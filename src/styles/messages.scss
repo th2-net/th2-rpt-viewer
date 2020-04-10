@@ -1,0 +1,614 @@
+/******************************************************************************
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+
+@import "./common/vars";
+@import "./machinelearning.scss";
+
+.message-card {
+    @include status-card;
+
+    // lb-count - number of displaying labels - to make offset for name and session
+    --lb-count: 0;
+    // lb-count variable assignment through the custom html property
+    &[data-lb-count="0"] { --lb-count: 0; }
+    &[data-lb-count="1"] { --lb-count: 1; }
+    &[data-lb-count="2"] { --lb-count: 2; }
+
+    position: relative;
+    display: grid;
+    grid-template: auto auto / auto calc(100% - var(--lb-count) * 20px);
+    grid-template-areas: "mc-labels mc-header"
+    "mc-labels mc-body";
+    width: 100%;
+    margin: 6px 0;
+
+    border: 2px solid var(--status-secondary-border-color);
+    border-radius: $defaultCardBorderRadius;
+
+    &.selected {
+        border-color: var(--status-primary-border-color);
+        background-color: var(--status-secondary-background-color);
+    }
+
+    &.transparent {
+        opacity: 0.3;
+    }
+
+    &__labels {
+        grid-area: mc-labels;
+        display: flex;
+        justify-content: flex-start;
+
+        div:first-of-type {
+            border-top-left-radius: 3px;
+            border-bottom-left-radius: 3px;
+        }
+    }
+
+    &__header {
+        grid-area: mc-header;
+    }
+
+    &__body {
+        grid-area: mc-body;
+    }
+}
+
+.mc-label {
+    width: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+
+    &__icon {
+        height: 14px;
+        width: 14px;
+        margin-top: 12px;
+        background-size: 100%;
+        filter: opacity(0.4);
+
+        &.rejected {
+            background-image: url(../../resources/icons/rejected-label.svg);
+        }
+
+        &.admin {
+            background-image: url(../../resources/icons/admin-icon.svg)
+        }
+    }
+
+    &.rejected {
+        background-color: $rejectedMessageLabelBackground;
+    }
+
+    &.admin {
+        background-color: $adminMessageLabelBackground;
+    }
+
+    .ml__prediction {
+        width: 100%;
+
+        &-icon {
+            height: 14px;
+            width: 14px;
+            margin-top: 12px;
+            margin-bottom: 6px;
+            background-size: 100%;
+
+            background-image: url(../../resources/icons/ml-prediction.svg)
+        }
+
+        &-percentage {
+            font-size: 10pt;
+            font-weight: bold;
+            color: white;
+
+            -webkit-text-stroke-width: 0.5px;
+            -webkit-text-stroke-color: white;
+        }
+    }
+}
+
+.mc-header {
+    grid-area: mc-header;
+    display: grid;
+    position: relative;
+    padding: 7px 5px 9px 10px;
+    color: $primaryTextColor;
+
+    &::after {
+        border-bottom: 2px solid var(--status-primary-delimeter-color);
+        padding: 0 20px;
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 10px;
+        right: 10px;
+    }
+
+    &.p25, &.p50, &.p0 {
+        grid-template-rows: auto auto;
+        grid-template-columns: calc(185px - (var(--lb-count) * 20px)) 50px 1fr 40px;
+        grid-template-areas: "info name name-value prediction"
+                             "timestamp session session-value prediction";
+    }
+
+    &.p75 {
+        grid-template-rows: auto auto auto;
+        grid-template-columns: 50px auto 1fr 40px;
+        grid-template-areas: "info info timestamp prediction"
+                             "name name-value name-value prediction"
+                             "session session-value session-value session-value";
+
+    }
+
+    &.admin {
+        grid-template-rows: 35px;
+        grid-template-columns: calc(195px - (var(--lb-count) * 20px)) 50px auto 1fr 40px;
+        grid-template-areas: "info name name-value empty expand-icon";
+        padding: 0;
+
+        &::after {
+            border: none;
+            padding: 0;
+        }
+    }
+
+    &__info {
+        grid-area: info;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+
+        &.rejected {
+            font-weight: bold;
+            font-size: 13px;
+            padding-left: 6px;
+            color: $primaryTextColor;
+        }
+    }
+
+    &.admin &__info {
+        padding-left: 5px;
+    }
+
+    &__name {
+        grid-area: name;
+    }
+
+    &__name-value {
+        grid-area: name-value;
+    }
+
+    .ml__submit {
+        grid-area: prediction;
+        justify-self: flex-end;
+        padding-right: 7px;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+
+        @include ml-icon;
+    }
+
+    &__timestamp {
+        grid-area: timestamp;
+        font-size: 12px;
+        padding-left: 5px;
+    }
+
+    &.p75 &__timestamp {
+        padding-left: 7px;
+    }
+
+    &__session {
+        grid-area: session;
+    }
+
+    &__session-value {
+        grid-area: session-value;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    &__session-icon {
+        grid-area: session-icon;
+        background-image: url('../../resources/icons/session-icon.svg');
+        height: 25px;
+        width: 25px;
+        background-size: 100%;
+        margin: 0 5px;
+    }
+
+    &__session, &__name, &__timestamp, &__name-value {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 3px;
+    }
+
+    &__name-value, &__session-value {
+        padding-left: 8px;
+        font-size: 13px;
+        font-weight: bold;
+        word-break: break-all;
+    }
+
+    &__session, &__name {
+        @include unselectable;
+        padding-top: 5px;
+        font-size: 10px;
+        color: $secondaryTextColor;
+    }
+
+    &__expand {
+        grid-area: expand-icon;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        &-icon {
+            height: 19px;
+            width: 19px;
+            background-image: url(../../resources/icons/arr4-down.svg);
+            background-size: 100%;
+            cursor: pointer;
+        }
+    }
+}
+
+.mc-body {
+    position: relative;
+    padding: 7px 10px 10px 15px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    &__title {
+        color: $primaryTextColor;
+        font-size: 14px;
+        font-weight: bold;
+        padding-bottom: 2px;
+        padding-top: 5px;
+    }
+
+    &__human {
+        padding-top: 5px;
+        word-break: break-word;
+        line-height: 21px;
+        margin: 0px;
+        font-size: 13px;
+    }
+
+    &__raw {
+        width: 100%
+    }
+
+    &__beautify-wrapper {
+        @include scrollbar;
+        overflow-x: scroll;
+    }
+}
+
+.mc-show-raw {
+    @include unselectable;
+    @include clickable;
+
+    float: right;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: $primaryTextColor;
+    padding: 0 4px;
+
+    &__title {
+        font-weight: bold;
+    }
+
+    &__icon {
+        height: 14px;
+        width: 14px;
+        background-size: 100%;
+        margin-left: 5px;
+
+        &.expanded {
+            background-image: url(../../resources/icons/arr4-up.svg);
+        }
+
+        &.hidden {
+            background-image: url(../../resources/icons/arr4-down.svg);
+        }
+    }
+}
+
+.mc-beautify {
+    @include clickable;
+
+    float: right;
+    height: 26px;
+    width: 26px;
+    padding: 2px;
+    margin: 0 0 5px 10px;
+
+    &__icon {
+        background-size: 100%;
+        background-repeat: no-repeat;
+        height: 100%;
+        width: 100%;
+
+        &.beautify {
+            background-image: url(../../resources/icons/beautified-text.svg);
+        }
+
+        &.plain {
+            background-image: url(../../resources/icons/plain-text.svg);
+        }
+    }
+}
+
+.mc-raw {
+
+    &__header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        padding-top: 10px;
+    }
+
+    &__title {
+        display: inline-block;
+        @include unselectable;
+        font-size: 13px;
+        color: $primaryTextColor;
+        font-weight: bold;
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        margin-top: 10px;
+        font-family: monospace;
+        line-height: 18px;
+        letter-spacing: 0.5px;
+        font-size: 11px;
+    }
+
+    &__column {
+        display: flex;
+        padding-left: 5px;
+        margin-left: 10px;
+        cursor: text;
+
+        &.primary {
+            color: $primaryTextColor;
+
+            &:hover {
+                background: $messageCardRawHoverBackground;
+            }
+        }
+
+        &.secondary {
+            color: $secondaryTextColor;
+        }
+    }
+
+    &__copy-btn {
+        display: inline-block;
+        margin: 4px 4px 4px 10px;
+        cursor: pointer;
+
+        &:hover {
+            filter: opacity(1);
+        }
+    }
+
+    &__copy-icon {
+        margin: 4px 4px 4px 10px;
+        height: 13px;
+        width: 13px;
+        background-image: url('../../resources/icons/clipboard.svg');
+        background-size: 100%;
+        filter: opacity(0.6);
+    }
+
+    &__copy-title {
+        @include unselectable;
+        font-size: 12px;
+        color: $primaryTextColor;
+        padding-left: 5px;
+    }
+
+    &__copy-all {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 10px;
+        padding: 2px;
+        cursor: pointer;
+
+        &:hover {
+            background: $messageCardRawHoverBackground;
+        }
+    }
+
+    &__content-part {
+        &::selection {
+            background-color: #338FFF;
+            color: white;
+        }
+    }
+
+    &__highlighted-content {
+        background-color: #99C7FF;
+        font-weight: bold;
+        color: $primaryTextColor;
+    }
+}
+
+.mc-expand-btn {
+    position: absolute;
+    top: 67px;
+    right: 12px;
+    padding-right: 5px;
+
+    &.rejected {
+        top: 80px;
+    }
+
+    &__icon {
+        height: 19px;
+        width: 19px;
+        background-image: url(../../resources/icons/arr4-up.svg);
+        background-size: 100%;
+        cursor: pointer;
+    }
+}
+
+.messages {
+    height: 100%;
+    padding: 0 5px;
+    word-wrap: break-word;
+
+    &__filter-info {
+        height: $filterCountHeight;
+        font-size: 14px;
+        font-weight: bold;
+        color: $filterPrimaryColor;
+
+        display: flex;
+        align-items: center;
+        padding-left: 20px;
+    }
+
+    &__list {
+        height: 100%;
+
+        &.filter-applied {
+            height: calc(100% - #{$filterCountHeight});
+        }
+    }
+}
+
+.mc-skeleton {
+    @include skeleton-pulse;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-areas: "mc-header"
+                         "delimiter"
+                         "mc-body";
+    grid-row-gap: 12px;
+    border: 2px solid $skeletonBackgroundColor;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 6px 0;
+    position: relative;
+
+    &__header {
+        grid-area: mc-header;
+        display: grid;
+        grid-template-rows: repeat(2, 20px);
+        grid-template-columns: 1.1fr 3fr 0.2fr;
+        grid-row-gap: 6px;
+        grid-template-areas: "icons name submit"
+                             "timestamp session submit";
+        align-items: center;
+    }
+
+    &__icons, &__timestamp, &__session, &__name, &__submit, &__icons-el, &__session-el {
+        @include skeleton;
+        height: 100%;
+    }
+
+    &__icons {
+        grid-area: icons;
+        background-color: white;
+    }
+
+    &__icons-el {
+        width: 20px;
+        display: inline-block;
+        margin-right: 8px;
+    }
+
+    &__timestamp {
+        grid-area: timestamp;
+        width: 65%;
+    }
+
+    &__session {
+        width: 75%;
+        grid-area: session;
+        background-color: white;
+        display: grid;
+        grid-column-gap: 40px;
+        grid-template-columns: 1fr 20px 1fr;
+    }
+
+    &__name {
+        grid-area: name;
+        width: 55%;
+    }
+
+    &__submit {
+        grid-area: submit;
+        width: 22px;
+        height: 22px;
+        justify-self: end;
+        align-self: center;
+    }
+
+    &__delimiter {
+        height: 2px;
+        background-color: $skeletonBackgroundColor;
+        grid-area: delimiter;
+    }
+
+    &__body {
+        grid-area: mc-body;
+        display: grid;
+        grid-template-rows: 16px 16px;
+        grid-template-columns: 1.2fr 1fr;
+        grid-row-gap: 7px;
+        grid-template-areas: "text1 text1"
+                             "text2 type";
+    }
+
+    &__body-text1, &__body-text2, &__body-type {
+        @include skeleton;
+    }
+
+    &__body-text1 {
+        grid-area: text1;
+    }
+
+    &__body-text2 {
+        grid-area: text2;
+    }
+
+    &__body-type {
+        justify-self: end;
+        grid-area: type;
+        width: 55px;
+    }
+}

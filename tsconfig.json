@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+      "outDir": "./build/",
+      "target": "es6",
+      "keyofStringsOnly": true,
+      "lib": ["es2019","es2017", "es2016", "dom"],
+      "module": "commonjs",
+      "noImplicitAny": false,
+      "noImplicitThis": true,
+      "removeComments": true,
+      "sourceMap": true,
+      "jsx": "react",
+      "skipLibCheck": true,
+      "esModuleInterop": true
+    },
+    "exclude": [
+      "node_modules"
+    ],
+    "include": [
+      "./src/**/*"
+    ]
+  }

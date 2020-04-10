@@ -1,0 +1,369 @@
+/******************************************************************************
+ * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+@import "./colors.scss";
+
+@mixin scrollbar {
+    &::-webkit-scrollbar {
+        background-color: rgba(0, 0, 0, 0.0);
+        width: 16px
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: rgba(0, 0, 0, 0.0);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: #babac0;
+        border-radius: 16px;
+        border: 4px solid #fff;
+    }
+
+    &::-webkit-scrollbar-button {
+        display: none;
+    }
+}
+
+@mixin status-card {
+
+    --status-primary-color: #{$primaryTextColor};
+    --status-secondary-color: #{$secondaryTextColor};
+    --status-primary-border-color: #{$defaultCardBorderColor};
+    --status-secondary-border-color: #{$defaultCardBackground};
+    --status-primary-background-color: #{$defaultCardBorderColor};
+    --status-primary-delimeter-color: #{$defaultCardBackground};
+    --status-secondary-background-color: #{$defaultSelectedCardBackground};
+    --status-primary-header-background-color: #{$defaultCardBorderColor};
+    --status-secondary-header-background-color: #{$defaultSelectedCardBackground};
+
+    &.passed {
+        // we can't symply assign scss variable to css variable because sass doesn't know css varible type,
+        // so we use #{ ... } syntax to tell sass that we use variable as color
+        // https://github.com/sass/libsass/issues/2621
+        --status-primary-color: #{$passedTextColor};
+        --status-secondary-color: #{$passedSecondaryTextColor};
+        --status-primary-border-color: #{$passedBorderColor};
+        --status-secondary-border-color: #{$passedBorderColorSecondary};
+        --status-hover-border-color: #{$passedBorderHoverColor};
+        --status-primary-delimeter-color: #{$passedDelimiterHoverColor};
+        --status-primary-background-color: #{$passedBorderColor};
+        --status-secondary-background-color: #{$passedBackgroundColor};
+        --status-primary-header-background-color: #{$passedHeaderColor};
+        --status-secondary-header-background-color: #{$passedHeaderSecondaryBackground};
+    }
+
+    &.failed {
+        --status-primary-color: #{$failedTextColor};
+        --status-secondary-color: #{$failedSecondaryTextColor};
+        --status-primary-border-color: #{$failedBorderColor};
+        --status-secondary-border-color: #{$failedBorderColorSecondary};
+        --status-hover-border-color: #{$failedBorderHoverColor};
+        --status-primary-delimeter-color: #{$failedDelimiterHoverColor};
+        --status-primary-background-color: #{$failedBorderColor};
+        --status-secondary-background-color: #{$failedBackgroundColor};
+        --status-primary-header-background-color: #{$failedHeaderColor};
+        --status-secondary-header-background-color: #{$failedHeaderSecondaryBackground};
+        --status-header-border-color: #{$failedHeaderBorderColor};
+    }
+
+    &.conditionally_passed {
+        --status-primary-color: #{$conditionallyPassedTextColor};
+        --status-secondary-color: #{$conditionallyPassedSecondaryTextColor};
+        --status-primary-border-color: #{$conditionallyPassedBorderColor};
+        --status-secondary-border-color: #{$conditionallyPassedBorderColorSecondary};
+        --status-hover-border-color: #{$conditionallyPassedBorderHoverColor};
+        --status-primary-delimeter-color: #{$conditionallyPassedDelimiterHoverColor};
+        --status-primary-background-color: #{$conditionallyPassedBorderColor};
+        --status-secondary-background-color: #{$conditionallyPassedBackgroundColor};
+        --status-primary-header-background-color: #{$conditionallyPassedHeaderColor};
+        --status-secondary-header-background-color: #{$conditionallyPassedHeaderSecondaryBackground};
+    }
+
+    &.conditionally_failed {
+        --status-primary-color: #{$conditionallyFailedTextColor};
+        --status-secondary-color: #{$conditionallyFailedSecondaryTextColor};
+        --status-primary-border-color: #{$conditionallyFailedBorderColor};
+        --status-secondary-border-color: #{$conditionallyFailedBorderColorSecondary};
+        --status-hover-border-color: #{$conditionallyFailedBorderHoverColor};
+        --status-primary-delimeter-color: #{$conditionallyFailedDelimiterHoverColor};
+        --status-primary-background-color: #{$conditionallyFailedBorderColor};
+        --status-secondary-background-color: #{$conditionallyFailedBackgroundColor};
+        --status-primary-header-background-color: #{$conditionallyFailedHeaderColor};
+        --status-secondary-header-background-color: #{$conditionallyFailedHeaderSecondaryBackground};
+    }
+
+
+}
+
+@mixin log-status-card {
+    &.error {
+        --lc-primary-color: #{$logCardErrorPrimaryColor};
+        --lc-border-color: #{$logCardErrorBorderColor};
+    }
+
+    &.warn {
+        --lc-primary-color: #{$logCardWarnPrimaryColor};
+        --lc-border-color: #{$logCardWarnBorderColor};
+    }
+
+    &.debug {
+        --lc-primary-color: #{$logCardDebugPrimaryColor};
+        --lc-border-color: #{$logCardDebugBorderColor};
+    }
+
+    &.info {
+        --lc-primary-color: #{$logCardInfoPrimaryColor};
+        --lc-border-color: #{$logCardInfoBorderColor};
+    }
+}
+
+@mixin status-card-with-running {
+    @include status-card;
+
+    &.running {
+        --status-primary-color: #{$liveTextColor};
+        --status-secondary-color: #{$liveSecondaryTextColor};
+        --status-primary-border-color: #{$liveBorderColor};
+        --status-secondary-border-color: #{$liveBorderSecondaryColor};
+        --status-hover-border-color: #{$liveBorderHoverColor};
+        --status-primary-background-color: #{$liveBackgroundColor};
+        --status-primary-delimeter-color: #{$liveDelimiterHoverColor};
+        --status-secondary-background-color: #{$liveSecondaryBackgroundColor};
+        --status-primary-header-background-color: #{$liveBackgroundColor};
+        --status-secondary-header-background-color: #{$liveHeaderSecondaryBackgroundColor};
+    }
+}
+
+@mixin status-background {
+    &.passed {
+        .passed {
+            background-color: $passedVerificationBackgroundColor;
+        }
+
+        &:hover .passed {
+            background-color: $passedVerificationHighlightedBackgroundColor;
+        }
+    }
+
+    &.failed {
+        .failed {
+            background-color: $failedVerificationBackgroundColor;
+        }
+
+        &:hover .failed {
+            background-color: $failedVerificationHighlightedBackgroundColor;
+        }
+    }
+
+    &.conditionally_passed {
+        .conditionally_passed {
+            background-color: $conditionallyPassedVerificationBackgroundColor;
+        }
+
+        &:hover .conditionally_passed {
+            background-color: $conditionallyPassedVerificationHighlightedBackgroundColor;
+        }
+    }
+
+    &.conditionally_failed {
+        .conditionally_failed {
+            background-color: $conditionallyFailedVerificationBackgroundColor;
+        }
+
+        &:hover .conditionally_failed {
+            background-color: $conditionallyFailedVerificationHighlightedBackgroundColor;
+        }
+    }
+}
+
+@mixin status-text {
+    &.passed {
+        color: $passedTextColor;
+    }
+
+    &.failed {
+        color: $failedTextColor;
+    }
+
+    &.conditionally_passed {
+        color: $conditionallyPassedTextColor;
+    }
+
+    &.conditionally_failed {
+        color: $conditionallyFailedTextColor;
+    }
+
+    &.na {
+        color: $naTextColor;
+    }
+}
+
+@mixin selectable-card {
+    &.selected {
+        border-color: $defaultCardBorderColor;
+        background-color: $defaultSelectedCardBackground;
+    }
+
+    &.passed {
+        background-color: $passedBackgroundColor;
+        border-color: $passedBorderColor;
+    }
+
+    &.failed {
+        background-color: $failedBackgroundColor;
+        border-color: $failedBorderColor;
+    }
+
+    &.conditionally_passed {
+        background-color: $conditionallyPassedBackgroundColor;
+        border-color: $conditionallyPassedBorderColor;
+    }
+
+    &.conditionally_failed {
+        background-color: $conditionallyFailedBackgroundColor;
+        border-color: $conditionallyFailedBorderColor;
+    }
+}
+
+@mixin unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+@mixin disable-appearance {
+    -webkit-appearance: none;
+    -khtml-appearance: none;
+    -moz-appearance: none;
+    user-select: none;
+}
+
+@mixin default-table {
+
+    table {
+        font-size: 11pt;
+        border-collapse: collapse;
+        border-style: hidden;
+        table-layout: fixed;
+    }
+
+    td {
+        border: 4px solid $tableCellBorderColor;
+        word-break: break-all;
+        white-space: pre-wrap;
+        background-color: $tableBodyBackground;
+
+        &.transparent {
+            background-color: transparent;
+            border-color: transparent;
+        }
+    }
+
+    th {
+        border: 4px solid $tableHeaderCellBorderColor;
+        background-color: $tableHeaderBackground;
+        font-weight: normal;
+        padding: 5px;
+
+        &.transparent {
+            background-color: transparent;
+            border-color: transparent;
+        }
+    }
+    tr {
+        &:hover td {
+            background-color: $tableBodyBackgroundHighlighted;
+
+            &.transparent {
+                background-color: transparent;
+            }
+        }
+    }
+}
+
+@mixin spinner($thikness, $size: 16px ,$duration: 1s, $outer-color: $spinnerOuterColor, $inner-color: $spinnerInnerColor) {
+    height: $size;
+    width: $size;
+    border: $thikness solid $outer-color;
+    border-top: $thikness solid $inner-color;
+    border-radius: 50%;
+    animation: spin $duration linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@mixin clickable {
+    cursor: pointer;
+    border-radius: 2px;
+
+    &:hover {
+        background-color: $clickableHoverBackground;
+    }
+}
+
+@mixin icon($image, $height: 16px, $width: 16px) {
+    height: $height;
+    width: $width;
+
+    background: {
+        image: $image;
+        repeat: no-repeat;
+        size: 100%;
+        position: center;
+    }
+}
+
+@mixin round-button($image, $size: 20px) {
+    @include clickable;
+    @include icon($image, $size, $size);
+
+    border-radius: 50%;
+}
+
+@mixin skeleton {
+    height: $defaultSkeletonElementHigh;
+    background-color: $skeletonBackgroundColor;
+    border-radius: $defaultSkeletonElementBorderRadius;
+}
+
+@mixin skeleton-pulse {
+    animation: pulse 1.7s ease-in-out infinite;
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.4;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+}
+
+@mixin card-shadow() {
+    box-shadow: 4px 8px 6px 0 rgba(0, 0, 0, 0.4);
+}

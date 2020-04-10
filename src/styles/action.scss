@@ -1,0 +1,415 @@
+/******************************************************************************
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+
+@import "./common/vars";
+@import "./machinelearning.scss";
+
+.action-card {
+    @include status-card;
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    border: 2px solid transparent;
+    border-radius: $defaultCardBorderRadius;
+    padding: 5px;
+    margin: 6px 0;
+    transition: all 0.1s;
+
+    &__status {
+        padding-left: 10px;
+    }
+
+    &__custom-msg {
+        color: $primaryTextColor;
+
+        &.debug {
+            color: gray;
+        }
+
+        &.info {
+            color: black;
+        }
+
+        &.warn {
+            color: #edcc10;
+        }
+
+        &.error {
+            color: orange;
+        }
+
+        &.fail {
+            color: red;
+        }
+    }
+
+    &__link {
+        padding-left: 33px;
+        
+        a {
+            text-decoration: none;
+            padding-bottom: 1px;
+            font-weight: bold;
+            font-size: 16px;
+            color: $linkTextColor;
+
+            // https://kirkizh.ru/2018/03/underline/
+            // we can't use standard underline and before pseudoelement with text-shadow
+            background-image: linear-gradient(to top, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 1px,  $linkUnderlineColor 1px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 100px);
+            text-shadow: 2px 0px #fff, -2px 0px #fff;
+        }
+    }
+
+    &.root {
+        border-color: var(--status-secondary-border-color);
+        &:hover {
+            border-color: var(--status-hover-border-color);
+        }
+    }
+
+    &.selected {
+        background-color: var(--status-secondary-background-color);
+        border-color: var(--status-primary-border-color);
+    }
+}
+
+.ac-header {
+    width: 100%;
+    padding: 3px;
+    display: grid;
+    word-break: break-all;
+
+    &.p50, &.p75 {
+        grid-template-columns: 1fr auto 70px;
+        grid-template-rows: auto 1fr;
+        grid-template-areas: "title controls controls"
+                             "title start-time elapsed-time";
+    }
+
+    &.p25 {
+        grid-template-columns: 1fr auto auto;
+        grid-template-rows: 1fr;
+        grid-template-areas: "title elapsed-time controls"
+    }
+
+    &.p25.expanded {
+        grid-template-columns: 1fr 55px 53px;
+        grid-template-rows: auto 1fr;
+        grid-template-areas: "title elapsed-time controls"
+                             "title start-time start-time";
+    }
+
+    &.p100 {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto auto auto;
+        grid-template-areas: "title start-time elapsed-time controls";
+    }
+
+    &.transparent {
+        opacity: 0.3;
+    }
+
+    &__title {
+        grid-area: title;
+        display: flex;
+        flex-direction: column;
+    }
+
+    &.p100 &__title {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    &__name, &__description, &__status, &__elapsed-time {
+        font-size: 17px;
+        font-weight: bold;
+    }
+
+    &__name {
+        cursor: pointer;
+        width: fit-content;
+    }
+
+    &__name-element {
+        padding: 0 8px;
+        cursor: pointer;
+        border-left: 2px solid var(--status-hover-border-color);
+        transition: 0.2s;
+        color: var(--status-primary-color);
+
+        &:hover {
+            background-color: var(--status-secondary-header-background-color);
+            border-color: var(--status-secondary-header-background-color);
+
+            &+div {
+                border-color: var(--status-secondary-header-background-color);
+            }
+        }
+
+        &.selected {
+            border-color: var(--status-primary-delimeter-color);
+
+            &:hover {
+                background-color: var(--status-hover-border-color);
+                border-color: var(--status-hover-border-color);
+                
+                &+div {
+                    border-color: var(--status-hover-border-color);
+                }
+            }
+        }
+
+        &:first-child {
+            border-left: none;
+        }
+    }
+
+    &__description {
+        color: var(--status-secondary-color);
+        padding-left: 8px;
+    }
+
+    &__name, &__description {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        white-space: pre-wrap;
+    }
+
+    &__elapsed-time {
+        grid-area: elapsed-time;
+        color: var(--status-primary-color);
+        display: flex;
+        flex-direction: row-reverse
+    }
+
+    &__start-time {
+        grid-area: start-time;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: flex-start;
+        padding-top: 4px;
+    }
+
+    &.p100 &__start-time {
+        padding-right: 10px;
+    }
+
+    &__time-label {
+        font-size: 11px;
+        color: $secondaryLightTextColor;
+        padding-right: 10px;
+        white-space: nowrap;
+    }
+
+    &__time-value {
+        font-size: 12px;
+        color: $secondaryTextColor;
+        font-weight: bold;
+        word-break: break-word;
+        text-align: right;
+    }
+
+    &__controls {
+        grid-area: controls;
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-start;
+        align-items: center;
+        padding-left: 5px;
+    }
+
+    &.p100 &__controls {
+        align-items: flex-start;
+    }
+    
+    &__status {
+        color: var(--status-primary-color);
+        min-width: 20px;
+        text-align: right;
+    }
+
+    .ml-action__submit {
+        display: flex;
+        flex-direction: row;
+        margin-right: 6px;
+        cursor: pointer;
+
+        @include ml-counter;
+        @include ml-icon;
+    }
+}
+
+.ac-body {
+    display: block;
+    box-sizing: border-box;
+    word-break: break-all;
+
+    &__item {
+        padding: 3px 7px;
+    }
+
+    &__item-title {
+        font-weight: bold;
+        font-size: 18px;
+
+        &:hover {
+            @include unselectable;
+            cursor: pointer;
+        }
+    }
+
+    &__input-params {
+        &.transparent {
+            opacity: 0.3;
+        }
+    }
+
+    &__verification {
+        @include status-card;
+        border: 2px solid transparent;
+        border-radius: $defaultCardBorderRadius;
+        padding-bottom: 5px;
+
+        &:hover {
+            border-color: var(--status-hover-border-color);
+        }
+        
+        &.selected {
+            background-color: var(--status-secondary-background-color);
+            border-color: var(--status-primary-border-color);
+        }
+
+        &.transparent {
+            opacity: 0.3;
+        }
+    }
+
+    &__verification-title-wrapper {
+        display: flex;
+        flex-direction: row;
+        flex-grow: 1;
+        margin-right: 10px;
+        justify-content: space-between;
+
+
+        .ml__submit {
+            margin-left: 4px;
+            cursor: pointer;
+
+            @include ml-icon;
+        }
+    }
+
+    &__verification-title {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        color: var(--status-primary-color);
+        font-weight: bold;
+        font-size: 17px;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+    
+    &__verification-table {
+        color: var(--status-primary-color);
+        font-weight: bold;
+        font-size: 17px;
+    }
+
+    &__truncated-warning {
+        color: $secondaryTextColor;
+        font-size: 12px;
+        font-weight: bold;
+        padding-left: 7px;
+    }
+}
+
+.actions {
+    height: 100%;
+
+    &__filter-info {
+        height: $filterCountHeight;
+        font-size: 14px;
+        font-weight: bold;
+        color: $filterPrimaryColor;
+
+        display: flex;
+        align-items: center;
+        padding-left: 20px;
+    }
+
+    &__list {
+        height: 100%;
+        padding: 0 5px;
+
+        &.filter-applied {
+            height: calc(100% - #{$filterCountHeight});
+        }
+    }
+}
+
+.ac-skeleton {
+    @include skeleton-pulse;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 7px 8px;
+    background-color: white;
+    border: 2px solid $skeletonBackgroundColor;
+    border-radius: 3px;
+    display: grid;
+    grid-template-areas: "icons title status"
+                         ". description info";
+    grid-template-columns: 20px repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-gap: 6px 18px;
+    margin: 6px 0;
+
+
+    &__icons, &__title, &__description, &__status, &__info {
+        @include skeleton;
+    }
+
+    &__icons {
+        grid-area: icons;
+    }
+
+    &__title {
+        grid-area: title;
+        width: 227px;
+    }
+
+    &__description {
+        grid-area: description;
+    }
+
+    &__status {
+        grid-area: status;
+        width: 80px;
+        justify-self: self-end;
+    }
+
+    &__info {
+        grid-area: info;
+        width: 190px;
+        justify-self: self-end;
+    }
+}

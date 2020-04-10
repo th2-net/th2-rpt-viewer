@@ -1,0 +1,148 @@
+/******************************************************************************
+ * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+
+ @import "./common/vars";
+
+.found {
+    color: #FFF;
+    opacity: 0.6;
+    border-radius: 3px;
+
+    &.target {
+        opacity: 1;
+        color: #000;
+    }
+}
+
+.search-field-wrapper {
+    position: relative;
+    height: 30px;
+    width: 240px;
+
+    &.active {
+        width: 455px;
+    }
+}
+
+.search-field {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+
+    border: 2px solid #808080;
+    border-radius: 3px;
+    background-color: #FFF;
+    cursor: text;
+
+    min-height: 29px;
+    padding: 2px 5px 0 5px;
+
+    &__counter {
+        @include unselectable;
+        color: $primaryTextColor;
+        white-space: nowrap;
+        font-size: 12px;
+        float: right;
+        padding: 3px 5px;
+        font-weight: bold;
+    }
+
+    &__icon {
+        @include icon(url(../../resources/icons/search.svg));
+        display: inline;
+        float: right;
+        margin-top: 3px;
+    }
+
+    &__input {
+        border: 0;
+        border-radius: 3px;
+        font-weight: bold;
+        color: $primaryTextColor;
+        height: 18px;
+        padding: 1px 4px;
+
+        &:focus {
+            outline: 0;
+        }
+
+        &::placeholder {
+            color: $secondaryTextColor;
+            font-style: italic;
+            font-weight: normal;
+        }
+    }
+
+    &__input-wrapper {
+        margin-left: 4px;
+        font-size: 13px;
+    }
+
+    &.active {
+        @include card-shadow;
+    }
+}
+
+.search-panel-controls {
+    height: 30px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+
+    border-top: 1px solid #CCCCCC;
+    margin-top: 3px;
+    cursor: default;
+
+    &__checkbox {
+        font-size: 12px;
+        font-weight: bold;
+        color: $primaryTextColor;
+        text-transform: capitalize;
+    }
+}
+
+.search-bubble {
+    display: inline-flex;
+    margin: 2px 5px;
+    color: #FFF;
+}
+
+.search-controls {
+    display: inline-flex;
+    float: right;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 2px;
+
+    &__prev {
+        @include round-button(url(../../resources/icons/prev-search-result.svg));
+    }
+
+    &__next {
+        @include round-button(url(../../resources/icons/next-search-result.svg));
+    }
+
+    &__clear {
+        @include round-button(url(../../resources/icons/cross-icon.svg));
+    }
+}
+
+.loader {
+    @include spinner(3px);
+}

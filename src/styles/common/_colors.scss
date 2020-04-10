@@ -1,0 +1,166 @@
+/******************************************************************************
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+
+$reportHeaderBackground: #5EDAE1;
+$reportInfoShadowColor: #E2E2E2;
+$reportBorderColor: #D6D6D6;
+$reportTitleTextColor: #7B7B7B;
+
+$failedTextColor: #CC0000;
+$failedBorderColor: $failedTextColor;
+$failedHeaderColor: #FFCCCC;
+$failedBorderColorSecondary: $failedHeaderColor;
+$failedBorderHoverColor: #FF9999;
+$failedDelimiterHoverColor: #FF6666;
+$failedBackgroundColor: #FFDBDB;
+$failedHeaderBorderColor: $failedTextColor;
+$failedHeaderSecondaryBackground: $failedHeaderColor;
+$failedSecondaryTextColor: #E05252;
+$failedVerificationBackgroundColor: mix($failedTextColor, white, 10%);
+$failedVerificationHighlightedBackgroundColor: mix($failedTextColor, white, 20%);
+
+$passedTextColor: #1F66AD;
+$passedBorderColor: $passedTextColor;
+$passedHeaderColor: #D4E6F7;
+$passedBorderColorSecondary: $passedHeaderColor;
+$passedBorderHoverColor: #A8CCF0;
+$passedDelimiterHoverColor: #7DB3E8;
+$passedBackgroundColor: $passedBorderColorSecondary;
+$passedHeaderSecondaryBackground: $passedBackgroundColor;
+$passedSecondaryTextColor: #3380CC;
+$passedVerificationBackgroundColor: mix($passedTextColor, white,  10%);
+$passedVerificationHighlightedBackgroundColor: mix($passedTextColor, white,  20%);
+
+$conditionallyPassedTextColor: #FF5500;
+$conditionallyPassedBorderColor: $conditionallyPassedTextColor;
+$conditionallyPassedHeaderColor: #FFDDCC;
+$conditionallyPassedBorderColorSecondary: $conditionallyPassedHeaderColor;
+$conditionallyPassedBorderHoverColor: #FFBB99;
+$conditionallyPassedDelimiterHoverColor: #FF9966;
+$conditionallyPassedBackgroundColor: $conditionallyPassedBorderColorSecondary;
+$conditionallyPassedHeaderSecondaryBackground: $conditionallyPassedBackgroundColor;
+$conditionallyPassedSecondaryTextColor: #F57A3D;
+$conditionallyPassedVerificationBackgroundColor: mix($conditionallyPassedTextColor, white, 10%);
+$conditionallyPassedVerificationHighlightedBackgroundColor: mix($conditionallyPassedTextColor, white, 20%);
+
+$conditionallyFailedTextColor: #E69900;
+$conditionallyFailedBorderColor: $conditionallyFailedTextColor;
+$conditionallyFailedHeaderColor: #FFEECC;
+$conditionallyFailedBorderColorSecondary: $conditionallyFailedHeaderColor;
+$conditionallyFailedBackgroundColor: $conditionallyFailedBorderColorSecondary;
+$conditionallyFailedBorderHoverColor: #FFDD99;
+$conditionallyFailedDelimiterHoverColor: #FFCC66;
+$conditionallyFailedHeaderSecondaryBackground: $conditionallyFailedBackgroundColor;
+$conditionallyFailedSecondaryTextColor: #E69900;
+$conditionallyFailedVerificationBackgroundColor: mix($conditionallyFailedTextColor, white, 10%);
+$conditionallyFailedVerificationHighlightedBackgroundColor: mix($conditionallyFailedTextColor, white, 20%);
+
+$logCardErrorPrimaryColor: #E23636;
+$logCardErrorBorderColor: #FFCCCC;
+
+$logCardWarnPrimaryColor: #F57A3D;
+$logCardWarnBorderColor: #FFDDCC;
+
+$logCardDebugPrimaryColor: #5EBA6E;
+$logCardDebugBorderColor: #DBF0DF;
+
+$logCardInfoPrimaryColor: #808080;
+$logCardInfoBorderColor: #E6E6E6;
+
+$logCardPrimaryTextColor: #262626;
+
+$naTextColor: $reportTitleTextColor;
+
+$checkpointBorderColor: #59B368;
+$checkpointBackground: #EFFFF1;
+
+$primaryTextColor: #4D4D4D;
+$secondaryTextColor: #808080;
+$secondaryLightTextColor: #999999;
+
+$defaultCardBorderColor: #666666;
+$defaultCardBackground: #E0E0E0;
+$defaultSelectedCardBackground: #E0E0E033;
+
+$buttonDisabledBackground: $defaultCardBackground;
+
+$tableHeaderBackground: $defaultCardBackground;
+$tableCellBorderColor: white;
+$tableHeaderCellBorderColor: $tableCellBorderColor;
+$tableBodyBackground: #F5F5F5;
+$tableBodyBackgroundHighlighted: $tableHeaderBackground;
+
+$messageCardBackgroundColor: #F2F2F2;
+$messageCardRawHoverBackground: rgba(102, 102, 102, 0.15);
+
+$rejectedMessageLabelBackground: #FFE699;
+$adminMessageLabelBackground: #7ACCCC;
+
+$filterPrimaryColor: #00BBCC;
+$filterTextColor: #FFFFFF;
+$filterPathColor: #000000;
+
+$bubbleDefaultBackground: #FFFFFF;
+
+$filterButtonEnabled: #3D994D;
+$filterButtonDisabled: #79BF80;
+$filterButtonTextColor: white;
+
+$notificationBackground: #D9D9D9;
+
+$scrollbarThumbBackground: #C4C4C4;
+$scrollbarTrackBackground: #F2F2F2;
+
+$splitterColor: $scrollbarThumbBackground;
+
+$spinnerOuterColor: $defaultCardBorderColor;
+$spinnerInnerColor: rgba(0, 0, 0, 0.2);
+
+$chipTextColor: #808080;
+
+$linkTextColor: #1763CF;
+$linkUnderlineColor: #A8C6F0;
+
+$clickableHoverBackground: rgba(102, 102, 102, 0.15);
+
+$hintBackgroundColor: white;
+$hintBorderColor: $failedBorderColor;
+$hintShadowColor: transparentize(black, 0.5);
+$hintTextColor: black;
+
+$nullValuetextColor: $naTextColor;
+$knownBugCardBorderColor: transparentize($defaultCardBackground, 0.33);
+
+$liveTextColor: #4D4D4D;
+$liveSecondaryTextColor: $secondaryTextColor;
+$liveBorderColor: #666666;
+$liveBorderSecondaryColor: $defaultCardBackground;
+$liveBackgroundColor: #CCCCCC;
+$liveSecondaryBackgroundColor: #eeeeee;
+$liveHeaderSecondaryBackgroundColor: #E6E6E6;
+$liveBorderHoverColor: $liveBackgroundColor;
+$liveDelimiterHoverColor: #999999;
+
+$ml-icon-size: 22px;
+$ml-accent-color: #45A155;
+$ml-gray-color: #999999;
+
+$tcLoaderBackgroundColor: #D8D8D8;
+$tcLoaderPrimaryColor: #7DB3E8;
+
+$skeletonBackgroundColor: #E6E6E6;
+
+$errorMsgBackgroundColor: #E23636;

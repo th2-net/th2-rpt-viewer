@@ -1,0 +1,331 @@
+/******************************************************************************
+ * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+@import "./common/vars";
+
+.ver-table {
+    @include default-table;
+    width: 100%;
+    padding: 3px 10px 0 0;
+
+    table {
+        width: 100%;
+    }
+
+    &-indicator {
+        width: 14px;
+        padding: 0;
+        margin: 0;
+    }
+
+    &-status {
+        width: 60px;
+    }
+
+    &-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        font-size: 11px;
+
+        &-control {
+            margin-bottom: 5px;
+            margin-left: 30px;
+            display: flex;
+            flex-direction: row;
+            white-space: pre;
+
+            &-button {
+                @include unselectable;
+                color: $passedTextColor;
+                cursor: pointer;
+                position: relative;
+
+                &::after {
+                    content: '';
+                    border-bottom: 1px solid $passedTextColor;
+                    border-bottom-style: dashed;
+                    width: 100%;
+                    position: absolute;
+                    left: 0;
+                    bottom: 0;
+                }
+            }
+        }
+    }
+
+    &-row {
+        @include status-background;
+
+        &:hover &-hint {
+            visibility: visible;
+        }
+
+        td {
+            // height: 100% does not work with display: table-cell for some reason
+            height: 1px;
+        }
+
+        &-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        &-value {
+            padding-top: 5px;
+
+            &.notype {
+                padding-bottom: 5px;
+            }
+
+            &.novalue {
+                color: $nullValuetextColor;
+            }
+        }
+
+        &-indicator {
+            position: relative;
+            background-position: center 7px;
+
+            &.active {
+                background-image: url(../../resources/icons/verification-hint-indicator.svg);
+                background-repeat: no-repeat;
+            }
+        }
+
+        &-hint {
+            &-inner {
+                padding: 5px 10px;
+                font-size: 10pt;
+                color: $hintTextColor;
+                text-align: center;
+                word-break: break-word;
+            }
+
+            visibility: hidden;
+
+            background-color: $hintBackgroundColor;
+            border-radius: 10px;
+            z-index: 1;
+
+            box-shadow: 3px 3px 3px $hintShadowColor;
+
+            position: absolute;
+            bottom: calc(100% + 12px);
+            left: calc(50% - 12px);
+
+            width: max-content;
+            max-width: 400px;
+
+            height: auto;
+
+            $hintBorderWidth: 2px;
+
+            border: $hintBorderWidth solid $hintBorderColor;
+
+            $baseDisplacement: 10px;
+            $triangleSize: 20px;
+
+            &::after {
+
+                content: "";
+
+                position: absolute;
+                left: $baseDisplacement;
+                top: 100%;
+
+                width: $triangleSize;
+                height: $triangleSize;
+                clip-path: polygon(0% 0%, 100% 0%, 0% 100%);
+
+                background-color: $hintBorderColor;
+
+                z-index: 2;
+            }
+
+            &::before {
+                $innerTriangleSize: $triangleSize - 2 * $hintBorderWidth;
+
+                content: "";
+                position: absolute;
+                left: $baseDisplacement + $hintBorderWidth;
+                width: $innerTriangleSize;
+
+                // 1 extra pixel fixes a border rendering artifact
+                top: calc(100% - 1px);
+                height: $innerTriangleSize + 1;
+                clip-path: polygon(0% 0%, 100% 0%, 100% 1px, 0% 100%);
+
+                background-color: $hintBackgroundColor;
+                z-index: 3;
+            }
+        }
+
+        &-type {
+            margin-top: 2px;
+            margin-bottom: 2px;
+            font-size: 9px;
+            color: $secondaryTextColor;
+            text-align: right;
+
+            &.highlighted {
+                font-weight: 600;
+                @include status-text;
+            }
+        }
+
+        &-status {
+            @include status-text;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        &-expected, &-actual {
+            font-family: monospace;
+            margin: 0;
+            text-decoration: none;
+            white-space: pre-wrap;
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+
+        td {
+            padding-left: 7px;
+            padding-right: 7px;
+        }
+
+        &.transparent {
+            opacity: 0.3;
+        }
+
+        &-count {
+            font-size: small;
+            color: gray;
+            padding-left: 10px;
+        }
+
+        &-count {
+            font-size: small;
+            color: gray;
+            padding-left: 10px;
+        }
+
+        &-toggler {
+            margin: 3px 0;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            padding-top: 4px;
+            padding-bottom: 4px;
+            cursor: pointer;
+
+            p {
+                display: inline;
+            }
+
+            &.collapsed {
+                p::before {
+                    content: "+";
+                }
+            }
+
+            &.expanded {
+                p::before {
+                    content: "-";
+                }
+            }
+
+            p::before {
+                padding-right: 2px;
+                margin-left: -3px;
+            }
+        }
+    }
+}
+
+.params-table {
+    @include default-table;
+
+    td, th {
+        padding: 2px 7px;
+    }
+
+    display: block;
+    width: 100%;
+    height: auto;
+
+    &-row-toogler {
+
+        &.collapsed {
+            p::before {
+                content: "+";
+            }
+        }
+
+        &.expanded {
+            p::before {
+                content: "-";
+            }
+        }
+
+        p::before {
+            padding-right: 2px;
+            margin-left: -3px;
+        }
+
+        p {
+            margin: 0;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            display: inline-block;
+        }
+
+        &-count {
+            font-size: small;
+            color: gray;
+            padding-left: 10px;
+        }
+
+        td {
+            cursor: pointer;
+        }
+    }
+
+    &-row-value {
+        p {
+            margin: 0;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    }
+}
+
+.user-table {
+    overflow: auto;
+    @include scrollbar;
+    @include default-table;
+    margin: 5px 10px 5px 0;
+
+    th, td {
+        padding: 3px 7px;
+    }
+
+    td {
+        min-width: 150px;
+    }
+}
