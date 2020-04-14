@@ -9,8 +9,9 @@
       "es2016",
       "dom"
     ],
-    "module": "commonjs",
-    "removeComments": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "removeComments": false,
     "sourceMap": true,
     "jsx": "react",
     "skipLibCheck": true,

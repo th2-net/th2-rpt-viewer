@@ -28,7 +28,6 @@ import { ToggleButton } from './ToggleButton';
 import RunInformation from './RunInformation';
 import ReportSummary from './ReportSummary';
 import { useStores } from '../hooks/useStores';
-import selectedStore from '../stores/SelectedStore';
 import '../styles/report.scss';
 
 const OLD_REPORT_PATH = 'report.html';
@@ -38,7 +37,7 @@ enum Panel {ReportSummary, RunInfo}
 
 
 const ReportLayout = observer(() => {
-	const { reportStore, mlStore } = useStores();
+	const { reportStore, mlStore, selectedStore } = useStores();
 	const [showKnownBugs, setShowKnownBugs] = React.useState(true);
 	const [panel, setPanel] = React.useState(Panel.ReportSummary);
 

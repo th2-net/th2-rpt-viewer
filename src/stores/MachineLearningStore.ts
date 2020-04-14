@@ -14,70 +14,78 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed } from 'mobx';
-import { SubmittedData, PredictionData } from '../models/MlServiceResponse';
-import selectedStore from './SelectedStore';
+import { action, computed, observable } from 'mobx';
+import { PredictionData, SubmittedData } from '../models/MlServiceResponse';
+import SelectedStore from './SelectedStore';
 import { StatusType } from '../models/Status';
 import { isAction } from '../models/Action';
+import ApiSchema from "../api/ApiSchema";
 
-export class MLStore {
-	@observable token: string | null = null;
+export default class MLStore {
 
-	@observable submittedData: SubmittedData[] = [];
+    private api: ApiSchema;
 
-	@observable predictionData: PredictionData[] = [];
+    private selectedStore: SelectedStore;
 
-	@observable predictionsEnabled = true;
+    constructor(api: ApiSchema, selectedStore: SelectedStore) {
+        this.api = api;
+        this.selectedStore = selectedStore;
+    }
 
-	@action
-	setMlToken = (token: string) => {
-		this.token = token;
-	};
+    @observable token: string | null = null;
 
-	@action
-	setSubmittedMlData = (submittedData: SubmittedData[]) => {
-		this.submittedData = submittedData;
-	};
+    @observable submittedData: SubmittedData[] = [];
 
-	@action
-	addSubmittedMlData = (submittedData: SubmittedData) => {
-		this.submittedData.push(submittedData);
-	};
+    @observable predictionData: PredictionData[] = [];
 
-	@action
-	removeSubmittedMlData = (data: SubmittedData) => {
-		this.submittedData = this.submittedData.filter(entry =>
-			!(entry.actionId === data.actionId && entry.messageId === data.messageId));
-	};
+    @observable predictionsEnabled = true;
 
-	@action
-	saveSubmittedData = (data: PredictionData[]) => {
-		this.submittedData = this.submittedData.concat(
-			data.filter(newItem =>
-				(!this.predictionData.some(existingItem =>
-					(existingItem.actionId === newItem.actionId && existingItem.messageId === newItem.messageId))
-				)),
-		);
-	};
+    @action
+    setMlToken = (token: string) => {
+        this.token = token;
+    };
 
-	@action
-	togglePredictions = () => {
-		this.predictionsEnabled = !this.predictionsEnabled;
-	};
+    @action
+    setSubmittedMlData = (submittedData: SubmittedData[]) => {
+        this.submittedData = submittedData;
+    };
 
-	@computed get isPredictionsAvailable() {
-		return this.token != null
-			&& selectedStore.messages.length > 0
-			// eslint-disable-next-line no-confusing-arrow
-			&& selectedStore.actions.some(act => isAction(act) && act.status.status === StatusType.FAILED);
-	}
+    @action
+    addSubmittedMlData = (submittedData: SubmittedData) => {
+        this.submittedData.push(submittedData);
+    };
 
-	@action
-	fetchPredictions = (actionId: number) => {
-		console.log('fetchPredictions', actionId);
-	};
+    @action
+    removeSubmittedMlData = (data: SubmittedData) => {
+        this.submittedData = this.submittedData.filter(entry =>
+            !(entry.actionId === data.actionId && entry.messageId === data.messageId));
+    };
+
+    @action
+    saveSubmittedData = (data: PredictionData[]) => {
+        this.submittedData = this.submittedData.concat(
+            data.filter(newItem =>
+                (!this.predictionData.some(existingItem =>
+                        (existingItem.actionId === newItem.actionId && existingItem.messageId === newItem.messageId))
+                )),
+        );
+    };
+
+    @action
+    togglePredictions = () => {
+        this.predictionsEnabled = !this.predictionsEnabled;
+    };
+
+    @computed get isPredictionsAvailable() {
+        return this.token != null
+            && this.selectedStore.messages.length > 0
+            // eslint-disable-next-line no-confusing-arrow
+            && this.selectedStore.actions.some(act => isAction(act) && act.status.status === StatusType.FAILED);
+    }
+
+    @action
+    fetchPredictions = (actionId: number) => {
+        // todo: fetch predictions from api
+        console.log('fetchPredictions', actionId);
+    };
 }
-
-const mlStore = new MLStore();
-
-export default mlStore;

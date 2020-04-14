@@ -14,24 +14,28 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action } from 'mobx';
+import { action, observable } from 'mobx';
 import Report from '../models/Report';
-import { createReport, createTestCaseMetadata } from '../__tests__/util/creators';
-import viewStore from './ViewStore';
+import ViewStore from './ViewStore';
+import ApiSchema from "../api/ApiSchema";
+import { createReport } from "../__tests__/util/creators";
 
-export class ReportStore {
-	@observable report: Report | null = null;
+export default class ReportStore {
 
-	@action
-	loadReport = () => {
-		this.report = createReport(
-			new Date().toString(),
-			[createTestCaseMetadata(1, new Date().toString(), 100)],
-		);
-		viewStore.isLoading = false;
-	};
+    private api: ApiSchema;
+
+    private viewStore: ViewStore;
+
+    constructor(api: ApiSchema, viewStore: ViewStore) {
+        this.api = api;
+        this.viewStore = viewStore;
+    }
+
+    @observable report: Report | null = null;
+
+    @action
+    loadReport = async () => {
+        this.report = createReport('');
+        this.viewStore.isLoading = false;
+    };
 }
-
-const reportStore = new ReportStore();
-
-export default reportStore;

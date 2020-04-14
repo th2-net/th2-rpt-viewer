@@ -17,8 +17,16 @@
 import { action, observable } from 'mobx';
 import SearchToken from '../models/search/SearchToken';
 import SearchResult from '../helpers/search/SearchResult';
+import ApiSchema from "../api/ApiSchema";
 
-export class SearchStore {
+export default class SearchStore {
+
+	private api: ApiSchema;
+
+	constructor(api: ApiSchema) {
+		this.api = api;
+	}
+
 	@observable tokens: SearchToken[] = [];
 
 	@observable results: SearchResult = new SearchResult();
@@ -68,7 +76,3 @@ export class SearchStore {
 		this.shouldScrollToItem = false;
 	};
 }
-
-const searchStore = new SearchStore();
-
-export default searchStore;

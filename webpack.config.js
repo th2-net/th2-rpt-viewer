@@ -16,75 +16,91 @@
 
 const path = require("path");
 const HtmlWebPackPlugin = require("html-webpack-plugin");
+const webpack = require("webpack");
 
 const mode = process.env.NODE_ENV || 'production';
+const api_env = process.env.API_ENV || 'http';
 
-module.exports = {
-  devServer: {
-    watchOptions : {
-      poll: true,
-      ignored: [/node_modules/, 'src/__tests__/']
-    },
+const devServerApiProperties = api_env === 'jsonp' ? {
     watchContentBase: true,
     contentBase: [path.join(__dirname, 'src'), path.join(__dirname, 'build', 'out')],
-    compress: true,
-    port: 9001,
-    host: "0.0.0.0"
-  },
-  output: {
-    path: path.resolve(__dirname, './build/out/'),
-    filename: 'bundle.js'
-  },
-  entry: path.resolve("./src/index.tsx"),
-  mode: mode,
-  resolve: {
-    extensions: ['.ts', '.tsx', '.scss', '.js', '.jsx']
-  },
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        loader: "awesome-typescript-loader",
-        exclude: /node_modules/
-      },
-      {
-        test: /\.scss$/,
-        exclude: /node_modules/,
-        use: [
-          'style-loader',
-          'css-loader',
-          mode == 'production' ? {
-            loader: 'postcss-loader',
-            options: {
-              config: {
-                path: path.resolve(__dirname, './postcss.config.js')
-              }
+} : {
+    proxy: {
+        '/': 'http://kos215:8000'
+    }
+};
+
+module.exports = {
+    devServer: {
+        watchOptions: {
+            poll: true,
+            ignored: [/node_modules/, 'src/__tests__/']
+        },
+        compress: true,
+        port: 9001,
+        host: "0.0.0.0",
+        ...devServerApiProperties
+    },
+    output: {
+        path: path.resolve(__dirname, './build/out/'),
+        publicPath: '/',
+        filename: '[name].bundle.js',
+        chunkFilename: '[name].bundle.js'
+    },
+    entry: path.resolve("./src/index.tsx"),
+    mode: mode,
+    resolve: {
+        extensions: ['.ts', '.tsx', '.scss', '.js', '.jsx']
+    },
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                loader: "awesome-typescript-loader",
+                exclude: /node_modules/
+            },
+            {
+                test: /\.scss$/,
+                exclude: /node_modules/,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                    mode == 'production' ? {
+                        loader: 'postcss-loader',
+                        options: {
+                            config: {
+                                path: path.resolve(__dirname, './postcss.config.js')
+                            }
+                        }
+                    } : null,
+                    'sass-loader'
+                ].filter(loader => loader)
+            },
+            {
+                test: /\.(woff(2)?|ttf|eot|svg|jpg)(\?v=\d+\.\d+\.\d+)?$/,
+                use: [{
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[ext]',
+                        outputPath: 'resources/'
+                    }
+                }]
             }
-          } : null,
-          'sass-loader'
-        ].filter(loader => loader)
-      },
-      {
-        test: /\.(woff(2)?|ttf|eot|svg|jpg)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [{
-            loader: 'file-loader',
-            options: {
-                name: '[name].[ext]',
-                outputPath: 'resources/'
-            }
-        }]
-      }
-    ]
-  },
-  plugins: [
-    new HtmlWebPackPlugin({
-      title: "Sailfish report",
-      template: "src/index.html",
-      favicon: "resources/icons/favicon.png"
-    })
-  ],
-  optimization: {
-    usedExports: mode == 'production'
-  },
-  devtool: mode == 'production' ? undefined : 'eval'
+        ]
+    },
+    plugins: [
+        new webpack.EnvironmentPlugin({
+            NODE_ENV: mode,
+            API_ENV: api_env
+        }),
+        new HtmlWebPackPlugin({
+            title: "Report viewer",
+            template: "src/index.html",
+            favicon: "resources/icons/favicon.png"
+        })
+    ],
+    optimization: {
+        usedExports: mode == 'production'
+    },
+    devtool: mode == 'production' ? undefined : 'eval'
 };

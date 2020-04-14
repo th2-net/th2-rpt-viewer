@@ -22,13 +22,13 @@ import App from './components/App';
 import ErrorBoundary from './components/util/ErrorBoundary';
 import 'core-js/features/array/flat-map';
 import 'core-js/features/array/flat';
-import { StoreContextProvider } from './contexts/storesContext';
+import StoresProvider from "./components/StoresProvider";
 
 ReactDOM.render(
-	<ErrorBoundary>
-		<StoreContextProvider>
-			<App />
-		</StoreContextProvider>
-	</ErrorBoundary>,
-	document.getElementById('index'),
+    <ErrorBoundary>
+        <StoresProvider>
+            <App/>
+        </StoresProvider>
+    </ErrorBoundary>,
+    document.getElementById("index")
 );
