@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,15 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
-import SearchSplitResult from "../../models/search/SearchSplitResult";
+ ***************************************************************************** */
+import SearchSplitResult from '../../models/search/SearchSplitResult';
 
+/* eslint-disable no-mixed-spaces-and-tabs */
 export default class SearchResult {
-
     private results: Map<string, SearchSplitResult[]>;
 
     constructor(initMap: Iterable<[string, SearchSplitResult[]]> = []) {
-        this.results = new Map(initMap);
+    	this.results = new Map(initMap);
     }
 
     has = (key: string) => this.results.has(key);
@@ -28,23 +28,23 @@ export default class SearchResult {
     get = (key: string) => this.results.get(key);
 
     get size() {
-        return this.results.size;
+    	return this.results.size;
     }
 
     get isEmpty() {
-        return this.results.size < 1;
+    	return this.results.size < 1;
     }
 
-    get entries() { 
-        return [...this.results.entries()];
+    get entries() {
+    	return [...this.results.entries()];
     }
 
     get keys() {
-        return [...this.results.keys()];
+    	return [...this.results.keys()];
     }
 
     get values() {
-        return [...this.results.values()];
+    	return [...this.results.values()];
     }
 
     map = <T>(fn: (entry: [string, SearchSplitResult[]]) => T): Array<T> => this.entries.map(fn);
@@ -54,43 +54,43 @@ export default class SearchResult {
     mapValues = <T>(fn: (value: SearchSplitResult[]) => T): Array<T> => this.values.map(fn);
 
     sum = () => this.values.reduce((sum, value) =>
-        sum + value
-            .filter(res => res.token != null && res.token.isScrollable)
-            .length
-    , 0);
+    	sum + value
+    		.filter(res => res.token != null && res.token.isScrollable)
+    		.length,
+    0);
 
     /**
      * Returns entry which includes target index
      * @param index target index for search result
      */
-    getByIndex(index: number): [string, SearchSplitResult[]] {
-        let count = 0;
+    getByIndex(index: number): [string, SearchSplitResult[]] | [undefined, undefined] {
+    	let count = 0;
 
-        const targetEntry = this.entries.find(([key, result]) => {
-            count += result
-                .filter(res => res.token != null && res.token.isScrollable)
-                .length;
-            return index < count;
-        });
+    	const targetEntry = this.entries.find(([, result]) => {
+    		count += result
+    			.filter(res => res.token != null && res.token.isScrollable)
+    			.length;
+    		return index < count;
+    	});
 
-        return targetEntry || [undefined, undefined];
+    	return targetEntry || [undefined, undefined];
     }
 
     /**
      * Returns index of first search result by the key
      * @param targetKey key to search
      */
-    getStartIndexForKey(targetKey: string): number {
-        if (!this.results.has(targetKey)) {
-            return null;
-        }
+    getStartIndexForKey(targetKey: string): number | null {
+    	if (!this.results.has(targetKey)) {
+    		return null;
+    	}
 
-        return this.values
-            .slice(0, this.keys.findIndex(key => key === targetKey))
-            .reduce((acc, result) =>
-                acc + result
-                    .filter(res => res.token != null && res.token.isScrollable)
-                    .length
-            , 0);
+    	return this.values
+    		.slice(0, this.keys.findIndex(key => key === targetKey))
+    		.reduce((acc, result) =>
+    			acc + result
+    				.filter(res => res.token != null && res.token.isScrollable)
+    				.length,
+    		0);
     }
 }

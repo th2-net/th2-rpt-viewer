@@ -1,5 +1,5 @@
-/******************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+/** *****************************************************************************
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,22 +12,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import *  as React from 'react';
+/* eslint-disable import/no-unassigned-import */
+
+import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import App from "./components/App";
+import App from './components/App';
 import ErrorBoundary from './components/util/ErrorBoundary';
-import { Provider } from 'react-redux';
-import { createAppStore } from './store/store';
 import 'core-js/features/array/flat-map';
 import 'core-js/features/array/flat';
+import { StoreContextProvider } from './contexts/storesContext';
 
 ReactDOM.render(
-    <Provider store={createAppStore()}>
-        <ErrorBoundary>
-            <App/>
-        </ErrorBoundary>
-    </Provider>, 
-    document.getElementById("index")
+	<ErrorBoundary>
+		<StoreContextProvider>
+			<App />
+		</StoreContextProvider>
+	</ErrorBoundary>,
+	document.getElementById('index'),
 );

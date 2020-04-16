@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +12,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import React from 'react';
 
-function NetworkError(){
+function NetworkError() {
 	return (
 		<div className="tc-error">
 			<div className="tc-error__message">
@@ -24,7 +24,10 @@ function NetworkError(){
 				<span className="tc-error__message-text">
 					Please try to refresh the page
 				</span>
-				<div className="tc-error__refresh-button" onClick={() => location.reload()}>
+				<div className="tc-error__refresh-button" onClick={() => {
+					// eslint-disable-next-line no-restricted-globals
+					location.reload();
+				}}>
 					<span className="tc-error__refresh-icon"/>
 					<span className="tc-error__refresh-text">
 						Refresh
@@ -32,7 +35,7 @@ function NetworkError(){
 				</div>
 			</div>
 		</div>
-	)
+	);
 }
 
 export default NetworkError;

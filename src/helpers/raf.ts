@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 /**
- * Helper for multiple requestAnimationFrame call. 
+ * Helper for multiple requestAnimationFrame call.
  * @param callback target callback
  * @param framesCount count of requestAnimationFrame's calls
  */
-export function raf(callback: () => void, framesCount: number = 1) {
-    if (framesCount < 1) {
-        callback();
-        return;
-    }
+export function raf(callback: () => void, framesCount = 1) {
+	if (framesCount < 1) {
+		callback();
+		return;
+	}
 
-    window.requestAnimationFrame(() => raf(callback, framesCount - 1));
+	window.requestAnimationFrame(() => raf(callback, framesCount - 1));
 }

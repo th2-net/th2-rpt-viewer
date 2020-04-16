@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,29 +12,27 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import { connect } from "react-redux";
-import AppState from "../../state/models/AppState";
-import Checkpoint, { CheckpointStateProps, CheckpointDispatchProps } from "../Checkpoint";
-import Message from "../../models/Message";
-import { isCheckpointMessage } from "../../helpers/message";
-import { selectCheckpointMessage } from "../../actions/actionCreators";
+import React from 'react';
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../../hooks/useStores';
+import Checkpoint from '../Checkpoint';
+import Message from '../../models/Message';
+import { isCheckpointMessage } from '../../helpers/message';
 
-interface OwnProps {
+interface Props {
     message: Message;
 }
 
-const CheckpointMessage = connect(
-    (state: AppState, ownProps: OwnProps): CheckpointStateProps => ({
-        name: ownProps.message.msgName,
-        isSelected: ownProps.message.id === state.selected.checkpointMessageId,
-        index : state.selected.testCase.messages.filter(isCheckpointMessage).indexOf(ownProps.message) + 1,
-        description : ownProps.message.content["message"] ? ownProps.message.content["message"]["Description"] : ""
-    }), 
-    (dispatch, ownProps: OwnProps): CheckpointDispatchProps => ({
-        clickHandler: () => dispatch(selectCheckpointMessage(ownProps.message))
-    })
-)(Checkpoint);
+const CheckpointMessage = observer(({ message }: Props) => {
+	const { selectedStore } = useStores();
+	return <Checkpoint
+		name={message.msgName}
+		isSelected={message.id === selectedStore.checkpointMessageId}
+		index={selectedStore.messages.filter(isCheckpointMessage).indexOf(message) + 1}
+		description=''
+		clickHandler={() => selectedStore.selectCheckpointMessage(message)} />;
+});
 
 export default CheckpointMessage;

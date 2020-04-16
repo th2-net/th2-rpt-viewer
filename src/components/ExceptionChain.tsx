@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 import * as React from 'react';
 import ExceptionCard, { RecoverableExceptionCard } from './ExceptionCard';
 import Exception from '../models/Exception';
 import '../styles/statusPanel.scss';
-import { treeToList } from '../helpers/exceptionTreeToListConverter'
+import { treeToList } from '../helpers/exceptionTreeToListConverter';
 import { RecoverableElementProps } from './util/StateSaver';
 
 interface Props {
@@ -25,43 +25,43 @@ interface Props {
 }
 
 export const ExceptionChain = ({ exception }: Props) => (
-    <div className="status-wrapper">
-    {
-        treeToList(exception).map((ex, index) => (
-            <React.Fragment key={index}>
-                {
-                    index != 0 ? (
-                        <div className="status-panel-exception-divider"/>
-                    ) : null
-                }
-                <ExceptionCard 
-                    exception={ex}/>
-            </React.Fragment>
-        ))
-    }
-    </div>
-)
+	<div className="status-wrapper">
+		{
+			treeToList(exception).map((ex, index) => (
+				<React.Fragment key={index}>
+					{
+						index !== 0 ? (
+							<div className="status-panel-exception-divider"/>
+						) : null
+					}
+					<ExceptionCard
+						exception={ex}/>
+				</React.Fragment>
+			))
+		}
+	</div>
+);
 
 interface RecoverableProps extends Props, RecoverableElementProps {
     onExpand?: () => any;
 }
 
 export const RecoverableExceptionChain = ({ exception, stateKey, onExpand }: RecoverableProps) => (
-    <div className="status-wrapper">
-    {
-        treeToList(exception).map((ex, index) => (
-            <React.Fragment key={index}>
-                {
-                    index != 0 ? (
-                        <div className="status-panel-exception-divider"/>
-                    ) : null
-                }
-                <RecoverableExceptionCard
-                    stateKey={`${stateKey}-${index}`} 
-                    exception={ex}
-                    onExpand={onExpand}/>
-            </React.Fragment>
-        ))
-    }
-    </div>
-)
+	<div className="status-wrapper">
+		{
+			treeToList(exception).map((ex, index) => (
+				<React.Fragment key={index}>
+					{
+						index !== 0 ? (
+							<div className="status-panel-exception-divider"/>
+						) : null
+					}
+					<RecoverableExceptionCard
+						stateKey={`${stateKey}-${index}`}
+						exception={ex}
+						onExpand={onExpand}/>
+				</React.Fragment>
+			))
+		}
+	</div>
+);

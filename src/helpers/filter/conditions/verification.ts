@@ -1,4 +1,5 @@
-/******************************************************************************
+
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,40 +13,40 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import filterEntry from "../filterEntry";
-import { VERIFICATION_FIELDS, VERIFICATION_NODE_FIELDS } from "../../search/searchEngine";
-import Verification from "../../../models/Verification";
-import FilterCondition from "./FilterCondition";
-import VerificationEntry from "../../../models/VerificationEntry";
-import {toRegExpArray} from "../../regexp";
-import FilterPath from "../../../models/filter/FilterPath";
+import filterEntry from '../filterEntry';
+import { VERIFICATION_FIELDS, VERIFICATION_NODE_FIELDS } from '../../search/searchEngine';
+import Verification from '../../../models/Verification';
+import FilterCondition from './FilterCondition';
+import VerificationEntry from '../../../models/VerificationEntry';
+import { toRegExpArray } from '../../regexp';
+import FilterPath from '../../../models/filter/FilterPath';
 
 const STUB_FUNCTION = () => false;
 
 export default function getVerificationCondition(path: FilterPath, values: string[]): FilterCondition<Verification> {
-    switch (path) {
-        case FilterPath.SERVICE:
-            return STUB_FUNCTION;
+	switch (path) {
+	case FilterPath.SERVICE:
+		return STUB_FUNCTION;
 
-        case FilterPath.STATUS:
-            return verification => values.includes(verification.status.status);
+	case FilterPath.STATUS:
+		return verification => values.includes(verification.status.status);
 
-        case FilterPath.ALL:
-            return verification => 
-                filterEntry(verification, VERIFICATION_FIELDS, toRegExpArray(values)) ||
-                verification.entries.some(entry => filterVerificationsEntry(entry, toRegExpArray(values)));
+	case FilterPath.ALL:
+		return verification =>
+			filterEntry(verification, VERIFICATION_FIELDS, toRegExpArray(values))
+                || verification.entries.some(entry => filterVerificationsEntry(entry, toRegExpArray(values)));
 
-        default:
-            return STUB_FUNCTION;
-    }
+	default:
+		return STUB_FUNCTION;
+	}
 }
 
 function filterVerificationsEntry(entry: VerificationEntry, values: RegExp[]): boolean {
-    if (filterEntry(entry, VERIFICATION_NODE_FIELDS, values)) {
-        return true;
-    }
+	if (filterEntry(entry, VERIFICATION_NODE_FIELDS, values)) {
+		return true;
+	}
 
-    return entry.subEntries?.some(entry => filterVerificationsEntry(entry, values)) ?? false;
+	return entry.subEntries?.some(e => filterVerificationsEntry(e, values)) ?? false;
 }

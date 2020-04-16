@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,15 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
-import "../styles/expandablePanel.scss"
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../hooks/useStores';
 import { createStyleSelector } from '../helpers/styleCreators';
-import StateSaver, { RecoverableElementProps } from "./util/StateSaver";
-import { connect } from 'react-redux';
-import AppState from '../state/models/AppState';
+import StateSaver, { RecoverableElementProps } from './util/StateSaver';
 import { stopPropagationHandler } from '../helpers/react';
+import '../styles/expandablePanel.scss';
 
 interface PanelProps {
     isExpanded?: boolean;
@@ -29,67 +29,69 @@ interface PanelProps {
     isExpandDisabled?: boolean;
 }
 
-export const ExpandablePanel = ({ children, isExpanded, onExpand, isExpandDisabled }: PanelProps) => {
-    const iconClass = createStyleSelector(
-        "expandable-panel__icon", 
-        !isExpanded ? "hidden" : null,
-        isExpandDisabled? "disabled": null
-    );
+export const ExpandablePanel = ({
+	children, isExpanded, onExpand, isExpandDisabled,
+}: PanelProps) => {
+	const iconClass = createStyleSelector(
+		'expandable-panel__icon',
+		!isExpanded ? 'hidden' : null,
+		isExpandDisabled ? 'disabled' : null,
+	);
 
-    const expand = (isExpanded: boolean) => {
-        if (!isExpandDisabled) {
-            onExpand(isExpanded)
-        }
-    };
+	const expand = (isPanelExpanded: boolean) => {
+		if (!isExpandDisabled && onExpand) {
+			onExpand(isPanelExpanded);
+		}
+	};
 
-    const [header, body] = children;
+	const [header, body] = children;
 
-    return (
-        <div className="expandable-panel">
-            <div className="expandable-panel__header">
-                <div className={iconClass} 
-                    onClick={stopPropagationHandler(expand, !isExpanded)}/>
-                { 
-                    typeof header == 'function' ? 
-                        header(() => expand(!isExpanded)) :
-                        header
-                }
-            </div>
-            {
-                isExpanded ? body : null
-            }
-        </div>
-    )
-}
+	return (
+		<div className="expandable-panel">
+			<div className="expandable-panel__header">
+				<div className={iconClass}
+					onClick={stopPropagationHandler(expand, !isExpanded)}/>
+				{
+					typeof header === 'function'
+						? header(() => expand(!isExpanded))
+						: header
+				}
+			</div>
+			{
+				isExpanded ? body : null
+			}
+		</div>
+	);
+};
 
 interface RecoverablePanelProps extends PanelProps, RecoverableElementProps {}
 
 export const RecoverableExpandablePanel = ({ stateKey, ...props }: RecoverablePanelProps) => (
-    <StateSaver
-        stateKey={stateKey}>
-        {
-            (isExpanded: boolean, stateSaver) => (
-                <ExpandablePanel
-                    {...props}
-                    isExpanded={props.isExpanded !== undefined ? props.isExpanded : isExpanded}
-                    onExpand={isExpanded => {
-                        stateSaver(isExpanded);
-                        props.onExpand && props.onExpand(isExpanded)
-                    }}/>
-            )
-        }
-    </StateSaver>
-)
+	<StateSaver
+		stateKey={stateKey}>
+		{
+			(isExpanded: boolean, stateSaver) => (
+				<ExpandablePanel
+					{...props}
+					isExpanded={props.isExpanded !== undefined ? props.isExpanded : isExpanded}
+					onExpand={isPanelExpanded => {
+						stateSaver(isExpanded);
+						if (props.onExpand) {
+							props.onExpand(isPanelExpanded);
+						}
+					}}/>
+			)
+		}
+	</StateSaver>
+);
 
 interface SearchExpandablePanelOwnProps extends RecoverablePanelProps {
     searchKeyPrefix: string;
 }
 
-export const SearchExpandablePanel = connect(
-    (state: AppState, ownProps: SearchExpandablePanelOwnProps) => {
-        const [currentKey] = state.selected.search.results.getByIndex(state.selected.search.index),
-            isExpanded = currentKey && currentKey.startsWith(ownProps.searchKeyPrefix) ? true : undefined;        
-
-        return { isExpanded };
-    }
-)(RecoverableExpandablePanel);
+export const SearchExpandablePanel = observer(({ searchKeyPrefix, ...props }: SearchExpandablePanelOwnProps) => {
+	const { searchStore } = useStores();
+	const [currentKey] = searchStore.results.getByIndex(searchStore.index as number);
+	const isExpanded = currentKey && currentKey.startsWith(searchKeyPrefix) ? true : undefined;
+	return <RecoverableExpandablePanel isExpanded={isExpanded} {...props} />;
+});

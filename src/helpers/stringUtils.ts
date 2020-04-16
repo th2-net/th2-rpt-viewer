@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +12,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import { createRegExp } from "./regexp";
+import { createRegExp } from './regexp';
 
-const MIDDLE_DOT = '\u00b7',
-    WHITE_SQUARE = '\u25a1';
+const MIDDLE_DOT = '\u00b7';
+const WHITE_SQUARE = '\u25a1';
 
 /**
  * This function replaces all special symbols with white square (□), and replaces all spaces with middle dot (·).
- * @param targetString 
+ * @param targetString
  */
 export function replaceNonPrintableChars(targetString: string): string {
-    if (!targetString) {
-        return targetString;
-    }
-    
-    return targetString.replace(nonPrintableRegExp, WHITE_SQUARE).replace(/ /g, MIDDLE_DOT);
+	if (!targetString) {
+		return targetString;
+	}
+
+	return targetString.replace(nonPrintableRegExp, WHITE_SQUARE).replace(/ /g, MIDDLE_DOT);
 }
 
 // https://stackoverflow.com/a/11598864
@@ -80,9 +80,9 @@ const nonPrintableRegExp = createRegExp`
 `;
 
 export function replaceNonPrintableCharsWithDot(targetString: string): string {
-    if (!targetString) {
-        return targetString;
-    }
-    
-    return targetString.replace(nonPrintableRegExp, '.');
+	if (!targetString) {
+		return targetString;
+	}
+
+	return targetString.replace(nonPrintableRegExp, '.');
 }

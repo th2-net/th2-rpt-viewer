@@ -17,26 +17,21 @@
  */
 
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../../hooks/useStores';
+import { MlUploadButton } from './MlUploadButton';
 import '../../styles/messages.scss';
-import AppState from '../../state/models/AppState';
-import {connect} from 'react-redux';
-import {MlUploadButton} from "./MlUploadButton";
 
 interface VerificationMlUploadButtonProps {
-    activeActionId: number;
     targetActionId: number;
     targetMessageId: number;
 }
 
-export class VerificationMlUploadButtonBase extends React.Component<VerificationMlUploadButtonProps, {}> {
-    render() {
-        return <MlUploadButton messageId={this.props.targetMessageId} show={this.props.targetActionId === this.props.activeActionId}/>
-    }
-}
-
-export const VerificationMlUploadButton = connect(
-    (state: AppState) => ({
-        activeActionId: state.selected.activeActionId
-    }),
-    () => ({})
-)(VerificationMlUploadButtonBase);
+export const VerificationMlUploadButton = observer(
+	({ targetActionId, targetMessageId }: VerificationMlUploadButtonProps) => {
+		const { selectedStore } = useStores();
+		return <MlUploadButton
+			messageId={targetMessageId}
+			show={targetActionId === selectedStore.activeActionId}/>;
+	},
+);

@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,117 +12,122 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import { CURRENT_TESTCASE_ORDER } from '../../thunks/loadTestCase';
+interface Window extends globalThis.Window {
+	[index: string]: any;
+}
+declare const window: Window;
 
+const CURRENT_TESTCASE_ORDER = 'CURRENT_TESTCASE_ORDER';
 /**
  * This function fetches jsonp data from js file.
  * @param path path to jsonp file.
  * @param jsonpPath callback path for jsonp file.
  */
 export async function fetchJsonp(path: string, jsonpPath: string): Promise<unknown> {
-    return new Promise((resolve, reject) => {
-        const jsonpLoader = document.createElement('script');
-        
-        jsonpLoader.src = path;
-        jsonpLoader.async = true;
+	return new Promise((resolve, reject) => {
+		const jsonpLoader = document.createElement('script');
 
-        window[jsonpPath] = (data: unknown) => {
-            // reset handler
-            delete window[jsonpPath];
+		jsonpLoader.src = path;
+		jsonpLoader.async = true;
 
-            resolve(data);
-        }
+		(window as any)[jsonpPath] = (data: unknown) => {
+			// reset handler
+			delete window[jsonpPath];
 
-        jsonpLoader.onload = () => {
-            document.body.removeChild(jsonpLoader);
-        }
+			resolve(data);
+		};
 
-        jsonpLoader.onerror = err => {
-            reject(err);
-        }
+		jsonpLoader.onload = () => {
+			document.body.removeChild(jsonpLoader);
+		};
 
-        document.body.appendChild(jsonpLoader);
-    });
+		jsonpLoader.onerror = err => {
+			reject(err);
+		};
+
+		document.body.appendChild(jsonpLoader);
+	});
 }
 
 /**
- * This function can be used to fetch updates from jsonp file with multiple jsonp callbacks. 
+ * This function can be used to fetch updates from jsonp file with multiple jsonp callbacks.
  * It accumulates updates for each jsonp callback path in array.
- * It uses prev and current update indexes to determine which of jsonp callback calls is with new update or not. 
- * 
+ * It uses prev and current update indexes to determine which of jsonp callback calls is with new update or not.
+ *
  * @param filePath path to jsonp file.
  * @param jsonpPaths array of all jsonp callback's paths.
  * @param prevIndex previous update index.
  * @param currentIndex current update index.
  * @returns object, where keys is jsonp callback's paths, and values are arrays of updated data.
- * 
+ *
  * @example
- *      // jsonp file with 
- * 
+ *      // jsonp file with
+ *
  *      window.loadAction(1, {
  *          // some action info
  *      });
- * 
+ *
  *      window.loadAction(2, {
  *          // some another action info
  *      })
- * 
+ *
  *      window.loadMessage(3, {
  *          // some message info
  *      })
- * 
+ *
  *      // Promise will be resolved to
  *      {
  *          loadAction: [{ action }, { anotherAction }],
  *          loadMessage: [{ message }]
  *      }
  */
-export async function fetchUpdate<T extends {}>(
-    filePath: string, 
-    jsonpPaths: string[], 
-    currentIndex: number,
-    prevIndex: number = Number.MIN_SAFE_INTEGER,
-    testCaseOrder?: number
+export async function fetchUpdate<T extends {[key: string]: any}>(
+	filePath: string,
+	jsonpPaths: string[],
+	currentIndex: number,
+	prevIndex: number = Number.MIN_SAFE_INTEGER,
+	testCaseOrder?: number,
 ) {
-    return new Promise<T>((resolve, reject) => {
-        const loader = document.createElement('script'),
-            result = {} as T;
+	return new Promise<T>((resolve, reject) => {
+		const loader = document.createElement('script');
+		const result = {} as T;
 
-        loader.src = filePath;
-        loader.async = true;
-        const jsonpHandler = (jsonpPath: string) => (index: number, data: unknown) => {
-            if (index < prevIndex) {
-                // ignore update
-                return;
-            }
-            if (index <= currentIndex) {
-                result[jsonpPath].push(data);
-            }
-            // final update
-            if (index == currentIndex && testCaseOrder == window[CURRENT_TESTCASE_ORDER]) {
-                jsonpPaths.forEach(path => delete window[path]);
-                resolve(result);
-            } else if (index == currentIndex && testCaseOrder !== window[CURRENT_TESTCASE_ORDER]) {
-                reject({ isCancelled: true })
-            }
-        }
-        
-        jsonpPaths.forEach((jsonpPath: string) => {
-            result[jsonpPath] = [];
-            window[jsonpPath] = jsonpHandler(jsonpPath);
-        });
+		loader.src = filePath;
+		loader.async = true;
+		const jsonpHandler = (jsonpPath: string) => (index: number, data: unknown) => {
+			if (index < prevIndex) {
+				// ignore update
+				return;
+			}
+			if (index <= currentIndex) {
+				result[jsonpPath].push(data);
+			}
+			// final update
+			if (index === currentIndex && testCaseOrder === window[CURRENT_TESTCASE_ORDER]) {
+				jsonpPaths.forEach(path => delete window[path]);
+				resolve(result);
+			} else if (index === currentIndex && testCaseOrder !== window[CURRENT_TESTCASE_ORDER]) {
+				// eslint-disable-next-line prefer-promise-reject-errors
+				reject({ isCancelled: true });
+			}
+		};
 
-        loader.onload = () => {
-            document.body.removeChild(loader);
-        }
+		jsonpPaths.forEach((jsonpPath: string) => {
+			(result as any)[jsonpPath] = [];
+			window[jsonpPath] = jsonpHandler(jsonpPath);
+		});
 
-        loader.onerror = (err) => {
-            document.body.removeChild(loader);
-            reject(err);
-        }
+		loader.onload = () => {
+			document.body.removeChild(loader);
+		};
 
-        document.body.appendChild(loader);
-    });
+		loader.onerror = err => {
+			document.body.removeChild(loader);
+			reject(err);
+		};
+
+		document.body.appendChild(loader);
+	});
 }

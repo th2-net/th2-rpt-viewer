@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {PredictionData} from '../../models/MlServiceResponse';
+import { PredictionData } from '../../models/MlServiceResponse';
 
 const COLOR_HUE = 0;
 const COLOR_SATURATION_PERCENTAGE = 100;
@@ -31,22 +31,32 @@ interface Props {
     prediction: PredictionData;
 }
 
-export const MessagePredictionIndicator = ({prediction, className = "mc-label"}: Props) => {
-    const predictionPercentage = Math.round(prediction.predictedClassProbability * 100);
+export const MessagePredictionIndicator = ({ prediction, className = 'mc-label' }: Props) => {
+	const predictionPercentage = Math.round(prediction.predictedClassProbability * 100);
 
-    return (
-        <div className={className}
-             style={{backgroundColor: `hsl(${COLOR_HUE}, ${COLOR_SATURATION_PERCENTAGE}%, ${getLightness(prediction.predictedClassProbability)}%)`}}>
-            <div className="ml__prediction-icon"/>
-            <div className="ml__prediction-percentage">{predictionPercentage === 100 ? null : predictionPercentage}</div>
-        </div>
-    )
+	return (
+		<div className={className}
+			style={{
+				backgroundColor: `
+					hsl(
+						${COLOR_HUE}, 
+						${COLOR_SATURATION_PERCENTAGE}%, 
+						${getLightness(prediction.predictedClassProbability)}%)
+					`,
+			}}>
+			<div className="ml__prediction-icon"/>
+			<div className="ml__prediction-percentage">
+				{predictionPercentage === 100 ? null : predictionPercentage}
+			</div>
+		</div>
+	);
 };
 
 function getLightness(value: number) {
-    const valueFiltered = (value > VALUE_THRESHOLD)
-        ? Math.round(((value - VALUE_THRESHOLD) / VALUE_THRESHOLD) * VALUE_STEP_COUNT) / VALUE_STEP_COUNT
-        : 0;
+	const valueFiltered = (value > VALUE_THRESHOLD)
+		? Math.round(((value - VALUE_THRESHOLD) / VALUE_THRESHOLD) * VALUE_STEP_COUNT) / VALUE_STEP_COUNT
+		: 0;
 
-    return COLOR_LIGHTNESS_MIN_PERCENTAGE - (valueFiltered * (COLOR_LIGHTNESS_MIN_PERCENTAGE - COLOR_LIGHTNESS_MAX_PERCENTAGE));
+	return COLOR_LIGHTNESS_MIN_PERCENTAGE
+		- (valueFiltered * (COLOR_LIGHTNESS_MIN_PERCENTAGE - COLOR_LIGHTNESS_MAX_PERCENTAGE));
 }

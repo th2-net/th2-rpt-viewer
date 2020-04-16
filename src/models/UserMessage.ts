@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import Action, { ActionNodeType, ActionNode } from './Action';
+import { ActionNodeType, ActionNode } from './Action';
 import Exception from './Exception';
 
-export type UserMessageTextColor =  'BLACK' | 'BLUE' | 'RED' | 'ORANGE' | 'GRAY';
+export type UserMessageTextColor = 'BLACK' | 'BLUE' | 'RED' | 'ORANGE' | 'GRAY';
 
 export type UserMessageTextStyle = 'BOLD' | 'NORMAL' | 'ITALIC';
 
@@ -33,5 +33,5 @@ export default interface UserMessage {
 }
 
 export function isUserMessage(actionNode: ActionNode): actionNode is UserMessage {
-    return actionNode.actionNodeType === ActionNodeType.CUSTOM_MESSAGE;
+	return actionNode.actionNodeType === ActionNodeType.CUSTOM_MESSAGE;
 }

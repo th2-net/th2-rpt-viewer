@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +12,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 export function toggleItem<T>(set: Set<T>, item: T): Set<T> {
-    if (set.has(item)) {
-        return new Set([...set].filter(i => i !== item));
-    } else {
-        return new Set([...set, item]);
-    }
+	if (set.has(item)) {
+		return new Set([...set].filter(i => i !== item));
+	}
+	return new Set([...set, item]);
 }

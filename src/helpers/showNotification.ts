@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,22 +12,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import '../styles/notification.scss';
 
 const NOTIFICATION_TIMEOUT = 1500;
 
 export function showNotification(text: string) {
-    const element = document.createElement('div');
-    element.className = 'notification';
-    element.innerHTML = `<p>${text}</p>`;
+	const element = document.createElement('div');
+	element.className = 'notification';
+	element.innerHTML = `<p>${text}</p>`;
 
-    const root = document.getElementById('index');
+	const root = document.getElementById('index');
 
-    root.appendChild(element);
+	root?.appendChild(element);
 
-    window.setTimeout(() => {
-        root.removeChild(element);
-    }, NOTIFICATION_TIMEOUT);
+	window.setTimeout(() => {
+		root?.removeChild(element);
+	}, NOTIFICATION_TIMEOUT);
 }

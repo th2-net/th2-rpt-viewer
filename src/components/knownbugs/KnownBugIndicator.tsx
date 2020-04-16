@@ -17,34 +17,36 @@
  */
 
 import * as React from 'react';
-import '../../styles/knownbug.scss';
 import KnownBug from '../../models/KnownBug';
 import KnownBugCategory from '../../models/KnownBugCategory';
 import { ActionNodeType } from '../../models/Action';
 import { KnownBugStatus } from '../../models/KnownBugStatus';
 import { createBemElement } from '../../helpers/styleCreators';
+import '../../styles/knownbug.scss';
 
 interface Props {
-    data: (KnownBug | KnownBugCategory)[]
+    data: (KnownBug | KnownBugCategory)[];
 }
 
 export function KnownBugIndicator({ data }: Props) {
-    const className = createBemElement(
-        'known-bugs',
-        'indicator',
-        hasReproducedBugs(data) ? "reproduced" : "not-reproduced"
-    );
+	const className = createBemElement(
+		'known-bugs',
+		'indicator',
+		hasReproducedBugs(data) ? 'reproduced' : 'not-reproduced',
+	);
 
-    return (
-        <div className={className}/>
-    )
+	return (
+		<div className={className}/>
+	);
 }
 
 function hasReproducedBugs(data: (KnownBug | KnownBugCategory)[]): boolean {
-    const categories = data.filter(item => item.actionNodeType === ActionNodeType.KNOWN_BUG_CATEGORY);
-    const bugs = data.filter(item => item.actionNodeType === ActionNodeType.KNOWN_BUG);
+	const categories = data.filter(
+		(item): item is KnownBugCategory => item.actionNodeType === ActionNodeType.KNOWN_BUG_CATEGORY,
+	);
+	const bugs = data.filter((item): item is KnownBug => item.actionNodeType === ActionNodeType.KNOWN_BUG);
 
-    return (bugs.some((item: KnownBug) => item.status === KnownBugStatus.REPRODUCED))
-        ? true
-        : categories.some((item: KnownBugCategory) => hasReproducedBugs(item.subNodes));
+	return (bugs.some((item: KnownBug) => item.status === KnownBugStatus.REPRODUCED))
+		? true
+		: categories.some((item: KnownBugCategory) => hasReproducedBugs(item.subNodes));
 }

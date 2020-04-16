@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import SearchResult from "./SearchResult";
+import SearchResult from './SearchResult';
 
-function getScrolledIndex(searchResults: SearchResult, targetIndex: number): [Number, Number, Number] {
-    const [currentKey = ''] = searchResults.getByIndex(targetIndex),
-        [keyType, keyId] = currentKey.split('-'),
-        actionId = keyType === 'action' ? new Number(keyId) : undefined,
-        msgId = keyType === 'msg' ?  new Number(keyId) : undefined,
-        logIndex = keyType === 'log' ? new Number(keyId) : undefined;
 
-    return [actionId, msgId, logIndex];
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable no-new-wrappers */
+function getScrolledIndex(
+	searchResults: SearchResult, targetIndex: number,
+): [Number| undefined, Number| undefined, Number| undefined] {
+	const [currentKey = ''] = searchResults.getByIndex(targetIndex);
+	const [keyType, keyId] = currentKey.split('-');
+	const actionId = keyType === 'action' ? new Number(keyId) : undefined;
+	const msgId = keyType === 'msg' ? new Number(keyId) : undefined;
+	const logIndex = keyType === 'log' ? new Number(keyId) : undefined;
+
+	return [actionId, msgId, logIndex];
 }
 
 export default getScrolledIndex;

@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,192 +12,143 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
-import { connect } from 'react-redux';
-import '../styles/layout.scss';
+import { observer } from 'mobx-react-lite';
+import ResizeObserver from 'resize-observer-polyfill';
 import Panel from '../util/Panel';
 import { ToggleButton } from './ToggleButton';
-import { MessagesCardList, MessagesCardListBase } from './message/MessagesCardList';
+import { MessageCardList } from './message/MessagesCardList';
 import LogsList, { LogListActions } from './log/LogsList';
-import AppState from '../state/models/AppState';
-import { setRightPane } from '../actions/actionCreators';
 import { createBemElement, createStyleSelector } from '../helpers/styleCreators';
-import { KnownBugPanel } from "./knownbugs/KnownBugPanel";
-import ResizeObserver from "resize-observer-polyfill";
-import { getRejectedMessages } from "../selectors/messages";
-import MessagePanelControl from "./message/MessagePanelControls";
+import { KnownBugPanel } from './knownbugs/KnownBugPanel';
+import MessagePanelControl from './message/MessagePanelControls';
+import { useStores } from '../hooks/useStores';
+import '../styles/layout.scss';
 
-const MIN_CONTROLS_WIDTH = 850,
-    MIN_CONTROLS_WIDTH_WITH_REJECTED = 900;
+const MIN_CONTROLS_WIDTH = 850;
+const MIN_CONTROLS_WIDTH_WITH_REJECTED = 900;
 
 type RightPanelType = Panel.MESSAGES | Panel.KNOWN_BUGS | Panel.LOGS;
 
-interface StateProps {
-    panel: RightPanelType;
-    rejectedMessagesEnabled: boolean;
-    hasLogs: boolean;
-    hasErrorLogs: boolean;
-    hasWarningLogs: boolean;
-    hasKnownBugs: boolean;
-}
+export const RightPanel = observer(() => {
+	const { viewStore, selectedStore } = useStores();
+	const [showTitles, setShowTitle] = React.useState(true);
 
-interface DispatchProps {
-    panelSelectHandler: (panel: RightPanelType) => void;
-}
+	const logsPanel = React.useRef<LogListActions>();
+	const root = React.useRef<HTMLDivElement>(null);
 
-interface Props extends StateProps, DispatchProps {}
+	const rootResizeObserver = React.useRef<ResizeObserver>(new ResizeObserver(elements => {
+		const minWidth = selectedStore.rejectedMessages.length > 0
+			? MIN_CONTROLS_WIDTH_WITH_REJECTED : MIN_CONTROLS_WIDTH;
+		const shouldShowTitles = elements[0]?.contentRect.width > minWidth;
 
-interface State {
-    showTitles: boolean;
-}
+		if (showTitles !== shouldShowTitles) {
+			setShowTitle(shouldShowTitles);
+		}
+	}));
 
-class RightPanelBase extends React.Component<Props, State> {
 
-    private messagesPanel = React.createRef<MessagesCardListBase>();
-    private logsPanel = React.createRef<LogListActions>();
-    private root = React.createRef<HTMLDivElement>();
+	React.useEffect(() => {
+		if (root.current) {
+			rootResizeObserver.current.observe(root.current);
+		}
+		return () => {
+			rootResizeObserver.current.unobserve(root.current as Element);
+		};
+	}, []);
 
-    private rootResizeObserver = new ResizeObserver(elements => {
-        const minWidth = this.props.rejectedMessagesEnabled ? MIN_CONTROLS_WIDTH_WITH_REJECTED : MIN_CONTROLS_WIDTH,
-            showTitles = elements[0]?.contentRect.width > minWidth;
+	const scrollPanelToTop = (panel: Panel) => {
+		switch (panel) {
+		case (Panel.LOGS): {
+				logsPanel.current?.scrollToTop();
+				break;
+		}
 
-        if (this.state.showTitles !== showTitles) {
-            this.setState({ showTitles });
-        }
-    });
+		default:
+		}
+	};
 
-    constructor(props) {
-        super(props);
+	const logChipClassName = createBemElement(
+		'log-button',
+		'chip',
+		// eslint-disable-next-line no-nested-ternary
+		selectedStore.testCase?.hasErrorLogs
+			? 'error' : selectedStore.testCase?.hasWarnLogs
+				? 'warning' : 'hidden',
+	);
+	const messagesRootClass = createStyleSelector(
+		'layout-panel__content-wrapper',
+		viewStore.rightPanel === Panel.MESSAGES ? null : 'disabled',
+	);
+	const knownBugsRootClass = createStyleSelector(
+		'layout-panel__content-wrapper',
+		viewStore.rightPanel === Panel.KNOWN_BUGS ? null : 'disabled',
+	);
+	const logsRootClass = createStyleSelector(
+		'layout-panel__content-wrapper',
+		viewStore.rightPanel === Panel.LOGS ? null : 'disabled',
+	);
 
-        this.state = {
-            showTitles: true
-        }
-    }
+	const selectPanel = (panel: RightPanelType) => {
+		if (panel === viewStore.rightPanel) {
+			scrollPanelToTop(panel);
+		} else {
+			viewStore.setRightPane(panel);
+		}
+	};
 
-    scrollPanelToTop(panel: Panel) {
-        switch (panel) {
-            case (Panel.MESSAGES): {
-                this.messagesPanel.current?.scrollToTop();
-                break;
-            }
-            case (Panel.LOGS): {
-                this.logsPanel.current?.scrollToTop();
-                break;
-            }
+	const getCurrentPanelControls = () => {
+		switch (viewStore.rightPanel) {
+		case Panel.MESSAGES: {
+			return <MessagePanelControl showTitles={showTitles}/>;
+		}
 
-            default: {
-                return;
-            }
-        }
-    }
+		default: {
+			return null;
+		}
+		}
+	};
 
-    componentDidMount() {
-        this.rootResizeObserver.observe(this.root.current);
-    }
-
-    componentWillUnmount() {
-        this.rootResizeObserver.unobserve(this.root.current);
-    }
-
-    render() {
-        const { panel, hasLogs, hasErrorLogs, hasWarningLogs, hasKnownBugs } = this.props;
-
-        const logChipClassName = createBemElement(
-                'log-button',
-                'chip',
-                hasErrorLogs ? 'error' : hasWarningLogs ? 'warning' : 'hidden'
-            ),
-            messagesRootClass = createStyleSelector(
-                "layout-panel__content-wrapper",
-                panel == Panel.MESSAGES ? null : "disabled"
-            ),
-            knownBugsRootClass = createStyleSelector(
-                "layout-panel__content-wrapper",
-                panel == Panel.KNOWN_BUGS ? null : "disabled"
-            ),
-            logsRootClass = createStyleSelector(
-                "layout-panel__content-wrapper",
-                panel == Panel.LOGS ? null : "disabled"
-            );
-
-        return (
-            <div className="layout-panel" ref={this.root}>
-                <div className="layout-panel__controls">
-                    <div className="layout-panel__tabs">
-                        <ToggleButton
-                            isToggled={panel == Panel.MESSAGES}
-                            onClick={() => this.selectPanel(Panel.MESSAGES)}>
-                            Messages
-                        </ToggleButton>
-                        <ToggleButton
-                            isToggled={panel == Panel.KNOWN_BUGS}
-                            isDisabled={!hasKnownBugs}
-                            onClick={() => this.selectPanel(Panel.KNOWN_BUGS)}>
-                            Known bugs
-                        </ToggleButton>
-                        <ToggleButton
-                            isDisabled={!hasLogs}
-                            isToggled={panel == Panel.LOGS}
-                            onClick={() => this.selectPanel(Panel.LOGS)}>
-                            <div className="log-button">
-                                <p>Logs</p>
-                                <div className={logChipClassName}/>
-                            </div>
-                        </ToggleButton>
-                    </div>
-                    {this.getCurrentPanelControls()}
-                </div>
-                <div className="layout-panel__content">
-                    <div className={messagesRootClass}>
-                        <MessagesCardList
-                            ref={this.messagesPanel}/>
-                    </div>
-                    <div className={logsRootClass}>
-                        <LogsList
-                            ref={this.logsPanel}
-                            isActive={panel === Panel.LOGS}/>
-                    </div>
-                    <div className={knownBugsRootClass}>
-                        <KnownBugPanel/>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
-    private selectPanel(panel: RightPanelType) {
-        if (panel == this.props.panel) {
-            this.scrollPanelToTop(panel);
-        } else {
-            this.props.panelSelectHandler(panel);
-        }
-    }
-    
-    private getCurrentPanelControls = () => {
-        switch (this.props.panel) {
-            case Panel.MESSAGES: {
-                return <MessagePanelControl showTitles={this.state.showTitles}/>;
-            }
-
-            default: {
-                return null;
-            }
-        }
-    }
-}
-
-export const RightPanel = connect(
-    (state: AppState): StateProps => ({
-        rejectedMessagesEnabled: getRejectedMessages(state).length > 0,
-        panel: state.view.rightPanel,
-        hasLogs: state.selected.testCase.files.logentry.count > 0,
-        hasErrorLogs: state.selected.testCase.hasErrorLogs,
-        hasWarningLogs: state.selected.testCase.hasWarnLogs,
-        hasKnownBugs: state.selected.testCase.bugs.length > 0
-    }),
-    (dispatch) => ({
-        panelSelectHandler: (panel: RightPanelType) => dispatch(setRightPane(panel))
-    })
-)(RightPanelBase);
+	return (
+		<div className="layout-panel" ref={root}>
+			<div className="layout-panel__controls">
+				<div className="layout-panel__tabs">
+					<ToggleButton
+						isToggled={viewStore.rightPanel === Panel.MESSAGES}
+						onClick={() => selectPanel(Panel.MESSAGES)}>
+						Messages
+					</ToggleButton>
+					<ToggleButton
+						isToggled={viewStore.rightPanel === Panel.KNOWN_BUGS}
+						isDisabled={false}
+						onClick={() => selectPanel(Panel.KNOWN_BUGS)}>
+						Known bugs
+					</ToggleButton>
+					<ToggleButton
+						isDisabled={false}
+						isToggled={viewStore.rightPanel === Panel.LOGS}
+						onClick={() => selectPanel(Panel.LOGS)}>
+						<div className="log-button">
+							<p>Logs</p>
+							<div className={logChipClassName}/>
+						</div>
+					</ToggleButton>
+				</div>
+				{getCurrentPanelControls()}
+			</div>
+			<div className="layout-panel__content">
+				<div className={messagesRootClass}>
+					<MessageCardList />
+				</div>
+				<div className={logsRootClass}>
+					<LogsList isActive={viewStore.rightPanel === Panel.LOGS}/>
+				</div>
+				<div className={knownBugsRootClass}>
+					<KnownBugPanel/>
+				</div>
+			</div>
+		</div>
+	);
+});

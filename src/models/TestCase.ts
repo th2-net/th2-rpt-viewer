@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +12,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import { ActionNode } from "./Action";
-import Message from "./Message";
-import Log from "./Log";
+import { ActionNode } from './Action';
+import Message from './Message';
+import Log from './Log';
 import Status from './Status';
-import Report from "./Report";
+import Report from './Report';
 import { KnownBugNode } from './KnownBug';
 
 export default interface TestCase {
@@ -36,12 +36,12 @@ export default interface TestCase {
     id: string;
     hash: number;
     description: string;
-    status?: Status;
+    status: Status;
     startTime: string;
-    finishTime: string;
+    finishTime: string | null;
     verifications?: any[];
     indexFiles?: TestCaseIndexFiles;
-    files?: TestCaseFiles;
+    files: TestCaseFiles;
     lastUpdate?: string;
     hasErrorLogs: boolean;
     hasWarnLogs: boolean;
@@ -57,12 +57,12 @@ export type TestCaseFiles = {
     [key in keyof TestCaseIndexFiles]: {
         count: number;
         dataFiles: {
-            [filePath: string]: number
+            [filePath: string]: number;
         };
         lastUpdate: string;
     }
-}
+};
 
 export function isTestCase(testCase: TestCase | Report): testCase is TestCase {
-    return (testCase as TestCase).actionNodeType === 'testCase';  
+	return (testCase as TestCase).actionNodeType === 'testCase';
 }

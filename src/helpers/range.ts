@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-const range = (start: number, end: number): Array<number> => 
-    new Array(end - start + 1).fill(undefined).map((_, i) => start + i);
+const range = (start: number, end: number): Array<number> =>
+	new Array(end - start + 1).fill(undefined).map((_, i) => start + i);
 
 export const rangeSum = (start: number, end: number, mapper: (idx: number) => number) =>
-    range(start, end).map(mapper).reduce((sum, current) => sum + current, 0);
+	range(start, end).map(mapper).reduce((sum, current) => sum + current, 0);
 
 export default range;

@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
 import beautify from '../../helpers/contentBeautifier';
@@ -25,14 +25,14 @@ interface Props {
 }
 
 function BeautifiedContent({ content, msgId }: Props) {
-    return (
-        <pre className="mc-body__beautify-wrapper">
-            <SearchableContent 
-                content={beautify(content)}
-                shouldPerformSplit={true}
-                contentKey={keyForMessage(msgId, 'contentHumanReadable')}/>
-        </pre>
-    )
+	return (
+		<pre className="mc-body__beautify-wrapper">
+			<SearchableContent
+				content={beautify(content)}
+				shouldPerformSplit={true}
+				contentKey={keyForMessage(msgId, 'contentHumanReadable')}/>
+		</pre>
+	);
 }
 
 export default BeautifiedContent;

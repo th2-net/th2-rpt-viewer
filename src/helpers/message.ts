@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,41 +12,41 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import Message from '../models/Message';
-import { decodeBase64RawContent, getRawContent } from "./rawFormatter";
+import { decodeBase64RawContent, getRawContent } from './rawFormatter';
 
 const CHECKPOINT_NAME = 'checkpoint';
 
 export function isCheckpointMessage(message: Message): boolean {
-    const name = message.content['name'] as string;
+	const name = message.content.name as string;
 
-    if (!name) {
-        return false;
-    }
+	if (!name) {
+		return false;
+	}
 
-    return name.toLowerCase() == CHECKPOINT_NAME;
+	return name.toLowerCase() === CHECKPOINT_NAME;
 }
 
 export function isRejected(message: Message): boolean {
-    return message.content.rejectReason !== null;
+	return message.content.rejectReason !== null;
 }
 
 export function isAdmin(message: Message): boolean {
-    return message.content.admin !== false;
+	return message.content.admin !== false;
 }
 
 export function appendRawContent(message: Message): Message {
-    if (message.raw == null || message.raw == 'null') {
-        return message;
-    }
+	if (message.raw == null || message.raw === 'null') {
+		return message;
+	}
 
-    const [, hex, , humanReadable] = getRawContent(decodeBase64RawContent(message.raw));
+	const [, hex, , humanReadable] = getRawContent(decodeBase64RawContent(message.raw));
 
-    return {
-        ...message,
-        rawHex: hex,
-        rawHumanReadable: humanReadable
-    }
+	return {
+		...message,
+		rawHex: hex,
+		rawHumanReadable: humanReadable,
+	};
 }
