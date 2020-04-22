@@ -17,11 +17,18 @@
 import { observable, action, computed } from 'mobx';
 import Panel from '../util/Panel';
 import PanelArea from '../util/PanelArea';
+import ApiSchema from "../api/ApiSchema";
 
-export class ViewStore {
+export default class ViewStore {
+
+	private api: ApiSchema;
+
+	constructor(api: ApiSchema) {
+		this.api = api;
+	}
+
 	@observable isLoading = true;
 
-	// eslint-disable-next-line no-new-wrappers
 	@observable adminMessagesEnabled = new Boolean(false);
 
 	@observable beautifiedMessages: number[] = [];
@@ -36,7 +43,6 @@ export class ViewStore {
 
 	@action
 	setAdminMsgEnabled = (adminEnabled: boolean) => {
-		// eslint-disable-next-line no-new-wrappers
 		this.adminMessagesEnabled = new Boolean(adminEnabled);
 	};
 
@@ -82,7 +88,3 @@ export class ViewStore {
 		return this.panelArea === PanelArea.P100;
 	}
 }
-
-const viewStore = new ViewStore();
-
-export default viewStore;

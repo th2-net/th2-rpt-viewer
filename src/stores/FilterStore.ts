@@ -16,8 +16,16 @@
 
 import { observable, action, computed } from 'mobx';
 import { FilterBlock } from '../models/filter/FilterBlock';
+import ApiSchema from "../api/ApiSchema";
 
-export class FilterStore {
+export default class FilterStore {
+
+	private api: ApiSchema;
+
+	constructor(api: ApiSchema) {
+		this.api = api;
+	}
+
 	@observable results: string[] = [];
 
 	@observable blocks: FilterBlock[] = [];
@@ -68,7 +76,3 @@ export class FilterStore {
 		return this.blocks.length > 0 && this.blocks.some(block => block.values.length > 0);
 	}
 }
-
-const filterStore = new FilterStore();
-
-export default filterStore;

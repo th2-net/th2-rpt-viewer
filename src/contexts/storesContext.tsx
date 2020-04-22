@@ -15,33 +15,49 @@
  ***************************************************************************** */
 
 import React from 'react';
-import reportStore, { ReportStore } from '../stores/ReportStore';
-import selectedStore, { SelectedStore } from '../stores/SelectedStore';
-import viewStore, { ViewStore } from '../stores/ViewStore';
-import mlStore, { MLStore } from '../stores/MachineLearningStore';
-import filterStore, { FilterStore } from '../stores/FilterStore';
-import searchStore, { SearchStore } from '../stores/SearchStore';
+import ReportStore from '../stores/ReportStore';
+import SelectedStore from '../stores/SelectedStore';
+import ViewStore from '../stores/ViewStore';
+import MLStore from '../stores/MachineLearningStore';
+import FilterStore from '../stores/FilterStore';
+import SearchStore from '../stores/SearchStore';
+import ApiSchema from "../api/ApiSchema";
+import EventsStore from "../stores/EventsStore";
 
-interface RootStoreContex {
-	reportStore: ReportStore;
-	selectedStore: SelectedStore;
-	viewStore: ViewStore;
-	mlStore: MLStore;
-	filterStore: FilterStore;
-	searchStore: SearchStore;
+export interface RootStoreContext {
+    reportStore: ReportStore;
+    selectedStore: SelectedStore;
+    viewStore: ViewStore;
+    mlStore: MLStore;
+    filterStore: FilterStore;
+    searchStore: SearchStore;
+    eventStore: EventsStore;
 }
 
-export const StoresContext = React.createContext({} as RootStoreContex);
+const StoresContext = React.createContext({} as RootStoreContext);
 
-export const StoreContextProvider = ({ children }: { children: React.ReactNode }) => (
-	<StoresContext.Provider value={{
-		reportStore,
-		selectedStore,
-		viewStore,
-		mlStore,
-		filterStore,
-		searchStore,
-	}}>
-		{children}
-	</StoresContext.Provider>
-);
+export function createStores(api: ApiSchema) {
+    const selectedStore = new SelectedStore(api),
+        filterStore = new FilterStore(api),
+        searchStore = new SearchStore(api),
+        mlStore = new MLStore(api, selectedStore),
+        viewStore = new ViewStore(api),
+        reportStore = new ReportStore(api, viewStore),
+        eventStore = new EventsStore(api);
+
+    eventStore.init();
+
+    const stores = {
+        reportStore,
+        selectedStore,
+        viewStore,
+        mlStore,
+        filterStore,
+        searchStore,
+        eventStore
+    };
+
+    return stores;
+}
+
+export default StoresContext;

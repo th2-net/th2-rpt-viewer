@@ -76,6 +76,7 @@ module.exports = {
 		"@typescript-eslint/no-unused-expressions": ["error"],
 		'import/no-unassigned-import': [2, { "allow": ["**/*.scss"] }],
 		'class-methods-use-this': 0,
+		'no-new-wrappers': 0
 	},
 	settings: {
 		react: {
