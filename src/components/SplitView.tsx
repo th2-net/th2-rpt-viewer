@@ -15,10 +15,10 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import '../styles/splitter.scss';
 import ResizeObserver from 'resize-observer-polyfill';
 import { createStyleSelector } from '../helpers/styleCreators';
 import PanelArea from '../util/PanelArea';
+import '../styles/splitter.scss';
 
 /**
  * Props for splitter component
@@ -32,7 +32,8 @@ export interface Props {
     panelArea: PanelArea;
     onPanelAreaChange: (panelArea: PanelArea) => void;
     leftPanelMinWidth: number;
-    rightPanelMinWidth: number;
+	rightPanelMinWidth: number;
+	showMessages: boolean;
 }
 
 interface State {
@@ -230,7 +231,7 @@ export class SplitView extends React.Component<Props, State> {
 	}
 
 	render() {
-		const { children, panelArea } = this.props;
+		const { children, panelArea, showMessages } = this.props;
 		const { isDragging, splitterLeftOffset, previewPanelArea } = this.state;
 
 		let rootStyle: React.CSSProperties = {};
@@ -283,14 +284,15 @@ export class SplitView extends React.Component<Props, State> {
 				<div className={rightClassName}>
 					{children[1]}
 				</div>
-				<div className={splitterClassName}
+				{true
+				&& 	<div className={splitterClassName}
 					style={{
 						left: isDragging ? splitterLeftOffset : undefined,
 					}}
 					onMouseDown={this.splitterMouseDown}
 					ref={this.splitter}>
 					<div className="splitter-bar-icon"/>
-				</div>
+				</div>}
 			</div>
 		);
 	}

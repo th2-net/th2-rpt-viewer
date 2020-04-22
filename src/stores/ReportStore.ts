@@ -17,11 +17,11 @@
 import { action, observable } from 'mobx';
 import Report from '../models/Report';
 import ViewStore from './ViewStore';
-import ApiSchema from "../api/ApiSchema";
-import { createReport } from "../__tests__/util/creators";
+import ApiSchema from '../api/ApiSchema';
+import { createReport } from '../__tests__/util/creators';
 
+/* eslint-disable indent */
 export default class ReportStore {
-
     private api: ApiSchema;
 
     private viewStore: ViewStore;

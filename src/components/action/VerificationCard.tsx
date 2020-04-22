@@ -15,72 +15,62 @@
 ***************************************************************************** */
 
 import * as React from 'react';
-import Verification from '../../models/Verification';
 import { StatusType } from '../../models/Status';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import { SearchExpandablePanel } from '../ExpandablePanel';
 import { VerificationTable } from './VerificationTable';
 import { keyForVerification } from '../../helpers/keys';
-import SearchableContent from '../search/SearchableContent';
-import { VerificationMlUploadButton } from '../machinelearning/VerificationMlUploadButton';
-import { stopPropagationHandler } from '../../helpers/react';
+import EventAction from '../../models/EventAction';
 import '../../styles/action.scss';
 
 interface VerificationCardProps {
-    verification: Verification;
+    verification: EventAction;
     isSelected: boolean;
     isTransparent: boolean;
     parentActionId: number;
-    onSelect: (messageId: number, rootActionId: number, status: StatusType) => any;
+    onSelect?: (messageId: number, rootActionId: number, status: StatusType) => any;
 }
 
 const VerificationCard = ({
-	verification, onSelect, isSelected, isTransparent, parentActionId,
+	verification, isSelected, isTransparent, parentActionId,
 }: VerificationCardProps) => {
 	const {
-		status, messageId, entries, name,
+		body,
+		eventType,
+		eventId,
+		successful,
 	} = verification;
+	const status = successful ? 'PASSED' : 'FAILED';
 
 	const className = createStyleSelector(
 		'ac-body__verification',
-		status && status.status,
+		status,
 		isSelected ? 'selected' : null,
 		isTransparent && !isSelected ? 'transparent' : null,
 	);
 
-	const key = keyForVerification(parentActionId, messageId);
-
+	const key = keyForVerification(parentActionId, eventId as any);
+	const params = body ? Object.keys(body.fields)
+		.map(field => ({
+			name: field,
+			...body.fields[field],
+		})) : [];
 	return (
 		<div className="action-card">
-			<div className={className}
-				onClick={stopPropagationHandler(onSelect, messageId, parentActionId, status.status)}>
-				<SearchExpandablePanel
-					searchKeyPrefix={key}
-					stateKey={key}>
-					{
-						(toggleExpand: any) => (
-							<div className="ac-body__verification-title-wrapper">
-								<div className="ac-body__verification-title"
-									onClick={toggleExpand}>
-									<span>{'Verification — '}</span>
-									<SearchableContent
-										contentKey={`${key}-name`}
-										content={name}/>
-									<span>{` — ${status.status}`}</span>
-								</div>
-								<VerificationMlUploadButton
-									targetActionId={parentActionId}
-									targetMessageId={messageId} />
-							</div>)
-					}
-					<VerificationTable
-						keyPrefix={key}
-						actionId={parentActionId}
-						messageId={messageId}
-						stateKey={`${key}-nodes`}
-						params={entries}
-						status={status.status}/>
-				</SearchExpandablePanel>
+			<div className="ac-header__title">
+				<div className="ac-header__name">
+					<div className="ac-header name-element" title="Event Name">
+						{eventType}
+					</div>
+				</div>
+			</div>
+			<div className={className}>
+				<VerificationTable
+					keyPrefix={key}
+					actionId={parentActionId}
+					messageId={eventId as any}
+					stateKey={`${key}-nodes`}
+					params={params}
+					status={status as StatusType}/>
 			</div>
 		</div>
 	);

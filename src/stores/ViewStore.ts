@@ -17,10 +17,9 @@
 import { observable, action, computed } from 'mobx';
 import Panel from '../util/Panel';
 import PanelArea from '../util/PanelArea';
-import ApiSchema from "../api/ApiSchema";
+import ApiSchema from '../api/ApiSchema';
 
 export default class ViewStore {
-
 	private api: ApiSchema;
 
 	constructor(api: ApiSchema) {
@@ -37,9 +36,11 @@ export default class ViewStore {
 
 	@observable rightPanel: Panel.MESSAGES | Panel.KNOWN_BUGS | Panel.LOGS = Panel.MESSAGES;
 
-	@observable panelArea: PanelArea = PanelArea.P50;
+	@observable panelArea: PanelArea = PanelArea.P100;
 
 	@observable isConnectionError = false;
+
+	@observable showMessages = false;
 
 	@action
 	setAdminMsgEnabled = (adminEnabled: boolean) => {

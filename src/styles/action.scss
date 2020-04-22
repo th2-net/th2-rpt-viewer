@@ -23,11 +23,13 @@
     box-sizing: border-box;
     width: 100%;
     height: auto;
-    border: 2px solid transparent;
+    border: 3px solid transparent;
     border-radius: $defaultCardBorderRadius;
     padding: 5px;
     margin: 6px 0;
     transition: all 0.1s;
+    background-color: var(--status-secondary-background-color);
+    cursor: pointer;
 
     &__status {
         padding-left: 10px;
@@ -75,9 +77,8 @@
     }
 
     &.root {
-        border-color: var(--status-secondary-border-color);
         &:hover {
-            border-color: var(--status-hover-border-color);
+            border-color: var(--status-primary-color);
         }
     }
 
@@ -115,8 +116,8 @@
 
     &.p100 {
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr auto auto auto;
-        grid-template-areas: "title start-time elapsed-time controls";
+        grid-template-columns: 1fr repeat(4, auto);
+        grid-template-areas: "title start-time end-time elapsed-time controls";
     }
 
     &.transparent {
@@ -150,6 +151,9 @@
         border-left: 2px solid var(--status-hover-border-color);
         transition: 0.2s;
         color: var(--status-primary-color);
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
 
         &:hover {
             background-color: var(--status-secondary-header-background-color);
@@ -204,6 +208,10 @@
         justify-content: flex-end;
         align-items: flex-start;
         padding-top: 4px;
+    }
+
+    &__end-time {
+        grid-area: end-time;
     }
 
     &.p100 &__start-time {

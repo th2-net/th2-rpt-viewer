@@ -22,13 +22,19 @@ import { useStores } from '../../hooks/useStores';
 import { ActionNode, isAction } from '../../models/Action';
 import { VirtualizedList } from '../VirtualizedList';
 import StateSaverProvider from '../util/StateSaverProvider';
-import { actionsHeatmap } from '../../helpers/heatmapCreator';
 import { createBemElement } from '../../helpers/styleCreators';
-import { getActions } from '../../helpers/action';
-import SkeletonedActionTree from './SkeletonedActionTree';
+import EventActionNode from '../EventActionNode';
+import EventAction from '../../models/EventAction';
 import '../../styles/action.scss';
+import VerificationCard from './VerificationCard';
 
-export const ActionsList = observer(() => {
+interface Props {
+	events: EventAction[];
+	isMinified?: boolean;
+	selectedEvents: string[];
+}
+
+export const EventList = observer(({ events, isMinified = false, selectedEvents }: Props) => {
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	const getScrolledIndex = (scrolledActionId: Number | null, actions: ActionNode[]): Number | null => {
 		const scrolledIndex = actions.findIndex(
@@ -38,7 +44,12 @@ export const ActionsList = observer(() => {
 		return scrolledIndex !== -1 ? new Number(scrolledIndex) : null;
 	};
 
-	const { selectedStore, filterStore } = useStores();
+	const {
+		selectedStore,
+		filterStore,
+		viewStore,
+		eventsStore,
+	} = useStores();
 	const list = React.useRef<VirtualizedList>();
 	/*
 		Number objects is used here because in some cases (eg one message / action was selected several times
@@ -57,19 +68,15 @@ export const ActionsList = observer(() => {
 		}
 	}, [selectedStore.scrolledActionId]);
 
-	const scrollToTop = () => {
-		// eslint-disable-next-line no-new-wrappers
-		setScrolledIndex(new Number(0));
-	};
+	const computeKey = (index: number): number => index;
 
-	const computeKey = (index: number): number => {
-		const action = selectedStore.actions[index];
-
-		return action && isAction(action) ? action.id : index;
-	};
-
-	const renderAction = (index: number): React.ReactElement => <SkeletonedActionTree index={index} />;
-
+	const renderEvent = (index: number): React.ReactElement =>
+		<EventActionNode
+			event={events[index]}
+			panelArea={viewStore.panelArea}
+			selectEvent={eventsStore.selectEvent}
+			isMinified={isMinified}
+			isSelected={selectedEvents.includes(events[index].eventId)} />;
 
 	const listRootClass = createBemElement(
 		'actions',
@@ -82,12 +89,12 @@ export const ActionsList = observer(() => {
 			<div className={listRootClass}>
 				<StateSaverProvider>
 					<VirtualizedList
-						rowCount={selectedStore.actions.length}
+						rowCount={events.length}
 						ref={list as any}
-						renderElement={renderAction}
+						renderElement={renderEvent}
 						computeItemKey={computeKey}
 						scrolledIndex={scrolledIndex}
-						selectedElements={actionsHeatmap(getActions(selectedStore.actions), selectedStore.actionsId)}
+						selectedElements={new Map()}
 						scrollHints={[]}
 					/>
 				</StateSaverProvider>

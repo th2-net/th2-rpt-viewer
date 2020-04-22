@@ -1,4 +1,4 @@
-/*******************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +12,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-export default interface EventAction {
-    type: 'event';
-    eventId: string;
-    eventName: string;
-    startTimestamp: Timestamp | null;
-    endTimestamp: Timestamp | null;
-    parentEventId: string | null;
-    body: unknown;
-    successful: boolean
-}
-
-interface Timestamp {
+interface EventActionTimeStamp {
     nano: number;
     epochSecond: number;
+}
+
+export default interface EventAction {
+    type: string;
+    eventId: string;
+    eventName: string;
+    eventType: string;
+    endTimestamp: null | EventActionTimeStamp;
+    startTimestamp: null | EventActionTimeStamp;
+    parentEventId: string | null;
+    attachedMessageIds: Array<string>;
+    body: any;
+    successful: boolean;
 }

@@ -17,10 +17,9 @@
 import { action, observable } from 'mobx';
 import SearchToken from '../models/search/SearchToken';
 import SearchResult from '../helpers/search/SearchResult';
-import ApiSchema from "../api/ApiSchema";
+import ApiSchema from '../api/ApiSchema';
 
 export default class SearchStore {
-
 	private api: ApiSchema;
 
 	constructor(api: ApiSchema) {

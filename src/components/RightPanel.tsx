@@ -18,12 +18,10 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import ResizeObserver from 'resize-observer-polyfill';
 import Panel from '../util/Panel';
-import { ToggleButton } from './ToggleButton';
 import { MessageCardList } from './message/MessagesCardList';
-import LogsList, { LogListActions } from './log/LogsList';
-import { createBemElement, createStyleSelector } from '../helpers/styleCreators';
+import LogsList from './log/LogsList';
+import { createStyleSelector } from '../helpers/styleCreators';
 import { KnownBugPanel } from './knownbugs/KnownBugPanel';
-import MessagePanelControl from './message/MessagePanelControls';
 import { useStores } from '../hooks/useStores';
 import '../styles/layout.scss';
 
@@ -36,7 +34,6 @@ export const RightPanel = observer(() => {
 	const { viewStore, selectedStore } = useStores();
 	const [showTitles, setShowTitle] = React.useState(true);
 
-	const logsPanel = React.useRef<LogListActions>();
 	const root = React.useRef<HTMLDivElement>(null);
 
 	const rootResizeObserver = React.useRef<ResizeObserver>(new ResizeObserver(elements => {
@@ -59,25 +56,6 @@ export const RightPanel = observer(() => {
 		};
 	}, []);
 
-	const scrollPanelToTop = (panel: Panel) => {
-		switch (panel) {
-		case (Panel.LOGS): {
-				logsPanel.current?.scrollToTop();
-				break;
-		}
-
-		default:
-		}
-	};
-
-	const logChipClassName = createBemElement(
-		'log-button',
-		'chip',
-		// eslint-disable-next-line no-nested-ternary
-		selectedStore.testCase?.hasErrorLogs
-			? 'error' : selectedStore.testCase?.hasWarnLogs
-				? 'warning' : 'hidden',
-	);
 	const messagesRootClass = createStyleSelector(
 		'layout-panel__content-wrapper',
 		viewStore.rightPanel === Panel.MESSAGES ? null : 'disabled',
@@ -91,53 +69,8 @@ export const RightPanel = observer(() => {
 		viewStore.rightPanel === Panel.LOGS ? null : 'disabled',
 	);
 
-	const selectPanel = (panel: RightPanelType) => {
-		if (panel === viewStore.rightPanel) {
-			scrollPanelToTop(panel);
-		} else {
-			viewStore.setRightPane(panel);
-		}
-	};
-
-	const getCurrentPanelControls = () => {
-		switch (viewStore.rightPanel) {
-		case Panel.MESSAGES: {
-			return <MessagePanelControl showTitles={showTitles}/>;
-		}
-
-		default: {
-			return null;
-		}
-		}
-	};
-
 	return (
 		<div className="layout-panel" ref={root}>
-			<div className="layout-panel__controls">
-				<div className="layout-panel__tabs">
-					<ToggleButton
-						isToggled={viewStore.rightPanel === Panel.MESSAGES}
-						onClick={() => selectPanel(Panel.MESSAGES)}>
-						Messages
-					</ToggleButton>
-					<ToggleButton
-						isToggled={viewStore.rightPanel === Panel.KNOWN_BUGS}
-						isDisabled={false}
-						onClick={() => selectPanel(Panel.KNOWN_BUGS)}>
-						Known bugs
-					</ToggleButton>
-					<ToggleButton
-						isDisabled={false}
-						isToggled={viewStore.rightPanel === Panel.LOGS}
-						onClick={() => selectPanel(Panel.LOGS)}>
-						<div className="log-button">
-							<p>Logs</p>
-							<div className={logChipClassName}/>
-						</div>
-					</ToggleButton>
-				</div>
-				{getCurrentPanelControls()}
-			</div>
 			<div className="layout-panel__content">
 				<div className={messagesRootClass}>
 					<MessageCardList />

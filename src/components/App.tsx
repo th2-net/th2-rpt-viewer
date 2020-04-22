@@ -20,7 +20,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../hooks/useStores';
-import TestCaseLayout from './TestCaseLayout';
+import EventsLayout from './EventsLayout';
 import ReportLayout from './ReportLayout';
 import {
 	getUrlSearchString,
@@ -38,12 +38,12 @@ const App = observer(() => {
 		reportStore,
 		selectedStore,
 		mlStore,
-		viewStore,
+		eventsStore,
 	} = useStores();
 	const searchParams = React.useRef<URLSearchParams | null>(null);
 
 	React.useEffect(() => {
-		reportStore.loadReport();
+		eventsStore.getEvents();
 		validateUrl();
 	}, []);
 
@@ -112,26 +112,23 @@ const App = observer(() => {
 		}
 	};
 
+	return (
+		<div className="root">
+			<EventsLayout />
+		</div>
+	);
 
-	if (viewStore.isLoading) {
+	if (reportStore.report) {
 		return (
 			<div className="root">
-				<SplashScreen />
-			</div>
-		);
-	}
-
-	if (selectedStore.testCase) {
-		return (
-			<div className="root">
-				<TestCaseLayout />
+				<ReportLayout />
 			</div>
 		);
 	}
 
 	return (
 		<div className="root">
-			<ReportLayout/>
+			<SplashScreen />
 		</div>
 	);
 });

@@ -40,7 +40,7 @@ export interface StateSaverProps<S> extends RecoverableElementProps {
 const StateSaver = <S extends {}>({ children, stateKey, getDefaultState }: StateSaverProps<S>) => (
 	<Consumer>
 		{
-			({ states, saveState }: StateSaverContext) => {
+			({ states = new Map(), saveState = () => {} }: StateSaverContext) => {
 				const saveNextState = (nextState: S) => saveState(stateKey, nextState);
 
 				if (states.has(stateKey) || !getDefaultState) {

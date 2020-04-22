@@ -32,9 +32,9 @@ $failedSecondaryTextColor: #E05252;
 $failedVerificationBackgroundColor: mix($failedTextColor, white, 10%);
 $failedVerificationHighlightedBackgroundColor: mix($failedTextColor, white, 20%);
 
-$passedTextColor: #1F66AD;
+$passedTextColor: #1F991F;
 $passedBorderColor: $passedTextColor;
-$passedHeaderColor: #D4E6F7;
+$passedHeaderColor: #DBF0DF;
 $passedBorderColorSecondary: $passedHeaderColor;
 $passedBorderHoverColor: #A8CCF0;
 $passedDelimiterHoverColor: #7DB3E8;

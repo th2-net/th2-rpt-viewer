@@ -19,17 +19,16 @@ import { PredictionData, SubmittedData } from '../models/MlServiceResponse';
 import SelectedStore from './SelectedStore';
 import { StatusType } from '../models/Status';
 import { isAction } from '../models/Action';
-import ApiSchema from "../api/ApiSchema";
+import ApiSchema from '../api/ApiSchema';
 
 export default class MLStore {
-
     private api: ApiSchema;
 
     private selectedStore: SelectedStore;
 
     constructor(api: ApiSchema, selectedStore: SelectedStore) {
-        this.api = api;
-        this.selectedStore = selectedStore;
+    	this.api = api;
+    	this.selectedStore = selectedStore;
     }
 
     @observable token: string | null = null;
@@ -42,42 +41,42 @@ export default class MLStore {
 
     @action
     setMlToken = (token: string) => {
-        this.token = token;
+    	this.token = token;
     };
 
     @action
     setSubmittedMlData = (submittedData: SubmittedData[]) => {
-        this.submittedData = submittedData;
+    	this.submittedData = submittedData;
     };
 
     @action
     addSubmittedMlData = (submittedData: SubmittedData) => {
-        this.submittedData.push(submittedData);
+    	this.submittedData.push(submittedData);
     };
 
     @action
     removeSubmittedMlData = (data: SubmittedData) => {
-        this.submittedData = this.submittedData.filter(entry =>
-            !(entry.actionId === data.actionId && entry.messageId === data.messageId));
+    	this.submittedData = this.submittedData.filter(entry =>
+    		!(entry.actionId === data.actionId && entry.messageId === data.messageId));
     };
 
     @action
     saveSubmittedData = (data: PredictionData[]) => {
-        this.submittedData = this.submittedData.concat(
-            data.filter(newItem =>
-                (!this.predictionData.some(existingItem =>
-                        (existingItem.actionId === newItem.actionId && existingItem.messageId === newItem.messageId))
-                )),
-        );
+    	this.submittedData = this.submittedData.concat(
+    		data.filter(newItem =>
+    			(!this.predictionData.some(existingItem =>
+    				(existingItem.actionId === newItem.actionId && existingItem.messageId === newItem.messageId))
+    			)),
+    	);
     };
 
     @action
     togglePredictions = () => {
-        this.predictionsEnabled = !this.predictionsEnabled;
+    	this.predictionsEnabled = !this.predictionsEnabled;
     };
 
     @computed get isPredictionsAvailable() {
-        return this.token != null
+    	return this.token != null
             && this.selectedStore.messages.length > 0
             // eslint-disable-next-line no-confusing-arrow
             && this.selectedStore.actions.some(act => isAction(act) && act.status.status === StatusType.FAILED);
@@ -85,7 +84,6 @@ export default class MLStore {
 
     @action
     fetchPredictions = (actionId: number) => {
-        // todo: fetch predictions from api
-        console.log('fetchPredictions', actionId);
+    	// TODO: fetch predictions from api
     };
 }

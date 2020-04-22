@@ -1,4 +1,4 @@
-/*******************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,10 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import EventAction from "../models/EventAction";
-import Message from "../models/Message";
+import Message from '../models/Message';
+import EventAction from '../models/EventAction';
 
 export default interface ApiSchema {
     events: EventApiSchema;
@@ -23,12 +23,13 @@ export default interface ApiSchema {
 }
 
 export interface EventApiSchema {
-    getAll: () => Promise<number[]>;
-    getSubNodes: (id: number) => Promise<EventAction[]>;
-    getEvent: (id: number) => Promise<EventAction | null>;
+    getAll: () => Promise<EventAction[]>;
+    getEvent: (id: string) => Promise<EventAction>;
+    getRange: (start: number, end: number) => Promise<EventAction[]>;
+    getSubNodes: (id: string) => Promise<EventAction[]>;
 }
 
 export interface MessageApiSchema {
     getAll: () => Promise<number[]>;
-    getMessage: (id: number) => Promise<Message | null>;
+    getMessage: (id: string) => Promise<Message | null>;
 }

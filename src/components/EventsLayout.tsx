@@ -25,7 +25,7 @@ import NetworkError from './NetworkError';
 import { useStores } from '../hooks/useStores';
 import '../styles/layout.scss';
 
-const TestCaseLayout = observer(() => {
+const EventsLayout = observer(() => {
 	const { viewStore } = useStores();
 
 	return (
@@ -40,7 +40,8 @@ const TestCaseLayout = observer(() => {
 					panelArea={viewStore.panelArea}
 					onPanelAreaChange={viewStore.setPanelArea}
 					leftPanelMinWidth={500}
-					rightPanelMinWidth={620}>
+					rightPanelMinWidth={620}
+					showMessages={viewStore.showMessages}>
 					<LeftPanel/>
 					<RightPanel/>
 				</SplitView>
@@ -49,4 +50,4 @@ const TestCaseLayout = observer(() => {
 	);
 });
 
-export default TestCaseLayout;
+export default EventsLayout;

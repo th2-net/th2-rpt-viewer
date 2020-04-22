@@ -16,10 +16,9 @@
 
 import { observable, action, computed } from 'mobx';
 import { FilterBlock } from '../models/filter/FilterBlock';
-import ApiSchema from "../api/ApiSchema";
+import ApiSchema from '../api/ApiSchema';
 
 export default class FilterStore {
-
 	private api: ApiSchema;
 
 	constructor(api: ApiSchema) {

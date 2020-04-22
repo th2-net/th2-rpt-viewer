@@ -28,7 +28,7 @@ import Log from '../models/Log';
 import { appendRawContent, isRejected, isAdmin } from '../helpers/message';
 import { getCheckpointActions } from '../helpers/checkpointFilter';
 import { createTestCase, createAction } from '../__tests__/util/creators';
-import ApiSchema from "../api/ApiSchema";
+import ApiSchema from '../api/ApiSchema';
 
 export const initialSelectedState: SelectedState = {
 	testCase: null,
@@ -53,7 +53,6 @@ export const initialSelectedState: SelectedState = {
 /* eslint-disable no-new-wrappers */
 /* eslint-disable @typescript-eslint/ban-types */
 export default class SelectedStore {
-
 	private api: ApiSchema;
 
 	constructor(api: ApiSchema) {
