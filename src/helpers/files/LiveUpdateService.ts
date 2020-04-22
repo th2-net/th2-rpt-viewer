@@ -58,9 +58,9 @@ export default class LiveUpdateService {
 
 	private liveTestCase: TestCase | null = null;
 
-	private reportWatchIntervalId: NodeJS.Timeout | null = null;
+	private reportWatchIntervalId: number | null = null;
 
-	private testCaseWatchIntervalId: NodeJS.Timeout | null = null;
+	private testCaseWatchIntervalId: number | null = null;
 
 	private onActionUpdate: ActionUpdate = STUB_CALLBACK;
 
