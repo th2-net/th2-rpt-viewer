@@ -16,12 +16,18 @@
 
 plugins {
     id "com.github.node-gradle.node" version "2.2.3"
+    id 'com.palantir.docker' version '0.25.0'
 }
 
+apply plugin: 'base'
+
 ext {
-    node_modules    = file("node_modules")
-    npmPackageInfo  = file("package.json")
-    npmDir          = file("${project.buildDir}/nodejs")
+    node_modules        = file("node_modules")
+    npmPackageInfo      = file("package.json")
+    npmDir              = file("${project.buildDir}/nodejs")
+
+    downloadNode        = project.hasProperty('download_node')
+    dockerImageVersion  = "${version_major}.${version_minor}.${version_maintenance}.${version_build}"
 }
 
 node {
@@ -29,7 +35,7 @@ node {
    npmVersion = '6.10.3'
    // If true, it will download node using above parameters.
    // If false, it will try to use globally installed node.
-   download = true
+   download = downloadNode
 
    workDir = npmDir
 }
@@ -45,7 +51,7 @@ task installDependencies(type: NpmTask) {
     environment "ADBLOCK": true
 }
 
-task build(type: NpmTask, dependsOn: 'installDependencies') {
+task buildProd(type: NpmTask, dependsOn: 'installDependencies') {
     inputs.file("${project.projectDir}/jest.config.js")
     inputs.file("${project.projectDir}/package.json")
     inputs.file("${project.projectDir}/package-lock.json")
@@ -70,4 +76,16 @@ task runTests(type: NpmTask, dependsOn: 'installDependencies') {
     // we use jest with '--no-cache' option, because there are some bugs, related to invalidating jest's cache
     // when using TS const enums
     args = ['run', 'test:ci']
+}
+
+dockerPrepare {
+    dependsOn buildProd
+}
+
+docker {
+    name "${docker_image_repository}/${docke_image_name}:${dockerImageVersion}"
+    tag 'local-version', "${docke_image_name}:${dockerImageVersion}"
+    tag 'local-latest', "${docke_image_name}:latest"
+    tag 'remote-latest',  "${docker_image_repository}/${docke_image_name}:latest"
+    copySpec.from("$buildDir/out")
 }
