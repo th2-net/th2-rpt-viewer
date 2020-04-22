@@ -1,4 +1,4 @@
-/*******************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,14 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
-import ApiSchema from "../ApiSchema";
-import eventJsonpApi from "./event";
-import messageJsonpApi from "./message";
+ ***************************************************************************** */
+import ApiSchema from '../ApiSchema';
+import eventJsonpApi from './event';
+import messageJsonpApi from './message';
 
 const jsonpApi: ApiSchema = {
-    events: eventJsonpApi,
-    messages: messageJsonpApi
+	events: eventJsonpApi,
+	messages: messageJsonpApi,
 };
 
 export default jsonpApi;

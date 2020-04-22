@@ -19,7 +19,7 @@
 .filter-wrapper {
     position: absolute;
     top: 100%;
-    right: 0;
+    left: 0;
     z-index: 100;
 }
 
@@ -28,7 +28,7 @@
     @include card-shadow;
     min-width: 850px;
     padding: 12px 7px;
-    border-radius: 5px 0 5px 5px;
+    border-radius: 0 5px 5px 5px;
 
     background-color: $filterPrimaryColor;
 

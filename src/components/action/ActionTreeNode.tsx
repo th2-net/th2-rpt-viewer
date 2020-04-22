@@ -127,7 +127,7 @@ export default function ActionTreeNode(props: Props) {
 		return (
 			<VerificationCard
 				key={verification.messageId}
-				verification={verification}
+				verification={verification as any}
 				isSelected={isSelected}
 				isTransparent={isTransparent}
 				onSelect={onVerificationSelect}

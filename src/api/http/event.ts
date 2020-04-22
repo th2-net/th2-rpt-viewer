@@ -1,4 +1,4 @@
-/*******************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,40 +12,55 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
-import { EventApiSchema } from "../ApiSchema";
+ ***************************************************************************** */
+
+/* eslint-disable no-return-await */
+import { EventApiSchema } from '../ApiSchema';
+
+const BASE_URL = 'http://th2-kuber-node03:30000/backend/';
 
 const eventHttpApi: EventApiSchema = {
-    getAll: async () => {
-        const res = await fetch('/search/events');
+	getAll: async () => {
+		// eslint-disable-next-line prefer-template
+		const res = await fetch(`${BASE_URL}/search/events?` + new URLSearchParams({ idsOnly: false } as any));
 
-        if (res.ok) {
-            return await res.json();
-        }
+		if (res.ok) {
+			return await res.json();
+		}
 
-        console.error(res.statusText);
-        return [];
-    },
-    getSubNodes: async (id) => {
-        const res = await fetch(`/event/${id}/children`);
+		console.error(res.statusText);
+		return [];
+	},
+	getEvent: async (id: string) => {
+		const res = await fetch(`${BASE_URL}/event/${id}`);
 
-        if (res.ok) {
-            return await res.json();
-        }
+		if (res.ok) {
+			return await res.json();
+		}
 
-        console.error(res.statusText);
-        return [];
-    },
-    getEvent: async (id) => {
-        const res = await fetch(`/event/${id}`);
+		console.error(res.statusText);
+		return {};
+	},
+	getRange: async (start, end) => {
+		const res = await fetch(`${BASE_URL}/event?start=${start},end=${end}`);
 
-        if (res.ok) {
-            return await res.json();
-        }
+		if (res.ok) {
+			return await res.json();
+		}
 
-        console.error(res.statusText);
-        return null;
-    }
+		console.error(res.statusText);
+		return [];
+	},
+	getSubNodes: async id => {
+		const res = await fetch(`${BASE_URL}/event/${id}/children`);
+
+		if (res.ok) {
+			return await res.json();
+		}
+
+		console.error(res.statusText);
+		return [];
+	},
 };
 
 export default eventHttpApi;

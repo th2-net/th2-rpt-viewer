@@ -23,7 +23,7 @@
     grid-template-areas:
         "header" 
         "main-content";
-
+    overflow: hidden;
     &__header {
         grid-area: header;
         position: relative;
@@ -39,7 +39,6 @@
 .layout-panel {
     height: 100%;
     display: flex;
-    flex-direction: column;
 
     &__controls {
         height: 50px;
@@ -184,5 +183,14 @@
         &.beautifier {
             background-image: url(../../resources/icons/plain-text.svg);
         }
+    }
+}
+
+.layout-events {
+    display: flex;
+
+    & > div {
+        flex: 1;
+        position: relative;
     }
 }

@@ -21,15 +21,6 @@ const webpack = require("webpack");
 const mode = process.env.NODE_ENV || 'production';
 const api_env = process.env.API_ENV || 'http';
 
-const devServerApiProperties = api_env === 'jsonp' ? {
-    watchContentBase: true,
-    contentBase: [path.join(__dirname, 'src'), path.join(__dirname, 'build', 'out')],
-} : {
-    proxy: {
-        '/': 'http://kos215:8000'
-    }
-};
-
 module.exports = {
     devServer: {
         watchOptions: {
@@ -39,7 +30,6 @@ module.exports = {
         compress: true,
         port: 9001,
         host: "0.0.0.0",
-        ...devServerApiProperties
     },
     output: {
         path: path.resolve(__dirname, './build/out/'),

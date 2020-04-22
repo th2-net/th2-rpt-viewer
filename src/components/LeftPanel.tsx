@@ -16,73 +16,55 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import Panel from '../util/Panel';
-import { ToggleButton } from './ToggleButton';
-import { ActionsList } from './action/ActionsList';
-import { StatusPanel } from './StatusPanel';
-import { createStyleSelector } from '../helpers/styleCreators';
-import ActionPanelControl from './action/ActionPanelControls';
+import { EventList } from './action/EventList';
 import { useStores } from '../hooks/useStores';
+import EventCard from './EventCard';
+import PanelArea from '../util/PanelArea';
 import '../styles/layout.scss';
+import VerificationCard from './action/VerificationCard';
+import SplashScreen from './SplashScreen';
 
 export const LeftPanel = observer(() => {
-	const { viewStore, selectedStore } = useStores();
-
-	const getCurrentPanelControls = () => {
-		switch (viewStore.leftPanel) {
-		case Panel.ACTIONS: {
-			return <ActionPanelControl/>;
+	const { eventsStore, viewStore } = useStores();
+	const renderSelectedElement = () => {
+		if (eventsStore.selectedEventIsLoading) {
+			return <div style={{ minWidth: '55%', maxWidth: '55%' }}>
+				<SplashScreen />
+			</div>;
 		}
-
-		default: {
-			return null;
-		}
-		}
+		if (!eventsStore.selectedEvent) return null;
+		return (
+			<div style={{ minWidth: '55%', maxWidth: '55%' }}>
+				{eventsStore.selectedEvent.body && eventsStore.selectedEvent.body.type === 'verification'
+					? <VerificationCard
+						verification={eventsStore.selectedEvent}
+						isSelected={true}
+						isTransparent={false}
+						parentActionId={eventsStore.selectedEvent.parentEventId as any} />
+					: <EventCard
+						event={eventsStore.selectedEvent}
+						panelArea={viewStore.panelArea} />
+				}
+			</div>);
 	};
-
-	const selectPanel = (panel: Panel.ACTIONS | Panel.STATUS) => {
-		viewStore.setLeftPane(panel);
-	};
-
-	const statusEnabled = selectedStore.testCase!.status.cause != null;
-	const actionsEnabled = selectedStore.testCase!.files.action!.count > 0;
-
-	const actionRootClass = createStyleSelector(
-		'layout-panel__content-wrapper',
-		viewStore.leftPanel === Panel.ACTIONS && actionsEnabled ? null : 'disabled',
-	);
-	const statusRootClass = createStyleSelector(
-		'layout-panel__content-wrapper',
-		viewStore.leftPanel === Panel.STATUS && statusEnabled ? null : 'disabled',
-	);
-
 	return (
 		<div className="layout-panel">
-			<div className="layout-panel__controls">
-				<div className="layout-panel__tabs">
-					<ToggleButton
-						isToggled={viewStore.leftPanel === Panel.ACTIONS}
-						isDisabled={!actionsEnabled}
-						onClick={() => actionsEnabled && selectPanel(Panel.ACTIONS)}>
-						Actions
-					</ToggleButton>
-					<ToggleButton
-						isToggled={viewStore.leftPanel === Panel.STATUS}
-						isDisabled={!statusEnabled}
-						onClick={() => statusEnabled && selectPanel(Panel.STATUS)}>
-						Status
-					</ToggleButton>
-				</div>
-				{getCurrentPanelControls()}
+			<div className="layout-panel__content layout-events">
+				{eventsStore.eventsList.map(([parentId, children]) =>
+					<div
+						className="layout-panel__content-wrapper"
+						style={{ zIndex: 1 }}
+						key={parentId || 'root'}>
+						<EventList
+							events={children}
+							isMinified={viewStore.panelArea === PanelArea.P25
+								|| eventsStore.eventsList.length > 2
+								|| (eventsStore.eventsList.length === 2
+									&& (eventsStore.selectedEventIsLoading || !!eventsStore.selectedEvent))}
+							selectedEvents={eventsStore.selectedEvents} />
+					</div>)}
 			</div>
-			<div className="layout-panel__content">
-				<div className={actionRootClass}>
-					<ActionsList />
-				</div>
-				<div className={statusRootClass}>
-					<StatusPanel/>
-				</div>
-			</div>
+			{renderSelectedElement()}
 		</div>
 	);
 });

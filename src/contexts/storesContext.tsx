@@ -21,8 +21,8 @@ import ViewStore from '../stores/ViewStore';
 import MLStore from '../stores/MachineLearningStore';
 import FilterStore from '../stores/FilterStore';
 import SearchStore from '../stores/SearchStore';
-import ApiSchema from "../api/ApiSchema";
-import EventsStore from "../stores/EventsStore";
+import EventsStore from '../stores/EventsStore';
+import ApiSchema from '../api/ApiSchema';
 
 export interface RootStoreContext {
     reportStore: ReportStore;
@@ -30,34 +30,32 @@ export interface RootStoreContext {
     viewStore: ViewStore;
     mlStore: MLStore;
     filterStore: FilterStore;
-    searchStore: SearchStore;
-    eventStore: EventsStore;
+	searchStore: SearchStore;
+	eventsStore: EventsStore;
 }
 
 const StoresContext = React.createContext({} as RootStoreContext);
 
 export function createStores(api: ApiSchema) {
-    const selectedStore = new SelectedStore(api),
-        filterStore = new FilterStore(api),
-        searchStore = new SearchStore(api),
-        mlStore = new MLStore(api, selectedStore),
-        viewStore = new ViewStore(api),
-        reportStore = new ReportStore(api, viewStore),
-        eventStore = new EventsStore(api);
+	const selectedStore = new SelectedStore(api);
+	const filterStore = new FilterStore(api);
+	const searchStore = new SearchStore(api);
+	const mlStore = new MLStore(api, selectedStore);
+	const viewStore = new ViewStore(api);
+	const reportStore = new ReportStore(api, viewStore);
+	const eventsStore = new EventsStore(api);
 
-    eventStore.init();
+	const stores = {
+		reportStore,
+		selectedStore,
+		viewStore,
+		mlStore,
+		filterStore,
+		searchStore,
+		eventsStore,
+	};
 
-    const stores = {
-        reportStore,
-        selectedStore,
-        viewStore,
-        mlStore,
-        filterStore,
-        searchStore,
-        eventStore
-    };
-
-    return stores;
+	return stores;
 }
 
 export default StoresContext;
