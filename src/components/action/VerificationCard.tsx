@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
 * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +12,19 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-******************************************************************************/
+***************************************************************************** */
 
 import * as React from 'react';
 import Verification from '../../models/Verification';
-import {StatusType} from "../../models/Status";
-import {createStyleSelector} from '../../helpers/styleCreators';
-import {SearchExpandablePanel} from "../ExpandablePanel";
-import {VerificationTable} from "./VerificationTable";
-import '../../styles/action.scss';
-import {keyForVerification} from '../../helpers/keys';
+import { StatusType } from '../../models/Status';
+import { createStyleSelector } from '../../helpers/styleCreators';
+import { SearchExpandablePanel } from '../ExpandablePanel';
+import { VerificationTable } from './VerificationTable';
+import { keyForVerification } from '../../helpers/keys';
 import SearchableContent from '../search/SearchableContent';
-import {VerificationMlUploadButton} from "../machinelearning/VerificationMlUploadButton";
+import { VerificationMlUploadButton } from '../machinelearning/VerificationMlUploadButton';
 import { stopPropagationHandler } from '../../helpers/react';
+import '../../styles/action.scss';
 
 interface VerificationCardProps {
     verification: Verification;
@@ -34,51 +34,56 @@ interface VerificationCardProps {
     onSelect: (messageId: number, rootActionId: number, status: StatusType) => any;
 }
 
-const VerificationCard = ({ verification, onSelect, isSelected, isTransparent, parentActionId }: VerificationCardProps) => {
+const VerificationCard = ({
+	verification, onSelect, isSelected, isTransparent, parentActionId,
+}: VerificationCardProps) => {
+	const {
+		status, messageId, entries, name,
+	} = verification;
 
-    const { status, messageId, entries, name } = verification;
+	const className = createStyleSelector(
+		'ac-body__verification',
+		status && status.status,
+		isSelected ? 'selected' : null,
+		isTransparent && !isSelected ? 'transparent' : null,
+	);
 
-    const className = createStyleSelector(
-        "ac-body__verification",
-        status && status.status,
-        isSelected ? "selected" : null,
-        isTransparent && !isSelected ? "transparent" : null
-    );
+	const key = keyForVerification(parentActionId, messageId);
 
-    const key = keyForVerification(parentActionId, messageId);
-
-    return (
-        <div className="action-card">
-            <div className={className}
-                onClick={stopPropagationHandler(onSelect, messageId, parentActionId, status.status)}>
-                <SearchExpandablePanel
-                    searchKeyPrefix={key}
-                    stateKey={key}>
-                    {
-                        toggleExpand => (
-                            <div className="ac-body__verification-title-wrapper">
-                                <div className="ac-body__verification-title"
-                                onClick={toggleExpand}>
-                                    <span>{"Verification — "}</span>
-                                    <SearchableContent
-                                        contentKey={`${key}-name`}
-                                        content={name}/>
-                                    <span>{" — " + status.status}</span>
-                                </div>
-                                <VerificationMlUploadButton targetActionId={parentActionId} targetMessageId={messageId}/>
-                            </div>)
-                    }
-                    <VerificationTable
-                        keyPrefix={key}
-                        actionId={parentActionId}
-                        messageId={messageId}
-                        stateKey={key + '-nodes'}
-                        params={entries}
-                        status={status.status}/>
-                </SearchExpandablePanel>
-            </div>
-        </div>
-    )
+	return (
+		<div className="action-card">
+			<div className={className}
+				onClick={stopPropagationHandler(onSelect, messageId, parentActionId, status.status)}>
+				<SearchExpandablePanel
+					searchKeyPrefix={key}
+					stateKey={key}>
+					{
+						(toggleExpand: any) => (
+							<div className="ac-body__verification-title-wrapper">
+								<div className="ac-body__verification-title"
+									onClick={toggleExpand}>
+									<span>{'Verification — '}</span>
+									<SearchableContent
+										contentKey={`${key}-name`}
+										content={name}/>
+									<span>{` — ${status.status}`}</span>
+								</div>
+								<VerificationMlUploadButton
+									targetActionId={parentActionId}
+									targetMessageId={messageId} />
+							</div>)
+					}
+					<VerificationTable
+						keyPrefix={key}
+						actionId={parentActionId}
+						messageId={messageId}
+						stateKey={`${key}-nodes`}
+						params={entries}
+						status={status.status}/>
+				</SearchExpandablePanel>
+			</div>
+		</div>
+	);
 };
 
 export default VerificationCard;

@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,30 +12,30 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import React from 'react'
-
+import React from 'react';
 import Alert from '../models/Alert';
-import {createBemBlock, createBemElement} from '../helpers/styleCreators';
+import { createBemBlock, createBemElement } from '../helpers/styleCreators';
 import '../styles/alert.scss';
 
-interface AlertProps extends Alert {}
+type AlertProps = Alert;
 
 export const AlertCard = ({
 	column,
 	lines,
 	message,
-	type
+	type,
 }: AlertProps) => {
 	const rootClassName = createBemBlock(
-		"alert",
-		type,
-	),	iconClassName = createBemElement(
 		'alert',
-		'icon',
-		type
-	);
+		type,
+	); const
+		iconClassName = createBemElement(
+			'alert',
+			'icon',
+			type,
+		);
 
 	return (
 		<div className={rootClassName}>
@@ -56,7 +56,7 @@ export const AlertCard = ({
 				</div>
 			</div>
 		</div>
-	)
-}
+	);
+};
 
 export default AlertCard;

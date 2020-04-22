@@ -27,15 +27,15 @@ interface Props {
 }
 
 export function KnownBugBadge({ bug }: Props) {
-    const className = createBemElement(
-        'known-bugs',
-        'bug',
-        bug.status === KnownBugStatus.REPRODUCED ? "reproduced" : "not-reproduced"
-    );
+	const className = createBemElement(
+		'known-bugs',
+		'bug',
+		bug.status === KnownBugStatus.REPRODUCED ? 'reproduced' : 'not-reproduced',
+	);
 
-    return (
-        <div className={className}>
-            {bug.subject}
-        </div>
-    )
+	return (
+		<div className={className}>
+			{bug.subject}
+		</div>
+	);
 }

@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,39 +12,32 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import { connect } from 'react-redux';
-import AppState from '../state/models/AppState';
-import SelectionCarousel, { SelectionCarouselProps } from './SelectionCarousel';
+import React from 'react';
+import { observer } from 'mobx-react-lite';
+import SelectionCarousel from './SelectionCarousel';
 import { isRejected } from '../helpers/message';
-import { selectRejectedMessageId } from '../actions/actionCreators';
 import { nextCyclicItemByIndex, prevCyclicItemByIndex } from '../helpers/array';
+import { useStores } from '../hooks/useStores';
 
-const RejectedMessagesCarousel = connect(
-    (state: AppState) => {
-        const rejectedMessages = state.selected.testCase.messages
-            .filter(isRejected)
-            .map(msg => msg.id);
+const RejectedMessagesCarousel = observer(() => {
+	const { selectedStore } = useStores();
+	const rejectedMessages = selectedStore.testCase!.messages
+		.filter(isRejected)
+		.map(msg => msg.id);
+	const index = rejectedMessages.indexOf(selectedStore.rejectedMessageId as number);
 
-        return {
-            index: rejectedMessages.indexOf(state.selected.rejectedMessageId),
-            itemsCount: rejectedMessages.length,
-            isEnabled: rejectedMessages.length > 0,
-            rejectedMessages
-        }   
-    },
-    dispatch => ({
-        selectRejectedMessage: (id: number) => dispatch(selectRejectedMessageId(id))
-    }),
-    ({ index, rejectedMessages, ...stateProps }, { selectRejectedMessage, ...dispatchProps }, ownProps): SelectionCarouselProps => ({
-        ...stateProps,
-        ...dispatchProps, 
-        ...ownProps,
-        currentIndex: index + 1,
-        next: () => selectRejectedMessage(nextCyclicItemByIndex(rejectedMessages, index)),
-        prev: () => selectRejectedMessage(prevCyclicItemByIndex(rejectedMessages, index))
-    })
-)(SelectionCarousel);
+	return <SelectionCarousel
+		currentIndex={index + 1}
+		next={() => {
+			selectedStore.selectRejectedMessage(nextCyclicItemByIndex(rejectedMessages, index));
+		}}
+		prev={() => {
+			selectedStore.selectRejectedMessage(prevCyclicItemByIndex(rejectedMessages, index));
+		}}
+		itemsCount={rejectedMessages.length}
+		isEnabled={rejectedMessages.length > 0} />;
+});
 
 export default RejectedMessagesCarousel;

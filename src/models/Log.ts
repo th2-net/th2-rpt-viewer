@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import { ActionNodeType, ActionNode } from './Action';
 import Exception from './Exception';
@@ -20,7 +20,7 @@ import Exception from './Exception';
 export default interface Log {
     actionNodeType: ActionNodeType.LOG;
     timestamp: string;
-    level: "ERROR" | "WARN" | "DEBUG" | "INFO";
+    level: 'ERROR' | 'WARN' | 'DEBUG' | 'INFO';
     thread: string;
     message: string;
     exception?: Exception;
@@ -28,5 +28,5 @@ export default interface Log {
 }
 
 export function isLog(action: ActionNode): action is Log {
-    return action.actionNodeType === ActionNodeType.LOG;
+	return action.actionNodeType === ActionNodeType.LOG;
 }

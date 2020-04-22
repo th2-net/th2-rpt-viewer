@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import Panel from "../../util/Panel";
+import Panel from '../../util/Panel';
 import ViewState from '../models/ViewState';
-import PanelArea from "../../util/PanelArea";
+import PanelArea from '../../util/PanelArea';
 
-const initialViewState : ViewState = {
-    isLoading: true,
-    adminMessagesEnabled: new Boolean(false),
-    beautifiedMessages: [],
-    leftPanel: Panel.ACTIONS,
-    rightPanel: Panel.MESSAGES,
-    panelArea: PanelArea.P50,
-    isConnectionError: false
+const initialViewState: ViewState = {
+	isLoading: true,
+	// eslint-disable-next-line no-new-wrappers
+	adminMessagesEnabled: new Boolean(false),
+	beautifiedMessages: [],
+	leftPanel: Panel.ACTIONS,
+	rightPanel: Panel.MESSAGES,
+	panelArea: PanelArea.P50,
+	isConnectionError: false,
 };
 
 export default initialViewState;

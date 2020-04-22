@@ -1,4 +1,4 @@
-/*******************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,130 +12,132 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  *  limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import { createCaseInsensitiveRegexp } from "../regexp";
-import SearchToken from "../../models/search/SearchToken";
-import SearchSplitResult from "../../models/search/SearchSplitResult";
+import { createCaseInsensitiveRegexp } from '../regexp';
+import SearchToken from '../../models/search/SearchToken';
+import SearchSplitResult from '../../models/search/SearchSplitResult';
 
+/* eslint-disable no-restricted-syntax */
 export default function multiTokenSplit(content: string, tokens: ReadonlyArray<SearchToken>): SearchSplitResult[] {
-    const sortRule = (a: SearchToken, b: SearchToken): number => {
-        if (a.isScrollable == b.isScrollable) {
-            // we are sorting tokens from longer to shorter one because in case of intersected tokens will truncate longer tokens
-            return a.pattern.length < b.pattern.length ? 1 : -1;
-        }
+	const sortRule = (a: SearchToken, b: SearchToken): number => {
+		if (a.isScrollable === b.isScrollable) {
+			// we are sorting tokens from longer to shorter one because in case of intersected tokens
+			// will truncate longer tokens
+			return a.pattern.length < b.pattern.length ? 1 : -1;
+		}
 
-        // also not scrollable items must be truncated by others
-        return a.isScrollable ? 1 : -1;
-    };
+		// also not scrollable items must be truncated by others
+		return a.isScrollable ? 1 : -1;
+	};
 
-    const splitContent = (token: SearchToken) => {
-        return {
-            content: content
-                .split(createCaseInsensitiveRegexp(token.pattern))
-                .slice(0, -1),
-            token
-        }
-    };
+	const splitContent = (token: SearchToken) => ({
+		content: content
+			.split(createCaseInsensitiveRegexp(token.pattern))
+			.slice(0, -1),
+		token,
+	});
 
-    const tokenSplitResults = [...tokens]
-        .filter(({ pattern }) => pattern.length > 0)
-        .sort(sortRule)
-        .map(splitContent)
-        .filter(res => res.content.length > 0);
+	const tokenSplitResults = [...tokens]
+		.filter(({ pattern }) => pattern.length > 0)
+		.sort(sortRule)
+		.map(splitContent)
+		.filter(res => res.content.length > 0);
 
-    const result: SearchSplitResult[] = [{
-        content,
-        token: null
-    }];
+	const result: SearchSplitResult[] = [{
+		content,
+		token: null,
+	}];
 
-    for (const splitResult of tokenSplitResults) {
-        let currentContentIndex = 0;
+	for (const splitResult of tokenSplitResults) {
+		let currentContentIndex = 0;
 
-        for (const splitContentPart of splitResult.content) {
-            currentContentIndex += splitContentPart.length;
+		for (const splitContentPart of splitResult.content) {
+			currentContentIndex += splitContentPart.length;
 
-            const appendingResult: SearchSplitResult = {
-                // we need to get original part of content, not pattern in case of case insensitive
-                content: content.substring(currentContentIndex, currentContentIndex + splitResult.token.pattern.length),
-                token: splitResult.token
-            };
+			const appendingResult: SearchSplitResult = {
+				// we need to get original part of content, not pattern in case of case insensitive
+				content: content.substring(currentContentIndex, currentContentIndex + splitResult.token.pattern.length),
+				token: splitResult.token,
+			};
 
-            let acc = 0,
-                startBlockOffset = 0,
-                endBlockOffset = 0;
+			let acc = 0;
+			let startBlockOffset = 0;
+			let endBlockOffset = 0;
 
-            // trying to find part of previous result, that need to be modified
-            const startIndex = result.findIndex(res => {
-                acc += res.content.length;
+			// trying to find part of previous result, that need to be modified
+			// eslint-disable-next-line no-loop-func
+			const startIndex = result.findIndex(res => {
+				acc += res.content.length;
 
-                if (acc > currentContentIndex) {
-                    startBlockOffset = res.content.length - (acc - currentContentIndex);
-                    return true;
-                }
+				if (acc > currentContentIndex) {
+					startBlockOffset = res.content.length - (acc - currentContentIndex);
+					return true;
+				}
 
-                return false;
-            });
+				return false;
+			});
 
-            acc = 0;
+			acc = 0;
 
-            const endIndex = result.findIndex(res => {
-                acc += res.content.length;
+			// eslint-disable-next-line no-loop-func
+			const endIndex = result.findIndex(res => {
+				acc += res.content.length;
 
-                if (acc >= currentContentIndex + splitResult.token.pattern.length) {
-                    endBlockOffset = res.content.length - (acc - (currentContentIndex + splitResult.token.pattern.length));
+				if (acc >= currentContentIndex + splitResult.token.pattern.length) {
+					endBlockOffset = res.content.length
+						- (acc - (currentContentIndex + splitResult.token.pattern.length));
 
-                    return true;
-                }
+					return true;
+				}
 
-                return false;
-            });
+				return false;
+			});
 
-            // part of previous result that need to be replaced
-            const blocks = result.slice(startIndex, endIndex + 1);
+			// part of previous result that need to be replaced
+			const blocks = result.slice(startIndex, endIndex + 1);
 
-            if (blocks.length == 0) {
-                throw new Error(`Can't merge search results with token "${splitResult.token.pattern}"`);
-            }
+			if (blocks.length === 0) {
+				throw new Error(`Can't merge search results with token "${splitResult.token.pattern}"`);
+			}
 
-            let nextResults: SearchSplitResult[] = [];
+			let nextResults: SearchSplitResult[] = [];
 
-            if (blocks.length == 1 ) {
-                const block = blocks[0];
+			if (blocks.length === 1) {
+				const block = blocks[0];
 
-                nextResults = [{
-                    ...block,
-                    content: block.content.substring(0, startBlockOffset)
-                }, appendingResult, {
-                    ...block,
-                    content: block.content.substring(endBlockOffset)
-                }];
+				nextResults = [{
+					...block,
+					content: block.content.substring(0, startBlockOffset),
+				}, appendingResult, {
+					...block,
+					content: block.content.substring(endBlockOffset),
+				}];
+			} else {
+				const startBlock = blocks[0];
+				const endBlock = blocks[blocks.length - 1];
 
-            } else {
-                const startBlock = blocks[0],
-                    endBlock = blocks[blocks.length - 1];
+				const nextStartBlock = {
+					...startBlock,
+					content: startBlock.content.substring(0, startBlockOffset),
+				};
 
-                const nextStartBlock = {
-                    ...startBlock,
-                    content: startBlock.content.substring(0, startBlockOffset)
-                };
+				const nextEndBlock = {
+					...endBlock,
+					content: endBlock.content.substring(endBlockOffset),
+				};
 
-                const nextEndBlock = {
-                    ...endBlock,
-                    content: endBlock.content.substring(endBlockOffset)
-                };
+				nextResults = [
+					nextStartBlock,
+					appendingResult,
+					nextEndBlock,
+				];
+			}
 
-                nextResults = [
-                    nextStartBlock,
-                    appendingResult,
-                    nextEndBlock
-                ];
-            }
+			result.splice(startIndex, blocks.length, ...nextResults);
+			currentContentIndex += splitResult.token.pattern.length;
+		}
+	}
 
-            result.splice(startIndex, blocks.length, ...nextResults);
-            currentContentIndex += splitResult.token.pattern.length;
-        }
-    }
-
-    return result.filter(res => res.content.length > 0);
+	return result.filter(res => res.content.length > 0);
 }

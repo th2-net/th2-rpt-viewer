@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,66 +12,42 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../../hooks/useStores';
 import Action from '../../models/Action';
 import { StatusType } from '../../models/Status';
-import "../../styles/messages.scss";
-import { createStyleSelector } from '../../helpers/styleCreators';
 import Message from '../../models/Message';
-import { connect } from 'react-redux';
-import AppState from '../../state/models/AppState';
-import { selectMessage } from '../../actions/actionCreators';
 import ChipsList from '../ChipsList';
-import { Chip } from "../Chip";
+import { Chip } from '../Chip';
+import '../../styles/messages.scss';
 
-type SelectHandler = (status: StatusType) => void;
-
-interface OwnProp {
+interface Props {
     message: Message;
 }
 
-interface StateProps {
-    actions: Action[];
-    selectedStatus?: StatusType;
-}
-
-interface DispatchProps {
-    selectHandler: SelectHandler;
-}
-
-interface Props extends OwnProp, StateProps, DispatchProps {
-}
-
-function MessageCardActionChipsBase({ actions, selectedStatus, selectHandler }: Props) {
-
-    return (
-        <div className="mc-header__info">
-            {
-                actions.length ? (
-                    <ChipsList
-                        actions={actions}
-                        selectedStatus={selectedStatus}
-                        onStatusSelect={selectHandler}/>
-                ) : (
-                    <Chip text='0' title='No related actions'/>
-                )
-            }
-        </div>
-    )
-}
-
-export const MessageCardActionChips = connect(
-    (state: AppState, ownProps: OwnProp): StateProps => ({
-        actions: ownProps.message.relatedActions
-            .reduce((actions, actionId) =>
-                state.selected.actionsMap.get(actionId) ?
-                    [...actions, state.selected.actionsMap.get(actionId)] :
-                    actions, []),
-        selectedStatus: state.selected.messagesId.includes(ownProps.message.id) ? state.selected.selectedActionStatus : null
-    }),
-    (dispatch, ownProps: OwnProp): DispatchProps => ({
-        selectHandler: (status: StatusType) => dispatch(selectMessage(ownProps.message, status))
-    })
-)(MessageCardActionChipsBase);
+export const MessageCardActionChips = observer(({ message }: Props) => {
+	const { selectedStore } = useStores();
+	const actionsList = message.relatedActions
+		.reduce((actions, actionId) =>
+			(selectedStore.actionsMap.get(actionId)
+				? [...actions, selectedStore.actionsMap.get(actionId)!] : actions), [] as Action[]);
+	const selectedStatus = selectedStore.messagesId.includes(message.id)
+		? selectedStore.selectedActionStatus : null;
+	return (
+		<div className="mc-header__info">
+			{
+				actionsList.length ? (
+					<ChipsList
+						actions={actionsList}
+						selectedStatus={selectedStatus}
+						onStatusSelect={(status: StatusType) => selectedStore.selectMessage(message, status)}/>
+				) : (
+					<Chip text='0' title='No related actions'/>
+				)
+			}
+		</div>
+	);
+});

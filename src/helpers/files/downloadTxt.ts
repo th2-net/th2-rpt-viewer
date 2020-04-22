@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,15 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 export function downloadTxtFile(content: BlobPart[], filename: string): void {
 	const anchorElement = document.createElement('a');
 	const file = new Blob(
 		content,
-		{type: "text/plain;charset=utf-8"}
+		{ type: 'text/plain;charset=utf-8' },
 	);
-	const url = URL.createObjectURL(file)
+	const url = URL.createObjectURL(file);
 	anchorElement.href = url;
 	anchorElement.download = filename;
 	anchorElement.click();

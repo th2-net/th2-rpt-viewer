@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
 
@@ -22,11 +22,11 @@ import * as React from 'react';
  * @param args callback arguments
  */
 export function stopPropagationHandler<T extends unknown[], R>(callbackfn: (...args: T) => R, ...args: T) {
-    return (e: React.MouseEvent) => {
-        e.stopPropagation();
+	return (e: React.MouseEvent) => {
+		e.stopPropagation();
 
-        if (callbackfn) {
-            callbackfn(...args);
-        }
-    }
+		if (callbackfn) {
+			callbackfn(...args);
+		}
+	};
 }

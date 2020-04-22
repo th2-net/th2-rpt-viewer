@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +12,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import KnownBug, { KnownBugNode } from "./KnownBug";
-import { ActionNodeType } from "./Action";
+import { KnownBugNode } from './KnownBug';
+import { ActionNodeType } from './Action';
 
 export default interface KnownBugCategory {
     actionNodeType: ActionNodeType.KNOWN_BUG_CATEGORY;
-    name: string;
+    name: string | null;
     subNodes: KnownBugNode[];
 }
 
 export function isKnownBugCategory(category: KnownBugNode): category is KnownBugCategory {
-    return category.actionNodeType === ActionNodeType.KNOWN_BUG_CATEGORY;
+	return category.actionNodeType === ActionNodeType.KNOWN_BUG_CATEGORY;
 }

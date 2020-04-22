@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,35 +12,27 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import { connect } from 'react-redux';
-import AppState from '../state/models/AppState';
-import SelectionCarousel, { SelectionCarouselProps } from './SelectionCarousel';
-import { selectCheckpointAction } from '../actions/actionCreators';
-import Action from '../models/Action';
+import React from 'react';
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../hooks/useStores';
+import SelectionCarousel from './SelectionCarousel';
 import { nextCyclicItemByIndex, prevCyclicItemByIndex } from '../helpers/array';
-import { getCheckpointActions } from '../selectors/actions';
 
-const CheckpointCarousel = connect(
-    (state: AppState) => ({
-        checkpointActions: getCheckpointActions(state),
-        selectedCheckpointAction: state.selected.checkpointActionId,
-        index: getCheckpointActions(state).findIndex(cp => cp.id === state.selected.checkpointActionId),
-    }),
-    dispatch => ({
-        selectCheckpoint: (checkpoint: Action) => dispatch(selectCheckpointAction(checkpoint))
-    }),
-    ({ index, checkpointActions, selectedCheckpointAction, ...stateProps }, {selectCheckpoint}, ownProps): SelectionCarouselProps => ({
-        ...stateProps,
-        ...ownProps,
-        currentIndex: index + 1,
-        next: () => selectCheckpoint(nextCyclicItemByIndex(checkpointActions, index)),
-        prev: () => selectCheckpoint(prevCyclicItemByIndex(checkpointActions, index)),
-        itemsCount: checkpointActions.length,
-        isEnabled:  checkpointActions.length > 0
-
-    })
-)(SelectionCarousel);
+const CheckpointCarousel = observer(() => {
+	const { selectedStore } = useStores();
+	const index = selectedStore.checkpointActions.findIndex(cp => cp.id === selectedStore.checkpointActionId);
+	return <SelectionCarousel
+		currentIndex={index + 1}
+		next={() => {
+			selectedStore.selectCheckpointAction(nextCyclicItemByIndex(selectedStore.checkpointActions, index));
+		}}
+		prev={() => {
+			selectedStore.selectCheckpointAction(prevCyclicItemByIndex(selectedStore.checkpointActions, index));
+		}}
+		itemsCount={selectedStore.checkpointActions.length}
+		isEnabled={selectedStore.checkpointActions.length > 0} />;
+});
 
 export default CheckpointCarousel;

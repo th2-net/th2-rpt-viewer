@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
 * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +12,20 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-******************************************************************************/
+***************************************************************************** */
 
 import React from 'react';
 import Log from '../../models/Log';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import SearchableContent from "../search/SearchableContent";
-import { keyForLog } from "../../helpers/keys";
+import SearchableContent from '../search/SearchableContent';
+import { keyForLog } from '../../helpers/keys';
 
 interface LogCardProps {
 	log: Log;
 	index: number;
 }
 
-export default function LogCard({ log , index }: LogCardProps){
+export default function LogCard({ log, index }: LogCardProps) {
 	const {
 		class: classStr,
 		exception,
@@ -36,10 +36,10 @@ export default function LogCard({ log , index }: LogCardProps){
 	} = log;
 
 	const rootClassName = createStyleSelector(
-        "log-card",
-        level
+		'log-card',
+		level,
 	);
-	
+
 	return (
 		<div className={rootClassName}>
 			<div className="log-card__head">
@@ -58,8 +58,8 @@ export default function LogCard({ log , index }: LogCardProps){
 						content={classStr}/>
 				</div>
 				{
-					exception && 
-						<>
+					exception
+						&& <>
 							<div className="log-card__exception">Exception</div>
 							<div className="log-card__exception-val">{exception.class}</div>
 						</>
@@ -72,5 +72,5 @@ export default function LogCard({ log , index }: LogCardProps){
 					content={message}/>
 			</pre>
 		</div>
-	)
+	);
 }

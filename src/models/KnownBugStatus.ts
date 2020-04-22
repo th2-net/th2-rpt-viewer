@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +12,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 export const enum KnownBugStatus {
-    REPRODUCED = "REPRODUCED",
-    NOT_REPRODUCED = "NOT_REPRODUCED"
+    REPRODUCED = 'REPRODUCED',
+    NOT_REPRODUCED = 'NOT_REPRODUCED'
 }

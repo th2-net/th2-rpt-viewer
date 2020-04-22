@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +12,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import TestCase from "./TestCase";
-import { TestCaseMetadata } from "./TestcaseMetadata";
-import { ReportProperties } from "./ReportProperties";
-import Exception from "./Exception";
-import Alert from "./Alert";
+import TestCase from './TestCase';
+import { TestCaseMetadata } from './TestcaseMetadata';
+import { ReportProperties } from './ReportProperties';
+import Exception from './Exception';
+import Alert from './Alert';
 
 export default interface Report {
     alerts?: Alert[];
@@ -43,5 +43,5 @@ export default interface Report {
 }
 
 export function isReport(report: TestCase | Report): report is Report {
-    return (report as Report).metadata !== undefined;
+	return (report as Report).metadata !== undefined;
 }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,113 +12,119 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  *  limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
-import KeyCodes from "../../util/KeyCodes";
-import AutosizeInput from "react-input-autosize";
+import AutosizeInput from 'react-input-autosize';
+import KeyCodes from '../../util/KeyCodes';
 
-const STUB_FUNCTION = () => {
-};
-
-interface Props<T extends string> {
+interface Props {
     className?: string;
-    value: T;
+    value: string;
     readonly?: boolean;
     onlyAutocompleteValues?: boolean;
     autoresize?: boolean;
-    onSubmit: (nextValue: T) => void;
+    onSubmit: (nextValue: string) => void;
     onRemove?: () => void;
     onEmptyBlur?: () => void;
-    autocomplete: T[] | null;
+    autocomplete: string[] | null;
     datalistKey?: string;
     placeholder?: string;
     submitKeyCodes?: number[];
 }
 
-const AutocompleteInput = React.forwardRef(function AutocompleteInput<T extends string>(props: Props<T>, ref: React.MutableRefObject<HTMLInputElement>) {
-    const {
-        value,
-        onSubmit,
-        onRemove = STUB_FUNCTION,
-        onEmptyBlur = STUB_FUNCTION,
-        autocomplete,
-        autoresize = true,
-        readonly = false,
-        onlyAutocompleteValues = true,
-        datalistKey,
-        className = '',
-        placeholder = '',
-        submitKeyCodes = [KeyCodes.ENTER]
-    } = props;
+const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
+	const {
+		value,
+		onSubmit,
+		onRemove,
+		onEmptyBlur,
+		autocomplete,
+		autoresize = true,
+		readonly = false,
+		onlyAutocompleteValues = true,
+		datalistKey,
+		className = '',
+		placeholder = '',
+		submitKeyCodes = [KeyCodes.ENTER],
+	} = props;
 
-    const [currentValue, setCurrentValue] = React.useState<string>(value);
+	const [currentValue, setCurrentValue] = React.useState<string>(value);
 
-    React.useEffect(() => {
-        setCurrentValue(value);
-    }, [value]);
+	React.useEffect(() => {
+		setCurrentValue(value);
+	}, [value]);
 
-    const onChange: React.ChangeEventHandler<HTMLInputElement> = e => {
-        if (autocomplete?.some(val => val.toUpperCase() === e.target.value.toUpperCase())) {
-            onSubmit(e.target.value as T);
-            setCurrentValue('');
-        } else {
-            setCurrentValue(e.target.value)
-        }
-    };
+	const onChange: React.ChangeEventHandler<HTMLInputElement> = e => {
+		if (autocomplete?.some(val => val.toUpperCase() === e.target.value.toUpperCase())) {
+			onSubmit(e.target.value);
+			setCurrentValue('');
+		} else {
+			setCurrentValue(e.target.value);
+		}
+	};
 
-    const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
-        if (submitKeyCodes.includes(e.keyCode) && currentValue.length > 0) {
-            if (!onlyAutocompleteValues || (autocomplete == null || autocomplete.includes(currentValue as T))) {
-                onSubmit(currentValue as T);
-                setCurrentValue('');
-            }
+	const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
+		if (submitKeyCodes.includes(e.keyCode) && currentValue.length > 0) {
+			if (!onlyAutocompleteValues || (autocomplete == null || autocomplete.includes(currentValue))) {
+				onSubmit(currentValue);
+				setCurrentValue('');
+			}
 
-            return;
-        }
+			return;
+		}
 
-        if (e.keyCode === KeyCodes.BACKSPACE && currentValue.length < 1) {
-            onRemove();
-            e.preventDefault();
-        }
-    };
+		if (e.keyCode === KeyCodes.BACKSPACE && currentValue.length < 1 && onRemove) {
+			onRemove();
+			e.preventDefault();
+		}
+	};
 
-    const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
-        readOnly: readonly,
-        value: currentValue,
-        list: datalistKey,
-        placeholder,
-        onKeyDown,
-        onChange,
-        onBlur: () => currentValue.length == 0 && onEmptyBlur()
-    };
+	const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
+		readOnly: readonly,
+		value: currentValue,
+		list: datalistKey,
+		placeholder,
+		onKeyDown,
+		onChange,
+		onBlur: () => {
+			if (currentValue.length === 0 && onEmptyBlur) {
+				onEmptyBlur();
+			}
+		},
+	};
 
-    return (
-        <React.Fragment>
-            {
-                autoresize ? (
-                    <AutosizeInput
-                        {...inputProps}
-                        inputRef={input => ref.current = input}
-                        inputClassName={className}
-                    />
-                ) : (
-                    <input
-                        {...inputProps}
-                        ref={ref}
-                        className={className}
-                    />
-                )
-            }
-            <datalist id={datalistKey}>
-                {
-                    autocomplete?.map((variant, index) => (
-                        <option key={index} value={variant}/>
-                    ))
-                }
-            </datalist>
-        </React.Fragment>
-    )
+	return (
+		<React.Fragment>
+			{
+				autoresize ? (
+					<AutosizeInput
+						{...inputProps}
+						inputRef={input => {
+							// eslint-disable-next-line no-param-reassign
+							ref.current = input as HTMLInputElement;
+						}}
+						inputClassName={className}
+					/>
+				) : (
+					<input
+						{...inputProps}
+						ref={ref}
+						className={className}
+					/>
+				)
+			}
+			<datalist id={datalistKey}>
+				{
+					autocomplete?.map((variant, index) => (
+						<option key={index} value={variant}/>
+					))
+				}
+			</datalist>
+		</React.Fragment>
+	);
 });
+
+AutocompleteInput.displayName = 'AutocompleteInput';
 
 export default AutocompleteInput;

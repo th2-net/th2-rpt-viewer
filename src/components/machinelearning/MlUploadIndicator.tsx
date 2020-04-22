@@ -17,85 +17,74 @@
  */
 
 import * as React from 'react';
-import '../../styles/messages.scss';
-import { SubmittedData } from '../../models/MlServiceResponse'
-import AppState from '../../state/models/AppState';
-import { connect } from 'react-redux';
-import TestCase from '../../models/TestCase';
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../../hooks/useStores';
 import { ActionNode, isAction } from '../../models/Action';
 import { StatusType } from '../../models/Status';
+import '../../styles/messages.scss';
 
-interface MlUploadIndicatorProps {
-    submittedData: SubmittedData[];
-    testCase: TestCase;
-    token: string;
-}
+export const MlUploadIndicator = observer(() => {
+	const { mlStore, selectedStore } = useStores();
+	const failedActionIds: number[] = [];
 
-export class MlUploadIndicatorBase extends React.Component<MlUploadIndicatorProps, {}> {
-    render() {
-        const failedActionIds: number[] = [];
+	function addSubActions(action: ActionNode) {
+		if (isAction(action) && action.status.status === StatusType.FAILED) {
+			failedActionIds.push(action.id);
+			action.subNodes.forEach(item => { addSubActions(item); });
+		}
+	}
 
-        function addSubActions(action: ActionNode) {
-            if (isAction(action) && action.status.status === StatusType.FAILED) {
-                failedActionIds.push(action.id);
-                action.subNodes.forEach((item) => { addSubActions(item) });
-            }
-        }
+	selectedStore.actions.forEach(item => addSubActions(item));
 
-        this.props.testCase.actions.forEach((item) => { addSubActions(item) });
+	const mlEnabled = mlStore.token !== null;
 
-        const mlEnabled = this.props.token != null;
+	const submittedActionIds = new Set(mlStore.submittedData
+		.filter(item => failedActionIds.includes(item.actionId))
+		.map(item => item.actionId));
 
-        const submittedActionIds = new Set(this.props.submittedData
-            .filter((item) => { return failedActionIds.includes(item.actionId) })
-            .map((item) => { return item.actionId }));
+	if (!mlEnabled) {
+		return (
+			<div className="ml__submit-indicator">
+				<p className="ml__submit-indicator-text unavailable">ML unavailable</p>
+			</div>
+		);
+	}
 
-        if (!mlEnabled) {
-            return (
-                <div className="ml__submit-indicator">
-                    <p className="ml__submit-indicator-text unavailable">ML unavailable</p>
-                </div>
-            )
-        }
+	if (submittedActionIds.size === failedActionIds.length && failedActionIds.length > 0) {
+		return (
+			<div className="ml__submit-indicator" >
+				<p className="ml__submit-indicator-text submitted">
+					Submitted {submittedActionIds.size} of {failedActionIds.length}
+				</p>
+			</div>
+		);
+	}
 
-        if (submittedActionIds.size === failedActionIds.length && failedActionIds.length > 0) {
-            return (
-                <div className="ml__submit-indicator" >
-                    <p className="ml__submit-indicator-text submitted">Submitted {submittedActionIds.size} of {failedActionIds.length}</p>
-                </div>
-            )
-        }
+	if (submittedActionIds.size > 0) {
+		return (
+			<div className="ml__submit-indicator">
+				<p className="ml__submit-indicator-text ready">
+					Submitted {submittedActionIds.size} of {failedActionIds.length}
+				</p>
+			</div>
+		);
+	}
 
-        if (submittedActionIds.size > 0) {
-            return (
-                <div className="ml__submit-indicator">
-                    <p className="ml__submit-indicator-text ready">Submitted {submittedActionIds.size} of {failedActionIds.length}</p>
-                </div>
-            )
-        }
+	if (failedActionIds.length > 0 && selectedStore.messages.length > 0) {
+		return (
+			<div className="ml__submit-indicator">
+				<p className="ml__submit-indicator-text ready">Ready to submit</p>
+			</div>
+		);
+	}
 
-        if (failedActionIds.length > 0 && this.props.testCase.messages.length > 0) {
-            return (
-                <div className="ml__submit-indicator">
-                    <p className="ml__submit-indicator-text ready">Ready to submit</p>
-                </div>
-            )
-        }
+	if (failedActionIds.length === 0 || selectedStore.messages.length === 0) {
+		return (
+			<div className="ml__submit-indicator">
+				<p className="ml__submit-indicator-text not-required">Nothing to submit</p>
+			</div>
+		);
+	}
 
-        if (failedActionIds.length === 0 || this.props.testCase.messages.length === 0) {
-            return (
-                <div className="ml__submit-indicator">
-                    <p className="ml__submit-indicator-text not-required">Nothing to submit</p>
-                </div>
-            )
-        }
-    }
-}
-
-export const MlUploadIndicator = connect(
-    (state: AppState) => ({
-        token: state.machineLearning.token,
-        submittedData: state.machineLearning.submittedData,
-        testCase: state.selected.testCase,
-    })
-)(MlUploadIndicatorBase);
+	return null;
+});

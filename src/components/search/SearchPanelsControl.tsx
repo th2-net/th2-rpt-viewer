@@ -1,4 +1,4 @@
-/*******************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,89 +12,46 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  *  limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
-import { connect } from "react-redux";
-import AppState from "../../state/models/AppState";
-import { setSearchLeftPanelEnabled, setSearchRightPanelEnabled } from "../../actions/actionCreators";
-import Panel from "../../util/Panel";
-import Checkbox from "../util/Checkbox";
-import {getIsLeftPanelClosed, getIsRightPanelClosed} from "../../selectors/view";
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../../hooks/useStores';
+import Checkbox from '../util/Checkbox';
 
-interface StateProps {
-    leftPanelEnabled: boolean;
-    leftPanel: Panel;
-    rightPanelEnabled: boolean;
-    rightPanel: Panel;
-    isLeftPanelClosed: boolean;
-    isRightPanelClosed: boolean;
-}
+const SearchPanelControl = observer(() => {
+	const { viewStore, searchStore } = useStores();
 
-interface DispatchProps {
-    onLeftPanelEnable: (isEnabled: boolean) => void;
-    onRightPanelEnable: (isEnabled: boolean) => void;
-}
+	const onLeftPanelSelect = () => {
+		if (!viewStore.isLeftPanelClosed) {
+			searchStore.leftPanelEnabled = !searchStore.leftPanelEnabled;
+		}
+	};
 
-interface Props extends StateProps, DispatchProps {}
+	const onRightPanelSelect = () => {
+		if (!viewStore.isRightPanelClosed) {
+			searchStore.rightPanelEnabled = !searchStore.rightPanelEnabled;
+		}
+	};
 
-function SearchPanelControlBase(props: Props) {
-    const {
-        leftPanelEnabled,
-        rightPanelEnabled,
-        onRightPanelEnable,
-        onLeftPanelEnable,
-        leftPanel,
-        rightPanel,
-        isLeftPanelClosed,
-        isRightPanelClosed
-    } = props;
-
-    const onLeftPanelSelect = () => {
-        if (!isLeftPanelClosed) {
-            onLeftPanelEnable(!leftPanelEnabled);
-        }
-    };
-
-    const onRightPanelSelect = () => {
-        if (!isRightPanelClosed) {
-            onRightPanelEnable(!rightPanelEnabled);
-        }
-    };
-
-    return (
-        <div className="search-panel-controls">
-            <Checkbox
-                className='search-panel-controls__checkbox'
-                id='left-panel'
-                checked={leftPanelEnabled}
-                label={leftPanel.toLowerCase().replace('_', ' ')}
-                onChange={onLeftPanelSelect}
-                isDisabled={isLeftPanelClosed}/>
-            <Checkbox
-                className='search-panel-controls__checkbox'
-                id='right-panel'
-                checked={rightPanelEnabled}
-                label={rightPanel.toLowerCase().replace('_', ' ')}
-                onChange={onRightPanelSelect}
-                isDisabled={isRightPanelClosed}/>
-        </div>
-    )
-}
-
-const SearchPanelControl = connect(
-    (state: AppState): StateProps => ({
-        leftPanelEnabled: state.selected.search.leftPanelEnabled,
-        leftPanel: state.view.leftPanel,
-        rightPanelEnabled: state.selected.search.rightPanelEnabled,
-        rightPanel: state.view.rightPanel,
-        isLeftPanelClosed: getIsLeftPanelClosed(state),
-        isRightPanelClosed: getIsRightPanelClosed(state)
-    }),
-    (dispatch): DispatchProps => ({
-        onLeftPanelEnable: isEnabled => dispatch(setSearchLeftPanelEnabled(isEnabled)),
-        onRightPanelEnable: isEnabled => dispatch(setSearchRightPanelEnabled(isEnabled))
-    })
-)(SearchPanelControlBase);
+	return (
+		<div className="search-panel-controls">
+			<Checkbox
+				className='search-panel-controls__checkbox'
+				id='left-panel'
+				checked={searchStore.leftPanelEnabled}
+				label={viewStore.leftPanel.toLowerCase().replace('_', ' ')}
+				onChange={onLeftPanelSelect}
+				isDisabled={viewStore.isLeftPanelClosed}/>
+			<Checkbox
+				className='search-panel-controls__checkbox'
+				id='right-panel'
+				checked={searchStore.rightPanelEnabled}
+				label={viewStore.rightPanel.toLowerCase().replace('_', ' ')}
+				onChange={onRightPanelSelect}
+				isDisabled={viewStore.isRightPanelClosed}/>
+		</div>
+	);
+});
 
 export default SearchPanelControl;

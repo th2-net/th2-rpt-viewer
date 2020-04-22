@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,29 +12,27 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import SelectedState from '../models/SelectedState';
 import Action from '../../models/Action';
 import { StatusType } from '../../models/Status';
-import initialSearchState from "./initialSearchState";
 
 export const initialSelectedState: SelectedState = {
-    testCase: null,
-    actionsId: [],
-    scrolledActionId: null,
-    messagesId: [],
-    scrolledMessageId: null,
-    scrolledLogIndex: null,
-    verificationId: null,
-    selectedActionStatus: StatusType.NA,
-    checkpointMessageId: null,
-    checkpointActionId: null,
-    rejectedMessageId: null,
-    actionsMap: new Map<number, Action>(),
-    activeActionId: null,
-    selectedTestCaseId: null,
-    search: initialSearchState,
-    actionsScrollHintsIds: [],
-    messagesScrollHintsIds: [],
+	testCase: null,
+	actionsId: [],
+	scrolledActionId: null,
+	messagesId: [],
+	scrolledMessageId: null,
+	scrolledLogIndex: null,
+	verificationId: null,
+	selectedActionStatus: StatusType.NA,
+	checkpointMessageId: null,
+	checkpointActionId: null,
+	rejectedMessageId: null,
+	actionsMap: new Map<number, Action>(),
+	activeActionId: null,
+	selectedTestCaseId: null,
+	actionsScrollHintsIds: [],
+	messagesScrollHintsIds: [],
 };

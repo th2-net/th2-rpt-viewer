@@ -1,5 +1,5 @@
-/******************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+/** ****************************************************************************
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,34 +12,24 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
-import Status from '../models/Status';
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../hooks/useStores';
 import { ExceptionChain } from './ExceptionChain';
 import '../styles/statusPanel.scss';
-import { connect } from 'react-redux';
-import AppState from '../state/models/AppState';
 
-interface StatusPanelProps {
-    status: Status;
-}
+export const StatusPanel = observer(() => {
+	const { selectedStore } = useStores();
+	const status = selectedStore.testCase?.status;
+	if (!status || status.cause == null) {
+		return null;
+	}
 
-function StatusPanelBase({ status }: StatusPanelProps) {
-
-    if (status.cause == null) {
-        return null;
-    }
-
-    return (
-        <div className="status-container">
-            <ExceptionChain exception={status.cause}/>
-        </div>
-    );
-}
-
-export const StatusPanel = connect(
-    (state: AppState) => ({
-        status: state.selected.testCase.status
-    })
-)(StatusPanelBase);
+	return (
+		<div className="status-container">
+			<ExceptionChain exception={status.cause}/>
+		</div>
+	);
+});

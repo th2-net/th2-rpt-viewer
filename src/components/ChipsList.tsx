@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
 import Action from '../models/Action';
@@ -22,31 +22,31 @@ import { stopPropagationHandler } from '../helpers/react';
 
 interface Props {
     actions: Action[];
-    selectedStatus?: StatusType; 
+    selectedStatus?: StatusType | null;
     onStatusSelect: (status: StatusType) => void;
 }
 
 export default function ChipsList({ actions, onStatusSelect, selectedStatus }: Props) {
-    return (
-        <React.Fragment>
-            {
-                statusValues.map((status, index) => {
-                    const count = actions.filter(action => action.status.status === status).length;
+	return (
+		<React.Fragment>
+			{
+				statusValues.map((status, index) => {
+					const count = actions.filter(action => action.status.status === status).length;
 
-                    if (count < 1) {
-                        return null;
-                    }
+					if (count < 1) {
+						return null;
+					}
 
-                    return (
-                        <Chip
-                            key={index}
-                            status={status}
-                            text={count.toString()}
-                            isSelected={status === selectedStatus}
-                            onClick={stopPropagationHandler(onStatusSelect, status)}/>
-                    )
-                })
-            }
-        </React.Fragment>
-    )
+					return (
+						<Chip
+							key={index}
+							status={status}
+							text={count.toString()}
+							isSelected={status === selectedStatus}
+							onClick={stopPropagationHandler(onStatusSelect, status)}/>
+					);
+				})
+			}
+		</React.Fragment>
+	);
 }

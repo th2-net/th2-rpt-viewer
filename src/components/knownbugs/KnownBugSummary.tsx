@@ -17,8 +17,8 @@
  */
 
 import * as React from 'react';
-import KnownBug from '../../models/KnownBug'
-import KnownBugCategory from '../../models/KnownBugCategory'
+import KnownBug from '../../models/KnownBug';
+import KnownBugCategory from '../../models/KnownBugCategory';
 import { ActionNodeType } from '../../models/Action';
 import { KnownBugCategoryComponent } from './KnownBugCategoryComponent';
 import '../../styles/knownbug.scss';
@@ -27,18 +27,18 @@ interface Props {
     data: (KnownBug | KnownBugCategory)[];
 }
 
-export function KnownBugSummary({ data }: Props)  {
-    const category: KnownBugCategory = { 
-        actionNodeType: ActionNodeType.KNOWN_BUG_CATEGORY, 
-        name: null, 
-        subNodes: data
-    };
+export function KnownBugSummary({ data }: Props) {
+	const category: KnownBugCategory = {
+		actionNodeType: ActionNodeType.KNOWN_BUG_CATEGORY,
+		name: null,
+		subNodes: data,
+	};
 
-    return (
-        <div className="known-bugs">
-            <KnownBugCategoryComponent 
-                isRoot={true} 
-                category={category} />
-        </div>
-    )
+	return (
+		<div className="known-bugs">
+			<KnownBugCategoryComponent
+				isRoot={true}
+				category={category} />
+		</div>
+	);
 }

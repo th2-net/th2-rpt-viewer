@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
 
@@ -25,32 +25,28 @@ interface State {
 }
 
 export default class ErrorBoundary extends React.Component<Props, State> {
-    constructor(props) {
-        super(props);
+	state = {
+		hasError: false,
+	};
 
-        this.state = {
-            hasError: false
-        }
-    }
+	static getDerivedStateFromError(): State {
+		return {
+			hasError: true,
+		};
+	}
 
-    static getDerivedStateFromError(): State {
-        return {
-            hasError: true
-        }
-    }
+	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+		console.error(`${error.stack}, component stack: ${errorInfo.componentStack}`);
+	}
 
-    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-        console.error(`${error.stack}, component stack: ${errorInfo.componentStack}`);
-    }
+	render() {
+		const errorMessge = this.props.errorMessage || 'Something went wrong...';
+		const { hasError } = this.state;
 
-    render() {
-        const errorMessge = this.props.errorMessage || 'Something went wrong...',
-            { hasError } = this.state;
+		if (hasError) {
+			return errorMessge;
+		}
 
-        if (hasError) {
-            return errorMessge;
-        }
-
-        return this.props.children;
-    }
+		return this.props.children;
+	}
 }

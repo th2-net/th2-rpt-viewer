@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
 
@@ -25,7 +25,7 @@ export interface StateSaverContext {
     saveState: (stateId: string, nextState: any) => any;
 }
 
-export const { Provider, Consumer } = React.createContext({});
+export const { Provider, Consumer } = React.createContext({} as StateSaverContext);
 
 export interface StateSaverProps<S> extends RecoverableElementProps {
     children: (state: S, stateHandler: (nextState: S) => any) => React.ReactNode;
@@ -34,31 +34,31 @@ export interface StateSaverProps<S> extends RecoverableElementProps {
 
 /**
  * This wrapper saves component's state after unmount and recover it by key.
- * @param props renderChild - child render function that recieves recovered state, stateKey - key for recovering state from store 
+ * @param props renderChild - child render function that recieves recovered state,
+ * stateKey - key for recovering state from store
  */
 const StateSaver = <S extends {}>({ children, stateKey, getDefaultState }: StateSaverProps<S>) => (
-    <Consumer>
-        {
-            ({ states, saveState }: StateSaverContext) => {
-                const saveNextState = nextState => saveState(stateKey, nextState);
+	<Consumer>
+		{
+			({ states, saveState }: StateSaverContext) => {
+				const saveNextState = (nextState: S) => saveState(stateKey, nextState);
 
-                if (states.has(stateKey) || !getDefaultState) {
-                    return children(states.get(stateKey), saveNextState)
-                } else {
-                    const defaultState = getDefaultState();
+				if (states.has(stateKey) || !getDefaultState) {
+					return children(states.get(stateKey), saveNextState);
+				}
+				const defaultState = getDefaultState();
 
-                    return (
-                        <DefaultStateSaver
-                            saveState={saveNextState}
-                            defaultState={defaultState}>
-                            {children(defaultState, saveNextState)}
-                        </DefaultStateSaver>
-                    )
-                }
-            }
-        }
-    </Consumer>
-)
+				return (
+					<DefaultStateSaver
+						saveState={saveNextState}
+						defaultState={defaultState}>
+						{children(defaultState, saveNextState)}
+					</DefaultStateSaver>
+				);
+			}
+		}
+	</Consumer>
+);
 
 interface DefaultStateSaverProps<S> {
     saveState: (nextState: S) => any;
@@ -67,11 +67,11 @@ interface DefaultStateSaverProps<S> {
 }
 
 const DefaultStateSaver = <S extends {}>({ saveState, defaultState, children }: DefaultStateSaverProps<S>) => {
-    React.useEffect(() => {
-        saveState(defaultState);
-    }, []);
+	React.useEffect(() => {
+		saveState(defaultState);
+	}, []);
 
-    return <React.Fragment>{children}</React.Fragment>;
-}
+	return <React.Fragment>{children}</React.Fragment>;
+};
 
 export default StateSaver;

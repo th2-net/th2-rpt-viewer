@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,32 +12,26 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import React from 'react';
-import { connect } from 'react-redux';
-import AppState from '../../state/models/AppState';
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../../hooks/useStores';
 import MessageCardSkeleton from './MessageCardSkeleton';
 import { isAdmin, isCheckpointMessage } from '../../helpers/message';
 import { AdminMessageWrapper } from './AdminMessageWrapper';
 import CheckpointMessage from './CheckpointMessage';
 import MessageCard from './MessageCard';
-import Message from '../../models/Message';
-import { getCurrentMessages } from '../../selectors/messages';
 
-interface OwnProps {
+interface Props {
 	index: number;
 }
 
-interface MappedProps {
-	message: Message | null;
-}
-
-export interface SkeletonedMessageCardListItemProps extends OwnProps, MappedProps { }
-
-function SkeletonedMessageCardListItem({ message }: SkeletonedMessageCardListItemProps ){
+const SkeletonedMessageCardListItem = observer(({ index }: Props) => {
+	const { selectedStore } = useStores();
+	const message = selectedStore.messages[index];
 	if (!message) {
-		return <MessageCardSkeleton />
+		return <MessageCardSkeleton />;
 	}
 
 	if (isCheckpointMessage(message)) {
@@ -49,7 +43,7 @@ function SkeletonedMessageCardListItem({ message }: SkeletonedMessageCardListIte
 			<AdminMessageWrapper
 				key={message.id}
 				message={message}/>
-		)
+		);
 	}
 
 	return (
@@ -57,10 +51,6 @@ function SkeletonedMessageCardListItem({ message }: SkeletonedMessageCardListIte
 			key={message.id}
 			message={message}/>
 	);
-}
+});
 
-export default connect(
-	(state: AppState, ownProps: OwnProps): MappedProps => ({
-		message: getCurrentMessages(state)[ownProps.index] ?? null
-	})
-)(SkeletonedMessageCardListItem);
+export default SkeletonedMessageCardListItem;

@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +12,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import "setimmediate";
+/* eslint-disable no-new-wrappers */
+// eslint-disable-next-line import/no-unassigned-import
+import 'setimmediate';
 
 /**
  * Returns next item after current index in array if it exists, or retruns first item if it doesn't exist.
@@ -22,11 +24,11 @@ import "setimmediate";
  * @param item Current item
  */
 export function nextCyclicItemByIndex<T>(array: Array<T>, index: number): T {
-    if (index < 0) {
-        return array[0];
-    }
+	if (index < 0) {
+		return array[0];
+	}
 
-    return array[(index + 1) % array.length];
+	return array[(index + 1) % array.length];
 }
 
 /**
@@ -35,11 +37,11 @@ export function nextCyclicItemByIndex<T>(array: Array<T>, index: number): T {
  * @param item Current item
  */
 export function prevCyclicItemByIndex<T>(array: Array<T>, index: number): T {
-    if (index < 0) {
-        return array[array.length - 1];
-    }
+	if (index < 0) {
+		return array[array.length - 1];
+	}
 
-    return array[(array.length + index - 1) % array.length];
+	return array[(array.length + index - 1) % array.length];
 }
 
 /**
@@ -47,14 +49,14 @@ export function prevCyclicItemByIndex<T>(array: Array<T>, index: number): T {
  * @param array Target array
  * @param item Current item
  */
-export function nextCyclicItem<T>(array: Array<T>, item: T): T {
-    const currentIndex = array.indexOf(item);
+export function nextCyclicItem<T>(array: Array<T>, item: T): T | null {
+	const currentIndex = array.indexOf(item);
 
-    if (currentIndex == -1) {
-        return null;
-    }
+	if (currentIndex === -1) {
+		return null;
+	}
 
-    return nextCyclicItemByIndex(array, currentIndex);
+	return nextCyclicItemByIndex(array, currentIndex);
 }
 
 /**
@@ -62,14 +64,14 @@ export function nextCyclicItem<T>(array: Array<T>, item: T): T {
  * @param array Target array
  * @param item Current item
  */
-export function prevCyclicItem<T>(array: Array<T>, item: T): T {
-    const currentIndex = array.indexOf(item);
+export function prevCyclicItem<T>(array: Array<T>, item: T): T | null {
+	const currentIndex = array.indexOf(item);
 
-    if (currentIndex == -1) {
-        return null;
-    }
+	if (currentIndex === -1) {
+		return null;
+	}
 
-    return prevCyclicItemByIndex(array, currentIndex);
+	return prevCyclicItemByIndex(array, currentIndex);
 }
 
 /**
@@ -77,10 +79,10 @@ export function prevCyclicItem<T>(array: Array<T>, item: T): T {
  * @param array Target array
  * @param item Current item
  */
-export function findNextCyclicItem<T>(array: Array<T>, predicateFn: (item: T) => boolean): T {
-    const item = array.find(predicateFn);
-    
-    return nextCyclicItem(array, item);
+export function findNextCyclicItem<T>(array: Array<T>, predicateFn: (item: T) => boolean): T | null {
+	const item = array.find(predicateFn)!;
+
+	return nextCyclicItem(array, item);
 }
 
 /**
@@ -88,10 +90,10 @@ export function findNextCyclicItem<T>(array: Array<T>, predicateFn: (item: T) =>
  * @param array Target array
  * @param item Current item
  */
-export function findPrevCyclicItem<T>(array: Array<T>, predicateFn: (item: T) => boolean): T {
-    const item = array.find(predicateFn);
+export function findPrevCyclicItem<T>(array: Array<T>, predicateFn: (item: T) => boolean): T | null {
+	const item = array.find(predicateFn)!;
 
-    return prevCyclicItem(array, item);
+	return prevCyclicItem(array, item);
 }
 
 /**
@@ -99,60 +101,61 @@ export function findPrevCyclicItem<T>(array: Array<T>, predicateFn: (item: T) =>
  * @param array selected items ids
  * @param prevScrolledId previous scrolled item id
  */
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function getScrolledId(array: Array<number>, prevScrolledId: number): Number {
-    if (array.includes(prevScrolledId)) {
-        return new Number(nextCyclicItem(array, prevScrolledId));
-    }
+	if (array.includes(prevScrolledId)) {
+		return new Number(nextCyclicItem(array, prevScrolledId));
+	}
 
-    return new Number(array[0]);
+	return new Number(array[0]);
 }
 
 export function replaceByIndex<T>(arr: T[], targetIndex: number, targetItem: T): T[] {
-    return arr.map((item, index) => index == targetIndex ? targetItem : item);
+	return arr.map((item, index) => (index === targetIndex ? targetItem : item));
 }
 
 export function removeByIndex<T>(arr: T[], targetIndex: number): T[] {
-    return arr.filter((_, index) => index !== targetIndex);
+	return arr.filter((_, index) => index !== targetIndex);
 }
 
 export function intersection<T>(arr1: T[], arr2: T[]): T[] {
-    return arr1.filter(item => arr2.includes(item));
+	return arr1.filter(item => arr2.includes(item));
 }
 
 export function complement<T>(arr1: T[], arr2: T[]): T[] {
-    return arr1.filter(item => !arr2.includes(item));
+	return arr1.filter(item => !arr2.includes(item));
 }
 
 export function sliceToChunks<T>(arr: T[], chunkSize: number): T[][] {
-    const chunks = [];
+	const chunks = [];
 
-    for (let i = 0; i < arr.length; i += chunkSize) {
-        chunks.push(arr.slice(i, i + chunkSize));
-    }
+	for (let i = 0; i < arr.length; i += chunkSize) {
+		chunks.push(arr.slice(i, i + chunkSize));
+	}
 
-    return chunks;
+	return chunks;
 }
 
 export function areArraysEqual<T extends unknown[]>(arr1: T, arr2: T): boolean {
-    if (arr1 === arr2) {
-        return true;
-    }
+	if (arr1 === arr2) {
+		return true;
+	}
 
-    if (!arr1 || !arr2) {
-        return false;
-    }
+	if (!arr1 || !arr2) {
+		return false;
+	}
 
-    if (arr1.length !== arr2.length) {
-        return false;
-    }
+	if (arr1.length !== arr2.length) {
+		return false;
+	}
 
-    for (let i = 0; i < arr1.length; i++) {
-        if (arr1[i] !== arr2[i]) {
-            return false;
-        }
-    }
+	for (let i = 0; i < arr1.length; i++) {
+		if (arr1[i] !== arr2[i]) {
+			return false;
+		}
+	}
 
-    return true;
+	return true;
 }
 
 /**
@@ -162,22 +165,26 @@ export function areArraysEqual<T extends unknown[]>(arr1: T, arr2: T): boolean {
  * @param fn mapper function
  * @param chunkSize size of chunk
  */
-export async function asyncFlatMap<T, R extends {}>(arr: T[], fn: (item: T, index?: number) => R[] | R, chunkSize: number = 25): Promise<R[]> {
-    const results: R[] = [],
-        chunks = sliceToChunks(arr, chunkSize);
+export async function asyncFlatMap<T, R extends {}>(
+	arr: T[], fn: (item: T, index?: number) => R[] | R, chunkSize = 25,
+): Promise<R[]> {
+	const results: R[] = [];
+	const chunks = sliceToChunks(arr, chunkSize);
 
-    for (const chunk of chunks) {
-        const res = await asyncChunkMapper(chunk, fn);
-        results.push(...res.flat());
-    }
+	// eslint-disable-next-line no-restricted-syntax
+	for (const chunk of chunks) {
+		// eslint-disable-next-line no-await-in-loop
+		const res = await asyncChunkMapper(chunk, fn);
+		results.push(...res.flat());
+	}
 
-    return results;
+	return results;
 }
 
 function asyncChunkMapper<T, R>(chunk: T[], fn: (item: T, index?: number) => R[] | R) {
-    return new Promise<(R[] | R)[]>(resolve => {
-        window.setImmediate(() => {
-            resolve(chunk.map(fn));
-        })
-    });
+	return new Promise<(R[] | R)[]>(resolve => {
+		window.setImmediate(() => {
+			resolve(chunk.map(fn));
+		});
+	});
 }

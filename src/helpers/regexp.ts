@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +12,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
- /**
+/**
   * Returns regexp, that will ignore all special symbols from target string
   * @param str target string
   * @param flags RegExp flags
   */
 export function createCaseInsensitiveRegexp(str: string): RegExp {
-    const escapedStr = escapeSpecialSymbols(str);
+	const escapedStr = escapeSpecialSymbols(str);
 
-    return new RegExp(escapedStr, 'gi');
+	return new RegExp(escapedStr, 'gi');
 }
 
 /**
@@ -30,16 +30,16 @@ export function createCaseInsensitiveRegexp(str: string): RegExp {
  * @param str target string
  */
 export function escapeSpecialSymbols(str: string): string {
-    return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+	return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
 
 /**
  * Tagged template function for creating RegExp
- * @param regExp 
- * @param options 
+ * @param regExp
+ * @param options
  */
 export function createRegExp(regExp: TemplateStringsArray, ...options: string[]): RegExp {
-    return new RegExp(regExp.raw[0].replace(/\s/gm, ""), options.join(''))
+	return new RegExp(regExp.raw[0].replace(/\s/gm, ''), options.join(''));
 }
 
 /**
@@ -48,5 +48,5 @@ export function createRegExp(regExp: TemplateStringsArray, ...options: string[])
  * @param flags RegExp flags (by default 'g' and 'i' flags are included)
  */
 export function toRegExpArray(values: string[], flags = 'gi'): RegExp[] {
-    return values.map(val => new RegExp(escapeSpecialSymbols(val), flags));
+	return values.map(val => new RegExp(escapeSpecialSymbols(val), flags));
 }

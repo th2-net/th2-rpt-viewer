@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,27 +12,27 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 export default interface Tree<T> {
     readonly value: T;
-    readonly nodes?: Array<Tree<T>>;
+    readonly nodes: Array<Tree<T>>;
 }
 
 export const createNode = <T>(value: T, nodes: Array<Tree<T>> = []): Tree<T> => ({
-    value: value,
-    nodes: nodes
+	value,
+	nodes,
 });
 
 export function mapTree<IN, OUT>(fn: (node: IN) => OUT, tree: Tree<IN>): Tree<OUT> {
-    const newValue = fn(tree.value);
+	const newValue = fn(tree.value);
 
-    if (tree.nodes.length === 0) {
-        return createNode(newValue);
-    }
+	if (!tree.nodes || tree.nodes.length === 0) {
+		return createNode(newValue);
+	}
 
-    return createNode(
-        newValue,
-        tree.nodes.map(node => mapTree(fn, node))
-    );
+	return createNode(
+		newValue,
+		tree.nodes.map(node => mapTree(fn, node)),
+	);
 }

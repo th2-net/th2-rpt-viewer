@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,26 +12,28 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
 import { StatusType } from '../../models/Status';
 import range from '../../helpers/range';
 import { createStyleSelector } from '../../helpers/styleCreators';
 
-interface HeatmapProps  {
+interface HeatmapProps {
     elementsCount: number;
     selectedElements: Map<number, StatusType>;
 }
 
 const Heatmap = ({ elementsCount, selectedElements }: HeatmapProps) => (
-    <div className="heatmap-scrollbar">
-        {
-            range(0, elementsCount - 1).map(index => (
-                <div className={createStyleSelector("heatmap-scrollbar-item", selectedElements.get(index))} key={index} />
-            ))
-        }
-    </div>
-)
+	<div className="heatmap-scrollbar">
+		{
+			range(0, elementsCount - 1).map(index => (
+				<div className={createStyleSelector(
+					'heatmap-scrollbar-item', selectedElements.get(index) || null,
+				)} key={index} />
+			))
+		}
+	</div>
+);
 
 export default Heatmap;

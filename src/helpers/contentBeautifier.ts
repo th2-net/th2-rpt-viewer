@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,99 +12,96 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-const TAB = ' '.repeat(4),
-    NEW_LINE = '\n';
+const TAB = ' '.repeat(4);
+const NEW_LINE = '\n';
 
-const searchRegexp = /[{}\[\];]/g;
+const searchRegexp = /[{}[\];]/g;
 
 /**
  * This function 'beautifies' human-readable content - it adds line breaks and tab indents to content
  * @param origin human-readable content
  */
 export default function beautify(origin: string): string {
+	let tabLevel = 0;
+	let result = '';
 
-    let tabLevel = 0,
-        result = '';
+	while (origin.length > 0) {
+		const index = origin.search(searchRegexp);
+		const targetSymbol = origin.charAt(index);
+		const appendingFragment = origin.substring(0, index).trimLeft();
 
-    while (origin.length > 0) {
-        const index = origin.search(searchRegexp),
-            targetSymbol = origin.charAt(index),
-            appendingFragment = origin.substring(0, index).trimLeft();
+		// nothing found
+		if (index === -1) {
+			result += origin.trimLeft();
+			break;
+		}
 
-        // nothing found
-        if (index == -1) {
-            result += origin.trimLeft();
-            break;
-        }
+		const lastResultChar = result[result.length - 1];
+		const nextChar = origin.substring(index + 1)[0];
 
-        origin = origin.substring(index + 1);
+		switch (targetSymbol) {
+		case ';': {
+			// we don't need indent with tabs at the end of array / object
+			if ((lastResultChar === '}' || lastResultChar === ']') && appendingFragment.length === 0) {
+				result = result + targetSymbol + NEW_LINE;
+			} else {
+				result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol + NEW_LINE;
+			}
 
-        const lastResultChar = result[result.length - 1],
-            nextChar = origin[0];
+			break;
+		}
 
-        switch(targetSymbol) {
+		case '{': {
+			// we don't need to add tab indent for for first object in array
+			if (lastResultChar === '[' && appendingFragment.length === 0) {
+				result = result + targetSymbol + NEW_LINE;
+			} else {
+				result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol + NEW_LINE;
+			}
 
-            case ';': {
-                // we don't need indent with tabs at the end of array / object
-                if ((lastResultChar === '}' || lastResultChar === ']') && appendingFragment.length === 0) {
-                    result = result + targetSymbol + NEW_LINE;
-                } else {
-                    result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol + NEW_LINE;
-                }
+			tabLevel++;
 
-                break;
-            }
+			break;
+		}
 
-            case '{': {
-                // we don't need to add tab indent for for first object in array
-                if (lastResultChar === '[' && appendingFragment.length === 0) {
-                    result = result + targetSymbol + NEW_LINE;
-                } else {
-                    result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol + NEW_LINE;
-                }
+		case '}': {
+			result = result + TAB.repeat(tabLevel) + appendingFragment + NEW_LINE
+				+ TAB.repeat(tabLevel - 1) + targetSymbol;
+			tabLevel--;
+			break;
+		}
 
-                tabLevel++;
+		case '[': {
+			if (nextChar === '{') {
+				result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol;
+			} else {
+				result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol + NEW_LINE;
+				tabLevel++;
+			}
 
-                break;
-            }
+			break;
+		}
 
-            case '}': {
-                result = result + TAB.repeat(tabLevel) + appendingFragment + NEW_LINE + TAB.repeat(tabLevel - 1) + targetSymbol;
-                tabLevel--;
-                break;
-            }
+		case ']': {
+			// we don't need tab indent and line breaks at the end of array
+			if (lastResultChar === '}') {
+				result = result + appendingFragment + targetSymbol;
+			} else {
+				result = result + TAB.repeat(tabLevel) + appendingFragment + NEW_LINE
+					+ TAB.repeat(tabLevel - 1) + targetSymbol;
+				tabLevel--;
+			}
 
-            case '[': {
-                if (nextChar === '{') {
-                    result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol;
-                } else {
-                    result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol + NEW_LINE;
-                    tabLevel++;
-                }
+			break;
+		}
 
-                break;
-            }
+		default: {
+			result = result + appendingFragment + targetSymbol;
+		}
+		}
+	}
 
-            case ']': {
-                // we don't need tab indent and line breaks at the end of array
-                if (lastResultChar === '}') {
-                    result = result + appendingFragment + targetSymbol;
-                } else {
-                    result = result + TAB.repeat(tabLevel) + appendingFragment + NEW_LINE + TAB.repeat(tabLevel - 1) + targetSymbol;
-                    tabLevel--;
-                }
-
-                break;
-            }
-
-            default: {
-                result = result + appendingFragment + targetSymbol;
-            }
-        }
-
-    }
-
-    return result;
-} 
+	return result;
+}

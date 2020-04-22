@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +12,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import { ActionNodeType, ActionNode } from "./Action";
+import { ActionNodeType, ActionNode } from './Action';
 
 export default interface UserTable {
     actionNodeType: ActionNodeType.TABLE;
     name?: string;
-    content: Object[];
+    content: Record<string, any>[];
 }
 
 export function isUserTable(actionNode: ActionNode): actionNode is UserTable {
-    return actionNode.actionNodeType === ActionNodeType.TABLE;
+	return actionNode.actionNodeType === ActionNodeType.TABLE;
 }

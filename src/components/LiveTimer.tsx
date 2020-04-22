@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,34 +12,33 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
 import * as React from 'react';
-import { getSecondsPeriod } from "../helpers/date";
+import { getSecondsPeriod } from '../helpers/date';
 
 interface Props {
     startTime: string;
 }
 
 function LiveTimer({ startTime }: Props) {
+	const [currentTime, setCurrentTime] = React.useState(new Date());
 
-    const [currentTime, setCurrentTime] = React.useState(new Date());
+	React.useEffect(() => {
+		const intervalId = setInterval(() => {
+			setCurrentTime(new Date());
+		}, 1000);
 
-    React.useEffect(() => {
-        const intervalId = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
+		return () => {
+			clearInterval(intervalId);
+		};
+	}, []);
 
-        return () => {
-            clearInterval(intervalId);
-        }
-    }, []);
-
-    return (
-        <React.Fragment>
-            {getSecondsPeriod(startTime, currentTime, false)}
-        </React.Fragment>
-    )
+	return (
+		<React.Fragment>
+			{getSecondsPeriod(startTime, currentTime, false)}
+		</React.Fragment>
+	);
 }
 
 export default LiveTimer;

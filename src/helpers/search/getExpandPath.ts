@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,38 +12,39 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import SearchResult from "./SearchResult";
+import SearchResult from './SearchResult';
 
 export function getParamsExpandPath(searchResults: SearchResult, index: number, actionId: number): number[] {
-    const [currentKey] = searchResults.getByIndex(index);
+	const [currentKey] = searchResults.getByIndex(index);
 
-    if (!currentKey) {
-        return [];
-    }
+	if (!currentKey) {
+		return [];
+	}
 
-    const [resultType, id, field, ...path] = currentKey.split('-');
+	const [resultType, id, field, ...path] = currentKey.split('-');
 
-    if (resultType === 'action' && +id === actionId && field === 'parameters' && path != null ) {
-        return path.map(Number);
-    } else {
-        return [];
-    }
+	if (resultType === 'action' && +id === actionId && field === 'parameters' && path != null) {
+		return path.map(Number);
+	}
+	return [];
 }
 
-export function getVerificationExpandPath(searchResults: SearchResult, index: number, actionId: number, msgId: number): number[] {
-    const [currentKey] = searchResults.getByIndex(index);
+export function getVerificationExpandPath(
+	searchResults: SearchResult, index: number, actionId: number, msgId: number,
+): number[] {
+	const [currentKey] = searchResults.getByIndex(index);
 
-    if (!currentKey) {
-        return [];
-    }
+	if (!currentKey) {
+		return [];
+	}
 
-    const [resultType, resultId, actionType, resultMsgId, ...path] = currentKey.split('-');
+	const [resultType, resultId, actionType, resultMsgId, ...path] = currentKey.split('-');
 
-    if (resultType === 'action' && +resultId === actionId && actionType === 'verification' && +resultMsgId === msgId && path != null) {
-        return path.map(Number);
-    } else {
-        return [];
-    }
+	if (resultType === 'action' && +resultId === actionId
+		&& actionType === 'verification' && +resultMsgId === msgId && path != null) {
+		return path.map(Number);
+	}
+	return [];
 }

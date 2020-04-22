@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,52 +12,52 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-import { areArraysEqual } from "../../helpers/array";
+import { areArraysEqual } from '../../helpers/array';
 
 describe('[Helpers] arrays', () => {
-    test('Same array', () => {
-        const arr = [1, 2, 3];
+	test('Same array', () => {
+		const arr = [1, 2, 3];
 
-        const result = areArraysEqual(arr, arr);
+		const result = areArraysEqual(arr, arr);
 
-        expect(result).toBe(true);
-    })
-    
-    test('Equal arrays', () => {
-        const arr1 = [1, 2, 3],
-            arr2 = [1, 2, 3];
+		expect(result).toBe(true);
+	});
 
-        const result = areArraysEqual(arr1, arr2);
+	test('Equal arrays', () => {
+		const arr1 = [1, 2, 3];
+		const arr2 = [1, 2, 3];
 
-        expect(result).toBe(true);
-    })
+		const result = areArraysEqual(arr1, arr2);
 
-    test('Different arrays', () => {
-        const arr1 = [1, 2, 3],
-            arr2 = [4, 5, 6];
+		expect(result).toBe(true);
+	});
 
-        const result = areArraysEqual(arr1, arr2);
+	test('Different arrays', () => {
+		const arr1 = [1, 2, 3];
+		const arr2 = [4, 5, 6];
 
-        expect(result).toBe(false);
-    })
+		const result = areArraysEqual(arr1, arr2);
 
-    test('Different length arrays', () => {
-        const arr1 = [1, 2, 3],
-            arr2 = ['test', 2];
+		expect(result).toBe(false);
+	});
 
-        const result = areArraysEqual(arr1, arr2);
+	test('Different length arrays', () => {
+		const arr1 = [1, 2, 3];
+		const arr2 = ['test', 2];
 
-        expect(result).toBe(false);
-    })
-    
-    test('Empty arrays', () => {
-        const empty1 = [],
-            empty2 = [];
+		const result = areArraysEqual(arr1, arr2);
 
-        const result = areArraysEqual(empty1, empty2);
+		expect(result).toBe(false);
+	});
 
-        expect(result).toBe(true);
-    })
-})
+	test('Empty arrays', () => {
+		const empty1: Array<number | string> = [];
+		const empty2: Array<number | string> = [];
+
+		const result = areArraysEqual(empty1, empty2);
+
+		expect(result).toBe(true);
+	});
+});
