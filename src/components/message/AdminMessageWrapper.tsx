@@ -41,6 +41,7 @@ interface RecoveredProps {
 interface MessageCardOuterProps extends MessageCardDispatchProps,
     MessageCardStateProps,
     MessageCardOwnProps {
+		message: any;
 }
 
 interface WrapperProps extends MessageCardOuterProps, RecoveredProps {
@@ -162,7 +163,7 @@ const RecoverableAdminMessageWrapper = (props: MessageCardOuterProps) => (
 );
 
 
-export const AdminMessageWrapper = observer(({ message }: MessageCardOwnProps) => {
+export const AdminMessageWrapper = observer(({ message }: { message: any}) => {
 	const { viewStore, selectedStore, mlStore } = useStores();
 
 	return <RecoverableAdminMessageWrapper

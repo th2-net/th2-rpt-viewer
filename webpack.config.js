@@ -30,6 +30,15 @@ module.exports = {
         compress: true,
         port: 9001,
         host: "0.0.0.0",
+        proxy: {
+            '/api': {
+                target: 'http://kos215:8000/',
+                pathRewrite: {
+                    '^/api': '',
+                },
+                changeOrigin: true
+            }
+        }
     },
     output: {
         path: path.resolve(__dirname, './build/out/'),

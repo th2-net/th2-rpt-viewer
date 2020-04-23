@@ -18,6 +18,7 @@ import { action, observable, computed } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import EventAction from '../models/EventAction';
 import { nextCyclicItem, prevCyclicItem } from '../helpers/array';
+import EventMessage from '../models/EventMessage';
 
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable indent */
@@ -36,10 +37,15 @@ export default class FilterStore {
 
 	@observable selectedRootEvent: EventAction | null = null;
 
+	@observable messages: EventMessage[] = [];
+
+	@observable isLoadingMessages = false;
+
     @action
     getEvents = async () => {
 		try {
 			const events = await this.api.events.getAll();
+			events.sort((a, b) => b.startTimestamp!.epochSecond - a.startTimestamp!.epochSecond);
 			this.eventsList = [[null, events]];
 		} catch (error) {
 			console.error('Error while loading events', error);
@@ -49,14 +55,16 @@ export default class FilterStore {
 	@action
 	getEventChildren = async (event: EventAction) => {
 		try {
-			this.selectedEventIsLoading = true;
+			if (event.parentEventId !== null) {
+				this.selectedEventIsLoading = true;
+			}
 			const children = await this.api.events.getSubNodes(event.eventId);
 			if (children.length > 0) {
 				if (event.parentEventId === null) {
 					this.eventsList = [this.eventsList[0], [event.eventId, children]];
 				} else {
 					const parentIndex = this.eventsList.findIndex(([parentId]) => parentId === event.parentEventId);
-					this.eventsList = this.eventsList.slice(0, parentIndex).concat([event.eventId, children]);
+					this.eventsList = [...this.eventsList.slice(0, parentIndex + 1), [event.eventId, children]];
 				}
 				this.selectedEventIsLoading = false;
 				return;
@@ -76,16 +84,17 @@ export default class FilterStore {
 		if (event.parentEventId === null) {
 			if (this.selectedRootEvent && this.selectedRootEvent.eventId === event.eventId) return;
 			this.selectedEvent = null;
-			this.selectedEventIsLoading = true;
+			this.eventsList = [this.eventsList[0], [event.eventId, []]];
 			this.selectedRootEvent = event;
 			this.getEventChildren(event);
-
+			this.getMessages(event);
 			return;
 		}
 		this.selectedEventIsLoading = true;
 		this.selectedEvent = null;
 
 		this.getEventChildren(event);
+		this.getMessages(event);
 	};
 
 	@action
@@ -103,6 +112,25 @@ export default class FilterStore {
 		const prevEvent = prevCyclicItem(this.eventsList[0][1], this.selectedRootEvent);
 		if (prevEvent) {
 			this.selectEvent(prevEvent);
+		}
+	};
+
+	@action
+	getMessages = async (event: EventAction) => {
+		if (event.parentEventId === null) {
+			this.messages = [];
+			return;
+		}
+		this.isLoadingMessages = true;
+		try {
+			const messages = await this.api.messages.getMessages(
+				event.startTimestamp!, event.endTimestamp!,
+			);
+			this.messages = messages;
+			this.isLoadingMessages = false;
+			console.log(messages);
+		} catch (error) {
+			console.error('Error occured while loading messages', error);
 		}
 	};
 

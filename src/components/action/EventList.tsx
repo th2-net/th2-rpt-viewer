@@ -26,15 +26,20 @@ import { createBemElement } from '../../helpers/styleCreators';
 import EventActionNode from '../EventActionNode';
 import EventAction from '../../models/EventAction';
 import '../../styles/action.scss';
-import VerificationCard from './VerificationCard';
 
 interface Props {
 	events: EventAction[];
 	isMinified?: boolean;
 	selectedEvents: string[];
+	minimizeCards?: boolean;
 }
 
-export const EventList = observer(({ events, isMinified = false, selectedEvents }: Props) => {
+export const EventList = observer(({
+	events,
+	isMinified = false,
+	selectedEvents,
+	minimizeCards = false,
+}: Props) => {
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	const getScrolledIndex = (scrolledActionId: Number | null, actions: ActionNode[]): Number | null => {
 		const scrolledIndex = actions.findIndex(

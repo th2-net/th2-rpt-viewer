@@ -33,6 +33,7 @@
     &__body {
         grid-area: main-content;
         padding-top: 7px; 
+        overflow: hidden;
     }
 }
 

@@ -37,10 +37,8 @@ const VerificationCard = ({
 		body,
 		eventType,
 		eventId,
-		successful,
 	} = verification;
-	const status = successful ? 'PASSED' : 'FAILED';
-
+	const { status } = body;
 	const className = createStyleSelector(
 		'ac-body__verification',
 		status,

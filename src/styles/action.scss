@@ -30,7 +30,7 @@
     transition: all 0.1s;
     background-color: var(--status-secondary-background-color);
     cursor: pointer;
-
+    height: auto;
     &__status {
         padding-left: 10px;
     }
@@ -77,6 +77,7 @@
     }
 
     &.root {
+        height: auto;
         &:hover {
             border-color: var(--status-primary-color);
         }
@@ -128,11 +129,13 @@
         grid-area: title;
         display: flex;
         flex-direction: column;
+        overflow: hidden;
     }
 
     &.p100 &__title {
         flex-direction: row;
         flex-wrap: wrap;
+        overflow: hidden;
     }
 
     &__name, &__description, &__status, &__elapsed-time {
