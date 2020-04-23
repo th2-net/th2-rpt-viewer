@@ -21,12 +21,12 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../hooks/useStores';
 import Message from '../../models/Message';
-import { messagesHeatmap } from '../../helpers/heatmapCreator';
 import StateSaverProvider from '../util/StateSaverProvider';
 import { VirtualizedList } from '../VirtualizedList';
 import { createBemElement } from '../../helpers/styleCreators';
-import SkeletonedMessageCardListItem from './SkeletonedMessageCardListItem';
 import '../../styles/messages.scss';
+import MessageCard from './MessageCard';
+import MessageCardSkeleton from './MessageCardSkeleton';
 
 export const MessageCardList = observer(() => {
 	const getScrolledIndex = (scrolledMessageId: Number, messages: Message[]): Number | null => {
@@ -40,7 +40,7 @@ export const MessageCardList = observer(() => {
 	// primitive numbers.
 	// Objects and reference comparison is the only way to handle numbers changing in this case.
 	const [scrolledIndex, setScrolledIndex] = React.useState<Number | null>(null);
-	const { filterStore, selectedStore } = useStores();
+	const { filterStore, selectedStore, eventsStore } = useStores();
 
 	React.useEffect(() => {
 		if (selectedStore.scrolledMessageId != null) {
@@ -52,11 +52,19 @@ export const MessageCardList = observer(() => {
 		setScrolledIndex(new Number(0));
 	};
 
-	const renderMessage = (index: number) => (
-		<SkeletonedMessageCardListItem index={index} />
-	);
+	const renderMessage = (index: number) => {
+		const message = eventsStore.messages[index];
+		if (!message) {
+			return <MessageCardSkeleton />;
+		}
+		return (
+			<MessageCard
+				key={message.messageId}
+				message={message}/>
+		);
+	};
 
-	const computeKey = (index: number) => selectedStore.messages[index]?.id ?? index;
+	const computeKey = (index: number) => eventsStore.messages[index]?.messageId ?? index;
 
 	const listClassName = createBemElement(
 		'messages',
@@ -76,16 +84,10 @@ export const MessageCardList = observer(() => {
 				}
 				<StateSaverProvider>
 					<VirtualizedList
-						selectedElements={
-							messagesHeatmap(
-								selectedStore.messages,
-								selectedStore.messagesId,
-								selectedStore.selectedActionStatus,
-							)
-						}
-						rowCount={selectedStore.messages.length}
+						selectedElements={new Map()}
+						rowCount={eventsStore.messages.length}
 						renderElement={renderMessage}
-						computeItemKey={computeKey}
+						computeItemKey={computeKey as any}
 						scrolledIndex={scrolledIndex}
 						scrollHints={[]}
 					/>

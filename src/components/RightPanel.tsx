@@ -23,6 +23,7 @@ import LogsList from './log/LogsList';
 import { createStyleSelector } from '../helpers/styleCreators';
 import { KnownBugPanel } from './knownbugs/KnownBugPanel';
 import { useStores } from '../hooks/useStores';
+import SplashScreen from './SplashScreen';
 import '../styles/layout.scss';
 
 const MIN_CONTROLS_WIDTH = 850;
@@ -31,7 +32,7 @@ const MIN_CONTROLS_WIDTH_WITH_REJECTED = 900;
 type RightPanelType = Panel.MESSAGES | Panel.KNOWN_BUGS | Panel.LOGS;
 
 export const RightPanel = observer(() => {
-	const { viewStore, selectedStore } = useStores();
+	const { viewStore, selectedStore, eventsStore } = useStores();
 	const [showTitles, setShowTitle] = React.useState(true);
 
 	const root = React.useRef<HTMLDivElement>(null);
@@ -71,17 +72,19 @@ export const RightPanel = observer(() => {
 
 	return (
 		<div className="layout-panel" ref={root}>
-			<div className="layout-panel__content">
-				<div className={messagesRootClass}>
-					<MessageCardList />
-				</div>
-				<div className={logsRootClass}>
-					<LogsList isActive={viewStore.rightPanel === Panel.LOGS}/>
-				</div>
-				<div className={knownBugsRootClass}>
-					<KnownBugPanel/>
-				</div>
-			</div>
+			{eventsStore.isLoadingMessages
+				? <SplashScreen />
+				: <div className="layout-panel__content">
+					<div className={messagesRootClass}>
+						<MessageCardList />
+					</div>
+					<div className={logsRootClass}>
+						<LogsList isActive={viewStore.rightPanel === Panel.LOGS}/>
+					</div>
+					<div className={knownBugsRootClass}>
+						<KnownBugPanel/>
+					</div>
+				</div>}
 		</div>
 	);
 });

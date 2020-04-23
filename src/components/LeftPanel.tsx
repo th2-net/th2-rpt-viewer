@@ -34,7 +34,7 @@ export const LeftPanel = observer(() => {
 		}
 		if (!eventsStore.selectedEvent) return null;
 		return (
-			<div style={{ minWidth: '55%', maxWidth: '55%' }}>
+			<div style={{ minWidth: '55%', maxWidth: '55%', overflow: 'auto' }}>
 				{eventsStore.selectedEvent.body && eventsStore.selectedEvent.body.type === 'verification'
 					? <VerificationCard
 						verification={eventsStore.selectedEvent}
@@ -55,13 +55,16 @@ export const LeftPanel = observer(() => {
 						className="layout-panel__content-wrapper"
 						style={{ zIndex: 1 }}
 						key={parentId || 'root'}>
-						<EventList
-							events={children}
-							isMinified={viewStore.panelArea === PanelArea.P25
-								|| eventsStore.eventsList.length > 2
+						{children.length === 0
+							? <SplashScreen />
+							: <EventList
+								events={children}
+								isMinified={eventsStore.selectedEvents.length > 2
 								|| (eventsStore.eventsList.length === 2
-									&& (eventsStore.selectedEventIsLoading || !!eventsStore.selectedEvent))}
-							selectedEvents={eventsStore.selectedEvents} />
+									&& (!!eventsStore.selectedEvent
+									|| eventsStore.selectedEventIsLoading || viewStore.panelArea !== PanelArea.P100))
+								|| viewStore.panelArea === PanelArea.P25}
+								selectedEvents={eventsStore.selectedEvents} />}
 					</div>)}
 			</div>
 			{renderSelectedElement()}

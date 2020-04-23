@@ -39,6 +39,7 @@ export default function EventCard({
 		attachedMessageIds,
 		eventType,
 		eventName,
+		body,
 	} = event;
 	const status = successful ? 'PASSED' : 'FAILED';
 

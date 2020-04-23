@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,28 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import { observer } from 'mobx-react-lite';
-import { useStores } from '../../hooks/useStores';
-import MessageCardSkeleton from './MessageCardSkeleton';
-import MessageCard from './MessageCard';
-
-interface Props {
-	index: number;
+export interface EventMessageTimeStamp {
+    nano: number;
+    epochSecond: number;
 }
 
-const SkeletonedMessageCardListItem = observer(({ index }: Props) => {
-	const { eventsStore } = useStores();
-	const message = eventsStore.messages[index];
-	if (!message) {
-		return <MessageCardSkeleton />;
-	}
-
-	return (
-		<MessageCard
-			key={message.messageId}
-			message={message}/>
-	);
-});
-
-export default SkeletonedMessageCardListItem;
+export default interface EventMessage {
+    type: string;
+	messageId: string;
+	timestamp: EventMessageTimeStamp;
+	direction: string;
+	sessionId: string;
+	body: any;
+}

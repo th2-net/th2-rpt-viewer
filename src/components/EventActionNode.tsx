@@ -40,8 +40,13 @@ export default function EventActionNode({
 		endTimestamp,
 		successful,
 		attachedMessageIds,
+		eventType,
+		body,
 	} = event;
-	const status = successful ? 'PASSED' : 'FAILED';
+	// eslint-disable-next-line no-nested-ternary
+	const status = eventType === 'verification'
+		? body.status
+		: successful ? 'PASSED' : 'FAILED';
 
 	const rootClassName = createBemBlock(
 		'action-card',

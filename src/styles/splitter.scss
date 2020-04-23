@@ -101,6 +101,7 @@
         &-left {
             grid-area: left-pane;
             z-index: 1;
+            overflow: hidden;
         }
 
         &-right {
