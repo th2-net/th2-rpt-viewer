@@ -29,6 +29,8 @@ import { PredictionData } from '../../models/MlServiceResponse';
 import PanelArea from '../../util/PanelArea';
 import '../../styles/messages.scss';
 import EventMessage from '../../models/EventMessage';
+import BeautifiedContent from "./BeautifiedContent";
+import ErrorBoundary from "../util/ErrorBoundary";
 
 const HUE_SEGMENTS_COUNT = 36;
 
@@ -84,6 +86,7 @@ export function MessageCardBase(props: MessageCardProps) {
 		timestamp,
 		type,
 		sessionId,
+		direction
 	} = message;
 
 	const rootClass = createBemBlock(
@@ -107,9 +110,15 @@ export function MessageCardBase(props: MessageCardProps) {
 		isContentBeautified ? 'plain' : 'beautify',
 	);
 	// session arrow color, we calculating it for each session from-to pair, based on hash
-	// const sessionArrowStyle = {
-	// 	filter: `invert(1) sepia(1) saturate(5) hue-rotate(${calculateHueValue(from, to)}deg)`,
-	// };
+	const sessionArrowStyle: React.CSSProperties = {
+		filter: `invert(1) sepia(1) saturate(5) hue-rotate(${calculateHueValue(sessionId)}deg)`,
+	};
+
+	const sessionClass = createBemElement(
+		'mc-header',
+		'session-icon',
+		direction?.toLowerCase()
+	);
 
 	return (
 		<div
@@ -145,30 +154,28 @@ export function MessageCardBase(props: MessageCardProps) {
 					<span>Session</span>
 				</div>
 				<div className="mc-header__session-value">
+					<div className={sessionClass}
+						style={sessionArrowStyle}/>
 					{sessionId}
 				</div>
-				<MlUploadButton messageId={message.messageId as any}/>
 			</div>
 			<div className="message-card__body   mc-body">
 				<div className="mc-body__human">
 					<div className="mc-beautify" onClick={() => toggleBeautify()}>
 						<div className={beautifyIconClass}/>
 					</div>
-					{/* {
+					{
 						isContentBeautified ? (
-							<ErrorBoundary
-								errorMessage="Can't parse message.">
-								<BeautifiedContent
-									content={contentHumanReadable}
-									msgId={id}/>
-							</ErrorBoundary>
+							<pre>
+								{JSON.stringify(message.body, undefined, '  ')}
+							</pre>
 						) : (
-							<SearchableContent
-								content={contentHumanReadable}
-								contentKey={keyForMessage(id, 'contentHumanReadable')}/>
+							<pre className="mc-body__human">
+								{JSON.stringify(message.body)}
+							</pre>
 						)
 					}
-					{
+					{/*{
 						(raw && raw !== 'null') ? (
 							<div className="mc-show-raw"
 								onClick={() => showRawHandler(!showRaw)}>
@@ -218,13 +225,8 @@ function renderMessageTypeLabels(message: Message, prediction: PredictionData | 
 	return labels;
 }
 
-function calculateHueValue(from: string, to: string): number {
-	const hashCode = getHashCode(
-		[from, to]
-			.filter(Boolean)
-			.sort((a, b) => a.localeCompare(b))
-			.join(''),
-	);
+function calculateHueValue(session: string): number {
+	const hashCode = getHashCode(session);
 
 	return (hashCode % HUE_SEGMENTS_COUNT) * (360 / HUE_SEGMENTS_COUNT);
 }
@@ -253,16 +255,16 @@ export const MessageCard = observer(({ message }: MessageCardOwnProps) => {
 
 	return <RecoverableMessageCard
 		isSelected={false}
-		status={'FAILED' as StatusType}
+		status={null}
 		isTransparent={false}
 		rejectedMessagesCount={0}
 		adminEnabled={viewStore.adminMessagesEnabled.valueOf()}
 		panelArea={viewStore.panelArea}
-		isContentBeautified={false}
+		isContentBeautified={viewStore.beautifiedMessages.includes(message.messageId)}
 		prediction={null}
 		searchField={null}
-		selectHandler={(status?: StatusType) => selectedStore.selectMessage(message as any, status)}
-		toggleBeautify={() => viewStore.toggleBeautify(message.messageId as any)}
+		selectHandler={() => 'stub'}
+		toggleBeautify={() => viewStore.toggleBeautify(message.messageId)}
 		message={message}
 	/>;
 });
