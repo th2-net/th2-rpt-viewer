@@ -27,10 +27,8 @@ import { MessagePredictionIndicator } from '../machinelearning/MlPredictionIndic
 import StateSaver from '../util/StateSaver';
 import { PredictionData } from '../../models/MlServiceResponse';
 import PanelArea from '../../util/PanelArea';
+import { EventMessage } from '../../models/EventMessage';
 import '../../styles/messages.scss';
-import EventMessage from '../../models/EventMessage';
-import BeautifiedContent from "./BeautifiedContent";
-import ErrorBoundary from "../util/ErrorBoundary";
 
 const HUE_SEGMENTS_COUNT = 36;
 
@@ -175,7 +173,7 @@ export function MessageCardBase(props: MessageCardProps) {
 							</pre>
 						)
 					}
-					{/*{
+					{/* {
 						(raw && raw !== 'null') ? (
 							<div className="mc-show-raw"
 								onClick={() => showRawHandler(!showRaw)}>

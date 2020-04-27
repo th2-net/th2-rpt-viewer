@@ -62,6 +62,8 @@ export function createVerificationEntry(
 		exception: null,
 		precision: undefined,
 		systemPrecision: undefined,
+		key: false,
+		operation: '',
 	};
 }
 

@@ -17,8 +17,6 @@
 /* eslint-disable no-return-await */
 import { EventApiSchema } from '../ApiSchema';
 
-// const BASE_URL = '/api';
-
 const BASE_URL = 'http://th2-kuber-node03:30000/backend';
 
 const eventHttpApi: EventApiSchema = {

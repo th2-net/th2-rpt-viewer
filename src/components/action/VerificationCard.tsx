@@ -19,7 +19,7 @@ import { StatusType } from '../../models/Status';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import { VerificationTable } from './VerificationTable';
 import { keyForVerification } from '../../helpers/keys';
-import EventAction from '../../models/EventAction';
+import { EventAction } from '../../models/EventAction';
 import '../../styles/action.scss';
 
 interface VerificationCardProps {
@@ -47,11 +47,7 @@ const VerificationCard = ({
 	);
 
 	const key = keyForVerification(parentActionId, eventId as any);
-	const params = body ? Object.keys(body.fields)
-		.map(field => ({
-			name: field,
-			...body.fields[field],
-		})) : [];
+
 	return (
 		<div className="action-card">
 			<div className="ac-header__title">
@@ -67,7 +63,7 @@ const VerificationCard = ({
 					actionId={parentActionId}
 					messageId={eventId as any}
 					stateKey={`${key}-nodes`}
-					params={params}
+					params={body}
 					status={status as StatusType}/>
 			</div>
 		</div>

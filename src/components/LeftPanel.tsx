@@ -18,14 +18,15 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { EventList } from './action/EventList';
 import { useStores } from '../hooks/useStores';
-import EventCard from './EventCard';
+import EventCard from './event/EventCard';
 import PanelArea from '../util/PanelArea';
-import '../styles/layout.scss';
 import VerificationCard from './action/VerificationCard';
 import SplashScreen from './SplashScreen';
+import '../styles/layout.scss';
 
 export const LeftPanel = observer(() => {
 	const { eventsStore, viewStore } = useStores();
+
 	const renderSelectedElement = () => {
 		if (eventsStore.selectedEventIsLoading) {
 			return <div style={{ minWidth: '55%', maxWidth: '55%' }}>
@@ -47,6 +48,7 @@ export const LeftPanel = observer(() => {
 				}
 			</div>);
 	};
+
 	return (
 		<div className="layout-panel">
 			<div className="layout-panel__content layout-events">

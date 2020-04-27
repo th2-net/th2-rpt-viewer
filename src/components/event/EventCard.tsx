@@ -15,13 +15,13 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import PanelArea from '../util/PanelArea';
-import { formatTime, getSecondsPeriod } from '../helpers/date';
-import { Chip } from './Chip';
-import { createBemBlock, createBemElement } from '../helpers/styleCreators';
-import EventAction from '../models/EventAction';
-import { getMinifiedStatus } from '../helpers/action';
-import { StatusType } from '../models/Status';
+import PanelArea from '../../util/PanelArea';
+import { formatTime, getSecondsPeriod } from '../../helpers/date';
+import { Chip } from '../Chip';
+import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
+import { EventAction } from '../../models/EventAction';
+import { getMinifiedStatus } from '../../helpers/action';
+import { StatusType } from '../../models/Status';
 
 interface Props {
     panelArea: PanelArea;
@@ -41,7 +41,10 @@ export default function EventCard({
 		eventName,
 		body,
 	} = event;
-	const status = successful ? 'PASSED' : 'FAILED';
+	// eslint-disable-next-line no-nested-ternary
+	const status = eventType === 'verification'
+		? body.status
+		: successful ? 'PASSED' : 'FAILED';
 
 	const rootClassName = createBemBlock(
 		'action-card',

@@ -16,8 +16,6 @@
 import { MessageApiSchema } from '../ApiSchema';
 import { EventMessageTimeStamp } from '../../models/EventMessage';
 
-// const BASE_URL = '/api';
-
 const BASE_URL = 'http://th2-kuber-node03:30000/backend';
 
 /* eslint-disable no-return-await */
@@ -36,8 +34,6 @@ const messageHttpApi: MessageApiSchema = {
 	getMessages: async (timestampFrom: EventMessageTimeStamp, timestampTo: EventMessageTimeStamp) => {
 		const params = new URLSearchParams({
 			idsOnly: false,
-			// timestampFrom: timestampFrom ? new Date(timestampFrom * 1000 ).toISOString() : null,
-			// timestampTo: timestampTo ? new Date(timestampTo * 1000).toISOString() : null,
 			timestampFrom: timestampFrom.epochSecond * 1000 + timestampFrom.nano / 1_000_000,
 			timestampTo: timestampTo.epochSecond * 1000 + timestampTo.nano / 1_000_000,
 		} as any);
