@@ -14,24 +14,24 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import Message from '../models/Message';
 import { EventAction } from '../models/EventAction';
-import { EventMessageTimeStamp, EventMessage } from '../models/EventMessage';
+import { EventMessage } from '../models/EventMessage';
 
 export default interface ApiSchema {
-    events: EventApiSchema;
-    messages: MessageApiSchema;
+	events: EventApiSchema;
+	messages: MessageApiSchema;
 }
 
 export interface EventApiSchema {
-    getAll: () => Promise<EventAction[]>;
-    getEvent: (id: string) => Promise<EventAction>;
-    getRange: (start: number, end: number) => Promise<EventAction[]>;
-    getSubNodes: (id: string) => Promise<EventAction[]>;
+	getAll: () => Promise<EventAction[]>;
+	getEvent: (id: string) => Promise<EventAction>;
+	getRange: (start: number, end: number) => Promise<EventAction[]>;
+	getSubNodes: (id: string) => Promise<EventAction[]>;
 }
 
 export interface MessageApiSchema {
-    getAll: () => Promise<number[]>;
-    getMessages: (timestampFrom: EventMessageTimeStamp, timestampTo: EventMessageTimeStamp) => Promise<EventMessage[]>;
-    getMessage: (id: string) => Promise<Message | null>;
+	getAll: () => Promise<number[]>;
+	getMessagesIds: (timestampFrom: number, timestampTo: number) => Promise<string[]>;
+	getMessages: (timestampFrom: number, timestampTo: number) => Promise<EventMessage[]>;
+	getMessage: (id: string) => Promise<EventMessage | null>;
 }

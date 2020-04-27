@@ -14,19 +14,26 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, computed } from 'mobx';
+import { action, autorun, computed, observable, toJS } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { EventAction } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
 import { nextCyclicItem, prevCyclicItem } from '../helpers/array';
+import FilterStore from './FilterStore';
 
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable indent */
-export default class FilterStore {
+export default class EventsStore {
 	private api: ApiSchema;
 
-	constructor(api: ApiSchema) {
+	private filterStore: FilterStore;
+
+	constructor(api: ApiSchema, filterStore: FilterStore) {
 		this.api = api;
+		this.filterStore = filterStore;
+
+		autorun(() => {
+			console.log(toJS(this.eventsList))
+		})
 	}
 
 	@observable eventsList: Array<[string | null, EventAction[]]> = [[null, []]];
@@ -37,12 +44,8 @@ export default class FilterStore {
 
 	@observable selectedRootEvent: EventAction | null = null;
 
-	@observable messages: EventMessage[] = [];
-
-	@observable isLoadingMessages = false;
-
-    @action
-    getEvents = async () => {
+	@action
+	getEvents = async () => {
 		try {
 			const events = await this.api.events.getAll();
 			events.sort((a, b) => b.startTimestamp.epochSecond - a.startTimestamp.epochSecond);
@@ -91,11 +94,10 @@ export default class FilterStore {
 			this.eventsList = [this.eventsList[0], [event.eventId, []]];
 			this.selectedRootEvent = event;
 			this.getEventChildren(event);
-			this.getMessages(event);
 			return;
 		}
 		this.getEventChildren(event);
-		this.getMessages(event);
+		// this.getMessages(event);
 	};
 
 	@action
@@ -113,24 +115,6 @@ export default class FilterStore {
 		const prevEvent = prevCyclicItem(this.eventsList[0][1], this.selectedRootEvent);
 		if (prevEvent) {
 			this.selectEvent(prevEvent);
-		}
-	};
-
-	@action
-	getMessages = async (event: EventAction) => {
-		if (event.parentEventId === null) {
-			this.messages = [];
-			return;
-		}
-		this.isLoadingMessages = true;
-		try {
-			const messages = await this.api.messages.getMessages(
-				event.startTimestamp!, event.endTimestamp!,
-			);
-			this.messages = messages;
-			this.isLoadingMessages = false;
-		} catch (error) {
-			console.error('Error occured while loading messages', error);
 		}
 	};
 

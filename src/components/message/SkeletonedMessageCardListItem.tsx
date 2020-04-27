@@ -19,14 +19,21 @@ import { observer } from 'mobx-react-lite';
 import { useStores } from '../../hooks/useStores';
 import MessageCardSkeleton from './MessageCardSkeleton';
 import MessageCard from './MessageCard';
+import { EventMessage } from '../../models/EventMessage';
+import useAsyncEffect from '../../hooks/useAsyncEffect';
 
 interface Props {
-	index: number;
+	id: string;
 }
 
-const SkeletonedMessageCardListItem = observer(({ index }: Props) => {
-	const { eventsStore } = useStores();
-	const message = eventsStore.messages[index];
+const SkeletonedMessageCardListItem = observer(({ id }: Props) => {
+	const [message, setMessage] = React.useState<null | EventMessage>(null);
+	const { messagesStore } = useStores();
+
+	useAsyncEffect(async () => {
+		setMessage(await messagesStore.getMessageById(id));
+	}, []);
+
 	if (!message) {
 		return <MessageCardSkeleton />;
 	}

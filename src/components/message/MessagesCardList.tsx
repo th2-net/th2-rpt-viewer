@@ -25,8 +25,7 @@ import StateSaverProvider from '../util/StateSaverProvider';
 import { VirtualizedList } from '../VirtualizedList';
 import { createBemElement } from '../../helpers/styleCreators';
 import '../../styles/messages.scss';
-import MessageCard from './MessageCard';
-import MessageCardSkeleton from './MessageCardSkeleton';
+import SkeletonedMessageCardListItem from './SkeletonedMessageCardListItem';
 
 export const MessageCardList = observer(() => {
 	const getScrolledIndex = (scrolledMessageId: Number, messages: Message[]): Number | null => {
@@ -40,7 +39,7 @@ export const MessageCardList = observer(() => {
 	// primitive numbers.
 	// Objects and reference comparison is the only way to handle numbers changing in this case.
 	const [scrolledIndex, setScrolledIndex] = React.useState<Number | null>(null);
-	const { filterStore, selectedStore, eventsStore } = useStores();
+	const { filterStore, selectedStore, messagesStore } = useStores();
 
 	React.useEffect(() => {
 		if (selectedStore.scrolledMessageId != null) {
@@ -53,18 +52,12 @@ export const MessageCardList = observer(() => {
 	};
 
 	const renderMessage = (index: number) => {
-		const message = eventsStore.messages[index];
-		if (!message) {
-			return <MessageCardSkeleton />;
-		}
+		const id = messagesStore.messagesIds[index];
+
 		return (
-			<MessageCard
-				key={message.messageId}
-				message={message}/>
+			<SkeletonedMessageCardListItem id={id}/>
 		);
 	};
-
-	const computeKey = (index: number) => eventsStore.messages[index]?.messageId ?? index;
 
 	const listClassName = createBemElement(
 		'messages',
@@ -85,9 +78,8 @@ export const MessageCardList = observer(() => {
 				<StateSaverProvider>
 					<VirtualizedList
 						selectedElements={new Map()}
-						rowCount={eventsStore.messages.length}
+						rowCount={messagesStore.messagesIds.length}
 						renderElement={renderMessage}
-						computeItemKey={computeKey as any}
 						scrolledIndex={scrolledIndex}
 						scrollHints={[]}
 					/>

@@ -36,7 +36,7 @@ export default class ViewStore {
 
 	@observable rightPanel: Panel.MESSAGES | Panel.KNOWN_BUGS | Panel.LOGS = Panel.MESSAGES;
 
-	@observable panelArea: PanelArea = PanelArea.P100;
+	@observable panelArea: PanelArea = PanelArea.P50;
 
 	@observable isConnectionError = false;
 

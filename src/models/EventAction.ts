@@ -13,19 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-
-interface EventTimeStamp {
-    nano: number;
-    epochSecond: number;
-}
+import Timestamp from './Timestamp';
 
 export interface EventAction {
     type: string;
     eventId: string;
     eventName: string;
     eventType: string;
-    endTimestamp: EventTimeStamp;
-    startTimestamp: EventTimeStamp;
+    endTimestamp: Timestamp;
+    startTimestamp: Timestamp;
     parentEventId: string;
     attachedMessageIds: Array<string>;
     body: any;

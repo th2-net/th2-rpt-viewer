@@ -20,7 +20,6 @@ import { useStores } from '../../hooks/useStores';
 import Message from '../../models/Message';
 import { StatusType } from '../../models/Status';
 import { getHashCode } from '../../helpers/stringHash';
-import { MlUploadButton } from '../machinelearning/MlUploadButton';
 import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
 import { keyForMessage } from '../../helpers/keys';
 import { MessagePredictionIndicator } from '../machinelearning/MlPredictionIndicator';
@@ -33,35 +32,35 @@ import '../../styles/messages.scss';
 const HUE_SEGMENTS_COUNT = 36;
 
 export interface MessageCardOwnProps {
-    message: EventMessage;
+	message: EventMessage;
 }
 
 export interface RecoveredProps {
-    showRaw: boolean;
-    showRawHandler: (showRaw: boolean) => void;
+	showRaw: boolean;
+	showRawHandler: (showRaw: boolean) => void;
 }
 
 export interface MessageCardStateProps {
-    rejectedMessagesCount: number;
-    isSelected: boolean;
-    isTransparent: boolean;
-    panelArea: PanelArea;
-    status: StatusType | null;
-    adminEnabled: boolean;
-    isContentBeautified: boolean;
-    prediction: PredictionData | null;
-    searchField: keyof Message | null;
+	rejectedMessagesCount: number;
+	isSelected: boolean;
+	isTransparent: boolean;
+	panelArea: PanelArea;
+	status: StatusType | null;
+	adminEnabled: boolean;
+	isContentBeautified: boolean;
+	prediction: PredictionData | null;
+	searchField: keyof Message | null;
 }
 
 export interface MessageCardDispatchProps {
-    selectHandler: (status?: StatusType) => void;
-    toggleBeautify: () => void;
+	selectHandler: (status?: StatusType) => void;
+	toggleBeautify: () => void;
 }
 
 export interface MessageCardProps extends MessageCardOwnProps,
-    Omit<MessageCardStateProps, 'searchField'>,
-    MessageCardDispatchProps,
-    RecoveredProps {
+	Omit<MessageCardStateProps, 'searchField'>,
+	MessageCardDispatchProps,
+	RecoveredProps {
 }
 
 export function MessageCardBase(props: MessageCardProps) {
@@ -84,7 +83,7 @@ export function MessageCardBase(props: MessageCardProps) {
 		timestamp,
 		type,
 		sessionId,
-		direction
+		direction,
 	} = message;
 
 	const rootClass = createBemBlock(
@@ -115,30 +114,13 @@ export function MessageCardBase(props: MessageCardProps) {
 	const sessionClass = createBemElement(
 		'mc-header',
 		'session-icon',
-		direction?.toLowerCase()
+		direction?.toLowerCase(),
 	);
 
 	return (
-		<div
-			className={rootClass}
-			// data-lb-count={labelsCount}
-		>
-			{/* <div className="message-card__labels">
-				{labels}
-			</div> */}
+		<div className={rootClass}>
 			<div className={headerClass}
-				onClick={() => selectHandler()}>
-				{/* {
-					rejectedMessagesCount && !(message.relatedActions?.length > 0)
-						? (
-							<div className="mc-header__info rejected">
-								<p>Rejected {rejectedMessagesCount}</p>
-							</div>
-						) : (
-							<MessageCardActionChips
-								message={message as}/>
-						)
-				} */}
+				 onClick={() => selectHandler()}>
 				<div className="mc-header__name">
 					<span>Name</span>
 				</div>
@@ -153,7 +135,7 @@ export function MessageCardBase(props: MessageCardProps) {
 				</div>
 				<div className="mc-header__session-value">
 					<div className={sessionClass}
-						style={sessionArrowStyle}/>
+						 style={sessionArrowStyle}/>
 					{sessionId}
 				</div>
 			</div>
@@ -173,22 +155,6 @@ export function MessageCardBase(props: MessageCardProps) {
 							</pre>
 						)
 					}
-					{/* {
-						(raw && raw !== 'null') ? (
-							<div className="mc-show-raw"
-								onClick={() => showRawHandler(!showRaw)}>
-								<div className="mc-show-raw__title">RAW</div>
-								<div className={showRawClass}/>
-							</div>
-						) : null
-					}
-					{
-						showRaw
-							? <MessageRaw
-								rawContent={raw}
-								messageId={message.messageId as any}/>
-							: null
-					} */}
 				</div>
 			</div>
 		</div>
@@ -231,10 +197,7 @@ function calculateHueValue(session: string): number {
 
 const MESSAGE_RAW_FIELDS: (keyof Message)[] = ['rawHex', 'rawHumanReadable'];
 
-export const RecoverableMessageCard = ({
-	searchField,
-	...props
-}: MessageCardStateProps & MessageCardOwnProps & MessageCardDispatchProps) => (
+export const RecoverableMessageCard = ({ searchField, ...props }: MessageCardStateProps & MessageCardOwnProps & MessageCardDispatchProps) => (
 	<StateSaver
 		stateKey={keyForMessage(props.message.messageId as any)}
 		getDefaultState={() => false}>

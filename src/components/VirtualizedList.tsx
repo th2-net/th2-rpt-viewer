@@ -61,8 +61,7 @@ export class VirtualizedList extends React.Component<Props, State> {
 		entries.forEach(entry => {
 			const { index } = (entry.target as HTMLDivElement).dataset;
 			const { height } = entry.contentRect;
-			if (
-				index !== undefined
+			if (index !== undefined
 				&& this.state[parseInt(index)] !== height) {
 				stateUpdate[parseInt(index)] = height;
 			}
@@ -139,7 +138,7 @@ type WrapperProps = React.PropsWithChildren<{
 }>;
 
 function ElementWrapper({
-	index, onMount, onUnmount, children,
+	onMount, onUnmount, children
 }: WrapperProps) {
 	const ref = React.useRef<HTMLDivElement>(null);
 
@@ -150,7 +149,7 @@ function ElementWrapper({
 	}, []);
 
 	return (
-		<div ref={ref} data-index={index}>
+		<div ref={ref}>
 			{children}
 		</div>
 	);
