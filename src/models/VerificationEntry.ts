@@ -28,4 +28,6 @@ export default interface VerificationEntry {
     subEntries: VerificationEntry[];
     exception?: unknown;
     hint: string;
+    key: boolean;
+    operation: string;
 }

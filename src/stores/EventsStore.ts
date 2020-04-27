@@ -16,9 +16,9 @@
 
 import { action, observable, computed } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
-import EventAction from '../models/EventAction';
+import { EventAction } from '../models/EventAction';
+import { EventMessage } from '../models/EventMessage';
 import { nextCyclicItem, prevCyclicItem } from '../helpers/array';
-import EventMessage from '../models/EventMessage';
 
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable indent */
@@ -45,7 +45,7 @@ export default class FilterStore {
     getEvents = async () => {
 		try {
 			const events = await this.api.events.getAll();
-			events.sort((a, b) => b.startTimestamp!.epochSecond - a.startTimestamp!.epochSecond);
+			events.sort((a, b) => b.startTimestamp.epochSecond - a.startTimestamp.epochSecond);
 			this.eventsList = [[null, events]];
 		} catch (error) {
 			console.error('Error while loading events', error);
@@ -72,6 +72,10 @@ export default class FilterStore {
 			if (event.parentEventId === null) {
 				this.eventsList = [this.eventsList[0]];
 			}
+			if (this.eventsList[this.eventsList.length - 1][0] !== event.eventId) {
+				const parentIndex = this.eventsList.findIndex(([parentId]) => parentId === event.parentEventId);
+				this.eventsList = [...this.eventsList.slice(0, parentIndex + 1)];
+			}
 			this.selectedEvent = event;
 			this.selectedEventIsLoading = false;
 		} catch (error) {
@@ -81,18 +85,15 @@ export default class FilterStore {
 
 	@action
 	selectEvent = (event: EventAction) => {
+		this.selectedEvent = null;
 		if (event.parentEventId === null) {
 			if (this.selectedRootEvent && this.selectedRootEvent.eventId === event.eventId) return;
-			this.selectedEvent = null;
 			this.eventsList = [this.eventsList[0], [event.eventId, []]];
 			this.selectedRootEvent = event;
 			this.getEventChildren(event);
 			this.getMessages(event);
 			return;
 		}
-		this.selectedEventIsLoading = true;
-		this.selectedEvent = null;
-
 		this.getEventChildren(event);
 		this.getMessages(event);
 	};
@@ -128,7 +129,6 @@ export default class FilterStore {
 			);
 			this.messages = messages;
 			this.isLoadingMessages = false;
-			console.log(messages);
 		} catch (error) {
 			console.error('Error occured while loading messages', error);
 		}
@@ -136,8 +136,8 @@ export default class FilterStore {
 
 	@computed get selectedEvents() {
 		const selected = [];
+		this.eventsList.forEach(([parentId]) => selected.push(parentId));
 		this.selectedEvent && selected.push(this.selectedEvent.eventId);
-		this.eventsList.forEach(([parentId]) => parentId && selected.push(parentId));
 		return selected;
 	}
 }

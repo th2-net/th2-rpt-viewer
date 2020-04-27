@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import Message from '../models/Message';
-import EventAction from '../models/EventAction';
-import EventMessage, { EventMessageTimeStamp } from '../models/EventMessage';
+import { EventAction } from '../models/EventAction';
+import { EventMessageTimeStamp, EventMessage } from '../models/EventMessage';
 
 export default interface ApiSchema {
     events: EventApiSchema;

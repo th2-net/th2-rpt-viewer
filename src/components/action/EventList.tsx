@@ -23,8 +23,8 @@ import { ActionNode, isAction } from '../../models/Action';
 import { VirtualizedList } from '../VirtualizedList';
 import StateSaverProvider from '../util/StateSaverProvider';
 import { createBemElement } from '../../helpers/styleCreators';
-import EventActionNode from '../EventActionNode';
-import EventAction from '../../models/EventAction';
+import EventActionNode from '../event/EventActionNode';
+import { EventAction } from '../../models/EventAction';
 import '../../styles/action.scss';
 
 interface Props {

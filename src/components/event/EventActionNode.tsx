@@ -15,13 +15,13 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import PanelArea from '../util/PanelArea';
-import { formatTime, getSecondsPeriod } from '../helpers/date';
-import { Chip } from './Chip';
-import { createBemBlock, createBemElement } from '../helpers/styleCreators';
-import EventAction from '../models/EventAction';
-import { getMinifiedStatus } from '../helpers/action';
-import { StatusType } from '../models/Status';
+import PanelArea from '../../util/PanelArea';
+import { formatTime, getSecondsPeriod } from '../../helpers/date';
+import { Chip } from '../Chip';
+import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
+import { EventAction } from '../../models/EventAction';
+import { getMinifiedStatus } from '../../helpers/action';
+import { StatusType } from '../../models/Status';
 
 interface Props {
     panelArea: PanelArea;

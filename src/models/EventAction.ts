@@ -14,19 +14,19 @@
  * limitations under the License.
  ***************************************************************************** */
 
-interface EventActionTimeStamp {
+interface EventTimeStamp {
     nano: number;
     epochSecond: number;
 }
 
-export default interface EventAction {
+export interface EventAction {
     type: string;
     eventId: string;
     eventName: string;
     eventType: string;
-    endTimestamp: null | EventActionTimeStamp;
-    startTimestamp: null | EventActionTimeStamp;
-    parentEventId: string | null;
+    endTimestamp: EventTimeStamp;
+    startTimestamp: EventTimeStamp;
+    parentEventId: string;
     attachedMessageIds: Array<string>;
     body: any;
     successful: boolean;

@@ -166,6 +166,8 @@ class VerificationTableBase extends React.Component<Props, State> {
 							<th className="ver-table-flexible">Expected</th>
 							<th className="ver-table-flexible">Actual</th>
 							<th className="ver-table-status">Status</th>
+							<th className="ver-table-flexible">Operation</th>
+							<th className="ver-table-flexible">key</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -199,6 +201,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 		const { transparencyFilter } = this.props;
 		const {
 			name, expected, expectedType, actual, actualType, status, isExpanded, subEntries, hint,
+			key: keyField, operation,
 		} = node;
 
 		const isToggler = subEntries != null && subEntries.length > 0;
@@ -306,6 +309,14 @@ class VerificationTableBase extends React.Component<Props, State> {
 				<td className={statusClassName}>
 					{this.renderContent(`${key}-status`, statusAlias.alias as string)}
 				</td>
+				<td className={actualClassName} onCopy={this.onCopyFor(operation)}>
+					<div className="ver-table-row-wrapper">
+						{this.renderContent(`${key}-operation`, operation, statusClassName, operation)}
+					</div>
+				</td>
+				<td className={statusClassName}>
+					{this.renderContent(`${key}-key`, keyField.toString())}
+				</td>
 			</tr>
 		);
 	}
@@ -372,7 +383,7 @@ export const RecoverableVerificationTable = ({ stateKey, ...props }: RecoveredPr
 	// at first table render, we need to generate table nodes if we don't find previous table's state
 	<StateSaver
 		stateKey={stateKey}
-		getDefaultState={() => (props.params ? props.params.map(param => paramsToNodes(param)) : [])}>
+		getDefaultState={() => (props.params ? extractParams(props.params) : [])}>
 		{
 			(state: TableNode[], stateHandler) => (
 				<VerificationTableBase
@@ -385,10 +396,23 @@ export const RecoverableVerificationTable = ({ stateKey, ...props }: RecoveredPr
 	</StateSaver>
 );
 
-function paramsToNodes(root: VerificationEntry): TableNode {
-	return root.subEntries ? {
+function extractParams(body: any) {
+	if (!body || !body.fields) return [];
+	return Object.keys(body.fields)
+		.map(field => extractTableParam(body, field))
+		.map(paramsToNodes);
+}
+
+const extractTableParam = (body: any, field: string) => ({
+	name: field,
+	...body.fields[field],
+});
+
+function paramsToNodes(root: any): TableNode {
+	return root.fields ? {
 		...root,
-		subEntries: root.subEntries.map(param => paramsToNodes(param)),
+		subEntries: Object.keys(root.fields)
+			.map(field => extractTableParam(root, field)),
 		isExpanded: true,
 	} : root;
 }

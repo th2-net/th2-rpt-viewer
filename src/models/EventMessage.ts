@@ -19,11 +19,11 @@ export interface EventMessageTimeStamp {
     epochSecond: number;
 }
 
-export default interface EventMessage {
+export interface EventMessage {
     type: string;
 	messageId: string;
 	timestamp: EventMessageTimeStamp;
 	direction: string;
 	sessionId: string;
-	body: unknown;
+	body: any;
 }
