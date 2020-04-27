@@ -25,5 +25,5 @@ export default interface EventMessage {
 	timestamp: EventMessageTimeStamp;
 	direction: string;
 	sessionId: string;
-	body: any;
+	body: unknown;
 }

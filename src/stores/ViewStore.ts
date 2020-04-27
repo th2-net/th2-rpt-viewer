@@ -30,7 +30,7 @@ export default class ViewStore {
 
 	@observable adminMessagesEnabled = new Boolean(false);
 
-	@observable beautifiedMessages: number[] = [];
+	@observable beautifiedMessages: string[] = [];
 
 	@observable leftPanel: Panel.ACTIONS | Panel.STATUS = Panel.ACTIONS;
 
@@ -73,7 +73,7 @@ export default class ViewStore {
 	};
 
 	@action
-	toggleBeautify = (messageId: number) => {
+	toggleBeautify = (messageId: string) => {
 		if (this.beautifiedMessages.includes(messageId)) {
 			this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
 			return;
