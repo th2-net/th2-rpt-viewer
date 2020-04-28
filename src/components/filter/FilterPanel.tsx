@@ -34,6 +34,16 @@ const FilterPanel = observer(() => {
 
 	return (
 		<div className="filter">
+			<div className='filter-row'>
+				<FilterRow
+					block={filterStore.timestampFromBlock}
+					rowIndex={100}/>
+			</div>
+			<div className='filter-row'>
+				<FilterRow
+					block={filterStore.timestampToBlock}
+					rowIndex={101}/>
+			</div>
 			{
 				blocks.map((block, index) => (
 					<div className="filter-row" key={index}>
@@ -62,7 +72,7 @@ const FilterPanel = observer(() => {
 						path: null,
 						values: [],
 					}}
-					rowIndex={blocks.length + 1} />
+					rowIndex={blocks.length + 1}/>
 			</div>
 			<div className="filter__controls filter-controls">
 				<div className="filter-controls__counts">
@@ -83,7 +93,7 @@ const FilterPanel = observer(() => {
 					onChange={() => filterStore.setIsHighlighted(!isHighlighted)}
 					id='filter-highlight'/>
 				<div className="filter-controls__transparency">
-                    Filtered out
+					Filtered out
 					<input
 						type="radio"
 						id="filter-radio-hide"
@@ -101,7 +111,7 @@ const FilterPanel = observer(() => {
 				</div>
 				<div className="filter-controls__clear-btn" onClick={() => resetFilter()}>
 					<div className="filter-controls__clear-icon"/>
-                    Clear All
+					Clear All
 				</div>
 			</div>
 		</div>

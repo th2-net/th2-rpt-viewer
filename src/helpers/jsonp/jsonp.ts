@@ -133,7 +133,7 @@ export function watchReport(interval: number, cb: FileWatchCallback) {
 		}
 	}
 	_watchReport();
-	return setInterval(() => {
+	return window.setInterval(() => {
 		_watchReport();
 	}, interval);
 }
@@ -159,7 +159,7 @@ export function watchLiveTestCase(filePath: string, interval: number, cb: FileWa
 		}
 	}
 	_watchLiveTestCase();
-	return setInterval(() => {
+	return window.setInterval(() => {
 		_watchLiveTestCase();
 	}, interval);
 }

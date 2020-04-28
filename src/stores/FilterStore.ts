@@ -14,9 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed } from 'mobx';
+import { action, computed, observable } from 'mobx';
 import { FilterBlock } from '../models/filter/FilterBlock';
 import ApiSchema from '../api/ApiSchema';
+import FilterPath from '../models/filter/FilterPath';
+import FilterType from '../models/filter/FilterType';
+import { getTimeDate } from '../helpers/date';
+
+const ONE_HOUR = 60 * 60 * 1000;
 
 export default class FilterStore {
 	private api: ApiSchema;
@@ -33,11 +38,23 @@ export default class FilterStore {
 
 	@observable isHighlighted = false;
 
+	@observable timestampFromBlock: FilterBlock = {
+		path: FilterPath.TIMESTAMP_FROM,
+		types: [FilterType.MESSAGE],
+		// start timestamp of a current date
+		values: [new Date(new Date().getTime() - ONE_HOUR).toISOString()]
+	};
+
+	@observable timestampToBlock: FilterBlock = {
+		path: FilterPath.TIMESTAMP_TO,
+		types: [FilterType.MESSAGE],
+		values: [new Date().toISOString()]
+	};
+
 	@action
 	setIsTransparent = (isTransparent: boolean) => {
 		this.isTransparent = isTransparent;
 	};
-
 
 	@action
 	setIsHighlighted = (isHighlighted: boolean) => {
@@ -71,7 +88,37 @@ export default class FilterStore {
 		this.results = [];
 	};
 
+	@action
+	updateMessagesTimestampFilter = (timestampStart: number, timestampEnd: number) => {
+		this.timestampFromBlock = {
+			path: FilterPath.TIMESTAMP_FROM,
+			types: [FilterType.MESSAGE],
+			values: [new Date(timestampStart).toUTCString()],
+		};
+
+		this.timestampToBlock = {
+			path: FilterPath.TIMESTAMP_TO,
+			types: [FilterType.MESSAGE],
+			values: [new Date(timestampEnd).toUTCString()],
+		};
+	};
+
 	@computed get isFilterApplied() {
 		return this.blocks.length > 0 && this.blocks.some(block => block.values.length > 0);
+	}
+
+	@computed
+	get messagesFromTimestamp() {
+		return this.timestampFromBlock.values[0];
+	}
+
+	@action
+	setMessagesFromTimestamp(timestamp: number) {
+		this.timestampFromBlock.values = [new Date(timestamp).toISOString()];
+	}
+
+	@computed
+	get messagesToTimestamp() {
+		return this.timestampToBlock.values[0];
 	}
 }

@@ -17,7 +17,9 @@
 const enum FilterPath {
     ALL = 'Text',
     SERVICE = 'Service',
-    STATUS = 'Status'
+    STATUS = 'Status',
+	TIMESTAMP_FROM = 'Timestamp from',
+	TIMESTAMP_TO = 'Timestamp to'
 }
 
 export const FILTER_PATH_VALUES: FilterPath[] = [FilterPath.ALL, FilterPath.STATUS, FilterPath.SERVICE];

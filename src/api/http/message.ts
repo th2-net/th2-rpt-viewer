@@ -14,43 +14,56 @@
  * limitations under the License.
  ***************************************************************************** */
 import { MessageApiSchema } from '../ApiSchema';
-import { EventMessageTimeStamp } from '../../models/EventMessage';
 
 const BASE_URL = 'http://th2-kuber-node03:30000/backend';
 
-/* eslint-disable no-return-await */
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {
 		const params = new URLSearchParams({ idsOnly: false } as any);
 		const res = await fetch(`${BASE_URL}/search/messages?${params}`);
 
 		if (res.ok) {
-			return await res.json();
+			return res.json();
 		}
 
 		console.error(res.statusText);
 		return [];
 	},
-	getMessages: async (timestampFrom: EventMessageTimeStamp, timestampTo: EventMessageTimeStamp) => {
+	getMessages: async (timestampFrom: number, timestampTo: number) => {
 		const params = new URLSearchParams({
 			idsOnly: false,
-			timestampFrom: timestampFrom.epochSecond * 1000 + timestampFrom.nano / 1_000_000,
-			timestampTo: timestampTo.epochSecond * 1000 + timestampTo.nano / 1_000_000,
+			timestampFrom,
+			timestampTo,
 		} as any);
 		const res = await fetch(`${BASE_URL}/search/messages?${params}`);
 
 		if (res.ok) {
-			return await res.json();
+			return res.json();
+		}
+
+		console.error(res.statusText);
+		return [];
+	},
+	getMessagesIds: async (timestampFrom: number, timestampTo: number) => {
+		const params = new URLSearchParams({
+			idsOnly: true,
+			timestampFrom,
+			timestampTo,
+		} as any);
+		const res = await fetch(`${BASE_URL}/search/messages?${params}`);
+
+		if (res.ok) {
+			return res.json();
 		}
 
 		console.error(res.statusText);
 		return [];
 	},
 	getMessage: async (id: string) => {
-		const res = await fetch(`${BASE_URL}/messages/${id}`);
+		const res = await fetch(`${BASE_URL}/message/${id}`);
 
 		if (res.ok) {
-			return await res.json();
+			return res.json();
 		}
 
 		console.error(res.statusText);

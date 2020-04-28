@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+import Timestamp from '../models/Timestamp';
 
 export function getSecondsPeriod(startTime: string | Date, finishTime: string | Date, withMiliseconds = true) {
 	if (!startTime || !finishTime) {
@@ -48,4 +49,15 @@ export function isDateEqual(first: string | Date, second: string | Date): boolea
 
 function toDate(date: string | Date): Date {
 	return typeof date === 'string' ? new Date(date) : date;
+}
+
+export function getTimeDate(hours: number, minutes: number, seconds: number, ms: number) {
+	const date = new Date();
+	date.setHours(hours, minutes, seconds, ms);
+
+	return date;
+}
+
+export function getTimestampAsNumber(timestamp: Timestamp): number {
+	return timestamp.epochSecond * 1000 + timestamp.nano / 1_000_000;
 }

@@ -23,6 +23,8 @@ import FilterStore from '../stores/FilterStore';
 import SearchStore from '../stores/SearchStore';
 import EventsStore from '../stores/EventsStore';
 import ApiSchema from '../api/ApiSchema';
+import MessagesStore from '../stores/MessagesStore';
+import { filter } from 'react-virtuoso/dist/tinyrx';
 
 export interface RootStoreContext {
     reportStore: ReportStore;
@@ -32,6 +34,7 @@ export interface RootStoreContext {
     filterStore: FilterStore;
 	searchStore: SearchStore;
 	eventsStore: EventsStore;
+	messagesStore: MessagesStore;
 }
 
 const StoresContext = React.createContext({} as RootStoreContext);
@@ -43,7 +46,8 @@ export function createStores(api: ApiSchema) {
 	const mlStore = new MLStore(api, selectedStore);
 	const viewStore = new ViewStore(api);
 	const reportStore = new ReportStore(api, viewStore);
-	const eventsStore = new EventsStore(api);
+	const eventsStore = new EventsStore(api, filterStore);
+	const messagesStore = new MessagesStore(api, eventsStore, filterStore);
 
 	const stores = {
 		reportStore,
@@ -53,6 +57,7 @@ export function createStores(api: ApiSchema) {
 		filterStore,
 		searchStore,
 		eventsStore,
+		messagesStore,
 	};
 
 	return stores;
