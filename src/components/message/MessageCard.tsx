@@ -212,22 +212,24 @@ export const RecoverableMessageCard = ({ searchField, ...props }: MessageCardSta
 );
 
 export const MessageCard = observer(({ message }: MessageCardOwnProps) => {
-	const { viewStore, selectedStore, mlStore } = useStores();
+	const { viewStore } = useStores();
 
-	return <RecoverableMessageCard
-		isSelected={false}
-		status={null}
-		isTransparent={false}
-		rejectedMessagesCount={0}
-		adminEnabled={viewStore.adminMessagesEnabled.valueOf()}
-		panelArea={viewStore.panelArea}
-		isContentBeautified={viewStore.beautifiedMessages.includes(message.messageId)}
-		prediction={null}
-		searchField={null}
-		selectHandler={() => 'stub'}
-		toggleBeautify={() => viewStore.toggleBeautify(message.messageId)}
-		message={message}
-	/>;
+	return (
+		<RecoverableMessageCard
+			isSelected={false}
+			status={null}
+			isTransparent={false}
+			rejectedMessagesCount={0}
+			adminEnabled={viewStore.adminMessagesEnabled.valueOf()}
+			panelArea={viewStore.panelArea}
+			isContentBeautified={viewStore.beautifiedMessages.includes(message.messageId)}
+			prediction={null}
+			searchField={null}
+			selectHandler={() => 'stub'}
+			toggleBeautify={() => viewStore.toggleBeautify(message.messageId)}
+			message={message}
+		/>
+	);
 });
 
 export default MessageCard;

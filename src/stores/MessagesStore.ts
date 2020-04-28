@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, observable } from 'mobx';
+import { action, observable, reaction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import EventsStore from './EventsStore';
 import FilterStore from './FilterStore';
@@ -31,7 +31,7 @@ export default class MessagesStore {
 	public messagesIds: Array<string> = [];
 
 	@observable
-	private messagesCache: Map<string, EventMessage> = new Map();
+	public messagesCache: Map<string, EventMessage> = new Map();
 
 	@observable
 	public isLoading: boolean = false;
@@ -41,13 +41,31 @@ export default class MessagesStore {
 		this.eventsStore = eventsStore;
 		this.filterStore = filterStore;
 
-		autorun(() => {
-			console.log('loading')
-			this.loadMessagesByTimestamp(
-				new Date(this.filterStore.messagesFromTimestamp).getTime(),
-				new Date(this.filterStore.messagesToTimestamp).getTime()
-			);
-		});
+		reaction(
+			() => [
+				this.filterStore.messagesFromTimestamp,
+				this.filterStore.messagesToTimestamp
+			],
+			([fromTimestamp, toTimestamp]) => {
+				this.loadMessagesByTimestamp(
+					new Date(fromTimestamp).getTime(),
+					new Date(toTimestamp).getTime(),
+				);
+			},
+		);
+
+		reaction(
+			() => this.messagesIds,
+			() => {
+				// clearing messages cache after list has changed
+				this.messagesCache = new Map<string, EventMessage>();
+			},
+		);
+
+		this.loadMessagesByTimestamp(
+			new Date(this.filterStore.messagesFromTimestamp).getTime(),
+			new Date(this.filterStore.messagesToTimestamp).getTime()
+		);
 	}
 
 	@action
@@ -57,13 +75,8 @@ export default class MessagesStore {
 		this.isLoading = false;
 	};
 
-	getMessageById = async (id: string): Promise<EventMessage> => {
-		if (this.messagesCache.has(id)) {
-			return this.messagesCache.get(id)!;
-		}
-
+	fetchMessage = async (id: string) => {
 		const message = await this.api.messages.getMessage(id);
 		this.messagesCache.set(id, message!);
-		return message!;
 	};
 }

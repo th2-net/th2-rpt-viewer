@@ -16,7 +16,7 @@
 
 import React from 'react';
 
-export function MessageCardSkeleton() {
+function MessageCardSkeleton() {
 	return (
 		<div className="mc-skeleton">
 			<div className="mc-skeleton__header">

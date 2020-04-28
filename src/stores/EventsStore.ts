@@ -14,11 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, computed, observable, toJS } from 'mobx';
+import { action, autorun, computed, observable, reaction, toJS } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { EventAction } from '../models/EventAction';
 import { nextCyclicItem, prevCyclicItem } from '../helpers/array';
 import FilterStore from './FilterStore';
+import { getTimestampAsNumber } from '../helpers/date';
 
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable indent */
@@ -31,9 +32,27 @@ export default class EventsStore {
 		this.api = api;
 		this.filterStore = filterStore;
 
-		autorun(() => {
-			console.log(toJS(this.eventsList))
-		})
+		reaction(
+			() => this.eventsList,
+			events => {
+				if (events.length < 2) {
+					return;
+				}
+
+				const rootSubEvents = events[1][1];
+
+				if (rootSubEvents != null && rootSubEvents.length > 0) {
+					const timestamps = rootSubEvents
+						.map(event => getTimestampAsNumber(event.startTimestamp))
+						.sort();
+
+					const fromTimestamp = timestamps[0];
+					const toTimestamp = timestamps[timestamps.length - 1];
+
+					this.filterStore.updateMessagesTimestampFilter(fromTimestamp, toTimestamp);
+				}
+			},
+		);
 	}
 
 	@observable eventsList: Array<[string | null, EventAction[]]> = [[null, []]];
