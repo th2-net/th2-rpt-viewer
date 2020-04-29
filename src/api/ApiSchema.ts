@@ -23,10 +23,10 @@ export default interface ApiSchema {
 }
 
 export interface EventApiSchema {
-	getAll: () => Promise<EventAction[]>;
-	getEvent: (id: string) => Promise<EventAction>;
-	getRange: (start: number, end: number) => Promise<EventAction[]>;
-	getSubNodes: (id: string) => Promise<EventAction[]>;
+    getAll: () => Promise<EventAction[]>;
+    getEvent: (id: string) => Promise<EventAction>;
+    getRange: (start: number, end: number) => Promise<EventAction[]>;
+    getSubNodes: (id: string, abortSignal?: AbortSignal) => Promise<EventAction[]>;
 }
 
 export interface MessageApiSchema {

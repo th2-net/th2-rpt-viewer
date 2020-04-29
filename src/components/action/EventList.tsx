@@ -30,8 +30,10 @@ import '../../styles/action.scss';
 interface Props {
 	events: EventAction[];
 	isMinified?: boolean;
-	selectedEvents: string[];
+	selectedEvents: (string | null)[];
 	minimizeCards?: boolean;
+	listIndex: number;
+	loadingEventId: string | null;
 }
 
 export const EventList = observer(({
@@ -39,6 +41,8 @@ export const EventList = observer(({
 	isMinified = false,
 	selectedEvents,
 	minimizeCards = false,
+	listIndex,
+	loadingEventId,
 }: Props) => {
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	const getScrolledIndex = (scrolledActionId: Number | null, actions: ActionNode[]): Number | null => {
@@ -75,13 +79,17 @@ export const EventList = observer(({
 
 	const computeKey = (index: number): number => index;
 
-	const renderEvent = (index: number): React.ReactElement =>
-		<EventActionNode
-			event={events[index]}
+	const renderEvent = (index: number): React.ReactElement => {
+		const event = events[index];
+		return <EventActionNode
+			event={event}
 			panelArea={viewStore.panelArea}
 			selectEvent={eventsStore.selectEvent}
 			isMinified={isMinified}
-			isSelected={selectedEvents.includes(events[index].eventId)} />;
+			isSelected={selectedEvents.includes(event.eventId)}
+			listIndex={listIndex}
+			loadingSubNodes={loadingEventId === event.eventId} />;
+	};
 
 	const listRootClass = createBemElement(
 		'actions',
@@ -109,3 +117,5 @@ export const EventList = observer(({
 }, {
 	forwardRef: true,
 });
+
+EventList.displayName = 'EventList';

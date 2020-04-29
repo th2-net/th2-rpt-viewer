@@ -130,8 +130,8 @@ export default function ActionTreeNode(props: Props) {
 				verification={verification as any}
 				isSelected={isSelected}
 				isTransparent={isTransparent}
-				onSelect={onVerificationSelect}
-				parentActionId={parentAction!.id}/>
+				parentActionId={parentAction!.id}
+				listIndex={0} />
 		);
 	}
 

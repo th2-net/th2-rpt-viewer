@@ -34,7 +34,7 @@ export default class MessagesStore {
 	public messagesCache: Map<string, EventMessage> = new Map();
 
 	@observable
-	public isLoading: boolean = false;
+	public isLoading = false;
 
 	constructor(api: ApiSchema, eventsStore: EventsStore, filterStore: FilterStore) {
 		this.api = api;

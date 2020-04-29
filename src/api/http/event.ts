@@ -51,8 +51,8 @@ const eventHttpApi: EventApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
-	getSubNodes: async id => {
-		const res = await fetch(`${BASE_URL}/event/${id}/children`);
+	getSubNodes: async (id: string, abortSignal?: AbortSignal) => {
+		const res = await fetch(`${BASE_URL}/event/${id}/children`, { signal: abortSignal });
 
 		if (res.ok) {
 			return await res.json();

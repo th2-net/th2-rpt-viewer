@@ -25,6 +25,7 @@ import useOutsideClickListener from '../hooks/useOutsideClickListener';
 import { downloadTxtFile } from '../helpers/files/downloadTxt';
 import { ToggleButton } from './ToggleButton';
 import { getMessagesContent } from '../helpers/rawFormatter';
+import { EventAction } from '../models/EventAction';
 import '../styles/header.scss';
 
 export const Header = observer(() => {
@@ -134,7 +135,8 @@ export const Header = observer(() => {
 							{`${eventsStore.selectedRootEvent.eventName} — ${0.710}s — ${status}`}
 						</div>
 						: 	<div className="header-main__title">
-							{`${new Date().toLocaleDateString()} — ${eventsStore.eventsList[0][1].length}`}
+							{/* eslint-disable-next-line max-len */}
+							{`${new Date().toLocaleDateString()} — ${(eventsStore.eventsList[0][1] as EventAction[]).length}`}
 						</div>
 					}
 

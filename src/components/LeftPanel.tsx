@@ -22,54 +22,69 @@ import EventCard from './event/EventCard';
 import PanelArea from '../util/PanelArea';
 import VerificationCard from './action/VerificationCard';
 import SplashScreen from './SplashScreen';
+import { EventAction } from '../models/EventAction';
 import '../styles/layout.scss';
 
 export const LeftPanel = observer(() => {
 	const { eventsStore, viewStore } = useStores();
 
-	const renderSelectedElement = () => {
-		if (eventsStore.selectedEventIsLoading) {
-			return <div style={{ minWidth: '55%', maxWidth: '55%' }}>
-				<SplashScreen />
-			</div>;
-		}
-		if (!eventsStore.selectedEvent) return null;
+	const renderSelectedElement = (event: EventAction, isMinified: boolean, listIndex: number) => {
+		if (!event) return null;
 		return (
-			<div style={{ minWidth: '55%', maxWidth: '55%', overflow: 'auto' }}>
-				{eventsStore.selectedEvent.body && eventsStore.selectedEvent.body.type === 'verification'
+			<div style={{ flex: 1.4, overflow: 'auto' }}>
+				{event.body && event.body.type === 'verification'
 					? <VerificationCard
-						verification={eventsStore.selectedEvent}
+						key={event.eventId}
+						verification={event}
 						isSelected={true}
 						isTransparent={false}
-						parentActionId={eventsStore.selectedEvent.parentEventId as any} />
+						parentActionId={event.parentEventId as any}
+						onSelect={eventsStore.selectEvent}
+						listIndex={listIndex}
+						loadingSubNodes={eventsStore.loadingEventId === event.eventId}/>
 					: <EventCard
-						event={eventsStore.selectedEvent}
-						panelArea={viewStore.panelArea} />
+						key={event.eventId}
+						event={event}
+						panelArea={viewStore.panelArea}
+						onSelect={eventsStore.selectEvent}
+						listIndex={listIndex}
+						loadingSubNodes={eventsStore.loadingEventId === event.eventId} />
 				}
 			</div>);
 	};
-
 	return (
 		<div className="layout-panel">
 			<div className="layout-panel__content layout-events">
-				{eventsStore.eventsList.map(([parentId, children]) =>
-					<div
-						className="layout-panel__content-wrapper"
-						style={{ zIndex: 1 }}
-						key={parentId || 'root'}>
-						{children.length === 0
-							? <SplashScreen />
-							: <EventList
-								events={children}
-								isMinified={eventsStore.selectedEvents.length > 2
-								|| (eventsStore.eventsList.length === 2
-									&& (!!eventsStore.selectedEvent
-									|| eventsStore.selectedEventIsLoading || viewStore.panelArea !== PanelArea.P100))
-								|| viewStore.panelArea === PanelArea.P25}
-								selectedEvents={eventsStore.selectedEvents} />}
-					</div>)}
+				{eventsStore.eventsList.map(([parentId, children], index) => {
+					const isMinified = (
+						eventsStore.eventsList.length > 2
+										|| (eventsStore.eventsList.length === 2
+											&& viewStore.panelArea !== PanelArea.P100)
+										|| viewStore.panelArea === PanelArea.P25
+					);
+					if (Array.isArray(children)) {
+						return (
+							<div
+								className="layout-panel__content-wrapper"
+								style={{ zIndex: 1 }}
+								key={parentId || 'root'}>
+								{children.length === 0
+									? <SplashScreen />
+									: <EventList
+										events={children}
+										isMinified={isMinified}
+										selectedEvents={eventsStore.selectedEvents}
+										listIndex={index}
+										loadingEventId={eventsStore.loadingEventId} />}
+							</div>
+						);
+					}
+
+					return renderSelectedElement(children, isMinified, index);
+				})}
 			</div>
-			{renderSelectedElement()}
 		</div>
 	);
 });
+
+LeftPanel.displayName = 'LeftPanel';

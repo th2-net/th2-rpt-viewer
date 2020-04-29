@@ -14,7 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, computed, observable, reaction, toJS } from 'mobx';
+import {
+	action,
+	observable,
+	computed,
+	reaction,
+} from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { EventAction } from '../models/EventAction';
 import { nextCyclicItem, prevCyclicItem } from '../helpers/array';
@@ -24,11 +29,12 @@ import { getTimestampAsNumber } from '../helpers/date';
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable indent */
 export default class EventsStore {
-	private api: ApiSchema;
+	subNodesAbortController: undefined | null | AbortController;
 
-	private filterStore: FilterStore;
-
-	constructor(api: ApiSchema, filterStore: FilterStore) {
+	constructor(
+		private api: ApiSchema,
+		private filterStore: FilterStore,
+		) {
 		this.api = api;
 		this.filterStore = filterStore;
 
@@ -41,7 +47,7 @@ export default class EventsStore {
 
 				const rootSubEvents = events[1][1];
 
-				if (rootSubEvents != null && rootSubEvents.length > 0) {
+				if (rootSubEvents != null && Array.isArray(rootSubEvents) && rootSubEvents.length > 0) {
 					const timestamps = rootSubEvents
 						.map(event => getTimestampAsNumber(event.startTimestamp))
 						.sort();
@@ -50,21 +56,25 @@ export default class EventsStore {
 					const toTimestamp = timestamps[timestamps.length - 1];
 
 					this.filterStore.updateMessagesTimestampFilter(fromTimestamp, toTimestamp);
+				} else {
+					const { startTimestamp } = rootSubEvents as EventAction;
+					this.filterStore.updateMessagesTimestampFilter(
+						getTimestampAsNumber(startTimestamp),
+						getTimestampAsNumber(startTimestamp),
+					);
 				}
 			},
 		);
 	}
 
-	@observable eventsList: Array<[string | null, EventAction[]]> = [[null, []]];
-
-	@observable selectedEvent: EventAction | null = null;
-
-	@observable selectedEventIsLoading = false;
+	@observable eventsList: Array<[string | null, EventAction[] | EventAction]> = [[null, []]];
 
 	@observable selectedRootEvent: EventAction | null = null;
 
-	@action
-	getEvents = async () => {
+	@observable loadingEventId: null | string = null;
+
+    @action
+    getEvents = async () => {
 		try {
 			const events = await this.api.events.getAll();
 			events.sort((a, b) => b.startTimestamp.epochSecond - a.startTimestamp.epochSecond);
@@ -75,72 +85,61 @@ export default class EventsStore {
 	};
 
 	@action
-	getEventChildren = async (event: EventAction) => {
+	getEventSubNodes = async (event: EventAction) => {
+		this.loadingEventId = event.eventId;
+		this.subNodesAbortController?.abort();
+		this.subNodesAbortController = new AbortController();
 		try {
+			const children = await this.api.events.getSubNodes(event.eventId, this.subNodesAbortController.signal);
+			this.subNodesAbortController = null;
+			this.loadingEventId = null;
+			if (children.length === 0) return;
 			if (event.parentEventId !== null) {
-				this.selectedEventIsLoading = true;
-			}
-			const children = await this.api.events.getSubNodes(event.eventId);
-			if (children.length > 0) {
-				if (event.parentEventId === null) {
-					this.eventsList = [this.eventsList[0], [event.eventId, children]];
-				} else {
-					const parentIndex = this.eventsList.findIndex(([parentId]) => parentId === event.parentEventId);
-					this.eventsList = [...this.eventsList.slice(0, parentIndex + 1), [event.eventId, children]];
-				}
-				this.selectedEventIsLoading = false;
+				// this.eventsList = [...this.eventsList.slice(0, parentIndex + 1), [event.eventId, children]];
+				this.eventsList.push([event.eventId, children]);
 				return;
 			}
-			if (event.parentEventId === null) {
-				this.eventsList = [this.eventsList[0]];
-			}
-			if (this.eventsList[this.eventsList.length - 1][0] !== event.eventId) {
-				const parentIndex = this.eventsList.findIndex(([parentId]) => parentId === event.parentEventId);
-				this.eventsList = [...this.eventsList.slice(0, parentIndex + 1)];
-			}
-			this.selectedEvent = event;
-			this.selectedEventIsLoading = false;
+			this.eventsList = [this.eventsList[0], [event.eventId, children]];
+			return;
 		} catch (error) {
 			console.error('Error while loading event children', error);
 		}
 	};
 
 	@action
-	selectEvent = (event: EventAction) => {
-		this.selectedEvent = null;
-		if (event.parentEventId === null) {
-			if (this.selectedRootEvent && this.selectedRootEvent.eventId === event.eventId) return;
-			this.eventsList = [this.eventsList[0], [event.eventId, []]];
-			this.selectedRootEvent = event;
-			this.getEventChildren(event);
+	selectEvent = (event: EventAction, listIndex: number) => {
+		this.eventsList = this.eventsList.slice(0, listIndex + 1);
+		if (event.parentEventId !== null
+			&& this.eventsList.findIndex(([parentId]) => parentId === event.eventId) === -1) {
+			this.eventsList.push([event.eventId, event]);
 			return;
 		}
-		this.getEventChildren(event);
-		// this.getMessages(event);
+		if (event.parentEventId === null) {
+			if (this.selectedRootEvent && this.selectedRootEvent.eventId === event.eventId) return;
+			this.selectedRootEvent = event;
+		}
+		this.getEventSubNodes(event);
 	};
 
 	@action
 	selectNextEvent = () => {
 		if (!this.selectedRootEvent) return;
-		const nextEvent = nextCyclicItem(this.eventsList[0][1], this.selectedRootEvent);
+		const nextEvent = nextCyclicItem(this.eventsList[0][1] as any, this.selectedRootEvent);
 		if (nextEvent) {
-			this.selectEvent(nextEvent);
+			this.selectEvent(nextEvent, 1);
 		}
 	};
 
 	@action
 	selectPrevEvent = () => {
 		if (!this.selectedRootEvent) return;
-		const prevEvent = prevCyclicItem(this.eventsList[0][1], this.selectedRootEvent);
+		const prevEvent = prevCyclicItem(this.eventsList[0][1] as EventAction[], this.selectedRootEvent);
 		if (prevEvent) {
-			this.selectEvent(prevEvent);
+			this.selectEvent(prevEvent, 2);
 		}
 	};
 
 	@computed get selectedEvents() {
-		const selected = [];
-		this.eventsList.forEach(([parentId]) => selected.push(parentId));
-		this.selectedEvent && selected.push(this.selectedEvent.eventId);
-		return selected;
+		return this.eventsList.map(([parentId]) => parentId);
 	}
 }
