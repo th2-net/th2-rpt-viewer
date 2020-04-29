@@ -21,6 +21,7 @@ import FilterRow from './FilterRow';
 import FilterType from '../../models/filter/FilterType';
 import Checkbox from '../util/Checkbox';
 import '../../styles/filter.scss';
+import MessagesTimestampFilter from './MessagesTimestampFilter';
 
 const FilterPanel = observer(() => {
 	const { filterStore } = useStores();
@@ -34,16 +35,7 @@ const FilterPanel = observer(() => {
 
 	return (
 		<div className="filter">
-			<div className='filter-row'>
-				<FilterRow
-					block={filterStore.timestampFromBlock}
-					rowIndex={100}/>
-			</div>
-			<div className='filter-row'>
-				<FilterRow
-					block={filterStore.timestampToBlock}
-					rowIndex={101}/>
-			</div>
+			<MessagesTimestampFilter/>
 			{
 				blocks.map((block, index) => (
 					<div className="filter-row" key={index}>
@@ -51,9 +43,7 @@ const FilterPanel = observer(() => {
 							<div className="filter-row__divider-text">
 								{index === 0 ? 'Filter' : 'and'}
 							</div>
-							<div
-								className="filter-row__remove-btn"
-							/>
+							<div className="filter-row__remove-btn"/>
 						</div>
 						<FilterRow
 							block={block}

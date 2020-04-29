@@ -43,8 +43,8 @@ export default class MessagesStore {
 
 		reaction(
 			() => [
-				this.filterStore.messagesFromTimestamp,
-				this.filterStore.messagesToTimestamp
+				this.filterStore.messagesTimestampFrom,
+				this.filterStore.messagesTimestampTo
 			],
 			([fromTimestamp, toTimestamp]) => {
 				this.loadMessagesByTimestamp(
@@ -63,8 +63,8 @@ export default class MessagesStore {
 		);
 
 		this.loadMessagesByTimestamp(
-			new Date(this.filterStore.messagesFromTimestamp).getTime(),
-			new Date(this.filterStore.messagesToTimestamp).getTime()
+			new Date(this.filterStore.messagesTimestampFrom).getTime(),
+			new Date(this.filterStore.messagesTimestampTo).getTime(),
 		);
 	}
 
