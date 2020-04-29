@@ -412,7 +412,7 @@ function paramsToNodes(root: any): TableNode {
 	return root.fields ? {
 		...root,
 		subEntries: Object.keys(root.fields)
-			.map(field => extractTableParam(root, field)),
+			.map(field => paramsToNodes(extractTableParam(root, field))),
 		isExpanded: true,
 	} : root;
 }

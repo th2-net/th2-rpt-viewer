@@ -22,17 +22,26 @@ import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
 import { EventAction } from '../../models/EventAction';
 import { getMinifiedStatus } from '../../helpers/action';
 import { StatusType } from '../../models/Status';
+import SplashScreen from '../SplashScreen';
 
 interface Props {
     panelArea: PanelArea;
 	event: EventAction;
-	selectEvent: (event: EventAction) => void;
+	selectEvent: (event: EventAction, index: number) => void;
 	isMinified?: boolean;
 	isSelected?: boolean;
+	listIndex: number;
+	loadingSubNodes?: boolean;
 }
 
 export default function EventActionNode({
-	event, panelArea, selectEvent, isMinified = false, isSelected = false,
+	event,
+	panelArea,
+	selectEvent,
+	isMinified = false,
+	isSelected = false,
+	listIndex,
+	loadingSubNodes = false,
 }: Props) {
 	const {
 		eventName,
@@ -57,7 +66,7 @@ export default function EventActionNode({
 
 	const headerClassName = createBemBlock(
 		'ac-header',
-		panelArea,
+		'p100',
 		status,
 	);
 
@@ -71,11 +80,11 @@ export default function EventActionNode({
 		: null;
 
 	return (
-		<div className={rootClassName} onClick={() => selectEvent(event)}>
+		<div className={rootClassName} onClick={() => selectEvent(event, listIndex)}>
 			<div className={headerClassName}>
 				<div className="ac-header__title">
 					<div className="ac-header__name">
-						<div className={headerTitleElemClassName} title="Event Name">
+						<div className={headerTitleElemClassName} title={eventName}>
 							{eventName}
 						</div>
 					</div>
@@ -107,6 +116,10 @@ export default function EventActionNode({
 					</div>
 				}
 				<div className="ac-header__controls">
+					{loadingSubNodes
+						&& <div className="ac-header__loader">
+							<SplashScreen />
+						</div>}
 					<div className="ac-header__status">
 						{
 							isMinified

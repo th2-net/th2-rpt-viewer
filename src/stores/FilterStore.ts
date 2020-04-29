@@ -42,13 +42,13 @@ export default class FilterStore {
 		path: FilterPath.TIMESTAMP_FROM,
 		types: [FilterType.MESSAGE],
 		// start timestamp of a current date
-		values: [new Date(new Date().getTime() - ONE_HOUR).toISOString()]
+		values: [new Date(new Date().getTime() - ONE_HOUR).toISOString()],
 	};
 
 	@observable timestampToBlock: FilterBlock = {
 		path: FilterPath.TIMESTAMP_TO,
 		types: [FilterType.MESSAGE],
-		values: [new Date().toISOString()]
+		values: [new Date().toISOString()],
 	};
 
 	@action

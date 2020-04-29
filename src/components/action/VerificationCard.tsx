@@ -21,17 +21,20 @@ import { VerificationTable } from './VerificationTable';
 import { keyForVerification } from '../../helpers/keys';
 import { EventAction } from '../../models/EventAction';
 import '../../styles/action.scss';
+import SplashScreen from '../SplashScreen';
 
 interface VerificationCardProps {
     verification: EventAction;
     isSelected: boolean;
     isTransparent: boolean;
     parentActionId: number;
-    onSelect?: (messageId: number, rootActionId: number, status: StatusType) => any;
+	onSelect?: (event: EventAction, listIndex: number) => void;
+	listIndex: number;
+	loadingSubNodes?: boolean;
 }
 
 const VerificationCard = ({
-	verification, isSelected, isTransparent, parentActionId,
+	verification, isSelected, isTransparent, parentActionId, onSelect, listIndex, loadingSubNodes = false,
 }: VerificationCardProps) => {
 	const {
 		body,
@@ -48,16 +51,26 @@ const VerificationCard = ({
 
 	const key = keyForVerification(parentActionId, eventId as any);
 
+	const handleClick = () => {
+		if (onSelect) {
+			onSelect(verification, listIndex);
+		}
+	};
+
 	return (
-		<div className="action-card">
-			<div className="ac-header__title">
-				<div className="ac-header__name">
-					<div className="ac-header name-element" title="Event Name">
-						{eventType}
-					</div>
-				</div>
-			</div>
+		<div className="action-card" onClick={handleClick}>
 			<div className={className}>
+				<div className="ac-header__title ac-body__verification-title-wrapper">
+					<div className="ac-header__name">
+						<div className="ac-header name-element" title={eventType}>
+							{eventType}
+						</div>
+					</div>
+					{loadingSubNodes
+					&& <div className="ac-header__loader">
+						<SplashScreen />
+					</div>}
+				</div>
 				<VerificationTable
 					keyPrefix={key}
 					actionId={parentActionId}

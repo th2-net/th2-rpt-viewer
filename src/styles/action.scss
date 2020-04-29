@@ -96,10 +96,12 @@
     word-break: break-all;
 
     &.p50, &.p75 {
-        grid-template-columns: 1fr auto 70px;
-        grid-template-rows: auto 1fr;
-        grid-template-areas: "title controls controls"
-                             "title start-time elapsed-time";
+        grid-template-columns: 1fr auto auto;
+        grid-template-rows: auto 1fr 1fr;
+        grid-template-areas: "title title controls"
+                             "start-time start-time elapsed-time"
+                             "end-time end-time .";
+        justify-content: flex-start;
     }
 
     &.p25 {
@@ -119,6 +121,15 @@
         grid-template-columns: 1fr;
         grid-template-columns: 1fr repeat(4, auto);
         grid-template-areas: "title start-time end-time elapsed-time controls";
+    }
+
+    &__loader {
+        grid-area: loader;
+        margin-left: 10px;
+        & div {
+            width: 20px;
+            height: 20px;
+        }
     }
 
     &.transparent {
