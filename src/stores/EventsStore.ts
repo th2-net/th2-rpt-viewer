@@ -64,7 +64,6 @@ export default class EventsStore {
 			this.loadingEventId = null;
 			if (children.length === 0) return;
 			if (event.parentEventId !== null) {
-				// this.eventsList = [...this.eventsList.slice(0, parentIndex + 1), [event.eventId, children]];
 				this.eventsList.push([event.eventId, children]);
 				return;
 			}
@@ -80,7 +79,9 @@ export default class EventsStore {
 		this.eventsList = this.eventsList.slice(0, listIndex + 1);
 		if (event.parentEventId !== null
 			&& this.eventsList.findIndex(([parentId]) => parentId === event.eventId) === -1) {
-			this.eventsList.push([event.eventId, event]);
+			this.eventsList = this.eventsList
+				.filter(([, children]) => Array.isArray(children))
+				.concat([[event.eventId, event]]);
 			return;
 		}
 		if (event.parentEventId === null) {
