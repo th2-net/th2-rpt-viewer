@@ -6,7 +6,7 @@ pipeline {
     environment {
         VERSION_MAINTENANCE = """${sh(
                             returnStdout: true,
-                            script: 'git rev-list --count HEAD'
+                            script: 'git rev-list --count VERSION-1.0..HEAD'
                             ).trim()}""" //TODO: Calculate revision from a specific tag instead of a root commit
         NEXUS = credentials('docker-user_nexus.exp.exactpro.com_9000')
         NEXUS_URL = 'nexus.exp.exactpro.com:9000'
