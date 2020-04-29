@@ -14,12 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	action,
-	observable,
-	computed,
-	reaction,
-} from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { EventAction } from '../models/EventAction';
 import { nextCyclicItem, prevCyclicItem } from '../helpers/array';
@@ -34,36 +29,10 @@ export default class EventsStore {
 	constructor(
 		private api: ApiSchema,
 		private filterStore: FilterStore,
-		) {
-		this.api = api;
-		this.filterStore = filterStore;
-
+	) {
 		reaction(
 			() => this.eventsList,
-			events => {
-				if (events.length < 2) {
-					return;
-				}
-
-				const rootSubEvents = events[1][1];
-
-				if (rootSubEvents != null && Array.isArray(rootSubEvents) && rootSubEvents.length > 0) {
-					const timestamps = rootSubEvents
-						.map(event => getTimestampAsNumber(event.startTimestamp))
-						.sort();
-
-					const fromTimestamp = timestamps[0];
-					const toTimestamp = timestamps[timestamps.length - 1];
-
-					this.filterStore.updateMessagesTimestampFilter(fromTimestamp, toTimestamp);
-				} else {
-					const { startTimestamp } = rootSubEvents as EventAction;
-					this.filterStore.updateMessagesTimestampFilter(
-						getTimestampAsNumber(startTimestamp),
-						getTimestampAsNumber(startTimestamp),
-					);
-				}
-			},
+			this.onEventsListChange,
 		);
 	}
 
@@ -73,8 +42,8 @@ export default class EventsStore {
 
 	@observable loadingEventId: null | string = null;
 
-    @action
-    getEvents = async () => {
+	@action
+	getEvents = async () => {
 		try {
 			const events = await this.api.events.getAll();
 			events.sort((a, b) => b.startTimestamp.epochSecond - a.startTimestamp.epochSecond);
@@ -142,4 +111,28 @@ export default class EventsStore {
 	@computed get selectedEvents() {
 		return this.eventsList.map(([parentId]) => parentId);
 	}
+
+	private onEventsListChange = (events: Array<[string | null, EventAction[] | EventAction]>) => {
+		if (events.length < 2) {
+			return;
+		}
+
+		const rootSubEvents = events[1][1];
+
+		if (rootSubEvents != null && Array.isArray(rootSubEvents) && rootSubEvents.length > 0) {
+			const timestamps = rootSubEvents
+				.map(event => getTimestampAsNumber(event.startTimestamp))
+				.sort();
+
+			const fromTimestamp = timestamps[0];
+			const toTimestamp = timestamps[timestamps.length - 1];
+
+			this.filterStore.setMessagesFromTimestamp(fromTimestamp);
+			this.filterStore.setMessagesToTimestamp(toTimestamp);
+		} else {
+			const startTimestamp = getTimestampAsNumber((rootSubEvents as EventAction).startTimestamp);
+			this.filterStore.setMessagesFromTimestamp(startTimestamp);
+			this.filterStore.setMessagesToTimestamp(startTimestamp);
+		}
+	};
 }
