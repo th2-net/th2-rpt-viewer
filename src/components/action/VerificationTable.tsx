@@ -28,7 +28,7 @@ import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { useStores } from '../../hooks/useStores';
 import '../../styles/tables.scss';
 
-const PADDING_LEVEL_VALUE = 15;
+const PADDING_LEVEL_VALUE = 5;
 
 const STATUS_ALIASES = new Map<StatusType, { alias: string; className: string }>([
 	[StatusType.FAILED, { alias: 'F', className: 'failed' }],
