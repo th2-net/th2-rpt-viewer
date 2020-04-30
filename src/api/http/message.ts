@@ -15,7 +15,7 @@
  ***************************************************************************** */
 import { MessageApiSchema } from '../ApiSchema';
 
-const BASE_URL = 'http://th2-kuber-node03:30000/backend';
+const BASE_URL = '/backend';
 
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {
