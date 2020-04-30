@@ -15,12 +15,10 @@
  ***************************************************************************** */
 import { MessageApiSchema } from '../ApiSchema';
 
-const BASE_URL = '/backend';
-
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {
 		const params = new URLSearchParams({ idsOnly: false } as any);
-		const res = await fetch(`${BASE_URL}/search/messages?${params}`);
+		const res = await fetch(`/backend/search/messages?${params}`);
 
 		if (res.ok) {
 			return res.json();
@@ -35,7 +33,7 @@ const messageHttpApi: MessageApiSchema = {
 			timestampFrom,
 			timestampTo,
 		} as any);
-		const res = await fetch(`${BASE_URL}/search/messages?${params}`);
+		const res = await fetch(`/backend/search/messages?${params}`);
 
 		if (res.ok) {
 			return res.json();
@@ -50,7 +48,7 @@ const messageHttpApi: MessageApiSchema = {
 			timestampFrom,
 			timestampTo,
 		} as any);
-		const res = await fetch(`${BASE_URL}/search/messages?${params}`);
+		const res = await fetch(`/backend/search/messages?${params}`);
 
 		if (res.ok) {
 			return res.json();
@@ -60,7 +58,7 @@ const messageHttpApi: MessageApiSchema = {
 		return [];
 	},
 	getMessage: async (id: string) => {
-		const res = await fetch(`${BASE_URL}/message/${id}`);
+		const res = await fetch(`/backend/message/${id}`);
 
 		if (res.ok) {
 			return res.json();

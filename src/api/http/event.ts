@@ -17,12 +17,10 @@
 /* eslint-disable no-return-await */
 import { EventApiSchema } from '../ApiSchema';
 
-const BASE_URL = '/backend';
-
 const eventHttpApi: EventApiSchema = {
 	getAll: async () => {
 		// eslint-disable-next-line prefer-template
-		const res = await fetch(`${BASE_URL}/search/events?` + new URLSearchParams({ idsOnly: false } as any));
+		const res = await fetch(`/backend/search/events?${new URLSearchParams({ idsOnly: false } as any)}`);
 
 		if (res.ok) {
 			return await res.json();
@@ -32,7 +30,7 @@ const eventHttpApi: EventApiSchema = {
 		return [];
 	},
 	getEvent: async (id: string) => {
-		const res = await fetch(`${BASE_URL}/event/${id}`);
+		const res = await fetch(`/backend/event/${id}`);
 
 		if (res.ok) {
 			return await res.json();
@@ -42,7 +40,7 @@ const eventHttpApi: EventApiSchema = {
 		return {};
 	},
 	getRange: async (start, end) => {
-		const res = await fetch(`${BASE_URL}/event?start=${start},end=${end}`);
+		const res = await fetch(`/backend/event?start=${start},end=${end}`);
 
 		if (res.ok) {
 			return await res.json();
@@ -52,7 +50,7 @@ const eventHttpApi: EventApiSchema = {
 		return [];
 	},
 	getSubNodes: async (id: string, abortSignal?: AbortSignal) => {
-		const res = await fetch(`${BASE_URL}/event/${id}/children`, { signal: abortSignal });
+		const res = await fetch(`/backend/event/${id}/children`, { signal: abortSignal });
 
 		if (res.ok) {
 			return await res.json();

@@ -31,7 +31,7 @@ export const LeftPanel = observer(() => {
 	const renderSelectedElement = (event: EventAction, isMinified: boolean, listIndex: number) => {
 		if (!event) return null;
 		return (
-			<div style={{ flex: 3, minWidth: '900px', overflow: 'auto' }}>
+			<div style={{ flex: 3, minWidth: '800px', overflow: 'auto' }}>
 				{event.body && event.body.type === 'verification'
 					? <VerificationCard
 						key={event.eventId}
