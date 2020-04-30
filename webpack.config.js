@@ -30,6 +30,11 @@ module.exports = {
         compress: true,
         port: 9001,
         host: "0.0.0.0",
+        proxy: {
+            '/backend': {
+                target: 'http://th2-kuber-node03:30000'
+            }
+        }
     },
     output: {
         path: path.resolve(__dirname, './build/out/'),
