@@ -138,7 +138,7 @@ type WrapperProps = React.PropsWithChildren<{
 }>;
 
 function ElementWrapper({
-	onMount, onUnmount, children
+	onMount, onUnmount, children,
 }: WrapperProps) {
 	const ref = React.useRef<HTMLDivElement>(null);
 

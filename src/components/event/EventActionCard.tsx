@@ -1,3 +1,4 @@
+/* eslint-disable no-lone-blocks */
 /** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -18,30 +19,35 @@ import * as React from 'react';
 import PanelArea from '../../util/PanelArea';
 import { formatTime, getSecondsPeriod } from '../../helpers/date';
 import { Chip } from '../Chip';
-import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
+import { createBemBlock, createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { EventAction } from '../../models/EventAction';
 import { getMinifiedStatus } from '../../helpers/action';
 import { StatusType } from '../../models/Status';
 import SplashScreen from '../SplashScreen';
+import { useOnScreen } from '../../hooks/useOnScreen';
 
 interface Props {
     panelArea: PanelArea;
 	event: EventAction;
-	selectEvent: (event: EventAction, index: number) => void;
+	onSelect: (event: EventAction) => void;
+	loadSubNodes: (event: EventAction, path: string[]) => void;
 	isMinified?: boolean;
 	isSelected?: boolean;
-	listIndex: number;
 	loadingSubNodes?: boolean;
+	path?: string[];
+	expandNode: (expandPath: string[], event: EventAction) => void;
+	expandPath: string[];
 }
 
-export default function EventActionNode({
+export default function EventActionCard({
 	event,
-	panelArea,
-	selectEvent,
+	onSelect,
 	isMinified = false,
 	isSelected = false,
-	listIndex,
-	loadingSubNodes = false,
+	loadSubNodes,
+	path = [],
+	expandPath,
+	panelArea,
 }: Props) {
 	const {
 		eventName,
@@ -52,6 +58,19 @@ export default function EventActionNode({
 		eventType,
 		body,
 	} = event;
+
+	const rootRef = React.useRef<any>();
+
+	const onScreen = useOnScreen(rootRef, '0px');
+
+	React.useEffect(() => {
+		if (onScreen && event.parentEventId !== null && !event.subNodes) {
+			loadSubNodes(event, path);
+		}
+	}, [onScreen]);
+
+	const isExpanded = expandPath.includes(event.eventId);
+
 	// eslint-disable-next-line no-nested-ternary
 	const status = eventType === 'verification'
 		? body.status
@@ -66,7 +85,7 @@ export default function EventActionNode({
 
 	const headerClassName = createBemBlock(
 		'ac-header',
-		'p100',
+		PanelArea.P100,
 		status,
 	);
 
@@ -79,8 +98,12 @@ export default function EventActionNode({
 		? getSecondsPeriod(new Date(startTimestamp.epochSecond * 1000), new Date(endTimestamp.epochSecond * 1000))
 		: null;
 
+
 	return (
-		<div className={rootClassName} onClick={() => selectEvent(event, listIndex)}>
+		<div
+			className={rootClassName}
+			onClick={() => onSelect(event)}
+			ref={rootRef}>
 			<div className={headerClassName}>
 				<div className="ac-header__title">
 					<div className="ac-header__name">
@@ -90,7 +113,7 @@ export default function EventActionNode({
 					</div>
 				</div>
 				{
-					startTimestamp && !isMinified && (
+					event.parentEventId === null && startTimestamp && !isMinified && (
 						<div className="ac-header__start-time">
 							<div className="ac-header__time-label">Start</div>
 							<div className="ac-header__time-value">
@@ -100,7 +123,7 @@ export default function EventActionNode({
 					)
 				}
 				{
-					endTimestamp && !isMinified && (
+					event.parentEventId === null && endTimestamp && !isMinified && (
 						<div className="ac-header__start-time ac-header__end-time">
 							<div className="ac-header__time-label">Finish</div>
 							<div className="ac-header__time-value">
@@ -110,13 +133,15 @@ export default function EventActionNode({
 					)
 				}
 				{
-					elapsedTime && !isMinified
+					event.parentEventId === null && elapsedTime && !isMinified
 					&& <div className="ac-header__elapsed-time">
 						{elapsedTime}
 					</div>
 				}
 				<div className="ac-header__controls">
-					{loadingSubNodes
+					{event.parentEventId === null
+					&& !event.subNodes
+					&& isExpanded
 						&& <div className="ac-header__loader">
 							<SplashScreen />
 						</div>}

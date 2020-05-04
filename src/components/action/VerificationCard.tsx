@@ -1,5 +1,5 @@
 /** ****************************************************************************
-* Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+* Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -28,13 +28,10 @@ interface VerificationCardProps {
     isSelected: boolean;
     isTransparent: boolean;
     parentActionId: number;
-	onSelect?: (event: EventAction, listIndex: number) => void;
-	listIndex: number;
-	loadingSubNodes?: boolean;
 }
 
 const VerificationCard = ({
-	verification, isSelected, isTransparent, parentActionId, onSelect, listIndex, loadingSubNodes = false,
+	verification, isSelected, isTransparent, parentActionId,
 }: VerificationCardProps) => {
 	const {
 		body,
@@ -51,14 +48,8 @@ const VerificationCard = ({
 
 	const key = keyForVerification(parentActionId, eventId as any);
 
-	const handleClick = () => {
-		if (onSelect) {
-			onSelect(verification, listIndex);
-		}
-	};
-
 	return (
-		<div className="action-card" onClick={handleClick}>
+		<div className="action-card">
 			<div className={className}>
 				<div className="ac-header__title ac-body__verification-title-wrapper">
 					<div className="ac-header__name">
@@ -66,10 +57,6 @@ const VerificationCard = ({
 							{eventType}
 						</div>
 					</div>
-					{loadingSubNodes
-					&& <div className="ac-header__loader">
-						<SplashScreen />
-					</div>}
 				</div>
 				<VerificationTable
 					keyPrefix={key}

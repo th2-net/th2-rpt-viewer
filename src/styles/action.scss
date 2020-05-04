@@ -26,11 +26,12 @@
     border: 3px solid transparent;
     border-radius: $defaultCardBorderRadius;
     padding: 5px;
-    margin: 6px 0;
     transition: all 0.1s;
     background-color: var(--status-secondary-background-color);
     cursor: pointer;
     height: auto;
+    margin: 3px 0;
+
     &__status {
         padding-left: 10px;
     }
@@ -274,6 +275,20 @@
 
         @include ml-counter;
         @include ml-icon;
+    }
+
+    &__expand-button {
+        @include icon(url(../../resources/icons/expand-on.svg), 16px, 16px);
+        cursor: pointer;
+        flex-shrink: 0;
+
+        &.hidden {
+            background-image: url(../../resources/icons/expand-off.svg);
+        }
+
+        &.disabled {
+            opacity: 0.2;
+        }
     }
 }
 

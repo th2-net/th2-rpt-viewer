@@ -24,10 +24,10 @@ import Message from '../../models/Message';
 import StateSaverProvider from '../util/StateSaverProvider';
 import { VirtualizedList } from '../VirtualizedList';
 import { createBemElement } from '../../helpers/styleCreators';
-import '../../styles/messages.scss';
 import SkeletonedMessageCardListItem from './SkeletonedMessageCardListItem';
+import '../../styles/messages.scss';
 
-export const MessageCardList = observer(() => {
+const MessageCardList = () => {
 	const getScrolledIndex = (scrolledMessageId: Number, messages: Message[]): Number | null => {
 		const scrolledIndex = messages.findIndex(message => message.id === +scrolledMessageId);
 
@@ -87,6 +87,6 @@ export const MessageCardList = observer(() => {
 			</div>
 		</div>
 	);
-}, {
-	forwardRef: true,
-});
+};
+
+export default observer(MessageCardList, { forwardRef: true });

@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,75 +16,25 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { EventList } from './action/EventList';
+import EventList from './event/EventList';
 import { useStores } from '../hooks/useStores';
-import EventCard from './event/EventCard';
-import PanelArea from '../util/PanelArea';
-import VerificationCard from './action/VerificationCard';
-import SplashScreen from './SplashScreen';
-import { EventAction } from '../models/EventAction';
 import '../styles/layout.scss';
+import SplashScreen from './SplashScreen';
 
-export const LeftPanel = observer(() => {
-	const { eventsStore, viewStore } = useStores();
+const LeftPanel = () => {
+	const { eventsStore } = useStores();
 
-	const renderSelectedElement = (event: EventAction, isMinified: boolean, listIndex: number) => {
-		if (!event) return null;
-		return (
-			<div style={{ flex: 3, minWidth: '800px', overflow: 'auto' }}>
-				{event.body && event.body.type === 'verification'
-					? <VerificationCard
-						key={event.eventId}
-						verification={event}
-						isSelected={true}
-						isTransparent={false}
-						parentActionId={event.parentEventId as any}
-						onSelect={eventsStore.selectEvent}
-						listIndex={listIndex}
-						loadingSubNodes={eventsStore.loadingEventId === event.eventId}/>
-					: <EventCard
-						key={event.eventId}
-						event={event}
-						panelArea={viewStore.panelArea}
-						onSelect={eventsStore.selectEvent}
-						listIndex={listIndex}
-						loadingSubNodes={eventsStore.loadingEventId === event.eventId} />
-				}
-			</div>);
-	};
 	return (
 		<div className="layout-panel">
 			<div className="layout-panel__content layout-events">
-				{eventsStore.eventsList.map(([parentId, children], index) => {
-					const isMinified = (
-						eventsStore.eventsList.length > 2
-										|| (eventsStore.eventsList.length === 2
-											&& viewStore.panelArea !== PanelArea.P100)
-										|| viewStore.panelArea === PanelArea.P25
-					);
-					if (Array.isArray(children)) {
-						return (
-							<div
-								className="layout-panel__content-wrapper"
-								style={{ zIndex: 1 }}
-								key={parentId || 'root'}>
-								{children.length === 0
-									? <SplashScreen />
-									: <EventList
-										events={children}
-										isMinified={isMinified}
-										selectedEvents={eventsStore.selectedEvents}
-										listIndex={index}
-										loadingEventId={eventsStore.loadingEventId} />}
-							</div>
-						);
-					}
-
-					return renderSelectedElement(children, isMinified, index);
-				})}
+				{
+					eventsStore.events.length > 0
+						? <EventList events={eventsStore.events} />
+						: <SplashScreen />
+				}
 			</div>
 		</div>
 	);
-});
+};
 
-LeftPanel.displayName = 'LeftPanel';
+export default observer(LeftPanel);

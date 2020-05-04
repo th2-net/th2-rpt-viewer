@@ -24,19 +24,18 @@ import { getMinifiedStatus } from '../../helpers/action';
 import { StatusType } from '../../models/Status';
 import ActionParameter from '../../models/ActionParameter';
 import ParamsTable from '../action/ParamsTable';
-import SplashScreen from '../SplashScreen';
 
 interface Props {
     panelArea: PanelArea;
 	event: EventAction;
+	onSelect: (event: EventAction) => void;
 	isMinified?: boolean;
-	onSelect?: (event: EventAction, listIndex: number) => void;
-	listIndex: number;
-	loadingSubNodes?: boolean;
 }
 
 export default function EventCard({
-	event, panelArea, isMinified = false, onSelect, listIndex, loadingSubNodes = false,
+	event,
+	isMinified = false,
+	onSelect,
 }: Props) {
 	const {
 		startTimestamp,
@@ -61,7 +60,7 @@ export default function EventCard({
 
 	const headerClassName = createBemBlock(
 		'ac-header',
-		PanelArea.P75,
+		PanelArea.P100,
 		status,
 	);
 
@@ -74,18 +73,8 @@ export default function EventCard({
 		? getSecondsPeriod(new Date(startTimestamp.epochSecond * 1000), new Date(endTimestamp.epochSecond * 1000))
 		: null;
 
-	const handleClick = () => {
-		if (onSelect) {
-			onSelect(event, listIndex);
-		}
-	};
-	// name: string;
-	// subParameters?: Array<ActionParameter>;
-	// value?: string;
 	const getParameters = (): ActionParameter[] => {
-		if (!body?.fields) {
-			return [];
-		}
+		if (!body?.fields) return [];
 		const { fields } = body;
 		// eslint-disable-next-line no-shadow
 		const extractParams = (fields: any): ActionParameter[] =>
@@ -132,7 +121,7 @@ export default function EventCard({
 	} = body || {};
 
 	return (
-		<div className={rootClassName} onClick={handleClick}>
+		<div className={rootClassName}>
 			<div className={headerClassName}>
 				<div className="ac-header__title">
 					<div className="ac-header__name">
@@ -168,10 +157,6 @@ export default function EventCard({
 					</div>
 				}
 				<div className="ac-header__controls">
-					{loadingSubNodes
-					&& <div className="ac-header__loader">
-						<SplashScreen />
-					</div>}
 					<div className="ac-header__status">
 						{
 							isMinified
@@ -188,7 +173,7 @@ export default function EventCard({
 					}
 				</div>
 			</div>
-			<div>
+			<div style={{ padding: '0 15px' }}>
 				{body?.fields
 				&& <>
 					<div className="ac-body__item-title">Input parameters</div>

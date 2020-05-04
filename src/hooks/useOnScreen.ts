@@ -11,20 +11,32 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  limitations under the License.
  ***************************************************************************** */
-import Timestamp from './Timestamp';
 
-export interface EventAction {
-    type: string;
-    eventId: string;
-    eventName: string;
-    eventType: string;
-    endTimestamp: Timestamp;
-    startTimestamp: Timestamp;
-    parentEventId: string;
-    attachedMessageIds: Array<string>;
-    body: any;
-    successful: boolean;
-    subNodes?: EventAction[];
+import React from 'react';
+
+export function useOnScreen(ref: any, rootMargin = '0px') {
+	// State and setter for storing whether element is visible
+	const [isIntersecting, setIntersecting] = React.useState(false);
+
+	React.useEffect(() => {
+		const observer = new IntersectionObserver(
+			([entry]) => {
+			// Update our state when observer callback fires
+				setIntersecting(entry.isIntersecting);
+			},
+			{
+				rootMargin,
+			},
+		);
+		if (ref.current) {
+			observer.observe(ref.current);
+		}
+		return () => {
+			observer.unobserve(ref.current);
+		};
+	}, []); // Empty array ensures that effect is only run on mount and unmount
+
+	return isIntersecting;
 }

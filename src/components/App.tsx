@@ -33,7 +33,7 @@ import '../styles/root.scss';
 
 const REPORT_FILE_PATH = 'index.html';
 
-const App = observer(() => {
+const App = () => {
 	const {
 		reportStore,
 		selectedStore,
@@ -131,6 +131,6 @@ const App = observer(() => {
 			<SplashScreen />
 		</div>
 	);
-});
+};
 
-export default App;
+export default observer(App);

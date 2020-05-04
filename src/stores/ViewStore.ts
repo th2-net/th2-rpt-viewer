@@ -14,16 +14,27 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed } from 'mobx';
+import { observable, action, computed, reaction } from 'mobx';
 import Panel from '../util/Panel';
 import PanelArea from '../util/PanelArea';
 import ApiSchema from '../api/ApiSchema';
+
+export enum Views {
+	EVENTS = 'events',
+	MESSAGES = 'messages',
+}
+
+const initialViewState = new URLSearchParams(window.location.search).get('view') as Views || Views.EVENTS;
 
 export default class ViewStore {
 	private api: ApiSchema;
 
 	constructor(api: ApiSchema) {
 		this.api = api;
+		reaction(
+			() => this.selectedView,
+			this.onViewChange,
+		);
 	}
 
 	@observable isLoading = true;
@@ -41,6 +52,8 @@ export default class ViewStore {
 	@observable isConnectionError = false;
 
 	@observable showMessages = false;
+
+	@observable selectedView: Views = initialViewState;
 
 	@action
 	setAdminMsgEnabled = (adminEnabled: boolean) => {
@@ -88,4 +101,10 @@ export default class ViewStore {
 	@computed get isRightPanelClosed() {
 		return this.panelArea === PanelArea.P100;
 	}
+
+	private onViewChange = () => {
+		const params = new URLSearchParams();
+		params.set('view', this.selectedView);
+		window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+	};
 }
