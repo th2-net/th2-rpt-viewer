@@ -361,7 +361,7 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 	}
 }
 
-const SearchInput = observer(() => {
+const SearchInput = () => {
 	const { searchStore } = useStores();
 
 	return <SearchInputBase
@@ -373,6 +373,6 @@ const SearchInput = observer(() => {
 		nextSearchResult={searchStore.nextSearchResult}
 		prevSearchResult={searchStore.prevSearchResult}
 		clear={searchStore.clear} />;
-});
+};
 
-export default SearchInput;
+export default observer(SearchInput);

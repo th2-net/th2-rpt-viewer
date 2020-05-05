@@ -26,10 +26,17 @@ import { downloadTxtFile } from '../helpers/files/downloadTxt';
 import { ToggleButton } from './ToggleButton';
 import { getMessagesContent } from '../helpers/rawFormatter';
 import { EventAction } from '../models/EventAction';
+import { Views } from '../stores/ViewStore';
 import '../styles/header.scss';
 
-export const Header = observer(() => {
-	const { selectedStore, filterStore, eventsStore } = useStores();
+/* eslint-disable no-return-assign */
+const Header = () => {
+	const {
+		selectedStore,
+		filterStore,
+		eventsStore,
+		viewStore,
+	} = useStores();
 
 	const [showFilter, setShowFilter] = React.useState(false);
 	const filterBaseRef = React.useRef<HTMLDivElement>(null);
@@ -136,7 +143,9 @@ export const Header = observer(() => {
 						</div>
 						: 	<div className="header-main__title">
 							{/* eslint-disable-next-line max-len */}
-							{`${new Date().toLocaleDateString()} — ${(eventsStore.eventsList[0][1] as EventAction[]).length}`}
+							{`${new Date().toLocaleDateString()} — ${eventsStore.selectedRootEvent
+								? (eventsStore.selectedRootEvent as EventAction).subNodes?.length
+								: 0}`}
 						</div>
 					}
 
@@ -147,11 +156,15 @@ export const Header = observer(() => {
 					</div>
 				</div>
 				<div className="header__group">
-					<ToggleButton>
-						Messages
+					<ToggleButton
+						isToggled={viewStore.selectedView === Views.EVENTS}
+						onClick={() => viewStore.selectedView = Views.EVENTS}>
+						Events
 					</ToggleButton>
-					<ToggleButton>
-						Logs
+					<ToggleButton
+						isToggled={viewStore.selectedView === Views.MESSAGES}
+						onClick={() => viewStore.selectedView = Views.MESSAGES}>
+						Messages
 					</ToggleButton>
 				</div>
 			</div>
@@ -161,20 +174,23 @@ export const Header = observer(() => {
 				&& 	<div className="header__info-element">
 					<span>Start:</span>
 					<p>
-						{formatTime(new Date().toString())}
+						{formatTime(
+							new Date(eventsStore.selectedRootEvent.startTimestamp.epochSecond * 1000).toString(),
+						)}
 					</p>
 				</div>}
-
-				<div className="header__description">
+				{/* <div className="header__description">
 					Description
 				</div>
 				<div className="header__info-element">
 					<span>Finish:</span>
-					<p>
+					<p style={{ opacity: 0 }}>
 						{formatTime(new Date().toString())}
 					</p>
-				</div>
+				</div> */}
 			</div>}
 		</div>
 	);
-});
+};
+
+export default observer(Header);

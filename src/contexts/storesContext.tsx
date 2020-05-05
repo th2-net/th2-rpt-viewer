@@ -24,7 +24,6 @@ import SearchStore from '../stores/SearchStore';
 import EventsStore from '../stores/EventsStore';
 import ApiSchema from '../api/ApiSchema';
 import MessagesStore from '../stores/MessagesStore';
-import { filter } from 'react-virtuoso/dist/tinyrx';
 
 export interface RootStoreContext {
     reportStore: ReportStore;

@@ -44,7 +44,7 @@ export default class MessagesStore {
 		reaction(
 			() => [
 				this.filterStore.messagesTimestampFrom,
-				this.filterStore.messagesTimestampTo
+				this.filterStore.messagesTimestampTo,
 			],
 			([fromTimestamp, toTimestamp]) => {
 				this.loadMessagesByTimestamp(

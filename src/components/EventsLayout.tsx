@@ -16,38 +16,48 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Header } from './Header';
-import { SplitView } from './SplitView';
-import { LeftPanel } from './LeftPanel';
-import { RightPanel } from './RightPanel';
+import Header from './Header';
+import SplitView from './SplitView';
+import LeftPanel from './LeftPanel';
+import RightPanel from './RightPanel';
 import LinearProgressBar from './LinearProgressBar';
 import NetworkError from './NetworkError';
+import MessageCardList from './message/MessagesCardList';
+import { Views } from '../stores/ViewStore';
 import { useStores } from '../hooks/useStores';
 import '../styles/layout.scss';
+import SplashScreen from './SplashScreen';
 
-const EventsLayout = observer(() => {
-	const { viewStore } = useStores();
+const EventsLayout = () => {
+	const { viewStore, messagesStore } = useStores();
 
 	return (
 		<div className="layout">
 			<div className="layout__header">
-				{!viewStore.isConnectionError && <LinearProgressBar progress={100}/>}
+				{!viewStore.isConnectionError && <LinearProgressBar progress={100} />}
 				{viewStore.isConnectionError && <NetworkError />}
-				<Header/>
+				<Header />
 			</div>
-			<div className="layout__body">
+			{viewStore.selectedView === Views.EVENTS
+			&& <div className="layout__body">
 				<SplitView
 					panelArea={viewStore.panelArea}
 					onPanelAreaChange={viewStore.setPanelArea}
 					leftPanelMinWidth={500}
 					rightPanelMinWidth={620}
 					showMessages={viewStore.showMessages}>
-					<LeftPanel/>
-					<RightPanel/>
+					<LeftPanel />
+					<RightPanel />
 				</SplitView>
-			</div>
+			</div>}
+			{/* eslint-disable-next-line no-nested-ternary */}
+			{viewStore.selectedView === Views.MESSAGES
+				? messagesStore.isLoading
+					? <SplashScreen />
+					: <MessageCardList />
+				: null}
 		</div>
 	);
-});
+};
 
-export default EventsLayout;
+export default observer(EventsLayout);

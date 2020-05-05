@@ -14,14 +14,20 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import {
+	action,
+	computed,
+	observable,
+	reaction,
+	set,
+} from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { EventAction } from '../models/EventAction';
 import { nextCyclicItem, prevCyclicItem } from '../helpers/array';
 import FilterStore from './FilterStore';
 import { getTimestampAsNumber } from '../helpers/date';
+import { isRootEvent } from '../helpers/event';
 
-/* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable indent */
 export default class EventsStore {
 	subNodesAbortController: undefined | null | AbortController;
@@ -31,96 +37,111 @@ export default class EventsStore {
 		private filterStore: FilterStore,
 	) {
 		reaction(
-			() => this.eventsList,
+			() => this.selectedRootEventSubNodes,
 			this.onEventsListChange,
 		);
 	}
 
-	@observable eventsList: Array<[string | null, EventAction[] | EventAction]> = [[null, []]];
+	@observable events: Array<EventAction> = [];
 
-	@observable selectedRootEvent: EventAction | null = null;
+	@observable selectedEvent: EventAction | null = null;
 
 	@observable loadingEventId: null | string = null;
+
+	@observable expandPath: Array<string> = [];
+
+	@computed get selectedRootEvent() {
+		if (!this.expandPath.length) return null;
+
+		return this.events.find(event => event.eventId === this.expandPath[0])!;
+	}
+
+	@computed get selectedRootEventSubNodes() {
+		return this.selectedRootEvent?.subNodes;
+	}
+
+	@action
+	expandNode = (path: string[], event: EventAction) => {
+		if (!event.subNodes) {
+			this.getEventSubNodes(event, path);
+		}
+		this.expandPath = path;
+	};
 
 	@action
 	getEvents = async () => {
 		try {
 			const events = await this.api.events.getAll();
 			events.sort((a, b) => b.startTimestamp.epochSecond - a.startTimestamp.epochSecond);
-			this.eventsList = [[null, events]];
+			this.events = events;
 		} catch (error) {
 			console.error('Error while loading events', error);
 		}
 	};
 
 	@action
-	getEventSubNodes = async (event: EventAction) => {
+	getEventSubNodes = async (event: EventAction, path: string[]) => {
+		if (event.subNodes) return;
 		this.loadingEventId = event.eventId;
-		this.subNodesAbortController?.abort();
-		this.subNodesAbortController = new AbortController();
 		try {
-			const children = await this.api.events.getSubNodes(event.eventId, this.subNodesAbortController.signal);
+			const children = await this.api.events.getSubNodes(event.eventId);
 			this.subNodesAbortController = null;
 			this.loadingEventId = null;
-			if (children.length === 0) return;
-			if (event.parentEventId !== null) {
-				this.eventsList.push([event.eventId, children]);
+			let { events } = this;
+			let parentNode: EventAction | undefined;
+			if (isRootEvent(event)) {
+				parentNode = events.find(e => e.eventId === event.eventId);
+				set(parentNode!, 'subNodes', observable.array(children));
 				return;
 			}
-			this.eventsList = [this.eventsList[0], [event.eventId, children]];
-			return;
+			while (path.length > 0) {
+				const nextParentNode = path.shift();
+				parentNode = events.find(e => e.eventId === nextParentNode);
+				events = parentNode?.subNodes || [];
+			}
+			if (parentNode) {
+				if (!parentNode.subNodes) {
+					set(parentNode, 'subNodes', observable.array(children));
+				} else {
+				// eslint-disable-next-line no-confusing-arrow
+				parentNode.subNodes = parentNode.subNodes?.map(e => {
+					if (e.eventId !== event.eventId) return e;
+					set(e, 'subNodes', observable.array(children));
+					return e;
+					});
+				}
+			}
 		} catch (error) {
 			console.error('Error while loading event children', error);
 		}
 	};
 
 	@action
-	selectEvent = (event: EventAction, listIndex: number) => {
-		this.eventsList = this.eventsList.slice(0, listIndex + 1);
-		if (event.parentEventId !== null
-			&& this.eventsList.findIndex(([parentId]) => parentId === event.eventId) === -1) {
-			this.eventsList = this.eventsList
-				.filter(([, children]) => Array.isArray(children))
-				.concat([[event.eventId, event]]);
-			return;
-		}
-		if (event.parentEventId === null) {
-			if (this.selectedRootEvent && this.selectedRootEvent.eventId === event.eventId) return;
-			this.selectedRootEvent = event;
-		}
-		this.getEventSubNodes(event);
+	selectEvent = (event: EventAction) => {
+		this.selectedEvent = event;
 	};
 
 	@action
 	selectNextEvent = () => {
 		if (!this.selectedRootEvent) return;
-		const nextEvent = nextCyclicItem(this.eventsList[0][1] as any, this.selectedRootEvent);
+		const nextEvent = nextCyclicItem(this.events, this.selectedRootEvent);
 		if (nextEvent) {
-			this.selectEvent(nextEvent, 1);
+			this.expandNode([nextEvent.eventId], nextEvent);
 		}
 	};
 
 	@action
 	selectPrevEvent = () => {
 		if (!this.selectedRootEvent) return;
-		const prevEvent = prevCyclicItem(this.eventsList[0][1] as EventAction[], this.selectedRootEvent);
+		const prevEvent = prevCyclicItem(this.events, this.selectedRootEvent);
 		if (prevEvent) {
-			this.selectEvent(prevEvent, 2);
+			this.expandNode([prevEvent.eventId], prevEvent);
 		}
 	};
 
-	@computed get selectedEvents() {
-		return this.eventsList.map(([parentId]) => parentId);
-	}
-
-	private onEventsListChange = (events: Array<[string | null, EventAction[] | EventAction]>) => {
-		if (events.length < 2) {
-			return;
-		}
-
-		const rootSubEvents = events[1][1];
-
-		if (rootSubEvents != null && Array.isArray(rootSubEvents) && rootSubEvents.length > 0) {
+	private onEventsListChange = (rootSubEvents: EventAction[] | undefined) => {
+		if (!rootSubEvents || !rootSubEvents.length) return;
+		if (Array.isArray(rootSubEvents)) {
 			const timestamps = rootSubEvents
 				.map(event => getTimestampAsNumber(event.startTimestamp))
 				.sort();
@@ -130,10 +151,6 @@ export default class EventsStore {
 
 			this.filterStore.setMessagesFromTimestamp(fromTimestamp);
 			this.filterStore.setMessagesToTimestamp(toTimestamp);
-		} else {
-			const startTimestamp = getTimestampAsNumber((rootSubEvents as EventAction).startTimestamp);
-			this.filterStore.setMessagesFromTimestamp(startTimestamp);
-			this.filterStore.setMessagesToTimestamp(startTimestamp);
 		}
 	};
 }

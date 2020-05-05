@@ -18,21 +18,18 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import ResizeObserver from 'resize-observer-polyfill';
 import Panel from '../util/Panel';
-import { MessageCardList } from './message/MessagesCardList';
-import LogsList from './log/LogsList';
+import VerificationCard from './action/VerificationCard';
+import EventCard from './event/EventCard';
 import { createStyleSelector } from '../helpers/styleCreators';
-import { KnownBugPanel } from './knownbugs/KnownBugPanel';
 import { useStores } from '../hooks/useStores';
-import SplashScreen from './SplashScreen';
+import { EventAction } from '../models/EventAction';
 import '../styles/layout.scss';
 
 const MIN_CONTROLS_WIDTH = 850;
 const MIN_CONTROLS_WIDTH_WITH_REJECTED = 900;
 
-type RightPanelType = Panel.MESSAGES | Panel.KNOWN_BUGS | Panel.LOGS;
-
-export const RightPanel = observer(() => {
-	const { viewStore, selectedStore, eventsStore, messagesStore } = useStores();
+const RightPanel = () => {
+	const { viewStore, selectedStore, eventsStore } = useStores();
 	const [showTitles, setShowTitle] = React.useState(true);
 
 	const root = React.useRef<HTMLDivElement>(null);
@@ -61,32 +58,36 @@ export const RightPanel = observer(() => {
 		'layout-panel__content-wrapper',
 		viewStore.rightPanel === Panel.MESSAGES ? null : 'disabled',
 	);
-	const knownBugsRootClass = createStyleSelector(
-		'layout-panel__content-wrapper',
-		viewStore.rightPanel === Panel.KNOWN_BUGS ? null : 'disabled',
-	);
-	const logsRootClass = createStyleSelector(
-		'layout-panel__content-wrapper',
-		viewStore.rightPanel === Panel.LOGS ? null : 'disabled',
-	);
 
+	const renderSelectedElement = (event: EventAction) => {
+		if (!event) return null;
+		return (
+			<div style={{ overflow: 'auto', height: '100%' }}>
+				{event.body && event.body.type === 'verification'
+					? <VerificationCard
+						key={event.eventId}
+						verification={event}
+						isSelected={true}
+						isTransparent={false}
+						parentActionId={event.parentEventId as any} />
+					: <EventCard
+						key={event.eventId}
+						event={event}
+						panelArea={viewStore.panelArea}
+						onSelect={eventsStore.selectEvent} />
+				}
+			</div>);
+	};
 	return (
 		<div className="layout-panel" ref={root}>
-			{
-				messagesStore.isLoading
-					? <SplashScreen/>
-					: <div className="layout-panel__content">
-						<div className={messagesRootClass}>
-							<MessageCardList/>
-						</div>
-						<div className={logsRootClass}>
-							<LogsList isActive={viewStore.rightPanel === Panel.LOGS}/>
-						</div>
-						<div className={knownBugsRootClass}>
-							<KnownBugPanel/>
-						</div>
-					</div>
-			}
+			<div className="layout-panel__content">
+				<div className={messagesRootClass}>
+					{eventsStore.selectedEvent
+					&& renderSelectedElement(eventsStore.selectedEvent)}
+				</div>
+			</div>
 		</div>
 	);
-});
+};
+
+export default observer(RightPanel);

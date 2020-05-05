@@ -43,7 +43,7 @@ interface State {
     previewPanelArea: PanelArea;
 }
 
-export class SplitView extends React.Component<Props, State> {
+export default class SplitView extends React.Component<Props, State> {
 	private leftPanel = React.createRef<HTMLDivElement>();
 
 	private root = React.createRef<HTMLDivElement>();

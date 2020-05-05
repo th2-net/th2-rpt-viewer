@@ -20,29 +20,19 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../hooks/useStores';
 import { ActionNode, isAction } from '../../models/Action';
+import EventTree from './EventTree';
 import { VirtualizedList } from '../VirtualizedList';
 import StateSaverProvider from '../util/StateSaverProvider';
 import { createBemElement } from '../../helpers/styleCreators';
-import EventActionNode from '../event/EventActionNode';
 import { EventAction } from '../../models/EventAction';
 import '../../styles/action.scss';
 
 interface Props {
 	events: EventAction[];
-	isMinified?: boolean;
-	selectedEvents: (string | null)[];
-	minimizeCards?: boolean;
-	listIndex: number;
-	loadingEventId: string | null;
 }
 
-export const EventList = observer(({
+const EventList = ({
 	events,
-	isMinified = false,
-	selectedEvents,
-	minimizeCards = false,
-	listIndex,
-	loadingEventId,
 }: Props) => {
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	const getScrolledIndex = (scrolledActionId: Number | null, actions: ActionNode[]): Number | null => {
@@ -56,8 +46,6 @@ export const EventList = observer(({
 	const {
 		selectedStore,
 		filterStore,
-		viewStore,
-		eventsStore,
 	} = useStores();
 	const list = React.useRef<VirtualizedList>();
 	/*
@@ -79,17 +67,10 @@ export const EventList = observer(({
 
 	const computeKey = (index: number): number => index;
 
-	const renderEvent = (index: number): React.ReactElement => {
-		const event = events[index];
-		return <EventActionNode
-			event={event}
-			panelArea={viewStore.panelArea}
-			selectEvent={eventsStore.selectEvent}
-			isMinified={isMinified}
-			isSelected={selectedEvents.includes(event.eventId)}
-			listIndex={listIndex}
-			loadingSubNodes={loadingEventId === event.eventId} />;
-	};
+	const renderEvent = (index: number): React.ReactElement =>
+		<EventTree
+			event={events[index]}
+			path={[]} />;
 
 	const listRootClass = createBemElement(
 		'actions',
@@ -99,7 +80,7 @@ export const EventList = observer(({
 
 	return (
 		<div className="actions">
-			<div className={listRootClass}>
+			<div className={listRootClass} style={{ overflow: 'auto' }}>
 				<StateSaverProvider>
 					<VirtualizedList
 						rowCount={events.length}
@@ -114,8 +95,6 @@ export const EventList = observer(({
 			</div>
 		</div>
 	);
-}, {
-	forwardRef: true,
-});
+};
 
-EventList.displayName = 'EventList';
+export default observer(EventList, { forwardRef: true });

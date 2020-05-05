@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,18 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import Timestamp from './Timestamp';
 
-export interface EventAction {
-    type: string;
-    eventId: string;
-    eventName: string;
-    eventType: string;
-    endTimestamp: Timestamp;
-    startTimestamp: Timestamp;
-    parentEventId: string;
-    attachedMessageIds: Array<string>;
-    body: any;
-    successful: boolean;
-    subNodes?: EventAction[];
-}
+import { EventAction } from '../models/EventAction';
+
+export const isRootEvent = (event: EventAction) => event.parentEventId === null;

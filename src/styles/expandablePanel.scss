@@ -31,11 +31,16 @@
         min-height: 25px;
     }
 
+    &__button {
+        width: 35px;
+        display: flex;
+        justify-content: center;
+    }
+
     &__icon {
         @include icon(url(../../resources/icons/expand-on.svg), 16px, 16px);
         cursor: pointer;
         flex-shrink: 0;
-        margin-right: 10px;
 
         &.hidden {
             background-image: url(../../resources/icons/expand-off.svg);
