@@ -17,45 +17,25 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import Header from './Header';
-import SplitView from './SplitView';
-import LeftPanel from './LeftPanel';
-import RightPanel from './RightPanel';
-import LinearProgressBar from './LinearProgressBar';
-import NetworkError from './NetworkError';
-import MessageCardList from './message/MessagesCardList';
-import { Views } from '../stores/ViewStore';
 import { useStores } from '../hooks/useStores';
-import '../styles/layout.scss';
-import SplashScreen from './SplashScreen';
+import { EventWindowProvider } from '../contexts/eventWindowContext';
+import EventWindow from './EventWindow';
 
 const EventsLayout = () => {
-	const { viewStore, messagesStore } = useStores();
+	const { eventsStore } = useStores();
 
 	return (
 		<div className="layout">
 			<div className="layout__header">
-				{!viewStore.isConnectionError && <LinearProgressBar progress={100} />}
-				{viewStore.isConnectionError && <NetworkError />}
 				<Header />
 			</div>
-			{viewStore.selectedView === Views.EVENTS
-			&& <div className="layout__body">
-				<SplitView
-					panelArea={viewStore.panelArea}
-					onPanelAreaChange={viewStore.setPanelArea}
-					leftPanelMinWidth={500}
-					rightPanelMinWidth={620}
-					showMessages={viewStore.showMessages}>
-					<LeftPanel />
-					<RightPanel />
-				</SplitView>
-			</div>}
-			{/* eslint-disable-next-line no-nested-ternary */}
-			{viewStore.selectedView === Views.MESSAGES
-				? messagesStore.isLoading
-					? <SplashScreen />
-					: <MessageCardList />
-				: null}
+			<div className="layout__body">
+				{eventsStore.eventWindows.map((eventWindowStore, index) => (
+					<EventWindowProvider value={eventWindowStore} key={index}>
+						<EventWindow />
+					</EventWindowProvider>
+				))}
+			</div>
 		</div>
 	);
 };

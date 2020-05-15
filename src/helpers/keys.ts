@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ export function isKeyForMessage(key: string): boolean {
         && (fieldName === undefined || MESSAGE_FIELDS.includes(fieldName as keyof Message));
 }
 
-export function keyForVerification(parentActionId: number | null, msgId: number): string {
+export function keyForVerification(parentActionId: number | null, msgId: number | string): string {
 	return `${ACTION_KEY_PREFIX}-${parentActionId}-${VERIFICATION_KEY_PREFIX}-${msgId}`;
 }
 

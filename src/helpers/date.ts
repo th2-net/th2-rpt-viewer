@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,19 @@ export function getSecondsPeriod(startTime: string | Date, finishTime: string | 
 		: `${seconds}s`;
 }
 
-export function formatTime(time: string) {
+export function getElapsedTime(startTimestamp: Timestamp, endTimestamp: Timestamp, withMiliseconds = true) {
+	const diff = getTimestampAsNumber(endTimestamp) - getTimestampAsNumber(startTimestamp);
+	const seconds = Math.floor(diff / 1000);
+	const milliseconds = diff - (seconds * 1000);
+
+	const millisecondsFormatted = milliseconds === 0 ? '0' : milliseconds.toString().padStart(3, '0');
+
+	return withMiliseconds
+		? `${seconds}.${millisecondsFormatted}s`
+		: `${seconds}s`;
+}
+
+export function formatTime(time: string | number) {
 	if (time == null) {
 		return '';
 	}

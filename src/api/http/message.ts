@@ -17,7 +17,7 @@ import { MessageApiSchema } from '../ApiSchema';
 
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {
-		const params = new URLSearchParams({ idsOnly: false } as any);
+		const params = new URLSearchParams({ idsOnly: false.toString() });
 		const res = await fetch(`/backend/search/messages?${params}`);
 
 		if (res.ok) {
@@ -29,10 +29,10 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	getMessages: async (timestampFrom: number, timestampTo: number) => {
 		const params = new URLSearchParams({
-			idsOnly: false,
-			timestampFrom,
-			timestampTo,
-		} as any);
+			idsOnly: false.toString(),
+			timestampFrom: timestampFrom.toString(),
+			timestampTo: timestampTo.toString(),
+		});
 		const res = await fetch(`/backend/search/messages?${params}`);
 
 		if (res.ok) {
@@ -44,10 +44,10 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	getMessagesIds: async (timestampFrom: number, timestampTo: number) => {
 		const params = new URLSearchParams({
-			idsOnly: true,
-			timestampFrom,
-			timestampTo,
-		} as any);
+			idsOnly: true.toString(),
+			timestampFrom: timestampFrom.toString(),
+			timestampTo: timestampTo.toString(),
+		});
 		const res = await fetch(`/backend/search/messages?${params}`);
 
 		if (res.ok) {

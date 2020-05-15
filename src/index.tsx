@@ -14,14 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-/* eslint-disable import/no-unassigned-import */
-
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import App from './components/App';
-import ErrorBoundary from './components/util/ErrorBoundary';
+import 'regenerator-runtime/runtime';
+import 'core-js/stable';
 import 'core-js/features/array/flat-map';
 import 'core-js/features/array/flat';
+import App from './components/App';
+import ErrorBoundary from './components/util/ErrorBoundary';
 import StoresProvider from './components/StoresProvider';
 
 ReactDOM.render(

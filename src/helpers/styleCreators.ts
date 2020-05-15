@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ export function createStyleSelector(className: string, ...modifiers: (string | n
 export function createTriStateControlClassName(baseName: string, isActive: boolean, isEnabled?: boolean) {
 	return createStyleSelector(
 		baseName,
-		// eslint-disable-next-line no-nested-ternary
 		(isEnabled != null && !isEnabled) ? 'disabled' : (isActive ? 'active' : 'inactive'),
 	);
 }

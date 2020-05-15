@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,6 @@ import { createStyleSelector } from '../helpers/styleCreators';
 import PanelArea from '../util/PanelArea';
 import '../styles/splitter.scss';
 
-/**
- * Props for splitter component
- */
 export interface Props {
     /**
      * Panel for components : first child - for left panel, second child - for right panel,
@@ -33,7 +30,6 @@ export interface Props {
     onPanelAreaChange: (panelArea: PanelArea) => void;
     leftPanelMinWidth: number;
 	rightPanelMinWidth: number;
-	showMessages: boolean;
 }
 
 interface State {
@@ -231,7 +227,7 @@ export default class SplitView extends React.Component<Props, State> {
 	}
 
 	render() {
-		const { children, panelArea, showMessages } = this.props;
+		const { children, panelArea } = this.props;
 		const { isDragging, splitterLeftOffset, previewPanelArea } = this.state;
 
 		let rootStyle: React.CSSProperties = {};

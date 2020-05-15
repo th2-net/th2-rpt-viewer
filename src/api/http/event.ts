@@ -19,8 +19,8 @@ import { EventApiSchema } from '../ApiSchema';
 
 const eventHttpApi: EventApiSchema = {
 	getAll: async () => {
-		// eslint-disable-next-line prefer-template
-		const res = await fetch(`/backend/search/events?${new URLSearchParams({ idsOnly: false } as any)}`);
+		const params = new URLSearchParams({ idsOnly: false.toString() });
+		const res = await fetch(`/backend/search/events?${params}`);
 
 		if (res.ok) {
 			return await res.json();

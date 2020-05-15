@@ -23,7 +23,7 @@ function StoresProvider({ children }: React.PropsWithChildren<{}>) {
 	const [stores, setStores] = React.useState<RootStoreContext | null>(null);
 
 	useAsyncEffect(async () => {
-		const { default: api } = process.env.API_ENV == 'http' ? (
+		const { default: api } = process.env.API_ENV === 'http' ? (
 			await import(/* webpackChunkName: "http-api" */ '../api/http')
 		) : (
 			await import(/* webpackChunkName: "jsonp-api" */ '../api/jsonp')

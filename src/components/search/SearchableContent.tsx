@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../hooks/useStores';
+import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 import { raf } from '../../helpers/raf';
 import SearchSplitResult from '../../models/search/SearchSplitResult';
 import { createStyleSelector } from '../../helpers/styleCreators';
@@ -34,10 +34,9 @@ interface Props {
 const SearchableContent = observer(({
 	content, contentKey,
 }: Props) => {
-	const { searchStore } = useStores();
+	const { searchStore } = useFirstEventWindowStore();
 	const targetIndex = searchStore.index;
 	const startIndex = searchStore.results.getStartIndexForKey(contentKey);
-	// eslint-disable-next-line no-nested-ternary
 	const searchResult = searchStore.results.has(contentKey) ? (
 		// in some cases (e. g. message's beautified content) we need to split content again, instead of using
 		// redux value because content passed in own props differ from the original.

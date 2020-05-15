@@ -15,61 +15,65 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { toJS } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../hooks/useStores';
+import { toJS } from 'mobx';
 import { EventAction } from '../../models/EventAction';
 import PanelArea from '../../util/PanelArea';
-import EventActionCard from './EventActionCard';
+import EventTreeNode from './EventTreeNode';
 import { ExpandablePanel } from '../ExpandablePanel';
+import { useOnScreen } from '../../hooks/useOnScreen';
+import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
+import '../../styles/expandablePanel.scss';
 
 interface EventTreeProps {
-	path: string[];
+	path?: string[];
 	event: EventAction;
 }
 
-const EventTree = ({ event, path }: EventTreeProps) => {
-	const { eventsStore, viewStore } = useStores();
-	const isSelected = eventsStore.selectedEvent?.eventId === event.eventId
-		|| eventsStore.expandPath.includes(event.eventId);
-	const isMinified = viewStore.panelArea === PanelArea.P25;
+// eslint-disable-next-line prefer-arrow-callback
+const EventTree = ({ event, path = [] }: EventTreeProps) => {
+	const eventWindowStore = useEventWindowStore();
+	const viewStore = useEventWindowViewStore();
+
+	const rootRef = React.useRef<HTMLDivElement>(null);
+
+	const onScreen = useOnScreen(rootRef, '0px');
+
+	React.useEffect(() => {
+		if (onScreen && event.parentEventId !== null && !event.subNodes) {
+			eventWindowStore.getEventSubNodes(event, path);
+		}
+	}, [onScreen]);
+
 	const plainEvent = toJS(event);
+
 	return (
-		<ExpandablePanel
-			isExpandDisabled={false}
-			isExpanded={eventsStore.expandPath.includes(event.eventId)}
-			onExpand={() => {
-				if (eventsStore.expandPath.includes(event.eventId)) {
-					eventsStore.expandNode(path, event);
-				} else {
-					eventsStore.expandNode([...path, event.eventId], event);
-				}
-			}}
-			showExpandButton={plainEvent.parentEventId === null
-				|| (plainEvent.subNodes !== undefined && plainEvent.subNodes.length > 0)}
-		>
-			{
-				() => (
-					<EventActionCard
-						event={event}
-						panelArea={viewStore.panelArea}
-						onSelect={eventsStore.selectEvent}
-						loadSubNodes={eventsStore.getEventSubNodes}
-						path={path}
-						expandPath={eventsStore.expandPath}
-						expandNode={eventsStore.expandNode}
-						isMinified={isMinified}
-						isSelected={isSelected} />
-				)
-			}
-			<div style={{ paddingLeft: isMinified ? 20 : 35 }}>
-				{event.subNodes && event.subNodes.map(e =>
-					<EventTree
+		<div ref={rootRef}>
+			<ExpandablePanel
+				isExpandDisabled={false}
+				isExpanded={eventWindowStore.expandPath.includes(event.eventId)}
+				onExpand={() => eventWindowStore.expandNode(path, event)}
+				showExpandButton={plainEvent.parentEventId === null
+					|| (plainEvent.subNodes !== undefined && plainEvent.subNodes.length > 0)}
+			>
+
+				<EventTreeNode
+					event={event}
+					panelArea={viewStore.panelArea}
+					onSelect={eventWindowStore.selectEvent}
+					path={path}
+					isMinified={viewStore.panelArea === PanelArea.P25}
+					isSelected={eventWindowStore.selectedEvent?.eventId === event.eventId}
+					isExpanded={eventWindowStore.expandPath.includes(event.eventId)} />
+				<div style={{ paddingLeft: viewStore.panelArea === PanelArea.P25 ? 20 : 35 }}>
+					{event.subNodes?.map(e => <EventTree
 						event={e}
 						key={e.eventId}
-						path={path.concat(event.eventId)} />)}
-			</div>
-		</ExpandablePanel>
+						path={[...path, event.eventId]} />)}
+				</div>
+			</ExpandablePanel>
+		</div>
 	);
 };
 

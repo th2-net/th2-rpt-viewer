@@ -15,31 +15,18 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { Virtuoso, TScrollContainer, VirtuosoMethods } from 'react-virtuoso';
+import { Virtuoso, VirtuosoMethods } from 'react-virtuoso';
 import ResizeObserver from 'resize-observer-polyfill';
 import { StatusType } from '../models/Status';
-import HeatmapScrollbar from './heatmap/HeatmapScrollbar';
 import { raf } from '../helpers/raf';
-import { ScrollHint } from '../models/util/ScrollHint';
-
-const DEFAULT_ITEM_HEIGHT = 60;
-
-const { Provider, Consumer } = React.createContext({
-	rowCount: 0,
-	rowHeightMap: {} as { [index: number]: number },
-	selectedElements: new Map<number, StatusType>(),
-	scrollHints: [],
-});
 
 interface Props {
-    renderElement: (idx: number) => React.ReactElement;
     computeItemKey?: (idx: number) => number;
     rowCount: number;
 
     // for heatmap scrollbar
     selectedElements: Map<number, StatusType>;
-    scrollHints?: ScrollHint[];
-
+	itemRenderer: (index: number) => React.ReactElement;
 	/*
 		Number objects is used here because in some cases (eg one message / action was selected several times
 		by diferent entities)
@@ -103,89 +90,18 @@ export class VirtualizedList extends React.Component<Props, State> {
 
 	render() {
 		const {
-			rowCount, selectedElements, computeItemKey,
+			rowCount, computeItemKey,
 		} = this.props;
 
 		return (
-			<Provider value={{
-				selectedElements, rowCount, rowHeightMap: this.state, scrollHints: [],
-			}}>
-				<Virtuoso
-					totalCount={rowCount}
-					ref={this.virtuoso}
-					overscan={3}
-					ScrollContainer={ScrollContainer as TScrollContainer}
-					computeItemKey={computeItemKey}
-					item={this.itemRenderer} />
-			</Provider>
+			<Virtuoso
+				totalCount={rowCount}
+				ref={this.virtuoso}
+				overscan={3}
+				computeItemKey={computeItemKey}
+				item={this.props.itemRenderer}
+				style={{ height: '100%' }}
+				className="virtualized-list"/>
 		);
 	}
-
-	private itemRenderer = (index: number) => (
-		<ElementWrapper
-			index={index}
-			onMount={ref => this.resizeObserver.observe(ref.current as Element)}
-			onUnmount={ref => this.resizeObserver.unobserve(ref.current as Element)}>
-			{this.props.renderElement(index)}
-		</ElementWrapper>
-	);
 }
-
-type WrapperProps = React.PropsWithChildren<{
-    onMount: (ref: React.MutableRefObject<HTMLDivElement | null>) => void;
-    onUnmount: (ref: React.MutableRefObject<HTMLDivElement | null>) => void;
-    index: number;
-}>;
-
-function ElementWrapper({
-	onMount, onUnmount, children,
-}: WrapperProps) {
-	const ref = React.useRef<HTMLDivElement>(null);
-
-	React.useEffect(() => {
-		onMount(ref);
-
-		return () => onUnmount(ref);
-	}, []);
-
-	return (
-		<div ref={ref}>
-			{children}
-		</div>
-	);
-}
-
-
-interface ScrollContanerProps {
-	children: React.ReactNode;
-    reportScrollTop: (scrollTop: number) => void;
-    scrollTo: (callback: (scrollTop: ScrollToOptions) => void) => void;
-}
-
-const ScrollContainer = ({ reportScrollTop, scrollTo, children }: ScrollContanerProps) => {
-	const elRef = React.useRef<HeatmapScrollbar>(null);
-
-	scrollTo((scrollOptions: ScrollToOptions) => {
-		elRef.current?.scrollTop(scrollOptions);
-	});
-
-	return (
-		<Consumer>
-			{
-				({
-					rowCount, rowHeightMap, selectedElements, scrollHints,
-				}) => (
-					<HeatmapScrollbar
-						ref={elRef}
-						heightMapper={index => rowHeightMap[index] ?? DEFAULT_ITEM_HEIGHT}
-						onScroll={(e: any) => reportScrollTop(e.target.scrollTop)}
-						selectedElements={selectedElements}
-						elementsCount={rowCount}
-						scrollHints={scrollHints}>
-						{children}
-					</HeatmapScrollbar>
-				)
-			}
-		</Consumer>
-	);
-};

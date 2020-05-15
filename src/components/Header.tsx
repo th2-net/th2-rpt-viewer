@@ -17,26 +17,20 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../hooks/useStores';
+import { useFirstEventWindowStore } from '../hooks/useFirstEventWindowStore';
 import { formatTime } from '../helpers/date';
 import { createBemElement, createStyleSelector } from '../helpers/styleCreators';
 import SearchInput from './search/SearchInput';
 import FilterPanel from './filter/FilterPanel';
 import useOutsideClickListener from '../hooks/useOutsideClickListener';
-import { downloadTxtFile } from '../helpers/files/downloadTxt';
 import { ToggleButton } from './ToggleButton';
-import { getMessagesContent } from '../helpers/rawFormatter';
-import { EventAction } from '../models/EventAction';
-import { Views } from '../stores/ViewStore';
 import '../styles/header.scss';
 
-/* eslint-disable no-return-assign */
 const Header = () => {
 	const {
-		selectedStore,
-		filterStore,
 		eventsStore,
-		viewStore,
 	} = useStores();
+	const eventWindowStore = useFirstEventWindowStore();
 
 	const [showFilter, setShowFilter] = React.useState(false);
 	const filterBaseRef = React.useRef<HTMLDivElement>(null);
@@ -48,10 +42,9 @@ const Header = () => {
 		}
 	});
 
-	// eslint-disable-next-line no-nested-ternary
-	const status = !eventsStore.selectedRootEvent
+	const status = !eventWindowStore?.selectedRootEvent
 		? null
-		: eventsStore.selectedRootEvent.successful
+		: eventWindowStore.selectedRootEvent.successful
 			? 'PASSED' : 'FAILED';
 
 	const rootClass = createStyleSelector(
@@ -60,7 +53,7 @@ const Header = () => {
 	);
 	const navButtonClass = createStyleSelector(
 		'header-button',
-		// reportStore.report?.metadata!.length > 1 ? '' : 'disabled',
+		eventWindowStore.events.length > 1 ? '' : 'disabled',
 		null,
 	);
 	const filterWrapperClass = createBemElement(
@@ -72,21 +65,15 @@ const Header = () => {
 		'header-button',
 		'title',
 		showFilter ? 'active' : null,
-		!showFilter && filterStore.isFilterApplied ? 'applied' : null,
+		!showFilter && eventWindowStore.filterStore.isFilterApplied ? 'applied' : null,
 	);
 	const filterIconClass = createBemElement(
 		'header-button',
 		'icon',
 		'filter-icon',
 		showFilter ? 'active' : null,
-		!showFilter && filterStore.isFilterApplied ? 'applied' : null,
+		!showFilter && eventWindowStore.filterStore.isFilterApplied ? 'applied' : null,
 	);
-
-	const downloadMessages = (contentTypes: ('contentHumanReadable' | 'hexadecimal' | 'raw')[]) => {
-		const content = getMessagesContent(selectedStore.messages, contentTypes);
-		const fileName = `{EventName}_messages_${new Date().toISOString()}.txt`;
-		downloadTxtFile([content], fileName);
-	};
 
 	return (
 		<div className={rootClass}>
@@ -102,25 +89,25 @@ const Header = () => {
 							<div className={filterIconClass}/>
 							<div className={filterTitleClass}>
 								{
-									// eslint-disable-next-line no-nested-ternary
-									filterStore.isFilterApplied
+									eventWindowStore.filterStore.isFilterApplied
 										? 'Filter Applied'
 										: showFilter
 											? 'Hide Filter'
 											: 'Show Filter'
 								}
 							</div>
-							{
-								filterStore.isFilterApplied && filterStore.isHighlighted ? (
-									<div className="header-button__filter-counter">
-										{
-											selectedStore.messages.length > 99
-												? '99+'
-												: selectedStore.messages.length
-										}
-									</div>
-								) : null
-							}
+							{/* {
+								eventWindowStore.filterStore.isFilterApplied
+								&& eventWindowStore.filterStore.isHighlighted ? (
+										<div className="header-button__filter-counter">
+											{
+												selectedStore.messages.length > 99
+													? '99+'
+													: selectedStore.messages.length
+											}
+										</div>
+									) : null
+							} */}
 						</div>
 						{
 							showFilter ? (
@@ -135,59 +122,47 @@ const Header = () => {
 					<div className={navButtonClass}>
 						<div
 							className="header-button__icon left"
-							onClick={eventsStore.selectPrevEvent} />
+							onClick={eventWindowStore?.selectPrevEvent} />
 					</div>
-					{eventsStore.selectedRootEvent
+					{eventWindowStore?.selectedRootEvent
 						?	<div className="header-main__title">
-							{`${eventsStore.selectedRootEvent.eventName} — ${0.710}s — ${status}`}
+							{`${eventWindowStore.selectedRootEvent.eventName} — ${status}`}
 						</div>
 						: 	<div className="header-main__title">
-							{/* eslint-disable-next-line max-len */}
-							{`${new Date().toLocaleDateString()} — ${eventsStore.selectedRootEvent
-								? (eventsStore.selectedRootEvent as EventAction).subNodes?.length
-								: 0}`}
+							{`${new Date().toLocaleDateString()} — ${eventsStore.rootEvents.length}`}
 						</div>
 					}
 
 					<div className={navButtonClass}>
 						<div
 							className="header-button__icon right"
-							onClick={eventsStore.selectNextEvent} />
+							onClick={eventWindowStore?.selectNextEvent} />
 					</div>
 				</div>
 				<div className="header__group">
 					<ToggleButton
-						isToggled={viewStore.selectedView === Views.EVENTS}
-						onClick={() => viewStore.selectedView = Views.EVENTS}>
+						isToggled={!eventWindowStore.viewStore.showMessages}
+						onClick={() => eventWindowStore.viewStore.showMessages = false}>
 						Events
 					</ToggleButton>
 					<ToggleButton
-						isToggled={viewStore.selectedView === Views.MESSAGES}
-						onClick={() => viewStore.selectedView = Views.MESSAGES}>
+						isToggled={eventWindowStore.viewStore.showMessages}
+						onClick={() => eventWindowStore.viewStore.showMessages = true}>
 						Messages
 					</ToggleButton>
 				</div>
 			</div>
-			{eventsStore.selectedRootEvent
+			{eventWindowStore?.selectedRootEvent
 			&& <div className="header__info">
-				{eventsStore.selectedRootEvent.startTimestamp
+				{eventWindowStore.selectedRootEvent.startTimestamp
 				&& 	<div className="header__info-element">
 					<span>Start:</span>
 					<p>
 						{formatTime(
-							new Date(eventsStore.selectedRootEvent.startTimestamp.epochSecond * 1000).toString(),
+							new Date(eventWindowStore.selectedRootEvent.startTimestamp.epochSecond * 1000).toString(),
 						)}
 					</p>
 				</div>}
-				{/* <div className="header__description">
-					Description
-				</div>
-				<div className="header__info-element">
-					<span>Finish:</span>
-					<p style={{ opacity: 0 }}>
-						{formatTime(new Date().toString())}
-					</p>
-				</div> */}
 			</div>}
 		</div>
 	);

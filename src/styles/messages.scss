@@ -15,7 +15,6 @@
  ******************************************************************************/
 
 @import "./common/vars";
-@import "./machinelearning.scss";
 
 .message-card {
     @include status-card;
@@ -98,29 +97,6 @@
     &.admin {
         background-color: $adminMessageLabelBackground;
     }
-
-    .ml__prediction {
-        width: 100%;
-
-        &-icon {
-            height: 14px;
-            width: 14px;
-            margin-top: 12px;
-            margin-bottom: 6px;
-            background-size: 100%;
-
-            background-image: url(../../resources/icons/ml-prediction.svg)
-        }
-
-        &-percentage {
-            font-size: 10pt;
-            font-weight: bold;
-            color: white;
-
-            -webkit-text-stroke-width: 0.5px;
-            -webkit-text-stroke-color: white;
-        }
-    }
 }
 
 .mc-header {
@@ -192,19 +168,6 @@
 
     &__name-value {
         grid-area: name-value;
-    }
-
-    .ml__submit {
-        grid-area: prediction;
-        justify-self: flex-end;
-        padding-right: 7px;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-
-        @include ml-icon;
     }
 
     &__timestamp {

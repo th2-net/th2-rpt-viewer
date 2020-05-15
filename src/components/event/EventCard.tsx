@@ -16,26 +16,24 @@
 
 import * as React from 'react';
 import PanelArea from '../../util/PanelArea';
-import { formatTime, getSecondsPeriod } from '../../helpers/date';
+import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/date';
 import { Chip } from '../Chip';
 import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
 import { EventAction } from '../../models/EventAction';
 import { getMinifiedStatus } from '../../helpers/action';
 import { StatusType } from '../../models/Status';
-import ActionParameter from '../../models/ActionParameter';
-import ParamsTable from '../action/ParamsTable';
+import ParamsTable from './ParamsTable';
+import { extractParams } from '../../helpers/tables';
 
 interface Props {
     panelArea: PanelArea;
 	event: EventAction;
-	onSelect: (event: EventAction) => void;
 	isMinified?: boolean;
 }
 
 export default function EventCard({
 	event,
 	isMinified = false,
-	onSelect,
 }: Props) {
 	const {
 		startTimestamp,
@@ -46,7 +44,14 @@ export default function EventCard({
 		eventName,
 		body,
 	} = event;
-	// eslint-disable-next-line no-nested-ternary
+
+	const {
+		fields,
+		...restBody
+	} = body || {};
+
+	const params = React.useMemo(() => extractParams(fields), [body]);
+
 	const status = eventType === 'verification'
 		? body.status
 		: successful ? 'PASSED' : 'FAILED';
@@ -54,7 +59,6 @@ export default function EventCard({
 	const rootClassName = createBemBlock(
 		'action-card',
 		status,
-		'root',
 		'selected',
 	);
 
@@ -69,63 +73,16 @@ export default function EventCard({
 		'name-element',
 	);
 
-	const elapsedTime = (startTimestamp && endTimestamp)
-		? getSecondsPeriod(new Date(startTimestamp.epochSecond * 1000), new Date(endTimestamp.epochSecond * 1000))
+	const elapsedTime = endTimestamp && startTimestamp
+		? getElapsedTime(startTimestamp, endTimestamp)
 		: null;
-
-	const getParameters = (): ActionParameter[] => {
-		if (!body?.fields) return [];
-		const { fields } = body;
-		// eslint-disable-next-line no-shadow
-		const extractParams = (fields: any): ActionParameter[] =>
-			Object.keys(fields)
-				.reduce((params, key) => {
-					if (typeof fields[key] === 'string') {
-						return [...params, createParam(key, fields[key], [])];
-					}
-					if (Array.isArray(fields[key])) {
-						return [
-							...params,
-							...fields[key].map((fieldObj: any) =>
-								createParam(
-									key,
-									Object.keys(fields[key]).length.toString(),
-									extractParams(fieldObj),
-								)),
-						];
-					}
-					if (fields[key] === Object(fields[key])) {
-						return [
-							...params,
-							createParam(key, Object.keys(fields[key]).length.toString(), extractParams(fields[key])),
-						];
-					}
-					return params;
-				}, [] as ActionParameter[]);
-
-		const createParam = (
-			name: string,
-			value: string | undefined,
-			subParameters: ActionParameter[],
-		): ActionParameter => ({
-			name,
-			value,
-			subParameters,
-		});
-		return extractParams(fields);
-	};
-
-	const {
-		fields,
-		...restBody
-	} = body || {};
 
 	return (
 		<div className={rootClassName}>
 			<div className={headerClassName}>
 				<div className="ac-header__title">
 					<div className="ac-header__name">
-						<div className={headerTitleElemClassName} title={eventName}>
+						<div className={headerTitleElemClassName} title={eventType || eventName}>
 							{eventType || eventName}
 						</div>
 					</div>
@@ -135,7 +92,7 @@ export default function EventCard({
 						<div className="ac-header__start-time">
 							<div className="ac-header__time-label">Start</div>
 							<div className="ac-header__time-value">
-								{formatTime(new Date(startTimestamp.epochSecond * 1000).toString())}
+								{formatTime(getTimestampAsNumber(startTimestamp))}
 							</div>
 						</div>
 					)
@@ -145,7 +102,7 @@ export default function EventCard({
 						<div className="ac-header__start-time ac-header__end-time">
 							<div className="ac-header__time-label">Finish</div>
 							<div className="ac-header__time-value">
-								{formatTime(new Date(endTimestamp.epochSecond * 1000).toString())}
+								{formatTime(getTimestampAsNumber(endTimestamp))}
 							</div>
 						</div>
 					)
@@ -153,7 +110,7 @@ export default function EventCard({
 				{
 					elapsedTime && !isMinified
 					&& <div className="ac-header__elapsed-time">
-						{elapsedTime}
+						<span>{elapsedTime}</span>
 					</div>
 				}
 				<div className="ac-header__controls">
@@ -178,7 +135,7 @@ export default function EventCard({
 				&& <>
 					<div className="ac-body__item-title">Input parameters</div>
 					<ParamsTable
-						params={getParameters()}
+						params={params}
 						actionId={event.eventId as any}
 						stateKey={`${event.eventId}-input-params-nodes`}
 						name={event.eventName} />
@@ -188,7 +145,6 @@ export default function EventCard({
 						{body && Object.keys(restBody).length > 0 && JSON.stringify(restBody, null, 4)}
 					</pre>
 				</div>
-
 			</div>
 		</div>
 	);

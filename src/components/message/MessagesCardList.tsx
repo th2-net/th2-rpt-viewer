@@ -19,37 +19,17 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../hooks/useStores';
-import Message from '../../models/Message';
 import StateSaverProvider from '../util/StateSaverProvider';
 import { VirtualizedList } from '../VirtualizedList';
 import { createBemElement } from '../../helpers/styleCreators';
+import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 import SkeletonedMessageCardListItem from './SkeletonedMessageCardListItem';
+import Empty from '../Empty';
+import SplashScreen from '../SplashScreen';
 import '../../styles/messages.scss';
 
 const MessageCardList = () => {
-	const getScrolledIndex = (scrolledMessageId: Number, messages: Message[]): Number | null => {
-		const scrolledIndex = messages.findIndex(message => message.id === +scrolledMessageId);
-
-		return scrolledIndex !== -1 ? new Number(scrolledIndex) : null;
-	};
-	// Number objects is used here because in some cases (eg one message / action was selected several
-	// times by different entities)
-	// We can't understand that we need to scroll to the selected entity again when we are comparing
-	// primitive numbers.
-	// Objects and reference comparison is the only way to handle numbers changing in this case.
-	const [scrolledIndex, setScrolledIndex] = React.useState<Number | null>(null);
-	const { filterStore, selectedStore, messagesStore } = useStores();
-
-	React.useEffect(() => {
-		if (selectedStore.scrolledMessageId != null) {
-			setScrolledIndex(getScrolledIndex(selectedStore.scrolledMessageId, selectedStore.messages));
-		}
-	}, [selectedStore.scrolledMessageId]);
-
-	const scrollToTop = () => {
-		setScrolledIndex(new Number(0));
-	};
+	const { messagesStore, filterStore } = useEventWindowStore();
 
 	const renderMessage = (index: number) => {
 		const id = messagesStore.messagesIds[index];
@@ -65,13 +45,21 @@ const MessageCardList = () => {
 		filterStore.isFilterApplied ? 'filter-applied' : null,
 	);
 
+	if (messagesStore.isLoading) {
+		return <SplashScreen />;
+	}
+
+	if (!messagesStore.isLoading && messagesStore.messagesIds.length === 0) {
+		return <Empty description="No messages" />;
+	}
+
 	return (
 		<div className="messages">
 			<div className={listClassName}>
 				{
 					filterStore.isFilterApplied ? (
 						<div className="messages__filter-info">
-							{selectedStore.messages} Messages Filtered
+							{/* {selectedStore.messages} Messages Filtered */}
 						</div>
 					) : null
 				}
@@ -79,9 +67,8 @@ const MessageCardList = () => {
 					<VirtualizedList
 						selectedElements={new Map()}
 						rowCount={messagesStore.messagesIds.length}
-						renderElement={renderMessage}
-						scrolledIndex={scrolledIndex}
-						scrollHints={[]}
+						scrolledIndex={null}
+						itemRenderer={renderMessage}
 					/>
 				</StateSaverProvider>
 			</div>
