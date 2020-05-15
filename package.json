@@ -5,7 +5,7 @@
   "main": "index.tsx",
   "private": true,
   "scripts": {
-    "build": "webpack --config=webpack.production.js",
+    "build": "webpack --config=webpack/webpack.production.js",
     "build:dev": "webpack --config=webpack/webpack.dev.js --watch",
     "start": "webpack-dev-server --config=webpack/webpack.dev.js",
     "test": "jest",
