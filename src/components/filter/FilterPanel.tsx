@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../hooks/useStores';
+import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 import FilterRow from './FilterRow';
 import FilterType from '../../models/filter/FilterType';
 import Checkbox from '../util/Checkbox';
@@ -24,18 +24,18 @@ import '../../styles/filter.scss';
 import MessagesTimestampFilter from './MessagesTimestampFilter';
 
 const FilterPanel = observer(() => {
-	const { filterStore } = useStores();
+	const eventWindowStore = useFirstEventWindowStore();
 	const {
 		blocks,
 		isFilterApplied,
 		isTransparent,
 		isHighlighted,
 		resetFilter,
-	} = filterStore;
+	} = eventWindowStore.filterStore;
 
 	return (
 		<div className="filter">
-			<MessagesTimestampFilter/>
+			<MessagesTimestampFilter />
 			{
 				blocks.map((block, index) => (
 					<div className="filter-row" key={index}>
@@ -80,7 +80,7 @@ const FilterPanel = observer(() => {
 				<Checkbox
 					checked={isHighlighted}
 					label='Highlight'
-					onChange={() => filterStore.setIsHighlighted(!isHighlighted)}
+					onChange={() => eventWindowStore.filterStore.setIsHighlighted(!isHighlighted)}
 					id='filter-highlight'/>
 				<div className="filter-controls__transparency">
 					Filtered out
@@ -88,14 +88,14 @@ const FilterPanel = observer(() => {
 						type="radio"
 						id="filter-radio-hide"
 						checked={!isTransparent}
-						onChange={e => filterStore.setIsTransparent(false)}
+						onChange={e => eventWindowStore.filterStore.setIsTransparent(false)}
 					/>
 					<label htmlFor="filter-radio-hide">Hide</label>
 					<input
 						type="radio"
 						id="filter-radio-transparent"
 						checked={isTransparent}
-						onChange={e => filterStore.setIsTransparent(true)}
+						onChange={e => eventWindowStore.filterStore.setIsTransparent(true)}
 					/>
 					<label htmlFor="filter-radio-transparent">Transparent</label>
 				</div>

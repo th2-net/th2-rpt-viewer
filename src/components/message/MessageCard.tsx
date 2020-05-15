@@ -16,17 +16,16 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../hooks/useStores';
 import Message from '../../models/Message';
 import { StatusType } from '../../models/Status';
 import { getHashCode } from '../../helpers/stringHash';
 import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
 import { keyForMessage } from '../../helpers/keys';
-import { MessagePredictionIndicator } from '../machinelearning/MlPredictionIndicator';
 import StateSaver from '../util/StateSaver';
 import { PredictionData } from '../../models/MlServiceResponse';
 import PanelArea from '../../util/PanelArea';
 import { EventMessage } from '../../models/EventMessage';
+import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import '../../styles/messages.scss';
 
 const HUE_SEGMENTS_COUNT = 36;
@@ -69,17 +68,12 @@ export function MessageCardBase(props: MessageCardProps) {
 		isSelected,
 		isTransparent,
 		status,
-		rejectedMessagesCount,
 		selectHandler,
-		showRaw,
-		showRawHandler,
 		isContentBeautified,
 		toggleBeautify,
-		prediction,
 		panelArea,
 	} = props;
 	const {
-		messageId,
 		timestamp,
 		type,
 		sessionId,
@@ -96,11 +90,11 @@ export function MessageCardBase(props: MessageCardProps) {
 		'mc-header',
 		panelArea,
 	);
-	const showRawClass = createBemElement(
-		'mc-show-raw',
-		'icon',
-		showRaw ? 'expanded' : 'hidden',
-	);
+	// const showRawClass = createBemElement(
+	// 	'mc-show-raw',
+	// 	'icon',
+	// 	showRaw ? 'expanded' : 'hidden',
+	// );
 	const beautifyIconClass = createBemElement(
 		'mc-beautify',
 		'icon',
@@ -161,34 +155,6 @@ export function MessageCardBase(props: MessageCardProps) {
 	);
 }
 
-function renderMessageTypeLabels(message: Message, prediction: PredictionData | null): React.ReactNodeArray {
-	const labels = [];
-
-	if (prediction) {
-		labels.push(
-			<MessagePredictionIndicator prediction={prediction} key="prediction"/>,
-		);
-	}
-
-	if (message.content.rejectReason !== null) {
-		labels.push(
-			<div className="mc-label rejected" key="rejected">
-				<div className="mc-label__icon rejected"/>
-			</div>,
-		);
-	}
-
-	if (message.content.admin) {
-		labels.push(
-			<div className="mc-label admin" key="admin">
-				<div className="mc-label__icon admin"/>
-			</div>,
-		);
-	}
-
-	return labels;
-}
-
 function calculateHueValue(session: string): number {
 	const hashCode = getHashCode(session);
 
@@ -197,7 +163,10 @@ function calculateHueValue(session: string): number {
 
 const MESSAGE_RAW_FIELDS: (keyof Message)[] = ['rawHex', 'rawHumanReadable'];
 
-export const RecoverableMessageCard = ({ searchField, ...props }: MessageCardStateProps & MessageCardOwnProps & MessageCardDispatchProps) => (
+export const RecoverableMessageCard = ({
+	searchField,
+	...props
+}: MessageCardStateProps & MessageCardOwnProps & MessageCardDispatchProps) => (
 	<StateSaver
 		stateKey={keyForMessage(props.message.messageId as any)}
 		getDefaultState={() => false}>
@@ -212,7 +181,7 @@ export const RecoverableMessageCard = ({ searchField, ...props }: MessageCardSta
 );
 
 export const MessageCard = observer(({ message }: MessageCardOwnProps) => {
-	const { viewStore } = useStores();
+	const viewStore = useEventWindowViewStore();
 
 	return (
 		<RecoverableMessageCard

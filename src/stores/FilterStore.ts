@@ -16,17 +16,10 @@
 
 import { action, computed, observable } from 'mobx';
 import { FilterBlock } from '../models/filter/FilterBlock';
-import ApiSchema from '../api/ApiSchema';
 
 const ONE_HOUR = 60 * 60 * 1000;
 
 export default class FilterStore {
-	private api: ApiSchema;
-
-	constructor(api: ApiSchema) {
-		this.api = api;
-	}
-
 	@observable results: string[] = [];
 
 	@observable blocks: FilterBlock[] = [];

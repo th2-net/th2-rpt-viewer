@@ -16,7 +16,7 @@
 
 import React from 'react';
 
-export function useOnScreen(ref: any, rootMargin = '0px') {
+export function useOnScreen(ref: React.MutableRefObject<HTMLElement | null>, rootMargin = '0px') {
 	// State and setter for storing whether element is visible
 	const [isIntersecting, setIntersecting] = React.useState(false);
 
@@ -34,7 +34,7 @@ export function useOnScreen(ref: any, rootMargin = '0px') {
 			observer.observe(ref.current);
 		}
 		return () => {
-			observer.unobserve(ref.current);
+			observer.unobserve(ref.current!);
 		};
 	}, []); // Empty array ensures that effect is only run on mount and unmount
 

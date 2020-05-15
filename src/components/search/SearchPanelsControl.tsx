@@ -16,11 +16,11 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../hooks/useStores';
+import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 import Checkbox from '../util/Checkbox';
 
 const SearchPanelControl = observer(() => {
-	const { viewStore, searchStore } = useStores();
+	const { viewStore, searchStore } = useFirstEventWindowStore();
 
 	const onLeftPanelSelect = () => {
 		if (!viewStore.isLeftPanelClosed) {

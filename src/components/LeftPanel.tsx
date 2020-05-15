@@ -15,26 +15,18 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
-import EventList from './event/EventList';
-import { useStores } from '../hooks/useStores';
 import '../styles/layout.scss';
-import SplashScreen from './SplashScreen';
 
-const LeftPanel = () => {
-	const { eventsStore } = useStores();
+interface Props {
+	children: React.ReactNode;
+}
 
-	return (
-		<div className="layout-panel">
-			<div className="layout-panel__content layout-events">
-				{
-					eventsStore.events.length > 0
-						? <EventList events={eventsStore.events} />
-						: <SplashScreen />
-				}
-			</div>
+const LeftPanel = ({ children }: Props) => (
+	<div className="layout-panel">
+		<div className="layout-panel__content layout-events">
+			{children}
 		</div>
-	);
-};
+	</div>
+);
 
-export default observer(LeftPanel);
+export default LeftPanel;

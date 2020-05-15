@@ -14,25 +14,23 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed, reaction } from 'mobx';
+import {
+	observable,
+	action,
+	computed,
+	reaction,
+} from 'mobx';
 import Panel from '../util/Panel';
 import PanelArea from '../util/PanelArea';
-import ApiSchema from '../api/ApiSchema';
+import SearchParams from '../util/SearchParams';
 
-export enum Views {
-	EVENTS = 'events',
-	MESSAGES = 'messages',
-}
+// eslint-disable-next-line eqeqeq
+const showMessagesInitialValue = new URLSearchParams(window.location.search).get(SearchParams.messages) == 'true';
 
-const initialViewState = new URLSearchParams(window.location.search).get('view') as Views || Views.EVENTS;
-
-export default class ViewStore {
-	private api: ApiSchema;
-
-	constructor(api: ApiSchema) {
-		this.api = api;
+export default class AppViewStore {
+	constructor() {
 		reaction(
-			() => this.selectedView,
+			() => this.showMessages,
 			this.onViewChange,
 		);
 	}
@@ -49,11 +47,7 @@ export default class ViewStore {
 
 	@observable panelArea: PanelArea = PanelArea.P50;
 
-	@observable isConnectionError = false;
-
-	@observable showMessages = false;
-
-	@observable selectedView: Views = initialViewState;
+	@observable showMessages = showMessagesInitialValue;
 
 	@action
 	setAdminMsgEnabled = (adminEnabled: boolean) => {
@@ -104,7 +98,11 @@ export default class ViewStore {
 
 	private onViewChange = () => {
 		const params = new URLSearchParams();
-		params.set('view', this.selectedView);
+		if (this.showMessages) {
+			params.set(SearchParams.messages, this.showMessages.toString());
+		} else {
+			params.delete(SearchParams.messages);
+		}
 		window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
 	};
 }

@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 import * as React from 'react';
 import { StatusType } from '../models/Status';
 import { getStatusChipDescription } from '../helpers/action';
-import '../styles/chip.scss';
 import { createStyleSelector } from '../helpers/styleCreators';
+import '../styles/chip.scss';
 
 interface Props {
     text: string;

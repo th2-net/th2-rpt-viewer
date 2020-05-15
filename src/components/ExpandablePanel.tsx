@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../hooks/useStores';
+import { useFirstEventWindowStore } from '../hooks/useFirstEventWindowStore';
 import { createStyleSelector } from '../helpers/styleCreators';
 import StateSaver, { RecoverableElementProps } from './util/StateSaver';
 import { stopPropagationHandler } from '../helpers/react';
@@ -99,7 +99,7 @@ interface SearchExpandablePanelOwnProps extends RecoverablePanelProps {
 }
 
 export const SearchExpandablePanel = observer(({ searchKeyPrefix, ...props }: SearchExpandablePanelOwnProps) => {
-	const { searchStore } = useStores();
+	const { searchStore } = useFirstEventWindowStore();
 	const [currentKey] = searchStore.results.getByIndex(searchStore.index as number);
 	const isExpanded = currentKey && currentKey.startsWith(searchKeyPrefix) ? true : undefined;
 	return <RecoverableExpandablePanel isExpanded={isExpanded} {...props} />;

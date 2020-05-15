@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import AutosizeInput from 'react-input-autosize';
-import { useStores } from '../../hooks/useStores';
 import SearchResult from '../../helpers/search/SearchResult';
 import KeyCodes from '../../util/KeyCodes';
 import SearchToken from '../../models/search/SearchToken';
 import Bubble from '../util/Bubble';
+import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 import { nextCyclicItem, removeByIndex, replaceByIndex } from '../../helpers/array';
 import { createBemBlock } from '../../helpers/styleCreators';
 import SearchPanelControl from './SearchPanelsControl';
@@ -362,7 +362,7 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 }
 
 const SearchInput = () => {
-	const { searchStore } = useStores();
+	const { searchStore } = useFirstEventWindowStore();
 
 	return <SearchInputBase
 		searchTokens={searchStore.tokens}

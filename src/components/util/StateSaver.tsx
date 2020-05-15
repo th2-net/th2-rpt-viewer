@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2009-2019 Exactpro (Exactpro Systems Limited)
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ export interface StateSaverContext {
 export const { Provider, Consumer } = React.createContext({} as StateSaverContext);
 
 export interface StateSaverProps<S> extends RecoverableElementProps {
-    children: (state: S, stateHandler: (nextState: S) => any) => React.ReactNode;
+    children: (state: S, stateHandler: (nextState: S) => void) => React.ReactNode;
     getDefaultState?: () => S;
 }
 
@@ -40,8 +40,12 @@ export interface StateSaverProps<S> extends RecoverableElementProps {
 const StateSaver = <S extends {}>({ children, stateKey, getDefaultState }: StateSaverProps<S>) => (
 	<Consumer>
 		{
-			({ states = new Map(), saveState = () => {} }: StateSaverContext) => {
-				const saveNextState = (nextState: S) => saveState(stateKey, nextState);
+			({ states = new Map(), saveState }: StateSaverContext) => {
+				const saveNextState = (nextState: S) => {
+					if (saveState) {
+						saveState(stateKey, nextState);
+					}
+				};
 
 				if (states.has(stateKey) || !getDefaultState) {
 					return children(states.get(stateKey), saveNextState);
@@ -61,7 +65,7 @@ const StateSaver = <S extends {}>({ children, stateKey, getDefaultState }: State
 );
 
 interface DefaultStateSaverProps<S> {
-    saveState: (nextState: S) => any;
+    saveState: (nextState: S) => void;
     defaultState: S;
     children: React.ReactNode;
 }

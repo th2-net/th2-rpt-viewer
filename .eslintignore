@@ -16,7 +16,7 @@
 
 node_modules/*
 mocks/*
-webpack.config.js
+webpack/*
 jest.config.js
 build
 postcss.config.js

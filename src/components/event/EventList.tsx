@@ -18,78 +18,51 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../hooks/useStores';
-import { ActionNode, isAction } from '../../models/Action';
 import EventTree from './EventTree';
 import { VirtualizedList } from '../VirtualizedList';
 import StateSaverProvider from '../util/StateSaverProvider';
 import { createBemElement } from '../../helpers/styleCreators';
-import { EventAction } from '../../models/EventAction';
+import Empty from '../Empty';
+import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import SplashScreen from '../SplashScreen';
 import '../../styles/action.scss';
 
-interface Props {
-	events: EventAction[];
-}
-
-const EventList = ({
-	events,
-}: Props) => {
-	// eslint-disable-next-line @typescript-eslint/ban-types
-	const getScrolledIndex = (scrolledActionId: Number | null, actions: ActionNode[]): Number | null => {
-		const scrolledIndex = actions.findIndex(
-			action => isAction(action) && action.id === Number(scrolledActionId),
-		);
-
-		return scrolledIndex !== -1 ? new Number(scrolledIndex) : null;
-	};
-
-	const {
-		selectedStore,
-		filterStore,
-	} = useStores();
+const EventList = () => {
+	const eventWindowStore = useEventWindowStore();
 	const list = React.useRef<VirtualizedList>();
-	/*
-		Number objects is used here because in some cases (eg one message / action was selected several times
-		by diferent entities)
-    	We can't understand that we need to scroll to the selected entity again when we are comparing primitive numbers.
-    	Objects and reference comparison is the only way to handle numbers changing in this case.
-	*/
-	// eslint-disable-next-line @typescript-eslint/ban-types
-	const [scrolledIndex, setScrolledIndex] = React.useState<Number | null>(
-		getScrolledIndex(selectedStore.scrolledActionId, selectedStore.actions),
-	);
-
-	React.useEffect(() => {
-		if (selectedStore.scrolledActionId != null) {
-			setScrolledIndex(getScrolledIndex(selectedStore.scrolledActionId, selectedStore.actions));
-		}
-	}, [selectedStore.scrolledActionId]);
 
 	const computeKey = (index: number): number => index;
 
 	const renderEvent = (index: number): React.ReactElement =>
 		<EventTree
-			event={events[index]}
+			event={eventWindowStore.events[index]}
 			path={[]} />;
 
 	const listRootClass = createBemElement(
 		'actions',
 		'list',
-		filterStore.isFilterApplied ? 'filter-applied' : null,
+		eventWindowStore.filterStore.isFilterApplied ? 'filter-applied' : null,
 	);
+
+	if (eventWindowStore.isLoadingRootEvents) {
+		return <SplashScreen />;
+	}
+
+	if (!eventWindowStore.isLoadingRootEvents && eventWindowStore.events.length === 0) {
+		return <Empty description="No events" />;
+	}
 
 	return (
 		<div className="actions">
 			<div className={listRootClass} style={{ overflow: 'auto' }}>
 				<StateSaverProvider>
 					<VirtualizedList
-						rowCount={events.length}
+						rowCount={eventWindowStore.events.length}
 						ref={list as any}
-						renderElement={renderEvent}
 						computeItemKey={computeKey}
-						scrolledIndex={scrolledIndex}
+						scrolledIndex={null}
 						selectedElements={new Map()}
-						scrollHints={[]}
+						itemRenderer={renderEvent}
 					/>
 				</StateSaverProvider>
 			</div>

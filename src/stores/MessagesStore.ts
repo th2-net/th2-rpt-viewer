@@ -16,17 +16,10 @@
 
 import { action, observable, reaction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
-import EventsStore from './EventsStore';
 import FilterStore from './FilterStore';
 import { EventMessage } from '../models/EventMessage';
 
 export default class MessagesStore {
-	private api: ApiSchema;
-
-	private eventsStore: EventsStore;
-
-	private filterStore: FilterStore;
-
 	@observable
 	public messagesIds: Array<string> = [];
 
@@ -36,11 +29,10 @@ export default class MessagesStore {
 	@observable
 	public isLoading = false;
 
-	constructor(api: ApiSchema, eventsStore: EventsStore, filterStore: FilterStore) {
-		this.api = api;
-		this.eventsStore = eventsStore;
-		this.filterStore = filterStore;
-
+	constructor(
+		private api: ApiSchema,
+		private filterStore: FilterStore,
+	) {
 		reaction(
 			() => [
 				this.filterStore.messagesTimestampFrom,
@@ -77,6 +69,8 @@ export default class MessagesStore {
 
 	fetchMessage = async (id: string) => {
 		const message = await this.api.messages.getMessage(id);
-		this.messagesCache.set(id, message!);
+		if (message) {
+			this.messagesCache.set(id, message);
+		}
 	};
 }
