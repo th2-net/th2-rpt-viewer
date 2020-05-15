@@ -57,7 +57,7 @@ task buildProd(type: NpmTask, dependsOn: 'installDependencies') {
     inputs.file("${project.projectDir}/package-lock.json")
     inputs.file("${project.projectDir}/postcss.config.js")
     inputs.file("${project.projectDir}/tsconfig.json")
-    inputs.file("${project.projectDir}/webpack.config.js")
+    inputs.file("${project.projectDir}/webpack/webpack.production.js")
     inputs.dir("${project.projectDir}/src")
     outputs.dir("${project.buildDir}/out")
 

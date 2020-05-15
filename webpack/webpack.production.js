@@ -16,8 +16,9 @@
 
 const webpackMerge = require('webpack-merge');
 const commonConfig = require('./webpack.common');
+const path = require('path');
 
-const { appPath } = require('./paths');
+const { appPath, appSrc } = require('./paths');
 
 module.exports = webpackMerge(commonConfig, {
     mode: 'production',
