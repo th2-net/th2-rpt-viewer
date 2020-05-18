@@ -34,3 +34,8 @@ export default interface Status {
     description: string | null;
     cause: Exception | null;
 }
+
+export enum EventStatus {
+    PASSED = 'PASSED',
+    FAILED = 'FAILED',
+}

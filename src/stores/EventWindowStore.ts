@@ -137,6 +137,7 @@ export default class EventWindowStore {
 		const nextEvent = nextCyclicItem(this.events, this.selectedRootEvent);
 		if (nextEvent) {
 			this.expandNode([nextEvent.eventId], nextEvent);
+			this.selectedEvent = nextEvent;
 		}
 	};
 
@@ -146,6 +147,7 @@ export default class EventWindowStore {
 		const prevEvent = prevCyclicItem(this.events, this.selectedRootEvent);
 		if (prevEvent) {
 			this.expandNode([prevEvent.eventId], prevEvent);
+			this.selectedEvent = prevEvent;
 		}
 	};
 

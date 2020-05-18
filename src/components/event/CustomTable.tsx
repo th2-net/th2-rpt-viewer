@@ -18,7 +18,7 @@ import * as React from 'react';
 import '../../styles/tables.scss';
 
 interface CustomTableProps {
-    content: any[];
+	content: any[];
 }
 
 export function CustomTable({ content }: CustomTableProps) {

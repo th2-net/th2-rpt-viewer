@@ -24,6 +24,8 @@ import { getMinifiedStatus } from '../../helpers/action';
 import { StatusType } from '../../models/Status';
 import ParamsTable from './ParamsTable';
 import { extractParams } from '../../helpers/tables';
+import { CustomTable } from './CustomTable';
+import ErrorBoundary from '../util/ErrorBoundary';
 
 interface Props {
     panelArea: PanelArea;
@@ -45,16 +47,7 @@ export default function EventCard({
 		body,
 	} = event;
 
-	const {
-		fields,
-		...restBody
-	} = body || {};
-
-	const params = React.useMemo(() => extractParams(fields), [body]);
-
-	const status = eventType === 'verification'
-		? body.status
-		: successful ? 'PASSED' : 'FAILED';
+	const status = successful ? 'PASSED' : 'FAILED';
 
 	const rootClassName = createBemBlock(
 		'action-card',
@@ -131,21 +124,76 @@ export default function EventCard({
 				</div>
 			</div>
 			<div style={{ padding: '0 15px' }}>
-				{body?.fields
-				&& <>
-					<div className="ac-body__item-title">Input parameters</div>
-					<ParamsTable
-						params={params}
-						actionId={event.eventId as any}
-						stateKey={`${event.eventId}-input-params-nodes`}
-						name={event.eventName} />
-				</>}
-				<div style={{ overflow: 'auto', marginTop: '15px' }}>
-					<pre>
-						{body && Object.keys(restBody).length > 0 && JSON.stringify(restBody, null, 4)}
-					</pre>
-				</div>
+				<ErrorBoundary
+					fallback={<EventCardBodyFallback body={body}/>}>
+					<EventCardBody
+						body={body}
+						event={event} />
+				</ErrorBoundary>
 			</div>
 		</div>
 	);
 }
+
+interface EventCardBodyProps {
+	body: any;
+	event: EventAction;
+}
+
+const EventCardBody = ({
+	body,
+	event,
+}: EventCardBodyProps) => {
+	if (Array.isArray(body)) {
+		const content: Array<React.ReactNode> = [];
+		body.forEach(bodyEl => {
+			switch (bodyEl.type) {
+			case 'message':
+				content.push(<div key="message">{bodyEl.data}</div>);
+				break;
+			case 'table':
+				content.push(
+					<CustomTable
+						content={bodyEl.fields}
+						key="table"/>,
+				);
+				break;
+			default:
+				break;
+			}
+		});
+		return <div>{content}</div>;
+	}
+
+	if (!body?.fields) return null;
+
+	const { fields, ...restBody } = body;
+
+	return <>
+		<div className="ac-body__item-title">
+			Input parameters
+		</div>
+		<ParamsTable
+			params={extractParams(body)}
+			actionId={event.eventId as any}
+			stateKey={`${event.eventId}-input-params-nodes`}
+			name={event.eventName} />
+		<div style={{ overflow: 'auto', marginTop: '15px' }}>
+			<pre>
+				{body && Object.keys(restBody).length > 0 && JSON.stringify(restBody, null, 4)}
+			</pre>
+		</div>
+	</>;
+};
+
+const EventCardBodyFallback = ({ body }: any) => {
+	if (!body) return null;
+
+	return (
+		<div style={{ overflow: 'auto', marginTop: '15px' }}>
+			<pre>
+				{body && JSON.stringify(body, null, 4)}
+			</pre>
+		</div>
+	);
+};

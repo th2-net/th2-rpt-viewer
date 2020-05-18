@@ -16,8 +16,11 @@
 
 import ActionParameter from '../models/ActionParameter';
 
-export const extractParams = (fields: any): ActionParameter[] => {
-	if (!fields) return [];
+export const extractParams = (body: any): ActionParameter[] => {
+	if (!body || !body.fields) return [];
+
+	const { fields } = body;
+
 	return Object.keys(fields)
 		.reduce((params, key) => {
 			if (typeof fields[key] === 'string') {

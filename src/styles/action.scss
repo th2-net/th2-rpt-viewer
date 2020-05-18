@@ -316,7 +316,6 @@
         @include status-card;
         border: 2px solid transparent;
         border-radius: $defaultCardBorderRadius;
-        padding-bottom: 5px;
         
         &.selected {
             background-color: var(--status-secondary-background-color);

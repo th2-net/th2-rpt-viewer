@@ -41,7 +41,7 @@ const EventWindow = () => {
 		if (!event) return <Empty description="Select event" />;
 		return (
 			<div style={{ overflow: 'auto', height: '100%' }}>
-				{event.body && event.body.type === 'verification'
+				{event.eventType === 'verification'
 					? <VerificationCard
 						key={event.eventId}
 						verification={event}

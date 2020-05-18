@@ -18,10 +18,11 @@ import * as React from 'react';
 
 interface Props {
     errorMessage?: string;
+	fallback?: React.ReactElement;
 }
 
 interface State {
-    hasError: boolean;
+	hasError: boolean;
 }
 
 export default class ErrorBoundary extends React.Component<Props, State> {
@@ -40,11 +41,14 @@ export default class ErrorBoundary extends React.Component<Props, State> {
 	}
 
 	render() {
-		const errorMessge = this.props.errorMessage || 'Something went wrong...';
+		const errorMessage = this.props.errorMessage || 'Something went wrong...';
 		const { hasError } = this.state;
-
+		const { fallback } = this.props;
 		if (hasError) {
-			return errorMessge;
+			if (React.isValidElement(fallback)) {
+				return fallback;
+			}
+			return errorMessage;
 		}
 
 		return this.props.children;
