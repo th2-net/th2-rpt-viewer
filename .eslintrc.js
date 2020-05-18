@@ -82,6 +82,7 @@ module.exports = {
 		'no-nested-ternary': "off",
 		'no-console': ["warn", { allow: ["warn", "error"] }],
 		"no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
+		"react/prop-types": "off"
 	},
 	settings: {
 		react: {

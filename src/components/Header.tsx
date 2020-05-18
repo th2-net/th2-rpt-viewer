@@ -18,7 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../hooks/useStores';
 import { useFirstEventWindowStore } from '../hooks/useFirstEventWindowStore';
-import { formatTime } from '../helpers/date';
+import { formatTime, getTimestampAsNumber, getElapsedTime } from '../helpers/date';
 import { createBemElement, createStyleSelector } from '../helpers/styleCreators';
 import SearchInput from './search/SearchInput';
 import FilterPanel from './filter/FilterPanel';
@@ -75,6 +75,15 @@ const Header = () => {
 		!showFilter && eventWindowStore.filterStore.isFilterApplied ? 'applied' : null,
 	);
 
+	const elapsedTime = eventWindowStore.selectedRootEvent?.endTimestamp
+		&& eventWindowStore.selectedRootEvent?.startTimestamp
+		? getElapsedTime(
+			eventWindowStore.selectedRootEvent?.startTimestamp,
+			eventWindowStore.selectedRootEvent?.endTimestamp,
+			true,
+		)
+		: null;
+
 	return (
 		<div className={rootClass}>
 			<div className="header__main   header-main">
@@ -126,7 +135,13 @@ const Header = () => {
 					</div>
 					{eventWindowStore?.selectedRootEvent
 						?	<div className="header-main__title">
-							{`${eventWindowStore.selectedRootEvent.eventName} — ${status}`}
+							{
+								[
+									eventWindowStore.selectedRootEvent.eventName,
+									elapsedTime,
+									status,
+								].filter(Boolean).join(' — ')
+							}
 						</div>
 						: 	<div className="header-main__title">
 							{`${new Date().toLocaleDateString()} — ${eventsStore.rootEvents.length}`}
@@ -158,9 +173,14 @@ const Header = () => {
 				&& 	<div className="header__info-element">
 					<span>Start:</span>
 					<p>
-						{formatTime(
-							new Date(eventWindowStore.selectedRootEvent.startTimestamp.epochSecond * 1000).toString(),
-						)}
+						{formatTime(getTimestampAsNumber(eventWindowStore.selectedRootEvent.startTimestamp))}
+					</p>
+				</div>}
+				{eventWindowStore.selectedRootEvent.endTimestamp
+				&& 	<div className="header__info-element">
+					<span>Finish:</span>
+					<p>
+						{formatTime(getTimestampAsNumber(eventWindowStore.selectedRootEvent.endTimestamp))}
 					</p>
 				</div>}
 			</div>}

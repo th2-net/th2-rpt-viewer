@@ -35,7 +35,7 @@ export function getSecondsPeriod(startTime: string | Date, finishTime: string | 
 export function getElapsedTime(startTimestamp: Timestamp, endTimestamp: Timestamp, withMiliseconds = true) {
 	const diff = getTimestampAsNumber(endTimestamp) - getTimestampAsNumber(startTimestamp);
 	const seconds = Math.floor(diff / 1000);
-	const milliseconds = diff - (seconds * 1000);
+	const milliseconds = Math.floor(diff - (seconds * 1000));
 
 	const millisecondsFormatted = milliseconds === 0 ? '0' : milliseconds.toString().padStart(3, '0');
 

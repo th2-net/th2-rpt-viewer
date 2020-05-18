@@ -139,6 +139,8 @@ class VerificationTableBase extends React.Component<Props, State> {
 
 		const rootClass = createStyleSelector('ver-table', status);
 
+		if (!nodes.length) return null;
+
 		return (
 			<div className={rootClass}>
 				<div className="ver-table-header">

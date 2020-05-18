@@ -25,6 +25,7 @@ import { EventAction } from '../../models/EventAction';
 import { getMinifiedStatus } from '../../helpers/action';
 import { StatusType } from '../../models/Status';
 import SplashScreen from '../SplashScreen';
+import { getEventStatus } from '../../helpers/event';
 
 interface Props {
     panelArea: PanelArea;
@@ -49,17 +50,12 @@ function EventTreeNode({
 		eventName,
 		startTimestamp,
 		endTimestamp,
-		successful,
-		eventType,
-		body,
 		subNodes,
 	} = event;
 
 	const parents = useAsObservableSource(path);
 
-	const status = eventType === 'verification'
-		? body.status
-		: successful ? 'PASSED' : 'FAILED';
+	const status = getEventStatus(event);
 
 	const rootClassName = createBemBlock(
 		'action-card',
@@ -121,16 +117,17 @@ function EventTreeNode({
 					<div className="ac-header__status">
 						{
 							isMinified
-								? getMinifiedStatus(status as StatusType)
+								? getMinifiedStatus(status as any)
 								: status.toUpperCase()
 						}
 					</div>
 					{
-						subNodes && subNodes.length > 0 ? (
+						subNodes && subNodes.length > 0
+						&& (
 							<div className="ac-header__chips">
 								<Chip text={subNodes.length.toString()} />
 							</div>
-						) : null
+						)
 					}
 				</div>
 			</div>

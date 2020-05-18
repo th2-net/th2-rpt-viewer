@@ -16,14 +16,16 @@
 
 import * as React from 'react';
 import { StatusType } from '../../models/Status';
-import { createStyleSelector } from '../../helpers/styleCreators';
+import { createStyleSelector, createBemBlock } from '../../helpers/styleCreators';
 import { VerificationTable } from './VerificationTable';
 import { keyForVerification } from '../../helpers/keys';
 import { EventAction } from '../../models/EventAction';
 import { getElapsedTime, formatTime, getTimestampAsNumber } from '../../helpers/date';
 import { getMinifiedStatus } from '../../helpers/action';
 import { Chip } from '../Chip';
+import ErrorBoundary from '../util/ErrorBoundary';
 import '../../styles/action.scss';
+import PanelArea from '../../util/PanelArea';
 
 interface VerificationCardProps {
     verification: EventAction;
@@ -45,8 +47,18 @@ const VerificationCard = ({
 		startTimestamp,
 		endTimestamp,
 		subNodes,
+		successful,
 	} = verification;
-	const { status } = body;
+
+	const verificationBody = body !== null
+		? Array.isArray(body)
+			? body.find(bodyEl => bodyEl.type === 'verification')
+			: body
+		: {};
+
+	const status = verificationBody && verificationBody.status
+		? verificationBody.status
+		: successful ? 'PASSED' : 'FAILED';
 
 	const rootClassName = createStyleSelector(
 		'action-card',
@@ -54,20 +66,30 @@ const VerificationCard = ({
 		'selected',
 	);
 
+	const headerClassName = createBemBlock(
+		'ac-header',
+		PanelArea.P100,
+		status,
+	);
+
 	const bodyClassName = createStyleSelector(
 		'ac-body__verification',
 		status,
 	);
+
+	const elapsedTime = endTimestamp && startTimestamp
+		? getElapsedTime(startTimestamp, endTimestamp)
+		: null;
 
 	const key = keyForVerification(parentActionId, eventId);
 
 	return (
 		<div className={rootClassName}>
 			<div className={bodyClassName}>
-				<div className="ac-header verification">
+				<div className={headerClassName}>
 					<div className="ac-header__title ac-body__verification-title-wrapper">
 						<div className="ac-header__name">
-							<div className="ac-header name-element" title={eventType}>
+							<div className="ac-header__name-element" title={eventType}>
 								{eventType}
 							</div>
 						</div>
@@ -93,9 +115,9 @@ const VerificationCard = ({
 						)
 					}
 					{
-						!isMinified
+						elapsedTime && !isMinified
 						&& <div className="ac-header__elapsed-time">
-							<span>{getElapsedTime(startTimestamp, endTimestamp)}</span>
+							<span>{elapsedTime}</span>
 						</div>
 					}
 					<div className="ac-header__controls">
@@ -107,24 +129,41 @@ const VerificationCard = ({
 							}
 						</div>
 						{
-							subNodes && subNodes.length > 0 ? (
+							subNodes && subNodes.length > 0
+							&& (
 								<div className="ac-header__chips">
 									<Chip text={subNodes.length.toString()}/>
 								</div>
-							) : null
+							)
 						}
 					</div>
 				</div>
-				<VerificationTable
-					keyPrefix={key}
-					actionId={parentActionId as any}
-					messageId={eventId as any}
-					stateKey={`${key}-nodes`}
-					params={body}
-					status={status as StatusType}/>
+				<ErrorBoundary
+					fallback={<VerificationCardBodyFallback body={verificationBody}/>}>
+					<VerificationTable
+						keyPrefix={key}
+						actionId={parentActionId as any}
+						messageId={eventId as any}
+						stateKey={`${key}-nodes`}
+						params={verificationBody}
+						status={status as StatusType}/>
+				</ErrorBoundary>
+
 			</div>
 		</div>
 	);
 };
 
 export default VerificationCard;
+
+const VerificationCardBodyFallback = ({ body }: any) => {
+	if (!body) return null;
+
+	return (
+		<div style={{ overflow: 'auto', marginTop: '15px' }}>
+			<pre>
+				{body && JSON.stringify(body, null, 4)}
+			</pre>
+		</div>
+	);
+};
