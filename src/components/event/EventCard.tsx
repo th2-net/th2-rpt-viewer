@@ -45,6 +45,7 @@ export default function EventCard({
 		eventType,
 		eventName,
 		body,
+		eventId,
 	} = event;
 
 	const status = successful ? 'PASSED' : 'FAILED';
@@ -122,6 +123,9 @@ export default function EventCard({
 						) : null
 					}
 				</div>
+			</div>
+			<div className="ac-header__id">
+				{eventId}
 			</div>
 			<div style={{ padding: '0 15px' }}>
 				<ErrorBoundary
