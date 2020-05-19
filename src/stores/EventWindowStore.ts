@@ -89,7 +89,7 @@ export default class EventWindowStore {
 		try {
 			const events = await this.api.events.getAll();
 			this.isLoadingRootEvents = false;
-			events.sort((a, b) => b.startTimestamp.epochSecond - a.startTimestamp.epochSecond);
+			events.sort((a, b) => getTimestampAsNumber(b.startTimestamp) - getTimestampAsNumber(a.startTimestamp));
 			this.events = events;
 		} catch (error) {
 			console.error('Error while loading events', error);
@@ -102,6 +102,7 @@ export default class EventWindowStore {
 		this.loadingEvents.set(event.eventId, true);
 		try {
 			const children = await this.api.events.getSubNodes(event.eventId);
+			children.sort((a, b) => getTimestampAsNumber(b.startTimestamp) - getTimestampAsNumber(a.startTimestamp));
 			this.loadingEvents.set(event.eventId, false);
 			let { events } = this;
 			let parentNode: EventAction | undefined;
