@@ -138,6 +138,9 @@ const VerificationCard = ({
 						}
 					</div>
 				</div>
+				<div className="ac-header__id">
+					{eventId}
+				</div>
 				<ErrorBoundary
 					fallback={<VerificationCardBodyFallback body={verificationBody}/>}>
 					<VerificationTable
