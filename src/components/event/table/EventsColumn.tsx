@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +14,29 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { hot } from 'react-hot-loader/root';
 import * as React from 'react';
-import EventsLayout from './event/EventsLayout';
-import '../styles/root.scss';
+import { Virtuoso } from 'react-virtuoso';
+import { observer } from 'mobx-react-lite';
+import { EventIdNode } from '../../../stores/EventWindowStore';
+import TableEventCard from './TableEventCard';
 
-const App = () => (
-	<div className="root">
-		<EventsLayout />
-	</div>
-);
+interface Props {
+	nodesList: EventIdNode[];
+}
 
-export default hot(App);
+function EventsColumn({ nodesList }: Props) {
+	const renderEvent = (index: number) => (
+		<TableEventCard idNode={nodesList[index]}/>
+	);
+
+	return (
+		<Virtuoso
+			style={{ height: '100%', width: '100%' }}
+			computeItemKey={index => nodesList[index].id}
+			overscan={3}
+			totalCount={nodesList.length}
+			item={renderEvent}/>
+	);
+}
+
+export default observer(EventsColumn);

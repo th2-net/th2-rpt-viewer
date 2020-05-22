@@ -15,21 +15,23 @@
  ***************************************************************************** */
 
 import {
-	action,
-	computed,
-	observable,
-	reaction,
-	set,
+	action, computed, observable, reaction,
 } from 'mobx';
 import FilterStore from './FilterStore';
 import MessagesStore from './MessagesStore';
-import ViewStore from './ViewStore';
+import ViewStore from './WindowViewStore';
 import ApiSchema from '../api/ApiSchema';
 import { EventAction } from '../models/EventAction';
 import { nextCyclicItem, prevCyclicItem } from '../helpers/array';
-import { isRootEvent } from '../helpers/event';
 import { getTimestampAsNumber } from '../helpers/date';
 import SearchStore from './SearchStore';
+
+export type EventIdNode = {
+	id: string;
+	isExpanded: boolean;
+	children: EventIdNode[] | null;
+	parents: EventIdNode[];
+};
 
 export default class EventWindowStore {
 	filterStore: FilterStore = new FilterStore();
@@ -45,22 +47,60 @@ export default class EventWindowStore {
 			() => this.rootEventSubEvents,
 			this.onEventsListChange,
 		);
+
+		reaction(
+			() => this.selectedNode,
+			() => this.messagesStore.scrolledIndex = null,
+		);
 	}
 
-	@observable events: Array<EventAction> = [];
+	@observable eventsIds: EventIdNode[] = [];
+
+	@observable eventsCache: Map<string, EventAction> = new Map<string, EventAction>();
 
 	@observable isLoadingRootEvents = false;
 
-	@observable selectedEvent: EventAction | null = null;
+	@observable selectedNode: EventIdNode | null = null;
 
-	@observable loadingEvents: Map<string, boolean> = new Map();
+	createTreeNode = (id: string, parents: EventIdNode[] = []): EventIdNode => ({
+		id,
+		isExpanded: false,
+		children: null,
+		parents,
+	});
 
-	@observable expandPath: Array<string> = [];
+	getNodesList = (idNode: EventIdNode): EventIdNode[] => {
+		if (idNode.isExpanded && idNode.children) {
+			return [
+				idNode,
+				...idNode.children.flatMap(this.getNodesList),
+			];
+		}
 
-	@computed get selectedRootEvent() {
-		if (!this.expandPath.length) return null;
+		return [idNode];
+	};
 
-		return this.events.find(event => event.eventId === this.expandPath[0]) || null;
+	// we need this property for correct virtualized tree render -
+	// to get event key by index in tree and list length calculation.
+	@computed get nodesList() {
+		return this.eventsIds.flatMap(eventId => this.getNodesList(eventId));
+	}
+
+	@computed get selectedPath() {
+		if (this.selectedNode == null) {
+			return [];
+		}
+
+		return [...this.selectedNode.parents, this.selectedNode];
+	}
+
+	@computed get selectedRootEvent(): EventAction | null {
+		if (this.selectedNode == null) {
+			return null;
+		}
+
+		const selectedRootNode = this.selectedPath[0];
+		return this.eventsCache.get(selectedRootNode.id) ?? null;
 	}
 
 	@computed get rootEventSubEvents() {
@@ -68,89 +108,85 @@ export default class EventWindowStore {
 	}
 
 	@action
-	expandNode = (path: string[], event: EventAction) => {
-		this.getEventSubNodes(event, path);
-		if (this.expandPath.includes(event.eventId)) {
-			this.expandPath = path;
-		} else {
-			this.expandPath = [...path, event.eventId];
+	toggleNode = (idNode: EventIdNode) => {
+		// eslint-disable-next-line no-param-reassign
+		idNode.isExpanded = !idNode.isExpanded;
+	};
+
+	@action
+	selectNode = async (idNode: EventIdNode | null) => {
+		if (idNode != null && idNode.children == null) {
+			await this.fetchEventChildren(idNode);
 		}
+
+		this.selectedNode = idNode;
 	};
 
 	@action
-	selectEvent = (event: EventAction, path: string[]) => {
-		this.selectedEvent = event;
-		this.expandNode(path, event);
+	fetchEvent = async (id: string, abortSignal?: AbortSignal): Promise<EventAction> => {
+		if (this.eventsCache.has(id)) {
+			return this.eventsCache.get(id)!;
+		}
+
+		const event = await this.api.events.getEvent(id, abortSignal);
+		this.eventsCache.set(id, event);
+		return event;
 	};
 
 	@action
-	getRootEvents = async () => {
+	fetchEventChildren = async (idNode: EventIdNode): Promise<string[]> => {
+		const { id } = idNode;
+		const subNodes = await this.api.events.getSubNodesIds(id);
+
+		// eslint-disable-next-line no-param-reassign
+		idNode.children = subNodes.map(subNodeId => this.createTreeNode(subNodeId, [...idNode.parents, idNode]));
+		return subNodes;
+	};
+
+	@action
+	fetchRootEvents = async () => {
 		this.isLoadingRootEvents = true;
 		try {
 			const events = await this.api.events.getAll();
 			this.isLoadingRootEvents = false;
 			events.sort((a, b) => getTimestampAsNumber(b.startTimestamp) - getTimestampAsNumber(a.startTimestamp));
-			this.events = events;
+
+			this.eventsIds = events
+				.map(event => this.createTreeNode(event.eventId, []));
+
+			events.forEach(event => {
+				this.eventsCache.set(event.eventId, event);
+			});
 		} catch (error) {
 			console.error('Error while loading events', error);
 		}
 	};
 
 	@action
-	getEventSubNodes = async (event: EventAction, path: string[]) => {
-		if (event.subNodes || this.loadingEvents.get(event.eventId)) return;
-		this.loadingEvents.set(event.eventId, true);
-		try {
-			const children = await this.api.events.getSubNodes(event.eventId);
-			children.sort((a, b) => getTimestampAsNumber(b.startTimestamp) - getTimestampAsNumber(a.startTimestamp));
-			this.loadingEvents.set(event.eventId, false);
-			let { events } = this;
-			let parentNode: EventAction | undefined;
-			if (isRootEvent(event)) {
-				parentNode = events.find(e => e.eventId === event.eventId);
-				set(parentNode!, 'subNodes', observable.array(children));
-				return;
-			}
-			while (path.length > 0) {
-				const parentId = path.shift();
-				parentNode = events.find(e => e.eventId === parentId);
-				events = parentNode?.subNodes || [];
-			}
-			if (parentNode) {
-				if (!parentNode.subNodes) {
-					set(parentNode, 'subNodes', observable.array(children));
-				} else {
-					parentNode.subNodes = parentNode.subNodes?.map(e => {
-						if (e.eventId !== event.eventId) return e;
-						set(e, 'subNodes', observable.array(children));
-						return e;
-					});
-				}
-			}
-		} catch (error) {
-			console.error('Error while loading event children', error);
-		}
-	};
-
-	@action
 	selectNextEvent = () => {
 		if (!this.selectedRootEvent) return;
-		const nextEvent = nextCyclicItem(this.events, this.selectedRootEvent);
-		if (nextEvent) {
-			this.expandNode([nextEvent.eventId], nextEvent);
-			this.selectedEvent = nextEvent;
+		const nextNode = nextCyclicItem(this.eventsIds, this.selectedNode);
+		if (nextNode) {
+			this.selectedNode = nextNode;
 		}
 	};
 
 	@action
 	selectPrevEvent = () => {
 		if (!this.selectedRootEvent) return;
-		const prevEvent = prevCyclicItem(this.events, this.selectedRootEvent);
-		if (prevEvent) {
-			this.expandNode([prevEvent.eventId], prevEvent);
-			this.selectedEvent = prevEvent;
+		const prevNode = prevCyclicItem(this.eventsIds, this.selectedNode);
+		if (prevNode) {
+			this.selectedNode = prevNode;
 		}
 	};
+
+	public isNodeSelected(idNode: EventIdNode) {
+		if (this.selectedNode == null) {
+			return false;
+		}
+
+		return this.selectedPath.includes(idNode);
+	}
 
 	private onEventsListChange = (rootEventSubEvents: EventAction[] | null) => {
 		if (!rootEventSubEvents || !rootEventSubEvents.length) return;

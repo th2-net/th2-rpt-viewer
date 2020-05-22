@@ -86,7 +86,7 @@
         }
 
         &:nth-child(2) {
-            flex-grow: 3;
+            flex-grow: 2.7;
             justify-content: center;
         }
 
@@ -170,9 +170,7 @@
     cursor: pointer;
 
     &__icon {
-        width: 20px;
-        height: 20px;
-        background-size: 100%;
+        @include icon(null, 20px, 20px);
 
         &.go-back {
             background-image: url(../../resources/icons/arr2-left.svg);
@@ -208,6 +206,15 @@
             margin-left: 6px;
             margin-top: 3px;
         }
+
+        &.tree-view {
+            background-image: url(../../resources/icons/tree-view-icon.svg);
+        }
+
+        &.table-view {
+            background-image: url(../../resources/icons/table-view-icon.svg);
+        }
+
     }
 
     &__filter-wrapper {

@@ -40,14 +40,14 @@ const SearchPanelControl = observer(() => {
 				className='search-panel-controls__checkbox'
 				id='left-panel'
 				checked={searchStore.leftPanelEnabled}
-				label={viewStore.leftPanel.toLowerCase().replace('_', ' ')}
+				label={'events'}
 				onChange={onLeftPanelSelect}
 				isDisabled={viewStore.isLeftPanelClosed}/>
 			<Checkbox
 				className='search-panel-controls__checkbox'
 				id='right-panel'
 				checked={searchStore.rightPanelEnabled}
-				label={viewStore.rightPanel.toLowerCase().replace('_', ' ')}
+				label={'messages'}
 				onChange={onRightPanelSelect}
 				isDisabled={viewStore.isRightPanelClosed}/>
 		</div>

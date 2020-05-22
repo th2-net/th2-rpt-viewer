@@ -15,17 +15,41 @@
 ***************************************************************************** */
 
 import React from 'react';
+import { TScrollContainer } from 'react-virtuoso';
+import MessagesHeatmap from './MessagesHeatmap';
 
-export function ActionCardSkeleton() {
+const MessagesScrollContainer: TScrollContainer = ({
+	className,
+	style,
+	reportScrollTop,
+	scrollTo,
+	children,
+}) => {
+	const scrollContainer = React.useRef<HTMLDivElement>(null);
+
+	scrollTo((scrollTop: ScrollToOptions) => {
+		scrollContainer.current?.scrollTo(scrollTop);
+	});
+
 	return (
-		<div className="ac-skeleton">
-			<div className="ac-skeleton__icons"/>
-			<div className="ac-skeleton__title"/>
-			<div className="ac-skeleton__description"/>
-			<div className="ac-skeleton__status"/>
-			<div className="ac-skeleton__info"/>
+		<div style={{ width: '100%', height: '100%', display: 'flex' }}>
+			<div
+				ref={scrollContainer}
+				onScroll={(e: React.SyntheticEvent<HTMLDivElement>) =>
+					reportScrollTop(e.currentTarget.scrollTop)}
+				style={{
+					...style,
+					flexGrow: 1,
+					marginRight: '11px',
+				}}
+				tabIndex={0}
+				className={className}
+			>
+				{children}
+			</div>
+			<MessagesHeatmap />
 		</div>
 	);
-}
+};
 
-export default ActionCardSkeleton;
+export default MessagesScrollContainer;

@@ -26,6 +26,7 @@ import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 import SkeletonedMessageCardListItem from './SkeletonedMessageCardListItem';
 import Empty from '../Empty';
 import SplashScreen from '../SplashScreen';
+import MessagesScrollContainer from './MessagesScrollContainer';
 import '../../styles/messages.scss';
 
 const MessageCardList = () => {
@@ -65,10 +66,12 @@ const MessageCardList = () => {
 				}
 				<StateSaverProvider>
 					<VirtualizedList
-						selectedElements={new Map()}
+						className="messages__list"
 						rowCount={messagesStore.messagesIds.length}
-						scrolledIndex={null}
+						scrolledIndex={messagesStore.scrolledIndex}
 						itemRenderer={renderMessage}
+						ScrollContainer={MessagesScrollContainer}
+						overscan={0}
 					/>
 				</StateSaverProvider>
 			</div>

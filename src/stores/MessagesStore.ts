@@ -29,6 +29,10 @@ export default class MessagesStore {
 	@observable
 	public isLoading = false;
 
+	@observable
+	// eslint-disable-next-line @typescript-eslint/ban-types
+	public scrolledIndex: Number | null = null;
+
 	constructor(
 		private api: ApiSchema,
 		private filterStore: FilterStore,

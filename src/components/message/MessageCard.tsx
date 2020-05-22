@@ -20,12 +20,15 @@ import Message from '../../models/Message';
 import { StatusType } from '../../models/Status';
 import { getHashCode } from '../../helpers/stringHash';
 import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
+import { getTimestampAsNumber } from '../../helpers/date';
 import { keyForMessage } from '../../helpers/keys';
 import StateSaver from '../util/StateSaver';
 import { PredictionData } from '../../models/MlServiceResponse';
 import PanelArea from '../../util/PanelArea';
 import { EventMessage } from '../../models/EventMessage';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
+import { useMessagesHeatmap } from '../../hooks/useMessagesHeatmap';
+import { lighten } from '../../helpers/color';
 import '../../styles/messages.scss';
 
 const HUE_SEGMENTS_COUNT = 36;
@@ -49,6 +52,7 @@ export interface MessageCardStateProps {
 	isContentBeautified: boolean;
 	prediction: PredictionData | null;
 	searchField: keyof Message | null;
+	color: string | undefined;
 }
 
 export interface MessageCardDispatchProps {
@@ -72,6 +76,7 @@ export function MessageCardBase(props: MessageCardProps) {
 		isContentBeautified,
 		toggleBeautify,
 		panelArea,
+		color,
 	} = props;
 	const {
 		timestamp,
@@ -112,7 +117,12 @@ export function MessageCardBase(props: MessageCardProps) {
 	);
 
 	return (
-		<div className={rootClass}>
+		<div
+			className={rootClass}
+			style={{
+				backgroundColor: color ? lighten(color, 47) : undefined,
+				borderColor: color,
+			}}>
 			<div className={headerClass}
 				 onClick={() => selectHandler()}>
 				<div className="mc-header__name">
@@ -122,7 +132,10 @@ export function MessageCardBase(props: MessageCardProps) {
 					{type}
 				</div>
 				<div className="mc-header__timestamp">
-					<p>{timestamp ? new Date(timestamp.epochSecond * 1000).toISOString().replace('T', ' ') : null}</p>
+					<p>
+						{timestamp
+						&& new Date(getTimestampAsNumber(timestamp)).toISOString().replace('T', ' ')}
+					</p>
 				</div>
 				<div className="mc-header__session">
 					<span>Session</span>
@@ -182,14 +195,18 @@ export const RecoverableMessageCard = ({
 
 export const MessageCard = observer(({ message }: MessageCardOwnProps) => {
 	const viewStore = useEventWindowViewStore();
+	const { heatmapElements } = useMessagesHeatmap();
+
+	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
 
 	return (
 		<RecoverableMessageCard
-			isSelected={false}
+			isSelected={Boolean(heatmapElement)}
+			color={heatmapElement?.color}
 			status={null}
 			isTransparent={false}
 			rejectedMessagesCount={0}
-			adminEnabled={viewStore.adminMessagesEnabled.valueOf()}
+			adminEnabled={true}
 			panelArea={viewStore.panelArea}
 			isContentBeautified={viewStore.beautifiedMessages.includes(message.messageId)}
 			prediction={null}

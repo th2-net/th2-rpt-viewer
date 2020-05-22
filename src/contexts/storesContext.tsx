@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import React from 'react';
-import AppViewStore from '../stores/AppViewStore';
 import EventsStore from '../stores/EventsStore';
 import ApiSchema from '../api/ApiSchema';
+import AppViewStore from '../stores/AppViewStore';
 
 export interface RootStoreContext {
     eventsStore: EventsStore;
