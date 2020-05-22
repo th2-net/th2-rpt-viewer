@@ -21,21 +21,23 @@ import { createStyleSelector } from '../helpers/styleCreators';
 import '../styles/chip.scss';
 
 interface Props {
-    text: string;
+    text: string | number;
     title?: string;
     status?: StatusType;
     isSelected?: boolean;
+    isLoading?: boolean;
     onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
 export function Chip({
-	status, text, isSelected, onClick, title,
+	status, text, isSelected, onClick, title, isLoading,
 }: Props) {
 	const rootClass = createStyleSelector(
 		'chip',
 		status || null,
 		isSelected ? 'selected' : null,
 		onClick ? 'clickable' : null,
+		isLoading ? 'loading' : null,
 	);
 
 	return (

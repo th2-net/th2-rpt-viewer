@@ -77,7 +77,7 @@
     }
 
     &:hover {
-        border-color: var(--status-primary-color);
+        border-color: var(--status-secondary-color);
     }
 
     &.selected {
@@ -122,7 +122,6 @@
     }
 
     &.p100 {
-        grid-template-columns: 1fr;
         grid-template-columns: 1fr repeat(4, auto);
         grid-template-areas: "title start-time end-time elapsed-time controls";
     }

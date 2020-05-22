@@ -13,47 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import Message from '../models/Message';
-import { StatusType } from '../models/Status';
-import Action from '../models/Action';
-import { TestCaseMetadata, isTestCaseMetadata } from '../models/TestcaseMetadata';
-import LiveTestCase from '../models/LiveTestCase';
 
-export function messagesHeatmap(
-	messages: Message[], selectedMessages: number[], selectedStatus: StatusType | null,
-): Map<number, StatusType> {
-	const heatmap = new Map<number, StatusType>();
+import { HeatmapElement } from '../components/message/MessagesHeatmap';
 
-	messages.forEach((message, idx) => {
-		if (selectedMessages.includes(message.id)) {
-			heatmap.set(idx, selectedStatus ?? StatusType.NA);
+export const getHeatmapElements = (
+	items: string[],
+	selectedItems: string[],
+	color: string,
+): HeatmapElement[] => {
+	if (!selectedItems.length) return [{ count: items.length, index: 0 }];
+
+	const presentIds = selectedItems.filter(id => items.includes(id));
+	const idsIndexes = presentIds.map(id => items.indexOf(id));
+	const heatmapElements = idsIndexes.reduce((blocks, itemIndex, index) => {
+		const nextIndex = idsIndexes[index + 1];
+		const updatedBlocks = blocks.slice();
+		updatedBlocks.push({
+			count: 1,
+			color,
+			id: presentIds[index],
+			index: itemIndex,
+		});
+		if (nextIndex && nextIndex - itemIndex !== 1) {
+			updatedBlocks.push({
+				count: nextIndex - itemIndex - 1,
+				index: itemIndex + 1,
+			});
 		}
-	});
+		return updatedBlocks;
+	}, [] as HeatmapElement[]);
 
-	return heatmap;
-}
+	if (!heatmapElements.length) return [{ count: items.length, index: 0 }];
 
-export function actionsHeatmap(actions: Action[], selectedActionsId: number[]): Map<number, StatusType> {
-	const heatmap = new Map<number, StatusType>();
-
-	actions.forEach((action, idx) => {
-		if (selectedActionsId.includes(action.id)) {
-			heatmap.set(idx, action.status.status);
-		}
-	});
-
-	return heatmap;
-}
-
-export function testCasesHeatmap(testCases: (TestCaseMetadata | LiveTestCase)[]): Map<number, StatusType> {
-	const heatmap = new Map<number, StatusType>();
-
-	testCases.forEach((metadata, idx) => {
-		// skip only passed testcases on heatmap
-		if (isTestCaseMetadata(metadata) && metadata.status.status !== StatusType.PASSED) {
-			heatmap.set(idx, metadata.status.status);
-		}
-	});
-
-	return heatmap;
-}
+	if (heatmapElements.length === 1) {
+		const [elem] = heatmapElements;
+		return [
+			{ count: elem.index ? elem.index - 1 : 0, index: 0 },
+			elem,
+			{ count: elem.index ? items.length - elem.index - 1 : 0, index: elem.index + 1 },
+		];
+	}
+	return heatmapElements;
+};

@@ -33,6 +33,10 @@
         padding: 0 5px;
     }
 
+    &.loading {
+        @include spinner(2px, 20px, 2s, var(--status-secondary-border-color), $secondaryTextColor);
+    }
+
     &.selected {
         font-weight: bold;
         color: white;

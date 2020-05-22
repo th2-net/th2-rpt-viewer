@@ -15,17 +15,14 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { Virtuoso, VirtuosoMethods } from 'react-virtuoso';
+import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
 import ResizeObserver from 'resize-observer-polyfill';
-import { StatusType } from '../models/Status';
 import { raf } from '../helpers/raf';
+import { createStyleSelector } from '../helpers/styleCreators';
 
 interface Props {
     computeItemKey?: (idx: number) => number;
     rowCount: number;
-
-    // for heatmap scrollbar
-    selectedElements: Map<number, StatusType>;
 	itemRenderer: (index: number) => React.ReactElement;
 	/*
 		Number objects is used here because in some cases (eg one message / action was selected several times
@@ -34,7 +31,10 @@ interface Props {
 		Objects and reference comparison is the only way to handle numbers changing in this case.
 	*/
     // eslint-disable-next-line @typescript-eslint/ban-types
-    scrolledIndex: Number | null;
+	scrolledIndex: Number | null;
+	className?: string;
+	ScrollContainer?: TScrollContainer;
+	overscan?: number;
 }
 
 type State = { [index: number]: number };
@@ -74,12 +74,12 @@ export class VirtualizedList extends React.Component<Props, State> {
 				Without it List will calculate wrong scrollTop because it contains outdated information
 				about row's heights.
 			*/
-			this.virtuoso.current?.scrollToIndex({ index: +this.props.scrolledIndex, align: 'center' });
+			this.virtuoso.current?.scrollToIndex({ index: +this.props.scrolledIndex, align: 'start' });
 		}
 	}
 
 	componentDidMount() {
-		if (this.props.scrolledIndex != null) {
+		if (this.props.scrolledIndex !== null) {
 			// we need raf here, because in componentDidMount virtualized list is not complete its render
 
 			raf(() => {
@@ -90,18 +90,24 @@ export class VirtualizedList extends React.Component<Props, State> {
 
 	render() {
 		const {
-			rowCount, computeItemKey,
+			rowCount, computeItemKey, className, ScrollContainer, overscan = 3,
 		} = this.props;
+
+		const rootClassName = createStyleSelector(
+			'virtualized-list',
+			className || null,
+		);
 
 		return (
 			<Virtuoso
 				totalCount={rowCount}
 				ref={this.virtuoso}
-				overscan={3}
+				overscan={overscan}
 				computeItemKey={computeItemKey}
 				item={this.props.itemRenderer}
 				style={{ height: '100%' }}
-				className="virtualized-list"/>
+				className={rootClassName}
+				ScrollContainer={ScrollContainer} />
 		);
 	}
 }

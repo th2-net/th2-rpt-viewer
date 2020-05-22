@@ -24,12 +24,11 @@ import SearchInput from './search/SearchInput';
 import FilterPanel from './filter/FilterPanel';
 import useOutsideClickListener from '../hooks/useOutsideClickListener';
 import { ToggleButton } from './ToggleButton';
+import { ModalPortal } from './Portal';
 import '../styles/header.scss';
 
-const Header = () => {
-	const {
-		eventsStore,
-	} = useStores();
+function Header() {
+	const { viewStore: appViewStore } = useStores();
 	const eventWindowStore = useFirstEventWindowStore();
 
 	const [showFilter, setShowFilter] = React.useState(false);
@@ -53,14 +52,16 @@ const Header = () => {
 	);
 	const navButtonClass = createStyleSelector(
 		'header-button',
-		eventWindowStore.events.length > 1 ? '' : 'disabled',
+		eventWindowStore.eventsIds.length > 1 ? '' : 'disabled',
 		null,
 	);
+
 	const filterWrapperClass = createBemElement(
 		'header-button',
 		'filter-wrapper',
 		showFilter ? 'active' : null,
 	);
+
 	const filterTitleClass = createBemElement(
 		'header-button',
 		'title',
@@ -73,6 +74,11 @@ const Header = () => {
 		'filter-icon',
 		showFilter ? 'active' : null,
 		!showFilter && eventWindowStore.filterStore.isFilterApplied ? 'applied' : null,
+	);
+	const eventsViewIconClass = createBemElement(
+		'header-button',
+		'icon',
+		appViewStore.eventTableModeEnabled ? 'table-view' : 'tree-view',
 	);
 
 	const elapsedTime = eventWindowStore.selectedRootEvent?.endTimestamp
@@ -105,26 +111,29 @@ const Header = () => {
 											: 'Show Filter'
 								}
 							</div>
-							{/* {
-								eventWindowStore.filterStore.isFilterApplied
-								&& eventWindowStore.filterStore.isHighlighted ? (
-										<div className="header-button__filter-counter">
-											{
-												selectedStore.messages.length > 99
-													? '99+'
-													: selectedStore.messages.length
-											}
-										</div>
-									) : null
-							} */}
 						</div>
-						{
-							showFilter ? (
-								<div ref={filterBaseRef} className="filter-wrapper">
-									<FilterPanel/>
-								</div>
-							) : null
-						}
+						<ModalPortal isOpen={showFilter}>
+							<div
+								ref={filterBaseRef}
+								className="filter-wrapper"
+								style={{
+									left: `${filterButtonRef.current?.getBoundingClientRect().left}px`,
+									top: `${filterButtonRef.current?.getBoundingClientRect().bottom}px`,
+								}}>
+								<FilterPanel />
+							</div>
+						</ModalPortal>
+					</div>
+					<div className='header-button'
+					 onClick={() => appViewStore.setTableModeEnabled(!appViewStore.eventTableModeEnabled)}>
+						<div className={eventsViewIconClass}/>
+						<div className='header-button__title'>
+							{
+								appViewStore.eventTableModeEnabled
+									? 'Table view'
+									: 'Tree view'
+							}
+						</div>
 					</div>
 				</div>
 				<div className="header-main__name header__group">
@@ -144,7 +153,7 @@ const Header = () => {
 							}
 						</div>
 						: 	<div className="header-main__title">
-							{`${new Date().toLocaleDateString()} — ${eventsStore.rootEvents.length}`}
+							{`${new Date().toLocaleDateString()} — ${eventWindowStore.eventsIds.length}`}
 						</div>
 					}
 
@@ -186,6 +195,6 @@ const Header = () => {
 			</div>}
 		</div>
 	);
-};
+}
 
 export default observer(Header);

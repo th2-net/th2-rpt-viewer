@@ -29,15 +29,15 @@ const eventHttpApi: EventApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
-	getEvent: async (id: string) => {
-		const res = await fetch(`/backend/event/${id}`);
+	getEvent: async (id: string, signal?: AbortSignal) => {
+		const res = await fetch(`/backend/event/${id}`, { signal });
 
 		if (res.ok) {
 			return await res.json();
 		}
 
 		console.error(res.statusText);
-		return {};
+		return null;
 	},
 	getRange: async (start, end) => {
 		const res = await fetch(`/backend/event?start=${start},end=${end}`);
@@ -51,6 +51,17 @@ const eventHttpApi: EventApiSchema = {
 	},
 	getSubNodes: async (id: string, abortSignal?: AbortSignal) => {
 		const res = await fetch(`/backend/event/${id}/children`, { signal: abortSignal });
+
+		if (res.ok) {
+			return await res.json();
+		}
+
+		console.error(res.statusText);
+		return [];
+	},
+	getSubNodesIds: async (id: string) => {
+		const params = new URLSearchParams({ idsOnly: true.toString() });
+		const res = await fetch(`/backend/event/${id}/children?${params}`);
 
 		if (res.ok) {
 			return await res.json();

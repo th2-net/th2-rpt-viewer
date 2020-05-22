@@ -37,11 +37,6 @@
     border: 2px solid var(--status-secondary-border-color);
     border-radius: $defaultCardBorderRadius;
 
-    &.selected {
-        border-color: var(--status-primary-border-color);
-        background-color: var(--status-secondary-background-color);
-    }
-
     &.transparent {
         opacity: 0.3;
     }
@@ -454,8 +449,7 @@
 
 .messages {
     height: 100%;
-    width: 60%;
-    padding: 0 5px;
+    width: 100%;
     word-wrap: break-word;
 
     &__filter-info {
@@ -471,6 +465,11 @@
 
     &__list {
         height: 100%;
+        &::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        
 
         &.filter-applied {
             height: calc(100% - #{$filterCountHeight});
@@ -579,4 +578,135 @@
         grid-area: type;
         width: 55px;
     }
+}
+
+.messages-panel {
+	background-color: white;
+	top: 0;
+    right: 0;
+    position: fixed;
+    height: 100%;
+    width: 48.5%;
+    z-index: 150;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.55);
+    padding: 15px 20px;
+    display: grid;
+    border-radius: 10px 0px 0px 10px;
+    grid-template-areas: "header"
+                        "list";
+    grid-template-rows: 73px 1fr;
+    column-gap: 9px;
+    transform: translate(100%, 0);
+    opacity: 0;
+    transition: 0.3s;
+
+	&.open {
+        transform: translate(0, 0);
+		opacity: 1;
+    }
+    
+    &__header {
+        grid-area: header;
+    }
+
+    &__title {
+        font-size: 20px;
+        line-height: 27px;
+        font-weight: 600;
+        color: $primaryTextColor;
+        margin-bottom: 17px;
+    }
+
+    &__list {
+        grid-area: list;
+    }
+
+    &__close-button {
+        @include icon(url(../../resources/icons/cross-icon.svg), 12px, 12px);
+        background-size: 200%;
+        position: absolute;
+        top: 21px;
+        right: 26px;
+        cursor: pointer;
+    }
+
+    &__buttons {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 9px;
+    }
+
+    &__button {
+        cursor: pointer;
+    
+        &:first-child{
+            @include icon(url(../../resources/icons/button-up.svg), 20px, 29px);
+            margin-right: 8px;
+        }
+        &:nth-child(2){
+            @include icon(url(../../resources/icons/button-up.svg), 20px, 29px);
+            transform: rotate(180deg);
+        }
+
+        &.disabled {
+            opacity: 0.6;
+            cursor: default;
+        }
+    }
+
+    &__counter {
+        font-size: 14px;
+        line-height: 19px;
+        color: $ml-gray-color;
+        font-weight: 600;
+        margin-right: 15px;
+        order: -1;
+    }
+}
+
+.messages-heatmap {
+    background-color: $skeletonBackgroundColor;
+	border-radius: 5px;
+	padding: 10px 10px;
+	height: 100%;
+	width: 64px;
+	
+	&__element {
+		border-radius: 3px;
+		background-color: #FFF;
+		border: 2px solid $skeletonBackgroundColor;
+		flex-basis: 10px;
+		margin-top: 4px;
+		display: flex;
+		flex-direction: column;
+		cursor: pointer;
+
+		&:first-child {
+			margin-top: 0;
+		}
+	}
+
+	&__step {
+		flex: 1;
+	}
+
+	&__scroller {
+		border-radius: 3px;
+		position: relative;
+		height: 100%;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__scroll-indicator {
+		position: absolute;
+		top: 0;
+		left: 0;
+		background-color: $primaryTextColor;
+		height: 4px;
+		width: 60px;
+		border-radius: 4px;
+		margin-left: -8px;
+	}
 }

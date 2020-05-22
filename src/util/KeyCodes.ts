@@ -21,7 +21,11 @@ const enum KeyCodes {
     TAB = 9,
     F = 70,
     F3 = 114,
-    SPACE = 32
+    SPACE = 32,
+    LEFT = 37,
+    UP = 38,
+    RIGHT = 39,
+    DOWN = 40,
 }
 
 export default KeyCodes;

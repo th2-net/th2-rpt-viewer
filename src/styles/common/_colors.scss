@@ -40,7 +40,7 @@ $passedBorderHoverColor: #A8CCF0;
 $passedDelimiterHoverColor: #7DB3E8;
 $passedBackgroundColor: $passedBorderColorSecondary;
 $passedHeaderSecondaryBackground: $passedBackgroundColor;
-$passedSecondaryTextColor: #3380CC;
+$passedSecondaryTextColor: rgba(#1F991F, 0.5);
 $passedVerificationBackgroundColor: mix($passedTextColor, white,  10%);
 $passedVerificationHighlightedBackgroundColor: mix($passedTextColor, white,  20%);
 

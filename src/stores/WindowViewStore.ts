@@ -20,14 +20,13 @@ import {
 	computed,
 	reaction,
 } from 'mobx';
-import Panel from '../util/Panel';
 import PanelArea from '../util/PanelArea';
 import SearchParams from '../util/SearchParams';
 
 // eslint-disable-next-line eqeqeq
 const showMessagesInitialValue = new URLSearchParams(window.location.search).get(SearchParams.messages) == 'true';
 
-export default class AppViewStore {
+export default class WindowViewStore {
 	constructor() {
 		reaction(
 			() => this.showMessages,
@@ -37,36 +36,15 @@ export default class AppViewStore {
 
 	@observable isLoading = true;
 
-	@observable adminMessagesEnabled = new Boolean(false);
-
 	@observable beautifiedMessages: string[] = [];
-
-	@observable leftPanel: Panel.ACTIONS | Panel.STATUS = Panel.ACTIONS;
-
-	@observable rightPanel: Panel.MESSAGES | Panel.KNOWN_BUGS | Panel.LOGS = Panel.MESSAGES;
 
 	@observable panelArea: PanelArea = PanelArea.P50;
 
 	@observable showMessages = showMessagesInitialValue;
 
 	@action
-	setAdminMsgEnabled = (adminEnabled: boolean) => {
-		this.adminMessagesEnabled = new Boolean(adminEnabled);
-	};
-
-	@action
 	uglifyAllMessages = () => {
 		this.beautifiedMessages = [];
-	};
-
-	@action
-	setLeftPane = (panel: Panel.ACTIONS | Panel.STATUS) => {
-		this.leftPanel = panel;
-	};
-
-	@action
-	setRightPane = (panel: Panel.MESSAGES | Panel.KNOWN_BUGS | Panel.LOGS) => {
-		this.rightPanel = panel;
 	};
 
 	@action

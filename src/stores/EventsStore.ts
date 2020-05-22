@@ -31,8 +31,4 @@ export default class EventStore {
 			this.eventWindows.push(new EventWindowStore(this.api));
 		}
 	}
-
-	@computed get rootEvents() {
-		return this.eventWindows[0].events;
-	}
 }

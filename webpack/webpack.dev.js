@@ -16,13 +16,13 @@
 
 const webpackMerge = require('webpack-merge');
 const commonConfig = require('./webpack.common');
-const { appSrc } = require('./paths');
+const {appSrc} = require('./paths');
 
 module.exports = webpackMerge(commonConfig, {
-	mode: 'development',
-	entry: ['react-hot-loader/patch', appSrc],
-	devtool: 'eval',
-	devServer: {
+    mode: 'development',
+    entry: ['react-hot-loader/patch', appSrc],
+    devtool: 'eval',
+    devServer: {
         watchOptions: {
             poll: true,
             ignored: [/node_modules/, 'src/__tests__/']
@@ -45,16 +45,17 @@ module.exports = webpackMerge(commonConfig, {
                 test: /\.(ts|tsx)$/,
                 enforce: 'pre',
                 use: [
-                  {
-                    options: {
-                        eslintPath: require.resolve('eslint'),
-                        failOnError: true,
-                        cache: false,
-                        quite: true,
-                        formatter: require('eslint-formatter-pretty'),
+                    "awesome-typescript-loader",
+                    {
+                        options: {
+                            eslintPath: require.resolve('eslint'),
+                            failOnError: false,
+                            cache: false,
+                            quite: true,
+                            formatter: require('eslint-formatter-pretty'),
+                        },
+                        loader: require.resolve('eslint-loader'),
                     },
-                    loader: require.resolve('eslint-loader'),
-                  },
                 ],
                 exclude: /node_modules/,
             },

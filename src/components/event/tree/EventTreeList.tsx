@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,29 +14,25 @@
  * limitations under the License.
  ***************************************************************************** */
 
-/* eslint-disable no-new-wrappers */
-
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { Virtuoso } from 'react-virtuoso';
 import EventTree from './EventTree';
-import { VirtualizedList } from '../VirtualizedList';
-import StateSaverProvider from '../util/StateSaverProvider';
-import { createBemElement } from '../../helpers/styleCreators';
-import Empty from '../Empty';
-import { useEventWindowStore } from '../../hooks/useEventWindowStore';
-import SplashScreen from '../SplashScreen';
-import '../../styles/action.scss';
+import StateSaverProvider from '../../util/StateSaverProvider';
+import { createBemElement } from '../../../helpers/styleCreators';
+import Empty from '../../Empty';
+import SplashScreen from '../../SplashScreen';
+import '../../../styles/action.scss';
+import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 
-const EventList = () => {
+function EventTreeList() {
 	const eventWindowStore = useEventWindowStore();
-	const list = React.useRef<VirtualizedList>();
 
-	const computeKey = (index: number): number => index;
+	const computeKey = (index: number) => eventWindowStore.nodesList[index].id;
 
-	const renderEvent = (index: number): React.ReactElement =>
-		<EventTree
-			event={eventWindowStore.events[index]}
-			path={[]} />;
+	const renderEvent = (index: number): React.ReactElement => (
+		<ItemListWrapper index={index}/>
+	);
 
 	const listRootClass = createBemElement(
 		'actions',
@@ -45,29 +41,36 @@ const EventList = () => {
 	);
 
 	if (eventWindowStore.isLoadingRootEvents) {
-		return <SplashScreen />;
+		return <SplashScreen/>;
 	}
 
-	if (!eventWindowStore.isLoadingRootEvents && eventWindowStore.events.length === 0) {
-		return <Empty description="No events" />;
+	if (!eventWindowStore.isLoadingRootEvents && eventWindowStore.eventsIds.length === 0) {
+		return <Empty description="No events"/>;
 	}
 
 	return (
 		<div className="actions">
 			<div className={listRootClass} style={{ overflow: 'auto' }}>
 				<StateSaverProvider>
-					<VirtualizedList
-						rowCount={eventWindowStore.events.length}
-						ref={list as any}
+					<Virtuoso
+						totalCount={eventWindowStore.nodesList.length}
 						computeItemKey={computeKey}
-						scrolledIndex={null}
-						selectedElements={new Map()}
-						itemRenderer={renderEvent}
+						style={{ height: '100%' }}
+						overscan={3}
+						item={renderEvent}
 					/>
 				</StateSaverProvider>
 			</div>
 		</div>
 	);
-};
+}
 
-export default observer(EventList, { forwardRef: true });
+const ItemListWrapper = observer(({ index }: { index: number }) => {
+	const eventWindowStore = useEventWindowStore();
+
+	return (
+		<EventTree idNode={eventWindowStore.nodesList[index]}/>
+	);
+});
+
+export default observer(EventTreeList);

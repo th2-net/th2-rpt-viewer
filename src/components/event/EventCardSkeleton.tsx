@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,23 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	observable,
-	action,
-} from 'mobx';
+import * as React from 'react';
+import '../../styles/events.scss';
 
-export default class AppViewStore {
-	@observable isLoading = true;
-
-	@observable eventTableModeEnabled = false;
-
-	@action
-	setIsLoading = (isLoading: boolean) => {
-		this.isLoading = isLoading;
-	};
-
-	@action
-	setTableModeEnabled = (isEnabled: boolean) => {
-		this.eventTableModeEnabled = isEnabled;
-	};
+export default function EventCardSkeleton() {
+	return (
+		<div className='event-skeleton'>
+			<div className='event-skeleton__name'/>
+			<div className='event-skeleton__status'/>
+		</div>
+	);
 }

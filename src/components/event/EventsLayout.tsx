@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,9 +16,9 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import Header from './Header';
-import { useStores } from '../hooks/useStores';
-import { EventWindowProvider } from '../contexts/eventWindowContext';
+import Header from '../Header';
+import { useStores } from '../../hooks/useStores';
+import { EventWindowProvider } from '../../contexts/eventWindowContext';
 import EventWindow from './EventWindow';
 
 const EventsLayout = () => {

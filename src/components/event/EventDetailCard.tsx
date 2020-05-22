@@ -33,7 +33,7 @@ interface Props {
 	isMinified?: boolean;
 }
 
-export default function EventCard({
+export default function EventDetailCard({
 	event,
 	isMinified = false,
 }: Props) {

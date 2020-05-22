@@ -16,35 +16,29 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer, useAsObservableSource } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import PanelArea from '../../util/PanelArea';
 import { formatTime, getTimestampAsNumber } from '../../helpers/date';
 import { Chip } from '../Chip';
 import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
 import { EventAction } from '../../models/EventAction';
 import { getMinifiedStatus } from '../../helpers/action';
-import { StatusType } from '../../models/Status';
-import SplashScreen from '../SplashScreen';
 import { getEventStatus } from '../../helpers/event';
 
 interface Props {
-    panelArea: PanelArea;
+    panelArea?: PanelArea;
 	event: EventAction;
-	onSelect: (event: EventAction, path: string[]) => void;
-	isMinified?: boolean;
+	onSelect: () => void;
 	isSelected?: boolean;
-	loadingSubNodes?: boolean;
-	path: string[];
-	isExpanded?: boolean;
+	childrenCount?: number | null;
 }
 
-function EventTreeNode({
+function EventCardHeader({
+	panelArea = PanelArea.P100,
 	event,
 	onSelect,
-	path,
-	isMinified = false,
 	isSelected = false,
-	isExpanded = false,
+	childrenCount,
 }: Props) {
 	const {
 		eventName,
@@ -53,15 +47,13 @@ function EventTreeNode({
 		subNodes,
 	} = event;
 
-	const parents = useAsObservableSource(path);
-
 	const status = getEventStatus(event);
 
 	const rootClassName = createBemBlock(
 		'action-card',
 		status,
 		'root',
-		isSelected || isExpanded ? 'selected' : null,
+		isSelected ? 'selected' : null,
 	);
 
 	const headerClassName = createBemBlock(
@@ -78,7 +70,7 @@ function EventTreeNode({
 	return (
 		<div
 			className={rootClassName}
-			onClick={() => onSelect(event, parents)}>
+			onClick={() => onSelect()}>
 			<div className={headerClassName}>
 				<div className="ac-header__title">
 					<div className="ac-header__name">
@@ -88,7 +80,7 @@ function EventTreeNode({
 					</div>
 				</div>
 				{
-					event.parentEventId === null && startTimestamp && !isMinified && (
+					event.parentEventId === null && startTimestamp && (
 						<div className="ac-header__start-time">
 							<div className="ac-header__time-label">Start</div>
 							<div className="ac-header__time-value">
@@ -98,7 +90,7 @@ function EventTreeNode({
 					)
 				}
 				{
-					event.parentEventId === null && endTimestamp && !isMinified && (
+					event.parentEventId === null && endTimestamp && (
 						<div className="ac-header__start-time ac-header__end-time">
 							<div className="ac-header__time-label">Finish</div>
 							<div className="ac-header__time-value">
@@ -108,26 +100,21 @@ function EventTreeNode({
 					)
 				}
 				<div className="ac-header__controls">
-					{event.parentEventId === null
-					&& !event.subNodes
-					&& isExpanded
-						&& <div className="ac-header__loader">
-							<SplashScreen />
-						</div>}
 					<div className="ac-header__status">
 						{
-							isMinified
+							[PanelArea.P100, PanelArea.P50, PanelArea.P75].includes(panelArea)
 								? getMinifiedStatus(status as any)
 								: status.toUpperCase()
 						}
 					</div>
 					{
-						subNodes && subNodes.length > 0
-						&& (
+						childrenCount !== undefined && childrenCount !== 0 ? (
 							<div className="ac-header__chips">
-								<Chip text={subNodes.length.toString()} />
+								<Chip
+									isLoading={childrenCount === null}
+									text={childrenCount ?? ''}/>
 							</div>
-						)
+						) : null
 					}
 				</div>
 			</div>
@@ -135,4 +122,4 @@ function EventTreeNode({
 	);
 }
 
-export default observer(EventTreeNode);
+export default observer(EventCardHeader);
