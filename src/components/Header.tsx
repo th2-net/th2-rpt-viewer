@@ -165,14 +165,14 @@ function Header() {
 				</div>
 				<div className="header__group">
 					<ToggleButton
-						isToggled={!eventWindowStore.viewStore.showMessages}
-						onClick={() => eventWindowStore.viewStore.showMessages = false}>
-						Events
-					</ToggleButton>
-					<ToggleButton
-						isToggled={eventWindowStore.viewStore.showMessages}
 						onClick={() => eventWindowStore.viewStore.showMessages = true}>
-						Messages
+						Messages {
+							eventWindowStore.selectedEvent
+							&& eventWindowStore.selectedEvent.attachedMessageIds.length > 0
+							&& <span className="header__messages-count">
+								{eventWindowStore.selectedEvent.attachedMessageIds.length}
+							</span>
+						}
 					</ToggleButton>
 				</div>
 			</div>

@@ -36,7 +36,10 @@ export type EventIdNode = {
 export default class EventWindowStore {
 	filterStore: FilterStore = new FilterStore();
 
-	messagesStore: MessagesStore = new MessagesStore(this.api, this.filterStore);
+	messagesStore: MessagesStore = new MessagesStore(
+		this.api,
+		this.filterStore,
+	);
 
 	viewStore: ViewStore = new ViewStore();
 
@@ -47,16 +50,11 @@ export default class EventWindowStore {
 			() => this.rootEventSubEvents,
 			this.onEventsListChange,
 		);
-
-		reaction(
-			() => this.selectedNode,
-			() => this.messagesStore.scrolledIndex = null,
-		);
 	}
 
 	@observable eventsIds: EventIdNode[] = [];
 
-	@observable eventsCache: Map<string, EventAction> = new Map<string, EventAction>();
+	@observable eventsCache: Map<string, EventAction> = new Map();
 
 	@observable isLoadingRootEvents = false;
 
@@ -179,6 +177,14 @@ export default class EventWindowStore {
 			this.selectedNode = prevNode;
 		}
 	};
+
+	@computed
+	get selectedEvent() {
+		if (!this.selectedNode) return null;
+		const { id } = this.selectedNode;
+		const event = this.eventsCache.get(id);
+		return event || null;
+	}
 
 	public isNodeSelected(idNode: EventIdNode) {
 		if (this.selectedNode == null) {

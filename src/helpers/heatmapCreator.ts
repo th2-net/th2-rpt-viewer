@@ -14,17 +14,21 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { HeatmapElement } from '../components/message/MessagesHeatmap';
+import { HeatmapElement, ListRange } from '../components/Heatmap';
 
 export const getHeatmapElements = (
 	items: string[],
 	selectedItems: string[],
 	color: string,
 ): HeatmapElement[] => {
-	if (!selectedItems.length) return [{ count: items.length, index: 0 }];
+	const emptyHeatmap = [{ count: items.length || 1, index: 0 }];
+
+	if (!selectedItems.length) return emptyHeatmap;
 
 	const presentIds = selectedItems.filter(id => items.includes(id));
 	const idsIndexes = presentIds.map(id => items.indexOf(id));
+	idsIndexes.sort((a, b) => a - b);
+
 	const heatmapElements = idsIndexes.reduce((blocks, itemIndex, index) => {
 		const nextIndex = idsIndexes[index + 1];
 		const updatedBlocks = blocks.slice();
@@ -43,15 +47,49 @@ export const getHeatmapElements = (
 		return updatedBlocks;
 	}, [] as HeatmapElement[]);
 
-	if (!heatmapElements.length) return [{ count: items.length, index: 0 }];
+	if (!heatmapElements.length) return emptyHeatmap;
 
-	if (heatmapElements.length === 1) {
-		const [elem] = heatmapElements;
-		return [
-			{ count: elem.index ? elem.index - 1 : 0, index: 0 },
-			elem,
-			{ count: elem.index ? items.length - elem.index - 1 : 0, index: elem.index + 1 },
-		];
-	}
-	return heatmapElements;
+	const firstEl = heatmapElements[0];
+	const lastEl = heatmapElements[heatmapElements.length - 1];
+	return [
+		{ count: firstEl.index ? firstEl.index : 0, index: 0 },
+		...heatmapElements,
+		{ count: lastEl.index ? items.length - lastEl.index - 1 : 0, index: lastEl.index + 1 },
+	];
 };
+
+
+export const getHeatmapRange = (heatmapElements: HeatmapElement[], fullRange = false): ListRange => {
+	if (heatmapElements.filter(isHeatmapPoint).length <= 1) {
+		const lastHeatmapElement = heatmapElements[heatmapElements.length - 1];
+		return {
+			startIndex: 0,
+			endIndex: lastHeatmapElement
+				? lastHeatmapElement.index + lastHeatmapElement.count
+				: 0,
+		};
+	}
+
+	let startIndex = 0;
+	let endIndex = heatmapElements.length - 1;
+	if (!fullRange) {
+		startIndex = heatmapElements.findIndex(el => el.id !== undefined);
+		const end = heatmapElements.slice().reverse().findIndex(el => el.id !== undefined);
+		endIndex = end >= 0 ? heatmapElements.length - 1 - end : end;
+	}
+	return {
+		startIndex: heatmapElements[startIndex].index + heatmapElements[startIndex].count - 1,
+		endIndex: heatmapElements[endIndex].index + heatmapElements[endIndex].count - 1,
+	};
+};
+
+export const inRange = (heatmapElement: HeatmapElement, range: ListRange | null) => {
+	if (!range) return true;
+	const { startIndex, endIndex } = range;
+	const { index, count } = heatmapElement;
+	const elEnd = index + count - 1;
+	const isInRange = elEnd >= startIndex && elEnd <= endIndex;
+	return isInRange;
+};
+
+export const isHeatmapPoint = (heatmapEl: HeatmapElement) => heatmapEl.id !== undefined;

@@ -94,6 +94,22 @@
             justify-content: flex-end;
         }
     }
+
+    &__messages-count {
+        box-sizing: border-box;
+        display: inline-block;
+        width: auto;
+        height: 20px;
+        border-radius: 10px;
+        border: 2px solid $selectedColor;
+        color: $selectedColor;
+        font-size: 11px;
+        text-align: center;
+        line-height: 16px;
+        background-color: white;
+        padding: 0 7px;
+        margin-left: 8px;
+    }
 }
 
 .header-main {

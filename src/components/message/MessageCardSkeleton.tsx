@@ -20,20 +20,18 @@ function MessageCardSkeleton() {
 	return (
 		<div className="mc-skeleton">
 			<div className="mc-skeleton__header">
-				<div className="mc-skeleton__icons">
-					<span className="mc-skeleton__icons-el"/>
-					<span className="mc-skeleton__icons-el"/>
-					<span className="mc-skeleton__icons-el"/>
-					<span className="mc-skeleton__icons-el"/>
-				</div>
 				<div className="mc-skeleton__timestamp"/>
-				<div className="mc-skeleton__name"/>
+				<div className="mc-skeleton__name">
+					<span className="mc-skeleton__title" />
+					<span className="mc-skeleton__value" />
+				</div>
 				<div className="mc-skeleton__session">
+					<span className="mc-skeleton__title" />
 					<span className="mc-skeleton__session-el"/>
 					<span className="mc-skeleton__session-el"/>
 					<span className="mc-skeleton__session-el"/>
 				</div>
-				<div className="mc-skeleton__submit"/>
+				<div className="mc-skeleton__beautify"/>
 			</div>
 			<div className="mc-skeleton__delimiter"/>
 			<div className="mc-skeleton__body">

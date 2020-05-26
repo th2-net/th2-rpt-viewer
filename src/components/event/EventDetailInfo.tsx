@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { EventAction } from '../../models/EventAction';
 import VerificationCard from './VerificationCard';
 import EventDetailCard from './EventDetailCard';
 import PanelArea from '../../util/PanelArea';

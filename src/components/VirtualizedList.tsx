@@ -35,6 +35,7 @@ interface Props {
 	className?: string;
 	ScrollContainer?: TScrollContainer;
 	overscan?: number;
+	initialTopMostItemIndex?: number;
 }
 
 type State = { [index: number]: number };
@@ -83,14 +84,19 @@ export class VirtualizedList extends React.Component<Props, State> {
 			// we need raf here, because in componentDidMount virtualized list is not complete its render
 
 			raf(() => {
-				this.virtuoso.current?.scrollToIndex({ index: Number(this.props.scrolledIndex), align: 'center' });
+				this.virtuoso.current?.scrollToIndex({ index: Number(this.props.scrolledIndex), align: 'start' });
 			}, 3);
 		}
 	}
 
 	render() {
 		const {
-			rowCount, computeItemKey, className, ScrollContainer, overscan = 3,
+			rowCount,
+			computeItemKey,
+			className,
+			ScrollContainer,
+			overscan = 3,
+			initialTopMostItemIndex,
 		} = this.props;
 
 		const rootClassName = createStyleSelector(
@@ -107,7 +113,8 @@ export class VirtualizedList extends React.Component<Props, State> {
 				item={this.props.itemRenderer}
 				style={{ height: '100%' }}
 				className={rootClassName}
-				ScrollContainer={ScrollContainer} />
+				ScrollContainer={ScrollContainer}
+				initialTopMostItemIndex={initialTopMostItemIndex}/>
 		);
 	}
 }

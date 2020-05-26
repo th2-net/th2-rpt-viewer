@@ -18,12 +18,11 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import MessagesCardList from './MessagesCardList';
-import { HeatmapElement, MessagesHeatmapCtx } from './MessagesHeatmap';
+import { HeatmapElement, HeatmapContext, ListRange } from '../Heatmap';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 import { nextCyclicItem, prevCyclicItem } from '../../helpers/array';
 import KeyCodes from '../../util/KeyCodes';
-import useCachedEvent from '../../hooks/useCachedEvent';
 
 interface Props {
 	isOpen: boolean;
@@ -32,6 +31,7 @@ interface Props {
 
 const MessagesPanel = ({ isOpen, onClose }: Props) => {
 	const [heatmapElements, setHeatmapElements] = React.useState<HeatmapElement[]>([]);
+	const [currentRange, setCurrentRange] = React.useState<ListRange | null>(null);
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -110,18 +110,16 @@ const MessagesPanel = ({ isOpen, onClose }: Props) => {
 	};
 
 	return (
-		<MessagesHeatmapCtx.Provider value={{
+		<HeatmapContext.Provider value={{
 			heatmapElements,
 			setHeatmapElements,
+			currentRange,
+			setCurrentRange,
 		}}>
 			<div
 				className={rootClassName}
 				ref={rootRef}>
-				<div
-					className="messages-panel__close-button"
-					role="button"
-					title="close"
-					onClick={() => onClose()}/>
+
 				<div className="messages-panel__header">
 					<h2 className="messages-panel__title">
 						Messages
@@ -131,32 +129,39 @@ const MessagesPanel = ({ isOpen, onClose }: Props) => {
 								: null
 						}
 					</h2>
-					{
-						(
+					<div className="messages-panel__controls">
+						{
 							!messagesStore.isLoading
 							&& messagesStore.messagesIds.length > 0
-							&& (selectedEvent?.attachedMessageIds || []).length > 0)
-						&& 	<div className="messages-panel__buttons">
-							<div
-								className={navButtonClass}
-								role="button"
-								title="previous"
-								onClick={selectPrevMessage}/>
-							<div
-								className={navButtonClass}
-								role="button"
-								title="next"
-								onClick={selectNextMessage}/>
-							<div className="messages-panel__counter">
-								{getStep()}
-							</div>
-						</div>}
+							&& (selectedEvent?.attachedMessageIds || []).length > 0
+							&& <>
+								<div
+									className={navButtonClass}
+									role="button"
+									title="previous"
+									onClick={selectPrevMessage}/>
+								<div
+									className={navButtonClass}
+									role="button"
+									title="next"
+									onClick={selectNextMessage}/>
+								<div className="messages-panel__counter">
+									{getStep()}
+								</div>
+							</>
+						}
+						<div
+							className="messages-panel__close-button"
+							role="button"
+							title="close"
+							onClick={() => onClose()}/>
+					</div>
 				</div>
 				<div className="messages-panel__list">
 					<MessagesCardList />
 				</div>
 			</div>
-		</MessagesHeatmapCtx.Provider>
+		</HeatmapContext.Provider>
 	);
 };
 
