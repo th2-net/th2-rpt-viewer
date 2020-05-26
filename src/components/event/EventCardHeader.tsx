@@ -1,4 +1,3 @@
-/* eslint-disable no-lone-blocks */
 /** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -17,16 +16,17 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import PanelArea from '../../util/PanelArea';
 import { formatTime, getTimestampAsNumber } from '../../helpers/date';
-import { Chip } from '../Chip';
-import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
+import { createBemBlock } from '../../helpers/styleCreators';
 import { EventAction } from '../../models/EventAction';
 import { getMinifiedStatus } from '../../helpers/action';
 import { getEventStatus } from '../../helpers/event';
+import CardDisplayType from '../../util/CardDisplayType';
+import { Chip } from '../Chip';
+import '../../styles/events.scss';
 
 interface Props {
-    panelArea?: PanelArea;
+	displayType?: CardDisplayType;
 	event: EventAction;
 	onSelect: () => void;
 	isSelected?: boolean;
@@ -34,89 +34,71 @@ interface Props {
 }
 
 function EventCardHeader({
-	panelArea = PanelArea.P100,
-	event,
-	onSelect,
-	isSelected = false,
-	childrenCount,
+	 displayType = CardDisplayType.MINIMAL,
+	 event,
+	 onSelect,
+	 isSelected = false,
+	 childrenCount,
 }: Props) {
 	const {
 		eventName,
 		startTimestamp,
 		endTimestamp,
-		subNodes,
 	} = event;
 
 	const status = getEventStatus(event);
 
 	const rootClassName = createBemBlock(
-		'action-card',
+		'event-header-card',
 		status,
-		'root',
+		displayType,
 		isSelected ? 'selected' : null,
-	);
-
-	const headerClassName = createBemBlock(
-		'ac-header',
-		PanelArea.P100,
-		status,
-	);
-
-	const headerTitleElemClassName = createBemElement(
-		'ac-header',
-		'name-element',
 	);
 
 	return (
 		<div
 			className={rootClassName}
 			onClick={() => onSelect()}>
-			<div className={headerClassName}>
-				<div className="ac-header__title">
-					<div className="ac-header__name">
-						<div className={headerTitleElemClassName} title={eventName}>
-							{eventName}
+			{
+				displayType !== CardDisplayType.STATUS_ONLY ? (
+					<div className='event-header-card__title' title={eventName}>
+						{eventName}
+					</div>
+				) : null
+			}
+			{
+				displayType === CardDisplayType.FULL && event.parentEventId === null && startTimestamp && (
+					<div className="ac-header__start-time">
+						<div className="ac-header__time-label">Start</div>
+						<div className="ac-header__time-value">
+							{formatTime(getTimestampAsNumber(startTimestamp))}
 						</div>
 					</div>
-				</div>
-				{
-					event.parentEventId === null && startTimestamp && (
-						<div className="ac-header__start-time">
-							<div className="ac-header__time-label">Start</div>
-							<div className="ac-header__time-value">
-								{formatTime(getTimestampAsNumber(startTimestamp))}
-							</div>
+				)
+			}
+			{
+				displayType === CardDisplayType.FULL && event.parentEventId === null && endTimestamp && (
+					<div className="ac-header__start-time ac-header__end-time">
+						<div className="ac-header__time-label">Finish</div>
+						<div className="ac-header__time-value">
+							{formatTime(getTimestampAsNumber(endTimestamp))}
 						</div>
-					)
-				}
-				{
-					event.parentEventId === null && endTimestamp && (
-						<div className="ac-header__start-time ac-header__end-time">
-							<div className="ac-header__time-label">Finish</div>
-							<div className="ac-header__time-value">
-								{formatTime(getTimestampAsNumber(endTimestamp))}
-							</div>
-						</div>
-					)
-				}
-				<div className="ac-header__controls">
-					<div className="ac-header__status">
-						{
-							[PanelArea.P100, PanelArea.P50, PanelArea.P75].includes(panelArea)
-								? getMinifiedStatus(status as any)
-								: status.toUpperCase()
-						}
 					</div>
-					{
-						childrenCount !== undefined && childrenCount !== 0 ? (
-							<div className="ac-header__chips">
-								<Chip
-									isLoading={childrenCount === null}
-									text={childrenCount ?? ''}/>
-							</div>
-						) : null
-					}
-				</div>
+				)
+			}
+			{
+				displayType !== CardDisplayType.STATUS_ONLY
+					&& childrenCount !== undefined
+					&& childrenCount !== 0 ? (
+						<div className="ac-header__chips">
+							<Chip
+								isLoading={childrenCount === null}
+								text={childrenCount ?? ''}/>
+						</div>
+					) : null
+			}
+			<div className="event-header-card__status">
+				{getMinifiedStatus(status)}
 			</div>
 		</div>
 	);

@@ -16,7 +16,6 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { EventAction } from '../../../models/EventAction';
 import PanelArea from '../../../util/PanelArea';
 import EventTreeNode from '../EventCardHeader';
 import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
@@ -27,6 +26,7 @@ import EventCardSkeleton from '../EventCardSkeleton';
 import ExpandIcon from '../../ExpandIcon';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import useCachedEvent from '../../../hooks/useCachedEvent';
+import CardDisplayType from '../../../util/CardDisplayType';
 
 interface EventTreeProps {
 	idNode: EventIdNode;
@@ -88,7 +88,7 @@ function EventTree({ idNode }: EventTreeProps) {
 					<EventTreeNode
 						childrenCount={idNode.children?.length}
 						event={event}
-						panelArea={viewStore.panelArea}
+						displayType={CardDisplayType.MINIMAL}
 						onSelect={() => eventWindowStore.selectNode(idNode)}
 						isSelected={eventWindowStore.isNodeSelected(idNode)}/>
 				) : (

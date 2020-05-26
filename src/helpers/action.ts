@@ -40,7 +40,7 @@ export function getStatusChipDescription(status?: StatusType): string {
 	return `${statusCapitalized} actions count. Click to select related ${statusFormatted} actions.`;
 }
 
-export function getMinifiedStatus(status: StatusType): string {
+export function getMinifiedStatus(status: string): string {
 	return status
 		.split('_')
 		.map(str => str[0])

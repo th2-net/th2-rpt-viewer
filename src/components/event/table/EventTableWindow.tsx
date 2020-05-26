@@ -22,11 +22,15 @@ import '../../../styles/events.scss';
 import EventBreadcrumbs from '../EventBreadcrumbs';
 import EventDetailInfo from '../EventDetailInfo';
 import useElementSize from '../../../hooks/useElementSize';
+import CardDisplayType from '../../../util/CardDisplayType';
 
 function EventTableWindow() {
 	const eventsStore = useEventWindowStore();
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const { width } = useElementSize(rootRef);
+
+	const columns = eventsStore.selectedPath
+		.filter(node => node.children && node.children.length > 0);
 
 	return (
 		<div className='event-table-window' ref={rootRef}>
@@ -39,13 +43,18 @@ function EventTableWindow() {
 			<div className='event-table-window__columns'>
 				{
 					eventsStore.selectedNode == null ? (
-						<EventsColumn nodesList={eventsStore.eventsIds}/>
+						<EventsColumn
+							nodesList={eventsStore.eventsIds}
+							displayType={CardDisplayType.MINIMAL}/>
 					) : (
 						<>
 							{
-								eventsStore.selectedPath.map(parentNode => (
+								columns.map((parentNode, i) => (
 									parentNode.children?.length
-										? <EventsColumn nodesList={parentNode.children} key={parentNode.id}/>
+										? <EventsColumn
+											displayType={calculateCardLayout(i, columns.length)}
+											nodesList={parentNode.children}
+											key={parentNode.id}/>
 										: null
 								))
 							}
@@ -58,6 +67,15 @@ function EventTableWindow() {
 			</div>
 		</div>
 	);
+}
+
+function calculateCardLayout(columnIndex: number, columnsLength: number): CardDisplayType {
+	// last 2 columns are always displayed
+	if (columnsLength - columnIndex < 3) {
+		return CardDisplayType.MINIMAL;
+	}
+
+	return CardDisplayType.STATUS_ONLY;
 }
 
 export default observer(EventTableWindow);

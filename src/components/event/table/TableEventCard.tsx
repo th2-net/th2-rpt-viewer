@@ -17,18 +17,19 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { EventIdNode } from '../../../stores/EventWindowStore';
-import PanelArea from '../../../util/PanelArea';
 import EventCard from '../EventCardHeader';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import useAsyncEffect from '../../../hooks/useAsyncEffect';
 import EventCardSkeleton from '../EventCardSkeleton';
 import useCachedEvent from '../../../hooks/useCachedEvent';
+import CardDisplayType from '../../../util/CardDisplayType';
 
 interface Props {
+	displayType: CardDisplayType;
 	idNode: EventIdNode;
 }
 
-function TableEventCard({ idNode }: Props) {
+function TableEventCard({ idNode, displayType }: Props) {
 	const eventWindowStore = useEventWindowStore();
 	const event = useCachedEvent(idNode);
 	const isRoot = idNode.parents.length === 0;
@@ -47,7 +48,7 @@ function TableEventCard({ idNode }: Props) {
 		<EventCard
 			event={event}
 			childrenCount={isRoot ? 0 : (idNode.children?.length ?? null)}
-			panelArea={PanelArea.P100}
+			displayType={displayType}
 			onSelect={() => eventWindowStore.selectNode(idNode)}
 			isSelected={eventWindowStore.isNodeSelected(idNode)}/>
 	);
