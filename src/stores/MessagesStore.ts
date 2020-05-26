@@ -18,6 +18,7 @@ import { action, observable, reaction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import FilterStore from './FilterStore';
 import { EventMessage } from '../models/EventMessage';
+import { EventAction } from '../models/EventAction';
 
 export default class MessagesStore {
 	@observable

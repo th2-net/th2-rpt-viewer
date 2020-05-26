@@ -27,7 +27,7 @@ import { PredictionData } from '../../models/MlServiceResponse';
 import PanelArea from '../../util/PanelArea';
 import { EventMessage } from '../../models/EventMessage';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
-import { useMessagesHeatmap } from '../../hooks/useMessagesHeatmap';
+import { useHeatmap } from '../../hooks/useHeatmap';
 import { lighten } from '../../helpers/color';
 import '../../styles/messages.scss';
 
@@ -145,12 +145,20 @@ export function MessageCardBase(props: MessageCardProps) {
 						 style={sessionArrowStyle}/>
 					{sessionId}
 				</div>
-			</div>
-			<div className="message-card__body   mc-body">
-				<div className="mc-body__human">
-					<div className="mc-beautify" onClick={() => toggleBeautify()}>
+				{
+					message.body !== null
+					&& 	<div className="mc-beautify" onClick={() => toggleBeautify()}>
 						<div className={beautifyIconClass}/>
-					</div>
+				   </div>
+				}
+				<div
+					className="mc-header__underline"
+					style={{
+						borderColor: color,
+					}}/>
+			</div>
+			<div className="message-card__body mc-body">
+				<div className="mc-body__human">
 					{
 						isContentBeautified ? (
 							<pre>
@@ -195,7 +203,7 @@ export const RecoverableMessageCard = ({
 
 export const MessageCard = observer(({ message }: MessageCardOwnProps) => {
 	const viewStore = useEventWindowViewStore();
-	const { heatmapElements } = useMessagesHeatmap();
+	const { heatmapElements } = useHeatmap();
 
 	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
 

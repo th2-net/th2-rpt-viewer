@@ -70,8 +70,10 @@ const MessageCardList = () => {
 						rowCount={messagesStore.messagesIds.length}
 						scrolledIndex={messagesStore.scrolledIndex}
 						itemRenderer={renderMessage}
-						ScrollContainer={MessagesScrollContainer}
 						overscan={0}
+						ScrollContainer={MessagesScrollContainer}
+						initialTopMostItemIndex={messagesStore.scrolledIndex
+							? messagesStore.scrolledIndex.valueOf() : undefined}
 					/>
 				</StateSaverProvider>
 			</div>

@@ -100,32 +100,18 @@
     position: relative;
     padding: 7px 5px 9px 10px;
     color: $primaryTextColor;
+    grid-template-rows: auto;
+    grid-template-columns: 1.4fr 40px 1fr 40px 2fr 40px;
+    grid-template-areas: "timestamp name name-value session session-value beautify";
 
-    &::after {
+    &__underline {
         border-bottom: 2px solid var(--status-primary-delimeter-color);
         padding: 0 20px;
-        content: '';
         position: absolute;
         bottom: 0;
         left: 10px;
         right: 10px;
     }
-
-    &.p25, &.p50, &.p0, &.p75 {
-        grid-template-rows: auto auto;
-        grid-template-columns: calc(185px - (var(--lb-count) * 20px)) 50px 1fr 40px;
-        grid-template-areas: "info name name-value prediction"
-                             "timestamp session session-value prediction";
-    }
-
-    //&.p75 {
-    //    grid-template-rows: auto auto auto;
-    //    grid-template-columns: 50px auto 1fr 40px;
-    //    grid-template-areas: "info info timestamp prediction"
-    //                         "name name-value name-value prediction"
-    //                         "session session-value session-value session-value";
-    //
-    //}
 
     &.admin {
         grid-template-rows: 35px;
@@ -305,12 +291,11 @@
 
 .mc-beautify {
     @include clickable;
-
+    grid-area: beautify;
     float: right;
     height: 26px;
     width: 26px;
     padding: 2px;
-    margin: 0 0 5px 10px;
 
     &__icon {
         background-size: 100%;
@@ -494,15 +479,22 @@
     &__header {
         grid-area: mc-header;
         display: grid;
-        grid-template-rows: repeat(2, 20px);
-        grid-template-columns: 1.1fr 3fr 0.2fr;
+        grid-template-rows: 20px;
+        grid-template-columns: 1.1fr 1.2fr 2fr 40px;
         grid-row-gap: 6px;
-        grid-template-areas: "icons name submit"
-                             "timestamp session submit";
+        grid-template-areas: "timestamp name session beautify";
         align-items: center;
     }
 
-    &__icons, &__timestamp, &__session, &__name, &__submit, &__icons-el, &__session-el {
+    &__icons,
+    &__timestamp,
+    &__session,
+    &__name,
+    &__beautify,
+    &__icons-el,
+    &__session-el,
+    &__title,
+    &__value {
         @include skeleton;
         height: 100%;
     }
@@ -520,7 +512,7 @@
 
     &__timestamp {
         grid-area: timestamp;
-        width: 65%;
+        width: 75%;
     }
 
     &__session {
@@ -528,18 +520,22 @@
         grid-area: session;
         background-color: white;
         display: grid;
-        grid-column-gap: 40px;
-        grid-template-columns: 1fr 20px 1fr;
+        grid-column-gap: 15px;
+        grid-template-columns: 50px 1fr 20px 1fr;
     }
 
     &__name {
+        background-color: white;
         grid-area: name;
-        width: 55%;
+        width: 75%;
+        display: grid;
+        grid-column-gap: 15px;
+        grid-template-columns: 50px 1fr;
     }
 
-    &__submit {
-        grid-area: submit;
-        width: 22px;
+    &__beautify {
+        grid-area: beautify;
+        width: 32px;
         height: 22px;
         justify-self: end;
         align-self: center;
@@ -594,11 +590,12 @@
     border-radius: 10px 0px 0px 10px;
     grid-template-areas: "header"
                         "list";
-    grid-template-rows: 73px 1fr;
+    grid-template-rows: 37px 1fr;
     column-gap: 9px;
     transform: translate(100%, 0);
     opacity: 0;
     transition: 0.3s;
+    overflow: hidden;
 
 	&.open {
         transform: translate(0, 0);
@@ -607,14 +604,23 @@
     
     &__header {
         grid-area: header;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        overflow: hidden;
+        padding-bottom: 15px;
     }
 
     &__title {
-        font-size: 20px;
+        font-size: 16px;
         line-height: 27px;
         font-weight: 600;
         color: $primaryTextColor;
-        margin-bottom: 17px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex-grow: 0;
+        padding-right: 20px;
     }
 
     &__list {
@@ -622,34 +628,40 @@
     }
 
     &__close-button {
-        @include icon(url(../../resources/icons/cross-icon.svg), 12px, 12px);
+        @include icon(url(../../resources/icons/cross-icon-dark.svg), 12px, 12px);
         background-size: 200%;
-        position: absolute;
+        // position: absolute;
         top: 21px;
         right: 26px;
         cursor: pointer;
+        order: 4;
     }
 
-    &__buttons {
+    &__controls {
         display: flex;
         justify-content: flex-end;
-        margin-bottom: 9px;
+        align-items: center;
+        min-width: 50px;
+        flex-shrink: 0;
     }
 
     &__button {
         cursor: pointer;
-    
+        transform-origin: center;
         &:first-child{
-            @include icon(url(../../resources/icons/button-up.svg), 20px, 29px);
-            margin-right: 8px;
+            @include icon(url(../../resources/icons/arr1-left-enabled.svg), 20px, 20px);
+            transform: rotate(90deg);
+            order: 1;
         }
         &:nth-child(2){
-            @include icon(url(../../resources/icons/button-up.svg), 20px, 29px);
-            transform: rotate(180deg);
+            @include icon(url(../../resources/icons/arr1-left-enabled.svg), 20px, 20px);
+            transform: rotate(270deg);
+            order: 3;
+            margin-right: 40px;
         }
 
         &.disabled {
-            opacity: 0.6;
+            opacity: 0.4;
             cursor: default;
         }
     }
@@ -659,54 +671,8 @@
         line-height: 19px;
         color: $ml-gray-color;
         font-weight: 600;
-        margin-right: 15px;
-        order: -1;
+        margin: 0 22px;
+        order: 2;
+        color: $primaryTextColor;
     }
-}
-
-.messages-heatmap {
-    background-color: $skeletonBackgroundColor;
-	border-radius: 5px;
-	padding: 10px 10px;
-	height: 100%;
-	width: 64px;
-	
-	&__element {
-		border-radius: 3px;
-		background-color: #FFF;
-		border: 2px solid $skeletonBackgroundColor;
-		flex-basis: 10px;
-		margin-top: 4px;
-		display: flex;
-		flex-direction: column;
-		cursor: pointer;
-
-		&:first-child {
-			margin-top: 0;
-		}
-	}
-
-	&__step {
-		flex: 1;
-	}
-
-	&__scroller {
-		border-radius: 3px;
-		position: relative;
-		height: 100%;
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-	}
-
-	&__scroll-indicator {
-		position: absolute;
-		top: 0;
-		left: 0;
-		background-color: $primaryTextColor;
-		height: 4px;
-		width: 60px;
-		border-radius: 4px;
-		margin-left: -8px;
-	}
 }
