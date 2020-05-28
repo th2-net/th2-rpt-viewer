@@ -66,6 +66,11 @@ const MessagesScrollContainer: TScrollContainer = ({
 					startIndex: parseInt(fullyRendered[0] as string),
 					endIndex: parseInt(fullyRendered[fullyRendered.length - 1] as string),
 				});
+			} else {
+				setVisibleRange({
+					startIndex: 0,
+					endIndex: 0,
+				});
 			}
 		} catch {
 			setVisibleRange({
