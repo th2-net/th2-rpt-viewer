@@ -18,7 +18,6 @@ import { action, observable, reaction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import FilterStore from './FilterStore';
 import { EventMessage } from '../models/EventMessage';
-import { EventAction } from '../models/EventAction';
 
 export default class MessagesStore {
 	@observable
@@ -33,6 +32,9 @@ export default class MessagesStore {
 	@observable
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	public scrolledIndex: Number | null = null;
+
+	@observable
+	public pinnedMessagesIds: Array<string> = [];
 
 	constructor(
 		private api: ApiSchema,
@@ -70,6 +72,18 @@ export default class MessagesStore {
 		this.isLoading = true;
 		this.messagesIds = await this.api.messages.getMessagesIds(from, to);
 		this.isLoading = false;
+	};
+
+	@action
+	toggleMessagePin = (message: EventMessage) => {
+		const { messageId } = message;
+		if (!this.pinnedMessagesIds.includes(messageId)) {
+			this.pinnedMessagesIds = this.pinnedMessagesIds.concat(messageId);
+		} else {
+			this.pinnedMessagesIds = this.pinnedMessagesIds.filter(
+				id => id !== messageId,
+			);
+		}
 	};
 
 	fetchMessage = async (id: string) => {

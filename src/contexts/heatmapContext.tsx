@@ -14,21 +14,18 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable } from 'mobx';
-import ApiSchema from '../api/ApiSchema';
-import EventWindowStore from './EventWindowStore';
 
-export default class EventStore {
-	constructor(private api: ApiSchema) {
-		this.api = api;
-	}
+import { createContext } from 'react';
 
-	@observable eventWindows: EventWindowStore[] = [new EventWindowStore(this.api)];
+import { HeatmapElement, ListRange } from '../models/Heatmap';
 
-	@action.bound
-	createEventWindowStore() {
-		if (this.eventWindows.length === 1) {
-			this.eventWindows.push(new EventWindowStore(this.api));
-		}
-	}
+interface HeatmapContextState {
+	heatmapElements: HeatmapElement[];
+	setHeatmapElements: (heatmapElements: HeatmapElement[]) => void;
+	visibleRange: ListRange | null;
+	setVisibleRange: (range: ListRange) => void;
+	fullRange: ListRange | null;
+	setFullRange: (range: ListRange) => void;
 }
+
+export const HeatmapContext = createContext({} as HeatmapContextState);

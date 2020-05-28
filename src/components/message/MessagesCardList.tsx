@@ -19,6 +19,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import ResizeObserver from 'resize-observer-polyfill';
 import StateSaverProvider from '../util/StateSaverProvider';
 import { VirtualizedList } from '../VirtualizedList';
 import { createBemElement } from '../../helpers/styleCreators';
@@ -29,14 +30,40 @@ import SplashScreen from '../SplashScreen';
 import MessagesScrollContainer from './MessagesScrollContainer';
 import '../../styles/messages.scss';
 
+export type MessagesHeights = { [index: number]: number };
+
 const MessageCardList = () => {
 	const { messagesStore, filterStore } = useEventWindowStore();
+	const [messagesHeightsMap, setMessagesHeightMap] = React.useState<State>({});
+
+	const resizeObserver = React.useRef(new ResizeObserver(entries => {
+		const stateUpdate: MessagesHeights = {};
+		entries.forEach(entry => {
+			const { index } = (entry.target as HTMLDivElement).dataset;
+			const { height } = entry.contentRect;
+			if (index !== undefined
+				&& messagesHeightsMap[parseInt(index)] !== height) {
+				stateUpdate[parseInt(index)] = height;
+			}
+		});
+		if (Object.entries(stateUpdate).length > 0) {
+			setMessagesHeightMap((heights: MessagesHeights) => ({
+				...heights,
+				...stateUpdate,
+			}));
+		}
+	}));
 
 	const renderMessage = (index: number) => {
 		const id = messagesStore.messagesIds[index];
 
 		return (
-			<SkeletonedMessageCardListItem id={id}/>
+			<MessageWrapper
+				index={index}
+				onMount={ref => resizeObserver.current.observe(ref.current as HTMLDivElement)}
+				onUnmount={ref => resizeObserver.current.unobserve(ref.current as HTMLDivElement)}>
+				<SkeletonedMessageCardListItem id={id}/>
+			</MessageWrapper>
 		);
 	};
 
@@ -64,21 +91,52 @@ const MessageCardList = () => {
 						</div>
 					) : null
 				}
-				<StateSaverProvider>
-					<VirtualizedList
-						className="messages__list"
-						rowCount={messagesStore.messagesIds.length}
-						scrolledIndex={messagesStore.scrolledIndex}
-						itemRenderer={renderMessage}
-						overscan={0}
-						ScrollContainer={MessagesScrollContainer}
-						initialTopMostItemIndex={messagesStore.scrolledIndex
-							? messagesStore.scrolledIndex.valueOf() : undefined}
-					/>
-				</StateSaverProvider>
+				<MessagesHeightsContext.Provider value={messagesHeightsMap}>
+					<StateSaverProvider>
+						<VirtualizedList
+							className="messages__list"
+							rowCount={messagesStore.messagesIds.length}
+							scrolledIndex={messagesStore.scrolledIndex}
+							itemRenderer={renderMessage}
+							overscan={0}
+							ScrollContainer={MessagesScrollContainer}
+							initialTopMostItemIndex={messagesStore.scrolledIndex
+								? messagesStore.scrolledIndex.valueOf() : undefined}
+						/>
+					</StateSaverProvider>
+				</MessagesHeightsContext.Provider>
 			</div>
 		</div>
 	);
 };
 
 export default observer(MessageCardList, { forwardRef: true });
+
+type WrapperProps = React.PropsWithChildren<{
+	onMount: (ref: React.MutableRefObject<HTMLDivElement | null>) => void;
+	onUnmount: (ref: React.MutableRefObject<HTMLDivElement | null>) => void;
+	index: number;
+}>;
+
+function MessageWrapper({
+	index,
+	onMount,
+	onUnmount,
+	children,
+}: WrapperProps) {
+	const ref = React.useRef<HTMLDivElement | null>(null);
+
+	React.useEffect(() => {
+		onMount(ref);
+
+		return () => onUnmount(ref);
+	}, []);
+
+	return (
+		<div ref={ref} data-index={index}>
+			{children}
+		</div>
+	);
+}
+
+export const MessagesHeightsContext = React.createContext<MessagesHeights>({});

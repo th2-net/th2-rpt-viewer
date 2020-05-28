@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { HeatmapContext } from '../components/Heatmap';
+import { HeatmapContext } from '../contexts/heatmapContext';
 
 export const useHeatmap = () => {
 	const heatmapContext = React.useContext(HeatmapContext);

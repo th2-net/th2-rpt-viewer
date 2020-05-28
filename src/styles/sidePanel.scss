@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/******************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,14 +12,27 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ***************************************************************************** */
+ ******************************************************************************/
 
-export const hexToRGBA = (hex: string, opacity: number) => {
-	// eslint-disable-next-line no-param-reassign
-	hex = hex.replace('#', '');
-	const r = parseInt(hex.substring(0, 2), 16);
-	const g = parseInt(hex.substring(2, 4), 16);
-	const b = parseInt(hex.substring(4, 6), 16);
+@import "./common/vars";
 
-	return `rgba(${r}, ${g}, ${b}, ${opacity / 100})`;
-};
+.side-panel {
+	background-color: white;
+	top: 0;
+    right: 0;
+    position: fixed;
+    height: 100%;
+    width: 48.5%;
+    z-index: 150;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.55);
+    border-radius: 10px 0px 0px 10px;
+    transform: translate(100%, 0);
+    opacity: 0;
+    transition: 0.3s;
+    overflow: hidden;
+
+	&.open {
+        transform: translate(0, 0);
+		opacity: 1;
+    }
+}
