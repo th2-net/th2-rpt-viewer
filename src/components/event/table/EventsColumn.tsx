@@ -44,6 +44,7 @@ function EventsColumn({ nodesList, displayType }: Props) {
 		<div className={rootClassName}>
 			<Virtuoso
 				style={{ height: '100%', width: '100%' }}
+				className='event-table-window__scrollbar'
 				computeItemKey={index => nodesList[index].id}
 				overscan={3}
 				totalCount={nodesList.length}

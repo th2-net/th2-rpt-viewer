@@ -82,19 +82,18 @@ module.exports = {
 		'no-nested-ternary': "off",
 		'no-console': ["warn", { allow: ["warn", "error"] }],
 		"no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
-		"react/prop-types": "off"
+		"react/prop-types": "off",
+		"react-hooks/rules-of-hooks": "error",
 	},
 	settings: {
 		react: {
 			version: 'detect'
 		}
 	},
-	overrides: [
-		{
-			files: ['*.tsx'],
-			rules: {
-			  '@typescript-eslint/explicit-function-return-type': 0,
-			},
-		  },
-	]
+	overrides: [{
+		files: ['*.tsx'],
+		rules: {
+		  '@typescript-eslint/explicit-function-return-type': 0,
+		},
+	}]
 };

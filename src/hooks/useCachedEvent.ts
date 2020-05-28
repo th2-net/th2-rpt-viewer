@@ -18,30 +18,47 @@ import * as React from 'react';
 import { useEventWindowStore } from './useEventWindowStore';
 import { EventAction } from '../models/EventAction';
 import { EventIdNode } from '../stores/EventWindowStore';
+import useAsyncEffect from './useAsyncEffect';
 
-export default function useCachedEvent(node: EventIdNode): EventAction | undefined {
+export default function useCachedEvent(node: EventIdNode, isVisible = true): EventAction | undefined {
 	const eventWindowStore = useEventWindowStore();
 	const [event, setEvent] = React.useState(eventWindowStore.eventsCache.get(node.id));
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
 
-		if (!event) {
-			eventWindowStore.fetchEvent(node.id, abortController.signal)
-				.then(setEvent);
-		} else if (event.eventId !== node.id) {
-			if (eventWindowStore.eventsCache.has(node.id)) {
-				setEvent(eventWindowStore.eventsCache.get(node.id)!);
-			} else {
+		if (isVisible) {
+			if (!event) {
 				eventWindowStore.fetchEvent(node.id, abortController.signal)
 					.then(setEvent);
+			} else if (event.eventId !== node.id) {
+				// handle event node change
+				if (eventWindowStore.eventsCache.has(node.id)) {
+					setEvent(eventWindowStore.eventsCache.get(node.id)!);
+				} else {
+					eventWindowStore.fetchEvent(node.id, abortController.signal)
+						.then(setEvent);
+				}
 			}
 		}
 
 		return () => {
 			abortController.abort();
 		};
-	}, [node]);
+	}, [node, isVisible]);
 
 	return event;
+}
+
+export function useEventSubNodes(node: EventIdNode, isVisible = true): EventIdNode[] | null {
+	const eventWindowStore = useEventWindowStore();
+	const [subNodes, setSubNodes] = React.useState(node.children);
+
+	useAsyncEffect(async () => {
+		if (!subNodes && isVisible) {
+			setSubNodes(await eventWindowStore.fetchEventChildren(node));
+		}
+	}, [isVisible]);
+
+	return subNodes;
 }

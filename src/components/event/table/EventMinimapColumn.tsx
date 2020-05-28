@@ -15,24 +15,34 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import '../../styles/events.scss';
-import CardDisplayType from '../../util/CardDisplayType';
-import { createBemBlock } from '../../helpers/styleCreators';
+import { TScrollContainer, Virtuoso } from 'react-virtuoso';
+import { observer } from 'mobx-react-lite';
+import { EventIdNode } from '../../../stores/EventWindowStore';
+import EventMinimapNode from './EventMinimapNode';
 
 interface Props {
-	displayType?: CardDisplayType;
+	deep: number;
+	nodes: EventIdNode[];
 }
 
-export default function EventCardSkeleton({ displayType = CardDisplayType.MINIMAL }: Props) {
-	const rootClassName = createBemBlock(
-		'event-skeleton',
-		displayType,
+function EventMinimapColumn({ deep, nodes }: Props) {
+	const renderEvent = (index: number) => (
+		<EventMinimapNode node={nodes[index]} deep={deep}/>
 	);
+
+	if (deep === 0) {
+		return null;
+	}
 
 	return (
-		<div className={rootClassName}>
-			<div className='event-skeleton__name'/>
-			<div className='event-skeleton__status'/>
-		</div>
+		<Virtuoso
+			className='event-table-window__scrollbar'
+			style={{ height: '100%', width: deep * 20 + 10 }}
+			computeItemKey={index => nodes[index].id}
+			overscan={3}
+			totalCount={nodes.length}
+			item={renderEvent}/>
 	);
 }
+
+export default observer(EventMinimapColumn);

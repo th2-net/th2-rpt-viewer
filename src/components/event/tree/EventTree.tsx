@@ -88,7 +88,7 @@ function EventTree({ idNode }: EventTreeProps) {
 					<EventTreeNode
 						childrenCount={idNode.children?.length}
 						event={event}
-						displayType={CardDisplayType.MINIMAL}
+						displayType={isRoot ? CardDisplayType.FULL : CardDisplayType.MINIMAL}
 						onSelect={() => eventWindowStore.selectNode(idNode)}
 						isSelected={eventWindowStore.isNodeSelected(idNode)}/>
 				) : (

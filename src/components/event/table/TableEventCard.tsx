@@ -40,17 +40,21 @@ function TableEventCard({ idNode, displayType }: Props) {
 		}
 	}, []);
 
-	if (event == null) {
-		return <EventCardSkeleton/>;
-	}
-
 	return (
-		<EventCard
-			event={event}
-			childrenCount={isRoot ? 0 : (idNode.children?.length ?? null)}
-			displayType={displayType}
-			onSelect={() => eventWindowStore.selectNode(idNode)}
-			isSelected={eventWindowStore.isNodeSelected(idNode)}/>
+		<div className='event-table-window__card'>
+			{
+				event != null ? (
+					<EventCard
+						event={event}
+						childrenCount={isRoot ? 0 : (idNode.children?.length ?? null)}
+						displayType={displayType}
+						onSelect={() => eventWindowStore.selectNode(idNode)}
+						isSelected={eventWindowStore.isNodeSelected(idNode)}/>
+				) : (
+					<EventCardSkeleton displayType={displayType}/>
+				)
+			}
+		</div>
 	);
 }
 

@@ -132,13 +132,15 @@ export default class EventWindowStore {
 	};
 
 	@action
-	fetchEventChildren = async (idNode: EventIdNode): Promise<string[]> => {
+	fetchEventChildren = async (idNode: EventIdNode): Promise<EventIdNode[]> => {
 		const { id } = idNode;
 		const subNodes = await this.api.events.getSubNodesIds(id);
+		const children = subNodes
+			.map(subNodeId => this.createTreeNode(subNodeId, [...idNode.parents, idNode]));
 
 		// eslint-disable-next-line no-param-reassign
-		idNode.children = subNodes.map(subNodeId => this.createTreeNode(subNodeId, [...idNode.parents, idNode]));
-		return subNodes;
+		idNode.children = children;
+		return children;
 	};
 
 	@action
@@ -191,7 +193,7 @@ export default class EventWindowStore {
 			return false;
 		}
 
-		return this.selectedPath.includes(idNode);
+		return this.selectedPath.some(n => n.id === idNode.id);
 	}
 
 	private onEventsListChange = (rootEventSubEvents: EventAction[] | null) => {

@@ -23,6 +23,7 @@ import EventBreadcrumbs from '../EventBreadcrumbs';
 import EventDetailInfo from '../EventDetailInfo';
 import useElementSize from '../../../hooks/useElementSize';
 import CardDisplayType from '../../../util/CardDisplayType';
+import EventMinimapColumn from './EventMinimapColumn';
 
 function EventTableWindow() {
 	const eventsStore = useEventWindowStore();
@@ -31,6 +32,8 @@ function EventTableWindow() {
 
 	const columns = eventsStore.selectedPath
 		.filter(node => node.children && node.children.length > 0);
+	const notMinfiedColumns = columns.slice(-3);
+	const minimapDeep = columns.length - notMinfiedColumns.length;
 
 	return (
 		<div className='event-table-window' ref={rootRef}>
@@ -45,20 +48,23 @@ function EventTableWindow() {
 					eventsStore.selectedNode == null ? (
 						<EventsColumn
 							nodesList={eventsStore.eventsIds}
-							displayType={CardDisplayType.MINIMAL}/>
+							displayType={CardDisplayType.FULL}/>
 					) : (
 						<>
+							<EventMinimapColumn
+								nodes={eventsStore.selectedPath[0].children!}
+								deep={minimapDeep}/>
 							{
-								columns.map((parentNode, i) => (
+								notMinfiedColumns.map((parentNode, i) => (
 									parentNode.children?.length
 										? <EventsColumn
-											displayType={calculateCardLayout(i, columns.length)}
+											displayType={calculateCardLayout(i, notMinfiedColumns.length)}
 											nodesList={parentNode.children}
 											key={parentNode.id}/>
 										: null
 								))
 							}
-							<div style={{ width: width * 0.4, flexShrink: 0 }}>
+							<div style={{ width: width * 0.45, flexShrink: 0 }}>
 								<EventDetailInfo idNode={eventsStore.selectedNode}/>
 							</div>
 						</>
@@ -70,8 +76,8 @@ function EventTableWindow() {
 }
 
 function calculateCardLayout(columnIndex: number, columnsLength: number): CardDisplayType {
-	// last 2 columns are always displayed
-	if (columnsLength - columnIndex < 3) {
+	// last columns is always displayed
+	if (columnsLength - columnIndex < 2) {
 		return CardDisplayType.MINIMAL;
 	}
 
