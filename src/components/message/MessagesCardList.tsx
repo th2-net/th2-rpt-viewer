@@ -34,7 +34,7 @@ export type MessagesHeights = { [index: number]: number };
 
 const MessageCardList = () => {
 	const { messagesStore, filterStore } = useEventWindowStore();
-	const [messagesHeightsMap, setMessagesHeightMap] = React.useState<State>({});
+	const [messagesHeightsMap, setMessagesHeightMap] = React.useState<MessagesHeights>({});
 
 	const resizeObserver = React.useRef(new ResizeObserver(entries => {
 		const stateUpdate: MessagesHeights = {};

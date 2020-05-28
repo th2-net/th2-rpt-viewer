@@ -123,7 +123,7 @@ export function MessageCardBase(props: MessageCardProps) {
 
 	const pinClassName = createBemElement(
 		'mc-header',
-		'pin',
+		'pin-icon',
 		isPinned ? 'active' : null,
 	);
 
@@ -162,14 +162,16 @@ export function MessageCardBase(props: MessageCardProps) {
 						<div className={beautifyIconClass}/>
 				   </div>
 				}
-				<div
-					title={isPinned ? 'Unpin' : 'Pin'}
-					className={pinClassName}
-					onClick={() => {
-						if (toggleMessagePin) {
-							toggleMessagePin(message);
-						}
-					}}/>
+				<div className="mc-header__pin">
+					<div
+						title={isPinned ? 'Unpin' : 'Pin'}
+						className={pinClassName}
+						onClick={() => {
+							if (toggleMessagePin) {
+								toggleMessagePin(message);
+							}
+						}}/>
+				</div>
 				<div
 					className="mc-header__underline"
 					style={{

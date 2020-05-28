@@ -19,6 +19,7 @@ export interface HeatmapElement {
 	color?: string;
 	id?: string;
 	index: number;
+	isPinned?: boolean;
 }
 
 export interface ListRange {
