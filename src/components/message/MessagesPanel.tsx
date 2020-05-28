@@ -17,26 +17,23 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { createStyleSelector } from '../../helpers/styleCreators';
+import { useHeatmap } from '../../hooks/useHeatmap';
 import MessagesCardList from './MessagesCardList';
-import { HeatmapElement, HeatmapContext, ListRange } from '../Heatmap';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 import { nextCyclicItem, prevCyclicItem } from '../../helpers/array';
 import KeyCodes from '../../util/KeyCodes';
+import SidePanel from '../SidePanel';
+import { HeatmapProvider } from '../heatmap/HeatmapProvider';
+import { HeatmapElement } from '../../models/Heatmap';
+import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 
-interface Props {
-	isOpen: boolean;
-	onClose: () => void;
-}
 
-const MessagesPanel = ({ isOpen, onClose }: Props) => {
-	const [heatmapElements, setHeatmapElements] = React.useState<HeatmapElement[]>([]);
-	const [currentRange, setCurrentRange] = React.useState<ListRange | null>(null);
-
-	const rootRef = React.useRef<HTMLDivElement>(null);
-
+const MessagesPanel = observer(() => {
+	const { heatmapElements } = useHeatmap();
 	const eventWindowStore = useEventWindowStore();
 	const messagesStore = useMessagesStore();
+	const windowViewStore = useEventWindowViewStore();
 
 	const selectedEvent = eventWindowStore.selectedNode
 		? eventWindowStore.eventsCache.get(eventWindowStore.selectedNode.id)
@@ -61,9 +58,11 @@ const MessagesPanel = ({ isOpen, onClose }: Props) => {
 		};
 	}, [heatmapElements, eventWindowStore.selectedNode]);
 
+	const hasAttachedMessages = ((selectedEvent?.attachedMessageIds || []).length
+	+ messagesStore.pinnedMessagesIds.length) > 0;
+
 	const selectNextMessage = () => {
-		const ids = selectedEvent?.attachedMessageIds;
-		if (!ids || ids.length <= 1) return;
+		if (!hasAttachedMessages) return;
 		const indexes = heatmapElements
 			.filter(el => Boolean(el.id))
 			.map(el => el.index);
@@ -76,8 +75,7 @@ const MessagesPanel = ({ isOpen, onClose }: Props) => {
 	};
 
 	const selectPrevMessage = () => {
-		const ids = selectedEvent?.attachedMessageIds;
-		if (!ids || ids.length <= 1) return;
+		if (!hasAttachedMessages) return;
 		const indexes = heatmapElements
 			.filter(el => Boolean(el.id))
 			.map(el => el.index);
@@ -89,14 +87,9 @@ const MessagesPanel = ({ isOpen, onClose }: Props) => {
 		messagesStore.scrolledIndex = new Number(prevIndex);
 	};
 
-	const rootClassName = createStyleSelector(
-		'messages-panel',
-		isOpen ? 'open' : null,
-	);
-
 	const navButtonClass = createStyleSelector(
 		'messages-panel__button',
-		(selectedEvent?.attachedMessageIds || []).length <= 1 ? 'disabled' : null,
+		!hasAttachedMessages ? 'disabled' : null,
 	);
 
 	const getStep = () => {
@@ -110,16 +103,10 @@ const MessagesPanel = ({ isOpen, onClose }: Props) => {
 	};
 
 	return (
-		<HeatmapContext.Provider value={{
-			heatmapElements,
-			setHeatmapElements,
-			currentRange,
-			setCurrentRange,
-		}}>
-			<div
-				className={rootClassName}
-				ref={rootRef}>
-
+		<SidePanel
+			isOpen={windowViewStore.showMessages}
+			onClose={() => windowViewStore.showMessages = false}>
+			<div className="messages-panel">
 				<div className="messages-panel__header">
 					<h2 className="messages-panel__title">
 						Messages
@@ -132,8 +119,7 @@ const MessagesPanel = ({ isOpen, onClose }: Props) => {
 					<div className="messages-panel__controls">
 						{
 							!messagesStore.isLoading
-							&& messagesStore.messagesIds.length > 0
-							&& (selectedEvent?.attachedMessageIds || []).length > 0
+							&& hasAttachedMessages
 							&& <>
 								<div
 									className={navButtonClass}
@@ -154,15 +140,44 @@ const MessagesPanel = ({ isOpen, onClose }: Props) => {
 							className="messages-panel__close-button"
 							role="button"
 							title="close"
-							onClick={() => onClose()}/>
+							onClick={() => windowViewStore.showMessages = false}/>
 					</div>
 				</div>
 				<div className="messages-panel__list">
 					<MessagesCardList />
 				</div>
 			</div>
-		</HeatmapContext.Provider>
+		</SidePanel>
 	);
-};
+});
 
-export default observer(MessagesPanel);
+const MessagesHeatmapProvider = observer(() => {
+	const eventWindowStore = useEventWindowStore();
+	const messagesStore = useMessagesStore();
+
+	const selectedItems = React.useMemo(() => {
+		if (eventWindowStore.selectedNode) {
+			return eventWindowStore.eventsCache
+				.get(eventWindowStore.selectedNode.id)?.attachedMessageIds || [];
+		}
+
+		return [];
+	}, [eventWindowStore.selectedNode, eventWindowStore.eventsCache]);
+
+	return (
+		<HeatmapProvider
+			onElementClick={(element: HeatmapElement) =>
+				messagesStore.scrolledIndex = new Number(element.index)}
+			scrollToItem={(index: number) =>
+				messagesStore.scrolledIndex = new Number(index)}
+			items={messagesStore.messagesIds}
+			selectedItems={selectedItems}
+			colors={[]}
+			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}
+			pinnedItems={messagesStore.pinnedMessagesIds}>
+			<MessagesPanel />
+		</HeatmapProvider>
+	);
+});
+
+export default MessagesHeatmapProvider;

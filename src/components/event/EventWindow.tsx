@@ -17,7 +17,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
-import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import { useStores } from '../../hooks/useStores';
 import EventTreeWindow from './tree/EventTreeWindow';
 import EventTableWindow from './table/EventTableWindow';
@@ -26,7 +25,6 @@ import '../../styles/events.scss';
 
 const EventWindow = () => {
 	const eventWindowStore = useEventWindowStore();
-	const windowViewStore = useEventWindowViewStore();
 	const { viewStore: appViewStore } = useStores();
 
 	React.useEffect(() => {
@@ -40,9 +38,7 @@ const EventWindow = () => {
 					? <EventTableWindow/>
 					: <EventTreeWindow/>
 			}
-			<MessagesPanel
-				isOpen={windowViewStore.showMessages}
-				onClose={() => windowViewStore.showMessages = false} />
+			<MessagesPanel />
 		</div>
 	);
 };

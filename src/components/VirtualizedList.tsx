@@ -16,7 +16,6 @@
 
 import * as React from 'react';
 import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
-import ResizeObserver from 'resize-observer-polyfill';
 import { raf } from '../helpers/raf';
 import { createStyleSelector } from '../helpers/styleCreators';
 
@@ -38,27 +37,7 @@ interface Props {
 	initialTopMostItemIndex?: number;
 }
 
-type State = { [index: number]: number };
-
 export class VirtualizedList extends React.Component<Props, State> {
-	state: State = {};
-
-	resizeObserver = new ResizeObserver(entries => {
-		const stateUpdate: State = {};
-
-		entries.forEach(entry => {
-			const { index } = (entry.target as HTMLDivElement).dataset;
-			const { height } = entry.contentRect;
-			if (index !== undefined
-				&& this.state[parseInt(index)] !== height) {
-				stateUpdate[parseInt(index)] = height;
-			}
-		});
-		if (Object.entries(stateUpdate).length > 0) {
-			this.setState(stateUpdate);
-		}
-	});
-
 	private virtuoso = React.createRef<VirtuosoMethods>();
 
 	componentDidUpdate(prevProps: Props) {

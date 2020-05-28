@@ -14,21 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable } from 'mobx';
-import ApiSchema from '../api/ApiSchema';
-import EventWindowStore from './EventWindowStore';
+export interface HeatmapElement {
+	count: number;
+	color?: string;
+	id?: string;
+	index: number;
+}
 
-export default class EventStore {
-	constructor(private api: ApiSchema) {
-		this.api = api;
-	}
-
-	@observable eventWindows: EventWindowStore[] = [new EventWindowStore(this.api)];
-
-	@action.bound
-	createEventWindowStore() {
-		if (this.eventWindows.length === 1) {
-			this.eventWindows.push(new EventWindowStore(this.api));
-		}
-	}
+export interface ListRange {
+	startIndex: number;
+    endIndex: number;
 }

@@ -17,6 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import Message from '../../models/Message';
+import { useMessagesStore } from '../../hooks/useMessagesStore';
 import { StatusType } from '../../models/Status';
 import { getHashCode } from '../../helpers/stringHash';
 import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
@@ -28,7 +29,7 @@ import PanelArea from '../../util/PanelArea';
 import { EventMessage } from '../../models/EventMessage';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import { useHeatmap } from '../../hooks/useHeatmap';
-import { lighten } from '../../helpers/color';
+import { hexToRGBA } from '../../helpers/color';
 import '../../styles/messages.scss';
 
 const HUE_SEGMENTS_COUNT = 36;
@@ -53,6 +54,8 @@ export interface MessageCardStateProps {
 	prediction: PredictionData | null;
 	searchField: keyof Message | null;
 	color: string | undefined;
+	isPinned?: boolean;
+	toggleMessagePin?: (message: EventMessage) => void;
 }
 
 export interface MessageCardDispatchProps {
@@ -77,6 +80,8 @@ export function MessageCardBase(props: MessageCardProps) {
 		toggleBeautify,
 		panelArea,
 		color,
+		isPinned,
+		toggleMessagePin,
 	} = props;
 	const {
 		timestamp,
@@ -116,11 +121,17 @@ export function MessageCardBase(props: MessageCardProps) {
 		direction?.toLowerCase(),
 	);
 
+	const pinClassName = createBemElement(
+		'mc-header',
+		'pin',
+		isPinned ? 'active' : null,
+	);
+
 	return (
 		<div
 			className={rootClass}
 			style={{
-				backgroundColor: color ? lighten(color, 47) : undefined,
+				backgroundColor: color ? hexToRGBA(color, 15) : undefined,
 				borderColor: color,
 			}}>
 			<div className={headerClass}
@@ -151,6 +162,14 @@ export function MessageCardBase(props: MessageCardProps) {
 						<div className={beautifyIconClass}/>
 				   </div>
 				}
+				<div
+					title={isPinned ? 'Unpin' : 'Pin'}
+					className={pinClassName}
+					onClick={() => {
+						if (toggleMessagePin) {
+							toggleMessagePin(message);
+						}
+					}}/>
 				<div
 					className="mc-header__underline"
 					style={{
@@ -203,6 +222,7 @@ export const RecoverableMessageCard = ({
 
 export const MessageCard = observer(({ message }: MessageCardOwnProps) => {
 	const viewStore = useEventWindowViewStore();
+	const messagesStore = useMessagesStore();
 	const { heatmapElements } = useHeatmap();
 
 	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
@@ -222,6 +242,8 @@ export const MessageCard = observer(({ message }: MessageCardOwnProps) => {
 			selectHandler={() => 'stub'}
 			toggleBeautify={() => viewStore.toggleBeautify(message.messageId)}
 			message={message}
+			isPinned={messagesStore.pinnedMessagesIds.includes(message.messageId)}
+			toggleMessagePin={messagesStore.toggleMessagePin}
 		/>
 	);
 });

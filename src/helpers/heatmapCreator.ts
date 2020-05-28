@@ -14,37 +14,40 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { HeatmapElement, ListRange } from '../components/Heatmap';
+import { HeatmapElement, ListRange } from '../models/Heatmap';
 
 export const getHeatmapElements = (
 	items: string[],
 	selectedItems: string[],
-	color: string,
+	pinnedItems: string[],
+	color = '#987DB3',
+	pinColor = '#00BBCC',
 ): HeatmapElement[] => {
 	const emptyHeatmap = [{ count: items.length || 1, index: 0 }];
 
-	if (!selectedItems.length) return emptyHeatmap;
+	if (!selectedItems.length && !pinnedItems.length) return emptyHeatmap;
 
-	const presentIds = selectedItems.filter(id => items.includes(id));
+	const presentIds = [...new Set([...selectedItems, ...pinnedItems])]
+		.filter(id => items.includes(id));
 	const idsIndexes = presentIds.map(id => items.indexOf(id));
 	idsIndexes.sort((a, b) => a - b);
 
 	const heatmapElements = idsIndexes.reduce((blocks, itemIndex, index) => {
+		const isPinned = pinnedItems.includes(items[itemIndex]);
 		const nextIndex = idsIndexes[index + 1];
-		const updatedBlocks = blocks.slice();
-		updatedBlocks.push({
+		blocks.push({
 			count: 1,
-			color,
-			id: presentIds[index],
+			color: isPinned ? pinColor : color,
+			id: items[itemIndex],
 			index: itemIndex,
 		});
 		if (nextIndex && nextIndex - itemIndex !== 1) {
-			updatedBlocks.push({
+			blocks.push({
 				count: nextIndex - itemIndex - 1,
 				index: itemIndex + 1,
 			});
 		}
-		return updatedBlocks;
+		return blocks;
 	}, [] as HeatmapElement[]);
 
 	if (!heatmapElements.length) return emptyHeatmap;
@@ -78,7 +81,7 @@ export const getHeatmapRange = (heatmapElements: HeatmapElement[], fullRange = f
 		endIndex = end >= 0 ? heatmapElements.length - 1 - end : end;
 	}
 	return {
-		startIndex: heatmapElements[startIndex].index + heatmapElements[startIndex].count - 1,
+		startIndex: heatmapElements[startIndex].index,
 		endIndex: heatmapElements[endIndex].index + heatmapElements[endIndex].count - 1,
 	};
 };

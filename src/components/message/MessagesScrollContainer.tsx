@@ -17,11 +17,12 @@
 import React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import { TScrollContainer } from 'react-virtuoso';
-import Heatmap, { HeatmapElement } from '../Heatmap';
+import Heatmap from '../heatmap/Heatmap';
 import { useHeatmap } from '../../hooks/useHeatmap';
+import { HeatmapElement } from '../../models/Heatmap';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
-import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
+import { MessagesHeightsContext, MessagesHeights } from './MessagesCardList';
 
 const MessagesScrollContainer: TScrollContainer = ({
 	className,
@@ -31,52 +32,52 @@ const MessagesScrollContainer: TScrollContainer = ({
 	children,
 }) => {
 	const scrollContainer = React.useRef<HTMLDivElement>(null);
-	const heatmapContext = useHeatmap();
+	const { setVisibleRange, visibleRange } = useHeatmap();
 	const messagesStore = useMessagesStore();
-	const eventWindowStore = useEventWindowStore();
+	const messagesHeights = React.useContext(MessagesHeightsContext);
+	const prevHeights = React.useRef<MessagesHeights>({});
 
-	const getRange = useDebouncedCallback(() => {
+	React.useEffect(() => {
+		if (!visibleRange) return;
+		for (let i = visibleRange.startIndex; i <= visibleRange.endIndex; i++) {
+			if (messagesHeights[i] !== prevHeights.current[i]) {
+				getVisibleRange();
+				break;
+			}
+		}
+		prevHeights.current = messagesHeights;
+	}, [messagesHeights]);
+
+	const getVisibleRange = useDebouncedCallback(() => {
 		if (!scrollContainer.current) return;
 		const offsetTop = scrollContainer.current.offsetTop || 0;
 		try {
-			const fullyRendered = Array.from(scrollContainer.current.children[0].children[0].children)
-				.filter(node => {
-					const rect = node.getBoundingClientRect();
-					const elemTop = rect.top - offsetTop + rect.height * 0.6;
-					const elemBottom = rect.bottom - rect.height * 0.6;
-					const isVisible = (elemTop >= 0) && (elemBottom <= window.innerHeight);
-					return isVisible;
-				})
-				.map(node => (node as HTMLDivElement).dataset.index);
+			const renderedMessages = Array.from(scrollContainer.current.children[0].children[0].children);
+			const fullyRendered = renderedMessages.filter(node => {
+				const rect = node.getBoundingClientRect();
+				const elemTop = rect.top - offsetTop + rect.height;
+				const elemBottom = rect.bottom - rect.height;
+				const isVisible = (elemTop >= 0) && (elemBottom <= window.innerHeight);
+				return isVisible;
+			}).map(node => (node as HTMLDivElement).dataset.index);
+
 			if (fullyRendered.length > 0) {
-				heatmapContext.setCurrentRange({
+				setVisibleRange({
 					startIndex: parseInt(fullyRendered[0] as string),
 					endIndex: parseInt(fullyRendered[fullyRendered.length - 1] as string),
 				});
 			}
 		} catch {
-			heatmapContext.setCurrentRange({
+			setVisibleRange({
 				startIndex: 0,
 				endIndex: 0,
 			});
 		}
-	}, 50);
-
-	React.useEffect(() => {
-		getRange();
-	}, [messagesStore.messagesCache.size]);
+	}, 25);
 
 	scrollTo((scrollTop: ScrollToOptions) => {
 		scrollContainer.current?.scrollTo(scrollTop);
 	});
-
-	const selectedItems = React.useMemo(() => {
-		if (eventWindowStore.selectedNode) {
-			return eventWindowStore.eventsCache.get(eventWindowStore.selectedNode.id)?.attachedMessageIds;
-		}
-
-		return [];
-	}, [eventWindowStore.selectedNode, eventWindowStore.eventsCache]);
 
 	return (
 		<div style={{ width: '100%', height: '100%', display: 'flex' }}>
@@ -84,7 +85,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 				ref={scrollContainer}
 				onScroll={(e: React.SyntheticEvent<HTMLDivElement>) => {
 					reportScrollTop(e.currentTarget.scrollTop);
-					getRange();
+					getVisibleRange();
 				}}
 				style={{
 					...style,
@@ -100,10 +101,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 				{() => <Heatmap
 					onElementClick={(element: HeatmapElement) =>
 						 messagesStore.scrolledIndex = new Number(element.index)}
-					items={messagesStore.messagesIds}
-					selectedItems={selectedItems}
-					colors={[]}
-					selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}/>}
+					selectedIndex={messagesStore.scrolledIndex?.valueOf() || null} />}
 			</Observer>
 
 		</div>

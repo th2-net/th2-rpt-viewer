@@ -33,6 +33,7 @@
     "mc-labels mc-body";
     width: 100%;
     margin: 6px 0;
+    transition: all 0.2s;
 
     border: 2px solid var(--status-secondary-border-color);
     border-radius: $defaultCardBorderRadius;
@@ -101,8 +102,8 @@
     padding: 7px 5px 9px 10px;
     color: $primaryTextColor;
     grid-template-rows: auto;
-    grid-template-columns: 1.4fr 40px 1fr 40px 2fr 40px;
-    grid-template-areas: "timestamp name name-value session session-value beautify";
+    grid-template-columns: 1.4fr 40px 1fr 40px 2fr 40px 30px;
+    grid-template-areas: "timestamp name name-value session session-value beautify pin";
 
     &__underline {
         border-bottom: 2px solid var(--status-primary-delimeter-color);
@@ -115,7 +116,7 @@
 
     &.admin {
         grid-template-rows: 35px;
-        grid-template-columns: calc(195px - (var(--lb-count) * 20px)) 50px auto 1fr 40px;
+        grid-template-columns: calc(195px - (var(--lb-count) * 20px)) 50px auto 1fr 30px 20px;
         grid-template-areas: "info name name-value empty expand-icon";
         padding: 0;
 
@@ -221,6 +222,20 @@
             cursor: pointer;
         }
     }
+    &__pin {
+        height: 15px;
+        width: 15px;
+        background-image: url(../../resources/icons/pin.svg);
+        background-size: 100%;
+        cursor: pointer;
+        grid-area: pin;
+        transition: 0.3s;
+        margin: auto;
+
+        &.active {
+            transform: rotate(-45deg);
+        }
+    }
 }
 
 .mc-body {
@@ -296,6 +311,7 @@
     height: 26px;
     width: 26px;
     padding: 2px;
+    margin: auto;
 
     &__icon {
         background-size: 100%;
@@ -577,14 +593,8 @@
 }
 
 .messages-panel {
-	background-color: white;
-	top: 0;
-    right: 0;
-    position: fixed;
     height: 100%;
-    width: 48.5%;
-    z-index: 150;
-    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.55);
+    width: 100%;
     padding: 15px 20px;
     display: grid;
     border-radius: 10px 0px 0px 10px;
@@ -592,23 +602,14 @@
                         "list";
     grid-template-rows: 37px 1fr;
     column-gap: 9px;
-    transform: translate(100%, 0);
-    opacity: 0;
-    transition: 0.3s;
     overflow: hidden;
 
-	&.open {
-        transform: translate(0, 0);
-		opacity: 1;
-    }
-    
     &__header {
         grid-area: header;
         display: flex;
         justify-content: space-between;
         width: 100%;
         overflow: hidden;
-        padding-bottom: 15px;
     }
 
     &__title {
@@ -620,7 +621,7 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         flex-grow: 0;
-        padding-right: 20px;
+        padding-right: 10px;
     }
 
     &__list {
@@ -643,6 +644,7 @@
         align-items: center;
         min-width: 50px;
         flex-shrink: 0;
+        margin-bottom: 15px;
     }
 
     &__button {

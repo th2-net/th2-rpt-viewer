@@ -14,21 +14,29 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable } from 'mobx';
-import ApiSchema from '../api/ApiSchema';
-import EventWindowStore from './EventWindowStore';
+import React from 'react';
+import { createStyleSelector } from '../helpers/styleCreators';
+import '../styles/sidePanel.scss';
 
-export default class EventStore {
-	constructor(private api: ApiSchema) {
-		this.api = api;
-	}
-
-	@observable eventWindows: EventWindowStore[] = [new EventWindowStore(this.api)];
-
-	@action.bound
-	createEventWindowStore() {
-		if (this.eventWindows.length === 1) {
-			this.eventWindows.push(new EventWindowStore(this.api));
-		}
-	}
+interface Props {
+	isOpen: boolean;
+	onClose: () => void;
+	children?: React.ReactNode;
 }
+
+const SidePanel = ({
+	isOpen,
+	children,
+}: Props) => {
+	const rootClassName = createStyleSelector(
+		'side-panel',
+		isOpen ? 'open' : null,
+	);
+	return (
+		<div className={rootClassName}>
+			{children}
+		</div>
+	);
+};
+
+export default SidePanel;
