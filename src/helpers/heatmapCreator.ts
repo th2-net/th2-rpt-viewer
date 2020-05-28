@@ -54,11 +54,12 @@ export const getHeatmapElements = (
 
 	const firstEl = heatmapElements[0];
 	const lastEl = heatmapElements[heatmapElements.length - 1];
+
 	return [
 		{ count: firstEl.index ? firstEl.index : 0, index: 0 },
 		...heatmapElements,
-		{ count: lastEl.index ? items.length - lastEl.index - 1 : 0, index: lastEl.index + 1 },
-	];
+		{ count: items.length - lastEl.index - 1, index: lastEl.index + 1 },
+	].filter(el => el.count !== 0);
 };
 
 
@@ -80,6 +81,7 @@ export const getHeatmapRange = (heatmapElements: HeatmapElement[], fullRange = f
 		const end = heatmapElements.slice().reverse().findIndex(el => el.id !== undefined);
 		endIndex = end >= 0 ? heatmapElements.length - 1 - end : end;
 	}
+
 	return {
 		startIndex: heatmapElements[startIndex].index,
 		endIndex: heatmapElements[endIndex].index + heatmapElements[endIndex].count - 1,
