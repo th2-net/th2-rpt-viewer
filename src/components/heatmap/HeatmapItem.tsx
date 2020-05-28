@@ -19,6 +19,7 @@ import { HeatmapElement } from '../../models/Heatmap';
 import { hexToRGBA } from '../../helpers/color';
 
 const HEATMAP_ELEMENT_MIN_HEIGHT = 14;
+const PINNED_MIN_HEIGHT = 21;
 
 interface Props extends HeatmapElement {
 	isSelected: boolean;
@@ -32,6 +33,7 @@ const HeatmapItem = ({
 	count,
 	id,
 	isSelected,
+	isPinned = false,
 	onClick,
 	totalCount,
 }: Props) => {
@@ -54,15 +56,16 @@ const HeatmapItem = ({
 			data-count={count}
 			style={{
 				borderColor: color,
-				borderWidth: isSelected ? '3px' : '2px',
+				borderWidth: isSelected || isPinned ? '3px' : '2px',
 				backgroundColor: '#FFF',
 				flexGrow: count / totalCount,
-				minHeight: id ? `${HEATMAP_ELEMENT_MIN_HEIGHT}px` : undefined,
+				minHeight: id ? isPinned ? PINNED_MIN_HEIGHT : `${HEATMAP_ELEMENT_MIN_HEIGHT}px` : undefined,
 			}}
 			key={index}
 			className="heatmap__element"
 			onClick={onItemClick}>
-			<div style={{ backgroundColor: isSelected && color ? hexToRGBA(color, 15) : undefined }}/>
+			<div style={{ backgroundColor: isSelected && color ? hexToRGBA(color, 17) : undefined }}/>
+			{isPinned && <div className="heatmap__pin-icon" />}
 		</div>
 	);
 };

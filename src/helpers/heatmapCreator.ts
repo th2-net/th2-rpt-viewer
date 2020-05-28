@@ -21,7 +21,7 @@ export const getHeatmapElements = (
 	selectedItems: string[],
 	pinnedItems: string[],
 	color = '#987DB3',
-	pinColor = '#00BBCC',
+	pinColor = '#4D4D4D',
 ): HeatmapElement[] => {
 	const emptyHeatmap = [{ count: items.length || 1, index: 0 }];
 
@@ -34,12 +34,14 @@ export const getHeatmapElements = (
 
 	const heatmapElements = idsIndexes.reduce((blocks, itemIndex, index) => {
 		const isPinned = pinnedItems.includes(items[itemIndex]);
+		const isAttached = selectedItems.includes(items[itemIndex]);
 		const nextIndex = idsIndexes[index + 1];
 		blocks.push({
 			count: 1,
-			color: isPinned ? pinColor : color,
+			color: isAttached ? color : pinColor,
 			id: items[itemIndex],
 			index: itemIndex,
+			isPinned,
 		});
 		if (nextIndex && nextIndex - itemIndex !== 1) {
 			blocks.push({

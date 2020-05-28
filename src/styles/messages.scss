@@ -223,17 +223,29 @@
         }
     }
     &__pin {
+        grid-area: pin;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        width: 20px;
+        height: 20px;
+        align-self: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    &__pin-icon {
         height: 15px;
         width: 15px;
         background-image: url(../../resources/icons/pin.svg);
+        background-repeat: no-repeat;
         background-size: 100%;
         cursor: pointer;
-        grid-area: pin;
         transition: 0.3s;
-        margin: auto;
 
         &.active {
-            transform: rotate(-45deg);
+            transform: rotate(-45deg) scale(1.4);
         }
     }
 }

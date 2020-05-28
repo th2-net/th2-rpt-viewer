@@ -37,7 +37,7 @@ interface Props {
 	initialTopMostItemIndex?: number;
 }
 
-export class VirtualizedList extends React.Component<Props, State> {
+export class VirtualizedList extends React.Component<Props> {
 	private virtuoso = React.createRef<VirtuosoMethods>();
 
 	componentDidUpdate(prevProps: Props) {
