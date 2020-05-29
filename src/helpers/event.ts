@@ -35,3 +35,19 @@ export const getEventStatus = (event: EventAction): EventStatus => {
 
 	return body.status;
 };
+
+export function isVerification(event: EventAction) {
+	if (event.body == null) {
+		return false;
+	}
+
+	if (Array.isArray(event.body)) {
+		return event.body.some(element => element.type === 'verification');
+	}
+
+	if (typeof event.body === 'object') {
+		return event.body.type === 'verification';
+	}
+
+	return false;
+}
