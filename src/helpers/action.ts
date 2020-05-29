@@ -76,33 +76,33 @@ export function filterActionNode(
 	actionNode: ActionNode, filterResults: string[], parentActionId: number | null = null,
 ): ActionNode | null {
 	switch (actionNode.actionNodeType) {
-	case ActionNodeType.ACTION: {
-		if (isCheckpointAction(actionNode)) {
+		case ActionNodeType.ACTION: {
+			if (isCheckpointAction(actionNode)) {
+				return actionNode;
+			}
+
+			if (filterResults.includes(keyForAction(actionNode.id))) {
+				return {
+					...actionNode,
+					subNodes: actionNode.subNodes
+							?.map(subNode => filterActionNode(subNode, filterResults, actionNode.id))
+							.filter((node): node is ActionNode => node !== null),
+				};
+			}
+
+			return null;
+		}
+
+		case ActionNodeType.VERIFICATION: {
+			if (filterResults.includes(keyForVerification(parentActionId, actionNode.messageId))) {
+				return actionNode;
+			}
+
+			return null;
+		}
+
+		default: {
 			return actionNode;
 		}
-
-		if (filterResults.includes(keyForAction(actionNode.id))) {
-			return {
-				...actionNode,
-				subNodes: actionNode.subNodes
-                        ?.map(subNode => filterActionNode(subNode, filterResults, actionNode.id))
-                        .filter((node): node is ActionNode => node !== null),
-			};
-		}
-
-		return null;
-	}
-
-	case ActionNodeType.VERIFICATION: {
-		if (filterResults.includes(keyForVerification(parentActionId, actionNode.messageId))) {
-			return actionNode;
-		}
-
-		return null;
-	}
-
-	default: {
-		return actionNode;
-	}
 	}
 }

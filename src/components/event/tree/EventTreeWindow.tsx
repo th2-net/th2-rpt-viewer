@@ -19,11 +19,11 @@ import { observer } from 'mobx-react-lite';
 import LeftPanel from '../../LeftPanel';
 import EventTreeList from './EventTreeList';
 import RightPanel from '../../RightPanel';
-import EventDetailInfo from '../EventDetailInfo';
 import Empty from '../../Empty';
 import SplitView from '../../SplitView';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
+import EventDetailInfoCard from '../EventDetailInfoCard';
 
 function EventTreeWindow() {
 	const eventWindowStore = useEventWindowStore();
@@ -42,7 +42,7 @@ function EventTreeWindow() {
 				<div className="layout-panel__content-wrapper">
 					{
 						eventWindowStore.selectedNode ? (
-							<EventDetailInfo idNode={eventWindowStore.selectedNode}/>
+							<EventDetailInfoCard idNode={eventWindowStore.selectedNode}/>
 						) : (
 							<Empty description="Select event"/>
 						)

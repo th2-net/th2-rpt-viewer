@@ -20,10 +20,10 @@ import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import EventsColumn from './EventsColumn';
 import '../../../styles/events.scss';
 import EventBreadcrumbs from '../EventBreadcrumbs';
-import EventDetailInfo from '../EventDetailInfo';
 import useElementSize from '../../../hooks/useElementSize';
 import CardDisplayType from '../../../util/CardDisplayType';
 import EventMinimapColumn from './EventMinimapColumn';
+import EventDetailInfoCard from '../EventDetailInfoCard';
 
 function EventTableWindow() {
 	const eventsStore = useEventWindowStore();
@@ -65,7 +65,7 @@ function EventTableWindow() {
 								))
 							}
 							<div style={{ width: width * 0.45, flexShrink: 0 }}>
-								<EventDetailInfo idNode={eventsStore.selectedNode}/>
+								<EventDetailInfoCard idNode={eventsStore.selectedNode}/>
 							</div>
 						</>
 					)

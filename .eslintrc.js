@@ -51,7 +51,7 @@ module.exports = {
 		'import/prefer-default-export': "off",
 		'import/no-cycle': "off",
 		'no-tabs': "off",
-		'indent': ['error', 'tab'],
+		'indent': ['error', 'tab', { 'SwitchCase': 1 }],
 		'max-len': [2, 120, 4],
 		'semi': "off",
 		'@typescript-eslint/semi': ['error'],
