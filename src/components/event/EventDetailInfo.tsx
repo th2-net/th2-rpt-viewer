@@ -21,6 +21,7 @@ import PanelArea from '../../util/PanelArea';
 import { EventIdNode } from '../../stores/EventWindowStore';
 import useCachedEvent from '../../hooks/useCachedEvent';
 import SplashScreen from '../SplashScreen';
+import { isVerification } from '../../helpers/event';
 
 interface Props {
 	idNode: EventIdNode;
@@ -36,7 +37,7 @@ export default function EventDetailInfo({ idNode }: Props) {
 	return (
 		<div style={{ overflow: 'auto', height: '100%' }}>
 			{
-				event.body && event.body.type === 'verification'
+				isVerification(event)
 					? <VerificationCard
 						key={event.eventId}
 						verification={event}
