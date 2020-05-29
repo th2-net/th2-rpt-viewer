@@ -149,27 +149,38 @@ const EventCardBody = ({
 	event,
 }: EventCardBodyProps) => {
 	if (Array.isArray(body)) {
-		const content: Array<React.ReactNode> = [];
-		body.forEach(bodyEl => {
+		const content: Array<React.ReactNode> = body.map(bodyEl => {
 			switch (bodyEl.type) {
 			case 'message':
-				content.push(<div key="message">{bodyEl.data}</div>);
-				break;
+				return (
+					<div key="message">{bodyEl.data}</div>
+				);
 			case 'table':
-				content.push(
+				return (
 					<CustomTable
 						content={bodyEl.fields}
-						key="table"/>,
+						key="table"/>
 				);
-				break;
 			default:
-				break;
+				return (
+					<pre>
+						{JSON.stringify(bodyEl, null, 4)}
+					</pre>
+				);
 			}
 		});
 		return <div>{content}</div>;
 	}
 
-	if (!body?.fields) return null;
+	if (!body?.fields) {
+		if (Object.keys(body).length < 1) {
+			return null;
+		}
+
+		return (
+			<pre>{JSON.stringify(body, null, 4)}</pre>
+		);
+	}
 
 	const { fields, ...restBody } = body;
 
