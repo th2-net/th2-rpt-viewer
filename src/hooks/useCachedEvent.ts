@@ -60,5 +60,19 @@ export function useEventSubNodes(node: EventIdNode, isVisible = true): EventIdNo
 		}
 	}, [isVisible]);
 
+	// handle node change
+	useAsyncEffect(async () => {
+		// ignore first render
+		if (!subNodes) {
+			return;
+		}
+
+		setSubNodes(node.children);
+
+		if (!node.children) {
+			setSubNodes(await eventWindowStore.fetchEventChildren(node));
+		}
+	}, [node]);
+
 	return subNodes;
 }

@@ -27,13 +27,16 @@ import { getMinifiedStatus } from '../../helpers/action';
 import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
 import ErrorBoundary from '../util/ErrorBoundary';
+import TableEventCard from './table/TableEventCard';
+import CardDisplayType from '../../util/CardDisplayType';
 
 interface Props {
 	idNode: EventIdNode;
+	showSubNodes?: boolean;
 	isMinified?: boolean;
 }
 
-function EventDetailInfoCard({ idNode, isMinified = false }: Props) {
+function EventDetailInfoCard({ idNode, isMinified = false, showSubNodes = false }: Props) {
 	const event = useCachedEvent(idNode);
 	const subEvents = useEventSubNodes(idNode);
 
@@ -132,6 +135,14 @@ function EventDetailInfoCard({ idNode, isMinified = false }: Props) {
 				<div className="ac-header__id">
 					{eventId}
 				</div>
+				{
+					showSubNodes && subEvents && subEvents.map(subEvent => (
+						<TableEventCard
+							key={subEvent.id}
+							idNode={subEvent}
+							displayType={CardDisplayType.MINIMAL}/>
+					))
+				}
 				<ErrorBoundary fallback={<BodyFallback body={body}/>}>
 					{
 						Array.isArray(event.body)

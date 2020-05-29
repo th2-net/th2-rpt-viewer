@@ -22,6 +22,7 @@
     display: grid;
     // Default values. Will be overwritten by style at SplitView component.
     grid-template-columns: calc(50% - 13px) $splitterBarWidth calc(50% - 13px);
+    grid-template-rows: 100%;
     grid-template-areas: "left-pane splitter-bar right-pane";
     position: relative;
     overflow: hidden;

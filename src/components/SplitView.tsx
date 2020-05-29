@@ -26,6 +26,7 @@ export interface Props {
 	 * other children will be ignored
      */
     children: [React.ReactNode, React.ReactNode];
+    className?: string;
     panelArea: PanelArea;
     onPanelAreaChange: (panelArea: PanelArea) => void;
     leftPanelMinWidth: number;
@@ -227,7 +228,7 @@ export default class SplitView extends React.Component<Props, State> {
 	}
 
 	render() {
-		const { children, panelArea } = this.props;
+		const { children, panelArea, className } = this.props;
 		const { isDragging, splitterLeftOffset, previewPanelArea } = this.state;
 
 		let rootStyle: React.CSSProperties = {};
@@ -262,7 +263,8 @@ export default class SplitView extends React.Component<Props, State> {
 		);
 
 		return (
-			<div className={rootClassName} ref={this.root}
+			<div className={`${rootClassName} ${className ?? ''}`}
+				ref={this.root}
 				style={rootStyle}>
 				{
 					isDragging ? (
