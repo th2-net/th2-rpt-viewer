@@ -16,14 +16,13 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { Virtuoso } from 'react-virtuoso';
 import { EventIdNode } from '../../stores/EventWindowStore';
 import useCachedEvent, { useEventSubNodes } from '../../hooks/useCachedEvent';
 import SplashScreen from '../SplashScreen';
-import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
-import PanelArea from '../../util/PanelArea';
+import { createBemBlock } from '../../helpers/styleCreators';
 import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
-import { getMinifiedStatus } from '../../helpers/action';
 import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
 import ErrorBoundary from '../util/ErrorBoundary';
@@ -33,10 +32,9 @@ import CardDisplayType from '../../util/CardDisplayType';
 interface Props {
 	idNode: EventIdNode;
 	showSubNodes?: boolean;
-	isMinified?: boolean;
 }
 
-function EventDetailInfoCard({ idNode, isMinified = false, showSubNodes = false }: Props) {
+function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
 	const event = useCachedEvent(idNode);
 	const subEvents = useEventSubNodes(idNode);
 
@@ -54,104 +52,128 @@ function EventDetailInfoCard({ idNode, isMinified = false, showSubNodes = false 
 		eventId,
 	} = event;
 
+	console.log(event);
+
+	const bodyList = Array.isArray(body) ? body : [body];
+
 	const status = getEventStatus(event);
 
 	const rootClassName = createBemBlock(
-		'action-card',
+		'event-detail-card',
 		status,
-		'selected',
-	);
-
-	const headerClassName = createBemBlock(
-		'ac-header',
-		PanelArea.P100,
-		status,
-	);
-
-	const headerTitleElemClassName = createBemElement(
-		'ac-header',
-		'name-element',
 	);
 
 	const elapsedTime = endTimestamp && startTimestamp
 		? getElapsedTime(startTimestamp, endTimestamp)
 		: null;
 
+	const renderItem = (index: number) => {
+		if (showSubNodes && subEvents && index < subEvents.length) {
+			const subEvent = subEvents[index];
+
+			return (
+				<TableEventCard
+					key={subEvent.id}
+					idNode={subEvent}
+					displayType={CardDisplayType.MINIMAL}/>
+			);
+		}
+
+		const bodyIndex = showSubNodes && subEvents ? index - subEvents.length : index;
+		const bodyElement = bodyList[bodyIndex];
+
+		if (!bodyElement) {
+			return <></>;
+		}
+
+		return (
+			<ErrorBoundary fallback={<BodyFallback body={bodyElement}/>}>
+				<EventBodyCard body={bodyElement} parentEvent={event}/>
+			</ErrorBoundary>
+		);
+	};
+
+	const computeKey = (index: number) => {
+		if (showSubNodes && subEvents) {
+			if (index < subEvents.length) {
+				return subEvents[index].id;
+			}
+
+			return `body-${eventId}-${index - subEvents.length}`;
+		}
+
+		return `body-${eventId}-${index}`;
+	};
+
 	return (
-		<div style={{ overflow: 'auto', height: '100%' }}>
-			<div className={rootClassName}>
-				<div className={headerClassName}>
-					<div className="ac-header__title">
-						<div className="ac-header__name">
-							<div className={headerTitleElemClassName} title={eventType || eventName}>
-								{eventType || eventName}
-							</div>
-						</div>
-					</div>
+		<div className={rootClassName}>
+			<div className='event-detail-card__header'>
+				<div className='event-detail-card__title' title={eventType || eventName}>
+					{eventType || eventName}
+				</div>
+				<div className="event-detail-card__controls">
 					{
-						startTimestamp && !isMinified && (
-							<div className="ac-header__start-time">
-								<div className="ac-header__time-label">Start</div>
-								<div className="ac-header__time-value">
+						elapsedTime && (
+							<span>{elapsedTime}</span>
+						)
+					}
+					<span>{status.toUpperCase()}</span>
+					{
+						attachedMessageIds.length > 0 ? (
+							<Chip text={attachedMessageIds.length.toString()}/>
+						) : null
+					}
+				</div>
+				<div className='event-detail-card__timestamp'>
+					{
+						startTimestamp && (
+							<>
+								<div className="event-detail-card__timestamp-label">Start</div>
+								<div className="event-detail-card__timestamp-value">
 									{formatTime(getTimestampAsNumber(startTimestamp))}
 								</div>
-							</div>
+							</>
 						)
 					}
 					{
-						endTimestamp && !isMinified && (
-							<div className="ac-header__start-time ac-header__end-time">
-								<div className="ac-header__time-label">Finish</div>
-								<div className="ac-header__time-value">
+						endTimestamp && (
+							<>
+								<div className="event-detail-card__timestamp-label">Finish</div>
+								<div className="event-detail-card__timestamp-value">
 									{formatTime(getTimestampAsNumber(endTimestamp))}
 								</div>
-							</div>
+							</>
 						)
 					}
-					{
-						elapsedTime && !isMinified && (
-							<div className="ac-header__elapsed-time">
-								<span>{elapsedTime}</span>
-							</div>
-						)
-					}
-					<div className="ac-header__controls">
-						<div className="ac-header__status">
-							{
-								isMinified
-									? getMinifiedStatus(status)
-									: status.toUpperCase()
-							}
-						</div>
-						{
-							attachedMessageIds.length > 0 ? (
-								<div className="ac-header__chips">
-									<Chip text={attachedMessageIds.length.toString()}/>
-								</div>
-							) : null
-						}
-					</div>
 				</div>
-				<div className="ac-header__id">
+				<div className="event-detail-card__id">
 					{eventId}
 				</div>
+			</div>
+			<div className='event-detail-card__body'>
 				{
-					showSubNodes && subEvents && subEvents.map(subEvent => (
-						<TableEventCard
-							key={subEvent.id}
-							idNode={subEvent}
-							displayType={CardDisplayType.MINIMAL}/>
-					))
+					showSubNodes ? (
+						<Virtuoso
+							style={{ height: '100%', width: '100%' }}
+							className='event-detail-card__body-list'
+							computeItemKey={computeKey}
+							overscan={3}
+							totalCount={(subEvents?.length ?? 0) + bodyList.length}
+							item={renderItem}/>
+					) : (
+						<div className='event-detail-card__body-list'>
+							{
+								bodyList.map((bodyElement, index) => (
+									<ErrorBoundary
+										key={`body-${eventId}-${index}`}
+										fallback={<BodyFallback body={bodyElement}/>}>
+										<EventBodyCard body={bodyElement} parentEvent={event}/>
+									</ErrorBoundary>
+								))
+							}
+						</div>
+					)
 				}
-				<ErrorBoundary fallback={<BodyFallback body={body}/>}>
-					{
-						Array.isArray(event.body)
-							? event.body.map((bodyElement, index) => (
-								<EventBodyCard body={bodyElement} parentEvent={event} key={index}/>
-							))
-							: <EventBodyCard body={event.body} parentEvent={event}/>
-					}
-				</ErrorBoundary>
 			</div>
 		</div>
 	);
