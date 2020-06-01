@@ -27,13 +27,13 @@ export default function useCachedEvent(node: EventIdNode): EventAction | undefin
 		const abortController = new AbortController();
 
 		if (!event) {
-			eventWindowStore.fetchEvent(node.id, abortController.signal)
+			eventWindowStore.fetchEvent(node, abortController.signal)
 				.then(setEvent);
 		} else if (event.eventId !== node.id) {
 			if (eventWindowStore.eventsCache.has(node.id)) {
 				setEvent(eventWindowStore.eventsCache.get(node.id)!);
 			} else {
-				eventWindowStore.fetchEvent(node.id, abortController.signal)
+				eventWindowStore.fetchEvent(node, abortController.signal)
 					.then(setEvent);
 			}
 		}

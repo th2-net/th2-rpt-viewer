@@ -20,7 +20,6 @@ import { EventIdNode } from '../../../stores/EventWindowStore';
 import PanelArea from '../../../util/PanelArea';
 import EventCard from '../EventCardHeader';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
-import useAsyncEffect from '../../../hooks/useAsyncEffect';
 import EventCardSkeleton from '../EventCardSkeleton';
 import useCachedEvent from '../../../hooks/useCachedEvent';
 
@@ -31,13 +30,6 @@ interface Props {
 function TableEventCard({ idNode }: Props) {
 	const eventWindowStore = useEventWindowStore();
 	const event = useCachedEvent(idNode);
-	const isRoot = idNode.parents.length === 0;
-
-	useAsyncEffect(async () => {
-		if (idNode.children == null && !isRoot) {
-			await eventWindowStore.fetchEventChildren(idNode);
-		}
-	}, []);
 
 	if (event == null) {
 		return <EventCardSkeleton/>;
@@ -46,7 +38,7 @@ function TableEventCard({ idNode }: Props) {
 	return (
 		<EventCard
 			event={event}
-			childrenCount={isRoot ? 0 : (idNode.children?.length ?? null)}
+			childrenCount={idNode.children?.length}
 			panelArea={PanelArea.P100}
 			onSelect={() => eventWindowStore.selectNode(idNode)}
 			isSelected={eventWindowStore.isNodeSelected(idNode)}/>

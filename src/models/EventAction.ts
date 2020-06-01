@@ -26,5 +26,6 @@ export interface EventAction {
     attachedMessageIds: Array<string>;
     body: any;
     successful: boolean;
+    childrenIds: string[];
     subNodes?: EventAction[];
 }

@@ -60,10 +60,14 @@ export default class EventWindowStore {
 
 	@observable selectedNode: EventIdNode | null = null;
 
-	createTreeNode = (id: string, parents: EventIdNode[] = []): EventIdNode => ({
+	createTreeNode = (
+		id: string,
+		parents: EventIdNode[] = [],
+		children: EventIdNode[] | null = null,
+	): EventIdNode => ({
 		id,
 		isExpanded: false,
-		children: null,
+		children,
 		parents,
 	});
 
@@ -113,45 +117,40 @@ export default class EventWindowStore {
 
 	@action
 	selectNode = async (idNode: EventIdNode | null) => {
-		if (idNode != null && idNode.children == null) {
-			await this.fetchEventChildren(idNode);
-		}
-
 		this.selectedNode = idNode;
 	};
 
 	@action
-	fetchEvent = async (id: string, abortSignal?: AbortSignal): Promise<EventAction> => {
+	fetchEvent = async (idNode: EventIdNode, abortSignal?: AbortSignal): Promise<EventAction> => {
+		const { id, parents } = idNode;
 		if (this.eventsCache.has(id)) {
 			return this.eventsCache.get(id)!;
 		}
-
-		const event = await this.api.events.getEvent(id, abortSignal);
+		const parentIds = parents.map(parentNode => parentNode.id);
+		const event = await this.api.events.getEvent(id, parentIds, abortSignal);
+		// eslint-disable-next-line no-param-reassign
+		idNode.children = event.childrenIds.map(
+			childId => this.createTreeNode(childId, [...idNode.parents, idNode]),
+		);
 		this.eventsCache.set(id, event);
 		return event;
-	};
-
-	@action
-	fetchEventChildren = async (idNode: EventIdNode): Promise<string[]> => {
-		const { id } = idNode;
-		const subNodes = await this.api.events.getSubNodesIds(id);
-
-		// eslint-disable-next-line no-param-reassign
-		idNode.children = subNodes.map(subNodeId => this.createTreeNode(subNodeId, [...idNode.parents, idNode]));
-		return subNodes;
 	};
 
 	@action
 	fetchRootEvents = async () => {
 		this.isLoadingRootEvents = true;
 		try {
-			const events = await this.api.events.getAll();
+			const events = await this.api.events.getRootEvents();
 			this.isLoadingRootEvents = false;
 			events.sort((a, b) => getTimestampAsNumber(b.startTimestamp) - getTimestampAsNumber(a.startTimestamp));
 
-			this.eventsIds = events
-				.map(event => this.createTreeNode(event.eventId, []));
-
+			this.eventsIds = events.map(event => this.createTreeNode(event.eventId));
+			this.eventsIds.forEach((eventIdNode, i) => {
+				// eslint-disable-next-line no-param-reassign
+				eventIdNode.children = events[i].childrenIds.map(
+					childrenId => this.createTreeNode(childrenId, [eventIdNode]),
+				);
+			});
 			events.forEach(event => {
 				this.eventsCache.set(event.eventId, event);
 			});

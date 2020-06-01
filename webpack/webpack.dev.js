@@ -31,19 +31,19 @@ module.exports = webpackMerge(commonConfig, {
         port: 9001,
         host: "0.0.0.0",
         proxy: {
-            '/backend': {
-                target: 'http://th2-qa:30000',
-                changeOrigin: true,
-                secure: false,
-            }
             // '/backend': {
-            //     target: 'http://kos215:8080',
+            //     target: 'http://th2-qa:30000',
             //     changeOrigin: true,
             //     secure: false,
-            //     pathRewrite: {
-            //         '^/backend': ''
-            //     },
             // }
+            '/backend': {
+                target: 'http://kos215:8081',
+                changeOrigin: true,
+                secure: false,
+                pathRewrite: {
+                    '^/backend': ''
+                },
+            }
         },
         hot: true,
     },
