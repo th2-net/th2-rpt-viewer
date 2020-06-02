@@ -19,23 +19,37 @@ import { Virtuoso } from 'react-virtuoso';
 import { observer } from 'mobx-react-lite';
 import { EventIdNode } from '../../../stores/EventWindowStore';
 import TableEventCard from './TableEventCard';
+import CardDisplayType from '../../../util/CardDisplayType';
+import { createBemElement } from '../../../helpers/styleCreators';
 
 interface Props {
 	nodesList: EventIdNode[];
+	displayType: CardDisplayType;
 }
 
-function EventsColumn({ nodesList }: Props) {
+function EventsColumn({ nodesList, displayType }: Props) {
 	const renderEvent = (index: number) => (
-		<TableEventCard idNode={nodesList[index]}/>
+		<TableEventCard
+			displayType={displayType}
+			idNode={nodesList[index]}/>
+	);
+
+	const rootClassName = createBemElement(
+		'event-table-window',
+		'column',
+		displayType,
 	);
 
 	return (
-		<Virtuoso
-			style={{ height: '100%', width: '100%' }}
-			computeItemKey={index => nodesList[index].id}
-			overscan={3}
-			totalCount={nodesList.length}
-			item={renderEvent}/>
+		<div className={rootClassName}>
+			<Virtuoso
+				style={{ height: '100%', width: '100%' }}
+				className='event-table-window__scrollbar'
+				computeItemKey={index => nodesList[index].id}
+				overscan={3}
+				totalCount={nodesList.length}
+				item={renderEvent}/>
+		</div>
 	);
 }
 

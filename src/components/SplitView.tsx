@@ -26,6 +26,7 @@ export interface Props {
 	 * other children will be ignored
      */
     children: [React.ReactNode, React.ReactNode];
+    className?: string;
     panelArea: PanelArea;
     onPanelAreaChange: (panelArea: PanelArea) => void;
     leftPanelMinWidth: number;
@@ -173,23 +174,23 @@ export default class SplitView extends React.Component<Props, State> {
 		let previewArea: PanelArea;
 
 		switch (closestStep) {
-		case w0:
-			previewArea = PanelArea.P0;
-			break;
-		case w25:
-			previewArea = PanelArea.P25;
-			break;
-		case w50:
-			previewArea = PanelArea.P50;
-			break;
-		case w75:
-			previewArea = PanelArea.P75;
-			break;
-		case w100:
-			previewArea = PanelArea.P100;
-			break;
-		default:
-			previewArea = PanelArea.P50;
+			case w0:
+				previewArea = PanelArea.P0;
+				break;
+			case w25:
+				previewArea = PanelArea.P25;
+				break;
+			case w50:
+				previewArea = PanelArea.P50;
+				break;
+			case w75:
+				previewArea = PanelArea.P75;
+				break;
+			case w100:
+				previewArea = PanelArea.P100;
+				break;
+			default:
+				previewArea = PanelArea.P50;
 		}
 
 		this.setState({
@@ -211,23 +212,23 @@ export default class SplitView extends React.Component<Props, State> {
 		const fullWidth = this.panelsAvailableWidth;
 
 		switch (area) {
-		case PanelArea.P0:
-			return [0, fullWidth];
-		case PanelArea.P25:
-			return [this.state.steps[1], fullWidth - this.state.steps[1]];
-		case PanelArea.P50:
-			return [this.state.steps[2], this.state.steps[2]];
-		case PanelArea.P75:
-			return [this.state.steps[3], fullWidth - this.state.steps[3]];
-		case PanelArea.P100:
-			return [this.state.steps[4], this.state.steps[0]];
-		default:
-			return [this.state.steps[2], this.state.steps[2]];
+			case PanelArea.P0:
+				return [0, fullWidth];
+			case PanelArea.P25:
+				return [this.state.steps[1], fullWidth - this.state.steps[1]];
+			case PanelArea.P50:
+				return [this.state.steps[2], this.state.steps[2]];
+			case PanelArea.P75:
+				return [this.state.steps[3], fullWidth - this.state.steps[3]];
+			case PanelArea.P100:
+				return [this.state.steps[4], this.state.steps[0]];
+			default:
+				return [this.state.steps[2], this.state.steps[2]];
 		}
 	}
 
 	render() {
-		const { children, panelArea } = this.props;
+		const { children, panelArea, className } = this.props;
 		const { isDragging, splitterLeftOffset, previewPanelArea } = this.state;
 
 		let rootStyle: React.CSSProperties = {};
@@ -262,7 +263,8 @@ export default class SplitView extends React.Component<Props, State> {
 		);
 
 		return (
-			<div className={rootClassName} ref={this.root}
+			<div className={`${rootClassName} ${className ?? ''}`}
+				ref={this.root}
 				style={rootStyle}>
 				{
 					isDragging ? (

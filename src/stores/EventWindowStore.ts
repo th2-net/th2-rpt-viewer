@@ -190,7 +190,7 @@ export default class EventWindowStore {
 			return false;
 		}
 
-		return this.selectedPath.includes(idNode);
+		return this.selectedPath.some(n => n.id === idNode.id);
 	}
 
 	private onEventsListChange = (rootEventSubEvents: EventAction[] | null) => {

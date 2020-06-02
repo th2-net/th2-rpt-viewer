@@ -28,7 +28,6 @@
     transition: all 0.1s;
     background-color: var(--status-secondary-background-color);
     cursor: pointer;
-    height: auto;
     margin: 3px 0;
 
     &__status {
@@ -124,6 +123,14 @@
     &.p100 {
         grid-template-columns: 1fr repeat(4, auto);
         grid-template-areas: "title start-time end-time elapsed-time controls";
+    }
+
+    &.status-only {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50px;
+
     }
 
     &__loader {

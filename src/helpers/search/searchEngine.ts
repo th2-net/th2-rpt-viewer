@@ -107,17 +107,18 @@ function findAllInAction(
 
 	action.subNodes.forEach(subAction => {
 		switch (subAction.actionNodeType) {
-		case ActionNodeType.ACTION: {
-			results.push(...findAllInAction(subAction, searchTokens));
-			return;
-		}
+			case ActionNodeType.ACTION: {
+				results.push(...findAllInAction(subAction, searchTokens));
+				return;
+			}
 
-		case ActionNodeType.VERIFICATION: {
-			results.push(...findAllInVerification(subAction, searchTokens, action.id));
-			break;
-		}
+			case ActionNodeType.VERIFICATION: {
+				results.push(...findAllInVerification(subAction, searchTokens, action.id));
+				break;
+			}
 
-		default:
+			default:
+				break;
 		}
 	});
 

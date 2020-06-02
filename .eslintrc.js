@@ -51,7 +51,7 @@ module.exports = {
 		'import/prefer-default-export': "off",
 		'import/no-cycle': "off",
 		'no-tabs': "off",
-		'indent': ['error', 'tab'],
+		'indent': ['error', 'tab', { 'SwitchCase': 1 }],
 		'max-len': [2, 120, 4],
 		'semi': "off",
 		'@typescript-eslint/semi': ['error'],
@@ -82,19 +82,18 @@ module.exports = {
 		'no-nested-ternary': "off",
 		'no-console': ["warn", { allow: ["warn", "error"] }],
 		"no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
-		"react/prop-types": "off"
+		"react/prop-types": "off",
+		"react-hooks/rules-of-hooks": "error",
 	},
 	settings: {
 		react: {
 			version: 'detect'
 		}
 	},
-	overrides: [
-		{
-			files: ['*.tsx'],
-			rules: {
-			  '@typescript-eslint/explicit-function-return-type': 0,
-			},
-		  },
-	]
+	overrides: [{
+		files: ['*.tsx'],
+		rules: {
+		  '@typescript-eslint/explicit-function-return-type': 0,
+		},
+	}]
 };

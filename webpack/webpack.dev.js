@@ -21,7 +21,7 @@ const {appSrc} = require('./paths');
 module.exports = webpackMerge(commonConfig, {
     mode: 'development',
     entry: ['react-hot-loader/patch', appSrc],
-    devtool: 'eval',
+    devtool: 'inline-source-map',
     devServer: {
         watchOptions: {
             poll: true,

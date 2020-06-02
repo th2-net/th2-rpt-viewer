@@ -165,18 +165,18 @@ export function getMessagesContent(
 				})
 				.map(type => {
 					switch (type) {
-					case 'contentHumanReadable':
-						return msg[type];
-					case 'hexadecimal': {
-						const decodedRawMessage = decodeBase64RawContent(msg.raw);
-						return getAllRawContent(decodedRawMessage).replace(/\n$/, '');
-					}
-					case 'raw': {
-						const [,, humanReadable] = decodeBase64RawContent(msg.raw);
-						return humanReadable.join('');
-					}
-					default:
-						return '';
+						case 'contentHumanReadable':
+							return msg[type];
+						case 'hexadecimal': {
+							const decodedRawMessage = decodeBase64RawContent(msg.raw);
+							return getAllRawContent(decodedRawMessage).replace(/\n$/, '');
+						}
+						case 'raw': {
+							const [,, humanReadable] = decodeBase64RawContent(msg.raw);
+							return humanReadable.join('');
+						}
+						default:
+							return '';
 					}
 				})
 				.join('\n'))

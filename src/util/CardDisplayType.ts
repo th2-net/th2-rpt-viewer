@@ -14,25 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import '../../styles/events.scss';
-import CardDisplayType from '../../util/CardDisplayType';
-import { createBemBlock } from '../../helpers/styleCreators';
-
-interface Props {
-	displayType?: CardDisplayType;
+const enum CardDisplayType {
+	STATUS_ONLY = 'status-only',
+	MINIMAL = 'minimal',
+	FULL = 'full',
 }
 
-export default function EventCardSkeleton({ displayType = CardDisplayType.MINIMAL }: Props) {
-	const rootClassName = createBemBlock(
-		'event-skeleton',
-		displayType,
-	);
-
-	return (
-		<div className={rootClassName}>
-			<div className='event-skeleton__name'/>
-			<div className='event-skeleton__status'/>
-		</div>
-	);
-}
+export default CardDisplayType;

@@ -17,31 +17,36 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { EventIdNode } from '../../../stores/EventWindowStore';
-import PanelArea from '../../../util/PanelArea';
 import EventCard from '../EventCardHeader';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import EventCardSkeleton from '../EventCardSkeleton';
 import useCachedEvent from '../../../hooks/useCachedEvent';
+import CardDisplayType from '../../../util/CardDisplayType';
 
 interface Props {
+	displayType: CardDisplayType;
 	idNode: EventIdNode;
 }
 
-function TableEventCard({ idNode }: Props) {
+function TableEventCard({ idNode, displayType }: Props) {
 	const eventWindowStore = useEventWindowStore();
 	const event = useCachedEvent(idNode);
 
-	if (event == null) {
-		return <EventCardSkeleton/>;
-	}
-
 	return (
-		<EventCard
-			event={event}
-			childrenCount={idNode.children?.length}
-			panelArea={PanelArea.P100}
-			onSelect={() => eventWindowStore.selectNode(idNode)}
-			isSelected={eventWindowStore.isNodeSelected(idNode)}/>
+		<div className='event-table-window__card'>
+			{
+				event != null ? (
+					<EventCard
+						event={event}
+						childrenCount={idNode.children?.length}
+						displayType={displayType}
+						onSelect={() => eventWindowStore.selectNode(idNode)}
+						isSelected={eventWindowStore.isNodeSelected(idNode)}/>
+				) : (
+					<EventCardSkeleton displayType={displayType}/>
+				)
+			}
+		</div>
 	);
 }
 

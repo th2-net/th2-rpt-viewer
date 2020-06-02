@@ -20,44 +20,88 @@ import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import EventsColumn from './EventsColumn';
 import '../../../styles/events.scss';
 import EventBreadcrumbs from '../EventBreadcrumbs';
-import EventDetailInfo from '../EventDetailInfo';
-import useElementSize from '../../../hooks/useElementSize';
+import CardDisplayType from '../../../util/CardDisplayType';
+import EventMinimapColumn from './EventMinimapColumn';
+import EventDetailInfoCard from '../EventDetailInfoCard';
+import SplashScreen from '../../SplashScreen';
+import SplitView from '../../SplitView';
+import Empty from '../../Empty';
+import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
 
 function EventTableWindow() {
 	const eventsStore = useEventWindowStore();
-	const rootRef = React.useRef<HTMLDivElement>(null);
-	const { width } = useElementSize(rootRef);
+	const viewStore = useEventWindowViewStore();
+
+	// removing current selected item - it will be rendered in detail card
+	const columns = (eventsStore.selectedNode?.parents ?? [])
+		.filter(node => node.children && node.children.length > 0);
+	const notMinfiedColumns = columns.slice(-3);
+	const minimapDeep = columns.length - notMinfiedColumns.length;
 
 	return (
-		<div className='event-table-window' ref={rootRef}>
+		<div className='event-table-window'>
 			<div className='event-table-window__breadcrumbs'>
 				<EventBreadcrumbs
 					rootEventsEnabled
 					nodes={eventsStore.selectedPath}
 					onSelect={eventsStore.selectNode}/>
 			</div>
-			<div className='event-table-window__columns'>
+			<SplitView
+				className='event-table-window__main'
+				panelArea={viewStore.panelArea}
+				onPanelAreaChange={viewStore.setPanelArea}
+				leftPanelMinWidth={500}
+				rightPanelMinWidth={500}>
+				<div className='event-table-window__columns'>
+					{
+						eventsStore.selectedNode == null ? (
+							eventsStore.isLoadingRootEvents ? (
+								<SplashScreen/>
+							) : (
+								<EventsColumn
+									nodesList={eventsStore.eventsIds}
+									displayType={CardDisplayType.FULL}/>
+							)
+						) : (
+							<>
+								<EventMinimapColumn
+									nodes={eventsStore.selectedPath[0].children!}
+									deep={minimapDeep}/>
+								{
+									notMinfiedColumns.map((parentNode, i) => (
+										parentNode.children?.length
+											? <EventsColumn
+												displayType={calculateCardLayout(i, notMinfiedColumns.length)}
+												nodesList={parentNode.children}
+												key={parentNode.id}/>
+											: null
+									))
+								}
+							</>
+						)
+					}
+				</div>
 				{
-					eventsStore.selectedNode == null ? (
-						<EventsColumn nodesList={eventsStore.eventsIds}/>
+					eventsStore.selectedNode ? (
+						<EventDetailInfoCard
+							idNode={eventsStore.selectedNode}
+							showSubNodes/>
 					) : (
-						<>
-							{
-								eventsStore.selectedPath.map(parentNode => (
-									parentNode.children?.length
-										? <EventsColumn nodesList={parentNode.children} key={parentNode.id}/>
-										: null
-								))
-							}
-							<div style={{ width: width * 0.4, flexShrink: 0 }}>
-								<EventDetailInfo idNode={eventsStore.selectedNode}/>
-							</div>
-						</>
+						<Empty description='Select event'/>
 					)
 				}
-			</div>
+			</SplitView>
 		</div>
 	);
+}
+
+function calculateCardLayout(columnIndex: number, columnsLength: number): CardDisplayType {
+	// last columns is always displayed
+	if (columnsLength - columnIndex < 2) {
+		return CardDisplayType.MINIMAL;
+	}
+
+	return CardDisplayType.STATUS_ONLY;
 }
 
 export default observer(EventTableWindow);

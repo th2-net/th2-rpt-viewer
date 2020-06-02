@@ -52,7 +52,7 @@ export function isKeyForMessage(key: string): boolean {
         && (fieldName === undefined || MESSAGE_FIELDS.includes(fieldName as keyof Message));
 }
 
-export function keyForVerification(parentActionId: number | null, msgId: number | string): string {
+export function keyForVerification(parentActionId: string | number | null, msgId: number | string): string {
 	return `${ACTION_KEY_PREFIX}-${parentActionId}-${VERIFICATION_KEY_PREFIX}-${msgId}`;
 }
 
