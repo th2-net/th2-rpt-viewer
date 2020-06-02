@@ -57,13 +57,9 @@
         cursor: pointer;
 		transition: 0.3s;
 		position: absolute;
-        top: 0px;
+        top: 50%;
 		left: 50%;
-		transform: translate(-50%, 0);
-		animation-name: slideDown;
-		animation-duration: 0;
-		animation-fill-mode: forwards;
-		animation-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+		transform: translate(-50%, -52%);
 	}
 
 	&__scroller {
@@ -97,15 +93,5 @@
 			height: 1px;
 			background-color: $liveBackgroundColor;
 		}
-	}
-}
-
-@keyframes slideDown {
-	from {
-		transform: translate(-50%, -18px);
-	}
-
-	to {
-		transform: translate(-50%, -0);
 	}
 }

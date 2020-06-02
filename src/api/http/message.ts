@@ -14,10 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 import { MessageApiSchema } from '../ApiSchema';
+import { createURLSearchParams } from '../../helpers/url';
 
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {
-		const params = new URLSearchParams({ idsOnly: false.toString() });
+		const params = createURLSearchParams({ idsOnly: false });
 		const res = await fetch(`/backend/search/messages?${params}`);
 
 		if (res.ok) {
@@ -28,10 +29,10 @@ const messageHttpApi: MessageApiSchema = {
 		return [];
 	},
 	getMessages: async (timestampFrom: number, timestampTo: number) => {
-		const params = new URLSearchParams({
-			idsOnly: false.toString(),
-			timestampFrom: timestampFrom.toString(),
-			timestampTo: timestampTo.toString(),
+		const params = createURLSearchParams({
+			idsOnly: false,
+			timestampFrom,
+			timestampTo,
 		});
 		const res = await fetch(`/backend/search/messages?${params}`);
 
@@ -43,10 +44,10 @@ const messageHttpApi: MessageApiSchema = {
 		return [];
 	},
 	getMessagesIds: async (timestampFrom: number, timestampTo: number) => {
-		const params = new URLSearchParams({
-			idsOnly: true.toString(),
-			timestampFrom: timestampFrom.toString(),
-			timestampTo: timestampTo.toString(),
+		const params = createURLSearchParams({
+			idsOnly: true,
+			timestampFrom,
+			timestampTo,
 		});
 		const res = await fetch(`/backend/search/messages?${params}`);
 
@@ -66,6 +67,35 @@ const messageHttpApi: MessageApiSchema = {
 
 		console.error(res.statusText);
 		return null;
+	},
+	getMessagesByFilter: async ({
+		timestampFrom,
+		timestampTo,
+		stream,
+		messageType,
+	}) => {
+		const params = createURLSearchParams({
+			timestampFrom,
+			timestampTo,
+			idsOnly: true,
+		});
+
+		if (stream != null) {
+			params.append('stream', stream);
+		}
+
+		if (messageType !== null) {
+			params.append('messageType', messageType);
+		}
+
+		const res = await fetch(`backend/search/messages?${params}`);
+
+		if (res.ok) {
+			return res.json();
+		}
+
+		console.error(res.statusText);
+		return [];
 	},
 };
 

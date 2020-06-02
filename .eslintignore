@@ -15,7 +15,6 @@
 #
 
 node_modules/*
-mocks/*
 webpack/*
 jest.config.js
 build

@@ -145,8 +145,8 @@ export function mapHumanReadableOffsetsToOctetOffsets(start: number, end: number
 }
 
 /**
- * This function takes messages and required contentTypes as parameters
- * and returns messages content joined by empty line
+ * This function takes messagesFilter and required contentTypes as parameters
+ * and returns messagesFilter content joined by empty line
  */
 export function getMessagesContent(
 	messages: Message[],

@@ -73,3 +73,40 @@
         }
     }
 }
+
+.pin-button {
+    height: 32px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #E6E6E6;
+    border: 2px solid #808080;
+    font-size: 14px;
+    font-weight: 600;
+    color: #808080;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &.disabled {
+        cursor: default;
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    &__icon {
+        height: 15px;
+        width: 15px;
+        background-image: url(../../resources/icons/pin.svg);
+        background-repeat: no-repeat;
+        background-size: 100%;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-right: 10px;
+
+        &.active {
+            transform: rotate(-45deg) scale(1.4);
+        }
+    }
+}

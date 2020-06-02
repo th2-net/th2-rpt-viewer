@@ -84,6 +84,7 @@ module.exports = {
 		"no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
 		"react/prop-types": "off",
 		"react-hooks/rules-of-hooks": "error",
+		"prefer-destructuring": "off"
 	},
 	settings: {
 		react: {

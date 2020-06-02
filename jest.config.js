@@ -17,19 +17,20 @@
 module.exports = {
 	preset: 'ts-jest',
 	testEnvironment: 'jsdom',
-	setupFiles: [
-		'core-js'
-	],
-	setupFilesAfterEnv: [
-		"<rootDir>/src/__tests__/setupTests.ts"
-	],
+	setupFiles: ['core-js'],
+	setupFilesAfterEnv: ['<rootDir>/src/__tests__/setupTests.ts'],
 	testPathIgnorePatterns: [
-		"<rootDir>/build", 
-		"<rootDir>/node_modules/", 
-		"<rootDir>/src/__tests__/util/", 
-		"<rootDir>/src/__tests__/setupTests.ts"
+		'<rootDir>/build',
+		'<rootDir>/node_modules/',
+		'<rootDir>/src/__tests__/util/',
+		'<rootDir>/src/__tests__/setupTests.ts',
+	],
+	watchPathIgnorePatterns: ['<rootDir>/build', '<rootDir>/node_modules/'],
+	watchPlugins: [
+		'jest-watch-typeahead/filename',
+		'jest-watch-typeahead/testname',
 	],
 	moduleNameMapper: {
-		"\\.(css|less|scss)$": "identity-obj-proxy"
-	}
+		'\\.(css|less|scss)$': 'identity-obj-proxy',
+	},
 };

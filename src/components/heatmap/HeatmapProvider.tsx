@@ -25,9 +25,7 @@ interface HeatmapProviderProps {
 	items: string[];
 	selectedItems: string[];
 	pinnedItems: string[];
-	colors: string[];
 	selectedIndex: number | null;
-	onElementClick: (element: HeatmapElement) => void;
 	scrollToItem: (index: number) => void;
 }
 
@@ -38,7 +36,9 @@ export const HeatmapProvider = ({
 	scrollToItem,
 	selectedItems,
 }: HeatmapProviderProps) => {
-	const [heatmapElements, setHeatmapElements] = React.useState<HeatmapElement[]>([]);
+	const [heatmapElements, setHeatmapElements] = React.useState<HeatmapElement[]>(
+		getHeatmapElements(items, selectedItems, pinnedItems),
+	);
 	const [fullRange, setFullRange] = useState<ListRange | null>(null);
 	const [visibleRange, setVisibleRange] = useState<ListRange | null>(null);
 
@@ -77,7 +77,8 @@ export const HeatmapProvider = ({
 			(visibleRange && fullRange)
 			&& (
 				(visibleRange.startIndex + 1) < fullRange.startIndex
-				|| (visibleRange.endIndex - 1) > fullRange.endIndex)
+				|| (visibleRange.endIndex - 1) > fullRange.endIndex
+			)
 		) {
 			setFullRange(getHeatmapRange(heatmapElements, true));
 		}

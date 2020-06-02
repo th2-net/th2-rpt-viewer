@@ -53,6 +53,7 @@ const HeatmapItem = ({
 		<div
 			data-start={index}
 			data-end={count === 1 ? index : index + count - 1}
+			data-testid="heatmap-element"
 			data-count={count}
 			style={{
 				borderColor: color,

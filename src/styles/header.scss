@@ -192,18 +192,6 @@
             background-image: url(../../resources/icons/arr2-left.svg);
         }    
 
-        &.filter-icon {
-            background-image: url(../../resources/icons/filter.svg);
-
-            &.applied {
-                background-image: url(../../resources/icons/filter-applied.svg);
-            }
-
-            &.active {
-                background-image: url(../../resources/icons/filter-white.svg);
-            }
-        }
-
         &.left {
             background-image: url(../../resources/icons/arr1-left-enabled.svg);
         }
@@ -231,32 +219,6 @@
             background-image: url(../../resources/icons/table-view-icon.svg);
         }
 
-    }
-
-    &__filter-wrapper {
-        position: relative;
-        height: calc(100% - 10px);
-        margin: 0 5px;
-        border-radius: 5px 5px 0 0;
-        display: flex;
-        align-items: center;
-
-        &.active {
-            @include card-shadow;
-            background-color: $filterPrimaryColor;
-        }
-    }
-
-    &__filter-counter {
-        width: 30px;
-        background-color: $filterPrimaryColor;
-        color: $filterTextColor;
-        font-weight: bold;
-        border-radius: 3px;
-        font-size: 14px;
-        text-align: center;
-        margin: 0 5px;
-        padding: 0 5px;
     }
 
     &__title {

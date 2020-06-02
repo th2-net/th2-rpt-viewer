@@ -21,25 +21,13 @@ import { useFirstEventWindowStore } from '../hooks/useFirstEventWindowStore';
 import { formatTime, getTimestampAsNumber, getElapsedTime } from '../helpers/date';
 import { createBemElement, createStyleSelector } from '../helpers/styleCreators';
 import SearchInput from './search/SearchInput';
-import FilterPanel from './filter/FilterPanel';
-import useOutsideClickListener from '../hooks/useOutsideClickListener';
 import { ToggleButton } from './ToggleButton';
-import { ModalPortal } from './Portal';
+import EventsFilterPanel from './filter/EventsFilterPanel';
 import '../styles/header.scss';
 
 function Header() {
 	const { viewStore: appViewStore } = useStores();
 	const eventWindowStore = useFirstEventWindowStore();
-
-	const [showFilter, setShowFilter] = React.useState(false);
-	const filterBaseRef = React.useRef<HTMLDivElement>(null);
-	const filterButtonRef = React.useRef<HTMLDivElement>(null);
-
-	useOutsideClickListener(filterBaseRef, (e: MouseEvent) => {
-		if (!filterButtonRef.current?.contains(e.target as Element)) {
-			setShowFilter(false);
-		}
-	});
 
 	const status = !eventWindowStore?.selectedRootEvent
 		? null
@@ -50,31 +38,13 @@ function Header() {
 		'header',
 		status,
 	);
+
 	const navButtonClass = createStyleSelector(
 		'header-button',
 		eventWindowStore.eventsIds.length > 1 ? '' : 'disabled',
 		null,
 	);
 
-	const filterWrapperClass = createBemElement(
-		'header-button',
-		'filter-wrapper',
-		showFilter ? 'active' : null,
-	);
-
-	const filterTitleClass = createBemElement(
-		'header-button',
-		'title',
-		showFilter ? 'active' : null,
-		!showFilter && eventWindowStore.filterStore.isFilterApplied ? 'applied' : null,
-	);
-	const filterIconClass = createBemElement(
-		'header-button',
-		'icon',
-		'filter-icon',
-		showFilter ? 'active' : null,
-		!showFilter && eventWindowStore.filterStore.isFilterApplied ? 'applied' : null,
-	);
 	const eventsViewIconClass = createBemElement(
 		'header-button',
 		'icon',
@@ -95,35 +65,9 @@ function Header() {
 			<div className="header__main   header-main">
 				<div className="header__group">
 					<div className="header-main__search">
-						<SearchInput/>
+						<SearchInput />
 					</div>
-					<div className={filterWrapperClass}>
-						<div className="header-button"
-							ref={filterButtonRef}
-							onClick={() => setShowFilter(!showFilter)}>
-							<div className={filterIconClass}/>
-							<div className={filterTitleClass}>
-								{
-									eventWindowStore.filterStore.isFilterApplied
-										? 'Filter Applied'
-										: showFilter
-											? 'Hide Filter'
-											: 'Show Filter'
-								}
-							</div>
-						</div>
-						<ModalPortal isOpen={showFilter}>
-							<div
-								ref={filterBaseRef}
-								className="filter-wrapper"
-								style={{
-									left: `${filterButtonRef.current?.getBoundingClientRect().left}px`,
-									top: `${filterButtonRef.current?.getBoundingClientRect().bottom}px`,
-								}}>
-								<FilterPanel />
-							</div>
-						</ModalPortal>
-					</div>
+					<EventsFilterPanel />
 					<div className='header-button'
 					 onClick={() => appViewStore.setTableModeEnabled(!appViewStore.eventTableModeEnabled)}>
 						<div className={eventsViewIconClass}/>

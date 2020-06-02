@@ -16,6 +16,7 @@
 
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
+import MessagesFilter from '../models/filter/MessagesFilter';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
@@ -33,4 +34,5 @@ export interface MessageApiSchema {
 	getMessagesIds: (timestampFrom: number, timestampTo: number) => Promise<string[]>;
 	getMessages: (timestampFrom: number, timestampTo: number) => Promise<EventMessage[]>;
 	getMessage: (id: string) => Promise<EventMessage | null>;
+	getMessagesByFilter: (filter: MessagesFilter) => Promise<string[]>;
 }

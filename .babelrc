@@ -21,7 +21,8 @@
   ],
   "env": {
     "production": {
-      "presets": ["minify"]
+      "presets": ["minify"],
+      "plugins": ["react-remove-properties", { "properties": ["data-testid"] }]
     },
     "test": {
       "presets": ["@babel/preset-env", "@babel/preset-react"]
