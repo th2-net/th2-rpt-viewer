@@ -30,6 +30,7 @@ import { EventMessage } from '../../models/EventMessage';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import { useHeatmap } from '../../hooks/useHeatmap';
 import { hexToRGBA } from '../../helpers/color';
+import { MessageRaw } from './MessageRaw';
 import '../../styles/messages.scss';
 
 const HUE_SEGMENTS_COUNT = 36;
@@ -82,12 +83,15 @@ export function MessageCardBase(props: MessageCardProps) {
 		color,
 		isPinned,
 		toggleMessagePin,
+		showRaw,
+		showRawHandler,
 	} = props;
 	const {
 		timestamp,
 		type,
 		sessionId,
 		direction,
+		bodyBase64,
 	} = message;
 
 	const rootClass = createBemBlock(
@@ -96,15 +100,18 @@ export function MessageCardBase(props: MessageCardProps) {
 		isSelected ? 'selected' : null,
 		!isSelected && isTransparent ? 'transparent' : null,
 	);
+
 	const headerClass = createBemBlock(
 		'mc-header',
 		panelArea,
 	);
-	// const showRawClass = createBemElement(
-	// 	'mc-show-raw',
-	// 	'icon',
-	// 	showRaw ? 'expanded' : 'hidden',
-	// );
+
+	const showRawClass = createBemElement(
+		'mc-show-raw',
+		'icon',
+		showRaw ? 'expanded' : 'hidden',
+	);
+
 	const beautifyIconClass = createBemElement(
 		'mc-beautify',
 		'icon',
@@ -190,6 +197,22 @@ export function MessageCardBase(props: MessageCardProps) {
 								{JSON.stringify(message.body)}
 							</pre>
 						)
+					}
+					{
+						(bodyBase64 && bodyBase64 !== 'null') ? (
+							<div className="mc-show-raw"
+								onClick={() => showRawHandler(!showRaw)}>
+								<div className="mc-show-raw__title">RAW</div>
+								<div className={showRawClass}/>
+							</div>
+						) : null
+					}
+					{
+						bodyBase64 && showRaw
+							? <MessageRaw
+								rawContent={bodyBase64}
+								messageId={message.messageId as any}/>
+							: null
 					}
 				</div>
 			</div>

@@ -16,17 +16,15 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { EventAction } from '../../../models/EventAction';
 import PanelArea from '../../../util/PanelArea';
 import EventTreeNode from '../EventCardHeader';
 import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
-import '../../../styles/expandablePanel.scss';
 import { EventIdNode } from '../../../stores/EventWindowStore';
-import useAsyncEffect from '../../../hooks/useAsyncEffect';
 import EventCardSkeleton from '../EventCardSkeleton';
 import ExpandIcon from '../../ExpandIcon';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import useCachedEvent from '../../../hooks/useCachedEvent';
+import '../../../styles/expandablePanel.scss';
 
 interface EventTreeProps {
 	idNode: EventIdNode;
@@ -37,37 +35,12 @@ function EventTree({ idNode }: EventTreeProps) {
 	const viewStore = useEventWindowViewStore();
 
 	const event = useCachedEvent(idNode);
-	const [isRootSubEventsLoading, setIsRootSubEventsLoading] = React.useState<boolean>(false);
-	const isRoot = idNode.parents.length === 0;
-
-	useAsyncEffect(async () => {
-		// we don't need to load sub events for root events on mount
-		if (idNode.children == null && !isRoot) {
-			await eventWindowStore.fetchEventChildren(idNode);
-		}
-	}, []);
-
-	const onExpandClick = () => {
-		if (isRoot && idNode.children == null) {
-			setIsRootSubEventsLoading(true);
-			eventWindowStore.fetchEventChildren(idNode)
-				.then(() => {
-					setIsRootSubEventsLoading(false);
-					eventWindowStore.toggleNode(idNode);
-				});
-		} else {
-			eventWindowStore.toggleNode(idNode);
-		}
-	};
+	const onExpandClick = () => eventWindowStore.toggleNode(idNode);
 
 	let expandIconStatus: 'expanded' | 'hidden' | 'loading' | 'none';
 
 	if (idNode.children == null) {
-		if (isRoot && !isRootSubEventsLoading) {
-			expandIconStatus = 'hidden';
-		} else {
-			expandIconStatus = 'loading';
-		}
+		expandIconStatus = 'loading';
 	} else if (idNode.children.length === 0) {
 		expandIconStatus = 'none';
 	} else if (idNode.isExpanded) {

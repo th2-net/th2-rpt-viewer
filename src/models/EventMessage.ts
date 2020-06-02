@@ -22,4 +22,5 @@ export interface EventMessage {
 	direction: string;
 	sessionId: string;
 	body: any;
+	bodyBase64: string | null;
 }
