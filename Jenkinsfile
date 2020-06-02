@@ -7,7 +7,7 @@ pipeline {
     environment {
         VERSION_MAINTENANCE = """${sh(
                             returnStdout: true,
-                            script: 'git rev-list --count VERSION-1.0..HEAD'
+                            script: 'git rev-list --count VERSION-1.1..HEAD'
                             ).trim()}""" //TODO: Calculate revision from a specific tag instead of a root commit
         TH2_REGISTRY = credentials('TH2_REGISTRY_USER')
         TH2_REGISTRY_URL = credentials('TH2_REGISTRY')
