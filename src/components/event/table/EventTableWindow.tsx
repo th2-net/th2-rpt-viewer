@@ -20,7 +20,6 @@ import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import EventsColumn from './EventsColumn';
 import '../../../styles/events.scss';
 import EventBreadcrumbs from '../EventBreadcrumbs';
-import useElementSize from '../../../hooks/useElementSize';
 import CardDisplayType from '../../../util/CardDisplayType';
 import EventMinimapColumn from './EventMinimapColumn';
 import EventDetailInfoCard from '../EventDetailInfoCard';
@@ -32,8 +31,6 @@ import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore'
 function EventTableWindow() {
 	const eventsStore = useEventWindowStore();
 	const viewStore = useEventWindowViewStore();
-	const rootRef = React.useRef<HTMLDivElement>(null);
-	const { width } = useElementSize(rootRef);
 
 	// removing current selected item - it will be rendered in detail card
 	const columns = (eventsStore.selectedNode?.parents ?? [])
@@ -42,7 +39,7 @@ function EventTableWindow() {
 	const minimapDeep = columns.length - notMinfiedColumns.length;
 
 	return (
-		<div className='event-table-window' ref={rootRef}>
+		<div className='event-table-window'>
 			<div className='event-table-window__breadcrumbs'>
 				<EventBreadcrumbs
 					rootEventsEnabled

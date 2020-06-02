@@ -52,8 +52,6 @@ function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
 		eventId,
 	} = event;
 
-	console.log(event);
-
 	const bodyList = Array.isArray(body) ? body : [body];
 
 	const status = getEventStatus(event);
