@@ -15,97 +15,114 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { observer } from 'mobx-react-lite';
-import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
-import FilterRow from './FilterRow';
-import FilterType from '../../models/filter/FilterType';
-import Checkbox from '../util/Checkbox';
+import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
+import useOutsideClickListener from '../../hooks/useOutsideClickListener';
+import { ModalPortal } from '../Portal';
 import '../../styles/filter.scss';
-import MessagesTimestampFilter from './MessagesTimestampFilter';
 
-const FilterPanel = observer(() => {
-	const eventWindowStore = useFirstEventWindowStore();
-	const {
-		blocks,
-		isFilterApplied,
-		isTransparent,
-		isHighlighted,
-		resetFilter,
-	} = eventWindowStore.filterStore;
+interface Props {
+	isFilterApplied: boolean;
+	showFilter: boolean;
+	setShowFilter: (isShown: boolean) => void;
+	children: React.ReactNode;
+	isDisabled?: boolean;
+	onSubmit?: () => void;
+	onClearAll?: () => void;
+}
+
+const FilterPanel = ({
+	isFilterApplied,
+	showFilter,
+	setShowFilter,
+	children,
+	isDisabled = false,
+	onSubmit,
+	onClearAll,
+}: Props) => {
+	const filterBaseRef = React.useRef<HTMLDivElement>(null);
+	const filterButtonRef = React.useRef<HTMLDivElement>(null);
+
+	useOutsideClickListener(filterBaseRef, (e: MouseEvent) => {
+		if (!filterButtonRef.current?.contains(e.target as Element)) {
+			setShowFilter(false);
+		}
+	});
+
+	const filterWrapperClass = createStyleSelector(
+		'filter-wrapper',
+		showFilter ? 'active' : null,
+	);
+
+	const filterTitleClass = createBemElement(
+		'filter',
+		'title',
+		showFilter ? 'active' : null,
+		!showFilter && isFilterApplied ? 'applied' : null,
+	);
+
+	const filterIconClass = createBemElement(
+		'filter',
+		'icon',
+		showFilter ? 'active' : null,
+		!showFilter && isFilterApplied ? 'applied' : null,
+	);
+
+	const filterButtonClass = createBemElement(
+		'filter',
+		'button',
+		isDisabled ? 'disabled' : null,
+	);
+
+	const handleSubmit = () => {
+		if (onSubmit) {
+			onSubmit();
+			setShowFilter(false);
+		}
+	};
 
 	return (
-		<div className="filter">
-			<MessagesTimestampFilter />
-			{
-				blocks.map((block, index) => (
-					<div className="filter-row" key={index}>
-						<div className="filter-row__divider">
-							<div className="filter-row__divider-text">
-								{index === 0 ? 'Filter' : 'and'}
-							</div>
-							<div className="filter-row__remove-btn"/>
-						</div>
-						<FilterRow
-							block={block}
-							rowIndex={index + 1}
-						/>
-					</div>
-				))
-			}
-			<div className="filter-row">
-				<div className="filter-row__divider">
-					{blocks.length === 0 ? 'Filter' : 'and'}
-				</div>
-				<FilterRow
-					block={{
-						types: null,
-						path: null,
-						values: [],
-					}}
-					rowIndex={blocks.length + 1}/>
-			</div>
-			<div className="filter__controls filter-controls">
-				<div className="filter-controls__counts">
+		<div className={filterWrapperClass}>
+			<div
+				className={filterButtonClass}
+				ref={filterButtonRef}
+				onClick={() => {
+					if (!isDisabled) {
+						setShowFilter(!showFilter);
+					}
+				}}>
+				<div className={filterIconClass}/>
+				<div className={filterTitleClass}>
 					{
-						isFilterApplied ? `${[
-							blocks.some(({ types }: { types: string[] }) => types.includes(FilterType.ACTION))
-								? `${0} Actions `
-								: null,
-							blocks.some(({ types }: { types: string[] }) => types.includes(FilterType.MESSAGE))
-								? `${0} Messages `
-								: null,
-						].filter(Boolean).join(' and ')}Filtered` : null
+						isFilterApplied
+							? 'Filter Applied'
+							: showFilter
+								? 'Hide Filter'
+								: 'Show Filter'
 					}
 				</div>
-				<Checkbox
-					checked={isHighlighted}
-					label='Highlight'
-					onChange={() => eventWindowStore.filterStore.setIsHighlighted(!isHighlighted)}
-					id='filter-highlight'/>
-				<div className="filter-controls__transparency">
-					Filtered out
-					<input
-						type="radio"
-						id="filter-radio-hide"
-						checked={!isTransparent}
-						onChange={e => eventWindowStore.filterStore.setIsTransparent(false)}
-					/>
-					<label htmlFor="filter-radio-hide">Hide</label>
-					<input
-						type="radio"
-						id="filter-radio-transparent"
-						checked={isTransparent}
-						onChange={e => eventWindowStore.filterStore.setIsTransparent(true)}
-					/>
-					<label htmlFor="filter-radio-transparent">Transparent</label>
-				</div>
-				<div className="filter-controls__clear-btn" onClick={() => resetFilter()}>
-					<div className="filter-controls__clear-icon"/>
-					Clear All
-				</div>
 			</div>
+			<ModalPortal isOpen={showFilter}>
+				<div
+					ref={filterBaseRef}
+					className="filter"
+					style={{
+						left: `${filterButtonRef.current?.getBoundingClientRect().left}px`,
+						top: `${filterButtonRef.current?.getBoundingClientRect().bottom}px`,
+					}}>
+					{children}
+					<div className="filter__controls filter-controls">
+						<div className="filter-controls__clear-btn" onClick={onClearAll}>
+							<div className="filter-controls__clear-icon"/>
+							Clear All
+						</div>
+						<div className='filter-row__submit-btn' onClick={handleSubmit}>
+							Submit
+						</div>
+					</div>
+				</div>
+			</ModalPortal>
 		</div>
 	);
-});
+};
 
 export default FilterPanel;

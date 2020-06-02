@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import {
-	action, computed, observable, reaction,
+	action, computed, observable, reaction, autorun,
 } from 'mobx';
 import FilterStore from './FilterStore';
 import MessagesStore from './MessagesStore';
@@ -46,10 +46,9 @@ export default class EventWindowStore {
 	searchStore: SearchStore = new SearchStore();
 
 	constructor(private api: ApiSchema) {
-		reaction(
-			() => this.rootEventSubEvents,
-			this.onEventsListChange,
-		);
+		autorun(() => {
+			this.messagesStore.attachedMessagesIds = this.selectedEvent?.attachedMessageIds || [];
+		});
 	}
 
 	@observable eventsIds: EventIdNode[] = [];
@@ -123,16 +122,16 @@ export default class EventWindowStore {
 	@action
 	fetchEvent = async (idNode: EventIdNode, abortSignal?: AbortSignal): Promise<EventAction> => {
 		const { id, parents } = idNode;
-		if (this.eventsCache.has(id)) {
-			return this.eventsCache.get(id)!;
-		}
-		const parentIds = parents.map(parentNode => parentNode.id);
-		const event = await this.api.events.getEvent(id, parentIds, abortSignal);
+		let event = this.eventsCache.get(id);
+		if (event) return event;
+
+		const parentsIds = parents.map(parentNode => parentNode.id);
+		event = await this.api.events.getEvent(id, parentsIds, abortSignal);
+		this.eventsCache.set(event.eventId, event);
 		// eslint-disable-next-line no-param-reassign
 		idNode.children = event.childrenIds.map(
 			childId => this.createTreeNode(childId, [...idNode.parents, idNode]),
 		);
-		this.eventsCache.set(id, event);
 		return event;
 	};
 
@@ -180,8 +179,7 @@ export default class EventWindowStore {
 	@computed
 	get selectedEvent() {
 		if (!this.selectedNode) return null;
-		const { id } = this.selectedNode;
-		const event = this.eventsCache.get(id);
+		const event = this.eventsCache.get(this.selectedNode.id);
 		return event || null;
 	}
 
@@ -192,16 +190,4 @@ export default class EventWindowStore {
 
 		return this.selectedPath.some(n => n.id === idNode.id);
 	}
-
-	private onEventsListChange = (rootEventSubEvents: EventAction[] | null) => {
-		if (!rootEventSubEvents || !rootEventSubEvents.length) return;
-		const timestamps = rootEventSubEvents
-			.map(event => getTimestampAsNumber(event.startTimestamp))
-			.sort();
-		const fromTimestamp = timestamps[0];
-		const toTimestamp = timestamps[timestamps.length - 1];
-
-		this.filterStore.setMessagesFromTimestamp(fromTimestamp);
-		this.filterStore.setMessagesToTimestamp(toTimestamp);
-	};
 }

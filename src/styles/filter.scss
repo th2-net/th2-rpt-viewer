@@ -16,26 +16,80 @@
 
 @import "./common/vars";
 
-.filter-wrapper {
-    position: fixed;
-    z-index: 151;
-}
-
 .filter {
     @include scrollbar;
     @include card-shadow;
-    min-width: 850px;
-    padding: 12px 7px;
+    min-width: 725px;
+    padding: 12px 15px;
     border-radius: 0 5px 5px 5px;
-
     background-color: $filterPrimaryColor;
-
     color: $filterTextColor;
     font-size: 15px;
     font-weight: bold;
     white-space: nowrap;
-
     overflow-y: auto;
+    position: fixed;
+    z-index: 151;
+
+    &-wrapper {
+        position: relative;
+        height: calc(100% - 10px);
+        margin: 0 5px;
+        border-radius: 5px 5px 0 0;
+        display: flex;
+        align-items: center;
+
+        &.active {
+            @include card-shadow;
+            background-color: $filterPrimaryColor;
+        }
+    }
+
+    &__button {
+        @include unselectable;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0px 10px;
+        cursor: pointer;
+        width: 128px;
+
+        &.disabled {
+            opacity: 0.6;
+            cursor: default;
+        }
+    }
+
+    &__icon {
+        @include icon(url(../../resources/icons/filter.svg), 20px, 20px);
+
+        &.applied {
+            background-image: url(../../resources/icons/filter-applied.svg);
+        }
+
+        &.active {
+            background-image: url(../../resources/icons/filter-white.svg);
+        }
+    }
+
+    &__title {
+        -webkit-margin-before: 0em;
+        -webkit-margin-after: 0em;
+        color: $primaryTextColor;
+        font-size: 14px;
+        font-weight: bold;
+        display: inline;
+        white-space: nowrap;
+        padding-left: 10px;
+
+        &.active {
+            color: $filterTextColor;
+        }
+
+        &.applied {
+            color: $filterPrimaryColor;
+        }
+    }
 
     &__path {
         color: $filterPathColor;
@@ -46,7 +100,6 @@
 
     &__controls {
         margin-left: 65px;
-        margin-right: 25px;
         height: 35px;
     }
 
@@ -55,12 +108,24 @@
         background-color: #FFF;
         margin: 0 10px;
     }
+
+    &__counter {
+        width: 30px;
+        background-color: $filterPrimaryColor;
+        color: $filterTextColor;
+        font-weight: bold;
+        border-radius: 3px;
+        font-size: 14px;
+        text-align: center;
+        margin: 0 5px;
+        padding: 0 5px;
+    }
 }
 
 .filter-controls {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     font-size: 14px;
 
@@ -197,5 +262,12 @@
         height: $filterBubbleHeight;
         font-size: 15px;
         min-width: 105px;
+    }
+
+    &__label {
+        width: 110px;
+        font-weight: bold;
+        font-size: 15px;
+        flex-shrink: 0;
     }
 }

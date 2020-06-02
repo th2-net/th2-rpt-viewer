@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export const TEST_CASE_PARAM_KEY = 'tc';
-export const ACTION_PARAM_KEY = 'ac';
-export const MESSAGE_PARAM_KEY = 'message';
-
-export function getUrlSearchString(url: string) {
-	return url.includes('?')
-		? url.substring(url.lastIndexOf('?')) : '';
+export default interface MessagesFilter {
+	timestampFrom: number;
+	timestampTo: number;
+	stream: string | null;
+	messageType: string | null;
 }
-
-// Allow implicit coercion
-export const createURLSearchParams = (params: Record<string, string | number | boolean>) =>
-	new URLSearchParams(params as Record<string, string>);

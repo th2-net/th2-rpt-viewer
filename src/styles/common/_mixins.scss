@@ -36,6 +36,18 @@
     }
 }
 
+@mixin hidden-scrollbar {
+    &::-webkit-scrollbar {
+        width: 0px;
+        height: 0;
+        background: transparent;
+    }
+    // IE
+    -ms-overflow-style: none;
+    // for FF
+    scrollbar-width: none;
+}
+
 @mixin status-card {
 
     --status-primary-color: #{$primaryTextColor};

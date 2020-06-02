@@ -478,12 +478,8 @@
 
     &__list {
         height: 100%;
-        &::-webkit-scrollbar {
-            width: 0px;
-            background: transparent;
-        }
+        @include hidden-scrollbar;
         
-
         &.filter-applied {
             height: calc(100% - #{$filterCountHeight});
         }
@@ -607,21 +603,26 @@
 .messages-panel {
     height: 100%;
     width: 100%;
-    padding: 15px 20px;
+    padding: 10px 20px;
     display: grid;
     border-radius: 10px 0px 0px 10px;
     grid-template-areas: "header"
                         "list";
-    grid-template-rows: 37px 1fr;
+    grid-template-rows: 40px 1fr;
     column-gap: 9px;
     overflow: hidden;
 
     &__header {
         grid-area: header;
         display: flex;
-        justify-content: space-between;
         width: 100%;
         overflow: hidden;
+        justify-content: space-between;
+    }
+
+    &__group {
+        display: flex;
+        align-items: center;
     }
 
     &__title {
@@ -648,6 +649,7 @@
         right: 26px;
         cursor: pointer;
         order: 4;
+        margin-right: 17px;
     }
 
     &__controls {
@@ -656,7 +658,6 @@
         align-items: center;
         min-width: 50px;
         flex-shrink: 0;
-        margin-bottom: 15px;
     }
 
     &__button {

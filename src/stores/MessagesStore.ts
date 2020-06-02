@@ -14,10 +14,17 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, reaction } from 'mobx';
+import {
+	action,
+	observable,
+	reaction,
+	computed,
+} from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import FilterStore from './FilterStore';
 import { EventMessage } from '../models/EventMessage';
+import MessagesFilter from '../models/filter/MessagesFilter';
+import { prevCyclicItem, nextCyclicItem } from '../helpers/array';
 
 export default class MessagesStore {
 	@observable
@@ -36,41 +43,45 @@ export default class MessagesStore {
 	@observable
 	public pinnedMessagesIds: Array<string> = [];
 
+	@observable
+	public attachedMessagesIds: Array<string> = [];
+
 	constructor(
 		private api: ApiSchema,
 		private filterStore: FilterStore,
 	) {
 		reaction(
-			() => [
-				this.filterStore.messagesTimestampFrom,
-				this.filterStore.messagesTimestampTo,
-			],
-			([fromTimestamp, toTimestamp]) => {
-				this.loadMessagesByTimestamp(
-					new Date(fromTimestamp).getTime(),
-					new Date(toTimestamp).getTime(),
-				);
-			},
+			() => this.filterStore.messagesFilter,
+			filter => this.loadMessagesByFilter(filter),
 		);
 
 		reaction(
 			() => this.messagesIds,
 			() => {
-				// clearing messages cache after list has changed
+				// clearing messagesFilter cache after list has changed
 				this.messagesCache = new Map<string, EventMessage>();
 			},
 		);
 
-		this.loadMessagesByTimestamp(
-			new Date(this.filterStore.messagesTimestampFrom).getTime(),
-			new Date(this.filterStore.messagesTimestampTo).getTime(),
-		);
+		this.loadMessagesByFilter(filterStore.messagesFilter);
+	}
+
+	@computed
+	get selectedMessagesIds(): Array<number> {
+		if (!this.attachedMessagesIds.length && !this.pinnedMessagesIds.length) return [];
+
+		const messagesIndexes = [...new Set([...this.attachedMessagesIds, ...this.pinnedMessagesIds])]
+			.filter(id => this.messagesIds.includes(id))
+			.map(id => this.messagesIds.indexOf(id));
+
+		messagesIndexes.sort((a, b) => a - b);
+		return messagesIndexes;
 	}
 
 	@action
-	loadMessagesByTimestamp = async (from: number, to: number) => {
+	loadMessagesByFilter = async (filter: MessagesFilter) => {
 		this.isLoading = true;
-		this.messagesIds = await this.api.messages.getMessagesIds(from, to);
+		this.messagesIds = await this.api.messages.getMessagesByFilter(filter);
 		this.isLoading = false;
 	};
 
@@ -91,5 +102,29 @@ export default class MessagesStore {
 		if (message) {
 			this.messagesCache.set(id, message);
 		}
+	};
+
+	@action
+	selectNextMessage = () => {
+		if (!this.selectedMessagesIds.length) return;
+
+		if (!this.scrolledIndex || this.selectedMessagesIds.indexOf(this.scrolledIndex.valueOf()) === -1) {
+			this.scrolledIndex = new Number(this.selectedMessagesIds[0]);
+			return;
+		}
+		const nextIndex = nextCyclicItem(this.selectedMessagesIds, this.scrolledIndex.valueOf());
+		this.scrolledIndex = new Number(nextIndex);
+	};
+
+	@action
+	selectPrevMessage = () => {
+		if (!this.selectedMessagesIds.length) return;
+
+		if (!this.scrolledIndex || this.selectedMessagesIds.indexOf(this.scrolledIndex.valueOf()) === -1) {
+			this.scrolledIndex = new Number(this.selectedMessagesIds[this.selectedMessagesIds.length - 1]);
+			return;
+		}
+		const prevIndex = prevCyclicItem(this.selectedMessagesIds, this.scrolledIndex.valueOf());
+		this.scrolledIndex = new Number(prevIndex);
 	};
 }

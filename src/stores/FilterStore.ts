@@ -16,6 +16,7 @@
 
 import { action, computed, observable } from 'mobx';
 import { FilterBlock } from '../models/filter/FilterBlock';
+import MessagesFilter from '../models/filter/MessagesFilter';
 
 const ONE_HOUR = 60 * 60 * 1000;
 
@@ -28,9 +29,12 @@ export default class FilterStore {
 
 	@observable isHighlighted = false;
 
-	@observable messagesTimestampFrom: number = new Date(new Date().getTime() - ONE_HOUR).getTime();
-
-	@observable messagesTimestampTo: number = new Date().getTime();
+	@observable messagesFilter: MessagesFilter = {
+		timestampFrom: new Date(new Date().getTime() - ONE_HOUR).getTime(),
+		timestampTo: new Date().getTime(),
+		stream: null,
+		messageType: null,
+	};
 
 	@action
 	setIsTransparent = (isTransparent: boolean) => {
@@ -75,11 +79,34 @@ export default class FilterStore {
 
 	@action
 	setMessagesFromTimestamp(timestamp: number) {
-		this.messagesTimestampFrom = timestamp;
+		this.messagesFilter.timestampFrom = timestamp;
 	}
 
 	@action
 	setMessagesToTimestamp(timestamp: number) {
-		this.messagesTimestampTo = timestamp;
+		this.messagesFilter.timestampTo = timestamp;
+	}
+
+	@action
+	setMessagesStream(stream: string | null) {
+		if (stream === '') {
+			this.messagesFilter.stream = null;
+		} else {
+			this.messagesFilter.stream = stream;
+		}
+	}
+
+	@action
+	setMessagesType(messageType: string | null) {
+		if (messageType === '') {
+			this.messagesFilter.messageType = null;
+		} else {
+			this.messagesFilter.messageType = messageType;
+		}
+	}
+
+	@action
+	updateFilter(filter: MessagesFilter) {
+		this.messagesFilter = filter;
 	}
 }

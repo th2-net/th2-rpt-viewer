@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { nanoid } from 'nanoid';
 import Action, { ActionNode, ActionNodeType } from '../../models/Action';
 import TestCase from '../../models/TestCase';
 import Message from '../../models/Message';
@@ -254,3 +255,19 @@ export function createTestCaseMetadata(
 		lastActionId: 0,
 	};
 }
+
+export const createHeatmapInputData = (
+	itemsLength: number,
+	selectedItemsIndexes: number[],
+	pinnedItemsIndexes: number[],
+) => {
+	const items = Array(itemsLength).fill(null).map(() => nanoid());
+	const selectedItems = selectedItemsIndexes.map(i => items[i]);
+	const pinnedItems = pinnedItemsIndexes.map(i => items[i]);
+
+	return {
+		items,
+		selectedItems,
+		pinnedItems,
+	};
+};

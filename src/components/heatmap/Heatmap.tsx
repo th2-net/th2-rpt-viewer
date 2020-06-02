@@ -39,33 +39,31 @@ const Heatmap = ({
 		if (!heatmapRef.current || !visibleRange || !scrollIndicatorRef.current) return;
 		const { startIndex, endIndex } = visibleRange;
 
-		const heatmapOffsetTop = heatmapRef.current.getBoundingClientRect().top || 98;
+		const {
+			top: heatmapOffsetTop,
+			bottom: heatmapOffsetBottom,
+		} = heatmapRef.current.getBoundingClientRect();
 		let scrollIndicatorTop = heatmapOffsetTop;
 		let scrollIndicatorHeight = 0;
+
 		Array
 			.from(heatmapRef.current.children)
 			.filter(isDivElement)
 			.forEach(heatmapEl => {
-				const { start, end } = heatmapEl.dataset;
-				if (
-					startIndex >= parseInt(start as string)
-					&& startIndex <= parseInt(end as string)
-				) {
+				const { start, end } = heatmapEl.dataset as { end: string; start: string };
+				if (startIndex >= parseInt(start) && startIndex <= parseInt(end)) {
 					scrollIndicatorTop = getCoordinates(heatmapEl, startIndex);
 				}
-				if (
-					endIndex >= parseInt(start as string)
-					&& endIndex <= parseInt(end as string)
-				) {
+				if (endIndex >= parseInt(start) && endIndex <= parseInt(end)) {
 					scrollIndicatorHeight = getCoordinates(heatmapEl, endIndex, false) - scrollIndicatorTop;
 				}
 			});
 
+		if (scrollIndicatorHeight === 0) {
+			scrollIndicatorHeight = heatmapOffsetBottom - scrollIndicatorRef.current.getBoundingClientRect().top;
+		}
 		scrollIndicatorRef.current.style.transform = `translate3d(0, ${scrollIndicatorTop - heatmapOffsetTop}px, 0)`;
-		scrollIndicatorRef.current.style.height = `${
-			scrollIndicatorHeight
-			|| scrollIndicatorRef.current.getBoundingClientRect().bottom - scrollIndicatorTop + heatmapOffsetTop
-		}px`;
+		scrollIndicatorRef.current.style.height = `${scrollIndicatorHeight}px`;
 
 		function getCoordinates(el: HTMLDivElement, index: number, isStart = true) {
 			const { top, height } = el.getBoundingClientRect();
