@@ -88,7 +88,7 @@ export function MessageCardBase(props: MessageCardProps) {
 	} = props;
 	const {
 		timestamp,
-		type,
+		messageType,
 		sessionId,
 		direction,
 		bodyBase64,
@@ -147,7 +147,7 @@ export function MessageCardBase(props: MessageCardProps) {
 					<span>Name</span>
 				</div>
 				<div className="mc-header__name-value">
-					{type}
+					{messageType}
 				</div>
 				<div className="mc-header__timestamp">
 					<p>
