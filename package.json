@@ -26,6 +26,7 @@
     "mobx-react-lite": "^1.5.2",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
+    "react-flip-toolkit": "^7.0.10",
     "react-hot-loader": "^4.12.21",
     "react-input-autosize": "^2.2.2",
     "react-virtuoso": "^0.16.6",

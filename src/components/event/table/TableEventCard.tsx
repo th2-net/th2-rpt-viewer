@@ -16,6 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { Flipped } from 'react-flip-toolkit';
 import { EventIdNode } from '../../../stores/EventWindowStore';
 import EventCard from '../EventCardHeader';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
@@ -33,20 +34,22 @@ function TableEventCard({ idNode, displayType }: Props) {
 	const event = useCachedEvent(idNode);
 
 	return (
-		<div className='event-table-window__card'>
-			{
-				event != null ? (
-					<EventCard
-						event={event}
-						childrenCount={idNode.children?.length}
-						displayType={displayType}
-						onSelect={() => eventWindowStore.selectNode(idNode)}
-						isSelected={eventWindowStore.isNodeSelected(idNode)}/>
-				) : (
-					<EventCardSkeleton displayType={displayType}/>
-				)
-			}
-		</div>
+		<Flipped flipId={idNode.id}>
+			<div className='event-table-window__card'>
+				{
+					event != null ? (
+						<EventCard
+							event={event}
+							childrenCount={idNode.children?.length}
+							displayType={displayType}
+							onSelect={() => eventWindowStore.selectNode(idNode)}
+							isSelected={eventWindowStore.isNodeSelected(idNode)}/>
+					) : (
+						<EventCardSkeleton displayType={displayType}/>
+					)
+				}
+			</div>
+		</Flipped>
 	);
 }
 

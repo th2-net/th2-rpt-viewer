@@ -1,3 +1,4 @@
+/* eslint-disable react/no-children-prop */
 /** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -51,7 +52,8 @@ function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
 		eventId,
 	} = event;
 
-	const bodyList = Array.isArray(body) ? body : [body];
+	const bodyList = (Array.isArray(body) ? body : [body])
+		.filter(bodyEl => bodyEl != null && Object.keys(bodyEl).length > 0);
 
 	const status = getEventStatus(event);
 
@@ -157,6 +159,7 @@ function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
 							overscan={3}
 							totalCount={(idNode.children?.length ?? 0) + bodyList.length}
 							item={renderItem}/>
+
 					) : (
 						<div className='event-detail-card__body-list'>
 							{

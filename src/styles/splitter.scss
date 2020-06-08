@@ -42,7 +42,6 @@
         position: relative;
 
         &-icon {
-            margin-top: 50px;
             height: 23px;
             width: 23px;
             background-size: 100%;
@@ -57,12 +56,11 @@
 
         &:hover:after {
             content: "";
-            height: calc(100% - 55px);
+            height: 100%;
             width: 0;
             border: 1.5px solid $splitterColor;
             position: absolute;
             left: 11px;
-            top: 55px;
             border-radius: 5px;
         }
 

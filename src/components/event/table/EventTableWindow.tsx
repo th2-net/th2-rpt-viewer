@@ -16,6 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { Flipper } from 'react-flip-toolkit';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import EventsColumn from './EventsColumn';
 import '../../../styles/events.scss';
@@ -39,7 +40,10 @@ function EventTableWindow() {
 	const minimapDeep = columns.length - notMinfiedColumns.length;
 
 	return (
-		<div className='event-table-window'>
+		<Flipper
+			className='event-table-window'
+			flipKey={eventsStore.selectedPath.reduce((acc, node) => `${acc}-${node.id}`, '')}
+			staggerConfig={{ default: { speed: 1 } }}>
 			<div className='event-table-window__breadcrumbs'>
 				<EventBreadcrumbs
 					rootEventsEnabled
@@ -91,7 +95,7 @@ function EventTableWindow() {
 					)
 				}
 			</SplitView>
-		</div>
+		</Flipper>
 	);
 }
 

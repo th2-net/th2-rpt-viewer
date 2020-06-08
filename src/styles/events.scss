@@ -260,6 +260,7 @@
 
 	&__scrollbar {
 		@include scrollbar;
+		overflow-x: hidden;
 	}
 
 	&__card {
