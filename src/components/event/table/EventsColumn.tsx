@@ -1,3 +1,4 @@
+/* eslint-disable react/no-children-prop */
 /** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -15,12 +16,13 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { Virtuoso } from 'react-virtuoso';
 import { observer } from 'mobx-react-lite';
+import { Virtuoso } from 'react-virtuoso';
 import { EventIdNode } from '../../../stores/EventWindowStore';
 import TableEventCard from './TableEventCard';
 import CardDisplayType from '../../../util/CardDisplayType';
 import { createBemElement } from '../../../helpers/styleCreators';
+
 
 interface Props {
 	nodesList: EventIdNode[];
