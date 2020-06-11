@@ -28,6 +28,16 @@ const eventHttpApi: EventApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
+	getRootEventsIds: async () => {
+		const res = await fetch('/backend/rootEvents?idsOnly=true');
+
+		if (res.ok) {
+			return await res.json();
+		}
+
+		console.error(res.statusText);
+		return [];
+	},
 	getEvent: async (id: string, parentIds: string[], signal?: AbortSignal) => {
 		const res = await fetch(`/backend/event/${[...parentIds, id].join('/')}`, { signal });
 

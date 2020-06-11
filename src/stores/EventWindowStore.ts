@@ -139,20 +139,9 @@ export default class EventWindowStore {
 	fetchRootEvents = async () => {
 		this.isLoadingRootEvents = true;
 		try {
-			const events = await this.api.events.getRootEvents();
+			const events = await this.api.events.getRootEventsIds();
+			this.eventsIds = events.map(eventId => this.createTreeNode(eventId));
 			this.isLoadingRootEvents = false;
-			events.sort((a, b) => getTimestampAsNumber(b.startTimestamp) - getTimestampAsNumber(a.startTimestamp));
-
-			this.eventsIds = events.map(event => this.createTreeNode(event.eventId));
-			this.eventsIds.forEach((eventIdNode, i) => {
-				// eslint-disable-next-line no-param-reassign
-				eventIdNode.children = events[i].childrenIds.map(
-					childrenId => this.createTreeNode(childrenId, [eventIdNode]),
-				);
-			});
-			events.forEach(event => {
-				this.eventsCache.set(event.eventId, event);
-			});
 		} catch (error) {
 			console.error('Error while loading events', error);
 		}

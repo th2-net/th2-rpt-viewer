@@ -25,6 +25,7 @@ export default interface ApiSchema {
 
 export interface EventApiSchema {
     getRootEvents: () => Promise<EventAction[]>;
+    getRootEventsIds: () => Promise<string[]>;
     getEvent: (id: string, parentIds: string[], abortSignal?: AbortSignal) => Promise<EventAction>;
     getRange: (start: number, end: number) => Promise<EventAction[]>;
 }
