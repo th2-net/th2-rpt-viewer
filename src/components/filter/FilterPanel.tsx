@@ -19,12 +19,32 @@ import { createBemElement, createStyleSelector } from '../../helpers/styleCreato
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { ModalPortal } from '../Portal';
 import '../../styles/filter.scss';
+import FilterPanelRow from './FilterPanelRow';
+
+export type FilterRowConfig = FilterRowDatetimeRangeConfig | FilterRowStringConfig;
+
+export type FilterRowBaseConfig = {
+	id: string;
+	label: string;
+};
+
+export type FilterRowDatetimeRangeConfig = FilterRowBaseConfig & {
+	type: 'datetime-range';
+	value: [number, number];
+	setValue: (nextValue: [number, number]) => void;
+};
+
+export type FilterRowStringConfig = FilterRowBaseConfig & {
+	type: 'string';
+	value: string;
+	setValue: (nextValue: string) => void;
+};
 
 interface Props {
 	isFilterApplied: boolean;
 	showFilter: boolean;
 	setShowFilter: (isShown: boolean) => void;
-	children: React.ReactNode;
+	config: FilterRowConfig[];
 	isDisabled?: boolean;
 	onSubmit?: () => void;
 	onClearAll?: () => void;
@@ -34,7 +54,7 @@ const FilterPanel = ({
 	isFilterApplied,
 	showFilter,
 	setShowFilter,
-	children,
+	config,
 	isDisabled = false,
 	onSubmit,
 	onClearAll,
@@ -109,7 +129,11 @@ const FilterPanel = ({
 						left: `${filterButtonRef.current?.getBoundingClientRect().left}px`,
 						top: `${filterButtonRef.current?.getBoundingClientRect().bottom}px`,
 					}}>
-					{children}
+					{
+						config.map(configItem => (
+							<FilterPanelRow rowConfig={configItem} key={configItem.id}/>
+						))
+					}
 					<div className="filter__controls filter-controls">
 						<div className="filter-controls__clear-btn" onClick={onClearAll}>
 							<div className="filter-controls__clear-icon"/>

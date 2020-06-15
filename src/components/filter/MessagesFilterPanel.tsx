@@ -16,7 +16,7 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import FilterPanel from './FilterPanel';
+import FilterPanel, { FilterRowConfig } from './FilterPanel';
 import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 
 const ONE_HOUR = 60 * 60 * 1000;
@@ -66,50 +66,37 @@ const MessagesFilterPanel = () => {
 		submitChanges();
 	};
 
+	const filterConfig: FilterRowConfig[] = [{
+		type: 'datetime-range',
+		id: 'messages-datetime',
+		label: 'Messages from',
+		value: [timestampFrom, timestampTo],
+		setValue: ([nextTimestampFrom, nextTimestampTo]) => {
+			setTimestampFrom(nextTimestampFrom);
+			setTimestampTo(nextTimestampTo);
+		},
+	}, {
+		type: 'string',
+		id: 'messages-stream',
+		label: 'Stream name',
+		value: stream ?? '',
+		setValue: setStream,
+	}, {
+		type: 'string',
+		id: 'messages-type',
+		label: 'Message type',
+		value: messageType ?? '',
+		setValue: setMessageType,
+	}];
+
 	return (
 		<FilterPanel
 			isFilterApplied={false}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
+			config={filterConfig}
 			onSubmit={submitChanges}
-			onClearAll={clearAllFilters}>
-			<div className='filter-row'>
-				<label htmlFor='messages-from'>Messages from</label>
-				<input id='messages-from'
-					className='filter-row__datetime-input'
-					type='datetime-local'
-					value={formatTimestampValue(timestampFrom)}
-					onChange={e => setTimestampFrom(new Date(e.target.value).getTime())}/>
-				<label htmlFor='messages-to'> to </label>
-				<input id='messages-to'
-					className='filter-row__datetime-input'
-					type='datetime-local'
-					value={formatTimestampValue(timestampTo)}
-					onChange={e => setTimestampTo(new Date(e.target.value).getTime())}/>
-			</div>
-			<div className="filter-row">
-				<label className="filter-row__label" htmlFor="stream">
-					Stream name
-				</label>
-				<input
-					type="text"
-					className="filter-row__input"
-					id="stream"
-					value={stream || ''}
-					onChange={e => setStream(e.target.value)}/>
-			</div>
-			<div className="filter-row">
-				<label className="filter-row__label" htmlFor="type">
-					Message type
-				</label>
-				<input
-					type="text"
-					className="filter-row__input"
-					id="type"
-					value={messageType || ''}
-					onChange={e => setMessageType(e.target.value)}/>
-			</div>
-		</FilterPanel>
+			onClearAll={clearAllFilters}/>
 	);
 };
 
