@@ -30,8 +30,10 @@ export type FilterRowBaseConfig = {
 
 export type FilterRowDatetimeRangeConfig = FilterRowBaseConfig & {
 	type: 'datetime-range';
-	value: [number, number];
-	setValue: (nextValue: [number, number]) => void;
+	fromValue: number | null;
+	toValue: number | null;
+	setFromValue: (nextValue: number) => void;
+	setToValue: (nextValue: number) => void;
 };
 
 export type FilterRowStringConfig = FilterRowBaseConfig & {

@@ -19,8 +19,6 @@ import { observer } from 'mobx-react-lite';
 import FilterPanel, { FilterRowConfig } from './FilterPanel';
 import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 
-const ONE_HOUR = 60 * 60 * 1000;
-
 const MessagesFilterPanel = () => {
 	const { filterStore } = useFirstEventWindowStore();
 
@@ -37,12 +35,6 @@ const MessagesFilterPanel = () => {
 		setMessageType(filterStore.messagesFilter.messageType);
 	}, [showFilter, filterStore.messagesFilter]);
 
-	const formatTimestampValue = (timestamp: number) => {
-		const date = new Date(timestamp);
-
-		return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().substring(0, 16);
-	};
-
 	const submitChanges = () => {
 		if (timestampFrom > timestampTo) {
 			// eslint-disable-next-line no-alert
@@ -50,7 +42,7 @@ const MessagesFilterPanel = () => {
 			return;
 		}
 
-		filterStore.updateFilter({
+		filterStore.setMessagesFilter({
 			timestampFrom,
 			timestampTo,
 			stream,
@@ -59,34 +51,29 @@ const MessagesFilterPanel = () => {
 	};
 
 	const clearAllFilters = () => {
-		setMessageType(null);
-		setStream(null);
-		setTimestampFrom(new Date(new Date().getTime() - ONE_HOUR).getTime());
-		setTimestampTo(new Date().getTime());
-		submitChanges();
+		filterStore.resetMessagesFilter();
 	};
 
 	const filterConfig: FilterRowConfig[] = [{
 		type: 'datetime-range',
 		id: 'messages-datetime',
 		label: 'Messages from',
-		value: [timestampFrom, timestampTo],
-		setValue: ([nextTimestampFrom, nextTimestampTo]) => {
-			setTimestampFrom(nextTimestampFrom);
-			setTimestampTo(nextTimestampTo);
-		},
+		fromValue: timestampFrom,
+		toValue: timestampTo,
+		setFromValue: setTimestampFrom,
+		setToValue: setTimestampTo,
 	}, {
 		type: 'string',
 		id: 'messages-stream',
 		label: 'Stream name',
 		value: stream ?? '',
-		setValue: setStream,
+		setValue: next => (next === '' ? setStream(null) : setStream(next)),
 	}, {
 		type: 'string',
 		id: 'messages-type',
 		label: 'Message type',
 		value: messageType ?? '',
-		setValue: setMessageType,
+		setValue: next => (next === '' ? setStream(null) : setMessageType(next)),
 	}];
 
 	return (

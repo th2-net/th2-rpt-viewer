@@ -16,20 +16,16 @@
 
 /* eslint-disable no-return-await */
 import { EventApiSchema } from '../ApiSchema';
+import { createURLSearchParams } from '../../helpers/url';
 
 const eventHttpApi: EventApiSchema = {
-	getRootEvents: async () => {
-		const res = await fetch('/backend/rootEvents');
+	getRootEvents: async filter => {
+		const params = createURLSearchParams({
+			idsOnly: true,
+			...(filter ?? {}),
+		});
 
-		if (res.ok) {
-			return await res.json();
-		}
-
-		console.error(res.statusText);
-		return [];
-	},
-	getRootEventsIds: async () => {
-		const res = await fetch('/backend/rootEvents?idsOnly=true');
+		const res = await fetch(`/backend/rootEvents?${params}`);
 
 		if (res.ok) {
 			return await res.json();

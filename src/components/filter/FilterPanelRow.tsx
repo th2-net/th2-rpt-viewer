@@ -37,30 +37,36 @@ export default function FilterPanelRow({ rowConfig }: Props) {
 }
 
 function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
-	const [fromValue, toValue] = config.value;
 	const fromId = `${config.id}-from`;
 	const toId = `${config.id}-to`;
 
-	const formatTimestampValue = (timestamp: number) => {
-		const date = new Date(timestamp);
+	const formatTimestampValue = (timestamp: number | null) => {
+		if (timestamp == null) {
+			return '';
+		}
 
+		const date = new Date(timestamp);
 		return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().substring(0, 16);
 	};
 
 	return (
 		<div className='filter-row'>
-			<label htmlFor={fromId}>{config.label}</label>
+			<label
+				htmlFor={fromId}
+				className='filter-row__label'>
+				{config.label}
+			</label>
 			<input id={fromId}
 				   className='filter-row__datetime-input'
 				   type='datetime-local'
-				   value={formatTimestampValue(fromValue)}
-				   onChange={e => config.setValue([new Date(e.target.value).getTime(), toValue])}/>
+				   value={formatTimestampValue(config.fromValue)}
+				   onChange={e => config.setFromValue(new Date(e.target.value).getTime())}/>
 			<label htmlFor={toId}> to </label>
 			<input id={toId}
 				   className='filter-row__datetime-input'
 				   type='datetime-local'
-				   value={formatTimestampValue(toValue)}
-				   onChange={e => config.setValue([fromValue, new Date(e.target.value).getTime()])}/>
+				   value={formatTimestampValue(config.toValue)}
+				   onChange={e => config.setToValue(new Date(e.target.value).getTime())}/>
 		</div>
 	);
 }

@@ -37,7 +37,6 @@ function EventTreeList() {
 	const listRootClass = createBemElement(
 		'actions',
 		'list',
-		eventWindowStore.filterStore.isFilterApplied ? 'filter-applied' : null,
 	);
 
 	if (eventWindowStore.isLoadingRootEvents) {

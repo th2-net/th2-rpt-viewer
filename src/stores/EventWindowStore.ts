@@ -25,6 +25,7 @@ import { EventAction } from '../models/EventAction';
 import { nextCyclicItem, prevCyclicItem } from '../helpers/array';
 import { getTimestampAsNumber } from '../helpers/date';
 import SearchStore from './SearchStore';
+import EventsFilter from '../models/filter/EventsFilter';
 
 export type EventIdNode = {
 	id: string;
@@ -49,6 +50,11 @@ export default class EventWindowStore {
 		autorun(() => {
 			this.messagesStore.attachedMessagesIds = this.selectedEvent?.attachedMessageIds || [];
 		});
+
+		reaction(
+			() => this.filterStore.eventsFilter,
+			filter => this.fetchRootEvents(filter),
+		);
 	}
 
 	@observable eventsIds: EventIdNode[] = [];
@@ -104,10 +110,6 @@ export default class EventWindowStore {
 		return this.eventsCache.get(selectedRootNode.id) ?? null;
 	}
 
-	@computed get rootEventSubEvents() {
-		return this.selectedRootEvent?.subNodes || null;
-	}
-
 	@action
 	toggleNode = (idNode: EventIdNode) => {
 		// eslint-disable-next-line no-param-reassign
@@ -136,15 +138,14 @@ export default class EventWindowStore {
 	};
 
 	@action
-	fetchRootEvents = async () => {
+	fetchRootEvents = async (filter?: EventsFilter) => {
+		this.selectedNode = null;
 		this.isLoadingRootEvents = true;
-		try {
-			const events = await this.api.events.getRootEventsIds();
-			this.eventsIds = events.map(eventId => this.createTreeNode(eventId));
-			this.isLoadingRootEvents = false;
-		} catch (error) {
-			console.error('Error while loading events', error);
-		}
+
+		const events = await this.api.events.getRootEvents(filter);
+		this.eventsIds = events.map(eventId => this.createTreeNode(eventId));
+
+		this.isLoadingRootEvents = false;
 	};
 
 	@action
