@@ -20,7 +20,7 @@ import FilterPanel, { FilterRowConfig } from './FilterPanel';
 import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 
 const MessagesFilterPanel = () => {
-	const { filterStore } = useFirstEventWindowStore();
+	const { filterStore, messagesStore } = useFirstEventWindowStore();
 
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [timestampFrom, setTimestampFrom] = React.useState(filterStore.messagesFilter.timestampFrom);
@@ -76,9 +76,13 @@ const MessagesFilterPanel = () => {
 		setValue: next => (next === '' ? setStream(null) : setMessageType(next)),
 	}];
 
+	const isApplied = filterStore.isMessagesFilterApplied && !messagesStore.isLoading;
+
 	return (
 		<FilterPanel
-			isFilterApplied={false}
+			isLoading={messagesStore.isLoading}
+			isFilterApplied={isApplied}
+			count={isApplied ? messagesStore.messagesIds.length : null}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
 			config={filterConfig}

@@ -44,19 +44,23 @@ export type FilterRowStringConfig = FilterRowBaseConfig & {
 
 interface Props {
 	isFilterApplied: boolean;
-	showFilter: boolean;
-	setShowFilter: (isShown: boolean) => void;
-	config: FilterRowConfig[];
+	isLoading?: boolean;
 	isDisabled?: boolean;
-	onSubmit?: () => void;
-	onClearAll?: () => void;
+	showFilter: boolean;
+	config: FilterRowConfig[];
+	count?: number | null;
+	setShowFilter: (isShown: boolean) => void;
+	onSubmit: () => void;
+	onClearAll: () => void;
 }
 
 const FilterPanel = ({
 	isFilterApplied,
+	isLoading = false,
 	showFilter,
 	setShowFilter,
 	config,
+	count = null,
 	isDisabled = false,
 	onSubmit,
 	onClearAll,
@@ -95,11 +99,14 @@ const FilterPanel = ({
 		isDisabled ? 'disabled' : null,
 	);
 
-	const handleSubmit = () => {
-		if (onSubmit) {
-			onSubmit();
-			setShowFilter(false);
-		}
+	const onSubmitClick = () => {
+		onSubmit();
+		setShowFilter(false);
+	};
+
+	const onClearAllClick = () => {
+		onClearAll();
+		setShowFilter(false);
 	};
 
 	return (
@@ -122,6 +129,11 @@ const FilterPanel = ({
 								: 'Show Filter'
 					}
 				</div>
+				{
+					count ? (
+						<div className='filter__counter'>{count}</div>
+					) : null
+				}
 			</div>
 			<ModalPortal isOpen={showFilter}>
 				<div
@@ -137,13 +149,19 @@ const FilterPanel = ({
 						))
 					}
 					<div className="filter__controls filter-controls">
-						<div className="filter-controls__clear-btn" onClick={onClearAll}>
+						<div className="filter-controls__clear-btn" onClick={onClearAllClick}>
 							<div className="filter-controls__clear-icon"/>
 							Clear All
 						</div>
-						<div className='filter-row__submit-btn' onClick={handleSubmit}>
-							Submit
-						</div>
+						{
+							isLoading ? (
+								<div className='filter__loading'/>
+							) : (
+								<div className='filter-row__submit-btn' onClick={onSubmitClick}>
+									Submit
+								</div>
+							)
+						}
 					</div>
 				</div>
 			</ModalPortal>

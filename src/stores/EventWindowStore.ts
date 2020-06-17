@@ -31,7 +31,7 @@ export type EventIdNode = {
 	id: string;
 	isExpanded: boolean;
 	children: EventIdNode[] | null;
-	parents: EventIdNode[];
+	parents: string[];
 };
 
 export default class EventWindowStore {
@@ -65,40 +65,18 @@ export default class EventWindowStore {
 
 	@observable selectedNode: EventIdNode | null = null;
 
-	createTreeNode = (
-		id: string,
-		parents: EventIdNode[] = [],
-		children: EventIdNode[] | null = null,
-	): EventIdNode => ({
-		id,
-		isExpanded: false,
-		children,
-		parents,
-	});
-
-	getNodesList = (idNode: EventIdNode): EventIdNode[] => {
-		if (idNode.isExpanded && idNode.children) {
-			return [
-				idNode,
-				...idNode.children.flatMap(this.getNodesList),
-			];
-		}
-
-		return [idNode];
-	};
-
 	// we need this property for correct virtualized tree render -
 	// to get event key by index in tree and list length calculation.
 	@computed get nodesList() {
 		return this.eventsIds.flatMap(eventId => this.getNodesList(eventId));
 	}
 
-	@computed get selectedPath() {
+	@computed get selectedPath(): EventIdNode[] {
 		if (this.selectedNode == null) {
 			return [];
 		}
 
-		return [...this.selectedNode.parents, this.selectedNode];
+		return [...this.getNodesPath(this.selectedNode.parents, this.nodesList), this.selectedNode];
 	}
 
 	@computed get selectedRootEvent(): EventAction | null {
@@ -127,12 +105,11 @@ export default class EventWindowStore {
 		let event = this.eventsCache.get(id);
 		if (event) return event;
 
-		const parentsIds = parents.map(parentNode => parentNode.id);
-		event = await this.api.events.getEvent(id, parentsIds, abortSignal);
+		event = await this.api.events.getEvent(id, parents, abortSignal);
 		this.eventsCache.set(event.eventId, event);
 		// eslint-disable-next-line no-param-reassign
 		idNode.children = event.childrenIds.map(
-			childId => this.createTreeNode(childId, [...idNode.parents, idNode]),
+			childId => this.createTreeNode(childId, [...idNode.parents, idNode.id]),
 		);
 		return event;
 	};
@@ -173,11 +150,53 @@ export default class EventWindowStore {
 		return event || null;
 	}
 
-	public isNodeSelected(idNode: EventIdNode) {
+	isNodeSelected(idNode: EventIdNode) {
 		if (this.selectedNode == null) {
 			return false;
 		}
 
 		return this.selectedPath.some(n => n.id === idNode.id);
+	}
+
+	private createTreeNode(id: string, parents: string[] = [], children: EventIdNode[] | null = null): EventIdNode {
+		const node: EventIdNode = {
+			id,
+			isExpanded: false,
+			children,
+			parents,
+		};
+
+		if (this.eventsCache.has(id) && children == null) {
+			const cachedChildren = this.eventsCache.get(id)!.childrenIds
+				.map(childId => this.createTreeNode(childId, [...parents, id]));
+			node.children = cachedChildren;
+		}
+
+		return node;
+	}
+
+	private getNodesList = (idNode: EventIdNode): EventIdNode[] => {
+		if (idNode.isExpanded && idNode.children) {
+			return [
+				idNode,
+				...idNode.children.flatMap(this.getNodesList),
+			];
+		}
+
+		return [idNode];
+	};
+
+	private getNodesPath(path: string[], nodes: EventIdNode[]): EventIdNode[] {
+		if (path.length === 0 || nodes.length === 0) {
+			return [];
+		}
+
+		const [currentId, ...rest] = path;
+		const targetNode = nodes.find(n => n.id === currentId)!;
+
+		return [
+			targetNode,
+			...this.getNodesPath(rest, targetNode.children ?? []),
+		];
 	}
 }

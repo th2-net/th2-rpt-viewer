@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import { action, computed, observable } from 'mobx';
-import { FilterBlock } from '../models/filter/FilterBlock';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
 
@@ -29,6 +28,8 @@ export default class FilterStore {
 		messageType: null,
 	};
 
+	@observable isMessagesFilterApplied = false;
+
 	@observable eventsFilter: EventsFilter = {
 		timestampFrom: null,
 		timestampTo: null,
@@ -36,9 +37,15 @@ export default class FilterStore {
 		name: null,
 	};
 
+	@computed
+	get isEventsFilterApplied() {
+		return Object.values(this.eventsFilter).some(field => field != null);
+	}
+
 	@action
 	setMessagesFilter(filter: MessagesFilter) {
 		this.messagesFilter = filter;
+		this.isMessagesFilterApplied = true;
 	}
 
 	@action resetMessagesFilter() {
@@ -48,6 +55,7 @@ export default class FilterStore {
 			stream: null,
 			messageType: null,
 		};
+		this.isMessagesFilterApplied = false;
 	}
 
 	@action

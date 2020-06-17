@@ -16,7 +16,8 @@
 
 const webpackMerge = require('webpack-merge');
 const commonConfig = require('./webpack.common');
-const { appSrc } = require('./paths');
+const {appSrc} = require('./paths');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 module.exports = webpackMerge(commonConfig, {
     mode: 'development',
@@ -44,19 +45,16 @@ module.exports = webpackMerge(commonConfig, {
             {
                 test: /\.(ts|tsx)$/,
                 enforce: 'pre',
-                use: [
-                    "awesome-typescript-loader",
-                    {
-                        options: {
-                            eslintPath: require.resolve('eslint'),
-                            failOnError: false,
-                            cache: false,
-                            quite: true,
-                            formatter: require('eslint-formatter-pretty'),
-                        },
-                        loader: require.resolve('eslint-loader'),
+                use: [{
+                    options: {
+                        eslintPath: require.resolve('eslint'),
+                        failOnError: false,
+                        cache: false,
+                        quite: true,
+                        formatter: require('eslint-formatter-pretty'),
                     },
-                ],
+                    loader: require.resolve('eslint-loader'),
+                }],
                 exclude: /node_modules/,
             },
             {
@@ -69,5 +67,12 @@ module.exports = webpackMerge(commonConfig, {
                 ].filter(loader => loader)
             },
         ]
-    }
+    },
+    plugins: [
+        new ForkTsCheckerWebpackPlugin({
+            eslint: {
+                files: './src/**/*'
+            }
+        })
+    ]
 });

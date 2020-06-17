@@ -20,7 +20,8 @@ import FilterPanel, { FilterRowConfig } from './FilterPanel';
 import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 
 function EventsFilterPanel() {
-	const { filterStore } = useFirstEventWindowStore();
+	const eventWindowStore = useFirstEventWindowStore();
+	const { filterStore } = eventWindowStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [timestampFrom, setTimestampFrom] = React.useState(filterStore.eventsFilter.timestampFrom);
@@ -36,12 +37,30 @@ function EventsFilterPanel() {
 	}, [showFilter, filterStore.eventsFilter]);
 
 	const onSubmit = () => {
-		filterStore.setEventsFilter({
-			timestampFrom,
-			timestampTo,
-			name,
-			eventType,
-		});
+		if (timestampFrom != null || timestampTo != null) {
+			const nextTimestampFrom = timestampFrom ?? new Date().getTime();
+			const nextTimestampTo = timestampTo ?? new Date().getTime();
+
+			if (nextTimestampFrom > nextTimestampTo) {
+				// eslint-disable-next-line no-alert
+				window.alert('Invalid timestamp filter for events.');
+				return;
+			}
+
+			filterStore.setEventsFilter({
+				timestampFrom: nextTimestampFrom,
+				timestampTo: nextTimestampTo,
+				name,
+				eventType,
+			});
+		} else {
+			filterStore.setEventsFilter({
+				timestampFrom: null,
+				timestampTo: null,
+				name,
+				eventType,
+			});
+		}
 	};
 
 	const onClear = () => {
@@ -72,13 +91,14 @@ function EventsFilterPanel() {
 
 	return (
 		<FilterPanel
-			isFilterApplied={false}
+			isLoading={eventWindowStore.isLoadingRootEvents}
+			isFilterApplied={filterStore.isEventsFilterApplied}
+			count={filterStore.isEventsFilterApplied ? eventWindowStore.nodesList.length : null}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
 			onSubmit={onSubmit}
 			onClearAll={onClear}
-			config={filterConfig}
-			isDisabled={false}/>
+			config={filterConfig}/>
 	);
 }
 
