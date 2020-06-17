@@ -15,104 +15,91 @@
  ***************************************************************************** */
 
 import React from 'react';
-import FilterPanel from './FilterPanel';
+import { observer } from 'mobx-react-lite';
+import FilterPanel, { FilterRowConfig } from './FilterPanel';
+import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 
-const EventsFilterPanel = () => {
+function EventsFilterPanel() {
+	const eventWindowStore = useFirstEventWindowStore();
+	const { filterStore } = eventWindowStore;
+
 	const [showFilter, setShowFilter] = React.useState(false);
+	const [timestampFrom, setTimestampFrom] = React.useState(filterStore.eventsFilter.timestampFrom);
+	const [timestampTo, setTimestampTo] = React.useState(filterStore.eventsFilter.timestampTo);
+	const [name, setName] = React.useState(filterStore.eventsFilter.name);
+	const [eventType, setEventType] = React.useState(filterStore.eventsFilter.eventType);
+
+	React.useEffect(() => {
+		setTimestampFrom(filterStore.eventsFilter.timestampFrom);
+		setTimestampTo(filterStore.eventsFilter.timestampTo);
+		setName(filterStore.eventsFilter.name);
+		setEventType(filterStore.eventsFilter.eventType);
+	}, [showFilter, filterStore.eventsFilter]);
+
+	const onSubmit = () => {
+		if (timestampFrom != null || timestampTo != null) {
+			const nextTimestampFrom = timestampFrom ?? new Date().getTime();
+			const nextTimestampTo = timestampTo ?? new Date().getTime();
+
+			if (nextTimestampFrom > nextTimestampTo) {
+				// eslint-disable-next-line no-alert
+				window.alert('Invalid timestamp filter for events.');
+				return;
+			}
+
+			filterStore.setEventsFilter({
+				timestampFrom: nextTimestampFrom,
+				timestampTo: nextTimestampTo,
+				name,
+				eventType,
+			});
+		} else {
+			filterStore.setEventsFilter({
+				timestampFrom: null,
+				timestampTo: null,
+				name,
+				eventType,
+			});
+		}
+	};
+
+	const onClear = () => {
+		filterStore.resetEventsFilter();
+	};
+
+	const filterConfig: FilterRowConfig[] = [{
+		type: 'datetime-range',
+		id: 'events-datetime',
+		label: 'Events from',
+		fromValue: timestampFrom,
+		toValue: timestampTo,
+		setFromValue: setTimestampFrom,
+		setToValue: setTimestampTo,
+	}, {
+		type: 'string',
+		id: 'events-name',
+		label: 'Events name',
+		value: name ?? '',
+		setValue: next => (next === '' ? setName(null) : setName(next)),
+	}, {
+		type: 'string',
+		id: 'events-type',
+		label: 'Events type',
+		value: eventType ?? '',
+		setValue: next => (next === '' ? setEventType(null) : setEventType(next)),
+	}];
 
 	return (
 		<FilterPanel
-			isFilterApplied={false}
+			isLoading={eventWindowStore.isLoadingRootEvents}
+			isFilterApplied={filterStore.isEventsFilterApplied}
+			count={filterStore.isEventsFilterApplied ? eventWindowStore.nodesList.length : null}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
-			isDisabled={true}>
-			EventsFilterPanel
-		</FilterPanel>
+			onSubmit={onSubmit}
+			onClearAll={onClear}
+			config={filterConfig}/>
 	);
-};
+}
 
-export default EventsFilterPanel;
-
-// const FilterPanel = observer(() => {
-// 	const eventWindowStore = useFirstEventWindowStore();
-// 	const {
-// 		blocks,
-// 		isFilterApplied,
-// 		isTransparent,
-// 		isHighlighted,
-// 		resetFilter,
-// 	} = eventWindowStore.filterStore;
-
-// 	return (
-// 		<div className="filter">
-// 			{
-// 				blocks.map((block, index) => (
-// 					<div className="filter-row" key={index}>
-// 						<div className="filter-row__divider">
-// 							<div className="filter-row__divider-text">
-// 								{index === 0 ? 'Filter' : 'and'}
-// 							</div>
-// 							<div className="filter-row__remove-btn"/>
-// 						</div>
-// 						<FilterRow
-// 							block={block}
-// 							rowIndex={index + 1}
-// 						/>
-// 					</div>
-// 				))
-// 			}
-// 			<div className="filter-row">
-// 				<div className="filter-row__divider">
-// 					{blocks.length === 0 ? 'Filter' : 'and'}
-// 				</div>
-// 				<FilterRow
-// 					block={{
-// 						types: null,
-// 						path: null,
-// 						values: [],
-// 					}}
-// 					rowIndex={blocks.length + 1}/>
-// 			</div>
-// 			<div className="filter__controls filter-controls">
-// 				<div className="filter-controls__counts">
-// 					{
-// 						isFilterApplied ? `${[
-// 							blocks.some(({ types }: { types: string[] }) => types.includes(FilterType.ACTION))
-// 								? `${0} Actions `
-// 								: null,
-// 							blocks.some(({ types }: { types: string[] }) => types.includes(FilterType.MESSAGE))
-// 								? `${0} Messages `
-// 								: null,
-// 						].filter(Boolean).join(' and ')}Filtered` : null
-// 					}
-// 				</div>
-// 				<Checkbox
-// 					checked={isHighlighted}
-// 					label='Highlight'
-// 					onChange={() => eventWindowStore.filterStore.setIsHighlighted(!isHighlighted)}
-// 					id='filter-highlight'/>
-// 				<div className="filter-controls__transparency">
-// 					Filtered out
-// 					<input
-// 						type="radio"
-// 						id="filter-radio-hide"
-// 						checked={!isTransparent}
-// 						onChange={e => eventWindowStore.filterStore.setIsTransparent(false)}
-// 					/>
-// 					<label htmlFor="filter-radio-hide">Hide</label>
-// 					<input
-// 						type="radio"
-// 						id="filter-radio-transparent"
-// 						checked={isTransparent}
-// 						onChange={e => eventWindowStore.filterStore.setIsTransparent(true)}
-// 					/>
-// 					<label htmlFor="filter-radio-transparent">Transparent</label>
-// 				</div>
-// 				<div className="filter-controls__clear-btn" onClick={() => resetFilter()}>
-// 					<div className="filter-controls__clear-icon"/>
-// 					Clear All
-// 				</div>
-// 			</div>
-// 		</div>
-// 	);
-// });
+export default observer(EventsFilterPanel);

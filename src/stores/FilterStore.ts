@@ -15,20 +15,12 @@
  ***************************************************************************** */
 
 import { action, computed, observable } from 'mobx';
-import { FilterBlock } from '../models/filter/FilterBlock';
 import MessagesFilter from '../models/filter/MessagesFilter';
+import EventsFilter from '../models/filter/EventsFilter';
 
 const ONE_HOUR = 60 * 60 * 1000;
 
 export default class FilterStore {
-	@observable results: string[] = [];
-
-	@observable blocks: FilterBlock[] = [];
-
-	@observable isTransparent = false;
-
-	@observable isHighlighted = false;
-
 	@observable messagesFilter: MessagesFilter = {
 		timestampFrom: new Date(new Date().getTime() - ONE_HOUR).getTime(),
 		timestampTo: new Date().getTime(),
@@ -36,77 +28,48 @@ export default class FilterStore {
 		messageType: null,
 	};
 
-	@action
-	setIsTransparent = (isTransparent: boolean) => {
-		this.isTransparent = isTransparent;
+	@observable isMessagesFilterApplied = false;
+
+	@observable eventsFilter: EventsFilter = {
+		timestampFrom: null,
+		timestampTo: null,
+		eventType: null,
+		name: null,
 	};
 
-	@action
-	setIsHighlighted = (isHighlighted: boolean) => {
-		this.isHighlighted = isHighlighted;
-	};
-
-	@action
-	setFilterResults = (results: string[]) => {
-		this.results = results;
-	};
-
-	@action
-	setFilterConfig = (blocks: FilterBlock[]) => {
-		this.blocks = blocks;
-	};
-
-	@action
-	setFilterIsTransparent = (isTransparent: boolean) => {
-		this.isTransparent = isTransparent;
-	};
-
-	@action
-	setFilterIsHighlighted = (isHighlighted: boolean) => {
-		this.isHighlighted = isHighlighted;
-	};
-
-	@action
-	resetFilter = () => {
-		this.blocks = [];
-		this.isHighlighted = false;
-		this.results = [];
-	};
-
-	@computed get isFilterApplied() {
-		return this.blocks.length > 0 && this.blocks.some(block => block.values.length > 0);
+	@computed
+	get isEventsFilterApplied() {
+		return Object.values(this.eventsFilter).some(field => field != null);
 	}
 
 	@action
-	setMessagesFromTimestamp(timestamp: number) {
-		this.messagesFilter.timestampFrom = timestamp;
-	}
-
-	@action
-	setMessagesToTimestamp(timestamp: number) {
-		this.messagesFilter.timestampTo = timestamp;
-	}
-
-	@action
-	setMessagesStream(stream: string | null) {
-		if (stream === '') {
-			this.messagesFilter.stream = null;
-		} else {
-			this.messagesFilter.stream = stream;
-		}
-	}
-
-	@action
-	setMessagesType(messageType: string | null) {
-		if (messageType === '') {
-			this.messagesFilter.messageType = null;
-		} else {
-			this.messagesFilter.messageType = messageType;
-		}
-	}
-
-	@action
-	updateFilter(filter: MessagesFilter) {
+	setMessagesFilter(filter: MessagesFilter) {
 		this.messagesFilter = filter;
+		this.isMessagesFilterApplied = true;
+	}
+
+	@action resetMessagesFilter() {
+		this.messagesFilter = {
+			timestampFrom: new Date(new Date().getTime() - ONE_HOUR).getTime(),
+			timestampTo: new Date().getTime(),
+			stream: null,
+			messageType: null,
+		};
+		this.isMessagesFilterApplied = false;
+	}
+
+	@action
+	setEventsFilter(filter: EventsFilter) {
+		this.eventsFilter = filter;
+	}
+
+	@action
+	resetEventsFilter() {
+		this.eventsFilter = {
+			timestampFrom: null,
+			timestampTo: null,
+			eventType: null,
+			name: null,
+		};
 	}
 }

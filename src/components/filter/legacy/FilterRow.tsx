@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/*******************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ***************************************************************************** */
+ ******************************************************************************/
 
 import * as React from 'react';
-import Bubble from '../util/Bubble';
-import { complement, removeByIndex, replaceByIndex } from '../../helpers/array';
-import AutocompleteInput from '../util/AutocompleteInput';
-import FilterPath, { isFilterPath } from '../../models/filter/FilterPath';
-import { FilterBlock } from '../../models/filter/FilterBlock';
-import NullableFields from '../../models/util/NullableFields';
-import FilterType from '../../models/filter/FilterType';
-import { StatusType } from '../../models/Status';
-import Select from '../util/Select';
+import Bubble from '../../util/Bubble';
+import { complement, removeByIndex, replaceByIndex } from '../../../helpers/array';
+import AutocompleteInput from '../../util/AutocompleteInput';
+import FilterPath, { isFilterPath } from '../../../models/filter/FilterPath';
+import { FilterBlock } from '../../../models/filter/FilterBlock';
+import NullableFields from '../../../models/util/NullableFields';
+import FilterType from '../../../models/filter/FilterType';
+import { StatusType } from '../../../models/Status';
+import Select from '../../util/Select';
 
 interface Props {
     block: NullableFields<FilterBlock>;
@@ -45,7 +45,7 @@ const AUTOCOMPLETE_MAP = new Map<FilterPath, string[]>([
 	],
 ]);
 
-export default function FilterRow(props: Props) {
+function FilterRow(props: Props) {
 	const {
 		block, rowIndex, onChange, onRemove = () => null,
 	} = props;

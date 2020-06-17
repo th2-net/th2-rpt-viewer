@@ -27,5 +27,4 @@ export interface EventAction {
     body: any;
     successful: boolean;
     childrenIds: string[];
-    subNodes?: EventAction[];
 }

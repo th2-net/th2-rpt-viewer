@@ -70,7 +70,6 @@ const MessageCardList = () => {
 	const listClassName = createBemElement(
 		'messages',
 		'list',
-		filterStore.isFilterApplied ? 'filter-applied' : null,
 	);
 
 	if (messagesStore.isLoading) {
@@ -84,13 +83,6 @@ const MessageCardList = () => {
 	return (
 		<div className="messages">
 			<div className={listClassName}>
-				{
-					filterStore.isFilterApplied ? (
-						<div className="messages__filter-info">
-							{/* {selectedStore.messages} Messages Filtered */}
-						</div>
-					) : null
-				}
 				<MessagesHeightsContext.Provider value={messagesHeightsMap}>
 					<StateSaverProvider>
 						<VirtualizedList

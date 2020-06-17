@@ -34,8 +34,7 @@ function EventTableWindow() {
 	const viewStore = useEventWindowViewStore();
 
 	// removing current selected item - it will be rendered in detail card
-	const columns = (eventsStore.selectedNode?.parents ?? [])
-		.filter(node => node.children && node.children.length > 0);
+	const columns = eventsStore.selectedPath.slice(0, -1);
 	const notMinfiedColumns = columns.slice(-3);
 	const minimapDeep = columns.length - notMinfiedColumns.length;
 

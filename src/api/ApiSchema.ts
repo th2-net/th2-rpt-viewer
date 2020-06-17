@@ -17,6 +17,7 @@
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import MessagesFilter from '../models/filter/MessagesFilter';
+import EventsFilter from '../models/filter/EventsFilter';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
@@ -24,8 +25,7 @@ export default interface ApiSchema {
 }
 
 export interface EventApiSchema {
-    getRootEvents: () => Promise<EventAction[]>;
-    getRootEventsIds: () => Promise<string[]>;
+    getRootEvents: (filter?: EventsFilter) => Promise<string[]>;
     getEvent: (id: string, parentIds: string[], abortSignal?: AbortSignal) => Promise<EventAction>;
     getRange: (start: number, end: number) => Promise<EventAction[]>;
 }
