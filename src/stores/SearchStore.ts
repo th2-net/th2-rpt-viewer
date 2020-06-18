@@ -14,57 +14,72 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable } from 'mobx';
+import { action, computed, observable } from 'mobx';
 import SearchToken from '../models/search/SearchToken';
 import SearchResult from '../helpers/search/SearchResult';
+import ApiSchema from '../api/ApiSchema';
+import EventWindowStore from './EventWindowStore';
 
 export default class SearchStore {
+	constructor(private api: ApiSchema, private eventsStore: EventWindowStore) {
+	}
+
 	@observable tokens: SearchToken[] = [];
 
-	@observable results: SearchResult = new SearchResult();
+	@observable private rawResults: string[] = [];
 
-	@observable resultsCount = 0;
+	@observable isLoading = false;
 
-	@observable index: number | null = null;
+	@observable scrolledIndex: number | null = null;
 
-	@observable shouldScrollToItem = false;
+	@computed
+	get scrolledItem() {
+		if (this.scrolledIndex == null) {
+			return null;
+		}
 
-	@observable leftPanelEnabled = true;
+		return this.results[this.scrolledIndex];
+	}
 
-	@observable rightPanelEnabled = true;
+	@computed
+	get results() {
+		// we need to filter original array to keep it in correct order
+		return this.eventsStore.eventsIds
+			.map(node => node.id)
+			.filter(nodeId => this.rawResults.includes(nodeId));
+	}
 
 	@action
-	setSearchTokens = (searchTokens: SearchToken[]) => {
-		this.tokens = searchTokens;
-		this.resultsCount = 0;
-		this.index = null;
+	updateTokens = async (nextTokens: SearchToken[]) => {
+		this.isLoading = true;
+		this.tokens = nextTokens;
+
+		const searchTokenResults = await Promise.all(
+			nextTokens.map(token => this.api.events.getEventsByName(token.pattern)),
+		);
+		// only unique ids
+		this.rawResults = [...new Set(searchTokenResults.flat())];
+		this.scrolledIndex = null;
 	};
 
 	@action
 	nextSearchResult = () => {
-		const targetIndex = this.index != null
-			? (this.index + 1) % this.resultsCount : 0;
-		this.index = targetIndex;
-		this.shouldScrollToItem = true;
+		this.scrolledIndex = this.scrolledIndex != null
+			? (this.scrolledIndex + 1) % this.results.length
+			: 0;
 	};
 
 	@action
 	prevSearchResult = () => {
-		const targetIndex = this.index != null
-			? (this.resultsCount + this.index - 1) % this.resultsCount
-			: this.resultsCount - 1;
-		this.index = targetIndex;
-		this.shouldScrollToItem = true;
+		this.scrolledIndex = this.scrolledIndex != null
+			? (this.results.length + this.scrolledIndex - 1) % this.results.length
+			: 0;
 	};
 
 	@action
 	clear = () => {
+		this.rawResults = [];
 		this.tokens = [];
-		this.results = new SearchResult();
-		this.index = null;
-		this.resultsCount = 0;
-		this.leftPanelEnabled = true;
-		this.rightPanelEnabled = true;
-		this.shouldScrollToItem = false;
+		this.scrolledIndex = null;
 	};
 }

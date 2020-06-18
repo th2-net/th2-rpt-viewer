@@ -16,7 +16,7 @@
 
  @import "./common/vars";
 
-.found {
+.found-content {
     color: #FFF;
     opacity: 0.6;
     border-radius: 3px;
@@ -50,7 +50,7 @@
     cursor: text;
 
     min-height: 29px;
-    padding: 2px 5px 0 5px;
+    padding: 0 5px;
 
     &__counter {
         @include unselectable;

@@ -19,8 +19,6 @@ import * as Raw from '../../helpers/rawFormatter';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { showNotification } from '../../helpers/showNotification';
 import useSelectListener from '../../hooks/useSelectListener';
-import SearchableContent from '../search/SearchableContent';
-import { keyForMessage } from '../../helpers/keys';
 import '../../styles/messages.scss';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
@@ -55,9 +53,7 @@ export function MessageRaw({ rawContent, messageId }: Props) {
 	const renderHumanReadable = (content: string) => {
 		if (hexSelectionStart === hexSelectionEnd) {
 			return (
-				<SearchableContent
-					contentKey={keyForMessage(messageId, 'rawHumanReadable')}
-					content={content}/>
+				<span>{content}</span>
 			);
 		}
 
@@ -80,9 +76,7 @@ export function MessageRaw({ rawContent, messageId }: Props) {
 	const renderOctet = (content: string) => {
 		if (humanSelectionStart === humanSelectionEnd) {
 			return (
-				<SearchableContent
-					contentKey={keyForMessage(messageId, 'rawHex')}
-					content={content}/>
+				<span>{content}</span>
 			);
 		}
 

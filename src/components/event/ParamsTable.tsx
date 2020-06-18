@@ -16,11 +16,9 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 import ActionParameter from '../../models/ActionParameter';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import StateSaver from '../util/StateSaver';
-import SearchableContent from '../search/SearchableContent';
 import { keyForActionParameter } from '../../helpers/keys';
 import SearchResult from '../../helpers/search/SearchResult';
 import '../../styles/tables.scss';
@@ -178,13 +176,6 @@ class ParamsTableBase extends React.Component<Props, State> {
 
 	// we need this for optimization - render SearchableContent component only if it contains some search results
 	private renderContent(contentKey: string, content: string): React.ReactNode {
-		if (this.props.searchResults.size && this.props.searchResults.get(contentKey)) {
-			return (
-				<SearchableContent
-					contentKey={contentKey}
-					content={content}/>
-			);
-		}
 		return content;
 	}
 
@@ -223,13 +214,12 @@ function paramsToNodes(root: ActionParameter): TableNode {
 	} : root);
 }
 
-const ParamsTable = observer(({ actionId, ...rest }: OwnProps) => {
-	const { searchStore } = useFirstEventWindowStore();
-	return <RecoverableParamsTable
+const ParamsTable = observer(({ actionId, ...rest }: OwnProps) => (
+	<RecoverableParamsTable
 		expandPath={[]}
-		searchResults={searchStore.results}
+		searchResults={new SearchResult() /** TODO: remove legacy search logic */}
 		{...rest}
-		actionId={actionId} />;
-});
+		actionId={actionId} />
+));
 
 export default ParamsTable;

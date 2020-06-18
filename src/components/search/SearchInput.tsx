@@ -17,14 +17,12 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import AutosizeInput from 'react-input-autosize';
-import SearchResult from '../../helpers/search/SearchResult';
 import KeyCodes from '../../util/KeyCodes';
 import SearchToken from '../../models/search/SearchToken';
 import Bubble from '../util/Bubble';
 import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 import { nextCyclicItem, removeByIndex, replaceByIndex } from '../../helpers/array';
 import { createBemBlock } from '../../helpers/styleCreators';
-import SearchPanelControl from './SearchPanelsControl';
 import '../../styles/search.scss';
 
 export const REACTIVE_SEARCH_DELAY = 500;
@@ -40,9 +38,8 @@ const COLORS = [
 
 interface StateProps {
     searchTokens: SearchToken[];
-    currentIndex: number;
+    currentIndex: number | null;
     resultsCount: number;
-    searchResults: SearchResult;
 }
 
 interface DispatchProps {
@@ -178,11 +175,10 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 								{
 									showControls ? (
 										<span className="search-field__counter">
-											{currentIndex != null ? currentIndex + 1 : 0} of {resultsCount ?? 0}
+											{currentIndex !== null ? currentIndex + 1 : 0} of {resultsCount ?? 0}
 										</span>
 									) : null
 								}
-								<SearchPanelControl />
 							</React.Fragment>
 						) : (
 							<div className="search-field__icon"/>
@@ -280,9 +276,9 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 	private documentOnKeyDown = (e: KeyboardEvent) => {
 		if (e.keyCode === KeyCodes.F3 || (e.keyCode === KeyCodes.F && e.ctrlKey)) {
 			// cancel browser search opening
-			// e.preventDefault();
+			e.preventDefault();
 
-			// this.focus();
+			this.focus();
 		}
 	};
 
@@ -364,15 +360,16 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 const SearchInput = () => {
 	const { searchStore } = useFirstEventWindowStore();
 
-	return <SearchInputBase
-		searchTokens={searchStore.tokens}
-		searchResults={searchStore.results}
-		resultsCount={searchStore.resultsCount}
-		currentIndex={searchStore.index as number}
-		updateSearchTokens={searchStore.setSearchTokens}
-		nextSearchResult={searchStore.nextSearchResult}
-		prevSearchResult={searchStore.prevSearchResult}
-		clear={searchStore.clear} />;
+	return (
+		<SearchInputBase
+			searchTokens={searchStore.tokens}
+			resultsCount={searchStore.results.length}
+			currentIndex={searchStore.scrolledIndex}
+			updateSearchTokens={searchStore.updateTokens}
+			nextSearchResult={searchStore.nextSearchResult}
+			prevSearchResult={searchStore.prevSearchResult}
+			clear={searchStore.clear} />
+	);
 };
 
 export default observer(SearchInput);

@@ -46,7 +46,6 @@ module.exports = {
 		'import/first': "error",
 		'import/no-duplicates': "error",
 		'import/newline-after-import': "error",
-		'import/no-unassigned-import': "error",
 		'import/extensions': "off",
 		'import/prefer-default-export': "off",
 		'import/no-cycle': "off",
@@ -84,7 +83,8 @@ module.exports = {
 		"no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
 		"react/prop-types": "off",
 		"react-hooks/rules-of-hooks": "error",
-		"prefer-destructuring": "off"
+		"prefer-destructuring": "off",
+		'no-useless-constructor': 'off',
 	},
 	settings: {
 		react: {

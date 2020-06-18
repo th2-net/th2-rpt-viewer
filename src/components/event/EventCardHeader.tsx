@@ -24,10 +24,12 @@ import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
 import '../../styles/events.scss';
 import { getMinifiedStatus } from '../../helpers/action';
+import SearchableContent from '../search/SearchableContent';
 
 interface Props {
 	displayType?: CardDisplayType;
 	event: EventAction;
+	isRoot?: boolean;
 	onSelect: () => void;
 	isSelected?: boolean;
 	childrenCount?: number | null;
@@ -35,6 +37,7 @@ interface Props {
 
 function EventCardHeader({
 	 displayType = CardDisplayType.MINIMAL,
+	 isRoot = false,
 	 event,
 	 onSelect,
 	 isSelected = false,
@@ -62,7 +65,11 @@ function EventCardHeader({
 			{
 				displayType !== CardDisplayType.STATUS_ONLY ? (
 					<div className='event-header-card__title' title={eventName}>
-						{eventName}
+						{
+							isRoot
+								? <SearchableContent content={eventName} eventId={event.eventId}/>
+								: eventName
+						}
 					</div>
 				) : null
 			}
