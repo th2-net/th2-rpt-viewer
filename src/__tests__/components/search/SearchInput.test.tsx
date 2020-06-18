@@ -25,18 +25,14 @@ import SearchResult from '../../../helpers/search/SearchResult';
 import SearchToken from '../../../models/search/SearchToken';
 import KeyCodes from '../../../util/KeyCodes';
 import { timer } from '../../util/timer';
-import * as SearchPanelsControlModule from '../../../components/search/SearchPanelsControl';
 
 /* eslint-disable @typescript-eslint/no-empty-function */
-// we need to mock this import because SearchPanelControl's Connect wrapper uses redux context
-(SearchPanelsControlModule as any).default = () => null;
 
 describe('[React] <SearchInput/>', () => {
 	const defaultProps: SearchInputProps = {
 		searchTokens: [],
 		currentIndex: -1,
 		resultsCount: 0,
-		searchResults: new SearchResult(),
 		updateSearchTokens: () => {},
 		nextSearchResult: () => {},
 		prevSearchResult: () => {},

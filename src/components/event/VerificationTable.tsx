@@ -20,12 +20,9 @@ import VerificationEntry from '../../models/VerificationEntry';
 import { StatusType, statusValues } from '../../models/Status';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import StateSaver, { RecoverableElementProps } from '../util/StateSaver';
-import SearchableContent from '../search/SearchableContent';
-import { getVerificationExpandPath } from '../../helpers/search/getExpandPath';
 import SearchResult from '../../helpers/search/SearchResult';
 import { replaceNonPrintableChars } from '../../helpers/stringUtils';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
-import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 import '../../styles/tables.scss';
 
 const PADDING_LEVEL_VALUE = 6;
@@ -343,9 +340,8 @@ class VerificationTableBase extends React.Component<Props, State> {
 
 		if (!this.props.searchResults.isEmpty && this.props.searchResults.get(contentKey)) {
 			return wrap(wrapperClassName, (
-				<SearchableContent
-					contentKey={contentKey}
-					content={content}/>));
+				<span>{content}</span>
+			));
 		}
 		return wrap(wrapperClassName, fakeContent);
 
@@ -419,21 +415,14 @@ function paramsToNodes(root: any): TableNode {
 	} : root;
 }
 
-export const VerificationTable = observer(({ actionId, messageId, ...restProps }: OwnProps) => {
-	const { searchStore } = useFirstEventWindowStore();
-
-	return <RecoverableVerificationTable
+export const VerificationTable = observer(({ actionId, messageId, ...restProps }: OwnProps) => (
+	<RecoverableVerificationTable
 		precision=""
 		transparencyFilter={new Set<StatusType>(statusValues)}
 		visibilityFilter={new Set(statusValues)}
-		expandPath={getVerificationExpandPath(
-			searchStore.results,
-			searchStore.index as number,
-			actionId,
-			messageId,
-		)}
-		searchResults={searchStore.results}
+		expandPath={[] /** TODO: remove legacy search logic */}
+		searchResults={new SearchResult()}
 		actionId={actionId}
 		messageId={messageId}
-		{...restProps}/>;
-});
+		{...restProps}/>
+));

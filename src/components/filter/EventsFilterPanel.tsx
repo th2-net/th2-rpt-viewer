@@ -77,12 +77,6 @@ function EventsFilterPanel() {
 		setToValue: setTimestampTo,
 	}, {
 		type: 'string',
-		id: 'events-name',
-		label: 'Events name',
-		value: name ?? '',
-		setValue: next => (next === '' ? setName(null) : setName(next)),
-	}, {
-		type: 'string',
 		id: 'events-type',
 		label: 'Events type',
 		value: eventType ?? '',

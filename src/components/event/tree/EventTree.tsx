@@ -17,7 +17,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import PanelArea from '../../../util/PanelArea';
-import EventTreeNode from '../EventCardHeader';
+import EventCardHeader from '../EventCardHeader';
 import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
 import { EventIdNode } from '../../../stores/EventWindowStore';
 import EventCardSkeleton from '../EventCardSkeleton';
@@ -59,7 +59,8 @@ function EventTree({ idNode }: EventTreeProps) {
 				onClick={onExpandClick}/>
 			{
 				event ? (
-					<EventTreeNode
+					<EventCardHeader
+						isRoot={idNode.parents.length === 0}
 						childrenCount={idNode.children?.length}
 						event={event}
 						displayType={CardDisplayType.MINIMAL}

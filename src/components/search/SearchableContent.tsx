@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,85 +16,44 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
-import { raf } from '../../helpers/raf';
-import SearchSplitResult from '../../models/search/SearchSplitResult';
-import { createStyleSelector } from '../../helpers/styleCreators';
+import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import multiTokenSplit from '../../helpers/search/multiTokenSplit';
+import { createBemBlock } from '../../helpers/styleCreators';
 import '../../styles/search.scss';
 
-interface Props {
-    content: string;
-    contentKey: string;
-    /**
-     * If true, component will split passed content and pass it instead of received from redux store.
-     */
-    shouldPerformSplit?: boolean;
-}
+type Props = {
+	content: string;
+	eventId: string;
+};
 
-const SearchableContent = observer(({
-	content, contentKey,
-}: Props) => {
-	const { searchStore } = useFirstEventWindowStore();
-	const targetIndex = searchStore.index;
-	const startIndex = searchStore.results.getStartIndexForKey(contentKey);
-	const searchResult = searchStore.results.has(contentKey) ? (
-		// in some cases (e. g. message's beautified content) we need to split content again, instead of using
-		// redux value because content passed in own props differ from the original.
-		searchStore.results.get(contentKey)
-	) : undefined;
-	const needsScroll = searchStore.shouldScrollToItem;
+function SearchableContent({ content, eventId }: Props) {
+	const { searchStore } = useEventWindowStore();
 
-	if (!searchResult) {
-		return <React.Fragment>{content}</React.Fragment>;
+	if (!searchStore.results.includes(eventId)) {
+		return <>{content}</>;
 	}
 
-	// we are using 'useRef' instead of 'createRef' in functional components
-	// because 'createRef' creates new Ref object for each call, when 'useRef' does not
-	const targetElement = React.useRef<HTMLSpanElement>(null);
+	const splitContent = multiTokenSplit(content, searchStore.tokens);
 
-	// fires only if target index has been changed
-	React.useEffect(() => {
-		// we need to scroll to target element after VirtualizedList scrolled to current row
-		raf(() => {
-			/*
-			'needsScroll' flag is used here not to scroll to target in case of second render after
-			virtualized row unmount.
-			TODO - it's really bad solution to store some flags in redux. We need to think how to
-			handle this situation without it.
-			*/
-			if (targetElement.current && needsScroll) {
-				targetElement.current.scrollIntoView({ block: 'center', inline: 'nearest' });
-				searchStore.shouldScrollToItem = false;
-			}
-		});
-	}, [targetIndex]);
-
-	const internalTargetIndex = targetIndex != null ? targetIndex - startIndex! : -1;
-	let foundPartIndex = -1;
-
-	const renderContentPart = ({ token, content: renderContent }: SearchSplitResult, index: number) => {
-		const isFound = token != null;
-		const isTarget = isFound && token?.isScrollable && ++foundPartIndex === internalTargetIndex;
-		const className = createStyleSelector(
-			'',
-			isFound ? 'found' : null,
-			isTarget ? 'target' : null,
-		);
-
-		return (
-			<span
-				key={index}
-				className={className}
-				style={{ backgroundColor: token?.color }}
-				ref={isTarget ? targetElement : undefined}>
-				{renderContent}
-			</span>
-		);
-	};
+	const contentPartClass = createBemBlock(
+		'found-content',
+		searchStore.scrolledItem === eventId ? 'target' : null,
+	);
 
 	return (
-		<span>{searchResult.map(renderContentPart)}</span>
+		<>
+			{
+				splitContent.map((contentPart, index) => (
+					<span
+						key={index}
+						className={contentPart.token != null ? contentPartClass : undefined}
+						style={{ backgroundColor: contentPart.token?.color }}>
+						{contentPart.content}
+					</span>
+				))
+			}
+		</>
 	);
-});
+}
 
-export default SearchableContent;
+export default observer(SearchableContent);

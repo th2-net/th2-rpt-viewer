@@ -20,7 +20,6 @@ import EventWindowStore from './EventWindowStore';
 
 export default class EventStore {
 	constructor(private api: ApiSchema) {
-		this.api = api;
 	}
 
 	@observable eventWindows: EventWindowStore[] = [new EventWindowStore(this.api)];

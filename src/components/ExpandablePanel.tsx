@@ -72,35 +72,3 @@ export const ExpandablePanel = ({
 		</div>
 	);
 };
-
-interface RecoverablePanelProps extends PanelProps, RecoverableElementProps {}
-
-export const RecoverableExpandablePanel = ({ stateKey, ...props }: RecoverablePanelProps) => (
-	<StateSaver
-		stateKey={stateKey}>
-		{
-			(isExpanded: boolean, stateSaver) => (
-				<ExpandablePanel
-					{...props}
-					isExpanded={props.isExpanded !== undefined ? props.isExpanded : isExpanded}
-					onExpand={isPanelExpanded => {
-						stateSaver(isExpanded);
-						if (props.onExpand) {
-							props.onExpand(isPanelExpanded);
-						}
-					}}/>
-			)
-		}
-	</StateSaver>
-);
-
-interface SearchExpandablePanelOwnProps extends RecoverablePanelProps {
-    searchKeyPrefix: string;
-}
-
-export const SearchExpandablePanel = observer(({ searchKeyPrefix, ...props }: SearchExpandablePanelOwnProps) => {
-	const { searchStore } = useFirstEventWindowStore();
-	const [currentKey] = searchStore.results.getByIndex(searchStore.index as number);
-	const isExpanded = currentKey && currentKey.startsWith(searchKeyPrefix) ? true : undefined;
-	return <RecoverableExpandablePanel isExpanded={isExpanded} {...props} />;
-});

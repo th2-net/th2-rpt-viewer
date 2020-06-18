@@ -44,7 +44,7 @@ export default class EventWindowStore {
 
 	viewStore: ViewStore = new ViewStore();
 
-	searchStore: SearchStore = new SearchStore();
+	searchStore: SearchStore = new SearchStore(this.api, this);
 
 	constructor(private api: ApiSchema) {
 		autorun(() => {
@@ -86,6 +86,14 @@ export default class EventWindowStore {
 
 		const selectedRootNode = this.selectedPath[0];
 		return this.eventsCache.get(selectedRootNode.id) ?? null;
+	}
+
+	@computed get scrolledEventIndex(): number | null {
+		if (this.searchStore.scrolledItem == null) {
+			return null;
+		}
+
+		return this.nodesList.findIndex(node => node.id === this.searchStore.scrolledItem);
 	}
 
 	@action

@@ -54,6 +54,21 @@ const eventHttpApi: EventApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
+	getEventsByName: async name => {
+		const params = createURLSearchParams({
+			idsOnly: true,
+			name,
+		});
+
+		const res = await fetch(`/backend/rootEvents?${params}`);
+
+		if (res.ok) {
+			return await res.json();
+		}
+
+		console.error(res.statusText);
+		return [];
+	},
 };
 
 export default eventHttpApi;

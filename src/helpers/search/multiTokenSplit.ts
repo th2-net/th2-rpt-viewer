@@ -20,6 +20,13 @@ import SearchSplitResult from '../../models/search/SearchSplitResult';
 
 /* eslint-disable no-restricted-syntax */
 export default function multiTokenSplit(content: string, tokens: ReadonlyArray<SearchToken>): SearchSplitResult[] {
+	if (tokens.length === 0) {
+		return [{
+			content,
+			token: null,
+		}];
+	}
+
 	const sortRule = (a: SearchToken, b: SearchToken): number => {
 		if (a.isScrollable === b.isScrollable) {
 			// we are sorting tokens from longer to shorter one because in case of intersected tokens

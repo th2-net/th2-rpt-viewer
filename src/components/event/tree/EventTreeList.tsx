@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Virtuoso } from 'react-virtuoso';
+import { Virtuoso, VirtuosoMethods } from 'react-virtuoso';
 import EventTree from './EventTree';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import { createBemElement } from '../../../helpers/styleCreators';
@@ -27,6 +27,16 @@ import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 
 function EventTreeList() {
 	const eventWindowStore = useEventWindowStore();
+	const listRef = React.useRef<VirtuosoMethods | null>(null);
+
+	React.useEffect(() => {
+		if (eventWindowStore.scrolledEventIndex != null) {
+			listRef.current?.scrollToIndex({
+				index: eventWindowStore.scrolledEventIndex,
+				align: 'center',
+			});
+		}
+	}, [eventWindowStore.scrolledEventIndex]);
 
 	const computeKey = (index: number) => eventWindowStore.nodesList[index].id;
 
@@ -52,6 +62,7 @@ function EventTreeList() {
 			<div className={listRootClass} style={{ overflow: 'auto' }}>
 				<StateSaverProvider>
 					<Virtuoso
+						ref={listRef}
 						totalCount={eventWindowStore.nodesList.length}
 						computeItemKey={computeKey}
 						style={{ height: '100%' }}
