@@ -15,11 +15,7 @@
  ***************************************************************************** */
 
 import {
-	action,
-	observable,
-	reaction,
-	computed,
-	toJS,
+	action, computed, observable, reaction, toJS,
 } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import FilterStore from './FilterStore';
@@ -44,7 +40,11 @@ export default class MessagesStore {
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	public scrolledIndex: Number | null = null;
 
-	@observable beautifiedMessages: string[] = [];
+	@observable
+	public detailedRawMessagesIds: Array<string> = [];
+
+	@observable
+	public beautifiedMessages: string[] = [];
 
 	constructor(
 		private api: ApiSchema,
@@ -85,6 +85,24 @@ export default class MessagesStore {
 		this.isLoading = true;
 		this.messagesIds = await this.api.messages.getMessagesByFilter(filter);
 		this.isLoading = false;
+	};
+
+	@action
+	toggleMessageDetailedRaw = (messageId: string) => {
+		if (this.detailedRawMessagesIds.includes(messageId)) {
+			this.detailedRawMessagesIds = this.detailedRawMessagesIds.filter(id => id !== messageId);
+		} else {
+			this.detailedRawMessagesIds = [...this.detailedRawMessagesIds, messageId];
+		}
+	};
+
+	@action
+	toggleMessageBeautify = (messageId: string) => {
+		if (this.beautifiedMessages.includes(messageId)) {
+			this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
+		} else {
+			this.beautifiedMessages = [...this.beautifiedMessages, messageId];
+		}
 	};
 
 	fetchMessage = async (id: string) => {
@@ -135,6 +153,8 @@ export default class MessagesStore {
 		const copy = new MessagesStore(api, windowsStore);
 		copy.messagesIds = toJS(store.messagesIds);
 		copy.messagesCache = observable(store.messagesCache);
+		copy.beautifiedMessages = observable(store.beautifiedMessages);
+		copy.detailedRawMessagesIds = observable(store.detailedRawMessagesIds);
 		copy.isLoading = store.isLoading.valueOf();
 		copy.scrolledIndex = store.scrolledIndex?.valueOf() || null;
 		copy.filterStore.messagesFilter.timestampFrom = store.filterStore.messagesFilter.timestampFrom.valueOf();
