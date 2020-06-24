@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,27 +14,24 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { ActionNode, ActionNodeType } from './Action';
+import * as React from 'react';
+import { decodeBase64RawContent } from '../../helpers/rawFormatter';
 
-export default interface Message {
-    actionNodeType: ActionNodeType.MESSAGE;
-    id: string;
-    checkPoint?: unknown;
-    raw: string;
-    relatedActions: number[];
-    from: string;
-    to: string;
-    msgName: string;
-    content: any;
-    contentHumanReadable: string;
-    timestamp: string;
-    status?: string;
-
-    // generated fields
-    rawHex?: string;
-    rawHumanReadable?: string;
+interface Props {
+	rawContent: string;
 }
 
-export function isMessage(action: ActionNode): action is Message {
-	return action.actionNodeType === ActionNodeType.MESSAGE;
+export default function SimpleMessageRaw({ rawContent }: Props) {
+	const [, , humanReadable] = decodeBase64RawContent(rawContent);
+
+	return (
+		<div className="mc-raw">
+			<div className="mc-raw__header">
+				<div className="mc-raw__title">Raw message</div>
+			</div>
+			<div className="mc-raw__content">
+				{humanReadable}
+			</div>
+		</div>
+	);
 }

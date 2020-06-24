@@ -24,8 +24,7 @@ import '../../styles/messages.scss';
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 interface Props {
-    rawContent: string;
-    messageId: number;
+	rawContent: string;
 }
 
 export function MessageRaw({ rawContent }: Props) {
@@ -100,12 +99,12 @@ export function MessageRaw({ rawContent }: Props) {
 
 	return (
 		<div className="mc-raw">
-			<div className="mc-raw">
+			<div className="mc-raw__header">
 				<div className="mc-raw__title">Raw message</div>
 				<div className="mc-raw__copy-all"
-					onClick={copyAll}
-					title="Copy all raw content to clipboard">
-					<div className="mc-raw__copy-icon" />
+					 onClick={copyAll}
+					 title="Copy all raw content to clipboard">
+					<div className="mc-raw__copy-icon"/>
 					<div className="mc-raw__copy-title">
 						<span>Copy All</span>
 					</div>
@@ -117,21 +116,21 @@ export function MessageRaw({ rawContent }: Props) {
 				</div>
 				<div className="mc-raw__column primary">
 					<pre className="mc-raw__content-part"
-						ref={hexadecimalRef}>
+						 ref={hexadecimalRef}>
 						{renderOctet(hexadecimal)}
 					</pre>
 					<div className="mc-raw__copy-btn   mc-raw__copy-icon"
-						onClick={() => copyHandler(hexadecimal)}
-						title="Copy to clipboard" />
+						 onClick={() => copyHandler(hexadecimal)}
+						 title="Copy to clipboard"/>
 				</div>
 				<div className="mc-raw__column primary">
 					<pre className="mc-raw__content-part"
-						ref={humanReadableRef}>
+						 ref={humanReadableRef}>
 						{renderHumanReadable(beautifiedHumanReadable)}
 					</pre>
 					<div className="mc-raw__copy-btn   mc-raw__copy-icon"
-						onClick={() => copyHandler(humanReadable)}
-						title="Copy to clipboard" />
+						 onClick={() => copyHandler(humanReadable)}
+						 title="Copy to clipboard"/>
 				</div>
 			</div>
 		</div>

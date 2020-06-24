@@ -102,8 +102,8 @@
     padding: 7px 5px 9px 10px;
     color: $primaryTextColor;
     grid-template-rows: auto;
-    grid-template-columns: 1.4fr 40px 1fr 40px 2fr 40px 30px;
-    grid-template-areas: "timestamp name name-value session session-value beautify pin";
+    grid-template-columns: 1.4fr 40px 1fr 40px 2fr 30px 30px 30px;
+    grid-template-areas: "timestamp name name-value session session-value raw-format beautify pin";
 
     &__underline {
         border-bottom: 2px solid var(--status-primary-delimeter-color);
@@ -112,18 +112,6 @@
         bottom: 0;
         left: 10px;
         right: 10px;
-    }
-
-    &.admin {
-        grid-template-rows: 35px;
-        grid-template-columns: calc(195px - (var(--lb-count) * 20px)) 50px auto 1fr 30px 20px;
-        grid-template-areas: "info name name-value empty expand-icon";
-        padding: 0;
-
-        &::after {
-            border: none;
-            padding: 0;
-        }
     }
 
     &__info {
@@ -138,10 +126,6 @@
             padding-left: 6px;
             color: $primaryTextColor;
         }
-    }
-
-    &.admin &__info {
-        padding-left: 5px;
     }
 
     &__name {
@@ -222,6 +206,7 @@
             cursor: pointer;
         }
     }
+
     &__pin {
         grid-area: pin;
         display: flex;
@@ -231,21 +216,29 @@
         width: 20px;
         height: 20px;
         align-self: center;
-        justify-content: center;
         overflow: hidden;
     }
 
     &__pin-icon {
-        height: 15px;
-        width: 15px;
-        background-image: url(../../resources/icons/pin.svg);
-        background-repeat: no-repeat;
-        background-size: 100%;
+        @include icon(url(../../resources/icons/pin.svg), 15px, 15px);
+
         cursor: pointer;
         transition: 0.3s;
 
         &.active {
             transform: rotate(-45deg) scale(1.4);
+        }
+    }
+
+    &__raw-format {
+        @include icon(url(../../resources/icons/expand-on.svg), 15px, 15px);
+
+        justify-self: center;
+        align-self: center;
+        cursor: pointer;
+
+        &.active {
+            background-image: url(../../resources/icons/table-view-icon.svg);
         }
     }
 }
@@ -347,8 +340,8 @@
         display: flex;
         flex-direction: row;
         align-items: center;
-        width: 100%;
-        padding-top: 10px;
+        padding-top: 4px;
+        min-height: 30px;
     }
 
     &__title {
