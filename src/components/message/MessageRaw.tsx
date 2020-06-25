@@ -30,12 +30,8 @@ interface Props {
 export function MessageRaw({ rawContent }: Props) {
 	const hexadecimalRef = React.useRef<HTMLPreElement>(null);
 	const humanReadableRef = React.useRef<HTMLPreElement>(null);
-	const [hexSelectionStart, hexSelectionEnd] = useSelectListener(
-		hexadecimalRef as React.MutableRefObject<HTMLPreElement>,
-	);
-	const [humanSelectionStart, humanSelectionEnd] = useSelectListener(
-		humanReadableRef as React.MutableRefObject<HTMLPreElement>,
-	);
+	const [hexSelectionStart, hexSelectionEnd] = useSelectListener(hexadecimalRef);
+	const [humanSelectionStart, humanSelectionEnd] = useSelectListener(humanReadableRef);
 
 	const decodedRawContent = React.useMemo(
 		() => Raw.decodeBase64RawContent(rawContent),
@@ -48,6 +44,14 @@ export function MessageRaw({ rawContent }: Props) {
 		humanReadable,
 		beautifiedHumanReadable,
 	] = Raw.getRawContent(decodedRawContent);
+
+	const humanContentOnCopy = (e: React.ClipboardEvent<HTMLPreElement>) => {
+		if (humanSelectionStart != null && humanSelectionEnd != null) {
+			const contentPart = humanReadable.substring(humanSelectionStart, humanSelectionEnd);
+			e.preventDefault();
+			copyTextToClipboard(contentPart);
+		}
+	};
 
 	const renderHumanReadable = (content: string) => {
 		if (hexSelectionStart === hexSelectionEnd) {
@@ -125,6 +129,7 @@ export function MessageRaw({ rawContent }: Props) {
 				</div>
 				<div className="mc-raw__column primary">
 					<pre className="mc-raw__content-part"
+						 onCopy={humanContentOnCopy}
 						 ref={humanReadableRef}>
 						{renderHumanReadable(beautifiedHumanReadable)}
 					</pre>
