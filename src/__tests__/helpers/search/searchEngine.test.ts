@@ -76,7 +76,7 @@ describe('[Helpers] Search - searchEngine', () => {
 			name: 'some test name here',
 		};
 		const message = {
-			...createMessage('2'),
+			...createMessage(2),
 			msgName: 'some another name',
 		};
 		const testCase = createTestCase('0', [action], [message]);
@@ -85,7 +85,7 @@ describe('[Helpers] Search - searchEngine', () => {
 
 		const expectedResults: Array<[string, SearchSplitResult[]]> = [
 			[keyForAction(1, 'name'), multiTokenSplit(action.name, tokens)],
-			[keyForMessage('2', 'msgName'), multiTokenSplit(message.msgName, tokens)],
+			[keyForMessage(2, 'msgName'), multiTokenSplit(message.msgName, tokens)],
 		];
 
 		expect(results.entries).toEqual(expectedResults);

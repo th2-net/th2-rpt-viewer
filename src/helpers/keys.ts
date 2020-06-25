@@ -40,7 +40,7 @@ export function isKeyForAction(key: string): boolean {
         && (fieldName === undefined || ACTION_FIELDS.includes(fieldName as keyof Action));
 }
 
-export function keyForMessage(id: string, fieldName: keyof Message | null = null): string {
+export function keyForMessage(id: number, fieldName: keyof Message | null = null): string {
 	return `${MESSAGE_KEY_PREFIX}-${id}${fieldName ? `-${fieldName}` : ''}`;
 }
 
