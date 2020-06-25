@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,65 +15,130 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
-import DetailedMessageRaw from './DetailedMessageRaw';
-import SimpleMessageRaw from './SimpleMessageRaw';
-import { createBemElement } from '../../helpers/styleCreators';
-import { decodeBase64RawContent, getAllRawContent } from '../../helpers/rawFormatter';
+import * as Raw from '../../helpers/rawFormatter';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { showNotification } from '../../helpers/showNotification';
+import useSelectListener from '../../hooks/useSelectListener';
+import '../../styles/messages.scss';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 interface Props {
-	rawContent: string;
-	messageId: string;
+    rawContent: string;
+    messageId: number;
 }
 
-function MessageRaw({ rawContent, messageId }: Props) {
-	const messagesStore = useMessagesWindowStore();
-
-	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
-	const displayIconClass = createBemElement(
-		'mc-raw',
-		'display-btn',
-		isDetailed ? 'active' : null,
+export function MessageRaw({ rawContent }: Props) {
+	const hexadecimalRef = React.useRef<HTMLPreElement>(null);
+	const humanReadableRef = React.useRef<HTMLPreElement>(null);
+	const [hexSelectionStart, hexSelectionEnd] = useSelectListener(
+		hexadecimalRef as React.MutableRefObject<HTMLPreElement>,
+	);
+	const [humanSelectionStart, humanSelectionEnd] = useSelectListener(
+		humanReadableRef as React.MutableRefObject<HTMLPreElement>,
 	);
 
-	const copyAll = () => {
-		const copyContent = isDetailed
-			? getAllRawContent(decodeBase64RawContent(rawContent))
-			: atob(rawContent);
+	const decodedRawContent = React.useMemo(
+		() => Raw.decodeBase64RawContent(rawContent),
+		[rawContent],
+	);
 
-		copyTextToClipboard(copyContent);
-		showNotification(COPY_NOTIFICATION_TEXT);
+	const [
+		offset,
+		hexadecimal,
+		humanReadable,
+		beautifiedHumanReadable,
+	] = Raw.getRawContent(decodedRawContent);
+
+	const renderHumanReadable = (content: string) => {
+		if (hexSelectionStart === hexSelectionEnd) {
+			return (
+				<span>{content}</span>
+			);
+		}
+
+		const [startOffset, endOffset] = Raw.mapOctetOffsetsToHumanReadableOffsets(
+			hexSelectionStart as number,
+			hexSelectionEnd as number,
+		);
+
+		return (
+			<React.Fragment>
+				{content.slice(0, startOffset)}
+				<mark className="mc-raw__highlighted-content">
+					{content.slice(startOffset, endOffset)}
+				</mark>
+				{content.slice(endOffset)}
+			</React.Fragment>
+		);
 	};
+
+	const renderOctet = (content: string) => {
+		if (humanSelectionStart === humanSelectionEnd) {
+			return (
+				<span>{content}</span>
+			);
+		}
+
+		const [startOffset, endOffset] = Raw.mapHumanReadableOffsetsToOctetOffsets(
+			humanSelectionStart as number,
+			humanSelectionEnd as number,
+		);
+
+		return (
+			<React.Fragment>
+				{content.slice(0, startOffset)}
+				<mark className="mc-raw__highlighted-content">
+					{content.slice(startOffset, endOffset)}
+				</mark>
+				{content.slice(endOffset)}
+			</React.Fragment>
+		);
+	};
+
+	const copyAll = () => copyHandler(Raw.getAllRawContent(decodedRawContent));
 
 	return (
 		<div className="mc-raw">
-			<div className="mc-raw__header">
+			<div className="mc-raw">
 				<div className="mc-raw__title">Raw message</div>
 				<div className="mc-raw__copy-all"
-					 onClick={copyAll}
-					 title="Copy all raw content to clipboard">
-					<div className="mc-raw__copy-icon"/>
+					onClick={copyAll}
+					title="Copy all raw content to clipboard">
+					<div className="mc-raw__copy-icon" />
 					<div className="mc-raw__copy-title">
 						<span>Copy All</span>
 					</div>
 				</div>
-				<div
-					className={displayIconClass}
-					onClick={() => messagesStore.toggleMessageDetailedRaw(messageId)}
-					title={`Switch to ${isDetailed ? 'simplified' : 'detailed'} view`}/>
 			</div>
-			{
-				isDetailed
-					? <DetailedMessageRaw rawContent={rawContent}/>
-					: <SimpleMessageRaw rawContent={rawContent}/>
-			}
+			<div className="mc-raw__content">
+				<div className="mc-raw__column secondary">
+					<pre>{offset}</pre>
+				</div>
+				<div className="mc-raw__column primary">
+					<pre className="mc-raw__content-part"
+						ref={hexadecimalRef}>
+						{renderOctet(hexadecimal)}
+					</pre>
+					<div className="mc-raw__copy-btn   mc-raw__copy-icon"
+						onClick={() => copyHandler(hexadecimal)}
+						title="Copy to clipboard" />
+				</div>
+				<div className="mc-raw__column primary">
+					<pre className="mc-raw__content-part"
+						ref={humanReadableRef}>
+						{renderHumanReadable(beautifiedHumanReadable)}
+					</pre>
+					<div className="mc-raw__copy-btn   mc-raw__copy-icon"
+						onClick={() => copyHandler(humanReadable)}
+						title="Copy to clipboard" />
+				</div>
+			</div>
 		</div>
 	);
 }
 
-export default observer(MessageRaw);
+function copyHandler(content: string) {
+	copyTextToClipboard(content);
+	showNotification(COPY_NOTIFICATION_TEXT);
+}

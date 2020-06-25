@@ -25,6 +25,8 @@ import PanelArea from '../util/PanelArea';
 export default class WindowViewStore {
 	@observable isLoading = true;
 
+	@observable beautifiedMessages: string[] = [];
+
 	@observable panelArea: PanelArea = PanelArea.P50;
 
 	@observable eventTableModeEnabled = false;
@@ -35,6 +37,11 @@ export default class WindowViewStore {
 	};
 
 	@action
+	uglifyAllMessages = () => {
+		this.beautifiedMessages = [];
+	};
+
+	@action
 	setPanelArea = (panelArea: PanelArea) => {
 		this.panelArea = panelArea;
 	};
@@ -42,6 +49,15 @@ export default class WindowViewStore {
 	@action
 	setIsLoading = (isLoading: boolean) => {
 		this.isLoading = isLoading;
+	};
+
+	@action
+	toggleBeautify = (messageId: string) => {
+		if (this.beautifiedMessages.includes(messageId)) {
+			this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
+			return;
+		}
+		this.beautifiedMessages = [...this.beautifiedMessages, messageId];
 	};
 
 	@computed get isLeftPanelClosed() {
@@ -56,6 +72,7 @@ export default class WindowViewStore {
 		const copy = new WindowViewStore();
 
 		copy.isLoading = viewStore.isLoading.valueOf();
+		copy.beautifiedMessages = toJS(viewStore.beautifiedMessages);
 		copy.panelArea = toJS(viewStore.panelArea);
 		copy.eventTableModeEnabled = toJS(viewStore.eventTableModeEnabled);
 

@@ -16,23 +16,26 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import Message from '../../models/Message';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import { StatusType } from '../../models/Status';
 import { getHashCode } from '../../helpers/stringHash';
 import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
-import { formatTime, getTimestampAsNumber } from '../../helpers/date';
+import { getTimestampAsNumber } from '../../helpers/date';
 import { keyForMessage } from '../../helpers/keys';
 import StateSaver from '../util/StateSaver';
+import { PredictionData } from '../../models/MlServiceResponse';
+import PanelArea from '../../util/PanelArea';
 import { EventMessage } from '../../models/EventMessage';
 import { useHeatmap } from '../../hooks/useHeatmap';
 import { hexToRGBA } from '../../helpers/color';
-import MessageRaw from './MessageRaw';
-import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
+import { MessageRaw } from './MessageRaw';
 import { useStores } from '../../hooks/useStores';
 import '../../styles/messages.scss';
 
 const HUE_SEGMENTS_COUNT = 36;
 
-export interface OwnProps {
+export interface MessageCardOwnProps {
 	message: EventMessage;
 }
 
@@ -41,18 +44,49 @@ export interface RecoveredProps {
 	showRawHandler: (showRaw: boolean) => void;
 }
 
-interface Props extends OwnProps, RecoveredProps {
+export interface MessageCardStateProps {
+	rejectedMessagesCount: number;
+	isSelected: boolean;
+	isTransparent: boolean;
+	panelArea: PanelArea;
+	status: StatusType | null;
+	adminEnabled: boolean;
+	isContentBeautified: boolean;
+	prediction: PredictionData | null;
+	searchField: keyof Message | null;
+	color: string | undefined;
+	isPinned?: boolean;
+	toggleMessagePin?: (message: EventMessage) => void;
 }
 
-function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
-	const viewStore = useEventWindowViewStore();
-	const { windowsStore } = useStores();
-	const messagesStore = useMessagesWindowStore();
-	const { heatmapElements } = useHeatmap();
+export interface MessageCardDispatchProps {
+	selectHandler: (status?: StatusType) => void;
+	toggleBeautify: () => void;
+}
 
-	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
+export interface MessageCardProps extends MessageCardOwnProps,
+	Omit<MessageCardStateProps, 'searchField'>,
+	MessageCardDispatchProps,
+	RecoveredProps {
+}
+
+export function MessageCardBase(props: MessageCardProps) {
 	const {
-		messageId,
+		message,
+		isSelected,
+		isTransparent,
+		status,
+		selectHandler,
+		isContentBeautified,
+		toggleBeautify,
+		panelArea,
+		color,
+		isPinned,
+		toggleMessagePin,
+		showRaw,
+		showRawHandler,
+	} = props;
+	const {
 		timestamp,
 		messageType,
 		sessionId,
@@ -60,19 +94,16 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		bodyBase64,
 	} = message;
 
-	const isSelected = Boolean(heatmapElement);
-	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
-	const isPinned = windowsStore.pinnedMessagesIds.includes(messageId);
-	const color = heatmapElement?.color;
-
 	const rootClass = createBemBlock(
 		'message-card',
+		status,
 		isSelected ? 'selected' : null,
+		!isSelected && isTransparent ? 'transparent' : null,
 	);
 
 	const headerClass = createBemBlock(
 		'mc-header',
-		viewStore.panelArea,
+		panelArea,
 	);
 
 	const showRawClass = createBemElement(
@@ -86,7 +117,6 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		'icon',
 		isContentBeautified ? 'plain' : 'beautify',
 	);
-
 	// session arrow color, we calculating it for each session from-to pair, based on hash
 	const sessionArrowStyle: React.CSSProperties = {
 		filter: `invert(1) sepia(1) saturate(5) hue-rotate(${calculateHueValue(sessionId)}deg)`,
@@ -111,36 +141,49 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 				backgroundColor: color ? hexToRGBA(color, 15) : undefined,
 				borderColor: color,
 			}}>
-			<div className={headerClass}>
-				<div className="mc-header__name">Name</div>
+			<div className={headerClass}
+				 onClick={() => selectHandler()}>
+				<div className="mc-header__name">
+					<span>Name</span>
+				</div>
 				<div className="mc-header__name-value">
 					{messageType}
 				</div>
 				<div className="mc-header__timestamp">
-					{timestamp && formatTime(getTimestampAsNumber(timestamp))}
+					<p>
+						{timestamp
+						&& new Date(getTimestampAsNumber(timestamp)).toISOString().replace('T', ' ')}
+					</p>
 				</div>
-				<div className="mc-header__session">Session</div>
+				<div className="mc-header__session">
+					<span>Session</span>
+				</div>
 				<div className="mc-header__session-value">
 					<div className={sessionClass}
 						 style={sessionArrowStyle}/>
 					{sessionId}
 				</div>
 				{
-					message.body !== null && (
-						<div className="mc-beautify" onClick={() => messagesStore.toggleMessageBeautify(messageId)}>
-							<div className={beautifyIconClass}/>
-						</div>
-					)
+					message.body !== null
+					&& 	<div className="mc-beautify" onClick={() => toggleBeautify()}>
+						<div className={beautifyIconClass}/>
+				   </div>
 				}
 				<div className="mc-header__pin">
 					<div
 						title={isPinned ? 'Unpin' : 'Pin'}
 						className={pinClassName}
-						onClick={() => windowsStore.toggleMessagePin(message)}/>
+						onClick={() => {
+							if (toggleMessagePin) {
+								toggleMessagePin(message);
+							}
+						}}/>
 				</div>
 				<div
 					className="mc-header__underline"
-					style={{ borderColor: color }}/>
+					style={{
+						borderColor: color,
+					}}/>
 			</div>
 			<div className="message-card__body mc-body">
 				<div className="mc-body__human">
@@ -158,7 +201,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 					{
 						(bodyBase64 && bodyBase64 !== 'null') ? (
 							<div className="mc-show-raw"
-								 onClick={() => showRawHandler(!showRaw)}>
+								onClick={() => showRawHandler(!showRaw)}>
 								<div className="mc-show-raw__title">RAW</div>
 								<div className={showRawClass}/>
 							</div>
@@ -166,7 +209,9 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 					}
 					{
 						bodyBase64 && showRaw
-							? <MessageRaw messageId={messageId} rawContent={bodyBase64}/>
+							? <MessageRaw
+								rawContent={bodyBase64}
+								messageId={message.messageId as any}/>
 							: null
 					}
 				</div>
@@ -175,26 +220,57 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	);
 }
 
-export const MessageCard = observer(MessageCardBase);
-
 function calculateHueValue(session: string): number {
 	const hashCode = getHashCode(session);
 
 	return (hashCode % HUE_SEGMENTS_COUNT) * (360 / HUE_SEGMENTS_COUNT);
 }
 
-export const RecoverableMessageCard = (props: OwnProps) => (
+const MESSAGE_RAW_FIELDS: (keyof Message)[] = ['rawHex', 'rawHumanReadable'];
+
+export const RecoverableMessageCard = ({
+	searchField,
+	...props
+}: MessageCardStateProps & MessageCardOwnProps & MessageCardDispatchProps) => (
 	<StateSaver
-		stateKey={keyForMessage(props.message.messageId)}
+		stateKey={keyForMessage(props.message.messageId as any)}
 		getDefaultState={() => false}>
 		{(state, saveState) => (
-			<MessageCard
+			<MessageCardBase
 				{...props}
 				// we should always show raw content if something found in it
-				showRaw={state}
+				showRaw={MESSAGE_RAW_FIELDS.includes(searchField!) || state}
 				showRawHandler={saveState}/>
 		)}
 	</StateSaver>
 );
 
-export default RecoverableMessageCard;
+export const MessageCard = observer(({ message }: MessageCardOwnProps) => {
+	const messagesStore = useMessagesWindowStore();
+	const { windowsStore } = useStores();
+	const { heatmapElements } = useHeatmap();
+
+	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
+
+	return (
+		<RecoverableMessageCard
+			isSelected={Boolean(heatmapElement)}
+			color={heatmapElement?.color}
+			status={null}
+			isTransparent={false}
+			rejectedMessagesCount={0}
+			adminEnabled={true}
+			panelArea={PanelArea.P100}
+			isContentBeautified={messagesStore.beautifiedMessages.includes(message.messageId)}
+			prediction={null}
+			searchField={null}
+			selectHandler={() => 'stub'}
+			toggleBeautify={() => messagesStore.toggleBeautify(message.messageId)}
+			message={message}
+			isPinned={windowsStore.pinnedMessagesIds.includes(message.messageId)}
+			toggleMessagePin={windowsStore.toggleMessagePin}
+		/>
+	);
+});
+
+export default MessageCard;

@@ -18,7 +18,7 @@ import { ActionNode, ActionNodeType } from './Action';
 
 export default interface Message {
     actionNodeType: ActionNodeType.MESSAGE;
-    id: string;
+    id: number;
     checkPoint?: unknown;
     raw: string;
     relatedActions: number[];

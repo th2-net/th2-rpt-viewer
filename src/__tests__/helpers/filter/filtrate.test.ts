@@ -241,12 +241,12 @@ describe('[Helpers] filtrate', () => {
 
 		const testCase: TestCase = {
 			...testCaseBase,
-			messages: [createMessage('0', 'some test name')],
+			messages: [createMessage(0, 'some test name')],
 		};
 
 		const results = await filtrate(testCase, blocks);
 
-		expect(results).toEqual([keyForMessage('0')]);
+		expect(results).toEqual([keyForMessage(0)]);
 	});
 
 	test('Filter both actions and messages by service', async () => {
@@ -259,7 +259,7 @@ describe('[Helpers] filtrate', () => {
 		const testCase: TestCase = {
 			...testCaseBase,
 			messages: [{
-				...createMessage('0'),
+				...createMessage(0),
 				from: 'test service',
 			}],
 			actions: [{
@@ -270,7 +270,7 @@ describe('[Helpers] filtrate', () => {
 
 		const results = await filtrate(testCase, blocks);
 
-		expect(results.sort()).toEqual([keyForAction(1), keyForMessage('0')].sort());
+		expect(results.sort()).toEqual([keyForAction(1), keyForMessage(0)].sort());
 	});
 
 	test('Filter by several block values', async () => {
