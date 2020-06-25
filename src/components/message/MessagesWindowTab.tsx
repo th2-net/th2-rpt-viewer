@@ -14,8 +14,22 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export interface ScrollHint {
-	index: number;
-	id: number;
-	type: 'Action' | 'Message';
-}
+import React from 'react';
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../../hooks/useStores';
+import { TabProps, Tab } from '../tabs/Tab';
+
+const MessagesWindowTab = (tabProps: Omit<TabProps, 'children'>) => {
+	const { windowsStore } = useStores();
+	const attachedMessagesCount = [...windowsStore.attachedMessagesIds.values()].flat().length;
+	return (
+		<Tab {...tabProps}>
+			Messages
+			<span className="messages-tab__count">
+				{attachedMessagesCount}
+			</span>
+		</Tab>
+	);
+};
+
+export default observer(MessagesWindowTab);

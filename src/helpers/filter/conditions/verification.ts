@@ -27,19 +27,19 @@ const STUB_FUNCTION = () => false;
 
 export default function getVerificationCondition(path: FilterPath, values: string[]): FilterCondition<Verification> {
 	switch (path) {
-	case FilterPath.SERVICE:
-		return STUB_FUNCTION;
+		case FilterPath.SERVICE:
+			return STUB_FUNCTION;
 
-	case FilterPath.STATUS:
-		return verification => values.includes(verification.status.status);
+		case FilterPath.STATUS:
+			return verification => values.includes(verification.status.status);
 
-	case FilterPath.ALL:
-		return verification =>
-			filterEntry(verification, VERIFICATION_FIELDS, toRegExpArray(values))
+		case FilterPath.ALL:
+			return verification =>
+				filterEntry(verification, VERIFICATION_FIELDS, toRegExpArray(values))
                 || verification.entries.some(entry => filterVerificationsEntry(entry, toRegExpArray(values)));
 
-	default:
-		return STUB_FUNCTION;
+		default:
+			return STUB_FUNCTION;
 	}
 }
 

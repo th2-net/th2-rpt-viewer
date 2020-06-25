@@ -21,34 +21,41 @@ export const DEFAULT_PIN_COLOR = '#4D4D4D';
 
 export const getHeatmapElements = (
 	items: string[],
-	selectedItems: string[],
+	selectedItems: Map<string, string[]>,
 	pinnedItems: string[] = [],
-	color = DEFAULT_HEATMAP_ELEMENT_COLOR,
 	pinColor = DEFAULT_PIN_COLOR,
 ): HeatmapElement[] => {
 	const emptyHeatmap = [createHeatmapElement(0, items.length || 1)];
+	if (!selectedItems.size && !pinnedItems.length) return emptyHeatmap;
 
-	if (!selectedItems.length && !pinnedItems.length) return emptyHeatmap;
+	let points: [number, string][] = [];
 
-	const idsIndexes = [...new Set([...selectedItems, ...pinnedItems])]
-		.filter(id => items.includes(id))
-		.map(id => items.indexOf(id));
-	idsIndexes.sort((a, b) => a - b);
+	selectedItems.forEach((ids, color) => ids.forEach(id => points.push([items.indexOf(id), color])));
 
-	const heatmapElements = idsIndexes
-		.reduce<HeatmapElement[]>((blocks, itemIndex, index) => {
+	pinnedItems
+		.map(pinnedItemId => items.indexOf(pinnedItemId))
+		.filter(pinnedItemIndex => points.findIndex(([index]) => pinnedItemIndex === index) === -1)
+		.forEach(index => points.push([index, pinColor]));
+
+	points = points.filter(([itemIndex], i, self) =>
+		itemIndex !== -1 && self.findIndex(([index]) => index === itemIndex) === i);
+
+	points.sort(([indexA], [indexB]) => indexA - indexB);
+
+	const heatmapElements = points
+		.reduce<HeatmapElement[]>((blocks, [itemIndex, color], index) => {
 			const isPinned = pinnedItems.includes(items[itemIndex]);
-			const isAttached = selectedItems.includes(items[itemIndex]);
-			const nextIndex = idsIndexes[index + 1];
+			const [nextIndex] = points[index + 1] || [];
 			blocks.push(
 				createHeatmapElement(
 					itemIndex,
 					1,
 					items[itemIndex],
-					isAttached ? color : pinColor,
+					color,
 					isPinned,
 				),
 			);
+
 			if (nextIndex && nextIndex - itemIndex !== 1) {
 				blocks.push(
 					createHeatmapElement(
@@ -112,8 +119,8 @@ export const inRange = (
 	const { startIndex, endIndex } = range;
 	const { index, count } = heatmapElement;
 	const elEnd = index + count - 1;
-	const isInRange = elEnd >= startIndex && elEnd <= endIndex;
-	return isInRange;
+
+	return elEnd >= startIndex && elEnd <= endIndex;
 };
 
 export const isHeatmapPoint = (heatmapEl: HeatmapElement) =>

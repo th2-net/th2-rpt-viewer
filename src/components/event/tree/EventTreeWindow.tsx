@@ -16,11 +16,10 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import LeftPanel from '../../LeftPanel';
+import SplitViewPane from '../../split-view/SplitViewPane';
 import EventTreeList from './EventTreeList';
-import RightPanel from '../../RightPanel';
 import Empty from '../../Empty';
-import SplitView from '../../SplitView';
+import SplitView from '../../split-view/SplitView';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
 import EventDetailInfoCard from '../EventDetailInfoCard';
@@ -33,22 +32,20 @@ function EventTreeWindow() {
 		<SplitView
 			panelArea={viewStore.panelArea}
 			onPanelAreaChange={viewStore.setPanelArea}
-			leftPanelMinWidth={500}
-			rightPanelMinWidth={500}>
-			<LeftPanel>
+			leftPanelMinWidth={445}
+			rightPanelMinWidth={445}>
+			<SplitViewPane>
 				<EventTreeList/>
-			</LeftPanel>
-			<RightPanel>
-				<div className="layout-panel__content-wrapper">
-					{
-						eventWindowStore.selectedNode ? (
-							<EventDetailInfoCard idNode={eventWindowStore.selectedNode}/>
-						) : (
-							<Empty description="Select event"/>
-						)
-					}
-				</div>
-			</RightPanel>
+			</SplitViewPane>
+			<SplitViewPane>
+				{
+					eventWindowStore.selectedNode ? (
+						<EventDetailInfoCard idNode={eventWindowStore.selectedNode}/>
+					) : (
+						<Empty description="Select event"/>
+					)
+				}
+			</SplitViewPane>
 		</SplitView>
 	);
 }

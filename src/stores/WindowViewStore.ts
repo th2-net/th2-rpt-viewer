@@ -18,29 +18,23 @@ import {
 	observable,
 	action,
 	computed,
-	reaction,
+	toJS,
 } from 'mobx';
 import PanelArea from '../util/PanelArea';
-import SearchParams from '../util/SearchParams';
-
-// eslint-disable-next-line eqeqeq
-const showMessagesInitialValue = new URLSearchParams(window.location.search).get(SearchParams.messages) == 'true';
 
 export default class WindowViewStore {
-	constructor() {
-		reaction(
-			() => this.showMessages,
-			this.onViewChange,
-		);
-	}
-
 	@observable isLoading = true;
 
 	@observable beautifiedMessages: string[] = [];
 
 	@observable panelArea: PanelArea = PanelArea.P50;
 
-	@observable showMessages = showMessagesInitialValue;
+	@observable eventTableModeEnabled = false;
+
+	@action
+	setTableModeEnabled = (isEnabled: boolean) => {
+		this.eventTableModeEnabled = isEnabled;
+	};
 
 	@action
 	uglifyAllMessages = () => {
@@ -74,13 +68,14 @@ export default class WindowViewStore {
 		return this.panelArea === PanelArea.P100;
 	}
 
-	private onViewChange = () => {
-		const params = new URLSearchParams();
-		if (this.showMessages) {
-			params.set(SearchParams.messages, this.showMessages.toString());
-		} else {
-			params.delete(SearchParams.messages);
-		}
-		window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
-	};
+	static copy(viewStore: WindowViewStore) {
+		const copy = new WindowViewStore();
+
+		copy.isLoading = viewStore.isLoading.valueOf();
+		copy.beautifiedMessages = toJS(viewStore.beautifiedMessages);
+		copy.panelArea = toJS(viewStore.panelArea);
+		copy.eventTableModeEnabled = toJS(viewStore.eventTableModeEnabled);
+
+		return copy;
+	}
 }

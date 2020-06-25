@@ -16,26 +16,27 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import Header from '../Header';
 import { useStores } from '../../hooks/useStores';
-import { EventWindowProvider } from '../../contexts/eventWindowContext';
-import EventWindow from './EventWindow';
+import SplitView from '../split-view/SplitView';
+import AppWindow from '../AppWindow';
+import '../../styles/layout.scss';
 
 const EventsLayout = () => {
-	const { eventsStore } = useStores();
+	const { windowsStore, appViewStore } = useStores();
 
 	return (
-		<div className="layout">
-			<div className="layout__header">
-				<Header />
-			</div>
-			<div className="layout__body">
-				{eventsStore.eventWindows.map((eventWindowStore, index) => (
-					<EventWindowProvider value={eventWindowStore} key={index}>
-						<EventWindow />
-					</EventWindowProvider>
-				))}
-			</div>
+		<div className="events-layout">
+			{
+				windowsStore.windows.length === 1
+					? <AppWindow windowStore={windowsStore.windows[0]} windowIndex={0}/>
+					: <SplitView panelArea={appViewStore.panelArea} onPanelAreaChange={appViewStore.setPanelArea}>
+						{windowsStore.windows.map((w, index) =>
+							<AppWindow
+								windowStore={w}
+								key={`window-${index}`}
+								windowIndex={index} />) as [React.ReactNode, React.ReactNode]}
+					</SplitView>
+			}
 		</div>
 	);
 };

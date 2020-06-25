@@ -19,7 +19,7 @@ import {
 } from '../../util/creators';
 import { findAll } from '../../../helpers/search/searchEngine';
 import { keyForAction, keyForMessage } from '../../../helpers/keys';
-import SearchToken, { PanelSearchToken } from '../../../models/search/SearchToken';
+import { PanelSearchToken } from '../../../models/search/SearchToken';
 import SearchSplitResult from '../../../models/search/SearchSplitResult';
 import multiTokenSplit from '../../../helpers/search/multiTokenSplit';
 

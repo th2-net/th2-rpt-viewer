@@ -25,16 +25,16 @@ const STUB_FUNCTION = () => false;
 
 export default function getMessageCondition(path: FilterPath, values: string[]): FilterCondition<Message> {
 	switch (path) {
-	case FilterPath.SERVICE:
-		return message => filterEntry(message, ['from', 'to'], toRegExpArray(values));
+		case FilterPath.SERVICE:
+			return message => filterEntry(message, ['from', 'to'], toRegExpArray(values));
 
-	case FilterPath.STATUS:
-		return STUB_FUNCTION;
+		case FilterPath.STATUS:
+			return STUB_FUNCTION;
 
-	case FilterPath.ALL:
-		return message => filterEntry(message, MESSAGE_FIELDS, toRegExpArray(values));
+		case FilterPath.ALL:
+			return message => filterEntry(message, MESSAGE_FIELDS, toRegExpArray(values));
 
-	default:
-		return STUB_FUNCTION;
+		default:
+			return STUB_FUNCTION;
 	}
 }

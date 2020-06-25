@@ -16,36 +16,35 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import MessagesCardList from './MessagesCardList';
-import { useMessagesStore } from '../../hooks/useMessagesStore';
-import SidePanel from '../SidePanel';
+import MessagesWindowHeader from './MessagesWindowHeader';
 import { HeatmapProvider } from '../heatmap/HeatmapProvider';
-import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
-import MessagesPanelControls from './MessagesPanelControls';
+import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import MessagesCardList from './MessagesCardList';
+import { useStores } from '../../hooks/useStores';
 
-const MessagesPanel = observer(() => {
-	const messagesStore = useMessagesStore();
-	const windowViewStore = useEventWindowViewStore();
+const MessagesWindow = () => (
+	<div className="layout">
+		<div className="layout__header">
+			<MessagesWindowHeader />
+		</div>
+		<div className="layout__body">
+			<MessagesCardList />
+		</div>
+	</div>
+);
+
+export default observer(() => {
+	const messagesStore = useMessagesWindowStore();
+	const { windowsStore } = useStores();
 
 	return (
 		<HeatmapProvider
 			scrollToItem={(index: number) => messagesStore.scrolledIndex = new Number(index)}
 			items={messagesStore.messagesIds}
-			selectedItems={messagesStore.attachedMessagesIds}
+			selectedItems={windowsStore.attachedMessagesIds}
 			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}
-			pinnedItems={messagesStore.pinnedMessagesIds}>
-			<SidePanel
-				isOpen={windowViewStore.showMessages}
-				onClose={() => windowViewStore.showMessages = false}>
-				<div className="messages-panel">
-					<MessagesPanelControls />
-					<div className="messages-panel__list">
-						<MessagesCardList />
-					</div>
-				</div>
-			</SidePanel>
+			pinnedItems={windowsStore.pinnedMessagesIds}>
+			<MessagesWindow />
 		</HeatmapProvider>
 	);
 });
-
-export default MessagesPanel;

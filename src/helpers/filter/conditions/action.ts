@@ -26,18 +26,18 @@ const STUB_FUNCTION = () => false;
 
 export default function getActionCondition(path: FilterPath, values: string[]): FilterCondition<Action> {
 	switch (path) {
-	case FilterPath.SERVICE:
-		return action => filterEntry(action, ['serviceName'], toRegExpArray(values));
+		case FilterPath.SERVICE:
+			return action => filterEntry(action, ['serviceName'], toRegExpArray(values));
 
-	case FilterPath.STATUS:
-		return action => values.includes(action.status.status);
+		case FilterPath.STATUS:
+			return action => values.includes(action.status.status);
 
-	case FilterPath.ALL:
-		return action => filterEntry(action, ACTION_FIELDS, toRegExpArray(values))
+		case FilterPath.ALL:
+			return action => filterEntry(action, ACTION_FIELDS, toRegExpArray(values))
                 || filterInputParams(action.parameters, toRegExpArray(values));
 
-	default:
-		return STUB_FUNCTION;
+		default:
+			return STUB_FUNCTION;
 	}
 }
 

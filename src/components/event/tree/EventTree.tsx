@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import PanelArea from '../../../util/PanelArea';
 import EventCardHeader from '../EventCardHeader';
 import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
-import { EventIdNode } from '../../../stores/EventWindowStore';
+import { EventIdNode } from '../../../stores/EventsStore';
 import EventCardSkeleton from '../EventCardSkeleton';
 import ExpandIcon from '../../ExpandIcon';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';

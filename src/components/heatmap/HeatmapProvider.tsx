@@ -23,10 +23,11 @@ import { HeatmapContext } from '../../contexts/heatmapContext';
 interface HeatmapProviderProps {
 	children: React.ReactNode;
 	items: string[];
-	selectedItems: string[];
+	selectedItems: Map<string, string[]>;
 	pinnedItems: string[];
 	selectedIndex: number | null;
 	scrollToItem: (index: number) => void;
+	colors?: string[];
 }
 
 export const HeatmapProvider = ({
@@ -48,11 +49,15 @@ export const HeatmapProvider = ({
 			selectedItems,
 			pinnedItems,
 		);
-		const updatedRange = getHeatmapRange(updatedHeatmap, selectedItems.length === 1);
+		const selected = [...selectedItems.values()].flat().filter(i => items.includes(i));
+
+		const updatedRange = getHeatmapRange(
+			updatedHeatmap,
+			selected.length === 1,
+		);
 		setHeatmapElements(updatedHeatmap);
 		setFullRange(updatedRange);
 
-		const selected = selectedItems.filter(i => items.includes(i));
 		const firstSelectedItem = selected.length > 0
 			? selected.map(item => items.indexOf(item))[0]
 			: heatmapElements.find(heatmapEl => heatmapEl.id !== undefined)?.index;

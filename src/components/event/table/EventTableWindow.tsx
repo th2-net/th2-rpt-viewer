@@ -19,15 +19,14 @@ import { observer } from 'mobx-react-lite';
 import { Flipper } from 'react-flip-toolkit';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import EventsColumn from './EventsColumn';
-import '../../../styles/events.scss';
-import EventBreadcrumbs from '../EventBreadcrumbs';
 import CardDisplayType from '../../../util/CardDisplayType';
 import EventMinimapColumn from './EventMinimapColumn';
 import EventDetailInfoCard from '../EventDetailInfoCard';
 import SplashScreen from '../../SplashScreen';
-import SplitView from '../../SplitView';
+import SplitView from '../../split-view/SplitView';
 import Empty from '../../Empty';
 import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
+import '../../../styles/events.scss';
 
 function EventTableWindow() {
 	const eventsStore = useEventWindowStore();
@@ -43,18 +42,11 @@ function EventTableWindow() {
 			className='event-table-window'
 			flipKey={eventsStore.selectedPath.reduce((acc, node) => `${acc}-${node.id}`, '')}
 			staggerConfig={{ default: { speed: 1 } }}>
-			<div className='event-table-window__breadcrumbs'>
-				<EventBreadcrumbs
-					rootEventsEnabled
-					nodes={eventsStore.selectedPath}
-					onSelect={eventsStore.selectNode}/>
-			</div>
 			<SplitView
-				className='event-table-window__main'
 				panelArea={viewStore.panelArea}
 				onPanelAreaChange={viewStore.setPanelArea}
-				leftPanelMinWidth={500}
-				rightPanelMinWidth={500}>
+				leftPanelMinWidth={445}
+				rightPanelMinWidth={445}>
 				<div className='event-table-window__columns'>
 					{
 						eventsStore.selectedNode == null ? (

@@ -460,29 +460,14 @@
     }
 }
 
-.messages {
+.messages-list {
     height: 100%;
     width: 100%;
     word-wrap: break-word;
 
-    &__filter-info {
-        height: $filterCountHeight;
-        font-size: 14px;
-        font-weight: bold;
-        color: $filterPrimaryColor;
-
-        display: flex;
-        align-items: center;
-        padding-left: 20px;
-    }
-
-    &__list {
+    &__items {
         height: 100%;
         @include hidden-scrollbar;
-        
-        &.filter-applied {
-            height: calc(100% - #{$filterCountHeight});
-        }
     }
 }
 
@@ -600,25 +585,12 @@
     }
 }
 
-.messages-panel {
+.messages-window-header {
     height: 100%;
     width: 100%;
-    padding: 10px 20px;
-    display: grid;
-    border-radius: 10px 0px 0px 10px;
-    grid-template-areas: "header"
-                        "list";
-    grid-template-rows: 40px 1fr;
-    column-gap: 9px;
+    display: flex;
     overflow: hidden;
-
-    &__header {
-        grid-area: header;
-        display: flex;
-        width: 100%;
-        overflow: hidden;
-        justify-content: space-between;
-    }
+    justify-content: space-between;
 
     &__group {
         display: flex;
@@ -637,22 +609,7 @@
         padding-right: 10px;
     }
 
-    &__list {
-        grid-area: list;
-    }
-
-    &__close-button {
-        @include icon(url(../../resources/icons/cross-icon-dark.svg), 12px, 12px);
-        background-size: 200%;
-        // position: absolute;
-        top: 21px;
-        right: 26px;
-        cursor: pointer;
-        order: 4;
-        margin-right: 17px;
-    }
-
-    &__controls {
+    &__steps {
         display: flex;
         justify-content: flex-end;
         align-items: center;
@@ -663,16 +620,17 @@
     &__button {
         cursor: pointer;
         transform-origin: center;
+
         &:first-child{
             @include icon(url(../../resources/icons/arr1-left-enabled.svg), 20px, 20px);
             transform: rotate(90deg);
             order: 1;
         }
+
         &:nth-child(2){
             @include icon(url(../../resources/icons/arr1-left-enabled.svg), 20px, 20px);
             transform: rotate(270deg);
             order: 3;
-            margin-right: 40px;
         }
 
         &.disabled {
@@ -681,7 +639,7 @@
         }
     }
 
-    &__counter {
+    &__steps-count {
         font-size: 14px;
         line-height: 19px;
         color: $ml-gray-color;
@@ -689,5 +647,23 @@
         margin: 0 22px;
         order: 2;
         color: $primaryTextColor;
+    }
+}
+
+.messages-tab {
+    &__count {
+        box-sizing: border-box;
+        display: inline-block;
+        width: auto;
+        height: 20px;
+        border-radius: 10px;
+        border: 2px solid $secondaryLightTextColor;
+        color: $secondaryLightTextColor;
+        font-size: 11px;
+        text-align: center;
+        line-height: 16px;
+        background-color: white;
+        padding: 0 7px;
+        margin-left: 8px;
     }
 }

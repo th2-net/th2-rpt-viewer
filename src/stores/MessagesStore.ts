@@ -19,14 +19,18 @@ import {
 	observable,
 	reaction,
 	computed,
+	toJS,
 } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import FilterStore from './FilterStore';
 import { EventMessage } from '../models/EventMessage';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import { prevCyclicItem, nextCyclicItem } from '../helpers/array';
+import WindowsStore from './WindowsStore';
 
 export default class MessagesStore {
+	filterStore = new FilterStore();
+
 	@observable
 	public messagesIds: Array<string> = [];
 
@@ -40,15 +44,11 @@ export default class MessagesStore {
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	public scrolledIndex: Number | null = null;
 
-	@observable
-	public pinnedMessagesIds: Array<string> = [];
-
-	@observable
-	public attachedMessagesIds: Array<string> = [];
+	@observable beautifiedMessages: string[] = [];
 
 	constructor(
 		private api: ApiSchema,
-		private filterStore: FilterStore,
+		private windowsStore: WindowsStore,
 	) {
 		reaction(
 			() => this.filterStore.messagesFilter,
@@ -63,14 +63,16 @@ export default class MessagesStore {
 			},
 		);
 
-		this.loadMessagesByFilter(filterStore.messagesFilter);
+		this.loadMessagesByFilter(this.filterStore.messagesFilter);
 	}
 
 	@computed
 	get selectedMessagesIds(): Array<number> {
-		if (!this.attachedMessagesIds.length && !this.pinnedMessagesIds.length) return [];
+		if (!this.windowsStore.attachedMessagesIds.size && !this.windowsStore.pinnedMessagesIds.length) return [];
 
-		const messagesIndexes = [...new Set([...this.attachedMessagesIds, ...this.pinnedMessagesIds])]
+		const attachedMessagesIds = [...this.windowsStore.attachedMessagesIds.values()].flat();
+
+		const messagesIndexes = [...new Set([...attachedMessagesIds, ...this.windowsStore.pinnedMessagesIds])]
 			.filter(id => this.messagesIds.includes(id))
 			.map(id => this.messagesIds.indexOf(id));
 
@@ -83,18 +85,6 @@ export default class MessagesStore {
 		this.isLoading = true;
 		this.messagesIds = await this.api.messages.getMessagesByFilter(filter);
 		this.isLoading = false;
-	};
-
-	@action
-	toggleMessagePin = (message: EventMessage) => {
-		const { messageId } = message;
-		if (!this.pinnedMessagesIds.includes(messageId)) {
-			this.pinnedMessagesIds = this.pinnedMessagesIds.concat(messageId);
-		} else {
-			this.pinnedMessagesIds = this.pinnedMessagesIds.filter(
-				id => id !== messageId,
-			);
-		}
 	};
 
 	fetchMessage = async (id: string) => {
@@ -127,4 +117,31 @@ export default class MessagesStore {
 		const prevIndex = prevCyclicItem(this.selectedMessagesIds, this.scrolledIndex.valueOf());
 		this.scrolledIndex = new Number(prevIndex);
 	};
+
+	@action
+	toggleBeautify = (messageId: string) => {
+		if (this.beautifiedMessages.includes(messageId)) {
+			this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
+			return;
+		}
+		this.beautifiedMessages = [...this.beautifiedMessages, messageId];
+	};
+
+	static copy(
+		store: MessagesStore,
+		api: ApiSchema,
+		windowsStore: WindowsStore,
+	) {
+		const copy = new MessagesStore(api, windowsStore);
+		copy.messagesIds = toJS(store.messagesIds);
+		copy.messagesCache = observable(store.messagesCache);
+		copy.isLoading = store.isLoading.valueOf();
+		copy.scrolledIndex = store.scrolledIndex?.valueOf() || null;
+		copy.filterStore.messagesFilter.timestampFrom = store.filterStore.messagesFilter.timestampFrom.valueOf();
+		copy.filterStore.messagesFilter.timestampTo = store.filterStore.messagesFilter.timestampTo.valueOf();
+		copy.filterStore.messagesFilter.stream = store.filterStore.messagesFilter.stream?.valueOf() || null;
+		copy.filterStore.messagesFilter.messageType = store.filterStore.messagesFilter.messageType?.valueOf() || null;
+
+		return copy;
+	}
 }

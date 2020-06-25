@@ -17,18 +17,15 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import KeyCodes from '../../util/KeyCodes';
-import PinButton from '../PinButton';
 import { useHeatmap } from '../../hooks/useHeatmap';
-import { useEventWindowStore } from '../../hooks/useEventWindowStore';
-import { useMessagesStore } from '../../hooks/useMessagesStore';
-import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
+import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import MessagesFilter from '../filter/MessagesFilterPanel';
+import { useStores } from '../../hooks/useStores';
 
-const MessagePanelControls = () => {
+const MessagesWindowHeader = () => {
 	const { heatmapElements } = useHeatmap();
-	const messagesStore = useMessagesStore();
-	const windowViewStore = useEventWindowViewStore();
+	const { windowsStore } = useStores();
+	const messagesStore = useMessagesWindowStore();
 
 	const getStep = () => {
 		const messagesIndexes = heatmapElements
@@ -41,21 +38,21 @@ const MessagePanelControls = () => {
 	};
 
 	const navButtonClass = createStyleSelector(
-		'messages-panel__button',
-		messagesStore.selectedMessagesIds.length < 0 ? 'disabled' : null,
+		'messages-window-header__button',
+		windowsStore.attachedMessagesIds.size > 0 || windowsStore.pinnedMessagesIds.length > 0
+			? null : 'disabled',
 	);
 
 	return (
-		<div className="messages-panel__header">
-			<div className="messages-panel__group">
-				<PinButton isDisabled={true} />
+		<div className="messages-window-header">
+			<div className="messages-window-header__group">
 				<MessagesFilter />
 			</div>
-			<div className="messages-panel__group">
-				<h2 className="messages-panel__title">
+			<div className="messages-window-header__group">
+				<h2 className="messages-window-header__title">
 					Messages
 				</h2>
-				<div className="messages-panel__controls">
+				<div className="messages-window-header__steps">
 					<div
 						className={navButtonClass}
 						role="button"
@@ -66,19 +63,13 @@ const MessagePanelControls = () => {
 						role="button"
 						title="next"
 						onClick={messagesStore.selectNextMessage}/>
-					<div className="messages-panel__counter">
+					<div className="messages-window-header__steps-count">
 						{getStep()}
 					</div>
-					<div
-						className="messages-panel__close-button"
-						role="button"
-						title="close"
-						onClick={() => windowViewStore.showMessages = false}/>
 				</div>
 			</div>
-
 		</div>
 	);
 };
 
-export default observer(MessagePanelControls);
+export default observer(MessagesWindowHeader);

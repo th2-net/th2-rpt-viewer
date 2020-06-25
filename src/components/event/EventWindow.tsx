@@ -17,28 +17,30 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
-import { useStores } from '../../hooks/useStores';
 import EventTreeWindow from './tree/EventTreeWindow';
 import EventTableWindow from './table/EventTableWindow';
-import MessagesPanel from '../message/MessagesPanel';
+import EventWindowHeader from './EventWindowHeader';
 import '../../styles/events.scss';
 
 const EventWindow = () => {
 	const eventWindowStore = useEventWindowStore();
-	const { viewStore: appViewStore } = useStores();
 
 	React.useEffect(() => {
 		eventWindowStore.fetchRootEvents();
 	}, []);
 
 	return (
-		<div className="event-window">
-			{
-				appViewStore.eventTableModeEnabled
-					? <EventTableWindow/>
-					: <EventTreeWindow/>
-			}
-			<MessagesPanel />
+		<div className="layout">
+			<div className="layout__header">
+				<EventWindowHeader />
+			</div>
+			<div className="layout__body">
+				{
+					eventWindowStore.viewStore.eventTableModeEnabled
+						? <EventTableWindow/>
+						: <EventTreeWindow/>
+				}
+			</div>
 		</div>
 	);
 };

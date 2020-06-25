@@ -17,4 +17,12 @@
 import React from 'react';
 import { EventWindowContext } from '../contexts/eventWindowContext';
 
-export const useEventWindowStore = () => React.useContext(EventWindowContext);
+export const useEventWindowStore = () => {
+	const eventWindowStore = React.useContext(EventWindowContext);
+
+	if (!eventWindowStore) {
+		throw new Error('EventWindowContext should be used inside of EventWindowStoreProvider');
+	}
+
+	return eventWindowStore;
+};

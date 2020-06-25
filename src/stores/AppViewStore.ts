@@ -18,19 +18,20 @@ import {
 	observable,
 	action,
 } from 'mobx';
+import PanelArea from '../util/PanelArea';
 
 export default class AppViewStore {
 	@observable isLoading = true;
 
-	@observable eventTableModeEnabled = false;
+	@observable panelArea: PanelArea = PanelArea.P50;
+
+	@action
+	setPanelArea = (panelArea: PanelArea) => {
+		this.panelArea = panelArea;
+	};
 
 	@action
 	setIsLoading = (isLoading: boolean) => {
 		this.isLoading = isLoading;
-	};
-
-	@action
-	setTableModeEnabled = (isEnabled: boolean) => {
-		this.eventTableModeEnabled = isEnabled;
 	};
 }

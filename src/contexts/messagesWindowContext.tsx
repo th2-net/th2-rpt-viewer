@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,22 +11,25 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import '../styles/layout.scss';
+import React from 'react';
+import MessagesStore from '../stores/MessagesStore';
 
-interface RightPanelProps {
+const MessagesWindowContext = React.createContext<MessagesStore | null>(null);
+
+interface MessagesWindowProviderProps {
 	children: React.ReactNode;
+	value: MessagesStore;
 }
-
-const RightPanel = ({ children }: RightPanelProps) => (
-	<div className="layout-panel">
-		<div className="layout-panel__content">
-			{children}
-		</div>
-	</div>
+const MessagesWindowProvider = ({ children, value }: MessagesWindowProviderProps) => (
+	<MessagesWindowContext.Provider value={value}>
+		{children}
+	</MessagesWindowContext.Provider>
 );
 
-export default RightPanel;
+export {
+	MessagesWindowContext,
+	MessagesWindowProvider,
+};

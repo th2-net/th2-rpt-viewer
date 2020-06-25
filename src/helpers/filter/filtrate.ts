@@ -74,19 +74,19 @@ function createActionMapper(
 	return function actionMapper(action: Action): string[] {
 		const subNodeResults = action.subNodes?.flatMap(subNode => {
 			switch (subNode.actionNodeType) {
-			case ActionNodeType.ACTION:
-				return actionMapper(subNode);
+				case ActionNodeType.ACTION:
+					return actionMapper(subNode);
 
-			case ActionNodeType.VERIFICATION:
-				if (verificationConditions.length > 0
+				case ActionNodeType.VERIFICATION:
+					if (verificationConditions.length > 0
 					&& verificationConditions.every(condition => condition(subNode))) {
-					return keyForVerification(action.id, subNode.messageId);
-				}
+						return keyForVerification(action.id, subNode.messageId);
+					}
 
-				return [];
+					return [];
 
-			default:
-				return [];
+				default:
+					return [];
 			}
 		}) ?? [];
 

@@ -16,9 +16,9 @@
 
 import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
-import { createStyleSelector } from '../helpers/styleCreators';
-import PanelArea from '../util/PanelArea';
-import '../styles/splitter.scss';
+import { createStyleSelector } from '../../helpers/styleCreators';
+import PanelArea from '../../util/PanelArea';
+import '../../styles/splitter.scss';
 
 export interface Props {
     /**
@@ -117,7 +117,7 @@ export default class SplitView extends React.Component<Props, State> {
 			this.root.current.addEventListener('mouseup', this.onMouseUpOrLeave);
 		}
 
-		this.lastPosition = e.clientX;
+		this.lastPosition = e.clientX - this.root.current!.getBoundingClientRect().left;
 
 		this.setState({
 			splitterLeftOffset: this.leftPanel.current!.clientWidth,
@@ -140,7 +140,7 @@ export default class SplitView extends React.Component<Props, State> {
 		if (e.clientX > document.documentElement.scrollWidth) {
 			this.stopDragging();
 		} else {
-			this.resetPosition(e.clientX);
+			this.resetPosition(e.clientX - this.root.current!.getBoundingClientRect().left);
 		}
 	};
 
@@ -171,30 +171,30 @@ export default class SplitView extends React.Component<Props, State> {
 			.sort((a, b) => a.diff - b.diff)[0]
 			.step;
 
-		let previewArea: PanelArea;
+		let previewPanelArea: PanelArea;
 
 		switch (closestStep) {
 			case w0:
-				previewArea = PanelArea.P0;
+				previewPanelArea = PanelArea.P0;
 				break;
 			case w25:
-				previewArea = PanelArea.P25;
+				previewPanelArea = PanelArea.P25;
 				break;
 			case w50:
-				previewArea = PanelArea.P50;
+				previewPanelArea = PanelArea.P50;
 				break;
 			case w75:
-				previewArea = PanelArea.P75;
+				previewPanelArea = PanelArea.P75;
 				break;
 			case w100:
-				previewArea = PanelArea.P100;
+				previewPanelArea = PanelArea.P100;
 				break;
 			default:
-				previewArea = PanelArea.P50;
+				previewPanelArea = PanelArea.P50;
 		}
 
 		this.setState({
-			previewPanelArea: previewArea,
+			previewPanelArea,
 			splitterLeftOffset: parseInt(this.splitter.current!.style.left) + diff,
 		});
 	}
@@ -289,7 +289,9 @@ export default class SplitView extends React.Component<Props, State> {
 					}}
 					onMouseDown={this.splitterMouseDown}
 					ref={this.splitter}>
-					<div className="splitter-bar-icon"/>
+					<div className="splitter-bar-button">
+						<div className="splitter-bar-icon"/>
+					</div>
 				</div>}
 			</div>
 		);

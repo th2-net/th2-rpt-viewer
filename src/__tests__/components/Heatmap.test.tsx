@@ -18,18 +18,21 @@ import React from 'react';
 import { mount } from 'enzyme';
 import Heatmap from '../../components/heatmap/Heatmap';
 import { HeatmapContext } from '../../contexts/heatmapContext';
-import { getHeatmapElements } from '../../helpers/heatmapCreator';
+import { getHeatmapElements, DEFAULT_HEATMAP_ELEMENT_COLOR } from '../../helpers/heatmapCreator';
 import { createHeatmapInputData } from '../util/creators';
 
 describe('Heatmap', () => {
 	test('renders heatmap', () => {
+		const selectedItemsMap: Map<string, number[]> = new Map();
+		selectedItemsMap.set(DEFAULT_HEATMAP_ELEMENT_COLOR, [3, 27]);
 		const {
 			items,
 			selectedItems,
 			pinnedItems,
-		} = createHeatmapInputData(40, [3, 27], [15]);
+		} = createHeatmapInputData(40, selectedItemsMap, [15]);
 		const heatmapElements = getHeatmapElements(items, selectedItems, pinnedItems);
 		const mockFn = jest.fn();
+
 		const wrapper = mount(
 			<HeatmapContext.Provider value={{
 				fullRange: null,

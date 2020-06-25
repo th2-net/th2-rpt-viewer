@@ -14,29 +14,22 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import { createStyleSelector } from '../helpers/styleCreators';
-import '../styles/sidePanel.scss';
+import EventsStore from '../../stores/EventsStore';
+import MessagesStore from '../../stores/MessagesStore';
 
-interface Props {
-	isOpen: boolean;
-	onClose: () => void;
-	children?: React.ReactNode;
+export type AppTab = EventsTab | MessagesTab;
+
+export const enum TabTypes {
+	Events,
+	Messages
 }
 
-const SidePanel = ({
-	isOpen,
-	children,
-}: Props) => {
-	const rootClassName = createStyleSelector(
-		'side-panel',
-		isOpen ? 'open' : null,
-	);
-	return (
-		<div className={rootClassName}>
-			{children}
-		</div>
-	);
-};
+export interface EventsTab {
+	type: TabTypes.Events;
+	store: EventsStore;
+}
 
-export default SidePanel;
+export interface MessagesTab {
+	type: TabTypes.Messages;
+	store: MessagesStore ;
+}

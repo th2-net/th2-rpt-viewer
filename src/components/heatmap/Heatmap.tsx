@@ -76,7 +76,7 @@ const Heatmap = ({
 		}
 	};
 
-	React.useEffect(() => {
+	React.useLayoutEffect(() => {
 		updateScrollIndicatorPosition();
 	}, [visibleRange, fullRange, heatmapElements]);
 

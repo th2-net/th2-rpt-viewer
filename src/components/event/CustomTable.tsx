@@ -18,7 +18,7 @@ import * as React from 'react';
 import '../../styles/tables.scss';
 
 interface CustomTableProps {
-	content: any[];
+	content: {[key: string]: string | number | null | undefined}[];
 }
 
 export function CustomTable({ content }: CustomTableProps) {
@@ -38,7 +38,7 @@ export function CustomTable({ content }: CustomTableProps) {
 					{
 						content.map((row, index) => (
 							<tr key={index}>
-								{headers.map(cell => <td key={row[cell]}>{row[cell]}</td>)}
+								{headers.map(cell => <td key={row[cell] ?? index}>{row[cell]}</td>)}
 							</tr>
 						))
 					}

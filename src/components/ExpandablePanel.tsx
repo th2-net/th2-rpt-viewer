@@ -16,10 +16,10 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useFirstEventWindowStore } from '../hooks/useFirstEventWindowStore';
 import { createStyleSelector } from '../helpers/styleCreators';
 import StateSaver, { RecoverableElementProps } from './util/StateSaver';
 import { stopPropagationHandler } from '../helpers/react';
+import { useEventWindowStore } from '../hooks/useEventWindowStore';
 import '../styles/expandablePanel.scss';
 
 interface PanelProps {

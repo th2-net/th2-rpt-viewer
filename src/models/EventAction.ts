@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+
 import Timestamp from './Timestamp';
+import { EventBodyPayload } from './EventActionPayload';
 
 export interface EventAction {
     type: string;
@@ -24,7 +26,9 @@ export interface EventAction {
     startTimestamp: Timestamp;
     parentEventId: string;
     attachedMessageIds: Array<string>;
-    body: any;
+    body: EventActionBody;
     successful: boolean;
     childrenIds: string[];
 }
+
+export type EventActionBody = EventBodyPayload[];
