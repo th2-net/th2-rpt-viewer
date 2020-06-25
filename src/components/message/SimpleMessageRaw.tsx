@@ -28,8 +28,7 @@ export default function SimpleMessageRaw({ rawContent }: Props) {
 	const contentRef = React.useRef<HTMLDivElement>(null);
 	const [selectionStart, selectionEnd] = useSelectListener(contentRef);
 
-	const [, , humanReadableArray] = decodeBase64RawContent(rawContent);
-	const humanReadableContent = humanReadableArray.join();
+	const humanReadableContent = atob(rawContent);
 	const beautifiedHumanReadable = replaceNonPrintableCharsWithDot(humanReadableContent);
 
 	const onCopy = (e: React.ClipboardEvent<HTMLDivElement>) => {
@@ -41,13 +40,8 @@ export default function SimpleMessageRaw({ rawContent }: Props) {
 	};
 
 	return (
-		<div className="mc-raw">
-			<div className="mc-raw__header">
-				<div className="mc-raw__title">Raw message</div>
-			</div>
-			<div className="mc-raw__content" ref={contentRef} onCopy={onCopy}>
-				{beautifiedHumanReadable}
-			</div>
+		<div className="mc-raw__content" ref={contentRef} onCopy={onCopy}>
+			{beautifiedHumanReadable}
 		</div>
 	);
 }

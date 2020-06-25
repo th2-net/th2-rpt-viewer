@@ -102,8 +102,8 @@
     padding: 7px 5px 9px 10px;
     color: $primaryTextColor;
     grid-template-rows: auto;
-    grid-template-columns: 1.4fr 40px 1fr 40px 2fr 30px 30px 30px;
-    grid-template-areas: "timestamp name name-value session session-value raw-format beautify pin";
+    grid-template-columns: 1.4fr 40px 1fr 40px 2fr 30px 30px;
+    grid-template-areas: "timestamp name name-value session session-value beautify pin";
 
     &__underline {
         border-bottom: 2px solid var(--status-primary-delimeter-color);
@@ -229,18 +229,6 @@
             transform: rotate(-45deg) scale(1.4);
         }
     }
-
-    &__raw-format {
-        @include icon(url(../../resources/icons/expand-on.svg), 15px, 15px);
-
-        justify-self: center;
-        align-self: center;
-        cursor: pointer;
-
-        &.active {
-            background-image: url(../../resources/icons/table-view-icon.svg);
-        }
-    }
 }
 
 .mc-body {
@@ -350,6 +338,24 @@
         font-size: 13px;
         color: $primaryTextColor;
         font-weight: bold;
+    }
+
+    &__display-btn {
+        @include icon(url(../../resources/icons/table-view-icon.svg), 15px, 15px);
+
+        justify-self: center;
+        align-self: center;
+        cursor: pointer;
+        margin-left: 10px;
+        opacity: 0.8;
+
+        &.active {
+            background-image: url(../../resources/icons/expand-on.svg);
+        }
+
+        &:hover {
+            opacity: 1;
+        }
     }
 
     &__content {

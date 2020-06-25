@@ -25,11 +25,10 @@ import StateSaver from '../util/StateSaver';
 import { EventMessage } from '../../models/EventMessage';
 import { useHeatmap } from '../../hooks/useHeatmap';
 import { hexToRGBA } from '../../helpers/color';
-import { MessageRaw } from './MessageRaw';
+import MessageRaw from './MessageRaw';
+import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import { useStores } from '../../hooks/useStores';
 import '../../styles/messages.scss';
-import SimpleMessageRaw from './SimpleMessageRaw';
-import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 
 const HUE_SEGMENTS_COUNT = 36;
 
@@ -64,7 +63,6 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const isSelected = Boolean(heatmapElement);
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isPinned = windowsStore.pinnedMessagesIds.includes(messageId);
-	const isRawDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
 	const color = heatmapElement?.color;
 
 	const rootClass = createBemBlock(
@@ -87,12 +85,6 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		'mc-beautify',
 		'icon',
 		isContentBeautified ? 'plain' : 'beautify',
-	);
-
-	const rawDetailViewClass = createBemElement(
-		'mc-header',
-		'raw-format',
-		isRawDetailed ? 'active' : null,
 	);
 
 	// session arrow color, we calculating it for each session from-to pair, based on hash
@@ -134,13 +126,6 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 					{sessionId}
 				</div>
 				{
-					showRaw && (
-						<div
-							className={rawDetailViewClass}
-							onClick={() => messagesStore.toggleMessageDetailedRaw(messageId)}/>
-					)
-				}
-				{
 					message.body !== null && (
 						<div className="mc-beautify" onClick={() => messagesStore.toggleMessageBeautify(messageId)}>
 							<div className={beautifyIconClass}/>
@@ -180,11 +165,9 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 						) : null
 					}
 					{
-						!(bodyBase64 && showRaw)
-							? null
-							: isRawDetailed
-								? <MessageRaw rawContent={bodyBase64}/>
-								: <SimpleMessageRaw rawContent={bodyBase64}/>
+						bodyBase64 && showRaw
+							? <MessageRaw messageId={messageId} rawContent={bodyBase64}/>
+							: null
 					}
 				</div>
 			</div>
