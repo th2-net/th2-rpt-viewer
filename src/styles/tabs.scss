@@ -1,0 +1,146 @@
+/******************************************************************************
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+
+@import "./common/vars";
+
+.tabs {
+	height: 100%;
+	width: 100%;
+	display: grid;
+	grid-template: 49px 1fr / 1fr;
+    grid-template-areas:
+        "tabs"
+		"content";
+		
+	&__list {
+		display: flex;
+		padding: 7px 9px;
+		width: 100%;
+	}
+
+	&__content {
+		background-color: #FFF;
+		padding: 0 7px;
+		position: relative;
+		& > div {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+		}
+	}
+}
+
+.tab-wrapper {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	margin-left: 10px;
+	position: relative;
+
+	&:first-child {
+		margin-left: 0;
+	}
+}
+
+.tab {
+	width: 100%;
+	height: 35px;
+	background-color: $tabsBackgroundColor;
+	border-radius: 6px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	position: absolute;
+	top: 0;
+	left: 0;
+	transition: width 0.15s, transform 0.15s;
+
+	&.selected {
+		background-color: #FFF;
+		&::before {
+			height: 12px;
+			background-color: #FFF;
+			content: "";
+			width: 100%;
+			position: absolute;
+			bottom: -7px;
+			left: 0;
+		}
+	}
+
+	&__content {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-grow: 1;
+		overflow: hidden;
+	}
+	
+	&__content-wrapper {
+		overflow: hidden;
+		padding: 0 10px;
+		margin: auto;
+		width: 100%;
+	}
+
+	&__controls {
+		height: 100%;
+		display: flex;
+		align-items: center;
+		padding-right: 10px;
+	}
+
+	&__button {
+		border-radius: 50%;
+		cursor: pointer;
+		opacity: 0.7;
+		transition: 0.2s;
+		background-color: transparent;
+		width: 22px;
+		height: 22px;
+		padding: 0;
+		border: none;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		&:focus {
+			outline: none;
+		};
+
+		&:hover {
+			opacity: 1;
+			background-color: $primaryTextColor;
+			background-color: rgba($color: $primaryTextColor, $alpha: 0.15)
+		};
+	}
+
+	&__icon {
+		&-dublicate {
+			display: inline-block;
+			@include icon(url(../../resources/icons/duplicate.svg), 14px, 14px);
+			background-size: 100%;
+		}
+
+		&-close {
+			display: inline-block;
+			@include icon(url(../../resources/icons/cross-icon-dark.svg), 12px, 12px);
+			background-size: 200%;
+		}
+	}
+}

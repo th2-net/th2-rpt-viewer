@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import Message from '../../models/Message';
-import { useMessagesStore } from '../../hooks/useMessagesStore';
+import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import { StatusType } from '../../models/Status';
 import { getHashCode } from '../../helpers/stringHash';
 import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
@@ -27,10 +27,10 @@ import StateSaver from '../util/StateSaver';
 import { PredictionData } from '../../models/MlServiceResponse';
 import PanelArea from '../../util/PanelArea';
 import { EventMessage } from '../../models/EventMessage';
-import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import { useHeatmap } from '../../hooks/useHeatmap';
 import { hexToRGBA } from '../../helpers/color';
 import { MessageRaw } from './MessageRaw';
+import { useStores } from '../../hooks/useStores';
 import '../../styles/messages.scss';
 
 const HUE_SEGMENTS_COUNT = 36;
@@ -246,8 +246,8 @@ export const RecoverableMessageCard = ({
 );
 
 export const MessageCard = observer(({ message }: MessageCardOwnProps) => {
-	const viewStore = useEventWindowViewStore();
-	const messagesStore = useMessagesStore();
+	const messagesStore = useMessagesWindowStore();
+	const { windowsStore } = useStores();
 	const { heatmapElements } = useHeatmap();
 
 	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
@@ -260,15 +260,15 @@ export const MessageCard = observer(({ message }: MessageCardOwnProps) => {
 			isTransparent={false}
 			rejectedMessagesCount={0}
 			adminEnabled={true}
-			panelArea={viewStore.panelArea}
-			isContentBeautified={viewStore.beautifiedMessages.includes(message.messageId)}
+			panelArea={PanelArea.P100}
+			isContentBeautified={messagesStore.beautifiedMessages.includes(message.messageId)}
 			prediction={null}
 			searchField={null}
 			selectHandler={() => 'stub'}
-			toggleBeautify={() => viewStore.toggleBeautify(message.messageId)}
+			toggleBeautify={() => messagesStore.toggleBeautify(message.messageId)}
 			message={message}
-			isPinned={messagesStore.pinnedMessagesIds.includes(message.messageId)}
-			toggleMessagePin={messagesStore.toggleMessagePin}
+			isPinned={windowsStore.pinnedMessagesIds.includes(message.messageId)}
+			toggleMessagePin={windowsStore.toggleMessagePin}
 		/>
 	);
 });

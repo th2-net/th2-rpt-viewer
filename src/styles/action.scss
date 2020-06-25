@@ -381,32 +381,16 @@
     }
 }
 
-.actions {
+.actions-list {
     height: 100%;
+    width: 100%;
 
-    &__filter-info {
-        height: $filterCountHeight;
-        font-size: 14px;
-        font-weight: bold;
-        color: $filterPrimaryColor;
-
-        display: flex;
-        align-items: center;
-        padding-left: 20px;
+    & > div {
+        height: 100%;
     }
 
-    &__list {
-        height: 100%;
-        padding: 0 5px;
-        overflow: hidden;
-
-        & > div {
-            height: 100%;
-        }
-
-        &.filter-applied {
-            height: calc(100% - #{$filterCountHeight});
-        }
+    &.filter-applied {
+        height: calc(100% - #{$filterCountHeight});
     }
 }
 

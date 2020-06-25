@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { TScrollContainer, Virtuoso } from 'react-virtuoso';
 import { observer } from 'mobx-react-lite';
-import { EventIdNode } from '../../../stores/EventWindowStore';
+import { EventIdNode } from '../../../stores/EventsStore';
 import EventMinimapNode from './EventMinimapNode';
 
 interface Props {

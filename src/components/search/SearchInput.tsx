@@ -20,9 +20,9 @@ import AutosizeInput from 'react-input-autosize';
 import KeyCodes from '../../util/KeyCodes';
 import SearchToken from '../../models/search/SearchToken';
 import Bubble from '../util/Bubble';
-import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
 import { nextCyclicItem, removeByIndex, replaceByIndex } from '../../helpers/array';
 import { createBemBlock } from '../../helpers/styleCreators';
+import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 import '../../styles/search.scss';
 
 export const REACTIVE_SEARCH_DELAY = 500;
@@ -358,7 +358,7 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 }
 
 const SearchInput = () => {
-	const { searchStore } = useFirstEventWindowStore();
+	const { searchStore } = useEventWindowStore();
 
 	return (
 		<SearchInputBase

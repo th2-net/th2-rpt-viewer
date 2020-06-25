@@ -15,18 +15,17 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import '../styles/layout.scss';
 
 interface Props {
 	children: React.ReactNode;
 }
 
-const LeftPanel = ({ children }: Props) => (
-	<div className="layout-panel">
-		<div className="layout-panel__content layout-events">
+const SplitViewPane = ({ children }: Props) => (
+	<div className="splitter-pane">
+		<div className="splitter-pane__content">
 			{children}
 		</div>
 	</div>
 );
 
-export default LeftPanel;
+export default SplitViewPane;

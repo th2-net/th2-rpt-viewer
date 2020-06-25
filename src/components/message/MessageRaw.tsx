@@ -28,7 +28,7 @@ interface Props {
     messageId: number;
 }
 
-export function MessageRaw({ rawContent, messageId }: Props) {
+export function MessageRaw({ rawContent }: Props) {
 	const hexadecimalRef = React.useRef<HTMLPreElement>(null);
 	const humanReadableRef = React.useRef<HTMLPreElement>(null);
 	const [hexSelectionStart, hexSelectionEnd] = useSelectListener(

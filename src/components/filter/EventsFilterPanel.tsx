@@ -17,10 +17,10 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import FilterPanel, { FilterRowConfig } from './FilterPanel';
-import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
+import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 
 function EventsFilterPanel() {
-	const eventWindowStore = useFirstEventWindowStore();
+	const eventWindowStore = useEventWindowStore();
 	const { filterStore } = eventWindowStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);

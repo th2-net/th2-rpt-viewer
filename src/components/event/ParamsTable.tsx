@@ -16,18 +16,32 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import ActionParameter from '../../models/ActionParameter';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import StateSaver from '../util/StateSaver';
 import { keyForActionParameter } from '../../helpers/keys';
 import SearchResult from '../../helpers/search/SearchResult';
 import '../../styles/tables.scss';
 
+export interface ParamsTableRow {
+	subRows: ParamsTableRow[];
+	columns?: {
+		[columnTitle: string]: string;
+	};
+	title: string;
+	isExpanded: boolean;
+}
+
+export interface ParamsTable {
+	rows: ParamsTableRow[];
+	columns: Array<string>;
+}
+
 const PADDING_LEVEL_VALUE = 10;
 
 interface OwnProps {
     actionId: number;
-    params: ActionParameter[];
+	columns: Array<string>;
+	rows: ParamsTableRow[];
 	name: string;
 	stateKey: string;
 }
@@ -38,19 +52,14 @@ interface StateProps {
 }
 
 interface RecoveredProps {
-    nodes: TableNode[];
-    saveState: (state: TableNode[]) => void;
+    nodes: ParamsTableRow[];
+    saveState: (state: ParamsTableRow[]) => void;
 }
 
 interface Props extends Omit<OwnProps, 'params'>, StateProps, RecoveredProps {}
 
 interface State {
-    nodes: TableNode[];
-}
-
-interface TableNode extends ActionParameter {
-    // is subnodes visible
-    isExpanded?: boolean;
+    nodes: ParamsTableRow[];
 }
 
 class ParamsTableBase extends React.Component<Props, State> {
@@ -61,7 +70,7 @@ class ParamsTableBase extends React.Component<Props, State> {
 		};
 	}
 
-	findNode(node: TableNode, targetNode: TableNode): TableNode {
+	findNode(node: ParamsTableRow, targetNode: ParamsTableRow): ParamsTableRow {
 		if (node === targetNode) {
 			return {
 				...targetNode,
@@ -71,16 +80,16 @@ class ParamsTableBase extends React.Component<Props, State> {
 
 		return {
 			...node,
-			subParameters: node.subParameters && node.subParameters.map(subNode => this.findNode(subNode, targetNode)),
+			subRows: node.subRows && node.subRows.map(subNode => this.findNode(subNode, targetNode)),
 		};
 	}
 
-	updateExpandPath([currentIndex, ...expandPath]: number[], prevState: TableNode[]): TableNode[] {
+	updateExpandPath([currentIndex, ...expandPath]: number[], prevState: ParamsTableRow[]): ParamsTableRow[] {
 		return prevState.map(
 			(node, index) => (index === currentIndex ? {
 				...node,
 				isExpanded: true,
-				subParameters: node.subParameters && this.updateExpandPath(expandPath, node.subParameters),
+				subParameters: node.subRows && this.updateExpandPath(expandPath, node.subRows),
 			} : node),
 		);
 	}
@@ -102,10 +111,13 @@ class ParamsTableBase extends React.Component<Props, State> {
 		return (
 			<div className="params-table">
 				<table>
-					<tbody>
+					<thead>
 						<tr>
-							<th colSpan={2}>{this.props.name}</th>
+							<th></th>
+							{this.props.columns.map(columnTitle => <th key={columnTitle}>{columnTitle}</th>)}
 						</tr>
+					</thead>
+					<tbody>
 						{
 							this.state.nodes.map((nodes, index) =>
 								this.renderNodes(nodes, 0, keyForActionParameter(this.props.actionId, index)))
@@ -116,10 +128,10 @@ class ParamsTableBase extends React.Component<Props, State> {
 		);
 	}
 
-	private renderNodes(node: TableNode, paddingLevel = 1, key: string): React.ReactNodeArray {
-		if (node.subParameters && node.subParameters.length !== 0) {
+	private renderNodes(node: ParamsTableRow, paddingLevel = 1, key: string): React.ReactNodeArray {
+		if (node.subRows && node.subRows.length !== 0) {
 			const subNodes = node.isExpanded
-				? node.subParameters.reduce(
+				? node.subRows.reduce(
 					(list, n, index) =>
 						list.concat(
 							this.renderNodes(n, paddingLevel + 1, `${key}-${index}`),
@@ -132,10 +144,15 @@ class ParamsTableBase extends React.Component<Props, State> {
 				...subNodes,
 			];
 		}
-		return [this.renderValueNode(node.name, node.value!, paddingLevel, key)];
+		return [this.renderValueNode(node.title, node.columns, paddingLevel, key)];
 	}
 
-	private renderValueNode(name: string, value: string, paddingLevel: number, key: string): React.ReactNode {
+	private renderValueNode(
+		rowTitle: string,
+		columns: {[columnTitle: string]: string} = {},
+		paddingLevel: number,
+		key: string,
+	): React.ReactNode {
 		const cellStyle = {
 			paddingLeft: PADDING_LEVEL_VALUE * paddingLevel,
 		};
@@ -143,16 +160,19 @@ class ParamsTableBase extends React.Component<Props, State> {
 		return (
 			<tr className="params-table-row-value" key={key}>
 				<td style={cellStyle}>
-					{this.renderContent(`${key}-name`, name)}
+					{this.renderContent(`${key}-name`, rowTitle)}
 				</td>
-				<td style={cellStyle}>
-					{this.renderContent(`${key}-value`, value)}
-				</td>
+				{
+					this.props.columns.map(columnTitle =>
+						<td style={cellStyle} key={`${rowTitle} - ${columnTitle}`}>
+							{this.renderContent(`${key}-value`, columns[columnTitle])}
+						</td>)
+				}
 			</tr>
 		);
 	}
 
-	private renderTooglerNode(node: TableNode, paddingLevel: number, key: string): React.ReactNode {
+	private renderTooglerNode(node: ParamsTableRow, paddingLevel: number, key: string): React.ReactNode {
 		const rootClass = createStyleSelector(
 			'params-table-row-toogler',
 			node.isExpanded ? 'expanded' : 'collapsed',
@@ -162,14 +182,14 @@ class ParamsTableBase extends React.Component<Props, State> {
 		};
 
 		return (
-			<tr className={rootClass} key={key}>
-				<td onClick={this.togglerClickHandler(node)}
-					colSpan={2}>
+			<tr className={rootClass} key={key} onClick={this.togglerClickHandler(node)}>
+				<td>
 					<p style={nameStyle}>
-						{this.renderContent(`${key}-name`, node.name)}
+						{this.renderContent(`${key}-name`, node.title)}
 					</p>
-					<span className="params-table-row-toogler-count">{node.subParameters?.length}</span>
 				</td>
+				{this.props.columns.map(columnTitle =>
+					<td key={`${node.title} - ${columnTitle}`}>&nbsp;</td>)}
 			</tr>
 		);
 	}
@@ -179,7 +199,7 @@ class ParamsTableBase extends React.Component<Props, State> {
 		return content;
 	}
 
-	private togglerClickHandler = (targetNode: TableNode) => (e: React.MouseEvent) => {
+	private togglerClickHandler = (targetNode: ParamsTableRow) => (e: React.MouseEvent) => {
 		this.setState({
 			...this.state,
 			nodes: this.state.nodes.map(node => this.findNode(node, targetNode)),
@@ -193,26 +213,19 @@ export const RecoverableParamsTable = ({ stateKey, ...props }: OwnProps & StateP
 	// at first table render, we need to generate table nodes if we don't find previous table's state
 	<StateSaver
 		stateKey={stateKey}
-		getDefaultState={() => (props.params ? props.params.map(param => paramsToNodes(param)) : [])}>
+		getDefaultState={() => props.rows}>
 		{
-			(state: TableNode[], stateSaver) => (
+			(state: ParamsTableRow[], stateSaver) => (
 				<ParamsTableBase
 					{...props}
 					saveState={stateSaver}
+					rows={state}
 					nodes={state}
 					stateKey={stateKey} />
 			)
 		}
 	</StateSaver>
 );
-
-function paramsToNodes(root: ActionParameter): TableNode {
-	return (root.subParameters ? {
-		...root,
-		subParameters: root.subParameters.map(parameter => paramsToNodes(parameter)),
-		isExpanded: true,
-	} : root);
-}
 
 const ParamsTable = observer(({ actionId, ...rest }: OwnProps) => (
 	<RecoverableParamsTable

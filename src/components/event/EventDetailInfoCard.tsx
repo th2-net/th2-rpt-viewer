@@ -18,7 +18,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso } from 'react-virtuoso';
-import { EventIdNode } from '../../stores/EventWindowStore';
+import { EventIdNode } from '../../stores/EventsStore';
 import useCachedEvent from '../../hooks/useCachedEvent';
 import SplashScreen from '../SplashScreen';
 import { createBemBlock } from '../../helpers/styleCreators';
@@ -26,7 +26,6 @@ import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/
 import { getEventStatus } from '../../helpers/event';
 import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
-import ErrorBoundary from '../util/ErrorBoundary';
 import TableEventCard from './table/TableEventCard';
 import CardDisplayType from '../../util/CardDisplayType';
 
@@ -45,15 +44,11 @@ function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
 	const {
 		startTimestamp,
 		endTimestamp,
-		attachedMessageIds,
 		eventType,
 		eventName,
 		body,
 		eventId,
 	} = event;
-
-	const bodyList = (Array.isArray(body) ? body : [body])
-		.filter(bodyEl => bodyEl != null && Object.keys(bodyEl).length > 0);
 
 	const status = getEventStatus(event);
 
@@ -79,16 +74,14 @@ function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
 		}
 
 		const bodyIndex = showSubNodes && idNode.children ? index - idNode.children.length : index;
-		const bodyElement = bodyList[bodyIndex];
+		const bodyElement = Array.isArray(body) ? body[bodyIndex] : body;
 
 		if (!bodyElement) {
 			return <></>;
 		}
 
 		return (
-			<ErrorBoundary fallback={<BodyFallback body={bodyElement}/>}>
-				<EventBodyCard body={bodyElement} parentEvent={event}/>
-			</ErrorBoundary>
+			<EventBodyCard body={bodyElement} parentEvent={event}/>
 		);
 	};
 
@@ -118,8 +111,8 @@ function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
 					}
 					<span>{status.toUpperCase()}</span>
 					{
-						attachedMessageIds.length > 0 ? (
-							<Chip text={attachedMessageIds.length.toString()}/>
+						idNode.children && idNode.children?.length > 0 ? (
+							<Chip text={idNode.children.length.toString()}/>
 						) : null
 					}
 				</div>
@@ -157,36 +150,27 @@ function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
 							className='event-detail-card__body-list'
 							computeItemKey={computeKey}
 							overscan={3}
-							totalCount={(idNode.children?.length ?? 0) + bodyList.length}
+							totalCount={
+								(idNode.children?.length ?? 0) + (Array.isArray(body) ? body.length : +Boolean(body))
+							}
 							item={renderItem}/>
 
 					) : (
 						<div className='event-detail-card__body-list'>
 							{
-								bodyList.map((bodyElement, index) => (
-									<ErrorBoundary
-										key={`body-${eventId}-${index}`}
-										fallback={<BodyFallback body={bodyElement}/>}>
-										<EventBodyCard body={bodyElement} parentEvent={event}/>
-									</ErrorBoundary>
-								))
+								Array.isArray(body)
+									? body.map((bodyPayloadItem, index) => (
+										<EventBodyCard
+											key={`body-${eventId}-${index}`}
+											body={bodyPayloadItem}
+											parentEvent={event}/>
+									))
+									: <EventBodyCard body={body} parentEvent={event} />
 							}
 						</div>
 					)
 				}
 			</div>
-		</div>
-	);
-}
-
-function BodyFallback({ body }: { body: any }) {
-	if (!body) return null;
-
-	return (
-		<div style={{ overflow: 'auto', marginTop: '15px' }}>
-			<pre>
-				{body && JSON.stringify(body, null, 4)}
-			</pre>
 		</div>
 	);
 }

@@ -14,7 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable } from 'mobx';
+import {
+	action,
+	computed,
+	observable,
+	toJS,
+} from 'mobx';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
 
@@ -71,5 +76,13 @@ export default class FilterStore {
 			eventType: null,
 			name: null,
 		};
+	}
+
+	static copy(filterStore: FilterStore) {
+		const copy = new FilterStore();
+		copy.messagesFilter = toJS(filterStore.messagesFilter);
+		copy.eventsFilter = toJS(filterStore.eventsFilter);
+
+		return copy;
 	}
 }

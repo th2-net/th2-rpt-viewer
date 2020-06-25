@@ -22,7 +22,6 @@ import { EventAction } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
-import '../../styles/events.scss';
 import { getMinifiedStatus } from '../../helpers/action';
 import SearchableContent from '../search/SearchableContent';
 

@@ -42,7 +42,6 @@
 
         &-control {
             margin-bottom: 5px;
-            margin-left: 30px;
             display: flex;
             flex-direction: row;
             white-space: pre;
@@ -269,7 +268,6 @@
     height: auto;
 
     &-row-toogler {
-
         &.collapsed {
             p::before {
                 content: "+";
@@ -291,14 +289,8 @@
             margin: 0;
             text-decoration: none;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 15px;
             display: inline-block;
-        }
-
-        &-count {
-            font-size: small;
-            color: gray;
-            padding-left: 10px;
         }
 
         td {

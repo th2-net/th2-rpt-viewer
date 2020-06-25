@@ -130,20 +130,20 @@ export default class LiveUpdateService {
 
 	private onReportDataUpdate: FileWatchCallback = e => {
 		switch (e.type) {
-		case 'data': {
-			this.updateReport(e.data as Report);
-			break;
-		}
+			case 'data': {
+				this.updateReport(e.data as Report);
+				break;
+			}
 
-		case 'error': {
-			this.onError();
-			console.error(e.err);
-			break;
-		}
+			case 'error': {
+				this.onError();
+				console.error(e.err);
+				break;
+			}
 
-		default: {
-			console.warn('Update with unknown type has been received.');
-		}
+			default: {
+				console.warn('Update with unknown type has been received.');
+			}
 		}
 	};
 
@@ -189,20 +189,20 @@ export default class LiveUpdateService {
 
 	private onTestCaseDataUpdate: FileWatchCallback = e => {
 		switch (e.type) {
-		case 'data': {
-			this.updateLiveTestCase(e.data as TestCase);
-			break;
-		}
+			case 'data': {
+				this.updateLiveTestCase(e.data as TestCase);
+				break;
+			}
 
-		case 'error': {
-			this.onError();
-			console.error(e.err);
-			break;
-		}
+			case 'error': {
+				this.onError();
+				console.error(e.err);
+				break;
+			}
 
-		default: {
-			console.warn('Update with unknown type has been received.');
-		}
+			default: {
+				console.warn('Update with unknown type has been received.');
+			}
 		}
 	};
 
@@ -327,34 +327,34 @@ export default class LiveUpdateService {
 	private handleFileUpdate(update: FileUpdate, testCaseOrder: number) {
 		Object.entries(update).forEach(([path, updatedValues]) => {
 			switch (path) {
-			case ACTION_JSONP_PATH: {
-				if (updatedValues.length !== 0) {
-					this.onActionUpdate(updatedValues as ActionNode[], testCaseOrder);
+				case ACTION_JSONP_PATH: {
+					if (updatedValues.length !== 0) {
+						this.onActionUpdate(updatedValues as ActionNode[], testCaseOrder);
+					}
+
+					break;
 				}
 
-				break;
-			}
+				case MESSAGE_JSONP_PATH: {
+					if (updatedValues.length !== 0) {
+						this.onMessageUpdate(updatedValues as Message[], testCaseOrder);
+					}
 
-			case MESSAGE_JSONP_PATH: {
-				if (updatedValues.length !== 0) {
-					this.onMessageUpdate(updatedValues as Message[], testCaseOrder);
+					break;
 				}
 
-				break;
-			}
+				case LOG_JSON_PATH: {
+					if (updatedValues.length !== 0) {
+						this.onLogsUpdate(updatedValues as Log[], testCaseOrder);
+					}
 
-			case LOG_JSON_PATH: {
-				if (updatedValues.length !== 0) {
-					this.onLogsUpdate(updatedValues as Log[], testCaseOrder);
+					break;
 				}
 
-				break;
-			}
-
-			default: {
-				console.warn(`Update with unknown jsonp path has been received (${path}).`);
-				break;
-			}
+				default: {
+					console.warn(`Update with unknown jsonp path has been received (${path}).`);
+					break;
+				}
 			}
 		});
 	}

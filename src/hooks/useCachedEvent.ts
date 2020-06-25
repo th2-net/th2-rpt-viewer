@@ -17,8 +17,7 @@
 import * as React from 'react';
 import { useEventWindowStore } from './useEventWindowStore';
 import { EventAction } from '../models/EventAction';
-import { EventIdNode } from '../stores/EventWindowStore';
-import useAsyncEffect from './useAsyncEffect';
+import { EventIdNode } from '../stores/EventsStore';
 
 export default function useCachedEvent(node: EventIdNode, isVisible = true): EventAction | undefined {
 	const eventWindowStore = useEventWindowStore();

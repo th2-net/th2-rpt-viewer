@@ -20,7 +20,7 @@ import { TScrollContainer } from 'react-virtuoso';
 import Heatmap from '../heatmap/Heatmap';
 import { useHeatmap } from '../../hooks/useHeatmap';
 import { HeatmapElement } from '../../models/Heatmap';
-import { useMessagesStore } from '../../hooks/useMessagesStore';
+import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { MessagesHeightsContext, MessagesHeights } from './MessagesCardList';
 
@@ -33,12 +33,15 @@ const MessagesScrollContainer: TScrollContainer = ({
 }) => {
 	const scrollContainer = React.useRef<HTMLDivElement>(null);
 	const { setVisibleRange, visibleRange } = useHeatmap();
-	const messagesStore = useMessagesStore();
+	const messagesStore = useMessagesWindowStore();
 	const messagesHeights = React.useContext(MessagesHeightsContext);
 	const prevHeights = React.useRef<MessagesHeights>({});
 
 	React.useEffect(() => {
-		if (!visibleRange) return;
+		if (!visibleRange) {
+			getVisibleRange();
+			return;
+		}
 		for (let i = visibleRange.startIndex; i <= visibleRange.endIndex; i++) {
 			if (messagesHeights[i] !== prevHeights.current[i]) {
 				getVisibleRange();

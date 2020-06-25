@@ -32,7 +32,8 @@
     "react-virtuoso": "^0.16.6",
     "regenerator-runtime": "^0.13.5",
     "resize-observer-polyfill": "^1.5.1",
-    "setimmediate": "^1.0.5"
+    "setimmediate": "^1.0.5",
+    "use-resize-observer": "^6.1.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",

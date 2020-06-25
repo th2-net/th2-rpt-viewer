@@ -16,23 +16,63 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { EventIdNode } from '../../stores/EventWindowStore';
+import useResizeObserver from 'use-resize-observer';
+import { EventIdNode } from '../../stores/EventsStore';
 import { createBemElement } from '../../helpers/styleCreators';
 import { getEventStatus } from '../../helpers/event';
-import '../../styles/events.scss';
 import useCachedEvent from '../../hooks/useCachedEvent';
+import Bookmark from '../util/Bookmark';
+import '../../styles/events.scss';
+
+const BREADCRUMB_ITEM_MAX_WIDTH = 170;
 
 interface Props {
 	nodes: EventIdNode[];
 	rootEventsEnabled?: boolean;
 	onSelect: (node: EventIdNode | null) => void;
+	onMouseEnter?: (
+		event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+		isMinified: boolean,
+		fullWidth: number
+	) => void;
+	onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+	color?: string;
 }
 
-export default function EventBreadcrumbs({ nodes, onSelect, rootEventsEnabled = false }: Props) {
+function EventBreadcrumbs({
+	nodes,
+	onSelect,
+	rootEventsEnabled = false,
+	onMouseLeave,
+	onMouseEnter,
+	color,
+}: Props) {
+	const rootRef = React.useRef<HTMLDivElement>(null);
+	const [visibleItemsCount, setVisibleItemsCount] = React.useState(nodes.length);
+	const [isMinified, setIsMinified] = React.useState(false);
+	const { width = 1 } = useResizeObserver({ ref: rootRef });
+
+	React.useEffect(() => {
+		const renderableBreadcrumbsCount = Math.max(1, Math.round(width / BREADCRUMB_ITEM_MAX_WIDTH) - 1);
+		const minify = nodes.length > 0 && renderableBreadcrumbsCount > 0
+			&& (renderableBreadcrumbsCount < nodes.length);
+		setVisibleItemsCount(renderableBreadcrumbsCount);
+
+		if (minify !== isMinified) {
+			setIsMinified(minify);
+		}
+	}, [nodes, width]);
+
+	const visibleBreadcrumbs = nodes.slice(-visibleItemsCount);
+
 	return (
-		<div className='event-breadcrumbs'>
+		<div
+			className='event-breadcrumbs'
+			ref={rootRef}
+			onMouseLeave={onMouseLeave}>
+			{color && <Bookmark color={color}/>}
 			{
-				rootEventsEnabled ? (
+				rootEventsEnabled && !(visibleItemsCount === 1 && nodes.length > 0) ? (
 					<React.Fragment>
 						<div className='event-breadcrumbs__item'
 							 onClick={() => onSelect(null)}>
@@ -47,30 +87,40 @@ export default function EventBreadcrumbs({ nodes, onSelect, rootEventsEnabled = 
 				) : null
 			}
 			{
-				nodes.map((node, i) => (
-					<React.Fragment key={i}>
-						<EventBreadcrumbsItem
-							key={i}
-							node={node}
-							onSelect={() => onSelect(node)}/>
-						{
-							i === nodes.length - 1
-								? <div className='event-breadcrumbs__divider-last'/>
-								: <div className='event-breadcrumbs__divider'/>
+				isMinified
+				&& <div
+					className='event-breadcrumbs__minified'
+					onMouseEnter={event => {
+						if (onMouseEnter) {
+							onMouseEnter(event, isMinified, (nodes.length + 1) * (BREADCRUMB_ITEM_MAX_WIDTH));
 						}
-					</React.Fragment>
+					}}>
+					<div>...</div>
+					<div className='event-breadcrumbs__divider'/>
+				</div>
+			}
+			{
+				visibleBreadcrumbs.map((node, i) => (
+					<EventBreadcrumbsItem
+						key={node.id}
+						node={node}
+						onSelect={() => onSelect(node)}
+						isLast={i === visibleBreadcrumbs.length - 1}/>
 				))
 			}
 		</div>
 	);
 }
 
+export default observer(EventBreadcrumbs);
+
 interface ItemProps {
 	node: EventIdNode;
 	onSelect: () => void;
+	isLast?: boolean;
 }
 
-const EventBreadcrumbsItem = observer(({ node, onSelect }: ItemProps) => {
+const EventBreadcrumbsItem = observer(({ node, onSelect, isLast }: ItemProps) => {
 	const event = useCachedEvent(node);
 
 	if (!event) {
@@ -89,11 +139,21 @@ const EventBreadcrumbsItem = observer(({ node, onSelect }: ItemProps) => {
 
 	return (
 		<div className={rootClass}
-			 onClick={() => onSelect()}>
+			 onClick={() => onSelect()}
+			 style={{
+				 maxWidth: BREADCRUMB_ITEM_MAX_WIDTH,
+			 }}>
 			<div className='event-breadcrumbs__name' title={event.eventName}>
 				{event.eventName}
 			</div>
-			— {status[0].toUpperCase()}
+			<span className="event-breadcrumbs__status">
+				— {status[0].toUpperCase()}
+			</span>
+			{
+				isLast
+					? <div className='event-breadcrumbs__divider-last'/>
+					: <div className='event-breadcrumbs__divider'/>
+			}
 		</div>
 	);
 });

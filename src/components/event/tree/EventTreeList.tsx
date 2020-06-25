@@ -18,12 +18,11 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoMethods } from 'react-virtuoso';
 import EventTree from './EventTree';
-import StateSaverProvider from '../../util/StateSaverProvider';
-import { createBemElement } from '../../../helpers/styleCreators';
 import Empty from '../../Empty';
 import SplashScreen from '../../SplashScreen';
-import '../../../styles/action.scss';
+import StateSaverProvider from '../../util/StateSaverProvider';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
+import '../../../styles/action.scss';
 
 function EventTreeList() {
 	const eventWindowStore = useEventWindowStore();
@@ -44,11 +43,6 @@ function EventTreeList() {
 		<ItemListWrapper index={index}/>
 	);
 
-	const listRootClass = createBemElement(
-		'actions',
-		'list',
-	);
-
 	if (eventWindowStore.isLoadingRootEvents) {
 		return <SplashScreen/>;
 	}
@@ -58,19 +52,17 @@ function EventTreeList() {
 	}
 
 	return (
-		<div className="actions">
-			<div className={listRootClass} style={{ overflow: 'auto' }}>
-				<StateSaverProvider>
-					<Virtuoso
-						ref={listRef}
-						totalCount={eventWindowStore.nodesList.length}
-						computeItemKey={computeKey}
-						style={{ height: '100%' }}
-						overscan={3}
-						item={renderEvent}
-					/>
-				</StateSaverProvider>
-			</div>
+		<div className="actions-list">
+			<StateSaverProvider>
+				<Virtuoso
+					ref={listRef}
+					totalCount={eventWindowStore.nodesList.length}
+					computeItemKey={computeKey}
+					overscan={3}
+					item={renderEvent}
+					style={{ height: '100%' }}
+				/>
+			</StateSaverProvider>
 		</div>
 	);
 }

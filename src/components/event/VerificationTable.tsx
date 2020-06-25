@@ -16,14 +16,15 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import VerificationEntry from '../../models/VerificationEntry';
 import { StatusType, statusValues } from '../../models/Status';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import StateSaver, { RecoverableElementProps } from '../util/StateSaver';
 import SearchResult from '../../helpers/search/SearchResult';
 import { replaceNonPrintableChars } from '../../helpers/stringUtils';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
+import { VerificationPayload, VerificationPayloadField } from '../../models/EventActionPayload';
 import '../../styles/tables.scss';
+import { getVerificationTablesNodes } from '../../helpers/tables';
 
 const PADDING_LEVEL_VALUE = 6;
 
@@ -37,7 +38,7 @@ const STATUS_ALIASES = new Map<StatusType, { alias: string; className: string }>
 interface OwnProps {
     actionId: number;
     messageId: number;
-    params: VerificationEntry[];
+    payload: VerificationPayload;
     status: StatusType;
 	keyPrefix: string;
 	stateKey: string;
@@ -56,16 +57,16 @@ interface Props extends Omit<OwnProps, 'params'>, StateProps {
     stateSaver: (state: TableNode[]) => void;
 }
 
-interface RecoveredProps extends OwnProps, RecoverableElementProps, StateProps {
-}
+interface RecoveredProps extends OwnProps, RecoverableElementProps, StateProps {}
 
 interface State {
     nodes: TableNode[];
 }
 
-interface TableNode extends VerificationEntry {
-    // is subnodes visible
-    isExpanded?: boolean;
+export interface TableNode extends VerificationPayloadField {
+	isExpanded?: boolean;
+	subEntries: TableNode[];
+	name: string;
 }
 
 class VerificationTableBase extends React.Component<Props, State> {
@@ -160,7 +161,6 @@ class VerificationTableBase extends React.Component<Props, State> {
 				<table>
 					<thead>
 						<tr>
-							<th className="ver-table-indicator transparent"></th>
 							<th>Name</th>
 							<th className="ver-table-flexible">Expected</th>
 							<th className="ver-table-flexible">Actual</th>
@@ -178,7 +178,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 	}
 
 	private renderTableNodes(node: TableNode, key: string, paddingLevel = 1): React.ReactNodeArray {
-		if (node.status != null && !this.props.visibilityFilter.has(node.status)) {
+		if (node.status != null && !this.props.visibilityFilter.has(node.status as any)) {
 			return [];
 		}
 
@@ -199,20 +199,17 @@ class VerificationTableBase extends React.Component<Props, State> {
 	private renderNode(node: TableNode, paddingLevel: number, key: string): React.ReactNode {
 		const { transparencyFilter } = this.props;
 		const {
-			name, expected, expectedType, actual, actualType, status, isExpanded, subEntries, hint,
+			name, expected, actual, status, isExpanded, subEntries,
 			key: keyField, operation,
 		} = node;
 
 		const isToggler = subEntries != null && subEntries.length > 0;
-		const isTransparent = status != null && !transparencyFilter.has(status);
-		const hasHint = hint != null && hint !== '';
-		const hasMismatchedTypes = expectedType != null && expectedType !== actualType;
-
+		const isTransparent = status != null && !transparencyFilter.has(status as any);
 		const expectedReplaced = replaceNonPrintableChars(expected);
 		const actualReplaced = replaceNonPrintableChars(actual);
 
-		const statusAlias = status && STATUS_ALIASES.has(status)
-			? STATUS_ALIASES.get(status)! : { alias: status, className: '' };
+		const statusAlias = status && STATUS_ALIASES.has(status as any)
+			? STATUS_ALIASES.get(status as any)! : { alias: status, className: '' };
 
 		const rootClassName = createStyleSelector(
 			'ver-table-row',
@@ -244,13 +241,6 @@ class VerificationTableBase extends React.Component<Props, State> {
 		const typeClassName = createStyleSelector(
 			'ver-table-row-type',
 			statusAlias.className,
-			hasMismatchedTypes ? 'highlighted' : null,
-		);
-
-		const indicatorClassName = createStyleSelector(
-			'ver-table-row-indicator',
-			'transparent',
-			hasHint ? 'active' : null,
 		);
 
 		const actualValueClassName = createStyleSelector(
@@ -261,21 +251,11 @@ class VerificationTableBase extends React.Component<Props, State> {
 		const expectedValueClassName = createStyleSelector(
 			'ver-table-row-value',
 			isToggler ? 'notype' : null,
-			expectedType == null && expected === 'null' ? 'novalue' : null,
+			expected === 'null' ? 'novalue' : null,
 		);
 
 		return (
 			<tr className={rootClassName} key={key}>
-				<td className={indicatorClassName}>
-					{ hasHint
-
-						? (<div className="ver-table-row-hint">
-							<div className="ver-table-row-hint-inner">{hint}</div>
-						</div>)
-
-						: null
-					}
-				</td>
 				{
 					isToggler ? (
 						<td className={togglerClassName}
@@ -296,13 +276,13 @@ class VerificationTableBase extends React.Component<Props, State> {
 				<td className={expectedClassName} onCopy={this.onCopyFor(expected)}>
 					<div className="ver-table-row-wrapper">
 						{this.renderContent(`${key}-expected`, expected, expectedValueClassName, expectedReplaced)}
-						{isToggler ? null : this.renderContent(`${key}-expectedType`, expectedType, typeClassName)}
+						{isToggler ? null : this.renderContent(`${key}-expectedType`, '', typeClassName)}
 					</div>
 				</td>
 				<td className={actualClassName} onCopy={this.onCopyFor(actual)}>
 					<div className="ver-table-row-wrapper">
 						{this.renderContent(`${key}-actual`, actual, actualValueClassName, actualReplaced)}
-						{isToggler ? null : this.renderContent(`${key}-actualType`, actualType, typeClassName)}
+						{isToggler ? null : this.renderContent(`${key}-actualType`, '', typeClassName)}
 					</div>
 				</td>
 				<td className={statusClassName}>
@@ -310,7 +290,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 				</td>
 				<td className={actualClassName} onCopy={this.onCopyFor(operation)}>
 					<div className="ver-table-row-wrapper">
-						{this.renderContent(`${key}-operation`, operation, statusClassName, operation)}
+						{this.renderContent(`${key}-operation`, operation, statusClassName)}
 					</div>
 				</td>
 				<td className={statusClassName}>
@@ -376,12 +356,11 @@ class VerificationTableBase extends React.Component<Props, State> {
 	};
 }
 
-
 export const RecoverableVerificationTable = ({ stateKey, ...props }: RecoveredProps) => (
 	// at first table render, we need to generate table nodes if we don't find previous table's state
 	<StateSaver
 		stateKey={stateKey}
-		getDefaultState={() => (props.params ? extractParams(props.params) : [])}>
+		getDefaultState={() => getVerificationTablesNodes(props.payload)}>
 		{
 			(state: TableNode[], stateHandler) => (
 				<VerificationTableBase
@@ -394,26 +373,6 @@ export const RecoverableVerificationTable = ({ stateKey, ...props }: RecoveredPr
 	</StateSaver>
 );
 
-function extractParams(body: any) {
-	if (!body || !body.fields) return [];
-	return Object.keys(body.fields)
-		.map(field => extractTableParam(body, field))
-		.map(paramsToNodes);
-}
-
-const extractTableParam = (body: any, field: string) => ({
-	name: field,
-	...body.fields[field],
-});
-
-function paramsToNodes(root: any): TableNode {
-	return root.fields ? {
-		...root,
-		subEntries: Object.keys(root.fields)
-			.map(field => paramsToNodes(extractTableParam(root, field))),
-		isExpanded: true,
-	} : root;
-}
 
 export const VerificationTable = observer(({ actionId, messageId, ...restProps }: OwnProps) => (
 	<RecoverableVerificationTable

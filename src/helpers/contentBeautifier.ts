@@ -42,64 +42,64 @@ export default function beautify(origin: string): string {
 		const nextChar = origin.substring(index + 1)[0];
 
 		switch (targetSymbol) {
-		case ';': {
-			// we don't need indent with tabs at the end of array / object
-			if ((lastResultChar === '}' || lastResultChar === ']') && appendingFragment.length === 0) {
-				result = result + targetSymbol + NEW_LINE;
-			} else {
-				result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol + NEW_LINE;
+			case ';': {
+				// we don't need indent with tabs at the end of array / object
+				if ((lastResultChar === '}' || lastResultChar === ']') && appendingFragment.length === 0) {
+					result = result + targetSymbol + NEW_LINE;
+				} else {
+					result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol + NEW_LINE;
+				}
+
+				break;
 			}
 
-			break;
-		}
+			case '{': {
+				// we don't need to add tab indent for for first object in array
+				if (lastResultChar === '[' && appendingFragment.length === 0) {
+					result = result + targetSymbol + NEW_LINE;
+				} else {
+					result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol + NEW_LINE;
+				}
 
-		case '{': {
-			// we don't need to add tab indent for for first object in array
-			if (lastResultChar === '[' && appendingFragment.length === 0) {
-				result = result + targetSymbol + NEW_LINE;
-			} else {
-				result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol + NEW_LINE;
-			}
-
-			tabLevel++;
-
-			break;
-		}
-
-		case '}': {
-			result = result + TAB.repeat(tabLevel) + appendingFragment + NEW_LINE
-				+ TAB.repeat(tabLevel - 1) + targetSymbol;
-			tabLevel--;
-			break;
-		}
-
-		case '[': {
-			if (nextChar === '{') {
-				result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol;
-			} else {
-				result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol + NEW_LINE;
 				tabLevel++;
+
+				break;
 			}
 
-			break;
-		}
-
-		case ']': {
-			// we don't need tab indent and line breaks at the end of array
-			if (lastResultChar === '}') {
-				result = result + appendingFragment + targetSymbol;
-			} else {
+			case '}': {
 				result = result + TAB.repeat(tabLevel) + appendingFragment + NEW_LINE
 					+ TAB.repeat(tabLevel - 1) + targetSymbol;
 				tabLevel--;
+				break;
 			}
 
-			break;
-		}
+			case '[': {
+				if (nextChar === '{') {
+					result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol;
+				} else {
+					result = result + TAB.repeat(tabLevel) + appendingFragment + targetSymbol + NEW_LINE;
+					tabLevel++;
+				}
 
-		default: {
-			result = result + appendingFragment + targetSymbol;
-		}
+				break;
+			}
+
+			case ']': {
+				// we don't need tab indent and line breaks at the end of array
+				if (lastResultChar === '}') {
+					result = result + appendingFragment + targetSymbol;
+				} else {
+					result = result + TAB.repeat(tabLevel) + appendingFragment + NEW_LINE
+						+ TAB.repeat(tabLevel - 1) + targetSymbol;
+					tabLevel--;
+				}
+
+				break;
+			}
+
+			default: {
+				result = result + appendingFragment + targetSymbol;
+			}
 		}
 	}
 

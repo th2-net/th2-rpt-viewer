@@ -258,13 +258,13 @@ export function createTestCaseMetadata(
 
 export const createHeatmapInputData = (
 	itemsLength: number,
-	selectedItemsIndexes: number[],
+	selectedItemsIndexes: Map<string, number[]>,
 	pinnedItemsIndexes: number[],
 ) => {
 	const items = Array(itemsLength).fill(null).map(() => nanoid());
-	const selectedItems = selectedItemsIndexes.map(i => items[i]);
 	const pinnedItems = pinnedItemsIndexes.map(i => items[i]);
-
+	const selectedItems: Map<string, string[]> = new Map();
+	selectedItemsIndexes.forEach((indexes, color) => selectedItems.set(color, indexes.map(i => items[i])));
 	return {
 		items,
 		selectedItems,

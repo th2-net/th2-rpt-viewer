@@ -23,3 +23,5 @@ export const hexToRGBA = (hex: string, opacity: number) => {
 
 	return `rgba(${r}, ${g}, ${b}, ${opacity / 100})`;
 };
+
+export const randomHexColor = () => `#${Math.floor(Math.random() * 16777215).toString(16)}`;

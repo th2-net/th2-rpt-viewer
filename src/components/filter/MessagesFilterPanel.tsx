@@ -17,10 +17,11 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import FilterPanel, { FilterRowConfig } from './FilterPanel';
-import { useFirstEventWindowStore } from '../../hooks/useFirstEventWindowStore';
+import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 
 const MessagesFilterPanel = () => {
-	const { filterStore, messagesStore } = useFirstEventWindowStore();
+	const messagesStore = useMessagesWindowStore();
+	const filterStore = messagesStore.filterStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [timestampFrom, setTimestampFrom] = React.useState(filterStore.messagesFilter.timestampFrom);

@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,13 +11,16 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
 
-import { useStores } from './useStores';
+import {
+	AppTab,
+	EventsTab,
+	MessagesTab,
+	TabTypes,
+} from '../models/util/Windows';
 
-export const useFirstEventWindowStore = () => {
-	const { eventsStore } = useStores();
+export const isEventsTab = (tab: AppTab): tab is EventsTab => tab.type === TabTypes.Events;
 
-	return eventsStore.eventWindows[0];
-};
+export const isMessagesTab = (tab: AppTab): tab is MessagesTab => tab.type === TabTypes.Messages;

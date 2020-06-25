@@ -17,10 +17,9 @@
 import * as React from 'react';
 import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
 import { raf } from '../helpers/raf';
-import { createStyleSelector } from '../helpers/styleCreators';
 
 interface Props {
-    computeItemKey?: (idx: number) => number;
+    computeItemKey?: (idx: number) => React.Key;
     rowCount: number;
 	itemRenderer: (index: number) => React.ReactElement;
 	/*
@@ -34,7 +33,6 @@ interface Props {
 	className?: string;
 	ScrollContainer?: TScrollContainer;
 	overscan?: number;
-	initialTopMostItemIndex?: number;
 }
 
 export class VirtualizedList extends React.Component<Props> {
@@ -75,13 +73,7 @@ export class VirtualizedList extends React.Component<Props> {
 			className,
 			ScrollContainer,
 			overscan = 3,
-			initialTopMostItemIndex,
 		} = this.props;
-
-		const rootClassName = createStyleSelector(
-			'virtualized-list',
-			className || null,
-		);
 
 		return (
 			<Virtuoso
@@ -90,10 +82,9 @@ export class VirtualizedList extends React.Component<Props> {
 				overscan={overscan}
 				computeItemKey={computeItemKey}
 				item={this.props.itemRenderer}
-				style={{ height: '100%' }}
-				className={rootClassName}
-				ScrollContainer={ScrollContainer}
-				initialTopMostItemIndex={initialTopMostItemIndex}/>
+				style={{ height: '100%', width: '100%' }}
+				className={className}
+				ScrollContainer={ScrollContainer} />
 		);
 	}
 }

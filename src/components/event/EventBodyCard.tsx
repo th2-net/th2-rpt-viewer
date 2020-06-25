@@ -21,31 +21,29 @@ import { VerificationTable } from './VerificationTable';
 import { keyForVerification } from '../../helpers/keys';
 import ParamsTable from './ParamsTable';
 import { extractParams } from '../../helpers/tables';
+import { EventBodyPayload, EventBodyPayloadType } from '../../models/EventActionPayload';
+import ErrorBoundary from '../util/ErrorBoundary';
 
 interface Props {
-	body: any;
+	body: EventBodyPayload;
 	parentEvent: EventAction;
 }
 
-export default function EventBodyCard({ body, parentEvent }: Props) {
-	if (body == null) {
-		return null;
-	}
-
+export function EventBodyPayloadRenderer({ body, parentEvent }: Props) {
 	switch (body.type) {
-		case 'message':
+		case EventBodyPayloadType.MESSAGE:
 			return (
 				<div key="message">
 					{body.data}
 				</div>
 			);
-		case 'table':
+		case EventBodyPayloadType.TABLE:
 			return (
 				<CustomTable
-					content={body.fields}
+					content={body.rows}
 					key="table"/>
 			);
-		case 'verification':
+		case EventBodyPayloadType.VERIFICATION:
 			// eslint-disable-next-line no-case-declarations
 			const key = keyForVerification(parentEvent.parentEventId, parentEvent.eventId);
 
@@ -53,42 +51,53 @@ export default function EventBodyCard({ body, parentEvent }: Props) {
 				<VerificationTable
 					actionId={parentEvent.eventId as any}
 					messageId={parentEvent.attachedMessageIds[0] as any}
-					params={body}
-					status={body.status ?? (parentEvent.successful ? 'PASSED' : 'FAILED')}
+					payload={body}
+					status={(parentEvent.successful ? 'PASSED' : 'FAILED') as any}
 					keyPrefix={key}
 					stateKey={`${key}-nodes`}/>
 			);
+		case EventBodyPayloadType.TREE_TABLE:
+			// eslint-disable-next-line no-case-declarations
+			const { columns, rows } = extractParams(body);
+			return 	(
+				<div>
+					<div className="ac-body__item-title">
+						Input parameters
+					</div>
+					<ParamsTable
+						columns={columns}
+						rows={rows}
+						actionId={parentEvent.eventId as any}
+						stateKey={`${parentEvent.eventId}-input-params-nodes`}
+						name={parentEvent.eventName}/>
+				</div>
+			);
 		default:
-			break;
+			return <BodyFallback body={body}/>;
 	}
+}
 
-	if (!body?.fields) {
-		if (Object.keys(body).length < 1) {
-			return null;
-		}
+export default function EventBodyCard({ parentEvent, body }: Props) {
+	return (
+		<ErrorBoundary
+			fallback={<BodyFallback body={body}/>}>
+			<EventBodyPayloadRenderer body={body} parentEvent={parentEvent}/>
+		</ErrorBoundary>
+	);
+}
 
-		return (
-			<pre>{JSON.stringify(body, null, 4)}</pre>
-		);
-	}
+function BodyFallback({ body }: { body: unknown }) {
+	if (!body) return null;
 
-	const { fields, ...restBody } = body;
+	const content = typeof body === 'object' && body !== null && Object.keys(body).length > 0
+		? body
+		: null;
 
 	return (
-		<>
-			<div className="ac-body__item-title">
-				Input parameters
-			</div>
-			<ParamsTable
-				params={extractParams(body)}
-				actionId={parentEvent.eventId as any}
-				stateKey={`${parentEvent.eventId}-input-params-nodes`}
-				name={parentEvent.eventName}/>
-			<div style={{ overflow: 'auto', marginTop: '15px' }}>
-				<pre>
-					{ body && Object.keys(restBody).length > 0 && JSON.stringify(restBody, null, 4) }
-				</pre>
-			</div>
-		</>
+		<div className="event-body-fallback">
+			{content && <pre>
+				{content && JSON.stringify(content, null, 4)}
+			</pre>}
+		</div>
 	);
 }

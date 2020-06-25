@@ -15,13 +15,13 @@
  ***************************************************************************** */
 
 import React from 'react';
-import EventWindowStore from '../stores/EventWindowStore';
+import EventsStore from '../stores/EventsStore';
 
-const EventWindowContext = React.createContext({} as EventWindowStore);
+const EventWindowContext = React.createContext<EventsStore | null>(null);
 
 interface EventWindowProviderProps {
 	children: React.ReactNode;
-	value: EventWindowStore;
+	value: EventsStore;
 }
 const EventWindowProvider = ({ children, value }: EventWindowProviderProps) => (
 	<EventWindowContext.Provider value={value}>

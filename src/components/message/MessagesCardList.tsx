@@ -22,8 +22,7 @@ import { observer } from 'mobx-react-lite';
 import ResizeObserver from 'resize-observer-polyfill';
 import StateSaverProvider from '../util/StateSaverProvider';
 import { VirtualizedList } from '../VirtualizedList';
-import { createBemElement } from '../../helpers/styleCreators';
-import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import SkeletonedMessageCardListItem from './SkeletonedMessageCardListItem';
 import Empty from '../Empty';
 import SplashScreen from '../SplashScreen';
@@ -33,7 +32,8 @@ import '../../styles/messages.scss';
 export type MessagesHeights = { [index: number]: number };
 
 const MessageCardList = () => {
-	const { messagesStore, filterStore } = useEventWindowStore();
+	const messagesStore = useMessagesWindowStore();
+
 	const [messagesHeightsMap, setMessagesHeightMap] = React.useState<MessagesHeights>({});
 
 	const resizeObserver = React.useRef(new ResizeObserver(entries => {
@@ -67,10 +67,6 @@ const MessageCardList = () => {
 		);
 	};
 
-	const listClassName = createBemElement(
-		'messages',
-		'list',
-	);
 
 	if (messagesStore.isLoading) {
 		return <SplashScreen />;
@@ -81,23 +77,18 @@ const MessageCardList = () => {
 	}
 
 	return (
-		<div className="messages">
-			<div className={listClassName}>
-				<MessagesHeightsContext.Provider value={messagesHeightsMap}>
-					<StateSaverProvider>
-						<VirtualizedList
-							className="messages__list"
-							rowCount={messagesStore.messagesIds.length}
-							scrolledIndex={messagesStore.scrolledIndex}
-							itemRenderer={renderMessage}
-							overscan={0}
-							ScrollContainer={MessagesScrollContainer}
-							initialTopMostItemIndex={messagesStore.scrolledIndex
-								? messagesStore.scrolledIndex.valueOf() : undefined}
-						/>
-					</StateSaverProvider>
-				</MessagesHeightsContext.Provider>
-			</div>
+		<div className="messages-list">
+			<MessagesHeightsContext.Provider value={messagesHeightsMap}>
+				<StateSaverProvider>
+					<VirtualizedList
+						className="messages-list__items"
+						rowCount={messagesStore.messagesIds.length}
+						scrolledIndex={messagesStore.scrolledIndex}
+						itemRenderer={renderMessage}
+						overscan={0}
+						ScrollContainer={MessagesScrollContainer} />
+				</StateSaverProvider>
+			</MessagesHeightsContext.Provider>
 		</div>
 	);
 };

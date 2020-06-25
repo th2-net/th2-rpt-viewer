@@ -15,24 +15,24 @@
  ***************************************************************************** */
 
 import React from 'react';
-import EventsStore from '../stores/EventsStore';
+import WindowsStore from '../stores/WindowsStore';
 import ApiSchema from '../api/ApiSchema';
 import AppViewStore from '../stores/AppViewStore';
 
 export interface RootStoreContext {
-    eventsStore: EventsStore;
-    viewStore: AppViewStore;
+    windowsStore: WindowsStore;
+    appViewStore: AppViewStore;
 }
 
 const StoresContext = React.createContext({} as RootStoreContext);
 
 export function createStores(api: ApiSchema): RootStoreContext {
-	const viewStore = new AppViewStore();
-	const eventsStore = new EventsStore(api);
+	const appViewStore = new AppViewStore();
+	const windowsStore = new WindowsStore(api);
 
 	const stores = {
-		viewStore,
-		eventsStore,
+		appViewStore,
+		windowsStore,
 	};
 
 	return stores;

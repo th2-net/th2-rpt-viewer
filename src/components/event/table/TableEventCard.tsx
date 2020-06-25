@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Flipped } from 'react-flip-toolkit';
-import { EventIdNode } from '../../../stores/EventWindowStore';
+import { EventIdNode } from '../../../stores/EventsStore';
 import EventCard from '../EventCardHeader';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import EventCardSkeleton from '../EventCardSkeleton';

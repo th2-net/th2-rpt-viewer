@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { EventIdNode } from '../../../stores/EventWindowStore';
+import { EventIdNode } from '../../../stores/EventsStore';
 import useCachedEvent from '../../../hooks/useCachedEvent';
 import { createBemElement } from '../../../helpers/styleCreators';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';

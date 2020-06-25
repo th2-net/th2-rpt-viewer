@@ -19,35 +19,5 @@ import { EventStatus } from '../models/Status';
 
 export const isRootEvent = (event: EventAction) => event.parentEventId === null;
 
-export const getEventStatus = (event: EventAction): EventStatus => {
-	const { body, eventType, successful } = event;
-	if (!body || eventType !== 'verification') {
-		return successful ? EventStatus.PASSED : EventStatus.FAILED;
-	}
-
-	if (Array.isArray(body)) {
-		const status = body.find(field => field.type === 'verification')?.status;
-		return status !== undefined
-			? status
-			: successful
-				? EventStatus.PASSED : EventStatus.FAILED;
-	}
-
-	return body.status;
-};
-
-export function isVerification(event: EventAction) {
-	if (event.body == null) {
-		return false;
-	}
-
-	if (Array.isArray(event.body)) {
-		return event.body.some(element => element.type === 'verification');
-	}
-
-	if (typeof event.body === 'object') {
-		return event.body.type === 'verification';
-	}
-
-	return false;
-}
+export const getEventStatus = (event: EventAction): EventStatus =>
+	(event.successful ? EventStatus.PASSED : EventStatus.FAILED);

@@ -18,7 +18,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso } from 'react-virtuoso';
-import { EventIdNode } from '../../../stores/EventWindowStore';
+import { EventIdNode } from '../../../stores/EventsStore';
 import TableEventCard from './TableEventCard';
 import CardDisplayType from '../../../util/CardDisplayType';
 import { createBemElement } from '../../../helpers/styleCreators';
