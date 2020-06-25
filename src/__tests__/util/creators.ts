@@ -68,7 +68,7 @@ export function createVerificationEntry(
 	};
 }
 
-export function createMessage(id = 0, msgName = 'test'): Message {
+export function createMessage(id = '0', msgName = 'test'): Message {
 	return {
 		actionNodeType: ActionNodeType.MESSAGE,
 		id,

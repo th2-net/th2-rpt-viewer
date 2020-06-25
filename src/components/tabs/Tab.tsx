@@ -15,7 +15,6 @@
  ***************************************************************************** */
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useDrag } from 'react-dnd';
 import { createStyleSelector } from '../../helpers/styleCreators';
 
 export interface TabProps {
