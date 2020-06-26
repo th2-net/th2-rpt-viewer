@@ -1,3 +1,4 @@
+/* eslint-disable */
 /** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -26,10 +27,11 @@ import { EventMessage } from '../../models/EventMessage';
 import { useHeatmap } from '../../hooks/useHeatmap';
 import { hexToRGBA } from '../../helpers/color';
 import MessageRaw from './MessageRaw';
-import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import { useStores } from '../../hooks/useStores';
 import '../../styles/messages.scss';
 import PanelArea from '../../util/PanelArea';
+import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
+import ErrorBoundary from '../util/ErrorBoundary';
 
 const HUE_SEGMENTS_COUNT = 36;
 
@@ -58,6 +60,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		sessionId,
 		direction,
 		bodyBase64,
+		body,
 	} = message;
 
 	const isSelected = Boolean(heatmapElement);
@@ -144,17 +147,15 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 			</div>
 			<div className="message-card__body mc-body">
 				<div className="mc-body__human">
-					{
-						isContentBeautified ? (
-							<pre>
-								{JSON.stringify(message.body, undefined, '  ')}
-							</pre>
-						) : (
-							<pre className="mc-body__human">
-								{JSON.stringify(message.body)}
-							</pre>
-						)
-					}
+					<ErrorBoundary fallback={
+						<MessageBodyCardFallback
+							isBeautified={isContentBeautified}
+							body={body}/>
+					}>
+						<MessageBodyCard
+							isBeautified={isContentBeautified}
+							body={body}/>
+					</ErrorBoundary>
 					{
 						(bodyBase64 && bodyBase64 !== 'null') ? (
 							<div className="mc-show-raw"

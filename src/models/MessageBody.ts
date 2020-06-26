@@ -13,16 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import Timestamp from './Timestamp';
-import MessageBody from './MessageBody';
 
-export interface EventMessage {
-    type: string;
-    messageType: string;
-	messageId: string;
-	timestamp: Timestamp;
-	direction: string;
-	sessionId: string;
-	body: MessageBody;
-	bodyBase64: string | null;
+export default interface MessageBody {
+	metadata: {
+		id: {
+			connectionId: {
+				sessionAlias: string;
+			};
+			sequence: string;
+		};
+		timestamp: string;
+		messageType: string;
+	};
+	fields: { [key: string]: MessageBodyField };
+}
+
+export type MessageValueField = {
+	messageValue: {
+		fields: { [key: string]: MessageBodyField };
+	};
+};
+
+export type SimpleValueField = {
+	simpleValue: string;
+};
+
+export type MessageBodyField = MessageValueField | SimpleValueField;
+
+export function isSimpleValue(field: MessageBodyField): field is SimpleValueField {
+	return field != null && typeof (field as SimpleValueField).simpleValue === 'string';
 }

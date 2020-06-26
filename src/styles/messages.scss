@@ -250,10 +250,14 @@
     &__human {
         padding-top: 5px;
         line-height: 21px;
-        margin: 0px;
+        margin: 0;
         font-size: 13px;
         white-space: pre-wrap;
         word-break: break-all;
+    }
+
+    &__field-label {
+        color: $secondaryTextColor;
     }
 
     &__raw {
