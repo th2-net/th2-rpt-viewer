@@ -16,11 +16,15 @@
 
 import * as React from 'react';
 
-export default function useSelectListener(ref: React.MutableRefObject<HTMLElement>): [number | null, number | null] {
+function useSelectListener(ref: React.MutableRefObject<HTMLElement | null>): [number | null, number | null] {
 	const [startOffset, setStartOffset] = React.useState<number | null>(null);
 	const [endOffset, setEndOffset] = React.useState<number | null>(null);
 
 	const onSelectionChanged = () => {
+		if (!ref.current) {
+			return;
+		}
+
 		const selection = window.getSelection();
 
 		const refIsAnchorNode = ref.current.contains(selection!.anchorNode);
@@ -60,3 +64,5 @@ export default function useSelectListener(ref: React.MutableRefObject<HTMLElemen
 
 	return [startOffset, endOffset];
 }
+
+export default useSelectListener;
