@@ -169,4 +169,16 @@
     background-color: $windowsLayoutBackgroundColor;
     display: flex;
     flex-direction: column;
+ 
+    &__splitter {
+        width: 20px;
+        padding: 8px 0;
+
+        &:hover:after {
+            content: "";
+            height: calc(100% - 16px);
+            border: 2px solid $windowsSplitterColor;
+            left: 8px;
+        }
+    }
 }

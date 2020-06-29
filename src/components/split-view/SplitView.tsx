@@ -31,6 +31,7 @@ export interface Props {
     onPanelAreaChange: (panelArea: PanelArea) => void;
     leftPanelMinWidth: number;
 	rightPanelMinWidth: number;
+	splitterClassName?: string;
 }
 
 interface State {
@@ -256,6 +257,7 @@ export default class SplitView extends React.Component<Props, State> {
 		const splitterClassName = createStyleSelector(
 			'splitter-bar',
 			isDragging ? 'dragging' : null,
+			this.props.splitterClassName || null,
 		);
 		const rootClassName = createStyleSelector(
 			'splitter',

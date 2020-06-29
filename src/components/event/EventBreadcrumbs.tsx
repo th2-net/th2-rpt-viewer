@@ -21,7 +21,6 @@ import { EventIdNode } from '../../stores/EventsStore';
 import { createBemElement } from '../../helpers/styleCreators';
 import { getEventStatus } from '../../helpers/event';
 import useCachedEvent from '../../hooks/useCachedEvent';
-import Bookmark from '../util/Bookmark';
 import '../../styles/events.scss';
 
 const BREADCRUMB_ITEM_MAX_WIDTH = 170;
@@ -29,14 +28,13 @@ const BREADCRUMB_ITEM_MAX_WIDTH = 170;
 interface Props {
 	nodes: EventIdNode[];
 	rootEventsEnabled?: boolean;
-	onSelect: (node: EventIdNode | null) => void;
+	onSelect?: (node: EventIdNode | null) => void;
 	onMouseEnter?: (
 		event: React.MouseEvent<HTMLDivElement, MouseEvent>,
 		isMinified: boolean,
 		fullWidth: number
 	) => void;
 	onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-	color?: string;
 }
 
 function EventBreadcrumbs({
@@ -45,7 +43,6 @@ function EventBreadcrumbs({
 	rootEventsEnabled = false,
 	onMouseLeave,
 	onMouseEnter,
-	color,
 }: Props) {
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const [visibleItemsCount, setVisibleItemsCount] = React.useState(nodes.length);
@@ -70,12 +67,11 @@ function EventBreadcrumbs({
 			className='event-breadcrumbs'
 			ref={rootRef}
 			onMouseLeave={onMouseLeave}>
-			{color && <Bookmark color={color}/>}
 			{
 				rootEventsEnabled && !(visibleItemsCount === 1 && nodes.length > 0) ? (
 					<React.Fragment>
 						<div className='event-breadcrumbs__item'
-							 onClick={() => onSelect(null)}>
+							 onClick={() => onSelect && onSelect(null)}>
 							Root events
 						</div>
 						{
@@ -104,7 +100,7 @@ function EventBreadcrumbs({
 					<EventBreadcrumbsItem
 						key={node.id}
 						node={node}
-						onSelect={() => onSelect(node)}
+						onSelect={() => onSelect && onSelect(node)}
 						isLast={i === visibleBreadcrumbs.length - 1}/>
 				))
 			}
@@ -137,13 +133,19 @@ const EventBreadcrumbsItem = observer(({ node, onSelect, isLast }: ItemProps) =>
 		status,
 	);
 
+	const nameClassName = createBemElement(
+		'event-breadcrumbs',
+		'name',
+		isLast ? 'last' : null,
+	);
+
 	return (
 		<div className={rootClass}
 			 onClick={() => onSelect()}
 			 style={{
 				 maxWidth: BREADCRUMB_ITEM_MAX_WIDTH,
 			 }}>
-			<div className='event-breadcrumbs__name' title={event.eventName}>
+			<div className={nameClassName} title={event.eventName}>
 				{event.eventName}
 			</div>
 			<span className="event-breadcrumbs__status">

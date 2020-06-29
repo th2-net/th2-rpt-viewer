@@ -654,6 +654,10 @@
 }
 
 .messages-tab {
+    min-width: 270px;
+    flex-grow: 1;
+    flex-shrink: 0;
+
     &__count {
         box-sizing: border-box;
         display: inline-block;

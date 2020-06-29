@@ -17,19 +17,49 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../hooks/useStores';
-import { TabProps, Tab } from '../tabs/Tab';
+import DraggableTab, { DraggableTabProps } from '../tabs/DraggableTab';
+import Tab from '../tabs/Tab';
 
-const MessagesWindowTab = (tabProps: Omit<TabProps, 'children'>) => {
+const MessagesWindowTab = (tabProps: Omit<DraggableTabProps, 'children'>) => {
 	const { windowsStore } = useStores();
-	const attachedMessagesCount = [...windowsStore.attachedMessagesIds.values()].flat().length;
+	const attachedMessages = [...windowsStore.attachedMessagesIds.entries()];
+
 	return (
-		<Tab {...tabProps}>
+		<DraggableTab {...tabProps} classNames={{ root: 'messages-tab' }}>
 			Messages
-			<span className="messages-tab__count">
-				{attachedMessagesCount}
-			</span>
-		</Tab>
+			{
+				attachedMessages.map(([color, ids]) => (
+					<span
+						key={color}
+						className="messages-tab__count"
+						style={{ borderColor: color }}>
+						{ids.length}
+					</span>
+				))}
+		</DraggableTab>
 	);
 };
 
 export default observer(MessagesWindowTab);
+
+interface MessagesWindowTabPreviewProps {
+	isSelected: boolean;
+}
+export const MessagesWindowTabPreview = ({ isSelected }: MessagesWindowTabPreviewProps) => {
+	const { windowsStore } = useStores();
+	const attachedMessages = [...windowsStore.attachedMessagesIds.entries()];
+	return (
+		<Tab isDragging={true} isSelected={isSelected}>
+			Messages
+			{
+				attachedMessages.map(([color, ids]) => (
+					<span
+						key={color}
+						className="messages-tab__count"
+						style={{ borderColor: color }}>
+						{ids.length}
+					</span>
+				))}
+		</Tab>
+	);
+};

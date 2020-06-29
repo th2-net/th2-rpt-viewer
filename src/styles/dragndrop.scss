@@ -16,50 +16,39 @@
 
 @import "./common/vars";
 
-body {
-    margin: 0;
-    font-family: Open sans;
-    div {
-        box-sizing: border-box;
-    }
+.side-drop-target {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	overflow: hidden;
 
-    overflow: hidden;
-}
+	&__overlay {
+		background-color: rgba($color: #7DB3E8, $alpha: 0.5);
+		border: 2px solid $draggableColor;
+		position: absolute;
+		right: 0;
+		top: 0;
+		z-index: 20;
+	}
 
-#index {
-    width: 100vw;
-    height: 100vh;
-    box-sizing: border-box;
-    overflow: hidden;
-}
+	&__drop-hint {
+		height: 100%;
+		width: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+		padding: 6px 0;
+		overflow: hidden;
 
-.root {
-    display: block;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-
-    div:focus {
-        outline: unset;
-    }
-}
-
-p, h1, h2, h3, h4, h5, pre {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    vertical-align: baseline;
-}
-
-.splash-screen {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    &__spinner {
-        @include spinner(5px, 40px, 2s);
-    }
+		&::after {
+			content: "";
+			flex-grow: 1;
+			width: 10px;
+			background-color: $draggableColor;
+			border: 3px solid #FFF;
+			border-radius: 6px;
+			box-sizing: border-box;
+		}
+	}
 }
