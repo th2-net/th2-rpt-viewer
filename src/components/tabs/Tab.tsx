@@ -19,29 +19,39 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 
 export interface TabProps {
 	children: React.ReactNode;
-	tabIndex: number;
-	windowIndex: number;
-	isSelected: boolean;
-	setActiveTab: (index: number) => void;
-	closeTab: (index: number) => void;
-	duplicateTab: (index: number) => void;
+	tabIndex?: number;
+	isSelected?: boolean;
+	setActiveTab?: (index: number) => void;
+	closeTab?: (index: number) => void;
+	duplicateTab?: (index: number) => void;
 	isClosable?: boolean;
+	color?: string;
+	classNames?: {
+		root?: string;
+		tab?: string;
+		content?: string;
+	};
+	isDragging?: boolean;
 }
 
-export const Tab = observer<TabProps, { tabRef: HTMLDivElement | null; contentRef: HTMLDivElement | null }>(({
-	isSelected = false,
-	tabIndex = 0,
-	setActiveTab,
-	closeTab,
-	duplicateTab,
-	children,
-	isClosable = true,
-}, ref) => {
-	const tabClassName = createStyleSelector(
-		'tab',
-		isSelected ? 'selected' : null,
-	);
+export interface TabForwardedRefs {
+	tabRef: HTMLDivElement | null;
+	contentRef: HTMLDivElement | null;
+}
 
+const Tab: React.RefForwardingComponent<TabForwardedRefs, TabProps> = (props, ref) => {
+	const {
+		isSelected = false,
+		tabIndex = 0,
+		setActiveTab,
+		closeTab,
+		duplicateTab,
+		children,
+		isClosable = true,
+		color,
+		isDragging = false,
+		classNames,
+	} = props;
 	const tabRef = React.useRef<HTMLDivElement>(null);
 	const contentRef = React.useRef<HTMLDivElement>(null);
 
@@ -54,49 +64,65 @@ export const Tab = observer<TabProps, { tabRef: HTMLDivElement | null; contentRe
 		},
 	}));
 
+	const tabClassName = createStyleSelector(
+		'tab',
+		isSelected ? 'selected' : null,
+		isDragging ? 'dragging' : null,
+		classNames?.tab || null,
+	);
+
+	const dragIconClassName = createStyleSelector(
+		'tab__drag-icon',
+		isDragging ? 'active' : null,
+	);
+
 	return (
 		<div
-			className="tab-wrapper"
-			style={{ zIndex: !isSelected ? 0 : 1 }}>
-			<div
-				className={tabClassName}
-				onClick={() => setActiveTab(tabIndex)}
-				ref={tabRef}>
-				<div className="tab__content-wrapper">
-					<div
-						className="tab__content"
-						style={{
-							pointerEvents: isSelected ? 'auto' : 'none',
-						}}
-						ref={contentRef}>
-						{children}
-					</div>
+			className={tabClassName}
+			onClick={() => setActiveTab && setActiveTab(tabIndex)}
+			ref={tabRef}>
+			<div className="tab__pre">
+				<div className={dragIconClassName}/>
+				{color && <div className="tab__color" style={{ borderColor: color }}/>}
+			</div>
+			<div className="tab__content-wrapper">
+				<div
+					className="tab__content"
+					style={{
+						pointerEvents: isSelected && !isDragging ? 'auto' : 'none',
+					}}
+					ref={contentRef}>
+					{children}
 				</div>
-				<div className="tab__controls">
-					<button
+			</div>
+			<div className="tab__controls">
+				<button
+					className="tab__button"
+					title="duplicate tab"
+					onClick={e => {
+						e.stopPropagation();
+						if (duplicateTab) {
+							duplicateTab(tabIndex);
+						}
+					}}>
+					<i className="tab__icon-dublicate"/>
+				</button>
+				{isClosable
+					&& 	<button
 						className="tab__button"
-						title="duplicate tab"
+						role="button"
+						title="close tab"
 						onClick={e => {
 							e.stopPropagation();
-							duplicateTab(tabIndex);
-						}}>
-						<i className="tab__icon-dublicate"/>
-					</button>
-					{isClosable
-						&& 	<button
-							className="tab__button"
-							role="button"
-							title="close tab"
-							onClick={e => {
-								e.stopPropagation();
+							if (closeTab) {
 								closeTab(tabIndex);
-							}}>
-							<i className="tab__icon-close"/>
-						</button>}
-				</div>
+							}
+						}}>
+						<i className="tab__icon-close"/>
+					</button>}
 			</div>
 		</div>
 	);
-}, { forwardRef: true });
+};
 
-Tab.displayName = 'Tab';
+export default observer(Tab, { forwardRef: true });

@@ -18,7 +18,7 @@ import {
 	action,
 	observable,
 	autorun,
-	reaction,
+	computed,
 } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { EventMessage } from '../models/EventMessage';
@@ -37,10 +37,8 @@ export default class WindowsStore {
 	];
 
 	constructor(private api: ApiSchema) {
-		reaction(
-			() => this.windows,
-			this.getAvailableColors,
-		);
+		this.createDefaultWindow();
+
 		autorun(() => {
 			const attachedMessages = this.windows.flatMap(({ tabs }) => tabs)
 				.filter(isEventsTab)
@@ -57,15 +55,24 @@ export default class WindowsStore {
 		});
 	}
 
-	@observable private colors: Array<string> = this.defaultColors.slice();
-
+	// Map<color, messagesIds[]>
 	@observable attachedMessagesIds: Map<string, Array<string>> = new Map();
 
 	@observable pinnedMessagesIds: Array<string> = [];
 
-	@observable windows: AppWindowStore[] = [
-		new AppWindowStore(this, this.api, this.colors, null),
-	];
+	@observable windows: AppWindowStore[] = [];
+
+	@computed get colors(): Array<string> {
+		if (this.windows.length === 0) return this.defaultColors;
+		const usedColors = this.windows
+			.flatMap(({ tabs }) => tabs)
+			.filter(isEventsTab)
+			.map(eventsTab => eventsTab.store.color);
+		const availableColors = this.defaultColors.filter(color => !usedColors.includes(color));
+		return availableColors.length === 0
+			? [randomHexColor()]
+			: availableColors;
+	}
 
 	@action
 	toggleMessagePin = (message: EventMessage) => {
@@ -80,29 +87,36 @@ export default class WindowsStore {
 	};
 
 	@action
-	moveTab = (originWindowIndex: number, targetWindowIndex: number, tabIndex: number) => {
-		if (originWindowIndex === targetWindowIndex) return;
+	moveTab = (
+		originWindowIndex: number,
+		targetWindowIndex: number,
+		tabIndex: number,
+		targetTabIndex: number,
+	) => {
+		if (originWindowIndex === targetWindowIndex
+			&& tabIndex === targetTabIndex) return;
+
 		const originWindow = this.windows[originWindowIndex];
 		const targetWindow = this.windows[targetWindowIndex];
-		const movedTab = originWindow.deleteTab(tabIndex);
 
 		if (!targetWindow) {
-			this.windows.push(
-				new AppWindowStore(
-					this,
-					this.api,
-					this.colors,
-					[movedTab],
-				),
-			);
+			const newWindow = new AppWindowStore(this, this.api);
+			newWindow.addTabs([originWindow.deleteTab(tabIndex)]);
+			this.windows.push(newWindow);
 			return;
 		}
 
-		targetWindow.addTab(movedTab);
+		if (targetWindow !== originWindow) {
+			targetWindow.addTabs([originWindow.deleteTab(tabIndex)], targetTabIndex);
 
-		if (originWindow.isEmpty) {
-			this.deleteWindow(originWindowIndex);
+			if (originWindow.isEmpty) {
+				this.deleteWindow(originWindowIndex);
+			}
+
+			return;
 		}
+
+		originWindow.changeTabPosition(tabIndex, targetTabIndex);
 	};
 
 	@action
@@ -111,18 +125,11 @@ export default class WindowsStore {
 	};
 
 	@action
-	private getAvailableColors = (windows: AppWindowStore[]) => {
-		if (!windows) {
-			this.colors = this.defaultColors.slice();
-			return;
-		}
-		const usedColors = this.windows
-			.flatMap(({ tabs }) => tabs)
-			.filter(isEventsTab)
-			.map(eventsTab => eventsTab.store.color);
-		const availableColors = this.colors.filter(color => !usedColors.includes(color));
-		this.colors = availableColors.length === 0
-			? [randomHexColor()]
-			: availableColors;
-	};
+	private createDefaultWindow() {
+		const defaultWindow = new AppWindowStore(this, this.api);
+		defaultWindow.addEventsTab();
+		defaultWindow.addMessagesTab();
+		defaultWindow.activeTabIndex = 0;
+		this.windows.push(defaultWindow);
+	}
 }

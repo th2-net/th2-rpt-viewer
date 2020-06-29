@@ -16,6 +16,9 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { CustomDragLayer } from '../drag-n-drop/CustomDragLayer';
 import { useStores } from '../../hooks/useStores';
 import SplitView from '../split-view/SplitView';
 import AppWindow from '../AppWindow';
@@ -25,19 +28,30 @@ const EventsLayout = () => {
 	const { windowsStore, appViewStore } = useStores();
 
 	return (
-		<div className="events-layout">
-			{
-				windowsStore.windows.length === 1
-					? <AppWindow windowStore={windowsStore.windows[0]} windowIndex={0}/>
-					: <SplitView panelArea={appViewStore.panelArea} onPanelAreaChange={appViewStore.setPanelArea}>
-						{windowsStore.windows.map((w, index) =>
-							<AppWindow
-								windowStore={w}
-								key={`window-${index}`}
-								windowIndex={index} />) as [React.ReactNode, React.ReactNode]}
-					</SplitView>
-			}
-		</div>
+		<DndProvider backend={HTML5Backend}>
+			<CustomDragLayer />
+			<div className="events-layout">
+				{
+					windowsStore.windows.length === 1
+						? <AppWindow
+							moveTabToNewWindow={(tabIndex: number) => windowsStore.moveTab(0, 1, tabIndex, 0)}
+							shouldWrap={windowsStore.windows.length === 1}
+							windowStore={windowsStore.windows[0]} windowIndex={0}/>
+						: <SplitView
+							panelArea={appViewStore.panelArea}
+							onPanelAreaChange={appViewStore.setPanelArea}
+							splitterClassName="events-layout__splitter">
+							{windowsStore.windows.map((w, index) =>
+								<AppWindow
+									moveTabToNewWindow={(tabIndex: number) => windowsStore.moveTab(0, 1, tabIndex, 0)}
+									windowStore={w}
+									key={`window-${index}`}
+									windowIndex={index} />) as [React.ReactNode, React.ReactNode]}
+						</SplitView>
+				}
+			</div>
+		</DndProvider>
+
 	);
 };
 

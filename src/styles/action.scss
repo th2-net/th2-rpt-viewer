@@ -386,6 +386,7 @@
     width: 100%;
 
     & > div {
+        @include scrollbar;
         height: 100%;
     }
 

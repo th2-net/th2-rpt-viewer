@@ -26,9 +26,9 @@ interface InjectedProps {
 }
 
 interface Props {
-	tabList: (props: InjectedProps) => React.ReactNode;
+	tabList: (props: InjectedProps) => React.ReactNode[];
 	tabPanels: React.ReactNode[];
-	activeIndex?: number;
+	activeIndex: number;
 	onChange: (tabIndex: number) => void;
 	closeTab: (tabIndex: number) => void;
 	duplicateTab: (tabIndex: number) => void;
@@ -45,7 +45,7 @@ const Tabs = ({
 	const [activeTabIndex, setActiveTabIndex] = React.useState(0);
 
 	React.useEffect(() => {
-		if (typeof activeIndex === 'number' && activeIndex !== activeTabIndex) {
+		if (activeIndex !== activeTabIndex) {
 			setActiveTabIndex(activeIndex);
 		}
 	}, [activeIndex]);
@@ -55,20 +55,23 @@ const Tabs = ({
 		onChange(tabIndex);
 	};
 
+	const tabs = tabList({
+		activeTabIndex,
+		closeTab,
+		duplicateTab,
+		setActiveTab,
+	});
+
 	return (
-		<div style={{ height: '100%', width: '100%' }}>
+		<div className="tabs__wrapper">
 			<div className="tabs">
 				<div className="tabs__list">
-					{tabList({
-						activeTabIndex,
-						closeTab,
-						duplicateTab,
-						setActiveTab,
-					})}
+					{tabs}
 				</div>
-				<div className="tabs__content" >
+				<div className="tabs__content">
 					{tabPanels.map((content, index) => (
 						<div
+							className="tabs__content-window"
 							key={index}
 							style={{ zIndex: index === activeIndex ? 1 : 0 }}>
 							{content}
@@ -76,8 +79,8 @@ const Tabs = ({
 					))}
 				</div>
 			</div>
-		</div>
 
+		</div>
 	);
 };
 

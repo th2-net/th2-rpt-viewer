@@ -25,37 +25,11 @@ import EventsStore from './EventsStore';
 import WindowsStore from './WindowsStore';
 import ApiSchema from '../api/ApiSchema';
 import { isEventsTab } from '../helpers/windows';
-import { randomHexColor } from '../helpers/color';
 
 export default class AppWindowStore {
-	// eslint-disable-next-line no-useless-constructor
-	constructor(
-		private windowsStore: WindowsStore,
-		private api: ApiSchema,
-		private colors: Array<string>,
-		tabs: AppTab[] | null,
-	) {
-		if (tabs) {
-			this.tabs = tabs;
-		}
-	}
+	constructor(private windowsStore: WindowsStore, private api: ApiSchema) {}
 
-	@observable tabs: AppTab[] = [
-		{
-			type: TabTypes.Events,
-			store: new EventsStore(
-				this.api,
-				this.colors[0],
-			),
-		},
-		{
-			type: TabTypes.Messages,
-			store: new MessagesStore(
-				this.api,
-				this.windowsStore,
-			),
-		},
-	];
+	@observable tabs: AppTab[] = [];
 
 	@observable activeTabIndex = 0;
 
@@ -63,34 +37,23 @@ export default class AppWindowStore {
 		return this.tabs.length === 0;
 	}
 
-	@action.bound
-	duplicateTab(tabIndex: number) {
-		const windowToDubplicate = this.tabs[tabIndex];
-		if (windowToDubplicate.type === TabTypes.Events) {
-			const usedColors = this.tabs
-				.filter(isEventsTab)
-				.map(w => w.store.color);
-			let color = this.colors.filter(c => !usedColors.includes(c))[0];
-			if (!color) {
-				color = randomHexColor();
-			}
-			this.tabs.push({
-				type: TabTypes.Events,
-				store: EventsStore.copy(windowToDubplicate.store, this.api, color),
-			});
-			this.activeTabIndex = this.tabs.length - 1;
-			return;
-		}
-		this.tabs.push({
-			type: TabTypes.Messages,
-			store: MessagesStore.copy(
-				windowToDubplicate.store,
+	@action
+	duplicateTab = (tabIndex: number) => {
+		const tabToDublicate = this.tabs[tabIndex];
+		if (isEventsTab(tabToDublicate)) {
+			const copiedStore = EventsStore.copy(tabToDublicate.store, this.api, this.windowsStore.colors[0])
+			this.addEventsTab(copiedStore);
+		} else {
+			const copiedMessagesStore = MessagesStore.copy(
+				tabToDublicate.store,
 				this.api,
 				this.windowsStore,
-			),
-		});
+			);
+			this.addMessagesTab(copiedMessagesStore);
+		}
+
 		this.activeTabIndex = this.tabs.length - 1;
-	}
+	};
 
 	@action
 	closeTab = (tabIndex: number) => {
@@ -112,13 +75,38 @@ export default class AppWindowStore {
 	};
 
 	@action
-	addTab = (tab: AppTab) => {
-		this.tabs.push(tab);
+	addTabs = (tabs: AppTab[] | AppTab, index = this.tabs.length) => {
+		const tabsToAdd = Array.isArray(tabs) ? tabs : [tabs];
+		this.tabs.splice(index, 0, ...tabsToAdd);
 		this.activeTabIndex = this.tabs.length - 1;
 	};
 
 	@action
 	setActiveTab = (tabIndex: number) => {
 		this.activeTabIndex = tabIndex;
+	};
+
+	@action
+	changeTabPosition = (currentTabIndex: number, newIndex: number) => {
+		const activeTab = this.tabs[this.activeTabIndex];
+		const movedTab = this.tabs.splice(currentTabIndex, 1)[0];
+		this.tabs.splice(newIndex, 0, movedTab);
+		this.activeTabIndex = this.tabs.findIndex(t => t === activeTab);
+	};
+
+	@action
+	addEventsTab = (store?: EventsStore) => {
+		this.addTabs({
+			type: TabTypes.Events,
+			store: store || new EventsStore(this.api, this.windowsStore.colors[0]),
+		});
+	};
+
+	@action
+	addMessagesTab = (store?: MessagesStore) => {
+		this.addTabs({
+			type: TabTypes.Messages,
+			store: store || new MessagesStore(this.api, this.windowsStore),
+		});
 	};
 }

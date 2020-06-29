@@ -25,47 +25,68 @@ import { EventWindowProvider } from '../contexts/eventWindowContext';
 import { MessagesWindowProvider } from '../contexts/messagesWindowContext';
 import { isEventsTab, isMessagesTab } from '../helpers/windows';
 import AppWindowStore from '../stores/AppWindowStore';
+import { useStores } from '../hooks/useStores';
+import { withSideDropTarget } from './drag-n-drop/AppWindowSideDropTarget';
+import { TabTypes } from '../models/util/Windows';
 
 interface AppWindowProps {
 	windowStore: AppWindowStore;
 	windowIndex: number;
 }
 
-const AppWindow = ({
+const AppWindow = observer(({
 	windowStore,
 	windowIndex,
-}: AppWindowProps) => (
-	<Tabs
-		activeIndex={windowStore.activeTabIndex}
-		onChange={windowStore.setActiveTab}
-		closeTab={windowStore.closeTab}
-		duplicateTab={windowStore.duplicateTab}
-		tabList={({ activeTabIndex, ...tabProps }) =>
-			windowStore.tabs.map((tab, index) =>
-				(isEventsTab(tab)
-					? <EventsWindowTab
-						store={tab.store}
-						key={index}
-						isSelected={activeTabIndex === index}
-						{...tabProps}
-						tabIndex={index}
-						isClosable={windowStore.tabs.filter(w => isEventsTab(w)).length > 1}
-						windowIndex={windowIndex}/>
-					: <MessagesWindowTab
-						key={index}
-						isSelected={activeTabIndex === index}
-						{...tabProps}
-						tabIndex={index}
-						isClosable={windowStore.tabs.filter(w => isMessagesTab(w)).length > 1}
-						windowIndex={windowIndex}/>))}
-		tabPanels={windowStore.tabs.map(tab =>
-			(isEventsTab(tab)
-				? <EventWindowProvider value={tab.store}>
-					<EventWindow />
-				</EventWindowProvider>
-				: <MessagesWindowProvider value={tab.store} >
-					<MessagesWindow />
-				</MessagesWindowProvider>))}/>
-);
+}: AppWindowProps) => {
+	const { windowsStore } = useStores();
 
-export default observer(AppWindow);
+	return (
+		<Tabs
+			activeIndex={windowStore.activeTabIndex}
+			onChange={windowStore.setActiveTab}
+			closeTab={windowStore.closeTab}
+			duplicateTab={windowStore.duplicateTab}
+			tabList={({ activeTabIndex, ...tabProps }) =>
+				windowStore.tabs.map((tab, index) =>
+					(isEventsTab(tab)
+						? <EventsWindowTab
+							dragItemPayload={{
+								type: TabTypes.Events,
+								store: tab.store,
+								isSelected: activeTabIndex === index,
+							}}
+							store={tab.store}
+							key={tab.store.color}
+							isSelected={activeTabIndex === index}
+							tabIndex={index}
+							isClosable={windowStore.tabs.filter(w => isEventsTab(w)).length > 1}
+							windowIndex={windowIndex}
+							onTabDrop={windowsStore.moveTab}
+							color={tab.store.color}
+							{...tabProps}/>
+						: <MessagesWindowTab
+							dragItemPayload={{
+								type: TabTypes.Messages,
+								isSelected: activeTabIndex === index,
+							}}
+							key={`messages-tab-${index}`}
+							isSelected={activeTabIndex === index}
+							tabIndex={index}
+							isClosable={windowStore.tabs.filter(w => isMessagesTab(w)).length > 1}
+							windowIndex={windowIndex}
+							onTabDrop={windowsStore.moveTab}
+							{...tabProps}/>))}
+			tabPanels={windowStore.tabs.map(tab =>
+				(isEventsTab(tab)
+					? <EventWindowProvider value={tab.store}>
+						<EventWindow />
+					</EventWindowProvider>
+					: <MessagesWindowProvider value={tab.store} >
+						<MessagesWindow />
+					</MessagesWindowProvider>))}/>
+	);
+});
+
+AppWindow.displayName = 'AppWindow';
+
+export default withSideDropTarget(AppWindow);

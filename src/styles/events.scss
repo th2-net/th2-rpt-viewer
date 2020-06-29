@@ -390,6 +390,11 @@
 		display: inline-block;
 		white-space: nowrap;
 		overflow: hidden;
+		opacity: 0.8;
+
+		&.last {
+			opacity: 1;
+		}
 	}
 
 	&__status {
@@ -412,11 +417,18 @@
 	&__divider-last {
 		margin: 0 5px;
 		flex-shrink: 0;
-		@include icon(url(../../resources/icons/arr1-down.svg), 16px, 16px);
+		@include icon(url(../../resources/icons/arr1-right-disabled.svg), 16px, 16px);
+		transform: rotate(90deg);
 	}
 
 	&__minified {
 		display: flex;
 		align-items: center;
+	}
+}
+
+.event-tab {
+	&__expanded {
+		box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 3px -2px, rgba(0, 0, 0, 0.14) 0px 3px 4px 0px, rgba(0, 0, 0, 0.12) 0px 1px 8px 0px;
 	}
 }

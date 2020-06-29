@@ -18,32 +18,36 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import EventBreadcrumbs from './EventBreadcrumbs';
 import { EventWindowProvider } from '../../contexts/eventWindowContext';
-import { Tab, TabProps } from '../tabs/Tab';
+import DraggableTab, { DraggableTabProps } from '../tabs/DraggableTab';
+import Tab, { TabForwardedRefs } from '../tabs/Tab';
 import EventWindowStore from '../../stores/EventsStore';
 import '../../styles/events.scss';
 
-type EventsWindowTabProps = Omit<TabProps, 'children'> & {
+type EventsWindowTabProps = Omit<DraggableTabProps, 'children'> & {
 	store: EventWindowStore;
 };
 
-const EventsWindowTab = observer(({
-	store,
-	...tabProps
-}: EventsWindowTabProps) => {
-	const tabRefs = React.useRef<{tabRef: HTMLDivElement | null; contentRef: HTMLDivElement | null}>(null);
+const EventsWindowTab = observer((props: EventsWindowTabProps) => {
+	const { store, ...tabProps } = props;
+	const [isExpanded, setIsExpanded] = React.useState(false);
+	const tabRefs = React.useRef<TabForwardedRefs>(null);
+
 	return (
-		<Tab {...tabProps} ref={tabRefs}>
+		<DraggableTab
+			{...tabProps}
+			ref={tabRefs}
+			classNames={{ tab: isExpanded ? 'event-tab__expanded' : '' }}>
 			<EventWindowProvider value={store}>
 				<EventBreadcrumbs
-					color={store.color}
 					rootEventsEnabled
 					nodes={store.selectedPath}
 					onSelect={store.selectNode}
 					onMouseEnter={(e, isMinified, fullBreadcrumsWidth) => {
 						const contentRef = tabRefs.current?.contentRef;
 						const tabRef = tabRefs.current?.tabRef;
-						if (!contentRef || !tabRef || !isMinified) return;
 
+						if (!contentRef || !tabRef || !isMinified) return;
+						if (!isExpanded) setIsExpanded(true);
 						const { left, right } = tabRef.getBoundingClientRect();
 						const contentWidth = contentRef.getBoundingClientRect().width;
 						const clientWidth = document.documentElement.clientWidth;
@@ -68,10 +72,27 @@ const EventsWindowTab = observer(({
 							tabRefs.current.tabRef.style.transform = 'translate(0, 0)';
 							tabRefs.current.tabRef.style.width = '100%';
 						}
+						setIsExpanded(false);
 					}}/>
 			</EventWindowProvider>
-		</Tab>
+		</DraggableTab>
 	);
 });
 
 export default EventsWindowTab;
+
+interface EventsWindowTabPreviewProps {
+	store: EventWindowStore;
+	isSelected: boolean;
+}
+
+export const EventsWindowTabPreview = ({ store, isSelected }: EventsWindowTabPreviewProps) => (
+	<Tab color={store.color} isDragging={true} isSelected={isSelected}>
+		<EventWindowProvider value={store}>
+			<EventBreadcrumbs
+				rootEventsEnabled
+				nodes={store.selectedPath} />
+		</EventWindowProvider>
+	</Tab>
+
+);
