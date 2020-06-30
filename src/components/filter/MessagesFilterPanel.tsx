@@ -26,14 +26,16 @@ const MessagesFilterPanel = () => {
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [timestampFrom, setTimestampFrom] = React.useState(filterStore.messagesFilter.timestampFrom);
 	const [timestampTo, setTimestampTo] = React.useState(filterStore.messagesFilter.timestampTo);
-	const [stream, setStream] = React.useState(filterStore.messagesFilter.stream);
-	const [messageType, setMessageType] = React.useState(filterStore.messagesFilter.messageType);
+	const [currentStream, setCurrentStream] = React.useState('');
+	const [streams, setStreams] = React.useState<Array<string>>([]);
+	const [currentMessageType, setCurrentMessageType] = React.useState('');
+	const [messageTypes, setMessagesTypes] = React.useState<Array<string>>([]);
 
 	React.useEffect(() => {
 		setTimestampFrom(filterStore.messagesFilter.timestampFrom);
 		setTimestampTo(filterStore.messagesFilter.timestampTo);
-		setStream(filterStore.messagesFilter.stream);
-		setMessageType(filterStore.messagesFilter.messageType);
+		setStreams(filterStore.messagesFilter.streams);
+		setMessagesTypes(filterStore.messagesFilter.messageTypes);
 	}, [showFilter, filterStore.messagesFilter]);
 
 	const submitChanges = () => {
@@ -46,8 +48,8 @@ const MessagesFilterPanel = () => {
 		filterStore.setMessagesFilter({
 			timestampFrom,
 			timestampTo,
-			stream,
-			messageType,
+			streams,
+			messageTypes,
 		});
 	};
 
@@ -64,18 +66,23 @@ const MessagesFilterPanel = () => {
 		setFromValue: setTimestampFrom,
 		setToValue: setTimestampTo,
 	}, {
-		type: 'string',
+		type: 'multiple-strings',
 		id: 'messages-stream',
 		label: 'Stream name',
-		value: stream ?? '',
-		setValue: next => (next === '' ? setStream(null) : setStream(next)),
+		values: streams,
+		setValues: setStreams,
+		currentValue: currentStream,
+		setCurrentValue: setCurrentStream,
 	}, {
-		type: 'string',
+		type: 'multiple-strings',
 		id: 'messages-type',
 		label: 'Message type',
-		value: messageType ?? '',
-		setValue: next => (next === '' ? setStream(null) : setMessageType(next)),
-	}];
+		values: messageTypes,
+		setValues: setMessagesTypes,
+		currentValue: currentMessageType,
+		setCurrentValue: setCurrentMessageType,
+	},
+	];
 
 	const isApplied = filterStore.isMessagesFilterApplied && !messagesStore.isLoading;
 

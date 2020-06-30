@@ -15,7 +15,15 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { FilterRowConfig, FilterRowDatetimeRangeConfig, FilterRowStringConfig } from './FilterPanel';
+import {
+	FilterRowConfig,
+	FilterRowDatetimeRangeConfig,
+	FilterRowMultipleStringsConfig,
+	FilterRowStringConfig,
+} from './FilterPanel';
+import Bubble from '../util/Bubble';
+import AutocompleteInput from '../util/AutocompleteInput';
+import { removeByIndex, replaceByIndex } from '../../helpers/array';
 
 interface Props {
 	rowConfig: FilterRowConfig;
@@ -30,6 +38,10 @@ export default function FilterPanelRow({ rowConfig }: Props) {
 		case 'string':
 			return (
 				<StringRow config={rowConfig}/>
+			);
+		case 'multiple-strings':
+			return (
+				<MultipleStringRow config={rowConfig}/>
 			);
 		default:
 			return null;
@@ -83,6 +95,76 @@ function StringRow({ config }: { config: FilterRowStringConfig }) {
 				id={config.id}
 				value={config.value}
 				onChange={e => config.setValue(e.target.value)}/>
+		</div>
+	);
+}
+
+function MultipleStringRow({ config }: { config: FilterRowMultipleStringsConfig }) {
+	const input = React.useRef<HTMLInputElement>();
+
+	React.useEffect(() => {
+		input.current?.focus();
+	}, []);
+
+	const valueBubbleOnChangeFor = (index: number) => (nextValue: string) => {
+		config.setValues(replaceByIndex(config.values, index, nextValue));
+	};
+
+	const valueBubbleOnRemoveFor = (index: number) => () => {
+		config.setValues(removeByIndex(config.values, index));
+	};
+
+	const inputOnRemove = () => {
+		const { values, setCurrentValue, setValues } = config;
+		if (values.length === 0) {
+			return;
+		}
+
+		const lastValue = values[values.length - 1];
+		const restValues = values.slice(0, values.length - 1);
+
+		setCurrentValue(lastValue);
+		setValues(restValues);
+	};
+
+	const inputOnSubmit = (nextValue: string) => {
+		const { values, setValues } = config;
+		if (values.length > 0) {
+			setValues([...values, nextValue]);
+			return;
+		}
+
+		config.setValues([...values, nextValue]);
+	};
+
+	return (
+		<div className="filter-row">
+			<label className="filter-row__label" htmlFor={config.id}>
+				{config.label}
+			</label>
+			<div className="filter-row__multiple-values">
+				{config.values.map((value, index) => (
+					<React.Fragment key={index}>
+						<Bubble
+							className="filter__bubble"
+							value={value}
+							onSubmit={valueBubbleOnChangeFor(index)}
+							onRemove={valueBubbleOnRemoveFor(index)}
+						/>
+						<span>or</span>
+					</React.Fragment>
+				))}
+				<AutocompleteInput
+					ref={input}
+					className="filter-row__input filter-row__multiple-values-input"
+					value={config.currentValue}
+					onSubmit={inputOnSubmit}
+					onRemove={inputOnRemove}
+					autoresize={false}
+					autocomplete={null}
+					datalistKey={`autocomplete-${1}`}
+				/>
+			</div>
 		</div>
 	);
 }

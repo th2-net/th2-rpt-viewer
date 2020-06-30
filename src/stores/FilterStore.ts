@@ -29,8 +29,8 @@ export default class FilterStore {
 	@observable messagesFilter: MessagesFilter = {
 		timestampFrom: new Date(new Date().getTime() - ONE_HOUR).getTime(),
 		timestampTo: new Date().getTime(),
-		stream: null,
-		messageType: null,
+		streams: [],
+		messageTypes: [],
 	};
 
 	@observable isMessagesFilterApplied = false;
@@ -57,8 +57,8 @@ export default class FilterStore {
 		this.messagesFilter = {
 			timestampFrom: new Date(new Date().getTime() - ONE_HOUR).getTime(),
 			timestampTo: new Date().getTime(),
-			stream: null,
-			messageType: null,
+			streams: [],
+			messageTypes: [],
 		};
 		this.isMessagesFilterApplied = false;
 	}
