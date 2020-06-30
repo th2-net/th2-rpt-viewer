@@ -16,7 +16,8 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { formatTime, getTimestampAsNumber } from '../../helpers/date';
+import TimeAgo from 'react-timeago';
+import { getTimestampAsNumber } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { EventAction } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';
@@ -73,24 +74,11 @@ function EventCardHeader({
 				) : null
 			}
 			{
-				displayType === CardDisplayType.FULL && event.parentEventId === null && startTimestamp && (
-					<>
-						<div className="event-header-card__time-label">Start</div>
-						<div className="event-header-card__time-value">
-							{formatTime(getTimestampAsNumber(startTimestamp))}
-						</div>
-					</>
-				)
-			}
-			{
-				displayType === CardDisplayType.FULL && event.parentEventId === null && endTimestamp && (
-					<>
-						<div className="event-header-card__time-label">Finish</div>
-						<div className="event-header-card__time-value">
-							{formatTime(getTimestampAsNumber(endTimestamp))}
-						</div>
-					</>
-				)
+				displayType !== CardDisplayType.STATUS_ONLY && isRoot ? (
+					<div className="event-header-card__time-label">
+						<TimeAgo date={getTimestampAsNumber(startTimestamp)}/>
+					</div>
+				) : null
 			}
 			{
 				displayType !== CardDisplayType.STATUS_ONLY
