@@ -55,7 +55,7 @@ function EventTableWindow() {
 							) : (
 								<EventsColumn
 									nodesList={eventsStore.eventsIds}
-									displayType={CardDisplayType.FULL}/>
+									displayType={CardDisplayType.MINIMAL}/>
 							)
 						) : (
 							<>

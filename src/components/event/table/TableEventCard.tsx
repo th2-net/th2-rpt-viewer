@@ -40,6 +40,7 @@ function TableEventCard({ idNode, displayType }: Props) {
 					event != null ? (
 						<EventCard
 							event={event}
+							isRoot={idNode.parents.length === 0}
 							childrenCount={idNode.children?.length}
 							displayType={displayType}
 							onSelect={() => eventWindowStore.selectNode(idNode)}
