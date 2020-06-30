@@ -41,7 +41,7 @@ export default class AppWindowStore {
 	duplicateTab = (tabIndex: number) => {
 		const tabToDublicate = this.tabs[tabIndex];
 		if (isEventsTab(tabToDublicate)) {
-			const copiedStore = EventsStore.copy(tabToDublicate.store, this.api, this.windowsStore.colors[0])
+			const copiedStore = EventsStore.copy(tabToDublicate.store, this.api, this.windowsStore.colors[0]);
 			this.addEventsTab(copiedStore);
 		} else {
 			const copiedMessagesStore = MessagesStore.copy(

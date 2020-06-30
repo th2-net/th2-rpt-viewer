@@ -35,7 +35,7 @@ function EventTreeList() {
 				align: 'center',
 			});
 		}
-	}, [eventWindowStore.scrolledEventIndex]);
+	}, [eventWindowStore.searchStore.scrolledIndex]);
 
 	const computeKey = (index: number) => eventWindowStore.nodesList[index].id;
 

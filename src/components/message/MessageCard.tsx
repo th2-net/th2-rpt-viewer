@@ -1,4 +1,3 @@
-/* eslint-disable */
 /** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
