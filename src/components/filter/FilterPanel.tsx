@@ -18,10 +18,10 @@ import React from 'react';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { ModalPortal } from '../Portal';
-import '../../styles/filter.scss';
 import FilterPanelRow from './FilterPanelRow';
+import '../../styles/filter.scss';
 
-export type FilterRowConfig = FilterRowDatetimeRangeConfig | FilterRowStringConfig;
+export type FilterRowConfig = FilterRowDatetimeRangeConfig | FilterRowStringConfig | FilterRowMultipleStringsConfig;
 
 export type FilterRowBaseConfig = {
 	id: string;
@@ -40,6 +40,14 @@ export type FilterRowStringConfig = FilterRowBaseConfig & {
 	type: 'string';
 	value: string;
 	setValue: (nextValue: string) => void;
+};
+
+export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
+	type: 'multiple-strings';
+	values: string[];
+	setValues: (nextValues: string[]) => void;
+	currentValue: string;
+	setCurrentValue: (currentValue: string) => void;
 };
 
 interface Props {
@@ -109,6 +117,10 @@ const FilterPanel = ({
 		setShowFilter(false);
 	};
 
+	const filterPanelMaxWidth = filterButtonRef.current
+		? document.documentElement.clientWidth - filterButtonRef.current.getBoundingClientRect().left
+		: undefined;
+
 	return (
 		<div className={filterWrapperClass}>
 			<div
@@ -142,6 +154,7 @@ const FilterPanel = ({
 					style={{
 						left: `${filterButtonRef.current?.getBoundingClientRect().left}px`,
 						top: `${filterButtonRef.current?.getBoundingClientRect().bottom}px`,
+						maxWidth: `${filterPanelMaxWidth}px`,
 					}}>
 					{
 						config.map(configItem => (

@@ -71,8 +71,8 @@ const messageHttpApi: MessageApiSchema = {
 	getMessagesByFilter: async ({
 		timestampFrom,
 		timestampTo,
-		stream,
-		messageType,
+		streams,
+		messageTypes,
 	}) => {
 		const params = createURLSearchParams({
 			timestampFrom,
@@ -80,12 +80,12 @@ const messageHttpApi: MessageApiSchema = {
 			idsOnly: true,
 		});
 
-		if (stream != null) {
-			params.append('stream', stream);
+		if (streams.length > 0) {
+			streams.forEach(stream => params.append('stream', stream));
 		}
 
-		if (messageType !== null) {
-			params.append('messageType', messageType);
+		if (messageTypes.length > 0) {
+			messageTypes.forEach(type => params.append('messageType', type));
 		}
 
 		const res = await fetch(`backend/search/messages?${params}`);

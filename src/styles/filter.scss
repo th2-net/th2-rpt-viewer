@@ -174,7 +174,7 @@
 }
 
 .filter-row {
-    height: 46px;
+    min-height: 46px;
     width: 100%;
     font-size: 15px;
     font-weight: bold;
@@ -272,5 +272,23 @@
         font-weight: bold;
         font-size: 15px;
         flex-shrink: 0;
+    }
+
+    &__multiple-values {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        flex-grow: 1;
+        & > div {
+            margin-bottom: 8px;
+            margin-top: 8px;
+        }
+    }
+
+    &__multiple-values-input {
+        flex-grow: 1;
+        width: auto;
+        min-width: 100px;
     }
 }

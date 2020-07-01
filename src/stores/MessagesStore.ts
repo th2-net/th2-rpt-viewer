@@ -15,7 +15,11 @@
  ***************************************************************************** */
 
 import {
-	action, computed, observable, reaction, toJS,
+	action,
+	observable,
+	reaction,
+	computed,
+	toJS,
 } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import FilterStore from './FilterStore';
@@ -159,8 +163,8 @@ export default class MessagesStore {
 		copy.scrolledIndex = store.scrolledIndex?.valueOf() || null;
 		copy.filterStore.messagesFilter.timestampFrom = store.filterStore.messagesFilter.timestampFrom.valueOf();
 		copy.filterStore.messagesFilter.timestampTo = store.filterStore.messagesFilter.timestampTo.valueOf();
-		copy.filterStore.messagesFilter.stream = store.filterStore.messagesFilter.stream?.valueOf() || null;
-		copy.filterStore.messagesFilter.messageType = store.filterStore.messagesFilter.messageType?.valueOf() || null;
+		copy.filterStore.messagesFilter.streams = observable(store.filterStore.messagesFilter.streams);
+		copy.filterStore.messagesFilter.messageTypes = observable(store.filterStore.messagesFilter.messageTypes);
 
 		return copy;
 	}
