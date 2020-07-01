@@ -54,13 +54,16 @@ const eventHttpApi: EventApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
-	getEventsByName: async name => {
+	getEventsByName: async (name, eventId) => {
 		const params = createURLSearchParams({
 			idsOnly: true,
 			name,
 		});
 
-		const res = await fetch(`/backend/rootEvents?${params}`);
+		const path = eventId == null
+			? `/backend/search/events?${params}`
+			: `/backend/search/events/${eventId}?${params}`;
+		const res = await fetch(path);
 
 		if (res.ok) {
 			return await res.json();

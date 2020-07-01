@@ -84,6 +84,13 @@ export default class EventsStore {
 	toggleNode = (idNode: EventIdNode) => {
 		// eslint-disable-next-line no-param-reassign
 		idNode.isExpanded = !idNode.isExpanded;
+		if (idNode.isExpanded) {
+			this.searchStore.appendResultsForEvent(idNode.id);
+		} else if (idNode.children?.length) {
+			this.searchStore.removeEventsResults(
+				idNode.children.flatMap(this.getNodesList).map(node => node.id),
+			);
+		}
 	};
 
 	@action

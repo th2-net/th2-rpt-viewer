@@ -23,7 +23,7 @@ import {
 import SearchToken from '../models/search/SearchToken';
 import SearchResult from '../helpers/search/SearchResult';
 import ApiSchema from '../api/ApiSchema';
-import EventsStore from './EventsStore';
+import EventsStore, { EventIdNode } from './EventsStore';
 
 export default class SearchStore {
 	constructor(private api: ApiSchema, private eventsStore: EventsStore) {}
@@ -48,7 +48,7 @@ export default class SearchStore {
 	@computed
 	get results() {
 		// we need to filter original array to keep it in correct order
-		return this.eventsStore.eventsIds
+		return this.eventsStore.nodesList
 			.map(node => node.id)
 			.filter(nodeId => this.rawResults.includes(nodeId));
 	}
@@ -58,11 +58,45 @@ export default class SearchStore {
 		this.isLoading = true;
 		this.tokens = nextTokens;
 
-		const searchTokenResults = await Promise.all(
-			nextTokens.map(token => this.api.events.getEventsByName(token.pattern)),
+		const rootEventsResults = await Promise.all(
+			nextTokens.map(token => this.fetchTokenResults(token.pattern)),
 		);
 		// only unique ids
-		this.rawResults = [...new Set(searchTokenResults.flat())];
+		this.rawResults = [...new Set(rootEventsResults.flat())];
+		this.scrolledIndex = null;
+	};
+
+	@action
+	fetchTokenResults = async (tokenString: string) => {
+		const rootEventsResults = await this.api.events.getEventsByName(tokenString);
+
+		const expandedSubNodes = this.eventsStore.nodesList
+			.filter(node => node.isExpanded && node.children && node.children.length > 0);
+
+		const subNodesResult = await Promise.all(
+			expandedSubNodes.map(node => this.api.events.getEventsByName(tokenString, node.id)),
+		);
+
+		return [...rootEventsResults, ...subNodesResult.flat(2)];
+	};
+
+	@action
+	appendResultsForEvent = async (eventId: string) => {
+		this.isLoading = true;
+		const results = await Promise.all(
+			this.tokens.map(token => this.api.events.getEventsByName(token.pattern, eventId)),
+		);
+		this.isLoading = false;
+		this.scrolledIndex = null;
+
+		this.rawResults.push(...new Set(results.flat()));
+	};
+
+	@action
+	removeEventsResults = (nodesIds: string[]) => {
+		this.rawResults = this.rawResults.filter(
+			result => !nodesIds.includes(result),
+		);
 		this.scrolledIndex = null;
 	};
 
