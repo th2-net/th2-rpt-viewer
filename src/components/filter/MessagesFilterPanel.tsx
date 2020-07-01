@@ -45,7 +45,7 @@ const MessagesFilterPanel = () => {
 			return;
 		}
 
-		filterStore.setMessagesFilter({
+		messagesStore.loadMessages({
 			timestampFrom,
 			timestampTo,
 			streams,
@@ -54,7 +54,7 @@ const MessagesFilterPanel = () => {
 	};
 
 	const clearAllFilters = () => {
-		filterStore.resetMessagesFilter();
+		messagesStore.loadMessages();
 	};
 
 	const filterConfig: FilterRowConfig[] = [{

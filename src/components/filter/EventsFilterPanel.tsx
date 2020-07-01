@@ -47,14 +47,14 @@ function EventsFilterPanel() {
 				return;
 			}
 
-			filterStore.setEventsFilter({
+			eventWindowStore.fetchRootEvents({
 				timestampFrom: nextTimestampFrom,
 				timestampTo: nextTimestampTo,
 				name,
 				eventType,
 			});
 		} else {
-			filterStore.setEventsFilter({
+			eventWindowStore.fetchRootEvents({
 				timestampFrom: null,
 				timestampTo: null,
 				name,
@@ -64,7 +64,7 @@ function EventsFilterPanel() {
 	};
 
 	const onClear = () => {
-		filterStore.resetEventsFilter();
+		eventWindowStore.fetchRootEvents();
 	};
 
 	const filterConfig: FilterRowConfig[] = [{

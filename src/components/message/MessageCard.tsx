@@ -27,10 +27,10 @@ import { useHeatmap } from '../../hooks/useHeatmap';
 import { hexToRGBA } from '../../helpers/color';
 import MessageRaw from './MessageRaw';
 import { useStores } from '../../hooks/useStores';
-import '../../styles/messages.scss';
 import PanelArea from '../../util/PanelArea';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import ErrorBoundary from '../util/ErrorBoundary';
+import '../../styles/messages.scss';
 
 const HUE_SEGMENTS_COUNT = 36;
 
