@@ -57,9 +57,6 @@ export default class AppWindowStore {
 
 	@action
 	closeTab = (tabIndex: number) => {
-		const windowToClose = this.tabs[tabIndex];
-		const isClosable = this.tabs.filter(w => w.type === windowToClose.type).length > 1;
-		if (!isClosable) return;
 		this.deleteTab(tabIndex);
 	};
 
@@ -88,9 +85,20 @@ export default class AppWindowStore {
 
 	@action
 	changeTabPosition = (currentTabIndex: number, newIndex: number) => {
+		if (currentTabIndex === newIndex) return;
 		const activeTab = this.tabs[this.activeTabIndex];
+		const insertBeforeTab = this.tabs[newIndex];
 		const movedTab = this.tabs.splice(currentTabIndex, 1)[0];
-		this.tabs.splice(newIndex, 0, movedTab);
+		if (!insertBeforeTab) {
+			this.tabs.push(movedTab);
+		} else {
+			this.tabs.splice(
+				this.tabs.findIndex(t => t === insertBeforeTab),
+				0,
+
+				movedTab,
+			);
+		}
 		this.activeTabIndex = this.tabs.findIndex(t => t === activeTab);
 	};
 

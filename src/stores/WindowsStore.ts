@@ -19,6 +19,7 @@ import {
 	observable,
 	autorun,
 	computed,
+	reaction,
 } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { EventMessage } from '../models/EventMessage';
@@ -38,6 +39,11 @@ export default class WindowsStore {
 
 	constructor(private api: ApiSchema) {
 		this.createDefaultWindow();
+
+		reaction(
+			() => this.windows.flatMap(({ tabs }) => tabs),
+			this.onWindowsTabsChange,
+		);
 
 		autorun(() => {
 			const attachedMessages = this.windows.flatMap(({ tabs }) => tabs)
@@ -102,16 +108,13 @@ export default class WindowsStore {
 		if (!targetWindow) {
 			const newWindow = new AppWindowStore(this, this.api);
 			newWindow.addTabs([originWindow.deleteTab(tabIndex)]);
-			this.windows.push(newWindow);
+			const startIndex = targetWindowIndex === -1 ? 0 : this.windows.length;
+			this.windows.splice(startIndex, 0, newWindow);
 			return;
 		}
 
 		if (targetWindow !== originWindow) {
 			targetWindow.addTabs([originWindow.deleteTab(tabIndex)], targetTabIndex);
-
-			if (originWindow.isEmpty) {
-				this.deleteWindow(originWindowIndex);
-			}
 
 			return;
 		}
@@ -123,6 +126,13 @@ export default class WindowsStore {
 	deleteWindow = (windowIndex: number) => {
 		this.windows.splice(windowIndex, 1);
 	};
+
+	@action.bound
+	private onWindowsTabsChange() {
+		this.windows
+			.filter(window => window.isEmpty)
+			.forEach(window => this.windows.splice(this.windows.findIndex(w => w === window), 1));
+	}
 
 	@action
 	private createDefaultWindow() {

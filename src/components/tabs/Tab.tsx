@@ -15,15 +15,15 @@
  ***************************************************************************** */
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'framer-motion';
 import { createStyleSelector } from '../../helpers/styleCreators';
+import { useHover } from '../../hooks/useHover';
+import { TabsInjectedProps } from './Tabs';
 
-export interface TabProps {
+export type TabProps = Partial<TabsInjectedProps> & {
 	children: React.ReactNode;
 	tabIndex?: number;
 	isSelected?: boolean;
-	setActiveTab?: (index: number) => void;
-	closeTab?: (index: number) => void;
-	duplicateTab?: (index: number) => void;
 	isClosable?: boolean;
 	color?: string;
 	classNames?: {
@@ -32,7 +32,7 @@ export interface TabProps {
 		content?: string;
 	};
 	isDragging?: boolean;
-}
+};
 
 export interface TabForwardedRefs {
 	tabRef: HTMLDivElement | null;
@@ -52,7 +52,9 @@ const Tab: React.RefForwardingComponent<TabForwardedRefs, TabProps> = (props, re
 		isDragging = false,
 		classNames,
 	} = props;
-	const tabRef = React.useRef<HTMLDivElement>(null);
+
+	const [tabRef, isHovered] = useHover<HTMLDivElement>();
+
 	const contentRef = React.useRef<HTMLDivElement>(null);
 
 	React.useImperativeHandle(ref, () => ({
@@ -82,7 +84,22 @@ const Tab: React.RefForwardingComponent<TabForwardedRefs, TabProps> = (props, re
 			onClick={() => setActiveTab && setActiveTab(tabIndex)}
 			ref={tabRef}>
 			<div className="tab__pre">
-				<div className={dragIconClassName}/>
+				<div style={{ width: 20 }}>
+					<AnimatePresence initial={false}>
+						{(isHovered || isDragging) && <motion.div
+							id="drag-icon"
+							className={dragIconClassName}
+							initial={{ opacity: 0, scale: 0 }}
+							animate={{ opacity: 1, scale: 1 }}
+							exit={{ opacity: 0, scale: 0 }}
+							transition={{
+								type: 'spring',
+								stiffness: 100,
+								damping: 20,
+							}}
+						/>}
+					</AnimatePresence>
+				</div>
 				{color && <div className="tab__color" style={{ borderColor: color }}/>}
 			</div>
 			<div className="tab__content-wrapper">
@@ -95,32 +112,35 @@ const Tab: React.RefForwardingComponent<TabForwardedRefs, TabProps> = (props, re
 					{children}
 				</div>
 			</div>
-			<div className="tab__controls">
-				<button
-					className="tab__button"
-					title="duplicate tab"
-					onClick={e => {
-						e.stopPropagation();
-						if (duplicateTab) {
-							duplicateTab(tabIndex);
-						}
-					}}>
-					<i className="tab__icon-dublicate"/>
-				</button>
-				{isClosable
-					&& 	<button
+			{!isDragging && (
+				<div className="tab__controls">
+					<button
 						className="tab__button"
-						role="button"
-						title="close tab"
+						title="duplicate tab"
 						onClick={e => {
 							e.stopPropagation();
-							if (closeTab) {
-								closeTab(tabIndex);
+							if (duplicateTab) {
+								duplicateTab(tabIndex);
 							}
 						}}>
-						<i className="tab__icon-close"/>
-					</button>}
-			</div>
+						<i className="tab__icon-dublicate"/>
+					</button>
+					{isClosable
+						&& 	<button
+							className="tab__button"
+							role="button"
+							title="close tab"
+							onClick={e => {
+								e.stopPropagation();
+								if (closeTab) {
+									closeTab(tabIndex);
+								}
+							}}>
+							<i className="tab__icon-close"/>
+						</button>}
+				</div>
+			)}
+
 		</div>
 	);
 };

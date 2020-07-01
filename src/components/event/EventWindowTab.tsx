@@ -21,6 +21,7 @@ import { EventWindowProvider } from '../../contexts/eventWindowContext';
 import DraggableTab, { DraggableTabProps } from '../tabs/DraggableTab';
 import Tab, { TabForwardedRefs } from '../tabs/Tab';
 import EventWindowStore from '../../stores/EventsStore';
+import { useStores } from '../../hooks/useStores';
 import '../../styles/events.scss';
 
 type EventsWindowTabProps = Omit<DraggableTabProps, 'children'> & {
@@ -86,13 +87,18 @@ interface EventsWindowTabPreviewProps {
 	isSelected: boolean;
 }
 
-export const EventsWindowTabPreview = ({ store, isSelected }: EventsWindowTabPreviewProps) => (
-	<Tab color={store.color} isDragging={true} isSelected={isSelected}>
-		<EventWindowProvider value={store}>
-			<EventBreadcrumbs
-				rootEventsEnabled
-				nodes={store.selectedPath} />
-		</EventWindowProvider>
-	</Tab>
+export const EventsWindowTabPreview = ({ store, isSelected }: EventsWindowTabPreviewProps) => {
+	const { windowsStore } = useStores();
+	const attachedMessagesIds = windowsStore.attachedMessagesIds.get(store.color);
+	const color = attachedMessagesIds?.length ? store.color : undefined;
 
-);
+	return (
+		<Tab color={color} isDragging={true} isSelected={isSelected}>
+			<EventWindowProvider value={store}>
+				<EventBreadcrumbs
+					rootEventsEnabled
+					nodes={store.selectedPath} />
+			</EventWindowProvider>
+		</Tab>
+	);
+};

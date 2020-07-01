@@ -284,8 +284,7 @@ export default class SplitView extends React.Component<Props, State> {
 				<div className={rightClassName}>
 					{children[1]}
 				</div>
-				{true
-				&& 	<div className={splitterClassName}
+				<div className={splitterClassName}
 					style={{
 						left: isDragging ? splitterLeftOffset : undefined,
 					}}
@@ -294,7 +293,7 @@ export default class SplitView extends React.Component<Props, State> {
 					<div className="splitter-bar-button">
 						<div className="splitter-bar-icon"/>
 					</div>
-				</div>}
+				</div>
 			</div>
 		);
 	}

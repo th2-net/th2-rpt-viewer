@@ -16,32 +16,42 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import { createStyleSelector } from '../../helpers/styleCreators';
 import '../../styles/tabs.scss';
 
-interface InjectedProps {
+export interface TabsInjectedProps {
 	activeTabIndex: number;
 	closeTab: (tabIndex: number) => void;
 	duplicateTab: (tabIndex: number) => void;
 	setActiveTab: (tabIndex: number) => void;
 }
 
+export type TabListRenderProps = (props: TabsInjectedProps) => React.ReactNode;
+
 interface Props {
-	tabList: (props: InjectedProps) => React.ReactNode[];
+	tabList: TabListRenderProps;
 	tabPanels: React.ReactNode[];
 	activeIndex: number;
 	onChange: (tabIndex: number) => void;
 	closeTab: (tabIndex: number) => void;
 	duplicateTab: (tabIndex: number) => void;
+	classNames?: {
+		root?: string;
+		tabsList?: string;
+		content?: string;
+	};
 }
 
-const Tabs = ({
-	tabList,
-	tabPanels,
-	activeIndex,
-	onChange,
-	closeTab,
-	duplicateTab,
-}: Props) => {
+const Tabs = (props: Props) => {
+	const {
+		tabList,
+		tabPanels,
+		activeIndex,
+		onChange,
+		closeTab,
+		duplicateTab,
+		classNames = {},
+	} = props;
 	const [activeTabIndex, setActiveTabIndex] = React.useState(0);
 
 	React.useEffect(() => {
@@ -62,10 +72,15 @@ const Tabs = ({
 		setActiveTab,
 	});
 
+	const tabsListClassName = createStyleSelector(
+		'tabs__list',
+		classNames.tabsList || null,
+	);
+
 	return (
 		<div className="tabs__wrapper">
 			<div className="tabs">
-				<div className="tabs__list">
+				<div className={tabsListClassName}>
 					{tabs}
 				</div>
 				<div className="tabs__content">
@@ -79,9 +94,8 @@ const Tabs = ({
 					))}
 				</div>
 			</div>
-
 		</div>
 	);
 };
 
-export default observer(Tabs);
+export default Tabs;
