@@ -23,9 +23,17 @@ import {
 import PanelArea from '../util/PanelArea';
 
 export default class WindowViewStore {
+	constructor(viewStore?: WindowViewStore) {
+		if (viewStore) {
+			this.isLoading = viewStore.isLoading.valueOf();
+			this.panelArea = toJS(viewStore.panelArea);
+			this.eventTableModeEnabled = toJS(viewStore.eventTableModeEnabled);
+		}
+	}
+
 	@observable isLoading = true;
 
-	@observable panelArea: PanelArea = PanelArea.P50;
+	@observable panelArea: PanelArea = PanelArea.P100;
 
 	@observable eventTableModeEnabled = false;
 
@@ -50,15 +58,5 @@ export default class WindowViewStore {
 
 	@computed get isRightPanelClosed() {
 		return this.panelArea === PanelArea.P100;
-	}
-
-	static copy(viewStore: WindowViewStore) {
-		const copy = new WindowViewStore();
-
-		copy.isLoading = viewStore.isLoading.valueOf();
-		copy.panelArea = toJS(viewStore.panelArea);
-		copy.eventTableModeEnabled = toJS(viewStore.eventTableModeEnabled);
-
-		return copy;
 	}
 }

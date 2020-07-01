@@ -15,11 +15,7 @@
  ***************************************************************************** */
 
 import {
-	action,
-	observable,
-	reaction,
-	computed,
-	toJS,
+	action, computed, observable, toJS,
 } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import FilterStore from './FilterStore';
@@ -30,6 +26,10 @@ import WindowsStore from './WindowsStore';
 
 export default class MessagesStore {
 	filterStore = new FilterStore();
+
+	private api: ApiSchema;
+
+	private windowsStore: WindowsStore;
 
 	@observable
 	public messagesIds: Array<string> = [];
@@ -50,24 +50,15 @@ export default class MessagesStore {
 	@observable
 	public beautifiedMessages: string[] = [];
 
-	constructor(
-		private api: ApiSchema,
-		private windowsStore: WindowsStore,
-	) {
-		reaction(
-			() => this.filterStore.messagesFilter,
-			filter => this.loadMessagesByFilter(filter),
-		);
+	constructor(api: ApiSchema, windowsStore: WindowsStore, messagesStore?: MessagesStore) {
+		this.api = api;
+		this.windowsStore = windowsStore;
 
-		reaction(
-			() => this.messagesIds,
-			() => {
-				// clearing messagesFilter cache after list has changed
-				this.messagesCache = new Map<string, EventMessage>();
-			},
-		);
-
-		this.loadMessagesByFilter(this.filterStore.messagesFilter);
+		if (messagesStore) {
+			this.copy(messagesStore);
+		} else {
+			this.loadMessages();
+		}
 	}
 
 	@computed
@@ -85,9 +76,11 @@ export default class MessagesStore {
 	}
 
 	@action
-	loadMessagesByFilter = async (filter: MessagesFilter) => {
+	loadMessages = async (filter?: MessagesFilter) => {
 		this.isLoading = true;
-		this.messagesIds = await this.api.messages.getMessagesByFilter(filter);
+		this.filterStore.setMessagesFilter(filter);
+		this.messagesIds = await this.api.messages.getMessagesByFilter(this.filterStore.messagesFilter);
+		this.messagesCache = new Map<string, EventMessage>();
 		this.isLoading = false;
 	};
 
@@ -149,23 +142,13 @@ export default class MessagesStore {
 		this.beautifiedMessages = [...this.beautifiedMessages, messageId];
 	};
 
-	static copy(
-		store: MessagesStore,
-		api: ApiSchema,
-		windowsStore: WindowsStore,
-	) {
-		const copy = new MessagesStore(api, windowsStore);
-		copy.messagesIds = toJS(store.messagesIds);
-		copy.messagesCache = observable(store.messagesCache);
-		copy.beautifiedMessages = observable(store.beautifiedMessages);
-		copy.detailedRawMessagesIds = observable(store.detailedRawMessagesIds);
-		copy.isLoading = store.isLoading.valueOf();
-		copy.scrolledIndex = store.scrolledIndex?.valueOf() || null;
-		copy.filterStore.messagesFilter.timestampFrom = store.filterStore.messagesFilter.timestampFrom.valueOf();
-		copy.filterStore.messagesFilter.timestampTo = store.filterStore.messagesFilter.timestampTo.valueOf();
-		copy.filterStore.messagesFilter.streams = observable(store.filterStore.messagesFilter.streams);
-		copy.filterStore.messagesFilter.messageTypes = observable(store.filterStore.messagesFilter.messageTypes);
-
-		return copy;
+	private copy(store: MessagesStore) {
+		this.messagesIds = toJS(store.messagesIds);
+		this.messagesCache = observable(store.messagesCache);
+		this.beautifiedMessages = observable(store.beautifiedMessages);
+		this.detailedRawMessagesIds = observable(store.detailedRawMessagesIds);
+		this.isLoading = store.isLoading.valueOf();
+		this.scrolledIndex = store.scrolledIndex?.valueOf() || null;
+		this.filterStore = new FilterStore(store.filterStore);
 	}
 }

@@ -26,6 +26,14 @@ import EventsFilter from '../models/filter/EventsFilter';
 const ONE_HOUR = 60 * 60 * 1000;
 
 export default class FilterStore {
+	constructor(filterStore?: FilterStore) {
+		if (filterStore) {
+			this.messagesFilter = toJS(filterStore.messagesFilter);
+			this.eventsFilter = toJS(filterStore.eventsFilter);
+			this.isMessagesFilterApplied = filterStore.isMessagesFilterApplied.valueOf();
+		}
+	}
+
 	@observable messagesFilter: MessagesFilter = {
 		timestampFrom: new Date(new Date().getTime() - ONE_HOUR).getTime(),
 		timestampTo: new Date().getTime(),
@@ -48,7 +56,11 @@ export default class FilterStore {
 	}
 
 	@action
-	setMessagesFilter(filter: MessagesFilter) {
+	setMessagesFilter(filter?: MessagesFilter) {
+		if (!filter) {
+			this.resetMessagesFilter();
+			return;
+		}
 		this.messagesFilter = filter;
 		this.isMessagesFilterApplied = true;
 	}
@@ -64,7 +76,11 @@ export default class FilterStore {
 	}
 
 	@action
-	setEventsFilter(filter: EventsFilter) {
+	setEventsFilter(filter?: EventsFilter) {
+		if (!filter) {
+			this.resetEventsFilter();
+			return;
+		}
 		this.eventsFilter = filter;
 	}
 
@@ -76,13 +92,5 @@ export default class FilterStore {
 			eventType: null,
 			name: null,
 		};
-	}
-
-	static copy(filterStore: FilterStore) {
-		const copy = new FilterStore();
-		copy.messagesFilter = toJS(filterStore.messagesFilter);
-		copy.eventsFilter = toJS(filterStore.eventsFilter);
-
-		return copy;
 	}
 }

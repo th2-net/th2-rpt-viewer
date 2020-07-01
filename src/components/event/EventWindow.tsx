@@ -25,10 +25,6 @@ import '../../styles/events.scss';
 const EventWindow = () => {
 	const eventWindowStore = useEventWindowStore();
 
-	React.useEffect(() => {
-		eventWindowStore.fetchRootEvents();
-	}, []);
-
 	return (
 		<div className="layout">
 			<div className="layout__header">

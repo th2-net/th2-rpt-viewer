@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import {
-	action, computed, observable, toJS, reaction,
+	action, computed, observable, toJS,
 } from 'mobx';
 import FilterStore from './FilterStore';
 import ViewStore from './WindowViewStore';
@@ -39,11 +39,12 @@ export default class EventsStore {
 	searchStore: SearchStore = new SearchStore(this.api, this);
 
 	// eslint-disable-next-line no-useless-constructor
-	constructor(private api: ApiSchema, public color: string) {
-		reaction(
-			() => this.filterStore.eventsFilter,
-			filter => this.fetchRootEvents(filter),
-		);
+	constructor(private api: ApiSchema, public color: string, eventStore?: EventsStore) {
+		if (eventStore) {
+			this.copy(eventStore);
+		} else {
+			this.fetchRootEvents();
+		}
 	}
 
 	@observable eventsIds: EventIdNode[] = [];
@@ -108,11 +109,11 @@ export default class EventsStore {
 
 	@action
 	fetchRootEvents = async (filter?: EventsFilter) => {
-		if (this.eventsIds.length) return;
+		this.filterStore.setEventsFilter(filter);
 		this.selectedNode = null;
 		this.isLoadingRootEvents = true;
 
-		const events = await this.api.events.getRootEvents(filter);
+		const events = await this.api.events.getRootEvents(this.filterStore.eventsFilter);
 		this.eventsIds = events.map(eventId => this.createTreeNode(eventId));
 
 		this.isLoadingRootEvents = false;
@@ -175,23 +176,19 @@ export default class EventsStore {
 		];
 	}
 
-	static copy(store: EventsStore, api: ApiSchema, color: string) {
-		const copy = new EventsStore(api, color);
-
-		copy.eventsCache = toJS(store.eventsCache, { exportMapsAsObjects: false });
-		copy.isLoadingRootEvents = toJS(store.isLoadingRootEvents);
-		copy.selectedNode = toJS(store.selectedNode);
-		copy.eventsIds = toJS(store.eventsIds);
+	private copy(store: EventsStore) {
+		this.eventsCache = toJS(store.eventsCache, { exportMapsAsObjects: false });
+		this.isLoadingRootEvents = toJS(store.isLoadingRootEvents);
+		this.selectedNode = toJS(store.selectedNode);
+		this.eventsIds = toJS(store.eventsIds);
 
 		if (store.selectedNode) {
 			const scrolledIndex = store.nodesList.findIndex(idNode => idNode.id === store.selectedNode!.id);
-			copy.scrolledIndex = scrolledIndex === -1 ? null : new Number(scrolledIndex);
+			this.scrolledIndex = scrolledIndex === -1 ? null : new Number(scrolledIndex);
 		}
 
-		copy.viewStore = ViewStore.copy(store.viewStore);
-		copy.filterStore = FilterStore.copy(store.filterStore);
-		copy.searchStore = SearchStore.copy(store.searchStore, api, copy);
-
-		return copy;
+		this.viewStore = new ViewStore(store.viewStore);
+		this.filterStore = new FilterStore(store.filterStore);
+		this.searchStore = new SearchStore(this.api, this, store.searchStore);
 	}
 }

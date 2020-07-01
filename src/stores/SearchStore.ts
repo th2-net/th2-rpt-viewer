@@ -21,12 +21,18 @@ import {
 	toJS,
 } from 'mobx';
 import SearchToken from '../models/search/SearchToken';
-import SearchResult from '../helpers/search/SearchResult';
 import ApiSchema from '../api/ApiSchema';
 import EventsStore from './EventsStore';
 
 export default class SearchStore {
-	constructor(private api: ApiSchema, private eventsStore: EventsStore) {}
+	constructor(private api: ApiSchema, private eventsStore: EventsStore, searchStore?: SearchStore) {
+		if (searchStore) {
+			this.tokens = toJS(searchStore.tokens);
+			this.isLoading = toJS(searchStore.isLoading);
+			this.scrolledIndex = toJS(searchStore.scrolledIndex);
+			this.rawResults = toJS(searchStore.rawResults);
+		}
+	}
 
 	@observable tokens: SearchToken[] = [];
 
@@ -86,14 +92,4 @@ export default class SearchStore {
 		this.tokens = [];
 		this.scrolledIndex = null;
 	};
-
-	static copy(searchStore: SearchStore, api: ApiSchema, eventsStore: EventsStore) {
-		const copy = new SearchStore(api, eventsStore);
-		copy.tokens = toJS(searchStore.tokens);
-		copy.isLoading = toJS(searchStore.isLoading);
-		copy.scrolledIndex = toJS(searchStore.scrolledIndex);
-		copy.rawResults = toJS(searchStore.rawResults);
-
-		return copy;
-	}
 }
