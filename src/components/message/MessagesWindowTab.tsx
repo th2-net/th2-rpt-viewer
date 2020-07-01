@@ -22,20 +22,20 @@ import Tab from '../tabs/Tab';
 
 const MessagesWindowTab = (tabProps: Omit<DraggableTabProps, 'children'>) => {
 	const { windowsStore } = useStores();
-	const attachedMessages = [...windowsStore.attachedMessagesIds.entries()];
 
 	return (
 		<DraggableTab {...tabProps} classNames={{ root: 'messages-tab' }}>
 			Messages
 			{
-				attachedMessages.map(([color, ids]) => (
+				windowsStore.eventsAttachedMessages.map(({ color, messagesIds }) => (
 					<span
 						key={color}
 						className="messages-tab__count"
 						style={{ borderColor: color }}>
-						{ids.length}
+						{messagesIds.length}
 					</span>
-				))}
+				))
+			}
 		</DraggableTab>
 	);
 };
@@ -47,17 +47,17 @@ interface MessagesWindowTabPreviewProps {
 }
 export const MessagesWindowTabPreview = ({ isSelected }: MessagesWindowTabPreviewProps) => {
 	const { windowsStore } = useStores();
-	const attachedMessages = [...windowsStore.attachedMessagesIds.entries()];
+
 	return (
 		<Tab isDragging={true} isSelected={isSelected}>
 			Messages
 			{
-				attachedMessages.map(([color, ids]) => (
+				windowsStore.eventsAttachedMessages.map(({ color, messagesIds }) => (
 					<span
 						key={color}
 						className="messages-tab__count"
 						style={{ borderColor: color }}>
-						{ids.length}
+						{messagesIds.length}
 					</span>
 				))}
 		</Tab>

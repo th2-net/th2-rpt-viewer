@@ -39,7 +39,7 @@ const MessagesWindowHeader = () => {
 
 	const navButtonClass = createStyleSelector(
 		'messages-window-header__button',
-		windowsStore.attachedMessagesIds.size > 0 || windowsStore.pinnedMessagesIds.length > 0
+		windowsStore.eventsAttachedMessages.length > 0 || windowsStore.pinnedMessagesIds.length > 0
 			? null : 'disabled',
 	);
 

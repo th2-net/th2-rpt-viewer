@@ -17,6 +17,7 @@
 import React from 'react';
 import { HeatmapElement } from '../../models/Heatmap';
 import { hexToRGBA } from '../../helpers/color';
+import { createStyleSelector, createBemElement } from '../../helpers/styleCreators';
 
 const HEATMAP_ELEMENT_MIN_HEIGHT = 14;
 const PINNED_MIN_HEIGHT = 21;
@@ -27,8 +28,8 @@ interface Props extends HeatmapElement {
 	totalCount: number;
 }
 
-const HeatmapItem = ({
-	color,
+const HeatmapBlock = ({
+	colors,
 	index,
 	count,
 	id,
@@ -40,35 +41,67 @@ const HeatmapItem = ({
 	const onItemClick = (event: React.MouseEvent<HTMLDivElement>) => {
 		const { height, top } = event.currentTarget.getBoundingClientRect();
 		const step = (height / count);
-		const elementIndex = Math.floor(index + (event.clientY - top) / step);
+		const clickIndex = Math.floor(index + (event.clientY - top) / step);
 		onClick({
 			count,
-			index: elementIndex,
+			index: clickIndex,
 			id,
-			color,
+			colors,
 		});
 	};
+
+	const pinIconClassName = createBemElement(
+		'heatmap-block',
+		'pin-icon',
+		isPinned
+			? colors.length === 1 ? 'default' : 'contoured'
+			: null,
+	);
 
 	return (
 		<div
 			data-start={index}
 			data-end={count === 1 ? index : index + count - 1}
-			data-testid="heatmap-element"
+			data-testid="heatmap-block"
 			data-count={count}
 			style={{
-				borderColor: color,
 				borderWidth: isSelected || isPinned ? '3px' : '2px',
-				backgroundColor: '#FFF',
 				flexGrow: count / totalCount,
 				minHeight: id ? isPinned ? PINNED_MIN_HEIGHT : `${HEATMAP_ELEMENT_MIN_HEIGHT}px` : undefined,
+				backgroundColor: colors.length ? undefined : '#FFF',
+				border: colors.length ? 'none' : undefined,
 			}}
 			key={index}
-			className="heatmap__element"
+			className="heatmap-block"
 			onClick={onItemClick}>
-			<div style={{ backgroundColor: isSelected && color ? hexToRGBA(color, 17) : undefined }}/>
-			{isPinned && <div className="heatmap__pin-icon" />}
+			{colors.map((color, i) =>
+				<HeatmapItem
+					color={color}
+					key={color}
+					isSelected={isSelected}
+					style={{
+						marginRight: colors.length && i !== colors.length - 1 ? '2px' : 0,
+					}}/>)}
+			{isPinned && <div className={pinIconClassName} />}
 		</div>
 	);
 };
 
-export default HeatmapItem;
+export default HeatmapBlock;
+
+
+interface HeatmapItemProps {
+	color: string;
+	style?: React.CSSProperties;
+	isSelected: boolean;
+}
+const HeatmapItem = ({ color, style, isSelected }: HeatmapItemProps) => (
+	<div
+		className="heatmap-element"
+		style={{
+			borderColor: color,
+			backgroundColor: isSelected && color ? hexToRGBA(color, 17) : undefined,
+			...style,
+		}}>
+	</div>
+);

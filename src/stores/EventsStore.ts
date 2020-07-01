@@ -23,6 +23,7 @@ import ApiSchema from '../api/ApiSchema';
 import { EventAction } from '../models/EventAction';
 import SearchStore from './SearchStore';
 import EventsFilter from '../models/filter/EventsFilter';
+import WindowsStore from './WindowsStore';
 
 export type EventIdNode = {
 	id: string;
@@ -39,7 +40,7 @@ export default class EventsStore {
 	searchStore: SearchStore = new SearchStore(this.api, this);
 
 	// eslint-disable-next-line no-useless-constructor
-	constructor(private api: ApiSchema, public color: string, eventStore?: EventsStore) {
+	constructor(private api: ApiSchema, private windowsStore: WindowsStore, eventStore?: EventsStore) {
 		if (eventStore) {
 			this.copy(eventStore);
 		} else {
@@ -58,6 +59,13 @@ export default class EventsStore {
 	@observable
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	public scrolledIndex: Number | null = null;
+
+	@computed get color() {
+		if (!this.selectedNode) return undefined;
+		const attachedMessage = this.windowsStore.eventsAttachedMessages
+			.find(({ eventId }) => eventId === this.selectedNode?.id);
+		return attachedMessage?.color;
+	}
 
 	// we need this property for correct virtualized tree render -
 	// to get event key by index in tree and list length calculation.

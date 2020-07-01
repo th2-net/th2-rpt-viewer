@@ -17,8 +17,6 @@
 import {
 	action,
 	observable,
-	autorun,
-	computed,
 	reaction,
 } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
@@ -26,6 +24,7 @@ import { EventMessage } from '../models/EventMessage';
 import { isEventsTab } from '../helpers/windows';
 import { randomHexColor } from '../helpers/color';
 import AppWindowStore from './AppWindowStore';
+import { EventAction } from '../models/EventAction';
 
 export default class WindowsStore {
 	private readonly defaultColors = [
@@ -45,40 +44,24 @@ export default class WindowsStore {
 			this.onWindowsTabsChange,
 		);
 
-		autorun(() => {
-			const attachedMessages = this.windows.flatMap(({ tabs }) => tabs)
+		reaction(
+			() => this.windows.flatMap(({ tabs }) => tabs)
 				.filter(isEventsTab)
-				.filter(w => w.store.selectedNode !== null)
-				.map(eventsWindow =>
-					[eventsWindow.store.color, (eventsWindow.store.selectedEvent?.attachedMessageIds || [])]);
-			const map = new Map();
-			attachedMessages.forEach(([color, ids]) => {
-				if (ids.length > 0) {
-					map.set(color, ids);
-				}
-			});
-			this.attachedMessagesIds = map;
-		});
+				.map(eventTab => eventTab.store.selectedEvent)
+				.filter((event): event is EventAction => event !== null && event.attachedMessageIds.length	> 0),
+			this.onSelectedEventsChange,
+		);
 	}
 
-	// Map<color, messagesIds[]>
-	@observable attachedMessagesIds: Map<string, Array<string>> = new Map();
+	@observable eventsAttachedMessages: Array<{
+		eventId: string;
+		messagesIds: Array<string>;
+		color: string;
+	}> = [];
 
 	@observable pinnedMessagesIds: Array<string> = [];
 
 	@observable windows: AppWindowStore[] = [];
-
-	@computed get colors(): Array<string> {
-		if (this.windows.length === 0) return this.defaultColors;
-		const usedColors = this.windows
-			.flatMap(({ tabs }) => tabs)
-			.filter(isEventsTab)
-			.map(eventsTab => eventsTab.store.color);
-		const availableColors = this.defaultColors.filter(color => !usedColors.includes(color));
-		return availableColors.length === 0
-			? [randomHexColor()]
-			: availableColors;
-	}
 
 	@action
 	toggleMessagePin = (message: EventMessage) => {
@@ -132,6 +115,29 @@ export default class WindowsStore {
 		this.windows
 			.filter(window => window.isEmpty)
 			.forEach(window => this.windows.splice(this.windows.findIndex(w => w === window), 1));
+	}
+
+	@action.bound
+	private onSelectedEventsChange(selectedEvents: EventAction[]) {
+		const events = selectedEvents
+			.filter((event, index, self) => self.findIndex(e => e.eventId === event.eventId) === index);
+		const eventIds = events.map(({ eventId }) => eventId);
+		const usedColors = this.eventsAttachedMessages.filter(({ eventId }) => eventIds.includes(eventId))
+			.map(({ color }) => color);
+		const availableColors = this.defaultColors.slice().filter(color => !usedColors.includes(color));
+
+		this.eventsAttachedMessages = events.map(({ eventId, attachedMessageIds }) => {
+			let color = this.eventsAttachedMessages.find((e => e.eventId === eventId))?.color;
+			if (!color) {
+				color = availableColors[0] || randomHexColor();
+				availableColors.shift();
+			}
+			return {
+				eventId,
+				color,
+				messagesIds: attachedMessageIds.slice(),
+			};
+		});
 	}
 
 	@action

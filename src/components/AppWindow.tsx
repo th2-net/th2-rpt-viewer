@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
+import { observer, Observer } from 'mobx-react-lite';
 import EventWindow from './event/EventWindow';
 import EventsWindowTab from './event/EventWindowTab';
 import Tabs, { TabListRenderProps } from './tabs/Tabs';
@@ -44,12 +44,6 @@ const AppWindow = (props: AppWindowProps) => {
 	} = props;
 	const { windowsStore } = useStores();
 
-	const getTabColor = (color: string) => {
-		const attachedMessagesIds = windowsStore.attachedMessagesIds.get(color);
-		if (!attachedMessagesIds?.length) return undefined;
-		return color;
-	};
-
 	const renderTabs: TabListRenderProps = renderProps => {
 		const { activeTabIndex, ...tabProps } = renderProps;
 
@@ -61,21 +55,24 @@ const AppWindow = (props: AppWindowProps) => {
 		return windowStore.tabs.map((tab, index) => {
 			if (isEventsTab(tab)) {
 				return (
-					<EventsWindowTab
-						key={`events-tab-${index}`}
-						store={tab.store}
-						dragItemPayload={{
-							type: TabTypes.Events,
-							store: tab.store,
-							isSelected: activeTabIndex === index,
-						}}
-						tabIndex={index}
-						isSelected={activeTabIndex === index}
-						isClosable={isEventsTabClosable}
-						windowIndex={windowIndex}
-						onTabDrop={windowsStore.moveTab}
-						color={getTabColor(tab.store.color)}
-						{...tabProps}/>
+					<Observer key={`events-tab-${index}`}>
+						{() => (
+							<EventsWindowTab
+								store={tab.store}
+								dragItemPayload={{
+									type: TabTypes.Events,
+									store: tab.store,
+									isSelected: activeTabIndex === index,
+								}}
+								tabIndex={index}
+								isSelected={activeTabIndex === index}
+								isClosable={isEventsTabClosable}
+								windowIndex={windowIndex}
+								onTabDrop={windowsStore.moveTab}
+								color={tab.store.color}
+								{...tabProps}/>
+						)}
+					</Observer>
 				);
 			}
 			return (

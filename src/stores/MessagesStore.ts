@@ -63,9 +63,9 @@ export default class MessagesStore {
 
 	@computed
 	get selectedMessagesIds(): Array<number> {
-		if (!this.windowsStore.attachedMessagesIds.size && !this.windowsStore.pinnedMessagesIds.length) return [];
+		if (!this.windowsStore.eventsAttachedMessages.length && !this.windowsStore.pinnedMessagesIds.length) return [];
 
-		const attachedMessagesIds = [...this.windowsStore.attachedMessagesIds.values()].flat();
+		const attachedMessagesIds = this.windowsStore.eventsAttachedMessages.flatMap(({ messagesIds }) => messagesIds);
 
 		const messagesIndexes = [...new Set([...attachedMessagesIds, ...this.windowsStore.pinnedMessagesIds])]
 			.filter(id => this.messagesIds.includes(id))

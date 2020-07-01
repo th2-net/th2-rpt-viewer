@@ -16,7 +16,7 @@
 
 export interface HeatmapElement {
 	count: number;
-	color?: string;
+	colors: string[];
 	id?: string;
 	index: number;
 	isPinned?: boolean;
