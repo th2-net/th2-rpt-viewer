@@ -18,7 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import EventWindow from './event/EventWindow';
 import EventsWindowTab from './event/EventWindowTab';
-import Tabs from './tabs/Tabs';
+import Tabs, { TabListRenderProps } from './tabs/Tabs';
 import MessagesWindow from './message/MessagesWindow';
 import MessagesWindowTab from './message/MessagesWindowTab';
 import { EventWindowProvider } from '../contexts/eventWindowContext';
@@ -26,67 +26,115 @@ import { MessagesWindowProvider } from '../contexts/messagesWindowContext';
 import { isEventsTab, isMessagesTab } from '../helpers/windows';
 import AppWindowStore from '../stores/AppWindowStore';
 import { useStores } from '../hooks/useStores';
-import { withSideDropTarget } from './drag-n-drop/AppWindowSideDropTarget';
 import { TabTypes } from '../models/util/Windows';
+import { TabDraggableItem } from './tabs/DraggableTab';
+import WithSideDropTargets from './drag-n-drop/WithSideDropTargets';
+import DroppableTabList from './tabs/DroppableTabList';
+import { createStyleSelector } from '../helpers/styleCreators';
 
 interface AppWindowProps {
 	windowStore: AppWindowStore;
 	windowIndex: number;
 }
 
-const AppWindow = observer(({
-	windowStore,
-	windowIndex,
-}: AppWindowProps) => {
+const AppWindow = (props: AppWindowProps) => {
+	const {
+		windowStore,
+		windowIndex,
+	} = props;
 	const { windowsStore } = useStores();
 
-	return (
-		<Tabs
-			activeIndex={windowStore.activeTabIndex}
-			onChange={windowStore.setActiveTab}
-			closeTab={windowStore.closeTab}
-			duplicateTab={windowStore.duplicateTab}
-			tabList={({ activeTabIndex, ...tabProps }) =>
-				windowStore.tabs.map((tab, index) =>
-					(isEventsTab(tab)
-						? <EventsWindowTab
-							dragItemPayload={{
-								type: TabTypes.Events,
-								store: tab.store,
-								isSelected: activeTabIndex === index,
-							}}
-							store={tab.store}
-							key={tab.store.color}
-							isSelected={activeTabIndex === index}
-							tabIndex={index}
-							isClosable={windowStore.tabs.filter(w => isEventsTab(w)).length > 1}
-							windowIndex={windowIndex}
-							onTabDrop={windowsStore.moveTab}
-							color={tab.store.color}
-							{...tabProps}/>
-						: <MessagesWindowTab
-							dragItemPayload={{
-								type: TabTypes.Messages,
-								isSelected: activeTabIndex === index,
-							}}
-							key={`messages-tab-${index}`}
-							isSelected={activeTabIndex === index}
-							tabIndex={index}
-							isClosable={windowStore.tabs.filter(w => isMessagesTab(w)).length > 1}
-							windowIndex={windowIndex}
-							onTabDrop={windowsStore.moveTab}
-							{...tabProps}/>))}
-			tabPanels={windowStore.tabs.map(tab =>
-				(isEventsTab(tab)
-					? <EventWindowProvider value={tab.store}>
-						<EventWindow />
-					</EventWindowProvider>
-					: <MessagesWindowProvider value={tab.store} >
-						<MessagesWindow />
-					</MessagesWindowProvider>))}/>
+	const getTabColor = (color: string) => {
+		const attachedMessagesIds = windowsStore.attachedMessagesIds.get(color);
+		if (!attachedMessagesIds?.length) return undefined;
+		return color;
+	};
+
+	const renderTabs: TabListRenderProps = renderProps => {
+		const { activeTabIndex, ...tabProps } = renderProps;
+
+		const allTabs = windowsStore.windows.flatMap(({ tabs }) => tabs);
+
+		const isEventsTabClosable = allTabs.filter(tab => isEventsTab(tab)).length > 1;
+		const isMessagesTabClosable = allTabs.filter(tab => isMessagesTab(tab)).length > 1;
+
+		return windowStore.tabs.map((tab, index) => {
+			if (isEventsTab(tab)) {
+				return (
+					<EventsWindowTab
+						key={`events-tab-${index}`}
+						store={tab.store}
+						dragItemPayload={{
+							type: TabTypes.Events,
+							store: tab.store,
+							isSelected: activeTabIndex === index,
+						}}
+						tabIndex={index}
+						isSelected={activeTabIndex === index}
+						isClosable={isEventsTabClosable}
+						windowIndex={windowIndex}
+						onTabDrop={windowsStore.moveTab}
+						color={getTabColor(tab.store.color)}
+						{...tabProps}/>
+				);
+			}
+			return (
+				<MessagesWindowTab
+					key={`messages-tab-${index}`}
+					dragItemPayload={{
+						type: TabTypes.Messages,
+						isSelected: activeTabIndex === index,
+					}}
+					tabIndex={index}
+					isSelected={activeTabIndex === index}
+					isClosable={isMessagesTabClosable}
+					windowIndex={windowIndex}
+					onTabDrop={windowsStore.moveTab}
+					{...tabProps} />
+			);
+		});
+	};
+
+	const tabsClassName = createStyleSelector(
+		'window-tabs',
+		windowsStore.windows.length > 1
+			? windowIndex === 0 ? 'attach-right' : 'attach-left'
+			: null,
 	);
-});
 
-AppWindow.displayName = 'AppWindow';
+	return (
+		<WithSideDropTargets
+			leftDropAreaEnabled={windowsStore.windows.length === 1}
+			rightDropAreaEnabled={windowsStore.windows.length === 1}
+			onDropLeft={(draggedTab: TabDraggableItem) =>
+				windowsStore.moveTab(0, windowIndex - 1, draggedTab.tabIndex, 0)}
+			onDropRight={(draggedTab: TabDraggableItem) =>
+				windowsStore.moveTab(0, windowIndex + 1, draggedTab.tabIndex, 0)}
+			offsetTop={50}>
+			<Tabs
+				activeIndex={windowStore.activeTabIndex}
+				onChange={windowStore.setActiveTab}
+				closeTab={windowStore.closeTab}
+				duplicateTab={windowStore.duplicateTab}
+				classNames={{
+					tabsList: tabsClassName,
+				}}
+				tabList={tabListInjectedProps => (
+					<DroppableTabList>
+						{renderTabs(tabListInjectedProps)}
+					</DroppableTabList>
+				)}
+				tabPanels={windowStore.tabs.map(tab =>
+					(isEventsTab(tab)
+						? <EventWindowProvider value={tab.store}>
+							<EventWindow />
+						</EventWindowProvider>
+						: <MessagesWindowProvider value={tab.store} >
+							<MessagesWindow />
+						</MessagesWindowProvider>))}/>
+		</WithSideDropTargets>
 
-export default withSideDropTarget(AppWindow);
+	);
+};
+
+export default observer(AppWindow);

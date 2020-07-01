@@ -21,6 +21,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { CustomDragLayer } from '../drag-n-drop/CustomDragLayer';
 import { useStores } from '../../hooks/useStores';
 import SplitView from '../split-view/SplitView';
+import SplitViewPane from '../split-view/SplitViewPane';
 import AppWindow from '../AppWindow';
 import '../../styles/layout.scss';
 
@@ -31,23 +32,24 @@ const EventsLayout = () => {
 		<DndProvider backend={HTML5Backend}>
 			<CustomDragLayer />
 			<div className="events-layout">
-				{
-					windowsStore.windows.length === 1
-						? <AppWindow
-							moveTabToNewWindow={(tabIndex: number) => windowsStore.moveTab(0, 1, tabIndex, 0)}
-							shouldWrap={windowsStore.windows.length === 1}
-							windowStore={windowsStore.windows[0]} windowIndex={0}/>
-						: <SplitView
-							panelArea={appViewStore.panelArea}
-							onPanelAreaChange={appViewStore.setPanelArea}
-							splitterClassName="events-layout__splitter">
-							{windowsStore.windows.map((w, index) =>
-								<AppWindow
-									moveTabToNewWindow={(tabIndex: number) => windowsStore.moveTab(0, 1, tabIndex, 0)}
-									windowStore={w}
-									key={`window-${index}`}
-									windowIndex={index} />) as [React.ReactNode, React.ReactNode]}
-						</SplitView>
+				{windowsStore.windows.length === 1
+					&& <AppWindow windowStore={windowsStore.windows[0]} windowIndex={0}/>}
+				{windowsStore.windows.length > 1
+					&& <SplitView
+						panelArea={appViewStore.panelArea}
+						onPanelAreaChange={appViewStore.setPanelArea}
+						splitterClassName="events-layout__splitter">
+						<SplitViewPane>
+							<AppWindow
+								windowStore={windowsStore.windows[0]}
+								windowIndex={0} />
+						</SplitViewPane>
+						<SplitViewPane>
+							<AppWindow
+								windowStore={windowsStore.windows[1]}
+								windowIndex={1} />
+						</SplitViewPane>
+					</SplitView>
 				}
 			</div>
 		</DndProvider>

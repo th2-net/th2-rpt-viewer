@@ -33,7 +33,7 @@
 		
 	&__list {
 		display: flex;
-		padding: 7px 4px;
+		padding: 7px 8px;
 		width: 100%;
 		z-index: 2;
 	}
@@ -51,7 +51,6 @@
 		width: 100%;
 		height: 100%;
 	}
-	
 }
 
 .tab-root {
@@ -64,7 +63,11 @@
 	border-radius: 6px;
 
 	&:first-child {
-		margin-left: 0;
+		padding-left: 0;
+	}
+
+	&:last-child {
+		padding-right: 0;
 	}
 
 	&.selected {
@@ -82,19 +85,6 @@
 		height: 100%;
 		width: 100%;
 		position: relative;
-	}
-}
-
-.tabs-drop-hint {
-	height: 100%;
-	width: 10px;
-	background-color: $draggableColor;
-	border: 3px solid #FFF;
-	border-radius: 6px;
-	display: none;
-
-	&.active {
-		display: block;
 	}
 }
 
@@ -144,7 +134,7 @@
 
 	&__drag-icon {
 		@include icon(url(../../resources/icons/draggable.svg), 24px, 24px);
-	
+
 		&.active {
 			background-image: url(../../resources/icons/draggable-active.svg);
 		}
@@ -229,4 +219,37 @@
 	&.active {
 		display: block;
 	}
+}
+
+.window-tabs {
+	&.attach-left {
+		padding-left: 0;
+		padding-right: 8px;
+	}
+
+	&.attach-right {
+		padding-left: 8px;
+		padding-right: 0;
+	}
+}
+
+.tabs-drop-hint {
+	height: 100%;
+	overflow: hidden;
+	flex-shrink: 0;
+
+	& div {
+		height: 100%;
+		width: 100%;
+		background-color: $draggableColor;
+		border: 3px solid #FFF;
+		border-radius: 6px;
+		flex-shrink: 0;
+	}
+}
+
+.droppable-tab-list {
+	width: 100%;
+	height: 100%;
+	display: flex;
 }
