@@ -56,10 +56,6 @@ export default class EventsStore {
 
 	@observable selectedNode: EventIdNode | null = null;
 
-	@observable
-	// eslint-disable-next-line @typescript-eslint/ban-types
-	public scrolledIndex: Number | null = null;
-
 	@computed get color() {
 		if (!this.selectedNode) return undefined;
 		const attachedMessage = this.windowsStore.eventsAttachedMessages
@@ -93,6 +89,13 @@ export default class EventsStore {
 	toggleNode = (idNode: EventIdNode) => {
 		// eslint-disable-next-line no-param-reassign
 		idNode.isExpanded = !idNode.isExpanded;
+		if (idNode.isExpanded) {
+			this.searchStore.appendResultsForEvent(idNode.id);
+		} else if (idNode.children?.length) {
+			this.searchStore.removeEventsResults(
+				idNode.children.flatMap(this.getNodesList).map(node => node.id),
+			);
+		}
 	};
 
 	@action
@@ -189,12 +192,6 @@ export default class EventsStore {
 		this.isLoadingRootEvents = toJS(store.isLoadingRootEvents);
 		this.selectedNode = toJS(store.selectedNode);
 		this.eventsIds = toJS(store.eventsIds);
-
-		if (store.selectedNode) {
-			const scrolledIndex = store.nodesList.findIndex(idNode => idNode.id === store.selectedNode!.id);
-			this.scrolledIndex = scrolledIndex === -1 ? null : new Number(scrolledIndex);
-		}
-
 		this.viewStore = new ViewStore(store.viewStore);
 		this.filterStore = new FilterStore(store.filterStore);
 		this.searchStore = new SearchStore(this.api, this, store.searchStore);

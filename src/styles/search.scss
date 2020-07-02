@@ -75,7 +75,10 @@
         font-weight: bold;
         color: $primaryTextColor;
         height: 18px;
-        padding: 1px 4px;
+        margin: 2px;
+        padding-left: 4px;
+        padding-right: 4px;
+        font-family: inherit;
 
         &:focus {
             outline: 0;
@@ -91,6 +94,14 @@
     &__input-wrapper {
         margin-left: 4px;
         font-size: 13px;
+    }
+
+    &__loader {
+        @include spinner(3px);
+
+        display: inline-block;
+        float: right;
+        margin-top: 4px;
     }
 
     &.active {
@@ -141,8 +152,4 @@
     &__clear {
         @include round-button(url(../../resources/icons/cross-icon.svg));
     }
-}
-
-.loader {
-    @include spinner(3px);
 }

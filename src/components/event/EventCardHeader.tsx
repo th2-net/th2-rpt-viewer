@@ -44,9 +44,9 @@ function EventCardHeader({
 	 childrenCount,
 }: Props) {
 	const {
+		eventId,
 		eventName,
 		startTimestamp,
-		endTimestamp,
 	} = event;
 
 	const status = getEventStatus(event);
@@ -65,11 +65,7 @@ function EventCardHeader({
 			{
 				displayType !== CardDisplayType.STATUS_ONLY ? (
 					<div className='event-header-card__title' title={eventName}>
-						{
-							isRoot
-								? <SearchableContent content={eventName} eventId={event.eventId}/>
-								: eventName
-						}
+						<SearchableContent content={eventName} eventId={eventId}/>
 					</div>
 				) : null
 			}

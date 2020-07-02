@@ -33,6 +33,7 @@ describe('[React] <SearchInput/>', () => {
 		searchTokens: [],
 		currentIndex: -1,
 		resultsCount: 0,
+		isLoading: false,
 		updateSearchTokens: () => {},
 		nextSearchResult: () => {},
 		prevSearchResult: () => {},
