@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import EventBreadcrumbs from './EventBreadcrumbs';
+import EventBreadcrumbs, { EventBreadcrumbsForwardingRef } from './EventBreadcrumbs';
 import { EventWindowProvider } from '../../contexts/eventWindowContext';
 import DraggableTab, { DraggableTabProps } from '../tabs/DraggableTab';
 import Tab, { TabForwardedRefs } from '../tabs/Tab';
@@ -29,51 +29,48 @@ type EventsWindowTabProps = Omit<DraggableTabProps, 'children'> & {
 
 const EventsWindowTab = observer((props: EventsWindowTabProps) => {
 	const { store, ...tabProps } = props;
+	const breadcrumbsRef = React.useRef<EventBreadcrumbsForwardingRef>(null);
 	const [isExpanded, setIsExpanded] = React.useState(false);
 	const tabRefs = React.useRef<TabForwardedRefs>(null);
+
+	React.useEffect(() => {
+		if (tabRefs.current?.tabRef) {
+			tabRefs.current?.tabRef.addEventListener('mouseover', expand);
+			tabRefs.current?.tabRef.addEventListener('mouseleave', collapse);
+		}
+
+		return () => {
+			if (tabRefs.current?.tabRef) {
+				tabRefs.current?.tabRef.removeEventListener('mouseover', expand);
+				tabRefs.current?.tabRef.removeEventListener('mouseleave', collapse);
+			}
+		};
+	  }, []);
+
+	const expand = () => {
+		if (breadcrumbsRef.current) {
+			breadcrumbsRef.current?.expand();
+		}
+	};
+
+	const collapse = () => {
+		if (breadcrumbsRef.current) {
+			breadcrumbsRef.current?.collapse();
+		}
+	};
 
 	return (
 		<DraggableTab
 			{...tabProps}
 			ref={tabRefs}
-			classNames={{ tab: isExpanded ? 'event-tab__expanded' : '' }}>
+			classNames={{ tab: breadcrumbsRef.current?.isExpanded ? 'event-tab__expanded' : '' }}>
 			<EventWindowProvider value={store}>
 				<EventBreadcrumbs
+					onExpand={isExpandedd => setIsExpanded(isExpandedd)}
+					ref={breadcrumbsRef}
 					rootEventsEnabled
 					nodes={store.selectedPath}
-					onSelect={store.selectNode}
-					onMouseEnter={(e, isMinified, fullBreadcrumsWidth) => {
-						const contentRef = tabRefs.current?.contentRef;
-						const tabRef = tabRefs.current?.tabRef;
-
-						if (!contentRef || !tabRef || !isMinified) return;
-						if (!isExpanded) setIsExpanded(true);
-						const { left, right } = tabRef.getBoundingClientRect();
-						const contentWidth = contentRef.getBoundingClientRect().width;
-						const clientWidth = document.documentElement.clientWidth;
-						const widthDiff = Math.round(fullBreadcrumsWidth - contentWidth);
-
-						let widthRemainder = widthDiff;
-						let startX = Math.max(9, left - widthDiff / 2);
-						widthRemainder -= (left - startX);
-						const endX = Math.min(clientWidth - 9, right + widthRemainder);
-						widthRemainder -= (endX - right);
-
-						if (widthRemainder > 0) {
-							startX = Math.max(10, startX - widthRemainder);
-						}
-						const fullTabWidth = endX - startX;
-
-						tabRef.style.transform = `translate(${startX - left}px, 0)`;
-						tabRef.style.width = `${fullTabWidth < clientWidth ? fullTabWidth : clientWidth}px`;
-					}}
-					onMouseLeave={() => {
-						if (tabRefs.current?.tabRef) {
-							tabRefs.current.tabRef.style.transform = 'translate(0, 0)';
-							tabRefs.current.tabRef.style.width = '100%';
-						}
-						setIsExpanded(false);
-					}}/>
+					onSelect={store.selectNode} />
 			</EventWindowProvider>
 		</DraggableTab>
 	);
@@ -91,7 +88,8 @@ export const EventsWindowTabPreview = ({ store, isSelected }: EventsWindowTabPre
 		<EventWindowProvider value={store}>
 			<EventBreadcrumbs
 				rootEventsEnabled
-				nodes={store.selectedPath} />
+				nodes={store.selectedPath}
+				showAll={true}/>
 		</EventWindowProvider>
 	</Tab>
 );
