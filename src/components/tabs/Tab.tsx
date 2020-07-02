@@ -112,35 +112,36 @@ const Tab: React.RefForwardingComponent<TabForwardedRefs, TabProps> = (props, re
 					{children}
 				</div>
 			</div>
-			{!isDragging && (
-				<div className="tab__controls">
-					<button
+			<div
+				style={{
+					opacity: isDragging ? 0 : 1,
+				}}
+				className="tab__controls">
+				<button
+					className="tab__button"
+					title="duplicate tab"
+					onClick={e => {
+						e.stopPropagation();
+						if (duplicateTab) {
+							duplicateTab(tabIndex);
+						}
+					}}>
+					<i className="tab__icon-dublicate"/>
+				</button>
+				{isClosable
+					&& 	<button
 						className="tab__button"
-						title="duplicate tab"
+						role="button"
+						title="close tab"
 						onClick={e => {
 							e.stopPropagation();
-							if (duplicateTab) {
-								duplicateTab(tabIndex);
+							if (closeTab) {
+								closeTab(tabIndex);
 							}
 						}}>
-						<i className="tab__icon-dublicate"/>
-					</button>
-					{isClosable
-						&& 	<button
-							className="tab__button"
-							role="button"
-							title="close tab"
-							onClick={e => {
-								e.stopPropagation();
-								if (closeTab) {
-									closeTab(tabIndex);
-								}
-							}}>
-							<i className="tab__icon-close"/>
-						</button>}
-				</div>
-			)}
-
+						<i className="tab__icon-close"/>
+					</button>}
+			</div>
 		</div>
 	);
 };

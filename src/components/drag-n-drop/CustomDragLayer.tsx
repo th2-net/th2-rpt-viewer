@@ -49,6 +49,8 @@ function getItemStyles(
 	return {
 		transform,
 		WebkitTransform: transform,
+		minWidth: width,
+		maxWIdth: width,
 		width,
 	};
 }

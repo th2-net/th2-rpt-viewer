@@ -89,7 +89,7 @@
 }
 
 .tab {
-	height: 35px;
+	min-height: 36px;
 	width: 100%;
 	border-radius: 6px;
 	cursor: pointer;
@@ -111,7 +111,7 @@
 			content: "";
 			width: 100%;
 			position: absolute;
-			bottom: -7px;
+			top: 30px;
 			left: 0;
 		}
 	}
@@ -126,9 +126,10 @@
 	}
 
 	&__pre {
-		height: 100%;
+		height: 34px;
 		display: flex;
 		align-items: center;
+		align-self: flex-start;
 		flex-shrink: 0;
 	}
 
@@ -163,9 +164,10 @@
 	}
 
 	&__controls {
-		height: 100%;
+		height: 34px;
 		display: flex;
 		align-items: center;
+		align-self: flex-start;
 	}
 
 	&__button {
