@@ -55,12 +55,10 @@ describe('[Helpers] heatmap', () => {
 				pinnedItems,
 			);
 
-			const t = selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![0];
-
 			expect(heatmapElements).toEqual([
 				createHeatmapElement(0, 2),
-				createHeatmapElement(2, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![0], DEFAULT_HEATMAP_ELEMENT_COLOR),
-				createHeatmapElement(3, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![1], DEFAULT_HEATMAP_ELEMENT_COLOR),
+				createHeatmapElement(2, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![0], [DEFAULT_HEATMAP_ELEMENT_COLOR]),
+				createHeatmapElement(3, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![1], [DEFAULT_HEATMAP_ELEMENT_COLOR]),
 				createHeatmapElement(4, 1),
 			]);
 		});
@@ -82,10 +80,10 @@ describe('[Helpers] heatmap', () => {
 			);
 
 			expect(heatmapElements).toEqual([
-				createHeatmapElement(0, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![0], DEFAULT_HEATMAP_ELEMENT_COLOR),
+				createHeatmapElement(0, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![0], [DEFAULT_HEATMAP_ELEMENT_COLOR]),
 				createHeatmapElement(1, 1),
-				createHeatmapElement(2, 1, pinnedItems[0], DEFAULT_PIN_COLOR, true),
-				createHeatmapElement(3, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![1], DEFAULT_HEATMAP_ELEMENT_COLOR),
+				createHeatmapElement(2, 1, pinnedItems[0], [DEFAULT_PIN_COLOR], true),
+				createHeatmapElement(3, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![1], [DEFAULT_HEATMAP_ELEMENT_COLOR]),
 				createHeatmapElement(4, 3),
 			]);
 		});
@@ -111,12 +109,12 @@ describe('[Helpers] heatmap', () => {
 
 			expect(heatmapElements).toEqual([
 				createHeatmapElement(0, 3),
-				createHeatmapElement(3, 1, selectedItems.get(color1)![0], color1, true),
-				createHeatmapElement(4, 1, selectedItems.get(color2)![1], color2),
+				createHeatmapElement(3, 1, selectedItems.get(color1)![0], [color1, color2], true),
+				createHeatmapElement(4, 1, selectedItems.get(color2)![1], [color2]),
 				createHeatmapElement(5, 4),
-				createHeatmapElement(9, 1, pinnedItems[1], DEFAULT_PIN_COLOR, true),
+				createHeatmapElement(9, 1, pinnedItems[1], [DEFAULT_PIN_COLOR], true),
 				createHeatmapElement(10, 1),
-				createHeatmapElement(11, 1, selectedItems.get(color1)![1], color1),
+				createHeatmapElement(11, 1, selectedItems.get(color1)![1], [color1]),
 				createHeatmapElement(12, 1),
 			]);
 		});

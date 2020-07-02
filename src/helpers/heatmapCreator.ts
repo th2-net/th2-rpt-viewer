@@ -28,22 +28,34 @@ export const getHeatmapElements = (
 	const emptyHeatmap = [createHeatmapElement(0, items.length || 1)];
 	if (!selectedItems.size && !pinnedItems.length) return emptyHeatmap;
 
-	let points: [number, string][] = [];
+	const heatmapElementsMap: { [index: number]: string[] } = {};
 
-	selectedItems.forEach((ids, color) => ids.forEach(id => points.push([items.indexOf(id), color])));
+	selectedItems.forEach((ids, color) => {
+		ids.forEach(id => {
+			const index = items.indexOf(id);
+			if (!heatmapElementsMap[index]) {
+				heatmapElementsMap[index] = [color];
+			} else {
+				heatmapElementsMap[index].push(color);
+			}
+		});
+	});
 
 	pinnedItems
 		.map(pinnedItemId => items.indexOf(pinnedItemId))
-		.filter(pinnedItemIndex => points.findIndex(([index]) => pinnedItemIndex === index) === -1)
-		.forEach(index => points.push([index, pinColor]));
+		.forEach(pinnedItemIndex => {
+			if (!heatmapElementsMap[pinnedItemIndex]) {
+				heatmapElementsMap[pinnedItemIndex] = [pinColor];
+			}
+		});
 
-	points = points.filter(([itemIndex], i, self) =>
-		itemIndex !== -1 && self.findIndex(([index]) => index === itemIndex) === i);
+	const points: [number, string[]][] = Object.keys(heatmapElementsMap)
+		.map(index => [parseInt(index), heatmapElementsMap[parseInt(index)]]);
 
 	points.sort(([indexA], [indexB]) => indexA - indexB);
 
 	const heatmapElements = points
-		.reduce<HeatmapElement[]>((blocks, [itemIndex, color], index) => {
+		.reduce<HeatmapElement[]>((blocks, [itemIndex, colors], index) => {
 			const isPinned = pinnedItems.includes(items[itemIndex]);
 			const [nextIndex] = points[index + 1] || [];
 			blocks.push(
@@ -51,7 +63,7 @@ export const getHeatmapElements = (
 					itemIndex,
 					1,
 					items[itemIndex],
-					color,
+					colors,
 					isPinned,
 				),
 			);
@@ -130,12 +142,12 @@ export const createHeatmapElement = (
 	index: number,
 	count: number,
 	id?: string,
-	color?: string,
+	colors = [] as string[],
 	isPinned = false,
 ): HeatmapElement => ({
 	index,
 	count,
 	id,
-	color,
+	colors,
 	isPinned,
 });

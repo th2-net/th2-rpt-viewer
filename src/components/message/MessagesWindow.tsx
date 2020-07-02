@@ -37,11 +37,16 @@ export default observer(() => {
 	const messagesStore = useMessagesWindowStore();
 	const { windowsStore } = useStores();
 
+	const selectedItems = React.useMemo(
+		() => new Map(windowsStore.eventsAttachedMessages.map(({ color, messagesIds }) => [color, messagesIds])),
+		[windowsStore.eventsAttachedMessages],
+	);
+
 	return (
 		<HeatmapProvider
 			scrollToItem={(index: number) => messagesStore.scrolledIndex = new Number(index)}
 			items={messagesStore.messagesIds}
-			selectedItems={windowsStore.attachedMessagesIds}
+			selectedItems={selectedItems}
 			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}
 			pinnedItems={windowsStore.pinnedMessagesIds}>
 			<MessagesWindow />

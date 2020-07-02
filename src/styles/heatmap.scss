@@ -25,42 +25,6 @@
     width: 46px;
     position: relative;
 	overflow: hidden;
-	
-	&__element {
-		border-radius: 3px;
-		background-color: #FFF;
-		border: 2px solid $skeletonBackgroundColor;
-		flex-basis: 10px;
-		margin-top: 4px;
-		display: flex;
-		flex-direction: column;
-		cursor: pointer;
-		position: relative;
-		overflow: hidden;
-
-		&:first-child {
-			margin-top: 0;
-		}
-
-		& > div:first-child {
-			width: 100%;
-			height: 100%;
-		}
-	}
-
-	&__pin-icon {
-		height: 15px;
-        width: 15px;
-        background-image: url(../../resources/icons/unpin.svg);
-        background-repeat: no-repeat;
-        background-size: 100%;
-        cursor: pointer;
-		transition: 0.3s;
-		position: absolute;
-        top: 50%;
-		left: 50%;
-		transform: translate(-50%, -52%);
-	}
 
 	&__scroller {
 		border-radius: 3px;
@@ -95,3 +59,52 @@
 		}
 	}
 }
+
+.heatmap-block {
+	border-radius: 3px;
+	flex-basis: 10px;
+	margin-top: 4px;
+	cursor: pointer;
+	position: relative;
+	overflow: hidden;
+	display: flex;
+	border: 2px solid $skeletonBackgroundColor;
+
+	&:first-child {
+		margin-top: 0;
+	}
+
+	& > div:first-child {
+		width: 100%;
+		height: 100%;
+	}
+
+	&__pin-icon {
+		height: 15px;
+        width: 15px;
+        background-repeat: no-repeat;
+        background-size: 100%;
+        cursor: pointer;
+		transition: 0.3s;
+		position: absolute;
+        top: 50%;
+		left: 50%;
+		transform: translate(-49%, -53%);
+
+		&.default {
+			background-image: url(../../resources/icons/unpin.svg);
+		}
+
+		&.contoured {
+			background-image: url(../../resources/icons/unpin-contoured.svg);
+		}
+	}
+}
+
+.heatmap-element {
+	flex: 1;
+	border-radius: 3px;
+	background-color: #FFF;
+	border: 2px solid $skeletonBackgroundColor;
+}
+

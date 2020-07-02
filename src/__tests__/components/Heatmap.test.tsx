@@ -46,7 +46,7 @@ describe('Heatmap', () => {
 			</HeatmapContext.Provider>,
 		);
 
-		const heatmapElementDivs = wrapper.find('[data-testid="heatmap-element"]');
+		const heatmapElementDivs = wrapper.find('[data-testid="heatmap-block"]');
 
 		expect(heatmapElementDivs.length).toBe(heatmapElements.length);
 	});

@@ -65,7 +65,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const isSelected = Boolean(heatmapElement);
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isPinned = windowsStore.pinnedMessagesIds.includes(messageId);
-	const color = heatmapElement?.color;
+	const color = heatmapElement?.colors[0];
 
 	const rootClass = createBemBlock(
 		'message-card',
