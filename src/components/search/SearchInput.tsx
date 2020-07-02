@@ -40,6 +40,7 @@ interface StateProps {
     searchTokens: SearchToken[];
     currentIndex: number | null;
     resultsCount: number;
+    isLoading: boolean;
 }
 
 interface DispatchProps {
@@ -57,7 +58,7 @@ interface State {
 }
 
 export class SearchInputBase extends React.PureComponent<Props, State> {
-	private inputElement: React.RefObject<HTMLInputElement> = React.createRef();
+	private inputElement: React.MutableRefObject<HTMLInputElement | null> = React.createRef();
 
 	private root = React.createRef<HTMLDivElement>();
 
@@ -97,7 +98,7 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 
 	render() {
 		const {
-			currentIndex, resultsCount, prevSearchResult, nextSearchResult, searchTokens,
+			currentIndex, resultsCount, prevSearchResult, nextSearchResult, searchTokens, isLoading,
 		} = this.props;
 		const { inputValue, isActive } = this.state;
 
@@ -124,7 +125,7 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 						isActive ? (
 							<React.Fragment>
 								{
-									showControls ? (
+									showControls && !isLoading ? (
 										<div className="search-controls">
 											<div className="search-controls__prev"
 												onClick={prevSearchResult}/>
@@ -152,11 +153,7 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 								<AutosizeInput
 									inputClassName="search-field__input"
 									className="search-field__input-wrapper"
-									// eslint-disable-next-line no-return-assign
-									inputRef={ref =>
-										// eslint-disable-next-line max-len
-										(this.inputElement as React.MutableRefObject<HTMLInputElement | null>).current = ref
-									}
+									inputRef={ref => this.inputElement.current = ref}
 									inputStyle={
 										inputValue.length > 0 ? {
 											backgroundColor: activeTokens?.color ?? this.getNextColor(),
@@ -173,7 +170,9 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 									onChange={this.inputOnChange}
 									onKeyDown={this.onKeyDown}/>
 								{
-									showControls ? (
+									isLoading ? (
+										<div className="search-field__loader"/>
+									) : showControls ? (
 										<span className="search-field__counter">
 											{currentIndex !== null ? currentIndex + 1 : 0} of {resultsCount ?? 0}
 										</span>
@@ -365,6 +364,7 @@ const SearchInput = () => {
 			searchTokens={searchStore.tokens}
 			resultsCount={searchStore.results.length}
 			currentIndex={searchStore.scrolledIndex}
+			isLoading={searchStore.isLoading}
 			updateSearchTokens={searchStore.updateTokens}
 			nextSearchResult={searchStore.nextSearchResult}
 			prevSearchResult={searchStore.prevSearchResult}

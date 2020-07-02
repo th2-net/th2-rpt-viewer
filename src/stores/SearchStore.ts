@@ -64,6 +64,7 @@ export default class SearchStore {
 		// only unique ids
 		this.rawResults = [...new Set(rootEventsResults.flat())];
 		this.scrolledIndex = null;
+		this.isLoading = false;
 	};
 
 	@action

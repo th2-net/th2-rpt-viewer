@@ -54,10 +54,6 @@ export default class EventsStore {
 
 	@observable selectedNode: EventIdNode | null = null;
 
-	@observable
-	// eslint-disable-next-line @typescript-eslint/ban-types
-	public scrolledIndex: Number | null = null;
-
 	// we need this property for correct virtualized tree render -
 	// to get event key by index in tree and list length calculation.
 	@computed get nodesList() {
@@ -115,7 +111,6 @@ export default class EventsStore {
 
 	@action
 	fetchRootEvents = async (filter?: EventsFilter) => {
-		if (this.eventsIds.length) return;
 		this.selectedNode = null;
 		this.isLoadingRootEvents = true;
 
@@ -189,12 +184,6 @@ export default class EventsStore {
 		copy.isLoadingRootEvents = toJS(store.isLoadingRootEvents);
 		copy.selectedNode = toJS(store.selectedNode);
 		copy.eventsIds = toJS(store.eventsIds);
-
-		if (store.selectedNode) {
-			const scrolledIndex = store.nodesList.findIndex(idNode => idNode.id === store.selectedNode!.id);
-			copy.scrolledIndex = scrolledIndex === -1 ? null : new Number(scrolledIndex);
-		}
-
 		copy.viewStore = ViewStore.copy(store.viewStore);
 		copy.filterStore = FilterStore.copy(store.filterStore);
 		copy.searchStore = SearchStore.copy(store.searchStore, api, copy);

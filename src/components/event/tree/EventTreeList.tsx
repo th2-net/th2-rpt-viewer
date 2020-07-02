@@ -30,10 +30,14 @@ function EventTreeList() {
 
 	React.useEffect(() => {
 		if (eventWindowStore.scrolledEventIndex != null) {
-			listRef.current?.scrollToIndex({
-				index: eventWindowStore.scrolledEventIndex,
-				align: 'center',
-			});
+			try {
+				listRef.current?.scrollToIndex({
+					index: eventWindowStore.scrolledEventIndex,
+					align: 'center',
+				});
+			} catch (e) {
+				console.error(e);
+			}
 		}
 	}, [eventWindowStore.searchStore.scrolledIndex]);
 
