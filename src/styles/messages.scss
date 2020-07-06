@@ -256,8 +256,15 @@
         word-break: break-all;
     }
 
+    &__field {
+        border-radius: 2px;
+        width: fit-content;
+    }
+
     &__field-label {
         color: $secondaryTextColor;
+        display: inline-block;
+        height: 100%;
     }
 
     &__raw {

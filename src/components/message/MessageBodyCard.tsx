@@ -18,20 +18,31 @@ import * as React from 'react';
 import MessageBody, { isSimpleValue, MessageBodyField } from '../../models/MessageBody';
 
 const BEAUTIFIED_PAD_VALUE = 15;
+const DEFAULT_HIGHLIGHT_COLOR = '#e2dfdf';
+const SELECTED_HIGHLIGHT_COLOR = '#fff';
 
 interface Props {
 	isBeautified: boolean;
 	body: MessageBody;
+	isSelected: boolean;
 }
 
-export default function MessageBodyCard({ isBeautified, body }: Props) {
+export default function MessageBodyCard({ isBeautified, body, isSelected }: Props) {
+	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
+
 	return (
 		<pre className="mc-body__human">
 			{!isBeautified && '{'}
 			{
 				Object.entries(body.fields).map(([key, value], idx, arr) => (
 					<React.Fragment key={key}>
-						<MessageBodyCardField label={key} field={value} isBeautified={isBeautified}/>
+						<MessageBodyCardField
+							highlightColor={isSelected ? SELECTED_HIGHLIGHT_COLOR : DEFAULT_HIGHLIGHT_COLOR}
+							label={key}
+							field={value}
+							isBeautified={isBeautified}
+							isHighlighted={areSiblingsHighlighed}
+							setIsHighlighted={highlightSiblings}/>
 						{isBeautified || idx === arr.length - 1 ? null : ', '}
 					</React.Fragment>
 				))
@@ -45,30 +56,70 @@ interface FieldProps {
 	isBeautified: boolean;
 	label: string;
 	field: MessageBodyField;
+	isHighlighted?: boolean;
+	setIsHighlighted: (isHighlighted: boolean) => void;
+	isRoot?: boolean;
+	highlightColor: string;
 }
 
-function MessageBodyCardField({ field, label, isBeautified }: FieldProps) {
-	const wrapperStyle = isBeautified
-		? { display: 'block' }
-		: {};
+function MessageBodyCardField(props: FieldProps) {
+	const {
+		field,
+		label,
+		isBeautified,
+		isHighlighted = false,
+		isRoot = true,
+		setIsHighlighted,
+		highlightColor,
+	} = props;
+
+	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
+
+	if (isRoot) {
+		return <MessageBodyCardField
+			highlightColor={highlightColor}
+			isBeautified={isBeautified}
+			field={field}
+			label={label}
+			isRoot={false}
+			isHighlighted={isHighlighted}
+			setIsHighlighted={setIsHighlighted}/>;
+	}
 
 	return (
-		<span style={wrapperStyle}>
-			<span className="mc-body__field-label">{isBeautified ? label : `"${label}"`}: </span>
+		<span
+			className="mc-body__field"
+			style={{
+				display: isBeautified ? 'block' : undefined,
+				background: isHighlighted ? backgroundGradient`${highlightColor}` : undefined,
+			}}>
+			<span
+				onMouseEnter={() => setIsHighlighted(true)}
+				onMouseLeave={() => setIsHighlighted(false)}
+				className="mc-body__field-label">
+				{isBeautified ? label : `"${label}"`}:{' '}
+			</span>
 			{
 				isSimpleValue(field) ? (
 					`"${field.simpleValue}"`
 				) : (
 					<>
 						{'{'}
-						<span style={{ ...wrapperStyle, paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined }}>
+						<span style={{
+							display: isBeautified ? 'block' : undefined,
+							paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
+						}}>
 							{
 								Object.entries(field.messageValue.fields).map(([key, subField], idx, arr) => (
 									<React.Fragment key={key}>
 										<MessageBodyCardField
 											field={subField}
 											label={key}
-											isBeautified={isBeautified}/>
+											isBeautified={isBeautified}
+											isHighlighted={areSiblingsHighlighed}
+											isRoot={false}
+											setIsHighlighted={highlightSiblings}
+											highlightColor={highlightColor}/>
 										{isBeautified || idx === arr.length - 1 ? null : ', '}
 									</React.Fragment>
 								))
@@ -95,3 +146,14 @@ export function MessageBodyCardFallback({ body, isBeautified }: Props) {
 		</pre>
 	);
 }
+
+
+const backgroundGradient = (strings: TemplateStringsArray, color: string) =>
+	`linear-gradient(to bottom, 
+        transparent 0%,
+        transparent 2px,
+        ${color} 2px,
+        ${color} calc(100% - 2px),
+        transparent calc(100% - 2px),
+        transparent 100%
+	)`;
