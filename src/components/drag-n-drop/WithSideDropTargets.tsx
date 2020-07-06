@@ -37,6 +37,7 @@ const defaultHoverState = Object.freeze({
 	isOverRightSide: false,
 	canDropOnLeft: false,
 	canDropOnRight: false,
+	yCoord: 0,
 });
 
 export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
@@ -50,7 +51,6 @@ export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
 		leftDropAreaEnabled = true,
 	} = props;
 	const [hoverState, setHoverState] = React.useState(defaultHoverState);
-	const [yCoord, setYCoord] = React.useState<null | number>(null);
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -77,11 +77,11 @@ export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
 				width,
 			} = root.getBoundingClientRect();
 
-			const isOverContent = clientXY.y > (top + offsetTop) && clientXY.y < bottom;
-			const isOverLeftSide = isOverContent && clientXY.x > left && clientXY.x < left + width / 2;
+			const isOverContent = clientXY.y >= (top + offsetTop) && clientXY.y <= bottom;
+			const isOverLeftSide = isOverContent && clientXY.x >= left && clientXY.x <= (left + width / 2);
 			const isOverRightSide = isOverContent && !isOverLeftSide;
 			const droppableAreaWidth = left + (droppableAreaPercent / 100) * width;
-			const canDropOnLeft = isOverLeftSide && clientXY.x < left + droppableAreaWidth;
+			const canDropOnLeft = isOverLeftSide && clientXY.x <= left + droppableAreaWidth;
 			const canDropOnRight = isOverRightSide && (clientXY.x > right - droppableAreaWidth);
 
 			if (!isOverContent) {
@@ -94,16 +94,13 @@ export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
 				isOverRightSide,
 				canDropOnLeft,
 				canDropOnRight,
+				yCoord: clientXY.y,
 			};
 
 			if (!isEqual(hoverState, updatedHoverState)) {
 				setHoverState(updatedHoverState);
-				setYCoord(clientXY.y);
 			}
 		},
-		collect: monitor => ({
-			isOver: monitor.isOver(),
-		}),
 	});
 
 	return (
@@ -114,46 +111,42 @@ export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
 				onMouseLeave={() => setHoverState(defaultHoverState)}>
 				<SideDropTarget
 					canDrop={hoverState.canDropOnLeft}
-					showHint={hoverState.isOverLeftSide}
-					yCoord={yCoord}
-					style={{
-						left: 0,
-						right: undefined,
-					}}/>
+					yCoord={hoverState.yCoord}
+					style={{ left: 0, right: undefined }}/>
 				{children}
 				<SideDropTarget
 					canDrop={hoverState.canDropOnRight}
-					showHint={hoverState.isOverRightSide}
-					yCoord={yCoord}/>
+					yCoord={hoverState.yCoord}/>
 			</div>
 		</div>
 	);
 };
 
-const WithSideDropTargets = (props: WithSideDropTargetsProps) => {
-	const {
-		leftDropAreaEnabled = true,
-		rightDropAreaEnabled = true,
-		children,
-		...restProps
-	} = props;
+export const withSideDropTarget = <P extends object>(
+	Component: React.ComponentType<P>,
+): React.FC<P & WithSideDropTargetsProps> => (props: WithSideDropTargetsProps & P) => {
+		const {
+			leftDropAreaEnabled,
+			rightDropAreaEnabled,
+			onDropLeft,
+			onDropRight,
+			droppableAreaPercent,
+			offsetTop,
+			...restProps
+		} = props;
 
-	if (!leftDropAreaEnabled && !rightDropAreaEnabled) {
+		if (!leftDropAreaEnabled && !rightDropAreaEnabled) return <Component {...restProps as P} />;
+
 		return (
-			<>
-				{children}
-			</>
+			<WithSideDropTargetsBase
+				leftDropAreaEnabled={leftDropAreaEnabled}
+				rightDropAreaEnabled={rightDropAreaEnabled}
+				onDropLeft={onDropLeft}
+				onDropRight={onDropRight}
+				droppableAreaPercent={droppableAreaPercent}
+				offsetTop={offsetTop}
+			>
+				<Component {...restProps as P}/>
+			</WithSideDropTargetsBase>
 		);
-	}
-
-	return (
-		<WithSideDropTargetsBase
-			leftDropAreaEnabled={leftDropAreaEnabled}
-			rightDropAreaEnabled={rightDropAreaEnabled}
-			{...restProps}>
-			{children}
-		</WithSideDropTargetsBase>
-	);
-};
-
-export default WithSideDropTargets;
+	};

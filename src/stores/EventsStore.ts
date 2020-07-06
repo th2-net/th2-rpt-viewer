@@ -24,6 +24,7 @@ import { EventAction } from '../models/EventAction';
 import SearchStore from './SearchStore';
 import EventsFilter from '../models/filter/EventsFilter';
 import WindowsStore from './WindowsStore';
+import PanelArea from '../util/PanelArea';
 
 export type EventIdNode = {
 	id: string;
@@ -55,6 +56,9 @@ export default class EventsStore {
 	@observable isLoadingRootEvents = false;
 
 	@observable selectedNode: EventIdNode | null = null;
+
+	// eslint-disable-next-line @typescript-eslint/ban-types
+	@observable scrolledIndex: Number | null = null;
 
 	@computed get color() {
 		if (!this.selectedNode) return undefined;
@@ -101,6 +105,17 @@ export default class EventsStore {
 	@action
 	selectNode = async (idNode: EventIdNode | null) => {
 		this.selectedNode = idNode;
+		if (this.viewStore.panelArea === PanelArea.P100) {
+			this.viewStore.panelArea = PanelArea.P50;
+		}
+	};
+
+	@action
+	scrollToEvent = (idNode: EventIdNode) => {
+		const index = this.nodesList.indexOf(idNode);
+		if (index !== -1) {
+			this.scrolledIndex = new Number(index);
+		}
 	};
 
 	@action
@@ -192,6 +207,13 @@ export default class EventsStore {
 		this.isLoadingRootEvents = toJS(store.isLoadingRootEvents);
 		this.selectedNode = toJS(store.selectedNode);
 		this.eventsIds = toJS(store.eventsIds);
+
+		if (store.selectedNode) {
+			const scrolledIndex = store.nodesList.findIndex(idNode => idNode.id === store.selectedNode!.id);
+			this.scrolledIndex = scrolledIndex === -1 ? null : new Number(scrolledIndex);
+		}
+
+
 		this.viewStore = new ViewStore(store.viewStore);
 		this.filterStore = new FilterStore(store.filterStore);
 		this.searchStore = new SearchStore(this.api, this, store.searchStore);

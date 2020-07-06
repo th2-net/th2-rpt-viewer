@@ -80,7 +80,7 @@ export default class WindowsStore {
 		originWindowIndex: number,
 		targetWindowIndex: number,
 		tabIndex: number,
-		targetTabIndex: number,
+		targetTabIndex = 0,
 	) => {
 		if (originWindowIndex === targetWindowIndex
 			&& tabIndex === targetTabIndex) return;

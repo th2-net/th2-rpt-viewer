@@ -95,8 +95,8 @@ const DraggableTab: React.RefForwardingComponent<TabForwardedRefs, DraggableTabP
 			if (!rootRef.current || !clientOffset) return;
 
 			const { left, width } = rootRef.current.getBoundingClientRect();
-			const hoverMiddleX = left + width / 2;
-			const newTabIndex = clientOffset.x > hoverMiddleX ? tabIndex + 1 : tabIndex;
+			const tabMiddleX = left + width / 2;
+			const newTabIndex = clientOffset.x > tabMiddleX ? tabIndex + 1 : tabIndex;
 			if (canDropOnLeft || canDropOnRight) {
 				onTabDrop(item.windowIndex, windowIndex, item.tabIndex, newTabIndex);
 			}

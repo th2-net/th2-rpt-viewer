@@ -23,23 +23,41 @@ import SplashScreen from '../../SplashScreen';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import '../../../styles/action.scss';
+import { raf } from '../../../helpers/raf';
 
 function EventTreeList() {
 	const eventWindowStore = useEventWindowStore();
 	const listRef = React.useRef<VirtuosoMethods | null>(null);
 
 	React.useEffect(() => {
-		if (eventWindowStore.scrolledEventIndex != null) {
-			try {
-				listRef.current?.scrollToIndex({
-					index: eventWindowStore.scrolledEventIndex,
-					align: 'center',
-				});
-			} catch (e) {
-				console.error(e);
-			}
+		try {
+			raf(() => {
+				if (eventWindowStore.scrolledEventIndex !== null) {
+					listRef.current?.scrollToIndex({
+						index: eventWindowStore.scrolledEventIndex,
+						align: 'center',
+					});
+				}
+			});
+		} catch (e) {
+			console.error(e);
 		}
 	}, [eventWindowStore.searchStore.scrolledIndex]);
+
+	React.useEffect(() => {
+		try {
+			raf(() => {
+				if (eventWindowStore.scrolledIndex !== null) {
+					listRef.current?.scrollToIndex({
+						index: eventWindowStore.scrolledIndex.valueOf(),
+						align: 'center',
+					});
+				}
+			}, 3);
+		} catch (e) {
+			console.error(e);
+		}
+	}, [eventWindowStore.scrolledIndex]);
 
 	const computeKey = (index: number) => eventWindowStore.nodesList[index].id;
 

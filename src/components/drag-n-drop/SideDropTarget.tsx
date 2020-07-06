@@ -20,7 +20,6 @@ import '../../styles/dragndrop.scss';
 
 interface SideDropTargetProps {
 	canDrop: boolean;
-	showHint: boolean;
 	style?: React.CSSProperties;
 	yCoord: null | number;
 }
@@ -28,56 +27,42 @@ interface SideDropTargetProps {
 const SideDropTarget = (props: SideDropTargetProps) => {
 	const {
 		canDrop,
-		showHint,
 		style = {},
 		yCoord,
 	} = props;
 	return (
-		<>
-			<AnimatePresence initial={false}>
-				{showHint && (
-					<motion.div
-						className="with-side-drop-target__drop-hint"
-						initial={{ width: 0 }}
-						animate={{ width: 20 }}
-						exit={{ width: 0 }}
-					/>
-				)}
-			</AnimatePresence>
-			<AnimatePresence initial={false}>
-				{canDrop && (
-					<motion.div
-						className="with-side-drop-target__overlay"
-						style={style}
-						positionTransition
-						transition={{
-							bounceDamping: 0,
-							bounceStiffness: 0,
-							duration: 0.4,
-						}}
-						initial={{
-							width: 0,
-							height: 0,
-							opacity: 0,
-							top: yCoord || 0,
-						}}
-						animate={{
-							width: '50%',
-							height: '100%',
-							top: 0,
-							opacity: 1,
-						}}
-						exit={{
-							width: 0,
-							height: 0,
-							opacity: 0,
-							top: '50%',
-						}}/>
-				)}
-			</AnimatePresence>
-		</>
+		<AnimatePresence initial={false}>
+			{canDrop && (
+				<motion.div
+					className="with-side-drop-target__overlay"
+					style={style}
+					positionTransition
+					transition={{
+						bounceDamping: 0,
+						bounceStiffness: 0,
+						duration: 0.4,
+					}}
+					initial={{
+						width: 0,
+						height: 0,
+						opacity: 0,
+						top: yCoord || 0,
+					}}
+					animate={{
+						width: '50%',
+						height: '100%',
+						top: 0,
+						opacity: 1,
+					}}
+					exit={{
+						width: 0,
+						height: 0,
+						opacity: 0,
+						top: '50%',
+					}}/>
+			)}
+		</AnimatePresence>
 	);
 };
-
 
 export default SideDropTarget;

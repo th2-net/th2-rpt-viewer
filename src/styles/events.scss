@@ -384,10 +384,15 @@
 		}
 	}
 
+	&__root-item {
+		display: flex;
+		align-items: center;
+	}
+
 	&__root-icon {
 		@include icon(url(../../resources/icons/burger.svg), 16px, 16px);
 		flex-shrink: 0;
-		margin-right: 6px;
+		margin: 10px 6px 10px 0;
 	}
 
 	&__name {

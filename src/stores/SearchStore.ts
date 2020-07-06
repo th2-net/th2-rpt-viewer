@@ -36,7 +36,7 @@ export default class SearchStore {
 
 	@observable tokens: SearchToken[] = [];
 
-	@observable private rawResults: string[] = [];
+	@observable rawResults: string[] = [];
 
 	@observable isLoading = false;
 

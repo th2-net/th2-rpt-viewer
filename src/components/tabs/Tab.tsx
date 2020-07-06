@@ -105,9 +105,6 @@ const Tab: React.RefForwardingComponent<TabForwardedRefs, TabProps> = (props, re
 			<div className="tab__content-wrapper">
 				<div
 					className="tab__content"
-					style={{
-						pointerEvents: isSelected && !isDragging ? 'auto' : 'none',
-					}}
 					ref={contentRef}>
 					{children}
 				</div>
