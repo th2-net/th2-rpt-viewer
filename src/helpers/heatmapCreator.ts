@@ -30,9 +30,9 @@ export const getHeatmapElements = (
 
 	const heatmapElementsMap: { [index: number]: string[] } = {};
 
-	selectedItems.forEach((ids, color) => {
-		ids.forEach(id => {
-			const index = items.indexOf(id);
+	selectedItems.forEach((selectedItemsList, color) => {
+		selectedItemsList.forEach(selectedItem => {
+			const index = items.indexOf(selectedItem);
 			if (!heatmapElementsMap[index]) {
 				heatmapElementsMap[index] = [color];
 			} else {
@@ -42,7 +42,7 @@ export const getHeatmapElements = (
 	});
 
 	pinnedItems
-		.map(pinnedItemId => items.indexOf(pinnedItemId))
+		.map(pinnedItem => items.indexOf(pinnedItem))
 		.forEach(pinnedItemIndex => {
 			if (!heatmapElementsMap[pinnedItemIndex]) {
 				heatmapElementsMap[pinnedItemIndex] = [pinColor];
@@ -93,6 +93,7 @@ export const getHeatmapElements = (
 
 export const getHeatmapRange = (
 	heatmapElements: HeatmapElement[],
+	// if not fullRange function will return range between first and last heatmap element
 	fullRange = false,
 ): ListRange => {
 	if (heatmapElements.filter(isHeatmapPoint).length <= 1) {

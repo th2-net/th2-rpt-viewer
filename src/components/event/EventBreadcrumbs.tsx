@@ -16,33 +16,27 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { motion, useAnimation } from 'framer-motion';
 import useResizeObserver from 'use-resize-observer';
 import { EventIdNode } from '../../stores/EventsStore';
-import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
+import { createBemElement } from '../../helpers/styleCreators';
 import { getEventStatus } from '../../helpers/event';
-import '../../styles/events.scss';
 import useCachedEvent from '../../hooks/useCachedEvent';
+import '../../styles/events.scss';
 
-const BREADCRUMB_ITEM_MAX_WIDTH = 170;
-const ROOT_ICONS_WIDTH = 90;
+const BREADCRUMB_ITEM_MAX_WIDTH = 150;
+const ROOT_ITEM_WIDTH = 140;
+const ROOT_ITEM_MINIFIED_WIDTH = 50;
+const MINIFY_ICON_WIDTH = 30;
 
 interface Props {
 	nodes: EventIdNode[];
-	rootEventsEnabled?: boolean;
 	onSelect?: (node: EventIdNode | null) => void;
-	onMouseEnter?: (
-		event: React.MouseEvent<HTMLDivElement, MouseEvent>,
-		isMinified: boolean,
-		fullWidth: number
-	) => void;
-	onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 	onExpand?: (isExpanded: boolean) => void;
 	showAll?: boolean;
 }
 
 export interface EventBreadcrumbsForwardingRef {
-	isExpanded: boolean;
-	isMinified: boolean;
 	expand: () => void;
 	collapse: () => void;
 }
@@ -51,9 +45,6 @@ const EventBreadcrumbs: React.RefForwardingComponent<EventBreadcrumbsForwardingR
 	const {
 		nodes,
 		onSelect,
-		rootEventsEnabled = false,
-		onMouseLeave,
-		onMouseEnter,
 		showAll = false,
 		onExpand,
 	} = props;
@@ -61,112 +52,119 @@ const EventBreadcrumbs: React.RefForwardingComponent<EventBreadcrumbsForwardingR
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const [visibleItemsCount, setVisibleItemsCount] = React.useState(nodes.length);
 	const [isMinified, setIsMinified] = React.useState(false);
-	const { width = 1, height = 36 } = useResizeObserver({ ref: rootRef });
+	const { width = 1 } = useResizeObserver({ ref: rootRef });
 	const [isExpanded, setIsExpanded] = React.useState(showAll);
-	const [itemMaxWidth, setItemMaxWIdth] = React.useState(BREADCRUMB_ITEM_MAX_WIDTH);
+	const [itemMaxWidth, setItemMaxWidth] = React.useState(BREADCRUMB_ITEM_MAX_WIDTH);
+
+	const controls = useAnimation();
 
 	React.useEffect(() => {
 		if (isExpanded) {
-			setVisibleItemsCount(nodes.length);
+			setVisibleItemsCount(nodes.length + 1);
 			setIsMinified(false);
 			return;
 		}
-		const renderableBreadcrumbsCount = Math.max(
-			1, Math.floor((width - ROOT_ICONS_WIDTH) / BREADCRUMB_ITEM_MAX_WIDTH),
-		);
-		const minify = nodes.length > 0 && renderableBreadcrumbsCount > 0
-			&& (renderableBreadcrumbsCount < nodes.length);
-		if (renderableBreadcrumbsCount === 1) {
-			const maxWidth = width - ROOT_ICONS_WIDTH;
-			setItemMaxWIdth(maxWidth > BREADCRUMB_ITEM_MAX_WIDTH ? BREADCRUMB_ITEM_MAX_WIDTH : maxWidth);
-		} else {
-			setItemMaxWIdth(BREADCRUMB_ITEM_MAX_WIDTH);
-		}
-		setVisibleItemsCount(renderableBreadcrumbsCount);
 
-		if (minify !== isMinified) {
-			setIsMinified(minify);
+		let renderableBreadcrumbsCount = Math.max(1, Math.floor(width / BREADCRUMB_ITEM_MAX_WIDTH));
+
+		if (renderableBreadcrumbsCount > nodes.length) {
+			setIsMinified(false);
+			setItemMaxWidth(BREADCRUMB_ITEM_MAX_WIDTH);
+			setVisibleItemsCount(renderableBreadcrumbsCount);
+			return;
 		}
+
+		if (renderableBreadcrumbsCount > 1) {
+			renderableBreadcrumbsCount = (width - renderableBreadcrumbsCount * BREADCRUMB_ITEM_MAX_WIDTH) < 90
+				? renderableBreadcrumbsCount - 1
+				: renderableBreadcrumbsCount;
+			setIsMinified(renderableBreadcrumbsCount < nodes.length);
+			setVisibleItemsCount(renderableBreadcrumbsCount);
+			setItemMaxWidth((width - 90) / renderableBreadcrumbsCount);
+			return;
+		}
+		const maxWidth = width - 80;
+		setIsMinified(nodes.length !== 1);
+		setVisibleItemsCount(1);
+		setItemMaxWidth(width < BREADCRUMB_ITEM_MAX_WIDTH ? width : maxWidth);
 	}, [nodes, width, isExpanded]);
-
-	React.useEffect(() => {
-		if (showAll) return;
-		setIsExpanded(height > 36);
-		if (onExpand) {
-			onExpand(height > 36);
-		}
-	}, [height]);
 
 	const visibleBreadcrumbs = nodes.slice(showAll ? 0 : -visibleItemsCount);
 
 	React.useImperativeHandle(ref, () => ({
-		get isExpanded() {
-			return isExpanded && height > 36;
-		},
-		get isMinified() {
-			return isMinified;
-		},
 		expand: () => {
 			if (!isMinified) return;
 			setIsExpanded(true);
 			if (onExpand) {
-				onExpand(height > 36);
+				onExpand(true);
 			}
+			controls.start({
+				height: 'auto',
+				transition: { duration: 0.5, delay: 0 },
+			});
 		},
 		collapse: () => {
+			if (!isExpanded) return;
 			setIsExpanded(false);
-			if (onExpand) {
-				onExpand(height > 36);
-			}
+			controls.start({
+				height: '36px',
+				transition: { duration: 0.5, delay: 0 },
+			}).then(() => {
+				if (onExpand) {
+					onExpand(false);
+				}
+			});
 		},
 	}));
 
 	return (
-		<div
+		<motion.div
+			animate={controls}
 			className='event-breadcrumbs'
-			style={{ flexWrap: isExpanded || showAll ? 'wrap' : 'nowrap' }}
-			ref={rootRef}
-			onMouseLeave={onMouseLeave}>
-			<div
-				className="event-breadcrumbs__root-icon"
-				onClick={() => onSelect && onSelect(null)}/>
+			ref={rootRef}>
+			{((width > BREADCRUMB_ITEM_MAX_WIDTH) || isExpanded) && <motion.div
+				className="event-breadcrumbs__root-item"
+				positionTransition={{ duration: 0.5, damping: 120, stiffness: 10 }}
+				key="root">
+				<div
+					className="event-breadcrumbs__root-icon"
+					onClick={() => onSelect && onSelect(null)}/>
+				{
+					 !nodes.length || (!isMinified && (visibleItemsCount > nodes.length)) ? (
+						<div className='event-breadcrumbs__item'
+							onClick={() => onSelect && onSelect(null)}>
+							Root events
+						</div>
+					) : null
+				}
+				{
+					nodes.length > 0
+						? <div className='event-breadcrumbs__divider'/>
+						: <div className='event-breadcrumbs__divider-last'/>
+				}
+			</motion.div>}
 			{
-				rootEventsEnabled && ((visibleItemsCount >= nodes.length + 1) || isExpanded) ? (
-					<div className='event-breadcrumbs__item'
-						onClick={() => onSelect && onSelect(null)}>
-						Root events
-					</div>
-				) : null
-			}
-			{
-				nodes.length > 0
-					? <div className='event-breadcrumbs__divider'/>
-					: <div className='event-breadcrumbs__divider-last'/>
-			}
-			{
-				isMinified
-				&& <div
-					className='event-breadcrumbs__minified'
-					onMouseEnter={event => {
-						if (onMouseEnter) {
-							onMouseEnter(event, isMinified, (nodes.length + 1) * (BREADCRUMB_ITEM_MAX_WIDTH));
-						}
-					}}>
+				isMinified && visibleItemsCount > 1
+				&& <div className='event-breadcrumbs__minified'>
 					<div>...</div>
 					<div className='event-breadcrumbs__divider'/>
 				</div>
 			}
 			{
-				visibleBreadcrumbs.map((node, i) => (
-					<EventBreadcrumbsItem
-						maxWidth={isExpanded ? BREADCRUMB_ITEM_MAX_WIDTH : itemMaxWidth}
+				visibleBreadcrumbs.map((node, index) => (
+					<motion.div
 						key={node.id}
-						node={node}
-						onSelect={() => onSelect && onSelect(node)}
-						isLast={i === visibleBreadcrumbs.length - 1}/>
+						positionTransition={{ duration: 0.5, damping: 120, stiffness: 10 }}>
+						<EventBreadcrumbsItem
+							maxWidth={isExpanded && (width > BREADCRUMB_ITEM_MAX_WIDTH)
+								? BREADCRUMB_ITEM_MAX_WIDTH : itemMaxWidth}
+							node={node}
+							onSelect={() => onSelect && onSelect(node)}
+							isLast={index === visibleBreadcrumbs.length - 1} />
+					</motion.div>
 				))
 			}
-		</div>
+		</motion.div>
 	);
 };
 
@@ -212,8 +210,9 @@ const EventBreadcrumbsItem = observer(({
 			 onClick={() => onSelect()}
 			 style={{
 				 maxWidth,
-			 }}>
-			<div className={nameClassName} title={event.eventName}>
+			 }}
+			 title={event.eventName}>
+			<div className={nameClassName}>
 				{event.eventName}
 			</div>
 			<span className="event-breadcrumbs__status">

@@ -654,8 +654,8 @@
 }
 
 .messages-tab {
-    min-width: 270px;
-    flex-grow: 1;
+    min-width: 130px;
+    flex-grow: 2;
     flex-shrink: 0;
 
     &__count {
@@ -672,5 +672,23 @@
         background-color: white;
         padding: 0 7px;
         margin-left: 8px;
+    }
+
+    &__wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    &__title {
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    &__count-list {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
     }
 }

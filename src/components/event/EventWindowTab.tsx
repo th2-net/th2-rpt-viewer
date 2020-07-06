@@ -20,7 +20,7 @@ import EventBreadcrumbs, { EventBreadcrumbsForwardingRef } from './EventBreadcru
 import { EventWindowProvider } from '../../contexts/eventWindowContext';
 import DraggableTab, { DraggableTabProps } from '../tabs/DraggableTab';
 import Tab, { TabForwardedRefs } from '../tabs/Tab';
-import EventWindowStore from '../../stores/EventsStore';
+import EventWindowStore, { EventIdNode } from '../../stores/EventsStore';
 import '../../styles/events.scss';
 
 type EventsWindowTabProps = Omit<DraggableTabProps, 'children'> & {
@@ -63,14 +63,18 @@ const EventsWindowTab = observer((props: EventsWindowTabProps) => {
 		<DraggableTab
 			{...tabProps}
 			ref={tabRefs}
-			classNames={{ tab: breadcrumbsRef.current?.isExpanded ? 'event-tab__expanded' : '' }}>
+			classNames={{ tab: isExpanded ? 'event-tab__expanded' : '' }}>
 			<EventWindowProvider value={store}>
 				<EventBreadcrumbs
-					onExpand={isExpandedd => setIsExpanded(isExpandedd)}
+					onExpand={newExpandeState => setIsExpanded(newExpandeState)}
 					ref={breadcrumbsRef}
-					rootEventsEnabled
 					nodes={store.selectedPath}
-					onSelect={store.selectNode} />
+					onSelect={(idNode: EventIdNode | null) => {
+						store.selectNode(idNode);
+						if (idNode) {
+							store.scrollToEvent(idNode);
+						}
+					}} />
 			</EventWindowProvider>
 		</DraggableTab>
 	);
@@ -87,7 +91,6 @@ export const EventsWindowTabPreview = ({ store, isSelected }: EventsWindowTabPre
 	<Tab color={store.color} isDragging={true} isSelected={isSelected}>
 		<EventWindowProvider value={store}>
 			<EventBreadcrumbs
-				rootEventsEnabled
 				nodes={store.selectedPath}
 				showAll={true}/>
 		</EventWindowProvider>

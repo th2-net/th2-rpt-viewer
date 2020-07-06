@@ -25,17 +25,21 @@ const MessagesWindowTab = (tabProps: Omit<DraggableTabProps, 'children'>) => {
 
 	return (
 		<DraggableTab {...tabProps} classNames={{ root: 'messages-tab' }}>
-			Messages
-			{
-				windowsStore.eventsAttachedMessages.map(({ color, messagesIds }) => (
-					<span
-						key={color}
-						className="messages-tab__count"
-						style={{ borderColor: color }}>
-						{messagesIds.length}
-					</span>
-				))
-			}
+			<div className="messages-tab__wrapper">
+				<span className="messages-tab__title" title="Messages">Messages</span>
+				<div className="messages-tab__count-list">
+					{
+						windowsStore.eventsAttachedMessages.map(({ color, messagesIds }) => (
+							<span
+								key={color}
+								className="messages-tab__count"
+								style={{ borderColor: color }}>
+								{messagesIds.length}
+							</span>
+						))
+					}
+				</div>
+			</div>
 		</DraggableTab>
 	);
 };

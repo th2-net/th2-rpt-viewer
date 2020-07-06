@@ -36,25 +36,4 @@
 		top: 0;
 		z-index: 20;
 	}
-
-	&__drop-hint {
-		height: 100%;
-		width: 0;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		flex-direction: column;
-		padding: 6px 0;
-		overflow: hidden;
-
-		&::after {
-			content: "";
-			flex-grow: 1;
-			width: 10px;
-			background-color: $draggableColor;
-			border: 3px solid #FFF;
-			border-radius: 6px;
-			box-sizing: border-box;
-		}
-	}
 }
