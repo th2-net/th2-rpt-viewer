@@ -29,14 +29,22 @@ export default function useCachedEvent(node: EventIdNode, isVisible = true): Eve
 		if (isVisible) {
 			if (!event) {
 				eventWindowStore.fetchEvent(node, abortController.signal)
-					.then(setEvent);
+					.then(setEvent).catch(err => {
+						if (err.name !== 'AbortError') {
+							console.error('Error while loading event');
+						}
+					});
 			} else if (event.eventId !== node.id) {
 				// handle event node change
 				if (eventWindowStore.eventsCache.has(node.id)) {
-					setEvent(eventWindowStore.eventsCache.get(node.id)!);
+					setEvent(eventWindowStore.eventsCache.get(node.id));
 				} else {
 					eventWindowStore.fetchEvent(node, abortController.signal)
-						.then(setEvent);
+						.then(setEvent).catch(err => {
+							if (err.name !== 'AbortError') {
+								console.error(`Error while loading event ${event.eventId}`);
+							}
+						});
 				}
 			}
 		}
