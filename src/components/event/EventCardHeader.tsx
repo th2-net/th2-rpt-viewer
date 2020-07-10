@@ -43,8 +43,6 @@ function EventCardHeader({
 	 isSelected = false,
 	 childrenCount,
 }: Props) {
-	const [showTimestamp, setShowTimestamp] = React.useState(false);
-
 	const {
 		eventId,
 		eventName,
@@ -74,15 +72,13 @@ function EventCardHeader({
 			}
 			{
 				displayType !== CardDisplayType.STATUS_ONLY && isRoot ? (
-					<div
-						className="event-header-card__time-label"
-						onMouseEnter={() => setShowTimestamp(true)}
-						onMouseLeave={() => setShowTimestamp(false)}>
-						{
-							showTimestamp
-								? formatTime(startTimestampValue)
-								: <TimeAgo date={startTimestampValue}/>
-						}
+					<div className="event-header-card__time-label">
+						<span className="event-header-card__time-label-full">
+							{formatTime(startTimestampValue)}
+						</span>
+						<span className="event-header-card__time-label-short">
+							<TimeAgo date={startTimestampValue}/>
+						</span>
 					</div>
 				) : null
 			}

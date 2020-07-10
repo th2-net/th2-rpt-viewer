@@ -61,19 +61,29 @@
 		padding-right: 5px;
 	}
 
-	&__time-value {
-		font-size: 11px;
-		color: $secondaryTextColor;
-		white-space: nowrap;
-		font-weight: bold;
-		padding: 1px 5px 0 10px;
-	}
-
 	&__time-label {
 		font-size: 12px;
 		color: $secondaryLightTextColor;
 		white-space: nowrap;
 		padding-right: 5px;
+
+		&-short {
+			display: inline;
+		}
+
+		&-full {
+			display: none;
+		}
+
+		&:hover & {
+			&-short {
+				display: none;
+			}
+
+			&-full {
+				display: inline;
+			}
+		}
 	}
 
 	&__status, &__title {
