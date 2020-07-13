@@ -27,10 +27,6 @@ import WindowsStore from './WindowsStore';
 export default class MessagesStore {
 	filterStore = new FilterStore();
 
-	private api: ApiSchema;
-
-	private windowsStore: WindowsStore;
-
 	@observable
 	public messagesIds: Array<string> = [];
 
@@ -50,10 +46,7 @@ export default class MessagesStore {
 	@observable
 	public beautifiedMessages: string[] = [];
 
-	constructor(api: ApiSchema, windowsStore: WindowsStore, messagesStore?: MessagesStore) {
-		this.api = api;
-		this.windowsStore = windowsStore;
-
+	constructor(private api: ApiSchema, private windowsStore: WindowsStore, messagesStore?: MessagesStore) {
 		if (messagesStore) {
 			this.copy(messagesStore);
 		} else {
@@ -62,13 +55,14 @@ export default class MessagesStore {
 	}
 
 	@computed
-	get selectedMessagesIds(): Array<number> {
-		if (!this.windowsStore.eventsAttachedMessages.length && !this.windowsStore.pinnedMessagesIds.length) return [];
+	get selectedMessagesIndexes(): Array<number> {
+		if (!this.windowsStore.attachedMessagesIds.length && !this.windowsStore.pinnedMessagesIds.length) return [];
 
-		const attachedMessagesIds = this.windowsStore.eventsAttachedMessages.flatMap(({ messagesIds }) => messagesIds);
-
-		const messagesIndexes = [...new Set([...attachedMessagesIds, ...this.windowsStore.pinnedMessagesIds])]
-			.filter(id => this.messagesIds.includes(id))
+		const messagesIndexes = [
+			...new Set([
+				...this.windowsStore.attachedMessagesIds,
+				...this.windowsStore.pinnedMessagesIds]),
+		].filter(id => this.messagesIds.includes(id))
 			.map(id => this.messagesIds.indexOf(id));
 
 		messagesIndexes.sort((a, b) => a - b);
@@ -111,25 +105,25 @@ export default class MessagesStore {
 
 	@action
 	selectNextMessage = () => {
-		if (!this.selectedMessagesIds.length) return;
+		if (!this.selectedMessagesIndexes.length) return;
 
-		if (!this.scrolledIndex || this.selectedMessagesIds.indexOf(this.scrolledIndex.valueOf()) === -1) {
-			this.scrolledIndex = new Number(this.selectedMessagesIds[0]);
+		if (!this.scrolledIndex || this.selectedMessagesIndexes.indexOf(this.scrolledIndex.valueOf()) === -1) {
+			this.scrolledIndex = new Number(this.selectedMessagesIndexes[0]);
 			return;
 		}
-		const nextIndex = nextCyclicItem(this.selectedMessagesIds, this.scrolledIndex.valueOf());
+		const nextIndex = nextCyclicItem(this.selectedMessagesIndexes, this.scrolledIndex.valueOf());
 		this.scrolledIndex = new Number(nextIndex);
 	};
 
 	@action
 	selectPrevMessage = () => {
-		if (!this.selectedMessagesIds.length) return;
+		if (!this.selectedMessagesIndexes.length) return;
 
-		if (!this.scrolledIndex || this.selectedMessagesIds.indexOf(this.scrolledIndex.valueOf()) === -1) {
-			this.scrolledIndex = new Number(this.selectedMessagesIds[this.selectedMessagesIds.length - 1]);
+		if (!this.scrolledIndex || this.selectedMessagesIndexes.indexOf(this.scrolledIndex.valueOf()) === -1) {
+			this.scrolledIndex = new Number(this.selectedMessagesIndexes[this.selectedMessagesIndexes.length - 1]);
 			return;
 		}
-		const prevIndex = prevCyclicItem(this.selectedMessagesIds, this.scrolledIndex.valueOf());
+		const prevIndex = prevCyclicItem(this.selectedMessagesIndexes, this.scrolledIndex.valueOf());
 		this.scrolledIndex = new Number(prevIndex);
 	};
 

@@ -37,7 +37,7 @@ function EventsColumn({ nodesList, displayType }: Props) {
 	);
 
 	const rootClassName = createBemElement(
-		'event-table-window',
+		'event-table-view',
 		'column',
 		displayType,
 	);
@@ -46,7 +46,7 @@ function EventsColumn({ nodesList, displayType }: Props) {
 		<div className={rootClassName}>
 			<Virtuoso
 				style={{ height: '100%', width: '100%' }}
-				className='event-table-window__scrollbar'
+				className='event-table-view__scrollbar'
 				computeItemKey={index => nodesList[index].id}
 				overscan={3}
 				totalCount={nodesList.length}

@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { AnimatePresence, motion } from 'framer-motion';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import { useHover } from '../../hooks/useHover';
 import { TabsInjectedProps } from './Tabs';
 
 export type TabProps = Partial<TabsInjectedProps> & {
@@ -25,7 +24,6 @@ export type TabProps = Partial<TabsInjectedProps> & {
 	tabIndex?: number;
 	isSelected?: boolean;
 	isClosable?: boolean;
-	color?: string;
 	classNames?: {
 		root?: string;
 		tab?: string;
@@ -34,37 +32,15 @@ export type TabProps = Partial<TabsInjectedProps> & {
 	isDragging?: boolean;
 };
 
-export interface TabForwardedRefs {
-	tabRef: HTMLDivElement | null;
-	contentRef: HTMLDivElement | null;
-}
-
-const Tab: React.RefForwardingComponent<TabForwardedRefs, TabProps> = (props, ref) => {
+const Tab: React.RefForwardingComponent<HTMLDivElement, TabProps> = (props, ref) => {
 	const {
 		isSelected = false,
 		tabIndex = 0,
 		setActiveTab,
-		closeTab,
-		duplicateTab,
 		children,
-		isClosable = true,
-		color,
 		isDragging = false,
 		classNames,
 	} = props;
-
-	const [tabRef, isHovered] = useHover<HTMLDivElement>();
-
-	const contentRef = React.useRef<HTMLDivElement>(null);
-
-	React.useImperativeHandle(ref, () => ({
-		get tabRef() {
-			return tabRef.current;
-		},
-		get contentRef() {
-			return contentRef.current;
-		},
-	}));
 
 	const tabClassName = createStyleSelector(
 		'tab',
@@ -73,72 +49,12 @@ const Tab: React.RefForwardingComponent<TabForwardedRefs, TabProps> = (props, re
 		classNames?.tab || null,
 	);
 
-	const dragIconClassName = createStyleSelector(
-		'tab__drag-icon',
-		isDragging ? 'active' : null,
-	);
-
 	return (
 		<div
 			className={tabClassName}
-			onClick={() => setActiveTab && setActiveTab(tabIndex)}
-			ref={tabRef}>
-			<div className="tab__pre">
-				<div style={{ width: 20 }}>
-					<AnimatePresence initial={false}>
-						{(isHovered || isDragging) && <motion.div
-							id="drag-icon"
-							className={dragIconClassName}
-							initial={{ opacity: 0, scale: 0 }}
-							animate={{ opacity: 1, scale: 1 }}
-							exit={{ opacity: 0, scale: 0 }}
-							transition={{
-								type: 'spring',
-								stiffness: 100,
-								damping: 20,
-							}}
-						/>}
-					</AnimatePresence>
-				</div>
-				{color && <div className="tab__color" style={{ borderColor: color }}/>}
-			</div>
-			<div className="tab__content-wrapper">
-				<div
-					className="tab__content"
-					ref={contentRef}>
-					{children}
-				</div>
-			</div>
-			<div
-				style={{
-					opacity: isDragging ? 0 : 1,
-				}}
-				className="tab__controls">
-				<button
-					className="tab__button"
-					title="duplicate tab"
-					onClick={e => {
-						e.stopPropagation();
-						if (duplicateTab) {
-							duplicateTab(tabIndex);
-						}
-					}}>
-					<i className="tab__icon-dublicate"/>
-				</button>
-				{isClosable
-					&& 	<button
-						className="tab__button"
-						role="button"
-						title="close tab"
-						onClick={e => {
-							e.stopPropagation();
-							if (closeTab) {
-								closeTab(tabIndex);
-							}
-						}}>
-						<i className="tab__icon-close"/>
-					</button>}
-			</div>
+			onClick={setActiveTab && (() => setActiveTab(tabIndex))}
+			ref={ref}>
+			{children}
 		</div>
 	);
 };

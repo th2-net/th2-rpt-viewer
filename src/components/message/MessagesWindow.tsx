@@ -20,26 +20,26 @@ import MessagesWindowHeader from './MessagesWindowHeader';
 import { HeatmapProvider } from '../heatmap/HeatmapProvider';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import MessagesCardList from './MessagesCardList';
-import { useStores } from '../../hooks/useStores';
+import { useWindowsStore } from '../../hooks/useWindowsStore';
 
-const MessagesWindow = () => (
-	<div className="layout">
-		<div className="layout__header">
-			<MessagesWindowHeader />
-		</div>
-		<div className="layout__body">
-			<MessagesCardList />
-		</div>
-	</div>
-);
-
-export default observer(() => {
+const MessagesWindow = () => {
 	const messagesStore = useMessagesWindowStore();
-	const { windowsStore } = useStores();
+	const windowsStore = useWindowsStore();
 
 	const selectedItems = React.useMemo(
-		() => new Map(windowsStore.eventsAttachedMessages.map(({ color, messagesIds }) => [color, messagesIds])),
-		[windowsStore.eventsAttachedMessages],
+		() => {
+			const heatmapElementsMap: Map<string, string[]> = new Map();
+			windowsStore.selectedEvents
+				.filter(e => e.attachedMessageIds.length !== 0)
+				.forEach(({ eventId, attachedMessageIds }) => {
+					const eventColor = windowsStore.eventColors.get(eventId);
+					if (eventColor) {
+						heatmapElementsMap.set(eventColor, attachedMessageIds);
+					}
+				});
+			return heatmapElementsMap;
+		},
+		[windowsStore.eventColors],
 	);
 
 	return (
@@ -49,7 +49,16 @@ export default observer(() => {
 			selectedItems={selectedItems}
 			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}
 			pinnedItems={windowsStore.pinnedMessagesIds}>
-			<MessagesWindow />
+			<div className="layout">
+				<div className="layout__header">
+					<MessagesWindowHeader />
+				</div>
+				<div className="layout__body">
+					<MessagesCardList />
+				</div>
+			</div>
 		</HeatmapProvider>
 	);
-});
+};
+
+export default observer(MessagesWindow);

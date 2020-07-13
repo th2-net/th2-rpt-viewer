@@ -18,13 +18,15 @@ import React from 'react';
 import {
 	useDrag,
 	useDrop,
+	DropTargetMonitor,
 } from 'react-dnd';
 import { AnimatePresence, motion } from 'framer-motion';
+import throttle from 'lodash.throttle';
 import { observer } from 'mobx-react-lite';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import Tab, { TabProps, TabForwardedRefs } from './Tab';
-import { DraggableListContext } from './DroppableTabList';
+import Tab, { TabProps } from './Tab';
+import { DraggableTabListContext } from './DroppableTabList';
 
 export const DraggableItemTypes = {
 	TAB: 'tab',
@@ -50,7 +52,7 @@ export interface DraggableTabProps extends TabProps {
 	dragItemPayload: unknown;
 }
 
-const DraggableTab: React.RefForwardingComponent<TabForwardedRefs, DraggableTabProps> = (
+const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabProps> = (
 	props, ref,
 ) => {
 	const {
@@ -69,9 +71,10 @@ const DraggableTab: React.RefForwardingComponent<TabForwardedRefs, DraggableTabP
 	const {
 		activeTab,
 		setActiveTab,
-	} = React.useContext(DraggableListContext);
+		setIsDragging,
+	} = React.useContext(DraggableTabListContext);
 
-	const [, draggableTabRef, preview] = useDrag({
+	const [{ isDragging }, draggableTabRef, preview] = useDrag({
 		item: {
 			tabIndex,
 			windowIndex,
@@ -88,48 +91,65 @@ const DraggableTab: React.RefForwardingComponent<TabForwardedRefs, DraggableTabP
 		preview(getEmptyImage(), { captureDraggingState: true });
 	}, [preview]);
 
-	const [{ canDropOnLeft, canDropOnRight, didDrop }, drop] = useDrop({
-		accept: DraggableItemTypes.TAB,
-		drop: (item: TabDraggableItem, monitor) => {
-			const clientOffset = monitor.getClientOffset();
-			if (!rootRef.current || !clientOffset) return;
+	const getDraggingState = (item: TabDraggableItem, monitor: DropTargetMonitor) => {
+		const { left = 0, width = 0 } = (rootRef.current?.getBoundingClientRect() || {});
+		const tabMiddleX = left + width / 2;
+		const clientOffset = monitor.getClientOffset();
 
-			const { left, width } = rootRef.current.getBoundingClientRect();
-			const tabMiddleX = left + width / 2;
-			const newTabIndex = clientOffset.x > tabMiddleX ? tabIndex + 1 : tabIndex;
-			if (canDropOnLeft || canDropOnRight) {
+		const tab = monitor.getItem();
+		const isOver = tab && monitor.isOver();
+		const didDrop = monitor.didDrop();
+		const isSameTab = tab && tabIndex === tab.tabIndex;
+		const isSameWindow = tab && tab.windowIndex === windowIndex;
+		const isNextTab = tab && tabIndex === tab.tabIndex + 1;
+
+		const hoveredLeft = (clientOffset?.x || 0) < tabMiddleX;
+		const hoveredRight = (clientOffset?.x || 0) >= tabMiddleX;
+
+		const isDroppableOnLeft = isOver && !didDrop && !isSameTab && (
+			!isSameWindow || !isNextTab
+		) && hoveredLeft;
+
+		const isDroppableOnRight = isOver && !didDrop && (
+			(!isSameWindow && hoveredRight)
+			|| (!isSameTab && tab.tabIndex !== tabIndex + 1 && hoveredRight)
+		);
+
+		const newActiveTabState = {
+			index: tabIndex,
+			windowIndex,
+			canDropOnLeft: isDroppableOnLeft,
+			canDropOnRight: isDroppableOnRight,
+		};
+
+		if (isOver) {
+			setActiveTab(newActiveTabState);
+		}
+	};
+
+	const throttledGetDraggingState = React.useRef(throttle(getDraggingState, 50)).current;
+
+	const [{ didDrop }, drop] = useDrop({
+		accept: DraggableItemTypes.TAB,
+		drop: (item: TabDraggableItem) => {
+			if (activeTab && (activeTab.canDropOnLeft || activeTab.canDropOnRight)) {
+				const newTabIndex = activeTab.canDropOnRight ? tabIndex + 1 : tabIndex;
 				onTabDrop(item.windowIndex, windowIndex, item.tabIndex, newTabIndex);
 			}
-			setActiveTab(null);
-		},
-		collect: monitor => {
-			const tab = monitor.getItem();
-			const isOver = tab && monitor.isOver();
-			const dropped = monitor.didDrop();
-			const isSameTab = tab && tabIndex === tab.tabIndex;
-			const isSameWindow = tab && tab.windowIndex === windowIndex;
-			const isDroppableOnLeft = (!isSameWindow && isOver) || (isOver && !isSameTab
-				&& tab.tabIndex + 1 !== tabIndex && !dropped);
-			const isDroppableOnRight = (!isSameWindow && isOver) || (
-				isOver && !isSameTab && tab.tabIndex !== tabIndex + 1 && !dropped
-			) || (!!activeTab && (tabIndex + 1 === activeTab.index) && activeTab.canDropOnLeft);
 
-			if (isOver) {
-				setActiveTab({
-					index: tabIndex,
-					windowIndex,
-					canDropOnLeft: isDroppableOnLeft,
-					canDropOnRight: isDroppableOnRight,
-				});
-			}
-			return {
-				canDropOnLeft: isDroppableOnLeft,
-				canDropOnRight: isDroppableOnRight,
-				isOver,
-				didDrop: dropped,
-			};
+			setActiveTab(null);
+			setIsDragging(false);
 		},
+		hover: throttledGetDraggingState,
+		collect: monitor => ({
+			didDrop: monitor.didDrop(),
+		}),
 	});
+
+	React.useEffect(() => {
+		if (isDragging) setIsDragging(true);
+		if (didDrop) setIsDragging(false);
+	}, [isDragging, didDrop]);
 
 	const rootClassName = createStyleSelector(
 		'tab-root',
@@ -142,7 +162,7 @@ const DraggableTab: React.RefForwardingComponent<TabForwardedRefs, DraggableTabP
 			ref={drop}
 			className={rootClassName}>
 			<DropTargetHint
-				show={canDropOnLeft && tabIndex === 0}
+				show={activeTab !== null && activeTab.index === 0 && tabIndex === 0 && activeTab.canDropOnLeft}
 				style={{ position: 'relative', left: '-3.5px' }}/>
 			<div ref={rootRef} className="tab-root__droppable">
 				<div className="tab-root__draggable" ref={draggableTabRef}>
@@ -157,10 +177,10 @@ const DraggableTab: React.RefForwardingComponent<TabForwardedRefs, DraggableTabP
 				</div>
 			</div>
 			<DropTargetHint
-				show={(canDropOnRight && activeTab !== null)
-					|| (!didDrop && activeTab !== null
-						&& (tabIndex + 1 === activeTab.index && activeTab.windowIndex === windowIndex)
-					&& activeTab.canDropOnLeft)}
+				show={activeTab !== null && (
+					(activeTab.index === tabIndex && activeTab.canDropOnRight)
+					|| (activeTab.index === tabIndex + 1 && activeTab.canDropOnLeft)
+				)}
 				style={{ position: 'relative', left: '3.5px' }} />
 		</div>
 	);

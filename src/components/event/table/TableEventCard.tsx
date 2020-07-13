@@ -35,7 +35,7 @@ function TableEventCard({ idNode, displayType }: Props) {
 
 	return (
 		<Flipped flipId={idNode.id}>
-			<div className='event-table-window__card'>
+			<div className='event-table-view__card'>
 				{
 					event != null ? (
 						<EventCard

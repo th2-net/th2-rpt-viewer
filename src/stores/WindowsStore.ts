@@ -15,16 +15,18 @@
  ***************************************************************************** */
 
 import {
-	action,
 	observable,
+	action,
+	computed,
 	reaction,
 } from 'mobx';
+import RootStore from './RootStore';
 import ApiSchema from '../api/ApiSchema';
-import { EventMessage } from '../models/EventMessage';
-import { isEventsTab } from '../helpers/windows';
-import { randomHexColor } from '../helpers/color';
 import AppWindowStore from './AppWindowStore';
+import { isMessagesTab, isEventsTab } from '../helpers/windows';
 import { EventAction } from '../models/EventAction';
+import { randomHexColor } from '../helpers/color';
+import { EventMessage } from '../models/EventMessage';
 
 export default class WindowsStore {
 	private readonly defaultColors = [
@@ -36,32 +38,56 @@ export default class WindowsStore {
 		'#45A155',
 	];
 
-	constructor(private api: ApiSchema) {
+	private readonly MAX_TABS_COUNT = 12;
+
+	constructor(private rootStore: RootStore, private api: ApiSchema) {
 		this.createDefaultWindow();
 
 		reaction(
-			() => this.windows.flatMap(({ tabs }) => tabs),
+			() => this.allTabs,
 			this.onWindowsTabsChange,
 		);
 
 		reaction(
-			() => this.windows.flatMap(({ tabs }) => tabs)
-				.filter(isEventsTab)
-				.map(eventTab => eventTab.store.selectedEvent)
-				.filter((event): event is EventAction => event !== null && event.attachedMessageIds.length	> 0),
-			this.onSelectedEventsChange,
+			() => this.selectedEvents,
+			selectedEvents => {
+				this.getEventColors(selectedEvents);
+				this.getAttachedMessagesIds(selectedEvents);
+			},
 		);
 	}
 
-	@observable eventsAttachedMessages: Array<{
-		eventId: string;
-		messagesIds: Array<string>;
-		color: string;
-	}> = [];
+	@observable eventColors: Map<string, string> = new Map();
+
+	@observable attachedMessagesIds: Array<string> = [];
 
 	@observable pinnedMessagesIds: Array<string> = [];
 
 	@observable windows: AppWindowStore[] = [];
+
+	@computed get allTabs() {
+		return this.windows.flatMap(({ tabs }) => tabs);
+	}
+
+	@computed get selectedEvents() {
+		return this.allTabs
+			.filter(isEventsTab)
+			.map(eventTab => eventTab.store.selectedEvent)
+			.filter((event, i, self): event is EventAction =>
+				event !== null && self.findIndex(e => e && e.eventId === event.eventId) === i);
+	}
+
+	@computed get isDuplicable() {
+		return this.allTabs.length < this.MAX_TABS_COUNT;
+	}
+
+	@computed get isEventsTabClosable() {
+		return this.allTabs.filter(tab => isEventsTab(tab)).length > 1;
+	}
+
+	@computed get isMessagesTabClosable() {
+		return this.allTabs.filter(tab => isMessagesTab(tab)).length > 1;
+	}
 
 	@action
 	toggleMessagePin = (message: EventMessage) => {
@@ -117,29 +143,6 @@ export default class WindowsStore {
 			.forEach(window => this.windows.splice(this.windows.findIndex(w => w === window), 1));
 	}
 
-	@action.bound
-	private onSelectedEventsChange(selectedEvents: EventAction[]) {
-		const events = selectedEvents
-			.filter((event, index, self) => self.findIndex(e => e.eventId === event.eventId) === index);
-		const eventIds = events.map(({ eventId }) => eventId);
-		const usedColors = this.eventsAttachedMessages.filter(({ eventId }) => eventIds.includes(eventId))
-			.map(({ color }) => color);
-		const availableColors = this.defaultColors.slice().filter(color => !usedColors.includes(color));
-
-		this.eventsAttachedMessages = events.map(({ eventId, attachedMessageIds }) => {
-			let color = this.eventsAttachedMessages.find((e => e.eventId === eventId))?.color;
-			if (!color) {
-				color = availableColors[0] || randomHexColor();
-				availableColors.shift();
-			}
-			return {
-				eventId,
-				color,
-				messagesIds: attachedMessageIds.slice(),
-			};
-		});
-	}
-
 	@action
 	private createDefaultWindow() {
 		const defaultWindow = new AppWindowStore(this, this.api);
@@ -148,4 +151,40 @@ export default class WindowsStore {
 		defaultWindow.activeTabIndex = 0;
 		this.windows.push(defaultWindow);
 	}
+
+	@action
+	private getEventColors = (selectedEvents: EventAction[]) => {
+		const eventsWithAttachedMessages = selectedEvents.filter(event => event.attachedMessageIds.length	> 0);
+
+		const usedColors2: Array<string> = [];
+		for (const [eventId, color] of this.eventColors.entries()) {
+			if (eventsWithAttachedMessages.findIndex(e => e.eventId === eventId) !== -1) {
+				usedColors2.push(color);
+			}
+		}
+		const availableColors = this.defaultColors.slice().filter(color => !usedColors2.includes(color));
+
+		const updatedEventColorsMap = new Map<string, string>();
+
+		eventsWithAttachedMessages.forEach(({ eventId }) => {
+			let color = this.eventColors.get(eventId);
+			if (!color) {
+				color = availableColors[0] || randomHexColor();
+				availableColors.shift();
+			}
+			updatedEventColorsMap.set(eventId, color);
+		});
+
+		this.eventColors = updatedEventColorsMap;
+	};
+
+	@action
+	private getAttachedMessagesIds = (selectedEvents: EventAction[]) => {
+		this.attachedMessagesIds = selectedEvents.reduce<string[]>((attachedMessageIds, event) => (
+			[
+				...attachedMessageIds,
+				...event.attachedMessageIds.filter(id => !attachedMessageIds.includes(id)),
+			]
+		), []);
+	};
 }

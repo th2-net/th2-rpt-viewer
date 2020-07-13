@@ -20,11 +20,11 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 import { useHeatmap } from '../../hooks/useHeatmap';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import MessagesFilter from '../filter/MessagesFilterPanel';
-import { useStores } from '../../hooks/useStores';
+import { useWindowsStore } from '../../hooks/useWindowsStore';
 
 const MessagesWindowHeader = () => {
 	const { heatmapElements } = useHeatmap();
-	const { windowsStore } = useStores();
+	const windowsStore = useWindowsStore();
 	const messagesStore = useMessagesWindowStore();
 
 	const getStep = () => {
@@ -39,7 +39,7 @@ const MessagesWindowHeader = () => {
 
 	const navButtonClass = createStyleSelector(
 		'messages-window-header__button',
-		windowsStore.eventsAttachedMessages.length > 0 || windowsStore.pinnedMessagesIds.length > 0
+		windowsStore.attachedMessagesIds.length > 0 || windowsStore.pinnedMessagesIds.length > 0
 			? null : 'disabled',
 	);
 

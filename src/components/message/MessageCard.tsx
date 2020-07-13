@@ -26,10 +26,10 @@ import { EventMessage } from '../../models/EventMessage';
 import { useHeatmap } from '../../hooks/useHeatmap';
 import { hexToRGBA } from '../../helpers/color';
 import MessageRaw from './MessageRaw';
-import { useStores } from '../../hooks/useStores';
 import PanelArea from '../../util/PanelArea';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import ErrorBoundary from '../util/ErrorBoundary';
+import { useWindowsStore } from '../../hooks/useWindowsStore';
 import '../../styles/messages.scss';
 
 const HUE_SEGMENTS_COUNT = 36;
@@ -47,7 +47,7 @@ interface Props extends OwnProps, RecoveredProps {
 }
 
 function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
-	const { windowsStore } = useStores();
+	const windowsStore = useWindowsStore();
 	const messagesStore = useMessagesWindowStore();
 	const { heatmapElements } = useHeatmap();
 

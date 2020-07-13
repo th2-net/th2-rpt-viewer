@@ -17,7 +17,7 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
-const modalRoot = document.getElementById('index');
+const modalRoot = document.getElementById('modal-root');
 
 interface Props {
 	children: React.ReactNode;

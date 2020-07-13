@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import {
-	action, computed, observable, toJS,
+	action, computed, observable, toJS, runInAction,
 } from 'mobx';
 import FilterStore from './FilterStore';
 import ViewStore from './WindowViewStore';
@@ -23,8 +23,8 @@ import ApiSchema from '../api/ApiSchema';
 import { EventAction } from '../models/EventAction';
 import SearchStore from './SearchStore';
 import EventsFilter from '../models/filter/EventsFilter';
-import WindowsStore from './WindowsStore';
 import PanelArea from '../util/PanelArea';
+import WindowsStore from './WindowsStore';
 
 export type EventIdNode = {
 	id: string;
@@ -40,7 +40,6 @@ export default class EventsStore {
 
 	searchStore: SearchStore = new SearchStore(this.api, this);
 
-	// eslint-disable-next-line no-useless-constructor
 	constructor(private api: ApiSchema, private windowsStore: WindowsStore, eventStore?: EventsStore) {
 		if (eventStore) {
 			this.copy(eventStore);
@@ -62,9 +61,7 @@ export default class EventsStore {
 
 	@computed get color() {
 		if (!this.selectedNode) return undefined;
-		const attachedMessage = this.windowsStore.eventsAttachedMessages
-			.find(({ eventId }) => eventId === this.selectedNode?.id);
-		return attachedMessage?.color;
+		return this.windowsStore.eventColors.get(this.selectedNode.id);
 	}
 
 	// we need this property for correct virtualized tree render -
@@ -103,7 +100,7 @@ export default class EventsStore {
 	};
 
 	@action
-	selectNode = async (idNode: EventIdNode | null) => {
+	selectNode = (idNode: EventIdNode | null) => {
 		this.selectedNode = idNode;
 		if (this.viewStore.panelArea === PanelArea.P100) {
 			this.viewStore.panelArea = PanelArea.P50;
@@ -139,10 +136,16 @@ export default class EventsStore {
 		this.selectedNode = null;
 		this.isLoadingRootEvents = true;
 
-		const events = await this.api.events.getRootEvents(this.filterStore.eventsFilter);
-		this.eventsIds = events.map(eventId => this.createTreeNode(eventId));
-
-		this.isLoadingRootEvents = false;
+		try {
+			const events = await this.api.events.getRootEvents(this.filterStore.eventsFilter);
+			runInAction(() => {
+				this.eventsIds = events.map(eventId => this.createTreeNode(eventId));
+			});
+		} catch (error) {
+			console.error('Error while loading root events', error);
+		} finally {
+			this.isLoadingRootEvents = false;
+		}
 	};
 
 	@computed
@@ -168,8 +171,10 @@ export default class EventsStore {
 			parents,
 		};
 
-		if (this.eventsCache.has(id) && children == null) {
-			const cachedChildren = this.eventsCache.get(id)!.childrenIds
+		const event = this.eventsCache.get(id);
+
+		if (event && children == null) {
+			const cachedChildren = event.childrenIds
 				.map(childId => this.createTreeNode(childId, [...parents, id]));
 			node.children = cachedChildren;
 		}
@@ -208,11 +213,12 @@ export default class EventsStore {
 		this.selectedNode = toJS(store.selectedNode);
 		this.eventsIds = toJS(store.eventsIds);
 
-		if (store.selectedNode) {
-			const scrolledIndex = store.nodesList.findIndex(idNode => idNode.id === store.selectedNode!.id);
+		const selectedNode = store.selectedNode;
+
+		if (selectedNode) {
+			const scrolledIndex = store.nodesList.findIndex(idNode => idNode.id === selectedNode.id);
 			this.scrolledIndex = scrolledIndex === -1 ? null : new Number(scrolledIndex);
 		}
-
 
 		this.viewStore = new ViewStore(store.viewStore);
 		this.filterStore = new FilterStore(store.filterStore);

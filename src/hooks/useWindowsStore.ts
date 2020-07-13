@@ -11,32 +11,13 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  limitations under the License.
  ***************************************************************************** */
 
-import { useState, useEffect, useRef } from 'react';
+import { useRootStore } from './useRootStore';
 
-export function useHover<T extends HTMLElement>(): [React.RefObject<T>, boolean] {
-	const [isHovered, setIsHovered] = useState(false);
+export const useWindowsStore = () => {
+	const rootStore = useRootStore();
 
-	const ref = useRef<T>(null);
-
-	const handleMouseOver = () => setIsHovered(true);
-	const handleMouseOut = () => setIsHovered(false);
-
-	useEffect(
-		() => {
-			const node = ref.current;
-			node?.addEventListener('mouseover', handleMouseOver);
-			node?.addEventListener('mouseout', handleMouseOut);
-
-			return () => {
-				node?.removeEventListener('mouseover', handleMouseOver);
-				node?.removeEventListener('mouseout', handleMouseOut);
-			};
-		},
-		[ref.current],
-	);
-
-	return [ref, isHovered];
-}
+	return rootStore.windowsStore;
+};

@@ -15,6 +15,15 @@
  ***************************************************************************** */
 
 import React from 'react';
-import StoresContext from '../contexts/storesContext';
+import RootStore from '../stores/RootStore';
+import ApiSchema from '../api/ApiSchema';
 
-export const useStores = () => React.useContext(StoresContext);
+const RootStoreContext = React.createContext<RootStore | null>(null);
+
+export function createRootStore(api: ApiSchema): RootStore {
+	const rootStore = new RootStore(api);
+
+	return rootStore;
+}
+
+export default RootStoreContext;

@@ -334,7 +334,6 @@
 }
 
 .mc-raw {
-
     &__header {
         display: flex;
         flex-direction: row;
@@ -677,8 +676,8 @@
         text-align: center;
         line-height: 16px;
         background-color: white;
-        padding: 0 7px;
-        margin-left: 8px;
+        padding: 0 5px;
+        margin-left: 4px;
     }
 
     &__wrapper {
@@ -686,6 +685,8 @@
         align-items: center;
         justify-content: center;
         overflow: hidden;
+        width: 100%;
+        padding: 0 8px;
     }
 
     &__title {
@@ -697,5 +698,27 @@
         display: flex;
         align-items: center;
         flex-shrink: 0;
+    }
+
+    &__event-list {
+        padding: 7px 20px 5px 12px;
+    }
+
+    &__event-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__event-title {
+        @include status-text;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 300px;
     }
 }
