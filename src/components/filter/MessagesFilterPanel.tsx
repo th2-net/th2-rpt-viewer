@@ -68,7 +68,7 @@ const MessagesFilterPanel = () => {
 	}, {
 		type: 'multiple-strings',
 		id: 'messages-stream',
-		label: 'Stream name',
+		label: 'Session name',
 		values: streams,
 		setValues: setStreams,
 		currentValue: currentStream,
@@ -76,7 +76,7 @@ const MessagesFilterPanel = () => {
 	}, {
 		type: 'multiple-strings',
 		id: 'messages-type',
-		label: 'Message type',
+		label: 'Message name',
 		values: messageTypes,
 		setValues: setMessagesTypes,
 		currentValue: currentMessageType,

@@ -88,8 +88,12 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onKeyDown,
 		onChange,
 		onBlur: () => {
-			if (currentValue.length === 0 && onEmptyBlur) {
-				onEmptyBlur();
+			if (currentValue.trim()) {
+				if (onEmptyBlur) {
+					onEmptyBlur();
+				}
+				onSubmit(currentValue);
+				setCurrentValue('');
 			}
 		},
 	};
