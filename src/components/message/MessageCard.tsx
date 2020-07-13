@@ -149,11 +149,13 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 					<ErrorBoundary fallback={
 						<MessageBodyCardFallback
 							isBeautified={isContentBeautified}
+							isSelected={color !== undefined}
 							body={body}/>
 					}>
 						<MessageBodyCard
 							isBeautified={isContentBeautified}
-							body={body}/>
+							body={body}
+							isSelected={color !== undefined}/>
 					</ErrorBoundary>
 					{
 						(bodyBase64 && bodyBase64 !== 'null') ? (
