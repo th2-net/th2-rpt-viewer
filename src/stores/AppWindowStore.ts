@@ -22,9 +22,9 @@ import {
 import { TabTypes, AppTab } from '../models/util/Windows';
 import MessagesStore from './MessagesStore';
 import EventsStore from './EventsStore';
-import WindowsStore from './WindowsStore';
 import ApiSchema from '../api/ApiSchema';
 import { isEventsTab } from '../helpers/windows';
+import WindowsStore from './WindowsStore';
 
 export default class AppWindowStore {
 	constructor(private windowsStore: WindowsStore, private api: ApiSchema) {}
@@ -89,7 +89,6 @@ export default class AppWindowStore {
 			this.tabs.splice(
 				this.tabs.findIndex(t => t === insertBeforeTab),
 				0,
-
 				movedTab,
 			);
 		}

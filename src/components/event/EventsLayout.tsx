@@ -19,19 +19,21 @@ import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { CustomDragLayer } from '../drag-n-drop/CustomDragLayer';
-import { useStores } from '../../hooks/useStores';
+import { useWindowsStore } from '../../hooks/useWindowsStore';
 import SplitView from '../split-view/SplitView';
 import SplitViewPane from '../split-view/SplitViewPane';
 import AppWindow from '../AppWindow';
+import { useAppViewStore } from '../../hooks/useAppViewStore';
 import '../../styles/layout.scss';
 
 const EventsLayout = () => {
-	const { windowsStore, appViewStore } = useStores();
+	const windowsStore = useWindowsStore();
+	const appViewStore = useAppViewStore();
 
 	return (
-		<DndProvider backend={HTML5Backend}>
-			<CustomDragLayer />
-			<div className="events-layout">
+		<div className="events-layout">
+			<DndProvider backend={HTML5Backend}>
+				<CustomDragLayer />
 				{windowsStore.windows.length === 1
 					&& <AppWindow windowStore={windowsStore.windows[0]} windowIndex={0}/>}
 				{windowsStore.windows.length > 1
@@ -51,9 +53,8 @@ const EventsLayout = () => {
 						</SplitViewPane>
 					</SplitView>
 				}
-			</div>
-		</DndProvider>
-
+			</DndProvider>
+		</div>
 	);
 };
 

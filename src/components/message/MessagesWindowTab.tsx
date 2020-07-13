@@ -16,29 +16,120 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../../hooks/useStores';
 import DraggableTab, { DraggableTabProps } from '../tabs/DraggableTab';
 import Tab from '../tabs/Tab';
+import TabMenu from '../tabs/TabMenu';
+import { DraggableTabListContext } from '../tabs/DroppableTabList';
+import { useWindowsStore } from '../../hooks/useWindowsStore';
+import { createStyleSelector } from '../../helpers/styleCreators';
+import { getEventStatus } from '../../helpers/event';
 
-const MessagesWindowTab = (tabProps: Omit<DraggableTabProps, 'children'>) => {
-	const { windowsStore } = useStores();
+type Props = Omit<DraggableTabProps, 'children'> & {
+	isDuplicable: boolean;
+};
+
+const MessagesWindowTab = (tabProps: Props) => {
+	const {
+		isClosable,
+		isSelected,
+		closeTab,
+		tabIndex,
+		duplicateTab,
+		isDuplicable,
+	} = tabProps;
+
+	const windowsStore = useWindowsStore();
+	const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+	const tabRef = React.useRef<HTMLDivElement>(null);
+	const menuRef = React.useRef<HTMLDivElement>(null);
+
+	const {
+		isDragging,
+	} = React.useContext(DraggableTabListContext);
+
+	React.useEffect(() => {
+		if (tabRef.current) {
+			tabRef.current?.addEventListener('mouseenter', showMenu);
+		}
+
+		return () => {
+			if (tabRef.current) {
+				tabRef.current?.removeEventListener('mouseenter', showMenu);
+			}
+		};
+	  }, []);
+
+	const showMenu = () => {
+		setIsMenuOpen(true);
+		document.documentElement.addEventListener('mousemove', onMouseMove);
+	};
+
+	const onMouseMove = (e: MouseEvent) => {
+		if (
+			e.target instanceof Node && !tabRef.current?.contains(e.target)
+			&& !menuRef.current?.contains(e.target)
+		) {
+			setIsMenuOpen(false);
+			document.documentElement.removeEventListener('mousemove', onMouseMove);
+		}
+	};
+
+	const getMenuWidth = () => {
+		if (windowsStore.eventColors.size > 0) {
+			return Math.max(450, tabRef.current?.getBoundingClientRect().width || 0);
+		}
+
+		return tabRef.current?.getBoundingClientRect().width || 0;
+	};
 
 	return (
-		<DraggableTab {...tabProps} classNames={{ root: 'messages-tab' }}>
+		<DraggableTab {...tabProps} classNames={{ root: 'messages-tab' }} ref={tabRef}>
 			<div className="messages-tab__wrapper">
 				<span className="messages-tab__title" title="Messages">Messages</span>
 				<div className="messages-tab__count-list">
 					{
-						windowsStore.eventsAttachedMessages.map(({ color, messagesIds }) => (
-							<span
-								key={color}
-								className="messages-tab__count"
-								style={{ borderColor: color }}>
-								{messagesIds.length}
-							</span>
-						))
+						windowsStore.selectedEvents
+							.filter(e => e.attachedMessageIds.length > 0)
+							.map(({ eventId, attachedMessageIds }) => (
+								<CountCircle
+									key={eventId}
+									color={windowsStore.eventColors.get(eventId)!}
+									count={attachedMessageIds.length} />
+							))
 					}
 				</div>
+				{isMenuOpen && !isDragging && (
+					<TabMenu
+						menuWidth={getMenuWidth()}
+						isSelected={!!isSelected}
+						ref={menuRef}
+						closeTab={() => closeTab && closeTab(tabIndex)}
+						duplicateTab={() => duplicateTab && duplicateTab(tabIndex)}
+						isClosable={!!isClosable}
+						isDuplicable={isDuplicable}
+						tabRect={tabRef.current?.getBoundingClientRect()}>
+						<ul className="messages-tab__event-list">
+							{
+								windowsStore.selectedEvents
+									.filter(e => e.attachedMessageIds.length > 0)
+									.map(event => (
+										<li key={event.eventId} className="messages-tab__event-row">
+											<span className={
+												createStyleSelector('messages-tab__event-title', getEventStatus(event))
+											}
+											title={event.eventName}>
+												{event.eventName}
+											</span>
+											<CountCircle
+												key={event.eventId}
+												color={windowsStore.eventColors.get(event.eventId)!}
+												count={event.attachedMessageIds.length} />
+										</li>
+									))
+							}
+						</ul>
+					</TabMenu>
+				)}
 			</div>
 		</DraggableTab>
 	);
@@ -50,20 +141,42 @@ interface MessagesWindowTabPreviewProps {
 	isSelected: boolean;
 }
 export const MessagesWindowTabPreview = ({ isSelected }: MessagesWindowTabPreviewProps) => {
-	const { windowsStore } = useStores();
+	const windowsStore = useWindowsStore();
 
 	return (
 		<Tab isDragging={true} isSelected={isSelected}>
-			Messages
-			{
-				windowsStore.eventsAttachedMessages.map(({ color, messagesIds }) => (
-					<span
-						key={color}
-						className="messages-tab__count"
-						style={{ borderColor: color }}>
-						{messagesIds.length}
-					</span>
-				))}
+			<div className="messages-tab__wrapper">
+				<span className="messages-tab__title" title="Messages">
+					Messages
+				</span>
+				<div className="messages-tab__count-list">
+					{
+						windowsStore.selectedEvents
+							.filter(e => e.attachedMessageIds.length > 0)
+							.map(({ eventId, attachedMessageIds }) => (
+								<span
+									key={eventId}
+									className="messages-tab__count"
+									style={{ borderColor: windowsStore.eventColors.get(eventId) }}>
+									{attachedMessageIds.length}
+								</span>
+							))
+					}
+				</div>
+			</div>
 		</Tab>
 	);
 };
+
+interface CountCircleProps {
+	count: number;
+	color: string;
+}
+
+const CountCircle = ({ color, count }: CountCircleProps) => (
+	<span
+		className="messages-tab__count"
+		style={{ borderColor: color }}>
+		{count}
+	</span>
+);

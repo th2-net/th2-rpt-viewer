@@ -16,11 +16,12 @@
 
 import React from 'react';
 import useAsyncEffect from '../hooks/useAsyncEffect';
-import StoresContext, { createStores, RootStoreContext } from '../contexts/storesContext';
+import RootStoreContext, { createRootStore } from '../contexts/rootStoreContext';
 import SplashScreen from './SplashScreen';
+import RootStore from '../stores/RootStore';
 
-function StoresProvider({ children }: React.PropsWithChildren<{}>) {
-	const [stores, setStores] = React.useState<RootStoreContext | null>(null);
+function RootStoreProvider({ children }: React.PropsWithChildren<{}>) {
+	const [rootStore, setRootStore] = React.useState<RootStore | null>(null);
 
 	useAsyncEffect(async () => {
 		const { default: api } = process.env.API_ENV === 'http' ? (
@@ -29,18 +30,18 @@ function StoresProvider({ children }: React.PropsWithChildren<{}>) {
 			await import(/* webpackChunkName: "jsonp-api" */ '../api/jsonp')
 		);
 
-		setStores(createStores(api));
+		setRootStore(createRootStore(api));
 	}, []);
 
-	if (stores == null) {
+	if (rootStore == null) {
 		return <SplashScreen/>;
 	}
 
 	return (
-		<StoresContext.Provider value={stores}>
+		<RootStoreContext.Provider value={rootStore}>
 			{children}
-		</StoresContext.Provider>
+		</RootStoreContext.Provider>
 	);
 }
 
-export default StoresProvider;
+export default RootStoreProvider;

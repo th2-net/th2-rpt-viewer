@@ -33,7 +33,7 @@ export function EventBodyPayloadRenderer({ body, parentEvent }: Props) {
 	switch (body.type) {
 		case EventBodyPayloadType.MESSAGE:
 			return (
-				<div key="message">
+				<div key="message" style={{ whiteSpace: 'pre' }}>
 					{body.data}
 				</div>
 			);

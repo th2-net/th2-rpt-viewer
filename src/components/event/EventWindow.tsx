@@ -17,8 +17,8 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
-import EventTreeWindow from './tree/EventTreeWindow';
-import EventTableWindow from './table/EventTableWindow';
+import EventTreeView from './tree/EventTreeView';
+import EventTableView from './table/EventTableView';
 import EventWindowHeader from './EventWindowHeader';
 import '../../styles/events.scss';
 
@@ -33,8 +33,8 @@ const EventWindow = () => {
 			<div className="layout__body">
 				{
 					eventWindowStore.viewStore.eventTableModeEnabled
-						? <EventTableWindow/>
-						: <EventTreeWindow/>
+						? <EventTableView/>
+						: <EventTreeView/>
 				}
 			</div>
 		</div>

@@ -36,7 +36,7 @@ function EventMinimapColumn({ deep, nodes }: Props) {
 
 	return (
 		<Virtuoso
-			className='event-table-window__scrollbar'
+			className='event-table-view__scrollbar'
 			style={{ height: '100%', width: deep * 20 + 10 }}
 			computeItemKey={index => nodes[index].id}
 			overscan={3}

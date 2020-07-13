@@ -60,9 +60,7 @@ function EventCardHeader({
 	);
 
 	return (
-		<div
-			className={rootClassName}
-			onClick={() => onSelect()}>
+		<div className={rootClassName} onClick={onSelect}>
 			{
 				displayType !== CardDisplayType.STATUS_ONLY ? (
 					<div className='event-header-card__title' title={eventName}>

@@ -23,36 +23,31 @@ import MessagesWindow from './message/MessagesWindow';
 import MessagesWindowTab from './message/MessagesWindowTab';
 import { EventWindowProvider } from '../contexts/eventWindowContext';
 import { MessagesWindowProvider } from '../contexts/messagesWindowContext';
-import { isEventsTab, isMessagesTab } from '../helpers/windows';
+import { isEventsTab } from '../helpers/windows';
 import AppWindowStore from '../stores/AppWindowStore';
-import { useStores } from '../hooks/useStores';
 import { TabTypes } from '../models/util/Windows';
 import { TabDraggableItem } from './tabs/DraggableTab';
-import { withSideDropTarget } from './drag-n-drop/WithSideDropTargets';
+import { withSideDropTargets } from './drag-n-drop/WithSideDropTargets';
 import DroppableTabList from './tabs/DroppableTabList';
 import { createStyleSelector } from '../helpers/styleCreators';
+import { useWindowsStore } from '../hooks/useWindowsStore';
 
 interface AppWindowProps {
 	windowStore: AppWindowStore;
 	windowIndex: number;
 }
 
-const TabsWithSideDropTargets = withSideDropTarget(Tabs);
+const TabsWithSideDropTargets = withSideDropTargets(Tabs);
 
 const AppWindow = (props: AppWindowProps) => {
 	const {
 		windowStore,
 		windowIndex,
 	} = props;
-	const { windowsStore } = useStores();
+	const windowsStore = useWindowsStore();
 
 	const renderTabs: TabListRenderProps = renderProps => {
 		const { activeTabIndex, ...tabProps } = renderProps;
-
-		const allTabs = windowsStore.windows.flatMap(({ tabs }) => tabs);
-
-		const isEventsTabClosable = allTabs.filter(tab => isEventsTab(tab)).length > 1;
-		const isMessagesTabClosable = allTabs.filter(tab => isMessagesTab(tab)).length > 1;
 
 		return windowStore.tabs.map((tab, index) => {
 			if (isEventsTab(tab)) {
@@ -68,11 +63,11 @@ const AppWindow = (props: AppWindowProps) => {
 								}}
 								tabIndex={index}
 								isSelected={activeTabIndex === index}
-								isClosable={isEventsTabClosable}
+								isClosable={windowsStore.isEventsTabClosable}
+								isDuplicable={windowsStore.isDuplicable}
 								windowIndex={windowIndex}
 								onTabDrop={windowsStore.moveTab}
-								color={tab.store.color}
-								{...tabProps}/>
+								{...tabProps} />
 						)}
 					</Observer>
 				);
@@ -87,8 +82,9 @@ const AppWindow = (props: AppWindowProps) => {
 							}}
 							tabIndex={index}
 							isSelected={activeTabIndex === index}
-							isClosable={isMessagesTabClosable}
+							isClosable={windowsStore.isMessagesTabClosable}
 							windowIndex={windowIndex}
+							isDuplicable={windowsStore.isDuplicable}
 							onTabDrop={windowsStore.moveTab}
 							{...tabProps} />
 					)}
@@ -132,7 +128,8 @@ const AppWindow = (props: AppWindowProps) => {
 					</EventWindowProvider>
 					: <MessagesWindowProvider value={tab.store} >
 						<MessagesWindow />
-					</MessagesWindowProvider>))} />
+					</MessagesWindowProvider>))
+			} />
 	);
 };
 

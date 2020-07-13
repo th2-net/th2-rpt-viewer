@@ -24,7 +24,7 @@ import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
 import EventDetailInfoCard from '../EventDetailInfoCard';
 
-function EventTreeWindow() {
+function EventTreeView() {
 	const eventWindowStore = useEventWindowStore();
 	const viewStore = useEventWindowViewStore();
 
@@ -50,4 +50,4 @@ function EventTreeWindow() {
 	);
 }
 
-export default observer(EventTreeWindow);
+export default observer(EventTreeView);

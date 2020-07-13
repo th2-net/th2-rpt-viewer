@@ -22,7 +22,7 @@ import {
 } from 'mobx';
 import SearchToken from '../models/search/SearchToken';
 import ApiSchema from '../api/ApiSchema';
-import EventsStore, { EventIdNode } from './EventsStore';
+import EventsStore from './EventsStore';
 
 export default class SearchStore {
 	constructor(private api: ApiSchema, private eventsStore: EventsStore, searchStore?: SearchStore) {

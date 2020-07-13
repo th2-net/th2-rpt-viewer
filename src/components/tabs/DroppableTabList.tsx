@@ -18,7 +18,7 @@ import React from 'react';
 import { useDrop } from 'react-dnd';
 import { DraggableItemTypes } from './DraggableTab';
 
-export const DraggableListContext = React.createContext({} as DroppableTabListState);
+export const DraggableTabListContext = React.createContext({} as DroppableTabListState);
 
 type ActiveTab = {
 	index: number;
@@ -30,6 +30,8 @@ type ActiveTab = {
 interface DroppableTabListState {
 	setActiveTab: (tab: ActiveTab) => void;
 	activeTab: ActiveTab;
+	isDragging: boolean;
+	setIsDragging: (isDragging: boolean) => void;
 }
 
 interface DroppableTabListProps {
@@ -37,7 +39,9 @@ interface DroppableTabListProps {
 }
 
 const DroppableTabList = (props: DroppableTabListProps) => {
-	const [activeTab, setActiveTab] = React.useState<ActiveTab>(null);
+	const [activeTab, setActiveTab] = React.useState<ActiveTab | null>(null);
+	const [isDragging, setIsDragging] = React.useState(false);
+
 	const [{ isOver }, drop] = useDrop({
 		accept: DraggableItemTypes.TAB,
 		collect: monitor => ({
@@ -52,14 +56,16 @@ const DroppableTabList = (props: DroppableTabListProps) => {
 	}, [isOver]);
 
 	return (
-		<DraggableListContext.Provider value={{
+		<DraggableTabListContext.Provider value={{
 			activeTab,
 			setActiveTab,
+			isDragging,
+			setIsDragging,
 		}}>
 			<div ref={drop} className="droppable-tab-list">
 				{props.children}
 			</div>
-		</DraggableListContext.Provider>
+		</DraggableTabListContext.Provider>
 	);
 };
 

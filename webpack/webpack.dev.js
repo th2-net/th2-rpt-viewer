@@ -37,34 +37,26 @@ module.exports = webpackMerge(commonConfig, {
                 changeOrigin: true,
                 secure: false,
             }
-            // '/backend': {
-            //     target: 'http://kos215:8081',
-            //     changeOrigin: true,
-            //     secure: false,
-            //     pathRewrite: {
-            //         '^/backend': ''
-            //     },
-            // }
         },
         hot: true,
     },
     module: {
         rules: [
-            {
-                test: /\.(ts|tsx)$/,
-                enforce: 'pre',
-                use: [{
-                    options: {
-                        eslintPath: require.resolve('eslint'),
-                        failOnError: false,
-                        cache: false,
-                        quite: true,
-                        formatter: require('eslint-formatter-pretty'),
-                    },
-                    loader: require.resolve('eslint-loader'),
-                }],
-                exclude: /node_modules/,
-            },
+            // {
+            //     test: /\.(ts|tsx)$/,
+            //     enforce: 'pre',
+            //     use: [{
+            //         options: {
+            //             eslintPath: require.resolve('eslint'),
+            //             failOnError: false,
+            //             cache: false,
+            //             quite: true,
+            //             formatter: require('eslint-formatter-pretty'),
+            //         },
+            //         loader: require.resolve('eslint-loader'),
+            //     }],
+            //     exclude: /node_modules/,
+            // },
             {
                 test: /\.scss$/,
                 exclude: /node_modules/,

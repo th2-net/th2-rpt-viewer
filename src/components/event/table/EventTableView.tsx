@@ -28,7 +28,7 @@ import Empty from '../../Empty';
 import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
 import '../../../styles/events.scss';
 
-function EventTableWindow() {
+function EventTableView() {
 	const eventsStore = useEventWindowStore();
 	const viewStore = useEventWindowViewStore();
 
@@ -39,7 +39,7 @@ function EventTableWindow() {
 
 	return (
 		<Flipper
-			className='event-table-window'
+			className='event-table-view'
 			flipKey={eventsStore.selectedPath.reduce((acc, node) => `${acc}-${node.id}`, '')}
 			staggerConfig={{ default: { speed: 1 } }}>
 			<SplitView
@@ -47,7 +47,7 @@ function EventTableWindow() {
 				onPanelAreaChange={viewStore.setPanelArea}
 				leftPanelMinWidth={445}
 				rightPanelMinWidth={445}>
-				<div className='event-table-window__columns'>
+				<div className='event-table-view__columns'>
 					{
 						eventsStore.selectedNode == null ? (
 							eventsStore.isLoadingRootEvents ? (
@@ -99,4 +99,4 @@ function calculateCardLayout(columnIndex: number, columnsLength: number): CardDi
 	return CardDisplayType.STATUS_ONLY;
 }
 
-export default observer(EventTableWindow);
+export default observer(EventTableView);

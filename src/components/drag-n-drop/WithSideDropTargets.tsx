@@ -15,7 +15,8 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { useDrop } from 'react-dnd';
+import { useDrop, DropTargetMonitor } from 'react-dnd';
+import throttle from 'lodash.throttle';
 import { DraggableItemTypes, TabDraggableItem } from '../tabs/DraggableTab';
 import { isEqual } from '../../helpers/object';
 import SideDropTarget from './SideDropTarget';
@@ -54,6 +55,45 @@ export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
+	const getDraggingState = (item: TabDraggableItem, monitor: DropTargetMonitor) => {
+		const clientXY = monitor.getClientOffset();
+		const root = rootRef.current;
+		if (!clientXY || !root) return;
+		const {
+			top,
+			bottom,
+			left,
+			right,
+			width,
+		} = root.getBoundingClientRect();
+
+		const isOverContent = clientXY.y >= (top + offsetTop) && clientXY.y <= bottom;
+		const isOverLeftSide = isOverContent && clientXY.x >= left && clientXY.x <= (left + width / 2);
+		const isOverRightSide = isOverContent && !isOverLeftSide;
+		const droppableAreaWidth = left + (droppableAreaPercent / 100) * width;
+		const canDropOnLeft = isOverLeftSide && clientXY.x <= left + droppableAreaWidth;
+		const canDropOnRight = isOverRightSide && (clientXY.x > right - droppableAreaWidth);
+
+		if (!isOverContent) {
+			setHoverState(defaultHoverState);
+			return;
+		}
+		const updatedHoverState = {
+			isOverContent,
+			isOverLeftSide,
+			isOverRightSide,
+			canDropOnLeft,
+			canDropOnRight,
+			yCoord: clientXY.y,
+		};
+
+		if (!isEqual(hoverState, updatedHoverState)) {
+			setHoverState(updatedHoverState);
+		}
+	};
+
+	const throttledGetDraggingState = React.useRef(throttle(getDraggingState, 50)).current;
+
 	const [, drop] = useDrop({
 		accept: DraggableItemTypes.TAB,
 		drop: (item: TabDraggableItem) => {
@@ -65,42 +105,7 @@ export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
 			}
 			setHoverState(defaultHoverState);
 		},
-		hover: (item, monitor) => {
-			const clientXY = monitor.getClientOffset();
-			const root = rootRef.current;
-			if (!clientXY || !root) return;
-			const {
-				top,
-				bottom,
-				left,
-				right,
-				width,
-			} = root.getBoundingClientRect();
-
-			const isOverContent = clientXY.y >= (top + offsetTop) && clientXY.y <= bottom;
-			const isOverLeftSide = isOverContent && clientXY.x >= left && clientXY.x <= (left + width / 2);
-			const isOverRightSide = isOverContent && !isOverLeftSide;
-			const droppableAreaWidth = left + (droppableAreaPercent / 100) * width;
-			const canDropOnLeft = isOverLeftSide && clientXY.x <= left + droppableAreaWidth;
-			const canDropOnRight = isOverRightSide && (clientXY.x > right - droppableAreaWidth);
-
-			if (!isOverContent) {
-				setHoverState(defaultHoverState);
-				return;
-			}
-			const updatedHoverState = {
-				isOverContent,
-				isOverLeftSide,
-				isOverRightSide,
-				canDropOnLeft,
-				canDropOnRight,
-				yCoord: clientXY.y,
-			};
-
-			if (!isEqual(hoverState, updatedHoverState)) {
-				setHoverState(updatedHoverState);
-			}
-		},
+		hover: throttledGetDraggingState,
 	});
 
 	return (
@@ -122,7 +127,7 @@ export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
 	);
 };
 
-export const withSideDropTarget = <P extends object>(
+export const withSideDropTargets = <P extends object>(
 	Component: React.ComponentType<P>,
 ): React.FC<P & WithSideDropTargetsProps> => (props: WithSideDropTargetsProps & P) => {
 		const {
