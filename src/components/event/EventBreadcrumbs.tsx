@@ -124,7 +124,7 @@ export const EventBreadcrumbRootItem = ({ onSelect }: RootItemProps) => {
 		<li
 			className="event-breadcrumbs__item"
 			key="root">
-			<span
+			<i
 				className="event-breadcrumbs__root-icon"
 				onClick={() => onSelect && onSelect()} />
 			<span className={nameClassName}

@@ -36,6 +36,7 @@ interface DroppableTabListState {
 
 interface DroppableTabListProps {
 	children: React.ReactNode;
+	className: string;
 }
 
 const DroppableTabList = (props: DroppableTabListProps) => {
@@ -62,7 +63,7 @@ const DroppableTabList = (props: DroppableTabListProps) => {
 			isDragging,
 			setIsDragging,
 		}}>
-			<div ref={drop} className="droppable-tab-list">
+			<div ref={drop} className={`droppable-tab-list ${props.className}`}>
 				{props.children}
 			</div>
 		</DraggableTabListContext.Provider>

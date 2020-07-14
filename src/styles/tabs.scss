@@ -24,6 +24,7 @@
     grid-template-areas:
         "tabs"
 		"content";
+	overflow: hidden;
 
 	&__wrapper {
 		width: 100%;
@@ -33,9 +34,9 @@
 		
 	&__list {
 		display: flex;
-		padding: 7px 8px;
 		width: 100%;
 		z-index: 2;
+		overflow: hidden;
 	}
 
 	&__content {
@@ -54,13 +55,13 @@
 }
 
 .tab-root {
-	height: 35px;
-	flex: 5;
+	height: 100%;
+	flex: 1;
 	display: flex;
 	align-items: center;
 	padding: 0 4px;
 	position: relative;
-	border-radius: 6px;
+	min-width: 5%;
 
 	&:first-child {
 		padding-left: 0;
@@ -89,7 +90,8 @@
 }
 
 .tab {
-	min-height: 36px;
+	position: relative;
+	height: 36px;
 	width: 100%;
 	border-radius: 6px;
 	cursor: pointer;
@@ -97,6 +99,7 @@
 	align-items: center;
 	transition: width 0.15s, transform 0.15s;
 	background-color: $tabsBackgroundColor;
+	margin: 7px 0;
 
 	&.selected {
 		background-color: #FFF;
@@ -181,6 +184,8 @@
 	width: 100%;
 	height: 100%;
 	display: flex;
+	overflow: hidden;
+	padding: 0 8px;
 }
 
 .tab-menu {

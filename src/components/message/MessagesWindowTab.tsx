@@ -75,11 +75,12 @@ const MessagesWindowTab = (tabProps: Props) => {
 	};
 
 	const getMenuWidth = () => {
+		const tabWidth = tabRef.current?.getBoundingClientRect().width || 0;
 		if (windowsStore.eventColors.size > 0) {
-			return Math.max(450, tabRef.current?.getBoundingClientRect().width || 0);
+			return Math.max(450, tabWidth);
 		}
 
-		return tabRef.current?.getBoundingClientRect().width || 0;
+		return Math.max(150, tabWidth);
 	};
 
 	return (

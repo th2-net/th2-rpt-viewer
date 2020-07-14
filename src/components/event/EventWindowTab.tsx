@@ -119,9 +119,11 @@ const EventsWindowTab = (props: EventsWindowTabProps) => {
 		<DraggableTab ref={tabRef} {...tabProps}>
 			<EventWindowProvider value={store}>
 				<div className="events-tab">
-					<div
-						className="events-tab__color"
-						style={{ borderColor: store.color, marginRight: 10 }}/>
+					<div>
+						{store.color && <div
+							className="events-tab__color"
+							style={{ borderColor: store.color, marginRight: 10 }}/>}
+					</div>
 					<div className="events-tab__title">
 						<EventBreadcrumbs
 							rootEventsEnabled={!store.selectedNode}
@@ -166,9 +168,11 @@ export const EventsWindowTabPreview = ({ store, isSelected }: EventsWindowTabPre
 	<Tab isDragging={true} isSelected={isSelected}>
 		<EventWindowProvider value={store}>
 			<div className="events-tab">
-				<div
-					className="events-tab__color"
-					style={{ borderColor: store.color, marginRight: 10 }}/>
+				<div>
+					{store.color && <div
+						className="events-tab__color"
+						style={{ borderColor: store.color, marginRight: 10 }}/>}
+				</div>
 				<div className="events-tab__title">
 					<EventBreadcrumbs
 						rootEventsEnabled={!store.selectedNode}
