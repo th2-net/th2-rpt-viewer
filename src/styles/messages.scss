@@ -660,7 +660,8 @@
 }
 
 .messages-tab {
-    min-width: 130px;
+    width: 20%;
+    max-width: 200px;
     flex-grow: 2;
     flex-shrink: 0;
 
@@ -681,11 +682,10 @@
     }
 
     &__wrapper {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: grid;
+        grid-template-columns: auto 1fr;
         overflow: hidden;
-        width: 100%;
+        margin: auto;
         padding: 0 8px;
     }
 

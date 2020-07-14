@@ -113,11 +113,8 @@ const AppWindow = (props: AppWindowProps) => {
 			onChange={windowStore.setActiveTab}
 			closeTab={windowStore.closeTab}
 			duplicateTab={windowStore.duplicateTab}
-			classNames={{
-				tabsList: tabsClassName,
-			}}
 			tabList={tabListInjectedProps => (
-				<DroppableTabList>
+				<DroppableTabList className={tabsClassName}>
 					{renderTabs(tabListInjectedProps)}
 				</DroppableTabList>
 			)}

@@ -201,7 +201,8 @@
     align-items: center;
     color: var(--status-primary-color);
     position: relative;
-    z-index: 1;
+	z-index: 1;
+	overflow: hidden;
 
     &__search {
         padding-right: 10px;
@@ -405,7 +406,7 @@
 		&::after {
 			content: "";
 			@include icon(url(../../resources/icons/arr1-right-disabled.svg), 16px, 16px);
-			transform: rotate(90deg) translateX(7px);
+			transform: rotate(90deg) translateX(2px);
 			margin: 0 10px;
 			display: inline-block;
 			flex-shrink: 0;
@@ -418,14 +419,15 @@
 		font-size: 16px;
 		font-weight: bold;
 		word-break: break-all;
+		vertical-align: middle;
+		line-height: inherit;
 	}
 
 	&__root-icon {
-		@include icon(url(../../resources/icons/burger.svg), 16px, 16px);
+		@include icon(url(../../resources/icons/burger.svg), 13px, 15px);
 		flex-shrink: 0;
 		display: inline-block;
 		margin-right: 6px;
-		margin-top: 5px;
 		cursor: inherit;
 	}
 
@@ -463,7 +465,7 @@
 .events-tab {
 	width: 100%;
 	display: grid;
-	grid-template-columns: 30px 1fr;
+	grid-template-columns: auto 1fr;
 	align-items: center;
 	padding: 0 10px;
 	background-color: inherit;
@@ -480,9 +482,14 @@
 
 		& li {
 			display: flex;
+			align-items: center;
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
+
+			&:only-child::after {
+				margin: 0 5px;
+			}
 		}
 	}
 
@@ -494,7 +501,7 @@
 	}
 
 	&__breadcrumbs {
-		padding: 5px 10px;
+		padding: 1px 10px 7px 10px;
 	}
 
 	&__content {

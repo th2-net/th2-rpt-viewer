@@ -163,7 +163,7 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 			className={rootClassName}>
 			<DropTargetHint
 				show={activeTab !== null && activeTab.index === 0 && tabIndex === 0 && activeTab.canDropOnLeft}
-				style={{ position: 'relative', left: '-3.5px' }}/>
+				style={{ position: 'relative', left: '-3.5px', height: 36 }}/>
 			<div ref={rootRef} className="tab-root__droppable">
 				<div className="tab-root__draggable" ref={draggableTabRef}>
 					<Tab
@@ -181,7 +181,7 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 					(activeTab.index === tabIndex && activeTab.canDropOnRight)
 					|| (activeTab.index === tabIndex + 1 && activeTab.canDropOnLeft)
 				)}
-				style={{ position: 'relative', left: '3.5px' }} />
+				style={{ position: 'relative', left: '3.5px', height: 36 }} />
 		</div>
 	);
 };
