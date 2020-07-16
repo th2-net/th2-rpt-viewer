@@ -26,14 +26,16 @@ function EventsFilterPanel() {
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [timestampFrom, setTimestampFrom] = React.useState(filterStore.eventsFilter.timestampFrom);
 	const [timestampTo, setTimestampTo] = React.useState(filterStore.eventsFilter.timestampTo);
-	const [name, setName] = React.useState(filterStore.eventsFilter.name);
-	const [eventType, setEventType] = React.useState(filterStore.eventsFilter.eventType);
+	const [currentName, setCurrentName] = React.useState('');
+	const [names, setNames] = React.useState(filterStore.eventsFilter.names);
+	const [currentType, setCurrentEventType] = React.useState('');
+	const [eventTypes, setEventsTypes] = React.useState(filterStore.eventsFilter.names);
 
 	React.useEffect(() => {
 		setTimestampFrom(filterStore.eventsFilter.timestampFrom);
 		setTimestampTo(filterStore.eventsFilter.timestampTo);
-		setName(filterStore.eventsFilter.name);
-		setEventType(filterStore.eventsFilter.eventType);
+		setNames(filterStore.eventsFilter.names);
+		setEventsTypes(filterStore.eventsFilter.eventTypes);
 	}, [showFilter, filterStore.eventsFilter]);
 
 	const onSubmit = () => {
@@ -50,15 +52,15 @@ function EventsFilterPanel() {
 			eventWindowStore.fetchRootEvents({
 				timestampFrom: nextTimestampFrom,
 				timestampTo: nextTimestampTo,
-				name,
-				eventType,
+				names,
+				eventTypes,
 			});
 		} else {
 			eventWindowStore.fetchRootEvents({
 				timestampFrom: null,
 				timestampTo: null,
-				name,
-				eventType,
+				names,
+				eventTypes,
 			});
 		}
 	};
@@ -76,17 +78,21 @@ function EventsFilterPanel() {
 		setFromValue: setTimestampFrom,
 		setToValue: setTimestampTo,
 	}, {
-		type: 'string',
-		id: 'event-name',
-		label: 'Event name',
-		value: name ?? '',
-		setValue: next => setName(next === '' ? null : next),
+		type: 'multiple-strings',
+		id: 'events-name',
+		label: 'Events name',
+		values: names,
+		setValues: setNames,
+		currentValue: currentName,
+		setCurrentValue: setCurrentName,
 	}, {
-		type: 'string',
+		type: 'multiple-strings',
 		id: 'events-type',
 		label: 'Events type',
-		value: eventType ?? '',
-		setValue: next => setEventType(next === '' ? null : next),
+		values: eventTypes,
+		setValues: setEventsTypes,
+		currentValue: currentType,
+		setCurrentValue: setCurrentEventType,
 	}];
 
 	return (

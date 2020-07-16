@@ -17,6 +17,6 @@
 export default interface EventsFilter {
 	timestampFrom: number | null;
 	timestampTo: number | null;
-	eventType: string | null;
-	name: string | null;
+	eventTypes: Array<string>;
+	names: Array<string>;
 }

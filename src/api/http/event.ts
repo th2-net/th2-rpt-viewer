@@ -20,18 +20,27 @@ import { createURLSearchParams } from '../../helpers/url';
 
 const eventHttpApi: EventApiSchema = {
 	getRootEvents: async filter => {
-		const params = createURLSearchParams({
-			idsOnly: true,
-			...(filter ?? {}),
-		});
+		if (filter) {
+			const from = filter.timestampFrom;
+			const to = filter.timestampTo;
+			const params = createURLSearchParams({
+				from,
+				to,
+				idsOnly: true,
+			});
 
-		const res = await fetch(`/backend/rootEvents?${params}`);
-
-		if (res.ok) {
-			return await res.json();
+			if (filter.names.length > 0) {
+				filter.names.forEach(name => params.append('name', name));
+			}
+			if (filter.eventTypes.length > 0) {
+				filter.eventTypes.forEach(type => params.append('eventType', type));
+			}
+			const res = await fetch(`/backend/rootEvents?${params}`);
+			if (res.ok) {
+				return await res.json();
+			}
+			console.error(res.statusText);
 		}
-
-		console.error(res.statusText);
 		return [];
 	},
 	getEvent: async (id: string, parentIds: string[], signal?: AbortSignal) => {

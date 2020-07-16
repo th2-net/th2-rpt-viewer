@@ -46,8 +46,8 @@ export default class FilterStore {
 	@observable eventsFilter: EventsFilter = {
 		timestampFrom: null,
 		timestampTo: null,
-		eventType: null,
-		name: null,
+		eventTypes: [],
+		names: [],
 	};
 
 	@computed
@@ -89,8 +89,8 @@ export default class FilterStore {
 		this.eventsFilter = {
 			timestampFrom: null,
 			timestampTo: null,
-			eventType: null,
-			name: null,
+			eventTypes: [],
+			names: [],
 		};
 	}
 }
