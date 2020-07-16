@@ -50,6 +50,8 @@ export interface DraggableTabProps extends TabProps {
 	windowIndex: number;
 	tabIndex: number;
 	dragItemPayload: unknown;
+	style?: React.CSSProperties;
+	tabCount: number;
 }
 
 const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabProps> = (
@@ -63,6 +65,8 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 		isSelected,
 		classNames = {},
 		dragItemPayload = {},
+		style = {},
+		tabCount,
 		...tabProps
 	} = props;
 
@@ -106,9 +110,7 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 		const hoveredLeft = (clientOffset?.x || 0) < tabMiddleX;
 		const hoveredRight = (clientOffset?.x || 0) >= tabMiddleX;
 
-		const isDroppableOnLeft = isOver && !didDrop && !isSameTab && (
-			!isSameWindow || !isNextTab
-		) && hoveredLeft;
+		const isDroppableOnLeft = isOver && !didDrop && hoveredLeft && (!isSameWindow || (!isSameTab && !isNextTab));
 
 		const isDroppableOnRight = isOver && !didDrop && (
 			(!isSameWindow && hoveredRight)
@@ -160,10 +162,14 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 	return (
 		<div
 			ref={drop}
-			className={rootClassName}>
+			className={rootClassName}
+			style={style}>
 			<DropTargetHint
 				show={activeTab !== null && activeTab.index === 0 && tabIndex === 0 && activeTab.canDropOnLeft}
-				style={{ position: 'relative', left: '-3.5px', height: 36 }}/>
+				style={{
+					marginRight: '4px',
+					height: 36,
+				}}/>
 			<div ref={rootRef} className="tab-root__droppable">
 				<div className="tab-root__draggable" ref={draggableTabRef}>
 					<Tab
@@ -181,7 +187,12 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 					(activeTab.index === tabIndex && activeTab.canDropOnRight)
 					|| (activeTab.index === tabIndex + 1 && activeTab.canDropOnLeft)
 				)}
-				style={{ position: 'relative', left: '3.5px', height: 36 }} />
+				style={{
+					position: 'relative',
+					left: tabCount === tabIndex + 1 ? 0 : '3.5px',
+					height: 36,
+					marginLeft: tabCount === tabIndex + 1 ? '4px' : '0',
+				}} />
 		</div>
 	);
 };
