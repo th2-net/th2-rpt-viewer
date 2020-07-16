@@ -49,6 +49,8 @@ const AppWindow = (props: AppWindowProps) => {
 	const renderTabs: TabListRenderProps = renderProps => {
 		const { activeTabIndex, ...tabProps } = renderProps;
 
+		const eventTabsCount = windowStore.tabs.filter(isEventsTab).length;
+
 		return windowStore.tabs.map((tab, index) => {
 			if (isEventsTab(tab)) {
 				return (
@@ -67,6 +69,7 @@ const AppWindow = (props: AppWindowProps) => {
 								isDuplicable={windowsStore.isDuplicable}
 								windowIndex={windowIndex}
 								onTabDrop={windowsStore.moveTab}
+								tabCount={windowStore.tabs.length}
 								{...tabProps} />
 						)}
 					</Observer>
@@ -76,6 +79,10 @@ const AppWindow = (props: AppWindowProps) => {
 				<Observer key={`messages-tab-${index}`}>
 					{() => (
 						<MessagesWindowTab
+							style={{
+								maxWidth: eventTabsCount === 0 ? '100%' : '200px',
+								width: eventTabsCount === 0 ? 'auto' : '20%',
+							}}
 							dragItemPayload={{
 								type: TabTypes.Messages,
 								isSelected: activeTabIndex === index,
@@ -86,6 +93,7 @@ const AppWindow = (props: AppWindowProps) => {
 							windowIndex={windowIndex}
 							isDuplicable={windowsStore.isDuplicable}
 							onTabDrop={windowsStore.moveTab}
+							tabCount={windowStore.tabs.length}
 							{...tabProps} />
 					)}
 				</Observer>
