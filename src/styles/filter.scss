@@ -239,8 +239,8 @@
             }
         }
 
-        &::placeholder {
-            color: transparent;
+        &.valid {
+            background-color: #FFF;
         }
     }
 

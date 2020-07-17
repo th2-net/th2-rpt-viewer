@@ -14,7 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
+
 import * as React from 'react';
+import MaskedInput from 'react-text-mask';
+import {
+	 isExists, isPast, isToday, format,
+} from 'date-fns';
 import {
 	FilterRowConfig,
 	FilterRowDatetimeRangeConfig,
@@ -24,6 +29,8 @@ import {
 import Bubble from '../util/Bubble';
 import AutocompleteInput from '../util/AutocompleteInput';
 import { removeByIndex, replaceByIndex } from '../../helpers/array';
+import { createBemElement } from '../../helpers/styleCreators';
+import { toUTCDate } from '../../helpers/date';
 
 interface Props {
 	rowConfig: FilterRowConfig;
@@ -51,6 +58,12 @@ export default function FilterPanelRow({ rowConfig }: Props) {
 function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 	const fromId = `${config.id}-from`;
 	const toId = `${config.id}-to`;
+	const inputMask = [/\d/, /\d/, '/', /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/, ',', ' ', /\d/, /\d/, ':', /\d/, /\d/];
+	const [isFromInputValid, setIsFromValue] = React.useState(config.fromValue !== null);
+	const [isToInputValid, setIsToValue] = React.useState(config.toValue !== null);
+
+	const fromInputClasses = createBemElement('filter-row', 'input', isFromInputValid ? 'valid' : null);
+	const toInputClasses = createBemElement('filter-row', 'input', isToInputValid ? 'valid' : null);
 
 	const formatTimestampValue = (timestamp: number | null) => {
 		if (timestamp == null) {
@@ -58,7 +71,67 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 		}
 
 		const date = new Date(timestamp);
-		return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().substring(0, 16);
+		const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+		return format(utcDate, 'MM/dd/yyyy, HH:mm');
+	};
+
+	const validPipe = (maskedValue: string):
+		string | false => {
+		if (is29February(maskedValue)) {
+			if (!maskedValue.substr(6, 4).includes('_')) {
+				const value = maskedValue.replace(/_/g, '1');
+				const date = new Date(value);
+				if (!isCorrectDate(maskedValue)) {
+					if (isPast(date) || isToday(date)) {
+						return maskedValue.replace('29', '28');
+					}
+					return false;
+				}
+				return maskedValue;
+			}
+			return maskedValue;
+		}
+		if (isCorrectDate(maskedValue)) {
+			return maskedValue;
+		}
+		return false;
+	};
+
+	const is29February = (maskedValue: string): boolean => maskedValue.includes('02/29');
+
+	const isCorrectDate = (maskedValue: string): boolean => {
+		const value = maskedValue.replace(/_/g, '1');
+		const [month, day, year] = value.substr(0, 10).split('/');
+		let isNotFuture = true;
+		if (!maskedValue.substr(6, 4).includes('_')) {
+			const date = new Date(value);
+			isNotFuture = isPast(date) || isToday(date);
+		}
+		const [hours, minutes] = value.substr(12, 5).split(':');
+		const isTimeCorrect = (parseInt(hours) < 24) && (parseInt(minutes) < 60);
+		return isExists(
+			parseInt(year),
+			parseInt(month) - 1,
+			parseInt(day),
+		) && isTimeCorrect && isNotFuture;
+	};
+
+	const onInputBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (isCorrectDate(e.target.value) && !e.target.value.includes('_')) {
+			const date = new Date(e.target.value);
+			const utcTime = toUTCDate(date);
+			if (e.target.name === 'from') {
+				setIsFromValue(true);
+				config.setFromValue(utcTime);
+			} else {
+				setIsToValue(true);
+				config.setToValue(utcTime);
+			}
+		} else if (e.target.name === 'from') {
+			setIsFromValue(false);
+		} else {
+			setIsToValue(false);
+		}
 	};
 
 	return (
@@ -68,17 +141,25 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 				className='filter-row__label'>
 				{config.label}
 			</label>
-			<input id={fromId}
-				   className='filter-row__datetime-input'
-				   type='datetime-local'
-				   value={formatTimestampValue(config.fromValue)}
-				   onChange={e => config.setFromValue(new Date(e.target.value).getTime())}/>
+			<MaskedInput id={fromId}
+						 className={fromInputClasses}
+						 value={formatTimestampValue(config.fromValue)}
+						 mask={inputMask}
+						 onBlur={onInputBlur}
+						 placeholder="MM/DD/YYYY, 00:00"
+						 keepCharPositions={true}
+						 pipe={validPipe}
+						 name='from'/>
 			<label htmlFor={toId}> to </label>
-			<input id={toId}
-				   className='filter-row__datetime-input'
-				   type='datetime-local'
-				   value={formatTimestampValue(config.toValue)}
-				   onChange={e => config.setToValue(new Date(e.target.value).getTime())}/>
+			<MaskedInput id={toId}
+						 className={toInputClasses}
+						 value={formatTimestampValue(config.toValue)}
+						 mask={inputMask}
+						 onBlur={onInputBlur}
+						 placeholder="MM/DD/YYYY, 00:00"
+						 keepCharPositions={true}
+						 pipe={validPipe}
+						 name='to'/>
 		</div>
 	);
 }
