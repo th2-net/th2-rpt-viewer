@@ -73,3 +73,14 @@ export function getTimeDate(hours: number, minutes: number, seconds: number, ms:
 export function getTimestampAsNumber(timestamp: Timestamp): number {
 	return timestamp.epochSecond * 1000 + timestamp.nano / 1_000_000;
 }
+
+export function toUTCDate(date: Date): number {
+	return Date.UTC(
+		date.getFullYear(),
+		date.getMonth(),
+		date.getDate(),
+		date.getHours(),
+		date.getMinutes(),
+		date.getSeconds(),
+	);
+}
