@@ -16,7 +16,7 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { getHeatmapElements, getHeatmapRange } from '../../helpers/heatmapCreator';
+import { getHeatmapElements, getHeatmapRange, DEFAULT_PIN_COLOR } from '../../helpers/heatmapCreator';
 import { HeatmapElement, ListRange } from '../../models/Heatmap';
 import { HeatmapContext } from '../../contexts/heatmapContext';
 
@@ -26,20 +26,30 @@ interface HeatmapProviderProps {
 	selectedItems: Map<string, string[]>;
 	pinnedItems: string[];
 	selectedIndex: number | null;
-	scrollToItem: (index: number) => void;
 	colors?: string[];
+	unknownAreas: {
+		before: string[];
+		after: string[];
+	};
 }
 
 export const HeatmapProvider = ({
 	children,
 	items,
 	pinnedItems,
-	scrollToItem,
 	selectedItems,
+	unknownAreas,
 }: HeatmapProviderProps) => {
 	const [heatmapElements, setHeatmapElements] = React.useState<HeatmapElement[]>(
 		getHeatmapElements(items, selectedItems, pinnedItems),
 	);
+	const [unknownAreasHeatmapElements, setUnknownAreasHeatmapElements] = React.useState<{
+		before: HeatmapElement[];
+		after: HeatmapElement[];
+	}>({
+		before: getHeatmapElements(unknownAreas.before, selectedItems, [], DEFAULT_PIN_COLOR, true),
+		after: getHeatmapElements(unknownAreas.after, selectedItems, [], DEFAULT_PIN_COLOR, true),
+	});
 	const [fullRange, setFullRange] = useState<ListRange | null>(null);
 	const [visibleRange, setVisibleRange] = useState<ListRange | null>(null);
 
@@ -49,22 +59,9 @@ export const HeatmapProvider = ({
 			selectedItems,
 			pinnedItems,
 		);
-		const selected = [...selectedItems.values()].flat().filter(i => items.includes(i));
 
-		const updatedRange = getHeatmapRange(
-			updatedHeatmap,
-			selected.length === 1,
-		);
 		setHeatmapElements(updatedHeatmap);
-		setFullRange(updatedRange);
-
-		const firstSelectedItem = selected.length > 0
-			? selected.map(item => items.indexOf(item))[0]
-			: heatmapElements.find(heatmapEl => heatmapEl.id !== undefined)?.index;
-
-		if (firstSelectedItem) {
-			scrollToItem(firstSelectedItem);
-		}
+		setFullRange(getHeatmapRange(updatedHeatmap));
 	}, [items, selectedItems]);
 
 	useEffect(() => {
@@ -76,6 +73,13 @@ export const HeatmapProvider = ({
 			),
 		);
 	}, [pinnedItems]);
+
+	useEffect(() => {
+		setUnknownAreasHeatmapElements({
+			before: getHeatmapElements(unknownAreas.before, selectedItems, [], DEFAULT_PIN_COLOR, true),
+			after: getHeatmapElements(unknownAreas.after, selectedItems, [], DEFAULT_PIN_COLOR, true),
+		});
+	}, [unknownAreas]);
 
 	React.useEffect(() => {
 		if (
@@ -96,6 +100,7 @@ export const HeatmapProvider = ({
 		setFullRange,
 		heatmapElements,
 		setHeatmapElements,
+		unknownAreas: unknownAreasHeatmapElements,
 	}}>
 		{children}
 	</HeatmapContext.Provider>;

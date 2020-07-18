@@ -23,20 +23,26 @@ import '../../styles/heatmap.scss';
 
 interface Props {
 	onElementClick: (element: HeatmapElement) => void;
-	selectedIndex: number | null;
+	selectedItem: string | null;
 }
 
 const Heatmap = ({
 	onElementClick,
-	selectedIndex,
+	selectedItem,
 }: Props) => {
 	const heatmapRef = React.useRef<HTMLDivElement>(null);
+	const heatmapRoot = React.useRef<HTMLDivElement>(null);
 	const scrollIndicatorRef = React.useRef<HTMLDivElement>(null);
 
-	const { visibleRange, fullRange, heatmapElements } = useHeatmap();
+	const {
+		visibleRange,
+		fullRange,
+		heatmapElements,
+		unknownAreas,
+	} = useHeatmap();
 
 	const updateScrollIndicatorPosition = () => {
-		if (!heatmapRef.current || !visibleRange || !scrollIndicatorRef.current) return;
+		if (!heatmapRef.current || !visibleRange || !scrollIndicatorRef.current || !heatmapRoot.current) return;
 		const { startIndex, endIndex } = visibleRange;
 
 		const {
@@ -62,7 +68,12 @@ const Heatmap = ({
 		if (scrollIndicatorHeight === 0) {
 			scrollIndicatorHeight = heatmapOffsetBottom - scrollIndicatorRef.current.getBoundingClientRect().top;
 		}
-		scrollIndicatorRef.current.style.transform = `translate3d(0, ${scrollIndicatorTop - heatmapOffsetTop}px, 0)`;
+
+		scrollIndicatorRef.current.style.transform = `
+			translate3d(0,
+				${heatmapOffsetTop - heatmapRoot.current.getBoundingClientRect().top
+					+ scrollIndicatorTop - heatmapOffsetTop}px, 0)
+		`;
 		scrollIndicatorRef.current.style.height = `${scrollIndicatorHeight}px`;
 
 		function getCoordinates(el: HTMLDivElement, index: number, isStart = true) {
@@ -86,20 +97,61 @@ const Heatmap = ({
 	return (
 		<div className="heatmap">
 			<div
-				className="heatmap__scroller"
-				ref={heatmapRef}>
-				{heatmapElementsInRange
-					.map((element: HeatmapElement, index: number) =>
-						<HeatmapItem
-							key={index}
-							{...element}
-							isSelected={element.index === selectedIndex}
-							onClick={onElementClick}
-							totalCount={totalCount} />)}
+				ref={heatmapRoot}
+				className="heatmap__wrapper">
+				{unknownAreas.before.length > 0
+					&& <div
+						className="heatmap__scroller"
+						style={{
+							maxHeight: 200,
+							marginBottom: 4,
+						}}>
+						{unknownAreas.before
+							.map((element: HeatmapElement, index: number) =>
+								<HeatmapItem
+									key={index}
+									{...element}
+									isSelected={element.id === selectedItem}
+									onClick={onElementClick}
+									totalCount={totalCount} />)}
+					</div>}
+				<div
+					className="heatmap__scroller"
+					style={{
+						flexGrow: 2,
+						flexShrink: 0,
+						minHeight: '60%',
+					}}
+					ref={heatmapRef}>
+					{heatmapElements
+						.map((element: HeatmapElement, index: number) =>
+							<HeatmapItem
+								key={index}
+								{...element}
+								isSelected={element.id === selectedItem}
+								onClick={onElementClick}
+								totalCount={totalCount} />)}
+				</div>
+				{unknownAreas.after.length > 0
+					&& <div
+						className="heatmap__scroller"
+						style={{
+							maxHeight: 200,
+							marginTop: 4,
+						}}>
+						{unknownAreas.after
+							.map((element: HeatmapElement, index: number) =>
+								<HeatmapItem
+									key={index}
+									{...element}
+									isSelected={element.id === selectedItem}
+									onClick={onElementClick}
+									totalCount={totalCount} />)}
+					</div>}
+				<div
+					ref={scrollIndicatorRef}
+					className="heatmap__scroll-indicatior"/>
 			</div>
-			<div
-				ref={scrollIndicatorRef}
-				className="heatmap__scroll-indicatior"/>
 		</div>
 	);
 };

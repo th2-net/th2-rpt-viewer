@@ -28,10 +28,12 @@ export default function useCachedEvent(node: EventIdNode, isVisible = true): Eve
 
 		if (isVisible) {
 			if (!event) {
-				eventWindowStore.fetchEvent(node, abortController.signal)
-					.then(setEvent).catch(err => {
+				eventWindowStore
+					.fetchEvent(node, abortController.signal)
+					.then(setEvent)
+					.catch(err => {
 						if (err.name !== 'AbortError') {
-							console.error('Error while loading event');
+							console.error(`Error while loading event ${node.id}`);
 						}
 					});
 			} else if (event.eventId !== node.id) {
@@ -39,8 +41,10 @@ export default function useCachedEvent(node: EventIdNode, isVisible = true): Eve
 				if (eventWindowStore.eventsCache.has(node.id)) {
 					setEvent(eventWindowStore.eventsCache.get(node.id));
 				} else {
-					eventWindowStore.fetchEvent(node, abortController.signal)
-						.then(setEvent).catch(err => {
+					eventWindowStore
+						.fetchEvent(node, abortController.signal)
+						.then(setEvent)
+						.catch(err => {
 							if (err.name !== 'AbortError') {
 								console.error(`Error while loading event ${event.eventId}`);
 							}

@@ -17,7 +17,7 @@
 import React from 'react';
 import { HeatmapElement } from '../../models/Heatmap';
 import { hexToRGBA } from '../../helpers/color';
-import { createStyleSelector, createBemElement } from '../../helpers/styleCreators';
+import { createBemElement } from '../../helpers/styleCreators';
 
 const HEATMAP_ELEMENT_MIN_HEIGHT = 14;
 const PINNED_MIN_HEIGHT = 21;
@@ -39,6 +39,7 @@ const HeatmapBlock = ({
 	totalCount,
 }: Props) => {
 	const onItemClick = (event: React.MouseEvent<HTMLDivElement>) => {
+		if (!id) return;
 		const { height, top } = event.currentTarget.getBoundingClientRect();
 		const step = (height / count);
 		const clickIndex = Math.floor(index + (event.clientY - top) / step);
@@ -65,11 +66,12 @@ const HeatmapBlock = ({
 			data-testid="heatmap-block"
 			data-count={count}
 			style={{
-				borderWidth: isSelected || isPinned ? '3px' : '2px',
+				cursor: id !== undefined ? 'pointer' : 'default',
 				flexGrow: count / totalCount,
 				minHeight: id ? isPinned ? PINNED_MIN_HEIGHT : `${HEATMAP_ELEMENT_MIN_HEIGHT}px` : undefined,
 				backgroundColor: colors.length ? undefined : '#FFF',
 				border: colors.length ? 'none' : undefined,
+				borderWidth: isSelected || isPinned ? '3px' : '2px',
 			}}
 			key={index}
 			className="heatmap-block"

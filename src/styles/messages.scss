@@ -209,13 +209,13 @@
 
     &__pin {
         grid-area: pin;
+        position: relative;
+        place-self: center;
         display: flex;
         align-items: center;
         justify-content: center;
-        position: relative;
         width: 20px;
         height: 20px;
-        align-self: center;
         overflow: hidden;
     }
 
@@ -315,7 +315,7 @@
     height: 26px;
     width: 26px;
     padding: 2px;
-    margin: auto;
+    place-self: center;
 
     &__icon {
         background-size: 100%;
@@ -477,6 +477,26 @@
     &__items {
         height: 100%;
         @include hidden-scrollbar;
+    }
+
+    &__spinner {
+        @include spinner(3px, 24px, 2s);
+        flex-shrink: 0;
+        margin: auto;
+    }
+
+    &__overlay-loader {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+    }
+
+    &__overlay-spinner {
+        @include spinner(5px, 40px, 2s);
     }
 }
 

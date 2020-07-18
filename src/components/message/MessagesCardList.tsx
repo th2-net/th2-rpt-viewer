@@ -21,7 +21,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import ResizeObserver from 'resize-observer-polyfill';
 import StateSaverProvider from '../util/StateSaverProvider';
-import { VirtualizedList } from '../VirtualizedList';
+import MessagesVirtualizedList from './MessagesVirtualizedList';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import SkeletonedMessageCardListItem from './SkeletonedMessageCardListItem';
 import Empty from '../Empty';
@@ -68,7 +68,7 @@ const MessageCardList = () => {
 	};
 
 
-	if (messagesStore.isLoading) {
+	if (messagesStore.isLoading && messagesStore.messagesIds.length === 0) {
 		return <SplashScreen />;
 	}
 
@@ -80,13 +80,16 @@ const MessageCardList = () => {
 		<div className="messages-list">
 			<MessagesHeightsContext.Provider value={messagesHeightsMap}>
 				<StateSaverProvider>
-					<VirtualizedList
+					<MessagesVirtualizedList
+						loadingState={messagesStore.messagesLoadingState}
 						className="messages-list__items"
 						rowCount={messagesStore.messagesIds.length}
 						scrolledIndex={messagesStore.scrolledIndex}
 						itemRenderer={renderMessage}
 						overscan={0}
-						ScrollContainer={MessagesScrollContainer} />
+						ScrollContainer={MessagesScrollContainer}
+						loadNextMessages={() => messagesStore.loadNextMessages()}
+						loadPrevMessages={() => messagesStore.loadPreviousMessages()}/>
 				</StateSaverProvider>
 			</MessagesHeightsContext.Provider>
 		</div>

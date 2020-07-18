@@ -15,7 +15,7 @@
 ***************************************************************************** */
 
 import React from 'react';
-import { Observer, observer } from 'mobx-react-lite';
+import { Observer } from 'mobx-react-lite';
 import { TScrollContainer } from 'react-virtuoso';
 import Heatmap from '../heatmap/Heatmap';
 import { useHeatmap } from '../../hooks/useHeatmap';
@@ -23,6 +23,8 @@ import { HeatmapElement } from '../../models/Heatmap';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { MessagesHeightsContext, MessagesHeights } from './MessagesCardList';
+import { InfiniteLoaderContext } from './MessagesVirtualizedList';
+import { MessagesLoadingState } from '../../stores/MessagesStore';
 
 const MessagesScrollContainer: TScrollContainer = ({
 	className,
@@ -36,6 +38,15 @@ const MessagesScrollContainer: TScrollContainer = ({
 	const messagesStore = useMessagesWindowStore();
 	const messagesHeights = React.useContext(MessagesHeightsContext);
 	const prevHeights = React.useRef<MessagesHeights>({});
+
+	const [loadingPrevItems, setLoadingPrevItems] = React.useState(false);
+	const [loadingNextItems, setLoadingNextItems] = React.useState(false);
+
+	const {
+		loadingState,
+		onScrollBottom,
+		onScrollTop,
+	} = React.useContext(InfiniteLoaderContext);
 
 	React.useEffect(() => {
 		if (!visibleRange) {
@@ -89,31 +100,71 @@ const MessagesScrollContainer: TScrollContainer = ({
 
 	return (
 		<div style={{ width: '100%', height: '100%', display: 'flex' }}>
-			<div
-				ref={scrollContainer}
-				onScroll={(e: React.SyntheticEvent<HTMLDivElement>) => {
-					reportScrollTop(e.currentTarget.scrollTop);
-					getVisibleRange();
-				}}
-				style={{
-					...style,
-					flexGrow: 1,
-					marginRight: '11px',
-				}}
-				tabIndex={0}
-				className={className}
-			>
-				{children}
+			<div style={{
+				width: '100%',
+				height: '100%',
+				display: 'flex',
+				flexDirection: 'column',
+				marginRight: '11px',
+				flexGrow: 1,
+			}}>
+				{loadingState !== null && loadingState === MessagesLoadingState.LOADING_PREVIOUS_ITEMS
+					&& <div className="messages-list__spinner"/>}
+				<div
+					ref={scrollContainer}
+					onScroll={(e: React.SyntheticEvent<HTMLDivElement>) => {
+						reportScrollTop(e.currentTarget.scrollTop);
+						getVisibleRange();
+					}}
+					onWheel={e => {
+						if (e.currentTarget.scrollHeight <= e.currentTarget.getBoundingClientRect().height) return;
+						if (
+							!loadingPrevItems
+							&& e.currentTarget.scrollTop === 0
+							&& e.deltaY < 0
+						) {
+							setLoadingPrevItems(true);
+							onScrollTop().then(() => setLoadingPrevItems(false));
+						}
+
+						if (
+							!loadingNextItems
+							&& e.deltaY > 0
+							&& (e.currentTarget.clientHeight + e.currentTarget.scrollTop)
+								=== e.currentTarget.scrollHeight
+						) {
+							setLoadingNextItems(true);
+							onScrollBottom().then(() => setLoadingNextItems(false));
+						}
+					}}
+					style={{
+						...style,
+						flexGrow: 1,
+						position: 'relative',
+					}}
+					tabIndex={0}
+					className={className}
+				>
+					{children}
+				</div>
+				{loadingState && loadingState === MessagesLoadingState.LOADING_SELECTED_MESSAGE
+					&& <div className="messages-list__overlay-loader">
+						<div className="messages-list__overlay-spinner"/>
+					</div>}
+				{loadingState && loadingState === MessagesLoadingState.LOADING_NEXT_ITEMS
+					&& <div className="messages-list__spinner"/>}
 			</div>
 			<Observer>
 				{() => <Heatmap
-					onElementClick={(element: HeatmapElement) =>
-						 messagesStore.scrolledIndex = new Number(element.index)}
-					selectedIndex={messagesStore.scrolledIndex?.valueOf() || null} />}
+					onElementClick={(element: HeatmapElement) => {
+						if (element.id) {
+							messagesStore.selectedMessageId = new String(element.id);
+						}
+					}}
+					selectedItem={messagesStore.selectedMessageId?.valueOf() || null} />}
 			</Observer>
-
 		</div>
 	);
 };
 
-export default observer(MessagesScrollContainer);
+export default MessagesScrollContainer;

@@ -21,7 +21,7 @@ import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 
 const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWindowStore();
-	const filterStore = messagesStore.filterStore;
+	const { filterStore } = messagesStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [timestampFrom, setTimestampFrom] = React.useState(filterStore.messagesFilter.timestampFrom);
@@ -39,13 +39,13 @@ const MessagesFilterPanel = () => {
 	}, [showFilter, filterStore.messagesFilter]);
 
 	const submitChanges = () => {
-		if (timestampFrom > timestampTo) {
+		if ((timestampFrom && timestampTo) && timestampFrom > timestampTo) {
 			// eslint-disable-next-line no-alert
 			window.alert('Invalid messagesFilter filter');
 			return;
 		}
 
-		messagesStore.loadMessages({
+		messagesStore.filterStore.setMessagesFilter({
 			timestampFrom,
 			timestampTo,
 			streams,
@@ -54,7 +54,7 @@ const MessagesFilterPanel = () => {
 	};
 
 	const clearAllFilters = () => {
-		messagesStore.loadMessages();
+		messagesStore.resetMessagesFilter();
 	};
 
 	const filterConfig: FilterRowConfig[] = [{
@@ -84,7 +84,7 @@ const MessagesFilterPanel = () => {
 	},
 	];
 
-	const isApplied = filterStore.isMessagesFilterApplied && !messagesStore.isLoading;
+	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !messagesStore.isLoading;
 
 	return (
 		<FilterPanel

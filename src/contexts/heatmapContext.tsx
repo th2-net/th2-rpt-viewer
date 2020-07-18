@@ -26,6 +26,10 @@ interface HeatmapContextState {
 	setVisibleRange: (range: ListRange) => void;
 	fullRange: ListRange | null;
 	setFullRange: (range: ListRange) => void;
+	unknownAreas: {
+		before: HeatmapElement[];
+		after: HeatmapElement[];
+	};
 }
 
 export const HeatmapContext = createContext({} as HeatmapContextState);

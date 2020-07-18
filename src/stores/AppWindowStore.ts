@@ -23,7 +23,7 @@ import { TabTypes, AppTab } from '../models/util/Windows';
 import MessagesStore from './MessagesStore';
 import EventsStore from './EventsStore';
 import ApiSchema from '../api/ApiSchema';
-import { isEventsTab } from '../helpers/windows';
+import { isEventsTab, isMessagesTab } from '../helpers/windows';
 import WindowsStore from './WindowsStore';
 
 export default class AppWindowStore {
@@ -51,11 +51,14 @@ export default class AppWindowStore {
 
 	@action
 	closeTab = (tabIndex: number) => {
-		this.deleteTab(tabIndex);
+		 const tabToClose = this.removeTab(tabIndex);
+		 if (isMessagesTab(tabToClose) && tabToClose.store.disposer) {
+			tabToClose.store.disposer();
+		 }
 	};
 
 	@action
-	deleteTab = (tabIndex: number): AppTab => {
+	removeTab = (tabIndex: number): AppTab => {
 		if (tabIndex <= this.activeTabIndex) {
 			this.activeTabIndex = this.activeTabIndex === 0
 				? 0
