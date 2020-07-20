@@ -52,7 +52,10 @@ export default class FilterStore {
 
 	@computed
 	get isEventsFilterApplied() {
-		return Object.values(this.eventsFilter).some(field => field != null);
+		return this.eventsFilter.timestampFrom !== null
+			|| this.eventsFilter.timestampTo !== null
+			|| this.eventsFilter.eventTypes.length !== 0
+			|| this.eventsFilter.names.length !== 0;
 	}
 
 	@action
