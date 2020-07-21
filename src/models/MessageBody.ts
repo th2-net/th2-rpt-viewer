@@ -28,6 +28,12 @@ export default interface MessageBody {
 	fields: { [key: string]: MessageBodyField };
 }
 
+export type ListValueField = {
+	listValue: {
+		values: Array<MessageValueField>;
+	};
+};
+
 export type MessageValueField = {
 	messageValue: {
 		fields: { [key: string]: MessageBodyField };
@@ -38,8 +44,12 @@ export type SimpleValueField = {
 	simpleValue: string;
 };
 
-export type MessageBodyField = MessageValueField | SimpleValueField;
+export type MessageBodyField = ListValueField | MessageValueField | SimpleValueField;
 
 export function isSimpleValue(field: MessageBodyField): field is SimpleValueField {
 	return field != null && typeof (field as SimpleValueField).simpleValue === 'string';
+}
+
+export function isListValue(field: MessageBodyField): field is ListValueField {
+	return field != null && typeof (field as ListValueField).listValue === 'object';
 }

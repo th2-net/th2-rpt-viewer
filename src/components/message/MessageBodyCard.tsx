@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import MessageBody, { isSimpleValue, MessageBodyField } from '../../models/MessageBody';
+import MessageBody, { isSimpleValue, MessageBodyField, isListValue } from '../../models/MessageBody';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 const DEFAULT_HIGHLIGHT_COLOR = '#e2dfdf';
@@ -97,11 +97,33 @@ function MessageBodyCardField(props: FieldProps) {
 				onMouseEnter={() => setIsHighlighted(true)}
 				onMouseLeave={() => setIsHighlighted(false)}
 				className="mc-body__field-label">
-				{isBeautified ? label : `"${label}"`}:{' '}
+				{label ? isBeautified ? `${label}: ` : `"${label}": ` : ''}
 			</span>
 			{
 				isSimpleValue(field) ? (
 					`"${field.simpleValue}"`
+				) : isListValue(field) ? (
+					<>
+						{'['}
+						<span style={{
+							display: isBeautified ? 'block' : undefined,
+							paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
+						}}>
+							{field.listValue.values.map((value, idx) => (
+								<MessageBodyCardField
+									key={idx}
+									field={value}
+									label={''}
+									isBeautified={isBeautified}
+									isHighlighted={isHighlighted}
+									isRoot={true}
+									setIsHighlighted={highlightSiblings}
+									highlightColor={highlightColor}
+								/>
+							))}
+						</span>
+						{']'}
+					</>
 				) : (
 					<>
 						{'{'}
