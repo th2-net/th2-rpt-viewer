@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
-import { raf } from '../helpers/raf';
+import { MessagesLoadingState } from '../../stores/MessagesStore';
 
 interface Props {
     computeItemKey?: (idx: number) => React.Key;
@@ -33,58 +33,67 @@ interface Props {
 	className?: string;
 	ScrollContainer?: TScrollContainer;
 	overscan?: number;
+	loadNextMessages: () => Promise<string[] | undefined>;
+	loadPrevMessages: () => Promise<string[] | undefined>;
+	loadingState: MessagesLoadingState | null;
 }
 
-export class VirtualizedList extends React.Component<Props> {
-	private virtuoso = React.createRef<VirtuosoMethods>();
+const MessagesVirtualizedList = (props: Props) => {
+	const virtuoso = React.useRef<VirtuosoMethods>(null);
+	const {
+		rowCount,
+		computeItemKey,
+		className,
+		ScrollContainer,
+		overscan = 3,
+		scrolledIndex,
+		itemRenderer,
+		loadPrevMessages,
+		loadNextMessages,
+		loadingState,
+	} = props;
 
-	componentDidUpdate(prevProps: Props) {
-		/*
-			Here we handle a situation, when primitive value of Number object doesn't changed
-			and passing new index value in List doesn't make any effect (because it requires primitive value).
-			So we need to scroll List manually.
-		*/
-		if (prevProps.scrolledIndex !== this.props.scrolledIndex && this.props.scrolledIndex != null) {
-			/*
-				We need raf here because in some cases scrolling happened before remeasuring row heights,
-				so we need to wait until component is complete rerender after remeasuring changed rows,
-				and then scroll to selected row.
-				Without it List will calculate wrong scrollTop because it contains outdated information
-				about row's heights.
-			*/
-			this.virtuoso.current?.scrollToIndex({ index: +this.props.scrolledIndex, align: 'start' });
+	React.useEffect(() => {
+		if (scrolledIndex !== null) {
+			virtuoso.current?.scrollToIndex({ index: +scrolledIndex, align: 'start' });
 		}
-	}
+	}, [scrolledIndex]);
 
-	componentDidMount() {
-		if (this.props.scrolledIndex !== null) {
-			// we need raf here, because in componentDidMount virtualized list is not complete its render
+	const onScrollBottom = () => loadNextMessages();
 
-			raf(() => {
-				this.virtuoso.current?.scrollToIndex({ index: Number(this.props.scrolledIndex), align: 'start' });
-			}, 3);
-		}
-	}
+	const onScrollTop = () => loadPrevMessages()
+		.then(messagesIds => {
+			if (messagesIds !== undefined) {
+				virtuoso.current?.adjustForPrependedItems(messagesIds.length);
+			}
+			return messagesIds;
+		});
 
-	render() {
-		const {
-			rowCount,
-			computeItemKey,
-			className,
-			ScrollContainer,
-			overscan = 3,
-		} = this.props;
-
-		return (
+	return (
+		<InfiniteLoaderContext.Provider value={{
+			onScrollBottom,
+			onScrollTop,
+			loadingState,
+		}}>
 			<Virtuoso
 				totalCount={rowCount}
-				ref={this.virtuoso}
+				ref={virtuoso}
 				overscan={overscan}
 				computeItemKey={computeItemKey}
-				item={this.props.itemRenderer}
+				item={itemRenderer}
 				style={{ height: '100%', width: '100%' }}
 				className={className}
 				ScrollContainer={ScrollContainer} />
-		);
-	}
+		</InfiniteLoaderContext.Provider>
+	);
+};
+
+interface InfiniteScrollContextValue {
+	onScrollBottom: () => Promise<string[] | undefined>;
+	onScrollTop: () => Promise<string[] | undefined>;
+	loadingState: MessagesLoadingState | null;
 }
+
+export const InfiniteLoaderContext = React.createContext<InfiniteScrollContextValue>({} as InfiniteScrollContextValue);
+
+export default MessagesVirtualizedList;

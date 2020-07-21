@@ -23,8 +23,6 @@ import {
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
 
-const ONE_HOUR = 60 * 60 * 1000;
-
 export default class FilterStore {
 	constructor(filterStore?: FilterStore) {
 		if (filterStore) {
@@ -35,8 +33,8 @@ export default class FilterStore {
 	}
 
 	@observable messagesFilter: MessagesFilter = {
-		timestampFrom: new Date(new Date().getTime() - ONE_HOUR).getTime(),
-		timestampTo: new Date().getTime(),
+		timestampFrom: null,
+		timestampTo: null,
 		streams: [],
 		messageTypes: [],
 	};
@@ -68,11 +66,11 @@ export default class FilterStore {
 		this.isMessagesFilterApplied = true;
 	}
 
-	@action resetMessagesFilter() {
+	@action resetMessagesFilter(streams: string[] = []) {
 		this.messagesFilter = {
-			timestampFrom: new Date(new Date().getTime() - ONE_HOUR).getTime(),
-			timestampTo: new Date().getTime(),
-			streams: [],
+			timestampFrom: null,
+			timestampTo: null,
+			streams,
 			messageTypes: [],
 		};
 		this.isMessagesFilterApplied = false;

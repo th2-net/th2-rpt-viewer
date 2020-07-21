@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 export default interface MessagesFilter {
-	timestampFrom: number;
-	timestampTo: number;
+	timestampFrom: null | number;
+	timestampTo: null | number;
 	streams: Array<string>;
 	messageTypes: Array<string>;
 }

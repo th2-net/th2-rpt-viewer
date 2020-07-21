@@ -15,6 +15,7 @@
  ***************************************************************************** */
 import { MessageApiSchema } from '../ApiSchema';
 import { createURLSearchParams } from '../../helpers/url';
+import MessagesFilter from '../../models/filter/MessagesFilter';
 
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {
@@ -28,13 +29,37 @@ const messageHttpApi: MessageApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
-	getMessages: async (timestampFrom: number, timestampTo: number) => {
+	getMessages: async ({
+		idsOnly = true,
+		messageId,
+		timelineDirection = 'next',
+		limit = 100,
+	}, filter: MessagesFilter, abortSignal?: AbortSignal) => {
+		const {
+			timestampFrom,
+			timestampTo,
+			streams,
+			messageTypes,
+		} = filter;
+
 		const params = createURLSearchParams({
-			idsOnly: false,
+			idsOnly,
+			timelineDirection,
+			messageId,
+			limit,
 			timestampFrom,
 			timestampTo,
 		});
-		const res = await fetch(`/backend/search/messages?${params}`);
+
+		if (streams.length > 0) {
+			streams.forEach(s => params.append('stream', s));
+		}
+
+		if (messageTypes.length > 0) {
+			messageTypes.forEach(type => params.append('messageType', type));
+		}
+
+		const res = await fetch(`/backend/search/messages?${params}`, { signal: abortSignal });
 
 		if (res.ok) {
 			return res.json();
@@ -58,8 +83,8 @@ const messageHttpApi: MessageApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
-	getMessage: async (id: string) => {
-		const res = await fetch(`/backend/message/${id}`);
+	getMessage: async (id: string, signal?: AbortSignal) => {
+		const res = await fetch(`/backend/message/${id}`, { signal });
 
 		if (res.ok) {
 			return res.json();

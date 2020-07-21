@@ -21,6 +21,7 @@ import { HeatmapProvider } from '../heatmap/HeatmapProvider';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import MessagesCardList from './MessagesCardList';
 import { useWindowsStore } from '../../hooks/useWindowsStore';
+import { getTimestampAsNumber } from '../../helpers/date';
 
 const MessagesWindow = () => {
 	const messagesStore = useMessagesWindowStore();
@@ -37,18 +38,41 @@ const MessagesWindow = () => {
 						heatmapElementsMap.set(eventColor, attachedMessageIds);
 					}
 				});
+
 			return heatmapElementsMap;
 		},
-		[windowsStore.eventColors],
+		[windowsStore.eventColors, messagesStore.messagesIds],
 	);
+
+	const unknownAreas = React.useMemo(() => {
+		if (!messagesStore.messagesIds.length || messagesStore.filterStore.isMessagesFilterApplied) {
+			return {
+				before: [],
+				after: [],
+			};
+		}
+		const headMessage = messagesStore.attachedMessages.find(m => messagesStore.messagesIds.includes(m.messageId))
+			|| messagesStore.messagesCache.get(messagesStore.messagesIds[0]);
+		if (!headMessage) {
+			return { before: [], after: [] };
+		}
+		const before = messagesStore.attachedMessages
+			.filter(msg => getTimestampAsNumber(msg.timestamp) < getTimestampAsNumber(headMessage.timestamp))
+			.map(msg => msg.messageId);
+		const after = messagesStore.attachedMessages
+			.filter(msg => !messagesStore.messagesIds.includes(msg.messageId)
+				&& getTimestampAsNumber(msg.timestamp) > getTimestampAsNumber(headMessage.timestamp))
+			.map(msg => msg.messageId);
+		return { before, after };
+	}, [messagesStore.messagesIds]);
 
 	return (
 		<HeatmapProvider
-			scrollToItem={(index: number) => messagesStore.scrolledIndex = new Number(index)}
 			items={messagesStore.messagesIds}
+			unknownAreas={unknownAreas}
 			selectedItems={selectedItems}
 			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}
-			pinnedItems={windowsStore.pinnedMessagesIds}>
+			pinnedItems={windowsStore.pinnedMessages.map(m => m.messageId)}>
 			<div className="layout">
 				<div className="layout__header">
 					<MessagesWindowHeader />

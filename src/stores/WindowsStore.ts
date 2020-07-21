@@ -19,6 +19,7 @@ import {
 	action,
 	computed,
 	reaction,
+	autorun,
 } from 'mobx';
 import RootStore from './RootStore';
 import ApiSchema from '../api/ApiSchema';
@@ -27,6 +28,7 @@ import { isMessagesTab, isEventsTab } from '../helpers/windows';
 import { EventAction } from '../models/EventAction';
 import { randomHexColor } from '../helpers/color';
 import { EventMessage } from '../models/EventMessage';
+import { AppTab } from '../models/util/Windows';
 
 export default class WindowsStore {
 	private readonly defaultColors = [
@@ -44,33 +46,38 @@ export default class WindowsStore {
 		this.createDefaultWindow();
 
 		reaction(
-			() => this.allTabs,
-			this.onWindowsTabsChange,
-		);
-
-		reaction(
 			() => this.selectedEvents,
 			selectedEvents => {
 				this.getEventColors(selectedEvents);
 				this.getAttachedMessagesIds(selectedEvents);
 			},
 		);
+
+		autorun(() => {
+			this.allTabs = this.windows.flatMap(window => window.tabs);
+
+			this.onWindowsTabsChange();
+		});
+
+		autorun(() => {
+			this.selectedEvents = this.events;
+		});
 	}
 
 	@observable eventColors: Map<string, string> = new Map();
 
 	@observable attachedMessagesIds: Array<string> = [];
 
-	@observable pinnedMessagesIds: Array<string> = [];
+	@observable pinnedMessages: Array<EventMessage> = [];
 
 	@observable windows: AppWindowStore[] = [];
 
-	@computed get allTabs() {
-		return this.windows.flatMap(({ tabs }) => tabs);
-	}
+	@observable allTabs: Array<AppTab> = [];
 
-	@computed get selectedEvents() {
-		return this.allTabs
+	@observable selectedEvents: Array<EventAction> = [];
+
+	@computed get events() {
+		return this.windows.flatMap(window => window.tabs)
 			.filter(isEventsTab)
 			.map(eventTab => eventTab.store.selectedEvent)
 			.filter((event, i, self): event is EventAction =>
@@ -91,12 +98,11 @@ export default class WindowsStore {
 
 	@action
 	toggleMessagePin = (message: EventMessage) => {
-		const { messageId } = message;
-		if (!this.pinnedMessagesIds.includes(messageId)) {
-			this.pinnedMessagesIds = this.pinnedMessagesIds.concat(messageId);
+		if (this.pinnedMessages.findIndex(m => m.messageId === message.messageId) === -1) {
+			this.pinnedMessages = this.pinnedMessages.concat(message);
 		} else {
-			this.pinnedMessagesIds = this.pinnedMessagesIds.filter(
-				id => id !== messageId,
+			this.pinnedMessages = this.pinnedMessages.filter(
+				msg => msg.messageId !== message.messageId,
 			);
 		}
 	};
@@ -116,14 +122,14 @@ export default class WindowsStore {
 
 		if (!targetWindow) {
 			const newWindow = new AppWindowStore(this, this.api);
-			newWindow.addTabs([originWindow.deleteTab(tabIndex)]);
+			newWindow.addTabs([originWindow.removeTab(tabIndex)]);
 			const startIndex = targetWindowIndex === -1 ? 0 : this.windows.length;
 			this.windows.splice(startIndex, 0, newWindow);
 			return;
 		}
 
 		if (targetWindow !== originWindow) {
-			targetWindow.addTabs([originWindow.deleteTab(tabIndex)], targetTabIndex);
+			targetWindow.addTabs([originWindow.removeTab(tabIndex)], targetTabIndex);
 
 			return;
 		}
@@ -136,12 +142,12 @@ export default class WindowsStore {
 		this.windows.splice(windowIndex, 1);
 	};
 
-	@action.bound
-	private onWindowsTabsChange() {
+	@action
+	private onWindowsTabsChange = () => {
 		this.windows
 			.filter(window => window.isEmpty)
 			.forEach(window => this.windows.splice(this.windows.findIndex(w => w === window), 1));
-	}
+	};
 
 	@action
 	private createDefaultWindow() {
@@ -180,11 +186,6 @@ export default class WindowsStore {
 
 	@action
 	private getAttachedMessagesIds = (selectedEvents: EventAction[]) => {
-		this.attachedMessagesIds = selectedEvents.reduce<string[]>((attachedMessageIds, event) => (
-			[
-				...attachedMessageIds,
-				...event.attachedMessageIds.filter(id => !attachedMessageIds.includes(id)),
-			]
-		), []);
+		this.attachedMessagesIds = [...new Set(selectedEvents.flatMap(({ attachedMessageIds }) => attachedMessageIds))];
 	};
 }

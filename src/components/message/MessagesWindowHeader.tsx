@@ -17,29 +17,23 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import { useHeatmap } from '../../hooks/useHeatmap';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import MessagesFilter from '../filter/MessagesFilterPanel';
-import { useWindowsStore } from '../../hooks/useWindowsStore';
 
 const MessagesWindowHeader = () => {
-	const { heatmapElements } = useHeatmap();
-	const windowsStore = useWindowsStore();
 	const messagesStore = useMessagesWindowStore();
 
 	const getStep = () => {
-		const messagesIndexes = heatmapElements
-			.filter(m => m.id !== undefined)
-			.map(m => m.index);
-		const step = messagesStore.scrolledIndex
-			? messagesIndexes.indexOf(messagesStore.scrolledIndex.valueOf()) + 1
+		const step = messagesStore.selectedMessageId && messagesStore.selectedMessagesIds
+			.includes(messagesStore.selectedMessageId.valueOf())
+			? messagesStore.selectedMessagesIds.indexOf(messagesStore.selectedMessageId.valueOf()) + 1
 			: 0;
-		return `${step} of ${messagesIndexes.length}`;
+		return `${step} of ${messagesStore.selectedMessagesIds.length}`;
 	};
 
 	const navButtonClass = createStyleSelector(
 		'messages-window-header__button',
-		windowsStore.attachedMessagesIds.length > 0 || windowsStore.pinnedMessagesIds.length > 0
+		messagesStore.selectedMessagesIds.length > 0
 			? null : 'disabled',
 	);
 
