@@ -133,6 +133,10 @@
 		align-items: center;
 		justify-self: flex-start;
 		padding-left: 10px;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		overflow: hidden;
+		width: inherit
 	}
 
 	&__controls {
