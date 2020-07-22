@@ -22,10 +22,14 @@ import Empty from '../../Empty';
 import SplashScreen from '../../SplashScreen';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
-import '../../../styles/action.scss';
 import { raf } from '../../../helpers/raf';
+import { EventIdNode } from '../../../stores/EventsStore';
+import '../../../styles/action.scss';
 
-function EventTreeList() {
+interface Props {
+	nodes: EventIdNode[]
+}
+function EventTreeList({ nodes }: Props) {
 	const eventWindowStore = useEventWindowStore();
 	const listRef = React.useRef<VirtuosoMethods | null>(null);
 
@@ -59,10 +63,10 @@ function EventTreeList() {
 		}
 	}, [eventWindowStore.scrolledIndex]);
 
-	const computeKey = (index: number) => eventWindowStore.nodesList[index].id;
+	const computeKey = (index: number) => nodes[index].id;
 
 	const renderEvent = (index: number): React.ReactElement => (
-		<ItemListWrapper index={index}/>
+		<EventTree idNode={nodes[index]}/>
 	);
 
 	if (eventWindowStore.isLoadingRootEvents) {
@@ -78,7 +82,7 @@ function EventTreeList() {
 			<StateSaverProvider>
 				<Virtuoso
 					ref={listRef}
-					totalCount={eventWindowStore.nodesList.length}
+					totalCount={nodes.length}
 					computeItemKey={computeKey}
 					overscan={3}
 					item={renderEvent}
@@ -89,12 +93,5 @@ function EventTreeList() {
 	);
 }
 
-const ItemListWrapper = observer(({ index }: { index: number }) => {
-	const eventWindowStore = useEventWindowStore();
-
-	return (
-		<EventTree idNode={eventWindowStore.nodesList[index]}/>
-	);
-});
 
 export default observer(EventTreeList);
