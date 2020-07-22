@@ -41,8 +41,9 @@ describe('Heatmap', () => {
 				setVisibleRange: mockFn,
 				heatmapElements,
 				setHeatmapElements: mockFn,
+				unknownAreas: { before: [], after: [] },
 			}}>
-				<Heatmap onElementClick={mockFn} selectedIndex={null} />
+				<Heatmap onElementClick={mockFn} selectedItem={null} />
 			</HeatmapContext.Provider>,
 		);
 

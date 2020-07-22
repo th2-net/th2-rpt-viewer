@@ -35,7 +35,7 @@ function EventTreeView() {
 			leftPanelMinWidth={445}
 			rightPanelMinWidth={445}>
 			<SplitViewPane>
-				<EventTreeList/>
+				<EventTreeList nodes={eventWindowStore.nodesList}/>
 			</SplitViewPane>
 			<SplitViewPane>
 				{
