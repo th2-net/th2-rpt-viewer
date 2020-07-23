@@ -31,42 +31,42 @@ module.exports = webpackMerge(commonConfig, {
         compress: true,
         port: 9001,
         host: "0.0.0.0",
-        // proxy: {
-        //     '/backend': {
-        //         target: 'http://th2-dev:30000',
-        //         changeOrigin: true,
-        //         secure: false,
-        //     }
-        // },
         proxy: {
             '/backend': {
-                target: 'http://kos215:8081',
+                target: 'http://th2-dev:30000',
                 changeOrigin: true,
                 secure: false,
-                pathRewrite: {
-                    '^/backend': ''
-                }
             }
         },
+        // proxy: {
+        //     '/backend': {
+        //         target: 'http://kos215:8081',
+        //         changeOrigin: true,
+        //         secure: false,
+        //         pathRewrite: {
+        //             '^/backend': ''
+        //         }
+        //     }
+        // },
         hot: true,
     },
     module: {
         rules: [
-            // {
-            //     test: /\.(ts|tsx)$/,
-            //     enforce: 'pre',
-            //     use: [{
-            //         options: {
-            //             eslintPath: require.resolve('eslint'),
-            //             failOnError: false,
-            //             cache: false,
-            //             quite: true,
-            //             formatter: require('eslint-formatter-pretty'),
-            //         },
-            //         loader: require.resolve('eslint-loader'),
-            //     }],
-            //     exclude: /node_modules/,
-            // },
+            {
+                test: /\.(ts|tsx)$/,
+                enforce: 'pre',
+                use: [{
+                    options: {
+                        eslintPath: require.resolve('eslint'),
+                        failOnError: false,
+                        cache: false,
+                        quite: true,
+                        formatter: require('eslint-formatter-pretty'),
+                    },
+                    loader: require.resolve('eslint-loader'),
+                }],
+                exclude: /node_modules/,
+            },
             {
                 test: /\.scss$/,
                 exclude: /node_modules/,

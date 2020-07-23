@@ -27,8 +27,9 @@ import { EventIdNode } from '../../../stores/EventsStore';
 import '../../../styles/action.scss';
 
 interface Props {
-	nodes: EventIdNode[]
+	nodes: EventIdNode[];
 }
+
 function EventTreeList({ nodes }: Props) {
 	const eventWindowStore = useEventWindowStore();
 	const listRef = React.useRef<VirtuosoMethods | null>(null);
@@ -92,6 +93,5 @@ function EventTreeList({ nodes }: Props) {
 		</div>
 	);
 }
-
 
 export default observer(EventTreeList);

@@ -27,7 +27,7 @@ export const getHeatmapElements = (
 	unknown = false,
 ): HeatmapElement[] => {
 	const emptyHeatmap = [createHeatmapElement(0, items.length || 1)];
-	if (!selectedItems.size && !pinnedItems.length) return emptyHeatmap;
+	if (!selectedItems.size && !pinnedItems.length && !unknown) return emptyHeatmap;
 
 	const heatmapElementsMap: { [index: number]: string[] } = {};
 
