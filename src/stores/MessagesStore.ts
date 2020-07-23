@@ -170,7 +170,7 @@ export default class MessagesStore {
 	@action
 	getMessages = async (
 		timelineDirection: 'next' | 'previous' = 'next',
-		originMessageId: string,
+		originMessageId?: string,
 	): Promise<string[] | undefined> => {
 		if (this.messagesAbortController) {
 			this.messagesAbortController.abort();
@@ -194,34 +194,43 @@ export default class MessagesStore {
 				limit: this.MESSAGES_CHUNK_SIZE,
 			}, this.filterStore.messagesFilter, this.messagesAbortController.signal);
 
-			if (!this.messagesIds.includes(originMessageId)) {
+			if (originMessageId && !this.messagesIds.includes(originMessageId)) {
 				this.messagesIds = [];
 				this.messagesCache.clear();
 			}
 
+			const newMessagesIds = timelineDirection === 'previous'
+				? messagesIds.reverse() : messagesIds;
+
+			if (newMessagesIds.length) {
+				// TODO: It's a temporary measure to create a timeline until timeline helper api is released.
+				await this.fetchMessage(messagesIds[0]);
+			}
+
 			if (timelineDirection === 'previous') {
-				await this.fetchMessage(messagesIds[messagesIds.length - 1]);
 				this.messagesIds = [
-					...messagesIds.reverse(),
+					...newMessagesIds,
 					...this.messagesIds,
 				];
 			} else {
-				await this.fetchMessage(messagesIds[0]);
-
+				if (newMessagesIds[0] === this.messagesIds[this.messagesIds.length - 1]) {
+					newMessagesIds.shift();
+				}
 				this.messagesIds = [
 					...this.messagesIds,
-					...messagesIds,
+					...newMessagesIds,
 				];
 			}
 
-			this.isLoading = false;
-			this.messagesLoadingState = null;
 			// eslint-disable-next-line consistent-return
 			return messagesIds;
 		} catch (error) {
 			if (error.name !== 'AbortError') {
 				console.error('Error while loading messages', error);
 			}
+		} finally {
+			this.isLoading = false;
+			this.messagesLoadingState = null;
 		}
 	};
 
@@ -293,12 +302,10 @@ export default class MessagesStore {
 				newlySelectedMessages
 					.sort((mesA, mesB) => getTimestampAsNumber(mesA.timestamp) - getTimestampAsNumber(mesB.timestamp));
 				this.selectedMessageId = newlySelectedMessages[0].messageId;
-			} else if (attachedMessagesIds.length) {
-				this.selectedMessageId = attachedMessagesIds[0];
 			}
 		} catch (error) {
 			if (error.name !== 'AbortError') {
-				console.error('Error whie loading attached messages', error);
+				console.error('Error while loading attached messages', error);
 			}
 		}
 	};
@@ -308,7 +315,10 @@ export default class MessagesStore {
 		this.messagesLoadingState = MessagesLoadingState.LOADING_ROOT_ITEMS;
 		this.messagesIds = [];
 		this.messagesCache.clear();
-		this.loadNextMessages();
+		const originMessageId = this.attachedMessages.length
+			? this.attachedMessages[0].messageId
+			: undefined;
+		this.getMessages('next', originMessageId);
 	};
 
 	@action

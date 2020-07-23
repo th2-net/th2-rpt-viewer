@@ -37,7 +37,7 @@ export interface MessageApiSchema {
 	getMessages: (search: {
 		limit?: number;
 		timelineDirection: 'previous' | 'next';
-		messageId: string;
+		messageId?: string;
 		idsOnly?: boolean;
 	}, filter: MessagesFilter,
 		abortSignal?: AbortSignal) => Promise<string[]>;

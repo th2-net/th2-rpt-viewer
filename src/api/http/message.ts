@@ -31,7 +31,7 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	getMessages: async ({
 		idsOnly = true,
-		messageId,
+		messageId = null,
 		timelineDirection = 'next',
 		limit = 100,
 	}, filter: MessagesFilter, abortSignal?: AbortSignal) => {
@@ -58,7 +58,6 @@ const messageHttpApi: MessageApiSchema = {
 		if (messageTypes.length > 0) {
 			messageTypes.forEach(type => params.append('messageType', type));
 		}
-
 		const res = await fetch(`/backend/search/messages?${params}`, { signal: abortSignal });
 
 		if (res.ok) {
