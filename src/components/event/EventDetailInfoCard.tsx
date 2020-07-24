@@ -165,7 +165,7 @@ function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
 											body={bodyPayloadItem}
 											parentEvent={event}/>
 									))
-									: <EventBodyCard body={body} parentEvent={event} />
+									: <EventBodyCard key={eventId} body={body} parentEvent={event} />
 							}
 						</div>
 					)
