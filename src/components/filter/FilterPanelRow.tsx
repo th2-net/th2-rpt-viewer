@@ -18,7 +18,7 @@
 import * as React from 'react';
 import MaskedInput from 'react-text-mask';
 import {
-	 isExists, isPast, isToday, format,
+	isBefore, format, parse, isValid, addHours,
 } from 'date-fns';
 import {
 	FilterRowConfig,
@@ -58,9 +58,11 @@ export default function FilterPanelRow({ rowConfig }: Props) {
 function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 	const fromId = `${config.id}-from`;
 	const toId = `${config.id}-to`;
-	const inputMask = [/\d/, /\d/, '/', /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/, ',', ' ', /\d/, /\d/, ':', /\d/, /\d/];
-	const [isFromInputValid, setIsFromValue] = React.useState(config.fromValue !== null);
-	const [isToInputValid, setIsToValue] = React.useState(config.toValue !== null);
+	const inputMask = [/\d/, /\d/, /\d/, /\d/, '-',
+		/\d/, /\d/, '-', /\d/, /\d/, ' ', /\d/, /\d/, ':',
+		/\d/, /\d/, ':', /\d/, /\d/, '.', /\d/, /\d/, /\d/];
+	const [isFromInputValid, setIsFromInputValid] = React.useState(config.fromValue !== null);
+	const [isToInputValid, setIsToInputValid] = React.useState(config.toValue !== null);
 
 	const fromInputClasses = createBemElement('filter-row', 'input', isFromInputValid ? 'valid' : null);
 	const toInputClasses = createBemElement('filter-row', 'input', isToInputValid ? 'valid' : null);
@@ -72,48 +74,28 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 
 		const date = new Date(timestamp);
 		const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-		return format(utcDate, 'MM/dd/yyyy, HH:mm');
+		return format(utcDate, 'yyyy-MM-dd HH:mm:ss.SSS');
 	};
 
-	const validPipe = (maskedValue: string):
-		string | false => {
-		if (is29February(maskedValue)) {
-			if (!maskedValue.substr(6, 4).includes('_')) {
-				const value = maskedValue.replace(/_/g, '1');
-				const date = new Date(value);
-				if (!isCorrectDate(maskedValue)) {
-					if (isPast(date) || isToday(date)) {
-						return maskedValue.replace('29', '28');
-					}
-					return false;
-				}
-				return maskedValue;
-			}
-			return maskedValue;
-		}
+	const validPipe = (maskedValue: string): string | false => {
 		if (isCorrectDate(maskedValue)) {
 			return maskedValue;
 		}
 		return false;
 	};
 
-	const is29February = (maskedValue: string): boolean => maskedValue.includes('02/29');
-
 	const isCorrectDate = (maskedValue: string): boolean => {
-		const value = maskedValue.replace(/_/g, '1');
-		const [month, day, year] = value.substr(0, 10).split('/');
-		let isNotFuture = true;
-		if (!maskedValue.substr(6, 4).includes('_')) {
-			const date = new Date(value);
-			isNotFuture = isPast(date) || isToday(date);
-		}
-		const [hours, minutes] = value.substr(12, 5).split(':');
-		const isTimeCorrect = (parseInt(hours) < 24) && (parseInt(minutes) < 60);
-		return isExists(
-			parseInt(year),
-			parseInt(month) - 1,
-			parseInt(day),
-		) && isTimeCorrect && isNotFuture;
+		const value = maskedValue.substr(0, 4).replace(/__/g, '01').replace(/_/g, '0')
+		+ maskedValue.substr(4, 6)
+			.replace(/__/g, '01')
+			.replace(/(?<=1)_/g, '0')
+			.replace(/(?<=0)_/g, '1')
+			.replace(/_/g, '0')
+		+ maskedValue.substring(10).replace(/_/g, '0');
+		const date = parse(value, 'yyyy-MM-dd HH:mm:ss.SSS', new Date());
+
+		return isValid(date)
+			&& isBefore(addHours(date, 3), new Date());
 	};
 
 	const onInputBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,16 +103,16 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 			const date = new Date(e.target.value);
 			const utcTime = toUTCDate(date);
 			if (e.target.name === 'from') {
-				setIsFromValue(true);
+				setIsFromInputValid(true);
 				config.setFromValue(utcTime);
 			} else {
-				setIsToValue(true);
+				setIsToInputValid(true);
 				config.setToValue(utcTime);
 			}
 		} else if (e.target.name === 'from') {
-			setIsFromValue(false);
+			setIsFromInputValid(false);
 		} else {
-			setIsToValue(false);
+			setIsToInputValid(false);
 		}
 	};
 
@@ -146,7 +128,7 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 						 value={formatTimestampValue(config.fromValue)}
 						 mask={inputMask}
 						 onBlur={onInputBlur}
-						 placeholder="MM/DD/YYYY, 00:00"
+						 placeholder="YYYY-MM-DD 00:00:00.000"
 						 keepCharPositions={true}
 						 pipe={validPipe}
 						 name='from'/>
@@ -156,7 +138,7 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 						 value={formatTimestampValue(config.toValue)}
 						 mask={inputMask}
 						 onBlur={onInputBlur}
-						 placeholder="MM/DD/YYYY, 00:00"
+						 placeholder="YYYY-MM-DD 00:00:00.000"
 						 keepCharPositions={true}
 						 pipe={validPipe}
 						 name='to'/>
