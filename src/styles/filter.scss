@@ -122,6 +122,16 @@
     &__loading {
         @include spinner(2px, 19px, 2s);
     }
+
+    &-time-controls {
+        margin-left: 120px;
+    }
+
+    &-time-control {
+        margin-right: 10px;
+        cursor: pointer;
+        text-decoration: underline;
+    }
 }
 
 .filter-controls {

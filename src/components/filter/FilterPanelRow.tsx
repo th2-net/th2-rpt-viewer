@@ -116,33 +116,51 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 		}
 	};
 
+	const setTimeOffset = (minutes: number) => {
+		config.setFromValue(Date.now() - minutes * 60000);
+		config.setToValue(Date.now());
+	};
+
 	return (
-		<div className='filter-row'>
-			<label
-				htmlFor={fromId}
-				className='filter-row__label'>
-				{config.label}
-			</label>
-			<MaskedInput id={fromId}
-						 className={fromInputClasses}
-						 value={formatTimestampValue(config.fromValue)}
-						 mask={inputMask}
-						 onBlur={onInputBlur}
-						 placeholder="YYYY-MM-DD 00:00:00.000"
-						 keepCharPositions={true}
-						 pipe={validPipe}
-						 name='from'/>
-			<label htmlFor={toId}> to </label>
-			<MaskedInput id={toId}
-						 className={toInputClasses}
-						 value={formatTimestampValue(config.toValue)}
-						 mask={inputMask}
-						 onBlur={onInputBlur}
-						 placeholder="YYYY-MM-DD 00:00:00.000"
-						 keepCharPositions={true}
-						 pipe={validPipe}
-						 name='to'/>
-		</div>
+		<>
+			<div className='filter-row'>
+				<label
+					htmlFor={fromId}
+					className='filter-row__label'>
+					{config.label}
+				</label>
+				<MaskedInput id={fromId}
+							 className={fromInputClasses}
+							 value={formatTimestampValue(config.fromValue)}
+							 mask={inputMask}
+							 onBlur={onInputBlur}
+							 placeholder="MM/DD/YYYY, 00:00"
+							 keepCharPositions={true}
+							 pipe={validPipe}
+							 name='from'/>
+				<label htmlFor={toId}> to </label>
+				<MaskedInput id={toId}
+							 className={toInputClasses}
+							 value={formatTimestampValue(config.toValue)}
+							 mask={inputMask}
+							 onBlur={onInputBlur}
+							 placeholder="MM/DD/YYYY, 00:00"
+							 keepCharPositions={true}
+							 pipe={validPipe}
+							 name='to'/>
+			</div>
+			<div className="filter-time-controls">
+				<span
+					className="filter-time-control"
+					onClick={setTimeOffset.bind(null, 15)}>last 15 minutes</span>
+				<span
+					className="filter-time-control"
+					onClick={setTimeOffset.bind(null, 60)}>last hour</span>
+				<span
+					className="filter-time-control"
+					onClick={setTimeOffset.bind(null, (60 * 24))}>last day</span>
+			</div>
+		</>
 	);
 }
 
