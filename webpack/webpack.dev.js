@@ -31,6 +31,7 @@ module.exports = webpackMerge(commonConfig, {
         compress: true,
         port: 9001,
         host: "0.0.0.0",
+        historyApiFallback: true,
         proxy: {
             '/backend': {
                 target: 'http://th2-dev:30000',

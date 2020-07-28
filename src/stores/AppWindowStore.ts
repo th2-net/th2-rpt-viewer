@@ -21,7 +21,7 @@ import {
 } from 'mobx';
 import { TabTypes, AppTab } from '../models/util/Windows';
 import MessagesStore from './MessagesStore';
-import EventsStore from './EventsStore';
+import EventsStore, { EventStoreURLState } from './EventsStore';
 import ApiSchema from '../api/ApiSchema';
 import { isEventsTab, isMessagesTab } from '../helpers/windows';
 import WindowsStore from './WindowsStore';
@@ -99,10 +99,10 @@ export default class AppWindowStore {
 	};
 
 	@action
-	addEventsTab = (store?: EventsStore) => {
+	addEventsTab = (defaultState: EventsStore | EventStoreURLState | null = null) => {
 		this.addTabs({
 			type: TabTypes.Events,
-			store: store || new EventsStore(this.api, this.windowsStore),
+			store: new EventsStore(this.api, this.windowsStore, defaultState),
 		});
 	};
 
@@ -110,7 +110,7 @@ export default class AppWindowStore {
 	addMessagesTab = (store?: MessagesStore) => {
 		this.addTabs({
 			type: TabTypes.Messages,
-			store: store || new MessagesStore(this.api, this.windowsStore),
+			store: new MessagesStore(this.api, this.windowsStore, store),
 		});
 	};
 }

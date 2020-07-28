@@ -23,12 +23,13 @@ import Bubble from '../util/Bubble';
 import { nextCyclicItem, removeByIndex, replaceByIndex } from '../../helpers/array';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import { createSearchToken } from '../../helpers/search/createSearchToken';
 import '../../styles/search.scss';
 
 export const REACTIVE_SEARCH_DELAY = 500;
 const INPUT_PLACEHOLDER = 'Separate words with a space to find multiple words';
 
-const COLORS = [
+export const COLORS = [
 	'#E69900',
 	'#FF5500',
 	'#1F66AD',
@@ -40,21 +41,22 @@ interface StateProps {
     searchTokens: SearchToken[];
     currentIndex: number | null;
     resultsCount: number;
-    isLoading: boolean;
+	isLoading: boolean;
+	isActive: boolean;
 }
 
 interface DispatchProps {
     updateSearchTokens: (searchValues: SearchToken[]) => void;
     nextSearchResult: () => void;
     prevSearchResult: () => void;
-    clear: () => void;
+	clear: () => void;
+	setIsActive: (isActive: boolean) => void;
 }
 
 export interface Props extends StateProps, DispatchProps {}
 
 interface State {
     inputValue: string;
-    isActive: boolean;
 }
 
 export class SearchInputBase extends React.PureComponent<Props, State> {
@@ -67,7 +69,6 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 
 		this.state = {
 			inputValue: '',
-			isActive: false,
 		};
 	}
 
@@ -82,25 +83,22 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 	}
 
 	focus() {
-		this.setState({
-			isActive: true,
-		}, () => {
-			this.inputElement.current?.focus();
-		});
+		this.props.setIsActive(true);
+		this.inputElement.current?.focus();
 	}
 
 	blur() {
+		this.props.setIsActive(false);
 		this.setState({
-			isActive: false,
 			inputValue: '',
 		});
 	}
 
 	render() {
 		const {
-			currentIndex, resultsCount, prevSearchResult, nextSearchResult, searchTokens, isLoading,
+			currentIndex, resultsCount, prevSearchResult, nextSearchResult, searchTokens, isLoading, isActive,
 		} = this.props;
-		const { inputValue, isActive } = this.state;
+		const { inputValue } = this.state;
 
 		const notActiveTokens = searchTokens.filter(searchToken => !searchToken.isActive);
 		const activeTokens = searchTokens.find((searchToken => searchToken.isActive));
@@ -190,7 +188,7 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 
 	private documentOnClick = (e: MouseEvent) => {
 		if (!this.root.current?.contains(e.target as HTMLElement)
-			&& this.state.isActive
+			&& this.props.isActive
 			&& this.props.searchTokens.length < 1
 			&& this.state.inputValue.length < 1
 		) {
@@ -341,12 +339,12 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 	};
 
 	private createToken(value: string, color?: string, isActive = true): SearchToken {
-		return {
-			pattern: value.trim(),
-			color: color ?? this.getNextColor(),
-			isScrollable: true,
+		return createSearchToken(
+			value.trim(),
+			color ?? this.getNextColor(),
+			true,
 			isActive,
-		};
+		);
 	}
 
 	private getNextColor(): string {
@@ -361,6 +359,8 @@ const SearchInput = () => {
 
 	return (
 		<SearchInputBase
+			isActive={searchStore.isActive}
+			setIsActive={(isActive: boolean) => searchStore.isActive = isActive}
 			searchTokens={searchStore.tokens}
 			resultsCount={searchStore.results.length}
 			currentIndex={searchStore.scrolledIndex}

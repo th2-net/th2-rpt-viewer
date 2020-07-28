@@ -23,15 +23,31 @@ import {
 import SearchToken from '../models/search/SearchToken';
 import ApiSchema from '../api/ApiSchema';
 import EventsStore from './EventsStore';
+import { createSearchToken } from '../helpers/search/createSearchToken';
+import { COLORS as SearchTokenColors } from '../components/search/SearchInput';
+
+const defaultState = {
+	tokens: [],
+	isLoading: false,
+	scrolledIndex: null,
+	rawResults: [],
+};
+
+type initialState = Partial<{
+	tokens: SearchToken[];
+	isLoading: boolean;
+	scrolledIndex: number | null;
+	rawResults: string[];
+	searchPatterns: string[];
+}>;
 
 export default class SearchStore {
-	constructor(private api: ApiSchema, private eventsStore: EventsStore, searchStore?: SearchStore) {
-		if (searchStore) {
-			this.tokens = toJS(searchStore.tokens);
-			this.isLoading = toJS(searchStore.isLoading);
-			this.scrolledIndex = toJS(searchStore.scrolledIndex);
-			this.rawResults = toJS(searchStore.rawResults);
-		}
+	constructor(
+		private api: ApiSchema,
+		private eventsStore: EventsStore,
+		initialState?: initialState,
+	) {
+		this.init(initialState);
 	}
 
 	@observable tokens: SearchToken[] = [];
@@ -41,6 +57,8 @@ export default class SearchStore {
 	@observable isLoading = false;
 
 	@observable scrolledIndex: number | null = null;
+
+	@observable isActive = false;
 
 	@computed
 	get scrolledItem() {
@@ -126,5 +144,31 @@ export default class SearchStore {
 		this.rawResults = [];
 		this.tokens = [];
 		this.scrolledIndex = null;
+	};
+
+	@action
+	private init = (initialState?: initialState) => {
+		if (!initialState) return;
+		const {
+			isLoading = defaultState.isLoading,
+			rawResults = defaultState.rawResults,
+			scrolledIndex = defaultState.scrolledIndex,
+			tokens = defaultState.tokens,
+			searchPatterns,
+		} = initialState;
+
+		this.isLoading = isLoading;
+		this.scrolledIndex = scrolledIndex;
+		this.rawResults = rawResults;
+
+		if (searchPatterns && searchPatterns.length) {
+			const tokensFromUrl = searchPatterns.map((patt, index) =>
+				createSearchToken(patt, SearchTokenColors[index], true, false));
+			this.tokens = tokensFromUrl;
+			this.updateTokens(tokensFromUrl);
+			this.isActive = true;
+		} else {
+			this.tokens = tokens;
+		}
 	};
 }

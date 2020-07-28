@@ -25,6 +25,7 @@ import SearchStore from './SearchStore';
 import EventsFilter from '../models/filter/EventsFilter';
 import PanelArea from '../util/PanelArea';
 import WindowsStore from './WindowsStore';
+import { TabTypes } from '../models/util/Windows';
 
 export type EventIdNode = {
 	id: string;
@@ -33,20 +34,28 @@ export type EventIdNode = {
 	parents: string[];
 };
 
+export type EventStoreURLState = Partial<{
+	type: TabTypes.Events;
+	panelArea: PanelArea;
+	filter: EventsFilter;
+	selectedNodesPath: string[];
+	search: string[];
+}>;
+
 export default class EventsStore {
+	constructor(
+		private api: ApiSchema,
+		private windowsStore: WindowsStore,
+		initialState: EventsStore | EventStoreURLState | null,
+	) {
+		this.init(initialState);
+	}
+
 	filterStore: FilterStore = new FilterStore();
 
 	viewStore: ViewStore = new ViewStore();
 
 	searchStore: SearchStore = new SearchStore(this.api, this);
-
-	constructor(private api: ApiSchema, private windowsStore: WindowsStore, eventStore?: EventsStore) {
-		if (eventStore) {
-			this.copy(eventStore);
-		} else {
-			this.fetchRootEvents();
-		}
-	}
 
 	@observable eventsIds: EventIdNode[] = [];
 
@@ -148,6 +157,25 @@ export default class EventsStore {
 		}
 	};
 
+	@action
+	expandBranch = async (selectedIds: string[]) => {
+		let headNode: EventIdNode | undefined;
+		for (let i = 0; i < selectedIds.length; i++) {
+			headNode = this.nodesList.find(node => node.id === selectedIds[i]);
+			if (headNode) {
+				// eslint-disable-next-line no-await-in-loop
+				await this.fetchEvent(headNode);
+				if (!headNode.isExpanded) {
+					this.toggleNode(headNode);
+				}
+			}
+		}
+		if (headNode) {
+			this.selectNode(headNode);
+			this.scrollToEvent(headNode);
+		}
+	};
+
 	@computed
 	get selectedEvent() {
 		if (!this.selectedNode) return null;
@@ -207,6 +235,7 @@ export default class EventsStore {
 		];
 	}
 
+	@action
 	private copy(store: EventsStore) {
 		this.eventsCache = toJS(store.eventsCache, { exportMapsAsObjects: false });
 		this.isLoadingRootEvents = toJS(store.isLoadingRootEvents);
@@ -222,6 +251,39 @@ export default class EventsStore {
 
 		this.viewStore = new ViewStore(store.viewStore);
 		this.filterStore = new FilterStore(store.filterStore);
-		this.searchStore = new SearchStore(this.api, this, store.searchStore);
+		this.searchStore = new SearchStore(this.api, this, {
+			isLoading: store.searchStore.isLoading,
+			rawResults: toJS(store.searchStore.rawResults),
+			scrolledIndex: store.searchStore.scrolledIndex,
+			tokens: toJS(store.searchStore.tokens),
+		});
+	}
+
+	@action
+	private async init(initialState: EventsStore | EventStoreURLState | null) {
+		if (!initialState) {
+			this.fetchRootEvents();
+			return;
+		}
+
+		if (initialState instanceof EventsStore) {
+			this.copy(initialState);
+			return;
+		}
+
+		const {
+			filter,
+			panelArea = PanelArea.P100,
+			selectedNodesPath,
+			search,
+		} = initialState;
+		this.viewStore.panelArea = panelArea;
+
+		this.filterStore = new FilterStore({ eventsFilter: filter });
+		this.searchStore = new SearchStore(this.api, this, { searchPatterns: search || [] });
+		await this.fetchRootEvents(this.filterStore.eventsFilter);
+		if (selectedNodesPath && selectedNodesPath.length) {
+			this.expandBranch(selectedNodesPath);
+		}
 	}
 }
