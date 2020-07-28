@@ -103,7 +103,7 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 		const notActiveTokens = searchTokens.filter(searchToken => !searchToken.isActive);
 		const activeTokens = searchTokens.find((searchToken => searchToken.isActive));
 
-		const showControls = searchTokens.length > 0;
+		const showControls = resultsCount > 0;
 
 		const wrapperClassName = createBemBlock(
 			'search-field-wrapper',
@@ -172,7 +172,7 @@ export class SearchInputBase extends React.PureComponent<Props, State> {
 										<div className="search-field__loader"/>
 									) : showControls ? (
 										<span className="search-field__counter">
-											{currentIndex !== null ? currentIndex + 1 : 0} of {resultsCount ?? 0}
+											{currentIndex !== null ? currentIndex + 1 : 0} of {resultsCount}
 										</span>
 									) : null
 								}
