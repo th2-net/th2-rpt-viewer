@@ -99,14 +99,14 @@ const Heatmap = ({
 			<div
 				ref={heatmapRoot}
 				className="heatmap__wrapper">
-				{unknownAreas.before.length > 0
+				{unknownAreas.after.length > 0
 					&& <div
 						className="heatmap__scroller"
 						style={{
 							maxHeight: 200,
 							marginBottom: 4,
 						}}>
-						{unknownAreas.before
+						{unknownAreas.after
 							.map((element: HeatmapElement, index: number) =>
 								<HeatmapItem
 									key={index}
@@ -132,14 +132,14 @@ const Heatmap = ({
 								onClick={onElementClick}
 								totalCount={totalCount} />)}
 				</div>
-				{unknownAreas.after.length > 0
+				{unknownAreas.before.length > 0
 					&& <div
 						className="heatmap__scroller"
 						style={{
 							maxHeight: 200,
 							marginTop: 4,
 						}}>
-						{unknownAreas.after
+						{unknownAreas.before
 							.map((element: HeatmapElement, index: number) =>
 								<HeatmapItem
 									key={index}

@@ -108,7 +108,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 				marginRight: '11px',
 				flexGrow: 1,
 			}}>
-				{loadingState !== null && loadingState === MessagesLoadingState.LOADING_PREVIOUS_ITEMS
+				{loadingState === MessagesLoadingState.LOADING_NEXT_ITEMS
 					&& <div className="messages-list__spinner"/>}
 				<div
 					ref={scrollContainer}
@@ -117,24 +117,23 @@ const MessagesScrollContainer: TScrollContainer = ({
 						getVisibleRange();
 					}}
 					onWheel={e => {
-						if (e.currentTarget.scrollHeight <= e.currentTarget.getBoundingClientRect().height) return;
 						if (
-							!loadingPrevItems
+							!loadingNextItems
 							&& e.currentTarget.scrollTop === 0
 							&& e.deltaY < 0
 						) {
-							setLoadingPrevItems(true);
-							onScrollTop().then(() => setLoadingPrevItems(false));
+							setLoadingNextItems(true);
+							onScrollBottom().then(() => setLoadingNextItems(false));
 						}
 
 						if (
-							!loadingNextItems
+							!loadingPrevItems
 							&& e.deltaY > 0
 							&& (e.currentTarget.clientHeight + e.currentTarget.scrollTop)
 								=== e.currentTarget.scrollHeight
 						) {
-							setLoadingNextItems(true);
-							onScrollBottom().then(() => setLoadingNextItems(false));
+							setLoadingPrevItems(true);
+							onScrollTop().then(() => setLoadingPrevItems(false));
 						}
 					}}
 					style={{
@@ -147,11 +146,11 @@ const MessagesScrollContainer: TScrollContainer = ({
 				>
 					{children}
 				</div>
-				{loadingState && loadingState === MessagesLoadingState.LOADING_SELECTED_MESSAGE
+				{loadingState === MessagesLoadingState.LOADING_SELECTED_MESSAGE
 					&& <div className="messages-list__overlay-loader">
 						<div className="messages-list__overlay-spinner"/>
 					</div>}
-				{loadingState && loadingState === MessagesLoadingState.LOADING_NEXT_ITEMS
+				{loadingState === MessagesLoadingState.LOADING_PREVIOUS_ITEMS
 					&& <div className="messages-list__spinner"/>}
 			</div>
 			<Observer>

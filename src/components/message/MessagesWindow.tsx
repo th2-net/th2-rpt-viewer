@@ -53,16 +53,19 @@ const MessagesWindow = () => {
 		}
 		const headMessage = messagesStore.attachedMessages.find(m => messagesStore.messagesIds.includes(m.messageId))
 			|| messagesStore.messagesCache.get(messagesStore.messagesIds[0]);
+
 		if (!headMessage) {
 			return { before: [], after: [] };
 		}
-		const before = messagesStore.attachedMessages
+		const notLoadedMessages = messagesStore.attachedMessages
+			.filter(msg => !messagesStore.messagesIds.includes(msg.messageId));
+		const before = notLoadedMessages
 			.filter(msg => getTimestampAsNumber(msg.timestamp) < getTimestampAsNumber(headMessage.timestamp))
 			.map(msg => msg.messageId);
-		const after = messagesStore.attachedMessages
-			.filter(msg => !messagesStore.messagesIds.includes(msg.messageId)
-				&& getTimestampAsNumber(msg.timestamp) > getTimestampAsNumber(headMessage.timestamp))
+		const after = notLoadedMessages
+			.filter(msg => getTimestampAsNumber(msg.timestamp) > getTimestampAsNumber(headMessage.timestamp))
 			.map(msg => msg.messageId);
+
 		return { before, after };
 	}, [messagesStore.messagesIds]);
 
