@@ -14,14 +14,73 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { autorun, toJS } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import AppViewStore from './AppViewStore';
-import WindowsStore from './WindowsStore';
+import WindowsStore, { WindowsUrlState } from './WindowsStore';
+import { isEventsTab, isMessagesTab } from '../helpers/windows';
+import { TabTypes } from '../models/util/Windows';
+import { EventStoreURLState } from './EventsStore';
+import { MessagesStoreURLState } from './MessagesStore';
 
 export default class RootStore {
-	constructor(private api: ApiSchema) {}
+	windowsStore: WindowsStore;
 
-	viewStore = new AppViewStore();
+	viewStore: AppViewStore;
 
-	windowsStore = new WindowsStore(this, this.api);
+	constructor(private api: ApiSchema) {
+		this.windowsStore = new WindowsStore(this, this.api, this.parseWindowsState());
+
+		this.viewStore = new AppViewStore();
+
+		autorun(() => {
+			const windowsUrlState: WindowsUrlState = this.windowsStore.windows.map(window => {
+				let activeTabState: EventStoreURLState | MessagesStoreURLState;
+
+				const activeTab = window.tabs[window.activeTabIndex];
+
+				if (isEventsTab(activeTab)) {
+					const eventsStore = activeTab.store;
+					activeTabState = {
+						type: TabTypes.Events,
+						filter: eventsStore.filterStore.isEventsFilterApplied
+							? eventsStore.filterStore.eventsFilter : undefined,
+						panelArea: eventsStore.viewStore.panelArea,
+						selectedNodesPath: eventsStore.selectedNode
+							? [...eventsStore.selectedNode.parents, eventsStore.selectedNode.id]
+							: undefined,
+						search: eventsStore.searchStore.tokens.map(t => t.pattern),
+					};
+				}
+
+				if (isMessagesTab(activeTab)) {
+					activeTabState = {
+						type: TabTypes.Messages,
+					};
+				}
+
+				return {
+					activeTab: activeTabState!,
+					activeTabIndex: window.activeTabIndex.toString(),
+				};
+			});
+
+			const searchParams = new URLSearchParams({
+				windows: encodeURIComponent(JSON.stringify(toJS(windowsUrlState))),
+			});
+			window.history.replaceState({}, '', `?${searchParams}`);
+		});
+	}
+
+
+	parseWindowsState = (): WindowsUrlState | null => {
+		try {
+			const searchParams = new URLSearchParams(window.location.search);
+			const windowsUrlState = searchParams.get('windows');
+			const parsedState = windowsUrlState ? JSON.parse(decodeURIComponent(windowsUrlState)) : null;
+			return parsedState;
+		} catch (error) {
+			return null;
+		}
+	};
 }

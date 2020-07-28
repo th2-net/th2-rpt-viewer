@@ -28,7 +28,14 @@ import { isMessagesTab, isEventsTab } from '../helpers/windows';
 import { EventAction } from '../models/EventAction';
 import { randomHexColor } from '../helpers/color';
 import { EventMessage } from '../models/EventMessage';
-import { AppTab } from '../models/util/Windows';
+import { AppTab, TabTypes } from '../models/util/Windows';
+import { EventStoreURLState } from './EventsStore';
+import { MessagesStoreURLState } from './MessagesStore';
+
+export type WindowsUrlState = Array<Partial<{
+	activeTab: EventStoreURLState | MessagesStoreURLState;
+	activeTabIndex: string;
+}>>;
 
 export default class WindowsStore {
 	private readonly defaultColors = [
@@ -40,10 +47,16 @@ export default class WindowsStore {
 		'#45A155',
 	];
 
-	private readonly MAX_TABS_COUNT = 12;
+	public readonly MAX_TABS_COUNT = 12;
 
-	constructor(private rootStore: RootStore, private api: ApiSchema) {
-		this.createDefaultWindow();
+	public readonly MAX_WINDOWS = 2;
+
+	constructor(
+		private rootStore: RootStore,
+		private api: ApiSchema,
+		initialState: WindowsUrlState | null,
+	) {
+		this.init(initialState);
 
 		reaction(
 			() => this.selectedEvents,
@@ -188,4 +201,52 @@ export default class WindowsStore {
 	private getAttachedMessagesIds = (selectedEvents: EventAction[]) => {
 		this.attachedMessagesIds = [...new Set(selectedEvents.flatMap(({ attachedMessageIds }) => attachedMessageIds))];
 	};
+
+	@action
+	private init(initialState: WindowsUrlState | null) {
+		if (!initialState) {
+			this.createDefaultWindow();
+			return;
+		}
+		try {
+			const windows = initialState.map(w => {
+				const window = new AppWindowStore(this, this.api);
+				if (w.activeTab?.type !== undefined) {
+					switch (w.activeTab.type) {
+						case TabTypes.Events:
+							window.addEventsTab(w.activeTab);
+							break;
+						case TabTypes.Messages:
+							window.addMessagesTab();
+							break;
+						default:
+							break;
+					}
+				}
+				return window;
+			});
+
+			const allTabs = windows.flatMap(w => w.tabs);
+
+			if (allTabs.filter(isEventsTab).length === 0) {
+				windows[0].addEventsTab();
+			}
+
+			if (allTabs.filter(isMessagesTab).length === 0) {
+				windows[0].addMessagesTab();
+			}
+
+			windows.forEach((window, index) => {
+				const activeTabIndex = parseInt(initialState[index].activeTabIndex ?? '0');
+				if (Number.isInteger(activeTabIndex) && window.tabs[activeTabIndex]) {
+					// eslint-disable-next-line no-param-reassign
+					window.activeTabIndex = activeTabIndex;
+				}
+			});
+
+			this.windows = windows;
+		} catch (error) {
+			this.createDefaultWindow();
+		}
+	}
 }

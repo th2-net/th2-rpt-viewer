@@ -23,6 +23,7 @@ import { EventMessage } from '../models/EventMessage';
 import { prevCyclicItem, nextCyclicItem } from '../helpers/array';
 import WindowsStore from './WindowsStore';
 import { getTimestampAsNumber } from '../helpers/date';
+import { TabTypes } from '../models/util/Windows';
 import MessagesFilter from '../models/filter/MessagesFilter';
 
 export const enum MessagesLoadingState {
@@ -31,6 +32,11 @@ export const enum MessagesLoadingState {
 	LOADING_ROOT_ITEMS,
 	LOADING_SELECTED_MESSAGE,
 }
+
+export type MessagesStoreURLState = Partial<{
+	type: TabTypes.Messages;
+	filter: MessagesFilter;
+}>;
 
 export default class MessagesStore {
 	private readonly MESSAGES_CHUNK_SIZE = 50;
@@ -68,9 +74,13 @@ export default class MessagesStore {
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	public selectedMessageId: String | null = null;
 
-	constructor(private api: ApiSchema, private windowsStore: WindowsStore, messagesStore?: MessagesStore) {
-		if (messagesStore) {
-			this.copy(messagesStore);
+	constructor(
+		private api: ApiSchema,
+		private windowsStore: WindowsStore,
+		store?: MessagesStore,
+	) {
+		if (store) {
+			this.copy(store);
 		}
 
 		// We have to dispose reaction after deleting tab otherwise store will not be garbage collected
@@ -347,6 +357,6 @@ export default class MessagesStore {
 		this.selectedMessageId = store.selectedMessageId?.valueOf() || null;
 		this.messagesLoadingState = store.messagesLoadingState;
 		this.attachedMessages = store.attachedMessages;
-		this.filterStore = new FilterStore(store.filterStore);
+		this.filterStore = new FilterStore({ messagesFilter: toJS(store.filterStore.messagesFilter) });
 	}
 }

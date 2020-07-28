@@ -15,11 +15,8 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
 import { createStyleSelector } from '../helpers/styleCreators';
-import StateSaver, { RecoverableElementProps } from './util/StateSaver';
 import { stopPropagationHandler } from '../helpers/react';
-import { useEventWindowStore } from '../hooks/useEventWindowStore';
 import '../styles/expandablePanel.scss';
 
 interface PanelProps {
