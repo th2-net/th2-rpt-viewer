@@ -22,6 +22,7 @@ import { isEventsTab, isMessagesTab } from '../helpers/windows';
 import { TabTypes } from '../models/util/Windows';
 import { EventStoreURLState } from './EventsStore';
 import { MessagesStoreURLState } from './MessagesStore';
+import { getObjectKeys } from '../helpers/object';
 
 export default class RootStore {
 	windowsStore: WindowsStore;
@@ -49,7 +50,9 @@ export default class RootStore {
 						selectedNodesPath: eventsStore.selectedNode
 							? [...eventsStore.selectedNode.parents, eventsStore.selectedNode.id]
 							: undefined,
-						search: eventsStore.searchStore.tokens.map(t => t.pattern),
+						search: eventsStore.searchStore.tokens.length > 0
+							? eventsStore.searchStore.tokens.map(t => t.pattern)
+							: undefined,
 					};
 				}
 
@@ -59,6 +62,13 @@ export default class RootStore {
 					};
 				}
 
+				getObjectKeys(activeTabState!)
+					.forEach(key => {
+						if (activeTabState[key] === undefined) {
+							delete activeTabState[key];
+						}
+					});
+
 				return {
 					activeTab: activeTabState!,
 					activeTabIndex: window.activeTabIndex.toString(),
@@ -66,8 +76,9 @@ export default class RootStore {
 			});
 
 			const searchParams = new URLSearchParams({
-				windows: encodeURIComponent(JSON.stringify(toJS(windowsUrlState))),
+				windows: window.btoa(JSON.stringify(toJS(windowsUrlState))),
 			});
+
 			window.history.replaceState({}, '', `?${searchParams}`);
 		});
 	}
@@ -77,7 +88,7 @@ export default class RootStore {
 		try {
 			const searchParams = new URLSearchParams(window.location.search);
 			const windowsUrlState = searchParams.get('windows');
-			const parsedState = windowsUrlState ? JSON.parse(decodeURIComponent(windowsUrlState)) : null;
+			const parsedState = windowsUrlState ? JSON.parse(window.atob(windowsUrlState)) : null;
 			return parsedState;
 		} catch (error) {
 			return null;
