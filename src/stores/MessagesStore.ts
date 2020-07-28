@@ -185,10 +185,6 @@ export default class MessagesStore {
 		originMessageId?: string,
 	// eslint-disable-next-line consistent-return
 	): Promise<string[] | undefined> => {
-		console.log({
-			originMessageId,
-			timelineDirection,
-		});
 		this.messagesAbortController?.abort();
 
 		// streams are required to get messages

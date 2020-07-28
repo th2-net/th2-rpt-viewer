@@ -134,7 +134,7 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 							 value={formatTimestampValue(config.fromValue)}
 							 mask={inputMask}
 							 onBlur={onInputBlur}
-							 placeholder="MM/DD/YYYY, 00:00"
+							 placeholder="YYYY-MM-DD, 00:00:00.000"
 							 keepCharPositions={true}
 							 pipe={validPipe}
 							 name='from'/>
@@ -144,7 +144,7 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 							 value={formatTimestampValue(config.toValue)}
 							 mask={inputMask}
 							 onBlur={onInputBlur}
-							 placeholder="MM/DD/YYYY, 00:00"
+							 placeholder="YYYY-MM-DD, 00:00:00.000"
 							 keepCharPositions={true}
 							 pipe={validPipe}
 							 name='to'/>

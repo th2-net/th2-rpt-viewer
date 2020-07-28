@@ -38,6 +38,8 @@ describe('[React] <SearchInput/>', () => {
 		nextSearchResult: () => {},
 		prevSearchResult: () => {},
 		clear: () => {},
+		isActive: false,
+		setIsActive: () => {},
 	};
 
 	test('Should render input on click', () => {
