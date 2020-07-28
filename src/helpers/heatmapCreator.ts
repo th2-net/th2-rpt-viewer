@@ -78,6 +78,7 @@ export const getHeatmapElements = (
 			}
 			return blocks;
 		}, []);
+
 	if (unknown) return heatmapElements;
 	if (!heatmapElements.length) return emptyHeatmap;
 

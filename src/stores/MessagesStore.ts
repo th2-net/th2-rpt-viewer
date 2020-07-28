@@ -23,6 +23,7 @@ import { EventMessage } from '../models/EventMessage';
 import { prevCyclicItem, nextCyclicItem } from '../helpers/array';
 import WindowsStore from './WindowsStore';
 import { getTimestampAsNumber } from '../helpers/date';
+import MessagesFilter from '../models/filter/MessagesFilter';
 
 export const enum MessagesLoadingState {
 	LOADING_PREVIOUS_ITEMS,
@@ -32,13 +33,14 @@ export const enum MessagesLoadingState {
 }
 
 export default class MessagesStore {
-	filterStore = new FilterStore();
+	private readonly MESSAGES_CHUNK_SIZE = 50;
 
 	disposer: IReactionDisposer | null = null;
 
-	private readonly MESSAGES_CHUNK_SIZE = 50;
+	filterStore = new FilterStore();
 
-	@observable messagesLoadingState: MessagesLoadingState | null = null;
+	@observable
+	public messagesLoadingState: MessagesLoadingState | null = null;
 
 	@observable
 	public messagesIds: Array<string> = [];
@@ -74,7 +76,7 @@ export default class MessagesStore {
 		// We have to dispose reaction after deleting tab otherwise store will not be garbage collected
 		this.disposer = reaction(
 			() => this.windowsStore.attachedMessagesIds,
-			this.onAttachedMessagesChange,
+			this.onAttachedMessagesIdsChange,
 		);
 
 		reaction(
@@ -83,10 +85,16 @@ export default class MessagesStore {
 		);
 
 		reaction(
-			() => this.selectedMessageId,
-			selectedMessageId => {
-				if (selectedMessageId) this.scrollToMessage(selectedMessageId.valueOf());
+			() => this.attachedMessages,
+			attachedMessages => {
+				this.filterStore.messagesFilter.streams = attachedMessages.map(m => m.sessionId)
+					.filter((stream, index, self) => self.indexOf(stream) === index);
 			},
+		);
+
+		reaction(
+			() => this.selectedMessageId,
+			selectedMessageId => selectedMessageId && this.scrollToMessage(selectedMessageId.valueOf()),
 		);
 	}
 
@@ -120,12 +128,15 @@ export default class MessagesStore {
 		return message;
 	};
 
+	// selected messages includes both attached and pinned messages
 	@computed get selectedMessagesIds(): string[] {
 		const pinnedMessages = this.windowsStore.pinnedMessages
 			.filter(msg => this.messagesIds.includes(msg.messageId));
+
 		const messages = [...this.attachedMessages, ...pinnedMessages]
 			.filter((message, index, self) => self.findIndex(m => m.messageId === message.messageId) === index);
-		messages.sort((mesA, mesB) => getTimestampAsNumber(mesA.timestamp) - getTimestampAsNumber(mesB.timestamp));
+
+		messages.sort((mesA, mesB) => getTimestampAsNumber(mesB.timestamp) - getTimestampAsNumber(mesA.timestamp));
 
 		if (this.filterStore.isMessagesFilterApplied) {
 			return messages.filter(m => this.messagesIds.includes(m.messageId)).map(m => m.messageId);
@@ -140,7 +151,7 @@ export default class MessagesStore {
 			this.selectedMessageId = this.selectedMessagesIds[0];
 			return;
 		}
-		const nextMessageId = nextCyclicItem(this.selectedMessagesIds, this.selectedMessageId);
+		const nextMessageId = nextCyclicItem(this.selectedMessagesIds, this.selectedMessageId.valueOf());
 
 		if (nextMessageId) this.selectedMessageId = nextMessageId;
 	};
@@ -151,36 +162,32 @@ export default class MessagesStore {
 			this.selectedMessageId = this.selectedMessagesIds[this.selectedMessagesIds.length - 1];
 			return;
 		}
-		const prevMessageId = prevCyclicItem(this.selectedMessagesIds, this.selectedMessageId);
+		const prevMessageId = prevCyclicItem(this.selectedMessagesIds, this.selectedMessageId.valueOf());
 
 		if (prevMessageId) this.selectedMessageId = prevMessageId;
-	};
-
-	@action
-	toggleBeautify = (messageId: string) => {
-		if (this.beautifiedMessages.includes(messageId)) {
-			this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
-			return;
-		}
-		this.beautifiedMessages = [...this.beautifiedMessages, messageId];
 	};
 
 	messagesAbortController: AbortController | null = null;
 
 	@action
 	getMessages = async (
-		timelineDirection: 'next' | 'previous' = 'next',
+		timelineDirection: 'next' | 'previous' = 'previous',
 		originMessageId?: string,
+	// eslint-disable-next-line consistent-return
 	): Promise<string[] | undefined> => {
-		if (this.messagesAbortController) {
-			this.messagesAbortController.abort();
-		}
+		console.log({
+			originMessageId,
+			timelineDirection,
+		});
+		this.messagesAbortController?.abort();
 
-		if (!this.filterStore.messagesFilter.streams.length) {
+		// streams are required to get messages
+		if (this.filterStore.messagesFilter.streams.length === 0) {
 			this.messagesIds = [];
 			this.messagesCache.clear();
 			this.isLoading = false;
-			return;
+			this.messagesLoadingState = null;
+			return [];
 		}
 
 		this.isLoading = true;
@@ -191,30 +198,32 @@ export default class MessagesStore {
 			const messagesIds = await this.api.messages.getMessages({
 				messageId: originMessageId,
 				timelineDirection,
-				limit: this.MESSAGES_CHUNK_SIZE,
+				limit: originMessageId && !this.messagesIds.includes(originMessageId)
+					? this.MESSAGES_CHUNK_SIZE - 1 : this.MESSAGES_CHUNK_SIZE,
 			}, this.filterStore.messagesFilter, this.messagesAbortController.signal);
 
 			if (originMessageId && !this.messagesIds.includes(originMessageId)) {
-				this.messagesIds = [];
 				this.messagesCache.clear();
+				this.messagesIds = [];
 			}
 
-			const newMessagesIds = timelineDirection === 'previous'
+			const newMessagesIds = timelineDirection === 'next'
 				? messagesIds.reverse() : messagesIds;
 
 			if (newMessagesIds.length) {
-				// TODO: It's a temporary measure to create a timeline until timeline helper api is released.
+				// TODO: It's a temporary measure to build a timeline relatively to first
+				// message timestamps until timeline helper api is released.
 				await this.fetchMessage(messagesIds[0]);
 			}
 
-			if (timelineDirection === 'previous') {
+			if (timelineDirection === 'next') {
 				this.messagesIds = [
 					...newMessagesIds,
 					...this.messagesIds,
 				];
 			} else {
-				if (newMessagesIds[0] === this.messagesIds[this.messagesIds.length - 1]) {
-					newMessagesIds.shift();
+				if (originMessageId && !this.messagesIds.includes(originMessageId)) {
+					newMessagesIds.unshift(originMessageId);
 				}
 				this.messagesIds = [
 					...this.messagesIds,
@@ -222,7 +231,6 @@ export default class MessagesStore {
 				];
 			}
 
-			// eslint-disable-next-line consistent-return
 			return messagesIds;
 		} catch (error) {
 			if (error.name !== 'AbortError') {
@@ -236,15 +244,15 @@ export default class MessagesStore {
 
 	loadPreviousMessages = () => {
 		this.messagesLoadingState = MessagesLoadingState.LOADING_PREVIOUS_ITEMS;
-		return this.getMessages('previous', this.messagesIds[0]);
+		const originMessageId = !this.messagesIds.length
+			? this.attachedMessages[0]?.messageId
+			: this.messagesIds[this.messagesIds.length - 1];
+		return this.getMessages('previous', originMessageId);
 	};
 
 	loadNextMessages = () => {
 		this.messagesLoadingState = MessagesLoadingState.LOADING_NEXT_ITEMS;
-		const originMessageId = !this.messagesIds.length
-			? this.attachedMessages[0].messageId
-			: this.messagesIds[this.messagesIds.length - 1];
-		return this.getMessages('next', originMessageId);
+		return this.getMessages('next', this.messagesIds[0]);
 	};
 
 	resetMessagesFilter = () => {
@@ -261,22 +269,20 @@ export default class MessagesStore {
 			return;
 		}
 		this.messagesLoadingState = MessagesLoadingState.LOADING_SELECTED_MESSAGE;
-		this.getMessages('next', messageId)
+		this.getMessages('previous', messageId)
 			.then(() => this.scrolledIndex = this.messagesIds.indexOf(messageId));
 	};
 
 	attachedMessagesAbortController: AbortController | null = null;
 
 	@action
-	private onAttachedMessagesChange = async (attachedMessagesIds: string[]) => {
+	private onAttachedMessagesIdsChange = async (attachedMessagesIds: string[]) => {
 		if (!attachedMessagesIds.length) {
 			this.attachedMessages = [];
 			return;
 		}
 
-		if (this.attachedMessagesAbortController) {
-			this.attachedMessagesAbortController.abort();
-		}
+		this.attachedMessagesAbortController?.abort();
 
 		const newlySelectedMessagesIds = attachedMessagesIds
 			.filter(id => this.attachedMessages.findIndex(m => m.messageId === id) === -1);
@@ -285,6 +291,7 @@ export default class MessagesStore {
 
 		try {
 			this.attachedMessagesAbortController = new AbortController();
+
 			const newlySelectedMessages = await Promise.all(
 				newlySelectedMessagesIds.map(id => this.api.messages.getMessage(
 					id, this.attachedMessagesAbortController?.signal,
@@ -292,15 +299,13 @@ export default class MessagesStore {
 			);
 			const messages = [...newlySelectedMessages, ...previouslySelectedMessages];
 
-			messages.sort((mesA, mesB) => getTimestampAsNumber(mesA.timestamp) - getTimestampAsNumber(mesB.timestamp));
+			messages.sort((mesA, mesB) => getTimestampAsNumber(mesB.timestamp) - getTimestampAsNumber(mesA.timestamp));
 
 			this.attachedMessages = messages;
-			this.filterStore.messagesFilter.streams = messages.map(m => m.sessionId)
-				.filter((stream, index, self) => self.indexOf(stream) === index);
 
 			if (newlySelectedMessages.length) {
 				newlySelectedMessages
-					.sort((mesA, mesB) => getTimestampAsNumber(mesA.timestamp) - getTimestampAsNumber(mesB.timestamp));
+					.sort((mesA, mesB) => getTimestampAsNumber(mesB.timestamp) - getTimestampAsNumber(mesA.timestamp));
 				this.selectedMessageId = newlySelectedMessages[0].messageId;
 			}
 		} catch (error) {
@@ -311,14 +316,24 @@ export default class MessagesStore {
 	};
 
 	@action
-	private onFilterChange = () => {
+	private onFilterChange = (messagesFilter: MessagesFilter) => {
 		this.messagesLoadingState = MessagesLoadingState.LOADING_ROOT_ITEMS;
 		this.messagesIds = [];
 		this.messagesCache.clear();
-		const originMessageId = this.attachedMessages.length
-			? this.attachedMessages[0].messageId
-			: undefined;
-		this.getMessages('next', originMessageId);
+		this.selectedMessageId = null;
+		this.scrolledIndex = null;
+
+		let originMessageId: string | undefined = this.attachedMessages[0]?.messageId;
+
+		if (this.attachedMessages.length && (messagesFilter.timestampFrom || messagesFilter.timestampTo)) {
+			const from = messagesFilter.timestampFrom || new Date(1980).getTime();
+			const to = messagesFilter.timestampTo
+			|| new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
+			const firstMessage = this.attachedMessages.find(m =>
+				getTimestampAsNumber(m.timestamp) >= from && getTimestampAsNumber(m.timestamp) <= to);
+			originMessageId = firstMessage?.messageId;
+		}
+		this.getMessages('previous', originMessageId);
 	};
 
 	@action

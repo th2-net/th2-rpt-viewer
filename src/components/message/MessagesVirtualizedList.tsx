@@ -59,15 +59,15 @@ const MessagesVirtualizedList = (props: Props) => {
 		}
 	}, [scrolledIndex]);
 
-	const onScrollBottom = () => loadNextMessages();
-
-	const onScrollTop = () => loadPrevMessages()
+	const onScrollBottom = () => loadNextMessages()
 		.then(messagesIds => {
 			if (messagesIds !== undefined) {
 				virtuoso.current?.adjustForPrependedItems(messagesIds.length);
 			}
 			return messagesIds;
 		});
+
+	const onScrollTop = () => loadPrevMessages();
 
 	return (
 		<InfiniteLoaderContext.Provider value={{
