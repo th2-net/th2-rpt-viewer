@@ -21,11 +21,9 @@ import { createURLSearchParams } from '../../helpers/url';
 const eventHttpApi: EventApiSchema = {
 	getRootEvents: async filter => {
 		if (filter) {
-			const from = filter.timestampFrom;
-			const to = filter.timestampTo;
 			const params = createURLSearchParams({
-				from,
-				to,
+				timestampFrom: filter.timestampFrom,
+				timestampTo: filter.timestampTo,
 				idsOnly: true,
 			});
 
