@@ -16,10 +16,7 @@
 
 
 import * as React from 'react';
-import MaskedInput from 'react-text-mask';
-import {
-	isBefore, format, parse, isValid, addHours,
-} from 'date-fns';
+import moment from 'moment';
 import {
 	FilterRowConfig,
 	FilterRowDatetimeRangeConfig,
@@ -31,10 +28,13 @@ import AutocompleteInput from '../util/AutocompleteInput';
 import { removeByIndex, replaceByIndex } from '../../helpers/array';
 import { createBemElement } from '../../helpers/styleCreators';
 import { toUTCDate } from '../../helpers/date';
+import FilterDatetimeInput from './FilterDatetimeInput';
 
 interface Props {
 	rowConfig: FilterRowConfig;
 }
+
+export const TIME_MASK = 'YYYY-MM-DD HH:mm:ss:SSS';
 
 export default function FilterPanelRow({ rowConfig }: Props) {
 	switch (rowConfig.type) {
@@ -67,16 +67,6 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 	const fromInputClasses = createBemElement('filter-row', 'input', isFromInputValid ? 'valid' : null);
 	const toInputClasses = createBemElement('filter-row', 'input', isToInputValid ? 'valid' : null);
 
-	const formatTimestampValue = (timestamp: number | null) => {
-		if (timestamp == null) {
-			return '';
-		}
-
-		const date = new Date(timestamp);
-		const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-		return format(utcDate, 'yyyy-MM-dd HH:mm:ss.SSS');
-	};
-
 	const validPipe = (maskedValue: string): string | false => {
 		if (isCorrectDate(maskedValue)) {
 			return maskedValue;
@@ -92,10 +82,9 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 			.replace(/(?<=0)_/g, '1')
 			.replace(/_/g, '0')
 		+ maskedValue.substring(10).replace(/_/g, '0');
-		const date = parse(value, 'yyyy-MM-dd HH:mm:ss.SSS', new Date());
-
-		return isValid(date)
-			&& isBefore(addHours(date, 3), new Date());
+		const date = moment(value, TIME_MASK);
+		return date.isValid()
+			&& date.isBefore(moment().utc().subtract((moment().utcOffset() / 60), 'hour'));
 	};
 
 	const onInputBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,25 +118,26 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 					className='filter-row__label'>
 					{config.label}
 				</label>
-				<MaskedInput id={fromId}
+				<FilterDatetimeInput id={fromId}
 							 className={fromInputClasses}
-							 value={formatTimestampValue(config.fromValue)}
+							 value={config.fromValue}
 							 mask={inputMask}
 							 onBlur={onInputBlur}
-							 placeholder="YYYY-MM-DD, 00:00:00.000"
-							 keepCharPositions={true}
 							 pipe={validPipe}
-							 name='from'/>
-				<label htmlFor={toId}> to </label>
-				<MaskedInput id={toId}
+							 name='from'
+							 config={config}/>
+				<label
+					htmlFor={toId}
+					className='filter-row__to-label'
+				>to</label>
+				<FilterDatetimeInput id={toId}
 							 className={toInputClasses}
-							 value={formatTimestampValue(config.toValue)}
+							 value={config.toValue}
 							 mask={inputMask}
 							 onBlur={onInputBlur}
-							 placeholder="YYYY-MM-DD, 00:00:00.000"
-							 keepCharPositions={true}
 							 pipe={validPipe}
-							 name='to'/>
+							 name='to'
+							 config={config}/>
 			</div>
 			<div className="filter-time-controls">
 				<span
