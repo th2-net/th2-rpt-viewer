@@ -111,6 +111,7 @@ export default class EventsStore {
 	@action
 	selectNode = (idNode: EventIdNode | null) => {
 		this.selectedNode = idNode;
+		this.windowsStore.lastSelectedEventId = idNode?.id || null;
 		if (this.viewStore.panelArea === PanelArea.P100) {
 			this.viewStore.panelArea = PanelArea.P50;
 		}

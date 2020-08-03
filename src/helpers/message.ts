@@ -14,39 +14,19 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import Message from '../models/Message';
-import { decodeBase64RawContent, getRawContent } from './rawFormatter';
+import { EventMessage } from '../models/EventMessage';
+import { getTimestampAsNumber } from './date';
 
-const CHECKPOINT_NAME = 'checkpoint';
-
-export function isCheckpointMessage(message: Message): boolean {
-	const name = message.content.name as string;
-
-	if (!name) {
-		return false;
-	}
-
-	return name.toLowerCase() === CHECKPOINT_NAME;
-}
-
-export function isRejected(message: Message): boolean {
-	return message.content.rejectReason !== null;
-}
-
-export function isAdmin(message: Message): boolean {
-	return message.content.admin !== false;
-}
-
-export function appendRawContent(message: Message): Message {
-	if (message.raw == null || message.raw === 'null') {
-		return message;
-	}
-
-	const [, hex, , humanReadable] = getRawContent(decodeBase64RawContent(message.raw));
-
-	return {
-		...message,
-		rawHex: hex,
-		rawHumanReadable: humanReadable,
-	};
-}
+export const sortMessagesByTimestamp = (
+	messages: Array<EventMessage>,
+	order: 'desc' | 'asc' = 'desc',
+) => {
+	const copiedMessages = messages.slice();
+	copiedMessages.sort((mesA, mesB) => {
+		if (order === 'desc') {
+			return getTimestampAsNumber(mesB.timestamp) - getTimestampAsNumber(mesA.timestamp);
+		}
+		return getTimestampAsNumber(mesA.timestamp) - getTimestampAsNumber(mesB.timestamp);
+	});
+	return copiedMessages;
+};
