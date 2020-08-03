@@ -67,7 +67,7 @@ const MessagesWindow = () => {
 			.map(msg => msg.messageId);
 
 		return { before, after };
-	}, [messagesStore.messagesIds]);
+	}, [windowsStore.eventColors, messagesStore.messagesIds]);
 
 	return (
 		<HeatmapProvider

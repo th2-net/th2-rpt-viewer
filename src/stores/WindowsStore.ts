@@ -63,6 +63,8 @@ export default class WindowsStore {
 			selectedEvents => {
 				this.getEventColors(selectedEvents);
 				this.getAttachedMessagesIds(selectedEvents);
+				this.lastSelectedEvent = selectedEvents
+					.find(e => e.eventId === this.lastSelectedEventId) || null;
 			},
 		);
 
@@ -89,6 +91,10 @@ export default class WindowsStore {
 
 	@observable selectedEvents: Array<EventAction> = [];
 
+	@observable lastSelectedEventId: string | null = null;
+
+	@observable lastSelectedEvent: EventAction | null = null;
+
 	@computed get events() {
 		return this.windows.flatMap(window => window.tabs)
 			.filter(isEventsTab)
@@ -110,7 +116,7 @@ export default class WindowsStore {
 	}
 
 	@action
-	toggleMessagePin = (message: EventMessage) => {
+	public toggleMessagePin = (message: EventMessage) => {
 		if (this.pinnedMessages.findIndex(m => m.messageId === message.messageId) === -1) {
 			this.pinnedMessages = this.pinnedMessages.concat(message);
 		} else {
@@ -121,7 +127,7 @@ export default class WindowsStore {
 	};
 
 	@action
-	moveTab = (
+	public moveTab = (
 		originWindowIndex: number,
 		targetWindowIndex: number,
 		tabIndex: number,
@@ -151,7 +157,7 @@ export default class WindowsStore {
 	};
 
 	@action
-	deleteWindow = (windowIndex: number) => {
+	public deleteWindow = (windowIndex: number) => {
 		this.windows.splice(windowIndex, 1);
 	};
 
@@ -173,7 +179,8 @@ export default class WindowsStore {
 
 	@action
 	private getEventColors = (selectedEvents: EventAction[]) => {
-		const eventsWithAttachedMessages = selectedEvents.filter(event => event.attachedMessageIds.length	> 0);
+		const eventsWithAttachedMessages = selectedEvents
+			.filter(event => event.attachedMessageIds.length > 0);
 
 		const usedColors2: Array<string> = [];
 		for (const [eventId, color] of this.eventColors.entries()) {
