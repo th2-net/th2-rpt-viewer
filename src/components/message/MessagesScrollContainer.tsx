@@ -21,8 +21,6 @@ import Heatmap from '../heatmap/Heatmap';
 import { useHeatmap } from '../../hooks/useHeatmap';
 import { HeatmapElement } from '../../models/Heatmap';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
-import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
-import { MessagesHeightsContext, MessagesHeights } from './MessagesCardList';
 import { InfiniteLoaderContext } from './MessagesVirtualizedList';
 import { MessagesLoadingState } from '../../stores/MessagesStore';
 
@@ -34,10 +32,8 @@ const MessagesScrollContainer: TScrollContainer = ({
 	children,
 }) => {
 	const scrollContainer = React.useRef<HTMLDivElement>(null);
-	const { setVisibleRange, visibleRange } = useHeatmap();
+	const { setVisibleRange } = useHeatmap();
 	const messagesStore = useMessagesWindowStore();
-	const messagesHeights = React.useContext(MessagesHeightsContext);
-	const prevHeights = React.useRef<MessagesHeights>({});
 
 	const [loadingPrevItems, setLoadingPrevItems] = React.useState(false);
 	const [loadingNextItems, setLoadingNextItems] = React.useState(false);
@@ -46,53 +42,8 @@ const MessagesScrollContainer: TScrollContainer = ({
 		loadingState,
 		onScrollBottom,
 		onScrollTop,
+		visibleItemsIndices,
 	} = React.useContext(InfiniteLoaderContext);
-
-	React.useEffect(() => {
-		if (!visibleRange) {
-			getVisibleRange();
-			return;
-		}
-		for (let i = visibleRange.startIndex; i <= visibleRange.endIndex; i++) {
-			if (messagesHeights[i] !== prevHeights.current[i]) {
-				getVisibleRange();
-				break;
-			}
-		}
-		prevHeights.current = messagesHeights;
-	}, [messagesHeights]);
-
-	const getVisibleRange = useDebouncedCallback(() => {
-		if (!scrollContainer.current) return;
-		const offsetTop = scrollContainer.current.offsetTop || 0;
-		try {
-			const renderedMessages = Array.from(scrollContainer.current.children[0].children[0].children);
-			const fullyRendered = renderedMessages.filter(node => {
-				const rect = node.getBoundingClientRect();
-				const elemTop = rect.top - offsetTop + rect.height;
-				const elemBottom = rect.bottom - rect.height;
-				const isVisible = (elemTop >= 0) && (elemBottom <= window.innerHeight);
-				return isVisible;
-			}).map(node => (node as HTMLDivElement).dataset.index);
-
-			if (fullyRendered.length > 0) {
-				setVisibleRange({
-					startIndex: parseInt(fullyRendered[0] as string),
-					endIndex: parseInt(fullyRendered[fullyRendered.length - 1] as string),
-				});
-			} else {
-				setVisibleRange({
-					startIndex: 0,
-					endIndex: 0,
-				});
-			}
-		} catch {
-			setVisibleRange({
-				startIndex: 0,
-				endIndex: 0,
-			});
-		}
-	}, 25);
 
 	scrollTo((scrollTop: ScrollToOptions) => {
 		scrollContainer.current?.scrollTo(scrollTop);
@@ -114,13 +65,13 @@ const MessagesScrollContainer: TScrollContainer = ({
 					ref={scrollContainer}
 					onScroll={(e: React.SyntheticEvent<HTMLDivElement>) => {
 						reportScrollTop(e.currentTarget.scrollTop);
-						getVisibleRange();
+						setVisibleRange(visibleItemsIndices);
 					}}
 					onWheel={e => {
 						if (
 							!loadingNextItems
-							&& e.currentTarget.scrollTop === 0
-							&& e.deltaY < 0
+							&& visibleItemsIndices.startIndex < messagesStore.MESSAGES_CHUNK_SIZE
+							&& !messagesStore.isBeginReached
 						) {
 							setLoadingNextItems(true);
 							onScrollBottom().then(() => setLoadingNextItems(false));
@@ -128,9 +79,9 @@ const MessagesScrollContainer: TScrollContainer = ({
 
 						if (
 							!loadingPrevItems
-							&& e.deltaY > 0
-							&& (e.currentTarget.clientHeight + e.currentTarget.scrollTop)
-								=== e.currentTarget.scrollHeight
+							&& visibleItemsIndices.endIndex
+							> messagesStore.messagesIds.length - messagesStore.MESSAGES_CHUNK_SIZE
+							&& !messagesStore.isEndReached
 						) {
 							setLoadingPrevItems(true);
 							onScrollTop().then(() => setLoadingPrevItems(false));
