@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import {
-	action, computed, observable, toJS, reaction, IReactionDisposer,
+	action, computed, observable, toJS, reaction, IReactionDisposer, autorun,
 } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import FilterStore from './FilterStore';
@@ -75,6 +75,9 @@ export default class MessagesStore {
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	public selectedMessageId: String | null = null;
 
+	@observable
+	public messageSessions: string[] = [];
+
 	constructor(
 		private api: ApiSchema,
 		private windowsStore: WindowsStore,
@@ -107,6 +110,8 @@ export default class MessagesStore {
 			() => this.selectedMessageId,
 			selectedMessageId => selectedMessageId && this.scrollToMessage(selectedMessageId.valueOf()),
 		);
+
+		this.loadMessageSessions();
 	}
 
 	@action
@@ -248,6 +253,11 @@ export default class MessagesStore {
 			this.messagesLoadingState = null;
 		}
 	};
+
+	@action
+	private async loadMessageSessions() {
+		this.messageSessions = await this.api.messages.getMessageSessions();
+	}
 
 	@action
 	public loadPreviousMessages = () => {

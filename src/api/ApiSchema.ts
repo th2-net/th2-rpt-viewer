@@ -43,4 +43,5 @@ export interface MessageApiSchema {
 		abortSignal?: AbortSignal) => Promise<string[]>;
 	getMessage: (id: string, signal?: AbortSignal) => Promise<EventMessage>;
 	getMessagesByFilter: (filter: MessagesFilter) => Promise<string[]>;
+	getMessageSessions: () => Promise<string[]>;
 }

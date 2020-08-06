@@ -121,6 +121,15 @@ const messageHttpApi: MessageApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
+	getMessageSessions: async () => {
+		const res = await fetch('/backend/messageStreams');
+		if (res.ok) {
+			return res.json();
+		}
+
+		console.log(res.statusText);
+		return [];
+	},
 };
 
 export default messageHttpApi;

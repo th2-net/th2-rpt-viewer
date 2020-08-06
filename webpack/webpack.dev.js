@@ -39,6 +39,16 @@ module.exports = webpackMerge(commonConfig, {
                 secure: false,
             }
         },
+        // proxy: {
+        //     '/backend': {
+        //         target: 'http://kos215:8081',
+        //         changeOrigin: true,
+        //         secure: false,
+        //         pathRewrite: {
+        //             '^/backend': ''
+        //         }
+        //     }
+        // },
         hot: true,
     },
     module: {
