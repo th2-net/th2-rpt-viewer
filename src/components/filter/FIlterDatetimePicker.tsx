@@ -28,6 +28,8 @@ interface FilterDatetimePickerProps {
 	config: FilterRowDatetimeRangeConfig;
 	name: string;
 	onClose: () => void;
+	left?: number;
+	top?: number;
 }
 
 const FilterDatetimePicker = ({
@@ -35,6 +37,8 @@ const FilterDatetimePicker = ({
 	config,
 	name,
 	onClose,
+	left,
+	top,
 }: FilterDatetimePickerProps) => {
 	const pickerRef = React.useRef<HTMLDivElement>(null);
 
@@ -86,7 +90,11 @@ const FilterDatetimePicker = ({
 	return (
 		<div
 			ref={pickerRef}
-			className='filter-datetime-picker'>
+			className='filter-datetime-picker'
+			style={{
+				left: `${left || 0}px`,
+				top: `${top || 0}px`,
+			}}>
 			<div className="filter-datetime-picker__row">
 				<Calendar
 					value={moment(value)}

@@ -16,10 +16,10 @@
 
 import React from 'react';
 import MaskedInput from 'react-text-mask';
-import moment from 'moment';
 import FilterDatetimePicker from './FIlterDatetimePicker';
 import { FilterRowDatetimeRangeConfig } from './FilterPanel';
 import { TIME_MASK } from './FilterPanelRow';
+import { formatTimestampValue, toUTCDate } from '../../helpers/date';
 
 interface FilterDatetimeInputProps {
 	id: string;
@@ -34,12 +34,28 @@ interface FilterDatetimeInputProps {
 
 interface State {
 	showPicker: boolean;
+	inputValue: string;
 }
 
 export default class FilterDatetimeInput extends React.Component<FilterDatetimeInputProps, State> {
+	private inputRef = React.createRef<MaskedInput>();
+
 	state: State = {
 		showPicker: false,
+		inputValue: formatTimestampValue(this.props.value, TIME_MASK),
 	};
+
+	componentWillUnmount() {
+		if (this.state.inputValue && !this.state.inputValue.includes('_')) {
+			const date = new Date(this.state.inputValue);
+			const utcTime = toUTCDate(date);
+			if (this.props.name === 'from') {
+				this.props.config.setFromValue(utcTime);
+			} else {
+				this.props.config.setToValue(utcTime);
+			}
+		}
+	}
 
 	openPicker = () => {
 		this.setState({
@@ -47,27 +63,24 @@ export default class FilterDatetimeInput extends React.Component<FilterDatetimeI
 		});
 	};
 
-	formatTimestampValue = (timestamp: number | null) => {
-		if (timestamp == null) {
-			return '';
-		}
-
-		const date = new Date(timestamp);
-		const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-		return moment(utcDate).format(TIME_MASK);
+	inputChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+		this.setState({
+			inputValue: e.target.value,
+		});
 	};
 
 	render = () => (
-		<div
-			className='filter-datetime-input-wrapper'>
+		<>
 			<MaskedInput
+				ref={this.inputRef}
 				id={this.props.id}
 				className={this.props.className}
 				mask={this.props.mask}
-				onBlur={this.props.onBlur}
 				pipe={this.props.pipe}
+				onBlur={this.props.onBlur}
 				onFocus={this.openPicker}
-				value={this.formatTimestampValue(this.props.value)}
+				onChange={this.inputChangeHandler}
+				value={formatTimestampValue(this.props.value, TIME_MASK)}
 				placeholder="YYYY-MM-DD 00:00:00.000"
 				keepCharPositions={true}
 				autoComplete='off'
@@ -79,9 +92,18 @@ export default class FilterDatetimeInput extends React.Component<FilterDatetimeI
 						value={this.props.value}
 						config={this.props.config}
 						name={this.props.name}
+						left={
+							this.inputRef.current?.inputElement.offsetLeft
+						}
+						top={
+							this.inputRef.current?.inputElement ? (
+								this.inputRef.current.inputElement.offsetTop
+								+ this.inputRef.current.inputElement.clientHeight + 10
+							) : undefined
+						}
 						onClose={() => { this.setState({ showPicker: false }); }}/>
 				)
 			}
-		</div>
+		</>
 	);
 }

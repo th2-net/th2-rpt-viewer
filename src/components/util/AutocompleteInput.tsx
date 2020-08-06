@@ -16,7 +16,9 @@
 
 import * as React from 'react';
 import AutosizeInput from 'react-input-autosize';
+import { observer } from 'mobx-react-lite';
 import KeyCodes from '../../util/KeyCodes';
+import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 
 interface Props {
     className?: string;
@@ -53,6 +55,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 
 	React.useEffect(() => {
 		setCurrentValue(value);
+		return () => {
+			setCurrentValue('');
+		};
 	}, [value]);
 
 	const onChange: React.ChangeEventHandler<HTMLInputElement> = e => {

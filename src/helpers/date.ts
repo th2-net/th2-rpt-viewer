@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+import moment from 'moment';
 import Timestamp from '../models/Timestamp';
 
 export function getSecondsPeriod(startTime: string | Date, finishTime: string | Date, withMiliseconds = true) {
@@ -83,4 +84,14 @@ export function toUTCDate(date: Date): number {
 		date.getMinutes(),
 		date.getSeconds(),
 	);
+}
+
+export function formatTimestampValue(timestamp: number | null, timeMask: string) {
+	if (timestamp == null) {
+		return '';
+	}
+
+	const date = new Date(timestamp);
+	const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+	return moment(utcDate).format(timeMask);
 }
