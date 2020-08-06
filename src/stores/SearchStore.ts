@@ -60,6 +60,8 @@ export default class SearchStore {
 
 	@observable isActive = false;
 
+	@observable inputValue = '';
+
 	@computed
 	get scrolledItem() {
 		if (this.scrolledIndex == null) {
@@ -170,5 +172,10 @@ export default class SearchStore {
 		} else {
 			this.tokens = tokens;
 		}
+	};
+
+	@action
+	setInputValue = (value: string) => {
+		this.inputValue = value;
 	};
 }
