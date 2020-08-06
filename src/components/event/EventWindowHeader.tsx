@@ -22,14 +22,6 @@ import EventsFilterPanel from '../filter/EventsFilterPanel';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 
 function EventWindowHeader() {
-	const { viewStore } = useEventWindowStore();
-
-	const eventsViewIconClass = createBemElement(
-		'event-window-header-button',
-		'icon',
-		viewStore.eventTableModeEnabled ? 'table-view' : 'tree-view',
-	);
-
 	return (
 		<div className="event-window-header">
 			<div className="event-window-header__group">
@@ -37,20 +29,8 @@ function EventWindowHeader() {
 					<SearchInput />
 				</div>
 				<EventsFilterPanel />
-				<div className="event-window-header-button"
-					onClick={() => viewStore.setTableModeEnabled(!viewStore.eventTableModeEnabled)}>
-					<div className={eventsViewIconClass}/>
-					<div className='event-window-header-button__title'>
-						{
-							viewStore.eventTableModeEnabled
-								? 'Table view'
-								: 'Tree view'
-						}
-					</div>
-				</div>
 			</div>
 		</div>
-
 	);
 }
 
