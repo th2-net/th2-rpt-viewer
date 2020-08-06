@@ -48,6 +48,11 @@
     border-radius: 3px;
     background-color: #FFF;
     cursor: text;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: flex;
+    
+    @include hidden-scrollbar;
 
     min-height: 29px;
     padding: 0 5px;
@@ -57,16 +62,15 @@
         color: $primaryTextColor;
         white-space: nowrap;
         font-size: 12px;
-        float: right;
         padding: 3px 5px;
         font-weight: bold;
+        margin-left: auto;
     }
 
     &__icon {
         @include icon(url(../../resources/icons/search.svg));
         display: inline;
-        float: right;
-        margin-top: 3px;
+        margin: 3px 0 0 auto;
     }
 
     &__input {
@@ -100,12 +104,20 @@
         @include spinner(3px);
 
         display: inline-block;
-        float: right;
-        margin-top: 4px;
+        margin: 4px 0 0 auto;
+        flex-shrink: 0;
     }
 
     &.active {
         @include card-shadow;
+    }
+
+    &__child-wrapper {
+        display: flex;
+        overflow-y: auto;
+        overflow-x: hidden;
+        margin-right: 3px;
+        @include hidden-scrollbar;
     }
 }
 
@@ -135,9 +147,7 @@
 
 .search-controls {
     display: inline-flex;
-    float: right;
     flex-direction: row;
-    justify-content: flex-end;
     align-items: center;
     padding-top: 2px;
 
