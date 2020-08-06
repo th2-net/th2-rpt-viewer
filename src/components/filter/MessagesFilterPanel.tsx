@@ -37,8 +37,7 @@ const MessagesFilterPanel = () => {
 		setTimestampTo(filterStore.messagesFilter.timestampTo);
 		setStreams(filterStore.messagesFilter.streams);
 		setMessagesTypes(filterStore.messagesFilter.messageTypes);
-		setAutocompleteSessions(messagesStore.messageSessions);
-	}, [showFilter, filterStore.messagesFilter]);
+	}, [filterStore.messagesFilter]);
 
 	const submitChanges = () => {
 		if ((timestampFrom && timestampTo) && timestampFrom > timestampTo) {

@@ -67,6 +67,11 @@ function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
 	const fromInputClasses = createBemElement('filter-row', 'input', isFromInputValid ? 'valid' : null);
 	const toInputClasses = createBemElement('filter-row', 'input', isToInputValid ? 'valid' : null);
 
+	React.useEffect(() => {
+		setIsFromInputValid(config.fromValue !== null);
+		setIsToInputValid(config.toValue !== null);
+	}, [config]);
+
 	const validPipe = (maskedValue: string): string | false => {
 		if (isCorrectDate(maskedValue)) {
 			return maskedValue;
@@ -175,6 +180,12 @@ function MultipleStringRow({ config }: { config: FilterRowMultipleStringsConfig 
 
 	React.useEffect(() => {
 		input.current?.focus();
+		return () => {
+			const inputValue = input.current?.value;
+			if (inputValue && inputValue.trim()) {
+				inputOnSubmit(inputValue);
+			}
+		};
 	}, []);
 
 	const valueBubbleOnChangeFor = (index: number) => (nextValue: string) => {

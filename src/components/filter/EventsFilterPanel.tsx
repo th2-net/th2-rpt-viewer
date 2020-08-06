@@ -36,7 +36,7 @@ function EventsFilterPanel() {
 		setTimestampTo(filterStore.eventsFilter.timestampTo);
 		setNames(filterStore.eventsFilter.names);
 		setEventsTypes(filterStore.eventsFilter.eventTypes);
-	}, [showFilter, filterStore.eventsFilter]);
+	}, [filterStore.eventsFilter]);
 
 	const onSubmit = () => {
 		if (timestampFrom != null || timestampTo != null) {
