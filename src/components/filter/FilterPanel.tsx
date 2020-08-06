@@ -48,6 +48,7 @@ export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
 	setValues: (nextValues: string[]) => void;
 	currentValue: string;
 	setCurrentValue: (currentValue: string) => void;
+	autocompleteList?: string[];
 };
 
 interface Props {

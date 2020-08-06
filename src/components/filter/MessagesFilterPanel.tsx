@@ -30,12 +30,14 @@ const MessagesFilterPanel = () => {
 	const [streams, setStreams] = React.useState<Array<string>>([]);
 	const [currentMessageType, setCurrentMessageType] = React.useState('');
 	const [messageTypes, setMessagesTypes] = React.useState<Array<string>>([]);
+	const [autocompleteSessions, setAutocompleteSessions] = React.useState<string[]>(messagesStore.messageSessions);
 
 	React.useEffect(() => {
 		setTimestampFrom(filterStore.messagesFilter.timestampFrom);
 		setTimestampTo(filterStore.messagesFilter.timestampTo);
 		setStreams(filterStore.messagesFilter.streams);
 		setMessagesTypes(filterStore.messagesFilter.messageTypes);
+		setAutocompleteSessions(messagesStore.messageSessions);
 	}, [showFilter, filterStore.messagesFilter]);
 
 	const submitChanges = () => {
@@ -73,6 +75,7 @@ const MessagesFilterPanel = () => {
 		setValues: setStreams,
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
+		autocompleteList: autocompleteSessions,
 	}, {
 		type: 'multiple-strings',
 		id: 'messages-type',

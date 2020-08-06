@@ -232,7 +232,7 @@ function MultipleStringRow({ config }: { config: FilterRowMultipleStringsConfig 
 					onSubmit={inputOnSubmit}
 					onRemove={inputOnRemove}
 					autoresize={false}
-					autocomplete={null}
+					autocomplete={config.autocompleteList}
 					datalistKey={`autocomplete-${1}`}
 				/>
 			</div>

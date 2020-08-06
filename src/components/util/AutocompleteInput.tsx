@@ -26,8 +26,8 @@ interface Props {
     autoresize?: boolean;
     onSubmit: (nextValue: string) => void;
     onRemove?: () => void;
-    onEmptyBlur?: () => void;
-    autocomplete: string[] | null;
+	onEmptyBlur?: () => void;
+    autocomplete?: string[];
     datalistKey?: string;
     placeholder?: string;
     submitKeyCodes?: number[];
@@ -56,12 +56,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	}, [value]);
 
 	const onChange: React.ChangeEventHandler<HTMLInputElement> = e => {
-		if (autocomplete?.some(val => val.toUpperCase() === e.target.value.toUpperCase())) {
-			onSubmit(e.target.value);
-			setCurrentValue('');
-		} else {
-			setCurrentValue(e.target.value);
-		}
+		setCurrentValue(e.target.value);
 	};
 
 	const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
@@ -118,13 +113,18 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 					/>
 				)
 			}
-			<datalist id={datalistKey}>
-				{
-					autocomplete?.map((variant, index) => (
-						<option key={index} value={variant}/>
-					))
-				}
-			</datalist>
+			{
+				currentValue.length > 0
+				&& (
+					<datalist id={datalistKey}>
+						{
+							autocomplete?.map((variant, index) => (
+								<option key={index} value={variant}/>
+							))
+						}
+					</datalist>
+				)
+			}
 		</React.Fragment>
 	);
 });
