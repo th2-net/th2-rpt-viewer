@@ -127,7 +127,7 @@ const messageHttpApi: MessageApiSchema = {
 			return res.json();
 		}
 
-		console.log(res.statusText);
+		console.error(res.statusText);
 		return [];
 	},
 };

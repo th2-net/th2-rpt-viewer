@@ -99,6 +99,8 @@ export default class EventsStore {
 	toggleNode = (idNode: EventIdNode) => {
 		// eslint-disable-next-line no-param-reassign
 		idNode.isExpanded = !idNode.isExpanded;
+		const nodeIndex = this.nodesList.findIndex(node => node.id === idNode.id);
+		this.nodesList[nodeIndex].isExpanded = idNode.isExpanded;
 		if (idNode.isExpanded) {
 			this.searchStore.appendResultsForEvent(idNode.id);
 		} else if (idNode.children?.length) {
@@ -130,7 +132,6 @@ export default class EventsStore {
 		const { id, parents } = idNode;
 		let event = this.eventsCache.get(id);
 		if (event) return event;
-
 		event = await this.api.events.getEvent(id, parents, abortSignal);
 		this.eventsCache.set(event.eventId, event);
 		// eslint-disable-next-line no-param-reassign
@@ -166,6 +167,8 @@ export default class EventsStore {
 			if (headNode) {
 				// eslint-disable-next-line no-await-in-loop
 				await this.fetchEvent(headNode);
+				// eslint-disable-next-line no-loop-func
+				this.nodesList[this.nodesList.findIndex(node => node.id === headNode?.id)].children = headNode.children;
 				if (!headNode.isExpanded) {
 					this.toggleNode(headNode);
 				}
