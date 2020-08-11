@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import {
-	action, computed, observable, toJS, reaction, IReactionDisposer, autorun,
+	action, computed, observable, toJS, reaction, IReactionDisposer,
 } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import FilterStore from './FilterStore';
@@ -40,7 +40,7 @@ export type MessagesStoreURLState = Partial<{
 }>;
 
 export default class MessagesStore {
-	private readonly MESSAGES_CHUNK_SIZE = 50;
+	public readonly MESSAGES_CHUNK_SIZE = 50;
 
 	disposer: IReactionDisposer | null = null;
 
@@ -77,6 +77,12 @@ export default class MessagesStore {
 
 	@observable
 	public messageSessions: string[] = [];
+
+	@observable
+	public isEndReached = false;
+
+	@observable
+	public isBeginReached = false;
 
 	constructor(
 		private api: ApiSchema,
@@ -207,12 +213,19 @@ export default class MessagesStore {
 
 		try {
 			this.messagesAbortController = new AbortController();
-
 			const messagesIds = await this.api.messages.getMessages({
 				messageId: originMessageId,
 				timelineDirection,
 				limit,
 			}, this.filterStore.messagesFilter, this.messagesAbortController.signal);
+
+			if (messagesIds.length === 0) {
+				if (timelineDirection === 'previous') {
+					this.isEndReached = true;
+				} else {
+					this.isBeginReached = true;
+				}
+			}
 
 			if (originMessageId && !this.messagesIds.includes(originMessageId)) {
 				this.messagesCache.clear();
