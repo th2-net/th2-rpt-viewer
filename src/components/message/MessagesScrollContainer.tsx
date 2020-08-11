@@ -49,6 +49,32 @@ const MessagesScrollContainer: TScrollContainer = ({
 		scrollContainer.current?.scrollTo(scrollTop);
 	});
 
+	const onScroll = (e: React.SyntheticEvent<HTMLDivElement>) => {
+		reportScrollTop(e.currentTarget.scrollTop);
+		setVisibleRange(visibleItemsIndices);
+	};
+
+	const onWheel = () => {
+		if (
+			!loadingNextItems
+			&& visibleItemsIndices.startIndex < messagesStore.MESSAGES_CHUNK_SIZE
+			&& !messagesStore.isBeginReached
+		) {
+			setLoadingNextItems(true);
+			onScrollBottom().then(() => setLoadingNextItems(false));
+		}
+
+		if (
+			!loadingPrevItems
+			&& visibleItemsIndices.endIndex
+			> messagesStore.messagesIds.length - messagesStore.MESSAGES_CHUNK_SIZE
+			&& !messagesStore.isEndReached
+		) {
+			setLoadingPrevItems(true);
+			onScrollTop().then(() => setLoadingPrevItems(false));
+		}
+	};
+
 	return (
 		<div style={{ width: '100%', height: '100%', display: 'flex' }}>
 			<div style={{
@@ -63,30 +89,8 @@ const MessagesScrollContainer: TScrollContainer = ({
 					&& <div className="messages-list__spinner"/>}
 				<div
 					ref={scrollContainer}
-					onScroll={(e: React.SyntheticEvent<HTMLDivElement>) => {
-						reportScrollTop(e.currentTarget.scrollTop);
-						setVisibleRange(visibleItemsIndices);
-					}}
-					onWheel={e => {
-						if (
-							!loadingNextItems
-							&& visibleItemsIndices.startIndex < messagesStore.MESSAGES_CHUNK_SIZE
-							&& !messagesStore.isBeginReached
-						) {
-							setLoadingNextItems(true);
-							onScrollBottom().then(() => setLoadingNextItems(false));
-						}
-
-						if (
-							!loadingPrevItems
-							&& visibleItemsIndices.endIndex
-							> messagesStore.messagesIds.length - messagesStore.MESSAGES_CHUNK_SIZE
-							&& !messagesStore.isEndReached
-						) {
-							setLoadingPrevItems(true);
-							onScrollTop().then(() => setLoadingPrevItems(false));
-						}
-					}}
+					onScroll={onScroll}
+					onWheel={onWheel}
 					style={{
 						...style,
 						flexGrow: 1,
