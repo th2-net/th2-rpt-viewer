@@ -40,7 +40,6 @@ export type MessagesStoreURLState = Partial<{
 }>;
 
 export default class MessagesStore {
-	@observable
 	public readonly MESSAGES_CHUNK_SIZE = 50;
 
 	disposer: IReactionDisposer | null = null;
