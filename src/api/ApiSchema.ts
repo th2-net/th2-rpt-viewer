@@ -34,13 +34,18 @@ export interface EventApiSchema {
 export interface MessageApiSchema {
 	getAll: () => Promise<number[]>;
 	getMessagesIds: (timestampFrom: number, timestampTo: number) => Promise<string[]>;
-	getMessages: (search: {
-		limit?: number;
+	getMessages(search: {
+		limit: number;
 		timelineDirection: 'previous' | 'next';
-		messageId?: string;
-		idsOnly?: boolean;
-	}, filter: MessagesFilter,
-		abortSignal?: AbortSignal) => Promise<string[]>;
+		messageId: string;
+		idsOnly: true;
+	}, filter: MessagesFilter, abortSignal?: AbortSignal): Promise<string[]>;
+	getMessages(search: {
+		limit: number;
+		timelineDirection: 'previous' | 'next';
+		messageId: string;
+		idsOnly: false;
+	}, filter: MessagesFilter, abortSignal?: AbortSignal): Promise<EventMessage[]>;
 	getMessage: (id: string, signal?: AbortSignal) => Promise<EventMessage>;
 	getMessagesByFilter: (filter: MessagesFilter) => Promise<string[]>;
 	getMessageSessions: () => Promise<string[]>;

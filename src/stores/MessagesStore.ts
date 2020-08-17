@@ -40,7 +40,7 @@ export type MessagesStoreURLState = Partial<{
 }>;
 
 export default class MessagesStore {
-	public readonly MESSAGES_CHUNK_SIZE = 50;
+	public readonly MESSAGES_CHUNK_SIZE = 25;
 
 	disposer: IReactionDisposer | null = null;
 
@@ -194,8 +194,9 @@ export default class MessagesStore {
 	@action
 	private getMessages = async (
 		timelineDirection: 'next' | 'previous' = 'previous',
-		originMessageId?: string,
+		originMessageId: string | null = null,
 		limit = this.MESSAGES_CHUNK_SIZE,
+		loadBody = false,
 	// eslint-disable-next-line consistent-return
 	): Promise<string[] | undefined> => {
 		this.messagesAbortController?.abort();
@@ -213,11 +214,27 @@ export default class MessagesStore {
 
 		try {
 			this.messagesAbortController = new AbortController();
-			const messagesIds = await this.api.messages.getMessages({
-				messageId: originMessageId,
-				timelineDirection,
-				limit,
-			}, this.filterStore.messagesFilter, this.messagesAbortController.signal);
+			let messagesIds: string[];
+
+			if (loadBody) {
+				const messages = await this.api.messages.getMessages({
+					messageId: originMessageId ?? '',
+					timelineDirection,
+					limit,
+					idsOnly: false,
+				}, this.filterStore.messagesFilter, this.messagesAbortController.signal);
+				messagesIds = messages.map(msg => msg.messageId);
+				messages.forEach(msg => {
+					this.messagesCache.set(msg.messageId, msg);
+				});
+			} else {
+				messagesIds = await this.api.messages.getMessages({
+					messageId: originMessageId ?? '',
+					timelineDirection,
+					limit,
+					idsOnly: true,
+				}, this.filterStore.messagesFilter, this.messagesAbortController.signal);
+			}
 
 			if (messagesIds.length === 0) {
 				if (timelineDirection === 'previous') {
@@ -278,13 +295,13 @@ export default class MessagesStore {
 		const originMessageId = !this.messagesIds.length
 			? this.attachedMessages[0]?.messageId
 			: this.messagesIds[this.messagesIds.length - 1];
-		return this.getMessages('previous', originMessageId);
+		return this.getMessages('previous', originMessageId, this.MESSAGES_CHUNK_SIZE, true);
 	};
 
 	@action
 	public loadNextMessages = () => {
 		this.messagesLoadingState = MessagesLoadingState.LOADING_NEXT_ITEMS;
-		return this.getMessages('next', this.messagesIds[0]);
+		return this.getMessages('next', this.messagesIds[0], this.MESSAGES_CHUNK_SIZE, true);
 	};
 
 	public resetMessagesFilter = () => {
