@@ -18,6 +18,8 @@ import * as React from 'react';
 import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
 import { ListRange } from 'react-virtuoso/dist/engines/scrollSeekEngine';
 import { MessagesLoadingState } from '../../stores/MessagesStore';
+import useAsyncEffect from '../../hooks/useAsyncEffect';
+import { raf } from '../../helpers/raf';
 
 interface Props {
     computeItemKey?: (idx: number) => React.Key;
@@ -54,15 +56,33 @@ const MessagesVirtualizedList = (props: Props) => {
 		loadingState,
 	} = props;
 
-	const [visibleItemsIndices, setvisibleItemsIndices] = React.useState<ListRange>({
+	const [visibleItemsIndices, setVisibleItemsIndices] = React.useState<ListRange>({
 		startIndex: 0,
 		endIndex: 0,
 	});
 
-	React.useEffect(() => {
-		if (scrolledIndex !== null) {
-			virtuoso.current?.scrollToIndex({ index: +scrolledIndex, align: 'start' });
+	useAsyncEffect(async () => {
+		if (scrolledIndex == null) {
+			return;
 		}
+		let resultIndex = scrolledIndex.valueOf();
+
+		if (scrolledIndex.valueOf() + 1 === rowCount) {
+			await loadPrevMessages();
+		}
+
+		if (scrolledIndex.valueOf() === 0) {
+			const nextMsg = await loadNextMessages();
+			if (nextMsg != null) {
+				virtuoso.current?.adjustForPrependedItems(nextMsg?.length);
+				resultIndex += nextMsg.length;
+			}
+		}
+
+		// we need raf callback here to wait prepended item render
+		raf(() => {
+			virtuoso.current?.scrollToIndex({ index: resultIndex, align: 'start' });
+		}, 1);
 	}, [scrolledIndex]);
 
 	const onScrollBottom = () => loadNextMessages()
@@ -91,7 +111,7 @@ const MessagesVirtualizedList = (props: Props) => {
 				style={{ height: '100%', width: '100%' }}
 				className={className}
 				ScrollContainer={ScrollContainer}
-				rangeChanged={({ startIndex, endIndex }) => setvisibleItemsIndices({ startIndex, endIndex })} />
+				rangeChanged={({ startIndex, endIndex }) => setVisibleItemsIndices({ startIndex, endIndex })} />
 		</InfiniteLoaderContext.Provider>
 	);
 };

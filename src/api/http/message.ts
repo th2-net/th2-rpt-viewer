@@ -31,7 +31,7 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	getMessages: async ({
 		idsOnly = true,
-		messageId = null,
+		messageId = '',
 		timelineDirection = 'next',
 		limit = 100,
 	}, filter: MessagesFilter, abortSignal?: AbortSignal) => {
@@ -45,7 +45,7 @@ const messageHttpApi: MessageApiSchema = {
 		const params = createURLSearchParams({
 			idsOnly,
 			timelineDirection,
-			messageId,
+			messageId: messageId.length > 0 ? messageId : null,
 			limit,
 			timestampFrom,
 			timestampTo,
