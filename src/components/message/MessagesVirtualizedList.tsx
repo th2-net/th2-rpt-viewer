@@ -16,7 +16,6 @@
 
 import * as React from 'react';
 import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
-import { ListRange } from 'react-virtuoso/dist/engines/scrollSeekEngine';
 import { MessagesLoadingState } from '../../stores/MessagesStore';
 import useAsyncEffect from '../../hooks/useAsyncEffect';
 import { raf } from '../../helpers/raf';
@@ -55,11 +54,6 @@ const MessagesVirtualizedList = (props: Props) => {
 		loadNextMessages,
 		loadingState,
 	} = props;
-
-	const [visibleItemsIndices, setVisibleItemsIndices] = React.useState<ListRange>({
-		startIndex: 0,
-		endIndex: 0,
-	});
 
 	useAsyncEffect(async () => {
 		if (scrolledIndex == null) {
@@ -100,7 +94,6 @@ const MessagesVirtualizedList = (props: Props) => {
 			onScrollBottom,
 			onScrollTop,
 			loadingState,
-			visibleItemsIndices,
 		}}>
 			<Virtuoso
 				totalCount={rowCount}
@@ -110,8 +103,7 @@ const MessagesVirtualizedList = (props: Props) => {
 				item={itemRenderer}
 				style={{ height: '100%', width: '100%' }}
 				className={className}
-				ScrollContainer={ScrollContainer}
-				rangeChanged={({ startIndex, endIndex }) => setVisibleItemsIndices({ startIndex, endIndex })} />
+				ScrollContainer={ScrollContainer}/>
 		</InfiniteLoaderContext.Provider>
 	);
 };
@@ -120,7 +112,6 @@ interface InfiniteScrollContextValue {
 	onScrollBottom: () => Promise<string[] | undefined>;
 	onScrollTop: () => Promise<string[] | undefined>;
 	loadingState: MessagesLoadingState | null;
-	visibleItemsIndices: ListRange;
 }
 
 export const InfiniteLoaderContext = React.createContext<InfiniteScrollContextValue>({} as InfiniteScrollContextValue);
