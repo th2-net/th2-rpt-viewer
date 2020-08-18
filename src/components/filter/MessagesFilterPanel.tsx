@@ -30,7 +30,7 @@ const MessagesFilterPanel = () => {
 	const [streams, setStreams] = React.useState<Array<string>>([]);
 	const [currentMessageType, setCurrentMessageType] = React.useState('');
 	const [messageTypes, setMessagesTypes] = React.useState<Array<string>>([]);
-	const [autocompleteSessions, setAutocompleteSessions] = React.useState<string[]>(messagesStore.messageSessions);
+	const [autocompleteSessions] = React.useState<string[]>(messagesStore.messageSessions);
 
 	React.useEffect(() => {
 		setTimestampFrom(filterStore.messagesFilter.timestampFrom);
@@ -83,6 +83,7 @@ const MessagesFilterPanel = () => {
 		setValues: setMessagesTypes,
 		currentValue: currentMessageType,
 		setCurrentValue: setCurrentMessageType,
+		autocompleteList: null,
 	},
 	];
 

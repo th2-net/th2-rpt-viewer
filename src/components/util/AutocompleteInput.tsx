@@ -16,9 +16,7 @@
 
 import * as React from 'react';
 import AutosizeInput from 'react-input-autosize';
-import { observer } from 'mobx-react-lite';
 import KeyCodes from '../../util/KeyCodes';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 
 interface Props {
     className?: string;
@@ -29,7 +27,7 @@ interface Props {
     onSubmit: (nextValue: string) => void;
     onRemove?: () => void;
 	onEmptyBlur?: () => void;
-    autocomplete?: string[];
+    autocomplete: string[] | null;
     datalistKey?: string;
     placeholder?: string;
     submitKeyCodes?: number[];

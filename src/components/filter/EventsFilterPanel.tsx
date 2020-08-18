@@ -85,6 +85,7 @@ function EventsFilterPanel() {
 		setValues: setNames,
 		currentValue: currentName,
 		setCurrentValue: setCurrentName,
+		autocompleteList: null,
 	}, {
 		type: 'multiple-strings',
 		id: 'events-type',
@@ -93,6 +94,7 @@ function EventsFilterPanel() {
 		setValues: setEventsTypes,
 		currentValue: currentType,
 		setCurrentValue: setCurrentEventType,
+		autocompleteList: null,
 	}];
 
 	return (

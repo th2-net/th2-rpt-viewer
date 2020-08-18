@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { TScrollContainer, Virtuoso } from 'react-virtuoso';
 import { observer } from 'mobx-react-lite';
+import { Virtuoso } from 'react-virtuoso';
 import { EventIdNode } from '../../../stores/EventsStore';
 import EventMinimapNode from './EventMinimapNode';
 
