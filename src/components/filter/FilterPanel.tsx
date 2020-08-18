@@ -20,6 +20,7 @@ import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { ModalPortal } from '../Portal';
 import FilterPanelRow from './FilterPanelRow';
 import '../../styles/filter.scss';
+import { raf } from '../../helpers/raf';
 
 export type FilterRowConfig = FilterRowDatetimeRangeConfig | FilterRowStringConfig | FilterRowMultipleStringsConfig;
 
@@ -48,7 +49,7 @@ export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
 	setValues: (nextValues: string[]) => void;
 	currentValue: string;
 	setCurrentValue: (currentValue: string) => void;
-	autocompleteList?: string[];
+	autocompleteList: string[] | null;
 };
 
 interface Props {
@@ -76,6 +77,22 @@ const FilterPanel = ({
 }: Props) => {
 	const filterBaseRef = React.useRef<HTMLDivElement>(null);
 	const filterButtonRef = React.useRef<HTMLDivElement>(null);
+
+	React.useEffect(
+		() => {
+			if (showFilter) {
+				raf(() => {
+					if (filterBaseRef.current) {
+						filterBaseRef.current.style.left = `${filterButtonRef
+							.current?.getBoundingClientRect().left}px`;
+						filterBaseRef.current.style.top = `${filterButtonRef
+							.current?.getBoundingClientRect().bottom}px`;
+					}
+				}, 1);
+			}
+		},
+		[showFilter],
+	);
 
 	useOutsideClickListener(filterBaseRef, (e: MouseEvent) => {
 		if (!filterButtonRef.current?.contains(e.target as Element)) {
@@ -153,8 +170,6 @@ const FilterPanel = ({
 					ref={filterBaseRef}
 					className="filter"
 					style={{
-						left: `${filterButtonRef.current?.getBoundingClientRect().left}px`,
-						top: `${filterButtonRef.current?.getBoundingClientRect().bottom}px`,
 						maxWidth: `${filterPanelMaxWidth}px`,
 					}}>
 					{
