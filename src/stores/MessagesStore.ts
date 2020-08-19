@@ -331,6 +331,8 @@ export default class MessagesStore {
 			return;
 		}
 
+		this.isBeginReached = false;
+		this.isEndReached = false;
 		this.attachedMessagesAbortController?.abort();
 
 		const newlySelectedMessagesIds = attachedMessagesIds
@@ -372,6 +374,8 @@ export default class MessagesStore {
 		this.messagesCache.clear();
 		this.selectedMessageId = null;
 		this.scrolledIndex = null;
+		this.isBeginReached = false;
+		this.isEndReached = false;
 
 		let originMessageId: string | undefined = this.attachedMessages[0]?.messageId;
 
