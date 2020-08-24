@@ -64,7 +64,7 @@ export default class WindowsStore {
 				this.getEventColors(selectedEvents);
 				this.getAttachedMessagesIds(selectedEvents);
 				this.lastSelectedEvent = selectedEvents
-					.find(e => e.eventId === this.lastSelectedEventId) || null;
+					.find(e => `${e.batchId}:${e.eventId}` === this.lastSelectedEventId) || null;
 			},
 		);
 

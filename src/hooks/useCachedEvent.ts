@@ -36,7 +36,7 @@ export default function useCachedEvent(node: EventIdNode, isVisible = true): Eve
 							console.error(`Error while loading event ${node.id}`);
 						}
 					});
-			} else if (event.eventId !== node.id) {
+			} else if (`${event.batchId}:${event.eventId}` !== node.id) {
 				// handle event node change
 				if (eventWindowStore.eventsCache.has(node.id)) {
 					setEvent(eventWindowStore.eventsCache.get(node.id));
