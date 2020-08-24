@@ -147,9 +147,10 @@ export default class EventsStore {
 			}
 			return cachedEvent;
 		}
-
 		const event = await this.api.events.getEvent(id, abortSignal);
-		this.eventsCache.set(event.eventId, event);
+		runInAction(() => {
+			this.eventsCache.set(idNode.id, event);
+		});
 
 		this.fetchEventChildren(
 			idNode,
@@ -209,26 +210,36 @@ export default class EventsStore {
 		}
 	};
 
-	@action
-	expandBranch = async (selectedIds: string[]) => {
+	@action.bound
+	async expandBranch(selectedIds: string[]) {
+		if (!selectedIds.length) return;
 		let headNode: EventIdNode | undefined;
-		for (let i = 0; i < selectedIds.length; i++) {
-			headNode = this.nodesList.find(node => node.id === selectedIds[i]);
+		let children = this.nodesList;
+
+		for await (const eventId of selectedIds) {
+			headNode = children.find(node => node.id === eventId);
 			if (headNode) {
-				// eslint-disable-next-line no-await-in-loop
 				await this.fetchEvent(headNode);
+				await this.fetchEventChildren(
+					headNode,
+					this.filterStore.eventsFilter.timestampFrom,
+					this.filterStore.eventsFilter.timestampTo,
+				);
 				// eslint-disable-next-line no-loop-func
 				this.nodesList[this.nodesList.findIndex(node => node.id === headNode?.id)].children = headNode.children;
 				if (!headNode.isExpanded) {
 					this.toggleNode(headNode);
 				}
 			}
+			children = headNode?.children || [];
 		}
-		if (headNode) {
-			this.selectNode(headNode);
-			this.scrollToEvent(headNode);
-		}
-	};
+		runInAction(() => {
+			if (headNode) {
+				this.selectNode(headNode);
+				this.scrollToEvent(headNode);
+			}
+		});
+	}
 
 	@computed
 	get selectedEvent() {
