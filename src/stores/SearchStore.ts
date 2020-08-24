@@ -18,7 +18,6 @@ import {
 	action,
 	computed,
 	observable,
-	toJS,
 } from 'mobx';
 import SearchToken from '../models/search/SearchToken';
 import ApiSchema from '../api/ApiSchema';
@@ -95,13 +94,15 @@ export default class SearchStore {
 
 	@action
 	fetchTokenResults = async (tokenString: string) => {
-		const rootEventsResults = await this.api.events.getEventsByName(tokenString);
+		const { timestampFrom, timestampTo } = this.eventsStore.filterStore.eventsFilter;
+		const rootEventsResults = await this.api.events.getEventsByName(timestampFrom, timestampTo, tokenString);
 
 		const expandedSubNodes = this.eventsStore.nodesList
 			.filter(node => node.isExpanded && node.children && node.children.length > 0);
 
 		const subNodesResult = await Promise.all(
-			expandedSubNodes.map(node => this.api.events.getEventsByName(tokenString, node.id)),
+			expandedSubNodes.map(node =>
+				this.api.events.getEventsByName(timestampFrom, timestampTo, tokenString, node.id)),
 		);
 
 		return [...rootEventsResults, ...subNodesResult.flat(2)];
@@ -110,8 +111,10 @@ export default class SearchStore {
 	@action
 	appendResultsForEvent = async (eventId: string) => {
 		this.isLoading = true;
+		const { timestampFrom, timestampTo } = this.eventsStore.filterStore.eventsFilter;
 		const results = await Promise.all(
-			this.tokens.map(token => this.api.events.getEventsByName(token.pattern, eventId)),
+			this.tokens.map(token =>
+				this.api.events.getEventsByName(timestampFrom, timestampTo, token.pattern, eventId)),
 		);
 		this.isLoading = false;
 		this.scrolledIndex = null;

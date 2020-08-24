@@ -16,7 +16,17 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import FilterPanel, { FilterRowConfig } from './FilterPanel';
+import moment from 'moment';
+import FilterPanel from './FilterPanel';
+import {
+	DATE_TIME_INPUT_MASK,
+	DATE_TIME_PLACEHOLDER,
+} from '../../util/filterInputs';
+import {
+	FilterRowConfig,
+	TimeInputType,
+	DateTimeMask,
+} from '../../models/filter/FilterInputs';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 
 const MessagesFilterPanel = () => {
@@ -54,18 +64,53 @@ const MessagesFilterPanel = () => {
 		});
 	};
 
-	const clearAllFilters = () => {
-		messagesStore.resetMessagesFilter();
+	const clearAllFilters = () => messagesStore.resetMessagesFilter();
+
+	const getTimeShortcutHandler = (minutesOffset: number) => () => {
+		setTimestampFrom(moment().subtract(minutesOffset, 'minutes').valueOf());
+		setTimestampTo(moment.now());
 	};
 
 	const filterConfig: FilterRowConfig[] = [{
 		type: 'datetime-range',
 		id: 'messages-datetime',
 		label: 'Messages from',
-		fromValue: timestampFrom,
-		toValue: timestampTo,
-		setFromValue: setTimestampFrom,
-		setToValue: setTimestampTo,
+		inputs: [{
+			label: 'Messages from',
+			value: timestampFrom,
+			setValue: setTimestampFrom,
+			type: TimeInputType.DATE_TIME,
+			id: 'messages-from',
+			inputMask: DATE_TIME_INPUT_MASK,
+			dateMask: DateTimeMask.DATE_TIME_MASK,
+			placeholder: DATE_TIME_PLACEHOLDER,
+			labelClassName: 'filter-row__label',
+		},
+		{
+			label: 'to',
+			value: timestampTo,
+			setValue: setTimestampTo,
+			type: TimeInputType.DATE_TIME,
+			id: 'messages-to',
+			inputMask: DATE_TIME_INPUT_MASK,
+			dateMask: DateTimeMask.DATE_TIME_MASK,
+			placeholder: DATE_TIME_PLACEHOLDER,
+		},
+		],
+		timeShortcuts: [
+			{
+				label: 'last 15 minutes',
+				onClick: getTimeShortcutHandler(15),
+			},
+			{
+				label: 'last hour',
+				onClick: getTimeShortcutHandler(60),
+			},
+			{
+				label: 'last day',
+				onClick: getTimeShortcutHandler(24 * 60),
+			},
+		],
 	}, {
 		type: 'multiple-strings',
 		id: 'messages-stream',

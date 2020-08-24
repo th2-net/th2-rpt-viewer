@@ -19,38 +19,9 @@ import { createBemElement, createStyleSelector } from '../../helpers/styleCreato
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { ModalPortal } from '../Portal';
 import FilterPanelRow from './FilterPanelRow';
-import '../../styles/filter.scss';
 import { raf } from '../../helpers/raf';
-
-export type FilterRowConfig = FilterRowDatetimeRangeConfig | FilterRowStringConfig | FilterRowMultipleStringsConfig;
-
-export type FilterRowBaseConfig = {
-	id: string;
-	label: string;
-};
-
-export type FilterRowDatetimeRangeConfig = FilterRowBaseConfig & {
-	type: 'datetime-range';
-	fromValue: number | null;
-	toValue: number | null;
-	setFromValue: (nextValue: number) => void;
-	setToValue: (nextValue: number) => void;
-};
-
-export type FilterRowStringConfig = FilterRowBaseConfig & {
-	type: 'string';
-	value: string;
-	setValue: (nextValue: string) => void;
-};
-
-export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
-	type: 'multiple-strings';
-	values: string[];
-	setValues: (nextValues: string[]) => void;
-	currentValue: string;
-	setCurrentValue: (currentValue: string) => void;
-	autocompleteList: string[] | null;
-};
+import { FilterRowConfig } from '../../models/filter/FilterInputs';
+import '../../styles/filter.scss';
 
 interface Props {
 	isFilterApplied: boolean;
@@ -78,20 +49,24 @@ const FilterPanel = ({
 	const filterBaseRef = React.useRef<HTMLDivElement>(null);
 	const filterButtonRef = React.useRef<HTMLDivElement>(null);
 
-	React.useEffect(
+	React.useLayoutEffect(
 		() => {
 			if (showFilter) {
 				raf(() => {
-					if (filterBaseRef.current) {
-						filterBaseRef.current.style.left = `${filterButtonRef
-							.current?.getBoundingClientRect().left}px`;
-						filterBaseRef.current.style.top = `${filterButtonRef
-							.current?.getBoundingClientRect().bottom}px`;
+					if (filterBaseRef.current && filterButtonRef.current) {
+						const clientWidth = document.documentElement.clientWidth;
+						const {
+							left,
+							bottom,
+						} = filterButtonRef.current?.getBoundingClientRect();
+
+						filterBaseRef.current.style.left = `${left}px`;
+						filterBaseRef.current.style.top = `${bottom}px`;
+						filterBaseRef.current.style.maxWidth = `${clientWidth - left - 10}px`;
 					}
-				}, 1);
+				}, 2);
 			}
-		},
-		[showFilter],
+		}, [showFilter],
 	);
 
 	useOutsideClickListener(filterBaseRef, (e: MouseEvent) => {
@@ -135,10 +110,6 @@ const FilterPanel = ({
 		setShowFilter(false);
 	};
 
-	const filterPanelMaxWidth = filterButtonRef.current
-		? document.documentElement.clientWidth - filterButtonRef.current.getBoundingClientRect().left
-		: undefined;
-
 	return (
 		<div className={filterWrapperClass}>
 			<div
@@ -166,15 +137,10 @@ const FilterPanel = ({
 				}
 			</div>
 			<ModalPortal isOpen={showFilter}>
-				<div
-					ref={filterBaseRef}
-					className="filter"
-					style={{
-						maxWidth: `${filterPanelMaxWidth}px`,
-					}}>
+				<div ref={filterBaseRef} className="filter">
 					{
-						config.map(configItem => (
-							<FilterPanelRow rowConfig={configItem} key={configItem.id}/>
+						config.map(rowConfig => (
+							<FilterPanelRow rowConfig={rowConfig} key={rowConfig.id}/>
 						))
 					}
 					<div className="filter__controls filter-controls">

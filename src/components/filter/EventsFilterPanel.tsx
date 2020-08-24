@@ -16,7 +16,19 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import FilterPanel, { FilterRowConfig } from './FilterPanel';
+import moment from 'moment';
+import FilterPanel from './FilterPanel';
+import {
+	FilterRowConfig,
+	TimeInputType,
+	DateTimeMask,
+} from '../../models/filter/FilterInputs';
+import {
+	TIME_INPUT_MASK,
+	TIME_PLACEHOLDER,
+	DATE_INPUT_MASK,
+	DATE_PLACEHOLDER,
+} from '../../util/filterInputs';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 
 function EventsFilterPanel() {
@@ -39,33 +51,71 @@ function EventsFilterPanel() {
 	}, [filterStore.eventsFilter]);
 
 	const onSubmit = () => {
-		if (timestampFrom != null || timestampTo != null) {
-			const nextTimestampFrom = timestampFrom ?? new Date().getTime();
-			const nextTimestampTo = timestampTo ?? new Date().getTime();
-
-			if (nextTimestampFrom > nextTimestampTo) {
-				// eslint-disable-next-line no-alert
-				window.alert('Invalid timestamp filter for events.');
-				return;
-			}
-
-			eventWindowStore.fetchRootEvents({
-				timestampFrom: nextTimestampFrom,
-				timestampTo: nextTimestampTo,
-				names,
-				eventTypes,
-			});
-		} else {
-			eventWindowStore.fetchRootEvents({
-				timestampFrom: null,
-				timestampTo: null,
-				names,
-				eventTypes,
-			});
+		if (timestampFrom > timestampTo) {
+			// eslint-disable-next-line no-alert
+			window.alert('Invalid timestamp filter for events.');
+			return;
 		}
+
+		eventWindowStore.filterStore.eventsTimeFilterIsApplied = true;
+		eventWindowStore.filterStore.setEventsFilter({
+			timestampFrom,
+			timestampTo,
+			names,
+			eventTypes,
+		});
+	};
+
+	const getTimeShortcutHandler = (minutesOffset: number) => () => {
+		const to = moment().utc();
+		let from = moment().utc().subtract(minutesOffset, 'minutes');
+
+		if (!from.isSame(to, 'day')) {
+			from = moment().utc().startOf('day');
+		}
+
+		setTimestampFrom(from.valueOf());
+		setTimestampTo(to.valueOf());
+	};
+
+	const setTimestampFromHandler = (timestamp: number) => {
+		if (timestampTo) {
+			const toDate = moment(timestamp).utc();
+			const date = toDate.get('date');
+			const month = toDate.get('month');
+			const year = toDate.get('year');
+
+			const toTimestamp = moment(timestampTo)
+				.utc()
+				.set('date', date)
+				.set('month', month)
+				.set('year', year);
+
+			setTimestampTo(toTimestamp.valueOf());
+		}
+		setTimestampFrom(timestamp);
+	};
+
+	const setTimestampToHandler = (timestamp: number) => {
+		if (timestampFrom) {
+			const fromDate = moment(timestampFrom).utc();
+			const date = fromDate.get('date');
+			const month = fromDate.get('month');
+			const year = fromDate.get('year');
+
+			// eslint-disable-next-line no-param-reassign
+			timestamp = moment(timestamp)
+				.utc()
+				.set('date', date)
+				.set('month', month)
+				.set('year', year)
+				.valueOf();
+		}
+		setTimestampTo(timestamp);
 	};
 
 	const onClear = () => {
+		eventWindowStore.filterStore.resetEventsFilter();
 		eventWindowStore.fetchRootEvents();
 	};
 
@@ -73,10 +123,55 @@ function EventsFilterPanel() {
 		type: 'datetime-range',
 		id: 'events-datetime',
 		label: 'Events from',
-		fromValue: timestampFrom,
-		toValue: timestampTo,
-		setFromValue: setTimestampFrom,
-		setToValue: setTimestampTo,
+		inputs: [{
+			label: 'Events on',
+			value: timestampFrom,
+			setValue: setTimestampFromHandler,
+			type: TimeInputType.DATE,
+			id: 'events-date',
+			inputMask: DATE_INPUT_MASK,
+			dateMask: DateTimeMask.DATE_MASK,
+			placeholder: DATE_PLACEHOLDER,
+			inputClassName: 'events-filter__date-input',
+			labelClassName: 'filter-row__label',
+		},
+		{
+			label: 'from',
+			value: timestampFrom,
+			setValue: setTimestampFromHandler,
+			type: TimeInputType.TIME,
+			id: 'events-time-from',
+			inputMask: TIME_INPUT_MASK,
+			dateMask: DateTimeMask.TIME_MASK,
+			placeholder: TIME_PLACEHOLDER,
+			inputClassName: 'events-filter__time-input',
+		},
+		{
+			label: 'to',
+			value: timestampTo,
+			setValue: setTimestampToHandler,
+			type: TimeInputType.TIME,
+			id: 'events-time-to',
+			inputMask: TIME_INPUT_MASK,
+			dateMask: DateTimeMask.TIME_MASK,
+			placeholder: TIME_PLACEHOLDER,
+			inputClassName: 'events-filter__time-input',
+		},
+		],
+		timeShortcuts: [
+			{
+				label: 'last 15 minutes',
+				onClick: getTimeShortcutHandler(15),
+			},
+			{
+				label: 'last hour',
+				onClick: getTimeShortcutHandler(60),
+			},
+			{
+				label: 'today',
+				onClick: getTimeShortcutHandler(24 * 60),
+			},
+		],
 	}, {
 		type: 'multiple-strings',
 		id: 'events-name',

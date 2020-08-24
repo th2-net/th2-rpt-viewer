@@ -18,17 +18,18 @@ import Timestamp from './Timestamp';
 import { EventBodyPayload } from './EventActionPayload';
 
 export interface EventAction {
-    type: string;
+    attachedMessageIds: Array<string>;
+    batchId: null | string;
+    batched: boolean;
+    body: EventActionBody;
+    endTimestamp: Timestamp;
     eventId: string;
     eventName: string;
     eventType: string;
-    endTimestamp: Timestamp;
-    startTimestamp: Timestamp;
     parentEventId: string;
-    attachedMessageIds: Array<string>;
-    body: EventActionBody;
+    startTimestamp: Timestamp;
     successful: boolean;
-    childrenIds: string[];
+    type: string;
 }
 
 export type EventActionBody = EventBodyPayload[];

@@ -40,9 +40,9 @@ function EventTree({ idNode }: EventTreeProps) {
 
 	let expandIconStatus: 'expanded' | 'hidden' | 'loading' | 'none';
 
-	if (event?.childrenIds == null) {
+	if (idNode.children == null) {
 		expandIconStatus = 'loading';
-	} else if (event.childrenIds.length === 0) {
+	} else if (idNode.children.length === 0) {
 		expandIconStatus = 'none';
 	} else if (idNode.isExpanded) {
 		expandIconStatus = 'expanded';

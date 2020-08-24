@@ -14,9 +14,22 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export default interface EventsFilter {
-	timestampFrom: number;
-	timestampTo: number;
-	eventTypes: Array<string>;
-	names: Array<string>;
-}
+export const DATE_TIME_INPUT_MASK = [
+	/\d/, /\d/, /\d/, /\d/, '-',
+	/\d/, /\d/, '-', /\d/, /\d/, ' ', /\d/, /\d/, ':',
+	/\d/, /\d/, ':', /\d/, /\d/, '.', /\d/, /\d/, /\d/,
+];
+
+export const DATE_INPUT_MASK = [
+	/\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, '-', /\d/, /\d/,
+];
+
+export const TIME_INPUT_MASK = [
+	/\d/, /\d/, ':', /\d/, /\d/, ':', /\d/, /\d/, '.', /\d/, /\d/, /\d/,
+];
+
+export const DATE_PLACEHOLDER = 'YYYY-MM-DD';
+
+export const TIME_PLACEHOLDER = '00:00:00.000';
+
+export const DATE_TIME_PLACEHOLDER = `${DATE_PLACEHOLDER} ${TIME_PLACEHOLDER}`;
