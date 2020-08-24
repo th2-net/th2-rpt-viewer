@@ -24,7 +24,6 @@ const eventHttpApi: EventApiSchema = {
 			const params = createURLSearchParams({
 				timestampFrom: filter.timestampFrom,
 				timestampTo: filter.timestampTo,
-				idsOnly: true,
 			});
 
 			if (filter.names.length > 0) {
@@ -33,7 +32,9 @@ const eventHttpApi: EventApiSchema = {
 			if (filter.eventTypes.length > 0) {
 				filter.eventTypes.forEach(type => params.append('eventType', type));
 			}
+
 			const res = await fetch(`/backend/rootEvents?${params}`);
+
 			if (res.ok) {
 				return await res.json();
 			}
@@ -41,8 +42,22 @@ const eventHttpApi: EventApiSchema = {
 		}
 		return [];
 	},
-	getEvent: async (id: string, parentIds: string[], signal?: AbortSignal) => {
-		const res = await fetch(`/backend/event/${[...parentIds, id].join('/')}`, { signal });
+	getEvent: async (id, signal?) => {
+		const res = await fetch(`/backend/event/${id}`, { signal });
+
+		if (res.ok) {
+			return await res.json();
+		}
+
+		console.error(res.statusText);
+		return null;
+	},
+	getEventChildren: async (id, timestampFrom, timestampTo, signal?) => {
+		const params = createURLSearchParams({
+			timestampFrom,
+			timestampTo,
+		});
+		const res = await fetch(`/backend/search/events/${id}?${params}`, { signal });
 
 		if (res.ok) {
 			return await res.json();
@@ -61,14 +76,15 @@ const eventHttpApi: EventApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
-	getEventsByName: async (name, eventId) => {
+	getEventsByName: async (timestampFrom, timestampTo, name, eventId) => {
 		const params = createURLSearchParams({
-			idsOnly: true,
 			name,
+			timestampFrom,
+			timestampTo,
 		});
 
 		const path = eventId == null
-			? `/backend/search/events?${params}`
+			? `/backend/rootEvents?${params}`
 			: `/backend/search/events/${eventId}?${params}`;
 		const res = await fetch(path);
 

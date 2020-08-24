@@ -26,9 +26,20 @@ export default interface ApiSchema {
 
 export interface EventApiSchema {
     getRootEvents: (filter?: EventsFilter) => Promise<string[]>;
-    getEvent: (id: string, parentIds: string[], abortSignal?: AbortSignal) => Promise<EventAction>;
+	getEvent: (id: string, abortSignal?: AbortSignal) => Promise<EventAction>;
+	getEventChildren: (
+		id: string,
+		timestampFrom: number,
+		timestampTo: number,
+		abortSignal?: AbortSignal,
+	) => Promise<Array<string>>;
     getRange: (start: number, end: number) => Promise<EventAction[]>;
-    getEventsByName: (name: string, eventId?: string) => Promise<string[]>;
+    getEventsByName: (
+		timestampFrom: number,
+		timestampTo: number,
+		name: string,
+		eventId?: string,
+	) => Promise<string[]>;
 }
 
 export interface MessageApiSchema {

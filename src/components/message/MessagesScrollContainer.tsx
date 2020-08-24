@@ -138,8 +138,10 @@ const MessagesScrollContainer: TScrollContainer = ({
 				marginRight: '11px',
 				flexGrow: 1,
 			}}>
-				{loadingState === MessagesLoadingState.LOADING_NEXT_ITEMS
-					&& <div className="messages-list__spinner"/>}
+				{
+					loadingState === MessagesLoadingState.LOADING_NEXT_ITEMS
+					&& <div className="messages-list__spinner"/>
+				}
 				<div
 					ref={scrollContainer}
 					onScroll={onScroll}
@@ -154,12 +156,16 @@ const MessagesScrollContainer: TScrollContainer = ({
 				>
 					{children}
 				</div>
-				{loadingState === MessagesLoadingState.LOADING_SELECTED_MESSAGE
+				{
+					loadingState === MessagesLoadingState.LOADING_SELECTED_MESSAGE
 					&& <div className="messages-list__overlay-loader">
 						<div className="messages-list__overlay-spinner"/>
-					</div>}
-				{loadingState === MessagesLoadingState.LOADING_PREVIOUS_ITEMS
-					&& <div className="messages-list__spinner"/>}
+					</div>
+				}
+				{
+					loadingState === MessagesLoadingState.LOADING_PREVIOUS_ITEMS
+					&& <div className="messages-list__spinner"/>
+				}
 			</div>
 			<Observer>
 				{() => <Heatmap

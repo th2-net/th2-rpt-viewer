@@ -16,25 +16,21 @@
 
 
 import * as React from 'react';
-import moment from 'moment';
 import {
 	FilterRowConfig,
 	FilterRowDatetimeRangeConfig,
 	FilterRowMultipleStringsConfig,
 	FilterRowStringConfig,
-} from './FilterPanel';
+	DateTimeInputType,
+} from '../../models/filter/FilterInputs';
 import Bubble from '../util/Bubble';
 import AutocompleteInput from '../util/AutocompleteInput';
 import { removeByIndex, replaceByIndex } from '../../helpers/array';
-import { createBemElement } from '../../helpers/styleCreators';
-import { toUTCDate } from '../../helpers/date';
-import FilterDatetimeInput from './FilterDatetimeInput';
+import DateTimeInput from './date-time-inputs/DateTimeInput';
 
 interface Props {
 	rowConfig: FilterRowConfig;
 }
-
-export const TIME_MASK = 'YYYY-MM-DD HH:mm:ss:SSS';
 
 export default function FilterPanelRow({ rowConfig }: Props) {
 	switch (rowConfig.type) {
@@ -56,104 +52,39 @@ export default function FilterPanelRow({ rowConfig }: Props) {
 }
 
 function DatetimeRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
-	const fromId = `${config.id}-from`;
-	const toId = `${config.id}-to`;
-	const inputMask = [/\d/, /\d/, /\d/, /\d/, '-',
-		/\d/, /\d/, '-', /\d/, /\d/, ' ', /\d/, /\d/, ':',
-		/\d/, /\d/, ':', /\d/, /\d/, '.', /\d/, /\d/, /\d/];
-	const [isFromInputValid, setIsFromInputValid] = React.useState(config.fromValue !== null);
-	const [isToInputValid, setIsToInputValid] = React.useState(config.toValue !== null);
-
-	const fromInputClasses = createBemElement('filter-row', 'input', isFromInputValid ? 'valid' : null);
-	const toInputClasses = createBemElement('filter-row', 'input', isToInputValid ? 'valid' : null);
-
-	React.useEffect(() => {
-		setIsFromInputValid(config.fromValue !== null);
-		setIsToInputValid(config.toValue !== null);
-	}, [config]);
-
-	const validPipe = (maskedValue: string): string | false => {
-		if (isCorrectDate(maskedValue)) {
-			return maskedValue;
-		}
-		return false;
-	};
-
-	const isCorrectDate = (maskedValue: string): boolean => {
-		const value = maskedValue.substr(0, 4).replace(/__/g, '01').replace(/_/g, '0')
-		+ maskedValue.substr(4, 6)
-			.replace(/__/g, '01')
-			.replace(/(?<=1)_/g, '0')
-			.replace(/(?<=0)_/g, '1')
-			.replace(/_/g, '0')
-		+ maskedValue.substring(10).replace(/_/g, '0');
-		const date = moment(value, TIME_MASK);
-		return date.isValid()
-			&& date.isBefore(moment().utc().subtract((moment().utcOffset() / 60), 'hour'));
-	};
-
-	const onInputBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (isCorrectDate(e.target.value) && !e.target.value.includes('_')) {
-			const date = new Date(e.target.value);
-			const utcTime = toUTCDate(date);
-			if (e.target.name === 'from') {
-				setIsFromInputValid(true);
-				config.setFromValue(utcTime);
-			} else {
-				setIsToInputValid(true);
-				config.setToValue(utcTime);
-			}
-		} else if (e.target.name === 'from') {
-			setIsFromInputValid(false);
-		} else {
-			setIsToInputValid(false);
-		}
-	};
-
-	const setTimeOffset = (minutes: number) => {
-		config.setFromValue(Date.now() - minutes * 60000);
-		config.setToValue(Date.now());
-	};
+	const renderInput = (inputConfig: DateTimeInputType) => [
+		inputConfig.label
+		&& <label
+			key={`${inputConfig.id}-label`}
+			htmlFor={inputConfig.id}
+			className={inputConfig.labelClassName}>
+			{inputConfig.label}
+		</label>,
+		<DateTimeInput
+			{...inputConfig}
+			inputConfig={inputConfig}
+			key={inputConfig.id}
+		/>,
+	];
 
 	return (
 		<>
 			<div className='filter-row'>
-				<label
-					htmlFor={fromId}
-					className='filter-row__label'>
-					{config.label}
-				</label>
-				<FilterDatetimeInput id={fromId}
-							 className={fromInputClasses}
-							 value={config.fromValue}
-							 mask={inputMask}
-							 onBlur={onInputBlur}
-							 pipe={validPipe}
-							 name='from'
-							 config={config}/>
-				<label
-					htmlFor={toId}
-					className='filter-row__to-label'
-				>to</label>
-				<FilterDatetimeInput id={toId}
-							 className={toInputClasses}
-							 value={config.toValue}
-							 mask={inputMask}
-							 onBlur={onInputBlur}
-							 pipe={validPipe}
-							 name='to'
-							 config={config}/>
+				{
+					config.inputs.map((inputConfig: DateTimeInputType) => renderInput(inputConfig))
+				}
 			</div>
 			<div className="filter-time-controls">
-				<span
-					className="filter-time-control"
-					onClick={setTimeOffset.bind(null, 15)}>last 15 minutes</span>
-				<span
-					className="filter-time-control"
-					onClick={setTimeOffset.bind(null, 60)}>last hour</span>
-				<span
-					className="filter-time-control"
-					onClick={setTimeOffset.bind(null, (60 * 24))}>last day</span>
+				{
+					config.timeShortcuts.map(({ label, onClick }) => (
+						<span
+							key={label}
+							className="filter-time-control"
+							onClick={onClick}>
+							{label}
+						</span>
+					))
+				}
 			</div>
 		</>
 	);

@@ -19,7 +19,6 @@
 .filter {
     @include scrollbar;
     @include card-shadow;
-    // min-width: 725px;
     padding: 12px 15px;
     border-radius: 0 5px 5px 5px;
     background-color: $filterPrimaryColor;
@@ -154,9 +153,8 @@
             width: 253px;
             display: flex;
             justify-content: space-between;
-            margin-top: 25px;
+            padding: 0 12px;
         }
-
 
         &__control {
             margin: 0;
@@ -186,12 +184,12 @@
     }
 
     &-timepicker {
-        width: 200px;
+        display: grid;
+        grid-template-columns: repeat(3, 70px);
         height: 100%;
 
         &__scroll {
             @include scrollbar;
-            width: 50%;
             display: inline-block;
             height: 100%;
             overflow-y: scroll;
@@ -201,7 +199,7 @@
             }
 
             &-item {
-                height: 40px;
+                height: 30px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -353,7 +351,7 @@
             }
         }
 
-        &.valid {
+        &.non-empty {
             background-color: #FFF;
         }
     }
@@ -404,5 +402,16 @@
         flex-grow: 1;
         width: auto;
         min-width: 100px;
+    }
+}
+
+.events-filter {
+    &__time-input {
+        width: 110px;
+        padding: 3px 9px;
+    }
+    &__date-input {
+        width: 98px;
+        padding: 3px 9px;
     }
 }

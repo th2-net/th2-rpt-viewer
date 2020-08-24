@@ -18,9 +18,8 @@ import {
 	action,
 	computed,
 	observable,
-	toJS,
-	reaction,
 } from 'mobx';
+import moment from 'moment';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
 
@@ -31,11 +30,16 @@ export const defaultMessagesFilter: MessagesFilter = {
 	messageTypes: [],
 };
 
-export const defaultEventsFilter: EventsFilter = {
-	timestampFrom: null,
-	timestampTo: null,
-	eventTypes: [],
-	names: [],
+export const getDefaultEventFilter = () => {
+	const timestampTo = moment(Date.now()).utc().valueOf();
+	const timestampFrom = moment().utc().startOf('day').valueOf();
+
+	return {
+		timestampFrom,
+		timestampTo,
+		eventTypes: [],
+		names: [],
+	};
 };
 
 type InitialState = Partial<{
@@ -53,17 +57,13 @@ export default class FilterStore {
 
 	@observable isMessagesFilterApplied = false;
 
-	@observable eventsFilter: EventsFilter = {
-		timestampFrom: null,
-		timestampTo: null,
-		eventTypes: [],
-		names: [],
-	};
+	@observable eventsFilter: EventsFilter = getDefaultEventFilter();
+
+	@observable eventsTimeFilterIsApplied = false;
 
 	@computed
 	get isEventsFilterApplied() {
-		return this.eventsFilter.timestampFrom !== null
-			|| this.eventsFilter.timestampTo !== null
+		return this.eventsTimeFilterIsApplied
 			|| this.eventsFilter.eventTypes.length !== 0
 			|| this.eventsFilter.names.length !== 0;
 	}
@@ -98,12 +98,14 @@ export default class FilterStore {
 
 	@action
 	resetEventsFilter() {
-		this.eventsFilter = defaultEventsFilter;
+		this.eventsTimeFilterIsApplied = false;
+		this.eventsFilter = getDefaultEventFilter();
 	}
 
 	@action
 	private init(initialState?: InitialState) {
 		if (!initialState) return;
+		const defaultEventsFilter = getDefaultEventFilter();
 		const {
 			eventsFilter = defaultEventsFilter,
 			messagesFilter = defaultMessagesFilter,
@@ -116,6 +118,10 @@ export default class FilterStore {
 			timestampFrom: eventsFilter.timestampFrom || defaultEventsFilter.timestampFrom,
 			timestampTo: eventsFilter.timestampTo || defaultEventsFilter.timestampTo,
 		};
+
+		if (eventsFilter.timestampFrom || eventsFilter.timestampTo) {
+			this.eventsTimeFilterIsApplied = true;
+		}
 
 		this.messagesFilter = {
 			timestampFrom: messagesFilter.timestampFrom || defaultMessagesFilter.timestampFrom,

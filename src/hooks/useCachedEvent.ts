@@ -27,7 +27,7 @@ export default function useCachedEvent(node: EventIdNode, isVisible = true): Eve
 		const abortController = new AbortController();
 
 		if (isVisible) {
-			if (!event) {
+			if (!event || !node.children) {
 				eventWindowStore
 					.fetchEvent(node, abortController.signal)
 					.then(setEvent)
