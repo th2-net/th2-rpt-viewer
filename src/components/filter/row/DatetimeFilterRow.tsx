@@ -40,18 +40,19 @@ export default function DatetimeFilterRow({ config }: { config: FilterRowDatetim
 				{
 					config.inputs.map((inputConfig: DateTimeInputType) => renderInput(inputConfig))
 				}
-			</div>
-			<div className="filter-time-controls">
-				{
-					config.timeShortcuts.map(({ label, onClick }) => (
-						<span
-							key={label}
-							className="filter-time-control"
-							onClick={onClick}>
-							{label}
-						</span>
-					))
-				}
+				<div className="filter-time-controls">
+					<div className='filter-row__arrow-icon'/>
+					{
+						config.timeShortcuts.map(({ label, onClick }) => (
+							<div
+								key={label}
+								className="filter-time-control"
+								onClick={onClick}>
+								{label}
+							</div>
+						))
+					}
+				</div>
 			</div>
 		</>
 	);

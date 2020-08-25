@@ -23,10 +23,7 @@ interface Props {
 	children: React.ReactNode;
 }
 
-export const Portal = ({
-	children,
-
-}: Props) => {
+export const Portal = ({ children }: Props) => {
 	const el = useRef(document.createElement('div'));
 
 	useEffect(() => {

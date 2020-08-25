@@ -23,6 +23,8 @@ import { raf } from '../../helpers/raf';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
 import '../../styles/filter.scss';
 
+const PANEL_WIDTH = 840;
+
 interface Props {
 	isFilterApplied: boolean;
 	isLoading?: boolean;
@@ -60,9 +62,12 @@ const FilterPanel = ({
 							bottom,
 						} = filterButtonRef.current?.getBoundingClientRect();
 
-						filterBaseRef.current.style.left = `${left}px`;
+						filterBaseRef.current.style.right = `${Math.max(clientWidth - left - PANEL_WIDTH, 10)}px`;
 						filterBaseRef.current.style.top = `${bottom}px`;
-						filterBaseRef.current.style.maxWidth = `${clientWidth - left - 10}px`;
+						filterBaseRef.current.style.width = `${PANEL_WIDTH}px`;
+						filterBaseRef.current.style.borderTopLeftRadius = clientWidth - left - PANEL_WIDTH < 10
+							? '5px'
+							: '';
 					}
 				}, 2);
 			}
@@ -153,7 +158,7 @@ const FilterPanel = ({
 								<div className='filter__loading'/>
 							) : (
 								<div className='filter-row__submit-btn' onClick={onSubmitClick}>
-									Submit
+									Submit filter
 								</div>
 							)
 						}

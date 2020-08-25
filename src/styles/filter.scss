@@ -96,7 +96,8 @@
 
     &__controls {
         margin-left: 65px;
-        height: 35px;
+        height: 40px;
+        padding: 5px 10px 0 0;
     }
 
     &__bubble {
@@ -121,13 +122,26 @@
     }
 
     &-time-controls {
-        margin-left: 120px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
     }
 
     &-time-control {
-        margin-right: 10px;
+        display: flex;
+        align-items: center;
+        margin: 5px;
         cursor: pointer;
-        text-decoration: underline;
+        border-radius: 6px;
+        background: $filterSecondaryColor;
+        height: 26px;
+        padding: 0 5px;
+        color: $primaryTextColor;
+        font-size: 13px;
+
+        &:hover {
+            background: rgba($filterSecondaryColor, 0.8);
+        }
     }
 
     &-datetime-picker {
@@ -278,6 +292,7 @@
         align-items: center;
         padding: 0 7px 0 5px;
         border-radius: 10px;
+        margin-right: 10px;
     }
 
     &__clear-icon {
@@ -337,9 +352,8 @@
         margin: 0 10px;
         border-radius: $bubbleBorderRadius;
         height: 30px;
-        flex-grow: 1;
         background-color: rgba(#FFFFFF, 0.5);
-        font-size: 15px;
+        font-size: 13px;
         color: $primaryTextColor;
         box-sizing: border-box;
 
@@ -361,14 +375,18 @@
     }
 
     &__submit-btn {
-        padding: 3px 5px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        padding: 3px 15px;
         border-radius: 5px;
-        background-color: rgba(255, 255, 255, 0.3);
+        background-color: rgba($filterSecondaryColor, 0.9);
+        color: $primaryTextColor;
         cursor: pointer;
-        font-size: 13px;
+        font-size: 14px;
 
         &:hover {
-            background-color: rgba(255, 255, 255, 0.5);
+            background-color: rgba($filterSecondaryColor, 1);
         }
     }
 
@@ -417,6 +435,10 @@
         font-size: 13px;
         color: $secondaryTextColor;
         font-weight: normal;
+    }
+
+    &__arrow-icon {
+        @include icon(url(../../resources/icons/filter-arrow.svg), 16px, 16px);
     }
 }
 
