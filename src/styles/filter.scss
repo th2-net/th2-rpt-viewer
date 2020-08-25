@@ -100,9 +100,9 @@
     }
 
     &__bubble {
-        color: $primaryTextColor;
-        background-color: #FFF;
-        margin: 0 10px;
+        color: #FFFFFF;
+        background-color: #5EBA6E;
+        margin: 0 5px;
     }
 
     &__counter {
@@ -390,18 +390,33 @@
         display: flex;
         align-items: center;
         justify-content: flex-start;
+        width: 100%;
+        cursor: text;
+
         flex-wrap: wrap;
         flex-grow: 1;
-        & > div {
-            margin-bottom: 8px;
-            margin-top: 8px;
+
+        &.active {
+            background: #FFFFFF;
         }
     }
 
     &__multiple-values-input {
-        flex-grow: 1;
-        width: auto;
-        min-width: 100px;
+        font-size: 14px;
+        background: transparent;
+        border: none;
+        appearance: none;
+        color: $primaryTextColor;
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    &__placeholder {
+        font-size: 13px;
+        color: $secondaryTextColor;
+        font-weight: normal;
     }
 }
 

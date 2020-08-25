@@ -18,7 +18,7 @@ import React from 'react';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { ModalPortal } from '../Portal';
-import FilterPanelRow from './FilterPanelRow';
+import FilterRow from './row';
 import { raf } from '../../helpers/raf';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
 import '../../styles/filter.scss';
@@ -140,7 +140,7 @@ const FilterPanel = ({
 				<div ref={filterBaseRef} className="filter">
 					{
 						config.map(rowConfig => (
-							<FilterPanelRow rowConfig={rowConfig} key={rowConfig.id}/>
+							<FilterRow rowConfig={rowConfig} key={rowConfig.id}/>
 						))
 					}
 					<div className="filter__controls filter-controls">
