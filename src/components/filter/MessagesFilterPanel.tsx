@@ -18,15 +18,8 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import FilterPanel from './FilterPanel';
-import {
-	DATE_TIME_INPUT_MASK,
-	DATE_TIME_PLACEHOLDER,
-} from '../../util/filterInputs';
-import {
-	FilterRowConfig,
-	TimeInputType,
-	DateTimeMask,
-} from '../../models/filter/FilterInputs';
+import { DATE_TIME_INPUT_MASK, DATE_TIME_PLACEHOLDER } from '../../util/filterInputs';
+import { DateTimeMask, FilterRowConfig, TimeInputType } from '../../models/filter/FilterInputs';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 
 const MessagesFilterPanel = () => {
@@ -85,8 +78,7 @@ const MessagesFilterPanel = () => {
 			dateMask: DateTimeMask.DATE_TIME_MASK,
 			placeholder: DATE_TIME_PLACEHOLDER,
 			labelClassName: 'filter-row__label',
-		},
-		{
+		}, {
 			label: 'to',
 			value: timestampTo,
 			setValue: setTimestampTo,
@@ -95,22 +87,17 @@ const MessagesFilterPanel = () => {
 			inputMask: DATE_TIME_INPUT_MASK,
 			dateMask: DateTimeMask.DATE_TIME_MASK,
 			placeholder: DATE_TIME_PLACEHOLDER,
-		},
-		],
-		timeShortcuts: [
-			{
-				label: 'last 15 minutes',
-				onClick: getTimeShortcutHandler(15),
-			},
-			{
-				label: 'last hour',
-				onClick: getTimeShortcutHandler(60),
-			},
-			{
-				label: 'last day',
-				onClick: getTimeShortcutHandler(24 * 60),
-			},
-		],
+		}],
+		timeShortcuts: [{
+			label: 'Last 15 minutes',
+			onClick: getTimeShortcutHandler(15),
+		}, {
+			label: 'Last hour',
+			onClick: getTimeShortcutHandler(60),
+		}, {
+			label: 'Last day',
+			onClick: getTimeShortcutHandler(24 * 60),
+		}],
 	}, {
 		type: 'multiple-strings',
 		id: 'messages-stream',
@@ -129,8 +116,7 @@ const MessagesFilterPanel = () => {
 		currentValue: currentMessageType,
 		setCurrentValue: setCurrentMessageType,
 		autocompleteList: null,
-	},
-	];
+	}];
 
 	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !messagesStore.isLoading;
 

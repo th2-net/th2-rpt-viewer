@@ -18,16 +18,9 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import FilterPanel from './FilterPanel';
+import { DateTimeMask, FilterRowConfig, TimeInputType } from '../../models/filter/FilterInputs';
 import {
-	FilterRowConfig,
-	TimeInputType,
-	DateTimeMask,
-} from '../../models/filter/FilterInputs';
-import {
-	TIME_INPUT_MASK,
-	TIME_PLACEHOLDER,
-	DATE_INPUT_MASK,
-	DATE_PLACEHOLDER,
+	DATE_INPUT_MASK, DATE_PLACEHOLDER, TIME_INPUT_MASK, TIME_PLACEHOLDER,
 } from '../../util/filterInputs';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 
@@ -134,8 +127,7 @@ function EventsFilterPanel() {
 			placeholder: DATE_PLACEHOLDER,
 			inputClassName: 'events-filter__date-input',
 			labelClassName: 'filter-row__label',
-		},
-		{
+		}, {
 			label: 'from',
 			value: timestampFrom,
 			setValue: setTimestampFromHandler,
@@ -145,8 +137,7 @@ function EventsFilterPanel() {
 			dateMask: DateTimeMask.TIME_MASK,
 			placeholder: TIME_PLACEHOLDER,
 			inputClassName: 'events-filter__time-input',
-		},
-		{
+		}, {
 			label: 'to',
 			value: timestampTo,
 			setValue: setTimestampToHandler,
@@ -156,22 +147,17 @@ function EventsFilterPanel() {
 			dateMask: DateTimeMask.TIME_MASK,
 			placeholder: TIME_PLACEHOLDER,
 			inputClassName: 'events-filter__time-input',
-		},
-		],
-		timeShortcuts: [
-			{
-				label: 'last 15 minutes',
-				onClick: getTimeShortcutHandler(15),
-			},
-			{
-				label: 'last hour',
-				onClick: getTimeShortcutHandler(60),
-			},
-			{
-				label: 'today',
-				onClick: getTimeShortcutHandler(24 * 60),
-			},
-		],
+		}],
+		timeShortcuts: [{
+			label: 'Last 15 minutes',
+			onClick: getTimeShortcutHandler(15),
+		}, {
+			label: 'Last hour',
+			onClick: getTimeShortcutHandler(60),
+		}, {
+			label: 'Today',
+			onClick: getTimeShortcutHandler(24 * 60),
+		}],
 	}, {
 		type: 'multiple-strings',
 		id: 'events-name',

@@ -24,13 +24,15 @@ interface Props {
     readonly?: boolean;
     onlyAutocompleteValues?: boolean;
     autoresize?: boolean;
-    onSubmit: (nextValue: string) => void;
-    onRemove?: () => void;
-	onEmptyBlur?: () => void;
     autocomplete: string[] | null;
     datalistKey?: string;
     placeholder?: string;
     submitKeyCodes?: number[];
+    onSubmit: (nextValue: string) => void;
+    onRemove?: () => void;
+    onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+	onEmptyBlur?: () => void;
 }
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
@@ -39,6 +41,8 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onSubmit,
 		onRemove,
 		onEmptyBlur,
+		onBlur = () => null,
+		onFocus,
 		autocomplete,
 		autoresize = true,
 		readonly = false,
@@ -85,14 +89,17 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		placeholder,
 		onKeyDown,
 		onChange,
-		onBlur: () => {
-			if (currentValue.trim()) {
+		onFocus,
+		onBlur: e => {
+			if (currentValue.trim().length > 0) {
 				if (onEmptyBlur) {
 					onEmptyBlur();
 				}
 				onSubmit(currentValue);
 				setCurrentValue('');
 			}
+
+			onBlur(e);
 		},
 	};
 
