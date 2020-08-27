@@ -106,10 +106,13 @@ function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
 				<div className="event-detail-card__controls">
 					{
 						elapsedTime && (
-							<span>{elapsedTime}</span>
+							<span className="event-detail-card__time">{elapsedTime}</span>
 						)
 					}
-					<span>{status.toUpperCase()}</span>
+					<span className="event-detail-card__separator"/>
+					<span className="event-detail-card__status">
+						{status.toUpperCase()}
+					</span>
 					{
 						idNode.children && idNode.children?.length > 0 ? (
 							<Chip text={idNode.children.length.toString()}/>

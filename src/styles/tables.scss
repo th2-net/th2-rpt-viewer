@@ -17,11 +17,13 @@
 
 .ver-table {
     @include default-table;
+    @include scrollbar;
     width: 100%;
-    padding: 3px 10px 0 0;
+    overflow: auto;
 
     table {
-        width: 100%;
+        width: fit-content;
+        grid-template-columns: minmax(130px, 250px) minmax(125px, 250px) minmax(125px, 250px) 60px 80px 50px;
     }
 
     &-indicator {
@@ -30,8 +32,8 @@
         margin: 0;
     }
 
-    &-status {
-        width: 60px;
+    &-flexible {
+        text-align: left;
     }
 
     &-header {
@@ -66,25 +68,63 @@
     }
 
     &-row {
-        @include status-background;
+        &.passed {
+            & td {
+                background-color: $tableRowPassedBackgroundColor;
+            }
+
+            &:hover td {
+                background-color: darken($color: $tableRowPassedBackgroundColor, $amount: 10);
+            }
+        }
+
+        &.failed {
+            & td {
+                background-color: $tableRowFailedBackgroundColor;
+            }
+
+            &:hover td {
+                background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 10);
+            }
+        }
+
+        &.na {
+            & td {
+                background-color: #FFF;
+            }
+        }
 
         &:hover &-hint {
             visibility: visible;
-        }
-
-        td {
-            // height: 100% does not work with display: table-cell for some reason
-            height: 1px;
         }
 
         &-wrapper {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            width: 100%;
+            height: 100%;
+        }
+
+        &-operation {
+            margin: auto;
+
+            &.equal {
+                @include icon(url(../../resources/icons/equal.svg), 8px, 16px);
+            }
+    
+            &.not-equal {
+                @include icon(url(../../resources/icons/not-equal.svg), 11px, 13px);
+            }
+            
+            &.not-empty {
+                @include icon(url(../../resources/icons/not-empty.svg), 16px, 16px);
+            }
         }
 
         &-value {
             padding-top: 5px;
+            font-size: 12px;
 
             &.notype {
                 padding-bottom: 5px;
@@ -187,9 +227,20 @@
         }
 
         &-status {
-            @include status-text;
-            font-weight: bold;
             text-align: center;
+            font-weight: bold;
+            
+            &.passed {
+                color: $tableStatusPassedColor;
+            }
+    
+            &.failed {
+                color: $tableStatusFailedColor;
+            }
+    
+            &.na {
+                color: $tableStatusNAColor;
+            }
         }
 
         &-expected, &-actual {
@@ -213,24 +264,28 @@
 
         &-count {
             font-size: small;
-            color: gray;
-            padding-left: 10px;
-        }
-
-        &-count {
-            font-size: small;
-            color: gray;
-            padding-left: 10px;
+            background-color: $tableCounterBackgroundColor;
+            color: $primaryTextColor;
+            text-align: center;
+            height: 14px;
+            line-height: 14px;
+            border-radius: 9px;
+            display: inline-block;
+            margin-left: 6px;
+            line-height: 14px;
+            padding: 0 4px;
+            font-size: 9px;
         }
 
         &-toggler {
-            margin: 3px 0;
             text-decoration: none;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 10pt;
             padding-top: 4px;
             padding-bottom: 4px;
             cursor: pointer;
+            color: $tableTitleColor;
+            grid-column: 1 / 7;
 
             p {
                 display: inline;
@@ -238,13 +293,21 @@
 
             &.collapsed {
                 p::before {
-                    content: "+";
+                    content: "";
+                    display: inline-block;
+                    @include icon(url(../../resources/icons/expand-filled.svg), 14px, 12px);
+                    transform: translateY(3px);
+                    margin-right: 7px;
                 }
             }
 
             &.expanded {
                 p::before {
-                    content: "-";
+                    content: "";
+                    display: inline-block;
+                    @include icon(url(../../resources/icons/collapse-filled.svg), 14px, 12px);
+                    transform: translateY(3px);
+                    margin-right: 7px;
                 }
             }
 
@@ -253,30 +316,137 @@
                 margin-left: -3px;
             }
         }
+        
+    }
+
+    &-status, &-operation, &-key {
+        & th {
+            text-align: center;
+        }
+    }
+
+    &-status-wrapper {
+        background: none;
+        margin: auto;
+
+        &.failed {
+            width: 16px;
+            height: 16px;
+            border-radius: 13px;
+            background-color: #E23636;
+            color: white;
+            font-size: 11px;
+            margin: auto;
+        }
+    }
+
+    &__check {
+        @include icon(url(../../resources/icons/check.svg), 10px, 16px);
+        margin: auto;
+    }
+
+    &__button {
+        font-size: 11px;
+        line-height: 16px;
+        color: $tableHeaderBackground;
+        font-weight: bold;
+        border: none;
+        background: none;
+        cursor: pointer;
+        outline: none;
+        padding: 0;
+    }
+
+    &__button-icon {
+        width: 16px;
+        height: 16px;
+        border-radius: 10px;
+        background-color: $tableHeaderBackground;
+        display: inline-block;
+        margin: 0 4px;
+    }
+
+    &__button-icon-next {
+        @include icon(url(../../resources/icons/arrow-white.svg), 8px, 6px);
+        display: inline-block;
+        transform: rotate(180deg);
+    }
+
+    &__button-icon-prev {
+        @include icon(url(../../resources/icons/arrow-white.svg), 8px, 6px);
+        display: inline-block;
+    }
+
+    &__counter {
+        font-size: 9px;
+        font-weight: bold;
+        color: $primaryTextColor;
+        width: 14px;
+        height: 14px;
+        background-color: #FFF;
+        border-radius: 9px;
+        display: inline-block;
+        margin: 0 5px;
+        line-height: 14px;
+    }
+
+    &__wrapper {
+        @include scrollbar;
+        width: 100%;
+        overflow: auto;
+    }
+
+    &__nav {
+        height: 16px;
+        display: flex;
+        justify-content: space-between;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        grid-template-areas: "prev . next";
     }
 }
 
 .params-table {
     @include default-table;
+    @include scrollbar;
 
     td, th {
         padding: 2px 7px;
+        text-align: left;
     }
 
     display: block;
     width: 100%;
     height: auto;
+    overflow: auto;
 
     &-row-toogler {
+        &:hover td {
+            background-color: darken($color: $tableHeaderBackgroundSecondary, $amount: 10) !important;
+        }
+
+        & td {
+            background-color: $tableHeaderBackgroundSecondary;
+            color: white;
+        }
+
         &.collapsed {
             p::before {
-                content: "+";
+                content: "";
+                display: inline-block;
+                @include icon(url(../../resources/icons/expand.svg), 14px, 12px);
+                transform: translateY(3px);
+                margin-right: 7px;
             }
         }
 
         &.expanded {
             p::before {
-                content: "-";
+                content: "";
+                display: inline-block;
+                @include icon(url(../../resources/icons/collapse.svg), 14px, 12px);
+                transform: translateY(3px);
+                margin-right: 7px;
             }
         }
 
@@ -289,7 +459,7 @@
             margin: 0;
             text-decoration: none;
             font-weight: bold;
-            font-size: 15px;
+            font-size: 10pt;
             display: inline-block;
         }
 
@@ -311,11 +481,11 @@
     overflow: auto;
     @include scrollbar;
     @include default-table;
-    margin: 5px 10px 5px 0;
+    margin: 10px 0;
 
     th, td {
         padding: 3px 7px;
-        height: 20px;
+        text-align: left;
     }
 
     td {

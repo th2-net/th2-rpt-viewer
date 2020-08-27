@@ -97,10 +97,19 @@ $defaultSelectedCardBackground: #E0E0E033;
 
 $buttonDisabledBackground: $defaultCardBackground;
 
-$tableHeaderBackground: $defaultCardBackground;
-$tableCellBorderColor: white;
-$tableHeaderCellBorderColor: $tableCellBorderColor;
-$tableBodyBackground: #F5F5F5;
+$tableHeaderBackground: #148FCC;
+$tableHeaderBackgroundSecondary: #73B6E6;
+$tableCellBorderColor: #CCCCCC;
+$tableSubEntriesCounterBackgroundColor: #A8CCF0;
+$tableRowFailedBackgroundColor: #FFB3B3;
+$tableRowPassedBackgroundColor: #cee8d3;
+$tableStatusFailedColor: #E23636;
+$tableStatusPassedColor: #3F9E50;
+$tableStatusNAColor: #CCCCCC;
+$tableTitleColor: #262626;
+$tableCounterBackgroundColor: #E6E6E6;
+
+$tableBodyBackground: #FFF;
 $tableBodyBackgroundHighlighted: $tableHeaderBackground;
 
 $messageCardBackgroundColor: #F2F2F2;
