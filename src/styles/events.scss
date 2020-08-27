@@ -104,6 +104,7 @@
 	background-color: var(--status-secondary-background-color);
 	border: 2px solid var(--status-primary-border-color);
 	border-radius: 5px;
+	overflow: hidden;
 
 	&__header {
 		grid-area: header;
@@ -118,7 +119,9 @@
 
 	&__body {
 		grid-area: body;
-		padding: 0 10px 5px 15px;
+		padding: 8px 10px 5px 15px;
+		width: 100%;
+		overflow: hidden;
 	}
 
 	&__body-list {
@@ -144,10 +147,18 @@
 		display: flex;
 		justify-content: flex-end;
 		align-items: center;
+	}
 
-		& span {
-			padding: 0 5px;
-		}
+	&__status, &__time {
+		padding: 0 6px;
+	}
+
+	&__separator {
+		width: 2px;
+		height: 16px;
+		display: inline-block;
+		background-color: var(--status-primary-color);
+		opacity: 0.3;
 	}
 
 	&__title, &__controls {
@@ -159,7 +170,7 @@
 	&__timestamp {
 		grid-area: timestamp;
 		display: flex;
-		justify-content: flex-start;
+		justify-content: flex-end;
 		align-items: center;
 	}
 
@@ -183,6 +194,15 @@
 		font-size: 13px;
 		color: var(--status-primary-color);
 		margin: 0 10px;
+	}
+
+	&__message {
+		border-radius: 4px;
+		background-color: white;
+		white-space: pre-wrap;
+		padding: 6px 10px;
+		margin: 5px 0;
+		font-size: 12px;
 	}
 }
 

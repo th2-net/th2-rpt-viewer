@@ -110,7 +110,9 @@ class ParamsTableBase extends React.Component<Props, State> {
 	render() {
 		return (
 			<div className="params-table">
-				<table>
+				<table style={{
+					gridTemplateColumns: `repeat(${this.props.columns.length + 1}, minmax(150px, 250px))`,
+				}}>
 					<thead>
 						<tr>
 							<th></th>
@@ -182,14 +184,17 @@ class ParamsTableBase extends React.Component<Props, State> {
 		};
 
 		return (
-			<tr className={rootClass} key={key} onClick={this.togglerClickHandler(node)}>
-				<td>
+			<tr
+				className={rootClass}
+				key={key}
+				onClick={this.togglerClickHandler(node)}>
+				<td style={{
+					gridColumn: `1 / ${this.props.columns.length + 2}`,
+				}}>
 					<p style={nameStyle}>
 						{this.renderContent(`${key}-name`, node.title)}
 					</p>
 				</td>
-				{this.props.columns.map(columnTitle =>
-					<td key={`${node.title} - ${columnTitle}`}>&nbsp;</td>)}
 			</tr>
 		);
 	}

@@ -30,7 +30,9 @@ export function CustomTable({ content }: CustomTableProps) {
 
 	return (
 		<div className="user-table">
-			<table>
+			<table style={{
+				gridTemplateColumns: `repeat(${headers.length}, minmax(150px, 250px))`,
+			}}>
 				<thead>
 					{headers.map(header => <th key={header}>{header}</th>)}
 				</thead>

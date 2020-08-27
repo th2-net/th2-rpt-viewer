@@ -66,7 +66,7 @@ export interface VerificationPayload {
 
 export interface VerificationPayloadField {
 	type: 'field' | 'collection';
-	operation: string;
+	operation: 'EQUAL' | 'NOT_EQUAL' | 'NOT_EMPTY';
 	status: EventStatus;
 	key: boolean;
 	actual: string;

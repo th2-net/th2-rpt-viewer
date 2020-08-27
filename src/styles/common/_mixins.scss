@@ -19,6 +19,7 @@
     &::-webkit-scrollbar {
         background-color: rgba(0, 0, 0, 0.0);
         width: 6px;
+        height: 6px;
     }
 
     &::-webkit-scrollbar-track {
@@ -266,19 +267,41 @@
 }
 
 @mixin default-table {
-
     table {
-        font-size: 11pt;
         border-collapse: collapse;
         border-style: hidden;
         table-layout: fixed;
+        border-radius: 4px;
+        display: grid;
+        min-width: 100%;
+        grid-auto-rows: minmax(24px, auto);
+    }
+
+    th, td {
+        font-size: 10pt;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-top: 0;
+        padding-bottom: 0;
+        box-sizing: border-box;
+        border-bottom: 1px solid $tableCellBorderColor;
+    }
+
+    thead,
+    tbody,
+    tr {
+        display: contents;
     }
 
     td {
-        border: 4px solid $tableCellBorderColor;
         word-break: break-all;
         white-space: pre-wrap;
         background-color: $tableBodyBackground;
+        border-right: 0;
+        border-left: 0;
+        display: flex;
+        align-items: center;
 
         &.transparent {
             background-color: transparent;
@@ -287,19 +310,35 @@
     }
 
     th {
-        border: 4px solid $tableHeaderCellBorderColor;
+        font-weight: bold;
+        line-height: 16px;
+        color: white;
         background-color: $tableHeaderBackground;
-        font-weight: normal;
         padding: 5px;
 
         &.transparent {
             background-color: transparent;
             border-color: transparent;
         }
+
+        &:first-child {
+            border-radius: 4px 0 0 0;
+        }
+
+        &:last-child {
+            border-radius: 0 4px 0 0;
+        }
     }
+
+    td, th {
+        &:first-child {
+            padding-left: 10px;
+        }
+    }
+
     tr {
         &:hover td {
-            background-color: $tableBodyBackgroundHighlighted;
+            background-color: darken($color: $tableBodyBackground, $amount: 10);
 
             &.transparent {
                 background-color: transparent;
