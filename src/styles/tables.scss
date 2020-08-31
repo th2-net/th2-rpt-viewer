@@ -53,6 +53,8 @@
                 color: $passedTextColor;
                 cursor: pointer;
                 position: relative;
+                display: flex;
+                align-items: center;
 
                 &::after {
                     content: '';

@@ -58,7 +58,7 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 				dateMask,
 			),
 		);
-	}, [value]);
+	}, [props.inputConfig.value]);
 
 	const togglePicker = (isShown: boolean) => setShowPicker(isShown);
 
