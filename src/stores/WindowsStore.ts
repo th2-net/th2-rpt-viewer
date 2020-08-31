@@ -29,7 +29,7 @@ import { EventAction } from '../models/EventAction';
 import { randomHexColor } from '../helpers/color';
 import { EventMessage } from '../models/EventMessage';
 import { AppTab, TabTypes } from '../models/util/Windows';
-import { EventStoreURLState } from './EventsStore';
+import { EventStoreURLState, EventIdNode } from './EventsStore';
 import { MessagesStoreURLState } from './MessagesStore';
 
 export type WindowsUrlState = Array<Partial<{
@@ -63,9 +63,12 @@ export default class WindowsStore {
 			selectedEvents => {
 				this.getEventColors(selectedEvents);
 				this.getAttachedMessagesIds(selectedEvents);
-				this.lastSelectedEvent = selectedEvents
-					.find(e => `${e.batchId}:${e.eventId}` === this.lastSelectedEventId) || null;
 			},
+		);
+
+		reaction(
+			() => this.lastSelectEventIdNode,
+			this.onEventNodeSelect,
 		);
 
 		autorun(() => {
@@ -74,9 +77,10 @@ export default class WindowsStore {
 			this.onWindowsTabsChange();
 		});
 
-		autorun(() => {
-			this.selectedEvents = this.events;
-		});
+		reaction(
+			() => this.events,
+			events => this.selectedEvents = events,
+		);
 	}
 
 	@observable eventColors: Map<string, string> = new Map();
@@ -91,14 +95,17 @@ export default class WindowsStore {
 
 	@observable selectedEvents: Array<EventAction> = [];
 
-	@observable lastSelectedEventId: string | null = null;
-
 	@observable lastSelectedEvent: EventAction | null = null;
+
+	@observable lastSelectEventIdNode: EventIdNode | null = null;
 
 	@computed get events() {
 		return this.windows.flatMap(window => window.tabs)
 			.filter(isEventsTab)
-			.map(eventTab => eventTab.store.selectedEvent)
+			.map(eventTab => {
+				if (!eventTab.store.selectedNode) return null;
+				return eventTab.store.eventsCache.get(eventTab.store.selectedNode.id) || null;
+			})
 			.filter((event, i, self): event is EventAction =>
 				event !== null && self.findIndex(e => e && e.eventId === event.eventId) === i);
 	}
@@ -207,6 +214,21 @@ export default class WindowsStore {
 	@action
 	private getAttachedMessagesIds = (selectedEvents: EventAction[]) => {
 		this.attachedMessagesIds = [...new Set(selectedEvents.flatMap(({ attachedMessageIds }) => attachedMessageIds))];
+	};
+
+	@action
+	private onEventNodeSelect = (selectedEventNode: EventIdNode | null) => {
+		if (!selectedEventNode) {
+			this.lastSelectedEvent = null;
+			return;
+		}
+		const event = this.allTabs
+			.filter(isEventsTab)
+			.find(eventTab => eventTab.store.selectedNode === this.lastSelectEventIdNode)
+			?.store.eventsCache.get(selectedEventNode.id);
+		if (event) {
+			this.lastSelectedEvent = event;
+		}
 	};
 
 	@action

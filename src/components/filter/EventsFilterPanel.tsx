@@ -71,38 +71,48 @@ function EventsFilterPanel() {
 		setTimestampTo(to.valueOf());
 	};
 
-	const setTimestampFromHandler = (timestamp: number) => {
+	const setDate = (baseDateTimeStamp: number, timestamp: number) => {
+		const date = moment(baseDateTimeStamp).utc();
+
+		return moment(timestamp)
+			.utc()
+			.set('date', date.get('date'))
+			.set('month', date.get('month'))
+			.set('year', date.get('year'))
+			.valueOf();
+	};
+
+	const setTime = (baseDateTimeStamp: number, timestamp: number) => {
+		const date = moment(baseDateTimeStamp).utc();
+
+		return moment(timestamp)
+			.utc()
+			.set('hours', date.get('hours'))
+			.set('minutes', date.get('minutes'))
+			.set('seconds', date.get('seconds'))
+			.set('milliseconds', date.get('milliseconds'))
+			.valueOf();
+	};
+
+	const setTimestampFromDate = (timestamp: number) => {
 		if (timestampTo) {
-			const toDate = moment(timestamp).utc();
-			const date = toDate.get('date');
-			const month = toDate.get('month');
-			const year = toDate.get('year');
+			setTimestampTo(setDate(timestamp, timestampTo));
+		}
+		setTimestampFrom(setTime(timestampFrom, timestamp));
+	};
 
-			const toTimestamp = moment(timestampTo)
-				.utc()
-				.set('date', date)
-				.set('month', month)
-				.set('year', year);
-
-			setTimestampTo(toTimestamp.valueOf());
+	const setTimestampFromTime = (timestamp: number) => {
+		if (timestampFrom) {
+			// eslint-disable-next-line no-param-reassign
+			timestamp = setDate(timestampFrom, timestamp);
 		}
 		setTimestampFrom(timestamp);
 	};
 
-	const setTimestampToHandler = (timestamp: number) => {
+	const setTimestampToTime = (timestamp: number) => {
 		if (timestampFrom) {
-			const fromDate = moment(timestampFrom).utc();
-			const date = fromDate.get('date');
-			const month = fromDate.get('month');
-			const year = fromDate.get('year');
-
 			// eslint-disable-next-line no-param-reassign
-			timestamp = moment(timestamp)
-				.utc()
-				.set('date', date)
-				.set('month', month)
-				.set('year', year)
-				.valueOf();
+			timestamp = setDate(timestampFrom, timestamp);
 		}
 		setTimestampTo(timestamp);
 	};
@@ -119,7 +129,7 @@ function EventsFilterPanel() {
 		inputs: [{
 			label: 'Events on',
 			value: timestampFrom,
-			setValue: setTimestampFromHandler,
+			setValue: setTimestampFromDate,
 			type: TimeInputType.DATE,
 			id: 'events-date',
 			inputMask: DATE_INPUT_MASK,
@@ -130,7 +140,7 @@ function EventsFilterPanel() {
 		}, {
 			label: 'from',
 			value: timestampFrom,
-			setValue: setTimestampFromHandler,
+			setValue: setTimestampFromTime,
 			type: TimeInputType.TIME,
 			id: 'events-time-from',
 			inputMask: TIME_INPUT_MASK,
@@ -140,7 +150,7 @@ function EventsFilterPanel() {
 		}, {
 			label: 'to',
 			value: timestampTo,
-			setValue: setTimestampToHandler,
+			setValue: setTimestampToTime,
 			type: TimeInputType.TIME,
 			id: 'events-time-to',
 			inputMask: TIME_INPUT_MASK,

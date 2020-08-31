@@ -18,10 +18,12 @@ import * as React from 'react';
 import { useEventWindowStore } from './useEventWindowStore';
 import { EventAction } from '../models/EventAction';
 import { EventIdNode } from '../stores/EventsStore';
+import { usePrevious } from './usePrevious';
 
 export default function useCachedEvent(node: EventIdNode, isVisible = true): EventAction | undefined {
 	const eventWindowStore = useEventWindowStore();
 	const [event, setEvent] = React.useState(eventWindowStore.eventsCache.get(node.id));
+	const previousNode = usePrevious(node);
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
@@ -36,8 +38,7 @@ export default function useCachedEvent(node: EventIdNode, isVisible = true): Eve
 							console.error(`Error while loading event ${node.id}`);
 						}
 					});
-			} else if (`${event.batchId}:${event.eventId}` !== node.id) {
-				// handle event node change
+			} else if (node !== previousNode) {
 				if (eventWindowStore.eventsCache.has(node.id)) {
 					setEvent(eventWindowStore.eventsCache.get(node.id));
 				} else {

@@ -74,8 +74,8 @@ export default class EventsStore {
 	@observable scrolledIndex: Number | null = null;
 
 	@computed get color() {
-		if (!this.selectedNode) return undefined;
-		return this.windowsStore.eventColors.get(this.selectedNode.id);
+		if (!this.selectedEvent) return undefined;
+		return this.windowsStore.eventColors.get(this.selectedEvent.eventId);
 	}
 
 	// we need this property for correct virtualized tree render -
@@ -118,7 +118,7 @@ export default class EventsStore {
 	@action
 	selectNode = (idNode: EventIdNode | null) => {
 		this.selectedNode = idNode;
-		this.windowsStore.lastSelectedEventId = idNode?.id || null;
+		this.windowsStore.lastSelectEventIdNode = idNode;
 		if (this.viewStore.panelArea === PanelArea.P100) {
 			this.viewStore.panelArea = PanelArea.P50;
 		}
@@ -149,7 +149,7 @@ export default class EventsStore {
 		}
 		const event = await this.api.events.getEvent(id, abortSignal);
 		runInAction(() => {
-			this.eventsCache.set(idNode.id, event);
+			this.eventsCache.set(id, event);
 		});
 
 		this.fetchEventChildren(
