@@ -349,7 +349,9 @@ export default class MessagesStore {
 				)),
 			);
 
-			const messages = sortMessagesByTimestamp([...newlySelectedMessages, ...previouslySelectedMessages]);
+			const messages = sortMessagesByTimestamp(
+				[...newlySelectedMessages, ...previouslySelectedMessages],
+			).filter(Boolean);
 
 			this.attachedMessages = messages;
 
