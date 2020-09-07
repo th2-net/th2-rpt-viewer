@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import Timestamp from './Timestamp';
-import MessageBody from './MessageBody';
 
-export interface EventMessage {
-    type: string;
-    messageType: string;
-	messageId: string;
-	timestamp: Timestamp;
-	direction: string;
-	sessionId: string;
-	body: MessageBody | null;
-	bodyBase64: string | null;
+import React from 'react';
+
+interface Props {
+	errorMessage: string;
 }
+
+const ErrorMessageFallback = ({ errorMessage }: Props) => (
+	<div className="error-message">
+		{errorMessage}
+	</div>
+);
+
+export default ErrorMessageFallback;

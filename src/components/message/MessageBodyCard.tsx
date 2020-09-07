@@ -23,12 +23,18 @@ const SELECTED_HIGHLIGHT_COLOR = '#fff';
 
 interface Props {
 	isBeautified: boolean;
-	body: MessageBody;
+	body: MessageBody | null;
 	isSelected: boolean;
 }
 
 export default function MessageBodyCard({ isBeautified, body, isSelected }: Props) {
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
+
+	if (body == null) {
+		return (
+			<pre className="mc-body__human">null</pre>
+		);
+	}
 
 	return (
 		<pre className="mc-body__human">

@@ -20,6 +20,7 @@ import MessageCardSkeleton from './MessageCardSkeleton';
 import MessageCard from './MessageCard';
 import useAsyncEffect from '../../hooks/useAsyncEffect';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import ErrorMessageFallback from './MessageErrorFallback';
 
 interface Props {
 	id: string;
@@ -28,12 +29,21 @@ interface Props {
 function SkeletonedMessageCardListItem({ id }: Props) {
 	const messagesStore = useMessagesWindowStore();
 	const message = messagesStore.messagesCache.get(id);
+	const [isError, setIsError] = React.useState(false);
 
 	useAsyncEffect(async () => {
 		if (!message) {
-			await messagesStore.fetchMessage(id);
+			try {
+				await messagesStore.fetchMessage(id);
+			} catch (err) {
+				setIsError(true);
+			}
 		}
 	}, []);
+
+	if (isError) {
+		return <ErrorMessageFallback errorMessage={`Error occurred while fetching message ${id}`}/>;
+	}
 
 	if (!message) {
 		return <MessageCardSkeleton/>;
