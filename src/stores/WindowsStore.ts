@@ -63,12 +63,8 @@ export default class WindowsStore {
 			selectedEvents => {
 				this.getEventColors(selectedEvents);
 				this.getAttachedMessagesIds(selectedEvents);
+				this.onNewSelectedEvents(selectedEvents);
 			},
-		);
-
-		reaction(
-			() => this.lastSelectEventIdNode,
-			this.onEventNodeSelect,
 		);
 
 		autorun(() => {
@@ -76,11 +72,6 @@ export default class WindowsStore {
 
 			this.onWindowsTabsChange();
 		});
-
-		reaction(
-			() => this.events,
-			events => this.selectedEvents = events,
-		);
 	}
 
 	@observable eventColors: Map<string, string> = new Map();
@@ -93,19 +84,14 @@ export default class WindowsStore {
 
 	@observable allTabs: Array<AppTab> = [];
 
-	@observable selectedEvents: Array<EventAction> = [];
-
 	@observable lastSelectedEvent: EventAction | null = null;
 
 	@observable lastSelectEventIdNode: EventIdNode | null = null;
 
-	@computed get events() {
+	@computed get selectedEvents() {
 		return this.windows.flatMap(window => window.tabs)
 			.filter(isEventsTab)
-			.map(eventTab => {
-				if (!eventTab.store.selectedNode) return null;
-				return eventTab.store.eventsCache.get(eventTab.store.selectedNode.id) || null;
-			})
+			.map(eventTab => eventTab.store.selectedEvent)
 			.filter((event, i, self): event is EventAction =>
 				event !== null && self.findIndex(e => e && e.eventId === event.eventId) === i);
 	}
@@ -217,17 +203,10 @@ export default class WindowsStore {
 	};
 
 	@action
-	private onEventNodeSelect = (selectedEventNode: EventIdNode | null) => {
-		if (!selectedEventNode) {
+	private onNewSelectedEvents = (selectedEvents: EventAction[]) => {
+		if (!this.lastSelectEventIdNode) {
 			this.lastSelectedEvent = null;
 			return;
-		}
-		const event = this.allTabs
-			.filter(isEventsTab)
-			.find(eventTab => eventTab.store.selectedNode === this.lastSelectEventIdNode)
-			?.store.eventsCache.get(selectedEventNode.id);
-		if (event) {
-			this.lastSelectedEvent = event;
 		}
 	};
 

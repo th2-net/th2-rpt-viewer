@@ -17,19 +17,31 @@
 import Timestamp from './Timestamp';
 import { EventBodyPayload } from './EventActionPayload';
 
+export type EventTree = Array<EventTreeNode>;
+
+export interface EventTreeNode {
+    eventId: string;
+    eventName: string;
+    eventType: string;
+    startTimestamp: Timestamp;
+    endTimestamp?: Timestamp;
+    childList: Array<EventTreeNode>;
+    successful: boolean;
+}
+
 export interface EventAction {
+    eventId: string;
+    eventName: string;
+    eventType: string;
+    startTimestamp: Timestamp;
+    endTimestamp?: Timestamp;
+    childList: Array<EventTreeNode>;
+    successful: boolean;
     attachedMessageIds: Array<string>;
     batchId: null | string;
     batched: boolean;
     body: EventActionBody;
-    endTimestamp: Timestamp;
-    eventId: string;
-    eventName: string;
-    eventType: string;
     parentEventId: string;
-    startTimestamp: Timestamp;
-    successful: boolean;
-    type: string;
 }
 
 export type EventActionBody = EventBodyPayload[];

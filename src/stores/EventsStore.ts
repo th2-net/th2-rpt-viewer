@@ -20,18 +20,20 @@ import {
 import FilterStore from './FilterStore';
 import ViewStore from './WindowViewStore';
 import ApiSchema from '../api/ApiSchema';
-import { EventAction } from '../models/EventAction';
+import { EventAction, EventTreeNode } from '../models/EventAction';
 import SearchStore from './SearchStore';
 import EventsFilter from '../models/filter/EventsFilter';
 import PanelArea from '../util/PanelArea';
 import WindowsStore from './WindowsStore';
 import { TabTypes } from '../models/util/Windows';
+import { getTimestampAsNumber } from '../helpers/date';
 
 export type EventIdNode = {
 	id: string;
 	isExpanded: boolean;
 	children: EventIdNode[] | null;
 	parents: string[];
+	event: EventTreeNode;
 };
 
 export type EventStoreURLState = Partial<{
@@ -52,7 +54,12 @@ export default class EventsStore {
 
 		reaction(
 			() => this.filterStore.eventsFilter,
-			filter => this.fetchRootEvents(),
+			filter => this.fetchEventTree(),
+		);
+
+		reaction(
+			() => this.selectedNode,
+			this.fetchDetailedEventInfo,
 		);
 	}
 
@@ -69,6 +76,10 @@ export default class EventsStore {
 	@observable isLoadingRootEvents = false;
 
 	@observable selectedNode: EventIdNode | null = null;
+
+	@observable selectedEvent: EventAction | null = null;
+
+	@observable loadingSelectedEvent = false;
 
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	@observable scrolledIndex: Number | null = null;
@@ -136,72 +147,26 @@ export default class EventsStore {
 	fetchEvent = async (idNode: EventIdNode, abortSignal?: AbortSignal): Promise<EventAction> => {
 		const { id } = idNode;
 		const cachedEvent = this.eventsCache.get(id);
-		if (cachedEvent) {
-			if (!idNode.children) {
-				this.fetchEventChildren(
-					idNode,
-					this.filterStore.eventsFilter.timestampFrom,
-					this.filterStore.eventsFilter.timestampTo,
-					abortSignal,
-				);
-			}
-			return cachedEvent;
-		}
+		if (cachedEvent) return cachedEvent;
 		const event = await this.api.events.getEvent(id, abortSignal);
+
 		runInAction(() => {
 			this.eventsCache.set(id, event);
 		});
-
-		this.fetchEventChildren(
-			idNode,
-			this.filterStore.eventsFilter.timestampFrom,
-			this.filterStore.eventsFilter.timestampTo,
-			abortSignal,
-		);
 
 		return event;
 	};
 
 	@action
-	fetchEventChildren = async (
-		idNode: EventIdNode,
-		timestampFrom: number,
-		timestampTo: number,
-		abortSignal?: AbortSignal,
-	): Promise<string[] | null> => {
-		try {
-			const childrenIds = await this.api.events.getEventChildren(
-				idNode.id,
-				timestampFrom,
-				timestampTo,
-				abortSignal,
-			);
-			runInAction(() => {
-				// eslint-disable-next-line no-param-reassign
-				idNode.children = childrenIds.map(
-					childId => this.createTreeNode(childId, [...idNode.parents, idNode.id]),
-				);
-			});
-
-			return childrenIds;
-		} catch (error) {
-			if (error.name !== 'AbortError') {
-				console.error(`could not fetch event children ${idNode.id}`);
-			}
-
-			return null;
-		}
-	};
-
-	@action
-	fetchRootEvents = async () => {
+	fetchEventTree = async () => {
 		this.selectedNode = null;
 		this.isLoadingRootEvents = true;
-
 		try {
-			const rootEventIds = await this.api.events.getRootEvents(this.filterStore.eventsFilter);
+			const rootEventIds = await this.api.events.getEventTree(this.filterStore.eventsFilter);
+			rootEventIds.sort((eventA, eventB) =>
+				getTimestampAsNumber(eventB.startTimestamp) - getTimestampAsNumber(eventA.startTimestamp));
 			runInAction(() => {
-				this.eventsIds = rootEventIds.map(eventId => this.createTreeNode(eventId));
+				this.eventsIds = rootEventIds.map(event => this.createEventTreeNode(event));
 			});
 		} catch (error) {
 			console.error('Error while loading root events', error);
@@ -210,42 +175,43 @@ export default class EventsStore {
 		}
 	};
 
+	@action
+	private fetchDetailedEventInfo = async (selectedNode: EventIdNode | null) => {
+		this.selectedEvent = null;
+		if (!selectedNode) return;
+
+		this.loadingSelectedEvent = true;
+		try {
+			const event = await this.api.events.getEvent(selectedNode.id);
+			this.selectedEvent = event;
+			if (this.windowsStore.lastSelectEventIdNode === this.selectedNode) {
+				this.windowsStore.lastSelectedEvent = event;
+			}
+		} catch (error) {
+			console.log(`Error occurred while loading event ${selectedNode.id}`);
+		} finally {
+			this.loadingSelectedEvent = false;
+		}
+	};
+
 	@action.bound
 	async expandBranch(selectedIds: string[]) {
-		if (!selectedIds.length) return;
+		if (selectedIds.length === 0) return;
+
 		let headNode: EventIdNode | undefined;
 		let children = this.nodesList;
 
-		for await (const eventId of selectedIds) {
+		for (const eventId of selectedIds) {
 			headNode = children.find(node => node.id === eventId);
-			if (headNode) {
-				await this.fetchEvent(headNode);
-				await this.fetchEventChildren(
-					headNode,
-					this.filterStore.eventsFilter.timestampFrom,
-					this.filterStore.eventsFilter.timestampTo,
-				);
-				// eslint-disable-next-line no-loop-func
-				this.nodesList[this.nodesList.findIndex(node => node.id === headNode?.id)].children = headNode.children;
-				if (!headNode.isExpanded) {
-					this.toggleNode(headNode);
-				}
+			if (headNode && !headNode.isExpanded) {
+				this.toggleNode(headNode);
 			}
 			children = headNode?.children || [];
 		}
-		runInAction(() => {
-			if (headNode) {
-				this.selectNode(headNode);
-				this.scrollToEvent(headNode);
-			}
-		});
-	}
-
-	@computed
-	get selectedEvent() {
-		if (!this.selectedNode) return null;
-		const event = this.eventsCache.get(this.selectedNode.id);
-		return event || null;
+		if (headNode) {
+			this.selectNode(headNode);
+			this.scrollToEvent(headNode);
+		}
 	}
 
 	isNodeSelected(idNode: EventIdNode) {
@@ -256,15 +222,18 @@ export default class EventsStore {
 		return this.selectedPath.some(n => n.id === idNode.id);
 	}
 
-	private createTreeNode(id: string, parents: string[] = [], children: EventIdNode[] | null = null): EventIdNode {
-		const node: EventIdNode = {
-			id,
+	private createEventTreeNode(
+		event: EventTreeNode,
+		parents: string[] = [],
+	): EventIdNode {
+		return {
+			id: event.eventId,
 			isExpanded: false,
-			children,
+			children: event.childList.map(childEvent =>
+				this.createEventTreeNode(childEvent, [...parents, event.eventId])),
 			parents,
+			event,
 		};
-
-		return node;
 	}
 
 	private getNodesList = (idNode: EventIdNode): EventIdNode[] => {
@@ -319,7 +288,7 @@ export default class EventsStore {
 	@action
 	private async init(initialState: EventsStore | EventStoreURLState | null) {
 		if (!initialState) {
-			this.fetchRootEvents();
+			this.fetchEventTree();
 			return;
 		}
 
@@ -338,8 +307,8 @@ export default class EventsStore {
 
 		this.filterStore = new FilterStore({ eventsFilter: filter });
 		this.searchStore = new SearchStore(this.api, this, { searchPatterns: search || [] });
-		await this.fetchRootEvents();
-		if (selectedNodesPath && selectedNodesPath.length) {
+		await this.fetchEventTree();
+		if (selectedNodesPath) {
 			this.expandBranch(selectedNodesPath);
 		}
 	}

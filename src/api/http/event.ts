@@ -17,30 +17,34 @@
 /* eslint-disable no-return-await */
 import { EventApiSchema } from '../ApiSchema';
 import { createURLSearchParams } from '../../helpers/url';
+import { EventTreeNode } from '../../models/EventAction';
 
 const eventHttpApi: EventApiSchema = {
-	getRootEvents: async filter => {
-		if (filter) {
-			const params = createURLSearchParams({
-				timestampFrom: filter.timestampFrom,
-				timestampTo: filter.timestampTo,
-			});
-
-			if (filter.names.length > 0) {
-				filter.names.forEach(name => params.append('name', name));
-			}
-			if (filter.eventTypes.length > 0) {
-				filter.eventTypes.forEach(type => params.append('eventType', type));
-			}
-
-			const res = await fetch(`/backend/rootEvents?${params}`);
-
-			if (res.ok) {
-				return await res.json();
-			}
-			console.error(res.statusText);
+	getEventTree: async filter => {
+		if (!filter?.timestampFrom || !filter.timestampTo) {
+			throw new Error('timestamps are required to fetch events');
 		}
-		return [];
+
+		const params = createURLSearchParams({
+			timestampFrom: filter.timestampFrom,
+			timestampTo: filter.timestampTo,
+		});
+
+		if (filter.names.length > 0) {
+			filter.names.forEach(name => params.append('name', name));
+		}
+		if (filter.eventTypes.length > 0) {
+			filter.eventTypes.forEach(type => params.append('eventType', type));
+		}
+
+		const res = await fetch(`/backend/search/events?${params}`);
+
+		if (res.ok) {
+			return await res.json();
+		}
+		console.error(res.statusText);
+
+		throw new Error('Couldn\'t fetch event tree');
 	},
 	getEvent: async (id, signal?) => {
 		const res = await fetch(`/backend/event/${id}`, { signal });
@@ -51,30 +55,6 @@ const eventHttpApi: EventApiSchema = {
 
 		console.error(res.statusText);
 		return null;
-	},
-	getEventChildren: async (id, timestampFrom, timestampTo, signal?) => {
-		const params = createURLSearchParams({
-			timestampFrom,
-			timestampTo,
-		});
-		const res = await fetch(`/backend/search/events/${id}?${params}`, { signal });
-
-		if (res.ok) {
-			return await res.json();
-		}
-
-		console.error(res.statusText);
-		return null;
-	},
-	getRange: async (start, end) => {
-		const res = await fetch(`/backend/event?start=${start},end=${end}`);
-
-		if (res.ok) {
-			return await res.json();
-		}
-
-		console.error(res.statusText);
-		return [];
 	},
 	getEventsByName: async (timestampFrom, timestampTo, name, eventId) => {
 		const params = createURLSearchParams({
@@ -89,7 +69,14 @@ const eventHttpApi: EventApiSchema = {
 		const res = await fetch(path);
 
 		if (res.ok) {
-			return await res.json();
+			if (eventId) {
+				const flattenEventTreeNodes = (e: EventTreeNode): string[] =>
+					[e.eventId, ...e.childList.flatMap(flattenEventTreeNodes)];
+				const events: Array<EventTreeNode> = await res.json();
+
+				return await events.flatMap(flattenEventTreeNodes);
+			}
+			return res.json();
 		}
 
 		console.error(res.statusText);

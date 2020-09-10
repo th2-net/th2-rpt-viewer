@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { EventIdNode } from '../../stores/EventsStore';
 import { createBemElement } from '../../helpers/styleCreators';
 import { getEventStatus } from '../../helpers/event';
-import useCachedEvent from '../../hooks/useCachedEvent';
 import '../../styles/events.scss';
 
 interface Props {
@@ -28,12 +27,7 @@ interface Props {
 	rootEventsEnabled?: boolean;
 }
 
-export interface EventBreadcrumbsForwardingRef {
-	expand: () => void;
-	collapse: () => void;
-}
-
-const EventBreadcrumbs: React.FC<Props> = props => {
+const EventBreadcrumbs = (props: Props) => {
 	const {
 		nodes,
 		onSelect,
@@ -75,7 +69,7 @@ export const EventBreadcrumbsItem = observer(({
 	node,
 	onSelect,
 }: ItemProps) => {
-	const event = useCachedEvent(node);
+	const { event } = node;
 
 	if (!event) {
 		return (

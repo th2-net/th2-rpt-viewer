@@ -34,7 +34,9 @@ export function CustomTable({ content }: CustomTableProps) {
 				gridTemplateColumns: `repeat(${headers.length}, minmax(150px, 250px))`,
 			}}>
 				<thead>
-					{headers.map(header => <th key={header}>{header}</th>)}
+					<tr>
+						{headers.map(header => <th key={header}>{header}</th>)}
+					</tr>
 				</thead>
 				<tbody>
 					{

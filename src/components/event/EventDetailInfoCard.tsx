@@ -28,6 +28,7 @@ import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
 import TableEventCard from './table/TableEventCard';
 import CardDisplayType from '../../util/CardDisplayType';
+import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 
 interface Props {
 	idNode: EventIdNode;
@@ -35,7 +36,8 @@ interface Props {
 }
 
 function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
-	const event = useCachedEvent(idNode);
+	const eventWindowStore = useEventWindowStore();
+	const event = eventWindowStore.selectedEvent;
 
 	if (!event) {
 		return <SplashScreen/>;

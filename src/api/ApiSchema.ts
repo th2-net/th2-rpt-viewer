@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventAction } from '../models/EventAction';
+import { EventAction, EventTree } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
@@ -25,15 +25,8 @@ export default interface ApiSchema {
 }
 
 export interface EventApiSchema {
-    getRootEvents: (filter?: EventsFilter) => Promise<string[]>;
+    getEventTree: (filter?: EventsFilter) => Promise<EventTree>;
 	getEvent: (id: string, abortSignal?: AbortSignal) => Promise<EventAction>;
-	getEventChildren: (
-		id: string,
-		timestampFrom: number,
-		timestampTo: number,
-		abortSignal?: AbortSignal,
-	) => Promise<Array<string>>;
-    getRange: (start: number, end: number) => Promise<EventAction[]>;
     getEventsByName: (
 		timestampFrom: number,
 		timestampTo: number,

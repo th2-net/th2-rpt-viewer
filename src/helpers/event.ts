@@ -14,10 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventAction } from '../models/EventAction';
+import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventStatus } from '../models/Status';
 
-export const isRootEvent = (event: EventAction) => event.parentEventId === null;
-
-export const getEventStatus = (event: EventAction): EventStatus =>
+export const getEventStatus = (event: EventAction | EventTreeNode): EventStatus =>
 	(event.successful ? EventStatus.PASSED : EventStatus.FAILED);
