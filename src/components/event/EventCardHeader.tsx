@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import TimeAgo from 'react-timeago';
 import { formatTime, getTimestampAsNumber } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
-import { EventAction } from '../../models/EventAction';
+import { EventTreeNode } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
@@ -28,7 +28,7 @@ import SearchableContent from '../search/SearchableContent';
 
 interface Props {
 	displayType?: CardDisplayType;
-	event: EventAction;
+	event: EventTreeNode;
 	isRoot?: boolean;
 	onSelect: () => void;
 	isSelected?: boolean;

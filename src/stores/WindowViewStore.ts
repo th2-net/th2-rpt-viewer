@@ -27,20 +27,12 @@ export default class WindowViewStore {
 		if (viewStore) {
 			this.isLoading = viewStore.isLoading.valueOf();
 			this.panelArea = toJS(viewStore.panelArea);
-			this.eventTableModeEnabled = toJS(viewStore.eventTableModeEnabled);
 		}
 	}
 
 	@observable isLoading = true;
 
 	@observable panelArea: PanelArea = PanelArea.P100;
-
-	@observable eventTableModeEnabled = false;
-
-	@action
-	setTableModeEnabled = (isEnabled: boolean) => {
-		this.eventTableModeEnabled = isEnabled;
-	};
 
 	@action
 	setPanelArea = (panelArea: PanelArea) => {

@@ -39,12 +39,11 @@ function EventTreeView() {
 			</SplitViewPane>
 			<SplitViewPane>
 				{
-					eventWindowStore.selectedNode ? (
-						<EventDetailInfoCard idNode={eventWindowStore.selectedNode}/>
-					) : (
-						<Empty description="Select event"/>
-					)
+					eventWindowStore.selectedNode === null
+					&& !eventWindowStore.loadingSelectedEvent
+					&& <Empty description="Select event"/>
 				}
+				{ eventWindowStore.selectedNode && <EventDetailInfoCard idNode={eventWindowStore.selectedNode}/> }
 			</SplitViewPane>
 		</SplitView>
 	);

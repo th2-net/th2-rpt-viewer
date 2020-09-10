@@ -328,9 +328,12 @@ export default class MessagesStore {
 	private onAttachedMessagesIdsChange = async (attachedMessagesIds: string[]) => {
 		if (!attachedMessagesIds.length) {
 			this.attachedMessages = [];
+			if (this.filterStore.messagesFilter.streams.length === 0) {
+				this.messagesIds = [];
+				this.messagesCache.clear();
+			}
 			return;
 		}
-
 		this.isBeginReached = false;
 		this.isEndReached = false;
 		this.attachedMessagesAbortController?.abort();

@@ -23,7 +23,6 @@ import { EventIdNode } from '../../../stores/EventsStore';
 import EventCardSkeleton from '../EventCardSkeleton';
 import ExpandIcon from '../../ExpandIcon';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
-import useCachedEvent from '../../../hooks/useCachedEvent';
 import CardDisplayType from '../../../util/CardDisplayType';
 import '../../../styles/expandablePanel.scss';
 
@@ -35,7 +34,7 @@ function EventTree({ idNode }: EventTreeProps) {
 	const eventWindowStore = useEventWindowStore();
 	const viewStore = useEventWindowViewStore();
 
-	const event = useCachedEvent(idNode);
+	const { event } = idNode;
 	const onExpandClick = () => eventWindowStore.toggleNode(idNode);
 
 	let expandIconStatus: 'expanded' | 'hidden' | 'loading' | 'none';

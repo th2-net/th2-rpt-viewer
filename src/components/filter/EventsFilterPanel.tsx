@@ -119,7 +119,7 @@ function EventsFilterPanel() {
 
 	const onClear = () => {
 		eventWindowStore.filterStore.resetEventsFilter();
-		eventWindowStore.fetchRootEvents();
+		eventWindowStore.fetchEventTree();
 	};
 
 	const filterConfig: FilterRowConfig[] = [{

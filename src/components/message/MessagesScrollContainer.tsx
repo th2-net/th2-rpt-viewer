@@ -93,7 +93,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 				endIndex: 0,
 			});
 		}
-	}, 25);
+	}, 5);
 
 
 	scrollTo((scrollTop: ScrollToOptions) => {
