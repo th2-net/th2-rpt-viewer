@@ -103,7 +103,6 @@
     &__bubble {
         color: #FFFFFF;
         background-color: #5EBA6E;
-        margin: 0 5px;
     }
 
     &__counter {
@@ -351,7 +350,7 @@
         padding: 3px 5px;
         margin: 0 10px;
         border-radius: $bubbleBorderRadius;
-        height: 30px;
+        min-height: 30px;
         background-color: rgba(#FFFFFF, 0.5);
         font-size: 13px;
         color: $primaryTextColor;
@@ -413,6 +412,7 @@
 
         flex-wrap: wrap;
         flex-grow: 1;
+        gap: 5px;
 
         &.active {
             background: #FFFFFF;
@@ -425,6 +425,10 @@
         border: none;
         appearance: none;
         color: $primaryTextColor;
+
+        &::-webkit-calendar-picker-indicator {
+            display: none;
+        }
 
         &:focus {
             outline: none;

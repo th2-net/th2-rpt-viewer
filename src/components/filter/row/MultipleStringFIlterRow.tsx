@@ -45,16 +45,12 @@ export default function MultipleStringFilterRow({ config }: { config: FilterRowM
 	};
 
 	const inputOnRemove = () => {
-		const { values, setCurrentValue, setValues } = config;
+		const { values, setValues } = config;
 		if (values.length === 0) {
 			return;
 		}
 
-		const lastValue = values[values.length - 1];
-		const restValues = values.slice(0, values.length - 1);
-
-		setCurrentValue(lastValue);
-		setValues(restValues);
+		setValues(values.slice(0, values.length - 1));
 	};
 
 	const inputOnSubmit = (nextValue: string) => {

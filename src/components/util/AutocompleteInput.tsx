@@ -19,19 +19,19 @@ import AutosizeInput from 'react-input-autosize';
 import KeyCodes from '../../util/KeyCodes';
 
 interface Props {
-    className?: string;
-    value: string;
-    readonly?: boolean;
-    onlyAutocompleteValues?: boolean;
-    autoresize?: boolean;
-    autocomplete: string[] | null;
-    datalistKey?: string;
-    placeholder?: string;
-    submitKeyCodes?: number[];
-    onSubmit: (nextValue: string) => void;
-    onRemove?: () => void;
-    onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
-    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+	className?: string;
+	value: string;
+	readonly?: boolean;
+	onlyAutocompleteValues?: boolean;
+	autoresize?: boolean;
+	autocomplete: string[] | null;
+	datalistKey?: string;
+	placeholder?: string;
+	submitKeyCodes?: number[];
+	onSubmit: (nextValue: string) => void;
+	onRemove?: () => void;
+	onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+	onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 	onEmptyBlur?: () => void;
 }
 
@@ -63,12 +63,22 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	}, [value]);
 
 	const onChange: React.ChangeEventHandler<HTMLInputElement> = e => {
-		setCurrentValue(e.target.value);
+		if (autocomplete?.includes(e.target.value)) {
+			onSubmit(e.target.value);
+			setCurrentValue('');
+		} else {
+			setCurrentValue(e.target.value);
+		}
 	};
 
 	const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
+		if (!currentValue.trim() && e.keyCode !== KeyCodes.BACKSPACE) {
+			setCurrentValue('');
+			return;
+		}
+
 		if (submitKeyCodes.includes(e.keyCode) && currentValue.length > 0) {
-			if (!onlyAutocompleteValues || (autocomplete == null || autocomplete.includes(currentValue))) {
+			if (!onlyAutocompleteValues || autocomplete == null || autocomplete.includes(currentValue)) {
 				onSubmit(currentValue);
 				setCurrentValue('');
 			}
@@ -91,50 +101,42 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onChange,
 		onFocus,
 		onBlur: e => {
-			if (currentValue.trim().length > 0) {
+			if (
+				currentValue.trim().length > 0
+				&& (!onlyAutocompleteValues || autocomplete == null || autocomplete.includes(currentValue))
+			) {
 				if (onEmptyBlur) {
 					onEmptyBlur();
 				}
 				onSubmit(currentValue);
-				setCurrentValue('');
 			}
 
+			setCurrentValue('');
 			onBlur(e);
 		},
 	};
 
 	return (
 		<React.Fragment>
-			{
-				autoresize ? (
-					<AutosizeInput
-						{...inputProps}
-						inputRef={input => {
-							// eslint-disable-next-line no-param-reassign
-							ref.current = input as HTMLInputElement;
-						}}
-						inputClassName={className}
-					/>
-				) : (
-					<input
-						{...inputProps}
-						ref={ref}
-						className={className}
-					/>
-				)
-			}
-			{
-				currentValue.length > 0
-				&& (
-					<datalist id={datalistKey}>
-						{
-							autocomplete?.map((variant, index) => (
-								<option key={index} value={variant}/>
-							))
-						}
-					</datalist>
-				)
-			}
+			{autoresize ? (
+				<AutosizeInput
+					{...inputProps}
+					inputRef={input => {
+						// eslint-disable-next-line no-param-reassign
+						ref.current = input as HTMLInputElement;
+					}}
+					inputClassName={className}
+				/>
+			) : (
+				<input {...inputProps} ref={ref} className={className} />
+			)}
+			{currentValue.length > 0 && (
+				<datalist id={datalistKey}>
+					{autocomplete?.map((variant, index) => (
+						<option key={index} value={variant} />
+					))}
+				</datalist>
+			)}
 		</React.Fragment>
 	);
 });
