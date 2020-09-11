@@ -19,23 +19,20 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso } from 'react-virtuoso';
 import { EventIdNode } from '../../stores/EventsStore';
-import useCachedEvent from '../../hooks/useCachedEvent';
 import SplashScreen from '../SplashScreen';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
-import TableEventCard from './table/TableEventCard';
 import CardDisplayType from '../../util/CardDisplayType';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 
 interface Props {
 	idNode: EventIdNode;
-	showSubNodes?: boolean;
 }
 
-function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
+function EventDetailInfoCard({ idNode }: Props) {
 	const eventWindowStore = useEventWindowStore();
 	const event = eventWindowStore.selectedEvent;
 
@@ -62,42 +59,6 @@ function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
 	const elapsedTime = endTimestamp && startTimestamp
 		? getElapsedTime(startTimestamp, endTimestamp)
 		: null;
-
-	const renderItem = (index: number) => {
-		if (showSubNodes && idNode.children && index < idNode.children.length) {
-			const subEvent = idNode.children[index];
-
-			return (
-				<TableEventCard
-					key={subEvent.id}
-					idNode={subEvent}
-					displayType={CardDisplayType.MINIMAL}/>
-			);
-		}
-
-		const bodyIndex = showSubNodes && idNode.children ? index - idNode.children.length : index;
-		const bodyElement = Array.isArray(body) ? body[bodyIndex] : body;
-
-		if (!bodyElement) {
-			return <></>;
-		}
-
-		return (
-			<EventBodyCard body={bodyElement} parentEvent={event}/>
-		);
-	};
-
-	const computeKey = (index: number) => {
-		if (showSubNodes && idNode.children) {
-			if (index < idNode.children.length) {
-				return idNode.children[index].id;
-			}
-
-			return `body-${eventId}-${index - idNode.children.length}`;
-		}
-
-		return `body-${eventId}-${index}`;
-	};
 
 	return (
 		<div className={rootClassName}>
@@ -148,33 +109,18 @@ function EventDetailInfoCard({ idNode, showSubNodes = false }: Props) {
 				</div>
 			</div>
 			<div className='event-detail-card__body'>
-				{
-					showSubNodes ? (
-						<Virtuoso
-							style={{ height: '100%', width: '100%' }}
-							className='event-detail-card__body-list'
-							computeItemKey={computeKey}
-							overscan={3}
-							totalCount={
-								(idNode.children?.length ?? 0) + (Array.isArray(body) ? body.length : +Boolean(body))
-							}
-							item={renderItem}/>
-
-					) : (
-						<div className='event-detail-card__body-list'>
-							{
-								Array.isArray(body)
-									? body.map((bodyPayloadItem, index) => (
-										<EventBodyCard
-											key={`body-${eventId}-${index}`}
-											body={bodyPayloadItem}
-											parentEvent={event}/>
-									))
-									: <EventBodyCard key={eventId} body={body} parentEvent={event} />
-							}
-						</div>
-					)
-				}
+				<div className='event-detail-card__body-list'>
+					{
+						Array.isArray(body)
+							? body.map((bodyPayloadItem, index) => (
+								<EventBodyCard
+									key={`body-${eventId}-${index}`}
+									body={bodyPayloadItem}
+									parentEvent={event}/>
+							))
+							: <EventBodyCard key={eventId} body={body} parentEvent={event} />
+					}
+				</div>
 			</div>
 		</div>
 	);

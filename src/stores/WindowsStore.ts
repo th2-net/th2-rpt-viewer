@@ -63,7 +63,6 @@ export default class WindowsStore {
 			selectedEvents => {
 				this.getEventColors(selectedEvents);
 				this.getAttachedMessagesIds(selectedEvents);
-				this.onNewSelectedEvents(selectedEvents);
 			},
 		);
 
@@ -200,14 +199,6 @@ export default class WindowsStore {
 	@action
 	private getAttachedMessagesIds = (selectedEvents: EventAction[]) => {
 		this.attachedMessagesIds = [...new Set(selectedEvents.flatMap(({ attachedMessageIds }) => attachedMessageIds))];
-	};
-
-	@action
-	private onNewSelectedEvents = (selectedEvents: EventAction[]) => {
-		if (!this.lastSelectEventIdNode) {
-			this.lastSelectedEvent = null;
-			return;
-		}
 	};
 
 	@action

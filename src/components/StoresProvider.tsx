@@ -15,30 +15,12 @@
  ***************************************************************************** */
 
 import React from 'react';
-import useAsyncEffect from '../hooks/useAsyncEffect';
 import RootStoreContext, { createRootStore } from '../contexts/rootStoreContext';
-import SplashScreen from './SplashScreen';
-import RootStore from '../stores/RootStore';
+import api from '../api';
 
 function RootStoreProvider({ children }: React.PropsWithChildren<{}>) {
-	const [rootStore, setRootStore] = React.useState<RootStore | null>(null);
-
-	useAsyncEffect(async () => {
-		const { default: api } = process.env.API_ENV === 'http' ? (
-			await import(/* webpackChunkName: "http-api" */ '../api/http')
-		) : (
-			await import(/* webpackChunkName: "jsonp-api" */ '../api/jsonp')
-		);
-
-		setRootStore(createRootStore(api));
-	}, []);
-
-	if (rootStore == null) {
-		return <SplashScreen/>;
-	}
-
 	return (
-		<RootStoreContext.Provider value={rootStore}>
+		<RootStoreContext.Provider value={createRootStore(api)}>
 			{children}
 		</RootStoreContext.Provider>
 	);

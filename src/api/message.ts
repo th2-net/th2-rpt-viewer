@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import { MessageApiSchema } from '../ApiSchema';
-import { createURLSearchParams } from '../../helpers/url';
-import MessagesFilter from '../../models/filter/MessagesFilter';
+import { MessageApiSchema } from './ApiSchema';
+import { createURLSearchParams } from '../helpers/url';
+import MessagesFilter from '../models/filter/MessagesFilter';
 
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {

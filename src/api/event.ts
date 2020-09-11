@@ -14,10 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-/* eslint-disable no-return-await */
-import { EventApiSchema } from '../ApiSchema';
-import { createURLSearchParams } from '../../helpers/url';
-import { EventTreeNode } from '../../models/EventAction';
+import { EventApiSchema } from './ApiSchema';
+import { createURLSearchParams } from '../helpers/url';
+import { EventTreeNode } from '../models/EventAction';
 
 const eventHttpApi: EventApiSchema = {
 	getEventTree: async filter => {
@@ -40,7 +39,7 @@ const eventHttpApi: EventApiSchema = {
 		const res = await fetch(`/backend/search/events?${params}`);
 
 		if (res.ok) {
-			return await res.json();
+			return res.json();
 		}
 		console.error(res.statusText);
 
@@ -50,7 +49,7 @@ const eventHttpApi: EventApiSchema = {
 		const res = await fetch(`/backend/event/${id}`, { signal });
 
 		if (res.ok) {
-			return await res.json();
+			return res.json();
 		}
 
 		console.error(res.statusText);
@@ -74,7 +73,7 @@ const eventHttpApi: EventApiSchema = {
 					[e.eventId, ...e.childList.flatMap(flattenEventTreeNodes)];
 				const events: Array<EventTreeNode> = await res.json();
 
-				return await events.flatMap(flattenEventTreeNodes);
+				return events.flatMap(flattenEventTreeNodes);
 			}
 			return res.json();
 		}

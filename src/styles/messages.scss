@@ -103,7 +103,7 @@
     padding: 7px 5px 9px 10px;
     color: $primaryTextColor;
     grid-template-rows: auto;
-    grid-template-columns: 1.4fr 40px 1fr 40px 2fr 30px 30px;
+    grid-template-columns: 1.2fr 40px 1.2fr 40px 1.8fr 30px 30px;
     grid-template-areas: "timestamp name name-value session session-value beautify pin";
 
     &__underline {
