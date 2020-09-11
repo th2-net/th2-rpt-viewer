@@ -333,68 +333,6 @@
 	margin: 0 5px;
 }
 
-.event-table-view {
-	height: 100%;
-	width: 100%;
-
-	&__columns {
-		width: 100%;
-		height: 100%;
-		display: flex;
-		flex-direction: row;
-		align-items: stretch;
-	}
-
-	&__column {
-	 	flex-grow: 1;
-		padding: 0 3px;
-
-		&.status-only {
-			flex-grow: 0;
-			width: 58px;
-		}
-	}
-
-	&__scrollbar {
-		@include scrollbar;
-		overflow-x: hidden;
-	}
-
-	&__card {
-		padding: 0 3px 1px 0;
-	}
-}
-
-.event-minimap {
-	&__node {
-		display: flex;
-		justify-content: flex-start;
-	}
-
-	&__sub-nodes {
-		display: flex;
-		flex-direction: column;
-	}
-
-	&__item {
-		@include status-card;
-		margin: 2px;
-		min-height: 14px;
-		min-width: 14px;
-		background-color: var(--status-secondary-background-color);
-		border-radius: 35px;
-
-		&.selected {
-			border: 1px solid var(--status-primary-border-color);
-		}
-
-		&.skeleton {
-			background-color: $skeletonBackgroundColor;
-		}
-	}
-
-}
-
 .event-breadcrumbs {
 	height: 100%;
 	width: 100%;

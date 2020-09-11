@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import ApiSchema from '../ApiSchema';
-import eventJsonpApi from './event';
-import messageJsonpApi from './message';
+import ApiSchema from './ApiSchema';
+import eventHttpApi from './event';
+import messageHttpApi from './message';
 
-const jsonpApi: ApiSchema = {
-	events: eventJsonpApi,
-	messages: messageJsonpApi,
+const api: ApiSchema = {
+	events: eventHttpApi,
+	messages: messageHttpApi,
 };
 
-export default jsonpApi;
+export default api;
