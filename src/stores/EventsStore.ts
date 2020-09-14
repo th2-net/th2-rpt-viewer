@@ -155,7 +155,7 @@ export default class EventsStore {
 		if (!this.viewStore.flattenedListView) {
 			index = this.nodesList.findIndex(event => event.id === eventId);
 		} else {
-			index = this.flatExpandedList.findIndex(event => event.id === eventId);
+			index = this.flattenedEventList.findIndex(event => event.id === eventId);
 		}
 		this.scrolledIndex = index !== -1 ? new Number(index) : null;
 	};
