@@ -97,7 +97,7 @@ const EventsWindowTab = (props: EventsWindowTabProps) => {
 	const selectNode = (idNode: EventIdNode | null) => {
 		store.selectNode(idNode);
 		if (idNode) {
-			store.scrollToEvent(idNode);
+			store.scrollToEvent(idNode.id);
 			setIsMenuOpen(false);
 		}
 	};

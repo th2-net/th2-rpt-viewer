@@ -37,7 +37,6 @@ interface Props {
 
 function EventCardHeader({
 	 displayType = CardDisplayType.MINIMAL,
-	 isRoot = false,
 	 event,
 	 onSelect,
 	 isSelected = false,
@@ -69,7 +68,7 @@ function EventCardHeader({
 				) : null
 			}
 			{
-				displayType !== CardDisplayType.STATUS_ONLY && isRoot ? (
+				displayType !== CardDisplayType.STATUS_ONLY ? (
 					<div className="event-header-card__time-label">
 						<span className="event-header-card__time-label-full">
 							{formatTime(startTimestampValue)}

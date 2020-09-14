@@ -53,6 +53,7 @@ export default class RootStore {
 						search: eventsStore.searchStore.tokens.length > 0
 							? eventsStore.searchStore.tokens.map(t => t.pattern)
 							: undefined,
+						flattenedListView: eventsStore.viewStore.flattenedListView,
 					};
 				}
 
