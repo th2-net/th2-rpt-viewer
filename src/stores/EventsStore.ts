@@ -31,7 +31,7 @@ import { getTimestampAsNumber } from '../helpers/date';
 export type EventIdNode = {
 	id: string;
 	isExpanded: boolean;
-	children: EventIdNode[] | null;
+	children: EventIdNode[];
 	parents: string[];
 	event: EventTreeNode;
 };
@@ -84,18 +84,31 @@ export default class EventsStore {
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	@observable scrolledIndex: Number | null = null;
 
-	@computed get color() {
+	@computed
+	get flattenedEventList() {
+		return this.flatExpandedList.filter(eventNode => eventNode.children.length === 0 && eventNode.event.filtered);
+	}
+
+	@computed
+	get flatExpandedList() {
+		return this.eventsIds.flatMap(eventId => this.getFlatExpandedList(eventId));
+	}
+
+	@computed
+	get color() {
 		if (!this.selectedEvent) return undefined;
 		return this.windowsStore.eventColors.get(this.selectedEvent.eventId);
 	}
 
 	// we need this property for correct virtualized tree render -
 	// to get event key by index in tree and list length calculation.
-	@computed get nodesList() {
+	@computed
+	get nodesList() {
 		return this.eventsIds.flatMap(eventId => this.getNodesList(eventId));
 	}
 
-	@computed get selectedPath(): EventIdNode[] {
+	@computed
+	get selectedPath(): EventIdNode[] {
 		if (this.selectedNode == null) {
 			return [];
 		}
@@ -103,7 +116,8 @@ export default class EventsStore {
 		return [...this.getNodesPath(this.selectedNode.parents, this.nodesList), this.selectedNode];
 	}
 
-	@computed get scrolledEventIndex(): number | null {
+	@computed
+	get scrolledEventIndex(): number | null {
 		if (this.searchStore.scrolledItem == null) {
 			return null;
 		}
@@ -246,6 +260,11 @@ export default class EventsStore {
 
 		return [idNode];
 	};
+
+	private getFlatExpandedList = (idNode: EventIdNode): EventIdNode[] => [
+		idNode,
+		...idNode.children.flatMap(this.getFlatExpandedList),
+	];
 
 	private getNodesPath(path: string[], nodes: EventIdNode[]): EventIdNode[] {
 		if (path.length === 0 || nodes.length === 0) {

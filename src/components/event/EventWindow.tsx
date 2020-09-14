@@ -15,18 +15,29 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 import EventTreeView from './tree/EventTreeView';
 import EventWindowHeader from './EventWindowHeader';
 import '../../styles/events.scss';
+import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
+import FlatEventView from './flat-event-list/FlatEventView';
 
-const EventWindow = () => (
-	<div className="layout">
-		<div className="layout__header">
-			<EventWindowHeader />
+const EventWindow = () => {
+	const viewStore = useEventWindowViewStore();
+	return (
+		<div className="layout">
+			<div className="layout__header">
+				<EventWindowHeader />
+			</div>
+			<div className="layout__body">
+				{
+					viewStore.flattenedListView
+						? <FlatEventView />
+						: <EventTreeView />
+				}
+			</div>
 		</div>
-		<div className="layout__body">
-			<EventTreeView/>
-		</div>
-	</div>
-);
-export default EventWindow;
+	);
+};
+
+export default observer(EventWindow);

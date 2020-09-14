@@ -62,19 +62,10 @@ const eventHttpApi: EventApiSchema = {
 			timestampTo,
 		});
 
-		const path = eventId == null
-			? `/backend/rootEvents?${params}`
-			: `/backend/search/events/${eventId}?${params}`;
+		const path = `/backend/search/events?${params}&flat=true`;
 		const res = await fetch(path);
 
 		if (res.ok) {
-			if (eventId) {
-				const flattenEventTreeNodes = (e: EventTreeNode): string[] =>
-					[e.eventId, ...e.childList.flatMap(flattenEventTreeNodes)];
-				const events: Array<EventTreeNode> = await res.json();
-
-				return events.flatMap(flattenEventTreeNodes);
-			}
 			return res.json();
 		}
 
