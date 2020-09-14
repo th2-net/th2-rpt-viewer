@@ -18,6 +18,7 @@ import {
 	action,
 	computed,
 	observable,
+	reaction,
 } from 'mobx';
 import SearchToken from '../models/search/SearchToken';
 import ApiSchema from '../api/ApiSchema';
@@ -47,6 +48,11 @@ export default class SearchStore {
 		initialState?: initialState,
 	) {
 		this.init(initialState);
+
+		reaction(
+			() => this.eventsStore.viewStore.flattenedListView,
+			flatView => this.scrolledIndex = null,
+		);
 	}
 
 	@observable tokens: SearchToken[] = [];
@@ -66,13 +72,16 @@ export default class SearchStore {
 		if (this.scrolledIndex == null) {
 			return null;
 		}
-
 		return this.results[this.scrolledIndex];
 	}
 
 	@computed
 	get results() {
-		// we need to filter original array to keep it in correct order
+		if (this.eventsStore.viewStore.flattenedListView) {
+			return this.eventsStore.flattenedEventList
+				.map(node => node.id)
+				.filter(nodeId => this.rawResults.includes(nodeId));
+		}
 		return this.eventsStore.nodesList
 			.map(node => node.id)
 			.filter(nodeId => this.rawResults.includes(nodeId));
@@ -97,8 +106,7 @@ export default class SearchStore {
 		const { timestampFrom, timestampTo } = this.eventsStore.filterStore.eventsFilter;
 		const rootEventsResults = await this.api.events.getEventsByName(timestampFrom, timestampTo, tokenString);
 
-		const expandedSubNodes = this.eventsStore.nodesList
-			.filter(node => node.isExpanded && node.children && node.children.length > 0);
+		const expandedSubNodes = this.eventsStore.nodesList.filter(node => node.isExpanded && node.children.length > 0);
 
 		const subNodesResult = await Promise.all(
 			expandedSubNodes.map(node =>
