@@ -18,15 +18,19 @@ import {
 	observable,
 	action,
 	computed,
-	toJS,
 } from 'mobx';
 import PanelArea from '../util/PanelArea';
 
+type InitialState = Partial<{
+	panelArea: PanelArea;
+	isLoading: boolean;
+	flattenedListView: boolean;
+}>;
+
 export default class WindowViewStore {
-	constructor(viewStore?: WindowViewStore) {
-		if (viewStore) {
-			this.isLoading = viewStore.isLoading.valueOf();
-			this.panelArea = toJS(viewStore.panelArea);
+	constructor(initalState?: InitialState) {
+		if (initalState) {
+			this.init(initalState);
 		}
 	}
 
@@ -57,5 +61,12 @@ export default class WindowViewStore {
 	@action
 	toggleFlatttenEventListView = () => {
 		this.flattenedListView = !this.flattenedListView;
+	};
+
+	@action
+	private init = (initalState: InitialState) => {
+		this.isLoading = initalState.isLoading ?? false;
+		this.panelArea = initalState.panelArea ?? PanelArea.P100;
+		this.flattenedListView = initalState.flattenedListView ?? false;
 	};
 }

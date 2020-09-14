@@ -42,6 +42,7 @@ export type EventStoreURLState = Partial<{
 	filter: EventsFilter;
 	selectedNodesPath: string[];
 	search: string[];
+	flattenedListView: boolean;
 }>;
 
 export default class EventsStore {
@@ -60,6 +61,16 @@ export default class EventsStore {
 		reaction(
 			() => this.selectedNode,
 			this.fetchDetailedEventInfo,
+		);
+
+		reaction(
+			() => this.viewStore.flattenedListView,
+			() => this.scrollToEvent(this.selectedNode?.id || null),
+		);
+
+		reaction(
+			() => this.searchStore.scrolledItem,
+			scrolledItem => this.scrollToEvent(scrolledItem),
 		);
 	}
 
@@ -85,17 +96,17 @@ export default class EventsStore {
 	@observable scrolledIndex: Number | null = null;
 
 	@computed
-	get flattenedEventList() {
+	public get flattenedEventList() {
 		return this.flatExpandedList.filter(eventNode => eventNode.children.length === 0 && eventNode.event.filtered);
 	}
 
 	@computed
-	get flatExpandedList() {
+	public get flatExpandedList() {
 		return this.eventsIds.flatMap(eventId => this.getFlatExpandedList(eventId));
 	}
 
 	@computed
-	get color() {
+	public get color() {
 		if (!this.selectedEvent) return undefined;
 		return this.windowsStore.eventColors.get(this.selectedEvent.eventId);
 	}
@@ -116,21 +127,10 @@ export default class EventsStore {
 		return [...this.getNodesPath(this.selectedNode.parents, this.nodesList), this.selectedNode];
 	}
 
-	@computed
-	get scrolledEventIndex(): number | null {
-		if (this.searchStore.scrolledItem == null) {
-			return null;
-		}
-
-		return this.nodesList.findIndex(node => node.id === this.searchStore.scrolledItem);
-	}
-
 	@action
 	toggleNode = (idNode: EventIdNode) => {
 		// eslint-disable-next-line no-param-reassign
 		idNode.isExpanded = !idNode.isExpanded;
-		const nodeIndex = this.nodesList.findIndex(node => node.id === idNode.id);
-		this.nodesList[nodeIndex].isExpanded = idNode.isExpanded;
 		if (idNode.isExpanded) {
 			this.searchStore.appendResultsForEvent(idNode.id);
 		} else if (idNode.children?.length) {
@@ -150,11 +150,14 @@ export default class EventsStore {
 	};
 
 	@action
-	scrollToEvent = (idNode: EventIdNode) => {
-		const index = this.nodesList.indexOf(idNode);
-		if (index !== -1) {
-			this.scrolledIndex = new Number(index);
+	scrollToEvent = (eventId: string | null) => {
+		let index = -1;
+		if (!this.viewStore.flattenedListView) {
+			index = this.nodesList.findIndex(event => event.id === eventId);
+		} else {
+			index = this.flatExpandedList.findIndex(event => event.id === eventId);
 		}
+		this.scrolledIndex = index !== -1 ? new Number(index) : null;
 	};
 
 	@action
@@ -202,14 +205,14 @@ export default class EventsStore {
 				this.windowsStore.lastSelectedEvent = event;
 			}
 		} catch (error) {
-			console.log(`Error occurred while loading event ${selectedNode.id}`);
+			console.error(`Error occurred while loading event ${selectedNode.id}`);
 		} finally {
 			this.loadingSelectedEvent = false;
 		}
 	};
 
-	@action.bound
-	async expandBranch(selectedIds: string[]) {
+	@action
+	private expandBranch = async (selectedIds: string[]) => {
 		if (selectedIds.length === 0) return;
 
 		let headNode: EventIdNode | undefined;
@@ -224,9 +227,9 @@ export default class EventsStore {
 		}
 		if (headNode) {
 			this.selectNode(headNode);
-			this.scrollToEvent(headNode);
+			this.scrollToEvent(headNode?.id || null);
 		}
-	}
+	};
 
 	isNodeSelected(idNode: EventIdNode) {
 		if (this.selectedNode == null) {
@@ -286,6 +289,7 @@ export default class EventsStore {
 		this.isLoadingRootEvents = toJS(store.isLoadingRootEvents);
 		this.selectedNode = toJS(store.selectedNode);
 		this.eventsIds = toJS(store.eventsIds);
+		this.selectedEvent = toJS(store.selectedEvent);
 
 		const selectedNode = store.selectedNode;
 
@@ -294,7 +298,11 @@ export default class EventsStore {
 			this.scrolledIndex = scrolledIndex === -1 ? null : new Number(scrolledIndex);
 		}
 
-		this.viewStore = new ViewStore(store.viewStore);
+		this.viewStore = new ViewStore({
+			flattenedListView: store.viewStore.flattenedListView.valueOf(),
+			isLoading: store.viewStore.isLoading.valueOf(),
+			panelArea: store.viewStore.panelArea,
+		});
 		this.filterStore = new FilterStore(store.filterStore);
 		this.searchStore = new SearchStore(this.api, this, {
 			isLoading: store.searchStore.isLoading,
@@ -321,11 +329,16 @@ export default class EventsStore {
 			panelArea = PanelArea.P100,
 			selectedNodesPath,
 			search,
+			flattenedListView,
 		} = initialState;
 		this.viewStore.panelArea = panelArea;
 
 		this.filterStore = new FilterStore({ eventsFilter: filter });
 		this.searchStore = new SearchStore(this.api, this, { searchPatterns: search || [] });
+		this.viewStore = new ViewStore({
+			flattenedListView,
+			panelArea,
+		});
 		await this.fetchEventTree();
 		if (selectedNodesPath) {
 			this.expandBranch(selectedNodesPath);

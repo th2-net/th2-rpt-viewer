@@ -37,21 +37,6 @@ function EventTreeList({ nodes }: Props) {
 	React.useEffect(() => {
 		try {
 			raf(() => {
-				if (eventWindowStore.scrolledEventIndex !== null) {
-					listRef.current?.scrollToIndex({
-						index: eventWindowStore.scrolledEventIndex,
-						align: 'center',
-					});
-				}
-			});
-		} catch (e) {
-			console.error(e);
-		}
-	}, [eventWindowStore.searchStore.scrolledIndex, eventWindowStore.viewStore.flattenedListView]);
-
-	React.useEffect(() => {
-		try {
-			raf(() => {
 				if (eventWindowStore.scrolledIndex !== null) {
 					listRef.current?.scrollToIndex({
 						index: eventWindowStore.scrolledIndex.valueOf(),
@@ -62,7 +47,7 @@ function EventTreeList({ nodes }: Props) {
 		} catch (e) {
 			console.error(e);
 		}
-	}, [eventWindowStore.scrolledIndex, eventWindowStore.viewStore.flattenedListView]);
+	}, [eventWindowStore.scrolledIndex]);
 
 	const computeKey = (index: number) => nodes[index].id;
 
