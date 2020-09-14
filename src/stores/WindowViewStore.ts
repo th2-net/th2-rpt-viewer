@@ -34,6 +34,16 @@ export default class WindowViewStore {
 
 	@observable panelArea: PanelArea = PanelArea.P100;
 
+	@observable flattenedListView = false;
+
+	@computed get isLeftPanelClosed() {
+		return this.panelArea === PanelArea.P0;
+	}
+
+	@computed get isRightPanelClosed() {
+		return this.panelArea === PanelArea.P100;
+	}
+
 	@action
 	setPanelArea = (panelArea: PanelArea) => {
 		this.panelArea = panelArea;
@@ -44,11 +54,8 @@ export default class WindowViewStore {
 		this.isLoading = isLoading;
 	};
 
-	@computed get isLeftPanelClosed() {
-		return this.panelArea === PanelArea.P0;
-	}
-
-	@computed get isRightPanelClosed() {
-		return this.panelArea === PanelArea.P100;
-	}
+	@action
+	toggleFlatttenEventListView = () => {
+		this.flattenedListView = !this.flattenedListView;
+	};
 }

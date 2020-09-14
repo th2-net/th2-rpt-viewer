@@ -16,12 +16,20 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { createBemElement } from '../../helpers/styleCreators';
 import SearchInput from '../search/SearchInput';
 import EventsFilterPanel from '../filter/EventsFilterPanel';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import { createBemElement } from '../../helpers/styleCreators';
 
 function EventWindowHeader() {
+	const eventStore = useEventWindowStore();
+
+	const flattenButtonClassName = createBemElement(
+		'event-window-header',
+		'flat-button',
+		eventStore.viewStore.flattenedListView ? 'active' : null,
+	);
+
 	return (
 		<div className="event-window-header">
 			<div className="event-window-header__group">
@@ -29,6 +37,12 @@ function EventWindowHeader() {
 					<SearchInput />
 				</div>
 				<EventsFilterPanel />
+				<div
+					role="button"
+					onClick={eventStore.viewStore.toggleFlatttenEventListView}
+					className={flattenButtonClassName}>
+					Flat view
+				</div>
 			</div>
 		</div>
 	);

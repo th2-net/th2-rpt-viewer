@@ -15,22 +15,23 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
+import { observer, Observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoMethods } from 'react-virtuoso';
-import EventTree from './EventTree';
+import EventCardHeader from '../EventCardHeader';
 import Empty from '../../Empty';
 import SplashScreen from '../../SplashScreen';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import { raf } from '../../../helpers/raf';
 import { EventIdNode } from '../../../stores/EventsStore';
+import CardDisplayType from '../../../util/CardDisplayType';
 import '../../../styles/action.scss';
 
 interface Props {
 	nodes: EventIdNode[];
 }
 
-function EventTreeList({ nodes }: Props) {
+function FlatEventList({ nodes }: Props) {
 	const eventWindowStore = useEventWindowStore();
 	const listRef = React.useRef<VirtuosoMethods | null>(null);
 
@@ -66,9 +67,26 @@ function EventTreeList({ nodes }: Props) {
 
 	const computeKey = (index: number) => nodes[index].id;
 
-	const renderEvent = (index: number): React.ReactElement => (
-		<EventTree idNode={nodes[index]}/>
-	);
+	const renderEvent = (index: number): React.ReactElement => {
+		const node = nodes[index];
+		return (
+			<Observer>
+				{() => (
+					<div style={{ margin: '4px 5px' }}>
+						<EventCardHeader
+							isRoot={node.parents.length === 0}
+							childrenCount={0}
+							event={node.event}
+							displayType={CardDisplayType.MINIMAL}
+							onSelect={() => eventWindowStore.selectNode(node)}
+							isSelected={eventWindowStore.selectedNode === node}
+						/>
+					</div>
+				)}
+			</Observer>
+
+		);
+	};
 
 	if (eventWindowStore.isLoadingRootEvents) {
 		return <SplashScreen/>;
@@ -94,4 +112,4 @@ function EventTreeList({ nodes }: Props) {
 	);
 }
 
-export default observer(EventTreeList);
+export default observer(FlatEventList);

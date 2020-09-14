@@ -27,6 +27,7 @@ export interface EventTreeNode {
     endTimestamp?: Timestamp;
     childList: Array<EventTreeNode>;
     successful: boolean;
+    filtered: boolean;
 }
 
 export interface EventAction {

@@ -50,11 +50,11 @@ function EventTree({ idNode }: EventTreeProps) {
 	}
 
 	return (
-		<div className='event-tree-card'
+		<div className="event-tree-card"
 			 style={{ paddingLeft: (viewStore.panelArea === PanelArea.P25 ? 20 : 35) * idNode.parents.length }}>
 			<ExpandIcon
 				status={expandIconStatus}
-				className='event-card__children-icon'
+				className="event-card__children-icon"
 				onClick={onExpandClick}/>
 			{
 				event ? (
