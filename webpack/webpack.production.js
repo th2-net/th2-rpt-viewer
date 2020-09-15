@@ -18,9 +18,15 @@ const webpackMerge = require('webpack-merge');
 const commonConfig = require('./webpack.common');
 const path = require('path');
 
-const { appPath, appSrc } = require('./paths');
+const { appBuild, appPath, appSrc } = require('./paths');
 
 module.exports = webpackMerge(commonConfig, {
+    output: {
+        path: path.resolve(appBuild, 'out'),
+        publicPath: '',
+        filename: '[name].bundle.js',
+        chunkFilename: '[name].bundle.js',
+    },
     mode: 'production',
     entry: path.resolve(appSrc, 'index.tsx'),
     module: {

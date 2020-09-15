@@ -18,17 +18,11 @@ const path = require('path');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
-const { appBuild, appSrc, appPath } = require('./paths');
+const { appSrc, appPath } = require('./paths');
 
 const api_env = process.env.API_ENV || 'http';
 
 module.exports = {
-    output: {
-        path: path.resolve(appBuild, 'out'),
-        publicPath: '/',
-        filename: '[name].bundle.js',
-        chunkFilename: '[name].bundle.js',
-    },
     resolve: {
         extensions: ['.ts', '.tsx', '.scss', '.js'],
     },

@@ -36,7 +36,7 @@ const eventHttpApi: EventApiSchema = {
 			filter.eventTypes.forEach(type => params.append('eventType', type));
 		}
 
-		const res = await fetch(`/backend/search/events?${params}`);
+		const res = await fetch(`backend/search/events?${params}`);
 
 		if (res.ok) {
 			return res.json();
@@ -46,7 +46,7 @@ const eventHttpApi: EventApiSchema = {
 		throw new Error('Couldn\'t fetch event tree');
 	},
 	getEvent: async (id, signal?) => {
-		const res = await fetch(`/backend/event/${id}`, { signal });
+		const res = await fetch(`backend/event/${id}`, { signal });
 
 		if (res.ok) {
 			return res.json();
@@ -62,7 +62,7 @@ const eventHttpApi: EventApiSchema = {
 			timestampTo,
 		});
 
-		const path = `/backend/search/events?${params}&flat=true`;
+		const path = `backend/search/events?${params}&flat=true`;
 		const res = await fetch(path);
 
 		if (res.ok) {

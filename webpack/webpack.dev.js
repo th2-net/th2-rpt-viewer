@@ -16,10 +16,13 @@
 
 const webpackMerge = require('webpack-merge');
 const commonConfig = require('./webpack.common');
-const {appSrc} = require('./paths');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const { appSrc } = require('./paths');
 
 module.exports = webpackMerge(commonConfig, {
+    output: {
+        publicPath: '/',
+    },
     mode: 'development',
     entry: ['react-hot-loader/patch', appSrc],
     devtool: 'inline-source-map',
