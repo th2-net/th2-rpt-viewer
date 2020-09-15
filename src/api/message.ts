@@ -20,7 +20,7 @@ import MessagesFilter from '../models/filter/MessagesFilter';
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {
 		const params = createURLSearchParams({ idsOnly: false });
-		const res = await fetch(`/backend/search/messages?${params}`);
+		const res = await fetch(`backend/search/messages?${params}`);
 
 		if (res.ok) {
 			return res.json();
@@ -58,7 +58,7 @@ const messageHttpApi: MessageApiSchema = {
 		if (messageTypes.length > 0) {
 			messageTypes.forEach(type => params.append('messageType', type));
 		}
-		const res = await fetch(`/backend/search/messages?${params}`, { signal: abortSignal });
+		const res = await fetch(`backend/search/messages?${params}`, { signal: abortSignal });
 
 		if (res.ok) {
 			return res.json();
@@ -73,7 +73,7 @@ const messageHttpApi: MessageApiSchema = {
 			timestampFrom,
 			timestampTo,
 		});
-		const res = await fetch(`/backend/search/messages?${params}`);
+		const res = await fetch(`backend/search/messages?${params}`);
 
 		if (res.ok) {
 			return res.json();
@@ -83,7 +83,7 @@ const messageHttpApi: MessageApiSchema = {
 		return [];
 	},
 	getMessage: async (id: string, signal?: AbortSignal) => {
-		const res = await fetch(`/backend/message/${id}`, { signal });
+		const res = await fetch(`backend/message/${id}`, { signal });
 
 		if (res.ok) {
 			return res.json();
@@ -122,7 +122,7 @@ const messageHttpApi: MessageApiSchema = {
 		return [];
 	},
 	getMessageSessions: async () => {
-		const res = await fetch('/backend/messageStreams');
+		const res = await fetch('backend/messageStreams');
 		if (res.ok) {
 			return res.json();
 		}
