@@ -23,6 +23,7 @@ import SplitView from '../../split-view/SplitView';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
 import EventDetailInfoCard from '../EventDetailInfoCard';
+import DetailedFlatEventCard from './DetailedFlatEventCard';
 
 function EventTreeView() {
 	const eventWindowStore = useEventWindowStore();
@@ -43,7 +44,13 @@ function EventTreeView() {
 					&& !eventWindowStore.loadingSelectedEvent
 					&& <Empty description="Select event"/>
 				}
-				{ eventWindowStore.selectedNode && <EventDetailInfoCard idNode={eventWindowStore.selectedNode}/> }
+				{
+					eventWindowStore.selectedNode
+					&& <DetailedFlatEventCard
+						idNode={eventWindowStore.selectedNode}
+						parentNodes={eventWindowStore.selectedPath
+							.filter(node => node !== eventWindowStore.selectedNode)}/>
+				}
 			</SplitViewPane>
 		</SplitView>
 	);

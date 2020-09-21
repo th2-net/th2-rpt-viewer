@@ -16,7 +16,6 @@
 
 import { EventApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
-import { EventTreeNode } from '../models/EventAction';
 
 const eventHttpApi: EventApiSchema = {
 	getEventTree: async filter => {
@@ -55,7 +54,7 @@ const eventHttpApi: EventApiSchema = {
 		console.error(res.statusText);
 		return null;
 	},
-	getEventsByName: async (timestampFrom, timestampTo, name, eventId) => {
+	getEventsByName: async (timestampFrom, timestampTo, name) => {
 		const params = createURLSearchParams({
 			name,
 			timestampFrom,

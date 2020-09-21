@@ -43,7 +43,12 @@ function EventTreeView() {
 					&& !eventWindowStore.loadingSelectedEvent
 					&& <Empty description="Select event"/>
 				}
-				{ eventWindowStore.selectedNode && <EventDetailInfoCard idNode={eventWindowStore.selectedNode}/> }
+				{
+					eventWindowStore.selectedNode
+					&& <EventDetailInfoCard
+						event={eventWindowStore.selectedEvent}
+						childrenCount={eventWindowStore.selectedNode?.children.length}/>
+				}
 			</SplitViewPane>
 		</SplitView>
 	);

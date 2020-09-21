@@ -33,6 +33,8 @@ interface Props {
 	onSelect: () => void;
 	isSelected?: boolean;
 	childrenCount?: number | null;
+	isFlatView?: boolean;
+	parentsCount?: number;
 }
 
 function EventCardHeader({
@@ -41,6 +43,8 @@ function EventCardHeader({
 	 onSelect,
 	 isSelected = false,
 	 childrenCount,
+	 isFlatView = false,
+	 parentsCount = 0,
 }: Props) {
 	const {
 		eventId,
@@ -60,6 +64,11 @@ function EventCardHeader({
 
 	return (
 		<div className={rootClassName} onClick={onSelect}>
+			{
+				isFlatView && parentsCount > 0
+					? <Chip text={parentsCount.toString()}/>
+					: null
+			}
 			{
 				displayType !== CardDisplayType.STATUS_ONLY ? (
 					<div className='event-header-card__title' title={eventName}>

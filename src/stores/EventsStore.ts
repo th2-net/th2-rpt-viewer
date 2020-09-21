@@ -43,6 +43,7 @@ export type EventStoreURLState = Partial<{
 	selectedNodesPath: string[];
 	search: string[];
 	flattenedListView: boolean;
+	selectedParentId: string;
 }>;
 
 export default class EventsStore {
@@ -55,12 +56,15 @@ export default class EventsStore {
 
 		reaction(
 			() => this.filterStore.eventsFilter,
-			filter => this.fetchEventTree(),
+			() => this.fetchEventTree(),
 		);
 
 		reaction(
 			() => this.selectedNode,
-			this.fetchDetailedEventInfo,
+			selectedNode => {
+				this.fetchDetailedEventInfo(selectedNode);
+				this.selectedParentNode = null;
+			},
 		);
 
 		reaction(
@@ -70,7 +74,13 @@ export default class EventsStore {
 
 		reaction(
 			() => this.searchStore.scrolledItem,
-			scrolledItem => this.scrollToEvent(scrolledItem),
+			scrolledItemId => this.scrollToEvent(scrolledItemId),
+		);
+
+		reaction(
+			() => this.selectedPath,
+			// eslint-disable-next-line no-param-reassign
+			selectedNodes => selectedNodes.forEach(node => node.isExpanded = true),
 		);
 	}
 
@@ -87,6 +97,8 @@ export default class EventsStore {
 	@observable isLoadingRootEvents = false;
 
 	@observable selectedNode: EventIdNode | null = null;
+
+	@observable selectedParentNode: EventIdNode | null = null;
 
 	@observable selectedEvent: EventAction | null = null;
 
@@ -175,7 +187,7 @@ export default class EventsStore {
 	};
 
 	@action
-	fetchEventTree = async () => {
+	private fetchEventTree = async () => {
 		this.selectedNode = null;
 		this.isLoadingRootEvents = true;
 		try {
@@ -290,6 +302,7 @@ export default class EventsStore {
 		this.selectedNode = toJS(store.selectedNode);
 		this.eventsIds = toJS(store.eventsIds);
 		this.selectedEvent = toJS(store.selectedEvent);
+		this.selectedParentNode = toJS(store.selectedParentNode);
 
 		const selectedNode = store.selectedNode;
 
@@ -330,6 +343,7 @@ export default class EventsStore {
 			selectedNodesPath,
 			search,
 			flattenedListView,
+			selectedParentId,
 		} = initialState;
 		this.viewStore.panelArea = panelArea;
 
@@ -342,6 +356,10 @@ export default class EventsStore {
 		await this.fetchEventTree();
 		if (selectedNodesPath) {
 			this.expandBranch(selectedNodesPath);
+		}
+		if (selectedParentId) {
+			const parentNode = this.selectedPath.find(eventNode => eventNode.id === selectedParentId);
+			this.selectedParentNode = parentNode ?? null;
 		}
 	}
 }

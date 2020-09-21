@@ -54,6 +54,8 @@ export default class RootStore {
 							? eventsStore.searchStore.tokens.map(t => t.pattern)
 							: undefined,
 						flattenedListView: eventsStore.viewStore.flattenedListView,
+						selectedParentId: eventsStore.viewStore.flattenedListView && eventsStore.selectedParentNode
+							? eventsStore.selectedParentNode.id : undefined,
 					};
 				}
 
