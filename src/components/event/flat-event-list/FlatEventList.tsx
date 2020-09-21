@@ -65,6 +65,8 @@ function FlatEventList({ nodes }: Props) {
 							displayType={CardDisplayType.MINIMAL}
 							onSelect={() => eventWindowStore.selectNode(node)}
 							isSelected={eventWindowStore.selectedNode === node}
+							isFlatView={true}
+							parentsCount={node.parents.length}
 						/>
 					</div>
 				)}

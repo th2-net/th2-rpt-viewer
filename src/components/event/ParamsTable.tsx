@@ -122,7 +122,7 @@ class ParamsTableBase extends React.Component<Props, State> {
 					<tbody>
 						{
 							this.state.nodes.map((nodes, index) =>
-								this.renderNodes(nodes, 0, keyForActionParameter(this.props.actionId, index)))
+								this.renderNodes(nodes, 1, keyForActionParameter(this.props.actionId, index)))
 						}
 					</tbody>
 				</table>
@@ -166,7 +166,7 @@ class ParamsTableBase extends React.Component<Props, State> {
 				</td>
 				{
 					this.props.columns.map(columnTitle =>
-						<td style={cellStyle} key={`${rowTitle} - ${columnTitle}`}>
+						<td key={`${rowTitle} - ${columnTitle}`}>
 							{this.renderContent(`${key}-value`, columns[columnTitle])}
 						</td>)
 				}

@@ -64,7 +64,10 @@ export const extractParams = (body: TreeTablePayload): ParamsTable => {
 			title: rowTitle,
 			columns: row.type === 'row' ? row.columns : undefined,
 			isExpanded: subRows.length > 0,
-			subRows,
+			subRows: row.type === 'collection'
+				? Object.keys(row.rows)
+					.map(subRowTitle => createRow(row.rows[subRowTitle], subRowTitle))
+				: [],
 		};
 	};
 
@@ -81,8 +84,6 @@ export const extractParams = (body: TreeTablePayload): ParamsTable => {
 					createRow(
 						payloadItem,
 						rowTitle,
-						Object.keys(payloadItem.rows)
-							.map(subRowTitle => createRow(payloadItem.rows[subRowTitle], subRowTitle)),
 					),
 				];
 			}

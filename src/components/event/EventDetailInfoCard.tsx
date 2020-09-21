@@ -17,7 +17,6 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Virtuoso } from 'react-virtuoso';
 import { EventIdNode } from '../../stores/EventsStore';
 import SplashScreen from '../SplashScreen';
 import { createBemBlock } from '../../helpers/styleCreators';
@@ -25,16 +24,21 @@ import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/
 import { getEventStatus } from '../../helpers/event';
 import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
-import CardDisplayType from '../../util/CardDisplayType';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import { EventAction } from '../../models/EventAction';
 
 interface Props {
-	idNode: EventIdNode;
+	event: EventAction | null;
+	childrenCount?: number;
+	rootStyle?: React.CSSProperties;
 }
 
-function EventDetailInfoCard({ idNode }: Props) {
-	const eventWindowStore = useEventWindowStore();
-	const event = eventWindowStore.selectedEvent;
+function EventDetailInfoCard(props: Props) {
+	const {
+		event,
+		childrenCount = 0,
+		rootStyle = {},
+	} = props;
 
 	if (!event) {
 		return <SplashScreen/>;
@@ -61,9 +65,9 @@ function EventDetailInfoCard({ idNode }: Props) {
 		: null;
 
 	return (
-		<div className={rootClassName}>
-			<div className='event-detail-card__header'>
-				<div className='event-detail-card__title' title={eventType || eventName}>
+		<div className={rootClassName} style={rootStyle}>
+			<div className="event-detail-card__header">
+				<div className="event-detail-card__title" title={eventType || eventName}>
 					{eventType || eventName}
 				</div>
 				<div className="event-detail-card__controls">
@@ -77,12 +81,12 @@ function EventDetailInfoCard({ idNode }: Props) {
 						{status.toUpperCase()}
 					</span>
 					{
-						idNode.children && idNode.children?.length > 0 ? (
-							<Chip text={idNode.children.length.toString()}/>
+						childrenCount > 0 ? (
+							<Chip text={childrenCount.toString()}/>
 						) : null
 					}
 				</div>
-				<div className='event-detail-card__timestamp'>
+				<div className="event-detail-card__timestamp">
 					{
 						startTimestamp && (
 							<>
@@ -108,8 +112,8 @@ function EventDetailInfoCard({ idNode }: Props) {
 					{eventId}
 				</div>
 			</div>
-			<div className='event-detail-card__body'>
-				<div className='event-detail-card__body-list'>
+			<div className="event-detail-card__body">
+				<div className="event-detail-card__body-list">
 					{
 						Array.isArray(body)
 							? body.map((bodyPayloadItem, index) => (
@@ -126,4 +130,4 @@ function EventDetailInfoCard({ idNode }: Props) {
 	);
 }
 
-export default observer(EventDetailInfoCard);
+export default EventDetailInfoCard;
