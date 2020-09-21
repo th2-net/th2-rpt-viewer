@@ -69,18 +69,12 @@ export default class EventsStore {
 
 		reaction(
 			() => this.viewStore.flattenedListView,
-			() => this.scrollToEvent(this.selectedNode?.id || null),
+			() => this.scrollToEvent(this.selectedNode?.id || null, this.selectedNode?.parents),
 		);
 
 		reaction(
 			() => this.searchStore.scrolledItem,
 			scrolledItemId => this.scrollToEvent(scrolledItemId),
-		);
-
-		reaction(
-			() => this.selectedPath,
-			// eslint-disable-next-line no-param-reassign
-			selectedNodes => selectedNodes.forEach(node => node.isExpanded = true),
 		);
 	}
 
@@ -162,14 +156,25 @@ export default class EventsStore {
 	};
 
 	@action
-	scrollToEvent = (eventId: string | null) => {
+	scrollToEvent = (eventId: string | null, parentEventIds: string[] = []) => {
+		if (!eventId) return;
 		let index = -1;
 		if (!this.viewStore.flattenedListView) {
-			index = this.nodesList.findIndex(event => event.id === eventId);
+			[...parentEventIds, eventId].forEach(id => {
+				const eventIndex = this.nodesList.findIndex(ev => ev.id === id);
+				runInAction(() => {
+					if (eventIndex !== -1) {
+						this.nodesList[eventIndex].isExpanded = true;
+						if (id === eventId) {
+							this.scrolledIndex = eventIndex;
+						}
+					}
+				});
+			});
 		} else {
 			index = this.flattenedEventList.findIndex(event => event.id === eventId);
+			this.scrolledIndex = index !== -1 ? new Number(index) : null;
 		}
-		this.scrolledIndex = index !== -1 ? new Number(index) : null;
 	};
 
 	@action
@@ -239,7 +244,7 @@ export default class EventsStore {
 		}
 		if (headNode) {
 			this.selectNode(headNode);
-			this.scrollToEvent(headNode?.id || null);
+			this.scrollToEvent(headNode?.id || null, headNode.parents);
 		}
 	};
 
