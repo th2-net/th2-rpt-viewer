@@ -35,6 +35,7 @@ interface Props {
 	childrenCount?: number | null;
 	isFlatView?: boolean;
 	parentsCount?: number;
+	rootStyle?: React.CSSProperties;
 }
 
 function EventCardHeader({
@@ -45,6 +46,7 @@ function EventCardHeader({
 	 childrenCount,
 	 isFlatView = false,
 	 parentsCount = 0,
+	 rootStyle = {},
 }: Props) {
 	const {
 		eventId,
@@ -63,7 +65,7 @@ function EventCardHeader({
 	);
 
 	return (
-		<div className={rootClassName} onClick={onSelect}>
+		<div className={rootClassName} onClick={onSelect} style={rootStyle}>
 			{
 				isFlatView && parentsCount > 0
 					? <Chip text={parentsCount.toString()}/>

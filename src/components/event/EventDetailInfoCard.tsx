@@ -16,15 +16,12 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
-import { EventIdNode } from '../../stores/EventsStore';
 import SplashScreen from '../SplashScreen';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
-import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 import { EventAction } from '../../models/EventAction';
 
 interface Props {

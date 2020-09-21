@@ -34,7 +34,7 @@ export function EventBodyPayloadRenderer({ body, parentEvent }: Props) {
 		case EventBodyPayloadType.MESSAGE:
 			return (
 				<ErrorBoundary fallback={<JSONBodyFallback body={body}/>}>
-					<div style={{ overflow: 'auto' }}>
+					<div style={{ overflowX: 'auto' }}>
 						<div key="message" className="event-detail-card__message">
 							{body.data}
 						</div>

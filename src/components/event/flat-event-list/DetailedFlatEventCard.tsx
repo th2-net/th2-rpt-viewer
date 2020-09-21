@@ -18,9 +18,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { EventIdNode } from '../../../stores/EventsStore';
-import SplashScreen from '../../SplashScreen';
-import { createBemBlock } from '../../../helpers/styleCreators';
-import { getEventStatus } from '../../../helpers/event';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import { useParentEvents } from '../../../hooks/useParentEvents';
 import EventCardHeader from '../EventCardHeader';
@@ -45,13 +42,8 @@ function DetailedFlatEventCard(props: Props) {
 		? eventWindowStore.selectedEvent
 		: selectedParentEvent;
 
-	const rootClassName = createBemBlock(
-		'flat-event-detail-card',
-		getEventStatus(selectedNode ? selectedNode.event : idNode.event),
-	);
-
 	return (
-		<div className={rootClassName}>
+		<div className="flat-event-detail-card">
 			{
 				parentNodes.length > 0
 				&& <div className="flat-event-detail-card__parents">
@@ -62,7 +54,8 @@ function DetailedFlatEventCard(props: Props) {
 									key={eventNode.id}
 									event={eventNode.event}
 									onSelect={() => setSelectedNode(eventNode)}
-									isSelected={selectedNode === eventNode} />)
+									isSelected={selectedNode === eventNode}
+									rootStyle={{ margin: '4px 0' }}/>)
 					}
 					{
 						selectedNode !== null
@@ -73,12 +66,14 @@ function DetailedFlatEventCard(props: Props) {
 					}
 				</div>
 			}
-			<div className="flat-event-detail-card__body">
-				<EventDetailInfoCard
-					event={event}
-					childrenCount={selectedNode?.children.length}
-					rootStyle={{ border: 'none' }}/>
-			</div>
+			<EventDetailInfoCard
+				rootStyle={{
+					overflow: 'visible',
+					height: 'auto',
+					flexGrow: 1,
+				}}
+				event={event}
+				childrenCount={selectedNode?.children.length} />
 		</div>
 	);
 }
