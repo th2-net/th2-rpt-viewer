@@ -271,7 +271,7 @@ export default class EventsStore {
 	}
 
 	private getNodesList = (idNode: EventIdNode): EventIdNode[] => {
-		if (idNode.isExpanded && idNode.children) {
+		if (idNode.isExpanded) {
 			return [
 				idNode,
 				...idNode.children.flatMap(this.getNodesList),
