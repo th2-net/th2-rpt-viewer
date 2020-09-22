@@ -35,11 +35,12 @@ const MessagesFilterPanel = () => {
 	const [messageTypes, setMessagesTypes] = React.useState<Array<string>>([]);
 
 	React.useEffect(() => {
+		console.log('filter changed', filterStore.messagesFilter);
 		setTimestampFrom(filterStore.messagesFilter.timestampFrom);
 		setTimestampTo(filterStore.messagesFilter.timestampTo);
 		setStreams(filterStore.messagesFilter.streams);
 		setMessagesTypes(filterStore.messagesFilter.messageTypes);
-	}, [filterStore.messagesFilter]);
+	}, [filterStore.messagesFilter, filterStore.messagesFilter.streams]);
 
 	const submitChanges = () => {
 		if ((timestampFrom && timestampTo) && timestampFrom > timestampTo) {

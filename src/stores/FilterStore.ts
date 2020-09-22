@@ -78,7 +78,8 @@ export default class FilterStore {
 		this.isMessagesFilterApplied = true;
 	}
 
-	@action resetMessagesFilter(streams: string[] = []) {
+	@action
+	resetMessagesFilter(streams: string[] = []) {
 		this.messagesFilter = {
 			...defaultMessagesFilter,
 			// after resetting filter, streams should be taken from attached messages
