@@ -32,7 +32,7 @@ const eventHttpApi: EventApiSchema = {
 			filter.names.forEach(name => params.append('name', name));
 		}
 		if (filter.eventTypes.length > 0) {
-			filter.eventTypes.forEach(type => params.append('eventType', type));
+			filter.eventTypes.forEach(type => params.append('type', type));
 		}
 
 		const res = await fetch(`backend/search/events?${params}`);
