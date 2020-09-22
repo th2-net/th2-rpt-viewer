@@ -53,7 +53,7 @@ export default class MessagesStore {
 	public messagesIds: Array<string> = [];
 
 	@observable
-	public messagesCache: Map<string, EventMessage> = new Map();
+	public messagesCache: Map<string, EventMessage> = observable.map();
 
 	@observable
 	public isLoading = false;
@@ -353,8 +353,8 @@ export default class MessagesStore {
 			);
 
 			const messages = sortMessagesByTimestamp(
-				[...newlySelectedMessages, ...previouslySelectedMessages],
-			).filter(Boolean);
+				[...newlySelectedMessages, ...previouslySelectedMessages].filter(Boolean),
+			);
 
 			this.attachedMessages = messages;
 
@@ -398,14 +398,17 @@ export default class MessagesStore {
 	@action
 	private copy(store: MessagesStore) {
 		this.messagesIds = toJS(store.messagesIds);
-		this.messagesCache = observable(store.messagesCache);
-		this.beautifiedMessages = observable(store.beautifiedMessages);
-		this.detailedRawMessagesIds = observable(store.detailedRawMessagesIds);
+		this.messagesCache = observable.map(toJS(store.messagesCache));
+		this.beautifiedMessages = toJS(store.beautifiedMessages);
+		this.detailedRawMessagesIds = toJS(store.detailedRawMessagesIds);
 		this.isLoading = store.isLoading.valueOf();
 		this.scrolledIndex = store.scrolledIndex?.valueOf() || null;
-		this.selectedMessageId = store.selectedMessageId?.valueOf() || null;
+		this.selectedMessageId = store.selectedMessageId ? new String(store.selectedMessageId.valueOf()) : null;
 		this.messagesLoadingState = store.messagesLoadingState?.valueOf() || null;
-		this.attachedMessages = store.attachedMessages;
+		this.attachedMessages = toJS(store.attachedMessages);
+		this.messageSessions = toJS(store.messageSessions);
 		this.filterStore = new FilterStore({ messagesFilter: toJS(store.filterStore.messagesFilter) });
+		this.isEndReached = store.isEndReached.valueOf();
+		this.isBeginReached = store.isBeginReached.valueOf();
 	}
 }
