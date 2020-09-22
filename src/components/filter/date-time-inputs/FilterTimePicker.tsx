@@ -64,12 +64,14 @@ const FilterTimepicker = ({
 		return (isToday && isCurrentHour && isCurrentMinute) ? second > currentDay.seconds() : false;
 	}, [inputConfig.value]);
 
+	const getBlockedHours = React.useCallback((hour: number) => isToday && hour > today.hour(), [inputConfig.value]);
+
 	return (
 		<div className='filter-timepicker'>
 			<TimeUnitList
 				unit="hour"
 				selectedUnit={selectedHour}
-				getIsBlocked={hour => isToday && hour > today.hour()}
+				getIsBlocked={getBlockedHours}
 				onUnitClick={setHour}
 			/>
 			<TimeUnitList

@@ -30,6 +30,9 @@ interface FilterDatetimePickerProps {
 	top?: number;
 }
 
+const now = moment();
+now.utcOffset(new Date().getTimezoneOffset() / 60);
+
 const FilterDatetimePicker = ({
 	inputConfig,
 	onClose,
@@ -50,9 +53,10 @@ const FilterDatetimePicker = ({
 			let appliedDate;
 			if (inputConfig.value) {
 				appliedDate = moment(inputConfig.value)
-					.year(dateValue.year())
-					.month(dateValue.month())
-					.date(dateValue.date());
+					.utc()
+					.set('year', dateValue.year())
+					.set('month', dateValue.month())
+					.set('date', dateValue.date());
 			} else {
 				appliedDate = dateValue.utc().startOf('day');
 			}
@@ -77,7 +81,7 @@ const FilterDatetimePicker = ({
 	return (
 		<div
 			ref={pickerRef}
-			className='filter-datetime-picker'
+			className="filter-datetime-picker"
 			style={{
 				left: `${left || 0}px`,
 				top: `${top || 0}px`,
@@ -87,12 +91,13 @@ const FilterDatetimePicker = ({
 					(inputConfig.type === TimeInputType.DATE_TIME
 						|| inputConfig.type === TimeInputType.DATE)
 					&& <Calendar
-						value={moment(inputConfig.value)}
-						onChange={change}
+						selectedValue={moment(inputConfig.value)}
+						defaultValue={now}
+						onSelect={change}
 						showDateInput={false}
-						className='filter-datetime-picker__datepicker'
-						disabledDate={getDisabledDate}
 						showToday={false}
+						className="filter-datetime-picker__datepicker"
+						disabledDate={getDisabledDate}
 						renderFooter={() => (
 							<div className="filter-datetime-picker__controls">
 								<button
