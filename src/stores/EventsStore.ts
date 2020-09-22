@@ -163,11 +163,11 @@ export default class EventsStore {
 			[...parentEventIds, eventId].forEach(id => {
 				const eventIndex = this.nodesList.findIndex(ev => ev.id === id);
 				runInAction(() => {
-					if (eventIndex !== -1) {
+					if (eventIndex !== -1 && id !== eventId) {
 						this.nodesList[eventIndex].isExpanded = true;
-						if (id === eventId) {
-							this.scrolledIndex = eventIndex;
-						}
+					}
+					if (id === eventId) {
+						this.scrolledIndex = eventIndex;
 					}
 				});
 			});
