@@ -32,7 +32,7 @@ export const defaultMessagesFilter: MessagesFilter = {
 
 export const getDefaultEventFilter = () => {
 	const timestampTo = moment(Date.now()).utc().valueOf();
-	const timestampFrom = moment().utc().startOf('day').valueOf();
+	const timestampFrom = moment(timestampTo).utc().subtract(15, 'minutes').valueOf();
 
 	return {
 		timestampFrom,
