@@ -55,6 +55,9 @@ export default class AppWindowStore {
 		 if (isMessagesTab(tabToClose) && tabToClose.store.disposer) {
 			tabToClose.store.disposer();
 		 }
+		 if (isEventsTab(tabToClose) && this.windowsStore.lastSelectEventIdNode === tabToClose.store.selectedNode) {
+			this.windowsStore.lastSelectEventIdNode = null;
+		 }
 	};
 
 	@action

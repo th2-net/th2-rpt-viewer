@@ -22,7 +22,6 @@ import { useHeatmap } from '../../hooks/useHeatmap';
 import { HeatmapElement } from '../../models/Heatmap';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import { InfiniteLoaderContext } from './MessagesVirtualizedList';
-import { MessagesLoadingState } from '../../stores/MessagesStore';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { MessagesHeightsContext, MessagesHeights } from './MessagesCardList';
 
@@ -38,7 +37,6 @@ const MessagesScrollContainer: TScrollContainer = ({
 	const messagesStore = useMessagesWindowStore();
 	const messagesHeights = React.useContext(MessagesHeightsContext);
 	const prevHeights = React.useRef<MessagesHeights>({});
-
 
 	const [loadingPrevItems, setLoadingPrevItems] = React.useState(false);
 	const [loadingNextItems, setLoadingNextItems] = React.useState(false);
@@ -139,8 +137,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 				flexGrow: 1,
 			}}>
 				{
-					loadingState === MessagesLoadingState.LOADING_NEXT_ITEMS
-					&& <div className="messages-list__spinner"/>
+					loadingState.loadingNextItems && <div className="messages-list__spinner"/>
 				}
 				<div
 					ref={scrollContainer}
@@ -157,13 +154,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 					{children}
 				</div>
 				{
-					loadingState === MessagesLoadingState.LOADING_SELECTED_MESSAGE
-					&& <div className="messages-list__overlay-loader">
-						<div className="messages-list__overlay-spinner"/>
-					</div>
-				}
-				{
-					loadingState === MessagesLoadingState.LOADING_PREVIOUS_ITEMS
+					loadingState.loadingPreviousItems
 					&& <div className="messages-list__spinner"/>
 				}
 			</div>

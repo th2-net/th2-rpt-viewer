@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
-import { MessagesLoadingState } from '../../stores/MessagesStore';
+import { defaultMessagesLoadingState } from '../../stores/MessagesStore';
 import useAsyncEffect from '../../hooks/useAsyncEffect';
 import { raf } from '../../helpers/raf';
 
@@ -37,7 +37,7 @@ interface Props {
 	overscan?: number;
 	loadNextMessages: () => Promise<string[] | undefined>;
 	loadPrevMessages: () => Promise<string[] | undefined>;
-	loadingState: MessagesLoadingState | null;
+	loadingState: typeof defaultMessagesLoadingState;
 }
 
 const MessagesVirtualizedList = (props: Props) => {
@@ -111,7 +111,7 @@ const MessagesVirtualizedList = (props: Props) => {
 interface InfiniteScrollContextValue {
 	onScrollBottom: () => Promise<string[] | undefined>;
 	onScrollTop: () => Promise<string[] | undefined>;
-	loadingState: MessagesLoadingState | null;
+	loadingState: typeof defaultMessagesLoadingState;
 }
 
 export const InfiniteLoaderContext = React.createContext<InfiniteScrollContextValue>({} as InfiniteScrollContextValue);
