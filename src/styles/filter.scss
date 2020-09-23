@@ -355,6 +355,8 @@
         font-size: 13px;
         color: $primaryTextColor;
         box-sizing: border-box;
+        // workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
+        min-width: 0;
 
         &:focus {
             background-color: #FFF;
