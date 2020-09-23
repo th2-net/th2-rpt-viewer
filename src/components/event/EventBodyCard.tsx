@@ -73,9 +73,6 @@ export function EventBodyPayloadRenderer({ body, parentEvent }: Props) {
 			return 	(
 				<ErrorBoundary>
 					<div>
-						<div className="ac-body__item-title">
-							Input parameters
-						</div>
 						<ParamsTable
 							columns={columns}
 							rows={rows}

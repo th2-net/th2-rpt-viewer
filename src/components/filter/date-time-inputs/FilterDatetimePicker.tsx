@@ -31,7 +31,7 @@ interface FilterDatetimePickerProps {
 }
 
 const now = moment();
-now.utcOffset(new Date().getTimezoneOffset() / 60);
+now.utcOffset(0);
 
 const FilterDatetimePicker = ({
 	inputConfig,
@@ -91,7 +91,7 @@ const FilterDatetimePicker = ({
 					(inputConfig.type === TimeInputType.DATE_TIME
 						|| inputConfig.type === TimeInputType.DATE)
 					&& <Calendar
-						selectedValue={moment(inputConfig.value)}
+						value={moment(inputConfig.value).utcOffset(0)}
 						defaultValue={now}
 						onSelect={change}
 						showDateInput={false}
