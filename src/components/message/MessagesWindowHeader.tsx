@@ -34,6 +34,7 @@ const MessagesWindowHeader = () => {
 	const navButtonClass = createStyleSelector(
 		'messages-window-header__button',
 		messagesStore.selectedMessagesIds.length > 0
+		&& messagesStore.messagesIds.length > 0
 			? null : 'disabled',
 	);
 

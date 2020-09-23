@@ -226,8 +226,10 @@
 }
 
 .event-body-fallback {
-	overflow: auto;
+	overflow-x: auto;
+	@include scrollbar;
 	margin-top: 15px;
+	padding: 5px 0;
 }
 
 .event-window {

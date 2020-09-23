@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import {
-	action, computed, observable, toJS, reaction, IReactionDisposer,
+	action, computed, observable, toJS, reaction, IReactionDisposer, runInAction,
 } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import FilterStore from './FilterStore';
@@ -27,12 +27,12 @@ import { TabTypes } from '../models/util/Windows';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import { sortMessagesByTimestamp } from '../helpers/message';
 
-export const enum MessagesLoadingState {
-	LOADING_PREVIOUS_ITEMS,
-	LOADING_NEXT_ITEMS,
-	LOADING_ROOT_ITEMS,
-	LOADING_SELECTED_MESSAGE,
-}
+export const defaultMessagesLoadingState = {
+	loadingPreviousItems: false,
+	loadingNextItems: false,
+	loadingRootItems: false,
+	loadingSelectedMessage: false,
+};
 
 export type MessagesStoreURLState = Partial<{
 	type: TabTypes.Messages;
@@ -47,7 +47,7 @@ export default class MessagesStore {
 	filterStore = new FilterStore();
 
 	@observable
-	public messagesLoadingState: MessagesLoadingState | null = null;
+	public messagesLoadingState = defaultMessagesLoadingState;
 
 	@observable
 	public messagesIds: Array<string> = [];
@@ -107,8 +107,12 @@ export default class MessagesStore {
 		reaction(
 			() => this.attachedMessages,
 			attachedMessages => {
-				this.filterStore.messagesFilter.streams = attachedMessages.map(m => m.sessionId)
+				const streams = attachedMessages.map(m => m.sessionId)
 					.filter((stream, index, self) => self.indexOf(stream) === index);
+				if (streams.length) {
+					this.messagesLoadingState.loadingSelectedMessage = true;
+				}
+				this.filterStore.messagesFilter.streams = streams;
 			},
 		);
 
@@ -189,31 +193,26 @@ export default class MessagesStore {
 		if (prevMessageId) this.selectedMessageId = prevMessageId;
 	};
 
-	messagesAbortController: AbortController | null = null;
-
 	@action
 	private getMessages = async (
 		timelineDirection: 'next' | 'previous' = 'previous',
 		originMessageId: string | null = null,
 		limit = this.MESSAGES_CHUNK_SIZE,
 		loadBody = false,
+		abortSignal?: AbortSignal,
 	// eslint-disable-next-line consistent-return
 	): Promise<string[] | undefined> => {
-		this.messagesAbortController?.abort();
-
 		// streams are required to get messages
 		if (this.filterStore.messagesFilter.streams.length === 0) {
 			this.messagesIds = [];
 			this.messagesCache.clear();
 			this.isLoading = false;
-			this.messagesLoadingState = null;
 			return [];
 		}
 
 		this.isLoading = true;
 
 		try {
-			this.messagesAbortController = new AbortController();
 			let messagesIds: string[];
 
 			if (loadBody) {
@@ -222,7 +221,7 @@ export default class MessagesStore {
 					timelineDirection,
 					limit,
 					idsOnly: false,
-				}, this.filterStore.messagesFilter, this.messagesAbortController.signal);
+				}, this.filterStore.messagesFilter, abortSignal);
 				messagesIds = messages.map(msg => msg.messageId);
 				messages.forEach(msg => {
 					this.messagesCache.set(msg.messageId, msg);
@@ -233,7 +232,7 @@ export default class MessagesStore {
 					timelineDirection,
 					limit,
 					idsOnly: true,
-				}, this.filterStore.messagesFilter, this.messagesAbortController.signal);
+				}, this.filterStore.messagesFilter, abortSignal);
 			}
 
 			if (messagesIds.length === 0) {
@@ -280,28 +279,74 @@ export default class MessagesStore {
 			}
 		} finally {
 			this.isLoading = false;
-			this.messagesLoadingState = null;
 		}
 	};
 
 	@action
 	private async loadMessageSessions() {
-		this.messageSessions = await this.api.messages.getMessageSessions();
+		try {
+			const messageSessions = await this.api.messages.getMessageSessions();
+			runInAction(() => {
+				this.messageSessions = messageSessions;
+			});
+		} catch (error) {
+			console.error('Couldn\'t fetch sessions');
+		}
 	}
+
+	abortControllers: { [key: string]: AbortController | null } = {
+		prevAC: null,
+		nextAC: null,
+		scrollAC: null,
+	};
 
 	@action
 	public loadPreviousMessages = () => {
-		this.messagesLoadingState = MessagesLoadingState.LOADING_PREVIOUS_ITEMS;
+		if (this.isEndReached) return [] as any;
+		if (this.abortControllers.prevAC) {
+			this.abortControllers.prevAC.abort();
+		} else {
+			this.abortControllers.prevAC = new AbortController();
+		}
+		this.messagesLoadingState.loadingPreviousItems = true;
 		const originMessageId = !this.messagesIds.length
 			? this.attachedMessages[0]?.messageId
 			: this.messagesIds[this.messagesIds.length - 1];
-		return this.getMessages('previous', originMessageId, this.MESSAGES_CHUNK_SIZE, true);
+		return this.getMessages(
+			'previous',
+			originMessageId,
+			this.MESSAGES_CHUNK_SIZE,
+			true,
+			this.abortControllers.prevAC.signal,
+		)
+			.then(messagesIds => {
+				this.messagesLoadingState.loadingPreviousItems = false;
+				this.abortControllers.prevAC = null;
+				return messagesIds;
+			});
 	};
 
 	@action
 	public loadNextMessages = () => {
-		this.messagesLoadingState = MessagesLoadingState.LOADING_NEXT_ITEMS;
-		return this.getMessages('next', this.messagesIds[0], this.MESSAGES_CHUNK_SIZE, true);
+		if (this.isBeginReached) return [] as any;
+		if (this.abortControllers.nextAC) {
+			this.abortControllers.nextAC.abort();
+		} else {
+			this.abortControllers.nextAC = new AbortController();
+		}
+		this.messagesLoadingState.loadingNextItems = true;
+		return this.getMessages(
+			'next',
+			this.messagesIds[0],
+			this.MESSAGES_CHUNK_SIZE,
+			true,
+			this.abortControllers.nextAC.signal,
+		)
+			.then(messagesIds => {
+				this.messagesLoadingState.loadingNextItems = false;
+				this.abortControllers.nextAC = null;
+				return messagesIds;
+			});
 	};
 
 	public resetMessagesFilter = () => {
@@ -315,11 +360,29 @@ export default class MessagesStore {
 		const messageIndex = this.messagesIds.indexOf(messageId);
 		if (messageIndex !== -1) {
 			this.scrolledIndex = new Number(messageIndex);
+			this.messagesLoadingState.loadingSelectedMessage = false;
 			return;
 		}
-		this.messagesLoadingState = MessagesLoadingState.LOADING_SELECTED_MESSAGE;
-		this.getMessages('previous', messageId, this.MESSAGES_CHUNK_SIZE - 1)
-			.then(() => this.scrolledIndex = this.messagesIds.indexOf(messageId));
+		if (this.abortControllers.scrollAC) {
+			this.abortControllers.scrollAC.abort();
+		} else {
+			this.abortControllers.scrollAC = new AbortController();
+		}
+		this.messagesLoadingState.loadingSelectedMessage = true;
+		this.getMessages(
+			'previous',
+			messageId,
+			this.MESSAGES_CHUNK_SIZE - 1,
+			false,
+			this.abortControllers.scrollAC.signal,
+		)
+			.then(() => {
+				this.scrolledIndex = this.messagesIds.indexOf(messageId);
+			})
+			.finally(() => {
+				this.messagesLoadingState.loadingSelectedMessage = false;
+				this.abortControllers.scrollAC = null;
+			});
 	};
 
 	attachedMessagesAbortController: AbortController | null = null;
@@ -334,6 +397,9 @@ export default class MessagesStore {
 			}
 			return;
 		}
+
+		this.messagesLoadingState.loadingSelectedMessage = true;
+
 		this.isBeginReached = false;
 		this.isEndReached = false;
 		this.attachedMessagesAbortController?.abort();
@@ -358,12 +424,16 @@ export default class MessagesStore {
 
 			this.attachedMessages = messages;
 
-			if (this.windowsStore.lastSelectedEvent) {
-				const messageId = messages.filter(m =>
-					this.windowsStore.lastSelectedEvent?.attachedMessageIds.includes(m.messageId))[0]?.messageId;
-				if (messageId) {
-					this.selectedMessageId = new String(messageId);
-				}
+			const messageId = messages.filter(m =>
+				this.windowsStore.lastSelectedEvent?.attachedMessageIds.includes(m.messageId))[0]?.messageId;
+			if (messageId) {
+				this.selectedMessageId = new String(messageId);
+				return;
+			}
+			if (messages.length > 0 && !messages.some(msg => this.messagesIds.includes(msg.messageId))) {
+				this.selectedMessageId = new String(messages[0].messageId);
+			} else {
+				this.messagesLoadingState.loadingSelectedMessage = false;
 			}
 		} catch (error) {
 			if (error.name !== 'AbortError') {
@@ -374,7 +444,7 @@ export default class MessagesStore {
 
 	@action
 	private onFilterChange = (messagesFilter: MessagesFilter) => {
-		this.messagesLoadingState = MessagesLoadingState.LOADING_ROOT_ITEMS;
+		this.messagesLoadingState.loadingRootItems = true;
 		this.messagesIds = [];
 		this.messagesCache.clear();
 		this.selectedMessageId = null;
@@ -404,7 +474,7 @@ export default class MessagesStore {
 		this.isLoading = store.isLoading.valueOf();
 		this.scrolledIndex = store.scrolledIndex?.valueOf() || null;
 		this.selectedMessageId = store.selectedMessageId ? new String(store.selectedMessageId.valueOf()) : null;
-		this.messagesLoadingState = store.messagesLoadingState?.valueOf() || null;
+		this.messagesLoadingState = toJS(store.messagesLoadingState);
 		this.attachedMessages = toJS(store.attachedMessages);
 		this.messageSessions = toJS(store.messageSessions);
 		this.filterStore = new FilterStore({ messagesFilter: toJS(store.filterStore.messagesFilter) });

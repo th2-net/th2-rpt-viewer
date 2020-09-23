@@ -67,12 +67,14 @@ const MessageCardList = () => {
 		);
 	};
 
-
-	if (messagesStore.isLoading && messagesStore.messagesIds.length === 0) {
+	if (messagesStore.messagesLoadingState.loadingRootItems && messagesStore.messagesIds.length === 0) {
 		return <SplashScreen />;
 	}
 
-	if (!messagesStore.isLoading && messagesStore.messagesIds.length === 0) {
+	if (
+		!Object.values(messagesStore.messagesLoadingState).some(Boolean)
+		&& messagesStore.messagesIds.length === 0
+	) {
 		return <Empty description="No messages" />;
 	}
 
@@ -90,6 +92,12 @@ const MessageCardList = () => {
 						ScrollContainer={MessagesScrollContainer}
 						loadNextMessages={() => messagesStore.loadNextMessages()}
 						loadPrevMessages={() => messagesStore.loadPreviousMessages()}/>
+					{
+						messagesStore.messagesLoadingState.loadingSelectedMessage
+						&& <div className="messages-list__overlay-loader">
+							<div className="messages-list__overlay-spinner"/>
+						</div>
+					}
 				</StateSaverProvider>
 			</MessagesHeightsContext.Provider>
 		</div>
