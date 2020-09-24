@@ -294,7 +294,7 @@ export default class MessagesStore {
 		}
 	}
 
-	abortControllers: { [key: string]: AbortController | null } = {
+	private abortControllers: { [key: string]: AbortController | null } = {
 		prevAC: null,
 		nextAC: null,
 		scrollAC: null,
@@ -303,11 +303,9 @@ export default class MessagesStore {
 	@action
 	public loadPreviousMessages = () => {
 		if (this.isEndReached) return [] as any;
-		if (this.abortControllers.prevAC) {
-			this.abortControllers.prevAC.abort();
-		} else {
-			this.abortControllers.prevAC = new AbortController();
-		}
+		this.abortControllers.prevAC?.abort();
+		this.abortControllers.prevAC = new AbortController();
+
 		this.messagesLoadingState.loadingPreviousItems = true;
 		const originMessageId = !this.messagesIds.length
 			? this.attachedMessages[0]?.messageId
@@ -329,11 +327,8 @@ export default class MessagesStore {
 	@action
 	public loadNextMessages = () => {
 		if (this.isBeginReached) return [] as any;
-		if (this.abortControllers.nextAC) {
-			this.abortControllers.nextAC.abort();
-		} else {
-			this.abortControllers.nextAC = new AbortController();
-		}
+		this.abortControllers.nextAC?.abort();
+		this.abortControllers.nextAC = new AbortController();
 		this.messagesLoadingState.loadingNextItems = true;
 		return this.getMessages(
 			'next',
@@ -363,11 +358,9 @@ export default class MessagesStore {
 			this.messagesLoadingState.loadingSelectedMessage = false;
 			return;
 		}
-		if (this.abortControllers.scrollAC) {
-			this.abortControllers.scrollAC.abort();
-		} else {
-			this.abortControllers.scrollAC = new AbortController();
-		}
+		this.abortControllers.scrollAC?.abort();
+		this.abortControllers.scrollAC = new AbortController();
+
 		this.messagesLoadingState.loadingSelectedMessage = true;
 		this.getMessages(
 			'previous',

@@ -51,14 +51,19 @@ export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
 		rightDropAreaEnabled = true,
 		leftDropAreaEnabled = true,
 	} = props;
+
 	const [hoverState, setHoverState] = React.useState(defaultHoverState);
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
-	const getDraggingState = (item: TabDraggableItem, monitor: DropTargetMonitor) => {
+	const getDraggingState = (monitor: DropTargetMonitor) => {
 		const clientXY = monitor.getClientOffset();
 		const root = rootRef.current;
-		if (!clientXY || !root) return;
+		if (!clientXY || !root) {
+			setHoverState(defaultHoverState);
+			return;
+		}
+
 		const {
 			top,
 			bottom,
@@ -105,7 +110,8 @@ export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
 			}
 			setHoverState(defaultHoverState);
 		},
-		hover: throttledGetDraggingState,
+		collect: monitor => throttledGetDraggingState(monitor),
+		hover: (item, monitor) => throttledGetDraggingState(monitor),
 	});
 
 	return (
