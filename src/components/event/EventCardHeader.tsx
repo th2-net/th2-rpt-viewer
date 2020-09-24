@@ -85,7 +85,7 @@ function EventCardHeader({
 							{formatTime(startTimestampValue)}
 						</span>
 						<span className="event-header-card__time-label-short">
-							<TimeAgo date={startTimestampValue}/>
+							<TimeAgo date={startTimestampValue} maxPeriod={5}/>
 						</span>
 					</div>
 				) : null
