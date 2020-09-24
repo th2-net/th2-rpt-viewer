@@ -28,12 +28,14 @@ const FilterTimepicker = ({
 }: FilterTimepickerProps) => {
 	const { value: time } = inputConfig;
 
-	const selectedHour = time ? moment(time).utc().hour() : null;
-	const selectedMinute = time ? moment(time).utc().minute() : null;
-	const selectedSecond = time ? moment(time).utc().second() : null;
+	const currentTime = moment(time).utc();
 
-	const isToday = moment(time).startOf('day').isSame(moment().startOf('day'));
+	const selectedHour = time ? currentTime.hour() : null;
+	const selectedMinute = time ? currentTime.minute() : null;
+	const selectedSecond = time ? currentTime.second() : null;
+
 	const today = moment().utc();
+	const isToday = currentTime.isSame(today, 'day');
 
 	const setTime = (
 		unit: 'hour' | 'minutes' | 'seconds',

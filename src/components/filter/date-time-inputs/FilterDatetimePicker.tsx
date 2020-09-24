@@ -74,7 +74,7 @@ const FilterDatetimePicker = ({
 	const getDisabledDate = (calendarDate?: Moment) => {
 		if (!calendarDate) return false;
 
-		const tomorrow = moment().startOf('day').add(1, 'day');
+		const tomorrow = moment().utc().startOf('day').add(1, 'day');
 		return calendarDate.valueOf() > tomorrow.valueOf();
 	};
 
