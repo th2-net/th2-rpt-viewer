@@ -298,6 +298,7 @@ export default class MessagesStore {
 		prevAC: null,
 		nextAC: null,
 		scrollAC: null,
+		rootAC: null,
 	};
 
 	@action
@@ -437,6 +438,8 @@ export default class MessagesStore {
 
 	@action
 	private onFilterChange = (messagesFilter: MessagesFilter) => {
+		this.abortControllers.rootAC?.abort();
+		this.abortControllers.rootAC = new AbortController();
 		this.messagesLoadingState.loadingRootItems = true;
 		this.messagesIds = [];
 		this.messagesCache.clear();
@@ -455,7 +458,12 @@ export default class MessagesStore {
 				getTimestampAsNumber(m.timestamp) >= from && getTimestampAsNumber(m.timestamp) <= to);
 			originMessageId = firstMessage?.messageId;
 		}
-		this.getMessages('previous', originMessageId, this.MESSAGES_CHUNK_SIZE - 1);
+
+		this.getMessages('previous', originMessageId, this.MESSAGES_CHUNK_SIZE - 1)
+			.finally(() => {
+				this.messagesLoadingState.loadingRootItems = false;
+				this.abortControllers.rootAC = null;
+			});
 	};
 
 	@action
