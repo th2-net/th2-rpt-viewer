@@ -43,6 +43,7 @@
         font-size: 11px;
 
         &-control {
+            @include unselectable;
             margin-bottom: 5px;
             display: flex;
             flex-direction: row;
@@ -348,6 +349,7 @@
     }
 
     &__button {
+        @include unselectable;
         font-size: 11px;
         line-height: 16px;
         color: $tableHeaderBackground;

@@ -60,9 +60,11 @@ export const ModalPortal = ({
 		setIsShown(isOpen);
 	}, [isOpen]);
 
-	return isShown ? (
+	return (
 		<Portal>
-			{children}
+			<div style={{ display: isShown ? 'block' : 'none' }}>
+				{children}
+			</div>
 		</Portal>
-	) : null;
+	);
 };

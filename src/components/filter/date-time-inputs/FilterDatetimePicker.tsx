@@ -71,6 +71,10 @@ const FilterDatetimePicker = ({
 		inputConfig.setValue((inputConfig.value ?? Date.now()) - (minutes * 60 * 1000));
 	};
 
+	const setNow = () => {
+		inputConfig.setValue(moment().utc().valueOf());
+	};
+
 	const getDisabledDate = (calendarDate?: Moment) => {
 		if (!calendarDate) return false;
 
@@ -94,6 +98,7 @@ const FilterDatetimePicker = ({
 						value={moment(inputConfig.value).utcOffset(0)}
 						defaultValue={now}
 						onSelect={change}
+						onChange={change}
 						showDateInput={false}
 						showToday={false}
 						className="filter-datetime-picker__datepicker"
@@ -102,7 +107,7 @@ const FilterDatetimePicker = ({
 							<div className="filter-datetime-picker__controls">
 								<button
 									className="filter-datetime-picker__control"
-									onClick={setTimeOffset.bind(null, 0)}>now</button>
+									onClick={setNow}>now</button>
 								<button
 									className="filter-datetime-picker__control"
 									onClick={setTimeOffset.bind(null, 15)}>-15m</button>
