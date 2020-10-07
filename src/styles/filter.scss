@@ -411,7 +411,7 @@
         justify-content: flex-start;
         width: 100%;
         cursor: text;
-
+        position: relative;
         flex-wrap: wrap;
         flex-grow: 1;
         gap: 5px;
@@ -437,10 +437,20 @@
         }
     }
 
+    &__multiple-values-input-wrapper {
+        flex-grow: 1;
+        position: relative;
+        z-index: 1;
+    }
+
     &__placeholder {
         font-size: 13px;
         color: $secondaryTextColor;
         font-weight: normal;
+        position: absolute;
+        top: 6px;
+        left: 8px;
+        z-index: 0;
     }
 
     &__arrow-icon {

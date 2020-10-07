@@ -20,6 +20,8 @@ import KeyCodes from '../../util/KeyCodes';
 
 interface Props {
 	className?: string;
+	wrapperClassName?: string;
+	inputStyle?: React.CSSProperties;
 	value: string;
 	readonly?: boolean;
 	onlyAutocompleteValues?: boolean;
@@ -49,6 +51,8 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onlyAutocompleteValues = true,
 		datalistKey,
 		className = '',
+		inputStyle = {},
+		wrapperClassName = '',
 		placeholder = '',
 		submitKeyCodes = [KeyCodes.ENTER],
 	} = props;
@@ -120,12 +124,14 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		<React.Fragment>
 			{autoresize ? (
 				<AutosizeInput
+					className={wrapperClassName}
 					{...inputProps}
 					inputRef={input => {
 						// eslint-disable-next-line no-param-reassign
 						ref.current = input as HTMLInputElement;
 					}}
 					inputClassName={className}
+					inputStyle={inputStyle}
 				/>
 			) : (
 				<input {...inputProps} ref={ref} className={className} />

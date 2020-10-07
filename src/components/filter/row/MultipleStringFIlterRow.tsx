@@ -78,12 +78,14 @@ export default function MultipleStringFilterRow({ config }: { config: FilterRowM
 			<label className="filter-row__label" htmlFor={config.id}>
 				{config.label}
 			</label>
-			<div className={`${inputRootClassName} filter-row__input`} onClick={rootOnClick}>
+			<div
+				className={`${inputRootClassName} filter-row__input`}
+				onClick={rootOnClick}>
 				{config.values.map((value, index) => (
 					<Bubble
 						key={index}
-						size='small'
-						removeIconType='white'
+						size="small"
+						removeIconType="white"
 						submitKeyCodes={[KeyCodes.SPACE, KeyCodes.ENTER]}
 						className="filter__bubble"
 						value={value}
@@ -102,6 +104,7 @@ export default function MultipleStringFilterRow({ config }: { config: FilterRowM
 					ref={input}
 					submitKeyCodes={[KeyCodes.SPACE, KeyCodes.ENTER]}
 					className="filter-row__multiple-values-input"
+					wrapperClassName="filter-row__multiple-values-input-wrapper"
 					value={config.currentValue}
 					autoresize
 					autocomplete={config.autocompleteList}
@@ -110,6 +113,7 @@ export default function MultipleStringFilterRow({ config }: { config: FilterRowM
 					onRemove={inputOnRemove}
 					onFocus={() => setIsFocused(true)}
 					onBlur={() => setIsFocused(false)}
+					inputStyle={{ width: '100%' }}
 				/>
 			</div>
 		</div>

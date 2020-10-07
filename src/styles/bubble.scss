@@ -30,11 +30,11 @@
     height: $filterBubbleHeight;
 
     &__remove {
-        position: absolute;
+        position: relative;
         width: 0;
         top: 0;
         // -3px to hide bubble's border-radius on the right
-        left: calc(100% - 3px);
+        left: 1px;
         bottom: 0;
         overflow: hidden;
         z-index: 1;
@@ -49,12 +49,11 @@
     }
 
     &:hover &__remove {
-        width: 20px;
+        width: 16px;
     }
 
     &__remove-icon {
         @include round-button(url(../../resources/icons/cross-icon.svg), 16px);
-        margin-right: 3px;
 
         &.white {
             background-image: url(../../resources/icons/cross-icon-white.svg);
