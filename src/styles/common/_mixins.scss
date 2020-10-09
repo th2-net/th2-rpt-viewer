@@ -418,3 +418,10 @@
 @mixin card-shadow() {
     box-shadow: 4px 8px 6px 0 rgba(0, 0, 0, 0.4);
 }
+
+@mixin message-background() {
+    border-radius: 4px;
+    background-color: white;
+    white-space: pre-wrap;
+    padding: 6px 10px;
+}
