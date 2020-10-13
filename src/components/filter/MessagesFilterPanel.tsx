@@ -16,11 +16,11 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import moment from 'moment';
 import FilterPanel from './FilterPanel';
 import { DATE_TIME_INPUT_MASK, DATE_TIME_PLACEHOLDER } from '../../util/filterInputs';
 import { DateTimeMask, FilterRowConfig, TimeInputType } from '../../models/filter/FilterInputs';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import { getTimeRange } from '../../helpers/date';
 
 const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWindowStore();
@@ -59,8 +59,9 @@ const MessagesFilterPanel = () => {
 	const clearAllFilters = () => messagesStore.resetMessagesFilter();
 
 	const getTimeShortcutHandler = (minutesOffset: number) => () => {
-		setTimestampFrom(moment().subtract(minutesOffset, 'minutes').valueOf());
-		setTimestampTo(moment.now());
+		const { from, to } = getTimeRange(minutesOffset);
+		setTimestampFrom(from);
+		setTimestampTo(to);
 	};
 
 	const filterConfig: FilterRowConfig[] = [{
@@ -94,7 +95,7 @@ const MessagesFilterPanel = () => {
 			label: 'Last hour',
 			onClick: getTimeShortcutHandler(60),
 		}, {
-			label: 'Last day',
+			label: 'Today',
 			onClick: getTimeShortcutHandler(24 * 60),
 		}],
 	}, {

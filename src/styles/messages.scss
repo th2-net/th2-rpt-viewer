@@ -99,12 +99,14 @@
 .mc-header {
     grid-area: mc-header;
     display: grid;
+    row-gap: 3px;
     position: relative;
     padding: 7px 5px 9px 10px;
     color: $primaryTextColor;
     grid-template-rows: auto;
     grid-template-columns: 1.2fr 40px 1.2fr 40px 1.8fr 30px 30px;
-    grid-template-areas: "timestamp name name-value session session-value beautify pin";
+    grid-template-areas: "timestamp name name-value session session-value beautify pin"
+                         "timestamp id id-value id-value id-value beautify pin";
 
     &__underline {
         border-bottom: 2px solid var(--status-primary-delimeter-color);
@@ -171,7 +173,14 @@
         }
     }
 
-    &__session, &__name, &__timestamp, &__name-value {
+    &__id {
+        grid-area: id;
+    }
+    &__id-value {
+        grid-area: id-value;
+    }
+
+    &__session, &__name, &__timestamp, &__name-value, &__id {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -179,14 +188,14 @@
         padding: 3px;
     }
 
-    &__name-value, &__session-value {
+    &__id-value, &__name-value, &__session-value {
         padding-left: 8px;
         font-size: 13px;
         font-weight: bold;
         word-break: break-all;
     }
 
-    &__session, &__name {
+    &__session, &__name, &__id {
         @include unselectable;
         padding-top: 5px;
         font-size: 10px;

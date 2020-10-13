@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import moment from 'moment';
+import moment, { Moment } from 'moment';
 import Timestamp from '../models/Timestamp';
 
 export function getSecondsPeriod(startTime: string | Date, finishTime: string | Date, withMiliseconds = true) {
@@ -83,4 +83,21 @@ export function formatTimestampValue(timestamp: number | null, timeMask: string)
 	const date = new Date(timestamp);
 	const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
 	return moment(utcDate).format(timeMask);
+}
+
+
+type TimeRange = { from: number; to: number };
+type TimeRangeOptions = { to: number | Date | Moment; withinTheDay: boolean };
+
+export function getTimeRange(
+	minutesOffset: number,
+	options: TimeRangeOptions = { to: moment.utc(), withinTheDay: true },
+): TimeRange {
+	const { to, withinTheDay } = options;
+	let from = moment().utc().subtract(minutesOffset, 'minutes');
+
+	if (withinTheDay && !from.isSame(to, 'day')) {
+		from = moment().utc().startOf('day');
+	}
+	return { from: from.valueOf(), to: to.valueOf() };
 }
