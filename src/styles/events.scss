@@ -199,10 +199,7 @@
 	}
 
 	&__message {
-		border-radius: 4px;
-		background-color: white;
-		white-space: pre-wrap;
-		padding: 6px 10px;
+		@include message-background;
 		margin: 5px 0;
 		font-size: 12px;
 	}
@@ -228,8 +225,8 @@
 .event-body-fallback {
 	overflow-x: auto;
 	@include scrollbar;
+	@include message-background;
 	margin-top: 15px;
-	padding: 5px 0;
 }
 
 .event-window {
