@@ -39,7 +39,6 @@ const HeatmapBlock = ({
 	totalCount,
 }: Props) => {
 	const onItemClick = (event: React.MouseEvent<HTMLDivElement>) => {
-		if (!id) return;
 		const { height, top } = event.currentTarget.getBoundingClientRect();
 		const step = (height / count);
 		const clickIndex = Math.floor(index + (event.clientY - top) / step);
