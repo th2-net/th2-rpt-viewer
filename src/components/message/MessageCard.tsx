@@ -127,6 +127,8 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 						 style={sessionArrowStyle}/>
 					{sessionId}
 				</div>
+				<div className="mc-header__id">Id</div>
+				<div className="mc-header__id-value">{messageId}</div>
 				{
 					message.body !== null && (
 						<div className="mc-beautify" onClick={() => messagesStore.toggleMessageBeautify(messageId)}>
