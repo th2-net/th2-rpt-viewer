@@ -161,9 +161,10 @@ const MessagesScrollContainer: TScrollContainer = ({
 			<Observer>
 				{() => <Heatmap
 					onElementClick={(element: HeatmapElement) => {
-						if (element.id) {
-							messagesStore.selectedMessageId = new String(element.id);
-						}
+						const newSelectedMessageId = new String(
+							element.id ? element.id : messagesStore.messagesIds[element.index],
+						);
+						messagesStore.selectedMessageId = newSelectedMessageId;
 					}}
 					selectedItem={messagesStore.selectedMessageId?.valueOf() || null} />}
 			</Observer>
