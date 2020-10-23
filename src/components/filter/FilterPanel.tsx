@@ -112,7 +112,6 @@ const FilterPanel = ({
 
 	const onClearAllClick = () => {
 		onClearAll();
-		setShowFilter(false);
 	};
 
 	return (
