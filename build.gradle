@@ -45,7 +45,7 @@ task installDependencies(type: NpmTask) {
     outputs.dir(node_modules)
 
     // running 'npm ci', same as 'npm install', but uses package-lock.json instead of package.json
-    args = ['ci']
+    args = ['ci', 'no-optional']
 
     // disables core-js postinstall ads
     environment "ADBLOCK": true
