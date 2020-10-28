@@ -1,0 +1,11 @@
+variables:
+  APP_NAME: "th2-report-viewer"
+  MAJOR_VERSION: "1"
+  MINOR_VERSION: "5"
+  MAINTENANCE_VERSION: '133'
+  INSPECTION_ENABLED: 'false'
+
+include:
+  - project: 'vivarium/th2/pipelines'
+    ref: master
+    file: '/.gitlab-ci-java.yml'
