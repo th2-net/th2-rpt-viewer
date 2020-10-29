@@ -16,7 +16,6 @@
 
 plugins {
     id "com.github.node-gradle.node" version "2.2.3"
-    id 'com.palantir.docker' version '0.25.0'
 }
 
 apply plugin: 'base'
@@ -45,7 +44,7 @@ task installDependencies(type: NpmTask) {
     outputs.dir(node_modules)
 
     // running 'npm ci', same as 'npm install', but uses package-lock.json instead of package.json
-    args = ['ci', 'no-optional']
+    args = ['ci', '--no-optional']
 
     // disables core-js postinstall ads
     environment "ADBLOCK": true
@@ -76,15 +75,4 @@ task runTests(type: NpmTask, dependsOn: 'installDependencies') {
     // we use jest with '--no-cache' option, because there are some bugs, related to invalidating jest's cache
     // when using TS const enums
     args = ['run', 'test:ci']
-}
-
-dockerPrepare {
-    dependsOn buildProd
-}
-
-docker {
-    name "${target_docker_repository}/${docke_image_name}:${dockerImageVersion}"
-    tag 'local-version', "${docke_image_name}:${dockerImageVersion}"
-
-    copySpec.from("$buildDir/out")
 }

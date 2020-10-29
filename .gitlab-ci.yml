@@ -1,5 +1,4 @@
 variables:
-  APP_NAME: "th2-report-viewer"
   MAJOR_VERSION: "1"
   MINOR_VERSION: "5"
   MAINTENANCE_VERSION: '133'
