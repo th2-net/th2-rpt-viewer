@@ -7,4 +7,4 @@ RUN gradle dockerPrepare -Prelease_version=${app_version} -Pdownload_node
 
 FROM nginx:1.17.10-alpine
 ENV NGINX_PORT=8080
-COPY --from=build ./build/out /usr/share/nginx/html
+COPY --from=build /home/gradle/build/out /usr/share/nginx/html
