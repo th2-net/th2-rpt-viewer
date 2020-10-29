@@ -1,6 +1,6 @@
 {
-  "name": "th2-report-viewer",
-  "version": "1.5.0",
+  "name": "th2-rpt-viewer",
+  "version": "2.0.0",
   "description": "",
   "main": "index.tsx",
   "private": true,
