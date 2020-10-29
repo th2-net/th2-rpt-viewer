@@ -1,9 +1,9 @@
-# Report-viewer 1.5
+# Report-viewer 2.0
 This is a web app that displays the test data stored in `cradle` using `report-data-provider`. 
 Minor versions of report-viewer and report-data-provider are compatible.
 
 # API
-This app needs `report-data-provider 1.5` backend component to function. 
+This app needs `report-data-provider 2.0` backend component to function. 
 Make sure it is available at `http://<host>:<port>/<report-viewer-root>/backend/*`
 
 # Configuration

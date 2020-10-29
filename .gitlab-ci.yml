@@ -1,7 +1,8 @@
 variables:
-  MAJOR_VERSION: "1"
-  MINOR_VERSION: "5"
-  MAINTENANCE_VERSION: '133'
+  APP_NAME: "th2-rpt-viewer"
+  MAJOR_VERSION: "2"
+  MINOR_VERSION: "0"
+  MAINTENANCE_VERSION: "0"
   INSPECTION_ENABLED: 'false'
 
 include:
