@@ -1,10 +1,11 @@
-FROM gradle:6.6-jdk11 AS build
+FROM node:10.23 AS build
 ARG app_version=0.0.0
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends make build-essential
+WORKDIR /home/node
 COPY ./ .
-RUN gradle buildProd -Prelease_version=${app_version} -Pdownload_node
+RUN npm install && npm run build
 
 FROM nginx:1.17.10-alpine
 ENV NGINX_PORT=8080
-COPY --from=build /home/gradle/build/out /usr/share/nginx/html
+COPY --from=build /home/node/build/out /usr/share/nginx/html
