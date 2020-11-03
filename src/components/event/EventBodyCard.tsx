@@ -103,11 +103,15 @@ function JSONBodyFallback({ body }: { body: unknown }) {
 		? body
 		: null;
 
+	if (!content) {
+		return null;
+	}
+
 	return (
 		<div className="event-body-fallback">
-			{content && <pre>
-				{content && JSON.stringify(content, null, 4)}
-			</pre>}
+			<pre>
+				{JSON.stringify(content, null, 4)}
+			</pre>
 		</div>
 	);
 }

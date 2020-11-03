@@ -23,11 +23,14 @@ import { TabTypes } from '../models/util/Windows';
 import { EventStoreURLState } from './EventsStore';
 import { MessagesStoreURLState } from './MessagesStore';
 import { getObjectKeys } from '../helpers/object';
+import NotificationsStore from './NotificationsStore';
 
 export default class RootStore {
 	windowsStore: WindowsStore;
 
 	viewStore: AppViewStore;
+
+	notificationsStore = NotificationsStore;
 
 	constructor(private api: ApiSchema) {
 		this.windowsStore = new WindowsStore(this, this.api, this.parseWindowsState());

@@ -23,6 +23,9 @@ import 'core-js/features/array/flat';
 import App from './components/App';
 import ErrorBoundary from './components/util/ErrorBoundary';
 import StoresProvider from './components/StoresProvider';
+import registerFetchInterceptors from './helpers/fetch-intercept';
+
+registerFetchInterceptors();
 
 ReactDOM.render(
 	<ErrorBoundary>

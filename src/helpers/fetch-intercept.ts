@@ -14,21 +14,34 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { hot } from 'react-hot-loader/root';
-import * as React from 'react';
-import { ToastProvider } from 'react-toast-notifications';
-import Toast from './Toast';
-import EventsLayout from './event/EventsLayout';
-import '../styles/root.scss';
-import Notifier from './Notifier';
+import fetchIntercept from 'fetch-intercept';
+import NotificationsStore from '../stores/NotificationsStore';
 
-const App = () => (
-	<div className="root">
-		<ToastProvider placement="top-right" components={{ Toast }}>
-			<EventsLayout />
-			<Notifier />
-		</ToastProvider>
-	</div>
+export default () => (
+	fetchIntercept.register({
+		request(url, config) {
+			return [url, config];
+		},
+
+		requestError(error) {
+			return Promise.reject(error);
+		},
+
+		response(response) {
+			if (!response.ok) {
+				const { url, status, statusText } = response;
+				NotificationsStore.addNotification({
+					type: 'error',
+					url,
+					status,
+					statusText,
+				});
+			}
+			return response;
+		},
+
+		responseError(error) {
+			return Promise.reject(error);
+		},
+	})
 );
-
-export default hot(App);
