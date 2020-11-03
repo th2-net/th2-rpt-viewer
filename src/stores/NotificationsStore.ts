@@ -14,21 +14,30 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { hot } from 'react-hot-loader/root';
-import * as React from 'react';
-import { ToastProvider } from 'react-toast-notifications';
-import Toast from './Toast';
-import EventsLayout from './event/EventsLayout';
-import '../styles/root.scss';
-import Notifier from './Notifier';
+import { action, observable } from 'mobx';
+import { AppearanceTypes } from 'react-toast-notifications';
 
-const App = () => (
-	<div className="root">
-		<ToastProvider placement="top-right" components={{ Toast }}>
-			<EventsLayout />
-			<Notifier />
-		</ToastProvider>
-	</div>
-);
+export interface Notification {
+	type: AppearanceTypes;
+	url?: string;
+	status?: number;
+	statusText?: string;
+}
 
-export default hot(App);
+class NotificationsStore {
+  @observable notifications: Notification[] = [];
+
+	@action
+	addNotification = (notification: Notification) => {
+		this.notifications = [...this.notifications, notification];
+	};
+
+	@action
+	delNotification = (notification: Notification) => {
+		this.notifications = this.notifications.filter(n => n !== notification);
+	};
+}
+
+const notificationsStore = new NotificationsStore();
+
+export default notificationsStore;

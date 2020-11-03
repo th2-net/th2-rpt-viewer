@@ -1,0 +1,62 @@
+/******************************************************************************
+ * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+
+@import "./common/vars";
+
+.react-toast-notifications__container {
+  width: 70%;
+  max-width: 500px;
+}
+
+.toast-message {
+  display: flex;
+  justify-content: space-between;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 0 0 8px;
+  &.error {
+    background-color: $toastErrorBackground;
+  }
+  &__icon {
+    min-width: 24px;
+    &.error {
+      @include icon(url(../../resources/icons/toast-error.svg), 24px, 24px);
+    }
+  }
+  &__content {
+    flex-grow: 1;
+    position: relative;
+    max-width: 84%;
+    height: 100%;
+    padding: 0 14px;
+    &:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 1px;
+      height: inherit;
+      background-color: #fff;
+    }
+  }
+  &__close {
+    min-width: 20px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    @include icon(url(../../resources/icons/cross-icon-white.svg), 20px, 20px);
+  }
+}

@@ -14,21 +14,22 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { hot } from 'react-hot-loader/root';
-import * as React from 'react';
-import { ToastProvider } from 'react-toast-notifications';
-import Toast from './Toast';
-import EventsLayout from './event/EventsLayout';
-import '../styles/root.scss';
-import Notifier from './Notifier';
+import React from 'react';
+import { ToastProps } from 'react-toast-notifications';
+import { createStyleSelector } from '../helpers/styleCreators';
+import '../styles/toasts.scss';
 
-const App = () => (
-	<div className="root">
-		<ToastProvider placement="top-right" components={{ Toast }}>
-			<EventsLayout />
-			<Notifier />
-		</ToastProvider>
-	</div>
-);
-
-export default hot(App);
+export default function Toast(props: ToastProps) {
+	const { appearance, children, onDismiss } = props;
+	const toastMessage = createStyleSelector('toast-message', appearance);
+	const toastMessageIcon = createStyleSelector('toast-message__icon', appearance);
+	return (
+		<div className={toastMessage}>
+			<div className={toastMessageIcon} />
+			<div className="toast-message__content">
+				{children}
+			</div>
+			<button className="toast-message__close" onClick={() => onDismiss()} />
+		</div>
+	);
+}
