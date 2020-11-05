@@ -23,6 +23,7 @@ import {
 	DATE_INPUT_MASK, DATE_PLACEHOLDER, TIME_INPUT_MASK, TIME_PLACEHOLDER,
 } from '../../util/filterInputs';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import { getTimeRange } from '../../helpers/date';
 
 function EventsFilterPanel() {
 	const eventWindowStore = useEventWindowStore();
@@ -60,15 +61,9 @@ function EventsFilterPanel() {
 	};
 
 	const getTimeShortcutHandler = (minutesOffset: number) => () => {
-		const to = moment().utc();
-		let from = moment().utc().subtract(minutesOffset, 'minutes');
-
-		if (!from.isSame(to, 'day')) {
-			from = moment().utc().startOf('day');
-		}
-
-		setTimestampFrom(from.valueOf());
-		setTimestampTo(to.valueOf());
+		const { from, to } = getTimeRange(minutesOffset);
+		setTimestampFrom(from);
+		setTimestampTo(to);
 	};
 
 	const setDate = (baseDateTimeStamp: number, timestamp: number) => {
