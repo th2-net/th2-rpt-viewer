@@ -30,34 +30,16 @@ interface DateTimeInputProps {
 const FilterDatetimeInput = (props: DateTimeInputProps) => {
 	const {
 		inputConfig,
-		inputConfig: {
-			dateMask,
-			id,
-			inputClassName = '',
-			inputMask,
-			placeholder,
-			setValue,
-			value,
-		},
+		inputConfig: { dateMask, id, inputClassName = '', inputMask, placeholder, setValue, value },
 	} = props;
 
 	const inputRef = React.useRef<MaskedInput>(null);
 
 	const [showPicker, setShowPicker] = React.useState(false);
-	const [inputValue, setInputValue] = React.useState(
-		formatTimestampValue(
-			value,
-			dateMask,
-		),
-	);
+	const [inputValue, setInputValue] = React.useState(formatTimestampValue(value, dateMask));
 
 	React.useEffect(() => {
-		setInputValue(
-			formatTimestampValue(
-				props.inputConfig.value,
-				dateMask,
-			),
-		);
+		setInputValue(formatTimestampValue(props.inputConfig.value, dateMask));
 	}, [props.inputConfig.value]);
 
 	const togglePicker = (isShown: boolean) => setShowPicker(isShown);
@@ -104,20 +86,20 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 				name={id}
 				value={inputValue}
 			/>
-			{
-				showPicker && (
-					<FilterDatetimePicker
-						inputConfig={inputConfig}
-						left={inputRef.current?.inputElement.offsetLeft}
-						top={
-							inputRef.current?.inputElement ? (
-								inputRef.current.inputElement.offsetTop
-								+ inputRef.current.inputElement.clientHeight + 10
-							) : undefined
-						}
-						onClose={() => togglePicker(false)}/>
-				)
-			}
+			{showPicker && (
+				<FilterDatetimePicker
+					inputConfig={inputConfig}
+					left={inputRef.current?.inputElement.offsetLeft}
+					top={
+						inputRef.current?.inputElement
+							? inputRef.current.inputElement.offsetTop +
+							  inputRef.current.inputElement.clientHeight +
+							  10
+							: undefined
+					}
+					onClose={() => togglePicker(false)}
+				/>
+			)}
 		</>
 	);
 };

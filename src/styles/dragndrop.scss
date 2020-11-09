@@ -14,7 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import "./common/vars";
+@import './common/vars';
 
 .with-side-drop-target {
 	width: 100%;
@@ -29,7 +29,7 @@
 	}
 
 	&__overlay {
-		background-color: rgba($color: #7DB3E8, $alpha: 0.5);
+		background-color: rgba($color: #7db3e8, $alpha: 0.5);
 		border: 2px solid $draggableColor;
 		position: absolute;
 		right: 0;

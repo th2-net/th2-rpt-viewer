@@ -21,7 +21,8 @@ const MIDDLE_DOT = '\u00b7';
 const WHITE_SQUARE = '\u25a1';
 
 /**
- * This function replaces all special symbols with white square (□), and replaces all spaces with middle dot (·).
+ * This function replaces all special symbols with white square (□), and replaces
+ * all spaces with middle dot (·).
  * @param targetString
  */
 export function replaceNonPrintableChars(targetString: string): string {
@@ -32,6 +33,7 @@ export function replaceNonPrintableChars(targetString: string): string {
 	return targetString.replace(nonPrintableRegExp, WHITE_SQUARE).replace(/ /g, MIDDLE_DOT);
 }
 
+/* eslint-disable max-len */
 // https://stackoverflow.com/a/11598864
 const nonPrintableRegExp = createRegExp`
 	[\0-\x1F\x7F-\x9F\xAD\u0378\u0379\u037F-\u0383\u038B\u038D\u03A2\u0528-\u0530
@@ -94,20 +96,26 @@ export function replaceUnfilledDateStringWithMinValues(
 ) {
 	switch (dateTimeMask) {
 		case DateTimeMask.DATE_TIME_MASK:
-			return maskedValue.substr(0, 4).replace(/__/g, '01').replace(/_/g, '0')
-			+ maskedValue.substr(4, 6)
-				.replace(/__/g, '01')
-				.replace(/(?<=1)_/g, '0')
-				.replace(/(?<=0)_/g, '1')
-				.replace(/_/g, '0')
-			+ maskedValue.substring(10).replace(/_/g, '0');
+			return (
+				maskedValue.substr(0, 4).replace(/__/g, '01').replace(/_/g, '0') +
+				maskedValue
+					.substr(4, 6)
+					.replace(/__/g, '01')
+					.replace(/(?<=1)_/g, '0')
+					.replace(/(?<=0)_/g, '1')
+					.replace(/_/g, '0') +
+				maskedValue.substring(10).replace(/_/g, '0')
+			);
 		case DateTimeMask.DATE_MASK:
-			return maskedValue.substr(0, 4).replace(/__/g, '01').replace(/_/g, '0')
-			+ maskedValue.substr(4)
-				.replace(/__/g, '01')
-				.replace(/(?<=1)_/g, '0')
-				.replace(/(?<=0)_/g, '1')
-				.replace(/_/g, '0');
+			return (
+				maskedValue.substr(0, 4).replace(/__/g, '01').replace(/_/g, '0') +
+				maskedValue
+					.substr(4)
+					.replace(/__/g, '01')
+					.replace(/(?<=1)_/g, '0')
+					.replace(/(?<=0)_/g, '1')
+					.replace(/_/g, '0')
+			);
 		case DateTimeMask.TIME_MASK:
 			return maskedValue.replace(/_/g, '0');
 		default:

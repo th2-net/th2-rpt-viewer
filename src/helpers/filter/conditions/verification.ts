@@ -1,4 +1,3 @@
-
 /** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -25,7 +24,10 @@ import FilterPath from '../../../models/filter/FilterPath';
 
 const STUB_FUNCTION = () => false;
 
-export default function getVerificationCondition(path: FilterPath, values: string[]): FilterCondition<Verification> {
+export default function getVerificationCondition(
+	path: FilterPath,
+	values: string[],
+): FilterCondition<Verification> {
 	switch (path) {
 		case FilterPath.SERVICE:
 			return STUB_FUNCTION;
@@ -35,8 +37,8 @@ export default function getVerificationCondition(path: FilterPath, values: strin
 
 		case FilterPath.ALL:
 			return verification =>
-				filterEntry(verification, VERIFICATION_FIELDS, toRegExpArray(values))
-                || verification.entries.some(entry => filterVerificationsEntry(entry, toRegExpArray(values)));
+				filterEntry(verification, VERIFICATION_FIELDS, toRegExpArray(values)) ||
+				verification.entries.some(entry => filterVerificationsEntry(entry, toRegExpArray(values)));
 
 		default:
 			return STUB_FUNCTION;

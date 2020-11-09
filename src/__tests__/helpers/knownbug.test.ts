@@ -27,10 +27,12 @@ describe('[Helpers] getCategoryBugChains()', () => {
 
 		const result = getCategoryBugChains(nodes);
 
-		expect(result).toEqual<CategoryChainBugs[]>([{
-			categoriesChain: [category.name as string],
-			categoryBugs,
-		}]);
+		expect(result).toEqual<CategoryChainBugs[]>([
+			{
+				categoriesChain: [category.name as string],
+				categoryBugs,
+			},
+		]);
 	});
 
 	test('2 sub categories test', () => {
@@ -42,10 +44,12 @@ describe('[Helpers] getCategoryBugChains()', () => {
 
 		const result = getCategoryBugChains(nodes);
 
-		expect(result).toEqual<CategoryChainBugs[]>([{
-			categoriesChain: [parentCategory.name as string, childCategory.name as string],
-			categoryBugs: bugs,
-		}]);
+		expect(result).toEqual<CategoryChainBugs[]>([
+			{
+				categoriesChain: [parentCategory.name as string, childCategory.name as string],
+				categoryBugs: bugs,
+			},
+		]);
 	});
 
 	test('2 categories with same name', () => {
@@ -58,10 +62,12 @@ describe('[Helpers] getCategoryBugChains()', () => {
 
 		const result = getCategoryBugChains(nodes);
 
-		expect(result).toEqual<CategoryChainBugs[]>([{
-			categoriesChain: [firstCategory.name as string],
-			categoryBugs: [...firstBugs, ...secondBugs],
-		}]);
+		expect(result).toEqual<CategoryChainBugs[]>([
+			{
+				categoriesChain: [firstCategory.name as string],
+				categoryBugs: [...firstBugs, ...secondBugs],
+			},
+		]);
 	});
 
 	test('Sub category with its own bugs.', () => {
@@ -74,12 +80,15 @@ describe('[Helpers] getCategoryBugChains()', () => {
 
 		const result = getCategoryBugChains(nodes);
 
-		expect(result).toEqual<CategoryChainBugs[]>([{
-			categoriesChain: [parent.name as string],
-			categoryBugs: parentBugs,
-		}, {
-			categoriesChain: [parent.name as string, child.name as string],
-			categoryBugs: childBugs,
-		}]);
+		expect(result).toEqual<CategoryChainBugs[]>([
+			{
+				categoriesChain: [parent.name as string],
+				categoryBugs: parentBugs,
+			},
+			{
+				categoriesChain: [parent.name as string, child.name as string],
+				categoryBugs: childBugs,
+			},
+		]);
 	});
 });

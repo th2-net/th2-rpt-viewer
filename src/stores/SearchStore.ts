@@ -14,12 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	action,
-	computed,
-	observable,
-	reaction,
-} from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import SearchToken from '../models/search/SearchToken';
 import ApiSchema from '../api/ApiSchema';
 import EventsStore from './EventsStore';
@@ -51,7 +46,7 @@ export default class SearchStore {
 
 		reaction(
 			() => this.eventsStore.viewStore.flattenedListView,
-			flatView => this.scrolledIndex = null,
+			() => (this.scrolledIndex = null),
 		);
 	}
 
@@ -79,11 +74,11 @@ export default class SearchStore {
 	get results() {
 		if (this.eventsStore.viewStore.flattenedListView) {
 			return this.eventsStore.flattenedEventList
-				.map(node => node.id)
+				.map(node => node.eventId)
 				.filter(nodeId => this.rawResults.includes(nodeId));
 		}
 		return this.eventsStore.nodesList
-			.map(node => node.id)
+			.map(node => node.eventId)
 			.filter(nodeId => this.rawResults.includes(nodeId));
 	}
 
@@ -104,13 +99,20 @@ export default class SearchStore {
 	@action
 	fetchTokenResults = async (tokenString: string) => {
 		const { timestampFrom, timestampTo } = this.eventsStore.filterStore.eventsFilter;
-		const rootEventsResults = await this.api.events.getEventsByName(timestampFrom, timestampTo, tokenString);
+		const rootEventsResults = await this.api.events.getEventsByName(
+			timestampFrom,
+			timestampTo,
+			tokenString,
+		);
 
-		const expandedSubNodes = this.eventsStore.nodesList.filter(node => node.isExpanded && node.children.length > 0);
+		const expandedSubNodes = this.eventsStore.nodesList.filter(
+			node => this.eventsStore.isExpandedMap.get(node.eventId) && node.childList.length > 0,
+		);
 
 		const subNodesResult = await Promise.all(
 			expandedSubNodes.map(node =>
-				this.api.events.getEventsByName(timestampFrom, timestampTo, tokenString, node.id)),
+				this.api.events.getEventsByName(timestampFrom, timestampTo, tokenString, node.eventId),
+			),
 		);
 
 		return [...rootEventsResults, ...subNodesResult.flat(2)];
@@ -122,7 +124,8 @@ export default class SearchStore {
 		const { timestampFrom, timestampTo } = this.eventsStore.filterStore.eventsFilter;
 		const results = await Promise.all(
 			this.tokens.map(token =>
-				this.api.events.getEventsByName(timestampFrom, timestampTo, token.pattern, eventId)),
+				this.api.events.getEventsByName(timestampFrom, timestampTo, token.pattern, eventId),
+			),
 		);
 		this.isLoading = false;
 		this.scrolledIndex = null;
@@ -132,24 +135,22 @@ export default class SearchStore {
 
 	@action
 	removeEventsResults = (nodesIds: string[]) => {
-		this.rawResults = this.rawResults.filter(
-			result => !nodesIds.includes(result),
-		);
+		this.rawResults = this.rawResults.filter(result => !nodesIds.includes(result));
 		this.scrolledIndex = null;
 	};
 
 	@action
 	nextSearchResult = () => {
-		this.scrolledIndex = this.scrolledIndex != null
-			? (this.scrolledIndex + 1) % this.results.length
-			: 0;
+		this.scrolledIndex =
+			this.scrolledIndex != null ? (this.scrolledIndex + 1) % this.results.length : 0;
 	};
 
 	@action
 	prevSearchResult = () => {
-		this.scrolledIndex = this.scrolledIndex != null
-			? (this.results.length + this.scrolledIndex - 1) % this.results.length
-			: 0;
+		this.scrolledIndex =
+			this.scrolledIndex != null
+				? (this.results.length + this.scrolledIndex - 1) % this.results.length
+				: 0;
 	};
 
 	@action
@@ -176,7 +177,8 @@ export default class SearchStore {
 
 		if (searchPatterns && searchPatterns.length) {
 			const tokensFromUrl = searchPatterns.map((patt, index) =>
-				createSearchToken(patt, SearchTokenColors[index], true, false));
+				createSearchToken(patt, SearchTokenColors[index], true, false),
+			);
 			this.tokens = tokensFromUrl;
 			this.updateTokens(tokensFromUrl);
 			this.isActive = true;

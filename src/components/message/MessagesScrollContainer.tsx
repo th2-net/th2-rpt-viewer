@@ -1,18 +1,18 @@
 /** ****************************************************************************
-* Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-***************************************************************************** */
+ * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***************************************************************************** */
 
 import React from 'react';
 import { Observer } from 'mobx-react-lite';
@@ -41,11 +41,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 	const [loadingPrevItems, setLoadingPrevItems] = React.useState(false);
 	const [loadingNextItems, setLoadingNextItems] = React.useState(false);
 
-	const {
-		loadingState,
-		onScrollBottom,
-		onScrollTop,
-	} = React.useContext(InfiniteLoaderContext);
+	const { loadingState, onScrollBottom, onScrollTop } = React.useContext(InfiniteLoaderContext);
 
 	React.useEffect(() => {
 		if (!visibleRange) {
@@ -66,13 +62,15 @@ const MessagesScrollContainer: TScrollContainer = ({
 		const offsetTop = scrollContainer.current.offsetTop || 0;
 		try {
 			const renderedMessages = Array.from(scrollContainer.current.children[0].children[0].children);
-			const fullyRendered = renderedMessages.filter(node => {
-				const rect = node.getBoundingClientRect();
-				const elemTop = rect.top - offsetTop + rect.height;
-				const elemBottom = rect.bottom - rect.height;
-				const isVisible = (elemTop >= 0) && (elemBottom <= window.innerHeight);
-				return isVisible;
-			}).map(node => (node as HTMLDivElement).dataset.index);
+			const fullyRendered = renderedMessages
+				.filter(node => {
+					const rect = node.getBoundingClientRect();
+					const elemTop = rect.top - offsetTop + rect.height;
+					const elemBottom = rect.bottom - rect.height;
+					const isVisible = elemTop >= 0 && elemBottom <= window.innerHeight;
+					return isVisible;
+				})
+				.map(node => (node as HTMLDivElement).dataset.index);
 
 			if (fullyRendered.length > 0) {
 				setVisibleRange({
@@ -93,7 +91,6 @@ const MessagesScrollContainer: TScrollContainer = ({
 		}
 	}, 5);
 
-
 	scrollTo((scrollTop: ScrollToOptions) => {
 		scrollContainer.current?.scrollTo(scrollTop);
 	});
@@ -105,21 +102,21 @@ const MessagesScrollContainer: TScrollContainer = ({
 
 	const onWheel = () => {
 		if (
-			!loadingNextItems
-			&& visibleRange
-			&& visibleRange.startIndex < messagesStore.MESSAGES_CHUNK_SIZE
-			&& !messagesStore.isBeginReached
+			!loadingNextItems &&
+			visibleRange &&
+			visibleRange.startIndex < messagesStore.MESSAGES_CHUNK_SIZE &&
+			!messagesStore.isBeginReached
 		) {
 			setLoadingNextItems(true);
 			onScrollBottom().then(() => setLoadingNextItems(false));
 		}
 
 		if (
-			!loadingPrevItems
-			&& visibleRange
-			&& visibleRange.endIndex
-			> messagesStore.messagesIds.length - messagesStore.MESSAGES_CHUNK_SIZE
-			&& !messagesStore.isEndReached
+			!loadingPrevItems &&
+			visibleRange &&
+			visibleRange.endIndex >
+				messagesStore.messagesIds.length - messagesStore.MESSAGES_CHUNK_SIZE &&
+			!messagesStore.isEndReached
 		) {
 			setLoadingPrevItems(true);
 			onScrollTop().then(() => setLoadingPrevItems(false));
@@ -128,17 +125,16 @@ const MessagesScrollContainer: TScrollContainer = ({
 
 	return (
 		<div style={{ width: '100%', height: '100%', display: 'flex' }}>
-			<div style={{
-				width: '100%',
-				height: '100%',
-				display: 'flex',
-				flexDirection: 'column',
-				marginRight: '11px',
-				flexGrow: 1,
-			}}>
-				{
-					loadingState.loadingNextItems && <div className="messages-list__spinner"/>
-				}
+			<div
+				style={{
+					width: '100%',
+					height: '100%',
+					display: 'flex',
+					flexDirection: 'column',
+					marginRight: '11px',
+					flexGrow: 1,
+				}}>
+				{loadingState.loadingNextItems && <div className='messages-list__spinner' />}
 				<div
 					ref={scrollContainer}
 					onScroll={onScroll}
@@ -149,24 +145,23 @@ const MessagesScrollContainer: TScrollContainer = ({
 						position: 'relative',
 					}}
 					tabIndex={0}
-					className={className}
-				>
+					className={className}>
 					{children}
 				</div>
-				{
-					loadingState.loadingPreviousItems
-					&& <div className="messages-list__spinner"/>
-				}
+				{loadingState.loadingPreviousItems && <div className='messages-list__spinner' />}
 			</div>
 			<Observer>
-				{() => <Heatmap
-					onElementClick={(element: HeatmapElement) => {
-						const newSelectedMessageId = new String(
-							element.id ? element.id : messagesStore.messagesIds[element.index],
-						);
-						messagesStore.selectedMessageId = newSelectedMessageId;
-					}}
-					selectedItem={messagesStore.selectedMessageId?.valueOf() || null} />}
+				{() => (
+					<Heatmap
+						onElementClick={(element: HeatmapElement) => {
+							const newSelectedMessageId = new String(
+								element.id ? element.id : messagesStore.messagesIds[element.index],
+							);
+							messagesStore.selectedMessageId = newSelectedMessageId;
+						}}
+						selectedItem={messagesStore.selectedMessageId?.valueOf() || null}
+					/>
+				)}
 			</Observer>
 		</div>
 	);

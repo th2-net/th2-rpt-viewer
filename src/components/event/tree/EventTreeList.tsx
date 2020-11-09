@@ -23,11 +23,11 @@ import SplashScreen from '../../SplashScreen';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import { raf } from '../../../helpers/raf';
-import { EventIdNode } from '../../../stores/EventsStore';
+import { EventTreeNode } from '../../../models/EventAction';
 import '../../../styles/action.scss';
 
 interface Props {
-	nodes: EventIdNode[];
+	nodes: EventTreeNode[];
 }
 
 function EventTreeList({ nodes }: Props) {
@@ -49,22 +49,22 @@ function EventTreeList({ nodes }: Props) {
 		}
 	}, [eventWindowStore.scrolledIndex]);
 
-	const computeKey = (index: number) => nodes[index].id;
+	const computeKey = (index: number) => nodes[index].eventId;
 
 	const renderEvent = (index: number): React.ReactElement => (
-		<EventTree idNode={nodes[index]}/>
+		<EventTree eventTreeNode={nodes[index]} />
 	);
 
 	if (eventWindowStore.isLoadingRootEvents) {
-		return <SplashScreen/>;
+		return <SplashScreen />;
 	}
 
-	if (!eventWindowStore.isLoadingRootEvents && eventWindowStore.eventsIds.length === 0) {
-		return <Empty description="No events"/>;
+	if (!eventWindowStore.isLoadingRootEvents && eventWindowStore.eventTree.length === 0) {
+		return <Empty description='No events' />;
 	}
 
 	return (
-		<div className="actions-list">
+		<div className='actions-list'>
 			<StateSaverProvider>
 				<Virtuoso
 					ref={listRef}

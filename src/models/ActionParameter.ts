@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 export default interface ActionParameter {
-    name: string;
-    subParameters?: Array<ActionParameter>;
-    value?: string;
+	name: string;
+	subParameters?: Array<ActionParameter>;
+	value?: string;
 }

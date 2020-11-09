@@ -13,486 +13,489 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-@import "./common/vars";
+@import './common/vars';
 
 .ver-table {
-    @include default-table;
-    @include scrollbar;
-    width: 100%;
-    overflow: auto;
-
-    table {
-        width: fit-content;
-        grid-template-columns: minmax(130px, 250px) minmax(125px, 250px) minmax(125px, 250px) 60px 80px 50px;
-    }
-
-    &-indicator {
-        width: 14px;
-        padding: 0;
-        margin: 0;
-    }
-
-    &-flexible {
-        text-align: left;
-    }
-
-    &-header {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        font-size: 11px;
-
-        &-control {
-            @include unselectable;
-            margin-bottom: 5px;
-            display: flex;
-            flex-direction: row;
-            white-space: pre;
-
-            &-button {
-                @include unselectable;
-                color: $passedTextColor;
-                cursor: pointer;
-                position: relative;
-                display: flex;
-                align-items: center;
-
-                &::after {
-                    content: '';
-                    border-bottom: 1px solid $passedTextColor;
-                    border-bottom-style: dashed;
-                    width: 100%;
-                    position: absolute;
-                    left: 0;
-                    bottom: 0;
-                }
-            }
-        }
-    }
-
-    &-row {
-        &.passed {
-            & td {
-                background-color: $tableRowPassedBackgroundColor;
-            }
-
-            &:hover td {
-                background-color: darken($color: $tableRowPassedBackgroundColor, $amount: 10);
-            }
-        }
-
-        &.failed {
-            & td {
-                background-color: $tableRowFailedBackgroundColor;
-            }
-
-            &:hover td {
-                background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 10);
-            }
-        }
-
-        &.na {
-            & td {
-                background-color: #FFF;
-            }
-        }
-
-        &:hover &-hint {
-            visibility: visible;
-        }
-
-        &-wrapper {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 100%;
-            height: 100%;
-        }
-
-        &-operation {
-            margin: auto;
-
-            &.equal {
-                @include icon(url(../../resources/icons/equal.svg), 8px, 16px);
-            }
-    
-            &.not-equal {
-                @include icon(url(../../resources/icons/not-equal.svg), 11px, 13px);
-            }
-            
-            &.not-empty {
-                @include icon(url(../../resources/icons/not-empty.svg), 16px, 16px);
-            }
-        }
+	@include default-table;
+	@include scrollbar;
+	width: 100%;
+	overflow: auto;
+
+	table {
+		width: fit-content;
+		grid-template-columns: minmax(130px, 250px) minmax(125px, 250px) minmax(125px, 250px) 60px 80px 50px;
+	}
+
+	&-indicator {
+		width: 14px;
+		padding: 0;
+		margin: 0;
+	}
+
+	&-flexible {
+		text-align: left;
+	}
+
+	&-header {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		font-size: 11px;
+
+		&-control {
+			@include unselectable;
+			margin-bottom: 5px;
+			display: flex;
+			flex-direction: row;
+			white-space: pre;
+
+			&-button {
+				@include unselectable;
+				color: $passedTextColor;
+				cursor: pointer;
+				position: relative;
+				display: flex;
+				align-items: center;
+
+				&::after {
+					content: '';
+					border-bottom: 1px solid $passedTextColor;
+					border-bottom-style: dashed;
+					width: 100%;
+					position: absolute;
+					left: 0;
+					bottom: 0;
+				}
+			}
+		}
+	}
+
+	&-row {
+		&.passed {
+			& td {
+				background-color: $tableRowPassedBackgroundColor;
+			}
+
+			&:hover td {
+				background-color: darken($color: $tableRowPassedBackgroundColor, $amount: 10);
+			}
+		}
+
+		&.failed {
+			& td {
+				background-color: $tableRowFailedBackgroundColor;
+			}
+
+			&:hover td {
+				background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 10);
+			}
+		}
+
+		&.na {
+			& td {
+				background-color: #fff;
+			}
+		}
+
+		&:hover &-hint {
+			visibility: visible;
+		}
+
+		&-wrapper {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			width: 100%;
+			height: 100%;
+		}
+
+		&-operation {
+			margin: auto;
+
+			&.equal {
+				@include icon(url(../../resources/icons/equal.svg), 8px, 16px);
+			}
+
+			&.not-equal {
+				@include icon(url(../../resources/icons/not-equal.svg), 11px, 13px);
+			}
 
-        &-value {
-            padding-top: 5px;
-            font-size: 12px;
-
-            &.notype {
-                padding-bottom: 5px;
-            }
-
-            &.novalue {
-                color: $nullValuetextColor;
-            }
-        }
-
-        &-indicator {
-            position: relative;
-            background-position: center 7px;
-
-            &.active {
-                background-image: url(../../resources/icons/verification-hint-indicator.svg);
-                background-repeat: no-repeat;
-            }
-        }
-
-        &-hint {
-            &-inner {
-                padding: 5px 10px;
-                font-size: 10pt;
-                color: $hintTextColor;
-                text-align: center;
-                word-break: break-word;
-            }
-
-            visibility: hidden;
-
-            background-color: $hintBackgroundColor;
-            border-radius: 10px;
-            z-index: 1;
-
-            box-shadow: 3px 3px 3px $hintShadowColor;
-
-            position: absolute;
-            bottom: calc(100% + 12px);
-            left: calc(50% - 12px);
-
-            width: max-content;
-            max-width: 400px;
-
-            height: auto;
-
-            $hintBorderWidth: 2px;
-
-            border: $hintBorderWidth solid $hintBorderColor;
-
-            $baseDisplacement: 10px;
-            $triangleSize: 20px;
-
-            &::after {
-
-                content: "";
-
-                position: absolute;
-                left: $baseDisplacement;
-                top: 100%;
-
-                width: $triangleSize;
-                height: $triangleSize;
-                clip-path: polygon(0% 0%, 100% 0%, 0% 100%);
-
-                background-color: $hintBorderColor;
-
-                z-index: 2;
-            }
-
-            &::before {
-                $innerTriangleSize: $triangleSize - 2 * $hintBorderWidth;
-
-                content: "";
-                position: absolute;
-                left: $baseDisplacement + $hintBorderWidth;
-                width: $innerTriangleSize;
-
-                // 1 extra pixel fixes a border rendering artifact
-                top: calc(100% - 1px);
-                height: $innerTriangleSize + 1;
-                clip-path: polygon(0% 0%, 100% 0%, 100% 1px, 0% 100%);
-
-                background-color: $hintBackgroundColor;
-                z-index: 3;
-            }
-        }
-
-        &-type {
-            margin-top: 2px;
-            margin-bottom: 2px;
-            font-size: 9px;
-            color: $secondaryTextColor;
-            text-align: right;
-
-            &.highlighted {
-                font-weight: 600;
-                @include status-text;
-            }
-        }
-
-        &-status {
-            text-align: center;
-            font-weight: bold;
-            
-            &.passed {
-                color: $tableStatusPassedColor;
-            }
-    
-            &.failed {
-                color: $tableStatusFailedColor;
-            }
-    
-            &.na {
-                color: $tableStatusNAColor;
-            }
-        }
-
-        &-expected, &-actual {
-            font-family: monospace;
-            margin: 0;
-            text-decoration: none;
-            white-space: pre-wrap;
-            height: 100%;
-            width: 100%;
-            position: relative;
-        }
-
-        td {
-            padding-left: 7px;
-            padding-right: 7px;
-        }
-
-        &.transparent {
-            opacity: 0.3;
-        }
-
-        &-count {
-            font-size: small;
-            background-color: $tableCounterBackgroundColor;
-            color: $primaryTextColor;
-            text-align: center;
-            height: 14px;
-            line-height: 14px;
-            border-radius: 9px;
-            display: inline-block;
-            margin-left: 6px;
-            line-height: 14px;
-            padding: 0 4px;
-            font-size: 9px;
-        }
-
-        &-toggler {
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 10pt;
-            padding-top: 4px;
-            padding-bottom: 4px;
-            cursor: pointer;
-            color: $tableTitleColor;
-            grid-column: 1 / 7;
-
-            p {
-                display: inline;
-            }
-
-            &.collapsed {
-                p::before {
-                    content: "";
-                    display: inline-block;
-                    @include icon(url(../../resources/icons/expand-filled.svg), 14px, 12px);
-                    transform: translateY(3px);
-                    margin-right: 7px;
-                }
-            }
-
-            &.expanded {
-                p::before {
-                    content: "";
-                    display: inline-block;
-                    @include icon(url(../../resources/icons/collapse-filled.svg), 14px, 12px);
-                    transform: translateY(3px);
-                    margin-right: 7px;
-                }
-            }
-
-            p::before {
-                padding-right: 2px;
-                margin-left: -3px;
-            }
-        }
-        
-    }
-
-    &-status, &-operation, &-key {
-        & th {
-            text-align: center;
-        }
-    }
-
-    &-status-wrapper {
-        background: none;
-        margin: auto;
-
-        &.failed {
-            width: 16px;
-            height: 16px;
-            border-radius: 13px;
-            background-color: #E23636;
-            color: white;
-            font-size: 11px;
-            margin: auto;
-        }
-    }
-
-    &__check {
-        @include icon(url(../../resources/icons/check.svg), 10px, 16px);
-        margin: auto;
-    }
-
-    &__button {
-        @include unselectable;
-        font-size: 11px;
-        line-height: 16px;
-        color: $tableHeaderBackground;
-        font-weight: bold;
-        border: none;
-        background: none;
-        cursor: pointer;
-        outline: none;
-        padding: 0;
-    }
-
-    &__button-icon {
-        width: 16px;
-        height: 16px;
-        border-radius: 10px;
-        background-color: $tableHeaderBackground;
-        display: inline-block;
-        margin: 0 4px;
-    }
-
-    &__button-icon-next {
-        @include icon(url(../../resources/icons/arrow-white.svg), 8px, 6px);
-        display: inline-block;
-        transform: rotate(180deg);
-    }
-
-    &__button-icon-prev {
-        @include icon(url(../../resources/icons/arrow-white.svg), 8px, 6px);
-        display: inline-block;
-    }
-
-    &__counter {
-        font-size: 9px;
-        font-weight: bold;
-        color: $primaryTextColor;
-        width: 14px;
-        height: 14px;
-        background-color: #FFF;
-        border-radius: 9px;
-        display: inline-block;
-        margin: 0 5px;
-        line-height: 14px;
-    }
-
-    &__wrapper {
-        @include scrollbar;
-        width: 100%;
-        overflow: auto;
-    }
-
-    &__nav {
-        height: 16px;
-        display: flex;
-        justify-content: space-between;
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        grid-template-areas: "prev . next";
-    }
+			&.not-empty {
+				@include icon(url(../../resources/icons/not-empty.svg), 16px, 16px);
+			}
+		}
+
+		&-value {
+			padding-top: 5px;
+			font-size: 12px;
+
+			&.notype {
+				padding-bottom: 5px;
+			}
+
+			&.novalue {
+				color: $nullValuetextColor;
+			}
+		}
+
+		&-indicator {
+			position: relative;
+			background-position: center 7px;
+
+			&.active {
+				background-image: url(../../resources/icons/verification-hint-indicator.svg);
+				background-repeat: no-repeat;
+			}
+		}
+
+		&-hint {
+			&-inner {
+				padding: 5px 10px;
+				font-size: 10pt;
+				color: $hintTextColor;
+				text-align: center;
+				word-break: break-word;
+			}
+
+			visibility: hidden;
+
+			background-color: $hintBackgroundColor;
+			border-radius: 10px;
+			z-index: 1;
+
+			box-shadow: 3px 3px 3px $hintShadowColor;
+
+			position: absolute;
+			bottom: calc(100% + 12px);
+			left: calc(50% - 12px);
+
+			width: max-content;
+			max-width: 400px;
+
+			height: auto;
+
+			$hintBorderWidth: 2px;
+
+			border: $hintBorderWidth solid $hintBorderColor;
+
+			$baseDisplacement: 10px;
+			$triangleSize: 20px;
+
+			&::after {
+				content: '';
+
+				position: absolute;
+				left: $baseDisplacement;
+				top: 100%;
+
+				width: $triangleSize;
+				height: $triangleSize;
+				clip-path: polygon(0% 0%, 100% 0%, 0% 100%);
+
+				background-color: $hintBorderColor;
+
+				z-index: 2;
+			}
+
+			&::before {
+				$innerTriangleSize: $triangleSize - 2 * $hintBorderWidth;
+
+				content: '';
+				position: absolute;
+				left: $baseDisplacement + $hintBorderWidth;
+				width: $innerTriangleSize;
+
+				// 1 extra pixel fixes a border rendering artifact
+				top: calc(100% - 1px);
+				height: $innerTriangleSize + 1;
+				clip-path: polygon(0% 0%, 100% 0%, 100% 1px, 0% 100%);
+
+				background-color: $hintBackgroundColor;
+				z-index: 3;
+			}
+		}
+
+		&-type {
+			margin-top: 2px;
+			margin-bottom: 2px;
+			font-size: 9px;
+			color: $secondaryTextColor;
+			text-align: right;
+
+			&.highlighted {
+				font-weight: 600;
+				@include status-text;
+			}
+		}
+
+		&-status {
+			text-align: center;
+			font-weight: bold;
+
+			&.passed {
+				color: $tableStatusPassedColor;
+			}
+
+			&.failed {
+				color: $tableStatusFailedColor;
+			}
+
+			&.na {
+				color: $tableStatusNAColor;
+			}
+		}
+
+		&-expected,
+		&-actual {
+			font-family: monospace;
+			margin: 0;
+			text-decoration: none;
+			white-space: pre-wrap;
+			height: 100%;
+			width: 100%;
+			position: relative;
+		}
+
+		td {
+			padding-left: 7px;
+			padding-right: 7px;
+		}
+
+		&.transparent {
+			opacity: 0.3;
+		}
+
+		&-count {
+			font-size: small;
+			background-color: $tableCounterBackgroundColor;
+			color: $primaryTextColor;
+			text-align: center;
+			height: 14px;
+			line-height: 14px;
+			border-radius: 9px;
+			display: inline-block;
+			margin-left: 6px;
+			line-height: 14px;
+			padding: 0 4px;
+			font-size: 9px;
+		}
+
+		&-toggler {
+			text-decoration: none;
+			font-weight: bold;
+			font-size: 10pt;
+			padding-top: 4px;
+			padding-bottom: 4px;
+			cursor: pointer;
+			color: $tableTitleColor;
+			grid-column: 1 / 7;
+
+			p {
+				display: inline;
+			}
+
+			&.collapsed {
+				p::before {
+					content: '';
+					display: inline-block;
+					@include icon(url(../../resources/icons/expand-filled.svg), 14px, 12px);
+					transform: translateY(3px);
+					margin-right: 7px;
+				}
+			}
+
+			&.expanded {
+				p::before {
+					content: '';
+					display: inline-block;
+					@include icon(url(../../resources/icons/collapse-filled.svg), 14px, 12px);
+					transform: translateY(3px);
+					margin-right: 7px;
+				}
+			}
+
+			p::before {
+				padding-right: 2px;
+				margin-left: -3px;
+			}
+		}
+	}
+
+	&-status,
+	&-operation,
+	&-key {
+		& th {
+			text-align: center;
+		}
+	}
+
+	&-status-wrapper {
+		background: none;
+		margin: auto;
+
+		&.failed {
+			width: 16px;
+			height: 16px;
+			border-radius: 13px;
+			background-color: #e23636;
+			color: white;
+			font-size: 11px;
+			margin: auto;
+		}
+	}
+
+	&__check {
+		@include icon(url(../../resources/icons/check.svg), 10px, 16px);
+		margin: auto;
+	}
+
+	&__button {
+		@include unselectable;
+		font-size: 11px;
+		line-height: 16px;
+		color: $tableHeaderBackground;
+		font-weight: bold;
+		border: none;
+		background: none;
+		cursor: pointer;
+		outline: none;
+		padding: 0;
+	}
+
+	&__button-icon {
+		width: 16px;
+		height: 16px;
+		border-radius: 10px;
+		background-color: $tableHeaderBackground;
+		display: inline-block;
+		margin: 0 4px;
+	}
+
+	&__button-icon-next {
+		@include icon(url(../../resources/icons/arrow-white.svg), 8px, 6px);
+		display: inline-block;
+		transform: rotate(180deg);
+	}
+
+	&__button-icon-prev {
+		@include icon(url(../../resources/icons/arrow-white.svg), 8px, 6px);
+		display: inline-block;
+	}
+
+	&__counter {
+		font-size: 9px;
+		font-weight: bold;
+		color: $primaryTextColor;
+		width: 14px;
+		height: 14px;
+		background-color: #fff;
+		border-radius: 9px;
+		display: inline-block;
+		margin: 0 5px;
+		line-height: 14px;
+	}
+
+	&__wrapper {
+		@include scrollbar;
+		width: 100%;
+		overflow: auto;
+	}
+
+	&__nav {
+		height: 16px;
+		display: flex;
+		justify-content: space-between;
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		grid-template-areas: 'prev . next';
+	}
 }
 
 .params-table {
-    @include default-table;
-    @include scrollbar;
+	@include default-table;
+	@include scrollbar;
 
-    td, th {
-        padding: 2px 7px;
-        text-align: left;
-    }
+	td,
+	th {
+		padding: 2px 7px;
+		text-align: left;
+	}
 
-    display: block;
-    width: 100%;
-    height: auto;
-    overflow: auto;
+	display: block;
+	width: 100%;
+	height: auto;
+	overflow: auto;
 
-    &-row-toogler {
-        &:hover td {
-            background-color: darken($color: $tableHeaderBackgroundSecondary, $amount: 10) !important;
-        }
+	&-row-toogler {
+		&:hover td {
+			background-color: darken($color: $tableHeaderBackgroundSecondary, $amount: 10) !important;
+		}
 
-        & td {
-            background-color: $tableHeaderBackgroundSecondary;
-            color: white;
-        }
+		& td {
+			background-color: $tableHeaderBackgroundSecondary;
+			color: white;
+		}
 
-        &.collapsed {
-            p::before {
-                content: "";
-                display: inline-block;
-                @include icon(url(../../resources/icons/expand.svg), 14px, 12px);
-                transform: translateY(3px);
-                margin-right: 7px;
-            }
-        }
+		&.collapsed {
+			p::before {
+				content: '';
+				display: inline-block;
+				@include icon(url(../../resources/icons/expand.svg), 14px, 12px);
+				transform: translateY(3px);
+				margin-right: 7px;
+			}
+		}
 
-        &.expanded {
-            p::before {
-                content: "";
-                display: inline-block;
-                @include icon(url(../../resources/icons/collapse.svg), 14px, 12px);
-                transform: translateY(3px);
-                margin-right: 7px;
-            }
-        }
+		&.expanded {
+			p::before {
+				content: '';
+				display: inline-block;
+				@include icon(url(../../resources/icons/collapse.svg), 14px, 12px);
+				transform: translateY(3px);
+				margin-right: 7px;
+			}
+		}
 
-        p::before {
-            padding-right: 2px;
-            margin-left: -3px;
-        }
+		p::before {
+			padding-right: 2px;
+			margin-left: -3px;
+		}
 
-        p {
-            margin: 0;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 10pt;
-            display: inline-block;
-        }
+		p {
+			margin: 0;
+			text-decoration: none;
+			font-weight: bold;
+			font-size: 10pt;
+			display: inline-block;
+		}
 
-        td {
-            cursor: pointer;
-        }
-    }
+		td {
+			cursor: pointer;
+		}
+	}
 
-    &-row-value {
-        p {
-            margin: 0;
-            text-decoration: none;
-            font-size: 14px;
-        }
-    }
+	&-row-value {
+		p {
+			margin: 0;
+			text-decoration: none;
+			font-size: 14px;
+		}
+	}
 }
 
 .user-table {
-    overflow: auto;
-    @include scrollbar;
-    @include default-table;
-    margin: 10px 0;
+	overflow: auto;
+	@include scrollbar;
+	@include default-table;
+	margin: 10px 0;
 
-    th, td {
-        padding: 3px 7px;
-        text-align: left;
-    }
+	th,
+	td {
+		padding: 3px 7px;
+		text-align: left;
+	}
 
-    td {
-        min-width: 150px;
-    }
+	td {
+		min-width: 150px;
+	}
 }

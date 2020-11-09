@@ -42,16 +42,14 @@ function SearchableContent({ content, eventId }: Props) {
 
 	return (
 		<>
-			{
-				splitContent.map((contentPart, index) => (
-					<span
-						key={index}
-						className={contentPart.token != null ? contentPartClass : undefined}
-						style={{ backgroundColor: contentPart.token?.color }}>
-						{contentPart.content}
-					</span>
-				))
-			}
+			{splitContent.map((contentPart, index) => (
+				<span
+					key={index}
+					className={contentPart.token != null ? contentPartClass : undefined}
+					style={{ backgroundColor: contentPart.token?.color }}>
+					{contentPart.content}
+				</span>
+			))}
 		</>
 	);
 }

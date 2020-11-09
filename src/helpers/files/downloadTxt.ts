@@ -16,10 +16,7 @@
 
 export function downloadTxtFile(content: BlobPart[], filename: string): void {
 	const anchorElement = document.createElement('a');
-	const file = new Blob(
-		content,
-		{ type: 'text/plain;charset=utf-8' },
-	);
+	const file = new Blob(content, { type: 'text/plain;charset=utf-8' });
 	const url = URL.createObjectURL(file);
 	anchorElement.href = url;
 	anchorElement.download = filename;

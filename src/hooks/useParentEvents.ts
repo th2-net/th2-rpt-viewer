@@ -15,21 +15,20 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { EventIdNode } from '../stores/EventsStore';
 import useAsyncEffect from './useAsyncEffect';
 import { useEventWindowStore } from './useEventWindowStore';
 import api from '../api/event';
-import { EventAction } from '../models/EventAction';
+import { EventAction, EventTreeNode } from '../models/EventAction';
 
 export const useParentEvents = (
-	eventIdNode: EventIdNode,
-	parentIdNodes: EventIdNode[],
-	initialSelectedNode: EventIdNode | null,
+	eventIdNode: EventTreeNode,
+	parentIdNodes: EventTreeNode[],
+	initialSelectedNode: EventTreeNode | null,
 ) => {
 	const eventWindowStore = useEventWindowStore();
 
 	const [parentEvents, setParentEvents] = React.useState<Map<string, EventAction>>(new Map());
-	const [selectedNode, setSelectedNode] = React.useState<null | EventIdNode>(initialSelectedNode);
+	const [selectedNode, setSelectedNode] = React.useState<null | EventTreeNode>(initialSelectedNode);
 	const [selectedParentEvent, selectParentEvent] = React.useState<null | EventAction>(null);
 	const abortController = React.useRef(new AbortController());
 
@@ -39,11 +38,11 @@ export const useParentEvents = (
 			selectParentEvent(null);
 			return;
 		}
-		const parentEvent = parentEvents.get(selectedNode.id);
+		const parentEvent = parentEvents.get(selectedNode.eventId);
 		if (parentEvent) {
 			selectParentEvent(parentEvent);
 		} else {
-			await fetchParentEvent(selectedNode.id, abortController.current.signal);
+			await fetchParentEvent(selectedNode.eventId, abortController.current.signal);
 		}
 	}, [selectedNode]);
 

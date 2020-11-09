@@ -33,12 +33,7 @@ interface FilterDatetimePickerProps {
 const now = moment();
 now.utcOffset(0);
 
-const FilterDatetimePicker = ({
-	inputConfig,
-	onClose,
-	left,
-	top,
-}: FilterDatetimePickerProps) => {
+const FilterDatetimePicker = ({ inputConfig, onClose, left, top }: FilterDatetimePickerProps) => {
 	const pickerRef = React.useRef<HTMLDivElement>(null);
 
 	useOutsideClickListener(pickerRef, (e: MouseEvent) => {
@@ -68,7 +63,7 @@ const FilterDatetimePicker = ({
 	};
 
 	const setTimeOffset = (minutes: number) => {
-		inputConfig.setValue((inputConfig.value ?? Date.now()) - (minutes * 60 * 1000));
+		inputConfig.setValue((inputConfig.value ?? Date.now()) - minutes * 60 * 1000);
 	};
 
 	const setNow = () => {
@@ -85,47 +80,51 @@ const FilterDatetimePicker = ({
 	return (
 		<div
 			ref={pickerRef}
-			className="filter-datetime-picker"
+			className='filter-datetime-picker'
 			style={{
 				left: `${left || 0}px`,
 				top: `${top || 0}px`,
 			}}>
-			<div className="filter-datetime-picker__row">
-				{
-					(inputConfig.type === TimeInputType.DATE_TIME
-						|| inputConfig.type === TimeInputType.DATE)
-					&& <Calendar
+			<div className='filter-datetime-picker__row'>
+				{(inputConfig.type === TimeInputType.DATE_TIME ||
+					inputConfig.type === TimeInputType.DATE) && (
+					<Calendar
 						value={moment(inputConfig.value).utcOffset(0)}
 						defaultValue={now}
 						onSelect={change}
 						onChange={change}
 						showDateInput={false}
 						showToday={false}
-						className="filter-datetime-picker__datepicker"
+						className='filter-datetime-picker__datepicker'
 						disabledDate={getDisabledDate}
 						renderFooter={() => (
-							<div className="filter-datetime-picker__controls">
+							<div className='filter-datetime-picker__controls'>
+								<button className='filter-datetime-picker__control' onClick={setNow}>
+									now
+								</button>
 								<button
-									className="filter-datetime-picker__control"
-									onClick={setNow}>now</button>
+									className='filter-datetime-picker__control'
+									onClick={setTimeOffset.bind(null, 15)}>
+									-15m
+								</button>
 								<button
-									className="filter-datetime-picker__control"
-									onClick={setTimeOffset.bind(null, 15)}>-15m</button>
+									className='filter-datetime-picker__control'
+									onClick={setTimeOffset.bind(null, 60)}>
+									-1h
+								</button>
 								<button
-									className="filter-datetime-picker__control"
-									onClick={setTimeOffset.bind(null, 60)}>-1h</button>
-								<button
-									className="filter-datetime-picker__control"
-									onClick={setTimeOffset.bind(null, (24 * 60))}>-1d</button>
+									className='filter-datetime-picker__control'
+									onClick={setTimeOffset.bind(null, 24 * 60)}>
+									-1d
+								</button>
 							</div>
 						)}
 					/>
-				}
-				{
-					(inputConfig.type === TimeInputType.DATE_TIME
-					|| inputConfig.type === TimeInputType.TIME)
-					&& <FilterTimepicker inputConfig={inputConfig} />
-				}
+				)}
+				{(inputConfig.type === TimeInputType.DATE_TIME ||
+					inputConfig.type === TimeInputType.TIME) && (
+					<FilterTimepicker inputConfig={inputConfig} />
+				)}
 			</div>
 		</div>
 	);

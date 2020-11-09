@@ -38,17 +38,11 @@ export default function DetailedMessageRaw({ rawContent }: Props) {
 	const [hexSelectionStart, hexSelectionEnd] = useSelectListener(hexadecimalRef);
 	const [humanSelectionStart, humanSelectionEnd] = useSelectListener(humanReadableRef);
 
-	const decodedRawContent = React.useMemo(
-		() => decodeBase64RawContent(rawContent),
-		[rawContent],
-	);
+	const decodedRawContent = React.useMemo(() => decodeBase64RawContent(rawContent), [rawContent]);
 
-	const [
-		offset,
-		hexadecimal,
-		humanReadable,
-		beautifiedHumanReadable,
-	] = getRawContent(decodedRawContent);
+	const [offset, hexadecimal, humanReadable, beautifiedHumanReadable] = getRawContent(
+		decodedRawContent,
+	);
 
 	const humanContentOnCopy = (e: React.ClipboardEvent<HTMLPreElement>) => {
 		if (humanSelectionStart != null && humanSelectionEnd != null) {
@@ -60,9 +54,7 @@ export default function DetailedMessageRaw({ rawContent }: Props) {
 
 	const renderHumanReadable = (content: string) => {
 		if (hexSelectionStart === hexSelectionEnd) {
-			return (
-				<span>{content}</span>
-			);
+			return <span>{content}</span>;
 		}
 
 		const [startOffset, endOffset] = mapOctetOffsetsToHumanReadableOffsets(
@@ -73,9 +65,7 @@ export default function DetailedMessageRaw({ rawContent }: Props) {
 		return (
 			<React.Fragment>
 				{content.slice(0, startOffset)}
-				<mark className="mc-raw__highlighted-content">
-					{content.slice(startOffset, endOffset)}
-				</mark>
+				<mark className='mc-raw__highlighted-content'>{content.slice(startOffset, endOffset)}</mark>
 				{content.slice(endOffset)}
 			</React.Fragment>
 		);
@@ -83,9 +73,7 @@ export default function DetailedMessageRaw({ rawContent }: Props) {
 
 	const renderOctet = (content: string) => {
 		if (humanSelectionStart === humanSelectionEnd) {
-			return (
-				<span>{content}</span>
-			);
+			return <span>{content}</span>;
 		}
 
 		const [startOffset, endOffset] = mapHumanReadableOffsetsToOctetOffsets(
@@ -96,9 +84,7 @@ export default function DetailedMessageRaw({ rawContent }: Props) {
 		return (
 			<React.Fragment>
 				{content.slice(0, startOffset)}
-				<mark className="mc-raw__highlighted-content">
-					{content.slice(startOffset, endOffset)}
-				</mark>
+				<mark className='mc-raw__highlighted-content'>{content.slice(startOffset, endOffset)}</mark>
 				{content.slice(endOffset)}
 			</React.Fragment>
 		);
@@ -110,28 +96,29 @@ export default function DetailedMessageRaw({ rawContent }: Props) {
 	};
 
 	return (
-		<div className="mc-raw__content">
-			<div className="mc-raw__column secondary">
+		<div className='mc-raw__content'>
+			<div className='mc-raw__column secondary'>
 				<pre>{offset}</pre>
 			</div>
-			<div className="mc-raw__column primary">
-				<pre className="mc-raw__content-part"
-					 ref={hexadecimalRef}>
+			<div className='mc-raw__column primary'>
+				<pre className='mc-raw__content-part' ref={hexadecimalRef}>
 					{renderOctet(hexadecimal)}
 				</pre>
-				<div className="mc-raw__copy-btn   mc-raw__copy-icon"
-					 onClick={() => copyHandler(hexadecimal)}
-					 title="Copy to clipboard"/>
+				<div
+					className='mc-raw__copy-btn   mc-raw__copy-icon'
+					onClick={() => copyHandler(hexadecimal)}
+					title='Copy to clipboard'
+				/>
 			</div>
-			<div className="mc-raw__column primary">
-				<pre className="mc-raw__content-part"
-					 onCopy={humanContentOnCopy}
-					 ref={humanReadableRef}>
+			<div className='mc-raw__column primary'>
+				<pre className='mc-raw__content-part' onCopy={humanContentOnCopy} ref={humanReadableRef}>
 					{renderHumanReadable(beautifiedHumanReadable)}
 				</pre>
-				<div className="mc-raw__copy-btn   mc-raw__copy-icon"
-					 onClick={() => copyHandler(humanReadable)}
-					 title="Copy to clipboard"/>
+				<div
+					className='mc-raw__copy-btn   mc-raw__copy-icon'
+					onClick={() => copyHandler(humanReadable)}
+					title='Copy to clipboard'
+				/>
 			</div>
 		</div>
 	);

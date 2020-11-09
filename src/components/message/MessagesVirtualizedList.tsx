@@ -21,16 +21,17 @@ import useAsyncEffect from '../../hooks/useAsyncEffect';
 import { raf } from '../../helpers/raf';
 
 interface Props {
-    computeItemKey?: (idx: number) => React.Key;
+	computeItemKey?: (idx: number) => React.Key;
 	rowCount: number;
 	itemRenderer: (index: number) => React.ReactElement;
 	/*
-		Number objects is used here because in some cases (eg one message / action was selected several times
-		by different entities)
-		We can't understand that we need to scroll to the selected entity again when we are comparing primitive numbers.
+		Number objects is used here because in some cases (eg one message / action was 
+		selected several times by different entities)
+		We can't understand that we need to scroll to the selected entity again when
+		we are comparing primitive numbers.
 		Objects and reference comparison is the only way to handle numbers changing in this case.
 	*/
-    // eslint-disable-next-line @typescript-eslint/ban-types
+	// eslint-disable-next-line @typescript-eslint/ban-types
 	scrolledIndex: Number | null;
 	className?: string;
 	ScrollContainer?: TScrollContainer;
@@ -79,8 +80,8 @@ const MessagesVirtualizedList = (props: Props) => {
 		}, 1);
 	}, [scrolledIndex]);
 
-	const onScrollBottom = () => loadNextMessages()
-		.then(messagesIds => {
+	const onScrollBottom = () =>
+		loadNextMessages().then(messagesIds => {
 			if (messagesIds !== undefined) {
 				virtuoso.current?.adjustForPrependedItems(messagesIds.length);
 			}
@@ -90,11 +91,12 @@ const MessagesVirtualizedList = (props: Props) => {
 	const onScrollTop = () => loadPrevMessages();
 
 	return (
-		<InfiniteLoaderContext.Provider value={{
-			onScrollBottom,
-			onScrollTop,
-			loadingState,
-		}}>
+		<InfiniteLoaderContext.Provider
+			value={{
+				onScrollBottom,
+				onScrollTop,
+				loadingState,
+			}}>
 			<Virtuoso
 				totalCount={rowCount}
 				ref={virtuoso}
@@ -103,7 +105,8 @@ const MessagesVirtualizedList = (props: Props) => {
 				item={itemRenderer}
 				style={{ height: '100%', width: '100%' }}
 				className={className}
-				ScrollContainer={ScrollContainer}/>
+				ScrollContainer={ScrollContainer}
+			/>
 		</InfiniteLoaderContext.Provider>
 	);
 };
@@ -114,6 +117,8 @@ interface InfiniteScrollContextValue {
 	loadingState: typeof defaultMessagesLoadingState;
 }
 
-export const InfiniteLoaderContext = React.createContext<InfiniteScrollContextValue>({} as InfiniteScrollContextValue);
+export const InfiniteLoaderContext = React.createContext<InfiniteScrollContextValue>(
+	{} as InfiniteScrollContextValue,
+);
 
 export default MessagesVirtualizedList;

@@ -25,24 +25,23 @@ describe('Heatmap', () => {
 	test('renders heatmap', () => {
 		const selectedItemsMap: Map<string, number[]> = new Map();
 		selectedItemsMap.set(DEFAULT_HEATMAP_ELEMENT_COLOR, [3, 27]);
-		const {
-			items,
-			selectedItems,
-			pinnedItems,
-		} = createHeatmapInputData(40, selectedItemsMap, [15]);
+		const { items, selectedItems, pinnedItems } = createHeatmapInputData(40, selectedItemsMap, [
+			15,
+		]);
 		const heatmapElements = getHeatmapElements(items, selectedItems, pinnedItems);
 		const mockFn = jest.fn();
 
 		const wrapper = mount(
-			<HeatmapContext.Provider value={{
-				fullRange: null,
-				setFullRange: mockFn,
-				visibleRange: null,
-				setVisibleRange: mockFn,
-				heatmapElements,
-				setHeatmapElements: mockFn,
-				unknownAreas: { before: [], after: [] },
-			}}>
+			<HeatmapContext.Provider
+				value={{
+					fullRange: null,
+					setFullRange: mockFn,
+					visibleRange: null,
+					setVisibleRange: mockFn,
+					heatmapElements,
+					setHeatmapElements: mockFn,
+					unknownAreas: { before: [], after: [] },
+				}}>
 				<Heatmap onElementClick={mockFn} selectedItem={null} />
 			</HeatmapContext.Provider>,
 		);

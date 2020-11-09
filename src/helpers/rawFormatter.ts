@@ -102,11 +102,7 @@ export function decodeBase64RawContent(rawBase64Content: string): string[][] {
 		humanReadable.push(humanReadableColumn);
 	}
 
-	return [
-		offset,
-		hexadecimal,
-		humanReadable,
-	];
+	return [offset, hexadecimal, humanReadable];
 }
 
 /**
@@ -117,12 +113,12 @@ export function mapOctetOffsetsToHumanReadableOffsets(start: number, end: number
 	// legend:
 	// 40 = length of octet line
 	// 17 = length of human-readable line: 16 human readable chars + '\n'
-	const startOffset = Math.floor(start / 40) * 17 // line
-        + Math.floor(start % 40 / 5) * 2 // symbols
-        + Math.floor(start % 40 % 5 / 2); // correction when only one byte from octet has been selected
-	const endOffset = Math.floor(end / 40) * 17
-        + Math.floor(end % 40 / 5) * 2
-        + Math.ceil(end % 40 % 5 / 2);
+	const startOffset =
+		Math.floor(start / 40) * 17 + // line
+		Math.floor((start % 40) / 5) * 2 + // symbols
+		Math.floor(((start % 40) % 5) / 2); // corection when only one byte from octet has been selected
+	const endOffset =
+		Math.floor(end / 40) * 17 + Math.floor((end % 40) / 5) * 2 + Math.ceil(((end % 40) % 5) / 2);
 	return start === end ? [startOffset, startOffset] : [startOffset, endOffset];
 }
 
@@ -134,12 +130,12 @@ export function mapHumanReadableOffsetsToOctetOffsets(start: number, end: number
 	// legend:
 	// 40 = length of octet line
 	// 17 = length of human-readable line: 16 human readable chars + '\n'
-	const startOffset = Math.floor(start / 17) * 40 // lines
-        + start % 17 * 2 // symbols
-        + Math.max(0, Math.floor((start % 17 - 1) / 2)); // space between octets
-	const endOffset = Math.floor(end / 17) * 40
-        + end % 17 * 2
-        + Math.max(0, Math.floor((end % 17 - 1) / 2));
+	const startOffset =
+		Math.floor(start / 17) * 40 + // lines
+		(start % 17) * 2 + // symbols
+		Math.max(0, Math.floor(((start % 17) - 1) / 2)); // space between octets
+	const endOffset =
+		Math.floor(end / 17) * 40 + (end % 17) * 2 + Math.max(0, Math.floor(((end % 17) - 1) / 2));
 
 	return start === end ? [startOffset, startOffset] : [startOffset, endOffset];
 }
@@ -172,14 +168,15 @@ export function getMessagesContent(
 							return getAllRawContent(decodedRawMessage).replace(/\n$/, '');
 						}
 						case 'raw': {
-							const [,, humanReadable] = decodeBase64RawContent(msg.raw);
+							const [, , humanReadable] = decodeBase64RawContent(msg.raw);
 							return humanReadable.join('');
 						}
 						default:
 							return '';
 					}
 				})
-				.join('\n'))
+				.join('\n'),
+		)
 		.filter(Boolean)
 		.join('\n\n');
 }

@@ -23,8 +23,8 @@ import '../styles/root.scss';
 import Notifier from './Notifier';
 
 const App = () => (
-	<div className="root">
-		<ToastProvider placement="top-right" components={{ Toast }}>
+	<div className='root'>
+		<ToastProvider placement='top-right' components={{ Toast }}>
 			<EventsLayout />
 			<Notifier />
 		</ToastProvider>

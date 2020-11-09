@@ -16,12 +16,12 @@
 
 import SearchResult from './SearchResult';
 
-
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable no-new-wrappers */
 function getScrolledIndex(
-	searchResults: SearchResult, targetIndex: number,
-): [Number| undefined, Number| undefined, Number| undefined] {
+	searchResults: SearchResult,
+	targetIndex: number,
+): [Number | undefined, Number | undefined, Number | undefined] {
 	const [currentKey = ''] = searchResults.getByIndex(targetIndex);
 	const [keyType, keyId] = currentKey.split('-');
 	const actionId = keyType === 'action' ? new Number(keyId) : undefined;

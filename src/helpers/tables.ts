@@ -26,19 +26,18 @@ import { ParamsTable, ParamsTableRow } from '../components/event/ParamsTable';
 
 export const getVerificationTablesNodes = (body: VerificationPayload) => {
 	if (!body || !body.fields) return [];
-	const result = Object.keys(body.fields)
-		.map(field => paramsToNodes(body.fields[field], field));
+	const result = Object.keys(body.fields).map(field => paramsToNodes(body.fields[field], field));
 
 	function paramsToNodes(root: VerificationPayloadField, name: string): TableNode {
-		return ({
-			subEntries: root.fields !== undefined
-				? Object.keys(root.fields)
-					.map(field => paramsToNodes(root.fields![field], field))
-				: [],
+		return {
+			subEntries:
+				root.fields !== undefined
+					? Object.keys(root.fields).map(field => paramsToNodes(root.fields![field], field))
+					: [],
 			isExpanded: true,
 			name,
 			...root,
-		});
+		};
 	}
 
 	return result;
@@ -57,37 +56,31 @@ export const extractParams = (body: TreeTablePayload): ParamsTable => {
 		subRows: ParamsTableRow[] = [],
 	): ParamsTableRow => {
 		if (row.type === 'row') {
-			Object.keys(row.columns)
-				.forEach(columnTitle => !tableColumns.includes(columnTitle) && tableColumns.push(columnTitle));
+			Object.keys(row.columns).forEach(
+				columnTitle => !tableColumns.includes(columnTitle) && tableColumns.push(columnTitle),
+			);
 		}
 		return {
 			title: rowTitle,
 			columns: row.type === 'row' ? row.columns : undefined,
 			isExpanded: subRows.length > 0,
-			subRows: row.type === 'collection'
-				? Object.keys(row.rows)
-					.map(subRowTitle => createRow(row.rows[subRowTitle], subRowTitle))
-				: [],
+			subRows:
+				row.type === 'collection'
+					? Object.keys(row.rows).map(subRowTitle => createRow(row.rows[subRowTitle], subRowTitle))
+					: [],
 		};
 	};
 
-	const tableRows = Object.keys(rows)
-		.reduce<ParamsTableRow[]>((paramTableRows, rowTitle) => {
-			const payloadItem = rows[rowTitle];
-			if (payloadItem.type === 'row') {
-				return [...paramTableRows, createRow(payloadItem, rowTitle)];
-			}
+	const tableRows = Object.keys(rows).reduce<ParamsTableRow[]>((paramTableRows, rowTitle) => {
+		const payloadItem = rows[rowTitle];
+		if (payloadItem.type === 'row') {
+			return [...paramTableRows, createRow(payloadItem, rowTitle)];
+		}
 
-			if (payloadItem.type === 'collection') {
-				return [
-					...paramTableRows,
-					createRow(
-						payloadItem,
-						rowTitle,
-					),
-				];
-			}
-			return paramTableRows;
-		}, []);
+		if (payloadItem.type === 'collection') {
+			return [...paramTableRows, createRow(payloadItem, rowTitle)];
+		}
+		return paramTableRows;
+	}, []);
 	return { rows: tableRows, columns: tableColumns };
 };

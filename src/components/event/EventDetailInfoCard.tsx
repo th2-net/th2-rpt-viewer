@@ -31,96 +31,66 @@ interface Props {
 }
 
 function EventDetailInfoCard(props: Props) {
-	const {
-		event,
-		childrenCount = 0,
-		rootStyle = {},
-	} = props;
+	const { event, childrenCount = 0, rootStyle = {} } = props;
 
 	if (!event) {
-		return <SplashScreen/>;
+		return <SplashScreen />;
 	}
 
-	const {
-		startTimestamp,
-		endTimestamp,
-		eventType,
-		eventName,
-		body,
-		eventId,
-	} = event;
+	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId } = event;
 
 	const status = getEventStatus(event);
 
-	const rootClassName = createBemBlock(
-		'event-detail-card',
-		status,
-	);
+	const rootClassName = createBemBlock('event-detail-card', status);
 
-	const elapsedTime = endTimestamp && startTimestamp
-		? getElapsedTime(startTimestamp, endTimestamp)
-		: null;
+	const elapsedTime =
+		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
 
 	return (
 		<div className={rootClassName} style={rootStyle}>
-			<div className="event-detail-card__header">
-				<div className="event-detail-card__title" title={eventType || eventName}>
+			<div className='event-detail-card__header'>
+				<div className='event-detail-card__title' title={eventType || eventName}>
 					{eventType || eventName}
 				</div>
-				<div className="event-detail-card__controls">
-					{
-						elapsedTime && (
-							<span className="event-detail-card__time">{elapsedTime}</span>
-						)
-					}
-					<span className="event-detail-card__separator"/>
-					<span className="event-detail-card__status">
-						{status.toUpperCase()}
-					</span>
-					{
-						childrenCount > 0 ? (
-							<Chip text={childrenCount.toString()}/>
-						) : null
-					}
+				<div className='event-detail-card__controls'>
+					{elapsedTime && <span className='event-detail-card__time'>{elapsedTime}</span>}
+					<span className='event-detail-card__separator' />
+					<span className='event-detail-card__status'>{status.toUpperCase()}</span>
+					{childrenCount > 0 ? <Chip text={childrenCount.toString()} /> : null}
 				</div>
-				<div className="event-detail-card__timestamp">
-					{
-						startTimestamp && (
-							<>
-								<div className="event-detail-card__timestamp-label">Start</div>
-								<div className="event-detail-card__timestamp-value">
-									{formatTime(getTimestampAsNumber(startTimestamp))}
-								</div>
-							</>
-						)
-					}
-					{
-						endTimestamp && (
-							<>
-								<div className="event-detail-card__timestamp-label">Finish</div>
-								<div className="event-detail-card__timestamp-value">
-									{formatTime(getTimestampAsNumber(endTimestamp))}
-								</div>
-							</>
-						)
-					}
+				<div className='event-detail-card__timestamp'>
+					{startTimestamp && (
+						<>
+							<div className='event-detail-card__timestamp-label'>Start</div>
+							<div className='event-detail-card__timestamp-value'>
+								{formatTime(getTimestampAsNumber(startTimestamp))}
+							</div>
+						</>
+					)}
+					{endTimestamp && (
+						<>
+							<div className='event-detail-card__timestamp-label'>Finish</div>
+							<div className='event-detail-card__timestamp-value'>
+								{formatTime(getTimestampAsNumber(endTimestamp))}
+							</div>
+						</>
+					)}
 				</div>
-				<div className="event-detail-card__id">
-					{eventId}
-				</div>
+				<div className='event-detail-card__id'>{eventId}</div>
 			</div>
-			<div className="event-detail-card__body">
-				<div className="event-detail-card__body-list">
-					{
-						Array.isArray(body)
-							? body.map((bodyPayloadItem, index) => (
-								<EventBodyCard
-									key={`body-${eventId}-${index}`}
-									body={bodyPayloadItem}
-									parentEvent={event}/>
-							))
-							: <EventBodyCard key={eventId} body={body} parentEvent={event} />
-					}
+			<div className='event-detail-card__body'>
+				<div className='event-detail-card__body-list'>
+					{Array.isArray(body) ? (
+						body.map((bodyPayloadItem, index) => (
+							<EventBodyCard
+								key={`body-${eventId}-${index}`}
+								body={bodyPayloadItem}
+								parentEvent={event}
+							/>
+						))
+					) : (
+						<EventBodyCard key={eventId} body={body} parentEvent={event} />
+					)}
 				</div>
 			</div>
 		</div>

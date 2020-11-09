@@ -30,7 +30,7 @@ interface Props {
 	isSelected: boolean;
 }
 
-const TabMenu: React.RefForwardingComponent<HTMLDivElement, Props> = ((props, menuRef) => {
+const TabMenu: React.RefForwardingComponent<HTMLDivElement, Props> = (props, menuRef) => {
 	const {
 		tabRect,
 		menuWidth,
@@ -50,21 +50,16 @@ const TabMenu: React.RefForwardingComponent<HTMLDivElement, Props> = ((props, me
 				top: 0,
 			};
 		}
-		const {
-			left,
-			right,
-			width,
-			bottom,
-		} = tabRect;
+		const { left, right, width, bottom } = tabRect;
 
 		const finalWidth = !menuWidth ? width : menuWidth;
 		const clientWidth = document.documentElement.clientWidth;
 		const widthDiff = Math.round(finalWidth - width);
 		let widthRemainder = widthDiff;
 		let startX = Math.max(8, left - widthDiff / 2);
-		widthRemainder -= (left - startX);
+		widthRemainder -= left - startX;
 		const endX = Math.min(clientWidth - 8, right + widthRemainder);
-		widthRemainder -= (endX - right);
+		widthRemainder -= endX - right;
 
 		if (widthRemainder > 0) {
 			startX = Math.max(10, startX - widthRemainder);
@@ -91,10 +86,7 @@ const TabMenu: React.RefForwardingComponent<HTMLDivElement, Props> = ((props, me
 		}
 	};
 
-	const rootClassName = createStyleSelector(
-		'tab-menu',
-		isSelected ? 'selected' : null,
-	);
+	const rootClassName = createStyleSelector('tab-menu', isSelected ? 'selected' : null);
 
 	const duplicateButtonClassName = createBemElement(
 		'tab-menu',
@@ -112,37 +104,32 @@ const TabMenu: React.RefForwardingComponent<HTMLDivElement, Props> = ((props, me
 
 	return (
 		<ModalPortal isOpen={true}>
-			<div
-				className={rootClassName}
-				ref={menuRef}
-				style={menuStyles}>
+			<div className={rootClassName} ref={menuRef} style={menuStyles}>
 				{tabRect && (
 					<div
-						className="tab-menu__box-shadow-overlay"
+						className='tab-menu__box-shadow-overlay'
 						style={{
 							left: tabRect?.left - menuStyles.left,
 							width: tabRect.width,
-						}}/>
+						}}
+					/>
 				)}
 				{children}
-				<div className="tab-menu__controls">
-					<button
-						className={duplicateButtonClassName}
-						title="duplicate tab"
-						onClick={onDuplicate}>
-						<i className="tab-menu__icon-duplicate"/>
+				<div className='tab-menu__controls'>
+					<button className={duplicateButtonClassName} title='duplicate tab' onClick={onDuplicate}>
+						<i className='tab-menu__icon-duplicate' />
 					</button>
 					<button
 						className={closeButtonClassName}
-						role="button"
-						title="close tab"
+						role='button'
+						title='close tab'
 						onClick={onClose}>
-						<i className="tab-menu__icon-close"/>
+						<i className='tab-menu__icon-close' />
 					</button>
 				</div>
 			</div>
 		</ModalPortal>
 	);
-});
+};
 
 export default observer(TabMenu, { forwardRef: true });

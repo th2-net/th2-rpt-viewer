@@ -22,45 +22,45 @@ import Report from './Report';
 import { KnownBugNode } from './KnownBug';
 
 export default interface TestCase {
-    actionNodeType: 'testCase';
-    name?: string;
-    actions: ActionNode[];
-    logs: Log[];
-    messages: Message[];
-    bugs: KnownBugNode[];
-    type?: string;
-    reference?: any;
-    order: number;
-    outcomes?: any[];
-    matrixOrder?: number;
-    id: string;
-    hash: number;
-    description: string;
-    status: Status;
-    startTime: string;
-    finishTime: string | null;
-    verifications?: any[];
-    indexFiles?: TestCaseIndexFiles;
-    files: TestCaseFiles;
-    lastUpdate?: string;
-    hasErrorLogs: boolean;
-    hasWarnLogs: boolean;
+	actionNodeType: 'testCase';
+	name?: string;
+	actions: ActionNode[];
+	logs: Log[];
+	messages: Message[];
+	bugs: KnownBugNode[];
+	type?: string;
+	reference?: any;
+	order: number;
+	outcomes?: any[];
+	matrixOrder?: number;
+	id: string;
+	hash: number;
+	description: string;
+	status: Status;
+	startTime: string;
+	finishTime: string | null;
+	verifications?: any[];
+	indexFiles?: TestCaseIndexFiles;
+	files: TestCaseFiles;
+	lastUpdate?: string;
+	hasErrorLogs: boolean;
+	hasWarnLogs: boolean;
 }
 
 export interface TestCaseIndexFiles {
-    message?: string;
-    action?: string;
-    logentry?: string;
+	message?: string;
+	action?: string;
+	logentry?: string;
 }
 
 export type TestCaseFiles = {
-    [key in keyof TestCaseIndexFiles]: {
-        count: number;
-        dataFiles: {
-            [filePath: string]: number;
-        };
-        lastUpdate: string;
-    }
+	[key in keyof TestCaseIndexFiles]: {
+		count: number;
+		dataFiles: {
+			[filePath: string]: number;
+		};
+		lastUpdate: string;
+	};
 };
 
 export function isTestCase(testCase: TestCase | Report): testCase is TestCase {

@@ -14,28 +14,24 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	observable,
-	action,
-	computed,
-	reaction,
-	autorun,
-} from 'mobx';
+import { observable, action, computed, reaction, autorun } from 'mobx';
 import RootStore from './RootStore';
 import ApiSchema from '../api/ApiSchema';
 import AppWindowStore from './AppWindowStore';
 import { isMessagesTab, isEventsTab } from '../helpers/windows';
-import { EventAction } from '../models/EventAction';
+import { EventAction, EventTreeNode } from '../models/EventAction';
 import { randomHexColor } from '../helpers/color';
 import { EventMessage } from '../models/EventMessage';
 import { AppTab, TabTypes } from '../models/util/Windows';
-import { EventStoreURLState, EventIdNode } from './EventsStore';
+import { EventStoreURLState } from './EventsStore';
 import { MessagesStoreURLState } from './MessagesStore';
 
-export type WindowsUrlState = Array<Partial<{
-	activeTab: EventStoreURLState | MessagesStoreURLState;
-	activeTabIndex: string;
-}>>;
+export type WindowsUrlState = Array<
+	Partial<{
+		activeTab: EventStoreURLState | MessagesStoreURLState;
+		activeTabIndex: string;
+	}>
+>;
 
 export default class WindowsStore {
 	private readonly defaultColors = [
@@ -83,16 +79,19 @@ export default class WindowsStore {
 
 	@observable allTabs: Array<AppTab> = [];
 
-	@observable lastSelectedEvent: EventAction | null = null;
+	@observable.ref lastSelectedEvent: EventAction | null = null;
 
-	@observable lastSelectEventIdNode: EventIdNode | null = null;
+	@observable.ref lastSelectEventIdNode: EventTreeNode | null = null;
 
 	@computed get selectedEvents() {
-		return this.windows.flatMap(window => window.tabs)
+		return this.windows
+			.flatMap(window => window.tabs)
 			.filter(isEventsTab)
 			.map(eventTab => eventTab.store.selectedEvent)
-			.filter((event, i, self): event is EventAction =>
-				event !== null && self.findIndex(e => e && e.eventId === event.eventId) === i);
+			.filter(
+				(event, i, self): event is EventAction =>
+					event !== null && self.findIndex(e => e && e.eventId === event.eventId) === i,
+			);
 	}
 
 	@computed get isDuplicable() {
@@ -112,9 +111,7 @@ export default class WindowsStore {
 		if (this.pinnedMessages.findIndex(m => m.messageId === message.messageId) === -1) {
 			this.pinnedMessages = this.pinnedMessages.concat(message);
 		} else {
-			this.pinnedMessages = this.pinnedMessages.filter(
-				msg => msg.messageId !== message.messageId,
-			);
+			this.pinnedMessages = this.pinnedMessages.filter(msg => msg.messageId !== message.messageId);
 		}
 	};
 
@@ -125,8 +122,7 @@ export default class WindowsStore {
 		tabIndex: number,
 		targetTabIndex = 0,
 	) => {
-		if (originWindowIndex === targetWindowIndex
-			&& tabIndex === targetTabIndex) return;
+		if (originWindowIndex === targetWindowIndex && tabIndex === targetTabIndex) return;
 
 		const originWindow = this.windows[originWindowIndex];
 		const targetWindow = this.windows[targetWindowIndex];
@@ -141,7 +137,7 @@ export default class WindowsStore {
 
 		if (targetWindow !== originWindow) {
 			targetWindow.addTabs([originWindow.removeTab(tabIndex)], targetTabIndex);
-
+			targetWindow.activeTabIndex = targetTabIndex;
 			return;
 		}
 
@@ -157,7 +153,12 @@ export default class WindowsStore {
 	private onWindowsTabsChange = () => {
 		this.windows
 			.filter(window => window.isEmpty)
-			.forEach(window => this.windows.splice(this.windows.findIndex(w => w === window), 1));
+			.forEach(window =>
+				this.windows.splice(
+					this.windows.findIndex(w => w === window),
+					1,
+				),
+			);
 	};
 
 	@action
@@ -171,8 +172,9 @@ export default class WindowsStore {
 
 	@action
 	private getEventColors = (selectedEvents: EventAction[]) => {
-		const eventsWithAttachedMessages = selectedEvents
-			.filter(event => event.attachedMessageIds.length > 0);
+		const eventsWithAttachedMessages = selectedEvents.filter(
+			event => event.attachedMessageIds.length > 0,
+		);
 
 		const usedColors2: Array<string> = [];
 		for (const [eventId, color] of this.eventColors.entries()) {
@@ -180,7 +182,9 @@ export default class WindowsStore {
 				usedColors2.push(color);
 			}
 		}
-		const availableColors = this.defaultColors.slice().filter(color => !usedColors2.includes(color));
+		const availableColors = this.defaultColors
+			.slice()
+			.filter(color => !usedColors2.includes(color));
 
 		const updatedEventColorsMap = new Map<string, string>();
 
@@ -198,7 +202,9 @@ export default class WindowsStore {
 
 	@action
 	private getAttachedMessagesIds = (selectedEvents: EventAction[]) => {
-		this.attachedMessagesIds = [...new Set(selectedEvents.flatMap(({ attachedMessageIds }) => attachedMessageIds))];
+		this.attachedMessagesIds = [
+			...new Set(selectedEvents.flatMap(({ attachedMessageIds }) => attachedMessageIds)),
+		];
 	};
 
 	@action

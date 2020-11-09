@@ -15,11 +15,11 @@
  ***************************************************************************** */
 
 const enum Panel {
-    ACTIONS= 'ACTIONS',
-    STATUS = 'STATUS',
-    MESSAGES = 'MESSAGES',
-    LOGS = 'LOGS',
-    KNOWN_BUGS = 'KNOWN_BUGS'
+	ACTIONS = 'ACTIONS',
+	STATUS = 'STATUS',
+	MESSAGES = 'MESSAGES',
+	LOGS = 'LOGS',
+	KNOWN_BUGS = 'KNOWN_BUGS',
 }
 
 export default Panel;

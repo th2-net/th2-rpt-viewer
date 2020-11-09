@@ -17,11 +17,15 @@
 import * as React from 'react';
 
 /**
- * Creates 'onClick' property handler, that will capture event and cancel event bubbling for parent divs
+ * Creates 'onClick' property handler, that will capture event and cancel
+ * event bubbling for parent divs
  * @param callbackfn callback for handler
  * @param args callback arguments
  */
-export function stopPropagationHandler<T extends unknown[], R>(callbackfn: (...args: T) => R, ...args: T) {
+export function stopPropagationHandler<T extends unknown[], R>(
+	callbackfn: (...args: T) => R,
+	...args: T
+) {
 	return (e: React.MouseEvent) => {
 		e.stopPropagation();
 

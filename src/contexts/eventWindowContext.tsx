@@ -24,12 +24,7 @@ interface EventWindowProviderProps {
 	value: EventsStore;
 }
 const EventWindowProvider = ({ children, value }: EventWindowProviderProps) => (
-	<EventWindowContext.Provider value={value}>
-		{children}
-	</EventWindowContext.Provider>
+	<EventWindowContext.Provider value={value}>{children}</EventWindowContext.Provider>
 );
 
-export {
-	EventWindowContext,
-	EventWindowProvider,
-};
+export { EventWindowContext, EventWindowProvider };

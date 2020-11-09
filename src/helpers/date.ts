@@ -16,7 +16,11 @@
 import moment, { Moment } from 'moment';
 import Timestamp from '../models/Timestamp';
 
-export function getSecondsPeriod(startTime: string | Date, finishTime: string | Date, withMiliseconds = true) {
+export function getSecondsPeriod(
+	startTime: string | Date,
+	finishTime: string | Date,
+	withMiliseconds = true,
+) {
 	if (!startTime || !finishTime) {
 		return '';
 	}
@@ -24,25 +28,25 @@ export function getSecondsPeriod(startTime: string | Date, finishTime: string | 
 	const diff = toDate(finishTime).getTime() - toDate(startTime).getTime();
 
 	const seconds = Math.floor(diff / 1000);
-	const milliseconds = diff - (seconds * 1000);
+	const milliseconds = diff - seconds * 1000;
 
 	const millisecondsFormatted = milliseconds === 0 ? '0' : milliseconds.toString().padStart(3, '0');
 
-	return withMiliseconds
-		? `${seconds}.${millisecondsFormatted}s`
-		: `${seconds}s`;
+	return withMiliseconds ? `${seconds}.${millisecondsFormatted}s` : `${seconds}s`;
 }
 
-export function getElapsedTime(startTimestamp: Timestamp, endTimestamp: Timestamp, withMiliseconds = true) {
+export function getElapsedTime(
+	startTimestamp: Timestamp,
+	endTimestamp: Timestamp,
+	withMiliseconds = true,
+) {
 	const diff = getTimestampAsNumber(endTimestamp) - getTimestampAsNumber(startTimestamp);
 	const seconds = Math.floor(diff / 1000);
-	const milliseconds = Math.floor(diff - (seconds * 1000));
+	const milliseconds = Math.floor(diff - seconds * 1000);
 
 	const millisecondsFormatted = milliseconds === 0 ? '0' : milliseconds.toString().padStart(3, '0');
 
-	return withMiliseconds
-		? `${seconds}.${millisecondsFormatted}s`
-		: `${seconds}s`;
+	return withMiliseconds ? `${seconds}.${millisecondsFormatted}s` : `${seconds}s`;
 }
 
 export function formatTime(time: string | number) {
@@ -50,10 +54,7 @@ export function formatTime(time: string | number) {
 		return '';
 	}
 
-	return new Date(time)
-		.toISOString()
-		.replace('T', ' ')
-		.replace('Z', '');
+	return new Date(time).toISOString().replace('T', ' ').replace('Z', '');
 }
 
 export function isDateEqual(first: string | Date, second: string | Date): boolean {
@@ -84,7 +85,6 @@ export function formatTimestampValue(timestamp: number | null, timeMask: string)
 	const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
 	return moment(utcDate).format(timeMask);
 }
-
 
 type TimeRange = { from: number; to: number };
 type TimeRangeOptions = { to: number | Date | Moment; withinTheDay: boolean };

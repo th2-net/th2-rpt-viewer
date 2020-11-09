@@ -42,11 +42,7 @@ interface ModalPortalProps {
 	isOpen: boolean;
 }
 
-export const ModalPortal = ({
-	closeDelay = 0,
-	children,
-	isOpen,
-}: ModalPortalProps) => {
+export const ModalPortal = ({ closeDelay = 0, children, isOpen }: ModalPortalProps) => {
 	const [isShown, setIsShown] = React.useState(false);
 
 	React.useEffect(() => {
@@ -62,9 +58,7 @@ export const ModalPortal = ({
 
 	return (
 		<Portal>
-			<div style={{ display: isShown ? 'block' : 'none' }}>
-				{children}
-			</div>
+			<div style={{ display: isShown ? 'block' : 'none' }}>{children}</div>
 		</Portal>
 	);
 };

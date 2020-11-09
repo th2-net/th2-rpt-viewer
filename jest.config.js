@@ -26,10 +26,7 @@ module.exports = {
 		'<rootDir>/src/__tests__/setupTests.ts',
 	],
 	watchPathIgnorePatterns: ['<rootDir>/build', '<rootDir>/node_modules/'],
-	watchPlugins: [
-		'jest-watch-typeahead/filename',
-		'jest-watch-typeahead/testname',
-	],
+	watchPlugins: ['jest-watch-typeahead/filename', 'jest-watch-typeahead/testname'],
 	moduleNameMapper: {
 		'\\.(css|less|scss)$': 'identity-obj-proxy',
 	},

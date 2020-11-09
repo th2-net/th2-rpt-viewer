@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 export default interface Tree<T> {
-    readonly value: T;
-    readonly nodes: Array<Tree<T>>;
+	readonly value: T;
+	readonly nodes: Array<Tree<T>>;
 }
 
 export const createNode = <T>(value: T, nodes: Array<Tree<T>> = []): Tree<T> => ({

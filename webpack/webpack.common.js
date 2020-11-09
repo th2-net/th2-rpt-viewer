@@ -23,40 +23,42 @@ const { appSrc, appPath } = require('./paths');
 const api_env = process.env.API_ENV || 'http';
 
 module.exports = {
-    resolve: {
-        extensions: ['.ts', '.tsx', '.scss', '.js'],
-    },
-    module: {
-        rules: [
-            {
-                test: /\.css$/i,
-                use: ['style-loader', 'css-loader'],
-            },
-            {
-                test: /\.(ts|tsx)$/,
-                loader: "babel-loader",
-                exclude: /node_modules/
-            },
-            {
-                test: /\.(woff(2)?|ttf|eot|svg|jpg)(\?v=\d+\.\d+\.\d+)?$/,
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        outputPath: 'resources/',
-                    },
-                }]
-            }
-        ]
-    },
-    plugins: [
-        new webpack.EnvironmentPlugin({
-            API_ENV: api_env
-        }),
-        new HtmlWebPackPlugin({
-            title: 'Report viewer',
-            template: path.resolve(appSrc, 'index.html'),
-            favicon: path.resolve(appPath, 'resources', 'icons', 'favicon.png'),
-        })
-    ],   
+	resolve: {
+		extensions: ['.ts', '.tsx', '.scss', '.js'],
+	},
+	module: {
+		rules: [
+			{
+				test: /\.css$/i,
+				use: ['style-loader', 'css-loader'],
+			},
+			{
+				test: /\.(ts|tsx)$/,
+				loader: 'babel-loader',
+				exclude: /node_modules/,
+			},
+			{
+				test: /\.(woff(2)?|ttf|eot|svg|jpg)(\?v=\d+\.\d+\.\d+)?$/,
+				use: [
+					{
+						loader: 'file-loader',
+						options: {
+							name: '[name].[ext]',
+							outputPath: 'resources/',
+						},
+					},
+				],
+			},
+		],
+	},
+	plugins: [
+		new webpack.EnvironmentPlugin({
+			API_ENV: api_env,
+		}),
+		new HtmlWebPackPlugin({
+			title: 'Report viewer',
+			template: path.resolve(appSrc, 'index.html'),
+			favicon: path.resolve(appPath, 'resources', 'icons', 'favicon.png'),
+		}),
+	],
 };

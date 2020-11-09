@@ -36,7 +36,8 @@ export const getHeatmapElements = (
 			const index = items.indexOf(selectedItem);
 			if (index !== -1) {
 				heatmapElementsMap[index] = heatmapElementsMap[index]
-					? [...heatmapElementsMap[index], color] : [color];
+					? [...heatmapElementsMap[index], color]
+					: [color];
 			}
 		});
 	});
@@ -49,35 +50,23 @@ export const getHeatmapElements = (
 			}
 		});
 
-	const points: [number, string[]][] = Object.keys(heatmapElementsMap)
-		.map(index => [parseInt(index), heatmapElementsMap[parseInt(index)]]);
+	const points: [number, string[]][] = Object.keys(heatmapElementsMap).map(index => [
+		parseInt(index),
+		heatmapElementsMap[parseInt(index)],
+	]);
 
 	points.sort(([indexA], [indexB]) => indexA - indexB);
 
-	const heatmapElements = points
-		.reduce<HeatmapElement[]>((blocks, [itemIndex, colors], index) => {
-			const isPinned = pinnedItems.includes(items[itemIndex]);
-			const [nextIndex] = points[index + 1] || [];
-			blocks.push(
-				createHeatmapElement(
-					itemIndex,
-					1,
-					items[itemIndex],
-					colors,
-					isPinned,
-				),
-			);
+	const heatmapElements = points.reduce<HeatmapElement[]>((blocks, [itemIndex, colors], index) => {
+		const isPinned = pinnedItems.includes(items[itemIndex]);
+		const [nextIndex] = points[index + 1] || [];
+		blocks.push(createHeatmapElement(itemIndex, 1, items[itemIndex], colors, isPinned));
 
-			if (nextIndex && nextIndex - itemIndex !== 1) {
-				blocks.push(
-					createHeatmapElement(
-						itemIndex + 1,
-						nextIndex - itemIndex - 1,
-					),
-				);
-			}
-			return blocks;
-		}, []);
+		if (nextIndex && nextIndex - itemIndex !== 1) {
+			blocks.push(createHeatmapElement(itemIndex + 1, nextIndex - itemIndex - 1));
+		}
+		return blocks;
+	}, []);
 
 	if (unknown) return heatmapElements;
 	if (!heatmapElements.length) return emptyHeatmap;
@@ -101,9 +90,7 @@ export const getHeatmapRange = (
 		const lastHeatmapElement = heatmapElements[heatmapElements.length - 1];
 		return {
 			startIndex: 0,
-			endIndex: lastHeatmapElement
-				? lastHeatmapElement.index + lastHeatmapElement.count
-				: 0,
+			endIndex: lastHeatmapElement ? lastHeatmapElement.index + lastHeatmapElement.count : 0,
 		};
 	}
 
@@ -120,15 +107,11 @@ export const getHeatmapRange = (
 
 	return {
 		startIndex: heatmapElements[startIndex].index,
-		endIndex:
-			heatmapElements[endIndex].index + heatmapElements[endIndex].count - 1,
+		endIndex: heatmapElements[endIndex].index + heatmapElements[endIndex].count - 1,
 	};
 };
 
-export const inRange = (
-	heatmapElement: HeatmapElement,
-	range: ListRange | null,
-) => {
+export const inRange = (heatmapElement: HeatmapElement, range: ListRange | null) => {
 	if (!range) return true;
 	const { startIndex, endIndex } = range;
 	const { index, count } = heatmapElement;
@@ -137,8 +120,7 @@ export const inRange = (
 	return elEnd >= startIndex && elEnd <= endIndex;
 };
 
-export const isHeatmapPoint = (heatmapEl: HeatmapElement) =>
-	heatmapEl.id !== undefined;
+export const isHeatmapPoint = (heatmapEl: HeatmapElement) => heatmapEl.id !== undefined;
 
 export const createHeatmapElement = (
 	index: number,

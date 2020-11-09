@@ -14,135 +14,143 @@
  * limitations under the License.
  ******************************************************************************/
 
-$reportHeaderBackground: #5EDAE1;
-$reportInfoShadowColor: #E2E2E2;
-$reportBorderColor: #D6D6D6;
-$reportTitleTextColor: #7B7B7B;
+$reportHeaderBackground: #5edae1;
+$reportInfoShadowColor: #e2e2e2;
+$reportBorderColor: #d6d6d6;
+$reportTitleTextColor: #7b7b7b;
 
-$failedTextColor: #CC0000;
+$failedTextColor: #cc0000;
 $failedBorderColor: $failedTextColor;
-$failedHeaderColor: #FFCCCC;
+$failedHeaderColor: #ffcccc;
 $failedBorderColorSecondary: $failedHeaderColor;
-$failedBorderHoverColor: #FF9999;
-$failedDelimiterHoverColor: #FF6666;
-$failedBackgroundColor: #FFDBDB;
+$failedBorderHoverColor: #ff9999;
+$failedDelimiterHoverColor: #ff6666;
+$failedBackgroundColor: #ffdbdb;
 $failedHeaderBorderColor: $failedTextColor;
 $failedHeaderSecondaryBackground: $failedHeaderColor;
-$failedSecondaryTextColor: #E05252;
+$failedSecondaryTextColor: #e05252;
 $failedVerificationBackgroundColor: mix($failedTextColor, white, 10%);
 $failedVerificationHighlightedBackgroundColor: mix($failedTextColor, white, 20%);
 
-$passedTextColor: #1F991F;
+$passedTextColor: #1f991f;
 $passedBorderColor: $passedTextColor;
-$passedHeaderColor: #DBF0DF;
+$passedHeaderColor: #dbf0df;
 $passedBorderColorSecondary: $passedHeaderColor;
-$passedBorderHoverColor: #A8CCF0;
-$passedDelimiterHoverColor: #7DB3E8;
+$passedBorderHoverColor: #a8ccf0;
+$passedDelimiterHoverColor: #7db3e8;
 $passedBackgroundColor: $passedBorderColorSecondary;
 $passedHeaderSecondaryBackground: $passedBackgroundColor;
-$passedSecondaryTextColor: rgba(#1F991F, 0.5);
-$passedVerificationBackgroundColor: mix($passedTextColor, white,  10%);
-$passedVerificationHighlightedBackgroundColor: mix($passedTextColor, white,  20%);
+$passedSecondaryTextColor: rgba(#1f991f, 0.5);
+$passedVerificationBackgroundColor: mix($passedTextColor, white, 10%);
+$passedVerificationHighlightedBackgroundColor: mix($passedTextColor, white, 20%);
 
-$conditionallyPassedTextColor: #FF5500;
+$conditionallyPassedTextColor: #ff5500;
 $conditionallyPassedBorderColor: $conditionallyPassedTextColor;
-$conditionallyPassedHeaderColor: #FFDDCC;
+$conditionallyPassedHeaderColor: #ffddcc;
 $conditionallyPassedBorderColorSecondary: $conditionallyPassedHeaderColor;
-$conditionallyPassedBorderHoverColor: #FFBB99;
-$conditionallyPassedDelimiterHoverColor: #FF9966;
+$conditionallyPassedBorderHoverColor: #ffbb99;
+$conditionallyPassedDelimiterHoverColor: #ff9966;
 $conditionallyPassedBackgroundColor: $conditionallyPassedBorderColorSecondary;
 $conditionallyPassedHeaderSecondaryBackground: $conditionallyPassedBackgroundColor;
-$conditionallyPassedSecondaryTextColor: #F57A3D;
+$conditionallyPassedSecondaryTextColor: #f57a3d;
 $conditionallyPassedVerificationBackgroundColor: mix($conditionallyPassedTextColor, white, 10%);
-$conditionallyPassedVerificationHighlightedBackgroundColor: mix($conditionallyPassedTextColor, white, 20%);
+$conditionallyPassedVerificationHighlightedBackgroundColor: mix(
+	$conditionallyPassedTextColor,
+	white,
+	20%
+);
 
-$conditionallyFailedTextColor: #E69900;
+$conditionallyFailedTextColor: #e69900;
 $conditionallyFailedBorderColor: $conditionallyFailedTextColor;
-$conditionallyFailedHeaderColor: #FFEECC;
+$conditionallyFailedHeaderColor: #ffeecc;
 $conditionallyFailedBorderColorSecondary: $conditionallyFailedHeaderColor;
 $conditionallyFailedBackgroundColor: $conditionallyFailedBorderColorSecondary;
-$conditionallyFailedBorderHoverColor: #FFDD99;
-$conditionallyFailedDelimiterHoverColor: #FFCC66;
+$conditionallyFailedBorderHoverColor: #ffdd99;
+$conditionallyFailedDelimiterHoverColor: #ffcc66;
 $conditionallyFailedHeaderSecondaryBackground: $conditionallyFailedBackgroundColor;
-$conditionallyFailedSecondaryTextColor: #E69900;
+$conditionallyFailedSecondaryTextColor: #e69900;
 $conditionallyFailedVerificationBackgroundColor: mix($conditionallyFailedTextColor, white, 10%);
-$conditionallyFailedVerificationHighlightedBackgroundColor: mix($conditionallyFailedTextColor, white, 20%);
+$conditionallyFailedVerificationHighlightedBackgroundColor: mix(
+	$conditionallyFailedTextColor,
+	white,
+	20%
+);
 
-$logCardErrorPrimaryColor: #E23636;
-$logCardErrorBorderColor: #FFCCCC;
+$logCardErrorPrimaryColor: #e23636;
+$logCardErrorBorderColor: #ffcccc;
 
-$logCardWarnPrimaryColor: #F57A3D;
-$logCardWarnBorderColor: #FFDDCC;
+$logCardWarnPrimaryColor: #f57a3d;
+$logCardWarnBorderColor: #ffddcc;
 
-$logCardDebugPrimaryColor: #5EBA6E;
-$logCardDebugBorderColor: #DBF0DF;
+$logCardDebugPrimaryColor: #5eba6e;
+$logCardDebugBorderColor: #dbf0df;
 
 $logCardInfoPrimaryColor: #808080;
-$logCardInfoBorderColor: #E6E6E6;
+$logCardInfoBorderColor: #e6e6e6;
 
 $logCardPrimaryTextColor: #262626;
 
 $naTextColor: $reportTitleTextColor;
 
-$checkpointBorderColor: #59B368;
-$checkpointBackground: #EFFFF1;
+$checkpointBorderColor: #59b368;
+$checkpointBackground: #effff1;
 
-$primaryTextColor: #4D4D4D;
+$primaryTextColor: #4d4d4d;
 $secondaryTextColor: #808080;
 $secondaryLightTextColor: #999999;
 
 $defaultCardBorderColor: #666666;
-$defaultCardBackground: #E0E0E0;
-$defaultSelectedCardBackground: #E0E0E033;
+$defaultCardBackground: #e0e0e0;
+$defaultSelectedCardBackground: #e0e0e033;
 
 $buttonDisabledBackground: $defaultCardBackground;
 
-$tableHeaderBackground: #148FCC;
-$tableHeaderBackgroundSecondary: #73B6E6;
-$tableCellBorderColor: #CCCCCC;
-$tableSubEntriesCounterBackgroundColor: #A8CCF0;
-$tableRowFailedBackgroundColor: #FFB3B3;
+$tableHeaderBackground: #148fcc;
+$tableHeaderBackgroundSecondary: #73b6e6;
+$tableCellBorderColor: #cccccc;
+$tableSubEntriesCounterBackgroundColor: #a8ccf0;
+$tableRowFailedBackgroundColor: #ffb3b3;
 $tableRowPassedBackgroundColor: #cee8d3;
-$tableStatusFailedColor: #E23636;
-$tableStatusPassedColor: #3F9E50;
-$tableStatusNAColor: #CCCCCC;
+$tableStatusFailedColor: #e23636;
+$tableStatusPassedColor: #3f9e50;
+$tableStatusNAColor: #cccccc;
 $tableTitleColor: #262626;
-$tableCounterBackgroundColor: #E6E6E6;
+$tableCounterBackgroundColor: #e6e6e6;
 
-$tableBodyBackground: #FFF;
+$tableBodyBackground: #fff;
 $tableBodyBackgroundHighlighted: $tableHeaderBackground;
 
-$messageCardBackgroundColor: #F2F2F2;
+$messageCardBackgroundColor: #f2f2f2;
 $messageCardRawHoverBackground: rgba(102, 102, 102, 0.15);
 
-$rejectedMessageLabelBackground: #FFE699;
-$adminMessageLabelBackground: #7ACCCC;
+$rejectedMessageLabelBackground: #ffe699;
+$adminMessageLabelBackground: #7acccc;
 
-$filterPrimaryColor: #00BBCC;
-$filterSecondaryColor: #FFDD99;
-$filterTextColor: #FFFFFF;
+$filterPrimaryColor: #00bbcc;
+$filterSecondaryColor: #ffdd99;
+$filterTextColor: #ffffff;
 $filterPathColor: #000000;
 
-$bubbleDefaultBackground: #FFFFFF;
+$bubbleDefaultBackground: #ffffff;
 
-$filterButtonEnabled: #3D994D;
-$filterButtonDisabled: #79BF80;
+$filterButtonEnabled: #3d994d;
+$filterButtonDisabled: #79bf80;
 $filterButtonTextColor: white;
 
-$notificationBackground: #D9D9D9;
+$notificationBackground: #d9d9d9;
 
-$scrollbarThumbBackground: #C4C4C4;
-$scrollbarTrackBackground: #F2F2F2;
+$scrollbarThumbBackground: #c4c4c4;
+$scrollbarTrackBackground: #f2f2f2;
 
-$splitterColor: #CCCCCC;
+$splitterColor: #cccccc;
 
 $spinnerOuterColor: $defaultCardBorderColor;
 $spinnerInnerColor: rgba(0, 0, 0, 0.2);
 
 $chipTextColor: #808080;
 
-$linkTextColor: #1763CF;
-$linkUnderlineColor: #A8C6F0;
+$linkTextColor: #1763cf;
+$linkUnderlineColor: #a8c6f0;
 
 $clickableHoverBackground: rgba(102, 102, 102, 0.15);
 
@@ -154,40 +162,40 @@ $hintTextColor: black;
 $nullValuetextColor: $naTextColor;
 $knownBugCardBorderColor: transparentize($defaultCardBackground, 0.33);
 
-$liveTextColor: #4D4D4D;
+$liveTextColor: #4d4d4d;
 $liveSecondaryTextColor: $secondaryTextColor;
 $liveBorderColor: #666666;
 $liveBorderSecondaryColor: $defaultCardBackground;
-$liveBackgroundColor: #CCCCCC;
+$liveBackgroundColor: #cccccc;
 $liveSecondaryBackgroundColor: #eeeeee;
-$liveHeaderSecondaryBackgroundColor: #E6E6E6;
+$liveHeaderSecondaryBackgroundColor: #e6e6e6;
 $liveBorderHoverColor: $liveBackgroundColor;
 $liveDelimiterHoverColor: #999999;
 
 $ml-icon-size: 22px;
-$ml-accent-color: #45A155;
+$ml-accent-color: #45a155;
 $ml-gray-color: #999999;
 
-$skeletonBackgroundColor: #E6E6E6;
+$skeletonBackgroundColor: #e6e6e6;
 
-$errorMsgBackgroundColor: #E23636;
+$errorMsgBackgroundColor: #e23636;
 
-$selectedColor: #997AB8;
+$selectedColor: #997ab8;
 
-$tabsBackgroundColor: #E6E6E6;
+$tabsBackgroundColor: #e6e6e6;
 
-$windowsLayoutBackgroundColor: #CCCCCC;
+$windowsLayoutBackgroundColor: #cccccc;
 
-$draggableColor: #3380CC;
+$draggableColor: #3380cc;
 
-$windowsSplitterColor: #7DB3E8;
+$windowsSplitterColor: #7db3e8;
 
-$filterPickerControlColor: #E6E6E6;
-$filterPickerControlFontColor: #4D4D4D;
+$filterPickerControlColor: #e6e6e6;
+$filterPickerControlFontColor: #4d4d4d;
 $filterPickerScrollItemColor: #666666;
-$filterPickerScrollItemActiveColor: #3FC7FA;
-$filterPickerScrollItemBlockedColor: #F3F3F3;
-$filterPickerScrollItemBlockedFontColor: #BCBCBC;
-$filterPickerScrollItemHoverColor: #EBFAFF;
+$filterPickerScrollItemActiveColor: #3fc7fa;
+$filterPickerScrollItemBlockedColor: #f3f3f3;
+$filterPickerScrollItemBlockedFontColor: #bcbcbc;
+$filterPickerScrollItemHoverColor: #ebfaff;
 
 $toastErrorBackground: $failedDelimiterHoverColor;

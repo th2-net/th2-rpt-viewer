@@ -25,16 +25,12 @@ import FlatEventView from './flat-event-list/FlatEventView';
 const EventWindow = () => {
 	const viewStore = useEventWindowViewStore();
 	return (
-		<div className="layout">
-			<div className="layout__header">
+		<div className='layout'>
+			<div className='layout__header'>
 				<EventWindowHeader />
 			</div>
-			<div className="layout__body">
-				{
-					viewStore.flattenedListView
-						? <FlatEventView />
-						: <EventTreeView />
-				}
+			<div className='layout__body'>
+				{viewStore.flattenedListView ? <FlatEventView /> : <EventTreeView />}
 			</div>
 		</div>
 	);

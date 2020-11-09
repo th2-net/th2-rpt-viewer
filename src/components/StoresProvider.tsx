@@ -20,9 +20,7 @@ import api from '../api';
 
 function RootStoreProvider({ children }: React.PropsWithChildren<{}>) {
 	return (
-		<RootStoreContext.Provider value={createRootStore(api)}>
-			{children}
-		</RootStoreContext.Provider>
+		<RootStoreContext.Provider value={createRootStore(api)}>{children}</RootStoreContext.Provider>
 	);
 }
 

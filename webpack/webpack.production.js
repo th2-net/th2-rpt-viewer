@@ -21,36 +21,36 @@ const path = require('path');
 const { appBuild, appPath, appSrc } = require('./paths');
 
 module.exports = webpackMerge(commonConfig, {
-    output: {
-        path: path.resolve(appBuild, 'out'),
-        publicPath: '',
-        filename: '[name].bundle.js',
-        chunkFilename: '[name].bundle.js',
-    },
-    mode: 'production',
-    entry: path.resolve(appSrc, 'index.tsx'),
-    module: {
-        rules: [
-            {
-                test: /\.scss$/,
-                exclude: /node_modules/,
-                use: [
-                    'style-loader',
-                    'css-loader',
-                    {
-                        loader: 'postcss-loader',
-                        options: {
-                            config: {
-                                path: path.resolve(appPath, 'postcss.config.js')
-                            }
-                        }
-                    },
-                    'sass-loader'
-                ].filter(loader => loader)
-            },
-        ]
-    },
-    optimization: {
-        usedExports: true,
-    },
+	output: {
+		path: path.resolve(appBuild, 'out'),
+		publicPath: '',
+		filename: '[name].bundle.js',
+		chunkFilename: '[name].bundle.js',
+	},
+	mode: 'production',
+	entry: path.resolve(appSrc, 'index.tsx'),
+	module: {
+		rules: [
+			{
+				test: /\.scss$/,
+				exclude: /node_modules/,
+				use: [
+					'style-loader',
+					'css-loader',
+					{
+						loader: 'postcss-loader',
+						options: {
+							config: {
+								path: path.resolve(appPath, 'postcss.config.js'),
+							},
+						},
+					},
+					'sass-loader',
+				].filter(loader => loader),
+			},
+		],
+	},
+	optimization: {
+		usedExports: true,
+	},
 });

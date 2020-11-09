@@ -19,21 +19,23 @@ import '../../styles/checkbox.scss';
 import { createBemBlock } from '../../helpers/styleCreators';
 
 interface Props {
-    checked: boolean;
-    label: string;
-    id?: string;
-    isDisabled?: boolean;
-    className?: string;
-    onChange: React.ChangeEventHandler<HTMLInputElement>;
+	checked: boolean;
+	label: string;
+	id?: string;
+	isDisabled?: boolean;
+	className?: string;
+	onChange: React.ChangeEventHandler<HTMLInputElement>;
 }
 
 export default function Checkbox({
-	checked, label, onChange, isDisabled = false, className = '', id = '',
+	checked,
+	label,
+	onChange,
+	isDisabled = false,
+	className = '',
+	id = '',
 }: Props) {
-	const rootClassName = createBemBlock(
-		'checkbox',
-		isDisabled ? 'disabled' : null,
-	);
+	const rootClassName = createBemBlock('checkbox', isDisabled ? 'disabled' : null);
 
 	return (
 		<div className={`${rootClassName} ${className}`}>
@@ -44,9 +46,7 @@ export default function Checkbox({
 				checked={checked}
 				onChange={onChange}
 			/>
-			<label
-				className='checkbox__label'
-				htmlFor={id}>
+			<label className='checkbox__label' htmlFor={id}>
 				{label}
 			</label>
 		</div>

@@ -14,430 +14,446 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import "./common/vars";
+@import './common/vars';
 
 .action-card {
-    @include status-card;
-    display: block;
-    box-sizing: border-box;
-    width: 100%;
-    height: auto;
-    border: 3px solid transparent;
-    border-radius: $defaultCardBorderRadius;
-    padding: 5px;
-    transition: all 0.1s;
-    background-color: var(--status-secondary-background-color);
-    cursor: pointer;
-    margin: 3px 0;
+	@include status-card;
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	height: auto;
+	border: 3px solid transparent;
+	border-radius: $defaultCardBorderRadius;
+	padding: 5px;
+	transition: all 0.1s;
+	background-color: var(--status-secondary-background-color);
+	cursor: pointer;
+	margin: 3px 0;
 
-    &__status {
-        padding-left: 10px;
-    }
+	&__status {
+		padding-left: 10px;
+	}
 
-    &__custom-msg {
-        color: $primaryTextColor;
+	&__custom-msg {
+		color: $primaryTextColor;
 
-        &.debug {
-            color: gray;
-        }
+		&.debug {
+			color: gray;
+		}
 
-        &.info {
-            color: black;
-        }
+		&.info {
+			color: black;
+		}
 
-        &.warn {
-            color: #edcc10;
-        }
+		&.warn {
+			color: #edcc10;
+		}
 
-        &.error {
-            color: orange;
-        }
+		&.error {
+			color: orange;
+		}
 
-        &.fail {
-            color: red;
-        }
-    }
+		&.fail {
+			color: red;
+		}
+	}
 
-    &__link {
-        padding-left: 33px;
-        
-        a {
-            text-decoration: none;
-            padding-bottom: 1px;
-            font-weight: bold;
-            font-size: 16px;
-            color: $linkTextColor;
+	&__link {
+		padding-left: 33px;
 
-            // https://kirkizh.ru/2018/03/underline/
-            // we can't use standard underline and before pseudoelement with text-shadow
-            background-image: linear-gradient(to top, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 1px,  $linkUnderlineColor 1px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 100px);
-            text-shadow: 2px 0px #fff, -2px 0px #fff;
-        }
-    }
+		a {
+			text-decoration: none;
+			padding-bottom: 1px;
+			font-weight: bold;
+			font-size: 16px;
+			color: $linkTextColor;
 
-    &:hover {
-        border-color: var(--status-secondary-color);
-    }
+			// https://kirkizh.ru/2018/03/underline/
+			// we can't use standard underline and before pseudoelement with text-shadow
+			background-image: linear-gradient(
+				to top,
+				rgba(0, 0, 0, 0) 0px,
+				rgba(0, 0, 0, 0) 1px,
+				$linkUnderlineColor 1px,
+				rgba(0, 0, 0, 0) 2px,
+				rgba(0, 0, 0, 0) 100px
+			);
+			text-shadow: 2px 0px #fff, -2px 0px #fff;
+		}
+	}
 
-    &.selected {
-        background-color: var(--status-secondary-background-color);
-        border-color: var(--status-primary-border-color);
-    }
+	&:hover {
+		border-color: var(--status-secondary-color);
+	}
+
+	&.selected {
+		background-color: var(--status-secondary-background-color);
+		border-color: var(--status-primary-border-color);
+	}
 }
 
 .ac-header {
-    width: 100%;
-    padding: 3px;
-    display: grid;
-    word-break: break-all;
+	width: 100%;
+	padding: 3px;
+	display: grid;
+	word-break: break-all;
 
-    &.verification {
-        grid-template-columns: 1fr repeat(4, auto);
-        grid-template-areas: "title start-time end-time elapsed-time controls";
-        justify-content: flex-start;
-        grid-column-gap: 10px;
-    }
+	&.verification {
+		grid-template-columns: 1fr repeat(4, auto);
+		grid-template-areas: 'title start-time end-time elapsed-time controls';
+		justify-content: flex-start;
+		grid-column-gap: 10px;
+	}
 
-    &.p50, &.p75 {
-        grid-template-columns: 1fr auto auto;
-        grid-template-rows: auto 1fr 1fr;
-        grid-template-areas: "title title controls"
-                             "start-time start-time elapsed-time"
-                             "end-time end-time .";
-        justify-content: flex-start;
-    }
+	&.p50,
+	&.p75 {
+		grid-template-columns: 1fr auto auto;
+		grid-template-rows: auto 1fr 1fr;
+		grid-template-areas:
+			'title title controls'
+			'start-time start-time elapsed-time'
+			'end-time end-time .';
+		justify-content: flex-start;
+	}
 
-    &.p25 {
-        grid-template-columns: 1fr auto auto;
-        grid-template-rows: 1fr;
-        grid-template-areas: "title elapsed-time controls"
-    }
+	&.p25 {
+		grid-template-columns: 1fr auto auto;
+		grid-template-rows: 1fr;
+		grid-template-areas: 'title elapsed-time controls';
+	}
 
-    &.p25.expanded {
-        grid-template-columns: 1fr 55px 53px;
-        grid-template-rows: auto 1fr;
-        grid-template-areas: "title elapsed-time controls"
-                             "title start-time start-time";
-    }
+	&.p25.expanded {
+		grid-template-columns: 1fr 55px 53px;
+		grid-template-rows: auto 1fr;
+		grid-template-areas:
+			'title elapsed-time controls'
+			'title start-time start-time';
+	}
 
-    &.p100 {
-        grid-template-columns: 1fr repeat(4, auto);
-        grid-template-areas: "title start-time end-time elapsed-time controls";
-    }
+	&.p100 {
+		grid-template-columns: 1fr repeat(4, auto);
+		grid-template-areas: 'title start-time end-time elapsed-time controls';
+	}
 
-    &.status-only {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: 50px;
+	&.status-only {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		border-radius: 50px;
+	}
 
-    }
+	&__loader {
+		grid-area: loader;
+		margin-left: 10px;
+		& div {
+			width: 20px;
+			height: 20px;
+		}
+	}
 
-    &__loader {
-        grid-area: loader;
-        margin-left: 10px;
-        & div {
-            width: 20px;
-            height: 20px;
-        }
-    }
+	&.transparent {
+		opacity: 0.3;
+	}
 
-    &.transparent {
-        opacity: 0.3;
-    }
+	&__title {
+		grid-area: title;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
 
-    &__title {
-        grid-area: title;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
+	&.p100 &__title {
+		flex-direction: row;
+		flex-wrap: wrap;
+		overflow: hidden;
+	}
 
-    &.p100 &__title {
-        flex-direction: row;
-        flex-wrap: wrap;
-        overflow: hidden;
-    }
+	&__name,
+	&__description,
+	&__status,
+	&__elapsed-time {
+		font-size: 17px;
+		font-weight: bold;
+	}
 
-    &__name, &__description, &__status, &__elapsed-time {
-        font-size: 17px;
-        font-weight: bold;
-    }
+	&__name {
+		cursor: pointer;
+		width: fit-content;
+	}
 
-    &__name {
-        cursor: pointer;
-        width: fit-content;
-    }
+	&__name-element {
+		padding: 0 8px;
+		cursor: pointer;
+		border-left: 2px solid var(--status-hover-border-color);
+		transition: 0.2s;
+		color: var(--status-primary-color);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
 
-    &__name-element {
-        padding: 0 8px;
-        cursor: pointer;
-        border-left: 2px solid var(--status-hover-border-color);
-        transition: 0.2s;
-        color: var(--status-primary-color);
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
+		&:hover {
+			background-color: var(--status-secondary-header-background-color);
+			border-color: var(--status-secondary-header-background-color);
 
-        &:hover {
-            background-color: var(--status-secondary-header-background-color);
-            border-color: var(--status-secondary-header-background-color);
+			& + div {
+				border-color: var(--status-secondary-header-background-color);
+			}
+		}
 
-            &+div {
-                border-color: var(--status-secondary-header-background-color);
-            }
-        }
+		&.selected {
+			border-color: var(--status-primary-delimeter-color);
 
-        &.selected {
-            border-color: var(--status-primary-delimeter-color);
+			&:hover {
+				background-color: var(--status-hover-border-color);
+				border-color: var(--status-hover-border-color);
 
-            &:hover {
-                background-color: var(--status-hover-border-color);
-                border-color: var(--status-hover-border-color);
-                
-                &+div {
-                    border-color: var(--status-hover-border-color);
-                }
-            }
-        }
+				& + div {
+					border-color: var(--status-hover-border-color);
+				}
+			}
+		}
 
-        &:first-child {
-            border-left: none;
-        }
-    }
-    
-    &__id {
-        opacity: 0.6;
-        font-size: 13px;
-        color: var(--status-primary-color);
-        margin: 0 0 6px 13px;
-    }
+		&:first-child {
+			border-left: none;
+		}
+	}
 
-    &__description {
-        color: var(--status-secondary-color);
-        padding-left: 8px;
-    }
+	&__id {
+		opacity: 0.6;
+		font-size: 13px;
+		color: var(--status-primary-color);
+		margin: 0 0 6px 13px;
+	}
 
-    &__name, &__description {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        white-space: pre-wrap;
-    }
+	&__description {
+		color: var(--status-secondary-color);
+		padding-left: 8px;
+	}
 
-    &__elapsed-time {
-        grid-area: elapsed-time;
-        color: var(--status-primary-color);
-        display: flex;
-        align-items: center;
-    }
+	&__name,
+	&__description {
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		white-space: pre-wrap;
+	}
 
-    &__start-time {
-        grid-area: start-time;
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-end;
-        align-items: center;
-    }
+	&__elapsed-time {
+		grid-area: elapsed-time;
+		color: var(--status-primary-color);
+		display: flex;
+		align-items: center;
+	}
 
-    &__end-time {
-        grid-area: end-time;
-    }
+	&__start-time {
+		grid-area: start-time;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-end;
+		align-items: center;
+	}
 
-    &.p100 &__start-time {
-        padding-right: 10px;
-    }
+	&__end-time {
+		grid-area: end-time;
+	}
 
-    &__time-label {
-        font-size: 11px;
-        color: $secondaryLightTextColor;
-        padding-right: 10px;
-        white-space: nowrap;
-    }
+	&.p100 &__start-time {
+		padding-right: 10px;
+	}
 
-    &__time-value {
-        font-size: 12px;
-        color: $secondaryTextColor;
-        font-weight: bold;
-        word-break: break-word;
-        text-align: right;
-    }
+	&__time-label {
+		font-size: 11px;
+		color: $secondaryLightTextColor;
+		padding-right: 10px;
+		white-space: nowrap;
+	}
 
-    &__controls {
-        grid-area: controls;
-        display: flex;
-        flex-direction: row-reverse;
-        justify-content: flex-start;
-        align-items: center;
-        padding-left: 5px;
-    }
-    
-    &__status {
-        color: var(--status-primary-color);
-        min-width: 20px;
-        text-align: right;
-    }
+	&__time-value {
+		font-size: 12px;
+		color: $secondaryTextColor;
+		font-weight: bold;
+		word-break: break-word;
+		text-align: right;
+	}
 
-    .ml-action__submit {
-        display: flex;
-        flex-direction: row;
-        margin-right: 6px;
-        cursor: pointer;
-    }
+	&__controls {
+		grid-area: controls;
+		display: flex;
+		flex-direction: row-reverse;
+		justify-content: flex-start;
+		align-items: center;
+		padding-left: 5px;
+	}
 
-    &__expand-button {
-        @include icon(url(../../resources/icons/expand-on.svg), 16px, 16px);
-        cursor: pointer;
-        flex-shrink: 0;
+	&__status {
+		color: var(--status-primary-color);
+		min-width: 20px;
+		text-align: right;
+	}
 
-        &.hidden {
-            background-image: url(../../resources/icons/expand-off.svg);
-        }
+	.ml-action__submit {
+		display: flex;
+		flex-direction: row;
+		margin-right: 6px;
+		cursor: pointer;
+	}
 
-        &.disabled {
-            opacity: 0.2;
-        }
-    }
+	&__expand-button {
+		@include icon(url(../../resources/icons/expand-on.svg), 16px, 16px);
+		cursor: pointer;
+		flex-shrink: 0;
+
+		&.hidden {
+			background-image: url(../../resources/icons/expand-off.svg);
+		}
+
+		&.disabled {
+			opacity: 0.2;
+		}
+	}
 }
 
 .ac-body {
-    display: block;
-    box-sizing: border-box;
-    word-break: break-all;
+	display: block;
+	box-sizing: border-box;
+	word-break: break-all;
 
-    &__item {
-        padding: 3px 7px;
-    }
+	&__item {
+		padding: 3px 7px;
+	}
 
-    &__item-title {
-        font-weight: bold;
-        font-size: 18px;
+	&__item-title {
+		font-weight: bold;
+		font-size: 18px;
 
-        &:hover {
-            @include unselectable;
-            cursor: pointer;
-        }
-    }
+		&:hover {
+			@include unselectable;
+			cursor: pointer;
+		}
+	}
 
-    &__input-params {
-        &.transparent {
-            opacity: 0.3;
-        }
-    }
+	&__input-params {
+		&.transparent {
+			opacity: 0.3;
+		}
+	}
 
-    &__verification {
-        @include status-card;
-        border: 2px solid transparent;
-        border-radius: $defaultCardBorderRadius;
-        
-        &.selected {
-            background-color: var(--status-secondary-background-color);
-            border-color: var(--status-primary-border-color);
-        }
+	&__verification {
+		@include status-card;
+		border: 2px solid transparent;
+		border-radius: $defaultCardBorderRadius;
 
-        &.transparent {
-            opacity: 0.3;
-        }
-    }
+		&.selected {
+			background-color: var(--status-secondary-background-color);
+			border-color: var(--status-primary-border-color);
+		}
 
-    &__verification-title-wrapper {
-        display: flex;
-        flex-direction: row;
-        flex-grow: 1;
-        margin-right: 10px;
-        justify-content: space-between;
+		&.transparent {
+			opacity: 0.3;
+		}
+	}
 
+	&__verification-title-wrapper {
+		display: flex;
+		flex-direction: row;
+		flex-grow: 1;
+		margin-right: 10px;
+		justify-content: space-between;
 
-        .ml__submit {
-            margin-left: 4px;
-            cursor: pointer;
-        }
-    }
+		.ml__submit {
+			margin-left: 4px;
+			cursor: pointer;
+		}
+	}
 
-    &__verification-title {
-        flex-grow: 1;
-        flex-shrink: 1;
+	&__verification-title {
+		flex-grow: 1;
+		flex-shrink: 1;
 
-        color: var(--status-primary-color);
-        font-weight: bold;
-        font-size: 17px;
+		color: var(--status-primary-color);
+		font-weight: bold;
+		font-size: 17px;
 
-        &:hover {
-            cursor: pointer;
-        }
-    }
-    
-    &__verification-table {
-        color: var(--status-primary-color);
-        font-weight: bold;
-        font-size: 17px;
-    }
+		&:hover {
+			cursor: pointer;
+		}
+	}
 
-    &__truncated-warning {
-        color: $secondaryTextColor;
-        font-size: 12px;
-        font-weight: bold;
-        padding-left: 7px;
-    }
+	&__verification-table {
+		color: var(--status-primary-color);
+		font-weight: bold;
+		font-size: 17px;
+	}
+
+	&__truncated-warning {
+		color: $secondaryTextColor;
+		font-size: 12px;
+		font-weight: bold;
+		padding-left: 7px;
+	}
 }
 
 .actions-list {
-    height: 100%;
-    width: 100%;
+	height: 100%;
+	width: 100%;
 
-    & > div {
-        @include scrollbar;
-        height: 100%;
-    }
+	& > div {
+		@include scrollbar;
+		height: 100%;
+	}
 
-    &.filter-applied {
-        height: calc(100% - #{$filterCountHeight});
-    }
+	&.filter-applied {
+		height: calc(100% - #{$filterCountHeight});
+	}
 }
 
 .ac-skeleton {
-    @include skeleton-pulse;
-    box-sizing: border-box;
-    width: 100%;
-    padding: 7px 8px;
-    background-color: white;
-    border: 2px solid $skeletonBackgroundColor;
-    border-radius: 3px;
-    display: grid;
-    grid-template-areas: "icons title status"
-                         ". description info";
-    grid-template-columns: 20px repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    grid-gap: 6px 18px;
-    margin: 6px 0;
+	@include skeleton-pulse;
+	box-sizing: border-box;
+	width: 100%;
+	padding: 7px 8px;
+	background-color: white;
+	border: 2px solid $skeletonBackgroundColor;
+	border-radius: 3px;
+	display: grid;
+	grid-template-areas:
+		'icons title status'
+		'. description info';
+	grid-template-columns: 20px repeat(2, 1fr);
+	grid-template-rows: repeat(2, 1fr);
+	grid-gap: 6px 18px;
+	margin: 6px 0;
 
+	&__icons,
+	&__title,
+	&__description,
+	&__status,
+	&__info {
+		@include skeleton;
+	}
 
-    &__icons, &__title, &__description, &__status, &__info {
-        @include skeleton;
-    }
+	&__icons {
+		grid-area: icons;
+	}
 
-    &__icons {
-        grid-area: icons;
-    }
+	&__title {
+		grid-area: title;
+		width: 227px;
+	}
 
-    &__title {
-        grid-area: title;
-        width: 227px;
-    }
+	&__description {
+		grid-area: description;
+	}
 
-    &__description {
-        grid-area: description;
-    }
+	&__status {
+		grid-area: status;
+		width: 80px;
+		justify-self: self-end;
+	}
 
-    &__status {
-        grid-area: status;
-        width: 80px;
-        justify-self: self-end;
-    }
-
-    &__info {
-        grid-area: info;
-        width: 190px;
-        justify-self: self-end;
-    }
+	&__info {
+		grid-area: info;
+		width: 190px;
+		justify-self: self-end;
+	}
 }

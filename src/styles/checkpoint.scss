@@ -13,48 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
- 
-@import "./common/vars";
+
+@import './common/vars';
 
 .checkpoint {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 9px 7px;
-    border: 2px solid transparent;
-    border-radius: 5px;
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+	padding: 9px 7px;
+	border: 2px solid transparent;
+	border-radius: 5px;
 
-    &.selected {
-        border-color: $checkpointBorderColor;
-        background-color: $checkpointBackground;
-    }
+	&.selected {
+		border-color: $checkpointBorderColor;
+		background-color: $checkpointBackground;
+	}
 
-    &-icon {
-        height: 20px;
-        width: 20px;
-        background-image: url(../../resources/icons/checkpoint.svg);
-        background-size: 100%;
-    }
+	&-icon {
+		height: 20px;
+		width: 20px;
+		background-image: url(../../resources/icons/checkpoint.svg);
+		background-size: 100%;
+	}
 
-    &-index {
-        padding-left: 5px;
-        font-weight: bold;
-        font-size: 15px;
-        color: $primaryTextColor;
-    }
+	&-index {
+		padding-left: 5px;
+		font-weight: bold;
+		font-size: 15px;
+		color: $primaryTextColor;
+	}
 
-    &-name {
-        padding-left: 20px;
-        font-weight: bold;
-        font-size: 14px;
-        color: $primaryTextColor;
-    }
+	&-name {
+		padding-left: 20px;
+		font-weight: bold;
+		font-size: 14px;
+		color: $primaryTextColor;
+	}
 
-    &-description {
-        font-size: 12px;
-        padding-left: 10px;
-        color: $secondaryTextColor;
-        word-wrap: break-word;
-    }
+	&-description {
+		font-size: 12px;
+		padding-left: 10px;
+		color: $secondaryTextColor;
+		word-wrap: break-word;
+	}
 }

@@ -26,23 +26,16 @@ interface Props {
 	selectedItem: string | null;
 }
 
-const Heatmap = ({
-	onElementClick,
-	selectedItem,
-}: Props) => {
+const Heatmap = ({ onElementClick, selectedItem }: Props) => {
 	const heatmapRef = React.useRef<HTMLDivElement>(null);
 	const heatmapRoot = React.useRef<HTMLDivElement>(null);
 	const scrollIndicatorRef = React.useRef<HTMLDivElement>(null);
 
-	const {
-		visibleRange,
-		fullRange,
-		heatmapElements,
-		unknownAreas,
-	} = useHeatmap();
+	const { visibleRange, fullRange, heatmapElements, unknownAreas } = useHeatmap();
 
 	const updateScrollIndicatorPosition = () => {
-		if (!heatmapRef.current || !visibleRange || !scrollIndicatorRef.current || !heatmapRoot.current) return;
+		if (!heatmapRef.current || !visibleRange || !scrollIndicatorRef.current || !heatmapRoot.current)
+			return;
 		const { startIndex, endIndex } = visibleRange;
 
 		const {
@@ -52,8 +45,7 @@ const Heatmap = ({
 		let scrollIndicatorTop = heatmapOffsetTop;
 		let scrollIndicatorHeight = 0;
 
-		Array
-			.from(heatmapRef.current.children)
+		Array.from(heatmapRef.current.children)
 			.filter(isDivElement)
 			.forEach(heatmapEl => {
 				const { start, end } = heatmapEl.dataset as { end: string; start: string };
@@ -66,13 +58,18 @@ const Heatmap = ({
 			});
 
 		if (scrollIndicatorHeight === 0) {
-			scrollIndicatorHeight = heatmapOffsetBottom - scrollIndicatorRef.current.getBoundingClientRect().top;
+			scrollIndicatorHeight =
+				heatmapOffsetBottom - scrollIndicatorRef.current.getBoundingClientRect().top;
 		}
 
 		scrollIndicatorRef.current.style.transform = `
 			translate3d(0,
-				${heatmapOffsetTop - heatmapRoot.current.getBoundingClientRect().top
-					+ scrollIndicatorTop - heatmapOffsetTop}px, 0)
+				${
+					heatmapOffsetTop -
+					heatmapRoot.current.getBoundingClientRect().top +
+					scrollIndicatorTop -
+					heatmapOffsetTop
+				}px, 0)
 		`;
 		scrollIndicatorRef.current.style.height = `${scrollIndicatorHeight}px`;
 
@@ -92,65 +89,69 @@ const Heatmap = ({
 	}, [visibleRange, fullRange, heatmapElements]);
 
 	const heatmapElementsInRange = heatmapElements.filter(el => inRange(el, fullRange));
-	const totalCount = heatmapElementsInRange.reduce((acc: number, curr: HeatmapElement) => acc + curr.count, 0);
+	const totalCount = heatmapElementsInRange.reduce(
+		(acc: number, curr: HeatmapElement) => acc + curr.count,
+		0,
+	);
 
 	return (
-		<div className="heatmap">
-			<div
-				ref={heatmapRoot}
-				className="heatmap__wrapper">
-				{unknownAreas.after.length > 0
-					&& <div
-						className="heatmap__scroller"
+		<div className='heatmap'>
+			<div ref={heatmapRoot} className='heatmap__wrapper'>
+				{unknownAreas.after.length > 0 && (
+					<div
+						className='heatmap__scroller'
 						style={{
 							maxHeight: 200,
 							marginBottom: 4,
 						}}>
-						{unknownAreas.after
-							.map((element: HeatmapElement, index: number) =>
-								<HeatmapItem
-									key={index}
-									{...element}
-									isSelected={element.id === selectedItem}
-									onClick={onElementClick}
-									totalCount={totalCount} />)}
-					</div>}
+						{unknownAreas.after.map((element: HeatmapElement, index: number) => (
+							<HeatmapItem
+								key={index}
+								{...element}
+								isSelected={element.id === selectedItem}
+								onClick={onElementClick}
+								totalCount={totalCount}
+							/>
+						))}
+					</div>
+				)}
 				<div
-					className="heatmap__scroller"
+					className='heatmap__scroller'
 					style={{
 						flexGrow: 2,
 						flexShrink: 0,
 						minHeight: '60%',
 					}}
 					ref={heatmapRef}>
-					{heatmapElements
-						.map((element: HeatmapElement, index: number) =>
+					{heatmapElements.map((element: HeatmapElement, index: number) => (
+						<HeatmapItem
+							key={index}
+							{...element}
+							isSelected={element.id === selectedItem}
+							onClick={onElementClick}
+							totalCount={totalCount}
+						/>
+					))}
+				</div>
+				{unknownAreas.before.length > 0 && (
+					<div
+						className='heatmap__scroller'
+						style={{
+							maxHeight: 200,
+							marginTop: 4,
+						}}>
+						{unknownAreas.before.map((element: HeatmapElement, index: number) => (
 							<HeatmapItem
 								key={index}
 								{...element}
 								isSelected={element.id === selectedItem}
 								onClick={onElementClick}
-								totalCount={totalCount} />)}
-				</div>
-				{unknownAreas.before.length > 0
-					&& <div
-						className="heatmap__scroller"
-						style={{
-							maxHeight: 200,
-							marginTop: 4,
-						}}>
-						{unknownAreas.before
-							.map((element: HeatmapElement, index: number) =>
-								<HeatmapItem
-									key={index}
-									{...element}
-									isSelected={element.id === selectedItem}
-									onClick={onElementClick}
-									totalCount={totalCount} />)}
-					</div>}
-				<div
-					ref={scrollIndicatorRef}
-					className="heatmap__scroll-indicatior"/>
+								totalCount={totalCount}
+							/>
+						))}
+					</div>
+				)}
+				<div ref={scrollIndicatorRef} className='heatmap__scroll-indicatior' />
 			</div>
 		</div>
 	);

@@ -15,7 +15,10 @@
  ***************************************************************************** */
 
 import {
-	createAction, createMessage, createSearchToken, createTestCase,
+	createAction,
+	createMessage,
+	createSearchToken,
+	createTestCase,
 } from '../../util/creators';
 import { findAll } from '../../../helpers/search/searchEngine';
 import { keyForAction, keyForMessage } from '../../../helpers/keys';
@@ -24,7 +27,7 @@ import SearchSplitResult from '../../../models/search/SearchSplitResult';
 import multiTokenSplit from '../../../helpers/search/multiTokenSplit';
 
 describe('[Helpers] Search - searchEngine', () => {
-	test('One token search in action\'s name', async () => {
+	test("One token search in action's name", async () => {
 		const tokens: PanelSearchToken[] = [createSearchToken()];
 
 		const action = {
@@ -42,7 +45,7 @@ describe('[Helpers] Search - searchEngine', () => {
 		expect(results.entries).toEqual(expectedResults);
 	});
 
-	test('Several tokens search in action\'s name', async () => {
+	test("Several tokens search in action's name", async () => {
 		const tokens: PanelSearchToken[] = [
 			createSearchToken('test', 'first'),
 			createSearchToken('some', 'second'),

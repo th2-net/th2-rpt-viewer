@@ -16,8 +16,9 @@
 
 /* eslint-disable no-bitwise */
 export function getHashCode(str: string): number {
-	let hash = 0; let i; let
-		chr;
+	let hash = 0;
+	let i;
+	let chr;
 
 	if (str.length === 0) {
 		return hash;
@@ -25,7 +26,7 @@ export function getHashCode(str: string): number {
 
 	for (i = 0; i < str.length; i++) {
 		chr = str.charCodeAt(i);
-		hash = ((hash << 5) - hash) + chr;
+		hash = (hash << 5) - hash + chr;
 		hash |= 0; // Convert to 32bit integer
 	}
 

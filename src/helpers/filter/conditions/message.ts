@@ -23,7 +23,10 @@ import FilterPath from '../../../models/filter/FilterPath';
 
 const STUB_FUNCTION = () => false;
 
-export default function getMessageCondition(path: FilterPath, values: string[]): FilterCondition<Message> {
+export default function getMessageCondition(
+	path: FilterPath,
+	values: string[],
+): FilterCondition<Message> {
 	switch (path) {
 		case FilterPath.SERVICE:
 			return message => filterEntry(message, ['from', 'to'], toRegExpArray(values));

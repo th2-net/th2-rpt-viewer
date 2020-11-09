@@ -40,10 +40,7 @@ interface AppWindowProps {
 const TabsWithSideDropTargets = withSideDropTargets(Tabs);
 
 const AppWindow = (props: AppWindowProps) => {
-	const {
-		windowStore,
-		windowIndex,
-	} = props;
+	const { windowStore, windowIndex } = props;
 	const windowsStore = useWindowsStore();
 
 	const renderTabs: TabListRenderProps = renderProps => {
@@ -70,7 +67,8 @@ const AppWindow = (props: AppWindowProps) => {
 								windowIndex={windowIndex}
 								onTabDrop={windowsStore.moveTab}
 								tabCount={windowStore.tabs.length}
-								{...tabProps} />
+								{...tabProps}
+							/>
 						)}
 					</Observer>
 				);
@@ -94,7 +92,8 @@ const AppWindow = (props: AppWindowProps) => {
 							isDuplicable={windowsStore.isDuplicable}
 							onTabDrop={windowsStore.moveTab}
 							tabCount={windowStore.tabs.length}
-							{...tabProps} />
+							{...tabProps}
+						/>
 					)}
 				</Observer>
 			);
@@ -103,9 +102,7 @@ const AppWindow = (props: AppWindowProps) => {
 
 	const tabsClassName = createStyleSelector(
 		'window-tabs',
-		windowsStore.windows.length > 1
-			? windowIndex === 0 ? 'attach-right' : 'attach-left'
-			: null,
+		windowsStore.windows.length > 1 ? (windowIndex === 0 ? 'attach-right' : 'attach-left') : null,
 	);
 
 	return (
@@ -113,9 +110,11 @@ const AppWindow = (props: AppWindowProps) => {
 			leftDropAreaEnabled={windowsStore.windows.length === 1}
 			rightDropAreaEnabled={windowsStore.windows.length === 1}
 			onDropLeft={(draggedTab: TabDraggableItem) =>
-				windowsStore.moveTab(windowIndex, windowIndex - 1, draggedTab.tabIndex)}
+				windowsStore.moveTab(windowIndex, windowIndex - 1, draggedTab.tabIndex)
+			}
 			onDropRight={(draggedTab: TabDraggableItem) =>
-				windowsStore.moveTab(windowIndex, windowIndex + 1, draggedTab.tabIndex)}
+				windowsStore.moveTab(windowIndex, windowIndex + 1, draggedTab.tabIndex)
+			}
 			offsetTop={50}
 			activeIndex={windowStore.activeTabIndex}
 			onChange={windowStore.setActiveTab}
@@ -127,14 +126,17 @@ const AppWindow = (props: AppWindowProps) => {
 				</DroppableTabList>
 			)}
 			tabPanels={windowStore.tabs.map(tab =>
-				(isEventsTab(tab)
-					? <EventWindowProvider value={tab.store}>
+				isEventsTab(tab) ? (
+					<EventWindowProvider value={tab.store}>
 						<EventWindow />
 					</EventWindowProvider>
-					: <MessagesWindowProvider value={tab.store} >
+				) : (
+					<MessagesWindowProvider value={tab.store}>
 						<MessagesWindow />
-					</MessagesWindowProvider>))
-			} />
+					</MessagesWindowProvider>
+				),
+			)}
+		/>
 	);
 };
 

@@ -36,23 +36,24 @@ const MessageCardList = () => {
 
 	const [messagesHeightsMap, setMessagesHeightMap] = React.useState<MessagesHeights>({});
 
-	const resizeObserver = React.useRef(new ResizeObserver(entries => {
-		const stateUpdate: MessagesHeights = {};
-		entries.forEach(entry => {
-			const { index } = (entry.target as HTMLDivElement).dataset;
-			const { height } = entry.contentRect;
-			if (index !== undefined
-				&& messagesHeightsMap[parseInt(index)] !== height) {
-				stateUpdate[parseInt(index)] = height;
+	const resizeObserver = React.useRef(
+		new ResizeObserver(entries => {
+			const stateUpdate: MessagesHeights = {};
+			entries.forEach(entry => {
+				const { index } = (entry.target as HTMLDivElement).dataset;
+				const { height } = entry.contentRect;
+				if (index !== undefined && messagesHeightsMap[parseInt(index)] !== height) {
+					stateUpdate[parseInt(index)] = height;
+				}
+			});
+			if (Object.entries(stateUpdate).length > 0) {
+				setMessagesHeightMap((heights: MessagesHeights) => ({
+					...heights,
+					...stateUpdate,
+				}));
 			}
-		});
-		if (Object.entries(stateUpdate).length > 0) {
-			setMessagesHeightMap((heights: MessagesHeights) => ({
-				...heights,
-				...stateUpdate,
-			}));
-		}
-	}));
+		}),
+	);
 
 	const renderMessage = (index: number) => {
 		const id = messagesStore.messagesIds[index];
@@ -62,42 +63,45 @@ const MessageCardList = () => {
 				index={index}
 				onMount={ref => resizeObserver.current.observe(ref.current as HTMLDivElement)}
 				onUnmount={ref => resizeObserver.current.unobserve(ref.current as HTMLDivElement)}>
-				<SkeletonedMessageCardListItem id={id}/>
+				<SkeletonedMessageCardListItem id={id} />
 			</MessageWrapper>
 		);
 	};
 
-	if (messagesStore.messagesLoadingState.loadingRootItems && messagesStore.messagesIds.length === 0) {
+	if (
+		messagesStore.messagesLoadingState.loadingRootItems &&
+		messagesStore.messagesIds.length === 0
+	) {
 		return <SplashScreen />;
 	}
 
 	if (
-		!Object.values(messagesStore.messagesLoadingState).some(Boolean)
-		&& messagesStore.messagesIds.length === 0
+		!Object.values(messagesStore.messagesLoadingState).some(Boolean) &&
+		messagesStore.messagesIds.length === 0
 	) {
-		return <Empty description="No messages" />;
+		return <Empty description='No messages' />;
 	}
 
 	return (
-		<div className="messages-list">
+		<div className='messages-list'>
 			<MessagesHeightsContext.Provider value={messagesHeightsMap}>
 				<StateSaverProvider>
 					<MessagesVirtualizedList
 						loadingState={messagesStore.messagesLoadingState}
-						className="messages-list__items"
+						className='messages-list__items'
 						rowCount={messagesStore.messagesIds.length}
 						scrolledIndex={messagesStore.scrolledIndex}
 						itemRenderer={renderMessage}
 						overscan={0}
 						ScrollContainer={MessagesScrollContainer}
 						loadNextMessages={() => messagesStore.loadNextMessages()}
-						loadPrevMessages={() => messagesStore.loadPreviousMessages()}/>
-					{
-						messagesStore.messagesLoadingState.loadingSelectedMessage
-						&& <div className="messages-list__overlay-loader">
-							<div className="messages-list__overlay-spinner"/>
+						loadPrevMessages={() => messagesStore.loadPreviousMessages()}
+					/>
+					{messagesStore.messagesLoadingState.loadingSelectedMessage && (
+						<div className='messages-list__overlay-loader'>
+							<div className='messages-list__overlay-spinner' />
 						</div>
-					}
+					)}
 				</StateSaverProvider>
 			</MessagesHeightsContext.Provider>
 		</div>
@@ -112,12 +116,7 @@ type WrapperProps = React.PropsWithChildren<{
 	index: number;
 }>;
 
-function MessageWrapper({
-	index,
-	onMount,
-	onUnmount,
-	children,
-}: WrapperProps) {
+function MessageWrapper({ index, onMount, onUnmount, children }: WrapperProps) {
 	const ref = React.useRef<HTMLDivElement | null>(null);
 
 	React.useEffect(() => {

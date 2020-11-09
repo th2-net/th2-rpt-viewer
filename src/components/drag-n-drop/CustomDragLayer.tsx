@@ -31,11 +31,7 @@ const layerStyles: React.CSSProperties = {
 	height: '100%',
 };
 
-function getItemStyles(
-	initialOffset: XYCoord | null,
-	currentOffset: XYCoord | null,
-	item: any,
-) {
+function getItemStyles(initialOffset: XYCoord | null, currentOffset: XYCoord | null, item: any) {
 	if (!initialOffset || !currentOffset) {
 		return {
 			display: 'none',
@@ -57,13 +53,7 @@ function getItemStyles(
 
 // This component allows us to customize rendering of dragging item
 export const CustomDragLayer = () => {
-	const {
-		itemType,
-		isDragging,
-		item,
-		initialOffset,
-		currentOffset,
-	} = useDragLayer(monitor => ({
+	const { itemType, isDragging, item, initialOffset, currentOffset } = useDragLayer(monitor => ({
 		item: monitor.getItem(),
 		itemType: monitor.getItemType(),
 		initialOffset: monitor.getInitialSourceClientOffset(),
@@ -74,9 +64,11 @@ export const CustomDragLayer = () => {
 	function renderTab() {
 		switch (item.payload.type) {
 			case TabTypes.Events:
-				return <EventsWindowTabPreview store={item.payload.store} isSelected={item.payload.isSelected}/>;
+				return (
+					<EventsWindowTabPreview store={item.payload.store} isSelected={item.payload.isSelected} />
+				);
 			case TabTypes.Messages:
-				return <MessagesWindowTabPreview isSelected={item.payload.isSelected}/>;
+				return <MessagesWindowTabPreview isSelected={item.payload.isSelected} />;
 			default:
 				return null;
 		}
@@ -97,11 +89,7 @@ export const CustomDragLayer = () => {
 
 	return (
 		<div style={layerStyles}>
-			<div
-				style={getItemStyles(initialOffset, currentOffset, item)}
-			>
-				{renderItem()}
-			</div>
+			<div style={getItemStyles(initialOffset, currentOffset, item)}>{renderItem()}</div>
 		</div>
 	);
 };

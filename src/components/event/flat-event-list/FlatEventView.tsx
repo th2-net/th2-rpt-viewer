@@ -22,7 +22,6 @@ import Empty from '../../Empty';
 import SplitView from '../../split-view/SplitView';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
-import EventDetailInfoCard from '../EventDetailInfoCard';
 import DetailedFlatEventCard from './DetailedFlatEventCard';
 
 function EventTreeView() {
@@ -36,21 +35,20 @@ function EventTreeView() {
 			leftPanelMinWidth={445}
 			rightPanelMinWidth={445}>
 			<SplitViewPane>
-				<FlatEventList nodes={eventWindowStore.flattenedEventList}/>
+				<FlatEventList nodes={eventWindowStore.flattenedEventList} />
 			</SplitViewPane>
 			<SplitViewPane>
-				{
-					eventWindowStore.selectedNode === null
-					&& !eventWindowStore.loadingSelectedEvent
-					&& <Empty description="Select event"/>
-				}
-				{
-					eventWindowStore.selectedNode
-					&& <DetailedFlatEventCard
-						idNode={eventWindowStore.selectedNode}
-						parentNodes={eventWindowStore.selectedPath
-							.filter(node => node !== eventWindowStore.selectedNode)}/>
-				}
+				{eventWindowStore.selectedNode === null && !eventWindowStore.loadingSelectedEvent && (
+					<Empty description='Select event' />
+				)}
+				{eventWindowStore.selectedNode && (
+					<DetailedFlatEventCard
+						eventTreeNode={eventWindowStore.selectedNode}
+						parentNodes={eventWindowStore.selectedPath.filter(
+							node => node !== eventWindowStore.selectedNode,
+						)}
+					/>
+				)}
 			</SplitViewPane>
 		</SplitView>
 	);

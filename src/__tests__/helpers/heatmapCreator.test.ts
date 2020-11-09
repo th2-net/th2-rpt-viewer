@@ -28,37 +28,25 @@ describe('[Helpers] heatmap', () => {
 	describe('Heatmap creator', () => {
 		test('generates empty heatmap', () => {
 			const { items } = createHeatmapInputData(0, new Map(), []);
-			const heatmapElement = getHeatmapElements(
-				items,
-				new Map(),
-				[],
-			);
+			const heatmapElement = getHeatmapElements(items, new Map(), []);
 			expect(heatmapElement).toEqual([createHeatmapElement(0, 1)]);
 		});
 
 		test('generates heatmap with selected items', () => {
 			const selectedItemsMap: Map<string, number[]> = new Map();
 			selectedItemsMap.set(DEFAULT_HEATMAP_ELEMENT_COLOR, [2, 3]);
-			const {
-				items,
-				selectedItems,
-				pinnedItems,
-			} = createHeatmapInputData(
-				5,
-				selectedItemsMap,
-				[],
-			);
+			const { items, selectedItems, pinnedItems } = createHeatmapInputData(5, selectedItemsMap, []);
 
-			const heatmapElements = getHeatmapElements(
-				items,
-				selectedItems,
-				pinnedItems,
-			);
+			const heatmapElements = getHeatmapElements(items, selectedItems, pinnedItems);
 
 			expect(heatmapElements).toEqual([
 				createHeatmapElement(0, 2),
-				createHeatmapElement(2, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![0], [DEFAULT_HEATMAP_ELEMENT_COLOR]),
-				createHeatmapElement(3, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![1], [DEFAULT_HEATMAP_ELEMENT_COLOR]),
+				createHeatmapElement(2, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![0], [
+					DEFAULT_HEATMAP_ELEMENT_COLOR,
+				]),
+				createHeatmapElement(3, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![1], [
+					DEFAULT_HEATMAP_ELEMENT_COLOR,
+				]),
 				createHeatmapElement(4, 1),
 			]);
 		});
@@ -67,23 +55,23 @@ describe('[Helpers] heatmap', () => {
 			const selectedItemsMap: Map<string, number[]> = new Map();
 			selectedItemsMap.set(DEFAULT_HEATMAP_ELEMENT_COLOR, [0, 3]);
 			const pinnedItemsIndexes = [2];
-			const {
-				items,
-				selectedItems,
-				pinnedItems,
-			} = createHeatmapInputData(7, selectedItemsMap, pinnedItemsIndexes);
-
-			const heatmapElements = getHeatmapElements(
-				items,
-				selectedItems,
-				pinnedItems,
+			const { items, selectedItems, pinnedItems } = createHeatmapInputData(
+				7,
+				selectedItemsMap,
+				pinnedItemsIndexes,
 			);
 
+			const heatmapElements = getHeatmapElements(items, selectedItems, pinnedItems);
+
 			expect(heatmapElements).toEqual([
-				createHeatmapElement(0, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![0], [DEFAULT_HEATMAP_ELEMENT_COLOR]),
+				createHeatmapElement(0, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![0], [
+					DEFAULT_HEATMAP_ELEMENT_COLOR,
+				]),
 				createHeatmapElement(1, 1),
 				createHeatmapElement(2, 1, pinnedItems[0], [DEFAULT_PIN_COLOR], true),
-				createHeatmapElement(3, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![1], [DEFAULT_HEATMAP_ELEMENT_COLOR]),
+				createHeatmapElement(3, 1, selectedItems.get(DEFAULT_HEATMAP_ELEMENT_COLOR)![1], [
+					DEFAULT_HEATMAP_ELEMENT_COLOR,
+				]),
 				createHeatmapElement(4, 3),
 			]);
 		});
@@ -95,17 +83,13 @@ describe('[Helpers] heatmap', () => {
 			selectedItemsMap.set(color1, [3, 11]);
 			selectedItemsMap.set(color2, [3, 4]);
 			const pinnedItemsIndexes = [3, 9];
-			const {
-				items,
-				selectedItems,
-				pinnedItems,
-			} = createHeatmapInputData(13, selectedItemsMap, pinnedItemsIndexes);
-
-			const heatmapElements = getHeatmapElements(
-				items,
-				selectedItems,
-				pinnedItems,
+			const { items, selectedItems, pinnedItems } = createHeatmapInputData(
+				13,
+				selectedItemsMap,
+				pinnedItemsIndexes,
 			);
+
+			const heatmapElements = getHeatmapElements(items, selectedItems, pinnedItems);
 
 			expect(heatmapElements).toEqual([
 				createHeatmapElement(0, 3),

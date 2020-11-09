@@ -24,15 +24,12 @@ interface Props {
 }
 
 export default function EventCardSkeleton({ displayType = CardDisplayType.MINIMAL }: Props) {
-	const rootClassName = createBemBlock(
-		'event-skeleton',
-		displayType,
-	);
+	const rootClassName = createBemBlock('event-skeleton', displayType);
 
 	return (
 		<div className={rootClassName}>
-			<div className='event-skeleton__name'/>
-			<div className='event-skeleton__status'/>
+			<div className='event-skeleton__name' />
+			<div className='event-skeleton__status' />
 		</div>
 	);
 }

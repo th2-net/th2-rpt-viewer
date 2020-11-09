@@ -48,7 +48,10 @@ export function getMinifiedStatus(status: string): string {
 		.toUpperCase();
 }
 
-export function removeNonexistingRelatedMessages(action: ActionNode, messagesIds: number[]): ActionNode {
+export function removeNonexistingRelatedMessages(
+	action: ActionNode,
+	messagesIds: number[],
+): ActionNode {
 	if (!isAction(action)) {
 		return action;
 	}
@@ -66,14 +69,17 @@ export function getActionCheckpointName(action: Action): string {
 	}
 
 	const checkpointParam = action.parameters.find(param => param.name === 'Checkpoint');
-	const nameParam = checkpointParam && checkpointParam.subParameters!.find(param => param.name === 'Name');
+	const nameParam =
+		checkpointParam && checkpointParam.subParameters!.find(param => param.name === 'Name');
 	const name = nameParam != null ? nameParam.value : '';
 
 	return name!;
 }
 
 export function filterActionNode(
-	actionNode: ActionNode, filterResults: string[], parentActionId: number | null = null,
+	actionNode: ActionNode,
+	filterResults: string[],
+	parentActionId: number | null = null,
 ): ActionNode | null {
 	switch (actionNode.actionNodeType) {
 		case ActionNodeType.ACTION: {
@@ -85,8 +91,8 @@ export function filterActionNode(
 				return {
 					...actionNode,
 					subNodes: actionNode.subNodes
-							?.map(subNode => filterActionNode(subNode, filterResults, actionNode.id))
-							.filter((node): node is ActionNode => node !== null),
+						?.map(subNode => filterActionNode(subNode, filterResults, actionNode.id))
+						.filter((node): node is ActionNode => node !== null),
 				};
 			}
 

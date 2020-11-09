@@ -18,26 +18,28 @@ import * as React from 'react';
 import '../../styles/select.scss';
 
 interface Props {
-    className?: string;
-    options: string[];
-    selected: string;
-    prefix?: string;
-    onChange: (option: string) => void;
+	className?: string;
+	options: string[];
+	selected: string;
+	prefix?: string;
+	onChange: (option: string) => void;
 }
 
 export default function Select({
-	options, selected, onChange, className = '', prefix = '',
+	options,
+	selected,
+	onChange,
+	className = '',
+	prefix = '',
 }: Props) {
 	return (
 		<select
 			className={`options-select ${className}`}
 			value={prefix + selected}
 			onChange={e => onChange(e.target.value.substring(prefix.length))}>
-			{
-				options.map((opt, index) => (
-					<option key={index}>{prefix + opt}</option>
-				))
-			}
+			{options.map((opt, index) => (
+				<option key={index}>{prefix + opt}</option>
+			))}
 		</select>
 	);
 }

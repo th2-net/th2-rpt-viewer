@@ -24,5 +24,5 @@ export interface HeatmapElement {
 
 export interface ListRange {
 	startIndex: number;
-    endIndex: number;
+	endIndex: number;
 }

@@ -25,7 +25,11 @@ import ActionParameter from '../../models/ActionParameter';
 
 type Entry = Action | Message | Verification | VerificationEntry | ActionParameter;
 
-export default function filterEntry<T extends Entry>(entry: T, fields: (keyof T)[], values: RegExp[]): boolean {
+export default function filterEntry<T extends Entry>(
+	entry: T,
+	fields: (keyof T)[],
+	values: RegExp[],
+): boolean {
 	for (const field of fields) {
 		const targetField = entry[field];
 

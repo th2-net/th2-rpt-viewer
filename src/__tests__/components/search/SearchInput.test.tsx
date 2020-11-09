@@ -21,7 +21,6 @@ import {
 	Props as SearchInputProps,
 	REACTIVE_SEARCH_DELAY,
 } from '../../../components/search/SearchInput';
-import SearchResult from '../../../helpers/search/SearchResult';
 import SearchToken from '../../../models/search/SearchToken';
 import KeyCodes from '../../../util/KeyCodes';
 import { timer } from '../../util/timer';
@@ -45,17 +44,16 @@ describe('[React] <SearchInput/>', () => {
 	};
 
 	test('Should render input on click', () => {
-		const wrapper = mount(
-			<SearchInputBase
-				{...defaultProps}
-			/>,
-		);
+		const setIsActive = jest.fn();
+		const wrapper = mount(<SearchInputBase {...defaultProps} setIsActive={setIsActive} />);
 
 		expect(wrapper.find('input').length).toEqual(0);
 
 		const field = wrapper.find('.search-field');
 		field.simulate('click', { target: field.getDOMNode() });
+		expect(setIsActive).toBeCalled();
 
+		wrapper.setProps({ isActive: true });
 		expect(wrapper.find('input').length).toEqual(1);
 	});
 
@@ -63,19 +61,16 @@ describe('[React] <SearchInput/>', () => {
 		const updateMock = jest.fn();
 
 		const wrapper = mount(
-			<SearchInputBase
-				{...defaultProps}
-				updateSearchTokens={updateMock}
-			/>,
+			<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} isActive={true} />,
 		);
 
-
 		const field = wrapper.find('.search-field');
+
 		field.simulate('click', { target: field.getDOMNode() });
 
 		const input = wrapper.find('input');
 		input.simulate('change', { target: { value: 'test' } });
-
+		wrapper.setProps({ value: 'test' });
 		expect(updateMock.mock.calls.length).toEqual(0);
 
 		setTimeout(() => {
@@ -91,10 +86,7 @@ describe('[React] <SearchInput/>', () => {
 		const updateMock = jest.fn();
 
 		const wrapper = mount(
-			<SearchInputBase
-				{...defaultProps}
-				updateSearchTokens={updateMock}
-			/>,
+			<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} isActive={true} />,
 		);
 
 		const field = wrapper.find('.search-field');
@@ -102,7 +94,7 @@ describe('[React] <SearchInput/>', () => {
 
 		const input = wrapper.find('input');
 		input.simulate('change', { target: { value: 'test' } });
-
+		wrapper.setProps({ value: 'test' });
 		expect(updateMock).not.toHaveBeenCalled();
 
 		input.simulate('keydown', { keyCode: KeyCodes.SPACE });
@@ -117,10 +109,7 @@ describe('[React] <SearchInput/>', () => {
 		const updateMock = jest.fn();
 
 		const wrapper = mount(
-			<SearchInputBase
-				{...defaultProps}
-				updateSearchTokens={updateMock}
-			/>,
+			<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} isActive={true} />,
 		);
 
 		const field = wrapper.find('.search-field');
@@ -128,13 +117,13 @@ describe('[React] <SearchInput/>', () => {
 
 		const input = wrapper.find('input');
 		input.simulate('change', { target: { value: 'test' } });
+		wrapper.setProps({ value: 'test' });
 
 		expect(updateMock).not.toHaveBeenCalled();
 
 		await timer(REACTIVE_SEARCH_DELAY);
 
 		expect(updateMock).toHaveBeenCalled();
-
 		const reactiveTokens: SearchToken[] = updateMock.mock.calls[0][0];
 		expect(reactiveTokens[0]?.pattern).toEqual('test');
 		expect(reactiveTokens[0]?.isActive).toEqual(true);
@@ -144,6 +133,7 @@ describe('[React] <SearchInput/>', () => {
 		});
 
 		input.simulate('change', { target: { value: 'testsubmit' } });
+		wrapper.setProps({ value: 'testsubmit' });
 		input.simulate('keydown', { keyCode: KeyCodes.SPACE });
 
 		expect(updateMock.mock.calls.length).toEqual(2);

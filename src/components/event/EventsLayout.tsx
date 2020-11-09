@@ -31,28 +31,25 @@ const EventsLayout = () => {
 	const appViewStore = useAppViewStore();
 
 	return (
-		<div className="events-layout">
+		<div className='events-layout'>
 			<DndProvider backend={HTML5Backend}>
 				<CustomDragLayer />
-				{windowsStore.windows.length === 1
-					&& <AppWindow windowStore={windowsStore.windows[0]} windowIndex={0}/>}
-				{windowsStore.windows.length > 1
-					&& <SplitView
+				{windowsStore.windows.length === 1 && (
+					<AppWindow windowStore={windowsStore.windows[0]} windowIndex={0} />
+				)}
+				{windowsStore.windows.length > 1 && (
+					<SplitView
 						panelArea={appViewStore.panelArea}
 						onPanelAreaChange={appViewStore.setPanelArea}
-						splitterClassName="events-layout__splitter">
+						splitterClassName='events-layout__splitter'>
 						<SplitViewPane>
-							<AppWindow
-								windowStore={windowsStore.windows[0]}
-								windowIndex={0} />
+							<AppWindow windowStore={windowsStore.windows[0]} windowIndex={0} />
 						</SplitViewPane>
 						<SplitViewPane>
-							<AppWindow
-								windowStore={windowsStore.windows[1]}
-								windowIndex={1} />
+							<AppWindow windowStore={windowsStore.windows[1]} windowIndex={1} />
 						</SplitViewPane>
 					</SplitView>
-				}
+				)}
 			</DndProvider>
 		</div>
 	);

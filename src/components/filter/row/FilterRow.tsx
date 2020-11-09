@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-
 import * as React from 'react';
 import { FilterRowConfig } from '../../../models/filter/FilterInputs';
 import StringFilterRow from './StringRow';
@@ -28,17 +27,11 @@ interface Props {
 export default function FilterRow({ rowConfig }: Props) {
 	switch (rowConfig.type) {
 		case 'datetime-range':
-			return (
-				<DatetimeFilterRow config={rowConfig}/>
-			);
+			return <DatetimeFilterRow config={rowConfig} />;
 		case 'string':
-			return (
-				<StringFilterRow config={rowConfig}/>
-			);
+			return <StringFilterRow config={rowConfig} />;
 		case 'multiple-strings':
-			return (
-				<MultipleStringFilterRow config={rowConfig}/>
-			);
+			return <MultipleStringFilterRow config={rowConfig} />;
 		default:
 			return null;
 	}

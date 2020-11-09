@@ -16,7 +16,12 @@
 
 import SearchToken from '../../models/search/SearchToken';
 
-export function createSearchToken(value: string, color: string, isScrollable = true, isActive = true): SearchToken {
+export function createSearchToken(
+	value: string,
+	color: string,
+	isScrollable = true,
+	isActive = true,
+): SearchToken {
 	return {
 		pattern: value.trim(),
 		color,

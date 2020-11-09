@@ -17,16 +17,14 @@
 import fetchIntercept from 'fetch-intercept';
 import NotificationsStore from '../stores/NotificationsStore';
 
-export default () => (
+export const registerFetchInterceptor = () =>
 	fetchIntercept.register({
 		request(url, config) {
 			return [url, config];
 		},
-
 		requestError(error) {
 			return Promise.reject(error);
 		},
-
 		response(response) {
 			if (!response.ok) {
 				const { url, status, statusText } = response;
@@ -39,9 +37,7 @@ export default () => (
 			}
 			return response;
 		},
-
 		responseError(error) {
 			return Promise.reject(error);
 		},
-	})
-);
+	});

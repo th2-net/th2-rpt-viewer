@@ -24,6 +24,7 @@ import { EventStoreURLState } from './EventsStore';
 import { MessagesStoreURLState } from './MessagesStore';
 import { getObjectKeys } from '../helpers/object';
 import NotificationsStore from './NotificationsStore';
+import { getEventNodeParents } from '../helpers/event';
 
 export default class RootStore {
 	windowsStore: WindowsStore;
@@ -39,7 +40,7 @@ export default class RootStore {
 
 		autorun(() => {
 			const windowsUrlState: WindowsUrlState = this.windowsStore.windows.map(window => {
-				let activeTabState: EventStoreURLState | MessagesStoreURLState;
+				let activeTabState: EventStoreURLState | MessagesStoreURLState = {};
 
 				const activeTab = window.tabs[window.activeTabIndex];
 
@@ -48,17 +49,21 @@ export default class RootStore {
 					activeTabState = {
 						type: TabTypes.Events,
 						filter: eventsStore.filterStore.isEventsFilterApplied
-							? eventsStore.filterStore.eventsFilter : undefined,
+							? eventsStore.filterStore.eventsFilter
+							: undefined,
 						panelArea: eventsStore.viewStore.panelArea,
 						selectedNodesPath: eventsStore.selectedNode
-							? [...eventsStore.selectedNode.parents, eventsStore.selectedNode.id]
+							? [...getEventNodeParents(eventsStore.selectedNode), eventsStore.selectedNode.eventId]
 							: undefined,
-						search: eventsStore.searchStore.tokens.length > 0
-							? eventsStore.searchStore.tokens.map(t => t.pattern)
-							: undefined,
+						search:
+							eventsStore.searchStore.tokens.length > 0
+								? eventsStore.searchStore.tokens.map(t => t.pattern)
+								: undefined,
 						flattenedListView: eventsStore.viewStore.flattenedListView,
-						selectedParentId: eventsStore.viewStore.flattenedListView && eventsStore.selectedParentNode
-							? eventsStore.selectedParentNode.id : undefined,
+						selectedParentId:
+							eventsStore.viewStore.flattenedListView && eventsStore.selectedParentNode
+								? eventsStore.selectedParentNode.eventId
+								: undefined,
 					};
 				}
 
@@ -68,15 +73,14 @@ export default class RootStore {
 					};
 				}
 
-				getObjectKeys(activeTabState!)
-					.forEach(key => {
-						if (activeTabState[key] === undefined) {
-							delete activeTabState[key];
-						}
-					});
+				getObjectKeys(activeTabState).forEach(key => {
+					if (activeTabState[key] === undefined) {
+						delete activeTabState[key];
+					}
+				});
 
 				return {
-					activeTab: activeTabState!,
+					activeTab: activeTabState,
 					activeTabIndex: window.activeTabIndex.toString(),
 				};
 			});
@@ -88,7 +92,6 @@ export default class RootStore {
 			window.history.replaceState({}, '', `?${searchParams}`);
 		});
 	}
-
 
 	parseWindowsState = (): WindowsUrlState | null => {
 		try {

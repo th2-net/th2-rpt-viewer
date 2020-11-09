@@ -17,7 +17,7 @@
 import * as React from 'react';
 
 interface Props {
-    errorMessage?: string;
+	errorMessage?: string;
 	fallback?: React.ReactElement;
 }
 

@@ -17,25 +17,27 @@
 import Exception from './Exception';
 
 export enum StatusType {
-    PASSED = 'PASSED',
-    FAILED = 'FAILED',
-    CONDITIONALLY_PASSED = 'CONDITIONALLY_PASSED',
-    NA = 'NA',
-    SKIPPED = 'SKIPPED',
-    CONDITIONALLY_FAILED = 'CONDITIONALLY_FAILED'
+	PASSED = 'PASSED',
+	FAILED = 'FAILED',
+	CONDITIONALLY_PASSED = 'CONDITIONALLY_PASSED',
+	NA = 'NA',
+	SKIPPED = 'SKIPPED',
+	CONDITIONALLY_FAILED = 'CONDITIONALLY_FAILED',
 }
 
 export const statusValues: StatusType[] = Object.values(StatusType);
 
 export default interface Status {
-    status: StatusType;
-    reason: string | null;
-    details: string | null;
-    description: string | null;
-    cause: Exception | null;
+	status: StatusType;
+	reason: string | null;
+	details: string | null;
+	description: string | null;
+	cause: Exception | null;
 }
 
 export enum EventStatus {
-    PASSED = 'PASSED',
-    FAILED = 'FAILED',
+	PASSED = 'PASSED',
+	FAILED = 'FAILED',
 }
+
+export const eventStatusValues: EventStatus[] = Object.values(EventStatus);

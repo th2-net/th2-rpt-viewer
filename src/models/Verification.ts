@@ -19,10 +19,10 @@ import VerificationEntry from './VerificationEntry';
 import { ActionNodeType } from './Action';
 
 export default interface Verification {
-    actionNodeType: ActionNodeType.VERIFICATION;
-    messageId: number;
-    name: string;
-    description: string;
-    status: Status;
-    entries: VerificationEntry[];
+	actionNodeType: ActionNodeType.VERIFICATION;
+	messageId: number;
+	name: string;
+	description: string;
+	status: Status;
+	entries: VerificationEntry[];
 }

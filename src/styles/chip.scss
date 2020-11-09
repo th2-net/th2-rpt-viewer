@@ -17,35 +17,35 @@
 @import './common/vars';
 
 .chip {
-    @include unselectable;
-    @include status-card;
+	@include unselectable;
+	@include status-card;
 
-    border: 2px solid var(--status-secondary-border-color);
-    border-radius: 10px;
-    height: 20px;
-    flex-shrink: 0;
+	border: 2px solid var(--status-secondary-border-color);
+	border-radius: 10px;
+	height: 20px;
+	flex-shrink: 0;
 
-    margin-right: 5px;
-    color: $chipTextColor;
-    background-color: white;
+	margin-right: 5px;
+	color: $chipTextColor;
+	background-color: white;
 
-    &__title {
-        font-size: 11px;
-        padding: 0 5px;
-    }
+	&__title {
+		font-size: 11px;
+		padding: 0 5px;
+	}
 
-    &.loading {
-        @include spinner(2px, 20px, 2s, var(--status-secondary-border-color), $secondaryTextColor);
-    }
+	&.loading {
+		@include spinner(2px, 20px, 2s, var(--status-secondary-border-color), $secondaryTextColor);
+	}
 
-    &.selected {
-        font-weight: bold;
-        color: white;
-        border-color: var(--status-primary-border-color);
-        background-color: var(--status-primary-background-color);
-    }
+	&.selected {
+		font-weight: bold;
+		color: white;
+		border-color: var(--status-primary-border-color);
+		background-color: var(--status-primary-background-color);
+	}
 
-    &.clickable {
-        cursor: pointer;
-    }
+	&.clickable {
+		cursor: pointer;
+	}
 }

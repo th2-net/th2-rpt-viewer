@@ -20,22 +20,24 @@ import KnownBugCategory from './KnownBugCategory';
 import LiveTestCase from './LiveTestCase';
 
 export interface TestCaseMetadata {
-    order: number;
-    startTime: string;
-    finishTime: string | null;
-    name: string;
-    status: Status;
-    id: string;
-    hash: number;
-    description: string;
-    jsonFileName: string;
-    jsonpFileName: string;
-    bugs: (KnownBug | KnownBugCategory) [];
-    firstActionId: number;
-    lastActionId: number;
-    failedActionCount: number;
+	order: number;
+	startTime: string;
+	finishTime: string | null;
+	name: string;
+	status: Status;
+	id: string;
+	hash: number;
+	description: string;
+	jsonFileName: string;
+	jsonpFileName: string;
+	bugs: (KnownBug | KnownBugCategory)[];
+	firstActionId: number;
+	lastActionId: number;
+	failedActionCount: number;
 }
 
-export function isTestCaseMetadata(testCase: TestCaseMetadata | LiveTestCase): testCase is TestCaseMetadata {
+export function isTestCaseMetadata(
+	testCase: TestCaseMetadata | LiveTestCase,
+): testCase is TestCaseMetadata {
 	return testCase.finishTime != null && testCase.status != null;
 }

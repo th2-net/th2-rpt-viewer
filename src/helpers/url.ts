@@ -19,16 +19,14 @@ export const ACTION_PARAM_KEY = 'ac';
 export const MESSAGE_PARAM_KEY = 'message';
 
 export function getUrlSearchString(url: string) {
-	return url.includes('?')
-		? url.substring(url.lastIndexOf('?')) : '';
+	return url.includes('?') ? url.substring(url.lastIndexOf('?')) : '';
 }
 
 // Allow implicit coercion
 export function createURLSearchParams(params: Record<string, string | number | boolean | null>) {
 	// filtering entries with null values
 	const filteredParams = Object.fromEntries(
-		Object.entries(params)
-			.filter(([_, value]) => value != null),
+		Object.entries(params).filter(([, value]) => value != null),
 	);
 
 	return new URLSearchParams(filteredParams as Record<string, string>);

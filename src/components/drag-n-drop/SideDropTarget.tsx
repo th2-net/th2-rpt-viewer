@@ -25,16 +25,12 @@ interface SideDropTargetProps {
 }
 
 const SideDropTarget = (props: SideDropTargetProps) => {
-	const {
-		canDrop,
-		style = {},
-		yCoord,
-	} = props;
+	const { canDrop, style = {}, yCoord } = props;
 	return (
 		<AnimatePresence initial={false}>
 			{canDrop && (
 				<motion.div
-					className="with-side-drop-target__overlay"
+					className='with-side-drop-target__overlay'
 					style={style}
 					positionTransition
 					transition={{
@@ -59,7 +55,8 @@ const SideDropTarget = (props: SideDropTargetProps) => {
 						height: 0,
 						opacity: 0,
 						top: '50%',
-					}}/>
+					}}
+				/>
 			)}
 		</AnimatePresence>
 	);

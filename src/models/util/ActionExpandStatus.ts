@@ -15,6 +15,6 @@
  ***************************************************************************** */
 
 export default interface ActionExpandStatus {
-    id: number | null;
-    isExpanded: boolean;
+	id: number | null;
+	isExpanded: boolean;
 }

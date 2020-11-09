@@ -20,10 +20,10 @@ import SearchToken from './SearchToken';
  * Result of multi - token search
  */
 export default interface SearchSplitResult {
-    content: string;
-    /**
-     * 'null' color stands for entries that doesn't match any token.
-     * Such content will not be highlighted.
-     */
-    token: SearchToken | null;
+	content: string;
+	/**
+	 * 'null' color stands for entries that doesn't match any token.
+	 * Such content will not be highlighted.
+	 */
+	token: SearchToken | null;
 }

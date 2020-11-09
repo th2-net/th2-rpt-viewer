@@ -27,22 +27,19 @@ const MessagesWindow = () => {
 	const messagesStore = useMessagesWindowStore();
 	const windowsStore = useWindowsStore();
 
-	const selectedItems = React.useMemo(
-		() => {
-			const heatmapElementsMap: Map<string, string[]> = new Map();
-			windowsStore.selectedEvents
-				.filter(e => e.attachedMessageIds.length !== 0)
-				.forEach(({ eventId, attachedMessageIds }) => {
-					const eventColor = windowsStore.eventColors.get(eventId);
-					if (eventColor) {
-						heatmapElementsMap.set(eventColor, attachedMessageIds);
-					}
-				});
+	const selectedItems = React.useMemo(() => {
+		const heatmapElementsMap: Map<string, string[]> = new Map();
+		windowsStore.selectedEvents
+			.filter(e => e.attachedMessageIds.length !== 0)
+			.forEach(({ eventId, attachedMessageIds }) => {
+				const eventColor = windowsStore.eventColors.get(eventId);
+				if (eventColor) {
+					heatmapElementsMap.set(eventColor, attachedMessageIds);
+				}
+			});
 
-			return heatmapElementsMap;
-		},
-		[windowsStore.eventColors, messagesStore.messagesIds],
-	);
+		return heatmapElementsMap;
+	}, [windowsStore.eventColors, messagesStore.messagesIds]);
 
 	const unknownAreas = React.useMemo(() => {
 		if (!messagesStore.messagesIds.length || messagesStore.filterStore.isMessagesFilterApplied) {
@@ -51,23 +48,30 @@ const MessagesWindow = () => {
 				after: [],
 			};
 		}
-		const headMessage = messagesStore.attachedMessages.find(m => messagesStore.messagesIds.includes(m.messageId))
-			|| messagesStore.messagesCache.get(messagesStore.messagesIds[0]);
+		const headMessage =
+			messagesStore.attachedMessages.find(m => messagesStore.messagesIds.includes(m.messageId)) ||
+			messagesStore.messagesCache.get(messagesStore.messagesIds[0]);
 
 		if (!headMessage) {
 			return { before: [], after: [] };
 		}
-		const notLoadedMessages = messagesStore.attachedMessages
-			.filter(msg => !messagesStore.messagesIds.includes(msg.messageId));
+		const notLoadedMessages = messagesStore.attachedMessages.filter(
+			msg => !messagesStore.messagesIds.includes(msg.messageId),
+		);
+
 		const before = notLoadedMessages
-			.filter(msg => getTimestampAsNumber(msg.timestamp) < getTimestampAsNumber(headMessage.timestamp))
+			.filter(
+				msg => getTimestampAsNumber(msg.timestamp) <= getTimestampAsNumber(headMessage.timestamp),
+			)
 			.map(msg => msg.messageId);
 		const after = notLoadedMessages
-			.filter(msg => getTimestampAsNumber(msg.timestamp) > getTimestampAsNumber(headMessage.timestamp))
+			.filter(
+				msg => getTimestampAsNumber(msg.timestamp) >= getTimestampAsNumber(headMessage.timestamp),
+			)
 			.map(msg => msg.messageId);
 
 		return { before, after };
-	}, [windowsStore.eventColors, messagesStore.messagesIds]);
+	}, [windowsStore.eventColors, messagesStore.messagesIds, messagesStore.messagesCache]);
 
 	return (
 		<HeatmapProvider
@@ -76,11 +80,11 @@ const MessagesWindow = () => {
 			selectedItems={selectedItems}
 			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}
 			pinnedItems={windowsStore.pinnedMessages.map(m => m.messageId)}>
-			<div className="layout">
-				<div className="layout__header">
+			<div className='layout'>
+				<div className='layout__header'>
 					<MessagesWindowHeader />
 				</div>
-				<div className="layout__body">
+				<div className='layout__body'>
 					<MessagesCardList />
 				</div>
 			</div>

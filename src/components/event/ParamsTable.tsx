@@ -39,7 +39,7 @@ export interface ParamsTable {
 const PADDING_LEVEL_VALUE = 10;
 
 interface OwnProps {
-    actionId: number;
+	actionId: number;
 	columns: Array<string>;
 	rows: ParamsTableRow[];
 	name: string;
@@ -47,19 +47,19 @@ interface OwnProps {
 }
 
 interface StateProps {
-    expandPath: number[];
-    searchResults: SearchResult;
+	expandPath: number[];
+	searchResults: SearchResult;
 }
 
 interface RecoveredProps {
-    nodes: ParamsTableRow[];
-    saveState: (state: ParamsTableRow[]) => void;
+	nodes: ParamsTableRow[];
+	saveState: (state: ParamsTableRow[]) => void;
 }
 
 interface Props extends Omit<OwnProps, 'params'>, StateProps, RecoveredProps {}
 
 interface State {
-    nodes: ParamsTableRow[];
+	nodes: ParamsTableRow[];
 }
 
 class ParamsTableBase extends React.Component<Props, State> {
@@ -84,19 +84,27 @@ class ParamsTableBase extends React.Component<Props, State> {
 		};
 	}
 
-	updateExpandPath([currentIndex, ...expandPath]: number[], prevState: ParamsTableRow[]): ParamsTableRow[] {
-		return prevState.map(
-			(node, index) => (index === currentIndex ? {
-				...node,
-				isExpanded: true,
-				subParameters: node.subRows && this.updateExpandPath(expandPath, node.subRows),
-			} : node),
+	updateExpandPath(
+		[currentIndex, ...expandPath]: number[],
+		prevState: ParamsTableRow[],
+	): ParamsTableRow[] {
+		return prevState.map((node, index) =>
+			index === currentIndex
+				? {
+						...node,
+						isExpanded: true,
+						subParameters: node.subRows && this.updateExpandPath(expandPath, node.subRows),
+				  }
+				: node,
 		);
 	}
 
 	componentDidUpdate(prevProps: Props) {
-		if (prevProps.expandPath !== this.props.expandPath
-			&& this.props.expandPath && this.props.expandPath.length > 0) {
+		if (
+			prevProps.expandPath !== this.props.expandPath &&
+			this.props.expandPath &&
+			this.props.expandPath.length > 0
+		) {
 			this.setState({
 				nodes: this.updateExpandPath(this.props.expandPath, this.state.nodes),
 			});
@@ -109,21 +117,23 @@ class ParamsTableBase extends React.Component<Props, State> {
 
 	render() {
 		return (
-			<div className="params-table">
-				<table style={{
-					gridTemplateColumns: `repeat(${this.props.columns.length + 1}, minmax(150px, 250px))`,
-				}}>
+			<div className='params-table'>
+				<table
+					style={{
+						gridTemplateColumns: `repeat(${this.props.columns.length + 1}, minmax(150px, 250px))`,
+					}}>
 					<thead>
 						<tr>
 							<th></th>
-							{this.props.columns.map(columnTitle => <th key={columnTitle}>{columnTitle}</th>)}
+							{this.props.columns.map(columnTitle => (
+								<th key={columnTitle}>{columnTitle}</th>
+							))}
 						</tr>
 					</thead>
 					<tbody>
-						{
-							this.state.nodes.map((nodes, index) =>
-								this.renderNodes(nodes, 1, keyForActionParameter(this.props.actionId, index)))
-						}
+						{this.state.nodes.map((nodes, index) =>
+							this.renderNodes(nodes, 1, keyForActionParameter(this.props.actionId, index)),
+						)}
 					</tbody>
 				</table>
 			</div>
@@ -134,24 +144,20 @@ class ParamsTableBase extends React.Component<Props, State> {
 		if (node.subRows && node.subRows.length !== 0) {
 			const subNodes = node.isExpanded
 				? node.subRows.reduce(
-					(list, n, index) =>
-						list.concat(
-							this.renderNodes(n, paddingLevel + 1, `${key}-${index}`),
-						), [] as React.ReactNodeArray,
-				)
+						(list, n, index) =>
+							list.concat(this.renderNodes(n, paddingLevel + 1, `${key}-${index}`)),
+						[] as React.ReactNodeArray,
+				  )
 				: [];
 
-			return [
-				this.renderTooglerNode(node, paddingLevel, key),
-				...subNodes,
-			];
+			return [this.renderTooglerNode(node, paddingLevel, key), ...subNodes];
 		}
 		return [this.renderValueNode(node.title, node.columns, paddingLevel, key)];
 	}
 
 	private renderValueNode(
 		rowTitle: string,
-		columns: {[columnTitle: string]: string} = {},
+		columns: { [columnTitle: string]: string } = {},
 		paddingLevel: number,
 		key: string,
 	): React.ReactNode {
@@ -160,21 +166,22 @@ class ParamsTableBase extends React.Component<Props, State> {
 		};
 
 		return (
-			<tr className="params-table-row-value" key={key}>
-				<td style={cellStyle}>
-					{this.renderContent(`${key}-name`, rowTitle)}
-				</td>
-				{
-					this.props.columns.map(columnTitle =>
-						<td key={`${rowTitle} - ${columnTitle}`}>
-							{this.renderContent(`${key}-value`, columns[columnTitle])}
-						</td>)
-				}
+			<tr className='params-table-row-value' key={key}>
+				<td style={cellStyle}>{this.renderContent(`${key}-name`, rowTitle)}</td>
+				{this.props.columns.map(columnTitle => (
+					<td key={`${rowTitle} - ${columnTitle}`}>
+						{this.renderContent(`${key}-value`, columns[columnTitle])}
+					</td>
+				))}
 			</tr>
 		);
 	}
 
-	private renderTooglerNode(node: ParamsTableRow, paddingLevel: number, key: string): React.ReactNode {
+	private renderTooglerNode(
+		node: ParamsTableRow,
+		paddingLevel: number,
+		key: string,
+	): React.ReactNode {
 		const rootClass = createStyleSelector(
 			'params-table-row-toogler',
 			node.isExpanded ? 'expanded' : 'collapsed',
@@ -184,22 +191,21 @@ class ParamsTableBase extends React.Component<Props, State> {
 		};
 
 		return (
-			<tr
-				className={rootClass}
-				key={key}
-				onClick={this.togglerClickHandler(node)}>
-				<td style={{
-					gridColumn: `1 / ${this.props.columns.length + 2}`,
-				}}>
-					<p style={nameStyle}>
-						{this.renderContent(`${key}-name`, node.title)}
-					</p>
+			<tr className={rootClass} key={key} onClick={this.togglerClickHandler(node)}>
+				<td
+					style={{
+						gridColumn: `1 / ${this.props.columns.length + 2}`,
+					}}>
+					<p style={nameStyle}>{this.renderContent(`${key}-name`, node.title)}</p>
 				</td>
 			</tr>
 		);
 	}
 
-	// we need this for optimization - render SearchableContent component only if it contains some search results
+	/* 
+		we need this for optimization - render SearchableContent component
+		only if it contains some search results
+	*/
 	private renderContent(contentKey: string, content: string): React.ReactNode {
 		return content;
 	}
@@ -214,21 +220,21 @@ class ParamsTableBase extends React.Component<Props, State> {
 	};
 }
 
-export const RecoverableParamsTable = ({ stateKey, ...props }: OwnProps & StateProps & {stateKey: string}) => (
+export const RecoverableParamsTable = ({
+	stateKey,
+	...props
+}: OwnProps & StateProps & { stateKey: string }) => (
 	// at first table render, we need to generate table nodes if we don't find previous table's state
-	<StateSaver
-		stateKey={stateKey}
-		getDefaultState={() => props.rows}>
-		{
-			(state: ParamsTableRow[], stateSaver) => (
-				<ParamsTableBase
-					{...props}
-					saveState={stateSaver}
-					rows={state}
-					nodes={state}
-					stateKey={stateKey} />
-			)
-		}
+	<StateSaver stateKey={stateKey} getDefaultState={() => props.rows}>
+		{(state: ParamsTableRow[], stateSaver) => (
+			<ParamsTableBase
+				{...props}
+				saveState={stateSaver}
+				rows={state}
+				nodes={state}
+				stateKey={stateKey}
+			/>
+		)}
 	</StateSaver>
 );
 
@@ -237,7 +243,8 @@ const ParamsTable = observer(({ actionId, ...rest }: OwnProps) => (
 		expandPath={[]}
 		searchResults={new SearchResult() /** TODO: remove legacy search logic */}
 		{...rest}
-		actionId={actionId} />
+		actionId={actionId}
+	/>
 ));
 
 export default ParamsTable;

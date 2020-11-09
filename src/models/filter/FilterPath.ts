@@ -15,14 +15,18 @@
  ***************************************************************************** */
 
 const enum FilterPath {
-    ALL = 'Text',
-    SERVICE = 'Service',
-    STATUS = 'Status',
+	ALL = 'Text',
+	SERVICE = 'Service',
+	STATUS = 'Status',
 	TIMESTAMP_FROM = 'Timestamp from',
-	TIMESTAMP_TO = 'Timestamp to'
+	TIMESTAMP_TO = 'Timestamp to',
 }
 
-export const FILTER_PATH_VALUES: FilterPath[] = [FilterPath.ALL, FilterPath.STATUS, FilterPath.SERVICE];
+export const FILTER_PATH_VALUES: FilterPath[] = [
+	FilterPath.ALL,
+	FilterPath.STATUS,
+	FilterPath.SERVICE,
+];
 
 export function isFilterPath(value: string): value is FilterPath {
 	return FILTER_PATH_VALUES.includes(value as FilterPath);

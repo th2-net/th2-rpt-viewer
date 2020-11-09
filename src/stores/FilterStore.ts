@@ -14,11 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	action,
-	computed,
-	observable,
-} from 'mobx';
+import { action, computed, observable } from 'mobx';
 import moment from 'moment';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
@@ -63,9 +59,11 @@ export default class FilterStore {
 
 	@computed
 	get isEventsFilterApplied() {
-		return this.eventsTimeFilterIsApplied
-			|| this.eventsFilter.eventTypes.length !== 0
-			|| this.eventsFilter.names.length !== 0;
+		return (
+			this.eventsTimeFilterIsApplied ||
+			this.eventsFilter.eventTypes.length !== 0 ||
+			this.eventsFilter.names.length !== 0
+		);
 	}
 
 	@action

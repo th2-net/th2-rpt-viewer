@@ -17,55 +17,51 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { EventIdNode } from '../../../stores/EventsStore';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import { useParentEvents } from '../../../hooks/useParentEvents';
 import EventCardHeader from '../EventCardHeader';
 import EventDetailInfoCard from '../EventDetailInfoCard';
+import { EventTreeNode } from '../../../models/EventAction';
 
 interface Props {
-	idNode: EventIdNode;
-	parentNodes: EventIdNode[];
+	eventTreeNode: EventTreeNode;
+	parentNodes: EventTreeNode[];
 }
 
 function DetailedFlatEventCard(props: Props) {
-	const { idNode, parentNodes } = props;
+	const { eventTreeNode, parentNodes } = props;
 	const eventWindowStore = useEventWindowStore();
 
-	const {
-		selectedParentEvent,
-		setSelectedNode,
-		selectedNode,
-	} = useParentEvents(idNode, parentNodes, eventWindowStore.selectedParentNode);
+	const { selectedParentEvent, setSelectedNode, selectedNode } = useParentEvents(
+		eventTreeNode,
+		parentNodes,
+		eventWindowStore.selectedParentNode,
+	);
 
-	const event = selectedNode === null
-		? eventWindowStore.selectedEvent
-		: selectedParentEvent;
+	const event = selectedNode === null ? eventWindowStore.selectedEvent : selectedParentEvent;
 
 	return (
-		<div className="flat-event-detail-card">
-			{
-				parentNodes.length > 0
-				&& <div className="flat-event-detail-card__parents">
-					{
-						parentNodes
-							.map(eventNode =>
-								<EventCardHeader
-									key={eventNode.id}
-									event={eventNode.event}
-									onSelect={() => setSelectedNode(eventNode)}
-									isSelected={selectedNode === eventNode}
-									rootStyle={{ margin: '4px 0' }}/>)
-					}
-					{
-						selectedNode !== null
-						&& <EventCardHeader
-							key={idNode.id}
-							event={idNode.event}
-							onSelect={() => setSelectedNode(null)} />
-					}
+		<div className='flat-event-detail-card'>
+			{parentNodes.length > 0 && (
+				<div className='flat-event-detail-card__parents'>
+					{parentNodes.map(eventNode => (
+						<EventCardHeader
+							key={eventNode.eventId}
+							event={eventNode}
+							onSelect={() => setSelectedNode(eventNode)}
+							isSelected={selectedNode === eventNode}
+							rootStyle={{ margin: '4px 0' }}
+						/>
+					))}
+					{selectedNode !== null && (
+						<EventCardHeader
+							key={eventTreeNode.eventId}
+							event={eventTreeNode}
+							onSelect={() => setSelectedNode(null)}
+						/>
+					)}
 				</div>
-			}
+			)}
 			<EventDetailInfoCard
 				rootStyle={{
 					overflow: 'visible',
@@ -73,7 +69,8 @@ function DetailedFlatEventCard(props: Props) {
 					flexGrow: 1,
 				}}
 				event={event}
-				childrenCount={selectedNode?.children.length} />
+				childrenCount={selectedNode?.childList.length}
+			/>
 		</div>
 	);
 }

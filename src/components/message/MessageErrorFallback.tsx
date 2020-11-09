@@ -21,9 +21,7 @@ interface Props {
 }
 
 const ErrorMessageFallback = ({ errorMessage }: Props) => (
-	<div className="error-message">
-		{errorMessage}
-	</div>
+	<div className='error-message'>{errorMessage}</div>
 );
 
 export default ErrorMessageFallback;

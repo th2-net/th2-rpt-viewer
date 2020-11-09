@@ -14,152 +14,152 @@
  * limitations under the License.
  ******************************************************************************/
 
- @import "./common/vars";
+@import './common/vars';
 
 .found-content {
-    color: #FFF;
-    opacity: 0.6;
-    border-radius: 3px;
+	color: #fff;
+	opacity: 0.6;
+	border-radius: 3px;
 
-    &.target {
-        opacity: 1;
-        color: #000;
-    }
+	&.target {
+		opacity: 1;
+		color: #000;
+	}
 }
 
 .search-field-wrapper {
-    position: relative;
-    height: 30px;
-    width: 240px;
+	position: relative;
+	height: 30px;
+	width: 240px;
 
-    &.active {
-        width: 455px;
-    }
+	&.active {
+		width: 455px;
+	}
 }
 
 .search-field {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: auto;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: auto;
 
-    border: 2px solid #808080;
-    border-radius: 3px;
-    background-color: #FFF;
-    cursor: text;
-    overflow-x: auto;
-    overflow-y: hidden;
-    display: flex;
-    
-    @include hidden-scrollbar;
+	border: 2px solid #808080;
+	border-radius: 3px;
+	background-color: #fff;
+	cursor: text;
+	overflow-x: auto;
+	overflow-y: hidden;
+	display: flex;
 
-    min-height: 29px;
-    padding: 0 5px;
+	@include hidden-scrollbar;
 
-    &__counter {
-        @include unselectable;
-        color: $primaryTextColor;
-        white-space: nowrap;
-        font-size: 12px;
-        padding: 3px 5px;
-        font-weight: bold;
-        margin-left: auto;
-    }
+	min-height: 29px;
+	padding: 0 5px;
 
-    &__icon {
-        @include icon(url(../../resources/icons/search.svg));
-        display: inline;
-        margin: 3px 0 0 auto;
-    }
+	&__counter {
+		@include unselectable;
+		color: $primaryTextColor;
+		white-space: nowrap;
+		font-size: 12px;
+		padding: 3px 5px;
+		font-weight: bold;
+		margin-left: auto;
+	}
 
-    &__input {
-        border: 0;
-        border-radius: 3px;
-        font-weight: bold;
-        color: $primaryTextColor;
-        height: 18px;
-        margin: 2px;
-        padding-left: 4px;
-        padding-right: 4px;
-        font-family: inherit;
+	&__icon {
+		@include icon(url(../../resources/icons/search.svg));
+		display: inline;
+		margin: 3px 0 0 auto;
+	}
 
-        &:focus {
-            outline: 0;
-        }
+	&__input {
+		border: 0;
+		border-radius: 3px;
+		font-weight: bold;
+		color: $primaryTextColor;
+		height: 18px;
+		margin: 2px;
+		padding-left: 4px;
+		padding-right: 4px;
+		font-family: inherit;
 
-        &::placeholder {
-            color: $secondaryTextColor;
-            font-style: italic;
-            font-weight: normal;
-        }
-    }
+		&:focus {
+			outline: 0;
+		}
 
-    &__input-wrapper {
-        margin-left: 4px;
-        font-size: 13px;
-    }
+		&::placeholder {
+			color: $secondaryTextColor;
+			font-style: italic;
+			font-weight: normal;
+		}
+	}
 
-    &__loader {
-        @include spinner(3px);
+	&__input-wrapper {
+		margin-left: 4px;
+		font-size: 13px;
+	}
 
-        display: inline-block;
-        margin: 4px 0 0 auto;
-        flex-shrink: 0;
-    }
+	&__loader {
+		@include spinner(3px);
 
-    &.active {
-        @include card-shadow;
-    }
+		display: inline-block;
+		margin: 4px 0 0 auto;
+		flex-shrink: 0;
+	}
 
-    &__child-wrapper {
-        display: flex;
-        overflow-y: auto;
-        overflow-x: hidden;
-        margin-right: 3px;
-        @include hidden-scrollbar;
-    }
+	&.active {
+		@include card-shadow;
+	}
+
+	&__child-wrapper {
+		display: flex;
+		overflow-y: auto;
+		overflow-x: hidden;
+		margin-right: 3px;
+		@include hidden-scrollbar;
+	}
 }
 
 .search-panel-controls {
-    height: 30px;
-    width: 100%;
-    display: flex;
-    align-items: center;
+	height: 30px;
+	width: 100%;
+	display: flex;
+	align-items: center;
 
-    border-top: 1px solid #CCCCCC;
-    margin-top: 3px;
-    cursor: default;
+	border-top: 1px solid #cccccc;
+	margin-top: 3px;
+	cursor: default;
 
-    &__checkbox {
-        font-size: 12px;
-        font-weight: bold;
-        color: $primaryTextColor;
-        text-transform: capitalize;
-    }
+	&__checkbox {
+		font-size: 12px;
+		font-weight: bold;
+		color: $primaryTextColor;
+		text-transform: capitalize;
+	}
 }
 
 .search-bubble {
-    display: inline-flex;
-    margin: 2px 5px;
-    color: #FFF;
+	display: inline-flex;
+	margin: 2px 5px;
+	color: #fff;
 }
 
 .search-controls {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    padding-top: 2px;
+	display: inline-flex;
+	flex-direction: row;
+	align-items: center;
+	padding-top: 2px;
 
-    &__prev {
-        @include round-button(url(../../resources/icons/prev-search-result.svg));
-    }
+	&__prev {
+		@include round-button(url(../../resources/icons/prev-search-result.svg));
+	}
 
-    &__next {
-        @include round-button(url(../../resources/icons/next-search-result.svg));
-    }
+	&__next {
+		@include round-button(url(../../resources/icons/next-search-result.svg));
+	}
 
-    &__clear {
-        @include round-button(url(../../resources/icons/cross-icon.svg));
-    }
+	&__clear {
+		@include round-button(url(../../resources/icons/cross-icon.svg));
+	}
 }

@@ -27,7 +27,9 @@ const MessagesFilterPanel = () => {
 	const { filterStore } = messagesStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);
-	const [timestampFrom, setTimestampFrom] = React.useState(filterStore.messagesFilter.timestampFrom);
+	const [timestampFrom, setTimestampFrom] = React.useState(
+		filterStore.messagesFilter.timestampFrom,
+	);
 	const [timestampTo, setTimestampTo] = React.useState(filterStore.messagesFilter.timestampTo);
 	const [currentStream, setCurrentStream] = React.useState('');
 	const [streams, setStreams] = React.useState<Array<string>>([]);
@@ -42,7 +44,7 @@ const MessagesFilterPanel = () => {
 	}, [filterStore.messagesFilter, filterStore.messagesFilter.streams]);
 
 	const submitChanges = () => {
-		if ((timestampFrom && timestampTo) && timestampFrom > timestampTo) {
+		if (timestampFrom && timestampTo && timestampFrom > timestampTo) {
 			// eslint-disable-next-line no-alert
 			window.alert('Invalid messagesFilter filter');
 			return;
@@ -64,59 +66,70 @@ const MessagesFilterPanel = () => {
 		setTimestampTo(to);
 	};
 
-	const filterConfig: FilterRowConfig[] = [{
-		type: 'datetime-range',
-		id: 'messages-datetime',
-		label: 'Messages from',
-		inputs: [{
+	const filterConfig: FilterRowConfig[] = [
+		{
+			type: 'datetime-range',
+			id: 'messages-datetime',
 			label: 'Messages from',
-			value: timestampFrom,
-			setValue: setTimestampFrom,
-			type: TimeInputType.DATE_TIME,
-			id: 'messages-from',
-			inputMask: DATE_TIME_INPUT_MASK,
-			dateMask: DateTimeMask.DATE_TIME_MASK,
-			placeholder: DATE_TIME_PLACEHOLDER,
-			labelClassName: 'filter-row__label',
-		}, {
-			label: 'to',
-			value: timestampTo,
-			setValue: setTimestampTo,
-			type: TimeInputType.DATE_TIME,
-			id: 'messages-to',
-			inputMask: DATE_TIME_INPUT_MASK,
-			dateMask: DateTimeMask.DATE_TIME_MASK,
-			placeholder: DATE_TIME_PLACEHOLDER,
-		}],
-		timeShortcuts: [{
-			label: 'Last 15 minutes',
-			onClick: getTimeShortcutHandler(15),
-		}, {
-			label: 'Last hour',
-			onClick: getTimeShortcutHandler(60),
-		}, {
-			label: 'Today',
-			onClick: getTimeShortcutHandler(24 * 60),
-		}],
-	}, {
-		type: 'multiple-strings',
-		id: 'messages-stream',
-		label: 'Session name',
-		values: streams,
-		setValues: setStreams,
-		currentValue: currentStream,
-		setCurrentValue: setCurrentStream,
-		autocompleteList: messagesStore.messageSessions,
-	}, {
-		type: 'multiple-strings',
-		id: 'messages-type',
-		label: 'Message name',
-		values: messageTypes,
-		setValues: setMessagesTypes,
-		currentValue: currentMessageType,
-		setCurrentValue: setCurrentMessageType,
-		autocompleteList: null,
-	}];
+			inputs: [
+				{
+					label: 'Messages from',
+					value: timestampFrom,
+					setValue: setTimestampFrom,
+					type: TimeInputType.DATE_TIME,
+					id: 'messages-from',
+					inputMask: DATE_TIME_INPUT_MASK,
+					dateMask: DateTimeMask.DATE_TIME_MASK,
+					placeholder: DATE_TIME_PLACEHOLDER,
+					labelClassName: 'filter-row__label',
+				},
+				{
+					label: 'to',
+					value: timestampTo,
+					setValue: setTimestampTo,
+					type: TimeInputType.DATE_TIME,
+					id: 'messages-to',
+					inputMask: DATE_TIME_INPUT_MASK,
+					dateMask: DateTimeMask.DATE_TIME_MASK,
+					placeholder: DATE_TIME_PLACEHOLDER,
+				},
+			],
+			timeShortcuts: [
+				{
+					label: 'Last 15 minutes',
+					onClick: getTimeShortcutHandler(15),
+				},
+				{
+					label: 'Last hour',
+					onClick: getTimeShortcutHandler(60),
+				},
+				{
+					label: 'Today',
+					onClick: getTimeShortcutHandler(24 * 60),
+				},
+			],
+		},
+		{
+			type: 'multiple-strings',
+			id: 'messages-stream',
+			label: 'Session name',
+			values: streams,
+			setValues: setStreams,
+			currentValue: currentStream,
+			setCurrentValue: setCurrentStream,
+			autocompleteList: messagesStore.messageSessions,
+		},
+		{
+			type: 'multiple-strings',
+			id: 'messages-type',
+			label: 'Message name',
+			values: messageTypes,
+			setValues: setMessagesTypes,
+			currentValue: currentMessageType,
+			setCurrentValue: setCurrentMessageType,
+			autocompleteList: null,
+		},
+	];
 
 	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !messagesStore.isLoading;
 
@@ -129,7 +142,8 @@ const MessagesFilterPanel = () => {
 			showFilter={showFilter}
 			config={filterConfig}
 			onSubmit={submitChanges}
-			onClearAll={clearAllFilters}/>
+			onClearAll={clearAllFilters}
+		/>
 	);
 };
 

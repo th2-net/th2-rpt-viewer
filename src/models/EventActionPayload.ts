@@ -16,28 +16,32 @@
 
 import { EventStatus } from './Status';
 
-export type EventBodyPayload = MessagePayload | TablePayload | VerificationPayload | TreeTablePayload;
+export type EventBodyPayload =
+	| MessagePayload
+	| TablePayload
+	| VerificationPayload
+	| TreeTablePayload;
 
 export enum EventBodyPayloadType {
-    MESSAGE = 'message',
-    TABLE = 'table',
-    TREE_TABLE = 'treeTable',
-    VERIFICATION = 'verification',
+	MESSAGE = 'message',
+	TABLE = 'table',
+	TREE_TABLE = 'treeTable',
+	VERIFICATION = 'verification',
 }
 
 export interface MessagePayload {
-    type: EventBodyPayloadType.MESSAGE;
-    data: string;
+	type: EventBodyPayloadType.MESSAGE;
+	data: string;
 }
 
 export interface TablePayload {
-    type: EventBodyPayloadType.TABLE;
-    rows: Array<{[column: string]: string}>;
+	type: EventBodyPayloadType.TABLE;
+	rows: Array<{ [column: string]: string }>;
 }
 
 export interface TreeTablePayload {
-    type: EventBodyPayloadType.TREE_TABLE;
-    rows: {
+	type: EventBodyPayloadType.TREE_TABLE;
+	rows: {
 		[rowName: string]: TreeTableRow | TreeTableCollection;
 	};
 }
@@ -57,11 +61,11 @@ export interface TreeTableCollection {
 }
 
 export interface VerificationPayload {
-    type: EventBodyPayloadType.VERIFICATION;
-    fields: {
+	type: EventBodyPayloadType.VERIFICATION;
+	fields: {
 		[field: string]: VerificationPayloadField;
 	};
-    status: EventStatus;
+	status: EventStatus;
 }
 
 export interface VerificationPayloadField {

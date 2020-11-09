@@ -25,9 +25,9 @@ export default interface ApiSchema {
 }
 
 export interface EventApiSchema {
-    getEventTree: (filter?: EventsFilter) => Promise<EventTree>;
+	getEventTree: (filter?: EventsFilter) => Promise<EventTree>;
 	getEvent: (id: string, abortSignal?: AbortSignal) => Promise<EventAction>;
-    getEventsByName: (
+	getEventsByName: (
 		timestampFrom: number,
 		timestampTo: number,
 		name: string,
@@ -38,18 +38,26 @@ export interface EventApiSchema {
 export interface MessageApiSchema {
 	getAll: () => Promise<number[]>;
 	getMessagesIds: (timestampFrom: number, timestampTo: number) => Promise<string[]>;
-	getMessages(search: {
-		limit: number;
-		timelineDirection: 'previous' | 'next';
-		messageId: string;
-		idsOnly: true;
-	}, filter: MessagesFilter, abortSignal?: AbortSignal): Promise<string[]>;
-	getMessages(search: {
-		limit: number;
-		timelineDirection: 'previous' | 'next';
-		messageId: string;
-		idsOnly: false;
-	}, filter: MessagesFilter, abortSignal?: AbortSignal): Promise<EventMessage[]>;
+	getMessages(
+		search: {
+			limit: number;
+			timelineDirection: 'previous' | 'next';
+			messageId: string;
+			idsOnly: true;
+		},
+		filter: MessagesFilter,
+		abortSignal?: AbortSignal,
+	): Promise<string[]>;
+	getMessages(
+		search: {
+			limit: number;
+			timelineDirection: 'previous' | 'next';
+			messageId: string;
+			idsOnly: false;
+		},
+		filter: MessagesFilter,
+		abortSignal?: AbortSignal,
+	): Promise<EventMessage[]>;
 	getMessage: (id: string, signal?: AbortSignal) => Promise<EventMessage>;
 	getMessagesByFilter: (filter: MessagesFilter) => Promise<string[]>;
 	getMessageSessions: () => Promise<string[]>;

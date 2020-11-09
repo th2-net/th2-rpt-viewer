@@ -26,12 +26,15 @@ import SearchToken, { PanelSearchToken } from '../../models/search/SearchToken';
 import KnownBug, { KnownBugNode } from '../../models/KnownBug';
 import { KnownBugStatus } from '../../models/KnownBugStatus';
 import KnownBugCategory from '../../models/KnownBugCategory';
-import Report from '../../models/Report';
 import { TestCaseMetadata } from '../../models/TestcaseMetadata';
 import SearchSplitResult from '../../models/search/SearchSplitResult';
 import Panel from '../../util/Panel';
 
-export function createVerification(messageId = 0, name = '', status: StatusType = StatusType.PASSED): Verification {
+export function createVerification(
+	messageId = 0,
+	name = '',
+	status: StatusType = StatusType.PASSED,
+): Verification {
 	return {
 		actionNodeType: ActionNodeType.VERIFICATION,
 		messageId,
@@ -49,7 +52,10 @@ export function createVerification(messageId = 0, name = '', status: StatusType 
 }
 
 export function createVerificationEntry(
-	name = '', actual = '', expected = '', status = StatusType.PASSED,
+	name = '',
+	actual = '',
+	expected = '',
+	status = StatusType.PASSED,
 ): VerificationEntry {
 	return {
 		name,
@@ -99,7 +105,10 @@ export function createSearchToken(
 	};
 }
 
-export function createSearchSplitResult(content = '', token: SearchToken | null = null): SearchSplitResult {
+export function createSearchSplitResult(
+	content = '',
+	token: SearchToken | null = null,
+): SearchSplitResult {
 	return {
 		content,
 		token,
@@ -165,33 +174,6 @@ export function createTestCase(
 				lastUpdate: '',
 			},
 		},
-	};
-}
-
-export function createReport(
-	startTime: string,
-	metadata: TestCaseMetadata[] = [],
-): Report {
-	return {
-		branchName: '',
-		bugs: [],
-		description: '',
-		startTime,
-		finishTime: new Date().toString(),
-		hostName: '',
-		metadata,
-		name: '',
-		plugins: [],
-		precision: '',
-		scriptRunId: 1,
-		userName: '',
-		version: '',
-		alerts: [],
-		exception: undefined,
-		outcomes: null,
-		reportProperties: undefined,
-		tags: [],
-		testCases: [],
 	};
 }
 
@@ -261,10 +243,17 @@ export const createHeatmapInputData = (
 	selectedItemsIndexes: Map<string, number[]>,
 	pinnedItemsIndexes: number[],
 ) => {
-	const items = Array(itemsLength).fill(null).map(() => nanoid());
+	const items = Array(itemsLength)
+		.fill(null)
+		.map(() => nanoid());
 	const pinnedItems = pinnedItemsIndexes.map(i => items[i]);
 	const selectedItems: Map<string, string[]> = new Map();
-	selectedItemsIndexes.forEach((indexes, color) => selectedItems.set(color, indexes.map(i => items[i])));
+	selectedItemsIndexes.forEach((indexes, color) =>
+		selectedItems.set(
+			color,
+			indexes.map(i => items[i]),
+		),
+	);
 	return {
 		items,
 		selectedItems,

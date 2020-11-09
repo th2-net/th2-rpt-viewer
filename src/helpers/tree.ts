@@ -30,15 +30,22 @@ export function createExpandTree(action: Action, treePath: Tree<number>): Tree<A
 
 	return createNode(
 		expandState,
-		action.subNodes.map(actionNode => (
-			isAction(actionNode)
-				? createExpandTree(actionNode, treePath && treePath.nodes.find(node => node.value === actionNode.id)!)
-				: null)).filter((node): node is Tree<ActionExpandStatus> => node !== null),
+		action.subNodes
+			.map(actionNode =>
+				isAction(actionNode)
+					? createExpandTree(
+							actionNode,
+							treePath && treePath.nodes.find(node => node.value === actionNode.id)!,
+					  )
+					: null,
+			)
+			.filter((node): node is Tree<ActionExpandStatus> => node !== null),
 	);
 }
 
 export function updateExpandTree(
-	tree: Tree<ActionExpandStatus>, nextPath: Tree<number> | null,
+	tree: Tree<ActionExpandStatus>,
+	nextPath: Tree<number> | null,
 ): Tree<ActionExpandStatus> {
 	if (!nextPath) {
 		return tree;
@@ -56,12 +63,14 @@ export function updateExpandTree(
 	return createNode(
 		nextState,
 		tree.nodes.map(node =>
-			updateExpandTree(node, nextPath.nodes.find(({ value }) => value === node.value.id) || null)),
+			updateExpandTree(node, nextPath.nodes.find(({ value }) => value === node.value.id) || null),
+		),
 	);
 }
 
 export function getSubTree(
-	action: ActionNode, expandTree: Tree<ActionExpandStatus> | null,
+	action: ActionNode,
+	expandTree: Tree<ActionExpandStatus> | null,
 ): Tree<ActionExpandStatus> | null {
 	if (isAction(action)) {
 		return expandTree && expandTree.nodes.find(({ value }) => value.id === action.id)!;
@@ -70,7 +79,10 @@ export function getSubTree(
 	return null;
 }
 
-export function createExpandTreePath(actionNode: ActionNode, targetActionsId: number[]): Tree<number> | null {
+export function createExpandTreePath(
+	actionNode: ActionNode,
+	targetActionsId: number[],
+): Tree<number> | null {
 	if (!isAction(actionNode)) {
 		return null;
 	}
@@ -91,7 +103,5 @@ export function createExpandTreePath(actionNode: ActionNode, targetActionsId: nu
 
 	// checking wheather the current action is the one of target acitons OR some of action's sub nodes
 	// is the target aciton
-	return targetActionsId.includes(actionNode.id) || treeNode.nodes.length !== 0
-		? treeNode
-		: null;
+	return targetActionsId.includes(actionNode.id) || treeNode.nodes.length !== 0 ? treeNode : null;
 }

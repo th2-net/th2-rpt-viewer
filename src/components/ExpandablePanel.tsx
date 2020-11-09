@@ -20,9 +20,9 @@ import { stopPropagationHandler } from '../helpers/react';
 import '../styles/expandablePanel.scss';
 
 interface PanelProps {
-    isExpanded?: boolean;
-    onExpand?: (isExpanded: boolean) => void;
-    children: [React.ReactNode | ((onExpand: () => void) => React.ReactNode), React.ReactNode];
+	isExpanded?: boolean;
+	onExpand?: (isExpanded: boolean) => void;
+	children: [React.ReactNode | ((onExpand: () => void) => React.ReactNode), React.ReactNode];
 	isExpandDisabled?: boolean;
 	showExpandButton?: boolean;
 }
@@ -49,23 +49,16 @@ export const ExpandablePanel = ({
 	const [header, body] = children;
 
 	return (
-		<div className="expandable-panel">
-			<div className="expandable-panel__header">
-				{
-					typeof header === 'function'
-						? header(() => expand(!isExpanded))
-						: header
-				}
-				<div className="expandable-panel__button">
-					{showExpandButton
-					&& <div
-						className={iconClass}
-						onClick={stopPropagationHandler(expand, !isExpanded)} />}
+		<div className='expandable-panel'>
+			<div className='expandable-panel__header'>
+				{typeof header === 'function' ? header(() => expand(!isExpanded)) : header}
+				<div className='expandable-panel__button'>
+					{showExpandButton && (
+						<div className={iconClass} onClick={stopPropagationHandler(expand, !isExpanded)} />
+					)}
 				</div>
 			</div>
-			{
-				isExpanded ? body : null
-			}
+			{isExpanded ? body : null}
 		</div>
 	);
 };

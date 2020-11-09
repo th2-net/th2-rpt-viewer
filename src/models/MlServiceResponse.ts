@@ -15,24 +15,24 @@
  ***************************************************************************** */
 
 export interface InitResponse {
-    token: string;
-    active: SubmittedData[];
+	token: string;
+	active: SubmittedData[];
 }
 
 export interface PredictionResponse {
-    token: string;
-    predictions: PredictionData[];
-    userMarks: SubmittedData[];
+	token: string;
+	predictions: PredictionData[];
+	userMarks: SubmittedData[];
 }
 
 export interface SubmittedData {
-    actionId: number;
-    messageId: number;
+	actionId: number;
+	messageId: number;
 }
 
 export interface PredictionData {
-    actionId: number;
-    messageId: number;
-    classValue: string;
-    predictedClassProbability: number;
+	actionId: number;
+	messageId: number;
+	classValue: string;
+	predictedClassProbability: number;
 }

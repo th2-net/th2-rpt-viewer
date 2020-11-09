@@ -17,19 +17,19 @@
 import * as React from 'react';
 
 export interface RecoverableElementProps {
-    stateKey: string;
+	stateKey: string;
 }
 
 export interface StateSaverContext {
-    states: Map<string, any>;
-    saveState: (stateId: string, nextState: any) => any;
+	states: Map<string, any>;
+	saveState: (stateId: string, nextState: any) => any;
 }
 
 export const { Provider, Consumer } = React.createContext({} as StateSaverContext);
 
 export interface StateSaverProps<S> extends RecoverableElementProps {
-    children: (state: S, stateHandler: (nextState: S) => void) => React.ReactNode;
-    getDefaultState?: () => S;
+	children: (state: S, stateHandler: (nextState: S) => void) => React.ReactNode;
+	getDefaultState?: () => S;
 }
 
 /**
@@ -39,38 +39,38 @@ export interface StateSaverProps<S> extends RecoverableElementProps {
  */
 const StateSaver = <S extends {}>({ children, stateKey, getDefaultState }: StateSaverProps<S>) => (
 	<Consumer>
-		{
-			({ states = new Map(), saveState }: StateSaverContext) => {
-				const saveNextState = (nextState: S) => {
-					if (saveState) {
-						saveState(stateKey, nextState);
-					}
-				};
-
-				if (states.has(stateKey) || !getDefaultState) {
-					return children(states.get(stateKey), saveNextState);
+		{({ states = new Map(), saveState }: StateSaverContext) => {
+			const saveNextState = (nextState: S) => {
+				if (saveState) {
+					saveState(stateKey, nextState);
 				}
-				const defaultState = getDefaultState();
+			};
 
-				return (
-					<DefaultStateSaver
-						saveState={saveNextState}
-						defaultState={defaultState}>
-						{children(defaultState, saveNextState)}
-					</DefaultStateSaver>
-				);
+			if (states.has(stateKey) || !getDefaultState) {
+				return children(states.get(stateKey), saveNextState);
 			}
-		}
+			const defaultState = getDefaultState();
+
+			return (
+				<DefaultStateSaver saveState={saveNextState} defaultState={defaultState}>
+					{children(defaultState, saveNextState)}
+				</DefaultStateSaver>
+			);
+		}}
 	</Consumer>
 );
 
 interface DefaultStateSaverProps<S> {
-    saveState: (nextState: S) => void;
-    defaultState: S;
-    children: React.ReactNode;
+	saveState: (nextState: S) => void;
+	defaultState: S;
+	children: React.ReactNode;
 }
 
-const DefaultStateSaver = <S extends {}>({ saveState, defaultState, children }: DefaultStateSaverProps<S>) => {
+const DefaultStateSaver = <S extends {}>({
+	saveState,
+	defaultState,
+	children,
+}: DefaultStateSaverProps<S>) => {
 	React.useEffect(() => {
 		saveState(defaultState);
 	}, []);

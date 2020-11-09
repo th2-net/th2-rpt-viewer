@@ -51,28 +51,22 @@ const FilterPanel = ({
 	const filterBaseRef = React.useRef<HTMLDivElement>(null);
 	const filterButtonRef = React.useRef<HTMLDivElement>(null);
 
-	React.useLayoutEffect(
-		() => {
-			if (showFilter) {
-				raf(() => {
-					if (filterBaseRef.current && filterButtonRef.current) {
-						const clientWidth = document.documentElement.clientWidth;
-						const {
-							left,
-							bottom,
-						} = filterButtonRef.current?.getBoundingClientRect();
+	React.useLayoutEffect(() => {
+		if (showFilter) {
+			raf(() => {
+				if (filterBaseRef.current && filterButtonRef.current) {
+					const clientWidth = document.documentElement.clientWidth;
+					const { left, bottom } = filterButtonRef.current?.getBoundingClientRect();
 
-						filterBaseRef.current.style.right = `${Math.max(clientWidth - left - PANEL_WIDTH, 10)}px`;
-						filterBaseRef.current.style.top = `${bottom}px`;
-						filterBaseRef.current.style.width = `${PANEL_WIDTH}px`;
-						filterBaseRef.current.style.borderTopLeftRadius = clientWidth - left - PANEL_WIDTH < 10
-							? '5px'
-							: '';
-					}
-				}, 2);
-			}
-		}, [showFilter],
-	);
+					filterBaseRef.current.style.right = `${Math.max(clientWidth - left - PANEL_WIDTH, 10)}px`;
+					filterBaseRef.current.style.top = `${bottom}px`;
+					filterBaseRef.current.style.width = `${PANEL_WIDTH}px`;
+					filterBaseRef.current.style.borderTopLeftRadius =
+						clientWidth - left - PANEL_WIDTH < 10 ? '5px' : '';
+				}
+			}, 2);
+		}
+	}, [showFilter]);
 
 	useOutsideClickListener(filterBaseRef, (e: MouseEvent) => {
 		if (!filterButtonRef.current?.contains(e.target as Element)) {
@@ -80,10 +74,7 @@ const FilterPanel = ({
 		}
 	});
 
-	const filterWrapperClass = createStyleSelector(
-		'filter-wrapper',
-		showFilter ? 'active' : null,
-	);
+	const filterWrapperClass = createStyleSelector('filter-wrapper', showFilter ? 'active' : null);
 
 	const filterTitleClass = createBemElement(
 		'filter',
@@ -99,11 +90,7 @@ const FilterPanel = ({
 		!showFilter && isFilterApplied ? 'applied' : null,
 	);
 
-	const filterButtonClass = createBemElement(
-		'filter',
-		'button',
-		isDisabled ? 'disabled' : null,
-	);
+	const filterButtonClass = createBemElement('filter', 'button', isDisabled ? 'disabled' : null);
 
 	const onSubmitClick = () => {
 		onSubmit();
@@ -124,43 +111,29 @@ const FilterPanel = ({
 						setShowFilter(!showFilter);
 					}
 				}}>
-				<div className={filterIconClass}/>
+				<div className={filterIconClass} />
 				<div className={filterTitleClass}>
-					{
-						isFilterApplied
-							? 'Filter Applied'
-							: showFilter
-								? 'Hide Filter'
-								: 'Show Filter'
-					}
+					{isFilterApplied ? 'Filter Applied' : showFilter ? 'Hide Filter' : 'Show Filter'}
 				</div>
-				{
-					count ? (
-						<div className='filter__counter'>{count}</div>
-					) : null
-				}
+				{count && !isLoading ? <div className='filter__counter'>{count}</div> : null}
 			</div>
 			<ModalPortal isOpen={showFilter}>
-				<div ref={filterBaseRef} className="filter">
-					{
-						config.map(rowConfig => (
-							<FilterRow rowConfig={rowConfig} key={rowConfig.id}/>
-						))
-					}
-					<div className="filter__controls filter-controls">
-						<div className="filter-controls__clear-btn" onClick={onClearAllClick}>
-							<div className="filter-controls__clear-icon"/>
+				<div ref={filterBaseRef} className='filter'>
+					{config.map(rowConfig => (
+						<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
+					))}
+					<div className='filter__controls filter-controls'>
+						<div className='filter-controls__clear-btn' onClick={onClearAllClick}>
+							<div className='filter-controls__clear-icon' />
 							Clear All
 						</div>
-						{
-							isLoading ? (
-								<div className='filter__loading'/>
-							) : (
-								<div className='filter-row__submit-btn' onClick={onSubmitClick}>
-									Submit filter
-								</div>
-							)
-						}
+						{isLoading ? (
+							<div className='filter__loading' />
+						) : (
+							<div className='filter-row__submit-btn' onClick={onSubmitClick}>
+								Submit filter
+							</div>
+						)}
 					</div>
 				</div>
 			</ModalPortal>

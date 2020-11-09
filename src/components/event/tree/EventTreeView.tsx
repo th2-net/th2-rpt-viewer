@@ -35,20 +35,18 @@ function EventTreeView() {
 			leftPanelMinWidth={445}
 			rightPanelMinWidth={445}>
 			<SplitViewPane>
-				<EventTreeList nodes={eventWindowStore.nodesList}/>
+				<EventTreeList nodes={eventWindowStore.nodesList} />
 			</SplitViewPane>
 			<SplitViewPane>
-				{
-					eventWindowStore.selectedNode === null
-					&& !eventWindowStore.loadingSelectedEvent
-					&& <Empty description="Select event"/>
-				}
-				{
-					eventWindowStore.selectedNode
-					&& <EventDetailInfoCard
+				{eventWindowStore.selectedNode === null && !eventWindowStore.loadingSelectedEvent && (
+					<Empty description='Select event' />
+				)}
+				{eventWindowStore.selectedNode && (
+					<EventDetailInfoCard
 						event={eventWindowStore.selectedEvent}
-						childrenCount={eventWindowStore.selectedNode?.children.length}/>
-				}
+						childrenCount={eventWindowStore.selectedNode?.childList.length}
+					/>
+				)}
 			</SplitViewPane>
 		</SplitView>
 	);

@@ -35,9 +35,11 @@ export function keyForAction(id: number, fieldName: keyof Action | null = null):
 export function isKeyForAction(key: string): boolean {
 	const [prefix, id, fieldName] = key.split('-');
 
-	return prefix === ACTION_KEY_PREFIX
-        && !isNaN(+id)
-        && (fieldName === undefined || ACTION_FIELDS.includes(fieldName as keyof Action));
+	return (
+		prefix === ACTION_KEY_PREFIX &&
+		!isNaN(+id) &&
+		(fieldName === undefined || ACTION_FIELDS.includes(fieldName as keyof Action))
+	);
 }
 
 export function keyForMessage(id: string, fieldName: keyof Message | null = null): string {
@@ -47,40 +49,39 @@ export function keyForMessage(id: string, fieldName: keyof Message | null = null
 export function isKeyForMessage(key: string): boolean {
 	const [prefix, id, fieldName] = key.split('-');
 
-	return prefix === MESSAGE_KEY_PREFIX
-        && !isNaN(+id)
-        && (fieldName === undefined || MESSAGE_FIELDS.includes(fieldName as keyof Message));
+	return (
+		prefix === MESSAGE_KEY_PREFIX &&
+		!isNaN(+id) &&
+		(fieldName === undefined || MESSAGE_FIELDS.includes(fieldName as keyof Message))
+	);
 }
 
-export function keyForVerification(parentActionId: string | number | null, msgId: number | string): string {
+export function keyForVerification(
+	parentActionId: string | number | null,
+	msgId: number | string,
+): string {
 	return `${ACTION_KEY_PREFIX}-${parentActionId}-${VERIFICATION_KEY_PREFIX}-${msgId}`;
 }
 
 export function isKeyForVerification(key: string): boolean {
 	const [actionPrefix, actionId, verificationPrefix, msgId] = key.split('-');
 
-	return actionPrefix === ACTION_KEY_PREFIX
-        && !isNaN(+actionId)
-        && verificationPrefix === VERIFICATION_KEY_PREFIX
-        && !isNaN(+msgId);
+	return (
+		actionPrefix === ACTION_KEY_PREFIX &&
+		!isNaN(+actionId) &&
+		verificationPrefix === VERIFICATION_KEY_PREFIX &&
+		!isNaN(+msgId)
+	);
 }
 
 export function keyForUserMessage(userMessage: UserMessage, parent: Action): string {
-	const index = parent.subNodes ? (
-		parent.subNodes
-			.filter(isUserMessage)
-			.indexOf(userMessage)
-	) : '';
+	const index = parent.subNodes ? parent.subNodes.filter(isUserMessage).indexOf(userMessage) : '';
 
 	return `${parent.id}-user_message-${index}`;
 }
 
 export function keyForUserTable(table: UserTable, parent: Action): string {
-	const index = parent.subNodes ? (
-		parent.subNodes
-			.filter(isUserTable)
-			.indexOf(table)
-	) : '';
+	const index = parent.subNodes ? parent.subNodes.filter(isUserTable).indexOf(table) : '';
 
 	return `${parent.id}-user_table-${index}`;
 }
@@ -98,7 +99,7 @@ export function keyForKnownBug(knownBug: KnownBug, fieldName?: keyof KnownBug): 
 }
 
 export function getKeyField(key: string): string | null {
-	const [,, field] = key.split('-');
+	const [, , field] = key.split('-');
 
 	return field ?? null;
 }

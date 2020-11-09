@@ -13,173 +13,174 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
- 
-@import "./common/vars"; 
+
+@import './common/vars';
 
 .layout {
-    display: grid;
-    height: 100%;
-    grid-template: auto 1fr / 1fr;
-    grid-template-areas:
-        "header" 
-        "main-content";
-    overflow: hidden;
-    background-color: #FFF;
-    padding: 0 10px;
+	display: grid;
+	height: 100%;
+	grid-template: auto 1fr / 1fr;
+	grid-template-areas:
+		'header'
+		'main-content';
+	overflow: hidden;
+	background-color: #fff;
+	padding: 0 10px;
 
-    &__tabs {
-        grid-area: tabs;
-    }
+	&__tabs {
+		grid-area: tabs;
+	}
 
-    &__header {
-        grid-area: header;
-        position: relative;
-        z-index: 100;
-        height: 47px;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: center;
-        padding: 0 10px;
-        overflow: hidden;
-    }
+	&__header {
+		grid-area: header;
+		position: relative;
+		z-index: 100;
+		height: 47px;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		align-items: center;
+		padding: 0 10px;
+		overflow: hidden;
+	}
 
-    &__body {
-        grid-area: main-content;
-        padding-top: 7px; 
-        overflow: hidden;
-        display: flex;
+	&__body {
+		grid-area: main-content;
+		padding-top: 7px;
+		overflow: hidden;
+		display: flex;
 
-        & > div {
-            width: 100%;
-        }
-    }
+		& > div {
+			width: 100%;
+		}
+	}
 }
 
 .layout-control {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 5px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 5px;
 
-    &.disabled {
-        opacity: 0.5;
-    }
+	&.disabled {
+		opacity: 0.5;
+	}
 
-    &__title, &__counter {
-        @include unselectable;
-        font-size: 15px;
-        font-weight: bold;
-        color: $primaryTextColor;
-        white-space: nowrap;
-    }
+	&__title,
+	&__counter {
+		@include unselectable;
+		font-size: 15px;
+		font-weight: bold;
+		color: $primaryTextColor;
+		white-space: nowrap;
+	}
 
-    &__title {
+	&__title {
+		&.selectable {
+			cursor: pointer;
 
-        &.selectable {
-            cursor: pointer;
-            
-            &.disabled {
-                cursor: default;
-            }
-        }
-        
-        &.prediction {
-            &.active {
-                color: $failedTextColor;
-            }
-        }
-    }
+			&.disabled {
+				cursor: default;
+			}
+		}
 
-    &__icon {
-        @include icon(null, 20px, 20px);
-        margin: 0 7px;
-        cursor: pointer;
+		&.prediction {
+			&.active {
+				color: $failedTextColor;
+			}
+		}
+	}
 
-        &.prev {
-            background-image: url(../../resources/icons/arr1-left.svg);
-        }
+	&__icon {
+		@include icon(null, 20px, 20px);
+		margin: 0 7px;
+		cursor: pointer;
 
-        &.next {
-            background-image: url(../../resources/icons/arr1-right.svg)
-        }
+		&.prev {
+			background-image: url(../../resources/icons/arr1-left.svg);
+		}
 
-        &.prev, &.next {
-            filter: opacity(0.7);
-        }
+		&.next {
+			background-image: url(../../resources/icons/arr1-right.svg);
+		}
 
-        &.cp {
-            background-image: url(../../resources/icons/checkpoint.svg);
-        }
+		&.prev,
+		&.next {
+			filter: opacity(0.7);
+		}
 
-        &.admin {
-            &.disabled {
-                background-image: url(../../resources/icons/admin-icon-inactive.svg);
-                cursor: default;
-            }
+		&.cp {
+			background-image: url(../../resources/icons/checkpoint.svg);
+		}
 
-            &.inactive {
-                background-image: url(../../resources/icons/admin-icon-inactive.svg);
-            }
+		&.admin {
+			&.disabled {
+				background-image: url(../../resources/icons/admin-icon-inactive.svg);
+				cursor: default;
+			}
 
-            &.active {
-                background-image: url(../../resources/icons/admin-icon-active.svg);
-            }
-        }
+			&.inactive {
+				background-image: url(../../resources/icons/admin-icon-inactive.svg);
+			}
 
-        &.rejected {
-            &.disabled {
-                background-image: url(../../resources/icons/rejected-icon-inactive.svg);
-                cursor: default;
-            }
+			&.active {
+				background-image: url(../../resources/icons/admin-icon-active.svg);
+			}
+		}
 
-            &.inactive {
-                background-image: url(../../resources/icons/rejected-icon-inactive.svg);
-            }
+		&.rejected {
+			&.disabled {
+				background-image: url(../../resources/icons/rejected-icon-inactive.svg);
+				cursor: default;
+			}
 
-            &.active {
-                background-image: url(../../resources/icons/rejected-icon.svg);
-            }
-        }
+			&.inactive {
+				background-image: url(../../resources/icons/rejected-icon-inactive.svg);
+			}
 
-        &.prediction {
-            &.disabled {
-                background-image: url(../../resources/icons/ml-control-icon-inactive.svg);
-                cursor: default;
-            }
+			&.active {
+				background-image: url(../../resources/icons/rejected-icon.svg);
+			}
+		}
 
-            &.inactive {
-                background-image: url(../../resources/icons/ml-control-icon-inactive.svg);
-            }
+		&.prediction {
+			&.disabled {
+				background-image: url(../../resources/icons/ml-control-icon-inactive.svg);
+				cursor: default;
+			}
 
-            &.active {
-                background-image: url(../../resources/icons/ml-control-icon-active.svg);
-            }        
-        }
+			&.inactive {
+				background-image: url(../../resources/icons/ml-control-icon-inactive.svg);
+			}
 
-        &.beautifier {
-            background-image: url(../../resources/icons/plain-text.svg);
-        }
-    }
+			&.active {
+				background-image: url(../../resources/icons/ml-control-icon-active.svg);
+			}
+		}
+
+		&.beautifier {
+			background-image: url(../../resources/icons/plain-text.svg);
+		}
+	}
 }
 
 .events-layout {
-    height: 100%;
-    width: 100%;
-    background-color: $windowsLayoutBackgroundColor;
-    display: flex;
-    flex-direction: column;
- 
-    &__splitter {
-        width: 20px;
-        padding: 8px 0;
+	height: 100%;
+	width: 100%;
+	background-color: $windowsLayoutBackgroundColor;
+	display: flex;
+	flex-direction: column;
 
-        &:hover:after {
-            content: "";
-            height: calc(100% - 16px);
-            border: 2px solid $windowsSplitterColor;
-            left: 8px;
-        }
-    }
+	&__splitter {
+		width: 20px;
+		padding: 8px 0;
+
+		&:hover:after {
+			content: '';
+			height: calc(100% - 16px);
+			border: 2px solid $windowsSplitterColor;
+			left: 8px;
+		}
+	}
 }

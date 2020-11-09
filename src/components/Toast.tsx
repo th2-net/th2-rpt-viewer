@@ -26,10 +26,8 @@ export default function Toast(props: ToastProps) {
 	return (
 		<div className={toastMessage}>
 			<div className={toastMessageIcon} />
-			<div className="toast-message__content">
-				{children}
-			</div>
-			<button className="toast-message__close" onClick={() => onDismiss()} />
+			<div className='toast-message__content'>{children}</div>
+			<button className='toast-message__close' onClick={() => onDismiss()} />
 		</div>
 	);
 }

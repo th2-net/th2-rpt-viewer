@@ -21,7 +21,7 @@ export type AppTab = EventsTab | MessagesTab;
 
 export const enum TabTypes {
 	Events,
-	Messages
+	Messages,
 }
 
 export interface EventsTab {
@@ -31,5 +31,5 @@ export interface EventsTab {
 
 export interface MessagesTab {
 	type: TabTypes.Messages;
-	store: MessagesStore ;
+	store: MessagesStore;
 }

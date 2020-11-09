@@ -14,80 +14,80 @@
  *  limitations under the License.
  ******************************************************************************/
 
-@import "./common/vars";
+@import './common/vars';
 
 .bubble {
-    display: inline-flex;
-    align-items: center;
-    white-space: nowrap;
-    position: relative;
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+	position: relative;
 
-    border-radius: $bubbleBorderRadius;
-    color: $primaryTextColor;
-    font-weight: bold;
+	border-radius: $bubbleBorderRadius;
+	color: $primaryTextColor;
+	font-weight: bold;
 
-    padding: 3px 5px;
-    height: $filterBubbleHeight;
+	padding: 3px 5px;
+	height: $filterBubbleHeight;
 
-    &__remove {
-        position: relative;
-        width: 0;
-        top: 0;
-        // -3px to hide bubble's border-radius on the right
-        left: 1px;
-        bottom: 0;
-        overflow: hidden;
-        z-index: 1;
+	&__remove {
+		position: relative;
+		width: 0;
+		top: 0;
+		// -3px to hide bubble's border-radius on the right
+		left: 1px;
+		bottom: 0;
+		overflow: hidden;
+		z-index: 1;
 
-        display: flex;
-        justify-content: center;
-        align-items: center;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 
-        border-radius: 0 3px 3px 0;
-        background-color: inherit;
-        transition: width 0.15s ease-in-out;
-    }
+		border-radius: 0 3px 3px 0;
+		background-color: inherit;
+		transition: width 0.15s ease-in-out;
+	}
 
-    &:hover &__remove {
-        width: 16px;
-    }
+	&:hover &__remove {
+		width: 16px;
+	}
 
-    &__remove-icon {
-        @include round-button(url(../../resources/icons/cross-icon.svg), 16px);
+	&__remove-icon {
+		@include round-button(url(../../resources/icons/cross-icon.svg), 16px);
 
-        &.white {
-            background-image: url(../../resources/icons/cross-icon-white.svg);
-        }
-    }
+		&.white {
+			background-image: url(../../resources/icons/cross-icon-white.svg);
+		}
+	}
 
-    &__input {
-        border: 0;
-        font-size: inherit;
-        background-color: rgba(0, 0, 0, 0);
-        color: inherit;
-        height: $filterBubbleHeight;
+	&__input {
+		border: 0;
+		font-size: inherit;
+		background-color: rgba(0, 0, 0, 0);
+		color: inherit;
+		height: $filterBubbleHeight;
 
-        &:focus {
-            outline: 0;
-        }
-    }
+		&:focus {
+			outline: 0;
+		}
+	}
 
-    &.small {
-        font-size: 13px;
-        height: 20px;
-    }
+	&.small {
+		font-size: 13px;
+		height: 20px;
+	}
 
-    &.medium {
-        font-size: 15px;
-        height: 30px;
-    }
+	&.medium {
+		font-size: 15px;
+		height: 30px;
+	}
 
-    &.large {
-        font-size: 17px;
-        height: 40px;
-    }
+	&.large {
+		font-size: 17px;
+		height: 40px;
+	}
 
-    &.invalid {
-        color: $failedTextColor;
-    }
+	&.invalid {
+		color: $failedTextColor;
+	}
 }

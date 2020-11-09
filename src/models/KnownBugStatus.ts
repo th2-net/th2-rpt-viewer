@@ -15,6 +15,6 @@
  ***************************************************************************** */
 
 export const enum KnownBugStatus {
-    REPRODUCED = 'REPRODUCED',
-    NOT_REPRODUCED = 'NOT_REPRODUCED'
+	REPRODUCED = 'REPRODUCED',
+	NOT_REPRODUCED = 'NOT_REPRODUCED',
 }

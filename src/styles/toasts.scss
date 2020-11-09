@@ -14,49 +14,49 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import "./common/vars";
+@import './common/vars';
 
 .react-toast-notifications__container {
-  width: 70%;
-  max-width: 500px;
+	width: 70%;
+	max-width: 500px;
 }
 
 .toast-message {
-  display: flex;
-  justify-content: space-between;
-  border-radius: 8px;
-  padding: 16px;
-  margin: 0 0 8px;
-  &.error {
-    background-color: $toastErrorBackground;
-  }
-  &__icon {
-    min-width: 24px;
-    &.error {
-      @include icon(url(../../resources/icons/toast-error.svg), 24px, 24px);
-    }
-  }
-  &__content {
-    flex-grow: 1;
-    position: relative;
-    max-width: 84%;
-    height: 100%;
-    padding: 0 14px;
-    &:after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 1px;
-      height: inherit;
-      background-color: #fff;
-    }
-  }
-  &__close {
-    min-width: 20px;
-    border: none;
-    background-color: transparent;
-    cursor: pointer;
-    @include icon(url(../../resources/icons/cross-icon-white.svg), 20px, 20px);
-  }
+	display: flex;
+	justify-content: space-between;
+	border-radius: 8px;
+	padding: 16px;
+	margin: 0 0 8px;
+	&.error {
+		background-color: $toastErrorBackground;
+	}
+	&__icon {
+		min-width: 24px;
+		&.error {
+			@include icon(url(../../resources/icons/toast-error.svg), 24px, 24px);
+		}
+	}
+	&__content {
+		flex-grow: 1;
+		position: relative;
+		max-width: 84%;
+		height: 100%;
+		padding: 0 14px;
+		&:after {
+			content: '';
+			position: absolute;
+			top: 0;
+			right: 0;
+			width: 1px;
+			height: inherit;
+			background-color: #fff;
+		}
+	}
+	&__close {
+		min-width: 20px;
+		border: none;
+		background-color: transparent;
+		cursor: pointer;
+		@include icon(url(../../resources/icons/cross-icon-white.svg), 20px, 20px);
+	}
 }

@@ -17,22 +17,22 @@
 import { ActionNode, ActionNodeType } from './Action';
 
 export default interface Message {
-    actionNodeType: ActionNodeType.MESSAGE;
-    id: string;
-    checkPoint?: unknown;
-    raw: string;
-    relatedActions: number[];
-    from: string;
-    to: string;
-    msgName: string;
-    content: any;
-    contentHumanReadable: string;
-    timestamp: string;
-    status?: string;
+	actionNodeType: ActionNodeType.MESSAGE;
+	id: string;
+	checkPoint?: unknown;
+	raw: string;
+	relatedActions: number[];
+	from: string;
+	to: string;
+	msgName: string;
+	content: any;
+	contentHumanReadable: string;
+	timestamp: string;
+	status?: string;
 
-    // generated fields
-    rawHex?: string;
-    rawHumanReadable?: string;
+	// generated fields
+	rawHex?: string;
+	rawHumanReadable?: string;
 }
 
 export function isMessage(action: ActionNode): action is Message {

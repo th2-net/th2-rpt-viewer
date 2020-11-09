@@ -21,13 +21,13 @@ import { createStyleSelector } from '../helpers/styleCreators';
 type ToggleButtonContent = string | React.ReactNode;
 
 interface Props {
-    onClick?: Function;
-    isToggled?: boolean;
-    isDisabled?: boolean;
-    title?: string;
-    theme?: string;
-    textClass?: string;
-    children: ToggleButtonContent;
+	onClick?: Function;
+	isToggled?: boolean;
+	isDisabled?: boolean;
+	title?: string;
+	theme?: string;
+	textClass?: string;
+	children: ToggleButtonContent;
 }
 
 export function ToggleButton({
@@ -48,11 +48,7 @@ export function ToggleButton({
 
 	if (textClass) {
 		// eslint-disable-next-line no-param-reassign
-		content = (
-			<span className={textClass}>
-				{content}
-			</span>
-		);
+		content = <span className={textClass}>{content}</span>;
 	}
 
 	return (
@@ -62,9 +58,7 @@ export function ToggleButton({
 				if (onClick && !isDisabled) onClick(content);
 			}}
 			title={title}>
-			<div className="toggle-button__title">
-				{content}
-			</div>
+			<div className='toggle-button__title'>{content}</div>
 		</div>
 	);
 }

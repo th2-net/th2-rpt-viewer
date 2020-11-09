@@ -17,21 +17,21 @@
 @import './common/vars';
 
 .notification {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 19px;
-    padding: 10px;
-    color: $primaryTextColor;
-    background-color: $notificationBackground;
-    border-radius: 5px;
-    font-family: Open sans;
-    z-index: 999;
+	position: absolute;
+	bottom: 15px;
+	right: 15px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 19px;
+	padding: 10px;
+	color: $primaryTextColor;
+	background-color: $notificationBackground;
+	border-radius: 5px;
+	font-family: Open sans;
+	z-index: 999;
 
-    p {
-        margin: 0;
-    }
+	p {
+		margin: 0;
+	}
 }

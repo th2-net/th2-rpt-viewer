@@ -19,7 +19,8 @@
 import 'setimmediate';
 
 /**
- * Returns next item after current index in array if it exists, or retruns first item if it doesn't exist.
+ * Returns next item after current index in array if it exists, or returns
+ * first item if it doesn't exist.
  * @param array Target array
  * @param item Current item
  */
@@ -32,7 +33,8 @@ export function nextCyclicItemByIndex<T>(array: Array<T>, index: number): T {
 }
 
 /**
- * Returns previous item before current index in array if it exists, or retruns last item if it doesn't exist.
+ * Returns previous item before current index in array if it exists
+ * or returns last item if it doesn't exist.
  * @param array Target array
  * @param item Current item
  */
@@ -60,7 +62,8 @@ export function nextCyclicItem<T>(array: Array<T>, item: T): T | null {
 }
 
 /**
- * Returns previous item before current in array if it exists, or retruns last item if it doesn't exist.
+ * Returns previous item before current in array if it exists
+ * or returns last item if it doesn't exist.
  * @param array Target array
  * @param item Current item
  */
@@ -75,22 +78,30 @@ export function prevCyclicItem<T>(array: Array<T>, item: T): T | null {
 }
 
 /**
- * Returns next item after current item in array if it exists, or retruns first item if it doesn't exist.
+ * Returns next item after current item in array if it exists
+ * or returns first item if it doesn't exist.
  * @param array Target array
  * @param item Current item
  */
-export function findNextCyclicItem<T>(array: Array<T>, predicateFn: (item: T) => boolean): T | null {
+export function findNextCyclicItem<T>(
+	array: Array<T>,
+	predicateFn: (item: T) => boolean,
+): T | null {
 	const item = array.find(predicateFn)!;
 
 	return nextCyclicItem(array, item);
 }
 
 /**
- * Returns previous item before current item in array if it exists, or retruns last item if it doesn't exist.
+ * Returns previous item before current item in array if it exists
+ * or returns last item if it doesn't exist.
  * @param array Target array
  * @param item Current item
  */
-export function findPrevCyclicItem<T>(array: Array<T>, predicateFn: (item: T) => boolean): T | null {
+export function findPrevCyclicItem<T>(
+	array: Array<T>,
+	predicateFn: (item: T) => boolean,
+): T | null {
 	const item = array.find(predicateFn)!;
 
 	return prevCyclicItem(array, item);
@@ -166,7 +177,9 @@ export function areArraysEqual<T extends unknown[]>(arr1: T, arr2: T): boolean {
  * @param chunkSize size of chunk
  */
 export async function asyncFlatMap<T, R extends {}>(
-	arr: T[], fn: (item: T, index?: number) => R[] | R, chunkSize = 25,
+	arr: T[],
+	fn: (item: T, index?: number) => R[] | R,
+	chunkSize = 25,
 ): Promise<R[]> {
 	const results: R[] = [];
 	const chunks = sliceToChunks(arr, chunkSize);

@@ -24,12 +24,12 @@ export type UserMessageTextStyle = 'BOLD' | 'NORMAL' | 'ITALIC';
 export type UserMessageLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FAIL';
 
 export default interface UserMessage {
-    message: string;
-    color: string;
-    style: string;
-    level?: string;
-    exception?: Exception;
-    actionNodeType: ActionNodeType.CUSTOM_MESSAGE;
+	message: string;
+	color: string;
+	style: string;
+	level?: string;
+	exception?: Exception;
+	actionNodeType: ActionNodeType.CUSTOM_MESSAGE;
 }
 
 export function isUserMessage(actionNode: ActionNode): actionNode is UserMessage {

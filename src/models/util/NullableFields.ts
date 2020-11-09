@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 type NullableFields<T extends {}> = {
-    [K in keyof T]: T[K] | null
+	[K in keyof T]: T[K] | null;
 };
 
 export default NullableFields;

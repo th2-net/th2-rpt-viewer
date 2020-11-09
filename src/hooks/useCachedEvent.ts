@@ -16,31 +16,33 @@
 
 import * as React from 'react';
 import { useEventWindowStore } from './useEventWindowStore';
-import { EventAction } from '../models/EventAction';
-import { EventIdNode } from '../stores/EventsStore';
+import { EventAction, EventTreeNode } from '../models/EventAction';
 import { usePrevious } from './usePrevious';
 
-export default function useCachedEvent(node: EventIdNode, isVisible = true): EventAction | undefined {
+export default function useCachedEvent(
+	node: EventTreeNode,
+	isVisible = true,
+): EventAction | undefined {
 	const eventWindowStore = useEventWindowStore();
-	const [event, setEvent] = React.useState(eventWindowStore.eventsCache.get(node.id));
+	const [event, setEvent] = React.useState(eventWindowStore.eventsCache.get(node.eventId));
 	const previousNode = usePrevious(node);
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
 
 		if (isVisible) {
-			if (!event || !node.children) {
+			if (!event || !node.childList) {
 				eventWindowStore
 					.fetchEvent(node, abortController.signal)
 					.then(setEvent)
 					.catch(err => {
 						if (err.name !== 'AbortError') {
-							console.error(`Error while loading event ${node.id}`);
+							console.error(`Error while loading event ${node.eventId}`);
 						}
 					});
 			} else if (node !== previousNode) {
-				if (eventWindowStore.eventsCache.has(node.id)) {
-					setEvent(eventWindowStore.eventsCache.get(node.id));
+				if (eventWindowStore.eventsCache.has(node.eventId)) {
+					setEvent(eventWindowStore.eventsCache.get(node.eventId));
 				} else {
 					eventWindowStore
 						.fetchEvent(node, abortController.signal)

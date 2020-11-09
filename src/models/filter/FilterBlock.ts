@@ -18,7 +18,7 @@ import FilterPath from './FilterPath';
 import FilterType from './FilterType';
 
 export interface FilterBlock {
-    path: FilterPath;
-    types: FilterType[];
-    values: string[];
+	path: FilterPath;
+	types: FilterType[];
+	values: string[];
 }

@@ -14,38 +14,38 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import "./common/vars";
+@import './common/vars';
 .fetch-error {
-  color: #fff;
-  &__top {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    font-weight: bold;
-  }
-  &__middle {
-    word-break: break-all;
-    font-size: 12px;
-  }
-  &__bottom {
-    display: flex;
-    justify-content: flex-end;
-  }
-  .copy-details {
-    margin: 4px 0 0;
-    display: flex;
-    background-color: transparent;
-    color: #fff;
-    cursor: pointer;
-    border: none;
-    &__icon {
-      margin: 0 4px 0 0;
-      @include icon(url(../../resources/icons/toast-copy.svg), 16px, 17px)
-    }
-    &__text {
-      &.copied {
-        color: gray
-      }
-    }
-  }
+	color: #fff;
+	&__top {
+		display: flex;
+		justify-content: space-between;
+		font-size: 14px;
+		font-weight: bold;
+	}
+	&__middle {
+		word-break: break-all;
+		font-size: 12px;
+	}
+	&__bottom {
+		display: flex;
+		justify-content: flex-end;
+	}
+	.copy-details {
+		margin: 4px 0 0;
+		display: flex;
+		background-color: transparent;
+		color: #fff;
+		cursor: pointer;
+		border: none;
+		&__icon {
+			margin: 0 4px 0 0;
+			@include icon(url(../../resources/icons/toast-copy.svg), 16px, 17px);
+		}
+		&__text {
+			&.copied {
+				color: gray;
+			}
+		}
+	}
 }

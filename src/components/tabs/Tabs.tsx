@@ -71,21 +71,16 @@ const Tabs = (props: Props) => {
 		setActiveTab,
 	});
 
-	const tabsListClassName = createStyleSelector(
-		'tabs__list',
-		classNames.tabsList || null,
-	);
+	const tabsListClassName = createStyleSelector('tabs__list', classNames.tabsList || null);
 
 	return (
-		<div className="tabs__wrapper">
-			<div className="tabs">
-				<div className={tabsListClassName}>
-					{tabs}
-				</div>
-				<div className="tabs__content">
+		<div className='tabs__wrapper'>
+			<div className='tabs'>
+				<div className={tabsListClassName}>{tabs}</div>
+				<div className='tabs__content'>
 					{tabPanels.map((content, index) => (
 						<div
-							className="tabs__content-window"
+							className='tabs__content-window'
 							key={index}
 							style={{ zIndex: index === activeIndex ? 1 : 0 }}>
 							{content}

@@ -20,7 +20,10 @@ import moment from 'moment';
 import FilterPanel from './FilterPanel';
 import { DateTimeMask, FilterRowConfig, TimeInputType } from '../../models/filter/FilterInputs';
 import {
-	DATE_INPUT_MASK, DATE_PLACEHOLDER, TIME_INPUT_MASK, TIME_PLACEHOLDER,
+	DATE_INPUT_MASK,
+	DATE_PLACEHOLDER,
+	TIME_INPUT_MASK,
+	TIME_PLACEHOLDER,
 } from '../../util/filterInputs';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 import { getTimeRange } from '../../helpers/date';
@@ -116,82 +119,95 @@ function EventsFilterPanel() {
 		eventWindowStore.filterStore.resetEventsFilter();
 	};
 
-	const filterConfig: FilterRowConfig[] = [{
-		type: 'datetime-range',
-		id: 'events-datetime',
-		label: 'Events from',
-		inputs: [{
-			label: 'Events on',
-			value: timestampFrom,
-			setValue: setTimestampFromDate,
-			type: TimeInputType.DATE,
-			id: 'events-date',
-			inputMask: DATE_INPUT_MASK,
-			dateMask: DateTimeMask.DATE_MASK,
-			placeholder: DATE_PLACEHOLDER,
-			inputClassName: 'events-filter__date-input',
-			labelClassName: 'filter-row__label',
-		}, {
-			label: 'from',
-			value: timestampFrom,
-			setValue: setTimestampFromTime,
-			type: TimeInputType.TIME,
-			id: 'events-time-from',
-			inputMask: TIME_INPUT_MASK,
-			dateMask: DateTimeMask.TIME_MASK,
-			placeholder: TIME_PLACEHOLDER,
-			inputClassName: 'events-filter__time-input',
-		}, {
-			label: 'to',
-			value: timestampTo,
-			setValue: setTimestampToTime,
-			type: TimeInputType.TIME,
-			id: 'events-time-to',
-			inputMask: TIME_INPUT_MASK,
-			dateMask: DateTimeMask.TIME_MASK,
-			placeholder: TIME_PLACEHOLDER,
-			inputClassName: 'events-filter__time-input',
-		}],
-		timeShortcuts: [{
-			label: 'Last 15 minutes',
-			onClick: getTimeShortcutHandler(15),
-		}, {
-			label: 'Last hour',
-			onClick: getTimeShortcutHandler(60),
-		}, {
-			label: 'Today',
-			onClick: getTimeShortcutHandler(24 * 60),
-		}],
-	}, {
-		type: 'multiple-strings',
-		id: 'events-name',
-		label: 'Events name',
-		values: names,
-		setValues: setNames,
-		currentValue: currentName,
-		setCurrentValue: setCurrentName,
-		autocompleteList: null,
-	}, {
-		type: 'multiple-strings',
-		id: 'events-type',
-		label: 'Events type',
-		values: eventTypes,
-		setValues: setEventsTypes,
-		currentValue: currentType,
-		setCurrentValue: setCurrentEventType,
-		autocompleteList: null,
-	}];
+	const filterConfig: FilterRowConfig[] = [
+		{
+			type: 'datetime-range',
+			id: 'events-datetime',
+			label: 'Events from',
+			inputs: [
+				{
+					label: 'Events on',
+					value: timestampFrom,
+					setValue: setTimestampFromDate,
+					type: TimeInputType.DATE,
+					id: 'events-date',
+					inputMask: DATE_INPUT_MASK,
+					dateMask: DateTimeMask.DATE_MASK,
+					placeholder: DATE_PLACEHOLDER,
+					inputClassName: 'events-filter__date-input',
+					labelClassName: 'filter-row__label',
+				},
+				{
+					label: 'from',
+					value: timestampFrom,
+					setValue: setTimestampFromTime,
+					type: TimeInputType.TIME,
+					id: 'events-time-from',
+					inputMask: TIME_INPUT_MASK,
+					dateMask: DateTimeMask.TIME_MASK,
+					placeholder: TIME_PLACEHOLDER,
+					inputClassName: 'events-filter__time-input',
+				},
+				{
+					label: 'to',
+					value: timestampTo,
+					setValue: setTimestampToTime,
+					type: TimeInputType.TIME,
+					id: 'events-time-to',
+					inputMask: TIME_INPUT_MASK,
+					dateMask: DateTimeMask.TIME_MASK,
+					placeholder: TIME_PLACEHOLDER,
+					inputClassName: 'events-filter__time-input',
+				},
+			],
+			timeShortcuts: [
+				{
+					label: 'Last 15 minutes',
+					onClick: getTimeShortcutHandler(15),
+				},
+				{
+					label: 'Last hour',
+					onClick: getTimeShortcutHandler(60),
+				},
+				{
+					label: 'Today',
+					onClick: getTimeShortcutHandler(24 * 60),
+				},
+			],
+		},
+		{
+			type: 'multiple-strings',
+			id: 'events-name',
+			label: 'Events name',
+			values: names,
+			setValues: setNames,
+			currentValue: currentName,
+			setCurrentValue: setCurrentName,
+			autocompleteList: null,
+		},
+		{
+			type: 'multiple-strings',
+			id: 'events-type',
+			label: 'Events type',
+			values: eventTypes,
+			setValues: setEventsTypes,
+			currentValue: currentType,
+			setCurrentValue: setCurrentEventType,
+			autocompleteList: null,
+		},
+	];
 
 	return (
 		<FilterPanel
 			isLoading={eventWindowStore.isLoadingRootEvents}
 			isFilterApplied={filterStore.isEventsFilterApplied}
-			count={filterStore.isEventsFilterApplied ? eventWindowStore.eventsIds.length : null}
+			count={filterStore.isEventsFilterApplied ? eventWindowStore.eventTree.length : null}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
 			onSubmit={onSubmit}
 			onClearAll={onClear}
-			config={filterConfig}/>
+			config={filterConfig}
+		/>
 	);
 }
 

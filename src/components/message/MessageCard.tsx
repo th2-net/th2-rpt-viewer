@@ -43,8 +43,7 @@ export interface RecoveredProps {
 	showRawHandler: (showRaw: boolean) => void;
 }
 
-interface Props extends OwnProps, RecoveredProps {
-}
+interface Props extends OwnProps, RecoveredProps {}
 
 function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const windowsStore = useWindowsStore();
@@ -52,36 +51,18 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const { heatmapElements } = useHeatmap();
 
 	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
-	const {
-		messageId,
-		timestamp,
-		messageType,
-		sessionId,
-		direction,
-		bodyBase64,
-		body,
-	} = message;
+	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
 	const isSelected = Boolean(heatmapElement);
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isPinned = windowsStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
 	const color = heatmapElement?.colors[0];
 
-	const rootClass = createBemBlock(
-		'message-card',
-		isSelected ? 'selected' : null,
-	);
+	const rootClass = createBemBlock('message-card', isSelected ? 'selected' : null);
 
-	const headerClass = createBemBlock(
-		'mc-header',
-		PanelArea.P100,
-	);
+	const headerClass = createBemBlock('mc-header', PanelArea.P100);
 
-	const showRawClass = createBemElement(
-		'mc-show-raw',
-		'icon',
-		showRaw ? 'expanded' : 'hidden',
-	);
+	const showRawClass = createBemElement('mc-show-raw', 'icon', showRaw ? 'expanded' : 'hidden');
 
 	const beautifyIconClass = createBemElement(
 		'mc-beautify',
@@ -94,17 +75,9 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		filter: `invert(1) sepia(1) saturate(5) hue-rotate(${calculateHueValue(sessionId)}deg)`,
 	};
 
-	const sessionClass = createBemElement(
-		'mc-header',
-		'session-icon',
-		direction?.toLowerCase(),
-	);
+	const sessionClass = createBemElement('mc-header', 'session-icon', direction?.toLowerCase());
 
-	const pinClassName = createBemElement(
-		'mc-header',
-		'pin-icon',
-		isPinned ? 'active' : null,
-	);
+	const pinClassName = createBemElement('mc-header', 'pin-icon', isPinned ? 'active' : null);
 
 	return (
 		<div
@@ -114,72 +87,66 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 				borderColor: color,
 			}}>
 			<div className={headerClass}>
-				<div className="mc-header__name">Name</div>
-				<div className="mc-header__name-value">
-					{messageType}
-				</div>
-				<div className="mc-header__timestamp">
+				<div className='mc-header__name'>Name</div>
+				<div className='mc-header__name-value'>{messageType}</div>
+				<div className='mc-header__timestamp'>
 					{timestamp && formatTime(getTimestampAsNumber(timestamp))}
 				</div>
-				<div className="mc-header__session">Session</div>
-				<div className="mc-header__session-value">
-					<div className={sessionClass}
-						 style={sessionArrowStyle}/>
+				<div className='mc-header__session'>Session</div>
+				<div className='mc-header__session-value'>
+					<div className={sessionClass} style={sessionArrowStyle} />
 					{sessionId}
 				</div>
-				<div className="mc-header__id">Id</div>
-				<div className="mc-header__id-value">{messageId}</div>
-				{
-					message.body !== null && (
-						<div className="mc-beautify" onClick={() => messagesStore.toggleMessageBeautify(messageId)}>
-							<div className={beautifyIconClass}/>
-						</div>
-					)
-				}
-				<div className="mc-header__pin">
+				<div className='mc-header__id'>Id</div>
+				<div className='mc-header__id-value'>{messageId}</div>
+				{message.body !== null && (
+					<div
+						className='mc-beautify'
+						onClick={() => messagesStore.toggleMessageBeautify(messageId)}>
+						<div className={beautifyIconClass} />
+					</div>
+				)}
+				<div className='mc-header__pin'>
 					<div
 						title={isPinned ? 'Unpin' : 'Pin'}
 						className={pinClassName}
-						onClick={() => windowsStore.toggleMessagePin(message)}/>
+						onClick={() => windowsStore.toggleMessagePin(message)}
+					/>
 				</div>
-				<div
-					className="mc-header__underline"
-					style={{ borderColor: color }}/>
+				<div className='mc-header__underline' style={{ borderColor: color }} />
 			</div>
-			<div className="message-card__body mc-body">
-				<div className="mc-body__human">
-					<ErrorBoundary fallback={
-						<MessageBodyCardFallback
-							isBeautified={isContentBeautified}
-							isSelected={color !== undefined}
-							body={body}/>
-					}>
+			<div className='message-card__body mc-body'>
+				<div className='mc-body__human'>
+					<ErrorBoundary
+						fallback={
+							<MessageBodyCardFallback
+								isBeautified={isContentBeautified}
+								isSelected={color !== undefined}
+								body={body}
+							/>
+						}>
 						<MessageBodyCard
 							isBeautified={isContentBeautified}
 							body={body}
-							isSelected={color !== undefined}/>
+							isSelected={color !== undefined}
+						/>
 					</ErrorBoundary>
-					{
-						(bodyBase64 && bodyBase64 !== 'null') ? (
-							<div className="mc-show-raw"
-								 onClick={() => showRawHandler(!showRaw)}>
-								<div className="mc-show-raw__title">RAW</div>
-								<div className={showRawClass}/>
-							</div>
-						) : null
-					}
-					{
-						bodyBase64 && showRaw
-							? <MessageRaw messageId={messageId} rawContent={bodyBase64}/>
-							: null
-					}
+					{bodyBase64 && bodyBase64 !== 'null' ? (
+						<div className='mc-show-raw' onClick={() => showRawHandler(!showRaw)}>
+							<div className='mc-show-raw__title'>RAW</div>
+							<div className={showRawClass} />
+						</div>
+					) : null}
+					{bodyBase64 && showRaw ? (
+						<MessageRaw messageId={messageId} rawContent={bodyBase64} />
+					) : null}
 				</div>
 			</div>
 		</div>
 	);
 }
 
-export const MessageCard = observer(MessageCardBase);
+const MessageCard = observer(MessageCardBase);
 
 function calculateHueValue(session: string): number {
 	const hashCode = getHashCode(session);
@@ -187,16 +154,15 @@ function calculateHueValue(session: string): number {
 	return (hashCode % HUE_SEGMENTS_COUNT) * (360 / HUE_SEGMENTS_COUNT);
 }
 
-export const RecoverableMessageCard = (props: OwnProps) => (
-	<StateSaver
-		stateKey={keyForMessage(props.message.messageId)}
-		getDefaultState={() => false}>
+const RecoverableMessageCard = (props: OwnProps) => (
+	<StateSaver stateKey={keyForMessage(props.message.messageId)} getDefaultState={() => false}>
 		{(state, saveState) => (
 			<MessageCard
 				{...props}
 				// we should always show raw content if something found in it
 				showRaw={state}
-				showRawHandler={saveState}/>
+				showRawHandler={saveState}
+			/>
 		)}
 	</StateSaver>
 );

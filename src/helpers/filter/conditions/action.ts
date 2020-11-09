@@ -16,7 +16,11 @@
 
 import Action from '../../../models/Action';
 import filterEntry from '../filterEntry';
-import { ACTION_FIELDS, INPUT_PARAM_NODE_FIELD, INPUT_PARAM_VALUE_FIELDS } from '../../search/searchEngine';
+import {
+	ACTION_FIELDS,
+	INPUT_PARAM_NODE_FIELD,
+	INPUT_PARAM_VALUE_FIELDS,
+} from '../../search/searchEngine';
 import FilterCondition from './FilterCondition';
 import { toRegExpArray } from '../../regexp';
 import FilterPath from '../../../models/filter/FilterPath';
@@ -24,7 +28,10 @@ import ActionParameter from '../../../models/ActionParameter';
 
 const STUB_FUNCTION = () => false;
 
-export default function getActionCondition(path: FilterPath, values: string[]): FilterCondition<Action> {
+export default function getActionCondition(
+	path: FilterPath,
+	values: string[],
+): FilterCondition<Action> {
 	switch (path) {
 		case FilterPath.SERVICE:
 			return action => filterEntry(action, ['serviceName'], toRegExpArray(values));
@@ -33,8 +40,9 @@ export default function getActionCondition(path: FilterPath, values: string[]): 
 			return action => values.includes(action.status.status);
 
 		case FilterPath.ALL:
-			return action => filterEntry(action, ACTION_FIELDS, toRegExpArray(values))
-                || filterInputParams(action.parameters, toRegExpArray(values));
+			return action =>
+				filterEntry(action, ACTION_FIELDS, toRegExpArray(values)) ||
+				filterInputParams(action.parameters, toRegExpArray(values));
 
 		default:
 			return STUB_FUNCTION;
@@ -46,7 +54,6 @@ function filterInputParams(params: ActionParameter[] | null, values: RegExp[]): 
 		return false;
 	}
 
-
 	return params.some(param => checkParamEntry(param, values));
 }
 
@@ -55,6 +62,8 @@ function checkParamEntry(param: ActionParameter, values: RegExp[]): boolean {
 		return filterEntry(param, INPUT_PARAM_VALUE_FIELDS, values);
 	}
 
-	return filterEntry(param, INPUT_PARAM_NODE_FIELD, values)
-        || param.subParameters.some(subParam => checkParamEntry(subParam, values));
+	return (
+		filterEntry(param, INPUT_PARAM_NODE_FIELD, values) ||
+		param.subParameters.some(subParam => checkParamEntry(subParam, values))
+	);
 }

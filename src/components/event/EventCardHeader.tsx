@@ -29,7 +29,6 @@ import SearchableContent from '../search/SearchableContent';
 interface Props {
 	displayType?: CardDisplayType;
 	event: EventTreeNode;
-	isRoot?: boolean;
 	onSelect: () => void;
 	isSelected?: boolean;
 	childrenCount?: number | null;
@@ -39,20 +38,16 @@ interface Props {
 }
 
 function EventCardHeader({
-	 displayType = CardDisplayType.MINIMAL,
-	 event,
-	 onSelect,
-	 isSelected = false,
-	 childrenCount,
-	 isFlatView = false,
-	 parentsCount = 0,
-	 rootStyle = {},
+	displayType = CardDisplayType.MINIMAL,
+	event,
+	onSelect,
+	isSelected = false,
+	childrenCount,
+	isFlatView = false,
+	parentsCount = 0,
+	rootStyle = {},
 }: Props) {
-	const {
-		eventId,
-		eventName,
-		startTimestamp,
-	} = event;
+	const { eventId, eventName, startTimestamp } = event;
 
 	const status = getEventStatus(event);
 	const startTimestampValue = getTimestampAsNumber(startTimestamp);
@@ -66,45 +61,29 @@ function EventCardHeader({
 
 	return (
 		<div className={rootClassName} onClick={onSelect} style={rootStyle}>
-			{
-				isFlatView && parentsCount > 0
-					? <Chip text={parentsCount.toString()}/>
-					: null
-			}
-			{
-				displayType !== CardDisplayType.STATUS_ONLY ? (
-					<div className='event-header-card__title' title={eventName}>
-						<SearchableContent content={eventName} eventId={eventId}/>
-					</div>
-				) : null
-			}
-			{
-				displayType !== CardDisplayType.STATUS_ONLY ? (
-					<div className="event-header-card__time-label">
-						<span className="event-header-card__time-label-full">
-							{formatTime(startTimestampValue)}
-						</span>
-						<span className="event-header-card__time-label-short">
-							<TimeAgo date={startTimestampValue} maxPeriod={5}/>
-						</span>
-					</div>
-				) : null
-			}
-			{
-				displayType !== CardDisplayType.STATUS_ONLY
-					&& childrenCount !== undefined
-					&& childrenCount !== 0 ? (
-						<Chip
-							isLoading={childrenCount === null}
-							text={childrenCount ?? ''}/>
-					) : null
-			}
-			<div className="event-header-card__status">
-				{
-					displayType === CardDisplayType.FULL
-						? status.toUpperCase()
-						: getMinifiedStatus(status)
-				}
+			{isFlatView && parentsCount > 0 ? <Chip text={parentsCount.toString()} /> : null}
+			{displayType !== CardDisplayType.STATUS_ONLY ? (
+				<div className='event-header-card__title' title={eventName}>
+					<SearchableContent content={eventName} eventId={eventId} />
+				</div>
+			) : null}
+			{displayType !== CardDisplayType.STATUS_ONLY ? (
+				<div className='event-header-card__time-label'>
+					<span className='event-header-card__time-label-full'>
+						{formatTime(startTimestampValue)}
+					</span>
+					<span className='event-header-card__time-label-short'>
+						<TimeAgo date={startTimestampValue} maxPeriod={5} />
+					</span>
+				</div>
+			) : null}
+			{displayType !== CardDisplayType.STATUS_ONLY &&
+			childrenCount !== undefined &&
+			childrenCount !== 0 ? (
+				<Chip isLoading={childrenCount === null} text={childrenCount ?? ''} />
+			) : null}
+			<div className='event-header-card__status'>
+				{displayType === CardDisplayType.FULL ? status.toUpperCase() : getMinifiedStatus(status)}
 			</div>
 		</div>
 	);

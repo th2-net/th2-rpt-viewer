@@ -14,10 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	observable,
-	action,
-} from 'mobx';
+import { observable, action } from 'mobx';
 import PanelArea from '../util/PanelArea';
 
 export default class AppViewStore {

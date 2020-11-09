@@ -18,45 +18,41 @@ import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import throttle from 'lodash.throttle';
 import { observer } from 'mobx-react-lite';
-import { StatusType, statusValues } from '../../models/Status';
+import { EventStatus, eventStatusValues } from '../../models/Status';
 import { createStyleSelector } from '../../helpers/styleCreators';
+import { getVerificationTablesNodes } from '../../helpers/tables';
 import StateSaver, { RecoverableElementProps } from '../util/StateSaver';
 import SearchResult from '../../helpers/search/SearchResult';
 import { replaceNonPrintableChars } from '../../helpers/stringUtils';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { VerificationPayload, VerificationPayloadField } from '../../models/EventActionPayload';
 import '../../styles/tables.scss';
-import { getVerificationTablesNodes } from '../../helpers/tables';
 
 const PADDING_LEVEL_VALUE = 10;
 
-const STATUS_ALIASES = new Map<StatusType, { alias: string; className: string }>([
-	[StatusType.FAILED, { alias: 'F', className: 'failed' }],
-	[StatusType.PASSED, { alias: 'P', className: 'passed' }],
-	[StatusType.CONDITIONALLY_PASSED, { alias: 'CP', className: 'conditionally_passed' }],
-	[StatusType.NA, { alias: 'NA', className: 'na' }],
+const STATUS_ALIASES = new Map<EventStatus, { alias: string; className: string }>([
+	[EventStatus.FAILED, { alias: 'F', className: 'failed' }],
+	[EventStatus.PASSED, { alias: 'P', className: 'passed' }],
 ]);
 
 interface OwnProps {
-    actionId: number;
-    messageId: number;
-    payload: VerificationPayload;
-    status: StatusType;
+	payload: VerificationPayload;
+	status: EventStatus;
 	keyPrefix: string;
 	stateKey: string;
 }
 
 interface StateProps {
-    precision: string;
-    transparencyFilter: Set<StatusType>;
-    visibilityFilter: Set<StatusType>;
-    expandPath: number[];
-    searchResults: SearchResult;
+	precision: string;
+	transparencyFilter: Set<EventStatus>;
+	visibilityFilter: Set<EventStatus>;
+	expandPath: number[];
+	searchResults: SearchResult;
 }
 
 interface Props extends Omit<OwnProps, 'params'>, StateProps {
-    nodes: TableNode[];
-    stateSaver: (state: TableNode[]) => void;
+	nodes: TableNode[];
+	stateSaver: (state: TableNode[]) => void;
 }
 
 interface RecoveredProps extends OwnProps, RecoverableElementProps, StateProps {}
@@ -80,7 +76,9 @@ class VerificationTableBase extends React.Component<Props, State> {
 		nextColumns: [],
 	};
 
-	columnsRefs: Array<React.RefObject<HTMLTableHeaderCellElement>> = Array(6).fill(null).map(() => React.createRef());
+	columnsRefs: Array<React.RefObject<HTMLTableHeaderCellElement>> = Array(6)
+		.fill(null)
+		.map(() => React.createRef());
 
 	rootRef = React.createRef<HTMLDivElement>();
 
@@ -96,14 +94,15 @@ class VerificationTableBase extends React.Component<Props, State> {
 
 		return {
 			...node,
-			subEntries: node.subEntries && node.subEntries.map(subNode => this.findNode(subNode, targetNode)),
+			subEntries:
+				node.subEntries && node.subEntries.map(subNode => this.findNode(subNode, targetNode)),
 		};
 	}
 
 	setExpandStatus(isCollapsed: boolean) {
 		this.setState({
-			nodes: this.state.nodes.map(
-				node => (node.subEntries ? this.setNodeExpandStatus(node, isCollapsed) : node),
+			nodes: this.state.nodes.map(node =>
+				node.subEntries ? this.setNodeExpandStatus(node, isCollapsed) : node,
 			),
 		});
 	}
@@ -112,16 +111,18 @@ class VerificationTableBase extends React.Component<Props, State> {
 		return {
 			...node,
 			isExpanded,
-			subEntries: node.subEntries && node.subEntries.map(
-				subNode => (subNode.subEntries ? this.setNodeExpandStatus(subNode, isExpanded) : subNode),
-			),
+			subEntries:
+				node.subEntries &&
+				node.subEntries.map(subNode =>
+					subNode.subEntries ? this.setNodeExpandStatus(subNode, isExpanded) : subNode,
+				),
 		};
 	}
 
 	componentDidMount() {
 		this.getHiddenColumns();
 
-		this.resizeObserver = new ResizeObserver(elements => this.getHiddenColumns());
+		this.resizeObserver = new ResizeObserver(() => this.getHiddenColumns());
 		this.resizeObserver.observe(this.rootRef.current as HTMLDivElement);
 	}
 
@@ -140,11 +141,14 @@ class VerificationTableBase extends React.Component<Props, State> {
 
 	updateExpandPath([currentIndex, ...expandPath]: number[], prevState: TableNode[]): TableNode[] {
 		return prevState.map(
-			(node, index): TableNode => (index === currentIndex ? {
-				...node,
-				isExpanded: true,
-				subEntries: node.subEntries && this.updateExpandPath(expandPath, node.subEntries),
-			} : node),
+			(node, index): TableNode =>
+				index === currentIndex
+					? {
+							...node,
+							isExpanded: true,
+							subEntries: node.subEntries && this.updateExpandPath(expandPath, node.subEntries),
+					  }
+					: node,
 		);
 	}
 
@@ -156,7 +160,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 		this.columnsRefs.forEach(col => {
 			if (!col.current) return 0;
 			const rect = col.current?.getBoundingClientRect();
-			const isVisible = left <= rect.left && (rect.left + rect.width * 0.9) <= right;
+			const isVisible = left <= rect.left && rect.left + rect.width * 0.9 <= right;
 			if (!isVisible) {
 				if (rect.left + rect.width > right) {
 					nextColumns.push(col);
@@ -176,8 +180,8 @@ class VerificationTableBase extends React.Component<Props, State> {
 		if (!nextColumn || !this.rootRef.current) return;
 		const { left, width } = this.rootRef.current.getBoundingClientRect();
 		const columnRect = nextColumn.getBoundingClientRect();
-		this.rootRef.current.scrollLeft = columnRect.left + columnRect.width
-			- left - width + this.rootRef.current.scrollLeft;
+		this.rootRef.current.scrollLeft =
+			columnRect.left + columnRect.width - left - width + this.rootRef.current.scrollLeft;
 		this.getHiddenColumns();
 	};
 
@@ -200,64 +204,73 @@ class VerificationTableBase extends React.Component<Props, State> {
 		if (!nodes.length) return null;
 		return (
 			<div className={rootClass}>
-				<div className="ver-table__nav">
-					{this.state.prevColumns.length > 0
-					&& <button
-						onClick={this.onPrevColumnClick}
-						className="ver-table__button"
-						style={{ gridArea: 'prev' }}>
-						<span className="ver-table__button-icon">
-							<i className="ver-table__button-icon-prev"></i>
-						</span>
-						<span className="ver-table__button-label">Previous</span>
-						<span className="ver-table__counter">
-							{this.state.prevColumns.length}
-						</span>
-					</button>}
-					{this.state.nextColumns.length > 0
-					&& <button
-						onClick={this.onNextColumnCick}
-						className="ver-table__button"
-						style={{ gridArea: 'next' }}>
-						<span className="ver-table__counter">
-							{this.state.nextColumns.length}
-						</span>
-						<span className="ver-table__button-label">Next</span>
-						<span className="ver-table__button-icon">
-							<i className="ver-table__button-icon-next"></i>
-						</span>
-					</button>}
+				<div className='ver-table__nav'>
+					{this.state.prevColumns.length > 0 && (
+						<button
+							onClick={this.onPrevColumnClick}
+							className='ver-table__button'
+							style={{ gridArea: 'prev' }}>
+							<span className='ver-table__button-icon'>
+								<i className='ver-table__button-icon-prev'></i>
+							</span>
+							<span className='ver-table__button-label'>Previous</span>
+							<span className='ver-table__counter'>{this.state.prevColumns.length}</span>
+						</button>
+					)}
+					{this.state.nextColumns.length > 0 && (
+						<button
+							onClick={this.onNextColumnCick}
+							className='ver-table__button'
+							style={{ gridArea: 'next' }}>
+							<span className='ver-table__counter'>{this.state.nextColumns.length}</span>
+							<span className='ver-table__button-label'>Next</span>
+							<span className='ver-table__button-icon'>
+								<i className='ver-table__button-icon-next'></i>
+							</span>
+						</button>
+					)}
 				</div>
-				<div className="ver-table-header">
-					<div className="ver-table-header-control">
-						<span className="ver-table-header-control-button"
+				<div className='ver-table-header'>
+					<div className='ver-table-header-control'>
+						<span
+							className='ver-table-header-control-button'
 							onClick={this.onControlButtonClick(false)}>
-                            Collapse
+							Collapse
 						</span>
 						<span> | </span>
-						<span className="ver-table-header-control-button"
+						<span
+							className='ver-table-header-control-button'
 							onClick={this.onControlButtonClick(true)}>
-                                Expand
+							Expand
 						</span>
 						<span> all groups</span>
 					</div>
-					<div className="ver-table-header-precision">
-						<span className="ver-table-header-precision-value">{precision}</span>
+					<div className='ver-table-header-precision'>
+						<span className='ver-table-header-precision-value'>{precision}</span>
 					</div>
 				</div>
-				<div
-					className="ver-table__wrapper"
-					ref={this.rootRef}
-					onScroll={this.getHiddenColumns}>
+				<div className='ver-table__wrapper' ref={this.rootRef} onScroll={this.getHiddenColumns}>
 					<table>
 						<thead>
 							<tr>
-								<th className="ver-table-flexible" ref={this.columnsRefs[0]}>Name</th>
-								<th className="ver-table-flexible" ref={this.columnsRefs[1]}>Expected</th>
-								<th className="ver-table-flexible" ref={this.columnsRefs[2]}>Actual</th>
-								<th className="ver-table-status" ref={this.columnsRefs[3]}>Status</th>
-								<th className="ver-table-operation" ref={this.columnsRefs[4]}>Operation</th>
-								<th className="ver-table-key" ref={this.columnsRefs[5]}>Key</th>
+								<th className='ver-table-flexible' ref={this.columnsRefs[0]}>
+									Name
+								</th>
+								<th className='ver-table-flexible' ref={this.columnsRefs[1]}>
+									Expected
+								</th>
+								<th className='ver-table-flexible' ref={this.columnsRefs[2]}>
+									Actual
+								</th>
+								<th className='ver-table-status' ref={this.columnsRefs[3]}>
+									Status
+								</th>
+								<th className='ver-table-operation' ref={this.columnsRefs[4]}>
+									Operation
+								</th>
+								<th className='ver-table-key' ref={this.columnsRefs[5]}>
+									Key
+								</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -277,11 +290,11 @@ class VerificationTableBase extends React.Component<Props, State> {
 		if (node.subEntries) {
 			const subNodes = node.isExpanded
 				? node.subEntries.reduce(
-					(list, n, index) =>
-						list.concat(
-							this.renderTableNodes(n, `${key}-${index}`, paddingLevel + 1),
-						), [] as React.ReactNodeArray,
-				) : [];
+						(list, n, index) =>
+							list.concat(this.renderTableNodes(n, `${key}-${index}`, paddingLevel + 1)),
+						[] as React.ReactNodeArray,
+				  )
+				: [];
 
 			return [this.renderNode(node, paddingLevel, key), ...subNodes];
 		}
@@ -291,8 +304,14 @@ class VerificationTableBase extends React.Component<Props, State> {
 	private renderNode(node: TableNode, paddingLevel: number, key: string): React.ReactNode {
 		const { transparencyFilter } = this.props;
 		const {
-			name, expected, actual, status, isExpanded, subEntries,
-			key: keyField, operation,
+			name,
+			expected,
+			actual,
+			status,
+			isExpanded,
+			subEntries,
+			key: keyField,
+			operation,
 		} = node;
 
 		const isToggler = subEntries != null && subEntries.length > 0;
@@ -300,8 +319,10 @@ class VerificationTableBase extends React.Component<Props, State> {
 		const expectedReplaced = replaceNonPrintableChars(expected);
 		const actualReplaced = replaceNonPrintableChars(actual);
 
-		const statusAlias = status && STATUS_ALIASES.has(status as any)
-			? STATUS_ALIASES.get(status as any)! : { alias: status, className: '' };
+		const statusAlias =
+			status && STATUS_ALIASES.has(status as any)
+				? STATUS_ALIASES.get(status as any)!
+				: { alias: status, className: '' };
 
 		const rootClassName = createStyleSelector(
 			'ver-table-row',
@@ -310,10 +331,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 			isToggler ? 'subheader' : null,
 		);
 
-		const statusClassName = createStyleSelector(
-			'ver-table-row-status',
-			statusAlias.className,
-		);
+		const statusClassName = createStyleSelector('ver-table-row-status', statusAlias.className);
 
 		const statusWrapperClassName = createStyleSelector(
 			'ver-table-status-wrapper',
@@ -326,20 +344,11 @@ class VerificationTableBase extends React.Component<Props, State> {
 			isExpanded ? 'expanded' : 'collapsed',
 		);
 
-		const actualClassName = createStyleSelector(
-			'ver-table-row-actual',
-			statusAlias.className,
-		);
+		const actualClassName = createStyleSelector('ver-table-row-actual', statusAlias.className);
 
-		const expectedClassName = createStyleSelector(
-			'ver-table-row-expected',
-			statusAlias.className,
-		);
+		const expectedClassName = createStyleSelector('ver-table-row-expected', statusAlias.className);
 
-		const typeClassName = createStyleSelector(
-			'ver-table-row-type',
-			statusAlias.className,
-		);
+		const typeClassName = createStyleSelector('ver-table-row-type', statusAlias.className);
 
 		const actualValueClassName = createStyleSelector(
 			'ver-table-row-value',
@@ -352,77 +361,72 @@ class VerificationTableBase extends React.Component<Props, State> {
 			expected === 'null' ? 'novalue' : null,
 		);
 
-		const operationClassName = createStyleSelector(
-			'ver-table-row-operation',
-			operation,
-		);
+		const operationClassName = createStyleSelector('ver-table-row-operation', operation);
 
 		return (
 			<tr className={rootClassName} key={key}>
-				{
-					isToggler ? (
-						<td className={togglerClassName}
-							onClick={this.onTogglerClick(node)}>
-							<p style={{ marginLeft: PADDING_LEVEL_VALUE * (paddingLevel - 1) }}>
-								{this.renderContent(`${key}-name`, name)}
-							</p>
-							<span className="ver-table-row-count">{subEntries.length}</span>
-						</td>
-					) : (
-						<td
-							className={statusAlias.className}
-							style={{ paddingLeft: PADDING_LEVEL_VALUE * paddingLevel }}>
+				{isToggler ? (
+					<td className={togglerClassName} onClick={this.onTogglerClick(node)}>
+						<p style={{ marginLeft: PADDING_LEVEL_VALUE * (paddingLevel - 1) }}>
 							{this.renderContent(`${key}-name`, name)}
-						</td>
-					)
-				}
-				{
-					!isToggler
-					&& (<>
+						</p>
+						<span className='ver-table-row-count'>{subEntries.length}</span>
+					</td>
+				) : (
+					<td
+						className={statusAlias.className}
+						style={{ paddingLeft: PADDING_LEVEL_VALUE * paddingLevel }}>
+						{this.renderContent(`${key}-name`, name)}
+					</td>
+				)}
+				{!isToggler && (
+					<>
 						<td className={expectedClassName} onCopy={this.onCopyFor(expected)}>
-							<div className="ver-table-row-wrapper">
-								{
-									this.renderContent(
-										`${key}-expected`,
-										expected,
-										expectedValueClassName,
-										expectedReplaced,
-									)
-								}
+							<div className='ver-table-row-wrapper'>
+								{this.renderContent(
+									`${key}-expected`,
+									expected,
+									expectedValueClassName,
+									expectedReplaced,
+								)}
 								{isToggler ? null : this.renderContent(`${key}-expectedType`, '', typeClassName)}
 							</div>
 						</td>
 						<td className={actualClassName} onCopy={this.onCopyFor(actual)}>
-							<div className="ver-table-row-wrapper">
+							<div className='ver-table-row-wrapper'>
 								{this.renderContent(`${key}-actual`, actual, actualValueClassName, actualReplaced)}
 								{this.renderContent(`${key}-actualType`, '', typeClassName)}
 							</div>
 						</td>
 						<td className={statusClassName}>
-							{this.renderContent(`${key}-status`, statusAlias.alias as string, statusWrapperClassName)}
+							{this.renderContent(
+								`${key}-status`,
+								statusAlias.alias as string,
+								statusWrapperClassName,
+							)}
 						</td>
 						<td className={actualClassName} onCopy={this.onCopyFor(operation)}>
-							<div className="ver-table-row-wrapper">
+							<div className='ver-table-row-wrapper'>
 								{this.renderContent(`${key}-operation`, '', operationClassName)}
 							</div>
 						</td>
-						<td className={statusClassName}>
-							{keyField && <div className="ver-table__check"/>}
-						</td>
-					</>)
-				}
+						<td className={statusClassName}>{keyField && <div className='ver-table__check' />}</td>
+					</>
+				)}
 			</tr>
 		);
 	}
 
 	/**
-     * We need this for optimization - render SearchableContent component only if it contains some search results
-     * @param contentKey for SearchableContent component
-     * @param content
-     * @param wrapperClassName - class name of the wrapping div (wrapper won't be rendered if class name is null)
-     * @param fakeContent - this text will be rendered when there is no search results found -
-     *     it's needed to render fake dots and squares instead of real non-printable characters
-     */
+	 * We need this for optimization - render SearchableContent component
+	 * only if it contains some search results
+	 * @param contentKey for SearchableContent component
+	 * @param content
+	 * @param wrapperClassName - class name of the wrapping div (wrapper won't be
+	 * rendered if class name is null)
+	 * @param fakeContent - this text will be rendered when there is no search results found -
+	 *     it's needed to render fake dots and squares instead of real non-printable characters
+	 */
 	private renderContent(
 		contentKey: string,
 		content: string | null,
@@ -434,17 +438,12 @@ class VerificationTableBase extends React.Component<Props, State> {
 		}
 
 		if (!this.props.searchResults.isEmpty && this.props.searchResults.get(contentKey)) {
-			return wrap(wrapperClassName, (
-				<span>{content}</span>
-			));
+			return wrap(wrapperClassName, <span>{content}</span>);
 		}
 		return wrap(wrapperClassName, fakeContent);
 
-
 		function wrap(className: string | null, data: React.ReactNode): React.ReactNode {
-			return className == null ? data : (
-				<div className={className}>{data}</div>
-			);
+			return className == null ? data : <div className={className}>{data}</div>;
 		}
 	}
 
@@ -473,30 +472,25 @@ class VerificationTableBase extends React.Component<Props, State> {
 
 export const RecoverableVerificationTable = ({ stateKey, ...props }: RecoveredProps) => (
 	// at first table render, we need to generate table nodes if we don't find previous table's state
-	<StateSaver
-		stateKey={stateKey}
-		getDefaultState={() => getVerificationTablesNodes(props.payload)}>
-		{
-			(state: TableNode[], stateHandler) => (
-				<VerificationTableBase
-					{...props}
-					stateKey={stateKey}
-					nodes={state}
-					stateSaver={stateHandler}/>
-			)
-		}
+	<StateSaver stateKey={stateKey} getDefaultState={() => getVerificationTablesNodes(props.payload)}>
+		{(state: TableNode[], stateHandler) => (
+			<VerificationTableBase
+				{...props}
+				stateKey={stateKey}
+				nodes={state}
+				stateSaver={stateHandler}
+			/>
+		)}
 	</StateSaver>
 );
 
-
-export const VerificationTable = observer(({ actionId, messageId, ...restProps }: OwnProps) => (
+export const VerificationTable = observer(({ ...restProps }: OwnProps) => (
 	<RecoverableVerificationTable
-		precision=""
-		transparencyFilter={new Set<StatusType>(statusValues)}
-		visibilityFilter={new Set(statusValues)}
+		precision=''
+		transparencyFilter={new Set<EventStatus>(eventStatusValues)}
+		visibilityFilter={new Set(eventStatusValues)}
 		expandPath={[] /** TODO: remove legacy search logic */}
 		searchResults={new SearchResult()}
-		actionId={actionId}
-		messageId={messageId}
-		{...restProps}/>
+		{...restProps}
+	/>
 ));

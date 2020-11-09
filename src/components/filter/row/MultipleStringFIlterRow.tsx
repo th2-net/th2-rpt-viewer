@@ -22,7 +22,11 @@ import AutocompleteInput from '../../util/AutocompleteInput';
 import KeyCodes from '../../../util/KeyCodes';
 import { createBemElement } from '../../../helpers/styleCreators';
 
-export default function MultipleStringFilterRow({ config }: { config: FilterRowMultipleStringsConfig }) {
+export default function MultipleStringFilterRow({
+	config,
+}: {
+	config: FilterRowMultipleStringsConfig;
+}) {
 	const input = React.useRef<HTMLInputElement>();
 	const [isFocused, setIsFocused] = React.useState(false);
 
@@ -74,37 +78,33 @@ export default function MultipleStringFilterRow({ config }: { config: FilterRowM
 	);
 
 	return (
-		<div className="filter-row">
-			<label className="filter-row__label" htmlFor={config.id}>
+		<div className='filter-row'>
+			<label className='filter-row__label' htmlFor={config.id}>
 				{config.label}
 			</label>
-			<div
-				className={`${inputRootClassName} filter-row__input`}
-				onClick={rootOnClick}>
+			<div className={`${inputRootClassName} filter-row__input`} onClick={rootOnClick}>
 				{config.values.map((value, index) => (
 					<Bubble
 						key={index}
-						size="small"
-						removeIconType="white"
+						size='small'
+						removeIconType='white'
 						submitKeyCodes={[KeyCodes.SPACE, KeyCodes.ENTER]}
-						className="filter__bubble"
+						className='filter__bubble'
 						value={value}
 						onSubmit={valueBubbleOnChangeFor(index)}
 						onRemove={valueBubbleOnRemoveFor(index)}
 					/>
 				))}
-				{
-					!isFocused && config.values.length === 0 ? (
-						<span className='filter-row__placeholder'>
-							Use Space to separate different words & Tab to finish
-						</span>
-					) : null
-				}
+				{!isFocused && config.values.length === 0 ? (
+					<span className='filter-row__placeholder'>
+						Use Space to separate different words & Tab to finish
+					</span>
+				) : null}
 				<AutocompleteInput
 					ref={input}
 					submitKeyCodes={[KeyCodes.SPACE, KeyCodes.ENTER]}
-					className="filter-row__multiple-values-input"
-					wrapperClassName="filter-row__multiple-values-input-wrapper"
+					className='filter-row__multiple-values-input'
+					wrapperClassName='filter-row__multiple-values-input-wrapper'
 					value={config.currentValue}
 					autoresize
 					autocomplete={config.autocompleteList}

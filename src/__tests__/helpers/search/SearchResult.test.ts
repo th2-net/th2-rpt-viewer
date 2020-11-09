@@ -26,32 +26,44 @@ describe('[Helpers] Search - SearchResult', () => {
 	const secondKey = keyForAction(2, 'name');
 
 	const defaultSearchResult = new SearchResult([
-		[firstKey, [
-			createSearchSplitResult('content'),
-			createSearchSplitResult('test', normalToken),
-			createSearchSplitResult('another content'),
-		]],
-		[secondKey, [
-			createSearchSplitResult('test', normalToken),
-			createSearchSplitResult('content'),
-			createSearchSplitResult('test', normalToken),
-		]],
+		[
+			firstKey,
+			[
+				createSearchSplitResult('content'),
+				createSearchSplitResult('test', normalToken),
+				createSearchSplitResult('another content'),
+			],
+		],
+		[
+			secondKey,
+			[
+				createSearchSplitResult('test', normalToken),
+				createSearchSplitResult('content'),
+				createSearchSplitResult('test', normalToken),
+			],
+		],
 	]);
 
 	const searchResultWithIgnored = new SearchResult([
-		[firstKey, [
-			createSearchSplitResult('ignored content', ignoredToken),
-			createSearchSplitResult('test', normalToken),
-			createSearchSplitResult('content'),
-		]],
-		[secondKey, [
-			createSearchSplitResult('ignored content', ignoredToken),
-			createSearchSplitResult('test', normalToken),
-			createSearchSplitResult('ignored content', ignoredToken),
-			createSearchSplitResult('content'),
-			createSearchSplitResult('test', normalToken),
-			createSearchSplitResult('ignored content', ignoredToken),
-		]],
+		[
+			firstKey,
+			[
+				createSearchSplitResult('ignored content', ignoredToken),
+				createSearchSplitResult('test', normalToken),
+				createSearchSplitResult('content'),
+			],
+		],
+		[
+			secondKey,
+			[
+				createSearchSplitResult('ignored content', ignoredToken),
+				createSearchSplitResult('test', normalToken),
+				createSearchSplitResult('ignored content', ignoredToken),
+				createSearchSplitResult('content'),
+				createSearchSplitResult('test', normalToken),
+				createSearchSplitResult('ignored content', ignoredToken),
+			],
+		],
 	]);
 
 	test('SearchResult.sum() with some simple results', () => {

@@ -15,11 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import {
-	useDrag,
-	useDrop,
-	DropTargetMonitor,
-} from 'react-dnd';
+import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd';
 import { AnimatePresence, motion } from 'framer-motion';
 import throttle from 'lodash.throttle';
 import { observer } from 'mobx-react-lite';
@@ -55,7 +51,8 @@ export interface DraggableTabProps extends TabProps {
 }
 
 const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabProps> = (
-	props, ref,
+	props,
+	ref,
 ) => {
 	const {
 		tabIndex = 0,
@@ -72,11 +69,7 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
-	const {
-		activeTab,
-		setActiveTab,
-		setIsDragging,
-	} = React.useContext(DraggableTabListContext);
+	const { activeTab, setActiveTab, setIsDragging } = React.useContext(DraggableTabListContext);
 
 	const [{ isDragging }, draggableTabRef, preview] = useDrag({
 		item: {
@@ -96,7 +89,7 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 	}, [preview]);
 
 	const getDraggingState = (item: TabDraggableItem, monitor: DropTargetMonitor) => {
-		const { left = 0, width = 0 } = (rootRef.current?.getBoundingClientRect() || {});
+		const { left = 0, width = 0 } = rootRef.current?.getBoundingClientRect() || {};
 		const tabMiddleX = left + width / 2;
 		const clientOffset = monitor.getClientOffset();
 
@@ -110,12 +103,14 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 		const hoveredLeft = (clientOffset?.x || 0) < tabMiddleX;
 		const hoveredRight = (clientOffset?.x || 0) >= tabMiddleX;
 
-		const isDroppableOnLeft = isOver && !didDrop && hoveredLeft && (!isSameWindow || (!isSameTab && !isNextTab));
+		const isDroppableOnLeft =
+			isOver && !didDrop && hoveredLeft && (!isSameWindow || (!isSameTab && !isNextTab));
 
-		const isDroppableOnRight = isOver && !didDrop && (
-			(!isSameWindow && hoveredRight)
-			|| (!isSameTab && tab.tabIndex !== tabIndex + 1 && hoveredRight)
-		);
+		const isDroppableOnRight =
+			isOver &&
+			!didDrop &&
+			((!isSameWindow && hoveredRight) ||
+				(!isSameTab && tab.tabIndex !== tabIndex + 1 && hoveredRight));
 
 		const newActiveTabState = {
 			index: tabIndex,
@@ -160,18 +155,18 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 	);
 
 	return (
-		<div
-			ref={drop}
-			className={rootClassName}
-			style={style}>
+		<div ref={drop} className={rootClassName} style={style}>
 			<DropTargetHint
-				show={activeTab !== null && activeTab.index === 0 && tabIndex === 0 && activeTab.canDropOnLeft}
+				show={
+					activeTab !== null && activeTab.index === 0 && tabIndex === 0 && activeTab.canDropOnLeft
+				}
 				style={{
 					marginRight: '4px',
 					height: 36,
-				}}/>
-			<div ref={rootRef} className="tab-root__droppable">
-				<div className="tab-root__draggable" ref={draggableTabRef}>
+				}}
+			/>
+			<div ref={rootRef} className='tab-root__droppable'>
+				<div className='tab-root__draggable' ref={draggableTabRef}>
 					<Tab
 						ref={ref}
 						tabIndex={tabIndex}
@@ -183,22 +178,23 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 				</div>
 			</div>
 			<DropTargetHint
-				show={activeTab !== null && (
-					(activeTab.index === tabIndex && activeTab.canDropOnRight)
-					|| (activeTab.index === tabIndex + 1 && activeTab.canDropOnLeft)
-				)}
+				show={
+					activeTab !== null &&
+					((activeTab.index === tabIndex && activeTab.canDropOnRight) ||
+						(activeTab.index === tabIndex + 1 && activeTab.canDropOnLeft))
+				}
 				style={{
 					position: 'relative',
 					left: tabCount === tabIndex + 1 ? 0 : '3.5px',
 					height: 36,
 					marginLeft: tabCount === tabIndex + 1 ? '4px' : '0',
-				}} />
+				}}
+			/>
 		</div>
 	);
 };
 
 export default observer(DraggableTab, { forwardRef: true });
-
 
 interface DropTargetHintProps {
 	show: boolean;
@@ -206,16 +202,13 @@ interface DropTargetHintProps {
 }
 
 const DropTargetHint = (props: DropTargetHintProps) => {
-	const {
-		show = false,
-		style = {},
-	} = props;
+	const { show = false, style = {} } = props;
 
 	return (
 		<AnimatePresence>
 			{show && (
 				<motion.div
-					className="tabs-drop-hint"
+					className='tabs-drop-hint'
 					style={style}
 					initial={{ width: 0, opacity: 0, scale: 0 }}
 					animate={{ width: 10, opacity: 1, scale: 1 }}

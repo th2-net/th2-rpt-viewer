@@ -15,7 +15,11 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import MessageBody, { isSimpleValue, MessageBodyField, isListValue } from '../../models/MessageBody';
+import MessageBody, {
+	isSimpleValue,
+	MessageBodyField,
+	isListValue,
+} from '../../models/MessageBody';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 const DEFAULT_HIGHLIGHT_COLOR = '#e2dfdf';
@@ -31,28 +35,25 @@ export default function MessageBodyCard({ isBeautified, body, isSelected }: Prop
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
 
 	if (body == null) {
-		return (
-			<pre className="mc-body__human">null</pre>
-		);
+		return <pre className='mc-body__human'>null</pre>;
 	}
 
 	return (
-		<pre className="mc-body__human">
+		<pre className='mc-body__human'>
 			{!isBeautified && '{'}
-			{
-				Object.entries(body.fields).map(([key, value], idx, arr) => (
-					<React.Fragment key={key}>
-						<MessageBodyCardField
-							highlightColor={isSelected ? SELECTED_HIGHLIGHT_COLOR : DEFAULT_HIGHLIGHT_COLOR}
-							label={key}
-							field={value}
-							isBeautified={isBeautified}
-							isHighlighted={areSiblingsHighlighed}
-							setIsHighlighted={highlightSiblings}/>
-						{isBeautified || idx === arr.length - 1 ? null : ', '}
-					</React.Fragment>
-				))
-			}
+			{Object.entries(body.fields).map(([key, value], idx, arr) => (
+				<React.Fragment key={key}>
+					<MessageBodyCardField
+						highlightColor={isSelected ? SELECTED_HIGHLIGHT_COLOR : DEFAULT_HIGHLIGHT_COLOR}
+						label={key}
+						field={value}
+						isBeautified={isBeautified}
+						isHighlighted={areSiblingsHighlighed}
+						setIsHighlighted={highlightSiblings}
+					/>
+					{isBeautified || idx === arr.length - 1 ? null : ', '}
+				</React.Fragment>
+			))}
 			{!isBeautified && '}'}
 		</pre>
 	);
@@ -82,19 +83,22 @@ function MessageBodyCardField(props: FieldProps) {
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
 
 	if (isRoot) {
-		return <MessageBodyCardField
-			highlightColor={highlightColor}
-			isBeautified={isBeautified}
-			field={field}
-			label={label}
-			isRoot={false}
-			isHighlighted={isHighlighted}
-			setIsHighlighted={setIsHighlighted}/>;
+		return (
+			<MessageBodyCardField
+				highlightColor={highlightColor}
+				isBeautified={isBeautified}
+				field={field}
+				label={label}
+				isRoot={false}
+				isHighlighted={isHighlighted}
+				setIsHighlighted={setIsHighlighted}
+			/>
+		);
 	}
 
 	return (
 		<span
-			className="mc-body__field"
+			className='mc-body__field'
 			style={{
 				display: isBeautified ? 'block' : undefined,
 				background: isHighlighted ? backgroundGradient`${highlightColor}` : undefined,
@@ -102,61 +106,60 @@ function MessageBodyCardField(props: FieldProps) {
 			<span
 				onMouseEnter={() => setIsHighlighted(true)}
 				onMouseLeave={() => setIsHighlighted(false)}
-				className="mc-body__field-label">
-				{label ? isBeautified ? `${label}: ` : `"${label}": ` : ''}
+				className='mc-body__field-label'>
+				{label ? (isBeautified ? `${label}: ` : `"${label}": `) : ''}
 			</span>
-			{
-				isSimpleValue(field) ? (
-					`"${field.simpleValue}"`
-				) : isListValue(field) ? (
-					<>
-						{'['}
-						<span style={{
+			{isSimpleValue(field) ? (
+				`"${field.simpleValue}"`
+			) : isListValue(field) ? (
+				<>
+					{'['}
+					<span
+						style={{
 							display: isBeautified ? 'block' : undefined,
 							paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
 						}}>
-							{field.listValue.values.map((value, idx) => (
+						{field.listValue.values.map((value, idx) => (
+							<MessageBodyCardField
+								key={idx}
+								field={value}
+								label={''}
+								isBeautified={isBeautified}
+								isHighlighted={isHighlighted}
+								isRoot={true}
+								setIsHighlighted={highlightSiblings}
+								highlightColor={highlightColor}
+							/>
+						))}
+					</span>
+					{']'}
+				</>
+			) : (
+				<>
+					{'{'}
+					<span
+						style={{
+							display: isBeautified ? 'block' : undefined,
+							paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
+						}}>
+						{Object.entries(field.messageValue.fields).map(([key, subField], idx, arr) => (
+							<React.Fragment key={key}>
 								<MessageBodyCardField
-									key={idx}
-									field={value}
-									label={''}
+									field={subField}
+									label={key}
 									isBeautified={isBeautified}
-									isHighlighted={isHighlighted}
-									isRoot={true}
+									isHighlighted={areSiblingsHighlighed}
+									isRoot={false}
 									setIsHighlighted={highlightSiblings}
 									highlightColor={highlightColor}
 								/>
-							))}
-						</span>
-						{']'}
-					</>
-				) : (
-					<>
-						{'{'}
-						<span style={{
-							display: isBeautified ? 'block' : undefined,
-							paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
-						}}>
-							{
-								Object.entries(field.messageValue.fields).map(([key, subField], idx, arr) => (
-									<React.Fragment key={key}>
-										<MessageBodyCardField
-											field={subField}
-											label={key}
-											isBeautified={isBeautified}
-											isHighlighted={areSiblingsHighlighed}
-											isRoot={false}
-											setIsHighlighted={highlightSiblings}
-											highlightColor={highlightColor}/>
-										{isBeautified || idx === arr.length - 1 ? null : ', '}
-									</React.Fragment>
-								))
-							}
-						</span>
-						{'}'}
-					</>
-				)
-			}
+								{isBeautified || idx === arr.length - 1 ? null : ', '}
+							</React.Fragment>
+						))}
+					</span>
+					{'}'}
+				</>
+			)}
 		</span>
 	);
 }
@@ -164,17 +167,10 @@ function MessageBodyCardField(props: FieldProps) {
 export function MessageBodyCardFallback({ body, isBeautified }: Props) {
 	return (
 		<pre className='mc-body__human'>
-			{
-				isBeautified ? (
-					JSON.stringify(body, undefined, '  ')
-				) : (
-					JSON.stringify(body)
-				)
-			}
+			{isBeautified ? JSON.stringify(body, undefined, '  ') : JSON.stringify(body)}
 		</pre>
 	);
 }
-
 
 const backgroundGradient = (strings: TemplateStringsArray, color: string) =>
 	`linear-gradient(to bottom, 

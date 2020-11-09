@@ -21,27 +21,23 @@ import Exception from './Exception';
 import Alert from './Alert';
 
 export default interface Report {
-    alerts?: Alert[];
-    startTime: string;
-    finishTime: string;
-    plugins: any;
-    testCases?: TestCase[];
-    bugs: any[];
-    hostName: string;
-    userName: string;
-    name: string;
-    scriptRunId: number;
-    version: string;
-    branchName: string;
-    description: string;
-    exception?: Exception;
-    outcomes?: any;
-    reportProperties?: ReportProperties;
-    metadata: TestCaseMetadata[];
-    precision: string;
-    tags?: string[];
-}
-
-export function isReport(report: TestCase | Report): report is Report {
-	return (report as Report).metadata !== undefined;
+	alerts?: Alert[];
+	startTime: string;
+	finishTime: string;
+	plugins: any;
+	testCases?: TestCase[];
+	bugs: any[];
+	hostName: string;
+	userName: string;
+	name: string;
+	scriptRunId: number;
+	version: string;
+	branchName: string;
+	description: string;
+	exception?: Exception;
+	outcomes?: any;
+	reportProperties?: ReportProperties;
+	metadata: TestCaseMetadata[];
+	precision: string;
+	tags?: string[];
 }

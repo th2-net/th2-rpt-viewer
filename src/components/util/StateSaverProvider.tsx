@@ -18,7 +18,7 @@ import * as React from 'react';
 import { Provider, StateSaverContext } from './StateSaver';
 
 interface State {
-    statesMap: Map<string, any>;
+	statesMap: Map<string, any>;
 }
 
 /**
@@ -34,7 +34,8 @@ export default class StateSaverProvider extends React.Component<{}, State> {
 			// todo(we realy need to do something with it)
 
 			// using 'setState(state)' is an anti-pattern, but we can't create new state on each call,
-			// because in some cases component recievs too many updates and it updates state only for last call.
+			// because in some cases component recievs too many updates and it updates
+			// state only for last call.
 			this.state.statesMap.set(stateKey, nextState);
 
 			this.setState(this.state);
@@ -43,7 +44,13 @@ export default class StateSaverProvider extends React.Component<{}, State> {
 
 	render() {
 		return (
-			<Provider value={{ states: this.state.statesMap, saveState: this.stateHandler } as StateSaverContext}>
+			<Provider
+				value={
+					{
+						states: this.state.statesMap,
+						saveState: this.stateHandler,
+					} as StateSaverContext
+				}>
 				{this.props.children}
 			</Provider>
 		);

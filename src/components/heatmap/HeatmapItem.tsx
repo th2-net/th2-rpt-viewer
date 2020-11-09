@@ -40,7 +40,7 @@ const HeatmapBlock = ({
 }: Props) => {
 	const onItemClick = (event: React.MouseEvent<HTMLDivElement>) => {
 		const { height, top } = event.currentTarget.getBoundingClientRect();
-		const step = (height / count);
+		const step = height / count;
 		const clickIndex = Math.floor(index + (event.clientY - top) / step);
 		onClick({
 			count,
@@ -53,43 +53,46 @@ const HeatmapBlock = ({
 	const pinIconClassName = createBemElement(
 		'heatmap-block',
 		'pin-icon',
-		isPinned
-			? colors.length === 1 ? 'default' : 'contoured'
-			: null,
+		isPinned ? (colors.length === 1 ? 'default' : 'contoured') : null,
 	);
 
 	return (
 		<div
 			data-start={index}
 			data-end={count === 1 ? index : index + count - 1}
-			data-testid="heatmap-block"
+			data-testid='heatmap-block'
 			data-count={count}
 			style={{
 				cursor: id !== undefined ? 'pointer' : 'default',
 				flexGrow: count / totalCount,
-				minHeight: id ? isPinned ? PINNED_MIN_HEIGHT : `${HEATMAP_ELEMENT_MIN_HEIGHT}px` : undefined,
+				minHeight: id
+					? isPinned
+						? PINNED_MIN_HEIGHT
+						: `${HEATMAP_ELEMENT_MIN_HEIGHT}px`
+					: undefined,
 				backgroundColor: colors.length ? undefined : '#FFF',
 				border: colors.length ? 'none' : undefined,
 				borderWidth: isSelected || isPinned ? '3px' : '2px',
 			}}
 			key={index}
-			className="heatmap-block"
+			className='heatmap-block'
 			onClick={onItemClick}>
-			{colors.map((color, i) =>
+			{colors.map((color, i) => (
 				<HeatmapItem
 					color={color}
 					key={color}
 					isSelected={isSelected}
 					style={{
 						marginRight: colors.length && i !== colors.length - 1 ? '2px' : 0,
-					}}/>)}
+					}}
+				/>
+			))}
 			{isPinned && <div className={pinIconClassName} />}
 		</div>
 	);
 };
 
 export default HeatmapBlock;
-
 
 interface HeatmapItemProps {
 	color: string;
@@ -98,11 +101,10 @@ interface HeatmapItemProps {
 }
 const HeatmapItem = ({ color, style, isSelected }: HeatmapItemProps) => (
 	<div
-		className="heatmap-element"
+		className='heatmap-element'
 		style={{
 			borderColor: color,
 			backgroundColor: isSelected && color ? hexToRGBA(color, 17) : undefined,
 			...style,
-		}}>
-	</div>
+		}}></div>
 );

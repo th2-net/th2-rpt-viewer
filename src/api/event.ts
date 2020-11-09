@@ -42,7 +42,7 @@ const eventHttpApi: EventApiSchema = {
 		}
 		console.error(res.statusText);
 
-		throw new Error('Couldn\'t fetch event tree');
+		throw new Error("Couldn't fetch event tree");
 	},
 	getEvent: async (id, signal?) => {
 		const res = await fetch(`backend/event/${id}`, { signal });

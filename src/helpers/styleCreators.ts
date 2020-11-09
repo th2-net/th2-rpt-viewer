@@ -25,10 +25,14 @@ export function createStyleSelector(className: string, ...modifiers: (string | n
 	return className + joinModifiers(modifiers);
 }
 
-export function createTriStateControlClassName(baseName: string, isActive: boolean, isEnabled?: boolean) {
+export function createTriStateControlClassName(
+	baseName: string,
+	isActive: boolean,
+	isEnabled?: boolean,
+) {
 	return createStyleSelector(
 		baseName,
-		(isEnabled != null && !isEnabled) ? 'disabled' : (isActive ? 'active' : 'inactive'),
+		isEnabled != null && !isEnabled ? 'disabled' : isActive ? 'active' : 'inactive',
 	);
 }
 
@@ -47,6 +51,10 @@ export function createBemBlock(blockName: string, ...modifiers: (string | null)[
 	return blockName + joinModifiers(modifiers);
 }
 
-export function createBemElement(blockName: string, elementName: string, ...modifiers: (string | null)[]): string {
+export function createBemElement(
+	blockName: string,
+	elementName: string,
+	...modifiers: (string | null)[]
+): string {
 	return `${blockName}__${elementName}${joinModifiers(modifiers)}`;
 }

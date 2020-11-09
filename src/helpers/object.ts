@@ -43,6 +43,4 @@ export function getObjectKeys<O extends object>(obj: O) {
  * Returns typed object entries
  * @param obj
  */
-export const entries = Object.entries as <T>(
-	obj: T
-  ) => [Extract<keyof T, string>, T[keyof T]][];
+export const entries = Object.entries as <T>(obj: T) => [Extract<keyof T, string>, T[keyof T]][];

@@ -22,10 +22,8 @@ interface EmptyProps {
 }
 
 const Empty = ({ description }: EmptyProps) => (
-	<div className="empty">
-		<span className="empty__description">
-			{description}
-		</span>
+	<div className='empty'>
+		<span className='empty__description'>{description}</span>
 	</div>
 );
 

@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { decodeBase64RawContent } from '../../helpers/rawFormatter';
 import { replaceNonPrintableCharsWithDot } from '../../helpers/stringUtils';
 import useSelectListener from '../../hooks/useSelectListener';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
@@ -40,7 +39,7 @@ export default function SimpleMessageRaw({ rawContent }: Props) {
 	};
 
 	return (
-		<div className="mc-raw__content" ref={contentRef} onCopy={onCopy}>
+		<div className='mc-raw__content' ref={contentRef} onCopy={onCopy}>
 			{beautifiedHumanReadable}
 		</div>
 	);

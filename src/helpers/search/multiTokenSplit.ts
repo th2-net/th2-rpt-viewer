@@ -19,12 +19,17 @@ import SearchToken from '../../models/search/SearchToken';
 import SearchSplitResult from '../../models/search/SearchSplitResult';
 
 /* eslint-disable no-restricted-syntax */
-export default function multiTokenSplit(content: string, tokens: ReadonlyArray<SearchToken>): SearchSplitResult[] {
+export default function multiTokenSplit(
+	content: string,
+	tokens: ReadonlyArray<SearchToken>,
+): SearchSplitResult[] {
 	if (tokens.length === 0) {
-		return [{
-			content,
-			token: null,
-		}];
+		return [
+			{
+				content,
+				token: null,
+			},
+		];
 	}
 
 	const sortRule = (a: SearchToken, b: SearchToken): number => {
@@ -39,9 +44,7 @@ export default function multiTokenSplit(content: string, tokens: ReadonlyArray<S
 	};
 
 	const splitContent = (token: SearchToken) => ({
-		content: content
-			.split(createCaseInsensitiveRegexp(token.pattern))
-			.slice(0, -1),
+		content: content.split(createCaseInsensitiveRegexp(token.pattern)).slice(0, -1),
 		token,
 	});
 
@@ -51,10 +54,12 @@ export default function multiTokenSplit(content: string, tokens: ReadonlyArray<S
 		.map(splitContent)
 		.filter(res => res.content.length > 0);
 
-	const result: SearchSplitResult[] = [{
-		content,
-		token: null,
-	}];
+	const result: SearchSplitResult[] = [
+		{
+			content,
+			token: null,
+		},
+	];
 
 	for (const splitResult of tokenSplitResults) {
 		let currentContentIndex = 0;
@@ -64,7 +69,10 @@ export default function multiTokenSplit(content: string, tokens: ReadonlyArray<S
 
 			const appendingResult: SearchSplitResult = {
 				// we need to get original part of content, not pattern in case of case insensitive
-				content: content.substring(currentContentIndex, currentContentIndex + splitResult.token.pattern.length),
+				content: content.substring(
+					currentContentIndex,
+					currentContentIndex + splitResult.token.pattern.length,
+				),
 				token: splitResult.token,
 			};
 
@@ -92,8 +100,8 @@ export default function multiTokenSplit(content: string, tokens: ReadonlyArray<S
 				acc += res.content.length;
 
 				if (acc >= currentContentIndex + splitResult.token.pattern.length) {
-					endBlockOffset = res.content.length
-						- (acc - (currentContentIndex + splitResult.token.pattern.length));
+					endBlockOffset =
+						res.content.length - (acc - (currentContentIndex + splitResult.token.pattern.length));
 
 					return true;
 				}
@@ -113,13 +121,17 @@ export default function multiTokenSplit(content: string, tokens: ReadonlyArray<S
 			if (blocks.length === 1) {
 				const block = blocks[0];
 
-				nextResults = [{
-					...block,
-					content: block.content.substring(0, startBlockOffset),
-				}, appendingResult, {
-					...block,
-					content: block.content.substring(endBlockOffset),
-				}];
+				nextResults = [
+					{
+						...block,
+						content: block.content.substring(0, startBlockOffset),
+					},
+					appendingResult,
+					{
+						...block,
+						content: block.content.substring(endBlockOffset),
+					},
+				];
 			} else {
 				const startBlock = blocks[0];
 				const endBlock = blocks[blocks.length - 1];
@@ -134,11 +146,7 @@ export default function multiTokenSplit(content: string, tokens: ReadonlyArray<S
 					content: endBlock.content.substring(endBlockOffset),
 				};
 
-				nextResults = [
-					nextStartBlock,
-					appendingResult,
-					nextEndBlock,
-				];
+				nextResults = [nextStartBlock, appendingResult, nextEndBlock];
 			}
 
 			result.splice(startIndex, blocks.length, ...nextResults);

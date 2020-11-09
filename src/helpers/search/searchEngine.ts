@@ -41,20 +41,39 @@ import Panel from '../../util/Panel';
 
 // list of fields that will be used to search (order is important!)
 export const MESSAGE_FIELDS: Array<keyof Message> = [
-	'msgName', 'from', 'to', 'contentHumanReadable', 'rawHex', 'rawHumanReadable'];
-export const ACTION_FIELDS: Array<keyof Action> = ['matrixId', 'serviceName', 'name', 'messageType', 'description',
+	'msgName',
+	'from',
+	'to',
+	'contentHumanReadable',
+	'rawHex',
+	'rawHumanReadable',
+];
+export const ACTION_FIELDS: Array<keyof Action> = [
+	'matrixId',
+	'serviceName',
+	'name',
+	'messageType',
+	'description',
 ];
 export const LOG_FIELDS: Array<keyof Log> = ['thread', 'class', 'message'];
 export const KNOWN_BUG_FIELDS: Array<keyof KnownBug> = ['subject'];
 export const VERIFICATION_FIELDS: Array<keyof Verification> = ['name'];
 export const VERIFICATION_NODE_FIELDS: Array<keyof VerificationEntry> = [
-	'name', 'expected', 'actual', 'status', 'actualType', 'expectedType',
+	'name',
+	'expected',
+	'actual',
+	'status',
+	'actualType',
+	'expectedType',
 ];
 export const INPUT_PARAM_VALUE_FIELDS: Array<keyof ActionParameter> = ['name', 'value'];
 // we need to ignore all fields besides 'name' in parent nodes because it doesn't render
 export const INPUT_PARAM_NODE_FIELD: Array<keyof ActionParameter> = ['name'];
 
-export async function findAll(tokens: ReadonlyArray<PanelSearchToken>, content: SearchContent): Promise<SearchResult> {
+export async function findAll(
+	tokens: ReadonlyArray<PanelSearchToken>,
+	content: SearchContent,
+): Promise<SearchResult> {
 	if (!tokens) {
 		return new SearchResult();
 	}
@@ -68,41 +87,37 @@ export async function findAll(tokens: ReadonlyArray<PanelSearchToken>, content: 
 	const kbTokens = tokens.filter(({ panels }) => panels.includes(Panel.KNOWN_BUGS));
 	const logTokens = tokens.filter(({ panels }) => panels.includes(Panel.LOGS));
 
-	const actionResults = await asyncFlatMap(filteredActions, item => findAllInAction(item, actionsTokens));
-	const messageResults = await asyncFlatMap(content.messages, item => findAllInMessage(item, messageTokens));
+	const actionResults = await asyncFlatMap(filteredActions, item =>
+		findAllInAction(item, actionsTokens),
+	);
+	const messageResults = await asyncFlatMap(content.messages, item =>
+		findAllInMessage(item, messageTokens),
+	);
 	const kbResults = await asyncFlatMap(content.bugs, item => findAllInKnownBugNode(item, kbTokens));
-	const logResults = await asyncFlatMap(
-		content.logs, (item, index) => findAllInLog(item, logTokens, index as number),
+	const logResults = await asyncFlatMap(content.logs, (item, index) =>
+		findAllInLog(item, logTokens, index as number),
 	);
 
-	return new SearchResult([
-		...actionResults,
-		...messageResults,
-		...kbResults,
-		...logResults,
-	]);
+	return new SearchResult([...actionResults, ...messageResults, ...kbResults, ...logResults]);
 }
 
 function findAllInMessage(
-	message: Message, searchTokens: ReadonlyArray<SearchToken>,
+	message: Message,
+	searchTokens: ReadonlyArray<SearchToken>,
 ): Array<[string, SearchSplitResult[]]> {
-	return findAllInObject(
-		message,
-		MESSAGE_FIELDS,
-		searchTokens,
-		keyForMessage(message.id),
-	);
+	return findAllInObject(message, MESSAGE_FIELDS, searchTokens, keyForMessage(message.id));
 }
 
 function findAllInAction(
-	action: Action, searchTokens: ReadonlyArray<SearchToken>,
+	action: Action,
+	searchTokens: ReadonlyArray<SearchToken>,
 ): Array<[string, SearchSplitResult[]]> {
 	const results = new Array<[string, SearchSplitResult[]]>();
 
 	results.push(...findAllInObject(action, ACTION_FIELDS, searchTokens, keyForAction(action.id)));
 
 	action.parameters?.forEach((param, index) =>
-		results.push(...findAllInParams(param, searchTokens, keyForActionParameter(action.id, index)))
+		results.push(...findAllInParams(param, searchTokens, keyForActionParameter(action.id, index))),
 	);
 
 	action.subNodes.forEach(subAction => {
@@ -126,43 +141,41 @@ function findAllInAction(
 }
 
 function findAllInLog(
-	log: Log, searchTokens: ReadonlyArray<SearchToken>, index: number,
+	log: Log,
+	searchTokens: ReadonlyArray<SearchToken>,
+	index: number,
 ): Array<[string, SearchSplitResult[]]> {
-	return findAllInObject(
-		log,
-		LOG_FIELDS,
-		searchTokens,
-		keyForLog(index),
-	);
+	return findAllInObject(log, LOG_FIELDS, searchTokens, keyForLog(index));
 }
 
 function findAllInKnownBugNode(
-	node: KnownBugNode, searchTokens: ReadonlyArray<SearchToken>,
+	node: KnownBugNode,
+	searchTokens: ReadonlyArray<SearchToken>,
 ): Array<[string, SearchSplitResult[]]> {
 	if (isKnownBugCategory(node)) {
-		return node.subNodes
-			.flatMap(subNode => findAllInKnownBugNode(subNode, searchTokens));
+		return node.subNodes.flatMap(subNode => findAllInKnownBugNode(subNode, searchTokens));
 	}
 
-	return findAllInObject(
-		node,
-		KNOWN_BUG_FIELDS,
-		searchTokens,
-		keyForKnownBug(node),
-	);
+	return findAllInObject(node, KNOWN_BUG_FIELDS, searchTokens, keyForKnownBug(node));
 }
 
 function findAllInParams(
-	param: ActionParameter, searchTokens: ReadonlyArray<SearchToken>, keyPrefix: string,
+	param: ActionParameter,
+	searchTokens: ReadonlyArray<SearchToken>,
+	keyPrefix: string,
 ): Array<[string, SearchSplitResult[]]> {
 	const results = new Array<[string, SearchSplitResult[]]>();
 
-	results.push(...findAllInObject(
-		param,
-		param.subParameters && param.subParameters.length > 0 ? INPUT_PARAM_NODE_FIELD : INPUT_PARAM_VALUE_FIELDS,
-		searchTokens,
-		keyPrefix,
-	));
+	results.push(
+		...findAllInObject(
+			param,
+			param.subParameters && param.subParameters.length > 0
+				? INPUT_PARAM_NODE_FIELD
+				: INPUT_PARAM_VALUE_FIELDS,
+			searchTokens,
+			keyPrefix,
+		),
+	);
 
 	param.subParameters?.forEach((p, index) => {
 		results.push(...findAllInParams(p, searchTokens, `${keyPrefix}-${index}`));
@@ -172,17 +185,14 @@ function findAllInParams(
 }
 
 function findAllInVerification(
-	verification: Verification, searchTokens: ReadonlyArray<SearchToken>, parentActionId: number,
+	verification: Verification,
+	searchTokens: ReadonlyArray<SearchToken>,
+	parentActionId: number,
 ): Array<[string, SearchSplitResult[]]> {
 	const results = new Array<[string, SearchSplitResult[]]>();
 	const key = keyForVerification(parentActionId, verification.messageId);
 
-	results.push(...findAllInObject(
-		verification,
-		VERIFICATION_FIELDS,
-		searchTokens,
-		key,
-	));
+	results.push(...findAllInObject(verification, VERIFICATION_FIELDS, searchTokens, key));
 
 	verification.entries?.forEach((entry, index) => {
 		results.push(...findAllInVerificationEntries(entry, searchTokens, `${key}-${index}`));
@@ -192,16 +202,13 @@ function findAllInVerification(
 }
 
 function findAllInVerificationEntries(
-	entry: VerificationEntry, searchTokens: ReadonlyArray<SearchToken>, keyPrefix: string,
+	entry: VerificationEntry,
+	searchTokens: ReadonlyArray<SearchToken>,
+	keyPrefix: string,
 ): Array<[string, SearchSplitResult[]]> {
 	const results = new Array<[string, SearchSplitResult[]]>();
 
-	results.push(...findAllInObject(
-		entry,
-		VERIFICATION_NODE_FIELDS,
-		searchTokens,
-		keyPrefix,
-	));
+	results.push(...findAllInObject(entry, VERIFICATION_NODE_FIELDS, searchTokens, keyPrefix));
 
 	entry.subEntries?.forEach((e, index) => {
 		results.push(...findAllInVerificationEntries(e, searchTokens, `${keyPrefix}-${index}`));

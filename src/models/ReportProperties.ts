@@ -17,19 +17,19 @@
 import Status from './Status';
 
 export interface ReportProperties {
-    state: string;
-    status: Status;
-    matrixFile: string;
-    timestamp: number;
-    environmentNameAttr?: string;
-    languageURI: string;
-    workFolder: string;
-    passed: number;
-    conditionallyPassed: number;
-    failed: number;
-    total: number;
-    services: string[];
-    range?: string;
-    autostart: boolean;
-    cause?: any;
+	state: string;
+	status: Status;
+	matrixFile: string;
+	timestamp: number;
+	environmentNameAttr?: string;
+	languageURI: string;
+	workFolder: string;
+	passed: number;
+	conditionallyPassed: number;
+	failed: number;
+	total: number;
+	services: string[];
+	range?: string;
+	autostart: boolean;
+	cause?: any;
 }

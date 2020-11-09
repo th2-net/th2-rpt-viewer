@@ -19,11 +19,11 @@ import { KnownBugStatus } from './KnownBugStatus';
 import KnownBugCategory from './KnownBugCategory';
 
 export default interface KnownBug {
-    actionNodeType: ActionNodeType.KNOWN_BUG;
-    status: KnownBugStatus;
-    subject: string;
-    relatedActionIds: number[];
-    id: number;
+	actionNodeType: ActionNodeType.KNOWN_BUG;
+	status: KnownBugStatus;
+	subject: string;
+	relatedActionIds: number[];
+	id: number;
 }
 
 export type KnownBugNode = KnownBug | KnownBugCategory;

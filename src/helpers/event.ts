@@ -18,4 +18,9 @@ import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventStatus } from '../models/Status';
 
 export const getEventStatus = (event: EventAction | EventTreeNode): EventStatus =>
-	(event.successful ? EventStatus.PASSED : EventStatus.FAILED);
+	event.successful ? EventStatus.PASSED : EventStatus.FAILED;
+
+export const isRootEvent = (event: EventTreeNode): boolean => event.parentId === 'null';
+
+export const getEventNodeParents = (event: EventTreeNode): string[] =>
+	event.parents ? event.parents : [];

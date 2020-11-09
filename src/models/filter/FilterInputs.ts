@@ -14,7 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export type FilterRowConfig = FilterRowDatetimeRangeConfig | FilterRowStringConfig | FilterRowMultipleStringsConfig;
+export type FilterRowConfig =
+	| FilterRowDatetimeRangeConfig
+	| FilterRowStringConfig
+	| FilterRowMultipleStringsConfig;
 
 export enum DateTimeMask {
 	TIME_MASK = 'HH:mm:ss.SSS',
@@ -43,7 +46,7 @@ export type DateTimeInputType = {
 export enum TimeInputType {
 	DATE_TIME,
 	DATE,
-	TIME
+	TIME,
 }
 
 export type FilterRowBaseConfig = {

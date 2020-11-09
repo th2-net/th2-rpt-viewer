@@ -14,11 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	observable,
-	action,
-	computed,
-} from 'mobx';
+import { observable, action, computed } from 'mobx';
 import PanelArea from '../util/PanelArea';
 
 type InitialState = Partial<{

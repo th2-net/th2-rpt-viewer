@@ -39,7 +39,6 @@ describe('[Helpers] Action type', () => {
 		expect(resultAcitons).toEqual(excpectActions);
 	});
 
-
 	test('getStatusChipDescription() ', () => {
 		const resultDescription = getStatusChipDescription(StatusType.PASSED);
 

@@ -21,8 +21,9 @@ import TabMenu from '../tabs/TabMenu';
 import { EventWindowProvider } from '../../contexts/eventWindowContext';
 import DraggableTab, { DraggableTabProps } from '../tabs/DraggableTab';
 import Tab from '../tabs/Tab';
-import EventWindowStore, { EventIdNode } from '../../stores/EventsStore';
+import EventWindowStore from '../../stores/EventsStore';
 import { DraggableTabListContext } from '../tabs/DroppableTabList';
+import { EventTreeNode } from '../../models/EventAction';
 import '../../styles/events.scss';
 
 type EventsWindowTabProps = Omit<DraggableTabProps, 'children'> & {
@@ -31,23 +32,11 @@ type EventsWindowTabProps = Omit<DraggableTabProps, 'children'> & {
 };
 
 const EventsWindowTab = (props: EventsWindowTabProps) => {
-	const {
-		store,
-		isDuplicable = true,
-		...tabProps
-	} = props;
+	const { store, isDuplicable = true, ...tabProps } = props;
 
-	const {
-		duplicateTab,
-		isClosable = true,
-		tabIndex,
-		closeTab,
-		isSelected,
-	} = tabProps;
+	const { duplicateTab, isClosable = true, tabIndex, closeTab, isSelected } = tabProps;
 
-	const {
-		isDragging,
-	} = React.useContext(DraggableTabListContext);
+	const { isDragging } = React.useContext(DraggableTabListContext);
 
 	const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 	const tabRef = React.useRef<HTMLDivElement>(null);
@@ -63,7 +52,7 @@ const EventsWindowTab = (props: EventsWindowTabProps) => {
 				tabRef.current?.removeEventListener('mouseenter', showMenu);
 			}
 		};
-	  }, []);
+	}, []);
 
 	const showMenu = () => {
 		setIsMenuOpen(true);
@@ -72,8 +61,9 @@ const EventsWindowTab = (props: EventsWindowTabProps) => {
 
 	const onMouseMove = (e: MouseEvent) => {
 		if (
-			e.target instanceof Node && !tabRef.current?.contains(e.target)
-			&& !menuRef.current?.contains(e.target)
+			e.target instanceof Node &&
+			!tabRef.current?.contains(e.target) &&
+			!menuRef.current?.contains(e.target)
 		) {
 			setIsMenuOpen(false);
 			document.documentElement.removeEventListener('mousemove', onMouseMove);
@@ -94,10 +84,10 @@ const EventsWindowTab = (props: EventsWindowTabProps) => {
 		}
 	};
 
-	const selectNode = (idNode: EventIdNode | null) => {
-		store.selectNode(idNode);
-		if (idNode) {
-			store.scrollToEvent(idNode.id);
+	const selectNode = (eventTreeNode: EventTreeNode | null) => {
+		store.selectNode(eventTreeNode);
+		if (eventTreeNode) {
+			store.scrollToEvent(eventTreeNode.eventId);
 			setIsMenuOpen(false);
 		}
 	};
@@ -118,16 +108,20 @@ const EventsWindowTab = (props: EventsWindowTabProps) => {
 	return (
 		<DraggableTab ref={tabRef} {...tabProps}>
 			<EventWindowProvider value={store}>
-				<div className="events-tab">
+				<div className='events-tab'>
 					<div>
-						{store.color && <div
-							className="events-tab__color"
-							style={{ borderColor: store.color, marginRight: 10 }}/>}
+						{store.color && (
+							<div
+								className='events-tab__color'
+								style={{ borderColor: store.color, marginRight: 10 }}
+							/>
+						)}
 					</div>
-					<div className="events-tab__title">
+					<div className='events-tab__title'>
 						<EventBreadcrumbs
 							rootEventsEnabled={!store.selectedNode}
-							nodes={store.selectedNode ? [store.selectedNode] : []}/>
+							nodes={store.selectedNode ? [store.selectedNode] : []}
+						/>
 					</div>
 					{isMenuOpen && !isDragging && (
 						<TabMenu
@@ -139,14 +133,13 @@ const EventsWindowTab = (props: EventsWindowTabProps) => {
 							isClosable={isClosable}
 							isDuplicable={isDuplicable}
 							tabRect={tabRef.current?.getBoundingClientRect()}>
-							<div className="events-tab__content">
+							<div className='events-tab__content'>
 								<div
-									className="events-tab__color"
-									style={{ borderColor: store.color, marginTop: 10 }}/>
-								<div className="events-tab__breadcrumbs">
-									<EventBreadcrumbs
-										nodes={store.selectedPath}
-										onSelect={selectNode} />
+									className='events-tab__color'
+									style={{ borderColor: store.color, marginTop: 10 }}
+								/>
+								<div className='events-tab__breadcrumbs'>
+									<EventBreadcrumbs nodes={store.selectedPath} onSelect={selectNode} />
 								</div>
 							</div>
 						</TabMenu>
@@ -167,16 +160,20 @@ interface EventsWindowTabPreviewProps {
 export const EventsWindowTabPreview = ({ store, isSelected }: EventsWindowTabPreviewProps) => (
 	<Tab isDragging={true} isSelected={isSelected}>
 		<EventWindowProvider value={store}>
-			<div className="events-tab">
+			<div className='events-tab'>
 				<div>
-					{store.color && <div
-						className="events-tab__color"
-						style={{ borderColor: store.color, marginRight: 10 }}/>}
+					{store.color && (
+						<div
+							className='events-tab__color'
+							style={{ borderColor: store.color, marginRight: 10 }}
+						/>
+					)}
 				</div>
-				<div className="events-tab__title">
+				<div className='events-tab__title'>
 					<EventBreadcrumbs
 						rootEventsEnabled={!store.selectedNode}
-						nodes={store.selectedNode ? [store.selectedNode] : []}/>
+						nodes={store.selectedNode ? [store.selectedNode] : []}
+					/>
 				</div>
 			</div>
 		</EventWindowProvider>

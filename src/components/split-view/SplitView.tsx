@@ -21,24 +21,24 @@ import PanelArea from '../../util/PanelArea';
 import '../../styles/splitter.scss';
 
 export interface Props {
-    /**
-     * Panel for components : first child - for left panel, second child - for right panel,
+	/**
+	 * Panel for components : first child - for left panel, second child - for right panel,
 	 * other children will be ignored
-     */
-    children: [React.ReactNode, React.ReactNode];
-    className?: string;
-    panelArea: PanelArea;
-    onPanelAreaChange: (panelArea: PanelArea) => void;
-    leftPanelMinWidth: number;
+	 */
+	children: [React.ReactNode, React.ReactNode];
+	className?: string;
+	panelArea: PanelArea;
+	onPanelAreaChange: (panelArea: PanelArea) => void;
+	leftPanelMinWidth: number;
 	rightPanelMinWidth: number;
 	splitterClassName?: string;
 }
 
 interface State {
-    splitterLeftOffset: number;
-    isDragging: boolean;
-    steps: number[];
-    previewPanelArea: PanelArea;
+	splitterLeftOffset: number;
+	isDragging: boolean;
+	steps: number[];
+	previewPanelArea: PanelArea;
 }
 
 export default class SplitView extends React.Component<Props, State> {
@@ -82,8 +82,10 @@ export default class SplitView extends React.Component<Props, State> {
 	}
 
 	componentDidUpdate(prevProps: Readonly<Props>) {
-		if (this.props.leftPanelMinWidth !== prevProps.leftPanelMinWidth
-			|| this.props.rightPanelMinWidth !== prevProps.rightPanelMinWidth) {
+		if (
+			this.props.leftPanelMinWidth !== prevProps.leftPanelMinWidth ||
+			this.props.rightPanelMinWidth !== prevProps.rightPanelMinWidth
+		) {
 			this.setState({
 				steps: this.calculateSteps(),
 			});
@@ -98,15 +100,15 @@ export default class SplitView extends React.Component<Props, State> {
 		const rootWidth = this.panelsAvailableWidth;
 		const stepWidth = rootWidth / 4;
 
-		const w25 = stepWidth > this.props.leftPanelMinWidth!
-			? stepWidth
-			: this.props.leftPanelMinWidth;
+		const w25 =
+			stepWidth > this.props.leftPanelMinWidth! ? stepWidth : this.props.leftPanelMinWidth;
 
 		const w50 = rootWidth / 2;
 
-		const w75 = (rootWidth - stepWidth * 3) > this.props.rightPanelMinWidth
-			? stepWidth * 3
-			: (rootWidth - this.props.rightPanelMinWidth);
+		const w75 =
+			rootWidth - stepWidth * 3 > this.props.rightPanelMinWidth
+				? stepWidth * 3
+				: rootWidth - this.props.rightPanelMinWidth;
 
 		return [0, w25, w50, w75, rootWidth];
 	}
@@ -169,8 +171,7 @@ export default class SplitView extends React.Component<Props, State> {
 				step,
 				diff: Math.abs(step - newPosition),
 			}))
-			.sort((a, b) => a.diff - b.diff)[0]
-			.step;
+			.sort((a, b) => a.diff - b.diff)[0].step;
 
 		let previewPanelArea: PanelArea;
 
@@ -241,7 +242,9 @@ export default class SplitView extends React.Component<Props, State> {
 			rootStyle = { gridTemplateColumns: `${leftWidth}px auto ${rightWidth}px` };
 
 			const [leftPreviewWidth, rightPreviewWidth] = this.getPanelsWidthByArea(previewPanelArea);
-			previewStyle = { gridTemplateColumns: `${leftPreviewWidth}px auto ${rightPreviewWidth}px` };
+			previewStyle = {
+				gridTemplateColumns: `${leftPreviewWidth}px auto ${rightPreviewWidth}px`,
+			};
 		}
 
 		const leftClassName = createStyleSelector(
@@ -259,39 +262,29 @@ export default class SplitView extends React.Component<Props, State> {
 			isDragging ? 'dragging' : null,
 			this.props.splitterClassName || null,
 		);
-		const rootClassName = createStyleSelector(
-			'splitter',
-			isDragging ? 'dragging' : null,
-		);
+		const rootClassName = createStyleSelector('splitter', isDragging ? 'dragging' : null);
 
 		return (
-			<div className={`${rootClassName} ${className ?? ''}`}
-				ref={this.root}
-				style={rootStyle}>
-				{
-					isDragging ? (
-						<div className='splitter-preview'
-							style={previewStyle}>
-							<div className='splitter-preview-left'/>
-							<div className='splitter-preview-right'/>
-						</div>
-					) : null
-				}
-				<div className={leftClassName}
-					ref={this.leftPanel}>
+			<div className={`${rootClassName} ${className ?? ''}`} ref={this.root} style={rootStyle}>
+				{isDragging ? (
+					<div className='splitter-preview' style={previewStyle}>
+						<div className='splitter-preview-left' />
+						<div className='splitter-preview-right' />
+					</div>
+				) : null}
+				<div className={leftClassName} ref={this.leftPanel}>
 					{children[0]}
 				</div>
-				<div className={rightClassName}>
-					{children[1]}
-				</div>
-				<div className={splitterClassName}
+				<div className={rightClassName}>{children[1]}</div>
+				<div
+					className={splitterClassName}
 					style={{
 						left: isDragging ? splitterLeftOffset : undefined,
 					}}
 					onMouseDown={this.splitterMouseDown}
 					ref={this.splitter}>
-					<div className="splitter-bar-button">
-						<div className="splitter-bar-icon"/>
+					<div className='splitter-bar-button'>
+						<div className='splitter-bar-icon' />
 					</div>
 				</div>
 			</div>

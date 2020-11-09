@@ -18,9 +18,9 @@ import { KnownBugNode } from './KnownBug';
 import { ActionNodeType } from './Action';
 
 export default interface KnownBugCategory {
-    actionNodeType: ActionNodeType.KNOWN_BUG_CATEGORY;
-    name: string | null;
-    subNodes: KnownBugNode[];
+	actionNodeType: ActionNodeType.KNOWN_BUG_CATEGORY;
+	name: string | null;
+	subNodes: KnownBugNode[];
 }
 
 export function isKnownBugCategory(category: KnownBugNode): category is KnownBugCategory {

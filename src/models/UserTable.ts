@@ -17,9 +17,9 @@
 import { ActionNodeType, ActionNode } from './Action';
 
 export default interface UserTable {
-    actionNodeType: ActionNodeType.TABLE;
-    name?: string;
-    content: Record<string, any>[];
+	actionNodeType: ActionNodeType.TABLE;
+	name?: string;
+	content: Record<string, any>[];
 }
 
 export function isUserTable(actionNode: ActionNode): actionNode is UserTable {

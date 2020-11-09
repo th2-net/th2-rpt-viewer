@@ -14,16 +14,15 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import "./common/vars";
-
+@import './common/vars';
 
 .heatmap {
-    background-color: $skeletonBackgroundColor;
+	background-color: $skeletonBackgroundColor;
 	border-radius: 5px;
 	padding: 8px 0;
 	height: 100%;
-    width: 46px;
-    position: relative;
+	width: 46px;
+	position: relative;
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
@@ -48,18 +47,18 @@
 	}
 
 	&__scroll-indicatior {
-        width: 100%;
-        height: 60px;
-        border: 2px solid $secondaryLightTextColor;
-        border-radius: 5px;
-        position: absolute;
-        top: 0;
-        left: 0;
-        pointer-events: none;
-        transition: 0.25s;
-		
+		width: 100%;
+		height: 60px;
+		border: 2px solid $secondaryLightTextColor;
+		border-radius: 5px;
+		position: absolute;
+		top: 0;
+		left: 0;
+		pointer-events: none;
+		transition: 0.25s;
+
 		&::after {
-			content: "";
+			content: '';
 			position: absolute;
 			top: 50%;
 			left: 0;
@@ -91,13 +90,13 @@
 
 	&__pin-icon {
 		height: 15px;
-        width: 15px;
-        background-repeat: no-repeat;
-        background-size: 100%;
-        cursor: pointer;
+		width: 15px;
+		background-repeat: no-repeat;
+		background-size: 100%;
+		cursor: pointer;
 		transition: 0.3s;
 		position: absolute;
-        top: 50%;
+		top: 50%;
 		left: 50%;
 		transform: translate(-49%, -53%);
 
@@ -114,7 +113,6 @@
 .heatmap-element {
 	flex: 1;
 	border-radius: 3px;
-	background-color: #FFF;
+	background-color: #fff;
 	border: 2px solid $skeletonBackgroundColor;
 }
-

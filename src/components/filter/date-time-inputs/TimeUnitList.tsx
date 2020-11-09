@@ -31,34 +31,28 @@ interface TimeUnitListProps {
 }
 
 const TimeUnitList = (props: TimeUnitListProps) => {
-	const {
-		onUnitClick,
-		selectedUnit,
-		getIsBlocked,
-		unit,
-	} = props;
+	const { onUnitClick, selectedUnit, getIsBlocked, unit } = props;
 
-	const [unitList, setUnitList] = React.useState(timeUnitsValues[unit]
-		.map(timeUnit => ({
+	const [unitList, setUnitList] = React.useState(
+		timeUnitsValues[unit].map(timeUnit => ({
 			isBlocked: getIsBlocked(timeUnit),
 			value: timeUnit,
-		})));
+		})),
+	);
 
 	const unitRefs = React.useRef(
-		timeUnitsValues[unit]
-			.reduce<{[k: number]: RefObject<HTMLLIElement>}>((acc, value) => {
-				acc[value] = React.createRef<HTMLLIElement>();
-				return acc;
-			}, {}),
+		timeUnitsValues[unit].reduce<{ [k: number]: RefObject<HTMLLIElement> }>((acc, value) => {
+			acc[value] = React.createRef<HTMLLIElement>();
+			return acc;
+		}, {}),
 	);
 
 	React.useEffect(() => {
 		const interval = setInterval(() => {
-			const result = timeUnitsValues[unit]
-				.map(timeUnit => ({
-					isBlocked: getIsBlocked(timeUnit),
-					value: timeUnit,
-				}));
+			const result = timeUnitsValues[unit].map(timeUnit => ({
+				isBlocked: getIsBlocked(timeUnit),
+				value: timeUnit,
+			}));
 			setUnitList(result);
 		}, 1000);
 
@@ -71,32 +65,30 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 				block: 'center',
 			});
 		}
-		setUnitList(timeUnitsValues[unit]
-			.map(timeUnit => ({
+		setUnitList(
+			timeUnitsValues[unit].map(timeUnit => ({
 				isBlocked: getIsBlocked(timeUnit),
 				value: timeUnit,
-			})));
+			})),
+		);
 	}, [selectedUnit, getIsBlocked]);
 
 	return (
-		<ul className="filter-timepicker__scroll">
-			{
-				unitList.map(unitItem => (
-					<li
-						ref={unitRefs.current[unitItem.value]}
-						key={unitItem.value}
-						className={
-							createBemElement(
-								'filter-timepicker',
-								'scroll-item',
-								selectedUnit === unitItem.value ? 'active' : null,
-								unitItem.isBlocked ? 'blocked' : null,
-							)}
-						onClick={!unitItem.isBlocked ? () => onUnitClick(unitItem.value) : undefined}>
-						{unitItem.value}
-					</li>
-				))
-			}
+		<ul className='filter-timepicker__scroll'>
+			{unitList.map(unitItem => (
+				<li
+					ref={unitRefs.current[unitItem.value]}
+					key={unitItem.value}
+					className={createBemElement(
+						'filter-timepicker',
+						'scroll-item',
+						selectedUnit === unitItem.value ? 'active' : null,
+						unitItem.isBlocked ? 'blocked' : null,
+					)}
+					onClick={!unitItem.isBlocked ? () => onUnitClick(unitItem.value) : undefined}>
+					{unitItem.value}
+				</li>
+			))}
 		</ul>
 	);
 };

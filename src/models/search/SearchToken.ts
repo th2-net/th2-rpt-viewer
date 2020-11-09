@@ -17,15 +17,15 @@
 import Panel from '../../util/Panel';
 
 export default interface SearchToken {
-    pattern: string;
-    color: string;
-    isActive: boolean;
-    /**
-     * If true, search results produced by this token will not be scrolled
-     */
-    isScrollable: boolean;
+	pattern: string;
+	color: string;
+	isActive: boolean;
+	/**
+	 * If true, search results produced by this token will not be scrolled
+	 */
+	isScrollable: boolean;
 }
 
-export interface PanelSearchToken extends SearchToken{
-    panels: Panel[];
+export interface PanelSearchToken extends SearchToken {
+	panels: Panel[];
 }

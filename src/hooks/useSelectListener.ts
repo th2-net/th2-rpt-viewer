@@ -16,7 +16,9 @@
 
 import * as React from 'react';
 
-function useSelectListener(ref: React.MutableRefObject<HTMLElement | null>): [number | null, number | null] {
+function useSelectListener(
+	ref: React.MutableRefObject<HTMLElement | null>,
+): [number | null, number | null] {
 	const [startOffset, setStartOffset] = React.useState<number | null>(null);
 	const [endOffset, setEndOffset] = React.useState<number | null>(null);
 

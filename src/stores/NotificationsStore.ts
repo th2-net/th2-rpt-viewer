@@ -25,7 +25,7 @@ export interface Notification {
 }
 
 class NotificationsStore {
-  @observable notifications: Notification[] = [];
+	@observable notifications: Notification[] = [];
 
 	@action
 	addNotification = (notification: Notification) => {

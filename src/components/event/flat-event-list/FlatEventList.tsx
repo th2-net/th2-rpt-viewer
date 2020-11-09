@@ -23,12 +23,13 @@ import SplashScreen from '../../SplashScreen';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import { raf } from '../../../helpers/raf';
-import { EventIdNode } from '../../../stores/EventsStore';
 import CardDisplayType from '../../../util/CardDisplayType';
+import { EventTreeNode } from '../../../models/EventAction';
+import { getEventNodeParents } from '../../../helpers/event';
 import '../../../styles/action.scss';
 
 interface Props {
-	nodes: EventIdNode[];
+	nodes: EventTreeNode[];
 }
 
 function FlatEventList({ nodes }: Props) {
@@ -50,41 +51,40 @@ function FlatEventList({ nodes }: Props) {
 		}
 	}, [eventWindowStore.scrolledIndex, eventWindowStore.viewStore.flattenedListView]);
 
-	const computeKey = (index: number) => nodes[index].id;
+	const computeKey = (index: number) => nodes[index].eventId;
 
 	const renderEvent = (index: number): React.ReactElement => {
 		const node = nodes[index];
+
 		return (
 			<Observer>
 				{() => (
 					<div style={{ margin: '4px 5px' }}>
 						<EventCardHeader
-							isRoot={node.parents.length === 0}
 							childrenCount={0}
-							event={node.event}
+							event={node}
 							displayType={CardDisplayType.MINIMAL}
 							onSelect={() => eventWindowStore.selectNode(node)}
-							isSelected={eventWindowStore.selectedNode === node}
+							isSelected={eventWindowStore.isNodeSelected(node)}
 							isFlatView={true}
-							parentsCount={node.parents.length}
+							parentsCount={getEventNodeParents(node).length}
 						/>
 					</div>
 				)}
 			</Observer>
-
 		);
 	};
 
 	if (eventWindowStore.isLoadingRootEvents) {
-		return <SplashScreen/>;
+		return <SplashScreen />;
 	}
 
-	if (!eventWindowStore.isLoadingRootEvents && eventWindowStore.eventsIds.length === 0) {
-		return <Empty description="No events"/>;
+	if (!eventWindowStore.isLoadingRootEvents && eventWindowStore.eventTree.length === 0) {
+		return <Empty description='No events' />;
 	}
 
 	return (
-		<div className="actions-list">
+		<div className='actions-list'>
 			<StateSaverProvider>
 				<Virtuoso
 					ref={listRef}

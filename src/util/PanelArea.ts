@@ -19,7 +19,7 @@ const enum PanelArea {
 	P25 = 'p25',
 	P50 = 'p50',
 	P75 = 'p75',
-	P100 = 'p100'
+	P100 = 'p100',
 }
 
 export default PanelArea;

@@ -17,6 +17,6 @@
 import { ActionNodeType } from './Action';
 
 export default interface Link {
-    actionNodeType: ActionNodeType.LINK;
-    link: string;
+	actionNodeType: ActionNodeType.LINK;
+	link: string;
 }

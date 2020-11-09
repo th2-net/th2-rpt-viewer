@@ -18,7 +18,6 @@ import * as React from 'react';
 import '../styles/expandablePanel.scss';
 import { createBemBlock } from '../helpers/styleCreators';
 
-
 interface Props {
 	status: 'expanded' | 'hidden' | 'loading' | 'none';
 	onClick?: React.MouseEventHandler;
@@ -27,22 +26,17 @@ interface Props {
 }
 
 export default function ExpandIcon(props: Props) {
-	const rootClass = createBemBlock(
-		'expand-icon',
-		props.status,
-	);
+	const rootClass = createBemBlock('expand-icon', props.status);
 
 	return (
 		<div className={`${rootClass} ${props.className}`} style={props.style} onClick={props.onClick}>
-			{
-				props.status === 'loading' ? (
-					<>
-						<div className='expand-icon__dot'/>
-						<div className='expand-icon__dot'/>
-						<div className='expand-icon__dot'/>
-					</>
-				) : null
-			}
+			{props.status === 'loading' ? (
+				<>
+					<div className='expand-icon__dot' />
+					<div className='expand-icon__dot' />
+					<div className='expand-icon__dot' />
+				</>
+			) : null}
 		</div>
 	);
 }

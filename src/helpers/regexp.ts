@@ -15,10 +15,10 @@
  ***************************************************************************** */
 
 /**
-  * Returns regexp, that will ignore all special symbols from target string
-  * @param str target string
-  * @param flags RegExp flags
-  */
+ * Returns regexp, that will ignore all special symbols from target string
+ * @param str target string
+ * @param flags RegExp flags
+ */
 export function createCaseInsensitiveRegexp(str: string): RegExp {
 	const escapedStr = escapeSpecialSymbols(str);
 

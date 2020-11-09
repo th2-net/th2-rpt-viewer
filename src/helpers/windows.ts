@@ -14,12 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	AppTab,
-	EventsTab,
-	MessagesTab,
-	TabTypes,
-} from '../models/util/Windows';
+import { AppTab, EventsTab, MessagesTab, TabTypes } from '../models/util/Windows';
 
 export const isEventsTab = (tab: AppTab): tab is EventsTab => tab.type === TabTypes.Events;
 

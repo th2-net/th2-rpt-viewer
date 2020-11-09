@@ -17,7 +17,8 @@
 import Action, { ActionNode, isAction } from '../models/Action';
 
 /**
- * This function returns map, where key is the action id and value is the action, including nested actions
+ * This function returns map, where key is the action id and value is the action
+ * including nested actions
  * @param actions list of actions
  */
 export const generateActionsMap = (actions: Action[]): Map<number, Action> => {

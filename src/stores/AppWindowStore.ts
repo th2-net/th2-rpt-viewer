@@ -14,11 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	action,
-	observable,
-	computed,
-} from 'mobx';
+import { action, observable, computed } from 'mobx';
 import { TabTypes, AppTab } from '../models/util/Windows';
 import MessagesStore from './MessagesStore';
 import EventsStore, { EventStoreURLState } from './EventsStore';
@@ -51,21 +47,22 @@ export default class AppWindowStore {
 
 	@action
 	closeTab = (tabIndex: number) => {
-		 const tabToClose = this.removeTab(tabIndex);
-		 if (isMessagesTab(tabToClose) && tabToClose.store.disposer) {
+		const tabToClose = this.removeTab(tabIndex);
+		if (isMessagesTab(tabToClose) && tabToClose.store.disposer) {
 			tabToClose.store.disposer();
-		 }
-		 if (isEventsTab(tabToClose) && this.windowsStore.lastSelectEventIdNode === tabToClose.store.selectedNode) {
+		}
+		if (
+			isEventsTab(tabToClose) &&
+			this.windowsStore.lastSelectEventIdNode === tabToClose.store.selectedNode
+		) {
 			this.windowsStore.lastSelectEventIdNode = null;
-		 }
+		}
 	};
 
 	@action
 	removeTab = (tabIndex: number): AppTab => {
 		if (tabIndex <= this.activeTabIndex) {
-			this.activeTabIndex = this.activeTabIndex === 0
-				? 0
-				: this.activeTabIndex - 1;
+			this.activeTabIndex = this.activeTabIndex === 0 ? 0 : this.activeTabIndex - 1;
 		}
 
 		return this.tabs.splice(tabIndex, 1)[0];

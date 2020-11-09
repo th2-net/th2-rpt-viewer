@@ -21,10 +21,8 @@ interface Props {
 }
 
 const SplitViewPane = ({ children }: Props) => (
-	<div className="splitter-pane">
-		<div className="splitter-pane__content">
-			{children}
-		</div>
+	<div className='splitter-pane'>
+		<div className='splitter-pane__content'>{children}</div>
 	</div>
 );
 

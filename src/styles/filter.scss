@@ -14,457 +14,456 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import "./common/vars";
+@import './common/vars';
 
 .filter {
-    @include scrollbar;
-    @include card-shadow;
-    padding: 12px 15px;
-    border-radius: 0 5px 5px 5px;
-    background-color: $filterPrimaryColor;
-    color: $filterTextColor;
-    font-size: 15px;
-    font-weight: bold;
-    white-space: nowrap;
-    position: fixed;
-    z-index: 20;
+	@include scrollbar;
+	@include card-shadow;
+	padding: 12px 15px;
+	border-radius: 0 5px 5px 5px;
+	background-color: $filterPrimaryColor;
+	color: $filterTextColor;
+	font-size: 15px;
+	font-weight: bold;
+	white-space: nowrap;
+	position: fixed;
+	z-index: 20;
 
-    &-wrapper {
-        position: relative;
-        height: 100%;
-        border-radius: 5px 5px 0 0;
-        display: flex;
-        align-items: center;
+	&-wrapper {
+		position: relative;
+		height: 100%;
+		border-radius: 5px 5px 0 0;
+		display: flex;
+		align-items: center;
 
-        &.active {
-            @include card-shadow;
-            background-color: $filterPrimaryColor;
-        }
-    }
+		&.active {
+			@include card-shadow;
+			background-color: $filterPrimaryColor;
+		}
+	}
 
-    &__button {
-        @include unselectable;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 0px 10px;
-        cursor: pointer;
+	&__button {
+		@include unselectable;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 0px 10px;
+		cursor: pointer;
 
-        &.disabled {
-            opacity: 0.6;
-            cursor: default;
-        }
-    }
+		&.disabled {
+			opacity: 0.6;
+			cursor: default;
+		}
+	}
 
-    &__icon {
-        @include icon(url(../../resources/icons/filter.svg), 20px, 20px);
+	&__icon {
+		@include icon(url(../../resources/icons/filter.svg), 20px, 20px);
 
-        &.applied {
-            background-image: url(../../resources/icons/filter-applied.svg);
-        }
+		&.applied {
+			background-image: url(../../resources/icons/filter-applied.svg);
+		}
 
-        &.active {
-            background-image: url(../../resources/icons/filter-white.svg);
-        }
-    }
+		&.active {
+			background-image: url(../../resources/icons/filter-white.svg);
+		}
+	}
 
-    &__title {
-        -webkit-margin-before: 0em;
-        -webkit-margin-after: 0em;
-        color: $primaryTextColor;
-        font-size: 14px;
-        font-weight: bold;
-        display: inline;
-        white-space: nowrap;
-        padding-left: 10px;
+	&__title {
+		-webkit-margin-before: 0em;
+		-webkit-margin-after: 0em;
+		color: $primaryTextColor;
+		font-size: 14px;
+		font-weight: bold;
+		display: inline;
+		white-space: nowrap;
+		padding-left: 10px;
 
-        &.active {
-            color: $filterTextColor;
-        }
+		&.active {
+			color: $filterTextColor;
+		}
 
-        &.applied {
-            color: $filterPrimaryColor;
-        }
-    }
+		&.applied {
+			color: $filterPrimaryColor;
+		}
+	}
 
-    &__path {
-        color: $filterPathColor;
-        font-weight: bold;
-        margin-right: 20px;
-        background-color: rgba(#FFF, 0.75);
-    }
+	&__path {
+		color: $filterPathColor;
+		font-weight: bold;
+		margin-right: 20px;
+		background-color: rgba(#fff, 0.75);
+	}
 
-    &__controls {
-        margin-left: 65px;
-        height: 40px;
-        padding: 5px 10px 0 0;
-    }
+	&__controls {
+		margin-left: 65px;
+		height: 40px;
+		padding: 5px 10px 0 0;
+	}
 
-    &__bubble {
-        color: #FFFFFF;
-        background-color: #5EBA6E;
-    }
+	&__bubble {
+		color: #ffffff;
+		background-color: #5eba6e;
+	}
 
-    &__counter {
-        background-color: $filterPrimaryColor;
-        color: $filterTextColor;
-        font-weight: bold;
-        border-radius: 3px;
-        font-size: 14px;
-        text-align: center;
-        margin: 0 5px;
-        padding: 0 5px;
-    }
+	&__counter {
+		background-color: $filterPrimaryColor;
+		color: $filterTextColor;
+		font-weight: bold;
+		border-radius: 3px;
+		font-size: 14px;
+		text-align: center;
+		margin: 0 5px;
+		padding: 0 5px;
+	}
 
-    &__loading {
-        @include spinner(2px, 19px, 2s);
-    }
+	&__loading {
+		@include spinner(2px, 19px, 2s);
+	}
 
-    &-time-controls {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-    }
+	&-time-controls {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
 
-    &-time-control {
-        display: flex;
-        align-items: center;
-        margin: 5px;
-        cursor: pointer;
-        border-radius: 6px;
-        background: $filterSecondaryColor;
-        height: 26px;
-        padding: 0 5px;
-        color: $primaryTextColor;
-        font-size: 13px;
+	&-time-control {
+		display: flex;
+		align-items: center;
+		margin: 5px;
+		cursor: pointer;
+		border-radius: 6px;
+		background: $filterSecondaryColor;
+		height: 26px;
+		padding: 0 5px;
+		color: $primaryTextColor;
+		font-size: 13px;
 
-        &:hover {
-            background: rgba($filterSecondaryColor, 0.8);
-        }
-    }
+		&:hover {
+			background: rgba($filterSecondaryColor, 0.8);
+		}
+	}
 
-    &-datetime-picker {
-        position: absolute;
-        left: 0;
-        top: 40px;
-        z-index: 2;
-        padding: 20px 30px;
-        background-color: white;
-        display: flex;
-        flex-direction: column;
-        border-radius: 6px;
-        box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
-        0px 8px 10px 1px rgba(0, 0, 0, 0.14), 
-        0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+	&-datetime-picker {
+		position: absolute;
+		left: 0;
+		top: 40px;
+		z-index: 2;
+		padding: 20px 30px;
+		background-color: white;
+		display: flex;
+		flex-direction: column;
+		border-radius: 6px;
+		box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14),
+			0px 3px 14px 2px rgba(0, 0, 0, 0.12);
 
-        &__row {
-            height: 300px;
-            display: flex;
-        }
+		&__row {
+			height: 300px;
+			display: flex;
+		}
 
-        &__controls {
-            width: 253px;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 12px;
-        }
+		&__controls {
+			width: 253px;
+			display: flex;
+			justify-content: space-between;
+			padding: 0 12px;
+		}
 
-        &__control {
-            margin: 0;
-            padding: 4px 5px;
-            width: 50px;
-            border: none;
-            background-color: $filterPickerControlColor;
-            border-radius: 6px;
-            font-size: 14px;
-            color: $filterPickerControlFontColor;
-            cursor: pointer;
-            font-weight: 600;
-            outline: none;
-        }
+		&__control {
+			margin: 0;
+			padding: 4px 5px;
+			width: 50px;
+			border: none;
+			background-color: $filterPickerControlColor;
+			border-radius: 6px;
+			font-size: 14px;
+			color: $filterPickerControlFontColor;
+			cursor: pointer;
+			font-weight: 600;
+			outline: none;
+		}
 
-        &__datepicker {
-            margin-right: 10px;
-        }
-    }
+		&__datepicker {
+			margin-right: 10px;
+		}
+	}
 
-    &-datetime-input {
-        &-wrapper {
-            width: 100%;
-            min-width: 70px;
-            position: relative;
-        }
-    }
+	&-datetime-input {
+		&-wrapper {
+			width: 100%;
+			min-width: 70px;
+			position: relative;
+		}
+	}
 
-    &-timepicker {
-        display: grid;
-        grid-template-columns: repeat(3, 70px);
-        height: 100%;
+	&-timepicker {
+		display: grid;
+		grid-template-columns: repeat(3, 70px);
+		height: 100%;
 
-        &__scroll {
-            @include scrollbar;
-            display: inline-block;
-            height: 100%;
-            overflow-y: scroll;
+		&__scroll {
+			@include scrollbar;
+			display: inline-block;
+			height: 100%;
+			overflow-y: scroll;
 
-            &::-webkit-scrollbar-track {
-                background-color: transparent;
-            }
+			&::-webkit-scrollbar-track {
+				background-color: transparent;
+			}
 
-            &-item {
-                height: 30px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-size: 18px;
-                cursor: pointer;
-                border-radius: 6px;
-                transition: background-color 0.15s ease-in-out;
-                color: $filterPickerScrollItemColor;
+			&-item {
+				height: 30px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				font-size: 18px;
+				cursor: pointer;
+				border-radius: 6px;
+				transition: background-color 0.15s ease-in-out;
+				color: $filterPickerScrollItemColor;
 
-                &.active {
-                    background-color: $filterPickerScrollItemActiveColor;
-                    color: white;
+				&.active {
+					background-color: $filterPickerScrollItemActiveColor;
+					color: white;
 
-                    &:hover {
-                        background-color: $filterPickerScrollItemActiveColor;
-                    }
-                }
+					&:hover {
+						background-color: $filterPickerScrollItemActiveColor;
+					}
+				}
 
-                &.blocked {
-                    color: $filterPickerScrollItemBlockedFontColor;
-                    background-color: $filterPickerScrollItemBlockedColor;
-                    border-radius: 0;
-                    cursor: not-allowed;
+				&.blocked {
+					color: $filterPickerScrollItemBlockedFontColor;
+					background-color: $filterPickerScrollItemBlockedColor;
+					border-radius: 0;
+					cursor: not-allowed;
 
-                    &:hover {
-                        background-color: $filterPickerScrollItemBlockedColor;
-                    }
-                }
+					&:hover {
+						background-color: $filterPickerScrollItemBlockedColor;
+					}
+				}
 
-                &:hover {
-                    background-color: $filterPickerScrollItemHoverColor;
-                }
-            }
-        }
-    }
+				&:hover {
+					background-color: $filterPickerScrollItemHoverColor;
+				}
+			}
+		}
+	}
 }
 
 .filter-controls {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: center;
-    font-size: 14px;
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	align-items: center;
+	font-size: 14px;
 
-    &__counts {
-        flex: auto;
-        width: 100%;
-    }
+	&__counts {
+		flex: auto;
+		width: 100%;
+	}
 
-    &__transparency {
-        flex: initial;
-        display: flex;
-        margin: 0 20px;
-        align-items: center;
+	&__transparency {
+		flex: initial;
+		display: flex;
+		margin: 0 20px;
+		align-items: center;
 
-        input {
-            margin: 2px 3px 0 10px;
-            cursor: pointer;
-        }
+		input {
+			margin: 2px 3px 0 10px;
+			cursor: pointer;
+		}
 
-        label {
-            opacity: 0.7;
-            cursor: pointer;
-        }
+		label {
+			opacity: 0.7;
+			cursor: pointer;
+		}
 
-        input[type="radio"]:checked + label {
-            opacity: 1;
-        }
-    }
+		input[type='radio']:checked + label {
+			opacity: 1;
+		}
+	}
 
-    &__clear-btn {
-        @include clickable;
-        flex: initial;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        padding: 0 7px 0 5px;
-        border-radius: 10px;
-        margin-right: 10px;
-    }
+	&__clear-btn {
+		@include clickable;
+		flex: initial;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 0 7px 0 5px;
+		border-radius: 10px;
+		margin-right: 10px;
+	}
 
-    &__clear-icon {
-        @include icon(url(../../resources/icons/cross-icon-white.svg), 25px, 25px);
-    }
+	&__clear-icon {
+		@include icon(url(../../resources/icons/cross-icon-white.svg), 25px, 25px);
+	}
 }
 
 .filter-row {
-    min-height: 46px;
-    width: 100%;
-    font-size: 15px;
-    font-weight: bold;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
+	min-height: 46px;
+	width: 100%;
+	font-size: 15px;
+	font-weight: bold;
+	box-sizing: border-box;
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
 
-    &:hover &__divider-text {
-        display: none;
-    }
+	&:hover &__divider-text {
+		display: none;
+	}
 
-    &:hover &__remove-btn {
-        display: block;
-    }
+	&:hover &__remove-btn {
+		display: block;
+	}
 
-    &__remove-btn {
-        @include round-button(url(../../resources/icons/cross-icon-white.svg));
-        display: none;
-        flex: 0 0 20px;
-    }
+	&__remove-btn {
+		@include round-button(url(../../resources/icons/cross-icon-white.svg));
+		display: none;
+		flex: 0 0 20px;
+	}
 
-    &__divider-text {
-        display: block;
-    }
+	&__divider-text {
+		display: block;
+	}
 
-    &__divider {
-        display: inline-flex;
-        align-items: center;
-        justify-content: flex-end;
-        width: 60px;
-        padding-left: 10px;
-        font-weight: bold;
-        font-size: 16px;
-    }
+	&__divider {
+		display: inline-flex;
+		align-items: center;
+		justify-content: flex-end;
+		width: 60px;
+		padding-left: 10px;
+		font-weight: bold;
+		font-size: 16px;
+	}
 
-    &__wrapper {
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: center;
-    }
+	&__wrapper {
+		width: 100%;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		align-items: center;
+	}
 
-    &__input {
-        border: 0;
-        padding: 3px 5px;
-        margin: 0 10px;
-        border-radius: $bubbleBorderRadius;
-        min-height: 30px;
-        background-color: rgba(#FFFFFF, 0.5);
-        font-size: 13px;
-        color: $primaryTextColor;
-        box-sizing: border-box;
-        // workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
-        min-width: 0;
+	&__input {
+		border: 0;
+		padding: 3px 5px;
+		margin: 0 10px;
+		border-radius: $bubbleBorderRadius;
+		min-height: 30px;
+		background-color: rgba(#ffffff, 0.5);
+		font-size: 13px;
+		color: $primaryTextColor;
+		box-sizing: border-box;
+		// workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
+		min-width: 0;
 
-        &:focus {
-            background-color: #FFF;
+		&:focus {
+			background-color: #fff;
 
-            &::placeholder {
-                color: $secondaryTextColor;
-            }
-        }
+			&::placeholder {
+				color: $secondaryTextColor;
+			}
+		}
 
-        &.non-empty {
-            background-color: #FFF;
-        }
-    }
+		&.non-empty {
+			background-color: #fff;
+		}
+	}
 
-    &__datetime-input {
-        margin: 0 10px;
-    }
+	&__datetime-input {
+		margin: 0 10px;
+	}
 
-    &__submit-btn {
-        height: 30px;
-        display: flex;
-        align-items: center;
-        padding: 3px 15px;
-        border-radius: 5px;
-        background-color: rgba($filterSecondaryColor, 0.9);
-        color: $primaryTextColor;
-        cursor: pointer;
-        font-size: 14px;
+	&__submit-btn {
+		height: 30px;
+		display: flex;
+		align-items: center;
+		padding: 3px 15px;
+		border-radius: 5px;
+		background-color: rgba($filterSecondaryColor, 0.9);
+		color: $primaryTextColor;
+		cursor: pointer;
+		font-size: 14px;
 
-        &:hover {
-            background-color: rgba($filterSecondaryColor, 1);
-        }
-    }
+		&:hover {
+			background-color: rgba($filterSecondaryColor, 1);
+		}
+	}
 
-    &__select {
-        margin: 0 10px;
-        height: $filterBubbleHeight;
-        font-size: 15px;
-        min-width: 105px;
-    }
+	&__select {
+		margin: 0 10px;
+		height: $filterBubbleHeight;
+		font-size: 15px;
+		min-width: 105px;
+	}
 
-    &__label {
-        width: 110px;
-        font-weight: bold;
-        font-size: 15px;
-        flex-shrink: 0;
-    }
+	&__label {
+		width: 110px;
+		font-weight: bold;
+		font-size: 15px;
+		flex-shrink: 0;
+	}
 
-    &__multiple-values {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        width: 100%;
-        cursor: text;
-        position: relative;
-        flex-wrap: wrap;
-        flex-grow: 1;
-        gap: 5px;
+	&__multiple-values {
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		width: 100%;
+		cursor: text;
+		position: relative;
+		flex-wrap: wrap;
+		flex-grow: 1;
+		gap: 5px;
 
-        &.active {
-            background: #FFFFFF;
-        }
-    }
+		&.active {
+			background: #ffffff;
+		}
+	}
 
-    &__multiple-values-input {
-        font-size: 14px;
-        background: transparent;
-        border: none;
-        appearance: none;
-        color: $primaryTextColor;
+	&__multiple-values-input {
+		font-size: 14px;
+		background: transparent;
+		border: none;
+		appearance: none;
+		color: $primaryTextColor;
 
-        &::-webkit-calendar-picker-indicator {
-            display: none;
-        }
+		&::-webkit-calendar-picker-indicator {
+			display: none;
+		}
 
-        &:focus {
-            outline: none;
-        }
-    }
+		&:focus {
+			outline: none;
+		}
+	}
 
-    &__multiple-values-input-wrapper {
-        flex-grow: 1;
-        position: relative;
-        z-index: 1;
-    }
+	&__multiple-values-input-wrapper {
+		flex-grow: 1;
+		position: relative;
+		z-index: 1;
+	}
 
-    &__placeholder {
-        font-size: 13px;
-        color: $secondaryTextColor;
-        font-weight: normal;
-        position: absolute;
-        top: 6px;
-        left: 8px;
-        z-index: 0;
-    }
+	&__placeholder {
+		font-size: 13px;
+		color: $secondaryTextColor;
+		font-weight: normal;
+		position: absolute;
+		top: 6px;
+		left: 8px;
+		z-index: 0;
+	}
 
-    &__arrow-icon {
-        @include icon(url(../../resources/icons/filter-arrow.svg), 16px, 16px);
-    }
+	&__arrow-icon {
+		@include icon(url(../../resources/icons/filter-arrow.svg), 16px, 16px);
+	}
 }
 
 .events-filter {
-    &__time-input {
-        width: 110px;
-        padding: 3px 9px;
-    }
-    &__date-input {
-        width: 98px;
-        padding: 3px 9px;
-    }
+	&__time-input {
+		width: 110px;
+		padding: 3px 9px;
+	}
+	&__date-input {
+		width: 98px;
+		padding: 3px 9px;
+	}
 }

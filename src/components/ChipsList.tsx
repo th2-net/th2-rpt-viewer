@@ -21,32 +21,31 @@ import { Chip } from './Chip';
 import { stopPropagationHandler } from '../helpers/react';
 
 interface Props {
-    actions: Action[];
-    selectedStatus?: StatusType | null;
-    onStatusSelect: (status: StatusType) => void;
+	actions: Action[];
+	selectedStatus?: StatusType | null;
+	onStatusSelect: (status: StatusType) => void;
 }
 
 export default function ChipsList({ actions, onStatusSelect, selectedStatus }: Props) {
 	return (
 		<React.Fragment>
-			{
-				statusValues.map((status, index) => {
-					const count = actions.filter(action => action.status.status === status).length;
+			{statusValues.map((status, index) => {
+				const count = actions.filter(action => action.status.status === status).length;
 
-					if (count < 1) {
-						return null;
-					}
+				if (count < 1) {
+					return null;
+				}
 
-					return (
-						<Chip
-							key={index}
-							status={status}
-							text={count.toString()}
-							isSelected={status === selectedStatus}
-							onClick={stopPropagationHandler(onStatusSelect, status)}/>
-					);
-				})
-			}
+				return (
+					<Chip
+						key={index}
+						status={status}
+						text={count.toString()}
+						isSelected={status === selectedStatus}
+						onClick={stopPropagationHandler(onStatusSelect, status)}
+					/>
+				);
+			})}
 		</React.Fragment>
 	);
 }

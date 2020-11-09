@@ -35,11 +35,7 @@ function MessageRaw({ rawContent, messageId }: Props) {
 	const messagesStore = useMessagesWindowStore();
 
 	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
-	const displayIconClass = createBemElement(
-		'mc-raw',
-		'display-btn',
-		isDetailed ? 'active' : null,
-	);
+	const displayIconClass = createBemElement('mc-raw', 'display-btn', isDetailed ? 'active' : null);
 
 	const copyAll = () => {
 		const copyContent = isDetailed
@@ -51,27 +47,29 @@ function MessageRaw({ rawContent, messageId }: Props) {
 	};
 
 	return (
-		<div className="mc-raw">
-			<div className="mc-raw__header">
-				<div className="mc-raw__title">Raw message</div>
-				<div className="mc-raw__copy-all"
-					 onClick={copyAll}
-					 title="Copy all raw content to clipboard">
-					<div className="mc-raw__copy-icon"/>
-					<div className="mc-raw__copy-title">
+		<div className='mc-raw'>
+			<div className='mc-raw__header'>
+				<div className='mc-raw__title'>Raw message</div>
+				<div
+					className='mc-raw__copy-all'
+					onClick={copyAll}
+					title='Copy all raw content to clipboard'>
+					<div className='mc-raw__copy-icon' />
+					<div className='mc-raw__copy-title'>
 						<span>Copy All</span>
 					</div>
 				</div>
 				<div
 					className={displayIconClass}
 					onClick={() => messagesStore.toggleMessageDetailedRaw(messageId)}
-					title={`Switch to ${isDetailed ? 'simplified' : 'detailed'} view`}/>
+					title={`Switch to ${isDetailed ? 'simplified' : 'detailed'} view`}
+				/>
 			</div>
-			{
-				isDetailed
-					? <DetailedMessageRaw rawContent={rawContent}/>
-					: <SimpleMessageRaw rawContent={rawContent}/>
-			}
+			{isDetailed ? (
+				<DetailedMessageRaw rawContent={rawContent} />
+			) : (
+				<SimpleMessageRaw rawContent={rawContent} />
+			)}
 		</div>
 	);
 }

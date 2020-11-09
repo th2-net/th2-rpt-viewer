@@ -19,7 +19,9 @@ import { TestCaseMetadata } from './TestcaseMetadata';
 
 type LiveTestCase = Omit<TestCase, 'actions' | 'messages'> & { lastUpdate: string };
 
-export function isLiveTestCase(testCase: LiveTestCase | TestCase | TestCaseMetadata): testCase is LiveTestCase {
+export function isLiveTestCase(
+	testCase: LiveTestCase | TestCase | TestCaseMetadata,
+): testCase is LiveTestCase {
 	return testCase.finishTime == null && testCase.status == null;
 }
 

@@ -31,14 +31,14 @@ function EventWindowHeader() {
 	);
 
 	return (
-		<div className="event-window-header">
-			<div className="event-window-header__group">
-				<div className="event-window-header__search">
+		<div className='event-window-header'>
+			<div className='event-window-header__group'>
+				<div className='event-window-header__search'>
 					<SearchInput />
 				</div>
 				<EventsFilterPanel />
 				<div
-					role="button"
+					role='button'
 					onClick={eventStore.viewStore.toggleFlatttenEventListView}
 					className={flattenButtonClassName}>
 					Flat view

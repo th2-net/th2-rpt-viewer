@@ -20,8 +20,8 @@ import Log from '../Log';
 import { KnownBugNode } from '../KnownBug';
 
 export default interface SearchContent {
-    actions: ActionNode[];
-    messages: Message[];
-    logs: Log[];
-    bugs: KnownBugNode[];
+	actions: ActionNode[];
+	messages: Message[];
+	logs: Log[];
+	bugs: KnownBugNode[];
 }

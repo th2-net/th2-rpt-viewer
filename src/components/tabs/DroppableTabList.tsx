@@ -57,12 +57,13 @@ const DroppableTabList = (props: DroppableTabListProps) => {
 	}, [isOver]);
 
 	return (
-		<DraggableTabListContext.Provider value={{
-			activeTab,
-			setActiveTab,
-			isDragging,
-			setIsDragging,
-		}}>
+		<DraggableTabListContext.Provider
+			value={{
+				activeTab,
+				setActiveTab,
+				isDragging,
+				setIsDragging,
+			}}>
 			<div ref={drop} className={`droppable-tab-list ${props.className}`}>
 				{props.children}
 			</div>

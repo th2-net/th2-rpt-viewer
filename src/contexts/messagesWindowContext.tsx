@@ -24,12 +24,7 @@ interface MessagesWindowProviderProps {
 	value: MessagesStore;
 }
 const MessagesWindowProvider = ({ children, value }: MessagesWindowProviderProps) => (
-	<MessagesWindowContext.Provider value={value}>
-		{children}
-	</MessagesWindowContext.Provider>
+	<MessagesWindowContext.Provider value={value}>{children}</MessagesWindowContext.Provider>
 );
 
-export {
-	MessagesWindowContext,
-	MessagesWindowProvider,
-};
+export { MessagesWindowContext, MessagesWindowProvider };

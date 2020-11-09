@@ -14,756 +14,776 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import "./common/vars";
+@import './common/vars';
 
 .message-card {
-    @include status-card;
+	@include status-card;
 
-    // lb-count - number of displaying labels - to make offset for name and session
-    --lb-count: 0;
-    // lb-count variable assignment through the custom html property
-    &[data-lb-count="0"] { --lb-count: 0; }
-    &[data-lb-count="1"] { --lb-count: 1; }
-    &[data-lb-count="2"] { --lb-count: 2; }
+	// lb-count - number of displaying labels - to make offset for name and session
+	--lb-count: 0;
+	// lb-count variable assignment through the custom html property
+	&[data-lb-count='0'] {
+		--lb-count: 0;
+	}
+	&[data-lb-count='1'] {
+		--lb-count: 1;
+	}
+	&[data-lb-count='2'] {
+		--lb-count: 2;
+	}
 
-    position: relative;
-    display: grid;
-    grid-template: auto auto / auto calc(100% - var(--lb-count) * 20px);
-    grid-template-areas: "mc-labels mc-header"
-    "mc-labels mc-body";
-    width: 100%;
-    margin: 6px 0;
-    transition: all 0.2s;
-    min-height: 100px;
+	position: relative;
+	display: grid;
+	grid-template: auto auto / auto calc(100% - var(--lb-count) * 20px);
+	grid-template-areas:
+		'mc-labels mc-header'
+		'mc-labels mc-body';
+	width: 100%;
+	margin: 6px 0;
+	transition: all 0.2s;
+	min-height: 100px;
 
-    border: 2px solid var(--status-secondary-border-color);
-    border-radius: $defaultCardBorderRadius;
+	border: 2px solid var(--status-secondary-border-color);
+	border-radius: $defaultCardBorderRadius;
 
-    &.transparent {
-        opacity: 0.3;
-    }
+	&.transparent {
+		opacity: 0.3;
+	}
 
-    &__labels {
-        grid-area: mc-labels;
-        display: flex;
-        justify-content: flex-start;
+	&__labels {
+		grid-area: mc-labels;
+		display: flex;
+		justify-content: flex-start;
 
-        div:first-of-type {
-            border-top-left-radius: 3px;
-            border-bottom-left-radius: 3px;
-        }
-    }
+		div:first-of-type {
+			border-top-left-radius: 3px;
+			border-bottom-left-radius: 3px;
+		}
+	}
 
-    &__header {
-        grid-area: mc-header;
-    }
+	&__header {
+		grid-area: mc-header;
+	}
 
-    &__body {
-        grid-area: mc-body;
-    }
+	&__body {
+		grid-area: mc-body;
+	}
 }
 
 .mc-label {
-    width: 20px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
+	width: 20px;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
 
-    &__icon {
-        height: 14px;
-        width: 14px;
-        margin-top: 12px;
-        background-size: 100%;
-        filter: opacity(0.4);
+	&__icon {
+		height: 14px;
+		width: 14px;
+		margin-top: 12px;
+		background-size: 100%;
+		filter: opacity(0.4);
 
-        &.rejected {
-            background-image: url(../../resources/icons/rejected-label.svg);
-        }
+		&.rejected {
+			background-image: url(../../resources/icons/rejected-label.svg);
+		}
 
-        &.admin {
-            background-image: url(../../resources/icons/admin-icon.svg)
-        }
-    }
+		&.admin {
+			background-image: url(../../resources/icons/admin-icon.svg);
+		}
+	}
 
-    &.rejected {
-        background-color: $rejectedMessageLabelBackground;
-    }
+	&.rejected {
+		background-color: $rejectedMessageLabelBackground;
+	}
 
-    &.admin {
-        background-color: $adminMessageLabelBackground;
-    }
+	&.admin {
+		background-color: $adminMessageLabelBackground;
+	}
 }
 
 .mc-header {
-    grid-area: mc-header;
-    display: grid;
-    row-gap: 3px;
-    position: relative;
-    padding: 7px 5px 9px 10px;
-    color: $primaryTextColor;
-    grid-template-rows: auto;
-    grid-template-columns: 1.2fr 40px 1.2fr 40px 1.8fr 30px 30px;
-    grid-template-areas: "timestamp name name-value session session-value beautify pin"
-                         "timestamp id id-value id-value id-value beautify pin";
+	grid-area: mc-header;
+	display: grid;
+	row-gap: 3px;
+	position: relative;
+	padding: 7px 5px 9px 10px;
+	color: $primaryTextColor;
+	grid-template-rows: auto;
+	grid-template-columns: 1.2fr 40px 1.2fr 40px 1.8fr 30px 30px;
+	grid-template-areas:
+		'timestamp name name-value session session-value beautify pin'
+		'timestamp id id-value id-value id-value beautify pin';
 
-    &__underline {
-        border-bottom: 2px solid var(--status-primary-delimeter-color);
-        padding: 0 20px;
-        position: absolute;
-        bottom: 0;
-        left: 10px;
-        right: 10px;
-    }
+	&__underline {
+		border-bottom: 2px solid var(--status-primary-delimeter-color);
+		padding: 0 20px;
+		position: absolute;
+		bottom: 0;
+		left: 10px;
+		right: 10px;
+	}
 
-    &__info {
-        grid-area: info;
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
+	&__info {
+		grid-area: info;
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
 
-        &.rejected {
-            font-weight: bold;
-            font-size: 13px;
-            padding-left: 6px;
-            color: $primaryTextColor;
-        }
-    }
+		&.rejected {
+			font-weight: bold;
+			font-size: 13px;
+			padding-left: 6px;
+			color: $primaryTextColor;
+		}
+	}
 
-    &__name {
-        grid-area: name;
-    }
+	&__name {
+		grid-area: name;
+	}
 
-    &__name-value {
-        grid-area: name-value;
-    }
+	&__name-value {
+		grid-area: name-value;
+	}
 
-    &__timestamp {
-        grid-area: timestamp;
-        font-size: 12px;
-        padding-left: 5px;
-    }
+	&__timestamp {
+		grid-area: timestamp;
+		font-size: 12px;
+		padding-left: 5px;
+	}
 
-    &.p75 &__timestamp {
-        padding-left: 7px;
-    }
+	&.p75 &__timestamp {
+		padding-left: 7px;
+	}
 
-    &__session {
-        grid-area: session;
-    }
+	&__session {
+		grid-area: session;
+	}
 
-    &__session-value {
-        grid-area: session-value;
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: center;
-    }
+	&__session-value {
+		grid-area: session-value;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		align-items: center;
+	}
 
-    &__session-icon {
-        background-image: url('../../resources/icons/session-icon.svg');
-        height: 25px;
-        width: 25px;
-        background-size: 100%;
-        margin: 0 5px;
+	&__session-icon {
+		background-image: url('../../resources/icons/session-icon.svg');
+		height: 25px;
+		width: 25px;
+		background-size: 100%;
+		margin: 0 5px;
 
-        &.in {
-            transform: scale(-1);
-        }
-    }
+		&.in {
+			transform: scale(-1);
+		}
+	}
 
-    &__id {
-        grid-area: id;
-    }
-    &__id-value {
-        grid-area: id-value;
-    }
+	&__id {
+		grid-area: id;
+	}
+	&__id-value {
+		grid-area: id-value;
+	}
 
-    &__session, &__name, &__timestamp, &__name-value, &__id {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: flex-start;
-        padding: 3px;
-    }
+	&__session,
+	&__name,
+	&__timestamp,
+	&__name-value,
+	&__id {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: flex-start;
+		padding: 3px;
+	}
 
-    &__id-value, &__name-value, &__session-value {
-        padding-left: 8px;
-        font-size: 13px;
-        font-weight: bold;
-        word-break: break-all;
-    }
+	&__id-value,
+	&__name-value,
+	&__session-value {
+		padding-left: 8px;
+		font-size: 13px;
+		font-weight: bold;
+		word-break: break-all;
+	}
 
-    &__session, &__name, &__id {
-        @include unselectable;
-        padding-top: 5px;
-        font-size: 10px;
-        color: $secondaryTextColor;
-    }
+	&__session,
+	&__name,
+	&__id {
+		@include unselectable;
+		padding-top: 5px;
+		font-size: 10px;
+		color: $secondaryTextColor;
+	}
 
-    &__expand {
-        grid-area: expand-icon;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+	&__expand {
+		grid-area: expand-icon;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 
-        &-icon {
-            height: 19px;
-            width: 19px;
-            background-image: url(../../resources/icons/arr4-down.svg);
-            background-size: 100%;
-            cursor: pointer;
-        }
-    }
+		&-icon {
+			height: 19px;
+			width: 19px;
+			background-image: url(../../resources/icons/arr4-down.svg);
+			background-size: 100%;
+			cursor: pointer;
+		}
+	}
 
-    &__pin {
-        grid-area: pin;
-        position: relative;
-        place-self: center;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 20px;
-        height: 20px;
-        overflow: hidden;
-    }
+	&__pin {
+		grid-area: pin;
+		position: relative;
+		place-self: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		overflow: hidden;
+	}
 
-    &__pin-icon {
-        @include icon(url(../../resources/icons/pin.svg), 15px, 15px);
+	&__pin-icon {
+		@include icon(url(../../resources/icons/pin.svg), 15px, 15px);
 
-        cursor: pointer;
-        transition: 0.3s;
+		cursor: pointer;
+		transition: 0.3s;
 
-        &.active {
-            transform: rotate(-45deg) scale(1.4);
-        }
-    }
+		&.active {
+			transform: rotate(-45deg) scale(1.4);
+		}
+	}
 }
 
 .mc-body {
-    position: relative;
-    padding: 7px 10px 10px 15px;
-    border-radius: 5px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
+	position: relative;
+	padding: 7px 10px 10px 15px;
+	border-radius: 5px;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
 
-    &__title {
-        color: $primaryTextColor;
-        font-size: 14px;
-        font-weight: bold;
-        padding-bottom: 2px;
-        padding-top: 5px;
-    }
+	&__title {
+		color: $primaryTextColor;
+		font-size: 14px;
+		font-weight: bold;
+		padding-bottom: 2px;
+		padding-top: 5px;
+	}
 
-    &__human {
-        padding-top: 5px;
-        line-height: 21px;
-        margin: 0;
-        font-size: 13px;
-        white-space: pre-wrap;
-        word-break: break-all;
-    }
+	&__human {
+		padding-top: 5px;
+		line-height: 21px;
+		margin: 0;
+		font-size: 13px;
+		white-space: pre-wrap;
+		word-break: break-all;
+	}
 
-    &__field {
-        border-radius: 2px;
-        width: fit-content;
-    }
+	&__field {
+		border-radius: 2px;
+		width: fit-content;
+	}
 
-    &__field-label {
-        color: $secondaryTextColor;
-        display: inline-block;
-        height: 100%;
-    }
+	&__field-label {
+		color: $secondaryTextColor;
+		display: inline-block;
+		height: 100%;
+	}
 
-    &__raw {
-        width: 100%
-    }
+	&__raw {
+		width: 100%;
+	}
 
-    &__beautify-wrapper {
-        @include scrollbar;
-        overflow-x: scroll;
-    }
+	&__beautify-wrapper {
+		@include scrollbar;
+		overflow-x: scroll;
+	}
 }
 
 .mc-show-raw {
-    @include unselectable;
-    @include clickable;
+	@include unselectable;
+	@include clickable;
 
-    float: right;
-    display: flex;
-    align-items: center;
-    font-size: 13px;
-    color: $primaryTextColor;
-    padding: 0 4px;
+	float: right;
+	display: flex;
+	align-items: center;
+	font-size: 13px;
+	color: $primaryTextColor;
+	padding: 0 4px;
 
-    &__title {
-        font-weight: bold;
-    }
+	&__title {
+		font-weight: bold;
+	}
 
-    &__icon {
-        height: 14px;
-        width: 14px;
-        background-size: 100%;
-        margin-left: 5px;
+	&__icon {
+		height: 14px;
+		width: 14px;
+		background-size: 100%;
+		margin-left: 5px;
 
-        &.expanded {
-            background-image: url(../../resources/icons/arr4-up.svg);
-        }
+		&.expanded {
+			background-image: url(../../resources/icons/arr4-up.svg);
+		}
 
-        &.hidden {
-            background-image: url(../../resources/icons/arr4-down.svg);
-        }
-    }
+		&.hidden {
+			background-image: url(../../resources/icons/arr4-down.svg);
+		}
+	}
 }
 
 .mc-beautify {
-    @include clickable;
-    grid-area: beautify;
-    float: right;
-    height: 26px;
-    width: 26px;
-    padding: 2px;
-    place-self: center;
+	@include clickable;
+	grid-area: beautify;
+	float: right;
+	height: 26px;
+	width: 26px;
+	padding: 2px;
+	place-self: center;
 
-    &__icon {
-        background-size: 100%;
-        background-repeat: no-repeat;
-        height: 100%;
-        width: 100%;
+	&__icon {
+		background-size: 100%;
+		background-repeat: no-repeat;
+		height: 100%;
+		width: 100%;
 
-        &.beautify {
-            background-image: url(../../resources/icons/beautified-text.svg);
-        }
+		&.beautify {
+			background-image: url(../../resources/icons/beautified-text.svg);
+		}
 
-        &.plain {
-            background-image: url(../../resources/icons/plain-text.svg);
-        }
-    }
+		&.plain {
+			background-image: url(../../resources/icons/plain-text.svg);
+		}
+	}
 }
 
 .mc-raw {
-    &__header {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        padding-top: 4px;
-        min-height: 30px;
-    }
+	&__header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding-top: 4px;
+		min-height: 30px;
+	}
 
-    &__title {
-        display: inline-block;
-        @include unselectable;
-        font-size: 13px;
-        color: $primaryTextColor;
-        font-weight: bold;
-    }
+	&__title {
+		display: inline-block;
+		@include unselectable;
+		font-size: 13px;
+		color: $primaryTextColor;
+		font-weight: bold;
+	}
 
-    &__display-btn {
-        @include icon(url(../../resources/icons/table-view-icon.svg), 15px, 15px);
+	&__display-btn {
+		@include icon(url(../../resources/icons/table-view-icon.svg), 15px, 15px);
 
-        justify-self: center;
-        align-self: center;
-        cursor: pointer;
-        margin-left: 10px;
-        opacity: 0.8;
+		justify-self: center;
+		align-self: center;
+		cursor: pointer;
+		margin-left: 10px;
+		opacity: 0.8;
 
-        &.active {
-            background-image: url(../../resources/icons/expand-on.svg);
-        }
+		&.active {
+			background-image: url(../../resources/icons/expand-on.svg);
+		}
 
-        &:hover {
-            opacity: 1;
-        }
-    }
+		&:hover {
+			opacity: 1;
+		}
+	}
 
-    &__content {
-        @include scrollbar;
+	&__content {
+		@include scrollbar;
 
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        margin-top: 10px;
-        font-family: monospace;
-        line-height: 18px;
-        letter-spacing: 0.5px;
-        font-size: 11px;
-        overflow-x: auto;
-    }
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		margin-top: 10px;
+		font-family: monospace;
+		line-height: 18px;
+		letter-spacing: 0.5px;
+		font-size: 11px;
+		overflow-x: auto;
+	}
 
-    &__column {
-        display: flex;
-        padding-left: 5px;
-        margin-left: 10px;
-        cursor: text;
+	&__column {
+		display: flex;
+		padding-left: 5px;
+		margin-left: 10px;
+		cursor: text;
 
-        &:first-child {
-            margin-left: 0;
-        }
+		&:first-child {
+			margin-left: 0;
+		}
 
-        &.primary {
-            color: $primaryTextColor;
+		&.primary {
+			color: $primaryTextColor;
 
-            &:hover {
-                background: $messageCardRawHoverBackground;
-            }
-        }
+			&:hover {
+				background: $messageCardRawHoverBackground;
+			}
+		}
 
-        &.secondary {
-            color: $secondaryTextColor;
-        }
-    }
+		&.secondary {
+			color: $secondaryTextColor;
+		}
+	}
 
-    &__copy-btn {
-        display: inline-block;
-        margin: 4px 4px 4px 10px;
-        cursor: pointer;
+	&__copy-btn {
+		display: inline-block;
+		margin: 4px 4px 4px 10px;
+		cursor: pointer;
 
-        &:hover {
-            filter: opacity(1);
-        }
-    }
+		&:hover {
+			filter: opacity(1);
+		}
+	}
 
-    &__copy-icon {
-        margin: 4px 4px 4px 10px;
-        height: 13px;
-        width: 13px;
-        background-image: url('../../resources/icons/clipboard.svg');
-        background-size: 100%;
-        filter: opacity(0.6);
-    }
+	&__copy-icon {
+		margin: 4px 4px 4px 10px;
+		height: 13px;
+		width: 13px;
+		background-image: url('../../resources/icons/clipboard.svg');
+		background-size: 100%;
+		filter: opacity(0.6);
+	}
 
-    &__copy-title {
-        @include unselectable;
-        font-size: 12px;
-        color: $primaryTextColor;
-        padding-left: 5px;
-    }
+	&__copy-title {
+		@include unselectable;
+		font-size: 12px;
+		color: $primaryTextColor;
+		padding-left: 5px;
+	}
 
-    &__copy-all {
-        display: inline-flex;
-        align-items: center;
-        margin-left: 10px;
-        padding: 2px;
-        cursor: pointer;
+	&__copy-all {
+		display: inline-flex;
+		align-items: center;
+		margin-left: 10px;
+		padding: 2px;
+		cursor: pointer;
 
-        &:hover {
-            background: $messageCardRawHoverBackground;
-        }
-    }
+		&:hover {
+			background: $messageCardRawHoverBackground;
+		}
+	}
 
-    &__content-part {
-        &::selection {
-            background-color: #338FFF;
-            color: white;
-        }
-    }
+	&__content-part {
+		&::selection {
+			background-color: #338fff;
+			color: white;
+		}
+	}
 
-    &__highlighted-content {
-        background-color: #99C7FF;
-        font-weight: bold;
-        color: $primaryTextColor;
-    }
+	&__highlighted-content {
+		background-color: #99c7ff;
+		font-weight: bold;
+		color: $primaryTextColor;
+	}
 }
 
 .mc-expand-btn {
-    position: absolute;
-    top: 67px;
-    right: 12px;
-    padding-right: 5px;
+	position: absolute;
+	top: 67px;
+	right: 12px;
+	padding-right: 5px;
 
-    &.rejected {
-        top: 80px;
-    }
+	&.rejected {
+		top: 80px;
+	}
 
-    &__icon {
-        height: 19px;
-        width: 19px;
-        background-image: url(../../resources/icons/arr4-up.svg);
-        background-size: 100%;
-        cursor: pointer;
-    }
+	&__icon {
+		height: 19px;
+		width: 19px;
+		background-image: url(../../resources/icons/arr4-up.svg);
+		background-size: 100%;
+		cursor: pointer;
+	}
 }
 
 .messages-list {
-    height: 100%;
-    width: 100%;
-    word-wrap: break-word;
+	height: 100%;
+	width: 100%;
+	word-wrap: break-word;
 
-    &__items {
-        height: 100%;
-        @include hidden-scrollbar;
-    }
+	&__items {
+		height: 100%;
+		@include hidden-scrollbar;
+	}
 
-    &__spinner {
-        @include spinner(3px, 24px, 2s);
-        flex-shrink: 0;
-        margin: auto;
-    }
+	&__spinner {
+		@include spinner(3px, 24px, 2s);
+		flex-shrink: 0;
+		margin: auto;
+	}
 
-    &__overlay-loader {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: grid;
-        place-items: center;
-    }
+	&__overlay-loader {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		display: grid;
+		place-items: center;
+	}
 
-    &__overlay-spinner {
-        @include spinner(5px, 40px, 2s);
-    }
+	&__overlay-spinner {
+		@include spinner(5px, 40px, 2s);
+	}
 }
 
 .mc-skeleton {
-    @include skeleton-pulse;
-    box-sizing: border-box;
-    display: grid;
-    grid-template-areas: "mc-header"
-                         "delimiter"
-                         "mc-body";
-    grid-row-gap: 12px;
-    border: 2px solid $skeletonBackgroundColor;
-    border-radius: 5px;
-    padding: 15px;
-    margin: 6px 0;
-    position: relative;
+	@include skeleton-pulse;
+	box-sizing: border-box;
+	display: grid;
+	grid-template-areas:
+		'mc-header'
+		'delimiter'
+		'mc-body';
+	grid-row-gap: 12px;
+	border: 2px solid $skeletonBackgroundColor;
+	border-radius: 5px;
+	padding: 15px;
+	margin: 6px 0;
+	position: relative;
 
-    &__header {
-        grid-area: mc-header;
-        display: grid;
-        grid-template-rows: 20px;
-        grid-template-columns: 1.1fr 1.2fr 2fr 40px;
-        grid-row-gap: 6px;
-        grid-template-areas: "timestamp name session beautify";
-        align-items: center;
-    }
+	&__header {
+		grid-area: mc-header;
+		display: grid;
+		grid-template-rows: 20px;
+		grid-template-columns: 1.1fr 1.2fr 2fr 40px;
+		grid-row-gap: 6px;
+		grid-template-areas: 'timestamp name session beautify';
+		align-items: center;
+	}
 
-    &__icons,
-    &__timestamp,
-    &__session,
-    &__name,
-    &__beautify,
-    &__icons-el,
-    &__session-el,
-    &__title,
-    &__value {
-        @include skeleton;
-        height: 100%;
-    }
+	&__icons,
+	&__timestamp,
+	&__session,
+	&__name,
+	&__beautify,
+	&__icons-el,
+	&__session-el,
+	&__title,
+	&__value {
+		@include skeleton;
+		height: 100%;
+	}
 
-    &__icons {
-        grid-area: icons;
-        background-color: white;
-    }
+	&__icons {
+		grid-area: icons;
+		background-color: white;
+	}
 
-    &__icons-el {
-        width: 20px;
-        display: inline-block;
-        margin-right: 8px;
-    }
+	&__icons-el {
+		width: 20px;
+		display: inline-block;
+		margin-right: 8px;
+	}
 
-    &__timestamp {
-        grid-area: timestamp;
-        width: 75%;
-    }
+	&__timestamp {
+		grid-area: timestamp;
+		width: 75%;
+	}
 
-    &__session {
-        width: 75%;
-        grid-area: session;
-        background-color: white;
-        display: grid;
-        grid-column-gap: 15px;
-        grid-template-columns: 50px 1fr 20px 1fr;
-    }
+	&__session {
+		width: 75%;
+		grid-area: session;
+		background-color: white;
+		display: grid;
+		grid-column-gap: 15px;
+		grid-template-columns: 50px 1fr 20px 1fr;
+	}
 
-    &__name {
-        background-color: white;
-        grid-area: name;
-        width: 75%;
-        display: grid;
-        grid-column-gap: 15px;
-        grid-template-columns: 50px 1fr;
-    }
+	&__name {
+		background-color: white;
+		grid-area: name;
+		width: 75%;
+		display: grid;
+		grid-column-gap: 15px;
+		grid-template-columns: 50px 1fr;
+	}
 
-    &__beautify {
-        grid-area: beautify;
-        width: 32px;
-        height: 22px;
-        justify-self: end;
-        align-self: center;
-    }
+	&__beautify {
+		grid-area: beautify;
+		width: 32px;
+		height: 22px;
+		justify-self: end;
+		align-self: center;
+	}
 
-    &__delimiter {
-        height: 2px;
-        background-color: $skeletonBackgroundColor;
-        grid-area: delimiter;
-    }
+	&__delimiter {
+		height: 2px;
+		background-color: $skeletonBackgroundColor;
+		grid-area: delimiter;
+	}
 
-    &__body {
-        grid-area: mc-body;
-        display: grid;
-        grid-template-rows: 16px 16px;
-        grid-template-columns: 1.2fr 1fr;
-        grid-row-gap: 7px;
-        grid-template-areas: "text1 text1"
-                             "text2 type";
-    }
+	&__body {
+		grid-area: mc-body;
+		display: grid;
+		grid-template-rows: 16px 16px;
+		grid-template-columns: 1.2fr 1fr;
+		grid-row-gap: 7px;
+		grid-template-areas:
+			'text1 text1'
+			'text2 type';
+	}
 
-    &__body-text1, &__body-text2, &__body-type {
-        @include skeleton;
-    }
+	&__body-text1,
+	&__body-text2,
+	&__body-type {
+		@include skeleton;
+	}
 
-    &__body-text1 {
-        grid-area: text1;
-    }
+	&__body-text1 {
+		grid-area: text1;
+	}
 
-    &__body-text2 {
-        grid-area: text2;
-    }
+	&__body-text2 {
+		grid-area: text2;
+	}
 
-    &__body-type {
-        justify-self: end;
-        grid-area: type;
-        width: 55px;
-    }
+	&__body-type {
+		justify-self: end;
+		grid-area: type;
+		width: 55px;
+	}
 }
 
 .messages-window-header {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    overflow: hidden;
-    justify-content: space-between;
+	height: 100%;
+	width: 100%;
+	display: flex;
+	overflow: hidden;
+	justify-content: space-between;
 
-    &__group {
-        display: flex;
-        align-items: center;
-    }
+	&__group {
+		display: flex;
+		align-items: center;
+	}
 
-    &__title {
-        font-size: 16px;
-        line-height: 27px;
-        font-weight: 600;
-        color: $primaryTextColor;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        flex-grow: 0;
-        padding-right: 10px;
-    }
+	&__title {
+		font-size: 16px;
+		line-height: 27px;
+		font-weight: 600;
+		color: $primaryTextColor;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		flex-grow: 0;
+		padding-right: 10px;
+	}
 
-    &__steps {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        min-width: 50px;
-        flex-shrink: 0;
-    }
+	&__steps {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		min-width: 50px;
+		flex-shrink: 0;
+	}
 
-    &__button {
-        cursor: pointer;
-        transform-origin: center;
+	&__button {
+		cursor: pointer;
+		transform-origin: center;
 
-        &:first-child{
-            @include icon(url(../../resources/icons/arr1-left-enabled.svg), 20px, 20px);
-            transform: rotate(90deg);
-            order: 1;
-        }
+		&:first-child {
+			@include icon(url(../../resources/icons/arr1-left-enabled.svg), 20px, 20px);
+			transform: rotate(90deg);
+			order: 1;
+		}
 
-        &:nth-child(2){
-            @include icon(url(../../resources/icons/arr1-left-enabled.svg), 20px, 20px);
-            transform: rotate(270deg);
-            order: 3;
-        }
+		&:nth-child(2) {
+			@include icon(url(../../resources/icons/arr1-left-enabled.svg), 20px, 20px);
+			transform: rotate(270deg);
+			order: 3;
+		}
 
-        &.disabled {
-            opacity: 0.4;
-            cursor: default;
-        }
-    }
+		&.disabled {
+			opacity: 0.4;
+			cursor: default;
+		}
+	}
 
-    &__steps-count {
-        font-size: 14px;
-        line-height: 19px;
-        color: $ml-gray-color;
-        font-weight: 600;
-        margin: 0 22px;
-        order: 2;
-        color: $primaryTextColor;
-    }
+	&__steps-count {
+		font-size: 14px;
+		line-height: 19px;
+		color: $ml-gray-color;
+		font-weight: 600;
+		margin: 0 22px;
+		order: 2;
+		color: $primaryTextColor;
+	}
 }
 
 .messages-tab {
-    width: 20%;
-    max-width: 200px;
-    flex-grow: 2;
-    flex-shrink: 0;
+	width: 20%;
+	max-width: 200px;
+	flex-grow: 2;
+	flex-shrink: 0;
 
-    &__count {
-        box-sizing: border-box;
-        display: inline-block;
-        width: auto;
-        height: 20px;
-        border-radius: 10px;
-        border: 2px solid $secondaryLightTextColor;
-        color: $secondaryLightTextColor;
-        font-size: 11px;
-        text-align: center;
-        line-height: 16px;
-        background-color: white;
-        padding: 0 5px;
-        margin-left: 4px;
-    }
+	&__count {
+		box-sizing: border-box;
+		display: inline-block;
+		width: auto;
+		height: 20px;
+		border-radius: 10px;
+		border: 2px solid $secondaryLightTextColor;
+		color: $secondaryLightTextColor;
+		font-size: 11px;
+		text-align: center;
+		line-height: 16px;
+		background-color: white;
+		padding: 0 5px;
+		margin-left: 4px;
+	}
 
-    &__wrapper {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        overflow: hidden;
-        margin: auto;
-        padding: 0 8px;
-    }
+	&__wrapper {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		overflow: hidden;
+		margin: auto;
+		padding: 0 8px;
+	}
 
-    &__title {
-        text-overflow: ellipsis;
-        overflow: hidden;
-    }
+	&__title {
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
 
-    &__count-list {
-        display: flex;
-        align-items: center;
-        flex-shrink: 0;
-    }
+	&__count-list {
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
+	}
 
-    &__event-list {
-        padding: 7px 20px 5px 12px;
-    }
+	&__event-list {
+		padding: 7px 20px 5px 12px;
+	}
 
-    &__event-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 5px;
+	&__event-row {
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: 5px;
 
-        &:last-child {
-            margin-bottom: 0;
-        }
-    }
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
 
-    &__event-title {
-        @include status-text;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        max-width: 300px;
-    }
+	&__event-title {
+		@include status-text;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		max-width: 300px;
+	}
 }
 
 .error-message {
-    height: 100px;
-    border: 2px solid $errorMsgBackgroundColor;
-    color:  $errorMsgBackgroundColor;
-    border-radius: 5px;
-    padding: 20px 15px;
+	height: 100px;
+	border: 2px solid $errorMsgBackgroundColor;
+	color: $errorMsgBackgroundColor;
+	border-radius: 5px;
+	padding: 20px 15px;
 }

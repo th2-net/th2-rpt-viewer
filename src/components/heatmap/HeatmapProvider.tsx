@@ -14,9 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-
 import React, { useEffect, useState } from 'react';
-import { getHeatmapElements, getHeatmapRange, DEFAULT_PIN_COLOR } from '../../helpers/heatmapCreator';
+import {
+	getHeatmapElements,
+	getHeatmapRange,
+	DEFAULT_PIN_COLOR,
+} from '../../helpers/heatmapCreator';
 import { HeatmapElement, ListRange } from '../../models/Heatmap';
 import { HeatmapContext } from '../../contexts/heatmapContext';
 
@@ -54,24 +57,14 @@ export const HeatmapProvider = ({
 	const [visibleRange, setVisibleRange] = useState<ListRange | null>(null);
 
 	useEffect(() => {
-		const updatedHeatmap = getHeatmapElements(
-			items,
-			selectedItems,
-			pinnedItems,
-		);
+		const updatedHeatmap = getHeatmapElements(items, selectedItems, pinnedItems);
 
 		setHeatmapElements(updatedHeatmap);
 		setFullRange(getHeatmapRange(updatedHeatmap));
 	}, [items, selectedItems]);
 
 	useEffect(() => {
-		setHeatmapElements(
-			getHeatmapElements(
-				items,
-				selectedItems,
-				pinnedItems,
-			),
-		);
+		setHeatmapElements(getHeatmapElements(items, selectedItems, pinnedItems));
 	}, [pinnedItems]);
 
 	useEffect(() => {
@@ -83,25 +76,27 @@ export const HeatmapProvider = ({
 
 	React.useEffect(() => {
 		if (
-			(visibleRange && fullRange)
-			&& (
-				(visibleRange.startIndex + 1) < fullRange.startIndex
-				|| (visibleRange.endIndex - 1) > fullRange.endIndex
-			)
+			visibleRange &&
+			fullRange &&
+			(visibleRange.startIndex + 1 < fullRange.startIndex ||
+				visibleRange.endIndex - 1 > fullRange.endIndex)
 		) {
 			setFullRange(getHeatmapRange(heatmapElements, true));
 		}
 	}, [visibleRange]);
 
-	return <HeatmapContext.Provider value={{
-		visibleRange,
-		setVisibleRange,
-		fullRange,
-		setFullRange,
-		heatmapElements,
-		setHeatmapElements,
-		unknownAreas: unknownAreasHeatmapElements,
-	}}>
-		{children}
-	</HeatmapContext.Provider>;
+	return (
+		<HeatmapContext.Provider
+			value={{
+				visibleRange,
+				setVisibleRange,
+				fullRange,
+				setFullRange,
+				heatmapElements,
+				setHeatmapElements,
+				unknownAreas: unknownAreasHeatmapElements,
+			}}>
+			{children}
+		</HeatmapContext.Provider>
+	);
 };

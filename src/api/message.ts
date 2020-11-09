@@ -29,18 +29,12 @@ const messageHttpApi: MessageApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
-	getMessages: async ({
-		idsOnly = true,
-		messageId = '',
-		timelineDirection = 'next',
-		limit = 100,
-	}, filter: MessagesFilter, abortSignal?: AbortSignal) => {
-		const {
-			timestampFrom,
-			timestampTo,
-			streams,
-			messageTypes,
-		} = filter;
+	getMessages: async (
+		{ idsOnly = true, messageId = '', timelineDirection = 'next', limit = 100 },
+		filter: MessagesFilter,
+		abortSignal?: AbortSignal,
+	) => {
+		const { timestampFrom, timestampTo, streams, messageTypes } = filter;
 
 		const params = createURLSearchParams({
 			idsOnly,
@@ -92,12 +86,7 @@ const messageHttpApi: MessageApiSchema = {
 		console.error(res.statusText);
 		return null;
 	},
-	getMessagesByFilter: async ({
-		timestampFrom,
-		timestampTo,
-		streams,
-		messageTypes,
-	}) => {
+	getMessagesByFilter: async ({ timestampFrom, timestampTo, streams, messageTypes }) => {
 		const params = createURLSearchParams({
 			timestampFrom,
 			timestampTo,

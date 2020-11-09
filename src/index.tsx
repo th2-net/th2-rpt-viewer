@@ -23,14 +23,14 @@ import 'core-js/features/array/flat';
 import App from './components/App';
 import ErrorBoundary from './components/util/ErrorBoundary';
 import StoresProvider from './components/StoresProvider';
-import registerFetchInterceptors from './helpers/fetch-intercept';
+import { registerFetchInterceptor } from './helpers/fetch-intercept';
 
-registerFetchInterceptors();
+registerFetchInterceptor();
 
 ReactDOM.render(
 	<ErrorBoundary>
 		<StoresProvider>
-			<App/>
+			<App />
 		</StoresProvider>
 	</ErrorBoundary>,
 	document.getElementById('index'),

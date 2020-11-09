@@ -16,7 +16,8 @@
 
 /**
  * This function can be used to save target function call results, it use Map to save it.
- * It's something like 'upgraded' memoization function - it saves results of each call, not only the last one.
+ * It's something like 'upgraded' memoization function - it saves results of each call
+ * not only the last one.
  * The key in Map is calculating using target function parameters through key mapper funcitons.
  * @param fn target function
  * @param keyMappers optional key mapper for each target fn argument
@@ -31,7 +32,9 @@ export default function memoize<T extends unknown[], R>(
 
 	return (...args: T) => {
 		const key = args.reduce(
-			(k, arg, index) => `${k}-${keyMappers[index] ? keyMappers[index](arg) : (arg as any).toString()}`, '',
+			(k, arg, index) =>
+				`${k}-${keyMappers[index] ? keyMappers[index](arg) : (arg as any).toString()}`,
+			'',
 		) as string;
 
 		if (callResultsMap.has(key)) {

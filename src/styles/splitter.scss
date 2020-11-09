@@ -14,127 +14,129 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import "./common/vars";
+@import './common/vars';
 
 .splitter {
-    width: 100%;
-    height: 100%;
-    display: grid;
-    // Default values. Will be overwritten by style at SplitView component.
-    grid-template-columns: calc(50% - 13px) $splitterBarWidth calc(50% - 13px);
-    grid-template-rows: 100%;
-    grid-template-areas: "left-pane splitter-bar right-pane";
-    position: relative;
+	width: 100%;
+	height: 100%;
+	display: grid;
+	// Default values. Will be overwritten by style at SplitView component.
+	grid-template-columns: calc(50% - 13px) $splitterBarWidth calc(50% - 13px);
+	grid-template-rows: 100%;
+	grid-template-areas: 'left-pane splitter-bar right-pane';
+	position: relative;
 
-    &.dragging {
-        @include unselectable;
-    }
+	&.dragging {
+		@include unselectable;
+	}
 
-    &-bar {
-        grid-area: splitter-bar;
-        height: 100%;
-        width: $splitterBarWidth;
-        cursor: col-resize;
-        position: relative;
+	&-bar {
+		grid-area: splitter-bar;
+		height: 100%;
+		width: $splitterBarWidth;
+		cursor: col-resize;
+		position: relative;
 
-        &-button {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 30px;
-            height: 20px;
-            background-color: $splitterColor;
-            opacity: 0.5;
-            border-radius: 14px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
+		&-button {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 30px;
+			height: 20px;
+			background-color: $splitterColor;
+			opacity: 0.5;
+			border-radius: 14px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			z-index: 10;
+		}
 
-        &-icon {
-            height: 20px;
-            width: 20px;
-            background-size: 100%;
-            background-image: url('../../resources/icons/splitter-icon.svg');
-        }
+		&-icon {
+			height: 20px;
+			width: 20px;
+			background-size: 100%;
+			background-image: url('../../resources/icons/splitter-icon.svg');
+		}
 
-        &.dragging {
-            grid-area: initial;
-            position: absolute;
-            z-index: 2;
-        }
+		&.dragging {
+			grid-area: initial;
+			position: absolute;
+			z-index: 2;
+		}
 
-        &:hover:after {
-            content: "";
-            height: 100%;
-            width: 0;
-            border: 1.5px solid $splitterColor;
-            position: absolute;
-            left: 14px;
-            border-radius: 5px;
-            background-color: $splitterColor;
-        }
-    }
+		&:hover:after {
+			content: '';
+			height: 100%;
+			width: 0;
+			border: 1.5px solid $splitterColor;
+			position: absolute;
+			left: 14px;
+			border-radius: 5px;
+			background-color: $splitterColor;
+		}
+	}
 
-    &-preview {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 1;
+	&-preview {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 1;
 
-        display: grid;
-        grid-template-columns: calc(50% - 13px) $splitterBarWidth calc(50% - 13px);
-        grid-template-areas: "left-preview _ right-preview";
+		display: grid;
+		grid-template-columns: calc(50% - 13px) $splitterBarWidth calc(50% - 13px);
+		grid-template-areas: 'left-preview _ right-preview';
 
-        &-left {
-            grid-area: left-preview;
-        }
+		&-left {
+			grid-area: left-preview;
+		}
 
-        &-right {
-            grid-area: right-preview;
-        }
+		&-right {
+			grid-area: right-preview;
+		}
 
-        &-left, &-right {
-            background-color: #000000;
-            border-radius: 5px;
-            opacity: 0.1;
-        }
-    }
+		&-left,
+		&-right {
+			background-color: #000000;
+			border-radius: 5px;
+			opacity: 0.1;
+		}
+	}
 
-    &-pane {
-        &-left {
-            grid-area: left-pane;
-        }
+	&-pane {
+		&-left {
+			grid-area: left-pane;
+		}
 
-        &-right {
-            grid-area: right-pane;
-        }
+		&-right {
+			grid-area: right-pane;
+		}
 
-        &-left, &-right {
-            height: 100%;
+		&-left,
+		&-right {
+			height: 100%;
 
-            &.dragging {
-                filter: opacity(0.3);
-            }
+			&.dragging {
+				filter: opacity(0.3);
+			}
 
-            &.hidden {
-                visibility: hidden;
-            }
-        }
-    }
+			&.hidden {
+				visibility: hidden;
+			}
+		}
+	}
 }
 
 .splitter-pane {
-    height: 100%;
-    display: flex;
+	height: 100%;
+	display: flex;
 
-    &__content {
-        width: 100%;
-        height: 100%;
-        position: relative;
-    }
+	&__content {
+		width: 100%;
+		height: 100%;
+		position: relative;
+	}
 }

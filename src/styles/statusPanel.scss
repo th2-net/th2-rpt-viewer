@@ -14,103 +14,103 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import "./common/vars";
+@import './common/vars';
 
 .status {
-    height: 100%;
+	height: 100%;
 
-    &-controls {
-        height: 50px;
-        display: flex;
-        flex-direction: row-reverse;
-        align-items: flex-end;
-        padding-right: 10px;
-    }
+	&-controls {
+		height: 50px;
+		display: flex;
+		flex-direction: row-reverse;
+		align-items: flex-end;
+		padding-right: 10px;
+	}
 
-    &-container {
-        @include scrollbar;
-        overflow-y: scroll;
-        height: 100%;
-        padding-top: 7px;
-    }
+	&-container {
+		@include scrollbar;
+		overflow-y: scroll;
+		height: 100%;
+		padding-top: 7px;
+	}
 
-    &-wrapper {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: center;
-        padding: 0 25px;
-    }
+	&-wrapper {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		align-items: center;
+		padding: 0 25px;
+	}
 
-    &-panel {
-        @include status-card;
-        width: 100%;
-        border: 2px solid var(--status-primary-border-color);
-        background-color: var(--status-secondary-background-color);
-        border-radius: 5px;
-        padding: 5px;
+	&-panel {
+		@include status-card;
+		width: 100%;
+		border: 2px solid var(--status-primary-border-color);
+		background-color: var(--status-secondary-background-color);
+		border-radius: 5px;
+		padding: 5px;
 
-        &-exception {
-            padding: 20px;
+		&-exception {
+			padding: 20px;
 
-            &-divider {
-                display: inline-block;
-                height: 24px;
-                width: 24px;
-                background-size: 24px;
-                background-image: url(../../resources/icons/arr4-up.svg);
-            }
+			&-divider {
+				display: inline-block;
+				height: 24px;
+				width: 24px;
+				background-size: 24px;
+				background-image: url(../../resources/icons/arr4-up.svg);
+			}
 
-            &-wrapper {
-                display: grid;
-                grid-template-columns: 1fr auto;
-            }
+			&-wrapper {
+				display: grid;
+				grid-template-columns: 1fr auto;
+			}
 
-            &-header {
-                word-break: break-all;
-                font-weight: bold;
+			&-header {
+				word-break: break-all;
+				font-weight: bold;
 
-                &-message {
-                    &.disabled {
-                        color: $secondaryTextColor;
-                    }
-                }
-            }
+				&-message {
+					&.disabled {
+						color: $secondaryTextColor;
+					}
+				}
+			}
 
-            &-expand {
-                padding-left: 5px;
-                display: flex;
-                align-items: start;
-                cursor: pointer;
-                font-size: 13px;
-                color: $primaryTextColor;
-    
-                &-title {
-                    @include unselectable;
-                    font-weight: bold;
-                }
-    
-                &-icon {
-                    margin-top: 2px;
-                    padding-left: 5px;
-                    
-                    &.expanded {
-                        @include icon(url(../../resources/icons/arr4-up.svg), 14px, 14px);
-                    }
-    
-                    &.hidden {
-                        @include icon(url(../../resources/icons/arr4-down.svg), 14px, 14px);
-                    }
-                }
-            }
+			&-expand {
+				padding-left: 5px;
+				display: flex;
+				align-items: start;
+				cursor: pointer;
+				font-size: 13px;
+				color: $primaryTextColor;
 
-            &-stacktrace {
-                @include scrollbar;
-                overflow-x: scroll;
-                overflow-y: hidden;
-                padding-top: 10px;
-            }
-        }
-    }
+				&-title {
+					@include unselectable;
+					font-weight: bold;
+				}
+
+				&-icon {
+					margin-top: 2px;
+					padding-left: 5px;
+
+					&.expanded {
+						@include icon(url(../../resources/icons/arr4-up.svg), 14px, 14px);
+					}
+
+					&.hidden {
+						@include icon(url(../../resources/icons/arr4-down.svg), 14px, 14px);
+					}
+				}
+			}
+
+			&-stacktrace {
+				@include scrollbar;
+				overflow-x: scroll;
+				overflow-y: hidden;
+				padding-top: 10px;
+			}
+		}
+	}
 }

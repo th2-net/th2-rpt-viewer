@@ -19,30 +19,31 @@ import { EventBodyPayload } from './EventActionPayload';
 
 export type EventTree = Array<EventTreeNode>;
 
-export interface EventTreeNode {
-    eventId: string;
-    eventName: string;
-    eventType: string;
-    startTimestamp: Timestamp;
-    endTimestamp?: Timestamp;
-    childList: Array<EventTreeNode>;
-    successful: boolean;
-    filtered: boolean;
+interface EventBase {
+	eventId: string;
+	eventName: string;
+	eventType: string;
+	startTimestamp: Timestamp;
+	endTimestamp?: Timestamp | null;
+	successful: boolean;
 }
 
-export interface EventAction {
-    eventId: string;
-    eventName: string;
-    eventType: string;
-    startTimestamp: Timestamp;
-    endTimestamp?: Timestamp;
-    childList: Array<EventTreeNode>;
-    successful: boolean;
-    attachedMessageIds: Array<string>;
-    batchId: null | string;
-    batched: boolean;
-    body: EventActionBody;
-    parentEventId: string;
+export interface EventTreeNode extends EventBase {
+	childList: Array<EventTreeNode>;
+	filtered: boolean;
+	parentId: string;
+	type: 'eventTreeNode';
+	parents?: string[];
+}
+
+export interface EventAction extends EventBase {
+	attachedMessageIds: Array<string>;
+	isBatched: boolean;
+	batchId: null | string;
+	batched: boolean;
+	body: EventActionBody;
+	parentEventId: string;
+	type: 'event';
 }
 
 export type EventActionBody = EventBodyPayload[];

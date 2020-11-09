@@ -64,20 +64,14 @@ export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
 			return;
 		}
 
-		const {
-			top,
-			bottom,
-			left,
-			right,
-			width,
-		} = root.getBoundingClientRect();
+		const { top, bottom, left, right, width } = root.getBoundingClientRect();
 
-		const isOverContent = clientXY.y >= (top + offsetTop) && clientXY.y <= bottom;
-		const isOverLeftSide = isOverContent && clientXY.x >= left && clientXY.x <= (left + width / 2);
+		const isOverContent = clientXY.y >= top + offsetTop && clientXY.y <= bottom;
+		const isOverLeftSide = isOverContent && clientXY.x >= left && clientXY.x <= left + width / 2;
 		const isOverRightSide = isOverContent && !isOverLeftSide;
 		const droppableAreaWidth = left + (droppableAreaPercent / 100) * width;
 		const canDropOnLeft = isOverLeftSide && clientXY.x <= left + droppableAreaWidth;
-		const canDropOnRight = isOverRightSide && (clientXY.x > right - droppableAreaWidth);
+		const canDropOnRight = isOverRightSide && clientXY.x > right - droppableAreaWidth;
 
 		if (!isOverContent) {
 			setHoverState(defaultHoverState);
@@ -115,19 +109,18 @@ export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
 	});
 
 	return (
-		<div ref={rootRef} className="with-side-drop-target__root">
+		<div ref={rootRef} className='with-side-drop-target__root'>
 			<div
 				ref={drop}
-				className="with-side-drop-target"
+				className='with-side-drop-target'
 				onMouseLeave={() => setHoverState(defaultHoverState)}>
 				<SideDropTarget
 					canDrop={hoverState.canDropOnLeft}
 					yCoord={hoverState.yCoord}
-					style={{ left: 0, right: undefined }}/>
+					style={{ left: 0, right: undefined }}
+				/>
 				{children}
-				<SideDropTarget
-					canDrop={hoverState.canDropOnRight}
-					yCoord={hoverState.yCoord}/>
+				<SideDropTarget canDrop={hoverState.canDropOnRight} yCoord={hoverState.yCoord} />
 			</div>
 		</div>
 	);
@@ -136,28 +129,27 @@ export const WithSideDropTargetsBase = (props: WithSideDropTargetsProps) => {
 export const withSideDropTargets = <P extends object>(
 	Component: React.ComponentType<P>,
 ): React.FC<P & WithSideDropTargetsProps> => (props: WithSideDropTargetsProps & P) => {
-		const {
-			leftDropAreaEnabled,
-			rightDropAreaEnabled,
-			onDropLeft,
-			onDropRight,
-			droppableAreaPercent,
-			offsetTop,
-			...restProps
-		} = props;
+	const {
+		leftDropAreaEnabled,
+		rightDropAreaEnabled,
+		onDropLeft,
+		onDropRight,
+		droppableAreaPercent,
+		offsetTop,
+		...restProps
+	} = props;
 
-		if (!leftDropAreaEnabled && !rightDropAreaEnabled) return <Component {...restProps as P} />;
+	if (!leftDropAreaEnabled && !rightDropAreaEnabled) return <Component {...(restProps as P)} />;
 
-		return (
-			<WithSideDropTargetsBase
-				leftDropAreaEnabled={leftDropAreaEnabled}
-				rightDropAreaEnabled={rightDropAreaEnabled}
-				onDropLeft={onDropLeft}
-				onDropRight={onDropRight}
-				droppableAreaPercent={droppableAreaPercent}
-				offsetTop={offsetTop}
-			>
-				<Component {...restProps as P}/>
-			</WithSideDropTargetsBase>
-		);
-	};
+	return (
+		<WithSideDropTargetsBase
+			leftDropAreaEnabled={leftDropAreaEnabled}
+			rightDropAreaEnabled={rightDropAreaEnabled}
+			onDropLeft={onDropLeft}
+			onDropRight={onDropRight}
+			droppableAreaPercent={droppableAreaPercent}
+			offsetTop={offsetTop}>
+			<Component {...(restProps as P)} />
+		</WithSideDropTargetsBase>
+	);
+};

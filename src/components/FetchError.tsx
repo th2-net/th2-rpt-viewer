@@ -19,7 +19,7 @@ import { copyTextToClipboard } from '../helpers/copyHandler';
 import { createStyleSelector } from '../helpers/styleCreators';
 import '../styles/fetch-error.scss';
 
-interface FetchErrorProps{
+interface FetchErrorProps {
 	resource?: string;
 	responseCode?: number;
 	responseBody?: string;
@@ -37,18 +37,16 @@ export default function FetchError(props: FetchErrorProps) {
 	};
 
 	return (
-		<div className="fetch-error">
-			<div className="fetch-error__top">
-				<p className="response-body">{responseBody}</p>
-				<p className="response-code">{responseCode}</p>
+		<div className='fetch-error'>
+			<div className='fetch-error__top'>
+				<p className='response-body'>{responseBody}</p>
+				<p className='response-code'>{responseCode}</p>
 			</div>
-			<div className="fetch-error__middle">{resource}</div>
-			<div className="fetch-error__bottom">
-				<button className="copy-details" disabled={copied} onClick={copy}>
-					{!copied && <span className="copy-details__icon"/>}
-					<span className={copyDetailsText}>
-						{copied ? 'Copied' : ' Copy details'}
-					</span>
+			<div className='fetch-error__middle'>{resource}</div>
+			<div className='fetch-error__bottom'>
+				<button className='copy-details' disabled={copied} onClick={copy}>
+					{!copied && <span className='copy-details__icon' />}
+					<span className={copyDetailsText}>{copied ? 'Copied' : ' Copy details'}</span>
 				</button>
 			</div>
 		</div>

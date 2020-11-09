@@ -17,59 +17,58 @@
 @import './common/vars';
 
 .toggle-button {
-    @include unselectable;
-    display: inline-flex;
-    height: 38px;
-    justify-content: center;
-    align-items: center;
-    margin: 0 3px;
-    border: 1.5px solid transparent;
-    border-radius: 7px;
-    font-size: 16px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 16px;
-    line-height: 22px;
-    padding: 0 16px;
+	@include unselectable;
+	display: inline-flex;
+	height: 38px;
+	justify-content: center;
+	align-items: center;
+	margin: 0 3px;
+	border: 1.5px solid transparent;
+	border-radius: 7px;
+	font-size: 16px;
+	cursor: pointer;
+	font-weight: 600;
+	font-size: 16px;
+	line-height: 22px;
+	padding: 0 16px;
 
-    &__title {
-        white-space: nowrap;
-        display: flex;
-        align-items: center;
-        height: 100%;
-    }
+	&__title {
+		white-space: nowrap;
+		display: flex;
+		align-items: center;
+		height: 100%;
+	}
 
-    &.toggled {
-        border-radius: 7px;
-    }
+	&.toggled {
+		border-radius: 7px;
+	}
 
-    &.disabled {
-        filter: opacity(0.4);
-        cursor: unset;
-    }
-    
+	&.disabled {
+		filter: opacity(0.4);
+		cursor: unset;
+	}
 
-    // themes for button
-    &.green {
-        background: $filterButtonDisabled;
-        border-color: $filterButtonDisabled;
-        height: 30px;
-        color: $filterButtonTextColor;
-        font-size: 14px;
+	// themes for button
+	&.green {
+		background: $filterButtonDisabled;
+		border-color: $filterButtonDisabled;
+		height: 30px;
+		color: $filterButtonTextColor;
+		font-size: 14px;
 
-        &.toggled {
-            background: $filterButtonEnabled;
-            border-color: $filterButtonEnabled;
-        }
-    }
+		&.toggled {
+			background: $filterButtonEnabled;
+			border-color: $filterButtonEnabled;
+		}
+	}
 
-    &.default {
-        background: $buttonDisabledBackground;
-        color: $primaryTextColor;
+	&.default {
+		background: $buttonDisabledBackground;
+		color: $primaryTextColor;
 
-        &.toggled {
-            border-color: black;
-            background: transparent;
-        }
-    }
+		&.toggled {
+			border-color: black;
+			background: transparent;
+		}
+	}
 }

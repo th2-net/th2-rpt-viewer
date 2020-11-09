@@ -23,6 +23,7 @@ import ParamsTable from './ParamsTable';
 import { extractParams } from '../../helpers/tables';
 import { EventBodyPayload, EventBodyPayloadType } from '../../models/EventActionPayload';
 import ErrorBoundary from '../util/ErrorBoundary';
+import { getEventStatus } from '../../helpers/event';
 
 interface Props {
 	body: EventBodyPayload;
@@ -33,21 +34,18 @@ export function EventBodyPayloadRenderer({ body, parentEvent }: Props) {
 	switch (body.type) {
 		case EventBodyPayloadType.MESSAGE:
 			return (
-				<ErrorBoundary fallback={<JSONBodyFallback body={body}/>}>
+				<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
 					<div style={{ overflowX: 'auto' }}>
-						<div key="message" className="event-detail-card__message">
+						<div key='message' className='event-detail-card__message'>
 							{body.data}
 						</div>
 					</div>
 				</ErrorBoundary>
-
 			);
 		case EventBodyPayloadType.TABLE:
 			return (
-				<ErrorBoundary fallback={<JSONBodyFallback body={body}/>}>
-					<CustomTable
-						content={body.rows}
-						key="table"/>
+				<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
+					<CustomTable content={body.rows} key='table' />
 				</ErrorBoundary>
 			);
 		case EventBodyPayloadType.VERIFICATION:
@@ -55,22 +53,21 @@ export function EventBodyPayloadRenderer({ body, parentEvent }: Props) {
 			const key = keyForVerification(parentEvent.parentEventId, parentEvent.eventId);
 
 			return (
-				<ErrorBoundary fallback={<JSONBodyFallback body={body}/>}>
+				<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
 					<div>
 						<VerificationTable
-							actionId={parentEvent.eventId as any}
-							messageId={parentEvent.attachedMessageIds[0] as any}
 							payload={body}
-							status={(parentEvent.successful ? 'PASSED' : 'FAILED') as any}
+							status={getEventStatus(parentEvent)}
 							keyPrefix={key}
-							stateKey={`${key}-nodes`}/>
+							stateKey={`${key}-nodes`}
+						/>
 					</div>
 				</ErrorBoundary>
 			);
 		case EventBodyPayloadType.TREE_TABLE:
 			// eslint-disable-next-line no-case-declarations
 			const { columns, rows } = extractParams(body);
-			return 	(
+			return (
 				<ErrorBoundary>
 					<div>
 						<ParamsTable
@@ -78,20 +75,20 @@ export function EventBodyPayloadRenderer({ body, parentEvent }: Props) {
 							rows={rows}
 							actionId={parentEvent.eventId as any}
 							stateKey={`${parentEvent.eventId}-input-params-nodes`}
-							name={parentEvent.eventName}/>
+							name={parentEvent.eventName}
+						/>
 					</div>
 				</ErrorBoundary>
 			);
 		default:
-			return <JSONBodyFallback body={body}/>;
+			return <JSONBodyFallback body={body} />;
 	}
 }
 
 export default function EventBodyCard({ parentEvent, body }: Props) {
 	return (
-		<ErrorBoundary
-			fallback={<JSONBodyFallback body={body}/>}>
-			<EventBodyPayloadRenderer body={body} parentEvent={parentEvent}/>
+		<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
+			<EventBodyPayloadRenderer body={body} parentEvent={parentEvent} />
 		</ErrorBoundary>
 	);
 }
@@ -99,19 +96,16 @@ export default function EventBodyCard({ parentEvent, body }: Props) {
 function JSONBodyFallback({ body }: { body: unknown }) {
 	if (!body) return null;
 
-	const content = typeof body === 'object' && body !== null && Object.keys(body).length > 0
-		? body
-		: null;
+	const content =
+		typeof body === 'object' && body !== null && Object.keys(body).length > 0 ? body : null;
 
 	if (!content) {
 		return null;
 	}
 
 	return (
-		<div className="event-body-fallback">
-			<pre>
-				{JSON.stringify(content, null, 4)}
-			</pre>
+		<div className='event-body-fallback'>
+			<pre>{JSON.stringify(content, null, 4)}</pre>
 		</div>
 	);
 }

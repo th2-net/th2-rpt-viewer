@@ -14,33 +14,33 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import "./common/vars";
+@import './common/vars';
 
 .options-select {
-    border-radius: 3px;
+	border-radius: 3px;
 
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    border: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	border: none;
 
-    font-family: Open Sans;
-    font-weight: bold;
-    color: $primaryTextColor;
+	font-family: Open Sans;
+	font-weight: bold;
+	color: $primaryTextColor;
 
-    background: {
-        image:  url(../../resources/icons/arr1-down.svg);
-        color: #E6E6E6;
-        repeat: no-repeat;
-        size: 15px;
-        position-x: 95%;
-        position-y: 50%;
-    }
+	background: {
+		image: url(../../resources/icons/arr1-down.svg);
+		color: #e6e6e6;
+		repeat: no-repeat;
+		size: 15px;
+		position-x: 95%;
+		position-y: 50%;
+	}
 
-    padding: 0 15px 0 5px;
+	padding: 0 15px 0 5px;
 
-    & option {
-        font-weight: bold;
-        height: 30px;
-    }
+	& option {
+		font-weight: bold;
+		height: 30px;
+	}
 }

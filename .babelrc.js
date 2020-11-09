@@ -14,30 +14,34 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { useEffect, useRef } from 'react';
-
-export function useDebouncedCallback<A extends unknown[]>(
-	callback: (...args: A) => void,
-	wait: number,
-) {
-	const argsRef = useRef<A>();
-	const timeout = useRef<ReturnType<typeof setTimeout>>();
-
-	function cleanup() {
-		if (timeout.current) {
-			clearTimeout(timeout.current);
-		}
-	}
-
-	useEffect(() => cleanup, []);
-
-	return function debouncedCallback(...args: A) {
-		argsRef.current = args;
-		cleanup();
-		timeout.current = setTimeout(() => {
-			if (argsRef.current) {
-				callback(...argsRef.current);
-			}
-		}, wait);
-	};
-}
+module.exports = {
+	presets: [
+		['@babel/env', { targets: '> 0.25%', modules: false }],
+		'@babel/preset-typescript',
+		'@babel/preset-react',
+	],
+	plugins: [
+		['@babel/plugin-proposal-decorators', { legacy: true }],
+		['@babel/proposal-class-properties', { legacy: true }],
+		'react-hot-loader/babel',
+		[
+			'const-enum',
+			{
+				transform: 'constObject',
+			},
+		],
+		'@babel/plugin-proposal-numeric-separator',
+		'@babel/plugin-proposal-nullish-coalescing-operator',
+		'@babel/plugin-proposal-optional-chaining',
+		'@babel/plugin-proposal-optional-catch-binding',
+	],
+	env: {
+		production: {
+			presets: ['minify'],
+			plugins: ['react-remove-properties', { properties: ['data-testid'] }],
+		},
+		test: {
+			presets: ['@babel/preset-env', '@babel/preset-react'],
+		},
+	},
+};

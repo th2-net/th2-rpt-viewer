@@ -18,8 +18,8 @@ import * as React from 'react';
 import '../styles/root.scss';
 
 const SplashScreen = () => (
-	<div className="splash-screen">
-		<div className="splash-screen__spinner"/>
+	<div className='splash-screen'>
+		<div className='splash-screen__spinner' />
 	</div>
 );
 

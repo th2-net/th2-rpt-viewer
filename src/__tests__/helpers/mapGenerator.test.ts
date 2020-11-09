@@ -27,7 +27,10 @@ describe('[Helpers] Actions map generator', () => {
 
 		const resultActionsMap = generateActionsMap(actions);
 
-		const expectedActionsMap = new Map<number, Action>([[1, firstAction], [2, secondAction]]);
+		const expectedActionsMap = new Map<number, Action>([
+			[1, firstAction],
+			[2, secondAction],
+		]);
 
 		expect(resultActionsMap).toEqual(expectedActionsMap);
 	});

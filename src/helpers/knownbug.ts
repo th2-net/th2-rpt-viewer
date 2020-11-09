@@ -18,11 +18,14 @@ import KnownBug, { isKnownBug, KnownBugNode } from '../models/KnownBug';
 import { isKnownBugCategory } from '../models/KnownBugCategory';
 
 export interface CategoryChainBugs {
-    categoriesChain: string[];
-    categoryBugs: KnownBug[];
+	categoriesChain: string[];
+	categoryBugs: KnownBug[];
 }
 
-export function getCategoryBugChains(nodes: KnownBugNode[], prevChain: string[] = []): CategoryChainBugs[] {
+export function getCategoryBugChains(
+	nodes: KnownBugNode[],
+	prevChain: string[] = [],
+): CategoryChainBugs[] {
 	const current: CategoryChainBugs = {
 		categoriesChain: prevChain,
 		categoryBugs: nodes.filter(isKnownBug),
@@ -32,8 +35,9 @@ export function getCategoryBugChains(nodes: KnownBugNode[], prevChain: string[] 
 		.filter(isKnownBugCategory)
 		.flatMap(cat => getCategoryBugChains(cat.subNodes, [...prevChain, cat.name as string]));
 
-	const resultNodes = [current, ...subNodesChains]
-		.filter(({ categoryBugs }) => categoryBugs.length > 0);
+	const resultNodes = [current, ...subNodesChains].filter(
+		({ categoryBugs }) => categoryBugs.length > 0,
+	);
 
 	const categoriesMap = new Map<string, CategoryChainBugs>();
 

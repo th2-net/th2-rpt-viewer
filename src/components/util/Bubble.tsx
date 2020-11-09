@@ -22,16 +22,16 @@ import '../../styles/bubble.scss';
 import KeyCodes from '../../util/KeyCodes';
 
 interface Props {
-    className?: string;
-    size?: 'small' | 'medium' | 'large';
-    style?: React.CSSProperties;
-    removeIconType?: 'default' | 'white';
-    value: string;
-    isValid?: boolean;
-    autocompleteVariants?: string[] | null;
-    submitKeyCodes?: number[];
-    onSubmit?: (nextValue: string) => void;
-    onRemove: () => void;
+	className?: string;
+	size?: 'small' | 'medium' | 'large';
+	style?: React.CSSProperties;
+	removeIconType?: 'default' | 'white';
+	value: string;
+	isValid?: boolean;
+	autocompleteVariants?: string[] | null;
+	submitKeyCodes?: number[];
+	onSubmit?: (nextValue: string) => void;
+	onRemove: () => void;
 }
 
 export default function Bubble(props: Props) {
@@ -53,7 +53,7 @@ export default function Bubble(props: Props) {
 
 	React.useEffect(() => {
 		if (isEditing) {
-            inputRef.current?.select();
+			inputRef.current?.select();
 		}
 	}, [isEditing]);
 
@@ -81,17 +81,9 @@ export default function Bubble(props: Props) {
 		setIsEditing(false);
 	};
 
-	const rootClass = createBemBlock(
-		'bubble',
-		size,
-		!isValid && !isEditing ? 'invalid' : null,
-	);
+	const rootClass = createBemBlock('bubble', size, !isValid && !isEditing ? 'invalid' : null);
 
-	const iconClass = createBemElement(
-		'bubble',
-		'remove-icon',
-		removeIconType,
-	);
+	const iconClass = createBemElement('bubble', 'remove-icon', removeIconType);
 
 	return (
 		<div
@@ -99,28 +91,26 @@ export default function Bubble(props: Props) {
 			style={style}
 			onBlur={onBlur}
 			onClick={rootOnClick}>
-			{
-				isEditing ? (
-					<AutocompleteInput
-						ref={inputRef}
-						className="bubble__input"
-						value={value}
-						onSubmit={inputOnSubmit}
-						onRemove={onRemove}
-						onEmptyBlur={onRemove}
-						autocomplete={autocompleteVariants as string[]}
-						datalistKey="bubble-autocomplete"
-						submitKeyCodes={submitKeyCodes}
-					/>
-				) : (
-					<React.Fragment>
-						{value}
-						<div className="bubble__remove">
-							<div className={iconClass} onClick={stopPropagationHandler(onRemove)}/>
-						</div>
-					</React.Fragment>
-				)
-			}
+			{isEditing ? (
+				<AutocompleteInput
+					ref={inputRef}
+					className='bubble__input'
+					value={value}
+					onSubmit={inputOnSubmit}
+					onRemove={onRemove}
+					onEmptyBlur={onRemove}
+					autocomplete={autocompleteVariants as string[]}
+					datalistKey='bubble-autocomplete'
+					submitKeyCodes={submitKeyCodes}
+				/>
+			) : (
+				<React.Fragment>
+					{value}
+					<div className='bubble__remove'>
+						<div className={iconClass} onClick={stopPropagationHandler(onRemove)} />
+					</div>
+				</React.Fragment>
+			)}
 		</div>
 	);
 }

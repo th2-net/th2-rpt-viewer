@@ -42,18 +42,14 @@ function SkeletonedMessageCardListItem({ id }: Props) {
 	}, []);
 
 	if (isError) {
-		return <ErrorMessageFallback errorMessage={`Error occurred while fetching message ${id}`}/>;
+		return <ErrorMessageFallback errorMessage={`Error occurred while fetching message ${id}`} />;
 	}
 
 	if (!message) {
-		return <MessageCardSkeleton/>;
+		return <MessageCardSkeleton />;
 	}
 
-	return (
-		<MessageCard
-			key={message.messageId}
-			message={message}/>
-	);
+	return <MessageCard key={message.messageId} message={message} />;
 }
 
 export default observer(SkeletonedMessageCardListItem);

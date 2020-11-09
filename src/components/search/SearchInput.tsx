@@ -29,27 +29,21 @@ import '../../styles/search.scss';
 export const REACTIVE_SEARCH_DELAY = 500;
 const INPUT_PLACEHOLDER = 'Separate words with a space to find multiple words';
 
-export const COLORS = [
-	'#E69900',
-	'#FF5500',
-	'#1F66AD',
-	'#45A155',
-	'#987DB3',
-];
+export const COLORS = ['#E69900', '#FF5500', '#1F66AD', '#45A155', '#987DB3'];
 
 interface StateProps {
-    searchTokens: SearchToken[];
-    currentIndex: number | null;
-    resultsCount: number;
+	searchTokens: SearchToken[];
+	currentIndex: number | null;
+	resultsCount: number;
 	isLoading: boolean;
 	isActive: boolean;
 	value: string;
 }
 
 interface DispatchProps {
-    updateSearchTokens: (searchValues: SearchToken[]) => void;
-    nextSearchResult: () => void;
-    prevSearchResult: () => void;
+	updateSearchTokens: (searchValues: SearchToken[]) => void;
+	nextSearchResult: () => void;
+	prevSearchResult: () => void;
 	clear: () => void;
 	setIsActive: (isActive: boolean) => void;
 	setValue: (value: string) => void;
@@ -88,103 +82,95 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 	render() {
 		const {
-			currentIndex, resultsCount, prevSearchResult, nextSearchResult, searchTokens, isLoading, isActive, value,
+			currentIndex,
+			resultsCount,
+			prevSearchResult,
+			nextSearchResult,
+			searchTokens,
+			isLoading,
+			isActive,
+			value,
 		} = this.props;
 
 		const notActiveTokens = searchTokens.filter(searchToken => !searchToken.isActive);
-		const activeTokens = searchTokens.find((searchToken => searchToken.isActive));
+		const activeTokens = searchTokens.find(searchToken => searchToken.isActive);
 
 		const showControls = resultsCount > 0;
 
-		const wrapperClassName = createBemBlock(
-			'search-field-wrapper',
-			isActive ? 'active' : null,
-		);
-		const rootClassName = createBemBlock(
-			'search-field',
-			isActive ? 'active' : null,
-		);
+		const wrapperClassName = createBemBlock('search-field-wrapper', isActive ? 'active' : null);
+		const rootClassName = createBemBlock('search-field', isActive ? 'active' : null);
 
 		return (
 			<div className={wrapperClassName}>
-				<div className={rootClassName}
-					ref={this.root}
-					onClick={this.rootOnClick}>
-					{
-						isActive ? (
-							<React.Fragment>
-								<div className="search-field__child-wrapper">
-									{
-										notActiveTokens.map(({ color, pattern }, index) => (
-											<Bubble
-												key={index}
-												className="search-bubble"
-												size="small"
-												removeIconType="white"
-												submitKeyCodes={[KeyCodes.ENTER, KeyCodes.SPACE]}
-												value={pattern}
-												style={{ backgroundColor: color, color: '#FFF' }}
-												onSubmit={this.bubbleOnChangeFor(index)}
-												onRemove={this.bubbleOnRemoveFor(index)}/>
-										))
+				<div className={rootClassName} ref={this.root} onClick={this.rootOnClick}>
+					{isActive ? (
+						<React.Fragment>
+							<div className='search-field__child-wrapper'>
+								{notActiveTokens.map(({ color, pattern }, index) => (
+									<Bubble
+										key={index}
+										className='search-bubble'
+										size='small'
+										removeIconType='white'
+										submitKeyCodes={[KeyCodes.ENTER, KeyCodes.SPACE]}
+										value={pattern}
+										style={{ backgroundColor: color, color: '#FFF' }}
+										onSubmit={this.bubbleOnChangeFor(index)}
+										onRemove={this.bubbleOnRemoveFor(index)}
+									/>
+								))}
+								<AutosizeInput
+									inputClassName='search-field__input'
+									className='search-field__input-wrapper'
+									inputRef={ref => (this.inputElement.current = ref)}
+									inputStyle={
+										value.length > 0
+											? {
+													backgroundColor: activeTokens?.color ?? this.getNextColor(),
+													color: '#FFF',
+											  }
+											: undefined
 									}
-									<AutosizeInput
-										inputClassName="search-field__input"
-										className="search-field__input-wrapper"
-										inputRef={ref => this.inputElement.current = ref}
-										inputStyle={
-											value.length > 0 ? {
-												backgroundColor: activeTokens?.color ?? this.getNextColor(),
-												color: '#FFF',
-											} : undefined
-										}
-										placeholder={
-											notActiveTokens.length < 1 && value.length < 1
-												? INPUT_PLACEHOLDER : undefined
-										}
-										type="text"
-										spellCheck={false}
-										value={value}
-										onChange={this.inputOnChange}
-										onKeyDown={this.onKeyDown}
-										autoFocus={true}/>
+									placeholder={
+										notActiveTokens.length < 1 && value.length < 1 ? INPUT_PLACEHOLDER : undefined
+									}
+									type='text'
+									spellCheck={false}
+									value={value}
+									onChange={this.inputOnChange}
+									onKeyDown={this.onKeyDown}
+									autoFocus={true}
+								/>
+							</div>
+							{isLoading ? (
+								<div className='search-field__loader' />
+							) : showControls ? (
+								<span className='search-field__counter'>
+									{currentIndex !== null ? currentIndex + 1 : 0} of {resultsCount}
+								</span>
+							) : null}
+							{showControls && !isLoading ? (
+								<div className='search-controls'>
+									<div className='search-controls__prev' onClick={prevSearchResult} />
+									<div className='search-controls__next' onClick={nextSearchResult} />
+									<div className='search-controls__clear' onClick={this.clear} />
 								</div>
-								{
-									isLoading ? (
-										<div className="search-field__loader"/>
-									) : showControls ? (
-										<span className="search-field__counter">
-											{currentIndex !== null ? currentIndex + 1 : 0} of {resultsCount}
-										</span>
-									) : null
-								}
-								{
-									showControls && !isLoading ? (
-										<div className="search-controls">
-											<div className="search-controls__prev"
-												onClick={prevSearchResult}/>
-											<div className="search-controls__next"
-												onClick={nextSearchResult}/>
-											<div className="search-controls__clear"
-												onClick={this.clear}/>
-										</div>
-									) : null
-								}
-							</React.Fragment>
-						) : (
-							<div className="search-field__icon"/>
-						)
-					}
+							) : null}
+						</React.Fragment>
+					) : (
+						<div className='search-field__icon' />
+					)}
 				</div>
 			</div>
 		);
 	}
 
 	private documentOnClick = (e: MouseEvent) => {
-		if (!this.root.current?.contains(e.target as HTMLElement)
-			&& this.props.isActive
-			&& this.props.searchTokens.length < 1
-			&& this.props.value.length < 1
+		if (
+			!this.root.current?.contains(e.target as HTMLElement) &&
+			this.props.isActive &&
+			this.props.searchTokens.length < 1 &&
+			this.props.value.length < 1
 		) {
 			this.blur();
 		}
@@ -212,7 +198,11 @@ export class SearchInputBase extends React.PureComponent<Props> {
 			return;
 		}
 
-		if (e.keyCode === KeyCodes.BACKSPACE && this.props.value === '' && this.props.searchTokens.length > 0) {
+		if (
+			e.keyCode === KeyCodes.BACKSPACE &&
+			this.props.value === '' &&
+			this.props.searchTokens.length > 0
+		) {
 			// we should check is the last item active or not and remove it
 			const nextTokens = this.props.searchTokens[this.props.searchTokens.length - 1].isActive
 				? this.props.searchTokens.slice(0, -1)
@@ -221,10 +211,13 @@ export class SearchInputBase extends React.PureComponent<Props> {
 			if (nextTokens.length > 0) {
 				const [lastItem, ...restItems] = nextTokens.reverse();
 
-				this.props.updateSearchTokens([...restItems.reverse(), {
-					...lastItem,
-					isActive: true,
-				}]);
+				this.props.updateSearchTokens([
+					...restItems.reverse(),
+					{
+						...lastItem,
+						isActive: true,
+					},
+				]);
 				this.props.setValue(lastItem.pattern);
 			} else {
 				this.props.updateSearchTokens([]);
@@ -242,11 +235,14 @@ export class SearchInputBase extends React.PureComponent<Props> {
 			const [lastItem, ...restItems] = [...this.props.searchTokens].reverse();
 
 			if (lastItem?.isActive) {
-				this.props.updateSearchTokens([...restItems.reverse(), {
-					...lastItem,
-					isActive: false,
-					pattern: e.currentTarget.value,
-				}]);
+				this.props.updateSearchTokens([
+					...restItems.reverse(),
+					{
+						...lastItem,
+						isActive: false,
+						pattern: e.currentTarget.value,
+					},
+				]);
 			} else {
 				this.props.updateSearchTokens([
 					...this.props.searchTokens,
@@ -291,11 +287,13 @@ export class SearchInputBase extends React.PureComponent<Props> {
 				const activeItem = this.props.searchTokens.find(({ isActive }) => isActive);
 
 				if (activeItem != null) {
-					this.props.updateSearchTokens(replaceByIndex(
-						this.props.searchTokens,
-						this.props.searchTokens.indexOf(activeItem),
-						this.createToken(this.props.value, activeItem.color),
-					));
+					this.props.updateSearchTokens(
+						replaceByIndex(
+							this.props.searchTokens,
+							this.props.searchTokens.indexOf(activeItem),
+							this.createToken(this.props.value, activeItem.color),
+						),
+					);
 					return;
 				}
 
@@ -308,11 +306,13 @@ export class SearchInputBase extends React.PureComponent<Props> {
 	};
 
 	private bubbleOnChangeFor = (index: number) => (nextValue: string) => {
-		this.props.updateSearchTokens(replaceByIndex(
-			this.props.searchTokens,
-			index,
-			this.createToken(nextValue, this.props.searchTokens[index].color, false),
-		));
+		this.props.updateSearchTokens(
+			replaceByIndex(
+				this.props.searchTokens,
+				index,
+				this.createToken(nextValue, this.props.searchTokens[index].color, false),
+			),
+		);
 	};
 
 	private bubbleOnRemoveFor = (index: number) => () => {
@@ -325,17 +325,15 @@ export class SearchInputBase extends React.PureComponent<Props> {
 	};
 
 	private createToken(value: string, color?: string, isActive = true): SearchToken {
-		return createSearchToken(
-			value.trim(),
-			color ?? this.getNextColor(),
-			true,
-			isActive,
-		);
+		return createSearchToken(value.trim(), color ?? this.getNextColor(), true, isActive);
 	}
 
 	private getNextColor(): string {
 		return this.props.searchTokens.length > 0
-			? nextCyclicItem(COLORS, this.props.searchTokens[this.props.searchTokens.length - 1].color) as string
+			? (nextCyclicItem(
+					COLORS,
+					this.props.searchTokens[this.props.searchTokens.length - 1].color,
+			  ) as string)
 			: COLORS[0];
 	}
 }
@@ -346,7 +344,7 @@ const SearchInput = () => {
 	return (
 		<SearchInputBase
 			isActive={searchStore.isActive}
-			setIsActive={(isActive: boolean) => searchStore.isActive = isActive}
+			setIsActive={(isActive: boolean) => (searchStore.isActive = isActive)}
 			searchTokens={searchStore.tokens}
 			resultsCount={searchStore.results.length}
 			currentIndex={searchStore.scrolledIndex}
@@ -356,7 +354,8 @@ const SearchInput = () => {
 			prevSearchResult={searchStore.prevSearchResult}
 			clear={searchStore.clear}
 			value={searchStore.inputValue}
-			setValue={searchStore.setInputValue} />
+			setValue={searchStore.setInputValue}
+		/>
 	);
 };
 

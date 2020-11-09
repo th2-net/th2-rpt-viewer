@@ -18,7 +18,7 @@ import * as React from 'react';
 import '../../styles/tables.scss';
 
 interface CustomTableProps {
-	content: {[key: string]: string | number | null | undefined}[];
+	content: { [key: string]: string | number | null | undefined }[];
 }
 
 export function CustomTable({ content }: CustomTableProps) {
@@ -29,23 +29,26 @@ export function CustomTable({ content }: CustomTableProps) {
 	const headers = Object.keys(content[0]);
 
 	return (
-		<div className="user-table">
-			<table style={{
-				gridTemplateColumns: `repeat(${headers.length}, minmax(150px, 250px))`,
-			}}>
+		<div className='user-table'>
+			<table
+				style={{
+					gridTemplateColumns: `repeat(${headers.length}, minmax(150px, 250px))`,
+				}}>
 				<thead>
 					<tr>
-						{headers.map(header => <th key={header}>{header}</th>)}
+						{headers.map(header => (
+							<th key={header}>{header}</th>
+						))}
 					</tr>
 				</thead>
 				<tbody>
-					{
-						content.map((row, index) => (
-							<tr key={index}>
-								{headers.map(cell => <td key={row[cell] ?? index}>{row[cell]}</td>)}
-							</tr>
-						))
-					}
+					{content.map((row, index) => (
+						<tr key={index}>
+							{headers.map(cell => (
+								<td key={row[cell] ?? index}>{row[cell]}</td>
+							))}
+						</tr>
+					))}
 				</tbody>
 			</table>
 		</div>

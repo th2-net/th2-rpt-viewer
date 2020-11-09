@@ -19,56 +19,54 @@ import { observer } from 'mobx-react-lite';
 import PanelArea from '../../../util/PanelArea';
 import EventCardHeader from '../EventCardHeader';
 import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
-import { EventIdNode } from '../../../stores/EventsStore';
 import EventCardSkeleton from '../EventCardSkeleton';
+import { EventTreeNode } from '../../../models/EventAction';
 import ExpandIcon from '../../ExpandIcon';
+import { getEventNodeParents } from '../../../helpers/event';
 import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import CardDisplayType from '../../../util/CardDisplayType';
 import '../../../styles/expandablePanel.scss';
 
 interface EventTreeProps {
-	idNode: EventIdNode;
+	eventTreeNode: EventTreeNode;
 }
 
-function EventTree({ idNode }: EventTreeProps) {
+function EventTree({ eventTreeNode }: EventTreeProps) {
 	const eventWindowStore = useEventWindowStore();
 	const viewStore = useEventWindowViewStore();
 
-	const { event } = idNode;
-	const onExpandClick = () => eventWindowStore.toggleNode(idNode);
+	const onExpandClick = () => eventWindowStore.toggleNode(eventTreeNode);
 
 	let expandIconStatus: 'expanded' | 'hidden' | 'loading' | 'none';
 
-	if (idNode.children == null) {
-		expandIconStatus = 'loading';
-	} else if (idNode.children.length === 0) {
+	if (eventTreeNode.childList.length === 0) {
 		expandIconStatus = 'none';
-	} else if (idNode.isExpanded) {
+	} else if (eventWindowStore.isExpandedMap.get(eventTreeNode.eventId)) {
 		expandIconStatus = 'expanded';
 	} else {
 		expandIconStatus = 'hidden';
 	}
 
+	const nestingLevel =
+		(viewStore.panelArea === PanelArea.P25 ? 20 : 35) * getEventNodeParents(eventTreeNode).length;
 	return (
-		<div className="event-tree-card"
-			 style={{ paddingLeft: (viewStore.panelArea === PanelArea.P25 ? 20 : 35) * idNode.parents.length }}>
+		<div className='event-tree-card' style={{ paddingLeft: nestingLevel }}>
 			<ExpandIcon
 				status={expandIconStatus}
-				className="event-card__children-icon"
-				onClick={onExpandClick}/>
-			{
-				event ? (
-					<EventCardHeader
-						isRoot={idNode.parents.length === 0}
-						childrenCount={idNode.children?.length}
-						event={event}
-						displayType={CardDisplayType.MINIMAL}
-						onSelect={() => eventWindowStore.selectNode(idNode)}
-						isSelected={eventWindowStore.isNodeSelected(idNode)}/>
-				) : (
-					<EventCardSkeleton/>
-				)
-			}
+				className='event-card__children-icon'
+				onClick={onExpandClick}
+			/>
+			{eventTreeNode ? (
+				<EventCardHeader
+					childrenCount={eventTreeNode.childList.length}
+					event={eventTreeNode}
+					displayType={CardDisplayType.MINIMAL}
+					onSelect={() => eventWindowStore.selectNode(eventTreeNode)}
+					isSelected={eventWindowStore.isNodeSelected(eventTreeNode)}
+				/>
+			) : (
+				<EventCardSkeleton />
+			)}
 		</div>
 	);
 }

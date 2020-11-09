@@ -25,39 +25,47 @@ import Log from './Log';
 import KnownBug from './KnownBug';
 
 export enum ActionNodeType {
-    ACTION = 'action',
-    VERIFICATION = 'verification',
-    CUSTOM_MESSAGE = 'customMessage',
-    LINK = 'link',
-    TABLE = 'table',
-    KNOWN_BUG = 'bug',
-    KNOWN_BUG_CATEGORY = 'category',
-    LOG = 'logEntry',
-    MESSAGE = 'message'
+	ACTION = 'action',
+	VERIFICATION = 'verification',
+	CUSTOM_MESSAGE = 'customMessage',
+	LINK = 'link',
+	TABLE = 'table',
+	KNOWN_BUG = 'bug',
+	KNOWN_BUG_CATEGORY = 'category',
+	LOG = 'logEntry',
+	MESSAGE = 'message',
 }
 
-export type ActionNode = Action | UserMessage | Verification | Link | UserTable | Message | Log | KnownBug;
+export type ActionNode =
+	| Action
+	| UserMessage
+	| Verification
+	| Link
+	| UserTable
+	| Message
+	| Log
+	| KnownBug;
 
 export default interface Action {
-    id: number;
-    matrixId?: string;
-    serviceName?: string;
-    actionNodeType: ActionNodeType.ACTION;
-    bugs: unknown[];
-    name: string;
-    messageType: string;
-    description: string;
-    parameters: ActionParameter[];
-    relatedMessages: number[];
-    logs?: unknown;
-    startTime: string;
-    finishTime: string;
-    status: Status;
-    subNodes: ActionNode[];
-    checkPointId?: number;
-    outcome?: string;
-    verificationCount: number;
-    isTruncated: boolean;
+	id: number;
+	matrixId?: string;
+	serviceName?: string;
+	actionNodeType: ActionNodeType.ACTION;
+	bugs: unknown[];
+	name: string;
+	messageType: string;
+	description: string;
+	parameters: ActionParameter[];
+	relatedMessages: number[];
+	logs?: unknown;
+	startTime: string;
+	finishTime: string;
+	status: Status;
+	subNodes: ActionNode[];
+	checkPointId?: number;
+	outcome?: string;
+	verificationCount: number;
+	isTruncated: boolean;
 }
 
 export function isAction(action: ActionNode): action is Action {

@@ -17,8 +17,8 @@ import Timestamp from './Timestamp';
 import MessageBody from './MessageBody';
 
 export interface EventMessage {
-    type: string;
-    messageType: string;
+	type: string;
+	messageType: string;
 	messageId: string;
 	timestamp: Timestamp;
 	direction: string;

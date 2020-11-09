@@ -16,7 +16,11 @@
 
 import SearchResult from './SearchResult';
 
-export function getParamsExpandPath(searchResults: SearchResult, index: number, actionId: number): number[] {
+export function getParamsExpandPath(
+	searchResults: SearchResult,
+	index: number,
+	actionId: number,
+): number[] {
 	const [currentKey] = searchResults.getByIndex(index);
 
 	if (!currentKey) {
@@ -32,7 +36,10 @@ export function getParamsExpandPath(searchResults: SearchResult, index: number, 
 }
 
 export function getVerificationExpandPath(
-	searchResults: SearchResult, index: number, actionId: number, msgId: number,
+	searchResults: SearchResult,
+	index: number,
+	actionId: number,
+	msgId: number,
 ): number[] {
 	const [currentKey] = searchResults.getByIndex(index);
 
@@ -42,8 +49,13 @@ export function getVerificationExpandPath(
 
 	const [resultType, resultId, actionType, resultMsgId, ...path] = currentKey.split('-');
 
-	if (resultType === 'action' && +resultId === actionId
-		&& actionType === 'verification' && +resultMsgId === msgId && path != null) {
+	if (
+		resultType === 'action' &&
+		+resultId === actionId &&
+		actionType === 'verification' &&
+		+resultMsgId === msgId &&
+		path != null
+	) {
 		return path.map(Number);
 	}
 	return [];

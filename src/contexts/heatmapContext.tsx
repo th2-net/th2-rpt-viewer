@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-
 import { createContext } from 'react';
 
 import { HeatmapElement, ListRange } from '../models/Heatmap';

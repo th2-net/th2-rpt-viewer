@@ -18,13 +18,13 @@ import { ActionNodeType, ActionNode } from './Action';
 import Exception from './Exception';
 
 export default interface Log {
-    actionNodeType: ActionNodeType.LOG;
-    timestamp: string;
-    level: 'ERROR' | 'WARN' | 'DEBUG' | 'INFO';
-    thread: string;
-    message: string;
-    exception?: Exception;
-    class: string;
+	actionNodeType: ActionNodeType.LOG;
+	timestamp: string;
+	level: 'ERROR' | 'WARN' | 'DEBUG' | 'INFO';
+	thread: string;
+	message: string;
+	exception?: Exception;
+	class: string;
 }
 
 export function isLog(action: ActionNode): action is Log {

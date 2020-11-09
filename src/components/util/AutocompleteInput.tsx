@@ -106,8 +106,8 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onFocus,
 		onBlur: e => {
 			if (
-				currentValue.trim().length > 0
-				&& (!onlyAutocompleteValues || autocomplete == null || autocomplete.includes(currentValue))
+				currentValue.trim().length > 0 &&
+				(!onlyAutocompleteValues || autocomplete == null || autocomplete.includes(currentValue))
 			) {
 				if (onEmptyBlur) {
 					onEmptyBlur();

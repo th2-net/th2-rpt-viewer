@@ -14,9 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	action, computed, observable, toJS, reaction, IReactionDisposer, runInAction,
-} from 'mobx';
+import { action, computed, observable, toJS, reaction, IReactionDisposer, runInAction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import FilterStore from './FilterStore';
 import { EventMessage } from '../models/EventMessage';
@@ -84,11 +82,7 @@ export default class MessagesStore {
 	@observable
 	public isBeginReached = false;
 
-	constructor(
-		private api: ApiSchema,
-		private windowsStore: WindowsStore,
-		store?: MessagesStore,
-	) {
+	constructor(private api: ApiSchema, private windowsStore: WindowsStore, store?: MessagesStore) {
 		if (store) {
 			this.copy(store);
 		}
@@ -99,15 +93,13 @@ export default class MessagesStore {
 			this.onAttachedMessagesIdsChange,
 		);
 
-		reaction(
-			() => this.filterStore.messagesFilter,
-			this.onFilterChange,
-		);
+		reaction(() => this.filterStore.messagesFilter, this.onFilterChange);
 
 		reaction(
 			() => this.attachedMessages,
 			attachedMessages => {
-				const streams = attachedMessages.map(m => m.sessionId)
+				const streams = attachedMessages
+					.map(m => m.sessionId)
 					.filter((stream, index, self) => self.indexOf(stream) === index);
 				if (streams.length) {
 					this.messagesLoadingState.loadingSelectedMessage = true;
@@ -156,16 +148,20 @@ export default class MessagesStore {
 
 	// selected messages includes both attached and pinned messages
 	@computed get selectedMessagesIds(): string[] {
-		const pinnedMessages = this.windowsStore.pinnedMessages
-			.filter(msg => this.messagesIds.includes(msg.messageId));
+		const pinnedMessages = this.windowsStore.pinnedMessages.filter(msg =>
+			this.messagesIds.includes(msg.messageId),
+		);
 
-		const messages = [...this.attachedMessages, ...pinnedMessages]
-			.filter((message, index, self) => self.findIndex(m => m.messageId === message.messageId) === index);
+		const messages = [...this.attachedMessages, ...pinnedMessages].filter(
+			(message, index, self) => self.findIndex(m => m.messageId === message.messageId) === index,
+		);
 
 		const sortedMessages = sortMessagesByTimestamp(messages);
 
 		if (this.filterStore.isMessagesFilterApplied) {
-			return sortedMessages.filter(m => this.messagesIds.includes(m.messageId)).map(m => m.messageId);
+			return sortedMessages
+				.filter(m => this.messagesIds.includes(m.messageId))
+				.map(m => m.messageId);
 		}
 
 		return sortedMessages.map(m => m.messageId);
@@ -173,22 +169,34 @@ export default class MessagesStore {
 
 	@action
 	public selectNextMessage = () => {
-		if (!this.selectedMessageId || !this.selectedMessagesIds.includes(this.selectedMessageId.valueOf())) {
+		if (
+			!this.selectedMessageId ||
+			!this.selectedMessagesIds.includes(this.selectedMessageId.valueOf())
+		) {
 			this.selectedMessageId = this.selectedMessagesIds[0];
 			return;
 		}
-		const nextMessageId = nextCyclicItem(this.selectedMessagesIds, this.selectedMessageId.valueOf());
+		const nextMessageId = nextCyclicItem(
+			this.selectedMessagesIds,
+			this.selectedMessageId.valueOf(),
+		);
 
 		if (nextMessageId) this.selectedMessageId = nextMessageId;
 	};
 
 	@action
 	public selectPrevMessage = () => {
-		if (!this.selectedMessageId || !this.selectedMessagesIds.includes(this.selectedMessageId.valueOf())) {
+		if (
+			!this.selectedMessageId ||
+			!this.selectedMessagesIds.includes(this.selectedMessageId.valueOf())
+		) {
 			this.selectedMessageId = this.selectedMessagesIds[this.selectedMessagesIds.length - 1];
 			return;
 		}
-		const prevMessageId = prevCyclicItem(this.selectedMessagesIds, this.selectedMessageId.valueOf());
+		const prevMessageId = prevCyclicItem(
+			this.selectedMessagesIds,
+			this.selectedMessageId.valueOf(),
+		);
 
 		if (prevMessageId) this.selectedMessageId = prevMessageId;
 	};
@@ -200,7 +208,7 @@ export default class MessagesStore {
 		limit = this.MESSAGES_CHUNK_SIZE,
 		loadBody = false,
 		abortSignal?: AbortSignal,
-	// eslint-disable-next-line consistent-return
+		// eslint-disable-next-line consistent-return
 	): Promise<string[] | undefined> => {
 		// streams are required to get messages
 		if (this.filterStore.messagesFilter.streams.length === 0) {
@@ -216,23 +224,31 @@ export default class MessagesStore {
 			let messagesIds: string[];
 
 			if (loadBody) {
-				const messages = await this.api.messages.getMessages({
-					messageId: originMessageId ?? '',
-					timelineDirection,
-					limit,
-					idsOnly: false,
-				}, this.filterStore.messagesFilter, abortSignal);
+				const messages = await this.api.messages.getMessages(
+					{
+						messageId: originMessageId ?? '',
+						timelineDirection,
+						limit,
+						idsOnly: false,
+					},
+					this.filterStore.messagesFilter,
+					abortSignal,
+				);
 				messagesIds = messages.map(msg => msg.messageId);
 				messages.forEach(msg => {
 					this.messagesCache.set(msg.messageId, msg);
 				});
 			} else {
-				messagesIds = await this.api.messages.getMessages({
-					messageId: originMessageId ?? '',
-					timelineDirection,
-					limit,
-					idsOnly: true,
-				}, this.filterStore.messagesFilter, abortSignal);
+				messagesIds = await this.api.messages.getMessages(
+					{
+						messageId: originMessageId ?? '',
+						timelineDirection,
+						limit,
+						idsOnly: true,
+					},
+					this.filterStore.messagesFilter,
+					abortSignal,
+				);
 			}
 
 			if (messagesIds.length === 0) {
@@ -248,8 +264,7 @@ export default class MessagesStore {
 				this.messagesIds = [];
 			}
 
-			const newMessagesIds = timelineDirection === 'next'
-				? messagesIds.reverse() : messagesIds;
+			const newMessagesIds = timelineDirection === 'next' ? messagesIds.reverse() : messagesIds;
 
 			if (newMessagesIds.length) {
 				// TODO: It's a temporary measure to build a timeline relatively to first
@@ -258,18 +273,12 @@ export default class MessagesStore {
 			}
 
 			if (timelineDirection === 'next') {
-				this.messagesIds = [
-					...newMessagesIds,
-					...this.messagesIds,
-				];
+				this.messagesIds = [...newMessagesIds, ...this.messagesIds];
 			} else {
 				if (originMessageId && !this.messagesIds.includes(originMessageId)) {
 					newMessagesIds.unshift(originMessageId);
 				}
-				this.messagesIds = [
-					...this.messagesIds,
-					...newMessagesIds,
-				];
+				this.messagesIds = [...this.messagesIds, ...newMessagesIds];
 			}
 
 			return messagesIds;
@@ -290,7 +299,7 @@ export default class MessagesStore {
 				this.messageSessions = messageSessions;
 			});
 		} catch (error) {
-			console.error('Couldn\'t fetch sessions');
+			console.error("Couldn't fetch sessions");
 		}
 	}
 
@@ -303,7 +312,7 @@ export default class MessagesStore {
 
 	@action
 	public loadPreviousMessages = () => {
-		if (this.isEndReached) return [] as any;
+		if (this.isEndReached) return Promise.resolve([]);
 		this.abortControllers.prevAC?.abort();
 		this.abortControllers.prevAC = new AbortController();
 
@@ -317,17 +326,16 @@ export default class MessagesStore {
 			this.MESSAGES_CHUNK_SIZE,
 			true,
 			this.abortControllers.prevAC.signal,
-		)
-			.then(messagesIds => {
-				this.messagesLoadingState.loadingPreviousItems = false;
-				this.abortControllers.prevAC = null;
-				return messagesIds;
-			});
+		).then(messagesIds => {
+			this.messagesLoadingState.loadingPreviousItems = false;
+			this.abortControllers.prevAC = null;
+			return messagesIds;
+		});
 	};
 
 	@action
 	public loadNextMessages = () => {
-		if (this.isBeginReached) return [] as any;
+		if (this.isBeginReached) return Promise.resolve([]);
 		this.abortControllers.nextAC?.abort();
 		this.abortControllers.nextAC = new AbortController();
 		this.messagesLoadingState.loadingNextItems = true;
@@ -337,16 +345,16 @@ export default class MessagesStore {
 			this.MESSAGES_CHUNK_SIZE,
 			true,
 			this.abortControllers.nextAC.signal,
-		)
-			.then(messagesIds => {
-				this.messagesLoadingState.loadingNextItems = false;
-				this.abortControllers.nextAC = null;
-				return messagesIds;
-			});
+		).then(messagesIds => {
+			this.messagesLoadingState.loadingNextItems = false;
+			this.abortControllers.nextAC = null;
+			return messagesIds;
+		});
 	};
 
 	public resetMessagesFilter = () => {
-		const streams = this.attachedMessages.map(m => m.sessionId)
+		const streams = this.attachedMessages
+			.map(m => m.sessionId)
 			.filter((stream, index, self) => self.indexOf(stream) === index);
 		this.filterStore.resetMessagesFilter(streams);
 	};
@@ -398,18 +406,21 @@ export default class MessagesStore {
 		this.isEndReached = false;
 		this.attachedMessagesAbortController?.abort();
 
-		const newlySelectedMessagesIds = attachedMessagesIds
-			.filter(id => this.attachedMessages.findIndex(m => m.messageId === id) === -1);
+		const newlySelectedMessagesIds = attachedMessagesIds.filter(
+			id => this.attachedMessages.findIndex(m => m.messageId === id) === -1,
+		);
 
-		const previouslySelectedMessages = this.attachedMessages.filter(m => attachedMessagesIds.includes(m.messageId));
+		const previouslySelectedMessages = this.attachedMessages.filter(m =>
+			attachedMessagesIds.includes(m.messageId),
+		);
 
 		try {
 			this.attachedMessagesAbortController = new AbortController();
 
 			const newlySelectedMessages = await Promise.all(
-				newlySelectedMessagesIds.map(id => this.api.messages.getMessage(
-					id, this.attachedMessagesAbortController?.signal,
-				)),
+				newlySelectedMessagesIds.map(id =>
+					this.api.messages.getMessage(id, this.attachedMessagesAbortController?.signal),
+				),
 			);
 
 			const messages = sortMessagesByTimestamp(
@@ -419,7 +430,8 @@ export default class MessagesStore {
 			this.attachedMessages = messages;
 
 			const messageId = messages.filter(m =>
-				this.windowsStore.lastSelectedEvent?.attachedMessageIds.includes(m.messageId))[0]?.messageId;
+				this.windowsStore.lastSelectedEvent?.attachedMessageIds.includes(m.messageId),
+			)[0]?.messageId;
 			if (messageId) {
 				this.selectedMessageId = new String(messageId);
 				return;
@@ -450,20 +462,24 @@ export default class MessagesStore {
 
 		let originMessageId: string | undefined = this.attachedMessages[0]?.messageId;
 
-		if (this.attachedMessages.length && (messagesFilter.timestampFrom || messagesFilter.timestampTo)) {
+		if (
+			this.attachedMessages.length &&
+			(messagesFilter.timestampFrom || messagesFilter.timestampTo)
+		) {
 			const from = messagesFilter.timestampFrom || new Date(1980).getTime();
-			const to = messagesFilter.timestampTo
-			|| new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
-			const firstMessage = this.attachedMessages.find(m =>
-				getTimestampAsNumber(m.timestamp) >= from && getTimestampAsNumber(m.timestamp) <= to);
+			const to =
+				messagesFilter.timestampTo ||
+				new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
+			const firstMessage = this.attachedMessages.find(
+				m => getTimestampAsNumber(m.timestamp) >= from && getTimestampAsNumber(m.timestamp) <= to,
+			);
 			originMessageId = firstMessage?.messageId;
 		}
 
-		this.getMessages('previous', originMessageId, this.MESSAGES_CHUNK_SIZE - 1)
-			.finally(() => {
-				this.messagesLoadingState.loadingRootItems = false;
-				this.abortControllers.rootAC = null;
-			});
+		this.getMessages('previous', originMessageId, this.MESSAGES_CHUNK_SIZE - 1).finally(() => {
+			this.messagesLoadingState.loadingRootItems = false;
+			this.abortControllers.rootAC = null;
+		});
 	};
 
 	@action
@@ -474,11 +490,15 @@ export default class MessagesStore {
 		this.detailedRawMessagesIds = toJS(store.detailedRawMessagesIds);
 		this.isLoading = store.isLoading.valueOf();
 		this.scrolledIndex = store.scrolledIndex?.valueOf() || null;
-		this.selectedMessageId = store.selectedMessageId ? new String(store.selectedMessageId.valueOf()) : null;
+		this.selectedMessageId = store.selectedMessageId
+			? new String(store.selectedMessageId.valueOf())
+			: null;
 		this.messagesLoadingState = toJS(store.messagesLoadingState);
 		this.attachedMessages = toJS(store.attachedMessages);
 		this.messageSessions = toJS(store.messageSessions);
-		this.filterStore = new FilterStore({ messagesFilter: toJS(store.filterStore.messagesFilter) });
+		this.filterStore = new FilterStore({
+			messagesFilter: toJS(store.filterStore.messagesFilter),
+		});
 		this.isEndReached = store.isEndReached.valueOf();
 		this.isBeginReached = store.isBeginReached.valueOf();
 	}
