@@ -41,6 +41,7 @@ export interface TablePayload {
 
 export interface TreeTablePayload {
 	type: EventBodyPayloadType.TREE_TABLE;
+	name?: string;
 	rows: {
 		[rowName: string]: TreeTableRow | TreeTableCollection;
 	};
