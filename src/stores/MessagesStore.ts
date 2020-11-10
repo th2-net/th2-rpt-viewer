@@ -109,6 +109,16 @@ export default class MessagesStore {
 		);
 
 		reaction(
+			() => this.filterStore.messagesFilter.streams,
+			streams => {
+				if (streams.length === 0) {
+					this.messagesIds = [];
+					this.messagesCache.clear();
+				}
+			},
+		);
+
+		reaction(
 			() => this.selectedMessageId,
 			selectedMessageId => selectedMessageId && this.scrollToMessage(selectedMessageId.valueOf()),
 		);
