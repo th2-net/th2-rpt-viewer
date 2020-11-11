@@ -74,7 +74,7 @@ export default class MessagesStore {
 	public selectedMessageId: String | null = null;
 
 	@observable
-	public messageSessions: string[] = [];
+	public messageSessions: string[] | null = null;
 
 	@observable
 	public isEndReached = false;
@@ -123,7 +123,9 @@ export default class MessagesStore {
 			selectedMessageId => selectedMessageId && this.scrollToMessage(selectedMessageId.valueOf()),
 		);
 
-		this.loadMessageSessions();
+		if (!store || (store && !store.messageSessions)) {
+			this.loadMessageSessions();
+		}
 	}
 
 	@action

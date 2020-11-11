@@ -82,7 +82,10 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		}
 
 		if (submitKeyCodes.includes(e.keyCode) && currentValue.length > 0) {
-			if (!onlyAutocompleteValues || autocomplete == null || autocomplete.includes(currentValue)) {
+			if (!onlyAutocompleteValues) {
+				onSubmit(currentValue);
+				setCurrentValue('');
+			} else if (autocomplete !== null && autocomplete.includes(currentValue)) {
 				onSubmit(currentValue);
 				setCurrentValue('');
 			}
@@ -105,20 +108,28 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onChange,
 		onFocus,
 		onBlur: e => {
-			if (
-				currentValue.trim().length > 0 &&
-				(!onlyAutocompleteValues || autocomplete == null || autocomplete.includes(currentValue))
-			) {
-				if (onEmptyBlur) {
-					onEmptyBlur();
+			if (currentValue.trim().length > 0) {
+				if (!onlyAutocompleteValues) {
+					if (onEmptyBlur) {
+						onEmptyBlur();
+					}
+				} else if (autocomplete !== null && autocomplete.includes(currentValue)) {
+					if (onEmptyBlur) {
+						onEmptyBlur();
+					}
+					onSubmit(currentValue);
 				}
-				onSubmit(currentValue);
 			}
 
 			setCurrentValue('');
 			onBlur(e);
 		},
 	};
+
+	const autocompleteList = React.useMemo(
+		() => autocomplete?.filter(variant => variant.indexOf(currentValue) === 0),
+		[currentValue],
+	);
 
 	return (
 		<React.Fragment>
@@ -138,9 +149,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			)}
 			{currentValue.length > 0 && (
 				<datalist id={datalistKey}>
-					{autocomplete?.map((variant, index) => (
-						<option key={index} value={variant} />
-					))}
+					{autocompleteList &&
+						autocompleteList.length <= 100 &&
+						autocompleteList?.map((variant, index) => <option key={index} value={variant} />)}
 				</datalist>
 			)}
 		</React.Fragment>
