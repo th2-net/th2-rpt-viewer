@@ -93,6 +93,7 @@ export default function MultipleStringFilterRow({
 						value={value}
 						onSubmit={valueBubbleOnChangeFor(index)}
 						onRemove={valueBubbleOnRemoveFor(index)}
+						isValid={config.autocompleteList ? config.autocompleteList.includes(value) : undefined}
 					/>
 				))}
 				{!isFocused && config.values.length === 0 ? (
@@ -114,6 +115,7 @@ export default function MultipleStringFilterRow({
 					onFocus={() => setIsFocused(true)}
 					onBlur={() => setIsFocused(false)}
 					inputStyle={{ width: '100%' }}
+					onlyAutocompleteValues={false}
 				/>
 			</div>
 		</div>

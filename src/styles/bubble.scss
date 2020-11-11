@@ -52,6 +52,13 @@
 		width: 16px;
 	}
 
+	&__attention-sign {
+		@include icon(url(../../resources/icons/attention-error.svg), 13px, 13px);
+
+		display: inline-block;
+		margin-right: 5px;
+	}
+
 	&__remove-icon {
 		@include round-button(url(../../resources/icons/cross-icon.svg), 16px);
 
@@ -88,6 +95,7 @@
 	}
 
 	&.invalid {
-		color: $failedTextColor;
+		color: $attentionTextColor;
+		background-color: $attentionBackgroundColor;
 	}
 }

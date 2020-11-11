@@ -105,7 +105,8 @@ export default function Bubble(props: Props) {
 				/>
 			) : (
 				<React.Fragment>
-					{value}
+					{!isValid && <i className='bubble__attention-sign' />}
+					<span className='bubble__value'>{value}</span>
 					<div className='bubble__remove'>
 						<div className={iconClass} onClick={stopPropagationHandler(onRemove)} />
 					</div>
