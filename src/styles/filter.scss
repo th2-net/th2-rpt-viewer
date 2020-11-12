@@ -404,19 +404,30 @@
 		flex-shrink: 0;
 	}
 
+	.filter-content {
+		@include scrollbar();
+		width: 100%;
+		overflow: auto;
+		margin: 0 10px;
+		border-radius: 3px;
+		&.active {
+			background: #ffffff;
+		}
+	}
+
 	&__multiple-values {
 		display: flex;
+		cursor: text;
 		align-items: center;
 		justify-content: flex-start;
-		width: 100%;
-		cursor: text;
+		min-width: 100%;
+		width: fit-content;
 		position: relative;
 		flex-wrap: wrap;
 		flex-grow: 1;
 		gap: 5px;
-
-		&.active {
-			background: #ffffff;
+		&.filter-row__input {
+			margin: 0;
 		}
 	}
 
