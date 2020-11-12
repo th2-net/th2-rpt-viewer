@@ -115,7 +115,6 @@ export default function MultipleStringFilterRow({
 					onFocus={() => setIsFocused(true)}
 					onBlur={() => setIsFocused(false)}
 					inputStyle={{ width: '100%' }}
-					onlyAutocompleteValues={false}
 				/>
 			</div>
 		</div>

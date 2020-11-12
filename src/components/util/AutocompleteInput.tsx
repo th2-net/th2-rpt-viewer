@@ -24,7 +24,6 @@ interface Props {
 	inputStyle?: React.CSSProperties;
 	value: string;
 	readonly?: boolean;
-	onlyAutocompleteValues?: boolean;
 	autoresize?: boolean;
 	autocomplete: string[] | null;
 	datalistKey?: string;
@@ -48,7 +47,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		autocomplete,
 		autoresize = true,
 		readonly = false,
-		onlyAutocompleteValues = true,
 		datalistKey,
 		className = '',
 		inputStyle = {},
@@ -67,12 +65,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	}, [value]);
 
 	const onChange: React.ChangeEventHandler<HTMLInputElement> = e => {
-		if (autocomplete?.includes(e.target.value)) {
-			onSubmit(e.target.value);
-			setCurrentValue('');
-		} else {
-			setCurrentValue(e.target.value);
-		}
+		setCurrentValue(e.target.value);
 	};
 
 	const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
@@ -82,13 +75,8 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		}
 
 		if (submitKeyCodes.includes(e.keyCode) && currentValue.length > 0) {
-			if (!onlyAutocompleteValues) {
-				onSubmit(currentValue);
-				setCurrentValue('');
-			} else if (autocomplete !== null && autocomplete.includes(currentValue)) {
-				onSubmit(currentValue);
-				setCurrentValue('');
-			}
+			onSubmit(currentValue);
+			setCurrentValue('');
 
 			return;
 		}
@@ -109,16 +97,10 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onFocus,
 		onBlur: e => {
 			if (currentValue.trim().length > 0) {
-				if (!onlyAutocompleteValues) {
-					if (onEmptyBlur) {
-						onEmptyBlur();
-					}
-				} else if (autocomplete !== null && autocomplete.includes(currentValue)) {
-					if (onEmptyBlur) {
-						onEmptyBlur();
-					}
-					onSubmit(currentValue);
+				if (onEmptyBlur) {
+					onEmptyBlur();
 				}
+				onSubmit(currentValue);
 			}
 
 			setCurrentValue('');
