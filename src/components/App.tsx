@@ -24,7 +24,7 @@ import Notifier from './Notifier';
 
 const App = () => (
 	<div className='root'>
-		<ToastProvider placement='top-right' components={{ Toast }}>
+		<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={0}>
 			<EventsLayout />
 			<Notifier />
 		</ToastProvider>

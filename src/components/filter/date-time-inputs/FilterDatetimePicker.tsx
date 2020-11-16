@@ -17,7 +17,6 @@
 import React from 'react';
 import Calendar from 'rc-calendar';
 import moment, { Moment } from 'moment';
-// eslint-disable-next-line import/no-unassigned-import
 import 'rc-calendar/assets/index.css';
 import { DateTimeInputType, TimeInputType } from '../../../models/filter/FilterInputs';
 import useOutsideClickListener from '../../../hooks/useOutsideClickListener';
@@ -37,7 +36,7 @@ const FilterDatetimePicker = ({ inputConfig, onClose, left, top }: FilterDatetim
 	const pickerRef = React.useRef<HTMLDivElement>(null);
 
 	useOutsideClickListener(pickerRef, (e: MouseEvent) => {
-		if (!pickerRef.current?.contains(e.target as Element)) {
+		if (e.target instanceof HTMLElement && !pickerRef.current?.contains(e.target)) {
 			onClose();
 		}
 	});
@@ -74,7 +73,7 @@ const FilterDatetimePicker = ({ inputConfig, onClose, left, top }: FilterDatetim
 		if (!calendarDate) return false;
 
 		const tomorrow = moment().utc().startOf('day').add(1, 'day');
-		return calendarDate.valueOf() > tomorrow.valueOf();
+		return calendarDate.valueOf() >= tomorrow.valueOf();
 	};
 
 	return (

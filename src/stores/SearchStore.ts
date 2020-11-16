@@ -99,6 +99,7 @@ export default class SearchStore {
 	@action
 	fetchTokenResults = async (tokenString: string) => {
 		const { timestampFrom, timestampTo } = this.eventsStore.filterStore.eventsFilter;
+
 		const rootEventsResults = await this.api.events.getEventsByName(
 			timestampFrom,
 			timestampTo,

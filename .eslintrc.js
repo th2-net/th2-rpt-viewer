@@ -81,7 +81,7 @@ module.exports = {
 		'@typescript-eslint/no-unused-expressions': ['error'],
 		'import/no-unassigned-import': [
 			'error',
-			{ allow: ['**/*.scss', 'core-js/**', 'regenerator-runtime/**'] },
+			{ allow: ['**/*.scss', 'core-js/**', 'regenerator-runtime/**', 'rc-calendar/assets/index.css'] },
 		],
 		'class-methods-use-this': 'off',
 		'no-new-wrappers': 'off',

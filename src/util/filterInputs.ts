@@ -57,8 +57,12 @@ export const TIME_INPUT_MASK = [
 	/\d/,
 ];
 
+export const INTERVAL_MASK = /^(\d+\.?\d*)?$/;
+
 export const DATE_PLACEHOLDER = 'YYYY-MM-DD';
 
 export const TIME_PLACEHOLDER = '00:00:00.000';
 
 export const DATE_TIME_PLACEHOLDER = `${DATE_PLACEHOLDER} ${TIME_PLACEHOLDER}`;
+
+export const INTERVAL_PLACEHOLDER = 'mm';

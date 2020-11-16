@@ -19,9 +19,9 @@ import { AppearanceTypes } from 'react-toast-notifications';
 
 export interface Notification {
 	type: AppearanceTypes;
-	url?: string;
-	status?: number;
-	statusText?: string;
+	resource: string;
+	responseBody: string;
+	responseCode: number;
 }
 
 class NotificationsStore {

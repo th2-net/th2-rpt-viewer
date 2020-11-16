@@ -14,101 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import Action, { ActionNode, ActionNodeType, isAction } from '../models/Action';
-import { StatusType } from '../models/Status';
-import { intersection } from './array';
-import { keyForAction, keyForVerification } from './keys';
-
-const ACTION_CHECKPOINT_NAME = 'Checkpoint';
-
-export function getActions(actionNodes: ActionNode[]): Action[] {
-	return actionNodes.filter(isAction);
-}
-
-export function isCheckpointAction(action: Action): boolean {
-	return action.parameters?.some(param => param.name === ACTION_CHECKPOINT_NAME);
-}
-
-export function getStatusChipDescription(status?: StatusType): string {
-	if (!status) {
-		return '';
-	}
-
-	const statusFormatted = status.toLowerCase().replace('_', ' ');
-	const statusCapitalized = statusFormatted.charAt(0).toUpperCase() + statusFormatted.slice(1);
-
-	return `${statusCapitalized} actions count. Click to select related ${statusFormatted} actions.`;
-}
-
 export function getMinifiedStatus(status: string): string {
 	return status
 		.split('_')
 		.map(str => str[0])
 		.join('')
 		.toUpperCase();
-}
-
-export function removeNonexistingRelatedMessages(
-	action: ActionNode,
-	messagesIds: number[],
-): ActionNode {
-	if (!isAction(action)) {
-		return action;
-	}
-
-	return {
-		...action,
-		relatedMessages: intersection(action.relatedMessages, messagesIds),
-		subNodes: action.subNodes.map(actn => removeNonexistingRelatedMessages(actn, messagesIds)),
-	};
-}
-
-export function getActionCheckpointName(action: Action): string {
-	if (action.parameters == null) {
-		return '';
-	}
-
-	const checkpointParam = action.parameters.find(param => param.name === 'Checkpoint');
-	const nameParam =
-		checkpointParam && checkpointParam.subParameters!.find(param => param.name === 'Name');
-	const name = nameParam != null ? nameParam.value : '';
-
-	return name!;
-}
-
-export function filterActionNode(
-	actionNode: ActionNode,
-	filterResults: string[],
-	parentActionId: number | null = null,
-): ActionNode | null {
-	switch (actionNode.actionNodeType) {
-		case ActionNodeType.ACTION: {
-			if (isCheckpointAction(actionNode)) {
-				return actionNode;
-			}
-
-			if (filterResults.includes(keyForAction(actionNode.id))) {
-				return {
-					...actionNode,
-					subNodes: actionNode.subNodes
-						?.map(subNode => filterActionNode(subNode, filterResults, actionNode.id))
-						.filter((node): node is ActionNode => node !== null),
-				};
-			}
-
-			return null;
-		}
-
-		case ActionNodeType.VERIFICATION: {
-			if (filterResults.includes(keyForVerification(parentActionId, actionNode.messageId))) {
-				return actionNode;
-			}
-
-			return null;
-		}
-
-		default: {
-			return actionNode;
-		}
-	}
 }

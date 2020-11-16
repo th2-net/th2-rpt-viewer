@@ -25,7 +25,7 @@ export default interface ApiSchema {
 }
 
 export interface EventApiSchema {
-	getEventTree: (filter?: EventsFilter) => Promise<EventTree>;
+	getEventTree: (filter: EventsFilter, signal?: AbortSignal) => Promise<EventTree>;
 	getEvent: (id: string, abortSignal?: AbortSignal) => Promise<EventAction>;
 	getEventsByName: (
 		timestampFrom: number,

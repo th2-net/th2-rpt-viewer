@@ -17,95 +17,81 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
-import { DATE_TIME_INPUT_MASK, DATE_TIME_PLACEHOLDER } from '../../util/filterInputs';
+import {
+	DATE_TIME_INPUT_MASK,
+	DATE_TIME_PLACEHOLDER,
+	INTERVAL_MASK,
+	INTERVAL_PLACEHOLDER,
+} from '../../util/filterInputs';
 import { DateTimeMask, FilterRowConfig, TimeInputType } from '../../models/filter/FilterInputs';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
-import { getTimeRange } from '../../helpers/date';
+import { getTimeWindow } from '../../helpers/date';
 
 const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWindowStore();
 	const { filterStore } = messagesStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);
-	const [timestampFrom, setTimestampFrom] = React.useState(
-		filterStore.messagesFilter.timestampFrom,
+	const [timestamp, setTimestamp] = React.useState<number | null>(
+		filterStore.messagesFilter.timestamp,
 	);
-	const [timestampTo, setTimestampTo] = React.useState(filterStore.messagesFilter.timestampTo);
+	const [timeInterval, setTimeInterval] = React.useState<number | null>(
+		filterStore.messagesFilter.timeInterval,
+	);
 	const [currentStream, setCurrentStream] = React.useState('');
 	const [streams, setStreams] = React.useState<Array<string>>([]);
 	const [currentMessageType, setCurrentMessageType] = React.useState('');
 	const [messageTypes, setMessagesTypes] = React.useState<Array<string>>([]);
 
 	React.useEffect(() => {
-		setTimestampFrom(filterStore.messagesFilter.timestampFrom);
-		setTimestampTo(filterStore.messagesFilter.timestampTo);
+		setTimestamp(filterStore.messagesFilter.timestamp);
+		setTimeInterval(filterStore.messagesFilter.timeInterval);
 		setStreams(filterStore.messagesFilter.streams);
 		setMessagesTypes(filterStore.messagesFilter.messageTypes);
 	}, [filterStore.messagesFilter, filterStore.messagesFilter.streams]);
 
 	const submitChanges = () => {
-		if (timestampFrom && timestampTo && timestampFrom > timestampTo) {
-			// eslint-disable-next-line no-alert
-			window.alert('Invalid messagesFilter filter');
-			return;
-		}
+		const { timestampFrom, timestampTo } = getTimeWindow(timestamp, timeInterval);
 
 		messagesStore.filterStore.setMessagesFilter({
-			timestampFrom,
-			timestampTo,
+			timestamp,
+			timeInterval,
 			streams,
 			messageTypes,
+			timestampFrom,
+			timestampTo,
 		});
 	};
 
 	const clearAllFilters = () => messagesStore.resetMessagesFilter();
 
-	const getTimeShortcutHandler = (minutesOffset: number) => () => {
-		const { from, to } = getTimeRange(minutesOffset);
-		setTimestampFrom(from);
-		setTimestampTo(to);
-	};
-
 	const filterConfig: FilterRowConfig[] = [
 		{
-			type: 'datetime-range',
-			id: 'messages-datetime',
-			label: 'Messages from',
+			type: 'time-window',
+			id: 'messages-time-window',
+			label: 'Messages timestamp',
 			inputs: [
 				{
-					label: 'Messages from',
-					value: timestampFrom,
-					setValue: setTimestampFrom,
+					label: 'Timestamp',
+					value: timestamp,
+					setValue: setTimestamp,
 					type: TimeInputType.DATE_TIME,
-					id: 'messages-from',
+					id: 'messages-timestamp',
 					inputMask: DATE_TIME_INPUT_MASK,
 					dateMask: DateTimeMask.DATE_TIME_MASK,
 					placeholder: DATE_TIME_PLACEHOLDER,
 					labelClassName: 'filter-row__label',
 				},
 				{
-					label: 'to',
-					value: timestampTo,
-					setValue: setTimestampTo,
-					type: TimeInputType.DATE_TIME,
-					id: 'messages-to',
-					inputMask: DATE_TIME_INPUT_MASK,
-					dateMask: DateTimeMask.DATE_TIME_MASK,
-					placeholder: DATE_TIME_PLACEHOLDER,
-				},
-			],
-			timeShortcuts: [
-				{
-					label: 'Last 15 minutes',
-					onClick: getTimeShortcutHandler(15),
-				},
-				{
-					label: 'Last hour',
-					onClick: getTimeShortcutHandler(60),
-				},
-				{
-					label: 'Today',
-					onClick: getTimeShortcutHandler(24 * 60),
+					label: 'Time interval',
+					value: timeInterval,
+					setValue: setTimeInterval,
+					type: TimeInputType.INTERVAL,
+					id: 'messages-interval',
+					inputMask: INTERVAL_MASK,
+					placeholder: INTERVAL_PLACEHOLDER,
+					inputClassName: 'time-interval',
+					labelClassName: 'filter-row__label',
 				},
 			],
 		},

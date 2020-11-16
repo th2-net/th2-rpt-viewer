@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 export type FilterRowConfig =
-	| FilterRowDatetimeRangeConfig
+	| FilterRowTimeWindowConfig
 	| FilterRowStringConfig
 	| FilterRowMultipleStringsConfig;
 
@@ -23,6 +23,7 @@ export enum DateTimeMask {
 	TIME_MASK = 'HH:mm:ss.SSS',
 	DATE_MASK = 'YYYY-MM-DD',
 	DATE_TIME_MASK = 'YYYY-MM-DD HH:mm:ss.SSS',
+	INTERVAL_MASK = 'mm',
 }
 
 export type TimeShortcut = {
@@ -43,10 +44,23 @@ export type DateTimeInputType = {
 	labelClassName?: string;
 };
 
+export type IntervalInputType = {
+	label?: string;
+	value: number | null;
+	setValue: (nextValue: number) => void;
+	type: TimeInputType;
+	id: string;
+	inputMask: RegExp;
+	placeholder: string;
+	inputClassName?: string;
+	labelClassName?: string;
+};
+
 export enum TimeInputType {
 	DATE_TIME,
 	DATE,
 	TIME,
+	INTERVAL,
 }
 
 export type FilterRowBaseConfig = {
@@ -54,13 +68,9 @@ export type FilterRowBaseConfig = {
 	label: string;
 };
 
-export type FilterRowDatetimeRangeConfig = FilterRowBaseConfig & {
-	type: 'datetime-range';
-	inputs: Array<DateTimeInputType>;
-	timeShortcuts: Array<{
-		label: string;
-		onClick: () => void;
-	}>;
+export type FilterRowTimeWindowConfig = FilterRowBaseConfig & {
+	type: 'time-window';
+	inputs: Array<DateTimeInputType | IntervalInputType>;
 };
 
 export type FilterRowStringConfig = FilterRowBaseConfig & {

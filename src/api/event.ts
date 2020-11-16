@@ -18,30 +18,25 @@ import { EventApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 
 const eventHttpApi: EventApiSchema = {
-	getEventTree: async filter => {
-		if (!filter?.timestampFrom || !filter.timestampTo) {
+	getEventTree: async (filter, signal?) => {
+		if (!filter.timestampFrom || !filter.timestampTo) {
 			throw new Error('timestamps are required to fetch events');
 		}
 
 		const params = createURLSearchParams({
 			timestampFrom: filter.timestampFrom,
 			timestampTo: filter.timestampTo,
+			name: filter.names,
+			type: filter.eventTypes,
 		});
 
-		if (filter.names.length > 0) {
-			filter.names.forEach(name => params.append('name', name));
-		}
-		if (filter.eventTypes.length > 0) {
-			filter.eventTypes.forEach(type => params.append('type', type));
-		}
-
-		const res = await fetch(`backend/search/events?${params}`);
+		const res = await fetch(`backend/search/events?${params}`, { signal });
 
 		if (res.ok) {
 			return res.json();
 		}
-		console.error(res.statusText);
 
+		console.error(res.statusText);
 		throw new Error("Couldn't fetch event tree");
 	},
 	getEvent: async (id, signal?) => {
@@ -59,9 +54,10 @@ const eventHttpApi: EventApiSchema = {
 			name,
 			timestampFrom,
 			timestampTo,
+			flat: true,
 		});
 
-		const path = `backend/search/events?${params}&flat=true`;
+		const path = `backend/search/events?${params}`;
 		const res = await fetch(path);
 
 		if (res.ok) {

@@ -15,34 +15,28 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { StatusType } from '../models/Status';
-import { getStatusChipDescription } from '../helpers/action';
 import { createStyleSelector } from '../helpers/styleCreators';
 import '../styles/chip.scss';
 
 interface Props {
 	text: string | number;
 	title?: string;
-	status?: StatusType;
 	isSelected?: boolean;
 	isLoading?: boolean;
 	onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
-export function Chip({ status, text, isSelected, onClick, title, isLoading }: Props) {
+export function Chip(props: Props) {
+	const { text, isSelected, onClick, title, isLoading } = props;
 	const rootClass = createStyleSelector(
 		'chip',
-		status || null,
 		isSelected ? 'selected' : null,
 		onClick ? 'clickable' : null,
 		isLoading ? 'loading' : null,
 	);
 
 	return (
-		<div
-			className={rootClass}
-			title={title ?? getStatusChipDescription(status)}
-			onClick={e => onClick && onClick(e)}>
+		<div className={rootClass} title={title} onClick={e => onClick && onClick(e)}>
 			<div className='chip__title'>
 				<p>{text}</p>
 			</div>

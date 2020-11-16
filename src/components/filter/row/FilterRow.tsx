@@ -17,8 +17,8 @@
 import * as React from 'react';
 import { FilterRowConfig } from '../../../models/filter/FilterInputs';
 import StringFilterRow from './StringRow';
-import DatetimeFilterRow from './DatetimeFilterRow';
 import MultipleStringFilterRow from './MultipleStringFIlterRow';
+import TimeWindow from './TimeWindow';
 
 interface Props {
 	rowConfig: FilterRowConfig;
@@ -26,8 +26,8 @@ interface Props {
 
 export default function FilterRow({ rowConfig }: Props) {
 	switch (rowConfig.type) {
-		case 'datetime-range':
-			return <DatetimeFilterRow config={rowConfig} />;
+		case 'time-window':
+			return <TimeWindow config={rowConfig} />;
 		case 'string':
 			return <StringFilterRow config={rowConfig} />;
 		case 'multiple-strings':
