@@ -61,12 +61,20 @@ const MessagesWindow = () => {
 
 		const before = notLoadedMessages
 			.filter(
-				msg => getTimestampAsNumber(msg.timestamp) <= getTimestampAsNumber(headMessage.timestamp),
+				msg =>
+					getTimestampAsNumber(msg.timestamp) < getTimestampAsNumber(headMessage.timestamp) ||
+					(getTimestampAsNumber(msg.timestamp) === getTimestampAsNumber(headMessage.timestamp) &&
+						messagesStore.attachedMessages.indexOf(msg) <
+							messagesStore.attachedMessages.indexOf(headMessage)),
 			)
 			.map(msg => msg.messageId);
 		const after = notLoadedMessages
 			.filter(
-				msg => getTimestampAsNumber(msg.timestamp) >= getTimestampAsNumber(headMessage.timestamp),
+				msg =>
+					getTimestampAsNumber(msg.timestamp) > getTimestampAsNumber(headMessage.timestamp) ||
+					(getTimestampAsNumber(msg.timestamp) === getTimestampAsNumber(headMessage.timestamp) &&
+						messagesStore.attachedMessages.indexOf(msg) >
+							messagesStore.attachedMessages.indexOf(headMessage)),
 			)
 			.map(msg => msg.messageId);
 
