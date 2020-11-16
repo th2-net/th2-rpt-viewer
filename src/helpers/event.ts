@@ -16,6 +16,7 @@
 
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventStatus } from '../models/Status';
+import { getTimestampAsNumber } from './date';
 
 export const getEventStatus = (event: EventAction | EventTreeNode): EventStatus =>
 	event.successful ? EventStatus.PASSED : EventStatus.FAILED;
@@ -24,3 +25,21 @@ export const isRootEvent = (event: EventTreeNode): boolean => event.parentId ===
 
 export const getEventNodeParents = (event: EventTreeNode): string[] =>
 	event.parents ? event.parents : [];
+
+export const sortEventsByTimestamp = (
+	eventNodes: Array<EventTreeNode>,
+	order: 'desc' | 'asc' = 'desc',
+) => {
+	const copiedEvents = eventNodes.slice();
+	copiedEvents.sort((eventA, eventB) => {
+		if (order === 'desc') {
+			return (
+				getTimestampAsNumber(eventB.startTimestamp) - getTimestampAsNumber(eventA.startTimestamp)
+			);
+		}
+		return (
+			getTimestampAsNumber(eventA.startTimestamp) - getTimestampAsNumber(eventB.startTimestamp)
+		);
+	});
+	return copiedEvents;
+};

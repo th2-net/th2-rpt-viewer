@@ -30,9 +30,9 @@ export const registerFetchInterceptor = () =>
 				const { url, status, statusText } = response;
 				NotificationsStore.addNotification({
 					type: 'error',
-					url,
-					status,
-					statusText,
+					resource: url,
+					responseCode: status,
+					responseBody: statusText,
 				});
 			}
 			return response;

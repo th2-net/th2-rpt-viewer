@@ -60,7 +60,7 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 	}, [getIsBlocked]);
 
 	React.useEffect(() => {
-		if (selectedUnit && unitRefs.current[selectedUnit].current) {
+		if (selectedUnit !== null && unitRefs.current[selectedUnit].current) {
 			unitRefs.current[selectedUnit].current?.scrollIntoView({
 				block: 'center',
 			});

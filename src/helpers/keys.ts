@@ -14,46 +14,21 @@
  * limitations under the License.
  ***************************************************************************** */
 
-/* eslint-disable no-restricted-globals */
+import { EventAction } from '../models/EventAction';
+import { EventMessage } from '../models/EventMessage';
 
-import Message from '../models/Message';
-import Action from '../models/Action';
-import UserMessage, { isUserMessage } from '../models/UserMessage';
-import UserTable, { isUserTable } from '../models/UserTable';
-import { ACTION_FIELDS, MESSAGE_FIELDS } from './search/searchEngine';
-import Log from '../models/Log';
-import KnownBug from '../models/KnownBug';
+/* eslint-disable no-restricted-globals */
 
 const ACTION_KEY_PREFIX = 'action';
 const MESSAGE_KEY_PREFIX = 'msg';
 const VERIFICATION_KEY_PREFIX = 'verification';
 
-export function keyForAction(id: number, fieldName: keyof Action | null = null): string {
+export function keyForAction(id: number, fieldName: keyof EventAction | null = null): string {
 	return `${ACTION_KEY_PREFIX}-${id}${fieldName ? `-${fieldName}` : ''}`;
 }
 
-export function isKeyForAction(key: string): boolean {
-	const [prefix, id, fieldName] = key.split('-');
-
-	return (
-		prefix === ACTION_KEY_PREFIX &&
-		!isNaN(+id) &&
-		(fieldName === undefined || ACTION_FIELDS.includes(fieldName as keyof Action))
-	);
-}
-
-export function keyForMessage(id: string, fieldName: keyof Message | null = null): string {
+export function keyForMessage(id: string, fieldName: keyof EventMessage | null = null): string {
 	return `${MESSAGE_KEY_PREFIX}-${id}${fieldName ? `-${fieldName}` : ''}`;
-}
-
-export function isKeyForMessage(key: string): boolean {
-	const [prefix, id, fieldName] = key.split('-');
-
-	return (
-		prefix === MESSAGE_KEY_PREFIX &&
-		!isNaN(+id) &&
-		(fieldName === undefined || MESSAGE_FIELDS.includes(fieldName as keyof Message))
-	);
 }
 
 export function keyForVerification(
@@ -72,34 +47,4 @@ export function isKeyForVerification(key: string): boolean {
 		verificationPrefix === VERIFICATION_KEY_PREFIX &&
 		!isNaN(+msgId)
 	);
-}
-
-export function keyForUserMessage(userMessage: UserMessage, parent: Action): string {
-	const index = parent.subNodes ? parent.subNodes.filter(isUserMessage).indexOf(userMessage) : '';
-
-	return `${parent.id}-user_message-${index}`;
-}
-
-export function keyForUserTable(table: UserTable, parent: Action): string {
-	const index = parent.subNodes ? parent.subNodes.filter(isUserTable).indexOf(table) : '';
-
-	return `${parent.id}-user_table-${index}`;
-}
-
-export function keyForActionParameter(actionId: number, index: number): string {
-	return `${keyForAction(actionId, 'parameters')}-${index}`;
-}
-
-export function keyForLog(index: number, fieldName?: keyof Log): string {
-	return `log-${index}${fieldName ? `-${fieldName}` : ''}`;
-}
-
-export function keyForKnownBug(knownBug: KnownBug, fieldName?: keyof KnownBug): string {
-	return `known-bug-${knownBug.id}${fieldName ? `-${fieldName}` : ''}`;
-}
-
-export function getKeyField(key: string): string | null {
-	const [, , field] = key.split('-');
-
-	return field ?? null;
 }

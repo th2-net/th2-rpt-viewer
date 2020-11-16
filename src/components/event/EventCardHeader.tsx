@@ -31,7 +31,7 @@ interface Props {
 	event: EventTreeNode;
 	onSelect: () => void;
 	isSelected?: boolean;
-	childrenCount?: number | null;
+	childrenCount?: number;
 	isFlatView?: boolean;
 	parentsCount?: number;
 	rootStyle?: React.CSSProperties;
@@ -78,10 +78,8 @@ function EventCardHeader({
 				</div>
 			) : null}
 			{displayType !== CardDisplayType.STATUS_ONLY &&
-			childrenCount !== undefined &&
-			childrenCount !== 0 ? (
-				<Chip isLoading={childrenCount === null} text={childrenCount ?? ''} />
-			) : null}
+				childrenCount !== undefined &&
+				childrenCount > 0 && <Chip text={childrenCount.toString()} />}
 			<div className='event-header-card__status'>
 				{displayType === CardDisplayType.FULL ? status.toUpperCase() : getMinifiedStatus(status)}
 			</div>

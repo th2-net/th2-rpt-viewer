@@ -34,12 +34,10 @@ function Notifier() {
 			? notifications
 			: complement(notifications, prevNotifications);
 		currentNotifications.forEach(n => {
-			const { url, type, status, statusText } = n;
-			addToast(<FetchError resource={url} responseBody={statusText} responseCode={status} />, {
+			const { type, ...props } = n;
+			addToast(<FetchError {...props} />, {
 				appearance: type,
-				onDismiss: () => {
-					delNotification(n);
-				},
+				onDismiss: () => delNotification(n),
 			});
 		});
 	}, [notifications]);

@@ -18,7 +18,7 @@ import React from 'react';
 import MaskedInput from 'react-text-mask';
 import moment from 'moment';
 import FilterDatetimePicker from './FilterDatetimePicker';
-import { DateTimeInputType } from '../../../models/filter/FilterInputs';
+import { DateTimeInputType, TimeInputType } from '../../../models/filter/FilterInputs';
 import { formatTimestampValue } from '../../../helpers/date';
 import { createStyleSelector } from '../../../helpers/styleCreators';
 import { replaceUnfilledDateStringWithMinValues } from '../../../helpers/stringUtils';
@@ -49,8 +49,7 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 		setInputValue(updatedValue);
 
 		if (updatedValue && !updatedValue.includes('_')) {
-			const updatedDate = moment(updatedValue, dateMask);
-			setValue(updatedDate.valueOf() + moment().utcOffset() * 60000);
+			setValue(moment.utc(updatedValue, dateMask).valueOf());
 		}
 	};
 
@@ -86,7 +85,7 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 				name={id}
 				value={inputValue}
 			/>
-			{showPicker && (
+			{showPicker && inputConfig.type !== TimeInputType.INTERVAL && (
 				<FilterDatetimePicker
 					inputConfig={inputConfig}
 					left={inputRef.current?.inputElement.offsetLeft}

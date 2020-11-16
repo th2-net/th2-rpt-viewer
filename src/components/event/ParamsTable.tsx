@@ -18,8 +18,6 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import StateSaver from '../util/StateSaver';
-import { keyForActionParameter } from '../../helpers/keys';
-import SearchResult from '../../helpers/search/SearchResult';
 import '../../styles/tables.scss';
 
 export interface ParamsTableRow {
@@ -48,7 +46,6 @@ interface OwnProps {
 
 interface StateProps {
 	expandPath: number[];
-	searchResults: SearchResult;
 }
 
 interface RecoveredProps {
@@ -130,17 +127,13 @@ class ParamsTableBase extends React.Component<Props, State> {
 							))}
 						</tr>
 					</thead>
-					<tbody>
-						{this.state.nodes.map((nodes, index) =>
-							this.renderNodes(nodes, 1, keyForActionParameter(this.props.actionId, index)),
-						)}
-					</tbody>
+					<tbody>{this.state.nodes.map(nodes => this.renderNodes(nodes, 1))}</tbody>
 				</table>
 			</div>
 		);
 	}
 
-	private renderNodes(node: ParamsTableRow, paddingLevel = 1, key: string): React.ReactNodeArray {
+	private renderNodes(node: ParamsTableRow, paddingLevel = 1, key = ''): React.ReactNodeArray {
 		if (node.subRows && node.subRows.length !== 0) {
 			const subNodes = node.isExpanded
 				? node.subRows.reduce(
@@ -239,12 +232,7 @@ export const RecoverableParamsTable = ({
 );
 
 const ParamsTable = observer(({ actionId, ...rest }: OwnProps) => (
-	<RecoverableParamsTable
-		expandPath={[]}
-		searchResults={new SearchResult() /** TODO: remove legacy search logic */}
-		{...rest}
-		actionId={actionId}
-	/>
+	<RecoverableParamsTable expandPath={[]} {...rest} actionId={actionId} />
 ));
 
 export default ParamsTable;

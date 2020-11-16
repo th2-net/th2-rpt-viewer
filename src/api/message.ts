@@ -43,15 +43,10 @@ const messageHttpApi: MessageApiSchema = {
 			limit,
 			timestampFrom,
 			timestampTo,
+			stream: streams,
+			messageType: messageTypes,
 		});
 
-		if (streams.length > 0) {
-			streams.forEach(s => params.append('stream', s));
-		}
-
-		if (messageTypes.length > 0) {
-			messageTypes.forEach(type => params.append('messageType', type));
-		}
 		const res = await fetch(`backend/search/messages?${params}`, { signal: abortSignal });
 
 		if (res.ok) {
@@ -91,30 +86,21 @@ const messageHttpApi: MessageApiSchema = {
 			timestampFrom,
 			timestampTo,
 			idsOnly: true,
+			stream: streams,
+			messageType: messageTypes,
 		});
-
-		if (streams.length > 0) {
-			streams.forEach(stream => params.append('stream', stream));
-		}
-
-		if (messageTypes.length > 0) {
-			messageTypes.forEach(type => params.append('messageType', type));
-		}
 
 		const res = await fetch(`backend/search/messages?${params}`);
 
-		if (res.ok) {
-			return res.json();
-		}
+		if (res.ok) return res.json();
 
 		console.error(res.statusText);
 		return [];
 	},
 	getMessageSessions: async () => {
 		const res = await fetch('backend/messageStreams');
-		if (res.ok) {
-			return res.json();
-		}
+
+		if (res.ok) return res.json();
 
 		console.error(res.statusText);
 		return [];

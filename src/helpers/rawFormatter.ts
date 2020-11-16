@@ -17,7 +17,6 @@
 /* eslint-disable no-mixed-operators */
 
 import { replaceNonPrintableCharsWithDot } from './stringUtils';
-import Message from '../models/Message';
 
 /**
  * Generates columns for rendering and copying.
@@ -138,45 +137,4 @@ export function mapHumanReadableOffsetsToOctetOffsets(start: number, end: number
 		Math.floor(end / 17) * 40 + (end % 17) * 2 + Math.max(0, Math.floor(((end % 17) - 1) / 2));
 
 	return start === end ? [startOffset, startOffset] : [startOffset, endOffset];
-}
-
-/**
- * This function takes messagesFilter and required contentTypes as parameters
- * and returns messagesFilter content joined by empty line
- */
-export function getMessagesContent(
-	messages: Message[],
-	contentTypes: ('contentHumanReadable' | 'hexadecimal' | 'raw')[],
-): string {
-	return messages
-		.map(msg =>
-			contentTypes
-				.filter(type => {
-					// 'hexadecimal' isn't a message property and relies on 'raw' field
-					if (type === 'hexadecimal') {
-						return msg.raw !== null;
-					}
-
-					return msg[type] !== null;
-				})
-				.map(type => {
-					switch (type) {
-						case 'contentHumanReadable':
-							return msg[type];
-						case 'hexadecimal': {
-							const decodedRawMessage = decodeBase64RawContent(msg.raw);
-							return getAllRawContent(decodedRawMessage).replace(/\n$/, '');
-						}
-						case 'raw': {
-							const [, , humanReadable] = decodeBase64RawContent(msg.raw);
-							return humanReadable.join('');
-						}
-						default:
-							return '';
-					}
-				})
-				.join('\n'),
-		)
-		.filter(Boolean)
-		.join('\n\n');
 }

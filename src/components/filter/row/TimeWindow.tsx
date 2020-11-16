@@ -14,39 +14,36 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import React from 'react';
 import {
 	DateTimeInputType,
-	FilterRowDatetimeRangeConfig,
+	FilterRowTimeWindowConfig,
+	IntervalInputType,
+	TimeInputType,
 } from '../../../models/filter/FilterInputs';
 import DateTimeInput from '../date-time-inputs/DateTimeInput';
+import IntervalInput from '../date-time-inputs/IntervalInput';
 
-export default function DatetimeFilterRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
-	const renderInput = (inputConfig: DateTimeInputType) => [
-		inputConfig.label && (
-			<label
-				key={`${inputConfig.id}-label`}
-				htmlFor={inputConfig.id}
-				className={inputConfig.labelClassName}>
-				{inputConfig.label}
-			</label>
-		),
-		<DateTimeInput {...inputConfig} inputConfig={inputConfig} key={inputConfig.id} />,
-	];
-
+const TimeWindow = ({ config }: { config: FilterRowTimeWindowConfig }) => {
 	return (
-		<>
-			<div className='filter-row'>
-				{config.inputs.map((inputConfig: DateTimeInputType) => renderInput(inputConfig))}
-				<div className='filter-time-controls'>
-					<div className='filter-row__arrow-icon' />
-					{config.timeShortcuts.map(({ label, onClick }) => (
-						<div key={label} className='filter-time-control' onClick={onClick}>
-							{label}
-						</div>
-					))}
-				</div>
-			</div>
-		</>
+		<div className='filter-row'>
+			{config.inputs.map((inputConfig: DateTimeInputType | IntervalInputType) => [
+				inputConfig.label && (
+					<label
+						key={`${inputConfig.id}-label`}
+						htmlFor={inputConfig.id}
+						className={inputConfig.labelClassName}>
+						{inputConfig.label}
+					</label>
+				),
+				inputConfig.type === TimeInputType.DATE_TIME ? (
+					<DateTimeInput inputConfig={inputConfig as DateTimeInputType} key={inputConfig.id} />
+				) : (
+					<IntervalInput inputConfig={inputConfig as IntervalInputType} key={inputConfig.id} />
+				),
+			])}
+		</div>
 	);
-}
+};
+
+export default TimeWindow;

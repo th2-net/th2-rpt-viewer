@@ -24,8 +24,7 @@ import EventsFilter from '../models/filter/EventsFilter';
 import PanelArea from '../util/PanelArea';
 import WindowsStore from './WindowsStore';
 import { TabTypes } from '../models/util/Windows';
-import { getTimestampAsNumber } from '../helpers/date';
-import { getEventNodeParents } from '../helpers/event';
+import { getEventNodeParents, sortEventsByTimestamp } from '../helpers/event';
 
 export type EventStoreURLState = Partial<{
 	type: TabTypes.Events;
@@ -103,8 +102,10 @@ export default class EventsStore {
 
 	@computed
 	public get flattenedEventList() {
-		return this.flatExpandedList.filter(
-			eventNode => eventNode.childList.length === 0 && eventNode.filtered,
+		return sortEventsByTimestamp(
+			this.flatExpandedList.filter(
+				eventNode => eventNode.childList.length === 0 && eventNode.filtered,
+			),
 		);
 	}
 
@@ -196,23 +197,30 @@ export default class EventsStore {
 		return event;
 	};
 
+	private eventTreeAbortController: AbortController | null = null;
+
 	@action
 	private fetchEventTree = async () => {
+		if (this.eventTreeAbortController) {
+			this.eventTreeAbortController.abort();
+		}
+		this.eventTreeAbortController = new AbortController();
+
 		this.selectedNode = null;
 		this.isLoadingRootEvents = true;
 		try {
-			const rootEventIds = await this.api.events.getEventTree(this.filterStore.eventsFilter);
-			rootEventIds.sort(
-				(eventA, eventB) =>
-					getTimestampAsNumber(eventB.startTimestamp) - getTimestampAsNumber(eventA.startTimestamp),
+			const rootEventIds = await this.api.events.getEventTree(
+				this.filterStore.eventsFilter,
+				this.eventTreeAbortController.signal,
 			);
 			runInAction(() => {
-				this.eventTree = rootEventIds;
+				this.eventTree = sortEventsByTimestamp(rootEventIds);
 			});
 		} catch (error) {
 			this.eventTree = [];
 			console.error('Error while loading root events', error);
 		} finally {
+			this.eventTreeAbortController = null;
 			this.isLoadingRootEvents = false;
 		}
 	};

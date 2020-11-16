@@ -22,7 +22,6 @@ import { EventStatus, eventStatusValues } from '../../models/Status';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import { getVerificationTablesNodes } from '../../helpers/tables';
 import StateSaver, { RecoverableElementProps } from '../util/StateSaver';
-import SearchResult from '../../helpers/search/SearchResult';
 import { replaceNonPrintableChars } from '../../helpers/stringUtils';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { VerificationPayload, VerificationPayloadField } from '../../models/EventActionPayload';
@@ -47,7 +46,6 @@ interface StateProps {
 	transparencyFilter: Set<EventStatus>;
 	visibilityFilter: Set<EventStatus>;
 	expandPath: number[];
-	searchResults: SearchResult;
 }
 
 interface Props extends Omit<OwnProps, 'params'>, StateProps {
@@ -437,9 +435,6 @@ class VerificationTableBase extends React.Component<Props, State> {
 			return wrap(wrapperClassName, null);
 		}
 
-		if (!this.props.searchResults.isEmpty && this.props.searchResults.get(contentKey)) {
-			return wrap(wrapperClassName, <span>{content}</span>);
-		}
 		return wrap(wrapperClassName, fakeContent);
 
 		function wrap(className: string | null, data: React.ReactNode): React.ReactNode {
@@ -490,7 +485,6 @@ export const VerificationTable = observer(({ ...restProps }: OwnProps) => (
 		transparencyFilter={new Set<EventStatus>(eventStatusValues)}
 		visibilityFilter={new Set(eventStatusValues)}
 		expandPath={[] /** TODO: remove legacy search logic */}
-		searchResults={new SearchResult()}
 		{...restProps}
 	/>
 ));

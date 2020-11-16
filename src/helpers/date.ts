@@ -101,3 +101,30 @@ export function getTimeRange(
 	}
 	return { from: from.valueOf(), to: to.valueOf() };
 }
+
+export const getTimeWindow = (
+	_timestamp: number | null,
+	_timeInterval: number | null,
+	limitByDay = false,
+) => {
+	const timestamp = moment.utc(_timestamp);
+	const timeInterval = _timeInterval || 15;
+
+	let timestampFrom = moment.utc(timestamp).subtract(timeInterval, 'minutes');
+	let timestampTo = moment.utc(timestamp).add(timeInterval, 'minutes');
+
+	if (!limitByDay) {
+		return {
+			timestampFrom: timestampFrom.valueOf(),
+			timestampTo: timestampTo.valueOf(),
+		};
+	}
+
+	timestampFrom = timestampFrom.isSame(timestamp, 'day') ? timestampFrom : timestamp.startOf('day');
+	timestampTo = timestampTo.isSame(timestamp, 'day') ? timestampTo : timestamp.endOf('day');
+
+	return {
+		timestampFrom: timestampFrom.valueOf(),
+		timestampTo: timestampTo.valueOf(),
+	};
+};

@@ -22,12 +22,20 @@ export function getUrlSearchString(url: string) {
 	return url.includes('?') ? url.substring(url.lastIndexOf('?')) : '';
 }
 
-// Allow implicit coercion
-export function createURLSearchParams(params: Record<string, string | number | boolean | null>) {
-	// filtering entries with null values
-	const filteredParams = Object.fromEntries(
-		Object.entries(params).filter(([, value]) => value != null),
-	);
+export function createURLSearchParams(
+	_params: Record<string, string | number | boolean | null | string[]>,
+) {
+	const params = new URLSearchParams();
 
-	return new URLSearchParams(filteredParams as Record<string, string>);
+	for (const [key, param] of Object.entries(_params)) {
+		// eslint-disable-next-line no-continue
+		if (param == null) continue;
+		if (Array.isArray(param)) {
+			param.forEach(p => params.append(key, p));
+		} else {
+			params.set(key, param.toString());
+		}
+	}
+
+	return params;
 }
