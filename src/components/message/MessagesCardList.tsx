@@ -14,19 +14,18 @@
  * limitations under the License.
  ***************************************************************************** */
 
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable no-new-wrappers */
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import ResizeObserver from 'resize-observer-polyfill';
-import StateSaverProvider from '../util/StateSaverProvider';
-import MessagesVirtualizedList from './MessagesVirtualizedList';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import SkeletonedMessageCardListItem from './SkeletonedMessageCardListItem';
-import Empty from '../Empty';
+import MessagesVirtualizedList from './MessagesVirtualizedList';
 import SplashScreen from '../SplashScreen';
 import MessagesScrollContainer from './MessagesScrollContainer';
+import Empty from '../Empty';
+import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import StateSaverProvider from '../util/StateSaverProvider';
 import '../../styles/messages.scss';
 
 export type MessagesHeights = { [index: number]: number };
@@ -68,10 +67,7 @@ const MessageCardList = () => {
 		);
 	};
 
-	if (
-		messagesStore.messagesLoadingState.loadingRootItems &&
-		messagesStore.messagesIds.length === 0
-	) {
+	if (messagesStore.messagesLoadingState.loadingRootItems) {
 		return <SplashScreen />;
 	}
 
@@ -97,11 +93,6 @@ const MessageCardList = () => {
 						loadNextMessages={() => messagesStore.loadNextMessages()}
 						loadPrevMessages={() => messagesStore.loadPreviousMessages()}
 					/>
-					{messagesStore.messagesLoadingState.loadingSelectedMessage && (
-						<div className='messages-list__overlay-loader'>
-							<div className='messages-list__overlay-spinner' />
-						</div>
-					)}
 				</StateSaverProvider>
 			</MessagesHeightsContext.Provider>
 		</div>

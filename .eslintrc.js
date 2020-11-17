@@ -73,6 +73,7 @@ module.exports = {
 		],
 		'@typescript-eslint/no-use-before-define': 'off',
 		'@typescript-eslint/explicit-function-return-type': 'off',
+		'@typescript-eslint/ban-types': 'off',
 		'implicit-arrow-linebreak': 'off',
 		'arrow-parens': ['error', 'as-needed'],
 		'no-plusplus': 'off',

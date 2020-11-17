@@ -20,26 +20,26 @@ import MessagesWindowHeader from './MessagesWindowHeader';
 import { HeatmapProvider } from '../heatmap/HeatmapProvider';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import MessagesCardList from './MessagesCardList';
-import { useWindowsStore } from '../../hooks/useWindowsStore';
 import { getTimestampAsNumber } from '../../helpers/date';
+import { useSelectedStore } from '../../hooks/useSelectedStore';
 
 const MessagesWindow = () => {
 	const messagesStore = useMessagesWindowStore();
-	const windowsStore = useWindowsStore();
+	const selectedStore = useSelectedStore();
 
 	const selectedItems = React.useMemo(() => {
 		const heatmapElementsMap: Map<string, string[]> = new Map();
-		windowsStore.selectedEvents
+		selectedStore.selectedEvents
 			.filter(e => e.attachedMessageIds.length !== 0)
 			.forEach(({ eventId, attachedMessageIds }) => {
-				const eventColor = windowsStore.eventColors.get(eventId);
+				const eventColor = selectedStore.eventColors.get(eventId);
 				if (eventColor) {
 					heatmapElementsMap.set(eventColor, attachedMessageIds);
 				}
 			});
 
 		return heatmapElementsMap;
-	}, [windowsStore.eventColors, messagesStore.messagesIds]);
+	}, [selectedStore.eventColors, messagesStore.messagesIds]);
 
 	const unknownAreas = React.useMemo(() => {
 		if (!messagesStore.messagesIds.length || messagesStore.filterStore.isMessagesFilterApplied) {
@@ -49,13 +49,13 @@ const MessagesWindow = () => {
 			};
 		}
 		const headMessage =
-			messagesStore.attachedMessages.find(m => messagesStore.messagesIds.includes(m.messageId)) ||
+			selectedStore.attachedMessages.find(m => messagesStore.messagesIds.includes(m.messageId)) ||
 			messagesStore.messagesCache.get(messagesStore.messagesIds[0]);
 
 		if (!headMessage) {
 			return { before: [], after: [] };
 		}
-		const notLoadedMessages = messagesStore.attachedMessages.filter(
+		const notLoadedMessages = selectedStore.attachedMessages.filter(
 			msg => !messagesStore.messagesIds.includes(msg.messageId),
 		);
 
@@ -64,8 +64,8 @@ const MessagesWindow = () => {
 				msg =>
 					getTimestampAsNumber(msg.timestamp) < getTimestampAsNumber(headMessage.timestamp) ||
 					(getTimestampAsNumber(msg.timestamp) === getTimestampAsNumber(headMessage.timestamp) &&
-						messagesStore.attachedMessages.indexOf(msg) <
-							messagesStore.attachedMessages.indexOf(headMessage)),
+						selectedStore.attachedMessages.indexOf(msg) <
+							selectedStore.attachedMessages.indexOf(headMessage)),
 			)
 			.map(msg => msg.messageId);
 		const after = notLoadedMessages
@@ -73,13 +73,13 @@ const MessagesWindow = () => {
 				msg =>
 					getTimestampAsNumber(msg.timestamp) > getTimestampAsNumber(headMessage.timestamp) ||
 					(getTimestampAsNumber(msg.timestamp) === getTimestampAsNumber(headMessage.timestamp) &&
-						messagesStore.attachedMessages.indexOf(msg) >
-							messagesStore.attachedMessages.indexOf(headMessage)),
+						selectedStore.attachedMessages.indexOf(msg) >
+							selectedStore.attachedMessages.indexOf(headMessage)),
 			)
 			.map(msg => msg.messageId);
 
 		return { before, after };
-	}, [windowsStore.eventColors, messagesStore.messagesIds, messagesStore.messagesCache]);
+	}, [selectedStore.eventColors, messagesStore.messagesIds]);
 
 	return (
 		<HeatmapProvider
@@ -87,7 +87,7 @@ const MessagesWindow = () => {
 			unknownAreas={unknownAreas}
 			selectedItems={selectedItems}
 			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}
-			pinnedItems={windowsStore.pinnedMessages.map(m => m.messageId)}>
+			pinnedItems={selectedStore.pinnedMessages.map(m => m.messageId)}>
 			<div className='layout'>
 				<div className='layout__header'>
 					<MessagesWindowHeader />

@@ -29,7 +29,7 @@ import MessageRaw from './MessageRaw';
 import PanelArea from '../../util/PanelArea';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import ErrorBoundary from '../util/ErrorBoundary';
-import { useWindowsStore } from '../../hooks/useWindowsStore';
+import { useSelectedStore } from '../../hooks/useSelectedStore';
 import '../../styles/messages.scss';
 
 const HUE_SEGMENTS_COUNT = 36;
@@ -46,8 +46,8 @@ export interface RecoveredProps {
 interface Props extends OwnProps, RecoveredProps {}
 
 function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
-	const windowsStore = useWindowsStore();
 	const messagesStore = useMessagesWindowStore();
+	const selectedStore = useSelectedStore();
 	const { heatmapElements } = useHeatmap();
 
 	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
@@ -55,7 +55,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 
 	const isSelected = Boolean(heatmapElement);
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
-	const isPinned = windowsStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
+	const isPinned = selectedStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
 	const color = heatmapElement?.colors[0];
 
 	const rootClass = createBemBlock('message-card', isSelected ? 'selected' : null);
@@ -110,7 +110,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 					<div
 						title={isPinned ? 'Unpin' : 'Pin'}
 						className={pinClassName}
-						onClick={() => windowsStore.toggleMessagePin(message)}
+						onClick={() => selectedStore.toggleMessagePin(message)}
 					/>
 				</div>
 				<div className='mc-header__underline' style={{ borderColor: color }} />

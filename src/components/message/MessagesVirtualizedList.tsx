@@ -31,7 +31,6 @@ interface Props {
 		we are comparing primitive numbers.
 		Objects and reference comparison is the only way to handle numbers changing in this case.
 	*/
-	// eslint-disable-next-line @typescript-eslint/ban-types
 	scrolledIndex: Number | null;
 	className?: string;
 	ScrollContainer?: TScrollContainer;
@@ -43,6 +42,7 @@ interface Props {
 
 const MessagesVirtualizedList = (props: Props) => {
 	const virtuoso = React.useRef<VirtuosoMethods>(null);
+
 	const {
 		rowCount,
 		computeItemKey,
@@ -57,9 +57,7 @@ const MessagesVirtualizedList = (props: Props) => {
 	} = props;
 
 	useAsyncEffect(async () => {
-		if (scrolledIndex == null) {
-			return;
-		}
+		if (scrolledIndex === null) return;
 		let resultIndex = scrolledIndex.valueOf();
 
 		if (scrolledIndex.valueOf() + 1 === rowCount) {

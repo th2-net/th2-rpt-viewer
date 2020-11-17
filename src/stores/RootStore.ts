@@ -27,14 +27,14 @@ import NotificationsStore from './NotificationsStore';
 import { getEventNodeParents } from '../helpers/event';
 
 export default class RootStore {
+	notificationsStore = NotificationsStore;
+
 	windowsStore: WindowsStore;
 
 	viewStore: AppViewStore;
 
-	notificationsStore = NotificationsStore;
-
 	constructor(private api: ApiSchema) {
-		this.windowsStore = new WindowsStore(this, this.api, this.parseWindowsState());
+		this.windowsStore = new WindowsStore(this.api, this.parseWindowsState());
 
 		this.viewStore = new AppViewStore();
 

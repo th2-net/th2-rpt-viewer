@@ -22,9 +22,9 @@ import { EventAction, EventTree, EventTreeNode } from '../models/EventAction';
 import SearchStore from './SearchStore';
 import EventsFilter from '../models/filter/EventsFilter';
 import PanelArea from '../util/PanelArea';
-import WindowsStore from './WindowsStore';
 import { TabTypes } from '../models/util/Windows';
 import { getEventNodeParents, sortEventsByTimestamp } from '../helpers/event';
+import { SelectedStore } from './SelectedStore';
 
 export type EventStoreURLState = Partial<{
 	type: TabTypes.Events;
@@ -39,7 +39,7 @@ export type EventStoreURLState = Partial<{
 export default class EventsStore {
 	constructor(
 		private api: ApiSchema,
-		private windowsStore: WindowsStore,
+		private selectedStore: SelectedStore,
 		initialState: EventsStore | EventStoreURLState | null,
 	) {
 		this.init(initialState);
@@ -95,7 +95,6 @@ export default class EventsStore {
 
 	@observable loadingSelectedEvent = false;
 
-	// eslint-disable-next-line @typescript-eslint/ban-types
 	@observable scrolledIndex: Number | null = null;
 
 	@observable isExpandedMap: Map<string, boolean> = new Map();
@@ -117,7 +116,12 @@ export default class EventsStore {
 	@computed
 	public get color() {
 		if (!this.selectedEvent) return undefined;
-		return this.windowsStore.eventColors.get(this.selectedEvent.eventId);
+		return this.selectedStore.eventColors.get(this.selectedEvent.eventId);
+	}
+
+	@computed
+	public get isSelectedEventLoading() {
+		return this.selectedNode !== null && this.selectedEvent === null;
 	}
 
 	// we need this property for correct virtualized tree render -
@@ -156,7 +160,6 @@ export default class EventsStore {
 	@action
 	selectNode = (eventTreeNode: EventTreeNode | null) => {
 		this.selectedNode = eventTreeNode;
-		this.windowsStore.lastSelectEventIdNode = eventTreeNode;
 		if (this.viewStore.panelArea === PanelArea.P100) {
 			this.viewStore.panelArea = PanelArea.P50;
 		}
@@ -197,46 +200,52 @@ export default class EventsStore {
 		return event;
 	};
 
-	private eventTreeAbortController: AbortController | null = null;
+	private eventTreeAC: AbortController | null = null;
 
 	@action
 	private fetchEventTree = async () => {
-		if (this.eventTreeAbortController) {
-			this.eventTreeAbortController.abort();
+		if (this.eventTreeAC) {
+			this.eventTreeAC.abort();
 		}
-		this.eventTreeAbortController = new AbortController();
+		this.eventTreeAC = new AbortController();
 
 		this.selectedNode = null;
 		this.isLoadingRootEvents = true;
 		try {
 			const rootEventIds = await this.api.events.getEventTree(
 				this.filterStore.eventsFilter,
-				this.eventTreeAbortController.signal,
+				this.eventTreeAC.signal,
 			);
 			runInAction(() => {
 				this.eventTree = sortEventsByTimestamp(rootEventIds);
 			});
 		} catch (error) {
 			this.eventTree = [];
+			this.isExpandedMap.clear();
 			console.error('Error while loading root events', error);
 		} finally {
-			this.eventTreeAbortController = null;
+			this.eventTreeAC = null;
 			this.isLoadingRootEvents = false;
 		}
 	};
+
+	private detailedEventAC: AbortController | null = null;
 
 	@action
 	private fetchDetailedEventInfo = async (selectedNode: EventTreeNode | null) => {
 		this.selectedEvent = null;
 		if (!selectedNode) return;
 
+		this.detailedEventAC?.abort();
+		this.detailedEventAC = new AbortController();
+
 		this.loadingSelectedEvent = true;
 		try {
-			const event = await this.api.events.getEvent(selectedNode.eventId);
+			const event = await this.api.events.getEvent(
+				selectedNode.eventId,
+				this.detailedEventAC.signal,
+			);
 			this.selectedEvent = event;
-			if (this.windowsStore.lastSelectEventIdNode === this.selectedNode) {
-				this.windowsStore.lastSelectedEvent = event;
-			}
 		} catch (error) {
 			console.error(`Error occurred while loading event ${selectedNode.eventId}`);
 		} finally {
@@ -281,7 +290,7 @@ export default class EventsStore {
 		if (this.isExpandedMap.get(eventTreeNode.eventId)) {
 			return [
 				eventTreeNode,
-				...eventTreeNode.childList.flatMap(eventNode =>
+				...sortEventsByTimestamp(eventTreeNode.childList).flatMap(eventNode =>
 					this.getNodesList(eventNode, [...parents, eventTreeNode.eventId]),
 				),
 			];
@@ -298,7 +307,7 @@ export default class EventsStore {
 		eventTreeNode.parents = !eventTreeNode.parents ? parents : eventTreeNode.parents;
 		return [
 			eventTreeNode,
-			...eventTreeNode.childList.flatMap(node =>
+			...sortEventsByTimestamp(eventTreeNode.childList).flatMap(node =>
 				this.getFlatExpandedList(node, [...parents, eventTreeNode.eventId]),
 			),
 		];

@@ -20,10 +20,10 @@ import MessagesStore from './MessagesStore';
 import EventsStore, { EventStoreURLState } from './EventsStore';
 import ApiSchema from '../api/ApiSchema';
 import { isEventsTab, isMessagesTab } from '../helpers/windows';
-import WindowsStore from './WindowsStore';
+import { SelectedStore } from './SelectedStore';
 
 export default class AppWindowStore {
-	constructor(private windowsStore: WindowsStore, private api: ApiSchema) {}
+	constructor(private selectedStore: SelectedStore, private api: ApiSchema) {}
 
 	@observable tabs: AppTab[] = [];
 
@@ -37,9 +37,9 @@ export default class AppWindowStore {
 	duplicateTab = (tabIndex: number) => {
 		const tabToDublicate = this.tabs[tabIndex];
 		if (isEventsTab(tabToDublicate)) {
-			this.addEventsTab(new EventsStore(this.api, this.windowsStore, tabToDublicate.store));
+			this.addEventsTab(new EventsStore(this.api, this.selectedStore, tabToDublicate.store));
 		} else {
-			this.addMessagesTab(new MessagesStore(this.api, this.windowsStore, tabToDublicate.store));
+			this.addMessagesTab(new MessagesStore(this.api, this.selectedStore, tabToDublicate.store));
 		}
 
 		this.activeTabIndex = this.tabs.length - 1;
@@ -48,14 +48,8 @@ export default class AppWindowStore {
 	@action
 	closeTab = (tabIndex: number) => {
 		const tabToClose = this.removeTab(tabIndex);
-		if (isMessagesTab(tabToClose) && tabToClose.store.disposer) {
-			tabToClose.store.disposer();
-		}
-		if (
-			isEventsTab(tabToClose) &&
-			this.windowsStore.lastSelectEventIdNode === tabToClose.store.selectedNode
-		) {
-			this.windowsStore.lastSelectEventIdNode = null;
+		if (isMessagesTab(tabToClose)) {
+			tabToClose.store.dispose();
 		}
 	};
 
@@ -102,7 +96,7 @@ export default class AppWindowStore {
 	addEventsTab = (defaultState: EventsStore | EventStoreURLState | null = null) => {
 		this.addTabs({
 			type: TabTypes.Events,
-			store: new EventsStore(this.api, this.windowsStore, defaultState),
+			store: new EventsStore(this.api, this.selectedStore, defaultState),
 		});
 	};
 
@@ -110,7 +104,7 @@ export default class AppWindowStore {
 	addMessagesTab = (store?: MessagesStore) => {
 		this.addTabs({
 			type: TabTypes.Messages,
-			store: new MessagesStore(this.api, this.windowsStore, store),
+			store: new MessagesStore(this.api, this.selectedStore, store),
 		});
 	};
 }

@@ -46,9 +46,12 @@ const MessagesFilterPanel = () => {
 	React.useEffect(() => {
 		setTimestamp(filterStore.messagesFilter.timestamp);
 		setTimeInterval(filterStore.messagesFilter.timeInterval);
-		setStreams(filterStore.messagesFilter.streams);
 		setMessagesTypes(filterStore.messagesFilter.messageTypes);
-	}, [filterStore.messagesFilter, filterStore.messagesFilter.streams]);
+	}, [filterStore.messagesFilter]);
+
+	React.useEffect(() => {
+		setStreams(filterStore.messagesFilter.streams);
+	}, [filterStore.messagesFilter.streams]);
 
 	const submitChanges = () => {
 		const { timestampFrom, timestampTo } = getTimeWindow(timestamp, timeInterval);
@@ -117,11 +120,12 @@ const MessagesFilterPanel = () => {
 		},
 	];
 
-	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !messagesStore.isLoading;
+	const isLoading = Object.values(messagesStore.messagesLoadingState).some(Boolean);
+	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !isLoading;
 
 	return (
 		<FilterPanel
-			isLoading={messagesStore.isLoading}
+			isLoading={isLoading}
 			isFilterApplied={isApplied}
 			count={isApplied ? messagesStore.messagesIds.length : null}
 			setShowFilter={setShowFilter}

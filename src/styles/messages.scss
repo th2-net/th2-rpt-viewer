@@ -741,6 +741,7 @@
 	&__wrapper {
 		display: grid;
 		grid-template-columns: auto 1fr;
+		align-items: center;
 		overflow: hidden;
 		margin: auto;
 		padding: 0 8px;
@@ -749,6 +750,8 @@
 	&__title {
 		text-overflow: ellipsis;
 		overflow: hidden;
+		display: flex;
+    align-items: center;
 	}
 
 	&__count-list {
@@ -777,6 +780,12 @@
 		text-overflow: ellipsis;
 		overflow: hidden;
 		max-width: 300px;
+	}
+
+	&__spinner {
+		@include spinner(3px, 16px, 2s);
+		margin-right: 5px;
+		display: inline-block;
 	}
 }
 

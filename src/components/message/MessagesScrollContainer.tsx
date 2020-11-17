@@ -100,11 +100,12 @@ const MessagesScrollContainer: TScrollContainer = ({
 		getVisibleRange();
 	};
 
-	const onWheel = () => {
+	const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
 		if (
 			!loadingNextItems &&
+			event.deltaY < 0 &&
 			visibleRange &&
-			visibleRange.startIndex < messagesStore.MESSAGES_CHUNK_SIZE &&
+			visibleRange.startIndex < messagesStore.MESSAGES_CHUNK_SIZE / 2 &&
 			!messagesStore.isBeginReached
 		) {
 			setLoadingNextItems(true);
@@ -113,9 +114,10 @@ const MessagesScrollContainer: TScrollContainer = ({
 
 		if (
 			!loadingPrevItems &&
+			event.deltaY > 0 &&
 			visibleRange &&
 			visibleRange.endIndex >
-				messagesStore.messagesIds.length - messagesStore.MESSAGES_CHUNK_SIZE &&
+				messagesStore.messagesIds.length - messagesStore.MESSAGES_CHUNK_SIZE / 2 &&
 			!messagesStore.isEndReached
 		) {
 			setLoadingPrevItems(true);
@@ -134,7 +136,10 @@ const MessagesScrollContainer: TScrollContainer = ({
 					marginRight: '11px',
 					flexGrow: 1,
 				}}>
-				{loadingState.loadingNextItems && <div className='messages-list__spinner' />}
+				{loadingState.loadingNextItems &&
+					!(loadingState.loadingRootItems || loadingState.loadingSelectedMessage) && (
+						<div className='messages-list__spinner' />
+					)}
 				<div
 					ref={scrollContainer}
 					onScroll={onScroll}
@@ -148,7 +153,10 @@ const MessagesScrollContainer: TScrollContainer = ({
 					className={className}>
 					{children}
 				</div>
-				{loadingState.loadingPreviousItems && <div className='messages-list__spinner' />}
+				{loadingState.loadingPreviousItems &&
+					!(loadingState.loadingRootItems || loadingState.loadingSelectedMessage) && (
+						<div className='messages-list__spinner' />
+					)}
 			</div>
 			<Observer>
 				{() => (

@@ -112,7 +112,6 @@ export function findPrevCyclicItem<T>(
  * @param array selected items ids
  * @param prevScrolledId previous scrolled item id
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
 export function getScrolledId(array: Array<number>, prevScrolledId: number): Number {
 	if (array.includes(prevScrolledId)) {
 		return new Number(nextCyclicItem(array, prevScrolledId));
@@ -167,37 +166,4 @@ export function areArraysEqual<T extends unknown[]>(arr1: T, arr2: T): boolean {
 	}
 
 	return true;
-}
-
-/**
- * Async version of Array.flatMap - it slices original array to chunks
- * and maps each chunk in dedicated event loop task.
- * @param arr target array
- * @param fn mapper function
- * @param chunkSize size of chunk
- */
-export async function asyncFlatMap<T, R extends {}>(
-	arr: T[],
-	fn: (item: T, index?: number) => R[] | R,
-	chunkSize = 25,
-): Promise<R[]> {
-	const results: R[] = [];
-	const chunks = sliceToChunks(arr, chunkSize);
-
-	// eslint-disable-next-line no-restricted-syntax
-	for (const chunk of chunks) {
-		// eslint-disable-next-line no-await-in-loop
-		const res = await asyncChunkMapper(chunk, fn);
-		results.push(...res.flat());
-	}
-
-	return results;
-}
-
-function asyncChunkMapper<T, R>(chunk: T[], fn: (item: T, index?: number) => R[] | R) {
-	return new Promise<(R[] | R)[]>(resolve => {
-		window.setImmediate(() => {
-			resolve(chunk.map(fn));
-		});
-	});
 }

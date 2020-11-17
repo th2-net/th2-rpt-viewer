@@ -427,6 +427,7 @@
 	overflow: auto;
 
 	&-row-toogler {
+		@include unselectable;
 		&:hover td {
 			background-color: darken($color: $tableHeaderBackgroundSecondary, $amount: 10) !important;
 		}
