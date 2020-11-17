@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { EventAction, EventTreeNode } from '../models/EventAction';
+import { EventMessage } from '../models/EventMessage';
 import { EventStatus } from '../models/Status';
 import { getTimestampAsNumber } from './date';
 
@@ -42,4 +43,12 @@ export const sortEventsByTimestamp = (
 		);
 	});
 	return copiedEvents;
+};
+
+export const isEventMessage = (object: unknown): object is EventMessage => {
+	return (
+		typeof object === 'object' &&
+		object !== null &&
+		(object as EventMessage).messageId !== undefined
+	);
 };
