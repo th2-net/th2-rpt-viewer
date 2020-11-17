@@ -16,12 +16,14 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { createStyleSelector } from '../../helpers/styleCreators';
+import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 import MessagesFilter from '../filter/MessagesFilterPanel';
+import { useMessageUpdateStore } from '../../hooks/useMessageUpdateStore';
 
 const MessagesWindowHeader = () => {
 	const messagesStore = useMessagesWindowStore();
+	const messageUpdateStore = useMessageUpdateStore();
 
 	const getStep = () => {
 		const step =
@@ -37,6 +39,12 @@ const MessagesWindowHeader = () => {
 		messagesStore.selectedMessagesIds.length > 0 && messagesStore.messagesIds.length > 0
 			? null
 			: 'disabled',
+	);
+
+	const updateButtonClass = createBemElement(
+		'messages-window-header',
+		'realtime-button',
+		messageUpdateStore.isSubscriptionActive ? 'active' : null,
 	);
 
 	return (
@@ -61,6 +69,21 @@ const MessagesWindowHeader = () => {
 					/>
 					<div className='messages-window-header__steps-count'>{getStep()}</div>
 				</div>
+				{messagesStore.messagesIds.length > 0 && (
+					<button onClick={messageUpdateStore.toggleSubscribe} className={updateButtonClass}>
+						{messageUpdateStore.accumulatedMessages.length === 0 ? (
+							<i className='messages-window-header__realtime-button-icon' />
+						) : (
+							<span
+								className='messages-window-header__realtime-button-count'
+								style={{
+									fontSize: messageUpdateStore.accumulatedMessages.length > 99 ? '11px' : '14px',
+								}}>
+								{messageUpdateStore.accumulatedMessages.length}
+							</span>
+						)}
+					</button>
+				)}
 			</div>
 		</div>
 	);

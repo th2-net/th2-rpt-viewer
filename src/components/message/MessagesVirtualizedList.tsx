@@ -19,6 +19,7 @@ import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
 import { defaultMessagesLoadingState } from '../../stores/MessagesStore';
 import useAsyncEffect from '../../hooks/useAsyncEffect';
 import { raf } from '../../helpers/raf';
+import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
@@ -41,6 +42,8 @@ interface Props {
 }
 
 const MessagesVirtualizedList = (props: Props) => {
+	const messageStore = useMessagesWindowStore();
+
 	const virtuoso = React.useRef<VirtuosoMethods>(null);
 
 	const {
@@ -75,7 +78,7 @@ const MessagesVirtualizedList = (props: Props) => {
 		// we need raf callback here to wait prepended item render
 		raf(() => {
 			virtuoso.current?.scrollToIndex({ index: resultIndex, align: 'start' });
-		}, 1);
+		}, 3);
 	}, [scrolledIndex]);
 
 	const onScrollBottom = () =>
@@ -104,6 +107,9 @@ const MessagesVirtualizedList = (props: Props) => {
 				style={{ height: '100%', width: '100%' }}
 				className={className}
 				ScrollContainer={ScrollContainer}
+				rangeChanged={range => {
+					messageStore.setScrollTopMessageId(range.startIndex);
+				}}
 			/>
 		</InfiniteLoaderContext.Provider>
 	);

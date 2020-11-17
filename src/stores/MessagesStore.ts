@@ -24,6 +24,8 @@ import { TabTypes } from '../models/util/Windows';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import { sortMessagesByTimestamp } from '../helpers/message';
 import { SelectedStore } from './SelectedStore';
+import MessageUpdateStore from './MessageUpdateStore';
+import { isEventMessage } from '../helpers/event';
 
 export const defaultMessagesLoadingState = {
 	loadingPreviousItems: false,
@@ -45,6 +47,8 @@ export default class MessagesStore {
 	private attachedMessagesSubscription: IReactionDisposer;
 
 	filterStore = new FilterStore();
+
+	messageUpdateStore = new MessageUpdateStore(this.api, this, this.filterStore);
 
 	@observable
 	public messagesIds: Array<string> = [];
@@ -76,6 +80,9 @@ export default class MessagesStore {
 	@observable
 	public isBeginReached = false;
 
+	@observable
+	public scrollTopMessageId: string | null = null;
+
 	constructor(private api: ApiSchema, private selectedStore: SelectedStore, store?: MessagesStore) {
 		if (store) {
 			this.copy(store);
@@ -104,7 +111,14 @@ export default class MessagesStore {
 
 		reaction(
 			() => this.selectedMessageId,
-			selectedMessageId => selectedMessageId && this.scrollToMessage(selectedMessageId.valueOf()),
+			selectedMessageId => {
+				if (this.messageUpdateStore.isSubscriptionActive) {
+					this.messageUpdateStore.disableSubscription();
+				}
+				if (selectedMessageId) {
+					this.scrollToMessage(selectedMessageId.valueOf());
+				}
+			},
 		);
 
 		if (!store) this.loadMessageSessions();
@@ -201,7 +215,7 @@ export default class MessagesStore {
 	};
 
 	@action
-	private getMessages = async (
+	public getMessages = async (
 		timelineDirection: 'next' | 'previous' = 'previous',
 		originMessageId: string | null = null,
 		limit = this.MESSAGES_CHUNK_SIZE,
@@ -296,7 +310,7 @@ export default class MessagesStore {
 		}
 	}
 
-	private abortControllers: { [key: string]: AbortController | null } = {
+	public abortControllers: { [key: string]: AbortController | null } = {
 		prevAC: null,
 		nextAC: null,
 	};
@@ -462,6 +476,32 @@ export default class MessagesStore {
 			await this.loadPreviousMessages(false, originMessageId);
 		} finally {
 			this.messagesLoadingState.loadingRootItems = false;
+		}
+	};
+
+	@action
+	public setScrollTopMessageId = (index: number) => {
+		this.scrollTopMessageId = this.messagesIds[index];
+	};
+
+	@action
+	public addMessagesToList = (
+		messages: EventMessage[] | string[],
+		timelineDirection: 'next' | 'previous',
+	) => {
+		if (!messages.length) return;
+		let messagesIds = messages;
+		if (isEventMessage(messages[0])) {
+			messagesIds = (messages as EventMessage[]).map(message => message.messageId);
+			(messages as EventMessage[]).forEach(message => {
+				this.messagesCache.set(message.messageId, message);
+			});
+		}
+
+		if (timelineDirection === 'next') {
+			this.messagesIds = [...(messagesIds.reverse() as string[]), ...this.messagesIds];
+		} else {
+			this.messagesIds = [...this.messagesIds, ...(messagesIds as string[])];
 		}
 	};
 
