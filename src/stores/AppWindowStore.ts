@@ -33,6 +33,10 @@ export default class AppWindowStore {
 		return this.tabs.length === 0;
 	}
 
+	@computed get activeTab() {
+		return this.tabs[this.activeTabIndex];
+	}
+
 	@action
 	duplicateTab = (tabIndex: number) => {
 		const tabToDublicate = this.tabs[tabIndex];

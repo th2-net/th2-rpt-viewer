@@ -22,12 +22,34 @@ import '../../styles/events.scss';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import FlatEventView from './flat-event-list/FlatEventView';
 
-const EventWindow = () => {
+interface EventWindowProps {
+	isActive: boolean;
+	setIsActive: () => void;
+}
+
+const EventWindow = (props: EventWindowProps) => {
 	const viewStore = useEventWindowViewStore();
+	const { isActive, setIsActive } = props;
+	const ref = React.useRef<HTMLDivElement | null>(null);
+
+	const documentClickHandler = (e: MouseEvent) => {
+		const tabs = ref.current && ref.current.closest('.tabs');
+		if (tabs && tabs.contains(e.target as HTMLElement)) {
+			setIsActive();
+		}
+	};
+
+	React.useEffect(() => {
+		document.addEventListener('click', documentClickHandler);
+		return () => {
+			document.removeEventListener('click', documentClickHandler);
+		};
+	}, []);
+
 	return (
-		<div className='layout'>
+		<div className='layout' ref={ref}>
 			<div className='layout__header'>
-				<EventWindowHeader />
+				<EventWindowHeader isWindowActive={isActive} />
 			</div>
 			<div className='layout__body'>
 				{viewStore.flattenedListView ? <FlatEventView /> : <EventTreeView />}

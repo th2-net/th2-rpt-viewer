@@ -21,7 +21,12 @@ import EventsFilterPanel from '../filter/EventsFilterPanel';
 import { useEventWindowStore } from '../../hooks/useEventWindowStore';
 import { createBemElement } from '../../helpers/styleCreators';
 
-function EventWindowHeader() {
+interface EventWindowHeaderProps {
+	isWindowActive: boolean;
+}
+
+function EventWindowHeader(props: EventWindowHeaderProps) {
+	const { isWindowActive } = props;
 	const eventStore = useEventWindowStore();
 
 	const flattenButtonClassName = createBemElement(
@@ -34,7 +39,7 @@ function EventWindowHeader() {
 		<div className='event-window-header'>
 			<div className='event-window-header__group'>
 				<div className='event-window-header__search'>
-					<SearchInput />
+					<SearchInput isWindowActive={isWindowActive} />
 				</div>
 				<EventsFilterPanel />
 				<div

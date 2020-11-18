@@ -25,7 +25,7 @@ import { EventWindowProvider } from '../contexts/eventWindowContext';
 import { MessagesWindowProvider } from '../contexts/messagesWindowContext';
 import { isEventsTab } from '../helpers/windows';
 import AppWindowStore from '../stores/AppWindowStore';
-import { TabTypes } from '../models/util/Windows';
+import { EventsTab, TabTypes } from '../models/util/Windows';
 import { TabDraggableItem } from './tabs/DraggableTab';
 import { withSideDropTargets } from './drag-n-drop/WithSideDropTargets';
 import DroppableTabList from './tabs/DroppableTabList';
@@ -35,13 +35,28 @@ import { useWindowsStore } from '../hooks/useWindowsStore';
 interface AppWindowProps {
 	windowStore: AppWindowStore;
 	windowIndex: number;
+	activeEventsTab: EventsTab | null;
+	setActiveEventsTab: (eventsTab: EventsTab | null) => void;
 }
 
 const TabsWithSideDropTargets = withSideDropTargets(Tabs);
 
 const AppWindow = (props: AppWindowProps) => {
-	const { windowStore, windowIndex } = props;
+	const { windowStore, windowIndex, activeEventsTab, setActiveEventsTab } = props;
 	const windowsStore = useWindowsStore();
+	const [isActive, setIsActive] = React.useState(false);
+
+	const setActiveWindow = () => {
+		setActiveEventsTab(isEventsTab(windowStore.activeTab) ? windowStore.activeTab : null);
+	};
+
+	React.useEffect(() => {
+		if (activeEventsTab === null) {
+			setActiveWindow();
+		} else {
+			setIsActive(activeEventsTab === windowStore.activeTab);
+		}
+	}, [activeEventsTab, windowStore.activeTab]);
 
 	const renderTabs: TabListRenderProps = renderProps => {
 		const { activeTabIndex, ...tabProps } = renderProps;
@@ -128,7 +143,7 @@ const AppWindow = (props: AppWindowProps) => {
 			tabPanels={windowStore.tabs.map(tab =>
 				isEventsTab(tab) ? (
 					<EventWindowProvider value={tab.store}>
-						<EventWindow />
+						<EventWindow isActive={isActive} setIsActive={setActiveWindow} />
 					</EventWindowProvider>
 				) : (
 					<MessagesWindowProvider value={tab.store}>

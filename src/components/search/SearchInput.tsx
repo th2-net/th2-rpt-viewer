@@ -49,7 +49,9 @@ interface DispatchProps {
 	setValue: (value: string) => void;
 }
 
-export interface Props extends StateProps, DispatchProps {}
+export interface Props extends StateProps, DispatchProps {
+	isWindowActive: boolean;
+}
 
 export class SearchInputBase extends React.PureComponent<Props> {
 	private inputElement: React.MutableRefObject<HTMLInputElement | null> = React.createRef();
@@ -258,8 +260,9 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		if (e.keyCode === KeyCodes.F3 || (e.keyCode === KeyCodes.F && e.ctrlKey)) {
 			// cancel browser search opening
 			e.preventDefault();
-
-			this.focus();
+			if (this.props.isWindowActive) {
+				this.focus();
+			}
 		}
 	};
 
@@ -338,12 +341,18 @@ export class SearchInputBase extends React.PureComponent<Props> {
 	}
 }
 
-const SearchInput = () => {
+interface SearchInputProps {
+	isWindowActive: boolean;
+}
+
+const SearchInput = (props: SearchInputProps) => {
+	const { isWindowActive } = props;
 	const { searchStore } = useEventWindowStore();
 
 	return (
 		<SearchInputBase
 			isActive={searchStore.isActive}
+			isWindowActive={isWindowActive}
 			setIsActive={(isActive: boolean) => (searchStore.isActive = isActive)}
 			searchTokens={searchStore.tokens}
 			resultsCount={searchStore.results.length}
