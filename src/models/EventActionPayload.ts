@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventStatus } from './Status';
+import { StatusType } from './Status';
 
 export type EventBodyPayload =
 	| MessagePayload
@@ -66,13 +66,13 @@ export interface VerificationPayload {
 	fields: {
 		[field: string]: VerificationPayloadField;
 	};
-	status: EventStatus;
+	status: StatusType;
 }
 
 export interface VerificationPayloadField {
 	type: 'field' | 'collection';
 	operation: 'EQUAL' | 'NOT_EQUAL' | 'NOT_EMPTY';
-	status: EventStatus;
+	status: StatusType;
 	key: boolean;
 	actual: string;
 	expected: string;
