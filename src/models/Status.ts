@@ -19,4 +19,13 @@ export enum EventStatus {
 	FAILED = 'FAILED',
 }
 
-export const eventStatusValues: EventStatus[] = Object.values(EventStatus);
+export enum StatusType {
+	PASSED = 'PASSED',
+	FAILED = 'FAILED',
+	CONDITIONALLY_PASSED = 'CONDITIONALLY_PASSED',
+	NA = 'NA',
+	SKIPPED = 'SKIPPED',
+	CONDITIONALLY_FAILED = 'CONDITIONALLY_FAILED',
+}
+
+export const eventStatusValues: StatusType[] = Object.values(StatusType);

@@ -37,7 +37,7 @@ function EventDetailInfoCard(props: Props) {
 		return <SplashScreen />;
 	}
 
-	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId } = event;
+	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId, batchId } = event;
 
 	const status = getEventStatus(event);
 
@@ -76,7 +76,7 @@ function EventDetailInfoCard(props: Props) {
 						</>
 					)}
 				</div>
-				<div className='event-detail-card__id'>{eventId}</div>
+				<div className='event-detail-card__id'>{`${batchId ? `${batchId}:` : ''}${eventId}`}</div>
 			</div>
 			<div className='event-detail-card__body'>
 				<div className='event-detail-card__body-list'>

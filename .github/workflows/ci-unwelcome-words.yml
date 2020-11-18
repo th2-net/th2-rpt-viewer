@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.sha }}
+    - name: Checkout tool
+      uses: actions/checkout@v2
+      with:
+        repository: exactpro-th2/ci-github-action
+        ref: master
+        token: ${{ secrets.PAT_CI_ACTION }}
+        path: ci-github-action
+    - name: Run CI action
+      uses: ./ci-github-action
+      with:
+        ref: ${{ github.sha }}

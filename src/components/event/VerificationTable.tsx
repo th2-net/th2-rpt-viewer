@@ -18,7 +18,7 @@ import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import throttle from 'lodash.throttle';
 import { observer } from 'mobx-react-lite';
-import { EventStatus, eventStatusValues } from '../../models/Status';
+import { EventStatus, eventStatusValues, StatusType } from '../../models/Status';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import { getVerificationTablesNodes } from '../../helpers/tables';
 import StateSaver, { RecoverableElementProps } from '../util/StateSaver';
@@ -29,9 +29,11 @@ import '../../styles/tables.scss';
 
 const PADDING_LEVEL_VALUE = 10;
 
-const STATUS_ALIASES = new Map<EventStatus, { alias: string; className: string }>([
-	[EventStatus.FAILED, { alias: 'F', className: 'failed' }],
-	[EventStatus.PASSED, { alias: 'P', className: 'passed' }],
+const STATUS_ALIASES = new Map<StatusType, { alias: string; className: string }>([
+	[StatusType.FAILED, { alias: 'F', className: 'failed' }],
+	[StatusType.PASSED, { alias: 'P', className: 'passed' }],
+	[StatusType.CONDITIONALLY_PASSED, { alias: 'CP', className: 'conditionally_passed' }],
+	[StatusType.NA, { alias: 'NA', className: 'na' }],
 ]);
 
 interface OwnProps {
@@ -43,8 +45,8 @@ interface OwnProps {
 
 interface StateProps {
 	precision: string;
-	transparencyFilter: Set<EventStatus>;
-	visibilityFilter: Set<EventStatus>;
+	transparencyFilter: Set<StatusType>;
+	visibilityFilter: Set<StatusType>;
 	expandPath: number[];
 }
 
@@ -313,13 +315,13 @@ class VerificationTableBase extends React.Component<Props, State> {
 		} = node;
 
 		const isToggler = subEntries != null && subEntries.length > 0;
-		const isTransparent = status != null && !transparencyFilter.has(status as any);
+		const isTransparent = status != null && !transparencyFilter.has(status);
 		const expectedReplaced = replaceNonPrintableChars(expected);
 		const actualReplaced = replaceNonPrintableChars(actual);
 
 		const statusAlias =
-			status && STATUS_ALIASES.has(status as any)
-				? STATUS_ALIASES.get(status as any)!
+			status && STATUS_ALIASES.has(status)
+				? STATUS_ALIASES.get(status)!
 				: { alias: status, className: '' };
 
 		const rootClassName = createStyleSelector(
@@ -482,7 +484,7 @@ export const RecoverableVerificationTable = ({ stateKey, ...props }: RecoveredPr
 export const VerificationTable = observer(({ ...restProps }: OwnProps) => (
 	<RecoverableVerificationTable
 		precision=''
-		transparencyFilter={new Set<EventStatus>(eventStatusValues)}
+		transparencyFilter={new Set<StatusType>(eventStatusValues)}
 		visibilityFilter={new Set(eventStatusValues)}
 		expandPath={[] /** TODO: remove legacy search logic */}
 		{...restProps}
