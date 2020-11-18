@@ -2,10 +2,10 @@ name: Build and publish Docker distributions to Github Container Registry ghcr.i
 
 on:
   push:
-    branches:
-    - master
-    paths:
-    - package.json  
+    # branches:
+    # - master
+    # paths:
+    # - package.json  
 
 jobs:
   build:
@@ -19,6 +19,8 @@ jobs:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT }}
+    - run: echo "::set-output name=REPOSITORY_NAME::$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')"
+      id: meta
     - name: Get package version
       id: version
       uses: notiz-dev/github-action-json-property@release
@@ -31,3 +33,4 @@ jobs:
       with:
         push: true
         tags: ghcr.io/${{ github.repository }}:${{ steps.version.outputs.value }}
+        labels: com.exactpro.th2.${{ steps.meta.outputs.REPOSITORY_NAME }}=${{ steps.version.outputs.value }}
