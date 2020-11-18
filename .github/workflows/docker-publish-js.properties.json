@@ -1,0 +1,5 @@
+{
+    "name": "Publish Docker artifacts to ghcr.io",
+    "description": "Publish Docker images to Github Container registry",
+    "iconName": "example-icon"
+}
