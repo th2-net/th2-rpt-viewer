@@ -2,8 +2,8 @@ name: Build and publish Docker distributions to Github Container Registry ghcr.i
 
 on:
   push:
-    # branches:
-    # - master
+    branches:
+    - master
     # paths:
     # - package.json  
 
