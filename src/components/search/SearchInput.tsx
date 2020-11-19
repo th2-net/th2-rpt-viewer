@@ -50,7 +50,7 @@ interface DispatchProps {
 }
 
 export interface Props extends StateProps, DispatchProps {
-	isWindowActive: boolean;
+	disabled: boolean;
 }
 
 export class SearchInputBase extends React.PureComponent<Props> {
@@ -260,7 +260,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		if (e.keyCode === KeyCodes.F3 || (e.keyCode === KeyCodes.F && e.ctrlKey)) {
 			// cancel browser search opening
 			e.preventDefault();
-			if (this.props.isWindowActive) {
+			if (!this.props.disabled) {
 				this.focus();
 			}
 		}
@@ -342,17 +342,17 @@ export class SearchInputBase extends React.PureComponent<Props> {
 }
 
 interface SearchInputProps {
-	isWindowActive: boolean;
+	disabled: boolean;
 }
 
 const SearchInput = (props: SearchInputProps) => {
-	const { isWindowActive } = props;
+	const { disabled } = props;
 	const { searchStore } = useEventWindowStore();
 
 	return (
 		<SearchInputBase
 			isActive={searchStore.isActive}
-			isWindowActive={isWindowActive}
+			disabled={disabled}
 			setIsActive={(isActive: boolean) => (searchStore.isActive = isActive)}
 			searchTokens={searchStore.tokens}
 			resultsCount={searchStore.results.length}

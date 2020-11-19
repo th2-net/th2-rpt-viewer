@@ -39,7 +39,7 @@ function EventWindowHeader(props: EventWindowHeaderProps) {
 		<div className='event-window-header'>
 			<div className='event-window-header__group'>
 				<div className='event-window-header__search'>
-					<SearchInput isWindowActive={isWindowActive} />
+					<SearchInput disabled={!isWindowActive} />
 				</div>
 				<EventsFilterPanel />
 				<div
