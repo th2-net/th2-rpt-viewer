@@ -67,6 +67,10 @@ export default class WindowsStore {
 		return this.allTabs.filter(tab => isMessagesTab(tab)).length > 1;
 	}
 
+	@computed get activeTabs() {
+		return this.windows.map(window => window.tabs[window.activeTabIndex]);
+	}
+
 	@action
 	public moveTab = (
 		originWindowIndex: number,

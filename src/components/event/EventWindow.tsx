@@ -24,30 +24,14 @@ import FlatEventView from './flat-event-list/FlatEventView';
 
 interface EventWindowProps {
 	isActive: boolean;
-	setIsActive: () => void;
 }
 
 const EventWindow = (props: EventWindowProps) => {
 	const viewStore = useEventWindowViewStore();
-	const { isActive, setIsActive } = props;
-	const ref = React.useRef<HTMLDivElement | null>(null);
-
-	const documentClickHandler = (e: MouseEvent) => {
-		const tabs = ref.current && ref.current.closest('.tabs');
-		if (tabs && tabs.contains(e.target as HTMLElement)) {
-			setIsActive();
-		}
-	};
-
-	React.useEffect(() => {
-		document.addEventListener('click', documentClickHandler);
-		return () => {
-			document.removeEventListener('click', documentClickHandler);
-		};
-	}, []);
+	const { isActive } = props;
 
 	return (
-		<div className='layout' ref={ref}>
+		<div className='layout'>
 			<div className='layout__header'>
 				<EventWindowHeader isWindowActive={isActive} />
 			</div>

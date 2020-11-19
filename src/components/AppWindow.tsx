@@ -44,19 +44,17 @@ const TabsWithSideDropTargets = withSideDropTargets(Tabs);
 const AppWindow = (props: AppWindowProps) => {
 	const { windowStore, windowIndex, activeEventsTab, setActiveEventsTab } = props;
 	const windowsStore = useWindowsStore();
-	const [isActive, setIsActive] = React.useState(false);
 
 	const setActiveWindow = () => {
-		setActiveEventsTab(isEventsTab(windowStore.activeTab) ? windowStore.activeTab : null);
+		const activeTab = windowStore.tabs[windowStore.activeTabIndex];
+		setActiveEventsTab(isEventsTab(activeTab) ? activeTab : null);
 	};
 
 	React.useEffect(() => {
-		if (activeEventsTab === null) {
-			setActiveWindow();
-		} else {
-			setIsActive(activeEventsTab === windowStore.activeTab);
+		if (!activeEventsTab || !windowsStore.activeTabs.includes(activeEventsTab)) {
+			setActiveEventsTab(windowsStore.activeTabs.find(isEventsTab) || null);
 		}
-	}, [activeEventsTab, windowStore.activeTab]);
+	}, [activeEventsTab, windowsStore.activeTabs]);
 
 	const renderTabs: TabListRenderProps = renderProps => {
 		const { activeTabIndex, ...tabProps } = renderProps;
@@ -124,6 +122,7 @@ const AppWindow = (props: AppWindowProps) => {
 		<TabsWithSideDropTargets
 			leftDropAreaEnabled={windowsStore.windows.length === 1}
 			rightDropAreaEnabled={windowsStore.windows.length === 1}
+			setActiveWindow={setActiveWindow}
 			onDropLeft={(draggedTab: TabDraggableItem) =>
 				windowsStore.moveTab(windowIndex, windowIndex - 1, draggedTab.tabIndex)
 			}
@@ -143,7 +142,7 @@ const AppWindow = (props: AppWindowProps) => {
 			tabPanels={windowStore.tabs.map(tab =>
 				isEventsTab(tab) ? (
 					<EventWindowProvider value={tab.store}>
-						<EventWindow isActive={isActive} setIsActive={setActiveWindow} />
+						<EventWindow isActive={tab === activeEventsTab} />
 					</EventWindowProvider>
 				) : (
 					<MessagesWindowProvider value={tab.store}>
