@@ -22,12 +22,18 @@ import '../../styles/events.scss';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import FlatEventView from './flat-event-list/FlatEventView';
 
-const EventWindow = () => {
+interface EventWindowProps {
+	isActive: boolean;
+}
+
+const EventWindow = (props: EventWindowProps) => {
 	const viewStore = useEventWindowViewStore();
+	const { isActive } = props;
+
 	return (
 		<div className='layout'>
 			<div className='layout__header'>
-				<EventWindowHeader />
+				<EventWindowHeader isWindowActive={isActive} />
 			</div>
 			<div className='layout__body'>
 				{viewStore.flattenedListView ? <FlatEventView /> : <EventTreeView />}

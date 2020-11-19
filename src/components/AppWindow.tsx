@@ -25,7 +25,7 @@ import { EventWindowProvider } from '../contexts/eventWindowContext';
 import { MessagesWindowProvider } from '../contexts/messagesWindowContext';
 import { isEventsTab } from '../helpers/windows';
 import AppWindowStore from '../stores/AppWindowStore';
-import { TabTypes } from '../models/util/Windows';
+import { EventsTab, TabTypes } from '../models/util/Windows';
 import { TabDraggableItem } from './tabs/DraggableTab';
 import { withSideDropTargets } from './drag-n-drop/WithSideDropTargets';
 import DroppableTabList from './tabs/DroppableTabList';
@@ -35,13 +35,26 @@ import { useWindowsStore } from '../hooks/useWindowsStore';
 interface AppWindowProps {
 	windowStore: AppWindowStore;
 	windowIndex: number;
+	activeEventsTab: EventsTab | null;
+	setActiveEventsTab: (eventsTab: EventsTab | null) => void;
 }
 
 const TabsWithSideDropTargets = withSideDropTargets(Tabs);
 
 const AppWindow = (props: AppWindowProps) => {
-	const { windowStore, windowIndex } = props;
+	const { windowStore, windowIndex, activeEventsTab, setActiveEventsTab } = props;
 	const windowsStore = useWindowsStore();
+
+	const setActiveWindow = () => {
+		const activeTab = windowStore.tabs[windowStore.activeTabIndex];
+		setActiveEventsTab(isEventsTab(activeTab) ? activeTab : null);
+	};
+
+	React.useEffect(() => {
+		if (!activeEventsTab || !windowsStore.activeTabs.includes(activeEventsTab)) {
+			setActiveEventsTab(windowsStore.activeTabs.find(isEventsTab) || null);
+		}
+	}, [activeEventsTab, windowsStore.activeTabs]);
 
 	const renderTabs: TabListRenderProps = renderProps => {
 		const { activeTabIndex, ...tabProps } = renderProps;
@@ -109,6 +122,7 @@ const AppWindow = (props: AppWindowProps) => {
 		<TabsWithSideDropTargets
 			leftDropAreaEnabled={windowsStore.windows.length === 1}
 			rightDropAreaEnabled={windowsStore.windows.length === 1}
+			setActiveWindow={setActiveWindow}
 			onDropLeft={(draggedTab: TabDraggableItem) =>
 				windowsStore.moveTab(windowIndex, windowIndex - 1, draggedTab.tabIndex)
 			}
@@ -128,7 +142,7 @@ const AppWindow = (props: AppWindowProps) => {
 			tabPanels={windowStore.tabs.map(tab =>
 				isEventsTab(tab) ? (
 					<EventWindowProvider value={tab.store}>
-						<EventWindow />
+						<EventWindow isActive={tab === activeEventsTab} />
 					</EventWindowProvider>
 				) : (
 					<MessagesWindowProvider value={tab.store}>

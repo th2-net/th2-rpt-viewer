@@ -41,6 +41,7 @@ describe('[React] <SearchInput/>', () => {
 		setIsActive: () => {},
 		value: 'default value',
 		setValue: () => {},
+		disabled: false,
 	};
 
 	test('Should render input on click', () => {

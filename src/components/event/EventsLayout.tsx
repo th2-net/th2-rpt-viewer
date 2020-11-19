@@ -25,17 +25,24 @@ import SplitViewPane from '../split-view/SplitViewPane';
 import AppWindow from '../AppWindow';
 import { useAppViewStore } from '../../hooks/useAppViewStore';
 import '../../styles/layout.scss';
+import { EventsTab } from '../../models/util/Windows';
 
 const EventsLayout = () => {
 	const windowsStore = useWindowsStore();
 	const appViewStore = useAppViewStore();
+	const [activeEventsTab, setActiveEventsTab] = React.useState<EventsTab | null>(null);
 
 	return (
 		<div className='events-layout'>
 			<DndProvider backend={HTML5Backend}>
 				<CustomDragLayer />
 				{windowsStore.windows.length === 1 && (
-					<AppWindow windowStore={windowsStore.windows[0]} windowIndex={0} />
+					<AppWindow
+						windowStore={windowsStore.windows[0]}
+						windowIndex={0}
+						activeEventsTab={activeEventsTab}
+						setActiveEventsTab={setActiveEventsTab}
+					/>
 				)}
 				{windowsStore.windows.length > 1 && (
 					<SplitView
@@ -43,10 +50,20 @@ const EventsLayout = () => {
 						onPanelAreaChange={appViewStore.setPanelArea}
 						splitterClassName='events-layout__splitter'>
 						<SplitViewPane>
-							<AppWindow windowStore={windowsStore.windows[0]} windowIndex={0} />
+							<AppWindow
+								windowStore={windowsStore.windows[0]}
+								windowIndex={0}
+								activeEventsTab={activeEventsTab}
+								setActiveEventsTab={setActiveEventsTab}
+							/>
 						</SplitViewPane>
 						<SplitViewPane>
-							<AppWindow windowStore={windowsStore.windows[1]} windowIndex={1} />
+							<AppWindow
+								windowStore={windowsStore.windows[1]}
+								windowIndex={1}
+								activeEventsTab={activeEventsTab}
+								setActiveEventsTab={setActiveEventsTab}
+							/>
 						</SplitViewPane>
 					</SplitView>
 				)}
