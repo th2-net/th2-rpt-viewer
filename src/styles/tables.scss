@@ -71,6 +71,7 @@
 	}
 
 	&-row {
+		@include unselectable;
 		&.passed {
 			& td {
 				background-color: $tableRowPassedBackgroundColor;
