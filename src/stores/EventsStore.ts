@@ -99,6 +99,8 @@ export default class EventsStore {
 
 	@observable isExpandedMap: Map<string, boolean> = new Map();
 
+	@observable eventTreeStatusCode: number | null = null;
+
 	@computed
 	public get flattenedEventList() {
 		return sortEventsByTimestamp(
@@ -208,6 +210,7 @@ export default class EventsStore {
 			this.eventTreeAC.abort();
 		}
 		this.eventTreeAC = new AbortController();
+		this.eventTreeStatusCode = null;
 
 		this.selectedNode = null;
 		this.isLoadingRootEvents = true;
@@ -220,9 +223,12 @@ export default class EventsStore {
 				this.eventTree = sortEventsByTimestamp(rootEventIds);
 			});
 		} catch (error) {
-			this.eventTree = [];
-			this.isExpandedMap.clear();
-			console.error('Error while loading root events', error);
+			if (error.name !== 'AbortError') {
+				this.eventTreeStatusCode = error.status;
+				this.eventTree = [];
+				this.isExpandedMap.clear();
+				console.error('Error while loading root events', error);
+			}
 		} finally {
 			this.eventTreeAC = null;
 			this.isLoadingRootEvents = false;
