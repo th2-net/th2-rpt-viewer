@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable } from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
@@ -57,9 +57,13 @@ export default class FilterStore {
 
 	@observable messagesFilter: MessagesFilter = defaultMessagesFilter;
 
+	@observable dirtyMessagesFilter: MessagesFilter = defaultMessagesFilter;
+
 	@observable isMessagesFilterApplied = false;
 
 	@observable eventsFilter: EventsFilter = getDefaultEventFilter();
+
+	@observable dirtyEventsFilter: EventsFilter = getDefaultEventFilter();
 
 	@observable eventsTimeFilterIsApplied = false;
 
@@ -83,6 +87,11 @@ export default class FilterStore {
 	}
 
 	@action
+	setDirtyMessagesFilter(filter: MessagesFilter) {
+		this.dirtyMessagesFilter = filter;
+	}
+
+	@action
 	resetMessagesFilter(streams: string[] = []) {
 		this.messagesFilter = {
 			...defaultMessagesFilter,
@@ -99,6 +108,11 @@ export default class FilterStore {
 			return;
 		}
 		this.eventsFilter = filter;
+	}
+
+	@action
+	setDirtyEventsFilter(filter: EventsFilter) {
+		this.dirtyEventsFilter = filter;
 	}
 
 	@action
@@ -126,6 +140,10 @@ export default class FilterStore {
 			timestampFrom: eventsFilter.timestampFrom || defaultEventsFilter.timestampFrom,
 		};
 
+		this.dirtyEventsFilter = {
+			...this.eventsFilter,
+		};
+
 		if (eventsFilter.timestamp || eventsFilter.timeInterval) {
 			this.eventsTimeFilterIsApplied = true;
 		}
@@ -137,6 +155,10 @@ export default class FilterStore {
 			streams: messagesFilter.streams || defaultMessagesFilter.streams,
 			timestampTo: messagesFilter.timestampTo || defaultMessagesFilter.timestampTo,
 			timestampFrom: messagesFilter.timestampFrom || defaultMessagesFilter.timestampFrom,
+		};
+
+		this.dirtyMessagesFilter = {
+			...this.messagesFilter,
 		};
 
 		this.isMessagesFilterApplied = isMessagesFilterApplied;

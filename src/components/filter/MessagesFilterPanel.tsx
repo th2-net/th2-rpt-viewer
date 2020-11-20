@@ -33,25 +33,46 @@ const MessagesFilterPanel = () => {
 
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [timestamp, setTimestamp] = React.useState<number | null>(
-		filterStore.messagesFilter.timestamp,
+		filterStore.dirtyMessagesFilter.timestamp,
 	);
 	const [timeInterval, setTimeInterval] = React.useState<number | null>(
-		filterStore.messagesFilter.timeInterval,
+		filterStore.dirtyMessagesFilter.timeInterval,
 	);
 	const [currentStream, setCurrentStream] = React.useState('');
-	const [streams, setStreams] = React.useState<Array<string>>([]);
+	const [streams, setStreams] = React.useState<Array<string>>(
+		filterStore.dirtyMessagesFilter.streams,
+	);
 	const [currentMessageType, setCurrentMessageType] = React.useState('');
-	const [messageTypes, setMessagesTypes] = React.useState<Array<string>>([]);
+	const [messageTypes, setMessagesTypes] = React.useState<Array<string>>(
+		filterStore.dirtyMessagesFilter.messageTypes,
+	);
 
 	React.useEffect(() => {
-		setTimestamp(filterStore.messagesFilter.timestamp);
-		setTimeInterval(filterStore.messagesFilter.timeInterval);
-		setMessagesTypes(filterStore.messagesFilter.messageTypes);
+		if (filterStore.isMessagesFilterApplied) {
+			setTimestamp(filterStore.messagesFilter.timestamp);
+			setTimeInterval(filterStore.messagesFilter.timeInterval);
+			setMessagesTypes(filterStore.messagesFilter.messageTypes);
+		}
 	}, [filterStore.messagesFilter]);
 
 	React.useEffect(() => {
-		setStreams(filterStore.messagesFilter.streams);
+		if (filterStore.isMessagesFilterApplied) {
+			setStreams(filterStore.messagesFilter.streams);
+		}
 	}, [filterStore.messagesFilter.streams]);
+
+	React.useEffect(() => {
+		const { timestampFrom, timestampTo } = getTimeWindow(timestamp, timeInterval, true);
+
+		filterStore.setDirtyMessagesFilter({
+			timestamp,
+			timeInterval,
+			timestampFrom,
+			timestampTo,
+			streams,
+			messageTypes,
+		});
+	}, [timestamp, timeInterval, streams, messageTypes]);
 
 	const submitChanges = () => {
 		const { timestampFrom, timestampTo } = getTimeWindow(timestamp, timeInterval);

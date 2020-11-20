@@ -31,27 +31,44 @@ function EventsFilterPanel() {
 	const eventWindowStore = useEventWindowStore();
 	const { filterStore } = eventWindowStore;
 
-	const [timestamp, setTimestamp] = React.useState(filterStore.eventsFilter.timestamp);
-	const [timeInterval, setTimeInterval] = React.useState(filterStore.eventsFilter.timeInterval);
+	const [timestamp, setTimestamp] = React.useState(filterStore.dirtyEventsFilter.timestamp);
+	const [timeInterval, setTimeInterval] = React.useState(
+		filterStore.dirtyEventsFilter.timeInterval,
+	);
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentName, setCurrentName] = React.useState('');
-	const [names, setNames] = React.useState(filterStore.eventsFilter.names);
+	const [names, setNames] = React.useState(filterStore.dirtyEventsFilter.names);
 	const [currentType, setCurrentEventType] = React.useState('');
-	const [eventTypes, setEventsTypes] = React.useState(filterStore.eventsFilter.names);
+	const [eventTypes, setEventsTypes] = React.useState(filterStore.dirtyEventsFilter.names);
 
 	React.useEffect(() => {
-		setTimestamp(filterStore.eventsFilter.timestamp);
-		setTimeInterval(filterStore.eventsFilter.timeInterval);
-		setNames(filterStore.eventsFilter.names);
-		setEventsTypes(filterStore.eventsFilter.eventTypes);
+		if (filterStore.isEventsFilterApplied) {
+			setTimestamp(filterStore.eventsFilter.timestamp);
+			setTimeInterval(filterStore.eventsFilter.timeInterval);
+			setNames(filterStore.eventsFilter.names);
+			setEventsTypes(filterStore.eventsFilter.eventTypes);
+		}
 	}, [filterStore.eventsFilter]);
 
+	React.useEffect(() => {
+		const { timestampFrom, timestampTo } = getTimeWindow(timestamp, timeInterval, true);
+
+		filterStore.setDirtyEventsFilter({
+			timestamp,
+			timeInterval,
+			timestampFrom,
+			timestampTo,
+			names,
+			eventTypes,
+		});
+	}, [timestamp, timeInterval, names, eventTypes]);
+
 	const onSubmit = () => {
-		eventWindowStore.filterStore.eventsTimeFilterIsApplied = true;
+		filterStore.eventsTimeFilterIsApplied = true;
 
 		const { timestampFrom, timestampTo } = getTimeWindow(timestamp, timeInterval, true);
 
-		eventWindowStore.filterStore.setEventsFilter({
+		filterStore.setEventsFilter({
 			timestamp,
 			timeInterval,
 			timestampFrom,
@@ -62,7 +79,7 @@ function EventsFilterPanel() {
 	};
 
 	const onClear = () => {
-		eventWindowStore.filterStore.resetEventsFilter();
+		filterStore.resetEventsFilter();
 	};
 
 	const filterConfig: FilterRowConfig[] = [
@@ -74,7 +91,7 @@ function EventsFilterPanel() {
 				{
 					label: 'Timestamp',
 					value: timestamp,
-					setValue: setTimestamp,
+					setValue: value => setTimestamp(value),
 					type: TimeInputType.DATE_TIME,
 					id: 'events-timestamp',
 					inputMask: DATE_TIME_INPUT_MASK,
