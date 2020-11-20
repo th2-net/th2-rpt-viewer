@@ -16,8 +16,8 @@
 
 import React from 'react';
 import { ToastProps } from 'react-toast-notifications';
-import { createStyleSelector } from '../helpers/styleCreators';
-import '../styles/toasts.scss';
+import { createStyleSelector } from '../../helpers/styleCreators';
+import '../../styles/toasts.scss';
 
 export default function Toast(props: ToastProps) {
 	const { appearance, children, onDismiss } = props;
