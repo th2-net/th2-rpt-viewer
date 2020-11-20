@@ -54,7 +54,8 @@ const messageHttpApi: MessageApiSchema = {
 		}
 
 		console.error(res.statusText);
-		return [];
+
+		throw res;
 	},
 	getMessagesIds: async (timestampFrom: number, timestampTo: number) => {
 		const params = createURLSearchParams({

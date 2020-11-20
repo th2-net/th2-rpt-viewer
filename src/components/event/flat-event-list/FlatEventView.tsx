@@ -38,9 +38,15 @@ function EventTreeView() {
 				<FlatEventList nodes={eventWindowStore.flattenedEventList} />
 			</SplitViewPane>
 			<SplitViewPane>
-				{eventWindowStore.selectedNode === null && !eventWindowStore.loadingSelectedEvent && (
-					<Empty description='Select event' />
-				)}
+				{eventWindowStore.selectedNode === null &&
+					!eventWindowStore.loadingSelectedEvent &&
+					(eventWindowStore.eventTreeStatusCode === null ? (
+						<Empty description='Select event' />
+					) : (
+						<Empty
+							description={`Server responded with ${eventWindowStore.eventTreeStatusCode} code`}
+						/>
+					))}
 				{eventWindowStore.selectedNode && (
 					<DetailedFlatEventCard
 						eventTreeNode={eventWindowStore.selectedNode}

@@ -80,7 +80,12 @@ function FlatEventList({ nodes }: Props) {
 	}
 
 	if (!eventWindowStore.isLoadingRootEvents && eventWindowStore.eventTree.length === 0) {
-		return <Empty description='No events' />;
+		if (eventWindowStore.eventTreeStatusCode === null) {
+			return <Empty description='No events' />;
+		}
+		return (
+			<Empty description={`Server responded with ${eventWindowStore.eventTreeStatusCode} code`} />
+		);
 	}
 
 	return (

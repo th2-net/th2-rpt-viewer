@@ -75,7 +75,14 @@ const MessageCardList = () => {
 		!Object.values(messagesStore.messagesLoadingState).some(Boolean) &&
 		messagesStore.messagesIds.length === 0
 	) {
-		return <Empty description='No messages' />;
+		if (messagesStore.messagesListErrorStatusCode === null) {
+			return <Empty description='No messages' />;
+		}
+		return (
+			<Empty
+				description={`Server responded with ${messagesStore.messagesListErrorStatusCode} code`}
+			/>
+		);
 	}
 
 	return (

@@ -83,6 +83,8 @@ export default class MessagesStore {
 	@observable
 	public scrollTopMessageId: string | null = null;
 
+	@observable messagesListErrorStatusCode: number | null = null;
+
 	constructor(private api: ApiSchema, private selectedStore: SelectedStore, store?: MessagesStore) {
 		if (store) {
 			this.copy(store);
@@ -228,6 +230,7 @@ export default class MessagesStore {
 			this.resetMessagesState();
 			return [];
 		}
+		this.messagesListErrorStatusCode = null;
 
 		try {
 			let messagesIds: string[];
@@ -243,6 +246,7 @@ export default class MessagesStore {
 					this.filterStore.messagesFilter,
 					abortSignal,
 				);
+
 				messagesIds = messages.map(msg => msg.messageId);
 				messages.forEach(msg => {
 					this.messagesCache.set(msg.messageId, msg);
@@ -293,6 +297,9 @@ export default class MessagesStore {
 			return messagesIds;
 		} catch (error) {
 			if (error.name !== 'AbortError') {
+				this.messagesListErrorStatusCode = error.status;
+				this.messagesIds = [];
+				this.messagesCache.clear();
 				console.error('Error while loading messages', error);
 			}
 		}
