@@ -17,10 +17,10 @@
 import { hot } from 'react-hot-loader/root';
 import * as React from 'react';
 import { ToastProvider } from 'react-toast-notifications';
-import Toast from './Toast';
+import Toast from './notifications/Toast';
 import EventsLayout from './event/EventsLayout';
 import '../styles/root.scss';
-import Notifier from './Notifier';
+import Notifier from './notifications/Notifier';
 
 const App = () => (
 	<div className='root'>

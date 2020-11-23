@@ -15,35 +15,31 @@
  ***************************************************************************** */
 
 import React, { useState } from 'react';
-import { copyTextToClipboard } from '../helpers/copyHandler';
-import { createStyleSelector } from '../helpers/styleCreators';
-import '../styles/fetch-error.scss';
+import { copyTextToClipboard } from '../../helpers/copyHandler';
+import { createStyleSelector } from '../../helpers/styleCreators';
 
-interface FetchErrorProps {
-	resource?: string;
-	responseCode?: number;
-	responseBody?: string;
+interface UrlEroorProps {
+	link: string | null | undefined;
+	error: Error;
 }
 
-export default function FetchError(props: FetchErrorProps) {
-	const { resource, responseBody, responseCode } = props;
+export default function UrlError(props: UrlEroorProps) {
+	const { link, error } = props;
 	const [copied, setCopied] = useState(false);
 	const copyDetailsText = createStyleSelector('copy-details__text', copied ? 'copied' : null);
 
 	const copy = () => {
-		const value = JSON.stringify({ resource, responseBody, responseCode }, null, ' ');
+		const value = JSON.stringify({ link, error }, null, ' ');
 		copyTextToClipboard(value);
 		setCopied(true);
 	};
 
 	return (
-		<div className='fetch-error'>
-			<div className='fetch-error__top'>
-				<p className='response-body'>{responseBody}</p>
-				<p className='response-code'>{responseCode}</p>
+		<div className='toast-content'>
+			<div className='toast-content__top'>
+				<p className='user-message'>Invalid report link</p>
 			</div>
-			<div className='fetch-error__middle'>{resource}</div>
-			<div className='fetch-error__bottom'>
+			<div className='toast-content__bottom'>
 				<button className='copy-details' disabled={copied} onClick={copy}>
 					{!copied && <span className='copy-details__icon' />}
 					<span className={copyDetailsText}>{copied ? 'Copied' : ' Copy details'}</span>

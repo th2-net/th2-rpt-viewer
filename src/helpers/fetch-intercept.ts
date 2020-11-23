@@ -28,7 +28,7 @@ export const registerFetchInterceptor = () =>
 		response(response) {
 			if (!response.ok) {
 				const { url, status, statusText } = response;
-				NotificationsStore.addNotification({
+				NotificationsStore.addResponseError({
 					type: 'error',
 					resource: url,
 					responseCode: status,

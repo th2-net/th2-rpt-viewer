@@ -100,6 +100,11 @@ export default class RootStore {
 			const parsedState = windowsUrlState ? JSON.parse(window.atob(windowsUrlState)) : null;
 			return parsedState;
 		} catch (error) {
+			this.notificationsStore.setUrlError({
+				type: 'error',
+				link: window.location.href,
+				error,
+			});
 			return null;
 		}
 	};

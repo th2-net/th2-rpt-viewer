@@ -17,24 +17,38 @@
 import { action, observable } from 'mobx';
 import { AppearanceTypes } from 'react-toast-notifications';
 
-export interface Notification {
+interface Notification {
 	type: AppearanceTypes;
+}
+interface ResponseError extends Notification {
 	resource: string;
 	responseBody: string;
 	responseCode: number;
 }
 
+interface UrlError extends Notification {
+	link: string | null | undefined;
+	error: Error;
+}
+
 class NotificationsStore {
-	@observable notifications: Notification[] = [];
+	@observable responseErrors: ResponseError[] = [];
 
 	@action
-	addNotification = (notification: Notification) => {
-		this.notifications = [...this.notifications, notification];
+	addResponseError = (responseError: ResponseError) => {
+		this.responseErrors = [...this.responseErrors, responseError];
 	};
 
 	@action
-	delNotification = (notification: Notification) => {
-		this.notifications = this.notifications.filter(n => n !== notification);
+	delResponseError = (responseError: ResponseError) => {
+		this.responseErrors = this.responseErrors.filter(re => re !== responseError);
+	};
+
+	@observable urlError: UrlError | null = null;
+
+	@action
+	setUrlError = (urlError: UrlError | null) => {
+		this.urlError = urlError;
 	};
 }
 

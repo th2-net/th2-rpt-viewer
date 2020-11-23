@@ -17,30 +17,41 @@
 import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 import { useToasts } from 'react-toast-notifications';
-import { complement } from '../helpers/array';
-import { useNotificationsStore } from '../hooks/useNotificationsStore';
-import { usePrevious } from '../hooks/usePrevious';
+import { complement } from '../../helpers/array';
+import { useNotificationsStore } from '../../hooks/useNotificationsStore';
+import { usePrevious } from '../../hooks/usePrevious';
 import FetchError from './FetchError';
+import UrlError from './UrlError';
 
 function Notifier() {
 	const { addToast } = useToasts();
 
-	const { notifications, delNotification } = useNotificationsStore();
+	const { responseErrors, delResponseError, urlError, setUrlError } = useNotificationsStore();
 
-	const prevNotifications = usePrevious(notifications);
+	const prevResponseErrors = usePrevious(responseErrors);
 
 	useEffect(() => {
-		const currentNotifications = !prevNotifications
-			? notifications
-			: complement(notifications, prevNotifications);
-		currentNotifications.forEach(n => {
+		const currentResponseErrors = !prevResponseErrors
+			? responseErrors
+			: complement(responseErrors, prevResponseErrors);
+		currentResponseErrors.forEach(n => {
 			const { type, ...props } = n;
 			addToast(<FetchError {...props} />, {
 				appearance: type,
-				onDismiss: () => delNotification(n),
+				onDismiss: () => delResponseError(n),
 			});
 		});
-	}, [notifications]);
+	}, [responseErrors]);
+
+	useEffect(() => {
+		if (urlError) {
+			const { type, link, error } = urlError;
+			addToast(<UrlError link={link} error={error} />, {
+				appearance: type,
+				onDismiss: () => setUrlError(null),
+			});
+		}
+	}, [urlError]);
 
 	return null;
 }
