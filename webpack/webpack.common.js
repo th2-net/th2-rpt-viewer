@@ -58,7 +58,7 @@ module.exports = {
 		new HtmlWebPackPlugin({
 			title: 'Report viewer',
 			template: path.resolve(appSrc, 'index.html'),
-			favicon: path.resolve(appPath, 'resources', 'icons', 'favicon.png'),
+			favicon: path.resolve(appPath, 'resources', 'icons', 'favicon.svg'),
 		}),
 	],
 };
