@@ -120,6 +120,29 @@
 		@include spinner(2px, 19px, 2s);
 	}
 
+	&-time-controls {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	&-time-control {
+		display: flex;
+		align-items: center;
+		margin: 5px;
+		cursor: pointer;
+		border-radius: 6px;
+		background: $filterSecondaryColor;
+		height: 26px;
+		padding: 0 5px;
+		color: $primaryTextColor;
+		font-size: 13px;
+
+		&:hover {
+			background: rgba($filterSecondaryColor, 0.8);
+		}
+	}
+
 	&-datetime-picker {
 		position: absolute;
 		left: 0;

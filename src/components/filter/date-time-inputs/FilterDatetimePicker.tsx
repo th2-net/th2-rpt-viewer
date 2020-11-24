@@ -62,7 +62,12 @@ const FilterDatetimePicker = ({ inputConfig, onClose, left, top }: FilterDatetim
 	};
 
 	const setTimeOffset = (minutes: number) => {
-		inputConfig.setValue((inputConfig.value ?? Date.now()) - minutes * 60 * 1000);
+		inputConfig.setValue(
+			moment(inputConfig.value || Date.now())
+				.utc()
+				.subtract(minutes, 'minutes')
+				.valueOf(),
+		);
 	};
 
 	const setNow = () => {
