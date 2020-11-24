@@ -34,38 +34,8 @@ class GraphStore {
 		this.interval = interval;
 	};
 
-	@action loadValues = async (from: number, to: number) => {
-		const values = await new Promise<
-			{
-				x: number;
-				y: number;
-			}[]
-		>(res => {
-			setTimeout(() => {
-				res(generateGraphValues(from, to));
-			}, 1000);
-		});
-
-		values.forEach(value => this.graphValues.set(value.x, value.y));
-	};
-
-	@action getChunkData = (from: number, to: number): ChunkData[] => {
-		const chunkData = [];
-		let isNotLoaded = false;
-		for (let i = 1; i < 10; i++) {
-			const data = this.graphValues.get(i);
-			if (!data) {
-				isNotLoaded = true;
-			}
-			chunkData.push({
-				x: i,
-				y: data || 0,
-			});
-		}
-		if (isNotLoaded) {
-			this.loadValues(from, to);
-		}
-		return chunkData;
+	@action loadChunkData = (from: number, to: number): ChunkData[] => {
+		return generateGraphValues(from, to);
 	};
 
 	@computed get timelineRange(): [Chunk, Chunk, Chunk, Chunk, Chunk] {
@@ -111,10 +81,6 @@ class GraphStore {
 					.valueOf(),
 			},
 		];
-	}
-
-	@computed get timelineData() {
-		return this.timelineRange.map(chunk => this.getChunkData(chunk.from, chunk.to));
 	}
 }
 

@@ -14,13 +14,23 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export const generateGraphValues = (from: number, to: number) => {
+import moment from 'moment';
+import { ChunkData } from '../models/graph';
+
+export const generateGraphValues = (from: number, to: number): ChunkData[] => {
 	const data = [];
-	for (let i = 1; i <= 10; i++) {
+	const ticksInterval = (to - from) / 15 / 1000 / 60;
+
+	for (let i = 0; i < 16; i++) {
 		data[i] = {
-			x: i,
-			y: Math.round(Math.random() * 10),
-		};
+			timestamp: moment(from)
+				.startOf('minute')
+				.add(ticksInterval * i, 'minutes')
+				.valueOf(),
+			passed: Math.round(Math.random() * 100),
+			failed: Math.round(Math.random() * 100),
+			messages: Math.round(Math.random() * 400),
+		} as ChunkData;
 	}
 	return data;
 };

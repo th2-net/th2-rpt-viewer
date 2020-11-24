@@ -20,10 +20,33 @@
 	background-color: #7a99b8;
 	position: relative;
 	padding-top: 30px;
+	display: flex;
+	justify-content: center;
 
 	&__chunks {
 		display: flex;
-		transition: all 0.2s;
 		transform: translateX(-33%);
+		
+		&.animated {
+			transition: transform 0.15s;
+		}
 	}
+
+	&-chunk {
+		width: 800px;
+		position: relative;
+
+		&-message {
+			width: 15px;
+			height: 15px;
+			border-radius: 50%;
+			background-color: $chartAttachedMessageColor;
+			position: absolute;
+			transform: translate(-50%, -50%);
+		}
+	}
+}
+
+.recharts-surface {
+	overflow: visible;
 }

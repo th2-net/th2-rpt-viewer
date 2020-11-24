@@ -15,40 +15,69 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import moment from 'moment';
 import * as React from 'react';
-import { LineChart, Line, CartesianGrid, XAxis, TooltipProps } from 'recharts';
-import { EventTreeNode } from '../../models/EventAction';
+import { LineChart, Line, CartesianGrid, XAxis } from 'recharts';
+import { getTimestampAsNumber } from '../../helpers/date';
+import { useGraphStore } from '../../hooks/useGraphStore';
+import { EventMessage } from '../../models/EventMessage';
 
-const data: {
-	name: string;
-	uv: number;
-	pv: number;
-	amt: number;
-}[] = [];
-
-for (let i = 0; i < 15; i++) {
-	data.push({
-		name: (i + 1).toString(),
-		uv: Math.floor(Math.random() * 5000),
-		pv: Math.floor(Math.random() * 5000),
-		amt: Math.floor(Math.random() * 5000),
-	});
+interface GraphChunkProps {
+	from: number;
+	to: number;
+	attachedMessages: EventMessage[];
 }
 
-interface Props {
-	data: any;
-}
+const GraphChunk = ({ from, to, attachedMessages }: GraphChunkProps) => {
+	const graphStore = useGraphStore();
 
-const GraphChunk = (props: Props) => {
+	const chunkData = React.useMemo(() => graphStore.loadChunkData(from, to), [from, to]);
+
+	const getMessagesLeftPosition = (timestamp: number) => {
+		return ((timestamp - from) / (to - from)) * 100;
+	};
+
+	const ticks: number[] = React.useMemo(() => {
+		const ticksArr = [];
+		const ticksInterval = (to - from) / 15 / 1000 / 60;
+
+		for (let i = 0; i < 16; i++) {
+			ticksArr.push(
+				moment(from)
+					.startOf('minute')
+					.add(ticksInterval * i, 'minutes')
+					.valueOf(),
+			);
+		}
+		return ticksArr;
+	}, [from, to]);
+
 	return (
-		<div style={{ position: 'relative' }}>
+		<div className='graph-chunk' style={{ position: 'relative' }}>
+			{attachedMessages.map(message => (
+				<div
+					key={message.messageId}
+					className='graph-chunk__message'
+					style={{
+						left: `${getMessagesLeftPosition(getTimestampAsNumber(message.timestamp))}%`,
+						top: 20,
+					}}
+				/>
+			))}
 			<LineChart
-				width={window.innerWidth / 3}
-				height={80}
-				data={props.data}
-				margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+				width={800}
+				height={100}
+				data={chunkData}
+				margin={{ top: 20, right: 0, left: 0, bottom: 0 }}
+				style={{
+					overflow: 'visible',
+				}}>
 				<XAxis
-					dataKey='x'
+					dataKey='timestamp'
+					type='number'
+					domain={[from, to]}
+					tickFormatter={tick => moment(tick).format('HH:mm')}
+					ticks={ticks}
 					tick={{
 						fill: 'white',
 						fontSize: 12,
@@ -56,23 +85,31 @@ const GraphChunk = (props: Props) => {
 						userSelect: 'none',
 					}}
 					stroke='rgba(0,0,0,0)'
+					interval={0}
 				/>
 				<CartesianGrid stroke='#f5f5f5' vertical={true} horizontal={false} color='#9aaac9' />
 				<Line
-					type='monotone'
-					dataKey='x'
+					dataKey='passed'
 					stroke='#ff7300'
-					yAxisId={0}
+					xAxisId={0}
 					animationDuration={0}
 					activeDot={false}
 					dot={false}
 				/>
 				<Line
-					type='monotone'
-					dataKey='y'
+					dataKey='failed'
 					stroke='#387908'
-					yAxisId={1}
+					xAxisId={0}
 					animationDuration={0}
+					activeDot={false}
+					dot={false}
+				/>
+				<Line
+					dataKey='messages'
+					stroke='#387908'
+					xAxisId={0}
+					animationDuration={0}
+					activeDot={false}
 					dot={false}
 				/>
 			</LineChart>

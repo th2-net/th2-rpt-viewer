@@ -21,6 +21,9 @@ import moment from 'moment';
 import GraphChunk from './GraphChunk';
 import '../../styles/graph.scss';
 import { useGraphStore } from '../../hooks/useGraphStore';
+import { useWindowsStore } from '../../hooks/useWindowsStore';
+import { getTimestampAsNumber } from '../../helpers/date';
+import { createBemElement } from '../../helpers/styleCreators';
 
 const rangeSelectorStyles: React.CSSProperties = {
 	height: '100%',
@@ -36,8 +39,10 @@ const intervalOptions = [15, 30, 60];
 
 function Graph() {
 	const graphStore = useGraphStore();
+	const selectedStore = useWindowsStore().selectedStore;
 	const graphChunks = React.useRef<HTMLDivElement>(null);
 	const [offset, setOffset] = React.useState(0);
+	const [isScrollAnimated, setIsScrollAnimated] = React.useState(true);
 
 	const onWheelHandler = (e: React.WheelEvent<HTMLElement>) => {
 		if (!graphChunks.current) return;
@@ -46,18 +51,22 @@ function Graph() {
 	};
 
 	React.useEffect(() => {
-		if (offset <= -600) {
+		if (offset <= -800) {
+			setIsScrollAnimated(false);
 			graphStore.setTimestamp(
 				moment(graphStore.timestamp).add(graphStore.interval, 'minutes').valueOf(),
 			);
 			setOffset(0);
+			setIsScrollAnimated(true);
 		}
 
-		if (offset >= 600) {
+		if (offset >= 800) {
+			setIsScrollAnimated(false);
 			graphStore.setTimestamp(
 				moment(graphStore.timestamp).subtract(graphStore.interval, 'minutes').valueOf(),
 			);
 			setOffset(0);
+			setIsScrollAnimated(true);
 		}
 	}, [offset]);
 
@@ -70,14 +79,30 @@ function Graph() {
 
 	const windowWidth = window.innerWidth;
 
+	const chunksWrapperClass = createBemElement(
+		'graph',
+		'chunks',
+		isScrollAnimated ? 'animated' : null,
+	);
+
 	return (
 		<div className='graph' onWheel={onWheelHandler}>
 			<div
-				className='graph__chunks'
+				className={chunksWrapperClass}
 				ref={graphChunks}
 				style={{ transform: `translateX(${offset}px)` }}>
-				{graphStore.timelineData.map((chunkData, i) => (
-					<GraphChunk key={i} data={chunkData} />
+				{graphStore.timelineRange.map((chunk, i) => (
+					<GraphChunk
+						key={i}
+						from={chunk.from}
+						to={chunk.to}
+						attachedMessages={selectedStore.attachedMessages.filter(message =>
+							moment(getTimestampAsNumber(message.timestamp)).isBetween(
+								moment(chunk.from),
+								moment(chunk.to),
+							),
+						)}
+					/>
 				))}
 			</div>
 			<div

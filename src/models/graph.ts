@@ -20,6 +20,8 @@ export interface Chunk {
 }
 
 export interface ChunkData {
-	x: number;
-	y: number;
+	timestamp: number;
+	passed: number;
+	failed: number;
+	messages: number;
 }
