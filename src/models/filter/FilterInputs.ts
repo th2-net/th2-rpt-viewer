@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 export type FilterRowConfig =
+	| FilterRowDatetimeRangeConfig
 	| FilterRowTimeWindowConfig
 	| FilterRowStringConfig
 	| FilterRowMultipleStringsConfig;
@@ -86,4 +87,13 @@ export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
 	currentValue: string;
 	setCurrentValue: (currentValue: string) => void;
 	autocompleteList: string[] | null;
+};
+
+export type FilterRowDatetimeRangeConfig = FilterRowBaseConfig & {
+	type: 'datetime-range';
+	inputs: Array<DateTimeInputType>;
+	timeShortcuts: Array<{
+		label: string;
+		onClick: () => void;
+	}>;
 };

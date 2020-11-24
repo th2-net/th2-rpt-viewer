@@ -109,8 +109,6 @@ export default class MessageUpdateStore {
 				{
 					timestampTo: Date.now(),
 					timestampFrom: null,
-					timestamp: null,
-					timeInterval: null,
 					streams: this.filterStore.messagesFilter.streams,
 					messageTypes: this.filterStore.messagesFilter.messageTypes,
 				},
