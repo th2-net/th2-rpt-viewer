@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, toJS, runInAction, reaction } from 'mobx';
+import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import FilterStore from './FilterStore';
 import ViewStore from './WindowViewStore';
 import ApiSchema from '../api/ApiSchema';
@@ -130,7 +130,9 @@ export default class EventsStore {
 	// to get event key by index in tree and list length calculation.
 	@computed
 	get nodesList() {
-		return this.eventTree.flatMap(eventNode => this.getNodesList(eventNode));
+		return sortEventsByTimestamp(this.eventTree, 'desc').flatMap(eventNode =>
+			this.getNodesList(eventNode),
+		);
 	}
 
 	@computed
@@ -296,7 +298,7 @@ export default class EventsStore {
 		if (this.isExpandedMap.get(eventTreeNode.eventId)) {
 			return [
 				eventTreeNode,
-				...sortEventsByTimestamp(eventTreeNode.childList).flatMap(eventNode =>
+				...sortEventsByTimestamp(eventTreeNode.childList, 'asc').flatMap(eventNode =>
 					this.getNodesList(eventNode, [...parents, eventTreeNode.eventId]),
 				),
 			];
