@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,30 +12,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-@import './common/vars';
+export function isElementInViewport(el: HTMLElement) {
+	const rect = el.getBoundingClientRect();
 
-.graph {
-	background-color: #7a99b8;
-	position: relative;
-	padding-top: 30px;
-
-	&__container {
-		position: relative;
-		height: 90px;
-	}
-
-	&__chunks {
-		display: flex;
-		// transition: transform 1.2s;
-		transform: translateX(-33%);
-		position: absolute;
-		top: 0;
-		height: 100%;
-	}
+	return (
+		rect.top >= 0 &&
+		rect.left >= 0 &&
+		rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+		rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+	);
 }
 
-.chunk {
-	position: relative;
+export function isDivElement(el: Element): el is HTMLDivElement {
+	return el instanceof HTMLDivElement;
 }

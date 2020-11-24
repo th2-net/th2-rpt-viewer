@@ -14,108 +14,121 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable } from 'mobx';
+import { action, observable, reaction } from 'mobx';
 import moment from 'moment';
-import { generateGraphValues } from '../helpers/graph';
 import { Chunk, ChunkData } from '../models/graph';
 
 class GraphStore {
-	@observable public timestamp: number = Date.now();
+	public readonly intervalOptions = [15, 30, 60];
 
-	@observable public interval: 15 | 30 | 60 = 15;
+	private steps = {
+		15: 1,
+		30: 3,
+		60: 5,
+	};
 
-	@observable public graphValues: Map<number, number> = new Map();
+	constructor() {
+		reaction(
+			() => this.interval,
+			interval => this.getChunksData(interval, this.timestamp),
+		);
 
-	@action setTimestamp = (timestamp: number) => {
+		this.getChunksData(this.interval, this.timestamp);
+	}
+
+	@observable
+	public interval: 15 | 30 | 60 = 15;
+
+	@observable
+	public chunks: Chunk[] = [];
+
+	@observable
+	public timestamp: number = moment().subtract(this.interval, 'minutes').valueOf();
+
+	@action
+	public setTimestamp = (timestamp: number) => {
 		this.timestamp = timestamp;
 	};
 
-	@action setInterval = (interval: 15 | 30 | 60) => {
+	@action
+	public setInterval = (interval: 15 | 30 | 60) => {
 		this.interval = interval;
 	};
 
-	@action loadValues = async (from: number, to: number) => {
-		const values = await new Promise<
-			{
-				x: number;
-				y: number;
-			}[]
-		>(res => {
-			setTimeout(() => {
-				res(generateGraphValues(from, to));
-			}, 1000);
-		});
-
-		values.forEach(value => this.graphValues.set(value.x, value.y));
-	};
-
-	@action getChunkData = (from: number, to: number): ChunkData[] => {
-		const chunkData = [];
-		let isNotLoaded = false;
-		for (let i = 1; i < 10; i++) {
-			const data = this.graphValues.get(i);
-			if (!data) {
-				isNotLoaded = true;
-			}
-			chunkData.push({
-				x: i,
-				y: data || 0,
+	@action
+	public getChunkData = (chunk: Chunk) => {
+		const { to, from } = chunk;
+		const targetChunk = this.chunks.find(_chunk => _chunk.from === from && _chunk.to === to);
+		if (!targetChunk) return;
+		const step = this.steps[this.interval];
+		const steps = this.interval / step;
+		const data: ChunkData[] = [];
+		for (let i = 0; i < steps + 1; i++) {
+			data.push({
+				count: Math.floor(Math.random() * 20),
+				timestamp: moment(from)
+					.add(step * i, 'minutes')
+					.valueOf(),
 			});
 		}
-		if (isNotLoaded) {
-			this.loadValues(from, to);
-		}
-		return chunkData;
+		targetChunk.data = data;
 	};
 
-	@computed get timelineRange(): [Chunk, Chunk, Chunk, Chunk, Chunk] {
-		return [
-			{
-				from: moment(this.timestamp)
-					.subtract(this.interval * 2.5, 'minutes')
-					.valueOf(),
-				to: moment(this.timestamp)
-					.subtract(this.interval * 1.5, 'minutes')
-					.valueOf(),
-			},
-			{
-				from: moment(this.timestamp)
-					.subtract(this.interval * 1.5, 'minutes')
-					.valueOf(),
-				to: moment(this.timestamp)
-					.subtract(this.interval * 0.5, 'minutes')
-					.valueOf(),
-			},
-			{
-				from: moment(this.timestamp)
-					.subtract(this.interval * 0.5, 'minutes')
-					.valueOf(),
-				to: moment(this.timestamp)
-					.add(this.interval * 0.5, 'minutes')
-					.valueOf(),
-			},
-			{
-				from: moment(this.timestamp)
-					.add(this.interval * 0.5, 'minutes')
-					.valueOf(),
-				to: moment(this.timestamp)
-					.add(this.interval * 1.5, 'minutes')
-					.valueOf(),
-			},
-			{
-				from: moment(this.timestamp)
-					.add(this.interval * 1.5, 'minutes')
-					.valueOf(),
-				to: moment(this.timestamp)
-					.add(this.interval * 2.5, 'minutes')
-					.valueOf(),
-			},
-		];
+	@action
+	public getChunksData(interval: 15 | 30 | 60, timestamp: number) {
+		let chunks: Chunk[] = [this.createChunk(timestamp, interval)];
+		for (let i = 1; i < 3; i++) {
+			chunks = [
+				this.createChunk(
+					moment(timestamp)
+						.subtract(i * interval, 'minutes')
+						.valueOf(),
+					interval,
+				),
+				...chunks,
+				this.createChunk(
+					moment(timestamp)
+						.add(i * interval, 'minutes')
+						.valueOf(),
+					interval,
+				),
+			];
+		}
+
+		this.chunks = chunks;
 	}
 
-	@computed get timelineData() {
-		return this.timelineRange.map(chunk => this.getChunkData(chunk.from, chunk.to));
-	}
+	private createChunk = (timestamp: number, interval: 15 | 30 | 60) => {
+		return {
+			from: moment(timestamp).valueOf(),
+			to: moment(timestamp).add(interval, 'minutes').valueOf(),
+			data: [],
+		};
+	};
+
+	@action
+	addPreviousChunk = () => {
+		const firstChunk = this.chunks[0];
+
+		if (firstChunk) {
+			this.chunks = [
+				this.createChunk(
+					moment(firstChunk.from).subtract(this.interval, 'minutes').valueOf(),
+					this.interval,
+				),
+				...this.chunks.slice(0, 4),
+			];
+		}
+	};
+
+	@action
+	addNextChunk = () => {
+		const lastChunk = this.chunks[this.chunks.length - 1];
+
+		if (lastChunk) {
+			this.chunks = [...this.chunks.slice(1), this.createChunk(lastChunk.to, this.interval)];
+		}
+	};
 }
 
 export default GraphStore;

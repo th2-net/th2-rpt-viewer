@@ -16,68 +16,67 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { LineChart, Line, CartesianGrid, XAxis, TooltipProps } from 'recharts';
-import { EventTreeNode } from '../../models/EventAction';
+import moment from 'moment';
+import { observer } from 'mobx-react-lite';
+import { LineChart, Line, CartesianGrid, XAxis, LineProps, CartesianGridProps } from 'recharts';
+import { Chunk } from '../../models/graph';
 
-const data: {
-	name: string;
-	uv: number;
-	pv: number;
-	amt: number;
-}[] = [];
+const tickStyles: React.CSSProperties = {
+	fill: 'white',
+	fontSize: 12,
+	fontFamily: 'OpenSans',
+	userSelect: 'none',
+};
 
-for (let i = 0; i < 15; i++) {
-	data.push({
-		name: (i + 1).toString(),
-		uv: Math.floor(Math.random() * 5000),
-		pv: Math.floor(Math.random() * 5000),
-		amt: Math.floor(Math.random() * 5000),
-	});
-}
+const lineProps: LineProps = {
+	type: 'monotone',
+	dataKey: 'count',
+	stroke: '#ff7300',
+	yAxisId: 0,
+	animationDuration: 0,
+	activeDot: false,
+	dot: false,
+};
+
+const gridProps: CartesianGridProps = {
+	stroke: '#f5f5f5',
+	vertical: true,
+	horizontal: false,
+	color: '#9aaac9',
+};
 
 interface Props {
-	data: any;
+	chunk: Chunk;
+	getChunkData: (chunk: Chunk) => void;
 }
 
-const GraphChunk = (props: Props) => {
+const GraphChunk: React.RefForwardingComponent<HTMLDivElement, Props> = (props, ref) => {
+	const { chunk, getChunkData } = props;
+
+	React.useEffect(() => {
+		getChunkData(chunk);
+	}, []);
+
 	return (
-		<div style={{ position: 'relative' }}>
+		<div className='chunk' ref={ref} data-from={chunk.from} data-to={chunk.to}>
 			<LineChart
 				width={window.innerWidth / 3}
 				height={80}
-				data={props.data}
+				data={chunk.data}
 				margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
 				<XAxis
-					dataKey='x'
-					tick={{
-						fill: 'white',
-						fontSize: 12,
-						fontFamily: 'OpenSans',
-						userSelect: 'none',
-					}}
+					dataKey='timestamp'
+					tick={tickStyles}
 					stroke='rgba(0,0,0,0)'
+					tickFormatter={tick => moment(tick).format('HH:mm')}
+					domain={['auto', 'auto']}
 				/>
-				<CartesianGrid stroke='#f5f5f5' vertical={true} horizontal={false} color='#9aaac9' />
-				<Line
-					type='monotone'
-					dataKey='x'
-					stroke='#ff7300'
-					yAxisId={0}
-					animationDuration={0}
-					activeDot={false}
-					dot={false}
-				/>
-				<Line
-					type='monotone'
-					dataKey='y'
-					stroke='#387908'
-					yAxisId={1}
-					animationDuration={0}
-					dot={false}
-				/>
+				<CartesianGrid {...gridProps} />
+				<Line {...lineProps} />
+				<Line {...lineProps} />
 			</LineChart>
 		</div>
 	);
 };
 
-export default GraphChunk;
+export default observer<Props, HTMLDivElement>(GraphChunk, { forwardRef: true });

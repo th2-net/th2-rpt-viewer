@@ -13,14 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-
-export const generateGraphValues = (from: number, to: number) => {
-	const data = [];
-	for (let i = 1; i <= 10; i++) {
-		data[i] = {
-			x: i,
-			y: Math.round(Math.random() * 10),
-		};
-	}
-	return data;
-};

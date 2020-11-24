@@ -17,9 +17,10 @@
 export interface Chunk {
 	from: number;
 	to: number;
+	data: Array<ChunkData>;
 }
 
 export interface ChunkData {
-	x: number;
-	y: number;
+	count: number;
+	timestamp: number;
 }
