@@ -19,6 +19,7 @@ import { FilterRowConfig } from '../../../models/filter/FilterInputs';
 import StringFilterRow from './StringRow';
 import MultipleStringFilterRow from './MultipleStringFIlterRow';
 import TimeWindow from './TimeWindow';
+import DatetimeFilterRow from './DateTimeFilterRow';
 
 interface Props {
 	rowConfig: FilterRowConfig;
@@ -26,6 +27,8 @@ interface Props {
 
 export default function FilterRow({ rowConfig }: Props) {
 	switch (rowConfig.type) {
+		case 'datetime-range':
+			return <DatetimeFilterRow config={rowConfig} />;
 		case 'time-window':
 			return <TimeWindow config={rowConfig} />;
 		case 'string':

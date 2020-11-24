@@ -15,8 +15,6 @@
  ***************************************************************************** */
 
 export default interface EventsFilter {
-	timestamp: number;
-	timeInterval: number;
 	timestampFrom: number;
 	timestampTo: number;
 	eventTypes: Array<string>;
