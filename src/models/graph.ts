@@ -17,10 +17,12 @@
 export interface Chunk {
 	from: number;
 	to: number;
+	data: Array<ChunkData>;
 }
 
 export interface ChunkData {
 	timestamp: number;
+	count: number;
 	passed: number;
 	failed: number;
 	messages: number;

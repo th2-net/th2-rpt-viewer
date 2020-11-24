@@ -20,6 +20,7 @@ import { HeatmapElement } from '../../models/Heatmap';
 import { useHeatmap } from '../../hooks/useHeatmap';
 import HeatmapItem from './HeatmapItem';
 import '../../styles/heatmap.scss';
+import { isDivElement } from '../../helpers/dom';
 
 interface Props {
 	onElementClick: (element: HeatmapElement) => void;
@@ -158,5 +159,3 @@ const Heatmap = ({ onElementClick, selectedItem }: Props) => {
 };
 
 export default Heatmap;
-
-const isDivElement = (el: Element): el is HTMLDivElement => el instanceof HTMLDivElement;

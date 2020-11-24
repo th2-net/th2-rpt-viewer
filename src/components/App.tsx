@@ -26,7 +26,7 @@ const App = () => (
 	<div className='root'>
 		<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={0}>
 			<EventsLayout />
-			<Notifier />
+			{/* <Notifier /> */}
 		</ToastProvider>
 	</div>
 );

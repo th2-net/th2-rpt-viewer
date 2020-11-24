@@ -23,30 +23,36 @@
 	display: flex;
 	justify-content: center;
 
+	&__container {
+		position: relative;
+		height: 90px;
+	}
+
 	&__chunks {
 		display: flex;
+		// transition: transform 1.2s;
 		transform: translateX(-33%);
-		
-		&.animated {
-			transition: transform 0.15s;
-		}
+		position: absolute;
+		top: 0;
+		height: 100%;
 	}
 
-	&-chunk {
-		width: 800px;
-		position: relative;
 
-		&-message {
-			width: 15px;
-			height: 15px;
-			border-radius: 50%;
-			background-color: $chartAttachedMessageColor;
-			position: absolute;
-			transform: translate(-50%, -50%);
-		}
-	}
 }
 
 .recharts-surface {
 	overflow: visible;
+}
+
+.graph-chunk {
+	position: relative;
+
+	&-message {
+		width: 15px;
+		height: 15px;
+		border-radius: 50%;
+		background-color: $chartAttachedMessageColor;
+		position: absolute;
+		transform: translate(-50%, -50%);
+	}
 }

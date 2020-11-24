@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,29 +12,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-@import './common/vars';
+export function isElementInViewport(el: HTMLElement) {
+	const rect = el.getBoundingClientRect();
 
-.with-side-drop-target {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	overflow: hidden;
-	position: relative;
+	return (
+		rect.top >= 0 &&
+		rect.left >= 0 &&
+		rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+		rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+	);
+}
 
-	&__root {
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-	}
-
-	&__overlay {
-		background-color: rgba($color: #7db3e8, $alpha: 0.5);
-		border: 2px solid $draggableColor;
-		position: absolute;
-		right: 0;
-		top: 0;
-		z-index: 20;
-	}
+export function isDivElement(el: Element): el is HTMLDivElement {
+	return el instanceof HTMLDivElement;
 }

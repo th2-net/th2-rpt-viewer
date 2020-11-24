@@ -19,11 +19,11 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import GraphChunk from './GraphChunk';
-import '../../styles/graph.scss';
 import { useGraphStore } from '../../hooks/useGraphStore';
-import { useWindowsStore } from '../../hooks/useWindowsStore';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { createBemElement } from '../../helpers/styleCreators';
+import { useSelectedStore } from '../../hooks/useSelectedStore';
+import { isDivElement, isElementInViewport } from '../../helpers/dom';
+import '../../styles/graph.scss';
 
 const rangeSelectorStyles: React.CSSProperties = {
 	height: '100%',
@@ -35,84 +35,66 @@ const rangeSelectorStyles: React.CSSProperties = {
 	// pointerEvents: 'none',
 };
 
-const intervalOptions = [15, 30, 60];
-
 function Graph() {
 	const graphStore = useGraphStore();
-	const selectedStore = useWindowsStore().selectedStore;
+	const selectedStore = useSelectedStore();
+
+	const windowWidth = window.innerWidth / 3;
 	const graphChunks = React.useRef<HTMLDivElement>(null);
-	const [offset, setOffset] = React.useState(0);
-	const [isScrollAnimated, setIsScrollAnimated] = React.useState(true);
 
 	const onWheelHandler = (e: React.WheelEvent<HTMLElement>) => {
 		if (!graphChunks.current) return;
 		const direction = e.deltaY > 0 ? 1 : -1;
-		setOffset(offset + direction * 50);
-	};
-
-	React.useEffect(() => {
-		if (offset <= -800) {
-			setIsScrollAnimated(false);
-			graphStore.setTimestamp(
-				moment(graphStore.timestamp).add(graphStore.interval, 'minutes').valueOf(),
-			);
-			setOffset(0);
-			setIsScrollAnimated(true);
-		}
-
-		if (offset >= 800) {
-			setIsScrollAnimated(false);
-			graphStore.setTimestamp(
-				moment(graphStore.timestamp).subtract(graphStore.interval, 'minutes').valueOf(),
-			);
-			setOffset(0);
-			setIsScrollAnimated(true);
-		}
-	}, [offset]);
-
-	const moveGraph = (direction: 1 | -1) => {
-		if (!graphChunks.current) return;
+		const { left, width } = graphChunks.current.getBoundingClientRect();
 		const style = getComputedStyle(graphChunks.current);
 		const matrix = new WebKitCSSMatrix(style.webkitTransform);
-		graphChunks.current.style.transform = `translate(${matrix.m41 + direction * 55}px, 0)`;
+		const translateX = matrix.m41 + direction * 100;
+		const leftProp = parseInt(style.marginLeft.replace('px', ''));
+		const right = 1920 - (left + width);
+		graphChunks.current.style.transform = `translate(${translateX}px, 0)`;
+		if (left > -150) {
+			graphStore.addPreviousChunk();
+			graphChunks.current.style.marginLeft = `${leftProp - left - windowWidth}px`;
+		} else if (right > -150) {
+			graphStore.addNextChunk();
+			graphChunks.current.style.marginLeft = `${leftProp + right + windowWidth}px`;
+		}
+
+		// const childrenInInterval = Array.from(graphChunks.current.children)
+		// 	.filter(isDivElement)
+		// 	.filter(isElementInViewport);
 	};
-
-	const windowWidth = window.innerWidth;
-
-	const chunksWrapperClass = createBemElement(
-		'graph',
-		'chunks',
-		isScrollAnimated ? 'animated' : null,
-	);
 
 	return (
 		<div className='graph' onWheel={onWheelHandler}>
-			<div
-				className={chunksWrapperClass}
-				ref={graphChunks}
-				style={{ transform: `translateX(${offset}px)` }}>
-				{graphStore.timelineRange.map((chunk, i) => (
-					<GraphChunk
-						key={i}
-						from={chunk.from}
-						to={chunk.to}
-						attachedMessages={selectedStore.attachedMessages.filter(message =>
-							moment(getTimestampAsNumber(message.timestamp)).isBetween(
-								moment(chunk.from),
-								moment(chunk.to),
-							),
-						)}
-					/>
-				))}
+			<div className='graph__container'>
+				<div className='graph__chunks' ref={graphChunks}>
+					{graphStore.chunks.map(chunk => (
+						<GraphChunk
+							key={`${chunk.from}-${chunk.to}`}
+							chunk={chunk}
+							getChunkData={graphStore.getChunkData}
+							attachedMessages={selectedStore.attachedMessages.filter(message =>
+								moment(getTimestampAsNumber(message.timestamp)).isBetween(
+									moment(chunk.from),
+									moment(chunk.to),
+								),
+							)}
+						/>
+					))}
+				</div>
 			</div>
 			<div
 				style={{
 					...rangeSelectorStyles,
-					width: windowWidth / 3,
-					left: windowWidth / 3,
+					width: windowWidth,
+					left: windowWidth,
 				}}>
-				<select name='interval' defaultValue={15}>
-					{intervalOptions.map(intervalValue => (
+				<select
+					name='interval'
+					value={graphStore.interval}
+					onChange={e => graphStore.setInterval(parseInt(e.target.value) as 15 | 30 | 60)}>
+					{graphStore.intervalOptions.map(intervalValue => (
 						<option key={intervalValue} value={intervalValue}>{`${intervalValue} minutes`}</option>
 					))}
 				</select>

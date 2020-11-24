@@ -15,30 +15,60 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import moment from 'moment';
 import * as React from 'react';
-import { LineChart, Line, CartesianGrid, XAxis } from 'recharts';
+import moment from 'moment';
+import { observer } from 'mobx-react-lite';
+import { LineChart, Line, CartesianGrid, XAxis, LineProps, CartesianGridProps } from 'recharts';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { useGraphStore } from '../../hooks/useGraphStore';
 import { EventMessage } from '../../models/EventMessage';
+import { Chunk } from '../../models/graph';
 
-interface GraphChunkProps {
-	from: number;
-	to: number;
+const tickStyles: React.CSSProperties = {
+	fill: 'white',
+	fontSize: 12,
+	fontFamily: 'OpenSans',
+	userSelect: 'none',
+};
+
+const lineProps: LineProps = {
+	type: 'monotone',
+	dataKey: 'count',
+	stroke: '#ff7300',
+	yAxisId: 0,
+	animationDuration: 0,
+	activeDot: false,
+	dot: false,
+};
+
+const gridProps: CartesianGridProps = {
+	stroke: '#f5f5f5',
+	vertical: true,
+	horizontal: false,
+	color: '#9aaac9',
+};
+
+interface Props {
+	chunk: Chunk;
+	getChunkData: (chunk: Chunk) => void;
 	attachedMessages: EventMessage[];
 }
 
-const GraphChunk = ({ from, to, attachedMessages }: GraphChunkProps) => {
-	const graphStore = useGraphStore();
+const GraphChunk: React.RefForwardingComponent<HTMLDivElement, Props> = (props, ref) => {
+	const { chunk, getChunkData, attachedMessages } = props;
 
-	const chunkData = React.useMemo(() => graphStore.loadChunkData(from, to), [from, to]);
+	React.useEffect(() => {
+		getChunkData(chunk);
+	}, []);
 
 	const getMessagesLeftPosition = (timestamp: number) => {
+		const { from, to } = chunk;
 		return ((timestamp - from) / (to - from)) * 100;
 	};
 
 	const ticks: number[] = React.useMemo(() => {
 		const ticksArr = [];
+		const { from, to } = chunk;
 		const ticksInterval = (to - from) / 15 / 1000 / 60;
 
 		for (let i = 0; i < 16; i++) {
@@ -50,10 +80,10 @@ const GraphChunk = ({ from, to, attachedMessages }: GraphChunkProps) => {
 			);
 		}
 		return ticksArr;
-	}, [from, to]);
+	}, [chunk]);
 
 	return (
-		<div className='graph-chunk' style={{ position: 'relative' }}>
+		<div className='graph-chunk' ref={ref} data-from={chunk.from} data-to={chunk.to}>
 			{attachedMessages.map(message => (
 				<div
 					key={message.messageId}
@@ -65,56 +95,26 @@ const GraphChunk = ({ from, to, attachedMessages }: GraphChunkProps) => {
 				/>
 			))}
 			<LineChart
-				width={800}
+				width={window.innerWidth / 3}
 				height={100}
-				data={chunkData}
-				margin={{ top: 20, right: 0, left: 0, bottom: 0 }}
-				style={{
-					overflow: 'visible',
-				}}>
+				data={chunk.data}
+				margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
 				<XAxis
 					dataKey='timestamp'
-					type='number'
-					domain={[from, to]}
+					domain={['auto', 'auto']}
 					tickFormatter={tick => moment(tick).format('HH:mm')}
-					ticks={ticks}
-					tick={{
-						fill: 'white',
-						fontSize: 12,
-						fontFamily: 'OpenSans',
-						userSelect: 'none',
-					}}
+					// ticks={ticks}
+					tick={tickStyles}
 					stroke='rgba(0,0,0,0)'
 					interval={0}
 				/>
-				<CartesianGrid stroke='#f5f5f5' vertical={true} horizontal={false} color='#9aaac9' />
-				<Line
-					dataKey='passed'
-					stroke='#ff7300'
-					xAxisId={0}
-					animationDuration={0}
-					activeDot={false}
-					dot={false}
-				/>
-				<Line
-					dataKey='failed'
-					stroke='#387908'
-					xAxisId={0}
-					animationDuration={0}
-					activeDot={false}
-					dot={false}
-				/>
-				<Line
-					dataKey='messages'
-					stroke='#387908'
-					xAxisId={0}
-					animationDuration={0}
-					activeDot={false}
-					dot={false}
-				/>
+				<CartesianGrid {...gridProps} />
+				<Line {...lineProps} dataKey='passed' stroke='#ff7300' />
+				<Line {...lineProps} dataKey='failed' stroke='#387908' />
+				<Line {...lineProps} dataKey='messages' stroke='#1f039c' />
 			</LineChart>
 		</div>
 	);
 };
 
-export default GraphChunk;
+export default observer<Props, HTMLDivElement>(GraphChunk, { forwardRef: true });
