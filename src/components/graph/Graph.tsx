@@ -25,6 +25,7 @@ import { getTimestampAsNumber } from '../../helpers/date';
 import { useSelectedStore } from '../../hooks/useSelectedStore';
 import GraphChunksScrollContainer, { Settings } from './GraphChunksScrollContainer';
 import { IntervalOption } from '../../stores/GraphStore';
+import { getElementsFullWidth, isDivElement, isElementInViewport } from '../../helpers/dom';
 import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
@@ -51,6 +52,8 @@ export const rangeSelectorStyles: React.CSSProperties = {
 	left: '50%',
 	transform: 'translate(-50%)',
 };
+
+const SCROLL_STEP = 100;
 
 function Graph() {
 	const graphStore = useGraphStore();

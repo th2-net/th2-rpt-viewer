@@ -37,3 +37,13 @@ export function isClickEventInElement(event: MouseEvent, element: HTMLElement) {
 	if (y < rect.top || y >= rect.bottom) return false;
 	return true;
 }
+
+export function getElementsFullWidth(el: HTMLElement) {
+	const style = window.getComputedStyle(el);
+	const width = el.clientWidth;
+	const margin = parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+	const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+	const border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+
+	return width + margin - padding + border;
+}

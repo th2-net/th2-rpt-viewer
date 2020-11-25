@@ -88,6 +88,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 		for (let i = 0; i < 16; i++) {
 			ticksArr.push(
 				moment(from)
+					.subtract(moment().utcOffset(), 'minutes')
 					.startOf('minute')
 					.add(ticksInterval * i, 'minutes')
 					.valueOf(),
@@ -118,7 +119,8 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 				}}>
 				<XAxis
 					dataKey='timestamp'
-					domain={['auto', 'auto']}
+					// type='number'
+					domain={[props.chunk.from, props.chunk.to]}
 					tickFormatter={tick => moment(tick).format('HH:mm')}
 					// type='number'
 					// ticks={ticks}
