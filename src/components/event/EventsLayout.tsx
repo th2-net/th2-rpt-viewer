@@ -26,6 +26,7 @@ import AppWindow from '../AppWindow';
 import { useAppViewStore } from '../../hooks/useAppViewStore';
 import '../../styles/layout.scss';
 import { EventsTab } from '../../models/util/Windows';
+import TimestampInput from '../util/TimestampInput';
 
 const EventsLayout = () => {
 	const windowsStore = useWindowsStore();
@@ -34,6 +35,7 @@ const EventsLayout = () => {
 
 	return (
 		<div className='events-layout'>
+			<TimestampInput />
 			<DndProvider backend={HTML5Backend}>
 				<CustomDragLayer />
 				{windowsStore.windows.length === 1 && (
