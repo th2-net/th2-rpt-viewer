@@ -26,7 +26,11 @@ export default interface ApiSchema {
 
 export interface EventApiSchema {
 	getEventTree: (filter: EventsFilter, signal?: AbortSignal) => Promise<EventTree>;
-	getEvent: (id: string, abortSignal?: AbortSignal) => Promise<EventAction>;
+	getEvent: (
+		id: string,
+		abortSignal?: AbortSignal,
+		queryParams?: Record<string, string | number | boolean | null | string[]>,
+	) => Promise<EventAction>;
 	getEventsByName: (
 		timestampFrom: number,
 		timestampTo: number,
@@ -58,7 +62,11 @@ export interface MessageApiSchema {
 		filter: MessagesFilter,
 		abortSignal?: AbortSignal,
 	): Promise<EventMessage[]>;
-	getMessage: (id: string, signal?: AbortSignal) => Promise<EventMessage>;
+	getMessage: (
+		id: string,
+		signal?: AbortSignal,
+		queryParams?: Record<string, string | number | boolean | null | string[]>,
+	) => Promise<EventMessage>;
 	getMessagesByFilter: (filter: MessagesFilter) => Promise<string[]>;
 	getMessageSessions: () => Promise<string[]>;
 }
