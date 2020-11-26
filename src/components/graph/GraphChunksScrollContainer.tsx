@@ -18,6 +18,7 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
+import { useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { useGraphStore } from '../../hooks/useGraphStore';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
@@ -78,7 +79,7 @@ interface State {
 	data: number[];
 }
 
-const GraphChunksScrollContainer = (props: Props) => {
+const GraphChunksScrollContainer = (props: Props, ref: any) => {
 	const { settings, chunkWidth } = props;
 
 	const graphStore = useGraphStore();
@@ -94,6 +95,13 @@ const GraphChunksScrollContainer = (props: Props) => {
 	const scrollLeft = React.useRef(0);
 	const isDown = React.useRef(false);
 
+	const motion = useMotionValue(state.initialPosition + chunkWidth / 2);
+	const spring = useSpring(motion, { stiffness: 300, damping: 40 });
+
+	React.useEffect(() => {
+		spring.onChange(value => (viewportElementRef.current!.scrollLeft = value));
+	}, []);
+
 	React.useEffect(() => {
 		if (!viewportElementRef.current) return;
 		viewportElementRef.current.scrollLeft = state.initialPosition + chunkWidth / 2;
@@ -108,7 +116,7 @@ const GraphChunksScrollContainer = (props: Props) => {
 		return () => {
 			document.removeEventListener('mousedown', handleMouseDown);
 		};
-	});
+	}, []);
 
 	const handleMouseDown = (event: MouseEvent) => {
 		if (!rangeElementRef.current || !viewportElementRef.current) return;
@@ -134,7 +142,8 @@ const GraphChunksScrollContainer = (props: Props) => {
 		event.preventDefault();
 		const x = event.pageX - viewportElementRef.current.offsetLeft;
 		const walk = (x - startX.current) * 3;
-		viewportElementRef.current.scrollLeft = scrollLeft.current - walk;
+		// viewportElementRef.current.scrollLeft = scrollLeft.current - walk;
+		motion.set(scrollLeft.current - walk);
 	};
 
 	const runScroller = (sl: number) => {
@@ -212,6 +221,18 @@ const GraphChunksScrollContainer = (props: Props) => {
 
 	const { viewportWidth, leftPadding, rightPadding, data } = state;
 
+	const scrollLeftHalfInterval = () => {
+		if (viewportElementRef.current) {
+			motion.set(viewportElementRef.current?.scrollLeft - chunkWidth / 2);
+		}
+	};
+
+	const scrollRightHalfInterval = () => {
+		if (viewportElementRef.current) {
+			motion.set(viewportElementRef.current?.scrollLeft + chunkWidth / 2);
+		}
+	};
+
 	return (
 		<div
 			className='graph-timeline'
@@ -222,6 +243,16 @@ const GraphChunksScrollContainer = (props: Props) => {
 			{data.map(index => props.row(index))}
 			<div ref={nextItemsRef} style={{ width: rightPadding, flexShrink: 0 }} />
 			<div style={{ ...rangeSelectorStyles, visibility: 'hidden' }} ref={rangeElementRef} />
+			<button
+				style={{ position: 'absolute', transform: 'translate(-121%, 6px)', left: '24%' }}
+				onClick={scrollLeftHalfInterval}>
+				Left
+			</button>
+			<button
+				style={{ position: 'absolute', transform: 'translate(121%, 6px)', left: '74%' }}
+				onClick={scrollRightHalfInterval}>
+				Right
+			</button>
 		</div>
 	);
 };
