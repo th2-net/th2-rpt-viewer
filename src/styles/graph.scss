@@ -17,26 +17,23 @@
 @import './common/vars';
 
 .graph {
+	height: 100px;
 	background-color: #7a99b8;
 	position: relative;
-	padding-top: 30px;
+	padding-top: 48px;
 	display: flex;
 	justify-content: center;
 
 	&__container {
-		position: relative;
 		height: 90px;
 	}
 
-	&__chunks {
-		display: flex;
-		// transition: transform 1.2s;
-		transform: translateX(-33%);
-		position: absolute;
-		top: 0;
+	&__chunk-item {
 		height: 100%;
+		display: inline-block;
+		width: 200px;
+		flex-shrink: 0;
 	}
-
 
 }
 
@@ -55,4 +52,13 @@
 		position: absolute;
 		transform: translate(-50%, -50%);
 	}
+}
+
+.graph-timeline {
+	@include hidden-scrollbar;
+	width: 100%;
+	height: 80px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	display: flex;
 }

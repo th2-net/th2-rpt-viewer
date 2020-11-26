@@ -18,89 +18,140 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
+import ResizeObserver from 'resize-observer-polyfill';
 import GraphChunk from './GraphChunk';
 import { useGraphStore } from '../../hooks/useGraphStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { useSelectedStore } from '../../hooks/useSelectedStore';
-import { isDivElement, isElementInViewport } from '../../helpers/dom';
+import GraphChunksScrollContainer, { Settings } from './GraphChunksScrollContainer';
+import { IntervalOption } from '../../stores/GraphStore';
 import '../../styles/graph.scss';
 
-const rangeSelectorStyles: React.CSSProperties = {
+const getChunkWidth = () => window.innerWidth / 2;
+
+const settings: Settings = {
+	itemWidth: getChunkWidth(),
+	amount: 3,
+	tolerance: 1,
+	minIndex: -50,
+	maxIndex: 50,
+	startIndex: 1,
+};
+
+export const rangeSelectorStyles: React.CSSProperties = {
 	height: '100%',
-	borderLeft: '3px solid #ff5500',
-	borderRight: '3px solid #ff5500',
+	borderLeft: '3px solid #FF7733',
+	borderRight: '3px solid #FF7733',
 	position: 'absolute',
 	top: 0,
 	backdropFilter: 'brightness(119%)',
-	// pointerEvents: 'none',
+	// cursor: 'grabbing',
+	pointerEvents: 'none',
+	width: getChunkWidth(),
+	left: '50%',
+	transform: 'translate(-50%)',
 };
 
 function Graph() {
 	const graphStore = useGraphStore();
 	const selectedStore = useSelectedStore();
 
-	const windowWidth = window.innerWidth / 3;
-	const graphChunks = React.useRef<HTMLDivElement>(null);
+	const [acnhorTimestamp, setAnchorTimestamp] = React.useState(graphStore.timestamp);
+	const [chunkWidth, setChunkWidth] = React.useState(getChunkWidth);
 
-	const onWheelHandler = (e: React.WheelEvent<HTMLElement>) => {
-		if (!graphChunks.current) return;
-		const direction = e.deltaY > 0 ? 1 : -1;
-		const { left, width } = graphChunks.current.getBoundingClientRect();
-		const style = getComputedStyle(graphChunks.current);
-		const matrix = new WebKitCSSMatrix(style.webkitTransform);
-		const translateX = matrix.m41 + direction * 100;
-		const leftProp = parseInt(style.marginLeft.replace('px', ''));
-		const right = 1920 - (left + width);
-		graphChunks.current.style.transform = `translate(${translateX}px, 0)`;
-		if (left > -150) {
-			graphStore.addPreviousChunk();
-			graphChunks.current.style.marginLeft = `${leftProp - left - windowWidth}px`;
-		} else if (right > -150) {
-			graphStore.addNextChunk();
-			graphChunks.current.style.marginLeft = `${leftProp + right + windowWidth}px`;
-		}
+	const rootRef = React.useRef<HTMLDivElement>(null);
 
-		// const childrenInInterval = Array.from(graphChunks.current.children)
-		// 	.filter(isDivElement)
-		// 	.filter(isElementInViewport);
+	const resizeObserver = React.useRef(
+		new ResizeObserver(() => {
+			setChunkWidth(getChunkWidth);
+		}),
+	);
+
+	React.useEffect(() => {
+		if (rootRef.current) resizeObserver.current.observe(rootRef.current);
+
+		return () => {
+			if (rootRef.current) resizeObserver.current.unobserve(rootRef.current);
+		};
+	}, []);
+
+	const rowTemplate = (index: number) => {
+		const chunk = graphStore.getChunkByTimestamp(
+			moment(acnhorTimestamp)
+				.subtract((1 - index) * graphStore.interval, 'minutes')
+				.valueOf(),
+		);
+		return (
+			<div
+				ref={rootRef}
+				data-from={moment(chunk.from).startOf('minute').valueOf()}
+				data-to={moment(chunk.to).endOf('minute').valueOf()}
+				className='graph__chunk-item'
+				key={index}
+				style={{ width: chunkWidth }}>
+				<GraphChunk
+					key={`${chunk.from}-${chunk.to}`}
+					chunk={chunk}
+					chunkWidth={chunkWidth}
+					getChunkData={graphStore.getChunkData}
+					attachedMessages={selectedStore.attachedMessages.filter(message =>
+						moment(getTimestampAsNumber(message.timestamp)).isBetween(
+							moment(chunk.from),
+							moment(chunk.to),
+						),
+					)}
+				/>
+			</div>
+		);
 	};
 
+	const [from, to] = graphStore.range;
+
 	return (
-		<div className='graph' onWheel={onWheelHandler}>
-			<div className='graph__container'>
-				<div className='graph__chunks' ref={graphChunks}>
-					{graphStore.chunks.map(chunk => (
-						<GraphChunk
-							key={`${chunk.from}-${chunk.to}`}
-							chunk={chunk}
-							getChunkData={graphStore.getChunkData}
-							attachedMessages={selectedStore.attachedMessages.filter(message =>
-								moment(getTimestampAsNumber(message.timestamp)).isBetween(
-									moment(chunk.from),
-									moment(chunk.to),
-								),
-							)}
-						/>
-					))}
-				</div>
-			</div>
-			<div
-				style={{
-					...rangeSelectorStyles,
-					width: windowWidth,
-					left: windowWidth,
-				}}>
+		<div className='graph'>
+			<GraphChunksScrollContainer chunkWidth={chunkWidth} settings={settings} row={rowTemplate} />
+			<div style={rangeSelectorStyles}>
+				<Timestamp timestamp={from} styles={{ left: 0 }} />
 				<select
 					name='interval'
 					value={graphStore.interval}
-					onChange={e => graphStore.setInterval(parseInt(e.target.value) as 15 | 30 | 60)}>
+					onChange={e => graphStore.setInterval(parseInt(e.target.value) as IntervalOption)}>
 					{graphStore.intervalOptions.map(intervalValue => (
 						<option key={intervalValue} value={intervalValue}>{`${intervalValue} minutes`}</option>
 					))}
 				</select>
+				<Timestamp
+					timestamp={to}
+					styles={{
+						transform: 'translate(120%, 5px)',
+						textAlign: 'left',
+						right: 0,
+					}}
+				/>
 			</div>
 		</div>
 	);
 }
 
 export default observer(Graph);
+
+interface TimestampProps {
+	timestamp: number;
+	styles?: React.CSSProperties;
+}
+
+const Timestamp = ({ timestamp, styles = {} }: TimestampProps) => (
+	<div
+		style={{
+			position: 'absolute',
+			transform: 'translate(-120%, 5px)',
+			color: '#fff',
+			fontSize: '13px',
+			top: 0,
+			textAlign: 'right',
+			...styles,
+		}}>
+		{moment(timestamp).format('DD.MM.YYYY')} <br />
+		{moment(timestamp).format('HH:mm:ss.SSS')}
+	</div>
+);

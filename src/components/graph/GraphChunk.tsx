@@ -20,7 +20,6 @@ import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import { LineChart, Line, CartesianGrid, XAxis, LineProps, CartesianGridProps } from 'recharts';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { useGraphStore } from '../../hooks/useGraphStore';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk } from '../../models/graph';
 
@@ -32,9 +31,8 @@ const tickStyles: React.CSSProperties = {
 };
 
 const lineProps: LineProps = {
+	dataKey: '',
 	type: 'monotone',
-	dataKey: 'count',
-	stroke: '#ff7300',
 	yAxisId: 0,
 	animationDuration: 0,
 	activeDot: false,
@@ -48,14 +46,30 @@ const gridProps: CartesianGridProps = {
 	color: '#9aaac9',
 };
 
+const graphLines = [
+	{
+		dataKey: 'passed',
+		stroke: '#00802a',
+	},
+	{
+		dataKey: 'failed',
+		stroke: '#c20a0a',
+	},
+	{
+		dataKey: 'messages',
+		stroke: '#2689bd',
+	},
+];
+
 interface Props {
 	chunk: Chunk;
+	chunkWidth: number;
 	getChunkData: (chunk: Chunk) => void;
 	attachedMessages: EventMessage[];
 }
 
-const GraphChunk: React.RefForwardingComponent<HTMLDivElement, Props> = (props, ref) => {
-	const { chunk, getChunkData, attachedMessages } = props;
+const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props, ref) => {
+	const { chunk, getChunkData, attachedMessages, chunkWidth } = props;
 
 	React.useEffect(() => {
 		getChunkData(chunk);
@@ -95,23 +109,24 @@ const GraphChunk: React.RefForwardingComponent<HTMLDivElement, Props> = (props, 
 				/>
 			))}
 			<LineChart
-				width={window.innerWidth / 3}
-				height={100}
+				width={chunkWidth}
+				height={60}
 				data={chunk.data}
 				margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
 				<XAxis
 					dataKey='timestamp'
 					domain={['auto', 'auto']}
 					tickFormatter={tick => moment(tick).format('HH:mm')}
+					// type='number'
 					// ticks={ticks}
 					tick={tickStyles}
 					stroke='rgba(0,0,0,0)'
-					interval={0}
+					interval={2}
 				/>
 				<CartesianGrid {...gridProps} />
-				<Line {...lineProps} dataKey='passed' stroke='#ff7300' />
-				<Line {...lineProps} dataKey='failed' stroke='#387908' />
-				<Line {...lineProps} dataKey='messages' stroke='#1f039c' />
+				{graphLines.map(line => (
+					<Line key={line.dataKey} {...lineProps} {...line} />
+				))}
 			</LineChart>
 		</div>
 	);

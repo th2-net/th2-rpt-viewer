@@ -28,3 +28,12 @@ export function isElementInViewport(el: HTMLElement) {
 export function isDivElement(el: Element): el is HTMLDivElement {
 	return el instanceof HTMLDivElement;
 }
+
+export function isClickEventInElement(event: MouseEvent, element: HTMLElement) {
+	const rect = element.getBoundingClientRect();
+	const x = event.clientX;
+	if (x < rect.left || x >= rect.right) return false;
+	const y = event.clientY;
+	if (y < rect.top || y >= rect.bottom) return false;
+	return true;
+}

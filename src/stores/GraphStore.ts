@@ -14,14 +14,18 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, reaction } from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { Chunk, ChunkData } from '../models/graph';
 
-class GraphStore {
-	public readonly intervalOptions = [15, 30, 60];
+export const intervalOptions = [15, 30, 60] as const;
 
-	private steps = {
+export type IntervalOption = typeof intervalOptions[number];
+
+class GraphStore {
+	public readonly intervalOptions = intervalOptions;
+
+	private readonly steps = {
 		15: 1,
 		30: 3,
 		60: 5,
@@ -30,14 +34,14 @@ class GraphStore {
 	constructor() {
 		reaction(
 			() => this.interval,
-			interval => this.getChunksData(interval, this.timestamp),
+			interval => this.createChunks(interval, this.timestamp),
 		);
 
-		this.getChunksData(this.interval, this.timestamp);
+		// this.createChunks(this.interval, this.timestamp);
 	}
 
 	@observable
-	public interval: 15 | 30 | 60 = 15;
+	public interval: IntervalOption = 15;
 
 	@observable
 	public chunks: Chunk[] = [];
@@ -45,21 +49,34 @@ class GraphStore {
 	@observable
 	public timestamp: number = moment().subtract(this.interval, 'minutes').valueOf();
 
+	@computed
+	public get range() {
+		return [this.timestamp, moment(this.timestamp).add(this.interval, 'minutes').valueOf()];
+	}
+
 	@action
 	public setTimestamp = (timestamp: number) => {
 		this.timestamp = timestamp;
 	};
 
 	@action
-	public setInterval = (interval: 15 | 30 | 60) => {
+	public setInterval = (interval: IntervalOption) => {
 		this.interval = interval;
 	};
 
 	@action
+	public getChunkByTimestamp = (timestampFrom: number) => {
+		const existedChunk = this.chunks.find(chunk => chunk.from === timestampFrom);
+		if (existedChunk) return existedChunk;
+
+		const chunk = observable(this.createChunk(timestampFrom, this.interval));
+		this.chunks.push(chunk);
+		return chunk;
+	};
+
+	@action
 	public getChunkData = (chunk: Chunk) => {
-		const { to, from } = chunk;
-		const targetChunk = this.chunks.find(_chunk => _chunk.from === from && _chunk.to === to);
-		if (!targetChunk) return;
+		const { from } = chunk;
 		const step = this.steps[this.interval];
 		const steps = this.interval / step;
 		const data: ChunkData[] = [];
@@ -74,16 +91,18 @@ class GraphStore {
 				passed: getRandomNumber(),
 			});
 		}
-		targetChunk.data = data;
+		// eslint-disable-next-line no-param-reassign
+		chunk.data = data;
 	};
 
 	@action
-	public getChunksData(interval: 15 | 30 | 60, timestamp: number) {
+	public createChunks(interval: IntervalOption, timestamp: number) {
 		let chunks: Chunk[] = [this.createChunk(timestamp, interval)];
 		for (let i = 1; i < 3; i++) {
 			chunks = [
 				this.createChunk(
 					moment(timestamp)
+						.startOf('minute')
 						.subtract(i * interval, 'minutes')
 						.valueOf(),
 					interval,
@@ -91,6 +110,7 @@ class GraphStore {
 				...chunks,
 				this.createChunk(
 					moment(timestamp)
+						.startOf('minute')
 						.add(i * interval, 'minutes')
 						.valueOf(),
 					interval,
@@ -101,7 +121,7 @@ class GraphStore {
 		this.chunks = chunks;
 	}
 
-	private createChunk = (timestamp: number, interval: 15 | 30 | 60) => {
+	private createChunk = (timestamp: number, interval: IntervalOption) => {
 		return {
 			from: moment(timestamp).valueOf(),
 			to: moment(timestamp).add(interval, 'minutes').valueOf(),
