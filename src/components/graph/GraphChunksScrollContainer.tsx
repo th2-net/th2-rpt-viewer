@@ -96,7 +96,7 @@ const GraphChunksScrollContainer = (props: Props) => {
 
 	React.useEffect(() => {
 		if (!viewportElementRef.current) return;
-		viewportElementRef.current.scrollLeft = state.initialPosition;
+		viewportElementRef.current.scrollLeft = state.initialPosition + chunkWidth / 2;
 		if (!state.initialPosition) {
 			runScroller(0);
 		}
@@ -145,7 +145,7 @@ const GraphChunksScrollContainer = (props: Props) => {
 			settings: { itemWidth, minIndex },
 		} = state;
 		const index = minIndex + Math.floor((sl - toleranceWidth) / itemWidth);
-		const data = getData(index, bufferedItems);
+		const data = getIndexes(index, bufferedItems);
 		const leftPadding = Math.max((index - minIndex) * itemWidth, 0);
 		const rightPadding = Math.max(totalWidth - leftPadding - data.length * itemWidth, 0);
 
@@ -198,7 +198,7 @@ const GraphChunksScrollContainer = (props: Props) => {
 		}
 	}, 50);
 
-	const getData = (offset: number, limit: number) => {
+	const getIndexes = (offset: number, limit: number) => {
 		const data = [];
 		const start = Math.max(settings.minIndex, offset);
 		const end = Math.min(offset + limit - 1, settings.maxIndex);

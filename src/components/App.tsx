@@ -19,8 +19,8 @@ import * as React from 'react';
 import { ToastProvider } from 'react-toast-notifications';
 import Toast from './notifications/Toast';
 import EventsLayout from './event/EventsLayout';
-import '../styles/root.scss';
 import Notifier from './notifications/Notifier';
+import '../styles/root.scss';
 
 const App = () => (
 	<div className='root'>

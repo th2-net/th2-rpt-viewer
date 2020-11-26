@@ -33,9 +33,9 @@ const settings: Settings = {
 	itemWidth: getChunkWidth(),
 	amount: 3,
 	tolerance: 1,
-	minIndex: -50,
-	maxIndex: 50,
-	startIndex: 1,
+	minIndex: -150,
+	maxIndex: 150,
+	startIndex: -1,
 };
 
 export const rangeSelectorStyles: React.CSSProperties = {
@@ -78,7 +78,7 @@ function Graph() {
 	const rowTemplate = (index: number) => {
 		const chunk = graphStore.getChunkByTimestamp(
 			moment(acnhorTimestamp)
-				.subtract((1 - index) * graphStore.interval, 'minutes')
+				.subtract(-index * graphStore.interval, 'minutes')
 				.valueOf(),
 		);
 		return (
