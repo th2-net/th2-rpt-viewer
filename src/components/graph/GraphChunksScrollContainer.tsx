@@ -18,7 +18,7 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { useMotionValue, useTransform, useSpring } from 'framer-motion';
+import { useMotionValue, useSpring } from 'framer-motion';
 import { useGraphStore } from '../../hooks/useGraphStore';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
@@ -79,7 +79,7 @@ interface State {
 	data: number[];
 }
 
-const GraphChunksScrollContainer = (props: Props, ref: any) => {
+const GraphChunksScrollContainer = (props: Props) => {
 	const { settings, chunkWidth } = props;
 
 	const graphStore = useGraphStore();
@@ -221,15 +221,9 @@ const GraphChunksScrollContainer = (props: Props, ref: any) => {
 
 	const { viewportWidth, leftPadding, rightPadding, data } = state;
 
-	const scrollLeftHalfInterval = () => {
+	const scrollHalfInterval = (direction: -1 | 1 = 1) => {
 		if (viewportElementRef.current) {
-			motion.set(viewportElementRef.current?.scrollLeft - chunkWidth / 2);
-		}
-	};
-
-	const scrollRightHalfInterval = () => {
-		if (viewportElementRef.current) {
-			motion.set(viewportElementRef.current?.scrollLeft + chunkWidth / 2);
+			motion.set(viewportElementRef.current?.scrollLeft - (chunkWidth * direction) / 2);
 		}
 	};
 
@@ -243,16 +237,22 @@ const GraphChunksScrollContainer = (props: Props, ref: any) => {
 			{data.map(index => props.row(index))}
 			<div ref={nextItemsRef} style={{ width: rightPadding, flexShrink: 0 }} />
 			<div style={{ ...rangeSelectorStyles, visibility: 'hidden' }} ref={rangeElementRef} />
-			<button
-				style={{ position: 'absolute', transform: 'translate(-121%, 6px)', left: '24%' }}
-				onClick={scrollLeftHalfInterval}>
-				Left
-			</button>
-			<button
-				style={{ position: 'absolute', transform: 'translate(121%, 6px)', left: '74%' }}
-				onClick={scrollRightHalfInterval}>
-				Right
-			</button>
+			<div
+				className='graph__arrow-button left'
+				style={{
+					left: chunkWidth / 2,
+				}}
+				onClick={() => scrollHalfInterval()}>
+				<i className='graph__arrow-icon'></i>
+			</div>
+			<div
+				className='graph__arrow-button right'
+				style={{
+					left: chunkWidth * 1.5,
+				}}
+				onClick={() => scrollHalfInterval(-1)}>
+				<i className='graph__arrow-icon'></i>
+			</div>
 		</div>
 	);
 };

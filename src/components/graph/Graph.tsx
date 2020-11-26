@@ -44,7 +44,7 @@ export const rangeSelectorStyles: React.CSSProperties = {
 	borderRight: '3px solid #FF7733',
 	position: 'absolute',
 	top: 0,
-	backdropFilter: 'brightness(119%)',
+	// backdropFilter: 'brightness(119%)',
 	// cursor: 'grabbing',
 	pointerEvents: 'none',
 	width: getChunkWidth(),
@@ -109,17 +109,20 @@ function Graph() {
 
 	return (
 		<div className='graph'>
+			<div className='graph__overlay left' style={{ width: (window.innerWidth - chunkWidth) / 2 }}>
+				<i className='graph__logo' />
+			</div>
 			<GraphChunksScrollContainer chunkWidth={chunkWidth} settings={settings} row={rowTemplate} />
 			<div style={rangeSelectorStyles}>
 				<Timestamp timestamp={from} styles={{ left: 0 }} />
-				<select
+				{/* <select
 					name='interval'
 					value={graphStore.interval}
 					onChange={e => graphStore.setInterval(parseInt(e.target.value) as IntervalOption)}>
 					{graphStore.intervalOptions.map(intervalValue => (
 						<option key={intervalValue} value={intervalValue}>{`${intervalValue} minutes`}</option>
 					))}
-				</select>
+				</select> */}
 				<Timestamp
 					timestamp={to}
 					styles={{
@@ -128,6 +131,10 @@ function Graph() {
 						right: 0,
 					}}
 				/>
+			</div>
+			<div className='graph__overlay right' style={{ width: (window.innerWidth - chunkWidth) / 2 }}>
+				<div className='graph__search-button' />
+				<div className='graph__settings-button' />
 			</div>
 		</div>
 	);
@@ -142,13 +149,8 @@ interface TimestampProps {
 
 const Timestamp = ({ timestamp, styles = {} }: TimestampProps) => (
 	<div
+		className='graph-timestamp'
 		style={{
-			position: 'absolute',
-			transform: 'translate(-120%, 5px)',
-			color: '#fff',
-			fontSize: '13px',
-			top: 0,
-			textAlign: 'right',
 			...styles,
 		}}>
 		{moment(timestamp).format('DD.MM.YYYY')} <br />

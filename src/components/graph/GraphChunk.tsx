@@ -24,7 +24,7 @@ import { EventMessage } from '../../models/EventMessage';
 import { Chunk } from '../../models/graph';
 
 const tickStyles: React.CSSProperties = {
-	fill: 'white',
+	fill: '#3D668F',
 	fontSize: 12,
 	fontFamily: 'OpenSans',
 	userSelect: 'none',
@@ -32,7 +32,7 @@ const tickStyles: React.CSSProperties = {
 
 const lineProps: LineProps = {
 	dataKey: '',
-	type: 'monotone',
+	type: 'linear',
 	yAxisId: 0,
 	animationDuration: 0,
 	activeDot: false,
@@ -112,7 +112,10 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 				width={chunkWidth}
 				height={60}
 				data={chunk.data}
-				margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+				margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+				style={{
+					zIndex: 5,
+				}}>
 				<XAxis
 					dataKey='timestamp'
 					domain={['auto', 'auto']}
@@ -128,6 +131,21 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 					<Line key={line.dataKey} {...lineProps} {...line} />
 				))}
 			</LineChart>
+			<div
+				style={{
+					position: 'absolute',
+					bottom: 10,
+					left: 0,
+					width: '100%',
+					display: 'flex',
+					justifyContent: 'space-around',
+				}}>
+				{['10:00', '12:00', '13:00'].map(time => (
+					<div key={time} style={{ color: 'blue', fontSize: 11 }}>
+						{time}
+					</div>
+				))}
+			</div>
 		</div>
 	);
 };
