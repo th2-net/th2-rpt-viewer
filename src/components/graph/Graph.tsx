@@ -91,6 +91,7 @@ function Graph() {
 				key={index}
 				style={{ width: chunkWidth }}>
 				<GraphChunk
+					interval={graphStore.interval}
 					key={`${chunk.from}-${chunk.to}`}
 					chunk={chunk}
 					chunkWidth={chunkWidth}

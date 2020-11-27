@@ -62,10 +62,11 @@ interface Props {
 	chunkWidth: number;
 	getChunkData: (chunk: Chunk) => void;
 	attachedItems: (EventMessage | EventAction)[];
+	interval: number;
 }
 
 const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props, ref) => {
-	const { chunk, getChunkData, attachedItems, chunkWidth } = props;
+	const { chunk, getChunkData, attachedItems, chunkWidth, interval } = props;
 
 	React.useEffect(() => {
 		getChunkData(chunk);
@@ -81,7 +82,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 		const { from, to } = chunk;
 		const ticksInterval = (to - from) / 15 / 1000 / 60;
 
-		for (let i = 0; i < 16; i += 3) {
+		for (let i = 0; i < interval; i++) {
 			ticksArr.push(
 				moment(from)
 					.subtract(moment().utcOffset(), 'minutes')
