@@ -18,18 +18,15 @@
 
 .graph {
 	height: 100px;
-	background: linear-gradient(90deg, rgba(69,134,236,1) 0%, rgba(69,134,236,1) 25%, rgba(202,210,222,1) 25%, rgba(202,210,222,1) 75%, rgba(69,134,236,1) 75%, rgba(69,134,236,1) 100%);
+	background-color: #DEE5ED;
 	position: relative;
-	padding-top: 48px;
 	display: flex;
-	justify-content: center;
-
-	&__container {
-		height: 90px;
-	}
+	flex-direction: column;
+	flex-shrink: 0;
+	justify-content: flex-end;
+	overflow: visible;
 
 	&__chunk-item {
-		height: 100%;
 		display: inline-block;
 		width: 200px;
 		flex-shrink: 0;
@@ -102,20 +99,90 @@
 .graph-chunk {
 	position: relative;
 
-	&-message {
-		width: 15px;
-		height: 15px;
-		border-radius: 50%;
-		background-color: $chartAttachedMessageColor;
+	&__item {
 		position: absolute;
 		transform: translate(-50%, -50%);
+		cursor: pointer;
+		z-index: 6;
+	}
+
+	&__message, &__event {
+		width: 10px;
+		height: 10px;
+		position: relative;
+		z-index: 6;
+	}
+
+	&__message {
+		background-color: $graphAttachedMessageColor;
+		transform: rotate(45deg);
+	}
+
+	&__event {
+		border-radius: 50%;
+
+		&.passed {
+			background-color: $graphAttachedEventPassedColor;
+		}
+
+		&.failed {
+			background-color: $graphAttachedEventFailedColor;
+		}
+	}
+
+	&__item-info {
+		background-color: #FFF;
+		position: absolute;
+		left: -7px;
+		top: -7px;
+		transform-origin: 9px 9px;
+		transform: scale(0.01);
+		transition: transform 0.1s ease-in-out;
+		box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, .45);
+		border-radius: 6px;
+		padding: 7px 7px 7px 24px;
+		z-index: 5;
+
+		&.open {
+			transform: scale(1);
+		}
+	}
+
+	&__item-name {
+		white-space: nowrap;
+		font-weight: 600;
+		font-size: 12px;
+		line-height: 12px;
+		color: #BC271A;
+	}
+
+	&__item-timestamp {
+		font-size: 9px;
+		line-height: 9px;
+		color: #666666;
+		margin-top: 7px;
+	}
+
+	&__ticks {
+		display: flex;
+		justify-content: space-between;
+	}
+
+	&__tick {
+		display: inline-block;
+		flex-grow: 1;
+		color: $graphTickColor;
+		font-size: 8px;
+		line-height: 8px;
+		border-left: 1px solid $graphTickColor;
+		padding: 0 0 4px 6px;
 	}
 }
 
 .graph-timeline {
 	@include hidden-scrollbar;
 	width: 100%;
-	height: 80px;
+	height: 62px;
 	overflow-x: auto;
 	overflow-y: hidden;
 	display: flex;
@@ -140,7 +207,7 @@
 	width: 480px;
 	height: 100%;
 	z-index: 2;
-	// backdrop-filter: invert(1) grayscale(1);
+	backdrop-filter: invert(0.8) brightness(204%) hue-rotate(190deg) contrast(188%) grayscale(3%) saturate(147%);
 	opacity: 0.8;
 
 	&.left {

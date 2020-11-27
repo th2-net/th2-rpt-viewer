@@ -37,7 +37,7 @@ class GraphStore {
 			interval => this.createChunks(interval, this.timestamp),
 		);
 
-		// this.createChunks(this.interval, this.timestamp);
+		this.createChunks(this.interval, this.timestamp);
 	}
 
 	@observable
@@ -47,7 +47,20 @@ class GraphStore {
 	public chunks: Chunk[] = [];
 
 	@observable
-	public timestamp: number = moment().subtract(this.interval, 'minutes').valueOf();
+	public timestamp: number = moment()
+		.subtract(moment().utcOffset(), 'minutes')
+		.subtract(this.interval, 'minutes')
+		.valueOf();
+
+	@observable
+	public graphWindowRange: [number, number] = [
+		moment(this.timestamp)
+			.subtract(this.interval / 2, 'minutes')
+			.valueOf(),
+		moment(this.timestamp)
+			.add(this.interval / 2, 'minutes')
+			.valueOf(),
+	];
 
 	@computed
 	public get range(): [number, number] {
@@ -75,6 +88,11 @@ class GraphStore {
 	};
 
 	@action
+	public setGraphWindowRange = (range: [number, number]) => {
+		this.graphWindowRange = range;
+	};
+
+	@action
 	public getChunkData = (chunk: Chunk) => {
 		const { from } = chunk;
 		const step = this.steps[this.interval];
@@ -91,6 +109,7 @@ class GraphStore {
 				passed: getRandomNumber(),
 			});
 		}
+
 		// eslint-disable-next-line no-param-reassign
 		chunk.data = data;
 	};

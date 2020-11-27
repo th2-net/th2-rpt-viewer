@@ -25,6 +25,7 @@ import { getTimestampAsNumber } from '../../helpers/date';
 import { useSelectedStore } from '../../hooks/useSelectedStore';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
 import { IntervalOption } from '../../stores/GraphStore';
+import { EventMessage } from '../../models/EventMessage';
 import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
@@ -44,19 +45,11 @@ export const rangeSelectorStyles: React.CSSProperties = {
 	borderRight: '3px solid #FF7733',
 	position: 'absolute',
 	top: 0,
-	// backdropFilter: 'brightness(119%)',
-	// cursor: 'grabbing',
-	pointerEvents: 'none',
 	width: getChunkWidth(),
 	left: '50%',
 	transform: 'translate(-50%)',
-	backdropFilter: 'invert(1) hue-rotate(205deg) brightness(1.5) contrast(1)',
+	zIndex: 2,
 };
-
-// const graphOverlay1Color = ' #005dff';
-const graphOverlay1Color = ' #7A99B8';
-// const graphOverlay2Color = '#cdd6e3';
-const graphOverlay2Color = '#4a5c7b';
 
 function Graph() {
 	const graphStore = useGraphStore();
@@ -64,6 +57,7 @@ function Graph() {
 
 	const [acnhorTimestamp, setAnchorTimestamp] = React.useState(graphStore.timestamp);
 	const [chunkWidth, setChunkWidth] = React.useState(getChunkWidth);
+	const [inputState, setInputState] = React.useState(graphStore.timestamp);
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -81,12 +75,13 @@ function Graph() {
 		};
 	}, []);
 
-	const rowTemplate = (index: number) => {
+	const renderChunk = (index: number) => {
 		const chunk = graphStore.getChunkByTimestamp(
 			moment(acnhorTimestamp)
 				.subtract(-index * graphStore.interval, 'minutes')
 				.valueOf(),
 		);
+
 		return (
 			<div
 				ref={rootRef}
@@ -100,24 +95,17 @@ function Graph() {
 					chunk={chunk}
 					chunkWidth={chunkWidth}
 					getChunkData={graphStore.getChunkData}
-					attachedMessages={selectedStore.attachedMessages.filter(message =>
-						moment(getTimestampAsNumber(message.timestamp)).isBetween(
-							moment(chunk.from),
-							moment(chunk.to),
-						),
-					)}
+					attachedItems={getAttachedMessages(graphStore.timestamp)}
+					// attachedItems={selectedStore.attachedMessages.filter(message =>
+					// 	moment(getTimestampAsNumber(message.timestamp)).isBetween(
+					// 		moment(chunk.from),
+					// 		moment(chunk.to),
+					// 	),
+					// )}
 				/>
 			</div>
 		);
 	};
-
-	const getBackgroundGradient = () => `linear-gradient(
-		90deg, ${graphOverlay1Color} 0%,  ${graphOverlay1Color} ${
-		chunkWidth / 2
-	}px, ${graphOverlay2Color} ${chunkWidth / 2}px,
-		${graphOverlay2Color}  ${chunkWidth * 1.5}px,  ${graphOverlay1Color} ${
-		chunkWidth * 1.5
-	}px,  ${graphOverlay1Color} 100%)`;
 
 	// 	<div style={rangeSelectorStyles}>
 	// 	<select
@@ -130,13 +118,16 @@ function Graph() {
 	// 	</select>
 	// </div>
 
+	const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (new Date(parseInt(e.target.value)).valueOf() > 1) {
+			graphStore.setTimestamp(parseInt(e.target.value));
+			setInputState(parseInt(e.target.value));
+		}
+	};
+
 	return (
-		<div
-			className='graph'
-			style={{
-				background: getBackgroundGradient(),
-			}}>
-			<GraphChunksVirtualizer chunkWidth={chunkWidth} settings={settings} row={rowTemplate} />
+		<div className='graph'>
+			<GraphChunksVirtualizer chunkWidth={chunkWidth} settings={settings} row={renderChunk} />
 			<OverlayPanel chunkWidth={chunkWidth} range={graphStore.range} />
 		</div>
 	);
@@ -190,3 +181,68 @@ const Timestamp = ({ timestamp, styles = {} }: TimestampProps) => (
 		{moment(timestamp).format('HH:mm:ss.SSS')}
 	</div>
 );
+
+const getAttachedMessages = (timestamp: number): EventMessage[] => [
+	{
+		body: {
+			fields: {
+				asd: {
+					listValue: {
+						values: [],
+					},
+				},
+			},
+			metadata: {
+				id: {
+					connectionId: {
+						sessionAlias: '',
+					},
+					sequence: '',
+				},
+				messageType: '',
+				timestamp: new Date().toString(),
+			},
+		},
+		bodyBase64: '',
+		direction: '',
+		messageId: 'e234sdf-32423-ssfsdf-46446-h342gs',
+		messageType: '',
+		sessionId: '',
+		type: '',
+		timestamp: {
+			epochSecond: moment(timestamp).add(10, 'minute').valueOf() / 1000,
+			nano: 0,
+		},
+	},
+	{
+		body: {
+			fields: {
+				asd: {
+					listValue: {
+						values: [],
+					},
+				},
+			},
+			metadata: {
+				id: {
+					connectionId: {
+						sessionAlias: '',
+					},
+					sequence: '',
+				},
+				messageType: '',
+				timestamp: new Date().toString(),
+			},
+		},
+		bodyBase64: '',
+		direction: '',
+		messageId: 'e234sdf-32423-sdfsdf-46346-h342gs',
+		messageType: '',
+		sessionId: '',
+		type: '',
+		timestamp: {
+			epochSecond: moment(timestamp).add(10, 'minute').valueOf() / 1000,
+			nano: 0,
+		},
+	},
+];
