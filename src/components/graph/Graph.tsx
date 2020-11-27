@@ -39,18 +39,6 @@ const settings: Settings = {
 	startIndex: -1,
 };
 
-export const rangeSelectorStyles: React.CSSProperties = {
-	height: '100%',
-	borderLeft: '3px solid #FF7733',
-	borderRight: '3px solid #FF7733',
-	position: 'absolute',
-	top: 0,
-	width: getChunkWidth(),
-	left: '50%',
-	transform: 'translate(-50%)',
-	zIndex: 2,
-};
-
 function Graph() {
 	const graphStore = useGraphStore();
 	const selectedStore = useSelectedStore();
@@ -84,7 +72,6 @@ function Graph() {
 
 		return (
 			<div
-				ref={rootRef}
 				data-from={moment(chunk.from).startOf('minute').valueOf()}
 				data-to={moment(chunk.to).endOf('minute').valueOf()}
 				className='graph__chunk-item'
@@ -127,7 +114,7 @@ function Graph() {
 	};
 
 	return (
-		<div className='graph'>
+		<div className='graph' ref={rootRef}>
 			<GraphChunksVirtualizer chunkWidth={chunkWidth} settings={settings} row={renderChunk} />
 			<OverlayPanel
 				chunkWidth={chunkWidth}
@@ -145,7 +132,7 @@ interface OverlayPanelProps {
 	chunkWidth: number;
 	range: [number, number];
 	inputValue: string;
-	onInputChange: any;
+	onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const OverlayPanel = ({
@@ -153,47 +140,37 @@ const OverlayPanel = ({
 	range: [from, to],
 	inputValue,
 	onInputChange,
-}: OverlayPanelProps) => (
-	<>
-		<div className='graph-overlay left' style={{ width: chunkWidth / 2 }} />
-		<div className='graph-overlay right' style={{ width: (window.innerWidth - chunkWidth) / 2 }} />
-		<div className='graph-overlay__section' style={{ width: chunkWidth / 2 }}>
-			<i className='graph-overlay__logo' />
-			<Timestamp timestamp={from} styles={{ right: 0 }} />
-		</div>
-		<div style={rangeSelectorStyles}>
-			<input value={inputValue} type='text' onChange={onInputChange} />
-		</div>
-		<div
-			className='graph-overlay__section right'
-			style={{ width: (window.innerWidth - chunkWidth) / 2 }}>
-			<Timestamp
-				timestamp={to}
-				styles={{
-					transform: 'translate(15%, 5px);',
-					textAlign: 'left',
-					left: 20,
-				}}
-			/>
-			<div className='graph__search-button' />
-			<div className='graph__settings-button' />
-		</div>
-	</>
-);
+}: OverlayPanelProps) => {
+	const overlayWidth = (window.innerWidth - chunkWidth) / 2;
 
+	return (
+		<>
+			<div className='graph-overlay left' style={{ width: overlayWidth }} />
+			<div className='graph-overlay right' style={{ width: overlayWidth }} />
+			<div className='graph-overlay__section' style={{ width: overlayWidth }}>
+				<i className='graph-overlay__logo' />
+				<Timestamp className='from' timestamp={from} />
+			</div>
+			<div className='graph-overlay__section right' style={{ width: overlayWidth }}>
+				<Timestamp className='to' timestamp={to} />
+				<div className='graph__search-button' />
+				<div className='graph__settings-button' />
+			</div>
+			<div className='graph-range-selector' style={{ width: chunkWidth, left: overlayWidth }}>
+				<input value={inputValue} type='text' onChange={onInputChange} />
+			</div>
+		</>
+	);
+};
 interface TimestampProps {
 	timestamp: number;
-	styles?: React.CSSProperties;
+	className?: string;
 }
 
-const Timestamp = ({ timestamp, styles = {} }: TimestampProps) => (
-	<div
-		className='graph-timestamp'
-		style={{
-			...styles,
-		}}>
-		{moment(timestamp).format('DD.MM.YYYY')} <br />
-		{moment(timestamp).format('HH:mm:ss.SSS')}
+const Timestamp = ({ timestamp, className = '' }: TimestampProps) => (
+	<div className={`graph-timestamp ${className}`}>
+		{moment(timestamp).utc().format('DD.MM.YYYY')} <br />
+		{moment(timestamp).utc().format('HH:mm:ss.SSS')}
 	</div>
 );
 

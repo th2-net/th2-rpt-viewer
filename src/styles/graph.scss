@@ -18,7 +18,7 @@
 
 .graph {
 	height: 100px;
-	background-color: #DEE5ED;
+	background-color: $graphBackgroundColor;
 	position: relative;
 	display: flex;
 	flex-direction: column;
@@ -36,7 +36,7 @@
 		width: 21px;
 		height: 21px;
 		border-radius: 50%;
-		background-color: #d7e0ea;
+		background-color: $graphButtonBackgroundColor;
 		position: absolute;
 		top: 42px;
 		left: 14px;
@@ -166,6 +166,7 @@
 	&__ticks {
 		display: flex;
 		justify-content: space-between;
+		@include unselectable;
 	}
 
 	&__tick {
@@ -186,6 +187,13 @@
 	overflow-x: auto;
 	overflow-y: hidden;
 	display: flex;
+
+	&__dragging-zone {
+		visibility: hidden;
+		height: 100%;
+		position: absolute;
+		top: 0;
+	}
 }
 
 .graph-timestamp {
@@ -199,6 +207,15 @@
 	text-align: right;
 	z-index: 5;
 	cursor: default;
+
+	&.from {
+		right: 0;
+	}
+
+	&.to {
+		transform: translate(15%, 5px);
+		text-align: left;
+	}
 }
 
 .graph-overlay {
@@ -239,4 +256,13 @@
 		top: 12px;
 		z-index: 5;
 	}
+}
+
+.graph-range-selector {
+	height: 100%;
+	border-left: 3px solid $graphRangeSelectorBorder;
+	border-right: 3px solid $graphRangeSelectorBorder;
+	position: absolute;
+	top: 0;
+	z-index: 2;
 }

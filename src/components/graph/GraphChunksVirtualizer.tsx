@@ -22,7 +22,6 @@ import { useMotionValue, useSpring } from 'framer-motion';
 import { useGraphStore } from '../../hooks/useGraphStore';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
-import { rangeSelectorStyles } from './Graph';
 import '../../styles/graph.scss';
 
 const setInitialState = (settings: Settings): State => {
@@ -99,7 +98,11 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const spring = useSpring(motion, { stiffness: 300, damping: 40 });
 
 	React.useEffect(() => {
-		spring.onChange(value => (viewportElementRef.current!.scrollLeft = value));
+		spring.onChange(value => {
+			if (viewportElementRef.current) {
+				viewportElementRef.current.scrollLeft = value;
+			}
+		});
 	}, []);
 
 	React.useEffect(() => {
@@ -117,6 +120,10 @@ const GraphChunksVirtualizer = (props: Props) => {
 			document.removeEventListener('mousedown', handleMouseDown);
 		};
 	}, []);
+
+	React.useEffect(() => {
+		getTimeRange();
+	}, [chunkWidth]);
 
 	const handleMouseDown = (event: MouseEvent) => {
 		if (!rangeElementRef.current || !viewportElementRef.current) return;
@@ -197,8 +204,8 @@ const GraphChunksVirtualizer = (props: Props) => {
 			const pixelsDiff = rangeBlockRect.left - targetDiv.getBoundingClientRect().left;
 			const secondsDiff = (pixelsDiff / chunkWidth) * (graphStore.interval * 60);
 
-			const intervalStart = moment(from).add(secondsDiff, 'seconds');
-			const intervalEnd = moment(intervalStart).add(graphStore.interval, 'minutes');
+			const intervalStart = moment(from).utc().add(secondsDiff, 'seconds');
+			const intervalEnd = moment(intervalStart).utc().add(graphStore.interval, 'minutes');
 			if (intervalStart.isValid() && intervalEnd.isValid()) {
 				graphStore.timestamp = intervalStart.valueOf();
 			}
@@ -243,7 +250,11 @@ const GraphChunksVirtualizer = (props: Props) => {
 			<div ref={prevItemsRef} style={{ width: leftPadding, flexShrink: 0 }} />
 			{data.map(index => props.row(index))}
 			<div ref={nextItemsRef} style={{ width: rightPadding, flexShrink: 0 }} />
-			<div style={{ ...rangeSelectorStyles, visibility: 'hidden' }} ref={rangeElementRef} />
+			<div
+				className='graph-timeline__dragging-zone'
+				style={{ width: chunkWidth, left: (window.innerWidth - chunkWidth) / 2 }}
+				ref={rangeElementRef}
+			/>
 			<div
 				className='graph__arrow-button left'
 				style={{

@@ -47,20 +47,7 @@ class GraphStore {
 	public chunks: Chunk[] = [];
 
 	@observable
-	public timestamp: number = moment()
-		.subtract(moment().utcOffset(), 'minutes')
-		.subtract(this.interval, 'minutes')
-		.valueOf();
-
-	@observable
-	public graphWindowRange: [number, number] = [
-		moment(this.timestamp)
-			.subtract(this.interval / 2, 'minutes')
-			.valueOf(),
-		moment(this.timestamp)
-			.add(this.interval / 2, 'minutes')
-			.valueOf(),
-	];
+	public timestamp: number = moment().utc().subtract(this.interval, 'minutes').valueOf();
 
 	@computed
 	public get range(): [number, number] {
@@ -85,11 +72,6 @@ class GraphStore {
 		const chunk = observable(this.createChunk(timestampFrom, this.interval));
 		this.chunks.push(chunk);
 		return chunk;
-	};
-
-	@action
-	public setGraphWindowRange = (range: [number, number]) => {
-		this.graphWindowRange = range;
 	};
 
 	@action
