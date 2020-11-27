@@ -27,6 +27,7 @@ import GraphChunksScrollContainer, { Settings } from './GraphChunksScrollContain
 import { IntervalOption } from '../../stores/GraphStore';
 import { getElementsFullWidth, isDivElement, isElementInViewport } from '../../helpers/dom';
 import '../../styles/graph.scss';
+import { EventMessage } from '../../models/EventMessage';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -47,10 +48,11 @@ export const rangeSelectorStyles: React.CSSProperties = {
 	top: 0,
 	// backdropFilter: 'brightness(119%)',
 	// cursor: 'grabbing',
-	pointerEvents: 'none',
+	// pointerEvents: 'none',
 	width: getChunkWidth(),
 	left: '50%',
 	transform: 'translate(-50%)',
+	zIndex: 2,
 };
 
 const SCROLL_STEP = 100;
@@ -84,6 +86,72 @@ function Graph() {
 				.subtract(-index * graphStore.interval, 'minutes')
 				.valueOf(),
 		);
+
+		const attachedMessages: EventMessage[] = [
+			{
+				body: {
+					fields: {
+						asd: {
+							listValue: {
+								values: [],
+							},
+						},
+					},
+					metadata: {
+						id: {
+							connectionId: {
+								sessionAlias: '',
+							},
+							sequence: '',
+						},
+						messageType: '',
+						timestamp: new Date().toString(),
+					},
+				},
+				bodyBase64: '',
+				direction: '',
+				messageId: 'e234sdf-32423-ssfsdf-46446-h342gs',
+				messageType: '',
+				sessionId: '',
+				type: '',
+				timestamp: {
+					epochSecond: moment(graphStore.timestamp).add(10, 'minute').valueOf() / 1000,
+					nano: 0,
+				},
+			},
+			{
+				body: {
+					fields: {
+						asd: {
+							listValue: {
+								values: [],
+							},
+						},
+					},
+					metadata: {
+						id: {
+							connectionId: {
+								sessionAlias: '',
+							},
+							sequence: '',
+						},
+						messageType: '',
+						timestamp: new Date().toString(),
+					},
+				},
+				bodyBase64: '',
+				direction: '',
+				messageId: 'e234sdf-32423-sdfsdf-46346-h342gs',
+				messageType: '',
+				sessionId: '',
+				type: '',
+				timestamp: {
+					epochSecond: moment(graphStore.timestamp).add(10, 'minute').valueOf() / 1000,
+					nano: 0,
+				},
+			},
+		];
+
 		return (
 			<div
 				ref={rootRef}
@@ -97,18 +165,27 @@ function Graph() {
 					chunk={chunk}
 					chunkWidth={chunkWidth}
 					getChunkData={graphStore.getChunkData}
-					attachedMessages={selectedStore.attachedMessages.filter(message =>
-						moment(getTimestampAsNumber(message.timestamp)).isBetween(
-							moment(chunk.from),
-							moment(chunk.to),
-						),
-					)}
+					// attachedItems={selectedStore.attachedMessages.filter(message =>
+					// 	moment(getTimestampAsNumber(message.timestamp)).isBetween(
+					// 		moment(chunk.from),
+					// 		moment(chunk.to),
+					// 	),
+					// )}
+					attachedItems={attachedMessages}
 				/>
 			</div>
 		);
 	};
 
 	const [from, to] = graphStore.range;
+
+	const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (new Date(parseInt(e.target.value)).valueOf() > 1) {
+			graphStore.setTimestamp(parseInt(e.target.value));
+			setInputState(parseInt(e.target.value));
+		}
+	};
+	const [inputState, setInputState] = React.useState(graphStore.timestamp);
 
 	return (
 		<div className='graph'>
@@ -118,6 +195,7 @@ function Graph() {
 			<GraphChunksScrollContainer chunkWidth={chunkWidth} settings={settings} row={rowTemplate} />
 			<div style={rangeSelectorStyles}>
 				<Timestamp timestamp={from} styles={{ left: 0 }} />
+				<input value={inputState} type='text' onChange={onChangeHandler} />
 				{/* <select
 					name='interval'
 					value={graphStore.interval}

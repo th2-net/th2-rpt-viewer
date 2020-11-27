@@ -37,7 +37,7 @@ class GraphStore {
 			interval => this.createChunks(interval, this.timestamp),
 		);
 
-		// this.createChunks(this.interval, this.timestamp);
+		this.createChunks(this.interval, this.timestamp);
 	}
 
 	@observable
@@ -109,6 +109,7 @@ class GraphStore {
 				passed: getRandomNumber(),
 			});
 		}
+
 		// eslint-disable-next-line no-param-reassign
 		chunk.data = data;
 	};

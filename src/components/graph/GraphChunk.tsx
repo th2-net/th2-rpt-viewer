@@ -22,6 +22,9 @@ import { LineChart, Line, CartesianGrid, XAxis, LineProps, CartesianGridProps } 
 import { getTimestampAsNumber } from '../../helpers/date';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk } from '../../models/graph';
+import { EventAction } from '../../models/EventAction';
+import { isEventMessage } from '../../helpers/event';
+import GraphAttachedItem from './GraphAttachedItem';
 
 const tickStyles: React.CSSProperties = {
 	fill: '#3D668F',
@@ -49,15 +52,15 @@ const gridProps: CartesianGridProps = {
 const graphLines = [
 	{
 		dataKey: 'passed',
-		stroke: '#00802a',
+		stroke: '#00802A',
 	},
 	{
 		dataKey: 'failed',
-		stroke: '#c20a0a',
+		stroke: '#C20A0A',
 	},
 	{
 		dataKey: 'messages',
-		stroke: '#2689bd',
+		stroke: '#2689BD',
 	},
 ];
 
@@ -65,17 +68,17 @@ interface Props {
 	chunk: Chunk;
 	chunkWidth: number;
 	getChunkData: (chunk: Chunk) => void;
-	attachedMessages: EventMessage[];
+	attachedItems: (EventMessage | EventAction)[];
 }
 
 const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props, ref) => {
-	const { chunk, getChunkData, attachedMessages, chunkWidth } = props;
+	const { chunk, getChunkData, attachedItems, chunkWidth } = props;
 
 	React.useEffect(() => {
 		getChunkData(chunk);
 	}, []);
 
-	const getMessagesLeftPosition = (timestamp: number) => {
+	const getAttachedItemsLeftPosition = (timestamp: number) => {
 		const { from, to } = chunk;
 		return ((timestamp - from) / (to - from)) * 100;
 	};
@@ -94,58 +97,46 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 					.valueOf(),
 			);
 		}
+
 		return ticksArr;
 	}, [chunk]);
 
 	return (
 		<div className='graph-chunk' ref={ref} data-from={chunk.from} data-to={chunk.to}>
-			{attachedMessages.map(message => (
-				<div
-					key={message.messageId}
-					className='graph-chunk__message'
-					style={{
-						left: `${getMessagesLeftPosition(getTimestampAsNumber(message.timestamp))}%`,
-						top: 20,
-					}}
+			{attachedItems.map(item => (
+				<GraphAttachedItem
+					key={isEventMessage(item) ? item.messageId : item.eventId}
+					item={item}
+					left={getAttachedItemsLeftPosition(
+						getTimestampAsNumber(isEventMessage(item) ? item.timestamp : item.startTimestamp),
+					)}
+					bottom={10}
 				/>
 			))}
 			<LineChart
 				width={chunkWidth}
-				height={60}
+				height={50}
 				data={chunk.data}
-				margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+				margin={{ top: 0, right: 0, left: 0, bottom: 5 }}
 				style={{
 					zIndex: 5,
 				}}>
 				<XAxis
 					dataKey='timestamp'
-					// type='number'
 					domain={[props.chunk.from, props.chunk.to]}
-					tickFormatter={tick => moment(tick).format('HH:mm')}
-					// type='number'
-					// ticks={ticks}
-					tick={tickStyles}
 					stroke='rgba(0,0,0,0)'
 					interval={2}
+					hide={true}
 				/>
-				<CartesianGrid {...gridProps} />
 				{graphLines.map(line => (
 					<Line key={line.dataKey} {...lineProps} {...line} />
 				))}
 			</LineChart>
-			<div
-				style={{
-					position: 'absolute',
-					bottom: 10,
-					left: 0,
-					width: '100%',
-					display: 'flex',
-					justifyContent: 'space-around',
-				}}>
-				{['10:00', '12:00', '13:00'].map(time => (
-					<div key={time} style={{ color: 'blue', fontSize: 11 }}>
-						{time}
-					</div>
+			<div className='graph-chunk__ticks'>
+				{ticks.map(tick => (
+					<span className='graph-chunk__tick' key={tick}>
+						{moment(tick).format('HH:mm')}
+					</span>
 				))}
 			</div>
 		</div>
