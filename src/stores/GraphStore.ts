@@ -50,7 +50,7 @@ class GraphStore {
 	public timestamp: number = moment().subtract(this.interval, 'minutes').valueOf();
 
 	@computed
-	public get range() {
+	public get range(): [number, number] {
 		return [this.timestamp, moment(this.timestamp).add(this.interval, 'minutes').valueOf()];
 	}
 

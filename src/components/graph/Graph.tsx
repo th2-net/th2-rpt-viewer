@@ -23,7 +23,7 @@ import GraphChunk from './GraphChunk';
 import { useGraphStore } from '../../hooks/useGraphStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { useSelectedStore } from '../../hooks/useSelectedStore';
-import GraphChunksScrollContainer, { Settings } from './GraphChunksScrollContainer';
+import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
 import { IntervalOption } from '../../stores/GraphStore';
 import '../../styles/graph.scss';
 
@@ -50,7 +50,13 @@ export const rangeSelectorStyles: React.CSSProperties = {
 	width: getChunkWidth(),
 	left: '50%',
 	transform: 'translate(-50%)',
+	backdropFilter: 'invert(1) hue-rotate(205deg) brightness(1.5) contrast(1)',
 };
+
+// const graphOverlay1Color = ' #005dff';
+const graphOverlay1Color = ' #7A99B8';
+// const graphOverlay2Color = '#cdd6e3';
+const graphOverlay2Color = '#4a5c7b';
 
 function Graph() {
 	const graphStore = useGraphStore();
@@ -105,42 +111,69 @@ function Graph() {
 		);
 	};
 
-	const [from, to] = graphStore.range;
+	const getBackgroundGradient = () => `linear-gradient(
+		90deg, ${graphOverlay1Color} 0%,  ${graphOverlay1Color} ${
+		chunkWidth / 2
+	}px, ${graphOverlay2Color} ${chunkWidth / 2}px,
+		${graphOverlay2Color}  ${chunkWidth * 1.5}px,  ${graphOverlay1Color} ${
+		chunkWidth * 1.5
+	}px,  ${graphOverlay1Color} 100%)`;
+
+	// 	<div style={rangeSelectorStyles}>
+	// 	<select
+	// 		name='interval'
+	// 		value={graphStore.interval}
+	// 		onChange={e => graphStore.setInterval(parseInt(e.target.value) as IntervalOption)}>
+	// 		{graphStore.intervalOptions.map(intervalValue => (
+	// 			<option key={intervalValue} value={intervalValue}>{`${intervalValue} minutes`}</option>
+	// 		))}
+	// 	</select>
+	// </div>
 
 	return (
-		<div className='graph'>
-			<div className='graph__overlay left' style={{ width: (window.innerWidth - chunkWidth) / 2 }}>
-				<i className='graph__logo' />
-			</div>
-			<GraphChunksScrollContainer chunkWidth={chunkWidth} settings={settings} row={rowTemplate} />
-			<div style={rangeSelectorStyles}>
-				<Timestamp timestamp={from} styles={{ left: 0 }} />
-				{/* <select
-					name='interval'
-					value={graphStore.interval}
-					onChange={e => graphStore.setInterval(parseInt(e.target.value) as IntervalOption)}>
-					{graphStore.intervalOptions.map(intervalValue => (
-						<option key={intervalValue} value={intervalValue}>{`${intervalValue} minutes`}</option>
-					))}
-				</select> */}
-				<Timestamp
-					timestamp={to}
-					styles={{
-						transform: 'translate(120%, 5px)',
-						textAlign: 'left',
-						right: 0,
-					}}
-				/>
-			</div>
-			<div className='graph__overlay right' style={{ width: (window.innerWidth - chunkWidth) / 2 }}>
-				<div className='graph__search-button' />
-				<div className='graph__settings-button' />
-			</div>
+		<div
+			className='graph'
+			style={{
+				background: getBackgroundGradient(),
+			}}>
+			<GraphChunksVirtualizer chunkWidth={chunkWidth} settings={settings} row={rowTemplate} />
+			<OverlayPanel chunkWidth={chunkWidth} range={graphStore.range} />
 		</div>
 	);
 }
 
 export default observer(Graph);
+
+interface OverlayPanelProps {
+	chunkWidth: number;
+	range: [number, number];
+}
+
+const OverlayPanel = ({ chunkWidth, range: [from, to] }: OverlayPanelProps) => (
+	<>
+		<div className='graph-overlay left' style={{ width: chunkWidth / 2 }} />
+		<div className='graph-overlay right' style={{ width: (window.innerWidth - chunkWidth) / 2 }} />
+		<div className='graph-overlay__section' style={{ width: chunkWidth / 2 }}>
+			<i className='graph-overlay__logo' />
+			<Timestamp timestamp={from} styles={{ right: 0 }} />
+		</div>
+		<div style={rangeSelectorStyles} />
+		<div
+			className='graph-overlay__section right'
+			style={{ width: (window.innerWidth - chunkWidth) / 2 }}>
+			<Timestamp
+				timestamp={to}
+				styles={{
+					transform: 'translate(15%, 5px);',
+					textAlign: 'left',
+					left: 20,
+				}}
+			/>
+			<div className='graph__search-button' />
+			<div className='graph__settings-button' />
+		</div>
+	</>
+);
 
 interface TimestampProps {
 	timestamp: number;

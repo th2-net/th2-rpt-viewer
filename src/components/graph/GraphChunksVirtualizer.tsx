@@ -79,7 +79,7 @@ interface State {
 	data: number[];
 }
 
-const GraphChunksScrollContainer = (props: Props) => {
+const GraphChunksVirtualizer = (props: Props) => {
 	const { settings, chunkWidth } = props;
 
 	const graphStore = useGraphStore();
@@ -168,6 +168,12 @@ const GraphChunksScrollContainer = (props: Props) => {
 		getTimeRange();
 	};
 
+	const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+		if (viewportElementRef.current) {
+			motion.set(viewportElementRef.current.scrollLeft + event.deltaY * 2);
+		}
+	};
+
 	const getTimeRange = useDebouncedCallback(() => {
 		if (!viewportElementRef.current || !rangeElementRef.current) return;
 
@@ -232,6 +238,7 @@ const GraphChunksScrollContainer = (props: Props) => {
 			className='graph-timeline'
 			ref={viewportElementRef}
 			onScroll={e => runScroller(e.currentTarget.scrollLeft)}
+			onWheel={onWheel}
 			style={{ width: viewportWidth }}>
 			<div ref={prevItemsRef} style={{ width: leftPadding, flexShrink: 0 }} />
 			{data.map(index => props.row(index))}
@@ -257,4 +264,4 @@ const GraphChunksScrollContainer = (props: Props) => {
 	);
 };
 
-export default observer(GraphChunksScrollContainer);
+export default observer(GraphChunksVirtualizer);

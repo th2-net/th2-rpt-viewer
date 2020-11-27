@@ -18,7 +18,7 @@
 import * as React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { LineChart, Line, CartesianGrid, XAxis, LineProps, CartesianGridProps } from 'recharts';
+import { LineChart, Line, LineProps } from 'recharts';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk } from '../../models/graph';
@@ -37,13 +37,6 @@ const lineProps: LineProps = {
 	animationDuration: 0,
 	activeDot: false,
 	dot: false,
-};
-
-const gridProps: CartesianGridProps = {
-	stroke: '#f5f5f5',
-	vertical: true,
-	horizontal: false,
-	color: '#9aaac9',
 };
 
 const graphLines = [
@@ -85,7 +78,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 		const { from, to } = chunk;
 		const ticksInterval = (to - from) / 15 / 1000 / 60;
 
-		for (let i = 0; i < 16; i++) {
+		for (let i = 0; i < 16; i += 3) {
 			ticksArr.push(
 				moment(from)
 					.startOf('minute')
@@ -110,23 +103,12 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 			))}
 			<LineChart
 				width={chunkWidth}
-				height={60}
+				height={30}
 				data={chunk.data}
 				margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
 				style={{
 					zIndex: 5,
 				}}>
-				<XAxis
-					dataKey='timestamp'
-					domain={['auto', 'auto']}
-					tickFormatter={tick => moment(tick).format('HH:mm')}
-					// type='number'
-					// ticks={ticks}
-					tick={tickStyles}
-					stroke='rgba(0,0,0,0)'
-					interval={2}
-				/>
-				<CartesianGrid {...gridProps} />
 				{graphLines.map(line => (
 					<Line key={line.dataKey} {...lineProps} {...line} />
 				))}
@@ -134,15 +116,36 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 			<div
 				style={{
 					position: 'absolute',
-					bottom: 10,
+					bottom: 5,
+					left: 0,
+					width: 20,
+					height: 20,
+					backgroundColor: 'red',
+					zIndex: 5,
+					borderRadius: '50%',
+					cursor: 'pointer',
+				}}
+				onClick={() => console.log('click')}
+			/>
+			<div
+				style={{
+					position: 'absolute',
+					bottom: -15,
 					left: 0,
 					width: '100%',
 					display: 'flex',
 					justifyContent: 'space-around',
+					cursor: 'default',
 				}}>
-				{['10:00', '12:00', '13:00'].map(time => (
-					<div key={time} style={{ color: 'blue', fontSize: 11 }}>
-						{time}
+				{ticks.map(tick => (
+					<div
+						key={tick}
+						style={{
+							// color: '#3D668F',
+							color: '#fff',
+							fontSize: 12,
+						}}>
+						{moment(tick).format('HH:mm')}
 					</div>
 				))}
 			</div>
