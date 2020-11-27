@@ -1,14 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-     viewBox="0 0 2316 2316" style="enable-background:new 0 0 2316 2316;" xml:space="preserve">
-<style type="text/css">
-	.st0{fill:#FFFFFF;}
-	.st1{fill:#10273D;}
-</style>
-    <circle class="st0" cx="1158" cy="1158" r="1110"/>
-    <g id="cat">
-	<path class="st1" d="M1744.4,1551.1L1744.4,1551.1L1744.4,1551.1L1506.3,1825l0,0l-225.5-572.7c117.6-50,240.6-102.7,240.6-102.7
-		l-43.1-418.4l66.7-382.6l0,0l0,0v0l0,0l-367.2,160l4,2.8l-4-2.8H956.2l0,0l-367.2-160l0,0v0l0,0l0,0l66.7,382.6l0,0l-36.9,418.5h0
-		c0,0,119.4,51.2,235.3,100.5l-282.5,717.5h492.3h6.2h492.3v0l0,0h182L1744.4,1551.1L1744.4,1551.1L1744.4,1551.1z"/>
-</g>
+<svg width="730" height="730" version="1.1" viewBox="185 250 730 730" xmlns="http://www.w3.org/2000/svg">
+    <g transform="matrix(1.0308 0 0 1.0308 -21.144 -14.293)">
+        <path d="m878.4 828.4s-317.9 136.2-322.3 136.2v-243.1z" fill="#10273d"/>
+        <path d="m233.8 828.4s317.9 136.2 322.3 136.2v-243.1z" fill="#2b5b80"/>
+        <polygon points="847.6 529.6 878.4 828.4 556.1 721.5 723.1 434.3" fill="#1d3d56"/>
+        <polygon points="260.2 529.6 233.8 828.4 556.1 721.5 384.7 434.3" fill="#7c8fa5"/>
+        <polygon points="556.1 721.5 723.1 434.3 633 370.6 556.1 370.6 551.7 370.6 474.8 370.6 384.7 434.3" fill="#255372"/>
+        <polygon points="895.2 256.4 723.1 434.4 847.6 529.6" fill="#10273d"/>
+        <polygon points="895.2 256.4 633 370.6 723.1 434.4" fill="#2b5b80"/>
+        <polygon points="212.6 256.4 384.7 434.4 260.2 529.6" fill="#2b5b80"/>
+        <polygon points="212.6 256.4 474.8 370.6 384.7 434.4" fill="#142f4d"/>
+    </g>
 </svg>

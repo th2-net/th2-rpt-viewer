@@ -52,3 +52,9 @@ export const isEventMessage = (object: unknown): object is EventMessage => {
 		(object as EventMessage).messageId !== undefined
 	);
 };
+
+export const isEventAction = (object: unknown): object is EventAction => {
+	return (
+		typeof object === 'object' && object !== null && (object as EventAction).eventId !== undefined
+	);
+};

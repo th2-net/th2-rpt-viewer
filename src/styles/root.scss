@@ -16,6 +16,10 @@
 
 @import './common/vars';
 
+svg g {
+	user-select: none;
+}
+
 body {
 	margin: 0;
 	font-family: Open sans;
