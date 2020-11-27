@@ -18,20 +18,13 @@
 import * as React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { LineChart, Line, LineProps, XAxis } from 'recharts';
+import { LineChart, Line, LineProps } from 'recharts';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk } from '../../models/graph';
 import { EventAction } from '../../models/EventAction';
 import { isEventMessage } from '../../helpers/event';
 import GraphAttachedItem from './GraphAttachedItem';
-
-const tickStyles: React.CSSProperties = {
-	fill: '#3D668F',
-	fontSize: 12,
-	fontFamily: 'OpenSans',
-	userSelect: 'none',
-};
 
 const lineProps: LineProps = {
 	dataKey: '',
@@ -115,13 +108,6 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 				style={{
 					zIndex: 5,
 				}}>
-				<XAxis
-					dataKey='timestamp'
-					domain={[props.chunk.from, props.chunk.to]}
-					stroke='rgba(0,0,0,0)'
-					interval={2}
-					hide={true}
-				/>
 				{graphLines.map(line => (
 					<Line key={line.dataKey} {...lineProps} {...line} />
 				))}
