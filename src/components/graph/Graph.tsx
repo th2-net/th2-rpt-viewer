@@ -57,7 +57,7 @@ function Graph() {
 
 	const [acnhorTimestamp, setAnchorTimestamp] = React.useState(graphStore.timestamp);
 	const [chunkWidth, setChunkWidth] = React.useState(getChunkWidth);
-	const [inputState, setInputState] = React.useState(graphStore.timestamp);
+	const [inputState, setInputState] = React.useState(graphStore.timestamp.toString());
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -122,14 +122,19 @@ function Graph() {
 	const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (new Date(parseInt(e.target.value)).valueOf() > 1) {
 			graphStore.setTimestamp(parseInt(e.target.value));
-			setInputState(parseInt(e.target.value));
+			setInputState(e.target.value);
 		}
 	};
 
 	return (
 		<div className='graph'>
 			<GraphChunksVirtualizer chunkWidth={chunkWidth} settings={settings} row={renderChunk} />
-			<OverlayPanel chunkWidth={chunkWidth} range={graphStore.range} />
+			<OverlayPanel
+				chunkWidth={chunkWidth}
+				range={graphStore.range}
+				inputValue={inputState}
+				onInputChange={onChangeHandler}
+			/>
 		</div>
 	);
 }
@@ -139,9 +144,16 @@ export default observer(Graph);
 interface OverlayPanelProps {
 	chunkWidth: number;
 	range: [number, number];
+	inputValue: string;
+	onInputChange: any;
 }
 
-const OverlayPanel = ({ chunkWidth, range: [from, to] }: OverlayPanelProps) => (
+const OverlayPanel = ({
+	chunkWidth,
+	range: [from, to],
+	inputValue,
+	onInputChange,
+}: OverlayPanelProps) => (
 	<>
 		<div className='graph-overlay left' style={{ width: chunkWidth / 2 }} />
 		<div className='graph-overlay right' style={{ width: (window.innerWidth - chunkWidth) / 2 }} />
@@ -149,7 +161,9 @@ const OverlayPanel = ({ chunkWidth, range: [from, to] }: OverlayPanelProps) => (
 			<i className='graph-overlay__logo' />
 			<Timestamp timestamp={from} styles={{ right: 0 }} />
 		</div>
-		<div style={rangeSelectorStyles} />
+		<div style={rangeSelectorStyles}>
+			<input value={inputValue} type='text' onChange={onInputChange} />
+		</div>
 		<div
 			className='graph-overlay__section right'
 			style={{ width: (window.innerWidth - chunkWidth) / 2 }}>
