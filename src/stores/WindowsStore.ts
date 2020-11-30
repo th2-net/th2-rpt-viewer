@@ -128,6 +128,11 @@ export default class WindowsStore {
 
 	@action
 	private init(initialState: WindowsUrlState | null) {
+		const persistedPinnedMessages = localStorage.getItem('pinnedMessages');
+		if (!persistedPinnedMessages) {
+			localStorage.setItem('pinnedMessages', JSON.stringify([]));
+		}
+
 		if (!initialState) {
 			this.createDefaultWindow();
 			return;
