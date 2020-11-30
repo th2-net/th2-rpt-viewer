@@ -26,7 +26,7 @@ export type IntervalOption = typeof intervalOptions[number];
 class GraphStore {
 	public readonly intervalOptions = intervalOptions;
 
-	private readonly steps = {
+	readonly steps = {
 		15: 1,
 		30: 3,
 		60: 5,
@@ -48,11 +48,20 @@ class GraphStore {
 	public chunks: Chunk[] = [];
 
 	@observable
-	public timestamp: number = moment().utc().subtract(this.interval, 'minutes').valueOf();
+	public timestamp: number = moment()
+		.utc()
+		.set('hours', 8)
+		.set('minutes', 0)
+		.set('seconds', 0)
+		.valueOf();
 
-	@computed
-	public get range(): [number, number] {
-		return [this.timestamp, moment(this.timestamp).add(this.interval, 'minutes').valueOf()];
+	@observable range: [number, number] = [
+		this.timestamp,
+		moment(this.timestamp).utc().add(this.interval, 'minutes').valueOf(),
+	];
+
+	@computed get tickSize() {
+		return this.steps[this.interval];
 	}
 
 	@action
@@ -78,7 +87,7 @@ class GraphStore {
 	@action
 	public getChunkData = (chunk: Chunk) => {
 		const { from } = chunk;
-		const step = this.steps[this.interval];
+		const step = this.tickSize;
 		const steps = this.interval / step;
 		const data: ChunkData[] = [];
 		for (let i = 0; i < steps + 1; i++) {

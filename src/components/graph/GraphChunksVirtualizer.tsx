@@ -18,13 +18,16 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { useMotionValue, useSpring } from 'framer-motion';
 import { useGraphStore } from '../../hooks/useGraphStore';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
-import '../../styles/graph.scss';
+import { Chunk } from '../../models/graph';
+import { IntervalOption } from '../../stores/GraphStore';
+import { raf } from '../../helpers/raf';
 import { EventAction } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
+import { usePrevious } from '../../hooks/usePrevious';
+import '../../styles/graph.scss';
 
 const setInitialState = (settings: Settings): State => {
 	const { itemWidth, amount, tolerance, minIndex, maxIndex, startIndex } = settings;
@@ -63,9 +66,10 @@ export interface Settings {
 
 interface Props {
 	settings: Settings;
-	row: (index: number) => JSX.Element;
+	renderChunk: (chunk: Chunk, index: number) => JSX.Element;
 	chunkWidth: number;
 	setExpandedAttachedItem: (item: EventAction | EventMessage | null) => void;
+	timestamp: number;
 }
 
 interface State {
@@ -82,7 +86,7 @@ interface State {
 }
 
 const GraphChunksVirtualizer = (props: Props) => {
-	const { settings, chunkWidth, setExpandedAttachedItem } = props;
+	const { settings, chunkWidth, setExpandedAttachedItem, timestamp } = props;
 
 	const graphStore = useGraphStore();
 
@@ -93,27 +97,21 @@ const GraphChunksVirtualizer = (props: Props) => {
 
 	const [state, setState] = React.useState<State>(setInitialState(settings));
 
+	const [acnhorTimestamp, setAnchorTimestamp] = React.useState(graphStore.timestamp);
+
+	const [chunks, setChunks] = React.useState<Array<[Chunk, number]>>([]);
+
 	const startX = React.useRef(0);
 	const scrollLeft = React.useRef(0);
 	const isDown = React.useRef(false);
 
-	const motion = useMotionValue(state.initialPosition + chunkWidth / 2);
-	const spring = useSpring(motion, { stiffness: 300, damping: 40 });
-
 	React.useEffect(() => {
-		spring.onChange(value => {
+		getCurrentChunks(state.initialPosition);
+		raf(() => {
 			if (viewportElementRef.current) {
-				viewportElementRef.current.scrollLeft = value;
+				viewportElementRef.current.scrollLeft = state.initialPosition - chunkWidth;
 			}
-		});
-	}, []);
-
-	React.useEffect(() => {
-		if (!viewportElementRef.current) return;
-		viewportElementRef.current.scrollLeft = state.initialPosition + chunkWidth / 2;
-		if (!state.initialPosition) {
-			runScroller(0);
-		}
+		}, 2);
 	}, []);
 
 	React.useEffect(() => {
@@ -128,10 +126,26 @@ const GraphChunksVirtualizer = (props: Props) => {
 		getTimeRange();
 	}, [chunkWidth]);
 
+	const prevInterval = usePrevious(graphStore.interval);
+
+	React.useEffect(() => {
+		if (viewportElementRef.current && prevInterval && prevInterval !== graphStore.interval) {
+			getCurrentChunks(viewportElementRef.current.scrollLeft);
+			getTimeRange();
+		}
+	}, [graphStore.interval]);
+
 	const handleMouseDown = (event: MouseEvent) => {
-		if (!rangeElementRef.current || !viewportElementRef.current) return;
+		if (
+			!rangeElementRef.current ||
+			!viewportElementRef.current ||
+			event.target instanceof HTMLInputElement
+		)
+			return;
+
 		if (isClickEventInElement(event, rangeElementRef.current)) {
 			setExpandedAttachedItem(null);
+			viewportElementRef.current.style.cursor = 'grabbing';
 			isDown.current = true;
 			startX.current = event.pageX - (viewportElementRef.current?.offsetLeft || 0);
 			scrollLeft.current = viewportElementRef.current.scrollLeft;
@@ -143,7 +157,9 @@ const GraphChunksVirtualizer = (props: Props) => {
 
 	const handleMouseUp = () => {
 		isDown.current = false;
-
+		if (viewportElementRef.current) {
+			viewportElementRef.current.style.cursor = 'default';
+		}
 		document.removeEventListener('mouseup', handleMouseUp);
 		document.removeEventListener('mousemove', handleMouseMove);
 	};
@@ -152,36 +168,32 @@ const GraphChunksVirtualizer = (props: Props) => {
 		if (!viewportElementRef.current || !isDown.current) return;
 		event.preventDefault();
 		const x = event.pageX - viewportElementRef.current.offsetLeft;
-		const walk = (x - startX.current) * 3;
-		// viewportElementRef.current.scrollLeft = scrollLeft.current - walk;
-		motion.set(scrollLeft.current - walk);
+		viewportElementRef.current.scrollLeft = scrollLeft.current - (x - startX.current) * 2;
 	};
 
-	const runScroller = (sl: number) => {
+	const getCurrentChunks = (_scrollLeft: number) => {
 		const {
 			totalWidth,
 			toleranceWidth,
 			bufferedItems,
 			settings: { itemWidth, minIndex },
 		} = state;
-		const index = minIndex + Math.floor((sl - toleranceWidth) / itemWidth);
+		const index = minIndex + Math.floor((_scrollLeft - toleranceWidth) / itemWidth);
 		const data = getIndexes(index, bufferedItems);
 		const leftPadding = Math.max((index - minIndex) * itemWidth, 0);
 		const rightPadding = Math.max(totalWidth - leftPadding - data.length * itemWidth, 0);
 
-		setState({
-			...state,
-			leftPadding,
-			rightPadding,
-			data,
-		});
+		if (prevItemsRef.current && nextItemsRef.current) {
+			prevItemsRef.current.style.width = `${leftPadding}px`;
+			nextItemsRef.current.style.width = `${rightPadding}px`;
+		}
 
-		getTimeRange();
+		setChunks(data.map(i => [getChunk(i), i]));
 	};
 
 	const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
 		if (viewportElementRef.current) {
-			motion.set(viewportElementRef.current.scrollLeft + event.deltaY * 2);
+			viewportElementRef.current.scrollLeft += event.deltaY * 2;
 		}
 	};
 
@@ -210,8 +222,9 @@ const GraphChunksVirtualizer = (props: Props) => {
 
 			const intervalStart = moment(from).utc().add(secondsDiff, 'seconds');
 			const intervalEnd = moment(intervalStart).utc().add(graphStore.interval, 'minutes');
+
 			if (intervalStart.isValid() && intervalEnd.isValid()) {
-				graphStore.timestamp = intervalStart.valueOf();
+				graphStore.range = [intervalStart.valueOf(), intervalEnd.valueOf()];
 			}
 		}
 
@@ -236,24 +249,51 @@ const GraphChunksVirtualizer = (props: Props) => {
 		return data;
 	};
 
-	const { viewportWidth, leftPadding, rightPadding, data } = state;
-
 	const scrollHalfInterval = (direction: -1 | 1 = 1) => {
 		if (viewportElementRef.current) {
-			motion.set(viewportElementRef.current?.scrollLeft - (chunkWidth * direction) / 2);
+			viewportElementRef.current.scrollLeft -= (chunkWidth * direction) / 2;
+		}
+	};
+
+	const getChunk = (index: number) =>
+		graphStore.getChunkByTimestamp(
+			moment(acnhorTimestamp)
+				.subtract(-index * graphStore.interval, 'minutes')
+				.valueOf(),
+		);
+
+	const onScroll = (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
+		getTimeRange();
+
+		if (viewportElementRef.current) {
+			const isStartReached = event.currentTarget.scrollLeft === 0;
+			const isEndReached =
+				event.currentTarget.scrollLeft + viewportElementRef.current.offsetWidth ===
+				viewportElementRef.current.scrollWidth;
+
+			if (isStartReached) {
+				const firstChunk = chunks[0][0];
+				setAnchorTimestamp(firstChunk.from);
+				getCurrentChunks(state.initialPosition);
+				viewportElementRef.current.scrollLeft = state.initialPosition;
+				scrollLeft.current = state.initialPosition;
+			} else if (isEndReached) {
+				const lastChunk = chunks[chunks.length - 1][0];
+				setAnchorTimestamp(lastChunk.from);
+				getCurrentChunks(state.initialPosition - chunkWidth * 0.5);
+				viewportElementRef.current.scrollLeft = state.initialPosition - chunkWidth * 0.5;
+				scrollLeft.current = state.initialPosition - chunkWidth * 0.5;
+			} else {
+				getCurrentChunks(event.currentTarget.scrollLeft);
+			}
 		}
 	};
 
 	return (
-		<div
-			className='graph-timeline'
-			ref={viewportElementRef}
-			onScroll={e => runScroller(e.currentTarget.scrollLeft)}
-			onWheel={onWheel}
-			style={{ width: viewportWidth }}>
-			<div ref={prevItemsRef} style={{ width: leftPadding, flexShrink: 0 }} />
-			{data.map(index => props.row(index))}
-			<div ref={nextItemsRef} style={{ width: rightPadding, flexShrink: 0 }} />
+		<div className='graph-timeline' ref={viewportElementRef} onScroll={onScroll} onWheel={onWheel}>
+			<div ref={prevItemsRef} style={{ flexShrink: 0 }} />
+			{chunks.map(([chunk, index]) => props.renderChunk(chunk, index))}
+			<div ref={nextItemsRef} style={{ flexShrink: 0 }} />
 			<div
 				className='graph-timeline__dragging-zone'
 				style={{ width: chunkWidth, left: (window.innerWidth - chunkWidth) / 2 }}
@@ -274,6 +314,65 @@ const GraphChunksVirtualizer = (props: Props) => {
 				}}
 				onClick={() => scrollHalfInterval(-1)}>
 				<i className='graph__arrow-icon'></i>
+			</div>
+			<div
+				style={{
+					position: 'absolute',
+					top: 0,
+					left: 0,
+					width: 200,
+					height: 20,
+					zIndex: 100,
+					border: '1px solid',
+				}}>
+				<button
+					onClick={e => {
+						if (viewportElementRef.current) {
+							viewportElementRef.current.scrollLeft = 200;
+						}
+					}}>
+					Scroll to start
+				</button>
+				<button
+					onClick={e => {
+						if (viewportElementRef.current) {
+							viewportElementRef.current.scrollLeft = viewportElementRef.current.scrollWidth - 3500;
+						}
+					}}>
+					Scroll to end
+				</button>
+				<button
+					onClick={() => {
+						graphStore.timestamp = moment(graphStore.timestamp)
+							.subtract(2, 'days')
+							.add(3, 'hours')
+							.subtract(5, 'minutes')
+							.valueOf();
+					}}>
+					set timestamp prev
+				</button>
+				<button
+					onClick={() => {
+						graphStore.timestamp = moment(graphStore.timestamp)
+							.add(3, 'days')
+							.add(4, 'hours')
+							.subtract(5, 'minutes')
+							.valueOf();
+					}}>
+					set timestamp next
+				</button>
+				<div>
+					<select
+						name='interval'
+						value={graphStore.interval}
+						onChange={e => graphStore.setInterval(parseInt(e.target.value) as IntervalOption)}>
+						{graphStore.intervalOptions.map(intervalValue => (
+							<option
+								key={intervalValue}
+								value={intervalValue}>{`${intervalValue} minutes`}</option>
+						))}
+					</select>
+				</div>
 			</div>
 		</div>
 	);

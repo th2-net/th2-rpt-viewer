@@ -1,6 +1,6 @@
 {
 	"name": "th2-rpt-viewer",
-  	"version": "2.0.18",
+	"version": "2.0.18",
 	"description": "",
 	"main": "index.tsx",
 	"private": true,
@@ -26,7 +26,7 @@
 		"core-js": "^3.6.5",
 		"cross-env": "^6.0.3",
 		"fetch-intercept": "^2.3.1",
-		"framer-motion": "^1.11.1",
+		"framer-motion": "^2.9.4",
 		"lodash.throttle": "^4.1.1",
 		"mobx": "^5.15.2",
 		"mobx-react-lite": "^1.5.2",

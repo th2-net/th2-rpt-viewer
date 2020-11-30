@@ -23,10 +23,11 @@ import GraphChunk, { AttachedItem } from './GraphChunk';
 import { useGraphStore } from '../../hooks/useGraphStore';
 import { useSelectedStore } from '../../hooks/useSelectedStore';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
-import '../../styles/graph.scss';
-import { EventMessage } from '../../models/EventMessage';
 import { EventAction } from '../../models/EventAction';
+import { EventMessage } from '../../models/EventMessage';
+import { Chunk } from '../../models/graph';
 import { filterListByChunkRange } from '../../helpers/graph';
+import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -34,16 +35,15 @@ const settings: Settings = {
 	itemWidth: getChunkWidth(),
 	amount: 3,
 	tolerance: 1,
-	minIndex: -150,
-	maxIndex: 150,
-	startIndex: -1,
+	minIndex: -100,
+	maxIndex: 100,
+	startIndex: 0,
 };
 
 function Graph() {
 	const graphStore = useGraphStore();
 	const selectedStore = useSelectedStore();
 
-	const [acnhorTimestamp, setAnchorTimestamp] = React.useState(graphStore.timestamp);
 	const [chunkWidth, setChunkWidth] = React.useState(getChunkWidth);
 	const [inputState, setInputState] = React.useState(graphStore.timestamp.toString());
 
@@ -67,13 +67,7 @@ function Graph() {
 		};
 	}, []);
 
-	const renderChunk = (index: number) => {
-		const chunk = graphStore.getChunkByTimestamp(
-			moment(acnhorTimestamp)
-				.subtract(-index * graphStore.interval, 'minutes')
-				.valueOf(),
-		);
-
+	const renderChunk = (chunk: Chunk, index: number) => {
 		const attachedItems: AttachedItem[] = filterListByChunkRange(
 			chunk,
 			selectedStore.attachedMessages.concat(selectedStore.pinnedMessages),
@@ -89,9 +83,11 @@ function Graph() {
 				data-from={moment(chunk.from).startOf('minute').valueOf()}
 				data-to={moment(chunk.to).endOf('minute').valueOf()}
 				className='graph__chunk-item'
+				data-index={index}
 				key={index}
 				style={{ width: chunkWidth }}>
 				<GraphChunk
+					tickSize={graphStore.tickSize}
 					interval={graphStore.interval}
 					key={`${chunk.from}-${chunk.to}`}
 					chunk={chunk}
@@ -105,7 +101,6 @@ function Graph() {
 		);
 	};
 
-	// 	<div style={rangeSelectorStyles}>
 	// 	<select
 	// 		name='interval'
 	// 		value={graphStore.interval}
@@ -114,7 +109,6 @@ function Graph() {
 	// 			<option key={intervalValue} value={intervalValue}>{`${intervalValue} minutes`}</option>
 	// 		))}
 	// 	</select>
-	// </div>
 
 	const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (new Date(parseInt(e.target.value)).valueOf() > 1) {
@@ -128,10 +122,12 @@ function Graph() {
 			<GraphChunksVirtualizer
 				chunkWidth={chunkWidth}
 				settings={settings}
-				row={renderChunk}
 				setExpandedAttachedItem={setExpandedAttachedItem}
+				renderChunk={renderChunk}
+				timestamp={graphStore.timestamp}
+				key={graphStore.timestamp}
 			/>
-			<OverlayPanel
+			<OverlayPanels
 				chunkWidth={chunkWidth}
 				range={graphStore.range}
 				inputValue={inputState}
@@ -150,23 +146,24 @@ interface OverlayPanelProps {
 	onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const OverlayPanel = ({
+const OverlayPanels = ({
 	chunkWidth,
 	range: [from, to],
 	inputValue,
 	onInputChange,
 }: OverlayPanelProps) => {
 	const overlayWidth = (window.innerWidth - chunkWidth) / 2;
+	const commonStyles: React.CSSProperties = { width: overlayWidth };
 
 	return (
 		<>
-			<div className='graph-overlay left' style={{ width: overlayWidth }} />
-			<div className='graph-overlay right' style={{ width: overlayWidth }} />
-			<div className='graph-overlay__section' style={{ width: overlayWidth }}>
+			<div className='graph-overlay left' style={commonStyles} />
+			<div className='graph-overlay right' style={commonStyles} />
+			<div className='graph-overlay__section' style={commonStyles}>
 				<i className='graph-overlay__logo' />
 				<Timestamp className='from' timestamp={from} />
 			</div>
-			<div className='graph-overlay__section right' style={{ width: overlayWidth }}>
+			<div className='graph-overlay__section right' style={commonStyles}>
 				<Timestamp className='to' timestamp={to} />
 				<div className='graph__search-button' />
 				<div className='graph__settings-button' />

@@ -18,14 +18,13 @@
 import * as React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { LineChart, Line, XAxis, LineProps, CartesianGridProps } from 'recharts';
+import { LineChart, Line, LineProps } from 'recharts';
 import { getTimestampAsNumber, isTimeIntersected, toUTC } from '../../helpers/date';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk } from '../../models/graph';
 import { EventAction } from '../../models/EventAction';
 import { isEventMessage } from '../../helpers/event';
 import GraphAttachedItemGroup from './GraphAttachedItemGroup';
-import { useGraphStore } from '../../hooks/useGraphStore';
 
 const ATTACHED_ITEM_SIZE = 14;
 
@@ -66,10 +65,10 @@ interface Props {
 	expandedAttachedItem: EventAction | EventMessage | null;
 	setExpandedAttachedItem: (item: EventAction | EventMessage | null) => void;
 	interval: number;
+	tickSize: number;
 }
 
 const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props, ref) => {
-	const graphStore = useGraphStore();
 	const {
 		chunk,
 		getChunkData,
@@ -78,6 +77,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 		expandedAttachedItem,
 		setExpandedAttachedItem,
 		interval,
+		tickSize,
 	} = props;
 
 	React.useEffect(() => {
@@ -92,9 +92,9 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 	const ticks: number[] = React.useMemo(() => {
 		const ticksArr = [];
 		const { from, to } = chunk;
-		const ticksInterval = (to - from) / 15 / 1000 / 60;
+		const ticksInterval = (to - from) / interval / 1000 / 60;
 
-		for (let i = 0; i < interval; i++) {
+		for (let i = 0; i < interval; i += tickSize) {
 			ticksArr.push(
 				moment(from)
 					.startOf('minute')
@@ -172,6 +172,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 				margin={{ top: 0, right: 0, left: 0, bottom: 5 }}
 				style={{
 					zIndex: 5,
+					cursor: 'inherit',
 				}}>
 				{graphLines.map(line => (
 					<Line key={line.dataKey} {...lineProps} {...line} />
