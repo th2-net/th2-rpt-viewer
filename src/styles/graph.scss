@@ -276,4 +276,64 @@
 	position: absolute;
 	top: 0;
 	z-index: 2;
+
+	&__wrapper {
+		display: flex;
+		align-items: center;
+		padding: 0 12px;
+		gap: 5px;
+		margin-top: 8px;
+	}
+
+	&__timestamp-input {
+		margin: 0 auto;
+		order: 2;
+	}
+
+	&__counter {
+		font-size: 11px;
+		line-height: 14px;
+		display: flex;
+		align-items: center;
+
+		&-icon {
+			width: 9px;
+			height: 9px;
+			margin-right: 5px;
+		}
+
+		&.events {
+			color: #3D668F;
+		}
+
+		&.passed {
+			color: #00802A;
+		}
+
+		&.passed &-icon {
+			border-radius: 50%;
+			background-color: #00802A;
+		}
+
+		&.failed {
+			color: #E60000;
+		}
+
+		&.failed &-icon {
+			border-radius: 50%;
+			background-color: #E60000;
+		}
+
+		&.messages {
+			color: #1481B8;
+		}
+
+		&.connected {
+			color: #FF6B00;
+		}
+
+		&.connected &-icon {
+			@include icon(url(../../resources/icons/attached-message.svg), 10px, 10px);
+		}
+	}
 }

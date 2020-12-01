@@ -34,7 +34,7 @@ export default class RootStore {
 
 	viewStore: AppViewStore;
 
-	graphStore = new GraphStore();
+	graphStore = new GraphStore(this);
 
 	constructor(private api: ApiSchema) {
 		this.windowsStore = new WindowsStore(this.api, this.parseWindowsState());
