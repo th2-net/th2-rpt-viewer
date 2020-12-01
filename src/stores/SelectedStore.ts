@@ -49,7 +49,6 @@ export class SelectedStore {
 	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
 
 	constructor(private windowsStore: WindowsStore, private api: ApiSchema) {
-
 		reaction(
 			() => this.selectedEvents,
 			selectedEvents => {

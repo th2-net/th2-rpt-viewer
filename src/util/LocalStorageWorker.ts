@@ -17,9 +17,13 @@
 import { EventMessage } from '../models/EventMessage';
 
 class LocalStorageWorker {
-	getPersistedPinnedMessages() {
-		const stringPersistedPinnedMessages = localStorage.getItem('pinnedMessages');
-		return stringPersistedPinnedMessages ? JSON.parse(stringPersistedPinnedMessages) : [];
+	getPersistedPinnedMessages(): EventMessage[] {
+		try {
+			const stringPersistedPinnedMessages = localStorage.getItem('pinnedMessages');
+			return stringPersistedPinnedMessages ? JSON.parse(stringPersistedPinnedMessages) : [];
+		} catch (error) {
+			return [];
+		}
 	}
 
 	setPersistedPinnedMessages(pinnedMessages: EventMessage[]) {
