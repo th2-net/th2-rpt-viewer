@@ -315,65 +315,6 @@ const GraphChunksVirtualizer = (props: Props) => {
 				onClick={() => scrollHalfInterval(-1)}>
 				<i className='graph__arrow-icon'></i>
 			</div>
-			<div
-				style={{
-					position: 'absolute',
-					top: 0,
-					left: 0,
-					width: 200,
-					height: 20,
-					zIndex: 100,
-					border: '1px solid',
-				}}>
-				<button
-					onClick={e => {
-						if (viewportElementRef.current) {
-							viewportElementRef.current.scrollLeft = 200;
-						}
-					}}>
-					Scroll to start
-				</button>
-				<button
-					onClick={e => {
-						if (viewportElementRef.current) {
-							viewportElementRef.current.scrollLeft = viewportElementRef.current.scrollWidth - 3500;
-						}
-					}}>
-					Scroll to end
-				</button>
-				<button
-					onClick={() => {
-						graphStore.timestamp = moment(graphStore.timestamp)
-							.subtract(2, 'days')
-							.add(3, 'hours')
-							.subtract(5, 'minutes')
-							.valueOf();
-					}}>
-					set timestamp prev
-				</button>
-				<button
-					onClick={() => {
-						graphStore.timestamp = moment(graphStore.timestamp)
-							.add(3, 'days')
-							.add(4, 'hours')
-							.subtract(5, 'minutes')
-							.valueOf();
-					}}>
-					set timestamp next
-				</button>
-				<div>
-					<select
-						name='interval'
-						value={graphStore.interval}
-						onChange={e => graphStore.setInterval(parseInt(e.target.value) as IntervalOption)}>
-						{graphStore.intervalOptions.map(intervalValue => (
-							<option
-								key={intervalValue}
-								value={intervalValue}>{`${intervalValue} minutes`}</option>
-						))}
-					</select>
-				</div>
-			</div>
 		</div>
 	);
 };

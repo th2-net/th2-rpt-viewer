@@ -48,16 +48,17 @@ class GraphStore {
 	public chunks: Chunk[] = [];
 
 	@observable
-	public timestamp: number = moment()
-		.utc()
-		.set('hours', 8)
-		.set('minutes', 0)
-		.set('seconds', 0)
-		.valueOf();
+	public timestamp: number = moment().utc().valueOf();
 
 	@observable range: [number, number] = [
-		this.timestamp,
-		moment(this.timestamp).utc().add(this.interval, 'minutes').valueOf(),
+		moment(this.timestamp)
+			.utc()
+			.subtract(this.interval / 2, 'minutes')
+			.valueOf(),
+		moment(this.timestamp)
+			.utc()
+			.add(this.interval / 2, 'minutes')
+			.valueOf(),
 	];
 
 	@computed get tickSize() {
