@@ -101,24 +101,31 @@
 
 	&__item {
 		position: absolute;
-		transform: translate(-50%, -50%);
 		cursor: pointer;
 		z-index: 6;
 	}
 
-	&__message, &__event {
-		width: 10px;
-		height: 10px;
+	&__attached-message, &__pinned-message, &__event {
 		position: relative;
 		z-index: 6;
+		cursor: pointer;
 	}
 
-	&__message {
-		background-color: $graphAttachedMessageColor;
-		transform: rotate(45deg);
+	&__attached-message {
+		@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
+	}
+
+	&__pinned-message {
+		@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+
+		&.full {
+			@include icon(url(../../resources/icons/starFull.svg), 41px, 14px);
+		}
 	}
 
 	&__event {
+		width: 14px;
+		height: 14px;
 		border-radius: 50%;
 
 		&.passed {
@@ -131,21 +138,23 @@
 	}
 
 	&__item-info {
+		@include scrollbar;
+
+		max-height: 200px;
+		overflow-y: auto;
 		background-color: #FFF;
 		position: absolute;
 		left: -7px;
 		top: -7px;
 		transform-origin: 9px 9px;
-		transform: scale(0.01);
-		transition: transform 0.1s ease-in-out;
 		box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, .45);
 		border-radius: 6px;
-		padding: 7px 7px 7px 24px;
+		padding: 7px 10px 7px 28px;
 		z-index: 5;
+	}
 
-		&.open {
-			transform: scale(1);
-		}
+	&__info-item:not(:last-child) {
+		margin-bottom: 10px;
 	}
 
 	&__item-name {

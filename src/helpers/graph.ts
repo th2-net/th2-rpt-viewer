@@ -13,3 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+
+import moment from 'moment';
+import { EventMessage } from '../models/EventMessage';
+import { Chunk } from '../models/graph';
+import { getTimestampAsNumber } from './date';
+
+export function filterListByChunkRange(chunk: Chunk, list: EventMessage[]) {
+	return list.filter(item =>
+		moment(getTimestampAsNumber(item.timestamp)).isBetween(moment(chunk.from), moment(chunk.to)),
+	);
+}
