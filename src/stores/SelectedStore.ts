@@ -21,6 +21,7 @@ import { sortMessagesByTimestamp } from '../helpers/message';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import WindowsStore from './WindowsStore';
+import localStorageWorker from '../util/LocalStorageWorker';
 
 export class SelectedStore {
 	private readonly defaultColors = [
@@ -45,13 +46,9 @@ export class SelectedStore {
 	public isLoadingAttachedMessages = false;
 
 	@observable
-	public pinnedMessages: Array<EventMessage> = [];
+	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
 
 	constructor(private windowsStore: WindowsStore, private api: ApiSchema) {
-		const stringPersistedPinnedMessages = localStorage.getItem('pinnedMessages');
-		this.pinnedMessages = stringPersistedPinnedMessages
-			? JSON.parse(stringPersistedPinnedMessages)
-			: this.pinnedMessages;
 
 		reaction(
 			() => this.selectedEvents,
@@ -79,28 +76,12 @@ export class SelectedStore {
 
 	@action
 	public toggleMessagePin = (message: EventMessage) => {
-		const stringPersistedPinnedMessages = localStorage.getItem('pinnedMessages');
 		if (this.pinnedMessages.findIndex(m => m.messageId === message.messageId) === -1) {
-			if (stringPersistedPinnedMessages) {
-				localStorage.setItem(
-					'pinnedMessages',
-					JSON.stringify([...JSON.parse(stringPersistedPinnedMessages), message]),
-				);
-			}
 			this.pinnedMessages = this.pinnedMessages.concat(message);
 		} else {
 			this.pinnedMessages = this.pinnedMessages.filter(msg => msg.messageId !== message.messageId);
-			if (stringPersistedPinnedMessages) {
-				localStorage.setItem(
-					'pinnedMessages',
-					JSON.stringify(
-						JSON.parse(stringPersistedPinnedMessages).filter(
-							(msg: EventMessage) => msg.messageId !== message.messageId,
-						),
-					),
-				);
-			}
 		}
+		localStorageWorker.setPersistedPinnedMessages(this.pinnedMessages);
 	};
 
 	@action
