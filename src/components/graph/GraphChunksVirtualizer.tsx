@@ -23,6 +23,8 @@ import { useGraphStore } from '../../hooks/useGraphStore';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
 import '../../styles/graph.scss';
+import { EventAction } from '../../models/EventAction';
+import { EventMessage } from '../../models/EventMessage';
 
 const setInitialState = (settings: Settings): State => {
 	const { itemWidth, amount, tolerance, minIndex, maxIndex, startIndex } = settings;
@@ -63,6 +65,7 @@ interface Props {
 	settings: Settings;
 	row: (index: number) => JSX.Element;
 	chunkWidth: number;
+	setExpandedAttachedItem: (item: EventAction | EventMessage | null) => void;
 }
 
 interface State {
@@ -79,7 +82,7 @@ interface State {
 }
 
 const GraphChunksVirtualizer = (props: Props) => {
-	const { settings, chunkWidth } = props;
+	const { settings, chunkWidth, setExpandedAttachedItem } = props;
 
 	const graphStore = useGraphStore();
 
@@ -128,6 +131,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const handleMouseDown = (event: MouseEvent) => {
 		if (!rangeElementRef.current || !viewportElementRef.current) return;
 		if (isClickEventInElement(event, rangeElementRef.current)) {
+			setExpandedAttachedItem(null);
 			isDown.current = true;
 			startX.current = event.pageX - (viewportElementRef.current?.offsetLeft || 0);
 			scrollLeft.current = viewportElementRef.current.scrollLeft;

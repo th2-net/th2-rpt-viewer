@@ -128,3 +128,14 @@ export const getTimeWindow = (
 		timestampTo: timestampTo.valueOf(),
 	};
 };
+
+export const isTimeIntersected = (firstRange: [number, number], secondRange: [number, number]) => {
+	return (
+		(firstRange[0] >= secondRange[0] && firstRange[0] <= secondRange[1]) ||
+		(secondRange[0] >= firstRange[0] && secondRange[0] <= secondRange[1])
+	);
+};
+
+export const toUTC = (date: Moment) => {
+	return date.subtract(moment().utcOffset(), 'minutes');
+};

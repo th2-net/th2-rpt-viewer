@@ -18,13 +18,16 @@
 import * as React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { LineChart, Line, LineProps } from 'recharts';
-import { getTimestampAsNumber } from '../../helpers/date';
+import { LineChart, Line, XAxis, LineProps, CartesianGridProps } from 'recharts';
+import { getTimestampAsNumber, isTimeIntersected, toUTC } from '../../helpers/date';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk } from '../../models/graph';
 import { EventAction } from '../../models/EventAction';
 import { isEventMessage } from '../../helpers/event';
-import GraphAttachedItem from './GraphAttachedItem';
+import GraphAttachedItemGroup from './GraphAttachedItemGroup';
+import { useGraphStore } from '../../hooks/useGraphStore';
+
+const ATTACHED_ITEM_SIZE = 14;
 
 const lineProps: LineProps = {
 	dataKey: '',
@@ -50,24 +53,40 @@ const graphLines = [
 	},
 ];
 
+export interface AttachedItem {
+	value: EventMessage | EventAction;
+	type: 'attached-message' | 'pinned-message' | 'event';
+}
+
 interface Props {
 	chunk: Chunk;
 	chunkWidth: number;
 	getChunkData: (chunk: Chunk) => void;
-	attachedItems: (EventMessage | EventAction)[];
+	attachedItems: AttachedItem[];
+	expandedAttachedItem: EventAction | EventMessage | null;
+	setExpandedAttachedItem: (item: EventAction | EventMessage | null) => void;
 	interval: number;
 }
 
 const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props, ref) => {
-	const { chunk, getChunkData, attachedItems, chunkWidth, interval } = props;
+	const graphStore = useGraphStore();
+	const {
+		chunk,
+		getChunkData,
+		attachedItems,
+		chunkWidth,
+		expandedAttachedItem,
+		setExpandedAttachedItem,
+		interval,
+	} = props;
 
 	React.useEffect(() => {
 		getChunkData(chunk);
 	}, []);
 
-	const getAttachedItemsLeftPosition = (timestamp: number) => {
+	const getGroupLeftPosition = (timestamp: number) => {
 		const { from, to } = chunk;
-		return ((timestamp - from) / (to - from)) * 100;
+		return ((timestamp - from) / (to - from)) * chunkWidth;
 	};
 
 	const ticks: number[] = React.useMemo(() => {
@@ -78,7 +97,6 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 		for (let i = 0; i < interval; i++) {
 			ticksArr.push(
 				moment(from)
-					.subtract(moment().utcOffset(), 'minutes')
 					.startOf('minute')
 					.add(ticksInterval * i, 'minutes')
 					.valueOf(),
@@ -88,16 +106,63 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 		return ticksArr;
 	}, [chunk]);
 
+	const attachedItemTimeSize = ((chunk.to - chunk.from) / chunkWidth) * ATTACHED_ITEM_SIZE;
+
+	const attachedItemsGroups: {
+		items: AttachedItem[];
+		left: number;
+	}[] = React.useMemo(() => {
+		const groups: {
+			range: [number, number];
+			items: AttachedItem[];
+		}[] = [];
+
+		attachedItems.forEach(item => {
+			const itemTimestamp = getTimestampAsNumber(
+				isEventMessage(item.value) ? item.value.timestamp : item.value.startTimestamp,
+			);
+			const itemRange: [number, number] = [
+				itemTimestamp - attachedItemTimeSize / 2,
+				itemTimestamp + attachedItemTimeSize / 2,
+			];
+
+			const targetGroup = groups.find(group => isTimeIntersected(group.range, itemRange));
+			if (targetGroup) {
+				targetGroup.items.push(item);
+			} else {
+				groups.push({
+					range: itemRange,
+					items: [item],
+				});
+			}
+		});
+
+		return groups.map(group => {
+			const groupFirstItem = group.items[0];
+			const left = getGroupLeftPosition(
+				moment(
+					getTimestampAsNumber(
+						isEventMessage(groupFirstItem.value)
+							? groupFirstItem.value.timestamp
+							: groupFirstItem.value.startTimestamp,
+					),
+				).valueOf(),
+			);
+			return {
+				items: group.items,
+				left,
+			};
+		});
+	}, [attachedItems]);
+
 	return (
 		<div className='graph-chunk' ref={ref} data-from={chunk.from} data-to={chunk.to}>
-			{attachedItems.map(item => (
-				<GraphAttachedItem
-					key={isEventMessage(item) ? item.messageId : item.eventId}
-					item={item}
-					left={getAttachedItemsLeftPosition(
-						getTimestampAsNumber(isEventMessage(item) ? item.timestamp : item.startTimestamp),
-					)}
-					bottom={10}
+			{attachedItemsGroups.map((group, index) => (
+				<GraphAttachedItemGroup
+					key={index}
+					group={group}
+					expandedAttachedItem={expandedAttachedItem}
+					setExpandedAttachedItem={setExpandedAttachedItem}
 				/>
 			))}
 			<LineChart
@@ -115,7 +180,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 			<div className='graph-chunk__ticks'>
 				{ticks.map(tick => (
 					<span className='graph-chunk__tick' key={tick}>
-						{moment(tick).format('HH:mm')}
+						{toUTC(moment(tick)).format('HH:mm')}
 					</span>
 				))}
 			</div>

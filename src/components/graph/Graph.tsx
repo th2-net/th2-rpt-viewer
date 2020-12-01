@@ -19,14 +19,14 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import ResizeObserver from 'resize-observer-polyfill';
-import GraphChunk from './GraphChunk';
+import GraphChunk, { AttachedItem } from './GraphChunk';
 import { useGraphStore } from '../../hooks/useGraphStore';
-import { getTimestampAsNumber } from '../../helpers/date';
 import { useSelectedStore } from '../../hooks/useSelectedStore';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
-import { IntervalOption } from '../../stores/GraphStore';
-import { EventMessage } from '../../models/EventMessage';
 import '../../styles/graph.scss';
+import { EventMessage } from '../../models/EventMessage';
+import { EventAction } from '../../models/EventAction';
+import { filterListByChunkRange } from '../../helpers/graph';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -46,6 +46,10 @@ function Graph() {
 	const [acnhorTimestamp, setAnchorTimestamp] = React.useState(graphStore.timestamp);
 	const [chunkWidth, setChunkWidth] = React.useState(getChunkWidth);
 	const [inputState, setInputState] = React.useState(graphStore.timestamp.toString());
+
+	const [expandedAttachedItem, setExpandedAttachedItem] = React.useState<
+		EventAction | EventMessage | null
+	>(null);
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -70,6 +74,16 @@ function Graph() {
 				.valueOf(),
 		);
 
+		const attachedItems: AttachedItem[] = filterListByChunkRange(
+			chunk,
+			selectedStore.attachedMessages.concat(selectedStore.pinnedMessages),
+		).map(message => ({
+			value: message,
+			type: (selectedStore.attachedMessages.includes(message)
+				? 'attached-message'
+				: 'pinned-message') as 'attached-message' | 'pinned-message' | 'event',
+		}));
+
 		return (
 			<div
 				data-from={moment(chunk.from).startOf('minute').valueOf()}
@@ -83,13 +97,9 @@ function Graph() {
 					chunk={chunk}
 					chunkWidth={chunkWidth}
 					getChunkData={graphStore.getChunkData}
-					attachedItems={getAttachedMessages(graphStore.timestamp)}
-					// attachedItems={selectedStore.attachedMessages.filter(message =>
-					// 	moment(getTimestampAsNumber(message.timestamp)).isBetween(
-					// 		moment(chunk.from),
-					// 		moment(chunk.to),
-					// 	),
-					// )}
+					attachedItems={attachedItems}
+					expandedAttachedItem={expandedAttachedItem}
+					setExpandedAttachedItem={setExpandedAttachedItem}
 				/>
 			</div>
 		);
@@ -115,7 +125,12 @@ function Graph() {
 
 	return (
 		<div className='graph' ref={rootRef}>
-			<GraphChunksVirtualizer chunkWidth={chunkWidth} settings={settings} row={renderChunk} />
+			<GraphChunksVirtualizer
+				chunkWidth={chunkWidth}
+				settings={settings}
+				row={renderChunk}
+				setExpandedAttachedItem={setExpandedAttachedItem}
+			/>
 			<OverlayPanel
 				chunkWidth={chunkWidth}
 				range={graphStore.range}
@@ -173,68 +188,3 @@ const Timestamp = ({ timestamp, className = '' }: TimestampProps) => (
 		{moment(timestamp).utc().format('HH:mm:ss.SSS')}
 	</div>
 );
-
-const getAttachedMessages = (timestamp: number): EventMessage[] => [
-	{
-		body: {
-			fields: {
-				asd: {
-					listValue: {
-						values: [],
-					},
-				},
-			},
-			metadata: {
-				id: {
-					connectionId: {
-						sessionAlias: '',
-					},
-					sequence: '',
-				},
-				messageType: '',
-				timestamp: new Date().toString(),
-			},
-		},
-		bodyBase64: '',
-		direction: '',
-		messageId: 'e234sdf-32423-ssfsdf-46446-h342gs',
-		messageType: '',
-		sessionId: '',
-		type: '',
-		timestamp: {
-			epochSecond: moment(timestamp).add(10, 'minute').valueOf() / 1000,
-			nano: 0,
-		},
-	},
-	{
-		body: {
-			fields: {
-				asd: {
-					listValue: {
-						values: [],
-					},
-				},
-			},
-			metadata: {
-				id: {
-					connectionId: {
-						sessionAlias: '',
-					},
-					sequence: '',
-				},
-				messageType: '',
-				timestamp: new Date().toString(),
-			},
-		},
-		bodyBase64: '',
-		direction: '',
-		messageId: 'e234sdf-32423-sdfsdf-46346-h342gs',
-		messageType: '',
-		sessionId: '',
-		type: '',
-		timestamp: {
-			epochSecond: moment(timestamp).add(10, 'minute').valueOf() / 1000,
-			nano: 0,
-		},
-	},
-];

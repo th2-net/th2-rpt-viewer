@@ -16,6 +16,7 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
+import { toUTC } from '../helpers/date';
 import { Chunk, ChunkData } from '../models/graph';
 
 export const intervalOptions = [15, 30, 60] as const;
