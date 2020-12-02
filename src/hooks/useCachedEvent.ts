@@ -19,7 +19,7 @@ import { useEventWindowStore } from './useEventWindowStore';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { usePrevious } from './usePrevious';
 
-export default function useCachedEvent(
+export function useCachedEvent(
 	node: EventTreeNode,
 	isVisible = true,
 ): EventAction | undefined {

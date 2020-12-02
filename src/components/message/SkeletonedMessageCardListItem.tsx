@@ -18,8 +18,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import MessageCardSkeleton from './MessageCardSkeleton';
 import MessageCard from './MessageCard';
-import useAsyncEffect from '../../hooks/useAsyncEffect';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import { useAsyncEffect, useMessagesWindowStore } from '../../hooks';
 import ErrorMessageFallback from './MessageErrorFallback';
 
 interface Props {

@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import { useEventWindowStore } from '../../hooks';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import { createBemBlock } from '../../helpers/styleCreators';
 import '../../styles/search.scss';

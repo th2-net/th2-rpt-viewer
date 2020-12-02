@@ -20,7 +20,7 @@
 	height: 100%;
 	width: 100%;
 	display: grid;
-	grid-template: 49px 1fr / 1fr;
+	grid-template: 42px 1fr / 1fr;
 	grid-template-areas:
 		'tabs'
 		'content';
@@ -99,7 +99,6 @@
 	align-items: center;
 	transition: width 0.15s, transform 0.15s;
 	background-color: $tabsBackgroundColor;
-	margin: 7px 0;
 
 	&.selected {
 		background-color: #fff;

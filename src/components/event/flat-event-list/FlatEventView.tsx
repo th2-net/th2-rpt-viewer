@@ -20,8 +20,7 @@ import SplitViewPane from '../../split-view/SplitViewPane';
 import FlatEventList from './FlatEventList';
 import Empty from '../../Empty';
 import SplitView from '../../split-view/SplitView';
-import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
-import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
+import { useEventWindowStore, useEventWindowViewStore } from '../../../hooks';
 import DetailedFlatEventCard from './DetailedFlatEventCard';
 
 function EventTreeView() {

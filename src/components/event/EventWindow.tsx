@@ -18,9 +18,9 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import EventTreeView from './tree/EventTreeView';
 import EventWindowHeader from './EventWindowHeader';
-import '../../styles/events.scss';
-import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
+import { useEventWindowViewStore } from '../../hooks';
 import FlatEventView from './flat-event-list/FlatEventView';
+import '../../styles/events.scss';
 
 interface EventWindowProps {
 	isActive: boolean;

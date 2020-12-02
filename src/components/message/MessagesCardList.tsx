@@ -24,7 +24,7 @@ import MessagesVirtualizedList from './MessagesVirtualizedList';
 import SplashScreen from '../SplashScreen';
 import MessagesScrollContainer from './MessagesScrollContainer';
 import Empty from '../Empty';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import { useMessagesWindowStore } from '../../hooks';
 import StateSaverProvider from '../util/StateSaverProvider';
 import '../../styles/messages.scss';
 

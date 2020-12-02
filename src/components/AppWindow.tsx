@@ -30,7 +30,7 @@ import { TabDraggableItem } from './tabs/DraggableTab';
 import { withSideDropTargets } from './drag-n-drop/WithSideDropTargets';
 import DroppableTabList from './tabs/DroppableTabList';
 import { createStyleSelector } from '../helpers/styleCreators';
-import { useWindowsStore } from '../hooks/useWindowsStore';
+import { useWindowsStore } from '../hooks';
 
 interface AppWindowProps {
 	windowStore: AppWindowStore;

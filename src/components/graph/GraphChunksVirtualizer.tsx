@@ -18,15 +18,13 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { useGraphStore } from '../../hooks/useGraphStore';
-import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
+import { useGraphStore, useDebouncedCallback, usePrevious } from '../../hooks';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
 import { Chunk } from '../../models/graph';
 import { IntervalOption } from '../../stores/GraphStore';
 import { raf } from '../../helpers/raf';
 import { EventAction } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { usePrevious } from '../../hooks/usePrevious';
 import '../../styles/graph.scss';
 
 const setInitialState = (settings: Settings): State => {

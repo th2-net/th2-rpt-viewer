@@ -21,7 +21,7 @@ import EventTree from './EventTree';
 import Empty from '../../Empty';
 import SplashScreen from '../../SplashScreen';
 import StateSaverProvider from '../../util/StateSaverProvider';
-import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
+import { useEventWindowStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
 import { EventTreeNode } from '../../../models/EventAction';
 import '../../../styles/action.scss';

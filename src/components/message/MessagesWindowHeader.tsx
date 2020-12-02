@@ -17,9 +17,8 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import { useMessagesWindowStore, useMessageUpdateStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
-import { useMessageUpdateStore } from '../../hooks/useMessageUpdateStore';
 
 const MessagesWindowHeader = () => {
 	const messagesStore = useMessagesWindowStore();

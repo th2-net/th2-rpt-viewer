@@ -19,7 +19,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { createBemElement } from '../../helpers/styleCreators';
-import useOutsideClickListener from '../../hooks/useOutsideClickListener';
+import { useOutsideClickListener } from '../../hooks';
 import { EventAction } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { ModalPortal } from '../Portal';

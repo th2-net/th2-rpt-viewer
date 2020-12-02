@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import { DATE_TIME_INPUT_MASK, DATE_TIME_PLACEHOLDER } from '../../util/filterInputs';
 import { DateTimeMask, FilterRowConfig, TimeInputType } from '../../models/filter/FilterInputs';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import { useMessagesWindowStore } from '../../hooks';
 import { getTimeRange } from '../../helpers/date';
 
 const MessagesFilterPanel = () => {

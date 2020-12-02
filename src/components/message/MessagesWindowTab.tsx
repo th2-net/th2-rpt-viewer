@@ -20,7 +20,7 @@ import DraggableTab, { DraggableTabProps } from '../tabs/DraggableTab';
 import Tab from '../tabs/Tab';
 import TabMenu from '../tabs/TabMenu';
 import { DraggableTabListContext } from '../tabs/DroppableTabList';
-import { useSelectedStore } from '../../hooks/useSelectedStore';
+import { useSelectedStore } from '../../hooks';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import { getEventStatus } from '../../helpers/event';
 

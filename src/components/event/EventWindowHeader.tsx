@@ -18,7 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SearchInput from '../search/SearchInput';
 import EventsFilterPanel from '../filter/EventsFilterPanel';
-import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import { useEventWindowStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
 
 interface EventWindowHeaderProps {

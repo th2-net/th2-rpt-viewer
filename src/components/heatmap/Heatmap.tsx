@@ -17,10 +17,10 @@
 import React from 'react';
 import { inRange } from '../../helpers/heatmapCreator';
 import { HeatmapElement } from '../../models/Heatmap';
-import { useHeatmap } from '../../hooks/useHeatmap';
+import { useHeatmap } from '../../hooks';
 import HeatmapItem from './HeatmapItem';
-import '../../styles/heatmap.scss';
 import { isDivElement } from '../../helpers/dom';
+import '../../styles/heatmap.scss';
 
 interface Props {
 	onElementClick: (element: HeatmapElement) => void;

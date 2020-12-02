@@ -18,10 +18,9 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import MessagesWindowHeader from './MessagesWindowHeader';
 import { HeatmapProvider } from '../heatmap/HeatmapProvider';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import { useMessagesWindowStore, useSelectedStore } from '../../hooks';
 import MessagesCardList from './MessagesCardList';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { useSelectedStore } from '../../hooks/useSelectedStore';
 
 const MessagesWindow = () => {
 	const messagesStore = useMessagesWindowStore();

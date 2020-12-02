@@ -21,7 +21,7 @@ import EventCardHeader from '../EventCardHeader';
 import Empty from '../../Empty';
 import SplashScreen from '../../SplashScreen';
 import StateSaverProvider from '../../util/StateSaverProvider';
-import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
+import { useEventWindowStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
 import CardDisplayType from '../../../util/CardDisplayType';
 import { EventTreeNode } from '../../../models/EventAction';

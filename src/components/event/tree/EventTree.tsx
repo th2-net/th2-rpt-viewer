@@ -18,12 +18,11 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import PanelArea from '../../../util/PanelArea';
 import EventCardHeader from '../EventCardHeader';
-import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
+import { useEventWindowViewStore, useEventWindowStore } from '../../../hooks';
 import EventCardSkeleton from '../EventCardSkeleton';
 import { EventTreeNode } from '../../../models/EventAction';
 import ExpandIcon from '../../ExpandIcon';
 import { getEventNodeParents } from '../../../helpers/event';
-import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
 import CardDisplayType from '../../../util/CardDisplayType';
 import '../../../styles/expandablePanel.scss';
 

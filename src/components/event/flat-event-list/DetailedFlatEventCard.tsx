@@ -17,8 +17,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
-import { useParentEvents } from '../../../hooks/useParentEvents';
+import { useEventWindowStore, useParentEvents } from '../../../hooks';
 import EventCardHeader from '../EventCardHeader';
 import EventDetailInfoCard from '../EventDetailInfoCard';
 import { EventTreeNode } from '../../../models/EventAction';

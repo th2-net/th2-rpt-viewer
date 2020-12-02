@@ -25,7 +25,7 @@ import {
 	TIME_INPUT_MASK,
 	TIME_PLACEHOLDER,
 } from '../../util/filterInputs';
-import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import { useEventWindowStore } from '../../hooks';
 import { getTimeRange } from '../../helpers/date';
 
 function EventsFilterPanel() {

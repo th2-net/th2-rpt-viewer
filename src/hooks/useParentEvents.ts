@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import useAsyncEffect from './useAsyncEffect';
+import { useAsyncEffect } from './useAsyncEffect';
 import { useEventWindowStore } from './useEventWindowStore';
 import api from '../api/event';
 import { EventAction, EventTreeNode } from '../models/EventAction';

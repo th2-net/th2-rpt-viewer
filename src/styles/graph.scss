@@ -17,7 +17,8 @@
 @import './common/vars';
 
 .graph {
-	height: 100px;
+	height: 100%;
+	width: 100%;
 	background-color: $graphBackgroundColor;
 	position: relative;
 	display: flex;
@@ -270,6 +271,7 @@
 }
 
 .graph-range-selector {
+	@include unselectable;
 	height: 100%;
 	border-left: 3px solid $graphRangeSelectorBorder;
 	border-right: 3px solid $graphRangeSelectorBorder;
