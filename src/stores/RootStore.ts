@@ -14,16 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { autorun, toJS } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import AppViewStore from './AppViewStore';
 import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
-import { TabTypes } from '../models/util/Windows';
-import { EventStoreURLState } from './EventsStore';
-import { getObjectKeys } from '../helpers/object';
 import NotificationsStore from './NotificationsStore';
-import { getEventNodeParents } from '../helpers/event';
 import GraphStore from './GraphStore';
+import { registerUrlMiddleware } from '../helpers/url';
 
 export default class RootStore {
 	notificationsStore = NotificationsStore;
@@ -39,52 +35,7 @@ export default class RootStore {
 
 		this.viewStore = new AppViewStore();
 
-		// TODO: move to a separate function
-
-		autorun(() => {
-			const workspacesUrlState: WorkspacesUrlState = this.windowsStore.workspaces.map(workspace => {
-				let eventStoreState: EventStoreURLState = {};
-
-				const eventsStore = workspace.eventsStore;
-				eventStoreState = {
-					type: TabTypes.Events,
-					filter: eventsStore.filterStore.isEventsFilterApplied
-						? eventsStore.filterStore.eventsFilter
-						: undefined,
-					panelArea: eventsStore.viewStore.panelArea,
-					selectedNodesPath: eventsStore.selectedNode
-						? [...getEventNodeParents(eventsStore.selectedNode), eventsStore.selectedNode.eventId]
-						: undefined,
-					search:
-						eventsStore.searchStore.tokens.length > 0
-							? eventsStore.searchStore.tokens.map(t => t.pattern)
-							: undefined,
-					flattenedListView: eventsStore.viewStore.flattenedListView,
-					selectedParentId:
-						eventsStore.viewStore.flattenedListView && eventsStore.selectedParentNode
-							? eventsStore.selectedParentNode.eventId
-							: undefined,
-				};
-
-
-				getObjectKeys(eventStoreState).forEach(key => {
-					if (eventStoreState[key] === undefined) {
-						delete eventStoreState[key];
-					}
-				});
-
-				return {
-					events: eventStoreState,
-					messages: {},
-				};
-			});
-
-			const searchParams = new URLSearchParams({
-				workspaces: window.btoa(JSON.stringify(toJS(workspacesUrlState))),
-			});
-
-			window.history.replaceState({}, '', `?${searchParams}`);
-		});
+		registerUrlMiddleware(this);
 	}
 
 	parseWorkspacesState = (): WorkspacesUrlState | null => {
