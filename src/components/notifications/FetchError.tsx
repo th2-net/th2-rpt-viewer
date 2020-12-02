@@ -20,13 +20,14 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 import '../../styles/toast-content.scss';
 
 interface FetchErrorProps {
+	header: string;
 	resource: string;
 	responseCode: number;
 	responseBody: string;
 }
 
 export default function FetchError(props: FetchErrorProps) {
-	const { resource, responseBody, responseCode } = props;
+	const { resource, responseBody, responseCode, header } = props;
 	const [copied, setCopied] = useState(false);
 	const copyDetailsText = createStyleSelector('copy-details__text', copied ? 'copied' : null);
 
@@ -39,10 +40,10 @@ export default function FetchError(props: FetchErrorProps) {
 	return (
 		<div className='toast-content'>
 			<div className='toast-content__top'>
-				<p className='response-body'>{responseBody}</p>
+				<p className='response-body'>{header}</p>
 				<p className='response-code'>{responseCode}</p>
 			</div>
-			<div className='toast-content__middle'>{resource}</div>
+			<div className='toast-content__middle'>{responseBody}</div>
 			<div className='toast-content__bottom'>
 				<button className='copy-details' disabled={copied} onClick={copy}>
 					{!copied && <span className='copy-details__icon' />}
