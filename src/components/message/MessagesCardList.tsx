@@ -24,14 +24,14 @@ import MessagesVirtualizedList from './MessagesVirtualizedList';
 import SplashScreen from '../SplashScreen';
 import MessagesScrollContainer from './MessagesScrollContainer';
 import Empty from '../Empty';
-import { useMessagesWindowStore } from '../../hooks';
+import { useMessagesWorkspaceStore } from '../../hooks';
 import StateSaverProvider from '../util/StateSaverProvider';
 import '../../styles/messages.scss';
 
 export type MessagesHeights = { [index: number]: number };
 
 const MessageCardList = () => {
-	const messagesStore = useMessagesWindowStore();
+	const messagesStore = useMessagesWorkspaceStore();
 
 	const [messagesHeightsMap, setMessagesHeightMap] = React.useState<MessagesHeights>({});
 

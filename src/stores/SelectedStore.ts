@@ -20,7 +20,7 @@ import { randomHexColor } from '../helpers/color';
 import { sortMessagesByTimestamp } from '../helpers/message';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import WindowsStore from './WindowsStore';
+import WorkspacesStore from './WorkspacesStore';
 import localStorageWorker from '../util/LocalStorageWorker';
 
 export class SelectedStore {
@@ -48,7 +48,7 @@ export class SelectedStore {
 	@observable
 	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
 
-	constructor(private windowsStore: WindowsStore, private api: ApiSchema) {
+	constructor(private windowsStore: WorkspacesStore, private api: ApiSchema) {
 		reaction(
 			() => this.selectedEvents,
 			selectedEvents => {
@@ -61,8 +61,8 @@ export class SelectedStore {
 	}
 
 	@computed get selectedEvents() {
-		return this.windowsStore.eventTabs
-			.map(eventTab => eventTab.store.selectedEvent)
+		return this.windowsStore.eventStores
+			.map(eventStore => eventStore.selectedEvent)
 			.filter(
 				(event, i, self): event is EventAction =>
 					event !== null && self.findIndex(e => e && e.eventId === event.eventId) === i,
@@ -70,7 +70,7 @@ export class SelectedStore {
 	}
 
 	@computed get isLoadingEvents() {
-		return this.windowsStore.eventTabs.some(eventTab => eventTab.store.isSelectedEventLoading);
+		return this.windowsStore.eventStores.some(eventStore => eventStore.isSelectedEventLoading);
 	}
 
 	@action

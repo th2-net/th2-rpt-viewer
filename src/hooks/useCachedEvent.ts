@@ -15,15 +15,12 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { useEventWindowStore } from './useEventWindowStore';
+import { useWorkspaceEventStore } from './useEventWindowStore';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { usePrevious } from './usePrevious';
 
-export function useCachedEvent(
-	node: EventTreeNode,
-	isVisible = true,
-): EventAction | undefined {
-	const eventWindowStore = useEventWindowStore();
+export function useCachedEvent(node: EventTreeNode, isVisible = true): EventAction | undefined {
+	const eventWindowStore = useWorkspaceEventStore();
 	const [event, setEvent] = React.useState(eventWindowStore.eventsCache.get(node.eventId));
 	const previousNode = usePrevious(node);
 

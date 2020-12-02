@@ -18,7 +18,7 @@ import React from 'react';
 import { XYCoord, useDragLayer } from 'react-dnd';
 import { DraggableItemTypes } from '../tabs/DraggableTab';
 import { MessagesWindowTabPreview } from '../message/MessagesWindowTab';
-import { EventsWindowTabPreview } from '../event/EventWindowTab';
+import { EventsWindowTabPreview } from '../event/EventWindowTab-legacy';
 import { TabTypes } from '../../models/util/Windows';
 
 const layerStyles: React.CSSProperties = {

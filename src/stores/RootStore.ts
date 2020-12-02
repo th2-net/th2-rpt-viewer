@@ -17,11 +17,9 @@
 import { autorun, toJS } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import AppViewStore from './AppViewStore';
-import WindowsStore, { WindowsUrlState } from './WindowsStore';
-import { isEventsTab, isMessagesTab } from '../helpers/windows';
+import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
 import { TabTypes } from '../models/util/Windows';
 import { EventStoreURLState } from './EventsStore';
-import { MessagesStoreURLState } from './MessagesStore';
 import { getObjectKeys } from '../helpers/object';
 import NotificationsStore from './NotificationsStore';
 import { getEventNodeParents } from '../helpers/event';
@@ -30,77 +28,70 @@ import GraphStore from './GraphStore';
 export default class RootStore {
 	notificationsStore = NotificationsStore;
 
-	windowsStore: WindowsStore;
+	windowsStore: WorkspacesStore;
 
 	viewStore: AppViewStore;
 
 	graphStore = new GraphStore(this);
 
 	constructor(private api: ApiSchema) {
-		this.windowsStore = new WindowsStore(this.api, this.parseWindowsState());
+		this.windowsStore = new WorkspacesStore(this.api, this.parseWorkspacesState());
 
 		this.viewStore = new AppViewStore();
 
+		// TODO: move to a separate function
+
 		autorun(() => {
-			const windowsUrlState: WindowsUrlState = this.windowsStore.windows.map(window => {
-				let activeTabState: EventStoreURLState | MessagesStoreURLState = {};
+			const workspacesUrlState: WorkspacesUrlState = this.windowsStore.workspaces.map(workspace => {
+				let eventStoreState: EventStoreURLState = {};
 
-				const activeTab = window.tabs[window.activeTabIndex];
-
-				if (isEventsTab(activeTab)) {
-					const eventsStore = activeTab.store;
-					activeTabState = {
-						type: TabTypes.Events,
-						filter: eventsStore.filterStore.isEventsFilterApplied
-							? eventsStore.filterStore.eventsFilter
+				const eventsStore = workspace.eventsStore;
+				eventStoreState = {
+					type: TabTypes.Events,
+					filter: eventsStore.filterStore.isEventsFilterApplied
+						? eventsStore.filterStore.eventsFilter
+						: undefined,
+					panelArea: eventsStore.viewStore.panelArea,
+					selectedNodesPath: eventsStore.selectedNode
+						? [...getEventNodeParents(eventsStore.selectedNode), eventsStore.selectedNode.eventId]
+						: undefined,
+					search:
+						eventsStore.searchStore.tokens.length > 0
+							? eventsStore.searchStore.tokens.map(t => t.pattern)
 							: undefined,
-						panelArea: eventsStore.viewStore.panelArea,
-						selectedNodesPath: eventsStore.selectedNode
-							? [...getEventNodeParents(eventsStore.selectedNode), eventsStore.selectedNode.eventId]
+					flattenedListView: eventsStore.viewStore.flattenedListView,
+					selectedParentId:
+						eventsStore.viewStore.flattenedListView && eventsStore.selectedParentNode
+							? eventsStore.selectedParentNode.eventId
 							: undefined,
-						search:
-							eventsStore.searchStore.tokens.length > 0
-								? eventsStore.searchStore.tokens.map(t => t.pattern)
-								: undefined,
-						flattenedListView: eventsStore.viewStore.flattenedListView,
-						selectedParentId:
-							eventsStore.viewStore.flattenedListView && eventsStore.selectedParentNode
-								? eventsStore.selectedParentNode.eventId
-								: undefined,
-					};
-				}
+				};
 
-				if (isMessagesTab(activeTab)) {
-					activeTabState = {
-						type: TabTypes.Messages,
-					};
-				}
 
-				getObjectKeys(activeTabState).forEach(key => {
-					if (activeTabState[key] === undefined) {
-						delete activeTabState[key];
+				getObjectKeys(eventStoreState).forEach(key => {
+					if (eventStoreState[key] === undefined) {
+						delete eventStoreState[key];
 					}
 				});
 
 				return {
-					activeTab: activeTabState,
-					activeTabIndex: window.activeTabIndex.toString(),
+					events: eventStoreState,
+					messages: {},
 				};
 			});
 
 			const searchParams = new URLSearchParams({
-				windows: window.btoa(JSON.stringify(toJS(windowsUrlState))),
+				workspaces: window.btoa(JSON.stringify(toJS(workspacesUrlState))),
 			});
 
 			window.history.replaceState({}, '', `?${searchParams}`);
 		});
 	}
 
-	parseWindowsState = (): WindowsUrlState | null => {
+	parseWorkspacesState = (): WorkspacesUrlState | null => {
 		try {
 			const searchParams = new URLSearchParams(window.location.search);
-			const windowsUrlState = searchParams.get('windows');
-			const parsedState = windowsUrlState ? JSON.parse(window.atob(windowsUrlState)) : null;
+			const workspacesUrlState = searchParams.get('workspaces');
+			const parsedState = workspacesUrlState ? JSON.parse(window.atob(workspacesUrlState)) : null;
 			return parsedState;
 		} catch (error) {
 			this.notificationsStore.setUrlError({

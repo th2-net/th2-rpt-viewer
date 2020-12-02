@@ -32,3 +32,4 @@ export * from './useRootStore';
 export * from './useSelectedStore';
 export * from './useWindowsStore';
 export * from './useSelectListener';
+export * from './useWorkspaceStore';

@@ -16,7 +16,7 @@
 
 import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import FilterStore from './FilterStore';
-import ViewStore from './WindowViewStore';
+import ViewStore from './WorkspaceViewStore';
 import ApiSchema from '../api/ApiSchema';
 import { EventAction, EventTree, EventTreeNode } from '../models/EventAction';
 import SearchStore from './SearchStore';

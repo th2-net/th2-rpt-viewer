@@ -85,7 +85,11 @@ export default class MessagesStore {
 
 	@observable messagesListErrorStatusCode: number | null = null;
 
-	constructor(private api: ApiSchema, private selectedStore: SelectedStore, store?: MessagesStore) {
+	constructor(
+		private api: ApiSchema,
+		private selectedStore: SelectedStore,
+		store: MessagesStore | null,
+	) {
 		if (store) {
 			this.copy(store);
 		}

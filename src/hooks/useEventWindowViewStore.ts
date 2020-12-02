@@ -14,10 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useEventWindowStore } from './useEventWindowStore';
+import { useWorkspaceEventStore } from './useEventWindowStore';
 
 export const useEventWindowViewStore = () => {
-	const eventWindowStore = useEventWindowStore();
+	const eventWindowStore = useWorkspaceEventStore();
 
 	return eventWindowStore.viewStore;
 };

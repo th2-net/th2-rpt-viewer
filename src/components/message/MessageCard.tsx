@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useMessagesWindowStore, useHeatmap, useSelectedStore } from '../../hooks';
+import { useMessagesWorkspaceStore, useHeatmap, useSelectedStore } from '../../hooks';
 import { getHashCode } from '../../helpers/stringHash';
 import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
 import { formatTime, getTimestampAsNumber } from '../../helpers/date';
@@ -44,7 +44,7 @@ export interface RecoveredProps {
 interface Props extends OwnProps, RecoveredProps {}
 
 function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
-	const messagesStore = useMessagesWindowStore();
+	const messagesStore = useMessagesWorkspaceStore();
 	const selectedStore = useSelectedStore();
 	const { heatmapElements } = useHeatmap();
 

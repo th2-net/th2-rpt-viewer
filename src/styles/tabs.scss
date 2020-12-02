@@ -184,7 +184,6 @@
 	height: 100%;
 	display: flex;
 	overflow: hidden;
-	padding: 0 8px;
 }
 
 .tab-menu {
@@ -196,7 +195,7 @@
 	display: grid;
 	grid-template-columns: 1fr 50px;
 	padding: 3px 10px 0 10px;
-	z-index: 22;
+	z-index: 100;
 	background-color: $tabsBackgroundColor;
 
 	&.selected {

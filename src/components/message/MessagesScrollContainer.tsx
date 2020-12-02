@@ -19,7 +19,7 @@ import { Observer } from 'mobx-react-lite';
 import { TScrollContainer } from 'react-virtuoso';
 import Heatmap from '../heatmap/Heatmap';
 import { HeatmapElement } from '../../models/Heatmap';
-import { useMessagesWindowStore, useDebouncedCallback, useHeatmap } from '../../hooks';
+import { useMessagesWorkspaceStore, useDebouncedCallback, useHeatmap } from '../../hooks';
 import { InfiniteLoaderContext } from './MessagesVirtualizedList';
 import { MessagesHeightsContext, MessagesHeights } from './MessagesCardList';
 
@@ -32,7 +32,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 }) => {
 	const scrollContainer = React.useRef<HTMLDivElement>(null);
 	const { setVisibleRange, visibleRange } = useHeatmap();
-	const messagesStore = useMessagesWindowStore();
+	const messagesStore = useMessagesWorkspaceStore();
 	const messagesHeights = React.useContext(MessagesHeightsContext);
 	const prevHeights = React.useRef<MessagesHeights>({});
 

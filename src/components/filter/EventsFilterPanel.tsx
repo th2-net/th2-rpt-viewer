@@ -25,11 +25,11 @@ import {
 	TIME_INPUT_MASK,
 	TIME_PLACEHOLDER,
 } from '../../util/filterInputs';
-import { useEventWindowStore } from '../../hooks';
+import { useWorkspaceEventStore } from '../../hooks';
 import { getTimeRange } from '../../helpers/date';
 
 function EventsFilterPanel() {
-	const eventWindowStore = useEventWindowStore();
+	const eventWindowStore = useWorkspaceEventStore();
 	const { filterStore } = eventWindowStore;
 
 	const [timestampFrom, setTimestampFrom] = React.useState(filterStore.eventsFilter.timestampFrom);

@@ -14,15 +14,11 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import { MessagesWindowContext } from '../contexts/messagesWindowContext';
+import MessagesStore from '../stores/MessagesStore';
+import { useWorkspaceStore } from './useWorkspaceStore';
 
-export const useMessagesWindowStore = () => {
-	const eventWindowStore = React.useContext(MessagesWindowContext);
+export const useMessagesWorkspaceStore = (): MessagesStore => {
+	const workspaceStore = useWorkspaceStore();
 
-	if (!eventWindowStore) {
-		throw new Error('MessagesWindowContext should be used inside of MessagesWindowStoreProvider');
-	}
-
-	return eventWindowStore;
+	return workspaceStore.messagesStore;
 };

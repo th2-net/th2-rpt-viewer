@@ -17,11 +17,11 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useMessagesWindowStore, useMessageUpdateStore } from '../../hooks';
+import { useMessagesWorkspaceStore, useMessageUpdateStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
 
 const MessagesWindowHeader = () => {
-	const messagesStore = useMessagesWindowStore();
+	const messagesStore = useMessagesWorkspaceStore();
 	const messageUpdateStore = useMessageUpdateStore();
 
 	const getStep = () => {

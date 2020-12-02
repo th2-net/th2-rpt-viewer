@@ -18,7 +18,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import PanelArea from '../../../util/PanelArea';
 import EventCardHeader from '../EventCardHeader';
-import { useEventWindowViewStore, useEventWindowStore } from '../../../hooks';
+import { useEventWindowViewStore, useWorkspaceEventStore } from '../../../hooks';
 import EventCardSkeleton from '../EventCardSkeleton';
 import { EventTreeNode } from '../../../models/EventAction';
 import ExpandIcon from '../../ExpandIcon';
@@ -31,7 +31,7 @@ interface EventTreeProps {
 }
 
 function EventTree({ eventTreeNode }: EventTreeProps) {
-	const eventWindowStore = useEventWindowStore();
+	const eventWindowStore = useWorkspaceEventStore();
 	const viewStore = useEventWindowViewStore();
 
 	const onExpandClick = () => eventWindowStore.toggleNode(eventTreeNode);

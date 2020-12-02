@@ -16,7 +16,7 @@
 
 import React from 'react';
 import { useAsyncEffect } from './useAsyncEffect';
-import { useEventWindowStore } from './useEventWindowStore';
+import { useWorkspaceEventStore } from './useEventWindowStore';
 import api from '../api/event';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 
@@ -25,7 +25,7 @@ export const useParentEvents = (
 	parentIdNodes: EventTreeNode[],
 	initialSelectedNode: EventTreeNode | null,
 ) => {
-	const eventWindowStore = useEventWindowStore();
+	const eventWindowStore = useWorkspaceEventStore();
 
 	const [parentEvents, setParentEvents] = React.useState<Map<string, EventAction>>(new Map());
 	const [selectedNode, setSelectedNode] = React.useState<null | EventTreeNode>(initialSelectedNode);

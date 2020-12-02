@@ -14,14 +14,25 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import './common/vars';
+ @import './common/vars';
 
-.layout {
+.workspace-layout {
+	height: 100%;
+	width: 100%;
+}
+
+.workspace {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.window {
 	display: grid;
 	height: 100%;
 	grid-template: auto 1fr / 1fr;
 	grid-template-areas:
-		'header'
+		'controls'
 		'main-content';
 	overflow: hidden;
 	background-color: #fff;
@@ -31,8 +42,8 @@
 		grid-area: tabs;
 	}
 
-	&__header {
-		grid-area: header;
+	&__controls {
+		grid-area: controls;
 		position: relative;
 		z-index: 100;
 		height: 47px;

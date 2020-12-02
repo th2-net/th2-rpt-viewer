@@ -14,10 +14,17 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useMessagesWorkspaceStore } from './useMessagesStore';
+import React from 'react';
+import WorkspaceStore from '../stores/WorkspaceStore';
 
-export const useMessageUpdateStore = () => {
-	const messageStore = useMessagesWorkspaceStore();
+const WorkspaceContext = React.createContext<WorkspaceStore | null>(null);
 
-	return messageStore.messageUpdateStore;
-};
+interface WorkspaceContextProviderProps {
+	children: React.ReactNode;
+	value: WorkspaceStore;
+}
+const WorkspaceContextProvider = ({ children, value }: WorkspaceContextProviderProps) => (
+	<WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>
+);
+
+export { WorkspaceContext, WorkspaceContextProvider };
