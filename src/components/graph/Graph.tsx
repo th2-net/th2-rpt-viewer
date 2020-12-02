@@ -152,8 +152,12 @@ const OverlayPanels = ({
 	inputValue,
 	onInputChange,
 }: OverlayPanelProps) => {
+	const graphStore = useGraphStore();
 	const overlayWidth = (window.innerWidth - chunkWidth) / 2;
 	const commonStyles: React.CSSProperties = { width: overlayWidth };
+	const intervalValues = React.useMemo(() => {
+		return graphStore.getIntervalData();
+	}, [from]);
 
 	return (
 		<>
@@ -169,7 +173,27 @@ const OverlayPanels = ({
 				<div className='graph__settings-button' />
 			</div>
 			<div className='graph-range-selector' style={{ width: chunkWidth, left: overlayWidth }}>
-				<input value={inputValue} type='text' onChange={onInputChange} />
+				<div className='graph-range-selector__wrapper'>
+					{Object.entries(intervalValues).map(([key, value], index) => (
+						<div
+							key={key}
+							style={{
+								order: index,
+							}}
+							className={`graph-range-selector__counter ${key}`}>
+							{['passed', 'failed', 'connected'].includes(key) && (
+								<i className='graph-range-selector__counter-icon' />
+							)}
+							<span className='graph-range-selector__counter-value'>{`${value} ${key}`}</span>
+						</div>
+					))}
+					<input
+						className='graph-range-selector__timestamp-input'
+						value={inputValue}
+						type='text'
+						onChange={onInputChange}
+					/>
+				</div>
 			</div>
 		</>
 	);

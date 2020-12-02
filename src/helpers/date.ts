@@ -136,6 +136,10 @@ export const isTimeIntersected = (firstRange: [number, number], secondRange: [nu
 	);
 };
 
+export const isTimeInsideInterval = (timestamp: number, interval: [number, number]) => {
+	return timestamp >= interval[0] && timestamp <= interval[1];
+};
+
 export const toUTC = (date: Moment) => {
 	return date.subtract(moment().utcOffset(), 'minutes');
 };
