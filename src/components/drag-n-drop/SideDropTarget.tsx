@@ -32,7 +32,6 @@ const SideDropTarget = (props: SideDropTargetProps) => {
 				<motion.div
 					className='with-side-drop-target__overlay'
 					style={style}
-					positionTransition
 					transition={{
 						bounceDamping: 0,
 						bounceStiffness: 0,

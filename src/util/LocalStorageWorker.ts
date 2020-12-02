@@ -14,13 +14,23 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import moment from 'moment';
 import { EventMessage } from '../models/EventMessage';
-import { Chunk } from '../models/graph';
-import { getTimestampAsNumber } from './date';
 
-export function filterListByChunkRange(chunk: Chunk, list: EventMessage[]) {
-	return list.filter(item =>
-		moment(getTimestampAsNumber(item.timestamp)).isBetween(moment(chunk.from), moment(chunk.to)),
-	);
+class LocalStorageWorker {
+	getPersistedPinnedMessages(): EventMessage[] {
+		try {
+			const stringPersistedPinnedMessages = localStorage.getItem('pinnedMessages');
+			return stringPersistedPinnedMessages ? JSON.parse(stringPersistedPinnedMessages) : [];
+		} catch (error) {
+			return [];
+		}
+	}
+
+	setPersistedPinnedMessages(pinnedMessages: EventMessage[]) {
+		localStorage.setItem('pinnedMessages', JSON.stringify(pinnedMessages));
+	}
 }
+
+const localStorageWorker = new LocalStorageWorker();
+
+export default localStorageWorker;

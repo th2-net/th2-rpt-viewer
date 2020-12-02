@@ -16,7 +16,9 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
-import { Chunk, ChunkData } from '../models/graph';
+import { getTimestampAsNumber, isTimeInsideInterval, isTimeIntersected } from '../helpers/date';
+import { Chunk, ChunkData, IntervalData } from '../models/graph';
+import RootStore from './RootStore';
 
 export const intervalOptions = [15, 30, 60] as const;
 
@@ -25,13 +27,13 @@ export type IntervalOption = typeof intervalOptions[number];
 class GraphStore {
 	public readonly intervalOptions = intervalOptions;
 
-	private readonly steps = {
+	readonly steps = {
 		15: 1,
 		30: 3,
 		60: 5,
 	};
 
-	constructor() {
+	constructor(private rootStore: RootStore) {
 		reaction(
 			() => this.interval,
 			interval => this.createChunks(interval, this.timestamp),
@@ -47,11 +49,21 @@ class GraphStore {
 	public chunks: Chunk[] = [];
 
 	@observable
-	public timestamp: number = moment().utc().subtract(this.interval, 'minutes').valueOf();
+	public timestamp: number = moment().utc().valueOf();
 
-	@computed
-	public get range(): [number, number] {
-		return [this.timestamp, moment(this.timestamp).add(this.interval, 'minutes').valueOf()];
+	@observable range: [number, number] = [
+		moment(this.timestamp)
+			.utc()
+			.subtract(this.interval / 2, 'minutes')
+			.valueOf(),
+		moment(this.timestamp)
+			.utc()
+			.add(this.interval / 2, 'minutes')
+			.valueOf(),
+	];
+
+	@computed get tickSize() {
+		return this.steps[this.interval];
 	}
 
 	@action
@@ -77,12 +89,12 @@ class GraphStore {
 	@action
 	public getChunkData = (chunk: Chunk) => {
 		const { from } = chunk;
-		const step = this.steps[this.interval];
+		const step = this.tickSize;
 		const steps = this.interval / step;
 		const data: ChunkData[] = [];
 		for (let i = 0; i < steps + 1; i++) {
 			data.push({
-				count: getRandomNumber(),
+				events: getRandomNumber(),
 				timestamp: moment(from)
 					.add(step * i, 'minutes')
 					.valueOf(),
@@ -94,6 +106,33 @@ class GraphStore {
 
 		// eslint-disable-next-line no-param-reassign
 		chunk.data = data;
+	};
+
+	@action getIntervalData = (): IntervalData => {
+		const intervalData: IntervalData = {
+			events: 0,
+			passed: 0,
+			failed: 0,
+			messages: 0,
+			connected: 0,
+		};
+		this.chunks.forEach(chunk => {
+			if (isTimeIntersected([chunk.from, chunk.to], this.range)) {
+				chunk.data.forEach(data => {
+					if (isTimeInsideInterval(data.timestamp, this.range)) {
+						intervalData.events += data.events;
+						intervalData.passed += data.passed;
+						intervalData.failed += data.failed;
+						intervalData.messages += data.messages;
+					}
+				});
+			}
+		});
+		intervalData.connected = this.rootStore.windowsStore.selectedStore.attachedMessages.filter(
+			message => isTimeInsideInterval(getTimestampAsNumber(message.timestamp), this.range),
+		).length;
+
+		return intervalData;
 	};
 
 	@action
