@@ -32,18 +32,11 @@ export interface TabDraggableItem {
 	type: 'tab';
 	tabIndex: number;
 	tabRef: React.RefObject<HTMLDivElement>;
-	windowIndex: number;
 }
 
 export interface DraggableTabProps extends TabProps {
 	children: React.ReactNode;
-	onTabDrop: (
-		droppedTabIndex: number,
-		droppedTabWindowIndex: number,
-		targetTabIndex: number,
-		targetWindowIndex: number,
-	) => void;
-	windowIndex: number;
+	onTabDrop: (droppedTabIndex: number, targetTabIndex: number) => void;
 	tabIndex: number;
 	dragItemPayload: unknown;
 	style?: React.CSSProperties;
@@ -56,7 +49,6 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 ) => {
 	const {
 		tabIndex = 0,
-		windowIndex = 0,
 		children,
 		onTabDrop,
 		isSelected,
@@ -74,7 +66,6 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 	const [{ isDragging }, draggableTabRef, preview] = useDrag({
 		item: {
 			tabIndex,
-			windowIndex,
 			type: DraggableItemTypes.TAB,
 			tabRef: rootRef,
 			payload: dragItemPayload,
@@ -97,24 +88,20 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 		const isOver = tab && monitor.isOver();
 		const didDrop = monitor.didDrop();
 		const isSameTab = tab && tabIndex === tab.tabIndex;
-		const isSameWindow = tab && tab.windowIndex === windowIndex;
 		const isNextTab = tab && tabIndex === tab.tabIndex + 1;
 
 		const hoveredLeft = (clientOffset?.x || 0) < tabMiddleX;
 		const hoveredRight = (clientOffset?.x || 0) >= tabMiddleX;
 
-		const isDroppableOnLeft =
-			isOver && !didDrop && hoveredLeft && (!isSameWindow || (!isSameTab && !isNextTab));
+		const isDroppableOnLeft = isOver && !didDrop && hoveredLeft && !isSameTab && !isNextTab;
 
 		const isDroppableOnRight =
 			isOver &&
 			!didDrop &&
-			((!isSameWindow && hoveredRight) ||
-				(!isSameTab && tab.tabIndex !== tabIndex + 1 && hoveredRight));
+			(hoveredRight || (!isSameTab && tab.tabIndex !== tabIndex + 1 && hoveredRight));
 
 		const newActiveTabState = {
 			index: tabIndex,
-			windowIndex,
 			canDropOnLeft: isDroppableOnLeft,
 			canDropOnRight: isDroppableOnRight,
 		};
@@ -131,7 +118,7 @@ const DraggableTab: React.RefForwardingComponent<HTMLDivElement, DraggableTabPro
 		drop: (item: TabDraggableItem) => {
 			if (activeTab && (activeTab.canDropOnLeft || activeTab.canDropOnRight)) {
 				const newTabIndex = activeTab.canDropOnRight ? tabIndex + 1 : tabIndex;
-				onTabDrop(item.windowIndex, windowIndex, item.tabIndex, newTabIndex);
+				onTabDrop(item.tabIndex, newTabIndex);
 			}
 
 			setActiveTab(null);

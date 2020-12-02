@@ -25,6 +25,7 @@ import PanelArea from '../util/PanelArea';
 import { TabTypes } from '../models/util/Windows';
 import { getEventNodeParents, sortEventsByTimestamp } from '../helpers/event';
 import { SelectedStore } from './SelectedStore';
+import WorkspaceStore from './WorkspaceStore';
 
 export type EventStoreURLState = Partial<{
 	type: TabTypes.Events;
@@ -38,8 +39,9 @@ export type EventStoreURLState = Partial<{
 
 export default class EventsStore {
 	constructor(
-		private api: ApiSchema,
+		private workspaceStore: WorkspaceStore,
 		private selectedStore: SelectedStore,
+		private api: ApiSchema,
 		initialState: EventsStore | EventStoreURLState | null,
 	) {
 		this.init(initialState);

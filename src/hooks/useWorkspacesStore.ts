@@ -16,8 +16,8 @@
 
 import { useRootStore } from './useRootStore';
 
-export const useWindowsStore = () => {
+export const useWorkspaces = () => {
 	const rootStore = useRootStore();
 
-	return rootStore.windowsStore;
+	return rootStore.workspacesStore;
 };

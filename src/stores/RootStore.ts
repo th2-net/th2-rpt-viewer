@@ -24,14 +24,14 @@ import { registerUrlMiddleware } from '../helpers/url';
 export default class RootStore {
 	notificationsStore = NotificationsStore;
 
-	windowsStore: WorkspacesStore;
+	workspacesStore: WorkspacesStore;
 
 	viewStore: AppViewStore;
 
 	graphStore = new GraphStore(this);
 
 	constructor(private api: ApiSchema) {
-		this.windowsStore = new WorkspacesStore(this.api, this.parseWorkspacesState());
+		this.workspacesStore = new WorkspacesStore(this.api, this.parseWorkspacesState());
 
 		this.viewStore = new AppViewStore();
 

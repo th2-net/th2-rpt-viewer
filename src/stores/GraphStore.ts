@@ -128,7 +128,7 @@ class GraphStore {
 				});
 			}
 		});
-		intervalData.connected = this.rootStore.windowsStore.selectedStore.attachedMessages.filter(
+		intervalData.connected = this.rootStore.workspacesStore.selectedStore.attachedMessages.filter(
 			message => isTimeInsideInterval(getTimestampAsNumber(message.timestamp), this.range),
 		).length;
 

@@ -81,9 +81,9 @@ ul {
 
 		&:hover:after {
 			content: '';
-			// TODO: delete important
 			height: calc(100% - 16px) !important;
 			border: 2px solid $windowsSplitterColor !important;
+			left: 8px;
 		}
 	}
 

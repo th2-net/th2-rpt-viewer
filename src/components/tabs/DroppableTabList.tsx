@@ -24,7 +24,6 @@ type ActiveTab = {
 	index: number;
 	canDropOnLeft: boolean;
 	canDropOnRight: boolean;
-	windowIndex: number;
 } | null;
 
 interface DroppableTabListState {
@@ -36,10 +35,11 @@ interface DroppableTabListState {
 
 interface DroppableTabListProps {
 	children: React.ReactNode;
-	className: string;
+	className?: string;
 }
 
 const DroppableTabList = (props: DroppableTabListProps) => {
+	const { className = '' } = props;
 	const [activeTab, setActiveTab] = React.useState<ActiveTab | null>(null);
 	const [isDragging, setIsDragging] = React.useState(false);
 
@@ -64,7 +64,7 @@ const DroppableTabList = (props: DroppableTabListProps) => {
 				isDragging,
 				setIsDragging,
 			}}>
-			<div ref={drop} className={`droppable-tab-list ${props.className}`}>
+			<div ref={drop} className={`droppable-tab-list ${className}`}>
 				{props.children}
 			</div>
 		</DraggableTabListContext.Provider>

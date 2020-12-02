@@ -79,9 +79,9 @@ const MessagesWindowTab = (tabProps: Props) => {
 		<DraggableTab {...tabProps} classNames={{ root: 'messages-tab' }} ref={tabRef}>
 			<div className='messages-tab__wrapper'>
 				<div className='messages-tab__title' title='Messages'>
-					{(selectedStore.isLoadingEvents || selectedStore.isLoadingAttachedMessages) && (
+					{/* {(selectedStore.isLoadingEvents || selectedStore.isLoadingAttachedMessages) && (
 						<div className='messages-tab__spinner' />
-					)}
+					)} */}
 					Messages
 				</div>
 				<div className='messages-tab__count-list'>

@@ -39,8 +39,8 @@ export default class TabsStore {
 			this.activeTabIndex = this.activeTabIndex === 0 ? 0 : this.activeTabIndex - 1;
 		}
 		const workspaceToClose = this.workspacesStore.workspaces[tabIndex];
+		workspaceToClose.messagesStore.dispose();
 		this.workspacesStore.deleteWorkspace(workspaceToClose);
-		// TODO: add desposers
 	};
 
 	@action

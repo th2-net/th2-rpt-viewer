@@ -30,6 +30,6 @@ export * from './useParentEvents';
 export * from './usePrevious';
 export * from './useRootStore';
 export * from './useSelectedStore';
-export * from './useWindowsStore';
+export * from './useWorkspacesStore';
 export * from './useSelectListener';
 export * from './useWorkspaceStore';

@@ -672,6 +672,20 @@
 		white-space: nowrap;
 		flex-grow: 0;
 		padding-right: 10px;
+		display: flex;
+    align-items: center;
+	}
+
+	&__spinner {
+		@include spinner(3px, 16px, 2s);
+		margin-right: 6px;
+		display: inline-block;
+	}
+
+	&__count-list {
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
 	}
 
 	&__steps {
@@ -779,7 +793,7 @@
 		line-height: 16px;
 		background-color: white;
 		padding: 0 5px;
-		margin-left: 4px;
+		margin-left: 6px;
 	}
 
 	&__wrapper {

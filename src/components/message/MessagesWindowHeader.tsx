@@ -17,12 +17,21 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useMessagesWorkspaceStore, useMessageUpdateStore } from '../../hooks';
+import {
+	useMessagesWorkspaceStore,
+	useMessageUpdateStore,
+	useWorkspaceEventStore,
+	useSelectedStore,
+	useWorkspaceStore,
+} from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
 
 const MessagesWindowHeader = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messageUpdateStore = useMessageUpdateStore();
+	const eventStore = useWorkspaceEventStore();
+	const selectedStore = useSelectedStore();
+	const workspaceStore = useWorkspaceStore();
 
 	const getStep = () => {
 		const step =
@@ -52,7 +61,20 @@ const MessagesWindowHeader = () => {
 				<MessagesFilter />
 			</div>
 			<div className='messages-window-header__group'>
-				<h2 className='messages-window-header__title'>Messages</h2>
+				<h2 className='messages-window-header__title'>
+					{(selectedStore.isLoadingEvents || workspaceStore.isLoadingAttachedMessages) && (
+						<div className='messages-window-header__spinner' />
+					)}
+					<div className='messages-window-header__count-list'>
+						{eventStore.selectedEvent && (
+							<CountCircle
+								color={selectedStore.eventColors.get(eventStore.selectedEvent.eventId) || ''}
+								count={eventStore.selectedEvent.attachedMessageIds.length}
+							/>
+						)}
+					</div>
+					Messages
+				</h2>
 				<div className='messages-window-header__steps'>
 					<div
 						className={navButtonClass}
@@ -89,3 +111,14 @@ const MessagesWindowHeader = () => {
 };
 
 export default observer(MessagesWindowHeader);
+
+interface CountCircleProps {
+	count: number;
+	color: string;
+}
+
+const CountCircle = ({ color, count }: CountCircleProps) => (
+	<span className='messages-tab__count' style={{ borderColor: color }}>
+		{count}
+	</span>
+);

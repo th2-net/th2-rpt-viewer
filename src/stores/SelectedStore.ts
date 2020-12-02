@@ -17,11 +17,11 @@
 import { action, computed, reaction, observable } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { randomHexColor } from '../helpers/color';
-import { sortMessagesByTimestamp } from '../helpers/message';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './WorkspacesStore';
 import localStorageWorker from '../util/LocalStorageWorker';
+import { sortMessagesByTimestamp } from '../helpers/message';
 
 export class SelectedStore {
 	private readonly defaultColors = [
@@ -37,31 +37,19 @@ export class SelectedStore {
 	public eventColors: Map<string, string> = new Map();
 
 	@observable
-	public attachedMessagesIds: Array<string> = [];
-
-	@observable
-	public attachedMessages: Array<EventMessage> = [];
-
-	@observable
-	public isLoadingAttachedMessages = false;
-
-	@observable
 	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
 
-	constructor(private windowsStore: WorkspacesStore, private api: ApiSchema) {
+	constructor(private workspacesStore: WorkspacesStore, private api: ApiSchema) {
 		reaction(
 			() => this.selectedEvents,
 			selectedEvents => {
 				this.getEventColors(selectedEvents);
-				this.getAttachedMessagesIds(selectedEvents);
 			},
 		);
-
-		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 	}
 
 	@computed get selectedEvents() {
-		return this.windowsStore.eventStores
+		return this.workspacesStore.eventStores
 			.map(eventStore => eventStore.selectedEvent)
 			.filter(
 				(event, i, self): event is EventAction =>
@@ -70,7 +58,13 @@ export class SelectedStore {
 	}
 
 	@computed get isLoadingEvents() {
-		return this.windowsStore.eventStores.some(eventStore => eventStore.isSelectedEventLoading);
+		return this.workspacesStore.eventStores.some(eventStore => eventStore.isSelectedEventLoading);
+	}
+
+	@computed get attachedMessages() {
+		return sortMessagesByTimestamp(
+			this.workspacesStore.workspaces.flatMap(workspace => workspace.attachedMessages),
+		);
 	}
 
 	@action
@@ -109,44 +103,5 @@ export class SelectedStore {
 		});
 
 		this.eventColors = updatedEventColorsMap;
-	};
-
-	@action
-	private getAttachedMessagesIds = (selectedEvents: EventAction[]) => {
-		this.attachedMessagesIds = [
-			...new Set(selectedEvents.flatMap(({ attachedMessageIds }) => attachedMessageIds)),
-		];
-	};
-
-	private attachedMessagesAC: AbortController | null = null;
-
-	@action
-	private getAttachedMessages = async (attachedMessagesIds: string[]) => {
-		this.isLoadingAttachedMessages = true;
-		if (this.attachedMessagesAC) {
-			this.attachedMessagesAC.abort();
-		}
-		this.attachedMessagesAC = new AbortController();
-		try {
-			const cachedMessages = this.attachedMessages.filter(message =>
-				attachedMessagesIds.includes(message.messageId),
-			);
-			const messagesToLoad = attachedMessagesIds.filter(
-				messageId => cachedMessages.findIndex(message => message.messageId === messageId) === -1,
-			);
-			const attachedMessages = await Promise.all(
-				messagesToLoad.map(id => this.api.messages.getMessage(id, this.attachedMessagesAC?.signal)),
-			);
-			this.attachedMessages = sortMessagesByTimestamp(
-				[...cachedMessages, ...attachedMessages].filter(Boolean),
-			);
-		} catch (error) {
-			if (error.name !== 'AbortError') {
-				console.error('Error while loading attached messages', error);
-			}
-		} finally {
-			this.attachedMessagesAC = null;
-			this.isLoadingAttachedMessages = false;
-		}
 	};
 }

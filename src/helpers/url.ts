@@ -49,7 +49,7 @@ export function createURLSearchParams(
 
 export function registerUrlMiddleware(rootStore: RootStore) {
 	autorun(() => {
-		const activeWorkspace = rootStore.windowsStore.activeWorkspace;
+		const activeWorkspace = rootStore.workspacesStore.activeWorkspace;
 		let eventStoreState: EventStoreURLState = {};
 
 		const eventsStore = activeWorkspace.eventsStore;

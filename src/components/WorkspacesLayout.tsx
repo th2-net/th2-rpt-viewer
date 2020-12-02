@@ -18,7 +18,7 @@ import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import Workspace from './Workspace';
 import { WorkspaceContextProvider } from '../contexts/workspaceContext';
-import { useWindowsStore } from '../hooks';
+import { useWorkspaces } from '../hooks';
 import EventsWindowTab from './event/EventsWindowTab';
 import Tabs, { TabListRenderProps } from './tabs/Tabs';
 import { TabTypes } from '../models/util/Windows';
@@ -26,12 +26,12 @@ import DroppableTabList from './tabs/DroppableTabList';
 import '../styles/root.scss';
 
 const WorkspacesLayout = () => {
-	const windowsStore = useWindowsStore();
+	const workspacesStore = useWorkspaces();
 
 	const renderTabs: TabListRenderProps = renderProps => {
 		const { activeTabIndex, ...tabProps } = renderProps;
 
-		return windowsStore.workspaces.map((workspace, index) => {
+		return workspacesStore.workspaces.map((workspace, index) => {
 			return (
 				<Observer key={`events-tab-${index}`}>
 					{() => (
@@ -44,11 +44,10 @@ const WorkspacesLayout = () => {
 							}}
 							tabIndex={index}
 							isSelected={activeTabIndex === index}
-							isClosable={windowsStore.workspaces.length > 1}
-							isDuplicable={!windowsStore.isFull}
-							windowIndex={0}
-							onTabDrop={windowsStore.moveTab}
-							tabCount={windowsStore.workspaces.length}
+							isClosable={workspacesStore.workspaces.length > 1}
+							isDuplicable={!workspacesStore.isFull}
+							onTabDrop={workspacesStore.moveTab}
+							tabCount={workspacesStore.workspaces.length}
 							{...tabProps}
 						/>
 					)}
@@ -59,14 +58,14 @@ const WorkspacesLayout = () => {
 
 	return (
 		<Tabs
-			activeIndex={windowsStore.tabsStore.activeTabIndex}
-			onChange={windowsStore.tabsStore.setActiveWorkspace}
-			closeTab={windowsStore.tabsStore.closeWorkspace}
-			duplicateTab={windowsStore.tabsStore.duplicateWorkspace}
+			activeIndex={workspacesStore.tabsStore.activeTabIndex}
+			onChange={workspacesStore.tabsStore.setActiveWorkspace}
+			closeTab={workspacesStore.tabsStore.closeWorkspace}
+			duplicateTab={workspacesStore.tabsStore.duplicateWorkspace}
 			tabList={tabListInjectedProps => (
-				<DroppableTabList className=''>{renderTabs(tabListInjectedProps)}</DroppableTabList>
+				<DroppableTabList>{renderTabs(tabListInjectedProps)}</DroppableTabList>
 			)}
-			tabPanels={windowsStore.workspaces.map((workspace, index) => (
+			tabPanels={workspacesStore.workspaces.map((workspace, index) => (
 				<WorkspaceContextProvider value={workspace} key={index}>
 					<Workspace />
 				</WorkspaceContextProvider>
