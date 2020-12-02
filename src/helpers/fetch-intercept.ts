@@ -28,11 +28,27 @@ export const registerFetchInterceptor = () =>
 		response(response) {
 			if (!response.ok) {
 				const { url, status, statusText } = response;
-				NotificationsStore.addResponseError({
-					type: 'error',
-					resource: url,
-					responseCode: status,
-					responseBody: statusText,
+				let header: string;
+				switch (status) {
+					case 404:
+						header = "Storage doesn't contain the requested data.";
+						break;
+					case 503:
+					case 502:
+						header = 'rpt-data-provider is unavailable. Try again later.';
+						break;
+					default:
+						header = statusText;
+						break;
+				}
+				response.text().then(text => {
+					NotificationsStore.addResponseError({
+						type: 'error',
+						header,
+						resource: url,
+						responseCode: status,
+						responseBody: text,
+					});
 				});
 			}
 			return response;
