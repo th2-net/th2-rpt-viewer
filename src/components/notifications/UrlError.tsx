@@ -18,12 +18,12 @@ import React, { useState } from 'react';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { createStyleSelector } from '../../helpers/styleCreators';
 
-interface UrlEroorProps {
+interface UrlErrorProps {
 	link: string | null | undefined;
 	error: Error;
 }
 
-export default function UrlError(props: UrlEroorProps) {
+export default function UrlError(props: UrlErrorProps) {
 	const { link, error } = props;
 	const [copied, setCopied] = useState(false);
 	const copyDetailsText = createStyleSelector('copy-details__text', copied ? 'copied' : null);

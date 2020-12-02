@@ -28,7 +28,7 @@ import '../styles/root.scss';
 
 const App = () => (
 	<div className='app'>
-		<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={0}>
+		<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={400}>
 			<Graph />
 			<DndProvider backend={HTML5Backend}>
 				<CustomDragLayer />
@@ -36,7 +36,7 @@ const App = () => (
 					<WorkspacesLayout />
 				</div>
 			</DndProvider>
-			{/* <Notifier /> */}
+			<Notifier />
 		</ToastProvider>
 	</div>
 );
