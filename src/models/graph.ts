@@ -22,8 +22,16 @@ export interface Chunk {
 
 export interface ChunkData {
 	timestamp: number;
-	count: number;
+	events: number;
 	passed: number;
 	failed: number;
 	messages: number;
+}
+
+export interface IntervalData {
+	events: number;
+	passed: number;
+	failed: number;
+	messages: number;
+	connected: number;
 }

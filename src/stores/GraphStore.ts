@@ -16,8 +16,9 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
-import { toUTC } from '../helpers/date';
-import { Chunk, ChunkData } from '../models/graph';
+import { getTimestampAsNumber, isTimeInsideInterval, isTimeIntersected } from '../helpers/date';
+import { Chunk, ChunkData, IntervalData } from '../models/graph';
+import RootStore from './RootStore';
 
 export const intervalOptions = [15, 30, 60] as const;
 
@@ -32,7 +33,7 @@ class GraphStore {
 		60: 5,
 	};
 
-	constructor() {
+	constructor(private rootStore: RootStore) {
 		reaction(
 			() => this.interval,
 			interval => this.createChunks(interval, this.timestamp),
@@ -93,7 +94,7 @@ class GraphStore {
 		const data: ChunkData[] = [];
 		for (let i = 0; i < steps + 1; i++) {
 			data.push({
-				count: getRandomNumber(),
+				events: getRandomNumber(),
 				timestamp: moment(from)
 					.add(step * i, 'minutes')
 					.valueOf(),
@@ -105,6 +106,33 @@ class GraphStore {
 
 		// eslint-disable-next-line no-param-reassign
 		chunk.data = data;
+	};
+
+	@action getIntervalData = (): IntervalData => {
+		const intervalData: IntervalData = {
+			events: 0,
+			passed: 0,
+			failed: 0,
+			messages: 0,
+			connected: 0,
+		};
+		this.chunks.forEach(chunk => {
+			if (isTimeIntersected([chunk.from, chunk.to], this.range)) {
+				chunk.data.forEach(data => {
+					if (isTimeInsideInterval(data.timestamp, this.range)) {
+						intervalData.events += data.events;
+						intervalData.passed += data.passed;
+						intervalData.failed += data.failed;
+						intervalData.messages += data.messages;
+					}
+				});
+			}
+		});
+		intervalData.connected = this.rootStore.windowsStore.selectedStore.attachedMessages.filter(
+			message => isTimeInsideInterval(getTimestampAsNumber(message.timestamp), this.range),
+		).length;
+
+		return intervalData;
 	};
 
 	@action
