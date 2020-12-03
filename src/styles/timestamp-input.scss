@@ -18,10 +18,11 @@
 
 .timestamp-input {
 	position: relative;
+	min-width: 220px;
   &__input {
 		width: 100%;
 		box-sizing: border-box;
-		padding: 5px 9px;
+		padding: 5px 24px 5px 9px;
 		border: 1px solid $timestampInputBorderColor;
 		border-radius: 4px;
 		font-size: 10px;
@@ -31,16 +32,12 @@
 		&::placeholder {
 			font-style: italic;
 		}
-		&:focus {
-			box-shadow: 4px 8px 6px 0 rgba(0, 0, 0, 0.4);
-		}
 	}
 	&__datepicker-button {
 		@include icon(url(../../resources/icons/dateselect.svg), 15px, 15px);
 		position: absolute;
-		top: 50%;
+		top: 6px;
 		right: 5px;
-		transform: translateY(-50%);
 		background-color: transparent;
 		outline: none;
 		border: none;

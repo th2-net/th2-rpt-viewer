@@ -27,6 +27,7 @@ import { EventMessage } from '../../models/EventMessage';
 import { Chunk } from '../../models/graph';
 import { filterListByChunkRange } from '../../helpers/graph';
 import '../../styles/graph.scss';
+import TimestampInput from '../util/TimestampInput';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -44,7 +45,6 @@ function Graph() {
 	const selectedStore = useSelectedStore();
 
 	const [chunkWidth, setChunkWidth] = React.useState(getChunkWidth);
-	const [inputState, setInputState] = React.useState(graphStore.timestamp.toString());
 
 	const [expandedAttachedItem, setExpandedAttachedItem] = React.useState<
 		EventAction | EventMessage | null
@@ -109,10 +109,9 @@ function Graph() {
 	// 		))}
 	// 	</select>
 
-	const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (new Date(parseInt(e.target.value)).valueOf() > 1) {
-			graphStore.setTimestamp(parseInt(e.target.value));
-			setInputState(e.target.value);
+	const onInputSubmit = (timestamp: number) => {
+		if (new Date(timestamp).valueOf() > 1) {
+			graphStore.setTimestamp(timestamp);
 		}
 	};
 
@@ -129,8 +128,7 @@ function Graph() {
 			<OverlayPanels
 				chunkWidth={chunkWidth}
 				range={graphStore.range}
-				inputValue={inputState}
-				onInputChange={onChangeHandler}
+				onInputSubmit={onInputSubmit}
 			/>
 		</div>
 	);
@@ -141,16 +139,10 @@ export default observer(Graph);
 interface OverlayPanelProps {
 	chunkWidth: number;
 	range: [number, number];
-	inputValue: string;
-	onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+	onInputSubmit: (timestamp: number) => void;
 }
 
-const OverlayPanels = ({
-	chunkWidth,
-	range: [from, to],
-	inputValue,
-	onInputChange,
-}: OverlayPanelProps) => {
+const OverlayPanels = ({ chunkWidth, range: [from, to], onInputSubmit }: OverlayPanelProps) => {
 	const graphStore = useGraphStore();
 	const overlayWidth = (window.innerWidth - chunkWidth) / 2;
 	const commonStyles: React.CSSProperties = { width: overlayWidth };
@@ -186,11 +178,9 @@ const OverlayPanels = ({
 							<span className='graph-range-selector__counter-value'>{`${value} ${key}`}</span>
 						</div>
 					))}
-					<input
-						className='graph-range-selector__timestamp-input'
-						value={inputValue}
-						type='text'
-						onChange={onInputChange}
+					<TimestampInput
+						wrapperClassName='graph-range-selector__timestamp-input timestamp-input'
+						onSubmit={onInputSubmit}
 					/>
 				</div>
 			</div>
