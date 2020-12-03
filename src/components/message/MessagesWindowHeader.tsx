@@ -65,15 +65,15 @@ const MessagesWindowHeader = () => {
 					{(selectedStore.isLoadingEvents || workspaceStore.isLoadingAttachedMessages) && (
 						<div className='messages-window-header__spinner' />
 					)}
+					Messages
 					<div className='messages-window-header__count-list'>
-						{eventStore.selectedEvent && (
+						{eventStore.selectedEvent && eventStore.selectedEvent.attachedMessageIds.length > 0 && (
 							<CountCircle
 								color={selectedStore.eventColors.get(eventStore.selectedEvent.eventId) || ''}
 								count={eventStore.selectedEvent.attachedMessageIds.length}
 							/>
 						)}
 					</div>
-					Messages
 				</h2>
 				<div className='messages-window-header__steps'>
 					<div
@@ -118,7 +118,7 @@ interface CountCircleProps {
 }
 
 const CountCircle = ({ color, count }: CountCircleProps) => (
-	<span className='messages-tab__count' style={{ borderColor: color }}>
+	<span className='messages-window-header__count' style={{ borderColor: color }}>
 		{count}
 	</span>
 );
