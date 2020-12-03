@@ -14,21 +14,23 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { hot } from 'react-hot-loader/root';
-import * as React from 'react';
-import { ToastProvider } from 'react-toast-notifications';
-import Toast from './notifications/Toast';
-import EventsLayout from './event/EventsLayout';
-import Notifier from './notifications/Notifier';
-import '../styles/root.scss';
+import { EventMessage } from '../models/EventMessage';
 
-const App = () => (
-	<div className='root'>
-		<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={0}>
-			<EventsLayout />
-			{/* <Notifier /> */}
-		</ToastProvider>
-	</div>
-);
+class LocalStorageWorker {
+	getPersistedPinnedMessages(): EventMessage[] {
+		try {
+			const stringPersistedPinnedMessages = localStorage.getItem('pinnedMessages');
+			return stringPersistedPinnedMessages ? JSON.parse(stringPersistedPinnedMessages) : [];
+		} catch (error) {
+			return [];
+		}
+	}
 
-export default hot(App);
+	setPersistedPinnedMessages(pinnedMessages: EventMessage[]) {
+		localStorage.setItem('pinnedMessages', JSON.stringify(pinnedMessages));
+	}
+}
+
+const localStorageWorker = new LocalStorageWorker();
+
+export default localStorageWorker;

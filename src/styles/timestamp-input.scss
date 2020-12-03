@@ -14,66 +14,36 @@
  * limitations under the License.
  ******************************************************************************/
 
-@import './common/vars';
+ @import './common/vars';
 
-svg g {
-	user-select: none;
-}
-
-body {
-	margin: 0;
-	font-family: Open sans;
-	div {
+.timestamp-input {
+	position: relative;
+  &__input {
+		width: 100%;
 		box-sizing: border-box;
+		padding: 5px 9px;
+		border: 1px solid $timestampInputBorderColor;
+		border-radius: 4px;
+		font-size: 10px;
+		outline: none;
+		transition: box-shadow ease-in-out 320ms;
+		box-shadow: none;
+		&::placeholder {
+			font-style: italic;
+		}
+		&:focus {
+			box-shadow: 4px 8px 6px 0 rgba(0, 0, 0, 0.4);
+		}
 	}
-
-	overflow: hidden;
-}
-
-#index {
-	width: 100vw;
-	height: 100vh;
-	box-sizing: border-box;
-	overflow: hidden;
-}
-
-.root {
-	display: block;
-	width: 100%;
-	height: 100%;
-	overflow: hidden;
-
-	div:focus {
-		outline: unset;
-	}
-}
-
-p,
-h1,
-h2,
-h3,
-h4,
-h5,
-pre {
-	margin: 0;
-	padding: 0;
-	border: 0;
-	vertical-align: baseline;
-}
-
-ul {
-	list-style: none;
-	padding: 0;
-	margin: 0;
-}
-
-.splash-screen {
-	width: 100%;
-	height: 100%;
-	display: grid;
-	place-items: center;
-
-	&__spinner {
-		@include spinner(5px, 40px, 2s);
+	&__datepicker-button {
+		@include icon(url(../../resources/icons/dateselect.svg), 15px, 15px);
+		position: absolute;
+		top: 50%;
+		right: 5px;
+		transform: translateY(-50%);
+		background-color: transparent;
+		outline: none;
+		border: none;
+		cursor: pointer;
 	}
 }

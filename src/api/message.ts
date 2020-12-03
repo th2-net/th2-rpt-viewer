@@ -74,7 +74,7 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	getMessage: async (id: string, signal?: AbortSignal, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(`backend/message/${id}${params}`, { signal });
+		const res = await fetch(`backend/message/${id}?${params}`, { signal });
 
 		if (res.ok) {
 			return res.json();

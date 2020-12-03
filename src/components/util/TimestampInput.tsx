@@ -18,8 +18,11 @@ import * as React from 'react';
 import eventHttpApi from '../../api/event';
 import messageHttpApi from '../../api/message';
 import { formatTimestampValue } from '../../helpers/date';
+import { createBemElement } from '../../helpers/styleCreators';
+import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { DateTimeMask } from '../../models/filter/FilterInputs';
 import Timestamp from '../../models/Timestamp';
+import '../../styles/timestamp-input.scss';
 
 const getTimestamp = (timestamp: Timestamp) => {
 	const ms = Math.floor(timestamp.nano / 1000000);
@@ -29,59 +32,121 @@ const getTimestamp = (timestamp: Timestamp) => {
 const dateFormatPattern = /[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])/g;
 
 interface Props {
+	wrapperClassName?: string;
 	className?: string;
 	style?: React.CSSProperties;
 	readonly?: boolean;
 	placeholder?: string;
+	datepicker?: boolean;
 }
 
 const TimestampInput = (props: Props) => {
-	const { readonly = false, className = '', placeholder = '', style } = props;
+	const {
+		wrapperClassName = 'timestamp-input',
+		datepicker = true,
+		readonly = false,
+		className = '',
+		placeholder = 'Go to ID or Timestamp',
+		style,
+	} = props;
 
 	const [currentValue, setCurrentValue] = React.useState<string>('');
-	const ref = React.useRef<HTMLInputElement | null>(null);
+	const [focus, setFocus] = React.useState<boolean>(false);
+	const [currentTimestamp, setCurrentTimestamp] = React.useState<number | null>(null);
+	const [showPicker, setShowPicker] = React.useState<boolean>(false);
+
+	const wrapperRef = React.useRef<HTMLDivElement | null>(null);
+
+	const outsideClickListener = () => {
+		setShowPicker(false);
+	};
+
+	useOutsideClickListener(wrapperRef, outsideClickListener);
+
+	React.useEffect(() => {
+		const date = currentValue.split(' ')[0];
+		const eventAbortController = new AbortController();
+		const messageAbortController = new AbortController();
+
+		if (!focus && currentValue !== '' && !dateFormatPattern.test(date)) {
+			const event = getEvent(currentValue, eventAbortController.signal);
+			const message = getMessage(currentValue, messageAbortController.signal);
+
+			event.then(e => {
+				if (!e) {
+					return;
+				}
+				messageAbortController.abort();
+				const timestamp = getTimestamp(e.startTimestamp);
+				setCurrentTimestamp(timestamp);
+			});
+
+			message.then(m => {
+				if (!m) {
+					return;
+				}
+				eventAbortController.abort();
+				const timestamp = getTimestamp(m.timestamp);
+				setCurrentTimestamp(timestamp);
+			});
+		}
+		return () => {
+			eventAbortController.abort();
+			messageAbortController.abort();
+		};
+	}, [focus, currentValue]);
+
+	React.useEffect(() => {
+		const timestamp = formatTimestampValue(currentTimestamp, DateTimeMask.DATE_TIME_MASK);
+		setCurrentValue(timestamp);
+	}, [currentTimestamp]);
+
+	const getMessage = async (messageId: string, signal: AbortSignal) => {
+		const message = await messageHttpApi.getMessage(messageId, signal, { probe: true });
+		return message;
+	};
+
+	const getEvent = async (eventId: string, signal: AbortSignal) => {
+		const event = await eventHttpApi.getEvent(eventId, signal, { probe: true });
+		return event;
+	};
+
+	const toggleDatepicker = () => {
+		setShowPicker(currentShowPicker => !currentShowPicker);
+	};
 
 	const onChange: React.ChangeEventHandler<HTMLInputElement> = e => {
 		setCurrentValue(e.target.value);
 	};
 
-	const getTimestampFromMessage = async (messageId: string) => {
-		const message = await messageHttpApi.getMessage(messageId, undefined, { probe: true });
-		if (!message) {
-			return;
-		}
-		const timestamp = getTimestamp(message.timestamp);
-		setCurrentValue(formatTimestampValue(timestamp, DateTimeMask.DATE_TIME_MASK));
+	const onInputBlur = () => {
+		setFocus(false);
 	};
 
-	const getTimestampFromEventOrMessage = async (eventId: string) => {
-		const event = await eventHttpApi.getEvent(eventId, undefined, { probe: true });
-		if (!event) {
-			getTimestampFromMessage(eventId);
-			return;
-		}
-		const timestamp = getTimestamp(event.startTimestamp);
-		setCurrentValue(formatTimestampValue(timestamp, DateTimeMask.DATE_TIME_MASK));
+	const onInputFocus = () => {
+		setFocus(true);
 	};
 
-	const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-		const date = e.target.value.split(' ')[0];
-		if (!dateFormatPattern.test(date)) {
-			getTimestampFromEventOrMessage(e.target.value);
-		}
-	};
+	const inputClassName = createBemElement(wrapperClassName, 'input');
+	const datepickerButtonClassName = createBemElement(wrapperClassName, 'datepicker-button');
 
 	const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
-		className,
+		className: `${inputClassName}${className ? ` ${className}` : ''}`,
 		style,
 		readOnly: readonly,
 		value: currentValue,
 		placeholder,
 		onChange,
-		onBlur,
+		onFocus: onInputFocus,
+		onBlur: onInputBlur,
 	};
 
-	return <input {...inputProps} ref={ref} />;
+	return (
+		<div className={wrapperClassName} ref={wrapperRef}>
+			<input {...inputProps} />
+			{datepicker && <button className={datepickerButtonClassName} onClick={toggleDatepicker} />}
+		</div>
+	);
 };
 
 TimestampInput.displayName = 'TimestampInput';

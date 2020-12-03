@@ -1,4 +1,4 @@
-/******************************************************************************
+/** *****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,29 +12,26 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-@import './common/vars';
+export interface Chunk {
+	from: number;
+	to: number;
+	data: Array<ChunkData>;
+}
 
-.with-side-drop-target {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	overflow: hidden;
-	position: relative;
+export interface ChunkData {
+	timestamp: number;
+	events: number;
+	passed: number;
+	failed: number;
+	messages: number;
+}
 
-	&__root {
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-	}
-
-	&__overlay {
-		background-color: rgba($color: #7db3e8, $alpha: 0.5);
-		border: 2px solid $draggableColor;
-		position: absolute;
-		right: 0;
-		top: 0;
-		z-index: 20;
-	}
+export interface IntervalData {
+	events: number;
+	passed: number;
+	failed: number;
+	messages: number;
+	connected: number;
 }

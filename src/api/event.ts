@@ -42,7 +42,7 @@ const eventHttpApi: EventApiSchema = {
 	},
 	getEvent: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(`backend/event/${id}${params}`, { signal });
+		const res = await fetch(`backend/event/${id}?${params}`, { signal });
 
 		if (res.ok) {
 			return res.json();

@@ -25,6 +25,7 @@ import { MessagesStoreURLState } from './MessagesStore';
 import { getObjectKeys } from '../helpers/object';
 import NotificationsStore from './NotificationsStore';
 import { getEventNodeParents } from '../helpers/event';
+import GraphStore from './GraphStore';
 
 export default class RootStore {
 	notificationsStore = NotificationsStore;
@@ -32,6 +33,8 @@ export default class RootStore {
 	windowsStore: WindowsStore;
 
 	viewStore: AppViewStore;
+
+	graphStore = new GraphStore(this);
 
 	constructor(private api: ApiSchema) {
 		this.windowsStore = new WindowsStore(this.api, this.parseWindowsState());

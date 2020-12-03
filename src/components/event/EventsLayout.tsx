@@ -18,14 +18,15 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { CustomDragLayer } from '../drag-n-drop/CustomDragLayer';
-import { useWindowsStore } from '../../hooks/useWindowsStore';
 import SplitView from '../split-view/SplitView';
 import SplitViewPane from '../split-view/SplitViewPane';
 import AppWindow from '../AppWindow';
+import Graph from '../graph/Graph';
+import { CustomDragLayer } from '../drag-n-drop/CustomDragLayer';
+import { useWindowsStore } from '../../hooks/useWindowsStore';
 import { useAppViewStore } from '../../hooks/useAppViewStore';
-import '../../styles/layout.scss';
 import { EventsTab } from '../../models/util/Windows';
+import '../../styles/layout.scss';
 
 const EventsLayout = () => {
 	const windowsStore = useWindowsStore();
@@ -34,6 +35,7 @@ const EventsLayout = () => {
 
 	return (
 		<div className='events-layout'>
+			<Graph />
 			<DndProvider backend={HTML5Backend}>
 				<CustomDragLayer />
 				{windowsStore.windows.length === 1 && (

@@ -21,6 +21,7 @@ import { sortMessagesByTimestamp } from '../helpers/message';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import WindowsStore from './WindowsStore';
+import localStorageWorker from '../util/LocalStorageWorker';
 
 export class SelectedStore {
 	private readonly defaultColors = [
@@ -45,7 +46,7 @@ export class SelectedStore {
 	public isLoadingAttachedMessages = false;
 
 	@observable
-	public pinnedMessages: Array<EventMessage> = [];
+	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
 
 	constructor(private windowsStore: WindowsStore, private api: ApiSchema) {
 		reaction(
@@ -79,6 +80,7 @@ export class SelectedStore {
 		} else {
 			this.pinnedMessages = this.pinnedMessages.filter(msg => msg.messageId !== message.messageId);
 		}
+		localStorageWorker.setPersistedPinnedMessages(this.pinnedMessages);
 	};
 
 	@action
