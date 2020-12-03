@@ -22,6 +22,7 @@ interface Notification {
 }
 interface ResponseError extends Notification {
 	resource: string;
+	header: string;
 	responseBody: string;
 	responseCode: number;
 }
