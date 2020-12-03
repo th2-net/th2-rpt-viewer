@@ -18,7 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SearchInput from '../search/SearchInput';
 import EventsFilterPanel from '../filter/EventsFilterPanel';
-import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import { useWorkspaceEventStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
 
 interface EventWindowHeaderProps {
@@ -27,7 +27,7 @@ interface EventWindowHeaderProps {
 
 function EventWindowHeader(props: EventWindowHeaderProps) {
 	const { isWindowActive } = props;
-	const eventStore = useEventWindowStore();
+	const eventStore = useWorkspaceEventStore();
 
 	const flattenButtonClassName = createBemElement(
 		'event-window-header',

@@ -17,9 +17,8 @@
 import * as React from 'react';
 import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
 import { defaultMessagesLoadingState } from '../../stores/MessagesStore';
-import useAsyncEffect from '../../hooks/useAsyncEffect';
+import { useAsyncEffect, useMessagesWorkspaceStore } from '../../hooks';
 import { raf } from '../../helpers/raf';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
@@ -42,7 +41,7 @@ interface Props {
 }
 
 const MessagesVirtualizedList = (props: Props) => {
-	const messageStore = useMessagesWindowStore();
+	const messageStore = useMessagesWorkspaceStore();
 
 	const virtuoso = React.useRef<VirtuosoMethods>(null);
 

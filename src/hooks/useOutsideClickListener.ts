@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 
-export default function useOutsideClickListener(
+export function useOutsideClickListener(
 	ref: React.MutableRefObject<HTMLElement | null>,
 	handler: (e: MouseEvent) => void,
 ) {

@@ -16,20 +16,18 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import { useMessagesWorkspaceStore, useHeatmap, useSelectedStore } from '../../hooks';
 import { getHashCode } from '../../helpers/stringHash';
 import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
 import { formatTime, getTimestampAsNumber } from '../../helpers/date';
 import { keyForMessage } from '../../helpers/keys';
 import StateSaver from '../util/StateSaver';
 import { EventMessage } from '../../models/EventMessage';
-import { useHeatmap } from '../../hooks/useHeatmap';
 import { hexToRGBA } from '../../helpers/color';
 import MessageRaw from './MessageRaw';
 import PanelArea from '../../util/PanelArea';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import ErrorBoundary from '../util/ErrorBoundary';
-import { useSelectedStore } from '../../hooks/useSelectedStore';
 import '../../styles/messages.scss';
 
 const HUE_SEGMENTS_COUNT = 36;
@@ -46,7 +44,7 @@ export interface RecoveredProps {
 interface Props extends OwnProps, RecoveredProps {}
 
 function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
-	const messagesStore = useMessagesWindowStore();
+	const messagesStore = useMessagesWorkspaceStore();
 	const selectedStore = useSelectedStore();
 	const { heatmapElements } = useHeatmap();
 

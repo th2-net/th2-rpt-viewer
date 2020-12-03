@@ -18,8 +18,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import MessageCardSkeleton from './MessageCardSkeleton';
 import MessageCard from './MessageCard';
-import useAsyncEffect from '../../hooks/useAsyncEffect';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import { useAsyncEffect, useMessagesWorkspaceStore } from '../../hooks';
 import ErrorMessageFallback from './MessageErrorFallback';
 
 interface Props {
@@ -27,7 +26,7 @@ interface Props {
 }
 
 function SkeletonedMessageCardListItem({ id }: Props) {
-	const messagesStore = useMessagesWindowStore();
+	const messagesStore = useMessagesWorkspaceStore();
 	const message = messagesStore.messagesCache.get(id);
 	const [isError, setIsError] = React.useState(false);
 

@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import { useMessagesWorkspaceStore } from '../../hooks';
 import DetailedMessageRaw from './DetailedMessageRaw';
 import SimpleMessageRaw from './SimpleMessageRaw';
 import { createBemElement } from '../../helpers/styleCreators';
@@ -32,7 +32,7 @@ interface Props {
 }
 
 function MessageRaw({ rawContent, messageId }: Props) {
-	const messagesStore = useMessagesWindowStore();
+	const messagesStore = useMessagesWorkspaceStore();
 
 	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
 	const displayIconClass = createBemElement('mc-raw', 'display-btn', isDetailed ? 'active' : null);

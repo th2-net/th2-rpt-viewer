@@ -14,10 +14,17 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useRootStore } from './useRootStore';
+import React from 'react';
+import WorkspaceStore from '../stores/WorkspaceStore';
 
-export const useWindowsStore = () => {
-	const rootStore = useRootStore();
+const WorkspaceContext = React.createContext<WorkspaceStore | null>(null);
 
-	return rootStore.windowsStore;
-};
+interface WorkspaceContextProviderProps {
+	children: React.ReactNode;
+	value: WorkspaceStore;
+}
+const WorkspaceContextProvider = ({ children, value }: WorkspaceContextProviderProps) => (
+	<WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>
+);
+
+export { WorkspaceContext, WorkspaceContextProvider };

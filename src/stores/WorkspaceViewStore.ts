@@ -23,7 +23,7 @@ type InitialState = Partial<{
 	flattenedListView: boolean;
 }>;
 
-export default class WindowViewStore {
+export default class WorkspaceViewStore {
 	constructor(initalState?: InitialState) {
 		if (initalState) {
 			this.init(initalState);
@@ -32,7 +32,7 @@ export default class WindowViewStore {
 
 	@observable isLoading = true;
 
-	@observable panelArea: PanelArea = PanelArea.P100;
+	@observable panelArea: PanelArea = PanelArea.P50;
 
 	@observable flattenedListView = false;
 

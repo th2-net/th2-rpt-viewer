@@ -18,13 +18,12 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import MessagesWindowHeader from './MessagesWindowHeader';
 import { HeatmapProvider } from '../heatmap/HeatmapProvider';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import { useMessagesWorkspaceStore, useSelectedStore } from '../../hooks';
 import MessagesCardList from './MessagesCardList';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { useSelectedStore } from '../../hooks/useSelectedStore';
 
 const MessagesWindow = () => {
-	const messagesStore = useMessagesWindowStore();
+	const messagesStore = useMessagesWorkspaceStore();
 	const selectedStore = useSelectedStore();
 
 	const selectedItems = React.useMemo(() => {
@@ -88,11 +87,11 @@ const MessagesWindow = () => {
 			selectedItems={selectedItems}
 			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}
 			pinnedItems={selectedStore.pinnedMessages.map(m => m.messageId)}>
-			<div className='layout'>
-				<div className='layout__header'>
+			<div className='window'>
+				<div className='window__header'>
 					<MessagesWindowHeader />
 				</div>
-				<div className='layout__body'>
+				<div className='window__body'>
 					<MessagesCardList />
 				</div>
 			</div>

@@ -17,14 +17,14 @@
 import * as React from 'react';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { showNotification } from '../../helpers/showNotification';
-import useSelectListener from '../../hooks/useSelectListener';
-import '../../styles/messages.scss';
+import { useSelectListener } from '../../hooks';
 import {
 	decodeBase64RawContent,
 	getRawContent,
 	mapHumanReadableOffsetsToOctetOffsets,
 	mapOctetOffsetsToHumanReadableOffsets,
 } from '../../helpers/rawFormatter';
+import '../../styles/messages.scss';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 

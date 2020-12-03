@@ -14,15 +14,11 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import { EventWindowContext } from '../contexts/eventWindowContext';
+import EventsStore from '../stores/EventsStore';
+import { useWorkspaceStore } from './useWorkspaceStore';
 
-export const useEventWindowStore = () => {
-	const eventWindowStore = React.useContext(EventWindowContext);
+export const useWorkspaceEventStore = (): EventsStore => {
+	const workspaceStore = useWorkspaceStore();
 
-	if (!eventWindowStore) {
-		throw new Error('EventWindowContext should be used inside of EventWindowStoreProvider');
-	}
-
-	return eventWindowStore;
+	return workspaceStore.eventsStore;
 };

@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { replaceNonPrintableCharsWithDot } from '../../helpers/stringUtils';
-import useSelectListener from '../../hooks/useSelectListener';
+import { useSelectListener } from '../../hooks';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 
 interface Props {

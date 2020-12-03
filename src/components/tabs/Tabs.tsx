@@ -31,7 +31,6 @@ interface Props {
 	tabList: TabListRenderProps;
 	tabPanels: React.ReactNode[];
 	activeIndex: number;
-	setActiveWindow: () => void;
 	onChange: (tabIndex: number) => void;
 	closeTab: (tabIndex: number) => void;
 	duplicateTab: (tabIndex: number) => void;
@@ -48,26 +47,12 @@ const Tabs = (props: Props) => {
 		tabPanels,
 		activeIndex,
 		onChange,
-		setActiveWindow,
 		closeTab,
 		duplicateTab,
 		classNames = {},
 	} = props;
 	const [activeTabIndex, setActiveTabIndex] = React.useState(0);
 	const ref = React.useRef<HTMLDivElement | null>(null);
-
-	const documentClickHandler = (e: MouseEvent) => {
-		if (ref.current?.contains(e.target as HTMLElement)) {
-			setActiveWindow();
-		}
-	};
-
-	React.useEffect(() => {
-		document.addEventListener('click', documentClickHandler);
-		return () => {
-			document.removeEventListener('click', documentClickHandler);
-		};
-	}, []);
 
 	React.useEffect(() => {
 		if (activeIndex !== activeTabIndex) {

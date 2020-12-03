@@ -14,93 +14,35 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { autorun, toJS } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import AppViewStore from './AppViewStore';
-import WindowsStore, { WindowsUrlState } from './WindowsStore';
-import { isEventsTab, isMessagesTab } from '../helpers/windows';
-import { TabTypes } from '../models/util/Windows';
-import { EventStoreURLState } from './EventsStore';
-import { MessagesStoreURLState } from './MessagesStore';
-import { getObjectKeys } from '../helpers/object';
+import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
 import NotificationsStore from './NotificationsStore';
-import { getEventNodeParents } from '../helpers/event';
 import GraphStore from './GraphStore';
+import { registerUrlMiddleware } from '../helpers/url';
 
 export default class RootStore {
 	notificationsStore = NotificationsStore;
 
-	windowsStore: WindowsStore;
+	workspacesStore: WorkspacesStore;
 
 	viewStore: AppViewStore;
 
 	graphStore = new GraphStore(this);
 
 	constructor(private api: ApiSchema) {
-		this.windowsStore = new WindowsStore(this.api, this.parseWindowsState());
+		this.workspacesStore = new WorkspacesStore(this.api, this.parseWorkspacesState());
 
 		this.viewStore = new AppViewStore();
 
-		autorun(() => {
-			const windowsUrlState: WindowsUrlState = this.windowsStore.windows.map(window => {
-				let activeTabState: EventStoreURLState | MessagesStoreURLState = {};
-
-				const activeTab = window.tabs[window.activeTabIndex];
-
-				if (isEventsTab(activeTab)) {
-					const eventsStore = activeTab.store;
-					activeTabState = {
-						type: TabTypes.Events,
-						filter: eventsStore.filterStore.isEventsFilterApplied
-							? eventsStore.filterStore.eventsFilter
-							: undefined,
-						panelArea: eventsStore.viewStore.panelArea,
-						selectedNodesPath: eventsStore.selectedNode
-							? [...getEventNodeParents(eventsStore.selectedNode), eventsStore.selectedNode.eventId]
-							: undefined,
-						search:
-							eventsStore.searchStore.tokens.length > 0
-								? eventsStore.searchStore.tokens.map(t => t.pattern)
-								: undefined,
-						flattenedListView: eventsStore.viewStore.flattenedListView,
-						selectedParentId:
-							eventsStore.viewStore.flattenedListView && eventsStore.selectedParentNode
-								? eventsStore.selectedParentNode.eventId
-								: undefined,
-					};
-				}
-
-				if (isMessagesTab(activeTab)) {
-					activeTabState = {
-						type: TabTypes.Messages,
-					};
-				}
-
-				getObjectKeys(activeTabState).forEach(key => {
-					if (activeTabState[key] === undefined) {
-						delete activeTabState[key];
-					}
-				});
-
-				return {
-					activeTab: activeTabState,
-					activeTabIndex: window.activeTabIndex.toString(),
-				};
-			});
-
-			const searchParams = new URLSearchParams({
-				windows: window.btoa(JSON.stringify(toJS(windowsUrlState))),
-			});
-
-			window.history.replaceState({}, '', `?${searchParams}`);
-		});
+		registerUrlMiddleware(this);
 	}
 
-	parseWindowsState = (): WindowsUrlState | null => {
+	parseWorkspacesState = (): WorkspacesUrlState | null => {
 		try {
 			const searchParams = new URLSearchParams(window.location.search);
-			const windowsUrlState = searchParams.get('windows');
-			const parsedState = windowsUrlState ? JSON.parse(window.atob(windowsUrlState)) : null;
+			const workspacesUrlState = searchParams.get('workspaces');
+			const parsedState = workspacesUrlState ? JSON.parse(window.atob(workspacesUrlState)) : null;
 			return parsedState;
 		} catch (error) {
 			this.notificationsStore.setUrlError({

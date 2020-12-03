@@ -18,9 +18,9 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import EventTreeView from './tree/EventTreeView';
 import EventWindowHeader from './EventWindowHeader';
-import '../../styles/events.scss';
-import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import FlatEventView from './flat-event-list/FlatEventView';
+import { useEventWindowViewStore } from '../../hooks';
+import '../../styles/events.scss';
 
 interface EventWindowProps {
 	isActive: boolean;
@@ -31,11 +31,11 @@ const EventWindow = (props: EventWindowProps) => {
 	const { isActive } = props;
 
 	return (
-		<div className='layout'>
-			<div className='layout__header'>
+		<div className='window'>
+			<div className='window__controls'>
 				<EventWindowHeader isWindowActive={isActive} />
 			</div>
-			<div className='layout__body'>
+			<div className='window__body'>
 				{viewStore.flattenedListView ? <FlatEventView /> : <EventTreeView />}
 			</div>
 		</div>

@@ -26,6 +26,7 @@ import { sortMessagesByTimestamp } from '../helpers/message';
 import { SelectedStore } from './SelectedStore';
 import MessageUpdateStore from './MessageUpdateStore';
 import { isEventMessage } from '../helpers/event';
+import WorkspaceStore from './WorkspaceStore';
 
 export const defaultMessagesLoadingState = {
 	loadingPreviousItems: false,
@@ -85,7 +86,12 @@ export default class MessagesStore {
 
 	@observable messagesListErrorStatusCode: number | null = null;
 
-	constructor(private api: ApiSchema, private selectedStore: SelectedStore, store?: MessagesStore) {
+	constructor(
+		private workspaceStore: WorkspaceStore,
+		private selectedStore: SelectedStore,
+		private api: ApiSchema,
+		store: MessagesStore | null,
+	) {
 		if (store) {
 			this.copy(store);
 		}
@@ -93,12 +99,12 @@ export default class MessagesStore {
 		reaction(() => this.filterStore.messagesFilter, this.onFilterChange);
 
 		this.attachedMessagesIdsSubscription = reaction(
-			() => this.selectedStore.attachedMessagesIds,
+			() => this.workspaceStore.attachedMessagesIds,
 			() => Object.values(this.abortControllers).forEach(ac => ac?.abort()),
 		);
 
 		this.attachedMessagesSubscription = reaction(
-			() => this.selectedStore.attachedMessages,
+			() => this.workspaceStore.attachedMessages,
 			this.onAttachedMessagesChange,
 		);
 
@@ -167,7 +173,7 @@ export default class MessagesStore {
 			this.messagesIds.includes(msg.messageId),
 		);
 
-		const messages = [...this.selectedStore.attachedMessages, ...pinnedMessages].filter(
+		const messages = [...this.workspaceStore.attachedMessages, ...pinnedMessages].filter(
 			(message, index, self) => self.findIndex(m => m.messageId === message.messageId) === index,
 		);
 
@@ -332,7 +338,7 @@ export default class MessagesStore {
 		const originMessageId =
 			messageId ||
 			(!this.messagesIds.length
-				? this.selectedStore.attachedMessages[0]?.messageId
+				? this.workspaceStore.attachedMessages[0]?.messageId
 				: this.messagesIds[this.messagesIds.length - 1]);
 		const chunkSize = messageId ? this.MESSAGES_CHUNK_SIZE - 1 : this.MESSAGES_CHUNK_SIZE;
 
@@ -366,7 +372,7 @@ export default class MessagesStore {
 		try {
 			const nextMessages = await this.getMessages(
 				'next',
-				this.messagesIds[0] || this.selectedStore.attachedMessages[0].messageId,
+				this.messagesIds[0] || this.workspaceStore.attachedMessages[0].messageId,
 				this.MESSAGES_CHUNK_SIZE,
 				true,
 				this.abortControllers.nextAC.signal,
@@ -384,7 +390,7 @@ export default class MessagesStore {
 	};
 
 	public resetMessagesFilter = () => {
-		const streams = this.selectedStore.attachedMessages
+		const streams = this.workspaceStore.attachedMessages
 			.map(m => m.sessionId)
 			.filter((stream, index, self) => self.indexOf(stream) === index);
 		this.filterStore.resetMessagesFilter(streams);
@@ -463,17 +469,17 @@ export default class MessagesStore {
 		this.resetMessagesState();
 		this.messagesLoadingState.loadingRootItems = true;
 
-		let originMessageId: string | undefined = this.selectedStore.attachedMessages[0]?.messageId;
+		let originMessageId: string | undefined = this.workspaceStore.attachedMessages[0]?.messageId;
 
 		if (
-			this.selectedStore.attachedMessages.length &&
+			this.workspaceStore.attachedMessages.length &&
 			(messagesFilter.timestampFrom || messagesFilter.timestampTo)
 		) {
 			const from = messagesFilter.timestampFrom || new Date(1980).getTime();
 			const to =
 				messagesFilter.timestampTo ||
 				new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
-			const firstMessage = this.selectedStore.attachedMessages.find(
+			const firstMessage = this.workspaceStore.attachedMessages.find(
 				m => getTimestampAsNumber(m.timestamp) >= from && getTimestampAsNumber(m.timestamp) <= to,
 			);
 			originMessageId = firstMessage?.messageId;
