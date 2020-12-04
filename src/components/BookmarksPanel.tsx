@@ -52,20 +52,25 @@ const BookmarksPanel = () => {
 
 				return firstTimestamp >= secondTimestamp ? 1 : -1;
 			});
-	}, [selectedStore.pinnedMessages]);
+	}, [selectedStore.pinnedMessages, selectedStore.pinnedEvents]);
 
 	const removeSavedItem = (item: SavedItem) => {
-		if (item.type === SavedItemTypes.PINNED_MESSAGE) {
-			selectedStore.removePinnedMessage(item.value as EventMessage);
+		if (isEventAction(item.value)) {
+			selectedStore.removePinnedEvent(item.value);
 		} else {
-			// TODO
+			selectedStore.removePinnedMessage(item.value);
 		}
 	};
 
 	return (
 		<div className='bookmarks-panel'>
 			{savedItems.map(item => {
-				const itemClass = createBemElement('bookmarks-panel', 'item', item.type);
+				const itemClass = createBemElement(
+					'bookmarks-panel',
+					'item',
+					item.type,
+					isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
+				);
 				const itemIconClass = createBemElement(
 					'bookmarks-panel',
 					'item-icon',

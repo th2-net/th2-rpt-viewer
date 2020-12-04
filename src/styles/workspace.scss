@@ -28,7 +28,12 @@
 }
 
 .bookmarks-panel {
+	@include scrollbar;
+
+	height: 100%;
+	width: 100%;
 	padding: 10px;
+	overflow-y: auto;
 
 	&__item {
 		display: flex;

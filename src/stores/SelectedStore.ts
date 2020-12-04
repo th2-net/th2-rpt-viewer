@@ -40,7 +40,7 @@ export class SelectedStore {
 	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
 
 	@observable
-	public pinnedEvents: Array<EventAction> = [];
+	public pinnedEvents: Array<EventAction> = localStorageWorker.getPersistedPinnedEvents();
 
 	constructor(private workspacesStore: WorkspacesStore, private api: ApiSchema) {
 		reaction(
@@ -53,6 +53,11 @@ export class SelectedStore {
 		reaction(
 			() => this.pinnedMessages,
 			pinnedMessages => localStorageWorker.setPersistedPinnedMessages(pinnedMessages),
+		);
+
+		reaction(
+			() => this.pinnedEvents,
+			pinnedEvents => localStorageWorker.setPersistedPinnedEvents(pinnedEvents),
 		);
 	}
 
@@ -82,7 +87,6 @@ export class SelectedStore {
 		} else {
 			this.removePinnedMessage(message);
 		}
-		localStorageWorker.setPersistedPinnedMessages(this.pinnedMessages);
 	};
 
 	@action
@@ -90,6 +94,20 @@ export class SelectedStore {
 		this.pinnedMessages = this.pinnedMessages.filter(
 			message => message.messageId !== removedMessage.messageId,
 		);
+	};
+
+	@action
+	public toggleEventPin = (event: EventAction) => {
+		if (this.pinnedEvents.findIndex(e => e.eventId === event.eventId) === -1) {
+			this.pinnedEvents = this.pinnedEvents.concat(event);
+		} else {
+			this.pinnedEvents = this.pinnedEvents.filter(e => e.eventId !== event.eventId);
+		}
+	};
+
+	@action
+	public removePinnedEvent = (removedEvent: EventAction) => {
+		this.pinnedEvents = this.pinnedEvents.filter(event => event.eventId !== removedEvent.eventId);
 	};
 
 	@action
