@@ -39,12 +39,20 @@ export class SelectedStore {
 	@observable
 	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
 
+	@observable
+	public pinnedEvents: Array<EventAction> = [];
+
 	constructor(private workspacesStore: WorkspacesStore, private api: ApiSchema) {
 		reaction(
 			() => this.selectedEvents,
 			selectedEvents => {
 				this.getEventColors(selectedEvents);
 			},
+		);
+
+		reaction(
+			() => this.pinnedMessages,
+			pinnedMessages => localStorageWorker.setPersistedPinnedMessages(pinnedMessages),
 		);
 	}
 
@@ -72,9 +80,16 @@ export class SelectedStore {
 		if (this.pinnedMessages.findIndex(m => m.messageId === message.messageId) === -1) {
 			this.pinnedMessages = this.pinnedMessages.concat(message);
 		} else {
-			this.pinnedMessages = this.pinnedMessages.filter(msg => msg.messageId !== message.messageId);
+			this.removePinnedMessage(message);
 		}
 		localStorageWorker.setPersistedPinnedMessages(this.pinnedMessages);
+	};
+
+	@action
+	public removePinnedMessage = (removedMessage: EventMessage) => {
+		this.pinnedMessages = this.pinnedMessages.filter(
+			message => message.messageId !== removedMessage.messageId,
+		);
 	};
 
 	@action

@@ -16,10 +16,15 @@
 
 import { EventMessage } from '../models/EventMessage';
 
+enum LocalStorageEntities {
+	PINNED_MESSAGE = 'pinnedMessages',
+}
 class LocalStorageWorker {
 	getPersistedPinnedMessages(): EventMessage[] {
 		try {
-			const stringPersistedPinnedMessages = localStorage.getItem('pinnedMessages');
+			const stringPersistedPinnedMessages = localStorage.getItem(
+				LocalStorageEntities.PINNED_MESSAGE,
+			);
 			return stringPersistedPinnedMessages ? JSON.parse(stringPersistedPinnedMessages) : [];
 		} catch (error) {
 			return [];
@@ -27,7 +32,7 @@ class LocalStorageWorker {
 	}
 
 	setPersistedPinnedMessages(pinnedMessages: EventMessage[]) {
-		localStorage.setItem('pinnedMessages', JSON.stringify(pinnedMessages));
+		localStorage.setItem(LocalStorageEntities.PINNED_MESSAGE, JSON.stringify(pinnedMessages));
 	}
 }
 
