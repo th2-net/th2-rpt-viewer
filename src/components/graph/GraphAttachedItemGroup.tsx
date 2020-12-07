@@ -161,7 +161,7 @@ const GraphAttachedItemGroup = ({
 					leftPosition={group.left}
 					bottomPosition={ATTACHED_ITEM_STEP * (index + 1)}
 					items={[item]}
-					isInfoOpen={expandedAttachedItem ? isEqual(expandedAttachedItem, item.value) : false}
+					isInfoOpen={expandedAttachedItem === item.value}
 					setExpandedItem={setExpandedAttachedItem}
 					className={
 						group.items.length === 1 && group.items[0].type === 'pinned-message'
@@ -176,9 +176,7 @@ const GraphAttachedItemGroup = ({
 			leftPosition={group.left}
 			bottomPosition={ATTACHED_ITEM_STEP}
 			items={group.items}
-			isInfoOpen={
-				expandedAttachedItem ? isEqual(expandedAttachedItem, group.items[0].value) : false
-			}
+			isInfoOpen={expandedAttachedItem === group.items[0].value}
 			setExpandedItem={setExpandedAttachedItem}
 		/>
 	);

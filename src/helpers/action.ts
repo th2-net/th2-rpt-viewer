@@ -14,10 +14,21 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { EventAction } from '../models/EventAction';
+import { EventMessage } from '../models/EventMessage';
+import { getTimestampAsNumber } from './date';
+import { isEventAction } from './event';
+
 export function getMinifiedStatus(status: string): string {
 	return status
 		.split('_')
 		.map(str => str[0])
 		.join('')
 		.toUpperCase();
+}
+
+export function mapToTimestamps(list: EventAction[] | EventMessage[]) {
+	return isEventAction(list[0])
+		? (list as EventAction[]).map(item => getTimestampAsNumber(item.startTimestamp))
+		: (list as EventMessage[]).map(item => getTimestampAsNumber(item.timestamp));
 }
