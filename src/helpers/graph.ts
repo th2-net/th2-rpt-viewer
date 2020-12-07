@@ -15,12 +15,20 @@
  ***************************************************************************** */
 
 import moment from 'moment';
+import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { Chunk } from '../models/graph';
 import { getTimestampAsNumber } from './date';
+import { isEventAction } from './event';
 
-export function filterListByChunkRange(chunk: Chunk, list: EventMessage[]) {
-	return list.filter(item =>
-		moment(getTimestampAsNumber(item.timestamp)).isBetween(moment(chunk.from), moment(chunk.to)),
-	);
+export function filterListByChunkRange(chunk: Chunk, list: (EventMessage | EventAction)[]) {
+	return list.filter(item => {
+		const itemTimestamp = getTimestampAsNumber(
+			isEventAction(item) ? item.startTimestamp : item.timestamp,
+		);
+		return (
+			moment(itemTimestamp).isBetween(moment(chunk.from), moment(chunk.to)) ||
+			itemTimestamp === chunk.to
+		);
+	});
 }
