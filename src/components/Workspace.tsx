@@ -19,9 +19,10 @@ import { observer } from 'mobx-react-lite';
 import SplitView from './split-view/SplitView';
 import SplitViewPane from './split-view/SplitViewPane';
 import EventWindow from './event/EventWindow';
-import MessagesWindow from './message/MessagesWindow';
+// import MessagesWindow from './message/MessagesWindow';
 import { useWorkspaceStore } from '../hooks';
 import '../styles/workspace.scss';
+import BookmarksPanel from './BookmarksPanel';
 
 function Workspace() {
 	const workspaceStore = useWorkspaceStore();
@@ -36,7 +37,8 @@ function Workspace() {
 					<EventWindow isActive={false} />
 				</SplitViewPane>
 				<SplitViewPane>
-					<MessagesWindow />
+					{/* <MessagesWindow /> */}
+					<BookmarksPanel />
 				</SplitViewPane>
 			</SplitView>
 		</div>

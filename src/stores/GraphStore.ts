@@ -17,7 +17,7 @@
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { getTimestampAsNumber, isTimeInsideInterval, isTimeIntersected } from '../helpers/date';
-import { Chunk, ChunkData, IntervalData } from '../models/graph';
+import { Chunk, ChunkData, IntervalData, OverlayValues } from '../models/graph';
 import RootStore from './RootStore';
 
 export const intervalOptions = [15, 30, 60] as const;
@@ -133,6 +133,43 @@ class GraphStore {
 		).length;
 
 		return intervalData;
+	};
+
+	@action getOverlayValues = (): OverlayValues => {
+		const windowTimeRange = [
+			moment(this.range[0])
+				.subtract(this.interval / 2, 'minutes')
+				.valueOf(),
+			moment(this.range[1])
+				.add(this.interval / 2, 'minutes')
+				.valueOf(),
+		];
+
+		const selectedStore = this.rootStore.workspacesStore.selectedStore;
+		return {
+			left: {
+				pinnedMessages: selectedStore.pinnedMessages.filter(
+					message => getTimestampAsNumber(message.timestamp) < windowTimeRange[0],
+				),
+				attachedMessages: selectedStore.attachedMessages.filter(
+					message => getTimestampAsNumber(message.timestamp) < windowTimeRange[0],
+				),
+				events: selectedStore.pinnedEvents.filter(
+					event => getTimestampAsNumber(event.startTimestamp) < windowTimeRange[0],
+				),
+			},
+			right: {
+				pinnedMessages: selectedStore.pinnedMessages.filter(
+					message => getTimestampAsNumber(message.timestamp) > windowTimeRange[1],
+				),
+				attachedMessages: selectedStore.attachedMessages.filter(
+					message => getTimestampAsNumber(message.timestamp) > windowTimeRange[1],
+				),
+				events: selectedStore.pinnedEvents.filter(
+					event => getTimestampAsNumber(event.startTimestamp) > windowTimeRange[1],
+				),
+			},
+		};
 	};
 
 	@action

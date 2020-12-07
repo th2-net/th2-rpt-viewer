@@ -27,6 +27,91 @@
 	overflow: hidden;
 }
 
+.bookmarks-panel {
+	@include scrollbar;
+
+	height: 100%;
+	width: 100%;
+	padding: 10px;
+	overflow-y: auto;
+
+	&__item {
+		display: flex;
+		align-items: center;
+		background-color: #FFF;
+		border-radius: 6px;
+		padding: 7px 10px 7px 28px;
+		border-width: 1px;
+		border-style: solid;
+		position: relative;
+
+		&-info {
+			flex-grow: 1;
+		}
+
+		&-remove-btn {
+			background-color: transparent;
+			border: none;
+			flex-grow: 0;
+			flex-shrink: 1;
+			outline: none;
+
+			&-icon {
+				@include clickable;
+				@include icon(url(../../resources/icons/cross-icon.svg), 20px, 20px);
+
+				border-radius: 50%;
+				display: inline-block;
+			}
+		}
+
+		&-name, &-timestamp {
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		    overflow: hidden;
+		}
+
+		&-name {
+			white-space: nowrap;
+			font-weight: 600;
+			font-size: 12px;
+			line-height: 12px;
+			color: $graphAttachedItemNameColor;
+		}
+	
+		&-timestamp {
+			font-size: 9px;
+			line-height: 9px;
+			color: $graphAttachedItemTimestampColor;
+			margin-top: 7px;
+		}
+
+		&-icon {
+			position: absolute;
+			left: 7px;
+			top: 7px;
+		}
+
+		&:not(:last-child) {
+			margin-bottom: 10px;
+		}
+
+		&.pinned-message {
+			border-color: $graphOverlayPinnedMessagesColor;
+		}
+
+		&.event {
+			&.passed {
+				border-color: $graphOverlayPassedEventsColor;
+			}
+
+			&.failed {
+				border-color: $graphOverlayFailedEventsColor;
+			}
+		}
+	}
+}
+
 .window {
 	display: grid;
 	height: 100%;

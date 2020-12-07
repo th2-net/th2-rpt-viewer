@@ -76,20 +76,114 @@
 
 	&__search-button {
 		@include icon(url(../../resources/icons/graph-search.svg), 15px, 15px);
-		top: 12px;
-		right: 40px;
-		position: absolute;
 		z-index: 5;
 		cursor: pointer;
 	}
 
 	&__settings-button {
 		@include icon(url(../../resources/icons/settings.svg), 15px, 15px);
-		top: 12px;
-		right: 14px;
-		position: absolute;
 		z-index: 5;
 		cursor: pointer;
+	}
+
+	&__pinned-messages-counter {
+		background-color: $graphPinnedMessageCounterColor;
+		border-radius: 18px;
+		padding: 2px 8px;
+		border: none;
+		cursor: pointer;
+		z-index: 5;
+		display: flex;
+		align-items: center;
+		outline: none;
+
+		&-value {
+			color: $graphOverlayPinnedMessagesColor;
+			font-size: 11px;
+			line-height: 14px;
+		}
+
+		&-icon {
+			@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+
+			display: inline-block;
+			margin-right: 5px;
+		}
+	}
+
+	&__outside-items {
+		&-wrapper {
+			display: flex;
+			flex-direction: column;
+			gap: 3px;
+			flex-shrink: 0;
+		}
+
+		&-indicator {
+			position: absolute;
+			top: 55%;
+			transform: translateY(-50%);
+			z-index: 5;
+			display: flex;
+			align-items: center;
+			cursor: pointer;
+	
+			&.right {
+				right: 14px;
+			}
+	
+			&.left {
+				left: 14px;
+			}
+	
+			&-item {
+				display: flex;
+				align-items: center;
+				flex-shrink: 0;
+			}
+	
+			&-value {
+				font-size: 11px;
+				line-height: 14px;
+				color: #FFFFFF;
+				flex-shrink: 0;
+			}
+	
+			&-icon {	
+				margin: 0 5px;
+				display: inline-block;
+				flex-shrink: 0;
+
+				&.pinnedMessages {
+					@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+				}
+
+				&.attachedMessages {
+					@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
+				}
+
+				&.events {
+					width: 12px;
+					height: 12px;
+					border-radius: 50%;
+					background-color: $graphOverlayPassedEventsColor;
+					margin: 0 6px;
+				}
+			}
+	
+			&-pointer {
+				display: inline-block;
+	
+				&.right {
+					@include icon(url(../../resources/icons/graph-pointer-right.svg), 14px, 14px);
+				}
+	
+				&.left {
+					@include icon(url(../../resources/icons/graph-pointer-right.svg), 14px, 14px);
+					transform: rotate(180deg);
+				}
+			}
+		}
 	}
 }
 
@@ -163,13 +257,13 @@
 		font-weight: 600;
 		font-size: 12px;
 		line-height: 12px;
-		color: #BC271A;
+		color: $graphAttachedItemNameColor;
 	}
 
 	&__item-timestamp {
 		font-size: 9px;
 		line-height: 9px;
-		color: #666666;
+		color: $graphAttachedItemTimestampColor;
 		margin-top: 7px;
 	}
 
@@ -267,6 +361,17 @@
 		left: 14px;
 		top: 12px;
 		z-index: 5;
+	}
+
+	&__wrapper {
+		width: 100%;
+		z-index: 5px;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 12px;
+		margin-top: 10px;
+		padding-right: 10px;
 	}
 }
 

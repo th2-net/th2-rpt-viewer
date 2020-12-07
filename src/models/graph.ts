@@ -14,6 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { EventAction } from './EventAction';
+import { EventMessage } from './EventMessage';
+
 export interface Chunk {
 	from: number;
 	to: number;
@@ -34,4 +37,15 @@ export interface IntervalData {
 	failed: number;
 	messages: number;
 	connected: number;
+}
+
+export interface OverlayValues {
+	left: OutsideItems;
+	right: OutsideItems;
+}
+
+export interface OutsideItems {
+	pinnedMessages: EventMessage[];
+	attachedMessages: EventMessage[];
+	events: EventAction[];
 }
