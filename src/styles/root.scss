@@ -102,3 +102,25 @@ ul {
 		@include spinner(5px, 40px, 2s);
 	}
 }
+
+.attached-message-icon {
+	@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
+}
+
+.pinned-message-icon {
+	@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+}
+
+.event-icon {
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+
+	&.passed {
+		background-color: $graphOverlayPassedEventsColor;
+	}
+
+	&.failed {
+		background-color: $graphOverlayFailedEventsColor;
+	}
+}
