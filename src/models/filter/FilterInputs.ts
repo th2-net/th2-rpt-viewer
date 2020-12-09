@@ -19,12 +19,7 @@ export type FilterRowConfig =
 	| FilterRowTimeWindowConfig
 	| FilterRowStringConfig
 	| FilterRowMultipleStringsConfig
-<<<<<<< HEAD
 	| FilterRowTogglerConfig;
-=======
-	| FilterRowTogglerConfig
-	| FilterRowCheckboxConfig;
->>>>>>> aeaca4a (TH2-1143. Implement continuous search view)
 
 export enum DateTimeMask {
 	TIME_MASK = 'HH:mm:ss.SSS',
