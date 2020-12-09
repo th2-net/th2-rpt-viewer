@@ -18,7 +18,7 @@ import { EventAction, EventTree } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
-import { SSEFilterInfo } from './sse';
+import { SSEFilterInfo } from '../stores/SearchPanelFiltersStore';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
