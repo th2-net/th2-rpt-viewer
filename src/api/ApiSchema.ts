@@ -22,6 +22,7 @@ import EventsFilter from '../models/filter/EventsFilter';
 export default interface ApiSchema {
 	events: EventApiSchema;
 	messages: MessageApiSchema;
+	sse: SSESchema;
 }
 
 export interface EventApiSchema {
@@ -69,4 +70,12 @@ export interface MessageApiSchema {
 	) => Promise<EventMessage>;
 	getMessagesByFilter: (filter: MessagesFilter) => Promise<string[]>;
 	getMessageSessions: () => Promise<string[]>;
+}
+
+export interface SSESchema {
+	getEventSource: (
+		type: 'event' | 'message',
+		queryParams: Record<string, string | number | boolean | null | string[]>,
+		listener: (this: EventSource, ev: Event | MessageEvent) => any,
+	) => EventSource;
 }

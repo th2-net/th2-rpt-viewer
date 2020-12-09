@@ -13,15 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import ApiSchema from './ApiSchema';
-import eventHttpApi from './event';
-import messageHttpApi from './message';
-import sseApi from './sse';
 
-const api: ApiSchema = {
-	events: eventHttpApi,
-	messages: messageHttpApi,
-	sse: sseApi,
+import { SSESchema } from './ApiSchema';
+import { createURLSearchParams } from '../helpers/url';
+
+const sseApi: SSESchema = {
+	getEventSource(
+		type: 'event' | 'message',
+		queryParams: Record<string, string | number | boolean | null | string[]>,
+		listener: (this: EventSource, ev: Event | MessageEvent) => any,
+	) {
+		const params = createURLSearchParams(queryParams);
+		const channel = new EventSource(`backend/search/sse/${type}s/?${params}`);
+		channel.addEventListener(type, listener);
+		return channel;
+	},
 };
 
-export default api;
+export default sseApi;
