@@ -20,7 +20,7 @@ import * as React from 'react';
 interface Panel {
 	title: string;
 	component: React.ReactNode;
-	color?: string;
+	color: string;
 	minWidth?: number;
 }
 
@@ -222,24 +222,20 @@ function WorkspaceSplitter(props: Props) {
 	};
 
 	return (
-		<div ref={rootRef} className='workspace-splitter'>
+		<div ref={rootRef} className='workspace-split-view'>
 			{props.panels.map((panel, index) => (
 				<>
-					<Resizer
+					<Splitter
 						color={panel.color}
 						title={panel.title}
 						onMouseDown={onMouseDown}
 						disabled={index === 0}
 						ref={splittersRefs.current[index]}
 					/>
-					<div className='workspace-splitter-panel' ref={panelsRefs.current[index]}>
+					<div className='workspace-split-view__pane' ref={panelsRefs.current[index]}>
 						{panel.component}
 					</div>
-					<Overlay
-						color={panel.color || '#CCC'}
-						isActive={isResizing}
-						ref={overlaysRefs.current[index]}
-					/>
+					<Overlay color={panel.color} isActive={isResizing} ref={overlaysRefs.current[index]} />
 				</>
 			))}
 		</div>
@@ -269,30 +265,18 @@ type ResizerProps = {
 	onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void;
 };
 
-const Resizer: any = React.forwardRef<HTMLDivElement, ResizerProps>(
+const Splitter = React.forwardRef<HTMLDivElement, ResizerProps>(
 	({ color, title, onMouseDown, disabled = false }, ref) => (
-		<div
-			className='workspace-splitter-resizer__root'
-			onMouseDown={e => (disabled ? null : onMouseDown(e))}>
+		<div className='workspace-splitter' onMouseDown={e => (disabled ? null : onMouseDown(e))}>
 			<div
 				ref={ref}
-				className='workspace-splitter-resizer'
-				style={{ backgroundColor: color, cursor: disabled ? 'default' : 'col-resize' }}>
-				{/* <h3 className='workspace-splitter-resizer__title'>{title}</h3> */}
-				<div
-					style={{
-						width: '5px',
-						height: '5px',
-						borderRadius: '50%',
-						backgroundColor: '#fff',
-					}}
-				/>
-			</div>
+				className='workspace-splitter__handle'
+				style={{ backgroundColor: color, cursor: disabled ? 'default' : 'col-resize' }}></div>
 		</div>
 	),
 );
 
-Resizer.displayName = 'Resizer';
+Splitter.displayName = 'Splitter';
 
 interface OverlayProps {
 	color: string;
@@ -323,12 +307,11 @@ const Overlay = React.forwardRef<HTMLDivElement, OverlayProps>((props, ref) => {
 			style={{
 				backgroundColor: props.color,
 				visibility: isVisible ? 'visible' : 'hidden',
-				display: 'block',
 				opacity: props.isActive ? 0.3 : 0,
 			}}
-			className='workspace-splitter__overlay'
+			className='workspace-overlay'
 			ref={ref}>
-			<div className='workspace-splitter__overlay-minify' />
+			<div className='workspace-overlay__minify' />
 		</div>
 	);
 });

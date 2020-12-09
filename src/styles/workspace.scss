@@ -27,6 +27,54 @@
 	overflow: hidden;
 }
 
+.workspace-split-view {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	position: relative;
+
+	&__pane {
+		width: 25%;
+		height: 100%;
+		display: flex;
+		overflow: auto;
+	
+		@include scrollbar;
+	}
+}
+
+.workspace-splitter {
+	width: 4px;	
+
+	&__handle {
+		height: 100%;
+		cursor: col-resize;
+		width: 4px;
+		position: relative;
+		z-index: 1000;
+		border-radius: 8px;
+
+		&.disabled {
+			cursor: default;
+		}
+	}
+}
+
+.workspace-overlay {
+	height: 100%;
+	position: absolute;
+	z-index: 1000;
+	top: 0;
+	left: 0;
+	border-radius: 8px;
+	border-left: 2px solid transparent;
+	transition: opacity 0.4s;
+
+	&__minify {
+		display: none;
+	}
+}
+
 .bookmarks-panel {
 	@include scrollbar;
 
@@ -152,54 +200,5 @@
 		& > div {
 			width: 100%;
 		}
-	}
-}
-
-.workspace-splitter {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	position: relative;
-
-	&__overlay {
-		display: none;
-		height: 100%;
-		position: absolute;
-		z-index: 1000;
-		top: 0;
-		left: 0;
-		border-radius: 8px;
-		border-left: 2px solid transparent;
-		transition: opacity 0.4s;
-	}
-	&_overlay-minify {
-		display: none;
-	}
-}
-
-.workspace-splitter-panel {
-	width: 25%;
-	height: 100%;
-	display: flex;
-	overflow: auto;
-
-	@include scrollbar;
-}
-
-.workspace-splitter-resizer {
-	height: 100%;
-	cursor: col-resize;
-	width: 4px;
-	position: relative;
-	z-index: 1000;
-	border-radius: 8px;
-
-	&.disabled {
-		cursor: default;
-	}
-
-
-	&__root {
-		width: 4px;
 	}
 }
