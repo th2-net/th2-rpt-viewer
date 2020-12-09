@@ -23,6 +23,7 @@ import EventWindow from './event/EventWindow';
 import { useWorkspaceStore } from '../hooks';
 import '../styles/workspace.scss';
 import BookmarksPanel from './BookmarksPanel';
+import SearchPanel from './SearchPanel';
 
 function Workspace() {
 	const workspaceStore = useWorkspaceStore();
@@ -39,6 +40,7 @@ function Workspace() {
 				<SplitViewPane>
 					{/* <MessagesWindow /> */}
 					<BookmarksPanel />
+					<SearchPanel />
 				</SplitViewPane>
 			</SplitView>
 		</div>

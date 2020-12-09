@@ -20,6 +20,8 @@ import StringFilterRow from './StringRow';
 import MultipleStringFilterRow from './MultipleStringFIlterRow';
 import TimeWindow from './TimeWindow';
 import DatetimeFilterRow from './DateTimeFilterRow';
+import TogglerRow from './TogglerRow';
+import Checkbox from './Checkbox';
 
 interface Props {
 	rowConfig: FilterRowConfig;
@@ -35,6 +37,10 @@ export default function FilterRow({ rowConfig }: Props) {
 			return <StringFilterRow config={rowConfig} />;
 		case 'multiple-strings':
 			return <MultipleStringFilterRow config={rowConfig} />;
+		case 'toggler':
+			return <TogglerRow config={rowConfig} />;
+		case 'checkbox':
+			return <Checkbox config={rowConfig} />;
 		default:
 			return null;
 	}
