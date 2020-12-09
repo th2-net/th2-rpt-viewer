@@ -235,12 +235,11 @@ function WorkspaceSplitter(props: Props) {
 					<div className='workspace-splitter-panel' ref={panelsRefs.current[index]}>
 						{panel.component}
 					</div>
-					<div
-						style={{ backgroundColor: panel.color, display: isResizing ? 'block' : 'none' }}
-						className='workspace-splitter__overlay'
-						ref={overlaysRefs.current[index]}>
-						<div className='workspace-splitter__overlay-minify'></div>
-					</div>
+					<Overlay
+						color={panel.color || '#CCC'}
+						isActive={isResizing}
+						ref={overlaysRefs.current[index]}
+					/>
 				</>
 			))}
 		</div>
@@ -267,9 +266,10 @@ type ResizerProps = {
 	color: string;
 	title: string;
 	disabled?: boolean;
+	onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void;
 };
 
-const Resizer: any = React.forwardRef<any, any>(
+const Resizer: any = React.forwardRef<HTMLDivElement, ResizerProps>(
 	({ color, title, onMouseDown, disabled = false }, ref) => (
 		<div
 			className='workspace-splitter-resizer__root'
@@ -279,9 +279,58 @@ const Resizer: any = React.forwardRef<any, any>(
 				className='workspace-splitter-resizer'
 				style={{ backgroundColor: color, cursor: disabled ? 'default' : 'col-resize' }}>
 				{/* <h3 className='workspace-splitter-resizer__title'>{title}</h3> */}
+				<div
+					style={{
+						width: '5px',
+						height: '5px',
+						borderRadius: '50%',
+						backgroundColor: '#fff',
+					}}
+				/>
 			</div>
 		</div>
 	),
 );
 
 Resizer.displayName = 'Resizer';
+
+interface OverlayProps {
+	color: string;
+	isActive: boolean;
+}
+
+const Overlay = React.forwardRef<HTMLDivElement, OverlayProps>((props, ref) => {
+	const [isVisible, setIsVisible] = React.useState(props.isActive);
+	const timer = React.useRef<NodeJS.Timeout>();
+
+	React.useEffect(() => {
+		if (props.isActive) {
+			setIsVisible(true);
+		} else {
+			timer.current = setTimeout(() => {
+				setIsVisible(false);
+			}, 200);
+		}
+		return () => {
+			if (timer.current) {
+				window.clearTimeout(timer.current);
+			}
+		};
+	}, [props.isActive]);
+
+	return (
+		<div
+			style={{
+				backgroundColor: props.color,
+				visibility: isVisible ? 'visible' : 'hidden',
+				display: 'block',
+				opacity: props.isActive ? 0.3 : 0,
+			}}
+			className='workspace-splitter__overlay'
+			ref={ref}>
+			<div className='workspace-splitter__overlay-minify' />
+		</div>
+	);
+});
+
+Overlay.displayName = 'Overlay';

@@ -88,7 +88,7 @@ const MessagesWindow = () => {
 			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}
 			pinnedItems={selectedStore.pinnedMessages.map(m => m.messageId)}>
 			<div className='window'>
-				<div className='window__header'>
+				<div className='window__controls'>
 					<MessagesWindowHeader />
 				</div>
 				<div className='window__body'>
