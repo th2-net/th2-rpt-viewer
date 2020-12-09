@@ -18,7 +18,9 @@ export type FilterRowConfig =
 	| FilterRowDatetimeRangeConfig
 	| FilterRowTimeWindowConfig
 	| FilterRowStringConfig
-	| FilterRowMultipleStringsConfig;
+	| FilterRowMultipleStringsConfig
+	| FilterRowTogglerConfig
+	| FilterRowCheckboxConfig;
 
 export enum DateTimeMask {
 	TIME_MASK = 'HH:mm:ss.SSS',
@@ -96,4 +98,18 @@ export type FilterRowDatetimeRangeConfig = FilterRowBaseConfig & {
 		label: string;
 		onClick: () => void;
 	}>;
+};
+
+export type FilterRowTogglerConfig = FilterRowBaseConfig & {
+	type: 'toggler';
+	disabled: boolean;
+	value: any;
+	possibleValues: string[];
+	setValue: (newValue: any) => void;
+};
+
+export type FilterRowCheckboxConfig = FilterRowBaseConfig & {
+	type: 'checkbox';
+	value: boolean;
+	setValue: () => void;
 };
