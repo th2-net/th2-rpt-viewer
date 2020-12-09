@@ -22,6 +22,7 @@ import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './WorkspacesStore';
 import localStorageWorker from '../util/LocalStorageWorker';
 import { sortMessagesByTimestamp } from '../helpers/message';
+import { isEventAction } from '../helpers/event';
 
 export class SelectedStore {
 	private readonly defaultColors = [
@@ -85,15 +86,8 @@ export class SelectedStore {
 		if (this.pinnedMessages.findIndex(m => m.messageId === message.messageId) === -1) {
 			this.pinnedMessages = this.pinnedMessages.concat(message);
 		} else {
-			this.removePinnedMessage(message);
+			this.removeSavedItem(message);
 		}
-	};
-
-	@action
-	public removePinnedMessage = (removedMessage: EventMessage) => {
-		this.pinnedMessages = this.pinnedMessages.filter(
-			message => message.messageId !== removedMessage.messageId,
-		);
 	};
 
 	@action
@@ -106,9 +100,15 @@ export class SelectedStore {
 	};
 
 	@action
-	public removePinnedEvent = (removedEvent: EventAction) => {
-		this.pinnedEvents = this.pinnedEvents.filter(event => event.eventId !== removedEvent.eventId);
-	};
+	public removeSavedItem(savedItem: EventAction | EventMessage) {
+		if (isEventAction(savedItem)) {
+			this.pinnedEvents = this.pinnedEvents.filter(event => event.eventId !== savedItem.eventId);
+		} else {
+			this.pinnedMessages = this.pinnedMessages.filter(
+				message => message.messageId !== savedItem.messageId,
+			);
+		}
+	}
 
 	@action
 	private getEventColors = (selectedEvents: EventAction[]) => {

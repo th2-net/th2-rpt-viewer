@@ -15,34 +15,47 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
-import SplitView from './split-view/SplitView';
-import SplitViewPane from './split-view/SplitViewPane';
 import EventWindow from './event/EventWindow';
-// import MessagesWindow from './message/MessagesWindow';
-import { useWorkspaceStore } from '../hooks';
-import '../styles/workspace.scss';
 import BookmarksPanel from './BookmarksPanel';
+import WorkspaceSplitter from './WorkspaceSplitter';
+import MessagesWindow from './message/MessagesWindow';
+import '../styles/workspace.scss';
 
-function Workspace() {
-	const workspaceStore = useWorkspaceStore();
+interface WorkspaceProps {
+	isActive: boolean;
+}
 
+function Workspace(props: WorkspaceProps) {
 	return (
 		<div className='workspace'>
-			<SplitView
-				panelArea={workspaceStore.viewStore.panelArea}
-				onPanelAreaChange={workspaceStore.viewStore.setPanelArea}
-				splitterClassName='app__workspaces-splitter'>
-				<SplitViewPane>
-					<EventWindow isActive={false} />
-				</SplitViewPane>
-				<SplitViewPane>
-					{/* <MessagesWindow /> */}
-					<BookmarksPanel />
-				</SplitViewPane>
-			</SplitView>
+			<WorkspaceSplitter
+				panels={[
+					{
+						title: 'Events',
+						color: '#F5C5A3',
+						component: <EventWindow isActive={props.isActive} />,
+						minWidth: 500,
+					},
+					{
+						title: 'Messages',
+						color: '#1AC4E5',
+						component: <MessagesWindow />,
+						minWidth: 400,
+					},
+					{
+						title: 'Search',
+						color: '#ADC2EB',
+						component: <div style={{ margin: 'auto' }}>Search</div>,
+					},
+					{
+						title: 'Bookmarks',
+						color: '#CCADEB',
+						component: <BookmarksPanel />,
+					},
+				]}
+			/>
 		</div>
 	);
 }
 
-export default observer(Workspace);
+export default Workspace;

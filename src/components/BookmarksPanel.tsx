@@ -36,6 +36,7 @@ enum SavedItemTypes {
 
 const BookmarksPanel = () => {
 	const selectedStore = useSelectedStore();
+
 	const savedItems: SavedItem[] = React.useMemo(() => {
 		return [...selectedStore.pinnedMessages, ...selectedStore.pinnedEvents]
 			.map(item => ({
@@ -54,54 +55,48 @@ const BookmarksPanel = () => {
 			});
 	}, [selectedStore.pinnedMessages, selectedStore.pinnedEvents]);
 
-	const removeSavedItem = (item: SavedItem) => {
-		if (isEventAction(item.value)) {
-			selectedStore.removePinnedEvent(item.value);
-		} else {
-			selectedStore.removePinnedMessage(item.value);
-		}
-	};
+	const removeSavedItem = (item: SavedItem) => selectedStore.removeSavedItem(item.value);
 
 	return (
 		<div className='bookmarks-panel'>
-			{savedItems.map(item => {
-				const itemClass = createBemElement(
-					'bookmarks-panel',
-					'item',
-					item.type,
-					isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
-				);
-				const itemIconClass = createBemElement(
-					'bookmarks-panel',
-					'item-icon',
-					`${item.type}-icon`,
-					isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
-				);
-				return (
-					<div
-						key={isEventAction(item.value) ? item.value.eventId : item.value.messageId}
-						className={itemClass}>
-						<i className={itemIconClass} />
-						<div className='bookmarks-panel__item-info'>
-							<div className='bookmarks-panel__item-name'>
-								{isEventAction(item.value) ? item.value.eventName : item.value.messageId}
-							</div>
-							<div className='bookmarks-panel__item-timestamp'>
-								{moment(
-									getTimestampAsNumber(
-										isEventAction(item.value) ? item.value.startTimestamp : item.value.timestamp,
-									),
-								).format('DD.MM.YYYY HH:mm:ss:SSS')}
-							</div>
+			{savedItems.map(item => (
+				<div
+					key={isEventAction(item.value) ? item.value.eventId : item.value.messageId}
+					className={createBemElement(
+						'bookmarks-panel',
+						'item',
+						item.type,
+						isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
+					)}>
+					<i
+						className={createBemElement(
+							'bookmarks-panel',
+							'item-icon',
+							`${item.type}-icon`,
+							isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
+						)}
+					/>
+					<div className='bookmarks-panel__item-info'>
+						<div
+							className='bookmarks-panel__item-name'
+							title={isEventAction(item.value) ? item.value.eventName : item.value.messageId}>
+							{isEventAction(item.value) ? item.value.eventName : item.value.messageId}
 						</div>
-						<button
-							onClick={() => removeSavedItem(item)}
-							className='bookmarks-panel__item-remove-btn'>
-							<i className='bookmarks-panel__item-remove-btn-icon' />
-						</button>
+						<div className='bookmarks-panel__item-timestamp'>
+							{moment(
+								getTimestampAsNumber(
+									isEventAction(item.value) ? item.value.startTimestamp : item.value.timestamp,
+								),
+							).format('DD.MM.YYYY HH:mm:ss:SSS')}
+						</div>
 					</div>
-				);
-			})}
+					<button
+						onClick={() => removeSavedItem(item)}
+						className='bookmarks-panel__item-remove-btn'>
+						<i className='bookmarks-panel__item-remove-btn-icon' />
+					</button>
+				</div>
+			))}
 		</div>
 	);
 };
