@@ -14,7 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 
- @import './common/vars';
+@import './common/vars';
 
 .workspace-layout {
 	height: 100%;
@@ -38,24 +38,90 @@
 		height: 100%;
 		display: flex;
 		overflow: auto;
-	
+
 		@include scrollbar;
+	}
+
+	&__search-icon {
+		@include icon(url(../../resources/icons/workspace-search.svg), 15px, 15px);
+		margin-bottom: 3px;
+	}
+
+	&__messages-icon {
+		background-color: #fff;
+		width: 8px;
+		height: 8px;
+		transform: rotate(45deg);
+		margin-bottom: 3px;
+	}
+
+	&__events-icon {
+		background-color: #fff;
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		margin-bottom: 3px;
+	}
+
+	&__bookmarks-icon {
+		@include icon(url(../../resources/icons/bookmarks.svg), 15px, 15px);
+		margin-bottom: 3px;
 	}
 }
 
 .workspace-splitter {
-	width: 4px;	
+	width: 8px;
 
 	&__handle {
 		height: 100%;
 		cursor: col-resize;
-		width: 4px;
+		width: 8px;
 		position: relative;
-		z-index: 1000;
-		border-radius: 8px;
+		z-index: 1001;
+		border-radius: 10px;
 
 		&.disabled {
 			cursor: default;
+		}
+	}
+
+	&__content {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		background-color: inherit;
+		pointer-events: none;
+		border-radius: inherit;
+	}
+
+	&__title {
+		font-size: 13px;
+		font-weight: bold;
+		writing-mode: vertical-rl;
+		text-orientation: mixed;
+		color: #fff;
+		height: 100%;
+		background-color: inherit;
+		position: absolute;
+		pointer-events: none;
+		z-index: 3000;
+		border-radius: 6px;
+		padding-top: 4px;
+		width: 0;
+		overflow: hidden;
+		transition: all 0.2s;
+		line-height: 15px;
+		opacity: 0;
+		display: flex;
+		align-items: center;
+
+		&.active {
+			width: 18px;
+			opacity: 1;
+		}
+
+		&.right {
+			right: 0;
 		}
 	}
 }
@@ -86,7 +152,7 @@
 	&__item {
 		display: grid;
 		grid-template-columns: 1fr 30px;
-		background-color: #FFF;
+		background-color: #fff;
 		border-radius: 6px;
 		padding: 7px 7px 7px 28px;
 		border-width: 1px;
@@ -114,10 +180,11 @@
 			}
 		}
 
-		&-name, &-timestamp {
+		&-name,
+		&-timestamp {
 			text-overflow: ellipsis;
 			white-space: nowrap;
-		  overflow: hidden;
+			overflow: hidden;
 		}
 
 		&-name {
@@ -127,7 +194,7 @@
 			line-height: 12px;
 			color: $graphAttachedItemNameColor;
 		}
-	
+
 		&-timestamp {
 			font-size: 9px;
 			line-height: 9px;

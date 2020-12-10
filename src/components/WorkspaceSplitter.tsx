@@ -62,7 +62,6 @@ function WorkspaceSplitter(props: Props) {
 			const panelDefaultWidth = ((rootWidth - splittersRefs.current.length * 4) / rootWidth) * 100;
 			panelsRefs.current.forEach((panelRef, index) => {
 				if (panelRef.current) {
-					// eslint-disable-next-line no-param-reassign
 					panelRef.current.style.width = `${index === 0 ? panelDefaultWidth : 0}%`;
 				}
 			});
@@ -191,9 +190,9 @@ function WorkspaceSplitter(props: Props) {
 
 			const splittersLeftPositions = getUpdatedSplittersPositions(activeSplitterLeftPostion);
 
-			splittersRefs.current.forEach((resizer, index) => {
-				if (resizer.current) {
-					resizer.current.style.left = `${splittersLeftPositions[index]}px`;
+			splittersRefs.current.forEach((splitter, index) => {
+				if (splitter.current) {
+					splitter.current.style.left = `${splittersLeftPositions[index]}px`;
 				}
 			});
 
@@ -210,12 +209,6 @@ function WorkspaceSplitter(props: Props) {
 							  spliiterWidth
 							: splittersLeftPositions[index + 1] - splittersLeftPositions[index] - spliiterWidth;
 					overlayRef.current.style.width = `${overlayWidth}px`;
-					const minWidth = props.panels[index].minWidth;
-					if (minWidth && overlayWidth < minWidth) {
-						overlayRef.current.classList.add('minimize');
-					} else {
-						overlayRef.current.classList.remove('minimize');
-					}
 				}
 			});
 		}
@@ -226,7 +219,9 @@ function WorkspaceSplitter(props: Props) {
 			{props.panels.map((panel, index) => (
 				<>
 					<Splitter
+						isResizing={isResizing}
 						color={panel.color}
+						icon={<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />}
 						title={panel.title}
 						onMouseDown={onMouseDown}
 						disabled={index === 0}
@@ -258,22 +253,48 @@ export const SplittedViewPanel = React.forwardRef<HTMLDivElement, SplittedViewPa
 
 SplittedViewPanel.displayName = 'SplittedViewPanel';
 
-type ResizerProps = {
+type SplitterProps = {
 	color: string;
+	icon?: React.ReactNode;
 	title: string;
 	disabled?: boolean;
 	onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void;
+	isResizing: boolean;
 };
 
-const Splitter = React.forwardRef<HTMLDivElement, ResizerProps>(
-	({ color, title, onMouseDown, disabled = false }, ref) => (
-		<div className='workspace-splitter' onMouseDown={e => (disabled ? null : onMouseDown(e))}>
+const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
+	({ color, title, onMouseDown, disabled = false, icon, isResizing }, ref) => {
+		const titleRef = React.useRef<HTMLDivElement>(null);
+		return (
 			<div
-				ref={ref}
-				className='workspace-splitter__handle'
-				style={{ backgroundColor: color, cursor: disabled ? 'default' : 'col-resize' }}></div>
-		</div>
-	),
+				className='workspace-splitter'
+				onMouseDown={e => (disabled ? null : onMouseDown(e))}
+				onMouseEnter={e => {
+					e.preventDefault();
+					if (e.pageX > window.innerWidth / 2) {
+						titleRef.current?.classList.add(`right`);
+					} else {
+						titleRef.current?.classList.remove(`right`);
+					}
+					titleRef.current?.classList.add(`active`);
+				}}
+				onMouseLeave={() => {
+					titleRef.current?.classList.remove('active');
+				}}>
+				<div
+					ref={ref}
+					className='workspace-splitter__handle'
+					style={{ backgroundColor: color, cursor: disabled ? 'default' : 'col-resize' }}>
+					<div className='workspace-splitter__content'>
+						<div className='workspace-splitter__title' ref={titleRef}>
+							{icon}
+							{title}
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	},
 );
 
 Splitter.displayName = 'Splitter';
