@@ -14,18 +14,20 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { SSESchema } from './ApiSchema';
+import { EventSourceConfig, SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 
 const sseApi: SSESchema = {
-	getEventSource(
-		type: 'event' | 'message',
-		queryParams: Record<string, string | number | boolean | null | string[]>,
-		listener: (this: EventSource, ev: Event | MessageEvent) => any,
-	) {
+	getEventSource(config: EventSourceConfig) {
+		const { type, queryParams, listener, onOpen, onClose } = config;
 		const params = createURLSearchParams(queryParams);
 		const channel = new EventSource(`backend/search/sse/${type}s/?${params}`);
 		channel.addEventListener(type, listener);
+		channel.addEventListener('close', () => {
+			channel.close();
+			onClose();
+		});
+		channel.addEventListener('open', onOpen);
 		return channel;
 	},
 };
