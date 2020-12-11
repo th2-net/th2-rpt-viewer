@@ -19,6 +19,7 @@ import EventWindow from './event/EventWindow';
 import BookmarksPanel from './BookmarksPanel';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import MessagesWindow from './message/MessagesWindow';
+import SearchPanel from './SearchPanel';
 import '../styles/workspace.scss';
 
 interface WorkspaceProps {
@@ -45,7 +46,7 @@ function Workspace(props: WorkspaceProps) {
 					{
 						title: 'Search',
 						color: '#ADC2EB',
-						component: <div style={{ margin: 'auto' }}>Search</div>,
+						component: <SearchPanel />,
 					},
 					{
 						title: 'Bookmarks',
