@@ -25,6 +25,14 @@ export default interface ApiSchema {
 	sse: SSESchema;
 }
 
+export interface EventSourceConfig {
+	type: 'event' | 'message';
+	queryParams: Record<string, string | number | boolean | null | string[]>;
+	listener: (this: EventSource, ev: Event | MessageEvent) => any;
+	onOpen: () => void;
+	onClose: () => void;
+}
+
 export interface EventApiSchema {
 	getEventTree: (filter: EventsFilter, signal?: AbortSignal) => Promise<EventTree>;
 	getEvent: (
@@ -73,9 +81,5 @@ export interface MessageApiSchema {
 }
 
 export interface SSESchema {
-	getEventSource: (
-		type: 'event' | 'message',
-		queryParams: Record<string, string | number | boolean | null | string[]>,
-		listener: (this: EventSource, ev: Event | MessageEvent) => any,
-	) => EventSource;
+	getEventSource: (config: EventSourceConfig) => EventSource;
 }
