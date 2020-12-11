@@ -23,6 +23,11 @@ import { FilterRowConfig } from '../models/filter/FilterInputs';
 import FilterRow from './filter/row';
 import TogglerRow from './filter/row/TogglerRow';
 import sseApi from '../api/sse';
+import { EventAction } from '../models/EventAction';
+import { createBemElement } from '../helpers/styleCreators';
+import { isEventAction } from '../helpers/event';
+import { getTimestampAsNumber } from '../helpers/date';
+import { EventMessage } from '../models/EventMessage';
 
 type SearchPanelState = {
 	startTimestamp: string;
@@ -48,7 +53,11 @@ const SearchPanel = () => {
 	const [currentName, setCurrentName] = useState('');
 	const [currentStream, setCurrentStream] = useState('');
 
-	const [currentlyLauncedChannel, setCurrentlyLaunchedChannel] = useState<EventSource | null>(null);
+	const [currentlyLaunchedChannel, setCurrentlyLaunchedChannel] = useState<EventSource | null>(
+		null,
+	);
+
+	const [events, setEvents] = useState<EventAction[]>([]);
 
 	const defaultState: SearchPanelState = {
 		startTimestamp: moment(timestamp).format('DD.MM.YYYY HH:mm:ss:SSS'),
@@ -242,16 +251,27 @@ const SearchPanel = () => {
 			formType === 'event'
 				? { ...commonParams, ...{ attachedMessageId, name, parentEvent } }
 				: { ...commonParams, ...{ attachedEventIds, stream, negativeTypeFilter } };
-		const channel = sseApi.getEventSource(formType, queryParams, e => {
-			// console.error(e);
+		const channel = sseApi.getEventSource({
+			type: formType,
+			queryParams,
+			listener: (ev: Event | MessageEvent) => {
+				const data = (ev as MessageEvent).data;
+				setEvents(currentEvents => [...currentEvents, JSON.parse(data)]);
+			},
+			onClose: () => {
+				setCurrentlyLaunchedChannel(null);
+			},
+			onOpen: () => {
+				setEvents([]);
+			},
 		});
 		setCurrentlyLaunchedChannel(channel);
 	}, [formType, formState]);
 
 	const stopChannel = useCallback(() => {
-		currentlyLauncedChannel?.close();
+		currentlyLaunchedChannel?.close();
 		setCurrentlyLaunchedChannel(null);
-	}, [currentlyLauncedChannel]);
+	}, [currentlyLaunchedChannel]);
 
 	return (
 		<div className='search-panel'>
@@ -260,7 +280,7 @@ const SearchPanel = () => {
 					config={{
 						type: 'toggler',
 						value: formType,
-						disabled: Boolean(currentlyLauncedChannel),
+						disabled: Boolean(currentlyLaunchedChannel),
 						setValue: setFormType,
 						possibleValues: ['event', 'message'],
 						id: 'source-type',
@@ -277,12 +297,34 @@ const SearchPanel = () => {
 				<div className='search-panel__buttons'>
 					<button
 						className='search-panel__submit'
-						onClick={currentlyLauncedChannel ? stopChannel : launchChannel}>
-						{currentlyLauncedChannel ? 'stop' : 'start'}
+						onClick={currentlyLaunchedChannel ? stopChannel : launchChannel}>
+						{currentlyLaunchedChannel ? 'stop' : 'start'}
 					</button>
 				</div>
 			</div>
-			<div>result</div>
+			<div className='search-panel__results'>
+				{events.map((item: EventAction | EventMessage) => {
+					const itemClass = createBemElement('search-panel', 'item', item.type);
+					const itemIconClass = createBemElement('search-panel', 'item-icon', `${item.type}-icon`);
+					return (
+						<div key={isEventAction(item) ? item.eventId : item.messageId} className={itemClass}>
+							<i className={itemIconClass} />
+							<div className='bookmarks-panel__item-info'>
+								<div className='bookmarks-panel__item-name'>
+									{isEventAction(item) ? item.eventName : item.messageId}
+								</div>
+								<div className='bookmarks-panel__item-timestamp'>
+									{moment(
+										getTimestampAsNumber(
+											isEventAction(item) ? item.startTimestamp : item.timestamp,
+										),
+									).format('DD.MM.YYYY HH:mm:ss:SSS')}
+								</div>
+							</div>
+						</div>
+					);
+				})}
+			</div>
 		</div>
 	);
 };
