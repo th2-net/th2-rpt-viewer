@@ -15,14 +15,14 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
 import { useGraphStore } from '../hooks';
 import useSetState from '../hooks/useSetState';
 import { FilterRowConfig } from '../models/filter/FilterInputs';
 import FilterRow from './filter/row';
 import TogglerRow from './filter/row/TogglerRow';
-import sseApi from '../api/sse';
+import sseApi, { SSEFilterInfo } from '../api/sse';
 import { EventAction } from '../models/EventAction';
 import { createBemElement } from '../helpers/styleCreators';
 import { isEventAction } from '../helpers/event';
@@ -47,6 +47,13 @@ const SearchPanel = () => {
 	const { timestamp } = useGraphStore();
 
 	const [formType, setFormType] = useState<'event' | 'message'>('event');
+	const [eventFilterInfo, setEventFilterInfo] = useState<SSEFilterInfo[]>([]);
+	const [messagesFilterInfo, setMessagesFilterInfo] = useState<SSEFilterInfo[]>([]);
+
+	useEffect(() => {
+		sseApi.getFilters('events').then(sseApi.getFiltersInfo).then(setEventFilterInfo);
+		sseApi.getFilters('messages').then(sseApi.getFiltersInfo).then(setMessagesFilterInfo);
+	}, []);
 
 	const [currentTypeValue, setCurrentTypeValue] = useState('');
 	const [currentAttachedEventIdsValue, setCurrentAttachedEventIdsValue] = useState('');
