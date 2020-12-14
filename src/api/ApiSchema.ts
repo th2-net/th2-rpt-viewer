@@ -18,6 +18,7 @@ import { EventAction, EventTree } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
+import { SSEFilterInfo } from './sse';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
@@ -82,4 +83,6 @@ export interface MessageApiSchema {
 
 export interface SSESchema {
 	getEventSource: (config: EventSourceConfig) => EventSource;
+	getFilters: (filterType: 'events' | 'messages') => Promise<[string, Promise<[string]>]>;
+	getFiltersInfo: (args: [string, Promise<[string]>]) => Promise<SSEFilterInfo[]>;
 }
