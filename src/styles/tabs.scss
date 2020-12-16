@@ -20,10 +20,7 @@
 	height: 100%;
 	width: 100%;
 	display: grid;
-	grid-template: 42px 1fr / 1fr;
-	grid-template-areas:
-		'tabs'
-		'content';
+	grid-template-columns: 22px 1fr;
 	overflow: hidden;
 
 	&__wrapper {
@@ -40,7 +37,7 @@
 	}
 
 	&__content {
-		background-color: #fff;
+		background-color: #EEF2F6;
 		padding: 0 7px;
 		position: relative;
 	}
@@ -182,7 +179,9 @@
 .droppable-tab-list {
 	width: 100%;
 	height: 100%;
-	display: flex;
+	display: grid;
+	grid-auto-rows: min-content;
+	grid-row-gap: 5px;
 	overflow: hidden;
 }
 

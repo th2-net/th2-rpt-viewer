@@ -19,37 +19,23 @@ import { Observer, observer } from 'mobx-react-lite';
 import Workspace from './Workspace';
 import { WorkspaceContextProvider } from '../contexts/workspaceContext';
 import { useWorkspaces } from '../hooks';
-import EventsWindowTab from './event/EventsWindowTab';
 import Tabs, { TabListRenderProps } from './tabs/Tabs';
-import { TabTypes } from '../models/util/Windows';
 import DroppableTabList from './tabs/DroppableTabList';
 import '../styles/root.scss';
 
 const WorkspacesLayout = () => {
 	const workspacesStore = useWorkspaces();
 
-	const renderTabs: TabListRenderProps = renderProps => {
-		const { activeTabIndex, ...tabProps } = renderProps;
-
+	const renderTabs: TabListRenderProps = ({ activeTabIndex, setActiveTab }) => {
 		return workspacesStore.workspaces.map((workspace, index) => {
 			return (
 				<Observer key={`events-tab-${index}`}>
 					{() => (
-						<EventsWindowTab
-							store={workspace.eventsStore}
-							dragItemPayload={{
-								type: TabTypes.Events,
-								store: workspace.eventsStore,
-								isSelected: activeTabIndex === index,
-							}}
-							tabIndex={index}
-							isSelected={activeTabIndex === index}
-							isClosable={workspacesStore.workspaces.length > 1}
-							isDuplicable={!workspacesStore.isFull}
-							onTabDrop={workspacesStore.moveTab}
-							tabCount={workspacesStore.workspaces.length}
-							{...tabProps}
-						/>
+						<div
+							className={`workspace-tab ${activeTabIndex === index ? 'active' : ''}`}
+							onClick={() => setActiveTab(index)}>
+							<h3 className='workspace-tab__title'>Workspace {index + 1}</h3>
+						</div>
 					)}
 				</Observer>
 			);
@@ -63,7 +49,14 @@ const WorkspacesLayout = () => {
 			closeTab={workspacesStore.tabsStore.closeWorkspace}
 			duplicateTab={workspacesStore.tabsStore.duplicateWorkspace}
 			tabList={tabListInjectedProps => (
-				<DroppableTabList>{renderTabs(tabListInjectedProps)}</DroppableTabList>
+				<DroppableTabList>
+					{renderTabs(tabListInjectedProps)}
+					<div
+						className='workspace-tab workspace-tab__add'
+						onClick={() => workspacesStore.addWorkspace(workspacesStore.createWorkspace())}>
+						+
+					</div>
+				</DroppableTabList>
 			)}
 			tabPanels={workspacesStore.workspaces.map((workspace, index) => (
 				<WorkspaceContextProvider value={workspace} key={index}>

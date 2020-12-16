@@ -83,6 +83,9 @@ function WorkspaceSplitter(props: Props) {
 			splittersRefs.current.forEach(resizerRef => {
 				if (resizerRef.current) {
 					resizerRef.current.style.position = 'absolute';
+					if (resizerRef.current === activeSplitter.current) {
+						resizerRef.current.style.zIndex = '1002';
+					}
 				}
 			});
 		}
@@ -121,6 +124,7 @@ function WorkspaceSplitter(props: Props) {
 		splittersRefs.current.forEach(resizerRef => {
 			if (resizerRef.current) {
 				resizerRef.current.style.position = 'static';
+				resizerRef.current.style.zIndex = '1000';
 			}
 		});
 	};
@@ -263,7 +267,7 @@ type SplitterProps = {
 };
 
 const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
-	({ color, title, onMouseDown, disabled = false, icon, isResizing }, ref) => {
+	({ color, title, onMouseDown, disabled = false, icon }, ref) => {
 		const titleRef = React.useRef<HTMLDivElement>(null);
 		return (
 			<div
