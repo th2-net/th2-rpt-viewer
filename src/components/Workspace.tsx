@@ -19,7 +19,7 @@ import EventWindow from './event/EventWindow';
 import BookmarksPanel from './BookmarksPanel';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import MessagesWindow from './message/MessagesWindow';
-import SearchPanel from './SearchPanel';
+import SearchPanel from './search-panel/SearchPanel';
 import '../styles/workspace.scss';
 
 interface WorkspaceProps {
