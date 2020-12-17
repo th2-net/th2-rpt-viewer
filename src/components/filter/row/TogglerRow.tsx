@@ -16,30 +16,20 @@
 import React from 'react';
 import { createStyleSelector } from '../../../helpers/styleCreators';
 import { FilterRowTogglerConfig } from '../../../models/filter/FilterInputs';
+import '../../../styles/toggler.scss';
 
 const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
 	const { value, setValue, possibleValues, label, disabled } = config;
+	const togglerClassName = createStyleSelector('toggler', disabled ? 'disabled' : '');
+	const togglerBarClassName = createStyleSelector('toggler__bar', value ? 'on' : 'off');
+	const [firstLabel, secondLabel] = possibleValues;
 	return (
 		<div className='filter-row'>
 			<p className='filter-row__label'>{label}</p>
-			<div className='filter-row__buttons'>
-				{possibleValues.map((possibleValue, i) => {
-					const buttonClassName = createStyleSelector(
-						'toggler-button',
-						value === possibleValue ? 'active' : '',
-					);
-					return (
-						<button
-							disabled={disabled}
-							key={i}
-							className={buttonClassName}
-							onClick={() => {
-								setValue(possibleValue);
-							}}>
-							{possibleValue}
-						</button>
-					);
-				})}
+			<div className={togglerClassName} onClick={setValue}>
+				<p className='toggler__label'>{firstLabel}</p>
+				<div className={togglerBarClassName}></div>
+				<p className='toggler__label'>{secondLabel}</p>
 			</div>
 		</div>
 	);
