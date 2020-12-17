@@ -22,7 +22,6 @@ import TogglerRow from '../filter/row/TogglerRow';
 import sseApi from '../../api/sse';
 import { EventAction } from '../../models/EventAction';
 import { isEventMessage } from '../../helpers/event';
-import { EventMessage } from '../../models/EventMessage';
 import SearchPanelFilters, {
 	FilterState,
 	MessageFilterState,
@@ -130,11 +129,11 @@ const SearchPanel = () => {
 		}
 
 		const filtersToAdd = currentFilters
-			.filter(info => {
+			.filter((info: SSEFilterInfo) => {
 				const values = getFilter(info.name).values;
 				return values.length !== 0;
 			})
-			.map(info => info.name);
+			.map((info: SSEFilterInfo) => info.name);
 
 		const filterValues = filtersToAdd.map(filter => {
 			const values = getFilter(filter).values;

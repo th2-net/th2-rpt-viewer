@@ -18,19 +18,6 @@ import { EventSourceConfig, SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import { SSEFilterInfo } from '../stores/SearchPanelFiltersStore';
 
-export interface SSEFilterParameter {
-	defaultValue: boolean;
-	hint: string;
-	name: string;
-	type: { value: string };
-}
-
-export interface SSEFilterInfo {
-	name: string;
-	hint: string;
-	parameters: SSEFilterParameter[];
-}
-
 const sseApi: SSESchema = {
 	getEventSource(config: EventSourceConfig) {
 		const { type, queryParams, listener, onOpen, onClose } = config;
