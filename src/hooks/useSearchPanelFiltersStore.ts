@@ -11,21 +11,12 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  limitations under the License.
  ***************************************************************************** */
-import React from 'react';
-import { FilterRowCheckboxConfig } from '../../../models/filter/FilterInputs';
 
-const Checkbox = ({ config }: { config: FilterRowCheckboxConfig }) => {
-	const { value, setValue, label, id } = config;
-	return (
-		<div className='filter-row'>
-			<label className='filter-row__label' htmlFor={id}>
-				{label}
-			</label>
-			<input type='checkbox' checked={value} onChange={setValue} />
-		</div>
-	);
+import { useRootStore } from './useRootStore';
+
+export const useSearchPanelFiltersStore = () => {
+	const rootStore = useRootStore();
+	return rootStore.searchPanelFiltersStore;
 };
-
-export default Checkbox;

@@ -20,9 +20,12 @@ import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
 import NotificationsStore from './NotificationsStore';
 import GraphStore from './GraphStore';
 import { registerUrlMiddleware } from '../helpers/url';
+import SearchPanelFiltersStore from './SearchPanelFiltersStore';
 
 export default class RootStore {
 	notificationsStore = NotificationsStore;
+
+	searchPanelFiltersStore = SearchPanelFiltersStore;
 
 	workspacesStore: WorkspacesStore;
 
