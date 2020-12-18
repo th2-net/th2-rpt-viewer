@@ -72,9 +72,9 @@ const SearchPanelForm = (props: SearchPanelFormProps) => {
 		{
 			label: 'Search Direction',
 			value: state.searchDirection === 'next',
-			setValue: toggleSearchDirection,
+			toggleValue: toggleSearchDirection,
 			disabled: false,
-			possibleValues: ['next', 'previous'],
+			possibleValues: ['next', 'prev'],
 			type: 'toggler',
 			id: 'search-direction',
 		},

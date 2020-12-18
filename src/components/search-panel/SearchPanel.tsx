@@ -16,15 +16,12 @@
 
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import moment from 'moment';
 import { useGraphStore } from '../../hooks';
 import useSetState from '../../hooks/useSetState';
 import TogglerRow from '../filter/row/TogglerRow';
 import sseApi from '../../api/sse';
 import { EventAction } from '../../models/EventAction';
-import { createBemElement } from '../../helpers/styleCreators';
-import { isEventAction } from '../../helpers/event';
-import { getTimestampAsNumber } from '../../helpers/date';
+import { isEventMessage } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
 import SearchPanelFilters, {
 	FilterState,
@@ -34,6 +31,8 @@ import SearchPanelFilters, {
 import SearchPanelForm from './SearchPanelForm';
 import { SSEFilterInfo, SSEFilterParameter } from '../../stores/SearchPanelFiltersStore';
 import { useSearchPanelFiltersStore } from '../../hooks/useSearchPanelFiltersStore';
+import '../../styles/search-panel.scss';
+import SearchPanelResults, { Result, ResultTypes } from './SearchPanelResults';
 
 export type SearchPanelState = {
 	startTimestamp: number;
@@ -147,7 +146,7 @@ const SearchPanel = () => {
 			return negative ? [`${filter}-negative`, negative] : [];
 		});
 
-		const commonParams = {
+		const params = {
 			startTimestamp,
 			searchDirection,
 			resultCountLimit,
@@ -156,15 +155,14 @@ const SearchPanel = () => {
 			...Object.fromEntries([...filterValues, ...filterInclusion]),
 		};
 
-		const queryParams =
-			formType === 'event' ? { ...commonParams, parentEvent } : { ...commonParams, stream };
+		const queryParams = formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
 
 		const channel = sseApi.getEventSource({
 			type: formType,
 			queryParams,
 			listener: (ev: Event | MessageEvent) => {
 				const data = (ev as MessageEvent).data;
-				setResults(currentResults => [...currentResults, JSON.parse(data)]);
+				setResults(res => [...res, JSON.parse(data)]);
 			},
 			onClose: () => {
 				setCurrentlyLaunchedChannel(null);
@@ -182,6 +180,13 @@ const SearchPanel = () => {
 		setCurrentlyLaunchedChannel(null);
 	}, [currentlyLaunchedChannel]);
 
+	const currentResults: Result[] = React.useMemo(() => {
+		return results.map(item => ({
+			value: item,
+			type: isEventMessage(item) ? ResultTypes.MESSAGE : ResultTypes.EVENT,
+		}));
+	}, [results]);
+
 	return (
 		<div className='search-panel'>
 			<div className='search-panel__toggle'>
@@ -190,7 +195,7 @@ const SearchPanel = () => {
 						type: 'toggler',
 						value: formType === 'event',
 						disabled: Boolean(currentlyLaunchedChannel),
-						setValue: toggleFormType,
+						toggleValue: toggleFormType,
 						possibleValues: ['event', 'message'],
 						id: 'source-type',
 						label: '',
@@ -212,29 +217,7 @@ const SearchPanel = () => {
 					</button>
 				</div>
 			</div>
-			<div className='search-panel__results'>
-				{results.map((item: EventAction | EventMessage) => {
-					const itemClass = createBemElement('search-panel', 'item', item.type);
-					const itemIconClass = createBemElement('search-panel', 'item-icon', `${item.type}-icon`);
-					return (
-						<div key={isEventAction(item) ? item.eventId : item.messageId} className={itemClass}>
-							<i className={itemIconClass} />
-							<div className='bookmarks-panel__item-info'>
-								<div className='bookmarks-panel__item-name'>
-									{isEventAction(item) ? item.eventName : item.messageId}
-								</div>
-								<div className='bookmarks-panel__item-timestamp'>
-									{moment(
-										getTimestampAsNumber(
-											isEventAction(item) ? item.startTimestamp : item.timestamp,
-										),
-									).format('DD.MM.YYYY HH:mm:ss:SSS')}
-								</div>
-							</div>
-						</div>
-					);
-				})}
-			</div>
+			<SearchPanelResults results={currentResults} />
 		</div>
 	);
 };
