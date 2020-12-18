@@ -124,8 +124,8 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									disabled: false,
 									type: 'toggler',
 									value: getState(filter.name).negative,
-									setValue: getNegativeToggler(filter.name),
-									possibleValues: ['exclude', 'include'],
+									toggleValue: getNegativeToggler(filter.name),
+									possibleValues: ['excl', 'incl'],
 								};
 							case 'string':
 								return {

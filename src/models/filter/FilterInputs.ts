@@ -104,5 +104,5 @@ export type FilterRowTogglerConfig = FilterRowBaseConfig & {
 	disabled: boolean;
 	value: boolean;
 	possibleValues: [string, string];
-	setValue: () => void;
+	toggleValue: () => void;
 };
