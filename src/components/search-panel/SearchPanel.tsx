@@ -22,7 +22,6 @@ import TogglerRow from '../filter/row/TogglerRow';
 import sseApi from '../../api/sse';
 import { EventAction } from '../../models/EventAction';
 import { isEventMessage } from '../../helpers/event';
-import { EventMessage } from '../../models/EventMessage';
 import SearchPanelFilters, {
 	FilterState,
 	MessageFilterState,
