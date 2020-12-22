@@ -21,10 +21,12 @@ import { HeatmapProvider } from '../heatmap/HeatmapProvider';
 import { useMessagesWorkspaceStore, useSelectedStore } from '../../hooks';
 import MessagesCardList from './MessagesCardList';
 import { getTimestampAsNumber } from '../../helpers/date';
+import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 
 const MessagesWindow = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const selectedStore = useSelectedStore();
+	const viewStore = useWorkspaceViewStore();
 
 	const selectedItems = React.useMemo(() => {
 		const heatmapElementsMap: Map<string, string[]> = new Map();
@@ -87,7 +89,7 @@ const MessagesWindow = () => {
 			selectedItems={selectedItems}
 			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}
 			pinnedItems={selectedStore.pinnedMessages.map(m => m.messageId)}>
-			<div className='window'>
+			<div onClick={() => viewStore.setTargetPanel(messagesStore)} className='window'>
 				<div className='window__controls'>
 					<MessagesWindowHeader />
 				</div>

@@ -16,6 +16,8 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { useWorkspaceStore } from '../hooks';
+import { useWorkspaceViewStore } from '../hooks/useWorkspaceViewStore';
 
 interface Panel {
 	title: string;
@@ -221,7 +223,7 @@ function WorkspaceSplitter(props: Props) {
 	return (
 		<div ref={rootRef} className='workspace-split-view'>
 			{props.panels.map((panel, index) => (
-				<>
+				<React.Fragment key={panel.title}>
 					<Splitter
 						isResizing={isResizing}
 						color={panel.color}
@@ -235,7 +237,7 @@ function WorkspaceSplitter(props: Props) {
 						{panel.component}
 					</div>
 					<Overlay color={panel.color} isActive={isResizing} ref={overlaysRefs.current[index]} />
-				</>
+				</React.Fragment>
 			))}
 		</div>
 	);
@@ -268,7 +270,20 @@ type SplitterProps = {
 
 const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
 	({ color, title, onMouseDown, disabled = false, icon }, ref) => {
+		const viewStore = useWorkspaceViewStore();
+		const workspaceStore = useWorkspaceStore();
 		const titleRef = React.useRef<HTMLDivElement>(null);
+
+		const targetPanel = () => {
+			viewStore.setTargetPanel(
+				title === 'Events'
+					? workspaceStore.eventsStore
+					: title === 'Messages'
+					? workspaceStore.messagesStore
+					: null,
+			);
+		};
+
 		return (
 			<div
 				className='workspace-splitter'
@@ -287,6 +302,7 @@ const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
 				}}>
 				<div
 					ref={ref}
+					onMouseDown={() => targetPanel()}
 					className='workspace-splitter__handle'
 					style={{ backgroundColor: color, cursor: disabled ? 'default' : 'col-resize' }}>
 					<div className='workspace-splitter__content'>

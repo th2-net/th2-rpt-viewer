@@ -124,7 +124,9 @@ const GraphAttachedItem = ({
 														? (items[0].value as EventAction).startTimestamp
 														: (items[0].value as EventMessage).timestamp,
 												),
-											).format('DD.MM.YYYY HH:mm:ss:SSS')}
+											)
+												.utc()
+												.format('DD.MM.YYYY HH:mm:ss:SSS')}
 										</div>
 									</div>
 								))}

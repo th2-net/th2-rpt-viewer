@@ -44,7 +44,7 @@ function EventWindowHeader(props: EventWindowHeaderProps) {
 				<EventsFilterPanel />
 				<div
 					role='button'
-					onClick={eventStore.viewStore.toggleFlatttenEventListView}
+					onClick={eventStore.viewStore.toggleFlattenEventListView}
 					className={flattenButtonClassName}>
 					Flat view
 				</div>

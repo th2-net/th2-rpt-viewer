@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed } from 'mobx';
+import { observable, action, computed, reaction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { SelectedStore } from './SelectedStore';
 import WorkspaceStore, {
@@ -23,6 +23,7 @@ import WorkspaceStore, {
 	WorkspaceUrlState,
 } from './WorkspaceStore';
 import TabsStore from './TabsStore';
+import GraphStore from './GraphStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -33,7 +34,11 @@ export default class WorkspacesStore {
 
 	tabsStore: TabsStore;
 
-	constructor(private api: ApiSchema, initialState: WorkspacesUrlState | null) {
+	constructor(
+		private api: ApiSchema,
+		private graphStore: GraphStore,
+		initialState: WorkspacesUrlState | null,
+	) {
 		this.init(initialState);
 
 		this.tabsStore = new TabsStore(this);
@@ -67,7 +72,8 @@ export default class WorkspacesStore {
 
 		try {
 			this.workspaces = initialState.map(
-				workspaceState => new WorkspaceStore(this.selectedStore, this.api, workspaceState.events),
+				workspaceState =>
+					new WorkspaceStore(this.selectedStore, this.api, this.graphStore, workspaceState.events),
 			);
 		} catch (error) {
 			this.addWorkspace(this.createWorkspace());
@@ -91,6 +97,7 @@ export default class WorkspacesStore {
 		return new WorkspaceStore(
 			this.selectedStore,
 			this.api,
+			this.graphStore,
 			eventsDefaultState,
 			messagesDefaultState,
 		);
