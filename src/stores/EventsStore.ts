@@ -344,7 +344,7 @@ export default class EventsStore {
 		this.scrolledIndex = store.scrolledIndex?.valueOf() || null;
 		this.isExpandedMap = toJS(store.isExpandedMap, { exportMapsAsObjects: false });
 		this.expandPath(store.selectedPath.map(n => n.eventId));
-		this.viewStore = new ViewStore({
+		this.viewStore = new ViewStore(undefined, {
 			flattenedListView: store.viewStore.flattenedListView.valueOf(),
 			isLoading: store.viewStore.isLoading.valueOf(),
 			panelArea: store.viewStore.panelArea,
@@ -382,7 +382,7 @@ export default class EventsStore {
 
 		this.filterStore = new FilterStore({ eventsFilter: filter });
 		this.searchStore = new SearchStore(this.api, this, { searchPatterns: search || [] });
-		this.viewStore = new ViewStore({
+		this.viewStore = new ViewStore(undefined, {
 			flattenedListView,
 			panelArea,
 		});

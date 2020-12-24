@@ -23,6 +23,8 @@ import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../models/EventMessage';
 import { EventAction } from '../models/EventAction';
 import { sortMessagesByTimestamp } from '../helpers/message';
+import GraphStore from './GraphStore';
+import { isEventsStore, isMessagesStore } from '../helpers/stores';
 
 export type EventStoreDefaultStateType = EventsStore | EventStoreURLState | null;
 export type MessagesStoreDefaultStateType = MessagesStore | null;
@@ -37,11 +39,12 @@ export default class WorkspaceStore {
 
 	@observable messagesStore: MessagesStore;
 
-	@observable viewStore = new WorkspaceViewStore();
+	@observable viewStore: WorkspaceViewStore;
 
 	constructor(
 		private selectedStore: SelectedStore,
 		private api: ApiSchema,
+		private graphStore: GraphStore,
 		eventDefaultState: EventStoreDefaultStateType = null,
 		messagesDefaultState: MessagesStoreDefaultStateType = null,
 	) {
@@ -52,11 +55,42 @@ export default class WorkspaceStore {
 			this.api,
 			messagesDefaultState,
 		);
+		this.viewStore = new WorkspaceViewStore(this.eventsStore);
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 
 		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
+
+		reaction(
+			() => this.graphStore.range,
+			() => {
+				this.panelUpdateTimer = setTimeout(() => {
+					if (this.panelUpdateTimer) {
+						clearTimeout(this.panelUpdateTimer);
+					}
+					if (isEventsStore(this.viewStore.targetPanel)) {
+						const eventsFilter = this.viewStore.targetPanel.filterStore.eventsFilter;
+						this.viewStore.targetPanel.filterStore.eventsFilter = {
+							timestampFrom: this.graphStore.range[0],
+							timestampTo: this.graphStore.range[1],
+							eventTypes: eventsFilter.eventTypes,
+							names: eventsFilter.names,
+						};
+					} else if (isMessagesStore(this.viewStore.targetPanel)) {
+						const messageFilter = this.viewStore.targetPanel?.filterStore.messagesFilter;
+						this.viewStore.targetPanel.filterStore.messagesFilter = {
+							timestampFrom: this.graphStore.range[0],
+							timestampTo: this.graphStore.range[1],
+							messageTypes: messageFilter ? messageFilter.messageTypes : [],
+							streams: messageFilter ? messageFilter.streams : [],
+						};
+					}
+				}, 1000);
+			},
+		);
 	}
+
+	@observable panelUpdateTimer: NodeJS.Timeout | null = null;
 
 	@observable
 	public attachedMessagesIds: Array<string> = [];
@@ -68,9 +102,14 @@ export default class WorkspaceStore {
 	public isLoadingAttachedMessages = false;
 
 	@action
-	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
-		this.attachedMessagesIds = selectedEvent ? [...new Set(selectedEvent.attachedMessageIds)] : [];
-	};
+	private onSelectedEventChange = (selectedEvent: EventAction | null) =>
+		this.setAttachedMessagesIds(
+			selectedEvent ? [...new Set(selectedEvent.attachedMessageIds)] : [],
+		);
+
+	@action
+	public setAttachedMessagesIds = (attachedMessageIds: string[]) =>
+		(this.attachedMessagesIds = attachedMessageIds);
 
 	private attachedMessagesAC: AbortController | null = null;
 

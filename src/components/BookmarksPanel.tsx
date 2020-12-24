@@ -21,6 +21,7 @@ import { getTimestampAsNumber } from '../helpers/date';
 import { isEventAction, isEventMessage } from '../helpers/event';
 import { createBemElement } from '../helpers/styleCreators';
 import { useSelectedStore } from '../hooks';
+import { useWorkspaceViewStore } from '../hooks/useWorkspaceViewStore';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 
@@ -36,6 +37,7 @@ enum SavedItemTypes {
 
 const BookmarksPanel = () => {
 	const selectedStore = useSelectedStore();
+	const viewStore = useWorkspaceViewStore();
 
 	const savedItems: SavedItem[] = React.useMemo(() => {
 		return [...selectedStore.pinnedMessages, ...selectedStore.pinnedEvents]
@@ -58,7 +60,7 @@ const BookmarksPanel = () => {
 	const removeSavedItem = (item: SavedItem) => selectedStore.removeSavedItem(item.value);
 
 	return (
-		<div className='bookmarks-panel'>
+		<div onClick={() => viewStore.setTargetPanel(null)} className='bookmarks-panel'>
 			{savedItems.map(item => (
 				<div
 					key={isEventAction(item.value) ? item.value.eventId : item.value.messageId}
@@ -87,7 +89,9 @@ const BookmarksPanel = () => {
 								getTimestampAsNumber(
 									isEventAction(item.value) ? item.value.startTimestamp : item.value.timestamp,
 								),
-							).format('DD.MM.YYYY HH:mm:ss:SSS')}
+							)
+								.utc()
+								.format('DD.MM.YYYY HH:mm:ss:SSS')}
 						</div>
 					</div>
 					<button

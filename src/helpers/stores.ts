@@ -14,25 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventAction } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
-import { getTimestampAsNumber } from './date';
-import { isEventAction } from './event';
+import EventsStore from '../stores/EventsStore';
+import MessagesStore from '../stores/MessagesStore';
 
-export function getMinifiedStatus(status: string): string {
-	return status
-		.split('_')
-		.map(str => str[0])
-		.join('')
-		.toUpperCase();
-}
+export const isEventsStore = (object: unknown): object is EventsStore => {
+	return object !== null && (object as EventsStore).eventTree !== undefined;
+};
 
-export function mapToTimestamps(list: EventAction[] | EventMessage[]) {
-	return isEventAction(list[0])
-		? (list as EventAction[]).map(item => getTimestampAsNumber(item.startTimestamp))
-		: (list as EventMessage[]).map(item => getTimestampAsNumber(item.timestamp));
-}
-
-export function toTimestamp(item: EventAction | EventMessage) {
-	return isEventAction(item) ? item.startTimestamp : (item as EventMessage).timestamp;
-}
+export const isMessagesStore = (object: unknown): object is MessagesStore => {
+	return object !== null && (object as MessagesStore).messagesIds !== undefined;
+};

@@ -20,12 +20,15 @@ import BookmarksPanel from './BookmarksPanel';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import MessagesWindow from './message/MessagesWindow';
 import '../styles/workspace.scss';
+import { useWorkspaceViewStore } from '../hooks/useWorkspaceViewStore';
 
 interface WorkspaceProps {
 	isActive: boolean;
 }
 
 function Workspace(props: WorkspaceProps) {
+	const viewStore = useWorkspaceViewStore();
+
 	return (
 		<div className='workspace'>
 			<WorkspaceSplitter
@@ -45,7 +48,11 @@ function Workspace(props: WorkspaceProps) {
 					{
 						title: 'Search',
 						color: '#ADC2EB',
-						component: <div style={{ margin: 'auto' }}>Search</div>,
+						component: (
+							<div onClick={() => viewStore.setTargetPanel(null)} style={{ margin: 'auto' }}>
+								Search
+							</div>
+						),
 					},
 					{
 						title: 'Bookmarks',

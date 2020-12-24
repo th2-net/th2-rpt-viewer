@@ -21,16 +21,18 @@ import moment from 'moment';
 import { AnimatePresence, motion } from 'framer-motion';
 import ResizeObserver from 'resize-observer-polyfill';
 import GraphChunk, { AttachedItem } from './GraphChunk';
-import { useGraphStore, useSelectedStore } from '../../hooks';
+import { useGraphStore, useSelectedStore, useWorkspaces } from '../../hooks';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
 import { EventAction } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk, OutsideItems } from '../../models/graph';
 import { filterListByChunkRange } from '../../helpers/graph';
 import TimestampInput from '../util/TimestampInput';
-import { mapToTimestamps } from '../../helpers/action';
-import { isEventAction } from '../../helpers/event';
+import { mapToTimestamps, toTimestamp } from '../../helpers/action';
+import { isEventAction, isEventMessage } from '../../helpers/event';
 import '../../styles/graph.scss';
+import { isMessagesStore } from '../../helpers/stores';
+import { getTimestampAsNumber } from '../../helpers/date';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -207,6 +209,7 @@ const OverlayPanels = observer(
 	({ chunkWidth, range: [from, to], onInputSubmit }: OverlayPanelProps) => {
 		const graphStore = useGraphStore();
 		const selectedStore = useSelectedStore();
+		const workspaceStore = useWorkspaces().activeWorkspace;
 		const overlayWidth = (window.innerWidth - chunkWidth) / 2;
 		const commonStyles: React.CSSProperties = { width: overlayWidth };
 		const intervalValues = React.useMemo(() => {
@@ -222,20 +225,36 @@ const OverlayPanels = observer(
 		]);
 
 		const handleIndicatorPointerClick = (direction: 'left' | 'right') => {
-			const timestamps = Object.values(
-				direction === 'left' ? outsideItems.left : outsideItems.right,
-			)
-				.flatMap(items => mapToTimestamps(items))
-				.sort((a, b) => (a > b ? 1 : -1));
+			const items = Object.values(direction === 'left' ? outsideItems.left : outsideItems.right)
+				.flatMap(groupItems => groupItems)
+				.sort((first, second) => {
+					const firstTimestamp = getTimestampAsNumber(toTimestamp(first));
+					const secondTimestamp = getTimestampAsNumber(toTimestamp(second));
+					return firstTimestamp > secondTimestamp ? 1 : -1;
+				});
+			const timestamps = items.map(item => getTimestampAsNumber(toTimestamp(item)));
+			const targetItem = items[direction === 'left' ? timestamps.length - 1 : 0];
 
+			if (isEventMessage(targetItem) && isMessagesStore(workspaceStore.viewStore.targetPanel)) {
+				workspaceStore.setAttachedMessagesIds([targetItem.messageId]);
+			}
 			graphStore.setTimestamp(timestamps[direction === 'left' ? timestamps.length - 1 : 0]);
 		};
 
-		const handleIdicatorItemClick = (item: keyof OutsideItems, direction: 'left' | 'right') => {
-			const timestamps = mapToTimestamps(outsideItems[direction][item]).sort((a, b) =>
-				a > b ? 1 : -1,
+		const handleIdicatorItemClick = (group: keyof OutsideItems, direction: 'left' | 'right') => {
+			const items = outsideItems[direction][group].sort(
+				(first: EventAction | EventMessage, second: EventAction | EventMessage) => {
+					const firstTimestamp = getTimestampAsNumber(toTimestamp(first));
+					const secondTimestamp = getTimestampAsNumber(toTimestamp(second));
+					return firstTimestamp > secondTimestamp ? 1 : -1;
+				},
 			);
+			const timestamps = mapToTimestamps(items);
+			const targetItem = items[direction === 'left' ? timestamps.length - 1 : 0];
 
+			if (isEventMessage(targetItem) && isMessagesStore(workspaceStore.viewStore.targetPanel)) {
+				workspaceStore.setAttachedMessagesIds([targetItem.messageId]);
+			}
 			graphStore.setTimestamp(timestamps[direction === 'left' ? timestamps.length - 1 : 0]);
 		};
 

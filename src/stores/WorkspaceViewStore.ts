@@ -16,6 +16,8 @@
 
 import { observable, action, computed } from 'mobx';
 import PanelArea from '../util/PanelArea';
+import EventsStore from './EventsStore';
+import MessagesStore from './MessagesStore';
 
 type InitialState = Partial<{
 	panelArea: PanelArea;
@@ -24,9 +26,12 @@ type InitialState = Partial<{
 }>;
 
 export default class WorkspaceViewStore {
-	constructor(initalState?: InitialState) {
+	constructor(private eventsStore?: EventsStore, initalState?: InitialState) {
 		if (initalState) {
 			this.init(initalState);
+		}
+		if (this.eventsStore) {
+			this.targetPanel = this.eventsStore;
 		}
 	}
 
@@ -35,6 +40,8 @@ export default class WorkspaceViewStore {
 	@observable panelArea: PanelArea = PanelArea.P50;
 
 	@observable flattenedListView = false;
+
+	@observable targetPanel: EventsStore | MessagesStore | null = null;
 
 	@computed get isLeftPanelClosed() {
 		return this.panelArea === PanelArea.P0;
@@ -55,7 +62,12 @@ export default class WorkspaceViewStore {
 	};
 
 	@action
-	toggleFlatttenEventListView = () => {
+	setTargetPanel = (panel: EventsStore | MessagesStore | null) => {
+		this.targetPanel = panel;
+	};
+
+	@action
+	toggleFlattenEventListView = () => {
 		this.flattenedListView = !this.flattenedListView;
 	};
 

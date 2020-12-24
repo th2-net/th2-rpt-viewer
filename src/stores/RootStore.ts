@@ -31,7 +31,11 @@ export default class RootStore {
 	graphStore = new GraphStore(this);
 
 	constructor(private api: ApiSchema) {
-		this.workspacesStore = new WorkspacesStore(this.api, this.parseWorkspacesState());
+		this.workspacesStore = new WorkspacesStore(
+			this.api,
+			this.graphStore,
+			this.parseWorkspacesState(),
+		);
 
 		this.viewStore = new AppViewStore();
 
