@@ -32,8 +32,6 @@
 	width: 100%;
 	border-radius: 6px 0 0 6px;
 	padding: 10px 0;
-	display: flex;
-	justify-content: center;
 	background-color: #CCE6FF;
 	color: #3D668F;
 	box-shadow:  0px 3px 10px rgba(0, 0, 0, 0.25);
@@ -52,16 +50,37 @@
 		writing-mode: vertical-rl;
 		text-orientation: mixed;
 		transform: rotate(180deg);
-		margin: 0;
+		margin: auto;
+		margin-right: 3px;
 	}
 
 	&__add {
 		background-color: #DEE5ED;
+		text-align: center;
 		height: 25px;
 		padding: 0;
 		color: #4D80B2;
 		font-size: 20px;
 		line-height: 25px;
+	}
+
+	&__close {
+		@include icon(url(../../resources/icons/cross-icon-white.svg));
+		display: block;
+		border-radius: 50%;
+		margin: auto;
+		margin-bottom: 5px;
+		transition: all 0.2s;
+
+		&:hover {
+			background-color: rgba(102, 102, 102, 0.15);
+		}
+
+		&.selected {
+			&:hover {
+				background-color: rgba(181, 181, 181, 0.34);
+			}
+		}
 	}
 }
 

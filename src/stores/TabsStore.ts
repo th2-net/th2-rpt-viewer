@@ -16,6 +16,7 @@
 
 import { action, observable } from 'mobx';
 import WorkspacesStore from './WorkspacesStore';
+import WorkspaceStore from './WorkspaceStore';
 
 export default class TabsStore {
 	constructor(private workspacesStore: WorkspacesStore) {}
@@ -34,13 +35,14 @@ export default class TabsStore {
 	};
 
 	@action
-	closeWorkspace = (tabIndex: number) => {
-		if (tabIndex <= this.activeTabIndex) {
-			this.activeTabIndex = this.activeTabIndex === 0 ? 0 : this.activeTabIndex - 1;
+	closeWorkspace = (tab: number | WorkspaceStore) => {
+		const index = typeof tab === 'number' ? tab : this.workspacesStore.workspaces.indexOf(tab);
+		if (index <= this.activeTabIndex) {
+			this.setActiveWorkspace(this.activeTabIndex === 0 ? 0 : this.activeTabIndex - 1);
 		}
-		const workspaceToClose = this.workspacesStore.workspaces[tabIndex];
+		const workspaceToClose = this.workspacesStore.workspaces[index];
 		workspaceToClose.messagesStore.dispose();
-		this.workspacesStore.deleteWorkspace(workspaceToClose);
+		this.workspacesStore.workspaces.splice(index, 1);
 	};
 
 	@action

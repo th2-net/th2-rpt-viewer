@@ -21,6 +21,7 @@ import { WorkspaceContextProvider } from '../contexts/workspaceContext';
 import { useWorkspaces } from '../hooks';
 import Tabs, { TabListRenderProps } from './tabs/Tabs';
 import DroppableTabList from './tabs/DroppableTabList';
+import { createStyleSelector } from '../helpers/styleCreators';
 import '../styles/root.scss';
 
 const WorkspacesLayout = () => {
@@ -34,6 +35,18 @@ const WorkspacesLayout = () => {
 						<div
 							className={`workspace-tab ${activeTabIndex === index ? 'active' : ''}`}
 							onClick={() => setActiveTab(index)}>
+							{workspacesStore.workspaces.length > 1 && (
+								<span
+									className={createStyleSelector(
+										'workspace-tab__close',
+										activeTabIndex === index ? 'selected' : null,
+									)}
+									onClick={e => {
+										e.stopPropagation();
+										workspacesStore.tabsStore.closeWorkspace(workspace);
+									}}
+								/>
+							)}
 							<h3 className='workspace-tab__title'>Workspace {index + 1}</h3>
 						</div>
 					)}
