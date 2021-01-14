@@ -222,7 +222,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 			const intervalEnd = moment(intervalStart).utc().add(graphStore.interval, 'minutes');
 
 			if (intervalStart.isValid() && intervalEnd.isValid()) {
-				graphStore.range = [intervalStart.valueOf(), intervalEnd.valueOf()];
+				graphStore.setRange([intervalStart.valueOf(), intervalEnd.valueOf()]);
 			}
 		}
 

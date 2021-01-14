@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import { action, computed, reaction, observable } from 'mobx';
-import ApiSchema from '../api/ApiSchema';
 import { randomHexColor } from '../helpers/color';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
@@ -43,23 +42,12 @@ export class SelectedStore {
 	@observable.shallow
 	public pinnedEvents: Array<EventAction> = localStorageWorker.getPersistedPinnedEvents();
 
-	constructor(private workspacesStore: WorkspacesStore, private api: ApiSchema) {
-		reaction(
-			() => this.selectedEvents,
-			selectedEvents => {
-				this.getEventColors(selectedEvents);
-			},
-		);
+	constructor(private workspacesStore: WorkspacesStore) {
+		reaction(() => this.selectedEvents, this.getEventColors);
 
-		reaction(
-			() => this.pinnedMessages,
-			pinnedMessages => localStorageWorker.setPersistedPinnedMessages(pinnedMessages),
-		);
+		reaction(() => this.pinnedMessages, localStorageWorker.setPersistedPinnedMessages);
 
-		reaction(
-			() => this.pinnedEvents,
-			pinnedEvents => localStorageWorker.setPersistedPinnedEvents(pinnedEvents),
-		);
+		reaction(() => this.pinnedEvents, localStorageWorker.setPersistedPinnedEvents);
 	}
 
 	@computed get savedItems() {

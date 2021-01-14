@@ -51,7 +51,8 @@ class GraphStore {
 	@observable
 	public timestamp: number = moment().utc().valueOf();
 
-	@observable range: [number, number] = [
+	@observable
+	public range: [number, number] = [
 		moment(this.timestamp)
 			.utc()
 			.subtract(this.interval / 2, 'minutes')
@@ -74,6 +75,11 @@ class GraphStore {
 	@action
 	public setInterval = (interval: IntervalOption) => {
 		this.interval = interval;
+	};
+
+	@action
+	public setRange = (range: [number, number]) => {
+		this.range = range;
 	};
 
 	@action
@@ -135,7 +141,7 @@ class GraphStore {
 		return intervalData;
 	};
 
-	@action getOverlayValues = (): OverlayValues => {
+	public getOverlayValues = (): OverlayValues => {
 		const windowTimeRange = [
 			moment(this.range[0])
 				.subtract(this.interval / 2, 'minutes')

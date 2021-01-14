@@ -28,11 +28,10 @@ import { EventMessage } from '../../models/EventMessage';
 import { Chunk, OutsideItems } from '../../models/graph';
 import { filterListByChunkRange } from '../../helpers/graph';
 import TimestampInput from '../util/TimestampInput';
-import { mapToTimestamps, toTimestamp } from '../../helpers/action';
-import { isEventAction, isEventMessage } from '../../helpers/event';
-import '../../styles/graph.scss';
+import { isEventAction, isEventMessage, mapToTimestamps, getTimestamp } from '../../helpers/event';
 import { isMessagesStore } from '../../helpers/stores';
 import { getTimestampAsNumber } from '../../helpers/date';
+import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -228,11 +227,11 @@ const OverlayPanels = observer(
 			const items = Object.values(direction === 'left' ? outsideItems.left : outsideItems.right)
 				.flatMap(groupItems => groupItems)
 				.sort((first, second) => {
-					const firstTimestamp = getTimestampAsNumber(toTimestamp(first));
-					const secondTimestamp = getTimestampAsNumber(toTimestamp(second));
+					const firstTimestamp = getTimestampAsNumber(getTimestamp(first));
+					const secondTimestamp = getTimestampAsNumber(getTimestamp(second));
 					return firstTimestamp > secondTimestamp ? 1 : -1;
 				});
-			const timestamps = items.map(item => getTimestampAsNumber(toTimestamp(item)));
+			const timestamps = items.map(item => getTimestampAsNumber(getTimestamp(item)));
 			const targetItem = items[direction === 'left' ? timestamps.length - 1 : 0];
 
 			if (isEventMessage(targetItem) && isMessagesStore(workspaceStore.viewStore.targetPanel)) {
@@ -244,8 +243,8 @@ const OverlayPanels = observer(
 		const handleIdicatorItemClick = (group: keyof OutsideItems, direction: 'left' | 'right') => {
 			const items = outsideItems[direction][group].sort(
 				(first: EventAction | EventMessage, second: EventAction | EventMessage) => {
-					const firstTimestamp = getTimestampAsNumber(toTimestamp(first));
-					const secondTimestamp = getTimestampAsNumber(toTimestamp(second));
+					const firstTimestamp = getTimestampAsNumber(getTimestamp(first));
+					const secondTimestamp = getTimestampAsNumber(getTimestamp(second));
 					return firstTimestamp > secondTimestamp ? 1 : -1;
 				},
 			);

@@ -18,9 +18,9 @@ import EventsStore from '../stores/EventsStore';
 import MessagesStore from '../stores/MessagesStore';
 
 export const isEventsStore = (object: unknown): object is EventsStore => {
-	return object !== null && (object as EventsStore).eventTree !== undefined;
+	return object instanceof EventsStore;
 };
 
 export const isMessagesStore = (object: unknown): object is MessagesStore => {
-	return object !== null && (object as MessagesStore).messagesIds !== undefined;
+	return object instanceof MessagesStore;
 };

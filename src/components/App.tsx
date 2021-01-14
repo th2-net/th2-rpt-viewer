@@ -23,7 +23,7 @@ import Toast from './notifications/Toast';
 import Notifier from './notifications/Notifier';
 import { CustomDragLayer } from './drag-n-drop/CustomDragLayer';
 import Graph from './graph/Graph';
-import WorkspacesLayout from './WorkspacesLayout';
+import WorkspacesLayout from './workspace/WorkspacesLayout';
 import '../styles/root.scss';
 
 const App = () => (

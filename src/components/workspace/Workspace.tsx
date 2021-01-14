@@ -15,12 +15,19 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import EventWindow from './event/EventWindow';
-import BookmarksPanel from './BookmarksPanel';
+import EventWindow from '../event/EventWindow';
+import BookmarksPanel from '../BookmarksPanel';
 import WorkspaceSplitter from './WorkspaceSplitter';
-import MessagesWindow from './message/MessagesWindow';
-import '../styles/workspace.scss';
-import { useWorkspaceViewStore } from '../hooks/useWorkspaceViewStore';
+import MessagesWindow from '../message/MessagesWindow';
+import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
+import '../../styles/workspace.scss';
+
+const panelColors = {
+	events: '#F5C5A3',
+	messages: '#1AC4E5',
+	search: '#ADC2EB',
+	bookmarks: '#CCADEB',
+} as const;
 
 interface WorkspaceProps {
 	isActive: boolean;
@@ -35,19 +42,19 @@ function Workspace(props: WorkspaceProps) {
 				panels={[
 					{
 						title: 'Events',
-						color: '#F5C5A3',
+						color: panelColors.events,
 						component: <EventWindow isActive={props.isActive} />,
 						minWidth: 500,
 					},
 					{
 						title: 'Messages',
-						color: '#1AC4E5',
+						color: panelColors.messages,
 						component: <MessagesWindow />,
 						minWidth: 400,
 					},
 					{
 						title: 'Search',
-						color: '#ADC2EB',
+						color: panelColors.search,
 						component: (
 							<div onClick={() => viewStore.setTargetPanel(null)} style={{ margin: 'auto' }}>
 								Search
@@ -56,7 +63,7 @@ function Workspace(props: WorkspaceProps) {
 					},
 					{
 						title: 'Bookmarks',
-						color: '#CCADEB',
+						color: panelColors.bookmarks,
 						component: <BookmarksPanel />,
 					},
 				]}

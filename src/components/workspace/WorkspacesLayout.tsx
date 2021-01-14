@@ -17,12 +17,12 @@
 import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import Workspace from './Workspace';
-import { WorkspaceContextProvider } from '../contexts/workspaceContext';
-import { useWorkspaces } from '../hooks';
-import Tabs, { TabListRenderProps } from './tabs/Tabs';
-import DroppableTabList from './tabs/DroppableTabList';
-import { createStyleSelector } from '../helpers/styleCreators';
-import '../styles/root.scss';
+import { WorkspaceContextProvider } from '../../contexts/workspaceContext';
+import { useWorkspaces } from '../../hooks';
+import Tabs, { TabListRenderProps } from '../tabs/Tabs';
+import DroppableTabList from '../tabs/DroppableTabList';
+import { createStyleSelector } from '../../helpers/styleCreators';
+import '../../styles/root.scss';
 
 const WorkspacesLayout = () => {
 	const workspacesStore = useWorkspaces();

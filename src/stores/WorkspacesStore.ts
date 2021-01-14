@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed, reaction } from 'mobx';
+import { observable, action, computed } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { SelectedStore } from './SelectedStore';
 import WorkspaceStore, {
@@ -30,7 +30,7 @@ export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
 
-	selectedStore = new SelectedStore(this, this.api);
+	selectedStore = new SelectedStore(this);
 
 	tabsStore: TabsStore;
 
@@ -59,11 +59,6 @@ export default class WorkspacesStore {
 	}
 
 	@action
-	public moveTab = (tabIndex: number, targetTabIndex = 0) => {
-		this.tabsStore.changeWorkspacePosition(tabIndex, targetTabIndex);
-	};
-
-	@action
 	private init(initialState: WorkspacesUrlState | null) {
 		if (!initialState || !initialState.length) {
 			this.addWorkspace(this.createWorkspace());
@@ -71,9 +66,8 @@ export default class WorkspacesStore {
 		}
 
 		try {
-			this.workspaces = initialState.map(
-				workspaceState =>
-					new WorkspaceStore(this.selectedStore, this.api, this.graphStore, workspaceState.events),
+			this.workspaces = initialState.map(workspaceState =>
+				this.createWorkspace(workspaceState.events),
 			);
 		} catch (error) {
 			this.addWorkspace(this.createWorkspace());

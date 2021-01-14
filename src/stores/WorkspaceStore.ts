@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, observable, reaction } from 'mobx';
 import MessagesStore, { MessagesStoreURLState } from './MessagesStore';
 import EventsStore, { EventStoreURLState } from './EventsStore';
 import ApiSchema from '../api/ApiSchema';
@@ -63,24 +63,25 @@ export default class WorkspaceStore {
 
 		reaction(
 			() => this.graphStore.range,
-			() => {
+			range => {
 				this.panelUpdateTimer = setTimeout(() => {
 					if (this.panelUpdateTimer) {
 						clearTimeout(this.panelUpdateTimer);
 					}
+					const [timestampFrom, timestampTo] = range;
 					if (isEventsStore(this.viewStore.targetPanel)) {
 						const eventsFilter = this.viewStore.targetPanel.filterStore.eventsFilter;
 						this.viewStore.targetPanel.filterStore.eventsFilter = {
-							timestampFrom: this.graphStore.range[0],
-							timestampTo: this.graphStore.range[1],
+							timestampFrom,
+							timestampTo,
 							eventTypes: eventsFilter.eventTypes,
 							names: eventsFilter.names,
 						};
 					} else if (isMessagesStore(this.viewStore.targetPanel)) {
 						const messageFilter = this.viewStore.targetPanel?.filterStore.messagesFilter;
 						this.viewStore.targetPanel.filterStore.messagesFilter = {
-							timestampFrom: this.graphStore.range[0],
-							timestampTo: this.graphStore.range[1],
+							timestampFrom,
+							timestampTo,
 							messageTypes: messageFilter ? messageFilter.messageTypes : [],
 							streams: messageFilter ? messageFilter.streams : [],
 						};
@@ -90,7 +91,8 @@ export default class WorkspaceStore {
 		);
 	}
 
-	@observable panelUpdateTimer: NodeJS.Timeout | null = null;
+	@observable
+	public panelUpdateTimer: NodeJS.Timeout | null = null;
 
 	@observable
 	public attachedMessagesIds: Array<string> = [];
@@ -102,14 +104,14 @@ export default class WorkspaceStore {
 	public isLoadingAttachedMessages = false;
 
 	@action
-	private onSelectedEventChange = (selectedEvent: EventAction | null) =>
-		this.setAttachedMessagesIds(
-			selectedEvent ? [...new Set(selectedEvent.attachedMessageIds)] : [],
-		);
+	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
+		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
+	};
 
 	@action
-	public setAttachedMessagesIds = (attachedMessageIds: string[]) =>
-		(this.attachedMessagesIds = attachedMessageIds);
+	public setAttachedMessagesIds = (attachedMessageIds: string[]) => {
+		this.attachedMessagesIds = [...new Set(attachedMessageIds)];
+	};
 
 	private attachedMessagesAC: AbortController | null = null;
 
