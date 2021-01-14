@@ -85,7 +85,7 @@ const Tabs = (props: Props) => {
 							key={index}
 							style={{
 								zIndex: index === activeIndex ? 1 : 0,
-								display: index === activeIndex ? 'block' : 'none',
+								// display: index === activeIndex ? 'block' : 'none',
 							}}>
 							{content}
 						</div>
