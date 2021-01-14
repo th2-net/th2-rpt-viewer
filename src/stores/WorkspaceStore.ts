@@ -64,10 +64,10 @@ export default class WorkspaceStore {
 		reaction(
 			() => this.graphStore.range,
 			range => {
+				if (this.panelUpdateTimer) {
+					clearTimeout(this.panelUpdateTimer);
+				}
 				this.panelUpdateTimer = setTimeout(() => {
-					if (this.panelUpdateTimer) {
-						clearTimeout(this.panelUpdateTimer);
-					}
 					const [timestampFrom, timestampTo] = range;
 					if (isEventsStore(this.viewStore.targetPanel)) {
 						const eventsFilter = this.viewStore.targetPanel.filterStore.eventsFilter;
