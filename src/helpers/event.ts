@@ -58,3 +58,20 @@ export const isEventAction = (object: unknown): object is EventAction => {
 		typeof object === 'object' && object !== null && (object as EventAction).eventId !== undefined
 	);
 };
+
+export const sortByTimestamp = (
+	itmes: Array<EventAction | EventMessage>,
+	order: 'desc' | 'asc' = 'desc',
+) => {
+	const copiedEvents = itmes.slice();
+	copiedEvents.sort((eventA, eventB) => {
+		const timestampA = isEventAction(eventA) ? eventA.startTimestamp : eventA.timestamp;
+		const timestampB = isEventAction(eventB) ? eventB.startTimestamp : eventB.timestamp;
+
+		if (order === 'desc') {
+			return getTimestampAsNumber(timestampB) - getTimestampAsNumber(timestampA);
+		}
+		return getTimestampAsNumber(timestampA) - getTimestampAsNumber(timestampB);
+	});
+	return copiedEvents;
+};

@@ -19,13 +19,13 @@
 
 .bookmarks-panel {
 	width: 100%;
+	padding: 10px;
 
 	&__list {
 		@include scrollbar;
 
 		height: 100%;
 		width: 100%;
-		padding: 10px;
 		overflow-y: auto;
 	}
 }
@@ -40,6 +40,7 @@
 	border-style: solid;
 	position: relative;
 	overflow: hidden;
+	margin-bottom: 6px;
 
 	&__info {
 		overflow: hidden;
@@ -88,11 +89,11 @@
 		left: 7px;
 		top: 7px;
 
-		&.attached-message-icon {
+		&.pinned-message-icon {
 			@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
 		}
 
-		&.pinned-message-icon {
+		&.message-icon {
 			@include icon(url(../../resources/icons/star.svg), 14px, 14px);
 		}
 
@@ -116,7 +117,7 @@
 		margin-bottom: 10px;
 	}
 
-	&.pinned-message {
+	&.message {
 		border-color: $graphOverlayPinnedMessagesColor;
 	}
 

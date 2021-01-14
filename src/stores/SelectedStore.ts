@@ -22,7 +22,7 @@ import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './WorkspacesStore';
 import localStorageWorker from '../util/LocalStorageWorker';
 import { sortMessagesByTimestamp } from '../helpers/message';
-import { isEventAction } from '../helpers/event';
+import { isEventAction, sortByTimestamp } from '../helpers/event';
 
 export class SelectedStore {
 	private readonly defaultColors = [
@@ -37,10 +37,10 @@ export class SelectedStore {
 	@observable
 	public eventColors: Map<string, string> = new Map();
 
-	@observable
+	@observable.shallow
 	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
 
-	@observable
+	@observable.shallow
 	public pinnedEvents: Array<EventAction> = localStorageWorker.getPersistedPinnedEvents();
 
 	constructor(private workspacesStore: WorkspacesStore, private api: ApiSchema) {
@@ -60,6 +60,10 @@ export class SelectedStore {
 			() => this.pinnedEvents,
 			pinnedEvents => localStorageWorker.setPersistedPinnedEvents(pinnedEvents),
 		);
+	}
+
+	@computed get savedItems() {
+		return sortByTimestamp([...this.pinnedEvents, ...this.pinnedMessages]);
 	}
 
 	@computed get selectedEvents() {

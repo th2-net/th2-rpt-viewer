@@ -19,6 +19,12 @@ import { EventBodyPayload } from './EventActionPayload';
 
 export type EventTree = Array<EventTreeNode>;
 
+export enum ActionType {
+	EVENT_ACTION = 'event',
+	EVENT_TREE_NODE = 'eventTreeNode',
+	MESSAGE = 'message',
+}
+
 interface EventBase {
 	eventId: string;
 	eventName: string;
@@ -32,7 +38,7 @@ export interface EventTreeNode extends EventBase {
 	childList: Array<EventTreeNode>;
 	filtered: boolean;
 	parentId: string;
-	type: 'eventTreeNode';
+	type: ActionType.EVENT_TREE_NODE;
 	parents?: string[];
 }
 
@@ -43,7 +49,7 @@ export interface EventAction extends EventBase {
 	batched: boolean;
 	body: EventActionBody;
 	parentEventId: string;
-	type: 'event';
+	type: ActionType.EVENT_ACTION;
 }
 
 export type EventActionBody = EventBodyPayload[];

@@ -14,63 +14,50 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
-import React from 'react';
+import { Virtuoso } from 'react-virtuoso';
 import { getTimestampAsNumber } from '../helpers/date';
-import { isEventAction, isEventMessage } from '../helpers/event';
-import { createBemElement, createStyleSelector } from '../helpers/styleCreators';
+import { isEventAction } from '../helpers/event';
+import { createStyleSelector } from '../helpers/styleCreators';
 import { useSelectedStore } from '../hooks';
 import { useWorkspaceViewStore } from '../hooks/useWorkspaceViewStore';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import '../styles/bookmarks.scss';
 
-interface SavedItem {
-	value: EventMessage | EventAction;
-	type: SavedItemTypes;
-}
-
-enum SavedItemTypes {
-	PINNED_MESSAGE = 'pinned-message',
-	EVENT = 'event',
-}
+type SavedItem = EventMessage | EventAction;
 
 const BookmarksPanel = () => {
 	const selectedStore = useSelectedStore();
 	const viewStore = useWorkspaceViewStore();
 
-	const savedItems: SavedItem[] = React.useMemo(() => {
-		return [...selectedStore.pinnedMessages, ...selectedStore.pinnedEvents]
-			.map(item => ({
-				value: item,
-				type: isEventMessage(item) ? SavedItemTypes.PINNED_MESSAGE : SavedItemTypes.EVENT,
-			}))
-			.sort((firstItem, secondItem) => {
-				const getItemTimestamp = (item: SavedItem) =>
-					getTimestampAsNumber(
-						isEventAction(item.value) ? item.value.startTimestamp : item.value.timestamp,
-					);
-				const firstTimestamp = getItemTimestamp(firstItem);
-				const secondTimestamp = getItemTimestamp(secondItem);
+	const onRemoveSavedItem = (item: SavedItem) => selectedStore.removeSavedItem(item);
 
-				return firstTimestamp >= secondTimestamp ? 1 : -1;
-			});
-	}, [selectedStore.pinnedMessages, selectedStore.pinnedEvents]);
+	// TODO: implement select of bookmarked item
+	const onItemClick = (item: SavedItem) => console.log(item);
 
-	const removeSavedItem = (item: SavedItem) => selectedStore.removeSavedItem(item.value);
+	const computeKey = (index: number) => {
+		const item = selectedStore.savedItems[index];
+
+		return isEventAction(item) ? item.eventId : item.messageId;
+	};
+
+	const renderBookmarkItem = (index: number) => {
+		const item = selectedStore.savedItems[index];
+		return <BookmarkItem item={item} onRemove={onRemoveSavedItem} onClick={onItemClick} />;
+	};
 
 	return (
-		<div onClick={() => viewStore.setTargetPanel(null)} className='bookmarks-panel'>
-			<div className='bookmarks-panel__list'>
-				{savedItems.map(item => (
-					<BookmarkItem
-						item={item}
-						onRemove={removeSavedItem}
-						key={isEventAction(item.value) ? item.value.eventId : item.value.messageId}
-					/>
-				))}
-			</div>
+		<div className='bookmarks-panel' onClick={() => viewStore.setTargetPanel(null)}>
+			<Virtuoso
+				className='bookmarks-panel__list'
+				totalCount={selectedStore.savedItems.length}
+				item={renderBookmarkItem}
+				computeItemKey={computeKey}
+				style={{ height: '100%' }}
+			/>
 		</div>
 	);
 };
@@ -80,41 +67,39 @@ export default observer(BookmarksPanel);
 interface BookmarkItemProps {
 	item: SavedItem;
 	onRemove: (item: SavedItem) => void;
+	onClick: (item: SavedItem) => void;
 }
 
-const BookmarkItem = ({ item, onRemove }: BookmarkItemProps) => (
-	<div
-		key={isEventAction(item.value) ? item.value.eventId : item.value.messageId}
-		className={createStyleSelector(
-			'bookmark-item',
-			item.type,
-			isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
-		)}>
-		<i
-			className={createStyleSelector(
-				'bookmark-item__icon',
-				`${item.type}-icon`,
-				isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
-			)}
-		/>
-		<div className='bookmark-item__info'>
-			<div
-				className='bookmark-item__name'
-				title={isEventAction(item.value) ? item.value.eventName : item.value.messageId}>
-				{isEventAction(item.value) ? item.value.eventName : item.value.messageId}
+const BookmarkItem = ({ item, onRemove, onClick }: BookmarkItemProps) => {
+	const itemInfo = {
+		status: isEventAction(item) ? (item.successful ? 'passed' : 'failed') : null,
+		title: isEventAction(item) ? item.eventName : item.messageId,
+		timestamp: getTimestampAsNumber(isEventAction(item) ? item.startTimestamp : item.timestamp),
+	};
+
+	return (
+		<div
+			onClick={() => onClick(item)}
+			className={createStyleSelector('bookmark-item', item.type, itemInfo.status)}>
+			<i
+				className={createStyleSelector('bookmark-item__icon', `${item.type}-icon`, itemInfo.status)}
+			/>
+			<div className='bookmark-item__info'>
+				<div className='bookmark-item__name' title={itemInfo.title}>
+					{itemInfo.title}
+				</div>
+				<div className='bookmark-item__timestamp'>
+					{moment(itemInfo.timestamp).utc().format('DD.MM.YYYY HH:mm:ss:SSS')}
+				</div>
 			</div>
-			<div className='bookmark-item__timestamp'>
-				{moment(
-					getTimestampAsNumber(
-						isEventAction(item.value) ? item.value.startTimestamp : item.value.timestamp,
-					),
-				)
-					.utc()
-					.format('DD.MM.YYYY HH:mm:ss:SSS')}
-			</div>
+			<button
+				className='bookmark-item__remove-btn'
+				onClick={e => {
+					e.stopPropagation();
+					onRemove(item);
+				}}>
+				<i className='bookmark-item__remove-btn-icon' />
+			</button>
 		</div>
-		<button onClick={() => onRemove(item)} className='bookmark-item__remove-btn'>
-			<i className='bookmark-item__remove-btn-icon' />
-		</button>
-	</div>
-);
+	);
+};
