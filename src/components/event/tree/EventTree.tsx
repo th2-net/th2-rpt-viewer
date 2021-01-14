@@ -21,10 +21,9 @@ import EventCardHeader from '../EventCardHeader';
 import { useEventWindowViewStore, useWorkspaceEventStore } from '../../../hooks';
 import EventCardSkeleton from '../EventCardSkeleton';
 import { EventTreeNode } from '../../../models/EventAction';
-import ExpandIcon from '../../ExpandIcon';
 import { getEventNodeParents } from '../../../helpers/event';
 import CardDisplayType from '../../../util/CardDisplayType';
-import '../../../styles/expandablePanel.scss';
+import { createBemBlock } from '../../../helpers/styleCreators';
 
 interface EventTreeProps {
 	eventTreeNode: EventTreeNode;
@@ -71,3 +70,26 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 }
 
 export default observer(EventTree);
+
+interface Props {
+	status: 'expanded' | 'hidden' | 'loading' | 'none';
+	onClick?: React.MouseEventHandler;
+	className?: string;
+	style?: React.CSSProperties;
+}
+
+function ExpandIcon(props: Props) {
+	const rootClass = createBemBlock('expand-icon', props.status);
+
+	return (
+		<div className={`${rootClass} ${props.className}`} style={props.style} onClick={props.onClick}>
+			{props.status === 'loading' ? (
+				<>
+					<div className='expand-icon__dot' />
+					<div className='expand-icon__dot' />
+					<div className='expand-icon__dot' />
+				</>
+			) : null}
+		</div>
+	);
+}
