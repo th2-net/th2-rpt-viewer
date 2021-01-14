@@ -19,11 +19,12 @@ import moment from 'moment';
 import React from 'react';
 import { getTimestampAsNumber } from '../helpers/date';
 import { isEventAction, isEventMessage } from '../helpers/event';
-import { createBemElement } from '../helpers/styleCreators';
+import { createBemElement, createStyleSelector } from '../helpers/styleCreators';
 import { useSelectedStore } from '../hooks';
 import { useWorkspaceViewStore } from '../hooks/useWorkspaceViewStore';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
+import '../styles/bookmarks.scss';
 
 interface SavedItem {
 	value: EventMessage | EventAction;
@@ -61,48 +62,59 @@ const BookmarksPanel = () => {
 
 	return (
 		<div onClick={() => viewStore.setTargetPanel(null)} className='bookmarks-panel'>
-			{savedItems.map(item => (
-				<div
-					key={isEventAction(item.value) ? item.value.eventId : item.value.messageId}
-					className={createBemElement(
-						'bookmarks-panel',
-						'item',
-						item.type,
-						isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
-					)}>
-					<i
-						className={createBemElement(
-							'bookmarks-panel',
-							'item-icon',
-							`${item.type}-icon`,
-							isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
-						)}
+			<div className='bookmarks-panel__list'>
+				{savedItems.map(item => (
+					<BookmarkItem
+						item={item}
+						onRemove={removeSavedItem}
+						key={isEventAction(item.value) ? item.value.eventId : item.value.messageId}
 					/>
-					<div className='bookmarks-panel__item-info'>
-						<div
-							className='bookmarks-panel__item-name'
-							title={isEventAction(item.value) ? item.value.eventName : item.value.messageId}>
-							{isEventAction(item.value) ? item.value.eventName : item.value.messageId}
-						</div>
-						<div className='bookmarks-panel__item-timestamp'>
-							{moment(
-								getTimestampAsNumber(
-									isEventAction(item.value) ? item.value.startTimestamp : item.value.timestamp,
-								),
-							)
-								.utc()
-								.format('DD.MM.YYYY HH:mm:ss:SSS')}
-						</div>
-					</div>
-					<button
-						onClick={() => removeSavedItem(item)}
-						className='bookmarks-panel__item-remove-btn'>
-						<i className='bookmarks-panel__item-remove-btn-icon' />
-					</button>
-				</div>
-			))}
+				))}
+			</div>
 		</div>
 	);
 };
 
 export default observer(BookmarksPanel);
+
+interface BookmarkItemProps {
+	item: SavedItem;
+	onRemove: (item: SavedItem) => void;
+}
+
+const BookmarkItem = ({ item, onRemove }: BookmarkItemProps) => (
+	<div
+		key={isEventAction(item.value) ? item.value.eventId : item.value.messageId}
+		className={createStyleSelector(
+			'bookmark-item',
+			item.type,
+			isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
+		)}>
+		<i
+			className={createStyleSelector(
+				'bookmark-item__icon',
+				`${item.type}-icon`,
+				isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
+			)}
+		/>
+		<div className='bookmark-item__info'>
+			<div
+				className='bookmark-item__name'
+				title={isEventAction(item.value) ? item.value.eventName : item.value.messageId}>
+				{isEventAction(item.value) ? item.value.eventName : item.value.messageId}
+			</div>
+			<div className='bookmark-item__timestamp'>
+				{moment(
+					getTimestampAsNumber(
+						isEventAction(item.value) ? item.value.startTimestamp : item.value.timestamp,
+					),
+				)
+					.utc()
+					.format('DD.MM.YYYY HH:mm:ss:SSS')}
+			</div>
+		</div>
+		<button onClick={() => onRemove(item)} className='bookmark-item__remove-btn'>
+			<i className='bookmark-item__remove-btn-icon' />
+		</button>
+	</div>
+);
