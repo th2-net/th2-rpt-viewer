@@ -15,13 +15,12 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useGraphStore } from '../../hooks';
 import useSetState from '../../hooks/useSetState';
 import TogglerRow from '../filter/row/TogglerRow';
 import sseApi from '../../api/sse';
 import { EventAction } from '../../models/EventAction';
-import { isEventMessage } from '../../helpers/event';
 import SearchPanelFilters, {
 	FilterState,
 	MessageFilterState,
@@ -30,14 +29,15 @@ import SearchPanelFilters, {
 import SearchPanelForm from './SearchPanelForm';
 import { SSEFilterInfo, SSEFilterParameter } from '../../stores/SearchPanelFiltersStore';
 import { useSearchPanelFiltersStore } from '../../hooks/useSearchPanelFiltersStore';
+import SearchPanelResults from './SearchPanelResults';
+import SearchPanelProgressBar from './SearchPanelProgressBar';
 import '../../styles/search-panel.scss';
-import SearchPanelResults, { Result, ResultTypes } from './SearchPanelResults';
 
 export type SearchPanelState = {
 	startTimestamp: number;
 	searchDirection: 'next' | 'previous';
 	resultCountLimit: string;
-	timeLimit: string;
+	endTimestamp: number | null;
 	parentEvent: string;
 	stream: string[];
 };
@@ -72,29 +72,27 @@ const SearchPanel = () => {
 	const { timestamp } = useGraphStore();
 	const { eventFilterInfo, messagesFilterInfo } = useSearchPanelFiltersStore();
 
-	const defaultFormState: SearchPanelState = {
-		startTimestamp: timestamp,
-		searchDirection: 'next',
-		resultCountLimit: '100',
-		timeLimit: '6000000',
-		parentEvent: '',
-		stream: [],
-	};
-
 	const [formType, setFormType] = useState<'event' | 'message'>('event');
 
 	const toggleFormType = () => {
 		setFormType(type => (type === 'event' ? 'message' : 'event'));
 	};
 
-	const [formState, setFormState] = useSetState<SearchPanelState>(defaultFormState);
+	const [formState, setFormState] = useSetState<SearchPanelState>({
+		startTimestamp: timestamp,
+		searchDirection: 'next',
+		resultCountLimit: '100',
+		endTimestamp: null,
+		parentEvent: '',
+		stream: [],
+	});
 	const [eventFilter, setEventFilter] = useSetState<EventFilterState>();
 	const [messagesFilter, setMessagesFilter] = useSetState<MessageFilterState>();
-
 	const [results, setResults] = useState<EventAction[]>([]);
 	const [currentlyLaunchedChannel, setCurrentlyLaunchedChannel] = useState<EventSource | null>(
 		null,
 	);
+	const [currentProgressBarPoint, setCurrentProgressBarPoint] = useState(0);
 
 	useEffect(() => {
 		setEventFilter(getDefaultFilterState(eventFilterInfo));
@@ -109,13 +107,19 @@ const SearchPanel = () => {
 				: { info: messagesFilterInfo, state: messagesFilter, setState: setMessagesFilter },
 		[formType, eventFilter, messagesFilter],
 	);
+	const progressBar = {
+		startTimestamp: formState.startTimestamp,
+		endTimestamp: formState.endTimestamp,
+		currentPoint: currentProgressBarPoint,
+		searching: Boolean(currentlyLaunchedChannel),
+	};
 
-	const launchChannel = useCallback(() => {
+	const launchChannel = () => {
 		const {
 			startTimestamp,
 			searchDirection,
 			resultCountLimit,
-			timeLimit,
+			endTimestamp,
 			parentEvent,
 			stream,
 		} = formState;
@@ -149,7 +153,7 @@ const SearchPanel = () => {
 			startTimestamp,
 			searchDirection,
 			resultCountLimit,
-			timeLimit,
+			endTimestamp,
 			filters: filtersToAdd,
 			...Object.fromEntries([...filterValues, ...filterInclusion]),
 		};
@@ -161,6 +165,8 @@ const SearchPanel = () => {
 			queryParams,
 			listener: (ev: Event | MessageEvent) => {
 				const data = (ev as MessageEvent).data;
+				const searchedEventTimestamp = JSON.parse((ev as MessageEvent).lastEventId).timestamp;
+				setCurrentProgressBarPoint(searchedEventTimestamp - formState.startTimestamp);
 				setResults(res => [...res, JSON.parse(data)]);
 			},
 			onClose: () => {
@@ -172,19 +178,12 @@ const SearchPanel = () => {
 		});
 
 		setCurrentlyLaunchedChannel(channel);
-	}, [formType, formState, eventFilter, messagesFilter]);
+	};
 
-	const stopChannel = useCallback(() => {
+	const stopChannel = () => {
 		currentlyLaunchedChannel?.close();
 		setCurrentlyLaunchedChannel(null);
-	}, [currentlyLaunchedChannel]);
-
-	const currentResults: Result[] = React.useMemo(() => {
-		return results.map(item => ({
-			value: item,
-			type: isEventMessage(item) ? ResultTypes.MESSAGE : ResultTypes.EVENT,
-		}));
-	}, [results]);
+	};
 
 	return (
 		<div className='search-panel'>
@@ -216,7 +215,8 @@ const SearchPanel = () => {
 					</button>
 				</div>
 			</div>
-			<SearchPanelResults results={currentResults} />
+			{<SearchPanelProgressBar {...progressBar} />}
+			<SearchPanelResults results={results} />
 		</div>
 	);
 };

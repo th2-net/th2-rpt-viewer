@@ -102,10 +102,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 	});
 
 	const setCurrentValue = (name: string) => (value: string) => {
-		setCurrentValues(currentState => ({
-			...currentState,
-			[name]: value,
-		}));
+		setCurrentValues({ [name]: value });
 	};
 
 	return (

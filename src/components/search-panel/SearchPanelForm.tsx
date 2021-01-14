@@ -50,7 +50,7 @@ const SearchPanelForm = (props: SearchPanelFormProps) => {
 
 	function getFormStateUpdater<T extends keyof SearchPanelState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelState[T]>(value: K) {
-			setState(currentState => ({ ...currentState, [name]: value }));
+			setState({ [name]: value });
 		};
 	}
 
@@ -61,13 +61,6 @@ const SearchPanelForm = (props: SearchPanelFormProps) => {
 			setValue: getFormStateUpdater('resultCountLimit'),
 			type: 'string',
 			id: 'result-count-limit',
-		},
-		{
-			label: 'Time Limit',
-			value: state.timeLimit,
-			setValue: getFormStateUpdater('timeLimit'),
-			type: 'string',
-			id: 'time-limit',
 		},
 		{
 			label: 'Search Direction',
@@ -99,14 +92,12 @@ const SearchPanelForm = (props: SearchPanelFormProps) => {
 		autocompleteList: null,
 	};
 
-	const config: FilterRowConfig[] = useMemo(() => {
-		if (formType === 'event') {
-			return [...commonFormConfig, eventsFormTypeConfig];
-		}
-		return [...commonFormConfig, messagesFormTypeConfig];
-	}, [commonFormConfig, formType]);
+	const config: FilterRowConfig[] =
+		formType === 'event'
+			? [...commonFormConfig, eventsFormTypeConfig]
+			: [...commonFormConfig, messagesFormTypeConfig];
 
-	const dateInput: DateInputProps = {
+	const startTimestampInput: DateInputProps = {
 		inputConfig: {
 			id: 'startTimestamp',
 			value: state.startTimestamp,
@@ -118,11 +109,27 @@ const SearchPanelForm = (props: SearchPanelFormProps) => {
 		},
 	};
 
+	const endTimestampInput: DateInputProps = {
+		inputConfig: {
+			id: 'endTimestamp',
+			value: state.endTimestamp,
+			setValue: getFormStateUpdater('endTimestamp'),
+			type: TimeInputType.DATE_TIME,
+			dateMask: DateTimeMask.DATE_TIME_MASK,
+			placeholder: '',
+			inputMask: DATE_TIME_INPUT_MASK,
+		},
+	};
+
 	return (
 		<>
 			<div className='filter-row'>
 				<div className='filter-row__label'>Start Timestamp</div>
-				<FilterDatetimeInput {...dateInput} />
+				<FilterDatetimeInput {...startTimestampInput} />
+			</div>
+			<div className='filter-row'>
+				<div className='filter-row__label'>Time Limit</div>
+				<FilterDatetimeInput {...endTimestampInput} />
 			</div>
 			{config.map(rowConfig => (
 				<FilterRow rowConfig={rowConfig} key={rowConfig.id} />

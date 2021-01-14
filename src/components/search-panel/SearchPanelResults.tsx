@@ -32,15 +32,20 @@ export enum ResultTypes {
 	EVENT = 'event',
 }
 
+const getResultWithType = (item: EventAction) => ({
+	value: item,
+	type: isEventAction(item) ? ResultTypes.EVENT : ResultTypes.MESSAGE,
+});
+
 interface SearchPanelResultsProps {
-	results: Result[];
+	results: EventAction[];
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const { results } = props;
 	return (
 		<div className='search-panel__results'>
-			{results.map((item: Result) => {
+			{results.map(getResultWithType).map((item: Result) => {
 				return (
 					<div
 						key={isEventAction(item.value) ? item.value.eventId : item.value.messageId}

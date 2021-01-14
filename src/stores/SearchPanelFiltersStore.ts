@@ -38,27 +38,27 @@ class SearchPanelFiltersStore {
 
 	@observable messagesFilterInfo: SSEFilterInfo[] = [];
 
-	@action setEventFilters() {
-		sseApi
-			.getFilters('events')
-			.then(sseApi.getFiltersInfo)
-			.then(filters => {
-				this.eventFilterInfo = filters;
-			});
-	}
+	@action
+	getEventFilters = async () => {
+		const filters = await sseApi.getFilters('events');
+		const filtersInfo = await sseApi.getFiltersInfo('events', filters);
+		return filtersInfo;
+	};
 
-	@action setMessagesFilters() {
-		sseApi
-			.getFilters('messages')
-			.then(sseApi.getFiltersInfo)
-			.then(filters => {
-				this.messagesFilterInfo = filters;
-			});
-	}
+	@action
+	getMessagesFilters = async () => {
+		const filters = await sseApi.getFilters('messages');
+		const filtersInfo = await sseApi.getFiltersInfo('messages', filters);
+		return filtersInfo;
+	};
 
 	private init() {
-		this.setEventFilters();
-		this.setMessagesFilters();
+		this.getEventFilters().then(filterInfo => {
+			this.eventFilterInfo = filterInfo;
+		});
+		this.getMessagesFilters().then(filterInfo => {
+			this.messagesFilterInfo = filterInfo;
+		});
 	}
 }
 

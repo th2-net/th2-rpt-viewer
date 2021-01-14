@@ -31,12 +31,14 @@ const sseApi: SSESchema = {
 		channel.addEventListener('open', onOpen);
 		return channel;
 	},
-	async getFilters(filterType: 'events' | 'messages'): Promise<[string, Promise<[string]>]> {
+	async getFilters(filterType: 'events' | 'messages'): Promise<[string]> {
 		const res = await fetch(`backend/filters/sse-${filterType}`);
-		return [filterType, res.json()];
+		return res.json();
 	},
-	async getFiltersInfo(args: [string, Promise<[string]>]): Promise<SSEFilterInfo[]> {
-		const [filterType, filters] = args;
+	async getFiltersInfo(
+		filterType: 'events' | 'messages',
+		filters: string[],
+	): Promise<SSEFilterInfo[]> {
 		const filterInfos = (await filters).map(async (filterName: string) => {
 			const res = await fetch(`backend/filters/sse-${filterType}/${filterName}`);
 			return res.json();
