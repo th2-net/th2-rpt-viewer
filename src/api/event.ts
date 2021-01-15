@@ -29,7 +29,6 @@ const eventHttpApi: EventApiSchema = {
 			name: filter.names,
 			type: filter.eventTypes,
 		});
-
 		const res = await fetch(`backend/search/events?${params}`, { signal });
 
 		if (res.ok) {

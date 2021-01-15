@@ -36,7 +36,7 @@ export function createURLSearchParams(
 
 	for (const [key, param] of Object.entries(_params)) {
 		// eslint-disable-next-line no-continue
-		if (param == null) continue;
+		if (param == null || param === '') continue;
 		if (Array.isArray(param)) {
 			param.forEach(p => params.append(key, p));
 		} else {

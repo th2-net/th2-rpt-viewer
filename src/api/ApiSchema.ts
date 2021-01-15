@@ -18,10 +18,20 @@ import { EventAction, EventTree } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
+import { SSEFilterInfo } from '../stores/SearchPanelFiltersStore';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
 	messages: MessageApiSchema;
+	sse: SSESchema;
+}
+
+export interface EventSourceConfig {
+	type: 'event' | 'message';
+	queryParams: Record<string, string | number | boolean | null | string[]>;
+	listener: (this: EventSource, ev: Event | MessageEvent) => void;
+	onOpen: () => void;
+	onClose: () => void;
 }
 
 export interface EventApiSchema {
@@ -69,4 +79,13 @@ export interface MessageApiSchema {
 	) => Promise<EventMessage>;
 	getMessagesByFilter: (filter: MessagesFilter) => Promise<string[]>;
 	getMessageSessions: () => Promise<string[]>;
+}
+
+export interface SSESchema {
+	getEventSource: (config: EventSourceConfig) => EventSource;
+	getFilters: (filterType: 'events' | 'messages') => Promise<[string]>;
+	getFiltersInfo: (
+		filterType: 'events' | 'messages',
+		filters: string[],
+	) => Promise<SSEFilterInfo[]>;
 }
