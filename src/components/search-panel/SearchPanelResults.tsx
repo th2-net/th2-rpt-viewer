@@ -16,8 +16,8 @@
 
 import React from 'react';
 import moment from 'moment';
-import { isEventAction } from '../../helpers/event';
-import { createBemElement } from '../../helpers/styleCreators';
+import { isEventMessage } from '../../helpers/event';
+import { createStyleSelector } from '../../helpers/styleCreators';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { EventMessage } from '../../models/EventMessage';
 import { EventAction } from '../../models/EventAction';
@@ -34,7 +34,7 @@ export enum ResultTypes {
 
 const getResultWithType = (item: EventAction) => ({
 	value: item,
-	type: isEventAction(item) ? ResultTypes.EVENT : ResultTypes.MESSAGE,
+	type: isEventMessage(item) ? ResultTypes.MESSAGE : ResultTypes.EVENT,
 });
 
 interface SearchPanelResultsProps {
@@ -43,36 +43,37 @@ interface SearchPanelResultsProps {
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const { results } = props;
+	const currentResults = results.map(getResultWithType);
 	return (
 		<div className='search-panel__results'>
-			{results.map(getResultWithType).map((item: Result) => {
+			{currentResults.map((item: Result) => {
+				const key = isEventMessage(item.value) ? item.value.messageId : item.value.eventId;
+				const itemSuccessModifier = isEventMessage(item.value)
+					? null
+					: item.value.successful
+					? 'passed'
+					: 'failed';
+				const itemTitle = isEventMessage(item.value) ? item.value.messageId : item.value.eventName;
 				return (
 					<div
-						key={isEventAction(item.value) ? item.value.eventId : item.value.messageId}
-						className={createBemElement(
-							'bookmarks-panel',
-							'item',
-							item.type,
-							isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
-						)}>
+						key={key}
+						className={createStyleSelector('bookmark-item', item.type, itemSuccessModifier)}>
+						{item.value.body}
 						<i
-							className={createBemElement(
-								'bookmarks-panel',
-								'item-icon',
+							className={createStyleSelector(
+								'bookmark-item__icon',
 								`${item.type}-icon`,
-								isEventAction(item.value) ? (item.value.successful ? 'passed' : 'failed') : null,
+								itemSuccessModifier,
 							)}
 						/>
-						<div className='bookmarks-panel__item-info'>
-							<div
-								className='bookmarks-panel__item-name'
-								title={isEventAction(item.value) ? item.value.eventName : item.value.messageId}>
-								{isEventAction(item.value) ? item.value.eventName : item.value.messageId}
+						<div className='bookmark-item__info'>
+							<div className='bookmark-item__name' title={itemTitle}>
+								{itemTitle}
 							</div>
-							<div className='bookmarks-panel__item-timestamp'>
+							<div className='bookmark-item__timestamp'>
 								{moment(
 									getTimestampAsNumber(
-										isEventAction(item.value) ? item.value.startTimestamp : item.value.timestamp,
+										isEventMessage(item.value) ? item.value.timestamp : item.value.startTimestamp,
 									),
 								).format('DD.MM.YYYY HH:mm:ss:SSS')}
 							</div>

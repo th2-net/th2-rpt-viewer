@@ -20,15 +20,16 @@ import { SSEFilterInfo } from '../stores/SearchPanelFiltersStore';
 
 const sseApi: SSESchema = {
 	getEventSource(config: EventSourceConfig) {
-		const { type, queryParams, listener, onOpen, onClose } = config;
+		const { type, queryParams, listener, onClose } = config;
 		const params = createURLSearchParams(queryParams);
 		const channel = new EventSource(`backend/search/sse/${type}s/?${params}`);
-		channel.addEventListener(type, listener);
+		channel.addEventListener('open', () => {
+			channel.addEventListener(type, listener);
+		});
 		channel.addEventListener('close', () => {
 			channel.close();
 			onClose();
 		});
-		channel.addEventListener('open', onOpen);
 		return channel;
 	},
 	async getFilters(filterType: 'events' | 'messages'): Promise<[string]> {

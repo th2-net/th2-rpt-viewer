@@ -159,25 +159,22 @@ const SearchPanel = () => {
 		};
 
 		const queryParams = formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
-
-		const channel = sseApi.getEventSource({
-			type: formType,
-			queryParams,
-			listener: (ev: Event | MessageEvent) => {
-				const data = (ev as MessageEvent).data;
-				const searchedEventTimestamp = JSON.parse((ev as MessageEvent).lastEventId).timestamp;
-				setCurrentProgressBarPoint(searchedEventTimestamp - formState.startTimestamp);
-				setResults(res => [...res, JSON.parse(data)]);
-			},
-			onClose: () => {
-				setCurrentlyLaunchedChannel(null);
-			},
-			onOpen: () => {
-				setResults([]);
-			},
-		});
-
-		setCurrentlyLaunchedChannel(channel);
+		setResults([]);
+		setCurrentlyLaunchedChannel(
+			sseApi.getEventSource({
+				type: formType,
+				queryParams,
+				listener: (ev: Event | MessageEvent) => {
+					const data = (ev as MessageEvent).data;
+					const searchedEventTimestamp = JSON.parse((ev as MessageEvent).lastEventId).timestamp;
+					setCurrentProgressBarPoint(searchedEventTimestamp - formState.startTimestamp);
+					setResults(res => [...res, JSON.parse(data)]);
+				},
+				onClose: () => {
+					setCurrentlyLaunchedChannel(null);
+				},
+			}),
+		);
 	};
 
 	const stopChannel = () => {

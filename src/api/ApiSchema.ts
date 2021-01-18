@@ -30,7 +30,6 @@ export interface EventSourceConfig {
 	type: 'event' | 'message';
 	queryParams: Record<string, string | number | boolean | null | string[]>;
 	listener: (this: EventSource, ev: Event | MessageEvent) => void;
-	onOpen: () => void;
 	onClose: () => void;
 }
 

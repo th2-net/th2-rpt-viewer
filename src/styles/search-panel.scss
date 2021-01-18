@@ -17,6 +17,7 @@
 @import './common/vars';
 
 .search-panel {
+	width: inherit;
 	padding: 0 8px;
 	&__toggle {
 		.filter-row {
@@ -57,5 +58,11 @@
 			right: 0;
 			text-align: right;
 		}
+	}
+	&__result {
+		font-size: 10px;
+		margin: 5px 0;
+		padding: 4px;
+		background-color: #fff;
 	}
 }
