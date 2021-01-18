@@ -18,15 +18,15 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import MessagesWindowHeader from './MessagesWindowHeader';
 import { HeatmapProvider } from '../heatmap/HeatmapProvider';
-import { useMessagesWorkspaceStore, useSelectedStore } from '../../hooks';
+import { useMessagesWorkspaceStore, useSelectedStore, useActivePanel } from '../../hooks';
 import MessagesCardList from './MessagesCardList';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 
 const MessagesWindow = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const selectedStore = useSelectedStore();
-	const viewStore = useWorkspaceViewStore();
+
+	const { ref: panelRef } = useActivePanel(messagesStore);
 
 	const selectedItems = React.useMemo(() => {
 		const heatmapElementsMap: Map<string, string[]> = new Map();
@@ -89,7 +89,7 @@ const MessagesWindow = () => {
 			selectedItems={selectedItems}
 			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}
 			pinnedItems={selectedStore.pinnedMessages.map(m => m.messageId)}>
-			<div onClick={() => viewStore.setTargetPanel(messagesStore)} className='window'>
+			<div className='window' ref={panelRef}>
 				<div className='window__controls'>
 					<MessagesWindowHeader />
 				</div>

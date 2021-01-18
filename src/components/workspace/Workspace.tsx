@@ -15,25 +15,26 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 import EventWindow from '../event/EventWindow';
 import BookmarksPanel from '../BookmarksPanel';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import MessagesWindow from '../message/MessagesWindow';
 import SearchPanel from '../search-panel/SearchPanel';
+import { useActivePanel } from '../../hooks';
+import { isEventsStore, isMessagesStore } from '../../helpers/stores';
 import '../../styles/workspace.scss';
 
 const panelColors = {
-	events: '#F5C5A3',
+	events: '#F7A76E',
 	messages: '#1AC4E5',
 	search: '#ADC2EB',
 	bookmarks: '#CCADEB',
 } as const;
 
-interface WorkspaceProps {
-	isActive: boolean;
-}
+function Workspace() {
+	const { activePanel } = useActivePanel(null);
 
-function Workspace(props: WorkspaceProps) {
 	return (
 		<div className='workspace'>
 			<WorkspaceSplitter
@@ -41,24 +42,28 @@ function Workspace(props: WorkspaceProps) {
 					{
 						title: 'Events',
 						color: panelColors.events,
-						component: <EventWindow isActive={props.isActive} />,
+						component: <EventWindow />,
 						minWidth: 500,
+						isActive: isEventsStore(activePanel),
 					},
 					{
 						title: 'Messages',
 						color: panelColors.messages,
 						component: <MessagesWindow />,
 						minWidth: 400,
+						isActive: isMessagesStore(activePanel),
 					},
 					{
 						title: 'Search',
 						color: panelColors.search,
 						component: <SearchPanel />,
+						isActive: false,
 					},
 					{
 						title: 'Bookmarks',
 						color: panelColors.bookmarks,
 						component: <BookmarksPanel />,
+						isActive: false,
 					},
 				]}
 			/>
@@ -66,4 +71,4 @@ function Workspace(props: WorkspaceProps) {
 	);
 }
 
-export default Workspace;
+export default observer(Workspace);

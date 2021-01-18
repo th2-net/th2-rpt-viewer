@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useGraphStore } from '../../hooks';
+import { useActivePanel, useGraphStore } from '../../hooks';
 import useSetState from '../../hooks/useSetState';
 import TogglerRow from '../filter/row/TogglerRow';
 import sseApi from '../../api/sse';
@@ -71,6 +71,7 @@ const getDefaultFilterState = (info: SSEFilterInfo[]): FilterState | {} =>
 const SearchPanel = () => {
 	const { timestamp } = useGraphStore();
 	const { eventFilterInfo, messagesFilterInfo } = useSearchPanelFiltersStore();
+	const { ref: searchPanelRef } = useActivePanel(null);
 
 	const [formType, setFormType] = useState<'event' | 'message'>('event');
 
@@ -183,7 +184,7 @@ const SearchPanel = () => {
 	};
 
 	return (
-		<div className='search-panel'>
+		<div className='search-panel' ref={searchPanelRef}>
 			<div className='search-panel__toggle'>
 				<TogglerRow
 					config={{

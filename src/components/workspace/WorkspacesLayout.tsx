@@ -73,7 +73,7 @@ const WorkspacesLayout = () => {
 			)}
 			tabPanels={workspacesStore.workspaces.map((workspace, index) => (
 				<WorkspaceContextProvider value={workspace} key={index}>
-					<Workspace isActive={workspacesStore.activeWorkspace === workspace} />
+					<Workspace />
 				</WorkspaceContextProvider>
 			))}
 		/>

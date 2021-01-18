@@ -16,12 +16,14 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { createStyleSelector } from '../../helpers/styleCreators';
 import { useWorkspaceStore } from '../../hooks';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 
 interface Panel {
 	title: string;
 	component: React.ReactNode;
+	isActive: boolean;
 	color: string;
 	minWidth?: number;
 }
@@ -235,11 +237,12 @@ function WorkspaceSplitter(props: Props) {
 						onMouseDown={onMouseDown}
 						disabled={index === 0}
 						ref={splittersRefs.current[index]}
+						isPanelActive={panel.isActive}
 					/>
 					<div className='workspace-split-view__pane' ref={panelsRefs.current[index]}>
 						{panel.component}
 					</div>
-					<Overlay color={panel.color} isActive={isResizing} ref={overlaysRefs.current[index]} />
+					<Overlay color={panel.color} isResizing={isResizing} ref={overlaysRefs.current[index]} />
 				</React.Fragment>
 			))}
 		</div>
@@ -269,16 +272,17 @@ type SplitterProps = {
 	disabled?: boolean;
 	onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void;
 	isResizing: boolean;
+	isPanelActive?: boolean;
 };
 
 const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
-	({ color, title, onMouseDown, disabled = false, icon }, ref) => {
+	({ color, title, onMouseDown, disabled = false, icon, isPanelActive = false }, ref) => {
 		const viewStore = useWorkspaceViewStore();
 		const workspaceStore = useWorkspaceStore();
 		const titleRef = React.useRef<HTMLDivElement>(null);
 
-		const targetPanel = () => {
-			viewStore.setTargetPanel(
+		const setActivePanel = () => {
+			viewStore.setActivePanel(
 				title === 'Events'
 					? workspaceStore.eventsStore
 					: title === 'Messages'
@@ -287,9 +291,14 @@ const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
 			);
 		};
 
+		const splitterClassName = createStyleSelector(
+			'workspace-splitter',
+			isPanelActive ? null : 'inactive',
+		);
+
 		return (
 			<div
-				className='workspace-splitter'
+				className={splitterClassName}
 				onMouseDown={e => (disabled ? null : onMouseDown(e))}
 				onMouseEnter={e => {
 					e.preventDefault();
@@ -305,7 +314,7 @@ const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
 				}}>
 				<div
 					ref={ref}
-					onMouseDown={() => targetPanel()}
+					onMouseDown={setActivePanel}
 					className='workspace-splitter__handle'
 					style={{ backgroundColor: color, cursor: disabled ? 'default' : 'col-resize' }}>
 					<div className='workspace-splitter__content'>
@@ -324,15 +333,15 @@ Splitter.displayName = 'Splitter';
 
 interface OverlayProps {
 	color: string;
-	isActive: boolean;
+	isResizing: boolean;
 }
 
 const Overlay = React.forwardRef<HTMLDivElement, OverlayProps>((props, ref) => {
-	const [isVisible, setIsVisible] = React.useState(props.isActive);
+	const [isVisible, setIsVisible] = React.useState(props.isResizing);
 	const timer = React.useRef<NodeJS.Timeout>();
 
 	React.useEffect(() => {
-		if (props.isActive) {
+		if (props.isResizing) {
 			setIsVisible(true);
 		} else {
 			timer.current = setTimeout(() => {
@@ -344,14 +353,14 @@ const Overlay = React.forwardRef<HTMLDivElement, OverlayProps>((props, ref) => {
 				window.clearTimeout(timer.current);
 			}
 		};
-	}, [props.isActive]);
+	}, [props.isResizing]);
 
 	return (
 		<div
 			style={{
 				backgroundColor: props.color,
 				visibility: isVisible ? 'visible' : 'hidden',
-				opacity: props.isActive ? 0.3 : 0,
+				opacity: props.isResizing ? 0.3 : 0,
 			}}
 			className='workspace-overlay'
 			ref={ref}>

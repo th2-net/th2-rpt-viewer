@@ -90,12 +90,11 @@ function Graph() {
 				data-to={moment(chunk.to).endOf('minute').valueOf()}
 				className='graph__chunk-item'
 				data-index={index}
-				key={index}
+				key={`${chunk.from}-${chunk.to}`}
 				style={{ width: chunkWidth }}>
 				<GraphChunk
 					tickSize={graphStore.tickSize}
 					interval={graphStore.interval}
-					key={`${chunk.from}-${chunk.to}`}
 					chunk={chunk}
 					chunkWidth={chunkWidth}
 					getChunkData={graphStore.getChunkData}
@@ -209,11 +208,14 @@ const OverlayPanels = observer(
 		const graphStore = useGraphStore();
 		const selectedStore = useSelectedStore();
 		const workspaceStore = useWorkspaces().activeWorkspace;
+
 		const overlayWidth = (window.innerWidth - chunkWidth) / 2;
 		const commonStyles: React.CSSProperties = { width: overlayWidth };
+
 		const intervalValues = React.useMemo(() => {
 			return graphStore.getIntervalData();
 		}, [from]);
+
 		const outsideItems = React.useMemo(() => {
 			return graphStore.getOverlayValues();
 		}, [
@@ -234,7 +236,7 @@ const OverlayPanels = observer(
 			const timestamps = items.map(item => getTimestampAsNumber(getTimestamp(item)));
 			const targetItem = items[direction === 'left' ? timestamps.length - 1 : 0];
 
-			if (isEventMessage(targetItem) && isMessagesStore(workspaceStore.viewStore.targetPanel)) {
+			if (isEventMessage(targetItem) && isMessagesStore(workspaceStore.viewStore.activePanel)) {
 				workspaceStore.setAttachedMessagesIds([targetItem.messageId]);
 			}
 			graphStore.setTimestamp(timestamps[direction === 'left' ? timestamps.length - 1 : 0]);
@@ -251,7 +253,7 @@ const OverlayPanels = observer(
 			const timestamps = mapToTimestamps(items);
 			const targetItem = items[direction === 'left' ? timestamps.length - 1 : 0];
 
-			if (isEventMessage(targetItem) && isMessagesStore(workspaceStore.viewStore.targetPanel)) {
+			if (isEventMessage(targetItem) && isMessagesStore(workspaceStore.viewStore.activePanel)) {
 				workspaceStore.setAttachedMessagesIds([targetItem.messageId]);
 			}
 			graphStore.setTimestamp(timestamps[direction === 'left' ? timestamps.length - 1 : 0]);

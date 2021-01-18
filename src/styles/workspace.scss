@@ -128,6 +128,11 @@
 
 .workspace-splitter {
 	width: 8px;
+	transition: opacity 0.2s;
+
+	&.inactive {
+		opacity: 0.5;
+	}
 
 	&__handle {
 		height: 100%;

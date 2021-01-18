@@ -33,3 +33,4 @@ export * from './useSelectedStore';
 export * from './useWorkspacesStore';
 export * from './useSelectListener';
 export * from './useWorkspaceStore';
+export * from './useActivePanel';

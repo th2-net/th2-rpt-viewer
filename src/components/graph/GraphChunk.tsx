@@ -35,7 +35,7 @@ const lineProps: LineProps = {
 	animationDuration: 0,
 	activeDot: false,
 	dot: false,
-};
+} as const;
 
 const graphLines = [
 	{
@@ -50,7 +50,7 @@ const graphLines = [
 		dataKey: 'messages',
 		stroke: '#2689BD',
 	},
-];
+] as const;
 
 export interface AttachedItem {
 	value: EventMessage | EventAction;

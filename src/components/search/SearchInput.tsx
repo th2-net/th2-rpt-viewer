@@ -259,8 +259,8 @@ export class SearchInputBase extends React.PureComponent<Props> {
 	private documentOnKeyDown = (e: KeyboardEvent) => {
 		if (e.keyCode === KeyCodes.F3 || (e.keyCode === KeyCodes.F && e.ctrlKey)) {
 			// cancel browser search opening
-			e.preventDefault();
 			if (!this.props.disabled) {
+				e.preventDefault();
 				this.focus();
 			}
 		}

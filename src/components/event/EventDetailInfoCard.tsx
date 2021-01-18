@@ -1,4 +1,3 @@
-/* eslint-disable react/no-children-prop */
 /** *****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -24,7 +23,7 @@ import { getEventStatus } from '../../helpers/event';
 import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
 import { EventAction } from '../../models/EventAction';
-import { useSelectedStore } from '../../hooks';
+import { useSelectedStore, useWorkspaceEventStore } from '../../hooks';
 
 interface Props {
 	event: EventAction | null;
@@ -34,6 +33,8 @@ interface Props {
 
 function EventDetailInfoCard(props: Props) {
 	const selectedStore = useSelectedStore();
+	const eventsStore = useWorkspaceEventStore();
+
 	const { event, childrenCount = 0, rootStyle = {} } = props;
 
 	if (!event) {
@@ -55,15 +56,23 @@ function EventDetailInfoCard(props: Props) {
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
 
+	function onEventPin() {
+		if (event === null) return;
+		const eventIdx = eventsStore.selectedPath.findIndex(e => e.eventId === event.eventId);
+		event.parents = eventsStore.selectedPath
+			.slice(0, eventIdx === -1 ? 0 : eventIdx)
+			.map(ev => ev.eventId);
+
+		selectedStore.toggleEventPin(event);
+	}
+
 	return (
 		<div className={rootClassName} style={rootStyle}>
 			<div className='event-detail-card__header'>
 				<div className='event-detail-card__title' title={eventType || eventName}>
 					{eventType || eventName}
 				</div>
-				<button
-					onClick={() => selectedStore.toggleEventPin(event)}
-					className='event-detail-card__pin-button'>
+				<button onClick={onEventPin} className='event-detail-card__pin-button'>
 					<i className={pinButtonIconClassName} />
 				</button>
 				<div className='event-detail-card__controls'>

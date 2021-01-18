@@ -83,10 +83,7 @@ const Tabs = (props: Props) => {
 						<div
 							className='tabs__content-window'
 							key={index}
-							style={{
-								zIndex: index === activeIndex ? 1 : 0,
-								// display: index === activeIndex ? 'block' : 'none',
-							}}>
+							style={{ zIndex: index === activeIndex ? 1 : 0 }}>
 							{content}
 						</div>
 					))}

@@ -19,30 +19,25 @@ import { observer } from 'mobx-react-lite';
 import EventTreeView from './tree/EventTreeView';
 import EventWindowHeader from './EventWindowHeader';
 import FlatEventView from './flat-event-list/FlatEventView';
-import { useEventWindowViewStore, useWorkspaceEventStore } from '../../hooks';
+import { useEventWindowViewStore, useWorkspaceEventStore, useActivePanel } from '../../hooks';
 import '../../styles/events.scss';
-import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 
-interface EventWindowProps {
-	isActive: boolean;
-}
-
-const EventWindow = (props: EventWindowProps) => {
-	const workspaceViewStore = useWorkspaceViewStore();
+function EventWindow() {
 	const eventWindowViewStore = useEventWindowViewStore();
 	const eventsStore = useWorkspaceEventStore();
-	const { isActive } = props;
+
+	const { ref: panelRef } = useActivePanel(eventsStore);
 
 	return (
-		<div onClick={() => workspaceViewStore.setTargetPanel(eventsStore)} className='window'>
+		<div className='window' ref={panelRef}>
 			<div className='window__controls'>
-				<EventWindowHeader isWindowActive={isActive} />
+				<EventWindowHeader />
 			</div>
 			<div className='window__body'>
 				{eventWindowViewStore.flattenedListView ? <FlatEventView /> : <EventTreeView />}
 			</div>
 		</div>
 	);
-};
+}
 
 export default observer(EventWindow);

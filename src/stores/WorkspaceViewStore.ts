@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed } from 'mobx';
+import { observable, action } from 'mobx';
 import PanelArea from '../util/PanelArea';
 import EventsStore from './EventsStore';
 import MessagesStore from './MessagesStore';
@@ -26,55 +26,39 @@ type InitialState = Partial<{
 }>;
 
 export default class WorkspaceViewStore {
-	constructor(private eventsStore?: EventsStore, initalState?: InitialState) {
+	constructor(initalState?: InitialState) {
 		if (initalState) {
 			this.init(initalState);
 		}
-		if (this.eventsStore) {
-			this.targetPanel = this.eventsStore;
-		}
 	}
 
-	@observable isLoading = true;
+	@observable
+	public panelArea: PanelArea = PanelArea.P50;
 
-	@observable panelArea: PanelArea = PanelArea.P50;
+	@observable
+	public flattenedListView = false;
 
-	@observable flattenedListView = false;
-
-	@observable targetPanel: EventsStore | MessagesStore | null = null;
-
-	@computed get isLeftPanelClosed() {
-		return this.panelArea === PanelArea.P0;
-	}
-
-	@computed get isRightPanelClosed() {
-		return this.panelArea === PanelArea.P100;
-	}
+	@observable
+	public activePanel: EventsStore | MessagesStore | null = null;
 
 	@action
-	setPanelArea = (panelArea: PanelArea) => {
+	public setPanelArea = (panelArea: PanelArea) => {
 		this.panelArea = panelArea;
 	};
 
 	@action
-	setIsLoading = (isLoading: boolean) => {
-		this.isLoading = isLoading;
+	public setActivePanel = (panel: EventsStore | MessagesStore | null) => {
+		this.activePanel = panel;
 	};
 
 	@action
-	setTargetPanel = (panel: EventsStore | MessagesStore | null) => {
-		this.targetPanel = panel;
-	};
-
-	@action
-	toggleFlattenEventListView = () => {
+	public toggleFlattenEventListView = () => {
 		this.flattenedListView = !this.flattenedListView;
 	};
 
 	@action
 	private init = (initalState: InitialState) => {
-		this.isLoading = initalState.isLoading ?? false;
 		this.panelArea = initalState.panelArea ?? PanelArea.P100;
-		this.flattenedListView = initalState.flattenedListView ?? false;
+		this.flattenedListView = Boolean(initalState.flattenedListView);
 	};
 }

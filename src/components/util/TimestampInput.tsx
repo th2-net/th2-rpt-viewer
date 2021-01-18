@@ -42,14 +42,12 @@ interface Props {
 	style?: React.CSSProperties;
 	readonly?: boolean;
 	placeholder?: string;
-	datepicker?: boolean;
 	onSubmit: (timestamp: number) => void;
 }
 
 const TimestampInput = (props: Props) => {
 	const {
 		wrapperClassName = 'timestamp-input',
-		datepicker = true,
 		readonly = false,
 		className = '',
 		placeholder = 'Go to ID or Timestamp',
@@ -129,11 +127,9 @@ const TimestampInput = (props: Props) => {
 	return (
 		<div className={wrapperClassName} ref={wrapperRef}>
 			<input {...inputProps} />
-			{datepicker && <button className={datepickerButtonClassName} onClick={toggleDatepicker} />}
+			<button className={datepickerButtonClassName} onClick={toggleDatepicker} />
 		</div>
 	);
 };
-
-TimestampInput.displayName = 'TimestampInput';
 
 export default TimestampInput;

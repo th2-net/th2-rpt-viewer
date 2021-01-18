@@ -17,8 +17,9 @@
 @import './common/vars';
 
 .search-panel {
-	width: inherit;
+	width: 100%;
 	padding: 0 8px;
+
 	&__toggle {
 		.filter-row {
 				justify-content: center;

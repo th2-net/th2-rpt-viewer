@@ -21,36 +21,45 @@ import { Virtuoso } from 'react-virtuoso';
 import { getTimestampAsNumber } from '../helpers/date';
 import { isEventAction } from '../helpers/event';
 import { createStyleSelector } from '../helpers/styleCreators';
-import { useSelectedStore } from '../hooks';
-import { useWorkspaceViewStore } from '../hooks/useWorkspaceViewStore';
+import { useActivePanel, useSelectedStore, useWorkspaces } from '../hooks';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import '../styles/bookmarks.scss';
 
 type SavedItem = EventMessage | EventAction;
 
-const BookmarksPanel = () => {
+function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
-	const viewStore = useWorkspaceViewStore();
+	const workspacesStore = useWorkspaces();
 
-	const onRemoveSavedItem = (item: SavedItem) => selectedStore.removeSavedItem(item);
+	const { ref: panelRef } = useActivePanel(null);
 
-	// TODO: implement select of bookmarked item
-	const onItemClick = (item: SavedItem) => console.log(item);
+	function onBookmarkRemove(item: SavedItem) {
+		return selectedStore.removeSavedItem(item);
+	}
 
-	const computeKey = (index: number) => {
+	function onBookmarkClick(item: SavedItem) {
+		return workspacesStore.onSavedItemSelect(item);
+	}
+
+	function computeKey(index: number) {
 		const item = selectedStore.savedItems[index];
 
 		return isEventAction(item) ? item.eventId : item.messageId;
-	};
+	}
 
-	const renderBookmarkItem = (index: number) => {
-		const item = selectedStore.savedItems[index];
-		return <BookmarkItem item={item} onRemove={onRemoveSavedItem} onClick={onItemClick} />;
-	};
+	function renderBookmarkItem(index: number) {
+		return (
+			<BookmarkItem
+				item={selectedStore.savedItems[index]}
+				onRemove={onBookmarkRemove}
+				onClick={onBookmarkClick}
+			/>
+		);
+	}
 
 	return (
-		<div className='bookmarks-panel' onClick={() => viewStore.setTargetPanel(null)}>
+		<div className='bookmarks-panel' ref={panelRef}>
 			<Virtuoso
 				className='bookmarks-panel__list'
 				totalCount={selectedStore.savedItems.length}
@@ -60,7 +69,7 @@ const BookmarksPanel = () => {
 			/>
 		</div>
 	);
-};
+}
 
 export default observer(BookmarksPanel);
 
@@ -70,12 +79,17 @@ interface BookmarkItemProps {
 	onClick: (item: SavedItem) => void;
 }
 
-const BookmarkItem = ({ item, onRemove, onClick }: BookmarkItemProps) => {
+function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 	const itemInfo = {
 		status: isEventAction(item) ? (item.successful ? 'passed' : 'failed') : null,
 		title: isEventAction(item) ? item.eventName : item.messageId,
 		timestamp: getTimestampAsNumber(isEventAction(item) ? item.startTimestamp : item.timestamp),
 	};
+
+	function onBookmarkRemove(event: React.MouseEvent<HTMLButtonElement>) {
+		event.stopPropagation();
+		onRemove(item);
+	}
 
 	return (
 		<div
@@ -92,14 +106,9 @@ const BookmarkItem = ({ item, onRemove, onClick }: BookmarkItemProps) => {
 					{moment(itemInfo.timestamp).utc().format('DD.MM.YYYY HH:mm:ss:SSS')}
 				</div>
 			</div>
-			<button
-				className='bookmark-item__remove-btn'
-				onClick={e => {
-					e.stopPropagation();
-					onRemove(item);
-				}}>
+			<button className='bookmark-item__remove-btn' onClick={onBookmarkRemove}>
 				<i className='bookmark-item__remove-btn-icon' />
 			</button>
 		</div>
 	);
-};
+}
