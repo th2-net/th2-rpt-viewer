@@ -17,6 +17,7 @@
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { getTimestampAsNumber, isTimeInsideInterval, isTimeIntersected } from '../helpers/date';
+import { calculateTimeRange } from '../helpers/graph';
 import { Chunk, ChunkData, IntervalData, OverlayValues } from '../models/graph';
 import RootStore from './RootStore';
 
@@ -52,16 +53,10 @@ class GraphStore {
 	public timestamp: number = moment().utc().valueOf();
 
 	@observable
-	public range: [number, number] = [
-		moment(this.timestamp)
-			.utc()
-			.subtract(this.interval / 2, 'minutes')
-			.valueOf(),
-		moment(this.timestamp)
-			.utc()
-			.add(this.interval / 2, 'minutes')
-			.valueOf(),
-	];
+	public range: [number, number] = calculateTimeRange(
+		moment(this.timestamp).utc().valueOf(),
+		this.interval,
+	);
 
 	@computed get tickSize() {
 		return this.steps[this.interval];

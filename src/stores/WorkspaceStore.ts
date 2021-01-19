@@ -62,8 +62,6 @@ export default class WorkspaceStore {
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 
 		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
-
-		reaction(() => this.graphStore.range, this.onRangeChange);
 	}
 
 	@observable
@@ -133,7 +131,7 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	private onRangeChange = (range: [number, number]) => {
+	public onRangeChange = (range: [number, number]) => {
 		if (this.panelUpdateTimer) {
 			clearTimeout(this.panelUpdateTimer);
 		}

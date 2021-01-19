@@ -32,3 +32,7 @@ export function filterListByChunkRange(chunk: Chunk, list: (EventMessage | Event
 		);
 	});
 }
+
+export function calculateTimeRange(timestamp: number, interval: number): [number, number] {
+	return [timestamp - (interval / 2) * 60 * 1000, timestamp + (interval / 2) * 60 * 1000];
+}

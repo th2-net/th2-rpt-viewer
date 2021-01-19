@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
+import moment from 'moment';
 import FilterStore from './FilterStore';
 import ViewStore from './WorkspaceViewStore';
 import ApiSchema from '../api/ApiSchema';
@@ -27,6 +28,7 @@ import { getEventNodeParents, sortEventsByTimestamp } from '../helpers/event';
 import { SelectedStore } from './SelectedStore';
 import WorkspaceStore from './WorkspaceStore';
 import { getTimestampAsNumber } from '../helpers/date';
+import { calculateTimeRange } from '../helpers/graph';
 
 export type EventStoreURLState = Partial<{
 	type: TabTypes.Events;
@@ -260,14 +262,16 @@ export default class EventsStore {
 			currIdx++;
 		}
 		if (!node) {
-			await this.fetchEventTree();
-			const interval = this.workspaceStore.graphStore.interval;
+			const [from, to] = calculateTimeRange(
+				getTimestampAsNumber(savedEvent.startTimestamp),
+				this.workspaceStore.graphStore.interval,
+			);
+
 			this.filterStore.eventsFilter.eventTypes = [];
 			this.filterStore.eventsFilter.names = [];
-			this.filterStore.eventsFilter.timestampFrom =
-				getTimestampAsNumber(savedEvent.startTimestamp) - interval * 60 * 1000;
-			this.filterStore.eventsFilter.timestampTo =
-				getTimestampAsNumber(savedEvent.startTimestamp) + interval * 60 * 1000;
+			this.filterStore.eventsFilter.timestampFrom = from;
+			this.filterStore.eventsFilter.timestampTo = to;
+			await this.fetchEventTree();
 		}
 		this.expandPath(fullPath);
 	};

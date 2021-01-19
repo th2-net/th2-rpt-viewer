@@ -18,7 +18,7 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { useGraphStore, useDebouncedCallback, usePrevious } from '../../hooks';
+import { useGraphStore, useDebouncedCallback, usePrevious, useWorkspaces } from '../../hooks';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
 import { Chunk } from '../../models/graph';
 import { raf } from '../../helpers/raf';
@@ -86,11 +86,14 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const { settings, chunkWidth, setExpandedAttachedItem, timestamp } = props;
 
 	const graphStore = useGraphStore();
+	const workspacesStore = useWorkspaces();
 
 	const viewportElementRef = React.useRef<HTMLDivElement>(null);
 	const rangeElementRef = React.useRef<HTMLDivElement>(null);
 	const prevItemsRef = React.useRef<HTMLDivElement>(null);
 	const nextItemsRef = React.useRef<HTMLDivElement>(null);
+
+	const initialRangeCalculation = React.useRef(true);
 
 	const [state, setState] = React.useState<State>(setInitialState(settings));
 
@@ -221,7 +224,15 @@ const GraphChunksVirtualizer = (props: Props) => {
 			const intervalEnd = moment(intervalStart).utc().add(graphStore.interval, 'minutes');
 
 			if (intervalStart.isValid() && intervalEnd.isValid()) {
-				graphStore.setRange([intervalStart.valueOf(), intervalEnd.valueOf()]);
+				const updatedRange: [number, number] = [intervalStart.valueOf(), intervalEnd.valueOf()];
+				graphStore.setRange(updatedRange);
+
+				// TODO: temporary workaround to ignore initial range calculation in order to avoid refetching data;
+				if (initialRangeCalculation.current) {
+					initialRangeCalculation.current = false;
+				} else {
+					workspacesStore.activeWorkspace.onRangeChange(updatedRange);
+				}
 			}
 		}
 
