@@ -11,17 +11,12 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  limitations under the License.
  ***************************************************************************** */
-import ApiSchema from './ApiSchema';
-import eventHttpApi from './event';
-import messageHttpApi from './message';
-import sseApi from './sse';
 
-const api: ApiSchema = {
-	events: eventHttpApi,
-	messages: messageHttpApi,
-	sse: sseApi,
+import { useRootStore } from './useRootStore';
+
+export const useSearchPanelFiltersStore = () => {
+	const rootStore = useRootStore();
+	return rootStore.searchPanelFiltersStore;
 };
-
-export default api;

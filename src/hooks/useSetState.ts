@@ -11,17 +11,26 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  limitations under the License.
  ***************************************************************************** */
-import ApiSchema from './ApiSchema';
-import eventHttpApi from './event';
-import messageHttpApi from './message';
-import sseApi from './sse';
 
-const api: ApiSchema = {
-	events: eventHttpApi,
-	messages: messageHttpApi,
-	sse: sseApi,
+import { useCallback, useState } from 'react';
+
+const useSetState = <T extends object>(
+	defaultState: T = {} as T,
+): [T, (patch: Partial<T> | ((prevState: T) => Partial<T>)) => void] => {
+	const [state, set] = useState<T>(defaultState);
+	const setState = useCallback(
+		patch => {
+			set(prevState => ({
+				...prevState,
+				...(patch instanceof Function ? patch(prevState) : patch),
+			}));
+		},
+		[set],
+	);
+
+	return [state, setState];
 };
 
-export default api;
+export default useSetState;
