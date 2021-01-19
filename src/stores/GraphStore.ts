@@ -34,11 +34,17 @@ class GraphStore {
 		60: 5,
 	};
 
-	constructor(private rootStore: RootStore) {
+	constructor(private rootStore: RootStore, initialRange: [number, number] | null) {
 		reaction(
 			() => this.interval,
 			interval => this.createChunks(interval, this.timestamp),
 		);
+
+		if (initialRange) {
+			const [from, to] = initialRange;
+			this.timestamp = from + (to - from) / 2;
+			this.range = initialRange;
+		}
 
 		this.createChunks(this.interval, this.timestamp);
 	}

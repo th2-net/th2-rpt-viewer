@@ -18,16 +18,9 @@ import { autorun, toJS } from 'mobx';
 import { TabTypes } from '../models/util/Windows';
 import { EventStoreURLState } from '../stores/EventsStore';
 import RootStore from '../stores/RootStore';
+import { WorkspacesUrlState } from '../stores/WorkspacesStore';
 import { getEventNodeParents } from './event';
 import { getObjectKeys } from './object';
-
-export const TEST_CASE_PARAM_KEY = 'tc';
-export const ACTION_PARAM_KEY = 'ac';
-export const MESSAGE_PARAM_KEY = 'message';
-
-export function getUrlSearchString(url: string) {
-	return url.includes('?') ? url.substring(url.lastIndexOf('?')) : '';
-}
 
 export function createURLSearchParams(
 	_params: Record<string, string | number | boolean | null | string[]>,
@@ -51,27 +44,28 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 	autorun(() => {
 		const activeWorkspace = rootStore.workspacesStore.activeWorkspace;
 		let eventStoreState: EventStoreURLState = {};
-
-		const eventsStore = activeWorkspace.eventsStore;
-		eventStoreState = {
-			type: TabTypes.Events,
-			filter: eventsStore.filterStore.isEventsFilterApplied
-				? eventsStore.filterStore.eventsFilter
-				: undefined,
-			panelArea: eventsStore.viewStore.panelArea,
-			selectedNodesPath: eventsStore.selectedNode
-				? [...getEventNodeParents(eventsStore.selectedNode), eventsStore.selectedNode.eventId]
-				: undefined,
-			search:
-				eventsStore.searchStore.tokens.length > 0
-					? eventsStore.searchStore.tokens.map(t => t.pattern)
+		if (activeWorkspace) {
+			const eventsStore = activeWorkspace.eventsStore;
+			eventStoreState = {
+				type: TabTypes.Events,
+				filter: eventsStore.filterStore.isEventsFilterApplied
+					? eventsStore.filterStore.eventsFilter
 					: undefined,
-			flattenedListView: eventsStore.viewStore.flattenedListView,
-			selectedParentId:
-				eventsStore.viewStore.flattenedListView && eventsStore.selectedParentNode
-					? eventsStore.selectedParentNode.eventId
+				panelArea: eventsStore.viewStore.panelArea,
+				selectedNodesPath: eventsStore.selectedNode
+					? [...getEventNodeParents(eventsStore.selectedNode), eventsStore.selectedNode.eventId]
 					: undefined,
-		};
+				search:
+					eventsStore.searchStore.tokens.length > 0
+						? eventsStore.searchStore.tokens.map(t => t.pattern)
+						: undefined,
+				flattenedListView: eventsStore.viewStore.flattenedListView,
+				selectedParentId:
+					eventsStore.viewStore.flattenedListView && eventsStore.selectedParentNode
+						? eventsStore.selectedParentNode.eventId
+						: undefined,
+			};
+		}
 
 		getObjectKeys(eventStoreState).forEach(key => {
 			if (eventStoreState[key] === undefined) {
@@ -79,17 +73,13 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 			}
 		});
 
+		const urlState: WorkspacesUrlState = toJS({
+			events: eventStoreState,
+			messages: {},
+		});
+
 		const searchParams = new URLSearchParams({
-			workspaces: window.btoa(
-				JSON.stringify(
-					toJS([
-						{
-							events: eventStoreState,
-							messages: {},
-						},
-					]),
-				),
-			),
+			workspaces: window.btoa(JSON.stringify(urlState)),
 		});
 
 		window.history.replaceState({}, '', `?${searchParams}`);

@@ -21,7 +21,6 @@ import EventsFilterPanel from '../filter/EventsFilterPanel';
 import { useActivePanel, useWorkspaceEventStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
 
-
 function EventWindowHeader() {
 	const { activePanel } = useActivePanel();
 	const eventStore = useWorkspaceEventStore();

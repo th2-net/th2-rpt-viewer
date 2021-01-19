@@ -31,21 +31,27 @@ export default class RootStore {
 
 	viewStore: AppViewStore;
 
-	graphStore = new GraphStore(this);
+	graphStore: GraphStore;
 
 	constructor(private api: ApiSchema) {
-		this.workspacesStore = new WorkspacesStore(
-			this.api,
-			this.graphStore,
-			this.parseWorkspacesState(),
-		);
+		const urlState = this.parseUrlState();
+
+		const eventsFilter = urlState?.events.filter;
+
+		const range: [number, number] | null = eventsFilter
+			? [eventsFilter.timestampFrom, eventsFilter.timestampTo]
+			: null;
+
+		this.graphStore = new GraphStore(this, range);
+
+		this.workspacesStore = new WorkspacesStore(this.api, this.graphStore, urlState);
 
 		this.viewStore = new AppViewStore();
 
 		registerUrlMiddleware(this);
 	}
 
-	parseWorkspacesState = (): WorkspacesUrlState | null => {
+	parseUrlState = (): WorkspacesUrlState | null => {
 		try {
 			const searchParams = new URLSearchParams(window.location.search);
 			const workspacesUrlState = searchParams.get('workspaces');

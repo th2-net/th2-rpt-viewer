@@ -27,7 +27,7 @@ import GraphStore from './GraphStore';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 
-export type WorkspacesUrlState = Array<WorkspaceUrlState>;
+export type WorkspacesUrlState = WorkspaceUrlState;
 
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
@@ -62,15 +62,13 @@ export default class WorkspacesStore {
 
 	@action
 	private init(initialState: WorkspacesUrlState | null) {
-		if (!initialState || !initialState.length) {
+		if (!initialState) {
 			this.addWorkspace(this.createWorkspace());
 			return;
 		}
 
 		try {
-			this.workspaces = initialState.map(workspaceState =>
-				this.createWorkspace(workspaceState.events),
-			);
+			this.addWorkspace(this.createWorkspace(initialState.events))
 		} catch (error) {
 			this.addWorkspace(this.createWorkspace());
 		}
