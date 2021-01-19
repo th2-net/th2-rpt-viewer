@@ -23,10 +23,11 @@ import { BookmarkItem } from '../BookmarksPanel';
 
 interface SearchPanelResultsProps {
 	results: Array<EventAction | EventMessage>;
+	onResultItemClick: (searchResult: EventAction | EventMessage) => void;
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
-	const { results } = props;
+	const { results, onResultItemClick } = props;
 
 	function computeKey(index: number) {
 		const item = results[index];
@@ -35,7 +36,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	}
 
 	function renderBookmarkItem(index: number) {
-		return <BookmarkItem item={results[index]} />;
+		return <BookmarkItem item={results[index]} onClick={onResultItemClick} />;
 	}
 
 	return (
