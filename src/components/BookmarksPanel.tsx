@@ -21,7 +21,7 @@ import { Virtuoso } from 'react-virtuoso';
 import { getTimestampAsNumber } from '../helpers/date';
 import { isEventAction } from '../helpers/event';
 import { createStyleSelector } from '../helpers/styleCreators';
-import { useActivePanel, useSelectedStore, useWorkspaces } from '../hooks';
+import { useActivePanel, useSelectedStore, useWorkspaceStore } from '../hooks';
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import '../styles/bookmarks.scss';
@@ -30,7 +30,7 @@ type SavedItem = EventMessage | EventAction;
 
 function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
-	const workspacesStore = useWorkspaces();
+	const workspaceStore = useWorkspaceStore();
 
 	const { ref: panelRef } = useActivePanel(null);
 
@@ -39,7 +39,7 @@ function BookmarksPanel() {
 	}
 
 	function onBookmarkClick(item: SavedItem) {
-		return workspacesStore.onSavedItemSelect(item);
+		return workspaceStore.onSavedItemSelect(item);
 	}
 
 	function computeKey(index: number) {

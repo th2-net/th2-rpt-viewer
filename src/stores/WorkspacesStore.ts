@@ -24,6 +24,8 @@ import WorkspaceStore, {
 } from './WorkspaceStore';
 import TabsStore from './TabsStore';
 import GraphStore from './GraphStore';
+import { EventAction } from '../models/EventAction';
+import { EventMessage } from '../models/EventMessage';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -82,6 +84,11 @@ export default class WorkspacesStore {
 	@action
 	public addWorkspace = (workspace: WorkspaceStore) => {
 		this.workspaces.push(workspace);
+	};
+
+	@action
+	public onSavedItemSelect = (savedItem: EventAction | EventMessage) => {
+		this.activeWorkspace.onSavedItemSelect(savedItem);
 	};
 
 	public createWorkspace = (

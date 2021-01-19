@@ -25,6 +25,8 @@ import { EventAction } from '../models/EventAction';
 import { sortMessagesByTimestamp } from '../helpers/message';
 import GraphStore from './GraphStore';
 import { isEventsStore, isMessagesStore } from '../helpers/stores';
+import { getTimestampAsNumber } from '../helpers/date';
+import { isEventAction } from '../helpers/event';
 
 export type EventStoreDefaultStateType = EventsStore | EventStoreURLState | null;
 export type MessagesStoreDefaultStateType = MessagesStore | null;
@@ -44,7 +46,7 @@ export default class WorkspaceStore {
 	constructor(
 		private selectedStore: SelectedStore,
 		private api: ApiSchema,
-		private graphStore: GraphStore,
+		public graphStore: GraphStore,
 		eventDefaultState: EventStoreDefaultStateType = null,
 		messagesDefaultState: MessagesStoreDefaultStateType = null,
 	) {
@@ -55,40 +57,13 @@ export default class WorkspaceStore {
 			this.api,
 			messagesDefaultState,
 		);
-		this.viewStore = new WorkspaceViewStore(this.eventsStore);
+		this.viewStore = new WorkspaceViewStore();
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 
 		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
 
-		reaction(
-			() => this.graphStore.range,
-			range => {
-				if (this.panelUpdateTimer) {
-					clearTimeout(this.panelUpdateTimer);
-				}
-				this.panelUpdateTimer = setTimeout(() => {
-					const [timestampFrom, timestampTo] = range;
-					if (isEventsStore(this.viewStore.targetPanel)) {
-						const eventsFilter = this.viewStore.targetPanel.filterStore.eventsFilter;
-						this.viewStore.targetPanel.filterStore.eventsFilter = {
-							timestampFrom,
-							timestampTo,
-							eventTypes: eventsFilter.eventTypes,
-							names: eventsFilter.names,
-						};
-					} else if (isMessagesStore(this.viewStore.targetPanel)) {
-						const messageFilter = this.viewStore.targetPanel?.filterStore.messagesFilter;
-						this.viewStore.targetPanel.filterStore.messagesFilter = {
-							timestampFrom,
-							timestampTo,
-							messageTypes: messageFilter ? messageFilter.messageTypes : [],
-							streams: messageFilter ? messageFilter.streams : [],
-						};
-					}
-				}, 1000);
-			},
-		);
+		reaction(() => this.graphStore.range, this.onRangeChange);
 	}
 
 	@observable
@@ -143,5 +118,44 @@ export default class WorkspaceStore {
 			this.attachedMessagesAC = null;
 			this.isLoadingAttachedMessages = false;
 		}
+	};
+
+	@action
+	onSavedItemSelect = (savedItem: EventAction | EventMessage) => {
+		this.graphStore.timestamp = isEventAction(savedItem)
+			? getTimestampAsNumber(savedItem.startTimestamp)
+			: getTimestampAsNumber(savedItem.timestamp);
+		if (isEventAction(savedItem)) {
+			this.eventsStore.onSavedItemSelect(savedItem);
+		} else {
+			this.messagesStore.onSavedItemSelect(savedItem);
+		}
+	};
+
+	@action
+	private onRangeChange = (range: [number, number]) => {
+		if (this.panelUpdateTimer) {
+			clearTimeout(this.panelUpdateTimer);
+		}
+		this.panelUpdateTimer = setTimeout(() => {
+			const [timestampFrom, timestampTo] = range;
+			if (isEventsStore(this.viewStore.activePanel)) {
+				const eventsFilter = this.viewStore.activePanel.filterStore.eventsFilter;
+				this.viewStore.activePanel.filterStore.eventsFilter = {
+					timestampFrom,
+					timestampTo,
+					eventTypes: eventsFilter.eventTypes,
+					names: eventsFilter.names,
+				};
+			} else if (isMessagesStore(this.viewStore.activePanel)) {
+				const messageFilter = this.viewStore.activePanel?.filterStore.messagesFilter;
+				this.viewStore.activePanel.filterStore.messagesFilter = {
+					timestampFrom,
+					timestampTo,
+					messageTypes: messageFilter ? messageFilter.messageTypes : [],
+					streams: messageFilter ? messageFilter.streams : [],
+				};
+			}
+		}, 800);
 	};
 }

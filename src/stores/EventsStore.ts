@@ -26,6 +26,7 @@ import { TabTypes } from '../models/util/Windows';
 import { getEventNodeParents, sortEventsByTimestamp } from '../helpers/event';
 import { SelectedStore } from './SelectedStore';
 import WorkspaceStore from './WorkspaceStore';
+import { getTimestampAsNumber } from '../helpers/date';
 
 export type EventStoreURLState = Partial<{
 	type: TabTypes.Events;
@@ -102,6 +103,10 @@ export default class EventsStore {
 	@observable isExpandedMap: Map<string, boolean> = new Map();
 
 	@observable eventTreeStatusCode: number | null = null;
+
+	@computed get isActivePanel() {
+		return this.workspaceStore.viewStore.activePanel === this;
+	}
 
 	@computed
 	public get flattenedEventList() {
@@ -239,6 +244,34 @@ export default class EventsStore {
 		}
 	};
 
+	@action
+	public onSavedItemSelect = async (savedEvent: EventAction) => {
+		const fullPath = [...(savedEvent.parents || []), savedEvent.eventId];
+		let currIdx = 0;
+		let nodes = this.eventTree;
+		let node: EventTreeNode | undefined;
+
+		while (currIdx < fullPath.length) {
+			// eslint-disable-next-line no-loop-func
+			node = nodes.find(n => n.eventId === fullPath[currIdx]);
+
+			if (!node) break;
+			nodes = node.childList;
+			currIdx++;
+		}
+		if (!node) {
+			await this.fetchEventTree();
+			const interval = this.workspaceStore.graphStore.interval;
+			this.filterStore.eventsFilter.eventTypes = [];
+			this.filterStore.eventsFilter.names = [];
+			this.filterStore.eventsFilter.timestampFrom =
+				getTimestampAsNumber(savedEvent.startTimestamp) - interval * 60 * 1000;
+			this.filterStore.eventsFilter.timestampTo =
+				getTimestampAsNumber(savedEvent.startTimestamp) + interval * 60 * 1000;
+		}
+		this.expandPath(fullPath);
+	};
+
 	private detailedEventAC: AbortController | null = null;
 
 	@action
@@ -264,7 +297,7 @@ export default class EventsStore {
 	};
 
 	@action
-	private expandPath = async (selectedIds: string[]) => {
+	public expandPath = async (selectedIds: string[]) => {
 		if (selectedIds.length === 0) return;
 
 		let headNode: EventTreeNode | undefined;
@@ -344,9 +377,8 @@ export default class EventsStore {
 		this.scrolledIndex = store.scrolledIndex?.valueOf() || null;
 		this.isExpandedMap = toJS(store.isExpandedMap, { exportMapsAsObjects: false });
 		this.expandPath(store.selectedPath.map(n => n.eventId));
-		this.viewStore = new ViewStore(undefined, {
+		this.viewStore = new ViewStore({
 			flattenedListView: store.viewStore.flattenedListView.valueOf(),
-			isLoading: store.viewStore.isLoading.valueOf(),
 			panelArea: store.viewStore.panelArea,
 		});
 		this.filterStore = new FilterStore(store.filterStore);
@@ -382,7 +414,7 @@ export default class EventsStore {
 
 		this.filterStore = new FilterStore({ eventsFilter: filter });
 		this.searchStore = new SearchStore(this.api, this, { searchPatterns: search || [] });
-		this.viewStore = new ViewStore(undefined, {
+		this.viewStore = new ViewStore({
 			flattenedListView,
 			panelArea,
 		});

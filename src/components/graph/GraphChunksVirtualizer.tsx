@@ -21,7 +21,6 @@ import { observer } from 'mobx-react-lite';
 import { useGraphStore, useDebouncedCallback, usePrevious } from '../../hooks';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
 import { Chunk } from '../../models/graph';
-import { IntervalOption } from '../../stores/GraphStore';
 import { raf } from '../../helpers/raf';
 import { EventAction } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
@@ -142,7 +141,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 			return;
 
 		if (isClickEventInElement(event, rangeElementRef.current)) {
-			setExpandedAttachedItem(null);
+			// setExpandedAttachedItem(null);
 			viewportElementRef.current.style.cursor = 'grabbing';
 			isDown.current = true;
 			startX.current = event.pageX - (viewportElementRef.current?.offsetLeft || 0);

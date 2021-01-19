@@ -84,7 +84,8 @@ export default class MessagesStore {
 	@observable
 	public scrollTopMessageId: string | null = null;
 
-	@observable messagesListErrorStatusCode: number | null = null;
+	@observable
+	public messagesListErrorStatusCode: number | null = null;
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
@@ -105,13 +106,17 @@ export default class MessagesStore {
 
 		this.attachedMessagesSubscription = reaction(
 			() => this.workspaceStore.attachedMessages,
-			this.onAttachedMessagesChange,
+			attachedMessages => {
+				if (this.isActivePanel || this.messagesIds.length === 0) {
+					this.onAttachedMessagesChange(attachedMessages);
+				}
+			},
 		);
 
 		reaction(
 			() => this.filterStore.messagesFilter.streams,
 			streams => {
-				if (streams.length === 0) {
+				if ((this.isActivePanel || this.messagesIds.length === 0) && streams.length === 0) {
 					this.resetMessagesState();
 				}
 			},
@@ -136,6 +141,10 @@ export default class MessagesStore {
 		this.attachedMessagesIdsSubscription();
 		this.attachedMessagesSubscription();
 	};
+
+	@computed get isActivePanel() {
+		return this.workspaceStore.viewStore.activePanel === this;
+	}
 
 	@action
 	public toggleMessageDetailedRaw = (messageId: string) => {
@@ -490,6 +499,17 @@ export default class MessagesStore {
 		} finally {
 			this.messagesLoadingState.loadingRootItems = false;
 		}
+	};
+
+	@action
+	public onSavedItemSelect = (savedMessage: EventMessage) => {
+		if (!this.messagesIds.includes(savedMessage.messageId)) {
+			this.filterStore.messagesFilter.messageTypes = [];
+			this.filterStore.messagesFilter.streams = [savedMessage.sessionId];
+			this.filterStore.messagesFilter.timestampFrom = null;
+			this.filterStore.messagesFilter.timestampTo = null;
+		}
+		this.scrollToMessage(savedMessage.messageId);
 	};
 
 	@action

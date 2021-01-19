@@ -23,7 +23,6 @@ import { useOutsideClickListener } from '../../hooks';
 import { EventAction } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { ModalPortal } from '../Portal';
-import { isEqual } from '../../helpers/object';
 import { AttachedItem } from './GraphChunk';
 
 interface GraphAttachedItemProps {
@@ -69,19 +68,18 @@ const GraphAttachedItem = ({
 
 	return (
 		<>
-			{!isInfoOpen && (
-				<div
-					style={{
-						position: 'absolute',
-						left: leftPosition,
-						bottom: bottomPosition,
-					}}
-					ref={itemRef}
-					className={className || itemClass}
-					onClick={() => setExpandedItem(items[0].value)}
-					onMouseDown={e => e.stopPropagation()}
-				/>
-			)}
+			<div
+				style={{
+					position: 'absolute',
+					left: leftPosition,
+					bottom: bottomPosition,
+					opacity: !isInfoOpen ? 1 : 0,
+				}}
+				ref={itemRef}
+				className={className || itemClass}
+				onClick={() => setExpandedItem(items[0].value)}
+				onMouseDown={e => e.stopPropagation()}
+			/>
 			<AnimatePresence exitBeforeEnter>
 				{isInfoOpen && (
 					<ModalPortal isOpen={true}>

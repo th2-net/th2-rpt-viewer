@@ -62,9 +62,10 @@ const MessagesWindowHeader = () => {
 			</div>
 			<div className='messages-window-header__group'>
 				<h2 className='messages-window-header__title'>
-					{(selectedStore.isLoadingEvents || workspaceStore.isLoadingAttachedMessages) && (
-						<div className='messages-window-header__spinner' />
-					)}
+					{(messagesStore.isActivePanel || messagesStore.messagesIds.length === 0) &&
+						(selectedStore.isLoadingEvents || workspaceStore.isLoadingAttachedMessages) && (
+							<div className='messages-window-header__spinner' />
+						)}
 					Messages
 					<div className='messages-window-header__count-list'>
 						{eventStore.selectedEvent && eventStore.selectedEvent.attachedMessageIds.length > 0 && (

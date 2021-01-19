@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 /** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -15,13 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
+/* eslint-disable max-len */
+
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { AnimatePresence, motion } from 'framer-motion';
 import ResizeObserver from 'resize-observer-polyfill';
 import GraphChunk, { AttachedItem } from './GraphChunk';
-import { useGraphStore, useSelectedStore, useWorkspaces } from '../../hooks';
+import { useActivePanel, useGraphStore, useSelectedStore, useWorkspaces } from '../../hooks';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
 import { EventAction } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
@@ -47,14 +48,14 @@ const settings: Settings = {
 function Graph() {
 	const graphStore = useGraphStore();
 	const selectedStore = useSelectedStore();
+	const workspacesStore = useWorkspaces();
+	const { ref: rootRef } = useActivePanel();
 
 	const [chunkWidth, setChunkWidth] = React.useState(getChunkWidth);
 
 	const [expandedAttachedItem, setExpandedAttachedItem] = React.useState<
 		EventAction | EventMessage | null
 	>(null);
-
-	const rootRef = React.useRef<HTMLDivElement>(null);
 
 	const resizeObserver = React.useRef(
 		new ResizeObserver(() => {
@@ -100,10 +101,15 @@ function Graph() {
 					getChunkData={graphStore.getChunkData}
 					attachedItems={attachedItems}
 					expandedAttachedItem={expandedAttachedItem}
-					setExpandedAttachedItem={setExpandedAttachedItem}
+					setExpandedAttachedItem={onGraphItemClick}
 				/>
 			</div>
 		);
+	};
+
+	const onGraphItemClick = (item: EventAction | EventMessage | null) => {
+		setExpandedAttachedItem(item);
+		if (item !== null) workspacesStore.onSavedItemSelect(item);
 	};
 
 	// 	<select
@@ -122,7 +128,7 @@ function Graph() {
 	};
 
 	return (
-		<div className='graph' ref={rootRef}>
+		<div className='graph'>
 			<GraphChunksVirtualizer
 				chunkWidth={chunkWidth}
 				settings={settings}
