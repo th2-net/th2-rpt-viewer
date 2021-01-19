@@ -75,11 +75,11 @@ export default observer(BookmarksPanel);
 
 interface BookmarkItemProps {
 	item: SavedItem;
-	onRemove: (item: SavedItem) => void;
-	onClick: (item: SavedItem) => void;
+	onRemove?: (item: SavedItem) => void;
+	onClick?: (item: SavedItem) => void;
 }
 
-function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
+export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 	const itemInfo = {
 		status: isEventAction(item) ? (item.successful ? 'passed' : 'failed') : null,
 		title: isEventAction(item) ? item.eventName : item.messageId,
@@ -87,13 +87,15 @@ function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 	};
 
 	function onBookmarkRemove(event: React.MouseEvent<HTMLButtonElement>) {
-		event.stopPropagation();
-		onRemove(item);
+		if (onRemove) {
+			event.stopPropagation();
+			onRemove(item);
+		}
 	}
 
 	return (
 		<div
-			onClick={() => onClick(item)}
+			onClick={() => onClick && onClick(item)}
 			className={createStyleSelector('bookmark-item', item.type, itemInfo.status)}>
 			<i
 				className={createStyleSelector('bookmark-item__icon', `${item.type}-icon`, itemInfo.status)}
@@ -106,9 +108,11 @@ function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 					{moment(itemInfo.timestamp).utc().format('DD.MM.YYYY HH:mm:ss:SSS')}
 				</div>
 			</div>
-			<button className='bookmark-item__remove-btn' onClick={onBookmarkRemove}>
-				<i className='bookmark-item__remove-btn-icon' />
-			</button>
+			{onRemove && (
+				<button className='bookmark-item__remove-btn' onClick={onBookmarkRemove}>
+					<i className='bookmark-item__remove-btn-icon' />
+				</button>
+			)}
 		</div>
 	);
 }

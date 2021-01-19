@@ -15,72 +15,38 @@
  ***************************************************************************** */
 
 import React from 'react';
-import moment from 'moment';
-import { isEventMessage } from '../../helpers/event';
-import { createStyleSelector } from '../../helpers/styleCreators';
-import { getTimestampAsNumber } from '../../helpers/date';
+import { Virtuoso } from 'react-virtuoso';
+import { isEventAction } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
 import { EventAction } from '../../models/EventAction';
-
-export interface Result {
-	value: EventMessage | EventAction;
-	type: ResultTypes;
-}
-
-export enum ResultTypes {
-	MESSAGE = 'message',
-	EVENT = 'event',
-}
-
-const getResultWithType = (item: EventAction) => ({
-	value: item,
-	type: isEventMessage(item) ? ResultTypes.MESSAGE : ResultTypes.EVENT,
-});
+import { BookmarkItem } from '../BookmarksPanel';
 
 interface SearchPanelResultsProps {
-	results: EventAction[];
+	results: Array<EventAction | EventMessage>;
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const { results } = props;
-	const currentResults = results.map(getResultWithType);
+
+	function computeKey(index: number) {
+		const item = results[index];
+
+		return isEventAction(item) ? item.eventId : item.messageId;
+	}
+
+	function renderBookmarkItem(index: number) {
+		return <BookmarkItem item={results[index]} />;
+	}
+
 	return (
-		<div className='search-panel__results'>
-			{currentResults.map((item: Result) => {
-				const key = isEventMessage(item.value) ? item.value.messageId : item.value.eventId;
-				const itemSuccessModifier = isEventMessage(item.value)
-					? null
-					: item.value.successful
-					? 'passed'
-					: 'failed';
-				const itemTitle = isEventMessage(item.value) ? item.value.messageId : item.value.eventName;
-				return (
-					<div
-						key={key}
-						className={createStyleSelector('bookmark-item', item.type, itemSuccessModifier)}>
-						{item.value.body}
-						<i
-							className={createStyleSelector(
-								'bookmark-item__icon',
-								`${item.type}-icon`,
-								itemSuccessModifier,
-							)}
-						/>
-						<div className='bookmark-item__info'>
-							<div className='bookmark-item__name' title={itemTitle}>
-								{itemTitle}
-							</div>
-							<div className='bookmark-item__timestamp'>
-								{moment(
-									getTimestampAsNumber(
-										isEventMessage(item.value) ? item.value.timestamp : item.value.startTimestamp,
-									),
-								).format('DD.MM.YYYY HH:mm:ss:SSS')}
-							</div>
-						</div>
-					</div>
-				);
-			})}
+		<div className='search-results'>
+			<Virtuoso
+				className='search-results__list'
+				totalCount={results.length}
+				item={renderBookmarkItem}
+				computeItemKey={computeKey}
+				style={{ height: '100%' }}
+			/>
 		</div>
 	);
 };
