@@ -69,7 +69,7 @@ function EventsFilterPanel() {
 	};
 
 	const getTimeShortcutHandler = (minutesOffset: number) => () => {
-		const { from, to } = getTimeRange(minutesOffset);
+		const [from, to] = getTimeRange(minutesOffset);
 		setTimestampFrom(from);
 		setTimestampTo(to);
 	};

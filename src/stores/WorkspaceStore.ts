@@ -27,6 +27,7 @@ import GraphStore from './GraphStore';
 import { isEventsStore, isMessagesStore } from '../helpers/stores';
 import { getTimestampAsNumber } from '../helpers/date';
 import { isEventAction } from '../helpers/event';
+import { TimeRange } from '../models/Timestamp';
 
 export type EventStoreDefaultStateType = EventsStore | EventStoreURLState | null;
 export type MessagesStoreDefaultStateType = MessagesStore | null;
@@ -131,7 +132,7 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	public onRangeChange = (range: [number, number]) => {
+	public onRangeChange = (range: TimeRange) => {
 		if (this.panelUpdateTimer) {
 			clearTimeout(this.panelUpdateTimer);
 		}

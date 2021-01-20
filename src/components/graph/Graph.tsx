@@ -32,6 +32,7 @@ import TimestampInput from '../util/TimestampInput';
 import { isEventAction, isEventMessage, mapToTimestamps, getTimestamp } from '../../helpers/event';
 import { isMessagesStore } from '../../helpers/stores';
 import { getTimestampAsNumber } from '../../helpers/date';
+import { TimeRange } from '../../models/Timestamp';
 import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
@@ -205,7 +206,7 @@ const leftIndicatorVariants = {
 
 interface OverlayPanelProps {
 	chunkWidth: number;
-	range: [number, number];
+	range: TimeRange;
 	onInputSubmit: (timestamp: number) => void;
 }
 

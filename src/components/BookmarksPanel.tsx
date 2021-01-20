@@ -93,13 +93,17 @@ export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 		}
 	}
 
+	const rootClassName = createStyleSelector('bookmark-item', item.type, itemInfo.status);
+
+	const iconClassName = createStyleSelector(
+		'bookmark-item__icon',
+		`${item.type}-icon`,
+		itemInfo.status,
+	);
+
 	return (
-		<div
-			onClick={() => onClick && onClick(item)}
-			className={createStyleSelector('bookmark-item', item.type, itemInfo.status)}>
-			<i
-				className={createStyleSelector('bookmark-item__icon', `${item.type}-icon`, itemInfo.status)}
-			/>
+		<div onClick={() => onClick && onClick(item)} className={rootClassName}>
+			<i className={iconClassName} />
 			<div className='bookmark-item__info'>
 				<div className='bookmark-item__name' title={itemInfo.title}>
 					{itemInfo.title}

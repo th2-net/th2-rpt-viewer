@@ -19,6 +19,7 @@ import moment from 'moment';
 import { getTimestampAsNumber, isTimeInsideInterval, isTimeIntersected } from '../helpers/date';
 import { calculateTimeRange } from '../helpers/graph';
 import { Chunk, ChunkData, IntervalData, OverlayValues } from '../models/graph';
+import { TimeRange } from '../models/Timestamp';
 import RootStore from './RootStore';
 
 export const intervalOptions = [15, 30, 60] as const;
@@ -34,7 +35,7 @@ class GraphStore {
 		60: 5,
 	};
 
-	constructor(private rootStore: RootStore, initialRange: [number, number] | null) {
+	constructor(private rootStore: RootStore, initialRange: TimeRange | null) {
 		reaction(
 			() => this.interval,
 			interval => this.createChunks(interval, this.timestamp),
@@ -59,7 +60,7 @@ class GraphStore {
 	public timestamp: number = moment().utc().valueOf();
 
 	@observable
-	public range: [number, number] = calculateTimeRange(
+	public range: TimeRange = calculateTimeRange(
 		moment(this.timestamp).utc().valueOf(),
 		this.interval,
 	);
@@ -79,7 +80,7 @@ class GraphStore {
 	};
 
 	@action
-	public setRange = (range: [number, number]) => {
+	public setRange = (range: TimeRange) => {
 		this.range = range;
 	};
 

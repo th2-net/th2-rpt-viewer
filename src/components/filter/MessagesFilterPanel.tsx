@@ -58,7 +58,7 @@ const MessagesFilterPanel = () => {
 	const clearAllFilters = () => messagesStore.resetMessagesFilter();
 
 	const getTimeShortcutHandler = (minutesOffset: number) => () => {
-		const { from, to } = getTimeRange(minutesOffset);
+		const [from, to] = getTimeRange(minutesOffset);
 		setTimestampFrom(from);
 		setTimestampTo(to);
 	};

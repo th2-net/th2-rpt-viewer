@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 import moment, { Moment } from 'moment';
-import Timestamp from '../models/Timestamp';
+import { TimeRange, Timestamp } from '../models/Timestamp';
 
 export function getSecondsPeriod(
 	startTime: string | Date,
@@ -86,7 +86,6 @@ export function formatTimestampValue(timestamp: number | null, timeMask: string)
 	return moment(utcDate).format(timeMask);
 }
 
-type TimeRange = { from: number; to: number };
 type TimeRangeOptions = { to: number | Date | Moment; withinTheDay: boolean };
 
 export function getTimeRange(
@@ -99,7 +98,7 @@ export function getTimeRange(
 	if (withinTheDay && !from.isSame(to, 'day')) {
 		from = moment().utc().startOf('day');
 	}
-	return { from: from.valueOf(), to: to.valueOf() };
+	return [from.valueOf(), to.valueOf()];
 }
 
 export const getTimeWindow = (
@@ -129,7 +128,7 @@ export const getTimeWindow = (
 	};
 };
 
-export const isTimeIntersected = (firstRange: [number, number], secondRange: [number, number]) => {
+export const isTimeIntersected = (firstRange: TimeRange, secondRange: TimeRange) => {
 	return (
 		(firstRange[0] >= secondRange[0] && firstRange[0] <= secondRange[1]) ||
 		(secondRange[0] >= firstRange[0] && secondRange[0] <= secondRange[1])

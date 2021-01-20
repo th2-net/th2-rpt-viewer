@@ -24,6 +24,7 @@ import { Chunk } from '../../models/graph';
 import { raf } from '../../helpers/raf';
 import { EventAction } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
+import { TimeRange } from '../../models/Timestamp';
 import '../../styles/graph.scss';
 
 const setInitialState = (settings: Settings): State => {
@@ -224,7 +225,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 			const intervalEnd = moment(intervalStart).utc().add(graphStore.interval, 'minutes');
 
 			if (intervalStart.isValid() && intervalEnd.isValid()) {
-				const updatedRange: [number, number] = [intervalStart.valueOf(), intervalEnd.valueOf()];
+				const updatedRange: TimeRange = [intervalStart.valueOf(), intervalEnd.valueOf()];
 				graphStore.setRange(updatedRange);
 
 				// TODO: temporary workaround to ignore initial range calculation in order to avoid refetching data;
@@ -236,7 +237,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 			}
 		}
 
-		function getDivInterval(intervalDiv: HTMLDivElement): null | [number, number] {
+		function getDivInterval(intervalDiv: HTMLDivElement): null | TimeRange {
 			const from = parseInt(intervalDiv.dataset.from || '');
 			const to = parseInt(intervalDiv.dataset.to || '');
 

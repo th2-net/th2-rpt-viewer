@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import Timestamp from './Timestamp';
+import { Timestamp } from './Timestamp';
 import { EventBodyPayload } from './EventActionPayload';
 
 export type EventTree = Array<EventTreeNode>;

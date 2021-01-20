@@ -21,6 +21,7 @@ import NotificationsStore from './NotificationsStore';
 import GraphStore from './GraphStore';
 import { registerUrlMiddleware } from '../helpers/url';
 import SearchPanelFiltersStore from './SearchPanelFiltersStore';
+import { TimeRange } from '../models/Timestamp';
 
 export default class RootStore {
 	notificationsStore = NotificationsStore;
@@ -38,7 +39,7 @@ export default class RootStore {
 
 		const eventsFilter = urlState?.events.filter;
 
-		const range: [number, number] | null = eventsFilter
+		const range: TimeRange | null = eventsFilter
 			? [eventsFilter.timestampFrom, eventsFilter.timestampTo]
 			: null;
 

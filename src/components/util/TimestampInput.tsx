@@ -25,7 +25,7 @@ import { useOutsideClickListener } from '../../hooks/useOutsideClickListener';
 import { EventAction } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { DateTimeMask } from '../../models/filter/FilterInputs';
-import Timestamp from '../../models/Timestamp';
+import { Timestamp } from '../../models/Timestamp';
 import KeyCodes from '../../util/KeyCodes';
 import '../../styles/timestamp-input.scss';
 

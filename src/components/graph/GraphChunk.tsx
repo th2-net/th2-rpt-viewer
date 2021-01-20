@@ -25,6 +25,7 @@ import { Chunk } from '../../models/graph';
 import { EventAction } from '../../models/EventAction';
 import { isEventMessage } from '../../helpers/event';
 import GraphAttachedItemGroup from './GraphAttachedItemGroup';
+import { TimeRange } from '../../models/Timestamp';
 
 const ATTACHED_ITEM_SIZE = 14;
 
@@ -113,7 +114,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 		left: number;
 	}[] = React.useMemo(() => {
 		const groups: {
-			range: [number, number];
+			range: TimeRange;
 			items: AttachedItem[];
 		}[] = [];
 
@@ -121,7 +122,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 			const itemTimestamp = getTimestampAsNumber(
 				isEventMessage(item.value) ? item.value.timestamp : item.value.startTimestamp,
 			);
-			const itemRange: [number, number] = [
+			const itemRange: TimeRange = [
 				itemTimestamp - attachedItemTimeSize / 2,
 				itemTimestamp + attachedItemTimeSize / 2,
 			];

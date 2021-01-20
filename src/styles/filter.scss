@@ -305,6 +305,8 @@
 	box-sizing: border-box;
 	display: flex;
 	align-items: center;
+	margin-bottom: 5px;
+
 	.filter-row {
 		width: 100%;
 	}
@@ -349,7 +351,6 @@
 	}
 
 	&__input {
-		border: solid 1px #000;
 		width: 100%;
 		padding: 3px 5px;
 		margin: 0 10px;

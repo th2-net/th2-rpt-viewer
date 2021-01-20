@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
-import moment from 'moment';
 import FilterStore from './FilterStore';
 import ViewStore from './WorkspaceViewStore';
 import ApiSchema from '../api/ApiSchema';

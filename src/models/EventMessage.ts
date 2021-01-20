@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import Timestamp from './Timestamp';
+import { Timestamp } from './Timestamp';
 import MessageBody from './MessageBody';
 import { ActionType } from './EventAction';
 
