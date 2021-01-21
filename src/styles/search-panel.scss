@@ -74,6 +74,25 @@
 }
 
 .search-results {
+	&__controls {
+		padding: 8px 0;
+		display: flex;
+		justify-content: space-between;
+	}
+	&__arrow {
+		height: 24px;
+		width: 24px;
+		border: none;
+		outline: none;
+		cursor: pointer;
+		background-image: url(../../resources/icons/graph-arrow-left.svg);
+		background-repeat: no-repeat;
+		background-size: 100%;
+		background-position: center;
+		&.next {
+			transform: rotate(180deg);
+		}
+	}
 	&__list {
 		@include scrollbar;
 

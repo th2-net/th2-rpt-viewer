@@ -14,36 +14,103 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { useReducer } from 'react';
+import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
 import { isEventAction } from '../../helpers/event';
-import { EventMessage } from '../../models/EventMessage';
-import { EventAction } from '../../models/EventAction';
 import { BookmarkItem } from '../BookmarksPanel';
+import { SearchHistory } from './SearchPanel';
+import { EventAction } from '../../models/EventAction';
+import { EventMessage } from '../../models/EventMessage';
 
 interface SearchPanelResultsProps {
-	results: Array<EventAction | EventMessage>;
 	onResultItemClick: (searchResult: EventAction | EventMessage) => void;
+	results: Array<SearchHistory>;
 }
+
+type Counter = {
+	index: number;
+	limit: number;
+	disableForward: boolean;
+	disableBackward: boolean;
+};
+
+type Action = {
+	type: 'forward' | 'backward';
+};
+
+const reducer = (counter: Counter, action: Action): Counter => {
+	const { index, limit } = counter;
+	switch (action.type) {
+		case 'forward':
+			if (index + 1 > limit) {
+				return { index, limit, disableForward: true, disableBackward: false };
+			}
+			return {
+				index: index + 1,
+				limit,
+				disableForward: index + 1 === limit,
+				disableBackward: false,
+			};
+		case 'backward':
+			if (index - 1 <= 0) {
+				return { index: 0, limit, disableForward: false, disableBackward: true };
+			}
+			return { index: index - 1, limit, disableForward: false, disableBackward: false };
+		default:
+			return { index, limit, disableForward: false, disableBackward: false };
+	}
+};
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const { results, onResultItemClick } = props;
 
-	function computeKey(index: number) {
-		const item = results[index];
+	const [state, dispatch] = useReducer(reducer, {
+		index: results.length === 0 ? 0 : results.length - 1,
+		limit: results.length - 1,
+		disableForward: true,
+		disableBackward: false,
+	});
+
+	const { index, disableForward, disableBackward } = state;
+	const currentResult = results[index];
+	if (!currentResult) {
+		return null;
+	}
+	const [resultPair] = Object.entries(currentResult);
+	const [timestamp, eventActions] = resultPair;
+	function computeKey(resultIndex: number) {
+		const item = eventActions[resultIndex];
 
 		return isEventAction(item) ? item.eventId : item.messageId;
 	}
 
-	function renderBookmarkItem(index: number) {
-		return <BookmarkItem item={results[index]} onClick={onResultItemClick} />;
+	function renderBookmarkItem(resultIndex: number) {
+		return <BookmarkItem item={eventActions[resultIndex]} onClick={onResultItemClick} />;
 	}
-
 	return (
 		<div className='search-results'>
+			{results.length > 1 && (
+				<div className='search-results__controls'>
+					<button
+						className='search-results__arrow'
+						disabled={disableBackward}
+						onClick={() => dispatch({ type: 'backward' })}></button>
+					<button
+						className='search-results__arrow next'
+						disabled={disableForward}
+						onClick={() => dispatch({ type: 'forward' })}></button>
+				</div>
+			)}
+			<p>
+				{moment(+timestamp)
+					.utc()
+					.format('DD.MM.YYYY HH:mm:ss:SSS')}
+			</p>
+			<hr />
 			<Virtuoso
 				className='search-results__list'
-				totalCount={results.length}
+				totalCount={eventActions.length}
 				item={renderBookmarkItem}
 				computeItemKey={computeKey}
 				style={{ height: '100%' }}

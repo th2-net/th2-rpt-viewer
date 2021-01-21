@@ -31,7 +31,9 @@ import { SSEFilterInfo, SSEFilterParameter } from '../../stores/SearchPanelFilte
 import { useSearchPanelFiltersStore } from '../../hooks/useSearchPanelFiltersStore';
 import SearchPanelResults from './SearchPanelResults';
 import SearchPanelProgressBar from './SearchPanelProgressBar';
+import useLocalStorage from '../../hooks/useLocalStorage';
 import '../../styles/search-panel.scss';
+import { EventMessage } from '../../models/EventMessage';
 
 export type SearchPanelState = {
 	startTimestamp: number;
@@ -40,6 +42,10 @@ export type SearchPanelState = {
 	endTimestamp: number | null;
 	parentEvent: string;
 	stream: string[];
+};
+
+export type SearchHistory = {
+	[index: number]: EventAction[] | EventMessage[];
 };
 
 const getFilterParameterDefaultValue = (param: SSEFilterParameter) => {
@@ -90,17 +96,13 @@ const SearchPanel = () => {
 	});
 	const [eventFilter, setEventFilter] = useSetState<EventFilterState>();
 	const [messagesFilter, setMessagesFilter] = useSetState<MessageFilterState>();
-	const [results, setResults] = useState<EventAction[]>([]);
+	const [currentRequestResults, setCurrentRequestResults] = useState<EventAction[]>([]);
+	const [searchHistory, setSearchHistory] = useLocalStorage<SearchHistory[]>('search-history', []);
+	const [userStartSearch, setUserStartSearch] = useState<null | number>(null);
 	const [currentlyLaunchedChannel, setCurrentlyLaunchedChannel] = useState<EventSource | null>(
 		null,
 	);
 	const [currentProgressBarPoint, setCurrentProgressBarPoint] = useState(0);
-
-	useEffect(() => {
-		setEventFilter(getDefaultFilterState(eventFilterInfo));
-		setMessagesFilter(getDefaultFilterState(messagesFilterInfo));
-	}, [eventFilterInfo, messagesFilterInfo]);
-
 	const form = { formType, state: formState, setState: setFormState };
 	const filters = useMemo(
 		() =>
@@ -115,8 +117,31 @@ const SearchPanel = () => {
 		currentPoint: currentProgressBarPoint,
 		searching: Boolean(currentlyLaunchedChannel),
 	};
+	const filterParams = formType === 'event' ? eventFilter : messagesFilter;
+
+	function getFilter<T extends keyof FilterState>(name: T) {
+		return filterParams[name];
+	}
 
 	const launchChannel = () => {
+		setCurrentRequestResults([]);
+		setUserStartSearch(Date.now());
+	};
+
+	const stopChannel = () => {
+		currentlyLaunchedChannel?.close();
+		setCurrentlyLaunchedChannel(null);
+	};
+
+	useEffect(() => {
+		setEventFilter(getDefaultFilterState(eventFilterInfo));
+		setMessagesFilter(getDefaultFilterState(messagesFilterInfo));
+	}, [eventFilterInfo, messagesFilterInfo]);
+
+	useEffect(() => {
+		if (!userStartSearch) {
+			return;
+		}
 		const {
 			startTimestamp,
 			searchDirection,
@@ -127,12 +152,6 @@ const SearchPanel = () => {
 		} = formState;
 
 		const currentFilters = formType === 'event' ? eventFilterInfo : messagesFilterInfo;
-
-		const filterParams = formType === 'event' ? eventFilter : messagesFilter;
-
-		function getFilter<T extends keyof FilterState>(name: T) {
-			return filterParams[name];
-		}
 
 		const filtersToAdd = currentFilters
 			.filter((info: SSEFilterInfo) => {
@@ -161,7 +180,6 @@ const SearchPanel = () => {
 		};
 
 		const queryParams = formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
-		setResults([]);
 		setCurrentlyLaunchedChannel(
 			sseApi.getEventSource({
 				type: formType,
@@ -170,19 +188,23 @@ const SearchPanel = () => {
 					const data = (ev as MessageEvent).data;
 					const searchedEventTimestamp = JSON.parse((ev as MessageEvent).lastEventId).timestamp;
 					setCurrentProgressBarPoint(searchedEventTimestamp - formState.startTimestamp);
-					setResults(res => [...res, JSON.parse(data)]);
+					setCurrentRequestResults(res => [...res, JSON.parse(data)]);
 				},
 				onClose: () => {
 					setCurrentlyLaunchedChannel(null);
 				},
 			}),
 		);
-	};
+	}, [userStartSearch]);
 
-	const stopChannel = () => {
-		currentlyLaunchedChannel?.close();
-		setCurrentlyLaunchedChannel(null);
-	};
+	useEffect(() => {
+		if (!currentlyLaunchedChannel && userStartSearch && currentRequestResults.length > 0) {
+			setSearchHistory((history: SearchHistory[]) => [
+				...history,
+				{ [userStartSearch]: currentRequestResults },
+			]);
+		}
+	}, [currentlyLaunchedChannel, userStartSearch, currentRequestResults]);
 
 	return (
 		<div className='search-panel' ref={searchPanelRef}>
@@ -215,7 +237,10 @@ const SearchPanel = () => {
 				</div>
 			</div>
 			{<SearchPanelProgressBar {...progressBar} />}
-			<SearchPanelResults results={results} onResultItemClick={workspacesStore.onSavedItemSelect} />
+			<SearchPanelResults
+				results={searchHistory}
+				onResultItemClick={workspacesStore.onSavedItemSelect}
+			/>
 		</div>
 	);
 };
