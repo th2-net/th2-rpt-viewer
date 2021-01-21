@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useReducer } from 'react';
+import React, { useReducer, useEffect } from 'react';
 import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
 import { isEventAction } from '../../helpers/event';
@@ -36,7 +36,8 @@ type Counter = {
 };
 
 type Action = {
-	type: 'forward' | 'backward';
+	type: 'forward' | 'backward' | 'set';
+	payload?: number;
 };
 
 const reducer = (counter: Counter, action: Action): Counter => {
@@ -57,14 +58,19 @@ const reducer = (counter: Counter, action: Action): Counter => {
 				return { index: 0, limit, disableForward: false, disableBackward: true };
 			}
 			return { index: index - 1, limit, disableForward: false, disableBackward: false };
+		case 'set':
+			return {
+				index: Number(action.payload) - 1,
+				limit: Number(action.payload) - 1,
+				disableForward: true,
+				disableBackward: false,
+			};
 		default:
 			return { index, limit, disableForward: false, disableBackward: false };
 	}
 };
-
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const { results, onResultItemClick } = props;
-
 	const [state, dispatch] = useReducer(reducer, {
 		index: results.length === 0 ? 0 : results.length - 1,
 		limit: results.length - 1,
@@ -74,11 +80,17 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 
 	const { index, disableForward, disableBackward } = state;
 	const currentResult = results[index];
+
+	useEffect(() => {
+		dispatch({ type: 'set', payload: results.length });
+	}, [results]);
+
 	if (!currentResult) {
 		return null;
 	}
 	const [resultPair] = Object.entries(currentResult);
 	const [timestamp, eventActions] = resultPair;
+
 	function computeKey(resultIndex: number) {
 		const item = eventActions[resultIndex];
 
@@ -108,6 +120,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 					.format('DD.MM.YYYY HH:mm:ss:SSS')}
 			</p>
 			<hr />
+			<p>{JSON.stringify(eventActions)}</p>
 			<Virtuoso
 				className='search-results__list'
 				totalCount={eventActions.length}

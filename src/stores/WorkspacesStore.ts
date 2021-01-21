@@ -68,7 +68,7 @@ export default class WorkspacesStore {
 		}
 
 		try {
-			this.addWorkspace(this.createWorkspace(initialState.events))
+			this.addWorkspace(this.createWorkspace(initialState.events));
 		} catch (error) {
 			this.addWorkspace(this.createWorkspace());
 		}
