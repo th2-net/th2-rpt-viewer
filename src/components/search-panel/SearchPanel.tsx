@@ -21,6 +21,7 @@ import useSetState from '../../hooks/useSetState';
 import TogglerRow from '../filter/row/TogglerRow';
 import sseApi from '../../api/sse';
 import { EventAction } from '../../models/EventAction';
+import { EventMessage } from '../../models/EventMessage';
 import SearchPanelFilters, {
 	FilterState,
 	MessageFilterState,
@@ -33,7 +34,6 @@ import SearchPanelResults from './SearchPanelResults';
 import SearchPanelProgressBar from './SearchPanelProgressBar';
 import useLocalStorage from '../../hooks/useLocalStorage';
 import '../../styles/search-panel.scss';
-import { EventMessage } from '../../models/EventMessage';
 
 export type SearchPanelState = {
 	startTimestamp: number;
@@ -131,6 +131,13 @@ const SearchPanel = () => {
 	const stopChannel = () => {
 		currentlyLaunchedChannel?.close();
 		setCurrentlyLaunchedChannel(null);
+	};
+
+	const delSearchHistoryItem = (index: number) => {
+		setSearchHistory((history: SearchHistory[]) => [
+			...history.slice(0, index),
+			...history.slice(index + 1),
+		]);
 	};
 
 	useEffect(() => {
@@ -236,10 +243,11 @@ const SearchPanel = () => {
 					</button>
 				</div>
 			</div>
-			{<SearchPanelProgressBar {...progressBar} />}
+			<SearchPanelProgressBar {...progressBar} />
 			<SearchPanelResults
 				results={searchHistory}
 				onResultItemClick={workspacesStore.onSavedItemSelect}
+				onResultDelete={delSearchHistoryItem}
 			/>
 		</div>
 	);

@@ -109,7 +109,7 @@ export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 					{itemInfo.title}
 				</div>
 				<div className='bookmark-item__timestamp'>
-					{moment(itemInfo.timestamp).utc().format('DD.MM.YYYY HH:mm:ss:SSS')}
+					{moment(itemInfo.timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}
 				</div>
 			</div>
 			{onRemove && (

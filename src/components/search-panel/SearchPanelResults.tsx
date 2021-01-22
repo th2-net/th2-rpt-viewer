@@ -25,6 +25,7 @@ import { EventMessage } from '../../models/EventMessage';
 
 interface SearchPanelResultsProps {
 	onResultItemClick: (searchResult: EventAction | EventMessage) => void;
+	onResultDelete: (index: number) => void;
 	results: Array<SearchHistory>;
 }
 
@@ -70,7 +71,7 @@ const reducer = (counter: Counter, action: Action): Counter => {
 	}
 };
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
-	const { results, onResultItemClick } = props;
+	const { results, onResultItemClick, onResultDelete } = props;
 	const [state, dispatch] = useReducer(reducer, {
 		index: results.length === 0 ? 0 : results.length - 1,
 		limit: results.length - 1,
@@ -114,11 +115,20 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 						onClick={() => dispatch({ type: 'forward' })}></button>
 				</div>
 			)}
-			<p>
-				{moment(+timestamp)
-					.utc()
-					.format('DD.MM.YYYY HH:mm:ss:SSS')}
-			</p>
+			<div className='history-point'>
+				<p className='history-point__timestamp'>
+					{moment(+timestamp)
+						.utc()
+						.format('DD.MM.YYYY HH:mm:ss.SSS')}
+				</p>
+				<button
+					className='bookmark-item__remove-btn'
+					onClick={() => {
+						onResultDelete(index);
+					}}>
+					<i className='bookmark-item__remove-btn-icon' />
+				</button>
+			</div>
 			<hr />
 			<p>{JSON.stringify(eventActions)}</p>
 			<Virtuoso

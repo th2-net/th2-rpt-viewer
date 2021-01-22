@@ -93,6 +93,18 @@
 			transform: rotate(180deg);
 		}
 	}
+	.history-point {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		&__timestamp {
+			margin: 0;
+			font-size: 12px;
+		}
+	}
+	hr {
+		margin-top: 0;
+	}
 	&__list {
 		@include scrollbar;
 
