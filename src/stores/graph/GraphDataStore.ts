@@ -30,7 +30,7 @@ export class GraphDataStore {
 		private graphStore: GraphStore,
 		private selectedStore: SelectedStore,
 		timeRange: TimeRange | null = null,
-		defaultInterval: IntervalOption = 60,
+		defaultInterval: IntervalOption = 15,
 	) {
 		if (timeRange) this.range = timeRange;
 		const range = timeRange || this.range;
@@ -46,7 +46,7 @@ export class GraphDataStore {
 	}
 
 	@observable
-	public interval: IntervalOption = 60;
+	public interval: IntervalOption = 15;
 
 	@observable
 	public chunks: Chunk[] = [];

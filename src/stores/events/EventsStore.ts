@@ -44,6 +44,12 @@ export type EventStoreURLState = Partial<{
 export type EventStoreDefaultStateType = EventsStore | EventStoreURLState | null;
 
 export default class EventsStore {
+	filterStore: FilterStore = new FilterStore();
+
+	viewStore: ViewStore = new ViewStore();
+
+	searchStore: EventsSearchStore = new EventsSearchStore(this.api, this, this.graphStore);
+
 	constructor(
 		private workspaceStore: WorkspaceStore,
 		private selectedStore: SelectedStore,
@@ -61,12 +67,6 @@ export default class EventsStore {
 
 		reaction(() => this.searchStore.scrolledItem, this.onScrolledItemChange);
 	}
-
-	filterStore: FilterStore = new FilterStore();
-
-	viewStore: ViewStore = new ViewStore();
-
-	searchStore: EventsSearchStore = new EventsSearchStore(this.api, this, this.graphStore);
 
 	@observable.ref eventTree: EventTree = [];
 
@@ -182,6 +182,7 @@ export default class EventsStore {
 
 		this.selectedNode = null;
 		this.isLoadingRootEvents = true;
+
 		try {
 			const rootEventIds = await this.api.events.getEventTree(
 				this.filterStore.eventsFilter,

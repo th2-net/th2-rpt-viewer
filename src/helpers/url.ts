@@ -48,9 +48,12 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 			const eventsStore = activeWorkspace.eventsStore;
 			eventStoreState = {
 				type: TabTypes.Events,
-				filter: eventsStore.filterStore.isEventsFilterApplied
-					? eventsStore.filterStore.eventsFilter
-					: undefined,
+				filter: {
+					eventTypes: eventsStore.filterStore.eventsFilter.eventTypes,
+					names: eventsStore.filterStore.eventsFilter.names,
+					timestampFrom: eventsStore.filterStore.eventsFilter.timestampFrom,
+					timestampTo: eventsStore.filterStore.eventsFilter.timestampTo,
+				},
 				panelArea: eventsStore.viewStore.panelArea,
 				selectedNodesPath: eventsStore.selectedNode
 					? [...getEventNodeParents(eventsStore.selectedNode), eventsStore.selectedNode.eventId]
