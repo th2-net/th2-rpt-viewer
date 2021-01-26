@@ -16,10 +16,10 @@
 
 import * as React from 'react';
 import { EventAction } from '../../models/EventAction';
-import { CustomTable } from './CustomTable';
-import { VerificationTable } from './VerificationTable';
+import { CustomTable } from './tables/CustomTable';
+import { VerificationTable } from './tables/VerificationTable';
 import { keyForVerification } from '../../helpers/keys';
-import ParamsTable from './ParamsTable';
+import ParamsTable from './tables/ParamsTable';
 import { extractParams } from '../../helpers/tables';
 import { EventBodyPayload, EventBodyPayloadType } from '../../models/EventActionPayload';
 import ErrorBoundary from '../util/ErrorBoundary';
