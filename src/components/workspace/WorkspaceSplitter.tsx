@@ -64,11 +64,9 @@ function WorkspaceSplitter(props: Props) {
 
 	React.useLayoutEffect(() => {
 		if (rootRef.current) {
-			const rootWidth = rootRef.current.clientWidth;
-			const panelDefaultWidth = ((rootWidth - splittersRefs.current.length * 3) / rootWidth) * 100;
-			panelsRefs.current.forEach((panelRef, index) => {
+			panelsRefs.current.forEach(panelRef => {
 				if (panelRef.current) {
-					panelRef.current.style.width = `${index !== 2 ? panelDefaultWidth : 0}%`;
+					panelRef.current.style.width = `25%`;
 				}
 			});
 		}
