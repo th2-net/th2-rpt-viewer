@@ -14,19 +14,24 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useReducer, useEffect } from 'react';
+import React from 'react';
 import moment from 'moment';
-import { Virtuoso } from 'react-virtuoso';
-import { isEventAction } from '../../helpers/event';
-import { BookmarkItem } from '../BookmarksPanel';
+import { isEventMessage } from '../../helpers/event';
 import { SearchHistory } from './SearchPanel';
 import { EventAction } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
+import { getTimestampAsNumber } from '../../helpers/date';
+import { createStyleSelector } from '../../helpers/styleCreators';
 
 interface SearchPanelResultsProps {
 	onResultItemClick: (searchResult: EventAction | EventMessage) => void;
-	onResultDelete: (index: number) => void;
-	results: Array<SearchHistory>;
+	onResultDelete: () => void;
+	disableNext: boolean;
+	disablePrev: boolean;
+	showToggler: boolean;
+	next: () => void;
+	prev: () => void;
+	results: SearchHistory;
 }
 
 type Counter = {
@@ -71,48 +76,29 @@ const reducer = (counter: Counter, action: Action): Counter => {
 	}
 };
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
-	const { results, onResultItemClick, onResultDelete } = props;
-	const [state, dispatch] = useReducer(reducer, {
-		index: results.length === 0 ? 0 : results.length - 1,
-		limit: results.length - 1,
-		disableForward: true,
-		disableBackward: false,
-	});
+	const {
+		results,
+		onResultItemClick,
+		onResultDelete,
+		disablePrev,
+		disableNext,
+		showToggler,
+		next,
+		prev,
+	} = props;
 
-	const { index, disableForward, disableBackward } = state;
-	const currentResult = results[index];
-
-	useEffect(() => {
-		dispatch({ type: 'set', payload: results.length });
-	}, [results]);
-
-	if (!currentResult) {
-		return null;
-	}
-	const [resultPair] = Object.entries(currentResult);
+	const [resultPair] = Object.entries(results);
 	const [timestamp, eventActions] = resultPair;
 
-	function computeKey(resultIndex: number) {
-		const item = eventActions[resultIndex];
-
-		return isEventAction(item) ? item.eventId : item.messageId;
-	}
-
-	function renderBookmarkItem(resultIndex: number) {
-		return <BookmarkItem item={eventActions[resultIndex]} onClick={onResultItemClick} />;
-	}
 	return (
 		<div className='search-results'>
-			{results.length > 1 && (
+			{showToggler && (
 				<div className='search-results__controls'>
-					<button
-						className='search-results__arrow'
-						disabled={disableBackward}
-						onClick={() => dispatch({ type: 'backward' })}></button>
+					<button className='search-results__arrow' disabled={disablePrev} onClick={prev}></button>
 					<button
 						className='search-results__arrow next'
-						disabled={disableForward}
-						onClick={() => dispatch({ type: 'forward' })}></button>
+						disabled={disableNext}
+						onClick={next}></button>
 				</div>
 			)}
 			<div className='history-point'>
@@ -121,25 +107,69 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 						.utc()
 						.format('DD.MM.YYYY HH:mm:ss.SSS')}
 				</p>
-				<button
-					className='bookmark-item__remove-btn'
-					onClick={() => {
-						onResultDelete(index);
-					}}>
+				<button className='bookmark-item__remove-btn' onClick={onResultDelete}>
 					<i className='bookmark-item__remove-btn-icon' />
 				</button>
 			</div>
 			<hr />
-			<p>{JSON.stringify(eventActions)}</p>
-			<Virtuoso
-				className='search-results__list'
-				totalCount={eventActions.length}
-				item={renderBookmarkItem}
-				computeItemKey={computeKey}
-				style={{ height: '100%' }}
-			/>
+			{eventActions.map((item: EventAction | EventMessage) => (
+				<SearchResult
+					key={isEventMessage(item) ? item.messageId : item.eventId}
+					item={item}
+					onClick={() => {
+						onResultItemClick(item);
+					}}
+				/>
+			))}
 		</div>
 	);
 };
 
 export default SearchPanelResults;
+interface BookmarkItemProps {
+	item: EventMessage | EventAction;
+	onRemove?: (item: EventMessage | EventAction) => void;
+	onClick?: (item: EventMessage | EventAction) => void;
+}
+
+export function SearchResult({ item, onRemove, onClick }: BookmarkItemProps) {
+	const itemInfo = {
+		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
+		title: isEventMessage(item) ? item.messageId : item.eventName,
+		timestamp: getTimestampAsNumber(isEventMessage(item) ? item.timestamp : item.startTimestamp),
+	};
+
+	function onBookmarkRemove(event: React.MouseEvent<HTMLButtonElement>) {
+		if (onRemove) {
+			event.stopPropagation();
+			onRemove(item);
+		}
+	}
+
+	const rootClassName = createStyleSelector('bookmark-item', item.type, itemInfo.status);
+
+	const iconClassName = createStyleSelector(
+		'bookmark-item__icon',
+		`${item.type}-icon`,
+		itemInfo.status,
+	);
+
+	return (
+		<div onClick={() => onClick && onClick(item)} className={rootClassName}>
+			<i className={iconClassName} />
+			<div className='bookmark-item__info'>
+				<div className='bookmark-item__name' title={itemInfo.title}>
+					{itemInfo.title}
+				</div>
+				<div className='bookmark-item__timestamp'>
+					{moment(itemInfo.timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}
+				</div>
+			</div>
+			{onRemove && (
+				<button className='bookmark-item__remove-btn' onClick={onBookmarkRemove}>
+					<i className='bookmark-item__remove-btn-icon' />
+				</button>
+			)}
+		</div>
+	);
+}

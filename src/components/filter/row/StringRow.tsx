@@ -29,6 +29,7 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 				type='text'
 				className='filter-row__input'
 				id={config.id}
+				disabled={config.disabled}
 				value={config.value}
 				onChange={e => config.setValue(e.target.value)}
 			/>

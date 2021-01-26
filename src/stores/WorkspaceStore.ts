@@ -26,7 +26,7 @@ import { sortMessagesByTimestamp } from '../helpers/message';
 import GraphStore from './GraphStore';
 import { isEventsStore, isMessagesStore } from '../helpers/stores';
 import { getTimestampAsNumber } from '../helpers/date';
-import { isEventAction } from '../helpers/event';
+import { isEventAction, isEventMessage } from '../helpers/event';
 import { TimeRange } from '../models/Timestamp';
 
 export type EventStoreDefaultStateType = EventsStore | EventStoreURLState | null;
@@ -121,9 +121,9 @@ export default class WorkspaceStore {
 
 	@action
 	onSavedItemSelect = (savedItem: EventAction | EventMessage) => {
-		this.graphStore.timestamp = isEventAction(savedItem)
-			? getTimestampAsNumber(savedItem.startTimestamp)
-			: getTimestampAsNumber(savedItem.timestamp);
+		this.graphStore.timestamp = isEventMessage(savedItem)
+			? getTimestampAsNumber(savedItem.timestamp)
+			: getTimestampAsNumber(savedItem.startTimestamp);
 		if (isEventAction(savedItem)) {
 			this.eventsStore.onSavedItemSelect(savedItem);
 		} else {

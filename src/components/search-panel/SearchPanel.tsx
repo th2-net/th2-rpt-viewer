@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useReducer, useState } from 'react';
 import { useActivePanel, useGraphStore, useWorkspaces } from '../../hooks';
 import useSetState from '../../hooks/useSetState';
 import TogglerRow from '../filter/row/TogglerRow';
@@ -45,7 +45,57 @@ export type SearchPanelState = {
 };
 
 export type SearchHistory = {
-	[index: number]: EventAction[] | EventMessage[];
+	[index: number]: Array<EventAction | EventMessage>;
+};
+
+type SearchPanelType = 'event' | 'message';
+
+type StateHistory = {
+	type: SearchPanelType;
+	state: SearchPanelState;
+	filters: EventFilterState | MessageFilterState;
+};
+
+type Counter = {
+	index: number;
+	limit: number;
+	disableForward: boolean;
+	disableBackward: boolean;
+};
+
+type Action = {
+	type: 'forward' | 'backward' | 'set';
+	payload?: number;
+};
+
+const reducer = (counter: Counter, action: Action): Counter => {
+	const { index, limit } = counter;
+	switch (action.type) {
+		case 'forward':
+			if (index + 1 > limit) {
+				return { index, limit, disableForward: true, disableBackward: false };
+			}
+			return {
+				index: index + 1,
+				limit,
+				disableForward: index + 1 === limit,
+				disableBackward: false,
+			};
+		case 'backward':
+			if (index - 1 <= 0) {
+				return { index: 0, limit, disableForward: false, disableBackward: true };
+			}
+			return { index: index - 1, limit, disableForward: false, disableBackward: false };
+		case 'set':
+			return {
+				index: Number(action.payload) - 1,
+				limit: Number(action.payload) - 1,
+				disableForward: true,
+				disableBackward: false,
+			};
+		default:
+			return { index, limit, disableForward: false, disableBackward: false };
+	}
 };
 
 const getFilterParameterDefaultValue = (param: SSEFilterParameter) => {
@@ -80,11 +130,35 @@ const SearchPanel = () => {
 	const workspacesStore = useWorkspaces();
 	const { ref: searchPanelRef } = useActivePanel(null);
 
-	const [formType, setFormType] = useState<'event' | 'message'>('event');
+	const [formType, setFormType] = useState<SearchPanelType>('event');
 
 	const toggleFormType = () => {
 		setFormType(type => (type === 'event' ? 'message' : 'event'));
 	};
+
+	const [eventFilter, setEventFilter] = useSetState<EventFilterState>();
+	const [messagesFilter, setMessagesFilter] = useSetState<MessageFilterState>();
+	const [currentRequestResults, setCurrentRequestResults] = useState<EventAction[]>([]);
+	const [searchHistory, setSearchHistory] = useLocalStorage<SearchHistory[]>('search-history', []);
+	const [userStartSearch, setUserStartSearch] = useState<null | number>(null);
+	const [currentlyLaunchedChannel, setCurrentlyLaunchedChannel] = useState<EventSource | null>(
+		null,
+	);
+	const [searchRequestHistory, setSearchRequestHistory] = useLocalStorage<StateHistory[]>(
+		'search-requests',
+		[],
+	);
+	const [currentProgressBarPoint, setCurrentProgressBarPoint] = useState(0);
+
+	const [resultsCounterState, dispatch] = useReducer(reducer, {
+		index: searchHistory.length === 0 ? 0 : searchHistory.length - 1,
+		limit: searchHistory.length - 1,
+		disableForward: true,
+		disableBackward: false,
+	});
+
+	const { index, disableForward, disableBackward } = resultsCounterState;
+	const currentResult = searchHistory[index];
 
 	const [formState, setFormState] = useSetState<SearchPanelState>({
 		startTimestamp: timestamp,
@@ -94,23 +168,7 @@ const SearchPanel = () => {
 		parentEvent: '',
 		stream: [],
 	});
-	const [eventFilter, setEventFilter] = useSetState<EventFilterState>();
-	const [messagesFilter, setMessagesFilter] = useSetState<MessageFilterState>();
-	const [currentRequestResults, setCurrentRequestResults] = useState<EventAction[]>([]);
-	const [searchHistory, setSearchHistory] = useLocalStorage<SearchHistory[]>('search-history', []);
-	const [userStartSearch, setUserStartSearch] = useState<null | number>(null);
-	const [currentlyLaunchedChannel, setCurrentlyLaunchedChannel] = useState<EventSource | null>(
-		null,
-	);
-	const [currentProgressBarPoint, setCurrentProgressBarPoint] = useState(0);
-	const form = { formType, state: formState, setState: setFormState };
-	const filters = useMemo(
-		() =>
-			formType === 'event'
-				? { info: eventFilterInfo, state: eventFilter, setState: setEventFilter }
-				: { info: messagesFilterInfo, state: messagesFilter, setState: setMessagesFilter },
-		[formType, eventFilter, messagesFilter],
-	);
+
 	const progressBar = {
 		startTimestamp: formState.startTimestamp,
 		endTimestamp: formState.endTimestamp,
@@ -118,6 +176,28 @@ const SearchPanel = () => {
 		searching: Boolean(currentlyLaunchedChannel),
 	};
 	const filterParams = formType === 'event' ? eventFilter : messagesFilter;
+	const disableForm =
+		Boolean(currentlyLaunchedChannel) ||
+		(searchHistory.length > 1 && index !== searchHistory.length - 1);
+
+	const form = { formType, state: formState, setState: setFormState, disableAll: disableForm };
+	const filters = useMemo(
+		() =>
+			formType === 'event'
+				? {
+						info: eventFilterInfo,
+						state: eventFilter,
+						setState: setEventFilter,
+						disableAll: disableForm,
+				  }
+				: {
+						info: messagesFilterInfo,
+						state: messagesFilter,
+						setState: setMessagesFilter,
+						disableAll: disableForm,
+				  },
+		[formType, eventFilter, messagesFilter],
+	);
 
 	function getFilter<T extends keyof FilterState>(name: T) {
 		return filterParams[name];
@@ -126,6 +206,9 @@ const SearchPanel = () => {
 	const launchChannel = () => {
 		setCurrentRequestResults([]);
 		setUserStartSearch(Date.now());
+		setSearchRequestHistory((history: StateHistory[]) => {
+			return [...history, { type: formType, state: formState, filters: filterParams }];
+		});
 	};
 
 	const stopChannel = () => {
@@ -133,8 +216,12 @@ const SearchPanel = () => {
 		setCurrentlyLaunchedChannel(null);
 	};
 
-	const delSearchHistoryItem = (index: number) => {
+	const delSearchHistoryItem = () => {
 		setSearchHistory((history: SearchHistory[]) => [
+			...history.slice(0, index),
+			...history.slice(index + 1),
+		]);
+		setSearchRequestHistory((history: StateHistory[]) => [
 			...history.slice(0, index),
 			...history.slice(index + 1),
 		]);
@@ -144,6 +231,10 @@ const SearchPanel = () => {
 		setEventFilter(getDefaultFilterState(eventFilterInfo));
 		setMessagesFilter(getDefaultFilterState(messagesFilterInfo));
 	}, [eventFilterInfo, messagesFilterInfo]);
+
+	useEffect(() => {
+		dispatch({ type: 'set', payload: searchHistory.length });
+	}, [searchHistory]);
 
 	useEffect(() => {
 		if (!userStartSearch) {
@@ -213,6 +304,17 @@ const SearchPanel = () => {
 		}
 	}, [currentlyLaunchedChannel, userStartSearch, currentRequestResults]);
 
+	useEffect(() => {
+		if (searchRequestHistory[index]) {
+			// eslint-disable-next-line no-shadow
+			const { type, state, filters } = searchRequestHistory[index];
+			setFormType(type);
+			setFormState(state);
+			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+			type === 'event' ? setEventFilter(filters) : setMessagesFilter(filters);
+		}
+	}, [index, searchHistory]);
+
 	return (
 		<div className='search-panel' ref={searchPanelRef}>
 			<div className='search-panel__toggle'>
@@ -220,7 +322,7 @@ const SearchPanel = () => {
 					config={{
 						type: 'toggler',
 						value: formType === 'event',
-						disabled: Boolean(currentlyLaunchedChannel),
+						disabled: disableForm,
 						toggleValue: toggleFormType,
 						possibleValues: ['event', 'message'],
 						id: 'source-type',
@@ -237,6 +339,7 @@ const SearchPanel = () => {
 				</div>
 				<div className='search-panel__buttons'>
 					<button
+						disabled={disableForm}
 						className='search-panel__submit'
 						onClick={currentlyLaunchedChannel ? stopChannel : launchChannel}>
 						{currentlyLaunchedChannel ? 'stop' : 'start'}
@@ -244,11 +347,22 @@ const SearchPanel = () => {
 				</div>
 			</div>
 			<SearchPanelProgressBar {...progressBar} />
-			<SearchPanelResults
-				results={searchHistory}
-				onResultItemClick={workspacesStore.onSavedItemSelect}
-				onResultDelete={delSearchHistoryItem}
-			/>
+			{currentResult && (
+				<SearchPanelResults
+					results={currentResult}
+					onResultItemClick={workspacesStore.onSavedItemSelect}
+					onResultDelete={delSearchHistoryItem}
+					showToggler={searchHistory.length > 1}
+					next={() => {
+						dispatch({ type: 'forward' });
+					}}
+					prev={() => {
+						dispatch({ type: 'backward' });
+					}}
+					disableNext={disableForward}
+					disablePrev={disableBackward}
+				/>
+			)}
 		</div>
 	);
 };
