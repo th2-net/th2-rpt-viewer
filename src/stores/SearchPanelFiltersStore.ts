@@ -29,7 +29,7 @@ export interface SSEFilterInfo {
 	parameters: SSEFilterParameter[];
 }
 
-class SearchPanelFiltersStore {
+export class SearchPanelFiltersStore {
 	constructor() {
 		this.init();
 	}
@@ -61,7 +61,3 @@ class SearchPanelFiltersStore {
 		});
 	}
 }
-
-const searchPanelFiltersStore = new SearchPanelFiltersStore();
-
-export default searchPanelFiltersStore;

@@ -17,9 +17,9 @@
 import React from 'react';
 import { Observer } from 'mobx-react-lite';
 import { TScrollContainer } from 'react-virtuoso';
-import Heatmap from '../heatmap/Heatmap';
-import { HeatmapElement } from '../../models/Heatmap';
-import { useMessagesWorkspaceStore, useDebouncedCallback, useHeatmap } from '../../hooks';
+import Heatmap from '../../heatmap/Heatmap';
+import { HeatmapElement } from '../../../models/Heatmap';
+import { useMessagesWorkspaceStore, useDebouncedCallback, useHeatmap } from '../../../hooks';
 import { InfiniteLoaderContext } from './MessagesVirtualizedList';
 import { MessagesHeightsContext, MessagesHeights } from './MessagesCardList';
 

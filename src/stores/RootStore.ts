@@ -19,12 +19,12 @@ import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore
 import NotificationsStore from './NotificationsStore';
 import GraphStore from './graph/GraphStore';
 import { registerUrlMiddleware } from '../helpers/url';
-import SearchPanelFiltersStore from './SearchPanelFiltersStore';
+import { SearchPanelFiltersStore } from './SearchPanelFiltersStore';
 
 export default class RootStore {
 	notificationsStore = NotificationsStore;
 
-	searchPanelFiltersStore = SearchPanelFiltersStore;
+	searchPanelFiltersStore = new SearchPanelFiltersStore();
 
 	workspacesStore: WorkspacesStore;
 

@@ -16,10 +16,10 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import MessageCardSkeleton from './MessageCardSkeleton';
-import MessageCard from './MessageCard';
-import { useAsyncEffect, useMessagesWorkspaceStore } from '../../hooks';
-import ErrorMessageFallback from './MessageErrorFallback';
+import MessageCardSkeleton from '../message-card/MessageCardSkeleton';
+import MessageCard from '../message-card/MessageCard';
+import { useAsyncEffect, useMessagesWorkspaceStore } from '../../../hooks';
+import ErrorMessageFallback from '../message-card/MessageErrorFallback';
 
 interface Props {
 	id: string;

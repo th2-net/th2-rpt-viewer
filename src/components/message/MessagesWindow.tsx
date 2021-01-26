@@ -24,7 +24,7 @@ import {
 	useActivePanel,
 	useWorkspaceStore,
 } from '../../hooks';
-import MessagesCardList from './MessagesCardList';
+import MessagesCardList from './message-card-list/MessagesCardList';
 import { getTimestampAsNumber } from '../../helpers/date';
 
 const MessagesWindow = () => {
