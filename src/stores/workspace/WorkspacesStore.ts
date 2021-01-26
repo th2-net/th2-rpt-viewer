@@ -14,21 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed } from 'mobx';
-import ApiSchema from '../api/ApiSchema';
-import { SelectedStore } from './SelectedStore';
-import WorkspaceStore, {
-	EventStoreDefaultStateType,
-	MessagesStoreDefaultStateType,
-	WorkspaceUrlState,
-} from './WorkspaceStore';
-import TabsStore from './TabsStore';
-import GraphStore from './GraphStore';
-import { EventAction } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
+import { observable, action, computed, reaction } from 'mobx';
+import ApiSchema from '../../api/ApiSchema';
+import { SelectedStore } from '../SelectedStore';
+import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
+import TabsStore from '../TabsStore';
+import GraphStore from '../graph/GraphStore';
 
-export type WorkspacesUrlState = WorkspaceUrlState;
-
+export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
 
@@ -44,6 +37,8 @@ export default class WorkspacesStore {
 		this.init(initialState);
 
 		this.tabsStore = new TabsStore(this);
+
+		reaction(() => this.activeWorkspace, this.onActiveWorkspaceChange);
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
@@ -68,7 +63,7 @@ export default class WorkspacesStore {
 		}
 
 		try {
-			this.addWorkspace(this.createWorkspace(initialState.events))
+			initialState.map(workspaceState => this.addWorkspace(this.createWorkspace(workspaceState)));
 		} catch (error) {
 			this.addWorkspace(this.createWorkspace());
 		}
@@ -85,20 +80,17 @@ export default class WorkspacesStore {
 	};
 
 	@action
-	public onSavedItemSelect = (savedItem: EventAction | EventMessage) => {
-		this.activeWorkspace.onSavedItemSelect(savedItem);
+	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
+		console.log(activeWorkspace);
 	};
 
-	public createWorkspace = (
-		eventsDefaultState: EventStoreDefaultStateType = null,
-		messagesDefaultState: MessagesStoreDefaultStateType = null,
-	) => {
+	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {
 		return new WorkspaceStore(
+			this,
 			this.selectedStore,
-			this.api,
 			this.graphStore,
-			eventsDefaultState,
-			messagesDefaultState,
+			this.api,
+			workspaceInitialState,
 		);
 	};
 }

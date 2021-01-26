@@ -21,7 +21,7 @@ import TabMenu from '../tabs/TabMenu';
 import { EventWindowProvider } from '../../contexts/eventWindowContext';
 import DraggableTab, { DraggableTabProps } from '../tabs/DraggableTab';
 import Tab from '../tabs/Tab';
-import EventWindowStore from '../../stores/EventsStore';
+import EventWindowStore from '../../stores/events/EventsStore';
 import { DraggableTabListContext } from '../tabs/DroppableTabList';
 import { EventTreeNode } from '../../models/EventAction';
 import '../../styles/events.scss';
@@ -109,14 +109,6 @@ const EventsWindowTab = (props: EventsWindowTabProps) => {
 		<DraggableTab ref={tabRef} {...tabProps}>
 			<EventWindowProvider value={store}>
 				<div className='events-tab'>
-					<div>
-						{store.color && (
-							<div
-								className='events-tab__color'
-								style={{ borderColor: store.color, marginRight: 10 }}
-							/>
-						)}
-					</div>
 					<div className='events-tab__title'>
 						<EventBreadcrumbs
 							rootEventsEnabled={!store.selectedNode}
@@ -134,10 +126,6 @@ const EventsWindowTab = (props: EventsWindowTabProps) => {
 							isDuplicable={isDuplicable}
 							tabRect={tabRef.current?.getBoundingClientRect()}>
 							<div className='events-tab__content'>
-								<div
-									className='events-tab__color'
-									style={{ borderColor: store.color, marginTop: 10 }}
-								/>
 								<div className='events-tab__breadcrumbs'>
 									<EventBreadcrumbs nodes={store.selectedPath} onSelect={selectNode} />
 								</div>
@@ -161,14 +149,6 @@ export const EventsWindowTabPreview = ({ store, isSelected }: EventsWindowTabPre
 	<Tab isDragging={true} isSelected={isSelected}>
 		<EventWindowProvider value={store}>
 			<div className='events-tab'>
-				<div>
-					{store.color && (
-						<div
-							className='events-tab__color'
-							style={{ borderColor: store.color, marginRight: 10 }}
-						/>
-					)}
-				</div>
 				<div className='events-tab__title'>
 					<EventBreadcrumbs
 						rootEventsEnabled={!store.selectedNode}

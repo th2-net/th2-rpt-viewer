@@ -16,11 +16,11 @@
 
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useActivePanel, useGraphStore, useWorkspaces } from '../../hooks';
+import { useActivePanel, useActiveWorkspace, useGraphStore } from '../../hooks';
 import useSetState from '../../hooks/useSetState';
 import TogglerRow from '../filter/row/TogglerRow';
 import sseApi from '../../api/sse';
-import { EventAction } from '../../models/EventAction';
+import { EventTreeNode } from '../../models/EventAction';
 import SearchPanelFilters, {
 	FilterState,
 	MessageFilterState,
@@ -69,9 +69,9 @@ const getDefaultFilterState = (info: SSEFilterInfo[]): FilterState | {} =>
 	}, {});
 
 const SearchPanel = () => {
-	const { timestamp } = useGraphStore();
+	const { range } = useGraphStore();
 	const { eventFilterInfo, messagesFilterInfo } = useSearchPanelFiltersStore();
-	const workspacesStore = useWorkspaces();
+	const activeWorkspace = useActiveWorkspace();
 	const { ref: searchPanelRef } = useActivePanel(null);
 
 	const [formType, setFormType] = useState<'event' | 'message'>('event');
@@ -81,7 +81,7 @@ const SearchPanel = () => {
 	};
 
 	const [formState, setFormState] = useSetState<SearchPanelState>({
-		startTimestamp: timestamp,
+		startTimestamp: range[0],
 		searchDirection: 'next',
 		resultCountLimit: '100',
 		endTimestamp: null,
@@ -90,7 +90,7 @@ const SearchPanel = () => {
 	});
 	const [eventFilter, setEventFilter] = useSetState<EventFilterState>();
 	const [messagesFilter, setMessagesFilter] = useSetState<MessageFilterState>();
-	const [results, setResults] = useState<EventAction[]>([]);
+	const [results, setResults] = useState<EventTreeNode[]>([]);
 	const [currentlyLaunchedChannel, setCurrentlyLaunchedChannel] = useState<EventSource | null>(
 		null,
 	);
@@ -215,7 +215,10 @@ const SearchPanel = () => {
 				</div>
 			</div>
 			{<SearchPanelProgressBar {...progressBar} />}
-			<SearchPanelResults results={results} onResultItemClick={workspacesStore.onSavedItemSelect} />
+			<SearchPanelResults
+				results={results}
+				onSearchResultClick={activeWorkspace.onSavedItemSelect}
+			/>
 		</div>
 	);
 };

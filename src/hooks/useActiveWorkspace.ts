@@ -14,10 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useRootStore } from './useRootStore';
+import { useWorkspaces } from './useWorkspacesStore';
 
-export const useAppViewStore = () => {
-	const rootStore = useRootStore();
+export const useActiveWorkspace = () => {
+	const workspacesStore = useWorkspaces();
 
-	return rootStore.viewStore;
+	return workspacesStore.activeWorkspace;
 };

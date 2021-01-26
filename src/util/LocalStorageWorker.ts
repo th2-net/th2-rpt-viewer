@@ -14,7 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventAction } from '../models/EventAction';
+import { isEventNode } from '../helpers/event';
+import { isMessage } from '../helpers/message';
+import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 
 enum LocalStorageEntities {
@@ -24,19 +26,19 @@ enum LocalStorageEntities {
 class LocalStorageWorker {
 	getPersistedPinnedMessages(): EventMessage[] {
 		try {
-			const stringPersistedPinnedMessages = localStorage.getItem(
-				LocalStorageEntities.PINNED_MESSAGES,
-			);
-			return stringPersistedPinnedMessages ? JSON.parse(stringPersistedPinnedMessages) : [];
+			const pinnedMessages = localStorage.getItem(LocalStorageEntities.PINNED_MESSAGES);
+			const parsedMessages = pinnedMessages ? JSON.parse(pinnedMessages) : [];
+			return Array.isArray(parsedMessages) ? parsedMessages.filter(isMessage) : [];
 		} catch (error) {
 			return [];
 		}
 	}
 
-	getPersistedPinnedEvents(): EventAction[] {
+	getPersistedPinnedEvents(): EventTreeNode[] {
 		try {
-			const stringPersistedPinnedMessages = localStorage.getItem(LocalStorageEntities.EVENTS);
-			return stringPersistedPinnedMessages ? JSON.parse(stringPersistedPinnedMessages) : [];
+			const pinnedEventsNodes = localStorage.getItem(LocalStorageEntities.EVENTS);
+			const parsedEventNodes = pinnedEventsNodes ? JSON.parse(pinnedEventsNodes) : [];
+			return Array.isArray(parsedEventNodes) ? parsedEventNodes.filter(isEventNode) : [];
 		} catch (error) {
 			return [];
 		}
@@ -46,7 +48,7 @@ class LocalStorageWorker {
 		localStorage.setItem(LocalStorageEntities.PINNED_MESSAGES, JSON.stringify(pinnedMessages));
 	}
 
-	setPersistedPinnedEvents(pinnedEvents: EventAction[]) {
+	setPersistedPinnedEvents(pinnedEvents: EventTreeNode[]) {
 		localStorage.setItem(LocalStorageEntities.EVENTS, JSON.stringify(pinnedEvents));
 	}
 }

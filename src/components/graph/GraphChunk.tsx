@@ -19,13 +19,14 @@ import * as React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import { LineChart, Line, LineProps } from 'recharts';
-import { getTimestampAsNumber, isTimeIntersected, toUTC } from '../../helpers/date';
+import { getTimestampAsNumber, isTimeIntersected } from '../../helpers/date';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk } from '../../models/graph';
-import { EventAction } from '../../models/EventAction';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { isEventMessage } from '../../helpers/event';
 import GraphAttachedItemGroup from './GraphAttachedItemGroup';
 import { TimeRange } from '../../models/Timestamp';
+import { GraphDataStore } from '../../stores/graph/GraphDataStore';
 
 const ATTACHED_ITEM_SIZE = 14;
 
@@ -54,17 +55,17 @@ const graphLines = [
 ] as const;
 
 export interface AttachedItem {
-	value: EventMessage | EventAction;
+	value: EventMessage | EventTreeNode;
 	type: 'attached-message' | 'pinned-message' | 'event';
 }
 
 interface Props {
 	chunk: Chunk;
 	chunkWidth: number;
-	getChunkData: (chunk: Chunk) => void;
+	getChunkData: InstanceType<typeof GraphDataStore>['getChunkData'];
 	attachedItems: AttachedItem[];
-	expandedAttachedItem: EventAction | EventMessage | null;
-	setExpandedAttachedItem: (item: EventAction | EventMessage | null) => void;
+	expandedAttachedItem: EventTreeNode | EventMessage | null;
+	setExpandedAttachedItem: (item: EventTreeNode | EventMessage | null) => void;
 	interval: number;
 	tickSize: number;
 }
@@ -82,7 +83,12 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 	} = props;
 
 	React.useEffect(() => {
-		getChunkData(chunk);
+		const abortController = new AbortController();
+		getChunkData(chunk, abortController.signal);
+
+		return () => {
+			abortController.abort();
+		};
 	}, []);
 
 	const getGroupLeftPosition = (timestamp: number) => {
@@ -105,7 +111,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 		}
 
 		return ticksArr;
-	}, [chunk]);
+	}, [chunk, interval]);
 
 	const attachedItemTimeSize = ((chunk.to - chunk.from) / chunkWidth) * ATTACHED_ITEM_SIZE;
 
@@ -182,7 +188,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 			<div className='graph-chunk__ticks'>
 				{ticks.map(tick => (
 					<span className='graph-chunk__tick' key={tick}>
-						{toUTC(moment(tick)).format('HH:mm')}
+						{moment(tick).utc().format('HH:mm')}
 					</span>
 				))}
 			</div>

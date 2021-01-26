@@ -30,7 +30,7 @@ const WorkspacesLayout = () => {
 	const renderTabs: TabListRenderProps = ({ activeTabIndex, setActiveTab }) => {
 		return workspacesStore.workspaces.map((workspace, index) => {
 			return (
-				<Observer key={`events-tab-${index}`}>
+				<Observer key={workspace.id}>
 					{() => (
 						<div
 							className={`workspace-tab ${activeTabIndex === index ? 'active' : ''}`}
@@ -55,6 +55,10 @@ const WorkspacesLayout = () => {
 		});
 	};
 
+	function addWorkspace() {
+		workspacesStore.addWorkspace(workspacesStore.createWorkspace());
+	}
+
 	return (
 		<Tabs
 			activeIndex={workspacesStore.tabsStore.activeTabIndex}
@@ -64,15 +68,13 @@ const WorkspacesLayout = () => {
 			tabList={tabListInjectedProps => (
 				<DroppableTabList>
 					{renderTabs(tabListInjectedProps)}
-					<div
-						className='workspace-tab workspace-tab__add'
-						onClick={() => workspacesStore.addWorkspace(workspacesStore.createWorkspace())}>
+					<div className='workspace-tab workspace-tab__add' onClick={addWorkspace}>
 						+
 					</div>
 				</DroppableTabList>
 			)}
-			tabPanels={workspacesStore.workspaces.map((workspace, index) => (
-				<WorkspaceContextProvider value={workspace} key={index}>
+			tabPanels={workspacesStore.workspaces.map(workspace => (
+				<WorkspaceContextProvider value={workspace} key={workspace.id}>
 					<Workspace />
 				</WorkspaceContextProvider>
 			))}

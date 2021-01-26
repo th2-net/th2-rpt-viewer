@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { ActionType } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { getTimestampAsNumber } from './date';
 
@@ -29,4 +30,12 @@ export const sortMessagesByTimestamp = (
 		return getTimestampAsNumber(mesA.timestamp) - getTimestampAsNumber(mesB.timestamp);
 	});
 	return copiedMessages;
+};
+
+export const isMessage = (object: unknown): object is EventMessage => {
+	return (
+		typeof object === 'object' &&
+		object !== null &&
+		(object as EventMessage).type === ActionType.MESSAGE
+	);
 };

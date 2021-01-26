@@ -16,27 +16,27 @@
 
 import React from 'react';
 import { Virtuoso } from 'react-virtuoso';
-import { isEventAction } from '../../helpers/event';
+import { isEventNode } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
-import { EventAction } from '../../models/EventAction';
+import { EventTreeNode } from '../../models/EventAction';
 import { BookmarkItem } from '../BookmarksPanel';
 
 interface SearchPanelResultsProps {
-	results: Array<EventAction | EventMessage>;
-	onResultItemClick: (searchResult: EventAction | EventMessage) => void;
+	results: Array<EventTreeNode | EventMessage>;
+	onSearchResultClick: (searchResult: EventTreeNode | EventMessage) => void;
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
-	const { results, onResultItemClick } = props;
+	const { results, onSearchResultClick } = props;
 
 	function computeKey(index: number) {
 		const item = results[index];
 
-		return isEventAction(item) ? item.eventId : item.messageId;
+		return isEventNode(item) ? item.eventId : item.messageId;
 	}
 
 	function renderBookmarkItem(index: number) {
-		return <BookmarkItem item={results[index]} onClick={onResultItemClick} />;
+		return <BookmarkItem item={results[index]} onClick={onSearchResultClick} />;
 	}
 
 	return (

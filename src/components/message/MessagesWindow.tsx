@@ -18,29 +18,28 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import MessagesWindowHeader from './MessagesWindowHeader';
 import { HeatmapProvider } from '../heatmap/HeatmapProvider';
-import { useMessagesWorkspaceStore, useSelectedStore, useActivePanel } from '../../hooks';
+import {
+	useMessagesWorkspaceStore,
+	useSelectedStore,
+	useActivePanel,
+	useWorkspaceStore,
+} from '../../hooks';
 import MessagesCardList from './MessagesCardList';
 import { getTimestampAsNumber } from '../../helpers/date';
 
 const MessagesWindow = () => {
 	const messagesStore = useMessagesWorkspaceStore();
+	const workspaceStore = useWorkspaceStore();
 	const selectedStore = useSelectedStore();
 
 	const { ref: panelRef } = useActivePanel(messagesStore);
 
 	const selectedItems = React.useMemo(() => {
 		const heatmapElementsMap: Map<string, string[]> = new Map();
-		selectedStore.selectedEvents
-			.filter(e => e.attachedMessageIds.length !== 0)
-			.forEach(({ eventId, attachedMessageIds }) => {
-				const eventColor = selectedStore.eventColors.get(eventId);
-				if (eventColor) {
-					heatmapElementsMap.set(eventColor, attachedMessageIds);
-				}
-			});
+		heatmapElementsMap.set('#FC8144', workspaceStore.attachedMessagesIds);
 
 		return heatmapElementsMap;
-	}, [selectedStore.eventColors, messagesStore.messagesIds]);
+	}, [workspaceStore.attachedMessagesIds]);
 
 	const unknownAreas = React.useMemo(() => {
 		if (!messagesStore.messagesIds.length || messagesStore.filterStore.isMessagesFilterApplied) {
@@ -80,7 +79,7 @@ const MessagesWindow = () => {
 			.map(msg => msg.messageId);
 
 		return { before, after };
-	}, [selectedStore.eventColors, messagesStore.messagesIds]);
+	}, [messagesStore.messagesIds]);
 
 	return (
 		<HeatmapProvider

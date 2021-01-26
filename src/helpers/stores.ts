@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import EventsStore from '../stores/EventsStore';
-import MessagesStore from '../stores/MessagesStore';
+import EventsStore from '../stores/events/EventsStore';
+import MessagesStore from '../stores/messages/MessagesStore';
 
 export const isEventsStore = (object: unknown): object is EventsStore => {
 	return object instanceof EventsStore;

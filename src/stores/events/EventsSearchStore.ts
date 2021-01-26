@@ -15,11 +15,12 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction } from 'mobx';
-import SearchToken from '../models/search/SearchToken';
-import ApiSchema from '../api/ApiSchema';
+import SearchToken from '../../models/search/SearchToken';
+import ApiSchema from '../../api/ApiSchema';
 import EventsStore from './EventsStore';
-import { createSearchToken } from '../helpers/search/createSearchToken';
-import { COLORS as SearchTokenColors } from '../components/search/SearchInput';
+import { createSearchToken } from '../../helpers/search/createSearchToken';
+import { COLORS as SearchTokenColors } from '../../components/search/SearchInput';
+import { GraphDataStore } from '../graph/GraphDataStore';
 
 const defaultState = {
 	tokens: [],
@@ -36,10 +37,11 @@ type initialState = Partial<{
 	searchPatterns: string[];
 }>;
 
-export default class SearchStore {
+export default class EventsSearchStore {
 	constructor(
 		private api: ApiSchema,
 		private eventsStore: EventsStore,
+		private graphStore: GraphDataStore,
 		initialState?: initialState,
 	) {
 		this.init(initialState);
@@ -98,11 +100,8 @@ export default class SearchStore {
 
 	@action
 	fetchTokenResults = async (tokenString: string) => {
-		const { timestampFrom, timestampTo } = this.eventsStore.filterStore.eventsFilter;
-
 		const rootEventsResults = await this.api.events.getEventsByName(
-			timestampFrom,
-			timestampTo,
+			this.graphStore.range,
 			tokenString,
 		);
 
@@ -112,7 +111,7 @@ export default class SearchStore {
 
 		const subNodesResult = await Promise.all(
 			expandedSubNodes.map(node =>
-				this.api.events.getEventsByName(timestampFrom, timestampTo, tokenString, node.eventId),
+				this.api.events.getEventsByName(this.graphStore.range, tokenString, node.eventId),
 			),
 		);
 
@@ -122,10 +121,9 @@ export default class SearchStore {
 	@action
 	appendResultsForEvent = async (eventId: string) => {
 		this.isLoading = true;
-		const { timestampFrom, timestampTo } = this.eventsStore.filterStore.eventsFilter;
 		const results = await Promise.all(
 			this.tokens.map(token =>
-				this.api.events.getEventsByName(timestampFrom, timestampTo, token.pattern, eventId),
+				this.api.events.getEventsByName(this.graphStore.range, token.pattern, eventId),
 			),
 		);
 		this.isLoading = false;

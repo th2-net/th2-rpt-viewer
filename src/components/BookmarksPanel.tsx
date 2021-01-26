@@ -19,14 +19,14 @@ import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
 import { getTimestampAsNumber } from '../helpers/date';
-import { isEventAction } from '../helpers/event';
+import { isEventNode } from '../helpers/event';
 import { createStyleSelector } from '../helpers/styleCreators';
 import { useActivePanel, useSelectedStore, useWorkspaceStore } from '../hooks';
-import { EventAction } from '../models/EventAction';
+import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import '../styles/bookmarks.scss';
 
-type SavedItem = EventMessage | EventAction;
+type SavedItem = EventMessage | EventTreeNode;
 
 function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
@@ -45,7 +45,7 @@ function BookmarksPanel() {
 	function computeKey(index: number) {
 		const item = selectedStore.savedItems[index];
 
-		return isEventAction(item) ? item.eventId : item.messageId;
+		return isEventNode(item) ? item.eventId : item.messageId;
 	}
 
 	function renderBookmarkItem(index: number) {
@@ -81,9 +81,10 @@ interface BookmarkItemProps {
 
 export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 	const itemInfo = {
-		status: isEventAction(item) ? (item.successful ? 'passed' : 'failed') : null,
-		title: isEventAction(item) ? item.eventName : item.messageId,
-		timestamp: getTimestampAsNumber(isEventAction(item) ? item.startTimestamp : item.timestamp),
+		status: isEventNode(item) ? (item.successful ? 'passed' : 'failed') : null,
+		title: isEventNode(item) ? item.eventName : item.messageId,
+		timestamp: getTimestampAsNumber(isEventNode(item) ? item.startTimestamp : item.timestamp),
+		type: isEventNode(item) ? 'event' : item.type,
 	};
 
 	function onBookmarkRemove(event: React.MouseEvent<HTMLButtonElement>) {
@@ -93,11 +94,11 @@ export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 		}
 	}
 
-	const rootClassName = createStyleSelector('bookmark-item', item.type, itemInfo.status);
+	const rootClassName = createStyleSelector('bookmark-item', itemInfo.type, itemInfo.status);
 
 	const iconClassName = createStyleSelector(
 		'bookmark-item__icon',
-		`${item.type}-icon`,
+		`${itemInfo.type}-icon`,
 		itemInfo.status,
 	);
 

@@ -19,10 +19,6 @@ import { createURLSearchParams } from '../helpers/url';
 
 const eventHttpApi: EventApiSchema = {
 	getEventTree: async (filter, signal?) => {
-		if (!filter.timestampFrom || !filter.timestampTo) {
-			throw new Error('timestamps are required to fetch events');
-		}
-
 		const params = createURLSearchParams({
 			timestampFrom: filter.timestampFrom,
 			timestampTo: filter.timestampTo,
@@ -50,7 +46,9 @@ const eventHttpApi: EventApiSchema = {
 		console.error(res.statusText);
 		return null;
 	},
-	getEventsByName: async (timestampFrom, timestampTo, name) => {
+	getEventsByName: async (timeRange, name) => {
+		const [timestampFrom, timestampTo] = timeRange;
+
 		const params = createURLSearchParams({
 			name,
 			timestampFrom,

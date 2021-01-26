@@ -24,6 +24,8 @@ import { useSelectedStore } from '../../hooks';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import { getEventStatus } from '../../helpers/event';
 
+// TODO: delete component
+
 type Props = Omit<DraggableTabProps, 'children'> & {
 	isDuplicable: boolean;
 };
@@ -68,11 +70,8 @@ const MessagesWindowTab = (tabProps: Props) => {
 
 	const getMenuWidth = () => {
 		const tabWidth = tabRef.current?.getBoundingClientRect().width || 0;
-		if (selectedStore.eventColors.size > 0) {
-			return Math.max(450, tabWidth);
-		}
 
-		return Math.max(150, tabWidth);
+		return Math.max(450, tabWidth);
 	};
 
 	return (
@@ -85,7 +84,7 @@ const MessagesWindowTab = (tabProps: Props) => {
 					Messages
 				</div>
 				<div className='messages-tab__count-list'>
-					{selectedStore.selectedEvents
+					{/* {selectedStore.selectedEvents
 						.filter(e => e.attachedMessageIds.length > 0)
 						.map(({ eventId, attachedMessageIds }) => (
 							<CountCircle
@@ -93,7 +92,7 @@ const MessagesWindowTab = (tabProps: Props) => {
 								color={selectedStore.eventColors.get(eventId)!}
 								count={attachedMessageIds.length}
 							/>
-						))}
+						))} */}
 				</div>
 				{isMenuOpen && !isDragging && (
 					<TabMenu
@@ -118,11 +117,11 @@ const MessagesWindowTab = (tabProps: Props) => {
 											title={event.eventName}>
 											{event.eventName}
 										</span>
-										<CountCircle
+										{/* <CountCircle
 											key={event.eventId}
 											color={selectedStore.eventColors.get(event.eventId)!}
 											count={event.attachedMessageIds.length}
-										/>
+										/> */}
 									</li>
 								))}
 						</ul>
@@ -148,7 +147,7 @@ export const MessagesWindowTabPreview = ({ isSelected }: MessagesWindowTabPrevie
 					Messages
 				</span>
 				<div className='messages-tab__count-list'>
-					{selectedStore.selectedEvents
+					{/* {selectedStore.selectedEvents
 						.filter(e => e.attachedMessageIds.length > 0)
 						.map(({ eventId, attachedMessageIds }) => (
 							<span
@@ -157,20 +156,9 @@ export const MessagesWindowTabPreview = ({ isSelected }: MessagesWindowTabPrevie
 								style={{ borderColor: selectedStore.eventColors.get(eventId) }}>
 								{attachedMessageIds.length}
 							</span>
-						))}
+						))} */}
 				</div>
 			</div>
 		</Tab>
 	);
 };
-
-interface CountCircleProps {
-	count: number;
-	color: string;
-}
-
-const CountCircle = ({ color, count }: CountCircleProps) => (
-	<span className='messages-tab__count' style={{ borderColor: color }}>
-		{count}
-	</span>
-);

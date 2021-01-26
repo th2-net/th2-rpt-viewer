@@ -30,7 +30,7 @@ import '../../styles/messages.scss';
 
 export type MessagesHeights = { [index: number]: number };
 
-const MessageCardList = () => {
+function MessageCardList() {
 	const messagesStore = useMessagesWorkspaceStore();
 
 	const [messagesHeightsMap, setMessagesHeightMap] = React.useState<MessagesHeights>({});
@@ -104,7 +104,7 @@ const MessageCardList = () => {
 			</MessagesHeightsContext.Provider>
 		</div>
 	);
-};
+}
 
 export default observer(MessageCardList, { forwardRef: true });
 

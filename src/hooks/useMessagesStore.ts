@@ -14,7 +14,7 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import MessagesStore from '../stores/MessagesStore';
+import MessagesStore from '../stores/messages/MessagesStore';
 import { useWorkspaceStore } from './useWorkspaceStore';
 
 export const useMessagesWorkspaceStore = (): MessagesStore => {

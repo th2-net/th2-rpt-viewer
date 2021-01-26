@@ -16,14 +16,18 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useMessagesWorkspaceStore, useHeatmap, useSelectedStore } from '../../hooks';
+import {
+	useMessagesWorkspaceStore,
+	useHeatmap,
+	useSelectedStore,
+	useWorkspaceStore,
+} from '../../hooks';
 import { getHashCode } from '../../helpers/stringHash';
-import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
+import { createBemBlock, createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { formatTime, getTimestampAsNumber } from '../../helpers/date';
 import { keyForMessage } from '../../helpers/keys';
 import StateSaver from '../util/StateSaver';
 import { EventMessage } from '../../models/EventMessage';
-import { hexToRGBA } from '../../helpers/color';
 import MessageRaw from './MessageRaw';
 import PanelArea from '../../util/PanelArea';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
@@ -46,6 +50,7 @@ interface Props extends OwnProps, RecoveredProps {}
 function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const messagesStore = useMessagesWorkspaceStore();
 	const selectedStore = useSelectedStore();
+	const workspaceStore = useWorkspaceStore();
 	const { heatmapElements } = useHeatmap();
 
 	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
@@ -54,9 +59,25 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const isSelected = Boolean(heatmapElement);
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isPinned = selectedStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
+
+	const isAttached = !!workspaceStore.attachedMessages.find(
+		attMsg => attMsg.messageId === message.messageId,
+	);
+
 	const color = heatmapElement?.colors[0];
 
-	const rootClass = createBemBlock('message-card', isSelected ? 'selected' : null);
+	const rootClass = createBemBlock(
+		'message-card',
+		isSelected ? 'selected' : null,
+		isAttached ? 'attached' : null,
+		isPinned ? 'pinned' : null,
+	);
+
+	const underlineClassName = createStyleSelector(
+		'mc-header__underline',
+		isAttached ? 'attached' : null,
+		isPinned ? 'pinned' : null,
+	);
 
 	const headerClass = createBemBlock('mc-header', PanelArea.P100);
 
@@ -78,12 +99,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const pinClassName = createBemElement('mc-header', 'pin-icon', isPinned ? 'active' : null);
 
 	return (
-		<div
-			className={rootClass}
-			style={{
-				backgroundColor: color ? hexToRGBA(color, 15) : undefined,
-				borderColor: color,
-			}}>
+		<div className={rootClass}>
 			<div className={headerClass}>
 				<div className='mc-header__name'>Name</div>
 				<div className='mc-header__name-value'>{messageType}</div>
@@ -111,7 +127,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 						onClick={() => selectedStore.toggleMessagePin(message)}
 					/>
 				</div>
-				<div className='mc-header__underline' style={{ borderColor: color }} />
+				<div className={underlineClassName} />
 			</div>
 			<div className='message-card__body mc-body'>
 				<div className='mc-body__human'>

@@ -26,7 +26,7 @@ export const defaultMessagesFilter: MessagesFilter = {
 	messageTypes: [],
 };
 
-export const getDefaultEventFilter = () => {
+export function getDefaultEventFilter() {
 	const timestampTo = moment(Date.now()).utc().valueOf();
 	const timestampFrom = moment(timestampTo).utc().subtract(15, 'minutes').valueOf();
 
@@ -36,7 +36,7 @@ export const getDefaultEventFilter = () => {
 		eventTypes: [],
 		names: [],
 	};
-};
+}
 
 type InitialState = Partial<{
 	messagesFilter: MessagesFilter;
@@ -55,15 +55,8 @@ export default class FilterStore {
 
 	@observable eventsFilter: EventsFilter = getDefaultEventFilter();
 
-	@observable eventsTimeFilterIsApplied = false;
-
-	@computed
-	get isEventsFilterApplied() {
-		return (
-			this.eventsTimeFilterIsApplied ||
-			this.eventsFilter.eventTypes.length !== 0 ||
-			this.eventsFilter.names.length !== 0
-		);
+	@computed get isEventsFilterApplied() {
+		return this.eventsFilter.eventTypes.length > 0 || this.eventsFilter.names.length > 0;
 	}
 
 	@action
@@ -80,7 +73,6 @@ export default class FilterStore {
 	resetMessagesFilter(streams: string[] = []) {
 		this.messagesFilter = {
 			...defaultMessagesFilter,
-			// after resetting filter, streams should be taken from attached messages
 			streams,
 		};
 		this.isMessagesFilterApplied = false;
@@ -98,29 +90,24 @@ export default class FilterStore {
 	@action
 	resetEventsFilter() {
 		this.eventsFilter = getDefaultEventFilter();
-		this.eventsTimeFilterIsApplied = false;
 	}
 
 	@action
 	private init(initialState?: InitialState) {
 		if (!initialState) return;
-		const defaultEventsFilter = getDefaultEventFilter();
+
 		const {
-			eventsFilter = defaultEventsFilter,
+			eventsFilter = getDefaultEventFilter(),
 			messagesFilter = defaultMessagesFilter,
 			isMessagesFilterApplied = false,
 		} = initialState;
 
 		this.eventsFilter = {
-			names: eventsFilter.names || defaultEventsFilter.names,
-			eventTypes: eventsFilter.eventTypes || defaultEventsFilter.eventTypes,
-			timestampTo: eventsFilter.timestampTo || defaultEventsFilter.timestampTo,
-			timestampFrom: eventsFilter.timestampFrom || defaultEventsFilter.timestampFrom,
+			names: eventsFilter.names || eventsFilter.names,
+			eventTypes: eventsFilter.eventTypes || eventsFilter.eventTypes,
+			timestampTo: eventsFilter.timestampTo || eventsFilter.timestampTo,
+			timestampFrom: eventsFilter.timestampFrom || eventsFilter.timestampFrom,
 		};
-
-		if (eventsFilter.timestampFrom || eventsFilter.timestampTo) {
-			this.eventsTimeFilterIsApplied = true;
-		}
 
 		this.messagesFilter = {
 			messageTypes: messagesFilter.messageTypes || defaultMessagesFilter.messageTypes,

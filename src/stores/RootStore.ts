@@ -15,13 +15,11 @@
  ***************************************************************************** */
 
 import ApiSchema from '../api/ApiSchema';
-import AppViewStore from './AppViewStore';
-import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
+import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import NotificationsStore from './NotificationsStore';
-import GraphStore from './GraphStore';
+import GraphStore from './graph/GraphStore';
 import { registerUrlMiddleware } from '../helpers/url';
 import SearchPanelFiltersStore from './SearchPanelFiltersStore';
-import { TimeRange } from '../models/Timestamp';
 
 export default class RootStore {
 	notificationsStore = NotificationsStore;
@@ -30,24 +28,12 @@ export default class RootStore {
 
 	workspacesStore: WorkspacesStore;
 
-	viewStore: AppViewStore;
-
 	graphStore: GraphStore;
 
 	constructor(private api: ApiSchema) {
-		const urlState = this.parseUrlState();
+		this.graphStore = new GraphStore();
 
-		const eventsFilter = urlState?.events.filter;
-
-		const range: TimeRange | null = eventsFilter
-			? [eventsFilter.timestampFrom, eventsFilter.timestampTo]
-			: null;
-
-		this.graphStore = new GraphStore(this, range);
-
-		this.workspacesStore = new WorkspacesStore(this.api, this.graphStore, urlState);
-
-		this.viewStore = new AppViewStore();
+		this.workspacesStore = new WorkspacesStore(this.api, this.graphStore, this.parseUrlState());
 
 		registerUrlMiddleware(this);
 	}
