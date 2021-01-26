@@ -176,9 +176,7 @@ const SearchPanel = () => {
 		searching: Boolean(currentlyLaunchedChannel),
 	};
 	const filterParams = formType === 'event' ? eventFilter : messagesFilter;
-	const disableForm =
-		Boolean(currentlyLaunchedChannel) ||
-		(searchHistory.length > 1 && index !== searchHistory.length - 1);
+	const disableForm = searchHistory.length > 1 && index !== searchHistory.length - 1;
 
 	const form = { formType, state: formState, setState: setFormState, disableAll: disableForm };
 	const filters = useMemo(

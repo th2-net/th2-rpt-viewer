@@ -99,7 +99,8 @@
 			@include icon(url(../../resources/icons/star.svg), 14px, 14px);
 		}
 
-		&.event-icon {
+		&.event-icon,
+		&.eventtreenode-icon {
 			width: 12px;
 			height: 12px;
 			margin: 1px;
@@ -123,7 +124,8 @@
 		border-color: $graphOverlayPinnedMessagesColor;
 	}
 
-	&.event {
+	&.event,
+	&.eventtreenode {
 		&.passed {
 			border-color: $graphOverlayPassedEventsColor;
 		}

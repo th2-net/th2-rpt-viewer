@@ -362,7 +362,9 @@
 		box-sizing: border-box;
 		// workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
 		min-width: 0;
-
+		&:disabled {
+			opacity: .5;
+		}
 		&:focus {
 			background-color: #fff;
 
@@ -457,6 +459,10 @@
 
 		&:focus {
 			outline: none;
+		}
+
+		&:disabled {
+			opacity: .5;
 		}
 	}
 
