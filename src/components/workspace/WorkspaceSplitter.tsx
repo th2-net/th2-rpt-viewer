@@ -20,6 +20,8 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 import { useWorkspaceStore } from '../../hooks';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 
+const MIN_PANEL_WIDTH = 15;
+
 interface Panel {
 	title: string;
 	component: React.ReactNode;
@@ -125,6 +127,14 @@ function WorkspaceSplitter(props: Props) {
 		panelsRefs.current.forEach((panelRef, index) => {
 			if (panelRef.current) {
 				panelRef.current.style.width = `${widths[index]}px`;
+
+				if (widths[index] === MIN_PANEL_WIDTH) {
+					if (!panelRef.current.classList.contains('minified')) {
+						panelRef.current.classList.add('minified');
+					}
+				} else if (panelRef.current.classList.contains('minified')) {
+					panelRef.current.classList.remove('minified');
+				}
 			}
 		});
 
@@ -148,9 +158,11 @@ function WorkspaceSplitter(props: Props) {
 			if (!splitterRef.current) {
 				return [0, window.innerWidth];
 			}
-			const min = splitterRef.current.clientWidth * index;
+			const min = (splitterRef.current.clientWidth + MIN_PANEL_WIDTH) * index;
 			const max =
-				rootOffsetWidth - splitterRef.current.clientWidth * (splittersRefs.current.length - index);
+				rootOffsetWidth -
+				(splitterRef.current.clientWidth + MIN_PANEL_WIDTH) *
+					(splittersRefs.current.length - index);
 			return [min, max];
 		});
 	};
@@ -166,22 +178,23 @@ function WorkspaceSplitter(props: Props) {
 			if (resizerRef.current === activeSplitter.current)
 				return minmax(activeSplitterLeft, ...splittersMinxMaxPositions.current[index]);
 			const { left, width } = resizerRef.current!.getBoundingClientRect();
+			const fullWidth = width + MIN_PANEL_WIDTH;
 
 			if (
 				index < activeSplitterIndex &&
-				left - rootOffsetLeft + width * (activeSplitterIndex - index) > activeSplitterLeft
+				left - rootOffsetLeft + fullWidth * (activeSplitterIndex - index) > activeSplitterLeft
 			) {
 				return minmax(
-					activeSplitterLeft - (activeSplitterIndex - index) * width,
+					activeSplitterLeft - (activeSplitterIndex - index) * fullWidth,
 					...splittersMinxMaxPositions.current[index],
 				);
 			}
 			if (
 				index > activeSplitterIndex &&
-				activeSplitterLeft + (index - activeSplitterIndex) * width > left - rootOffsetLeft
+				activeSplitterLeft + (index - activeSplitterIndex) * fullWidth > left - rootOffsetLeft
 			) {
 				return minmax(
-					activeSplitterLeft + (index - activeSplitterIndex) * width,
+					activeSplitterLeft + (index - activeSplitterIndex) * fullWidth,
 					...splittersMinxMaxPositions.current[index],
 				);
 			}
@@ -239,8 +252,21 @@ function WorkspaceSplitter(props: Props) {
 						ref={splittersRefs.current[index]}
 						isPanelActive={panel.isActive}
 					/>
-					<div className='workspace-split-view__pane' ref={panelsRefs.current[index]}>
-						{panel.component}
+					<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
+						<div className='pane__sidebar'>
+							<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />
+							{panel.title}
+							<div className='pane__line' style={{ backgroundColor: panel.color }}></div>
+						</div>
+						<div className='pane__wrapper'>
+							<div className='pane__header-white-background'>
+								<div className='pane__header' style={{ backgroundColor: panel.color }}>
+									<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon-white`} />
+									{panel.title}
+								</div>
+							</div>
+							<div className='pane__main'>{panel.component}</div>
+						</div>
 					</div>
 					<Overlay color={panel.color} isResizing={isResizing} ref={overlaysRefs.current[index]} />
 				</React.Fragment>
@@ -276,10 +302,9 @@ type SplitterProps = {
 };
 
 const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
-	({ color, title, onMouseDown, disabled = false, icon, isPanelActive = false }, ref) => {
+	({ title, onMouseDown, disabled = false, isPanelActive = false }, ref) => {
 		const viewStore = useWorkspaceViewStore();
 		const workspaceStore = useWorkspaceStore();
-		const titleRef = React.useRef<HTMLDivElement>(null);
 
 		const setActivePanel = () => {
 			viewStore.setActivePanel(
@@ -297,33 +322,12 @@ const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
 		);
 
 		return (
-			<div
-				className={splitterClassName}
-				onMouseDown={e => (disabled ? null : onMouseDown(e))}
-				onMouseEnter={e => {
-					e.preventDefault();
-					if (e.pageX > window.innerWidth / 2) {
-						titleRef.current?.classList.add(`right`);
-					} else {
-						titleRef.current?.classList.remove(`right`);
-					}
-					titleRef.current?.classList.add(`active`);
-				}}
-				onMouseLeave={() => {
-					titleRef.current?.classList.remove('active');
-				}}>
+			<div className={splitterClassName} onMouseDown={e => (disabled ? null : onMouseDown(e))}>
 				<div
 					ref={ref}
 					onMouseDown={setActivePanel}
 					className='workspace-splitter__handle'
-					style={{ backgroundColor: color, cursor: disabled ? 'default' : 'col-resize' }}>
-					<div className='workspace-splitter__content'>
-						<div className='workspace-splitter__title' ref={titleRef}>
-							{icon}
-							{title}
-						</div>
-					</div>
-				</div>
+					style={{ cursor: disabled ? 'default' : 'col-resize' }}></div>
 			</div>
 		);
 	},
