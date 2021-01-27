@@ -110,7 +110,7 @@ function MessageBodyCardField(props: FieldProps) {
 				{label ? (isBeautified ? `${label}: ` : `"${label}": `) : ''}
 			</span>
 			{isSimpleValue(field) ? (
-				`"${field.simpleValue}"`
+				<span className='mc-body__field-simple-value'>{field.simpleValue}</span>
 			) : isListValue(field) ? (
 				<>
 					{'['}

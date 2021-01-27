@@ -17,68 +17,77 @@
 @import './common/vars';
 
 .message-card {
-	@include status-card;
+	margin-bottom: 5px;
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+	border-radius: 5px;
 
-	// lb-count - number of displaying labels - to make offset for name and session
-	--lb-count: 0;
-	// lb-count variable assignment through the custom html property
-	&[data-lb-count='0'] {
-		--lb-count: 0;
+	&:hover {
+		background-color: #f3fafc;
 	}
-	&[data-lb-count='1'] {
-		--lb-count: 1;
-	}
-	&[data-lb-count='2'] {
-		--lb-count: 2;
-	}
-
-	position: relative;
-	display: grid;
-	grid-template: auto auto / auto calc(100% - var(--lb-count) * 20px);
-	grid-template-areas:
-		'mc-labels mc-header'
-		'mc-labels mc-body';
-	width: 100%;
-	margin: 6px 0;
-	transition: all 0.2s;
-	min-height: 100px;
-
-	border: 2px solid var(--status-secondary-border-color);
-	border-radius: $defaultCardBorderRadius;
-
-	// TODO: create mixins for attached & pinned messages
 
 	&.attached {
-		background-color: rgba($color: $graphAttachedMessageColor, $alpha: 0.15);
-		border-color: $graphAttachedMessageColor;
-	}
+		border: 2px solid #ffe5cc;
 
-	&.pinned {
-		background-color: rgba($color: $graphOverlayPinnedMessagesColor, $alpha: 0.15);
-		border-color: $graphOverlayPinnedMessagesColor;
-	}
+		&:hover {
+			border-color: #ffa64c;
+			background-color: #fff5f0;
+		}
 
-	&.transparent {
-		opacity: 0.3;
-	}
-
-	&__labels {
-		grid-area: mc-labels;
-		display: flex;
-		justify-content: flex-start;
-
-		div:first-of-type {
-			border-top-left-radius: 3px;
-			border-bottom-left-radius: 3px;
+		.mc-header__is-attached-icon {
+			display: block;
 		}
 	}
 
-	&__header {
-		grid-area: mc-header;
+	&:hover .mc-header {
+		&__breakline {
+			display: block;
+		}
+
+		&__info {
+			column-gap: 10px;
+		}
+
+		&__bookmark {
+			display: block;
+		}
+
+		&__key-minified {
+			display: none;
+		}
+
+		&__key {
+			display: inline;
+		}
+
+		&__info {
+			flex-direction: column;
+		}
+
+		&__value {
+			font-weight: 600;
+			font-size: 10px;
+		}
+
+		&__is-attached-icon {
+			opacity: 1;
+		}
+
+		&__bookmark-icon {
+			display: block;
+			background: url(../../resources/icons/bookmark-add-hover.svg);
+
+			&.pinned {
+				background: url(../../resources/icons/bookmark-added-hover.svg);
+			}
+		}
 	}
 
-	&__body {
-		grid-area: mc-body;
+	&:hover .mc-body {
+		&__controls {
+			display: flex;
+		}
 	}
 }
 
@@ -116,201 +125,122 @@
 }
 
 .mc-header {
-	grid-area: mc-header;
-	display: grid;
-	row-gap: 3px;
-	position: relative;
-	padding: 7px 5px 9px 10px;
-	color: $primaryTextColor;
-	grid-template-rows: auto;
-	grid-template-columns: 1.2fr 40px 1.2fr 40px 1.8fr 30px 30px;
-	grid-template-areas:
-		'timestamp name name-value session session-value beautify pin'
-		'timestamp id id-value id-value id-value beautify pin';
+	display: flex;
+	column-gap: 5px;
+	white-space: nowrap;
 
-	&__underline {
-		border-bottom: 2px solid var(--status-primary-delimeter-color);
-		padding: 0 20px;
-		position: absolute;
-		bottom: 0;
-		left: 10px;
-		right: 10px;
+	&__is-attached-icon {
+		flex-shrink: 0;
+		width: 8px;
+		height: 8px;
+		transform: rotate(45deg);
+		transform-origin: center;
+		background-color: #ff8c1a;
+		opacity: 0.43;
+		margin-top: 3px;
+		margin-left: 3px;
+		margin-right: 4px;
+		display: none;
+	}
 
-		&.attached {
-			border-color: $graphAttachedMessageColor;
-		}
+	&__bookmark-icon {
+		display: none;
+		flex-shrink: 0;
+		width: 15px;
+		height: 15px;
+		background: url(../../resources/icons/bookmark-add.svg);
+		cursor: pointer;
 
 		&.pinned {
-			border-color: $graphOverlayPinnedMessagesColor;
+			display: block;
+			background: url(../../resources/icons/bookmark-added.svg);
 		}
 	}
 
 	&__info {
-		grid-area: info;
+		flex-grow: 1;
 		display: flex;
-		justify-content: flex-start;
-		align-items: center;
-
-		&.rejected {
-			font-weight: bold;
-			font-size: 13px;
-			padding-left: 6px;
-			color: $primaryTextColor;
-		}
+		column-gap: 5px;
+		overflow: hidden;
 	}
 
-	&__name {
-		grid-area: name;
-	}
-
-	&__name-value {
-		grid-area: name-value;
-	}
-
-	&__timestamp {
-		grid-area: timestamp;
-		font-size: 12px;
-		padding-left: 5px;
-	}
-
-	&.p75 &__timestamp {
-		padding-left: 7px;
-	}
-
-	&__session {
-		grid-area: session;
-	}
-
-	&__session-value {
-		grid-area: session-value;
+	&__row {
 		display: flex;
-		flex-direction: row;
-		justify-content: flex-start;
+		column-gap: 5px;
 		align-items: center;
 	}
 
-	&__session-icon {
+	&__item {
+		display: flex;
+		column-gap: 3px;
+		align-items: center;
+	}
+
+	&__direction-icon {
 		background-image: url('../../resources/icons/session-icon.svg');
-		height: 25px;
-		width: 25px;
+		height: 15px;
+		width: 15px;
 		background-size: 100%;
-		margin: 0 5px;
 
 		&.in {
 			transform: scale(-1);
 		}
 	}
 
-	&__id {
-		grid-area: id;
-	}
-	&__id-value {
-		grid-area: id-value;
+	&__bookmark {
+		display: none;
 	}
 
-	&__session,
-	&__name,
-	&__timestamp,
-	&__name-value,
-	&__id {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: flex-start;
-		padding: 3px;
+	&__key {
+		display: none;
 	}
 
-	&__id-value,
-	&__name-value,
-	&__session-value {
-		padding-left: 8px;
-		font-size: 13px;
-		font-weight: bold;
-		word-break: break-all;
+	&__key,
+	&__key-minified {
+		color: #5cc2d6;
+		font-size: 9px;
+		line-height: 15px;
 	}
 
-	&__session,
-	&__name,
-	&__id {
-		@include unselectable;
-		padding-top: 5px;
-		font-size: 10px;
-		color: $secondaryTextColor;
-	}
-
-	&__expand {
-		grid-area: expand-icon;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-
-		&-icon {
-			height: 19px;
-			width: 19px;
-			background-image: url(../../resources/icons/arr4-down.svg);
-			background-size: 100%;
-			cursor: pointer;
-		}
-	}
-
-	&__pin {
-		grid-area: pin;
-		position: relative;
-		place-self: center;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 20px;
-		height: 20px;
-		overflow: hidden;
-	}
-
-	&__pin-icon {
-		@include icon(url(../../resources/icons/pin.svg), 15px, 15px);
-
-		cursor: pointer;
-		transition: 0.3s;
-
-		&.active {
-			transform: rotate(-45deg) scale(1.4);
-		}
+	&__value {
+		color: #087a91;
+		font-size: 9px;
+		line-height: 15px;
 	}
 }
 
 .mc-body {
 	position: relative;
-	padding: 7px 10px 10px 15px;
 	border-radius: 5px;
 	display: flex;
-	flex-direction: column;
-	justify-content: flex-start;
-
-	&__title {
-		color: $primaryTextColor;
-		font-size: 14px;
-		font-weight: bold;
-		padding-bottom: 2px;
-		padding-top: 5px;
-	}
+	column-gap: 10px;
 
 	&__human {
-		padding-top: 5px;
-		line-height: 21px;
+		padding-top: 2px;
+		line-height: 16px;
 		margin: 0;
-		font-size: 13px;
+		font-size: 11px;
 		white-space: pre-wrap;
 		word-break: break-all;
+		color: $alternativeTextColor;
+		flex-grow: 1;
+		flex-shrink: 1;
+		overflow: hidden;
 	}
 
 	&__field {
+		font-size: 11px;
 		border-radius: 2px;
 		width: fit-content;
 	}
 
 	&__field-label {
-		color: $secondaryTextColor;
 		display: inline-block;
 		height: 100%;
+	}
+
+	&__field-simple-value {
+		color: $activeTextColor;
 	}
 
 	&__raw {
@@ -321,61 +251,36 @@
 		@include scrollbar;
 		overflow-x: scroll;
 	}
-}
 
-.mc-show-raw {
-	@include unselectable;
-	@include clickable;
-
-	float: right;
-	display: flex;
-	align-items: center;
-	font-size: 13px;
-	color: $primaryTextColor;
-	padding: 0 4px;
-
-	&__title {
-		font-weight: bold;
+	&__controls {
+		display: none;
+		flex-direction: column;
+		row-gap: 15px;
 	}
 
-	&__icon {
-		height: 14px;
-		width: 14px;
-		background-size: 100%;
-		margin-left: 5px;
+	&__control-button {
+		cursor: pointer;
+		width: 15px;
+		height: 15px;
+		background-size: cover;
+		opacity: 0.77;
 
-		&.expanded {
-			background-image: url(../../resources/icons/arr4-up.svg);
-		}
-
-		&.hidden {
-			background-image: url(../../resources/icons/arr4-down.svg);
+		&:hover,
+		&.active {
+			opacity: 1;
 		}
 	}
-}
 
-.mc-beautify {
-	@include clickable;
-	grid-area: beautify;
-	float: right;
-	height: 26px;
-	width: 26px;
-	padding: 2px;
-	place-self: center;
+	&__beatutify-button {
+		width: 15px;
+		height: 15px;
+		background: url(../../resources/icons/messages-beautify.svg);
+	}
 
-	&__icon {
-		background-size: 100%;
-		background-repeat: no-repeat;
-		height: 100%;
-		width: 100%;
-
-		&.beautify {
-			background-image: url(../../resources/icons/beautified-text.svg);
-		}
-
-		&.plain {
-			background-image: url(../../resources/icons/plain-text.svg);
-		}
+	&__show-raw-button {
+		width: 15px;
+		height: 15px;
+		background: url(../../resources/icons/bincode.svg);
 	}
 }
 

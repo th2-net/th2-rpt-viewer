@@ -33,7 +33,6 @@ import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
 import { EventMessage } from '../../../models/EventMessage';
 import MessageRaw from './raw/MessageRaw';
-import PanelArea from '../../../util/PanelArea';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import '../../../styles/messages.scss';
@@ -77,20 +76,14 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		isPinned ? 'pinned' : null,
 	);
 
-	const underlineClassName = createStyleSelector(
-		'mc-header__underline',
-		isAttached ? 'attached' : null,
-		isPinned ? 'pinned' : null,
+	const showRawButtonClass = createStyleSelector(
+		'mc-body__control-button mc-body__show-raw-button',
+		showRaw ? 'active' : null,
 	);
 
-	const headerClass = createBemBlock('mc-header', PanelArea.P100);
-
-	const showRawClass = createBemElement('mc-show-raw', 'icon', showRaw ? 'expanded' : 'hidden');
-
-	const beautifyIconClass = createBemElement(
-		'mc-beautify',
-		'icon',
-		isContentBeautified ? 'plain' : 'beautify',
+	const beautifyButtonClass = createStyleSelector(
+		'mc-body__control-button mc-body__beatutify-button',
+		isContentBeautified ? 'active' : null,
 	);
 
 	// session arrow color, we calculating it for each session from-to pair, based on hash
@@ -98,42 +91,49 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		filter: `invert(1) sepia(1) saturate(5) hue-rotate(${calculateHueValue(sessionId)}deg)`,
 	};
 
-	const sessionClass = createBemElement('mc-header', 'session-icon', direction?.toLowerCase());
+	const sessionClass = createBemElement('mc-header', 'direction-icon', direction?.toLowerCase());
 
-	const pinClassName = createBemElement('mc-header', 'pin-icon', isPinned ? 'active' : null);
+	const bookmarkIconClass = createBemElement(
+		'mc-header',
+		'bookmark-icon',
+		isPinned ? 'pinned' : null,
+	);
 
 	return (
 		<div className={rootClass}>
-			<div className={headerClass}>
-				<div className='mc-header__name'>Name</div>
-				<div className='mc-header__name-value'>{messageType}</div>
-				<div className='mc-header__timestamp'>
-					{timestamp && formatTime(getTimestampAsNumber(timestamp))}
-				</div>
-				<div className='mc-header__session'>Session</div>
-				<div className='mc-header__session-value'>
-					<div className={sessionClass} style={sessionArrowStyle} />
-					{sessionId}
-				</div>
-				<div className='mc-header__id'>Id</div>
-				<div className='mc-header__id-value'>{messageId}</div>
-				{message.body !== null && (
-					<div
-						className='mc-beautify'
-						onClick={() => messagesStore.toggleMessageBeautify(messageId)}>
-						<div className={beautifyIconClass} />
+			<div className='mc__mc-header mc-header'>
+				<div className='mc-header__is-attached-icon'></div>
+				<div className='mc-header__info'>
+					<div className='mc-header__row'>
+						<div className='mc-header__value'>
+							{timestamp && formatTime(getTimestampAsNumber(timestamp))}
+						</div>
+						<div className='mc-header__item'>
+							<span className='mc-header__key-minified'>nm</span>
+							<span className='mc-header__key'>Name</span>
+							<span className='mc-header__value'>{messageType}</span>
+						</div>
 					</div>
-				)}
-				<div className='mc-header__pin'>
-					<div
-						title={isPinned ? 'Unpin' : 'Pin'}
-						className={pinClassName}
-						onClick={() => selectedStore.toggleMessagePin(message)}
-					/>
+					<div className='mc-header__row'>
+						<div className='mc-header__item'>
+							<span className='mc-header__key-minified'>ss</span>
+							<span className='mc-header__key'>Session</span>
+							<span className={sessionClass} style={sessionArrowStyle}></span>
+							<span className='mc-header__value'>{sessionId}</span>
+						</div>
+						<div className='mc-header__item'>
+							<span className='mc-header__key-minified'>id</span>
+							<span className='mc-header__key'>ID</span>
+							<span className='mc-header__value'>{messageId}</span>
+						</div>
+					</div>
 				</div>
-				<div className={underlineClassName} />
+				<div
+					className={bookmarkIconClass}
+					title={isPinned ? 'Remove from bookmarks' : 'Add to bookmarks'}
+					onClick={() => selectedStore.toggleMessagePin(message)}></div>
 			</div>
-			<div className='message-card__body mc-body'>
+			<div className='mc__mc-body mc-body'>
 				<div className='mc-body__human'>
 					<ErrorBoundary
 						fallback={
@@ -149,14 +149,19 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 							isSelected={color !== undefined}
 						/>
 					</ErrorBoundary>
-					{bodyBase64 && bodyBase64 !== 'null' ? (
-						<div className='mc-show-raw' onClick={() => showRawHandler(!showRaw)}>
-							<div className='mc-show-raw__title'>RAW</div>
-							<div className={showRawClass} />
-						</div>
-					) : null}
 					{bodyBase64 && showRaw ? (
 						<MessageRaw messageId={messageId} rawContent={bodyBase64} />
+					) : null}
+				</div>
+				<div className='mc-body__controls'>
+					{message.body !== null && (
+						<div
+							className={beautifyButtonClass}
+							onClick={() => messagesStore.toggleMessageBeautify(messageId)}
+						/>
+					)}
+					{bodyBase64 && bodyBase64 !== 'null' ? (
+						<div className={showRawButtonClass} onClick={() => showRawHandler(!showRaw)} />
 					) : null}
 				</div>
 			</div>

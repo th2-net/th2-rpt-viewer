@@ -66,6 +66,8 @@ $checkpointBackground: #effff1;
 $primaryTextColor: #4d4d4d;
 $secondaryTextColor: #808080;
 $secondaryLightTextColor: #999999;
+$alternativeTextColor: #666666;
+$activeTextColor: #333333;
 
 $defaultCardBorderColor: #666666;
 $defaultCardBackground: #e0e0e0;
@@ -152,7 +154,7 @@ $selectedColor: #997ab8;
 
 $tabsBackgroundColor: #e6e6e6;
 
-$windowsLayoutBackgroundColor: #BDCCDB;
+$windowsLayoutBackgroundColor: #bdccdb;
 
 $draggableColor: #3380cc;
 
@@ -175,24 +177,24 @@ $realtimeButtonColor: #e6e6e6;
 $realtimeButtonActiveColor: #a9e9b5;
 $realtimeButtonBorderColor: #999999;
 
-$graphBackgroundColor: #DEE5ED;
+$graphBackgroundColor: #dee5ed;
 $graphButtonBackgroundColor: #d7e0ea;
-$graphAttachedMessageColor: #FC8144;
-$graphTickColor: #3D668F;
-$graphAttachedEventPassedColor: #00802A;
-$graphAttachedEventFailedColor: #BC271A;
-$graphRangeSelectorBorder: #FF7733;
-$graphOverlayEventsColor: #3D668F;
-$graphOverlayPassedEventsColor: #00802A;
-$graphOverlayFailedEventsColor: #E60000;
-$graphOverlayMessagesColor: #1481B8;
-$graphOverlayConnectedMessagesColor: #FF6B00;
-$graphAttachedEventPassedColor: #00802A;
-$graphAttachedEventFailedColor: #BC271A;
-$graphOverlayConnectedMessagesColor: #FF6B00;
-$graphOverlayPinnedMessagesColor: #A21AE5;
-$graphPinnedMessageCounterColor: #D7E0EA;
-$graphAttachedItemNameColor: #BC271A;
+$graphAttachedMessageColor: #fc8144;
+$graphTickColor: #3d668f;
+$graphAttachedEventPassedColor: #00802a;
+$graphAttachedEventFailedColor: #bc271a;
+$graphRangeSelectorBorder: #ff7733;
+$graphOverlayEventsColor: #3d668f;
+$graphOverlayPassedEventsColor: #00802a;
+$graphOverlayFailedEventsColor: #e60000;
+$graphOverlayMessagesColor: #1481b8;
+$graphOverlayConnectedMessagesColor: #ff6b00;
+$graphAttachedEventPassedColor: #00802a;
+$graphAttachedEventFailedColor: #bc271a;
+$graphOverlayConnectedMessagesColor: #ff6b00;
+$graphOverlayPinnedMessagesColor: #a21ae5;
+$graphPinnedMessageCounterColor: #d7e0ea;
+$graphAttachedItemNameColor: #bc271a;
 $graphAttachedItemTimestampColor: #666666;
 
 $timestampInputBorderColor: #7a99b8;
