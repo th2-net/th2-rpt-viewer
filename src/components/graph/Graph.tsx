@@ -21,7 +21,7 @@ import ResizeObserver from 'resize-observer-polyfill';
 import GraphChunk, { AttachedItem } from './GraphChunk';
 import GraphOverlay from './GraphOverlay';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
-import { useActiveWorkspace, useGraphStore, useSelectedStore } from '../../hooks';
+import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk, GraphItem } from '../../models/Graph';
@@ -41,7 +41,6 @@ const settings: Settings = {
 } as const;
 
 function Graph() {
-	const graphStore = useGraphStore();
 	const selectedStore = useSelectedStore();
 	const activeWorkspace = useActiveWorkspace();
 
@@ -109,7 +108,7 @@ function Graph() {
 						key={`${chunk.from}-${chunk.to}`}
 						style={{ width: chunkWidth }}>
 						<GraphChunk
-							tickSize={graphStore.steps[activeWorkspace.graphDataStore.interval]}
+							tickSize={activeWorkspace.graphDataStore.tickSize}
 							interval={activeWorkspace.graphDataStore.interval}
 							chunk={chunk}
 							chunkWidth={chunkWidth}
@@ -124,6 +123,17 @@ function Graph() {
 		);
 	};
 
+	const getChunk = React.useCallback(
+		(timestamp: number, index: number) => {
+			return activeWorkspace.graphDataStore.getChunkByTimestamp(
+				moment(timestamp)
+					.subtract(-index * activeWorkspace.graphDataStore.interval, 'minutes')
+					.valueOf(),
+			);
+		},
+		[activeWorkspace, activeWorkspace.graphDataStore.interval],
+	);
+
 	return (
 		<div className='graph' ref={rootRef}>
 			<GraphChunksVirtualizer
@@ -133,13 +143,7 @@ function Graph() {
 				renderChunk={renderChunk}
 				setRange={activeWorkspace.graphDataStore.setRange}
 				onRangeChanged={activeWorkspace.onRangeChange}
-				getChunk={(timestamp: number, index: number) => {
-					return activeWorkspace.graphDataStore.getChunkByTimestamp(
-						moment(timestamp)
-							.subtract(-index * activeWorkspace.graphDataStore.interval, 'minutes')
-							.valueOf(),
-					);
-				}}
+				getChunk={getChunk}
 				interval={activeWorkspace.graphDataStore.interval}
 				timestamp={activeWorkspace.graphDataStore.timestamp}
 				key={activeWorkspace.graphDataStore.timestamp}

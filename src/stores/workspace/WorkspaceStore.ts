@@ -27,7 +27,6 @@ import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
-import GraphStore from '../graph/GraphStore';
 import { GraphDataStore } from '../graph/GraphDataStore';
 import { isEventsStore, isMessagesStore } from '../../helpers/stores';
 import { getTimestampAsNumber } from '../../helpers/date';
@@ -63,16 +62,10 @@ export default class WorkspaceStore {
 	constructor(
 		private workspacesStore: WorkspacesStore,
 		private selectedStore: SelectedStore,
-		private graphStore: GraphStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
-		this.graphDataStore = new GraphDataStore(
-			this,
-			this.graphStore,
-			this.selectedStore,
-			initialState.timeRange,
-		);
+		this.graphDataStore = new GraphDataStore(this.selectedStore, initialState.timeRange);
 		this.eventsStore = new EventsStore(
 			this,
 			this.selectedStore,

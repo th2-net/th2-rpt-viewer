@@ -20,7 +20,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useActiveWorkspace, useGraphStore, useSelectedStore } from '../../hooks';
+import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { OutsideItems } from '../../models/Graph';

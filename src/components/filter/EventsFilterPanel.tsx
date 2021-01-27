@@ -18,11 +18,11 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
-import { useGraphStore, useWorkspaceEventStore } from '../../hooks';
+import { useWorkspaceEventStore, useGraphDataStore } from '../../hooks';
 
 function EventsFilterPanel() {
 	const eventWindowStore = useWorkspaceEventStore();
-	const graphStore = useGraphStore();
+	const graphDataStore = useGraphDataStore();
 	const { filterStore } = eventWindowStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);
@@ -40,8 +40,8 @@ function EventsFilterPanel() {
 		eventWindowStore.filterStore.setEventsFilter({
 			names,
 			eventTypes,
-			timestampFrom: graphStore.range[0],
-			timestampTo: graphStore.range[1],
+			timestampFrom: graphDataStore.range[0],
+			timestampTo: graphDataStore.range[1],
 		});
 	};
 

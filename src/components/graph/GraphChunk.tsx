@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 /** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -70,7 +69,7 @@ interface Props {
 	tickSize: number;
 }
 
-const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props, ref) => {
+function GraphChunk(props: Props) {
 	const {
 		chunk,
 		getChunkData,
@@ -84,6 +83,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
+
 		getChunkData(chunk, abortController.signal);
 
 		return () => {
@@ -163,7 +163,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 	}, [attachedItems]);
 
 	return (
-		<div className='graph-chunk' ref={ref} data-from={chunk.from} data-to={chunk.to}>
+		<div className='graph-chunk' data-from={chunk.from} data-to={chunk.to}>
 			{attachedItemsGroups.map((group, index) => (
 				<GraphAttachedItemGroup
 					key={index}
@@ -194,6 +194,6 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 			</div>
 		</div>
 	);
-};
+}
 
-export default observer<Props, HTMLDivElement>(GraphChunk, { forwardRef: true });
+export default GraphChunk;

@@ -17,7 +17,6 @@
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import NotificationsStore from './NotificationsStore';
-import GraphStore from './graph/GraphStore';
 import { registerUrlMiddleware } from '../helpers/url';
 import { SearchPanelFiltersStore } from './SearchPanelFiltersStore';
 
@@ -28,12 +27,9 @@ export default class RootStore {
 
 	workspacesStore: WorkspacesStore;
 
-	graphStore: GraphStore;
-
 	constructor(private api: ApiSchema) {
-		this.graphStore = new GraphStore();
 
-		this.workspacesStore = new WorkspacesStore(this.api, this.graphStore, this.parseUrlState());
+		this.workspacesStore = new WorkspacesStore(this.api, this.parseUrlState());
 
 		registerUrlMiddleware(this);
 	}

@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useActivePanel, useActiveWorkspace, useGraphStore } from '../../hooks';
+import { useActivePanel, useActiveWorkspace, useGraphDataStore } from '../../hooks';
 import useSetState from '../../hooks/useSetState';
 import TogglerRow from '../filter/row/TogglerRow';
 import sseApi from '../../api/sse';
@@ -69,7 +69,7 @@ const getDefaultFilterState = (info: SSEFilterInfo[]): FilterState | {} =>
 	}, {});
 
 const SearchPanel = () => {
-	const { range } = useGraphStore();
+	const graphDataStore = useGraphDataStore();
 	const { eventFilterInfo, messagesFilterInfo } = useSearchPanelFiltersStore();
 	const activeWorkspace = useActiveWorkspace();
 	const { ref: searchPanelRef } = useActivePanel(null);
@@ -81,7 +81,7 @@ const SearchPanel = () => {
 	};
 
 	const [formState, setFormState] = useSetState<SearchPanelState>({
-		startTimestamp: range[0],
+		startTimestamp: graphDataStore.range[0],
 		searchDirection: 'next',
 		resultCountLimit: '100',
 		endTimestamp: null,
