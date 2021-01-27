@@ -48,6 +48,7 @@ function EventTreeView() {
 					))}
 				{eventWindowStore.selectedNode && (
 					<EventDetailInfoCard
+						node={eventWindowStore.selectedNode}
 						event={eventWindowStore.selectedEvent}
 						childrenCount={eventWindowStore.selectedNode?.childList.length}
 					/>

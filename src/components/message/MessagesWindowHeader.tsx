@@ -25,13 +25,17 @@ import {
 	useWorkspaceStore,
 } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
+import { complement } from '../../helpers/array';
 
-const MessagesWindowHeader = () => {
+function MessagesWindowHeader() {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messageUpdateStore = useMessageUpdateStore();
 	const eventStore = useWorkspaceEventStore();
 	const selectedStore = useSelectedStore();
 	const workspaceStore = useWorkspaceStore();
+
+	const [newSessions, setNewSessions] = React.useState<string[]>([]);
+	const [showNewSessionsHint, setShowNewSessionsHint] = React.useState(false);
 
 	const getStep = () => {
 		const step =
@@ -41,6 +45,15 @@ const MessagesWindowHeader = () => {
 				: 0;
 		return `${step} of ${messagesStore.selectedMessagesIds.length}`;
 	};
+
+	React.useEffect(() => {
+		setNewSessions(
+			complement(
+				workspaceStore.attachedMessagesStreams,
+				messagesStore.filterStore.messagesFilter.streams,
+			),
+		);
+	}, [workspaceStore.attachedMessagesStreams, messagesStore.filterStore.messagesFilter.streams]);
 
 	const navButtonClass = createStyleSelector(
 		'messages-window-header__button',
@@ -59,6 +72,29 @@ const MessagesWindowHeader = () => {
 		<div className='messages-window-header'>
 			<div className='messages-window-header__group'>
 				<MessagesFilter />
+				{newSessions.length > 0 && (
+					<div
+						className='sessions'
+						onMouseOver={() => setShowNewSessionsHint(true)}
+						onMouseLeave={() => setShowNewSessionsHint(false)}>
+						<p className='sessions__title'>New sessions</p>{' '}
+						<button className='sessions__add-button' onClick={messagesStore.applyStreams}>
+							Add
+						</button>
+						{showNewSessionsHint && (
+							<div className='sessions__content'>
+								<div className='sessions__triangle' />
+								<ul className='sessions__list'>
+									{newSessions.map(session => (
+										<li className='sessions__list-item' key={session}>
+											{session}
+										</li>
+									))}
+								</ul>
+							</div>
+						)}
+					</div>
+				)}
 			</div>
 			<div className='messages-window-header__group'>
 				<h2 className='messages-window-header__title'>
@@ -69,10 +105,9 @@ const MessagesWindowHeader = () => {
 					Messages
 					<div className='messages-window-header__count-list'>
 						{eventStore.selectedEvent && eventStore.selectedEvent.attachedMessageIds.length > 0 && (
-							<CountCircle
-								color={selectedStore.eventColors.get(eventStore.selectedEvent.eventId) || ''}
-								count={eventStore.selectedEvent.attachedMessageIds.length}
-							/>
+							<span className='messages-window-header__count'>
+								{eventStore.selectedEvent.attachedMessageIds.length}
+							</span>
 						)}
 					</div>
 				</h2>
@@ -109,17 +144,6 @@ const MessagesWindowHeader = () => {
 			</div>
 		</div>
 	);
-};
-
-export default observer(MessagesWindowHeader);
-
-interface CountCircleProps {
-	count: number;
-	color: string;
 }
 
-const CountCircle = ({ color, count }: CountCircleProps) => (
-	<span className='messages-window-header__count' style={{ borderColor: color }}>
-		{count}
-	</span>
-);
+export default observer(MessagesWindowHeader);

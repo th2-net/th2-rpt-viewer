@@ -16,9 +16,9 @@
 
 import * as React from 'react';
 import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
-import { defaultMessagesLoadingState } from '../../stores/MessagesStore';
-import { useAsyncEffect, useMessagesWorkspaceStore } from '../../hooks';
-import { raf } from '../../helpers/raf';
+import { defaultMessagesLoadingState } from '../../../stores/messages/MessagesStore';
+import { useAsyncEffect, useMessagesWorkspaceStore } from '../../../hooks';
+import { raf } from '../../../helpers/raf';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;

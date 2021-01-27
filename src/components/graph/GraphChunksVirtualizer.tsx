@@ -18,11 +18,11 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { useGraphStore, useDebouncedCallback, usePrevious, useWorkspaces } from '../../hooks';
+import { useDebouncedCallback, usePrevious } from '../../hooks';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
 import { Chunk } from '../../models/graph';
 import { raf } from '../../helpers/raf';
-import { EventAction } from '../../models/EventAction';
+import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { TimeRange } from '../../models/Timestamp';
 import '../../styles/graph.scss';
@@ -66,8 +66,12 @@ interface Props {
 	settings: Settings;
 	renderChunk: (chunk: Chunk, index: number) => JSX.Element;
 	chunkWidth: number;
-	setExpandedAttachedItem: (item: EventAction | EventMessage | null) => void;
+	setExpandedAttachedItem: (item: EventTreeNode | EventMessage | null) => void;
 	timestamp: number;
+	interval: number;
+	onRangeChanged: (range: TimeRange) => void;
+	setRange: (range: TimeRange) => void;
+	getChunk: (timestamp: number, index: number) => Chunk;
 }
 
 interface State {
@@ -84,10 +88,16 @@ interface State {
 }
 
 const GraphChunksVirtualizer = (props: Props) => {
-	const { settings, chunkWidth, setExpandedAttachedItem, timestamp } = props;
-
-	const graphStore = useGraphStore();
-	const workspacesStore = useWorkspaces();
+	const {
+		settings,
+		chunkWidth,
+		setExpandedAttachedItem,
+		timestamp,
+		interval,
+		onRangeChanged,
+		setRange,
+		getChunk,
+	} = props;
 
 	const viewportElementRef = React.useRef<HTMLDivElement>(null);
 	const rangeElementRef = React.useRef<HTMLDivElement>(null);
@@ -98,7 +108,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 
 	const [state, setState] = React.useState<State>(setInitialState(settings));
 
-	const [acnhorTimestamp, setAnchorTimestamp] = React.useState(graphStore.timestamp);
+	const [acnhorTimestamp, setAnchorTimestamp] = React.useState(timestamp);
 
 	const [chunks, setChunks] = React.useState<Array<[Chunk, number]>>([]);
 
@@ -127,14 +137,14 @@ const GraphChunksVirtualizer = (props: Props) => {
 		getTimeRange();
 	}, [chunkWidth]);
 
-	const prevInterval = usePrevious(graphStore.interval);
+	const prevInterval = usePrevious(interval);
 
 	React.useEffect(() => {
-		if (viewportElementRef.current && prevInterval && prevInterval !== graphStore.interval) {
+		if (viewportElementRef.current && prevInterval && prevInterval !== interval) {
 			getCurrentChunks(viewportElementRef.current.scrollLeft);
 			getTimeRange();
 		}
-	}, [graphStore.interval]);
+	}, [interval]);
 
 	const handleMouseDown = (event: MouseEvent) => {
 		if (
@@ -189,7 +199,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 			nextItemsRef.current.style.width = `${rightPadding}px`;
 		}
 
-		setChunks(data.map(i => [getChunk(i), i]));
+		setChunks(data.map(i => [getChunk(acnhorTimestamp, i), i]));
 	};
 
 	const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
@@ -219,20 +229,20 @@ const GraphChunksVirtualizer = (props: Props) => {
 		if (targetDiv && timestamps) {
 			const [from] = timestamps;
 			const pixelsDiff = rangeBlockRect.left - targetDiv.getBoundingClientRect().left;
-			const secondsDiff = (pixelsDiff / chunkWidth) * (graphStore.interval * 60);
+			const secondsDiff = (pixelsDiff / chunkWidth) * (interval * 60);
 
 			const intervalStart = moment(from).utc().add(secondsDiff, 'seconds');
-			const intervalEnd = moment(intervalStart).utc().add(graphStore.interval, 'minutes');
+			const intervalEnd = moment(intervalStart).utc().add(interval, 'minutes');
 
 			if (intervalStart.isValid() && intervalEnd.isValid()) {
 				const updatedRange: TimeRange = [intervalStart.valueOf(), intervalEnd.valueOf()];
-				graphStore.setRange(updatedRange);
+				setRange(updatedRange);
 
 				// TODO: temporary workaround to ignore initial range calculation in order to avoid refetching data;
 				if (initialRangeCalculation.current) {
 					initialRangeCalculation.current = false;
 				} else {
-					workspacesStore.activeWorkspace.onRangeChange(updatedRange);
+					onRangeChanged(updatedRange);
 				}
 			}
 		}
@@ -263,13 +273,6 @@ const GraphChunksVirtualizer = (props: Props) => {
 			viewportElementRef.current.scrollLeft -= (chunkWidth * direction) / 2;
 		}
 	};
-
-	const getChunk = (index: number) =>
-		graphStore.getChunkByTimestamp(
-			moment(acnhorTimestamp)
-				.subtract(-index * graphStore.interval, 'minutes')
-				.valueOf(),
-		);
 
 	const onScroll = (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
 		getTimeRange();

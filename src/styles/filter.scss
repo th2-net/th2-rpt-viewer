@@ -486,14 +486,3 @@
 		@include icon(url(../../resources/icons/filter-arrow.svg), 16px, 16px);
 	}
 }
-
-.events-filter {
-	&__time-input {
-		width: 110px;
-		padding: 3px 9px;
-	}
-	&__date-input {
-		width: 98px;
-		padding: 3px 9px;
-	}
-}

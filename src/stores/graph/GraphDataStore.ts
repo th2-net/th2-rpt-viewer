@@ -14,40 +14,35 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, observable, reaction } from 'mobx';
 import moment from 'moment';
-import { getTimestampAsNumber, isTimeInsideInterval, isTimeIntersected } from '../helpers/date';
-import { calculateTimeRange } from '../helpers/graph';
-import { Chunk, ChunkData, IntervalData, OverlayValues } from '../models/graph';
-import { TimeRange } from '../models/Timestamp';
-import RootStore from './RootStore';
+import { getTimestampAsNumber, isTimeInsideInterval, isTimeIntersected } from '../../helpers/date';
+import { calculateTimeRange } from '../../helpers/graph';
+import { Chunk, ChunkData, IntervalData, OverlayValues, IntervalOption } from '../../models/graph';
+import { TimeRange } from '../../models/Timestamp';
+import { SelectedStore } from '../SelectedStore';
+import WorkspaceStore from '../workspace/WorkspaceStore';
+import GraphStore from './GraphStore';
 
-export const intervalOptions = [15, 30, 60] as const;
+export class GraphDataStore {
+	constructor(
+		private workspaceStore: WorkspaceStore,
+		private graphStore: GraphStore,
+		private selectedStore: SelectedStore,
+		timeRange: TimeRange | null = null,
+		defaultInterval: IntervalOption = 15,
+	) {
+		if (timeRange) this.range = timeRange;
+		const range = timeRange || this.range;
+		this.timestamp = range[0] + (range[1] - range[0]) / 2;
+		this.interval = defaultInterval;
 
-export type IntervalOption = typeof intervalOptions[number];
-
-class GraphStore {
-	public readonly intervalOptions = intervalOptions;
-
-	readonly steps = {
-		15: 1,
-		30: 3,
-		60: 5,
-	};
-
-	constructor(private rootStore: RootStore, initialRange: TimeRange | null) {
 		reaction(
 			() => this.interval,
-			interval => this.createChunks(interval, this.timestamp),
+			interval => this.createChunks(interval, this.graphStore.timestamp),
 		);
 
-		if (initialRange) {
-			const [from, to] = initialRange;
-			this.timestamp = from + (to - from) / 2;
-			this.range = initialRange;
-		}
-
-		this.createChunks(this.interval, this.timestamp);
+		this.createChunks(this.interval, this.graphStore.timestamp);
 	}
 
 	@observable
@@ -57,17 +52,16 @@ class GraphStore {
 	public chunks: Chunk[] = [];
 
 	@observable
-	public timestamp: number = moment().utc().valueOf();
+	public timestamp: number = moment()
+		.utc()
+		.subtract(this.interval / 2, 'minutes')
+		.valueOf();
 
 	@observable
 	public range: TimeRange = calculateTimeRange(
 		moment(this.timestamp).utc().valueOf(),
 		this.interval,
 	);
-
-	@computed get tickSize() {
-		return this.steps[this.interval];
-	}
 
 	@action
 	public setTimestamp = (timestamp: number) => {
@@ -95,9 +89,9 @@ class GraphStore {
 	};
 
 	@action
-	public getChunkData = (chunk: Chunk) => {
+	public getChunkData = (chunk: Chunk, abortSignal?: AbortSignal) => {
 		const { from } = chunk;
-		const step = this.tickSize;
+		const step = this.graphStore.steps[this.interval];
 		const steps = this.interval / step;
 		const data: ChunkData[] = [];
 		for (let i = 0; i < steps + 1; i++) {
@@ -136,8 +130,8 @@ class GraphStore {
 				});
 			}
 		});
-		intervalData.connected = this.rootStore.workspacesStore.selectedStore.attachedMessages.filter(
-			message => isTimeInsideInterval(getTimestampAsNumber(message.timestamp), this.range),
+		intervalData.connected = this.selectedStore.attachedMessages.filter(message =>
+			isTimeInsideInterval(getTimestampAsNumber(message.timestamp), this.range),
 		).length;
 
 		return intervalData;
@@ -153,27 +147,26 @@ class GraphStore {
 				.valueOf(),
 		];
 
-		const selectedStore = this.rootStore.workspacesStore.selectedStore;
 		return {
 			left: {
-				pinnedMessages: selectedStore.pinnedMessages.filter(
+				pinnedMessages: this.selectedStore.pinnedMessages.filter(
 					message => getTimestampAsNumber(message.timestamp) < windowTimeRange[0],
 				),
-				attachedMessages: selectedStore.attachedMessages.filter(
+				attachedMessages: this.selectedStore.attachedMessages.filter(
 					message => getTimestampAsNumber(message.timestamp) < windowTimeRange[0],
 				),
-				events: selectedStore.pinnedEvents.filter(
+				events: this.selectedStore.pinnedEvents.filter(
 					event => getTimestampAsNumber(event.startTimestamp) < windowTimeRange[0],
 				),
 			},
 			right: {
-				pinnedMessages: selectedStore.pinnedMessages.filter(
+				pinnedMessages: this.selectedStore.pinnedMessages.filter(
 					message => getTimestampAsNumber(message.timestamp) > windowTimeRange[1],
 				),
-				attachedMessages: selectedStore.attachedMessages.filter(
+				attachedMessages: this.selectedStore.attachedMessages.filter(
 					message => getTimestampAsNumber(message.timestamp) > windowTimeRange[1],
 				),
-				events: selectedStore.pinnedEvents.filter(
+				events: this.selectedStore.pinnedEvents.filter(
 					event => getTimestampAsNumber(event.startTimestamp) > windowTimeRange[1],
 				),
 			},
@@ -238,7 +231,5 @@ class GraphStore {
 		}
 	};
 }
-
-export default GraphStore;
 
 const getRandomNumber = (max = 100) => Math.min(Math.floor(Math.random() * 20), max);

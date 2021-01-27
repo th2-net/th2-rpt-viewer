@@ -38,6 +38,7 @@ function DetailedFlatEventCard(props: Props) {
 	);
 
 	const event = selectedNode === null ? eventWindowStore.selectedEvent : selectedParentEvent;
+	const node = selectedNode === null ? eventWindowStore.selectedNode : selectedNode;
 
 	return (
 		<div className='flat-event-detail-card'>
@@ -62,6 +63,7 @@ function DetailedFlatEventCard(props: Props) {
 				</div>
 			)}
 			<EventDetailInfoCard
+				node={node!}
 				rootStyle={{
 					overflow: 'visible',
 					height: 'auto',

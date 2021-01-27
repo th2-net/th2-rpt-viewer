@@ -22,10 +22,11 @@ import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/
 import { getEventStatus } from '../../helpers/event';
 import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
-import { EventAction } from '../../models/EventAction';
-import { useSelectedStore, useWorkspaceEventStore } from '../../hooks';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { useSelectedStore } from '../../hooks';
 
 interface Props {
+	node: EventTreeNode;
 	event: EventAction | null;
 	childrenCount?: number;
 	rootStyle?: React.CSSProperties;
@@ -33,9 +34,8 @@ interface Props {
 
 function EventDetailInfoCard(props: Props) {
 	const selectedStore = useSelectedStore();
-	const eventsStore = useWorkspaceEventStore();
 
-	const { event, childrenCount = 0, rootStyle = {} } = props;
+	const { event, childrenCount = 0, rootStyle = {}, node } = props;
 
 	if (!event) {
 		return <SplashScreen />;
@@ -58,12 +58,8 @@ function EventDetailInfoCard(props: Props) {
 
 	function onEventPin() {
 		if (event === null) return;
-		const eventIdx = eventsStore.selectedPath.findIndex(e => e.eventId === event.eventId);
-		event.parents = eventsStore.selectedPath
-			.slice(0, eventIdx === -1 ? 0 : eventIdx)
-			.map(ev => ev.eventId);
 
-		selectedStore.toggleEventPin(event);
+		selectedStore.toggleEventPin(node);
 	}
 
 	return (

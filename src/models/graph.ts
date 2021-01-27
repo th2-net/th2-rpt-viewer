@@ -14,8 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventAction } from './EventAction';
+import { EventTreeNode } from './EventAction';
 import { EventMessage } from './EventMessage';
+
+export const intervalOptions = [15, 30, 60] as const;
+
+export type IntervalOption = typeof intervalOptions[number];
 
 export interface Chunk {
 	from: number;
@@ -47,5 +51,5 @@ export interface OverlayValues {
 export interface OutsideItems {
 	pinnedMessages: EventMessage[];
 	attachedMessages: EventMessage[];
-	events: EventAction[];
+	events: EventTreeNode[];
 }

@@ -16,8 +16,8 @@
  ***************************************************************************** */
 
 import { useEffect, useRef } from 'react';
-import EventsStore from '../stores/EventsStore';
-import MessagesStore from '../stores/MessagesStore';
+import EventsStore from '../stores/events/EventsStore';
+import MessagesStore from '../stores/messages/MessagesStore';
 import { useWorkspaceViewStore } from './useWorkspaceViewStore';
 
 export function useActivePanel(panel: EventsStore | MessagesStore | null = null) {

@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import { observable, action } from 'mobx';
-import PanelArea from '../util/PanelArea';
-import EventsStore from './EventsStore';
-import MessagesStore from './MessagesStore';
+import PanelArea from '../../util/PanelArea';
+import EventsStore from '../events/EventsStore';
+import MessagesStore from '../messages/MessagesStore';
 
 type InitialState = Partial<{
 	panelArea: PanelArea;

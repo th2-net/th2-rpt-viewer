@@ -15,12 +15,12 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useMemo, useReducer, useState } from 'react';
-import { useActivePanel, useGraphStore, useWorkspaces } from '../../hooks';
+import React, { useEffect, useMemo, useState, useReducer } from 'react';
+import { useActivePanel, useActiveWorkspace, useGraphStore } from '../../hooks';
 import useSetState from '../../hooks/useSetState';
 import TogglerRow from '../filter/row/TogglerRow';
 import sseApi from '../../api/sse';
-import { EventAction } from '../../models/EventAction';
+import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import SearchPanelFilters, {
 	FilterState,
@@ -44,8 +44,10 @@ export type SearchPanelState = {
 	stream: string[];
 };
 
+export type Result = EventTreeNode | EventMessage;
+
 export type SearchHistory = {
-	[index: number]: Array<EventAction | EventMessage>;
+	[index: number]: Array<Result>;
 };
 
 type SearchPanelType = 'event' | 'message';
@@ -125,9 +127,9 @@ const getDefaultFilterState = (info: SSEFilterInfo[]): FilterState | {} =>
 	}, {});
 
 const SearchPanel = () => {
-	const { timestamp } = useGraphStore();
+	const { range } = useGraphStore();
 	const { eventFilterInfo, messagesFilterInfo } = useSearchPanelFiltersStore();
-	const workspacesStore = useWorkspaces();
+	const activeWorkspace = useActiveWorkspace();
 	const { ref: searchPanelRef } = useActivePanel(null);
 
 	const [formType, setFormType] = useState<SearchPanelType>('event');
@@ -138,7 +140,7 @@ const SearchPanel = () => {
 
 	const [eventFilter, setEventFilter] = useSetState<EventFilterState>();
 	const [messagesFilter, setMessagesFilter] = useSetState<MessageFilterState>();
-	const [currentRequestResults, setCurrentRequestResults] = useState<EventAction[]>([]);
+	const [currentRequestResults, setCurrentRequestResults] = useState<Result[]>([]);
 	const [searchHistory, setSearchHistory] = useLocalStorage<SearchHistory[]>('search-history', []);
 	const [userStartSearch, setUserStartSearch] = useState<null | number>(null);
 	const [currentlyLaunchedChannel, setCurrentlyLaunchedChannel] = useState<EventSource | null>(
@@ -161,7 +163,7 @@ const SearchPanel = () => {
 	const currentResult = searchHistory[index];
 
 	const [formState, setFormState] = useSetState<SearchPanelState>({
-		startTimestamp: timestamp,
+		startTimestamp: range[0],
 		searchDirection: 'next',
 		resultCountLimit: '100',
 		endTimestamp: null,
@@ -348,7 +350,7 @@ const SearchPanel = () => {
 			{currentResult && (
 				<SearchPanelResults
 					results={currentResult}
-					onResultItemClick={workspacesStore.onSavedItemSelect}
+					onResultItemClick={activeWorkspace.onSavedItemSelect}
 					onResultDelete={delSearchHistoryItem}
 					showToggler={searchHistory.length > 1}
 					next={() => {

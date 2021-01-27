@@ -96,7 +96,7 @@
 		width: 25%;
 		height: 100%;
 		display: flex;
-		overflow: auto;
+		overflow: hidden;
 
 		@include scrollbar;
 	}
@@ -196,7 +196,6 @@
 		flex-direction: column;
 		justify-content: flex-start;
 		align-items: center;
-		padding: 0 10px;
 	}
 
 	&__body {
@@ -263,6 +262,7 @@
 
 	&__main {
 		flex-grow: 1;
+		height: 100%;
 	}
 
 	&.minified &__sidebar {

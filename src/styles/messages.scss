@@ -46,6 +46,18 @@
 	border: 2px solid var(--status-secondary-border-color);
 	border-radius: $defaultCardBorderRadius;
 
+	// TODO: create mixins for attached & pinned messages
+
+	&.attached {
+		background-color: rgba($color: $graphAttachedMessageColor, $alpha: 0.15);
+		border-color: $graphAttachedMessageColor;
+	}
+
+	&.pinned {
+		background-color: rgba($color: $graphOverlayPinnedMessagesColor, $alpha: 0.15);
+		border-color: $graphOverlayPinnedMessagesColor;
+	}
+
 	&.transparent {
 		opacity: 0.3;
 	}
@@ -123,6 +135,14 @@
 		bottom: 0;
 		left: 10px;
 		right: 10px;
+
+		&.attached {
+			border-color: $graphAttachedMessageColor;
+		}
+
+		&.pinned {
+			border-color: $graphOverlayPinnedMessagesColor;
+		}
 	}
 
 	&__info {
@@ -673,7 +693,7 @@
 		flex-grow: 0;
 		padding-right: 10px;
 		display: flex;
-    align-items: center;
+		align-items: center;
 	}
 
 	&__spinner {
@@ -694,7 +714,7 @@
 		width: auto;
 		height: 20px;
 		border-radius: 10px;
-		border: 2px solid $secondaryLightTextColor;
+		border: 2px solid $graphAttachedMessageColor;
 		color: $secondaryLightTextColor;
 		font-size: 11px;
 		text-align: center;
@@ -739,7 +759,7 @@
 		line-height: 19px;
 		color: $ml-gray-color;
 		font-weight: 600;
-		margin: 0 22px;
+		margin: 0 10px;
 		order: 2;
 		color: $primaryTextColor;
 	}
@@ -752,7 +772,7 @@
 		background-color: transparent;
 		width: 28px;
 		height: 28px;
-		margin: 0 -2px 0 20px;
+		margin: 0 -2px 0 15px;
 		display: flex;
 		justify-content: center;
 		padding: 0;
@@ -788,6 +808,47 @@
 			font-weight: 600;
 		}
 	}
+
+	.sessions {
+		display: flex;
+		align-items: center;
+		position: relative;
+		height: 100%;
+
+		&__title {
+			color: $primaryTextColor;
+			font-size: 14px;
+			font-weight: bold;
+		}
+
+		&__content {
+			background-color: #fff;
+			position: absolute;
+			top: 35px;
+			box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.25);
+			border-radius: 5px;
+			padding: 5px 10px;
+		}
+
+		&__add-button {
+			height: 22px;
+			display: flex;
+			align-items: center;
+			padding: 3px 15px;
+			border-radius: 5px;
+			background-color: #00bbcc;
+			color: #fff;
+			cursor: pointer;
+			font-size: 14px;
+			border: none;
+			margin-left: 5px;
+		}
+
+		&__list-item {
+			color: $primaryTextColor;
+			font-size: 13px;
+		}
+	}
 }
 
 .messages-tab {
@@ -809,7 +870,7 @@
 		text-overflow: ellipsis;
 		overflow: hidden;
 		display: flex;
-    align-items: center;
+		align-items: center;
 	}
 
 	&__count-list {

@@ -21,16 +21,16 @@ import { observer } from 'mobx-react-lite';
 import ResizeObserver from 'resize-observer-polyfill';
 import SkeletonedMessageCardListItem from './SkeletonedMessageCardListItem';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
-import SplashScreen from '../SplashScreen';
+import SplashScreen from '../../SplashScreen';
 import MessagesScrollContainer from './MessagesScrollContainer';
-import Empty from '../Empty';
-import { useMessagesWorkspaceStore } from '../../hooks';
-import StateSaverProvider from '../util/StateSaverProvider';
-import '../../styles/messages.scss';
+import Empty from '../../Empty';
+import { useMessagesWorkspaceStore } from '../../../hooks';
+import StateSaverProvider from '../../util/StateSaverProvider';
+import '../../../styles/messages.scss';
 
 export type MessagesHeights = { [index: number]: number };
 
-const MessageCardList = () => {
+function MessageCardList() {
 	const messagesStore = useMessagesWorkspaceStore();
 
 	const [messagesHeightsMap, setMessagesHeightMap] = React.useState<MessagesHeights>({});
@@ -104,7 +104,7 @@ const MessageCardList = () => {
 			</MessagesHeightsContext.Provider>
 		</div>
 	);
-};
+}
 
 export default observer(MessageCardList, { forwardRef: true });
 

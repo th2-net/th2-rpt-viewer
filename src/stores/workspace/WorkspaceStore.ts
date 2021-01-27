@@ -14,49 +14,78 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, reaction } from 'mobx';
-import MessagesStore, { MessagesStoreURLState } from './MessagesStore';
-import EventsStore, { EventStoreURLState } from './EventsStore';
-import ApiSchema from '../api/ApiSchema';
-import { SelectedStore } from './SelectedStore';
+import { action, computed, observable, reaction } from 'mobx';
+import { nanoid } from 'nanoid';
+import MessagesStore, {
+	MessagesStoreDefaultStateType,
+	MessagesStoreURLState,
+} from '../messages/MessagesStore';
+import EventsStore, { EventStoreDefaultStateType, EventStoreURLState } from '../events/EventsStore';
+import ApiSchema from '../../api/ApiSchema';
+import { SelectedStore } from '../SelectedStore';
 import WorkspaceViewStore from './WorkspaceViewStore';
-import { EventMessage } from '../models/EventMessage';
-import { EventAction } from '../models/EventAction';
-import { sortMessagesByTimestamp } from '../helpers/message';
-import GraphStore from './GraphStore';
-import { isEventsStore, isMessagesStore } from '../helpers/stores';
-import { getTimestampAsNumber } from '../helpers/date';
-import { isEventAction, isEventMessage } from '../helpers/event';
-import { TimeRange } from '../models/Timestamp';
-
-export type EventStoreDefaultStateType = EventsStore | EventStoreURLState | null;
-export type MessagesStoreDefaultStateType = MessagesStore | null;
+import { EventMessage } from '../../models/EventMessage';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { sortMessagesByTimestamp } from '../../helpers/message';
+import GraphStore from '../graph/GraphStore';
+import { GraphDataStore } from '../graph/GraphDataStore';
+import { isEventsStore, isMessagesStore } from '../../helpers/stores';
+import { getTimestampAsNumber } from '../../helpers/date';
+import { isEventNode } from '../../helpers/event';
+import { TimeRange } from '../../models/Timestamp';
+import WorkspacesStore from './WorkspacesStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;
 	messages: Partial<MessagesStoreURLState>;
+	timeRange: TimeRange | null;
+	interval: number | null;
 }
 
+export type WorkspaceInitialState = Partial<{
+	events: EventStoreDefaultStateType;
+	messages: MessagesStoreDefaultStateType;
+	timeRange: TimeRange | null;
+	interval: number | null;
+}>;
+
 export default class WorkspaceStore {
-	@observable eventsStore: EventsStore;
+	public eventsStore: EventsStore;
 
-	@observable messagesStore: MessagesStore;
+	public messagesStore: MessagesStore;
 
-	@observable viewStore: WorkspaceViewStore;
+	public viewStore: WorkspaceViewStore;
+
+	public graphDataStore: GraphDataStore;
+
+	public id = nanoid();
 
 	constructor(
+		private workspacesStore: WorkspacesStore,
 		private selectedStore: SelectedStore,
+		private graphStore: GraphStore,
 		private api: ApiSchema,
-		public graphStore: GraphStore,
-		eventDefaultState: EventStoreDefaultStateType = null,
-		messagesDefaultState: MessagesStoreDefaultStateType = null,
+		initialState: WorkspaceInitialState,
 	) {
-		this.eventsStore = new EventsStore(this, this.selectedStore, this.api, eventDefaultState);
+		this.graphDataStore = new GraphDataStore(
+			this,
+			this.graphStore,
+			this.selectedStore,
+			initialState.timeRange,
+		);
+		this.eventsStore = new EventsStore(
+			this,
+			this.selectedStore,
+			this.graphDataStore,
+			this.api,
+			initialState.events || null,
+		);
 		this.messagesStore = new MessagesStore(
 			this,
 			this.selectedStore,
+			this.graphDataStore,
 			this.api,
-			messagesDefaultState,
+			initialState.messages || null,
 		);
 		this.viewStore = new WorkspaceViewStore();
 
@@ -65,8 +94,7 @@ export default class WorkspaceStore {
 		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
 	}
 
-	@observable
-	public panelUpdateTimer: NodeJS.Timeout | null = null;
+	private panelUpdateTimer: NodeJS.Timeout | null = null;
 
 	@observable
 	public attachedMessagesIds: Array<string> = [];
@@ -77,10 +105,13 @@ export default class WorkspaceStore {
 	@observable
 	public isLoadingAttachedMessages = false;
 
-	@action
-	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
-		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
-	};
+	@computed get isActive() {
+		return this.workspacesStore.activeWorkspace === this;
+	}
+
+	@computed get attachedMessagesStreams() {
+		return [...new Set(this.attachedMessages.map(msg => msg.sessionId))];
+	}
 
 	@action
 	public setAttachedMessagesIds = (attachedMessageIds: string[]) => {
@@ -103,11 +134,11 @@ export default class WorkspaceStore {
 			const messagesToLoad = attachedMessagesIds.filter(
 				messageId => cachedMessages.findIndex(message => message.messageId === messageId) === -1,
 			);
-			const attachedMessages = await Promise.all(
+			const messages = await Promise.all(
 				messagesToLoad.map(id => this.api.messages.getMessage(id, this.attachedMessagesAC?.signal)),
 			);
 			this.attachedMessages = sortMessagesByTimestamp(
-				[...cachedMessages, ...attachedMessages].filter(Boolean),
+				[...cachedMessages, ...messages].filter(Boolean),
 			);
 		} catch (error) {
 			if (error.name !== 'AbortError') {
@@ -120,11 +151,11 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	onSavedItemSelect = (savedItem: EventAction | EventMessage) => {
-		this.graphStore.timestamp = isEventMessage(savedItem)
-			? getTimestampAsNumber(savedItem.timestamp)
-			: getTimestampAsNumber(savedItem.startTimestamp);
-		if (isEventAction(savedItem)) {
+	public onSavedItemSelect = (savedItem: EventTreeNode | EventMessage) => {
+		this.graphDataStore.timestamp = isEventNode(savedItem)
+			? getTimestampAsNumber(savedItem.startTimestamp)
+			: getTimestampAsNumber(savedItem.timestamp);
+		if (isEventNode(savedItem)) {
 			this.eventsStore.onSavedItemSelect(savedItem);
 		} else {
 			this.messagesStore.onSavedItemSelect(savedItem);
@@ -132,27 +163,32 @@ export default class WorkspaceStore {
 	};
 
 	@action
+	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
+		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
+	};
+
+	@action
 	public onRangeChange = (range: TimeRange) => {
+		const [timestampFrom, timestampTo] = range;
 		if (this.panelUpdateTimer) {
 			clearTimeout(this.panelUpdateTimer);
 		}
 		this.panelUpdateTimer = setTimeout(() => {
-			const [timestampFrom, timestampTo] = range;
 			if (isEventsStore(this.viewStore.activePanel)) {
 				const eventsFilter = this.viewStore.activePanel.filterStore.eventsFilter;
 				this.viewStore.activePanel.filterStore.eventsFilter = {
-					timestampFrom,
-					timestampTo,
 					eventTypes: eventsFilter.eventTypes,
 					names: eventsFilter.names,
+					timestampFrom,
+					timestampTo,
 				};
 			} else if (isMessagesStore(this.viewStore.activePanel)) {
 				const messageFilter = this.viewStore.activePanel?.filterStore.messagesFilter;
 				this.viewStore.activePanel.filterStore.messagesFilter = {
-					timestampFrom,
-					timestampTo,
 					messageTypes: messageFilter ? messageFilter.messageTypes : [],
 					streams: messageFilter ? messageFilter.streams : [],
+					timestampFrom,
+					timestampTo,
 				};
 			}
 		}, 800);

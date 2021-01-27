@@ -47,8 +47,8 @@ module.exports = webpackMerge(commonConfig, {
 		},
 		// proxy: {
 		// 	'/backend': {
-		// 		// target: 'http://th2-qa:30000/schema-schema-qa/',
-		// 		target: 'http://th2-dev:30000/',
+		// 		target: 'http://th2-qa:30000/schema-schema-qa/',
+		// 		// target: 'http://th2-dev:30000/',
 		// 		changeOrigin: true,
 		// 		secure: false,
 		// 	},

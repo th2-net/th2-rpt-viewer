@@ -90,113 +90,6 @@
 		--status-secondary-header-background-color: #{$failedHeaderSecondaryBackground};
 		--status-header-border-color: #{$failedHeaderBorderColor};
 	}
-
-	&.conditionally_passed {
-		--status-primary-color: #{$conditionallyPassedTextColor};
-		--status-secondary-color: #{$conditionallyPassedSecondaryTextColor};
-		--status-primary-border-color: #{$conditionallyPassedBorderColor};
-		--status-secondary-border-color: #{$conditionallyPassedBorderColorSecondary};
-		--status-hover-border-color: #{$conditionallyPassedBorderHoverColor};
-		--status-primary-delimeter-color: #{$conditionallyPassedDelimiterHoverColor};
-		--status-primary-background-color: #{$conditionallyPassedBorderColor};
-		--status-secondary-background-color: #{$conditionallyPassedBackgroundColor};
-		--status-primary-header-background-color: #{$conditionallyPassedHeaderColor};
-		--status-secondary-header-background-color: #{$conditionallyPassedHeaderSecondaryBackground};
-	}
-
-	&.conditionally_failed {
-		--status-primary-color: #{$conditionallyFailedTextColor};
-		--status-secondary-color: #{$conditionallyFailedSecondaryTextColor};
-		--status-primary-border-color: #{$conditionallyFailedBorderColor};
-		--status-secondary-border-color: #{$conditionallyFailedBorderColorSecondary};
-		--status-hover-border-color: #{$conditionallyFailedBorderHoverColor};
-		--status-primary-delimeter-color: #{$conditionallyFailedDelimiterHoverColor};
-		--status-primary-background-color: #{$conditionallyFailedBorderColor};
-		--status-secondary-background-color: #{$conditionallyFailedBackgroundColor};
-		--status-primary-header-background-color: #{$conditionallyFailedHeaderColor};
-		--status-secondary-header-background-color: #{$conditionallyFailedHeaderSecondaryBackground};
-	}
-}
-
-@mixin log-status-card {
-	&.error {
-		--lc-primary-color: #{$logCardErrorPrimaryColor};
-		--lc-border-color: #{$logCardErrorBorderColor};
-	}
-
-	&.warn {
-		--lc-primary-color: #{$logCardWarnPrimaryColor};
-		--lc-border-color: #{$logCardWarnBorderColor};
-	}
-
-	&.debug {
-		--lc-primary-color: #{$logCardDebugPrimaryColor};
-		--lc-border-color: #{$logCardDebugBorderColor};
-	}
-
-	&.info {
-		--lc-primary-color: #{$logCardInfoPrimaryColor};
-		--lc-border-color: #{$logCardInfoBorderColor};
-	}
-}
-
-@mixin status-card-with-running {
-	@include status-card;
-
-	&.running {
-		--status-primary-color: #{$liveTextColor};
-		--status-secondary-color: #{$liveSecondaryTextColor};
-		--status-primary-border-color: #{$liveBorderColor};
-		--status-secondary-border-color: #{$liveBorderSecondaryColor};
-		--status-hover-border-color: #{$liveBorderHoverColor};
-		--status-primary-background-color: #{$liveBackgroundColor};
-		--status-primary-delimeter-color: #{$liveDelimiterHoverColor};
-		--status-secondary-background-color: #{$liveSecondaryBackgroundColor};
-		--status-primary-header-background-color: #{$liveBackgroundColor};
-		--status-secondary-header-background-color: #{$liveHeaderSecondaryBackgroundColor};
-	}
-}
-
-@mixin status-background {
-	&.passed {
-		.passed {
-			background-color: $passedVerificationBackgroundColor;
-		}
-
-		&:hover .passed {
-			background-color: $passedVerificationHighlightedBackgroundColor;
-		}
-	}
-
-	&.failed {
-		.failed {
-			background-color: $failedVerificationBackgroundColor;
-		}
-
-		&:hover .failed {
-			background-color: $failedVerificationHighlightedBackgroundColor;
-		}
-	}
-
-	&.conditionally_passed {
-		.conditionally_passed {
-			background-color: $conditionallyPassedVerificationBackgroundColor;
-		}
-
-		&:hover .conditionally_passed {
-			background-color: $conditionallyPassedVerificationHighlightedBackgroundColor;
-		}
-	}
-
-	&.conditionally_failed {
-		.conditionally_failed {
-			background-color: $conditionallyFailedVerificationBackgroundColor;
-		}
-
-		&:hover .conditionally_failed {
-			background-color: $conditionallyFailedVerificationHighlightedBackgroundColor;
-		}
-	}
 }
 
 @mixin status-text {
@@ -206,14 +99,6 @@
 
 	&.failed {
 		color: $failedTextColor;
-	}
-
-	&.conditionally_passed {
-		color: $conditionallyPassedTextColor;
-	}
-
-	&.conditionally_failed {
-		color: $conditionallyFailedTextColor;
 	}
 
 	&.na {
@@ -235,16 +120,6 @@
 	&.failed {
 		background-color: $failedBackgroundColor;
 		border-color: $failedBorderColor;
-	}
-
-	&.conditionally_passed {
-		background-color: $conditionallyPassedBackgroundColor;
-		border-color: $conditionallyPassedBorderColor;
-	}
-
-	&.conditionally_failed {
-		background-color: $conditionallyFailedBackgroundColor;
-		border-color: $conditionallyFailedBorderColor;
 	}
 }
 

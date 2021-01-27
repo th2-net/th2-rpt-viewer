@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import { action, observable } from 'mobx';
-import WorkspacesStore from './WorkspacesStore';
-import WorkspaceStore from './WorkspaceStore';
+import WorkspacesStore from './workspace/WorkspacesStore';
+import WorkspaceStore from './workspace/WorkspaceStore';
 
 export default class TabsStore {
 	constructor(private workspacesStore: WorkspacesStore) {}
@@ -26,16 +26,18 @@ export default class TabsStore {
 	@action
 	duplicateWorkspace = (tabIndex: number) => {
 		const worspaceToDublicate = this.workspacesStore.workspaces[tabIndex];
-		const workspaceCopy = this.workspacesStore.createWorkspace(
-			worspaceToDublicate.eventsStore,
-			worspaceToDublicate.messagesStore,
-		);
+		const workspaceCopy = this.workspacesStore.createWorkspace({
+			events: worspaceToDublicate.eventsStore,
+			messages: worspaceToDublicate.messagesStore,
+		});
 		this.workspacesStore.addWorkspace(workspaceCopy);
 		this.activeTabIndex = this.workspacesStore.workspaces.length - 1;
 	};
 
 	@action
 	closeWorkspace = (tab: number | WorkspaceStore) => {
+		if (this.workspacesStore.workspaces.length === 1) return;
+
 		const index = typeof tab === 'number' ? tab : this.workspacesStore.workspaces.indexOf(tab);
 		if (index <= this.activeTabIndex) {
 			this.setActiveWorkspace(this.activeTabIndex === 0 ? 0 : this.activeTabIndex - 1);

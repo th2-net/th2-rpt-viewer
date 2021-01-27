@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import { action, observable, reaction } from 'mobx';
-import ApiSchema from '../api/ApiSchema';
-import { EventMessage } from '../models/EventMessage';
-import FilterStore from './FilterStore';
+import ApiSchema from '../../api/ApiSchema';
+import { EventMessage } from '../../models/EventMessage';
+import FilterStore from '../FilterStore';
 import MessagesStore from './MessagesStore';
 
 export default class MessageUpdateStore {

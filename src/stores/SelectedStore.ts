@@ -15,42 +15,27 @@
  ***************************************************************************** */
 
 import { action, computed, reaction, observable } from 'mobx';
-import { randomHexColor } from '../helpers/color';
-import { EventAction } from '../models/EventAction';
+import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import WorkspacesStore from './WorkspacesStore';
+import WorkspacesStore from './workspace/WorkspacesStore';
 import localStorageWorker from '../util/LocalStorageWorker';
 import { sortMessagesByTimestamp } from '../helpers/message';
-import { isEventAction, sortByTimestamp } from '../helpers/event';
+import { isEventNode, sortByTimestamp } from '../helpers/event';
 
 export class SelectedStore {
-	private readonly defaultColors = [
-		'#997AB8',
-		'#00BBCC',
-		'#FF5500',
-		'#1F66AD',
-		'#E69900',
-		'#45A155',
-	];
-
-	@observable
-	public eventColors: Map<string, string> = new Map();
-
 	@observable.shallow
 	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
 
 	@observable.shallow
-	public pinnedEvents: Array<EventAction> = localStorageWorker.getPersistedPinnedEvents();
+	public pinnedEvents: Array<EventTreeNode> = localStorageWorker.getPersistedPinnedEvents();
 
 	constructor(private workspacesStore: WorkspacesStore) {
-		reaction(() => this.selectedEvents, this.getEventColors);
-
 		reaction(() => this.pinnedMessages, localStorageWorker.setPersistedPinnedMessages);
 
 		reaction(() => this.pinnedEvents, localStorageWorker.setPersistedPinnedEvents);
 	}
 
-	@computed get savedItems() {
+	@computed get savedItems(): Array<EventTreeNode | EventMessage> {
 		return sortByTimestamp([...this.pinnedEvents, ...this.pinnedMessages]);
 	}
 
@@ -83,7 +68,7 @@ export class SelectedStore {
 	};
 
 	@action
-	public toggleEventPin = (event: EventAction) => {
+	public toggleEventPin = (event: EventTreeNode) => {
 		if (this.pinnedEvents.findIndex(e => e.eventId === event.eventId) === -1) {
 			this.pinnedEvents = this.pinnedEvents.concat(event);
 		} else {
@@ -92,8 +77,8 @@ export class SelectedStore {
 	};
 
 	@action
-	public removeSavedItem(savedItem: EventAction | EventMessage) {
-		if (isEventAction(savedItem)) {
+	public removeSavedItem(savedItem: EventTreeNode | EventMessage) {
+		if (isEventNode(savedItem)) {
 			this.pinnedEvents = this.pinnedEvents.filter(event => event.eventId !== savedItem.eventId);
 		} else {
 			this.pinnedMessages = this.pinnedMessages.filter(
@@ -101,32 +86,4 @@ export class SelectedStore {
 			);
 		}
 	}
-
-	@action
-	private getEventColors = (selectedEvents: EventAction[]) => {
-		const eventsWithAttachedMessages = selectedEvents.filter(
-			event => event.attachedMessageIds.length > 0,
-		);
-
-		const usedColors: Array<string> = [];
-		for (const [eventId, color] of this.eventColors.entries()) {
-			if (eventsWithAttachedMessages.findIndex(e => e.eventId === eventId) !== -1) {
-				usedColors.push(color);
-			}
-		}
-		const availableColors = this.defaultColors.slice().filter(color => !usedColors.includes(color));
-
-		const updatedEventColorsMap = new Map<string, string>();
-
-		eventsWithAttachedMessages.forEach(({ eventId }) => {
-			let color = this.eventColors.get(eventId);
-			if (!color) {
-				color = availableColors[0] || randomHexColor();
-				availableColors.shift();
-			}
-			updatedEventColorsMap.set(eventId, color);
-		});
-
-		this.eventColors = updatedEventColorsMap;
-	};
 }

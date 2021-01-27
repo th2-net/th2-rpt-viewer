@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { createBemElement } from '../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../hooks';
-import { EventAction } from '../../models/EventAction';
+import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { ModalPortal } from '../Portal';
 import { AttachedItem } from './GraphChunk';
@@ -30,7 +30,7 @@ interface GraphAttachedItemProps {
 	leftPosition: number;
 	bottomPosition: number;
 	isInfoOpen: boolean;
-	setExpandedItem: (item: EventAction | EventMessage | null) => void;
+	setExpandedItem: (item: EventTreeNode | EventMessage | null) => void;
 	className?: string;
 }
 
@@ -58,7 +58,7 @@ const GraphAttachedItem = ({
 		'graph-chunk',
 		items[0].type,
 		items[0].type === 'event'
-			? (items[0].value as EventAction).successful
+			? (items[0].value as EventTreeNode).successful
 				? 'passed'
 				: 'failed'
 			: null,
@@ -112,14 +112,14 @@ const GraphAttachedItem = ({
 									<div key={index} className='graph-chunk__info-item'>
 										<div className='graph-chunk__item-name'>
 											{items[0].type === 'event'
-												? (items[0].value as EventAction).eventName
+												? (items[0].value as EventTreeNode).eventName
 												: (items[0].value as EventMessage).messageId}
 										</div>
 										<div className='graph-chunk__item-timestamp'>
 											{moment(
 												getTimestampAsNumber(
 													items[0].type === 'event'
-														? (items[0].value as EventAction).startTimestamp
+														? (items[0].value as EventTreeNode).startTimestamp
 														: (items[0].value as EventMessage).timestamp,
 												),
 											)
@@ -142,8 +142,8 @@ interface GraphAttachedItemGroupProps {
 		items: AttachedItem[];
 		left: number;
 	};
-	expandedAttachedItem: EventAction | EventMessage | null;
-	setExpandedAttachedItem: (item: EventAction | EventMessage | null) => void;
+	expandedAttachedItem: EventTreeNode | EventMessage | null;
+	setExpandedAttachedItem: (item: EventTreeNode | EventMessage | null) => void;
 }
 
 const ATTACHED_ITEM_STEP = 15;

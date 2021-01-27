@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { replaceNonPrintableCharsWithDot } from '../../helpers/stringUtils';
-import { useSelectListener } from '../../hooks';
-import { copyTextToClipboard } from '../../helpers/copyHandler';
+import { replaceNonPrintableCharsWithDot } from '../../../../helpers/stringUtils';
+import { useSelectListener } from '../../../../hooks';
+import { copyTextToClipboard } from '../../../../helpers/copyHandler';
 
 interface Props {
 	rawContent: string;

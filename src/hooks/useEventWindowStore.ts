@@ -14,7 +14,7 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import EventsStore from '../stores/EventsStore';
+import EventsStore from '../stores/events/EventsStore';
 import { useWorkspaceStore } from './useWorkspaceStore';
 
 export const useWorkspaceEventStore = (): EventsStore => {

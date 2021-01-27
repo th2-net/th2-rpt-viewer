@@ -19,7 +19,7 @@ import MessageBody, {
 	isSimpleValue,
 	MessageBodyField,
 	isListValue,
-} from '../../models/MessageBody';
+} from '../../../models/MessageBody';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 const DEFAULT_HIGHLIGHT_COLOR = '#e2dfdf';

@@ -44,38 +44,6 @@ $passedSecondaryTextColor: rgba(#1f991f, 0.5);
 $passedVerificationBackgroundColor: mix($passedTextColor, white, 10%);
 $passedVerificationHighlightedBackgroundColor: mix($passedTextColor, white, 20%);
 
-$conditionallyPassedTextColor: #ff5500;
-$conditionallyPassedBorderColor: $conditionallyPassedTextColor;
-$conditionallyPassedHeaderColor: #ffddcc;
-$conditionallyPassedBorderColorSecondary: $conditionallyPassedHeaderColor;
-$conditionallyPassedBorderHoverColor: #ffbb99;
-$conditionallyPassedDelimiterHoverColor: #ff9966;
-$conditionallyPassedBackgroundColor: $conditionallyPassedBorderColorSecondary;
-$conditionallyPassedHeaderSecondaryBackground: $conditionallyPassedBackgroundColor;
-$conditionallyPassedSecondaryTextColor: #f57a3d;
-$conditionallyPassedVerificationBackgroundColor: mix($conditionallyPassedTextColor, white, 10%);
-$conditionallyPassedVerificationHighlightedBackgroundColor: mix(
-	$conditionallyPassedTextColor,
-	white,
-	20%
-);
-
-$conditionallyFailedTextColor: #e69900;
-$conditionallyFailedBorderColor: $conditionallyFailedTextColor;
-$conditionallyFailedHeaderColor: #ffeecc;
-$conditionallyFailedBorderColorSecondary: $conditionallyFailedHeaderColor;
-$conditionallyFailedBackgroundColor: $conditionallyFailedBorderColorSecondary;
-$conditionallyFailedBorderHoverColor: #ffdd99;
-$conditionallyFailedDelimiterHoverColor: #ffcc66;
-$conditionallyFailedHeaderSecondaryBackground: $conditionallyFailedBackgroundColor;
-$conditionallyFailedSecondaryTextColor: #e69900;
-$conditionallyFailedVerificationBackgroundColor: mix($conditionallyFailedTextColor, white, 10%);
-$conditionallyFailedVerificationHighlightedBackgroundColor: mix(
-	$conditionallyFailedTextColor,
-	white,
-	20%
-);
-
 $logCardErrorPrimaryColor: #e23636;
 $logCardErrorBorderColor: #ffcccc;
 

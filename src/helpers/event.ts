@@ -32,7 +32,7 @@ export const getEventStatus = (event: EventAction | EventTreeNode): EventStatus 
 
 export const isRootEvent = (event: EventTreeNode): boolean => event.parentId === 'null';
 
-export function mapToTimestamps(list: Array<EventAction | EventMessage>) {
+export function mapToTimestamps(list: Array<EventTreeNode | EventMessage>) {
 	return list.map(item => getTimestampAsNumber(getTimestamp(item)));
 }
 
@@ -80,8 +80,16 @@ export const isEventAction = (object: unknown): object is EventAction => {
 	);
 };
 
+export const isEventNode = (object: unknown): object is EventTreeNode => {
+	return (
+		typeof object === 'object' &&
+		object !== null &&
+		(object as EventTreeNode).type === ActionType.EVENT_TREE_NODE
+	);
+};
+
 export const sortByTimestamp = (
-	itmes: Array<EventAction | EventMessage>,
+	itmes: Array<EventMessage | EventTreeNode>,
 	order: 'desc' | 'asc' = 'desc',
 ) => {
 	const copiedEvents = itmes.slice();

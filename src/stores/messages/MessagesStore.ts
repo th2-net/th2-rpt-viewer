@@ -15,18 +15,20 @@
  ***************************************************************************** */
 
 import { action, computed, observable, toJS, reaction, IReactionDisposer, runInAction } from 'mobx';
-import ApiSchema from '../api/ApiSchema';
-import FilterStore from './FilterStore';
-import { EventMessage } from '../models/EventMessage';
-import { prevCyclicItem, nextCyclicItem } from '../helpers/array';
-import { getTimestampAsNumber } from '../helpers/date';
-import { TabTypes } from '../models/util/Windows';
-import MessagesFilter from '../models/filter/MessagesFilter';
-import { sortMessagesByTimestamp } from '../helpers/message';
-import { SelectedStore } from './SelectedStore';
+import ApiSchema from '../../api/ApiSchema';
+import FilterStore from '../FilterStore';
+import { EventMessage } from '../../models/EventMessage';
+import { prevCyclicItem, nextCyclicItem } from '../../helpers/array';
+import { getTimestampAsNumber } from '../../helpers/date';
+import { TabTypes } from '../../models/util/Windows';
+import MessagesFilter from '../../models/filter/MessagesFilter';
+import { sortMessagesByTimestamp } from '../../helpers/message';
+import { SelectedStore } from '../SelectedStore';
 import MessageUpdateStore from './MessageUpdateStore';
-import { isEventMessage } from '../helpers/event';
-import WorkspaceStore from './WorkspaceStore';
+import { isEventMessage } from '../../helpers/event';
+import WorkspaceStore from '../workspace/WorkspaceStore';
+import { isMessagesStore } from '../../helpers/stores';
+import { GraphDataStore } from '../graph/GraphDataStore';
 
 export const defaultMessagesLoadingState = {
 	loadingPreviousItems: false,
@@ -40,10 +42,10 @@ export type MessagesStoreURLState = Partial<{
 	filter: MessagesFilter;
 }>;
 
+export type MessagesStoreDefaultStateType = MessagesStore | MessagesStoreURLState | null;
+
 export default class MessagesStore {
 	public readonly MESSAGES_CHUNK_SIZE = 25;
-
-	private attachedMessagesIdsSubscription: IReactionDisposer;
 
 	private attachedMessagesSubscription: IReactionDisposer;
 
@@ -61,7 +63,7 @@ export default class MessagesStore {
 	public messagesCache: Map<string, EventMessage> = observable.map(new Map(), { deep: false });
 
 	@observable
-	public messageSessions: string[] | null = null;
+	public messageSessions: Array<string> = [];
 
 	@observable
 	public selectedMessageId: String | null = null;
@@ -70,10 +72,13 @@ export default class MessagesStore {
 	public scrolledIndex: Number | null = null;
 
 	@observable
+	public scrollTopMessageId: string | null = null;
+
+	@observable
 	public detailedRawMessagesIds: Array<string> = [];
 
 	@observable
-	public beautifiedMessages: string[] = [];
+	public beautifiedMessages: Array<string> = [];
 
 	@observable
 	public isEndReached = false;
@@ -82,102 +87,37 @@ export default class MessagesStore {
 	public isBeginReached = false;
 
 	@observable
-	public scrollTopMessageId: string | null = null;
-
-	@observable
 	public messagesListErrorStatusCode: number | null = null;
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
 		private selectedStore: SelectedStore,
+		private graphStore: GraphDataStore,
 		private api: ApiSchema,
-		store: MessagesStore | null,
+		defaultState: MessagesStoreDefaultStateType,
 	) {
-		if (store) {
-			this.copy(store);
+		if (isMessagesStore(defaultState)) {
+			this.copy(defaultState);
 		}
 
 		reaction(() => this.filterStore.messagesFilter, this.onFilterChange);
 
-		this.attachedMessagesIdsSubscription = reaction(
-			() => this.workspaceStore.attachedMessagesIds,
-			() => Object.values(this.abortControllers).forEach(ac => ac?.abort()),
-		);
-
 		this.attachedMessagesSubscription = reaction(
 			() => this.workspaceStore.attachedMessages,
-			attachedMessages => {
-				if (this.isActivePanel || this.messagesIds.length === 0) {
-					this.onAttachedMessagesChange(attachedMessages);
-				}
-			},
+			this.onAttachedMessagesChange,
 		);
 
-		reaction(
-			() => this.filterStore.messagesFilter.streams,
-			streams => {
-				if ((this.isActivePanel || this.messagesIds.length === 0) && streams.length === 0) {
-					this.resetMessagesState();
-				}
-			},
-		);
+		reaction(() => this.filterStore.messagesFilter.streams, this.onStreamsChanged);
 
-		reaction(
-			() => this.selectedMessageId,
-			selectedMessageId => {
-				if (this.messageUpdateStore.isSubscriptionActive) {
-					this.messageUpdateStore.disableSubscription();
-				}
-				if (selectedMessageId) {
-					this.scrollToMessage(selectedMessageId.valueOf());
-				}
-			},
-		);
+		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
 
-		if (!store) this.loadMessageSessions();
+		if (this.messageSessions.length === 0) {
+			this.loadMessageSessions();
+		}
 	}
 
-	dispose = () => {
-		this.attachedMessagesIdsSubscription();
-		this.attachedMessagesSubscription();
-	};
-
-	@computed get isActivePanel() {
-		return this.workspaceStore.viewStore.activePanel === this;
-	}
-
-	@action
-	public toggleMessageDetailedRaw = (messageId: string) => {
-		if (this.detailedRawMessagesIds.includes(messageId)) {
-			this.detailedRawMessagesIds = this.detailedRawMessagesIds.filter(id => id !== messageId);
-		} else {
-			this.detailedRawMessagesIds = [...this.detailedRawMessagesIds, messageId];
-		}
-	};
-
-	@action
-	public toggleMessageBeautify = (messageId: string) => {
-		if (this.beautifiedMessages.includes(messageId)) {
-			this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
-		} else {
-			this.beautifiedMessages = [...this.beautifiedMessages, messageId];
-		}
-	};
-
-	@action
-	public fetchMessage = async (id: string) => {
-		let message = this.messagesCache.get(id);
-
-		if (!message) {
-			message = await this.api.messages.getMessage(id);
-			this.messagesCache.set(id, message);
-		}
-
-		return message;
-	};
-
-	// selected messages includes both attached and pinned messages
-	@computed get selectedMessagesIds(): string[] {
+	@computed
+	get selectedMessagesIds(): string[] {
 		const pinnedMessages = this.selectedStore.pinnedMessages.filter(msg =>
 			this.messagesIds.includes(msg.messageId),
 		);
@@ -229,6 +169,41 @@ export default class MessagesStore {
 		);
 
 		if (prevMessageId) this.selectedMessageId = prevMessageId;
+	};
+
+	@computed
+	get isActivePanel() {
+		return this.workspaceStore.isActive && this.workspaceStore.viewStore.activePanel === this;
+	}
+
+	@action
+	public toggleMessageDetailedRaw = (messageId: string) => {
+		if (this.detailedRawMessagesIds.includes(messageId)) {
+			this.detailedRawMessagesIds = this.detailedRawMessagesIds.filter(id => id !== messageId);
+		} else {
+			this.detailedRawMessagesIds = [...this.detailedRawMessagesIds, messageId];
+		}
+	};
+
+	@action
+	public toggleMessageBeautify = (messageId: string) => {
+		if (this.beautifiedMessages.includes(messageId)) {
+			this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
+		} else {
+			this.beautifiedMessages = [...this.beautifiedMessages, messageId];
+		}
+	};
+
+	@action
+	public fetchMessage = async (id: string) => {
+		let message = this.messagesCache.get(id);
+
+		if (!message) {
+			message = await this.api.messages.getMessage(id);
+			this.messagesCache.set(id, message);
+		}
+
+		return message;
 	};
 
 	@action
@@ -398,6 +373,16 @@ export default class MessagesStore {
 		}
 	};
 
+	@action
+	private resetMessagesState = () => {
+		this.messagesIds = [];
+		this.messagesCache.clear();
+		this.scrolledIndex = null;
+		this.isBeginReached = false;
+		this.isEndReached = false;
+		this.messagesLoadingState = defaultMessagesLoadingState;
+	};
+
 	public resetMessagesFilter = () => {
 		const streams = this.workspaceStore.attachedMessages
 			.map(m => m.sessionId)
@@ -433,44 +418,40 @@ export default class MessagesStore {
 		}
 	};
 
-	private previousAttachedMessages: EventMessage[] = [];
-
 	@action
 	private onAttachedMessagesChange = (attachedMessages: EventMessage[]) => {
+		if (this.messagesIds.length !== 0) return;
+
 		this.isBeginReached = false;
 		this.isEndReached = false;
 
-		const streams = [...new Set(attachedMessages.map(m => m.sessionId))];
-		this.filterStore.messagesFilter.streams = streams;
+		this.filterStore.messagesFilter.streams = [...new Set(attachedMessages.map(m => m.sessionId))];
 
-		const targetMessageId = attachedMessages.filter(
-			({ messageId }) =>
-				this.previousAttachedMessages.findIndex(
-					prevMessage => prevMessage.messageId === messageId,
-				) === -1,
-		)[0]?.messageId;
+		const targetMessageId = sortMessagesByTimestamp(attachedMessages)[0]?.messageId;
 
-		this.previousAttachedMessages = attachedMessages;
 		if (targetMessageId) {
 			this.selectedMessageId = new String(targetMessageId);
-			return;
-		}
-		if (
-			attachedMessages.length > 0 &&
-			!attachedMessages.some(msg => this.messagesIds.includes(msg.messageId))
-		) {
-			this.selectedMessageId = new String(attachedMessages[0].messageId);
 		}
 	};
 
 	@action
-	private resetMessagesState = () => {
-		this.messagesIds = [];
-		this.messagesCache.clear();
-		this.scrolledIndex = null;
-		this.isBeginReached = false;
-		this.isEndReached = false;
-		this.messagesLoadingState = defaultMessagesLoadingState;
+	public applyStreams = () => {
+		this.filterStore.messagesFilter = {
+			...this.filterStore.messagesFilter,
+			streams: [
+				...new Set([
+					...this.filterStore.messagesFilter.streams,
+					...this.workspaceStore.attachedMessagesStreams,
+				]),
+			],
+		};
+	};
+
+	@action
+	private onStreamsChanged = (streams: string[]) => {
+		if ((this.isActivePanel || this.messagesIds.length === 0) && streams.length === 0) {
+			this.resetMessagesState();
+		}
 	};
 
 	@action
@@ -480,14 +461,8 @@ export default class MessagesStore {
 
 		let originMessageId: string | undefined = this.workspaceStore.attachedMessages[0]?.messageId;
 
-		if (
-			this.workspaceStore.attachedMessages.length &&
-			(messagesFilter.timestampFrom || messagesFilter.timestampTo)
-		) {
-			const from = messagesFilter.timestampFrom || new Date(1980).getTime();
-			const to =
-				messagesFilter.timestampTo ||
-				new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
+		if (this.workspaceStore.attachedMessages.length) {
+			const [from, to] = this.graphStore.range;
 			const firstMessage = this.workspaceStore.attachedMessages.find(
 				m => getTimestampAsNumber(m.timestamp) >= from && getTimestampAsNumber(m.timestamp) <= to,
 			);
@@ -502,13 +477,32 @@ export default class MessagesStore {
 	};
 
 	@action
-	public onSavedItemSelect = (savedMessage: EventMessage) => {
+	private onSelectedMessageIdChange = (selectedMessageId: String | null) => {
+		if (this.messageUpdateStore.isSubscriptionActive) {
+			this.messageUpdateStore.disableSubscription();
+		}
+		if (selectedMessageId !== null) {
+			this.scrollToMessage(selectedMessageId.valueOf());
+		}
+	};
+
+	@action
+	public onSavedItemSelect = async (savedMessage: EventMessage) => {
 		if (!this.messagesIds.includes(savedMessage.messageId)) {
 			this.filterStore.messagesFilter.messageTypes = [];
 			this.filterStore.messagesFilter.streams = [savedMessage.sessionId];
-			this.filterStore.messagesFilter.timestampFrom = null;
-			this.filterStore.messagesFilter.timestampTo = null;
+		} else {
+			this.abortControllers.prevAC?.abort();
+			this.abortControllers.prevAC = new AbortController();
+			await this.getMessages(
+				'previous',
+				savedMessage.messageId,
+				this.MESSAGES_CHUNK_SIZE,
+				true,
+				undefined,
+			);
 		}
+
 		this.scrollToMessage(savedMessage.messageId);
 	};
 
@@ -540,10 +534,10 @@ export default class MessagesStore {
 
 	@action
 	private copy(store: MessagesStore) {
-		this.messagesIds = toJS(store.messagesIds);
+		this.messagesIds = toJS(store.messagesIds.slice());
 		this.messagesCache = observable.map(toJS(store.messagesCache), { deep: false });
-		this.beautifiedMessages = toJS(store.beautifiedMessages);
-		this.detailedRawMessagesIds = toJS(store.detailedRawMessagesIds);
+		this.beautifiedMessages = toJS(store.beautifiedMessages.slice());
+		this.detailedRawMessagesIds = toJS(store.detailedRawMessagesIds.slice());
 		this.scrolledIndex = store.scrolledIndex?.valueOf() || null;
 		this.selectedMessageId = store.selectedMessageId
 			? new String(store.selectedMessageId.valueOf())
@@ -555,10 +549,14 @@ export default class MessagesStore {
 		this.isEndReached = store.isEndReached.valueOf();
 		this.isBeginReached = store.isBeginReached.valueOf();
 
-		if (!store.messageSessions) {
+		if (!store.messageSessions.length) {
 			this.loadMessageSessions();
 		} else {
 			this.messageSessions = store.messageSessions.slice();
 		}
 	}
+
+	public dispose = () => {
+		this.attachedMessagesSubscription();
+	};
 }

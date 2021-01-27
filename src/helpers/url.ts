@@ -16,9 +16,9 @@
 
 import { autorun, toJS } from 'mobx';
 import { TabTypes } from '../models/util/Windows';
-import { EventStoreURLState } from '../stores/EventsStore';
+import { EventStoreURLState } from '../stores/events/EventsStore';
 import RootStore from '../stores/RootStore';
-import { WorkspacesUrlState } from '../stores/WorkspacesStore';
+import { WorkspacesUrlState } from '../stores/workspace/WorkspacesStore';
 import { getEventNodeParents } from './event';
 import { getObjectKeys } from './object';
 
@@ -48,9 +48,12 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 			const eventsStore = activeWorkspace.eventsStore;
 			eventStoreState = {
 				type: TabTypes.Events,
-				filter: eventsStore.filterStore.isEventsFilterApplied
-					? eventsStore.filterStore.eventsFilter
-					: undefined,
+				filter: {
+					eventTypes: eventsStore.filterStore.eventsFilter.eventTypes,
+					names: eventsStore.filterStore.eventsFilter.names,
+					timestampFrom: eventsStore.filterStore.eventsFilter.timestampFrom,
+					timestampTo: eventsStore.filterStore.eventsFilter.timestampTo,
+				},
 				panelArea: eventsStore.viewStore.panelArea,
 				selectedNodesPath: eventsStore.selectedNode
 					? [...getEventNodeParents(eventsStore.selectedNode), eventsStore.selectedNode.eventId]
@@ -73,10 +76,14 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 			}
 		});
 
-		const urlState: WorkspacesUrlState = toJS({
-			events: eventStoreState,
-			messages: {},
-		});
+		const urlState: WorkspacesUrlState = [
+			toJS({
+				events: eventStoreState,
+				messages: {},
+				timeRange: activeWorkspace.graphDataStore.range,
+				interval: activeWorkspace.graphDataStore.interval,
+			}),
+		];
 
 		const searchParams = new URLSearchParams({
 			workspaces: window.btoa(JSON.stringify(urlState)),

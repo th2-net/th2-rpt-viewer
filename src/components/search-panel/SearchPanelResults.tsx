@@ -16,15 +16,14 @@
 
 import React from 'react';
 import moment from 'moment';
-import { isEventMessage } from '../../helpers/event';
-import { SearchHistory } from './SearchPanel';
-import { EventAction } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
+import { isEventNode } from '../../helpers/event';
+import { Result, SearchHistory } from './SearchPanel';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { createStyleSelector } from '../../helpers/styleCreators';
+import { BookmarkItem } from '../BookmarksPanel';
 
 interface SearchPanelResultsProps {
-	onResultItemClick: (searchResult: EventAction | EventMessage) => void;
+	onResultItemClick: (searchResult: Result) => void;
 	onResultDelete: () => void;
 	disableNext: boolean;
 	disablePrev: boolean;
@@ -34,47 +33,6 @@ interface SearchPanelResultsProps {
 	results: SearchHistory;
 }
 
-type Counter = {
-	index: number;
-	limit: number;
-	disableForward: boolean;
-	disableBackward: boolean;
-};
-
-type Action = {
-	type: 'forward' | 'backward' | 'set';
-	payload?: number;
-};
-
-const reducer = (counter: Counter, action: Action): Counter => {
-	const { index, limit } = counter;
-	switch (action.type) {
-		case 'forward':
-			if (index + 1 > limit) {
-				return { index, limit, disableForward: true, disableBackward: false };
-			}
-			return {
-				index: index + 1,
-				limit,
-				disableForward: index + 1 === limit,
-				disableBackward: false,
-			};
-		case 'backward':
-			if (index - 1 <= 0) {
-				return { index: 0, limit, disableForward: false, disableBackward: true };
-			}
-			return { index: index - 1, limit, disableForward: false, disableBackward: false };
-		case 'set':
-			return {
-				index: Number(action.payload) - 1,
-				limit: Number(action.payload) - 1,
-				disableForward: true,
-				disableBackward: false,
-			};
-		default:
-			return { index, limit, disableForward: false, disableBackward: false };
-	}
-};
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const {
 		results,
@@ -112,9 +70,9 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 				</button>
 			</div>
 			<hr />
-			{eventActions.map((item: EventAction | EventMessage) => (
-				<SearchResult
-					key={isEventMessage(item) ? item.messageId : item.eventId}
+			{eventActions.map((item: Result) => (
+				<BookmarkItem
+					key={isEventNode(item) ? item.eventId : item.messageId}
 					item={item}
 					onClick={() => {
 						onResultItemClick(item);
@@ -126,50 +84,3 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 };
 
 export default SearchPanelResults;
-interface BookmarkItemProps {
-	item: EventMessage | EventAction;
-	onRemove?: (item: EventMessage | EventAction) => void;
-	onClick?: (item: EventMessage | EventAction) => void;
-}
-
-export function SearchResult({ item, onRemove, onClick }: BookmarkItemProps) {
-	const itemInfo = {
-		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
-		title: isEventMessage(item) ? item.messageId : item.eventName,
-		timestamp: getTimestampAsNumber(isEventMessage(item) ? item.timestamp : item.startTimestamp),
-	};
-
-	function onBookmarkRemove(event: React.MouseEvent<HTMLButtonElement>) {
-		if (onRemove) {
-			event.stopPropagation();
-			onRemove(item);
-		}
-	}
-
-	const rootClassName = createStyleSelector('bookmark-item', item.type, itemInfo.status);
-
-	const iconClassName = createStyleSelector(
-		'bookmark-item__icon',
-		`${item.type}-icon`,
-		itemInfo.status,
-	);
-
-	return (
-		<div onClick={() => onClick && onClick(item)} className={rootClassName}>
-			<i className={iconClassName} />
-			<div className='bookmark-item__info'>
-				<div className='bookmark-item__name' title={itemInfo.title}>
-					{itemInfo.title}
-				</div>
-				<div className='bookmark-item__timestamp'>
-					{moment(itemInfo.timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}
-				</div>
-			</div>
-			{onRemove && (
-				<button className='bookmark-item__remove-btn' onClick={onBookmarkRemove}>
-					<i className='bookmark-item__remove-btn-icon' />
-				</button>
-			)}
-		</div>
-	);
-}

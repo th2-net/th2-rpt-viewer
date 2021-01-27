@@ -16,6 +16,7 @@
 import { MessageApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import MessagesFilter from '../models/filter/MessagesFilter';
+import { TimeRange } from '../models/Timestamp';
 
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {
@@ -30,11 +31,17 @@ const messageHttpApi: MessageApiSchema = {
 		return [];
 	},
 	getMessages: async (
-		{ idsOnly = true, messageId = '', timelineDirection = 'next', limit = 100 },
+		search: {
+			limit: number;
+			timelineDirection: 'previous' | 'next';
+			messageId: string;
+			idsOnly: boolean;
+		},
 		filter: MessagesFilter,
 		abortSignal?: AbortSignal,
 	) => {
-		const { timestampFrom, timestampTo, streams, messageTypes } = filter;
+		const { idsOnly = true, messageId = '', timelineDirection = 'next', limit = 100 } = search;
+		const { streams, messageTypes, timestampFrom, timestampTo } = filter;
 
 		const params = createURLSearchParams({
 			idsOnly,
@@ -57,7 +64,7 @@ const messageHttpApi: MessageApiSchema = {
 
 		throw res;
 	},
-	getMessagesIds: async (timestampFrom: number, timestampTo: number) => {
+	getMessagesIds: async (timestampFrom, timestampTo) => {
 		const params = createURLSearchParams({
 			idsOnly: true,
 			timestampFrom,
@@ -72,7 +79,7 @@ const messageHttpApi: MessageApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
-	getMessage: async (id: string, signal?: AbortSignal, queryParams = {}) => {
+	getMessage: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
 		const res = await fetch(`backend/message/${id}?${params}`, { signal });
 
@@ -82,22 +89,6 @@ const messageHttpApi: MessageApiSchema = {
 
 		console.error(res.statusText);
 		return null;
-	},
-	getMessagesByFilter: async ({ timestampFrom, timestampTo, streams, messageTypes }) => {
-		const params = createURLSearchParams({
-			timestampFrom,
-			timestampTo,
-			idsOnly: true,
-			stream: streams,
-			messageType: messageTypes,
-		});
-
-		const res = await fetch(`backend/search/messages?${params}`);
-
-		if (res.ok) return res.json();
-
-		console.error(res.statusText);
-		return [];
 	},
 	getMessageSessions: async () => {
 		const res = await fetch('backend/messageStreams');

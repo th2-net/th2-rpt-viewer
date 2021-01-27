@@ -19,6 +19,7 @@ import { EventMessage } from '../models/EventMessage';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
 import { SSEFilterInfo } from '../stores/SearchPanelFiltersStore';
+import { TimeRange } from '../models/Timestamp';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
@@ -40,12 +41,7 @@ export interface EventApiSchema {
 		abortSignal?: AbortSignal,
 		queryParams?: Record<string, string | number | boolean | null | string[]>,
 	) => Promise<EventAction>;
-	getEventsByName: (
-		timestampFrom: number,
-		timestampTo: number,
-		name: string,
-		eventId?: string,
-	) => Promise<string[]>;
+	getEventsByName: (timeRange: TimeRange, name: string, eventId?: string) => Promise<string[]>;
 }
 
 export interface MessageApiSchema {
@@ -76,7 +72,6 @@ export interface MessageApiSchema {
 		signal?: AbortSignal,
 		queryParams?: Record<string, string | number | boolean | null | string[]>,
 	) => Promise<EventMessage>;
-	getMessagesByFilter: (filter: MessagesFilter) => Promise<string[]>;
 	getMessageSessions: () => Promise<string[]>;
 }
 
