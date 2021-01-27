@@ -98,14 +98,13 @@ function Graph() {
 		}));
 
 		return (
-			<Observer>
+			<Observer key={`${chunk.from}-${chunk.to}`}>
 				{() => (
 					<div
 						data-from={moment(chunk.from).startOf('minute').valueOf()}
 						data-to={moment(chunk.to).endOf('minute').valueOf()}
 						className='graph__chunk-item'
 						data-index={index}
-						key={`${chunk.from}-${chunk.to}`}
 						style={{ width: chunkWidth }}>
 						<GraphChunk
 							tickSize={activeWorkspace.graphDataStore.tickSize}
