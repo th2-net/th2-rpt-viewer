@@ -39,6 +39,10 @@ export class SelectedStore {
 		return sortByTimestamp([...this.pinnedEvents, ...this.pinnedMessages]);
 	}
 
+	@computed get graphItems(): Array<EventTreeNode | EventMessage> {
+		return [...this.savedItems, ...this.workspacesStore.activeWorkspace.attachedMessages];
+	}
+
 	@computed get selectedEvents() {
 		return this.workspacesStore.eventStores
 			.map(eventStore => eventStore.selectedEvent)

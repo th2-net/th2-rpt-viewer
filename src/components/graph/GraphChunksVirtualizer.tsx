@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 /** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -15,12 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
+/* eslint-disable max-len */
+
 import React from 'react';
 import moment from 'moment';
-import { observer } from 'mobx-react-lite';
 import { useDebouncedCallback, usePrevious } from '../../hooks';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
-import { Chunk } from '../../models/graph';
+import { Chunk } from '../../models/Graph';
 import { raf } from '../../helpers/raf';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
@@ -331,4 +331,4 @@ const GraphChunksVirtualizer = (props: Props) => {
 	);
 };
 
-export default observer(GraphChunksVirtualizer);
+export default React.memo(GraphChunksVirtualizer);

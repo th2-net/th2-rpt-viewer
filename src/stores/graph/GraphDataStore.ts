@@ -18,7 +18,7 @@ import { action, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { getTimestampAsNumber, isTimeInsideInterval, isTimeIntersected } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
-import { Chunk, ChunkData, IntervalData, OverlayValues, IntervalOption } from '../../models/graph';
+import { Chunk, ChunkData, IntervalData, OverlayValues, IntervalOption } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';

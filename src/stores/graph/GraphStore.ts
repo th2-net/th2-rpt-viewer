@@ -17,7 +17,7 @@
 import { action, observable } from 'mobx';
 import moment from 'moment';
 import { calculateTimeRange } from '../../helpers/graph';
-import { Chunk, intervalOptions, IntervalOption } from '../../models/graph';
+import { Chunk, intervalOptions, IntervalOption } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 
 class GraphStore {

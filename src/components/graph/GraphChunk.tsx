@@ -21,8 +21,8 @@ import { observer } from 'mobx-react-lite';
 import { LineChart, Line, LineProps } from 'recharts';
 import { getTimestampAsNumber, isTimeIntersected } from '../../helpers/date';
 import { EventMessage } from '../../models/EventMessage';
-import { Chunk } from '../../models/graph';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { Chunk, GraphItem } from '../../models/Graph';
+import { EventTreeNode } from '../../models/EventAction';
 import { isEventMessage } from '../../helpers/event';
 import GraphAttachedItemGroup from './GraphAttachedItemGroup';
 import { TimeRange } from '../../models/Timestamp';
@@ -55,7 +55,7 @@ const graphLines = [
 ] as const;
 
 export interface AttachedItem {
-	value: EventMessage | EventTreeNode;
+	value: GraphItem;
 	type: 'attached-message' | 'pinned-message' | 'event';
 }
 

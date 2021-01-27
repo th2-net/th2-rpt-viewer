@@ -17,7 +17,7 @@
 import moment from 'moment';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import { Chunk } from '../models/graph';
+import { Chunk } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { getTimestampAsNumber } from './date';
 import { isEventNode } from './event';
