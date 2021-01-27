@@ -16,7 +16,6 @@
 
 import * as React from 'react';
 import moment from 'moment';
-import { observer } from 'mobx-react-lite';
 import { LineChart, Line, LineProps } from 'recharts';
 import { getTimestampAsNumber, isTimeIntersected } from '../../helpers/date';
 import { EventMessage } from '../../models/EventMessage';

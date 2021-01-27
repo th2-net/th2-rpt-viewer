@@ -36,7 +36,7 @@ const App = () => (
 					<WorkspacesLayout />
 				</div>
 			</DndProvider>
-			{/* <Notifier /> */}
+			<Notifier />
 		</ToastProvider>
 	</div>
 );
