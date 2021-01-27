@@ -77,7 +77,7 @@ export interface MessageApiSchema {
 
 export interface SSESchema {
 	getEventSource: (config: EventSourceConfig) => EventSource;
-	getFilters: (filterType: 'events' | 'messages') => Promise<[string]>;
+	getFilters: (filterType: 'events' | 'messages') => Promise<string[]>;
 	getFiltersInfo: (
 		filterType: 'events' | 'messages',
 		filters: string[],

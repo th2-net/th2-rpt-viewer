@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import { action, observable } from 'mobx';
+
+import { action, observable, runInAction } from 'mobx';
 import sseApi from '../api/sse';
 
 export interface SSEFilterParameter {
@@ -31,7 +32,8 @@ export interface SSEFilterInfo {
 
 export class SearchPanelFiltersStore {
 	constructor() {
-		this.init();
+		this.getEventFilters();
+		this.getMessagesFilters();
 	}
 
 	@observable eventFilterInfo: SSEFilterInfo[] = [];
@@ -40,24 +42,27 @@ export class SearchPanelFiltersStore {
 
 	@action
 	getEventFilters = async () => {
-		const filters = await sseApi.getFilters('events');
-		const filtersInfo = await sseApi.getFiltersInfo('events', filters);
-		return filtersInfo;
+		try {
+			const filters = await sseApi.getFilters('events');
+			const filtersInfo = await sseApi.getFiltersInfo('events', filters);
+			runInAction(() => {
+				this.eventFilterInfo = filtersInfo;
+			});
+		} catch (error) {
+			console.error('Error occured while loading event filters', error);
+		}
 	};
 
 	@action
 	getMessagesFilters = async () => {
-		const filters = await sseApi.getFilters('messages');
-		const filtersInfo = await sseApi.getFiltersInfo('messages', filters);
-		return filtersInfo;
+		try {
+			const filters = await sseApi.getFilters('messages');
+			const filtersInfo = await sseApi.getFiltersInfo('messages', filters);
+			runInAction(() => {
+				this.messagesFilterInfo = filtersInfo;
+			});
+		} catch (error) {
+			console.error('Error occured while loading messages filters', error);
+		}
 	};
-
-	private init() {
-		this.getEventFilters().then(filterInfo => {
-			this.eventFilterInfo = filterInfo;
-		});
-		this.getMessagesFilters().then(filterInfo => {
-			this.messagesFilterInfo = filterInfo;
-		});
-	}
 }
