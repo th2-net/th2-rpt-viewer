@@ -64,25 +64,22 @@ function Graph() {
 		};
 	}, []);
 
-	const onGraphItemClick = (item: EventTreeNode | EventMessage | null) => {
-		setExpandedAttachedItem(item);
-		if (item !== null) activeWorkspace.onSavedItemSelect(item);
-	};
+	const onGraphItemClick = React.useCallback(
+		(item: EventTreeNode | EventMessage | null) => {
+			setExpandedAttachedItem(item);
+			if (item !== null) activeWorkspace.onSavedItemSelect(item);
+		},
+		[activeWorkspace.onSavedItemSelect],
+	);
 
-	// 	<select
-	// 		name='interval'
-	// 		value={graphStore.interval}
-	// 		onChange={e => graphStore.setInterval(parseInt(e.target.value) as IntervalOption)}>
-	// 		{graphStore.intervalOptions.map(intervalValue => (
-	// 			<option key={intervalValue} value={intervalValue}>{`${intervalValue} minutes`}</option>
-	// 		))}
-	// 	</select>
-
-	const onInputSubmit = (timestamp: number) => {
-		if (new Date(timestamp).valueOf() > 1) {
-			activeWorkspace.graphDataStore.setTimestamp(timestamp);
-		}
-	};
+	const onInputSubmit = React.useCallback(
+		(timestamp: number) => {
+			if (new Date(timestamp).valueOf() > 1) {
+				activeWorkspace.graphDataStore.setTimestamp(timestamp);
+			}
+		},
+		[activeWorkspace.graphDataStore.setTimestamp],
+	);
 
 	const renderChunk = (chunk: Chunk, index: number) => {
 		const attachedItems: AttachedItem[] = filterListByChunkRange(
@@ -157,3 +154,12 @@ function Graph() {
 }
 
 export default observer(Graph);
+
+// 	<select
+// 		name='interval'
+// 		value={graphStore.interval}
+// 		onChange={e => graphStore.setInterval(parseInt(e.target.value) as IntervalOption)}>
+// 		{graphStore.intervalOptions.map(intervalValue => (
+// 			<option key={intervalValue} value={intervalValue}>{`${intervalValue} minutes`}</option>
+// 		))}
+// 	</select>

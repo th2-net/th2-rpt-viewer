@@ -199,7 +199,17 @@ const GraphChunksVirtualizer = (props: Props) => {
 			nextItemsRef.current.style.width = `${rightPadding}px`;
 		}
 
-		setChunks(data.map(i => [getChunk(acnhorTimestamp, i), i]));
+		const updatedChunks: [Chunk, number][] = data.map(i => [getChunk(acnhorTimestamp, i), i]);
+		const isUpdated =
+			chunks.length === 0 ||
+			updatedChunks.some(
+				([chunk, virtualizerIndex], i) =>
+					chunk !== chunks[i][0] && virtualizerIndex !== chunks[i][1],
+			);
+
+		if (isUpdated) {
+			setChunks(data.map(i => [getChunk(acnhorTimestamp, i), i]));
+		}
 	};
 
 	const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {

@@ -57,6 +57,23 @@ export interface AttachedItem {
 	type: 'attached-message' | 'pinned-message' | 'event';
 }
 
+function getTicks(chunk: Chunk, interval: number, tickSize: number) {
+	const ticksArr = [];
+	const { from, to } = chunk;
+	const ticksInterval = (to - from) / interval / 1000 / 60;
+
+	for (let i = 0; i < interval; i += tickSize) {
+		ticksArr.push(
+			moment(from)
+				.startOf('minute')
+				.add(ticksInterval * i, 'minutes')
+				.valueOf(),
+		);
+	}
+
+	return ticksArr.map(tick => moment(tick).utc().format('HH:mm'));
+}
+
 interface Props {
 	chunk: Chunk;
 	chunkWidth: number;
@@ -90,27 +107,11 @@ function GraphChunk(props: Props) {
 		};
 	}, []);
 
-	const getGroupLeftPosition = (timestamp: number) => {
-		const { from, to } = chunk;
-		return ((timestamp - from) / (to - from)) * chunkWidth;
-	};
-
-	const ticks: number[] = React.useMemo(() => {
-		const ticksArr = [];
-		const { from, to } = chunk;
-		const ticksInterval = (to - from) / interval / 1000 / 60;
-
-		for (let i = 0; i < interval; i += tickSize) {
-			ticksArr.push(
-				moment(from)
-					.startOf('minute')
-					.add(ticksInterval * i, 'minutes')
-					.valueOf(),
-			);
-		}
-
-		return ticksArr;
-	}, [chunk, interval]);
+	const ticks = React.useMemo(() => getTicks(chunk, interval, tickSize), [
+		chunk,
+		interval,
+		tickSize,
+	]);
 
 	const attachedItemTimeSize = ((chunk.to - chunk.from) / chunkWidth) * ATTACHED_ITEM_SIZE;
 
@@ -123,10 +124,16 @@ function GraphChunk(props: Props) {
 			items: AttachedItem[];
 		}[] = [];
 
+		const getGroupLeftPosition = (timestamp: number) => {
+			const { from, to } = chunk;
+			return Math.floor(((timestamp - from) / (to - from)) * chunkWidth);
+		};
+
 		attachedItems.forEach(item => {
 			const itemTimestamp = getTimestampAsNumber(
 				isEventMessage(item.value) ? item.value.timestamp : item.value.startTimestamp,
 			);
+
 			const itemRange: TimeRange = [
 				itemTimestamp - attachedItemTimeSize / 2,
 				itemTimestamp + attachedItemTimeSize / 2,
@@ -187,7 +194,7 @@ function GraphChunk(props: Props) {
 			<div className='graph-chunk__ticks'>
 				{ticks.map(tick => (
 					<span className='graph-chunk__tick' key={tick}>
-						{moment(tick).utc().format('HH:mm')}
+						{tick}
 					</span>
 				))}
 			</div>
@@ -195,4 +202,4 @@ function GraphChunk(props: Props) {
 	);
 }
 
-export default GraphChunk;
+export default React.memo(GraphChunk);

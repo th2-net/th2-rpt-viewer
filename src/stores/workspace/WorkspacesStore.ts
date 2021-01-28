@@ -18,7 +18,7 @@ import { observable, action, computed, reaction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
-import TabsStore from '../TabsStore';
+import TabsStore from './TabsStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
