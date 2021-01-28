@@ -32,8 +32,10 @@ export default class WorkspaceViewStore {
 		}
 	}
 
+	// TODO: save workspace panels layout
+
 	@observable
-	public panelArea: PanelArea = PanelArea.P50;
+	public eventsPanelArea: PanelArea = PanelArea.P50;
 
 	@observable
 	public flattenedListView = false;
@@ -43,7 +45,7 @@ export default class WorkspaceViewStore {
 
 	@action
 	public setPanelArea = (panelArea: PanelArea) => {
-		this.panelArea = panelArea;
+		this.eventsPanelArea = panelArea;
 	};
 
 	@action
@@ -58,7 +60,7 @@ export default class WorkspaceViewStore {
 
 	@action
 	private init = (initalState: InitialState) => {
-		this.panelArea = initalState.panelArea ?? PanelArea.P100;
+		this.eventsPanelArea = initalState.panelArea ?? PanelArea.P100;
 		this.flattenedListView = Boolean(initalState.flattenedListView);
 	};
 }

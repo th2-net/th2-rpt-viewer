@@ -57,7 +57,7 @@ export interface AttachedItem {
 	type: 'attached-message' | 'pinned-message' | 'event';
 }
 
-function getTicks(chunk: Chunk, interval: number, tickSize: number) {
+function getGraphTimeTicks(chunk: Chunk, interval: number, tickSize: number) {
 	const ticksArr = [];
 	const { from, to } = chunk;
 	const ticksInterval = (to - from) / interval / 1000 / 60;
@@ -107,7 +107,7 @@ function GraphChunk(props: Props) {
 		};
 	}, []);
 
-	const ticks = React.useMemo(() => getTicks(chunk, interval, tickSize), [
+	const ticks = React.useMemo(() => getGraphTimeTicks(chunk, interval, tickSize), [
 		chunk,
 		interval,
 		tickSize,

@@ -54,7 +54,7 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 					timestampFrom: eventsStore.filterStore.eventsFilter.timestampFrom,
 					timestampTo: eventsStore.filterStore.eventsFilter.timestampTo,
 				},
-				panelArea: eventsStore.viewStore.panelArea,
+				panelArea: eventsStore.viewStore.eventsPanelArea,
 				selectedNodesPath: eventsStore.selectedNode
 					? [...getEventNodeParents(eventsStore.selectedNode), eventsStore.selectedNode.eventId]
 					: undefined,

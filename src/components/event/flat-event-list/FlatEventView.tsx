@@ -29,7 +29,7 @@ function EventTreeView() {
 
 	return (
 		<SplitView
-			panelArea={viewStore.panelArea}
+			panelArea={viewStore.eventsPanelArea}
 			onPanelAreaChange={viewStore.setPanelArea}
 			leftPanelMinWidth={445}
 			rightPanelMinWidth={445}>

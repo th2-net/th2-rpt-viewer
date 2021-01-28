@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 /** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -14,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+
+/* eslint-disable no-param-reassign */
 
 import * as React from 'react';
 import { createStyleSelector } from '../../helpers/styleCreators';
