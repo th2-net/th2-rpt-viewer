@@ -23,7 +23,7 @@ import { getEventNodeParents } from './event';
 import { getObjectKeys } from './object';
 
 export function createURLSearchParams(
-	_params: Record<string, string | number | boolean | null | string[]>,
+	_params: Record<string, string | number | boolean | null | string[] | undefined>,
 ) {
 	const params = new URLSearchParams();
 

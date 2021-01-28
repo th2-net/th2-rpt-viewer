@@ -17,9 +17,7 @@
 import React from 'react';
 import moment from 'moment';
 import { isEventNode } from '../../helpers/event';
-import { Result, SearchHistory } from './SearchPanel';
-import { getTimestampAsNumber } from '../../helpers/date';
-import { createStyleSelector } from '../../helpers/styleCreators';
+import { Result } from './SearchPanel';
 import { BookmarkItem } from '../BookmarksPanel';
 
 interface SearchPanelResultsProps {
@@ -30,12 +28,14 @@ interface SearchPanelResultsProps {
 	showToggler: boolean;
 	next: () => void;
 	prev: () => void;
-	results: SearchHistory;
+	results: Array<Result>;
+	timestamp: number;
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const {
 		results,
+		timestamp,
 		onResultItemClick,
 		onResultDelete,
 		disablePrev,
@@ -44,9 +44,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		next,
 		prev,
 	} = props;
-
-	const [resultPair] = Object.entries(results);
-	const [timestamp, eventActions] = resultPair;
 
 	return (
 		<div className='search-results'>
@@ -70,7 +67,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 				</button>
 			</div>
 			<hr />
-			{eventActions.map((item: Result) => (
+			{results.map((item: Result) => (
 				<BookmarkItem
 					key={isEventNode(item) ? item.eventId : item.messageId}
 					item={item}

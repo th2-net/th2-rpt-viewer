@@ -15,11 +15,11 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useMemo, useState, useReducer } from 'react';
+import React, { useEffect, useMemo, useState, useReducer, useCallback } from 'react';
 import { useActivePanel, useActiveWorkspace, useGraphStore } from '../../hooks';
 import useSetState from '../../hooks/useSetState';
 import TogglerRow from '../filter/row/TogglerRow';
-import sseApi from '../../api/sse';
+import sseApi, { SSEParams } from '../../api/sse';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import SearchPanelFilters, {
@@ -33,6 +33,7 @@ import { useSearchPanelFiltersStore } from '../../hooks/useSearchPanelFiltersSto
 import SearchPanelResults from './SearchPanelResults';
 import SearchPanelProgressBar from './SearchPanelProgressBar';
 import useLocalStorage from '../../hooks/useLocalStorage';
+import { FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
 import '../../styles/search-panel.scss';
 
 export type SearchPanelState = {
@@ -47,7 +48,9 @@ export type SearchPanelState = {
 export type Result = EventTreeNode | EventMessage;
 
 export type SearchHistory = {
-	[index: number]: Array<Result>;
+	timestamp: number;
+	results: Array<Result>;
+	request: StateHistory;
 };
 
 type SearchPanelType = 'event' | 'message';
@@ -70,7 +73,7 @@ type Action = {
 	payload?: number;
 };
 
-const reducer = (counter: Counter, action: Action): Counter => {
+const resultsCounter = (counter: Counter, action: Action): Counter => {
 	const { index, limit } = counter;
 	switch (action.type) {
 		case 'forward':
@@ -146,13 +149,9 @@ const SearchPanel = () => {
 	const [currentlyLaunchedChannel, setCurrentlyLaunchedChannel] = useState<EventSource | null>(
 		null,
 	);
-	const [searchRequestHistory, setSearchRequestHistory] = useLocalStorage<StateHistory[]>(
-		'search-requests',
-		[],
-	);
 	const [currentProgressBarPoint, setCurrentProgressBarPoint] = useState(0);
 
-	const [resultsCounterState, dispatch] = useReducer(reducer, {
+	const [resultsCounterState, dispatch] = useReducer(resultsCounter, {
 		index: searchHistory.length === 0 ? 0 : searchHistory.length - 1,
 		limit: searchHistory.length - 1,
 		disableForward: true,
@@ -161,7 +160,6 @@ const SearchPanel = () => {
 
 	const { index, disableForward, disableBackward } = resultsCounterState;
 	const currentResult = searchHistory[index];
-
 	const [formState, setFormState] = useSetState<SearchPanelState>({
 		startTimestamp: range[0],
 		searchDirection: 'next',
@@ -170,7 +168,7 @@ const SearchPanel = () => {
 		parentEvent: '',
 		stream: [],
 	});
-
+	const { startTimestamp } = formState;
 	const progressBar = {
 		startTimestamp: formState.startTimestamp,
 		endTimestamp: formState.endTimestamp,
@@ -179,8 +177,10 @@ const SearchPanel = () => {
 	};
 	const filterParams = formType === 'event' ? eventFilter : messagesFilter;
 	const disableForm = searchHistory.length > 1 && index !== searchHistory.length - 1;
-
-	const form = { formType, state: formState, setState: setFormState, disableAll: disableForm };
+	const form = useMemo(
+		() => ({ formType, state: formState, setState: setFormState, disableAll: disableForm }),
+		[formType, formState, disableForm],
+	);
 	const filters = useMemo(
 		() =>
 			formType === 'event'
@@ -196,19 +196,32 @@ const SearchPanel = () => {
 						setState: setMessagesFilter,
 						disableAll: disableForm,
 				  },
-		[formType, eventFilter, messagesFilter],
+		[formType, eventFilter, messagesFilter, disableForm],
 	);
 
-	function getFilter<T extends keyof FilterState>(name: T) {
-		return filterParams[name];
-	}
+	const formTypeTogglerConfig: FilterRowTogglerConfig = useMemo(
+		() => ({
+			type: 'toggler',
+			value: formType === 'event',
+			disabled: disableForm,
+			toggleValue: toggleFormType,
+			possibleValues: ['event', 'message'],
+			id: 'source-type',
+			label: '',
+		}),
+		[formType, disableForm],
+	);
+
+	const getFilter = useCallback(
+		function getFilter<T extends keyof FilterState>(name: T) {
+			return filterParams[name];
+		},
+		[filterParams],
+	);
 
 	const launchChannel = () => {
 		setCurrentRequestResults([]);
 		setUserStartSearch(Date.now());
-		setSearchRequestHistory((history: StateHistory[]) => {
-			return [...history, { type: formType, state: formState, filters: filterParams }];
-		});
 	};
 
 	const stopChannel = () => {
@@ -216,16 +229,32 @@ const SearchPanel = () => {
 		setCurrentlyLaunchedChannel(null);
 	};
 
+	const onChannelResponse = useCallback(
+		(ev: Event | MessageEvent) => {
+			const data = (ev as MessageEvent).data;
+			const searchedEventTimestamp = JSON.parse((ev as MessageEvent).lastEventId).timestamp;
+			setCurrentProgressBarPoint(searchedEventTimestamp - formState.startTimestamp);
+			setCurrentRequestResults(res => [...res, JSON.parse(data)]);
+		},
+		[startTimestamp],
+	);
+
 	const delSearchHistoryItem = () => {
 		setSearchHistory((history: SearchHistory[]) => [
 			...history.slice(0, index),
 			...history.slice(index + 1),
 		]);
-		setSearchRequestHistory((history: StateHistory[]) => [
-			...history.slice(0, index),
-			...history.slice(index + 1),
-		]);
 	};
+
+	useEffect(() => {
+		if (currentlyLaunchedChannel) {
+			currentlyLaunchedChannel.addEventListener(formType, onChannelResponse);
+			currentlyLaunchedChannel.addEventListener('close', () => {
+				currentlyLaunchedChannel.close();
+				setCurrentlyLaunchedChannel(null);
+			});
+		}
+	}, [currentlyLaunchedChannel, formType]);
 
 	useEffect(() => {
 		setEventFilter(getDefaultFilterState(eventFilterInfo));
@@ -241,6 +270,7 @@ const SearchPanel = () => {
 			return;
 		}
 		const {
+			// eslint-disable-next-line no-shadow
 			startTimestamp,
 			searchDirection,
 			resultCountLimit,
@@ -249,13 +279,8 @@ const SearchPanel = () => {
 			stream,
 		} = formState;
 
-		const currentFilters = formType === 'event' ? eventFilterInfo : messagesFilterInfo;
-
-		const filtersToAdd = currentFilters
-			.filter((info: SSEFilterInfo) => {
-				const values = getFilter(info.name).values;
-				return values.length !== 0;
-			})
+		const filtersToAdd = filters.info
+			.filter((info: SSEFilterInfo) => getFilter(info.name).values.length !== 0)
 			.map((info: SSEFilterInfo) => info.name);
 
 		const filterValues = filtersToAdd.map(filter => {
@@ -277,20 +302,12 @@ const SearchPanel = () => {
 			...Object.fromEntries([...filterValues, ...filterInclusion]),
 		};
 
-		const queryParams = formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
+		const queryParams: SSEParams =
+			formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
 		setCurrentlyLaunchedChannel(
 			sseApi.getEventSource({
 				type: formType,
 				queryParams,
-				listener: (ev: Event | MessageEvent) => {
-					const data = (ev as MessageEvent).data;
-					const searchedEventTimestamp = JSON.parse((ev as MessageEvent).lastEventId).timestamp;
-					setCurrentProgressBarPoint(searchedEventTimestamp - formState.startTimestamp);
-					setCurrentRequestResults(res => [...res, JSON.parse(data)]);
-				},
-				onClose: () => {
-					setCurrentlyLaunchedChannel(null);
-				},
 			}),
 		);
 	}, [userStartSearch]);
@@ -299,15 +316,19 @@ const SearchPanel = () => {
 		if (!currentlyLaunchedChannel && userStartSearch && currentRequestResults.length > 0) {
 			setSearchHistory((history: SearchHistory[]) => [
 				...history,
-				{ [userStartSearch]: currentRequestResults },
+				{
+					results: currentRequestResults,
+					timestamp: userStartSearch,
+					request: { type: formType, state: formState, filters: filterParams },
+				},
 			]);
 		}
 	}, [currentlyLaunchedChannel, userStartSearch, currentRequestResults]);
 
 	useEffect(() => {
-		if (searchRequestHistory[index]) {
+		if (searchHistory[index]) {
 			// eslint-disable-next-line no-shadow
-			const { type, state, filters } = searchRequestHistory[index];
+			const { type, state, filters } = searchHistory[index].request;
 			setFormType(type);
 			setFormState(state);
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -318,17 +339,7 @@ const SearchPanel = () => {
 	return (
 		<div className='search-panel' ref={searchPanelRef}>
 			<div className='search-panel__toggle'>
-				<TogglerRow
-					config={{
-						type: 'toggler',
-						value: formType === 'event',
-						disabled: disableForm,
-						toggleValue: toggleFormType,
-						possibleValues: ['event', 'message'],
-						id: 'source-type',
-						label: '',
-					}}
-				/>
+				<TogglerRow config={formTypeTogglerConfig} />
 			</div>
 			<div className='search-panel__form'>
 				<div className='search-panel__fields'>
@@ -349,7 +360,8 @@ const SearchPanel = () => {
 			<SearchPanelProgressBar {...progressBar} />
 			{currentResult && (
 				<SearchPanelResults
-					results={currentResult}
+					results={currentResult.results}
+					timestamp={currentResult.timestamp}
 					onResultItemClick={activeWorkspace.onSavedItemSelect}
 					onResultDelete={delSearchHistoryItem}
 					showToggler={searchHistory.length > 1}

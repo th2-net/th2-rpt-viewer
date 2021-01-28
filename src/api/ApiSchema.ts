@@ -20,6 +20,7 @@ import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
 import { SSEFilterInfo } from '../stores/SearchPanelFiltersStore';
 import { TimeRange } from '../models/Timestamp';
+import { SSEParams } from './sse';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
@@ -29,9 +30,7 @@ export default interface ApiSchema {
 
 export interface EventSourceConfig {
 	type: 'event' | 'message';
-	queryParams: Record<string, string | number | boolean | null | string[]>;
-	listener: (this: EventSource, ev: Event | MessageEvent) => void;
-	onClose: () => void;
+	queryParams: SSEParams;
 }
 
 export interface EventApiSchema {
@@ -77,7 +76,7 @@ export interface MessageApiSchema {
 
 export interface SSESchema {
 	getEventSource: (config: EventSourceConfig) => EventSource;
-	getFilters: (filterType: 'events' | 'messages') => Promise<[string]>;
+	getFilters: (filterType: 'events' | 'messages') => Promise<string[]>;
 	getFiltersInfo: (
 		filterType: 'events' | 'messages',
 		filters: string[],
