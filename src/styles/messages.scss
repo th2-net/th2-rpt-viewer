@@ -461,119 +461,63 @@
 
 .mc-skeleton {
 	@include skeleton-pulse;
-	box-sizing: border-box;
-	display: grid;
-	grid-template-areas:
-		'mc-header'
-		'delimiter'
-		'mc-body';
-	grid-row-gap: 12px;
-	border: 2px solid $skeletonBackgroundColor;
-	border-radius: 5px;
-	padding: 15px;
-	margin: 6px 0;
-	position: relative;
+	margin-bottom: 5px;
+	flex-direction: column;
+	padding: 10px;
 
 	&__header {
-		grid-area: mc-header;
-		display: grid;
-		grid-template-rows: 20px;
-		grid-template-columns: 1.1fr 1.2fr 2fr 40px;
-		grid-row-gap: 6px;
-		grid-template-areas: 'timestamp name session beautify';
-		align-items: center;
+		display: flex;
+		column-gap: 3px;
+		height: 11px;
+		width: 100%;
 	}
 
-	&__icons,
+	&__body {
+		margin-top: 10px;
+		display: flex;
+		flex-direction: column;
+		row-gap: 5px;
+	}
+
 	&__timestamp,
-	&__session,
-	&__name,
-	&__beautify,
-	&__icons-el,
-	&__session-el,
-	&__title,
-	&__value {
+	&__key,
+	&__icon,
+	&__value,
+	&__text {
 		@include skeleton;
 		height: 100%;
 	}
 
-	&__icons {
-		grid-area: icons;
-		background-color: white;
-	}
-
-	&__icons-el {
-		width: 20px;
-		display: inline-block;
-		margin-right: 8px;
-	}
-
 	&__timestamp {
-		grid-area: timestamp;
-		width: 75%;
-	}
-
-	&__session {
-		width: 75%;
-		grid-area: session;
-		background-color: white;
-		display: grid;
-		grid-column-gap: 15px;
-		grid-template-columns: 50px 1fr 20px 1fr;
-	}
-
-	&__name {
-		background-color: white;
-		grid-area: name;
-		width: 75%;
-		display: grid;
-		grid-column-gap: 15px;
-		grid-template-columns: 50px 1fr;
-	}
-
-	&__beautify {
-		grid-area: beautify;
-		width: 32px;
-		height: 22px;
-		justify-self: end;
-		align-self: center;
-	}
-
-	&__delimiter {
-		height: 2px;
-		background-color: $skeletonBackgroundColor;
-		grid-area: delimiter;
-	}
-
-	&__body {
-		grid-area: mc-body;
-		display: grid;
-		grid-template-rows: 16px 16px;
-		grid-template-columns: 1.2fr 1fr;
-		grid-row-gap: 7px;
-		grid-template-areas:
-			'text1 text1'
-			'text2 type';
-	}
-
-	&__body-text1,
-	&__body-text2,
-	&__body-type {
 		@include skeleton;
+		width: 105px;
+		height: 100%;
 	}
 
-	&__body-text1 {
-		grid-area: text1;
+	&__key {
+		margin-left: 2px;
+		width: 13px;
 	}
 
-	&__body-text2 {
-		grid-area: text2;
+	&__icon {
+		width: 13px;
 	}
 
-	&__body-type {
-		justify-self: end;
-		grid-area: type;
-		width: 55px;
+	&__value {
+		width: 40px;
+
+		&.wide {
+			flex-grow: 1;
+		}
+	}
+
+	&__text {
+		height: 11px;
+		width: 100%;
+
+		&:last-child {
+			width: 75%;
+		}
 	}
 }
 
