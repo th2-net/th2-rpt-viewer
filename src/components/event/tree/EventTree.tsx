@@ -46,7 +46,8 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	}
 
 	const nestingLevel =
-		(viewStore.panelArea === PanelArea.P25 ? 20 : 35) * getEventNodeParents(eventTreeNode).length;
+		(viewStore.eventsPanelArea === PanelArea.P25 ? 20 : 35) *
+		getEventNodeParents(eventTreeNode).length;
 	return (
 		<div className='event-tree-card' style={{ paddingLeft: nestingLevel }}>
 			<ExpandIcon

@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 /** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -15,12 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
+/* eslint-disable no-param-reassign */
+
 import * as React from 'react';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import { useWorkspaceStore } from '../../hooks';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 
 const MIN_PANEL_WIDTH = 15;
+
+export type WorkspacePanelsLayout = [number, number, number, number];
 
 interface Panel {
 	title: string;
@@ -37,6 +40,7 @@ export interface Props {
 }
 
 function WorkspaceSplitter(props: Props) {
+	const viewStore = useWorkspaceViewStore();
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const clickStartX = React.useRef(0);
 	const activeSplitter = React.useRef<HTMLDivElement | null>(null);
@@ -64,9 +68,18 @@ function WorkspaceSplitter(props: Props) {
 
 	React.useLayoutEffect(() => {
 		if (rootRef.current) {
-			panelsRefs.current.forEach(panelRef => {
+			panelsRefs.current.forEach((panelRef, index) => {
 				if (panelRef.current) {
-					panelRef.current.style.width = `25%`;
+					panelRef.current.style.width = `${viewStore.panelsLayout[index]}%`;
+					const widthInPx =
+						(rootRef.current!.getBoundingClientRect().width * viewStore.panelsLayout[index]) / 100;
+					if (Math.floor(widthInPx) <= MIN_PANEL_WIDTH) {
+						if (!panelRef.current.classList.contains('minified')) {
+							panelRef.current.classList.add('minified');
+						}
+					} else if (panelRef.current.classList.contains('minified')) {
+						panelRef.current.classList.remove('minified');
+					}
 				}
 			});
 		}
@@ -108,6 +121,8 @@ function WorkspaceSplitter(props: Props) {
 			document.removeEventListener('mouseup', onMouseUp);
 		}
 
+		const rootWidth = rootRef.current!.getBoundingClientRect().width;
+
 		const widths = splittersRefs.current.map((splitterRef, index) => {
 			const { left, width } = splitterRef.current!.getBoundingClientRect();
 			const nextSplitter = splittersRefs.current[index + 1];
@@ -118,6 +133,10 @@ function WorkspaceSplitter(props: Props) {
 					  rootRef.current!.getBoundingClientRect().left;
 			return right - (left + width);
 		});
+
+		viewStore.panelsLayout = widths.map(w =>
+			parseFloat(((w / (rootWidth - MIN_PANEL_WIDTH * 4)) * 100).toFixed(2)),
+		) as WorkspacePanelsLayout;
 
 		panelsRefs.current.forEach((panelRef, index) => {
 			if (panelRef.current) {
@@ -254,11 +273,9 @@ function WorkspaceSplitter(props: Props) {
 							<div className='pane__line' style={{ backgroundColor: panel.color }}></div>
 						</div>
 						<div className='pane__wrapper'>
-							<div className='pane__header-white-background'>
-								<div className='pane__header' style={{ backgroundColor: panel.color }}>
-									<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon-white`} />
-									{panel.title}
-								</div>
+							<div className='pane__header' style={{ backgroundColor: panel.color }}>
+								<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon-white`} />
+								{panel.title}
 							</div>
 							<div className='pane__main'>{panel.component}</div>
 						</div>

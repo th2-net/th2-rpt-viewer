@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 /** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -17,12 +16,11 @@
 
 import * as React from 'react';
 import moment from 'moment';
-import { observer } from 'mobx-react-lite';
 import { LineChart, Line, LineProps } from 'recharts';
 import { getTimestampAsNumber, isTimeIntersected } from '../../helpers/date';
 import { EventMessage } from '../../models/EventMessage';
-import { Chunk } from '../../models/graph';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { Chunk, GraphItem } from '../../models/Graph';
+import { EventTreeNode } from '../../models/EventAction';
 import { isEventMessage } from '../../helpers/event';
 import GraphAttachedItemGroup from './GraphAttachedItemGroup';
 import { TimeRange } from '../../models/Timestamp';
@@ -55,8 +53,25 @@ const graphLines = [
 ] as const;
 
 export interface AttachedItem {
-	value: EventMessage | EventTreeNode;
+	value: GraphItem;
 	type: 'attached-message' | 'pinned-message' | 'event';
+}
+
+function getGraphTimeTicks(chunk: Chunk, interval: number, tickSize: number) {
+	const ticksArr = [];
+	const { from, to } = chunk;
+	const ticksInterval = (to - from) / interval / 1000 / 60;
+
+	for (let i = 0; i < interval; i += tickSize) {
+		ticksArr.push(
+			moment(from)
+				.startOf('minute')
+				.add(ticksInterval * i, 'minutes')
+				.valueOf(),
+		);
+	}
+
+	return ticksArr.map(tick => moment(tick).utc().format('HH:mm'));
 }
 
 interface Props {
@@ -70,7 +85,7 @@ interface Props {
 	tickSize: number;
 }
 
-const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props, ref) => {
+function GraphChunk(props: Props) {
 	const {
 		chunk,
 		getChunkData,
@@ -84,6 +99,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
+
 		getChunkData(chunk, abortController.signal);
 
 		return () => {
@@ -91,27 +107,11 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 		};
 	}, []);
 
-	const getGroupLeftPosition = (timestamp: number) => {
-		const { from, to } = chunk;
-		return ((timestamp - from) / (to - from)) * chunkWidth;
-	};
-
-	const ticks: number[] = React.useMemo(() => {
-		const ticksArr = [];
-		const { from, to } = chunk;
-		const ticksInterval = (to - from) / interval / 1000 / 60;
-
-		for (let i = 0; i < interval; i += tickSize) {
-			ticksArr.push(
-				moment(from)
-					.startOf('minute')
-					.add(ticksInterval * i, 'minutes')
-					.valueOf(),
-			);
-		}
-
-		return ticksArr;
-	}, [chunk, interval]);
+	const ticks = React.useMemo(() => getGraphTimeTicks(chunk, interval, tickSize), [
+		chunk,
+		interval,
+		tickSize,
+	]);
 
 	const attachedItemTimeSize = ((chunk.to - chunk.from) / chunkWidth) * ATTACHED_ITEM_SIZE;
 
@@ -124,10 +124,16 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 			items: AttachedItem[];
 		}[] = [];
 
+		const getGroupLeftPosition = (timestamp: number) => {
+			const { from, to } = chunk;
+			return Math.floor(((timestamp - from) / (to - from)) * chunkWidth);
+		};
+
 		attachedItems.forEach(item => {
 			const itemTimestamp = getTimestampAsNumber(
 				isEventMessage(item.value) ? item.value.timestamp : item.value.startTimestamp,
 			);
+
 			const itemRange: TimeRange = [
 				itemTimestamp - attachedItemTimeSize / 2,
 				itemTimestamp + attachedItemTimeSize / 2,
@@ -163,7 +169,7 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 	}, [attachedItems]);
 
 	return (
-		<div className='graph-chunk' ref={ref} data-from={chunk.from} data-to={chunk.to}>
+		<div className='graph-chunk' data-from={chunk.from} data-to={chunk.to}>
 			{attachedItemsGroups.map((group, index) => (
 				<GraphAttachedItemGroup
 					key={index}
@@ -188,12 +194,12 @@ const GraphChunk: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (props
 			<div className='graph-chunk__ticks'>
 				{ticks.map(tick => (
 					<span className='graph-chunk__tick' key={tick}>
-						{moment(tick).utc().format('HH:mm')}
+						{tick}
 					</span>
 				))}
 			</div>
 		</div>
 	);
-};
+}
 
-export default observer<Props, HTMLDivElement>(GraphChunk, { forwardRef: true });
+export default React.memo(GraphChunk);

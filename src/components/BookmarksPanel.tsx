@@ -26,7 +26,7 @@ import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import '../styles/bookmarks.scss';
 
-type SavedItem = EventMessage | EventTreeNode;
+type BookmarkedItem = EventMessage | EventTreeNode;
 
 function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
@@ -34,11 +34,11 @@ function BookmarksPanel() {
 
 	const { ref: panelRef } = useActivePanel(null);
 
-	function onBookmarkRemove(item: SavedItem) {
+	function onBookmarkRemove(item: BookmarkedItem) {
 		return selectedStore.removeSavedItem(item);
 	}
 
-	function onBookmarkClick(item: SavedItem) {
+	function onBookmarkClick(item: BookmarkedItem) {
 		return workspaceStore.onSavedItemSelect(item);
 	}
 
@@ -74,9 +74,9 @@ function BookmarksPanel() {
 export default observer(BookmarksPanel);
 
 interface BookmarkItemProps {
-	item: SavedItem;
-	onRemove?: (item: SavedItem) => void;
-	onClick?: (item: SavedItem) => void;
+	item: BookmarkedItem;
+	onRemove?: (item: BookmarkedItem) => void;
+	onClick?: (item: BookmarkedItem) => void;
 }
 
 export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {

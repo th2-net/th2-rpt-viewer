@@ -18,8 +18,7 @@ import { observable, action, computed, reaction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
-import TabsStore from '../TabsStore';
-import GraphStore from '../graph/GraphStore';
+import TabsStore from './TabsStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
@@ -29,11 +28,7 @@ export default class WorkspacesStore {
 
 	tabsStore: TabsStore;
 
-	constructor(
-		private api: ApiSchema,
-		private graphStore: GraphStore,
-		initialState: WorkspacesUrlState | null,
-	) {
+	constructor(private api: ApiSchema, initialState: WorkspacesUrlState | null) {
 		this.init(initialState);
 
 		this.tabsStore = new TabsStore(this);
@@ -85,12 +80,6 @@ export default class WorkspacesStore {
 	};
 
 	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {
-		return new WorkspaceStore(
-			this,
-			this.selectedStore,
-			this.graphStore,
-			this.api,
-			workspaceInitialState,
-		);
+		return new WorkspaceStore(this, this.selectedStore, this.api, workspaceInitialState);
 	};
 }

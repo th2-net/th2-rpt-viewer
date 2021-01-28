@@ -18,11 +18,10 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
-import { useGraphStore, useMessagesWorkspaceStore } from '../../hooks';
+import { useMessagesWorkspaceStore } from '../../hooks';
 
 const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
-	const graphStore = useGraphStore();
 	const { filterStore } = messagesStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);

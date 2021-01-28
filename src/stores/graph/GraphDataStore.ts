@@ -14,20 +14,22 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, reaction } from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { getTimestampAsNumber, isTimeInsideInterval, isTimeIntersected } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
-import { Chunk, ChunkData, IntervalData, OverlayValues, IntervalOption } from '../../models/graph';
+import { Chunk, ChunkData, IntervalData, OverlayValues, IntervalOption } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import { SelectedStore } from '../SelectedStore';
-import WorkspaceStore from '../workspace/WorkspaceStore';
-import GraphStore from './GraphStore';
 
 export class GraphDataStore {
+	public readonly steps = {
+		15: 1,
+		30: 3,
+		60: 5,
+	};
+
 	constructor(
-		private workspaceStore: WorkspaceStore,
-		private graphStore: GraphStore,
 		private selectedStore: SelectedStore,
 		timeRange: TimeRange | null = null,
 		defaultInterval: IntervalOption = 15,
@@ -39,10 +41,10 @@ export class GraphDataStore {
 
 		reaction(
 			() => this.interval,
-			interval => this.createChunks(interval, this.graphStore.timestamp),
+			interval => this.createChunks(interval, this.timestamp),
 		);
 
-		this.createChunks(this.interval, this.graphStore.timestamp);
+		this.createChunks(this.interval, this.timestamp);
 	}
 
 	@observable
@@ -62,6 +64,10 @@ export class GraphDataStore {
 		moment(this.timestamp).utc().valueOf(),
 		this.interval,
 	);
+
+	@computed get tickSize() {
+		return this.steps[this.interval];
+	}
 
 	@action
 	public setTimestamp = (timestamp: number) => {
@@ -91,7 +97,7 @@ export class GraphDataStore {
 	@action
 	public getChunkData = (chunk: Chunk, abortSignal?: AbortSignal) => {
 		const { from } = chunk;
-		const step = this.graphStore.steps[this.interval];
+		const step = this.steps[this.interval];
 		const steps = this.interval / step;
 		const data: ChunkData[] = [];
 		for (let i = 0; i < steps + 1; i++) {
