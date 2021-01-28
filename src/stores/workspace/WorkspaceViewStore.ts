@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { observable, action } from 'mobx';
+import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import PanelArea from '../../util/PanelArea';
 import EventsStore from '../events/EventsStore';
 import MessagesStore from '../messages/MessagesStore';
@@ -23,7 +24,11 @@ type InitialState = Partial<{
 	panelArea: PanelArea;
 	isLoading: boolean;
 	flattenedListView: boolean;
+	panelsLayout: WorkspacePanelsLayout;
 }>;
+
+const defaultPanelsLayout: WorkspacePanelsLayout =
+	process.env.NODE_ENV === 'development' ? [25, 25, 25, 25] : [100, 0, 0, 0];
 
 export default class WorkspaceViewStore {
 	constructor(initalState?: InitialState) {
@@ -32,10 +37,11 @@ export default class WorkspaceViewStore {
 		}
 	}
 
-	// TODO: save workspace panels layout
-
 	@observable
 	public eventsPanelArea: PanelArea = PanelArea.P50;
+
+	@observable
+	public panelsLayout: WorkspacePanelsLayout = defaultPanelsLayout;
 
 	@observable
 	public flattenedListView = false;
@@ -62,5 +68,6 @@ export default class WorkspaceViewStore {
 	private init = (initalState: InitialState) => {
 		this.eventsPanelArea = initalState.panelArea ?? PanelArea.P100;
 		this.flattenedListView = Boolean(initalState.flattenedListView);
+		this.panelsLayout = initalState.panelsLayout ?? defaultPanelsLayout;
 	};
 }

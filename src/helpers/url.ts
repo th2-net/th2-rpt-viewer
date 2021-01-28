@@ -82,6 +82,7 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 				messages: {},
 				timeRange: activeWorkspace.graphDataStore.range,
 				interval: activeWorkspace.graphDataStore.interval,
+				layout: activeWorkspace.viewStore.panelsLayout,
 			}),
 		];
 

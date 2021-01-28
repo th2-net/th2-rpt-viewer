@@ -33,12 +33,14 @@ import { getTimestampAsNumber } from '../../helpers/date';
 import { isEventNode } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
+import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;
 	messages: Partial<MessagesStoreURLState>;
 	timeRange: TimeRange | null;
 	interval: number | null;
+	layout: WorkspacePanelsLayout;
 }
 
 export type WorkspaceInitialState = Partial<{
@@ -46,6 +48,7 @@ export type WorkspaceInitialState = Partial<{
 	messages: MessagesStoreDefaultStateType;
 	timeRange: TimeRange | null;
 	interval: number | null;
+	layout: WorkspacePanelsLayout;
 }>;
 
 export default class WorkspaceStore {
@@ -80,7 +83,7 @@ export default class WorkspaceStore {
 			this.api,
 			initialState.messages || null,
 		);
-		this.viewStore = new WorkspaceViewStore();
+		this.viewStore = new WorkspaceViewStore({ panelsLayout: initialState.layout });
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 
