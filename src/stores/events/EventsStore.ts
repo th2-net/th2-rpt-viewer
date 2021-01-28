@@ -44,11 +44,11 @@ export type EventStoreURLState = Partial<{
 export type EventStoreDefaultStateType = EventsStore | EventStoreURLState | null;
 
 export default class EventsStore {
-	filterStore: FilterStore = new FilterStore();
+	filterStore = new FilterStore();
 
-	viewStore: ViewStore = new ViewStore();
+	viewStore = new ViewStore();
 
-	searchStore: EventsSearchStore = new EventsSearchStore(this.api, this, this.graphStore);
+	searchStore = new EventsSearchStore(this.api, this, this.graphStore);
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
@@ -147,8 +147,8 @@ export default class EventsStore {
 	@action
 	public selectNode = (eventTreeNode: EventTreeNode | null) => {
 		this.selectedNode = eventTreeNode;
-		if (this.viewStore.panelArea === PanelArea.P100) {
-			this.viewStore.panelArea = PanelArea.P50;
+		if (this.viewStore.eventsPanelArea === PanelArea.P100) {
+			this.viewStore.eventsPanelArea = PanelArea.P50;
 		}
 	};
 
@@ -316,7 +316,7 @@ export default class EventsStore {
 		this.expandPath(store.selectedPath.map(n => n.eventId));
 		this.viewStore = new ViewStore({
 			flattenedListView: store.viewStore.flattenedListView.valueOf(),
-			panelArea: store.viewStore.panelArea,
+			panelArea: store.viewStore.eventsPanelArea,
 		});
 		this.filterStore = new FilterStore(store.filterStore);
 		this.searchStore = new EventsSearchStore(this.api, this, this.graphStore, {
@@ -347,7 +347,7 @@ export default class EventsStore {
 			flattenedListView,
 			selectedParentId,
 		} = initialState;
-		this.viewStore.panelArea = panelArea;
+		this.viewStore.eventsPanelArea = panelArea;
 
 		this.filterStore = new FilterStore({ eventsFilter: filter });
 		this.searchStore = new EventsSearchStore(this.api, this, this.graphStore, {

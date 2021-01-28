@@ -15,16 +15,16 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
+import { Observer, observer } from 'mobx-react-lite';
 import moment from 'moment';
 import ResizeObserver from 'resize-observer-polyfill';
 import GraphChunk, { AttachedItem } from './GraphChunk';
 import GraphOverlay from './GraphOverlay';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
-import { useActiveWorkspace, useGraphStore, useSelectedStore } from '../../hooks';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { useActiveWorkspace, useSelectedStore } from '../../hooks';
+import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { Chunk } from '../../models/graph';
+import { Chunk, GraphItem } from '../../models/Graph';
 import { filterListByChunkRange } from '../../helpers/graph';
 import { isEventNode } from '../../helpers/event';
 import '../../styles/graph.scss';
@@ -38,10 +38,9 @@ const settings: Settings = {
 	minIndex: -100,
 	maxIndex: 100,
 	startIndex: 0,
-};
+} as const;
 
 function Graph() {
-	const graphStore = useGraphStore();
 	const selectedStore = useSelectedStore();
 	const activeWorkspace = useActiveWorkspace();
 
@@ -49,9 +48,7 @@ function Graph() {
 
 	const [chunkWidth, setChunkWidth] = React.useState(getChunkWidth);
 
-	const [expandedAttachedItem, setExpandedAttachedItem] = React.useState<
-		EventTreeNode | EventMessage | null
-	>(null);
+	const [expandedAttachedItem, setExpandedAttachedItem] = React.useState<GraphItem | null>(null);
 
 	const resizeObserver = React.useRef(
 		new ResizeObserver(() => {
@@ -67,12 +64,28 @@ function Graph() {
 		};
 	}, []);
 
+	const onGraphItemClick = React.useCallback(
+		(item: EventTreeNode | EventMessage | null) => {
+			setExpandedAttachedItem(item);
+			if (item !== null) activeWorkspace.onSavedItemSelect(item);
+		},
+		[activeWorkspace.onSavedItemSelect],
+	);
+
+	const onInputSubmit = React.useCallback(
+		(timestamp: number) => {
+			if (new Date(timestamp).valueOf() > 1) {
+				activeWorkspace.graphDataStore.setTimestamp(timestamp);
+			}
+		},
+		[activeWorkspace.graphDataStore.setTimestamp],
+	);
+
 	const renderChunk = (chunk: Chunk, index: number) => {
-		const attachedItems: AttachedItem[] = filterListByChunkRange(chunk, [
-			...selectedStore.pinnedEvents,
-			...selectedStore.attachedMessages,
-			...selectedStore.pinnedMessages,
-		]).map(item => ({
+		const attachedItems: AttachedItem[] = filterListByChunkRange(
+			chunk,
+			selectedStore.graphItems,
+		).map(item => ({
 			value: item,
 			type: isEventNode(item)
 				? 'event'
@@ -82,46 +95,40 @@ function Graph() {
 		}));
 
 		return (
-			<div
-				data-from={moment(chunk.from).startOf('minute').valueOf()}
-				data-to={moment(chunk.to).endOf('minute').valueOf()}
-				className='graph__chunk-item'
-				data-index={index}
-				key={`${chunk.from}-${chunk.to}`}
-				style={{ width: chunkWidth }}>
-				<GraphChunk
-					tickSize={graphStore.steps[activeWorkspace.graphDataStore.interval]}
-					interval={activeWorkspace.graphDataStore.interval}
-					chunk={chunk}
-					chunkWidth={chunkWidth}
-					getChunkData={activeWorkspace.graphDataStore.getChunkData}
-					attachedItems={attachedItems}
-					expandedAttachedItem={expandedAttachedItem}
-					setExpandedAttachedItem={onGraphItemClick}
-				/>
-			</div>
+			<Observer key={`${chunk.from}-${chunk.to}`}>
+				{() => (
+					<div
+						data-from={moment(chunk.from).startOf('minute').valueOf()}
+						data-to={moment(chunk.to).endOf('minute').valueOf()}
+						className='graph__chunk-item'
+						data-index={index}
+						style={{ width: chunkWidth }}>
+						<GraphChunk
+							tickSize={activeWorkspace.graphDataStore.tickSize}
+							interval={activeWorkspace.graphDataStore.interval}
+							chunk={chunk}
+							chunkWidth={chunkWidth}
+							getChunkData={activeWorkspace.graphDataStore.getChunkData}
+							attachedItems={attachedItems}
+							expandedAttachedItem={expandedAttachedItem}
+							setExpandedAttachedItem={onGraphItemClick}
+						/>
+					</div>
+				)}
+			</Observer>
 		);
 	};
 
-	const onGraphItemClick = (item: EventTreeNode | EventMessage | null) => {
-		setExpandedAttachedItem(item);
-		if (item !== null) activeWorkspace.onSavedItemSelect(item);
-	};
-
-	// 	<select
-	// 		name='interval'
-	// 		value={graphStore.interval}
-	// 		onChange={e => graphStore.setInterval(parseInt(e.target.value) as IntervalOption)}>
-	// 		{graphStore.intervalOptions.map(intervalValue => (
-	// 			<option key={intervalValue} value={intervalValue}>{`${intervalValue} minutes`}</option>
-	// 		))}
-	// 	</select>
-
-	const onInputSubmit = (timestamp: number) => {
-		if (new Date(timestamp).valueOf() > 1) {
-			activeWorkspace.graphDataStore.setTimestamp(timestamp);
-		}
-	};
+	const getChunk = React.useCallback(
+		(timestamp: number, index: number) => {
+			return activeWorkspace.graphDataStore.getChunkByTimestamp(
+				moment(timestamp)
+					.subtract(-index * activeWorkspace.graphDataStore.interval, 'minutes')
+					.valueOf(),
+			);
+		},
+		[activeWorkspace, activeWorkspace.graphDataStore.interval],
+	);
 
 	return (
 		<div className='graph' ref={rootRef}>
@@ -132,13 +139,7 @@ function Graph() {
 				renderChunk={renderChunk}
 				setRange={activeWorkspace.graphDataStore.setRange}
 				onRangeChanged={activeWorkspace.onRangeChange}
-				getChunk={(timestamp: number, index: number) => {
-					return activeWorkspace.graphDataStore.getChunkByTimestamp(
-						moment(timestamp)
-							.subtract(-index * activeWorkspace.graphDataStore.interval, 'minutes')
-							.valueOf(),
-					);
-				}}
+				getChunk={getChunk}
 				interval={activeWorkspace.graphDataStore.interval}
 				timestamp={activeWorkspace.graphDataStore.timestamp}
 				key={activeWorkspace.graphDataStore.timestamp}
@@ -153,3 +154,12 @@ function Graph() {
 }
 
 export default observer(Graph);
+
+// 	<select
+// 		name='interval'
+// 		value={graphStore.interval}
+// 		onChange={e => graphStore.setInterval(parseInt(e.target.value) as IntervalOption)}>
+// 		{graphStore.intervalOptions.map(intervalValue => (
+// 			<option key={intervalValue} value={intervalValue}>{`${intervalValue} minutes`}</option>
+// 		))}
+// 	</select>

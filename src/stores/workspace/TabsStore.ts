@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import { action, observable } from 'mobx';
-import WorkspacesStore from './workspace/WorkspacesStore';
-import WorkspaceStore from './workspace/WorkspaceStore';
+import WorkspacesStore from './WorkspacesStore';
+import WorkspaceStore from './WorkspaceStore';
 
 export default class TabsStore {
 	constructor(private workspacesStore: WorkspacesStore) {}

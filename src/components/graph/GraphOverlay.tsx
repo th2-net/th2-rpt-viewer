@@ -20,10 +20,10 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useGraphStore, useSelectedStore, useWorkspaces } from '../../hooks';
+import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { OutsideItems } from '../../models/graph';
+import { OutsideItems } from '../../models/Graph';
 import TimestampInput from '../util/TimestampInput';
 import { isEventMessage, mapToTimestamps, getTimestamp } from '../../helpers/event';
 import { isMessagesStore } from '../../helpers/stores';
@@ -92,177 +92,182 @@ interface OverlayPanelProps {
 	onInputSubmit: (timestamp: number) => void;
 }
 
-const GraphOverlay = observer(
-	({ chunkWidth, range: [from, to], onInputSubmit }: OverlayPanelProps) => {
-		const graphStore = useGraphStore();
-		const selectedStore = useSelectedStore();
-		const workspaceStore = useWorkspaces().activeWorkspace;
+const GraphOverlay = (props: OverlayPanelProps) => {
+	const {
+		chunkWidth,
+		range: [from, to],
+		onInputSubmit,
+	} = props;
 
-		const overlayWidth = (window.innerWidth - chunkWidth) / 2;
-		const commonStyles: React.CSSProperties = { width: overlayWidth };
+	const selectedStore = useSelectedStore();
+	const activeWorkspace = useActiveWorkspace();
 
-		const intervalValues = React.useMemo(() => {
-			return workspaceStore.graphDataStore.getIntervalData();
-		}, [from]);
+	const overlayWidth = (window.innerWidth - chunkWidth) / 2;
+	const commonStyles: React.CSSProperties = { width: overlayWidth };
 
-		const outsideItems = React.useMemo(() => {
-			return workspaceStore.graphDataStore.getOverlayValues();
-		}, [
-			from,
-			selectedStore.attachedMessages,
-			selectedStore.pinnedMessages,
-			selectedStore.pinnedEvents,
-		]);
+	const intervalValues = React.useMemo(() => {
+		return activeWorkspace.graphDataStore.getIntervalData();
+	}, [from]);
 
-		const handleIndicatorPointerClick = (direction: 'left' | 'right') => {
-			const items = Object.values(direction === 'left' ? outsideItems.left : outsideItems.right)
-				.flatMap(groupItems => groupItems)
-				.sort((first, second) => {
-					const firstTimestamp = getTimestampAsNumber(getTimestamp(first));
-					const secondTimestamp = getTimestampAsNumber(getTimestamp(second));
-					return firstTimestamp > secondTimestamp ? 1 : -1;
-				});
-			const timestamps = items.map(item => getTimestampAsNumber(getTimestamp(item)));
-			const targetItem = items[direction === 'left' ? timestamps.length - 1 : 0];
+	const outsideItems = React.useMemo(() => {
+		return activeWorkspace.graphDataStore.getOverlayValues();
+	}, [
+		from,
+		selectedStore.attachedMessages,
+		selectedStore.pinnedMessages,
+		selectedStore.pinnedEvents,
+	]);
 
-			if (isEventMessage(targetItem) && isMessagesStore(workspaceStore.viewStore.activePanel)) {
-				workspaceStore.setAttachedMessagesIds([targetItem.messageId]);
-			}
-			graphStore.setTimestamp(timestamps[direction === 'left' ? timestamps.length - 1 : 0]);
-		};
+	const handleIndicatorPointerClick = (direction: 'left' | 'right') => {
+		const items = Object.values(direction === 'left' ? outsideItems.left : outsideItems.right)
+			.flatMap(groupItems => groupItems)
+			.sort((first, second) => {
+				const firstTimestamp = getTimestampAsNumber(getTimestamp(first));
+				const secondTimestamp = getTimestampAsNumber(getTimestamp(second));
+				return firstTimestamp > secondTimestamp ? 1 : -1;
+			});
+		const timestamps = items.map(item => getTimestampAsNumber(getTimestamp(item)));
+		const targetItem = items[direction === 'left' ? timestamps.length - 1 : 0];
 
-		const handleIdicatorItemClick = (group: keyof OutsideItems, direction: 'left' | 'right') => {
-			const items = outsideItems[direction][group].sort(
-				(first: EventTreeNode | EventMessage, second: EventTreeNode | EventMessage) => {
-					const firstTimestamp = getTimestampAsNumber(getTimestamp(first));
-					const secondTimestamp = getTimestampAsNumber(getTimestamp(second));
-					return firstTimestamp > secondTimestamp ? 1 : -1;
-				},
-			);
-			const timestamps = mapToTimestamps(items);
-			const targetItem = items[direction === 'left' ? timestamps.length - 1 : 0];
+		if (isEventMessage(targetItem) && isMessagesStore(activeWorkspace.viewStore.activePanel)) {
+			activeWorkspace.setAttachedMessagesIds([targetItem.messageId]);
+		}
+		activeWorkspace.graphDataStore.setTimestamp(
+			timestamps[direction === 'left' ? timestamps.length - 1 : 0],
+		);
+	};
 
-			if (isEventMessage(targetItem) && isMessagesStore(workspaceStore.viewStore.activePanel)) {
-				workspaceStore.setAttachedMessagesIds([targetItem.messageId]);
-			}
-			graphStore.setTimestamp(timestamps[direction === 'left' ? timestamps.length - 1 : 0]);
-		};
+	const handleIdicatorItemClick = (group: keyof OutsideItems, direction: 'left' | 'right') => {
+		const items = outsideItems[direction][group].sort(
+			(first: EventTreeNode | EventMessage, second: EventTreeNode | EventMessage) => {
+				const firstTimestamp = getTimestampAsNumber(getTimestamp(first));
+				const secondTimestamp = getTimestampAsNumber(getTimestamp(second));
+				return firstTimestamp > secondTimestamp ? 1 : -1;
+			},
+		);
+		const timestamps = mapToTimestamps(items);
+		const targetItem = items[direction === 'left' ? timestamps.length - 1 : 0];
 
-		return (
-			<>
-				<div className='graph-overlay left' style={commonStyles} />
-				<div className='graph-overlay right' style={commonStyles} />
-				<div className='graph-overlay__section' style={commonStyles}>
-					<i className='graph-overlay__logo' />
-					<Timestamp className='from' timestamp={from} />
+		if (isEventMessage(targetItem) && isMessagesStore(activeWorkspace.viewStore.activePanel)) {
+			activeWorkspace.setAttachedMessagesIds([targetItem.messageId]);
+		}
+		activeWorkspace.graphDataStore.setTimestamp(
+			timestamps[direction === 'left' ? timestamps.length - 1 : 0],
+		);
+	};
+
+	return (
+		<>
+			<div className='graph-overlay left' style={commonStyles} />
+			<div className='graph-overlay right' style={commonStyles} />
+			<div className='graph-overlay__section' style={commonStyles}>
+				<i className='graph-overlay__logo' />
+				<Timestamp className='from' timestamp={from} />
+				<AnimatePresence>
+					{Object.values(outsideItems.left).some(value => value.length !== 0) && (
+						<motion.div
+							variants={leftIndicatorVariants}
+							initial='hidden'
+							animate='visible'
+							exit='hidden'
+							className='graph__outside-items-indicator left'>
+							<i
+								onClick={() => handleIndicatorPointerClick('left')}
+								className='graph__outside-items-indicator-pointer left'
+							/>
+							<div className='graph__outside-items-wrapper'>
+								{Object.entries(outsideItems.left)
+									.filter(([_, value]) => value.length)
+									.map(([key, value]) => (
+										<div
+											key={key}
+											onClick={() => handleIdicatorItemClick(key as keyof OutsideItems, 'left')}
+											className='graph__outside-items-indicator-item'>
+											<i className={`graph__outside-items-indicator-icon ${key}`} />
+											<span className='graph__outside-items-indicator-value'>
+												{`+ ${value.length}`}
+											</span>
+										</div>
+									))}
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</div>
+			<div className='graph-overlay__section right' style={commonStyles}>
+				<Timestamp className='to' timestamp={to} />
+				<div className='graph-overlay__wrapper'>
 					<AnimatePresence>
-						{Object.values(outsideItems.left).some(value => value.length !== 0) && (
-							<motion.div
-								variants={leftIndicatorVariants}
+						{selectedStore.pinnedMessages.length > 0 && (
+							<motion.button
+								variants={fadeInOutVariants}
 								initial='hidden'
 								animate='visible'
 								exit='hidden'
-								className='graph__outside-items-indicator left'>
-								<i
-									onClick={() => handleIndicatorPointerClick('left')}
-									className='graph__outside-items-indicator-pointer left'
-								/>
+								className='graph__pinned-messages-counter'>
+								<i className='graph__pinned-messages-counter-icon' />
+								<span className='graph__pinned-messages-counter-value'>{`${selectedStore.pinnedMessages.length} saved`}</span>
+							</motion.button>
+						)}
+					</AnimatePresence>
+					<div className='graph__search-button' />
+					<div className='graph__settings-button' />
+					<AnimatePresence>
+						{Object.values(outsideItems.right).some(value => value.length !== 0) && (
+							<motion.div
+								variants={rightIndicatorVariants}
+								initial='hidden'
+								animate='visible'
+								exit='hidden'
+								className='graph__outside-items-indicator right'>
 								<div className='graph__outside-items-wrapper'>
-									{Object.entries(outsideItems.left)
+									{Object.entries(outsideItems.right)
 										.filter(([_, value]) => value.length)
 										.map(([key, value]) => (
 											<div
 												key={key}
-												onClick={() => handleIdicatorItemClick(key as keyof OutsideItems, 'left')}
+												onClick={() => handleIdicatorItemClick(key as keyof OutsideItems, 'right')}
 												className='graph__outside-items-indicator-item'>
-												<i className={`graph__outside-items-indicator-icon ${key}`} />
 												<span className='graph__outside-items-indicator-value'>
 													{`+ ${value.length}`}
 												</span>
+												<i className={`graph__outside-items-indicator-icon ${key}`} />
 											</div>
 										))}
 								</div>
+								<i
+									onClick={() => handleIndicatorPointerClick('right')}
+									className='graph__outside-items-indicator-pointer right'
+								/>
 							</motion.div>
 						)}
 					</AnimatePresence>
 				</div>
-				<div className='graph-overlay__section right' style={commonStyles}>
-					<Timestamp className='to' timestamp={to} />
-					<div className='graph-overlay__wrapper'>
-						<AnimatePresence>
-							{selectedStore.pinnedMessages.length > 0 && (
-								<motion.button
-									variants={fadeInOutVariants}
-									initial='hidden'
-									animate='visible'
-									exit='hidden'
-									className='graph__pinned-messages-counter'>
-									<i className='graph__pinned-messages-counter-icon' />
-									<span className='graph__pinned-messages-counter-value'>{`${selectedStore.pinnedMessages.length} saved`}</span>
-								</motion.button>
+			</div>
+			<div className='graph-range-selector' style={{ width: chunkWidth, left: overlayWidth }}>
+				<div className='graph-range-selector__wrapper'>
+					{Object.entries(intervalValues).map(([key, value], index) => (
+						<div
+							key={key}
+							style={{
+								order: index,
+							}}
+							className={`graph-range-selector__counter ${key}`}>
+							{['passed', 'failed', 'connected'].includes(key) && (
+								<i className='graph-range-selector__counter-icon' />
 							)}
-						</AnimatePresence>
-						<div className='graph__search-button' />
-						<div className='graph__settings-button' />
-						<AnimatePresence>
-							{Object.values(outsideItems.right).some(value => value.length !== 0) && (
-								<motion.div
-									variants={rightIndicatorVariants}
-									initial='hidden'
-									animate='visible'
-									exit='hidden'
-									className='graph__outside-items-indicator right'>
-									<div className='graph__outside-items-wrapper'>
-										{Object.entries(outsideItems.right)
-											.filter(([_, value]) => value.length)
-											.map(([key, value]) => (
-												<div
-													key={key}
-													onClick={() =>
-														handleIdicatorItemClick(key as keyof OutsideItems, 'right')
-													}
-													className='graph__outside-items-indicator-item'>
-													<span className='graph__outside-items-indicator-value'>
-														{`+ ${value.length}`}
-													</span>
-													<i className={`graph__outside-items-indicator-icon ${key}`} />
-												</div>
-											))}
-									</div>
-									<i
-										onClick={() => handleIndicatorPointerClick('right')}
-										className='graph__outside-items-indicator-pointer right'
-									/>
-								</motion.div>
-							)}
-						</AnimatePresence>
-					</div>
+							<span className='graph-range-selector__counter-value'>{`${value} ${key}`}</span>
+						</div>
+					))}
+					<TimestampInput
+						wrapperClassName='graph-range-selector__timestamp-input timestamp-input'
+						onSubmit={onInputSubmit}
+					/>
 				</div>
-				<div className='graph-range-selector' style={{ width: chunkWidth, left: overlayWidth }}>
-					<div className='graph-range-selector__wrapper'>
-						{Object.entries(intervalValues).map(([key, value], index) => (
-							<div
-								key={key}
-								style={{
-									order: index,
-								}}
-								className={`graph-range-selector__counter ${key}`}>
-								{['passed', 'failed', 'connected'].includes(key) && (
-									<i className='graph-range-selector__counter-icon' />
-								)}
-								<span className='graph-range-selector__counter-value'>{`${value} ${key}`}</span>
-							</div>
-						))}
-						<TimestampInput
-							wrapperClassName='graph-range-selector__timestamp-input timestamp-input'
-							onSubmit={onInputSubmit}
-						/>
-					</div>
-				</div>
-			</>
-		);
-	},
-);
+			</div>
+		</>
+	);
+};
 interface TimestampProps {
 	timestamp: number;
 	className?: string;
@@ -275,4 +280,4 @@ const Timestamp = ({ timestamp, className = '' }: TimestampProps) => (
 	</div>
 );
 
-export default GraphOverlay;
+export default observer(GraphOverlay);

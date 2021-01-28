@@ -53,3 +53,5 @@ export interface OutsideItems {
 	attachedMessages: EventMessage[];
 	events: EventTreeNode[];
 }
+
+export type GraphItem = EventMessage | EventTreeNode;

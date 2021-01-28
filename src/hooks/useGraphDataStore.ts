@@ -14,10 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useRootStore } from './useRootStore';
+import { useWorkspaceStore } from './useWorkspaceStore';
 
-export const useGraphStore = () => {
-	const rootStore = useRootStore();
+export const useGraphDataStore = () => {
+	const workspace = useWorkspaceStore();
 
-	return rootStore.graphStore;
+	return workspace.graphDataStore;
 };

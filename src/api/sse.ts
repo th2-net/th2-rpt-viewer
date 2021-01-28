@@ -66,11 +66,11 @@ const sseApi: SSESchema = {
 		filterType: 'events' | 'messages',
 		filters: string[],
 	): Promise<SSEFilterInfo[]> {
-		const filterInfos = (await filters).map(async (filterName: string) => {
-			const res = await fetch(`backend/filters/sse-${filterType}/${filterName}`);
-			return res.json();
-		});
-		return Promise.all(filterInfos);
+		return Promise.all(
+			filters.map(filterName =>
+				fetch(`backend/filters/sse-${filterType}/${filterName}`).then(res => res.json()),
+			),
+		);
 	},
 };
 
