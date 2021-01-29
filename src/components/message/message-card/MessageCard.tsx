@@ -104,28 +104,24 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 			<div className='mc__mc-header mc-header'>
 				<div className='mc-header__is-attached-icon'></div>
 				<div className='mc-header__info'>
-					<div className='mc-header__row'>
-						<div className='mc-header__value'>
-							{timestamp && formatTime(getTimestampAsNumber(timestamp))}
-						</div>
-						<div className='mc-header__item'>
-							<span className='mc-header__key-minified'>nm</span>
-							<span className='mc-header__key'>Name</span>
-							<span className='mc-header__value'>{messageType}</span>
-						</div>
+					<div className='mc-header__value'>
+						{timestamp && formatTime(getTimestampAsNumber(timestamp))}
 					</div>
-					<div className='mc-header__row'>
-						<div className='mc-header__item'>
-							<span className='mc-header__key-minified'>ss</span>
-							<span className='mc-header__key'>Session</span>
-							<span className={sessionClass} style={sessionArrowStyle}></span>
-							<span className='mc-header__value'>{sessionId}</span>
-						</div>
-						<div className='mc-header__item'>
-							<span className='mc-header__key-minified'>id</span>
-							<span className='mc-header__key'>ID</span>
-							<span className='mc-header__value'>{messageId}</span>
-						</div>
+					<div className='mc-header__item'>
+						<span className='mc-header__key-minified'>nm</span>
+						<span className='mc-header__key'>Name</span>
+						<span className='mc-header__value'>{messageType}</span>
+					</div>
+					<div className='mc-header__item'>
+						<span className='mc-header__key-minified'>ss</span>
+						<span className='mc-header__key'>Session</span>
+						<span className={sessionClass} style={sessionArrowStyle}></span>
+						<span className='mc-header__value'>{sessionId}</span>
+					</div>
+					<div className='mc-header__item'>
+						<span className='mc-header__key-minified'>id</span>
+						<span className='mc-header__key'>ID</span>
+						<span className='mc-header__value'>{messageId}</span>
 					</div>
 				</div>
 				<div

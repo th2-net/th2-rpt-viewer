@@ -41,10 +41,6 @@
 	}
 
 	&:hover .mc-header {
-		&__breakline {
-			display: block;
-		}
-
 		&__info {
 			column-gap: 10px;
 		}
@@ -62,7 +58,7 @@
 		}
 
 		&__info {
-			flex-direction: column;
+			flex-wrap: wrap;
 		}
 
 		&__value {
@@ -162,11 +158,6 @@
 		display: flex;
 		column-gap: 5px;
 		overflow: hidden;
-	}
-
-	&__row {
-		display: flex;
-		column-gap: 5px;
 		align-items: center;
 	}
 
