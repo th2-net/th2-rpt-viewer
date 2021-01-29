@@ -16,28 +16,11 @@
 
 @import './common/vars';
 
-.message-card {
-	margin-bottom: 5px;
-	display: flex;
-	flex-direction: column;
-	padding: 10px;
-	border-radius: 5px;
+.message-card-wrapper {
+	padding-bottom: 5px;
 
-	&:hover {
+	&:hover .message-card {
 		background-color: #f3fafc;
-	}
-
-	&.attached {
-		border: 2px solid #ffe5cc;
-
-		&:hover {
-			border-color: #ffa64c;
-			background-color: #fff5f0;
-		}
-
-		.mc-header__is-attached-icon {
-			display: block;
-		}
 	}
 
 	&:hover .mc-header {
@@ -82,6 +65,26 @@
 	&:hover .mc-body {
 		&__controls {
 			display: flex;
+		}
+	}
+}
+
+.message-card {
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+	border-radius: 5px;
+
+	&.attached {
+		border: 2px solid #ffe5cc;
+
+		&:hover {
+			border-color: #ffa64c;
+			background-color: #fff5f0;
+		}
+
+		.mc-header__is-attached-icon {
+			display: block;
 		}
 	}
 }

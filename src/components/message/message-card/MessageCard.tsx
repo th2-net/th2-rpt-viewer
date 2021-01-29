@@ -100,65 +100,67 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	);
 
 	return (
-		<div className={rootClass}>
-			<div className='mc__mc-header mc-header'>
-				<div className='mc-header__is-attached-icon'></div>
-				<div className='mc-header__info'>
-					<div className='mc-header__value'>
-						{timestamp && formatTime(getTimestampAsNumber(timestamp))}
+		<div className='message-card-wrapper'>
+			<div className={rootClass}>
+				<div className='mc__mc-header mc-header'>
+					<div className='mc-header__is-attached-icon'></div>
+					<div className='mc-header__info'>
+						<div className='mc-header__value'>
+							{timestamp && formatTime(getTimestampAsNumber(timestamp))}
+						</div>
+						<div className='mc-header__item'>
+							<span className='mc-header__key-minified'>nm</span>
+							<span className='mc-header__key'>Name</span>
+							<span className='mc-header__value'>{messageType}</span>
+						</div>
+						<div className='mc-header__item'>
+							<span className='mc-header__key-minified'>ss</span>
+							<span className='mc-header__key'>Session</span>
+							<span className={sessionClass} style={sessionArrowStyle}></span>
+							<span className='mc-header__value'>{sessionId}</span>
+						</div>
+						<div className='mc-header__item'>
+							<span className='mc-header__key-minified'>id</span>
+							<span className='mc-header__key'>ID</span>
+							<span className='mc-header__value'>{messageId}</span>
+						</div>
 					</div>
-					<div className='mc-header__item'>
-						<span className='mc-header__key-minified'>nm</span>
-						<span className='mc-header__key'>Name</span>
-						<span className='mc-header__value'>{messageType}</span>
-					</div>
-					<div className='mc-header__item'>
-						<span className='mc-header__key-minified'>ss</span>
-						<span className='mc-header__key'>Session</span>
-						<span className={sessionClass} style={sessionArrowStyle}></span>
-						<span className='mc-header__value'>{sessionId}</span>
-					</div>
-					<div className='mc-header__item'>
-						<span className='mc-header__key-minified'>id</span>
-						<span className='mc-header__key'>ID</span>
-						<span className='mc-header__value'>{messageId}</span>
-					</div>
+					<div
+						className={bookmarkIconClass}
+						title={isPinned ? 'Remove from bookmarks' : 'Add to bookmarks'}
+						onClick={() => selectedStore.toggleMessagePin(message)}></div>
 				</div>
-				<div
-					className={bookmarkIconClass}
-					title={isPinned ? 'Remove from bookmarks' : 'Add to bookmarks'}
-					onClick={() => selectedStore.toggleMessagePin(message)}></div>
-			</div>
-			<div className='mc__mc-body mc-body'>
-				<div className='mc-body__human'>
-					<ErrorBoundary
-						fallback={
-							<MessageBodyCardFallback
+				<div className='mc__mc-body mc-body'>
+					<div className='mc-body__human'>
+						<ErrorBoundary
+							fallback={
+								<MessageBodyCardFallback
+									isBeautified={isContentBeautified}
+									isSelected={color !== undefined}
+									body={body}
+								/>
+							}>
+							<MessageBodyCard
 								isBeautified={isContentBeautified}
-								isSelected={color !== undefined}
 								body={body}
+								isSelected={color !== undefined}
 							/>
-						}>
-						<MessageBodyCard
-							isBeautified={isContentBeautified}
-							body={body}
-							isSelected={color !== undefined}
-						/>
-					</ErrorBoundary>
-					{bodyBase64 && showRaw ? (
-						<MessageRaw messageId={messageId} rawContent={bodyBase64} />
-					) : null}
-				</div>
-				<div className='mc-body__controls'>
-					{message.body !== null && (
-						<div
-							className={beautifyButtonClass}
-							onClick={() => messagesStore.toggleMessageBeautify(messageId)}
-						/>
-					)}
-					{bodyBase64 && bodyBase64 !== 'null' ? (
-						<div className={showRawButtonClass} onClick={() => showRawHandler(!showRaw)} />
-					) : null}
+						</ErrorBoundary>
+						{bodyBase64 && showRaw ? (
+							<MessageRaw messageId={messageId} rawContent={bodyBase64} />
+						) : null}
+					</div>
+					<div className='mc-body__controls'>
+						{message.body !== null && (
+							<div
+								className={beautifyButtonClass}
+								onClick={() => messagesStore.toggleMessageBeautify(messageId)}
+							/>
+						)}
+						{bodyBase64 && bodyBase64 !== 'null' ? (
+							<div className={showRawButtonClass} onClick={() => showRawHandler(!showRaw)} />
+						) : null}
+					</div>
 				</div>
 			</div>
 		</div>
