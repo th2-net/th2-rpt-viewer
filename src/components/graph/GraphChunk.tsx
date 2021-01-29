@@ -17,14 +17,12 @@
 import * as React from 'react';
 import moment from 'moment';
 import { LineChart, Line, LineProps } from 'recharts';
-import { getTimestampAsNumber, isTimeIntersected } from '../../helpers/date';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk, GraphItem } from '../../models/Graph';
 import { EventTreeNode } from '../../models/EventAction';
-import { isEventMessage } from '../../helpers/event';
 import GraphAttachedItemGroup from './GraphAttachedItemGroup';
-import { TimeRange } from '../../models/Timestamp';
 import { GraphDataStore } from '../../stores/graph/GraphDataStore';
+import { getGraphTimeTicks, groupGraphItems } from '../../helpers/graph';
 
 const ATTACHED_ITEM_SIZE = 14;
 
@@ -57,21 +55,9 @@ export interface AttachedItem {
 	type: 'attached-message' | 'pinned-message' | 'event';
 }
 
-function getGraphTimeTicks(chunk: Chunk, interval: number, tickSize: number) {
-	const ticksArr = [];
-	const { from, to } = chunk;
-	const ticksInterval = (to - from) / interval / 1000 / 60;
-
-	for (let i = 0; i < interval; i += tickSize) {
-		ticksArr.push(
-			moment(from)
-				.startOf('minute')
-				.add(ticksInterval * i, 'minutes')
-				.valueOf(),
-		);
-	}
-
-	return ticksArr.map(tick => moment(tick).utc().format('HH:mm'));
+export interface AttachedItemGroup {
+	items: AttachedItem[];
+	left: number;
 }
 
 interface Props {
@@ -107,73 +93,27 @@ function GraphChunk(props: Props) {
 		};
 	}, []);
 
-	const ticks = React.useMemo(() => getGraphTimeTicks(chunk, interval, tickSize), [
-		chunk,
-		interval,
-		tickSize,
-	]);
+	const ticks = React.useMemo(() => {
+		const [from, to] = [
+			moment(chunk.from).startOf('minute').valueOf(),
+			moment(chunk.to).startOf('minute').valueOf(),
+		];
 
-	const attachedItemTimeSize = ((chunk.to - chunk.from) / chunkWidth) * ATTACHED_ITEM_SIZE;
+		return getGraphTimeTicks(from, to, interval, tickSize);
+	}, [chunk, interval, tickSize]);
 
-	const attachedItemsGroups: {
-		items: AttachedItem[];
-		left: number;
-	}[] = React.useMemo(() => {
-		const groups: {
-			range: TimeRange;
-			items: AttachedItem[];
-		}[] = [];
+	const graphItemsGroups = React.useMemo(() => {
+		const [from, to] = [
+			moment(chunk.from).startOf('minute').valueOf(),
+			moment(chunk.to).startOf('minute').valueOf(),
+		];
 
-		const getGroupLeftPosition = (timestamp: number) => {
-			const [from, to] = [
-				moment(chunk.from).startOf('minute').valueOf(),
-				moment(chunk.to).startOf('minute').valueOf(),
-			];
-			return Math.floor(((timestamp - from) / (to - from)) * chunkWidth);
-		};
-
-		attachedItems.forEach(item => {
-			const itemTimestamp = getTimestampAsNumber(
-				isEventMessage(item.value) ? item.value.timestamp : item.value.startTimestamp,
-			);
-
-			const itemRange: TimeRange = [
-				itemTimestamp - attachedItemTimeSize / 2,
-				itemTimestamp + attachedItemTimeSize / 2,
-			];
-
-			const targetGroup = groups.find(group => isTimeIntersected(group.range, itemRange));
-			if (targetGroup) {
-				targetGroup.items.push(item);
-			} else {
-				groups.push({
-					range: itemRange,
-					items: [item],
-				});
-			}
-		});
-
-		return groups.map(group => {
-			const groupFirstItem = group.items[0];
-			const left = getGroupLeftPosition(
-				moment(
-					getTimestampAsNumber(
-						isEventMessage(groupFirstItem.value)
-							? groupFirstItem.value.timestamp
-							: groupFirstItem.value.startTimestamp,
-					),
-				).valueOf(),
-			);
-			return {
-				items: group.items,
-				left,
-			};
-		});
-	}, [attachedItems]);
+		return groupGraphItems(from, to, chunkWidth, attachedItems, ATTACHED_ITEM_SIZE);
+	}, [chunk, chunkWidth, attachedItems]);
 
 	return (
 		<div className='graph-chunk' data-from={chunk.from} data-to={chunk.to}>
-			{attachedItemsGroups.map((group, index) => (
+			{graphItemsGroups.map((group, index) => (
 				<GraphAttachedItemGroup
 					key={index}
 					group={group}
