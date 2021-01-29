@@ -435,7 +435,7 @@
 
 	&__items {
 		height: 100%;
-		@include hidden-scrollbar;
+		@include scrollbar;
 	}
 
 	&__spinner {
