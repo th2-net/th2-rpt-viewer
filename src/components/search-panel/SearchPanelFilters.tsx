@@ -66,6 +66,7 @@ interface SearchPanelFiltersProps {
 	setState: (
 		patch: Partial<FilterState> | ((prevState: FilterState) => Partial<FilterState>),
 	) => void;
+	disableAll: boolean;
 }
 
 type Values = {
@@ -73,7 +74,7 @@ type Values = {
 };
 
 const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
-	const { info, state, setState } = props;
+	const { info, state, setState, disableAll } = props;
 
 	function getValuesUpdater<T extends keyof FilterState>(name: T) {
 		return function valuesUpdater<K extends FilterState[T]>(values: K) {
@@ -118,7 +119,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 								return {
 									id: `${filter.name}-include`,
 									label: '',
-									disabled: false,
+									disabled: disableAll,
 									type: 'toggler',
 									value: getState(filter.name).negative,
 									toggleValue: getNegativeToggler(filter.name),
@@ -127,6 +128,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 							case 'string':
 								return {
 									id: filter.name,
+									disabled: disableAll,
 									label: '',
 									type: 'string',
 									value: getState(filter.name).values,
@@ -135,6 +137,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 							default:
 								return {
 									id: filter.name,
+									disabled: disableAll,
 									label: '',
 									type: 'multiple-strings',
 									values: getState(filter.name).values,

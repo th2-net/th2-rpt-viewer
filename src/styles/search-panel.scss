@@ -21,6 +21,8 @@
 	height: 100%;
 	padding: 0 8px;
 	background-color: #fff;
+	overflow: auto;
+	@include scrollbar();
 
 	& input {
 		border: solid 1px #000;
@@ -75,6 +77,37 @@
 }
 
 .search-results {
+	&__controls {
+		padding: 8px 0;
+		display: flex;
+		justify-content: space-between;
+	}
+	&__arrow {
+		height: 24px;
+		width: 24px;
+		border: none;
+		outline: none;
+		cursor: pointer;
+		background-image: url(../../resources/icons/graph-arrow-left.svg);
+		background-repeat: no-repeat;
+		background-size: 100%;
+		background-position: center;
+		&.next {
+			transform: rotate(180deg);
+		}
+	}
+	.history-point {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		&__timestamp {
+			margin: 0;
+			font-size: 12px;
+		}
+	}
+	hr {
+		margin-top: 0;
+	}
 	&__list {
 		@include scrollbar;
 

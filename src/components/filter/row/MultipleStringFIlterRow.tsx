@@ -108,6 +108,7 @@ export default function MultipleStringFilterRow({
 					) : null}
 					<AutocompleteInput
 						ref={input}
+						disabled={config.disabled}
 						submitKeyCodes={[KeyCodes.SPACE, KeyCodes.ENTER]}
 						className='filter-row__multiple-values-input'
 						wrapperClassName='filter-row__multiple-values-input-wrapper'

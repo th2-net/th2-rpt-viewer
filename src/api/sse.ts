@@ -18,21 +18,47 @@ import { EventSourceConfig, SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import { SSEFilterInfo } from '../stores/SearchPanelFiltersStore';
 
+interface BaseSSEParams {
+	startTimestamp: number;
+	searchDirection: 'next' | 'previous';
+	resultCountLimit: string;
+	endTimestamp?: number | null;
+}
+
+type EventSSEFilters = 'attachedMessageId' | 'type' | 'name';
+type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body';
+
+interface EventSSEParams extends BaseSSEParams {
+	parentEvent?: string;
+	filters: Array<EventSSEFilters>;
+	'attachedMessageId-values': string;
+	'attachedMessageId-negative': boolean;
+	'type-values': string[];
+	'type-negative': boolean;
+	'name-values': string[];
+	'name-negative': boolean;
+}
+
+interface MessagesSSEParams extends BaseSSEParams {
+	stream: string[];
+	filters: Array<MessagesSSEFilters>;
+	'attachedEventIds-values': string[];
+	'attachedEventIds-negative': boolean;
+	'type-values': string[];
+	'type-negative': boolean;
+	'body-values': string[];
+	'body-negative': boolean;
+}
+
+export type SSEParams = EventSSEParams | MessagesSSEParams;
+
 const sseApi: SSESchema = {
 	getEventSource(config: EventSourceConfig) {
-		const { type, queryParams, listener, onClose } = config;
-		const params = createURLSearchParams(queryParams);
-		const channel = new EventSource(`backend/search/sse/${type}s/?${params}`);
-		channel.addEventListener('open', () => {
-			channel.addEventListener(type, listener);
-		});
-		channel.addEventListener('close', () => {
-			channel.close();
-			onClose();
-		});
-		return channel;
+		const { type, queryParams } = config;
+		const params = createURLSearchParams({ ...queryParams });
+		return new EventSource(`backend/search/sse/${type}s/?${params}`);
 	},
-	async getFilters(filterType: 'events' | 'messages'): Promise<[string]> {
+	async getFilters(filterType: 'events' | 'messages'): Promise<string[]> {
 		const res = await fetch(`backend/filters/sse-${filterType}`);
 		return res.json();
 	},

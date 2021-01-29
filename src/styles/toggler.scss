@@ -17,6 +17,9 @@
  @import './common/vars';
 
 .toggler {
+    &.disabled {
+        opacity: .5;
+    }
     display: flex;
     align-items: center;
     margin: 0 10px;

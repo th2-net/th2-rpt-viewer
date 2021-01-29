@@ -30,7 +30,16 @@ interface DateTimeInputProps {
 const FilterDatetimeInput = (props: DateTimeInputProps) => {
 	const {
 		inputConfig,
-		inputConfig: { dateMask, id, inputClassName = '', inputMask, placeholder, setValue, value },
+		inputConfig: {
+			dateMask,
+			id,
+			inputClassName = '',
+			inputMask,
+			placeholder,
+			setValue,
+			value,
+			disabled,
+		},
 	} = props;
 
 	const inputRef = React.useRef<MaskedInput>(null);
@@ -75,6 +84,7 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 				ref={inputRef}
 				id={id}
 				className={`filter-row__input ${maskedInputClassName}`}
+				disabled={disabled}
 				mask={inputMask}
 				pipe={validPipe}
 				onFocus={() => togglePicker(true)}

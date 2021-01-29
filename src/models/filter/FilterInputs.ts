@@ -44,6 +44,7 @@ export type DateTimeInputType = {
 	placeholder: string;
 	inputClassName?: string;
 	labelClassName?: string;
+	disabled?: boolean;
 };
 
 export type IntervalInputType = {
@@ -68,6 +69,7 @@ export enum TimeInputType {
 export type FilterRowBaseConfig = {
 	id: string;
 	label: string;
+	disabled?: boolean;
 };
 
 export type FilterRowTimeWindowConfig = FilterRowBaseConfig & {

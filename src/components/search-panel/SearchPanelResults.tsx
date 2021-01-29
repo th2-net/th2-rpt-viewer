@@ -15,39 +15,67 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { Virtuoso } from 'react-virtuoso';
+import moment from 'moment';
 import { isEventNode } from '../../helpers/event';
-import { EventMessage } from '../../models/EventMessage';
-import { EventTreeNode } from '../../models/EventAction';
+import { Result } from './SearchPanel';
 import { BookmarkItem } from '../BookmarksPanel';
 
 interface SearchPanelResultsProps {
-	results: Array<EventTreeNode | EventMessage>;
-	onSearchResultClick: (searchResult: EventTreeNode | EventMessage) => void;
+	onResultItemClick: (searchResult: Result) => void;
+	onResultDelete: () => void;
+	disableNext: boolean;
+	disablePrev: boolean;
+	showToggler: boolean;
+	next: () => void;
+	prev: () => void;
+	results: Array<Result>;
+	timestamp: number;
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
-	const { results, onSearchResultClick } = props;
-
-	function computeKey(index: number) {
-		const item = results[index];
-
-		return isEventNode(item) ? item.eventId : item.messageId;
-	}
-
-	function renderBookmarkItem(index: number) {
-		return <BookmarkItem item={results[index]} onClick={onSearchResultClick} />;
-	}
+	const {
+		results,
+		timestamp,
+		onResultItemClick,
+		onResultDelete,
+		disablePrev,
+		disableNext,
+		showToggler,
+		next,
+		prev,
+	} = props;
 
 	return (
 		<div className='search-results'>
-			<Virtuoso
-				className='search-results__list'
-				totalCount={results.length}
-				item={renderBookmarkItem}
-				computeItemKey={computeKey}
-				style={{ height: '100%' }}
-			/>
+			{showToggler && (
+				<div className='search-results__controls'>
+					<button className='search-results__arrow' disabled={disablePrev} onClick={prev}></button>
+					<button
+						className='search-results__arrow next'
+						disabled={disableNext}
+						onClick={next}></button>
+				</div>
+			)}
+			<div className='history-point'>
+				<p className='history-point__timestamp'>
+					{moment(+timestamp)
+						.utc()
+						.format('DD.MM.YYYY HH:mm:ss.SSS')}
+				</p>
+				<button className='bookmark-item__remove-btn' onClick={onResultDelete}>
+					<i className='bookmark-item__remove-btn-icon' />
+				</button>
+			</div>
+			<hr />
+			{results.map((item: Result) => (
+				<BookmarkItem
+					key={isEventNode(item) ? item.eventId : item.messageId}
+					item={item}
+					onClick={() => {
+						onResultItemClick(item);
+					}}
+				/>
+			))}
 		</div>
 	);
 };
