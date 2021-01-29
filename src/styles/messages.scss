@@ -291,7 +291,7 @@
 	&__title {
 		display: inline-block;
 		@include unselectable;
-		font-size: 13px;
+		font-size: 11px;
 		color: $primaryTextColor;
 		font-weight: bold;
 	}
@@ -322,7 +322,7 @@
 		justify-content: flex-start;
 		margin-top: 10px;
 		font-family: monospace;
-		line-height: 18px;
+		line-height: 15px;
 		letter-spacing: 0.5px;
 		font-size: 11px;
 		overflow-x: auto;
@@ -372,7 +372,7 @@
 
 	&__copy-title {
 		@include unselectable;
-		font-size: 12px;
+		font-size: 11px;
 		color: $primaryTextColor;
 		padding-left: 5px;
 	}
