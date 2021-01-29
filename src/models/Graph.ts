@@ -54,4 +54,14 @@ export interface OutsideItems {
 	events: EventTreeNode[];
 }
 
+export interface AttachedItem {
+	value: GraphItem;
+	type: 'attached-message' | 'pinned-message' | 'event';
+}
+
+export interface AttachedItemGroup {
+	items: AttachedItem[];
+	left: number;
+}
+
 export type GraphItem = EventMessage | EventTreeNode;

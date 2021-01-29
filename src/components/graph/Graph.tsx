@@ -18,13 +18,13 @@ import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import moment from 'moment';
 import ResizeObserver from 'resize-observer-polyfill';
-import GraphChunk, { AttachedItem } from './GraphChunk';
+import GraphChunk from './GraphChunk';
 import GraphOverlay from './GraphOverlay';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { Chunk, GraphItem } from '../../models/Graph';
+import { Chunk, GraphItem, AttachedItem } from '../../models/Graph';
 import { filterListByChunkRange } from '../../helpers/graph';
 import { isEventNode } from '../../helpers/event';
 import '../../styles/graph.scss';
@@ -82,18 +82,6 @@ function Graph() {
 	);
 
 	const renderChunk = (chunk: Chunk, index: number) => {
-		const attachedItems: AttachedItem[] = filterListByChunkRange(
-			chunk,
-			selectedStore.graphItems,
-		).map(item => ({
-			value: item,
-			type: isEventNode(item)
-				? 'event'
-				: selectedStore.attachedMessages.includes(item)
-				? 'attached-message'
-				: 'pinned-message',
-		}));
-
 		return (
 			<Observer key={`${chunk.from}-${chunk.to}`}>
 				{() => (
@@ -109,7 +97,14 @@ function Graph() {
 							chunk={chunk}
 							chunkWidth={chunkWidth}
 							getChunkData={activeWorkspace.graphDataStore.getChunkData}
-							attachedItems={attachedItems}
+							attachedItems={filterListByChunkRange(chunk, selectedStore.graphItems).map(item => ({
+								value: item,
+								type: isEventNode(item)
+									? 'event'
+									: selectedStore.attachedMessages.includes(item)
+									? 'attached-message'
+									: 'pinned-message',
+							}))}
 							expandedAttachedItem={expandedAttachedItem}
 							setExpandedAttachedItem={onGraphItemClick}
 						/>

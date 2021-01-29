@@ -15,10 +15,9 @@
  ***************************************************************************** */
 
 import moment from 'moment';
-import { AttachedItem, AttachedItemGroup } from '../components/graph/GraphChunk';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import { Chunk } from '../models/Graph';
+import { Chunk, AttachedItem, AttachedItemGroup } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { getTimestampAsNumber } from './date';
 import { isEventMessage, isEventNode } from './event';
@@ -46,9 +45,9 @@ export function groupGraphItems(
 	items: AttachedItem[],
 	ATTACHED_ITEM_SIZE: number,
 ): Array<AttachedItemGroup> {
-	const getGroupLeftPosition = (timestamp: number) => {
+	function getGroupLeftPosition(timestamp: number) {
 		return Math.floor(((timestamp - from) / (to - from)) * chunkWidth);
-	};
+	}
 
 	const positions = items.map(item =>
 		getGroupLeftPosition(

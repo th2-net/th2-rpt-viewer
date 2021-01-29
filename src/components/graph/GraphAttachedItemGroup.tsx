@@ -23,7 +23,7 @@ import { useOutsideClickListener } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { ModalPortal } from '../Portal';
-import { AttachedItem } from './GraphChunk';
+import { AttachedItem } from '../../models/Graph';
 
 interface GraphAttachedItemProps {
 	items: AttachedItem[];

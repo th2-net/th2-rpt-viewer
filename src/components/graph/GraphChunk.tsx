@@ -17,11 +17,11 @@
 import * as React from 'react';
 import moment from 'moment';
 import { LineChart, Line, LineProps } from 'recharts';
-import { EventMessage } from '../../models/EventMessage';
-import { Chunk, GraphItem } from '../../models/Graph';
-import { EventTreeNode } from '../../models/EventAction';
 import GraphAttachedItemGroup from './GraphAttachedItemGroup';
 import { GraphDataStore } from '../../stores/graph/GraphDataStore';
+import { EventMessage } from '../../models/EventMessage';
+import { AttachedItem, AttachedItemGroup, Chunk } from '../../models/Graph';
+import { EventTreeNode } from '../../models/EventAction';
 import { getGraphTimeTicks, groupGraphItems } from '../../helpers/graph';
 
 const ATTACHED_ITEM_SIZE = 14;
@@ -49,16 +49,6 @@ const graphLines = [
 		stroke: '#2689BD',
 	},
 ] as const;
-
-export interface AttachedItem {
-	value: GraphItem;
-	type: 'attached-message' | 'pinned-message' | 'event';
-}
-
-export interface AttachedItemGroup {
-	items: AttachedItem[];
-	left: number;
-}
 
 interface Props {
 	chunk: Chunk;
@@ -93,7 +83,7 @@ function GraphChunk(props: Props) {
 		};
 	}, []);
 
-	const ticks = React.useMemo(() => {
+	const ticks: Array<string> = React.useMemo(() => {
 		const [from, to] = [
 			moment(chunk.from).startOf('minute').valueOf(),
 			moment(chunk.to).startOf('minute').valueOf(),
@@ -102,7 +92,7 @@ function GraphChunk(props: Props) {
 		return getGraphTimeTicks(from, to, interval, tickSize);
 	}, [chunk, interval, tickSize]);
 
-	const graphItemsGroups = React.useMemo(() => {
+	const graphItemsGroups: Array<AttachedItemGroup> = React.useMemo(() => {
 		const [from, to] = [
 			moment(chunk.from).startOf('minute').valueOf(),
 			moment(chunk.to).startOf('minute').valueOf(),
