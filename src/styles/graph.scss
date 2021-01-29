@@ -41,7 +41,7 @@
 		position: absolute;
 		top: 42px;
 		left: 14px;
-		z-index: 5;
+		z-index: 10;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -378,11 +378,24 @@
 .graph-range-selector {
 	@include unselectable;
 	height: 100%;
-	border-left: 3px solid $graphRangeSelectorBorder;
-	border-right: 3px solid $graphRangeSelectorBorder;
 	position: absolute;
 	top: 0;
 	z-index: 2;
+
+	&__border {
+		content: "";
+		height: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 10;
+		width: 3px;
+		background-color: $graphRangeSelectorBorder;
+
+		&.right {
+			transform: translateX(-100%);
+		}
+	}
 
 	&__wrapper {
 		display: flex;

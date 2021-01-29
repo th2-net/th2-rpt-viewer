@@ -244,6 +244,11 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 					</AnimatePresence>
 				</div>
 			</div>
+			<div className='graph-range-selector__border left' style={{ left: overlayWidth }} />
+			<div
+				className='graph-range-selector__border right'
+				style={{ left: overlayWidth + chunkWidth }}
+			/>
 			<div className='graph-range-selector' style={{ width: chunkWidth, left: overlayWidth }}>
 				<div className='graph-range-selector__wrapper'>
 					{Object.entries(intervalValues).map(([key, value], index) => (

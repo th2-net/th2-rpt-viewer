@@ -125,7 +125,10 @@ function GraphChunk(props: Props) {
 		}[] = [];
 
 		const getGroupLeftPosition = (timestamp: number) => {
-			const { from, to } = chunk;
+			const [from, to] = [
+				moment(chunk.from).startOf('minute').valueOf(),
+				moment(chunk.to).startOf('minute').valueOf(),
+			];
 			return Math.floor(((timestamp - from) / (to - from)) * chunkWidth);
 		};
 
