@@ -22,15 +22,17 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { AttachedItem } from '../../models/Graph';
+import { GraphItem } from '../../models/Graph';
 import { getEventStatus, isEventMessage, isEventNode } from '../../helpers/event';
+import { GraphDataStore } from '../../stores/graph/GraphDataStore';
 
 interface MenuProps {
-	items: AttachedItem[];
+	items: GraphItem[];
 	onClose: () => void;
 	isMenuOpened: boolean;
 	anchorEl?: HTMLElement | null;
 	onMenuItemClick: (item: EventTreeNode | EventMessage) => void;
+	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
 	maxWidth?: number;
 }
 
@@ -41,6 +43,7 @@ export default function GraphItemsMenu({
 	anchorEl,
 	onMenuItemClick,
 	maxWidth = 400,
+	getGraphItemType,
 }: MenuProps) {
 	const menuRef = React.useRef<HTMLDivElement>(null);
 
@@ -88,8 +91,8 @@ export default function GraphItemsMenu({
 		}
 	}, [isMenuOpened, setPositioningStyles]);
 
-	function handleClick(item: AttachedItem) {
-		onMenuItemClick(item.value);
+	function handleClick(item: GraphItem) {
+		onMenuItemClick(item);
 		onClose();
 	}
 
@@ -102,24 +105,22 @@ export default function GraphItemsMenu({
 				<ul className='graph-item-group__list'>
 					{items.map(item => (
 						<li
-							key={isEventMessage(item.value) ? item.value.messageId : item.value.eventId}
+							key={isEventMessage(item) ? item.messageId : item.eventId}
 							className='graph-menu__item'
 							onClick={() => handleClick(item)}>
 							<div
 								className={createStyleSelector(
 									'graph-menu__item-icon',
-									`${item.type}-icon`,
-									isEventNode(item.value) ? getEventStatus(item.value) : null,
+									`${getGraphItemType(item)}-icon`,
+									isEventNode(item) ? getEventStatus(item) : null,
 								)}
 							/>
 							<div className='graph-menu__item-name'>
-								{isEventMessage(item.value) ? item.value.messageId : item.value.eventName}
+								{isEventMessage(item) ? item.messageId : item.eventName}
 							</div>
 							<div className='graph-menu__item-timestamp'>
 								{moment(
-									getTimestampAsNumber(
-										isEventMessage(item.value) ? item.value.timestamp : item.value.startTimestamp,
-									),
+									getTimestampAsNumber(isEventMessage(item) ? item.timestamp : item.startTimestamp),
 								)
 									.utc()
 									.format('DD.MM.YYYY HH:mm:ss:SSS')}

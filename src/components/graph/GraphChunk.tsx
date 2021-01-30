@@ -17,10 +17,10 @@
 import * as React from 'react';
 import moment from 'moment';
 import { LineChart, Line, LineProps } from 'recharts';
-import GraphAttachedItemGroup from './GraphAttachedItemGroup';
+import GraphItemsGroup from './GraphItemsGroup';
 import { GraphDataStore } from '../../stores/graph/GraphDataStore';
 import { EventMessage } from '../../models/EventMessage';
-import { AttachedItem, AttachedItemGroup, Chunk } from '../../models/Graph';
+import { GraphGroup, Chunk, GraphItem } from '../../models/Graph';
 import { EventTreeNode } from '../../models/EventAction';
 import { getGraphTimeTicks, groupGraphItems } from '../../helpers/graph';
 
@@ -54,7 +54,8 @@ interface Props {
 	chunk: Chunk;
 	chunkWidth: number;
 	getChunkData: InstanceType<typeof GraphDataStore>['getChunkData'];
-	attachedItems: AttachedItem[];
+	graphItems: GraphItem[];
+	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 	interval: number;
 	tickSize: number;
@@ -64,7 +65,8 @@ function GraphChunk(props: Props) {
 	const {
 		chunk,
 		getChunkData,
-		attachedItems,
+		graphItems,
+		getGraphItemType,
 		chunkWidth,
 		onGraphItemClick,
 		interval,
@@ -90,22 +92,23 @@ function GraphChunk(props: Props) {
 		return getGraphTimeTicks(from, to, interval, tickSize);
 	}, [chunk, interval, tickSize]);
 
-	const graphItemsGroups: Array<AttachedItemGroup> = React.useMemo(() => {
+	const graphItemsGroups: Array<GraphGroup> = React.useMemo(() => {
 		const [from, to] = [
 			moment(chunk.from).startOf('minute').valueOf(),
 			moment(chunk.to).startOf('minute').valueOf(),
 		];
 
-		return groupGraphItems(from, to, chunkWidth, attachedItems, ATTACHED_ITEM_SIZE);
-	}, [chunk, chunkWidth, attachedItems]);
+		return groupGraphItems(from, to, chunkWidth, graphItems, ATTACHED_ITEM_SIZE);
+	}, [chunk, chunkWidth, graphItems]);
 
 	return (
 		<div className='graph-chunk' data-from={chunk.from} data-to={chunk.to}>
 			{graphItemsGroups.map(group => (
-				<GraphAttachedItemGroup
+				<GraphItemsGroup
 					key={group.left}
 					group={group}
 					onGraphItemClick={onGraphItemClick}
+					getGraphItemType={getGraphItemType}
 				/>
 			))}
 			<LineChart

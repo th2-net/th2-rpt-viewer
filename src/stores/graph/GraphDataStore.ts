@@ -17,10 +17,16 @@
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { getTimestampAsNumber, isTimeInsideInterval, isTimeIntersected } from '../../helpers/date';
-import { getEventStatus } from '../../helpers/event';
+import { isEventNode } from '../../helpers/event';
 import { calculateTimeRange } from '../../helpers/graph';
-import { Chunk, ChunkData, IntervalData, OverlayValues, IntervalOption } from '../../models/Graph';
-import { EventStatus } from '../../models/Status';
+import {
+	Chunk,
+	ChunkData,
+	GraphItem,
+	GraphItemType,
+	IntervalData,
+	IntervalOption,
+} from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import { SelectedStore } from '../SelectedStore';
 
@@ -145,56 +151,6 @@ export class GraphDataStore {
 		return intervalData;
 	};
 
-	public getOverlayValues = (): OverlayValues => {
-		const windowTimeRange = [
-			moment(this.range[0])
-				.subtract(this.interval / 2, 'minutes')
-				.valueOf(),
-			moment(this.range[1])
-				.add(this.interval / 2, 'minutes')
-				.valueOf(),
-		];
-
-		return {
-			left: {
-				pinnedMessages: this.selectedStore.pinnedMessages.filter(
-					message => getTimestampAsNumber(message.timestamp) < windowTimeRange[0],
-				),
-				attachedMessages: this.selectedStore.attachedMessages.filter(
-					message => getTimestampAsNumber(message.timestamp) < windowTimeRange[0],
-				),
-				passedEvents: this.selectedStore.pinnedEvents.filter(
-					event =>
-						getEventStatus(event) === EventStatus.PASSED &&
-						getTimestampAsNumber(event.startTimestamp) < windowTimeRange[0],
-				),
-				failedEvents: this.selectedStore.pinnedEvents.filter(
-					event =>
-						getEventStatus(event) === EventStatus.FAILED &&
-						getTimestampAsNumber(event.startTimestamp) < windowTimeRange[0],
-				),
-			},
-			right: {
-				pinnedMessages: this.selectedStore.pinnedMessages.filter(
-					message => getTimestampAsNumber(message.timestamp) > windowTimeRange[1],
-				),
-				attachedMessages: this.selectedStore.attachedMessages.filter(
-					message => getTimestampAsNumber(message.timestamp) > windowTimeRange[1],
-				),
-				passedEvents: this.selectedStore.pinnedEvents.filter(
-					event =>
-						getEventStatus(event) === EventStatus.PASSED &&
-						getTimestampAsNumber(event.startTimestamp) > windowTimeRange[1],
-				),
-				failedEvents: this.selectedStore.pinnedEvents.filter(
-					event =>
-						getEventStatus(event) === EventStatus.FAILED &&
-						getTimestampAsNumber(event.startTimestamp) > windowTimeRange[1],
-				),
-			},
-		};
-	};
-
 	@action
 	public createChunks(interval: IntervalOption, timestamp: number) {
 		let chunks: Chunk[] = [this.createChunk(timestamp, interval)];
@@ -251,6 +207,14 @@ export class GraphDataStore {
 		if (lastChunk) {
 			this.chunks = [...this.chunks.slice(1), this.createChunk(lastChunk.to, this.interval)];
 		}
+	};
+
+	public getGraphItemType = (item: GraphItem): GraphItemType => {
+		return isEventNode(item)
+			? GraphItemType.EVENT
+			: this.selectedStore.attachedMessages.includes(item)
+			? GraphItemType.ATTACHED_MESSAGE
+			: GraphItemType.PINNED_MESSAGE;
 	};
 }
 

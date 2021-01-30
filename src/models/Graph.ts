@@ -43,26 +43,15 @@ export interface IntervalData {
 	connected: number;
 }
 
-export interface OverlayValues {
-	left: OutsideItems;
-	right: OutsideItems;
-}
-
-export interface OutsideItems {
-	pinnedMessages: EventMessage[];
-	attachedMessages: EventMessage[];
-	passedEvents: EventTreeNode[];
-	failedEvents: EventTreeNode[];
-}
-
-export interface AttachedItem {
-	value: GraphItem;
-	type: 'attached-message' | 'pinned-message' | 'event';
-}
-
-export interface AttachedItemGroup {
-	items: AttachedItem[];
+export interface GraphGroup {
+	items: GraphItem[];
 	left: number;
 }
 
 export type GraphItem = EventMessage | EventTreeNode;
+
+export enum GraphItemType {
+	ATTACHED_MESSAGE = 'attached-message',
+	PINNED_MESSAGE = 'pinned-message',
+	EVENT = 'event',
+}

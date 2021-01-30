@@ -22,10 +22,13 @@ import GraphItemsMenu from './GraphItemsMenu';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { AttachedItem, OutsideItems } from '../../models/Graph';
+import { GraphItem, GraphItemType } from '../../models/Graph';
 import TimestampInput from '../util/TimestampInput';
-import { isEventNode } from '../../helpers/event';
+import { getEventStatus, isEventNode } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
+import { getTimestampAsNumber } from '../../helpers/date';
+import { EventStatus } from '../../models/Status';
+import { GraphDataStore } from '../../stores/graph/GraphDataStore';
 import '../../styles/graph.scss';
 
 interface OverlayPanelProps {
@@ -33,6 +36,7 @@ interface OverlayPanelProps {
 	range: TimeRange;
 	onInputSubmit: (timestamp: number) => void;
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
+	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
 }
 
 const GraphOverlay = (props: OverlayPanelProps) => {
@@ -41,6 +45,7 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 		range: [from, to],
 		onInputSubmit,
 		onGraphItemClick,
+		getGraphItemType,
 	} = props;
 
 	const selectedStore = useSelectedStore();
@@ -53,34 +58,51 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 		return activeWorkspace.graphDataStore.getIntervalData();
 	}, [from]);
 
-	const outsideItems = React.useMemo(() => {
-		return activeWorkspace.graphDataStore.getOverlayValues();
-	}, [
-		from,
-		selectedStore.attachedMessages,
-		selectedStore.pinnedMessages,
-		selectedStore.pinnedEvents,
-	]);
+	const outsideItems: OutsideItems = React.useMemo(() => {
+		const windowTimeRange = [
+			moment(from)
+				.subtract(activeWorkspace.graphDataStore.interval / 2, 'minutes')
+				.valueOf(),
+			moment(to)
+				.add(activeWorkspace.graphDataStore.interval / 2, 'minutes')
+				.valueOf(),
+		];
+
+		return {
+			left: selectedStore.graphItems.filter(
+				item =>
+					getTimestampAsNumber(isEventNode(item) ? item.startTimestamp : item.timestamp) <
+					windowTimeRange[0],
+			),
+			right: selectedStore.graphItems.filter(
+				item =>
+					getTimestampAsNumber(isEventNode(item) ? item.startTimestamp : item.timestamp) >
+					windowTimeRange[1],
+			),
+		};
+	}, [from, to, selectedStore.graphItems]);
 
 	return (
 		<>
+			<OutsideItemsMenu
+				onGraphItemClick={onGraphItemClick}
+				direction='left'
+				items={outsideItems.left}
+				getGraphItemType={getGraphItemType}
+			/>
+			<OutsideItemsMenu
+				onGraphItemClick={onGraphItemClick}
+				direction='right'
+				items={outsideItems.right}
+				getGraphItemType={getGraphItemType}
+			/>
 			<div className='graph-overlay left' style={commonStyles} />
 			<div className='graph-overlay right' style={commonStyles} />
 			<div className='graph-overlay__section' style={commonStyles}>
 				<i className='graph-overlay__logo' />
 				<Timestamp className='from' timestamp={from} />
-				<OutsideItemsMenu
-					onGraphItemClick={onGraphItemClick}
-					direction='left'
-					items={outsideItems.left}
-				/>
 			</div>
 			<div className='graph-overlay__section right' style={commonStyles}>
-				<OutsideItemsMenu
-					onGraphItemClick={onGraphItemClick}
-					direction='right'
-					items={outsideItems.right}
-				/>
 				<Timestamp className='to' timestamp={to} />
 				<div className='graph-overlay__wrapper'>
 					<AnimatePresence>
@@ -203,14 +225,20 @@ const leftIndicatorVariants = {
 	},
 };
 
+interface OutsideItems {
+	left: GraphItem[];
+	right: GraphItem[];
+}
+
 interface OutsideItemsProps {
-	items: OutsideItems;
+	items: GraphItem[];
 	direction: 'left' | 'right';
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
+	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
 }
 
 function OutsideItemsMenu(props: OutsideItemsProps) {
-	const { items, direction, onGraphItemClick } = props;
+	const { items, direction, onGraphItemClick, getGraphItemType } = props;
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
@@ -219,21 +247,26 @@ function OutsideItemsMenu(props: OutsideItemsProps) {
 		setMenuAnchor(rootRef.current);
 	}
 
-	const menuItems: AttachedItem[] = React.useMemo(() => {
-		return Object.values(items)
-			.flat()
-			.map(item => {
-				return {
-					value: item,
-					type: isEventNode(item) ? 'event' : 'pinned-message',
-				};
-			});
+	const outsideItemsMap = React.useMemo(() => {
+		const map: Partial<Record<EventStatus | GraphItemType, number>> = {};
+
+		items.forEach(item => {
+			let key: EventStatus | GraphItemType;
+			if (isEventNode(item)) {
+				key = getEventStatus(item);
+			} else {
+				key = getGraphItemType(item);
+			}
+			map[key] = (map[key] || 0) + 1;
+		});
+
+		return map;
 	}, [items]);
 
 	return (
 		<>
 			<AnimatePresence>
-				{Object.values(items).some(value => value.length !== 0) && (
+				{Object.values(outsideItemsMap).some(Boolean) && (
 					<motion.div
 						variants={direction === 'left' ? leftIndicatorVariants : rightIndicatorVariants}
 						initial='hidden'
@@ -244,12 +277,12 @@ function OutsideItemsMenu(props: OutsideItemsProps) {
 						onClick={openMenu}>
 						<i className={`outside-items-indicator-pointer ${direction}`} />
 						<div className='outside-items-wrapper'>
-							{Object.entries(items)
-								.filter(([_, value]) => value.length)
-								.map(([key, value]) => (
-									<div key={key} className={`outside-items-indicator-item ${direction}`}>
-										<i className={`outside-items-indicator-icon ${key}`} />
-										<span className='outside-items-indicator-value'>{`+ ${value.length}`}</span>
+							{Object.entries(outsideItemsMap)
+								.filter(([_type, count]) => Boolean(count))
+								.map(([type, count]) => (
+									<div key={type} className={`outside-items-indicator-item ${direction}`}>
+										<i className={`outside-items-indicator-icon ${type.toLowerCase()}`} />
+										<span className='outside-items-indicator-value'>{`+ ${count}`}</span>
 									</div>
 								))}
 						</div>
@@ -258,7 +291,8 @@ function OutsideItemsMenu(props: OutsideItemsProps) {
 			</AnimatePresence>
 			<GraphItemsMenu
 				isMenuOpened={Boolean(menuAnchor)}
-				items={menuItems}
+				getGraphItemType={getGraphItemType}
+				items={items}
 				onClose={() => setMenuAnchor(null)}
 				onMenuItemClick={onGraphItemClick}
 				anchorEl={menuAnchor}

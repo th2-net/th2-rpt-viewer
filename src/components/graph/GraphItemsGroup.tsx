@@ -19,16 +19,18 @@ import GraphItemsMenu from './GraphItemsMenu';
 import { createBemElement } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { AttachedItem, AttachedItemGroup } from '../../models/Graph';
+import { GraphGroup, GraphItem, GraphItemType } from '../../models/Graph';
 import { getEventStatus, isEventMessage, isEventNode } from '../../helpers/event';
+import { GraphDataStore } from '../../stores/graph/GraphDataStore';
 
-interface GraphAttachedItemGroupProps {
-	group: AttachedItemGroup;
+interface GraphItemsGroupProps {
+	group: GraphGroup;
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
+	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
 }
 
-function GraphAttachedItemGroup(props: GraphAttachedItemGroupProps) {
-	const { group, onGraphItemClick } = props;
+function GraphItemsGroup(props: GraphItemsGroupProps) {
+	const { group, onGraphItemClick, getGraphItemType } = props;
 
 	const groupRef = React.useRef<HTMLDivElement>(null);
 	const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
@@ -42,18 +44,21 @@ function GraphAttachedItemGroup(props: GraphAttachedItemGroupProps) {
 			<div className='graph-item-group__dots'>
 				{group.items.slice(0, 3).map(item => (
 					<GraphDot
-						key={isEventMessage(item.value) ? item.value.messageId : item.value.eventId}
+						key={isEventMessage(item) ? item.messageId : item.eventId}
 						item={item}
 						openMenu={handleClick}
 						className={
-							group.items.length === 1 && group.items[0].type === 'pinned-message'
+							group.items.length === 1 &&
+							getGraphItemType(group.items[0]) === GraphItemType.PINNED_MESSAGE
 								? 'graph-dot__pinned-message full'
 								: undefined
 						}
+						type={getGraphItemType(item)}
 					/>
 				))}
 			</div>
 			<GraphItemsMenu
+				getGraphItemType={getGraphItemType}
 				onMenuItemClick={onGraphItemClick}
 				items={group.items}
 				isMenuOpened={Boolean(menuAnchor)}
@@ -64,19 +69,22 @@ function GraphAttachedItemGroup(props: GraphAttachedItemGroupProps) {
 	);
 }
 
-export default GraphAttachedItemGroup;
+export default GraphItemsGroup;
 
-interface GraphAttachedItemProps {
-	item: AttachedItem;
+interface GraphDotProps {
+	item: GraphItem;
 	className?: string;
+	type: string;
 	openMenu: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-function GraphDot({ item, className, openMenu }: GraphAttachedItemProps) {
+function GraphDot(props: GraphDotProps) {
+	const { item, className, openMenu, type } = props;
+
 	const itemClass = createBemElement(
 		'graph-dot',
-		item.type,
-		isEventNode(item.value) ? getEventStatus(item.value) : null,
+		type,
+		isEventNode(item) ? getEventStatus(item) : null,
 	);
 
 	return <div className={className || itemClass} onClick={openMenu} />;

@@ -26,7 +26,6 @@ import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk } from '../../models/Graph';
 import { filterListByChunkRange } from '../../helpers/graph';
-import { isEventNode } from '../../helpers/event';
 import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
@@ -78,6 +77,11 @@ function Graph() {
 		[activeWorkspace.graphDataStore.setTimestamp],
 	);
 
+	const getGraphItemType = React.useCallback(activeWorkspace.graphDataStore.getGraphItemType, [
+		selectedStore.attachedMessages,
+		selectedStore.graphItems,
+	]);
+
 	const renderChunk = (chunk: Chunk, index: number) => {
 		return (
 			<Observer key={`${chunk.from}-${chunk.to}`}>
@@ -94,14 +98,8 @@ function Graph() {
 							chunk={chunk}
 							chunkWidth={chunkWidth}
 							getChunkData={activeWorkspace.graphDataStore.getChunkData}
-							attachedItems={filterListByChunkRange(chunk, selectedStore.graphItems).map(item => ({
-								value: item,
-								type: isEventNode(item)
-									? 'event'
-									: selectedStore.attachedMessages.includes(item)
-									? 'attached-message'
-									: 'pinned-message',
-							}))}
+							getGraphItemType={getGraphItemType}
+							graphItems={filterListByChunkRange(chunk, selectedStore.graphItems)}
 							onGraphItemClick={onGraphItemClick}
 						/>
 					</div>
@@ -139,6 +137,7 @@ function Graph() {
 				range={activeWorkspace.graphDataStore.range}
 				onInputSubmit={onInputSubmit}
 				onGraphItemClick={onGraphItemClick}
+				getGraphItemType={getGraphItemType}
 			/>
 		</div>
 	);

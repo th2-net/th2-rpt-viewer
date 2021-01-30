@@ -118,7 +118,7 @@
 		position: absolute;
 		top: 55%;
 		transform: translateY(-50%);
-		z-index: 5;
+		z-index: 15;
 		display: flex;
 		align-items: center;
 		cursor: pointer;
@@ -154,15 +154,15 @@
 			display: inline-block;
 			flex-shrink: 0;
 
-			&.pinnedMessages {
+			&.pinned-message {
 				@include icon(url(../../resources/icons/star.svg), 14px, 14px);
 			}
 
-			&.attachedMessages {
+			&.attached-message {
 				@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
 			}
 
-			&.failedEvents {
+			&.failed {
 				width: 12px;
 				height: 12px;
 				border-radius: 50%;
@@ -170,7 +170,7 @@
 				margin: 0 6px;
 			}
 
-			&.passedEvents {
+			&.passed {
 				width: 12px;
 				height: 12px;
 				border-radius: 50%;
