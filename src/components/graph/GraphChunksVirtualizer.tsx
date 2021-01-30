@@ -22,8 +22,6 @@ import { useDebouncedCallback, usePrevious } from '../../hooks';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
 import { raf } from '../../helpers/raf';
 import { Chunk } from '../../models/Graph';
-import { EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
 import { TimeRange } from '../../models/Timestamp';
 import '../../styles/graph.scss';
 
@@ -203,8 +201,11 @@ const GraphChunksVirtualizer = (props: Props) => {
 	};
 
 	const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
-		// TODO: prevent from scrolling
-		if (viewportElementRef.current) {
+		if (
+			viewportElementRef.current &&
+			event.target instanceof HTMLDivElement &&
+			viewportElementRef.current.contains(event.target)
+		) {
 			viewportElementRef.current.scrollLeft += event.deltaY * 2;
 		}
 	};

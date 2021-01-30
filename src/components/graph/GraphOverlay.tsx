@@ -131,6 +131,7 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 		</>
 	);
 };
+
 interface TimestampProps {
 	timestamp: number;
 	className?: string;
