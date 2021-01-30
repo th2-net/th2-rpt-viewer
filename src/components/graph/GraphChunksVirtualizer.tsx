@@ -66,7 +66,6 @@ interface Props {
 	settings: Settings;
 	renderChunk: (chunk: Chunk, index: number) => JSX.Element;
 	chunkWidth: number;
-	setExpandedAttachedItem: (item: EventTreeNode | EventMessage | null) => void;
 	timestamp: number;
 	interval: number;
 	onRangeChanged: (range: TimeRange) => void;
@@ -88,16 +87,7 @@ interface State {
 }
 
 const GraphChunksVirtualizer = (props: Props) => {
-	const {
-		settings,
-		chunkWidth,
-		setExpandedAttachedItem,
-		timestamp,
-		interval,
-		onRangeChanged,
-		setRange,
-		getChunk,
-	} = props;
+	const { settings, chunkWidth, timestamp, interval, onRangeChanged, setRange, getChunk } = props;
 
 	const viewportElementRef = React.useRef<HTMLDivElement>(null);
 	const rangeElementRef = React.useRef<HTMLDivElement>(null);
@@ -213,6 +203,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 	};
 
 	const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+		// TODO: prevent from scrolling
 		if (viewportElementRef.current) {
 			viewportElementRef.current.scrollLeft += event.deltaY * 2;
 		}

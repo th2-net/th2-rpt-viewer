@@ -58,7 +58,7 @@ export const ModalPortal = ({ closeDelay = 0, children, isOpen }: ModalPortalPro
 
 	return (
 		<Portal>
-			<div style={{ display: isShown ? 'block' : 'none' }}>{children}</div>
+			<div style={{ visibility: isShown ? 'visible' : 'hidden' }}>{children}</div>
 		</Portal>
 	);
 };

@@ -55,8 +55,7 @@ interface Props {
 	chunkWidth: number;
 	getChunkData: InstanceType<typeof GraphDataStore>['getChunkData'];
 	attachedItems: AttachedItem[];
-	expandedAttachedItem: EventTreeNode | EventMessage | null;
-	setExpandedAttachedItem: (item: EventTreeNode | EventMessage | null) => void;
+	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 	interval: number;
 	tickSize: number;
 }
@@ -67,8 +66,7 @@ function GraphChunk(props: Props) {
 		getChunkData,
 		attachedItems,
 		chunkWidth,
-		expandedAttachedItem,
-		setExpandedAttachedItem,
+		onGraphItemClick,
 		interval,
 		tickSize,
 	} = props;
@@ -103,12 +101,11 @@ function GraphChunk(props: Props) {
 
 	return (
 		<div className='graph-chunk' data-from={chunk.from} data-to={chunk.to}>
-			{graphItemsGroups.map((group, index) => (
+			{graphItemsGroups.map(group => (
 				<GraphAttachedItemGroup
-					key={index}
+					key={group.left}
 					group={group}
-					expandedAttachedItem={expandedAttachedItem}
-					setExpandedAttachedItem={setExpandedAttachedItem}
+					onGraphItemClick={onGraphItemClick}
 				/>
 			))}
 			<LineChart

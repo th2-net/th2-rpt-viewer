@@ -16,170 +16,168 @@
 
 import moment from 'moment';
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ModalPortal } from '../util/Portal';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { createBemElement } from '../../helpers/styleCreators';
+import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { ModalPortal } from '../Portal';
-import { AttachedItem } from '../../models/Graph';
-
-interface GraphAttachedItemProps {
-	items: AttachedItem[];
-	leftPosition: number;
-	bottomPosition: number;
-	isInfoOpen: boolean;
-	setExpandedItem: (item: EventTreeNode | EventMessage | null) => void;
-	className?: string;
-}
-
-const GraphAttachedItem = ({
-	items,
-	leftPosition,
-	bottomPosition,
-	isInfoOpen,
-	setExpandedItem,
-	className,
-}: GraphAttachedItemProps) => {
-	const itemRef = React.useRef<HTMLDivElement>(null);
-	const itemRect = itemRef.current?.getBoundingClientRect();
-	const itemGlobalPosition = itemRect
-		? {
-				left: itemRect.left,
-				top: itemRect.top,
-		  }
-		: {
-				left: 0,
-				top: 0,
-		  };
-
-	const itemClass = createBemElement(
-		'graph-chunk',
-		items[0].type,
-		items[0].type === 'event'
-			? (items[0].value as EventTreeNode).successful
-				? 'passed'
-				: 'failed'
-			: null,
-	);
-
-	useOutsideClickListener(itemRef, () => setExpandedItem(null));
-
-	return (
-		<>
-			<div
-				style={{
-					position: 'absolute',
-					left: leftPosition,
-					bottom: bottomPosition,
-					opacity: !isInfoOpen ? 1 : 0,
-				}}
-				ref={itemRef}
-				className={className || itemClass}
-				onClick={() => setExpandedItem(items[0].value)}
-				onMouseDown={e => e.stopPropagation()}
-			/>
-			<AnimatePresence exitBeforeEnter>
-				{isInfoOpen && (
-					<ModalPortal isOpen={true}>
-						<div
-							style={{
-								left: itemGlobalPosition.left,
-								top: itemGlobalPosition.top,
-							}}
-							onClick={() => setExpandedItem(null)}
-							onScroll={e => e.stopPropagation()}
-							onMouseDown={e => e.stopPropagation()}
-							className='graph-chunk__item'>
-							<div className={itemClass} />
-							<motion.div
-								initial={{
-									transform: 'scale(0.01)',
-								}}
-								animate={{
-									transform: 'scale(1)',
-								}}
-								exit={{
-									transform: 'scale(0.01)',
-								}}
-								transition={{
-									duration: 0.1,
-									type: 'tween',
-								}}
-								className='graph-chunk__item-info'>
-								{items.map((item, index) => (
-									<div key={index} className='graph-chunk__info-item'>
-										<div className='graph-chunk__item-name'>
-											{items[0].type === 'event'
-												? (items[0].value as EventTreeNode).eventName
-												: (items[0].value as EventMessage).messageId}
-										</div>
-										<div className='graph-chunk__item-timestamp'>
-											{moment(
-												getTimestampAsNumber(
-													items[0].type === 'event'
-														? (items[0].value as EventTreeNode).startTimestamp
-														: (items[0].value as EventMessage).timestamp,
-												),
-											)
-												.utc()
-												.format('DD.MM.YYYY HH:mm:ss:SSS')}
-										</div>
-									</div>
-								))}
-							</motion.div>
-						</div>
-					</ModalPortal>
-				)}
-			</AnimatePresence>
-		</>
-	);
-};
+import { AttachedItem, AttachedItemGroup } from '../../models/Graph';
+import { getEventStatus, isEventMessage, isEventNode } from '../../helpers/event';
 
 interface GraphAttachedItemGroupProps {
-	group: {
-		items: AttachedItem[];
-		left: number;
-	};
-	expandedAttachedItem: EventTreeNode | EventMessage | null;
-	setExpandedAttachedItem: (item: EventTreeNode | EventMessage | null) => void;
+	group: AttachedItemGroup;
+	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 }
 
-const ATTACHED_ITEM_STEP = 15;
+function GraphAttachedItemGroup(props: GraphAttachedItemGroupProps) {
+	const { group, onGraphItemClick } = props;
 
-const GraphAttachedItemGroup = ({
-	group,
-	expandedAttachedItem,
-	setExpandedAttachedItem,
-}: GraphAttachedItemGroupProps) => {
-	return group.items.length < 4 ? (
-		<>
-			{group.items.map((item, index) => (
-				<GraphAttachedItem
-					key={index}
-					leftPosition={group.left}
-					bottomPosition={ATTACHED_ITEM_STEP * (index + 1)}
-					items={[item]}
-					isInfoOpen={expandedAttachedItem === item.value}
-					setExpandedItem={setExpandedAttachedItem}
-					className={
-						group.items.length === 1 && group.items[0].type === 'pinned-message'
-							? 'graph-chunk__pinned-message full'
-							: undefined
-					}
-				/>
-			))}
-		</>
-	) : (
-		<GraphAttachedItem
-			leftPosition={group.left}
-			bottomPosition={ATTACHED_ITEM_STEP}
-			items={group.items}
-			isInfoOpen={expandedAttachedItem === group.items[0].value}
-			setExpandedItem={setExpandedAttachedItem}
-		/>
+	const groupRef = React.useRef<HTMLDivElement>(null);
+	const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
+
+	function handleClick() {
+		setMenuAnchor(groupRef.current);
+	}
+
+	return (
+		<div className='graph-item-group' ref={groupRef} style={{ left: group.left }}>
+			<div className='graph-item-group__dots'>
+				{group.items.slice(0, 3).map(item => (
+					<GraphDot
+						key={isEventMessage(item.value) ? item.value.messageId : item.value.eventId}
+						item={item}
+						openMenu={handleClick}
+						className={
+							group.items.length === 1 && group.items[0].type === 'pinned-message'
+								? 'graph-dot__pinned-message full'
+								: undefined
+						}
+					/>
+				))}
+			</div>
+			<GraphItemMenu
+				onMenuItemClick={onGraphItemClick}
+				items={group.items}
+				isMenuOpened={Boolean(menuAnchor)}
+				onClose={() => setMenuAnchor(null)}
+				anchorEl={menuAnchor}
+			/>
+		</div>
 	);
-};
+}
 
 export default GraphAttachedItemGroup;
+
+interface GraphAttachedItemProps {
+	item: AttachedItem;
+	className?: string;
+	openMenu: (e: React.MouseEvent<HTMLDivElement>) => void;
+}
+
+function GraphDot({ item, className, openMenu }: GraphAttachedItemProps) {
+	const itemClass = createBemElement(
+		'graph-dot',
+		item.type,
+		isEventNode(item.value) ? getEventStatus(item.value) : null,
+	);
+
+	return <div className={className || itemClass} onClick={openMenu} />;
+}
+
+interface MenuProps {
+	items: AttachedItem[];
+	onClose: () => void;
+	isMenuOpened: boolean;
+	anchorEl?: HTMLElement | null;
+	onMenuItemClick: (item: EventTreeNode | EventMessage) => void;
+}
+
+export function GraphItemMenu({
+	items,
+	onClose,
+	isMenuOpened,
+	anchorEl,
+	onMenuItemClick,
+}: MenuProps) {
+	const menuRef = React.useRef<HTMLDivElement>(null);
+
+	const anchorElement = anchorEl || menuRef.current;
+
+	useOutsideClickListener(menuRef, () => {
+		if (isMenuOpened) {
+			onClose();
+		}
+	});
+
+	const getAnchorOffset = React.useCallback(() => {
+		if (anchorElement instanceof HTMLElement && menuRef.current) {
+			const anchorRect = anchorElement.getBoundingClientRect();
+			let menuOffsetLeft = anchorRect.right + 10;
+			const { width } = menuRef.current.getBoundingClientRect();
+
+			if (window.innerWidth < menuOffsetLeft + width || window.innerWidth < menuOffsetLeft + 600) {
+				menuOffsetLeft = anchorRect.left - 10 - (width > 600 ? 600 : width);
+			}
+
+			return {
+				top: anchorRect.top,
+				left: menuOffsetLeft,
+			};
+		}
+
+		return null;
+	}, [anchorEl]);
+
+	const setPositioningStyles = React.useCallback(() => {
+		const offset = getAnchorOffset();
+		if (offset && menuRef.current) {
+			menuRef.current.style.left = `${offset.left}px`;
+			menuRef.current.style.top = `${offset.top}px`;
+		}
+	}, [getAnchorOffset]);
+
+	React.useEffect(() => {
+		if (isMenuOpened) {
+			setPositioningStyles();
+		}
+	}, [isMenuOpened, setPositioningStyles]);
+
+	return (
+		<ModalPortal isOpen={isMenuOpened}>
+			<div
+				className={`graph-menu ${isMenuOpened ? 'active' : ''}`}
+				ref={menuRef}
+				style={{ visibility: !isMenuOpened ? 'hidden' : 'visible' }}>
+				<ul className='graph-item-group__list'>
+					{items.map(item => (
+						<li
+							key={isEventMessage(item.value) ? item.value.messageId : item.value.eventId}
+							className='graph-menu__item'
+							onClick={() => onMenuItemClick(item.value)}>
+							<div
+								className={createStyleSelector(
+									'graph-menu__item-icon',
+									`${item.type}-icon`,
+									isEventNode(item.value) ? getEventStatus(item.value) : null,
+								)}
+							/>
+							<div className='graph-menu__item-name'>
+								{isEventMessage(item.value) ? item.value.messageId : item.value.eventName}
+							</div>
+							<div className='graph-menu__item-timestamp'>
+								{moment(
+									getTimestampAsNumber(
+										isEventMessage(item.value) ? item.value.timestamp : item.value.startTimestamp,
+									),
+								)
+									.utc()
+									.format('DD.MM.YYYY HH:mm:ss:SSS')}
+							</div>
+						</li>
+					))}
+				</ul>
+			</div>
+		</ModalPortal>
+	);
+}

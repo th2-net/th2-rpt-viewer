@@ -16,7 +16,7 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ModalPortal } from '../Portal';
+import { ModalPortal } from '../util/Portal';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 
 interface Props {

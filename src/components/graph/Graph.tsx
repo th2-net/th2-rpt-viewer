@@ -24,7 +24,7 @@ import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { Chunk, GraphItem, AttachedItem } from '../../models/Graph';
+import { Chunk } from '../../models/Graph';
 import { filterListByChunkRange } from '../../helpers/graph';
 import { isEventNode } from '../../helpers/event';
 import '../../styles/graph.scss';
@@ -48,8 +48,6 @@ function Graph() {
 
 	const [chunkWidth, setChunkWidth] = React.useState(getChunkWidth);
 
-	const [expandedAttachedItem, setExpandedAttachedItem] = React.useState<GraphItem | null>(null);
-
 	const resizeObserver = React.useRef(
 		new ResizeObserver(() => {
 			setChunkWidth(getChunkWidth);
@@ -65,9 +63,8 @@ function Graph() {
 	}, []);
 
 	const onGraphItemClick = React.useCallback(
-		(item: EventTreeNode | EventMessage | null) => {
-			setExpandedAttachedItem(item);
-			if (item !== null) activeWorkspace.onSavedItemSelect(item);
+		(item: EventTreeNode | EventMessage) => {
+			activeWorkspace.onSavedItemSelect(item);
 		},
 		[activeWorkspace.onSavedItemSelect],
 	);
@@ -105,8 +102,7 @@ function Graph() {
 									? 'attached-message'
 									: 'pinned-message',
 							}))}
-							expandedAttachedItem={expandedAttachedItem}
-							setExpandedAttachedItem={onGraphItemClick}
+							onGraphItemClick={onGraphItemClick}
 						/>
 					</div>
 				)}
@@ -130,7 +126,6 @@ function Graph() {
 			<GraphChunksVirtualizer
 				chunkWidth={chunkWidth}
 				settings={settings}
-				setExpandedAttachedItem={setExpandedAttachedItem}
 				renderChunk={renderChunk}
 				setRange={activeWorkspace.graphDataStore.setRange}
 				onRangeChanged={activeWorkspace.onRangeChange}

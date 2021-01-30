@@ -40,7 +40,10 @@ export class SelectedStore {
 	}
 
 	@computed get graphItems(): Array<EventTreeNode | EventMessage> {
-		return [...this.savedItems, ...this.workspacesStore.activeWorkspace.attachedMessages];
+		return sortByTimestamp([
+			...this.savedItems,
+			...this.workspacesStore.activeWorkspace.attachedMessages,
+		]);
 	}
 
 	@computed get selectedEvents() {

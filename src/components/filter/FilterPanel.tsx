@@ -17,7 +17,7 @@
 import React from 'react';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../hooks';
-import { ModalPortal } from '../Portal';
+import { ModalPortal } from '../util/Portal';
 import FilterRow from './row';
 import { raf } from '../../helpers/raf';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
