@@ -138,6 +138,7 @@ function Graph() {
 				chunkWidth={chunkWidth}
 				range={activeWorkspace.graphDataStore.range}
 				onInputSubmit={onInputSubmit}
+				onGraphItemClick={onGraphItemClick}
 			/>
 		</div>
 	);

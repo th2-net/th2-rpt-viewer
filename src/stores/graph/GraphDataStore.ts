@@ -17,8 +17,10 @@
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { getTimestampAsNumber, isTimeInsideInterval, isTimeIntersected } from '../../helpers/date';
+import { getEventStatus } from '../../helpers/event';
 import { calculateTimeRange } from '../../helpers/graph';
 import { Chunk, ChunkData, IntervalData, OverlayValues, IntervalOption } from '../../models/Graph';
+import { EventStatus } from '../../models/Status';
 import { TimeRange } from '../../models/Timestamp';
 import { SelectedStore } from '../SelectedStore';
 
@@ -161,8 +163,15 @@ export class GraphDataStore {
 				attachedMessages: this.selectedStore.attachedMessages.filter(
 					message => getTimestampAsNumber(message.timestamp) < windowTimeRange[0],
 				),
-				events: this.selectedStore.pinnedEvents.filter(
-					event => getTimestampAsNumber(event.startTimestamp) < windowTimeRange[0],
+				passedEvents: this.selectedStore.pinnedEvents.filter(
+					event =>
+						getEventStatus(event) === EventStatus.PASSED &&
+						getTimestampAsNumber(event.startTimestamp) < windowTimeRange[0],
+				),
+				failedEvents: this.selectedStore.pinnedEvents.filter(
+					event =>
+						getEventStatus(event) === EventStatus.FAILED &&
+						getTimestampAsNumber(event.startTimestamp) < windowTimeRange[0],
 				),
 			},
 			right: {
@@ -172,8 +181,15 @@ export class GraphDataStore {
 				attachedMessages: this.selectedStore.attachedMessages.filter(
 					message => getTimestampAsNumber(message.timestamp) > windowTimeRange[1],
 				),
-				events: this.selectedStore.pinnedEvents.filter(
-					event => getTimestampAsNumber(event.startTimestamp) > windowTimeRange[1],
+				passedEvents: this.selectedStore.pinnedEvents.filter(
+					event =>
+						getEventStatus(event) === EventStatus.PASSED &&
+						getTimestampAsNumber(event.startTimestamp) > windowTimeRange[1],
+				),
+				failedEvents: this.selectedStore.pinnedEvents.filter(
+					event =>
+						getEventStatus(event) === EventStatus.FAILED &&
+						getTimestampAsNumber(event.startTimestamp) > windowTimeRange[1],
 				),
 			},
 		};

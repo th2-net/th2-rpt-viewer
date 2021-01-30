@@ -51,7 +51,8 @@ export interface OverlayValues {
 export interface OutsideItems {
 	pinnedMessages: EventMessage[];
 	attachedMessages: EventMessage[];
-	events: EventTreeNode[];
+	passedEvents: EventTreeNode[];
+	failedEvents: EventTreeNode[];
 }
 
 export interface AttachedItem {
