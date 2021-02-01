@@ -39,9 +39,11 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 		setMenuAnchor(groupRef.current);
 	}
 
+	const dotsClassName = createBemElement('graph-item-group', 'dots', menuAnchor ? 'active' : null);
+
 	return (
 		<div className='graph-item-group' ref={groupRef} style={{ left: group.left }}>
-			<div className='graph-item-group__dots'>
+			<div className={dotsClassName}>
 				{group.items.slice(0, 3).map(item => (
 					<GraphDot
 						key={isEventMessage(item) ? item.messageId : item.eventId}

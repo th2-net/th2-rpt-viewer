@@ -69,7 +69,7 @@ export default function GraphItemsMenu({
 			}
 
 			return {
-				top: anchorRect.top,
+				top: anchorRect.top - 2,
 				left: menuOffsetLeft,
 			};
 		}
