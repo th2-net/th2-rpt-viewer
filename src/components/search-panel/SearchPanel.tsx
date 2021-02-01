@@ -293,7 +293,7 @@ const SearchPanel = () => {
 		});
 
 		const params = {
-			_startTimestamp,
+			startTimestamp: _startTimestamp,
 			searchDirection,
 			resultCountLimit,
 			endTimestamp,
