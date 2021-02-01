@@ -86,6 +86,10 @@ export default function GraphItemsMenu({
 	}, [getAnchorOffset]);
 
 	React.useEffect(() => {
+		if (menuRef.current) {
+			menuRef.current.scrollLeft = 0;
+			menuRef.current.scrollTop = 0;
+		}
 		if (isMenuOpened) {
 			setPositioningStyles();
 		}

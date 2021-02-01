@@ -25,7 +25,6 @@ import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk } from '../../models/Graph';
-import { filterListByChunkRange } from '../../helpers/graph';
 import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;

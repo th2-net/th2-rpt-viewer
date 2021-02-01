@@ -277,6 +277,14 @@ const GraphChunksVirtualizer = (props: Props) => {
 	};
 
 	const onScroll = (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
+		if (
+			viewportElementRef.current &&
+			event.target instanceof HTMLElement &&
+			!viewportElementRef.current.contains(event.target)
+		) {
+			return;
+		}
+
 		getTimeRange();
 
 		if (viewportElementRef.current) {

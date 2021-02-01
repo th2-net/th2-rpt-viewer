@@ -57,7 +57,6 @@ interface Props {
 	chunk: Chunk;
 	chunkWidth: number;
 	getChunkData: InstanceType<typeof GraphDataStore>['getChunkData'];
-	// graphItems: GraphItem[];
 	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 	interval: number;
