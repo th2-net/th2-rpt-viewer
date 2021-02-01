@@ -17,20 +17,21 @@
 import moment from 'moment';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import { Chunk, GraphGroup, GraphItem } from '../models/Graph';
+import { GraphGroup, GraphItem } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { getTimestampAsNumber } from './date';
 import { isEventMessage, isEventNode } from './event';
 
-export function filterListByChunkRange(chunk: Chunk, list: Array<EventMessage | EventTreeNode>) {
+export function filterListByChunkRange(
+	timeRange: TimeRange,
+	list: Array<EventMessage | EventTreeNode>,
+) {
+	const [from, to] = timeRange;
 	return list.filter(item => {
 		const itemTimestamp = getTimestampAsNumber(
 			isEventNode(item) ? item.startTimestamp : item.timestamp,
 		);
-		return (
-			moment(itemTimestamp).isBetween(moment(chunk.from), moment(chunk.to)) ||
-			itemTimestamp === chunk.to
-		);
+		return moment(itemTimestamp).isBetween(moment(from), moment(to)) || itemTimestamp === to;
 	});
 }
 
@@ -39,12 +40,12 @@ export function calculateTimeRange(timestamp: number, interval: number): TimeRan
 }
 
 export function groupGraphItems(
-	from: number,
-	to: number,
+	timeRange: TimeRange,
 	chunkWidth: number,
 	items: GraphItem[],
 	ATTACHED_ITEM_SIZE: number,
 ): Array<GraphGroup> {
+	const [from, to] = timeRange;
 	function getGroupLeftPosition(timestamp: number) {
 		return Math.floor(((timestamp - from) / (to - from)) * chunkWidth);
 	}
@@ -84,8 +85,10 @@ export function groupGraphItems(
 	return groups;
 }
 
-export function getGraphTimeTicks(from: number, to: number, interval: number, tickSize: number) {
+export function getGraphTimeTicks(timeRange: TimeRange, interval: number, tickSize: number) {
 	const ticksArr = [];
+
+	const [from, to] = timeRange;
 
 	const ticksInterval = (to - from) / interval / 1000 / 60;
 

@@ -15,14 +15,17 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { LineChart, Line, LineProps } from 'recharts';
 import GraphItemsGroup from './GraphItemsGroup';
 import { GraphDataStore } from '../../stores/graph/GraphDataStore';
 import { EventMessage } from '../../models/EventMessage';
-import { GraphGroup, Chunk, GraphItem } from '../../models/Graph';
+import { GraphGroup, Chunk } from '../../models/Graph';
 import { EventTreeNode } from '../../models/EventAction';
-import { getGraphTimeTicks, groupGraphItems } from '../../helpers/graph';
+import { getGraphTimeTicks, groupGraphItems, filterListByChunkRange } from '../../helpers/graph';
+import { useSelectedStore } from '../../hooks';
+import { TimeRange } from '../../models/Timestamp';
 
 const ATTACHED_ITEM_SIZE = 14;
 
@@ -54,7 +57,7 @@ interface Props {
 	chunk: Chunk;
 	chunkWidth: number;
 	getChunkData: InstanceType<typeof GraphDataStore>['getChunkData'];
-	graphItems: GraphItem[];
+	// graphItems: GraphItem[];
 	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 	interval: number;
@@ -65,13 +68,14 @@ function GraphChunk(props: Props) {
 	const {
 		chunk,
 		getChunkData,
-		graphItems,
 		getGraphItemType,
 		chunkWidth,
 		onGraphItemClick,
 		interval,
 		tickSize,
 	} = props;
+
+	const selectedStore = useSelectedStore();
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
@@ -83,23 +87,24 @@ function GraphChunk(props: Props) {
 		};
 	}, []);
 
-	const ticks: Array<string> = React.useMemo(() => {
-		const [from, to] = [
+	const chunkBoundaries: TimeRange = React.useMemo(() => {
+		return [
 			moment(chunk.from).startOf('minute').valueOf(),
 			moment(chunk.to).startOf('minute').valueOf(),
 		];
+	}, [chunk.from, chunk.to]);
 
-		return getGraphTimeTicks(from, to, interval, tickSize);
-	}, [chunk, interval, tickSize]);
+	const graphItems = React.useMemo(() => {
+		return filterListByChunkRange(chunkBoundaries, selectedStore.graphItems);
+	}, [chunkBoundaries, selectedStore.graphItems]);
+
+	const ticks: Array<string> = React.useMemo(() => {
+		return getGraphTimeTicks(chunkBoundaries, interval, tickSize);
+	}, [chunkBoundaries, interval, tickSize]);
 
 	const graphItemsGroups: Array<GraphGroup> = React.useMemo(() => {
-		const [from, to] = [
-			moment(chunk.from).startOf('minute').valueOf(),
-			moment(chunk.to).startOf('minute').valueOf(),
-		];
-
-		return groupGraphItems(from, to, chunkWidth, graphItems, ATTACHED_ITEM_SIZE);
-	}, [chunk, chunkWidth, graphItems]);
+		return groupGraphItems(chunkBoundaries, chunkWidth, graphItems, ATTACHED_ITEM_SIZE);
+	}, [chunkBoundaries, chunkWidth, graphItems]);
 
 	return (
 		<div className='graph-chunk' data-from={chunk.from} data-to={chunk.to}>
@@ -135,4 +140,4 @@ function GraphChunk(props: Props) {
 	);
 }
 
-export default React.memo(GraphChunk);
+export default observer(GraphChunk);

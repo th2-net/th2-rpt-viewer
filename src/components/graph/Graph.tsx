@@ -99,7 +99,6 @@ function Graph() {
 							chunkWidth={chunkWidth}
 							getChunkData={activeWorkspace.graphDataStore.getChunkData}
 							getGraphItemType={getGraphItemType}
-							graphItems={filterListByChunkRange(chunk, selectedStore.graphItems)}
 							onGraphItemClick={onGraphItemClick}
 						/>
 					</div>

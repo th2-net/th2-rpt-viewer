@@ -147,7 +147,6 @@ export default class EventsStore {
 	@action
 	public selectNode = (eventTreeNode: EventTreeNode | null) => {
 		this.selectedNode = eventTreeNode;
-		this.selectedEvent = null;
 		if (this.viewStore.eventsPanelArea === PanelArea.P100) {
 			this.viewStore.eventsPanelArea = PanelArea.P50;
 		}
