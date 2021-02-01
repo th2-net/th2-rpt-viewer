@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
 import { getTimestampAsNumber } from '../helpers/date';
-import { isEventNode } from '../helpers/event';
+import { isEventMessage, isEventNode } from '../helpers/event';
 import { createStyleSelector } from '../helpers/styleCreators';
 import { useActivePanel, useSelectedStore, useWorkspaceStore } from '../hooks';
 import { EventTreeNode } from '../models/EventAction';
@@ -81,8 +81,9 @@ interface BookmarkItemProps {
 
 export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 	const itemInfo = {
+		id: isEventNode(item) ? item.eventId : item.messageId,
 		status: isEventNode(item) ? (item.successful ? 'passed' : 'failed') : null,
-		title: isEventNode(item) ? item.eventName : item.messageId,
+		title: isEventNode(item) ? item.eventName : item.messageType,
 		timestamp: getTimestampAsNumber(isEventNode(item) ? item.startTimestamp : item.timestamp),
 		type: isEventNode(item) ? 'event' : item.type,
 	};
@@ -112,6 +113,7 @@ export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 				<div className='bookmark-item__timestamp'>
 					{moment(itemInfo.timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}
 				</div>
+				<div className='bookmark-item__id'>{itemInfo.id}</div>
 			</div>
 			{onRemove && (
 				<button className='bookmark-item__remove-btn' onClick={onBookmarkRemove}>
