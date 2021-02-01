@@ -211,6 +211,7 @@ export default class EventsStore {
 		/*
 			While we are saving eventTreeNodes with their parents, searching returns eventTreeNodes 
 			without full path, so we have to fetch it first
+			
 		*/
 		if (!savedEventNode.parents) {
 			try {

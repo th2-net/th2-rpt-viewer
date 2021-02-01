@@ -95,7 +95,7 @@ function EventDetailInfoCard(props: Props) {
 						</>
 					)}
 				</div>
-				<div className='event-detail-card__id'>{`${batchId ? `${batchId}:` : ''}${eventId}`}</div>
+				<div className='event-detail-card__id'>{eventId}</div>
 			</div>
 			<div className='event-detail-card__body'>
 				<div className='event-detail-card__body-list'>
