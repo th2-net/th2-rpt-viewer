@@ -23,7 +23,7 @@ import EventsSearchStore from './EventsSearchStore';
 import EventsFilter from '../../models/filter/EventsFilter';
 import PanelArea from '../../util/PanelArea';
 import { TabTypes } from '../../models/util/Windows';
-import { getEventNodeParents, sortEventsByTimestamp } from '../../helpers/event';
+import { getEventNodeParents, isEventNode, sortEventsByTimestamp } from '../../helpers/event';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getTimestampAsNumber } from '../../helpers/date';
@@ -147,6 +147,7 @@ export default class EventsStore {
 	@action
 	public selectNode = (eventTreeNode: EventTreeNode | null) => {
 		this.selectedNode = eventTreeNode;
+		this.selectedEvent = null;
 		if (this.viewStore.eventsPanelArea === PanelArea.P100) {
 			this.viewStore.eventsPanelArea = PanelArea.P50;
 		}
@@ -207,12 +208,27 @@ export default class EventsStore {
 
 	@action
 	public onSavedItemSelect = async (savedEventNode: EventTreeNode) => {
-		// Check if event exists in current tree
-		const fullPath = [...(savedEventNode.parents || []), savedEventNode.eventId];
+		let fullPath: string[] = [];
+		/*
+			While we are saving eventTreeNodes with their parents, searching returns eventTreeNodes 
+			without full path, so we have to fetch it first
+		*/
+		if (!savedEventNode.parents) {
+			try {
+				this.isLoadingRootEvents = true;
+				this.selectNode(null);
+				fullPath = await this.fetchFullPath(savedEventNode);
+			} catch (error) {
+				this.isLoadingRootEvents = false;
+			}
+		} else {
+			fullPath = [...(savedEventNode.parents || []), savedEventNode.eventId];
+		}
 		let currIdx = 0;
 		let nodes = this.eventTree;
 		let node: EventTreeNode | undefined;
 
+		// Check if event exists in current tree
 		while (currIdx < fullPath.length) {
 			// eslint-disable-next-line no-loop-func
 			node = nodes.find(n => n.eventId === fullPath[currIdx]);
@@ -221,6 +237,7 @@ export default class EventsStore {
 			nodes = node.childList;
 			currIdx++;
 		}
+
 		if (!node) {
 			const [timestampFrom, timestampTo] = calculateTimeRange(
 				getTimestampAsNumber(savedEventNode.startTimestamp),
@@ -234,6 +251,7 @@ export default class EventsStore {
 			await this.fetchEventTree();
 		}
 		this.expandPath(fullPath);
+		this.isLoadingRootEvents = false;
 	};
 
 	private detailedEventAC: AbortController | null = null;
@@ -418,4 +436,21 @@ export default class EventsStore {
 
 		return targetNode ? [targetNode, ...this.getNodesPath(rest, targetNode.childList ?? [])] : [];
 	}
+
+	private fetchFullPath = async (event: EventTreeNode | EventAction) => {
+		let currentEvent = event;
+		const path: string[] = [event.eventId];
+
+		while (typeof getEventParentId(currentEvent) === 'string') {
+			const parentId = getEventParentId(currentEvent);
+			path.unshift(parentId);
+			// eslint-disable-next-line no-await-in-loop
+			currentEvent = await this.api.events.getEvent(parentId);
+		}
+
+		return path;
+	};
 }
+
+const getEventParentId = (event: EventTreeNode | EventAction) =>
+	isEventNode(event) ? event.parentId : event.parentEventId;
