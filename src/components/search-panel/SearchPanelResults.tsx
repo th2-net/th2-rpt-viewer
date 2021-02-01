@@ -69,7 +69,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 			<hr />
 			{results.map((item: Result) => (
 				<BookmarkItem
-					key={isEventNode(item) ? item.eventId : item.messageId}
+					key={`${timestamp}-${isEventNode(item) ? item.eventId : item.messageId}`}
 					item={item}
 					onClick={() => {
 						onResultItemClick(item);

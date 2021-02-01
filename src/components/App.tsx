@@ -16,12 +16,9 @@
 
 import { hot } from 'react-hot-loader/root';
 import * as React from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ToastProvider } from 'react-toast-notifications';
 import Toast from './notifications/Toast';
 import Notifier from './notifications/Notifier';
-import { CustomDragLayer } from './drag-n-drop/CustomDragLayer';
 import Graph from './graph/Graph';
 import WorkspacesLayout from './workspace/WorkspacesLayout';
 import '../styles/root.scss';
@@ -30,12 +27,9 @@ const App = () => (
 	<div className='app'>
 		<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={400}>
 			<Graph />
-			<DndProvider backend={HTML5Backend}>
-				<CustomDragLayer />
-				<div className='app__workspaces'>
-					<WorkspacesLayout />
-				</div>
-			</DndProvider>
+			<div className='app__workspaces'>
+				<WorkspacesLayout />
+			</div>
 			<Notifier />
 		</ToastProvider>
 	</div>

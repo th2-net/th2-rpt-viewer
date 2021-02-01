@@ -95,7 +95,8 @@ export default function GraphItemsMenu({
 		}
 	}, [isMenuOpened, setPositioningStyles]);
 
-	function handleClick(item: GraphItem) {
+	function handleClick(e: React.MouseEvent<HTMLLIElement>, item: GraphItem) {
+		e.stopPropagation();
 		onMenuItemClick(item);
 		onClose();
 	}
@@ -111,7 +112,7 @@ export default function GraphItemsMenu({
 						<li
 							key={isEventMessage(item) ? item.messageId : item.eventId}
 							className='graph-menu__item'
-							onClick={() => handleClick(item)}>
+							onClick={ev => handleClick(ev, item)}>
 							<div
 								className={createStyleSelector(
 									'graph-menu__item-icon',

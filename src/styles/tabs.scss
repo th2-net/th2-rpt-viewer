@@ -30,9 +30,11 @@
 	}
 
 	&__list {
-		display: flex;
 		width: 100%;
-		z-index: 2;
+		height: 100%;
+		display: grid;
+		grid-auto-rows: min-content;
+		grid-row-gap: 5px;
 		overflow: hidden;
 	}
 
@@ -49,41 +51,6 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-	}
-}
-
-.tab-root {
-	height: 100%;
-	flex: 1;
-	display: flex;
-	align-items: center;
-	padding: 0 4px;
-	position: relative;
-	min-width: 5%;
-
-	&:first-child {
-		padding-left: 0;
-	}
-
-	&:last-child {
-		padding-right: 0;
-	}
-
-	&.selected {
-		z-index: 1;
-	}
-
-	&__draggable {
-		height: 100%;
-		width: 100%;
-		position: relative;
-	}
-
-	&__droppable {
-		display: flex;
-		height: 100%;
-		width: 100%;
-		position: relative;
 	}
 }
 
@@ -113,15 +80,6 @@
 		}
 	}
 
-	&.dragging {
-		background-color: rgba($color: #fff, $alpha: 0.65);
-		border: 3px solid $draggableColor;
-
-		&::before {
-			display: none;
-		}
-	}
-
 	&__content {
 		display: flex;
 		align-items: center;
@@ -134,134 +92,5 @@
 		overflow: hidden;
 		padding: 0 5px;
 		flex-grow: 1;
-	}
-}
-
-.tab-drop-target {
-	height: 100%;
-	width: 10px;
-	background-color: $draggableColor;
-	border: 3px solid #fff;
-	border-radius: 6px;
-	display: none;
-
-	&.active {
-		display: block;
-	}
-}
-
-.window-tabs {
-	&.attach-left {
-		padding-left: 0;
-		padding-right: 8px;
-	}
-
-	&.attach-right {
-		padding-left: 8px;
-		padding-right: 0;
-	}
-}
-
-.tabs-drop-hint {
-	height: 100%;
-	overflow: hidden;
-	flex-shrink: 0;
-
-	& div {
-		height: 100%;
-		width: 100%;
-		background-color: $draggableColor;
-		border: 3px solid #fff;
-		border-radius: 6px;
-		flex-shrink: 0;
-	}
-}
-
-.droppable-tab-list {
-	width: 100%;
-	height: 100%;
-	display: grid;
-	grid-auto-rows: min-content;
-	grid-row-gap: 5px;
-	overflow: hidden;
-}
-
-.tab-menu {
-	border-radius: 6px;
-	box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.35);
-	position: absolute;
-	width: 100%;
-	height: auto;
-	display: grid;
-	grid-template-columns: 1fr 50px;
-	padding: 3px 10px 0 10px;
-	z-index: 100;
-	background-color: $tabsBackgroundColor;
-
-	&.selected {
-		background-color: #fff;
-	}
-
-	&__controls {
-		height: 34px;
-		display: flex;
-		align-items: center;
-		align-self: flex-start;
-	}
-
-	&__button {
-		border-radius: 50%;
-		cursor: pointer;
-		opacity: 0.7;
-		transition: 0.2s;
-		background-color: transparent;
-		width: 22px;
-		height: 22px;
-		padding: 0;
-		border: none;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-
-		&:focus {
-			outline: none;
-		}
-
-		&.active {
-			&:hover {
-				opacity: 1;
-				background-color: $primaryTextColor;
-				background-color: rgba($color: $primaryTextColor, $alpha: 0.11);
-			}
-		}
-
-		&.disabled {
-			opacity: 0.5;
-			cursor: default;
-		}
-	}
-
-	&__icon {
-		&-duplicate {
-			display: inline-block;
-			@include icon(url(../../resources/icons/duplicate.svg), 14px, 14px);
-			background-size: 100%;
-		}
-
-		&-close {
-			display: inline-block;
-			@include icon(url(../../resources/icons/cross-icon-dark.svg), 10px, 10px);
-			background-size: 200%;
-		}
-	}
-
-	&__box-shadow-overlay {
-		position: absolute;
-		top: -5px;
-		left: 0;
-		height: 9px;
-		width: 100%;
-		background-color: #fff;
-		background-color: inherit;
 	}
 }

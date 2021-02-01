@@ -20,7 +20,6 @@ import Workspace from './Workspace';
 import { WorkspaceContextProvider } from '../../contexts/workspaceContext';
 import { useWorkspaces } from '../../hooks';
 import Tabs, { TabListRenderProps } from '../tabs/Tabs';
-import DroppableTabList from '../tabs/DroppableTabList';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import '../../styles/root.scss';
 
@@ -66,12 +65,12 @@ const WorkspacesLayout = () => {
 			closeTab={workspacesStore.tabsStore.closeWorkspace}
 			duplicateTab={workspacesStore.tabsStore.duplicateWorkspace}
 			tabList={tabListInjectedProps => (
-				<DroppableTabList>
+				<>
 					{renderTabs(tabListInjectedProps)}
 					<div className='workspace-tab workspace-tab__add' onClick={addWorkspace}>
 						+
 					</div>
-				</DroppableTabList>
+				</>
 			)}
 			tabPanels={workspacesStore.workspaces.map(workspace => (
 				<WorkspaceContextProvider value={workspace} key={workspace.id}>

@@ -851,63 +851,6 @@
 	}
 }
 
-.messages-tab {
-	width: 20%;
-	max-width: 200px;
-	flex-grow: 2;
-	flex-shrink: 0;
-
-	&__wrapper {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		align-items: center;
-		overflow: hidden;
-		margin: auto;
-		padding: 0 8px;
-	}
-
-	&__title {
-		text-overflow: ellipsis;
-		overflow: hidden;
-		display: flex;
-		align-items: center;
-	}
-
-	&__count-list {
-		display: flex;
-		align-items: center;
-		flex-shrink: 0;
-	}
-
-	&__event-list {
-		padding: 7px 20px 5px 12px;
-	}
-
-	&__event-row {
-		display: flex;
-		justify-content: space-between;
-		margin-bottom: 5px;
-
-		&:last-child {
-			margin-bottom: 0;
-		}
-	}
-
-	&__event-title {
-		@include status-text;
-		white-space: nowrap;
-		text-overflow: ellipsis;
-		overflow: hidden;
-		max-width: 300px;
-	}
-
-	&__spinner {
-		@include spinner(3px, 16px, 2s);
-		margin-right: 5px;
-		display: inline-block;
-	}
-}
-
 .error-message {
 	height: 100px;
 	border: 2px solid $errorMsgBackgroundColor;

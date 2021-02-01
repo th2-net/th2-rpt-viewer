@@ -270,8 +270,7 @@ const SearchPanel = () => {
 			return;
 		}
 		const {
-			// eslint-disable-next-line no-shadow
-			startTimestamp,
+			startTimestamp: _startTimestamp,
 			searchDirection,
 			resultCountLimit,
 			endTimestamp,
@@ -294,7 +293,7 @@ const SearchPanel = () => {
 		});
 
 		const params = {
-			startTimestamp,
+			_startTimestamp,
 			searchDirection,
 			resultCountLimit,
 			endTimestamp,
@@ -327,12 +326,15 @@ const SearchPanel = () => {
 
 	useEffect(() => {
 		if (searchHistory[index]) {
-			// eslint-disable-next-line no-shadow
-			const { type, state, filters } = searchHistory[index].request;
-			setFormType(type);
-			setFormState(state);
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-			type === 'event' ? setEventFilter(filters) : setMessagesFilter(filters);
+			const request = searchHistory[index].request;
+			setFormType(request.type);
+			setFormState(request.state);
+
+			if (request.type === 'event') {
+				setEventFilter(request.filters);
+			} else {
+				setMessagesFilter(request.filters);
+			}
 		}
 	}, [index, searchHistory]);
 
