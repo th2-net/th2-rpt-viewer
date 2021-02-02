@@ -51,7 +51,7 @@ export default function MessageBodyCard({ isBeautified, body, isSelected }: Prop
 						isHighlighted={areSiblingsHighlighed}
 						setIsHighlighted={highlightSiblings}
 					/>
-					{isBeautified || idx === arr.length - 1 ? null : ','}
+					{isBeautified || idx === arr.length - 1 ? null : ', '}
 				</React.Fragment>
 			))}
 			{!isBeautified && '}'}
@@ -107,7 +107,7 @@ function MessageBodyCardField(props: FieldProps) {
 				onMouseEnter={() => setIsHighlighted(true)}
 				onMouseLeave={() => setIsHighlighted(false)}
 				className='mc-body__field-label'>
-				{label ? (isBeautified ? `${label}: ` : `"${label}":`) : ''}
+				{label ? (isBeautified ? `${label}: ` : `"${label}": `) : ''}
 			</span>
 			{isSimpleValue(field) ? (
 				<span className='mc-body__field-simple-value'>{field.simpleValue}</span>
@@ -153,7 +153,7 @@ function MessageBodyCardField(props: FieldProps) {
 									setIsHighlighted={highlightSiblings}
 									highlightColor={highlightColor}
 								/>
-								{isBeautified || idx === arr.length - 1 ? null : ','}
+								{isBeautified || idx === arr.length - 1 ? null : ', '}
 							</React.Fragment>
 						))}
 					</span>
