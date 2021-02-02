@@ -143,7 +143,6 @@ const GraphChunksVirtualizer = (props: Props) => {
 			return;
 
 		if (isClickEventInElement(event, rangeElementRef.current)) {
-			// setExpandedAttachedItem(null);
 			viewportElementRef.current.style.cursor = 'grabbing';
 			isDown.current = true;
 			startX.current = event.pageX - (viewportElementRef.current?.offsetLeft || 0);
@@ -203,7 +202,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
 		if (
 			viewportElementRef.current &&
-			event.target instanceof HTMLDivElement &&
+			event.target instanceof Node &&
 			viewportElementRef.current.contains(event.target)
 		) {
 			viewportElementRef.current.scrollLeft += event.deltaY * 2;
@@ -279,7 +278,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const onScroll = (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
 		if (
 			viewportElementRef.current &&
-			event.target instanceof HTMLElement &&
+			event.target instanceof Node &&
 			!viewportElementRef.current.contains(event.target)
 		) {
 			return;

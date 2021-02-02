@@ -26,11 +26,7 @@ export function useActivePanel(panel: EventsStore | MessagesStore | null = null)
 	const workspaceViewStore = useWorkspaceViewStore();
 
 	function handlePanelClick(e: MouseEvent) {
-		if (
-			panelRef.current &&
-			e.target instanceof HTMLElement &&
-			panelRef.current.contains(e.target)
-		) {
+		if (panelRef.current && e.target instanceof Node && panelRef.current.contains(e.target)) {
 			workspaceViewStore.setActivePanel(panel);
 		}
 	}

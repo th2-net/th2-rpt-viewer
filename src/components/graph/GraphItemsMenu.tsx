@@ -56,7 +56,7 @@ export default function GraphItemsMenu({
 	});
 
 	const getAnchorOffset = React.useCallback(() => {
-		if (anchorElement instanceof HTMLElement && menuRef.current) {
+		if (anchorElement instanceof Node && menuRef.current) {
 			const anchorRect = anchorElement.getBoundingClientRect();
 			let menuOffsetLeft = anchorRect.right + 10;
 			const { width } = menuRef.current.getBoundingClientRect();

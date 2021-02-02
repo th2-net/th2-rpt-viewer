@@ -36,7 +36,7 @@ const FilterDatetimePicker = ({ inputConfig, onClose, left, top }: FilterDatetim
 	const pickerRef = React.useRef<HTMLDivElement>(null);
 
 	useOutsideClickListener(pickerRef, (e: MouseEvent) => {
-		if (e.target instanceof HTMLElement && !pickerRef.current?.contains(e.target)) {
+		if (e.target instanceof Node && !pickerRef.current?.contains(e.target)) {
 			onClose();
 		}
 	});
