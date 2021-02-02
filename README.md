@@ -6,7 +6,7 @@ This is a web app that displays the stored test data (events and messages) using
 Major versions of report-viewer and report-data-provider are compatible.
 
 # API
-This app needs `report-data-provider 2.0.0 (or newer)` backend component to function. 
+This app needs `report-data-provider 3.0.0 (or newer)` backend component to function. 
 
 # Configuration
 To include this component in your schema, a following yml file needs to be created
@@ -17,7 +17,7 @@ metadata:
   name: report-data-viewer
 spec:
   image-name: ghcr.io/th2-net/th2-rpt-viewer
-  image-version: 2.0.18 // change this line if you want to use a newer version
+  image-version: 3.0.0 // change this line if you want to use a newer version
   type: th2-rpt-viewer
   extended-settings:
     chart-cfg:

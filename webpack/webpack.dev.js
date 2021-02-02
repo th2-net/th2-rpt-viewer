@@ -35,20 +35,9 @@ module.exports = webpackMerge(commonConfig, {
 		port: 9001,
 		host: '0.0.0.0',
 		historyApiFallback: true,
-		// proxy: {
-		// 	'/backend': {
-		// 		target: 'http://srt022:8082/',
-		// 		changeOrigin: true,
-		// 		secure: false,
-		// 		pathRewrite: {
-		// 			'^/backend': '',
-		// 		},
-		// 	},
-		// },
 		proxy: {
 			'/backend': {
 				target: 'http://th2-qa:30000/schema-schema-qa/',
-				// target: 'http://th2-dev:30000/',
 				changeOrigin: true,
 				secure: false,
 			},
