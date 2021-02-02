@@ -23,7 +23,7 @@ import SkeletonedMessageCardListItem from './SkeletonedMessageCardListItem';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
 import SplashScreen from '../../SplashScreen';
 import MessagesScrollContainer from './MessagesScrollContainer';
-import Empty from '../../Empty';
+import Empty from '../../util/Empty';
 import { useMessagesWorkspaceStore } from '../../../hooks';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import '../../../styles/messages.scss';

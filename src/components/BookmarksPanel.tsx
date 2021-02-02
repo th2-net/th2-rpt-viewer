@@ -18,8 +18,9 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
+import Empty from './util/Empty';
 import { getTimestampAsNumber } from '../helpers/date';
-import { isEventMessage, isEventNode } from '../helpers/event';
+import { isEventNode } from '../helpers/event';
 import { createStyleSelector } from '../helpers/styleCreators';
 import { useActivePanel, useSelectedStore, useWorkspaceStore } from '../hooks';
 import { EventTreeNode } from '../models/EventAction';
@@ -60,6 +61,7 @@ function BookmarksPanel() {
 
 	return (
 		<div className='bookmarks-panel' ref={panelRef}>
+			{selectedStore.savedItems.length === 0 && <Empty description='No bookmarks added' />}
 			<Virtuoso
 				className='bookmarks-panel__list'
 				totalCount={selectedStore.savedItems.length}

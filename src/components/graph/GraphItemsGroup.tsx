@@ -36,7 +36,7 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 	const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
 
 	function handleClick() {
-		setMenuAnchor(groupRef.current);
+		setMenuAnchor(anchor => (anchor ? null : groupRef.current));
 	}
 
 	const dotsClassName = createBemElement('graph-item-group', 'dots', menuAnchor ? 'active' : null);

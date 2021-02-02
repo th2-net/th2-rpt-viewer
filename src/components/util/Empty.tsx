@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import '../styles/empty.scss';
+import '../../styles/empty.scss';
 
 interface EmptyProps {
 	description: string;

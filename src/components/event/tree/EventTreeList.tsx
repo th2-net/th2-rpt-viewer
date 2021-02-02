@@ -18,7 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoMethods } from 'react-virtuoso';
 import EventTree from './EventTree';
-import Empty from '../../Empty';
+import Empty from '../../util/Empty';
 import SplashScreen from '../../SplashScreen';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import { useWorkspaceEventStore } from '../../../hooks';
