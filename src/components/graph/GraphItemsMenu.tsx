@@ -50,7 +50,7 @@ export default function GraphItemsMenu({
 	const anchorElement = anchorEl || menuRef.current;
 
 	useOutsideClickListener(menuRef, e => {
-		if (isMenuOpened && e.target instanceof HTMLElement && !anchorEl?.contains(e.target)) {
+		if (isMenuOpened && e.target instanceof Node && !anchorEl?.contains(e.target)) {
 			onClose();
 		}
 	});

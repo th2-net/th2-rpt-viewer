@@ -25,6 +25,10 @@ const MIN_PANEL_WIDTH = 15;
 
 export type WorkspacePanelsLayout = [number, number, number, number];
 
+function minmax(num: number, min: number, max: number) {
+	return Math.min(Math.max(num, min), max);
+}
+
 interface Panel {
 	title: string;
 	component: React.ReactNode;
@@ -41,9 +45,12 @@ export interface Props {
 
 function WorkspaceSplitter(props: Props) {
 	const viewStore = useWorkspaceViewStore();
+
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const clickStartX = React.useRef(0);
+	const resizeDirection = React.useRef<'left' | 'right' | null>(null);
 	const activeSplitter = React.useRef<HTMLDivElement | null>(null);
+
 	const [isResizing, setIsResizing] = React.useState(false);
 
 	const panelsRefs = React.useRef(
@@ -67,61 +74,106 @@ function WorkspaceSplitter(props: Props) {
 	const splittersMinxMaxPositions = React.useRef<[number, number][]>([]);
 
 	React.useLayoutEffect(() => {
-		if (rootRef.current) {
-			panelsRefs.current.forEach((panelRef, index) => {
-				if (panelRef.current) {
-					panelRef.current.style.width = `${viewStore.panelsLayout[index]}%`;
-					const widthInPx =
-						(rootRef.current!.getBoundingClientRect().width * viewStore.panelsLayout[index]) / 100;
-					if (Math.floor(widthInPx) <= MIN_PANEL_WIDTH) {
-						if (!panelRef.current.classList.contains('minified')) {
-							panelRef.current.classList.add('minified');
-						}
-					} else if (panelRef.current.classList.contains('minified')) {
-						panelRef.current.classList.remove('minified');
+		const rootEl = rootRef.current;
+		if (!rootEl) return;
+
+		panelsRefs.current.forEach((ref, index) => {
+			const panelRef = ref.current;
+			if (panelRef) {
+				panelRef.style.width = `${viewStore.panelsLayout[index]}%`;
+				const widthInPx =
+					(rootEl.getBoundingClientRect().width * viewStore.panelsLayout[index]) / 100;
+				if (Math.floor(widthInPx) <= MIN_PANEL_WIDTH) {
+					if (!panelRef.classList.contains('minified')) {
+						panelRef.classList.add('minified');
 					}
+				} else if (panelRef.classList.contains('minified')) {
+					panelRef.classList.remove('minified');
 				}
-			});
-		}
-	}, []);
+			}
+		});
+	}, [viewStore.panelsLayout]);
 
-	const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-		if (rootRef.current) {
-			setIsResizing(true);
+	function onMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+		setIsResizing(true);
 
-			document.addEventListener('mousemove', onMouseMove);
-			document.addEventListener('mouseup', onMouseUp);
+		document.addEventListener('mousemove', onMouseMove);
+		document.addEventListener('mouseup', onMouseUp);
 
-			clickStartX.current = event.pageX;
-			activeSplitter.current = event.target instanceof HTMLDivElement ? event.target : null;
-			getMinMaxSplittersPositions();
-			handleResize(event);
+		clickStartX.current = event.pageX;
+		activeSplitter.current = event.target instanceof HTMLDivElement ? event.target : null;
+		resizeDirection.current = null;
 
-			splittersRefs.current.forEach(resizerRef => {
-				if (resizerRef.current) {
-					resizerRef.current.style.position = 'absolute';
-					if (resizerRef.current === activeSplitter.current) {
-						resizerRef.current.style.zIndex = '1002';
-					}
+		calcMinMaxSplittersPositions();
+		handleResize(event);
+
+		splittersRefs.current.forEach(resizerRef => {
+			if (resizerRef.current) {
+				resizerRef.current.style.position = 'absolute';
+				if (resizerRef.current === activeSplitter.current) {
+					resizerRef.current.style.zIndex = '1002';
 				}
-			});
-		}
-	};
+			}
+		});
+	}
 
-	const onMouseMove = (e: MouseEvent) => {
+	function onMouseMove(e: MouseEvent) {
 		e.preventDefault();
 
 		handleResize(e);
-	};
+	}
+
+	function handleResize(e: MouseEvent | React.MouseEvent<HTMLDivElement>) {
+		const activeSplitterEl = activeSplitter.current;
+		const rootEl = rootRef.current;
+
+		if (!activeSplitterEl || !rootEl) return;
+
+		const diffX = e.pageX - clickStartX.current;
+
+		resizeDirection.current = diffX < 0 ? 'left' : 'right';
+		clickStartX.current = e.pageX;
+
+		const { left: rootLeft, width: rootWidth } = rootEl.getBoundingClientRect();
+
+		const activeSplitterOffsetLeft = activeSplitterEl.getBoundingClientRect().left;
+		const activeSplitterLeftPostion = activeSplitterOffsetLeft + diffX - rootLeft;
+
+		const splittersLeftPositions = getUpdatedSplittersPositions(activeSplitterLeftPostion);
+
+		splittersRefs.current.forEach((splitter, index) => {
+			if (splitter.current) {
+				splitter.current.style.left = `${splittersLeftPositions[index]}px`;
+			}
+		});
+
+		const spliiterWidth = splittersRefs.current[0].current!.clientWidth;
+
+		overlaysRefs.current.forEach((overlayRef, index) => {
+			if (overlayRef.current) {
+				overlayRef.current.style.left = `${splittersLeftPositions[index] + spliiterWidth}px`;
+				const overlayWidth =
+					index === overlaysRefs.current.length - 1
+						? rootRef.current!.offsetLeft +
+						  rootWidth -
+						  splittersLeftPositions[index] -
+						  spliiterWidth
+						: splittersLeftPositions[index + 1] - splittersLeftPositions[index] - spliiterWidth;
+				overlayRef.current.style.width = `${overlayWidth}px`;
+			}
+		});
+	}
 
 	const onMouseUp = () => {
-		if (rootRef.current) {
-			setIsResizing(false);
-			document.removeEventListener('mousemove', onMouseMove);
-			document.removeEventListener('mouseup', onMouseUp);
-		}
+		const rootEl = rootRef.current;
+		if (!rootEl) return;
 
-		const rootWidth = rootRef.current!.getBoundingClientRect().width;
+		setIsResizing(false);
+
+		document.removeEventListener('mousemove', onMouseMove);
+		document.removeEventListener('mouseup', onMouseUp);
+
+		const { width: rootWidth, left: rootOffsetLeft } = rootEl?.getBoundingClientRect();
 
 		const widths = splittersRefs.current.map((splitterRef, index) => {
 			const { left, width } = splitterRef.current!.getBoundingClientRect();
@@ -129,8 +181,7 @@ function WorkspaceSplitter(props: Props) {
 			const right =
 				nextSplitter && nextSplitter.current
 					? nextSplitter.current.getBoundingClientRect().left
-					: rootRef.current!.getBoundingClientRect().width +
-					  rootRef.current!.getBoundingClientRect().left;
+					: rootWidth + rootOffsetLeft;
 			return right - (left + width);
 		});
 
@@ -160,11 +211,7 @@ function WorkspaceSplitter(props: Props) {
 		});
 	};
 
-	function minmax(num: number, min: number, max: number) {
-		return Math.min(Math.max(num, min), max);
-	}
-
-	const getMinMaxSplittersPositions = () => {
+	function calcMinMaxSplittersPositions() {
 		if (!rootRef.current) return;
 		const { width: rootOffsetWidth } = rootRef.current.getBoundingClientRect();
 
@@ -179,7 +226,7 @@ function WorkspaceSplitter(props: Props) {
 					(splittersRefs.current.length - index);
 			return [min, max];
 		});
-	};
+	}
 
 	const getUpdatedSplittersPositions = (activeSplitterLeft: number) => {
 		const activeSplitterIndex = splittersRefs.current.findIndex(
@@ -214,42 +261,6 @@ function WorkspaceSplitter(props: Props) {
 			}
 			return left - rootRef.current!.getBoundingClientRect().left;
 		});
-	};
-
-	const handleResize = (e: MouseEvent | React.MouseEvent<HTMLDivElement>) => {
-		if (activeSplitter.current) {
-			const diffX = e.pageX - clickStartX.current;
-			clickStartX.current = e.pageX;
-
-			const rootOffsetLeft = rootRef.current?.getBoundingClientRect().left || 0;
-
-			const activeSplitterOffsetLeft = activeSplitter.current.getBoundingClientRect().left;
-			const activeSplitterLeftPostion = activeSplitterOffsetLeft + diffX - rootOffsetLeft;
-
-			const splittersLeftPositions = getUpdatedSplittersPositions(activeSplitterLeftPostion);
-
-			splittersRefs.current.forEach((splitter, index) => {
-				if (splitter.current) {
-					splitter.current.style.left = `${splittersLeftPositions[index]}px`;
-				}
-			});
-
-			const spliiterWidth = splittersRefs.current[0].current!.clientWidth;
-
-			overlaysRefs.current.forEach((overlayRef, index) => {
-				if (overlayRef.current) {
-					overlayRef.current.style.left = `${splittersLeftPositions[index] + spliiterWidth}px`;
-					const overlayWidth =
-						index === overlaysRefs.current.length - 1
-							? rootRef.current!.offsetLeft +
-							  rootRef.current!.offsetWidth -
-							  splittersLeftPositions[index] -
-							  spliiterWidth
-							: splittersLeftPositions[index + 1] - splittersLeftPositions[index] - spliiterWidth;
-					overlayRef.current.style.width = `${overlayWidth}px`;
-				}
-			});
-		}
 	};
 
 	return (
