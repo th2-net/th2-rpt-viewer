@@ -206,7 +206,7 @@ export default class EventsStore {
 	};
 
 	@action
-	public onSavedItemSelect = async (savedEventNode: EventTreeNode) => {
+	public onSavedItemSelect = async (savedEventNode: EventTreeNode | EventAction) => {
 		let fullPath: string[] = [];
 		/*
 			While we are saving eventTreeNodes with their parents, searching returns eventTreeNodes 

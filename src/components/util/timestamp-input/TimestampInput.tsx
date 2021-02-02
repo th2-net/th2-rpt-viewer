@@ -15,28 +15,32 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import eventHttpApi from '../../api/event';
-import messageHttpApi from '../../api/message';
-import { formatTimestampValue } from '../../helpers/date';
-import { isEventAction } from '../../helpers/event';
-import { createBemElement } from '../../helpers/styleCreators';
-import { useDebouncedCallback } from '../../hooks';
-import { useOutsideClickListener } from '../../hooks/useOutsideClickListener';
-import { EventAction } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import { DateTimeMask } from '../../models/filter/FilterInputs';
-import { Timestamp } from '../../models/Timestamp';
-import KeyCodes from '../../util/KeyCodes';
-import '../../styles/timestamp-input.scss';
+import moment from 'moment';
+import eventHttpApi from '../../../api/event';
+import messageHttpApi from '../../../api/message';
+import { formatTimestampValue } from '../../../helpers/date';
+import { isEventAction } from '../../../helpers/event';
+import { createBemElement } from '../../../helpers/styleCreators';
+import { useDebouncedCallback } from '../../../hooks';
+import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
+import { EventAction } from '../../../models/EventAction';
+import { EventMessage } from '../../../models/EventMessage';
+import { DateTimeMask } from '../../../models/filter/FilterInputs';
+import { Timestamp } from '../../../models/Timestamp';
+import KeyCodes from '../../../util/KeyCodes';
+import TimestampDialog from './TimestampDialog';
+import '../../../styles/timestamp-input.scss';
 
 const getTimestamp = (timestamp: Timestamp) => {
 	const ms = Math.floor(timestamp.nano / 1000000);
 	return +`${timestamp.epochSecond}${ms}`;
 };
 
-const dateFormatPattern = /[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])/g;
+const dateFormatPattern = /(0[1-9]|[1-2][0-9]|3[0-1])\.(0[1-9]|1[0-2])\.([0-9]{4})/g;
 
 interface Props {
+	event: EventAction | null;
+	timestamp: number;
 	wrapperClassName?: string;
 	className?: string;
 	style?: React.CSSProperties;
@@ -47,6 +51,8 @@ interface Props {
 
 const TimestampInput = (props: Props) => {
 	const {
+		event,
+		timestamp,
 		wrapperClassName = 'timestamp-input',
 		readonly = false,
 		className = '',
@@ -55,14 +61,25 @@ const TimestampInput = (props: Props) => {
 		onSubmit,
 	} = props;
 
-	const [currentValue, setCurrentValue] = React.useState('');
+	const [currentValue, setCurrentValue] = React.useState(
+		moment(timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS'),
+	);
 	const [currentTimestamp, setCurrentTimestamp] = React.useState(0);
+	const [currentEventOrMessage, setCurrentEventOrMessage] = React.useState<
+		EventAction | EventMessage | null
+	>(event);
+	const [dimensions, setDimensions] = React.useState<DOMRect | null>(null);
+	const [isLoading, setIsLoading] = React.useState(false);
 	const [showPicker, setShowPicker] = React.useState(false);
+	const [showDialog, setShowDialog] = React.useState(false);
 
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
 
 	useOutsideClickListener(wrapperRef, () => {
 		setShowPicker(false);
+		setTimeout(() => {
+			setShowDialog(false);
+		}, 2000);
 	});
 
 	const setTimestamp = (eventOrMessage: null | EventAction | EventMessage, ac: AbortController) => {
@@ -70,21 +87,64 @@ const TimestampInput = (props: Props) => {
 			return;
 		}
 		ac.abort();
-		const timestamp = isEventAction(eventOrMessage)
+		const timestampFromEventOrMessage = isEventAction(eventOrMessage)
 			? getTimestamp(eventOrMessage.startTimestamp)
 			: getTimestamp(eventOrMessage.timestamp);
-		setCurrentTimestamp(timestamp);
-		setCurrentValue(formatTimestampValue(timestamp, DateTimeMask.DATE_TIME_MASK));
+		setCurrentTimestamp(timestampFromEventOrMessage);
+		setCurrentValue(formatTimestampValue(timestampFromEventOrMessage, DateTimeMask.DATE_TIME_MASK));
 	};
 
 	const setTimestampFromEventOrMessage = useDebouncedCallback((ac: AbortController) => {
+		// eslint-disable-next-line no-shadow
 		eventHttpApi.getEvent(currentValue, ac.signal, { probe: true }).then(event => {
+			setCurrentEventOrMessage(event);
 			setTimestamp(event, ac);
 		});
 		messageHttpApi.getMessage(currentValue, ac.signal, { probe: true }).then(message => {
+			setCurrentEventOrMessage(message);
 			setTimestamp(message, ac);
 		});
 	}, 500);
+
+	const toggleDatepicker = () => {
+		setShowPicker(currentShowPicker => !currentShowPicker);
+	};
+
+	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setCurrentValue(e.target.value);
+	};
+
+	const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.keyCode === KeyCodes.ENTER) {
+			onSubmit(currentTimestamp);
+		}
+	};
+
+	const onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+		e.target.setSelectionRange(0, currentValue.length);
+		setShowDialog(true);
+	};
+
+	const inputClassName = createBemElement(wrapperClassName, 'input');
+	const dialogClassName = createBemElement(wrapperClassName, 'dialog');
+	const datepickerButtonClassName = createBemElement(wrapperClassName, 'datepicker-button');
+
+	const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
+		className: `${inputClassName}${className ? ` ${className}` : ''}`,
+		style,
+		readOnly: readonly,
+		value: currentValue,
+		placeholder,
+		onChange,
+		onKeyDown,
+		onFocus,
+	};
+
+	React.useEffect(() => {
+		if (wrapperRef.current) {
+			setDimensions(wrapperRef.current.getBoundingClientRect());
+		}
+	}, [wrapperRef.current]);
 
 	React.useEffect(() => {
 		const ac = new AbortController();
@@ -97,37 +157,16 @@ const TimestampInput = (props: Props) => {
 		};
 	}, [currentValue]);
 
-	const toggleDatepicker = () => {
-		setShowPicker(currentShowPicker => !currentShowPicker);
-	};
-
-	const onChange: React.ChangeEventHandler<HTMLInputElement> = e => {
-		setCurrentValue(e.target.value);
-	};
-
-	const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.keyCode === KeyCodes.ENTER) {
-			onSubmit(currentTimestamp);
-		}
-	};
-
-	const inputClassName = createBemElement(wrapperClassName, 'input');
-	const datepickerButtonClassName = createBemElement(wrapperClassName, 'datepicker-button');
-
-	const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
-		className: `${inputClassName}${className ? ` ${className}` : ''}`,
-		style,
-		readOnly: readonly,
-		value: currentValue,
-		placeholder,
-		onChange,
-		onKeyDown,
-	};
-
 	return (
 		<div className={wrapperClassName} ref={wrapperRef}>
 			<input {...inputProps} />
 			<button className={datepickerButtonClassName} onClick={toggleDatepicker} />
+			<TimestampDialog
+				className={dialogClassName}
+				isOpen={showDialog}
+				rect={dimensions}
+				foundedObject={currentEventOrMessage}
+			/>
 		</div>
 	);
 };

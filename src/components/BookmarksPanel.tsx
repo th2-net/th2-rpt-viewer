@@ -20,14 +20,14 @@ import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
 import Empty from './util/Empty';
 import { getTimestampAsNumber } from '../helpers/date';
-import { isEventNode } from '../helpers/event';
+import { isEventAction, isEventNode } from '../helpers/event';
 import { createStyleSelector } from '../helpers/styleCreators';
 import { useActivePanel, useSelectedStore, useWorkspaceStore } from '../hooks';
-import { EventTreeNode } from '../models/EventAction';
+import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import '../styles/bookmarks.scss';
 
-type BookmarkedItem = EventMessage | EventTreeNode;
+type BookmarkedItem = EventMessage | EventTreeNode | EventAction;
 
 function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
@@ -36,7 +36,10 @@ function BookmarksPanel() {
 	const { ref: panelRef } = useActivePanel(null);
 
 	function onBookmarkRemove(item: BookmarkedItem) {
-		return selectedStore.removeSavedItem(item);
+		if (isEventNode(item)) {
+			return selectedStore.removeSavedItem(item);
+		}
+		return null;
 	}
 
 	function onBookmarkClick(item: BookmarkedItem) {
@@ -83,11 +86,14 @@ interface BookmarkItemProps {
 
 export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 	const itemInfo = {
-		id: isEventNode(item) ? item.eventId : item.messageId,
-		status: isEventNode(item) ? (item.successful ? 'passed' : 'failed') : null,
-		title: isEventNode(item) ? item.eventName : item.messageType,
-		timestamp: getTimestampAsNumber(isEventNode(item) ? item.startTimestamp : item.timestamp),
-		type: isEventNode(item) ? 'event' : item.type,
+		id: isEventNode(item) || isEventAction(item) ? item.eventId : item.messageId,
+		status:
+			isEventNode(item) || isEventAction(item) ? (item.successful ? 'passed' : 'failed') : null,
+		title: isEventNode(item) || isEventAction(item) ? item.eventName : item.messageId,
+		timestamp: getTimestampAsNumber(
+			isEventNode(item) || isEventAction(item) ? item.startTimestamp : item.timestamp,
+		),
+		type: isEventNode(item) || isEventAction(item) ? 'event' : item.type,
 	};
 
 	function onBookmarkRemove(event: React.MouseEvent<HTMLButtonElement>) {
