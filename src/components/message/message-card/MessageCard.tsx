@@ -77,12 +77,12 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	);
 
 	const showRawButtonClass = createStyleSelector(
-		'mc-body__control-button mc-body__show-raw-button',
+		'mc-header__control-button mc-header__icon mc-header__show-raw-button',
 		showRaw ? 'active' : null,
 	);
 
 	const beautifyButtonClass = createStyleSelector(
-		'mc-body__control-button mc-body__beatutify-button',
+		'mc-header__control-button mc-header__icon mc-header__beatutify-button',
 		isContentBeautified ? 'active' : null,
 	);
 
@@ -91,13 +91,12 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		filter: `invert(1) sepia(1) saturate(5) hue-rotate(${calculateHueValue(sessionId)}deg)`,
 	};
 
-	const sessionClass = createBemElement('mc-header', 'direction-icon', direction?.toLowerCase());
+	const sessionClass = createStyleSelector('mc-header__icon mc-header__direction-icon', direction?.toLowerCase());
 
-	const bookmarkIconClass = createBemElement(
-		'mc-header',
-		'bookmark-icon',
+	const bookmarkIconClass = createStyleSelector(
+		'mc-header__icon mc-header__bookmark-button',
 		isPinned ? 'pinned' : null,
-	);
+	)
 
 	return (
 		<div className='message-card-wrapper'>
@@ -125,10 +124,21 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 							<span className='mc-header__value'>{messageId}</span>
 						</div>
 					</div>
-					<div
-						className={bookmarkIconClass}
-						title={isPinned ? 'Remove from bookmarks' : 'Add to bookmarks'}
-						onClick={() => selectedStore.toggleMessagePin(message)}></div>
+					<div className='mc-header__controls'>
+						{message.body !== null && (
+							<div
+								className={beautifyButtonClass}
+								onClick={() => messagesStore.toggleMessageBeautify(messageId)}
+							/>
+						)}
+						{bodyBase64 && bodyBase64 !== 'null' ? (
+							<div className={showRawButtonClass} onClick={() => showRawHandler(!showRaw)} />
+						) : null}
+						<div
+							className={bookmarkIconClass}
+							title={isPinned ? 'Remove from bookmarks' : 'Add to bookmarks'}
+							onClick={() => selectedStore.toggleMessagePin(message)}></div>
+					</div>
 				</div>
 				<div className='mc__mc-body mc-body'>
 					<div className='mc-body__human'>
@@ -148,17 +158,6 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 						</ErrorBoundary>
 						{bodyBase64 && showRaw ? (
 							<MessageRaw messageId={messageId} rawContent={bodyBase64} />
-						) : null}
-					</div>
-					<div className='mc-body__controls'>
-						{message.body !== null && (
-							<div
-								className={beautifyButtonClass}
-								onClick={() => messagesStore.toggleMessageBeautify(messageId)}
-							/>
-						)}
-						{bodyBase64 && bodyBase64 !== 'null' ? (
-							<div className={showRawButtonClass} onClick={() => showRawHandler(!showRaw)} />
 						) : null}
 					</div>
 				</div>

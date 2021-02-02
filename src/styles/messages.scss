@@ -14,667 +14,656 @@
  * limitations under the License.
  ******************************************************************************/
 
- @import './common/vars';
+@import './common/vars';
 
- .message-card-wrapper {
-	 padding-bottom: 5px;
-	 margin-right: 10px;
- 
-	 &:hover .message-card {
-		 background-color: $messageCardHoverBackground;
-	 }
- 
-	 &:hover .mc-header {
-		 &__info {
-			 column-gap: 10px;
-		 }
- 
-		 &__bookmark {
-			 display: block;
-		 }
- 
-		 &__key-minified {
-			 display: none;
-		 }
- 
-		 &__key {
-			 display: inline;
-		 }
- 
-		 &__info {
-			 flex-wrap: wrap;
-		 }
- 
-		 &__value {
-			 font-weight: bold;
-		 }
- 
-		 &__is-attached-icon {
-			 opacity: 1;
-		 }
- 
-		 &__bookmark-icon {
-			 display: block;
-			 background: url(../../resources/icons/bookmark-add-hover.svg);
- 
-			 &.pinned {
-				 background: url(../../resources/icons/bookmark-added-hover.svg);
-			 }
-		 }
-	 }
- 
-	 &:hover .mc-body {
-		 &__controls {
-			 display: flex;
-		 }
-	 }
- }
- 
- .message-card {
-	 display: flex;
-	 flex-direction: column;
-	 padding: 10px;
-	 border-radius: 5px;
- 
-	 &.attached {
-		 border: 2px solid $attachedMessageCardBorderColor;
- 
-		 &:hover {
-			 border-color: $attachedMessageCardHoverBorderColor;
-			 background-color: $attachedMessageCardHoverBackground;
-		 }
- 
-		 .mc-header__is-attached-icon {
-			 display: block;
-		 }
-	 }
- }
- 
- .mc-label {
-	 width: 20px;
-	 height: 100%;
-	 display: flex;
-	 flex-direction: column;
-	 justify-content: flex-start;
-	 align-items: center;
- 
-	 &__icon {
-		 height: 14px;
-		 width: 14px;
-		 margin-top: 12px;
-		 background-size: 100%;
-		 filter: opacity(0.4);
- 
-		 &.rejected {
-			 background-image: url(../../resources/icons/rejected-label.svg);
-		 }
- 
-		 &.admin {
-			 background-image: url(../../resources/icons/admin-icon.svg);
-		 }
-	 }
- 
-	 &.rejected {
-		 background-color: $rejectedMessageLabelBackground;
-	 }
- 
-	 &.admin {
-		 background-color: $adminMessageLabelBackground;
-	 }
- }
- 
- .mc-header {
-	 display: flex;
-	 column-gap: 5px;
-	 white-space: nowrap;
- 
-	 &__is-attached-icon {
-		 flex-shrink: 0;
-		 width: 8px;
-		 height: 8px;
-		 transform: rotate(45deg);
-		 transform-origin: center;
-		 background-color: $attachedMessageCardIconColor;
-		 opacity: 0.43;
-		 margin-top: 3px;
-		 margin-left: 3px;
-		 margin-right: 4px;
-		 display: none;
-	 }
- 
-	 &__bookmark-icon {
-		 display: none;
-		 flex-shrink: 0;
-		 width: 15px;
-		 height: 15px;
-		 background: url(../../resources/icons/bookmark-add.svg);
-		 cursor: pointer;
- 
-		 &.pinned {
-			 display: block;
-			 background: url(../../resources/icons/bookmark-added.svg);
-		 }
-	 }
- 
-	 &__info {
-		 flex-grow: 1;
-		 display: flex;
-		 column-gap: 5px;
-		 overflow: hidden;
-		 align-items: center;
-	 }
- 
-	 &__item {
-		 display: flex;
-		 column-gap: 3px;
-		 align-items: center;
-	 }
- 
-	 &__direction-icon {
-		 background-image: url('../../resources/icons/session-icon.svg');
-		 height: 15px;
-		 width: 15px;
-		 background-size: 100%;
- 
-		 &.in {
-			 transform: scale(-1);
-		 }
-	 }
- 
-	 &__bookmark {
-		 display: none;
-	 }
- 
-	 &__key {
-		 display: none;
-	 }
- 
-	 &__key,
-	 &__key-minified {
-		 color: $messageCardKeyColor;
-		 font-size: 9px;
-		 line-height: 15px;
-	 }
- 
-	 &__value {
-		 color: $messageCardValueColor;
-		 font-size: 9px;
-		 line-height: 15px;
-	 }
- }
- 
- .mc-body {
-	 position: relative;
-	 border-radius: 5px;
-	 display: flex;
-	 column-gap: 10px;
- 
-	 &__human {
-		 font-family: inherit;
-		 padding-top: 2px;
-		 line-height: 16px;
-		 margin: 0;
-		 font-size: 11px;
-		 white-space: pre-wrap;
-		 word-break: break-all;
-		 color: $alternativeTextColor;
-		 flex-grow: 1;
-		 flex-shrink: 1;
-		 overflow: hidden;
-	 }
- 
-	 &__field {
-		 font-size: 11px;
-		 border-radius: 2px;
-		 width: fit-content;
-	 }
- 
-	 &__field-label {
-		 display: inline-block;
-		 height: 100%;
-	 }
- 
-	 &__field-simple-value {
-		 font-weight: 600;
-		 color: $activeTextColor;
-	 }
- 
-	 &__raw {
-		 width: 100%;
-	 }
- 
-	 &__beautify-wrapper {
-		 @include scrollbar;
-		 overflow-x: scroll;
-	 }
- 
-	 &__controls {
-		 display: none;
-		 flex-direction: column;
-		 row-gap: 15px;
-	 }
- 
-	 &__control-button {
-		 cursor: pointer;
-		 width: 15px;
-		 height: 15px;
-		 background-size: cover;
-		 opacity: 0.77;
- 
-		 &:hover,
-		 &.active {
-			 opacity: 1;
-		 }
-	 }
- 
-	 &__beatutify-button {
-		 width: 15px;
-		 height: 15px;
-		 background: url(../../resources/icons/messages-beautify.svg);
-	 }
- 
-	 &__show-raw-button {
-		 width: 15px;
-		 height: 15px;
-		 background: url(../../resources/icons/bincode.svg);
-	 }
- }
- 
- .mc-raw {
-	 &__header {
-		 display: flex;
-		 flex-direction: row;
-		 align-items: center;
-		 padding-top: 4px;
-		 min-height: 30px;
-	 }
- 
-	 &__title {
-		 display: inline-block;
-		 @include unselectable;
-		 font-size: 11px;
-		 color: $primaryTextColor;
-		 font-weight: bold;
-	 }
- 
-	 &__display-btn {
-		 @include icon(url(../../resources/icons/table-view-icon.svg), 15px, 15px);
- 
-		 justify-self: center;
-		 align-self: center;
-		 cursor: pointer;
-		 margin-left: 10px;
-		 opacity: 0.8;
- 
-		 &.active {
-			 background-image: url(../../resources/icons/expand-on.svg);
-		 }
- 
-		 &:hover {
-			 opacity: 1;
-		 }
-	 }
- 
-	 &__content {
-		 @include scrollbar;
- 
-		 display: flex;
-		 flex-direction: row;
-		 justify-content: flex-start;
-		 font-family: monospace;
-		 line-height: 15px;
-		 letter-spacing: 0.5px;
-		 font-size: 11px;
-		 overflow-x: auto;
-	 }
- 
-	 &__column {
-		 display: flex;
-		 padding-left: 5px;
-		 margin-left: 10px;
-		 cursor: text;
- 
-		 &:first-child {
-			 margin-left: 0;
-		 }
- 
-		 &.primary {
-			 color: $primaryTextColor;
- 
-			 &:hover {
-				 background: $messageCardRawHoverBackground;
-			 }
-		 }
- 
-		 &.secondary {
-			 color: $secondaryTextColor;
-		 }
-	 }
- 
-	 &__copy-btn {
-		 display: inline-block;
-		 margin: 4px 4px 4px 10px;
-		 cursor: pointer;
- 
-		 &:hover {
-			 filter: opacity(1);
-		 }
-	 }
- 
-	 &__copy-icon {
-		 margin: 4px 4px 4px 10px;
-		 height: 13px;
-		 width: 13px;
-		 background-image: url('../../resources/icons/clipboard.svg');
-		 background-size: 100%;
-		 filter: opacity(0.6);
-	 }
- 
-	 &__copy-title {
-		 @include unselectable;
-		 font-size: 11px;
-		 color: $primaryTextColor;
-		 padding-left: 5px;
-	 }
- 
-	 &__copy-all {
-		 display: inline-flex;
-		 align-items: center;
-		 margin-left: 10px;
-		 padding: 2px;
-		 cursor: pointer;
- 
-		 &:hover {
-			 background: $messageCardRawHoverBackground;
-		 }
-	 }
- 
-	 &__content-part {
-		 &::selection {
-			 background-color: #338fff;
-			 color: white;
-		 }
-	 }
- 
-	 &__highlighted-content {
-		 background-color: #99c7ff;
-		 font-weight: bold;
-		 color: $primaryTextColor;
-	 }
- }
- 
- .mc-expand-btn {
-	 position: absolute;
-	 top: 67px;
-	 right: 12px;
-	 padding-right: 5px;
- 
-	 &.rejected {
-		 top: 80px;
-	 }
- 
-	 &__icon {
-		 height: 19px;
-		 width: 19px;
-		 background-image: url(../../resources/icons/arr4-up.svg);
-		 background-size: 100%;
-		 cursor: pointer;
-	 }
- }
- 
- .messages-list {
-	 height: 100%;
-	 width: 100%;
-	 word-wrap: break-word;
- 
-	 &__items {
-		 height: 100%;
-		 @include scrollbar;
-	 }
- 
-	 &__spinner {
-		 @include spinner(3px, 24px, 2s);
-		 flex-shrink: 0;
-		 margin: auto;
-	 }
- 
-	 &__overlay-loader {
-		 position: absolute;
-		 top: 0;
-		 left: 0;
-		 width: 100%;
-		 height: 100%;
-		 display: grid;
-		 place-items: center;
-	 }
- 
-	 &__overlay-spinner {
-		 @include spinner(5px, 40px, 2s);
-	 }
- }
- 
- .mc-skeleton {
-	 @include skeleton-pulse;
-	 margin-bottom: 5px;
-	 flex-direction: column;
-	 padding: 10px;
- 
-	 &__header {
-		 display: flex;
-		 column-gap: 3px;
-		 height: 11px;
-		 width: 100%;
-	 }
- 
-	 &__body {
-		 margin-top: 10px;
-		 display: flex;
-		 flex-direction: column;
-		 row-gap: 5px;
-	 }
- 
-	 &__timestamp,
-	 &__key,
-	 &__icon,
-	 &__value,
-	 &__text {
-		 @include skeleton;
-		 height: 100%;
-	 }
- 
-	 &__timestamp {
-		 @include skeleton;
-		 width: 105px;
-		 height: 100%;
-	 }
- 
-	 &__key {
-		 margin-left: 2px;
-		 width: 13px;
-	 }
- 
-	 &__icon {
-		 width: 13px;
-	 }
- 
-	 &__value {
-		 width: 40px;
- 
-		 &.wide {
-			 flex-grow: 1;
-		 }
-	 }
- 
-	 &__text {
-		 height: 11px;
-		 width: 100%;
- 
-		 &:last-child {
-			 width: 75%;
-		 }
-	 }
- }
- 
- .messages-window-header {
-	 height: 100%;
-	 width: 100%;
-	 display: flex;
-	 justify-content: space-between;
- 
-	 &__group {
-		 display: flex;
-		 align-items: center;
-	 }
- 
-	 &__realtime-button {
-		 @include clickable;
- 
-		 border: 2px solid $realtimeButtonBorderColor;
-		 border-radius: 6px;
-		 background-color: transparent;
-		 width: 28px;
-		 height: 28px;
-		 margin: 0 -2px 0 15px;
-		 display: flex;
-		 justify-content: center;
-		 padding: 0;
-		 align-items: center;
-		 cursor: pointer;
-		 outline: none;
- 
-		 &-icon {
-			 @include icon(url(../../resources/icons/update.svg), 16px, 16px);
- 
-			 display: inline-block;
-		 }
- 
-		 &.active {
-			 background-color: $realtimeButtonActiveColor;
-		 }
- 
-		 &.active &-icon {
-			 animation: rotating 4s linear infinite;
- 
-			 @keyframes rotating {
-				 from {
-					 transform: rotate(0deg);
-				 }
-				 to {
-					 transform: rotate(360deg);
-				 }
-			 }
-		 }
- 
-		 &-count {
-			 color: $primaryTextColor;
-			 font-weight: 600;
-		 }
-	 }
- 
-	 .sessions {
-		 display: flex;
-		 align-items: center;
-		 position: relative;
-		 height: 100%;
- 
-		 &__title {
-			 color: $primaryTextColor;
-			 font-size: 14px;
-			 font-weight: bold;
-		 }
- 
-		 &__content {
-			 background-color: #fff;
-			 position: absolute;
-			 top: 35px;
-			 box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.25);
-			 border-radius: 5px;
-			 padding: 5px 10px;
-		 }
- 
-		 &__add-button {
-			 height: 22px;
-			 display: flex;
-			 align-items: center;
-			 padding: 3px 15px;
-			 border-radius: 5px;
-			 background-color: #00bbcc;
-			 color: #fff;
-			 cursor: pointer;
-			 font-size: 14px;
-			 border: none;
-			 margin-left: 5px;
-		 }
- 
-		 &__list-item {
-			 color: $primaryTextColor;
-			 font-size: 13px;
-		 }
-	 }
- }
- 
- .messages-tab {
-	 width: 20%;
-	 max-width: 200px;
-	 flex-grow: 2;
-	 flex-shrink: 0;
- 
-	 &__wrapper {
-		 display: grid;
-		 grid-template-columns: auto 1fr;
-		 align-items: center;
-		 overflow: hidden;
-		 margin: auto;
-		 padding: 0 8px;
-	 }
- 
-	 &__title {
-		 text-overflow: ellipsis;
-		 overflow: hidden;
-		 display: flex;
-		 align-items: center;
-	 }
- 
-	 &__count-list {
-		 display: flex;
-		 align-items: center;
-		 flex-shrink: 0;
-	 }
- 
-	 &__event-list {
-		 padding: 7px 20px 5px 12px;
-	 }
- 
-	 &__event-row {
-		 display: flex;
-		 justify-content: space-between;
-		 margin-bottom: 5px;
- 
-		 &:last-child {
-			 margin-bottom: 0;
-		 }
-	 }
- 
-	 &__event-title {
-		 @include status-text;
-		 white-space: nowrap;
-		 text-overflow: ellipsis;
-		 overflow: hidden;
-		 max-width: 300px;
-	 }
- 
-	 &__spinner {
-		 @include spinner(3px, 16px, 2s);
-		 margin-right: 5px;
-		 display: inline-block;
-	 }
- }
- 
- .error-message {
-	 height: 100px;
-	 border: 2px solid $errorMsgBackgroundColor;
-	 color: $errorMsgBackgroundColor;
-	 border-radius: 5px;
-	 padding: 20px 15px;
- }
- 
+.message-card-wrapper {
+	padding-bottom: 5px;
+	margin-right: 10px;
+
+	&:hover .message-card {
+		background-color: $messageCardHoverBackground;
+	}
+
+	&:hover .mc-header {
+		&__info {
+			column-gap: 10px;
+		}
+
+		&__control-button {
+			display: block;
+		}
+
+		&__key-minified {
+			display: none;
+		}
+
+		&__key {
+			display: inline;
+		}
+
+		&__info {
+			flex-wrap: wrap;
+		}
+
+		&__value {
+			font-weight: bold;
+		}
+
+		&__is-attached-icon {
+			opacity: 1;
+		}
+
+		&__bookmark-button {
+			display: block;
+			background: url(../../resources/icons/bookmark-add-hover.svg);
+
+			&.pinned {
+				background: url(../../resources/icons/bookmark-added-hover.svg);
+			}
+		}
+	}
+}
+
+.message-card {
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+	border-radius: 5px;
+
+	&.attached {
+		border: 2px solid $attachedMessageCardBorderColor;
+
+		&:hover {
+			border-color: $attachedMessageCardHoverBorderColor;
+			background-color: $attachedMessageCardHoverBackground;
+		}
+
+		.mc-header__is-attached-icon {
+			display: block;
+		}
+	}
+}
+
+.mc-label {
+	width: 20px;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+
+	&__icon {
+		height: 14px;
+		width: 14px;
+		margin-top: 12px;
+		background-size: 100%;
+		filter: opacity(0.4);
+
+		&.rejected {
+			background-image: url(../../resources/icons/rejected-label.svg);
+		}
+
+		&.admin {
+			background-image: url(../../resources/icons/admin-icon.svg);
+		}
+	}
+
+	&.rejected {
+		background-color: $rejectedMessageLabelBackground;
+	}
+
+	&.admin {
+		background-color: $adminMessageLabelBackground;
+	}
+}
+
+.mc-header {
+	display: flex;
+	column-gap: 5px;
+	white-space: nowrap;
+
+	&__is-attached-icon {
+		flex-shrink: 0;
+		width: 8px;
+		height: 8px;
+		transform: rotate(45deg);
+		transform-origin: center;
+		background-color: $attachedMessageCardIconColor;
+		opacity: 0.43;
+		margin-top: 3px;
+		margin-left: 3px;
+		margin-right: 4px;
+		display: none;
+	}
+
+	&__info {
+		flex-grow: 1;
+		display: flex;
+		column-gap: 5px;
+		overflow: hidden;
+		align-items: center;
+	}
+
+	&__item {
+		display: flex;
+		column-gap: 3px;
+		align-items: center;
+	}
+
+	&__direction-icon {
+		background-image: url('../../resources/icons/session-icon.svg');
+		background-size: 100%;
+
+		&.in {
+			transform: scale(-1);
+		}
+	}
+
+	&__bookmark {
+		display: none;
+	}
+
+	&__key {
+		display: none;
+	}
+
+	&__key,
+	&__key-minified,
+	&__value {
+		font-size: 9px;
+		line-height: 15px;
+	}
+
+	&__key,
+	&__key-minified {
+		color: $messageCardKeyColor;
+	}
+
+	&__value {
+		color: $messageCardValueColor;
+	}
+
+	&__controls {
+		display: flex;
+		column-gap: 5px;
+
+		div {
+			cursor: pointer;
+		}
+	}
+
+	&__icon {
+		width: 15px;
+		height: 15px;
+	}
+
+	&__control-button {
+		display: none;
+		background-size: cover;
+		opacity: 0.77;
+
+		&:hover,
+		&.active {
+			opacity: 1;
+		}
+	}
+
+	&__beatutify-button {
+		background: url(../../resources/icons/messages-beautify.svg);
+	}
+
+	&__show-raw-button {
+		background: url(../../resources/icons/bincode.svg);
+	}
+
+	&__bookmark-button {
+		display: none;
+		flex-shrink: 0;
+		background: url(../../resources/icons/bookmark-add.svg);
+
+		&.pinned {
+			display: block;
+			background: url(../../resources/icons/bookmark-added.svg);
+		}
+	}
+}
+
+.mc-body {
+	font-size: 11px;
+	position: relative;
+	border-radius: 5px;
+	display: flex;
+	column-gap: 10px;
+
+	&__human {
+		font-family: inherit;
+		padding-top: 2px;
+		line-height: 16px;
+		margin: 0;
+		white-space: pre-wrap;
+		word-break: break-all;
+		color: $alternativeTextColor;
+		flex-grow: 1;
+		flex-shrink: 1;
+		overflow: hidden;
+	}
+
+	&__field {
+		border-radius: 2px;
+		width: fit-content;
+	}
+
+	&__field-label {
+		display: inline-block;
+		height: 100%;
+	}
+
+	&__field-simple-value {
+		font-weight: 600;
+		color: $activeTextColor;
+	}
+
+	&__raw {
+		width: 100%;
+	}
+
+	&__beautify-wrapper {
+		@include scrollbar;
+		overflow-x: scroll;
+	}
+}
+
+.mc-raw {
+	&__header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding-top: 4px;
+		min-height: 30px;
+	}
+
+	&__title {
+		display: inline-block;
+		@include unselectable;
+		color: $primaryTextColor;
+		font-weight: bold;
+	}
+
+	&__display-btn {
+		@include icon(url(../../resources/icons/table-view-icon.svg), 15px, 15px);
+
+		justify-self: center;
+		align-self: center;
+		cursor: pointer;
+		margin-left: 10px;
+		opacity: 0.8;
+
+		&.active {
+			background-image: url(../../resources/icons/expand-on.svg);
+		}
+
+		&:hover {
+			opacity: 1;
+		}
+	}
+
+	&__content {
+		@include scrollbar;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		font-family: monospace;
+		line-height: 15px;
+		letter-spacing: 0.5px;
+		overflow-x: auto;
+	}
+
+	&__column {
+		display: flex;
+		padding-left: 5px;
+		margin-left: 10px;
+		cursor: text;
+
+		&:first-child {
+			margin-left: 0;
+		}
+
+		&.primary {
+			color: $primaryTextColor;
+
+			&:hover {
+				background: $messageCardRawHoverBackground;
+			}
+		}
+
+		&.secondary {
+			color: $secondaryTextColor;
+		}
+	}
+
+	&__copy-btn {
+		display: inline-block;
+		margin: 4px 4px 4px 10px;
+		cursor: pointer;
+
+		&:hover {
+			filter: opacity(1);
+		}
+	}
+
+	&__copy-icon {
+		margin: 4px 4px 4px 10px;
+		height: 13px;
+		width: 13px;
+		background-image: url('../../resources/icons/clipboard.svg');
+		background-size: 100%;
+		filter: opacity(0.6);
+	}
+
+	&__copy-title {
+		@include unselectable;
+		color: $primaryTextColor;
+		padding-left: 5px;
+	}
+
+	&__copy-all {
+		display: inline-flex;
+		align-items: center;
+		margin-left: 10px;
+		padding: 2px;
+		cursor: pointer;
+
+		&:hover {
+			background: $messageCardRawHoverBackground;
+		}
+	}
+
+	&__content-part {
+		&::selection {
+			background-color: #338fff;
+			color: white;
+		}
+	}
+
+	&__highlighted-content {
+		background-color: #99c7ff;
+		font-weight: bold;
+		color: $primaryTextColor;
+	}
+}
+
+.mc-expand-btn {
+	position: absolute;
+	top: 67px;
+	right: 12px;
+	padding-right: 5px;
+
+	&.rejected {
+		top: 80px;
+	}
+
+	&__icon {
+		height: 19px;
+		width: 19px;
+		background-image: url(../../resources/icons/arr4-up.svg);
+		background-size: 100%;
+		cursor: pointer;
+	}
+}
+
+.messages-list {
+	height: 100%;
+	width: 100%;
+	word-wrap: break-word;
+
+	&__items {
+		height: 100%;
+		@include scrollbar;
+	}
+
+	&__spinner {
+		@include spinner(3px, 24px, 2s);
+		flex-shrink: 0;
+		margin: auto;
+	}
+
+	&__overlay-loader {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		display: grid;
+		place-items: center;
+	}
+
+	&__overlay-spinner {
+		@include spinner(5px, 40px, 2s);
+	}
+}
+
+.mc-skeleton {
+	@include skeleton-pulse;
+	margin-bottom: 5px;
+	flex-direction: column;
+	padding: 10px;
+
+	&__header {
+		display: flex;
+		column-gap: 3px;
+		height: 11px;
+		width: 100%;
+	}
+
+	&__body {
+		margin-top: 10px;
+		display: flex;
+		flex-direction: column;
+		row-gap: 5px;
+	}
+
+	&__timestamp,
+	&__key,
+	&__icon,
+	&__value,
+	&__text {
+		@include skeleton;
+		height: 100%;
+	}
+
+	&__timestamp {
+		@include skeleton;
+		width: 105px;
+		height: 100%;
+	}
+
+	&__key {
+		margin-left: 2px;
+		width: 13px;
+	}
+
+	&__icon {
+		width: 13px;
+	}
+
+	&__value {
+		width: 40px;
+
+		&.wide {
+			flex-grow: 1;
+		}
+	}
+
+	&__text {
+		height: 11px;
+		width: 100%;
+
+		&:last-child {
+			width: 75%;
+		}
+	}
+}
+
+.messages-window-header {
+	height: 100%;
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+
+	&__group {
+		display: flex;
+		align-items: center;
+	}
+
+	&__realtime-button {
+		@include clickable;
+
+		border: 2px solid $realtimeButtonBorderColor;
+		border-radius: 6px;
+		background-color: transparent;
+		width: 28px;
+		height: 28px;
+		margin: 0 -2px 0 15px;
+		display: flex;
+		justify-content: center;
+		padding: 0;
+		align-items: center;
+		cursor: pointer;
+		outline: none;
+
+		&-icon {
+			@include icon(url(../../resources/icons/update.svg), 16px, 16px);
+
+			display: inline-block;
+		}
+
+		&.active {
+			background-color: $realtimeButtonActiveColor;
+		}
+
+		&.active &-icon {
+			animation: rotating 4s linear infinite;
+
+			@keyframes rotating {
+				from {
+					transform: rotate(0deg);
+				}
+				to {
+					transform: rotate(360deg);
+				}
+			}
+		}
+
+		&-count {
+			color: $primaryTextColor;
+			font-weight: 600;
+		}
+	}
+
+	.sessions {
+		display: flex;
+		align-items: center;
+		position: relative;
+		height: 100%;
+
+		&__title {
+			color: $primaryTextColor;
+			font-size: 14px;
+			font-weight: bold;
+		}
+
+		&__content {
+			background-color: #fff;
+			position: absolute;
+			top: 35px;
+			box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.25);
+			border-radius: 5px;
+			padding: 5px 10px;
+		}
+
+		&__add-button {
+			height: 22px;
+			display: flex;
+			align-items: center;
+			padding: 3px 15px;
+			border-radius: 5px;
+			background-color: #00bbcc;
+			color: #fff;
+			cursor: pointer;
+			font-size: 14px;
+			border: none;
+			margin-left: 5px;
+		}
+
+		&__list-item {
+			color: $primaryTextColor;
+			font-size: 13px;
+		}
+	}
+}
+
+.messages-tab {
+	width: 20%;
+	max-width: 200px;
+	flex-grow: 2;
+	flex-shrink: 0;
+
+	&__wrapper {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		align-items: center;
+		overflow: hidden;
+		margin: auto;
+		padding: 0 8px;
+	}
+
+	&__title {
+		text-overflow: ellipsis;
+		overflow: hidden;
+		display: flex;
+		align-items: center;
+	}
+
+	&__count-list {
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	&__event-list {
+		padding: 7px 20px 5px 12px;
+	}
+
+	&__event-row {
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: 5px;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	&__event-title {
+		@include status-text;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		max-width: 300px;
+	}
+
+	&__spinner {
+		@include spinner(3px, 16px, 2s);
+		margin-right: 5px;
+		display: inline-block;
+	}
+}
+
+.error-message {
+	height: 100px;
+	border: 2px solid $errorMsgBackgroundColor;
+	color: $errorMsgBackgroundColor;
+	border-radius: 5px;
+	padding: 20px 15px;
+}
