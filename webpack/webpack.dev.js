@@ -37,7 +37,7 @@ module.exports = webpackMerge(commonConfig, {
 		historyApiFallback: true,
 		proxy: {
 			'/backend': {
-				target: 'http://th2:30000/qa/',
+				target: 'http://th2-qa:30000/schema-schema-qa/',
 				changeOrigin: true,
 				secure: false,
 			},
@@ -46,21 +46,21 @@ module.exports = webpackMerge(commonConfig, {
 	},
 	module: {
 		rules: [
-			{
-			    test: /\.(ts|tsx)$/,
-			    enforce: 'pre',
-			    use: [{
-			        options: {
-			            eslintPath: require.resolve('eslint'),
-			            failOnError: false,
-			            cache: false,
-			            quite: true,
-			            formatter: require('eslint-formatter-pretty'),
-			        },
-			        loader: require.resolve('eslint-loader'),
-			    }],
-			    exclude: /node_modules/,
-			},
+			// {
+			//     test: /\.(ts|tsx)$/,
+			//     enforce: 'pre',
+			//     use: [{
+			//         options: {
+			//             eslintPath: require.resolve('eslint'),
+			//             failOnError: false,
+			//             cache: false,
+			//             quite: true,
+			//             formatter: require('eslint-formatter-pretty'),
+			//         },
+			//         loader: require.resolve('eslint-loader'),
+			//     }],
+			//     exclude: /node_modules/,
+			// },
 			{
 				test: /\.scss$/,
 				exclude: /node_modules/,

@@ -19,7 +19,7 @@ import Calendar from 'rc-calendar';
 import moment, { Moment } from 'moment';
 import 'rc-calendar/assets/index.css';
 import { DateTimeInputType, TimeInputType } from '../../../models/filter/FilterInputs';
-import useOutsideClickListener from '../../../hooks/useOutsideClickListener';
+import { useOutsideClickListener } from '../../../hooks';
 import FilterTimepicker from './FilterTimePicker';
 
 interface FilterDatetimePickerProps {
@@ -36,7 +36,7 @@ const FilterDatetimePicker = ({ inputConfig, onClose, left, top }: FilterDatetim
 	const pickerRef = React.useRef<HTMLDivElement>(null);
 
 	useOutsideClickListener(pickerRef, (e: MouseEvent) => {
-		if (e.target instanceof HTMLElement && !pickerRef.current?.contains(e.target)) {
+		if (e.target instanceof Node && !pickerRef.current?.contains(e.target)) {
 			onClose();
 		}
 	});

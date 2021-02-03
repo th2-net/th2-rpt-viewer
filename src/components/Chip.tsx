@@ -16,7 +16,6 @@
 
 import * as React from 'react';
 import { createStyleSelector } from '../helpers/styleCreators';
-import '../styles/chip.scss';
 
 interface Props {
 	text: string | number;

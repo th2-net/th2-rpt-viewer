@@ -20,13 +20,16 @@ import { FilterRowStringConfig } from '../../../models/filter/FilterInputs';
 export default function StringFilterRow({ config }: { config: FilterRowStringConfig }) {
 	return (
 		<div className='filter-row'>
-			<label className='filter-row__label' htmlFor={config.id}>
-				{config.label}
-			</label>
+			{config.label && (
+				<label className='filter-row__label' htmlFor={config.id}>
+					{config.label}
+				</label>
+			)}
 			<input
 				type='text'
 				className='filter-row__input'
 				id={config.id}
+				disabled={config.disabled}
 				value={config.value}
 				onChange={e => config.setValue(e.target.value)}
 			/>

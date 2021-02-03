@@ -15,53 +15,40 @@
  ***************************************************************************** */
 
 import { action, computed, reaction, observable } from 'mobx';
-import ApiSchema from '../api/ApiSchema';
-import { randomHexColor } from '../helpers/color';
-import { sortMessagesByTimestamp } from '../helpers/message';
-import { EventAction } from '../models/EventAction';
+import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import WindowsStore from './WindowsStore';
+import WorkspacesStore from './workspace/WorkspacesStore';
+import localStorageWorker from '../util/LocalStorageWorker';
+import { sortMessagesByTimestamp } from '../helpers/message';
+import { isEventNode, sortByTimestamp } from '../helpers/event';
 
 export class SelectedStore {
-	private readonly defaultColors = [
-		'#997AB8',
-		'#00BBCC',
-		'#FF5500',
-		'#1F66AD',
-		'#E69900',
-		'#45A155',
-	];
+	@observable.shallow
+	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
 
-	@observable
-	public eventColors: Map<string, string> = new Map();
+	@observable.shallow
+	public pinnedEvents: Array<EventTreeNode> = localStorageWorker.getPersistedPinnedEvents();
 
-	@observable
-	public attachedMessagesIds: Array<string> = [];
+	constructor(private workspacesStore: WorkspacesStore) {
+		reaction(() => this.pinnedMessages, localStorageWorker.setPersistedPinnedMessages);
 
-	@observable
-	public attachedMessages: Array<EventMessage> = [];
+		reaction(() => this.pinnedEvents, localStorageWorker.setPersistedPinnedEvents);
+	}
 
-	@observable
-	public isLoadingAttachedMessages = false;
+	@computed get savedItems(): Array<EventTreeNode | EventMessage> {
+		return sortByTimestamp([...this.pinnedEvents, ...this.pinnedMessages]);
+	}
 
-	@observable
-	public pinnedMessages: Array<EventMessage> = [];
-
-	constructor(private windowsStore: WindowsStore, private api: ApiSchema) {
-		reaction(
-			() => this.selectedEvents,
-			selectedEvents => {
-				this.getEventColors(selectedEvents);
-				this.getAttachedMessagesIds(selectedEvents);
-			},
-		);
-
-		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
+	@computed get graphItems(): Array<EventTreeNode | EventMessage> {
+		return sortByTimestamp([
+			...this.savedItems,
+			...this.workspacesStore.activeWorkspace.attachedMessages,
+		]);
 	}
 
 	@computed get selectedEvents() {
-		return this.windowsStore.eventTabs
-			.map(eventTab => eventTab.store.selectedEvent)
+		return this.workspacesStore.eventStores
+			.map(eventStore => eventStore.selectedEvent)
 			.filter(
 				(event, i, self): event is EventAction =>
 					event !== null && self.findIndex(e => e && e.eventId === event.eventId) === i,
@@ -69,7 +56,13 @@ export class SelectedStore {
 	}
 
 	@computed get isLoadingEvents() {
-		return this.windowsStore.eventTabs.some(eventTab => eventTab.store.isSelectedEventLoading);
+		return this.workspacesStore.eventStores.some(eventStore => eventStore.isSelectedEventLoading);
+	}
+
+	@computed get attachedMessages() {
+		return sortMessagesByTimestamp(
+			this.workspacesStore.workspaces.flatMap(workspace => workspace.attachedMessages),
+		);
 	}
 
 	@action
@@ -77,74 +70,27 @@ export class SelectedStore {
 		if (this.pinnedMessages.findIndex(m => m.messageId === message.messageId) === -1) {
 			this.pinnedMessages = this.pinnedMessages.concat(message);
 		} else {
-			this.pinnedMessages = this.pinnedMessages.filter(msg => msg.messageId !== message.messageId);
+			this.removeSavedItem(message);
 		}
 	};
 
 	@action
-	private getEventColors = (selectedEvents: EventAction[]) => {
-		const eventsWithAttachedMessages = selectedEvents.filter(
-			event => event.attachedMessageIds.length > 0,
-		);
-
-		const usedColors: Array<string> = [];
-		for (const [eventId, color] of this.eventColors.entries()) {
-			if (eventsWithAttachedMessages.findIndex(e => e.eventId === eventId) !== -1) {
-				usedColors.push(color);
-			}
+	public toggleEventPin = (event: EventTreeNode) => {
+		if (this.pinnedEvents.findIndex(e => e.eventId === event.eventId) === -1) {
+			this.pinnedEvents = this.pinnedEvents.concat(event);
+		} else {
+			this.pinnedEvents = this.pinnedEvents.filter(e => e.eventId !== event.eventId);
 		}
-		const availableColors = this.defaultColors.slice().filter(color => !usedColors.includes(color));
-
-		const updatedEventColorsMap = new Map<string, string>();
-
-		eventsWithAttachedMessages.forEach(({ eventId }) => {
-			let color = this.eventColors.get(eventId);
-			if (!color) {
-				color = availableColors[0] || randomHexColor();
-				availableColors.shift();
-			}
-			updatedEventColorsMap.set(eventId, color);
-		});
-
-		this.eventColors = updatedEventColorsMap;
 	};
 
 	@action
-	private getAttachedMessagesIds = (selectedEvents: EventAction[]) => {
-		this.attachedMessagesIds = [
-			...new Set(selectedEvents.flatMap(({ attachedMessageIds }) => attachedMessageIds)),
-		];
-	};
-
-	private attachedMessagesAC: AbortController | null = null;
-
-	@action
-	private getAttachedMessages = async (attachedMessagesIds: string[]) => {
-		this.isLoadingAttachedMessages = true;
-		if (this.attachedMessagesAC) {
-			this.attachedMessagesAC.abort();
+	public removeSavedItem(savedItem: EventTreeNode | EventMessage) {
+		if (isEventNode(savedItem)) {
+			this.pinnedEvents = this.pinnedEvents.filter(event => event.eventId !== savedItem.eventId);
+		} else {
+			this.pinnedMessages = this.pinnedMessages.filter(
+				message => message.messageId !== savedItem.messageId,
+			);
 		}
-		this.attachedMessagesAC = new AbortController();
-		try {
-			const cachedMessages = this.attachedMessages.filter(message =>
-				attachedMessagesIds.includes(message.messageId),
-			);
-			const messagesToLoad = attachedMessagesIds.filter(
-				messageId => cachedMessages.findIndex(message => message.messageId === messageId) === -1,
-			);
-			const attachedMessages = await Promise.all(
-				messagesToLoad.map(id => this.api.messages.getMessage(id, this.attachedMessagesAC?.signal)),
-			);
-			this.attachedMessages = sortMessagesByTimestamp(
-				[...cachedMessages, ...attachedMessages].filter(Boolean),
-			);
-		} catch (error) {
-			if (error.name !== 'AbortError') {
-				console.error('Error while loading attached messages', error);
-			}
-		} finally {
-			this.attachedMessagesAC = null;
-			this.isLoadingAttachedMessages = false;
-		}
-	};
+	}
 }

@@ -16,30 +16,27 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
+import { createBemElement } from '../../helpers/styleCreators';
+import { useMessagesWorkspaceStore, useMessageUpdateStore, useWorkspaceStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
-import { useMessageUpdateStore } from '../../hooks/useMessageUpdateStore';
+import { complement } from '../../helpers/array';
 
-const MessagesWindowHeader = () => {
-	const messagesStore = useMessagesWindowStore();
+function MessagesWindowHeader() {
+	const messagesStore = useMessagesWorkspaceStore();
 	const messageUpdateStore = useMessageUpdateStore();
+	const workspaceStore = useWorkspaceStore();
 
-	const getStep = () => {
-		const step =
-			messagesStore.selectedMessageId &&
-			messagesStore.selectedMessagesIds.includes(messagesStore.selectedMessageId.valueOf())
-				? messagesStore.selectedMessagesIds.indexOf(messagesStore.selectedMessageId.valueOf()) + 1
-				: 0;
-		return `${step} of ${messagesStore.selectedMessagesIds.length}`;
-	};
+	const [newSessions, setNewSessions] = React.useState<string[]>([]);
+	const [showNewSessionsHint, setShowNewSessionsHint] = React.useState(false);
 
-	const navButtonClass = createStyleSelector(
-		'messages-window-header__button',
-		messagesStore.selectedMessagesIds.length > 0 && messagesStore.messagesIds.length > 0
-			? null
-			: 'disabled',
-	);
+	React.useEffect(() => {
+		setNewSessions(
+			complement(
+				workspaceStore.attachedMessagesStreams,
+				messagesStore.filterStore.messagesFilter.streams,
+			),
+		);
+	}, [workspaceStore.attachedMessagesStreams, messagesStore.filterStore.messagesFilter.streams]);
 
 	const updateButtonClass = createBemElement(
 		'messages-window-header',
@@ -51,24 +48,31 @@ const MessagesWindowHeader = () => {
 		<div className='messages-window-header'>
 			<div className='messages-window-header__group'>
 				<MessagesFilter />
+				{newSessions.length > 0 && (
+					<div
+						className='sessions'
+						onMouseOver={() => setShowNewSessionsHint(true)}
+						onMouseLeave={() => setShowNewSessionsHint(false)}>
+						<p className='sessions__title'>New sessions</p>{' '}
+						<button className='sessions__add-button' onClick={messagesStore.applyStreams}>
+							Add
+						</button>
+						{showNewSessionsHint && (
+							<div className='sessions__content'>
+								<div className='sessions__triangle' />
+								<ul className='sessions__list'>
+									{newSessions.map(session => (
+										<li className='sessions__list-item' key={session}>
+											{session}
+										</li>
+									))}
+								</ul>
+							</div>
+						)}
+					</div>
+				)}
 			</div>
 			<div className='messages-window-header__group'>
-				<h2 className='messages-window-header__title'>Messages</h2>
-				<div className='messages-window-header__steps'>
-					<div
-						className={navButtonClass}
-						role='button'
-						title='previous'
-						onClick={messagesStore.selectPrevMessage}
-					/>
-					<div
-						className={navButtonClass}
-						role='button'
-						title='next'
-						onClick={messagesStore.selectNextMessage}
-					/>
-					<div className='messages-window-header__steps-count'>{getStep()}</div>
-				</div>
 				{messagesStore.messagesIds.length > 0 && (
 					<button onClick={messageUpdateStore.toggleSubscribe} className={updateButtonClass}>
 						{messageUpdateStore.accumulatedMessages.length === 0 ? (
@@ -87,6 +91,6 @@ const MessagesWindowHeader = () => {
 			</div>
 		</div>
 	);
-};
+}
 
 export default observer(MessagesWindowHeader);

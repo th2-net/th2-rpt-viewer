@@ -20,10 +20,9 @@ import TimeAgo from 'react-timeago';
 import { formatTime, getTimestampAsNumber } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
-import { getEventStatus } from '../../helpers/event';
+import { getEventStatus, getMinifiedStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
-import { getMinifiedStatus } from '../../helpers/action';
 import SearchableContent from '../search/SearchableContent';
 
 interface Props {

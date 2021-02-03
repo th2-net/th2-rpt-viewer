@@ -18,21 +18,29 @@ import { EventAction, EventTree } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
+import { SSEFilterInfo } from '../stores/SearchPanelFiltersStore';
+import { TimeRange } from '../models/Timestamp';
+import { SSEParams } from './sse';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
 	messages: MessageApiSchema;
+	sse: SSESchema;
+}
+
+export interface EventSourceConfig {
+	type: 'event' | 'message';
+	queryParams: SSEParams;
 }
 
 export interface EventApiSchema {
 	getEventTree: (filter: EventsFilter, signal?: AbortSignal) => Promise<EventTree>;
-	getEvent: (id: string, abortSignal?: AbortSignal) => Promise<EventAction>;
-	getEventsByName: (
-		timestampFrom: number,
-		timestampTo: number,
-		name: string,
-		eventId?: string,
-	) => Promise<string[]>;
+	getEvent: (
+		id: string,
+		abortSignal?: AbortSignal,
+		queryParams?: Record<string, string | number | boolean | null | string[]>,
+	) => Promise<EventAction>;
+	getEventsByName: (timeRange: TimeRange, name: string, eventId?: string) => Promise<string[]>;
 }
 
 export interface MessageApiSchema {
@@ -58,7 +66,19 @@ export interface MessageApiSchema {
 		filter: MessagesFilter,
 		abortSignal?: AbortSignal,
 	): Promise<EventMessage[]>;
-	getMessage: (id: string, signal?: AbortSignal) => Promise<EventMessage>;
-	getMessagesByFilter: (filter: MessagesFilter) => Promise<string[]>;
+	getMessage: (
+		id: string,
+		signal?: AbortSignal,
+		queryParams?: Record<string, string | number | boolean | null | string[]>,
+	) => Promise<EventMessage>;
 	getMessageSessions: () => Promise<string[]>;
+}
+
+export interface SSESchema {
+	getEventSource: (config: EventSourceConfig) => EventSource;
+	getFilters: (filterType: 'events' | 'messages') => Promise<string[]>;
+	getFiltersInfo: (
+		filterType: 'events' | 'messages',
+		filters: string[],
+	) => Promise<SSEFilterInfo[]>;
 }

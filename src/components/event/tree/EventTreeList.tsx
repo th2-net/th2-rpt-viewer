@@ -18,10 +18,10 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoMethods } from 'react-virtuoso';
 import EventTree from './EventTree';
-import Empty from '../../Empty';
+import Empty from '../../util/Empty';
 import SplashScreen from '../../SplashScreen';
 import StateSaverProvider from '../../util/StateSaverProvider';
-import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
+import { useWorkspaceEventStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
 import { EventTreeNode } from '../../../models/EventAction';
 import '../../../styles/action.scss';
@@ -31,7 +31,7 @@ interface Props {
 }
 
 function EventTreeList({ nodes }: Props) {
-	const eventWindowStore = useEventWindowStore();
+	const eventWindowStore = useWorkspaceEventStore();
 	const listRef = React.useRef<VirtuosoMethods | null>(null);
 
 	React.useEffect(() => {

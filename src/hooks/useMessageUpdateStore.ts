@@ -14,10 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useMessagesWindowStore } from './useMessagesStore';
+import { useMessagesWorkspaceStore } from './useMessagesStore';
 
 export const useMessageUpdateStore = () => {
-	const messageStore = useMessagesWindowStore();
+	const messageStore = useMessagesWorkspaceStore();
 
 	return messageStore.messageUpdateStore;
 };

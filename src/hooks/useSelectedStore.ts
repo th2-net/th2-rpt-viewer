@@ -14,9 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useWindowsStore } from './useWindowsStore';
+import { useWorkspaces } from './useWorkspacesStore';
 
 export const useSelectedStore = () => {
-	const windowsStore = useWindowsStore();
+	const windowsStore = useWorkspaces();
+
 	return windowsStore.selectedStore;
 };

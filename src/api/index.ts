@@ -16,10 +16,12 @@
 import ApiSchema from './ApiSchema';
 import eventHttpApi from './event';
 import messageHttpApi from './message';
+import sseApi from './sse';
 
 const api: ApiSchema = {
 	events: eventHttpApi,
 	messages: messageHttpApi,
+	sse: sseApi,
 };
 
 export default api;

@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import EventsStore from '../../stores/EventsStore';
-import MessagesStore from '../../stores/MessagesStore';
+import EventsStore from '../../stores/events/EventsStore';
+import MessagesStore from '../../stores/messages/MessagesStore';
 
 export type AppTab = EventsTab | MessagesTab;
 

@@ -29,23 +29,14 @@ export type TabProps = Partial<TabsInjectedProps> & {
 		tab?: string;
 		content?: string;
 	};
-	isDragging?: boolean;
 };
 
 const Tab: React.RefForwardingComponent<HTMLDivElement, TabProps> = (props, ref) => {
-	const {
-		isSelected = false,
-		tabIndex = 0,
-		setActiveTab,
-		children,
-		isDragging = false,
-		classNames,
-	} = props;
+	const { isSelected = false, tabIndex = 0, setActiveTab, children, classNames } = props;
 
 	const tabClassName = createStyleSelector(
 		'tab',
 		isSelected ? 'selected' : null,
-		isDragging ? 'dragging' : null,
 		classNames?.tab || null,
 	);
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { TableNode } from '../components/event/VerificationTable';
+import { TableNode } from '../components/event/tables/VerificationTable';
 import {
 	TreeTablePayload,
 	TreeTableRow,
@@ -22,7 +22,7 @@ import {
 	VerificationPayloadField,
 	TreeTableCollection,
 } from '../models/EventActionPayload';
-import { ParamsTable, ParamsTableRow } from '../components/event/ParamsTable';
+import { ParamsTable, ParamsTableRow } from '../components/event/tables/ParamsTable';
 
 export const getVerificationTablesNodes = (body: VerificationPayload) => {
 	if (!body || !body.fields) return [];

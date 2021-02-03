@@ -18,19 +18,18 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SplitViewPane from '../../split-view/SplitViewPane';
 import EventTreeList from './EventTreeList';
-import Empty from '../../Empty';
+import Empty from '../../util/Empty';
 import SplitView from '../../split-view/SplitView';
-import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
-import { useEventWindowViewStore } from '../../../hooks/useEventWindowViewStore';
+import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks';
 import EventDetailInfoCard from '../EventDetailInfoCard';
 
 function EventTreeView() {
-	const eventWindowStore = useEventWindowStore();
+	const eventWindowStore = useWorkspaceEventStore();
 	const viewStore = useEventWindowViewStore();
 
 	return (
 		<SplitView
-			panelArea={viewStore.panelArea}
+			panelArea={viewStore.eventsPanelArea}
 			onPanelAreaChange={viewStore.setPanelArea}
 			leftPanelMinWidth={445}
 			rightPanelMinWidth={445}>
@@ -49,6 +48,7 @@ function EventTreeView() {
 					))}
 				{eventWindowStore.selectedNode && (
 					<EventDetailInfoCard
+						node={eventWindowStore.selectedNode}
 						event={eventWindowStore.selectedEvent}
 						childrenCount={eventWindowStore.selectedNode?.childList.length}
 					/>

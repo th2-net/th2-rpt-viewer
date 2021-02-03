@@ -79,9 +79,11 @@ export default function MultipleStringFilterRow({
 
 	return (
 		<div className='filter-row'>
-			<label className='filter-row__label' htmlFor={config.id}>
-				{config.label}
-			</label>
+			{config.label && (
+				<label className='filter-row__label' htmlFor={config.id}>
+					{config.label}
+				</label>
+			)}
 			<div className={filterContentClassName}>
 				<div className={`${inputRootClassName} filter-row__input`} onClick={rootOnClick}>
 					{config.values.map((value, index) => (
@@ -106,6 +108,7 @@ export default function MultipleStringFilterRow({
 					) : null}
 					<AutocompleteInput
 						ref={input}
+						disabled={config.disabled}
 						submitKeyCodes={[KeyCodes.SPACE, KeyCodes.ENTER]}
 						className='filter-row__multiple-values-input'
 						wrapperClassName='filter-row__multiple-values-input-wrapper'

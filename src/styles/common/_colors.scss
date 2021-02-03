@@ -44,38 +44,6 @@ $passedSecondaryTextColor: rgba(#1f991f, 0.5);
 $passedVerificationBackgroundColor: mix($passedTextColor, white, 10%);
 $passedVerificationHighlightedBackgroundColor: mix($passedTextColor, white, 20%);
 
-$conditionallyPassedTextColor: #ff5500;
-$conditionallyPassedBorderColor: $conditionallyPassedTextColor;
-$conditionallyPassedHeaderColor: #ffddcc;
-$conditionallyPassedBorderColorSecondary: $conditionallyPassedHeaderColor;
-$conditionallyPassedBorderHoverColor: #ffbb99;
-$conditionallyPassedDelimiterHoverColor: #ff9966;
-$conditionallyPassedBackgroundColor: $conditionallyPassedBorderColorSecondary;
-$conditionallyPassedHeaderSecondaryBackground: $conditionallyPassedBackgroundColor;
-$conditionallyPassedSecondaryTextColor: #f57a3d;
-$conditionallyPassedVerificationBackgroundColor: mix($conditionallyPassedTextColor, white, 10%);
-$conditionallyPassedVerificationHighlightedBackgroundColor: mix(
-	$conditionallyPassedTextColor,
-	white,
-	20%
-);
-
-$conditionallyFailedTextColor: #e69900;
-$conditionallyFailedBorderColor: $conditionallyFailedTextColor;
-$conditionallyFailedHeaderColor: #ffeecc;
-$conditionallyFailedBorderColorSecondary: $conditionallyFailedHeaderColor;
-$conditionallyFailedBackgroundColor: $conditionallyFailedBorderColorSecondary;
-$conditionallyFailedBorderHoverColor: #ffdd99;
-$conditionallyFailedDelimiterHoverColor: #ffcc66;
-$conditionallyFailedHeaderSecondaryBackground: $conditionallyFailedBackgroundColor;
-$conditionallyFailedSecondaryTextColor: #e69900;
-$conditionallyFailedVerificationBackgroundColor: mix($conditionallyFailedTextColor, white, 10%);
-$conditionallyFailedVerificationHighlightedBackgroundColor: mix(
-	$conditionallyFailedTextColor,
-	white,
-	20%
-);
-
 $logCardErrorPrimaryColor: #e23636;
 $logCardErrorBorderColor: #ffcccc;
 
@@ -98,6 +66,8 @@ $checkpointBackground: #effff1;
 $primaryTextColor: #4d4d4d;
 $secondaryTextColor: #808080;
 $secondaryLightTextColor: #999999;
+$alternativeTextColor: #666666;
+$activeTextColor: #333333;
 
 $defaultCardBorderColor: #666666;
 $defaultCardBackground: #e0e0e0;
@@ -120,7 +90,13 @@ $tableCounterBackgroundColor: #e6e6e6;
 $tableBodyBackground: #fff;
 $tableBodyBackgroundHighlighted: $tableHeaderBackground;
 
-$messageCardBackgroundColor: #f2f2f2;
+$messageCardHoverBackground: #f3fafc;
+$attachedMessageCardHoverBackground: #fff5f0;
+$attachedMessageCardBorderColor: #ffe5cc;
+$attachedMessageCardHoverBorderColor: #ffa64c;
+$attachedMessageCardIconColor: #ff8c1a;
+$messageCardKeyColor: #5cc2d6;
+$messageCardValueColor: #087a91;
 $messageCardRawHoverBackground: rgba(102, 102, 102, 0.15);
 
 $rejectedMessageLabelBackground: #ffe699;
@@ -184,9 +160,7 @@ $selectedColor: #997ab8;
 
 $tabsBackgroundColor: #e6e6e6;
 
-$windowsLayoutBackgroundColor: #cccccc;
-
-$draggableColor: #3380cc;
+$windowsLayoutBackgroundColor: #bdccdb;
 
 $windowsSplitterColor: #7db3e8;
 
@@ -206,3 +180,25 @@ $attentionBackgroundColor: #f07a36;
 $realtimeButtonColor: #e6e6e6;
 $realtimeButtonActiveColor: #a9e9b5;
 $realtimeButtonBorderColor: #999999;
+
+$graphBackgroundColor: #dee5ed;
+$graphButtonBackgroundColor: #d7e0ea;
+$graphAttachedMessageColor: #fc8144;
+$graphTickColor: #3d668f;
+$graphAttachedEventPassedColor: #00802a;
+$graphAttachedEventFailedColor: #bc271a;
+$graphRangeSelectorBorder: #ff7733;
+$graphOverlayEventsColor: #3d668f;
+$graphOverlayPassedEventsColor: #00802a;
+$graphOverlayFailedEventsColor: #e60000;
+$graphOverlayMessagesColor: #1481b8;
+$graphOverlayConnectedMessagesColor: #ff6b00;
+$graphAttachedEventPassedColor: #00802a;
+$graphAttachedEventFailedColor: #bc271a;
+$graphOverlayConnectedMessagesColor: #ff6b00;
+$graphOverlayPinnedMessagesColor: #a21ae5;
+$graphPinnedMessageCounterColor: #d7e0ea;
+$graphAttachedItemNameColor: #bc271a;
+$graphAttachedItemTimestampColor: #666666;
+
+$timestampInputBorderColor: #7a99b8;

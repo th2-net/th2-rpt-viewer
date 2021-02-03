@@ -17,8 +17,9 @@
 import React from 'react';
 import { inRange } from '../../helpers/heatmapCreator';
 import { HeatmapElement } from '../../models/Heatmap';
-import { useHeatmap } from '../../hooks/useHeatmap';
+import { useHeatmap } from '../../hooks';
 import HeatmapItem from './HeatmapItem';
+import { isDivElement } from '../../helpers/dom';
 import '../../styles/heatmap.scss';
 
 interface Props {
@@ -158,5 +159,3 @@ const Heatmap = ({ onElementClick, selectedItem }: Props) => {
 };
 
 export default Heatmap;
-
-const isDivElement = (el: Element): el is HTMLDivElement => el instanceof HTMLDivElement;

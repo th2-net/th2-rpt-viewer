@@ -17,8 +17,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEventWindowStore } from '../../../hooks/useEventWindowStore';
-import { useParentEvents } from '../../../hooks/useParentEvents';
+import { useWorkspaceEventStore, useParentEvents } from '../../../hooks';
 import EventCardHeader from '../EventCardHeader';
 import EventDetailInfoCard from '../EventDetailInfoCard';
 import { EventTreeNode } from '../../../models/EventAction';
@@ -30,7 +29,7 @@ interface Props {
 
 function DetailedFlatEventCard(props: Props) {
 	const { eventTreeNode, parentNodes } = props;
-	const eventWindowStore = useEventWindowStore();
+	const eventWindowStore = useWorkspaceEventStore();
 
 	const { selectedParentEvent, setSelectedNode, selectedNode } = useParentEvents(
 		eventTreeNode,
@@ -39,6 +38,7 @@ function DetailedFlatEventCard(props: Props) {
 	);
 
 	const event = selectedNode === null ? eventWindowStore.selectedEvent : selectedParentEvent;
+	const node = selectedNode === null ? eventWindowStore.selectedNode : selectedNode;
 
 	return (
 		<div className='flat-event-detail-card'>
@@ -63,6 +63,7 @@ function DetailedFlatEventCard(props: Props) {
 				</div>
 			)}
 			<EventDetailInfoCard
+				node={node!}
 				rootStyle={{
 					overflow: 'visible',
 					height: 'auto',

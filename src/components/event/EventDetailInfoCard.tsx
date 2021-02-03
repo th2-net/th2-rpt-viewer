@@ -1,4 +1,3 @@
-/* eslint-disable react/no-children-prop */
 /** *****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -16,22 +15,27 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 import SplashScreen from '../SplashScreen';
-import { createBemBlock } from '../../helpers/styleCreators';
+import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
 import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
-import { EventAction } from '../../models/EventAction';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { useSelectedStore } from '../../hooks';
 
 interface Props {
+	node: EventTreeNode;
 	event: EventAction | null;
 	childrenCount?: number;
 	rootStyle?: React.CSSProperties;
 }
 
 function EventDetailInfoCard(props: Props) {
-	const { event, childrenCount = 0, rootStyle = {} } = props;
+	const selectedStore = useSelectedStore();
+
+	const { event, childrenCount = 0, rootStyle = {}, node } = props;
 
 	if (!event) {
 		return <SplashScreen />;
@@ -40,11 +44,23 @@ function EventDetailInfoCard(props: Props) {
 	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId, batchId } = event;
 
 	const status = getEventStatus(event);
+	const isPinned = selectedStore.pinnedEvents.findIndex(e => e.eventId === event.eventId) !== -1;
 
 	const rootClassName = createBemBlock('event-detail-card', status);
+	const pinButtonIconClassName = createBemElement(
+		'event-detail-card',
+		'pin-button-icon',
+		isPinned ? 'active' : null,
+	);
 
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
+
+	function onEventPin() {
+		if (event === null) return;
+
+		selectedStore.toggleEventPin(node);
+	}
 
 	return (
 		<div className={rootClassName} style={rootStyle}>
@@ -52,6 +68,9 @@ function EventDetailInfoCard(props: Props) {
 				<div className='event-detail-card__title' title={eventType || eventName}>
 					{eventType || eventName}
 				</div>
+				<button onClick={onEventPin} className='event-detail-card__pin-button'>
+					<i className={pinButtonIconClassName} />
+				</button>
 				<div className='event-detail-card__controls'>
 					{elapsedTime && <span className='event-detail-card__time'>{elapsedTime}</span>}
 					<span className='event-detail-card__separator' />
@@ -76,7 +95,7 @@ function EventDetailInfoCard(props: Props) {
 						</>
 					)}
 				</div>
-				<div className='event-detail-card__id'>{`${batchId ? `${batchId}:` : ''}${eventId}`}</div>
+				<div className='event-detail-card__id'>{eventId}</div>
 			</div>
 			<div className='event-detail-card__body'>
 				<div className='event-detail-card__body-list'>
@@ -97,4 +116,4 @@ function EventDetailInfoCard(props: Props) {
 	);
 }
 
-export default EventDetailInfoCard;
+export default observer(EventDetailInfoCard);

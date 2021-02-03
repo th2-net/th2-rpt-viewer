@@ -116,9 +116,10 @@
 		display: grid;
 		padding: 5px;
 		grid-template:
-			'title controls' auto
-			'timestamp timestamp' auto
-			'id id' auto / 1fr auto;
+			'title pin-button controls' auto
+			'timestamp timestamp timestamp' auto
+			'id id id' auto / auto auto 1fr;
+		align-items: center;
 	}
 
 	&__body {
@@ -144,6 +145,36 @@
 		white-space: nowrap;
 		overflow: hidden;
 		width: inherit;
+	}
+
+	&__pin-button {
+		@include clickable;
+
+		height: 23px;
+		width: 23px;
+		grid-area: pin-button;
+		background-color: transparent;
+		margin-left: 5px;
+		border: none;
+		border-radius: 4px;
+		box-sizing: border-box;
+		padding: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		outline: none;
+
+		&-icon {
+			@include icon(url(../../resources/icons/pin.svg), 15px, 15px);
+
+			display: inline-block;
+			transition: transform 0.3s;
+			transform: scale(0.9);
+
+			&.active {
+				transform: rotate(-45deg) scale(1);
+			}
+		}
 	}
 
 	&__controls {
@@ -419,6 +450,7 @@
 		word-break: break-all;
 		vertical-align: middle;
 		line-height: inherit;
+		cursor: pointer;
 	}
 
 	&__root-icon {
@@ -457,53 +489,5 @@
 		width: 100px;
 		height: 20px;
 		border-radius: 3px;
-	}
-}
-
-.events-tab {
-	width: 100%;
-	display: grid;
-	grid-template-columns: auto 1fr;
-	align-items: center;
-	padding: 0 10px;
-	background-color: inherit;
-
-	&__title {
-		width: 100%;
-		overflow: hidden;
-
-		ul {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
-
-		& li {
-			display: flex;
-			align-items: center;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-
-			&:only-child::after {
-				margin: 0 5px;
-			}
-		}
-	}
-
-	&__color {
-		width: 12px;
-		height: 12px;
-		border-radius: 50%;
-		border: 2px solid transparent;
-	}
-
-	&__breadcrumbs {
-		padding: 1px 10px 7px 10px;
-	}
-
-	&__content {
-		display: grid;
-		grid-template-columns: 30px 1fr;
 	}
 }

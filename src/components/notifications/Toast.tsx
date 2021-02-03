@@ -20,12 +20,13 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 import '../../styles/toasts.scss';
 
 export default function Toast(props: ToastProps) {
-	const { appearance, children, onDismiss } = props;
-	const toastMessage = createStyleSelector('toast-message', appearance);
-	const toastMessageIcon = createStyleSelector('toast-message__icon', appearance);
+	const { appearance, children, onDismiss, transitionState } = props;
+	const toastMessageClassname = createStyleSelector('toast-message', appearance, transitionState);
+	const toastMessageIconClassname = createStyleSelector('toast-message__icon', appearance);
+
 	return (
-		<div className={toastMessage}>
-			<div className={toastMessageIcon} />
+		<div className={toastMessageClassname}>
+			<div className={toastMessageIconClassname} />
 			<div className='toast-message__content'>{children}</div>
 			<button className='toast-message__close' onClick={() => onDismiss()} />
 		</div>

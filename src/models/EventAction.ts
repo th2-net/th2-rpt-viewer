@@ -14,10 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import Timestamp from './Timestamp';
+import { Timestamp } from './Timestamp';
 import { EventBodyPayload } from './EventActionPayload';
 
 export type EventTree = Array<EventTreeNode>;
+
+export enum ActionType {
+	EVENT_ACTION = 'event',
+	EVENT_TREE_NODE = 'eventTreeNode',
+	MESSAGE = 'message',
+}
 
 interface EventBase {
 	eventId: string;
@@ -26,14 +32,14 @@ interface EventBase {
 	startTimestamp: Timestamp;
 	endTimestamp?: Timestamp | null;
 	successful: boolean;
+	parents?: string[];
 }
 
 export interface EventTreeNode extends EventBase {
 	childList: Array<EventTreeNode>;
 	filtered: boolean;
 	parentId: string;
-	type: 'eventTreeNode';
-	parents?: string[];
+	type: ActionType.EVENT_TREE_NODE;
 }
 
 export interface EventAction extends EventBase {
@@ -43,7 +49,7 @@ export interface EventAction extends EventBase {
 	batched: boolean;
 	body: EventActionBody;
 	parentEventId: string;
-	type: 'event';
+	type: ActionType.EVENT_ACTION;
 }
 
 export type EventActionBody = EventBodyPayload[];

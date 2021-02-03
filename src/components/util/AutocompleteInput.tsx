@@ -34,6 +34,7 @@ interface Props {
 	onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
 	onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 	onEmptyBlur?: () => void;
+	disabled?: boolean;
 }
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
@@ -44,6 +45,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onEmptyBlur,
 		onBlur = () => null,
 		onFocus,
+		disabled,
 		autocomplete,
 		autoresize = true,
 		readonly = false,
@@ -92,6 +94,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		value: currentValue,
 		list: datalistKey,
 		placeholder,
+		disabled,
 		onKeyDown,
 		onChange,
 		onFocus,

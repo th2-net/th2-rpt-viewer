@@ -1,0 +1,56 @@
+/******************************************************************************
+ * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+
+ @import './common/vars';
+
+.toggler {
+    &.disabled {
+        opacity: .5;
+    }
+    display: flex;
+    align-items: center;
+    margin: 0 10px;
+    &__bar {
+        position: relative;
+        box-sizing: border-box;
+        width: 40px;
+        height: 20px;
+        margin: 0 4px;
+        border: solid black 1px;
+        border-radius: 12px;
+        &:before {
+            position: absolute;
+            content: '';
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #000;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: left ease-in-out 240ms;
+        }
+    }
+    .off {
+        &:before {
+            left: calc(100% - 18px);
+        }
+    }
+    .on {
+        &:before {
+            left: 2px;
+        }
+    }
+}

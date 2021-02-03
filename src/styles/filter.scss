@@ -299,14 +299,20 @@
 }
 
 .filter-row {
-	min-height: 46px;
-	width: 100%;
-	font-size: 15px;
+	min-height: 32px;
+	font-size: 12px;
 	font-weight: bold;
 	box-sizing: border-box;
 	display: flex;
-	justify-content: flex-start;
 	align-items: center;
+	margin-bottom: 5px;
+
+	.filter-row {
+		width: 100%;
+	}
+	.toggler-wrapper {
+		width: fit-content;
+	}
 
 	&:hover &__divider-text {
 		display: none;
@@ -345,7 +351,7 @@
 	}
 
 	&__input {
-		border: 0;
+		width: 100%;
 		padding: 3px 5px;
 		margin: 0 10px;
 		border-radius: $bubbleBorderRadius;
@@ -356,7 +362,9 @@
 		box-sizing: border-box;
 		// workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
 		min-width: 0;
-
+		&:disabled {
+			opacity: .5;
+		}
 		&:focus {
 			background-color: #fff;
 
@@ -404,9 +412,9 @@
 	}
 
 	&__label {
-		width: 110px;
+		width: 120px;
 		font-weight: bold;
-		font-size: 15px;
+		font-size: 14px;
 		flex-shrink: 0;
 	}
 
@@ -434,6 +442,7 @@
 		gap: 5px;
 		&.filter-row__input {
 			margin: 0;
+			width: 100%;
 		}
 	}
 
@@ -450,6 +459,10 @@
 
 		&:focus {
 			outline: none;
+		}
+
+		&:disabled {
+			opacity: .5;
 		}
 	}
 
@@ -471,16 +484,5 @@
 
 	&__arrow-icon {
 		@include icon(url(../../resources/icons/filter-arrow.svg), 16px, 16px);
-	}
-}
-
-.events-filter {
-	&__time-input {
-		width: 110px;
-		padding: 3px 9px;
-	}
-	&__date-input {
-		width: 98px;
-		padding: 3px 9px;
 	}
 }

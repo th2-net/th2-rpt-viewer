@@ -18,28 +18,28 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import MessagesWindowHeader from './MessagesWindowHeader';
 import { HeatmapProvider } from '../heatmap/HeatmapProvider';
-import { useMessagesWindowStore } from '../../hooks/useMessagesStore';
-import MessagesCardList from './MessagesCardList';
+import {
+	useMessagesWorkspaceStore,
+	useSelectedStore,
+	useActivePanel,
+	useWorkspaceStore,
+} from '../../hooks';
+import MessagesCardList from './message-card-list/MessagesCardList';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { useSelectedStore } from '../../hooks/useSelectedStore';
 
 const MessagesWindow = () => {
-	const messagesStore = useMessagesWindowStore();
+	const messagesStore = useMessagesWorkspaceStore();
+	const workspaceStore = useWorkspaceStore();
 	const selectedStore = useSelectedStore();
+
+	const { ref: panelRef } = useActivePanel(messagesStore);
 
 	const selectedItems = React.useMemo(() => {
 		const heatmapElementsMap: Map<string, string[]> = new Map();
-		selectedStore.selectedEvents
-			.filter(e => e.attachedMessageIds.length !== 0)
-			.forEach(({ eventId, attachedMessageIds }) => {
-				const eventColor = selectedStore.eventColors.get(eventId);
-				if (eventColor) {
-					heatmapElementsMap.set(eventColor, attachedMessageIds);
-				}
-			});
+		heatmapElementsMap.set('#FC8144', workspaceStore.attachedMessagesIds);
 
 		return heatmapElementsMap;
-	}, [selectedStore.eventColors, messagesStore.messagesIds]);
+	}, [workspaceStore.attachedMessagesIds]);
 
 	const unknownAreas = React.useMemo(() => {
 		if (!messagesStore.messagesIds.length || messagesStore.filterStore.isMessagesFilterApplied) {
@@ -79,7 +79,7 @@ const MessagesWindow = () => {
 			.map(msg => msg.messageId);
 
 		return { before, after };
-	}, [selectedStore.eventColors, messagesStore.messagesIds]);
+	}, [messagesStore.messagesIds]);
 
 	return (
 		<HeatmapProvider
@@ -88,11 +88,11 @@ const MessagesWindow = () => {
 			selectedItems={selectedItems}
 			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}
 			pinnedItems={selectedStore.pinnedMessages.map(m => m.messageId)}>
-			<div className='layout'>
-				<div className='layout__header'>
+			<div className='window sm' ref={panelRef}>
+				<div className='window__controls'>
 					<MessagesWindowHeader />
 				</div>
-				<div className='layout__body'>
+				<div className='window__body'>
 					<MessagesCardList />
 				</div>
 			</div>

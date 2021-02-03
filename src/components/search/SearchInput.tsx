@@ -22,7 +22,7 @@ import SearchToken from '../../models/search/SearchToken';
 import Bubble from '../util/Bubble';
 import { nextCyclicItem, removeByIndex, replaceByIndex } from '../../helpers/array';
 import { createBemBlock } from '../../helpers/styleCreators';
-import { useEventWindowStore } from '../../hooks/useEventWindowStore';
+import { useWorkspaceEventStore } from '../../hooks';
 import { createSearchToken } from '../../helpers/search/createSearchToken';
 import '../../styles/search.scss';
 
@@ -259,8 +259,8 @@ export class SearchInputBase extends React.PureComponent<Props> {
 	private documentOnKeyDown = (e: KeyboardEvent) => {
 		if (e.keyCode === KeyCodes.F3 || (e.keyCode === KeyCodes.F && e.ctrlKey)) {
 			// cancel browser search opening
-			e.preventDefault();
 			if (!this.props.disabled) {
+				e.preventDefault();
 				this.focus();
 			}
 		}
@@ -347,7 +347,7 @@ interface SearchInputProps {
 
 const SearchInput = (props: SearchInputProps) => {
 	const { disabled } = props;
-	const { searchStore } = useEventWindowStore();
+	const { searchStore } = useWorkspaceEventStore();
 
 	return (
 		<SearchInputBase

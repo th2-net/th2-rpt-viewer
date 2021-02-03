@@ -18,7 +18,8 @@ export type FilterRowConfig =
 	| FilterRowDatetimeRangeConfig
 	| FilterRowTimeWindowConfig
 	| FilterRowStringConfig
-	| FilterRowMultipleStringsConfig;
+	| FilterRowMultipleStringsConfig
+	| FilterRowTogglerConfig;
 
 export enum DateTimeMask {
 	TIME_MASK = 'HH:mm:ss.SSS',
@@ -43,6 +44,7 @@ export type DateTimeInputType = {
 	placeholder: string;
 	inputClassName?: string;
 	labelClassName?: string;
+	disabled?: boolean;
 };
 
 export type IntervalInputType = {
@@ -67,6 +69,7 @@ export enum TimeInputType {
 export type FilterRowBaseConfig = {
 	id: string;
 	label: string;
+	disabled?: boolean;
 };
 
 export type FilterRowTimeWindowConfig = FilterRowBaseConfig & {
@@ -96,4 +99,12 @@ export type FilterRowDatetimeRangeConfig = FilterRowBaseConfig & {
 		label: string;
 		onClick: () => void;
 	}>;
+};
+
+export type FilterRowTogglerConfig = FilterRowBaseConfig & {
+	type: 'toggler';
+	disabled: boolean;
+	value: boolean;
+	possibleValues: [string, string];
+	toggleValue: () => void;
 };

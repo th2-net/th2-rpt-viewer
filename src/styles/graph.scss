@@ -1,0 +1,574 @@
+/******************************************************************************
+ * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+
+@import './common/vars';
+
+.graph {
+	height: 100%;
+	width: 100%;
+	background-color: $graphBackgroundColor;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
+	justify-content: flex-end;
+	overflow: visible;
+
+	&__arrow-button {
+		width: 21px;
+		height: 21px;
+		border-radius: 50%;
+		background-color: $graphButtonBackgroundColor;
+		position: absolute;
+		top: 42px;
+		left: 14px;
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+
+		&:hover i {
+			transform: scale(1.1);
+		}
+
+		&.left {
+			transform: translateX(-31px);
+		}
+
+		&.right {
+			transform: translateX(10px);
+			left: 35px;
+			& i {
+				transform: rotate(180deg) scale(1);
+
+				&:hover {
+					transform: rotate(180deg) scale(1.1);
+				}
+			}
+		}
+	}
+
+	&__arrow-icon {
+		@include icon(url(../../resources/icons/graph-arrow-left.svg), 15px, 15px);
+		transition: transform 0.1s;
+		display: inline-block;
+	}
+
+	&__search-button {
+		@include icon(url(../../resources/icons/graph-search.svg), 15px, 15px);
+		z-index: 5;
+		cursor: pointer;
+	}
+
+	&__settings-button {
+		@include icon(url(../../resources/icons/settings.svg), 15px, 15px);
+		z-index: 5;
+		cursor: pointer;
+	}
+
+	&__pinned-messages-counter {
+		background-color: $graphPinnedMessageCounterColor;
+		border-radius: 18px;
+		padding: 2px 8px;
+		border: none;
+		cursor: pointer;
+		z-index: 5;
+		display: flex;
+		align-items: center;
+		outline: none;
+
+		&-value {
+			color: $graphOverlayPinnedMessagesColor;
+			font-size: 11px;
+			line-height: 14px;
+		}
+
+		&-icon {
+			@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+
+			display: inline-block;
+			margin-right: 5px;
+		}
+	}
+}
+
+.outside-items {
+	&-wrapper {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		flex-shrink: 0;
+	}
+
+	&-indicator {
+		position: absolute;
+		top: 55%;
+		transform: translateY(-50%);
+		z-index: 15;
+		display: flex;
+		align-items: center;
+		cursor: pointer;
+
+		&.right {
+			flex-direction: row-reverse;
+			right: 14px;
+		}
+
+		&.left {
+			left: 14px;
+		}
+
+		&-item {
+			display: flex;
+			align-items: center;
+			flex-shrink: 0;
+
+			&.right {
+				flex-direction: row-reverse;
+			}
+		}
+
+		&-value {
+			font-size: 11px;
+			line-height: 14px;
+			color: #ffffff;
+			flex-shrink: 0;
+		}
+
+		&-icon {
+			margin: 1px 5px 0 5px;
+			display: inline-block;
+			flex-shrink: 0;
+
+			&.pinned-message {
+				@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+			}
+
+			&.attached-message {
+				@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
+			}
+
+			&.failed {
+				width: 12px;
+				height: 12px;
+				border-radius: 50%;
+				background-color: $graphOverlayFailedEventsColor;
+				margin: 0 6px;
+			}
+
+			&.passed {
+				width: 12px;
+				height: 12px;
+				border-radius: 50%;
+				background-color: $graphOverlayPassedEventsColor;
+				margin: 0 6px;
+			}
+		}
+
+		&-pointer {
+			display: inline-block;
+
+			&.right {
+				@include icon(url(../../resources/icons/graph-pointer-right.svg), 14px, 14px);
+			}
+
+			&.left {
+				@include icon(url(../../resources/icons/graph-pointer-right.svg), 14px, 14px);
+				transform: rotate(180deg);
+			}
+		}
+	}
+}
+
+.recharts-surface {
+	overflow: visible;
+}
+
+.graph-chunk {
+	position: relative;
+
+	&__item {
+		position: absolute;
+		cursor: pointer;
+		z-index: 6;
+	}
+
+	&__ticks {
+		display: flex;
+		justify-content: space-between;
+		@include unselectable;
+	}
+
+	&__tick {
+		display: inline-block;
+		flex-grow: 1;
+		color: $graphTickColor;
+		font-size: 8px;
+		line-height: 8px;
+		border-left: 1px solid $graphTickColor;
+		padding: 0 0 4px 6px;
+	}
+}
+
+.graph-dot {
+	&__attached-message,
+	&__pinned-message,
+	&__event {
+		position: relative;
+		z-index: 6;
+		cursor: pointer;
+	}
+
+	&__event {
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+
+		&:not(:first-child) {
+			margin-bottom: 1px;
+		}
+
+		&.passed {
+			background-color: $graphAttachedEventPassedColor;
+		}
+
+		&.failed {
+			background-color: $graphAttachedEventFailedColor;
+		}
+	}
+
+	&__attached-message {
+		@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
+	}
+
+	&__pinned-message {
+		@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+
+		&.full {
+			@include icon(url(../../resources/icons/starFull.svg), 41px, 14px);
+		}
+	}
+}
+
+.graph-item-group {
+	position: absolute;
+	bottom: 15px;
+	z-index: 10;
+
+	&__dots {
+		display: flex;
+		flex-direction: column-reverse;
+		position: relative;
+		z-index: 101;
+
+		&::before {
+			content: "";
+			position: absolute;
+			top: -2px;
+			left: -2px;
+			width: 100%;
+			height: 100%;
+			transition: all 0.15s;
+			background-color: transparent;
+			box-shadow: none;
+			border-radius: 10px;
+			padding: 2px;
+		}
+
+		&.active {
+			&::before {
+				background-color: #fff;
+				box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.45);
+			}
+		}
+	}
+}
+
+.graph-menu {
+	@include scrollbar();
+	padding: 5px 2px;
+	max-height: 170px;
+	position: absolute;
+	background-color: #fff;
+	border-radius: 6px;
+	width: auto;
+	overflow: auto;
+	z-index: 100;
+	box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.45);
+
+	&.active {
+		animation: fade-in 0.1s linear 1, move-left 0.15s linear 1;
+
+		@keyframes fade-in {
+			from {
+				opacity: 0;
+			}
+			to {
+				opacity: 1;
+			}
+		}
+		@keyframes move-left {
+			from {
+				transform: translateX(-5px);
+			}
+			to {
+				transform: translateX(0);
+			}
+		}
+	}
+
+	&__list {
+		@include scrollbar;
+		height: 100%;
+		overflow: auto;
+	}
+
+	&__item {
+		cursor: pointer;
+		padding: 2px 3px;
+		border-radius: 6px;
+		display: grid;
+		grid-template-areas:
+			'icon title'
+			'icon timestamp';
+		grid-template-columns: 20px 1fr;
+		row-gap: 2px;
+
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.04);
+		}
+
+		&:not(:last-child) {
+			margin-bottom: 2px;
+		}
+	}
+
+	&__item-name {
+		grid-area: title;
+		white-space: nowrap;
+		font-weight: 600;
+		font-size: 12px;
+		line-height: 12px;
+		color: $graphAttachedItemNameColor;
+	}
+
+	&__item-timestamp {
+		grid-area: timestamp;
+		font-size: 9px;
+		line-height: 9px;
+		color: $graphAttachedItemTimestampColor;
+	}
+
+	&__item-icon {
+		&.message-icon {
+			@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
+		}
+
+		&.pinned-message-icon {
+			@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+		}
+
+		&.event-icon,
+		&.eventtreenode-icon {
+			width: 12px;
+			height: 12px;
+			margin: 1px;
+			border-radius: 50%;
+
+			&.passed {
+				background-color: $graphOverlayPassedEventsColor;
+			}
+
+			&.failed {
+				background-color: $graphOverlayFailedEventsColor;
+			}
+		}
+	}
+}
+
+.graph-timeline {
+	@include hidden-scrollbar;
+	width: 100%;
+	height: 62px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	display: flex;
+
+	&__dragging-zone {
+		visibility: hidden;
+		height: 100%;
+		position: absolute;
+		top: 0;
+	}
+}
+
+.graph-timestamp {
+	@include unselectable;
+	position: absolute;
+	transform: translate(-20%, 5px);
+	color: #fff;
+	font-size: 10px;
+	line-height: 15px;
+	top: 0;
+	text-align: right;
+	z-index: 5;
+	cursor: default;
+
+	&.from {
+		right: 0;
+	}
+
+	&.to {
+		transform: translate(15%, 5px);
+		text-align: left;
+	}
+}
+
+.graph-overlay {
+	position: absolute;
+	top: 0;
+	width: 480px;
+	height: 100%;
+	z-index: 2;
+	backdrop-filter: invert(0.8) brightness(204%) hue-rotate(190deg) contrast(188%) grayscale(3%)
+		saturate(147%);
+	opacity: 0.8;
+
+	&.left {
+		left: 0;
+	}
+
+	&.right {
+		right: 0;
+	}
+
+	&__section {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 640px;
+		height: 100%;
+
+		&.right {
+			left: unset;
+			right: 0;
+		}
+	}
+
+	&__logo {
+		@include icon(url(../../resources/icons/th2-icon.svg), 22px, 60px);
+		display: inline-block;
+		position: absolute;
+		left: 14px;
+		top: 12px;
+		z-index: 5;
+	}
+
+	&__wrapper {
+		width: 100%;
+		z-index: 5px;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 12px;
+		margin-top: 10px;
+		padding-right: 10px;
+	}
+}
+
+.graph-range-selector {
+	@include unselectable;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	z-index: 2;
+
+	&__border {
+		content: '';
+		height: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 10;
+		width: 3px;
+		background-color: $graphRangeSelectorBorder;
+
+		&.right {
+			transform: translateX(-100%);
+		}
+	}
+
+	&__wrapper {
+		display: flex;
+		align-items: center;
+		padding: 0 12px;
+		gap: 5px;
+		margin-top: 8px;
+	}
+
+	&__timestamp-input {
+		margin: 0 auto;
+		order: 2;
+	}
+
+	&__counter {
+		font-size: 11px;
+		line-height: 14px;
+		display: flex;
+		align-items: center;
+
+		&-icon {
+			width: 9px;
+			height: 9px;
+			margin-right: 5px;
+		}
+
+		&.events {
+			color: $graphOverlayEventsColor;
+		}
+
+		&.passed {
+			color: $graphOverlayPassedEventsColor;
+		}
+
+		&.passed &-icon {
+			border-radius: 50%;
+			background-color: $graphOverlayPassedEventsColor;
+		}
+
+		&.failed {
+			color: $graphOverlayFailedEventsColor;
+		}
+
+		&.failed &-icon {
+			border-radius: 50%;
+			background-color: $graphOverlayFailedEventsColor;
+		}
+
+		&.messages {
+			color: $graphOverlayMessagesColor;
+		}
+
+		&.connected {
+			color: $graphOverlayConnectedMessagesColor;
+		}
+
+		&.connected &-icon {
+			@include icon(url(../../resources/icons/attached-message.svg), 10px, 10px);
+		}
+	}
+}
