@@ -21,23 +21,18 @@ function MessageCardSkeleton() {
 		<div className='mc-skeleton'>
 			<div className='mc-skeleton__header'>
 				<div className='mc-skeleton__timestamp' />
-				<div className='mc-skeleton__name'>
-					<span className='mc-skeleton__title' />
-					<span className='mc-skeleton__value' />
-				</div>
-				<div className='mc-skeleton__session'>
-					<span className='mc-skeleton__title' />
-					<span className='mc-skeleton__session-el' />
-					<span className='mc-skeleton__session-el' />
-					<span className='mc-skeleton__session-el' />
-				</div>
-				<div className='mc-skeleton__beautify' />
+				<div className='mc-skeleton__key' />
+				<div className='mc-skeleton__value' />
+				<div className='mc-skeleton__key' />
+				<div className='mc-skeleton__key' />
+				<div className='mc-skeleton__value' />
+				<div className='mc-skeleton__key' />
+				<div className='mc-skeleton__value wide' />
 			</div>
-			<div className='mc-skeleton__delimiter' />
 			<div className='mc-skeleton__body'>
-				<div className='mc-skeleton__body-text1' />
-				<div className='mc-skeleton__body-text2' />
-				<div className='mc-skeleton__body-type' />
+				<div className='mc-skeleton__text' />
+				<div className='mc-skeleton__text' />
+				<div className='mc-skeleton__text' />
 			</div>
 		</div>
 	);

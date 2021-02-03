@@ -156,19 +156,6 @@ const MessagesScrollContainer: TScrollContainer = ({
 						<div className='messages-list__spinner' />
 					)}
 			</div>
-			<Observer>
-				{() => (
-					<Heatmap
-						onElementClick={(element: HeatmapElement) => {
-							const newSelectedMessageId = new String(
-								element.id ? element.id : messagesStore.messagesIds[element.index],
-							);
-							messagesStore.selectedMessageId = newSelectedMessageId;
-						}}
-						selectedItem={messagesStore.selectedMessageId?.valueOf() || null}
-					/>
-				)}
-			</Observer>
 		</div>
 	);
 };

@@ -16,69 +16,71 @@
 
 @import './common/vars';
 
-.message-card {
-	@include status-card;
+.message-card-wrapper {
+	padding-bottom: 5px;
+	margin-right: 10px;
 
-	// lb-count - number of displaying labels - to make offset for name and session
-	--lb-count: 0;
-	// lb-count variable assignment through the custom html property
-	&[data-lb-count='0'] {
-		--lb-count: 0;
-	}
-	&[data-lb-count='1'] {
-		--lb-count: 1;
-	}
-	&[data-lb-count='2'] {
-		--lb-count: 2;
+	&:hover .message-card {
+		background-color: $messageCardHoverBackground;
 	}
 
-	position: relative;
-	display: grid;
-	grid-template: auto auto / auto calc(100% - var(--lb-count) * 20px);
-	grid-template-areas:
-		'mc-labels mc-header'
-		'mc-labels mc-body';
-	width: 100%;
-	margin: 6px 0;
-	transition: all 0.2s;
-	min-height: 100px;
+	&:hover .mc-header {
+		&__info {
+			column-gap: 10px;
+		}
 
-	border: 2px solid var(--status-secondary-border-color);
-	border-radius: $defaultCardBorderRadius;
+		&__control-button {
+			display: block;
+		}
 
-	// TODO: create mixins for attached & pinned messages
+		&__key-minified {
+			display: none;
+		}
 
-	&.attached {
-		background-color: rgba($color: $graphAttachedMessageColor, $alpha: 0.15);
-		border-color: $graphAttachedMessageColor;
-	}
+		&__key {
+			display: inline;
+		}
 
-	&.pinned {
-		background-color: rgba($color: $graphOverlayPinnedMessagesColor, $alpha: 0.15);
-		border-color: $graphOverlayPinnedMessagesColor;
-	}
+		&__info {
+			flex-wrap: wrap;
+		}
 
-	&.transparent {
-		opacity: 0.3;
-	}
+		&__value {
+			font-weight: bold;
+		}
 
-	&__labels {
-		grid-area: mc-labels;
-		display: flex;
-		justify-content: flex-start;
+		&__is-attached-icon {
+			opacity: 1;
+		}
 
-		div:first-of-type {
-			border-top-left-radius: 3px;
-			border-bottom-left-radius: 3px;
+		&__bookmark-button {
+			display: block;
+			background: url(../../resources/icons/bookmark-add-hover.svg);
+
+			&.pinned {
+				background: url(../../resources/icons/bookmark-added-hover.svg);
+			}
 		}
 	}
+}
 
-	&__header {
-		grid-area: mc-header;
-	}
+.message-card {
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+	border-radius: 5px;
 
-	&__body {
-		grid-area: mc-body;
+	&.attached {
+		border: 2px solid $attachedMessageCardBorderColor;
+
+		&:hover {
+			border-color: $attachedMessageCardHoverBorderColor;
+			background-color: $attachedMessageCardHoverBackground;
+		}
+
+		.mc-header__is-attached-icon {
+			display: block;
+		}
 	}
 }
 
@@ -116,190 +118,134 @@
 }
 
 .mc-header {
-	grid-area: mc-header;
-	display: grid;
-	row-gap: 3px;
-	position: relative;
-	padding: 7px 5px 9px 10px;
-	color: $primaryTextColor;
-	grid-template-rows: auto;
-	grid-template-columns: 1.2fr 40px 1.2fr 40px 1.8fr 30px 30px;
-	grid-template-areas:
-		'timestamp name name-value session session-value beautify pin'
-		'timestamp id id-value id-value id-value beautify pin';
+	display: flex;
+	column-gap: 5px;
+	white-space: nowrap;
 
-	&__underline {
-		border-bottom: 2px solid var(--status-primary-delimeter-color);
-		padding: 0 20px;
-		position: absolute;
-		bottom: 0;
-		left: 10px;
-		right: 10px;
-
-		&.attached {
-			border-color: $graphAttachedMessageColor;
-		}
-
-		&.pinned {
-			border-color: $graphOverlayPinnedMessagesColor;
-		}
+	&__is-attached-icon {
+		flex-shrink: 0;
+		width: 8px;
+		height: 8px;
+		transform: rotate(45deg);
+		transform-origin: center;
+		background-color: $attachedMessageCardIconColor;
+		opacity: 0.43;
+		margin-top: 3px;
+		margin-left: 3px;
+		margin-right: 4px;
+		display: none;
 	}
 
 	&__info {
-		grid-area: info;
+		flex-grow: 1;
 		display: flex;
-		justify-content: flex-start;
-		align-items: center;
-
-		&.rejected {
-			font-weight: bold;
-			font-size: 13px;
-			padding-left: 6px;
-			color: $primaryTextColor;
-		}
-	}
-
-	&__name {
-		grid-area: name;
-	}
-
-	&__name-value {
-		grid-area: name-value;
-	}
-
-	&__timestamp {
-		grid-area: timestamp;
-		font-size: 12px;
-		padding-left: 5px;
-	}
-
-	&.p75 &__timestamp {
-		padding-left: 7px;
-	}
-
-	&__session {
-		grid-area: session;
-	}
-
-	&__session-value {
-		grid-area: session-value;
-		display: flex;
-		flex-direction: row;
-		justify-content: flex-start;
+		column-gap: 5px;
+		overflow: hidden;
 		align-items: center;
 	}
 
-	&__session-icon {
+	&__item {
+		display: flex;
+		column-gap: 3px;
+		align-items: center;
+	}
+
+	&__direction-icon {
 		background-image: url('../../resources/icons/session-icon.svg');
-		height: 25px;
-		width: 25px;
 		background-size: 100%;
-		margin: 0 5px;
 
 		&.in {
 			transform: scale(-1);
 		}
 	}
 
-	&__id {
-		grid-area: id;
-	}
-	&__id-value {
-		grid-area: id-value;
+	&__bookmark {
+		display: none;
 	}
 
-	&__session,
-	&__name,
-	&__timestamp,
-	&__name-value,
-	&__id {
+	&__key {
+		display: none;
+	}
+
+	&__key,
+	&__key-minified,
+	&__value {
+		font-size: 9px;
+		line-height: 15px;
+	}
+
+	&__key,
+	&__key-minified {
+		color: $messageCardKeyColor;
+	}
+
+	&__value {
+		color: $messageCardValueColor;
+	}
+
+	&__controls {
 		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: flex-start;
-		padding: 3px;
-	}
+		column-gap: 5px;
 
-	&__id-value,
-	&__name-value,
-	&__session-value {
-		padding-left: 8px;
-		font-size: 13px;
-		font-weight: bold;
-		word-break: break-all;
-	}
-
-	&__session,
-	&__name,
-	&__id {
-		@include unselectable;
-		padding-top: 5px;
-		font-size: 10px;
-		color: $secondaryTextColor;
-	}
-
-	&__expand {
-		grid-area: expand-icon;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-
-		&-icon {
-			height: 19px;
-			width: 19px;
-			background-image: url(../../resources/icons/arr4-down.svg);
-			background-size: 100%;
+		div {
 			cursor: pointer;
 		}
 	}
 
-	&__pin {
-		grid-area: pin;
-		position: relative;
-		place-self: center;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 20px;
-		height: 20px;
-		overflow: hidden;
+	&__icon {
+		width: 15px;
+		height: 15px;
 	}
 
-	&__pin-icon {
-		@include icon(url(../../resources/icons/pin.svg), 15px, 15px);
+	&__control-button {
+		display: none;
+		background-size: cover;
+		opacity: 0.77;
 
-		cursor: pointer;
-		transition: 0.3s;
-
+		&:hover,
 		&.active {
-			transform: rotate(-45deg) scale(1.4);
+			opacity: 1;
+		}
+	}
+
+	&__beatutify-button {
+		background: url(../../resources/icons/messages-beautify.svg);
+	}
+
+	&__show-raw-button {
+		background: url(../../resources/icons/bincode.svg);
+	}
+
+	&__bookmark-button {
+		display: none;
+		flex-shrink: 0;
+		background: url(../../resources/icons/bookmark-add.svg);
+
+		&.pinned {
+			display: block;
+			background: url(../../resources/icons/bookmark-added.svg);
 		}
 	}
 }
 
 .mc-body {
+	font-size: 11px;
 	position: relative;
-	padding: 7px 10px 10px 15px;
 	border-radius: 5px;
 	display: flex;
-	flex-direction: column;
-	justify-content: flex-start;
-
-	&__title {
-		color: $primaryTextColor;
-		font-size: 14px;
-		font-weight: bold;
-		padding-bottom: 2px;
-		padding-top: 5px;
-	}
+	column-gap: 10px;
 
 	&__human {
-		padding-top: 5px;
-		line-height: 21px;
+		font-family: inherit;
+		padding-top: 2px;
+		line-height: 16px;
 		margin: 0;
-		font-size: 13px;
 		white-space: pre-wrap;
 		word-break: break-all;
+		color: $alternativeTextColor;
+		flex-grow: 1;
+		flex-shrink: 1;
+		overflow: hidden;
 	}
 
 	&__field {
@@ -308,9 +254,13 @@
 	}
 
 	&__field-label {
-		color: $secondaryTextColor;
 		display: inline-block;
 		height: 100%;
+	}
+
+	&__field-simple-value {
+		font-weight: 600;
+		color: $activeTextColor;
 	}
 
 	&__raw {
@@ -320,62 +270,6 @@
 	&__beautify-wrapper {
 		@include scrollbar;
 		overflow-x: scroll;
-	}
-}
-
-.mc-show-raw {
-	@include unselectable;
-	@include clickable;
-
-	float: right;
-	display: flex;
-	align-items: center;
-	font-size: 13px;
-	color: $primaryTextColor;
-	padding: 0 4px;
-
-	&__title {
-		font-weight: bold;
-	}
-
-	&__icon {
-		height: 14px;
-		width: 14px;
-		background-size: 100%;
-		margin-left: 5px;
-
-		&.expanded {
-			background-image: url(../../resources/icons/arr4-up.svg);
-		}
-
-		&.hidden {
-			background-image: url(../../resources/icons/arr4-down.svg);
-		}
-	}
-}
-
-.mc-beautify {
-	@include clickable;
-	grid-area: beautify;
-	float: right;
-	height: 26px;
-	width: 26px;
-	padding: 2px;
-	place-self: center;
-
-	&__icon {
-		background-size: 100%;
-		background-repeat: no-repeat;
-		height: 100%;
-		width: 100%;
-
-		&.beautify {
-			background-image: url(../../resources/icons/beautified-text.svg);
-		}
-
-		&.plain {
-			background-image: url(../../resources/icons/plain-text.svg);
-		}
 	}
 }
 
@@ -391,7 +285,6 @@
 	&__title {
 		display: inline-block;
 		@include unselectable;
-		font-size: 13px;
 		color: $primaryTextColor;
 		font-weight: bold;
 	}
@@ -420,11 +313,9 @@
 		display: flex;
 		flex-direction: row;
 		justify-content: flex-start;
-		margin-top: 10px;
 		font-family: monospace;
-		line-height: 18px;
+		line-height: 15px;
 		letter-spacing: 0.5px;
-		font-size: 11px;
 		overflow-x: auto;
 	}
 
@@ -472,7 +363,6 @@
 
 	&__copy-title {
 		@include unselectable;
-		font-size: 12px;
 		color: $primaryTextColor;
 		padding-left: 5px;
 	}
@@ -529,7 +419,7 @@
 
 	&__items {
 		height: 100%;
-		@include hidden-scrollbar;
+		@include scrollbar;
 	}
 
 	&__spinner {
@@ -555,119 +445,63 @@
 
 .mc-skeleton {
 	@include skeleton-pulse;
-	box-sizing: border-box;
-	display: grid;
-	grid-template-areas:
-		'mc-header'
-		'delimiter'
-		'mc-body';
-	grid-row-gap: 12px;
-	border: 2px solid $skeletonBackgroundColor;
-	border-radius: 5px;
-	padding: 15px;
-	margin: 6px 0;
-	position: relative;
+	margin-bottom: 5px;
+	flex-direction: column;
+	padding: 10px;
 
 	&__header {
-		grid-area: mc-header;
-		display: grid;
-		grid-template-rows: 20px;
-		grid-template-columns: 1.1fr 1.2fr 2fr 40px;
-		grid-row-gap: 6px;
-		grid-template-areas: 'timestamp name session beautify';
-		align-items: center;
+		display: flex;
+		column-gap: 3px;
+		height: 11px;
+		width: 100%;
 	}
 
-	&__icons,
+	&__body {
+		margin-top: 10px;
+		display: flex;
+		flex-direction: column;
+		row-gap: 5px;
+	}
+
 	&__timestamp,
-	&__session,
-	&__name,
-	&__beautify,
-	&__icons-el,
-	&__session-el,
-	&__title,
-	&__value {
+	&__key,
+	&__icon,
+	&__value,
+	&__text {
 		@include skeleton;
 		height: 100%;
 	}
 
-	&__icons {
-		grid-area: icons;
-		background-color: white;
-	}
-
-	&__icons-el {
-		width: 20px;
-		display: inline-block;
-		margin-right: 8px;
-	}
-
 	&__timestamp {
-		grid-area: timestamp;
-		width: 75%;
-	}
-
-	&__session {
-		width: 75%;
-		grid-area: session;
-		background-color: white;
-		display: grid;
-		grid-column-gap: 15px;
-		grid-template-columns: 50px 1fr 20px 1fr;
-	}
-
-	&__name {
-		background-color: white;
-		grid-area: name;
-		width: 75%;
-		display: grid;
-		grid-column-gap: 15px;
-		grid-template-columns: 50px 1fr;
-	}
-
-	&__beautify {
-		grid-area: beautify;
-		width: 32px;
-		height: 22px;
-		justify-self: end;
-		align-self: center;
-	}
-
-	&__delimiter {
-		height: 2px;
-		background-color: $skeletonBackgroundColor;
-		grid-area: delimiter;
-	}
-
-	&__body {
-		grid-area: mc-body;
-		display: grid;
-		grid-template-rows: 16px 16px;
-		grid-template-columns: 1.2fr 1fr;
-		grid-row-gap: 7px;
-		grid-template-areas:
-			'text1 text1'
-			'text2 type';
-	}
-
-	&__body-text1,
-	&__body-text2,
-	&__body-type {
 		@include skeleton;
+		width: 105px;
+		height: 100%;
 	}
 
-	&__body-text1 {
-		grid-area: text1;
+	&__key {
+		margin-left: 2px;
+		width: 13px;
 	}
 
-	&__body-text2 {
-		grid-area: text2;
+	&__icon {
+		width: 13px;
 	}
 
-	&__body-type {
-		justify-self: end;
-		grid-area: type;
-		width: 55px;
+	&__value {
+		width: 40px;
+
+		&.wide {
+			flex-grow: 1;
+		}
+	}
+
+	&__text {
+		height: 11px;
+		width: 100%;
+
+		&:last-child {
+			width: 75%;
+		}
 	}
 }
 
@@ -680,88 +514,6 @@
 	&__group {
 		display: flex;
 		align-items: center;
-	}
-
-	&__title {
-		font-size: 16px;
-		line-height: 27px;
-		font-weight: 600;
-		color: $primaryTextColor;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		flex-grow: 0;
-		padding-right: 10px;
-		display: flex;
-		align-items: center;
-	}
-
-	&__spinner {
-		@include spinner(3px, 16px, 2s);
-		margin-right: 6px;
-		display: inline-block;
-	}
-
-	&__count-list {
-		display: flex;
-		align-items: center;
-		flex-shrink: 0;
-	}
-
-	&__count {
-		box-sizing: border-box;
-		display: inline-block;
-		width: auto;
-		height: 20px;
-		border-radius: 10px;
-		border: 2px solid $graphAttachedMessageColor;
-		color: $secondaryLightTextColor;
-		font-size: 11px;
-		text-align: center;
-		line-height: 16px;
-		background-color: white;
-		padding: 0 5px;
-		margin-left: 5px;
-	}
-
-	&__steps {
-		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-		min-width: 50px;
-		flex-shrink: 0;
-	}
-
-	&__button {
-		cursor: pointer;
-		transform-origin: center;
-
-		&:first-child {
-			@include icon(url(../../resources/icons/arr1-left-enabled.svg), 20px, 20px);
-			transform: rotate(90deg);
-			order: 1;
-		}
-
-		&:nth-child(2) {
-			@include icon(url(../../resources/icons/arr1-left-enabled.svg), 20px, 20px);
-			transform: rotate(270deg);
-			order: 3;
-		}
-
-		&.disabled {
-			opacity: 0.4;
-			cursor: default;
-		}
-	}
-
-	&__steps-count {
-		font-size: 14px;
-		line-height: 19px;
-		color: $ml-gray-color;
-		font-weight: 600;
-		margin: 0 10px;
-		order: 2;
-		color: $primaryTextColor;
 	}
 
 	&__realtime-button {
