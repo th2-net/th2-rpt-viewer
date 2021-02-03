@@ -1,27 +1,23 @@
-name: check forbidden expressions
+name: CI
 
 on:
   pull_request:
 
 jobs:
-  check_expressions:
+  test:
     runs-on: ubuntu-20.04
-
     steps:
-    - name: checkout
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v2
       with:
         ref: ${{ github.sha }}
-
-    - name: download the checker tool
+    - name: Checkout tool
       uses: actions/checkout@v2
       with:
         repository: exactpro-th2/ci-github-action
         ref: master
         token: ${{ secrets.PAT_CI_ACTION }}
         path: ci-github-action
-
-    - name: run the checker tool
+    - name: Run CI action
       uses: ./ci-github-action
       with:
         ref: ${{ github.sha }}
