@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { isEventAction } from '../../../helpers/event';
-import { useActiveWorkspace, useDebouncedCallback, useOutsideClickListener } from '../../../hooks';
+import { useActiveWorkspace } from '../../../hooks';
 import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../BookmarksPanel';

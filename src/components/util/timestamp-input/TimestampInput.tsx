@@ -62,7 +62,7 @@ const TimestampInput = (props: Props) => {
 	} = props;
 
 	const [currentValue, setCurrentValue] = React.useState(
-		moment(timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS'),
+		moment(timestamp).utc().format('YYYY-MM-DD HH:mm:ss.SSS'),
 	);
 	const [currentTimestamp, setCurrentTimestamp] = React.useState(0);
 	const [currentEventOrMessage, setCurrentEventOrMessage] = React.useState<
@@ -84,6 +84,7 @@ const TimestampInput = (props: Props) => {
 	});
 
 	const setTimestamp = (eventOrMessage: null | EventAction | EventMessage, ac: AbortController) => {
+		setIsLoading(false);
 		if (!eventOrMessage) {
 			return;
 		}
@@ -99,12 +100,10 @@ const TimestampInput = (props: Props) => {
 		eventHttpApi.getEvent(currentValue, ac.signal, { probe: true }).then(foundEvent => {
 			setCurrentEventOrMessage(foundEvent);
 			setTimestamp(foundEvent, ac);
-			setIsLoading(false);
 		});
 		messageHttpApi.getMessage(currentValue, ac.signal, { probe: true }).then(message => {
 			setCurrentEventOrMessage(message);
 			setTimestamp(message, ac);
-			setIsLoading(false);
 		});
 	}, 500);
 
