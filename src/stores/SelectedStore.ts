@@ -40,10 +40,7 @@ export class SelectedStore {
 	}
 
 	@computed get graphItems(): Array<EventTreeNode | EventMessage> {
-		const items = sortByTimestamp([
-			...this.savedItems,
-			...this.workspacesStore.activeWorkspace.attachedMessages,
-		]);
+		const items = [...this.savedItems, ...this.workspacesStore.activeWorkspace.attachedMessages];
 
 		const selectedEvent = this.workspacesStore.activeWorkspace.eventsStore.selectedNode;
 
@@ -51,7 +48,7 @@ export class SelectedStore {
 			items.push(selectedEvent);
 		}
 
-		return items;
+		return sortByTimestamp(items);
 	}
 
 	@computed get selectedEvents() {
