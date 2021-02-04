@@ -23,11 +23,7 @@ import {
 	useWorkspaceStore,
 } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
-import {
-	createBemBlock,
-	createBemElement,
-	createStyleSelector,
-} from '../../../helpers/styleCreators';
+import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
 import { formatTime, getTimestampAsNumber } from '../../../helpers/date';
 import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
@@ -91,12 +87,15 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		filter: `invert(1) sepia(1) saturate(5) hue-rotate(${calculateHueValue(sessionId)}deg)`,
 	};
 
-	const sessionClass = createStyleSelector('mc-header__icon mc-header__direction-icon', direction?.toLowerCase());
+	const sessionClass = createStyleSelector(
+		'mc-header__icon mc-header__direction-icon',
+		direction?.toLowerCase(),
+	);
 
 	const bookmarkIconClass = createStyleSelector(
 		'mc-header__icon mc-header__bookmark-button',
 		isPinned ? 'pinned' : null,
-	)
+	);
 
 	return (
 		<div className='message-card-wrapper'>
