@@ -68,9 +68,7 @@ export class SelectedStore {
 	}
 
 	@computed get attachedMessages() {
-		return sortMessagesByTimestamp(
-			this.workspacesStore.workspaces.flatMap(workspace => workspace.attachedMessages),
-		);
+		return sortMessagesByTimestamp(this.workspacesStore.activeWorkspace.attachedMessages);
 	}
 
 	@action

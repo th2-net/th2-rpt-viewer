@@ -56,7 +56,7 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 
 	const intervalValues = React.useMemo(() => {
 		return activeWorkspace.graphDataStore.getIntervalData();
-	}, [from]);
+	}, [from, to]);
 
 	const outsideItems: OutsideItems = React.useMemo(() => {
 		const windowTimeRange = [
