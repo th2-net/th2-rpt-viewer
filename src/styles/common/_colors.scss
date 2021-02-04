@@ -19,11 +19,11 @@ $reportInfoShadowColor: #e2e2e2;
 $reportBorderColor: #d6d6d6;
 $reportTitleTextColor: #7b7b7b;
 
-$failedTextColor: #cc0000;
-$failedBorderColor: $failedTextColor;
+$failedTextColor: #d92626;
+$failedBorderColor: #ffe5cc;
 $failedHeaderColor: #ffcccc;
 $failedBorderColorSecondary: $failedHeaderColor;
-$failedBorderHoverColor: #ff9999;
+$failedBorderHoverColor: #ffa64c;
 $failedDelimiterHoverColor: #ff6666;
 $failedBackgroundColor: #ffdbdb;
 $failedHeaderBorderColor: $failedTextColor;
@@ -31,18 +31,24 @@ $failedHeaderSecondaryBackground: $failedHeaderColor;
 $failedSecondaryTextColor: #e05252;
 $failedVerificationBackgroundColor: mix($failedTextColor, white, 10%);
 $failedVerificationHighlightedBackgroundColor: mix($failedTextColor, white, 20%);
+$failedIconColor: #ff999b;
+$failedIconColorLight: #ffe5e6;
+$failedIconColorActive: #bc271a;
 
-$passedTextColor: #1f991f;
-$passedBorderColor: $passedTextColor;
+$passedTextColor: #06792d;
+$passedBorderColor: $failedBorderColor;
 $passedHeaderColor: #dbf0df;
 $passedBorderColorSecondary: $passedHeaderColor;
-$passedBorderHoverColor: #a8ccf0;
+$passedBorderHoverColor: $failedBorderHoverColor;
 $passedDelimiterHoverColor: #7db3e8;
 $passedBackgroundColor: $passedBorderColorSecondary;
 $passedHeaderSecondaryBackground: $passedBackgroundColor;
 $passedSecondaryTextColor: rgba(#1f991f, 0.5);
 $passedVerificationBackgroundColor: mix($passedTextColor, white, 10%);
 $passedVerificationHighlightedBackgroundColor: mix($passedTextColor, white, 20%);
+$passedIconColor: #85e0a3;
+$passedIconColorLight: #d6f5e0;
+$passedIconColorActive: #00802a;
 
 $logCardErrorPrimaryColor: #e23636;
 $logCardErrorBorderColor: #ffcccc;
@@ -123,7 +129,7 @@ $splitterColor: #cccccc;
 $spinnerOuterColor: $defaultCardBorderColor;
 $spinnerInnerColor: rgba(0, 0, 0, 0.2);
 
-$chipTextColor: #808080;
+$chipTextColor: #333333;
 
 $linkTextColor: #1763cf;
 $linkUnderlineColor: #a8c6f0;

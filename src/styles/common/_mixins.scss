@@ -60,6 +60,9 @@
 	--status-secondary-background-color: #{$defaultSelectedCardBackground};
 	--status-primary-header-background-color: #{$defaultCardBorderColor};
 	--status-secondary-header-background-color: #{$defaultSelectedCardBackground};
+	--status-icon-color: #{$secondaryTextColor};
+	--status-icon-color-light: #{$secondaryLightTextColor};
+	--status-icon-color-active: #{$primaryTextColor};
 
 	&.passed {
 		// we can't symply assign scss variable to css variable because sass doesn't know css varible type,
@@ -75,6 +78,9 @@
 		--status-secondary-background-color: #{$passedBackgroundColor};
 		--status-primary-header-background-color: #{$passedHeaderColor};
 		--status-secondary-header-background-color: #{$passedHeaderSecondaryBackground};
+		--status-icon-color: #{$passedIconColor};
+		--status-icon-color-light: #{$passedIconColorLight};
+		--status-icon-color-active: #{$passedIconColorActive};
 	}
 
 	&.failed {
@@ -89,6 +95,9 @@
 		--status-primary-header-background-color: #{$failedHeaderColor};
 		--status-secondary-header-background-color: #{$failedHeaderSecondaryBackground};
 		--status-header-border-color: #{$failedHeaderBorderColor};
+		--status-icon-color: #{$failedIconColor};
+		--status-icon-color-light: #{$failedIconColorLight};
+		--status-icon-color-active: #{$failedIconColorActive};
 	}
 }
 

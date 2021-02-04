@@ -18,20 +18,19 @@
 
 .event-header-card {
 	@include status-card;
+	line-height: 15px;
 	width: 100%;
-	min-height: 38px;
 	border-radius: 5px;
-	padding: 0 10px;
-	margin: 2px 0;
+	padding: 2px 5px 2px 5px;
 	display: flex;
 	align-items: center;
-	background-color: var(--status-secondary-background-color);
+	column-gap: 5px;
 	border: 2px solid transparent;
 	overflow: hidden;
 	cursor: pointer;
 
 	&:hover {
-		border-color: var(--status-secondary-color);
+		background-color: var(--status-secondary-background-color);
 	}
 
 	&.full {
@@ -49,8 +48,39 @@
 	}
 
 	&.selected {
-		background-color: var(--status-secondary-background-color);
 		border-color: var(--status-primary-border-color);
+	}
+
+	&.active {
+		background-color: var(--status-secondary-background-color);
+		border-color: var(--status-hover-border-color);
+	}
+
+	&:hover &__icon {
+		border-color: var(--status-icon-color);
+		background-color: var(--status-icon-color);
+	}
+
+	& &__icon {
+		margin-right: 1px;
+		flex-shrink: 0;
+		width: 11px;
+		height: 11px;
+		border-radius: 50%;
+		border: 2px solid #0000;
+		background-color: var(--status-icon-color-light);
+
+		&.selected {
+			border-color: var(--status-icon-color);
+			background-color: var(--status-icon-color);
+		}
+
+		&.active {
+			width: 11px;
+			height: 11px;
+			border-color: white;
+			background-color: var(--status-icon-color-active);
+		}
 	}
 
 	&__title {
@@ -59,14 +89,24 @@
 		display: inline-block;
 		white-space: nowrap;
 		overflow: hidden;
-		padding-right: 5px;
+	}
+
+	&__elapsed-time {
+		display: none;
+		color: $activeTextColor;
+		font-weight: 600;
+		font-size: 10px;
+		line-height: 15px;
+	}
+
+	&:hover &__elapsed-time {
+		display: block;
 	}
 
 	&__time-label {
-		font-size: 12px;
+		font-size: 9px;
 		color: $secondaryLightTextColor;
 		white-space: nowrap;
-		padding-right: 5px;
 
 		&-short {
 			display: inline;
@@ -75,23 +115,46 @@
 		&-full {
 			display: none;
 		}
+	}
 
-		&:hover & {
-			&-short {
-				display: none;
-			}
+	&:hover &__time-label {
+		&-short {
+			display: none;
+		}
 
-			&-full {
-				display: inline;
-			}
+		&-full {
+			display: inline;
 		}
 	}
 
 	&__status,
 	&__title {
 		color: var(--status-primary-color);
-		font-size: 17px;
+		font-size: 11px;
+		line-height: 15px;
 		font-weight: bold;
+	}
+
+	&__bookmark-button {
+		width: 15px;
+		height: 15px;
+		display: none;
+		flex-shrink: 0;
+		background: url(../../resources/icons/bookmark-add.svg);
+
+		&.pinned {
+			display: block;
+			background: url(../../resources/icons/bookmark-added.svg);
+		}
+	}
+
+	&:hover &__bookmark-button {
+		display: block;
+		background: url(../../resources/icons/bookmark-add-hover.svg);
+
+		&.pinned {
+			background: url(../../resources/icons/bookmark-added-hover.svg);
+		}
 	}
 }
 
@@ -105,7 +168,7 @@
 		'header' auto
 		'body' 1fr;
 	background-color: var(--status-secondary-background-color);
-	border: 2px solid var(--status-primary-border-color);
+	border: 2px solid var(--status-hover-border-color);
 	border-radius: 5px;
 	overflow: hidden;
 
@@ -389,7 +452,7 @@
 
 .event-card {
 	&__children-icon {
-		margin-right: 10px;
+		margin-right: 5px;
 	}
 }
 
@@ -397,7 +460,8 @@
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	margin: 0 5px;
+	margin-bottom: 5px;
+	margin-right: 5px;
 }
 
 .event-breadcrumbs {

@@ -20,17 +20,16 @@
 	@include unselectable;
 	@include status-card;
 
-	border: 2px solid var(--status-secondary-border-color);
-	border-radius: 47%;
-	height: 20px;
+	border: 1px solid var(--status-secondary-border-color);
+	border-radius: 10px;
+	height: 13px;
 	flex-shrink: 0;
-
-	margin-right: 5px;
 	color: $chipTextColor;
 	background-color: white;
 
 	&__title {
-		font-size: 11px;
+		font-size: 9px;
+		line-height: 11px;
 		padding: 0 5px;
 	}
 
@@ -51,7 +50,7 @@
 }
 
 .expand-icon {
-	@include icon(null, 16px, 16px);
+	@include icon(null, 15px, 15px);
 	flex-shrink: 0;
 
 	&.expanded {

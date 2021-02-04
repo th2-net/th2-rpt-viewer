@@ -45,9 +45,12 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		expandIconStatus = 'hidden';
 	}
 
-	const nestingLevel =
-		(viewStore.eventsPanelArea === PanelArea.P25 ? 20 : 35) *
-		getEventNodeParents(eventTreeNode).length;
+	// const nestingLevel =
+	// 	(viewStore.eventsPanelArea === PanelArea.P25 ? 20 : 35) *
+	// 	getEventNodeParents(eventTreeNode).length;
+
+	const nestingLevel = 20 * getEventNodeParents(eventTreeNode).length;
+
 	return (
 		<div className='event-tree-card' style={{ paddingLeft: nestingLevel }}>
 			<ExpandIcon
@@ -62,6 +65,11 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 					displayType={CardDisplayType.MINIMAL}
 					onSelect={() => eventWindowStore.selectNode(eventTreeNode)}
 					isSelected={eventWindowStore.isNodeSelected(eventTreeNode)}
+					isActive={
+						eventWindowStore.selectedPath.length > 0 &&
+						eventWindowStore.selectedPath[eventWindowStore.selectedPath.length - 1].eventId ===
+							eventTreeNode.eventId
+					}
 				/>
 			) : (
 				<EventCardSkeleton />
