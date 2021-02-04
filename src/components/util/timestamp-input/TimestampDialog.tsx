@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { isEventAction } from '../../../helpers/event';
-import { useActiveWorkspace } from '../../../hooks';
+import { useActiveWorkspace, useDebouncedCallback, useOutsideClickListener } from '../../../hooks';
 import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../BookmarksPanel';
@@ -25,12 +25,13 @@ import { ModalPortal } from '../Portal';
 interface Props {
 	className: string;
 	rect: DOMRect | null;
+	isLoading: boolean;
 	isOpen: boolean;
-	foundedObject: EventAction | EventMessage | null;
+	foundObject: EventAction | EventMessage | null;
 }
 
 const TimestampDialog = (props: Props) => {
-	const { className, rect, isOpen, foundedObject } = props;
+	const { className, rect, isOpen, isLoading, foundObject } = props;
 	const style: React.CSSProperties = {
 		position: 'absolute',
 		width: rect ? `${rect.width}px` : 0,
@@ -40,21 +41,20 @@ const TimestampDialog = (props: Props) => {
 	};
 
 	const activeWorkspace = useActiveWorkspace();
-
 	return (
 		<ModalPortal isOpen={isOpen} style={style}>
 			<div className={className}>
-				{foundedObject ? (
-					<p>{isEventAction(foundedObject) ? foundedObject.eventId : foundedObject.messageId}</p>
-				) : null}
-
-				{foundedObject && (
-					<BookmarkItem
-						item={foundedObject}
-						onClick={() => {
-							activeWorkspace.onSavedItemSelect(foundedObject);
-						}}
-					/>
+				{isLoading && <div className='spinner' />}
+				{foundObject && (
+					<>
+						<p>{isEventAction(foundObject) ? foundObject.eventId : foundObject.messageId}</p>
+						<BookmarkItem
+							item={foundObject}
+							onClick={() => {
+								activeWorkspace.onSavedItemSelect(foundObject);
+							}}
+						/>
+					</>
 				)}
 			</div>
 		</ModalPortal>

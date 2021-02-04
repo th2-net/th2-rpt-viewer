@@ -36,7 +36,7 @@ const getTimestamp = (timestamp: Timestamp) => {
 	return +`${timestamp.epochSecond}${ms}`;
 };
 
-const dateFormatPattern = /(0[1-9]|[1-2][0-9]|3[0-1])\.(0[1-9]|1[0-2])\.([0-9]{4})/g;
+const dateFormatPattern = /([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])/g;
 
 interface Props {
 	event: EventAction | null;
@@ -74,10 +74,11 @@ const TimestampInput = (props: Props) => {
 	const [showDialog, setShowDialog] = React.useState(false);
 
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
+	const timeout = React.useRef<ReturnType<typeof setTimeout>>();
 
 	useOutsideClickListener(wrapperRef, () => {
 		setShowPicker(false);
-		setTimeout(() => {
+		timeout.current = setTimeout(() => {
 			setShowDialog(false);
 		}, 2000);
 	});
@@ -95,14 +96,15 @@ const TimestampInput = (props: Props) => {
 	};
 
 	const setTimestampFromEventOrMessage = useDebouncedCallback((ac: AbortController) => {
-		// eslint-disable-next-line no-shadow
-		eventHttpApi.getEvent(currentValue, ac.signal, { probe: true }).then(event => {
-			setCurrentEventOrMessage(event);
-			setTimestamp(event, ac);
+		eventHttpApi.getEvent(currentValue, ac.signal, { probe: true }).then(foundEvent => {
+			setCurrentEventOrMessage(foundEvent);
+			setTimestamp(foundEvent, ac);
+			setIsLoading(false);
 		});
 		messageHttpApi.getMessage(currentValue, ac.signal, { probe: true }).then(message => {
 			setCurrentEventOrMessage(message);
 			setTimestamp(message, ac);
+			setIsLoading(false);
 		});
 	}, 500);
 
@@ -123,10 +125,15 @@ const TimestampInput = (props: Props) => {
 	const onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
 		e.target.setSelectionRange(0, currentValue.length);
 		setShowDialog(true);
+		if (timeout.current) clearTimeout(timeout.current);
 	};
 
 	const inputClassName = createBemElement(wrapperClassName, 'input');
-	const dialogClassName = createBemElement(wrapperClassName, 'dialog');
+	const dialogClassName = createBemElement(
+		wrapperClassName,
+		'dialog',
+		currentEventOrMessage || isLoading ? 'bordered' : null,
+	);
 	const datepickerButtonClassName = createBemElement(wrapperClassName, 'datepicker-button');
 
 	const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
@@ -150,6 +157,7 @@ const TimestampInput = (props: Props) => {
 		const ac = new AbortController();
 		const date = currentValue.split(' ')[0];
 		if (currentValue !== '' && !dateFormatPattern.test(date)) {
+			setIsLoading(true);
 			setTimestampFromEventOrMessage(ac);
 		}
 		return () => {
@@ -164,8 +172,9 @@ const TimestampInput = (props: Props) => {
 			<TimestampDialog
 				className={dialogClassName}
 				isOpen={showDialog}
+				isLoading={isLoading}
 				rect={dimensions}
-				foundedObject={currentEventOrMessage}
+				foundObject={currentEventOrMessage}
 			/>
 		</div>
 	);

@@ -20,7 +20,7 @@ import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
 import Empty from './util/Empty';
 import { getTimestampAsNumber } from '../helpers/date';
-import { isEventAction, isEventNode } from '../helpers/event';
+import { isEventMessage, isEventNode } from '../helpers/event';
 import { createStyleSelector } from '../helpers/styleCreators';
 import { useActivePanel, useSelectedStore, useWorkspaceStore } from '../hooks';
 import { EventAction, EventTreeNode } from '../models/EventAction';
@@ -36,7 +36,7 @@ function BookmarksPanel() {
 	const { ref: panelRef } = useActivePanel(null);
 
 	function onBookmarkRemove(item: BookmarkedItem) {
-		if (isEventNode(item)) {
+		if (isEventNode(item) || isEventMessage(item)) {
 			return selectedStore.removeSavedItem(item);
 		}
 		return null;
@@ -86,14 +86,11 @@ interface BookmarkItemProps {
 
 export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 	const itemInfo = {
-		id: isEventNode(item) || isEventAction(item) ? item.eventId : item.messageId,
-		status:
-			isEventNode(item) || isEventAction(item) ? (item.successful ? 'passed' : 'failed') : null,
-		title: isEventNode(item) || isEventAction(item) ? item.eventName : item.messageId,
-		timestamp: getTimestampAsNumber(
-			isEventNode(item) || isEventAction(item) ? item.startTimestamp : item.timestamp,
-		),
-		type: isEventNode(item) || isEventAction(item) ? 'event' : item.type,
+		id: isEventMessage(item) ? item.messageId : item.eventId,
+		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
+		title: isEventMessage(item) ? item.messageId : item.eventName,
+		timestamp: getTimestampAsNumber(isEventMessage(item) ? item.timestamp : item.startTimestamp),
+		type: isEventMessage(item) ? 'event' : item.type,
 	};
 
 	function onBookmarkRemove(event: React.MouseEvent<HTMLButtonElement>) {
