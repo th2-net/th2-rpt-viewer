@@ -23,11 +23,7 @@ import {
 	useWorkspaceStore,
 } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
-import {
-	createBemBlock,
-	createBemElement,
-	createStyleSelector,
-} from '../../../helpers/styleCreators';
+import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
 import { formatTime, getTimestampAsNumber } from '../../../helpers/date';
 import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
