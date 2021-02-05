@@ -74,7 +74,7 @@ const TimestampInput = (props: Props) => {
 	const [showDialog, setShowDialog] = React.useState(false);
 
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
-	const timeout = React.useRef<ReturnType<typeof setTimeout>>();
+	const timeout = React.useRef<NodeJS.Timeout>();
 
 	useOutsideClickListener(wrapperRef, () => {
 		setShowPicker(false);
@@ -82,6 +82,24 @@ const TimestampInput = (props: Props) => {
 			setShowDialog(false);
 		}, 2000);
 	});
+
+	React.useEffect(() => {
+		if (wrapperRef.current) {
+			setDimensions(wrapperRef.current.getBoundingClientRect());
+		}
+	}, [wrapperRef.current]);
+
+	React.useEffect(() => {
+		const ac = new AbortController();
+		const date = currentValue.split(' ')[0];
+		if (currentValue !== '' && !dateFormatPattern.test(date)) {
+			setIsLoading(true);
+			setTimestampFromEventOrMessage(ac);
+		}
+		return () => {
+			ac.abort();
+		};
+	}, [currentValue]);
 
 	const setTimestamp = (eventOrMessage: null | EventAction | EventMessage, ac: AbortController) => {
 		setIsLoading(false);
@@ -145,24 +163,6 @@ const TimestampInput = (props: Props) => {
 		onKeyDown,
 		onFocus,
 	};
-
-	React.useEffect(() => {
-		if (wrapperRef.current) {
-			setDimensions(wrapperRef.current.getBoundingClientRect());
-		}
-	}, [wrapperRef.current]);
-
-	React.useEffect(() => {
-		const ac = new AbortController();
-		const date = currentValue.split(' ')[0];
-		if (currentValue !== '' && !dateFormatPattern.test(date)) {
-			setIsLoading(true);
-			setTimestampFromEventOrMessage(ac);
-		}
-		return () => {
-			ac.abort();
-		};
-	}, [currentValue]);
 
 	return (
 		<div className={wrapperClassName} ref={wrapperRef}>

@@ -30,7 +30,7 @@ import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphDataStore } from '../graph/GraphDataStore';
 import { isEventsStore, isMessagesStore } from '../../helpers/stores';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { isEventAction, isEventNode } from '../../helpers/event';
+import { isEventAction, isEventMessage, isEventNode } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
@@ -149,11 +149,9 @@ export default class WorkspaceStore {
 
 	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
-		this.graphDataStore.timestamp = isEventNode(savedItem)
-			? getTimestampAsNumber(savedItem.startTimestamp)
-			: isEventAction(savedItem)
-			? getTimestampAsNumber(savedItem.startTimestamp)
-			: getTimestampAsNumber(savedItem.timestamp);
+		this.graphDataStore.timestamp = isEventMessage(savedItem)
+			? getTimestampAsNumber(savedItem.timestamp)
+			: getTimestampAsNumber(savedItem.startTimestamp)
 		if (isEventNode(savedItem) || isEventAction(savedItem)) {
 			this.eventsStore.onSavedItemSelect(savedItem);
 		} else {
