@@ -151,7 +151,7 @@ export default class WorkspaceStore {
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
 		this.graphDataStore.timestamp = isEventMessage(savedItem)
 			? getTimestampAsNumber(savedItem.timestamp)
-			: getTimestampAsNumber(savedItem.startTimestamp)
+			: getTimestampAsNumber(savedItem.startTimestamp);
 		if (isEventNode(savedItem) || isEventAction(savedItem)) {
 			this.eventsStore.onSavedItemSelect(savedItem);
 		} else {
