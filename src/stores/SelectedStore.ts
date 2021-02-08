@@ -40,10 +40,15 @@ export class SelectedStore {
 	}
 
 	@computed get graphItems(): Array<EventTreeNode | EventMessage> {
-		return sortByTimestamp([
-			...this.savedItems,
-			...this.workspacesStore.activeWorkspace.attachedMessages,
-		]);
+		const items = [...this.savedItems, ...this.workspacesStore.activeWorkspace.attachedMessages];
+
+		const selectedEvent = this.workspacesStore.activeWorkspace.eventsStore.selectedNode;
+
+		if (selectedEvent) {
+			items.push(selectedEvent);
+		}
+
+		return sortByTimestamp(items);
 	}
 
 	@computed get selectedEvents() {
@@ -60,9 +65,7 @@ export class SelectedStore {
 	}
 
 	@computed get attachedMessages() {
-		return sortMessagesByTimestamp(
-			this.workspacesStore.workspaces.flatMap(workspace => workspace.attachedMessages),
-		);
+		return sortMessagesByTimestamp(this.workspacesStore.activeWorkspace.attachedMessages);
 	}
 
 	@action

@@ -140,6 +140,7 @@ export default class WorkspaceStore {
 			if (error.name !== 'AbortError') {
 				console.error('Error while loading attached messages', error);
 			}
+			this.attachedMessages = [];
 		} finally {
 			this.attachedMessagesAC = null;
 			this.isLoadingAttachedMessages = false;
