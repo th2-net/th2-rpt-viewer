@@ -146,7 +146,6 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 					))}
 					<TimestampInput
 						timestamp={from}
-						event={activeWorkspace.eventsStore.selectedEvent}
 						wrapperClassName='graph-range-selector__timestamp-input timestamp-input'
 						onSubmit={onInputSubmit}
 					/>

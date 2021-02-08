@@ -15,8 +15,9 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import TimeAgo from 'react-timeago';
+import { getTimestampAsNumber } from '../../../helpers/date';
 import { isEventAction } from '../../../helpers/event';
-import { useActiveWorkspace } from '../../../hooks';
 import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../BookmarksPanel';
@@ -40,7 +41,8 @@ const TimestampDialog = (props: Props) => {
 		zIndex: 11,
 	};
 
-	const activeWorkspace = useActiveWorkspace();
+	const time = isEventAction(foundObject) ? foundObject.startTimestamp : foundObject?.timestamp;
+
 	return (
 		<ModalPortal isOpen={isOpen} style={style}>
 			<div className={className}>
@@ -48,12 +50,8 @@ const TimestampDialog = (props: Props) => {
 				{foundObject && (
 					<>
 						<p>{isEventAction(foundObject) ? foundObject.eventId : foundObject.messageId}</p>
-						<BookmarkItem
-							item={foundObject}
-							onClick={() => {
-								activeWorkspace.onSavedItemSelect(foundObject);
-							}}
-						/>
+						<BookmarkItem item={foundObject} />
+						{time && <TimeAgo date={getTimestampAsNumber(time)} />}
 					</>
 				)}
 			</div>

@@ -21,7 +21,7 @@ import messageHttpApi from '../../../api/message';
 import { formatTimestampValue } from '../../../helpers/date';
 import { isEventAction } from '../../../helpers/event';
 import { createBemElement } from '../../../helpers/styleCreators';
-import { useDebouncedCallback } from '../../../hooks';
+import { useActiveWorkspace, useDebouncedCallback } from '../../../hooks';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
@@ -39,7 +39,6 @@ const getTimestamp = (timestamp: Timestamp) => {
 const dateFormatPattern = /([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])/g;
 
 interface Props {
-	event: EventAction | null;
 	timestamp: number;
 	wrapperClassName?: string;
 	className?: string;
@@ -51,7 +50,6 @@ interface Props {
 
 const TimestampInput = (props: Props) => {
 	const {
-		event,
 		timestamp,
 		wrapperClassName = 'timestamp-input',
 		readonly = false,
@@ -61,13 +59,15 @@ const TimestampInput = (props: Props) => {
 		onSubmit,
 	} = props;
 
+	const activeWorkspace = useActiveWorkspace();
+
 	const [currentValue, setCurrentValue] = React.useState(
 		moment(timestamp).utc().format('YYYY-MM-DD HH:mm:ss.SSS'),
 	);
 	const [currentTimestamp, setCurrentTimestamp] = React.useState(0);
 	const [currentEventOrMessage, setCurrentEventOrMessage] = React.useState<
 		EventAction | EventMessage | null
-	>(event);
+	>(null);
 	const [dimensions, setDimensions] = React.useState<DOMRect | null>(null);
 	const [isLoading, setIsLoading] = React.useState(false);
 	const [showPicker, setShowPicker] = React.useState(false);
@@ -78,9 +78,7 @@ const TimestampInput = (props: Props) => {
 
 	useOutsideClickListener(wrapperRef, () => {
 		setShowPicker(false);
-		timeout.current = setTimeout(() => {
-			setShowDialog(false);
-		}, 2000);
+		setShowDialog(false);
 	});
 
 	React.useEffect(() => {
@@ -100,6 +98,15 @@ const TimestampInput = (props: Props) => {
 			ac.abort();
 		};
 	}, [currentValue]);
+
+	React.useEffect(() => {
+		if (currentEventOrMessage) {
+			activeWorkspace.onSavedItemSelect(currentEventOrMessage);
+			timeout.current = setTimeout(() => {
+				setShowDialog(false);
+			}, 2000);
+		}
+	}, [currentEventOrMessage]);
 
 	const setTimestamp = (eventOrMessage: null | EventAction | EventMessage, ac: AbortController) => {
 		setIsLoading(false);
@@ -143,6 +150,7 @@ const TimestampInput = (props: Props) => {
 		e.target.setSelectionRange(0, currentValue.length);
 		setShowDialog(true);
 		if (timeout.current) clearTimeout(timeout.current);
+		setCurrentEventOrMessage(null);
 	};
 
 	const inputClassName = createBemElement(wrapperClassName, 'input');
