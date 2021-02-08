@@ -17,6 +17,7 @@
 @import './common/vars';
 
 .message-card-wrapper {
+	@include bookmark-button($showOnHoverOverParent: true);
 	padding-bottom: 5px;
 	margin-right: 10px;
 
@@ -109,7 +110,6 @@
 }
 
 .mc-header {
-	@include bookmark-button;
 	display: flex;
 	column-gap: 5px;
 	white-space: nowrap;

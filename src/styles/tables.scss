@@ -127,7 +127,6 @@
 
 		&-value {
 			padding-top: 5px;
-			font-size: 12px;
 
 			&.notype {
 				padding-bottom: 5px;
@@ -266,7 +265,6 @@
 		}
 
 		&-count {
-			font-size: small;
 			background-color: $tableCounterBackgroundColor;
 			color: $primaryTextColor;
 			text-align: center;
@@ -339,7 +337,6 @@
 			border-radius: 13px;
 			background-color: #e23636;
 			color: white;
-			font-size: 11px;
 			margin: auto;
 		}
 	}

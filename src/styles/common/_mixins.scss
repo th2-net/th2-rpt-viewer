@@ -161,7 +161,8 @@
 
 	th,
 	td {
-		font-size: 10pt;
+		font-size: 11px;
+		line-height: 16px;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -197,7 +198,7 @@
 		line-height: 16px;
 		color: white;
 		background-color: $tableHeaderBackground;
-		padding: 5px;
+		padding: 4px;
 
 		&.transparent {
 			background-color: transparent;
@@ -310,17 +311,20 @@
 }
 
 @mixin message-background() {
-	border-radius: 4px;
-	background-color: white;
+	background-color: $workspaceBackground;
 	white-space: pre-wrap;
 	padding: 6px 10px;
 }
 
-@mixin bookmark-button() {
+@mixin bookmark-button($showOnHoverOverParent: false) {
 	& .bookmark-button {
+		@if $showOnHoverOverParent {
+			display: none;
+		}
+
+		cursor: pointer;
 		width: 15px;
 		height: 15px;
-		display: none;
 		flex-shrink: 0;
 		background: url(../../resources/icons/bookmark-add.svg);
 
@@ -340,8 +344,8 @@
 	}
 }
 
-@mixin event-status-icon($hoverable: false) {
-	@if $hoverable {
+@mixin event-status-icon($isParentHoverable: false) {
+	@if $isParentHoverable {
 		&:hover .event-status-icon {
 			border-color: var(--status-icon-color);
 			background-color: var(--status-icon-color);
@@ -355,7 +359,6 @@
 		border-radius: 50%;
 		border: 2px solid #0000;
 		background-color: var(--status-icon-color-light);
-		margin: 5px 1px 5px 0;
 
 		&.selected {
 			border-color: var(--status-icon-color);

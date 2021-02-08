@@ -19,7 +19,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useWorkspaceEventStore, useParentEvents } from '../../../hooks';
 import EventCardHeader from '../EventCardHeader';
-import EventDetailInfoCard from '../EventDetailInfoCard';
+import EventDetailInfo from '../EventDetailInfo';
 import { EventTreeNode } from '../../../models/EventAction';
 
 interface Props {
@@ -41,16 +41,15 @@ function DetailedFlatEventCard(props: Props) {
 	const node = selectedNode === null ? eventWindowStore.selectedNode : selectedNode;
 
 	return (
-		<div className='flat-event-detail-card'>
+		<EventDetailInfo node={node!} event={event} childrenCount={selectedNode?.childList.length}>
 			{parentNodes.length > 0 && (
-				<div className='flat-event-detail-card__parents'>
+				<div className='event-detail-info__parents'>
 					{parentNodes.map(eventNode => (
 						<EventCardHeader
 							key={eventNode.eventId}
 							event={eventNode}
 							onSelect={() => setSelectedNode(eventNode)}
-							isSelected={selectedNode === eventNode}
-							rootStyle={{ margin: '4px 0' }}
+							isActive={selectedNode === eventNode}
 						/>
 					))}
 					{selectedNode !== null && (
@@ -62,17 +61,7 @@ function DetailedFlatEventCard(props: Props) {
 					)}
 				</div>
 			)}
-			<EventDetailInfoCard
-				node={node!}
-				rootStyle={{
-					overflow: 'visible',
-					height: 'auto',
-					flexGrow: 1,
-				}}
-				event={event}
-				childrenCount={selectedNode?.childList.length}
-			/>
-		</div>
+		</EventDetailInfo>
 	);
 }
 
