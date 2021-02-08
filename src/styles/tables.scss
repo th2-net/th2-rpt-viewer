@@ -296,7 +296,7 @@
 				p::before {
 					content: '';
 					display: inline-block;
-					@include icon(url(../../resources/icons/expand-filled.svg), 14px, 12px);
+					@include icon(url(../../resources/icons/expand-filled.svg), 12px, 10px);
 					transform: translateY(3px);
 					margin-right: 7px;
 				}
@@ -306,7 +306,7 @@
 				p::before {
 					content: '';
 					display: inline-block;
-					@include icon(url(../../resources/icons/collapse-filled.svg), 14px, 12px);
+					@include icon(url(../../resources/icons/collapse-filled.svg), 12px, 10px);
 					transform: translateY(3px);
 					margin-right: 7px;
 				}
