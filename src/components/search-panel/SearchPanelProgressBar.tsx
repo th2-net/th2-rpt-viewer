@@ -33,8 +33,6 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 
 	const timeInterval = endTimestamp !== null ? endTimestamp - startTimestamp : null;
 
-	console.log(currentPoint);
-
 	if (timeInterval) {
 		const position = ((currentPoint / timeInterval) * 100).toFixed(2);
 		return (

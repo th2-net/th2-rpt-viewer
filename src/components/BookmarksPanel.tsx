@@ -27,7 +27,7 @@ import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import '../styles/bookmarks.scss';
 
-type BookmarkedItem = EventMessage | EventTreeNode | EventAction;
+export type BookmarkedItem = EventMessage | EventTreeNode | EventAction;
 
 function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
