@@ -16,13 +16,24 @@
 
 import { EventSourceConfig, SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
-import { SSEFilterInfo } from '../stores/SearchPanelFiltersStore';
 
 interface BaseSSEParams {
 	startTimestamp: number;
 	searchDirection: 'next' | 'previous';
 	resultCountLimit: string;
 	endTimestamp?: number | null;
+}
+export interface SSEFilterInfo {
+	name: any;
+	hint: string;
+	parameters: SSEFilterParameter[];
+}
+
+export interface SSEFilterParameter {
+	defaultValue: boolean | string | string[] | null;
+	hint: string;
+	name: string;
+	type: { value: 'string' | 'boolean' | 'string[]' };
 }
 
 type EventSSEFilters = 'attachedMessageId' | 'type' | 'name';
@@ -58,14 +69,18 @@ const sseApi: SSESchema = {
 		const params = createURLSearchParams({ ...queryParams });
 		return new EventSource(`backend/search/sse/${type}s/?${params}`);
 	},
-	async getFilters(filterType: 'events' | 'messages'): Promise<string[]> {
+	getFilters: async (filterType: 'events' | 'messages'): Promise<string[]> => {
 		const res = await fetch(`backend/filters/sse-${filterType}`);
-		return res.json();
+		if (res.ok) {
+			return res.json();
+		}
+
+		throw res;
 	},
-	async getFiltersInfo(
+	getFiltersInfo: (
 		filterType: 'events' | 'messages',
 		filters: string[],
-	): Promise<SSEFilterInfo[]> {
+	): Promise<SSEFilterInfo[]> => {
 		return Promise.all(
 			filters.map(filterName =>
 				fetch(`backend/filters/sse-${filterType}/${filterName}`).then(res => res.json()),

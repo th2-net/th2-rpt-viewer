@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+
 import React, { useState } from 'react';
 import {
 	DateTimeInputType,
@@ -20,55 +21,59 @@ import {
 	FilterRowConfig,
 	TimeInputType,
 } from '../../models/filter/FilterInputs';
-import { SearchPanelState } from './SearchPanel';
 import FilterRow from '../filter/row';
 import FilterDatetimeInput from '../filter/date-time-inputs/DateTimeInput';
 import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
-
-interface SearchPanelFormProps {
-	formType: 'event' | 'message';
-	state: SearchPanelState;
-	setState: (
-		patch: Partial<SearchPanelState> | ((prevState: SearchPanelState) => Partial<SearchPanelState>),
-	) => void;
-	disableAll: boolean;
-}
+import { SearchPanelFormState } from '../../stores/SearchStore';
 
 type DateInputProps = {
 	inputConfig: DateTimeInputType;
 };
 
-const SearchPanelForm = (props: SearchPanelFormProps) => {
-	const { formType, state, setState, disableAll } = props;
+interface Props {
+	formType: 'event' | 'message';
+	form: SearchPanelFormState;
+	updateForm: (patch: Partial<SearchPanelFormState>) => void;
+	disabled: boolean;
+}
+
+const SearchPanelForm = (props: Props) => {
+	const { disabled, updateForm, form, formType } = props;
+
 	const [currentStream, setCurrentStream] = useState('');
 
 	const toggleSearchDirection = () => {
-		setState(currentState => ({
-			...currentState,
-			searchDirection: currentState.searchDirection === 'next' ? 'previous' : 'next',
-		}));
+		updateForm({
+			searchDirection: form.searchDirection === 'next' ? 'previous' : 'next',
+		});
 	};
 
-	function getFormStateUpdater<T extends keyof SearchPanelState>(name: T) {
-		return function formStateUpdater<K extends SearchPanelState[T]>(value: K) {
-			setState({ [name]: value });
+	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
+		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
+			updateForm({ [name]: value });
 		};
+	}
+
+	function updateCountLimit(value: string) {
+		if (value === '' || /^\d+$/.test(value)) {
+			updateForm({ resultCountLimit: value === '' ? undefined : Number(value) });
+		}
 	}
 
 	const commonFormConfig: FilterRowConfig[] = [
 		{
 			label: 'Result Count Limit',
-			value: state.resultCountLimit,
-			setValue: getFormStateUpdater('resultCountLimit'),
+			value: !form.resultCountLimit ? '' : form.resultCountLimit.toString(),
+			setValue: updateCountLimit,
 			type: 'string',
-			disabled: disableAll,
+			disabled,
 			id: 'result-count-limit',
 		},
 		{
 			label: 'Search Direction',
-			value: state.searchDirection === 'next',
+			value: form.searchDirection === 'next',
 			toggleValue: toggleSearchDirection,
-			disabled: disableAll,
+			disabled,
 			possibleValues: ['next', 'prev'],
 			type: 'toggler',
 			id: 'search-direction',
@@ -77,8 +82,8 @@ const SearchPanelForm = (props: SearchPanelFormProps) => {
 
 	const eventsFormTypeConfig: FilterRowConfig = {
 		label: 'Parent Event',
-		value: state.parentEvent,
-		disabled: disableAll,
+		value: form.parentEvent,
+		disabled,
 		setValue: getFormStateUpdater('parentEvent'),
 		type: 'string',
 		id: 'parent-event',
@@ -88,8 +93,8 @@ const SearchPanelForm = (props: SearchPanelFormProps) => {
 		type: 'multiple-strings',
 		id: 'stream',
 		label: 'Stream',
-		values: state.stream,
-		disabled: disableAll,
+		values: form.stream,
+		disabled,
 		setValues: getFormStateUpdater('stream'),
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
@@ -104,8 +109,8 @@ const SearchPanelForm = (props: SearchPanelFormProps) => {
 	const startTimestampInput: DateInputProps = {
 		inputConfig: {
 			id: 'startTimestamp',
-			value: state.startTimestamp,
-			disabled: disableAll,
+			value: form.startTimestamp,
+			disabled,
 			setValue: getFormStateUpdater('startTimestamp'),
 			type: TimeInputType.DATE_TIME,
 			dateMask: DateTimeMask.DATE_TIME_MASK,
@@ -117,8 +122,8 @@ const SearchPanelForm = (props: SearchPanelFormProps) => {
 	const endTimestampInput: DateInputProps = {
 		inputConfig: {
 			id: 'endTimestamp',
-			value: state.endTimestamp,
-			disabled: disableAll,
+			value: form.endTimestamp,
+			disabled,
 			setValue: getFormStateUpdater('endTimestamp'),
 			type: TimeInputType.DATE_TIME,
 			dateMask: DateTimeMask.DATE_TIME_MASK,
@@ -144,4 +149,4 @@ const SearchPanelForm = (props: SearchPanelFormProps) => {
 	);
 };
 
-export default SearchPanelForm;
+export default React.memo(SearchPanelForm);

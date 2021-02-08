@@ -45,6 +45,11 @@ export class GraphDataStore {
 			interval => this.createChunks(interval, this.timestamp),
 		);
 
+		reaction(
+			() => this.timestamp,
+			() => (this.chunks = []),
+		);
+
 		this.createChunks(this.interval, this.timestamp);
 	}
 
