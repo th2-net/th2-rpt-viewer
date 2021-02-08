@@ -18,7 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import TimeAgo from 'react-timeago';
 import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/date';
-import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
+import { createBemBlock } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { getEventStatus, getMinifiedStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
@@ -68,9 +68,8 @@ function EventCardHeader({
 		isActive ? 'active' : null,
 	);
 
-	const iconClassName = createBemElement(
-		'event-header-card',
-		'icon',
+	const iconClassName = createBemBlock(
+		'event-status-icon',
 		status,
 		isSelected ? 'selected' : null,
 		isActive ? 'active' : null,

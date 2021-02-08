@@ -339,3 +339,34 @@
 		}
 	}
 }
+
+@mixin event-status-icon($hoverable: false) {
+	@if $hoverable {
+		&:hover .event-status-icon {
+			border-color: var(--status-icon-color);
+			background-color: var(--status-icon-color);
+		}
+	}
+
+	& .event-status-icon {
+		flex-shrink: 0;
+		width: 11px;
+		height: 11px;
+		border-radius: 50%;
+		border: 2px solid #0000;
+		background-color: var(--status-icon-color-light);
+		margin: 5px 1px 5px 0;
+
+		&.selected {
+			border-color: var(--status-icon-color);
+			background-color: var(--status-icon-color);
+		}
+
+		&.active {
+			width: 11px;
+			height: 11px;
+			border-color: white;
+			background-color: var(--status-icon-color-active);
+		}
+	}
+}

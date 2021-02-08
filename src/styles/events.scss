@@ -19,6 +19,7 @@
 .event-header-card {
 	@include status-card;
 	@include bookmark-button;
+	@include event-status-icon($hoverable: true);
 	line-height: 15px;
 	width: 100%;
 	border-radius: 5px;
@@ -55,33 +56,6 @@
 	&.active {
 		background-color: var(--status-secondary-background-color);
 		border-color: var(--status-hover-border-color);
-	}
-
-	&:hover &__icon {
-		border-color: var(--status-icon-color);
-		background-color: var(--status-icon-color);
-	}
-
-	& &__icon {
-		flex-shrink: 0;
-		width: 11px;
-		height: 11px;
-		border-radius: 50%;
-		border: 2px solid #0000;
-		background-color: var(--status-icon-color-light);
-		margin: 5px 1px 5px 0;
-
-		&.selected {
-			border-color: var(--status-icon-color);
-			background-color: var(--status-icon-color);
-		}
-
-		&.active {
-			width: 11px;
-			height: 11px;
-			border-color: white;
-			background-color: var(--status-icon-color-active);
-		}
 	}
 
 	&__title {
