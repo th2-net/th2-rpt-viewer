@@ -60,7 +60,6 @@ const TimestampInput = (props: Props) => {
 	} = props;
 
 	const activeWorkspace = useActiveWorkspace();
-
 	const [currentValue, setCurrentValue] = React.useState(
 		moment(timestamp).utc().format('YYYY-MM-DD HH:mm:ss.SSS'),
 	);
@@ -88,16 +87,22 @@ const TimestampInput = (props: Props) => {
 	}, [wrapperRef.current]);
 
 	React.useEffect(() => {
+		setCurrentValue(moment(timestamp).utc().format('YYYY-MM-DD HH:mm:ss.SSS'));
+	}, [timestamp]);
+
+	React.useEffect(() => {
 		const ac = new AbortController();
-		const date = currentValue.split(' ')[0];
-		if (currentValue !== '' && !dateFormatPattern.test(date)) {
-			setIsLoading(true);
-			setTimestampFromEventOrMessage(ac);
+		if (showDialog) {
+			const isDate = currentValue.split(' ')[0].match(dateFormatPattern);
+			if (!isDate) {
+				setIsLoading(true);
+				setTimestampFromEventOrMessage(ac);
+			}
 		}
 		return () => {
 			ac.abort();
 		};
-	}, [currentValue]);
+	}, [currentValue, showDialog]);
 
 	React.useEffect(() => {
 		if (currentEventOrMessage) {
