@@ -76,11 +76,7 @@ function EventCardHeader({
 		isActive ? 'active' : null,
 	);
 
-	const bookmarkClassName = createBemElement(
-		'event-header-card',
-		'bookmark-button',
-		isPinned ? 'pinned' : null,
-	);
+	const bookmarkClassName = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
 
 	const onPinClicked = (e: React.MouseEvent) => {
 		selectedStore.toggleEventPin(event);

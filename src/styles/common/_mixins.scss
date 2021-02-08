@@ -315,3 +315,27 @@
 	white-space: pre-wrap;
 	padding: 6px 10px;
 }
+
+@mixin bookmark-button() {
+	& .bookmark-button {
+		width: 15px;
+		height: 15px;
+		display: none;
+		flex-shrink: 0;
+		background: url(../../resources/icons/bookmark-add.svg);
+
+		&.pinned {
+			display: block;
+			background: url(../../resources/icons/bookmark-added.svg);
+		}
+	}
+
+	&:hover .bookmark-button {
+		display: block;
+		background: url(../../resources/icons/bookmark-add-hover.svg);
+
+		&.pinned {
+			background: url(../../resources/icons/bookmark-added-hover.svg);
+		}
+	}
+}

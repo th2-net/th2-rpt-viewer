@@ -18,6 +18,7 @@
 
 .event-header-card {
 	@include status-card;
+	@include bookmark-button;
 	line-height: 15px;
 	width: 100%;
 	border-radius: 5px;
@@ -133,28 +134,6 @@
 		font-size: 11px;
 		line-height: 15px;
 		font-weight: bold;
-	}
-
-	&__bookmark-button {
-		width: 15px;
-		height: 15px;
-		display: none;
-		flex-shrink: 0;
-		background: url(../../resources/icons/bookmark-add.svg);
-
-		&.pinned {
-			display: block;
-			background: url(../../resources/icons/bookmark-added.svg);
-		}
-	}
-
-	&:hover &__bookmark-button {
-		display: block;
-		background: url(../../resources/icons/bookmark-add-hover.svg);
-
-		&.pinned {
-			background: url(../../resources/icons/bookmark-added-hover.svg);
-		}
 	}
 }
 

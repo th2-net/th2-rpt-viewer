@@ -52,15 +52,6 @@
 		&__is-attached-icon {
 			opacity: 1;
 		}
-
-		&__bookmark-button {
-			display: block;
-			background: url(../../resources/icons/bookmark-add-hover.svg);
-
-			&.pinned {
-				background: url(../../resources/icons/bookmark-added-hover.svg);
-			}
-		}
 	}
 }
 
@@ -118,6 +109,7 @@
 }
 
 .mc-header {
+	@include bookmark-button;
 	display: flex;
 	column-gap: 5px;
 	white-space: nowrap;
@@ -157,10 +149,6 @@
 		&.in {
 			transform: scale(-1);
 		}
-	}
-
-	&__bookmark {
-		display: none;
 	}
 
 	&__key {
@@ -214,17 +202,6 @@
 
 	&__show-raw-button {
 		background: url(../../resources/icons/bincode.svg);
-	}
-
-	&__bookmark-button {
-		display: none;
-		flex-shrink: 0;
-		background: url(../../resources/icons/bookmark-add.svg);
-
-		&.pinned {
-			display: block;
-			background: url(../../resources/icons/bookmark-added.svg);
-		}
 	}
 }
 
