@@ -23,7 +23,7 @@
 	line-height: 15px;
 	width: 100%;
 	border-radius: 5px;
-	padding: 2px 5px 2px 5px;
+	padding: 0px 5px;
 	display: flex;
 	align-items: center;
 	column-gap: 5px;
@@ -161,13 +161,12 @@
 
 	&__status {
 		& .event-status-icon {
-			margin-top: 2px;
-			margin-left: 2px;
+			margin: 3px 2px;
 		}
 	}
 
 	&__info {
-		padding: 0 5px;
+		padding-left: 6px;
 		flex-grow: 1;
 		flex-shrink: 1;
 		display: flex;

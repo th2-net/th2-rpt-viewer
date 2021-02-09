@@ -354,10 +354,9 @@
 
 	& .event-status-icon {
 		flex-shrink: 0;
-		width: 11px;
-		height: 11px;
+		width: 9px;
+		height: 9px;
 		border-radius: 50%;
-		border: 2px solid #0000;
 		background-color: var(--status-icon-color-light);
 
 		&.selected {
@@ -366,9 +365,7 @@
 		}
 
 		&.active {
-			width: 11px;
-			height: 11px;
-			border-color: white;
+			box-shadow: 0 0 0 2px white;
 			background-color: var(--status-icon-color-active);
 		}
 	}
