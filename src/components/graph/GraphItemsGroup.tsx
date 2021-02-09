@@ -49,12 +49,6 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 						key={isEventMessage(item) ? item.messageId : item.eventId}
 						item={item}
 						openMenu={handleClick}
-						className={
-							group.items.length === 1 &&
-							getGraphItemType(group.items[0]) === GraphItemType.PINNED_MESSAGE
-								? 'graph-dot__pinned-message full'
-								: undefined
-						}
 						type={getGraphItemType(item)}
 					/>
 				))}
@@ -75,13 +69,12 @@ export default GraphItemsGroup;
 
 interface GraphDotProps {
 	item: GraphItem;
-	className?: string;
 	type: string;
 	openMenu: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 function GraphDot(props: GraphDotProps) {
-	const { item, className, openMenu, type } = props;
+	const { item, openMenu, type } = props;
 
 	const itemClass = createBemElement(
 		'graph-dot',
@@ -89,5 +82,5 @@ function GraphDot(props: GraphDotProps) {
 		isEventNode(item) ? getEventStatus(item) : null,
 	);
 
-	return <div className={className || itemClass} onClick={openMenu} />;
+	return <div className={itemClass} onClick={openMenu} />;
 }

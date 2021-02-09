@@ -24,12 +24,12 @@ import EventsFilter from '../../models/filter/EventsFilter';
 import PanelArea from '../../util/PanelArea';
 import { TabTypes } from '../../models/util/Windows';
 import { getEventNodeParents, isEventNode, sortEventsByTimestamp } from '../../helpers/event';
-import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
 import { isEventsStore } from '../../helpers/stores';
 import { GraphDataStore } from '../graph/GraphDataStore';
+import { TimeRange } from '../../models/Timestamp';
 
 export type EventStoreURLState = Partial<{
 	type: TabTypes.Events;
@@ -52,7 +52,6 @@ export default class EventsStore {
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
-		private selectedStore: SelectedStore,
 		private graphStore: GraphDataStore,
 		private api: ApiSchema,
 		initialState: EventStoreDefaultStateType,
@@ -97,6 +96,11 @@ export default class EventsStore {
 				eventNode => eventNode.childList.length === 0 && eventNode.filtered,
 			),
 		);
+	}
+
+	@computed
+	public get panelRange(): TimeRange {
+		return [this.filterStore.eventsFilter.timestampFrom, this.filterStore.eventsFilter.timestampTo];
 	}
 
 	@computed

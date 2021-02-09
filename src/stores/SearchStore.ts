@@ -98,7 +98,7 @@ export class SearchStore {
 	@observable searchForm: SearchPanelFormState = {
 		startTimestamp: this.workspacesStore.activeWorkspace.graphDataStore.range[0],
 		searchDirection: 'next',
-		resultCountLimit: 10,
+		resultCountLimit: 50,
 		endTimestamp: null,
 		parentEvent: '',
 		stream: [],

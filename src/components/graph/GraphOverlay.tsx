@@ -22,8 +22,8 @@ import GraphItemsMenu from './GraphItemsMenu';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
+import { GraphItem, GraphItemType, PanelRange } from '../../models/Graph';
 import { getEventStatus, isEventNode } from '../../helpers/event';
-import { GraphItem, GraphItemType } from '../../models/Graph';
 import TimestampInput from '../util/timestamp-input/TimestampInput';
 import { TimeRange } from '../../models/Timestamp';
 import { getTimestampAsNumber } from '../../helpers/date';
@@ -37,6 +37,7 @@ interface OverlayPanelProps {
 	onInputSubmit: (timestamp: number) => void;
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
+	panelsRange: Array<PanelRange>;
 }
 
 const GraphOverlay = (props: OverlayPanelProps) => {
@@ -46,6 +47,7 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 		onInputSubmit,
 		onGraphItemClick,
 		getGraphItemType,
+		panelsRange,
 	} = props;
 
 	const selectedStore = useSelectedStore();
@@ -82,6 +84,26 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 		};
 	}, [from, to, selectedStore.graphItems]);
 
+	const outsidePanels = React.useMemo(() => {
+		const windowTimeRange = [
+			moment(from)
+				.subtract(activeWorkspace.graphDataStore.interval / 2, 'minutes')
+				.valueOf(),
+			moment(to)
+				.add(activeWorkspace.graphDataStore.interval / 2, 'minutes')
+				.valueOf(),
+		];
+
+		return {
+			left: panelsRange
+				.filter(panelRange => panelRange.range != null && panelRange.range[1] < windowTimeRange[0])
+				.reduce((prev, curr) => ({ ...prev, [curr.type]: 1 }), {}),
+			right: panelsRange
+				.filter(panelRange => panelRange.range != null && panelRange.range[0] > windowTimeRange[1])
+				.reduce((prev, curr) => ({ ...prev, [curr.type]: 1 }), {}),
+		};
+	}, [from, to]);
+
 	return (
 		<>
 			<OutsideItemsMenu
@@ -95,6 +117,18 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 				direction='right'
 				items={outsideItems.right}
 				getGraphItemType={getGraphItemType}
+			/>
+			<OutsideItems
+				showCount={false}
+				itemsMap={outsidePanels.left}
+				direction='left'
+				className='outside-items__panels'
+			/>
+			<OutsideItems
+				showCount={false}
+				itemsMap={outsidePanels.right}
+				direction='right'
+				className='outside-items__panels'
 			/>
 			<div className='graph-overlay left' style={commonStyles} />
 			<div className='graph-overlay right' style={commonStyles} />
@@ -231,14 +265,14 @@ interface OutsideItems {
 	right: GraphItem[];
 }
 
-interface OutsideItemsProps {
+interface OutsideItemsMenuProps {
 	items: GraphItem[];
 	direction: 'left' | 'right';
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
 }
 
-function OutsideItemsMenu(props: OutsideItemsProps) {
+function OutsideItemsMenu(props: OutsideItemsMenuProps) {
 	const { items, direction, onGraphItemClick, getGraphItemType } = props;
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
@@ -266,30 +300,12 @@ function OutsideItemsMenu(props: OutsideItemsProps) {
 
 	return (
 		<>
-			<AnimatePresence>
-				{Object.values(outsideItemsMap).some(Boolean) && (
-					<motion.div
-						variants={direction === 'left' ? leftIndicatorVariants : rightIndicatorVariants}
-						initial='hidden'
-						animate='visible'
-						exit='hidden'
-						className={`outside-items-indicator ${direction}`}
-						ref={rootRef}
-						onClick={openMenu}>
-						<i className={`outside-items-indicator-pointer ${direction}`} />
-						<div className='outside-items-wrapper'>
-							{Object.entries(outsideItemsMap)
-								.filter(([_type, count]) => Boolean(count))
-								.map(([type, count]) => (
-									<div key={type} className={`outside-items-indicator-item ${direction}`}>
-										<i className={`outside-items-indicator-icon ${type.toLowerCase()}`} />
-										<span className='outside-items-indicator-value'>{`+ ${count}`}</span>
-									</div>
-								))}
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
+			<OutsideItems
+				ref={rootRef}
+				onClick={openMenu}
+				itemsMap={outsideItemsMap}
+				direction={direction}
+			/>
 			<GraphItemsMenu
 				isMenuOpened={Boolean(menuAnchor)}
 				getGraphItemType={getGraphItemType}
@@ -301,3 +317,46 @@ function OutsideItemsMenu(props: OutsideItemsProps) {
 		</>
 	);
 }
+
+interface OutsideItemsProps {
+	itemsMap: Record<string, number | undefined>;
+	direction: 'left' | 'right';
+	onClick?: () => void;
+	className?: string;
+	showCount?: boolean;
+}
+
+const OutsideItems = React.forwardRef<HTMLDivElement, OutsideItemsProps>(
+	({ itemsMap, direction, onClick, className = '', showCount = true }: OutsideItemsProps, ref) => {
+		return (
+			<AnimatePresence>
+				{Object.values(itemsMap).some(Boolean) && (
+					<motion.div
+						variants={direction === 'left' ? leftIndicatorVariants : rightIndicatorVariants}
+						initial='hidden'
+						animate='visible'
+						exit='hidden'
+						className={`outside-items__indicator ${direction} ${className}`}
+						ref={ref}
+						onClick={onClick}>
+						<i className={`outside-items__indicator-pointer ${direction}`} />
+						<div className='outside-items__wrapper'>
+							{Object.entries(itemsMap)
+								.filter(([_type, count]) => Boolean(count))
+								.map(([type, count]) => (
+									<div key={type} className={`outside-items__indicator-item ${direction}`}>
+										<i className={`outside-items__indicator-icon ${type.toLowerCase()}`} />
+										{showCount && (
+											<span className='outside-items__indicator-value'>{`+ ${count}`}</span>
+										)}
+									</div>
+								))}
+						</div>
+					</motion.div>
+				)}
+			</AnimatePresence>
+		);
+	},
+);
+
+OutsideItems.displayName = 'OutsideItems';

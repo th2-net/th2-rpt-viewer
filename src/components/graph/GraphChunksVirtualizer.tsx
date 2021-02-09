@@ -14,14 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-/* eslint-disable max-len */
-
 import React from 'react';
 import moment from 'moment';
 import { useDebouncedCallback, usePrevious } from '../../hooks';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
 import { raf } from '../../helpers/raf';
-import { Chunk } from '../../models/Graph';
+import { Chunk, PanelRange, PanelsRangeMarker } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import '../../styles/graph.scss';
 
@@ -69,6 +67,7 @@ interface Props {
 	onRangeChanged: (range: TimeRange) => void;
 	setRange: (range: TimeRange) => void;
 	getChunk: (timestamp: number, index: number) => Chunk;
+	panelsRange: Array<PanelRange>;
 }
 
 interface State {
@@ -85,7 +84,16 @@ interface State {
 }
 
 const GraphChunksVirtualizer = (props: Props) => {
-	const { settings, chunkWidth, timestamp, interval, onRangeChanged, setRange, getChunk } = props;
+	const {
+		settings,
+		chunkWidth,
+		timestamp,
+		interval,
+		onRangeChanged,
+		setRange,
+		getChunk,
+		panelsRange,
+	} = props;
 
 	const viewportElementRef = React.useRef<HTMLDivElement>(null);
 	const rangeElementRef = React.useRef<HTMLDivElement>(null);
@@ -104,11 +112,45 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const scrollLeft = React.useRef(0);
 	const isDown = React.useRef(false);
 
+	const [panels, setPanels] = React.useState<Array<PanelsRangeMarker | null>>([]);
+
+	React.useLayoutEffect(() => {
+		if (!chunks.length) {
+			setPanels([]);
+			return;
+		}
+		const firstChunk = viewportElementRef.current?.querySelector(`[data-index="${chunks[0][1]}"]`);
+		if (firstChunk && firstChunk instanceof HTMLDivElement) {
+			const firstChunkRange = getDivInterval(firstChunk);
+			const offset = firstChunk.offsetLeft;
+			if (firstChunkRange) {
+				const panelsMarkerPositions = panelsRange.map(({ range, type }) => {
+					if (!range) return null;
+					const widthPerMs = chunkWidth / (interval * 60 * 1000);
+					const panelWidth = (range[1] - range[0]) * widthPerMs;
+					const diff = (range[0] - firstChunkRange[0]) * (chunkWidth / (interval * 60 * 1000));
+
+					return {
+						left: diff + offset,
+						type,
+						width: panelWidth,
+					};
+				});
+				setPanels(panelsMarkerPositions);
+			}
+		} else {
+			setPanels([]);
+		}
+	}, [panelsRange, chunks]);
+
 	React.useEffect(() => {
 		getCurrentChunks(state.initialPosition);
 		raf(() => {
 			if (viewportElementRef.current) {
-				viewportElementRef.current.scrollLeft = state.initialPosition - chunkWidth;
+				const offset =
+					(timestamp - moment(timestamp).startOf('minute').valueOf()) *
+					(chunkWidth / (interval * 60 * 1000));
+				viewportElementRef.current.scrollLeft = state.initialPosition - chunkWidth + offset;
 			}
 		}, 2);
 	}, []);
@@ -239,21 +281,14 @@ const GraphChunksVirtualizer = (props: Props) => {
 				const updatedRange: TimeRange = [intervalStart.valueOf(), intervalEnd.valueOf()];
 				setRange(updatedRange);
 
-				// TODO: temporary workaround to ignore initial range calculation in order to avoid refetching data;
+				// TODO: temporary workaround to ignore initial range calculation
+				// in order to avoid refetching data;
 				if (initialRangeCalculation.current) {
 					initialRangeCalculation.current = false;
 				} else {
 					onRangeChanged(updatedRange);
 				}
 			}
-		}
-
-		function getDivInterval(intervalDiv: HTMLDivElement): null | TimeRange {
-			const from = parseInt(intervalDiv.dataset.from || '');
-			const to = parseInt(intervalDiv.dataset.to || '');
-
-			if (from && to) return [from, to];
-			return null;
 		}
 	}, 50);
 
@@ -311,33 +346,53 @@ const GraphChunksVirtualizer = (props: Props) => {
 	};
 
 	return (
-		<div className='graph-timeline' ref={viewportElementRef} onScroll={onScroll} onWheel={onWheel}>
-			<div ref={prevItemsRef} style={{ flexShrink: 0 }} />
-			{chunks.map(([chunk, index]) => props.renderChunk(chunk, index))}
-			<div ref={nextItemsRef} style={{ flexShrink: 0 }} />
+		<div className='graph-virtualizer'>
 			<div
-				className='graph-timeline__dragging-zone'
+				className='graph-virtualizer__list'
+				ref={viewportElementRef}
+				onScroll={onScroll}
+				onWheel={onWheel}>
+				<div ref={prevItemsRef} style={{ flexShrink: 0 }} />
+				{chunks.map(([chunk, index]) => props.renderChunk(chunk, index))}
+				<div ref={nextItemsRef} style={{ flexShrink: 0 }} />
+				{panels.map(
+					(panel, index) =>
+						panel && (
+							<div
+								key={panel.type}
+								className={`graph-virtualizer__panel-marker ${panel.type}`}
+								style={{ left: panel.left, bottom: index * 6, width: panel.width }}
+							/>
+						),
+				)}
+			</div>
+			<div
+				className='graph-virtualizer__dragging-zone'
 				style={{ width: chunkWidth, left: (window.innerWidth - chunkWidth) / 2 }}
 				ref={rangeElementRef}
 			/>
 			<div
-				className='graph__arrow-button left'
-				style={{
-					left: chunkWidth / 2,
-				}}
+				className='graph-virtualizer__arrow-button left'
+				style={{ left: chunkWidth / 2 }}
 				onClick={() => scrollHalfInterval()}>
-				<i className='graph__arrow-icon'></i>
+				<i className='graph-virtualizer__arrow-icon'></i>
 			</div>
 			<div
-				className='graph__arrow-button right'
-				style={{
-					left: chunkWidth * 1.5,
-				}}
+				className='graph-virtualizer__arrow-button right'
+				style={{ left: chunkWidth * 1.5 }}
 				onClick={() => scrollHalfInterval(-1)}>
-				<i className='graph__arrow-icon'></i>
+				<i className='graph-virtualizer__arrow-icon'></i>
 			</div>
 		</div>
 	);
 };
 
 export default React.memo(GraphChunksVirtualizer);
+
+function getDivInterval(intervalDiv: HTMLDivElement): null | TimeRange {
+	const from = parseInt(intervalDiv.dataset.from || '');
+	const to = parseInt(intervalDiv.dataset.to || '');
+
+	if (from && to) return [from, to];
+	return null;
+}

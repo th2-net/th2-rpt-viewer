@@ -14,9 +14,6 @@
  * limitations under the License.
  ******************************************************************************/
 
-$reportHeaderBackground: #5edae1;
-$reportInfoShadowColor: #e2e2e2;
-$reportBorderColor: #d6d6d6;
 $reportTitleTextColor: #7b7b7b;
 
 $failedTextColor: #cc0000;
@@ -29,8 +26,6 @@ $failedBackgroundColor: #ffdbdb;
 $failedHeaderBorderColor: $failedTextColor;
 $failedHeaderSecondaryBackground: $failedHeaderColor;
 $failedSecondaryTextColor: #e05252;
-$failedVerificationBackgroundColor: mix($failedTextColor, white, 10%);
-$failedVerificationHighlightedBackgroundColor: mix($failedTextColor, white, 20%);
 
 $passedTextColor: #1f991f;
 $passedBorderColor: $passedTextColor;
@@ -41,27 +36,8 @@ $passedDelimiterHoverColor: #7db3e8;
 $passedBackgroundColor: $passedBorderColorSecondary;
 $passedHeaderSecondaryBackground: $passedBackgroundColor;
 $passedSecondaryTextColor: rgba(#1f991f, 0.5);
-$passedVerificationBackgroundColor: mix($passedTextColor, white, 10%);
-$passedVerificationHighlightedBackgroundColor: mix($passedTextColor, white, 20%);
-
-$logCardErrorPrimaryColor: #e23636;
-$logCardErrorBorderColor: #ffcccc;
-
-$logCardWarnPrimaryColor: #f57a3d;
-$logCardWarnBorderColor: #ffddcc;
-
-$logCardDebugPrimaryColor: #5eba6e;
-$logCardDebugBorderColor: #dbf0df;
-
-$logCardInfoPrimaryColor: #808080;
-$logCardInfoBorderColor: #e6e6e6;
-
-$logCardPrimaryTextColor: #262626;
 
 $naTextColor: $reportTitleTextColor;
-
-$checkpointBorderColor: #59b368;
-$checkpointBackground: #effff1;
 
 $primaryTextColor: #4d4d4d;
 $secondaryTextColor: #808080;
@@ -136,27 +112,10 @@ $hintShadowColor: transparentize(black, 0.5);
 $hintTextColor: black;
 
 $nullValuetextColor: $naTextColor;
-$knownBugCardBorderColor: transparentize($defaultCardBackground, 0.33);
-
-$liveTextColor: #4d4d4d;
-$liveSecondaryTextColor: $secondaryTextColor;
-$liveBorderColor: #666666;
-$liveBorderSecondaryColor: $defaultCardBackground;
-$liveBackgroundColor: #cccccc;
-$liveSecondaryBackgroundColor: #eeeeee;
-$liveHeaderSecondaryBackgroundColor: #e6e6e6;
-$liveBorderHoverColor: $liveBackgroundColor;
-$liveDelimiterHoverColor: #999999;
-
-$ml-icon-size: 22px;
-$ml-accent-color: #45a155;
-$ml-gray-color: #999999;
 
 $skeletonBackgroundColor: #e6e6e6;
 
 $errorMsgBackgroundColor: #e23636;
-
-$selectedColor: #997ab8;
 
 $tabsBackgroundColor: #e6e6e6;
 
@@ -183,7 +142,6 @@ $realtimeButtonBorderColor: #999999;
 
 $graphBackgroundColor: #dee5ed;
 $graphButtonBackgroundColor: #d7e0ea;
-$graphAttachedMessageColor: #fc8144;
 $graphTickColor: #3d668f;
 $graphAttachedEventPassedColor: #00802a;
 $graphAttachedEventFailedColor: #bc271a;
