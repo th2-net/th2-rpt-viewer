@@ -1,6 +1,6 @@
 # Report-viewer
 ![](https://img.shields.io/github/package-json/v/th2-net/th2-rpt-viewer)
-![](https://img.shields.io/github/workflow/status/th2-net/th2-rpt-viewer/Build%20and%20publish%20Docker%20distributions%20to%20Github%20Container%20Registry%20ghcr.io)
+![](https://img.shields.io/github/workflow/status/th2-net/th2-rpt-viewer/build%20&%20publish%20release%20image%20to%20ghcr.io)
 
 This is a web app that displays the stored test data (events and messages) using `report-data-provider`. 
 Major versions of report-viewer and report-data-provider are compatible.
