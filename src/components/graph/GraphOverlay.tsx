@@ -18,18 +18,34 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { AnimatePresence, motion } from 'framer-motion';
-import GraphItemsMenu from './GraphItemsMenu';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { GraphItem, GraphItemType, PanelRange } from '../../models/Graph';
-import { getEventStatus, isEventNode } from '../../helpers/event';
+import { PanelRange } from '../../models/Graph';
+import { isEventNode } from '../../helpers/event';
 import TimestampInput from '../util/timestamp-input/TimestampInput';
 import { TimeRange } from '../../models/Timestamp';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { EventStatus } from '../../models/Status';
 import { GraphDataStore } from '../../stores/graph/GraphDataStore';
+import { OutsideItems, OutsideItemsMenu, OutsideItemsList } from './OutsideItems';
 import '../../styles/graph.scss';
+
+const fadeInOutVariants = {
+	visible: {
+		opacity: 1,
+		transition: {
+			duration: 0.15,
+			type: 'tween',
+		},
+	},
+	hidden: {
+		opacity: 0,
+		transition: {
+			duration: 0.15,
+			type: 'tween',
+		},
+	},
+};
 
 interface OverlayPanelProps {
 	chunkWidth: number;
@@ -118,13 +134,13 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 				items={outsideItems.right}
 				getGraphItemType={getGraphItemType}
 			/>
-			<OutsideItems
+			<OutsideItemsList
 				showCount={false}
 				itemsMap={outsidePanels.left}
 				direction='left'
 				className='outside-items__panels'
 			/>
-			<OutsideItems
+			<OutsideItemsList
 				showCount={false}
 				itemsMap={outsidePanels.right}
 				direction='right'
@@ -204,159 +220,3 @@ function Timestamp({ timestamp, className = '' }: TimestampProps) {
 }
 
 export default observer(GraphOverlay);
-
-const fadeInOutVariants = {
-	visible: {
-		opacity: 1,
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-	hidden: {
-		opacity: 0,
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-};
-
-const rightIndicatorVariants = {
-	visible: {
-		opacity: 1,
-		right: '14px',
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-	hidden: {
-		opacity: 0,
-		right: '-14px',
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-};
-
-const leftIndicatorVariants = {
-	visible: {
-		opacity: 1,
-		left: '14px',
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-	hidden: {
-		opacity: 0,
-		left: '-14px',
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-};
-
-interface OutsideItems {
-	left: GraphItem[];
-	right: GraphItem[];
-}
-
-interface OutsideItemsMenuProps {
-	items: GraphItem[];
-	direction: 'left' | 'right';
-	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
-	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
-}
-
-function OutsideItemsMenu(props: OutsideItemsMenuProps) {
-	const { items, direction, onGraphItemClick, getGraphItemType } = props;
-
-	const rootRef = React.useRef<HTMLDivElement>(null);
-	const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
-
-	function openMenu() {
-		setMenuAnchor(rootRef.current);
-	}
-
-	const outsideItemsMap = React.useMemo(() => {
-		const map: Partial<Record<EventStatus | GraphItemType, number>> = {};
-
-		items.forEach(item => {
-			let key: EventStatus | GraphItemType;
-			if (isEventNode(item)) {
-				key = getEventStatus(item);
-			} else {
-				key = getGraphItemType(item);
-			}
-			map[key] = (map[key] || 0) + 1;
-		});
-
-		return map;
-	}, [items]);
-
-	return (
-		<>
-			<OutsideItems
-				ref={rootRef}
-				onClick={openMenu}
-				itemsMap={outsideItemsMap}
-				direction={direction}
-			/>
-			<GraphItemsMenu
-				isMenuOpened={Boolean(menuAnchor)}
-				getGraphItemType={getGraphItemType}
-				items={items}
-				onClose={() => setMenuAnchor(null)}
-				onMenuItemClick={onGraphItemClick}
-				anchorEl={menuAnchor}
-			/>
-		</>
-	);
-}
-
-interface OutsideItemsProps {
-	itemsMap: Record<string, number | undefined>;
-	direction: 'left' | 'right';
-	onClick?: () => void;
-	className?: string;
-	showCount?: boolean;
-}
-
-const OutsideItems = React.forwardRef<HTMLDivElement, OutsideItemsProps>(
-	({ itemsMap, direction, onClick, className = '', showCount = true }: OutsideItemsProps, ref) => {
-		return (
-			<AnimatePresence>
-				{Object.values(itemsMap).some(Boolean) && (
-					<motion.div
-						variants={direction === 'left' ? leftIndicatorVariants : rightIndicatorVariants}
-						initial='hidden'
-						animate='visible'
-						exit='hidden'
-						className={`outside-items__indicator ${direction} ${className}`}
-						ref={ref}
-						onClick={onClick}>
-						<i className={`outside-items__indicator-pointer ${direction}`} />
-						<div className='outside-items__wrapper'>
-							{Object.entries(itemsMap)
-								.filter(([_type, count]) => Boolean(count))
-								.map(([type, count]) => (
-									<div key={type} className={`outside-items__indicator-item ${direction}`}>
-										<i className={`outside-items__indicator-icon ${type.toLowerCase()}`} />
-										{showCount && (
-											<span className='outside-items__indicator-value'>{`+ ${count}`}</span>
-										)}
-									</div>
-								))}
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
-		);
-	},
-);
-
-OutsideItems.displayName = 'OutsideItems';
