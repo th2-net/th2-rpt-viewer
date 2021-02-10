@@ -24,7 +24,7 @@ import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { Chunk } from '../../models/Graph';
+import { Chunk, PanelRange } from '../../models/Graph';
 import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
@@ -117,6 +117,21 @@ function Graph() {
 		[activeWorkspace, activeWorkspace.graphDataStore.interval],
 	);
 
+	const panelsRange = React.useMemo(() => {
+		const panels: Array<PanelRange> = [
+			{
+				type: 'events-panel',
+				range: activeWorkspace.eventsStore.panelRange,
+			},
+			{
+				type: 'messages-panel',
+				range: activeWorkspace.messagesStore.panelRange,
+			},
+		];
+
+		return panels;
+	}, [activeWorkspace.eventsStore.panelRange, activeWorkspace.messagesStore.panelRange]);
+
 	return (
 		<div className='graph' ref={rootRef}>
 			<GraphChunksVirtualizer
@@ -129,6 +144,7 @@ function Graph() {
 				interval={activeWorkspace.graphDataStore.interval}
 				timestamp={activeWorkspace.graphDataStore.timestamp}
 				key={activeWorkspace.graphDataStore.timestamp}
+				panelsRange={panelsRange}
 			/>
 			<GraphOverlay
 				chunkWidth={chunkWidth}
@@ -136,6 +152,7 @@ function Graph() {
 				onInputSubmit={onInputSubmit}
 				onGraphItemClick={onGraphItemClick}
 				getGraphItemType={getGraphItemType}
+				panelsRange={panelsRange}
 			/>
 		</div>
 	);

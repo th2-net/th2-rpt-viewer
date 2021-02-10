@@ -102,12 +102,8 @@
 		left: 7px;
 		top: 7px;
 
-		&.pinned-message-icon {
-			@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
-		}
-
 		&.message-icon {
-			@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+			@include icon(url(/resources/icons/bookmark-added-hover.svg), 17px, 17px);
 		}
 
 		&.event-icon,

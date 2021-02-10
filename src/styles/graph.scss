@@ -27,47 +27,6 @@
 	justify-content: flex-end;
 	overflow: visible;
 
-	&__arrow-button {
-		width: 21px;
-		height: 21px;
-		border-radius: 50%;
-		background-color: $graphButtonBackgroundColor;
-		position: absolute;
-		top: 42px;
-		left: 14px;
-		z-index: 10;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		cursor: pointer;
-
-		&:hover i {
-			transform: scale(1.1);
-		}
-
-		&.left {
-			transform: translateX(-31px);
-		}
-
-		&.right {
-			transform: translateX(10px);
-			left: 35px;
-			& i {
-				transform: rotate(180deg) scale(1);
-
-				&:hover {
-					transform: rotate(180deg) scale(1.1);
-				}
-			}
-		}
-	}
-
-	&__arrow-icon {
-		@include icon(url(../../resources/icons/graph-arrow-left.svg), 15px, 15px);
-		transition: transform 0.1s;
-		display: inline-block;
-	}
-
 	&__search-button {
 		@include icon(url(../../resources/icons/graph-search.svg), 15px, 15px);
 		z-index: 5;
@@ -107,16 +66,16 @@
 }
 
 .outside-items {
-	&-wrapper {
+	&__wrapper {
 		display: flex;
 		flex-direction: column;
 		gap: 3px;
 		flex-shrink: 0;
 	}
 
-	&-indicator {
+	&__indicator {
 		position: absolute;
-		top: 55%;
+		top: 50%;
 		transform: translateY(-50%);
 		z-index: 15;
 		display: flex;
@@ -155,7 +114,7 @@
 			flex-shrink: 0;
 
 			&.pinned-message {
-				@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+				@include icon(url(../../resources/icons/bookmark-added-hover.svg), 14px, 14px);
 			}
 
 			&.attached-message {
@@ -177,6 +136,18 @@
 				background-color: $graphOverlayPassedEventsColor;
 				margin: 0 6px;
 			}
+
+			&.events-panel {
+				width: 30px;
+				height: 6px;
+				background-color: rgb(247, 167, 110);
+			}
+	
+			&.messages-panel {
+				width: 30px;
+				height: 6px;
+				background-color: rgb(26, 196, 229);
+			}
 		}
 
 		&-pointer {
@@ -191,6 +162,11 @@
 				transform: rotate(180deg);
 			}
 		}
+	}
+
+	&__panels {
+		top: 89%;
+		cursor: default;
 	}
 }
 
@@ -256,11 +232,7 @@
 	}
 
 	&__pinned-message {
-		@include icon(url(../../resources/icons/star.svg), 14px, 14px);
-
-		&.full {
-			@include icon(url(../../resources/icons/starFull.svg), 41px, 14px);
-		}
+		@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
 	}
 }
 
@@ -272,6 +244,7 @@
 	&__dots {
 		display: flex;
 		flex-direction: column-reverse;
+		align-items: center;
 		position: relative;
 		z-index: 101;
 
@@ -371,7 +344,7 @@
 		}
 
 		&.pinned-message-icon {
-			@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+			@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
 		}
 
 		&.event-icon,
@@ -392,19 +365,79 @@
 	}
 }
 
-.graph-timeline {
-	@include hidden-scrollbar;
-	width: 100%;
-	height: 62px;
-	overflow-x: auto;
-	overflow-y: hidden;
-	display: flex;
-
+.graph-virtualizer {
+	&__list {
+		@include hidden-scrollbar;
+		width: 100%;
+		height: 62px;
+		overflow-x: auto;
+		overflow-y: hidden;
+		display: flex;
+		position: relative;
+	}
+	
 	&__dragging-zone {
 		visibility: hidden;
 		height: 100%;
 		position: absolute;
 		top: 0;
+	}
+
+	&__arrow-button {
+		width: 21px;
+		height: 21px;
+		border-radius: 50%;
+		background-color: $graphButtonBackgroundColor;
+		position: absolute;
+		top: 42px;
+		left: 14px;
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+
+		&:hover i {
+			transform: scale(1.1);
+		}
+
+		&.left {
+			transform: translateX(-31px);
+		}
+
+		&.right {
+			transform: translateX(10px);
+			left: 35px;
+			& i {
+				transform: rotate(180deg) scale(1);
+
+				&:hover {
+					transform: rotate(180deg) scale(1.1);
+				}
+			}
+		}
+	}
+
+	&__arrow-icon {
+		@include icon(url(../../resources/icons/graph-arrow-left.svg), 15px, 15px);
+		transition: transform 0.1s;
+		display: inline-block;
+	}
+
+	&__panel-marker {
+		width: 960px;
+    height: 5px;
+    position: absolute;
+    z-index: 50;
+    border-radius: 2px;
+
+		&.events-panel {
+			background-color: rgba($color: rgb(247, 167, 110), $alpha: 0.7);
+		}
+
+		&.messages-panel {
+			background-color: rgba($color: rgb(26, 196, 229), $alpha: 0.7);
+		}
 	}
 }
 

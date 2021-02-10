@@ -193,7 +193,7 @@ function WorkspaceSplitter(props: Props) {
 			if (panelRef.current) {
 				panelRef.current.style.width = `${widths[index]}px`;
 
-				if (widths[index] === MIN_PANEL_WIDTH) {
+				if (widths[index] <= MIN_PANEL_WIDTH) {
 					if (!panelRef.current.classList.contains('minified')) {
 						panelRef.current.classList.add('minified');
 					}

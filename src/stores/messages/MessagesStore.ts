@@ -29,6 +29,7 @@ import { isEventMessage } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { isMessagesStore } from '../../helpers/stores';
 import { GraphDataStore } from '../graph/GraphDataStore';
+import { TimeRange } from '../../models/Timestamp';
 
 export const defaultMessagesLoadingState = {
 	loadingPreviousItems: false,
@@ -117,7 +118,7 @@ export default class MessagesStore {
 	}
 
 	@computed
-	get selectedMessagesIds(): string[] {
+	public get selectedMessagesIds(): string[] {
 		const pinnedMessages = this.selectedStore.pinnedMessages.filter(msg =>
 			this.messagesIds.includes(msg.messageId),
 		);
@@ -135,6 +136,26 @@ export default class MessagesStore {
 		}
 
 		return sortedMessages.map(m => m.messageId);
+	}
+
+	@computed
+	public get panelRange(): TimeRange | null {
+		const fromMsgId = this.messagesIds
+			.slice()
+			.reverse()
+			.find(messageId => this.messagesCache.get(messageId));
+		const toMsgId = this.messagesIds.find(messageId => this.messagesCache.get(messageId));
+
+		const messageFrom = fromMsgId && this.messagesCache.get(fromMsgId);
+		const messageTo = toMsgId && this.messagesCache.get(toMsgId);
+
+		if (messageFrom && messageTo && messageFrom !== messageTo) {
+			return [
+				getTimestampAsNumber(messageFrom.timestamp),
+				getTimestampAsNumber(messageTo.timestamp),
+			];
+		}
+		return null;
 	}
 
 	@action

@@ -71,7 +71,6 @@ export default class WorkspaceStore {
 		this.graphDataStore = new GraphDataStore(this.selectedStore, initialState.timeRange);
 		this.eventsStore = new EventsStore(
 			this,
-			this.selectedStore,
 			this.graphDataStore,
 			this.api,
 			initialState.events || null,
@@ -152,10 +151,12 @@ export default class WorkspaceStore {
 		this.graphDataStore.timestamp = isEventMessage(savedItem)
 			? getTimestampAsNumber(savedItem.timestamp)
 			: getTimestampAsNumber(savedItem.startTimestamp);
-		if (isEventNode(savedItem) || isEventAction(savedItem)) {
-			this.eventsStore.onSavedItemSelect(savedItem);
-		} else {
+		if (isEventMessage(savedItem)) {
+			this.viewStore.activePanel = this.messagesStore;
 			this.messagesStore.onSavedItemSelect(savedItem);
+		} else {
+			this.viewStore.activePanel = this.eventsStore;
+			this.eventsStore.onSavedItemSelect(savedItem);
 		}
 	};
 
