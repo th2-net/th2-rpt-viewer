@@ -17,7 +17,7 @@
 import { isEventNode } from '../helpers/event';
 import { isMessage } from '../helpers/message';
 import { isSearchHistoryEntity } from '../helpers/search';
-import { EventTreeNode } from '../models/EventAction';
+import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { SearchHistory } from '../stores/SearchStore';
 
@@ -25,6 +25,7 @@ enum LocalStorageEntities {
 	PINNED_MESSAGES = 'pinnedMessages',
 	EVENTS = 'events',
 	SEARCH_HISTORY = 'search-history',
+	GO_TO_TIMESTAMP_HISTORY = 'go-to-timestamp-history',
 }
 class LocalStorageWorker {
 	getPersistedPinnedMessages(): EventMessage[] {
@@ -59,6 +60,10 @@ class LocalStorageWorker {
 		localStorage.setItem(LocalStorageEntities.SEARCH_HISTORY, JSON.stringify(history));
 	};
 
+	saveGOTOTimestampHistory = (history: Array<EventMessage | EventAction>) => {
+		localStorage.setItem(LocalStorageEntities.GO_TO_TIMESTAMP_HISTORY, JSON.stringify(history));
+	};
+
 	getSearchHistory = () => {
 		try {
 			const searchHistory = localStorage.getItem(LocalStorageEntities.SEARCH_HISTORY);
@@ -66,6 +71,17 @@ class LocalStorageWorker {
 			return Array.isArray(parsedSearchHistory)
 				? parsedSearchHistory.filter(isSearchHistoryEntity)
 				: [];
+		} catch (error) {
+			return [];
+		}
+	};
+
+	getGOTOTimestampHistory = (): Array<EventMessage | EventAction> => {
+		try {
+			const goToTimestampHistory = localStorage.getItem(
+				LocalStorageEntities.GO_TO_TIMESTAMP_HISTORY,
+			);
+			return goToTimestampHistory ? JSON.parse(goToTimestampHistory) : [];
 		} catch (error) {
 			return [];
 		}

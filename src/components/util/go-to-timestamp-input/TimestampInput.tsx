@@ -28,6 +28,7 @@ import { Timestamp } from '../../../models/Timestamp';
 import KeyCodes from '../../../util/KeyCodes';
 import TimestampDialog from './TimestampDialog';
 import '../../../styles/timestamp-input.scss';
+import localStorageWorker from '../../../util/LocalStorageWorker';
 
 const getTimestamp = (timestamp: Timestamp) => {
 	const ms = Math.floor(timestamp.nano / 1000000);
@@ -75,10 +76,8 @@ const TimestampInput = (props: Props) => {
 	const [currentValue, setCurrentValue] = React.useState(
 		moment(timestamp).utc().format('YYYY-MM-DD HH:mm:ss.SSS'),
 	);
-	const [currentTimestamp, setCurrentTimestamp] = React.useState(timestamp);
-	const [currentEventOrMessage, setCurrentEventOrMessage] = React.useState<
-		EventAction | EventMessage | null
-	>(null);
+	const [currentTimestamp, setCurrentTimestamp] = React.useState(0);
+	const [foundObject, setFoundbject] = React.useState<EventAction | EventMessage | null>(null);
 	const [dimensions, setDimensions] = React.useState<DOMRect | null>(null);
 	const [isLoading, setIsLoading] = React.useState(false);
 	const [showPicker, setShowPicker] = React.useState(false);
@@ -87,10 +86,14 @@ const TimestampInput = (props: Props) => {
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
 	const timeout = React.useRef<NodeJS.Timeout>();
 
-	useOutsideClickListener(wrapperRef, () => {
-		setShowPicker(false);
-		setShowDialog(false);
-	});
+	useOutsideClickListener(
+		wrapperRef,
+		() => {
+			setShowPicker(false);
+			setShowDialog(false);
+		},
+		'mouseup',
+	);
 
 	React.useEffect(() => {
 		if (wrapperRef.current) {
@@ -113,7 +116,7 @@ const TimestampInput = (props: Props) => {
 				setIsLoading(false);
 			} catch (error) {
 				setIsLoading(true);
-				setTimestampFromEventOrMessage(ac);
+				setTimestampFromFoundObject(ac);
 			}
 		}
 		return () => {
@@ -122,35 +125,41 @@ const TimestampInput = (props: Props) => {
 	}, [currentValue, showDialog]);
 
 	React.useEffect(() => {
-		if (currentEventOrMessage) {
-			activeWorkspace.onSavedItemSelect(currentEventOrMessage);
+		if (foundObject) {
+			activeWorkspace.onSavedItemSelect(foundObject);
 			timeout.current = setTimeout(() => {
 				setShowDialog(false);
 			}, 2000);
 		}
-	}, [currentEventOrMessage]);
+	}, [foundObject]);
 
-	const setTimestamp = (eventOrMessage: null | EventAction | EventMessage, ac: AbortController) => {
+	const onObjectFound = (
+		object: null | EventAction | EventMessage,
+		id: string,
+		ac: AbortController,
+	) => {
 		setIsLoading(false);
-		if (!eventOrMessage) {
+		if (!object) {
 			return;
 		}
 		ac.abort();
-		const timestampFromEventOrMessage = isEventAction(eventOrMessage)
-			? getTimestamp(eventOrMessage.startTimestamp)
-			: getTimestamp(eventOrMessage.timestamp);
-		setCurrentTimestamp(timestampFromEventOrMessage);
-		setCurrentValue(moment(timestampFromEventOrMessage).format('YYYY-MM-DD HH:mm:ss.SSS'));
+		const currentHistory = localStorageWorker.getGOTOTimestampHistory();
+		localStorageWorker.saveGOTOTimestampHistory([...currentHistory, object]);
+		const timestamFromFoundObject = isEventAction(object)
+			? getTimestamp(object.startTimestamp)
+			: getTimestamp(object.timestamp);
+		setCurrentTimestamp(timestamFromFoundObject);
+		setCurrentValue(formatTimestampValue(timestamFromFoundObject, DateTimeMask.DATE_TIME_MASK));
 	};
 
-	const setTimestampFromEventOrMessage = useDebouncedCallback((ac: AbortController) => {
+	const setTimestampFromFoundObject = useDebouncedCallback((ac: AbortController) => {
 		eventHttpApi.getEvent(currentValue, ac.signal, { probe: true }).then(foundEvent => {
-			setCurrentEventOrMessage(foundEvent);
-			setTimestamp(foundEvent, ac);
+			setFoundbject(foundEvent);
+			onObjectFound(foundEvent, currentValue, ac);
 		});
 		messageHttpApi.getMessage(currentValue, ac.signal, { probe: true }).then(message => {
-			setCurrentEventOrMessage(message);
-			setTimestamp(message, ac);
+			setFoundbject(message);
+			onObjectFound(message, currentValue, ac);
 		});
 	}, 500);
 
@@ -172,13 +181,15 @@ const TimestampInput = (props: Props) => {
 		e.target.setSelectionRange(0, currentValue.length);
 		setShowDialog(true);
 		if (timeout.current) clearTimeout(timeout.current);
-		setCurrentEventOrMessage(null);
+		setFoundbject(null);
 	};
 
 	const dialogClassName = createBemElement(
 		'timestamp-input',
 		'dialog',
-		currentEventOrMessage || isLoading ? 'bordered' : null,
+		foundObject || isLoading || localStorageWorker.getGOTOTimestampHistory().length > 0
+			? 'bordered'
+			: null,
 	);
 
 	const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
@@ -197,11 +208,12 @@ const TimestampInput = (props: Props) => {
 			<input {...inputProps} />
 			<button className='timestamp-input__datepicker-button' onClick={toggleDatepicker} />
 			<TimestampDialog
+				history={localStorageWorker.getGOTOTimestampHistory()}
 				className={dialogClassName}
 				isOpen={showDialog}
 				isLoading={isLoading}
 				rect={dimensions}
-				foundObject={currentEventOrMessage}
+				foundObject={foundObject}
 			/>
 		</div>
 	);

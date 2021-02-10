@@ -22,17 +22,19 @@ import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../BookmarksPanel';
 import { ModalPortal } from '../Portal';
+import TimestampHistory from './TimestampHistory';
 
 interface Props {
 	className: string;
 	rect: DOMRect | null;
 	isLoading: boolean;
 	isOpen: boolean;
+	history: Array<EventAction | EventMessage>;
 	foundObject: EventAction | EventMessage | null;
 }
 
 const TimestampDialog = (props: Props) => {
-	const { className, rect, isOpen, isLoading, foundObject } = props;
+	const { className, rect, isOpen, isLoading, history, foundObject } = props;
 	const style: React.CSSProperties = {
 		position: 'absolute',
 		width: rect ? `${rect.width}px` : 0,
@@ -42,10 +44,12 @@ const TimestampDialog = (props: Props) => {
 	};
 
 	const time = isEventAction(foundObject) ? foundObject.startTimestamp : foundObject?.timestamp;
+	const showHistory = !isLoading && !foundObject;
 
 	return (
 		<ModalPortal isOpen={isOpen} style={style}>
 			<div className={className}>
+				{showHistory && <TimestampHistory history={history} />}
 				{isLoading && <div className='spinner' />}
 				{foundObject && (
 					<>
