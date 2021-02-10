@@ -30,7 +30,7 @@ const App = () => (
 			<div className='app__workspaces'>
 				<WorkspacesLayout />
 			</div>
-			<Notifier />
+			{/* <Notifier /> */}
 		</ToastProvider>
 	</div>
 );
