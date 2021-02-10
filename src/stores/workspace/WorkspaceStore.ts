@@ -30,7 +30,7 @@ import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphDataStore } from '../graph/GraphDataStore';
 import { isEventsStore, isMessagesStore } from '../../helpers/stores';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { isEventAction, isEventMessage, isEventNode } from '../../helpers/event';
+import { isEventMessage } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
@@ -100,11 +100,13 @@ export default class WorkspaceStore {
 	@observable
 	public isLoadingAttachedMessages = false;
 
-	@computed get isActive() {
+	@computed
+	public get isActive() {
 		return this.workspacesStore.activeWorkspace === this;
 	}
 
-	@computed get attachedMessagesStreams() {
+	@computed
+	public get attachedMessagesStreams() {
 		return [...new Set(this.attachedMessages.map(msg => msg.sessionId))];
 	}
 

@@ -122,10 +122,12 @@ function Graph() {
 			{
 				type: 'events-panel',
 				range: activeWorkspace.eventsStore.panelRange,
+				setRange: activeWorkspace.eventsStore.onRangeChange,
 			},
 			{
 				type: 'messages-panel',
 				range: activeWorkspace.messagesStore.panelRange,
+				setRange: activeWorkspace.eventsStore.onRangeChange,
 			},
 		];
 
@@ -139,12 +141,12 @@ function Graph() {
 				settings={settings}
 				renderChunk={renderChunk}
 				setRange={activeWorkspace.graphDataStore.setRange}
-				onRangeChanged={activeWorkspace.onRangeChange}
 				getChunk={getChunk}
 				interval={activeWorkspace.graphDataStore.interval}
 				timestamp={activeWorkspace.graphDataStore.timestamp}
 				key={activeWorkspace.graphDataStore.timestamp}
 				panelsRange={panelsRange}
+				range={activeWorkspace.graphDataStore.range}
 			/>
 			<GraphOverlay
 				chunkWidth={chunkWidth}

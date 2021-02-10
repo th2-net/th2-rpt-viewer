@@ -32,8 +32,6 @@ export default class WorkspacesStore {
 		this.init(initialState);
 
 		this.tabsStore = new TabsStore(this);
-
-		reaction(() => this.activeWorkspace, this.onActiveWorkspaceChange);
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
@@ -72,11 +70,6 @@ export default class WorkspacesStore {
 	@action
 	public addWorkspace = (workspace: WorkspaceStore) => {
 		this.workspaces.push(workspace);
-	};
-
-	@action
-	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
-		console.log(activeWorkspace);
 	};
 
 	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {

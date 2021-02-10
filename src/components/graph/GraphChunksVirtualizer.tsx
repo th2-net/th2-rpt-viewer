@@ -19,7 +19,7 @@ import moment from 'moment';
 import { useDebouncedCallback, usePrevious } from '../../hooks';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
 import { raf } from '../../helpers/raf';
-import { Chunk, PanelRange, PanelsRangeMarker } from '../../models/Graph';
+import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import '../../styles/graph.scss';
 
@@ -64,7 +64,7 @@ interface Props {
 	chunkWidth: number;
 	timestamp: number;
 	interval: number;
-	onRangeChanged: (range: TimeRange) => void;
+	range: TimeRange;
 	setRange: (range: TimeRange) => void;
 	getChunk: (timestamp: number, index: number) => Chunk;
 	panelsRange: Array<PanelRange>;
@@ -89,18 +89,16 @@ const GraphChunksVirtualizer = (props: Props) => {
 		chunkWidth,
 		timestamp,
 		interval,
-		onRangeChanged,
 		setRange,
 		getChunk,
 		panelsRange,
+		range,
 	} = props;
 
 	const viewportElementRef = React.useRef<HTMLDivElement>(null);
 	const rangeElementRef = React.useRef<HTMLDivElement>(null);
 	const prevItemsRef = React.useRef<HTMLDivElement>(null);
 	const nextItemsRef = React.useRef<HTMLDivElement>(null);
-
-	const initialRangeCalculation = React.useRef(true);
 
 	const [state, setState] = React.useState<State>(setInitialState(settings));
 
@@ -111,6 +109,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const startX = React.useRef(0);
 	const scrollLeft = React.useRef(0);
 	const isDown = React.useRef(false);
+	const innerRange = React.useRef<null | TimeRange>(null);
 
 	const [panels, setPanels] = React.useState<Array<PanelsRangeMarker | null>>([]);
 
@@ -279,15 +278,8 @@ const GraphChunksVirtualizer = (props: Props) => {
 
 			if (intervalStart.isValid() && intervalEnd.isValid()) {
 				const updatedRange: TimeRange = [intervalStart.valueOf(), intervalEnd.valueOf()];
+				innerRange.current = updatedRange;
 				setRange(updatedRange);
-
-				// TODO: temporary workaround to ignore initial range calculation
-				// in order to avoid refetching data;
-				if (initialRangeCalculation.current) {
-					initialRangeCalculation.current = false;
-				} else {
-					onRangeChanged(updatedRange);
-				}
 			}
 		}
 	}, 50);
@@ -304,9 +296,10 @@ const GraphChunksVirtualizer = (props: Props) => {
 		return data;
 	};
 
-	const scrollHalfInterval = (direction: -1 | 1 = 1) => {
+	const scrollHalfInterval = (direction: 'left' | 'right') => {
+		const x = direction === 'left' ? 1 : -1;
 		if (viewportElementRef.current) {
-			viewportElementRef.current.scrollLeft -= (chunkWidth * direction) / 2;
+			viewportElementRef.current.scrollLeft -= (chunkWidth * x) / 2;
 		}
 	};
 
@@ -345,6 +338,18 @@ const GraphChunksVirtualizer = (props: Props) => {
 		}
 	};
 
+	const windowTimeRange: TimeRange = React.useMemo(() => {
+		const [from, to] = range;
+		return [
+			moment(from)
+				.subtract(interval / 2, 'minutes')
+				.valueOf(),
+			moment(to)
+				.add(interval / 2, 'minutes')
+				.valueOf(),
+		];
+	}, [range]);
+
 	return (
 		<div className='graph-virtualizer'>
 			<div
@@ -366,28 +371,127 @@ const GraphChunksVirtualizer = (props: Props) => {
 						),
 				)}
 			</div>
+			{panelsRange.map(panel => (
+				<TimeSelector
+					key={panel.type}
+					windowTimeRange={windowTimeRange}
+					onClick={panel.setRange}
+					interval={interval}
+					panelType={panel.type}
+				/>
+			))}
 			<div
 				className='graph-virtualizer__dragging-zone'
 				style={{ width: chunkWidth, left: (window.innerWidth - chunkWidth) / 2 }}
 				ref={rangeElementRef}
 			/>
-			<div
-				className='graph-virtualizer__arrow-button left'
-				style={{ left: chunkWidth / 2 }}
-				onClick={() => scrollHalfInterval()}>
-				<i className='graph-virtualizer__arrow-icon'></i>
-			</div>
-			<div
-				className='graph-virtualizer__arrow-button right'
-				style={{ left: chunkWidth * 1.5 }}
-				onClick={() => scrollHalfInterval(-1)}>
-				<i className='graph-virtualizer__arrow-icon'></i>
-			</div>
+			<ArrowButton left={chunkWidth / 2} direction='left' onClick={scrollHalfInterval} />
+			<ArrowButton left={chunkWidth * 1.5} direction='right' onClick={scrollHalfInterval} />
 		</div>
 	);
 };
 
 export default React.memo(GraphChunksVirtualizer);
+
+interface ArrowButtonProps {
+	direction: 'left' | 'right';
+	left: number;
+	onClick: (direction: 'left' | 'right') => void;
+}
+
+function ArrowButton({ left, direction, onClick }: ArrowButtonProps) {
+	return (
+		<div
+			className={`arrow-button ${direction}`}
+			style={{ left }}
+			onClick={() => onClick(direction)}>
+			<i className='arrow-button__icon'></i>
+		</div>
+	);
+}
+
+interface TimeSelectorProps {
+	onClick: (range: TimeRange) => void;
+	windowTimeRange: TimeRange;
+	interval: number;
+	panelType: GraphPanelType;
+}
+
+function TimeSelector(props: TimeSelectorProps) {
+	const { onClick, windowTimeRange, interval, panelType } = props;
+
+	const delayedSetState = React.useRef<NodeJS.Timeout | null>(null);
+	const rootRef = React.useRef<HTMLDivElement>(null);
+	const pointerRef = React.useRef<HTMLSpanElement>(null);
+	const dashedLineRef = React.useRef<HTMLDivElement>(null);
+
+	function handleClick(e: React.MouseEvent<HTMLSpanElement>) {
+		if (rootRef.current) {
+			const [from, to] = windowTimeRange;
+			const { left, width } = rootRef.current.getBoundingClientRect();
+			const clickPoint = e.pageX - left;
+			const clickedTime = from + (to - from) * (clickPoint / width);
+			const clickedRange: TimeRange = [
+				moment(clickedTime)
+					.subtract((interval * 60) / 2, 'seconds')
+					.valueOf(),
+				moment(clickedTime)
+					.add((interval * 60) / 2, 'seconds')
+					.valueOf(),
+			];
+			onClick(clickedRange);
+		}
+	}
+
+	function handleMouseEnter() {
+		if (!delayedSetState.current) {
+			delayedSetState.current = setTimeout(() => {
+				const pointerEl = pointerRef.current;
+				const dashedLineEl = dashedLineRef.current;
+				if (pointerEl && dashedLineEl) {
+					pointerEl.style.display = 'block';
+					dashedLineEl.style.display = 'block';
+				}
+			}, 60);
+		}
+	}
+
+	function handleMouseOut() {
+		if (delayedSetState.current) {
+			clearTimeout(delayedSetState.current);
+			delayedSetState.current = null;
+			const pointerEl = pointerRef.current;
+			const dashedLineEl = dashedLineRef.current;
+			if (pointerEl && dashedLineEl) {
+				pointerEl.style.display = 'none';
+				dashedLineEl.style.display = 'none';
+			}
+		}
+	}
+
+	function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+		const pointerEl = pointerRef.current;
+		if (pointerEl) {
+			pointerEl.style.left = `${e.clientX - pointerEl.offsetWidth / 2}px`;
+		}
+	}
+
+	return (
+		<div
+			className={`time-picker ${panelType}`}
+			ref={rootRef}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseOut}
+			onMouseMove={handleMouseMove}>
+			<div ref={dashedLineRef} className={`time-picker__dashed-line ${panelType}`} />
+			<span
+				className={`time-picker__pointer ${panelType}`}
+				ref={pointerRef}
+				onClick={handleClick}
+			/>
+		</div>
+	);
+}
 
 function getDivInterval(intervalDiv: HTMLDivElement): null | TimeRange {
 	const from = parseInt(intervalDiv.dataset.from || '');

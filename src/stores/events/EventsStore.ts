@@ -258,6 +258,16 @@ export default class EventsStore {
 		this.isLoadingRootEvents = false;
 	};
 
+	@action
+	public onRangeChange = ([timestampFrom, timestampTo]: TimeRange) => {
+		this.filterStore.eventsFilter = {
+			timestampFrom,
+			timestampTo,
+			eventTypes: [],
+			names: [],
+		};
+	};
+
 	private detailedEventAC: AbortController | null = null;
 
 	@action

@@ -528,6 +528,15 @@ export default class MessagesStore {
 	};
 
 	@action
+	public onRangeChange = ([timestampFrom, timestampTo]: TimeRange) => {
+		this.filterStore.messagesFilter = {
+			...this.filterStore.messagesFilter,
+			timestampFrom,
+			timestampTo,
+		};
+	};
+
+	@action
 	public setScrollTopMessageId = (index: number) => {
 		this.scrollTopMessageId = this.messagesIds[index];
 	};

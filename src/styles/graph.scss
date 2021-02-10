@@ -57,7 +57,7 @@
 		}
 
 		&-icon {
-			@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+			@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
 
 			display: inline-block;
 			margin-right: 5px;
@@ -142,7 +142,7 @@
 				height: 6px;
 				background-color: rgb(247, 167, 110);
 			}
-	
+
 			&.messages-panel {
 				width: 30px;
 				height: 6px;
@@ -249,7 +249,7 @@
 		z-index: 101;
 
 		&::before {
-			content: "";
+			content: '';
 			position: absolute;
 			top: -2px;
 			left: -2px;
@@ -375,7 +375,7 @@
 		display: flex;
 		position: relative;
 	}
-	
+
 	&__dragging-zone {
 		visibility: hidden;
 		height: 100%;
@@ -383,7 +383,23 @@
 		top: 0;
 	}
 
-	&__arrow-button {
+	&__panel-marker {
+		width: 960px;
+		height: 5px;
+		position: absolute;
+		z-index: 50;
+		border-radius: 2px;
+
+		&.events-panel {
+			background-color: rgba($color: rgb(247, 167, 110), $alpha: 0.7);
+		}
+
+		&.messages-panel {
+			background-color: rgba($color: rgb(26, 196, 229), $alpha: 0.7);
+		}
+	}
+
+	.arrow-button {
 		width: 21px;
 		height: 21px;
 		border-radius: 50%;
@@ -396,9 +412,10 @@
 		align-items: center;
 		justify-content: center;
 		cursor: pointer;
+		transition: box-shadow 0.15s;
 
-		&:hover i {
-			transform: scale(1.1);
+		&:hover {
+			box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.45);
 		}
 
 		&.left {
@@ -409,34 +426,65 @@
 			transform: translateX(10px);
 			left: 35px;
 			& i {
-				transform: rotate(180deg) scale(1);
-
-				&:hover {
-					transform: rotate(180deg) scale(1.1);
-				}
+				transform: rotate(180deg);
 			}
 		}
+
+		&__icon {
+			@include icon(url(../../resources/icons/graph-arrow-left.svg), 15px, 15px);
+			transition: transform 0.1s;
+			display: inline-block;
+		}
 	}
 
-	&__arrow-icon {
-		@include icon(url(../../resources/icons/graph-arrow-left.svg), 15px, 15px);
-		transition: transform 0.1s;
-		display: inline-block;
-	}
+	.time-picker {
+		height: 6px;
+		width: 100%;
+		position: absolute;
+		bottom: 0;
+		z-index: 15;
 
-	&__panel-marker {
-		width: 960px;
-    height: 5px;
-    position: absolute;
-    z-index: 50;
-    border-radius: 2px;
+		&__dashed-line {
+			position: absolute;
+			top: 3px;
+			left: 0;
+			width: 100%;
+			display: none;
 
-		&.events-panel {
-			background-color: rgba($color: rgb(247, 167, 110), $alpha: 0.7);
+			&.events-panel {
+				border-bottom: 1px dashed rgb(247, 167, 110);
+			}
+
+			&.messages-panel {
+				border-bottom: 1px dashed rgb(26, 196, 229);
+			}
 		}
 
-		&.messages-panel {
-			background-color: rgba($color: rgb(26, 196, 229), $alpha: 0.7);
+		&:hover {
+			&::before {
+				display: block;
+			}
+		}
+
+		& ~ .time-picker {
+			bottom: 6px;
+		}
+
+		&__pointer {
+			cursor: pointer;
+			width: 6px;
+			height: 6px;
+			position: absolute;
+			border-radius: 50%;
+			border: 1px solid #fff;
+
+			&.events-panel {
+				background-color: rgb(247, 167, 110);
+			}
+
+			&.messages-panel {
+				background-color: rgb(26, 196, 229);
+			}
 		}
 	}
 }
