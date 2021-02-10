@@ -296,8 +296,8 @@
 				p::before {
 					content: '';
 					display: inline-block;
-					@include icon(url(../../resources/icons/expand-filled.svg), 12px, 10px);
-					transform: translateY(3px);
+					@include icon(url(../../resources/icons/expand.svg), 12px, 10px);
+					transform: translateY(2px);
 					margin-right: 7px;
 				}
 			}
@@ -306,8 +306,8 @@
 				p::before {
 					content: '';
 					display: inline-block;
-					@include icon(url(../../resources/icons/collapse-filled.svg), 12px, 10px);
-					transform: translateY(3px);
+					@include icon(url(../../resources/icons/collapse.svg), 12px, 10px);
+					transform: translateY(2px);
 					margin-right: 7px;
 				}
 			}
@@ -414,7 +414,7 @@
 
 	td,
 	th {
-		padding: 2px 7px;
+		padding: 4px 10px;
 		text-align: left;
 	}
 
@@ -438,8 +438,8 @@
 			p::before {
 				content: '';
 				display: inline-block;
-				@include icon(url(../../resources/icons/expand.svg), 14px, 12px);
-				transform: translateY(3px);
+				@include icon(url(../../resources/icons/expand-filled.svg), 12px, 10px);
+				transform: translateY(2px);
 				margin-right: 7px;
 			}
 		}
@@ -448,8 +448,8 @@
 			p::before {
 				content: '';
 				display: inline-block;
-				@include icon(url(../../resources/icons/collapse.svg), 14px, 12px);
-				transform: translateY(3px);
+				@include icon(url(../../resources/icons/collapse-filled.svg), 12px, 10px);
+				transform: translateY(2px);
 				margin-right: 7px;
 			}
 		}
@@ -462,8 +462,6 @@
 		p {
 			margin: 0;
 			text-decoration: none;
-			font-weight: bold;
-			font-size: 10pt;
 			display: inline-block;
 		}
 
@@ -476,7 +474,7 @@
 		p {
 			margin: 0;
 			text-decoration: none;
-			font-size: 14px;
+			font-size: 12px;
 		}
 	}
 }
