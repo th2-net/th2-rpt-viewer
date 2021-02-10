@@ -145,7 +145,7 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 						</div>
 					))}
 					<TimestampInput
-						timestamp={from}
+						timestamp={from + (to - from) / 2}
 						wrapperClassName='graph-range-selector__timestamp-input timestamp-input'
 						onSubmit={onInputSubmit}
 					/>
