@@ -22,9 +22,9 @@ import GraphItemsMenu from './GraphItemsMenu';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { GraphItem, GraphItemType } from '../../models/Graph';
-import TimestampInput from '../util/TimestampInput';
 import { getEventStatus, isEventNode } from '../../helpers/event';
+import { GraphItem, GraphItemType } from '../../models/Graph';
+import TimestampInput from '../util/timestamp-input/TimestampInput';
 import { TimeRange } from '../../models/Timestamp';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { EventStatus } from '../../models/Status';
@@ -145,6 +145,7 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 						</div>
 					))}
 					<TimestampInput
+						timestamp={from + (to - from) / 2}
 						wrapperClassName='graph-range-selector__timestamp-input timestamp-input'
 						onSubmit={onInputSubmit}
 					/>

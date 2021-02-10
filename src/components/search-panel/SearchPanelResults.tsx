@@ -18,11 +18,11 @@ import React from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import moment from 'moment';
 import { isEventNode } from '../../helpers/event';
-import { BookmarkItem } from '../BookmarksPanel';
+import { BookmarkedItem, BookmarkItem } from '../BookmarksPanel';
 import { SearchResult } from '../../stores/SearchStore';
 
 interface SearchPanelResultsProps {
-	onResultItemClick: (searchResult: SearchResult) => void;
+	onResultItemClick: (searchResult: BookmarkedItem) => void;
 	onResultDelete: () => void;
 	disableNext: boolean;
 	disablePrev: boolean;

@@ -43,4 +43,23 @@
 		border: none;
 		cursor: pointer;
 	}
+	&__dialog {
+		overflow: auto;
+		background-color: #fff;
+		border-radius: 4px;
+		width: 100%;
+		&.bordered {
+			border: 1px solid $timestampInputBorderColor;
+			padding: 5px 9px;
+		}
+		.spinner {
+			@include spinner(3px);
+			margin: 4px auto;
+		}	
+		p {
+			text-align: center;
+			font-size: 12px;
+			margin: 0 0 6px;
+		}
+	}
 }
