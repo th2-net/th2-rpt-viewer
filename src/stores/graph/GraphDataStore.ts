@@ -16,10 +16,9 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
-import { getTimestampAsNumber, isTimeInsideInterval } from '../../helpers/date';
 import { isEventNode } from '../../helpers/event';
 import { calculateTimeRange } from '../../helpers/graph';
-import { Chunk, GraphItem, GraphItemType, IntervalData, IntervalOption } from '../../models/Graph';
+import { Chunk, GraphItem, GraphItemType, IntervalOption } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import { SelectedStore } from '../SelectedStore';
 

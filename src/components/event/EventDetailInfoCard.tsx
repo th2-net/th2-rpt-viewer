@@ -41,7 +41,7 @@ function EventDetailInfoCard(props: Props) {
 		return <SplashScreen />;
 	}
 
-	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId, batchId } = event;
+	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId } = event;
 
 	const status = getEventStatus(event);
 	const isPinned = selectedStore.pinnedEvents.findIndex(e => e.eventId === event.eventId) !== -1;

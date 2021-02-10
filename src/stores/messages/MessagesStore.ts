@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, observable, toJS, reaction, IReactionDisposer, runInAction } from 'mobx';
+import { ListRange } from 'react-virtuoso/dist/engines/scrollSeekEngine';
 import ApiSchema from '../../api/ApiSchema';
 import FilterStore from '../FilterStore';
 import { EventMessage } from '../../models/EventMessage';
@@ -90,6 +91,12 @@ export default class MessagesStore {
 	@observable
 	public messagesListErrorStatusCode: number | null = null;
 
+	@observable
+	public currentMessagesIndexesRange: ListRange = {
+		startIndex: 0,
+		endIndex: 0,
+	};
+
 	constructor(
 		private workspaceStore: WorkspaceStore,
 		private selectedStore: SelectedStore,
@@ -140,16 +147,19 @@ export default class MessagesStore {
 
 	@computed
 	public get panelRange(): TimeRange | null {
-		const fromMsgId = this.messagesIds
+		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
+		const messagesIds = this.messagesIds.slice(startIndex, endIndex);
+
+		const fromMsgId = messagesIds
 			.slice()
 			.reverse()
 			.find(messageId => this.messagesCache.get(messageId));
-		const toMsgId = this.messagesIds.find(messageId => this.messagesCache.get(messageId));
+		const toMsgId = messagesIds.find(messageId => this.messagesCache.get(messageId));
 
 		const messageFrom = fromMsgId && this.messagesCache.get(fromMsgId);
 		const messageTo = toMsgId && this.messagesCache.get(toMsgId);
 
-		if (messageFrom && messageTo && messageFrom !== messageTo) {
+		if (messageFrom && messageTo) {
 			return [
 				getTimestampAsNumber(messageFrom.timestamp),
 				getTimestampAsNumber(messageTo.timestamp),

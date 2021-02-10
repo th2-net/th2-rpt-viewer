@@ -127,7 +127,7 @@ function Graph() {
 			{
 				type: 'messages-panel',
 				range: activeWorkspace.messagesStore.panelRange,
-				setRange: activeWorkspace.eventsStore.onRangeChange,
+				setRange: activeWorkspace.messagesStore.onRangeChange,
 			},
 		];
 	}, [activeWorkspace.eventsStore.panelRange, activeWorkspace.messagesStore.panelRange]);

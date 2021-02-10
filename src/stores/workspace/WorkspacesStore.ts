@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed, reaction } from 'mobx';
+import { observable, action, computed } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
