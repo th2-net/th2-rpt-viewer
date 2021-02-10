@@ -21,7 +21,7 @@ import EventTreeList from './EventTreeList';
 import Empty from '../../util/Empty';
 import SplitView from '../../split-view/SplitView';
 import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks';
-import EventDetailInfo from '../EventDetailInfo';
+import EventDetailInfoCard from '../EventDetailInfoCard';
 
 function EventTreeView() {
 	const eventWindowStore = useWorkspaceEventStore();
@@ -47,7 +47,7 @@ function EventTreeView() {
 						/>
 					))}
 				{eventWindowStore.selectedNode && (
-					<EventDetailInfo
+					<EventDetailInfoCard
 						node={eventWindowStore.selectedNode}
 						event={eventWindowStore.selectedEvent}
 						childrenCount={eventWindowStore.selectedNode?.childList.length}

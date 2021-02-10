@@ -19,7 +19,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useWorkspaceEventStore, useParentEvents } from '../../../hooks';
 import EventCardHeader from '../EventCardHeader';
-import EventDetailInfo from '../EventDetailInfo';
+import EventDetailInfoCard from '../EventDetailInfoCard';
 import { EventTreeNode } from '../../../models/EventAction';
 
 interface Props {
@@ -41,7 +41,7 @@ function DetailedFlatEventCard(props: Props) {
 	const node = selectedNode === null ? eventWindowStore.selectedNode : selectedNode;
 
 	return (
-		<EventDetailInfo node={node!} event={event} childrenCount={selectedNode?.childList.length}>
+		<EventDetailInfoCard node={node!} event={event} childrenCount={selectedNode?.childList.length}>
 			{parentNodes.length > 0 && (
 				<div className='event-detail-info__parents'>
 					{parentNodes.map(eventNode => (
@@ -61,7 +61,7 @@ function DetailedFlatEventCard(props: Props) {
 					)}
 				</div>
 			)}
-		</EventDetailInfo>
+		</EventDetailInfoCard>
 	);
 }
 
