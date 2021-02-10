@@ -25,7 +25,7 @@ import { EventMessage } from '../../../models/EventMessage';
 import { EventAction } from '../../../models/EventAction';
 
 interface Props {
-	history: Array<EventAction | EventMessage>
+	history: Array<EventAction | EventMessage>;
 }
 
 const TimestampHistory = (props: Props) => {

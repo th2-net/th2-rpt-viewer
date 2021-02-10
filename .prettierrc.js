@@ -25,4 +25,5 @@ module.exports = {
 	bracketSpacing: true,
 	jsxSingleQuote: true,
 	jsxBracketSameLine: true,
+	endOfLine: 'auto'
 };
