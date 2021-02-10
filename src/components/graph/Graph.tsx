@@ -117,8 +117,8 @@ function Graph() {
 		[activeWorkspace, activeWorkspace.graphDataStore.interval],
 	);
 
-	const panelsRange = React.useMemo(() => {
-		const panels: Array<PanelRange> = [
+	const panelsRange: Array<PanelRange> = React.useMemo(() => {
+		return [
 			{
 				type: 'events-panel',
 				range: activeWorkspace.eventsStore.panelRange,
@@ -130,8 +130,6 @@ function Graph() {
 				setRange: activeWorkspace.eventsStore.onRangeChange,
 			},
 		];
-
-		return panels;
 	}, [activeWorkspace.eventsStore.panelRange, activeWorkspace.messagesStore.panelRange]);
 
 	return (
@@ -149,7 +147,6 @@ function Graph() {
 				range={activeWorkspace.graphDataStore.range}
 			/>
 			<GraphOverlay
-				chunkWidth={chunkWidth}
 				range={activeWorkspace.graphDataStore.range}
 				onInputSubmit={onInputSubmit}
 				onGraphItemClick={onGraphItemClick}

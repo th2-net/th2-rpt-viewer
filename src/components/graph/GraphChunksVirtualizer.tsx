@@ -123,11 +123,11 @@ const GraphChunksVirtualizer = (props: Props) => {
 			const firstChunkRange = getDivInterval(firstChunk);
 			const offset = firstChunk.offsetLeft;
 			if (firstChunkRange) {
-				const panelsMarkerPositions = panelsRange.map(({ range, type }) => {
-					if (!range) return null;
+				const panelsMarkerPositions = panelsRange.map(({ range: panelRange, type }) => {
+					if (!panelRange) return null;
 					const widthPerMs = chunkWidth / (interval * 60 * 1000);
-					const panelWidth = (range[1] - range[0]) * widthPerMs;
-					const diff = (range[0] - firstChunkRange[0]) * (chunkWidth / (interval * 60 * 1000));
+					const panelWidth = (panelRange[1] - panelRange[0]) * widthPerMs;
+					const diff = (panelRange[0] - firstChunkRange[0]) * (chunkWidth / (interval * 60 * 1000));
 
 					return {
 						left: diff + offset,
@@ -296,13 +296,6 @@ const GraphChunksVirtualizer = (props: Props) => {
 		return data;
 	};
 
-	const scrollHalfInterval = (direction: 'left' | 'right') => {
-		const x = direction === 'left' ? 1 : -1;
-		if (viewportElementRef.current) {
-			viewportElementRef.current.scrollLeft -= (chunkWidth * x) / 2;
-		}
-	};
-
 	const onScroll = (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
 		if (
 			viewportElementRef.current &&
@@ -385,30 +378,11 @@ const GraphChunksVirtualizer = (props: Props) => {
 				style={{ width: chunkWidth, left: (window.innerWidth - chunkWidth) / 2 }}
 				ref={rangeElementRef}
 			/>
-			<ArrowButton left={chunkWidth / 2} direction='left' onClick={scrollHalfInterval} />
-			<ArrowButton left={chunkWidth * 1.5} direction='right' onClick={scrollHalfInterval} />
 		</div>
 	);
 };
 
 export default React.memo(GraphChunksVirtualizer);
-
-interface ArrowButtonProps {
-	direction: 'left' | 'right';
-	left: number;
-	onClick: (direction: 'left' | 'right') => void;
-}
-
-function ArrowButton({ left, direction, onClick }: ArrowButtonProps) {
-	return (
-		<div
-			className={`arrow-button ${direction}`}
-			style={{ left }}
-			onClick={() => onClick(direction)}>
-			<i className='arrow-button__icon'></i>
-		</div>
-	);
-}
 
 interface TimeSelectorProps {
 	onClick: (range: TimeRange) => void;

@@ -106,22 +106,6 @@ export class GraphDataStore {
 		// TODO: implement chunk data fetching
 	};
 
-	@action getIntervalData = (): IntervalData => {
-		const intervalData: IntervalData = {
-			events: 0,
-			passed: 0,
-			failed: 0,
-			messages: 0,
-			connected: 0,
-		};
-
-		intervalData.connected = this.selectedStore.attachedMessages.filter(message =>
-			isTimeInsideInterval(getTimestampAsNumber(message.timestamp), this.range),
-		).length;
-
-		return intervalData;
-	};
-
 	@action
 	public createChunks(interval: IntervalOption, timestamp: number) {
 		let chunks: Chunk[] = [this.createChunk(timestamp, interval)];

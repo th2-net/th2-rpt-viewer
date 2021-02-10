@@ -17,7 +17,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
@@ -30,25 +29,7 @@ import { GraphDataStore } from '../../stores/graph/GraphDataStore';
 import { OutsideItems, OutsideItemsMenu, OutsideItemsList } from './OutsideItems';
 import '../../styles/graph.scss';
 
-const fadeInOutVariants = {
-	visible: {
-		opacity: 1,
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-	hidden: {
-		opacity: 0,
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-};
-
 interface OverlayPanelProps {
-	chunkWidth: number;
 	range: TimeRange;
 	onInputSubmit: (timestamp: number) => void;
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
@@ -58,7 +39,6 @@ interface OverlayPanelProps {
 
 const GraphOverlay = (props: OverlayPanelProps) => {
 	const {
-		chunkWidth,
 		range: [from, to],
 		onInputSubmit,
 		onGraphItemClick,
@@ -68,13 +48,6 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 
 	const selectedStore = useSelectedStore();
 	const activeWorkspace = useActiveWorkspace();
-
-	const overlayWidth = (window.innerWidth - chunkWidth) / 2;
-	const commonStyles: React.CSSProperties = { width: overlayWidth };
-
-	const intervalValues = React.useMemo(() => {
-		return activeWorkspace.graphDataStore.getIntervalData();
-	}, [from, to, selectedStore.graphItems]);
 
 	const outsideItems: OutsideItems = React.useMemo(() => {
 		const windowTimeRange = [
@@ -146,77 +119,12 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 				direction='right'
 				className='outside-items__panels'
 			/>
-			<div className='graph-overlay left' style={commonStyles} />
-			<div className='graph-overlay right' style={commonStyles} />
-			<div className='graph-overlay__section' style={commonStyles}>
-				<i className='graph-overlay__logo' />
-				<Timestamp className='from' timestamp={from} />
-			</div>
-			<div className='graph-overlay__section right' style={commonStyles}>
-				<Timestamp className='to' timestamp={to} />
-				<div className='graph-overlay__wrapper'>
-					<AnimatePresence>
-						{selectedStore.pinnedMessages.length > 0 && (
-							<motion.button
-								variants={fadeInOutVariants}
-								initial='hidden'
-								animate='visible'
-								exit='hidden'
-								className='graph__pinned-messages-counter'>
-								<i className='graph__pinned-messages-counter-icon' />
-								<span className='graph__pinned-messages-counter-value'>
-									{`${selectedStore.pinnedMessages.length} saved`}
-								</span>
-							</motion.button>
-						)}
-					</AnimatePresence>
-					<div className='graph__search-button' />
-					<div className='graph__settings-button' />
-				</div>
-			</div>
-			<div className='graph-range-selector__border left' style={{ left: overlayWidth }} />
-			<div
-				className='graph-range-selector__border right'
-				style={{ left: overlayWidth + chunkWidth }}
-			/>
-			<div className='graph-range-selector' style={{ width: chunkWidth, left: overlayWidth }}>
-				<div className='graph-range-selector__wrapper'>
-					{Object.entries(intervalValues).map(([key, value], index) => (
-						<div
-							key={key}
-							style={{
-								order: index,
-							}}
-							className={`graph-range-selector__counter ${key}`}>
-							{['passed', 'failed', 'connected'].includes(key) && (
-								<i className='graph-range-selector__counter-icon' />
-							)}
-							<span className='graph-range-selector__counter-value'>{`${value} ${key}`}</span>
-						</div>
-					))}
-					<TimestampInput
-						timestamp={from + (to - from) / 2}
-						wrapperClassName='graph-range-selector__timestamp-input timestamp-input'
-						onSubmit={onInputSubmit}
-					/>
-				</div>
+			<i className='th2-logo' />
+			<div className='graph-search-input'>
+				<TimestampInput timestamp={from + (to - from) / 2} onSubmit={onInputSubmit} />
 			</div>
 		</>
 	);
 };
-
-interface TimestampProps {
-	timestamp: number;
-	className?: string;
-}
-
-function Timestamp({ timestamp, className = '' }: TimestampProps) {
-	return (
-		<div className={`graph-timestamp ${className}`}>
-			{moment(timestamp).utc().format('DD.MM.YYYY')} <br />
-			{moment(timestamp).utc().format('HH:mm:ss.SSS')}
-		</div>
-	);
-}
 
 export default observer(GraphOverlay);

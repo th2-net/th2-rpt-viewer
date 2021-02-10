@@ -19,6 +19,7 @@
 .timestamp-input {
 	position: relative;
 	min-width: 220px;
+
   &__input {
 		width: 100%;
 		box-sizing: border-box;
@@ -29,10 +30,12 @@
 		outline: none;
 		transition: box-shadow ease-in-out 320ms;
 		box-shadow: none;
+
 		&::placeholder {
 			font-style: italic;
 		}
 	}
+
 	&__datepicker-button {
 		@include icon(url(../../resources/icons/dateselect.svg), 15px, 15px);
 		position: absolute;
@@ -43,19 +46,23 @@
 		border: none;
 		cursor: pointer;
 	}
+
 	&__dialog {
 		overflow: auto;
 		background-color: #fff;
 		border-radius: 4px;
 		width: 100%;
+
 		&.bordered {
 			border: 1px solid $timestampInputBorderColor;
 			padding: 5px 9px;
 		}
+
 		.spinner {
 			@include spinner(3px);
 			margin: 4px auto;
-		}	
+		}
+
 		p {
 			text-align: center;
 			font-size: 12px;

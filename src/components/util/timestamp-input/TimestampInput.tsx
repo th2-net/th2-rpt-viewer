@@ -20,7 +20,7 @@ import eventHttpApi from '../../../api/event';
 import messageHttpApi from '../../../api/message';
 import { formatTimestampValue } from '../../../helpers/date';
 import { isEventAction } from '../../../helpers/event';
-import { createBemElement } from '../../../helpers/styleCreators';
+import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
 import { useActiveWorkspace, useDebouncedCallback } from '../../../hooks';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { EventAction } from '../../../models/EventAction';
@@ -51,9 +51,7 @@ interface Props {
 const TimestampInput = (props: Props) => {
 	const {
 		timestamp,
-		wrapperClassName = 'timestamp-input',
 		readonly = false,
-		className = '',
 		placeholder = 'Go to ID or Timestamp',
 		style,
 		onSubmit,
@@ -158,16 +156,14 @@ const TimestampInput = (props: Props) => {
 		setCurrentEventOrMessage(null);
 	};
 
-	const inputClassName = createBemElement(wrapperClassName, 'input');
 	const dialogClassName = createBemElement(
-		wrapperClassName,
+		'timestamp-input',
 		'dialog',
 		currentEventOrMessage || isLoading ? 'bordered' : null,
 	);
-	const datepickerButtonClassName = createBemElement(wrapperClassName, 'datepicker-button');
 
 	const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
-		className: `${inputClassName}${className ? ` ${className}` : ''}`,
+		className: 'timestamp-input__input',
 		style,
 		readOnly: readonly,
 		value: currentValue,
@@ -178,9 +174,9 @@ const TimestampInput = (props: Props) => {
 	};
 
 	return (
-		<div className={wrapperClassName} ref={wrapperRef}>
+		<div className='timestamp-input' ref={wrapperRef}>
 			<input {...inputProps} />
-			<button className={datepickerButtonClassName} onClick={toggleDatepicker} />
+			<button className='timestamp-input__datepicker-button' onClick={toggleDatepicker} />
 			<TimestampDialog
 				className={dialogClassName}
 				isOpen={showDialog}
