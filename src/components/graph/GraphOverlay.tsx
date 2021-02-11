@@ -21,7 +21,7 @@ import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { PanelRange } from '../../models/Graph';
-import { isEventNode } from '../../helpers/event';
+import { isEventNode, sortByTimestamp } from '../../helpers/event';
 import TimestampInput from '../util/timestamp-input/TimestampInput';
 import { TimeRange } from '../../models/Timestamp';
 import { getTimestampAsNumber } from '../../helpers/date';
@@ -31,7 +31,6 @@ import '../../styles/graph.scss';
 
 interface OverlayPanelProps {
 	range: TimeRange;
-	onInputSubmit: (timestamp: number) => void;
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
 	panelsRange: Array<PanelRange>;
@@ -40,7 +39,6 @@ interface OverlayPanelProps {
 const GraphOverlay = (props: OverlayPanelProps) => {
 	const {
 		range: [from, to],
-		onInputSubmit,
 		onGraphItemClick,
 		getGraphItemType,
 		panelsRange,
@@ -91,13 +89,21 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 				.filter(panelRange => panelRange.range != null && panelRange.range[0] > windowTimeRange[1])
 				.reduce((prev, curr) => ({ ...prev, [curr.type]: 1 }), {}),
 		};
-	}, [from, to]);
+	}, [from, to, panelsRange]);
 
-	const onOutSidePanelClick = (panelKey: string) => {
+	const onOutsidePanelClick = (panelKey: string) => {
 		const panel = panelsRange.find(p => p.type === panelKey);
 		if (panel) {
 			activeWorkspace.graphDataStore.timestamp =
 				panel.range[0] + (panel.range[1] - panel.range[0]) / 2;
+		}
+	};
+
+	const onOutsideItemsArrowClick = (direction: 'left' | 'right') => {
+		const items = sortByTimestamp(outsideItems[direction]);
+		const utterItem = items[direction === 'right' ? items.length - 1 : 0];
+		if (utterItem) {
+			onGraphItemClick(utterItem);
 		}
 	};
 
@@ -108,30 +114,36 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 				direction='left'
 				items={outsideItems.left}
 				getGraphItemType={getGraphItemType}
+				onArrowClick={onOutsideItemsArrowClick}
 			/>
 			<OutsideItemsMenu
 				onGraphItemClick={onGraphItemClick}
 				direction='right'
 				items={outsideItems.right}
 				getGraphItemType={getGraphItemType}
+				onArrowClick={onOutsideItemsArrowClick}
 			/>
 			<OutsideItemsList
 				showCount={false}
 				itemsMap={outsidePanels.left}
 				direction='left'
 				className='outside-items__panels'
-				onItemClick={onOutSidePanelClick}
+				onItemClick={onOutsidePanelClick}
 			/>
 			<OutsideItemsList
 				showCount={false}
 				itemsMap={outsidePanels.right}
 				direction='right'
 				className='outside-items__panels'
-				onItemClick={onOutSidePanelClick}
+				onItemClick={onOutsidePanelClick}
+				onArrowClick={onOutsideItemsArrowClick}
 			/>
 			<i className='th2-logo' />
 			<div className='graph-search-input'>
-				<TimestampInput timestamp={from + (to - from) / 2} onSubmit={onInputSubmit} />
+				<TimestampInput
+					timestamp={from + (to - from) / 2}
+					onTimestampSubmit={activeWorkspace.graphDataStore.setTimestamp}
+				/>
 			</div>
 		</>
 	);

@@ -402,7 +402,7 @@ function TimeSelector(props: TimeSelectorProps) {
 			const [from, to] = windowTimeRange;
 			const { left, width } = rootRef.current.getBoundingClientRect();
 			const clickPoint = e.pageX - left;
-			const clickedTime = from + (to - from) * (clickPoint / width);
+			const clickedTime = Math.floor(from + (to - from) * (clickPoint / width));
 			onClick(clickedTime);
 		}
 	}
@@ -424,12 +424,12 @@ function TimeSelector(props: TimeSelectorProps) {
 		if (delayedSetState.current) {
 			clearTimeout(delayedSetState.current);
 			delayedSetState.current = null;
-			const pointerEl = pointerRef.current;
-			const dashedLineEl = dashedLineRef.current;
-			if (pointerEl && dashedLineEl) {
-				pointerEl.style.display = 'none';
-				dashedLineEl.style.display = 'none';
-			}
+		}
+		const pointerEl = pointerRef.current;
+		const dashedLineEl = dashedLineRef.current;
+		if (pointerEl && dashedLineEl) {
+			pointerEl.style.display = 'none';
+			dashedLineEl.style.display = 'none';
 		}
 	}
 

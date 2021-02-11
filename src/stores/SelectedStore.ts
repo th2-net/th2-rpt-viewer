@@ -21,6 +21,8 @@ import WorkspacesStore from './workspace/WorkspacesStore';
 import localStorageWorker from '../util/LocalStorageWorker';
 import { sortMessagesByTimestamp } from '../helpers/message';
 import { isEventNode, sortByTimestamp } from '../helpers/event';
+import { GraphItem } from '../models/Graph';
+import { filterUniqueGraphItems } from '../helpers/graph';
 
 export class SelectedStore {
 	@observable.shallow
@@ -39,7 +41,7 @@ export class SelectedStore {
 		return sortByTimestamp([...this.pinnedEvents, ...this.pinnedMessages]);
 	}
 
-	@computed get graphItems(): Array<EventTreeNode | EventMessage> {
+	@computed get graphItems(): Array<GraphItem> {
 		const items = [...this.savedItems, ...this.workspacesStore.activeWorkspace.attachedMessages];
 
 		const selectedEvent = this.workspacesStore.activeWorkspace.eventsStore.selectedNode;
@@ -48,7 +50,7 @@ export class SelectedStore {
 			items.push(selectedEvent);
 		}
 
-		return sortByTimestamp(items);
+		return sortByTimestamp(filterUniqueGraphItems(items));
 	}
 
 	@computed get selectedEvents() {

@@ -68,7 +68,7 @@ export interface OutsideItems {
 	right: GraphItem[];
 }
 
-interface OutsideItemsMenuProps {
+interface OutsideItemsMenuProps extends Omit<OutsideItemsListProps, 'itemsMap'> {
 	items: GraphItem[];
 	direction: 'left' | 'right';
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
@@ -76,7 +76,7 @@ interface OutsideItemsMenuProps {
 }
 
 export function OutsideItemsMenu(props: OutsideItemsMenuProps) {
-	const { items, direction, onGraphItemClick, getGraphItemType } = props;
+	const { items, direction, onGraphItemClick, getGraphItemType, ...listProps } = props;
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
@@ -104,6 +104,7 @@ export function OutsideItemsMenu(props: OutsideItemsMenuProps) {
 	return (
 		<>
 			<OutsideItemsList
+				{...listProps}
 				ref={rootRef}
 				onClick={openMenu}
 				itemsMap={outsideItemsMap}
@@ -126,6 +127,7 @@ interface OutsideItemsListProps {
 	direction: 'left' | 'right';
 	onClick?: () => void;
 	onItemClick?: (key: string) => void;
+	onArrowClick?: (direction: 'left' | 'right') => void;
 	className?: string;
 	showCount?: boolean;
 }
@@ -133,12 +135,13 @@ interface OutsideItemsListProps {
 export const OutsideItemsList = React.forwardRef<HTMLDivElement, OutsideItemsListProps>(
 	(
 		{
-			itemsMap,
+			itemsMap = {},
 			direction,
 			onClick,
 			className = '',
 			showCount = true,
 			onItemClick,
+			onArrowClick,
 		}: OutsideItemsListProps,
 		ref,
 	) => {
@@ -151,10 +154,17 @@ export const OutsideItemsList = React.forwardRef<HTMLDivElement, OutsideItemsLis
 						animate='visible'
 						exit='hidden'
 						className={`outside-items__indicator ${direction} ${className}`}
-						ref={ref}
-						onClick={onClick}>
-						<i className={`outside-items__indicator-pointer ${direction}`} />
-						<div className='outside-items__wrapper'>
+						ref={ref}>
+						<i
+							className={`outside-items__indicator-pointer ${direction}`}
+							onClick={e => {
+								if (onArrowClick) {
+									e.stopPropagation();
+									onArrowClick(direction);
+								}
+							}}
+						/>
+						<div className='outside-items__wrapper' onClick={onClick}>
 							{Object.entries(itemsMap)
 								.filter(([_type, count]) => Boolean(count))
 								.map(([type, count]) => (

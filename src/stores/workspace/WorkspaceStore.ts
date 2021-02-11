@@ -77,7 +77,6 @@ export default class WorkspaceStore {
 		this.messagesStore = new MessagesStore(
 			this,
 			this.selectedStore,
-			this.graphDataStore,
 			this.api,
 			initialState.messages || null,
 		);

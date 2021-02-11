@@ -102,3 +102,14 @@ export function getGraphTimeTicks(timeRange: TimeRange, interval: number, tickSi
 
 	return ticksArr.map(tick => moment(tick).utc().format('HH:mm'));
 }
+
+export function filterUniqueGraphItems(items: GraphItem[]) {
+	return items.filter((item, index, self) => {
+		return index === self.findIndex(selfItem => getGraphItemId(item) === getGraphItemId(selfItem));
+	});
+}
+
+function getGraphItemId(item: GraphItem) {
+	if (isEventMessage(item)) return item.messageId;
+	return item.eventId;
+}

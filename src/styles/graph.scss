@@ -346,7 +346,7 @@
 	}
 
 	&__panel-marker {
-		width: 960px;
+		min-width: 20px;
 		height: 5px;
 		position: absolute;
 		z-index: 50;
@@ -395,6 +395,7 @@
 		}
 
 		&__pointer {
+			display: none;
 			cursor: pointer;
 			width: 6px;
 			height: 6px;

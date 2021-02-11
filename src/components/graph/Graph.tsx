@@ -67,15 +67,6 @@ function Graph() {
 		[activeWorkspace.onSavedItemSelect],
 	);
 
-	const onInputSubmit = React.useCallback(
-		(timestamp: number) => {
-			if (new Date(timestamp).valueOf() > 1) {
-				activeWorkspace.graphDataStore.setTimestamp(timestamp);
-			}
-		},
-		[activeWorkspace.graphDataStore.setTimestamp],
-	);
-
 	const getGraphItemType = React.useCallback(activeWorkspace.graphDataStore.getGraphItemType, [
 		selectedStore.attachedMessages,
 		selectedStore.graphItems,
@@ -148,7 +139,6 @@ function Graph() {
 			/>
 			<GraphOverlay
 				range={activeWorkspace.graphDataStore.range}
-				onInputSubmit={onInputSubmit}
 				onGraphItemClick={onGraphItemClick}
 				getGraphItemType={getGraphItemType}
 				panelsRange={panelsRange}

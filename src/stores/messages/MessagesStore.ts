@@ -101,7 +101,6 @@ export default class MessagesStore {
 	constructor(
 		private workspaceStore: WorkspaceStore,
 		private selectedStore: SelectedStore,
-		private graphStore: GraphDataStore,
 		private api: ApiSchema,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
@@ -115,12 +114,12 @@ export default class MessagesStore {
 			};
 		}
 
-		reaction(() => this.filterStore.messagesFilter, this.onFilterChange);
-
 		this.attachedMessagesSubscription = reaction(
 			() => this.workspaceStore.attachedMessages,
 			this.onAttachedMessagesChange,
 		);
+
+		reaction(() => this.filterStore.messagesFilter, this.onFilterChange);
 
 		reaction(() => this.filterStore.messagesFilter.streams, this.onStreamsChanged);
 
@@ -317,12 +316,6 @@ export default class MessagesStore {
 
 			const newMessagesIds = timelineDirection === 'next' ? messagesIds.reverse() : messagesIds;
 
-			if (newMessagesIds.length) {
-				// TODO: It's a temporary measure to build a timeline relatively to first
-				// message timestamps until timeline helper api is released.
-				await this.fetchMessage(messagesIds[0]);
-			}
-
 			if (timelineDirection === 'next') {
 				this.messagesIds = [...newMessagesIds, ...this.messagesIds];
 			} else {
@@ -361,17 +354,22 @@ export default class MessagesStore {
 	};
 
 	@action
-	public loadPreviousMessages = async (loadBody = true, messageId?: string) => {
+	public loadPreviousMessages = async (loadBody = true, messageId?: string | null) => {
 		if (this.isEndReached) return [];
 		this.abortControllers.prevAC?.abort();
 		this.abortControllers.prevAC = new AbortController();
 
 		this.messagesLoadingState.loadingPreviousItems = true;
-		const originMessageId =
-			messageId ||
-			(!this.messagesIds.length
-				? this.workspaceStore.attachedMessages[0]?.messageId
-				: this.messagesIds[this.messagesIds.length - 1]);
+		let originMessageId: string | null | undefined = messageId;
+
+		if (messageId !== null) {
+			originMessageId =
+				messageId ||
+				(!this.messagesIds.length
+					? this.workspaceStore.attachedMessages[0]?.messageId
+					: this.messagesIds[this.messagesIds.length - 1]);
+		}
+
 		const chunkSize = messageId ? this.MESSAGES_CHUNK_SIZE - 1 : this.MESSAGES_CHUNK_SIZE;
 
 		try {
@@ -507,7 +505,7 @@ export default class MessagesStore {
 		this.resetMessagesState();
 		this.messagesLoadingState.loadingRootItems = true;
 		try {
-			await this.loadPreviousMessages(false);
+			await this.loadPreviousMessages(false, null);
 		} finally {
 			this.messagesLoadingState.loadingRootItems = false;
 		}
