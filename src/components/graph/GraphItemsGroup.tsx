@@ -19,7 +19,7 @@ import GraphItemsMenu from './GraphItemsMenu';
 import { createBemElement } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { GraphGroup, GraphItem, GraphItemType } from '../../models/Graph';
+import { GraphGroup, GraphItem } from '../../models/Graph';
 import { getEventStatus, isEventMessage, isEventNode } from '../../helpers/event';
 import { GraphDataStore } from '../../stores/graph/GraphDataStore';
 

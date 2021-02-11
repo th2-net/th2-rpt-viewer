@@ -14,8 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-/* eslint-disable no-new-wrappers */
-
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import ResizeObserver from 'resize-observer-polyfill';

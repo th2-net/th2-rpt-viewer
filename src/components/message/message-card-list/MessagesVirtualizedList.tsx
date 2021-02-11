@@ -107,6 +107,7 @@ const MessagesVirtualizedList = (props: Props) => {
 				className={className}
 				ScrollContainer={ScrollContainer}
 				rangeChanged={range => {
+					messageStore.currentMessagesIndexesRange = range;
 					messageStore.setScrollTopMessageId(range.startIndex);
 				}}
 			/>

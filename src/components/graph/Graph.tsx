@@ -67,15 +67,6 @@ function Graph() {
 		[activeWorkspace.onSavedItemSelect],
 	);
 
-	const onInputSubmit = React.useCallback(
-		(timestamp: number) => {
-			if (new Date(timestamp).valueOf() > 1) {
-				activeWorkspace.graphDataStore.setTimestamp(timestamp);
-			}
-		},
-		[activeWorkspace.graphDataStore.setTimestamp],
-	);
-
 	const getGraphItemType = React.useCallback(activeWorkspace.graphDataStore.getGraphItemType, [
 		selectedStore.attachedMessages,
 		selectedStore.graphItems,
@@ -117,19 +108,19 @@ function Graph() {
 		[activeWorkspace, activeWorkspace.graphDataStore.interval],
 	);
 
-	const panelsRange = React.useMemo(() => {
-		const panels: Array<PanelRange> = [
+	const panelsRange: Array<PanelRange> = React.useMemo(() => {
+		return [
 			{
 				type: 'events-panel',
 				range: activeWorkspace.eventsStore.panelRange,
+				setRange: activeWorkspace.eventsStore.onRangeChange,
 			},
 			{
 				type: 'messages-panel',
 				range: activeWorkspace.messagesStore.panelRange,
+				setRange: activeWorkspace.messagesStore.onRangeChange,
 			},
 		];
-
-		return panels;
 	}, [activeWorkspace.eventsStore.panelRange, activeWorkspace.messagesStore.panelRange]);
 
 	return (
@@ -139,17 +130,15 @@ function Graph() {
 				settings={settings}
 				renderChunk={renderChunk}
 				setRange={activeWorkspace.graphDataStore.setRange}
-				onRangeChanged={activeWorkspace.onRangeChange}
 				getChunk={getChunk}
 				interval={activeWorkspace.graphDataStore.interval}
 				timestamp={activeWorkspace.graphDataStore.timestamp}
 				key={activeWorkspace.graphDataStore.timestamp}
 				panelsRange={panelsRange}
+				range={activeWorkspace.graphDataStore.range}
 			/>
 			<GraphOverlay
-				chunkWidth={chunkWidth}
 				range={activeWorkspace.graphDataStore.range}
-				onInputSubmit={onInputSubmit}
 				onGraphItemClick={onGraphItemClick}
 				getGraphItemType={getGraphItemType}
 				panelsRange={panelsRange}

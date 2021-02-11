@@ -17,6 +17,7 @@
 import { autorun, toJS } from 'mobx';
 import { TabTypes } from '../models/util/Windows';
 import { EventStoreURLState } from '../stores/events/EventsStore';
+import { MessagesStoreURLState } from '../stores/messages/MessagesStore';
 import RootStore from '../stores/RootStore';
 import { WorkspacesUrlState } from '../stores/workspace/WorkspacesStore';
 import { getEventNodeParents } from './event';
@@ -44,6 +45,8 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 	autorun(() => {
 		const activeWorkspace = rootStore.workspacesStore.activeWorkspace;
 		let eventStoreState: EventStoreURLState = {};
+		let messagesStoreState: MessagesStoreURLState = {};
+
 		if (activeWorkspace) {
 			const eventsStore = activeWorkspace.eventsStore;
 			eventStoreState = {
@@ -68,6 +71,13 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 						? eventsStore.selectedParentNode.eventId
 						: undefined,
 			};
+			const messagesStore = activeWorkspace.messagesStore;
+			messagesStoreState = {
+				filter: {
+					timestampFrom: messagesStore.filterStore.messagesFilter.timestampFrom,
+					timestampTo: messagesStore.filterStore.messagesFilter.timestampTo,
+				},
+			};
 		}
 
 		getObjectKeys(eventStoreState).forEach(key => {
@@ -76,10 +86,16 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 			}
 		});
 
+		getObjectKeys(messagesStoreState).forEach(key => {
+			if (messagesStoreState[key] === undefined) {
+				delete messagesStoreState[key];
+			}
+		});
+
 		const urlState: WorkspacesUrlState = [
 			toJS({
 				events: eventStoreState,
-				messages: {},
+				messages: messagesStoreState,
 				timeRange: activeWorkspace.graphDataStore.range,
 				interval: activeWorkspace.graphDataStore.interval,
 				layout: activeWorkspace.viewStore.panelsLayout,

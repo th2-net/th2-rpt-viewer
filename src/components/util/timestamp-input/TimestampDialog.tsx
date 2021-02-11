@@ -38,7 +38,7 @@ const TimestampDialog = (props: Props) => {
 		width: rect ? `${rect.width}px` : 0,
 		top: rect ? `${rect.y + rect.height + 1}px` : 0,
 		left: rect ? `${rect.x}px` : 0,
-		zIndex: 11,
+		zIndex: 1000,
 	};
 
 	const time = isEventAction(foundObject) ? foundObject.startTimestamp : foundObject?.timestamp;
