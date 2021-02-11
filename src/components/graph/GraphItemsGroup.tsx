@@ -16,12 +16,28 @@
 
 import React from 'react';
 import GraphItemsMenu from './GraphItemsMenu';
-import { createBemElement } from '../../helpers/styleCreators';
+import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { GraphGroup, GraphItem } from '../../models/Graph';
-import { getEventStatus, isEventMessage, isEventNode } from '../../helpers/event';
+import { GraphGroup, GraphItemType } from '../../models/Graph';
+import { getEventStatus, isEventNode } from '../../helpers/event';
 import { GraphDataStore } from '../../stores/graph/GraphDataStore';
+import { EventStatus } from '../../models/Status';
+
+type GroupItemType =
+	| GraphItemType.ATTACHED_MESSAGE
+	| GraphItemType.PINNED_MESSAGE
+	| EventStatus.FAILED
+	| EventStatus.PASSED;
+
+const listIconsPriority: { [key in GroupItemType]: number } = {
+	[GraphItemType.ATTACHED_MESSAGE]: 3,
+	[GraphItemType.PINNED_MESSAGE]: 2,
+	[EventStatus.FAILED]: 1,
+	[EventStatus.PASSED]: 1,
+};
+
+const GROUP_MAX_ITEMS = 3;
 
 interface GraphItemsGroupProps {
 	group: GraphGroup;
@@ -39,17 +55,42 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 		setMenuAnchor(anchor => (anchor ? null : groupRef.current));
 	}
 
+	const groupHeader: Array<string> = React.useMemo(() => {
+		const map: Partial<Record<GroupItemType, number>> = {};
+
+		group.items.forEach(item => {
+			let key: GroupItemType;
+			if (isEventNode(item)) {
+				key = getEventStatus(item);
+			} else {
+				key = getGraphItemType(item) as GroupItemType;
+			}
+			map[key] = (map[key] || 0) + 1;
+		});
+
+		const entries = Object.entries(map) as Array<[GraphItemType, number]>;
+		entries.sort((entryA, entryB) => {
+			return (
+				listIconsPriority[entryB[0] as GroupItemType] -
+				listIconsPriority[entryA[0] as GroupItemType]
+			);
+		});
+		return entries.reduce<string[]>((prev, [type, amount], index, array) => {
+			const maxItems = Math.max(GROUP_MAX_ITEMS - prev.length - (array.length - 1 - index), 0);
+			const step = maxItems >= amount ? amount : maxItems;
+			return [...prev, ...new Array(step).fill(null).map(() => type)];
+		}, []);
+	}, [group]);
+
 	const dotsClassName = createBemElement('graph-item-group', 'dots', menuAnchor ? 'active' : null);
 
 	return (
 		<div className='graph-item-group' ref={groupRef} style={{ left: group.left }}>
-			<div className={dotsClassName}>
-				{group.items.slice(0, 3).map(item => (
-					<GraphDot
-						key={isEventMessage(item) ? item.messageId : item.eventId}
-						item={item}
-						openMenu={handleClick}
-						type={getGraphItemType(item)}
+			<div className={dotsClassName} onClick={handleClick}>
+				{groupHeader.map((itemType, index) => (
+					<div
+						className={createStyleSelector('graph-dot', itemType)}
+						key={`${itemType}-${index}`}
 					/>
 				))}
 			</div>
@@ -66,21 +107,3 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 }
 
 export default GraphItemsGroup;
-
-interface GraphDotProps {
-	item: GraphItem;
-	type: string;
-	openMenu: (e: React.MouseEvent<HTMLDivElement>) => void;
-}
-
-function GraphDot(props: GraphDotProps) {
-	const { item, openMenu, type } = props;
-
-	const itemClass = createBemElement(
-		'graph-dot',
-		type,
-		isEventNode(item) ? getEventStatus(item) : null,
-	);
-
-	return <div className={itemClass} onClick={openMenu} />;
-}
