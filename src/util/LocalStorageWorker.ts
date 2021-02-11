@@ -25,7 +25,7 @@ enum LocalStorageEntities {
 	PINNED_MESSAGES = 'pinnedMessages',
 	EVENTS = 'events',
 	SEARCH_HISTORY = 'search-history',
-	GO_TO_TIMESTAMP_HISTORY = 'go-to-timestamp-history',
+	GRAPH_SEARCH_HISTORY = 'graph-search-history',
 }
 class LocalStorageWorker {
 	getPersistedPinnedMessages(): EventMessage[] {
@@ -60,8 +60,8 @@ class LocalStorageWorker {
 		localStorage.setItem(LocalStorageEntities.SEARCH_HISTORY, JSON.stringify(history));
 	};
 
-	saveGOTOTimestampHistory = (history: Array<EventMessage | EventAction>) => {
-		localStorage.setItem(LocalStorageEntities.GO_TO_TIMESTAMP_HISTORY, JSON.stringify(history));
+	saveGraphSearchHistory = (history: Array<EventMessage | EventAction>) => {
+		localStorage.setItem(LocalStorageEntities.GRAPH_SEARCH_HISTORY, JSON.stringify(history));
 	};
 
 	getSearchHistory = () => {
@@ -76,12 +76,10 @@ class LocalStorageWorker {
 		}
 	};
 
-	getGOTOTimestampHistory = (): Array<EventMessage | EventAction> => {
+	getGraphSearchHistory = (): Array<EventMessage | EventAction> => {
 		try {
-			const goToTimestampHistory = localStorage.getItem(
-				LocalStorageEntities.GO_TO_TIMESTAMP_HISTORY,
-			);
-			return goToTimestampHistory ? JSON.parse(goToTimestampHistory) : [];
+			const graphSearchHistory = localStorage.getItem(LocalStorageEntities.GRAPH_SEARCH_HISTORY);
+			return graphSearchHistory ? JSON.parse(graphSearchHistory) : [];
 		} catch (error) {
 			return [];
 		}

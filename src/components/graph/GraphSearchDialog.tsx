@@ -16,13 +16,13 @@
 
 import * as React from 'react';
 import TimeAgo from 'react-timeago';
-import { getTimestampAsNumber } from '../../../helpers/date';
-import { isEventAction } from '../../../helpers/event';
-import { EventAction } from '../../../models/EventAction';
-import { EventMessage } from '../../../models/EventMessage';
-import { BookmarkItem } from '../../BookmarksPanel';
-import { ModalPortal } from '../Portal';
-import TimestampHistory from './TimestampHistory';
+import { getTimestampAsNumber } from '../../helpers/date';
+import { isEventAction } from '../../helpers/event';
+import { EventAction } from '../../models/EventAction';
+import { EventMessage } from '../../models/EventMessage';
+import { BookmarkItem } from '../BookmarksPanel';
+import { ModalPortal } from '../util/Portal';
+import GraphSearchHistory from './GraphSearchHistory';
 
 interface Props {
 	className: string;
@@ -49,7 +49,7 @@ const TimestampDialog = (props: Props) => {
 	return (
 		<ModalPortal isOpen={isOpen} style={style}>
 			<div className={className}>
-				{showHistory && <TimestampHistory history={history} />}
+				{showHistory && <GraphSearchHistory history={history} />}
 				{isLoading && <div className='spinner' />}
 				{foundObject && (
 					<>

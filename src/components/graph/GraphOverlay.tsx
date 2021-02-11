@@ -22,7 +22,7 @@ import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { GraphItem, GraphItemType, PanelRange } from '../../models/Graph';
 import { getEventStatus, isEventNode } from '../../helpers/event';
-import TimestampInput from '../util/go-to-timestamp-input/TimestampInput';
+import GraphSearchInput from './GraphSearchInput';
 import { TimeRange } from '../../models/Timestamp';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { GraphDataStore } from '../../stores/graph/GraphDataStore';
@@ -138,12 +138,60 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 				onItemClick={onOutsidePanelClick}
 				onArrowClick={onOutsideItemsArrowClick}
 			/>
-			<i className='th2-logo' />
-			<div className='graph-search-input'>
-				<TimestampInput
-					timestamp={from + (to - from) / 2}
-					onTimestampSubmit={activeWorkspace.graphDataStore.setTimestamp}
-				/>
+			<div className='graph-overlay left' style={commonStyles} />
+			<div className='graph-overlay right' style={commonStyles} />
+			<div className='graph-overlay__section' style={commonStyles}>
+				<i className='graph-overlay__logo' />
+				<Timestamp className='from' timestamp={from} />
+			</div>
+			<div className='graph-overlay__section right' style={commonStyles}>
+				<Timestamp className='to' timestamp={to} />
+				<div className='graph-overlay__wrapper'>
+					<AnimatePresence>
+						{selectedStore.pinnedMessages.length > 0 && (
+							<motion.button
+								variants={fadeInOutVariants}
+								initial='hidden'
+								animate='visible'
+								exit='hidden'
+								className='graph__pinned-messages-counter'>
+								<i className='graph__pinned-messages-counter-icon' />
+								<span className='graph__pinned-messages-counter-value'>
+									{`${selectedStore.pinnedMessages.length} saved`}
+								</span>
+							</motion.button>
+						)}
+					</AnimatePresence>
+					<div className='graph__search-button' />
+					<div className='graph__settings-button' />
+				</div>
+			</div>
+			<div className='graph-range-selector__border left' style={{ left: overlayWidth }} />
+			<div
+				className='graph-range-selector__border right'
+				style={{ left: overlayWidth + chunkWidth }}
+			/>
+			<div className='graph-range-selector' style={{ width: chunkWidth, left: overlayWidth }}>
+				<div className='graph-range-selector__wrapper'>
+					{Object.entries(intervalValues).map(([key, value], index) => (
+						<div
+							key={key}
+							style={{
+								order: index,
+							}}
+							className={`graph-range-selector__counter ${key}`}>
+							{['passed', 'failed', 'connected'].includes(key) && (
+								<i className='graph-range-selector__counter-icon' />
+							)}
+							<span className='graph-range-selector__counter-value'>{`${value} ${key}`}</span>
+						</div>
+					))}
+					<GraphSearchInput
+						timestamp={from + (to - from) / 2}
+						wrapperClassName='graph-range-selector__timestamp-input timestamp-input'
+						onSubmit={onInputSubmit}
+					/>
+				</div>
 			</div>
 		</>
 	);

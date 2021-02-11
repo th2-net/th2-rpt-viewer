@@ -16,19 +16,21 @@
 
 import * as React from 'react';
 import moment from 'moment';
-import eventHttpApi from '../../../api/event';
-import messageHttpApi from '../../../api/message';
-import { isEventAction } from '../../../helpers/event';
-import { createBemElement } from '../../../helpers/styleCreators';
-import { useActiveWorkspace, useDebouncedCallback } from '../../../hooks';
-import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
-import { EventAction } from '../../../models/EventAction';
-import { EventMessage } from '../../../models/EventMessage';
-import { Timestamp } from '../../../models/Timestamp';
-import KeyCodes from '../../../util/KeyCodes';
-import TimestampDialog from './TimestampDialog';
-import '../../../styles/timestamp-input.scss';
-import localStorageWorker from '../../../util/LocalStorageWorker';
+import eventHttpApi from '../../api/event';
+import messageHttpApi from '../../api/message';
+import { formatTimestampValue } from '../../helpers/date';
+import { isEventAction } from '../../helpers/event';
+import { createBemElement } from '../../helpers/styleCreators';
+import { useActiveWorkspace, useDebouncedCallback } from '../../hooks';
+import { useOutsideClickListener } from '../../hooks/useOutsideClickListener';
+import { EventAction } from '../../models/EventAction';
+import { EventMessage } from '../../models/EventMessage';
+import { DateTimeMask } from '../../models/filter/FilterInputs';
+import { Timestamp } from '../../models/Timestamp';
+import KeyCodes from '../../util/KeyCodes';
+import GraphSearchDialog from './GraphSearchDialog';
+import '../../styles/timestamp-input.scss';
+import localStorageWorker from '../../util/LocalStorageWorker';
 
 const getTimestamp = (timestamp: Timestamp) => {
 	const ms = Math.floor(timestamp.nano / 1000000);
@@ -82,6 +84,9 @@ const TimestampInput = (props: Props) => {
 	const [isLoading, setIsLoading] = React.useState(false);
 	const [showPicker, setShowPicker] = React.useState(false);
 	const [showDialog, setShowDialog] = React.useState(false);
+	const [history, setHistory] = React.useState<Array<EventAction | EventMessage>>(
+		localStorageWorker.getGraphSearchHistory(),
+	);
 
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
 	const timeout = React.useRef<NodeJS.Timeout>();
@@ -127,6 +132,8 @@ const TimestampInput = (props: Props) => {
 	React.useEffect(() => {
 		if (foundObject) {
 			activeWorkspace.onSavedItemSelect(foundObject);
+			localStorageWorker.saveGraphSearchHistory([...history, foundObject]);
+			setHistory(localStorageWorker.getGraphSearchHistory());
 			timeout.current = setTimeout(() => {
 				setShowDialog(false);
 			}, 2000);
@@ -143,8 +150,6 @@ const TimestampInput = (props: Props) => {
 			return;
 		}
 		ac.abort();
-		const currentHistory = localStorageWorker.getGOTOTimestampHistory();
-		localStorageWorker.saveGOTOTimestampHistory([...currentHistory, object]);
 		const timestamFromFoundObject = isEventAction(object)
 			? getTimestamp(object.startTimestamp)
 			: getTimestamp(object.timestamp);
@@ -187,9 +192,7 @@ const TimestampInput = (props: Props) => {
 	const dialogClassName = createBemElement(
 		'timestamp-input',
 		'dialog',
-		foundObject || isLoading || localStorageWorker.getGOTOTimestampHistory().length > 0
-			? 'bordered'
-			: null,
+		foundObject || isLoading || history.length > 0 ? 'bordered' : null,
 	);
 
 	const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
@@ -206,9 +209,9 @@ const TimestampInput = (props: Props) => {
 	return (
 		<div className='timestamp-input' ref={wrapperRef}>
 			<input {...inputProps} />
-			<button className='timestamp-input__datepicker-button' onClick={toggleDatepicker} />
-			<TimestampDialog
-				history={localStorageWorker.getGOTOTimestampHistory()}
+			<button className={datepickerButtonClassName} onClick={toggleDatepicker} />
+			<GraphSearchDialog
+				history={history}
 				className={dialogClassName}
 				isOpen={showDialog}
 				isLoading={isLoading}

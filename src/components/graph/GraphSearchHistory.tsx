@@ -17,12 +17,12 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso } from 'react-virtuoso';
-import localStorageWorker from '../../../util/LocalStorageWorker';
-import { isEventAction } from '../../../helpers/event';
-import { BookmarkItem } from '../../BookmarksPanel';
-import { useActiveWorkspace } from '../../../hooks';
-import { EventMessage } from '../../../models/EventMessage';
-import { EventAction } from '../../../models/EventAction';
+import localStorageWorker from '../../util/LocalStorageWorker';
+import { isEventAction } from '../../helpers/event';
+import { BookmarkItem } from '../BookmarksPanel';
+import { useActiveWorkspace } from '../../hooks';
+import { EventMessage } from '../../models/EventMessage';
+import { EventAction } from '../../models/EventAction';
 
 interface Props {
 	history: Array<EventAction | EventMessage>;
@@ -46,7 +46,7 @@ const TimestampHistory = (props: Props) => {
 							item={item}
 							onClick={activeWorkspace.onSavedItemSelect}
 							onRemove={() => {
-								localStorageWorker.saveGOTOTimestampHistory(
+								localStorageWorker.saveGraphSearchHistory(
 									history.filter(historyItem => historyItem !== item),
 								);
 							}}
