@@ -58,6 +58,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const isSelected = Boolean(heatmapElement);
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isPinned = selectedStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
+	const isHighlighted = messagesStore.highlightedMessageId === messageId;
 
 	const isAttached = !!workspaceStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
@@ -70,6 +71,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		isSelected ? 'selected' : null,
 		isAttached ? 'attached' : null,
 		isPinned ? 'pinned' : null,
+		isHighlighted ? 'highlighted' : null,
 	);
 
 	const showRawButtonClass = createStyleSelector(

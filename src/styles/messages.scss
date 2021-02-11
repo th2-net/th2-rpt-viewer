@@ -70,6 +70,24 @@
 	padding: 10px;
 	border-radius: 5px;
 
+	&.highlighted {
+		animation: highlight backwards 1500ms 0ms;
+
+		@keyframes highlight {
+			from {
+				background: transparent;
+			}
+
+			50% {
+				background: $highlightedMessageCardBackground;
+			}
+
+			to {
+				background: transparent;
+			}
+		}
+	}
+
 	&.attached {
 		border: 2px solid $attachedMessageCardBorderColor;
 

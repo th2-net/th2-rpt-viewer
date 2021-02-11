@@ -72,6 +72,9 @@ export default class MessagesStore {
 	public scrolledIndex: Number | null = null;
 
 	@observable
+	public highlightedMessageId: String | null = null;
+
+	@observable
 	public scrollTopMessageId: string | null = null;
 
 	@observable
@@ -215,6 +218,8 @@ export default class MessagesStore {
 		abortSignal?: AbortSignal,
 		// eslint-disable-next-line consistent-return
 	): Promise<string[] | undefined> => {
+		console.log('get messages');
+		
 		// streams are required to get messages
 		if (this.filterStore.messagesFilter.streams.length === 0) {
 			this.resetMessagesState();
@@ -395,6 +400,7 @@ export default class MessagesStore {
 		const messageIndex = this.messagesIds.indexOf(messageId);
 		if (messageIndex !== -1) {
 			this.scrolledIndex = new Number(messageIndex);
+			this.highlightedMessageId = messageId;
 			this.messagesLoadingState = defaultMessagesLoadingState;
 			return;
 		}
@@ -407,6 +413,7 @@ export default class MessagesStore {
 		try {
 			await this.loadPreviousMessages(false, messageId);
 			this.scrolledIndex = this.messagesIds.indexOf(messageId);
+			this.highlightedMessageId = messageId;
 			this.messagesLoadingState.loadingPreviousItems = false;
 			this.messagesLoadingState.loadingRootItems = false;
 		} catch (error) {
