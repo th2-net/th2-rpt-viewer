@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
+import moment from 'moment';
 import FilterStore from '../FilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
@@ -259,12 +260,15 @@ export default class EventsStore {
 	};
 
 	@action
-	public onRangeChange = ([timestampFrom, timestampTo]: TimeRange) => {
+	public onRangeChange = (timestamp: number) => {
 		this.filterStore.eventsFilter = {
-			timestampFrom,
-			timestampTo,
-			eventTypes: [],
-			names: [],
+			...this.filterStore.eventsFilter,
+			timestampFrom: moment(timestamp)
+				.subtract((this.graphStore.interval * 60) / 2, 'seconds')
+				.valueOf(),
+			timestampTo: moment(timestamp)
+				.add((this.graphStore.interval * 60) / 2, 'seconds')
+				.valueOf(),
 		};
 	};
 

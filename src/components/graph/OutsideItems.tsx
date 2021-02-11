@@ -121,16 +121,27 @@ export function OutsideItemsMenu(props: OutsideItemsMenuProps) {
 	);
 }
 
-interface OutsideItemsProps {
+interface OutsideItemsListProps {
 	itemsMap: Record<string, number | undefined>;
 	direction: 'left' | 'right';
 	onClick?: () => void;
+	onItemClick?: (key: string) => void;
 	className?: string;
 	showCount?: boolean;
 }
 
-export const OutsideItemsList = React.forwardRef<HTMLDivElement, OutsideItemsProps>(
-	({ itemsMap, direction, onClick, className = '', showCount = true }: OutsideItemsProps, ref) => {
+export const OutsideItemsList = React.forwardRef<HTMLDivElement, OutsideItemsListProps>(
+	(
+		{
+			itemsMap,
+			direction,
+			onClick,
+			className = '',
+			showCount = true,
+			onItemClick,
+		}: OutsideItemsListProps,
+		ref,
+	) => {
 		return (
 			<AnimatePresence>
 				{Object.values(itemsMap).some(Boolean) && (
@@ -147,7 +158,15 @@ export const OutsideItemsList = React.forwardRef<HTMLDivElement, OutsideItemsPro
 							{Object.entries(itemsMap)
 								.filter(([_type, count]) => Boolean(count))
 								.map(([type, count]) => (
-									<div key={type} className={`outside-items__indicator-item ${direction}`}>
+									<div
+										key={type}
+										className={`outside-items__indicator-item ${direction}`}
+										onClick={e => {
+											if (onItemClick) {
+												e.stopPropagation();
+												onItemClick(type);
+											}
+										}}>
 										<i className={`outside-items__indicator-icon ${type.toLowerCase()}`} />
 										{showCount && (
 											<span className='outside-items__indicator-value'>{`+ ${count}`}</span>

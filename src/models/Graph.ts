@@ -59,8 +59,8 @@ export enum GraphItemType {
 
 export interface PanelRange {
 	type: GraphPanelType;
-	range: TimeRange | null;
-	setRange: (range: TimeRange) => void;
+	range: TimeRange;
+	setRange: (timestamp: number) => void;
 }
 
 export interface PanelsRangeMarker {

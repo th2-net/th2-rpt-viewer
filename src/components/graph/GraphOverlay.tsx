@@ -93,6 +93,14 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 		};
 	}, [from, to]);
 
+	const onOutSidePanelClick = (panelKey: string) => {
+		const panel = panelsRange.find(p => p.type === panelKey);
+		if (panel) {
+			activeWorkspace.graphDataStore.timestamp =
+				panel.range[0] + (panel.range[1] - panel.range[0]) / 2;
+		}
+	};
+
 	return (
 		<>
 			<OutsideItemsMenu
@@ -112,12 +120,14 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 				itemsMap={outsidePanels.left}
 				direction='left'
 				className='outside-items__panels'
+				onItemClick={onOutSidePanelClick}
 			/>
 			<OutsideItemsList
 				showCount={false}
 				itemsMap={outsidePanels.right}
 				direction='right'
 				className='outside-items__panels'
+				onItemClick={onOutSidePanelClick}
 			/>
 			<i className='th2-logo' />
 			<div className='graph-search-input'>

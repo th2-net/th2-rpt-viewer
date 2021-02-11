@@ -369,7 +369,6 @@ const GraphChunksVirtualizer = (props: Props) => {
 					key={panel.type}
 					windowTimeRange={windowTimeRange}
 					onClick={panel.setRange}
-					interval={interval}
 					panelType={panel.type}
 				/>
 			))}
@@ -385,14 +384,13 @@ const GraphChunksVirtualizer = (props: Props) => {
 export default React.memo(GraphChunksVirtualizer);
 
 interface TimeSelectorProps {
-	onClick: (range: TimeRange) => void;
+	onClick: (clickedTimestamp: number) => void;
 	windowTimeRange: TimeRange;
-	interval: number;
 	panelType: GraphPanelType;
 }
 
 function TimeSelector(props: TimeSelectorProps) {
-	const { onClick, windowTimeRange, interval, panelType } = props;
+	const { onClick, windowTimeRange, panelType } = props;
 
 	const delayedSetState = React.useRef<NodeJS.Timeout | null>(null);
 	const rootRef = React.useRef<HTMLDivElement>(null);
@@ -405,15 +403,7 @@ function TimeSelector(props: TimeSelectorProps) {
 			const { left, width } = rootRef.current.getBoundingClientRect();
 			const clickPoint = e.pageX - left;
 			const clickedTime = from + (to - from) * (clickPoint / width);
-			const clickedRange: TimeRange = [
-				moment(clickedTime)
-					.subtract((interval * 60) / 2, 'seconds')
-					.valueOf(),
-				moment(clickedTime)
-					.add((interval * 60) / 2, 'seconds')
-					.valueOf(),
-			];
-			onClick(clickedRange);
+			onClick(clickedTime);
 		}
 	}
 
