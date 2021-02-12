@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ***************************************************************************** */
+ *	**************************************************************************** */
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
@@ -26,7 +26,6 @@ import {
 import { useMessagesWorkspaceStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
-import { getDefaultFilterState } from '../../helpers/search';
 import { MessageFilterState } from '../search-panel/SearchPanelFilters';
 
 type CurrentSSEValues = {
@@ -59,23 +58,16 @@ const MessagesFilterPanel = () => {
 	}, [filterStore.messagesFilter.streams]);
 
 	React.useEffect(() => {
-		const filter = getDefaultFilterState(searchStore.messagesFilterInfo);
-		if (Object.keys(filter).length > 0) {
-			messagesStore.filterStore.sseMessagesFilter = filter as MessageFilterState;
-		}
-	}, [searchStore.messagesFilterInfo]);
-
-	React.useEffect(() => {
 		setSSEFilter(messagesStore.filterStore.sseMessagesFilter);
 	}, [messagesStore.filterStore.sseMessagesFilter]);
 
 	const submitChanges = React.useCallback(() => {
+		messagesStore.filterStore.sseMessagesFilter = sseFilter;
 		messagesStore.filterStore.setMessagesFilter({
 			...filterStore.messagesFilter,
 			streams,
 			messageTypes,
 		});
-		messagesStore.filterStore.sseMessagesFilter = sseFilter;
 	}, [filterStore.messagesFilter, streams, messageTypes, sseFilter]);
 
 	const isLoading = Object.values(messagesStore.messagesLoadingState).some(Boolean);

@@ -14,11 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, toJS } from 'mobx';
+import { action, computed, IReactionDisposer, observable, reaction, toJS } from 'mobx';
 import moment from 'moment';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
 import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
+import { SearchStore } from './SearchStore';
+import { getDefaultFilterState } from '../helpers/search';
 
 export const defaultMessagesFilter: MessagesFilter = {
 	timestampFrom: null,
@@ -46,8 +48,21 @@ type InitialState = Partial<{
 }>;
 
 export default class FilterStore {
-	constructor(initialState?: InitialState) {
+	private sseFilterSubscription: IReactionDisposer;
+
+	constructor(private searchStore: SearchStore, initialState?: InitialState) {
 		this.init(initialState);
+
+		this.sseFilterSubscription = reaction(
+			() => searchStore.messagesFilterInfo,
+			filterInfo => {
+				const filter = getDefaultFilterState(filterInfo);
+
+				if (Object.keys(filter).length > 0) {
+					this.sseMessagesFilter = filter as MessageFilterState;
+				}
+			},
+		);
 	}
 
 	@observable messagesFilter: MessagesFilter = defaultMessagesFilter;
@@ -121,4 +136,8 @@ export default class FilterStore {
 
 		this.isMessagesFilterApplied = isMessagesFilterApplied;
 	}
+
+	public dispose = () => {
+		this.sseFilterSubscription();
+	};
 }

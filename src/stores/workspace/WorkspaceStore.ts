@@ -33,6 +33,7 @@ import { isEventAction, isEventMessage, isEventNode } from '../../helpers/event'
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
+import { SearchStore } from '../SearchStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;
@@ -65,6 +66,7 @@ export default class WorkspaceStore {
 	constructor(
 		private workspacesStore: WorkspacesStore,
 		private selectedStore: SelectedStore,
+		private searchStore: SearchStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
@@ -72,6 +74,7 @@ export default class WorkspaceStore {
 		this.eventsStore = new EventsStore(
 			this,
 			this.graphDataStore,
+			this.searchStore,
 			this.api,
 			initialState.entity &&
 			(isEventAction(initialState.entity) || isEventNode(initialState.entity))
@@ -81,6 +84,7 @@ export default class WorkspaceStore {
 		this.messagesStore = new MessagesStore(
 			this,
 			this.selectedStore,
+			this.searchStore,
 			this.api,
 			isEventMessage(initialState.entity) ? initialState.entity : initialState.messages || null,
 		);

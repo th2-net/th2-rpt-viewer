@@ -19,8 +19,7 @@ import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
+import { SearchStore } from '../SearchStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
@@ -32,7 +31,11 @@ export default class WorkspacesStore {
 
 	tabsStore: TabsStore;
 
-	constructor(private api: ApiSchema, initialState: WorkspacesUrlState | null) {
+	constructor(
+		private searchStore: SearchStore,
+		private api: ApiSchema,
+		initialState: WorkspacesUrlState | null,
+	) {
 		this.init(initialState);
 
 		this.searchWorkspace = this.createWorkspace();
@@ -72,6 +75,12 @@ export default class WorkspacesStore {
 	};
 
 	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {
-		return new WorkspaceStore(this, this.selectedStore, this.api, workspaceInitialState);
+		return new WorkspaceStore(
+			this,
+			this.selectedStore,
+			this.searchStore,
+			this.api,
+			workspaceInitialState,
+		);
 	};
 }

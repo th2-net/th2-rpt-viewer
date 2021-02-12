@@ -35,6 +35,7 @@ import { calculateTimeRange } from '../../helpers/graph';
 import { isEventsStore } from '../../helpers/stores';
 import { GraphDataStore } from '../graph/GraphDataStore';
 import { TimeRange } from '../../models/Timestamp';
+import { SearchStore } from '../SearchStore';
 
 export type EventStoreURLState = Partial<{
 	type: TabTypes.Events;
@@ -49,7 +50,7 @@ export type EventStoreURLState = Partial<{
 export type EventStoreDefaultStateType = EventsStore | EventStoreURLState | null;
 
 export default class EventsStore {
-	filterStore = new FilterStore();
+	filterStore = new FilterStore(this.searchPanelStore);
 
 	viewStore = new ViewStore();
 
@@ -58,6 +59,7 @@ export default class EventsStore {
 	constructor(
 		private workspaceStore: WorkspaceStore,
 		private graphStore: GraphDataStore,
+		private searchPanelStore: SearchStore,
 		private api: ApiSchema,
 		initialState: EventStoreDefaultStateType | EventAction | EventTreeNode,
 	) {
@@ -344,7 +346,7 @@ export default class EventsStore {
 			flattenedListView: store.viewStore.flattenedListView.valueOf(),
 			panelArea: store.viewStore.eventsPanelArea,
 		});
-		this.filterStore = new FilterStore(store.filterStore);
+		this.filterStore = new FilterStore(this.searchPanelStore, store.filterStore);
 		this.searchStore = new EventsSearchStore(this.api, this, this.graphStore, {
 			isLoading: store.searchStore.isLoading,
 			rawResults: toJS(store.searchStore.rawResults),
@@ -374,7 +376,7 @@ export default class EventsStore {
 			? 100
 			: initialState.panelArea || 100;
 
-		this.filterStore = new FilterStore({
+		this.filterStore = new FilterStore(this.searchPanelStore, {
 			eventsFilter: !isInitialEntity(initialState) ? initialState.filter : undefined,
 		});
 		this.searchStore = new EventsSearchStore(this.api, this, this.graphStore, {
@@ -467,6 +469,10 @@ export default class EventsStore {
 		}
 
 		return path;
+	};
+
+	public dispose = () => {
+		this.filterStore.dispose();
 	};
 }
 

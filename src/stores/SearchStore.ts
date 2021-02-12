@@ -66,7 +66,7 @@ export type SearchHistoryState<T> = {
 };
 
 export class SearchStore {
-	constructor(private workspacesStore: WorkspacesStore, private api: ApiSchema) {
+	constructor(private api: ApiSchema) {
 		this.getEventFilters();
 		this.getMessagesFilters();
 
@@ -97,7 +97,7 @@ export class SearchStore {
 	@observable messagesFilter: MessageFilterState | null = null;
 
 	@observable searchForm: SearchPanelFormState = {
-		startTimestamp: this.workspacesStore.activeWorkspace.graphDataStore.range[0],
+		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
 		searchDirection: 'next',
 		resultCountLimit: 50,
 		endTimestamp: null,

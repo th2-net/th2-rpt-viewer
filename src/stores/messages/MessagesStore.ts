@@ -31,6 +31,7 @@ import { isEventMessage } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { isMessagesStore } from '../../helpers/stores';
 import { TimeRange } from '../../models/Timestamp';
+import { SearchStore } from '../SearchStore';
 
 export const defaultMessagesLoadingState = {
 	loadingPreviousItems: false,
@@ -51,7 +52,7 @@ export default class MessagesStore {
 
 	private attachedMessagesSubscription: IReactionDisposer;
 
-	filterStore = new FilterStore();
+	filterStore = new FilterStore(this.searchStore);
 
 	messageUpdateStore = new MessageUpdateStore(this.api, this, this.filterStore);
 
@@ -100,6 +101,7 @@ export default class MessagesStore {
 	constructor(
 		private workspaceStore: WorkspaceStore,
 		private selectedStore: SelectedStore,
+		private searchStore: SearchStore,
 		private api: ApiSchema,
 		defaultState: MessagesStoreDefaultStateType | EventMessage,
 	) {
@@ -580,7 +582,7 @@ export default class MessagesStore {
 			? new String(store.selectedMessageId.valueOf())
 			: null;
 		this.messagesLoadingState = toJS(store.messagesLoadingState);
-		this.filterStore = new FilterStore({
+		this.filterStore = new FilterStore(this.searchStore, {
 			messagesFilter: toJS(store.filterStore.messagesFilter),
 		});
 		this.isEndReached = store.isEndReached.valueOf();
@@ -595,5 +597,6 @@ export default class MessagesStore {
 
 	public dispose = () => {
 		this.attachedMessagesSubscription();
+		this.filterStore.dispose();
 	};
 }
