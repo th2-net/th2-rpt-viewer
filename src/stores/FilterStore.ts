@@ -14,10 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable } from 'mobx';
+import { action, computed, observable, reaction, toJS } from 'mobx';
 import moment from 'moment';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
+import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
 
 export const defaultMessagesFilter: MessagesFilter = {
 	timestampFrom: null,
@@ -50,6 +51,8 @@ export default class FilterStore {
 	}
 
 	@observable messagesFilter: MessagesFilter = defaultMessagesFilter;
+
+	@observable sseMessagesFilter: MessageFilterState | null = null;
 
 	@observable isMessagesFilterApplied = false;
 

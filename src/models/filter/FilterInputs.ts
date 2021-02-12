@@ -14,12 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export type FilterRowConfig =
+export type FitlerRowItem =
 	| FilterRowDatetimeRangeConfig
 	| FilterRowTimeWindowConfig
 	| FilterRowStringConfig
 	| FilterRowMultipleStringsConfig
 	| FilterRowTogglerConfig;
+
+export type CompoundFilterRow = Array<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>;
+
+export type FilterRowConfig = FitlerRowItem | CompoundFilterRow;
 
 export enum DateTimeMask {
 	TIME_MASK = 'HH:mm:ss.SSS',
@@ -103,8 +107,9 @@ export type FilterRowDatetimeRangeConfig = FilterRowBaseConfig & {
 
 export type FilterRowTogglerConfig = FilterRowBaseConfig & {
 	type: 'toggler';
-	disabled: boolean;
+	disabled?: boolean;
 	value: boolean;
 	possibleValues: [string, string];
 	toggleValue: () => void;
+	className?: string;
 };
