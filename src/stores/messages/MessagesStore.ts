@@ -30,7 +30,6 @@ import MessageUpdateStore from './MessageUpdateStore';
 import { isEventMessage } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { isMessagesStore } from '../../helpers/stores';
-import { GraphDataStore } from '../graph/GraphDataStore';
 import { TimeRange } from '../../models/Timestamp';
 
 export const defaultMessagesLoadingState = {

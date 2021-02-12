@@ -163,15 +163,16 @@
 }
 
 .graph-dot {
-	&__attached-message,
-	&__pinned-message,
-	&__event {
+	&.attached-message,
+	&.pinned-message,
+	&.passed,
+	&.failed {
 		position: relative;
 		z-index: 6;
 		cursor: pointer;
 	}
 
-	&__event {
+	&.passed, &.failed {
 		width: 14px;
 		height: 14px;
 		border-radius: 50%;
@@ -179,21 +180,21 @@
 		&:not(:first-child) {
 			margin-bottom: 1px;
 		}
-
-		&.passed {
-			background-color: $graphAttachedEventPassedColor;
-		}
-
-		&.failed {
-			background-color: $graphAttachedEventFailedColor;
-		}
 	}
 
-	&__attached-message {
+	&.passed {
+		background-color: $graphAttachedEventPassedColor;
+	}
+
+	&.failed {
+		background-color: $graphAttachedEventFailedColor;
+	}
+
+	&.attached-message {
 		@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
 	}
 
-	&__pinned-message {
+	&.pinned-message {
 		@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
 	}
 }
