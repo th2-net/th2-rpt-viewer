@@ -219,7 +219,7 @@ export default class MessagesStore {
 		// eslint-disable-next-line consistent-return
 	): Promise<string[] | undefined> => {
 		console.log('get messages');
-		
+
 		// streams are required to get messages
 		if (this.filterStore.messagesFilter.streams.length === 0) {
 			this.resetMessagesState();
