@@ -16,6 +16,7 @@
 
 import { EventTreeNode } from './EventAction';
 import { EventMessage } from './EventMessage';
+import { TimeRange } from './Timestamp';
 
 export const intervalOptions = [15, 30, 60] as const;
 
@@ -55,3 +56,17 @@ export enum GraphItemType {
 	PINNED_MESSAGE = 'pinned-message',
 	EVENT = 'event',
 }
+
+export interface PanelRange {
+	type: GraphPanelType;
+	range: TimeRange;
+	setRange: (timestamp: number) => void;
+}
+
+export interface PanelsRangeMarker {
+	type: string;
+	left: number;
+	width: number;
+}
+
+export type GraphPanelType = 'events-panel' | 'messages-panel';

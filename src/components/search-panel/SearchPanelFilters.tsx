@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+
 import React from 'react';
 import useSetState from '../../hooks/useSetState';
 import {
@@ -20,7 +21,7 @@ import {
 	FilterRowStringConfig,
 	FilterRowTogglerConfig,
 } from '../../models/filter/FilterInputs';
-import { SSEFilterInfo, SSEFilterParameter } from '../../stores/SearchPanelFiltersStore';
+import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import FilterRow from '../filter/row';
 
 export type EventFilterState = {
@@ -63,9 +64,7 @@ type FilterRowConfig =
 interface SearchPanelFiltersProps {
 	info: SSEFilterInfo[];
 	state: FilterState;
-	setState: (
-		patch: Partial<FilterState> | ((prevState: FilterState) => Partial<FilterState>),
-	) => void;
+	setState: (patch: Partial<FilterState>) => void;
 	disableAll: boolean;
 }
 
@@ -78,16 +77,13 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 
 	function getValuesUpdater<T extends keyof FilterState>(name: T) {
 		return function valuesUpdater<K extends FilterState[T]>(values: K) {
-			setState(currentState => ({ ...currentState, [name]: { ...currentState[name], values } }));
+			setState({ [name]: { ...state[name], values } });
 		};
 	}
 
 	function getNegativeToggler<T extends keyof FilterState>(name: T) {
 		return function negativeToggler() {
-			setState(currentState => {
-				const negative = !currentState[name].negative;
-				return { ...currentState, [name]: { ...currentState[name], negative } };
-			});
+			setState({ [name]: { ...state[name], negative: !state[name].negative } });
 		};
 	}
 

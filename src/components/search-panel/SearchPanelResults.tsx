@@ -15,20 +15,21 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { Virtuoso } from 'react-virtuoso';
 import moment from 'moment';
 import { isEventNode } from '../../helpers/event';
-import { Result } from './SearchPanel';
-import { BookmarkItem } from '../BookmarksPanel';
+import { BookmarkedItem, BookmarkItem } from '../BookmarksPanel';
+import { SearchResult } from '../../stores/SearchStore';
 
 interface SearchPanelResultsProps {
-	onResultItemClick: (searchResult: Result) => void;
+	onResultItemClick: (searchResult: BookmarkedItem) => void;
 	onResultDelete: () => void;
 	disableNext: boolean;
 	disablePrev: boolean;
 	showToggler: boolean;
 	next: () => void;
 	prev: () => void;
-	results: Array<Result>;
+	results: Array<SearchResult>;
 	timestamp: number;
 }
 
@@ -45,15 +46,22 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		prev,
 	} = props;
 
+	function computeKey(index: number) {
+		const item = results[index];
+
+		return isEventNode(item) ? item.eventId : item.messageId;
+	}
+
+	function renderSearchResult(index: number) {
+		return <BookmarkItem item={results[index]} onClick={onResultItemClick} />;
+	}
+
 	return (
 		<div className='search-results'>
 			{showToggler && (
 				<div className='search-results__controls'>
-					<button className='search-results__arrow' disabled={disablePrev} onClick={prev}></button>
-					<button
-						className='search-results__arrow next'
-						disabled={disableNext}
-						onClick={next}></button>
+					<button className='search-results__arrow' disabled={disablePrev} onClick={prev} />
+					<button className='search-results__arrow next' disabled={disableNext} onClick={next} />
 				</div>
 			)}
 			<div className='history-point'>
@@ -66,16 +74,13 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 					<i className='bookmark-item__remove-btn-icon' />
 				</button>
 			</div>
-			<hr />
-			{results.map((item: Result) => (
-				<BookmarkItem
-					key={`${timestamp}-${isEventNode(item) ? item.eventId : item.messageId}`}
-					item={item}
-					onClick={() => {
-						onResultItemClick(item);
-					}}
-				/>
-			))}
+			<Virtuoso
+				className='search-results__list'
+				totalCount={results.length}
+				item={renderSearchResult}
+				computeItemKey={computeKey}
+				style={{ height: '100%' }}
+			/>
 		</div>
 	);
 };

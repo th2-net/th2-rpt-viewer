@@ -14,28 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useState } from 'react';
+import { useRootStore } from './useRootStore';
 
-export default function useLocalStorage<T>(key: string, initialValue?: T) {
-	const [storedValue, setStoredValue] = useState(() => {
-		try {
-			const item = window.localStorage.getItem(key);
-			return item ? JSON.parse(item) : initialValue;
-		} catch (error) {
-			console.error(error);
-			return initialValue;
-		}
-	});
+export const useSearchStore = () => {
+	const rootStore = useRootStore();
 
-	const setValue = (value: T) => {
-		try {
-			const valueToStore = value instanceof Function ? value(storedValue) : value;
-			setStoredValue(valueToStore);
-			window.localStorage.setItem(key, JSON.stringify(valueToStore));
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	return [storedValue, setValue];
-}
+	return rootStore.searchStore;
+};

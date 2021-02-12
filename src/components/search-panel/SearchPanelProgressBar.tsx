@@ -17,18 +17,22 @@ import React from 'react';
 import moment from 'moment';
 
 interface SearchPanelProgressBarProps {
-	startTimestamp: number;
-	endTimestamp: number | null;
-	currentPoint: number;
-	searching: boolean;
+	searchProgress: {
+		startTimestamp: number;
+		endTimestamp: number | null;
+		currentPoint: number;
+		searching: boolean;
+	};
 }
 
 const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
-	const { searching, startTimestamp, endTimestamp, currentPoint } = props;
+	const { searching, startTimestamp, endTimestamp, currentPoint } = props.searchProgress;
 	if (!endTimestamp && searching) {
-		return <div className='spinner'></div>;
+		return <div className='spinner' />;
 	}
+
 	const timeInterval = endTimestamp !== null ? endTimestamp - startTimestamp : null;
+
 	if (timeInterval) {
 		const position = ((currentPoint / timeInterval) * 100).toFixed(2);
 		return (
@@ -38,7 +42,7 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 					{moment(startTimestamp).utc().format('HH:mm:ss.SSS')}
 				</span>
 				<div className='progress-bar__track'>
-					<div className='progress-bar__line' style={{ left: `${position}%` }}></div>
+					<div className='progress-bar__line' style={{ left: `${position}%` }} />
 				</div>
 				<span className='progress-bar-points progress-bar__end'>
 					{moment(endTimestamp).utc().format('DD.MM.YYYY')} <br />

@@ -21,8 +21,9 @@
 	height: 100%;
 	padding: 0 8px;
 	background-color: #fff;
-	overflow: auto;
-	@include scrollbar();
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 
 	& input {
 		border: solid 1px #000;
@@ -77,6 +78,10 @@
 }
 
 .search-results {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+
 	&__controls {
 		padding: 8px 0;
 		display: flex;
@@ -100,19 +105,24 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		border-bottom: 1px solid;
+		margin-bottom: 5px;
+	
 		&__timestamp {
 			margin: 0;
 			font-size: 12px;
 		}
 	}
-	hr {
-		margin-top: 0;
-	}
+
 	&__list {
 		@include scrollbar;
-
 		height: 100%;
 		width: 100%;
 		overflow-y: auto;
+		flex-grow: 1;
+
+		&>div {
+			padding-right: 5px;
+		}
 	}
 }
