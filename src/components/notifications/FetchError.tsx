@@ -22,7 +22,7 @@ import '../../styles/toast-content.scss';
 interface FetchErrorProps {
 	header: string;
 	resource: string;
-	responseCode: number;
+	responseCode: number | null;
 	responseBody: string;
 }
 
@@ -40,7 +40,9 @@ export default function FetchError(props: FetchErrorProps) {
 	return (
 		<div className='toast-content'>
 			<div className='toast-content__top'>
-				<p className='response-body'>{header}</p>
+				<p className='response-body' title={header}>
+					{header}
+				</p>
 				<p className='response-code'>{responseCode}</p>
 			</div>
 			<div className='toast-content__middle'>{responseBody}</div>
