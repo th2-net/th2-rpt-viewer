@@ -33,11 +33,6 @@ const SearchPanel = () => {
 	const { ref: searchPanelRef } = useActivePanel(null);
 	const searchStore = useSearchStore();
 	const messagesStore = useMessagesWorkspaceStore();
-	const {
-		filterStore: {
-			messagesFilter: { streams },
-		},
-	} = messagesStore;
 
 	const formTypeTogglerConfig: FilterRowTogglerConfig = React.useMemo(
 		() => ({
@@ -64,7 +59,7 @@ const SearchPanel = () => {
 						form={searchStore.searchForm}
 						formType={searchStore.formType}
 						updateForm={searchStore.updateForm}
-						streams={searchStore.formType === 'message' ? streams : null}
+						streams={searchStore.formType === 'message' ? messagesStore.messageSessions : null}
 					/>
 				</div>
 				<div className='filters'>
