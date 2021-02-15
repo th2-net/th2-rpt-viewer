@@ -69,23 +69,10 @@
 	flex-direction: column;
 	padding: 10px;
 	border-radius: 5px;
+	transition: 250ms background;
 
 	&.highlighted {
-		animation: highlight backwards 1500ms 0ms;
-
-		@keyframes highlight {
-			from {
-				background: transparent;
-			}
-
-			50% {
-				background: $highlightedMessageCardBackground;
-			}
-
-			to {
-				background: transparent;
-			}
-		}
+		background: $highlightedMessageCardBackground;
 	}
 
 	&.attached {

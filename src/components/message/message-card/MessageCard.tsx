@@ -51,6 +51,8 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const selectedStore = useSelectedStore();
 	const workspaceStore = useWorkspaceStore();
 	const { heatmapElements } = useHeatmap();
+	const [isHighlighted, setHighlighted] = React.useState(false);
+	const highlightTimer = React.useRef<NodeJS.Timeout>();
 
 	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
@@ -58,7 +60,28 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const isSelected = Boolean(heatmapElement);
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isPinned = selectedStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
-	const isHighlighted = messagesStore.highlightedMessageId === messageId;
+
+	React.useEffect(() => {
+		if (messagesStore.highlightedMessageId === messageId) {
+			if (isHighlighted) {
+				return;
+			}
+			setHighlighted(true);
+
+			highlightTimer.current = setTimeout(() => {
+				setHighlighted(false);
+				messagesStore.highlightedMessageId = null;
+			}, 1500);
+		} else if (messagesStore.highlightedMessageId !== null) {
+			setHighlighted(false);
+		}
+
+		return () => {
+			if (highlightTimer.current) {
+				window.clearTimeout(highlightTimer.current);
+			}
+		};
+	}, [messagesStore.highlightedMessageId]);
 
 	const isAttached = !!workspaceStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
