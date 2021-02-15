@@ -33,7 +33,10 @@ interface Panel {
 	title: string;
 	component: React.ReactNode;
 	isActive: boolean;
-	color: string;
+	color: {
+		default: string;
+		active: string;
+	};
 	minWidth?: number;
 }
 
@@ -269,7 +272,7 @@ function WorkspaceSplitter(props: Props) {
 				<React.Fragment key={panel.title}>
 					<Splitter
 						isResizing={isResizing}
-						color={panel.color}
+						color={panel.isActive ? panel.color.active : panel.color.default}
 						icon={<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />}
 						title={panel.title}
 						onMouseDown={onMouseDown}
@@ -281,10 +284,19 @@ function WorkspaceSplitter(props: Props) {
 						<div className='pane__sidebar'>
 							<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />
 							<div className='pane__title'>{panel.title}</div>
-							<div className='pane__line' style={{ backgroundColor: panel.color }}></div>
+							<div
+								className='pane__line'
+								style={{
+									backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
+								}}
+							/>
 						</div>
 						<div className='pane__wrapper'>
-							<div className='pane__header' style={{ backgroundColor: panel.color }}>
+							<div
+								className='pane__header'
+								style={{
+									backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
+								}}>
 								<i
 									className={
 										'pane__header-icon ' +
@@ -296,7 +308,11 @@ function WorkspaceSplitter(props: Props) {
 							<div className='pane__main'>{panel.component}</div>
 						</div>
 					</div>
-					<Overlay color={panel.color} isResizing={isResizing} ref={overlaysRefs.current[index]} />
+					<Overlay
+						color={panel.color.default}
+						isResizing={isResizing}
+						ref={overlaysRefs.current[index]}
+					/>
 				</React.Fragment>
 			))}
 		</div>

@@ -15,6 +15,8 @@
  ***************************************************************************** */
 
 import { action, computed, observable, toJS, reaction, IReactionDisposer, runInAction } from 'mobx';
+import moment from 'moment';
+import { ListRange } from 'react-virtuoso/dist/engines/scrollSeekEngine';
 import ApiSchema from '../../api/ApiSchema';
 import FilterStore from '../FilterStore';
 import { EventMessage } from '../../models/EventMessage';
@@ -28,7 +30,7 @@ import MessageUpdateStore from './MessageUpdateStore';
 import { isEventMessage } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { isMessagesStore } from '../../helpers/stores';
-import { GraphDataStore } from '../graph/GraphDataStore';
+import { TimeRange } from '../../models/Timestamp';
 
 export const defaultMessagesLoadingState = {
 	loadingPreviousItems: false,
@@ -39,7 +41,7 @@ export const defaultMessagesLoadingState = {
 
 export type MessagesStoreURLState = Partial<{
 	type: TabTypes.Messages;
-	filter: MessagesFilter;
+	filter: Partial<MessagesFilter>;
 }>;
 
 export type MessagesStoreDefaultStateType = MessagesStore | MessagesStoreURLState | null;
@@ -89,23 +91,34 @@ export default class MessagesStore {
 	@observable
 	public messagesListErrorStatusCode: number | null = null;
 
+	@observable
+	public currentMessagesIndexesRange: ListRange = {
+		startIndex: 0,
+		endIndex: 0,
+	};
+
 	constructor(
 		private workspaceStore: WorkspaceStore,
 		private selectedStore: SelectedStore,
-		private graphStore: GraphDataStore,
 		private api: ApiSchema,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
 		if (isMessagesStore(defaultState)) {
 			this.copy(defaultState);
+		} else if (defaultState !== null) {
+			this.filterStore.messagesFilter = {
+				...this.filterStore.messagesFilter,
+				timestampFrom: defaultState.filter?.timestampFrom || null,
+				timestampTo: defaultState.filter?.timestampTo || moment().utc().valueOf(),
+			};
 		}
-
-		reaction(() => this.filterStore.messagesFilter, this.onFilterChange);
 
 		this.attachedMessagesSubscription = reaction(
 			() => this.workspaceStore.attachedMessages,
 			this.onAttachedMessagesChange,
 		);
+
+		reaction(() => this.filterStore.messagesFilter, this.onFilterChange);
 
 		reaction(() => this.filterStore.messagesFilter.streams, this.onStreamsChanged);
 
@@ -117,7 +130,7 @@ export default class MessagesStore {
 	}
 
 	@computed
-	get selectedMessagesIds(): string[] {
+	public get selectedMessagesIds(): string[] {
 		const pinnedMessages = this.selectedStore.pinnedMessages.filter(msg =>
 			this.messagesIds.includes(msg.messageId),
 		);
@@ -135,6 +148,30 @@ export default class MessagesStore {
 		}
 
 		return sortedMessages.map(m => m.messageId);
+	}
+
+	@computed
+	public get panelRange(): TimeRange {
+		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
+		const messagesIds = this.messagesIds.slice(startIndex, endIndex);
+
+		const fromMsgId = messagesIds
+			.slice()
+			.reverse()
+			.find(messageId => this.messagesCache.get(messageId));
+		const toMsgId = messagesIds.find(messageId => this.messagesCache.get(messageId));
+
+		const messageFrom = fromMsgId && this.messagesCache.get(fromMsgId);
+		const messageTo = toMsgId && this.messagesCache.get(toMsgId);
+
+		if (messageFrom && messageTo) {
+			return [
+				getTimestampAsNumber(messageFrom.timestamp),
+				getTimestampAsNumber(messageTo.timestamp),
+			];
+		}
+		const timestampTo = this.filterStore.messagesFilter.timestampTo || moment().utc().valueOf();
+		return [timestampTo - 30 * 1000, timestampTo];
 	}
 
 	@action
@@ -222,6 +259,15 @@ export default class MessagesStore {
 		}
 		this.messagesListErrorStatusCode = null;
 
+		const appliedFilter: MessagesFilter =
+			originMessageId || this.messagesIds.length > 0
+				? {
+						...this.filterStore.messagesFilter,
+						timestampFrom: null,
+						timestampTo: null,
+				  }
+				: this.filterStore.messagesFilter;
+
 		try {
 			let messagesIds: string[];
 
@@ -233,7 +279,7 @@ export default class MessagesStore {
 						limit,
 						idsOnly: false,
 					},
-					this.filterStore.messagesFilter,
+					appliedFilter,
 					abortSignal,
 				);
 
@@ -249,7 +295,7 @@ export default class MessagesStore {
 						limit,
 						idsOnly: true,
 					},
-					this.filterStore.messagesFilter,
+					appliedFilter,
 					abortSignal,
 				);
 			}
@@ -268,12 +314,6 @@ export default class MessagesStore {
 			}
 
 			const newMessagesIds = timelineDirection === 'next' ? messagesIds.reverse() : messagesIds;
-
-			if (newMessagesIds.length) {
-				// TODO: It's a temporary measure to build a timeline relatively to first
-				// message timestamps until timeline helper api is released.
-				await this.fetchMessage(messagesIds[0]);
-			}
 
 			if (timelineDirection === 'next') {
 				this.messagesIds = [...newMessagesIds, ...this.messagesIds];
@@ -313,17 +353,22 @@ export default class MessagesStore {
 	};
 
 	@action
-	public loadPreviousMessages = async (loadBody = true, messageId?: string) => {
+	public loadPreviousMessages = async (loadBody = true, messageId?: string | null) => {
 		if (this.isEndReached) return [];
 		this.abortControllers.prevAC?.abort();
 		this.abortControllers.prevAC = new AbortController();
 
 		this.messagesLoadingState.loadingPreviousItems = true;
-		const originMessageId =
-			messageId ||
-			(!this.messagesIds.length
-				? this.workspaceStore.attachedMessages[0]?.messageId
-				: this.messagesIds[this.messagesIds.length - 1]);
+		let originMessageId: string | null | undefined = messageId;
+
+		if (messageId !== null) {
+			originMessageId =
+				messageId ||
+				(!this.messagesIds.length
+					? this.workspaceStore.attachedMessages[0]?.messageId
+					: this.messagesIds[this.messagesIds.length - 1]);
+		}
+
 		const chunkSize = messageId ? this.MESSAGES_CHUNK_SIZE - 1 : this.MESSAGES_CHUNK_SIZE;
 
 		try {
@@ -455,22 +500,11 @@ export default class MessagesStore {
 	};
 
 	@action
-	private onFilterChange = async (messagesFilter: MessagesFilter) => {
+	private onFilterChange = async () => {
 		this.resetMessagesState();
 		this.messagesLoadingState.loadingRootItems = true;
-
-		let originMessageId: string | undefined = this.workspaceStore.attachedMessages[0]?.messageId;
-
-		if (this.workspaceStore.attachedMessages.length) {
-			const [from, to] = this.graphStore.range;
-			const firstMessage = this.workspaceStore.attachedMessages.find(
-				m => getTimestampAsNumber(m.timestamp) >= from && getTimestampAsNumber(m.timestamp) <= to,
-			);
-			originMessageId = firstMessage?.messageId;
-		}
-
 		try {
-			await this.loadPreviousMessages(false, originMessageId);
+			await this.loadPreviousMessages(false, null);
 		} finally {
 			this.messagesLoadingState.loadingRootItems = false;
 		}
@@ -489,21 +523,22 @@ export default class MessagesStore {
 	@action
 	public onSavedItemSelect = async (savedMessage: EventMessage) => {
 		if (!this.messagesIds.includes(savedMessage.messageId)) {
+			this.filterStore.messagesFilter.timestampFrom = null;
+			this.filterStore.messagesFilter.timestampTo = getTimestampAsNumber(savedMessage.timestamp);
 			this.filterStore.messagesFilter.messageTypes = [];
 			this.filterStore.messagesFilter.streams = [savedMessage.sessionId];
-		} else {
-			this.abortControllers.prevAC?.abort();
-			this.abortControllers.prevAC = new AbortController();
-			await this.getMessages(
-				'previous',
-				savedMessage.messageId,
-				this.MESSAGES_CHUNK_SIZE,
-				true,
-				undefined,
-			);
 		}
 
 		this.scrollToMessage(savedMessage.messageId);
+	};
+
+	@action
+	public onRangeChange = (timestamp: number) => {
+		this.filterStore.messagesFilter = {
+			...this.filterStore.messagesFilter,
+			timestampFrom: null,
+			timestampTo: timestamp,
+		};
 	};
 
 	@action

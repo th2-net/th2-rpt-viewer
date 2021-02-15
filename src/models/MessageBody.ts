@@ -30,13 +30,13 @@ export default interface MessageBody {
 
 export type ListValueField = {
 	listValue: {
-		values: Array<MessageValueField>;
+		values?: Array<MessageValueField>;
 	};
 };
 
 export type MessageValueField = {
 	messageValue: {
-		fields: { [key: string]: MessageBodyField };
+		fields?: { [key: string]: MessageBodyField };
 	};
 };
 

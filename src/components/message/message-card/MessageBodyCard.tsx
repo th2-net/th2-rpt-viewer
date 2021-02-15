@@ -119,7 +119,7 @@ function MessageBodyCardField(props: FieldProps) {
 							display: isBeautified ? 'block' : undefined,
 							paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
 						}}>
-						{field.listValue.values.map((value, idx) => (
+						{field.listValue.values?.map((value, idx) => (
 							<MessageBodyCardField
 								key={idx}
 								field={value}
@@ -142,7 +142,7 @@ function MessageBodyCardField(props: FieldProps) {
 							display: isBeautified ? 'block' : undefined,
 							paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
 						}}>
-						{Object.entries(field.messageValue.fields).map(([key, subField], idx, arr) => (
+						{Object.entries(field.messageValue?.fields || {}).map(([key, subField], idx, arr) => (
 							<React.Fragment key={key}>
 								<MessageBodyCardField
 									field={subField}

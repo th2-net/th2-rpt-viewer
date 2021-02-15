@@ -16,12 +16,15 @@
 
 import { isEventNode } from '../helpers/event';
 import { isMessage } from '../helpers/message';
+import { isSearchHistoryEntity } from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
+import { SearchHistory } from '../stores/SearchStore';
 
 enum LocalStorageEntities {
 	PINNED_MESSAGES = 'pinnedMessages',
 	EVENTS = 'events',
+	SEARCH_HISTORY = 'search-history',
 }
 class LocalStorageWorker {
 	getPersistedPinnedMessages(): EventMessage[] {
@@ -51,6 +54,22 @@ class LocalStorageWorker {
 	setPersistedPinnedEvents(pinnedEvents: EventTreeNode[]) {
 		localStorage.setItem(LocalStorageEntities.EVENTS, JSON.stringify(pinnedEvents));
 	}
+
+	saveSearchHistory = (history: SearchHistory[]) => {
+		localStorage.setItem(LocalStorageEntities.SEARCH_HISTORY, JSON.stringify(history));
+	};
+
+	getSearchHistory = () => {
+		try {
+			const searchHistory = localStorage.getItem(LocalStorageEntities.SEARCH_HISTORY);
+			const parsedSearchHistory = searchHistory ? JSON.parse(searchHistory) : [];
+			return Array.isArray(parsedSearchHistory)
+				? parsedSearchHistory.filter(isSearchHistoryEntity)
+				: [];
+		} catch (error) {
+			return [];
+		}
+	};
 }
 
 const localStorageWorker = new LocalStorageWorker();

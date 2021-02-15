@@ -40,10 +40,9 @@ const MessagesFilterPanel = () => {
 
 	const submitChanges = () => {
 		messagesStore.filterStore.setMessagesFilter({
+			...filterStore.messagesFilter,
 			streams,
 			messageTypes,
-			timestampFrom: null,
-			timestampTo: null,
 		});
 	};
 

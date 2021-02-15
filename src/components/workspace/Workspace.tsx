@@ -26,10 +26,22 @@ import { isEventsStore, isMessagesStore } from '../../helpers/stores';
 import '../../styles/workspace.scss';
 
 const panelColors = {
-	events: '#F7A76E',
-	messages: '#1AC4E5',
-	search: '#ADC2EB',
-	bookmarks: '#CCADEB',
+	events: {
+		default: '#F5C5A3',
+		active: '#F7A76E',
+	},
+	messages: {
+		default: '#ADE0EB',
+		active: '#1AC4E5',
+	},
+	search: {
+		default: '#ADC2EB',
+		active: '#5C85D6',
+	},
+	bookmarks: {
+		default: '#CCA3F5',
+		active: '#A65CD6',
+	},
 } as const;
 
 function Workspace() {

@@ -13,27 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+
 import moment, { Moment } from 'moment';
 import { TimeRange, Timestamp } from '../models/Timestamp';
-
-export function getSecondsPeriod(
-	startTime: string | Date,
-	finishTime: string | Date,
-	withMiliseconds = true,
-) {
-	if (!startTime || !finishTime) {
-		return '';
-	}
-
-	const diff = toDate(finishTime).getTime() - toDate(startTime).getTime();
-
-	const seconds = Math.floor(diff / 1000);
-	const milliseconds = diff - seconds * 1000;
-
-	const millisecondsFormatted = milliseconds === 0 ? '0' : milliseconds.toString().padStart(3, '0');
-
-	return withMiliseconds ? `${seconds}.${millisecondsFormatted}s` : `${seconds}s`;
-}
 
 export function getElapsedTime(
 	startTimestamp: Timestamp,
@@ -57,21 +39,6 @@ export function formatTime(time: string | number) {
 	return new Date(time).toISOString().replace('T', ' ').replace('Z', '');
 }
 
-export function isDateEqual(first: string | Date, second: string | Date): boolean {
-	return toDate(first).getTime() === toDate(second).getTime();
-}
-
-function toDate(date: string | Date): Date {
-	return typeof date === 'string' ? new Date(date) : date;
-}
-
-export function getTimeDate(hours: number, minutes: number, seconds: number, ms: number) {
-	const date = new Date();
-	date.setHours(hours, minutes, seconds, ms);
-
-	return date;
-}
-
 export function getTimestampAsNumber(timestamp: Timestamp): number {
 	return Math.floor(timestamp.epochSecond * 1000 + timestamp.nano / 1_000_000);
 }
@@ -84,21 +51,6 @@ export function formatTimestampValue(timestamp: number | null, timeMask: string)
 	const date = new Date(timestamp);
 	const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
 	return moment(utcDate).format(timeMask);
-}
-
-type TimeRangeOptions = { to: number | Date | Moment; withinTheDay: boolean };
-
-export function getTimeRange(
-	minutesOffset: number,
-	options: TimeRangeOptions = { to: moment.utc(), withinTheDay: true },
-): TimeRange {
-	const { to, withinTheDay } = options;
-	let from = moment().utc().subtract(minutesOffset, 'minutes');
-
-	if (withinTheDay && !from.isSame(to, 'day')) {
-		from = moment().utc().startOf('day');
-	}
-	return [from.valueOf(), to.valueOf()];
 }
 
 export const getTimeWindow = (

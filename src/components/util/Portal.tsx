@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useEffect, useRef } from 'react';
+import React, { CSSProperties, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 const modalRoot = document.getElementById('modal-root');
@@ -40,9 +40,10 @@ interface ModalPortalProps {
 	closeDelay?: number;
 	children: React.ReactNode;
 	isOpen: boolean;
+	style?: CSSProperties;
 }
 
-export const ModalPortal = ({ closeDelay = 0, children, isOpen }: ModalPortalProps) => {
+export const ModalPortal = ({ closeDelay = 0, children, isOpen, style }: ModalPortalProps) => {
 	const [isShown, setIsShown] = React.useState(false);
 
 	React.useEffect(() => {
@@ -58,7 +59,7 @@ export const ModalPortal = ({ closeDelay = 0, children, isOpen }: ModalPortalPro
 
 	return (
 		<Portal>
-			<div style={{ visibility: isShown ? 'visible' : 'hidden' }}>{children}</div>
+			<div style={{ ...style, visibility: isShown ? 'visible' : 'hidden' }}>{children}</div>
 		</Portal>
 	);
 };
