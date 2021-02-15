@@ -33,7 +33,7 @@ interface Props {
 	foundObject: EventAction | EventMessage | null;
 }
 
-const TimestampDialog = (props: Props) => {
+const GraphSearchDialog = (props: Props) => {
 	const { className, rect, isOpen, isLoading, history, foundObject } = props;
 	const style: React.CSSProperties = {
 		position: 'absolute',
@@ -63,4 +63,4 @@ const TimestampDialog = (props: Props) => {
 	);
 };
 
-export default TimestampDialog;
+export default GraphSearchDialog;

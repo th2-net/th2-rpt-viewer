@@ -65,7 +65,7 @@ interface Props {
 	onTimestampSubmit: (timestamp: number) => void;
 }
 
-const TimestampInput = (props: Props) => {
+const GraphSearchInput = (props: Props) => {
 	const {
 		timestamp,
 		readonly = false,
@@ -222,4 +222,4 @@ const TimestampInput = (props: Props) => {
 	);
 };
 
-export default TimestampInput;
+export default GraphSearchInput;

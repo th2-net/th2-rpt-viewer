@@ -28,15 +28,17 @@ interface Props {
 	history: Array<EventAction | EventMessage>;
 }
 
-const TimestampHistory = (props: Props) => {
+const GraphSearchHistory = (props: Props) => {
 	const { history } = props;
 	const activeWorkspace = useActiveWorkspace();
 
-	const computeKey = (item: EventMessage | EventAction) =>
-		isEventAction(item) ? item.eventId : item.messageId;
-	return (
-		<div className='timestamp-input__history'>
-			{history.length !== 0 && (
+	const computeKey = (item: EventAction | EventMessage) => {
+		return isEventAction(item) ? item.eventId : item.messageId;
+	};
+
+	const renderHistory = React.useCallback(() => {
+		return (
+			history.length !== 0 && (
 				<>
 					<p>history</p>
 					<hr />
@@ -53,9 +55,11 @@ const TimestampHistory = (props: Props) => {
 						/>
 					))}
 				</>
-			)}
-		</div>
-	);
+			)
+		);
+	}, [history]);
+
+	return <div className='timestamp-input__history'>{renderHistory()}</div>;
 };
 
-export default observer(TimestampHistory);
+export default observer(GraphSearchHistory);
