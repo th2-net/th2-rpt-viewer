@@ -83,9 +83,7 @@ class ParamsTableBase extends React.Component<Props, State> {
 
 	setExpandStatus(isCollapsed: boolean) {
 		this.setState({
-			nodes: this.state.nodes.map(node =>
-				node.subRows ? this.setNodeExpandStatus(node, isCollapsed) : node,
-			),
+			nodes: this.state.nodes.map(node => this.setNodeExpandStatus(node, isCollapsed)),
 		});
 	}
 
@@ -93,11 +91,7 @@ class ParamsTableBase extends React.Component<Props, State> {
 		return {
 			...node,
 			isExpanded,
-			subRows:
-				node.subRows &&
-				node.subRows.map(subNode =>
-					subNode.subRows ? this.setNodeExpandStatus(subNode, isExpanded) : subNode,
-				),
+			subRows: node.subRows.map(subNode => this.setNodeExpandStatus(subNode, isExpanded)),
 		};
 	}
 
