@@ -206,6 +206,8 @@ const GraphSearchInput = (props: Props) => {
 		onFocus,
 	};
 
+	const datepickerButtonClassName = createBemElement('timestamp-input', 'datepicker-button');
+
 	return (
 		<div className='timestamp-input' ref={wrapperRef}>
 			<input {...inputProps} />
