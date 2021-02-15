@@ -320,7 +320,6 @@ export class SearchStore {
 		localStorageWorker.saveSearchHistory(this.searchHistory);
 	};
 
-	@action
 	onError = (ev: Event) => {
 		const data = (ev as MessageEvent).data;
 		notificationsStore.addResponseError({
