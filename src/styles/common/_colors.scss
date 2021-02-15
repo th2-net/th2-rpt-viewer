@@ -143,6 +143,7 @@ $realtimeButtonBorderColor: #999999;
 $graphBackgroundColor: #dee5ed;
 $graphButtonBackgroundColor: #d7e0ea;
 $graphTickColor: #3d668f;
+$graphTextColor: $graphTickColor;
 $graphAttachedEventPassedColor: #00802a;
 $graphAttachedEventFailedColor: #bc271a;
 $graphRangeSelectorBorder: #ff7733;
@@ -153,9 +154,7 @@ $graphOverlayMessagesColor: #1481b8;
 $graphOverlayConnectedMessagesColor: #ff6b00;
 $graphAttachedEventPassedColor: #00802a;
 $graphAttachedEventFailedColor: #bc271a;
-$graphOverlayConnectedMessagesColor: #ff6b00;
 $graphOverlayPinnedMessagesColor: #a21ae5;
-$graphPinnedMessageCounterColor: #d7e0ea;
 $graphAttachedItemNameColor: #bc271a;
 $graphAttachedItemTimestampColor: #666666;
 

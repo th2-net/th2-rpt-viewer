@@ -89,10 +89,10 @@ export const isEventNode = (object: unknown): object is EventTreeNode => {
 };
 
 export const sortByTimestamp = (
-	itmes: Array<EventMessage | EventTreeNode>,
+	items: Array<EventMessage | EventTreeNode>,
 	order: 'desc' | 'asc' = 'desc',
 ) => {
-	const copiedEvents = itmes.slice();
+	const copiedEvents = items.slice();
 	copiedEvents.sort((eventA, eventB) => {
 		if (order === 'desc') {
 			return (

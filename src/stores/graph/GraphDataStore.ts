@@ -16,10 +16,9 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
-import { getTimestampAsNumber, isTimeInsideInterval } from '../../helpers/date';
 import { isEventNode } from '../../helpers/event';
 import { calculateTimeRange } from '../../helpers/graph';
-import { Chunk, GraphItem, GraphItemType, IntervalData, IntervalOption } from '../../models/Graph';
+import { Chunk, GraphItem, GraphItemType, IntervalOption } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import { SelectedStore } from '../SelectedStore';
 
@@ -104,22 +103,6 @@ export class GraphDataStore {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public getChunkData = (chunk: Chunk, abortSignal?: AbortSignal) => {
 		// TODO: implement chunk data fetching
-	};
-
-	@action getIntervalData = (): IntervalData => {
-		const intervalData: IntervalData = {
-			events: 0,
-			passed: 0,
-			failed: 0,
-			messages: 0,
-			connected: 0,
-		};
-
-		intervalData.connected = this.selectedStore.attachedMessages.filter(message =>
-			isTimeInsideInterval(getTimestampAsNumber(message.timestamp), this.range),
-		).length;
-
-		return intervalData;
 	};
 
 	@action

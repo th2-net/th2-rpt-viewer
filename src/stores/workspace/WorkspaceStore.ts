@@ -28,9 +28,8 @@ import { EventMessage } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphDataStore } from '../graph/GraphDataStore';
-import { isEventsStore, isMessagesStore } from '../../helpers/stores';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { isEventAction, isEventMessage, isEventNode } from '../../helpers/event';
+import { isEventMessage } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
@@ -78,7 +77,6 @@ export default class WorkspaceStore {
 		this.messagesStore = new MessagesStore(
 			this,
 			this.selectedStore,
-			this.graphDataStore,
 			this.api,
 			initialState.messages || null,
 		);
@@ -89,8 +87,6 @@ export default class WorkspaceStore {
 		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
 	}
 
-	private panelUpdateTimer: NodeJS.Timeout | null = null;
-
 	@observable
 	public attachedMessagesIds: Array<string> = [];
 
@@ -100,11 +96,13 @@ export default class WorkspaceStore {
 	@observable
 	public isLoadingAttachedMessages = false;
 
-	@computed get isActive() {
+	@computed
+	public get isActive() {
 		return this.workspacesStore.activeWorkspace === this;
 	}
 
-	@computed get attachedMessagesStreams() {
+	@computed
+	public get attachedMessagesStreams() {
 		return [...new Set(this.attachedMessages.map(msg => msg.sessionId))];
 	}
 
@@ -163,32 +161,5 @@ export default class WorkspaceStore {
 	@action
 	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
 		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
-	};
-
-	@action
-	public onRangeChange = (range: TimeRange) => {
-		const [timestampFrom, timestampTo] = range;
-		if (this.panelUpdateTimer) {
-			clearTimeout(this.panelUpdateTimer);
-		}
-		this.panelUpdateTimer = setTimeout(() => {
-			if (isEventsStore(this.viewStore.activePanel)) {
-				const eventsFilter = this.viewStore.activePanel.filterStore.eventsFilter;
-				this.viewStore.activePanel.filterStore.eventsFilter = {
-					eventTypes: eventsFilter.eventTypes,
-					names: eventsFilter.names,
-					timestampFrom,
-					timestampTo,
-				};
-			} else if (isMessagesStore(this.viewStore.activePanel)) {
-				const messageFilter = this.viewStore.activePanel?.filterStore.messagesFilter;
-				this.viewStore.activePanel.filterStore.messagesFilter = {
-					messageTypes: messageFilter ? messageFilter.messageTypes : [],
-					streams: messageFilter ? messageFilter.streams : [],
-					timestampFrom,
-					timestampTo,
-				};
-			}
-		}, 800);
 	};
 }

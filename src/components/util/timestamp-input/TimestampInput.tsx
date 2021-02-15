@@ -18,14 +18,12 @@ import * as React from 'react';
 import moment from 'moment';
 import eventHttpApi from '../../../api/event';
 import messageHttpApi from '../../../api/message';
-import { formatTimestampValue } from '../../../helpers/date';
 import { isEventAction } from '../../../helpers/event';
 import { createBemElement } from '../../../helpers/styleCreators';
 import { useActiveWorkspace, useDebouncedCallback } from '../../../hooks';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
-import { DateTimeMask } from '../../../models/filter/FilterInputs';
 import { Timestamp } from '../../../models/Timestamp';
 import KeyCodes from '../../../util/KeyCodes';
 import TimestampDialog from './TimestampDialog';
@@ -36,7 +34,23 @@ const getTimestamp = (timestamp: Timestamp) => {
 	return +`${timestamp.epochSecond}${ms}`;
 };
 
-const dateFormatPattern = /([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])/g;
+function parseDateString(dateStr: string): number {
+	const dateMasks = [
+		'YYYY-MM-DD HH:mm:ss.SSS',
+		'YYYY-MM-DD HH:mm:ss',
+		'YYYY-MM-DD HH:mm',
+		'YYYY-MM-DD HH',
+	];
+	let i = 0;
+	while (i < dateMasks.length) {
+		const date = moment(dateStr, dateMasks[i], true);
+
+		if (date.isValid()) return date.valueOf() - new Date().getTimezoneOffset() * 60000;
+		i++;
+	}
+
+	throw new Error('Invalid date string');
+}
 
 interface Props {
 	timestamp: number;
@@ -45,25 +59,23 @@ interface Props {
 	style?: React.CSSProperties;
 	readonly?: boolean;
 	placeholder?: string;
-	onSubmit: (timestamp: number) => void;
+	onTimestampSubmit: (timestamp: number) => void;
 }
 
 const TimestampInput = (props: Props) => {
 	const {
 		timestamp,
-		wrapperClassName = 'timestamp-input',
 		readonly = false,
-		className = '',
 		placeholder = 'Go to ID or Timestamp',
 		style,
-		onSubmit,
+		onTimestampSubmit,
 	} = props;
 
 	const activeWorkspace = useActiveWorkspace();
 	const [currentValue, setCurrentValue] = React.useState(
 		moment(timestamp).utc().format('YYYY-MM-DD HH:mm:ss.SSS'),
 	);
-	const [currentTimestamp, setCurrentTimestamp] = React.useState(0);
+	const [currentTimestamp, setCurrentTimestamp] = React.useState(timestamp);
 	const [currentEventOrMessage, setCurrentEventOrMessage] = React.useState<
 		EventAction | EventMessage | null
 	>(null);
@@ -88,13 +100,18 @@ const TimestampInput = (props: Props) => {
 
 	React.useEffect(() => {
 		setCurrentValue(moment(timestamp).utc().format('YYYY-MM-DD HH:mm:ss.SSS'));
+		setCurrentTimestamp(timestamp);
 	}, [timestamp]);
 
 	React.useEffect(() => {
 		const ac = new AbortController();
+
 		if (showDialog) {
-			const isDate = currentValue.split(' ')[0].match(dateFormatPattern);
-			if (!isDate) {
+			try {
+				const parsedTimestamp = parseDateString(currentValue);
+				setCurrentTimestamp(parsedTimestamp);
+				setIsLoading(false);
+			} catch (error) {
 				setIsLoading(true);
 				setTimestampFromEventOrMessage(ac);
 			}
@@ -123,7 +140,7 @@ const TimestampInput = (props: Props) => {
 			? getTimestamp(eventOrMessage.startTimestamp)
 			: getTimestamp(eventOrMessage.timestamp);
 		setCurrentTimestamp(timestampFromEventOrMessage);
-		setCurrentValue(formatTimestampValue(timestampFromEventOrMessage, DateTimeMask.DATE_TIME_MASK));
+		setCurrentValue(moment(timestampFromEventOrMessage).format('YYYY-MM-DD HH:mm:ss.SSS'));
 	};
 
 	const setTimestampFromEventOrMessage = useDebouncedCallback((ac: AbortController) => {
@@ -147,7 +164,7 @@ const TimestampInput = (props: Props) => {
 
 	const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.keyCode === KeyCodes.ENTER) {
-			onSubmit(currentTimestamp);
+			onTimestampSubmit(currentTimestamp);
 		}
 	};
 
@@ -158,16 +175,14 @@ const TimestampInput = (props: Props) => {
 		setCurrentEventOrMessage(null);
 	};
 
-	const inputClassName = createBemElement(wrapperClassName, 'input');
 	const dialogClassName = createBemElement(
-		wrapperClassName,
+		'timestamp-input',
 		'dialog',
 		currentEventOrMessage || isLoading ? 'bordered' : null,
 	);
-	const datepickerButtonClassName = createBemElement(wrapperClassName, 'datepicker-button');
 
 	const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
-		className: `${inputClassName}${className ? ` ${className}` : ''}`,
+		className: 'timestamp-input__input',
 		style,
 		readOnly: readonly,
 		value: currentValue,
@@ -178,9 +193,9 @@ const TimestampInput = (props: Props) => {
 	};
 
 	return (
-		<div className={wrapperClassName} ref={wrapperRef}>
+		<div className='timestamp-input' ref={wrapperRef}>
 			<input {...inputProps} />
-			<button className={datepickerButtonClassName} onClick={toggleDatepicker} />
+			<button className='timestamp-input__datepicker-button' onClick={toggleDatepicker} />
 			<TimestampDialog
 				className={dialogClassName}
 				isOpen={showDialog}

@@ -17,24 +17,20 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
-import { AnimatePresence, motion } from 'framer-motion';
-import GraphItemsMenu from './GraphItemsMenu';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { GraphItem, GraphItemType, PanelRange } from '../../models/Graph';
-import { getEventStatus, isEventNode } from '../../helpers/event';
+import { PanelRange } from '../../models/Graph';
+import { isEventNode, sortByTimestamp } from '../../helpers/event';
 import TimestampInput from '../util/timestamp-input/TimestampInput';
 import { TimeRange } from '../../models/Timestamp';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { EventStatus } from '../../models/Status';
 import { GraphDataStore } from '../../stores/graph/GraphDataStore';
+import { OutsideItems, OutsideItemsMenu, OutsideItemsList } from './OutsideItems';
 import '../../styles/graph.scss';
 
 interface OverlayPanelProps {
-	chunkWidth: number;
 	range: TimeRange;
-	onInputSubmit: (timestamp: number) => void;
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
 	panelsRange: Array<PanelRange>;
@@ -42,9 +38,7 @@ interface OverlayPanelProps {
 
 const GraphOverlay = (props: OverlayPanelProps) => {
 	const {
-		chunkWidth,
 		range: [from, to],
-		onInputSubmit,
 		onGraphItemClick,
 		getGraphItemType,
 		panelsRange,
@@ -52,13 +46,6 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 
 	const selectedStore = useSelectedStore();
 	const activeWorkspace = useActiveWorkspace();
-
-	const overlayWidth = (window.innerWidth - chunkWidth) / 2;
-	const commonStyles: React.CSSProperties = { width: overlayWidth };
-
-	const intervalValues = React.useMemo(() => {
-		return activeWorkspace.graphDataStore.getIntervalData();
-	}, [from, to, selectedStore.graphItems]);
 
 	const outsideItems: OutsideItems = React.useMemo(() => {
 		const windowTimeRange = [
@@ -102,7 +89,23 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 				.filter(panelRange => panelRange.range != null && panelRange.range[0] > windowTimeRange[1])
 				.reduce((prev, curr) => ({ ...prev, [curr.type]: 1 }), {}),
 		};
-	}, [from, to]);
+	}, [from, to, panelsRange]);
+
+	const onOutsidePanelClick = (panelKey: string) => {
+		const panel = panelsRange.find(p => p.type === panelKey);
+		if (panel) {
+			activeWorkspace.graphDataStore.timestamp =
+				panel.range[0] + (panel.range[1] - panel.range[0]) / 2;
+		}
+	};
+
+	const onOutsideItemsArrowClick = (direction: 'left' | 'right') => {
+		const items = sortByTimestamp(outsideItems[direction]);
+		const utterItem = items[direction === 'right' ? items.length - 1 : 0];
+		if (utterItem) {
+			onGraphItemClick(utterItem);
+		}
+	};
 
 	return (
 		<>
@@ -111,252 +114,39 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 				direction='left'
 				items={outsideItems.left}
 				getGraphItemType={getGraphItemType}
+				onArrowClick={onOutsideItemsArrowClick}
 			/>
 			<OutsideItemsMenu
 				onGraphItemClick={onGraphItemClick}
 				direction='right'
 				items={outsideItems.right}
 				getGraphItemType={getGraphItemType}
+				onArrowClick={onOutsideItemsArrowClick}
 			/>
-			<OutsideItems
+			<OutsideItemsList
 				showCount={false}
 				itemsMap={outsidePanels.left}
 				direction='left'
 				className='outside-items__panels'
+				onItemClick={onOutsidePanelClick}
 			/>
-			<OutsideItems
+			<OutsideItemsList
 				showCount={false}
 				itemsMap={outsidePanels.right}
 				direction='right'
 				className='outside-items__panels'
+				onItemClick={onOutsidePanelClick}
+				onArrowClick={onOutsideItemsArrowClick}
 			/>
-			<div className='graph-overlay left' style={commonStyles} />
-			<div className='graph-overlay right' style={commonStyles} />
-			<div className='graph-overlay__section' style={commonStyles}>
-				<i className='graph-overlay__logo' />
-				<Timestamp className='from' timestamp={from} />
-			</div>
-			<div className='graph-overlay__section right' style={commonStyles}>
-				<Timestamp className='to' timestamp={to} />
-				<div className='graph-overlay__wrapper'>
-					<AnimatePresence>
-						{selectedStore.pinnedMessages.length > 0 && (
-							<motion.button
-								variants={fadeInOutVariants}
-								initial='hidden'
-								animate='visible'
-								exit='hidden'
-								className='graph__pinned-messages-counter'>
-								<i className='graph__pinned-messages-counter-icon' />
-								<span className='graph__pinned-messages-counter-value'>
-									{`${selectedStore.pinnedMessages.length} saved`}
-								</span>
-							</motion.button>
-						)}
-					</AnimatePresence>
-					<div className='graph__search-button' />
-					<div className='graph__settings-button' />
-				</div>
-			</div>
-			<div className='graph-range-selector__border left' style={{ left: overlayWidth }} />
-			<div
-				className='graph-range-selector__border right'
-				style={{ left: overlayWidth + chunkWidth }}
-			/>
-			<div className='graph-range-selector' style={{ width: chunkWidth, left: overlayWidth }}>
-				<div className='graph-range-selector__wrapper'>
-					{Object.entries(intervalValues).map(([key, value], index) => (
-						<div
-							key={key}
-							style={{
-								order: index,
-							}}
-							className={`graph-range-selector__counter ${key}`}>
-							{['passed', 'failed', 'connected'].includes(key) && (
-								<i className='graph-range-selector__counter-icon' />
-							)}
-							<span className='graph-range-selector__counter-value'>{`${value} ${key}`}</span>
-						</div>
-					))}
-					<TimestampInput
-						timestamp={from + (to - from) / 2}
-						wrapperClassName='graph-range-selector__timestamp-input timestamp-input'
-						onSubmit={onInputSubmit}
-					/>
-				</div>
+			<i className='th2-logo' />
+			<div className='graph-search-input'>
+				<TimestampInput
+					timestamp={from + (to - from) / 2}
+					onTimestampSubmit={activeWorkspace.graphDataStore.setTimestamp}
+				/>
 			</div>
 		</>
 	);
 };
-
-interface TimestampProps {
-	timestamp: number;
-	className?: string;
-}
-
-function Timestamp({ timestamp, className = '' }: TimestampProps) {
-	return (
-		<div className={`graph-timestamp ${className}`}>
-			{moment(timestamp).utc().format('DD.MM.YYYY')} <br />
-			{moment(timestamp).utc().format('HH:mm:ss.SSS')}
-		</div>
-	);
-}
 
 export default observer(GraphOverlay);
-
-const fadeInOutVariants = {
-	visible: {
-		opacity: 1,
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-	hidden: {
-		opacity: 0,
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-};
-
-const rightIndicatorVariants = {
-	visible: {
-		opacity: 1,
-		right: '14px',
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-	hidden: {
-		opacity: 0,
-		right: '-14px',
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-};
-
-const leftIndicatorVariants = {
-	visible: {
-		opacity: 1,
-		left: '14px',
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-	hidden: {
-		opacity: 0,
-		left: '-14px',
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-};
-
-interface OutsideItems {
-	left: GraphItem[];
-	right: GraphItem[];
-}
-
-interface OutsideItemsMenuProps {
-	items: GraphItem[];
-	direction: 'left' | 'right';
-	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
-	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
-}
-
-function OutsideItemsMenu(props: OutsideItemsMenuProps) {
-	const { items, direction, onGraphItemClick, getGraphItemType } = props;
-
-	const rootRef = React.useRef<HTMLDivElement>(null);
-	const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
-
-	function openMenu() {
-		setMenuAnchor(rootRef.current);
-	}
-
-	const outsideItemsMap = React.useMemo(() => {
-		const map: Partial<Record<EventStatus | GraphItemType, number>> = {};
-
-		items.forEach(item => {
-			let key: EventStatus | GraphItemType;
-			if (isEventNode(item)) {
-				key = getEventStatus(item);
-			} else {
-				key = getGraphItemType(item);
-			}
-			map[key] = (map[key] || 0) + 1;
-		});
-
-		return map;
-	}, [items]);
-
-	return (
-		<>
-			<OutsideItems
-				ref={rootRef}
-				onClick={openMenu}
-				itemsMap={outsideItemsMap}
-				direction={direction}
-			/>
-			<GraphItemsMenu
-				isMenuOpened={Boolean(menuAnchor)}
-				getGraphItemType={getGraphItemType}
-				items={items}
-				onClose={() => setMenuAnchor(null)}
-				onMenuItemClick={onGraphItemClick}
-				anchorEl={menuAnchor}
-			/>
-		</>
-	);
-}
-
-interface OutsideItemsProps {
-	itemsMap: Record<string, number | undefined>;
-	direction: 'left' | 'right';
-	onClick?: () => void;
-	className?: string;
-	showCount?: boolean;
-}
-
-const OutsideItems = React.forwardRef<HTMLDivElement, OutsideItemsProps>(
-	({ itemsMap, direction, onClick, className = '', showCount = true }: OutsideItemsProps, ref) => {
-		return (
-			<AnimatePresence>
-				{Object.values(itemsMap).some(Boolean) && (
-					<motion.div
-						variants={direction === 'left' ? leftIndicatorVariants : rightIndicatorVariants}
-						initial='hidden'
-						animate='visible'
-						exit='hidden'
-						className={`outside-items__indicator ${direction} ${className}`}
-						ref={ref}
-						onClick={onClick}>
-						<i className={`outside-items__indicator-pointer ${direction}`} />
-						<div className='outside-items__wrapper'>
-							{Object.entries(itemsMap)
-								.filter(([_type, count]) => Boolean(count))
-								.map(([type, count]) => (
-									<div key={type} className={`outside-items__indicator-item ${direction}`}>
-										<i className={`outside-items__indicator-icon ${type.toLowerCase()}`} />
-										{showCount && (
-											<span className='outside-items__indicator-value'>{`+ ${count}`}</span>
-										)}
-									</div>
-								))}
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
-		);
-	},
-);
-
-OutsideItems.displayName = 'OutsideItems';

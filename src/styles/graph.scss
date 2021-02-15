@@ -26,43 +26,6 @@
 	flex-shrink: 0;
 	justify-content: flex-end;
 	overflow: visible;
-
-	&__search-button {
-		@include icon(url(../../resources/icons/graph-search.svg), 15px, 15px);
-		z-index: 5;
-		cursor: pointer;
-	}
-
-	&__settings-button {
-		@include icon(url(../../resources/icons/settings.svg), 15px, 15px);
-		z-index: 5;
-		cursor: pointer;
-	}
-
-	&__pinned-messages-counter {
-		background-color: $graphPinnedMessageCounterColor;
-		border-radius: 18px;
-		padding: 2px 8px;
-		border: none;
-		cursor: pointer;
-		z-index: 5;
-		display: flex;
-		align-items: center;
-		outline: none;
-
-		&-value {
-			color: $graphOverlayPinnedMessagesColor;
-			font-size: 11px;
-			line-height: 14px;
-		}
-
-		&-icon {
-			@include icon(url(../../resources/icons/star.svg), 14px, 14px);
-
-			display: inline-block;
-			margin-right: 5px;
-		}
-	}
 }
 
 .outside-items {
@@ -104,7 +67,7 @@
 		&-value {
 			font-size: 11px;
 			line-height: 14px;
-			color: #ffffff;
+			color: $graphTextColor;
 			flex-shrink: 0;
 		}
 
@@ -142,7 +105,7 @@
 				height: 6px;
 				background-color: rgb(247, 167, 110);
 			}
-	
+
 			&.messages-panel {
 				width: 30px;
 				height: 6px;
@@ -166,7 +129,6 @@
 
 	&__panels {
 		top: 89%;
-		cursor: default;
 	}
 }
 
@@ -201,15 +163,16 @@
 }
 
 .graph-dot {
-	&__attached-message,
-	&__pinned-message,
-	&__event {
+	&.attached-message,
+	&.pinned-message,
+	&.passed,
+	&.failed {
 		position: relative;
 		z-index: 6;
 		cursor: pointer;
 	}
 
-	&__event {
+	&.passed, &.failed {
 		width: 14px;
 		height: 14px;
 		border-radius: 50%;
@@ -217,21 +180,21 @@
 		&:not(:first-child) {
 			margin-bottom: 1px;
 		}
-
-		&.passed {
-			background-color: $graphAttachedEventPassedColor;
-		}
-
-		&.failed {
-			background-color: $graphAttachedEventFailedColor;
-		}
 	}
 
-	&__attached-message {
+	&.passed {
+		background-color: $graphAttachedEventPassedColor;
+	}
+
+	&.failed {
+		background-color: $graphAttachedEventFailedColor;
+	}
+
+	&.attached-message {
 		@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
 	}
 
-	&__pinned-message {
+	&.pinned-message {
 		@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
 	}
 }
@@ -249,7 +212,7 @@
 		z-index: 101;
 
 		&::before {
-			content: "";
+			content: '';
 			position: absolute;
 			top: -2px;
 			left: -2px;
@@ -375,7 +338,7 @@
 		display: flex;
 		position: relative;
 	}
-	
+
 	&__dragging-zone {
 		visibility: hidden;
 		height: 100%;
@@ -383,53 +346,12 @@
 		top: 0;
 	}
 
-	&__arrow-button {
-		width: 21px;
-		height: 21px;
-		border-radius: 50%;
-		background-color: $graphButtonBackgroundColor;
-		position: absolute;
-		top: 42px;
-		left: 14px;
-		z-index: 10;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		cursor: pointer;
-
-		&:hover i {
-			transform: scale(1.1);
-		}
-
-		&.left {
-			transform: translateX(-31px);
-		}
-
-		&.right {
-			transform: translateX(10px);
-			left: 35px;
-			& i {
-				transform: rotate(180deg) scale(1);
-
-				&:hover {
-					transform: rotate(180deg) scale(1.1);
-				}
-			}
-		}
-	}
-
-	&__arrow-icon {
-		@include icon(url(../../resources/icons/graph-arrow-left.svg), 15px, 15px);
-		transition: transform 0.1s;
-		display: inline-block;
-	}
-
 	&__panel-marker {
-		width: 960px;
-    height: 5px;
-    position: absolute;
-    z-index: 50;
-    border-radius: 2px;
+		min-width: 20px;
+		height: 5px;
+		position: absolute;
+		z-index: 50;
+		border-radius: 2px;
 
 		&.events-panel {
 			background-color: rgba($color: rgb(247, 167, 110), $alpha: 0.7);
@@ -439,161 +361,73 @@
 			background-color: rgba($color: rgb(26, 196, 229), $alpha: 0.7);
 		}
 	}
-}
 
-.graph-timestamp {
-	@include unselectable;
-	position: absolute;
-	transform: translate(-20%, 5px);
-	color: #fff;
-	font-size: 10px;
-	line-height: 15px;
-	top: 0;
-	text-align: right;
-	z-index: 5;
-	cursor: default;
-
-	&.from {
-		right: 0;
-	}
-
-	&.to {
-		transform: translate(15%, 5px);
-		text-align: left;
-	}
-}
-
-.graph-overlay {
-	position: absolute;
-	top: 0;
-	width: 480px;
-	height: 100%;
-	z-index: 2;
-	backdrop-filter: invert(0.8) brightness(204%) hue-rotate(190deg) contrast(188%) grayscale(3%)
-		saturate(147%);
-	opacity: 0.8;
-
-	&.left {
-		left: 0;
-	}
-
-	&.right {
-		right: 0;
-	}
-
-	&__section {
-		position: absolute;
-		left: 0;
-		top: 0;
-		width: 640px;
-		height: 100%;
-
-		&.right {
-			left: unset;
-			right: 0;
-		}
-	}
-
-	&__logo {
-		@include icon(url(../../resources/icons/th2-icon.svg), 22px, 60px);
-		display: inline-block;
-		position: absolute;
-		left: 14px;
-		top: 12px;
-		z-index: 5;
-	}
-
-	&__wrapper {
+	.time-picker {
+		height: 6px;
 		width: 100%;
-		z-index: 5px;
-		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-		gap: 12px;
-		margin-top: 10px;
-		padding-right: 10px;
+		position: absolute;
+		bottom: 0;
+		z-index: 15;
+
+		&__dashed-line {
+			position: absolute;
+			top: 3px;
+			left: 0;
+			width: 100%;
+			display: none;
+
+			&.events-panel {
+				border-bottom: 1px dashed rgb(247, 167, 110);
+			}
+
+			&.messages-panel {
+				border-bottom: 1px dashed rgb(26, 196, 229);
+			}
+		}
+
+		&:hover {
+			&::before {
+				display: block;
+			}
+		}
+
+		& ~ .time-picker {
+			bottom: 6px;
+		}
+
+		&__pointer {
+			display: none;
+			cursor: pointer;
+			width: 6px;
+			height: 6px;
+			position: absolute;
+			border-radius: 50%;
+			border: 1px solid #fff;
+
+			&.events-panel {
+				background-color: rgb(247, 167, 110);
+			}
+
+			&.messages-panel {
+				background-color: rgb(26, 196, 229);
+			}
+		}
 	}
 }
 
-.graph-range-selector {
-	@include unselectable;
-	height: 100%;
+.th2-logo {
+	@include icon(url(../../resources/icons/th2-icon.svg), 22px, 60px);
+	display: inline-block;
 	position: absolute;
-	top: 0;
-	z-index: 2;
+	left: 14px;
+	top: 12px;
+	z-index: 5;
+}
 
-	&__border {
-		content: '';
-		height: 100%;
-		position: absolute;
-		top: 0;
-		left: 0;
-		z-index: 10;
-		width: 3px;
-		background-color: $graphRangeSelectorBorder;
-
-		&.right {
-			transform: translateX(-100%);
-		}
-	}
-
-	&__wrapper {
-		display: flex;
-		align-items: center;
-		padding: 0 12px;
-		gap: 5px;
-		margin-top: 8px;
-	}
-
-	&__timestamp-input {
-		margin: 0 auto;
-		order: 2;
-	}
-
-	&__counter {
-		font-size: 11px;
-		line-height: 14px;
-		display: flex;
-		align-items: center;
-
-		&-icon {
-			width: 9px;
-			height: 9px;
-			margin-right: 5px;
-		}
-
-		&.events {
-			color: $graphOverlayEventsColor;
-		}
-
-		&.passed {
-			color: $graphOverlayPassedEventsColor;
-		}
-
-		&.passed &-icon {
-			border-radius: 50%;
-			background-color: $graphOverlayPassedEventsColor;
-		}
-
-		&.failed {
-			color: $graphOverlayFailedEventsColor;
-		}
-
-		&.failed &-icon {
-			border-radius: 50%;
-			background-color: $graphOverlayFailedEventsColor;
-		}
-
-		&.messages {
-			color: $graphOverlayMessagesColor;
-		}
-
-		&.connected {
-			color: $graphOverlayConnectedMessagesColor;
-		}
-
-		&.connected &-icon {
-			@include icon(url(../../resources/icons/attached-message.svg), 10px, 10px);
-		}
-	}
+.graph-search-input {
+	position: absolute;
+	left: 50%;
+	top: 10px;
+	transform: translateX(-50%);
+	width: 240px;
 }

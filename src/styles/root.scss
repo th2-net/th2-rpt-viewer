@@ -113,7 +113,7 @@ input {
 }
 
 .pinned-message-icon {
-	@include icon(url(../../resources/icons/star.svg), 14px, 14px);
+	@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
 }
 
 .event-icon {

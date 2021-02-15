@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed, reaction } from 'mobx';
+import { observable, action, computed } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
@@ -32,8 +32,6 @@ export default class WorkspacesStore {
 		this.init(initialState);
 
 		this.tabsStore = new TabsStore(this);
-
-		reaction(() => this.activeWorkspace, this.onActiveWorkspaceChange);
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
@@ -72,11 +70,6 @@ export default class WorkspacesStore {
 	@action
 	public addWorkspace = (workspace: WorkspaceStore) => {
 		this.workspaces.push(workspace);
-	};
-
-	@action
-	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
-		console.log(activeWorkspace);
 	};
 
 	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {

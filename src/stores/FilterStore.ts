@@ -21,7 +21,7 @@ import EventsFilter from '../models/filter/EventsFilter';
 
 export const defaultMessagesFilter: MessagesFilter = {
 	timestampFrom: null,
-	timestampTo: null,
+	timestampTo: moment(Date.now()).utc().valueOf(),
 	streams: [],
 	messageTypes: [],
 };

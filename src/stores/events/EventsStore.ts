@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
+import moment from 'moment';
 import FilterStore from '../FilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
@@ -228,34 +229,33 @@ export default class EventsStore {
 		} else {
 			fullPath = [...(savedEventNode.parents || []), savedEventNode.eventId];
 		}
-		let currIdx = 0;
-		let nodes = this.eventTree;
-		let node: EventTreeNode | undefined;
 
-		// Check if event exists in current tree
-		while (currIdx < fullPath.length) {
-			// eslint-disable-next-line no-loop-func
-			node = nodes.find(n => n.eventId === fullPath[currIdx]);
+		const [timestampFrom, timestampTo] = calculateTimeRange(
+			getTimestampAsNumber(savedEventNode.startTimestamp),
+			this.graphStore.interval,
+		);
 
-			if (!node) break;
-			nodes = node.childList;
-			currIdx++;
-		}
+		this.filterStore.eventsFilter.timestampFrom = timestampFrom;
+		this.filterStore.eventsFilter.timestampTo = timestampTo;
+		this.filterStore.eventsFilter.eventTypes = [];
+		this.filterStore.eventsFilter.names = [];
 
-		if (!node) {
-			const [timestampFrom, timestampTo] = calculateTimeRange(
-				getTimestampAsNumber(savedEventNode.startTimestamp),
-				this.graphStore.interval,
-			);
-
-			this.filterStore.eventsFilter.timestampFrom = timestampFrom;
-			this.filterStore.eventsFilter.timestampTo = timestampTo;
-			this.filterStore.eventsFilter.eventTypes = [];
-			this.filterStore.eventsFilter.names = [];
-			await this.fetchEventTree();
-		}
+		await this.fetchEventTree();
 		this.expandPath(fullPath);
 		this.isLoadingRootEvents = false;
+	};
+
+	@action
+	public onRangeChange = (timestamp: number) => {
+		this.filterStore.eventsFilter = {
+			...this.filterStore.eventsFilter,
+			timestampFrom: moment(timestamp)
+				.subtract((this.graphStore.interval * 60) / 2, 'seconds')
+				.valueOf(),
+			timestampTo: moment(timestamp)
+				.add((this.graphStore.interval * 60) / 2, 'seconds')
+				.valueOf(),
+		};
 	};
 
 	private detailedEventAC: AbortController | null = null;
