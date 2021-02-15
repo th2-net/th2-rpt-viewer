@@ -24,7 +24,12 @@ import EventsSearchStore from './EventsSearchStore';
 import EventsFilter from '../../models/filter/EventsFilter';
 import PanelArea from '../../util/PanelArea';
 import { TabTypes } from '../../models/util/Windows';
-import { getEventNodeParents, isEventAction, isEventNode, sortEventsByTimestamp } from '../../helpers/event';
+import {
+	getEventNodeParents,
+	isEventAction,
+	isEventNode,
+	sortEventsByTimestamp,
+} from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
