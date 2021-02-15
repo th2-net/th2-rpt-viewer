@@ -26,10 +26,13 @@
 	padding: 0px 5px;
 	display: flex;
 	align-items: center;
-	column-gap: 5px;
 	border: 2px solid transparent;
 	overflow: hidden;
 	cursor: pointer;
+
+	& > *:not(:first-child) {
+		margin-left: 5px;
+	}
 
 	& .event-status-icon {
 		margin: 5px 1px 5px 0;
@@ -125,8 +128,11 @@
 	&__parents {
 		display: flex;
 		flex-direction: column;
-		row-gap: 3px;
 		padding-bottom: 10px;
+
+		& > *:not(:first-child) {
+			margin-top: 3px;
+		}
 	}
 
 	&__event-card {
@@ -136,7 +142,10 @@
 	&__list {
 		display: flex;
 		flex-direction: column;
-		row-gap: 5px;
+
+		& > *:not(:first-child) {
+			margin-top: 5px;
+		}
 	}
 
 	&__message {
@@ -172,14 +181,16 @@
 		flex-shrink: 1;
 		display: flex;
 		flex-direction: column;
-		row-gap: 2px;
 		min-width: 0;
 	}
 
 	&__header {
 		display: flex;
 		align-items: center;
-		column-gap: 5px;
+
+		& > *:not(:first-child) {
+			margin-left: 5px;
+		}
 	}
 
 	&__title {
@@ -204,12 +215,15 @@
 
 	&__controls {
 		display: flex;
-		column-gap: 5px;
+
+		& > *:not(:first-child) {
+			margin-left: 5px;
+		}
 	}
 
 	&__body {
+		margin-top: 2px;
 		display: flex;
-		column-gap: 10px;
 		align-items: flex-start;
 		font-size: 10px;
 	}
@@ -222,13 +236,13 @@
 		justify-content: flex-end;
 		display: flex;
 		flex-wrap: wrap;
-		column-gap: 5px;
 		min-width: 0;
+		margin-left: 5px;
 	}
 
 	&__timestamp-item {
+		margin-left: 5px;
 		display: flex;
-		column-gap: 5px;
 		min-width: 0;
 	}
 
@@ -238,6 +252,7 @@
 	}
 
 	&__timestamp-value {
+		margin-left: 5px;
 		font-size: 10px;
 		color: $activeTextColor;
 		font-weight: 600;
@@ -401,7 +416,6 @@
 	display: flex;
 	justify-content: flex-end;
 	padding: 3px 10px 3px 0;
-	column-gap: 10px;
 	margin-top: 3px;
 	margin-bottom: 5px;
 
@@ -412,6 +426,7 @@
 	}
 
 	&__icon {
+		margin-left: 10px;
 		@include icon(url(../../resources/icons/time-arrow-start.svg), 15px, 15px);
 	}
 

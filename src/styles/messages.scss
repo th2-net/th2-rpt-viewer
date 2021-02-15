@@ -26,8 +26,8 @@
 	}
 
 	&:hover .mc-header {
-		&__info {
-			column-gap: 10px;
+		&__info > *:not(:last-child) {
+			margin-right: 10px;
 		}
 
 		&__control-button {
@@ -111,8 +111,11 @@
 
 .mc-header {
 	display: flex;
-	column-gap: 5px;
 	white-space: nowrap;
+
+	& > *:not(:last-child) {
+		margin-right: 5px;
+	}
 
 	&__is-attached-icon {
 		flex-shrink: 0;
@@ -131,14 +134,16 @@
 	&__info {
 		flex-grow: 1;
 		display: flex;
-		column-gap: 5px;
 		overflow: hidden;
 		align-items: center;
+
+		& > *:not(:last-child) {
+			margin-right: 5px;
+		}
 	}
 
 	&__item {
 		display: flex;
-		column-gap: 3px;
 		align-items: center;
 	}
 
@@ -149,6 +154,12 @@
 		&.in {
 			transform: scale(-1);
 		}
+	}
+
+	&__key,
+	&__key__minified,
+	&__direction-icon {
+		margin-right: 3px;
 	}
 
 	&__key {
@@ -173,10 +184,13 @@
 
 	&__controls {
 		display: flex;
-		column-gap: 5px;
 
 		div {
 			cursor: pointer;
+		}
+
+		& > *:not(:last-child) {
+			margin-right: 5px;
 		}
 	}
 
@@ -209,8 +223,6 @@
 	font-size: 11px;
 	position: relative;
 	border-radius: 5px;
-	display: flex;
-	column-gap: 10px;
 
 	&__human {
 		font-family: inherit;
@@ -428,16 +440,22 @@
 
 	&__header {
 		display: flex;
-		column-gap: 3px;
 		height: 11px;
 		width: 100%;
+
+		& > *:not(:last-child) {
+			margin-right: 3px;
+		}
 	}
 
 	&__body {
 		margin-top: 10px;
 		display: flex;
 		flex-direction: column;
-		row-gap: 5px;
+
+		& > *:not(:first-child) {
+			margin-top: 5px;
+		}
 	}
 
 	&__timestamp,

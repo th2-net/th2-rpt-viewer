@@ -285,8 +285,13 @@ function WorkspaceSplitter(props: Props) {
 						</div>
 						<div className='pane__wrapper'>
 							<div className='pane__header' style={{ backgroundColor: panel.color }}>
-								<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon-white`} />
-								{panel.title}
+								<i
+									className={
+										'pane__header-icon ' +
+										`workspace-split-view__${panel.title.toLowerCase()}-icon-white`
+									}
+								/>
+								<div className='pane__header-title'>{panel.title}</div>
 							</div>
 							<div className='pane__main'>{panel.component}</div>
 						</div>
