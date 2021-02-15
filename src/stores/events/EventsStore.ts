@@ -24,7 +24,7 @@ import EventsSearchStore from './EventsSearchStore';
 import EventsFilter from '../../models/filter/EventsFilter';
 import PanelArea from '../../util/PanelArea';
 import { TabTypes } from '../../models/util/Windows';
-import { getEventNodeParents, isEventNode, sortEventsByTimestamp } from '../../helpers/event';
+import { getEventNodeParents, isEventAction, isEventNode, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
@@ -55,7 +55,7 @@ export default class EventsStore {
 		private workspaceStore: WorkspaceStore,
 		private graphStore: GraphDataStore,
 		private api: ApiSchema,
-		initialState: EventStoreDefaultStateType,
+		initialState: EventStoreDefaultStateType | EventAction | EventTreeNode,
 	) {
 		this.init(initialState);
 
@@ -350,7 +350,12 @@ export default class EventsStore {
 	}
 
 	@action
-	private async init(initialState: EventsStore | EventStoreURLState | null) {
+	private async init(
+		initialState: EventsStore | EventStoreURLState | EventTreeNode | EventAction | null,
+	) {
+		const isInitialEntity = (state: typeof initialState): state is EventAction | EventTreeNode =>
+			isEventAction(state) || isEventNode(state);
+
 		if (!initialState) {
 			this.fetchEventTree();
 			return;
@@ -361,31 +366,36 @@ export default class EventsStore {
 			return;
 		}
 
-		const {
-			filter,
-			panelArea = PanelArea.P100,
-			selectedNodesPath,
-			search,
-			flattenedListView,
-			selectedParentId,
-		} = initialState;
-		this.viewStore.eventsPanelArea = panelArea;
+		this.viewStore.eventsPanelArea = isInitialEntity(initialState)
+			? PanelArea.P100
+			: initialState.panelArea || PanelArea.P100;
 
-		this.filterStore = new FilterStore({ eventsFilter: filter });
+		this.filterStore = new FilterStore({
+			eventsFilter: !isInitialEntity(initialState) ? initialState.filter : undefined,
+		});
 		this.searchStore = new EventsSearchStore(this.api, this, this.graphStore, {
-			searchPatterns: search || [],
+			searchPatterns: !isInitialEntity(initialState) ? initialState.search : [],
 		});
 		this.viewStore = new ViewStore({
-			flattenedListView,
-			panelArea,
+			flattenedListView: !isInitialEntity(initialState)
+				? initialState.flattenedListView
+				: undefined,
+			panelArea: !isInitialEntity(initialState) ? initialState.panelArea : undefined,
 		});
-		await this.fetchEventTree();
-		if (selectedNodesPath) {
-			this.expandPath(selectedNodesPath);
+
+		if (isInitialEntity(initialState)) {
+			this.onSavedItemSelect(initialState);
+		} else {
+			await this.fetchEventTree();
 		}
-		if (selectedParentId) {
+
+		if (!isInitialEntity(initialState) && initialState.selectedNodesPath) {
+			this.expandPath(initialState.selectedNodesPath);
+		}
+
+		if (!isInitialEntity(initialState) && initialState.selectedParentId) {
 			const parentNode = this.selectedPath.find(
-				eventNode => eventNode.eventId === selectedParentId,
+				eventNode => eventNode.eventId === initialState.selectedParentId,
 			);
 			this.selectedParentNode = parentNode ?? null;
 		}
