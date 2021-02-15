@@ -17,7 +17,6 @@
 import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import PanelArea from '../../util/PanelArea';
 import '../../styles/splitter.scss';
 
 export interface Props {
@@ -27,18 +26,17 @@ export interface Props {
 	 */
 	children: [React.ReactNode, React.ReactNode];
 	className?: string;
-	panelArea: PanelArea;
-	onPanelAreaChange: (panelArea: PanelArea) => void;
-	leftPanelMinWidth: number;
-	rightPanelMinWidth: number;
+	panelArea: number;
+	onPanelAreaChange: (panelArea: number) => void;
 	splitterClassName?: string;
 }
 
 interface State {
-	splitterLeftOffset: number;
 	isDragging: boolean;
-	steps: number[];
-	previewPanelArea: PanelArea;
+	previewPanelArea: number;
+	rootWidth: number;
+	rootHeight: number;
+	isVertical: boolean;
 }
 
 export default class SplitView extends React.Component<Props, State> {
@@ -48,24 +46,23 @@ export default class SplitView extends React.Component<Props, State> {
 
 	private splitter = React.createRef<HTMLDivElement>();
 
-	private lastPosition = 0;
+	private splitterThickness = 32;
+
+	private lastPosition = {
+		x: 0,
+		y: 0,
+	};
 
 	private resizeObserver = new ResizeObserver(this.onResize.bind(this));
-
-	private rootWidth = 0;
-
-	static defaultProps: Partial<Props> = {
-		leftPanelMinWidth: 0,
-		rightPanelMinWidth: 0,
-	};
 
 	constructor(props: Props) {
 		super(props);
 		this.state = {
-			splitterLeftOffset: 0,
 			isDragging: false,
-			steps: [],
 			previewPanelArea: props.panelArea,
+			rootWidth: 0,
+			rootHeight: 0,
+			isVertical: false,
 		};
 	}
 
@@ -81,36 +78,12 @@ export default class SplitView extends React.Component<Props, State> {
 		}
 	}
 
-	componentDidUpdate(prevProps: Readonly<Props>) {
-		if (
-			this.props.leftPanelMinWidth !== prevProps.leftPanelMinWidth ||
-			this.props.rightPanelMinWidth !== prevProps.rightPanelMinWidth
-		) {
-			this.setState({
-				steps: this.calculateSteps(),
-			});
-		}
-	}
-
 	get panelsAvailableWidth() {
-		return this.root.current?.offsetWidth! - this.splitter.current?.offsetWidth!;
+		return this.root.current?.offsetWidth! - this.splitterThickness;
 	}
 
-	private calculateSteps(): State['steps'] {
-		const rootWidth = this.panelsAvailableWidth;
-		const stepWidth = rootWidth / 4;
-
-		const w25 =
-			stepWidth > this.props.leftPanelMinWidth! ? stepWidth : this.props.leftPanelMinWidth;
-
-		const w50 = rootWidth / 2;
-
-		const w75 =
-			rootWidth - stepWidth * 3 > this.props.rightPanelMinWidth
-				? stepWidth * 3
-				: rootWidth - this.props.rightPanelMinWidth;
-
-		return [0, w25, w50, w75, rootWidth];
+	get panelsAvailableHeight() {
+		return this.root.current?.offsetHeight! - this.splitterThickness;
 	}
 
 	private splitterMouseDown = (e: React.MouseEvent) => {
@@ -120,84 +93,64 @@ export default class SplitView extends React.Component<Props, State> {
 			this.root.current.addEventListener('mouseup', this.onMouseUpOrLeave);
 		}
 
-		this.lastPosition = e.clientX - this.root.current!.getBoundingClientRect().left;
+		this.lastPosition.x = e.clientX - this.root.current!.getBoundingClientRect().left;
+		this.lastPosition.y = e.clientY - this.root.current!.getBoundingClientRect().top;
 
 		this.setState({
-			splitterLeftOffset: this.leftPanel.current!.clientWidth,
 			isDragging: true,
 		});
 	};
 
 	private onMouseUpOrLeave = () => {
 		if (this.root.current) {
-			this.root.current.removeEventListener('mouseleave', this.onMouseUpOrLeave);
-			this.root.current.removeEventListener('mouseup', this.onMouseUpOrLeave);
 			this.root.current.removeEventListener('mousemove', this.onMouseMove);
+			this.root.current.removeEventListener('mouseup', this.onMouseUpOrLeave);
+			this.root.current.removeEventListener('mouseleave', this.onMouseUpOrLeave);
 		}
 
 		this.stopDragging();
 	};
 
 	private onMouseMove = (e: MouseEvent) => {
-		// here we catching situation when the mouse is outside the browser document
-		if (e.clientX > document.documentElement.scrollWidth) {
-			this.stopDragging();
-		} else {
-			this.resetPosition(e.clientX - this.root.current!.getBoundingClientRect().left);
-		}
+		this.resetPosition({
+			x: e.clientX - this.root.current!.getBoundingClientRect().left,
+			y: e.clientY - this.root.current!.getBoundingClientRect().top,
+		});
 	};
 
 	private onResize(elements: ResizeObserverEntry[]) {
-		const nextRootWidth = elements[0]?.contentRect.width;
+		if (elements[0]) {
+			const nextRootWidth = elements[0].contentRect.width;
+			const nextRootHeight = elements[0].contentRect.height;
 
-		if (nextRootWidth !== this.rootWidth) {
+			const isVerticalNext = nextRootWidth < 500;
+
 			this.setState({
-				steps: this.calculateSteps(),
+				rootWidth: nextRootWidth,
+				rootHeight: nextRootHeight,
+				isVertical: isVerticalNext,
 			});
 		}
-
-		this.rootWidth = nextRootWidth;
 	}
 
-	resetPosition(newPosition: number) {
-		const diff = newPosition - this.lastPosition;
+	resetPosition(newPosition: { x: number; y: number }) {
+		this.lastPosition = { ...newPosition };
 
-		this.lastPosition = newPosition;
+		let previewPanelArea: number;
 
-		const [w0, w25, w50, w75, w100] = this.state.steps;
-
-		const closestStep = this.state.steps
-			.map(step => ({
-				step,
-				diff: Math.abs(step - newPosition),
-			}))
-			.sort((a, b) => a.diff - b.diff)[0].step;
-
-		let previewPanelArea: PanelArea;
-
-		switch (closestStep) {
-			case w0:
-				previewPanelArea = PanelArea.P0;
-				break;
-			case w25:
-				previewPanelArea = PanelArea.P25;
-				break;
-			case w50:
-				previewPanelArea = PanelArea.P50;
-				break;
-			case w75:
-				previewPanelArea = PanelArea.P75;
-				break;
-			case w100:
-				previewPanelArea = PanelArea.P100;
-				break;
-			default:
-				previewPanelArea = PanelArea.P50;
+		if (this.state.isVertical) {
+			previewPanelArea =
+				((newPosition.y - this.splitterThickness / 2) / this.panelsAvailableHeight) * 100;
+		} else {
+			previewPanelArea =
+				((newPosition.x - this.splitterThickness / 2) / this.panelsAvailableWidth) * 100;
 		}
+
+		previewPanelArea = Math.max(Math.min(previewPanelArea, 100), 0);
+		previewPanelArea = Math.round(previewPanelArea / 5) * 5;
 
 		this.setState({
 			previewPanelArea,
-			splitterLeftOffset: parseInt(this.splitter.current!.style.left) + diff,
 		});
 	}
 
@@ -206,63 +159,80 @@ export default class SplitView extends React.Component<Props, State> {
 
 		this.setState({
 			isDragging: false,
-			splitterLeftOffset: 0,
 		});
 	}
 
-	private getPanelsWidthByArea(area: PanelArea): [number, number] {
-		const fullWidth = this.panelsAvailableWidth;
+	private getPanelsWidthByArea(area: number): [number, number] {
+		const availableWidth = this.panelsAvailableWidth;
 
-		switch (area) {
-			case PanelArea.P0:
-				return [0, fullWidth];
-			case PanelArea.P25:
-				return [this.state.steps[1], fullWidth - this.state.steps[1]];
-			case PanelArea.P50:
-				return [this.state.steps[2], this.state.steps[2]];
-			case PanelArea.P75:
-				return [this.state.steps[3], fullWidth - this.state.steps[3]];
-			case PanelArea.P100:
-				return [this.state.steps[4], this.state.steps[0]];
-			default:
-				return [this.state.steps[2], this.state.steps[2]];
-		}
+		return [(area / 100) * availableWidth, availableWidth - (area / 100) * availableWidth];
+	}
+
+	private getPanelsHeightByArea(area: number): [number, number] {
+		const availableHeight = this.panelsAvailableHeight;
+
+		return [(area / 100) * availableHeight, availableHeight - (area / 100) * availableHeight];
 	}
 
 	render() {
 		const { children, panelArea, className } = this.props;
-		const { isDragging, splitterLeftOffset, previewPanelArea } = this.state;
+		const { isDragging, previewPanelArea, isVertical } = this.state;
 
 		let rootStyle: React.CSSProperties = {};
 		let previewStyle: React.CSSProperties = {};
+		let splitterStyle: React.CSSProperties = {};
 
-		// during first render we can't calculate panel's widths
+		// during first render we can't calculate panel's sizes
 		if (this.root.current) {
-			const [leftWidth, rightWidth] = this.getPanelsWidthByArea(panelArea);
-			rootStyle = { gridTemplateColumns: `${leftWidth}px auto ${rightWidth}px` };
+			if (isVertical) {
+				const [topHeight, bottomHeight] = this.getPanelsHeightByArea(panelArea);
+				rootStyle = { gridTemplateRows: `${topHeight}px auto ${bottomHeight}px` };
 
-			const [leftPreviewWidth, rightPreviewWidth] = this.getPanelsWidthByArea(previewPanelArea);
-			previewStyle = {
-				gridTemplateColumns: `${leftPreviewWidth}px auto ${rightPreviewWidth}px`,
-			};
+				const [topPreviewHeight, bottomPreviewHeight] = this.getPanelsHeightByArea(
+					previewPanelArea,
+				);
+				previewStyle = {
+					gridTemplateRows: `${topPreviewHeight}px auto ${bottomPreviewHeight}px`,
+				};
+
+				splitterStyle = {
+					top: isDragging ? (previewPanelArea * this.panelsAvailableHeight) / 100 : undefined,
+				};
+			} else {
+				const [leftWidth, rightWidth] = this.getPanelsWidthByArea(panelArea);
+				rootStyle = { gridTemplateColumns: `${leftWidth}px auto ${rightWidth}px` };
+
+				const [leftPreviewWidth, rightPreviewWidth] = this.getPanelsWidthByArea(previewPanelArea);
+				previewStyle = {
+					gridTemplateColumns: `${leftPreviewWidth}px auto ${rightPreviewWidth}px`,
+				};
+
+				splitterStyle = {
+					left: isDragging ? (previewPanelArea * this.panelsAvailableWidth) / 100 : undefined,
+				};
+			}
 		}
 
 		const leftClassName = createStyleSelector(
 			'splitter-pane-left',
 			isDragging ? 'dragging' : null,
-			panelArea === PanelArea.P0 ? 'hidden' : null,
+			panelArea === 0 ? 'hidden' : null,
 		);
 		const rightClassName = createStyleSelector(
 			'splitter-pane-right',
 			isDragging ? 'dragging' : null,
-			panelArea === PanelArea.P100 ? 'hidden' : null,
+			panelArea === 100 ? 'hidden' : null,
 		);
 		const splitterClassName = createStyleSelector(
 			'splitter-bar',
 			isDragging ? 'dragging' : null,
 			this.props.splitterClassName || null,
 		);
-		const rootClassName = createStyleSelector('splitter', isDragging ? 'dragging' : null);
+		const rootClassName = createStyleSelector(
+			'splitter',
+			isDragging ? 'dragging' : null,
+			isVertical ? 'vertical' : null,
+		);
 
 		return (
 			<div className={`${rootClassName} ${className ?? ''}`} ref={this.root} style={rootStyle}>
@@ -278,9 +248,7 @@ export default class SplitView extends React.Component<Props, State> {
 				<div className={rightClassName}>{children[1]}</div>
 				<div
 					className={splitterClassName}
-					style={{
-						left: isDragging ? splitterLeftOffset : undefined,
-					}}
+					style={splitterStyle}
 					onMouseDown={this.splitterMouseDown}
 					ref={this.splitter}>
 					<div className='splitter-bar-button'>

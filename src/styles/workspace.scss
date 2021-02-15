@@ -173,7 +173,7 @@
 .window {
 	display: grid;
 	width: 100%;
-	min-width: 500px;
+	min-width: 350px;
 	height: 100%;
 	grid-template: auto 1fr / 1fr;
 	grid-template-areas:
@@ -182,10 +182,6 @@
 	overflow: hidden;
 	background-color: #fff;
 	padding: 6px 10px 0 10px;
-
-	&.sm {
-		min-width: 350px;
-	}
 
 	&__tabs {
 		grid-area: tabs;

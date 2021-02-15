@@ -21,7 +21,6 @@ import ApiSchema from '../../api/ApiSchema';
 import { EventAction, EventTree, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
 import EventsFilter from '../../models/filter/EventsFilter';
-import PanelArea from '../../util/PanelArea';
 import { TabTypes } from '../../models/util/Windows';
 import { getEventNodeParents, isEventNode, sortEventsByTimestamp } from '../../helpers/event';
 import { SelectedStore } from '../SelectedStore';
@@ -33,7 +32,7 @@ import { GraphDataStore } from '../graph/GraphDataStore';
 
 export type EventStoreURLState = Partial<{
 	type: TabTypes.Events;
-	panelArea: PanelArea;
+	panelArea: number;
 	filter: EventsFilter;
 	selectedNodesPath: string[];
 	search: string[];
@@ -147,8 +146,8 @@ export default class EventsStore {
 	@action
 	public selectNode = (eventTreeNode: EventTreeNode | null) => {
 		this.selectedNode = eventTreeNode;
-		if (this.viewStore.eventsPanelArea === PanelArea.P100) {
-			this.viewStore.eventsPanelArea = PanelArea.P50;
+		if (this.viewStore.eventsPanelArea === 100) {
+			this.viewStore.eventsPanelArea = 50;
 		}
 	};
 
@@ -359,7 +358,7 @@ export default class EventsStore {
 
 		const {
 			filter,
-			panelArea = PanelArea.P100,
+			panelArea = 100,
 			selectedNodesPath,
 			search,
 			flattenedListView,
