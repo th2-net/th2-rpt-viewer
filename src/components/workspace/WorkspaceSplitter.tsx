@@ -23,7 +23,7 @@ import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 
 const MIN_PANEL_WIDTH = 15;
 
-export type WorkspacePanelsLayout = [number, number, number, number];
+export type WorkspacePanelsLayout = [number, number];
 
 function minmax(num: number, min: number, max: number) {
 	return Math.min(Math.max(num, min), max);

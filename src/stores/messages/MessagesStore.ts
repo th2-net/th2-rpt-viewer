@@ -101,10 +101,12 @@ export default class MessagesStore {
 		private workspaceStore: WorkspaceStore,
 		private selectedStore: SelectedStore,
 		private api: ApiSchema,
-		defaultState: MessagesStoreDefaultStateType,
+		defaultState: MessagesStoreDefaultStateType | EventMessage,
 	) {
 		if (isMessagesStore(defaultState)) {
 			this.copy(defaultState);
+		} else if (isEventMessage(defaultState)) {
+			this.onSavedItemSelect(defaultState);
 		} else if (defaultState !== null) {
 			this.filterStore.messagesFilter = {
 				...this.filterStore.messagesFilter,

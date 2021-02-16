@@ -19,6 +19,8 @@ import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { EventMessage } from '../../models/EventMessage';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
@@ -26,10 +28,14 @@ export default class WorkspacesStore {
 
 	selectedStore = new SelectedStore(this);
 
+	public searchWorkspace: WorkspaceStore;
+
 	tabsStore: TabsStore;
 
 	constructor(private api: ApiSchema, initialState: WorkspacesUrlState | null) {
 		this.init(initialState);
+
+		this.searchWorkspace = this.createWorkspace();
 
 		this.tabsStore = new TabsStore(this);
 	}
@@ -45,21 +51,14 @@ export default class WorkspacesStore {
 	}
 
 	@computed get activeWorkspace() {
-		return this.workspaces[this.tabsStore.activeTabIndex];
+		return [this.searchWorkspace, ...this.workspaces][this.tabsStore.activeTabIndex];
 	}
 
 	@action
 	private init(initialState: WorkspacesUrlState | null) {
-		if (!initialState) {
-			this.addWorkspace(this.createWorkspace());
-			return;
-		}
+		if (!initialState) return;
 
-		try {
-			initialState.map(workspaceState => this.addWorkspace(this.createWorkspace(workspaceState)));
-		} catch (error) {
-			this.addWorkspace(this.createWorkspace());
-		}
+		initialState.map(workspaceState => this.addWorkspace(this.createWorkspace(workspaceState)));
 	}
 
 	@action

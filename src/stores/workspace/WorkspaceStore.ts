@@ -29,7 +29,7 @@ import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphDataStore } from '../graph/GraphDataStore';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { isEventMessage } from '../../helpers/event';
+import { isEventAction, isEventMessage, isEventNode } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
@@ -48,6 +48,7 @@ export type WorkspaceInitialState = Partial<{
 	timeRange: TimeRange | null;
 	interval: number | null;
 	layout: WorkspacePanelsLayout;
+	entity: EventTreeNode | EventAction | EventMessage;
 }>;
 
 export default class WorkspaceStore {
@@ -72,13 +73,16 @@ export default class WorkspaceStore {
 			this,
 			this.graphDataStore,
 			this.api,
-			initialState.events || null,
+			initialState.entity &&
+			(isEventAction(initialState.entity) || isEventNode(initialState.entity))
+				? initialState.entity
+				: initialState.events || null,
 		);
 		this.messagesStore = new MessagesStore(
 			this,
 			this.selectedStore,
 			this.api,
-			initialState.messages || null,
+			isEventMessage(initialState.entity) ? initialState.entity : initialState.messages || null,
 		);
 		this.viewStore = new WorkspaceViewStore({ panelsLayout: initialState.layout });
 
@@ -146,16 +150,12 @@ export default class WorkspaceStore {
 
 	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
-		this.graphDataStore.timestamp = isEventMessage(savedItem)
-			? getTimestampAsNumber(savedItem.timestamp)
-			: getTimestampAsNumber(savedItem.startTimestamp);
-		if (isEventMessage(savedItem)) {
-			this.viewStore.activePanel = this.messagesStore;
-			this.messagesStore.onSavedItemSelect(savedItem);
-		} else {
-			this.viewStore.activePanel = this.eventsStore;
-			this.eventsStore.onSavedItemSelect(savedItem);
-		}
+		const newWorkspace = this.workspacesStore.createWorkspace({
+			entity: savedItem,
+		});
+
+		this.workspacesStore.addWorkspace(newWorkspace);
+		this.workspacesStore.tabsStore.setActiveWorkspace(this.workspacesStore.workspaces.length);
 	};
 
 	@action
