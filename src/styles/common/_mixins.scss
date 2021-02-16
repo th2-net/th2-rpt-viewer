@@ -15,6 +15,12 @@
  ******************************************************************************/
 @import './colors.scss';
 
+@mixin ellipsis {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
 @mixin scrollbar {
 	&::-webkit-scrollbar {
 		background-color: rgba(0, 0, 0, 0);
@@ -161,11 +167,9 @@
 
 	th,
 	td {
+		@include ellipsis();
 		font-size: 11px;
 		line-height: 16px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 		padding-top: 0;
 		padding-bottom: 0;
 		box-sizing: border-box;

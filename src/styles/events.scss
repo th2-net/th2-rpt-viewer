@@ -66,11 +66,9 @@
 	}
 
 	&__title {
+		@include ellipsis();
 		flex-grow: 1;
-		text-overflow: ellipsis;
 		display: inline-block;
-		white-space: nowrap;
-		overflow: hidden;
 	}
 
 	&__elapsed-time {
@@ -506,8 +504,7 @@
 	}
 
 	&__name {
-		text-overflow: ellipsis;
-		overflow: hidden;
+		@include ellipsis();
 		opacity: 0.8;
 		cursor: pointer;
 
