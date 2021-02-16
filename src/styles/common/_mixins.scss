@@ -66,6 +66,9 @@
 	--status-secondary-background-color: #{$defaultSelectedCardBackground};
 	--status-primary-header-background-color: #{$defaultCardBorderColor};
 	--status-secondary-header-background-color: #{$defaultSelectedCardBackground};
+	--status-icon-color: #{$secondaryTextColor};
+	--status-icon-color-light: #{$secondaryLightTextColor};
+	--status-icon-color-active: #{$primaryTextColor};
 
 	&.passed {
 		// we can't symply assign scss variable to css variable because sass doesn't know css varible type,
@@ -81,6 +84,9 @@
 		--status-secondary-background-color: #{$passedBackgroundColor};
 		--status-primary-header-background-color: #{$passedHeaderColor};
 		--status-secondary-header-background-color: #{$passedHeaderSecondaryBackground};
+		--status-icon-color: #{$passedIconColor};
+		--status-icon-color-light: #{$passedIconColorLight};
+		--status-icon-color-active: #{$passedIconColorActive};
 	}
 
 	&.failed {
@@ -95,6 +101,9 @@
 		--status-primary-header-background-color: #{$failedHeaderColor};
 		--status-secondary-header-background-color: #{$failedHeaderSecondaryBackground};
 		--status-header-border-color: #{$failedHeaderBorderColor};
+		--status-icon-color: #{$failedIconColor};
+		--status-icon-color-light: #{$failedIconColorLight};
+		--status-icon-color-active: #{$failedIconColorActive};
 	}
 }
 
@@ -159,7 +168,8 @@
 	th,
 	td {
 		@include ellipsis();
-		font-size: 10pt;
+		font-size: 11px;
+		line-height: 16px;
 		padding-top: 0;
 		padding-bottom: 0;
 		box-sizing: border-box;
@@ -192,7 +202,7 @@
 		line-height: 16px;
 		color: white;
 		background-color: $tableHeaderBackground;
-		padding: 5px;
+		padding: 4px;
 
 		&.transparent {
 			background-color: transparent;
@@ -305,8 +315,62 @@
 }
 
 @mixin message-background() {
-	border-radius: 4px;
-	background-color: white;
+	background-color: $workspaceBackground;
 	white-space: pre-wrap;
 	padding: 6px 10px;
+}
+
+@mixin bookmark-button($showOnHoverOverParent: false) {
+	& .bookmark-button {
+		@if $showOnHoverOverParent {
+			display: none;
+		}
+
+		cursor: pointer;
+		width: 15px;
+		height: 15px;
+		flex-shrink: 0;
+		background: url(../../resources/icons/bookmark-add.svg);
+
+		&.pinned {
+			display: block;
+			background: url(../../resources/icons/bookmark-added.svg);
+		}
+	}
+
+	&:hover .bookmark-button {
+		display: block;
+		background: url(../../resources/icons/bookmark-add-hover.svg);
+
+		&.pinned {
+			background: url(../../resources/icons/bookmark-added-hover.svg);
+		}
+	}
+}
+
+@mixin event-status-icon($isParentHoverable: false) {
+	@if $isParentHoverable {
+		&:hover .event-status-icon {
+			border-color: var(--status-icon-color);
+			background-color: var(--status-icon-color);
+		}
+	}
+
+	& .event-status-icon {
+		flex-shrink: 0;
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		background-color: var(--status-icon-color-light);
+
+		&.selected {
+			border-color: var(--status-icon-color);
+			background-color: var(--status-icon-color);
+		}
+
+		&.active {
+			box-shadow: 0 0 0 2px white;
+			background-color: var(--status-icon-color-active);
+		}
+	}
 }

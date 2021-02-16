@@ -16,26 +16,32 @@
 
 $reportTitleTextColor: #7b7b7b;
 
-$failedTextColor: #cc0000;
-$failedBorderColor: $failedTextColor;
+$failedTextColor: #d92626;
+$failedBorderColor: #ffe5cc;
 $failedHeaderColor: #ffcccc;
 $failedBorderColorSecondary: $failedHeaderColor;
-$failedBorderHoverColor: #ff9999;
+$failedBorderHoverColor: #ffa64c;
 $failedDelimiterHoverColor: #ff6666;
 $failedBackgroundColor: #ffdbdb;
 $failedHeaderBorderColor: $failedTextColor;
 $failedHeaderSecondaryBackground: $failedHeaderColor;
 $failedSecondaryTextColor: #e05252;
+$failedIconColor: #ff999b;
+$failedIconColorLight: #ffe5e6;
+$failedIconColorActive: #bc271a;
 
-$passedTextColor: #1f991f;
-$passedBorderColor: $passedTextColor;
+$passedTextColor: #06792d;
+$passedBorderColor: $failedBorderColor;
 $passedHeaderColor: #dbf0df;
 $passedBorderColorSecondary: $passedHeaderColor;
-$passedBorderHoverColor: #a8ccf0;
+$passedBorderHoverColor: $failedBorderHoverColor;
 $passedDelimiterHoverColor: #7db3e8;
 $passedBackgroundColor: $passedBorderColorSecondary;
 $passedHeaderSecondaryBackground: $passedBackgroundColor;
 $passedSecondaryTextColor: rgba(#1f991f, 0.5);
+$passedIconColor: #85e0a3;
+$passedIconColorLight: #d6f5e0;
+$passedIconColorActive: #00802a;
 
 $naTextColor: $reportTitleTextColor;
 
@@ -99,7 +105,7 @@ $splitterColor: #cccccc;
 $spinnerOuterColor: $defaultCardBorderColor;
 $spinnerInnerColor: rgba(0, 0, 0, 0.2);
 
-$chipTextColor: #808080;
+$chipTextColor: #333333;
 
 $linkTextColor: #1763cf;
 $linkUnderlineColor: #a8c6f0;
@@ -159,3 +165,8 @@ $graphAttachedItemNameColor: #bc271a;
 $graphAttachedItemTimestampColor: #666666;
 
 $timestampInputBorderColor: #7a99b8;
+
+$eventCardIdColor: #595959;
+$eventTextColor: #f26c0d;
+
+$workspaceBackground: #eef2f6;

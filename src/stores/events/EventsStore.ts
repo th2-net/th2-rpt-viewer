@@ -22,7 +22,6 @@ import ApiSchema from '../../api/ApiSchema';
 import { EventAction, EventTree, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
 import EventsFilter from '../../models/filter/EventsFilter';
-import PanelArea from '../../util/PanelArea';
 import { TabTypes } from '../../models/util/Windows';
 import {
 	getEventNodeParents,
@@ -39,7 +38,7 @@ import { TimeRange } from '../../models/Timestamp';
 
 export type EventStoreURLState = Partial<{
 	type: TabTypes.Events;
-	panelArea: PanelArea;
+	panelArea: number;
 	filter: EventsFilter;
 	selectedNodesPath: string[];
 	search: string[];
@@ -157,8 +156,8 @@ export default class EventsStore {
 	@action
 	public selectNode = (eventTreeNode: EventTreeNode | null) => {
 		this.selectedNode = eventTreeNode;
-		if (this.viewStore.eventsPanelArea === PanelArea.P100) {
-			this.viewStore.eventsPanelArea = PanelArea.P50;
+		if (this.viewStore.eventsPanelArea === 100) {
+			this.viewStore.eventsPanelArea = 50;
 		}
 	};
 
@@ -372,8 +371,8 @@ export default class EventsStore {
 		}
 
 		this.viewStore.eventsPanelArea = isInitialEntity(initialState)
-			? PanelArea.P100
-			: initialState.panelArea || PanelArea.P100;
+			? 100
+			: initialState.panelArea || 100;
 
 		this.filterStore = new FilterStore({
 			eventsFilter: !isInitialEntity(initialState) ? initialState.filter : undefined,

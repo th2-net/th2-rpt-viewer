@@ -196,7 +196,7 @@ function WorkspaceSplitter(props: Props) {
 			if (panelRef.current) {
 				panelRef.current.style.width = `${widths[index]}px`;
 
-				if (widths[index] <= MIN_PANEL_WIDTH) {
+				if (Math.round(widths[index]) === MIN_PANEL_WIDTH) {
 					if (!panelRef.current.classList.contains('minified')) {
 						panelRef.current.classList.add('minified');
 					}
@@ -283,7 +283,7 @@ function WorkspaceSplitter(props: Props) {
 					<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
 						<div className='pane__sidebar'>
 							<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />
-							{panel.title}
+							<div className='pane__title'>{panel.title}</div>
 							<div
 								className='pane__line'
 								style={{
@@ -297,8 +297,13 @@ function WorkspaceSplitter(props: Props) {
 								style={{
 									backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
 								}}>
-								<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon-white`} />
-								{panel.title}
+								<i
+									className={
+										'pane__header-icon ' +
+										`workspace-split-view__${panel.title.toLowerCase()}-icon-white`
+									}
+								/>
+								<div className='pane__header-title'>{panel.title}</div>
 							</div>
 							<div className='pane__main'>{panel.component}</div>
 						</div>

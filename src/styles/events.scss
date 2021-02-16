@@ -18,20 +18,28 @@
 
 .event-header-card {
 	@include status-card;
+	@include bookmark-button($showOnHoverOverParent: true);
+	@include event-status-icon($isParentHoverable: true);
+	line-height: 15px;
 	width: 100%;
-	min-height: 38px;
 	border-radius: 5px;
-	padding: 0 10px;
-	margin: 2px 0;
+	padding: 0px 5px;
 	display: flex;
 	align-items: center;
-	background-color: var(--status-secondary-background-color);
 	border: 2px solid transparent;
 	overflow: hidden;
 	cursor: pointer;
 
+	& > *:not(:first-child) {
+		margin-left: 5px;
+	}
+
+	& .event-status-icon {
+		margin: 5px 1px 5px 0;
+	}
+
 	&:hover {
-		border-color: var(--status-secondary-color);
+		background-color: var(--status-secondary-background-color);
 	}
 
 	&.full {
@@ -49,22 +57,36 @@
 	}
 
 	&.selected {
-		background-color: var(--status-secondary-background-color);
 		border-color: var(--status-primary-border-color);
+	}
+
+	&.active {
+		background-color: var(--status-secondary-background-color);
+		border-color: var(--status-hover-border-color);
 	}
 
 	&__title {
 		@include ellipsis();
 		flex-grow: 1;
 		display: inline-block;
-		padding-right: 5px;
+	}
+
+	&__elapsed-time {
+		display: none;
+		color: $activeTextColor;
+		font-weight: 600;
+		font-size: 10px;
+		line-height: 15px;
+	}
+
+	&:hover &__elapsed-time {
+		display: block;
 	}
 
 	&__time-label {
-		font-size: 12px;
+		font-size: 9px;
 		color: $secondaryLightTextColor;
 		white-space: nowrap;
-		padding-right: 5px;
 
 		&-short {
 			display: inline;
@@ -73,183 +95,174 @@
 		&-full {
 			display: none;
 		}
+	}
 
-		&:hover & {
-			&-short {
-				display: none;
-			}
+	&:hover &__time-label {
+		&-short {
+			display: none;
+		}
 
-			&-full {
-				display: inline;
-			}
+		&-full {
+			display: inline;
 		}
 	}
 
 	&__status,
 	&__title {
 		color: var(--status-primary-color);
-		font-size: 17px;
+		font-size: 11px;
+		line-height: 15px;
 		font-weight: bold;
 	}
 }
 
-.event-detail-card {
-	@include status-card;
+.event-detail-info {
+	@include scrollbar;
+	overflow-y: auto;
 	width: 100%;
 	height: 100%;
-	display: grid;
-	grid-template:
-		'parents' auto
-		'header' auto
-		'body' 1fr;
-	background-color: var(--status-secondary-background-color);
-	border: 2px solid var(--status-primary-border-color);
-	border-radius: 5px;
-	overflow: hidden;
+	padding-right: 5px;
 
-	&__header {
-		grid-area: header;
-		min-height: 50px;
-		width: 100%;
-		display: grid;
-		padding: 5px;
-		grid-template:
-			'title pin-button controls' auto
-			'timestamp timestamp timestamp' auto
-			'id id id' auto / auto auto 1fr;
-		align-items: center;
-	}
-
-	&__body {
-		grid-area: body;
-		padding: 0 10px 10px 15px;
-		width: 100%;
-		overflow: hidden;
-	}
-
-	&__body-list {
-		@include scrollbar;
-		height: 100%;
-		width: 100%;
-		overflow: auto;
-	}
-
-	&__title {
-		@include ellipsis();
-		grid-area: title;
-		align-items: center;
-		justify-self: flex-start;
-		padding-left: 10px;
-		width: inherit;
-	}
-
-	&__pin-button {
-		@include clickable;
-
-		height: 23px;
-		width: 23px;
-		grid-area: pin-button;
-		background-color: transparent;
-		margin-left: 5px;
-		border: none;
-		border-radius: 4px;
-		box-sizing: border-box;
-		padding: 0;
+	&__parents {
 		display: flex;
-		justify-content: center;
-		align-items: center;
-		outline: none;
+		flex-direction: column;
+		padding-bottom: 10px;
 
-		&-icon {
-			@include icon(url(../../resources/icons/pin.svg), 15px, 15px);
-
-			display: inline-block;
-			transition: transform 0.3s;
-			transform: scale(0.9);
-
-			&.active {
-				transform: rotate(-45deg) scale(1);
-			}
+		& > *:not(:first-child) {
+			margin-top: 3px;
 		}
 	}
 
-	&__controls {
-		grid-area: controls;
+	&__event-card {
+		margin-bottom: 10px;
+	}
+
+	&__list {
 		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-	}
+		flex-direction: column;
 
-	&__status,
-	&__time {
-		padding: 0 6px;
-	}
-
-	&__separator {
-		width: 2px;
-		height: 16px;
-		display: inline-block;
-		background-color: var(--status-primary-color);
-		opacity: 0.3;
-	}
-
-	&__title,
-	&__controls {
-		color: var(--status-primary-color);
-		font-size: 17px;
-		font-weight: bold;
-	}
-
-	&__timestamp {
-		grid-area: timestamp;
-		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-	}
-
-	&__timestamp-label {
-		font-size: 11px;
-		color: $secondaryLightTextColor;
-		white-space: nowrap;
-		padding: 5px 10px;
-	}
-
-	&__timestamp-value {
-		font-size: 12px;
-		color: $secondaryTextColor;
-		font-weight: bold;
-		word-break: break-word;
-	}
-
-	&__id {
-		grid-area: id;
-		opacity: 0.6;
-		font-size: 13px;
-		color: var(--status-primary-color);
-		margin: 3px 10px;
+		& > *:not(:first-child) {
+			margin-top: 5px;
+		}
 	}
 
 	&__message {
 		@include message-background;
-		margin: 5px 0;
-		font-size: 12px;
+		font-size: 11px;
 	}
 }
 
-.flat-event-detail-card {
+.event-card {
 	@include status-card;
+	@include event-status-icon($isParentHoverable: false);
+	@include bookmark-button($showOnHoverOverParent: false);
 	@include scrollbar;
-	width: 100%;
-	height: 100%;
-	overflow: auto;
 	display: flex;
-	flex-direction: column;
-	padding: 0 10px;
+	padding: 2px 3px;
+	border-radius: 5px;
+	background-color: var(--status-secondary-background-color);
+	border: 2px solid var(--status-hover-border-color);
+	font-size: 11px;
+	line-height: 15px;
+	overflow: hidden;
 
-	&__parents {
-		flex-shrink: 0;
+	&__status {
+		& .event-status-icon {
+			margin: 3px 2px;
+		}
+	}
+
+	&__info {
+		padding-left: 6px;
+		padding-right: 6px;
+		flex-grow: 1;
+		flex-shrink: 1;
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	&__header {
+		display: flex;
+		align-items: center;
+
+		& > *:not(:first-child) {
+			margin-left: 5px;
+		}
+	}
+
+	&__title {
+		flex-grow: 1;
+		flex-shrink: 1;
+		font-weight: 600;
+		color: var(--status-primary-color);
+		white-space: nowrap;
+		text-overflow: ellipsis;
 		overflow: hidden;
-		margin-bottom: 10px;
+	}
+
+	&__time {
+		color: $activeTextColor;
+		font-weight: 600;
+	}
+
+	&__status-label {
+		font-weight: 600;
+		color: var(--status-primary-color);
+	}
+
+	&__controls {
+		display: flex;
+
+		& > *:not(:first-child) {
+			margin-left: 5px;
+		}
+	}
+
+	&__body {
+		margin-top: 2px;
+		display: flex;
+		align-items: flex-start;
+		font-size: 10px;
+	}
+
+	&__id {
+		color: $eventCardIdColor;
+	}
+
+	&__timestamp {
+		justify-content: flex-end;
+		display: flex;
+		flex-wrap: wrap;
+		min-width: 0;
+		margin-left: 5px;
+	}
+
+	&__timestamp-item {
+		margin-left: 5px;
+		display: flex;
+		min-width: 0;
+	}
+
+	&__timestamp-label {
+		font-size: 9px;
+		color: $alternativeTextColor;
+	}
+
+	&__timestamp-value {
+		margin-left: 5px;
+		font-size: 10px;
+		color: $activeTextColor;
+		font-weight: 600;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	&__bookmark {
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
 	}
 }
 
@@ -385,7 +398,7 @@
 
 .event-card {
 	&__children-icon {
-		margin-right: 10px;
+		margin-right: 5px;
 	}
 }
 
@@ -393,7 +406,36 @@
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	margin: 0 5px;
+	margin-bottom: 5px;
+	margin-right: 5px;
+}
+
+.event-tree-timestamp {
+	display: flex;
+	justify-content: flex-end;
+	padding: 3px 10px 3px 0;
+	margin-top: 3px;
+	margin-bottom: 5px;
+
+	&__value {
+		font-size: 9px;
+		line-height: 15px;
+		color: $eventTextColor;
+	}
+
+	&__icon {
+		margin-left: 10px;
+		@include icon(url(../../resources/icons/time-arrow-start.svg), 15px, 15px);
+	}
+
+	&.end & {
+		margin-top: 3px;
+		margin-bottom: 5px;
+
+		&__icon {
+			background-image: url(../../resources/icons/time-arrow-end.svg);
+		}
+	}
 }
 
 .event-breadcrumbs {
