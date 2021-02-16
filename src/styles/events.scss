@@ -54,11 +54,9 @@
 	}
 
 	&__title {
+		@include ellipsis();
 		flex-grow: 1;
-		text-overflow: ellipsis;
 		display: inline-block;
-		white-space: nowrap;
-		overflow: hidden;
 		padding-right: 5px;
 	}
 
@@ -137,13 +135,11 @@
 	}
 
 	&__title {
+		@include ellipsis();
 		grid-area: title;
 		align-items: center;
 		justify-self: flex-start;
 		padding-left: 10px;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		overflow: hidden;
 		width: inherit;
 	}
 
@@ -466,8 +462,7 @@
 	}
 
 	&__name {
-		text-overflow: ellipsis;
-		overflow: hidden;
+		@include ellipsis();
 		opacity: 0.8;
 		cursor: pointer;
 

@@ -30,6 +30,7 @@ import { getDefaultFilterState } from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import localStorageWorker from '../util/LocalStorageWorker';
+import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 
 export type SearchPanelFormState = {
@@ -307,7 +308,7 @@ export class SearchStore {
 
 		this.searchChannel.addEventListener(this.formType, this.onChannelResponse);
 		this.searchChannel.addEventListener('close', this.stopSearch);
-		this.searchChannel.addEventListener('error', this.stopSearch);
+		this.searchChannel.addEventListener('error', this.onError);
 	};
 
 	@action
@@ -317,6 +318,19 @@ export class SearchStore {
 		this.searchChannel = null;
 
 		localStorageWorker.saveSearchHistory(this.searchHistory);
+	};
+
+	onError = (ev: Event) => {
+		const data = (ev as MessageEvent).data;
+		notificationsStore.addResponseError({
+			type: 'error',
+			header: JSON.parse(data).exceptionName,
+			resource: (ev.target as EventSource).url,
+			responseBody: JSON.parse(data).exceptionCause,
+			responseCode: null,
+		});
+
+		this.stopSearch();
 	};
 
 	private onChannelResponse = (ev: Event) => {

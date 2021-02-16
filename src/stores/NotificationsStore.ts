@@ -24,7 +24,7 @@ interface ResponseError extends Notification {
 	resource: string;
 	header: string;
 	responseBody: string;
-	responseCode: number;
+	responseCode: number | null;
 }
 
 interface UrlError extends Notification {

@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useActivePanel, useActiveWorkspace } from '../../hooks';
+import { useActivePanel, useActiveWorkspace, useMessagesWorkspaceStore } from '../../hooks';
 import TogglerRow from '../filter/row/TogglerRow';
 import SearchPanelFilters from './SearchPanelFilters';
 import SearchPanelForm from './SearchPanelForm';
@@ -32,6 +32,7 @@ const SearchPanel = () => {
 	const activeWorkspace = useActiveWorkspace();
 	const { ref: searchPanelRef } = useActivePanel(null);
 	const searchStore = useSearchStore();
+	const messagesStore = useMessagesWorkspaceStore();
 
 	const formTypeTogglerConfig: FilterRowTogglerConfig = React.useMemo(
 		() => ({
@@ -58,6 +59,7 @@ const SearchPanel = () => {
 						form={searchStore.searchForm}
 						formType={searchStore.formType}
 						updateForm={searchStore.updateForm}
+						streams={searchStore.formType === 'message' ? messagesStore.messageSessions : null}
 					/>
 				</div>
 				<div className='filters'>
