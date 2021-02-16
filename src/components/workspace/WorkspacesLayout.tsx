@@ -66,7 +66,6 @@ const WorkspacesLayout = () => {
 	function addWorkspace() {
 		workspacesStore.addWorkspace(workspacesStore.createWorkspace());
 	}
-
 	return (
 		<Tabs
 			activeIndex={workspacesStore.tabsStore.activeTabIndex}

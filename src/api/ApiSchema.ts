@@ -27,8 +27,10 @@ export default interface ApiSchema {
 	sse: SSESchema;
 }
 
+export type SSEChannelType = 'event' | 'message';
+
 export interface EventSourceConfig {
-	type: 'event' | 'message';
+	type: SSEChannelType;
 	queryParams: SSEParams;
 }
 

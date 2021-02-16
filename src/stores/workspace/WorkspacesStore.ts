@@ -27,9 +27,9 @@ export default class WorkspacesStore {
 
 	selectedStore = new SelectedStore(this);
 
-	public searchWorkspace: WorkspaceStore;
+	tabsStore = new TabsStore(this);
 
-	tabsStore: TabsStore;
+	public searchWorkspace: WorkspaceStore;
 
 	constructor(
 		private searchStore: SearchStore,
@@ -39,8 +39,6 @@ export default class WorkspacesStore {
 		this.init(initialState);
 
 		this.searchWorkspace = this.createWorkspace();
-
-		this.tabsStore = new TabsStore(this);
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
@@ -60,8 +58,8 @@ export default class WorkspacesStore {
 	@action
 	private init(initialState: WorkspacesUrlState | null) {
 		if (!initialState) return;
-
-		initialState.map(workspaceState => this.addWorkspace(this.createWorkspace(workspaceState)));
+		initialState.forEach(workspaceState => this.addWorkspace(this.createWorkspace(workspaceState)));
+		this.tabsStore.setActiveWorkspace(this.workspaces.length);
 	}
 
 	@action

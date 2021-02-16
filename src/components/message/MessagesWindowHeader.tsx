@@ -16,14 +16,12 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { createBemElement } from '../../helpers/styleCreators';
-import { useMessagesWorkspaceStore, useMessageUpdateStore, useWorkspaceStore } from '../../hooks';
+import { useMessagesWorkspaceStore, useWorkspaceStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
 import { complement } from '../../helpers/array';
 
 function MessagesWindowHeader() {
 	const messagesStore = useMessagesWorkspaceStore();
-	const messageUpdateStore = useMessageUpdateStore();
 	const workspaceStore = useWorkspaceStore();
 
 	const [newSessions, setNewSessions] = React.useState<string[]>([]);
@@ -38,11 +36,11 @@ function MessagesWindowHeader() {
 		);
 	}, [workspaceStore.attachedMessagesStreams, messagesStore.filterStore.messagesFilter.streams]);
 
-	const updateButtonClass = createBemElement(
-		'messages-window-header',
-		'realtime-button',
-		messageUpdateStore.isSubscriptionActive ? 'active' : null,
-	);
+	// const updateButtonClass = createBemElement(
+	// 	'messages-window-header',
+	// 	'realtime-button',
+	// 	messageUpdateStore.isSubscriptionActive ? 'active' : null,
+	// );
 
 	return (
 		<div className='messages-window-header'>
@@ -72,7 +70,7 @@ function MessagesWindowHeader() {
 					</div>
 				)}
 			</div>
-			<div className='messages-window-header__group'>
+			{/* <div className='messages-window-header__group'>
 				{messagesStore.messagesIds.length > 0 && (
 					<button onClick={messageUpdateStore.toggleSubscribe} className={updateButtonClass}>
 						{messageUpdateStore.accumulatedMessages.length === 0 ? (
@@ -88,7 +86,7 @@ function MessagesWindowHeader() {
 						)}
 					</button>
 				)}
-			</div>
+			</div> */}
 		</div>
 	);
 }

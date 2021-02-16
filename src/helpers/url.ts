@@ -44,12 +44,13 @@ export function createURLSearchParams(
 export function registerUrlMiddleware(rootStore: RootStore) {
 	autorun(() => {
 		const activeWorkspace = rootStore.workspacesStore.activeWorkspace;
-		if (activeWorkspace === rootStore.workspacesStore.searchWorkspace) return;
 
 		let eventStoreState: EventStoreURLState = {};
 		let messagesStoreState: MessagesStoreURLState = {};
 
-		if (activeWorkspace) {
+		let urlState: null | WorkspacesUrlState = null;
+
+		if (activeWorkspace && activeWorkspace !== rootStore.workspacesStore.searchWorkspace) {
 			const eventsStore = activeWorkspace.eventsStore;
 			eventStoreState = {
 				type: TabTypes.Events,
@@ -80,33 +81,36 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 					timestampTo: messagesStore.filterStore.messagesFilter.timestampTo,
 				},
 			};
+
+			getObjectKeys(eventStoreState).forEach(key => {
+				if (eventStoreState[key] === undefined) {
+					delete eventStoreState[key];
+				}
+			});
+
+			getObjectKeys(messagesStoreState).forEach(key => {
+				if (messagesStoreState[key] === undefined) {
+					delete messagesStoreState[key];
+				}
+			});
+			urlState = [
+				toJS({
+					events: eventStoreState,
+					messages: messagesStoreState,
+					timeRange: activeWorkspace.graphDataStore.range,
+					interval: activeWorkspace.graphDataStore.interval,
+					layout: activeWorkspace.viewStore.panelsLayout,
+				}),
+			];
 		}
 
-		getObjectKeys(eventStoreState).forEach(key => {
-			if (eventStoreState[key] === undefined) {
-				delete eventStoreState[key];
-			}
-		});
-
-		getObjectKeys(messagesStoreState).forEach(key => {
-			if (messagesStoreState[key] === undefined) {
-				delete messagesStoreState[key];
-			}
-		});
-
-		const urlState: WorkspacesUrlState = [
-			toJS({
-				events: eventStoreState,
-				messages: messagesStoreState,
-				timeRange: activeWorkspace.graphDataStore.range,
-				interval: activeWorkspace.graphDataStore.interval,
-				layout: activeWorkspace.viewStore.panelsLayout,
-			}),
-		];
-
-		const searchParams = new URLSearchParams({
-			workspaces: window.btoa(JSON.stringify(urlState)),
-		});
+		const searchParams = new URLSearchParams(
+			urlState
+				? {
+						workspaces: window.btoa(JSON.stringify(urlState)),
+				  }
+				: undefined,
+		);
 
 		window.history.replaceState({}, '', `?${searchParams}`);
 	});

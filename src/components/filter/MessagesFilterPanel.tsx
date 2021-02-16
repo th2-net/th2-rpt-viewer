@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *	**************************************************************************** */
+ ***************************************************************************** */
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
@@ -23,7 +23,7 @@ import {
 	FilterRowTogglerConfig,
 	FilterRowMultipleStringsConfig,
 } from '../../models/filter/FilterInputs';
-import { useMessagesWorkspaceStore } from '../../hooks';
+import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import { MessageFilterState } from '../search-panel/SearchPanelFilters';
@@ -34,6 +34,7 @@ type CurrentSSEValues = {
 
 const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
+	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
 	const { filterStore } = messagesStore;
 
@@ -62,15 +63,17 @@ const MessagesFilterPanel = () => {
 	}, [messagesStore.filterStore.sseMessagesFilter]);
 
 	const submitChanges = React.useCallback(() => {
-		messagesStore.filterStore.sseMessagesFilter = sseFilter;
-		messagesStore.filterStore.setMessagesFilter({
-			...filterStore.messagesFilter,
-			streams,
-			messageTypes,
-		});
+		messagesStore.filterStore.setMessagesFilter(
+			{
+				...filterStore.messagesFilter,
+				streams,
+				messageTypes,
+			},
+			sseFilter,
+		);
 	}, [filterStore.messagesFilter, streams, messageTypes, sseFilter]);
 
-	const isLoading = Object.values(messagesStore.messagesLoadingState).some(Boolean);
+	const isLoading = messagesDataStore.messages.length === 0 && messagesDataStore.isLoading;
 	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !isLoading;
 
 	const compoundFilterRow: Array<CompoundFilterRow> = React.useMemo(() => {
@@ -186,12 +189,12 @@ const MessagesFilterPanel = () => {
 		<FilterPanel
 			isLoading={isLoading}
 			isFilterApplied={isApplied}
-			count={isApplied ? messagesStore.messagesIds.length : null}
+			count={isApplied ? messagesDataStore.messages.length : null}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
 			config={filterConfig}
 			onSubmit={submitChanges}
-			onClearAll={messagesStore.resetMessagesFilter}
+			onClearAll={messagesStore.clearFilters}
 		/>
 	);
 };

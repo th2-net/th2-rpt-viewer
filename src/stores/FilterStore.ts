@@ -21,6 +21,8 @@ import EventsFilter from '../models/filter/EventsFilter';
 import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
 import { SearchStore } from './SearchStore';
 import { getDefaultFilterState } from '../helpers/search';
+import { MessagesSSEParams } from '../api/sse';
+import { EventSourceConfig } from '../api/ApiSchema';
 
 export const defaultMessagesFilter: MessagesFilter = {
 	timestampFrom: null,
@@ -44,7 +46,6 @@ export function getDefaultEventFilter() {
 type InitialState = Partial<{
 	messagesFilter: MessagesFilter;
 	eventsFilter: EventsFilter;
-	isMessagesFilterApplied: boolean;
 }>;
 
 export default class FilterStore {
@@ -60,6 +61,8 @@ export default class FilterStore {
 
 				if (Object.keys(filter).length > 0) {
 					this.sseMessagesFilter = filter as MessageFilterState;
+				} else {
+					this.sseMessagesFilter = null;
 				}
 			},
 		);
@@ -69,32 +72,83 @@ export default class FilterStore {
 
 	@observable sseMessagesFilter: MessageFilterState | null = null;
 
-	@observable isMessagesFilterApplied = false;
-
 	@observable eventsFilter: EventsFilter = getDefaultEventFilter();
 
-	@computed get isEventsFilterApplied() {
+	@computed
+	public get sseConfig(): EventSourceConfig {
+		const sseFilters = this.sseMessagesFilter;
+
+		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
+			? []
+			: Object.entries(sseFilters)
+					.filter(([key, value]) => value.values.length > 0)
+					.map(([filterName]) => filterName as keyof MessageFilterState);
+
+		const filterValues = filtersToAdd
+			.map(filterName =>
+				sseFilters ? [`${filterName}-values`, sseFilters[filterName].values] : [],
+			)
+			.filter(Boolean);
+
+		const filterInclusion = filtersToAdd.map(filterName =>
+			sseFilters && sseFilters[filterName].negative
+				? [`${filterName}-negative`, sseFilters[filterName].negative]
+				: [],
+		);
+
+		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
+		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
+
+		const queryParams: MessagesSSEParams = {
+			startTimestamp: this.messagesFilter.timestampTo || startTimestamp,
+			stream: this.messagesFilter.streams,
+			searchDirection: 'previous',
+			resultCountLimit: 15,
+			filters: filtersToAdd,
+			...Object.fromEntries([...filterValues, ...filterInclusion]),
+		};
+
+		return {
+			type: 'message',
+			queryParams,
+		};
+	}
+
+	@computed
+	public get isEventsFilterApplied() {
 		return this.eventsFilter.eventTypes.length > 0 || this.eventsFilter.names.length > 0;
 	}
 
-	@action
-	setMessagesFilter(filter?: MessagesFilter) {
-		if (!filter) {
-			this.resetMessagesFilter();
-			return;
-		}
-		this.messagesFilter = filter;
-		this.isMessagesFilterApplied = true;
+	@computed
+	public get isMessagesFilterApplied() {
+		return [
+			this.messagesFilter.streams,
+			this.messagesFilter.messageTypes,
+			this.sseMessagesFilter
+				? [
+						this.sseMessagesFilter.attachedEventIds.values,
+						this.sseMessagesFilter.body.values,
+						this.sseMessagesFilter.type.values,
+				  ].flat()
+				: [].flat(),
+		].some(filter => filter.length > 0);
 	}
 
 	@action
-	resetMessagesFilter(streams: string[] = []) {
+	setMessagesFilter(filter: MessagesFilter, sseFilters: MessageFilterState | null) {
+		this.sseMessagesFilter = sseFilters;
+		this.messagesFilter = filter;
+	}
+
+	@action
+	resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
+		const filter = getDefaultFilterState(this.searchStore.messagesFilterInfo);
+		this.sseMessagesFilter = Object.keys(filter).length ? (filter as MessageFilterState) : null;
 		this.messagesFilter = {
 			...defaultMessagesFilter,
-			streams,
+			...initFilter,
 		};
-		this.isMessagesFilterApplied = false;
-	}
+	};
 
 	@action
 	setEventsFilter(filter?: EventsFilter) {
@@ -117,7 +171,6 @@ export default class FilterStore {
 		const {
 			eventsFilter = getDefaultEventFilter(),
 			messagesFilter = defaultMessagesFilter,
-			isMessagesFilterApplied = false,
 		} = initialState;
 
 		this.eventsFilter = {
@@ -133,8 +186,6 @@ export default class FilterStore {
 			timestampTo: messagesFilter.timestampTo || defaultMessagesFilter.timestampTo,
 			timestampFrom: messagesFilter.timestampFrom || defaultMessagesFilter.timestampFrom,
 		};
-
-		this.isMessagesFilterApplied = isMessagesFilterApplied;
 	}
 
 	public dispose = () => {

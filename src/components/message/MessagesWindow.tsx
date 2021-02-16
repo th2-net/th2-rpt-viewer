@@ -23,12 +23,14 @@ import {
 	useSelectedStore,
 	useActivePanel,
 	useWorkspaceStore,
+	useMessagesDataStore,
 } from '../../hooks';
 import MessagesCardList from './message-card-list/MessagesCardList';
 import { getTimestampAsNumber } from '../../helpers/date';
 
 const MessagesWindow = () => {
 	const messagesStore = useMessagesWorkspaceStore();
+	const messagesDataStore = useMessagesDataStore();
 	const workspaceStore = useWorkspaceStore();
 	const selectedStore = useSelectedStore();
 
@@ -42,21 +44,23 @@ const MessagesWindow = () => {
 	}, [workspaceStore.attachedMessagesIds]);
 
 	const unknownAreas = React.useMemo(() => {
-		if (!messagesStore.messagesIds.length || messagesStore.filterStore.isMessagesFilterApplied) {
+		const messages = messagesDataStore.messages;
+		if (!messages.length || messagesStore.filterStore.isMessagesFilterApplied) {
 			return {
 				before: [],
 				after: [],
 			};
 		}
 		const headMessage =
-			selectedStore.attachedMessages.find(m => messagesStore.messagesIds.includes(m.messageId)) ||
-			messagesStore.messagesCache.get(messagesStore.messagesIds[0]);
+			selectedStore.attachedMessages.find(attachedMessage =>
+				messages.find(msg => attachedMessage.messageId === msg.messageId),
+			) || messages[0];
 
 		if (!headMessage) {
 			return { before: [], after: [] };
 		}
 		const notLoadedMessages = selectedStore.attachedMessages.filter(
-			msg => !messagesStore.messagesIds.includes(msg.messageId),
+			msg => messages.findIndex(m => m.messageId === msg.messageId) === -1,
 		);
 
 		const before = notLoadedMessages
@@ -79,11 +83,16 @@ const MessagesWindow = () => {
 			.map(msg => msg.messageId);
 
 		return { before, after };
-	}, [messagesStore.messagesIds]);
+	}, [messagesDataStore.messages]);
+
+	const messagesIds: string[] = React.useMemo(
+		() => messagesDataStore.messages.map(m => m.messageId),
+		[messagesDataStore.messages],
+	);
 
 	return (
 		<HeatmapProvider
-			items={messagesStore.messagesIds}
+			items={messagesIds}
 			unknownAreas={unknownAreas}
 			selectedItems={selectedItems}
 			selectedIndex={messagesStore.scrolledIndex?.valueOf() || null}

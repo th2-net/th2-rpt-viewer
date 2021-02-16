@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction } from 'mobx';
+import moment from 'moment';
 import { nanoid } from 'nanoid';
 import MessagesStore, {
 	MessagesStoreDefaultStateType,
@@ -28,12 +29,12 @@ import { EventMessage } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphDataStore } from '../graph/GraphDataStore';
-import { getTimestampAsNumber } from '../../helpers/date';
 import { isEventAction, isEventMessage, isEventNode } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
+import { getTimestampAsNumber } from '../../helpers/date';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;
@@ -70,7 +71,11 @@ export default class WorkspaceStore {
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
-		this.graphDataStore = new GraphDataStore(this.selectedStore, initialState.timeRange);
+		const entityRange = getDefaultRange(initialState.entity, 15);
+		this.graphDataStore = new GraphDataStore(
+			this.selectedStore,
+			entityRange || initialState.timeRange,
+		);
 		this.eventsStore = new EventsStore(
 			this,
 			this.graphDataStore,
@@ -154,16 +159,52 @@ export default class WorkspaceStore {
 
 	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
-		const newWorkspace = this.workspacesStore.createWorkspace({
-			entity: savedItem,
-		});
+		if (this === this.workspacesStore.searchWorkspace) {
+			const newWorkspace = this.workspacesStore.createWorkspace({
+				entity: savedItem,
+			});
 
-		this.workspacesStore.addWorkspace(newWorkspace);
-		this.workspacesStore.tabsStore.setActiveWorkspace(this.workspacesStore.workspaces.length);
+			this.workspacesStore.addWorkspace(newWorkspace);
+			this.workspacesStore.tabsStore.setActiveWorkspace(this.workspacesStore.workspaces.length);
+		} else {
+			this.graphDataStore.timestamp = isEventMessage(savedItem)
+				? getTimestampAsNumber(savedItem.timestamp)
+				: getTimestampAsNumber(savedItem.startTimestamp);
+			if (isEventMessage(savedItem)) {
+				this.viewStore.activePanel = this.messagesStore;
+				this.messagesStore.onSavedItemSelect(savedItem);
+			} else {
+				this.viewStore.activePanel = this.eventsStore;
+				this.eventsStore.onSavedItemSelect(savedItem);
+			}
+		}
 	};
 
 	@action
 	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
 		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
 	};
+}
+
+function getDefaultRange(entity: unknown, interval: number): TimeRange | null {
+	let timestamp;
+
+	if (isEventMessage(entity)) {
+		timestamp = getTimestampAsNumber(entity.timestamp);
+	} else if (isEventAction(entity) || isEventNode(entity)) {
+		timestamp = getTimestampAsNumber(entity.startTimestamp);
+	}
+
+	if (timestamp) {
+		return [
+			moment(timestamp)
+				.subtract(interval / 2, 'minutes')
+				.valueOf(),
+			moment(timestamp)
+				.add(interval / 2, 'minutes')
+				.valueOf(),
+		];
+	}
+
+	return null;
 }

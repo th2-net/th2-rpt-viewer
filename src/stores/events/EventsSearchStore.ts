@@ -20,7 +20,6 @@ import ApiSchema from '../../api/ApiSchema';
 import EventsStore from './EventsStore';
 import { createSearchToken } from '../../helpers/search/createSearchToken';
 import { COLORS as SearchTokenColors } from '../../components/search/SearchInput';
-import { GraphDataStore } from '../graph/GraphDataStore';
 
 const defaultState = {
 	tokens: [],
@@ -41,7 +40,6 @@ export default class EventsSearchStore {
 	constructor(
 		private api: ApiSchema,
 		private eventsStore: EventsStore,
-		private graphStore: GraphDataStore,
 		initialState?: initialState,
 	) {
 		this.init(initialState);
@@ -101,7 +99,10 @@ export default class EventsSearchStore {
 	@action
 	fetchTokenResults = async (tokenString: string) => {
 		const rootEventsResults = await this.api.events.getEventsByName(
-			this.graphStore.range,
+			[
+				this.eventsStore.filterStore.eventsFilter.timestampFrom,
+				this.eventsStore.filterStore.eventsFilter.timestampTo,
+			],
 			tokenString,
 		);
 
@@ -111,7 +112,14 @@ export default class EventsSearchStore {
 
 		const subNodesResult = await Promise.all(
 			expandedSubNodes.map(node =>
-				this.api.events.getEventsByName(this.graphStore.range, tokenString, node.eventId),
+				this.api.events.getEventsByName(
+					[
+						this.eventsStore.filterStore.eventsFilter.timestampFrom,
+						this.eventsStore.filterStore.eventsFilter.timestampTo,
+					],
+					tokenString,
+					node.eventId,
+				),
 			),
 		);
 
@@ -123,7 +131,14 @@ export default class EventsSearchStore {
 		this.isLoading = true;
 		const results = await Promise.all(
 			this.tokens.map(token =>
-				this.api.events.getEventsByName(this.graphStore.range, token.pattern, eventId),
+				this.api.events.getEventsByName(
+					[
+						this.eventsStore.filterStore.eventsFilter.timestampFrom,
+						this.eventsStore.filterStore.eventsFilter.timestampTo,
+					],
+					token.pattern,
+					eventId,
+				),
 			),
 		);
 		this.isLoading = false;

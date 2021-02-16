@@ -54,7 +54,7 @@ export default class EventsStore {
 
 	viewStore = new ViewStore();
 
-	searchStore = new EventsSearchStore(this.api, this, this.graphStore);
+	searchStore = new EventsSearchStore(this.api, this);
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
@@ -347,7 +347,7 @@ export default class EventsStore {
 			panelArea: store.viewStore.eventsPanelArea,
 		});
 		this.filterStore = new FilterStore(this.searchPanelStore, store.filterStore);
-		this.searchStore = new EventsSearchStore(this.api, this, this.graphStore, {
+		this.searchStore = new EventsSearchStore(this.api, this, {
 			isLoading: store.searchStore.isLoading,
 			rawResults: toJS(store.searchStore.rawResults),
 			scrolledIndex: store.searchStore.scrolledIndex,
@@ -379,7 +379,7 @@ export default class EventsStore {
 		this.filterStore = new FilterStore(this.searchPanelStore, {
 			eventsFilter: !isInitialEntity(initialState) ? initialState.filter : undefined,
 		});
-		this.searchStore = new EventsSearchStore(this.api, this, this.graphStore, {
+		this.searchStore = new EventsSearchStore(this.api, this, {
 			searchPatterns: !isInitialEntity(initialState) ? initialState.search : [],
 		});
 		this.viewStore = new ViewStore({
