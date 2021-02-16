@@ -17,10 +17,8 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import EventWindow from '../event/EventWindow';
-import BookmarksPanel from '../BookmarksPanel';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import MessagesWindow from '../message/MessagesWindow';
-import SearchPanel from '../search-panel/SearchPanel';
 import { useActivePanel } from '../../hooks';
 import { isEventsStore, isMessagesStore } from '../../helpers/stores';
 import '../../styles/workspace.scss';

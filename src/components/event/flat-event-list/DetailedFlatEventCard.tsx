@@ -1,4 +1,3 @@
-/* eslint-disable react/no-children-prop */
 /** *****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *

@@ -137,7 +137,7 @@ export default class MessagesDataProviderStore {
 		// this.searchChannelPrev = null;
 	};
 
-	onPrevChannelError = (event: Event) => {
+	onPrevChannelError = () => {
 		this.searchChannelPrev?.stop();
 		this.searchChannelPrev = null;
 		this.isError = true;

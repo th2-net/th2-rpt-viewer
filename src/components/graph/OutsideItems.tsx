@@ -166,7 +166,7 @@ export const OutsideItemsList = React.forwardRef<HTMLDivElement, OutsideItemsLis
 						/>
 						<div className='outside-items__wrapper' onClick={onClick}>
 							{Object.entries(itemsMap)
-								.filter(([_type, count]) => Boolean(count))
+								.filter(item => Boolean(item[1]))
 								.map(([type, count]) => (
 									<div
 										key={type}
