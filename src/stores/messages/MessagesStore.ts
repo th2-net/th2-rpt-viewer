@@ -47,6 +47,9 @@ export default class MessagesStore {
 	data = new MessagesDataProviderStore(this, this.api);
 
 	@observable
+	public hoveredMessage: EventMessage | null = null;
+
+	@observable
 	public selectedMessageId: String | null = null;
 
 	@observable
@@ -121,6 +124,11 @@ export default class MessagesStore {
 	@computed
 	get isActivePanel() {
 		return this.workspaceStore.isActive && this.workspaceStore.viewStore.activePanel === this;
+	}
+
+	@action
+	public setHoveredMessage(message: EventMessage | null) {
+		this.hoveredMessage = message;
 	}
 
 	@action

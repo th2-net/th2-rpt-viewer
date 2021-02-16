@@ -165,9 +165,15 @@ export class GraphDataStore {
 
 	public getGraphItemType = (item: GraphItem): GraphItemType => {
 		return isEventNode(item)
-			? GraphItemType.EVENT
+			? item.eventId === this.selectedStore.hoveredEvent?.eventId
+				? GraphItemType.HOVERED_EVENT
+				: item.successful
+				? GraphItemType.PASSED
+				: GraphItemType.FAILED
 			: this.selectedStore.attachedMessages.includes(item)
 			? GraphItemType.ATTACHED_MESSAGE
+			: item === this.selectedStore.hoveredMessage
+			? GraphItemType.HOVERED_MESSAGE
 			: GraphItemType.PINNED_MESSAGE;
 	};
 }

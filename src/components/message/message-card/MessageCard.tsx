@@ -119,7 +119,14 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const bookmarkIconClass = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
 
 	return (
-		<div className='message-card-wrapper'>
+		<div
+			className='message-card-wrapper'
+			onMouseEnter={() => {
+				messagesStore.setHoveredMessage(message);
+			}}
+			onMouseLeave={() => {
+				messagesStore.setHoveredMessage(null);
+			}}>
 			<div className={rootClass}>
 				<div className='mc__mc-header mc-header'>
 					<div className='mc-header__is-attached-icon'></div>

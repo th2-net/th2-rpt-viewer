@@ -20,21 +20,24 @@ import { createBemElement, createStyleSelector } from '../../helpers/styleCreato
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { GraphGroup, GraphItemType } from '../../models/Graph';
-import { getEventStatus, isEventNode } from '../../helpers/event';
 import { GraphDataStore } from '../../stores/graph/GraphDataStore';
 import { EventStatus } from '../../models/Status';
 
 type GroupItemType =
 	| GraphItemType.ATTACHED_MESSAGE
 	| GraphItemType.PINNED_MESSAGE
+	| GraphItemType.HOVERED_EVENT
+	| GraphItemType.HOVERED_MESSAGE
 	| EventStatus.FAILED
 	| EventStatus.PASSED;
 
 const listIconsPriority: { [key in GroupItemType]: number } = {
-	[GraphItemType.ATTACHED_MESSAGE]: 3,
-	[GraphItemType.PINNED_MESSAGE]: 2,
-	[EventStatus.FAILED]: 1,
-	[EventStatus.PASSED]: 1,
+	[GraphItemType.ATTACHED_MESSAGE]: 4,
+	[GraphItemType.PINNED_MESSAGE]: 3,
+	[GraphItemType.HOVERED_EVENT]: 1,
+	[GraphItemType.HOVERED_MESSAGE]: 1,
+	[EventStatus.FAILED]: 2,
+	[EventStatus.PASSED]: 2,
 };
 
 const GROUP_MAX_ITEMS = 3;
@@ -59,12 +62,7 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 		const map: Partial<Record<GroupItemType, number>> = {};
 
 		group.items.forEach(item => {
-			let key: GroupItemType;
-			if (isEventNode(item)) {
-				key = getEventStatus(item);
-			} else {
-				key = getGraphItemType(item) as GroupItemType;
-			}
+			const key = getGraphItemType(item) as GroupItemType;
 			map[key] = (map[key] || 0) + 1;
 		});
 

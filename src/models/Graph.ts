@@ -54,7 +54,10 @@ export type GraphItem = EventMessage | EventTreeNode;
 export enum GraphItemType {
 	ATTACHED_MESSAGE = 'attached-message',
 	PINNED_MESSAGE = 'pinned-message',
-	EVENT = 'event',
+	PASSED = 'passed',
+	FAILED = 'failed',
+	HOVERED_EVENT = 'hovered-event',
+	HOVERED_MESSAGE = 'hovered-message',
 }
 
 export interface PanelRange {
