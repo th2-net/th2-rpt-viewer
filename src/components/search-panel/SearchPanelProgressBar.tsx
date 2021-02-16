@@ -18,7 +18,7 @@ import moment from 'moment';
 
 interface SearchPanelProgressBarProps {
 	searchProgress: {
-		startTimestamp: number;
+		startTimestamp: number | null;
 		endTimestamp: number | null;
 		currentPoint: number;
 		searching: boolean;
@@ -31,7 +31,7 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 		return <div className='spinner' />;
 	}
 
-	const timeInterval = endTimestamp !== null ? endTimestamp - startTimestamp : null;
+	const timeInterval = endTimestamp !== null ? endTimestamp - Number(startTimestamp) : null;
 
 	if (timeInterval) {
 		const position = ((currentPoint / timeInterval) * 100).toFixed(2);

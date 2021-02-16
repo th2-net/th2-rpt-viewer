@@ -34,7 +34,7 @@ import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 
 export type SearchPanelFormState = {
-	startTimestamp: number;
+	startTimestamp: number | null;
 	endTimestamp: number | null;
 	resultCountLimit: number;
 	searchDirection: 'next' | 'previous';
@@ -123,7 +123,9 @@ export class SearchStore {
 		return {
 			startTimestamp: this.searchForm.startTimestamp,
 			endTimestamp: this.searchForm.endTimestamp,
-			currentPoint: lastItemTimestamp ? lastItemTimestamp - this.searchForm.startTimestamp : 0,
+			currentPoint: lastItemTimestamp
+				? lastItemTimestamp - Number(this.searchForm.startTimestamp)
+				: 0,
 			searching: Boolean(this.searchChannel),
 		};
 	}

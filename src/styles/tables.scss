@@ -15,27 +15,8 @@
  ******************************************************************************/
 @import './common/vars';
 
-.ver-table {
-	@include default-table;
-	@include scrollbar;
-	width: 100%;
-	overflow: auto;
-
-	table {
-		width: fit-content;
-		grid-template-columns: minmax(130px, 250px) minmax(125px, 250px) minmax(125px, 250px) 60px 80px 50px;
-	}
-
-	&-indicator {
-		width: 14px;
-		padding: 0;
-		margin: 0;
-	}
-
-	&-flexible {
-		text-align: left;
-	}
-
+.ver-table,
+.params-table {
 	&-header {
 		display: flex;
 		flex-direction: row;
@@ -68,6 +49,28 @@
 				}
 			}
 		}
+	}
+}
+
+.ver-table {
+	@include default-table;
+	@include scrollbar;
+	width: 100%;
+	overflow: auto;
+
+	table {
+		width: fit-content;
+		grid-template-columns: minmax(130px, 250px) minmax(125px, 250px) minmax(125px, 250px) 60px 80px 50px;
+	}
+
+	&-indicator {
+		width: 14px;
+		padding: 0;
+		margin: 0;
+	}
+
+	&-flexible {
+		text-align: left;
 	}
 
 	&-row {
