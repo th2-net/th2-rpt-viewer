@@ -28,9 +28,9 @@ export default class RootStore {
 	workspacesStore: WorkspacesStore;
 
 	constructor(private api: ApiSchema) {
-		this.workspacesStore = new WorkspacesStore(this.api, this.parseUrlState());
+		this.searchStore = new SearchStore(this.api);
 
-		this.searchStore = new SearchStore(this.workspacesStore, this.api);
+		this.workspacesStore = new WorkspacesStore(this.searchStore, this.api, this.parseUrlState());
 
 		registerUrlMiddleware(this);
 	}

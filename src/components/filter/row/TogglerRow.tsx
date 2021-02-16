@@ -19,9 +19,9 @@ import { FilterRowTogglerConfig } from '../../../models/filter/FilterInputs';
 import '../../../styles/toggler.scss';
 
 const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
-	const { value, toggleValue, possibleValues, label, disabled } = config;
+	const { value, toggleValue, possibleValues, label, disabled, className = '' } = config;
 	const togglerClassName = createStyleSelector('toggler', disabled ? 'disabled' : '');
-	const togglerBarClassName = createStyleSelector('toggler__bar', value ? 'on' : 'off');
+	const togglerBarClassName = createStyleSelector('toggler__bar', className, value ? 'on' : 'off');
 	const [firstLabel, secondLabel] = possibleValues;
 	return (
 		<div className='filter-row toggler-wrapper'>

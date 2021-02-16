@@ -18,7 +18,7 @@ import React, { useState } from 'react';
 import {
 	DateTimeInputType,
 	DateTimeMask,
-	FilterRowConfig,
+	FitlerRowItem,
 	TimeInputType,
 } from '../../models/filter/FilterInputs';
 import FilterRow from '../filter/row';
@@ -61,7 +61,7 @@ const SearchPanelForm = (props: Props) => {
 		}
 	}
 
-	const commonFormConfig: FilterRowConfig[] = [
+	const commonFormConfig: FitlerRowItem[] = [
 		{
 			label: 'Result Count Limit',
 			value: !form.resultCountLimit ? '' : form.resultCountLimit.toString(),
@@ -81,7 +81,7 @@ const SearchPanelForm = (props: Props) => {
 		},
 	];
 
-	const eventsFormTypeConfig: FilterRowConfig = {
+	const eventsFormTypeConfig: FitlerRowItem = {
 		label: 'Parent Event',
 		value: form.parentEvent,
 		disabled,
@@ -90,7 +90,7 @@ const SearchPanelForm = (props: Props) => {
 		id: 'parent-event',
 	};
 
-	const messagesFormTypeConfig: FilterRowConfig = {
+	const messagesFormTypeConfig: FitlerRowItem = {
 		type: 'multiple-strings',
 		id: 'stream',
 		label: 'Session',
@@ -102,7 +102,7 @@ const SearchPanelForm = (props: Props) => {
 		autocompleteList: streams,
 	};
 
-	const config: FilterRowConfig[] =
+	const config: FitlerRowItem[] =
 		formType === 'event'
 			? [...commonFormConfig, eventsFormTypeConfig]
 			: [...commonFormConfig, messagesFormTypeConfig];

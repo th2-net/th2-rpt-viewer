@@ -119,9 +119,17 @@ const FilterPanel = ({
 			</div>
 			<ModalPortal isOpen={showFilter}>
 				<div ref={filterBaseRef} className='filter'>
-					{config.map(rowConfig => (
-						<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
-					))}
+					{config.map(rowConfig =>
+						Array.isArray(rowConfig) ? (
+							<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
+								{rowConfig.map(_rowConfig => (
+									<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
+								))}
+							</div>
+						) : (
+							<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
+						),
+					)}
 					<div className='filter__controls filter-controls'>
 						<div className='filter-controls__clear-btn' onClick={onClearAllClick}>
 							<div className='filter-controls__clear-icon' />
@@ -141,4 +149,4 @@ const FilterPanel = ({
 	);
 };
 
-export default FilterPanel;
+export default React.memo(FilterPanel);

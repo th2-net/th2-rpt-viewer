@@ -31,7 +31,6 @@ import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import localStorageWorker from '../util/LocalStorageWorker';
 import notificationsStore from './NotificationsStore';
-import WorkspacesStore from './workspace/WorkspacesStore';
 
 export type SearchPanelFormState = {
 	startTimestamp: number | null;
@@ -66,7 +65,7 @@ export type SearchHistoryState<T> = {
 };
 
 export class SearchStore {
-	constructor(private workspacesStore: WorkspacesStore, private api: ApiSchema) {
+	constructor(private api: ApiSchema) {
 		this.getEventFilters();
 		this.getMessagesFilters();
 
@@ -97,7 +96,7 @@ export class SearchStore {
 	@observable messagesFilter: MessageFilterState | null = null;
 
 	@observable searchForm: SearchPanelFormState = {
-		startTimestamp: this.workspacesStore.activeWorkspace.graphDataStore.range[0],
+		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
 		searchDirection: 'next',
 		resultCountLimit: 50,
 		endTimestamp: null,
@@ -256,13 +255,12 @@ export class SearchStore {
 	};
 
 	@action startSearch = () => {
-		if (this.searchChannel) return;
-
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
+		if (this.searchChannel || !filterParams) return;
 
 		this.newSearch({
 			timestamp: moment().utc().valueOf(),
-			request: { type: this.formType, state: this.searchForm, filters: filterParams! },
+			request: { type: this.formType, state: this.searchForm, filters: filterParams },
 			results: [],
 		});
 
@@ -316,7 +314,7 @@ export class SearchStore {
 	@action
 	stopSearch = () => {
 		if (!this.searchChannel) return;
-		this.searchChannel?.close();
+		this.searchChannel.close();
 		this.searchChannel = null;
 
 		localStorageWorker.saveSearchHistory(this.searchHistory);

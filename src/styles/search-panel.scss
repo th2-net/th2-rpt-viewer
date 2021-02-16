@@ -24,6 +24,7 @@
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
+	color: $primaryTextColor;
 
 	& input {
 		border: solid 1px #000;

@@ -18,7 +18,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import MessageCardSkeleton from '../message-card/MessageCardSkeleton';
 import MessageCard from '../message-card/MessageCard';
-import { useAsyncEffect, useMessagesWorkspaceStore } from '../../../hooks';
+import { useMessagesDataStore } from '../../../hooks';
 import ErrorMessageFallback from '../message-card/MessageErrorFallback';
 
 interface Props {
@@ -26,18 +26,25 @@ interface Props {
 }
 
 function SkeletonedMessageCardListItem({ id }: Props) {
-	const messagesStore = useMessagesWorkspaceStore();
-	const message = messagesStore.messagesCache.get(id);
+	const messagesDataStore = useMessagesDataStore();
+	const message = messagesDataStore.messagesCache.get(id);
 	const [isError, setIsError] = React.useState(false);
 
-	useAsyncEffect(async () => {
-		if (!message) {
-			try {
-				await messagesStore.fetchMessage(id);
-			} catch (err) {
-				setIsError(true);
+	React.useEffect(() => {
+		const abortController = new AbortController();
+		async function getMessage() {
+			if (!message) {
+				try {
+					await messagesDataStore.fetchMessage(id, abortController.signal);
+				} catch (error) {
+					setIsError(true);
+				}
 			}
 		}
+		getMessage();
+		return () => {
+			abortController.abort();
+		};
 	}, []);
 
 	if (isError) {

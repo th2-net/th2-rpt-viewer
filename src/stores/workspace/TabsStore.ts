@@ -44,6 +44,7 @@ export default class TabsStore {
 		}
 		const workspaceToClose = this.workspacesStore.workspaces[index];
 		workspaceToClose.messagesStore.dispose();
+		workspaceToClose.eventsStore.dispose();
 		this.workspacesStore.workspaces.splice(index, 1);
 	};
 
