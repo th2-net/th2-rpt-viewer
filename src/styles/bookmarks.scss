@@ -72,9 +72,7 @@
 
 	&__name,
 	&__timestamp {
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		overflow: hidden;
+		@include ellipsis();
 	}
 
 	&__name {

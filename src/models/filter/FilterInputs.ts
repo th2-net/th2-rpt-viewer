@@ -36,7 +36,7 @@ export type TimeShortcut = {
 export type DateTimeInputType = {
 	label?: string;
 	value: number | null;
-	setValue: (nextValue: number) => void;
+	setValue: (nextValue: number | null) => void;
 	type: TimeInputType;
 	id: string;
 	inputMask: (string | RegExp)[];

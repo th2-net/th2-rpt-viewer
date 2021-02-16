@@ -35,10 +35,11 @@ interface Props {
 	form: SearchPanelFormState;
 	updateForm: (patch: Partial<SearchPanelFormState>) => void;
 	disabled: boolean;
+	streams: string[] | null;
 }
 
 const SearchPanelForm = (props: Props) => {
-	const { disabled, updateForm, form, formType } = props;
+	const { disabled, updateForm, form, formType, streams } = props;
 
 	const [currentStream, setCurrentStream] = useState('');
 
@@ -92,13 +93,13 @@ const SearchPanelForm = (props: Props) => {
 	const messagesFormTypeConfig: FilterRowConfig = {
 		type: 'multiple-strings',
 		id: 'stream',
-		label: 'Stream',
+		label: 'Session',
 		values: form.stream,
 		disabled,
 		setValues: getFormStateUpdater('stream'),
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
-		autocompleteList: null,
+		autocompleteList: streams,
 	};
 
 	const config: FilterRowConfig[] =

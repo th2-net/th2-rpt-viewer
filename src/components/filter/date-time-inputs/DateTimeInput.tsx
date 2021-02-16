@@ -57,9 +57,13 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 		const { value: updatedValue } = e.target;
 		setInputValue(updatedValue);
 
-		if (updatedValue && !updatedValue.includes('_')) {
-			setValue(moment.utc(updatedValue, dateMask).valueOf());
+		if (updatedValue) {
+			if (!updatedValue.includes('_')) {
+				setValue(moment.utc(updatedValue, dateMask).valueOf());
+			}
+			return;
 		}
+		setValue(null);
 	};
 
 	const isValidDate = (maskedValue: string): boolean => {
