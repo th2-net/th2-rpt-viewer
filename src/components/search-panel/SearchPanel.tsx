@@ -82,7 +82,11 @@ const SearchPanel = () => {
 					results={searchStore.currentSearch.results}
 					timestamp={searchStore.currentSearch.timestamp}
 					onResultItemClick={activeWorkspace.onSavedItemSelect}
-					onResultDelete={() => searchStore.deleteHistoryItem(searchStore.currentSearch!)}
+					onResultDelete={() => {
+						if (searchStore.currentSearch) {
+							searchStore.deleteHistoryItem(searchStore.currentSearch);
+						}
+					}}
 					showToggler={searchStore.searchHistory.length > 1}
 					next={searchStore.nextSearch}
 					prev={searchStore.prevSearch}

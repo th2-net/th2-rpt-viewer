@@ -38,7 +38,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 	const [loadingPrevItems, setLoadingPrevItems] = React.useState(false);
 	const [loadingNextItems, setLoadingNextItems] = React.useState(false);
 
-	const { loadingState, onScrollBottom, onScrollTop } = React.useContext(InfiniteLoaderContext);
+	const { onScrollBottom, onScrollTop } = React.useContext(InfiniteLoaderContext);
 
 	React.useEffect(() => {
 		if (!visibleRange) {

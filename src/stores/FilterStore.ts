@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, IReactionDisposer, observable, reaction, toJS } from 'mobx';
+import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import moment from 'moment';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
@@ -81,7 +81,7 @@ export default class FilterStore {
 		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
 			? []
 			: Object.entries(sseFilters)
-					.filter(([key, value]) => value.values.length > 0)
+					.filter(filter => filter[1].values.length > 0)
 					.map(([filterName]) => filterName as keyof MessageFilterState);
 
 		const filterValues = filtersToAdd

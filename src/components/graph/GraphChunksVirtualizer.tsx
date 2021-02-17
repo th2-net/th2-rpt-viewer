@@ -100,7 +100,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const prevItemsRef = React.useRef<HTMLDivElement>(null);
 	const nextItemsRef = React.useRef<HTMLDivElement>(null);
 
-	const [state, setState] = React.useState<State>(setInitialState(settings));
+	const [state] = React.useState<State>(setInitialState(settings));
 
 	const [acnhorTimestamp, setAnchorTimestamp] = React.useState(timestamp);
 

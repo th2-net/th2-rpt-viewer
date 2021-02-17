@@ -15,8 +15,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, IReactionDisposer, observable } from 'mobx';
-import throttle from 'lodash.throttle';
+import { action, observable } from 'mobx';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams } from '../../api/sse';
@@ -107,6 +106,8 @@ export class SSEChannel {
 				);
 				this.accumulatedMessages = [];
 				this.isLoading = false;
+				this.channel?.close();
+				this.channel = null;
 			}, 2000);
 		});
 	};
