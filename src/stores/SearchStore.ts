@@ -68,6 +68,7 @@ export class SearchStore {
 	constructor(private api: ApiSchema) {
 		this.getEventFilters();
 		this.getMessagesFilters();
+		this.loadMessageSessions();
 
 		autorun(() => {
 			this.currentSearch = this.searchHistory[this.currentIndex] || null;
@@ -88,6 +89,8 @@ export class SearchStore {
 			},
 		);
 	}
+
+	@observable messageSessions: Array<string> = [];
 
 	@observable searchChannel: EventSource | null = null;
 
@@ -339,4 +342,16 @@ export class SearchStore {
 			this.currentSearch.results = [...this.currentSearch.results, JSON.parse(data)];
 		}
 	};
+
+	@action
+	private async loadMessageSessions() {
+		try {
+			const messageSessions = await this.api.messages.getMessageSessions();
+			runInAction(() => {
+				this.messageSessions = messageSessions;
+			});
+		} catch (error) {
+			console.error("Couldn't fetch sessions");
+		}
+	}
 }

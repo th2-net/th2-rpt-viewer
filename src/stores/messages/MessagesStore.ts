@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, toJS, reaction, IReactionDisposer, runInAction } from 'mobx';
+import { action, computed, observable, toJS, reaction, IReactionDisposer } from 'mobx';
 import moment from 'moment';
 import { ListRange } from 'react-virtuoso/dist/engines/scrollSeekEngine';
 import ApiSchema from '../../api/ApiSchema';
@@ -45,9 +45,6 @@ export default class MessagesStore {
 	filterStore = new FilterStore(this.searchStore);
 
 	data = new MessagesDataProviderStore(this, this.api);
-
-	@observable
-	public messageSessions: Array<string> = [];
 
 	@observable
 	public selectedMessageId: String | null = null;
@@ -94,10 +91,11 @@ export default class MessagesStore {
 		);
 
 		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
+	}
 
-		if (this.messageSessions.length === 0) {
-			this.loadMessageSessions();
-		}
+	@computed
+	public get messageSessions(): string[] {
+		return this.searchStore.messageSessions;
 	}
 
 	@computed
@@ -207,18 +205,6 @@ export default class MessagesStore {
 	};
 
 	@action
-	private async loadMessageSessions() {
-		try {
-			const messageSessions = await this.api.messages.getMessageSessions();
-			runInAction(() => {
-				this.messageSessions = messageSessions;
-			});
-		} catch (error) {
-			console.error("Couldn't fetch sessions");
-		}
-	}
-
-	@action
 	clearFilters = () => {
 		this.filterStore.resetMessagesFilter();
 		this.data.stopMessagesLoading();
@@ -238,12 +224,6 @@ export default class MessagesStore {
 		});
 
 		// TODO: handle copying of MessagesDataProviderStore
-
-		if (!store.messageSessions.length) {
-			this.loadMessageSessions();
-		} else {
-			this.messageSessions = store.messageSessions.slice();
-		}
 	}
 
 	public dispose = () => {
