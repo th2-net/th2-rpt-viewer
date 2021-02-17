@@ -106,6 +106,8 @@ export class SSEChannel {
 				);
 				this.accumulatedMessages = [];
 				this.isLoading = false;
+				this.channel?.close();
+				this.channel = null;
 			}, 2000);
 		});
 	};
