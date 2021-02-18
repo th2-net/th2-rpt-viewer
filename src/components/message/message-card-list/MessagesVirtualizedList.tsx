@@ -15,9 +15,11 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
-import { defaultMessagesLoadingState } from '../../../stores/messages/MessagesStore';
-import { useAsyncEffect, useMessagesWorkspaceStore } from '../../../hooks';
+import { defaultMessagesLoadingState } from '../../../stores/messages/MessagesDataProviderStore';
+import { useMessagesWorkspaceStore } from '../../../hooks';
+import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
 
 interface Props {
@@ -35,8 +37,8 @@ interface Props {
 	className?: string;
 	ScrollContainer?: TScrollContainer;
 	overscan?: number;
-	loadNextMessages: () => Promise<string[] | undefined>;
-	loadPrevMessages: () => Promise<string[] | undefined>;
+	loadNextMessages: () => Promise<EventMessage[]>;
+	loadPrevMessages: () => Promise<EventMessage[]>;
 	loadingState: typeof defaultMessagesLoadingState;
 }
 
@@ -51,44 +53,41 @@ const MessagesVirtualizedList = (props: Props) => {
 		className,
 		ScrollContainer,
 		overscan = 3,
-		scrolledIndex,
 		itemRenderer,
 		loadPrevMessages,
 		loadNextMessages,
 		loadingState,
+		scrolledIndex,
 	} = props;
 
-	useAsyncEffect(async () => {
-		if (scrolledIndex === null) return;
-		let resultIndex = scrolledIndex.valueOf();
-
-		if (scrolledIndex.valueOf() + 1 === rowCount) {
-			await loadPrevMessages();
+	React.useEffect(() => {
+		if (scrolledIndex !== null) {
+			raf(() => {
+				virtuoso.current?.scrollToIndex({ index: scrolledIndex.valueOf(), align: 'center' });
+			}, 3);
 		}
-
-		if (scrolledIndex.valueOf() === 0) {
-			const nextMsg = await loadNextMessages();
-			if (nextMsg != null) {
-				virtuoso.current?.adjustForPrependedItems(nextMsg?.length);
-				resultIndex += nextMsg.length;
-			}
-		}
-
-		// we need raf callback here to wait prepended item render
-		raf(() => {
-			virtuoso.current?.scrollToIndex({ index: resultIndex, align: 'start' });
-		}, 3);
 	}, [scrolledIndex]);
 
-	const onScrollBottom = () =>
-		loadNextMessages().then(messagesIds => {
-			if (messagesIds !== undefined) {
-				virtuoso.current?.adjustForPrependedItems(messagesIds.length);
+	const onScrollTop = () => {
+		return loadNextMessages().then(messages => {
+			if (messages.length > 0) {
+				messageStore.data.onNextChannelResponse(messages);
+				setTimeout(() => {
+					virtuoso.current?.adjustForPrependedItems(messages.length - 1);
+				}, 50);
 			}
-			return messagesIds;
+			return messages;
 		});
+	};
 
-	const onScrollTop = () => loadPrevMessages();
+	const onScrollBottom = () => {
+		return loadPrevMessages().then(messages => {
+			if (messages.length > 0) {
+				messageStore.data.onPrevChannelResponse(messages);
+			}
+			return messages;
+		});
+	};
 
 	return (
 		<InfiniteLoaderContext.Provider
@@ -108,7 +107,6 @@ const MessagesVirtualizedList = (props: Props) => {
 				ScrollContainer={ScrollContainer}
 				rangeChanged={range => {
 					messageStore.currentMessagesIndexesRange = range;
-					messageStore.setScrollTopMessageId(range.startIndex);
 				}}
 			/>
 		</InfiniteLoaderContext.Provider>
@@ -116,8 +114,8 @@ const MessagesVirtualizedList = (props: Props) => {
 };
 
 interface InfiniteScrollContextValue {
-	onScrollBottom: () => Promise<string[] | undefined>;
-	onScrollTop: () => Promise<string[] | undefined>;
+	onScrollBottom: () => Promise<EventMessage[]>;
+	onScrollTop: () => Promise<EventMessage[]>;
 	loadingState: typeof defaultMessagesLoadingState;
 }
 
@@ -125,4 +123,4 @@ export const InfiniteLoaderContext = React.createContext<InfiniteScrollContextVa
 	{} as InfiniteScrollContextValue,
 );
 
-export default MessagesVirtualizedList;
+export default observer(MessagesVirtualizedList);

@@ -19,6 +19,7 @@ import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
+import { SearchStore } from '../SearchStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
@@ -26,12 +27,18 @@ export default class WorkspacesStore {
 
 	selectedStore = new SelectedStore(this);
 
-	tabsStore: TabsStore;
+	tabsStore = new TabsStore(this);
 
-	constructor(private api: ApiSchema, initialState: WorkspacesUrlState | null) {
+	public searchWorkspace: WorkspaceStore;
+
+	constructor(
+		private searchStore: SearchStore,
+		private api: ApiSchema,
+		initialState: WorkspacesUrlState | null,
+	) {
 		this.init(initialState);
 
-		this.tabsStore = new TabsStore(this);
+		this.searchWorkspace = this.createWorkspace();
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
@@ -45,21 +52,14 @@ export default class WorkspacesStore {
 	}
 
 	@computed get activeWorkspace() {
-		return this.workspaces[this.tabsStore.activeTabIndex];
+		return [this.searchWorkspace, ...this.workspaces][this.tabsStore.activeTabIndex];
 	}
 
 	@action
 	private init(initialState: WorkspacesUrlState | null) {
-		if (!initialState) {
-			this.addWorkspace(this.createWorkspace());
-			return;
-		}
-
-		try {
-			initialState.map(workspaceState => this.addWorkspace(this.createWorkspace(workspaceState)));
-		} catch (error) {
-			this.addWorkspace(this.createWorkspace());
-		}
+		if (!initialState) return;
+		initialState.forEach(workspaceState => this.addWorkspace(this.createWorkspace(workspaceState)));
+		this.tabsStore.setActiveWorkspace(this.workspaces.length);
 	}
 
 	@action
@@ -73,6 +73,12 @@ export default class WorkspacesStore {
 	};
 
 	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {
-		return new WorkspaceStore(this, this.selectedStore, this.api, workspaceInitialState);
+		return new WorkspaceStore(
+			this,
+			this.selectedStore,
+			this.searchStore,
+			this.api,
+			workspaceInitialState,
+		);
 	};
 }

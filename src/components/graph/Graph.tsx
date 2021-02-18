@@ -26,6 +26,7 @@ import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk, PanelRange } from '../../models/Graph';
 import '../../styles/graph.scss';
+import { useSearchStore } from '../../hooks/useSearchStore';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -125,23 +126,26 @@ function Graph() {
 
 	return (
 		<div className='graph' ref={rootRef}>
-			<GraphChunksVirtualizer
-				chunkWidth={chunkWidth}
-				settings={settings}
-				renderChunk={renderChunk}
-				setRange={activeWorkspace.graphDataStore.setRange}
-				getChunk={getChunk}
-				interval={activeWorkspace.graphDataStore.interval}
-				timestamp={activeWorkspace.graphDataStore.timestamp}
-				key={activeWorkspace.graphDataStore.timestamp}
-				panelsRange={panelsRange}
-				range={activeWorkspace.graphDataStore.range}
-			/>
+			{!activeWorkspace.isSearchWorkspace && (
+				<GraphChunksVirtualizer
+					chunkWidth={chunkWidth}
+					settings={settings}
+					renderChunk={renderChunk}
+					setRange={activeWorkspace.graphDataStore.setRange}
+					getChunk={getChunk}
+					interval={activeWorkspace.graphDataStore.interval}
+					timestamp={activeWorkspace.graphDataStore.timestamp}
+					key={activeWorkspace.graphDataStore.timestamp}
+					panelsRange={panelsRange}
+					range={activeWorkspace.graphDataStore.range}
+				/>
+			)}
 			<GraphOverlay
 				range={activeWorkspace.graphDataStore.range}
 				onGraphItemClick={onGraphItemClick}
 				getGraphItemType={getGraphItemType}
 				panelsRange={panelsRange}
+				disableInteractions={activeWorkspace.isSearchWorkspace}
 			/>
 		</div>
 	);

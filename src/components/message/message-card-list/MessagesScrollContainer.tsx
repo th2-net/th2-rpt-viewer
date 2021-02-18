@@ -16,7 +16,7 @@
 
 import React from 'react';
 import { TScrollContainer } from 'react-virtuoso';
-import { useMessagesWorkspaceStore, useDebouncedCallback, useHeatmap } from '../../../hooks';
+import { useDebouncedCallback, useHeatmap, useMessagesDataStore } from '../../../hooks';
 import { InfiniteLoaderContext } from './MessagesVirtualizedList';
 import { MessagesHeightsContext, MessagesHeights } from './MessagesCardList';
 
@@ -27,16 +27,18 @@ const MessagesScrollContainer: TScrollContainer = ({
 	scrollTo,
 	children,
 }) => {
-	const scrollContainer = React.useRef<HTMLDivElement>(null);
+	const messagesDataStore = useMessagesDataStore();
+
 	const { setVisibleRange, visibleRange } = useHeatmap();
-	const messagesStore = useMessagesWorkspaceStore();
+
+	const scrollContainer = React.useRef<HTMLDivElement>(null);
 	const messagesHeights = React.useContext(MessagesHeightsContext);
 	const prevHeights = React.useRef<MessagesHeights>({});
 
 	const [loadingPrevItems, setLoadingPrevItems] = React.useState(false);
 	const [loadingNextItems, setLoadingNextItems] = React.useState(false);
 
-	const { loadingState, onScrollBottom, onScrollTop } = React.useContext(InfiniteLoaderContext);
+	const { onScrollBottom, onScrollTop } = React.useContext(InfiniteLoaderContext);
 
 	React.useEffect(() => {
 		if (!visibleRange) {
@@ -100,23 +102,22 @@ const MessagesScrollContainer: TScrollContainer = ({
 			!loadingNextItems &&
 			event.deltaY < 0 &&
 			visibleRange &&
-			visibleRange.startIndex < messagesStore.MESSAGES_CHUNK_SIZE / 2 &&
-			!messagesStore.isBeginReached
+			visibleRange.startIndex < 12 &&
+			!messagesDataStore.isBeginReached
 		) {
 			setLoadingNextItems(true);
-			onScrollBottom().then(() => setLoadingNextItems(false));
+			onScrollTop().then(() => setLoadingNextItems(false));
 		}
 
 		if (
 			!loadingPrevItems &&
 			event.deltaY > 0 &&
 			visibleRange &&
-			visibleRange.endIndex >
-				messagesStore.messagesIds.length - messagesStore.MESSAGES_CHUNK_SIZE / 2 &&
-			!messagesStore.isEndReached
+			visibleRange.endIndex > messagesDataStore.messages.length - 12 &&
+			!messagesDataStore.isEndReached
 		) {
 			setLoadingPrevItems(true);
-			onScrollTop().then(() => setLoadingPrevItems(false));
+			onScrollBottom().then(() => setLoadingPrevItems(false));
 		}
 	};
 
@@ -131,10 +132,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 					marginRight: '11px',
 					flexGrow: 1,
 				}}>
-				{loadingState.loadingNextItems &&
-					!(loadingState.loadingRootItems || loadingState.loadingSelectedMessage) && (
-						<div className='messages-list__spinner' />
-					)}
+				{loadingNextItems && <div className='messages-list__spinner' />}
 				<div
 					ref={scrollContainer}
 					onScroll={onScroll}
@@ -148,10 +146,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 					className={className}>
 					{children}
 				</div>
-				{loadingState.loadingPreviousItems &&
-					!(loadingState.loadingRootItems || loadingState.loadingSelectedMessage) && (
-						<div className='messages-list__spinner' />
-					)}
+				{loadingPrevItems && <div className='messages-list__spinner' />}
 			</div>
 		</div>
 	);

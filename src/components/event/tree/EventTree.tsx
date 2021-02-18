@@ -16,22 +16,23 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import PanelArea from '../../../util/PanelArea';
 import EventCardHeader from '../EventCardHeader';
-import { useEventWindowViewStore, useWorkspaceEventStore } from '../../../hooks';
+import { useWorkspaceEventStore } from '../../../hooks';
 import EventCardSkeleton from '../EventCardSkeleton';
 import { EventTreeNode } from '../../../models/EventAction';
 import { getEventNodeParents } from '../../../helpers/event';
 import CardDisplayType from '../../../util/CardDisplayType';
 import { createBemBlock } from '../../../helpers/styleCreators';
+import { formatTime } from '../../../helpers/date';
 
 interface EventTreeProps {
 	eventTreeNode: EventTreeNode;
+	startTimestamp?: number;
+	endTimestamp?: number;
 }
 
-function EventTree({ eventTreeNode }: EventTreeProps) {
+function EventTree({ eventTreeNode, startTimestamp, endTimestamp }: EventTreeProps) {
 	const eventWindowStore = useWorkspaceEventStore();
-	const viewStore = useEventWindowViewStore();
 
 	const onExpandClick = () => eventWindowStore.toggleNode(eventTreeNode);
 
@@ -45,28 +46,50 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		expandIconStatus = 'hidden';
 	}
 
-	const nestingLevel =
-		(viewStore.eventsPanelArea === PanelArea.P25 ? 20 : 35) *
-		getEventNodeParents(eventTreeNode).length;
+	// const nestingLevel =
+	// 	(viewStore.eventsPanelArea === PanelArea.P25 ? 20 : 35) *
+	// 	getEventNodeParents(eventTreeNode).length;
+
+	const nestingLevel = 20 * getEventNodeParents(eventTreeNode).length;
+
 	return (
-		<div className='event-tree-card' style={{ paddingLeft: nestingLevel }}>
-			<ExpandIcon
-				status={expandIconStatus}
-				className='event-card__children-icon'
-				onClick={onExpandClick}
-			/>
-			{eventTreeNode ? (
-				<EventCardHeader
-					childrenCount={eventTreeNode.childList.length}
-					event={eventTreeNode}
-					displayType={CardDisplayType.MINIMAL}
-					onSelect={() => eventWindowStore.selectNode(eventTreeNode)}
-					isSelected={eventWindowStore.isNodeSelected(eventTreeNode)}
-				/>
-			) : (
-				<EventCardSkeleton />
+		<>
+			{startTimestamp && (
+				<div className='event-tree-timestamp'>
+					<div className='event-tree-timestamp__value'>{formatTime(startTimestamp)}</div>
+					<div className='event-tree-timestamp__icon' />
+				</div>
 			)}
-		</div>
+			<div className='event-tree-card' style={{ paddingLeft: nestingLevel }}>
+				<ExpandIcon
+					status={expandIconStatus}
+					className='event-card__children-icon'
+					onClick={onExpandClick}
+				/>
+				{eventTreeNode ? (
+					<EventCardHeader
+						childrenCount={eventTreeNode.childList.length}
+						event={eventTreeNode}
+						displayType={CardDisplayType.MINIMAL}
+						onSelect={() => eventWindowStore.selectNode(eventTreeNode)}
+						isSelected={eventWindowStore.isNodeSelected(eventTreeNode)}
+						isActive={
+							eventWindowStore.selectedPath.length > 0 &&
+							eventWindowStore.selectedPath[eventWindowStore.selectedPath.length - 1].eventId ===
+								eventTreeNode.eventId
+						}
+					/>
+				) : (
+					<EventCardSkeleton />
+				)}
+			</div>
+			{endTimestamp && (
+				<div className='event-tree-timestamp end'>
+					<div className='event-tree-timestamp__value'>{formatTime(endTimestamp)}</div>
+					<div className='event-tree-timestamp__icon' />
+				</div>
+			)}
+		</>
 	);
 }
 

@@ -17,6 +17,7 @@
 @import './common/vars';
 
 .message-card-wrapper {
+	@include bookmark-button($showOnHoverOverParent: true);
 	padding-bottom: 5px;
 	margin-right: 10px;
 
@@ -25,8 +26,8 @@
 	}
 
 	&:hover .mc-header {
-		&__info {
-			column-gap: 10px;
+		&__info > *:not(:last-child) {
+			margin-right: 10px;
 		}
 
 		&__control-button {
@@ -51,15 +52,6 @@
 
 		&__is-attached-icon {
 			opacity: 1;
-		}
-
-		&__bookmark-button {
-			display: block;
-			background: url(../../resources/icons/bookmark-add-hover.svg);
-
-			&.pinned {
-				background: url(../../resources/icons/bookmark-added-hover.svg);
-			}
 		}
 	}
 }
@@ -124,8 +116,11 @@
 
 .mc-header {
 	display: flex;
-	column-gap: 5px;
 	white-space: nowrap;
+
+	& > *:not(:last-child) {
+		margin-right: 5px;
+	}
 
 	&__is-attached-icon {
 		flex-shrink: 0;
@@ -144,14 +139,16 @@
 	&__info {
 		flex-grow: 1;
 		display: flex;
-		column-gap: 5px;
 		overflow: hidden;
 		align-items: center;
+
+		& > *:not(:last-child) {
+			margin-right: 5px;
+		}
 	}
 
 	&__item {
 		display: flex;
-		column-gap: 3px;
 		align-items: center;
 	}
 
@@ -164,8 +161,10 @@
 		}
 	}
 
-	&__bookmark {
-		display: none;
+	&__key,
+	&__key__minified,
+	&__direction-icon {
+		margin-right: 3px;
 	}
 
 	&__key {
@@ -190,10 +189,13 @@
 
 	&__controls {
 		display: flex;
-		column-gap: 5px;
 
 		div {
 			cursor: pointer;
+		}
+
+		& > *:not(:last-child) {
+			margin-right: 5px;
 		}
 	}
 
@@ -220,25 +222,12 @@
 	&__show-raw-button {
 		background: url(../../resources/icons/bincode.svg);
 	}
-
-	&__bookmark-button {
-		display: none;
-		flex-shrink: 0;
-		background: url(../../resources/icons/bookmark-add.svg);
-
-		&.pinned {
-			display: block;
-			background: url(../../resources/icons/bookmark-added.svg);
-		}
-	}
 }
 
 .mc-body {
 	font-size: 11px;
 	position: relative;
 	border-radius: 5px;
-	display: flex;
-	column-gap: 10px;
 
 	&__human {
 		font-family: inherit;
@@ -456,16 +445,22 @@
 
 	&__header {
 		display: flex;
-		column-gap: 3px;
 		height: 11px;
 		width: 100%;
+
+		& > *:not(:last-child) {
+			margin-right: 3px;
+		}
 	}
 
 	&__body {
 		margin-top: 10px;
 		display: flex;
 		flex-direction: column;
-		row-gap: 5px;
+
+		& > *:not(:first-child) {
+			margin-top: 5px;
+		}
 	}
 
 	&__timestamp,

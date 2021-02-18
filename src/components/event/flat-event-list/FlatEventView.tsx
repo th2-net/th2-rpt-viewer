@@ -28,11 +28,7 @@ function EventTreeView() {
 	const viewStore = useEventWindowViewStore();
 
 	return (
-		<SplitView
-			panelArea={viewStore.eventsPanelArea}
-			onPanelAreaChange={viewStore.setPanelArea}
-			leftPanelMinWidth={445}
-			rightPanelMinWidth={445}>
+		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
 				<FlatEventList nodes={eventWindowStore.flattenedEventList} />
 			</SplitViewPane>

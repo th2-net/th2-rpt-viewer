@@ -117,10 +117,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		direction?.toLowerCase(),
 	);
 
-	const bookmarkIconClass = createStyleSelector(
-		'mc-header__icon mc-header__bookmark-button',
-		isPinned ? 'pinned' : null,
-	);
+	const bookmarkIconClass = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
 
 	return (
 		<div className='message-card-wrapper'>

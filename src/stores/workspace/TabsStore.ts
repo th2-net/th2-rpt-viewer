@@ -36,14 +36,13 @@ export default class TabsStore {
 
 	@action
 	closeWorkspace = (tab: number | WorkspaceStore) => {
-		if (this.workspacesStore.workspaces.length === 1) return;
-
 		const index = typeof tab === 'number' ? tab : this.workspacesStore.workspaces.indexOf(tab);
 		if (index <= this.activeTabIndex) {
 			this.setActiveWorkspace(this.activeTabIndex === 0 ? 0 : this.activeTabIndex - 1);
 		}
 		const workspaceToClose = this.workspacesStore.workspaces[index];
 		workspaceToClose.messagesStore.dispose();
+		workspaceToClose.eventsStore.dispose();
 		this.workspacesStore.workspaces.splice(index, 1);
 	};
 

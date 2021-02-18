@@ -14,10 +14,12 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useMessagesWorkspaceStore } from './useMessagesStore';
+// TODO: fix messages update store
 
-export const useMessageUpdateStore = () => {
-	const messageStore = useMessagesWorkspaceStore();
+// import { useMessagesWorkspaceStore } from './useMessagesStore';
 
-	return messageStore.messageUpdateStore;
-};
+// export const useMessageUpdateStore = () => {
+// 	const messageStore = useMessagesWorkspaceStore();
+
+// 	return messageStore.messageUpdateStore;
+// };
