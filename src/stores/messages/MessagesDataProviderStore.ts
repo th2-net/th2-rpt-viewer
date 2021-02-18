@@ -22,28 +22,12 @@ import MessagesFilter from '../../models/filter/MessagesFilter';
 import MessagesStore from './MessagesStore';
 import { SSEChannel } from './SSEChannel';
 
-export const defaultMessagesLoadingState = {
-	loadingPreviousItems: false,
-	loadingNextItems: false,
-	loadingRootItems: false,
-	loadingSelectedMessage: false,
-};
-
 export default class MessagesDataProviderStore {
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
 		reaction(() => this.messagesStore.filterStore.messagesFilter, this.onFilterChange);
 
 		reaction(() => this.messagesStore.filterStore.messagesFilter.streams, this.onStreamsChanged);
 	}
-
-	@observable
-	public messagesLoadingState = defaultMessagesLoadingState;
-
-	@observable
-	public isLoadingNextMessages = false;
-
-	@observable
-	public isLoadingPreviousMessages = false;
 
 	@observable
 	public isEndReached = false;
@@ -67,8 +51,18 @@ export default class MessagesDataProviderStore {
 	searchChannelNext: SSEChannel | null = null;
 
 	@computed
+	public get isLoadingNextMessages() {
+		return Boolean(this.searchChannelNext?.isLoading);
+	}
+
+	@computed
+	public get isLoadingPreviousMessages() {
+		return Boolean(this.searchChannelPrev?.isLoading);
+	}
+
+	@computed
 	public get isLoading() {
-		return Boolean(this.searchChannelPrev || this.searchChannelNext);
+		return this.isLoadingNextMessages || this.isLoadingPreviousMessages;
 	}
 
 	@action
@@ -191,18 +185,12 @@ export default class MessagesDataProviderStore {
 		return this.searchChannelNext.load();
 	};
 
-	// Reactions start
 	@action
 	private onFilterChange = async (filter: MessagesFilter) => {
 		this.stopMessagesLoading();
-		this.messagesLoadingState.loadingRootItems = true;
 
 		if (filter.streams.length === 0) return;
-		try {
-			this.loadMessages();
-		} finally {
-			this.messagesLoadingState.loadingRootItems = false;
-		}
+		this.loadMessages();
 	};
 
 	@action
@@ -212,15 +200,12 @@ export default class MessagesDataProviderStore {
 		}
 	};
 
-	// Reactions end
-
 	@action
 	private resetMessagesDataState = () => {
 		this.messages = [];
 		this.isBeginReached = false;
 		this.isEndReached = false;
 		this.isError = false;
-		this.messagesLoadingState = defaultMessagesLoadingState;
 	};
 
 	@observable

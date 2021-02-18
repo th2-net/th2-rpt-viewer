@@ -17,7 +17,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
-import { defaultMessagesLoadingState } from '../../../stores/messages/MessagesDataProviderStore';
 import { useMessagesWorkspaceStore } from '../../../hooks';
 import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
@@ -39,7 +38,8 @@ interface Props {
 	overscan?: number;
 	loadNextMessages: () => Promise<EventMessage[]>;
 	loadPrevMessages: () => Promise<EventMessage[]>;
-	loadingState: typeof defaultMessagesLoadingState;
+	isLoadingNextMessages: boolean;
+	isLoadingPreviousMessages: boolean;
 }
 
 const MessagesVirtualizedList = (props: Props) => {
@@ -56,7 +56,8 @@ const MessagesVirtualizedList = (props: Props) => {
 		itemRenderer,
 		loadPrevMessages,
 		loadNextMessages,
-		loadingState,
+		isLoadingNextMessages,
+		isLoadingPreviousMessages,
 		scrolledIndex,
 	} = props;
 
@@ -68,7 +69,7 @@ const MessagesVirtualizedList = (props: Props) => {
 		}
 	}, [scrolledIndex]);
 
-	const onScrollTop = () => {
+	const startReached = () => {
 		return loadNextMessages().then(messages => {
 			if (messages.length > 0) {
 				messageStore.data.onNextChannelResponse(messages);
@@ -80,7 +81,7 @@ const MessagesVirtualizedList = (props: Props) => {
 		});
 	};
 
-	const onScrollBottom = () => {
+	const endReached = () => {
 		return loadPrevMessages().then(messages => {
 			if (messages.length > 0) {
 				messageStore.data.onPrevChannelResponse(messages);
@@ -92,9 +93,10 @@ const MessagesVirtualizedList = (props: Props) => {
 	return (
 		<InfiniteLoaderContext.Provider
 			value={{
-				onScrollBottom,
-				onScrollTop,
-				loadingState,
+				startReached,
+				endReached,
+				isLoadingNextMessages,
+				isLoadingPreviousMessages,
 			}}>
 			<Virtuoso
 				totalCount={rowCount}
@@ -114,9 +116,10 @@ const MessagesVirtualizedList = (props: Props) => {
 };
 
 interface InfiniteScrollContextValue {
-	onScrollBottom: () => Promise<EventMessage[]>;
-	onScrollTop: () => Promise<EventMessage[]>;
-	loadingState: typeof defaultMessagesLoadingState;
+	startReached: () => Promise<EventMessage[]>;
+	endReached: () => Promise<EventMessage[]>;
+	isLoadingNextMessages: boolean;
+	isLoadingPreviousMessages: boolean;
 }
 
 export const InfiniteLoaderContext = React.createContext<InfiniteScrollContextValue>(

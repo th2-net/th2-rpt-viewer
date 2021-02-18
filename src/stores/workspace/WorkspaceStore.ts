@@ -165,7 +165,6 @@ export default class WorkspaceStore {
 			});
 
 			this.workspacesStore.addWorkspace(newWorkspace);
-			this.workspacesStore.tabsStore.setActiveWorkspace(this.workspacesStore.workspaces.length);
 		} else {
 			this.graphDataStore.timestamp = isEventMessage(savedItem)
 				? getTimestampAsNumber(savedItem.timestamp)
