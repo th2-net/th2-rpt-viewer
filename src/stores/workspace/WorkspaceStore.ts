@@ -28,7 +28,7 @@ import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
-import { GraphDataStore } from '../graph/GraphDataStore';
+import { GraphStore } from '../GraphStore';
 import { isEventAction, isEventMessage, isEventNode } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
@@ -60,7 +60,7 @@ export default class WorkspaceStore {
 
 	public viewStore: WorkspaceViewStore;
 
-	public graphDataStore: GraphDataStore;
+	public graphStore: GraphStore;
 
 	public id = nanoid();
 
@@ -72,13 +72,10 @@ export default class WorkspaceStore {
 		initialState: WorkspaceInitialState,
 	) {
 		const entityRange = getDefaultRange(initialState.entity, 15);
-		this.graphDataStore = new GraphDataStore(
-			this.selectedStore,
-			entityRange || initialState.timeRange,
-		);
+		this.graphStore = new GraphStore(this.selectedStore, entityRange || initialState.timeRange);
 		this.eventsStore = new EventsStore(
 			this,
-			this.graphDataStore,
+			this.graphStore,
 			this.searchStore,
 			this.api,
 			initialState.entity &&
@@ -166,15 +163,15 @@ export default class WorkspaceStore {
 
 			this.workspacesStore.addWorkspace(newWorkspace);
 		} else {
-			this.graphDataStore.timestamp = isEventMessage(savedItem)
+			this.graphStore.timestamp = isEventMessage(savedItem)
 				? getTimestampAsNumber(savedItem.timestamp)
 				: getTimestampAsNumber(savedItem.startTimestamp);
 			if (isEventMessage(savedItem)) {
 				this.viewStore.activePanel = this.messagesStore;
-				this.messagesStore.onSavedItemSelect(savedItem);
+				this.messagesStore.onMessageSelect(savedItem);
 			} else {
 				this.viewStore.activePanel = this.eventsStore;
-				this.eventsStore.onSavedItemSelect(savedItem);
+				this.eventsStore.onEventSelect(savedItem);
 			}
 		}
 	};

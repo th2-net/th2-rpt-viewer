@@ -30,6 +30,8 @@ export class SSEChannel {
 
 	private chunkSize = 12;
 
+	private updateTimeout = 2500;
+
 	@observable
 	public isError = false;
 
@@ -103,8 +105,8 @@ export class SSEChannel {
 		this.channel.addEventListener('error', this._onError);
 
 		const messagesChunk = await Promise.race([
-			this.resolveMessagesWithinTimeout(),
-			this.resolveMessagesWithinCount(),
+			this.resolveMessagesWithinTimeout(this.updateTimeout),
+			this.resolveMessagesWithinCount(this.chunkSize),
 		]);
 
 		this.resetSSEState();
@@ -113,18 +115,18 @@ export class SSEChannel {
 		return messagesChunk;
 	};
 
-	resolveMessagesWithinTimeout = (): Promise<EventMessage[]> => {
+	resolveMessagesWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
 		return new Promise(res => {
 			this.messagesResolverTimeout = setTimeout(() => {
 				res(this.nextChunk());
-			}, 2500);
+			}, timeout);
 		});
 	};
 
-	resolveMessagesWithinCount = (): Promise<EventMessage[]> => {
+	resolveMessagesWithinCount = (count: number): Promise<EventMessage[]> => {
 		return new Promise(res => {
 			this.messagesResolverInterval = setInterval(() => {
-				if (this.accumulatedMessages.length >= this.chunkSize) {
+				if (this.accumulatedMessages.length >= count) {
 					res(this.nextChunk());
 				}
 			}, 20);

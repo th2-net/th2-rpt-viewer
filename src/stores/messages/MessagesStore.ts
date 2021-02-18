@@ -67,6 +67,9 @@ export default class MessagesStore {
 		endIndex: 0,
 	};
 
+	@observable
+	public selectedMessage: EventMessage | null = null;
+
 	constructor(
 		private workspaceStore: WorkspaceStore,
 		private selectedStore: SelectedStore,
@@ -78,7 +81,7 @@ export default class MessagesStore {
 			this.copy(defaultState);
 		} else if (isEventMessage(defaultState)) {
 			setTimeout(() => {
-				this.onSavedItemSelect(defaultState);
+				this.onMessageSelect(defaultState);
 			}, 50);
 		} else if (defaultState !== null) {
 			this.filterStore.messagesFilter = {
@@ -170,7 +173,7 @@ export default class MessagesStore {
 	};
 
 	@action
-	public onSavedItemSelect = async (savedMessage: EventMessage) => {
+	public onMessageSelect = async (savedMessage: EventMessage) => {
 		this.filterStore.resetMessagesFilter({
 			timestampFrom: null,
 			timestampTo: getTimestampAsNumber(savedMessage.timestamp),
@@ -200,13 +203,12 @@ export default class MessagesStore {
 		)
 			return;
 
-		this.filterStore.messagesFilter.streams = [...new Set(attachedMessages.map(m => m.sessionId))];
-
 		const mostRecentMessage = sortMessagesByTimestamp(attachedMessages)[0];
 
 		if (mostRecentMessage) {
 			this.filterStore.messagesFilter = {
 				...this.filterStore.messagesFilter,
+				streams: [...new Set(attachedMessages.map(m => m.sessionId))],
 				timestampTo: getTimestampAsNumber(mostRecentMessage.timestamp),
 			};
 			this.selectedMessageId = new String(mostRecentMessage.messageId);

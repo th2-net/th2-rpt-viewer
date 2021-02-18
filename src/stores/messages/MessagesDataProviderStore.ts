@@ -25,8 +25,6 @@ import { SSEChannel } from './SSEChannel';
 export default class MessagesDataProviderStore {
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
 		reaction(() => this.messagesStore.filterStore.messagesFilter, this.onFilterChange);
-
-		reaction(() => this.messagesStore.filterStore.messagesFilter.streams, this.onStreamsChanged);
 	}
 
 	@observable
@@ -189,15 +187,10 @@ export default class MessagesDataProviderStore {
 	private onFilterChange = async (filter: MessagesFilter) => {
 		this.stopMessagesLoading();
 
-		if (filter.streams.length === 0) return;
-		this.loadMessages();
-	};
-
-	@action
-	private onStreamsChanged = (streams: string[]) => {
-		if (streams.length === 0) {
+		if (filter.streams.length === 0) {
 			this.resetMessagesDataState();
 		}
+		this.loadMessages();
 	};
 
 	@action
