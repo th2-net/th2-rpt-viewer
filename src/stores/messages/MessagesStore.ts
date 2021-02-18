@@ -79,7 +79,7 @@ export default class MessagesStore {
 		} else if (isEventMessage(defaultState)) {
 			setTimeout(() => {
 				this.onSavedItemSelect(defaultState);
-			}, 100);
+			}, 50);
 		} else if (defaultState !== null) {
 			this.filterStore.messagesFilter = {
 				...this.filterStore.messagesFilter,
@@ -193,7 +193,12 @@ export default class MessagesStore {
 
 	@action
 	public onAttachedMessagesChange = (attachedMessages: EventMessage[]) => {
-		if (this.data.messages.length !== 0 || this.data.isLoading) return;
+		if (
+			this.data.messages.length !== 0 ||
+			this.data.isLoadingNextMessages ||
+			this.data.isLoadingPreviousMessages
+		)
+			return;
 
 		this.filterStore.messagesFilter.streams = [...new Set(attachedMessages.map(m => m.sessionId))];
 
@@ -235,35 +240,3 @@ export default class MessagesStore {
 		this.filterStore.dispose();
 	};
 }
-
-/*
-	@observable
-	public scrollTopMessageId: string | null = null;
-
-	@action
-	public setScrollTopMessageId = (index: number) => {
-		this.scrollTopMessageId = this.messagesIds[index];
-	};
-
-	@action
-	public addMessagesToList = (
-		messages: EventMessage[] | string[],
-		timelineDirection: 'next' | 'previous',
-	) => {
-		if (!messages.length) return;
-		let messagesIds = messages;
-		if (isEventMessage(messages[0])) {
-			messagesIds = (messages as EventMessage[]).map(message => message.messageId);
-			(messages as EventMessage[]).forEach(message => {
-				this.messagesCache.set(message.messageId, message);
-			});
-		}
-
-		if (timelineDirection === 'next') {
-			this.messagesIds = [...(messagesIds.reverse() as string[]), ...this.messagesIds];
-		} else {
-			this.messagesIds = [...this.messagesIds, ...(messagesIds as string[])];
-		}
-	};
-
-	*/

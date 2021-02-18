@@ -35,10 +35,12 @@ const MessagesScrollContainer: TScrollContainer = ({
 	const messagesHeights = React.useContext(MessagesHeightsContext);
 	const prevHeights = React.useRef<MessagesHeights>({});
 
-	const [loadingPrevItems, setLoadingPrevItems] = React.useState(false);
-	const [loadingNextItems, setLoadingNextItems] = React.useState(false);
-
-	const { onScrollBottom, onScrollTop } = React.useContext(InfiniteLoaderContext);
+	const {
+		startReached,
+		endReached,
+		isLoadingNextMessages,
+		isLoadingPreviousMessages,
+	} = React.useContext(InfiniteLoaderContext);
 
 	React.useEffect(() => {
 		if (!visibleRange) {
@@ -99,25 +101,23 @@ const MessagesScrollContainer: TScrollContainer = ({
 
 	const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
 		if (
-			!loadingNextItems &&
+			!isLoadingNextMessages &&
 			event.deltaY < 0 &&
 			visibleRange &&
 			visibleRange.startIndex < 12 &&
 			!messagesDataStore.isBeginReached
 		) {
-			setLoadingNextItems(true);
-			onScrollTop().then(() => setLoadingNextItems(false));
+			startReached();
 		}
 
 		if (
-			!loadingPrevItems &&
+			!isLoadingPreviousMessages &&
 			event.deltaY > 0 &&
 			visibleRange &&
 			visibleRange.endIndex > messagesDataStore.messages.length - 12 &&
 			!messagesDataStore.isEndReached
 		) {
-			setLoadingPrevItems(true);
-			onScrollBottom().then(() => setLoadingPrevItems(false));
+			endReached();
 		}
 	};
 
@@ -132,7 +132,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 					marginRight: '11px',
 					flexGrow: 1,
 				}}>
-				{loadingNextItems && <div className='messages-list__spinner' />}
+				{isLoadingNextMessages && <div className='messages-list__spinner' />}
 				<div
 					ref={scrollContainer}
 					onScroll={onScroll}
@@ -146,7 +146,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 					className={className}>
 					{children}
 				</div>
-				{loadingPrevItems && <div className='messages-list__spinner' />}
+				{isLoadingPreviousMessages && <div className='messages-list__spinner' />}
 			</div>
 		</div>
 	);

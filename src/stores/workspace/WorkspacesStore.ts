@@ -59,7 +59,6 @@ export default class WorkspacesStore {
 	private init(initialState: WorkspacesUrlState | null) {
 		if (!initialState) return;
 		initialState.forEach(workspaceState => this.addWorkspace(this.createWorkspace(workspaceState)));
-		this.tabsStore.setActiveWorkspace(this.workspaces.length);
 	}
 
 	@action
@@ -70,6 +69,7 @@ export default class WorkspacesStore {
 	@action
 	public addWorkspace = (workspace: WorkspaceStore) => {
 		this.workspaces.push(workspace);
+		this.tabsStore.setActiveWorkspace(this.workspaces.length);
 	};
 
 	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {

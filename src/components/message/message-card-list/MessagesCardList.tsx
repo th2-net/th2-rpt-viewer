@@ -64,7 +64,10 @@ function MessageCardList() {
 		);
 	};
 
-	if (messagesDataStore.messages.length === 0 && messagesDataStore.isLoading) {
+	if (
+		messagesDataStore.messages.length === 0 &&
+		(messagesDataStore.isLoadingNextMessages || messagesDataStore.isLoadingPreviousMessages)
+	) {
 		return <SplashScreen />;
 	}
 
@@ -72,8 +75,11 @@ function MessageCardList() {
 		return <Empty description='Error occured while loading messages' />;
 	}
 
-	if (!messagesDataStore.isLoading && messagesDataStore.messages.length === 0) {
-		if (messagesDataStore.isError === null) {
+	if (
+		!(messagesDataStore.isLoadingNextMessages || messagesDataStore.isLoadingPreviousMessages) &&
+		messagesDataStore.messages.length === 0
+	) {
+		if (messagesDataStore.isError === false) {
 			return <Empty description='No messages' />;
 		}
 	}
@@ -83,7 +89,8 @@ function MessageCardList() {
 			<MessagesHeightsContext.Provider value={messagesHeightsMap}>
 				<StateSaverProvider>
 					<MessagesVirtualizedList
-						loadingState={messagesDataStore.messagesLoadingState}
+						isLoadingNextMessages={messagesDataStore.isLoadingNextMessages}
+						isLoadingPreviousMessages={messagesDataStore.isLoadingPreviousMessages}
 						className='messages-list__items'
 						rowCount={messagesDataStore.messages.length}
 						scrolledIndex={messagesStore.scrolledIndex}
