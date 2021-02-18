@@ -461,7 +461,10 @@ export default class EventsStore {
 		let currentEvent = event;
 		const path: string[] = [event.eventId];
 
-		while (typeof getEventParentId(currentEvent) === 'string') {
+		while (
+			typeof getEventParentId(currentEvent) === 'string' &&
+			getEventParentId(currentEvent) !== 'null'
+		) {
 			const parentId = getEventParentId(currentEvent);
 			path.unshift(parentId);
 			// eslint-disable-next-line no-await-in-loop
