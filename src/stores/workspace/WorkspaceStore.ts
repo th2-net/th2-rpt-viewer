@@ -184,6 +184,11 @@ export default class WorkspaceStore {
 	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
 		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
 	};
+
+	@computed
+	public get isSearchWorkspace() {
+		return this === this.workspacesStore.searchWorkspace;
+	}
 }
 
 function getDefaultRange(entity: unknown, interval: number): TimeRange | null {

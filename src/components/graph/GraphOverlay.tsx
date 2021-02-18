@@ -34,6 +34,7 @@ interface OverlayPanelProps {
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
 	panelsRange: Array<PanelRange>;
+	disableInteractions: boolean;
 }
 
 const GraphOverlay = (props: OverlayPanelProps) => {
@@ -42,6 +43,7 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 		onGraphItemClick,
 		getGraphItemType,
 		panelsRange,
+		disableInteractions,
 	} = props;
 
 	const selectedStore = useSelectedStore();
@@ -109,35 +111,39 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 
 	return (
 		<>
-			<OutsideItemsMenu
-				onGraphItemClick={onGraphItemClick}
-				direction='left'
-				items={outsideItems.left}
-				getGraphItemType={getGraphItemType}
-				onArrowClick={onOutsideItemsArrowClick}
-			/>
-			<OutsideItemsMenu
-				onGraphItemClick={onGraphItemClick}
-				direction='right'
-				items={outsideItems.right}
-				getGraphItemType={getGraphItemType}
-				onArrowClick={onOutsideItemsArrowClick}
-			/>
-			<OutsideItemsList
-				showCount={false}
-				itemsMap={outsidePanels.left}
-				direction='left'
-				className='outside-items__panels'
-				onItemClick={onOutsidePanelClick}
-			/>
-			<OutsideItemsList
-				showCount={false}
-				itemsMap={outsidePanels.right}
-				direction='right'
-				className='outside-items__panels'
-				onItemClick={onOutsidePanelClick}
-				onArrowClick={onOutsideItemsArrowClick}
-			/>
+			{!disableInteractions && (
+				<>
+					<OutsideItemsMenu
+						onGraphItemClick={onGraphItemClick}
+						direction='left'
+						items={outsideItems.left}
+						getGraphItemType={getGraphItemType}
+						onArrowClick={onOutsideItemsArrowClick}
+					/>
+					<OutsideItemsMenu
+						onGraphItemClick={onGraphItemClick}
+						direction='right'
+						items={outsideItems.right}
+						getGraphItemType={getGraphItemType}
+						onArrowClick={onOutsideItemsArrowClick}
+					/>
+					<OutsideItemsList
+						showCount={false}
+						itemsMap={outsidePanels.left}
+						direction='left'
+						className='outside-items__panels'
+						onItemClick={onOutsidePanelClick}
+					/>
+					<OutsideItemsList
+						showCount={false}
+						itemsMap={outsidePanels.right}
+						direction='right'
+						className='outside-items__panels'
+						onItemClick={onOutsidePanelClick}
+						onArrowClick={onOutsideItemsArrowClick}
+					/>
+				</>
+			)}
 			<i className='th2-logo' />
 			<div className='graph-search-input'>
 				<TimestampInput
