@@ -14,20 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, toJS, reaction, IReactionDisposer, runInAction } from 'mobx';
+import { action, computed, observable, toJS, reaction, IReactionDisposer } from 'mobx';
 import moment from 'moment';
 import { ListRange } from 'react-virtuoso/dist/engines/scrollSeekEngine';
 import ApiSchema from '../../api/ApiSchema';
 import FilterStore from '../FilterStore';
 import { EventMessage } from '../../models/EventMessage';
-import { prevCyclicItem, nextCyclicItem } from '../../helpers/array';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { TabTypes } from '../../models/util/Windows';
 import MessagesFilter from '../../models/filter/MessagesFilter';
-import { sortMessagesByTimestamp } from '../../helpers/message';
 import { SelectedStore } from '../SelectedStore';
-import MessageUpdateStore from './MessageUpdateStore';
-import { isEventMessage } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { isMessagesStore } from '../../helpers/stores';
 import { TimeRange } from '../../models/Timestamp';
