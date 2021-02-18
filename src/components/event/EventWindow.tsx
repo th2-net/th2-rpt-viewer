@@ -19,6 +19,7 @@ import { observer } from 'mobx-react-lite';
 import EventTreeView from './tree/EventTreeView';
 import EventWindowHeader from './EventWindowHeader';
 import FlatEventView from './flat-event-list/FlatEventView';
+import EventBreadcrumbs from './breadcrumbs/EventBreadcrumbs';
 import { useEventWindowViewStore, useWorkspaceEventStore, useActivePanel } from '../../hooks';
 import '../../styles/events.scss';
 
@@ -34,6 +35,7 @@ function EventWindow() {
 				<EventWindowHeader />
 			</div>
 			<div className='window__body'>
+				<EventBreadcrumbs path={eventsStore.selectedPath} onSelect={eventsStore.selectNode} />
 				{eventWindowViewStore.flattenedListView ? <FlatEventView /> : <EventTreeView />}
 			</div>
 		</div>
