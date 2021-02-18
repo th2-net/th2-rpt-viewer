@@ -16,17 +16,9 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
-import { getTimestampAsNumber, isTimeInsideInterval, isTimeIntersected } from '../../helpers/date';
 import { isEventNode } from '../../helpers/event';
 import { calculateTimeRange } from '../../helpers/graph';
-import {
-	Chunk,
-	ChunkData,
-	GraphItem,
-	GraphItemType,
-	IntervalData,
-	IntervalOption,
-} from '../../models/Graph';
+import { Chunk, GraphItem, GraphItemType, IntervalOption } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import { SelectedStore } from '../SelectedStore';
 
@@ -50,6 +42,11 @@ export class GraphDataStore {
 		reaction(
 			() => this.interval,
 			interval => this.createChunks(interval, this.timestamp),
+		);
+
+		reaction(
+			() => this.timestamp,
+			() => (this.chunks = []),
 		);
 
 		this.createChunks(this.interval, this.timestamp);
@@ -103,52 +100,9 @@ export class GraphDataStore {
 	};
 
 	@action
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public getChunkData = (chunk: Chunk, abortSignal?: AbortSignal) => {
-		const { from } = chunk;
-		const step = this.steps[this.interval];
-		const steps = this.interval / step;
-		const data: ChunkData[] = [];
-		for (let i = 0; i < steps + 1; i++) {
-			data.push({
-				events: getRandomNumber(),
-				timestamp: moment(from)
-					.add(step * i, 'minutes')
-					.valueOf(),
-				failed: getRandomNumber(),
-				messages: getRandomNumber(),
-				passed: getRandomNumber(),
-			});
-		}
-
-		// eslint-disable-next-line no-param-reassign
-		chunk.data = data;
-	};
-
-	@action getIntervalData = (): IntervalData => {
-		const intervalData: IntervalData = {
-			events: 0,
-			passed: 0,
-			failed: 0,
-			messages: 0,
-			connected: 0,
-		};
-		this.chunks.forEach(chunk => {
-			if (isTimeIntersected([chunk.from, chunk.to], this.range)) {
-				chunk.data.forEach(data => {
-					if (isTimeInsideInterval(data.timestamp, this.range)) {
-						intervalData.events += data.events;
-						intervalData.passed += data.passed;
-						intervalData.failed += data.failed;
-						intervalData.messages += data.messages;
-					}
-				});
-			}
-		});
-		intervalData.connected = this.selectedStore.attachedMessages.filter(message =>
-			isTimeInsideInterval(getTimestampAsNumber(message.timestamp), this.range),
-		).length;
-
-		return intervalData;
+		// TODO: implement chunk data fetching
 	};
 
 	@action
@@ -217,5 +171,3 @@ export class GraphDataStore {
 			: GraphItemType.PINNED_MESSAGE;
 	};
 }
-
-const getRandomNumber = (max = 100) => Math.min(Math.floor(Math.random() * 20), max);

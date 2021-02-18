@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
+import moment from 'moment';
 import FilterStore from '../FilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
@@ -24,12 +25,12 @@ import EventsFilter from '../../models/filter/EventsFilter';
 import PanelArea from '../../util/PanelArea';
 import { TabTypes } from '../../models/util/Windows';
 import { getEventNodeParents, isEventNode, sortEventsByTimestamp } from '../../helpers/event';
-import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
 import { isEventsStore } from '../../helpers/stores';
 import { GraphDataStore } from '../graph/GraphDataStore';
+import { TimeRange } from '../../models/Timestamp';
 
 export type EventStoreURLState = Partial<{
 	type: TabTypes.Events;
@@ -52,7 +53,6 @@ export default class EventsStore {
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
-		private selectedStore: SelectedStore,
 		private graphStore: GraphDataStore,
 		private api: ApiSchema,
 		initialState: EventStoreDefaultStateType,
@@ -97,6 +97,11 @@ export default class EventsStore {
 				eventNode => eventNode.childList.length === 0 && eventNode.filtered,
 			),
 		);
+	}
+
+	@computed
+	public get panelRange(): TimeRange {
+		return [this.filterStore.eventsFilter.timestampFrom, this.filterStore.eventsFilter.timestampTo];
 	}
 
 	@computed
@@ -206,7 +211,7 @@ export default class EventsStore {
 	};
 
 	@action
-	public onSavedItemSelect = async (savedEventNode: EventTreeNode) => {
+	public onSavedItemSelect = async (savedEventNode: EventTreeNode | EventAction) => {
 		let fullPath: string[] = [];
 		/*
 			While we are saving eventTreeNodes with their parents, searching returns eventTreeNodes 
@@ -224,34 +229,33 @@ export default class EventsStore {
 		} else {
 			fullPath = [...(savedEventNode.parents || []), savedEventNode.eventId];
 		}
-		let currIdx = 0;
-		let nodes = this.eventTree;
-		let node: EventTreeNode | undefined;
 
-		// Check if event exists in current tree
-		while (currIdx < fullPath.length) {
-			// eslint-disable-next-line no-loop-func
-			node = nodes.find(n => n.eventId === fullPath[currIdx]);
+		const [timestampFrom, timestampTo] = calculateTimeRange(
+			getTimestampAsNumber(savedEventNode.startTimestamp),
+			this.graphStore.interval,
+		);
 
-			if (!node) break;
-			nodes = node.childList;
-			currIdx++;
-		}
+		this.filterStore.eventsFilter.timestampFrom = timestampFrom;
+		this.filterStore.eventsFilter.timestampTo = timestampTo;
+		this.filterStore.eventsFilter.eventTypes = [];
+		this.filterStore.eventsFilter.names = [];
 
-		if (!node) {
-			const [timestampFrom, timestampTo] = calculateTimeRange(
-				getTimestampAsNumber(savedEventNode.startTimestamp),
-				this.graphStore.interval,
-			);
-
-			this.filterStore.eventsFilter.timestampFrom = timestampFrom;
-			this.filterStore.eventsFilter.timestampTo = timestampTo;
-			this.filterStore.eventsFilter.eventTypes = [];
-			this.filterStore.eventsFilter.names = [];
-			await this.fetchEventTree();
-		}
+		await this.fetchEventTree();
 		this.expandPath(fullPath);
 		this.isLoadingRootEvents = false;
+	};
+
+	@action
+	public onRangeChange = (timestamp: number) => {
+		this.filterStore.eventsFilter = {
+			...this.filterStore.eventsFilter,
+			timestampFrom: moment(timestamp)
+				.subtract((this.graphStore.interval * 60) / 2, 'seconds')
+				.valueOf(),
+			timestampTo: moment(timestamp)
+				.add((this.graphStore.interval * 60) / 2, 'seconds')
+				.valueOf(),
+		};
 	};
 
 	private detailedEventAC: AbortController | null = null;

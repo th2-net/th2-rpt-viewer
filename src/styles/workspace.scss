@@ -97,6 +97,7 @@
 		height: 100%;
 		display: flex;
 		overflow: hidden;
+		min-width: 15px;
 
 		@include scrollbar;
 	}
@@ -218,6 +219,8 @@
 	display: flex;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
+	justify-content: flex-start;
+	min-width: 15px;
 
 	&__sidebar {
 		text-orientation: mixed;
@@ -256,6 +259,7 @@
 		line-height: 15px;
 		color: #fff;
 		border-radius: 5px;
+		transition: background-color 0.15s;
 	}
 
 	&__main {
