@@ -22,7 +22,7 @@ import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { GraphItem } from '../../models/Graph';
 import { getEventStatus, isEventMessage, isEventNode } from '../../helpers/event';
-import { GraphDataStore } from '../../stores/graph/GraphDataStore';
+import { GraphStore } from '../../stores/GraphStore';
 import Popover from '../util/Popover';
 
 interface MenuProps {
@@ -31,7 +31,7 @@ interface MenuProps {
 	isMenuOpened: boolean;
 	anchorEl?: HTMLElement | null;
 	onMenuItemClick: (item: EventTreeNode | EventMessage) => void;
-	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
+	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 	maxWidth?: number;
 }
 
