@@ -62,18 +62,17 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const isPinned = selectedStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
 
 	React.useEffect(() => {
-		if (messagesStore.highlightedMessageId === messageId) {
-			if (isHighlighted) {
-				return;
-			}
-			setHighlighted(true);
+		if (!isHighlighted) {
+			if (messagesStore.highlightedMessageId === messageId) {
+				setHighlighted(true);
 
-			highlightTimer.current = setTimeout(() => {
+				highlightTimer.current = setTimeout(() => {
+					setHighlighted(false);
+					messagesStore.highlightedMessageId = null;
+				}, 1500);
+			} else if (messagesStore.highlightedMessageId !== null) {
 				setHighlighted(false);
-				messagesStore.highlightedMessageId = null;
-			}, 1500);
-		} else if (messagesStore.highlightedMessageId !== null) {
-			setHighlighted(false);
+			}
 		}
 
 		return () => {
