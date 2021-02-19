@@ -16,7 +16,7 @@
 
 import { action, computed, observable, toJS, reaction, IReactionDisposer } from 'mobx';
 import moment from 'moment';
-import { ListRange } from 'react-virtuoso/dist/engines/scrollSeekEngine';
+import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
 import FilterStore from '../FilterStore';
 import { EventMessage } from '../../models/EventMessage';
@@ -32,6 +32,7 @@ import MessagesDataProviderStore from './MessagesDataProviderStore';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { isEventMessage } from '../../helpers/event';
 import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
+import { GraphStore } from '../GraphStore';
 
 export type MessagesStoreURLState = Partial<{
 	type: TabTypes.Messages;
@@ -73,6 +74,7 @@ export default class MessagesStore {
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
+		private graphStore: GraphStore,
 		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
 		private api: ApiSchema,
@@ -168,18 +170,21 @@ export default class MessagesStore {
 			targetMessage = sortMessagesByTimestamp(this.workspaceStore.attachedMessages)[0];
 		}
 
-		this.filterStore.resetMessagesFilter({
-			streams: this.selectedMessage
-				? [this.selectedMessage.sessionId]
-				: this.workspaceStore.attachedMessages.map(m => m.sessionId),
+		if (targetMessage) {
+			this.filterStore.resetMessagesFilter({
+				streams: this.selectedMessage
+					? [this.selectedMessage.sessionId]
+					: this.workspaceStore.attachedMessages.map(m => m.sessionId),
 
-			messageTypes: [],
-			timestampTo: getTimestampAsNumber(targetMessage.timestamp),
-			timestampFrom: null,
-		});
-
-		this.selectedMessage = null;
-		this.selectedMessageId = new String(targetMessage.messageId);
+				messageTypes: [],
+				timestampTo: getTimestampAsNumber(targetMessage.timestamp),
+				timestampFrom: null,
+			});
+			this.graphStore.setTimestamp(getTimestampAsNumber(targetMessage.timestamp));
+			this.selectedMessage = null;
+			this.selectedMessageId = new String(targetMessage.messageId);
+			this.highlightedMessageId = targetMessage.messageId;
+		}
 	};
 
 	@action
@@ -213,6 +218,7 @@ export default class MessagesStore {
 			});
 			this.selectedMessageId = new String(message.messageId);
 			this.highlightedMessageId = message.messageId;
+			this.graphStore.setTimestamp(getTimestampAsNumber(message.timestamp));
 			this.selectedMessage = null;
 		} else {
 			this.selectedMessage = message;
@@ -221,6 +227,8 @@ export default class MessagesStore {
 
 	@action
 	public onRangeChange = (timestamp: number) => {
+		this.selectedMessageId = null;
+		this.highlightedMessageId = null;
 		this.selectedMessageId = null;
 		this.filterStore.messagesFilter = {
 			...this.filterStore.messagesFilter,
@@ -242,6 +250,7 @@ export default class MessagesStore {
 		const mostRecentMessage = sortMessagesByTimestamp(attachedMessages)[0];
 
 		if (mostRecentMessage) {
+			this.graphStore.setTimestamp(getTimestampAsNumber(mostRecentMessage.timestamp));
 			this.filterStore.messagesFilter = {
 				...this.filterStore.messagesFilter,
 				streams: [...new Set(attachedMessages.map(m => m.sessionId))],

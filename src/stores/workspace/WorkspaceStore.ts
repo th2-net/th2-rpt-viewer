@@ -85,6 +85,7 @@ export default class WorkspaceStore {
 		);
 		this.messagesStore = new MessagesStore(
 			this,
+			this.graphStore,
 			this.selectedStore,
 			this.searchStore,
 			this.api,
@@ -162,17 +163,15 @@ export default class WorkspaceStore {
 			});
 
 			this.workspacesStore.addWorkspace(newWorkspace);
+			return;
+		}
+
+		if (isEventMessage(savedItem)) {
+			this.viewStore.activePanel = this.messagesStore;
+			this.messagesStore.onMessageSelect(savedItem);
 		} else {
-			this.graphStore.timestamp = isEventMessage(savedItem)
-				? getTimestampAsNumber(savedItem.timestamp)
-				: getTimestampAsNumber(savedItem.startTimestamp);
-			if (isEventMessage(savedItem)) {
-				this.viewStore.activePanel = this.messagesStore;
-				this.messagesStore.onMessageSelect(savedItem);
-			} else {
-				this.viewStore.activePanel = this.eventsStore;
-				this.eventsStore.onEventSelect(savedItem);
-			}
+			this.viewStore.activePanel = this.eventsStore;
+			this.eventsStore.onEventSelect(savedItem);
 		}
 	};
 
