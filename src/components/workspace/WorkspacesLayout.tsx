@@ -17,41 +17,50 @@
 import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import Workspace from './Workspace';
+import SearchWorkspace from './SearchWorkspace';
 import { WorkspaceContextProvider } from '../../contexts/workspaceContext';
 import { useWorkspaces } from '../../hooks';
 import Tabs, { TabListRenderProps } from '../tabs/Tabs';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import '../../styles/root.scss';
+import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 
 const WorkspacesLayout = () => {
 	const workspacesStore = useWorkspaces();
 
 	const renderTabs: TabListRenderProps = ({ activeTabIndex, setActiveTab }) => {
-		return workspacesStore.workspaces.map((workspace, index) => {
-			return (
-				<Observer key={workspace.id}>
-					{() => (
-						<div
-							className={`workspace-tab ${activeTabIndex === index ? 'active' : ''}`}
-							onClick={() => setActiveTab(index)}>
-							{workspacesStore.workspaces.length > 1 && (
-								<span
-									className={createStyleSelector(
-										'workspace-tab__close',
-										activeTabIndex === index ? 'selected' : null,
-									)}
-									onClick={e => {
-										e.stopPropagation();
-										workspacesStore.tabsStore.closeWorkspace(workspace);
-									}}
-								/>
-							)}
-							<h3 className='workspace-tab__title'>Workspace {index + 1}</h3>
-						</div>
-					)}
-				</Observer>
-			);
-		});
+		const getTabLayout = (workspace: WorkspaceStore, index: number, isSearchStore: boolean) => (
+			<Observer key={workspace.id}>
+				{() => (
+					<div
+						className={`workspace-tab ${activeTabIndex === index ? 'active' : ''}`}
+						onClick={() => setActiveTab(index)}>
+						{workspacesStore.workspaces.length > 0 && !isSearchStore && (
+							<span
+								className={createStyleSelector(
+									'workspace-tab__close',
+									activeTabIndex === index ? 'selected' : null,
+								)}
+								onClick={e => {
+									e.stopPropagation();
+									workspacesStore.tabsStore.closeWorkspace(workspace);
+								}}
+							/>
+						)}
+						<h3 className='workspace-tab__title'>
+							{!isSearchStore ? `Workspace ${index}` : 'Search'}
+						</h3>
+					</div>
+				)}
+			</Observer>
+		);
+
+		return [
+			getTabLayout(workspacesStore.searchWorkspace, 0, true),
+			...workspacesStore.workspaces.map((workspace, index) =>
+				getTabLayout(workspace, index + 1, false),
+			),
+		];
 	};
 
 	function addWorkspace() {
@@ -72,11 +81,16 @@ const WorkspacesLayout = () => {
 					</div>
 				</>
 			)}
-			tabPanels={workspacesStore.workspaces.map(workspace => (
-				<WorkspaceContextProvider value={workspace} key={workspace.id}>
-					<Workspace />
-				</WorkspaceContextProvider>
-			))}
+			tabPanels={[
+				<WorkspaceContextProvider value={workspacesStore.searchWorkspace} key='search-workspace'>
+					<SearchWorkspace />
+				</WorkspaceContextProvider>,
+				...workspacesStore.workspaces.map(workspace => (
+					<WorkspaceContextProvider value={workspace} key={workspace.id}>
+						<Workspace />
+					</WorkspaceContextProvider>
+				)),
+			]}
 		/>
 	);
 };

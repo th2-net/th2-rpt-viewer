@@ -128,6 +128,48 @@
 			}
 		}
 	}
+
+	&.vertical {
+		grid-template-columns: 100%;
+		grid-template-rows: calc(50% - 13px) $splitterBarWidth calc(50% - 13px);
+		grid-template-areas:
+			'left-pane'
+			'splitter-bar'
+			'right-pane';
+	}
+
+	&.vertical & {
+		&-bar {
+			width: 100%;
+			height: $splitterBarWidth;
+			cursor: row-resize;
+
+			&-button {
+				transform: translate(-50%, -50%);
+				width: 20px;
+				height: 30px;
+			}
+
+			&-icon {
+				transform: rotate(90deg);
+			}
+
+			&:hover:after {
+				width: 100%;
+				height: 0;
+				left: 0;
+				top: 50%;
+				transform: translateY(-50%);
+			}
+		}
+
+		&-preview {
+			grid-template-areas:
+				'left-preview'
+				'_'
+				'right-preview';
+		}
+	}
 }
 
 .splitter-pane {

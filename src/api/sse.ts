@@ -19,8 +19,8 @@ import { createURLSearchParams } from '../helpers/url';
 
 interface BaseSSEParams {
 	startTimestamp: number;
-	searchDirection: 'next' | 'previous';
-	resultCountLimit: string;
+	searchDirection?: 'next' | 'previous'; // defaults to next
+	resultCountLimit?: number;
 	endTimestamp?: number | null;
 }
 export interface SSEFilterInfo {
@@ -42,23 +42,24 @@ type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body';
 interface EventSSEParams extends BaseSSEParams {
 	parentEvent?: string;
 	filters: Array<EventSSEFilters>;
-	'attachedMessageId-values': string;
-	'attachedMessageId-negative': boolean;
-	'type-values': string[];
-	'type-negative': boolean;
-	'name-values': string[];
-	'name-negative': boolean;
+	'attachedMessageId-values'?: string;
+	'attachedMessageId-negative'?: boolean;
+	'type-values'?: string[];
+	'type-negative'?: boolean;
+	'name-values'?: string[];
+	'name-negative'?: boolean;
 }
 
-interface MessagesSSEParams extends BaseSSEParams {
+export interface MessagesSSEParams extends BaseSSEParams {
 	stream: string[];
-	filters: Array<MessagesSSEFilters>;
-	'attachedEventIds-values': string[];
-	'attachedEventIds-negative': boolean;
-	'type-values': string[];
-	'type-negative': boolean;
-	'body-values': string[];
-	'body-negative': boolean;
+	filters?: Array<MessagesSSEFilters>;
+	'attachedEventIds-values'?: string[];
+	'attachedEventIds-negative'?: boolean;
+	'type-values'?: string[];
+	'type-negative'?: boolean;
+	'body-values'?: string[];
+	'body-negative'?: boolean;
+	resumeFromId?: string;
 }
 
 export type SSEParams = EventSSEParams | MessagesSSEParams;

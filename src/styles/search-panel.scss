@@ -24,9 +24,18 @@
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
+	color: $primaryTextColor;
 
-	& input {
+	.filter-row__input {
 		border: solid 1px #000;
+	}
+
+	.filter-row {
+		flex-grow: 1;
+	}
+
+	.toggler-wrapper {
+		flex-grow: 0;
 	}
 
 	&__toggle {
@@ -34,6 +43,7 @@
 				justify-content: center;
 		}
 	}
+
 	.spinner {
 		@include spinner(3px);
 		margin: 4px auto;

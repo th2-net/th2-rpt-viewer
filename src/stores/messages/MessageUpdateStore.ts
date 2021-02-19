@@ -18,12 +18,12 @@ import { action, observable, reaction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
 import FilterStore from '../FilterStore';
-import MessagesStore from './MessagesStore';
 
+// TODO: fix store
 export default class MessageUpdateStore {
 	constructor(
 		private api: ApiSchema,
-		private messagesStore: MessagesStore,
+		private messagesStore: any,
 		private filterStore: FilterStore,
 	) {
 		reaction(
@@ -76,27 +76,27 @@ export default class MessageUpdateStore {
 
 	@action
 	public activateSubscription = async () => {
-		Object.keys(this.messagesStore.abortControllers).forEach(key => {
-			if (this.messagesStore.abortControllers[key]) {
-				this.messagesStore.abortControllers[key]?.abort();
-			}
-		});
+		// Object.keys(this.messagesStore.abortControllers).forEach(key => {
+		// 	if (this.messagesStore.abortControllers[key]) {
+		// 		this.messagesStore.abortControllers[key]?.abort();
+		// 	}
+		// });
 
 		if (this.updateAbortController) {
 			this.updateAbortController.abort();
 		}
 		this.updateAbortController = new AbortController();
 
-		if (!this.isAttachedToTop && this.messagesStore.isBeginReached) {
+		if (!this.isAttachedToTop && this.messagesStore.data.isBeginReached) {
 			this.messagesStore.scrollToMessage(this.messagesStore.messagesIds[0]);
 		}
 		this.isSubscriptionActive = true;
 
-		if (!this.messagesStore.isBeginReached || this.accumulatedMessages.length) {
+		if (!this.messagesStore.data.isBeginReached || this.accumulatedMessages.length) {
 			this.messagesStore.messagesIds = [];
 			this.messagesStore.messagesCache.clear();
 			this.accumulatedMessages = [];
-			this.messagesStore.isBeginReached = true;
+			this.messagesStore.data.isBeginReached = true;
 			this.messagesStore.messagesLoadingState.loadingRootItems = true;
 
 			const messages = await this.api.messages.getMessages(
@@ -123,17 +123,16 @@ export default class MessageUpdateStore {
 		const checkUpdates = async () => {
 			this.updateAbortController = new AbortController();
 			if (this.isAttachedToTop) {
-				const messagesIds = await this.messagesStore.getMessages(
-					'next',
-					this.messagesStore.messagesIds[0],
-					this.messagesStore.MESSAGES_CHUNK_SIZE,
-					true,
-					this.updateAbortController.signal,
-				);
-
-				if (messagesIds?.length && this.isAttachedToTop) {
-					this.messagesStore.scrollToMessage(messagesIds[0]);
-				}
+				// const messagesIds = await this.messagesStore.getMessages(
+				// 	'next',
+				// 	this.messagesStore.messagesIds[0],
+				// 	this.messagesStore.MESSAGES_CHUNK_SIZE,
+				// 	true,
+				// 	this.updateAbortController.signal,
+				// );
+				// if (messagesIds?.length && this.isAttachedToTop) {
+				// 	this.messagesStore.scrollToMessage(messagesIds[0]);
+				// }
 			} else {
 				const messages = await this.api.messages.getMessages(
 					{
@@ -180,7 +179,7 @@ export default class MessageUpdateStore {
 		}
 
 		this.isSubscriptionActive = false;
-		this.messagesStore.abortControllers.nextAC?.abort();
+		// this.messagesStore.abortControllers.nextAC?.abort();
 		if (this.subscriptionInterval) {
 			window.clearInterval(this.subscriptionInterval);
 		}

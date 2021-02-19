@@ -22,19 +22,24 @@ import ApiSchema from '../../api/ApiSchema';
 import { EventAction, EventTree, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
 import EventsFilter from '../../models/filter/EventsFilter';
-import PanelArea from '../../util/PanelArea';
 import { TabTypes } from '../../models/util/Windows';
-import { getEventNodeParents, isEventNode, sortEventsByTimestamp } from '../../helpers/event';
+import {
+	getEventNodeParents,
+	isEventAction,
+	isEventNode,
+	sortEventsByTimestamp,
+} from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
 import { isEventsStore } from '../../helpers/stores';
 import { GraphDataStore } from '../graph/GraphDataStore';
 import { TimeRange } from '../../models/Timestamp';
+import { SearchStore } from '../SearchStore';
 
 export type EventStoreURLState = Partial<{
 	type: TabTypes.Events;
-	panelArea: PanelArea;
+	panelArea: number;
 	filter: EventsFilter;
 	selectedNodesPath: string[];
 	search: string[];
@@ -45,17 +50,18 @@ export type EventStoreURLState = Partial<{
 export type EventStoreDefaultStateType = EventsStore | EventStoreURLState | null;
 
 export default class EventsStore {
-	filterStore = new FilterStore();
+	filterStore = new FilterStore(this.searchPanelStore);
 
 	viewStore = new ViewStore();
 
-	searchStore = new EventsSearchStore(this.api, this, this.graphStore);
+	searchStore = new EventsSearchStore(this.api, this);
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
 		private graphStore: GraphDataStore,
+		private searchPanelStore: SearchStore,
 		private api: ApiSchema,
-		initialState: EventStoreDefaultStateType,
+		initialState: EventStoreDefaultStateType | EventAction | EventTreeNode,
 	) {
 		this.init(initialState);
 
@@ -152,8 +158,8 @@ export default class EventsStore {
 	@action
 	public selectNode = (eventTreeNode: EventTreeNode | null) => {
 		this.selectedNode = eventTreeNode;
-		if (this.viewStore.eventsPanelArea === PanelArea.P100) {
-			this.viewStore.eventsPanelArea = PanelArea.P50;
+		if (this.viewStore.eventsPanelArea === 100) {
+			this.viewStore.eventsPanelArea = 50;
 		}
 	};
 
@@ -340,8 +346,8 @@ export default class EventsStore {
 			flattenedListView: store.viewStore.flattenedListView.valueOf(),
 			panelArea: store.viewStore.eventsPanelArea,
 		});
-		this.filterStore = new FilterStore(store.filterStore);
-		this.searchStore = new EventsSearchStore(this.api, this, this.graphStore, {
+		this.filterStore = new FilterStore(this.searchPanelStore, store.filterStore);
+		this.searchStore = new EventsSearchStore(this.api, this, {
 			isLoading: store.searchStore.isLoading,
 			rawResults: toJS(store.searchStore.rawResults),
 			scrolledIndex: store.searchStore.scrolledIndex,
@@ -350,7 +356,12 @@ export default class EventsStore {
 	}
 
 	@action
-	private async init(initialState: EventsStore | EventStoreURLState | null) {
+	private async init(
+		initialState: EventsStore | EventStoreURLState | EventTreeNode | EventAction | null,
+	) {
+		const isInitialEntity = (state: typeof initialState): state is EventAction | EventTreeNode =>
+			isEventAction(state) || isEventNode(state);
+
 		if (!initialState) {
 			this.fetchEventTree();
 			return;
@@ -361,31 +372,36 @@ export default class EventsStore {
 			return;
 		}
 
-		const {
-			filter,
-			panelArea = PanelArea.P100,
-			selectedNodesPath,
-			search,
-			flattenedListView,
-			selectedParentId,
-		} = initialState;
-		this.viewStore.eventsPanelArea = panelArea;
+		this.viewStore.eventsPanelArea = isInitialEntity(initialState)
+			? 100
+			: initialState.panelArea || 100;
 
-		this.filterStore = new FilterStore({ eventsFilter: filter });
-		this.searchStore = new EventsSearchStore(this.api, this, this.graphStore, {
-			searchPatterns: search || [],
+		this.filterStore = new FilterStore(this.searchPanelStore, {
+			eventsFilter: !isInitialEntity(initialState) ? initialState.filter : undefined,
+		});
+		this.searchStore = new EventsSearchStore(this.api, this, {
+			searchPatterns: !isInitialEntity(initialState) ? initialState.search : [],
 		});
 		this.viewStore = new ViewStore({
-			flattenedListView,
-			panelArea,
+			flattenedListView: !isInitialEntity(initialState)
+				? initialState.flattenedListView
+				: undefined,
+			panelArea: !isInitialEntity(initialState) ? initialState.panelArea : undefined,
 		});
-		await this.fetchEventTree();
-		if (selectedNodesPath) {
-			this.expandPath(selectedNodesPath);
+
+		if (isInitialEntity(initialState)) {
+			this.onSavedItemSelect(initialState);
+		} else {
+			await this.fetchEventTree();
 		}
-		if (selectedParentId) {
+
+		if (!isInitialEntity(initialState) && initialState.selectedNodesPath) {
+			this.expandPath(initialState.selectedNodesPath);
+		}
+
+		if (!isInitialEntity(initialState) && initialState.selectedParentId) {
 			const parentNode = this.selectedPath.find(
-				eventNode => eventNode.eventId === selectedParentId,
+				eventNode => eventNode.eventId === initialState.selectedParentId,
 			);
 			this.selectedParentNode = parentNode ?? null;
 		}
@@ -445,7 +461,10 @@ export default class EventsStore {
 		let currentEvent = event;
 		const path: string[] = [event.eventId];
 
-		while (typeof getEventParentId(currentEvent) === 'string') {
+		while (
+			typeof getEventParentId(currentEvent) === 'string' &&
+			getEventParentId(currentEvent) !== 'null'
+		) {
 			const parentId = getEventParentId(currentEvent);
 			path.unshift(parentId);
 			// eslint-disable-next-line no-await-in-loop
@@ -453,6 +472,10 @@ export default class EventsStore {
 		}
 
 		return path;
+	};
+
+	public dispose = () => {
+		this.filterStore.dispose();
 	};
 }
 

@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SplashScreen from '../SplashScreen';
-import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
+import { createBemBlock, createStyleSelector } from '../../helpers/styleCreators';
 import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import { Chip } from '../Chip';
@@ -29,13 +29,13 @@ interface Props {
 	node: EventTreeNode;
 	event: EventAction | null;
 	childrenCount?: number;
-	rootStyle?: React.CSSProperties;
+	children?: React.ReactNode;
 }
 
 function EventDetailInfoCard(props: Props) {
 	const selectedStore = useSelectedStore();
 
-	const { event, childrenCount = 0, rootStyle = {}, node } = props;
+	const { event, childrenCount = 0, node, children } = props;
 
 	if (!event) {
 		return <SplashScreen />;
@@ -46,13 +46,6 @@ function EventDetailInfoCard(props: Props) {
 	const status = getEventStatus(event);
 	const isPinned = selectedStore.pinnedEvents.findIndex(e => e.eventId === event.eventId) !== -1;
 
-	const rootClassName = createBemBlock('event-detail-card', status);
-	const pinButtonIconClassName = createBemElement(
-		'event-detail-card',
-		'pin-button-icon',
-		isPinned ? 'active' : null,
-	);
-
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
 
@@ -62,55 +55,70 @@ function EventDetailInfoCard(props: Props) {
 		selectedStore.toggleEventPin(node);
 	}
 
+	const cardClassName = createStyleSelector('event-detail-info__event-card', 'event-card', status);
+
+	const bookmarkButtonClassName = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
+
 	return (
-		<div className={rootClassName} style={rootStyle}>
-			<div className='event-detail-card__header'>
-				<div className='event-detail-card__title' title={eventType || eventName}>
-					{eventType || eventName}
+		<div className='event-detail-info'>
+			{children}
+			<div className={cardClassName}>
+				<div className='event-card__status'>
+					<div className={`event-status-icon active`}></div>
 				</div>
-				<button onClick={onEventPin} className='event-detail-card__pin-button'>
-					<i className={pinButtonIconClassName} />
-				</button>
-				<div className='event-detail-card__controls'>
-					{elapsedTime && <span className='event-detail-card__time'>{elapsedTime}</span>}
-					<span className='event-detail-card__separator' />
-					<span className='event-detail-card__status'>{status.toUpperCase()}</span>
-					{childrenCount > 0 ? <Chip text={childrenCount.toString()} /> : null}
-				</div>
-				<div className='event-detail-card__timestamp'>
-					{startTimestamp && (
-						<>
-							<div className='event-detail-card__timestamp-label'>Start</div>
-							<div className='event-detail-card__timestamp-value'>
-								{formatTime(getTimestampAsNumber(startTimestamp))}
+				<div className='event-card__info'>
+					<div className='event-card__header'>
+						<div className='event-card__title' title={eventType || eventName}>
+							{eventType || eventName}
+						</div>
+						<div className='event-card__controls'>
+							{elapsedTime && <span className='event-card__time'>{elapsedTime}</span>}
+							{childrenCount > 0 ? <Chip text={childrenCount.toString()} /> : null}
+							<span className='event-card__status-label'>{status.toUpperCase()}</span>
+						</div>
+					</div>
+					<div className='event-card__body'>
+						<div className='event-card__id'>{eventId}</div>
+						<div className='event-card__timestamp'>
+							<div className='event-card__timestamp-item'>
+								{startTimestamp && (
+									<>
+										<div className='event-card__timestamp-label'>Start</div>
+										<div className='event-card__timestamp-value'>
+											{formatTime(getTimestampAsNumber(startTimestamp))}
+										</div>
+									</>
+								)}
 							</div>
-						</>
-					)}
-					{endTimestamp && (
-						<>
-							<div className='event-detail-card__timestamp-label'>Finish</div>
-							<div className='event-detail-card__timestamp-value'>
-								{formatTime(getTimestampAsNumber(endTimestamp))}
+							<div className='event-card__timestamp-item'>
+								{endTimestamp && (
+									<>
+										<div className='event-card__timestamp-label'>Finish</div>
+										<div className='event-card__timestamp-value'>
+											{formatTime(getTimestampAsNumber(endTimestamp))}
+										</div>
+									</>
+								)}
 							</div>
-						</>
-					)}
+						</div>
+					</div>
 				</div>
-				<div className='event-detail-card__id'>{eventId}</div>
+				<div className='event-card__bookmark'>
+					<div className={bookmarkButtonClassName} onClick={onEventPin}></div>
+				</div>
 			</div>
-			<div className='event-detail-card__body'>
-				<div className='event-detail-card__body-list'>
-					{Array.isArray(body) ? (
-						body.map((bodyPayloadItem, index) => (
-							<EventBodyCard
-								key={`body-${eventId}-${index}`}
-								body={bodyPayloadItem}
-								parentEvent={event}
-							/>
-						))
-					) : (
-						<EventBodyCard key={eventId} body={body} parentEvent={event} />
-					)}
-				</div>
+			<div className='event-detail-info__list'>
+				{Array.isArray(body) ? (
+					body.map((bodyPayloadItem, index) => (
+						<EventBodyCard
+							key={`body-${eventId}-${index}`}
+							body={bodyPayloadItem}
+							parentEvent={event}
+						/>
+					))
+				) : (
+					<EventBodyCard key={eventId} body={body} parentEvent={event} />
+				)}
 			</div>
 		</div>
 	);

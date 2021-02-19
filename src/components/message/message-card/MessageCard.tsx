@@ -51,6 +51,8 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const selectedStore = useSelectedStore();
 	const workspaceStore = useWorkspaceStore();
 	const { heatmapElements } = useHeatmap();
+	const [isHighlighted, setHighlighted] = React.useState(false);
+	const highlightTimer = React.useRef<NodeJS.Timeout>();
 
 	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
@@ -58,6 +60,27 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const isSelected = Boolean(heatmapElement);
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isPinned = selectedStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
+
+	React.useEffect(() => {
+		if (!isHighlighted) {
+			if (messagesStore.highlightedMessageId === messageId) {
+				setHighlighted(true);
+
+				highlightTimer.current = setTimeout(() => {
+					setHighlighted(false);
+					messagesStore.highlightedMessageId = null;
+				}, 3000);
+			} else if (messagesStore.highlightedMessageId !== null) {
+				setHighlighted(false);
+			}
+		}
+
+		return () => {
+			if (highlightTimer.current) {
+				window.clearTimeout(highlightTimer.current);
+			}
+		};
+	}, [messagesStore.highlightedMessageId]);
 
 	const isAttached = !!workspaceStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
@@ -70,6 +93,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		isSelected ? 'selected' : null,
 		isAttached ? 'attached' : null,
 		isPinned ? 'pinned' : null,
+		isHighlighted ? 'highlighted' : null,
 	);
 
 	const showRawButtonClass = createStyleSelector(
@@ -92,10 +116,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		direction?.toLowerCase(),
 	);
 
-	const bookmarkIconClass = createStyleSelector(
-		'mc-header__icon mc-header__bookmark-button',
-		isPinned ? 'pinned' : null,
-	);
+	const bookmarkIconClass = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
 
 	return (
 		<div className='message-card-wrapper'>

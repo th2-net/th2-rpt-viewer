@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { FilterRowConfig } from '../../../models/filter/FilterInputs';
+import { FitlerRowItem } from '../../../models/filter/FilterInputs';
 import StringFilterRow from './StringRow';
 import MultipleStringFilterRow from './MultipleStringFIlterRow';
 import TimeWindow from './TimeWindow';
@@ -23,7 +23,7 @@ import DatetimeFilterRow from './DateTimeFilterRow';
 import TogglerRow from './TogglerRow';
 
 interface Props {
-	rowConfig: FilterRowConfig;
+	rowConfig: FitlerRowItem;
 }
 
 export default function FilterRow({ rowConfig }: Props) {

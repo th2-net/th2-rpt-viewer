@@ -14,12 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-const enum PanelArea {
-	P0 = 'p0',
-	P25 = 'p25',
-	P50 = 'p50',
-	P75 = 'p75',
-	P100 = 'p100',
-}
+import { useMessagesWorkspaceStore } from './useMessagesStore';
 
-export default PanelArea;
+export const useMessagesDataStore = () => {
+	const messagesStore = useMessagesWorkspaceStore();
+
+	return messagesStore.data;
+};

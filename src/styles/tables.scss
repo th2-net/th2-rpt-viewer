@@ -15,27 +15,8 @@
  ******************************************************************************/
 @import './common/vars';
 
-.ver-table {
-	@include default-table;
-	@include scrollbar;
-	width: 100%;
-	overflow: auto;
-
-	table {
-		width: fit-content;
-		grid-template-columns: minmax(130px, 250px) minmax(125px, 250px) minmax(125px, 250px) 60px 80px 50px;
-	}
-
-	&-indicator {
-		width: 14px;
-		padding: 0;
-		margin: 0;
-	}
-
-	&-flexible {
-		text-align: left;
-	}
-
+.ver-table,
+.params-table {
 	&-header {
 		display: flex;
 		flex-direction: row;
@@ -68,6 +49,28 @@
 				}
 			}
 		}
+	}
+}
+
+.ver-table {
+	@include default-table;
+	@include scrollbar;
+	width: 100%;
+	overflow: auto;
+
+	table {
+		width: fit-content;
+		grid-template-columns: minmax(130px, 250px) minmax(125px, 250px) minmax(125px, 250px) 60px 80px 50px;
+	}
+
+	&-indicator {
+		width: 14px;
+		padding: 0;
+		margin: 0;
+	}
+
+	&-flexible {
+		text-align: left;
 	}
 
 	&-row {
@@ -127,7 +130,6 @@
 
 		&-value {
 			padding-top: 5px;
-			font-size: 12px;
 
 			&.notype {
 				padding-bottom: 5px;
@@ -266,7 +268,6 @@
 		}
 
 		&-count {
-			font-size: small;
 			background-color: $tableCounterBackgroundColor;
 			color: $primaryTextColor;
 			text-align: center;
@@ -298,8 +299,8 @@
 				p::before {
 					content: '';
 					display: inline-block;
-					@include icon(url(../../resources/icons/expand-filled.svg), 14px, 12px);
-					transform: translateY(3px);
+					@include icon(url(../../resources/icons/expand.svg), 12px, 10px);
+					transform: translateY(2px);
 					margin-right: 7px;
 				}
 			}
@@ -308,8 +309,8 @@
 				p::before {
 					content: '';
 					display: inline-block;
-					@include icon(url(../../resources/icons/collapse-filled.svg), 14px, 12px);
-					transform: translateY(3px);
+					@include icon(url(../../resources/icons/collapse.svg), 12px, 10px);
+					transform: translateY(2px);
 					margin-right: 7px;
 				}
 			}
@@ -339,7 +340,6 @@
 			border-radius: 13px;
 			background-color: #e23636;
 			color: white;
-			font-size: 11px;
 			margin: auto;
 		}
 	}
@@ -417,7 +417,7 @@
 
 	td,
 	th {
-		padding: 2px 7px;
+		padding: 4px 10px;
 		text-align: left;
 	}
 
@@ -441,8 +441,8 @@
 			p::before {
 				content: '';
 				display: inline-block;
-				@include icon(url(../../resources/icons/expand.svg), 14px, 12px);
-				transform: translateY(3px);
+				@include icon(url(../../resources/icons/expand-filled.svg), 12px, 10px);
+				transform: translateY(2px);
 				margin-right: 7px;
 			}
 		}
@@ -451,8 +451,8 @@
 			p::before {
 				content: '';
 				display: inline-block;
-				@include icon(url(../../resources/icons/collapse.svg), 14px, 12px);
-				transform: translateY(3px);
+				@include icon(url(../../resources/icons/collapse-filled.svg), 12px, 10px);
+				transform: translateY(2px);
 				margin-right: 7px;
 			}
 		}
@@ -465,8 +465,6 @@
 		p {
 			margin: 0;
 			text-decoration: none;
-			font-weight: bold;
-			font-size: 10pt;
 			display: inline-block;
 		}
 
@@ -479,7 +477,7 @@
 		p {
 			margin: 0;
 			text-decoration: none;
-			font-size: 14px;
+			font-size: 12px;
 		}
 	}
 }

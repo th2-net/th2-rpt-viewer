@@ -182,14 +182,12 @@
 	}
 
 	&__name-element {
+		@include ellipsis();
 		padding: 0 8px;
 		cursor: pointer;
 		border-left: 2px solid var(--status-hover-border-color);
 		transition: 0.2s;
 		color: var(--status-primary-color);
-		white-space: nowrap;
-		text-overflow: ellipsis;
-		overflow: hidden;
 
 		&:hover {
 			background-color: var(--status-secondary-header-background-color);
@@ -324,7 +322,7 @@
 
 	&__item-title {
 		font-weight: bold;
-		font-size: 18px;
+		font-size: 13px;
 
 		&:hover {
 			@include unselectable;

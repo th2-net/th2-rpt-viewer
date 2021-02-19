@@ -17,12 +17,12 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import ResizeObserver from 'resize-observer-polyfill';
-import SkeletonedMessageCardListItem from './SkeletonedMessageCardListItem';
+import MessageCard from '../message-card/MessageCard';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
 import SplashScreen from '../../SplashScreen';
 import MessagesScrollContainer from './MessagesScrollContainer';
 import Empty from '../../util/Empty';
-import { useMessagesWorkspaceStore } from '../../../hooks';
+import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../../hooks';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import '../../../styles/messages.scss';
 
@@ -30,6 +30,7 @@ export type MessagesHeights = { [index: number]: number };
 
 function MessageCardList() {
 	const messagesStore = useMessagesWorkspaceStore();
+	const messagesDataStore = useMessagesDataStore();
 
 	const [messagesHeightsMap, setMessagesHeightMap] = React.useState<MessagesHeights>({});
 
@@ -52,35 +53,29 @@ function MessageCardList() {
 		}),
 	);
 
-	const renderMessage = (index: number) => {
-		const id = messagesStore.messagesIds[index];
-
+	const renderMsg = (index: number) => {
 		return (
 			<MessageWrapper
 				index={index}
 				onMount={ref => resizeObserver.current.observe(ref.current as HTMLDivElement)}
 				onUnmount={ref => resizeObserver.current.unobserve(ref.current as HTMLDivElement)}>
-				<SkeletonedMessageCardListItem id={id} />
+				<MessageCard message={messagesDataStore.messages[index]} />
 			</MessageWrapper>
 		);
 	};
 
-	if (messagesStore.messagesLoadingState.loadingRootItems) {
+	if (messagesDataStore.messages.length === 0 && messagesDataStore.isLoading) {
 		return <SplashScreen />;
 	}
 
-	if (
-		!Object.values(messagesStore.messagesLoadingState).some(Boolean) &&
-		messagesStore.messagesIds.length === 0
-	) {
-		if (messagesStore.messagesListErrorStatusCode === null) {
+	if (messagesDataStore.isError) {
+		return <Empty description='Error occured while loading messages' />;
+	}
+
+	if (!messagesDataStore.isLoading && messagesDataStore.messages.length === 0) {
+		if (messagesDataStore.isError === null) {
 			return <Empty description='No messages' />;
 		}
-		return (
-			<Empty
-				description={`Server responded with ${messagesStore.messagesListErrorStatusCode} code`}
-			/>
-		);
 	}
 
 	return (
@@ -88,15 +83,15 @@ function MessageCardList() {
 			<MessagesHeightsContext.Provider value={messagesHeightsMap}>
 				<StateSaverProvider>
 					<MessagesVirtualizedList
-						loadingState={messagesStore.messagesLoadingState}
+						loadingState={messagesDataStore.messagesLoadingState}
 						className='messages-list__items'
-						rowCount={messagesStore.messagesIds.length}
+						rowCount={messagesDataStore.messages.length}
 						scrolledIndex={messagesStore.scrolledIndex}
-						itemRenderer={renderMessage}
+						itemRenderer={renderMsg}
 						overscan={0}
 						ScrollContainer={MessagesScrollContainer}
-						loadNextMessages={() => messagesStore.loadNextMessages()}
-						loadPrevMessages={() => messagesStore.loadPreviousMessages()}
+						loadNextMessages={messagesDataStore.getNextMessages}
+						loadPrevMessages={messagesDataStore.getPreviousMessages}
 					/>
 				</StateSaverProvider>
 			</MessagesHeightsContext.Provider>

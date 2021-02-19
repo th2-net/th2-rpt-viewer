@@ -247,6 +247,14 @@
 			}
 		}
 	}
+
+	&__compound {
+		display: flex;
+
+		&>div:last-child {
+			width: 100%;
+		}
+	}
 }
 
 .filter-controls {
@@ -306,13 +314,6 @@
 	display: flex;
 	align-items: center;
 	margin-bottom: 5px;
-
-	.filter-row {
-		width: 100%;
-	}
-	.toggler-wrapper {
-		width: fit-content;
-	}
 
 	&:hover &__divider-text {
 		display: none;
@@ -381,6 +382,16 @@
 			width: 50px;
 			text-align: center;
 			margin-left: 0px;
+		}
+	}
+
+	&__toggler {
+		cursor: pointer;
+		border: none;
+		background-color: $filterPickerControlFontColor;
+
+		&::before {
+			background-color: $filterSecondaryColor;
 		}
 	}
 

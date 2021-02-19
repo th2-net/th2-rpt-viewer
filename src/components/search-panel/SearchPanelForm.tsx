@@ -18,7 +18,7 @@ import React, { useState } from 'react';
 import {
 	DateTimeInputType,
 	DateTimeMask,
-	FilterRowConfig,
+	FitlerRowItem,
 	TimeInputType,
 } from '../../models/filter/FilterInputs';
 import FilterRow from '../filter/row';
@@ -35,10 +35,11 @@ interface Props {
 	form: SearchPanelFormState;
 	updateForm: (patch: Partial<SearchPanelFormState>) => void;
 	disabled: boolean;
+	streams: string[] | null;
 }
 
 const SearchPanelForm = (props: Props) => {
-	const { disabled, updateForm, form, formType } = props;
+	const { disabled, updateForm, form, formType, streams } = props;
 
 	const [currentStream, setCurrentStream] = useState('');
 
@@ -60,7 +61,7 @@ const SearchPanelForm = (props: Props) => {
 		}
 	}
 
-	const commonFormConfig: FilterRowConfig[] = [
+	const commonFormConfig: FitlerRowItem[] = [
 		{
 			label: 'Result Count Limit',
 			value: !form.resultCountLimit ? '' : form.resultCountLimit.toString(),
@@ -80,7 +81,7 @@ const SearchPanelForm = (props: Props) => {
 		},
 	];
 
-	const eventsFormTypeConfig: FilterRowConfig = {
+	const eventsFormTypeConfig: FitlerRowItem = {
 		label: 'Parent Event',
 		value: form.parentEvent,
 		disabled,
@@ -89,19 +90,19 @@ const SearchPanelForm = (props: Props) => {
 		id: 'parent-event',
 	};
 
-	const messagesFormTypeConfig: FilterRowConfig = {
+	const messagesFormTypeConfig: FitlerRowItem = {
 		type: 'multiple-strings',
 		id: 'stream',
-		label: 'Stream',
+		label: 'Session',
 		values: form.stream,
 		disabled,
 		setValues: getFormStateUpdater('stream'),
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
-		autocompleteList: null,
+		autocompleteList: streams,
 	};
 
-	const config: FilterRowConfig[] =
+	const config: FitlerRowItem[] =
 		formType === 'event'
 			? [...commonFormConfig, eventsFormTypeConfig]
 			: [...commonFormConfig, messagesFormTypeConfig];

@@ -30,10 +30,10 @@ import { getDefaultFilterState } from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import localStorageWorker from '../util/LocalStorageWorker';
-import WorkspacesStore from './workspace/WorkspacesStore';
+import notificationsStore from './NotificationsStore';
 
 export type SearchPanelFormState = {
-	startTimestamp: number;
+	startTimestamp: number | null;
 	endTimestamp: number | null;
 	resultCountLimit: number;
 	searchDirection: 'next' | 'previous';
@@ -65,9 +65,10 @@ export type SearchHistoryState<T> = {
 };
 
 export class SearchStore {
-	constructor(private workspacesStore: WorkspacesStore, private api: ApiSchema) {
+	constructor(private api: ApiSchema) {
 		this.getEventFilters();
 		this.getMessagesFilters();
+		this.loadMessageSessions();
 
 		autorun(() => {
 			this.currentSearch = this.searchHistory[this.currentIndex] || null;
@@ -89,6 +90,8 @@ export class SearchStore {
 		);
 	}
 
+	@observable messageSessions: Array<string> = [];
+
 	@observable searchChannel: EventSource | null = null;
 
 	@observable eventsFilter: EventFilterState | null = null;
@@ -96,7 +99,7 @@ export class SearchStore {
 	@observable messagesFilter: MessageFilterState | null = null;
 
 	@observable searchForm: SearchPanelFormState = {
-		startTimestamp: this.workspacesStore.activeWorkspace.graphDataStore.range[0],
+		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
 		searchDirection: 'next',
 		resultCountLimit: 50,
 		endTimestamp: null,
@@ -122,7 +125,9 @@ export class SearchStore {
 		return {
 			startTimestamp: this.searchForm.startTimestamp,
 			endTimestamp: this.searchForm.endTimestamp,
-			currentPoint: lastItemTimestamp ? lastItemTimestamp - this.searchForm.startTimestamp : 0,
+			currentPoint: lastItemTimestamp
+				? lastItemTimestamp - Number(this.searchForm.startTimestamp)
+				: 0,
 			searching: Boolean(this.searchChannel),
 		};
 	}
@@ -253,13 +258,12 @@ export class SearchStore {
 	};
 
 	@action startSearch = () => {
-		if (this.searchChannel) return;
-
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
+		if (this.searchChannel || !filterParams) return;
 
 		this.newSearch({
 			timestamp: moment().utc().valueOf(),
-			request: { type: this.formType, state: this.searchForm, filters: filterParams! },
+			request: { type: this.formType, state: this.searchForm, filters: filterParams },
 			results: [],
 		});
 
@@ -307,16 +311,29 @@ export class SearchStore {
 
 		this.searchChannel.addEventListener(this.formType, this.onChannelResponse);
 		this.searchChannel.addEventListener('close', this.stopSearch);
-		this.searchChannel.addEventListener('error', this.stopSearch);
+		this.searchChannel.addEventListener('error', this.onError);
 	};
 
 	@action
 	stopSearch = () => {
 		if (!this.searchChannel) return;
-		this.searchChannel?.close();
+		this.searchChannel.close();
 		this.searchChannel = null;
 
 		localStorageWorker.saveSearchHistory(this.searchHistory);
+	};
+
+	onError = (ev: Event) => {
+		const data = (ev as MessageEvent).data;
+		notificationsStore.addResponseError({
+			type: 'error',
+			header: JSON.parse(data).exceptionName,
+			resource: (ev.target as EventSource).url,
+			responseBody: JSON.parse(data).exceptionCause,
+			responseCode: null,
+		});
+
+		this.stopSearch();
 	};
 
 	private onChannelResponse = (ev: Event) => {
@@ -325,4 +342,16 @@ export class SearchStore {
 			this.currentSearch.results = [...this.currentSearch.results, JSON.parse(data)];
 		}
 	};
+
+	@action
+	private async loadMessageSessions() {
+		try {
+			const messageSessions = await this.api.messages.getMessageSessions();
+			runInAction(() => {
+				this.messageSessions = messageSessions;
+			});
+		} catch (error) {
+			console.error("Couldn't fetch sessions");
+		}
+	}
 }

@@ -25,6 +25,7 @@ import { useWorkspaceEventStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
 import { EventTreeNode } from '../../../models/EventAction';
 import '../../../styles/action.scss';
+import { getTimestampAsNumber } from '../../../helpers/date';
 
 interface Props {
 	nodes: EventTreeNode[];
@@ -49,10 +50,67 @@ function EventTreeList({ nodes }: Props) {
 		}
 	}, [eventWindowStore.scrolledIndex]);
 
+	const getTimestamps = (eventNodes: EventTreeNode[], selectedPath: EventTreeNode[]) => {
+		if (!eventNodes.length || !selectedPath.length) return null;
+
+		const selectedRootEventId = selectedPath[0].eventId;
+		const rootEventIndex = eventNodes.findIndex(e => e.eventId === selectedRootEventId);
+
+		const timestamps = {
+			startEventId: selectedRootEventId,
+			startTimestamp: getTimestampAsNumber(eventNodes[rootEventIndex].startTimestamp),
+			endEventId: selectedRootEventId,
+			endTimestamp: getTimestampAsNumber(eventNodes[rootEventIndex].startTimestamp),
+		};
+
+		if (
+			eventNodes[rootEventIndex].childList.length &&
+			eventNodes[rootEventIndex + 1] &&
+			eventNodes[rootEventIndex + 1].parentId === selectedRootEventId
+		) {
+			timestamps.startTimestamp = getTimestampAsNumber(
+				eventNodes[rootEventIndex + 1].startTimestamp,
+			);
+			timestamps.endTimestamp = timestamps.startTimestamp;
+
+			for (
+				let i = rootEventIndex + 1;
+				eventNodes[i] && eventNodes[i].parents![0] === selectedRootEventId;
+				i++
+			) {
+				timestamps.endEventId = eventNodes[i].eventId;
+
+				if (eventNodes[i].parents?.length === 1) {
+					const eventTimestamp = getTimestampAsNumber(eventNodes[i].startTimestamp);
+
+					if (eventTimestamp < timestamps.startTimestamp) {
+						timestamps.startTimestamp = eventTimestamp;
+					}
+
+					if (eventTimestamp > timestamps.endTimestamp) {
+						timestamps.endTimestamp = eventTimestamp;
+					}
+				}
+			}
+		}
+
+		return timestamps;
+	};
+
+	const timestamps = getTimestamps(nodes, eventWindowStore.selectedPath);
+
 	const computeKey = (index: number) => nodes[index].eventId;
 
 	const renderEvent = (index: number): React.ReactElement => (
-		<EventTree eventTreeNode={nodes[index]} />
+		<EventTree
+			eventTreeNode={nodes[index]}
+			startTimestamp={
+				timestamps?.startEventId === nodes[index].eventId ? timestamps.startTimestamp : undefined
+			}
+			endTimestamp={
+				timestamps?.endEventId === nodes[index].eventId ? timestamps.endTimestamp : undefined
+			}
+		/>
 	);
 
 	if (eventWindowStore.isLoadingRootEvents) {

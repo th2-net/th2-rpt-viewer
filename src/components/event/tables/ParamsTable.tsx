@@ -81,6 +81,20 @@ class ParamsTableBase extends React.Component<Props, State> {
 		};
 	}
 
+	setExpandStatus(isCollapsed: boolean) {
+		this.setState({
+			nodes: this.state.nodes.map(node => this.setNodeExpandStatus(node, isCollapsed)),
+		});
+	}
+
+	setNodeExpandStatus(node: ParamsTableRow, isExpanded: boolean): ParamsTableRow {
+		return {
+			...node,
+			isExpanded,
+			subRows: node.subRows.map(subNode => this.setNodeExpandStatus(subNode, isExpanded)),
+		};
+	}
+
 	updateExpandPath(
 		[currentIndex, ...expandPath]: number[],
 		prevState: ParamsTableRow[],
@@ -115,6 +129,21 @@ class ParamsTableBase extends React.Component<Props, State> {
 	render() {
 		return (
 			<div className='params-table'>
+				<div className='params-table-header'>
+					<div className='params-table-header-control'>
+						<span
+							className='params-table-header-control-button'
+							onClick={this.onControlButtonClick(false)}>
+							Collapse
+						</span>
+						<span> | </span>
+						<span
+							className='params-table-header-control-button'
+							onClick={this.onControlButtonClick(true)}>
+							Expand
+						</span>
+					</div>
+				</div>
 				<table
 					style={{
 						gridTemplateColumns: `repeat(${this.props.columns.length + 1}, minmax(150px, 250px))`,
@@ -209,6 +238,11 @@ class ParamsTableBase extends React.Component<Props, State> {
 			nodes: this.state.nodes.map(node => this.findNode(node, targetNode)),
 		});
 
+		e.stopPropagation();
+	};
+
+	private onControlButtonClick = (expandStatus: boolean) => (e: React.MouseEvent) => {
+		this.setExpandStatus(expandStatus);
 		e.stopPropagation();
 	};
 }

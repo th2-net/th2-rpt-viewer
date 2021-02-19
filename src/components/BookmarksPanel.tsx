@@ -90,7 +90,7 @@ const BookmarkItemBase = ({ item, onRemove, onClick }: BookmarkItemProps) => {
 		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
 		title: isEventMessage(item) ? item.messageId : item.eventName,
 		timestamp: getTimestampAsNumber(isEventMessage(item) ? item.timestamp : item.startTimestamp),
-		type: isEventMessage(item) ? 'message' : item.type,
+		type: item.type,
 	};
 
 	function onBookmarkRemove(event: React.MouseEvent<HTMLButtonElement>) {
