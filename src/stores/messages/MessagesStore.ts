@@ -16,7 +16,7 @@
 
 import { action, computed, observable, toJS, reaction, IReactionDisposer } from 'mobx';
 import moment from 'moment';
-import { ListRange } from 'react-virtuoso/dist/engines/scrollSeekEngine';
+import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
 import FilterStore from '../FilterStore';
 import { EventMessage } from '../../models/EventMessage';

@@ -15,33 +15,23 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { TScrollContainer } from 'react-virtuoso';
-import { useDebouncedCallback, useHeatmap, useMessagesDataStore } from '../../../hooks';
-import { InfiniteLoaderContext } from './MessagesVirtualizedList';
+import { ScrollerProps } from 'react-virtuoso';
+import { useDebouncedCallback, useHeatmap, useCombinedRefs } from '../../../hooks';
 import { MessagesHeightsContext, MessagesHeights } from './MessagesCardList';
 
-const MessagesScrollContainer: TScrollContainer = ({
-	className,
-	style,
-	reportScrollTop,
-	scrollTo,
-	children,
-}) => {
-	const messagesDataStore = useMessagesDataStore();
+const MessagesScrollContainer = React.forwardRef<HTMLDivElement, ScrollerProps>((props, ref) => {
+	const { children, style } = props;
 
 	const { setVisibleRange, visibleRange } = useHeatmap();
 
-	const scrollContainer = React.useRef<HTMLDivElement>(null);
+	const scrollContainer: React.RefObject<HTMLDivElement> = React.useRef(null);
+	const combinedRef = useCombinedRefs<HTMLDivElement>(
+		ref as React.MutableRefObject<HTMLDivElement>,
+		scrollContainer as React.MutableRefObject<HTMLDivElement>,
+	);
+
 	const messagesHeights = React.useContext(MessagesHeightsContext);
 	const prevHeights = React.useRef<MessagesHeights>({});
-	const scrollProgress = React.useRef<number>(0);
-
-	const {
-		startReached,
-		endReached,
-		isLoadingNextMessages,
-		isLoadingPreviousMessages,
-	} = React.useContext(InfiniteLoaderContext);
 
 	React.useEffect(() => {
 		if (!visibleRange) {
@@ -91,34 +81,8 @@ const MessagesScrollContainer: TScrollContainer = ({
 		}
 	}, 5);
 
-	scrollTo((scrollTop: ScrollToOptions) => {
-		scrollContainer.current?.scrollTo(scrollTop);
-	});
-
-	const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
-		reportScrollTop(e.currentTarget.scrollTop);
+	const onScroll = () => {
 		getVisibleRange();
-
-		if (
-			!isLoadingNextMessages &&
-			e.currentTarget.scrollTop - scrollProgress.current < 0 &&
-			visibleRange &&
-			visibleRange.startIndex < 12 &&
-			!messagesDataStore.isBeginReached
-		) {
-			startReached();
-		}
-
-		if (
-			!isLoadingPreviousMessages &&
-			e.currentTarget.scrollTop - scrollProgress.current > 0 &&
-			visibleRange &&
-			visibleRange.endIndex > messagesDataStore.messages.length - 12 &&
-			!messagesDataStore.isEndReached
-		) {
-			endReached();
-		}
-		scrollProgress.current = e.currentTarget.scrollTop;
 	};
 
 	return (
@@ -132,23 +96,21 @@ const MessagesScrollContainer: TScrollContainer = ({
 					marginRight: '11px',
 					flexGrow: 1,
 				}}>
-				{isLoadingNextMessages && <div className='messages-list__spinner' />}
 				<div
-					ref={scrollContainer}
+					className='messages-list__items'
+					ref={combinedRef}
 					onScroll={onScroll}
 					style={{
 						...style,
 						flexGrow: 1,
 						position: 'relative',
 					}}
-					tabIndex={0}
-					className={className}>
+					tabIndex={0}>
 					{children}
 				</div>
-				{isLoadingPreviousMessages && <div className='messages-list__spinner' />}
 			</div>
 		</div>
 	);
-};
+});
 
 export default MessagesScrollContainer;

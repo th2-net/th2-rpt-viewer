@@ -68,7 +68,7 @@ function BookmarksPanel() {
 			<Virtuoso
 				className='bookmarks-panel__list'
 				totalCount={selectedStore.savedItems.length}
-				item={renderBookmarkItem}
+				itemContent={renderBookmarkItem}
 				computeItemKey={computeKey}
 				style={{ height: '100%' }}
 			/>

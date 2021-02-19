@@ -17,6 +17,7 @@
 export * from './useActivePanel';
 export * from './useActiveWorkspace';
 export * from './useAsyncEffect';
+export * from './useCombinedRefs';
 export * from './useGraphDataStore';
 export * from './useDebouncedCallback';
 export * from './useEventWindowStore';
