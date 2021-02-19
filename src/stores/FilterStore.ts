@@ -75,7 +75,7 @@ export default class FilterStore {
 	@observable eventsFilter: EventsFilter = getDefaultEventFilter();
 
 	@computed
-	public get sseConfig(): EventSourceConfig {
+	public get messsagesSSEConfig(): EventSourceConfig {
 		const sseFilters = this.sseMessagesFilter;
 
 		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
@@ -130,7 +130,7 @@ export default class FilterStore {
 						this.sseMessagesFilter.body.values,
 						this.sseMessagesFilter.type.values,
 				  ].flat()
-				: [].flat(),
+				: [],
 		].some(filter => filter.length > 0);
 	}
 

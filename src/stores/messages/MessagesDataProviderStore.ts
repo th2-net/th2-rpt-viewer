@@ -68,7 +68,7 @@ export default class MessagesDataProviderStore {
 		this.stopMessagesLoading();
 
 		const prevQuery = {
-			...this.messagesStore.filterStore.sseConfig.queryParams,
+			...this.messagesStore.filterStore.messsagesSSEConfig.queryParams,
 		} as MessagesSSEParams;
 
 		const nextQuery = {
@@ -112,7 +112,7 @@ export default class MessagesDataProviderStore {
 	startPreviousMessagesChannel = (query: MessagesSSEParams) => {
 		this.searchChannelPrev = new SSEChannel(
 			this.messagesStore,
-			this.messagesStore.filterStore.sseConfig.type,
+			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onPrevChannelResponse,
 			this.onPrevChannelClose,
@@ -129,7 +129,7 @@ export default class MessagesDataProviderStore {
 		// this.searchChannelPrev = null;
 	};
 
-	onPrevChannelError = () => {
+	onPrevChannelError = (ev: Event) => {
 		this.searchChannelPrev?.stop();
 		this.searchChannelPrev = null;
 		this.isError = true;
@@ -139,7 +139,7 @@ export default class MessagesDataProviderStore {
 	startNextMessagesChannel = (query: MessagesSSEParams) => {
 		this.searchChannelNext = new SSEChannel(
 			this.messagesStore,
-			this.messagesStore.filterStore.sseConfig.type,
+			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onNextChannelResponse,
 			this.onNextChannelClose,
@@ -159,7 +159,7 @@ export default class MessagesDataProviderStore {
 		// this.searchChannelNext = null;
 	};
 
-	onNextChannelError = () => {
+	onNextChannelError = (ev: Event) => {
 		this.searchChannelNext?.stop();
 		this.searchChannelNext = null;
 		this.isError = true;

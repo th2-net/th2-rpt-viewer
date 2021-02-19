@@ -30,7 +30,7 @@ export class SSEChannel {
 
 	private chunkSize = 12;
 
-	private updateTimeout = 2500;
+	private updateTimeout = 3500;
 
 	@observable
 	public isError = false;
@@ -61,9 +61,7 @@ export class SSEChannel {
 		this.isError = true;
 		this.isLoading = false;
 		this.channel?.close();
-		if (event instanceof MessageEvent) {
-			this.onError(event);
-		}
+		this.onError(event);
 	};
 
 	private onSSEResponse = (ev: Event) => {
