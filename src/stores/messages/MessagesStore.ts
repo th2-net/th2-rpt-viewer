@@ -53,6 +53,9 @@ export default class MessagesStore {
 	public scrolledIndex: Number | null = null;
 
 	@observable
+	public highlightedMessageId: String | null = null;
+
+	@observable
 	public detailedRawMessagesIds: Array<string> = [];
 
 	@observable
@@ -175,6 +178,7 @@ export default class MessagesStore {
 			streams: [savedMessage.sessionId],
 		});
 		this.selectedMessageId = new String(savedMessage.messageId);
+		this.highlightedMessageId = savedMessage.messageId;
 	};
 
 	@action

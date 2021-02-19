@@ -62,6 +62,22 @@
 	padding: 10px;
 	border-radius: 5px;
 
+	&.highlighted {
+		@keyframes highlight {
+			from {
+				background: rgba($highlightedMessageCardBackground, 1);
+			}
+
+			50% {
+				background: rgba($highlightedMessageCardBackground, 0);
+			}
+			to {
+				background: rgba($highlightedMessageCardBackground, 1);
+			}
+		}
+		animation: highlight 1s infinite ease-in-out;
+	}
+
 	&.attached {
 		border: 2px solid $attachedMessageCardBorderColor;
 
