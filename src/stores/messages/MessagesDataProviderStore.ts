@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, reaction, observable, computed } from 'mobx';
+import { action, reaction, observable, computed, runInAction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams } from '../../api/sse';
 import { EventMessage } from '../../models/EventMessage';
@@ -47,6 +47,12 @@ export default class MessagesDataProviderStore {
 
 	@observable
 	searchChannelNext: SSEChannel | null = null;
+
+	@observable
+	startIndex = 10000;
+
+	@observable
+	initialItemCount = 0;
 
 	@computed
 	public get isLoadingNextMessages() {
@@ -91,7 +97,10 @@ export default class MessagesDataProviderStore {
 				nextMessages.pop();
 			}
 
-			this.messages = [...nextMessages, ...prevMessages];
+			runInAction(() => {
+				this.messages = [...nextMessages, ...prevMessages];
+				this.initialItemCount = this.messages.length;
+			});
 
 			if (this.messagesStore.selectedMessageId) {
 				this.messagesStore.scrollToMessage(this.messagesStore.selectedMessageId?.valueOf());
@@ -120,6 +129,7 @@ export default class MessagesDataProviderStore {
 		);
 	};
 
+	@action
 	onPrevChannelResponse = (messages: EventMessage[]) => {
 		this.messages = [...this.messages, ...messages];
 	};
@@ -129,6 +139,7 @@ export default class MessagesDataProviderStore {
 		// this.searchChannelPrev = null;
 	};
 
+	@action
 	onPrevChannelError = (ev: Event) => {
 		this.searchChannelPrev?.stop();
 		this.searchChannelPrev = null;
@@ -147,11 +158,13 @@ export default class MessagesDataProviderStore {
 		);
 	};
 
+	@action
 	onNextChannelResponse = (messages: EventMessage[]) => {
-		const messagesToAppend = messages.filter(
+		const messagesToPrepend = messages.filter(
 			m => this.messages.findIndex(topMsg => topMsg.messageId === m.messageId) === -1,
 		);
-		this.messages = [...messagesToAppend, ...this.messages];
+		this.startIndex -= messagesToPrepend.length;
+		this.messages = [...messagesToPrepend, ...this.messages];
 	};
 
 	onNextChannelClose = () => {
@@ -159,6 +172,7 @@ export default class MessagesDataProviderStore {
 		// this.searchChannelNext = null;
 	};
 
+	@action
 	onNextChannelError = (ev: Event) => {
 		this.searchChannelNext?.stop();
 		this.searchChannelNext = null;
@@ -195,6 +209,8 @@ export default class MessagesDataProviderStore {
 
 	@action
 	private resetMessagesDataState = () => {
+		this.initialItemCount = 0;
+		this.startIndex = 10000;
 		this.messages = [];
 		this.isBeginReached = false;
 		this.isEndReached = false;

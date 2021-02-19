@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer, Observer } from 'mobx-react-lite';
-import { Virtuoso, VirtuosoMethods } from 'react-virtuoso';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import EventCardHeader from '../EventCardHeader';
 import Empty from '../../util/Empty';
 import SplashScreen from '../../SplashScreen';
@@ -34,7 +34,7 @@ interface Props {
 
 function FlatEventList({ nodes }: Props) {
 	const eventWindowStore = useWorkspaceEventStore();
-	const listRef = React.useRef<VirtuosoMethods | null>(null);
+	const listRef = React.useRef<VirtuosoHandle | null>(null);
 
 	React.useEffect(() => {
 		try {
@@ -101,7 +101,7 @@ function FlatEventList({ nodes }: Props) {
 					totalCount={nodes.length}
 					computeItemKey={computeKey}
 					overscan={3}
-					item={renderEvent}
+					itemContent={renderEvent}
 					style={{ height: '100%' }}
 				/>
 			</StateSaverProvider>

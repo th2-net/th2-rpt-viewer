@@ -20,10 +20,10 @@ import ResizeObserver from 'resize-observer-polyfill';
 import MessageCard from '../message-card/MessageCard';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
 import SplashScreen from '../../SplashScreen';
-import MessagesScrollContainer from './MessagesScrollContainer';
 import Empty from '../../util/Empty';
 import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../../hooks';
 import StateSaverProvider from '../../util/StateSaverProvider';
+import { EventMessage } from '../../../models/EventMessage';
 import '../../../styles/messages.scss';
 
 export type MessagesHeights = { [index: number]: number };
@@ -53,13 +53,13 @@ function MessageCardList() {
 		}),
 	);
 
-	const renderMsg = (index: number) => {
+	const renderMsg = (index: number, message: EventMessage) => {
 		return (
 			<MessageWrapper
 				index={index}
 				onMount={ref => resizeObserver.current.observe(ref.current as HTMLDivElement)}
 				onUnmount={ref => resizeObserver.current.unobserve(ref.current as HTMLDivElement)}>
-				<MessageCard message={messagesDataStore.messages[index]} />
+				<MessageCard message={message} />
 			</MessageWrapper>
 		);
 	};
@@ -89,14 +89,11 @@ function MessageCardList() {
 			<MessagesHeightsContext.Provider value={messagesHeightsMap}>
 				<StateSaverProvider>
 					<MessagesVirtualizedList
-						isLoadingNextMessages={messagesDataStore.isLoadingNextMessages}
-						isLoadingPreviousMessages={messagesDataStore.isLoadingPreviousMessages}
 						className='messages-list__items'
 						rowCount={messagesDataStore.messages.length}
 						scrolledIndex={messagesStore.scrolledIndex}
 						itemRenderer={renderMsg}
 						overscan={0}
-						ScrollContainer={MessagesScrollContainer}
 						loadNextMessages={messagesDataStore.getNextMessages}
 						loadPrevMessages={messagesDataStore.getPreviousMessages}
 					/>

@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../../hooks';
 import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
@@ -24,7 +24,7 @@ import { raf } from '../../../helpers/raf';
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
 	rowCount: number;
-	itemRenderer: (index: number) => React.ReactElement;
+	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
 	/*
 		Number objects is used here because in some cases (eg one message / action was 
 		selected several times by different entities)
@@ -34,31 +34,24 @@ interface Props {
 	*/
 	scrolledIndex: Number | null;
 	className?: string;
-	ScrollContainer?: TScrollContainer;
 	overscan?: number;
 	loadNextMessages: () => Promise<EventMessage[]>;
 	loadPrevMessages: () => Promise<EventMessage[]>;
-	isLoadingNextMessages: boolean;
-	isLoadingPreviousMessages: boolean;
 }
 
 const MessagesVirtualizedList = (props: Props) => {
 	const messageStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 
-	const virtuoso = React.useRef<VirtuosoMethods>(null);
+	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
 	const {
 		rowCount,
-		computeItemKey,
 		className,
-		ScrollContainer,
 		overscan = 3,
 		itemRenderer,
 		loadPrevMessages,
 		loadNextMessages,
-		isLoadingNextMessages,
-		isLoadingPreviousMessages,
 		scrolledIndex,
 	} = props;
 
@@ -98,61 +91,59 @@ const MessagesVirtualizedList = (props: Props) => {
 		}
 	}, [scrolledIndex]);
 
-	const startReached = () => {
+	const startReached = React.useCallback(() => {
 		return loadNextMessages().then(messages => {
 			if (messages.length > 0) {
 				messageStore.data.onNextChannelResponse(messages);
-				setTimeout(() => {
-					virtuoso.current?.adjustForPrependedItems(messages.length - 1);
-				}, 50);
 			}
 			return messages;
 		});
-	};
+	}, [loadNextMessages, messageStore.data.onNextChannelResponse]);
 
-	const endReached = () => {
+	const endReached = React.useCallback(() => {
 		return loadPrevMessages().then(messages => {
 			if (messages.length > 0) {
 				messageStore.data.onPrevChannelResponse(messages);
 			}
 			return messages;
 		});
-	};
-
+	}, [loadPrevMessages, messageStore.data.onPrevChannelResponse]);
 	return (
-		<InfiniteLoaderContext.Provider
-			value={{
-				startReached,
-				endReached,
-				isLoadingNextMessages,
-				isLoadingPreviousMessages,
-			}}>
-			<Virtuoso
-				totalCount={rowCount}
-				ref={virtuoso}
-				overscan={overscan}
-				computeItemKey={computeItemKey}
-				item={itemRenderer}
-				style={{ height: '100%', width: '100%' }}
-				className={className}
-				ScrollContainer={ScrollContainer}
-				rangeChanged={range => {
-					messageStore.currentMessagesIndexesRange = range;
-				}}
-			/>
-		</InfiniteLoaderContext.Provider>
+		<Virtuoso
+			startReached={startReached}
+			endReached={endReached}
+			data={messagesDataStore.messages}
+			firstItemIndex={messagesDataStore.startIndex}
+			initialTopMostItemIndex={messagesDataStore.initialItemCount - 1}
+			ref={virtuoso}
+			overscan={overscan}
+			itemContent={itemRenderer}
+			style={{ height: '100%', width: '100%' }}
+			className={className}
+			itemsRendered={messages => {
+				messageStore.currentMessagesIndexesRange = {
+					startIndex: (messages.length && messages[0].originalIndex) ?? 0,
+					endIndex: (messages.length && messages[messages.length - 1].originalIndex) ?? 0,
+				};
+			}}
+			components={{
+				// eslint-disable-next-line react/display-name
+				Header: () => <MessagesListSpinner isLoading={messagesDataStore.isLoadingNextMessages} />,
+				// eslint-disable-next-line react/display-name
+				Footer: () => (
+					<MessagesListSpinner isLoading={messagesDataStore.isLoadingPreviousMessages} />
+				),
+			}}
+		/>
 	);
 };
 
-interface InfiniteScrollContextValue {
-	startReached: () => Promise<EventMessage[]>;
-	endReached: () => Promise<EventMessage[]>;
-	isLoadingNextMessages: boolean;
-	isLoadingPreviousMessages: boolean;
-}
-
-export const InfiniteLoaderContext = React.createContext<InfiniteScrollContextValue>(
-	{} as InfiniteScrollContextValue,
-);
-
 export default observer(MessagesVirtualizedList);
+
+interface SpinnerProps {
+	isLoading: boolean;
+}
+const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
+	if (!isLoading) return null;
+	return <div className='messages-list__spinner' />;
+};
