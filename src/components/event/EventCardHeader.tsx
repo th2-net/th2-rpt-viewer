@@ -24,7 +24,7 @@ import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
 import SearchableContent from '../search/SearchableContent';
-import { useSelectedStore, useWorkspaceEventStore } from '../../hooks';
+import { useDebouncedCallback, useSelectedStore, useWorkspaceEventStore } from '../../hooks';
 
 interface Props {
 	displayType?: CardDisplayType;
@@ -83,17 +83,21 @@ function EventCardHeader({
 		e.stopPropagation();
 	};
 
+	const hoverEvent = useDebouncedCallback(() => {
+		eventStore.setHoveredEvent(event);
+	}, 100);
+
+	const unhoverEvent = () => {
+		eventStore.setHoveredEvent(null);
+	};
+
 	return (
 		<div
 			className={rootClassName}
 			onClick={onSelect}
 			style={rootStyle}
-			onMouseEnter={() => {
-				eventStore.setHoveredEvent(event);
-			}}
-			onMouseLeave={() => {
-				eventStore.setHoveredEvent(null);
-			}}>
+			onMouseEnter={hoverEvent}
+			onMouseLeave={unhoverEvent}>
 			<div className={iconClassName} />
 			{isFlatView && parentsCount > 0 ? <Chip text={parentsCount.toString()} /> : null}
 			{displayType !== CardDisplayType.STATUS_ONLY ? (

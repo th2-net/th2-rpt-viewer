@@ -32,12 +32,12 @@ type GroupItemType =
 	| EventStatus.PASSED;
 
 const listIconsPriority: { [key in GroupItemType]: number } = {
-	[GraphItemType.ATTACHED_MESSAGE]: 4,
-	[GraphItemType.PINNED_MESSAGE]: 3,
-	[GraphItemType.HOVERED_EVENT]: 1,
-	[GraphItemType.HOVERED_MESSAGE]: 1,
-	[EventStatus.FAILED]: 2,
-	[EventStatus.PASSED]: 2,
+	[GraphItemType.HOVERED_MESSAGE]: 4,
+	[GraphItemType.HOVERED_EVENT]: 4,
+	[GraphItemType.ATTACHED_MESSAGE]: 3,
+	[GraphItemType.PINNED_MESSAGE]: 2,
+	[EventStatus.FAILED]: 1,
+	[EventStatus.PASSED]: 1,
 };
 
 const GROUP_MAX_ITEMS = 3;

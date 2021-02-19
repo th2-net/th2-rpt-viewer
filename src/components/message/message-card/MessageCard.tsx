@@ -21,6 +21,7 @@ import {
 	useHeatmap,
 	useSelectedStore,
 	useWorkspaceStore,
+	useDebouncedCallback,
 } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
@@ -118,15 +119,16 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 
 	const bookmarkIconClass = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
 
+	const hoverMessage = useDebouncedCallback(() => {
+		messagesStore.setHoveredMessage(message);
+	}, 100);
+
+	const unhoverMessage = () => {
+		messagesStore.setHoveredMessage(null);
+	};
+
 	return (
-		<div
-			className='message-card-wrapper'
-			onMouseEnter={() => {
-				messagesStore.setHoveredMessage(message);
-			}}
-			onMouseLeave={() => {
-				messagesStore.setHoveredMessage(null);
-			}}>
+		<div className='message-card-wrapper' onMouseEnter={hoverMessage} onMouseLeave={unhoverMessage}>
 			<div className={rootClass}>
 				<div className='mc__mc-header mc-header'>
 					<div className='mc-header__is-attached-icon'></div>
