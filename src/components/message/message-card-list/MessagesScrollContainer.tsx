@@ -34,6 +34,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 	const scrollContainer = React.useRef<HTMLDivElement>(null);
 	const messagesHeights = React.useContext(MessagesHeightsContext);
 	const prevHeights = React.useRef<MessagesHeights>({});
+	const scrollProgress = React.useRef<number>(0);
 
 	const {
 		startReached,
@@ -94,15 +95,13 @@ const MessagesScrollContainer: TScrollContainer = ({
 		scrollContainer.current?.scrollTo(scrollTop);
 	});
 
-	const onScroll = (e: React.SyntheticEvent<HTMLDivElement>) => {
+	const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
 		reportScrollTop(e.currentTarget.scrollTop);
 		getVisibleRange();
-	};
 
-	const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
 		if (
 			!isLoadingNextMessages &&
-			event.deltaY < 0 &&
+			e.currentTarget.scrollTop - scrollProgress.current < 0 &&
 			visibleRange &&
 			visibleRange.startIndex < 12 &&
 			!messagesDataStore.isBeginReached
@@ -112,13 +111,14 @@ const MessagesScrollContainer: TScrollContainer = ({
 
 		if (
 			!isLoadingPreviousMessages &&
-			event.deltaY > 0 &&
+			e.currentTarget.scrollTop - scrollProgress.current > 0 &&
 			visibleRange &&
 			visibleRange.endIndex > messagesDataStore.messages.length - 12 &&
 			!messagesDataStore.isEndReached
 		) {
 			endReached();
 		}
+		scrollProgress.current = e.currentTarget.scrollTop;
 	};
 
 	return (
@@ -136,7 +136,6 @@ const MessagesScrollContainer: TScrollContainer = ({
 				<div
 					ref={scrollContainer}
 					onScroll={onScroll}
-					onWheel={onWheel}
 					style={{
 						...style,
 						flexGrow: 1,

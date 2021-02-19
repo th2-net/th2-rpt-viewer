@@ -31,6 +31,7 @@ import { SearchStore } from '../SearchStore';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { isEventMessage } from '../../helpers/event';
+import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 
 export type MessagesStoreURLState = Partial<{
 	type: TabTypes.Messages;
@@ -153,16 +154,32 @@ export default class MessagesStore {
 	};
 
 	@action
+	public applyFilter = (filter: MessagesFilter, sseFilters: MessageFilterState | null) => {
+		this.selectedMessage = null;
+		this.filterStore.setMessagesFilter(filter, sseFilters);
+	};
+
+	@action
 	public applyStreams = () => {
-		this.filterStore.messagesFilter = {
-			...this.filterStore.messagesFilter,
-			streams: [
-				...new Set([
-					...this.filterStore.messagesFilter.streams,
-					...this.workspaceStore.attachedMessagesStreams,
-				]),
-			],
-		};
+		let targetMessage: EventMessage | null = null;
+		if (this.selectedMessage) {
+			targetMessage = this.selectedMessage;
+		} else {
+			targetMessage = sortMessagesByTimestamp(this.workspaceStore.attachedMessages)[0];
+		}
+
+		this.filterStore.resetMessagesFilter({
+			streams: this.selectedMessage
+				? [this.selectedMessage.sessionId]
+				: this.workspaceStore.attachedMessages.map(m => m.sessionId),
+
+			messageTypes: [],
+			timestampTo: getTimestampAsNumber(targetMessage.timestamp),
+			timestampFrom: null,
+		});
+
+		this.selectedMessage = null;
+		this.selectedMessageId = new String(targetMessage.messageId);
 	};
 
 	@action
@@ -173,15 +190,33 @@ export default class MessagesStore {
 	};
 
 	@action
-	public onMessageSelect = async (savedMessage: EventMessage) => {
-		this.filterStore.resetMessagesFilter({
-			timestampFrom: null,
-			timestampTo: getTimestampAsNumber(savedMessage.timestamp),
-			messageTypes: [],
-			streams: [savedMessage.sessionId],
-		});
-		this.selectedMessageId = new String(savedMessage.messageId);
-		this.highlightedMessageId = savedMessage.messageId;
+	public onMessageSelect = async (message: EventMessage) => {
+		const messagesFilter = this.filterStore.messagesFilter;
+		const sseFilter = this.filterStore.sseMessagesFilter;
+
+		const areFiltersApplied = [
+			messagesFilter.messageTypes,
+			sseFilter
+				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
+				: [],
+		].some(filterValues => filterValues.length > 0);
+
+		if (
+			(messagesFilter.streams.length === 0 || messagesFilter.streams.includes(message.sessionId)) &&
+			!areFiltersApplied
+		) {
+			this.filterStore.resetMessagesFilter({
+				timestampFrom: null,
+				timestampTo: getTimestampAsNumber(message.timestamp),
+				messageTypes: [],
+				streams: [message.sessionId],
+			});
+			this.selectedMessageId = new String(message.messageId);
+			this.highlightedMessageId = message.messageId;
+			this.selectedMessage = null;
+		} else {
+			this.selectedMessage = message;
+		}
 	};
 
 	@action
@@ -196,6 +231,7 @@ export default class MessagesStore {
 
 	@action
 	public onAttachedMessagesChange = (attachedMessages: EventMessage[]) => {
+		this.selectedMessage = null;
 		if (
 			this.data.messages.length !== 0 ||
 			this.data.isLoadingNextMessages ||
@@ -217,6 +253,7 @@ export default class MessagesStore {
 
 	@action
 	clearFilters = () => {
+		this.selectedMessage = null;
 		this.filterStore.resetMessagesFilter();
 		this.data.stopMessagesLoading();
 	};

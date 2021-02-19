@@ -96,8 +96,7 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 	const onOutsidePanelClick = (panelKey: string) => {
 		const panel = panelsRange.find(p => p.type === panelKey);
 		if (panel) {
-			activeWorkspace.graphStore.timestamp =
-				panel.range[0] + (panel.range[1] - panel.range[0]) / 2;
+			activeWorkspace.graphStore.timestamp = panel.range[0] + (panel.range[1] - panel.range[0]) / 2;
 		}
 	};
 

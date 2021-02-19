@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoMethods, TScrollContainer } from 'react-virtuoso';
-import { useMessagesWorkspaceStore } from '../../../hooks';
+import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../../hooks';
 import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
 
@@ -44,6 +44,7 @@ interface Props {
 
 const MessagesVirtualizedList = (props: Props) => {
 	const messageStore = useMessagesWorkspaceStore();
+	const messagesDataStore = useMessagesDataStore();
 
 	const virtuoso = React.useRef<VirtuosoMethods>(null);
 
@@ -60,6 +61,34 @@ const MessagesVirtualizedList = (props: Props) => {
 		isLoadingPreviousMessages,
 		scrolledIndex,
 	} = props;
+
+	React.useEffect(() => {
+		async function fetchStartMessages() {
+			const messages = await startReached();
+			messagesDataStore.isEndReached =
+				messages.length === 0 && !messagesDataStore.searchChannelNext?.isLoading;
+		}
+
+		async function fetchEndMessages() {
+			const messages = await endReached();
+			messagesDataStore.isEndReached =
+				messages.length === 0 && !messagesDataStore.searchChannelPrev?.isLoading;
+		}
+		if (messagesDataStore.messages.length < 12) {
+			if (!messagesDataStore.isEndReached) {
+				fetchEndMessages();
+			}
+
+			if (!messagesDataStore.isBeginReached) {
+				fetchStartMessages();
+			}
+		}
+	}, [
+		rowCount,
+		messagesDataStore.messages,
+		messagesDataStore.isBeginReached,
+		messagesDataStore.isEndReached,
+	]);
 
 	React.useEffect(() => {
 		if (scrolledIndex !== null) {
