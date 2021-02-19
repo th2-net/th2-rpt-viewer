@@ -61,10 +61,21 @@
 	flex-direction: column;
 	padding: 10px;
 	border-radius: 5px;
-	transition: 250ms background;
 
 	&.highlighted {
-		background: $highlightedMessageCardBackground;
+		@keyframes highlight {
+			from {
+				background: rgba($highlightedMessageCardBackground, 1);
+			}
+
+			50% {
+				background: rgba($highlightedMessageCardBackground, 0);
+			}
+			to {
+				background: rgba($highlightedMessageCardBackground, 1);
+			}
+		}
+		animation: highlight 1s infinite ease-in-out;
 	}
 
 	&.attached {

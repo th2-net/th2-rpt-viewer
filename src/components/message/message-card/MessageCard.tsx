@@ -69,7 +69,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 				highlightTimer.current = setTimeout(() => {
 					setHighlighted(false);
 					messagesStore.highlightedMessageId = null;
-				}, 1500);
+				}, 3000);
 			} else if (messagesStore.highlightedMessageId !== null) {
 				setHighlighted(false);
 			}
