@@ -25,7 +25,7 @@ const eventHttpApi: EventApiSchema = {
 			name: filter.names,
 			type: filter.eventTypes,
 		});
-		const res = await fetch(`backend/search/events?${params}`, { signal });
+		const res = await fetch(`search/events?${params}`, { signal });
 
 		if (res.ok) {
 			return res.json();
@@ -37,7 +37,7 @@ const eventHttpApi: EventApiSchema = {
 	},
 	getEvent: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(`backend/event/${id}?${params}`, { signal });
+		const res = await fetch(`event/${id}?${params}`, { signal });
 
 		if (res.ok) {
 			return res.json();
@@ -56,7 +56,7 @@ const eventHttpApi: EventApiSchema = {
 			flat: true,
 		});
 
-		const path = `backend/search/events?${params}`;
+		const path = `search/events?${params}`;
 		const res = await fetch(path);
 
 		if (res.ok) {

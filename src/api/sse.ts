@@ -68,10 +68,10 @@ const sseApi: SSESchema = {
 	getEventSource(config: EventSourceConfig) {
 		const { type, queryParams } = config;
 		const params = createURLSearchParams({ ...queryParams });
-		return new EventSource(`backend/search/sse/${type}s/?${params}`);
+		return new EventSource(`search/sse/${type}s/?${params}`);
 	},
 	getFilters: async (filterType: 'events' | 'messages'): Promise<string[]> => {
-		const res = await fetch(`backend/filters/sse-${filterType}`);
+		const res = await fetch(`filters/sse-${filterType}`);
 		if (res.ok) {
 			return res.json();
 		}
@@ -84,7 +84,7 @@ const sseApi: SSESchema = {
 	): Promise<SSEFilterInfo[]> => {
 		return Promise.all(
 			filters.map(filterName =>
-				fetch(`backend/filters/sse-${filterType}/${filterName}`).then(res => res.json()),
+				fetch(`filters/sse-${filterType}/${filterName}`).then(res => res.json()),
 			),
 		);
 	},

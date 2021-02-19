@@ -54,7 +54,7 @@ const messageHttpApi: MessageApiSchema = {
 			messageType: messageTypes,
 		});
 
-		const res = await fetch(`backend/search/messages?${params}`, { signal: abortSignal });
+		const res = await fetch(`search/messages?${params}`, { signal: abortSignal });
 
 		if (res.ok) {
 			return res.json();
@@ -70,7 +70,7 @@ const messageHttpApi: MessageApiSchema = {
 			timestampFrom,
 			timestampTo,
 		});
-		const res = await fetch(`backend/search/messages?${params}`);
+		const res = await fetch(`search/messages?${params}`);
 
 		if (res.ok) {
 			return res.json();
@@ -81,7 +81,7 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	getMessage: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(`backend/message/${id}?${params}`, { signal });
+		const res = await fetch(`message/${id}?${params}`, { signal });
 
 		if (res.ok) {
 			return res.json();
@@ -91,7 +91,7 @@ const messageHttpApi: MessageApiSchema = {
 		return null;
 	},
 	getMessageSessions: async () => {
-		const res = await fetch('backend/messageStreams');
+		const res = await fetch('messageStreams');
 
 		if (res.ok) return res.json();
 
