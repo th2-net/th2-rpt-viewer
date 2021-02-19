@@ -36,30 +36,28 @@ const GraphSearchHistory = (props: Props) => {
 		return isEventAction(item) ? item.eventId : item.messageId;
 	};
 
-	const renderHistory = React.useCallback(() => {
-		return (
-			history.length !== 0 && (
-				<>
-					<p>history</p>
-					<hr />
-					{history.map(item => (
-						<BookmarkItem
-							key={computeKey(item)}
-							item={item}
-							onClick={activeWorkspace.onSavedItemSelect}
-							onRemove={() => {
-								localStorageWorker.saveGraphSearchHistory(
-									history.filter(historyItem => historyItem !== item),
-								);
-							}}
-						/>
-					))}
-				</>
-			)
-		);
-	}, [history]);
+	if (!history.length) {
+		return null;
+	}
 
-	return <div className='timestamp-input__history'>{renderHistory()}</div>;
+	return (
+		<div className='timestamp-input__history'>
+			<p>history</p>
+			<hr />
+			{history.map(item => (
+				<BookmarkItem
+					key={computeKey(item)}
+					item={item}
+					onClick={activeWorkspace.onSavedItemSelect}
+					onRemove={() => {
+						localStorageWorker.saveGraphSearchHistory(
+							history.filter(historyItem => historyItem !== item),
+						);
+					}}
+				/>
+			))}
+		</div>
+	);
 };
 
 export default observer(GraphSearchHistory);
