@@ -21,7 +21,6 @@ import {
 	useHeatmap,
 	useSelectedStore,
 	useWorkspaceStore,
-	useDebouncedCallback,
 } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
@@ -54,6 +53,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const { heatmapElements } = useHeatmap();
 	const [isHighlighted, setHighlighted] = React.useState(false);
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
+	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
@@ -119,11 +119,14 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 
 	const bookmarkIconClass = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
 
-	const hoverMessage = useDebouncedCallback(() => {
-		messagesStore.setHoveredMessage(message);
-	}, 100);
+	const hoverMessage = () => {
+		hoverTimeout.current = setTimeout(() => {
+			messagesStore.setHoveredMessage(message);
+		}, 50);
+	};
 
 	const unhoverMessage = () => {
+		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
 		messagesStore.setHoveredMessage(null);
 	};
 

@@ -24,7 +24,7 @@ import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
 import SearchableContent from '../search/SearchableContent';
-import { useDebouncedCallback, useSelectedStore, useWorkspaceEventStore } from '../../hooks';
+import { useSelectedStore, useWorkspaceEventStore } from '../../hooks';
 
 interface Props {
 	displayType?: CardDisplayType;
@@ -51,6 +51,7 @@ function EventCardHeader({
 }: Props) {
 	const { eventId, eventName, startTimestamp, endTimestamp } = event;
 	const selectedStore = useSelectedStore();
+	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const status = getEventStatus(event);
 	const startTimestampValue = getTimestampAsNumber(startTimestamp);
@@ -83,11 +84,14 @@ function EventCardHeader({
 		e.stopPropagation();
 	};
 
-	const hoverEvent = useDebouncedCallback(() => {
-		eventStore.setHoveredEvent(event);
-	}, 100);
+	const hoverEvent = () => {
+		hoverTimeout.current = setTimeout(() => {
+			eventStore.setHoveredEvent(event);
+		}, 50);
+	};
 
 	const unhoverEvent = () => {
+		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
 		eventStore.setHoveredEvent(null);
 	};
 

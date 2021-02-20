@@ -321,20 +321,20 @@
 			@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
 		}
 
-		&.event-icon,
-		&.eventtreenode-icon {
+		&.failed-icon,
+		&.passed-icon {
 			width: 12px;
 			height: 12px;
 			margin: 1px;
 			border-radius: 50%;
 
-			&.passed {
-				background-color: $graphOverlayPassedEventsColor;
-			}
+		}
+		&.passed-icon {
+			background-color: $graphOverlayPassedEventsColor;
+		}
 
-			&.failed {
-				background-color: $graphOverlayFailedEventsColor;
-			}
+		&.failed-icon {
+			background-color: $graphOverlayFailedEventsColor;
 		}
 	}
 }

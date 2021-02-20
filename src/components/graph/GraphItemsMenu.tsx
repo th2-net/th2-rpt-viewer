@@ -76,7 +76,6 @@ export default function GraphItemsMenu({
 							className={createStyleSelector(
 								'graph-menu__item-icon',
 								`${getGraphItemType(item)}-icon`,
-								isEventNode(item) ? getEventStatus(item) : null,
 							)}
 						/>
 						<div className='graph-menu__item-name'>
