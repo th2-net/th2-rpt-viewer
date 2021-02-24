@@ -80,6 +80,8 @@ export default class EventsStore {
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
 
+	@observable.ref hoveredEvent: EventTreeNode | null = null;
+
 	@observable.ref selectedParentNode: EventTreeNode | null = null;
 
 	@observable.ref selectedEvent: EventAction | null = null;
@@ -138,6 +140,13 @@ export default class EventsStore {
 			...this.getNodesPath(getEventNodeParents(this.selectedNode), this.nodesList),
 			this.selectedNode,
 		];
+	}
+
+	@action
+	public setHoveredEvent(event: EventTreeNode | null) {
+		if (event !== this.hoveredEvent) {
+			this.hoveredEvent = event;
+		}
 	}
 
 	@action

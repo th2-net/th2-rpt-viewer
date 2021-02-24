@@ -68,6 +68,7 @@ function Graph() {
 	);
 
 	const getGraphItemType = React.useCallback(activeWorkspace.graphStore.getGraphItemType, [
+		activeWorkspace.graphStore.getGraphItemType,
 		selectedStore.attachedMessages,
 		selectedStore.graphItems,
 	]);

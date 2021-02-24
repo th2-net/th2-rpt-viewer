@@ -53,6 +53,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const { heatmapElements } = useHeatmap();
 	const [isHighlighted, setHighlighted] = React.useState(false);
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
+	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
@@ -118,8 +119,19 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 
 	const bookmarkIconClass = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
 
+	const hoverMessage = () => {
+		hoverTimeout.current = setTimeout(() => {
+			messagesStore.setHoveredMessage(message);
+		}, 50);
+	};
+
+	const unhoverMessage = () => {
+		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+		messagesStore.setHoveredMessage(null);
+	};
+
 	return (
-		<div className='message-card-wrapper'>
+		<div className='message-card-wrapper' onMouseEnter={hoverMessage} onMouseLeave={unhoverMessage}>
 			<div className={rootClass}>
 				<div className='mc__mc-header mc-header'>
 					<div className='mc-header__is-attached-icon'></div>
