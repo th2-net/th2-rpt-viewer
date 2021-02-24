@@ -298,14 +298,21 @@ export default class MessagesStore {
 
 	@action
 	private handleFilterHint = (message: EventMessage | EventMessage[]) => {
+		const messagesFilter = this.filterStore.messagesFilter;
+		const sseFilter = this.filterStore.sseMessagesFilter;
+		const areFiltersApplied = [
+			messagesFilter.messageTypes,
+			sseFilter
+				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
+				: [],
+		].some(filterValues => filterValues.length > 0);
 		if (isEventMessage(message)) {
-			this.showFilterChangeHint = !this.filterStore.messagesFilter.streams.includes(
-				message.messageId,
-			);
+			this.showFilterChangeHint =
+				!this.filterStore.messagesFilter.streams.includes(message.messageId) || areFiltersApplied;
 		} else {
-			this.showFilterChangeHint = message.some(
-				m => !this.filterStore.messagesFilter.streams.includes(m.messageId),
-			);
+			this.showFilterChangeHint =
+				message.some(m => !this.filterStore.messagesFilter.streams.includes(m.sessionId)) ||
+				areFiltersApplied;
 		}
 	};
 }
