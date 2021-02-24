@@ -22,7 +22,7 @@ import { EventMessage } from '../../models/EventMessage';
 import { GraphItem, GraphItemType } from '../../models/Graph';
 import { getEventStatus, isEventNode } from '../../helpers/event';
 import { EventStatus } from '../../models/Status';
-import { GraphDataStore } from '../../stores/graph/GraphDataStore';
+import { GraphStore } from '../../stores/GraphStore';
 import '../../styles/graph.scss';
 
 const rightIndicatorVariants = {
@@ -72,7 +72,7 @@ interface OutsideItemsMenuProps extends Omit<OutsideItemsListProps, 'itemsMap'> 
 	items: GraphItem[];
 	direction: 'left' | 'right';
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
-	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
+	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 }
 
 export function OutsideItemsMenu(props: OutsideItemsMenuProps) {

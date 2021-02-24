@@ -77,7 +77,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 			<Virtuoso
 				className='search-results__list'
 				totalCount={results.length}
-				item={renderSearchResult}
+				itemContent={renderSearchResult}
 				computeItemKey={computeKey}
 				style={{ height: '100%' }}
 			/>

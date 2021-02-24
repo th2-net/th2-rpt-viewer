@@ -19,5 +19,5 @@ import { useWorkspaceStore } from './useWorkspaceStore';
 export const useGraphDataStore = () => {
 	const workspace = useWorkspaceStore();
 
-	return workspace.graphDataStore;
+	return workspace.graphStore;
 };

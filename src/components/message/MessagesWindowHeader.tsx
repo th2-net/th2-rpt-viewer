@@ -24,17 +24,29 @@ function MessagesWindowHeader() {
 	const messagesStore = useMessagesWorkspaceStore();
 	const workspaceStore = useWorkspaceStore();
 
-	const [newSessions, setNewSessions] = React.useState<string[]>([]);
-	const [showNewSessionsHint, setShowNewSessionsHint] = React.useState(false);
+	const [showChangeFilterHint, setShowChangeFilterHint] = React.useState(false);
 
 	React.useEffect(() => {
-		setNewSessions(
-			complement(
-				workspaceStore.attachedMessagesStreams,
-				messagesStore.filterStore.messagesFilter.streams,
-			),
+		const attachedMessagesStreams = workspaceStore.attachedMessages.map(
+			({ sessionId }) => sessionId,
 		);
-	}, [workspaceStore.attachedMessagesStreams, messagesStore.filterStore.messagesFilter.streams]);
+		const selectedMessageStreams = messagesStore.selectedMessage
+			? [messagesStore.selectedMessage.sessionId]
+			: [];
+
+		setShowChangeFilterHint(
+			messagesStore.filterStore.messagesFilter.streams.length > 0
+				? complement(
+						[...attachedMessagesStreams, ...selectedMessageStreams],
+						messagesStore.filterStore.messagesFilter.streams,
+				  ).length > 0
+				: false,
+		);
+	}, [
+		workspaceStore.attachedMessages,
+		messagesStore.filterStore.messagesFilter,
+		messagesStore.selectedMessage,
+	]);
 
 	// const updateButtonClass = createBemElement(
 	// 	'messages-window-header',
@@ -46,27 +58,12 @@ function MessagesWindowHeader() {
 		<div className='messages-window-header'>
 			<div className='messages-window-header__group'>
 				<MessagesFilter />
-				{newSessions.length > 0 && (
-					<div
-						className='sessions'
-						onMouseOver={() => setShowNewSessionsHint(true)}
-						onMouseLeave={() => setShowNewSessionsHint(false)}>
-						<p className='sessions__title'>New sessions</p>{' '}
+				{showChangeFilterHint && (
+					<div className='sessions'>
+						<p className='sessions__title'>Message may not match the filter</p>{' '}
 						<button className='sessions__add-button' onClick={messagesStore.applyStreams}>
-							Add
+							Change filter
 						</button>
-						{showNewSessionsHint && (
-							<div className='sessions__content'>
-								<div className='sessions__triangle' />
-								<ul className='sessions__list'>
-									{newSessions.map(session => (
-										<li className='sessions__list-item' key={session}>
-											{session}
-										</li>
-									))}
-								</ul>
-							</div>
-						)}
 					</div>
 				)}
 			</div>

@@ -35,7 +35,7 @@ const WorkspacesLayout = () => {
 					<div
 						className={`workspace-tab ${activeTabIndex === index ? 'active' : ''}`}
 						onClick={() => setActiveTab(index)}>
-						{workspacesStore.workspaces.length > 0 && !isSearchStore && (
+						{!isSearchStore && (
 							<span
 								className={createStyleSelector(
 									'workspace-tab__close',

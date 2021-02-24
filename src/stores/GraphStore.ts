@@ -16,13 +16,13 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
-import { isEventNode } from '../../helpers/event';
-import { calculateTimeRange } from '../../helpers/graph';
-import { Chunk, GraphItem, GraphItemType, IntervalOption } from '../../models/Graph';
-import { TimeRange } from '../../models/Timestamp';
-import { SelectedStore } from '../SelectedStore';
+import { isEventNode } from '../helpers/event';
+import { calculateTimeRange } from '../helpers/graph';
+import { Chunk, GraphItem, GraphItemType, IntervalOption } from '../models/Graph';
+import { TimeRange } from '../models/Timestamp';
+import { SelectedStore } from './SelectedStore';
 
-export class GraphDataStore {
+export class GraphStore {
 	public readonly steps = {
 		15: 1,
 		30: 3,
@@ -36,7 +36,7 @@ export class GraphDataStore {
 	) {
 		if (timeRange) this.range = timeRange;
 		const range = timeRange || this.range;
-		this.timestamp = range[0] + (range[1] - range[0]) / 2;
+		this.setTimestampFromRange(range);
 		this.interval = defaultInterval;
 
 		reaction(
@@ -164,10 +164,23 @@ export class GraphDataStore {
 	};
 
 	public getGraphItemType = (item: GraphItem): GraphItemType => {
-		return isEventNode(item)
-			? GraphItemType.EVENT
-			: this.selectedStore.attachedMessages.includes(item)
+		if (isEventNode(item)) {
+			return item.eventId === this.selectedStore.hoveredEvent?.eventId
+				? GraphItemType.HOVERED_EVENT
+				: item.successful
+				? GraphItemType.PASSED
+				: GraphItemType.FAILED;
+		}
+		return item.messageId === this.selectedStore.hoveredMessage?.messageId
+			? GraphItemType.HOVERED_MESSAGE
+			: this.selectedStore.attachedMessages.findIndex(
+					attMsg => attMsg.messageId === item.messageId,
+			  ) !== -1
 			? GraphItemType.ATTACHED_MESSAGE
 			: GraphItemType.PINNED_MESSAGE;
+	};
+
+	setTimestampFromRange = (range: TimeRange) => {
+		this.timestamp = range[0] + (range[1] - range[0]) / 2;
 	};
 }

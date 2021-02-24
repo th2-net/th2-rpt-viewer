@@ -98,8 +98,8 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 				toJS({
 					events: eventStoreState,
 					messages: messagesStoreState,
-					timeRange: activeWorkspace.graphDataStore.range,
-					interval: activeWorkspace.graphDataStore.interval,
+					timeRange: activeWorkspace.graphStore.range,
+					interval: activeWorkspace.graphStore.interval,
 					layout: activeWorkspace.viewStore.panelsLayout,
 				}),
 			];

@@ -20,11 +20,11 @@ import TimeAgo from 'react-timeago';
 import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
-import { getEventStatus, getMinifiedStatus } from '../../helpers/event';
+import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
 import SearchableContent from '../search/SearchableContent';
-import { useSelectedStore, useSelectListener } from '../../hooks';
+import { useSelectedStore, useWorkspaceEventStore } from '../../hooks';
 
 interface Props {
 	displayType?: CardDisplayType;
@@ -50,7 +50,11 @@ function EventCardHeader({
 	rootStyle = {},
 }: Props) {
 	const { eventId, eventName, startTimestamp, endTimestamp } = event;
+
 	const selectedStore = useSelectedStore();
+	const eventStore = useWorkspaceEventStore();
+
+	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const status = getEventStatus(event);
 	const startTimestampValue = getTimestampAsNumber(startTimestamp);
@@ -82,9 +86,26 @@ function EventCardHeader({
 		e.stopPropagation();
 	};
 
+	const hoverEvent = () => {
+		hoverTimeout.current = setTimeout(() => {
+			eventStore.setHoveredEvent(event);
+		}, 50);
+	};
+
+	const unhoverEvent = () => {
+		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+		eventStore.setHoveredEvent(null);
+	};
+
 	return (
-		<div className={rootClassName} onClick={onSelect} style={rootStyle}>
-			<div className={iconClassName}></div>
+		<div
+			className={rootClassName}
+			onClick={onSelect}
+			style={rootStyle}
+			onMouseEnter={hoverEvent}
+			onMouseLeave={unhoverEvent}>
+			<div className={iconClassName} />
+			{isFlatView && parentsCount > 0 ? <Chip text={parentsCount.toString()} /> : null}
 			{displayType !== CardDisplayType.STATUS_ONLY ? (
 				<div className='event-header-card__title' title={eventName}>
 					<SearchableContent content={eventName} eventId={eventId} />

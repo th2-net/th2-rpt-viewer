@@ -33,7 +33,7 @@ import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
 import { isEventsStore } from '../../helpers/stores';
-import { GraphDataStore } from '../graph/GraphDataStore';
+import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
 import { SearchStore } from '../SearchStore';
 
@@ -58,7 +58,7 @@ export default class EventsStore {
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
-		private graphStore: GraphDataStore,
+		private graphStore: GraphStore,
 		private searchPanelStore: SearchStore,
 		private api: ApiSchema,
 		initialState: EventStoreDefaultStateType | EventAction | EventTreeNode,
@@ -79,6 +79,8 @@ export default class EventsStore {
 	@observable isLoadingRootEvents = false;
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
+
+	@observable.ref hoveredEvent: EventTreeNode | null = null;
 
 	@observable.ref selectedParentNode: EventTreeNode | null = null;
 
@@ -138,6 +140,13 @@ export default class EventsStore {
 			...this.getNodesPath(getEventNodeParents(this.selectedNode), this.nodesList),
 			this.selectedNode,
 		];
+	}
+
+	@action
+	public setHoveredEvent(event: EventTreeNode | null) {
+		if (event !== this.hoveredEvent) {
+			this.hoveredEvent = event;
+		}
 	}
 
 	@action
@@ -217,7 +226,8 @@ export default class EventsStore {
 	};
 
 	@action
-	public onSavedItemSelect = async (savedEventNode: EventTreeNode | EventAction) => {
+	public onEventSelect = async (savedEventNode: EventTreeNode | EventAction) => {
+		this.graphStore.setTimestamp(getTimestampAsNumber(savedEventNode.startTimestamp));
 		let fullPath: string[] = [];
 		/*
 			While we are saving eventTreeNodes with their parents, searching returns eventTreeNodes 
@@ -390,7 +400,7 @@ export default class EventsStore {
 		});
 
 		if (isInitialEntity(initialState)) {
-			this.onSavedItemSelect(initialState);
+			this.onEventSelect(initialState);
 		} else {
 			await this.fetchEventTree();
 		}
