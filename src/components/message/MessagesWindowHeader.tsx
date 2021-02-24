@@ -16,38 +16,11 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useMessagesWorkspaceStore, useWorkspaceStore } from '../../hooks';
+import { useMessagesWorkspaceStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
-import { complement } from '../../helpers/array';
 
 function MessagesWindowHeader() {
 	const messagesStore = useMessagesWorkspaceStore();
-	const workspaceStore = useWorkspaceStore();
-
-	const [showChangeFilterHint, setShowChangeFilterHint] = React.useState(false);
-
-	React.useEffect(() => {
-		const attachedMessagesStreams = workspaceStore.attachedMessages.map(
-			({ sessionId }) => sessionId,
-		);
-		const selectedMessageStreams = messagesStore.selectedMessage
-			? [messagesStore.selectedMessage.sessionId]
-			: [];
-
-		setShowChangeFilterHint(
-			messagesStore.filterStore.messagesFilter.streams.length > 0
-				? complement(
-						[...attachedMessagesStreams, ...selectedMessageStreams],
-						messagesStore.filterStore.messagesFilter.streams,
-				  ).length > 0
-				: false,
-		);
-	}, [
-		workspaceStore.attachedMessages,
-		messagesStore.filterStore.messagesFilter,
-		messagesStore.selectedMessage,
-	]);
-
 	// const updateButtonClass = createBemElement(
 	// 	'messages-window-header',
 	// 	'realtime-button',
@@ -58,7 +31,7 @@ function MessagesWindowHeader() {
 		<div className='messages-window-header'>
 			<div className='messages-window-header__group'>
 				<MessagesFilter />
-				{showChangeFilterHint && (
+				{messagesStore.showFilterChangeHint && (
 					<div className='sessions'>
 						<p className='sessions__title'>Message may not match the filter</p>{' '}
 						<button className='sessions__add-button' onClick={messagesStore.applyStreams}>
