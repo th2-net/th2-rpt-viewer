@@ -48,11 +48,12 @@
 	}
 
 	&__dialog {
+		@include scrollbar();
 		overflow: auto;
 		background-color: #fff;
 		border-radius: 4px;
 		width: 100%;
-
+		max-height: 450px;
 		&.bordered {
 			border: 1px solid $timestampInputBorderColor;
 			padding: 5px 9px;
