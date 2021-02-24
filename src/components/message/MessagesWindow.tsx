@@ -27,6 +27,7 @@ import {
 } from '../../hooks';
 import MessagesCardList from './message-card-list/MessagesCardList';
 import { getTimestampAsNumber } from '../../helpers/date';
+import { isWorkspaceStore } from '../../helpers/workspace';
 
 const MessagesWindow = () => {
 	const messagesStore = useMessagesWorkspaceStore();
@@ -38,10 +39,13 @@ const MessagesWindow = () => {
 
 	const selectedItems = React.useMemo(() => {
 		const heatmapElementsMap: Map<string, string[]> = new Map();
-		heatmapElementsMap.set('#FC8144', workspaceStore.attachedMessagesIds);
+		heatmapElementsMap.set(
+			'#FC8144',
+			isWorkspaceStore(workspaceStore) ? workspaceStore.attachedMessagesIds : [],
+		);
 
 		return heatmapElementsMap;
-	}, [workspaceStore.attachedMessagesIds]);
+	}, [isWorkspaceStore(workspaceStore) ? workspaceStore.attachedMessagesIds : null]);
 
 	const unknownAreas = React.useMemo(() => {
 		const messages = messagesDataStore.messages;

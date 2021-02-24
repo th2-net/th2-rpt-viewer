@@ -15,13 +15,14 @@
  ***************************************************************************** */
 
 import React from 'react';
+import SearchWorkspaceStore from '../stores/workspace/SearchWorkspaceStore';
 import WorkspaceStore from '../stores/workspace/WorkspaceStore';
 
-const WorkspaceContext = React.createContext<WorkspaceStore | null>(null);
+const WorkspaceContext = React.createContext<WorkspaceStore | SearchWorkspaceStore | null>(null);
 
 interface WorkspaceContextProviderProps {
 	children: React.ReactNode;
-	value: WorkspaceStore;
+	value: WorkspaceStore | SearchWorkspaceStore;
 }
 const WorkspaceContextProvider = ({ children, value }: WorkspaceContextProviderProps) => (
 	<WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>

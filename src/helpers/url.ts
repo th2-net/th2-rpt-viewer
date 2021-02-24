@@ -22,6 +22,7 @@ import RootStore from '../stores/RootStore';
 import { WorkspacesUrlState } from '../stores/workspace/WorkspacesStore';
 import { getEventNodeParents } from './event';
 import { getObjectKeys } from './object';
+import { isWorkspaceStore } from './workspace';
 
 export function createURLSearchParams(
 	_params: Record<string, string | number | boolean | null | string[] | undefined>,
@@ -44,14 +45,14 @@ export function createURLSearchParams(
 export function registerUrlMiddleware(rootStore: RootStore) {
 	autorun(() => {
 		const activeWorkspace = rootStore.workspacesStore.activeWorkspace;
-		if (activeWorkspace.isSearchWorkspace) return;
+		if (!isWorkspaceStore(activeWorkspace)) return;
 
 		let eventStoreState: EventStoreURLState = {};
 		let messagesStoreState: MessagesStoreURLState = {};
 
 		let urlState: null | WorkspacesUrlState = null;
 
-		if (activeWorkspace && activeWorkspace !== rootStore.workspacesStore.searchWorkspace) {
+		if (activeWorkspace) {
 			const eventsStore = activeWorkspace.eventsStore;
 			eventStoreState = {
 				type: TabTypes.Events,

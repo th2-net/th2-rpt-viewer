@@ -27,6 +27,7 @@ import { EventMessage } from '../../models/EventMessage';
 import { Chunk, PanelRange } from '../../models/Graph';
 import '../../styles/graph.scss';
 import { useSearchStore } from '../../hooks/useSearchStore';
+import { isWorkspaceStore } from '../../helpers/workspace';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -110,23 +111,41 @@ function Graph() {
 	);
 
 	const panelsRange: Array<PanelRange> = React.useMemo(() => {
-		return [
-			{
-				type: 'events-panel',
-				range: activeWorkspace.eventsStore.panelRange,
-				setRange: activeWorkspace.eventsStore.onRangeChange,
-			},
-			{
-				type: 'messages-panel',
-				range: activeWorkspace.messagesStore.panelRange,
-				setRange: activeWorkspace.messagesStore.onRangeChange,
-			},
-		];
-	}, [activeWorkspace.eventsStore.panelRange, activeWorkspace.messagesStore.panelRange]);
+		return isWorkspaceStore(activeWorkspace)
+			? [
+					{
+						type: 'events-panel',
+						range: activeWorkspace.eventsStore.panelRange,
+						setRange: activeWorkspace.eventsStore.onRangeChange,
+					},
+					{
+						type: 'messages-panel',
+						range: activeWorkspace.messagesStore.panelRange,
+						setRange: activeWorkspace.messagesStore.onRangeChange,
+					},
+			  ]
+			: [
+					{
+						type: 'events-panel',
+						range: activeWorkspace.timeRange,
+						setRange: activeWorkspace.onRangeChange,
+					},
+					{
+						type: 'messages-panel',
+						range: activeWorkspace.timeRange,
+						setRange: activeWorkspace.onRangeChange,
+					},
+			  ];
+	}, [
+		isWorkspaceStore(activeWorkspace)
+			? activeWorkspace.eventsStore.panelRange
+			: activeWorkspace.timeRange,
+		isWorkspaceStore(activeWorkspace) ? activeWorkspace.messagesStore.panelRange : null,
+	]);
 
 	return (
 		<div className='graph' ref={rootRef}>
-			{!activeWorkspace.isSearchWorkspace && (
+			{isWorkspaceStore(activeWorkspace) && (
 				<GraphChunksVirtualizer
 					chunkWidth={chunkWidth}
 					settings={settings}
@@ -145,7 +164,7 @@ function Graph() {
 				onGraphItemClick={onGraphItemClick}
 				getGraphItemType={getGraphItemType}
 				panelsRange={panelsRange}
-				disableInteractions={activeWorkspace.isSearchWorkspace}
+				disableInteractions={!isWorkspaceStore(activeWorkspace)}
 			/>
 		</div>
 	);

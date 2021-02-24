@@ -20,6 +20,7 @@ import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
 import { SearchStore } from '../SearchStore';
+import SearchWorkspaceStore from './SearchWorkspaceStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
@@ -29,16 +30,12 @@ export default class WorkspacesStore {
 
 	tabsStore = new TabsStore(this);
 
-	public searchWorkspace: WorkspaceStore;
+	public searchWorkspace: SearchWorkspaceStore;
 
-	constructor(
-		private searchStore: SearchStore,
-		private api: ApiSchema,
-		initialState: WorkspacesUrlState | null,
-	) {
+	constructor(private api: ApiSchema, initialState: WorkspacesUrlState | null) {
 		this.init(initialState);
 
-		this.searchWorkspace = this.createWorkspace();
+		this.searchWorkspace = new SearchWorkspaceStore(this, this.selectedStore, this.api, null);
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
@@ -76,7 +73,7 @@ export default class WorkspacesStore {
 		return new WorkspaceStore(
 			this,
 			this.selectedStore,
-			this.searchStore,
+			this.searchWorkspace.searchStore,
 			this.api,
 			workspaceInitialState,
 		);

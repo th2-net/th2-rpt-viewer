@@ -18,19 +18,14 @@ import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import NotificationsStore from './NotificationsStore';
 import { registerUrlMiddleware } from '../helpers/url';
-import { SearchStore } from './SearchStore';
 
 export default class RootStore {
 	notificationsStore = NotificationsStore;
 
-	searchStore: SearchStore;
-
 	workspacesStore: WorkspacesStore;
 
 	constructor(private api: ApiSchema) {
-		this.searchStore = new SearchStore(this.api);
-
-		this.workspacesStore = new WorkspacesStore(this.searchStore, this.api, this.parseUrlState());
+		this.workspacesStore = new WorkspacesStore(this.api, this.parseUrlState());
 
 		registerUrlMiddleware(this);
 	}

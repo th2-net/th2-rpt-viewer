@@ -159,24 +159,15 @@ export default class WorkspaceStore {
 
 	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
-		if (this === this.workspacesStore.searchWorkspace) {
-			const newWorkspace = this.workspacesStore.createWorkspace({
-				entity: savedItem,
-			});
-
-			this.workspacesStore.addWorkspace(newWorkspace);
-			this.workspacesStore.tabsStore.setActiveWorkspace(this.workspacesStore.workspaces.length);
+		this.graphDataStore.timestamp = isEventMessage(savedItem)
+			? getTimestampAsNumber(savedItem.timestamp)
+			: getTimestampAsNumber(savedItem.startTimestamp);
+		if (isEventMessage(savedItem)) {
+			this.viewStore.activePanel = this.messagesStore;
+			this.messagesStore.onSavedItemSelect(savedItem);
 		} else {
-			this.graphDataStore.timestamp = isEventMessage(savedItem)
-				? getTimestampAsNumber(savedItem.timestamp)
-				: getTimestampAsNumber(savedItem.startTimestamp);
-			if (isEventMessage(savedItem)) {
-				this.viewStore.activePanel = this.messagesStore;
-				this.messagesStore.onSavedItemSelect(savedItem);
-			} else {
-				this.viewStore.activePanel = this.eventsStore;
-				this.eventsStore.onSavedItemSelect(savedItem);
-			}
+			this.viewStore.activePanel = this.eventsStore;
+			this.eventsStore.onSavedItemSelect(savedItem);
 		}
 	};
 
@@ -184,11 +175,6 @@ export default class WorkspaceStore {
 	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
 		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
 	};
-
-	@computed
-	public get isSearchWorkspace() {
-		return this === this.workspacesStore.searchWorkspace;
-	}
 }
 
 function getDefaultRange(entity: unknown, interval: number): TimeRange | null {

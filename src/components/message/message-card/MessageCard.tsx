@@ -32,6 +32,7 @@ import MessageRaw from './raw/MessageRaw';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import '../../../styles/messages.scss';
+import { isWorkspaceStore } from '../../../helpers/workspace';
 
 const HUE_SEGMENTS_COUNT = 36;
 
@@ -82,9 +83,9 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		};
 	}, [messagesStore.highlightedMessageId]);
 
-	const isAttached = !!workspaceStore.attachedMessages.find(
-		attMsg => attMsg.messageId === message.messageId,
-	);
+	const isAttached = isWorkspaceStore(workspaceStore)
+		? !!workspaceStore.attachedMessages.find(attMsg => attMsg.messageId === message.messageId)
+		: false;
 
 	const color = heatmapElement?.colors[0];
 

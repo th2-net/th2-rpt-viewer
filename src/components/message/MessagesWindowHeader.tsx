@@ -19,6 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { useMessagesWorkspaceStore, useWorkspaceStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
 import { complement } from '../../helpers/array';
+import { isWorkspaceStore } from '../../helpers/workspace';
 
 function MessagesWindowHeader() {
 	const messagesStore = useMessagesWorkspaceStore();
@@ -30,11 +31,14 @@ function MessagesWindowHeader() {
 	React.useEffect(() => {
 		setNewSessions(
 			complement(
-				workspaceStore.attachedMessagesStreams,
+				isWorkspaceStore(workspaceStore) ? workspaceStore.attachedMessagesStreams : [],
 				messagesStore.filterStore.messagesFilter.streams,
 			),
 		);
-	}, [workspaceStore.attachedMessagesStreams, messagesStore.filterStore.messagesFilter.streams]);
+	}, [
+		isWorkspaceStore(workspaceStore) ? workspaceStore.attachedMessagesStreams : null,
+		messagesStore.filterStore.messagesFilter.streams,
+	]);
 
 	// const updateButtonClass = createBemElement(
 	// 	'messages-window-header',

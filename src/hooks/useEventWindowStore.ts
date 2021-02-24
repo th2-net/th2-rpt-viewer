@@ -14,11 +14,16 @@
  *  limitations under the License.
  ***************************************************************************** */
 
+import { isWorkspaceStore } from '../helpers/workspace';
 import EventsStore from '../stores/events/EventsStore';
 import { useWorkspaceStore } from './useWorkspaceStore';
 
 export const useWorkspaceEventStore = (): EventsStore => {
 	const workspaceStore = useWorkspaceStore();
+
+	if (!isWorkspaceStore(workspaceStore)) {
+		throw new Error("SearchWorkspace doesn't contain eventsStore");
+	}
 
 	return workspaceStore.eventsStore;
 };

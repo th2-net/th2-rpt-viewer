@@ -18,6 +18,7 @@
 
 import * as React from 'react';
 import { createStyleSelector } from '../../helpers/styleCreators';
+import { isWorkspaceStore } from '../../helpers/workspace';
 import { useWorkspaceStore } from '../../hooks';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 
@@ -352,10 +353,12 @@ const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
 
 		const setActivePanel = () => {
 			viewStore.setActivePanel(
-				title === 'Events'
-					? workspaceStore.eventsStore
-					: title === 'Messages'
-					? workspaceStore.messagesStore
+				isWorkspaceStore(workspaceStore)
+					? title === 'Events'
+						? workspaceStore.eventsStore
+						: title === 'Messages'
+						? workspaceStore.messagesStore
+						: null
 					: null,
 			);
 		};

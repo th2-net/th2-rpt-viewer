@@ -32,7 +32,7 @@ const panelColors = {
 	},
 } as const;
 
-function Workspace() {
+function SearchWorkspace() {
 	return (
 		<div className='workspace'>
 			<WorkspaceSplitter
@@ -55,4 +55,4 @@ function Workspace() {
 	);
 }
 
-export default observer(Workspace);
+export default observer(SearchWorkspace);
