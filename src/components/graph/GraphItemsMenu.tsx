@@ -21,7 +21,7 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { GraphItem } from '../../models/Graph';
-import { getEventStatus, isEventMessage, isEventNode } from '../../helpers/event';
+import { isEventMessage } from '../../helpers/event';
 import { GraphStore } from '../../stores/GraphStore';
 import Popover from '../util/Popover';
 

@@ -21,23 +21,22 @@ import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { GraphGroup, GraphItemType } from '../../models/Graph';
 import { GraphStore } from '../../stores/GraphStore';
-import { EventStatus } from '../../models/Status';
 
 type GroupItemType =
 	| GraphItemType.ATTACHED_MESSAGE
 	| GraphItemType.PINNED_MESSAGE
 	| GraphItemType.HOVERED_EVENT
 	| GraphItemType.HOVERED_MESSAGE
-	| EventStatus.FAILED
-	| EventStatus.PASSED;
+	| GraphItemType.FAILED
+	| GraphItemType.PASSED;
 
 const listIconsPriority: { [key in GroupItemType]: number } = {
 	[GraphItemType.HOVERED_MESSAGE]: 4,
 	[GraphItemType.HOVERED_EVENT]: 4,
 	[GraphItemType.ATTACHED_MESSAGE]: 3,
 	[GraphItemType.PINNED_MESSAGE]: 2,
-	[EventStatus.FAILED]: 1,
-	[EventStatus.PASSED]: 1,
+	[GraphItemType.FAILED]: 1,
+	[GraphItemType.PASSED]: 1,
 };
 
 const GROUP_MAX_ITEMS = 3;
@@ -73,6 +72,7 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 				listIconsPriority[entryA[0] as GroupItemType]
 			);
 		});
+
 		return entries.reduce<string[]>((prev, [type, amount], index, array) => {
 			const maxItems = Math.max(GROUP_MAX_ITEMS - prev.length - (array.length - 1 - index), 0);
 			const step = maxItems >= amount ? amount : maxItems;
@@ -104,4 +104,4 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 	);
 }
 
-export default GraphItemsGroup;
+export default React.memo(GraphItemsGroup);

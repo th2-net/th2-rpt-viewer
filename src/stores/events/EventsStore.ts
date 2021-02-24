@@ -143,8 +143,10 @@ export default class EventsStore {
 	}
 
 	@action
-	public setHoveredEvent(Event: EventTreeNode | null) {
-		this.hoveredEvent = Event;
+	public setHoveredEvent(event: EventTreeNode | null) {
+		if (event !== this.hoveredEvent) {
+			this.hoveredEvent = event;
+		}
 	}
 
 	@action

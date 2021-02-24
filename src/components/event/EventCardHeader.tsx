@@ -50,12 +50,14 @@ function EventCardHeader({
 	rootStyle = {},
 }: Props) {
 	const { eventId, eventName, startTimestamp, endTimestamp } = event;
+
 	const selectedStore = useSelectedStore();
+	const eventStore = useWorkspaceEventStore();
+
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const status = getEventStatus(event);
 	const startTimestampValue = getTimestampAsNumber(startTimestamp);
-	const eventStore = useWorkspaceEventStore();
 
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
