@@ -20,7 +20,7 @@ import { createBemElement, createStyleSelector } from '../../helpers/styleCreato
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { GraphGroup, GraphItemType } from '../../models/Graph';
-import { GraphDataStore } from '../../stores/graph/GraphDataStore';
+import { GraphStore } from '../../stores/GraphStore';
 import { EventStatus } from '../../models/Status';
 
 type GroupItemType =
@@ -45,7 +45,7 @@ const GROUP_MAX_ITEMS = 3;
 interface GraphItemsGroupProps {
 	group: GraphGroup;
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
-	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
+	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 }
 
 function GraphItemsGroup(props: GraphItemsGroupProps) {

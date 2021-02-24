@@ -31,7 +31,7 @@ export default class TabsStore {
 			messages: worspaceToDublicate.messagesStore,
 		});
 		this.workspacesStore.addWorkspace(workspaceCopy);
-		this.activeTabIndex = this.workspacesStore.workspaces.length - 1;
+		this.activeTabIndex = this.workspacesStore.workspaces.length;
 	};
 
 	@action

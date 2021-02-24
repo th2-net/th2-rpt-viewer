@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, reaction, observable, computed } from 'mobx';
+import { action, reaction, observable, computed, runInAction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams } from '../../api/sse';
 import { EventMessage } from '../../models/EventMessage';
@@ -22,28 +22,10 @@ import MessagesFilter from '../../models/filter/MessagesFilter';
 import MessagesStore from './MessagesStore';
 import { SSEChannel } from './SSEChannel';
 
-export const defaultMessagesLoadingState = {
-	loadingPreviousItems: false,
-	loadingNextItems: false,
-	loadingRootItems: false,
-	loadingSelectedMessage: false,
-};
-
 export default class MessagesDataProviderStore {
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
 		reaction(() => this.messagesStore.filterStore.messagesFilter, this.onFilterChange);
-
-		reaction(() => this.messagesStore.filterStore.messagesFilter.streams, this.onStreamsChanged);
 	}
-
-	@observable
-	public messagesLoadingState = defaultMessagesLoadingState;
-
-	@observable
-	public isLoadingNextMessages = false;
-
-	@observable
-	public isLoadingPreviousMessages = false;
 
 	@observable
 	public isEndReached = false;
@@ -66,9 +48,25 @@ export default class MessagesDataProviderStore {
 	@observable
 	searchChannelNext: SSEChannel | null = null;
 
+	@observable
+	startIndex = 10000;
+
+	@observable
+	initialItemCount = 0;
+
+	@computed
+	public get isLoadingNextMessages() {
+		return Boolean(this.searchChannelNext?.isLoading);
+	}
+
+	@computed
+	public get isLoadingPreviousMessages() {
+		return Boolean(this.searchChannelPrev?.isLoading);
+	}
+
 	@computed
 	public get isLoading() {
-		return Boolean(this.searchChannelPrev || this.searchChannelNext);
+		return this.isLoadingNextMessages || this.isLoadingPreviousMessages;
 	}
 
 	@action
@@ -76,7 +74,7 @@ export default class MessagesDataProviderStore {
 		this.stopMessagesLoading();
 
 		const prevQuery = {
-			...this.messagesStore.filterStore.sseConfig.queryParams,
+			...this.messagesStore.filterStore.messsagesSSEConfig.queryParams,
 		} as MessagesSSEParams;
 
 		const nextQuery = {
@@ -99,7 +97,10 @@ export default class MessagesDataProviderStore {
 				nextMessages.pop();
 			}
 
-			this.messages = [...nextMessages, ...prevMessages];
+			runInAction(() => {
+				this.messages = [...nextMessages, ...prevMessages];
+				this.initialItemCount = this.messages.length;
+			});
 
 			if (this.messagesStore.selectedMessageId) {
 				this.messagesStore.scrollToMessage(this.messagesStore.selectedMessageId?.valueOf());
@@ -120,7 +121,7 @@ export default class MessagesDataProviderStore {
 	startPreviousMessagesChannel = (query: MessagesSSEParams) => {
 		this.searchChannelPrev = new SSEChannel(
 			this.messagesStore,
-			this.messagesStore.filterStore.sseConfig.type,
+			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onPrevChannelResponse,
 			this.onPrevChannelClose,
@@ -128,6 +129,7 @@ export default class MessagesDataProviderStore {
 		);
 	};
 
+	@action
 	onPrevChannelResponse = (messages: EventMessage[]) => {
 		this.messages = [...this.messages, ...messages];
 	};
@@ -137,7 +139,8 @@ export default class MessagesDataProviderStore {
 		// this.searchChannelPrev = null;
 	};
 
-	onPrevChannelError = () => {
+	@action
+	onPrevChannelError = (ev: Event) => {
 		this.searchChannelPrev?.stop();
 		this.searchChannelPrev = null;
 		this.isError = true;
@@ -147,7 +150,7 @@ export default class MessagesDataProviderStore {
 	startNextMessagesChannel = (query: MessagesSSEParams) => {
 		this.searchChannelNext = new SSEChannel(
 			this.messagesStore,
-			this.messagesStore.filterStore.sseConfig.type,
+			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onNextChannelResponse,
 			this.onNextChannelClose,
@@ -155,11 +158,13 @@ export default class MessagesDataProviderStore {
 		);
 	};
 
+	@action
 	onNextChannelResponse = (messages: EventMessage[]) => {
-		const messagesToAppend = messages.filter(
+		const messagesToPrepend = messages.filter(
 			m => this.messages.findIndex(topMsg => topMsg.messageId === m.messageId) === -1,
 		);
-		this.messages = [...messagesToAppend, ...this.messages];
+		this.startIndex -= messagesToPrepend.length;
+		this.messages = [...messagesToPrepend, ...this.messages];
 	};
 
 	onNextChannelClose = () => {
@@ -167,7 +172,8 @@ export default class MessagesDataProviderStore {
 		// this.searchChannelNext = null;
 	};
 
-	onNextChannelError = () => {
+	@action
+	onNextChannelError = (ev: Event) => {
 		this.searchChannelNext?.stop();
 		this.searchChannelNext = null;
 		this.isError = true;
@@ -191,36 +197,24 @@ export default class MessagesDataProviderStore {
 		return this.searchChannelNext.load();
 	};
 
-	// Reactions start
 	@action
 	private onFilterChange = async (filter: MessagesFilter) => {
 		this.stopMessagesLoading();
-		this.messagesLoadingState.loadingRootItems = true;
 
-		if (filter.streams.length === 0) return;
-		try {
-			this.loadMessages();
-		} finally {
-			this.messagesLoadingState.loadingRootItems = false;
-		}
-	};
-
-	@action
-	private onStreamsChanged = (streams: string[]) => {
-		if (streams.length === 0) {
+		if (filter.streams.length === 0) {
 			this.resetMessagesDataState();
 		}
+		this.loadMessages();
 	};
-
-	// Reactions end
 
 	@action
 	private resetMessagesDataState = () => {
+		this.initialItemCount = 0;
+		this.startIndex = 10000;
 		this.messages = [];
 		this.isBeginReached = false;
 		this.isEndReached = false;
 		this.isError = false;
-		this.messagesLoadingState = defaultMessagesLoadingState;
 	};
 
 	@observable
