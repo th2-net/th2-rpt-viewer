@@ -27,7 +27,8 @@ import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreat
 import { formatTime, getTimestampAsNumber } from '../../../helpers/date';
 import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
-import { EventMessage } from '../../../models/EventMessage';
+import { MessageScreenshotZoom } from './MessageScreenshot';
+import { EventMessage, isScreenshotMessage } from '../../../models/EventMessage';
 import MessageRaw from './raw/MessageRaw';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import ErrorBoundary from '../../util/ErrorBoundary';
@@ -85,6 +86,8 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const isAttached = !!workspaceStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
 	);
+
+	const isScreenshotMsg = isScreenshotMessage(message);
 
 	const color = heatmapElement?.colors[0];
 
@@ -145,13 +148,23 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 						</div>
 					</div>
 					<div className='mc-header__controls'>
+						{isScreenshotMsg && (
+							<>
+								<div className='mc-header__control-button mc-header__icon mc-headr__zoom-button' />
+								<a
+									className='mc-header__control-button mc-header__icon mc-header__download-button'
+									download={`${messageId}.${messageType.replace('image/', '')}`}
+									href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}
+								/>
+							</>
+						)}
 						{message.body !== null && (
 							<div
 								className={beautifyButtonClass}
 								onClick={() => messagesStore.toggleMessageBeautify(messageId)}
 							/>
 						)}
-						{bodyBase64 && bodyBase64 !== 'null' ? (
+						{!isScreenshotMsg && bodyBase64 && bodyBase64 !== 'null' ? (
 							<div className={showRawButtonClass} onClick={() => showRawHandler(!showRaw)} />
 						) : null}
 						<div
@@ -161,25 +174,38 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 					</div>
 				</div>
 				<div className='mc__mc-body mc-body'>
-					<div className='mc-body__human'>
-						<ErrorBoundary
-							fallback={
-								<MessageBodyCardFallback
-									isBeautified={isContentBeautified}
-									isSelected={color !== undefined}
-									body={body}
-								/>
-							}>
-							<MessageBodyCard
-								isBeautified={isContentBeautified}
-								body={body}
-								isSelected={color !== undefined}
+					{isScreenshotMsg ? (
+						<div className='mc-body__screenshot'>
+							<MessageScreenshotZoom
+								src={
+									typeof bodyBase64 === 'string'
+										? `data:${message.messageType};base64,${message.bodyBase64}`
+										: ''
+								}
+								alt={message.messageId}
 							/>
-						</ErrorBoundary>
-						{bodyBase64 && showRaw ? (
-							<MessageRaw messageId={messageId} rawContent={bodyBase64} />
-						) : null}
-					</div>
+						</div>
+					) : (
+						<div className='mc-body__human'>
+							<ErrorBoundary
+								fallback={
+									<MessageBodyCardFallback
+										isBeautified={isContentBeautified}
+										isSelected={color !== undefined}
+										body={body}
+									/>
+								}>
+								<MessageBodyCard
+									isBeautified={isContentBeautified}
+									body={body}
+									isSelected={color !== undefined}
+								/>
+							</ErrorBoundary>
+							{bodyBase64 && showRaw ? (
+								<MessageRaw messageId={messageId} rawContent={bodyBase64} />
+							) : null}
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
