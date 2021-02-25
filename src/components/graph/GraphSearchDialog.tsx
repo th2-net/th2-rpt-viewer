@@ -21,45 +21,31 @@ import { isEventAction } from '../../helpers/event';
 import { EventAction } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { BookmarkItem } from '../BookmarksPanel';
-import { ModalPortal } from '../util/Portal';
-import GraphSearchHistory from './GraphSearchHistory';
 
 interface Props {
 	className: string;
-	rect: DOMRect | null;
 	isLoading: boolean;
-	isOpen: boolean;
-	history: Array<EventAction | EventMessage>;
+	isError: boolean;
 	foundObject: EventAction | EventMessage | null;
 }
 
 const GraphSearchDialog = (props: Props) => {
-	const { className, rect, isOpen, isLoading, history, foundObject } = props;
-	const style: React.CSSProperties = {
-		position: 'absolute',
-		width: rect ? `${rect.width}px` : 0,
-		top: rect ? `${rect.y + rect.height + 1}px` : 0,
-		left: rect ? `${rect.x}px` : 0,
-		zIndex: 1000,
-	};
+	const { className, isLoading, foundObject, isError } = props;
 
 	const time = isEventAction(foundObject) ? foundObject.startTimestamp : foundObject?.timestamp;
-	const showHistory = !isLoading && !foundObject;
 
 	return (
-		<ModalPortal isOpen={isOpen} style={style}>
-			<div className={className}>
-				{showHistory && <GraphSearchHistory history={history} />}
-				{isLoading && <div className='spinner' />}
-				{foundObject && (
-					<>
-						<p>{isEventAction(foundObject) ? foundObject.eventId : foundObject.messageId}</p>
-						<BookmarkItem item={foundObject} />
-						{time && <TimeAgo date={getTimestampAsNumber(time)} />}
-					</>
-				)}
-			</div>
-		</ModalPortal>
+		<div className={className}>
+			{isLoading && <div className='spinner' />}
+			{!isLoading && isError && <div className='error' />}
+			{!isLoading && foundObject && (
+				<>
+					<p>{isEventAction(foundObject) ? foundObject.eventId : foundObject.messageId}</p>
+					<BookmarkItem item={foundObject} />
+					{time && <TimeAgo date={getTimestampAsNumber(time)} />}
+				</>
+			)}
+		</div>
 	);
 };
 

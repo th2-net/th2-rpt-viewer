@@ -16,15 +16,15 @@
 
 import React from 'react';
 import moment from 'moment';
-import { DateTimeInputType } from '../../../models/filter/FilterInputs';
 import TimeUnitList from './TimeUnitList';
 
 interface FilterTimepickerProps {
-	inputConfig: DateTimeInputType;
+	value: number | null;
+	setValue: (nextValue: number | null) => void;
 }
 
-const FilterTimepicker = ({ inputConfig }: FilterTimepickerProps) => {
-	const { value: time } = inputConfig;
+const FilterTimepicker = (props: FilterTimepickerProps) => {
+	const { value: time, setValue } = props;
 
 	const currentTime = moment(time).utc();
 
@@ -36,9 +36,9 @@ const FilterTimepicker = ({ inputConfig }: FilterTimepickerProps) => {
 	const isToday = currentTime.isSame(today, 'day');
 
 	const setTime = (unit: 'hour' | 'minutes' | 'seconds', unitValue: number) => {
-		const timestamp = inputConfig.value || moment.utc().valueOf();
+		const timestamp = time || moment.utc().valueOf();
 		const updatedDate = moment(timestamp).utc().set(unit, unitValue);
-		inputConfig.setValue(updatedDate.valueOf());
+		setValue(updatedDate.valueOf());
 	};
 
 	const setHour = setTime.bind(null, 'hour');
@@ -48,27 +48,27 @@ const FilterTimepicker = ({ inputConfig }: FilterTimepickerProps) => {
 	const getBlockedMinutes = React.useCallback(
 		(minute: number) => {
 			const currentDay = moment().utc();
-			const isCurrentHour = moment(inputConfig.value).utc().hour() === currentDay.hour();
+			const isCurrentHour = moment(time).utc().hour() === currentDay.hour();
 			const isBlocked = isToday && isCurrentHour ? minute > currentDay.minutes() : false;
 
 			return isBlocked;
 		},
-		[inputConfig.value],
+		[time],
 	);
 
 	const getBlockedSeconds = React.useCallback(
 		(second: number) => {
 			const currentDay = moment().utc();
-			const isCurrentHour = moment(inputConfig.value).utc().hour() === currentDay.hour();
-			const isCurrentMinute = moment(inputConfig.value).utc().minutes() === currentDay.minutes();
+			const isCurrentHour = moment(time).utc().hour() === currentDay.hour();
+			const isCurrentMinute = moment(time).utc().minutes() === currentDay.minutes();
 
 			return isToday && isCurrentHour && isCurrentMinute ? second > currentDay.seconds() : false;
 		},
-		[inputConfig.value],
+		[time],
 	);
 
 	const getBlockedHours = React.useCallback((hour: number) => isToday && hour > today.hour(), [
-		inputConfig.value,
+		time,
 	]);
 
 	return (

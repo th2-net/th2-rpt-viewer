@@ -16,209 +16,194 @@
 
 import * as React from 'react';
 import moment from 'moment';
-import eventHttpApi from '../../api/event';
-import messageHttpApi from '../../api/message';
-import { formatTimestampValue } from '../../helpers/date';
-import { isEventAction } from '../../helpers/event';
-import { createBemElement } from '../../helpers/styleCreators';
-import { useActiveWorkspace, useDebouncedCallback } from '../../hooks';
-import { useOutsideClickListener } from '../../hooks/useOutsideClickListener';
-import { EventAction } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import { DateTimeMask } from '../../models/filter/FilterInputs';
-import { Timestamp } from '../../models/Timestamp';
 import KeyCodes from '../../util/KeyCodes';
-import GraphSearchDialog from './GraphSearchDialog';
-import '../../styles/timestamp-input.scss';
-import localStorageWorker from '../../util/LocalStorageWorker';
 
-const getTimestamp = (timestamp: Timestamp) => {
-	const ms = Math.floor(timestamp.nano / 1000000);
-	return +`${timestamp.epochSecond}${ms}`;
+const TIME_MASK = 'HH:mm:ss.SSS' as const;
+const DATE_TIME_MASK = 'YYYY.MM.DD HH:mm:ss.SSS' as const;
+const TIME_PLACEHOLDER = '00:00:00.000' as const;
+const DATE_TIME_PLACEHOLDER = '0000.01.01 00:00:00.000' as const;
+
+const isCompletable = (
+	dateStr: string,
+	dateMask: typeof TIME_MASK | typeof DATE_TIME_MASK,
+): boolean => {
+	return new RegExp(
+		dateMask
+			.split('')
+			.slice(0, dateStr.length)
+			.map(char => (/[a-zA-Z0-9]/gi.test(char) ? '\\d' : char))
+			.join(''),
+		'gi',
+	).test(dateStr);
 };
 
-function parseDateString(dateStr: string): number {
-	const dateMasks = [
-		'YYYY-MM-DD HH:mm:ss.SSS',
-		'YYYY-MM-DD HH:mm:ss',
-		'YYYY-MM-DD HH:mm',
-		'YYYY-MM-DD HH',
-	];
-	let i = 0;
-	while (i < dateMasks.length) {
-		const date = moment(dateStr, dateMasks[i], true);
-
-		if (date.isValid()) return date.valueOf() - new Date().getTimezoneOffset() * 60000;
-		i++;
+const replaceBlankTimeCharsWithDefaults = (
+	dateStr: string,
+	dateMask: typeof TIME_MASK | typeof DATE_TIME_MASK,
+	placeholder: typeof TIME_PLACEHOLDER | typeof DATE_TIME_PLACEHOLDER,
+) => {
+	if (isCompletable(dateStr, dateMask)) {
+		return dateStr + placeholder.slice(dateStr.length);
 	}
-
-	throw new Error('Invalid date string');
-}
+	return null;
+};
 
 interface Props {
-	timestamp: number;
-	wrapperClassName?: string;
-	className?: string;
-	style?: React.CSSProperties;
-	readonly?: boolean;
-	placeholder?: string;
-	onTimestampSubmit: (timestamp: number) => void;
+	openTimePicker: () => void;
+	closeTimePicker: () => void;
+	openHistory: () => void;
+	closeHistory: () => void;
+	setTimestamp: (ts: null | number) => void;
+	timestamp: number | null;
+	onSubmit: (value: number | string) => void;
+}
+
+export interface GraphSearchInputConfig {
+	isValid: boolean;
+	value: string;
+	timestamp: number | null;
+	placeholder: typeof TIME_PLACEHOLDER | typeof DATE_TIME_PLACEHOLDER | null;
+	mask: typeof TIME_MASK | typeof DATE_TIME_MASK | null;
 }
 
 const GraphSearchInput = (props: Props) => {
 	const {
+		openTimePicker,
+		closeTimePicker,
+		openHistory,
+		closeHistory,
 		timestamp,
-		readonly = false,
-		placeholder = 'Go to ID or Timestamp',
-		style,
-		onTimestampSubmit,
+		setTimestamp,
+		onSubmit,
 	} = props;
 
-	const activeWorkspace = useActiveWorkspace();
-	const [currentValue, setCurrentValue] = React.useState(
-		moment(timestamp).utc().format('YYYY-MM-DD HH:mm:ss.SSS'),
-	);
-	const [currentTimestamp, setCurrentTimestamp] = React.useState(0);
-	const [foundObject, setFoundbject] = React.useState<EventAction | EventMessage | null>(null);
-	const [dimensions, setDimensions] = React.useState<DOMRect | null>(null);
-	const [isLoading, setIsLoading] = React.useState(false);
-	const [showPicker, setShowPicker] = React.useState(false);
-	const [showDialog, setShowDialog] = React.useState(false);
-	const [history, setHistory] = React.useState<Array<EventAction | EventMessage>>(
-		localStorageWorker.getGraphSearchHistory(),
-	);
-
-	const wrapperRef = React.useRef<HTMLDivElement>(null);
-	const timeout = React.useRef<NodeJS.Timeout>();
-
-	useOutsideClickListener(
-		wrapperRef,
-		() => {
-			setShowPicker(false);
-			setShowDialog(false);
-		},
-		'mouseup',
-	);
+	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
+		isValid: false,
+		mask: null,
+		placeholder: null,
+		timestamp: null,
+		value: '',
+	});
 
 	React.useEffect(() => {
-		if (wrapperRef.current) {
-			setDimensions(wrapperRef.current.getBoundingClientRect());
+		if (timestamp !== null && timestamp !== inputConfig.timestamp) {
+			const mask = inputConfig.mask || DATE_TIME_MASK;
+			const placeholder = inputConfig.placeholder || DATE_TIME_PLACEHOLDER;
+			setInputConfig({
+				...inputConfig,
+				value: moment.utc(timestamp).format(mask),
+				mask,
+				placeholder,
+				timestamp,
+				isValid: true,
+			});
 		}
-	}, [wrapperRef.current]);
-
-	React.useEffect(() => {
-		setCurrentValue(moment(timestamp).utc().format('YYYY-MM-DD HH:mm:ss.SSS'));
-		setCurrentTimestamp(timestamp);
 	}, [timestamp]);
 
-	React.useEffect(() => {
-		const ac = new AbortController();
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		const { mask, value, placeholder, isValid } = inputConfig;
+		if (e.keyCode === KeyCodes.ENTER) {
+			closeHistory();
+			closeTimePicker();
+			onSubmit(value && isValid && timestamp ? timestamp : value);
+		}
 
-		if (showDialog) {
-			try {
-				const parsedTimestamp = parseDateString(currentValue);
-				setCurrentTimestamp(parsedTimestamp);
-				setIsLoading(false);
-			} catch (error) {
-				setIsLoading(true);
-				setTimestampFromFoundObject(ac);
+		if (e.keyCode === KeyCodes.TAB) {
+			e.preventDefault();
+			if (mask && isCompletable(value, mask) && placeholder) {
+				const fullDate = replaceBlankTimeCharsWithDefaults(value, mask, placeholder);
+				const completedTimestamp = moment.utc(fullDate, mask);
+				if (fullDate !== null && completedTimestamp.isValid()) {
+					setInputConfig({
+						...inputConfig,
+						value: fullDate,
+						isValid: true,
+						timestamp: completedTimestamp.valueOf(),
+					});
+					setTimestamp(completedTimestamp.valueOf());
+				}
 			}
 		}
-		return () => {
-			ac.abort();
-		};
-	}, [currentValue, showDialog]);
+	};
 
-	React.useEffect(() => {
-		if (foundObject) {
-			activeWorkspace.onSavedItemSelect(foundObject);
-			localStorageWorker.saveGraphSearchHistory([...history, foundObject]);
-			setHistory(localStorageWorker.getGraphSearchHistory());
-			timeout.current = setTimeout(() => {
-				setShowDialog(false);
-			}, 2000);
+	const handleInputValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const value = event.target.value;
+		onSubmit('');
+		if (value) {
+			closeHistory();
+		} else {
+			openHistory();
 		}
-	}, [foundObject]);
 
-	const onObjectFound = (
-		object: null | EventAction | EventMessage,
-		id: string,
-		ac: AbortController,
-	) => {
-		setIsLoading(false);
-		if (!object) {
-			return;
-		}
-		ac.abort();
-		const timestamFromFoundObject = isEventAction(object)
-			? getTimestamp(object.startTimestamp)
-			: getTimestamp(object.timestamp);
-		setCurrentTimestamp(timestamFromFoundObject);
-		setCurrentValue(formatTimestampValue(timestamFromFoundObject, DateTimeMask.DATE_TIME_MASK));
-	};
+		const replacedTime = replaceBlankTimeCharsWithDefaults(value, TIME_MASK, TIME_PLACEHOLDER);
+		const parsedTime = moment.utc(replacedTime, TIME_MASK, true);
 
-	const setTimestampFromFoundObject = useDebouncedCallback((ac: AbortController) => {
-		eventHttpApi.getEvent(currentValue, ac.signal, { probe: true }).then(foundEvent => {
-			setFoundbject(foundEvent);
-			onObjectFound(foundEvent, currentValue, ac);
-		});
-		messageHttpApi.getMessage(currentValue, ac.signal, { probe: true }).then(message => {
-			setFoundbject(message);
-			onObjectFound(message, currentValue, ac);
-		});
-	}, 500);
+		const replacedDate = replaceBlankTimeCharsWithDefaults(
+			value,
+			DATE_TIME_MASK,
+			DATE_TIME_PLACEHOLDER,
+		);
+		const parsedDate = moment.utc(replacedDate, DATE_TIME_MASK, true);
 
-	const toggleDatepicker = () => {
-		setShowPicker(currentShowPicker => !currentShowPicker);
-	};
-
-	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setCurrentValue(e.target.value);
-	};
-
-	const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.keyCode === KeyCodes.ENTER) {
-			onTimestampSubmit(currentTimestamp);
+		if (value.length > 2 && isCompletable(value, TIME_MASK) && parsedTime.isValid()) {
+			setInputConfig({
+				isValid: value.length === TIME_MASK.length && moment(value, TIME_MASK).isValid(),
+				mask: TIME_MASK,
+				placeholder: TIME_PLACEHOLDER,
+				timestamp: parsedTime.valueOf(),
+				value,
+			});
+			setTimestamp(parsedTime.valueOf());
+			openTimePicker();
+		} else if (value.length > 4 && isCompletable(value, DATE_TIME_MASK) && parsedDate.isValid()) {
+			setInputConfig({
+				isValid: value.length === DATE_TIME_MASK.length && moment(value, DATE_TIME_MASK).isValid(),
+				mask: DATE_TIME_MASK,
+				placeholder: DATE_TIME_PLACEHOLDER,
+				timestamp: parsedDate.valueOf(),
+				value,
+			});
+			setTimestamp(parsedDate.valueOf());
+			openTimePicker();
+		} else {
+			setInputConfig({
+				isValid: false,
+				mask: null,
+				placeholder: null,
+				timestamp: null,
+				value,
+			});
+			closeTimePicker();
 		}
 	};
-
-	const onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-		e.target.setSelectionRange(0, currentValue.length);
-		setShowDialog(true);
-		if (timeout.current) clearTimeout(timeout.current);
-		setFoundbject(null);
-	};
-
-	const dialogClassName = createBemElement(
-		'timestamp-input',
-		'dialog',
-		foundObject || isLoading || history.length > 0 ? 'bordered' : null,
-	);
-
-	const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
-		className: 'timestamp-input__input',
-		style,
-		readOnly: readonly,
-		value: currentValue,
-		placeholder,
-		onChange,
-		onKeyDown,
-		onFocus,
-	};
-
-	const datepickerButtonClassName = createBemElement('timestamp-input', 'datepicker-button');
 
 	return (
-		<div className='timestamp-input' ref={wrapperRef}>
-			<input {...inputProps} />
-			<button className={datepickerButtonClassName} onClick={toggleDatepicker} />
-			<GraphSearchDialog
-				history={history}
-				className={dialogClassName}
-				isOpen={showDialog}
-				isLoading={isLoading}
-				rect={dimensions}
-				foundObject={foundObject}
+		<div className='graph-search-input'>
+			<input
+				value={inputConfig.value}
+				onChange={handleInputValueChange}
+				className='graph-search-input__input'
+				placeholder={inputConfig.placeholder || undefined}
+				onFocus={() => {
+					if (!inputConfig.value) {
+						openHistory();
+					} else if (
+						isCompletable(inputConfig.value, DATE_TIME_MASK) ||
+						isCompletable(inputConfig.value, TIME_MASK)
+					) {
+						openTimePicker();
+					}
+				}}
+				onKeyDown={handleKeyDown}
+			/>
+			<input
+				className='graph-search-input__placeholder'
+				type='text'
+				value={
+					inputConfig.placeholder
+						? inputConfig.value + inputConfig.placeholder.slice(inputConfig.value.length)
+						: ''
+				}
 			/>
 		</div>
 	);

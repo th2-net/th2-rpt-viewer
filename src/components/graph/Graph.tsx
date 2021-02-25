@@ -19,6 +19,7 @@ import { Observer, observer } from 'mobx-react-lite';
 import moment from 'moment';
 import ResizeObserver from 'resize-observer-polyfill';
 import GraphChunk from './GraphChunk';
+import GraphSearch from './GraphSearch';
 import GraphOverlay from './GraphOverlay';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
@@ -146,6 +147,10 @@ function Graph() {
 				getGraphItemType={getGraphItemType}
 				panelsRange={panelsRange}
 				disableInteractions={activeWorkspace.isSearchWorkspace}
+			/>
+			<GraphSearch
+				onTimestampSubmit={activeWorkspace.graphStore.setTimestamp}
+				onFoundItemClick={activeWorkspace.onSavedItemSelect}
 			/>
 		</div>
 	);
