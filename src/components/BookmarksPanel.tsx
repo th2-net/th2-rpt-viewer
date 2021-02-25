@@ -84,7 +84,7 @@ interface BookmarkItemProps {
 	onClick?: (item: BookmarkedItem) => void;
 }
 
-export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
+const BookmarkItemBase = ({ item, onRemove, onClick }: BookmarkItemProps) => {
 	const itemInfo = {
 		id: isEventMessage(item) ? item.messageId : item.eventId,
 		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
@@ -127,4 +127,6 @@ export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 			)}
 		</div>
 	);
-}
+};
+
+export const BookmarkItem = React.memo(BookmarkItemBase);

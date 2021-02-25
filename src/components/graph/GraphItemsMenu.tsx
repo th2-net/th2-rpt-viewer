@@ -21,7 +21,7 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { GraphItem } from '../../models/Graph';
-import { getEventStatus, isEventMessage, isEventNode } from '../../helpers/event';
+import { isEventMessage } from '../../helpers/event';
 import { GraphStore } from '../../stores/GraphStore';
 import Popover from '../util/Popover';
 
@@ -76,7 +76,6 @@ export default function GraphItemsMenu({
 							className={createStyleSelector(
 								'graph-menu__item-icon',
 								`${getGraphItemType(item)}-icon`,
-								isEventNode(item) ? getEventStatus(item) : null,
 							)}
 						/>
 						<div className='graph-menu__item-name'>

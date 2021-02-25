@@ -16,23 +16,25 @@
 
 import * as React from 'react';
 import TimeAgo from 'react-timeago';
-import { getTimestampAsNumber } from '../../../helpers/date';
-import { isEventAction } from '../../../helpers/event';
-import { EventAction } from '../../../models/EventAction';
-import { EventMessage } from '../../../models/EventMessage';
-import { BookmarkItem } from '../../BookmarksPanel';
-import { ModalPortal } from '../Portal';
+import { getTimestampAsNumber } from '../../helpers/date';
+import { isEventAction } from '../../helpers/event';
+import { EventAction } from '../../models/EventAction';
+import { EventMessage } from '../../models/EventMessage';
+import { BookmarkItem } from '../BookmarksPanel';
+import { ModalPortal } from '../util/Portal';
+import GraphSearchHistory from './GraphSearchHistory';
 
 interface Props {
 	className: string;
 	rect: DOMRect | null;
 	isLoading: boolean;
 	isOpen: boolean;
+	history: Array<EventAction | EventMessage>;
 	foundObject: EventAction | EventMessage | null;
 }
 
-const TimestampDialog = (props: Props) => {
-	const { className, rect, isOpen, isLoading, foundObject } = props;
+const GraphSearchDialog = (props: Props) => {
+	const { className, rect, isOpen, isLoading, history, foundObject } = props;
 	const style: React.CSSProperties = {
 		position: 'absolute',
 		width: rect ? `${rect.width}px` : 0,
@@ -42,10 +44,12 @@ const TimestampDialog = (props: Props) => {
 	};
 
 	const time = isEventAction(foundObject) ? foundObject.startTimestamp : foundObject?.timestamp;
+	const showHistory = !isLoading && !foundObject;
 
 	return (
 		<ModalPortal isOpen={isOpen} style={style}>
 			<div className={className}>
+				{showHistory && <GraphSearchHistory history={history} />}
 				{isLoading && <div className='spinner' />}
 				{foundObject && (
 					<>
@@ -59,4 +63,4 @@ const TimestampDialog = (props: Props) => {
 	);
 };
 
-export default TimestampDialog;
+export default GraphSearchDialog;
