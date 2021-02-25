@@ -63,7 +63,7 @@ const MessagesFilterPanel = () => {
 	}, [messagesStore.filterStore.sseMessagesFilter]);
 
 	const submitChanges = React.useCallback(() => {
-		messagesStore.filterStore.setMessagesFilter(
+		messagesStore.applyFilter(
 			{
 				...filterStore.messagesFilter,
 				streams,

@@ -62,6 +62,22 @@
 	padding: 10px;
 	border-radius: 5px;
 
+	&.highlighted {
+		@keyframes highlight {
+			from {
+				background: rgba($highlightedMessageCardBackground, 1);
+			}
+
+			50% {
+				background: rgba($highlightedMessageCardBackground, 0);
+			}
+			to {
+				background: rgba($highlightedMessageCardBackground, 1);
+			}
+		}
+		animation: highlight 1s infinite ease-in-out;
+	}
+
 	&.attached {
 		border: 2px solid $attachedMessageCardBorderColor;
 
@@ -217,6 +233,10 @@
 	&__show-raw-button {
 		background: url(../../resources/icons/bincode.svg);
 	}
+
+	&__download-button {
+		@include icon(url(../../resources/icons/download.svg), 15px, 15px);
+	}
 }
 
 .mc-body {
@@ -259,6 +279,12 @@
 	&__beautify-wrapper {
 		@include scrollbar;
 		overflow-x: scroll;
+	}
+
+	&__screenshot {
+		width: auto;
+		height: 100px;
+		padding: 5px 0;
 	}
 }
 
@@ -569,15 +595,6 @@
 			font-weight: bold;
 		}
 
-		&__content {
-			background-color: #fff;
-			position: absolute;
-			top: 35px;
-			box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.25);
-			border-radius: 5px;
-			padding: 5px 10px;
-		}
-
 		&__add-button {
 			height: 19px;
 			display: flex;
@@ -591,11 +608,6 @@
 			border: none;
 			margin-left: 5px;
 		}
-
-		&__list-item {
-			color: $primaryTextColor;
-			font-size: 13px;
-		}
 	}
 }
 
@@ -605,4 +617,51 @@
 	color: $errorMsgBackgroundColor;
 	border-radius: 5px;
 	padding: 20px 15px;
+}
+
+.zoomed-message {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	cursor: zoom-in;
+
+	& img {
+		object-fit: cover;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	&.open {
+		cursor: zoom-out;
+
+		& img {
+			z-index: 1001;
+			position: fixed;
+			width: auto;
+			height: auto;
+			max-width: 100%;
+			margin: auto;
+		}
+
+		.shade {
+			pointer-events: auto;
+			opacity: 1;
+			z-index: 1000;
+		}
+	}
+
+	.shade {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		pointer-events: none;
+		opacity: 0;
+		background: rgba($color: #ade0eb, $alpha: 0.6);
+	}
 }

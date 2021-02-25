@@ -44,6 +44,7 @@ export function createURLSearchParams(
 export function registerUrlMiddleware(rootStore: RootStore) {
 	autorun(() => {
 		const activeWorkspace = rootStore.workspacesStore.activeWorkspace;
+		if (activeWorkspace.isSearchWorkspace) return;
 
 		let eventStoreState: EventStoreURLState = {};
 		let messagesStoreState: MessagesStoreURLState = {};
@@ -97,8 +98,8 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 				toJS({
 					events: eventStoreState,
 					messages: messagesStoreState,
-					timeRange: activeWorkspace.graphDataStore.range,
-					interval: activeWorkspace.graphDataStore.interval,
+					timeRange: activeWorkspace.graphStore.range,
+					interval: activeWorkspace.graphStore.interval,
 					layout: activeWorkspace.viewStore.panelsLayout,
 				}),
 			];

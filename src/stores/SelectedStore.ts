@@ -41,6 +41,14 @@ export class SelectedStore {
 		return sortByTimestamp([...this.pinnedEvents, ...this.pinnedMessages]);
 	}
 
+	@computed get hoveredEvent(): EventTreeNode | null {
+		return this.workspacesStore.activeWorkspace.eventsStore.hoveredEvent;
+	}
+
+	@computed get hoveredMessage(): EventMessage | null {
+		return this.workspacesStore.activeWorkspace.messagesStore.hoveredMessage;
+	}
+
 	@computed get graphItems(): Array<GraphItem> {
 		const items = [...this.savedItems, ...this.workspacesStore.activeWorkspace.attachedMessages];
 
@@ -48,6 +56,14 @@ export class SelectedStore {
 
 		if (selectedEvent) {
 			items.push(selectedEvent);
+		}
+
+		if (this.hoveredEvent) {
+			items.push(this.hoveredEvent);
+		}
+
+		if (this.hoveredMessage) {
+			items.push(this.hoveredMessage);
 		}
 
 		return sortByTimestamp(filterUniqueGraphItems(items));

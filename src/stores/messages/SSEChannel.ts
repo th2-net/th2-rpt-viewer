@@ -26,14 +26,11 @@ import MessagesStore from './MessagesStore';
 export class SSEChannel {
 	private channel: EventSource | null = null;
 
-	@observable.ref
 	private accumulatedMessages: EventMessage[] = [];
 
-	private immdediateMessageResponse = 15;
+	private chunkSize = 12;
 
-	private sentMessages = 0;
-
-	private chunkUpdateSize = 15;
+	private updateTimeout = 3500;
 
 	@observable
 	public isError = false;
@@ -64,65 +61,101 @@ export class SSEChannel {
 		this.isError = true;
 		this.isLoading = false;
 		this.channel?.close();
-		if (event instanceof MessageEvent) {
-			this.onError(event);
-		}
+		this.onError(event);
 	};
 
 	private onSSEResponse = (ev: Event) => {
 		const data = JSON.parse((ev as MessageEvent).data);
 		if (isEventMessage(data)) {
-			this.accumulatedMessages = [...this.accumulatedMessages, data];
+			this.accumulatedMessages.push(data);
 		}
 	};
 
-	public load = (): Promise<EventMessage[]> => {
-		let resumeFromId;
+	messagesResolverInterval: NodeJS.Timeout | null = null;
+
+	messagesResolverTimeout: NodeJS.Timeout | null = null;
+
+	public load = async (): Promise<EventMessage[]> => {
+		this.resetSSEState();
 		this.isLoading = true;
-		if (this.messagesStore.data.messages.length > 0) {
+
+		let resumeFromId;
+
+		const messages = this.messagesStore.data.messages;
+		if (messages.length > 0) {
 			resumeFromId =
 				this.queryParams.searchDirection === 'next'
-					? this.messagesStore.data.messages[0].messageId
-					: this.messagesStore.data.messages[this.messagesStore.data.messages.length - 1].messageId;
+					? messages[0].messageId
+					: messages[messages.length - 1].messageId;
 		}
+
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
 				resumeFromId,
-				resultCountLimit: 15,
+				resultCountLimit: this.chunkSize,
 			},
 			type: this.type,
 		});
+
 		this.channel.addEventListener('message', this.onSSEResponse);
 		this.channel.addEventListener('close', this._onClose);
 		this.channel.addEventListener('error', this._onError);
 
+		const messagesChunk = await Promise.race([
+			this.resolveMessagesWithinTimeout(this.updateTimeout),
+			this.resolveMessagesWithinCount(this.chunkSize),
+		]);
+
+		this.resetSSEState();
+		this.isLoading = false;
+
+		return messagesChunk;
+	};
+
+	resolveMessagesWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
 		return new Promise(res => {
-			setTimeout(() => {
-				res(
-					this.queryParams.searchDirection === 'next'
-						? this.accumulatedMessages.reverse()
-						: this.accumulatedMessages,
-				);
-				this.accumulatedMessages = [];
-				this.isLoading = false;
-				this.channel?.close();
-				this.channel = null;
-			}, 2000);
+			this.messagesResolverTimeout = setTimeout(() => {
+				res(this.nextChunk());
+			}, timeout);
+		});
+	};
+
+	resolveMessagesWithinCount = (count: number): Promise<EventMessage[]> => {
+		return new Promise(res => {
+			this.messagesResolverInterval = setInterval(() => {
+				if (this.accumulatedMessages.length >= count || !this.isLoading) {
+					res(this.nextChunk());
+				}
+			}, 20);
 		});
 	};
 
 	public stop = () => {
-		this.channel?.close();
-		// this.channel = null;
+		this.resetSSEState();
 	};
 
-	nextChunk = async (): Promise<EventMessage[]> => {
-		let chunk = this.accumulatedMessages.splice(0, this.chunkUpdateSize);
+	nextChunk = () => {
+		let chunk = this.accumulatedMessages;
 		if (this.queryParams.searchDirection === 'next') {
 			chunk = chunk.reverse();
 		}
-		this.sentMessages += chunk.length;
 		return chunk;
+	};
+
+	resetSSEState = () => {
+		if (this.messagesResolverInterval) {
+			clearInterval(this.messagesResolverInterval);
+		}
+
+		if (this.messagesResolverTimeout) {
+			clearInterval(this.messagesResolverTimeout);
+		}
+
+		this.channel?.close();
+		this.channel = null;
+		this.accumulatedMessages = [];
+		this.messagesResolverInterval = null;
+		this.messagesResolverTimeout = null;
 	};
 }

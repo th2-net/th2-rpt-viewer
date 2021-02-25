@@ -19,6 +19,7 @@ import * as React from 'react';
 export function useOutsideClickListener(
 	ref: React.MutableRefObject<HTMLElement | null>,
 	handler: (e: MouseEvent) => void,
+	eventType: 'mousedown' | 'mouseup' = 'mousedown',
 ) {
 	const onOutsideClick = (e: MouseEvent) => {
 		if (!ref.current?.contains(e.target as Element)) {
@@ -27,10 +28,10 @@ export function useOutsideClickListener(
 	};
 
 	React.useEffect(() => {
-		document.addEventListener('mousedown', onOutsideClick);
+		document.addEventListener(eventType, onOutsideClick);
 
 		return () => {
-			document.removeEventListener('mousedown', onOutsideClick);
+			document.removeEventListener(eventType, onOutsideClick);
 		};
 	}, [handler]);
 }

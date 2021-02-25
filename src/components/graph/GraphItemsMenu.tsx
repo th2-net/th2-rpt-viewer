@@ -21,8 +21,8 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { GraphItem } from '../../models/Graph';
-import { getEventStatus, isEventMessage, isEventNode } from '../../helpers/event';
-import { GraphDataStore } from '../../stores/graph/GraphDataStore';
+import { isEventMessage } from '../../helpers/event';
+import { GraphStore } from '../../stores/GraphStore';
 import Popover from '../util/Popover';
 
 interface MenuProps {
@@ -31,7 +31,7 @@ interface MenuProps {
 	isMenuOpened: boolean;
 	anchorEl?: HTMLElement | null;
 	onMenuItemClick: (item: EventTreeNode | EventMessage) => void;
-	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
+	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 	maxWidth?: number;
 }
 
@@ -76,7 +76,6 @@ export default function GraphItemsMenu({
 							className={createStyleSelector(
 								'graph-menu__item-icon',
 								`${getGraphItemType(item)}-icon`,
-								isEventNode(item) ? getEventStatus(item) : null,
 							)}
 						/>
 						<div className='graph-menu__item-name'>
