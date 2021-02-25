@@ -20,12 +20,12 @@
 	height: 100%;
 	width: 100%;
 	background-color: $graphBackgroundColor;
-	position: relative;
 	display: flex;
 	flex-direction: column;
 	flex-shrink: 0;
 	justify-content: flex-end;
 	overflow: visible;
+	position: relative;
 }
 
 .outside-items {

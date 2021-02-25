@@ -73,6 +73,9 @@ export default class MessagesStore {
 	};
 
 	@observable
+	public showFilterChangeHint = false;
+
+	@observable
 	public selectedMessage: EventMessage | null = null;
 
 	constructor(
@@ -166,6 +169,7 @@ export default class MessagesStore {
 	@action
 	public applyFilter = (filter: MessagesFilter, sseFilters: MessageFilterState | null) => {
 		this.selectedMessage = null;
+		this.showFilterChangeHint = false;
 		this.filterStore.setMessagesFilter(filter, sseFilters);
 	};
 
@@ -192,6 +196,7 @@ export default class MessagesStore {
 			this.selectedMessage = null;
 			this.selectedMessageId = new String(targetMessage.messageId);
 			this.highlightedMessageId = targetMessage.messageId;
+			this.showFilterChangeHint = false;
 		}
 	};
 
@@ -230,6 +235,7 @@ export default class MessagesStore {
 			this.selectedMessage = null;
 		} else {
 			this.selectedMessage = message;
+			this.handleFilterHint(message);
 		}
 	};
 
@@ -252,8 +258,10 @@ export default class MessagesStore {
 			this.data.messages.length !== 0 ||
 			this.data.isLoadingNextMessages ||
 			this.data.isLoadingPreviousMessages
-		)
+		) {
+			this.handleFilterHint(attachedMessages);
 			return;
+		}
 
 		const mostRecentMessage = sortMessagesByTimestamp(attachedMessages)[0];
 
@@ -294,5 +302,25 @@ export default class MessagesStore {
 	public dispose = () => {
 		this.attachedMessagesSubscription();
 		this.filterStore.dispose();
+	};
+
+	@action
+	private handleFilterHint = (message: EventMessage | EventMessage[]) => {
+		const messagesFilter = this.filterStore.messagesFilter;
+		const sseFilter = this.filterStore.sseMessagesFilter;
+		const areFiltersApplied = [
+			messagesFilter.messageTypes,
+			sseFilter
+				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
+				: [],
+		].some(filterValues => filterValues.length > 0);
+		if (isEventMessage(message)) {
+			this.showFilterChangeHint =
+				!this.filterStore.messagesFilter.streams.includes(message.messageId) || areFiltersApplied;
+		} else {
+			this.showFilterChangeHint =
+				message.some(m => !this.filterStore.messagesFilter.streams.includes(m.sessionId)) ||
+				areFiltersApplied;
+		}
 	};
 }

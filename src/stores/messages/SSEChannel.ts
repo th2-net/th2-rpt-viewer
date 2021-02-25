@@ -124,7 +124,7 @@ export class SSEChannel {
 	resolveMessagesWithinCount = (count: number): Promise<EventMessage[]> => {
 		return new Promise(res => {
 			this.messagesResolverInterval = setInterval(() => {
-				if (this.accumulatedMessages.length >= count) {
+				if (this.accumulatedMessages.length >= count || !this.isLoading) {
 					res(this.nextChunk());
 				}
 			}, 20);

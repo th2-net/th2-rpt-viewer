@@ -27,3 +27,7 @@ export interface EventMessage {
 	body: MessageBody | null;
 	bodyBase64: string | null;
 }
+
+export function isScreenshotMessage(message: EventMessage): boolean {
+	return /image\/\w+/gi.test(message.messageType);
+}
