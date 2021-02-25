@@ -129,7 +129,7 @@ const MessagesScrollContainer: TScrollContainer = ({
 					height: '100%',
 					display: 'flex',
 					flexDirection: 'column',
-					marginRight: '11px',
+					marginLeft: '5px',
 					flexGrow: 1,
 				}}>
 				{loadingNextItems && <div className='messages-list__spinner' />}

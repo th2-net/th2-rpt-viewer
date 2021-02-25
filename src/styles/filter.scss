@@ -47,17 +47,21 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		padding: 0px 10px;
+		padding: 4px 5px;
 		cursor: pointer;
 
 		&.disabled {
 			opacity: 0.6;
 			cursor: default;
 		}
+
+		&.active {
+			padding: 4px 10px;
+		}
 	}
 
 	&__icon {
-		@include icon(url(../../resources/icons/filter.svg), 20px, 20px);
+		@include icon(url(../../resources/icons/filter.svg), 15px, 15px);
 
 		&.applied {
 			background-image: url(../../resources/icons/filter-applied.svg);
@@ -72,11 +76,12 @@
 		-webkit-margin-before: 0em;
 		-webkit-margin-after: 0em;
 		color: $primaryTextColor;
-		font-size: 14px;
+		font-size: 12px;
+		line-height: 15px;
 		font-weight: bold;
 		display: inline;
 		white-space: nowrap;
-		padding-left: 10px;
+		padding-left: 5px;
 
 		&.active {
 			color: $filterTextColor;
@@ -109,11 +114,11 @@
 		background-color: $filterPrimaryColor;
 		color: $filterTextColor;
 		font-weight: bold;
-		border-radius: 3px;
-		font-size: 14px;
+		border-radius: 5px;
+		font-size: 11px;
 		text-align: center;
-		margin: 0 5px;
-		padding: 0 5px;
+		margin-left: 5px;
+		padding: 2px 5px;
 	}
 
 	&__loading {
@@ -251,7 +256,7 @@
 	&__compound {
 		display: flex;
 
-		&>div:last-child {
+		& > div:last-child {
 			width: 100%;
 		}
 	}
@@ -308,7 +313,7 @@
 
 .filter-row {
 	min-height: 32px;
-	font-size: 12px;
+	font-size: 14px;
 	font-weight: bold;
 	box-sizing: border-box;
 	display: flex;
@@ -364,7 +369,7 @@
 		// workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
 		min-width: 0;
 		&:disabled {
-			opacity: .5;
+			opacity: 0.5;
 		}
 		&:focus {
 			background-color: #fff;
@@ -473,7 +478,7 @@
 		}
 
 		&:disabled {
-			opacity: .5;
+			opacity: 0.5;
 		}
 	}
 
