@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import EventWindow from '../event/EventWindow';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import MessagesWindow from '../message/MessagesWindow';
-import { useActivePanel } from '../../hooks';
+import { useActivePanel, useActiveWorkspace } from '../../hooks';
 import { isEventsStore, isMessagesStore } from '../../helpers/stores';
 import '../../styles/workspace.scss';
 
@@ -36,6 +36,50 @@ const panelColors = {
 
 function Workspace() {
 	const { activePanel } = useActivePanel(null);
+	const activeWorkspace = useActiveWorkspace();
+
+	const [eventsRange, setEventsRange] = React.useState([0, 0]);
+	const [messagesRange, setMessagesRange] = React.useState([0, 0]);
+	const [isEventsIndicated, setEventsIndicated] = React.useState(false);
+	const [isMessagesIndicated, setMessagesIndicated] = React.useState(false);
+	const eventsTimer = React.useRef<NodeJS.Timeout>();
+	const messagesTimer = React.useRef<NodeJS.Timeout>();
+
+	React.useEffect(() => {
+		let range = activeWorkspace.eventsStore.panelRange;
+		if (eventsRange[0] !== range[0] || eventsRange[1] !== range[1]) {
+			setEventsIndicated(true);
+			setEventsRange(range);
+
+			eventsTimer.current = setTimeout(() => {
+				setEventsIndicated(false);
+			}, 400);
+		}
+
+		return () => {
+			if (eventsTimer.current) {
+				window.clearTimeout(eventsTimer.current);
+			}
+		};
+	}, [activeWorkspace.eventsStore.panelRange]);
+
+	React.useEffect(() => {
+		let range = activeWorkspace.messagesStore.panelRange;
+		if (messagesRange[0] !== range[0] || messagesRange[1] !== range[1]) {
+			setMessagesIndicated(true);
+			setMessagesRange(range);
+
+			messagesTimer.current = setTimeout(() => {
+				setMessagesIndicated(false);
+			}, 400);
+		}
+
+		return () => {
+			if (messagesTimer.current) {
+				window.clearTimeout(messagesTimer.current);
+			}
+		};
+	}, [activeWorkspace.messagesStore.panelRange]);
 
 	return (
 		<div className='workspace'>
@@ -46,14 +90,14 @@ function Workspace() {
 						color: panelColors.events,
 						component: <EventWindow />,
 						minWidth: 500,
-						isActive: isEventsStore(activePanel),
+						isActive: isEventsStore(activePanel) || isEventsIndicated,
 					},
 					{
 						title: 'Messages',
 						color: panelColors.messages,
 						component: <MessagesWindow />,
 						minWidth: 400,
-						isActive: isMessagesStore(activePanel),
+						isActive: isMessagesStore(activePanel) || isMessagesIndicated,
 					},
 				]}
 			/>
