@@ -46,7 +46,7 @@ function Workspace() {
 	const messagesTimer = React.useRef<NodeJS.Timeout>();
 
 	React.useEffect(() => {
-		let range = activeWorkspace.eventsStore.panelRange;
+		const range = activeWorkspace.eventsStore.panelRange;
 		if (eventsRange[0] !== range[0] || eventsRange[1] !== range[1]) {
 			setEventsIndicated(true);
 			setEventsRange(range);
@@ -64,7 +64,7 @@ function Workspace() {
 	}, [activeWorkspace.eventsStore.panelRange]);
 
 	React.useEffect(() => {
-		let range = activeWorkspace.messagesStore.panelRange;
+		const range = activeWorkspace.messagesStore.panelRange;
 		if (messagesRange[0] !== range[0] || messagesRange[1] !== range[1]) {
 			setMessagesIndicated(true);
 			setMessagesRange(range);
