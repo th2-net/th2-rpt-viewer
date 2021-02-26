@@ -39,7 +39,6 @@ const getTimestamp = (timestamp: Timestamp) => {
 };
 
 interface Props {
-	timestamp?: number;
 	onTimestampSubmit: (timestamp: number) => void;
 	onFoundItemClick: InstanceType<typeof WorkspaceStore>['onSavedItemSelect'];
 }
@@ -56,7 +55,7 @@ const GraphSearch = (props: Props) => {
 	const [history, setHistory] = React.useState<Array<EventAction | EventMessage>>(
 		localStorageWorker.getGraphSearchHistory(),
 	);
-	const [ts, setTs] = React.useState<number | null>(null);
+	const [timestamp, setTimestamp] = React.useState<number | null>(null);
 	const [showHistory, setShowHistory] = React.useState(false);
 
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
@@ -108,8 +107,9 @@ const GraphSearch = (props: Props) => {
 			setIsLoading(false);
 			setIsError(false);
 			onFoundItemClick(foundObject);
-			localStorageWorker.saveGraphSearchHistory([...history, foundObject]);
-			setHistory(localStorageWorker.getGraphSearchHistory());
+			const updatedHistory = [...history, foundObject];
+			localStorageWorker.saveGraphSearchHistory(updatedHistory);
+			setHistory(updatedHistory);
 			timeout.current = setTimeout(() => {
 				setShowDialog(false);
 			}, 2000);
@@ -129,7 +129,7 @@ const GraphSearch = (props: Props) => {
 		const timestamFromFoundObject = isEventAction(object)
 			? getTimestamp(object.startTimestamp)
 			: getTimestamp(object.timestamp);
-		setTs(timestamFromFoundObject);
+		setTimestamp(timestamFromFoundObject);
 	};
 
 	const setTimestampFromFoundObject = useDebouncedCallback((ac: AbortController) => {
@@ -180,7 +180,7 @@ const GraphSearch = (props: Props) => {
 	);
 
 	const handleTimepickerValueChange = (value: number | null) => {
-		setTs(value);
+		setTimestamp(value);
 	};
 
 	const openTimePicker = React.useCallback(() => {
@@ -209,8 +209,8 @@ const GraphSearch = (props: Props) => {
 		<div className='graph-search' ref={wrapperRef}>
 			<GraphSearchInput
 				onSubmit={onSubmit}
-				timestamp={ts}
-				setTimestamp={setTs}
+				timestamp={timestamp}
+				setTimestamp={setTimestamp}
 				openHistory={openHistory}
 				closeHistory={closeHistory}
 				openTimePicker={openTimePicker}
@@ -231,7 +231,7 @@ const GraphSearch = (props: Props) => {
 						className='graph-search-picker'
 						setValue={handleTimepickerValueChange}
 						type={TimeInputType.DATE_TIME}
-						value={ts}
+						value={timestamp}
 					/>
 				)}
 				{showDialog && (

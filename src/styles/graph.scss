@@ -515,7 +515,8 @@
 }
 
 .graph-search-history {
-	width: 240px;
+	min-width: 240px;
+	max-width: 360px;
 	min-height: 50px;
 	max-height: 290px;
 	background-color: #fff;
