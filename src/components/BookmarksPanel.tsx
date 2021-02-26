@@ -68,7 +68,7 @@ function BookmarksPanel() {
 			<Virtuoso
 				className='bookmarks-panel__list'
 				totalCount={selectedStore.savedItems.length}
-				item={renderBookmarkItem}
+				itemContent={renderBookmarkItem}
 				computeItemKey={computeKey}
 				style={{ height: '100%' }}
 			/>
@@ -84,11 +84,11 @@ interface BookmarkItemProps {
 	onClick?: (item: BookmarkedItem) => void;
 }
 
-export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
+const BookmarkItemBase = ({ item, onRemove, onClick }: BookmarkItemProps) => {
 	const itemInfo = {
 		id: isEventMessage(item) ? item.messageId : item.eventId,
 		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
-		title: isEventMessage(item) ? item.messageId : item.eventName,
+		title: isEventMessage(item) ? item.messageType : item.eventName,
 		timestamp: getTimestampAsNumber(isEventMessage(item) ? item.timestamp : item.startTimestamp),
 		type: item.type,
 	};
@@ -127,4 +127,6 @@ export function BookmarkItem({ item, onRemove, onClick }: BookmarkItemProps) {
 			)}
 		</div>
 	);
-}
+};
+
+export const BookmarkItem = React.memo(BookmarkItemBase);

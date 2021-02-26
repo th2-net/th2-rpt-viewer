@@ -23,7 +23,8 @@ import {
 } from '../../helpers/heatmapCreator';
 import { createHeatmapInputData } from '../util/creators';
 
-/* eslint-disable max-len */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 describe('[Helpers] heatmap', () => {
 	describe('Heatmap creator', () => {
 		test('generates empty heatmap', () => {

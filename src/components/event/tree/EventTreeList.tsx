@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Virtuoso, VirtuosoMethods } from 'react-virtuoso';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import EventTree from './EventTree';
 import Empty from '../../util/Empty';
 import SplashScreen from '../../SplashScreen';
@@ -33,7 +33,7 @@ interface Props {
 
 function EventTreeList({ nodes }: Props) {
 	const eventWindowStore = useWorkspaceEventStore();
-	const listRef = React.useRef<VirtuosoMethods | null>(null);
+	const listRef = React.useRef<VirtuosoHandle | null>(null);
 
 	React.useEffect(() => {
 		try {
@@ -134,7 +134,7 @@ function EventTreeList({ nodes }: Props) {
 					totalCount={nodes.length}
 					computeItemKey={computeKey}
 					overscan={3}
-					item={renderEvent}
+					itemContent={renderEvent}
 					style={{ height: '100%' }}
 				/>
 			</StateSaverProvider>

@@ -27,7 +27,8 @@ import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreat
 import { formatTime, getTimestampAsNumber } from '../../../helpers/date';
 import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
-import { EventMessage } from '../../../models/EventMessage';
+import { MessageScreenshotZoom } from './MessageScreenshot';
+import { EventMessage, isScreenshotMessage } from '../../../models/EventMessage';
 import MessageRaw from './raw/MessageRaw';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import ErrorBoundary from '../../util/ErrorBoundary';
@@ -51,6 +52,9 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const selectedStore = useSelectedStore();
 	const workspaceStore = useWorkspaceStore();
 	const { heatmapElements } = useHeatmap();
+	const [isHighlighted, setHighlighted] = React.useState(false);
+	const highlightTimer = React.useRef<NodeJS.Timeout>();
+	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
@@ -59,9 +63,32 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isPinned = selectedStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
 
+	React.useEffect(() => {
+		if (!isHighlighted) {
+			if (messagesStore.highlightedMessageId === messageId) {
+				setHighlighted(true);
+
+				highlightTimer.current = setTimeout(() => {
+					setHighlighted(false);
+					messagesStore.highlightedMessageId = null;
+				}, 3000);
+			} else if (messagesStore.highlightedMessageId !== null) {
+				setHighlighted(false);
+			}
+		}
+
+		return () => {
+			if (highlightTimer.current) {
+				window.clearTimeout(highlightTimer.current);
+			}
+		};
+	}, [messagesStore.highlightedMessageId]);
+
 	const isAttached = !!workspaceStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
 	);
+
+	const isScreenshotMsg = isScreenshotMessage(message);
 
 	const color = heatmapElement?.colors[0];
 
@@ -70,6 +97,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		isSelected ? 'selected' : null,
 		isAttached ? 'attached' : null,
 		isPinned ? 'pinned' : null,
+		isHighlighted ? 'highlighted' : null,
 	);
 
 	const showRawButtonClass = createStyleSelector(
@@ -94,8 +122,19 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 
 	const bookmarkIconClass = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
 
+	const hoverMessage = () => {
+		hoverTimeout.current = setTimeout(() => {
+			messagesStore.setHoveredMessage(message);
+		}, 50);
+	};
+
+	const unhoverMessage = () => {
+		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+		messagesStore.setHoveredMessage(null);
+	};
+
 	return (
-		<div className='message-card-wrapper'>
+		<div className='message-card-wrapper' onMouseEnter={hoverMessage} onMouseLeave={unhoverMessage}>
 			<div className={rootClass}>
 				<div className='mc__mc-header mc-header'>
 					<div className='mc-header__is-attached-icon'></div>
@@ -121,13 +160,23 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 						</div>
 					</div>
 					<div className='mc-header__controls'>
+						{isScreenshotMsg && (
+							<>
+								<div className='mc-header__control-button mc-header__icon mc-headr__zoom-button' />
+								<a
+									className='mc-header__control-button mc-header__icon mc-header__download-button'
+									download={`${messageId}.${messageType.replace('image/', '')}`}
+									href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}
+								/>
+							</>
+						)}
 						{message.body !== null && (
 							<div
 								className={beautifyButtonClass}
 								onClick={() => messagesStore.toggleMessageBeautify(messageId)}
 							/>
 						)}
-						{bodyBase64 && bodyBase64 !== 'null' ? (
+						{!isScreenshotMsg && bodyBase64 && bodyBase64 !== 'null' ? (
 							<div className={showRawButtonClass} onClick={() => showRawHandler(!showRaw)} />
 						) : null}
 						<div
@@ -137,25 +186,38 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 					</div>
 				</div>
 				<div className='mc__mc-body mc-body'>
-					<div className='mc-body__human'>
-						<ErrorBoundary
-							fallback={
-								<MessageBodyCardFallback
-									isBeautified={isContentBeautified}
-									isSelected={color !== undefined}
-									body={body}
-								/>
-							}>
-							<MessageBodyCard
-								isBeautified={isContentBeautified}
-								body={body}
-								isSelected={color !== undefined}
+					{isScreenshotMsg ? (
+						<div className='mc-body__screenshot'>
+							<MessageScreenshotZoom
+								src={
+									typeof bodyBase64 === 'string'
+										? `data:${message.messageType};base64,${message.bodyBase64}`
+										: ''
+								}
+								alt={message.messageId}
 							/>
-						</ErrorBoundary>
-						{bodyBase64 && showRaw ? (
-							<MessageRaw messageId={messageId} rawContent={bodyBase64} />
-						) : null}
-					</div>
+						</div>
+					) : (
+						<div className='mc-body__human'>
+							<ErrorBoundary
+								fallback={
+									<MessageBodyCardFallback
+										isBeautified={isContentBeautified}
+										isSelected={color !== undefined}
+										body={body}
+									/>
+								}>
+								<MessageBodyCard
+									isBeautified={isContentBeautified}
+									body={body}
+									isSelected={color !== undefined}
+								/>
+							</ErrorBoundary>
+							{bodyBase64 && showRaw ? (
+								<MessageRaw messageId={messageId} rawContent={bodyBase64} />
+							) : null}
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

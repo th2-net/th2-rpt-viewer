@@ -26,7 +26,6 @@ import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk, PanelRange } from '../../models/Graph';
 import '../../styles/graph.scss';
-import { useSearchStore } from '../../hooks/useSearchStore';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -68,7 +67,8 @@ function Graph() {
 		[activeWorkspace.onSavedItemSelect],
 	);
 
-	const getGraphItemType = React.useCallback(activeWorkspace.graphDataStore.getGraphItemType, [
+	const getGraphItemType = React.useCallback(activeWorkspace.graphStore.getGraphItemType, [
+		activeWorkspace.graphStore.getGraphItemType,
 		selectedStore.attachedMessages,
 		selectedStore.graphItems,
 	]);
@@ -84,11 +84,11 @@ function Graph() {
 						data-index={index}
 						style={{ width: chunkWidth }}>
 						<GraphChunk
-							tickSize={activeWorkspace.graphDataStore.tickSize}
-							interval={activeWorkspace.graphDataStore.interval}
+							tickSize={activeWorkspace.graphStore.tickSize}
+							interval={activeWorkspace.graphStore.interval}
 							chunk={chunk}
 							chunkWidth={chunkWidth}
-							getChunkData={activeWorkspace.graphDataStore.getChunkData}
+							getChunkData={activeWorkspace.graphStore.getChunkData}
 							getGraphItemType={getGraphItemType}
 							onGraphItemClick={onGraphItemClick}
 						/>
@@ -100,13 +100,13 @@ function Graph() {
 
 	const getChunk = React.useCallback(
 		(timestamp: number, index: number) => {
-			return activeWorkspace.graphDataStore.getChunkByTimestamp(
+			return activeWorkspace.graphStore.getChunkByTimestamp(
 				moment(timestamp)
-					.subtract(-index * activeWorkspace.graphDataStore.interval, 'minutes')
+					.subtract(-index * activeWorkspace.graphStore.interval, 'minutes')
 					.valueOf(),
 			);
 		},
-		[activeWorkspace, activeWorkspace.graphDataStore.interval],
+		[activeWorkspace, activeWorkspace.graphStore.interval],
 	);
 
 	const panelsRange: Array<PanelRange> = React.useMemo(() => {
@@ -131,17 +131,17 @@ function Graph() {
 					chunkWidth={chunkWidth}
 					settings={settings}
 					renderChunk={renderChunk}
-					setRange={activeWorkspace.graphDataStore.setRange}
+					setRange={activeWorkspace.graphStore.setRange}
 					getChunk={getChunk}
-					interval={activeWorkspace.graphDataStore.interval}
-					timestamp={activeWorkspace.graphDataStore.timestamp}
-					key={activeWorkspace.graphDataStore.timestamp}
+					interval={activeWorkspace.graphStore.interval}
+					timestamp={activeWorkspace.graphStore.timestamp}
+					key={activeWorkspace.graphStore.timestamp}
 					panelsRange={panelsRange}
-					range={activeWorkspace.graphDataStore.range}
+					range={activeWorkspace.graphStore.range}
 				/>
 			)}
 			<GraphOverlay
-				range={activeWorkspace.graphDataStore.range}
+				range={activeWorkspace.graphStore.range}
 				onGraphItemClick={onGraphItemClick}
 				getGraphItemType={getGraphItemType}
 				panelsRange={panelsRange}

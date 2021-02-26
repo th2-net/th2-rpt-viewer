@@ -22,17 +22,17 @@ import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { PanelRange } from '../../models/Graph';
 import { isEventNode, sortByTimestamp } from '../../helpers/event';
-import TimestampInput from '../util/timestamp-input/TimestampInput';
+import GraphSearchInput from './GraphSearchInput';
 import { TimeRange } from '../../models/Timestamp';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { GraphDataStore } from '../../stores/graph/GraphDataStore';
+import { GraphStore } from '../../stores/GraphStore';
 import { OutsideItems, OutsideItemsMenu, OutsideItemsList } from './OutsideItems';
 import '../../styles/graph.scss';
 
 interface OverlayPanelProps {
 	range: TimeRange;
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
-	getGraphItemType: InstanceType<typeof GraphDataStore>['getGraphItemType'];
+	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 	panelsRange: Array<PanelRange>;
 	disableInteractions: boolean;
 }
@@ -52,10 +52,10 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 	const outsideItems: OutsideItems = React.useMemo(() => {
 		const windowTimeRange = [
 			moment(from)
-				.subtract(activeWorkspace.graphDataStore.interval / 2, 'minutes')
+				.subtract(activeWorkspace.graphStore.interval / 2, 'minutes')
 				.valueOf(),
 			moment(to)
-				.add(activeWorkspace.graphDataStore.interval / 2, 'minutes')
+				.add(activeWorkspace.graphStore.interval / 2, 'minutes')
 				.valueOf(),
 		];
 
@@ -76,10 +76,10 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 	const outsidePanels = React.useMemo(() => {
 		const windowTimeRange = [
 			moment(from)
-				.subtract(activeWorkspace.graphDataStore.interval / 2, 'minutes')
+				.subtract(activeWorkspace.graphStore.interval / 2, 'minutes')
 				.valueOf(),
 			moment(to)
-				.add(activeWorkspace.graphDataStore.interval / 2, 'minutes')
+				.add(activeWorkspace.graphStore.interval / 2, 'minutes')
 				.valueOf(),
 		];
 
@@ -96,8 +96,7 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 	const onOutsidePanelClick = (panelKey: string) => {
 		const panel = panelsRange.find(p => p.type === panelKey);
 		if (panel) {
-			activeWorkspace.graphDataStore.timestamp =
-				panel.range[0] + (panel.range[1] - panel.range[0]) / 2;
+			activeWorkspace.graphStore.timestamp = panel.range[0] + (panel.range[1] - panel.range[0]) / 2;
 		}
 	};
 
@@ -146,9 +145,9 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 			)}
 			<i className='th2-logo' />
 			<div className='graph-search-input'>
-				<TimestampInput
+				<GraphSearchInput
 					timestamp={from + (to - from) / 2}
-					onTimestampSubmit={activeWorkspace.graphDataStore.setTimestamp}
+					onTimestampSubmit={activeWorkspace.graphStore.setTimestamp}
 				/>
 			</div>
 		</>
