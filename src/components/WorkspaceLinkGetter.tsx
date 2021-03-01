@@ -43,7 +43,7 @@ const WorkspaceLinkGetter = () => {
 				);
 				setDisabled(true);
 			}}>
-			Get Workspace Link
+			{disabled ? 'Copied to clipboard' : 'Get Workspace Link'}
 		</button>
 	);
 };
