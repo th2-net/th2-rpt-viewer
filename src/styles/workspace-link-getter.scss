@@ -18,6 +18,18 @@
 
 .workspace-link-getter {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 12px;
+    right: 14px;
+    padding: 3px 6px;
+    outline: none;
+    border: 1px solid $workspaceLinkGetterColor;
+    border-radius: 4px;
+    background: transparent;
+    color: $workspaceLinkGetterColor;
+    font: 11px 'Open sans', sans-serif;
+    &:disabled {
+        color: grey;
+        border-color: grey;
+        opacity: .5;
+    }
 }
