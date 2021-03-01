@@ -17,6 +17,7 @@
 @import './common/vars';
 
 .workspace-link-getter {
+    cursor: pointer;
     position: absolute;
     top: 12px;
     right: 14px;
@@ -27,6 +28,7 @@
     background: transparent;
     color: $workspaceLinkGetterColor;
     font: 11px 'Open sans', sans-serif;
+
     &:disabled {
         color: grey;
         border-color: grey;
