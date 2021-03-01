@@ -103,10 +103,12 @@ interface Props {
 }
 
 function ExpandIcon(props: Props) {
-	const rootClass = createBemBlock('expand-icon', props.status);
+	const { status, onClick, className, style } = props;
+
+	const rootClass = createBemBlock('expand-icon', status, className || null);
 
 	return (
-		<div className={`${rootClass} ${props.className}`} style={props.style} onClick={props.onClick}>
+		<div className={rootClass} style={style} onClick={onClick}>
 			{props.status === 'loading' ? (
 				<>
 					<div className='expand-icon__dot' />

@@ -20,6 +20,7 @@ import { EventStoreURLState } from '../stores/events/EventsStore';
 import { MessagesStoreURLState } from '../stores/messages/MessagesStore';
 import RootStore from '../stores/RootStore';
 import { WorkspacesUrlState } from '../stores/workspace/WorkspacesStore';
+import localStorageWorker from '../util/LocalStorageWorker';
 import { getEventNodeParents } from './event';
 import { getObjectKeys } from './object';
 
@@ -112,7 +113,7 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 				  }
 				: undefined,
 		);
-
-		window.history.replaceState({}, '', `?${searchParams}`);
+		localStorageWorker.setLastSearchQuery(searchParams.toString());
+		window.history.replaceState({}, '', '/');
 	});
 }
