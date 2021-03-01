@@ -114,6 +114,6 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 				: undefined,
 		);
 		localStorageWorker.setLastSearchQuery(searchParams.toString());
-		window.history.replaceState({}, '', ' ');
+		window.history.replaceState({}, '', '/');
 	});
 }
