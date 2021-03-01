@@ -303,10 +303,8 @@ export default class MessagesStore {
 
 	@action
 	private handleFilterHint = (message: EventMessage | EventMessage[]) => {
-		const messagesFilter = this.filterStore.messagesFilter;
 		const sseFilter = this.filterStore.sseMessagesFilter;
 		const areFiltersApplied = [
-			messagesFilter.messageTypes,
 			sseFilter
 				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
 				: [],

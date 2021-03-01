@@ -173,7 +173,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	onNextChannelError = (ev: Event) => {
+	onNextChannelError = () => {
 		this.searchChannelNext?.stop();
 		this.searchChannelNext = null;
 		this.isError = true;
