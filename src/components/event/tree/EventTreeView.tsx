@@ -22,6 +22,7 @@ import Empty from '../../util/Empty';
 import SplitView from '../../split-view/SplitView';
 import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks';
 import EventDetailInfoCard from '../EventDetailInfoCard';
+import EventWindowHeader from '../EventWindowHeader';
 
 function EventTreeView() {
 	const eventWindowStore = useWorkspaceEventStore();
@@ -30,6 +31,7 @@ function EventTreeView() {
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
+				<EventWindowHeader />
 				<EventTreeList nodes={eventWindowStore.nodesList} />
 			</SplitViewPane>
 			<SplitViewPane>
