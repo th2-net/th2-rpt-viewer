@@ -149,7 +149,7 @@ function Graph() {
 				disableInteractions={activeWorkspace.isSearchWorkspace}
 			/>
 			<GraphSearch
-				onTimestampSubmit={activeWorkspace.graphStore.setTimestamp}
+				onTimestampSubmit={activeWorkspace.onTimestampSelect}
 				onFoundItemClick={activeWorkspace.onSavedItemSelect}
 			/>
 		</div>
