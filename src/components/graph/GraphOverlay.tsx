@@ -28,6 +28,7 @@ import { getTimestampAsNumber } from '../../helpers/date';
 import { GraphStore } from '../../stores/GraphStore';
 import { OutsideItems, OutsideItemsMenu, OutsideItemsList } from './OutsideItems';
 import '../../styles/graph.scss';
+import WorkspaceLinkGetter from '../WorkspaceLinkGetter';
 
 interface OverlayPanelProps {
 	range: TimeRange;
@@ -150,6 +151,7 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 					onTimestampSubmit={activeWorkspace.graphStore.setTimestamp}
 				/>
 			</div>
+			<WorkspaceLinkGetter />
 		</>
 	);
 };
