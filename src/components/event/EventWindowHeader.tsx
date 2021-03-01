@@ -32,17 +32,19 @@ function EventWindowHeader() {
 	);
 
 	return (
-		<div className='event-window-header'>
-			<div className='event-window-header__group'>
-				<div className='event-window-header__search'>
-					<SearchInput disabled={!(activePanel === eventStore)} />
-				</div>
-				<EventsFilterPanel />
-				<div
-					role='button'
-					onClick={eventStore.viewStore.toggleFlattenEventListView}
-					className={flattenButtonClassName}>
-					Flat view
+		<div className='window__controls'>
+			<div className='event-window-header'>
+				<div className='event-window-header__group'>
+					<div className='event-window-header__search'>
+						<SearchInput disabled={!(activePanel === eventStore)} />
+					</div>
+					<EventsFilterPanel />
+					<div
+						role='button'
+						onClick={eventStore.viewStore.toggleFlattenEventListView}
+						className={flattenButtonClassName}>
+						Flat view
+					</div>
 				</div>
 			</div>
 		</div>
