@@ -110,7 +110,6 @@ export default class MessageUpdateStore {
 					timestampTo: Date.now(),
 					timestampFrom: null,
 					streams: this.filterStore.messagesFilter.streams,
-					messageTypes: this.filterStore.messagesFilter.messageTypes,
 				},
 				this.updateAbortController.signal,
 			);

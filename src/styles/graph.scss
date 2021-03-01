@@ -446,36 +446,6 @@
 	border: 1px solid $timestampInputBorderColor;
 	border-radius: 4px;
 	overflow: hidden;
-}
-
-.graph-search-input {
-	position: relative;
-	min-width: 220px;
-	background-color: #fff;
-	height: 100%;
-
-	@mixin searchInput {
-		width: 100%;
-		box-sizing: border-box;
-		padding: 5px 24px 5px 9px;
-		font-size: 10px;
-		outline: none;
-		position: absolute;
-		left: 0;
-		top: 0;
-		z-index: 1;
-		background-color: transparent;
-	}
-
-	&__input {
-		@include searchInput();
-	}
-
-	&__placeholder {
-		@include searchInput();
-		color: #ccc;
-		z-index: 0;
-	}
 
 	&__dialog {
 		@include scrollbar();
@@ -507,6 +477,48 @@
 			font-size: 12px;
 			margin: 0 0 6px;
 		}
+	}
+}
+
+.graph-search-input {
+	position: relative;
+	min-width: 220px;
+	background-color: #fff;
+	height: 100%;
+
+	@mixin searchInput {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 5px 24px 5px 9px;
+		font-size: 10px;
+		outline: none;
+		position: absolute;
+		left: 0;
+		top: 0;
+		z-index: 1;
+		background-color: transparent;
+	}
+
+	&__input {
+		@include searchInput();
+	}
+
+	&__placeholder {
+		@include searchInput();
+		color: #ccc;
+		z-index: 0;
+	}
+
+	&__datepicker-button {	
+		@include icon(url(../../resources/icons/dateselect.svg), 15px, 15px);	
+		position: absolute;	
+		top: 4px;	
+		right: 5px;	
+		background-color: transparent;	
+		outline: none;	
+		border: none;	
+		cursor: pointer;	
+		z-index: 115;
 	}
 }
 

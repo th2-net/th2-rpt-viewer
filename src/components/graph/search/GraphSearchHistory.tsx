@@ -16,12 +16,12 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { isEventAction } from '../../helpers/event';
-import { BookmarkItem } from '../BookmarksPanel';
-import { useActiveWorkspace } from '../../hooks';
-import { EventMessage } from '../../models/EventMessage';
-import { EventAction } from '../../models/EventAction';
-import Empty from '../util/Empty';
+import { isEventAction } from '../../../helpers/event';
+import { BookmarkItem } from '../../BookmarksPanel';
+import { useActiveWorkspace } from '../../../hooks';
+import { EventMessage } from '../../../models/EventMessage';
+import { EventAction } from '../../../models/EventAction';
+import Empty from '../../util/Empty';
 
 interface Props {
 	history: Array<EventAction | EventMessage>;

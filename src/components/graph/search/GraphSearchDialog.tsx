@@ -16,11 +16,11 @@
 
 import * as React from 'react';
 import TimeAgo from 'react-timeago';
-import { getTimestampAsNumber } from '../../helpers/date';
-import { isEventAction } from '../../helpers/event';
-import { EventAction } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import { BookmarkItem } from '../BookmarksPanel';
+import { getTimestampAsNumber } from '../../../helpers/date';
+import { isEventAction } from '../../../helpers/event';
+import { EventAction } from '../../../models/EventAction';
+import { EventMessage } from '../../../models/EventMessage';
+import { BookmarkItem } from '../../BookmarksPanel';
 
 interface Props {
 	className: string;

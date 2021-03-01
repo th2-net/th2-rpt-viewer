@@ -19,7 +19,7 @@ import { Observer, observer } from 'mobx-react-lite';
 import moment from 'moment';
 import ResizeObserver from 'resize-observer-polyfill';
 import GraphChunk from './GraphChunk';
-import GraphSearch from './GraphSearch';
+import GraphSearch from './search/GraphSearch';
 import GraphOverlay from './GraphOverlay';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';

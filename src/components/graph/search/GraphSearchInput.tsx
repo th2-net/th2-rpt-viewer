@@ -16,7 +16,8 @@
 
 import * as React from 'react';
 import moment from 'moment';
-import KeyCodes from '../../util/KeyCodes';
+import KeyCodes from '../../../util/KeyCodes';
+import { createBemElement } from '../../../helpers/styleCreators';
 
 const TIME_MASK = 'HH:mm:ss.SSS' as const;
 const DATE_TIME_MASK = 'YYYY.MM.DD HH:mm:ss.SSS' as const;
@@ -49,10 +50,8 @@ const replaceBlankTimeCharsWithDefaults = (
 };
 
 interface Props {
-	openTimePicker: () => void;
-	closeTimePicker: () => void;
-	openHistory: () => void;
-	closeHistory: () => void;
+	toggleTimePicker: (isOpen: boolean) => void;
+	toggleHistory: (isOpen: boolean) => void;
 	setTimestamp: (ts: null | number) => void;
 	timestamp: number | null;
 	onSubmit: (value: number | string) => void;
@@ -66,16 +65,8 @@ export interface GraphSearchInputConfig {
 	mask: typeof TIME_MASK | typeof DATE_TIME_MASK | null;
 }
 
-const GraphSearchInput = (props: Props) => {
-	const {
-		openTimePicker,
-		closeTimePicker,
-		openHistory,
-		closeHistory,
-		timestamp,
-		setTimestamp,
-		onSubmit,
-	} = props;
+function GraphSearchInput(props: Props) {
+	const { toggleTimePicker, toggleHistory, timestamp, setTimestamp, onSubmit } = props;
 
 	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
 		isValid: false,
@@ -100,11 +91,11 @@ const GraphSearchInput = (props: Props) => {
 		}
 	}, [timestamp]);
 
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+	function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
 		const { mask, value, placeholder, isValid } = inputConfig;
 		if (e.keyCode === KeyCodes.ENTER) {
-			closeHistory();
-			closeTimePicker();
+			toggleHistory(false);
+			toggleTimePicker(false);
 			onSubmit(value && isValid && timestamp ? timestamp : value);
 		}
 
@@ -124,15 +115,15 @@ const GraphSearchInput = (props: Props) => {
 				}
 			}
 		}
-	};
+	}
 
-	const handleInputValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+	function handleInputValueChange(event: React.ChangeEvent<HTMLInputElement>) {
 		const value = event.target.value;
 		onSubmit('');
 		if (value) {
-			closeHistory();
+			toggleHistory(false);
 		} else {
-			openHistory();
+			toggleHistory(true);
 		}
 
 		const replacedTime = replaceBlankTimeCharsWithDefaults(value, TIME_MASK, TIME_PLACEHOLDER);
@@ -154,7 +145,7 @@ const GraphSearchInput = (props: Props) => {
 				value,
 			});
 			setTimestamp(parsedTime.valueOf());
-			openTimePicker();
+			toggleTimePicker(true);
 		} else if (value.length > 4 && isCompletable(value, DATE_TIME_MASK) && parsedDate.isValid()) {
 			setInputConfig({
 				isValid: value.length === DATE_TIME_MASK.length && moment(value, DATE_TIME_MASK).isValid(),
@@ -164,7 +155,7 @@ const GraphSearchInput = (props: Props) => {
 				value,
 			});
 			setTimestamp(parsedDate.valueOf());
-			openTimePicker();
+			toggleTimePicker(true);
 		} else {
 			setInputConfig({
 				isValid: false,
@@ -173,9 +164,29 @@ const GraphSearchInput = (props: Props) => {
 				timestamp: null,
 				value,
 			});
-			closeTimePicker();
+			toggleTimePicker(false);
 		}
-	};
+	}
+
+	function onInputFocus() {
+		if (!inputConfig.value) {
+			toggleHistory(true);
+		} else if (
+			isCompletable(inputConfig.value, DATE_TIME_MASK) ||
+			isCompletable(inputConfig.value, TIME_MASK)
+		) {
+			toggleTimePicker(true);
+		}
+	}
+
+	function toggleDatepicker() {
+		if (!inputConfig.value) {
+			setTimestamp(moment.utc().valueOf());
+		}
+		toggleTimePicker(true);
+	}
+
+	const datepickerButtonClassName = createBemElement('graph-search-input', 'datepicker-button');
 
 	return (
 		<div className='graph-search-input'>
@@ -183,17 +194,7 @@ const GraphSearchInput = (props: Props) => {
 				value={inputConfig.value}
 				onChange={handleInputValueChange}
 				className='graph-search-input__input'
-				placeholder={inputConfig.placeholder || undefined}
-				onFocus={() => {
-					if (!inputConfig.value) {
-						openHistory();
-					} else if (
-						isCompletable(inputConfig.value, DATE_TIME_MASK) ||
-						isCompletable(inputConfig.value, TIME_MASK)
-					) {
-						openTimePicker();
-					}
-				}}
+				onFocus={onInputFocus}
 				onKeyDown={handleKeyDown}
 			/>
 			<input
@@ -205,8 +206,9 @@ const GraphSearchInput = (props: Props) => {
 						: ''
 				}
 			/>
+			<button className={datepickerButtonClassName} onClick={toggleDatepicker} />
 		</div>
 	);
-};
+}
 
-export default GraphSearchInput;
+export default React.memo(GraphSearchInput);

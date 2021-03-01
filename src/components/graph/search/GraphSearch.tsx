@@ -15,21 +15,20 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import eventHttpApi from '../../api/event';
-import messageHttpApi from '../../api/message';
-import { isEventAction } from '../../helpers/event';
-import { createBemElement } from '../../helpers/styleCreators';
-import { useDebouncedCallback } from '../../hooks';
-import { useOutsideClickListener } from '../../hooks/useOutsideClickListener';
-import { EventAction } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import { TimeInputType } from '../../models/filter/FilterInputs';
-import { Timestamp } from '../../models/Timestamp';
+import eventHttpApi from '../../../api/event';
+import messageHttpApi from '../../../api/message';
+import { isEventAction } from '../../../helpers/event';
+import { createBemElement } from '../../../helpers/styleCreators';
+import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
+import { EventAction } from '../../../models/EventAction';
+import { EventMessage } from '../../../models/EventMessage';
+import { TimeInputType } from '../../../models/filter/FilterInputs';
+import { Timestamp } from '../../../models/Timestamp';
 import GraphSearchDialog from './GraphSearchDialog';
-import localStorageWorker from '../../util/LocalStorageWorker';
-import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
-import { ModalPortal } from '../util/Portal';
-import FilterDatetimePicker from '../filter/date-time-inputs/FilterDatetimePicker';
+import localStorageWorker from '../../../util/LocalStorageWorker';
+import WorkspaceStore from '../../../stores/workspace/WorkspaceStore';
+import { ModalPortal } from '../../util/Portal';
+import FilterDatetimePicker from '../../filter/date-time-inputs/FilterDatetimePicker';
 import GraphSearchInput from './GraphSearchInput';
 import GraphSearchHistory from './GraphSearchHistory';
 
@@ -43,7 +42,7 @@ interface Props {
 	onFoundItemClick: InstanceType<typeof WorkspaceStore>['onSavedItemSelect'];
 }
 
-const GraphSearch = (props: Props) => {
+function GraphSearch(props: Props) {
 	const { onTimestampSubmit, onFoundItemClick } = props;
 
 	const [currentValue, setCurrentValue] = React.useState('');
@@ -116,11 +115,11 @@ const GraphSearch = (props: Props) => {
 		}
 	}, [foundObject]);
 
-	const onObjectFound = (
+	function onObjectFound(
 		object: null | EventAction | EventMessage,
 		id: string,
 		ac: AbortController,
-	) => {
+	) {
 		setIsLoading(false);
 		if (!object) {
 			return;
@@ -130,9 +129,9 @@ const GraphSearch = (props: Props) => {
 			? getTimestamp(object.startTimestamp)
 			: getTimestamp(object.timestamp);
 		setTimestamp(timestamFromFoundObject);
-	};
+	}
 
-	const setTimestampFromFoundObject = useDebouncedCallback((ac: AbortController) => {
+	const setTimestampFromFoundObject = (ac: AbortController) => {
 		eventHttpApi
 			.getEvent(currentValue, ac.signal, { probe: true })
 			.then(foundEvent => {
@@ -155,55 +154,46 @@ const GraphSearch = (props: Props) => {
 					setIsError(true);
 				}
 			});
-	}, 500);
+	};
 
-	const onSubmit = (value: number | string) => {
+	function onSubmit(value: number | string) {
 		if (typeof value === 'number') {
 			onTimestampSubmit(value);
 			setCurrentValue('');
 		} else {
 			setCurrentValue(value);
 		}
-	};
+	}
 
-	const onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-		e.target.setSelectionRange(0, currentValue.length);
-		setShowDialog(true);
-		if (timeout.current) clearTimeout(timeout.current);
-		setFoundbject(null);
-	};
+	function handleTimepickerValueChange(value: number | null) {
+		setTimestamp(value);
+	}
 
-	const dialogClassName = createBemElement(
-		'graph-search-input',
-		'dialog',
-		foundObject || isLoading || history.length > 0 ? 'bordered' : null,
+	const toggleTimePicker = React.useCallback(
+		(isOpen: boolean) => {
+			if (isOpen !== showPicker) setShowPicker(isOpen);
+		},
+		[setShowPicker, showPicker],
 	);
 
-	const handleTimepickerValueChange = (value: number | null) => {
-		setTimestamp(value);
-	};
+	const toggleHistory = React.useCallback(
+		(isOpen: boolean) => {
+			if (isOpen !== showHistory) setShowHistory(false);
+		},
+		[setShowHistory, showHistory],
+	);
 
-	const openTimePicker = React.useCallback(() => {
-		if (!showPicker) setShowPicker(true);
-	}, [setShowPicker, showPicker]);
-
-	const closeTimePicker = React.useCallback(() => {
-		if (showPicker) setShowPicker(false);
-	}, [setShowPicker, showPicker]);
-
-	const openHistory = React.useCallback(() => {
-		if (!showHistory) setShowHistory(true);
-	}, [setShowHistory, showHistory]);
-
-	const closeHistory = React.useCallback(() => {
-		if (showHistory) setShowHistory(false);
-	}, [setShowHistory, showHistory]);
-
-	const onHistoryItemDelete = (historyItem: EventAction | EventMessage) => {
+	function onHistoryItemDelete(historyItem: EventAction | EventMessage) {
 		const updatedHistory = history.filter(item => item !== historyItem);
 		setHistory(updatedHistory);
 		localStorageWorker.saveGraphSearchHistory(updatedHistory);
-	};
+	}
+
+	const dialogClassName = createBemElement(
+		'graph-search',
+		'dialog',
+		foundObject || isLoading || history.length > 0 ? 'bordered' : null,
+	);
 
 	return (
 		<div className='graph-search' ref={wrapperRef}>
@@ -211,10 +201,8 @@ const GraphSearch = (props: Props) => {
 				onSubmit={onSubmit}
 				timestamp={timestamp}
 				setTimestamp={setTimestamp}
-				openHistory={openHistory}
-				closeHistory={closeHistory}
-				openTimePicker={openTimePicker}
-				closeTimePicker={closeTimePicker}
+				toggleHistory={toggleHistory}
+				toggleTimePicker={toggleTimePicker}
 			/>
 			<ModalPortal
 				isOpen={showPicker || showDialog || showHistory}
@@ -224,7 +212,7 @@ const GraphSearch = (props: Props) => {
 					transform: 'translateX(-50%)',
 					top: wrapperRef.current?.getBoundingClientRect().bottom || 30,
 					position: 'absolute',
-					zIndex: 322,
+					zIndex: 110,
 				}}>
 				{showPicker && (
 					<FilterDatetimePicker
@@ -248,6 +236,6 @@ const GraphSearch = (props: Props) => {
 			</ModalPortal>
 		</div>
 	);
-};
+}
 
-export default GraphSearch;
+export default React.memo(GraphSearch);
