@@ -90,7 +90,12 @@ const FilterPanel = ({
 		!showFilter && isFilterApplied ? 'applied' : null,
 	);
 
-	const filterButtonClass = createBemElement('filter', 'button', isDisabled ? 'disabled' : null);
+	const filterButtonClass = createBemElement(
+		'filter',
+		'button',
+		isDisabled ? 'disabled' : null,
+		showFilter ? 'active' : null,
+	);
 
 	const onSubmitClick = () => {
 		onSubmit();

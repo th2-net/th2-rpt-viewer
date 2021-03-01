@@ -222,6 +222,7 @@
 	&__body {
 		margin-top: 2px;
 		display: flex;
+		justify-content: space-between;
 		align-items: flex-start;
 		font-size: 10px;
 	}
@@ -291,7 +292,7 @@
 	overflow: hidden;
 
 	&__search {
-		padding-right: 10px;
+		padding-right: 5px;
 	}
 
 	&__group {
@@ -304,7 +305,8 @@
 		@include unselectable;
 
 		color: $primaryTextColor;
-		font-size: 14px;
+		font-size: 12px;
+		line-height: 15px;
 		font-weight: bold;
 		cursor: pointer;
 		margin: 0 5px;
@@ -439,92 +441,52 @@
 }
 
 .event-breadcrumbs {
-	height: 100%;
-	width: 100%;
-	list-style: none;
-	text-align: center;
-	line-height: 28px;
+	display: flex;
+	align-items: center;
+	white-space: nowrap;
+	font-size: 10px;
+	line-height: 15px;
+	padding-bottom: 5px;
+	flex-wrap: wrap;
 
-	& li:after {
-		content: '';
-		@include icon(url(../../resources/icons/arr1-right.svg), 16px, 16px);
-		transform: translateY(2px);
-		margin: 1px 10px 0 10px;
-		display: inline-block;
-		flex-shrink: 0;
-	}
-
-	& li:last-child {
-		& span {
-			opacity: 1;
-		}
-
-		&::after {
-			content: '';
-			@include icon(url(../../resources/icons/arr1-right-disabled.svg), 16px, 16px);
-			transform: rotate(90deg) translateX(3px);
-			margin: 0 10px;
-			display: inline-block;
-			flex-shrink: 0;
-		}
-	}
-
-	& li:only-child {
-		&::after {
-			content: '';
-			@include icon(url(../../resources/icons/arr1-right-disabled.svg), 16px, 16px);
-			transform: rotate(90deg) translateX(2px);
-			margin: 0 10px;
-			display: inline-block;
-			flex-shrink: 0;
-		}
+	& > *:not(:last-child) {
+		margin-right: 10px;
 	}
 
 	&__item {
-		@include status-text;
-		display: inline;
-		font-size: 16px;
-		font-weight: bold;
-		word-break: break-all;
-		vertical-align: middle;
-		line-height: inherit;
-		cursor: pointer;
-	}
+		@include status-card;
+		display: flex;
+		align-items: center;
 
-	&__root-icon {
-		@include icon(url(../../resources/icons/burger.svg), 13px, 15px);
-		flex-shrink: 0;
-		display: inline-block;
-		margin-right: 6px;
-		cursor: inherit;
-	}
+		&-title {
+			cursor: pointer;
+			margin-right: 10px;
+			color: var(--status-primary-color-light);
+		}
 
-	&__root-item {
-		display: inline;
-	}
+		&-arrow {
+			@include icon(url(../../resources/icons/arr1-right-enabled.svg), 9px, 9px);
+		}
 
-	&__name {
-		@include ellipsis();
-		opacity: 0.8;
-		cursor: pointer;
+		&.last & {
+			&-title {
+				color: var(--status-primary-color);
+			}
 
-		&.disabled {
-			cursor: default;
-
-			&:hover {
-				text-decoration: none;
+			&-arrow {
+				background-image: url(../../resources/icons/arr1-down.svg);
 			}
 		}
 
-		&:hover {
-			text-decoration: underline;
-		}
-	}
+		&.root & {
+			&-title {
+				color: $eventTextColorLight;
+			}
 
-	&__item-skeleton {
-		@include skeleton;
-		width: 100px;
-		height: 20px;
-		border-radius: 3px;
+			&-icon {
+				margin-right: 5px;
+				@include icon(url(../../resources/icons/events-root-level.svg), 10px, 10px);
+			}
+		}
 	}
 }
