@@ -21,14 +21,13 @@ import EventsFilter from '../models/filter/EventsFilter';
 import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
 import { SearchStore } from './SearchStore';
 import { getDefaultFilterState } from '../helpers/search';
-import { MessagesSSEParams } from '../api/sse';
+import { MessagesSSEParams, SSEFilterInfo } from '../api/sse';
 import { EventSourceConfig } from '../api/ApiSchema';
 
 export const defaultMessagesFilter: MessagesFilter = {
 	timestampFrom: null,
 	timestampTo: moment(Date.now()).utc().valueOf(),
 	streams: [],
-	messageTypes: [],
 };
 
 export function getDefaultEventFilter() {
@@ -54,17 +53,11 @@ export default class FilterStore {
 	constructor(private searchStore: SearchStore, initialState?: InitialState) {
 		this.init(initialState);
 
+		this.setSSEMessagesFilter(this.searchStore.messagesFilterInfo);
+
 		this.sseFilterSubscription = reaction(
 			() => searchStore.messagesFilterInfo,
-			filterInfo => {
-				const filter = getDefaultFilterState(filterInfo);
-
-				if (Object.keys(filter).length > 0) {
-					this.sseMessagesFilter = filter as MessageFilterState;
-				} else {
-					this.sseMessagesFilter = null;
-				}
-			},
+			this.setSSEMessagesFilter,
 		);
 	}
 
@@ -123,7 +116,6 @@ export default class FilterStore {
 	public get isMessagesFilterApplied() {
 		return [
 			this.messagesFilter.streams,
-			this.messagesFilter.messageTypes,
 			this.sseMessagesFilter
 				? [
 						this.sseMessagesFilter.attachedEventIds.values,
@@ -181,7 +173,6 @@ export default class FilterStore {
 		};
 
 		this.messagesFilter = {
-			messageTypes: messagesFilter.messageTypes || defaultMessagesFilter.messageTypes,
 			streams: messagesFilter.streams || defaultMessagesFilter.streams,
 			timestampTo: messagesFilter.timestampTo || defaultMessagesFilter.timestampTo,
 			timestampFrom: messagesFilter.timestampFrom || defaultMessagesFilter.timestampFrom,
@@ -190,5 +181,16 @@ export default class FilterStore {
 
 	public dispose = () => {
 		this.sseFilterSubscription();
+	};
+
+	@action
+	private setSSEMessagesFilter = (messagesFilterInfo: SSEFilterInfo[]) => {
+		const filter = getDefaultFilterState(messagesFilterInfo);
+
+		if (Object.keys(filter).length > 0) {
+			this.sseMessagesFilter = filter as MessageFilterState;
+		} else {
+			this.sseMessagesFilter = null;
+		}
 	};
 }

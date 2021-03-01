@@ -188,7 +188,6 @@ export default class MessagesStore {
 					? [this.selectedMessage.sessionId]
 					: this.workspaceStore.attachedMessages.map(m => m.sessionId),
 
-				messageTypes: [],
 				timestampTo: getTimestampAsNumber(targetMessage.timestamp),
 				timestampFrom: null,
 			});
@@ -213,7 +212,6 @@ export default class MessagesStore {
 		const sseFilter = this.filterStore.sseMessagesFilter;
 
 		const areFiltersApplied = [
-			messagesFilter.messageTypes,
 			sseFilter
 				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
 				: [],
@@ -226,7 +224,6 @@ export default class MessagesStore {
 			this.filterStore.resetMessagesFilter({
 				timestampFrom: null,
 				timestampTo: getTimestampAsNumber(message.timestamp),
-				messageTypes: [],
 				streams: [message.sessionId],
 			});
 			this.selectedMessageId = new String(message.messageId);
