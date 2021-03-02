@@ -44,11 +44,12 @@ export interface Props {
 	className?: string;
 	splitterClassName?: string;
 	panels: Array<Panel>;
+	panelsLayout: WorkspacePanelsLayout;
+	setPanelsLayout: (panelsLayout: WorkspacePanelsLayout) => void;
 }
 
 function WorkspaceSplitter(props: Props) {
-	const viewStore = useWorkspaceViewStore();
-
+	const { panels, panelsLayout, setPanelsLayout } = props;
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const clickStartX = React.useRef(0);
 	const resizeDirection = React.useRef<'left' | 'right' | null>(null);
@@ -57,19 +58,19 @@ function WorkspaceSplitter(props: Props) {
 	const [isResizing, setIsResizing] = React.useState(false);
 
 	const panelsRefs = React.useRef(
-		Array(props.panels.length)
+		Array(panels.length)
 			.fill(null)
 			.map(() => React.createRef<HTMLDivElement>()),
 	);
 
 	const splittersRefs = React.useRef(
-		Array(props.panels.length)
+		Array(panels.length)
 			.fill(null)
 			.map(() => React.createRef<HTMLDivElement>()),
 	);
 
 	const overlaysRefs = React.useRef(
-		Array(props.panels.length)
+		Array(panels.length)
 			.fill(null)
 			.map(() => React.createRef<HTMLDivElement>()),
 	);
@@ -83,9 +84,8 @@ function WorkspaceSplitter(props: Props) {
 		panelsRefs.current.forEach((ref, index) => {
 			const panelRef = ref.current;
 			if (panelRef) {
-				panelRef.style.width = `${viewStore.panelsLayout[index]}%`;
-				const widthInPx =
-					(rootEl.getBoundingClientRect().width * viewStore.panelsLayout[index]) / 100;
+				panelRef.style.width = `${panelsLayout[index]}%`;
+				const widthInPx = (rootEl.getBoundingClientRect().width * panelsLayout[index]) / 100;
 				if (Math.floor(widthInPx) <= MIN_PANEL_WIDTH) {
 					if (!panelRef.classList.contains('minified')) {
 						panelRef.classList.add('minified');
@@ -95,7 +95,7 @@ function WorkspaceSplitter(props: Props) {
 				}
 			}
 		});
-	}, [viewStore.panelsLayout]);
+	}, [panelsLayout]);
 
 	function onMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
 		setIsResizing(true);
@@ -188,9 +188,11 @@ function WorkspaceSplitter(props: Props) {
 			return right - (left + width);
 		});
 
-		viewStore.panelsLayout = widths.map(w =>
-			parseFloat(((w / (rootWidth - MIN_PANEL_WIDTH * 4)) * 100).toFixed(2)),
-		) as WorkspacePanelsLayout;
+		setPanelsLayout(
+			widths.map(w =>
+				parseFloat(((w / (rootWidth - MIN_PANEL_WIDTH * 4)) * 100).toFixed(2)),
+			) as WorkspacePanelsLayout,
+		);
 
 		panelsRefs.current.forEach((panelRef, index) => {
 			if (panelRef.current) {
@@ -268,7 +270,7 @@ function WorkspaceSplitter(props: Props) {
 
 	return (
 		<div ref={rootRef} className='workspace-split-view'>
-			{props.panels.map((panel, index) => (
+			{panels.map((panel, index) => (
 				<React.Fragment key={panel.title}>
 					<Splitter
 						isResizing={isResizing}

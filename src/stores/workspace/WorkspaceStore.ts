@@ -160,6 +160,7 @@ export default class WorkspaceStore {
 		if (this === this.workspacesStore.searchWorkspace) {
 			const newWorkspace = this.workspacesStore.createWorkspace({
 				entity: savedItem,
+				layout: isEventMessage(savedItem) ? [0, 100] : [100, 0],
 			});
 
 			this.workspacesStore.addWorkspace(newWorkspace);
