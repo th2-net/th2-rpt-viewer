@@ -22,6 +22,7 @@ import MessagesWindow from '../message/MessagesWindow';
 import { useActivePanel } from '../../hooks';
 import { isEventsStore, isMessagesStore } from '../../helpers/stores';
 import '../../styles/workspace.scss';
+import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 
 const panelColors = {
 	events: {
@@ -36,10 +37,13 @@ const panelColors = {
 
 function Workspace() {
 	const { activePanel } = useActivePanel(null);
+	const { panelsLayout, setPanelsLayout } = useWorkspaceViewStore();
 
 	return (
 		<div className='workspace'>
 			<WorkspaceSplitter
+				panelsLayout={panelsLayout}
+				setPanelsLayout={setPanelsLayout}
 				panels={[
 					{
 						title: 'Events',

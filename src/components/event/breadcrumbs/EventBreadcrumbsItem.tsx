@@ -37,11 +37,13 @@ export default function EventBreadcrumbsItem(props: Props) {
 
 	const arrowClassName = createBemElement('event-breadcrumbs', 'item-arrow');
 
+	const title = eventNode === 'root' ? 'Root Events' : eventNode.eventName;
+
 	return (
 		<div className={itemClassName}>
 			{eventNode === 'root' && <i className='event-breadcrumbs__item-icon' />}
-			<div className='event-breadcrumbs__item-title' onClick={onSelect}>
-				{eventNode === 'root' ? 'Root Events' : eventNode.eventName}
+			<div className='event-breadcrumbs__item-title' onClick={onSelect} title={title}>
+				{title}
 			</div>
 			<i className={arrowClassName} />
 		</div>

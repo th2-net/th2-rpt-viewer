@@ -246,6 +246,10 @@ export default class MessagesStore {
 			timestampFrom: null,
 			timestampTo: timestamp,
 		};
+
+		if (this.workspaceStore.viewStore.panelsLayout[1] < 20) {
+			this.workspaceStore.viewStore.setPanelsLayout([50, 50]);
+		}
 	};
 
 	@action

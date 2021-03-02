@@ -105,7 +105,6 @@ function EventCardHeader({
 			onMouseEnter={onMouseEnter}
 			onMouseLeave={onMouseLeave}>
 			<div className={iconClassName} />
-			{isFlatView && parentsCount > 0 ? <Chip text={parentsCount.toString()} /> : null}
 			{displayType !== CardDisplayType.STATUS_ONLY ? (
 				<div className='event-header-card__title' title={eventName}>
 					<SearchableContent content={eventName} eventId={eventId} />

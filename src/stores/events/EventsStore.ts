@@ -268,6 +268,10 @@ export default class EventsStore {
 				.add((this.graphStore.interval * 60) / 2, 'seconds')
 				.valueOf(),
 		};
+
+		if (this.workspaceStore.viewStore.panelsLayout[0] < 20) {
+			this.workspaceStore.viewStore.setPanelsLayout([50, 50]);
+		}
 	};
 
 	private detailedEventAC: AbortController | null = null;

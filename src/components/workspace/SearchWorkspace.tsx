@@ -20,6 +20,7 @@ import BookmarksPanel from '../BookmarksPanel';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import SearchPanel from '../search-panel/SearchPanel';
 import '../../styles/workspace.scss';
+import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 
 const panelColors = {
 	search: {
@@ -33,9 +34,13 @@ const panelColors = {
 } as const;
 
 function Workspace() {
+	const { panelsLayout, setPanelsLayout } = useWorkspaceViewStore();
+
 	return (
 		<div className='workspace'>
 			<WorkspaceSplitter
+				panelsLayout={panelsLayout}
+				setPanelsLayout={setPanelsLayout}
 				panels={[
 					{
 						title: 'Search',

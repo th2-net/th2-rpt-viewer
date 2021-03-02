@@ -54,6 +54,11 @@ export default class WorkspaceViewStore {
 	};
 
 	@action
+	public setPanelsLayout = (panelsLayout: WorkspacePanelsLayout) => {
+		this.panelsLayout = panelsLayout;
+	};
+
+	@action
 	public setActivePanel = (panel: EventsStore | MessagesStore | null) => {
 		this.activePanel = panel;
 	};
