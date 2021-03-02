@@ -36,7 +36,7 @@ export default class MessagesDataProviderStore {
 	@observable
 	public messagesListErrorStatusCode: number | null = null;
 
-	@observable.ref
+	@observable.shallow
 	public messages: Array<EventMessage> = [];
 
 	@observable

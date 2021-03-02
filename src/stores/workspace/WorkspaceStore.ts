@@ -191,9 +191,7 @@ export default class WorkspaceStore {
 					},
 				},
 				messages: {
-					filter: {
-						timestampTo: timestamp,
-					},
+					timestampTo: timestamp,
 				},
 			});
 

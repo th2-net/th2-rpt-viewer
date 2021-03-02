@@ -22,7 +22,6 @@ import ApiSchema from '../../api/ApiSchema';
 import { EventAction, EventTree, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
 import EventsFilter from '../../models/filter/EventsFilter';
-import { TabTypes } from '../../models/util/Windows';
 import {
 	getEventNodeParents,
 	isEventAction,
@@ -32,13 +31,11 @@ import {
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
-import { isEventsStore } from '../../helpers/stores';
 import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
 import { SearchStore } from '../SearchStore';
 
 export type EventStoreURLState = Partial<{
-	type: TabTypes.Events;
 	panelArea: number;
 	filter: EventsFilter;
 	selectedNodesPath: string[];
@@ -47,10 +44,10 @@ export type EventStoreURLState = Partial<{
 	selectedParentId: string;
 }>;
 
-export type EventStoreDefaultStateType = EventsStore | EventStoreURLState | null;
+export type EventStoreDefaultStateType = EventStoreURLState | EventTreeNode | EventAction | null;
 
 export default class EventsStore {
-	filterStore = new EventsFilterStore();
+	filterStore = new EventsFilterStore(this.graphStore);
 
 	viewStore = new ViewStore();
 
@@ -74,7 +71,7 @@ export default class EventsStore {
 		reaction(() => this.searchStore.scrolledItem, this.onScrolledItemChange);
 	}
 
-	@observable.ref eventTree: EventTree = [];
+	@observable.shallow eventTree: EventTree = [];
 
 	@observable isLoadingRootEvents = false;
 
@@ -93,10 +90,6 @@ export default class EventsStore {
 	@observable isExpandedMap: Map<string, boolean> = new Map();
 
 	@observable eventTreeStatusCode: number | null = null;
-
-	@computed get isActivePanel() {
-		return this.workspaceStore.isActive && this.workspaceStore.viewStore.activePanel === this;
-	}
 
 	@computed
 	public get flattenedEventList() {
@@ -346,32 +339,7 @@ export default class EventsStore {
 	};
 
 	@action
-	private copy(store: EventsStore) {
-		this.isLoadingRootEvents = toJS(store.isLoadingRootEvents);
-		this.selectedNode = store.selectedNode;
-		this.eventTree = store.eventTree;
-		this.selectedEvent = store.selectedEvent;
-		this.selectedParentNode = store.selectedParentNode;
-		this.scrolledIndex = store.scrolledIndex?.valueOf() || null;
-		this.isExpandedMap = toJS(store.isExpandedMap, { exportMapsAsObjects: false });
-		this.expandPath(store.selectedPath.map(n => n.eventId));
-		this.viewStore = new ViewStore({
-			flattenedListView: store.viewStore.flattenedListView.valueOf(),
-			panelArea: store.viewStore.eventsPanelArea,
-		});
-		this.filterStore = new EventsFilterStore();
-		this.searchStore = new EventsSearchStore(this.api, this, {
-			isLoading: store.searchStore.isLoading,
-			rawResults: toJS(store.searchStore.rawResults),
-			scrolledIndex: store.searchStore.scrolledIndex,
-			tokens: toJS(store.searchStore.tokens),
-		});
-	}
-
-	@action
-	private async init(
-		initialState: EventsStore | EventStoreURLState | EventTreeNode | EventAction | null,
-	) {
+	private async init(initialState: EventStoreDefaultStateType) {
 		const isInitialEntity = (state: typeof initialState): state is EventAction | EventTreeNode =>
 			isEventAction(state) || isEventNode(state);
 
@@ -380,16 +348,12 @@ export default class EventsStore {
 			return;
 		}
 
-		if (isEventsStore(initialState)) {
-			this.copy(initialState);
-			return;
-		}
-
 		this.viewStore.eventsPanelArea = isInitialEntity(initialState)
 			? 100
 			: initialState.panelArea || 100;
 
 		this.filterStore = new EventsFilterStore(
+			this.graphStore,
 			!isInitialEntity(initialState) ? initialState.filter : undefined,
 		);
 		this.searchStore = new EventsSearchStore(this.api, this, {

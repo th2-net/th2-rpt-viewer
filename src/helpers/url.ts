@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import { autorun, toJS } from 'mobx';
-import { TabTypes } from '../models/util/Windows';
 import { EventStoreURLState } from '../stores/events/EventsStore';
 import { MessagesStoreURLState } from '../stores/messages/MessagesStore';
 import RootStore from '../stores/RootStore';
@@ -54,7 +53,6 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 		if (activeWorkspace && activeWorkspace !== rootStore.workspacesStore.searchWorkspace) {
 			const eventsStore = activeWorkspace.eventsStore;
 			eventStoreState = {
-				type: TabTypes.Events,
 				filter: {
 					eventTypes: eventsStore.filterStore.filter.eventTypes,
 					names: eventsStore.filterStore.filter.names,
@@ -77,10 +75,9 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 			};
 			const messagesStore = activeWorkspace.messagesStore;
 			messagesStoreState = {
-				filter: {
-					timestampFrom: messagesStore.filterStore.filter.timestampFrom,
-					timestampTo: messagesStore.filterStore.filter.timestampTo,
-				},
+				timestampFrom: messagesStore.filterStore.filter.timestampFrom,
+				timestampTo: messagesStore.filterStore.filter.timestampTo,
+				streams: messagesStore.filterStore.filter.streams,
 			};
 
 			getObjectKeys(eventStoreState).forEach(key => {

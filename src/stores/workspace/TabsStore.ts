@@ -24,17 +24,6 @@ export default class TabsStore {
 	@observable activeTabIndex = 0;
 
 	@action
-	duplicateWorkspace = (tabIndex: number) => {
-		const worspaceToDublicate = this.workspacesStore.workspaces[tabIndex];
-		const workspaceCopy = this.workspacesStore.createWorkspace({
-			events: worspaceToDublicate.eventsStore,
-			messages: worspaceToDublicate.messagesStore,
-		});
-		this.workspacesStore.addWorkspace(workspaceCopy);
-		this.activeTabIndex = this.workspacesStore.workspaces.length;
-	};
-
-	@action
 	closeWorkspace = (tab: number | WorkspaceStore) => {
 		const index = typeof tab === 'number' ? tab : this.workspacesStore.workspaces.indexOf(tab);
 		if (index <= this.activeTabIndex) {

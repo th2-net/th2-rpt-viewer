@@ -17,10 +17,11 @@
 import { action, computed, observable } from 'mobx';
 import moment from 'moment';
 import EventsFilter from '../../models/filter/EventsFilter';
+import { GraphStore } from '../GraphStore';
 
-export function getDefaultEventFilter() {
+export function getDefaultEventFilter(interval = 15) {
 	const timestampTo = moment.utc().valueOf();
-	const timestampFrom = moment.utc(timestampTo).subtract(15, 'minutes').valueOf();
+	const timestampFrom = moment.utc(timestampTo).subtract(interval, 'minutes').valueOf();
 
 	return {
 		timestampTo,
@@ -33,10 +34,10 @@ export function getDefaultEventFilter() {
 export type EventsFilterStoreInitialState = Partial<EventsFilter>;
 
 export default class EventsFilterStore {
-	constructor(initialState?: EventsFilterStoreInitialState) {
+	constructor(private graphStore: GraphStore, initialState?: EventsFilterStoreInitialState) {
 		if (initialState) {
 			const { names, eventTypes, timestampTo, timestampFrom } = initialState;
-			const defaultEventsFilter = getDefaultEventFilter();
+			const defaultEventsFilter = getDefaultEventFilter(this.graphStore.interval);
 
 			this.setEventsFilter({
 				names: names || defaultEventsFilter.names,
@@ -47,7 +48,7 @@ export default class EventsFilterStore {
 		}
 	}
 
-	@observable filter: EventsFilter = getDefaultEventFilter();
+	@observable filter: EventsFilter = getDefaultEventFilter(this.graphStore.interval);
 
 	@computed
 	public get isEventsFilterApplied() {
@@ -61,6 +62,6 @@ export default class EventsFilterStore {
 
 	@action
 	resetEventsFilter() {
-		this.filter = getDefaultEventFilter();
+		this.filter = getDefaultEventFilter(this.graphStore.interval);
 	}
 }
