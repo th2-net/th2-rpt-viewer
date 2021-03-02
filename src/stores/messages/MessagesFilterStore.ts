@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,42 +16,37 @@
 
 import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import moment from 'moment';
-import MessagesFilter from '../models/filter/MessagesFilter';
-import EventsFilter from '../models/filter/EventsFilter';
-import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
-import { SearchStore } from './SearchStore';
-import { getDefaultFilterState } from '../helpers/search';
-import { MessagesSSEParams, SSEFilterInfo } from '../api/sse';
-import { EventSourceConfig } from '../api/ApiSchema';
+import MessagesFilter from '../../models/filter/MessagesFilter';
+import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
+import { SearchStore } from '../SearchStore';
+import { getDefaultFilterState } from '../../helpers/search';
+import { MessagesSSEParams, SSEFilterInfo } from '../../api/sse';
+import { EventSourceConfig } from '../../api/ApiSchema';
 
-export const defaultMessagesFilter: MessagesFilter = {
-	timestampFrom: null,
-	timestampTo: moment(Date.now()).utc().valueOf(),
-	streams: [],
-};
-
-export function getDefaultEventFilter() {
-	const timestampTo = moment(Date.now()).utc().valueOf();
-	const timestampFrom = moment(timestampTo).utc().subtract(15, 'minutes').valueOf();
-
+function getDefaultMessagesFilter(): MessagesFilter {
 	return {
-		timestampTo,
-		timestampFrom,
-		eventTypes: [],
-		names: [],
+		timestampFrom: null,
+		timestampTo: moment.utc().valueOf(),
+		streams: [],
 	};
 }
 
-type InitialState = Partial<{
-	messagesFilter: MessagesFilter;
-	eventsFilter: EventsFilter;
-}>;
+export type MessagesFilterStoreInitialState = Partial<MessagesFilter>;
 
-export default class FilterStore {
+export default class MessagesFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
 
-	constructor(private searchStore: SearchStore, initialState?: InitialState) {
-		this.init(initialState);
+	constructor(private searchStore: SearchStore, initialState?: MessagesFilterStoreInitialState) {
+		if (initialState) {
+			const { streams, timestampTo, timestampFrom } = initialState;
+			const defaultMessagesFilter = getDefaultMessagesFilter();
+
+			this.setMessagesFilter({
+				streams: streams || defaultMessagesFilter.streams,
+				timestampTo: timestampTo || defaultMessagesFilter.timestampTo,
+				timestampFrom: timestampFrom || defaultMessagesFilter.timestampFrom,
+			});
+		}
 
 		this.setSSEMessagesFilter(this.searchStore.messagesFilterInfo);
 
@@ -61,11 +56,9 @@ export default class FilterStore {
 		);
 	}
 
-	@observable messagesFilter: MessagesFilter = defaultMessagesFilter;
+	@observable filter: MessagesFilter = getDefaultMessagesFilter();
 
 	@observable sseMessagesFilter: MessageFilterState | null = null;
-
-	@observable eventsFilter: EventsFilter = getDefaultEventFilter();
 
 	@computed
 	public get messsagesSSEConfig(): EventSourceConfig {
@@ -93,8 +86,8 @@ export default class FilterStore {
 		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
 
 		const queryParams: MessagesSSEParams = {
-			startTimestamp: this.messagesFilter.timestampTo || startTimestamp,
-			stream: this.messagesFilter.streams,
+			startTimestamp: this.filter.timestampTo || startTimestamp,
+			stream: this.filter.streams,
 			searchDirection: 'previous',
 			resultCountLimit: 15,
 			filters: filtersToAdd,
@@ -108,14 +101,9 @@ export default class FilterStore {
 	}
 
 	@computed
-	public get isEventsFilterApplied() {
-		return this.eventsFilter.eventTypes.length > 0 || this.eventsFilter.names.length > 0;
-	}
-
-	@computed
 	public get isMessagesFilterApplied() {
 		return [
-			this.messagesFilter.streams,
+			this.filter.streams,
 			this.sseMessagesFilter
 				? [
 						this.sseMessagesFilter.attachedEventIds.values,
@@ -127,60 +115,20 @@ export default class FilterStore {
 	}
 
 	@action
-	setMessagesFilter(filter: MessagesFilter, sseFilters: MessageFilterState | null) {
+	setMessagesFilter(filter: MessagesFilter, sseFilters: MessageFilterState | null = null) {
 		this.sseMessagesFilter = sseFilters;
-		this.messagesFilter = filter;
+		this.filter = filter;
 	}
 
 	@action
 	resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
 		const filter = getDefaultFilterState(this.searchStore.messagesFilterInfo);
+		const defaultMessagesFilter = getDefaultMessagesFilter();
 		this.sseMessagesFilter = Object.keys(filter).length ? (filter as MessageFilterState) : null;
-		this.messagesFilter = {
+		this.filter = {
 			...defaultMessagesFilter,
 			...initFilter,
 		};
-	};
-
-	@action
-	setEventsFilter(filter?: EventsFilter) {
-		if (!filter) {
-			this.resetEventsFilter();
-			return;
-		}
-		this.eventsFilter = filter;
-	}
-
-	@action
-	resetEventsFilter() {
-		this.eventsFilter = getDefaultEventFilter();
-	}
-
-	@action
-	private init(initialState?: InitialState) {
-		if (!initialState) return;
-
-		const {
-			eventsFilter = getDefaultEventFilter(),
-			messagesFilter = defaultMessagesFilter,
-		} = initialState;
-
-		this.eventsFilter = {
-			names: eventsFilter.names || eventsFilter.names,
-			eventTypes: eventsFilter.eventTypes || eventsFilter.eventTypes,
-			timestampTo: eventsFilter.timestampTo || eventsFilter.timestampTo,
-			timestampFrom: eventsFilter.timestampFrom || eventsFilter.timestampFrom,
-		};
-
-		this.messagesFilter = {
-			streams: messagesFilter.streams || defaultMessagesFilter.streams,
-			timestampTo: messagesFilter.timestampTo || defaultMessagesFilter.timestampTo,
-			timestampFrom: messagesFilter.timestampFrom || defaultMessagesFilter.timestampFrom,
-		};
-	}
-
-	public dispose = () => {
-		this.sseFilterSubscription();
 	};
 
 	@action
@@ -192,5 +140,9 @@ export default class FilterStore {
 		} else {
 			this.sseMessagesFilter = null;
 		}
+	};
+
+	public dispose = () => {
+		this.sseFilterSubscription();
 	};
 }

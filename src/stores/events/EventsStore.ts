@@ -16,7 +16,7 @@
 
 import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
-import FilterStore from '../FilterStore';
+import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
 import { EventAction, EventTree, EventTreeNode } from '../../models/EventAction';
@@ -50,7 +50,7 @@ export type EventStoreURLState = Partial<{
 export type EventStoreDefaultStateType = EventsStore | EventStoreURLState | null;
 
 export default class EventsStore {
-	filterStore = new FilterStore(this.searchPanelStore);
+	filterStore = new EventsFilterStore();
 
 	viewStore = new ViewStore();
 
@@ -65,7 +65,7 @@ export default class EventsStore {
 	) {
 		this.init(initialState);
 
-		reaction(() => this.filterStore.eventsFilter, this.onFilterChange);
+		reaction(() => this.filterStore.filter, this.onFilterChange);
 
 		reaction(() => this.selectedNode, this.onSelectedNodeChange);
 
@@ -109,7 +109,7 @@ export default class EventsStore {
 
 	@computed
 	public get panelRange(): TimeRange {
-		return [this.filterStore.eventsFilter.timestampFrom, this.filterStore.eventsFilter.timestampTo];
+		return [this.filterStore.filter.timestampFrom, this.filterStore.filter.timestampTo];
 	}
 
 	@computed
@@ -203,7 +203,7 @@ export default class EventsStore {
 
 		try {
 			const rootEventIds = await this.api.events.getEventTree(
-				this.filterStore.eventsFilter,
+				this.filterStore.filter,
 				this.eventTreeAC.signal,
 			);
 			runInAction(() => {
@@ -248,10 +248,10 @@ export default class EventsStore {
 			this.graphStore.interval,
 		);
 
-		this.filterStore.eventsFilter.timestampFrom = timestampFrom;
-		this.filterStore.eventsFilter.timestampTo = timestampTo;
-		this.filterStore.eventsFilter.eventTypes = [];
-		this.filterStore.eventsFilter.names = [];
+		this.filterStore.filter.timestampFrom = timestampFrom;
+		this.filterStore.filter.timestampTo = timestampTo;
+		this.filterStore.filter.eventTypes = [];
+		this.filterStore.filter.names = [];
 		await this.fetchEventTree();
 		this.expandPath(fullPath);
 		this.isLoadingRootEvents = false;
@@ -259,8 +259,8 @@ export default class EventsStore {
 
 	@action
 	public onRangeChange = (timestamp: number) => {
-		this.filterStore.eventsFilter = {
-			...this.filterStore.eventsFilter,
+		this.filterStore.filter = {
+			...this.filterStore.filter,
 			timestampFrom: moment(timestamp)
 				.subtract((this.graphStore.interval * 60) / 2, 'seconds')
 				.valueOf(),
@@ -359,7 +359,7 @@ export default class EventsStore {
 			flattenedListView: store.viewStore.flattenedListView.valueOf(),
 			panelArea: store.viewStore.eventsPanelArea,
 		});
-		this.filterStore = new FilterStore(this.searchPanelStore, store.filterStore);
+		this.filterStore = new EventsFilterStore();
 		this.searchStore = new EventsSearchStore(this.api, this, {
 			isLoading: store.searchStore.isLoading,
 			rawResults: toJS(store.searchStore.rawResults),
@@ -389,9 +389,9 @@ export default class EventsStore {
 			? 100
 			: initialState.panelArea || 100;
 
-		this.filterStore = new FilterStore(this.searchPanelStore, {
-			eventsFilter: !isInitialEntity(initialState) ? initialState.filter : undefined,
-		});
+		this.filterStore = new EventsFilterStore(
+			!isInitialEntity(initialState) ? initialState.filter : undefined,
+		);
 		this.searchStore = new EventsSearchStore(this.api, this, {
 			searchPatterns: !isInitialEntity(initialState) ? initialState.search : [],
 		});
@@ -485,10 +485,6 @@ export default class EventsStore {
 		}
 
 		return path;
-	};
-
-	public dispose = () => {
-		this.filterStore.dispose();
 	};
 }
 

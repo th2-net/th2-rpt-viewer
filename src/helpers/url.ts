@@ -56,10 +56,10 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 			eventStoreState = {
 				type: TabTypes.Events,
 				filter: {
-					eventTypes: eventsStore.filterStore.eventsFilter.eventTypes,
-					names: eventsStore.filterStore.eventsFilter.names,
-					timestampFrom: eventsStore.filterStore.eventsFilter.timestampFrom,
-					timestampTo: eventsStore.filterStore.eventsFilter.timestampTo,
+					eventTypes: eventsStore.filterStore.filter.eventTypes,
+					names: eventsStore.filterStore.filter.names,
+					timestampFrom: eventsStore.filterStore.filter.timestampFrom,
+					timestampTo: eventsStore.filterStore.filter.timestampTo,
 				},
 				panelArea: eventsStore.viewStore.eventsPanelArea,
 				selectedNodesPath: eventsStore.selectedNode
@@ -78,8 +78,8 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 			const messagesStore = activeWorkspace.messagesStore;
 			messagesStoreState = {
 				filter: {
-					timestampFrom: messagesStore.filterStore.messagesFilter.timestampFrom,
-					timestampTo: messagesStore.filterStore.messagesFilter.timestampTo,
+					timestampFrom: messagesStore.filterStore.filter.timestampFrom,
+					timestampTo: messagesStore.filterStore.filter.timestampTo,
 				},
 			};
 

@@ -24,7 +24,7 @@ import { SSEChannel } from './SSEChannel';
 
 export default class MessagesDataProviderStore {
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
-		reaction(() => this.messagesStore.filterStore.messagesFilter, this.onFilterChange);
+		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
 	}
 
 	@observable
@@ -140,7 +140,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	onPrevChannelError = (ev: Event) => {
+	onPrevChannelError = () => {
 		this.searchChannelPrev?.stop();
 		this.searchChannelPrev = null;
 		this.isError = true;
