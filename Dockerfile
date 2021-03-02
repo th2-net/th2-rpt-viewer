@@ -1,10 +1,10 @@
-FROM node:10.23 AS build
+FROM node:10.24 AS build
 ARG app_version=0.0.0
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends make build-essential
 WORKDIR /home/node
 COPY ./ .
-RUN npm install && npm run build
+RUN npm ci && npm run build
 
 FROM nginx:1.17.10-alpine
 ENV NGINX_PORT=8080

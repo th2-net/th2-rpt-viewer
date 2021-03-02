@@ -41,7 +41,7 @@ const messageHttpApi: MessageApiSchema = {
 		abortSignal?: AbortSignal,
 	) => {
 		const { idsOnly = true, messageId = '', timelineDirection = 'next', limit = 100 } = search;
-		const { streams, messageTypes, timestampFrom, timestampTo } = filter;
+		const { streams, timestampFrom, timestampTo } = filter;
 
 		const params = createURLSearchParams({
 			idsOnly,
@@ -51,7 +51,6 @@ const messageHttpApi: MessageApiSchema = {
 			timestampFrom,
 			timestampTo,
 			stream: streams,
-			messageType: messageTypes,
 		});
 
 		const res = await fetch(`backend/search/messages?${params}`, { signal: abortSignal });

@@ -101,7 +101,9 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 			/>
 			{showPicker && (
 				<FilterDatetimePicker
-					inputConfig={inputConfig}
+					setValue={inputConfig.setValue}
+					value={inputConfig.value}
+					type={inputConfig.type}
 					left={inputRef.current?.inputElement.offsetLeft}
 					top={
 						inputRef.current?.inputElement

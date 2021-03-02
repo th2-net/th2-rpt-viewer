@@ -43,23 +43,29 @@ interface ModalPortalProps {
 	style?: CSSProperties;
 }
 
-export const ModalPortal = ({ closeDelay = 0, children, isOpen, style }: ModalPortalProps) => {
-	const [isShown, setIsShown] = React.useState(false);
+export const ModalPortal = React.forwardRef<HTMLDivElement, ModalPortalProps>(
+	({ closeDelay = 0, children, isOpen, style }, ref) => {
+		const [isShown, setIsShown] = React.useState(false);
 
-	React.useEffect(() => {
-		if (!isOpen && closeDelay !== 0) {
-			setTimeout(() => {
-				setIsShown(isOpen);
-			}, closeDelay);
-			return;
-		}
+		React.useEffect(() => {
+			if (!isOpen && closeDelay !== 0) {
+				setTimeout(() => {
+					setIsShown(isOpen);
+				}, closeDelay);
+				return;
+			}
 
-		setIsShown(isOpen);
-	}, [isOpen]);
+			setIsShown(isOpen);
+		}, [isOpen]);
 
-	return (
-		<Portal>
-			<div style={{ ...style, visibility: isShown ? 'visible' : 'hidden' }}>{children}</div>
-		</Portal>
-	);
-};
+		return (
+			<Portal>
+				<div ref={ref} style={{ ...style, visibility: isShown ? 'visible' : 'hidden' }}>
+					{children}
+				</div>
+			</Portal>
+		);
+	},
+);
+
+ModalPortal.displayName = 'ModalPortal';

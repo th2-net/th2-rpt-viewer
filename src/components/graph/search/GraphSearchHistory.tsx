@@ -16,20 +16,20 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Virtuoso } from 'react-virtuoso';
-import localStorageWorker from '../../util/LocalStorageWorker';
-import { isEventAction } from '../../helpers/event';
-import { BookmarkItem } from '../BookmarksPanel';
-import { useActiveWorkspace } from '../../hooks';
-import { EventMessage } from '../../models/EventMessage';
-import { EventAction } from '../../models/EventAction';
+import { isEventAction } from '../../../helpers/event';
+import { BookmarkItem } from '../../BookmarksPanel';
+import { useActiveWorkspace } from '../../../hooks';
+import { EventMessage } from '../../../models/EventMessage';
+import { EventAction } from '../../../models/EventAction';
+import Empty from '../../util/Empty';
 
 interface Props {
 	history: Array<EventAction | EventMessage>;
+	onHistoryItemDelete: (historyItem: EventAction | EventMessage) => void;
 }
 
 const GraphSearchHistory = (props: Props) => {
-	const { history } = props;
+	const { history, onHistoryItemDelete } = props;
 	const activeWorkspace = useActiveWorkspace();
 
 	const computeKey = (item: EventAction | EventMessage) => {
@@ -37,25 +37,27 @@ const GraphSearchHistory = (props: Props) => {
 	};
 
 	if (!history.length) {
-		return null;
+		return (
+			<div className='graph-search-history'>
+				<Empty description='Search history is empty' />
+			</div>
+		);
 	}
 
 	return (
-		<div className='timestamp-input__history'>
-			<p>history</p>
+		<div className='graph-search-history'>
+			<h4 className='graph-search-history__title'>Search history</h4>
 			<hr />
-			{history.map(item => (
-				<BookmarkItem
-					key={computeKey(item)}
-					item={item}
-					onClick={activeWorkspace.onSavedItemSelect}
-					onRemove={() => {
-						localStorageWorker.saveGraphSearchHistory(
-							history.filter(historyItem => historyItem !== item),
-						);
-					}}
-				/>
-			))}
+			<div className='graph-search-history__list'>
+				{history.map((item, index) => (
+					<BookmarkItem
+						key={`${computeKey(item)}-${index}`}
+						item={item}
+						onClick={activeWorkspace.onSavedItemSelect}
+						onRemove={() => onHistoryItemDelete(item)}
+					/>
+				))}
+			</div>
 		</div>
 	);
 };

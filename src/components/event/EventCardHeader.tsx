@@ -86,13 +86,13 @@ function EventCardHeader({
 		e.stopPropagation();
 	};
 
-	const hoverEvent = () => {
+	const onMouseEnter = () => {
 		hoverTimeout.current = setTimeout(() => {
 			eventStore.setHoveredEvent(event);
-		}, 50);
+		}, 150);
 	};
 
-	const unhoverEvent = () => {
+	const onMouseLeave = () => {
 		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
 		eventStore.setHoveredEvent(null);
 	};
@@ -102,8 +102,8 @@ function EventCardHeader({
 			className={rootClassName}
 			onClick={onSelect}
 			style={rootStyle}
-			onMouseEnter={hoverEvent}
-			onMouseLeave={unhoverEvent}>
+			onMouseEnter={onMouseEnter}
+			onMouseLeave={onMouseLeave}>
 			<div className={iconClassName} />
 			{displayType !== CardDisplayType.STATUS_ONLY ? (
 				<div className='event-header-card__title' title={eventName}>
