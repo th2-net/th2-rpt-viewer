@@ -24,10 +24,7 @@
 	display: flex;
 	flex-direction: column;
 	color: #fff;
-
-	.filter-row__input {
-		border: solid 1px #000;
-	}
+	border-radius: 0 0 5px 5px;
 
 	.filter-row {
 		flex-grow: 1;

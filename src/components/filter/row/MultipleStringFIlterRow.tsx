@@ -101,13 +101,13 @@ export default function MultipleStringFilterRow({
 							}
 						/>
 					))}
-					{!isFocused && config.values.length === 0 ? (
-						<span className='filter-row__placeholder'>
-							Use Space to separate different words & Tab to finish
-						</span>
-					) : null}
 					<AutocompleteInput
 						ref={input}
+						placeholder={
+							config.values.length === 0
+								? 'Use Space to separate different words & Tab to finish'
+								: ''
+						}
 						disabled={config.disabled}
 						submitKeyCodes={[KeyCodes.SPACE, KeyCodes.ENTER]}
 						className='filter-row__multiple-values-input'
