@@ -77,7 +77,6 @@ export function registerUrlMiddleware(rootStore: RootStore) {
 			messagesStoreState = {
 				timestampFrom: messagesStore.filterStore.filter.timestampFrom,
 				timestampTo: messagesStore.filterStore.filter.timestampTo,
-				streams: messagesStore.filterStore.filter.streams,
 			};
 
 			getObjectKeys(eventStoreState).forEach(key => {

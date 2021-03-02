@@ -32,7 +32,7 @@ interface UrlError extends Notification {
 	error: Error;
 }
 
-class NotificationsStore {
+export class NotificationsStore {
 	@observable responseErrors: ResponseError[] = [];
 
 	@action

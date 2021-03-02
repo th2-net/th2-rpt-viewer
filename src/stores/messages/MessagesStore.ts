@@ -34,7 +34,7 @@ import MessagesFilterStore from './MessagesFilterStore';
 
 export type MessagesStoreURLState = Partial<MessagesFilter>;
 
-export type MessagesStoreDefaultStateType = EventMessage | MessagesStoreURLState | null;
+export type MessagesStoreDefaultStateType = EventMessage | MessagesStoreURLState | null | undefined;
 
 export default class MessagesStore {
 	private attachedMessagesSubscription: IReactionDisposer;
@@ -82,11 +82,9 @@ export default class MessagesStore {
 		defaultState: MessagesStoreDefaultStateType,
 	) {
 		if (isEventMessage(defaultState)) {
-			// TODO: fix this workaround
-			setTimeout(() => {
-				this.onMessageSelect(defaultState);
-			}, 50);
-		} else if (defaultState !== null) {
+			this.onMessageSelect(defaultState);
+			this.data.loadMessages();
+		} else if (defaultState) {
 			this.filterStore.setMessagesFilter({
 				timestampFrom: defaultState.timestampFrom || null,
 				timestampTo: defaultState.timestampTo || moment.utc().valueOf(),

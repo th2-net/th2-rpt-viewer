@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
+import { action, computed, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
 import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
@@ -24,6 +24,7 @@ import EventsSearchStore from './EventsSearchStore';
 import EventsFilter from '../../models/filter/EventsFilter';
 import {
 	getEventNodeParents,
+	isEvent,
 	isEventAction,
 	isEventNode,
 	sortEventsByTimestamp,
@@ -44,7 +45,12 @@ export type EventStoreURLState = Partial<{
 	selectedParentId: string;
 }>;
 
-export type EventStoreDefaultStateType = EventStoreURLState | EventTreeNode | EventAction | null;
+export type EventStoreDefaultStateType =
+	| EventStoreURLState
+	| EventTreeNode
+	| EventAction
+	| null
+	| undefined;
 
 export default class EventsStore {
 	filterStore = new EventsFilterStore(this.graphStore);
@@ -341,7 +347,7 @@ export default class EventsStore {
 	@action
 	private async init(initialState: EventStoreDefaultStateType) {
 		const isInitialEntity = (state: typeof initialState): state is EventAction | EventTreeNode =>
-			isEventAction(state) || isEventNode(state);
+			isEvent(state);
 
 		if (!initialState) {
 			this.fetchEventTree();

@@ -16,13 +16,13 @@
 
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
-import NotificationsStore from './NotificationsStore';
+import notificationStoreInstance from './NotificationsStore';
 import { registerUrlMiddleware } from '../helpers/url';
 import { SearchStore } from './SearchStore';
 import localStorageWorker from '../util/LocalStorageWorker';
 
 export default class RootStore {
-	notificationsStore = NotificationsStore;
+	notificationsStore = notificationStoreInstance;
 
 	searchStore: SearchStore;
 
