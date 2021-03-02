@@ -457,8 +457,10 @@
 		@include status-card;
 		display: flex;
 		align-items: center;
+		max-width: 100%;
 
 		&-title {
+			@include ellipsis;
 			cursor: pointer;
 			margin-right: 10px;
 			color: var(--status-primary-color-light);
