@@ -39,7 +39,11 @@ const WorkspaceLinkGetter = () => {
 			disabled={disabled}
 			onClick={() => {
 				copyTextToClipboard(
-					`${window.location.origin}/?${localStorageWorker.getLastSearchQuery()}`,
+					[
+						window.location.origin,
+						window.location.pathname,
+						`?${localStorageWorker.getLastSearchQuery()}`,
+					].join(''),
 				);
 				setDisabled(true);
 			}}>
