@@ -23,10 +23,12 @@ import SplitView from '../../split-view/SplitView';
 import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks';
 import DetailedFlatEventCard from './DetailedFlatEventCard';
 import EventWindowHeader from '../EventWindowHeader';
+import useEventsDataStore from '../../../hooks/useEventsDataStore';
 
 function EventTreeView() {
 	const eventWindowStore = useWorkspaceEventStore();
 	const viewStore = useEventWindowViewStore();
+	const eventDataStore = useEventsDataStore();
 
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
@@ -36,14 +38,14 @@ function EventTreeView() {
 			</SplitViewPane>
 			<SplitViewPane>
 				{eventWindowStore.selectedNode === null &&
-					!eventWindowStore.loadingSelectedEvent &&
-					(eventWindowStore.eventTreeStatusCode === null ? (
+					!eventDataStore.loadingSelectedEvent &&
+					(eventDataStore.eventTreeStatusCode === null ? (
 						<Empty description='Select event' />
 					) : (
 						<Empty
 							description={
-								typeof eventWindowStore.eventTreeStatusCode === 'number'
-									? `Server responded with ${eventWindowStore.eventTreeStatusCode} code`
+								typeof eventDataStore.eventTreeStatusCode === 'number'
+									? `Server responded with ${eventDataStore.eventTreeStatusCode} code`
 									: 'Error occured while loading event'
 							}
 						/>

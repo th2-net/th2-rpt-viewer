@@ -19,7 +19,7 @@ import { EventMessage } from '../models/EventMessage';
 import MessagesFilter from '../models/filter/MessagesFilter';
 import EventsFilter from '../models/filter/EventsFilter';
 import { TimeRange } from '../models/Timestamp';
-import { SSEParams, SSEFilterInfo } from './sse';
+import { SSEFilterInfo, SSEParams } from './sse';
 
 export default interface ApiSchema {
 	events: EventApiSchema;

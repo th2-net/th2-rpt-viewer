@@ -46,9 +46,9 @@ export interface SSEFilterParameter {
 type EventSSEFilters = 'attachedMessageId' | 'type' | 'name';
 type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body';
 
-interface EventSSEParams extends BaseSSEParams {
+export interface EventSSEParams extends BaseSSEParams {
 	parentEvent?: string;
-	filters: Array<EventSSEFilters>;
+	filters?: Array<EventSSEFilters>;
 	'attachedMessageId-values'?: string;
 	'attachedMessageId-negative'?: boolean;
 	'type-values'?: string[];

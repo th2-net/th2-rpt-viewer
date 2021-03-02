@@ -17,6 +17,7 @@
 /* eslint-disable no-new-wrappers */
 // eslint-disable-next-line import/no-unassigned-import
 import 'setimmediate';
+import { EventTreeNode } from '../models/EventAction';
 
 /**
  * Returns next item after current index in array if it exists, or returns

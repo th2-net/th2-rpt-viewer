@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, runInAction } from 'mobx';
+import { action, computed, observable, reaction, _allowStateChangesInsideComputed } from 'mobx';
 import moment from 'moment';
 import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
@@ -34,6 +34,7 @@ import { calculateTimeRange } from '../../helpers/graph';
 import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
 import { SearchStore } from '../SearchStore';
+import EventsDataStore from './EventsDataStore';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
@@ -57,6 +58,8 @@ export default class EventsStore {
 	viewStore = new ViewStore();
 
 	searchStore = new EventsSearchStore(this.api, this);
+
+	eventDataStore = new EventsDataStore(this, this.filterStore, this.api);
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
@@ -90,13 +93,15 @@ export default class EventsStore {
 
 	@observable.ref selectedEvent: EventAction | null = null;
 
-	@observable loadingSelectedEvent = false;
-
 	@observable scrolledIndex: Number | null = null;
 
 	@observable isExpandedMap: Map<string, boolean> = new Map();
 
 	@observable eventTreeStatusCode: number | null = null;
+
+	@computed get isActivePanel() {
+		return this.workspaceStore.isActive && this.workspaceStore.viewStore.activePanel === this;
+	}
 
 	@computed
 	public get flattenedEventList() {
@@ -188,41 +193,6 @@ export default class EventsStore {
 		}
 	};
 
-	private eventTreeAC: AbortController | null = null;
-
-	@action
-	private fetchEventTree = async () => {
-		if (this.eventTreeAC) {
-			this.eventTreeAC.abort();
-		}
-		this.eventTreeAC = new AbortController();
-		this.eventTreeStatusCode = null;
-
-		this.selectedNode = null;
-		this.isLoadingRootEvents = true;
-
-		try {
-			const rootEventIds = await this.api.events.getEventTree(
-				this.filterStore.filter,
-				this.eventTreeAC.signal,
-			);
-			runInAction(() => {
-				this.eventTree = sortEventsByTimestamp(rootEventIds);
-			});
-			this.isLoadingRootEvents = false;
-		} catch (error) {
-			if (error.name !== 'AbortError') {
-				this.eventTreeStatusCode = error.status;
-				this.eventTree = [];
-				this.isExpandedMap.clear();
-				console.error('Error while loading root events', error);
-				this.isLoadingRootEvents = false;
-			}
-		} finally {
-			this.eventTreeAC = null;
-		}
-	};
-
 	@action
 	public onEventSelect = async (savedEventNode: EventTreeNode | EventAction) => {
 		this.graphStore.setTimestamp(timestampToNumber(savedEventNode.startTimestamp));
@@ -235,11 +205,11 @@ export default class EventsStore {
 		*/
 		if (!savedEventNode.parents) {
 			try {
-				this.isLoadingRootEvents = true;
+				this.eventDataStore.isLoadingRootEvents = true;
 				this.selectNode(null);
 				fullPath = await this.fetchFullPath(savedEventNode);
-			} catch (error) {
-				this.isLoadingRootEvents = false;
+			} catch {
+				this.eventDataStore.isLoadingRootEvents = false;
 			}
 		} else {
 			fullPath = [...(savedEventNode.parents || []), savedEventNode.eventId];
@@ -254,9 +224,10 @@ export default class EventsStore {
 		this.filterStore.filter.timestampTo = timestampTo;
 		this.filterStore.filter.eventTypes = [];
 		this.filterStore.filter.names = [];
-		await this.fetchEventTree();
+
+		await this.eventDataStore.fetchEventTree();
 		this.expandPath(fullPath);
-		this.isLoadingRootEvents = false;
+		this.eventDataStore.isLoadingRootEvents = false;
 	};
 
 	@action
@@ -273,30 +244,6 @@ export default class EventsStore {
 
 		if (this.workspaceStore.viewStore.panelsLayout[0] < 20) {
 			this.workspaceStore.viewStore.setPanelsLayout([50, 50]);
-		}
-	};
-
-	private detailedEventAC: AbortController | null = null;
-
-	@action
-	private fetchDetailedEventInfo = async (selectedNode: EventTreeNode | null) => {
-		this.selectedEvent = null;
-		if (!selectedNode) return;
-
-		this.detailedEventAC?.abort();
-		this.detailedEventAC = new AbortController();
-
-		this.loadingSelectedEvent = true;
-		try {
-			const event = await this.api.events.getEvent(
-				selectedNode.eventId,
-				this.detailedEventAC.signal,
-			);
-			this.selectedEvent = event;
-		} catch (error) {
-			console.error(`Error occurred while loading event ${selectedNode.eventId}`);
-		} finally {
-			this.loadingSelectedEvent = false;
 		}
 	};
 
@@ -325,13 +272,13 @@ export default class EventsStore {
 
 	@action
 	private onFilterChange = async () => {
-		await this.fetchEventTree();
+		await this.eventDataStore.fetchEventTree();
 		this.isExpandedMap.clear();
 	};
 
 	@action
 	private onSelectedNodeChange = (selectedNode: EventTreeNode | null) => {
-		this.fetchDetailedEventInfo(selectedNode);
+		this.eventDataStore.fetchDetailedEventInfo(selectedNode);
 		this.selectedParentNode = null;
 	};
 
@@ -350,7 +297,7 @@ export default class EventsStore {
 	@action
 	private async init(initialState: EventStoreDefaultStateType) {
 		if (!initialState) {
-			this.fetchEventTree();
+			this.eventDataStore.fetchEventTree();
 			return;
 		}
 
@@ -366,7 +313,7 @@ export default class EventsStore {
 		if (isEvent(initialState.targetEvent)) {
 			this.onEventSelect(initialState.targetEvent);
 		} else {
-			await this.fetchEventTree();
+			await this.eventDataStore.fetchEventTree();
 		}
 
 		if (!isEvent(initialState.targetEvent) && initialState.selectedNodesPath) {
@@ -393,8 +340,10 @@ export default class EventsStore {
 		eventTreeNode: EventTreeNode,
 		parents: string[] = [],
 	): EventTreeNode[] => {
-		// eslint-disable-next-line no-param-reassign
-		eventTreeNode.parents = !eventTreeNode.parents ? parents : eventTreeNode.parents;
+		_allowStateChangesInsideComputed(() => {
+			// eslint-disable-next-line no-param-reassign
+			eventTreeNode.parents = !eventTreeNode.parents ? parents : eventTreeNode.parents;
+		});
 		if (this.isExpandedMap.get(eventTreeNode.eventId)) {
 			return [
 				eventTreeNode,
@@ -411,8 +360,10 @@ export default class EventsStore {
 		eventTreeNode: EventTreeNode,
 		parents: string[] = [],
 	): EventTreeNode[] => {
-		// eslint-disable-next-line no-param-reassign
-		eventTreeNode.parents = !eventTreeNode.parents ? parents : eventTreeNode.parents;
+		_allowStateChangesInsideComputed(() => {
+			// eslint-disable-next-line no-param-reassign
+			eventTreeNode.parents = !eventTreeNode.parents ? parents : eventTreeNode.parents;
+		});
 		return [
 			eventTreeNode,
 			...sortEventsByTimestamp(eventTreeNode.childList).flatMap(node =>
@@ -437,9 +388,12 @@ export default class EventsStore {
 
 		while (
 			typeof getEventParentId(currentEvent) === 'string' &&
-			getEventParentId(currentEvent) !== 'null'
+			getEventParentId(currentEvent) !== 'null' &&
+			getEventParentId(currentEvent) !== null
 		) {
 			const parentId = getEventParentId(currentEvent);
+			if (!parentId) return path;
+
 			path.unshift(parentId);
 			// eslint-disable-next-line no-await-in-loop
 			currentEvent = await this.api.events.getEvent(parentId);

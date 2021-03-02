@@ -28,6 +28,7 @@ import { EventTreeNode } from '../../../models/EventAction';
 import { getEventNodeParents } from '../../../helpers/event';
 import { EventListFooter, EventListHeader } from '../EventListNavigation';
 import '../../../styles/action.scss';
+import useEventsDataStore from '../../../hooks/useEventsDataStore';
 
 interface Props {
 	nodes: EventTreeNode[];
@@ -35,6 +36,8 @@ interface Props {
 
 function FlatEventList({ nodes }: Props) {
 	const eventWindowStore = useWorkspaceEventStore();
+	const eventDataStore = useEventsDataStore();
+
 	const listRef = React.useRef<VirtuosoHandle | null>(null);
 
 	React.useEffect(() => {
@@ -80,24 +83,18 @@ function FlatEventList({ nodes }: Props) {
 		);
 	};
 
-	if (eventWindowStore.isLoadingRootEvents) {
-		return <SplashScreen />;
-	}
-
-	if (!eventWindowStore.isLoadingRootEvents && eventWindowStore.eventTree.length === 0) {
-		if (eventWindowStore.eventTreeStatusCode === null) {
-			return (
-				<Empty
-					description='No events'
-					descriptionStyles={{ position: 'relative', bottom: '19px' }}
-				/>
-			);
+	if (eventWindowStore.eventTree.length === 0) {
+		if (eventDataStore.isLoadingRootEvents) {
+			return <SplashScreen />;
+		}
+		if (!eventDataStore.isLoadingRootEvents && eventDataStore.eventTreeStatusCode === null) {
+			return <Empty description='No events' />;
 		}
 		return (
 			<Empty
 				description={
-					typeof eventWindowStore.eventTreeStatusCode === 'number'
-						? `Server responded with ${eventWindowStore.eventTreeStatusCode} code`
+					typeof eventDataStore.eventTreeStatusCode === 'number'
+						? `Server responded with ${eventDataStore.eventTreeStatusCode} code`
 						: 'Error occured while loading evnets'
 				}
 				descriptionStyles={{ position: 'relative', bottom: '19px' }}
