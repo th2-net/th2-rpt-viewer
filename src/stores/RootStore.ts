@@ -19,7 +19,6 @@ import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore
 import notificationStoreInstance from './NotificationsStore';
 import { registerUrlMiddleware } from '../helpers/url';
 import { SearchStore } from './SearchStore';
-import localStorageWorker from '../util/LocalStorageWorker';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -38,8 +37,7 @@ export default class RootStore {
 
 	parseUrlState = (): WorkspacesUrlState | null => {
 		try {
-			const lastSearchQuery = window.location.search || localStorageWorker.getLastSearchQuery();
-			const searchParams = new URLSearchParams(lastSearchQuery);
+			const searchParams = new URLSearchParams(window.location.search);
 			const workspacesUrlState = searchParams.get('workspaces');
 			const parsedState = workspacesUrlState ? JSON.parse(window.atob(workspacesUrlState)) : null;
 			return parsedState;
