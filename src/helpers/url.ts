@@ -45,7 +45,6 @@ export function createURLSearchParams(
 export function registerUrlMiddleware(rootStore: RootStore) {
 	autorun(() => {
 		const activeWorkspace = rootStore.workspacesStore.activeWorkspace;
-		if (activeWorkspace.isSearchWorkspace) return;
 
 		let eventStoreState: EventStoreURLState = {};
 		let messagesStoreState: MessagesStoreURLState = {};

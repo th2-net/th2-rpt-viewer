@@ -157,7 +157,7 @@ export default class WorkspaceStore {
 
 	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
-		if (this === this.workspacesStore.searchWorkspace) {
+		if (this.workspacesStore.searchWorkspace === this) {
 			const newWorkspace = this.workspacesStore.createWorkspace({
 				entity: savedItem,
 			});
@@ -173,6 +173,33 @@ export default class WorkspaceStore {
 			this.viewStore.activePanel = this.eventsStore;
 			this.eventsStore.onEventSelect(savedItem);
 		}
+	};
+
+	@action
+	public onTimestampSelect = (timestamp: number) => {
+		if (this.workspacesStore.searchWorkspace === this) {
+			const range = getRangeFromTimestamp(timestamp, this.graphStore.interval);
+			const newWorkspace = this.workspacesStore.createWorkspace({
+				timeRange: range,
+				events: {
+					filter: {
+						timestampFrom: range[0],
+						timestampTo: range[1],
+						eventTypes: [],
+						names: [],
+					},
+				},
+				messages: {
+					filter: {
+						timestampTo: timestamp,
+					},
+				},
+			});
+
+			this.workspacesStore.addWorkspace(newWorkspace);
+			return;
+		}
+		this.graphStore.setTimestamp(timestamp);
 	};
 
 	@action
@@ -196,15 +223,19 @@ function getDefaultRange(entity: unknown, interval: number): TimeRange | null {
 	}
 
 	if (timestamp) {
-		return [
-			moment(timestamp)
-				.subtract(interval / 2, 'minutes')
-				.valueOf(),
-			moment(timestamp)
-				.add(interval / 2, 'minutes')
-				.valueOf(),
-		];
+		return getRangeFromTimestamp(timestamp, interval);
 	}
 
 	return null;
+}
+
+function getRangeFromTimestamp(timestamp: number, interval: number): TimeRange {
+	return [
+		moment(timestamp)
+			.subtract(interval / 2, 'minutes')
+			.valueOf(),
+		moment(timestamp)
+			.add(interval / 2, 'minutes')
+			.valueOf(),
+	];
 }

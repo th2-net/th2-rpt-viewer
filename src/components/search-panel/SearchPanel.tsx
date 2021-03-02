@@ -59,7 +59,7 @@ const SearchPanel = () => {
 						form={searchStore.searchForm}
 						formType={searchStore.formType}
 						updateForm={searchStore.updateForm}
-						streams={searchStore.formType === 'message' ? messagesStore.messageSessions : null}
+						streams={searchStore.formType === 'message' ? searchStore.messageSessions : null}
 					/>
 				</div>
 				<div className='filters'>

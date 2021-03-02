@@ -22,7 +22,6 @@ import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { PanelRange } from '../../models/Graph';
 import { isEventNode, sortByTimestamp } from '../../helpers/event';
-import GraphSearchInput from './GraphSearchInput';
 import { TimeRange } from '../../models/Timestamp';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { GraphStore } from '../../stores/GraphStore';
@@ -145,12 +144,6 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 				</>
 			)}
 			<i className='th2-logo' />
-			<div className='graph-search-input'>
-				<GraphSearchInput
-					timestamp={from + (to - from) / 2}
-					onTimestampSubmit={activeWorkspace.graphStore.setTimestamp}
-				/>
-			</div>
 			<WorkspaceLinkGetter />
 		</>
 	);
