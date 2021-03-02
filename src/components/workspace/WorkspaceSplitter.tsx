@@ -296,6 +296,7 @@ function WorkspaceSplitter(props: Props) {
 								className='pane__header'
 								style={{
 									backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
+									borderRadius: panel.title === 'Search' ? '5px 5px 0 0' : '5px',
 								}}>
 								<i
 									className={
