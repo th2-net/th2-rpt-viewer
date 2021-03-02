@@ -22,12 +22,12 @@ import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { PanelRange } from '../../models/Graph';
 import { isEventNode, sortByTimestamp } from '../../helpers/event';
-import GraphSearchInput from './GraphSearchInput';
 import { TimeRange } from '../../models/Timestamp';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { GraphStore } from '../../stores/GraphStore';
 import { OutsideItems, OutsideItemsMenu, OutsideItemsList } from './OutsideItems';
 import '../../styles/graph.scss';
+import WorkspaceLinkGetter from '../WorkspaceLinkGetter';
 
 interface OverlayPanelProps {
 	range: TimeRange;
@@ -144,12 +144,7 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 				</>
 			)}
 			<i className='th2-logo' />
-			<div className='graph-search-input'>
-				<GraphSearchInput
-					timestamp={from + (to - from) / 2}
-					onTimestampSubmit={activeWorkspace.graphStore.setTimestamp}
-				/>
-			</div>
+			<WorkspaceLinkGetter />
 		</>
 	);
 };

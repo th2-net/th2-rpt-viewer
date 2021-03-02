@@ -125,7 +125,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const hoverMessage = () => {
 		hoverTimeout.current = setTimeout(() => {
 			messagesStore.setHoveredMessage(message);
-		}, 50);
+		}, 150);
 	};
 
 	const unhoverMessage = () => {

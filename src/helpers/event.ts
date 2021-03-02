@@ -103,3 +103,8 @@ export const sortByTimestamp = (
 	});
 	return copiedEvents;
 };
+
+export function getItemId(item: EventAction | EventTreeNode | EventMessage) {
+	if (isEventMessage(item)) return item.messageId;
+	return item.eventId;
+}

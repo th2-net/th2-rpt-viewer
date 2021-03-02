@@ -41,18 +41,12 @@ const MessagesFilterPanel = () => {
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentStream, setCurrentStream] = React.useState('');
 	const [streams, setStreams] = React.useState<Array<string>>([]);
-	const [currentMessageType, setCurrentMessageType] = React.useState('');
-	const [messageTypes, setMessagesTypes] = React.useState<Array<string>>([]);
 	const [sseFilter, setSSEFilter] = React.useState<MessageFilterState | null>(null);
 	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
 		type: '',
 		body: '',
 		attachedEventIds: '',
 	});
-
-	React.useEffect(() => {
-		setMessagesTypes(filterStore.messagesFilter.messageTypes);
-	}, [filterStore.messagesFilter]);
 
 	React.useEffect(() => {
 		setStreams(filterStore.messagesFilter.streams);
@@ -67,11 +61,10 @@ const MessagesFilterPanel = () => {
 			{
 				...filterStore.messagesFilter,
 				streams,
-				messageTypes,
 			},
 			sseFilter,
 		);
-	}, [filterStore.messagesFilter, streams, messageTypes, sseFilter]);
+	}, [filterStore.messagesFilter, streams, sseFilter]);
 
 	const isLoading = messagesDataStore.messages.length === 0 && messagesDataStore.isLoading;
 	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !isLoading;
@@ -168,22 +161,9 @@ const MessagesFilterPanel = () => {
 		};
 	}, [streams, setStreams, currentStream, setCurrentStream, messagesStore.messageSessions]);
 
-	const nameFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
-		return {
-			type: 'multiple-strings',
-			id: 'messages-type',
-			label: 'Message name',
-			values: messageTypes,
-			setValues: setMessagesTypes,
-			currentValue: currentMessageType,
-			setCurrentValue: setCurrentMessageType,
-			autocompleteList: null,
-		};
-	}, [messageTypes, setMessagesTypes, currentMessageType, setCurrentMessageType]);
-
 	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
-		return [sessionFilterConfig, nameFilterConfig, ...compoundFilterRow];
-	}, [sessionFilterConfig, nameFilterConfig, compoundFilterRow]);
+		return [sessionFilterConfig, ...compoundFilterRow];
+	}, [sessionFilterConfig, compoundFilterRow]);
 
 	return (
 		<FilterPanel

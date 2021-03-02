@@ -173,7 +173,7 @@
 	}
 
 	&__key,
-	&__key__minified,
+	&__key-minified,
 	&__direction-icon {
 		margin-right: 3px;
 	}
@@ -583,6 +583,7 @@
 	}
 
 	.sessions {
+		margin-left: 5px;
 		display: flex;
 		align-items: center;
 		position: relative;
@@ -590,20 +591,20 @@
 
 		&__title {
 			color: $primaryTextColor;
-			font-size: 14px;
+			font-size: 12px;
 			font-weight: bold;
 		}
 
 		&__add-button {
-			height: 22px;
+			height: 19px;
 			display: flex;
 			align-items: center;
-			padding: 3px 15px;
+			padding: 0 8px;
 			border-radius: 5px;
 			background-color: #00bbcc;
 			color: #fff;
 			cursor: pointer;
-			font-size: 14px;
+			font-size: 11px;
 			border: none;
 			margin-left: 5px;
 		}

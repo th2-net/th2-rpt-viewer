@@ -17,6 +17,7 @@
 $reportTitleTextColor: #7b7b7b;
 
 $failedTextColor: #d92626;
+$failedTextColorLight: #ff6666;
 $failedBorderColor: #ffe5cc;
 $failedHeaderColor: #ffcccc;
 $failedBorderColorSecondary: $failedHeaderColor;
@@ -31,6 +32,7 @@ $failedIconColorLight: #ffe5e6;
 $failedIconColorActive: #bc271a;
 
 $passedTextColor: #06792d;
+$passedTextColorLight: #4db26f;
 $passedBorderColor: $failedBorderColor;
 $passedHeaderColor: #dbf0df;
 $passedBorderColorSecondary: $passedHeaderColor;
@@ -46,6 +48,7 @@ $passedIconColorActive: #00802a;
 $naTextColor: $reportTitleTextColor;
 
 $primaryTextColor: #4d4d4d;
+$primaryTextColorLight: #5e5e5e;
 $secondaryTextColor: #808080;
 $secondaryLightTextColor: #999999;
 $alternativeTextColor: #666666;
@@ -166,8 +169,12 @@ $graphAttachedItemNameColor: #bc271a;
 $graphAttachedItemTimestampColor: #666666;
 
 $timestampInputBorderColor: #7a99b8;
+$workspaceLinkGetterColor: #3d668f;
 
 $eventCardIdColor: #595959;
 $eventTextColor: #f26c0d;
+$eventTextColorLight: #ffb266;
 
 $workspaceBackground: #eef2f6;
+
+$expandIconBackgroundColor: rgba(0, 0, 0, 0.1);

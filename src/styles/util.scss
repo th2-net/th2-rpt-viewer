@@ -53,14 +53,30 @@
 	@include icon(null, 15px, 15px);
 	flex-shrink: 0;
 
+	&::before {
+		content: '';
+		position: absolute;
+		width: 15px;
+		height: 15px;
+		border-radius: 3px;
+	}
+
 	&.expanded {
 		background-image: url(../../resources/icons/expand-on.svg);
 		cursor: pointer;
+
+		&:hover::before {
+			background-color: $expandIconBackgroundColor;
+		}
 	}
 
 	&.hidden {
 		background-image: url(../../resources/icons/expand-off.svg);
 		cursor: pointer;
+
+		&:hover::before {
+			background-color: $expandIconBackgroundColor;
+		}
 	}
 
 	&.loading {

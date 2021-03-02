@@ -14,8 +14,33 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export default interface MessagesFilter {
-	timestampFrom: null | number;
-	timestampTo: null | number;
-	streams: Array<string>;
+import * as React from 'react';
+import { EventTreeNode } from '../../../models/EventAction';
+import EventBreadcrumbsItem from './EventBreadcrumbsItem';
+
+interface Props {
+	path: EventTreeNode[];
+	onSelect: (eventTreeNode: EventTreeNode | null) => void;
+}
+
+export default function EventBreadcrumbs(props: Props) {
+	const { path, onSelect } = props;
+	return (
+		<div className='event-breadcrumbs'>
+			<EventBreadcrumbsItem
+				eventNode='root'
+				onSelect={() => onSelect(null)}
+				key='root'
+				isLast={!path.length}
+			/>
+			{path.map((eventNode, index) => (
+				<EventBreadcrumbsItem
+					eventNode={eventNode}
+					onSelect={() => onSelect(eventNode)}
+					key={eventNode.eventId}
+					isLast={index === path.length - 1}
+				/>
+			))}
+		</div>
+	);
 }
