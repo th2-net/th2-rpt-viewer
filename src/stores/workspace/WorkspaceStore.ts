@@ -158,36 +158,47 @@ export default class WorkspaceStore {
 
 	@action
 	public onSearchResultItemSelect = (resultItem: EventTreeNode | EventAction | EventMessage) => {
-		this.onSavedItemSelect(resultItem);
+		let initialWorkspaceState: WorkspaceInitialState = {};
 
-		new Promise<void>(res => {
-			res();
-		}).then(() => {
-			const newWorkspace = this.workspacesStore.workspaces[
-				this.workspacesStore.workspaces.length - 1
-			];
-			if (isEventMessage(resultItem)) {
-				const filterStore = newWorkspace.messagesStore.filterStore;
-				filterStore.setMessagesFilter(
-					filterStore.filter,
-					this.searchStore.currentSearch
-						? (this.searchStore.currentSearch.request.filters as MessageFilterState)
-						: null,
-				);
-			} else {
-				const filter = this.searchStore.currentSearch?.request.filters as EventFilterState;
-				const filterStore = newWorkspace.eventsStore.filterStore;
-				const eventTypes = !filter.type.negative ? filter.type.values : [];
-				const names = !filter.name.negative ? filter.name.values : [];
+		if (isEventMessage(resultItem)) {
+			const requestInfo = this.searchStore.currentSearch?.request;
+			initialWorkspaceState = {
+				messages: {
+					sse: (requestInfo?.filters as MessageFilterState) || null,
+					streams: requestInfo?.state.stream || [],
+					timestampFrom: null,
+					timestampTo: getTimestampAsNumber(resultItem.timestamp),
+					targetMessage: resultItem,
+				},
+				interval: this.graphStore.interval,
+				layout: [0, 100],
+				timeRange: getRangeFromTimestamp(getTimestampAsNumber(resultItem.timestamp), 15),
+			};
+		} else {
+			const requestInfo = this.searchStore.currentSearch?.request;
+			const filter = requestInfo?.filters as EventFilterState | undefined;
+			const [timestampFrom, timestampTo] = getRangeFromTimestamp(
+				getTimestampAsNumber(resultItem.startTimestamp),
+				this.graphStore.interval,
+			);
+			initialWorkspaceState = {
+				events: {
+					filter: {
+						eventTypes: filter && !filter.type.negative ? filter.type.values : [],
+						names: filter && !filter.name.negative ? filter.name.values : [],
+						timestampFrom,
+						timestampTo,
+					},
+					targetEvent: resultItem,
+				},
+				layout: [100, 0],
+				interval: this.graphStore.interval,
+				timeRange: [timestampFrom, timestampTo],
+			};
+		}
 
-				filterStore.setEventsFilter({
-					timestampFrom: filterStore.filter.timestampFrom,
-					timestampTo: filterStore.filter.timestampTo,
-					eventTypes,
-					names,
-				});
-			}
-		});
+		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
+		this.workspacesStore.addWorkspace(newWorkspace);
 	};
 
 	@action
@@ -197,14 +208,23 @@ export default class WorkspaceStore {
 				getTimestampAsNumber(isEvent(savedItem) ? savedItem.startTimestamp : savedItem.timestamp),
 				this.graphStore.interval,
 			);
-			const newWorkspace = this.workspacesStore.createWorkspace({
-				messages: isEventMessage(savedItem) ? savedItem : undefined,
-				events: isEvent(savedItem) ? savedItem : undefined,
-				interval: this.graphStore.interval,
+			const initialWorkspaceState: WorkspaceInitialState = {
 				timeRange,
-				layout: isEventMessage(savedItem) ? [50, 50] : [100, 0],
-			});
+				interval: this.graphStore.interval,
+			};
+			if (isEvent(savedItem)) {
+				initialWorkspaceState.events = {
+					targetEvent: savedItem,
+				};
+				initialWorkspaceState.layout = [100, 0];
+			} else {
+				initialWorkspaceState.messages = {
+					targetMessage: savedItem,
+				};
+				initialWorkspaceState.layout = [0, 100];
+			}
 
+			const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
 			this.workspacesStore.addWorkspace(newWorkspace);
 			return;
 		}

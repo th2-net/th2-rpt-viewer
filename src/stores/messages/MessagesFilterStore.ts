@@ -31,7 +31,9 @@ function getDefaultMessagesFilter(): MessagesFilter {
 	};
 }
 
-export type MessagesFilterStoreInitialState = Partial<MessagesFilter>;
+export type MessagesFilterStoreInitialState = {
+	sse?: Partial<MessageFilterState>;
+} & Partial<MessagesFilter>;
 
 export default class MessagesFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
@@ -39,19 +41,29 @@ export default class MessagesFilterStore {
 	constructor(private searchStore: SearchStore, initialState?: MessagesFilterStoreInitialState) {
 		if (initialState) {
 			const defaultMessagesFilter = getDefaultMessagesFilter();
-
-			this.setMessagesFilter({
-				...defaultMessagesFilter,
-				...initialState,
-			});
+			const {
+				streams = defaultMessagesFilter.streams,
+				timestampFrom = defaultMessagesFilter.timestampFrom,
+				timestampTo = defaultMessagesFilter.timestampTo,
+				sse = {},
+			} = initialState;
+			const appliedSSEFilter = {
+				...(this.getDefaultMessagesSSEFilter(this.searchStore.messagesFilterInfo) || {}),
+				...sse,
+			} as MessageFilterState;
+			this.setMessagesFilter(
+				{
+					streams,
+					timestampFrom,
+					timestampTo,
+				},
+				Object.keys(appliedSSEFilter).length > 0 ? appliedSSEFilter : null,
+			);
+		} else {
+			this.setSSEMessagesFilter(this.searchStore.messagesFilterInfo);
 		}
 
-		this.setSSEMessagesFilter(this.searchStore.messagesFilterInfo);
-
-		this.sseFilterSubscription = reaction(
-			() => searchStore.messagesFilterInfo,
-			this.setSSEMessagesFilter,
-		);
+		this.sseFilterSubscription = reaction(() => searchStore.messagesFilterInfo, this.initSSEFilter);
 	}
 
 	@observable filter: MessagesFilter = getDefaultMessagesFilter();
@@ -131,13 +143,25 @@ export default class MessagesFilterStore {
 
 	@action
 	private setSSEMessagesFilter = (messagesFilterInfo: SSEFilterInfo[]) => {
+		this.sseMessagesFilter = this.getDefaultMessagesSSEFilter(messagesFilterInfo);
+	};
+
+	@action
+	private initSSEFilter = (filterInfo: SSEFilterInfo[]) => {
+		if (this.sseMessagesFilter) {
+			this.sseMessagesFilter = {
+				...getDefaultFilterState(filterInfo),
+				...this.sseMessagesFilter,
+			};
+		} else {
+			this.setSSEMessagesFilter(filterInfo);
+		}
+	};
+
+	private getDefaultMessagesSSEFilter = (messagesFilterInfo: SSEFilterInfo[]) => {
 		const filter = getDefaultFilterState(messagesFilterInfo);
 
-		if (Object.keys(filter).length > 0) {
-			this.sseMessagesFilter = filter as MessageFilterState;
-		} else {
-			this.sseMessagesFilter = null;
-		}
+		return Object.keys(filter).length > 0 ? (filter as MessageFilterState) : null;
 	};
 
 	public dispose = () => {

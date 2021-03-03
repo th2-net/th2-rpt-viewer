@@ -45,9 +45,9 @@ export type EventStoreURLState = Partial<{
 }>;
 
 export type EventStoreDefaultStateType =
-	| EventStoreURLState
-	| EventTreeNode
-	| EventAction
+	| (EventStoreURLState & {
+			targetEvent?: EventTreeNode | EventAction;
+	  })
 	| null
 	| undefined;
 
@@ -63,7 +63,7 @@ export default class EventsStore {
 		private graphStore: GraphStore,
 		private searchPanelStore: SearchStore,
 		private api: ApiSchema,
-		initialState: EventStoreDefaultStateType | EventAction | EventTreeNode,
+		initialState: EventStoreDefaultStateType,
 	) {
 		this.init(initialState);
 
@@ -345,43 +345,31 @@ export default class EventsStore {
 
 	@action
 	private async init(initialState: EventStoreDefaultStateType) {
-		const isInitialEntity = (state: typeof initialState): state is EventAction | EventTreeNode =>
-			isEvent(state);
-
 		if (!initialState) {
 			this.fetchEventTree();
 			return;
 		}
 
-		this.viewStore.eventsPanelArea = isInitialEntity(initialState)
-			? 100
-			: initialState.panelArea || 100;
-
-		this.filterStore = new EventsFilterStore(
-			this.graphStore,
-			!isInitialEntity(initialState) ? initialState.filter : undefined,
-		);
+		this.filterStore = new EventsFilterStore(this.graphStore, initialState.filter);
 		this.searchStore = new EventsSearchStore(this.api, this, {
-			searchPatterns: !isInitialEntity(initialState) ? initialState.search : [],
+			searchPatterns: initialState.search,
 		});
 		this.viewStore = new ViewStore({
-			flattenedListView: !isInitialEntity(initialState)
-				? initialState.flattenedListView
-				: undefined,
-			panelArea: !isInitialEntity(initialState) ? initialState.panelArea : undefined,
+			flattenedListView: initialState.flattenedListView,
+			panelArea: initialState.panelArea,
 		});
 
-		if (isInitialEntity(initialState)) {
-			this.onEventSelect(initialState);
+		if (isEvent(initialState.targetEvent)) {
+			this.onEventSelect(initialState.targetEvent);
 		} else {
 			await this.fetchEventTree();
 		}
 
-		if (!isInitialEntity(initialState) && initialState.selectedNodesPath) {
+		if (!isEvent(initialState.targetEvent) && initialState.selectedNodesPath) {
 			this.expandPath(initialState.selectedNodesPath);
 		}
 
-		if (!isInitialEntity(initialState) && initialState.selectedParentId) {
+		if (!isEvent(initialState.targetEvent) && initialState.selectedParentId) {
 			const parentNode = this.selectedPath.find(
 				eventNode => eventNode.eventId === initialState.selectedParentId,
 			);

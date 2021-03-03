@@ -30,11 +30,16 @@ import { sortMessagesByTimestamp } from '../../helpers/message';
 import { isEventMessage } from '../../helpers/event';
 import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { GraphStore } from '../GraphStore';
-import MessagesFilterStore from './MessagesFilterStore';
+import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 
-export type MessagesStoreURLState = Partial<MessagesFilter>;
+export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
-export type MessagesStoreDefaultStateType = EventMessage | MessagesStoreURLState | null | undefined;
+export type MessagesStoreDefaultStateType =
+	| (MessagesStoreURLState & {
+			targetMessage?: EventMessage;
+	  })
+	| null
+	| undefined;
 
 export default class MessagesStore {
 	private attachedMessagesSubscription: IReactionDisposer;
@@ -81,15 +86,12 @@ export default class MessagesStore {
 		private api: ApiSchema,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
-		if (isEventMessage(defaultState)) {
-			this.onMessageSelect(defaultState);
+		if (defaultState) {
+			if (isEventMessage(defaultState.targetMessage)) {
+				this.onMessageSelect(defaultState.targetMessage);
+			}
+			this.filterStore = new MessagesFilterStore(this.searchStore, defaultState);
 			this.data.loadMessages();
-		} else if (defaultState) {
-			this.filterStore.setMessagesFilter({
-				timestampFrom: defaultState.timestampFrom || null,
-				timestampTo: defaultState.timestampTo || moment.utc().valueOf(),
-				streams: defaultState.streams || [],
-			});
 		}
 
 		this.attachedMessagesSubscription = reaction(
