@@ -35,6 +35,10 @@ import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
 import { getTimestampAsNumber } from '../../helpers/date';
+import {
+	EventFilterState,
+	MessageFilterState,
+} from '../../components/search-panel/SearchPanelFilters';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;
@@ -153,6 +157,40 @@ export default class WorkspaceStore {
 	};
 
 	@action
+	public onSearchResultItemSelect = (resultItem: EventTreeNode | EventAction | EventMessage) => {
+		this.onSavedItemSelect(resultItem);
+
+		new Promise<void>(res => {
+			res();
+		}).then(() => {
+			const newWorkspace = this.workspacesStore.workspaces[
+				this.workspacesStore.workspaces.length - 1
+			];
+			if (isEventMessage(resultItem)) {
+				const filterStore = newWorkspace.messagesStore.filterStore;
+				filterStore.setMessagesFilter(
+					filterStore.filter,
+					this.searchStore.currentSearch
+						? (this.searchStore.currentSearch.request.filters as MessageFilterState)
+						: null,
+				);
+			} else {
+				const filter = this.searchStore.currentSearch?.request.filters as EventFilterState;
+				const filterStore = newWorkspace.eventsStore.filterStore;
+				const eventTypes = !filter.type.negative ? filter.type.values : [];
+				const names = !filter.name.negative ? filter.name.values : [];
+
+				filterStore.setEventsFilter({
+					timestampFrom: filterStore.filter.timestampFrom,
+					timestampTo: filterStore.filter.timestampTo,
+					eventTypes,
+					names,
+				});
+			}
+		});
+	};
+
+	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
 		if (this.workspacesStore.searchWorkspace === this) {
 			const timeRange = getRangeFromTimestamp(
@@ -160,11 +198,11 @@ export default class WorkspaceStore {
 				this.graphStore.interval,
 			);
 			const newWorkspace = this.workspacesStore.createWorkspace({
-				layout: isEventMessage(savedItem) ? [0, 100] : [100, 0],
 				messages: isEventMessage(savedItem) ? savedItem : undefined,
 				events: isEvent(savedItem) ? savedItem : undefined,
 				interval: this.graphStore.interval,
 				timeRange,
+				layout: isEventMessage(savedItem) ? [50, 50] : [100, 0],
 			});
 
 			this.workspacesStore.addWorkspace(newWorkspace);

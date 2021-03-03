@@ -84,7 +84,7 @@ const SearchPanel = () => {
 				<SearchPanelResults
 					resultGroups={searchStore.resultGroups}
 					timestamp={searchStore.currentSearch.timestamp}
-					onResultItemClick={activeWorkspace.onSavedItemSelect}
+					onResultItemClick={activeWorkspace.onSearchResultItemSelect}
 					onResultDelete={() => {
 						if (searchStore.currentSearch) {
 							searchStore.deleteHistoryItem(searchStore.currentSearch);
