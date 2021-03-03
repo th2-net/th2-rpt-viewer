@@ -35,6 +35,10 @@ import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
 import { getTimestampAsNumber } from '../../helpers/date';
+import {
+	EventFilterState,
+	MessageFilterState,
+} from '../../components/search-panel/SearchPanelFilters';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;
@@ -156,24 +160,57 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
-		if (this.workspacesStore.searchWorkspace === this) {
-			const newWorkspace = this.workspacesStore.createWorkspace({
-				entity: savedItem,
-				layout: isEventMessage(savedItem) ? [0, 100] : [100, 0],
-			});
+	public onSearchResultItemSelect = (resultItem: EventTreeNode | EventAction | EventMessage) => {
+		this.onSavedItemSelect(resultItem);
 
-			this.workspacesStore.addWorkspace(newWorkspace);
+		new Promise<void>(res => {
+			res();
+		}).then(() => {
+			const newWorkspace = this.workspacesStore.workspaces[
+				this.workspacesStore.workspaces.length - 1
+			];
+			if (isEventMessage(resultItem)) {
+				const filterStore = newWorkspace.messagesStore.filterStore;
+				filterStore.setMessagesFilter(
+					filterStore.messagesFilter,
+					this.searchStore.currentSearch
+						? (this.searchStore.currentSearch.request.filters as MessageFilterState)
+						: null,
+				);
+			} else {
+				const filter = this.searchStore.currentSearch?.request.filters as EventFilterState;
+				const filterStore = newWorkspace.eventsStore.filterStore;
+				const eventTypes = !filter.type.negative ? filter.type.values : [];
+				const names = !filter.name.negative ? filter.name.values : [];
+
+				filterStore.setEventsFilter({
+					timestampFrom: filterStore.eventsFilter.timestampFrom,
+					timestampTo: filterStore.eventsFilter.timestampTo,
+					eventTypes,
+					names,
+				});
+			}
+		});
+	};
+
+	@action
+	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
+		if (this !== this.workspacesStore.searchWorkspace) {
+			if (isEventMessage(savedItem)) {
+				this.viewStore.activePanel = this.messagesStore;
+				this.messagesStore.onMessageSelect(savedItem);
+			} else {
+				this.viewStore.activePanel = this.eventsStore;
+				this.eventsStore.onEventSelect(savedItem);
+			}
 			return;
 		}
 
-		if (isEventMessage(savedItem)) {
-			this.viewStore.activePanel = this.messagesStore;
-			this.messagesStore.onMessageSelect(savedItem);
-		} else {
-			this.viewStore.activePanel = this.eventsStore;
-			this.eventsStore.onEventSelect(savedItem);
-		}
+		const newWorkspace: WorkspaceStore = this.workspacesStore.createWorkspace({
+			entity: savedItem,
+			layout: isEventMessage(savedItem) ? [0, 100] : [100, 0],
+		});
+		this.workspacesStore.addWorkspace(newWorkspace);
 	};
 
 	@action

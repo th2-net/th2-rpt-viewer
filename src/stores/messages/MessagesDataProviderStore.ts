@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, reaction, observable, computed, runInAction } from 'mobx';
+import { action, reaction, observable, computed, runInAction, autorun } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams } from '../../api/sse';
 import { EventMessage } from '../../models/EventMessage';
@@ -24,7 +24,7 @@ import { SSEChannel } from './SSEChannel';
 
 export default class MessagesDataProviderStore {
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
-		reaction(() => this.messagesStore.filterStore.messagesFilter, this.onFilterChange);
+		autorun(() => this.onFilterChange(this.messagesStore.filterStore.messagesFilter));
 	}
 
 	@observable

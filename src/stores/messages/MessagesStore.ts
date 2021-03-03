@@ -89,9 +89,7 @@ export default class MessagesStore {
 		if (isMessagesStore(defaultState)) {
 			this.copy(defaultState);
 		} else if (isEventMessage(defaultState)) {
-			setTimeout(() => {
-				this.onMessageSelect(defaultState);
-			}, 50);
+			this.onMessageSelect(defaultState);
 		} else if (defaultState !== null) {
 			this.filterStore.messagesFilter = {
 				...this.filterStore.messagesFilter,
