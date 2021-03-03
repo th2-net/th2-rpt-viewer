@@ -47,7 +47,7 @@ const SearchPanel = () => {
 	);
 
 	return (
-		<>
+		<div className='search-panel-wrapper'>
 			<div className='search-panel' ref={searchPanelRef}>
 				<div className='search-panel__toggle'>
 					<TogglerRow config={formTypeTogglerConfig} />
@@ -97,7 +97,7 @@ const SearchPanel = () => {
 					disablePrev={searchStore.currentIndex === 0}
 				/>
 			)}
-		</>
+		</div>
 	);
 };
 
