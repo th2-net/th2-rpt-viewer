@@ -20,7 +20,7 @@ import KeyCodes from '../../../util/KeyCodes';
 import { createBemElement } from '../../../helpers/styleCreators';
 
 const TIME_MASK = 'HH:mm:ss.SSS' as const;
-const DATE_TIME_MASK = 'YYYY.MM.DD HH:mm:ss.SSS' as const;
+export const DATE_TIME_MASK = 'YYYY.MM.DD HH:mm:ss.SSS' as const;
 const TIME_PLACEHOLDER = '00:00:00.000' as const;
 const DATE_TIME_PLACEHOLDER = '0000.01.01 00:00:00.000' as const;
 
