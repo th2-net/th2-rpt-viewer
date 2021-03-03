@@ -54,6 +54,11 @@ const MessagesFilterPanel = () => {
 
 	React.useEffect(() => {
 		setSSEFilter(messagesStore.filterStore.sseMessagesFilter);
+		setCurrentValues({
+			type: '',
+			body: '',
+			attachedEventIds: '',
+		});
 	}, [messagesStore.filterStore.sseMessagesFilter]);
 
 	const submitChanges = React.useCallback(() => {

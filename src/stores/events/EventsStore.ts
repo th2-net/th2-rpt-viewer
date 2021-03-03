@@ -25,7 +25,6 @@ import EventsFilter from '../../models/filter/EventsFilter';
 import {
 	getEventNodeParents,
 	isEvent,
-	isEventAction,
 	isEventNode,
 	sortEventsByTimestamp,
 } from '../../helpers/event';

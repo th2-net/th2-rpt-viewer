@@ -39,9 +39,9 @@ export type MessagesStoreDefaultStateType = EventMessage | MessagesStoreURLState
 export default class MessagesStore {
 	private attachedMessagesSubscription: IReactionDisposer;
 
-	filterStore = new MessagesFilterStore(this.searchStore);
+	public filterStore = new MessagesFilterStore(this.searchStore);
 
-	data = new MessagesDataProviderStore(this, this.api);
+	public data = new MessagesDataProviderStore(this, this.api);
 
 	@observable
 	public hoveredMessage: EventMessage | null = null;
@@ -228,6 +228,7 @@ export default class MessagesStore {
 		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
 		this.selectedMessageId = null;
+
 		this.filterStore.filter = {
 			...this.filterStore.filter,
 			timestampFrom: null,
@@ -265,7 +266,7 @@ export default class MessagesStore {
 	};
 
 	@action
-	clearFilters = () => {
+	public clearFilters = () => {
 		this.selectedMessage = null;
 		this.filterStore.resetMessagesFilter();
 		this.data.stopMessagesLoading();

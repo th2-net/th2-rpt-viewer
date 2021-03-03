@@ -38,13 +38,11 @@ export default class MessagesFilterStore {
 
 	constructor(private searchStore: SearchStore, initialState?: MessagesFilterStoreInitialState) {
 		if (initialState) {
-			const { streams, timestampTo, timestampFrom } = initialState;
 			const defaultMessagesFilter = getDefaultMessagesFilter();
 
 			this.setMessagesFilter({
-				streams: streams || defaultMessagesFilter.streams,
-				timestampTo: timestampTo || defaultMessagesFilter.timestampTo,
-				timestampFrom: timestampFrom || defaultMessagesFilter.timestampFrom,
+				...defaultMessagesFilter,
+				...initialState,
 			});
 		}
 
@@ -67,7 +65,7 @@ export default class MessagesFilterStore {
 		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
 			? []
 			: Object.entries(sseFilters)
-					.filter(filter => filter[1].values.length > 0)
+					.filter(([_, filter]) => filter.values.length > 0)
 					.map(([filterName]) => filterName as keyof MessageFilterState);
 
 		const filterValues = filtersToAdd
@@ -115,13 +113,13 @@ export default class MessagesFilterStore {
 	}
 
 	@action
-	setMessagesFilter(filter: MessagesFilter, sseFilters: MessageFilterState | null = null) {
+	public setMessagesFilter(filter: MessagesFilter, sseFilters: MessageFilterState | null = null) {
 		this.sseMessagesFilter = sseFilters;
 		this.filter = filter;
 	}
 
 	@action
-	resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
+	public resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
 		const filter = getDefaultFilterState(this.searchStore.messagesFilterInfo);
 		const defaultMessagesFilter = getDefaultMessagesFilter();
 		this.sseMessagesFilter = Object.keys(filter).length ? (filter as MessageFilterState) : null;

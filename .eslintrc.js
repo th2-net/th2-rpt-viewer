@@ -78,6 +78,8 @@ module.exports = {
 		'arrow-parens': ['error', 'as-needed'],
 		'no-plusplus': 'off',
 		radix: 'off',
+		"no-unused-vars": "off",
+  	"@typescript-eslint/no-unused-vars": ["error", {"argsIgnorePattern": "^_"}],
 		'no-unused-expressions': 'off',
 		'@typescript-eslint/no-unused-expressions': ['error'],
 		'import/no-unassigned-import': [
