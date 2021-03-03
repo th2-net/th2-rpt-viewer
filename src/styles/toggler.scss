@@ -24,12 +24,13 @@
     align-items: center;
     margin: 0 10px;
     &__bar {
+        cursor: pointer;
         position: relative;
         box-sizing: border-box;
         width: 40px;
         height: 20px;
         margin: 0 4px;
-        border: solid black 1px;
+        border: solid white 1px;
         border-radius: 12px;
         &:before {
             position: absolute;
@@ -37,7 +38,7 @@
             width: 16px;
             height: 16px;
             border-radius: 50%;
-            background-color: #000;
+            background-color: white;
             top: 50%;
             transform: translateY(-50%);
             transition: left ease-in-out 240ms;
