@@ -139,12 +139,36 @@ export default class MessagesStore {
 	};
 
 	@action
+	public detailify = (messageId: string) => {
+		if (!this.detailedRawMessagesIds.includes(messageId)) {
+			this.detailedRawMessagesIds = [...this.detailedRawMessagesIds, messageId];
+		}
+	};
+
+	@action
+	public undetailify = (messageId: string) => {
+		this.detailedRawMessagesIds = this.detailedRawMessagesIds.filter(id => id !== messageId);
+	};
+
+	@action
 	public toggleMessageBeautify = (messageId: string) => {
 		if (this.beautifiedMessages.includes(messageId)) {
 			this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
 		} else {
 			this.beautifiedMessages = [...this.beautifiedMessages, messageId];
 		}
+	};
+
+	@action
+	public beautify = (messageId: string) => {
+		if (!this.beautifiedMessages.includes(messageId)) {
+			this.beautifiedMessages = [...this.beautifiedMessages, messageId];
+		}
+	};
+
+	@action
+	public debeautify = (messageId: string) => {
+		this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
 	};
 
 	@action

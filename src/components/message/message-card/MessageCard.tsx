@@ -29,9 +29,11 @@ import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
 import { MessageScreenshotZoom } from './MessageScreenshot';
 import { EventMessage, isScreenshotMessage } from '../../../models/EventMessage';
-import MessageRaw from './raw/MessageRaw';
-import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
-import ErrorBoundary from '../../util/ErrorBoundary';
+
+import Select from '../../util/Select';
+import MessageCardViewTypeSwitcher, {
+	MessageCardViewTypeSwitcherProps,
+} from './MessageCardViewTypeSwitcher';
 import '../../../styles/messages.scss';
 
 const HUE_SEGMENTS_COUNT = 36;
@@ -47,12 +49,13 @@ export interface RecoveredProps {
 
 interface Props extends OwnProps, RecoveredProps {}
 
-function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
+function MessageCardBase({ message, showRawHandler }: Props) {
 	const messagesStore = useMessagesWorkspaceStore();
 	const selectedStore = useSelectedStore();
 	const workspaceStore = useWorkspaceStore();
 	const { heatmapElements } = useHeatmap();
 	const [isHighlighted, setHighlighted] = React.useState(false);
+	const [messageViewType, setMessageViewType] = React.useState('parsed');
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
@@ -84,6 +87,28 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		};
 	}, [messagesStore.highlightedMessageId]);
 
+	React.useEffect(() => {
+		if (messageViewType === 'ascii' || messageViewType === 'binary') {
+			showRawHandler(true);
+		} else {
+			showRawHandler(false);
+		}
+		switch (messageViewType) {
+			case 'beautified':
+				messagesStore.beautify(messageId);
+				break;
+			case 'ascii':
+				messagesStore.undetailify(messageId);
+				break;
+			case 'binary':
+				messagesStore.detailify(messageId);
+				break;
+			default:
+				messagesStore.debeautify(messageId);
+				break;
+		}
+	}, [messageViewType]);
+
 	const isAttached = !!workspaceStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
 	);
@@ -98,16 +123,6 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		isAttached ? 'attached' : null,
 		isPinned ? 'pinned' : null,
 		isHighlighted ? 'highlighted' : null,
-	);
-
-	const showRawButtonClass = createStyleSelector(
-		'mc-header__control-button mc-header__icon mc-header__show-raw-button',
-		showRaw ? 'active' : null,
-	);
-
-	const beautifyButtonClass = createStyleSelector(
-		'mc-header__control-button mc-header__icon mc-header__beatutify-button',
-		isContentBeautified ? 'active' : null,
 	);
 
 	// session arrow color, we calculating it for each session from-to pair, based on hash
@@ -131,6 +146,15 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const unhoverMessage = () => {
 		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
 		messagesStore.setHoveredMessage(null);
+	};
+
+	const messageViewTypeSwitcherProps: MessageCardViewTypeSwitcherProps = {
+		messageId,
+		messageViewType,
+		messageBody: body,
+		isBeautified: isContentBeautified,
+		rawContent: bodyBase64,
+		isSelected: color !== undefined,
 	};
 
 	return (
@@ -160,6 +184,15 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 						</div>
 					</div>
 					<div className='mc-header__controls'>
+						{!isScreenshotMsg && (
+							<Select
+								options={['parsed', 'beautified', 'ascii', 'binary']}
+								selected={messageViewType}
+								onChange={(option: string) => {
+									setMessageViewType(option);
+								}}
+							/>
+						)}
 						{isScreenshotMsg && (
 							<>
 								<div className='mc-header__control-button mc-header__icon mc-headr__zoom-button' />
@@ -170,15 +203,6 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 								/>
 							</>
 						)}
-						{message.body !== null && (
-							<div
-								className={beautifyButtonClass}
-								onClick={() => messagesStore.toggleMessageBeautify(messageId)}
-							/>
-						)}
-						{!isScreenshotMsg && bodyBase64 && bodyBase64 !== 'null' ? (
-							<div className={showRawButtonClass} onClick={() => showRawHandler(!showRaw)} />
-						) : null}
 						<div
 							className={bookmarkIconClass}
 							title={isPinned ? 'Remove from bookmarks' : 'Add to bookmarks'}
@@ -199,23 +223,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 						</div>
 					) : (
 						<div className='mc-body__human'>
-							<ErrorBoundary
-								fallback={
-									<MessageBodyCardFallback
-										isBeautified={isContentBeautified}
-										isSelected={color !== undefined}
-										body={body}
-									/>
-								}>
-								<MessageBodyCard
-									isBeautified={isContentBeautified}
-									body={body}
-									isSelected={color !== undefined}
-								/>
-							</ErrorBoundary>
-							{bodyBase64 && showRaw ? (
-								<MessageRaw messageId={messageId} rawContent={bodyBase64} />
-							) : null}
+							<MessageCardViewTypeSwitcher {...messageViewTypeSwitcherProps} />
 						</div>
 					)}
 				</div>
