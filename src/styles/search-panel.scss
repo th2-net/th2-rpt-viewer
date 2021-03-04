@@ -16,19 +16,22 @@
 
 @import './common/vars';
 
+.search-panel-wrapper {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
 .search-panel {
 	width: 100%;
-	height: 100%;
-	padding: 0 8px;
-	background-color: #fff;
+	padding: 0 8px 8px;
+	background-color: #ADC2EB;
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
-	color: $primaryTextColor;
-
-	.filter-row__input {
-		border: solid 1px #000;
-	}
+	color: #fff;
+	border-radius: 0 0 5px 5px;
+	flex-shrink: 0;
 
 	.filter-row {
 		flex-grow: 1;
@@ -48,43 +51,37 @@
 		@include spinner(3px);
 		margin: 4px auto;
 	}
-	.progress-bar {
-		width: 100%;
-		position: relative;
-		padding: 32px 0 10px;
-		.progress-bar-points {
-			position: absolute;
-			font-size: 10px;
-			top: 0
-		}
-		&__start {
-			left: 0;
-		}
-		&__track {
-			width: 100%;
-			height: 8px;
-			overflow: hidden;
-			position: relative;
-			background-color: #000;
-			border: 1px solid #000;
-		}
-		&__line {
-			position: absolute;
-			width: 100%;
-			height: inherit;
-			background-color: #fff;
-		}
-		&__end {
-			right: 0;
-			text-align: right;
-		}
-	}
-	&__result {
-		font-size: 10px;
-		margin: 5px 0;
-		padding: 4px;
-		background-color: #fff;
-	}
+}
+.progress-bar {
+    width: 100%;
+    position: relative;
+    padding: 32px 0 10px;
+    .progress-bar-points {
+        position: absolute;
+        font-size: 10px;
+        top: 0
+    }
+    &__start {
+        left: 0;
+    }
+    &__track {
+        width: 100%;
+        height: 8px;
+        overflow: hidden;
+        position: relative;
+        background-color: #000;
+        border: 1px solid #000;
+    }
+    &__line {
+        position: absolute;
+        width: 100%;
+        height: inherit;
+        background-color: #fff;
+    }
+    &__end {
+        right: 0;
+        text-align: right;
+    }
 }
 
 .search-results {
@@ -126,13 +123,71 @@
 
 	&__list {
 		@include scrollbar;
-		height: 100%;
+		
 		width: 100%;
 		overflow-y: auto;
 		flex-grow: 1;
+		flex-basis: 0px;
+	}
+}
 
-		&>div {
-			padding-right: 5px;
+.search-result-group {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	margin-bottom: 10px;
+
+	&__expand-button {
+		@include icon(url(../../resources/icons/expand-off.svg), 17px, 17px);
+
+		margin: 0;
+		padding: 0;
+		background-color: transparent;
+		border: none;
+		cursor: pointer;
+		margin-right: 5px;
+		outline: none;
+		flex-shrink: 0;
+
+		&.expanded {
+			@include icon(url(../../resources/icons/expand-on.svg), 17px, 17px);
 		}
+	}
+
+	&__header {
+		display: flex;
+		flex-grow: 1;
+		background-color: #fff;
+		border-radius: 6px;
+		padding: 7px;
+		border-width: 1px;
+		border-style: solid;
+		overflow: hidden;
+		cursor: pointer;
+		align-items: flex-start;
+	}
+
+	&__results-count {
+		font-size: 16px;
+		font-weight: 600;
+		margin-right: 7px;
+	}
+
+	&__most-popular-names {
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+	
+	&__name {
+		display: inline-block;
+		font-size: 12px;
+		line-height: 14px;
+		font-weight: 600;
+		color: $graphAttachedItemNameColor;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		overflow: hidden;
 	}
 }

@@ -14,43 +14,47 @@
  * limitations under the License.
  ******************************************************************************/
 
- @import './common/vars';
+@import './common/vars';
 
 .toggler {
-    &.disabled {
-        opacity: .5;
-    }
-    display: flex;
-    align-items: center;
-    margin: 0 10px;
-    &__bar {
-        position: relative;
-        box-sizing: border-box;
-        width: 40px;
-        height: 20px;
-        margin: 0 4px;
-        border: solid black 1px;
-        border-radius: 12px;
-        &:before {
-            position: absolute;
-            content: '';
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background-color: #000;
-            top: 50%;
-            transform: translateY(-50%);
-            transition: left ease-in-out 240ms;
-        }
-    }
-    .off {
-        &:before {
-            left: calc(100% - 18px);
-        }
-    }
-    .on {
-        &:before {
-            left: 2px;
-        }
-    }
+	&.disabled {
+		opacity: 0.5;
+		& > div {
+			cursor: default;
+		}
+	}
+	display: flex;
+	align-items: center;
+	margin: 0 10px;
+	&__bar {
+		cursor: pointer;
+		position: relative;
+		box-sizing: border-box;
+		width: 40px;
+		height: 20px;
+		margin: 0 4px;
+		border: solid white 1px;
+		border-radius: 12px;
+		&:before {
+			position: absolute;
+			content: '';
+			width: 16px;
+			height: 16px;
+			border-radius: 50%;
+			background-color: white;
+			top: 50%;
+			transform: translateY(-50%);
+			transition: left ease-in-out 240ms;
+		}
+	}
+	.off {
+		&:before {
+			left: calc(100% - 18px);
+		}
+	}
+	.on {
+		&:before {
+			left: 2px;
+		}
+	}
 }

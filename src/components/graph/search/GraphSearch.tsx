@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import moment from 'moment';
 import eventHttpApi from '../../../api/event';
 import messageHttpApi from '../../../api/message';
 import { isEventAction } from '../../../helpers/event';
@@ -29,7 +30,7 @@ import localStorageWorker from '../../../util/LocalStorageWorker';
 import WorkspaceStore from '../../../stores/workspace/WorkspaceStore';
 import { ModalPortal } from '../../util/Portal';
 import FilterDatetimePicker from '../../filter/date-time-inputs/FilterDatetimePicker';
-import GraphSearchInput from './GraphSearchInput';
+import GraphSearchInput, { DATE_TIME_MASK } from './GraphSearchInput';
 import GraphSearchHistory from './GraphSearchHistory';
 
 const getTimestamp = (timestamp: Timestamp) => {
@@ -215,12 +216,16 @@ function GraphSearch(props: Props) {
 					zIndex: 110,
 				}}>
 				{showPicker && (
-					<FilterDatetimePicker
-						className='graph-search-picker'
-						setValue={handleTimepickerValueChange}
-						type={TimeInputType.DATE_TIME}
-						value={timestamp}
-					/>
+					<div className='graph-search-picker'>
+						<p className='graph-search-picker__timestamp'>
+							{typeof timestamp === 'number' && moment.utc(timestamp).format(DATE_TIME_MASK)}
+						</p>
+						<FilterDatetimePicker
+							setValue={handleTimepickerValueChange}
+							type={TimeInputType.DATE_TIME}
+							value={timestamp}
+						/>
+					</div>
 				)}
 				{showDialog && (
 					<GraphSearchDialog

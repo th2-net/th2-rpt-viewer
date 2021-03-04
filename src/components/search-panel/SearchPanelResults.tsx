@@ -18,8 +18,9 @@ import React from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import moment from 'moment';
 import { isEventNode } from '../../helpers/event';
-import { BookmarkedItem, BookmarkItem } from '../BookmarksPanel';
+import { BookmarkedItem } from '../BookmarksPanel';
 import { SearchResult } from '../../stores/SearchStore';
+import SearchResultGroup from './SearchResultGroup';
 
 interface SearchPanelResultsProps {
 	onResultItemClick: (searchResult: BookmarkedItem) => void;
@@ -29,13 +30,13 @@ interface SearchPanelResultsProps {
 	showToggler: boolean;
 	next: () => void;
 	prev: () => void;
-	results: Array<SearchResult>;
+	resultGroups: Array<Array<SearchResult>>;
 	timestamp: number;
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const {
-		results,
+		resultGroups,
 		timestamp,
 		onResultItemClick,
 		onResultDelete,
@@ -47,13 +48,13 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	} = props;
 
 	function computeKey(index: number) {
-		const item = results[index];
+		const item = resultGroups[index][0] || 'key';
 
 		return isEventNode(item) ? item.eventId : item.messageId;
 	}
 
 	function renderSearchResult(index: number) {
-		return <BookmarkItem item={results[index]} onClick={onResultItemClick} />;
+		return <SearchResultGroup results={resultGroups[index]} onResultClick={onResultItemClick} />;
 	}
 
 	return (
@@ -74,13 +75,22 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 					<i className='bookmark-item__remove-btn-icon' />
 				</button>
 			</div>
-			<Virtuoso
+			<div className='search-results__list'>
+				{resultGroups.map((group, index) => (
+					<SearchResultGroup
+						key={computeKey(index)}
+						results={group}
+						onResultClick={onResultItemClick}
+					/>
+				))}
+			</div>
+			{/* <Virtuoso
 				className='search-results__list'
-				totalCount={results.length}
+				totalCount={resultGroups.length}
 				itemContent={renderSearchResult}
 				computeItemKey={computeKey}
 				style={{ height: '100%' }}
-			/>
+			/> */}
 		</div>
 	);
 };
