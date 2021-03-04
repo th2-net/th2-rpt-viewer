@@ -82,7 +82,7 @@ const SearchPanel = () => {
 			<SearchPanelProgressBar searchProgress={searchStore.searchProgress} />
 			{searchStore.currentSearch && (
 				<SearchPanelResults
-					results={searchStore.currentSearch.results}
+					resultGroups={searchStore.resultGroups}
 					timestamp={searchStore.currentSearch.timestamp}
 					onResultItemClick={activeWorkspace.onSavedItemSelect}
 					onResultDelete={() => {
