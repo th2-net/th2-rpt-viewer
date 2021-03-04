@@ -25,7 +25,7 @@ import {
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { getTimestampAsNumber } from '../helpers/date';
-import { isEventNode } from '../helpers/event';
+import { isEventMessage, isEventNode } from '../helpers/event';
 import { getDefaultFilterState } from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
@@ -63,6 +63,8 @@ export type SearchHistoryState<T> = {
 	currrentSearch: null | T;
 	history: Array<T>;
 };
+
+const SEARCH_RESULT_GROUP_TIME_INTERVAL = 1;
 
 export class SearchStore {
 	constructor(private api: ApiSchema) {
@@ -322,6 +324,42 @@ export class SearchStore {
 
 		localStorageWorker.saveSearchHistory(this.searchHistory);
 	};
+
+	@computed get resultGroups(): Array<Array<SearchResult>> {
+		if (!this.currentSearch) return [];
+		if (!this.currentSearch.results.length) return [];
+
+		const groups: Array<Array<SearchResult>> = [[]];
+		let groupStartTime = getTimestampAsNumber(
+			isEventMessage(this.currentSearch.results[0])
+				? this.currentSearch.results[0].timestamp
+				: this.currentSearch.results[0].startTimestamp,
+		);
+		const searchDirection = this.currentSearch.request.state.searchDirection;
+
+		this.currentSearch.results.forEach(result => {
+			const resultTimestamp = getTimestampAsNumber(
+				isEventMessage(result) ? result.timestamp : result.startTimestamp,
+			);
+			if (
+				(searchDirection === 'next'
+					? resultTimestamp - groupStartTime
+					: groupStartTime - resultTimestamp) /
+					1000 /
+					60 <
+				SEARCH_RESULT_GROUP_TIME_INTERVAL
+			) {
+				groups[groups.length - 1].push(result);
+			} else {
+				groupStartTime = getTimestampAsNumber(
+					isEventMessage(result) ? result.timestamp : result.startTimestamp,
+				);
+				groups.push([]);
+				groups[groups.length - 1].push(result);
+			}
+		});
+		return groups;
+	}
 
 	onError = (ev: Event) => {
 		const data = (ev as MessageEvent).data;
