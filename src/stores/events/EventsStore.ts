@@ -224,6 +224,7 @@ export default class EventsStore {
 	@action
 	public onEventSelect = async (savedEventNode: EventTreeNode | EventAction) => {
 		this.graphStore.setTimestamp(getTimestampAsNumber(savedEventNode.startTimestamp));
+		this.workspaceStore.viewStore.activePanel = this;
 		let fullPath: string[] = [];
 		/*
 			While we are saving eventTreeNodes with their parents, searching returns eventTreeNodes 

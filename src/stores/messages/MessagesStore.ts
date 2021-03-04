@@ -219,6 +219,7 @@ export default class MessagesStore {
 			this.highlightedMessageId = message.messageId;
 			this.graphStore.setTimestamp(getTimestampAsNumber(message.timestamp));
 			this.selectedMessage = null;
+			this.workspaceStore.viewStore.activePanel = this;
 		} else {
 			this.selectedMessage = message;
 			this.handleFilterHint(message);

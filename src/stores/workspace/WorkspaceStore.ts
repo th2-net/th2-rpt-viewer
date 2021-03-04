@@ -74,6 +74,9 @@ export default class WorkspaceStore {
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
+		this.viewStore = new WorkspaceViewStore({
+			panelsLayout: initialState.layout,
+		});
 		this.graphStore = new GraphStore(this.selectedStore, initialState.timeRange);
 		this.eventsStore = new EventsStore(
 			this,
@@ -90,9 +93,6 @@ export default class WorkspaceStore {
 			this.api,
 			initialState.messages,
 		);
-		this.viewStore = new WorkspaceViewStore({
-			panelsLayout: initialState.layout,
-		});
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 

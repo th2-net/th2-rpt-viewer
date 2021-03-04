@@ -36,19 +36,25 @@ export type EventsFilterStoreInitialState = Partial<EventsFilter>;
 export default class EventsFilterStore {
 	constructor(private graphStore: GraphStore, initialState?: EventsFilterStoreInitialState) {
 		if (initialState) {
-			const { names, eventTypes, timestampTo, timestampFrom } = initialState;
 			const defaultEventsFilter = getDefaultEventFilter(this.graphStore.interval);
+			const {
+				names = defaultEventsFilter.names,
+				eventTypes = defaultEventsFilter.eventTypes,
+				timestampTo = defaultEventsFilter.timestampTo,
+				timestampFrom = defaultEventsFilter.timestampFrom,
+			} = initialState;
 
 			this.setEventsFilter({
-				names: names || defaultEventsFilter.names,
-				eventTypes: eventTypes || defaultEventsFilter.eventTypes,
-				timestampTo: timestampTo || defaultEventsFilter.timestampTo,
-				timestampFrom: timestampFrom || defaultEventsFilter.timestampFrom,
+				names,
+				eventTypes,
+				timestampTo,
+				timestampFrom,
 			});
 		}
 	}
 
-	@observable filter: EventsFilter = getDefaultEventFilter(this.graphStore.interval);
+	@observable
+	public filter: EventsFilter = getDefaultEventFilter(this.graphStore.interval);
 
 	@computed
 	public get isEventsFilterApplied() {
@@ -56,12 +62,12 @@ export default class EventsFilterStore {
 	}
 
 	@action
-	setEventsFilter(filter: EventsFilter) {
+	public setEventsFilter(filter: EventsFilter) {
 		this.filter = filter;
 	}
 
 	@action
-	resetEventsFilter() {
+	public resetEventsFilter() {
 		this.filter = getDefaultEventFilter(this.graphStore.interval);
 	}
 }
