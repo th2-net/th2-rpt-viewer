@@ -51,8 +51,7 @@ export interface Props {
 function WorkspaceSplitter(props: Props) {
 	const { panels, panelsLayout, setPanelsLayout } = props;
 	const rootRef = React.useRef<HTMLDivElement>(null);
-	const clickStartX = React.useRef(0);
-	const resizeDirection = React.useRef<'left' | 'right' | null>(null);
+	const clickOffsetX = React.useRef(0);
 	const activeSplitter = React.useRef<HTMLDivElement | null>(null);
 
 	const [isResizing, setIsResizing] = React.useState(false);
@@ -103,9 +102,10 @@ function WorkspaceSplitter(props: Props) {
 		document.addEventListener('mousemove', onMouseMove);
 		document.addEventListener('mouseup', onMouseUp);
 
-		clickStartX.current = event.pageX;
 		activeSplitter.current = event.target instanceof HTMLDivElement ? event.target : null;
-		resizeDirection.current = null;
+		clickOffsetX.current = activeSplitter.current
+			? event.pageX - activeSplitter.current.getBoundingClientRect().left
+			: 0;
 
 		calcMinMaxSplittersPositions();
 		handleResize(event);
@@ -132,15 +132,9 @@ function WorkspaceSplitter(props: Props) {
 
 		if (!activeSplitterEl || !rootEl) return;
 
-		const diffX = e.pageX - clickStartX.current;
-
-		resizeDirection.current = diffX < 0 ? 'left' : 'right';
-		clickStartX.current = e.pageX;
-
 		const { left: rootLeft, width: rootWidth } = rootEl.getBoundingClientRect();
 
-		const activeSplitterOffsetLeft = activeSplitterEl.getBoundingClientRect().left;
-		const activeSplitterLeftPostion = activeSplitterOffsetLeft + diffX - rootLeft;
+		const activeSplitterLeftPostion = e.pageX - clickOffsetX.current - rootLeft;
 
 		const splittersLeftPositions = getUpdatedSplittersPositions(activeSplitterLeftPostion);
 
@@ -188,9 +182,11 @@ function WorkspaceSplitter(props: Props) {
 			return right - (left + width);
 		});
 
+		const splitterWidth = splittersRefs.current[0].current!.clientWidth;
+
 		setPanelsLayout(
 			widths.map(w =>
-				parseFloat(((w / (rootWidth - MIN_PANEL_WIDTH * 4)) * 100).toFixed(2)),
+				parseFloat(((w / (rootWidth - splitterWidth * panels.length)) * 100).toFixed(2)),
 			) as WorkspacePanelsLayout,
 		);
 
@@ -233,6 +229,27 @@ function WorkspaceSplitter(props: Props) {
 		});
 	}
 
+	const getFreeSpaceAroundSplitter = (splitterIndex: number, activeSplitterLeftPostion: number) => {
+		const splitter = splittersRefs.current[splitterIndex].current!;
+		const leftSplitter = splittersRefs.current[splitterIndex - 1]?.current;
+		const rightSplitter = splittersRefs.current[splitterIndex + 1]?.current;
+
+		return {
+			left: leftSplitter
+				? activeSplitterLeftPostion -
+				  leftSplitter.clientLeft -
+				  MIN_PANEL_WIDTH -
+				  splitter.clientWidth
+				: activeSplitterLeftPostion,
+			right: rightSplitter
+				? rightSplitter.clientLeft - activeSplitterLeftPostion
+				: rootRef.current!.clientWidth -
+				  MIN_PANEL_WIDTH -
+				  splitter.clientWidth -
+				  activeSplitterLeftPostion,
+		};
+	};
+
 	const getUpdatedSplittersPositions = (activeSplitterLeft: number) => {
 		const activeSplitterIndex = splittersRefs.current.findIndex(
 			splitter => splitter.current === activeSplitter.current,
@@ -241,8 +258,25 @@ function WorkspaceSplitter(props: Props) {
 		const { left: rootOffsetLeft } = rootRef.current!.getBoundingClientRect();
 
 		return splittersRefs.current.map((resizerRef, index) => {
-			if (resizerRef.current === activeSplitter.current)
+			if (resizerRef.current === activeSplitter.current) {
+				const { left: leftSpace, right: rightSpace } = getFreeSpaceAroundSplitter(
+					index,
+					activeSplitterLeft,
+				);
+
+				const rootWidth = rootRef.current!.clientWidth;
+
+				if (leftSpace / rootWidth < 0.2) {
+					return activeSplitterLeft - leftSpace;
+				}
+
+				if (rightSpace / rootWidth < 0.2) {
+					return activeSplitterLeft + rightSpace;
+				}
+
 				return minmax(activeSplitterLeft, ...splittersMinxMaxPositions.current[index]);
+			}
+
 			const { left, width } = resizerRef.current!.getBoundingClientRect();
 			const fullWidth = width + MIN_PANEL_WIDTH;
 
