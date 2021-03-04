@@ -74,7 +74,8 @@ export default function MultipleStringFilterRow({
 	const inputRootClassName = createBemElement('filter-row', 'multiple-values');
 	const filterContentClassName = createStyleSelector(
 		'filter-content',
-		isFocused || config.values.length > 0 ? 'active' : null,
+		(isFocused || config.values.length > 0) && !config.disabled ? 'active' : null,
+		config.disabled ? 'disabled' : null,
 	);
 
 	return (
