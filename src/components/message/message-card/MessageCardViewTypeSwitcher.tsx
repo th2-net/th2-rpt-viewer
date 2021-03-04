@@ -21,7 +21,7 @@ import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import MessageRaw from './raw/MessageRaw';
 
 export type MessageCardViewTypeSwitcherProps = {
-	messageViewType: string;
+	showRaw: boolean;
 	messageId: string;
 	rawContent: string | null;
 	isBeautified: boolean;
@@ -30,32 +30,27 @@ export type MessageCardViewTypeSwitcherProps = {
 };
 
 const MessageCardViewTypeSwitcher = ({
-	messageViewType,
 	messageId,
+	showRaw,
 	rawContent,
 	isBeautified,
 	isSelected,
 	messageBody,
 }: MessageCardViewTypeSwitcherProps) => {
-	switch (messageViewType) {
-		case 'ascii':
-		case 'binary':
-			return rawContent ? <MessageRaw messageId={messageId} rawContent={rawContent} /> : null;
-
-		default:
-			return (
-				<ErrorBoundary
-					fallback={
-						<MessageBodyCardFallback
-							isBeautified={isBeautified}
-							isSelected={isSelected}
-							body={messageBody}
-						/>
-					}>
-					<MessageBodyCard isBeautified={isBeautified} body={messageBody} isSelected={isSelected} />
-				</ErrorBoundary>
-			);
-	}
+	return showRaw && rawContent ? (
+		<MessageRaw messageId={messageId} rawContent={rawContent} />
+	) : (
+		<ErrorBoundary
+			fallback={
+				<MessageBodyCardFallback
+					isBeautified={isBeautified}
+					isSelected={isSelected}
+					body={messageBody}
+				/>
+			}>
+			<MessageBodyCard isBeautified={isBeautified} body={messageBody} isSelected={isSelected} />
+		</ErrorBoundary>
+	);
 };
 
 export default MessageCardViewTypeSwitcher;
