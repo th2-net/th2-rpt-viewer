@@ -197,33 +197,16 @@ export default class MessagesStore {
 
 	@action
 	public onMessageSelect = async (message: EventMessage) => {
-		const filter = this.filterStore.filter;
-		const sseFilter = this.filterStore.sseMessagesFilter;
-
-		const areFiltersApplied = [
-			sseFilter
-				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
-				: [],
-		].some(filterValues => filterValues.length > 0);
-
-		if (
-			(filter.streams.length === 0 || filter.streams.includes(message.sessionId)) &&
-			!areFiltersApplied
-		) {
-			this.filterStore.resetMessagesFilter({
-				timestampFrom: null,
-				timestampTo: getTimestampAsNumber(message.timestamp),
-				streams: [message.sessionId],
-			});
-			this.selectedMessageId = new String(message.messageId);
-			this.highlightedMessageId = message.messageId;
-			this.graphStore.setTimestamp(getTimestampAsNumber(message.timestamp));
-			this.selectedMessage = null;
-			this.workspaceStore.viewStore.activePanel = this;
-		} else {
-			this.selectedMessage = message;
-			this.handleFilterHint(message);
-		}
+		this.filterStore.resetMessagesFilter({
+			timestampFrom: null,
+			timestampTo: getTimestampAsNumber(message.timestamp),
+			streams: [message.sessionId],
+		});
+		this.selectedMessageId = new String(message.messageId);
+		this.highlightedMessageId = message.messageId;
+		this.graphStore.setTimestamp(getTimestampAsNumber(message.timestamp));
+		this.selectedMessage = null;
+		this.workspaceStore.viewStore.activePanel = this;
 	};
 
 	@action
