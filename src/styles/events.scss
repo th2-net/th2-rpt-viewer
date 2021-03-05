@@ -304,13 +304,17 @@
 	&__flat-button {
 		@include unselectable;
 
-		color: $primaryTextColor;
+		color: $controlButtonTextColor;
 		font-size: 12px;
 		line-height: 15px;
 		font-weight: bold;
 		cursor: pointer;
 		margin: 0 5px;
 		transition: color 0.2s;
+
+		&:hover {
+			color: $controlButtonTextColorHover;
+		}
 
 		&.active {
 			color: $filterPrimaryColor;

@@ -16,6 +16,87 @@
 
 @import './common/vars';
 
+.search {
+	@include scrollbar;
+	@include card-shadow;
+	padding: 12px 15px;
+	border-radius: 0 5px 5px 5px;
+	background-color: $filterPrimaryColor;
+	color: $filterTextColor;
+	font-size: 15px;
+	font-weight: bold;
+	white-space: nowrap;
+	position: fixed;
+	z-index: 120;
+
+	&-wrapper {
+		position: relative;
+		height: 100%;
+		border-radius: 5px 5px 0 0;
+		display: flex;
+		align-items: center;
+
+		&.active {
+			@include card-shadow;
+			background-color: $filterPrimaryColor;
+		}
+	}
+
+	&__button {
+		@include unselectable;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 4px 5px;
+		cursor: pointer;
+
+		&.disabled {
+			opacity: 0.6;
+			cursor: default;
+		}
+
+		&.active {
+			padding: 4px 10px;
+		}
+	}
+
+	&__icon {
+		@include icon(url(../../resources/icons/search.svg), 15px, 15px);
+	}
+
+	&__title {
+		-webkit-margin-before: 0em;
+		-webkit-margin-after: 0em;
+		color: $controlButtonTextColor;
+		font-size: 12px;
+		line-height: 15px;
+		font-weight: bold;
+		display: inline;
+		white-space: nowrap;
+		padding-left: 5px;
+	}
+
+	&__button:hover & {
+		&__title {
+			color: $controlButtonTextColorHover;
+		}
+
+		&__icon {
+			background-image: url(../../resources/icons/search-hover.svg);
+		}
+	}
+
+	&__button.active & {
+		&__title {
+			color: $filterTextColor;
+		}
+
+		&__icon {
+			background-image: url(../../resources/icons/search-white.svg);
+		}
+	}
+}
+
 .found-content {
 	color: #fff;
 	opacity: 0.6;
@@ -30,11 +111,6 @@
 .search-field-wrapper {
 	position: relative;
 	height: 30px;
-	width: 240px;
-
-	&.active {
-		width: 455px;
-	}
 }
 
 .search-field {
@@ -44,9 +120,8 @@
 	right: 0;
 	height: auto;
 
-	border: 2px solid #808080;
 	border-radius: 3px;
-	background-color: #fff;
+	background-color: rgba(255, 255, 255, 0.5);
 	cursor: text;
 	overflow-x: auto;
 	overflow-y: hidden;
@@ -55,7 +130,11 @@
 	@include hidden-scrollbar;
 
 	min-height: 29px;
-	padding: 0 5px;
+	padding: 3px 5px;
+
+	&.active {
+		background-color: white;
+	}
 
 	&__counter {
 		@include unselectable;
@@ -64,13 +143,7 @@
 		font-size: 12px;
 		padding: 3px 5px;
 		font-weight: bold;
-		margin-left: auto;
-	}
-
-	&__icon {
-		@include icon(url(../../resources/icons/search.svg));
-		display: inline;
-		margin: 3px 0 0 auto;
+		margin-left: 5px;
 	}
 
 	&__input {
@@ -83,6 +156,7 @@
 		padding-left: 4px;
 		padding-right: 4px;
 		font-family: inherit;
+		background-color: transparent;
 
 		&:focus {
 			outline: 0;
@@ -90,7 +164,6 @@
 
 		&::placeholder {
 			color: $secondaryTextColor;
-			font-style: italic;
 			font-weight: normal;
 		}
 	}
@@ -104,12 +177,8 @@
 		@include spinner(3px);
 
 		display: inline-block;
-		margin: 4px 0 0 auto;
+		margin: 4px 0 0 2px;
 		flex-shrink: 0;
-	}
-
-	&.active {
-		@include card-shadow;
 	}
 
 	&__child-wrapper {
@@ -118,6 +187,12 @@
 		overflow-x: hidden;
 		margin-right: 3px;
 		@include hidden-scrollbar;
+	}
+
+	&__clear-button {
+		@include round-button(url(../../resources/icons/cross-icon.svg));
+		margin-left: auto;
+		margin-top: 2px;
 	}
 }
 
@@ -157,9 +232,5 @@
 
 	&__next {
 		@include round-button(url(../../resources/icons/next-search-result.svg));
-	}
-
-	&__clear {
-		@include round-button(url(../../resources/icons/cross-icon.svg));
 	}
 }

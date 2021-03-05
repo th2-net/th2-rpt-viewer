@@ -95,6 +95,7 @@ const FilterPanel = ({
 		'button',
 		isDisabled ? 'disabled' : null,
 		showFilter ? 'active' : null,
+		!showFilter && isFilterApplied ? 'applied' : null,
 	);
 
 	const onSubmitClick = () => {
