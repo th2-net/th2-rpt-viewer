@@ -78,11 +78,20 @@ module.exports = {
 		'arrow-parens': ['error', 'as-needed'],
 		'no-plusplus': 'off',
 		radix: 'off',
+		'no-unused-vars': 'off',
+		'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
 		'no-unused-expressions': 'off',
 		'@typescript-eslint/no-unused-expressions': ['error'],
 		'import/no-unassigned-import': [
 			'error',
-			{ allow: ['**/*.scss', 'core-js/**', 'regenerator-runtime/**', 'rc-calendar/assets/index.css'] },
+			{
+				allow: [
+					'**/*.scss',
+					'core-js/**',
+					'regenerator-runtime/**',
+					'rc-calendar/assets/index.css',
+				],
+			},
 		],
 		'class-methods-use-this': 'off',
 		'no-new-wrappers': 'off',

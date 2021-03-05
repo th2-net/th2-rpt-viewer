@@ -10,7 +10,7 @@
 		"start": "webpack-dev-server --config=webpack/webpack.dev.js",
 		"test": "jest",
 		"test:ci": "jest --no-cache",
-		"lint": "tsc --noEmit && eslint . --ext .js,.js,.ts,.tsx",
+		"lint": "tsc && eslint . --ext .js,.js,.ts,.tsx",
 		"lint:fix": "eslint --fix './src/**/*.{ts,tsx}' && prettier --write src/**"
 	},
 	"dependencies": {
@@ -28,7 +28,7 @@
 		"fetch-intercept": "^2.3.1",
 		"framer-motion": "^3.6.7",
 		"lodash.throttle": "^4.1.1",
-		"mobx": "^5.15.2",
+		"mobx": "^5.2.1",
 		"mobx-react-lite": "^1.5.2",
 		"moment": "^2.27.0",
 		"nanoid": "^3.1.9",

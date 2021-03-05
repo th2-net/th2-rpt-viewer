@@ -144,7 +144,7 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 				</>
 			)}
 			<i className='th2-logo' />
-			<WorkspaceLinkGetter />
+			{!disableInteractions && <WorkspaceLinkGetter />}
 		</>
 	);
 };

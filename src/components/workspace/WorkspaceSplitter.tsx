@@ -127,6 +127,7 @@ function WorkspaceSplitter(props: Props) {
 	}
 
 	function handleResize(e: MouseEvent | React.MouseEvent<HTMLDivElement>) {
+		e.preventDefault();
 		const activeSplitterEl = activeSplitter.current;
 		const rootEl = rootRef.current;
 

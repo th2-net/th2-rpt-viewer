@@ -27,8 +27,9 @@ export function getMinifiedStatus(status: string): string {
 		.toUpperCase();
 }
 
-export const getEventStatus = (event: EventAction | EventTreeNode): EventStatus =>
-	event.successful ? EventStatus.PASSED : EventStatus.FAILED;
+export function getEventStatus(event: EventAction | EventTreeNode): EventStatus {
+	return event.successful ? EventStatus.PASSED : EventStatus.FAILED;
+}
 
 export const isRootEvent = (event: EventTreeNode): boolean => event.parentId === 'null';
 
@@ -43,13 +44,14 @@ export function getTimestamp(item: EventAction | EventMessage | EventTreeNode) {
 	return item.timestamp;
 }
 
-export const getEventNodeParents = (event: EventTreeNode): string[] =>
-	event.parents ? event.parents : [];
+export function getEventNodeParents(event: EventTreeNode): string[] {
+	return event.parents ? event.parents : [];
+}
 
-export const sortEventsByTimestamp = (
+export function sortEventsByTimestamp(
 	eventNodes: Array<EventTreeNode>,
 	order: 'desc' | 'asc' = 'desc',
-) => {
+) {
 	const copiedEvents = eventNodes.slice();
 	copiedEvents.sort((eventA, eventB) => {
 		if (order === 'desc') {
@@ -62,31 +64,35 @@ export const sortEventsByTimestamp = (
 		);
 	});
 	return copiedEvents;
-};
+}
 
-export const isEventMessage = (object: unknown): object is EventMessage => {
+export function isEventMessage(object: unknown): object is EventMessage {
 	return (
 		typeof object === 'object' &&
 		object !== null &&
 		(object as EventMessage).type === ActionType.MESSAGE
 	);
-};
+}
 
-export const isEventAction = (object: unknown): object is EventAction => {
+export function isEventAction(object: unknown): object is EventAction {
 	return (
 		typeof object === 'object' &&
 		object !== null &&
 		(object as EventAction).type === ActionType.EVENT_ACTION
 	);
-};
+}
 
-export const isEventNode = (object: unknown): object is EventTreeNode => {
+export function isEventNode(object: unknown): object is EventTreeNode {
 	return (
 		typeof object === 'object' &&
 		object !== null &&
 		(object as EventTreeNode).type === ActionType.EVENT_TREE_NODE
 	);
-};
+}
+
+export function isEvent(object: unknown): object is EventTreeNode | EventAction {
+	return isEventNode(object) || isEventAction(object);
+}
 
 export const sortByTimestamp = (
 	items: Array<EventMessage | EventTreeNode>,
