@@ -17,7 +17,7 @@
 import { action, autorun, computed, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
 import ApiSchema from '../api/ApiSchema';
-import { SSEFilterInfo, SSEParams } from '../api/sse';
+import { SSEFilterInfo, SSEHeartbeat, SSEParams } from '../api/sse';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
 	EventFilterState,
@@ -120,19 +120,17 @@ export class SearchStore {
 	@observable messagesFilterInfo: SSEFilterInfo[] = [];
 
 	@computed get searchProgress() {
-		const lastItem = this.currentSearch?.results[this.currentSearch.results.length - 1];
-		const lastItemTimestamp = lastItem
-			? getTimestampAsNumber(isEventNode(lastItem) ? lastItem.startTimestamp : lastItem.timestamp)
-			: null;
 		return {
 			startTimestamp: this.searchForm.startTimestamp,
 			endTimestamp: this.searchForm.endTimestamp,
-			currentPoint: lastItemTimestamp
-				? lastItemTimestamp - Number(this.searchForm.startTimestamp)
+			currentPoint: this.currentSearchTimestamp
+				? this.currentSearchTimestamp - Number(this.searchForm.startTimestamp)
 				: 0,
 			searching: Boolean(this.searchChannel),
 		};
 	}
+
+	@observable currentSearchTimestamp: number | null = null;
 
 	@observable currentSearch: SearchHistory | null = null;
 
@@ -312,6 +310,7 @@ export class SearchStore {
 		});
 
 		this.searchChannel.addEventListener(this.formType, this.onChannelResponse);
+		this.searchChannel.addEventListener('keep_alive', this.setCurrentSearchTimestamp);
 		this.searchChannel.addEventListener('close', this.stopSearch);
 		this.searchChannel.addEventListener('error', this.onError);
 	};
@@ -375,10 +374,25 @@ export class SearchStore {
 	};
 
 	private onChannelResponse = (ev: Event) => {
+		this.setCurrentSearchTimestamp(ev);
 		if (this.currentSearch) {
 			const data = (ev as MessageEvent).data;
 			this.currentSearch.results = [...this.currentSearch.results, JSON.parse(data)];
 		}
+	};
+
+	private setCurrentSearchTimestamp = (ev: Event) => {
+		const data = (ev as MessageEvent).data;
+		const parsedEvent: SearchResult | SSEHeartbeat = JSON.parse(data);
+		if (isEventNode(parsedEvent)) {
+			this.currentSearchTimestamp = getTimestampAsNumber(parsedEvent.startTimestamp);
+			return;
+		}
+		if (isEventMessage(parsedEvent)) {
+			this.currentSearchTimestamp = getTimestampAsNumber(parsedEvent.timestamp);
+			return;
+		}
+		this.currentSearchTimestamp = parsedEvent.timestamp;
 	};
 
 	@action
