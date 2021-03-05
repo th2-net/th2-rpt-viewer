@@ -47,6 +47,7 @@ export type SearchHistory = {
 	timestamp: number;
 	results: Array<SearchResult>;
 	request: StateHistory;
+	progress: number;
 };
 
 export type StateHistory = {
@@ -123,14 +124,12 @@ export class SearchStore {
 		return {
 			startTimestamp: this.searchForm.startTimestamp,
 			endTimestamp: this.searchForm.endTimestamp,
-			currentPoint: this.currentSearchTimestamp
-				? this.currentSearchTimestamp - Number(this.searchForm.startTimestamp)
+			currentPoint: this.currentSearch?.progress
+				? this.currentSearch?.progress - Number(this.searchForm.startTimestamp)
 				: 0,
 			searching: Boolean(this.searchChannel),
 		};
 	}
-
-	@observable currentSearchTimestamp: number | null = null;
 
 	@observable currentSearch: SearchHistory | null = null;
 
@@ -265,6 +264,7 @@ export class SearchStore {
 			timestamp: moment().utc().valueOf(),
 			request: { type: this.formType, state: this.searchForm, filters: filterParams },
 			results: [],
+			progress: 0,
 		});
 
 		function getFilter<T extends keyof FilterState>(name: T) {
@@ -310,7 +310,7 @@ export class SearchStore {
 		});
 
 		this.searchChannel.addEventListener(this.formType, this.onChannelResponse);
-		this.searchChannel.addEventListener('keep_alive', this.setCurrentSearchTimestamp);
+		this.searchChannel.addEventListener('keep_alive', this.onChannelResponse);
 		this.searchChannel.addEventListener('close', this.stopSearch);
 		this.searchChannel.addEventListener('error', this.onError);
 	};
@@ -374,25 +374,22 @@ export class SearchStore {
 	};
 
 	private onChannelResponse = (ev: Event) => {
-		this.setCurrentSearchTimestamp(ev);
 		if (this.currentSearch) {
 			const data = (ev as MessageEvent).data;
-			this.currentSearch.results = [...this.currentSearch.results, JSON.parse(data)];
+			const parsedEvent: SearchResult | SSEHeartbeat = JSON.parse(data);
+			if (isEventNode(parsedEvent) || isEventMessage(parsedEvent)) {
+				this.currentSearch.results = [...this.currentSearch.results, JSON.parse(data)];
+			}
+			if (isEventNode(parsedEvent)) {
+				this.currentSearch.progress = getTimestampAsNumber(parsedEvent.startTimestamp);
+				return;
+			}
+			if (isEventMessage(parsedEvent)) {
+				this.currentSearch.progress = getTimestampAsNumber(parsedEvent.timestamp);
+				return;
+			}
+			this.currentSearch.progress = parsedEvent.timestamp;
 		}
-	};
-
-	private setCurrentSearchTimestamp = (ev: Event) => {
-		const data = (ev as MessageEvent).data;
-		const parsedEvent: SearchResult | SSEHeartbeat = JSON.parse(data);
-		if (isEventNode(parsedEvent)) {
-			this.currentSearchTimestamp = getTimestampAsNumber(parsedEvent.startTimestamp);
-			return;
-		}
-		if (isEventMessage(parsedEvent)) {
-			this.currentSearchTimestamp = getTimestampAsNumber(parsedEvent.timestamp);
-			return;
-		}
-		this.currentSearchTimestamp = parsedEvent.timestamp;
 	};
 
 	@action
