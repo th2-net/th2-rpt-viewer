@@ -16,16 +16,19 @@
 
 @import './common/vars';
 
+
 .toggler {
+	display: flex;
+	align-items: center;
+	margin: 0 10px;
+
 	&.disabled {
 		opacity: 0.5;
 		& > div {
 			cursor: default;
 		}
 	}
-	display: flex;
-	align-items: center;
-	margin: 0 10px;
+
 	&__bar {
 		cursor: pointer;
 		position: relative;

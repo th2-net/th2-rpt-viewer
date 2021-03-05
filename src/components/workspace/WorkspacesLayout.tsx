@@ -72,7 +72,6 @@ const WorkspacesLayout = () => {
 			activeIndex={workspacesStore.tabsStore.activeTabIndex}
 			onChange={workspacesStore.tabsStore.setActiveWorkspace}
 			closeTab={workspacesStore.tabsStore.closeWorkspace}
-			duplicateTab={workspacesStore.tabsStore.duplicateWorkspace}
 			tabList={tabListInjectedProps => (
 				<>
 					{renderTabs(tabListInjectedProps)}

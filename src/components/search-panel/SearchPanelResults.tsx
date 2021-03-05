@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { Virtuoso } from 'react-virtuoso';
 import moment from 'moment';
 import { isEventNode } from '../../helpers/event';
 import { BookmarkedItem } from '../BookmarksPanel';
@@ -53,10 +52,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		return isEventNode(item) ? item.eventId : item.messageId;
 	}
 
-	function renderSearchResult(index: number) {
-		return <SearchResultGroup results={resultGroups[index]} onResultClick={onResultItemClick} />;
-	}
-
 	return (
 		<div className='search-results'>
 			{showToggler && (
@@ -84,13 +79,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 					/>
 				))}
 			</div>
-			{/* <Virtuoso
-				className='search-results__list'
-				totalCount={resultGroups.length}
-				itemContent={renderSearchResult}
-				computeItemKey={computeKey}
-				style={{ height: '100%' }}
-			/> */}
 		</div>
 	);
 };

@@ -64,7 +64,7 @@ export type SearchHistoryState<T> = {
 	history: Array<T>;
 };
 
-const SEARCH_RESULT_GROUP_TIME_INTERVAL = 1;
+const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
 
 export class SearchStore {
 	constructor(private api: ApiSchema) {
@@ -347,7 +347,7 @@ export class SearchStore {
 					: groupStartTime - resultTimestamp) /
 					1000 /
 					60 <
-				SEARCH_RESULT_GROUP_TIME_INTERVAL
+				SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES
 			) {
 				groups[groups.length - 1].push(result);
 			} else {

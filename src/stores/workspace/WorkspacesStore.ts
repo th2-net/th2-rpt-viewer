@@ -59,8 +59,11 @@ export default class WorkspacesStore {
 
 	@action
 	private init(initialState: WorkspacesUrlState | null) {
-		if (!initialState) return;
-		initialState.forEach(workspaceState => this.addWorkspace(this.createWorkspace(workspaceState)));
+		if (initialState !== null) {
+			initialState.forEach(workspaceState =>
+				this.addWorkspace(this.createWorkspace(workspaceState)),
+			);
+		}
 	}
 
 	@action

@@ -21,7 +21,6 @@ import '../../styles/tabs.scss';
 export interface TabsInjectedProps {
 	activeTabIndex: number;
 	closeTab: (tabIndex: number) => void;
-	duplicateTab: (tabIndex: number) => void;
 	setActiveTab: (tabIndex: number) => void;
 }
 
@@ -33,7 +32,6 @@ interface Props {
 	activeIndex: number;
 	onChange: (tabIndex: number) => void;
 	closeTab: (tabIndex: number) => void;
-	duplicateTab: (tabIndex: number) => void;
 	classNames?: {
 		root?: string;
 		tabsList?: string;
@@ -42,15 +40,7 @@ interface Props {
 }
 
 const Tabs = (props: Props) => {
-	const {
-		tabList,
-		tabPanels,
-		activeIndex,
-		onChange,
-		closeTab,
-		duplicateTab,
-		classNames = {},
-	} = props;
+	const { tabList, tabPanels, activeIndex, onChange, closeTab, classNames = {} } = props;
 	const [activeTabIndex, setActiveTabIndex] = React.useState(0);
 	const ref = React.useRef<HTMLDivElement | null>(null);
 
@@ -68,7 +58,6 @@ const Tabs = (props: Props) => {
 	const tabs = tabList({
 		activeTabIndex,
 		closeTab,
-		duplicateTab,
 		setActiveTab,
 	});
 

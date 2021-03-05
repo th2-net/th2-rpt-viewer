@@ -14,31 +14,28 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
+import { action, computed, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
-import FilterStore from '../FilterStore';
+import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
 import { EventAction, EventTree, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
 import EventsFilter from '../../models/filter/EventsFilter';
-import { TabTypes } from '../../models/util/Windows';
 import {
 	getEventNodeParents,
-	isEventAction,
+	isEvent,
 	isEventNode,
 	sortEventsByTimestamp,
 } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
-import { isEventsStore } from '../../helpers/stores';
 import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
 import { SearchStore } from '../SearchStore';
 
 export type EventStoreURLState = Partial<{
-	type: TabTypes.Events;
 	panelArea: number;
 	filter: EventsFilter;
 	selectedNodesPath: string[];
@@ -47,10 +44,15 @@ export type EventStoreURLState = Partial<{
 	selectedParentId: string;
 }>;
 
-export type EventStoreDefaultStateType = EventsStore | EventStoreURLState | null;
+export type EventStoreDefaultStateType =
+	| (EventStoreURLState & {
+			targetEvent?: EventTreeNode | EventAction;
+	  })
+	| null
+	| undefined;
 
 export default class EventsStore {
-	filterStore = new FilterStore(this.searchPanelStore);
+	filterStore = new EventsFilterStore(this.graphStore);
 
 	viewStore = new ViewStore();
 
@@ -61,11 +63,11 @@ export default class EventsStore {
 		private graphStore: GraphStore,
 		private searchPanelStore: SearchStore,
 		private api: ApiSchema,
-		initialState: EventStoreDefaultStateType | EventAction | EventTreeNode,
+		initialState: EventStoreDefaultStateType,
 	) {
 		this.init(initialState);
 
-		reaction(() => this.filterStore.eventsFilter, this.onFilterChange);
+		reaction(() => this.filterStore.filter, this.onFilterChange);
 
 		reaction(() => this.selectedNode, this.onSelectedNodeChange);
 
@@ -74,7 +76,7 @@ export default class EventsStore {
 		reaction(() => this.searchStore.scrolledItem, this.onScrolledItemChange);
 	}
 
-	@observable.ref eventTree: EventTree = [];
+	@observable.shallow eventTree: EventTree = [];
 
 	@observable isLoadingRootEvents = false;
 
@@ -94,10 +96,6 @@ export default class EventsStore {
 
 	@observable eventTreeStatusCode: number | null = null;
 
-	@computed get isActivePanel() {
-		return this.workspaceStore.isActive && this.workspaceStore.viewStore.activePanel === this;
-	}
-
 	@computed
 	public get flattenedEventList() {
 		return sortEventsByTimestamp(
@@ -109,7 +107,7 @@ export default class EventsStore {
 
 	@computed
 	public get panelRange(): TimeRange {
-		return [this.filterStore.eventsFilter.timestampFrom, this.filterStore.eventsFilter.timestampTo];
+		return [this.filterStore.filter.timestampFrom, this.filterStore.filter.timestampTo];
 	}
 
 	@computed
@@ -203,7 +201,7 @@ export default class EventsStore {
 
 		try {
 			const rootEventIds = await this.api.events.getEventTree(
-				this.filterStore.eventsFilter,
+				this.filterStore.filter,
 				this.eventTreeAC.signal,
 			);
 			runInAction(() => {
@@ -225,6 +223,8 @@ export default class EventsStore {
 
 	@action
 	public onEventSelect = async (savedEventNode: EventTreeNode | EventAction) => {
+		this.graphStore.setTimestamp(getTimestampAsNumber(savedEventNode.startTimestamp));
+		this.workspaceStore.viewStore.activePanel = this;
 		let fullPath: string[] = [];
 		/*
 			While we are saving eventTreeNodes with their parents, searching returns eventTreeNodes 
@@ -248,10 +248,10 @@ export default class EventsStore {
 			this.graphStore.interval,
 		);
 
-		this.filterStore.eventsFilter.timestampFrom = timestampFrom;
-		this.filterStore.eventsFilter.timestampTo = timestampTo;
-		this.filterStore.eventsFilter.eventTypes = [];
-		this.filterStore.eventsFilter.names = [];
+		this.filterStore.filter.timestampFrom = timestampFrom;
+		this.filterStore.filter.timestampTo = timestampTo;
+		this.filterStore.filter.eventTypes = [];
+		this.filterStore.filter.names = [];
 		await this.fetchEventTree();
 		this.expandPath(fullPath);
 		this.isLoadingRootEvents = false;
@@ -259,8 +259,8 @@ export default class EventsStore {
 
 	@action
 	public onRangeChange = (timestamp: number) => {
-		this.filterStore.eventsFilter = {
-			...this.filterStore.eventsFilter,
+		this.filterStore.filter = {
+			...this.filterStore.filter,
 			timestampFrom: moment(timestamp)
 				.subtract((this.graphStore.interval * 60) / 2, 'seconds')
 				.valueOf(),
@@ -346,73 +346,32 @@ export default class EventsStore {
 	};
 
 	@action
-	private copy(store: EventsStore) {
-		this.isLoadingRootEvents = toJS(store.isLoadingRootEvents);
-		this.selectedNode = store.selectedNode;
-		this.eventTree = store.eventTree;
-		this.selectedEvent = store.selectedEvent;
-		this.selectedParentNode = store.selectedParentNode;
-		this.scrolledIndex = store.scrolledIndex?.valueOf() || null;
-		this.isExpandedMap = toJS(store.isExpandedMap, { exportMapsAsObjects: false });
-		this.expandPath(store.selectedPath.map(n => n.eventId));
-		this.viewStore = new ViewStore({
-			flattenedListView: store.viewStore.flattenedListView.valueOf(),
-			panelArea: store.viewStore.eventsPanelArea,
-		});
-		this.filterStore = new FilterStore(this.searchPanelStore, store.filterStore);
-		this.searchStore = new EventsSearchStore(this.api, this, {
-			isLoading: store.searchStore.isLoading,
-			rawResults: toJS(store.searchStore.rawResults),
-			scrolledIndex: store.searchStore.scrolledIndex,
-			tokens: toJS(store.searchStore.tokens),
-		});
-	}
-
-	@action
-	private async init(
-		initialState: EventsStore | EventStoreURLState | EventTreeNode | EventAction | null,
-	) {
-		const isInitialEntity = (state: typeof initialState): state is EventAction | EventTreeNode =>
-			isEventAction(state) || isEventNode(state);
-
+	private async init(initialState: EventStoreDefaultStateType) {
 		if (!initialState) {
 			this.fetchEventTree();
 			return;
 		}
 
-		if (isEventsStore(initialState)) {
-			this.copy(initialState);
-			return;
-		}
-
-		this.viewStore.eventsPanelArea = isInitialEntity(initialState)
-			? 100
-			: initialState.panelArea || 100;
-
-		this.filterStore = new FilterStore(this.searchPanelStore, {
-			eventsFilter: !isInitialEntity(initialState) ? initialState.filter : undefined,
-		});
+		this.filterStore = new EventsFilterStore(this.graphStore, initialState.filter);
 		this.searchStore = new EventsSearchStore(this.api, this, {
-			searchPatterns: !isInitialEntity(initialState) ? initialState.search : [],
+			searchPatterns: initialState.search,
 		});
 		this.viewStore = new ViewStore({
-			flattenedListView: !isInitialEntity(initialState)
-				? initialState.flattenedListView
-				: undefined,
-			panelArea: !isInitialEntity(initialState) ? initialState.panelArea : undefined,
+			flattenedListView: initialState.flattenedListView,
+			panelArea: initialState.panelArea,
 		});
 
-		if (isInitialEntity(initialState)) {
-			this.onEventSelect(initialState);
+		if (isEvent(initialState.targetEvent)) {
+			this.onEventSelect(initialState.targetEvent);
 		} else {
 			await this.fetchEventTree();
 		}
 
-		if (!isInitialEntity(initialState) && initialState.selectedNodesPath) {
+		if (!isEvent(initialState.targetEvent) && initialState.selectedNodesPath) {
 			this.expandPath(initialState.selectedNodesPath);
 		}
 
-		if (!isInitialEntity(initialState) && initialState.selectedParentId) {
+		if (!isEvent(initialState.targetEvent) && initialState.selectedParentId) {
 			const parentNode = this.selectedPath.find(
 				eventNode => eventNode.eventId === initialState.selectedParentId,
 			);
@@ -485,10 +444,6 @@ export default class EventsStore {
 		}
 
 		return path;
-	};
-
-	public dispose = () => {
-		this.filterStore.dispose();
 	};
 }
 
