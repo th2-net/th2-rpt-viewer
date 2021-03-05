@@ -22,6 +22,10 @@
 	flex-direction: column;
 	height: 100%;
 	overflow: auto;
+	.spinner {
+		@include spinner(3px);
+		margin: 4px auto;
+	}
 }
 
 .search-panel {
@@ -47,11 +51,6 @@
 		.filter-row {
 				justify-content: center;
 		}
-	}
-
-	.spinner {
-		@include spinner(3px);
-		margin: 4px auto;
 	}
 }
 .progress-bar {

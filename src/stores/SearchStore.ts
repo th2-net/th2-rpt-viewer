@@ -17,7 +17,7 @@
 import { action, autorun, computed, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
 import ApiSchema from '../api/ApiSchema';
-import { SSEFilterInfo, SSEParams } from '../api/sse';
+import { SSEFilterInfo, SSEHeartbeat, SSEParams } from '../api/sse';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
 	EventFilterState,
@@ -47,6 +47,7 @@ export type SearchHistory = {
 	timestamp: number;
 	results: Array<SearchResult>;
 	request: StateHistory;
+	progress: number;
 };
 
 export type StateHistory = {
@@ -120,15 +121,11 @@ export class SearchStore {
 	@observable messagesFilterInfo: SSEFilterInfo[] = [];
 
 	@computed get searchProgress() {
-		const lastItem = this.currentSearch?.results[this.currentSearch.results.length - 1];
-		const lastItemTimestamp = lastItem
-			? getTimestampAsNumber(isEventNode(lastItem) ? lastItem.startTimestamp : lastItem.timestamp)
-			: null;
 		return {
 			startTimestamp: this.searchForm.startTimestamp,
 			endTimestamp: this.searchForm.endTimestamp,
-			currentPoint: lastItemTimestamp
-				? lastItemTimestamp - Number(this.searchForm.startTimestamp)
+			currentPoint: this.currentSearch?.progress
+				? this.currentSearch?.progress - Number(this.searchForm.startTimestamp)
 				: 0,
 			searching: Boolean(this.searchChannel),
 		};
@@ -267,6 +264,7 @@ export class SearchStore {
 			timestamp: moment().utc().valueOf(),
 			request: { type: this.formType, state: this.searchForm, filters: filterParams },
 			results: [],
+			progress: 0,
 		});
 
 		function getFilter<T extends keyof FilterState>(name: T) {
@@ -312,6 +310,7 @@ export class SearchStore {
 		});
 
 		this.searchChannel.addEventListener(this.formType, this.onChannelResponse);
+		this.searchChannel.addEventListener('keep_alive', this.onChannelResponse);
 		this.searchChannel.addEventListener('close', this.stopSearch);
 		this.searchChannel.addEventListener('error', this.onError);
 	};
@@ -377,7 +376,19 @@ export class SearchStore {
 	private onChannelResponse = (ev: Event) => {
 		if (this.currentSearch) {
 			const data = (ev as MessageEvent).data;
-			this.currentSearch.results = [...this.currentSearch.results, JSON.parse(data)];
+			const parsedEvent: SearchResult | SSEHeartbeat = JSON.parse(data);
+			if (isEventNode(parsedEvent) || isEventMessage(parsedEvent)) {
+				this.currentSearch.results = [...this.currentSearch.results, JSON.parse(data)];
+			}
+			if (isEventNode(parsedEvent)) {
+				this.currentSearch.progress = getTimestampAsNumber(parsedEvent.startTimestamp);
+				return;
+			}
+			if (isEventMessage(parsedEvent)) {
+				this.currentSearch.progress = getTimestampAsNumber(parsedEvent.timestamp);
+				return;
+			}
+			this.currentSearch.progress = parsedEvent.timestamp;
 		}
 	};
 
