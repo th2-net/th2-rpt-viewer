@@ -35,7 +35,7 @@ function MessagesWindowHeader() {
 				{messagesStore.showFilterChangeHint && (
 					<div className='sessions'>
 						<p className='sessions__title'>Message may not match the filter</p>{' '}
-						<button className='sessions__add-button' onClick={messagesStore.applyStreams}>
+						<button className='sessions__add-button' onClick={messagesStore.applyFilterHint}>
 							Change filter
 						</button>
 					</div>

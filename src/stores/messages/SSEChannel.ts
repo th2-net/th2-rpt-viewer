@@ -81,7 +81,7 @@ export class SSEChannel {
 
 		let resumeFromId;
 
-		const messages = this.messagesStore.data.messages;
+		const messages = this.messagesStore.dataStore.messages;
 		if (messages.length > 0) {
 			resumeFromId =
 				this.queryParams.searchDirection === 'next'

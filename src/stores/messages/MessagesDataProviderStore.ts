@@ -18,7 +18,6 @@ import { action, reaction, observable, computed, runInAction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams } from '../../api/sse';
 import { EventMessage } from '../../models/EventMessage';
-import MessagesFilter from '../../models/filter/MessagesFilter';
 import MessagesStore from './MessagesStore';
 import { SSEChannel } from './SSEChannel';
 
@@ -198,12 +197,9 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	private onFilterChange = async (filter: MessagesFilter) => {
+	private onFilterChange = async () => {
 		this.stopMessagesLoading();
-
-		if (filter.streams.length === 0) {
-			this.resetMessagesDataState();
-		}
+		this.resetMessagesDataState();
 		this.loadMessages();
 	};
 

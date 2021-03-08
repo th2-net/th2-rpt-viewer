@@ -94,20 +94,20 @@ const MessagesVirtualizedList = (props: Props) => {
 	const startReached = React.useCallback(() => {
 		return loadNextMessages().then(messages => {
 			if (messages.length > 0) {
-				messageStore.data.onNextChannelResponse(messages);
+				messageStore.dataStore.onNextChannelResponse(messages);
 			}
 			return messages;
 		});
-	}, [loadNextMessages, messageStore.data.onNextChannelResponse]);
+	}, [loadNextMessages, messageStore.dataStore.onNextChannelResponse]);
 
 	const endReached = React.useCallback(() => {
 		return loadPrevMessages().then(messages => {
 			if (messages.length > 0) {
-				messageStore.data.onPrevChannelResponse(messages);
+				messageStore.dataStore.onPrevChannelResponse(messages);
 			}
 			return messages;
 		});
-	}, [loadPrevMessages, messageStore.data.onPrevChannelResponse]);
+	}, [loadPrevMessages, messageStore.dataStore.onPrevChannelResponse]);
 	return (
 		<Virtuoso
 			startReached={startReached}
