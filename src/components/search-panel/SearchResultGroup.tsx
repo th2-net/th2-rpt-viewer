@@ -15,8 +15,10 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { isEventMessage, isEventNode } from '../../helpers/event';
+import { observer } from 'mobx-react-lite';
+import { isEventMessage, isEventNode, getItemId } from '../../helpers/event';
 import { createBemElement } from '../../helpers/styleCreators';
+import { useSelectedStore } from '../../hooks';
 import { SearchResult } from '../../stores/SearchStore';
 import { BookmarkedItem, BookmarkItem } from '../BookmarksPanel';
 
@@ -26,6 +28,7 @@ interface SearchResultGroup {
 }
 
 const SearchResultGroup = ({ results, onResultClick }: SearchResultGroup) => {
+	const selectedStore = useSelectedStore();
 	const [isExpanded, setIsExpanded] = React.useState(false);
 
 	const expandButtonClass = createBemElement(
@@ -56,6 +59,20 @@ const SearchResultGroup = ({ results, onResultClick }: SearchResultGroup) => {
 		.map(entry => entry[0])
 		.splice(0, 3);
 
+	const getBookmarkToggler = (searchResult: SearchResult) => () => {
+		if (isEventMessage(searchResult)) {
+			selectedStore.toggleMessagePin(searchResult);
+		} else {
+			selectedStore.toggleEventPin(searchResult);
+		}
+	};
+
+	const getIsToggled = (searchResult: SearchResult): boolean => {
+		return Boolean(
+			selectedStore.savedItems.find(savedItem => getItemId(savedItem) === getItemId(searchResult)),
+		);
+	};
+
 	return (
 		<>
 			<div className='search-result-group' onClick={() => setIsExpanded(!isExpanded)}>
@@ -77,10 +94,16 @@ const SearchResultGroup = ({ results, onResultClick }: SearchResultGroup) => {
 			</div>
 			{isExpanded &&
 				results.map((result, index) => (
-					<BookmarkItem key={computeKey(index)} item={result} onClick={onResultClick} />
+					<BookmarkItem
+						key={computeKey(index)}
+						item={result}
+						onClick={onResultClick}
+						toggleBookmark={getBookmarkToggler(result)}
+						isBookmarked={getIsToggled(result)}
+					/>
 				))}
 		</>
 	);
 };
 
-export default SearchResultGroup;
+export default observer(SearchResultGroup);
