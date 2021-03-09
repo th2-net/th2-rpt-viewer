@@ -14,11 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { toJS } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
-import { registerUrlMiddleware } from '../helpers/url';
 import { SearchStore } from './SearchStore';
+import EventsStore, { EventStoreURLState } from './events/EventsStore';
+import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
+import { getEventNodeParents } from '../helpers/event';
+import { getObjectKeys } from '../helpers/object';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -32,8 +36,67 @@ export default class RootStore {
 
 		this.workspacesStore = new WorkspacesStore(this.searchStore, this.api, this.parseUrlState());
 
-		registerUrlMiddleware(this);
+		window.history.replaceState({}, '', window.location.pathname);
 	}
+
+	getAppState = (): WorkspacesUrlState | null => {
+		const activeWorkspace = this.workspacesStore.activeWorkspace;
+
+		let eventStoreState: EventStoreURLState = {};
+		let messagesStoreState: MessagesStoreURLState = {};
+
+		if (activeWorkspace && activeWorkspace !== this.workspacesStore.searchWorkspace) {
+			const eventsStore: EventsStore = activeWorkspace.eventsStore;
+			eventStoreState = {
+				filter: {
+					eventTypes: eventsStore.filterStore.filter.eventTypes,
+					names: eventsStore.filterStore.filter.names,
+					timestampFrom: eventsStore.filterStore.filter.timestampFrom,
+					timestampTo: eventsStore.filterStore.filter.timestampTo,
+				},
+				panelArea: eventsStore.viewStore.eventsPanelArea,
+				selectedNodesPath: eventsStore.selectedNode
+					? [...getEventNodeParents(eventsStore.selectedNode), eventsStore.selectedNode.eventId]
+					: undefined,
+				search:
+					eventsStore.searchStore.tokens.length > 0
+						? eventsStore.searchStore.tokens.map(t => t.pattern)
+						: undefined,
+				flattenedListView: eventsStore.viewStore.flattenedListView,
+				selectedParentId:
+					eventsStore.viewStore.flattenedListView && eventsStore.selectedParentNode
+						? eventsStore.selectedParentNode.eventId
+						: undefined,
+			};
+			const messagesStore: MessagesStore = activeWorkspace.messagesStore;
+			messagesStoreState = {
+				timestampFrom: messagesStore.filterStore.filter.timestampFrom,
+				timestampTo: messagesStore.filterStore.filter.timestampTo,
+			};
+
+			getObjectKeys(eventStoreState).forEach(key => {
+				if (eventStoreState[key] === undefined) {
+					delete eventStoreState[key];
+				}
+			});
+
+			getObjectKeys(messagesStoreState).forEach(key => {
+				if (messagesStoreState[key] === undefined) {
+					delete messagesStoreState[key];
+				}
+			});
+			return [
+				toJS({
+					events: eventStoreState,
+					messages: messagesStoreState,
+					timeRange: activeWorkspace.graphStore.range,
+					interval: activeWorkspace.graphStore.interval,
+					layout: activeWorkspace.viewStore.panelsLayout,
+				}),
+			];
+		}
+		return null;
+	};
 
 	parseUrlState = (): WorkspacesUrlState | null => {
 		try {
