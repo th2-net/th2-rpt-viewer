@@ -284,7 +284,9 @@ const RecoverableMessageCard = (props: OwnProps) => {
 				const declaredRule = workspaceStore.messageDisplayRules.find(
 					rule => rule.session === props.message.sessionId,
 				);
-				return declaredRule ? declaredRule.viewType : MessageViewType.JSON;
+				return declaredRule
+					? declaredRule.viewType
+					: workspaceStore.messageDisplayRules[0].viewType;
 			}}>
 			{(state, saveState) => (
 				<MessageCard
