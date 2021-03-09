@@ -82,9 +82,12 @@ interface BookmarkItemProps {
 	item: BookmarkedItem;
 	onRemove?: (item: BookmarkedItem) => void;
 	onClick?: (item: BookmarkedItem) => void;
+	isBookmarked?: boolean;
+	toggleBookmark?: () => void;
 }
 
-const BookmarkItemBase = ({ item, onRemove, onClick }: BookmarkItemProps) => {
+const BookmarkItemBase = (props: BookmarkItemProps) => {
+	const { item, onRemove, onClick, toggleBookmark, isBookmarked = true } = props;
 	const itemInfo = {
 		id: isEventMessage(item) ? item.messageId : item.eventId,
 		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
@@ -120,11 +123,24 @@ const BookmarkItemBase = ({ item, onRemove, onClick }: BookmarkItemProps) => {
 				</div>
 				<div className='bookmark-item__id'>{itemInfo.id}</div>
 			</div>
-			{onRemove && (
-				<button className='bookmark-item__remove-btn' onClick={onBookmarkRemove}>
-					<i className='bookmark-item__remove-btn-icon' />
-				</button>
-			)}
+			<div className='bookmark-item__buttons'>
+				{onRemove && (
+					<button className='bookmark-item__remove-btn' onClick={onBookmarkRemove}>
+						<i className='bookmark-item__remove-btn-icon' />
+					</button>
+				)}
+				{!onRemove && toggleBookmark && (
+					<div className='bookmark-item__toggle-btn'>
+						<div
+							className={createStyleSelector('bookmark-button', isBookmarked ? 'pinned' : null)}
+							onClick={e => {
+								e.stopPropagation();
+								toggleBookmark();
+							}}
+						/>
+					</div>
+				)}
+			</div>
 		</div>
 	);
 };
