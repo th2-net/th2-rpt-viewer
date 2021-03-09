@@ -145,20 +145,22 @@ export class SearchInputBase extends React.PureComponent<Props> {
 								onMouseDown={this.onMouseDown}
 							/>
 						</div>
-						<div className='search-field__clear-button' onClick={this.clear} />
-						{isLoading ? (
-							<div className='search-field__loader' />
-						) : showControls ? (
-							<span className='search-field__counter'>
-								{currentIndex !== null ? currentIndex + 1 : 0} of {resultsCount}
-							</span>
-						) : null}
-						{showControls && !isLoading ? (
-							<div className='search-controls'>
-								<div className='search-controls__prev' onClick={prevSearchResult} />
-								<div className='search-controls__next' onClick={nextSearchResult} />
-							</div>
-						) : null}
+						<div className='search-field__search-controls search-controls'>
+							<div className='search-controls__clear-button' onClick={this.clear} />
+							{isLoading ? (
+								<div className='search-controls__loader' />
+							) : showControls ? (
+								<span className='search-controls__counter'>
+									{currentIndex !== null ? currentIndex + 1 : 0} of {resultsCount}
+								</span>
+							) : null}
+							{showControls && !isLoading ? (
+								<>
+									<div className='search-controls__prev' onClick={prevSearchResult} />
+									<div className='search-controls__next' onClick={nextSearchResult} />
+								</>
+							) : null}
+						</div>
 					</React.Fragment>
 				</div>
 			</div>
