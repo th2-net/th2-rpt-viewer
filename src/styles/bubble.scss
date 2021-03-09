@@ -21,6 +21,7 @@
 	align-items: center;
 	white-space: nowrap;
 	position: relative;
+	right: 0;
 
 	border-radius: $bubbleBorderRadius;
 	color: $primaryTextColor;
@@ -29,12 +30,14 @@
 	padding: 3px 5px;
 	height: $filterBubbleHeight;
 
+	transition: right 0.15s ease-in-out;
+
 	&__remove {
-		position: relative;
+		position: absolute;
 		width: 0;
 		top: 0;
 		// -3px to hide bubble's border-radius on the right
-		left: 1px;
+		left: calc(100% - 3px);
 		bottom: 0;
 		overflow: hidden;
 		z-index: 1;
@@ -46,6 +49,11 @@
 		border-radius: 0 3px 3px 0;
 		background-color: inherit;
 		transition: width 0.15s ease-in-out;
+		flex-shrink: 0;
+	}
+
+	&:hover {
+		right: 6px;
 	}
 
 	&:hover &__remove {
