@@ -30,11 +30,11 @@ import StateSaver from '../../util/StateSaver';
 import { MessageScreenshotZoom } from './MessageScreenshot';
 import { EventMessage, isScreenshotMessage } from '../../../models/EventMessage';
 
-import MessageCardViewTypeSwitcher, {
-	MessageCardViewTypeSwitcherProps,
-} from './MessageCardViewTypeSwitcher';
+import MessageCardViewTypeRenderer, {
+	MessageCardViewTypeRendererProps,
+} from './MessageCardViewTypeRenderer';
 import '../../../styles/messages.scss';
-import RadioGroup, { RadioGroupProps } from '../../util/RadioGroup';
+import RadioGroup from '../../util/RadioGroup';
 import { RadioProps } from '../../util/Radio';
 
 const HUE_SEGMENTS_COUNT = 36;
@@ -44,8 +44,8 @@ export interface OwnProps {
 }
 
 export interface RecoveredProps {
-	showRaw: boolean;
-	showRawHandler: (showRaw: boolean) => void;
+	viewType: MessageViewType;
+	setViewType: (viewType: MessageViewType) => void;
 }
 
 export enum MessageViewType {
@@ -57,15 +57,12 @@ export enum MessageViewType {
 
 interface Props extends OwnProps, RecoveredProps {}
 
-function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
+function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const messagesStore = useMessagesWorkspaceStore();
 	const selectedStore = useSelectedStore();
 	const workspaceStore = useWorkspaceStore();
 	const { heatmapElements } = useHeatmap();
 	const [isHighlighted, setHighlighted] = React.useState(false);
-	const [messageViewType, setMessageViewType] = React.useState<MessageViewType>(
-		MessageViewType.JSON,
-	);
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
@@ -77,7 +74,21 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 	const isPinned = selectedStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
 
 	const toggleViewType = (v: MessageViewType) => {
-		setMessageViewType(v);
+		switch (v) {
+			case MessageViewType.FORMATTED:
+				messagesStore.beautify(messageId);
+				break;
+			case MessageViewType.ASCII:
+				messagesStore.hideDetailedRawMessage(messageId);
+				break;
+			case MessageViewType.BINARY:
+				messagesStore.showDetailedRawMessage(messageId);
+				break;
+			default:
+				messagesStore.debeautify(messageId);
+				break;
+		}
+		setViewType(v);
 	};
 
 	React.useEffect(() => {
@@ -108,7 +119,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 				id: `${MessageViewType.JSON}-${messageId}`,
 				name: `message-view-type-${messageId}`,
 				className: 'message-view-type-radio',
-				checked: messageViewType === MessageViewType.JSON,
+				checked: viewType === MessageViewType.JSON,
 				onChange: toggleViewType,
 			},
 			{
@@ -116,7 +127,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 				id: `${MessageViewType.FORMATTED}-${messageId}`,
 				name: `message-view-type-${messageId}`,
 				className: 'message-view-type-radio',
-				checked: messageViewType === MessageViewType.FORMATTED,
+				checked: viewType === MessageViewType.FORMATTED,
 				onChange: toggleViewType,
 			},
 			{
@@ -124,7 +135,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 				id: `${MessageViewType.BINARY}-${messageId}`,
 				name: `message-view-type-${messageId}`,
 				className: 'message-view-type-radio',
-				checked: messageViewType === MessageViewType.BINARY,
+				checked: viewType === MessageViewType.BINARY,
 				onChange: toggleViewType,
 			},
 			{
@@ -132,34 +143,12 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 				id: `${MessageViewType.ASCII}-${messageId}`,
 				name: `message-view-type-${messageId}`,
 				className: 'message-view-type-radio',
-				checked: messageViewType === MessageViewType.ASCII,
+				checked: viewType === MessageViewType.ASCII,
 				onChange: toggleViewType,
 			},
 		],
-		[messageId, messageViewType],
+		[messageId, viewType],
 	);
-
-	React.useEffect(() => {
-		if (messageViewType === MessageViewType.ASCII || messageViewType === MessageViewType.BINARY) {
-			showRawHandler(true);
-		} else {
-			showRawHandler(false);
-		}
-		switch (messageViewType) {
-			case MessageViewType.FORMATTED:
-				messagesStore.beautify(messageId);
-				break;
-			case MessageViewType.ASCII:
-				messagesStore.undetailify(messageId);
-				break;
-			case MessageViewType.BINARY:
-				messagesStore.detailify(messageId);
-				break;
-			default:
-				messagesStore.debeautify(messageId);
-				break;
-		}
-	}, [messageViewType]);
 
 	const isAttached = !!workspaceStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
@@ -200,9 +189,9 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 		messagesStore.setHoveredMessage(null);
 	};
 
-	const messageViewTypeSwitcherProps: MessageCardViewTypeSwitcherProps = {
+	const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
+		viewType,
 		messageId,
-		showRaw,
 		messageBody: body,
 		isBeautified: isContentBeautified,
 		rawContent: bodyBase64,
@@ -272,7 +261,7 @@ function MessageCardBase({ message, showRaw, showRawHandler }: Props) {
 						</div>
 					) : (
 						<div className='mc-body__human'>
-							<MessageCardViewTypeSwitcher {...messageViewTypeSwitcherProps} />
+							<MessageCardViewTypeRenderer {...messageViewTypeRendererProps} />
 						</div>
 					)}
 				</div>
@@ -290,13 +279,15 @@ function calculateHueValue(session: string): number {
 }
 
 const RecoverableMessageCard = (props: OwnProps) => (
-	<StateSaver stateKey={keyForMessage(props.message.messageId)} getDefaultState={() => false}>
+	<StateSaver
+		stateKey={keyForMessage(props.message.messageId)}
+		getDefaultState={() => MessageViewType.JSON}>
 		{(state, saveState) => (
 			<MessageCard
 				{...props}
 				// we should always show raw content if something found in it
-				showRaw={state}
-				showRawHandler={saveState}
+				viewType={state}
+				setViewType={saveState}
 			/>
 		)}
 	</StateSaver>

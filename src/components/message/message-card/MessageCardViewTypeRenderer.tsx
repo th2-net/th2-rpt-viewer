@@ -18,10 +18,13 @@ import * as React from 'react';
 import MessageBody from '../../../models/MessageBody';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
+import { MessageViewType } from './MessageCard';
+import DetailedMessageRaw from './raw/DetailedMessageRaw';
 import MessageRaw from './raw/MessageRaw';
+import SimpleMessageRaw from './raw/SimpleMessageRaw';
 
-export type MessageCardViewTypeSwitcherProps = {
-	showRaw: boolean;
+export type MessageCardViewTypeRendererProps = {
+	viewType: MessageViewType;
 	messageId: string;
 	rawContent: string | null;
 	isBeautified: boolean;
@@ -29,28 +32,35 @@ export type MessageCardViewTypeSwitcherProps = {
 	messageBody: MessageBody | null;
 };
 
-const MessageCardViewTypeSwitcher = ({
+const MessageCardViewTypeRenderer = ({
+	viewType,
 	messageId,
-	showRaw,
 	rawContent,
 	isBeautified,
 	isSelected,
 	messageBody,
-}: MessageCardViewTypeSwitcherProps) => {
-	return showRaw && rawContent ? (
-		<MessageRaw messageId={messageId} rawContent={rawContent} />
-	) : (
-		<ErrorBoundary
-			fallback={
-				<MessageBodyCardFallback
-					isBeautified={isBeautified}
-					isSelected={isSelected}
-					body={messageBody}
-				/>
-			}>
-			<MessageBodyCard isBeautified={isBeautified} body={messageBody} isSelected={isSelected} />
-		</ErrorBoundary>
-	);
+}: MessageCardViewTypeRendererProps) => {
+	switch (viewType) {
+		case MessageViewType.FORMATTED:
+		case MessageViewType.JSON:
+			return (
+				<ErrorBoundary
+					fallback={
+						<MessageBodyCardFallback
+							isBeautified={isBeautified}
+							isSelected={isSelected}
+							body={messageBody}
+						/>
+					}>
+					<MessageBodyCard isBeautified={isBeautified} body={messageBody} isSelected={isSelected} />
+				</ErrorBoundary>
+			);
+		case MessageViewType.ASCII:
+		case MessageViewType.BINARY:
+			return rawContent ? <MessageRaw messageId={messageId} rawContent={rawContent} /> : null;
+		default:
+			return null;
+	}
 };
 
-export default MessageCardViewTypeSwitcher;
+export default MessageCardViewTypeRenderer;
