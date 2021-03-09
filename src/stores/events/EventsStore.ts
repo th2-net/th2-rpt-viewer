@@ -438,9 +438,11 @@ export default class EventsStore {
 			getEventParentId(currentEvent) !== 'null'
 		) {
 			const parentId = getEventParentId(currentEvent);
-			path.unshift(parentId);
-			// eslint-disable-next-line no-await-in-loop
-			currentEvent = await this.api.events.getEvent(parentId);
+			if (parentId) {
+				path.unshift(parentId);
+				// eslint-disable-next-line no-await-in-loop
+				currentEvent = await this.api.events.getEvent(parentId);
+			} else return path;
 		}
 
 		return path;

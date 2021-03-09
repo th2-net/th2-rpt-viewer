@@ -29,16 +29,11 @@ import { EventMessage } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphStore } from '../GraphStore';
-import { isEvent, isEventMessage } from '../../helpers/event';
+import { isEventMessage } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
-import { getTimestampAsNumber } from '../../helpers/date';
-import {
-	EventFilterState,
-	MessageFilterState,
-} from '../../components/search-panel/SearchPanelFilters';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;
@@ -157,78 +152,7 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	public onSearchResultItemSelect = (resultItem: EventTreeNode | EventAction | EventMessage) => {
-		let initialWorkspaceState: WorkspaceInitialState = {};
-
-		if (isEventMessage(resultItem)) {
-			const requestInfo = this.searchStore.currentSearch?.request;
-			initialWorkspaceState = {
-				messages: {
-					sse: (requestInfo?.filters as MessageFilterState) || null,
-					streams: requestInfo?.state.stream || [],
-					timestampFrom: null,
-					timestampTo: getTimestampAsNumber(resultItem.timestamp),
-					targetMessage: resultItem,
-				},
-				interval: this.graphStore.interval,
-				layout: [0, 100],
-				timeRange: getRangeFromTimestamp(getTimestampAsNumber(resultItem.timestamp), 15),
-			};
-		} else {
-			const requestInfo = this.searchStore.currentSearch?.request;
-			const filter = requestInfo?.filters as EventFilterState | undefined;
-			const [timestampFrom, timestampTo] = getRangeFromTimestamp(
-				getTimestampAsNumber(resultItem.startTimestamp),
-				this.graphStore.interval,
-			);
-			initialWorkspaceState = {
-				events: {
-					filter: {
-						eventTypes: filter && !filter.type.negative ? filter.type.values : [],
-						names: filter && !filter.name.negative ? filter.name.values : [],
-						timestampFrom,
-						timestampTo,
-					},
-					targetEvent: resultItem,
-				},
-				layout: [100, 0],
-				interval: this.graphStore.interval,
-				timeRange: [timestampFrom, timestampTo],
-			};
-		}
-
-		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
-		this.workspacesStore.addWorkspace(newWorkspace);
-	};
-
-	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
-		if (this.workspacesStore.searchWorkspace === this) {
-			const timeRange = getRangeFromTimestamp(
-				getTimestampAsNumber(isEvent(savedItem) ? savedItem.startTimestamp : savedItem.timestamp),
-				this.graphStore.interval,
-			);
-			const initialWorkspaceState: WorkspaceInitialState = {
-				timeRange,
-				interval: this.graphStore.interval,
-			};
-			if (isEvent(savedItem)) {
-				initialWorkspaceState.events = {
-					targetEvent: savedItem,
-				};
-				initialWorkspaceState.layout = [100, 0];
-			} else {
-				initialWorkspaceState.messages = {
-					targetMessage: savedItem,
-				};
-				initialWorkspaceState.layout = [0, 100];
-			}
-
-			const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
-			this.workspacesStore.addWorkspace(newWorkspace);
-			return;
-		}
-
 		if (isEventMessage(savedItem)) {
 			this.viewStore.activePanel = this.messagesStore;
 			this.messagesStore.onMessageSelect(savedItem);
@@ -240,27 +164,6 @@ export default class WorkspaceStore {
 
 	@action
 	public onTimestampSelect = (timestamp: number) => {
-		if (this.workspacesStore.searchWorkspace === this) {
-			const timeRange = getRangeFromTimestamp(timestamp, this.graphStore.interval);
-			const newWorkspace = this.workspacesStore.createWorkspace({
-				timeRange,
-				interval: this.graphStore.interval,
-				events: {
-					filter: {
-						timestampFrom: timeRange[0],
-						timestampTo: timeRange[1],
-						eventTypes: [],
-						names: [],
-					},
-				},
-				messages: {
-					timestampTo: timestamp,
-				},
-			});
-
-			this.workspacesStore.addWorkspace(newWorkspace);
-			return;
-		}
 		this.graphStore.setTimestamp(timestamp);
 	};
 
@@ -268,14 +171,9 @@ export default class WorkspaceStore {
 	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
 		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
 	};
-
-	@computed
-	public get isSearchWorkspace() {
-		return this === this.workspacesStore.searchWorkspace;
-	}
 }
 
-function getRangeFromTimestamp(timestamp: number, interval: number): TimeRange {
+export function getRangeFromTimestamp(timestamp: number, interval: number): TimeRange {
 	return [
 		moment(timestamp)
 			.subtract(interval / 2, 'minutes')

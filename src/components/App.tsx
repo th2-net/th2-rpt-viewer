@@ -19,9 +19,10 @@ import * as React from 'react';
 import { ToastProvider } from 'react-toast-notifications';
 import Toast from './notifications/Toast';
 import Notifier from './notifications/Notifier';
-import Graph from './graph/Graph';
 import WorkspacesLayout from './workspace/WorkspacesLayout';
 import '../styles/root.scss';
+// eslint-disable-next-line import/no-named-default
+import { default as Graph } from './graph/Graph';
 
 const App = () => (
 	<div className='app'>

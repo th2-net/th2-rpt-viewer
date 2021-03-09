@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useActivePanel, useActiveWorkspace } from '../../hooks';
+import { useActivePanel } from '../../hooks';
 import TogglerRow from '../filter/row/TogglerRow';
 import SearchPanelFilters from './SearchPanelFilters';
 import SearchPanelForm from './SearchPanelForm';
@@ -25,11 +25,12 @@ import SearchPanelResults from './SearchPanelResults';
 import SearchPanelProgressBar from './SearchPanelProgressBar';
 import { FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
 import '../../styles/search-panel.scss';
+import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 
 export type SearchPanelType = 'event' | 'message';
 
 const SearchPanel = () => {
-	const activeWorkspace = useActiveWorkspace();
+	const activeWorkspace = useSearchWorkspace();
 	const { ref: searchPanelRef } = useActivePanel(null);
 	const searchStore = useSearchStore();
 
@@ -59,7 +60,7 @@ const SearchPanel = () => {
 							form={searchStore.searchForm}
 							formType={searchStore.formType}
 							updateForm={searchStore.updateForm}
-							streams={searchStore.formType === 'message' ? searchStore.messageSessions : null}
+							messageSessions={searchStore.messageSessions}
 						/>
 					</div>
 					<div className='filters'>

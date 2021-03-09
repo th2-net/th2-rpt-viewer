@@ -20,7 +20,7 @@ import BookmarksPanel from '../BookmarksPanel';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import SearchPanel from '../search-panel/SearchPanel';
 import '../../styles/workspace.scss';
-import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
+import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 
 const panelColors = {
 	search: {
@@ -33,12 +33,14 @@ const panelColors = {
 	},
 } as const;
 
-function Workspace() {
-	const { panelsLayout, setPanelsLayout } = useWorkspaceViewStore();
+function SearchWorkspace() {
+	const searchWorkspaceStore = useSearchWorkspace();
+	const { panelsLayout, setPanelsLayout } = searchWorkspaceStore.viewStore;
 
 	return (
 		<div className='workspace'>
 			<WorkspaceSplitter
+				workspaceStore={searchWorkspaceStore}
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
 				panels={[
@@ -60,4 +62,4 @@ function Workspace() {
 	);
 }
 
-export default observer(Workspace);
+export default observer(SearchWorkspace);

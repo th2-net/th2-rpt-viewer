@@ -1,5 +1,5 @@
 /** *****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2021 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,17 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { isWorkspaceStore } from '../helpers/workspace';
-import { useWorkspaceStore } from './useWorkspaceStore';
+import React from 'react';
+import SearchWorkspaceStore from '../stores/workspace/SearchWorkspaceStore';
 
-export const useGraphDataStore = () => {
-	const workspace = useWorkspaceStore();
+const SearchWorkspaceContext = React.createContext<SearchWorkspaceStore | null>(null);
 
-	if (!isWorkspaceStore(workspace)) {
-		throw new Error("SearchWorkspace doesn't contain graphStore");
-	}
+interface WorkspaceContextProviderProps {
+	children: React.ReactNode;
+	value: SearchWorkspaceStore;
+}
+const SearchWorkspaceContextProvider = ({ children, value }: WorkspaceContextProviderProps) => (
+	<SearchWorkspaceContext.Provider value={value}>{children}</SearchWorkspaceContext.Provider>
+);
 
-	return workspace.graphStore;
-};
+export { SearchWorkspaceContext, SearchWorkspaceContextProvider };

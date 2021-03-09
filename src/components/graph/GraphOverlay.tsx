@@ -17,7 +17,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
-import { useActiveWorkspace, useSelectedStore } from '../../hooks';
+import { useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { PanelRange } from '../../models/Graph';
@@ -28,13 +28,14 @@ import { GraphStore } from '../../stores/GraphStore';
 import { OutsideItems, OutsideItemsMenu, OutsideItemsList } from './OutsideItems';
 import '../../styles/graph.scss';
 import WorkspaceLinkGetter from '../WorkspaceLinkGetter';
+import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 
 interface OverlayPanelProps {
 	range: TimeRange;
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 	panelsRange: Array<PanelRange>;
-	disableInteractions: boolean;
+	activeWorkspace: WorkspaceStore;
 }
 
 const GraphOverlay = (props: OverlayPanelProps) => {
@@ -43,11 +44,10 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 		onGraphItemClick,
 		getGraphItemType,
 		panelsRange,
-		disableInteractions,
+		activeWorkspace,
 	} = props;
 
 	const selectedStore = useSelectedStore();
-	const activeWorkspace = useActiveWorkspace();
 
 	const outsideItems: OutsideItems = React.useMemo(() => {
 		const windowTimeRange = [
@@ -110,41 +110,37 @@ const GraphOverlay = (props: OverlayPanelProps) => {
 
 	return (
 		<>
-			{!disableInteractions && (
-				<>
-					<OutsideItemsMenu
-						onGraphItemClick={onGraphItemClick}
-						direction='left'
-						items={outsideItems.left}
-						getGraphItemType={getGraphItemType}
-						onArrowClick={onOutsideItemsArrowClick}
-					/>
-					<OutsideItemsMenu
-						onGraphItemClick={onGraphItemClick}
-						direction='right'
-						items={outsideItems.right}
-						getGraphItemType={getGraphItemType}
-						onArrowClick={onOutsideItemsArrowClick}
-					/>
-					<OutsideItemsList
-						showCount={false}
-						itemsMap={outsidePanels.left}
-						direction='left'
-						className='outside-items__panels'
-						onItemClick={onOutsidePanelClick}
-					/>
-					<OutsideItemsList
-						showCount={false}
-						itemsMap={outsidePanels.right}
-						direction='right'
-						className='outside-items__panels'
-						onItemClick={onOutsidePanelClick}
-						onArrowClick={onOutsideItemsArrowClick}
-					/>
-				</>
-			)}
+			<OutsideItemsMenu
+				onGraphItemClick={onGraphItemClick}
+				direction='left'
+				items={outsideItems.left}
+				getGraphItemType={getGraphItemType}
+				onArrowClick={onOutsideItemsArrowClick}
+			/>
+			<OutsideItemsMenu
+				onGraphItemClick={onGraphItemClick}
+				direction='right'
+				items={outsideItems.right}
+				getGraphItemType={getGraphItemType}
+				onArrowClick={onOutsideItemsArrowClick}
+			/>
+			<OutsideItemsList
+				showCount={false}
+				itemsMap={outsidePanels.left}
+				direction='left'
+				className='outside-items__panels'
+				onItemClick={onOutsidePanelClick}
+			/>
+			<OutsideItemsList
+				showCount={false}
+				itemsMap={outsidePanels.right}
+				direction='right'
+				className='outside-items__panels'
+				onItemClick={onOutsidePanelClick}
+				onArrowClick={onOutsideItemsArrowClick}
+			/>
 			<i className='th2-logo' />
-			{!disableInteractions && <WorkspaceLinkGetter />}
+			<WorkspaceLinkGetter />
 		</>
 	);
 };

@@ -35,11 +35,11 @@ interface Props {
 	form: SearchPanelFormState;
 	updateForm: (patch: Partial<SearchPanelFormState>) => void;
 	disabled: boolean;
-	streams: string[] | null;
+	messageSessions: string[] | null;
 }
 
 const SearchPanelForm = (props: Props) => {
-	const { disabled, updateForm, form, formType, streams } = props;
+	const { disabled, updateForm, form, formType, messageSessions } = props;
 
 	const [currentStream, setCurrentStream] = useState('');
 
@@ -99,7 +99,7 @@ const SearchPanelForm = (props: Props) => {
 		setValues: getFormStateUpdater('stream'),
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
-		autocompleteList: streams,
+		autocompleteList: messageSessions,
 	};
 
 	const config: FitlerRowItem[] =

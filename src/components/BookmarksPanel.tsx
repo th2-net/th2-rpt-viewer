@@ -22,16 +22,17 @@ import Empty from './util/Empty';
 import { getTimestampAsNumber } from '../helpers/date';
 import { isEventMessage, isEventNode } from '../helpers/event';
 import { createStyleSelector } from '../helpers/styleCreators';
-import { useActivePanel, useSelectedStore, useWorkspaceStore } from '../hooks';
+import { useActivePanel, useSelectedStore } from '../hooks';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import '../styles/bookmarks.scss';
+import useSearchWorkspace from '../hooks/useSearchWorkspace';
 
 export type BookmarkedItem = EventMessage | EventTreeNode | EventAction;
 
 function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
-	const workspaceStore = useWorkspaceStore();
+	const workspaceStore = useSearchWorkspace();
 
 	const { ref: panelRef } = useActivePanel(null);
 
