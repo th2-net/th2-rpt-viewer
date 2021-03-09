@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { createBemBlock } from '../../../helpers/styleCreators';
 import {
 	DateTimeInputType,
 	FilterRowTimeWindowConfig,
@@ -25,8 +26,10 @@ import DateTimeInput from '../date-time-inputs/DateTimeInput';
 import IntervalInput from '../date-time-inputs/IntervalInput';
 
 const TimeWindow = ({ config }: { config: FilterRowTimeWindowConfig }) => {
+	const wrapperClassName = createBemBlock('filter-row', config.className || null);
+
 	return (
-		<div className='filter-row'>
+		<div className={wrapperClassName}>
 			{config.inputs.map((inputConfig: DateTimeInputType | IntervalInputType) => [
 				inputConfig.label && (
 					<label

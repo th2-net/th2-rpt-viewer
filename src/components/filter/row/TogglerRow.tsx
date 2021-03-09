@@ -23,6 +23,7 @@ const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
 	const togglerClassName = createStyleSelector('toggler', disabled ? 'disabled' : '');
 	const togglerBarClassName = createStyleSelector('toggler__bar', className, value ? 'on' : 'off');
 	const [firstLabel, secondLabel] = possibleValues;
+
 	return (
 		<div className='filter-row toggler-wrapper'>
 			{label && <p className='filter-row__label'>{label}</p>}

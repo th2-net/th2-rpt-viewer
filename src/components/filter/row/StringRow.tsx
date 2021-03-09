@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { createBemElement } from '../../../helpers/styleCreators';
+import { createBemBlock, createBemElement } from '../../../helpers/styleCreators';
 import { FilterRowStringConfig } from '../../../models/filter/FilterInputs';
 
 export default function StringFilterRow({ config }: { config: FilterRowStringConfig }) {
@@ -24,8 +24,10 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 		'input',
 		config.value.length ? 'non-empty' : '',
 	);
+	const wrapperClassName = createBemBlock('filter-row', config.className || null);
+
 	return (
-		<div className='filter-row'>
+		<div className={wrapperClassName}>
 			{config.label && (
 				<label className='filter-row__label' htmlFor={config.id}>
 					{config.label}

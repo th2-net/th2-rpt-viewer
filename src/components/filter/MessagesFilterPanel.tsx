@@ -19,14 +19,16 @@ import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import {
 	CompoundFilterRow,
-	FilterRowConfig,
 	FilterRowTogglerConfig,
 	FilterRowMultipleStringsConfig,
+	ActionFilterConfig,
+	FilterRowConfig,
 } from '../../models/filter/FilterInputs';
 import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import { MessageFilterState } from '../search-panel/SearchPanelFilters';
+import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -163,24 +165,39 @@ const MessagesFilterPanel = () => {
 			currentValue: currentStream,
 			setCurrentValue: setCurrentStream,
 			autocompleteList: messagesStore.messageSessions,
+			className: 'messages-window-header__session-filter',
 		};
 	}, [streams, setStreams, currentStream, setCurrentStream, messagesStore.messageSessions]);
 
+	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
+		return {
+			type: 'action',
+			id: 'sse-filtler-error',
+			message: 'Failed to load sse filters',
+			actionButtonText: 'Try again',
+			action: searchStore.getMessagesFilters,
+			isLoading: searchStore.isMessageFiltersLoading,
+		};
+	}, [searchStore.getMessagesFilters, searchStore.isMessageFiltersLoading]);
+
 	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
-		return [sessionFilterConfig, ...compoundFilterRow];
-	}, [sessionFilterConfig, compoundFilterRow]);
+		return compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig];
+	}, [compoundFilterRow, sseFiltersErrorConfig]);
 
 	return (
-		<FilterPanel
-			isLoading={isLoading}
-			isFilterApplied={isApplied}
-			count={isApplied ? messagesDataStore.messages.length : null}
-			setShowFilter={setShowFilter}
-			showFilter={showFilter}
-			config={filterConfig}
-			onSubmit={submitChanges}
-			onClearAll={messagesStore.clearFilters}
-		/>
+		<>
+			<FilterPanel
+				isLoading={isLoading}
+				isFilterApplied={isApplied}
+				count={isApplied ? messagesDataStore.messages.length : null}
+				setShowFilter={setShowFilter}
+				showFilter={showFilter}
+				config={filterConfig}
+				onSubmit={submitChanges}
+				onClearAll={messagesStore.clearFilters}
+			/>
+			<MessagesFilterSessionFilter config={sessionFilterConfig} sseFilter={sseFilter} />
+		</>
 	);
 };
 

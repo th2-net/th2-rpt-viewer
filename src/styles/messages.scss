@@ -511,6 +511,7 @@
 	justify-content: space-between;
 
 	&__group {
+		width: 100%;
 		display: flex;
 		align-items: center;
 	}
@@ -586,6 +587,44 @@
 			border: none;
 			margin-left: 5px;
 		}
+	}
+
+	&__session-filter {
+		margin-bottom: 0;
+		margin-left: 20px;
+		flex-grow: 1;
+
+		.filter-row {
+			&__input {
+				border: 1px solid rgb(94, 94, 94);
+			}
+
+			&__label {
+				width: auto;
+				padding-right: 15px;
+				color: #4d4d4d;
+				font-size: 12px;
+				line-height: 15px;
+				font-weight: bold;
+				white-space: nowrap;
+			}
+		}
+
+		.filter-content {
+			margin: 0;
+		}
+	}
+
+	&__filter-submit-btn {
+		@include icon(url('../../resources/icons/search.svg'), 16px, 16px);
+
+		flex-shrink: 0;
+		background-color: transparent;
+		border: none;
+		padding: 4px;
+		margin-left: 15px;
+		padding: 0;
+		cursor: pointer;
 	}
 }
 

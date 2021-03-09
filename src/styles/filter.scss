@@ -419,7 +419,7 @@
 		margin: 0 10px;
 	}
 
-	&__submit-btn {
+	&__button {
 		height: 30px;
 		display: flex;
 		align-items: center;
@@ -429,6 +429,9 @@
 		color: $primaryTextColor;
 		cursor: pointer;
 		font-size: 14px;
+		font-weight: bold;
+		border: none;
+		outline: none;
 
 		&:hover {
 			background-color: rgba($filterSecondaryColor, 1);
@@ -519,5 +522,12 @@
 
 	&__arrow-icon {
 		@include icon(url(../../resources/icons/filter-arrow.svg), 16px, 16px);
+	}
+
+	&__message {
+		color: white;
+		font-size: 14px;
+		font-weight: bold;
+		margin-right: 15px;
 	}
 }

@@ -144,7 +144,7 @@ const FilterPanel = ({
 						{isLoading ? (
 							<div className='filter__loading' />
 						) : (
-							<div className='filter-row__submit-btn' onClick={onSubmitClick}>
+							<div className='filter-row__button' onClick={onSubmitClick}>
 								Submit filter
 							</div>
 						)}
