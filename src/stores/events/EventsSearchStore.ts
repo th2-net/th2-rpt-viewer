@@ -20,6 +20,7 @@ import ApiSchema from '../../api/ApiSchema';
 import EventsStore from './EventsStore';
 import { createSearchToken } from '../../helpers/search/createSearchToken';
 import { COLORS as SearchTokenColors } from '../../components/search/SearchInput';
+import { nextCyclicItemByIndex } from '../../helpers/array';
 
 const defaultState = {
 	tokens: [],
@@ -191,7 +192,7 @@ export default class EventsSearchStore {
 
 		if (searchPatterns && searchPatterns.length) {
 			const tokensFromUrl = searchPatterns.map((patt, index) =>
-				createSearchToken(patt, SearchTokenColors[index], true, false),
+				createSearchToken(patt, nextCyclicItemByIndex(SearchTokenColors, index - 1), true, false),
 			);
 			this.tokens = tokensFromUrl;
 			this.updateTokens(tokensFromUrl);
