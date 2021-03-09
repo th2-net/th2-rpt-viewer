@@ -127,7 +127,7 @@ function EventCardHeader({
 			{displayType !== CardDisplayType.STATUS_ONLY &&
 				childrenCount !== undefined &&
 				childrenCount > 0 && <Chip text={childrenCount.toString()} />}
-			<div className={bookmarkClassName} onClick={onPinClicked}></div>
+			<div className={bookmarkClassName} onClick={onPinClicked} />
 		</div>
 	);
 }

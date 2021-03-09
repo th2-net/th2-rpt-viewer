@@ -36,6 +36,7 @@
 }
 
 .bookmark-item {
+	@include bookmark-button($showOnHoverOverParent: false);
 	display: grid;
 	grid-template-columns: 1fr 30px;
 	background-color: #fff;
@@ -58,13 +59,18 @@
 		gap: 3px 10px;
 	}
 
+	&__buttons {
+		flex-grow: 0;
+		flex-shrink: 1;
+		display: grid;
+		place-items: center;
+	}
+
 	&__remove-btn {
 		background-color: transparent;
 		border: none;
-		flex-grow: 0;
-		flex-shrink: 1;
 		outline: none;
-
+	
 		&-icon {
 			@include clickable;
 			@include icon(url(../../resources/icons/cross-icon.svg), 20px, 20px);
@@ -72,6 +78,15 @@
 			border-radius: 50%;
 			display: inline-block;
 		}
+	}
+
+	&__toggle-btn {
+		@include clickable;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		width: 20px;
+		height: 20px;
 	}
 
 	&__name,
