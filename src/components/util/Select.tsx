@@ -17,26 +17,26 @@
 import * as React from 'react';
 import '../../styles/select.scss';
 
-interface Props {
+interface Props<T> {
 	className?: string;
-	options: string[];
+	options: Array<T>;
 	selected: string;
 	prefix?: string;
-	onChange: (option: string) => void;
+	onChange: (option: T) => void;
 }
 
-export default function Select({
+export default function Select<T extends string>({
 	options,
 	selected,
 	onChange,
 	className = '',
 	prefix = '',
-}: Props) {
+}: Props<T>) {
 	return (
 		<select
 			className={`options-select ${className}`}
 			value={prefix + selected}
-			onChange={e => onChange(e.target.value.substring(prefix.length))}>
+			onChange={e => onChange(e.target.value as T)}>
 			{options.map((opt, index) => (
 				<option key={index}>{prefix + opt}</option>
 			))}

@@ -28,7 +28,7 @@ import { formatTime, timestampToNumber } from '../../../helpers/date';
 import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
 import { MessageScreenshotZoom } from './MessageScreenshot';
-import { EventMessage, isScreenshotMessage } from '../../../models/EventMessage';
+import { EventMessage, isScreenshotMessage, MessageViewType } from '../../../models/EventMessage';
 
 import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
@@ -46,13 +46,6 @@ export interface OwnProps {
 export interface RecoveredProps {
 	viewType: MessageViewType;
 	setViewType: (viewType: MessageViewType) => void;
-}
-
-export enum MessageViewType {
-	JSON = 'json',
-	FORMATTED = 'formatted',
-	ASCII = 'ASCII',
-	BINARY = 'binary',
 }
 
 interface Props extends OwnProps, RecoveredProps {}
@@ -74,7 +67,11 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const isPinned = selectedStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
 
 	const toggleViewType = (v: MessageViewType) => {
-		switch (v) {
+		setViewType(v);
+	};
+
+	React.useEffect(() => {
+		switch (viewType) {
 			case MessageViewType.FORMATTED:
 				messagesStore.beautify(messageId);
 				break;
@@ -88,8 +85,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 				messagesStore.debeautify(messageId);
 				break;
 		}
-		setViewType(v);
-	};
+	}, [viewType]);
 
 	React.useEffect(() => {
 		if (!isHighlighted) {
@@ -278,19 +274,28 @@ function calculateHueValue(session: string): number {
 	return (hashCode % HUE_SEGMENTS_COUNT) * (360 / HUE_SEGMENTS_COUNT);
 }
 
-const RecoverableMessageCard = (props: OwnProps) => (
-	<StateSaver
-		stateKey={keyForMessage(props.message.messageId)}
-		getDefaultState={() => MessageViewType.JSON}>
-		{(state, saveState) => (
-			<MessageCard
-				{...props}
-				// we should always show raw content if something found in it
-				viewType={state}
-				setViewType={saveState}
-			/>
-		)}
-	</StateSaver>
-);
+const RecoverableMessageCard = (props: OwnProps) => {
+	const workspaceStore = useWorkspaceStore();
+
+	return (
+		<StateSaver
+			stateKey={keyForMessage(props.message.messageId)}
+			getDefaultState={() => {
+				const declaredRule = workspaceStore.messageDisplayRules.find(
+					rule => rule.session === props.message.sessionId,
+				);
+				return declaredRule ? declaredRule.viewType : MessageViewType.JSON;
+			}}>
+			{(state, saveState) => (
+				<MessageCard
+					{...props}
+					// we should always show raw content if something found in it
+					viewType={state}
+					setViewType={saveState}
+				/>
+			)}
+		</StateSaver>
+	);
+};
 
 export default RecoverableMessageCard;

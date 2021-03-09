@@ -17,6 +17,20 @@ import { Timestamp } from './Timestamp';
 import MessageBody from './MessageBody';
 import { ActionType } from './EventAction';
 
+export enum MessageViewType {
+	JSON = 'json',
+	FORMATTED = 'formatted',
+	ASCII = 'ASCII',
+	BINARY = 'binary',
+}
+
+export type MessageDisplayRule = {
+	session: string;
+	viewType: MessageViewType;
+	removable: boolean;
+	editable: boolean;
+};
+
 export interface EventMessage {
 	type: ActionType.MESSAGE;
 	messageType: string;
@@ -26,6 +40,7 @@ export interface EventMessage {
 	sessionId: string;
 	body: MessageBody | null;
 	bodyBase64: string | null;
+	viewType: MessageViewType;
 }
 
 export function isScreenshotMessage(message: EventMessage): boolean {

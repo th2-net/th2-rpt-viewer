@@ -25,7 +25,7 @@ import EventsStore, { EventStoreDefaultStateType, EventStoreURLState } from '../
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceViewStore from './WorkspaceViewStore';
-import { EventMessage } from '../../models/EventMessage';
+import { EventMessage, MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphStore } from '../GraphStore';
@@ -94,6 +94,15 @@ export default class WorkspaceStore {
 		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
 	}
 
+	@observable messageDisplayRules: Array<MessageDisplayRule> = [
+		{
+			session: '*',
+			viewType: MessageViewType.JSON,
+			removable: false,
+			editable: false,
+		},
+	];
+
 	@observable
 	public attachedMessagesIds: Array<string> = [];
 
@@ -112,6 +121,14 @@ export default class WorkspaceStore {
 	public get attachedMessagesStreams() {
 		return [...new Set(this.attachedMessages.map(msg => msg.sessionId))];
 	}
+
+	@action setNewMessagesDisplayRule = (rule: MessageDisplayRule) => {
+		this.messageDisplayRules = [...this.messageDisplayRules, rule];
+	};
+
+	@action deleteMessagesDisplayRule = (rule: MessageDisplayRule) => {
+		this.messageDisplayRules = this.messageDisplayRules.filter(existedRule => existedRule !== rule);
+	};
 
 	@action
 	public setAttachedMessagesIds = (attachedMessageIds: string[]) => {

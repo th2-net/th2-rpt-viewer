@@ -30,6 +30,7 @@ interface Props {
 	placeholder?: string;
 	submitKeyCodes?: number[];
 	onSubmit: (nextValue: string) => void;
+	notResetOnSubmit?: boolean;
 	onRemove?: () => void;
 	onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
 	onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
@@ -41,6 +42,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	const {
 		value,
 		onSubmit,
+		notResetOnSubmit,
 		onRemove,
 		onEmptyBlur,
 		onBlur = () => null,
@@ -78,8 +80,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 
 		if (submitKeyCodes.includes(e.keyCode) && currentValue.length > 0) {
 			onSubmit(currentValue);
-			setCurrentValue('');
-
+			if (!notResetOnSubmit) {
+				setCurrentValue('');
+			}
 			return;
 		}
 
@@ -105,8 +108,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 				}
 				onSubmit(currentValue);
 			}
-
-			setCurrentValue('');
+			if (!notResetOnSubmit) {
+				setCurrentValue('');
+			}
 			onBlur(e);
 		},
 	};
@@ -115,7 +119,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		() => autocomplete?.filter(variant => variant.indexOf(currentValue) === 0),
 		[currentValue],
 	);
-
 	return (
 		<React.Fragment>
 			{autoresize ? (
