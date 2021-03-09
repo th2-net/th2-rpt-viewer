@@ -19,9 +19,7 @@ import MessageBody from '../../../models/MessageBody';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import { MessageViewType } from './MessageCard';
-import DetailedMessageRaw from './raw/DetailedMessageRaw';
 import MessageRaw from './raw/MessageRaw';
-import SimpleMessageRaw from './raw/SimpleMessageRaw';
 
 export type MessageCardViewTypeRendererProps = {
 	viewType: MessageViewType;

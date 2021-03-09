@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { useMessagesWorkspaceStore } from '../../../../hooks';
 import DetailedMessageRaw from './DetailedMessageRaw';
 import SimpleMessageRaw from './SimpleMessageRaw';
-import { createBemElement } from '../../../../helpers/styleCreators';
 import { decodeBase64RawContent, getAllRawContent } from '../../../../helpers/rawFormatter';
 import { copyTextToClipboard } from '../../../../helpers/copyHandler';
 import { showNotification } from '../../../../helpers/showNotification';
