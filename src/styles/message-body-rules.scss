@@ -30,6 +30,24 @@
     font: 11px 'Open sans', sans-serif;
 }
 
+.message-display-rules,
+.rule-editor {
+    &-inputs {
+        display: flex;
+        justify-content: space-between;
+        .session {
+            display: flex;
+            p {
+                margin-right: 4px;
+            }
+        }
+    }
+    &-buttons {
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
 .message-display-rules {
     width: 100%;
     border-radius: 4px;
@@ -52,35 +70,6 @@
         @include scrollbar();
         overflow: auto;
         max-height: 30vh;
-        .rule {
-            position: relative;
-            padding: 4px 24px 0px 4px;
-            display: flex;
-            justify-content: space-between;
-            button {
-                outline: none;
-                background-color: transparent;
-                border: none;
-                color: inherit;
-                position: absolute;
-                top: 0;
-                right: 0;
-            }
-        }
-    }
-    &-inputs {
-        display: flex;
-        justify-content: space-between;
-        .session {
-            display: flex;
-            p {
-                margin-right: 4px;
-            }
-        }
-    }
-    &-buttons {
-        display: flex;
-        justify-content: flex-end;
     }
     &-inputs,
     &-body,
@@ -89,4 +78,23 @@
         width: 100%;
         background-color: lighten($color: grey, $amount: 5);
     }
+}
+
+.rule {
+    position: relative;
+    padding: 4px 24px 0px 4px;
+    display: flex;
+    justify-content: space-between;
+    button {
+        outline: none;
+        background-color: transparent;
+        border: none;
+        color: inherit;
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+}
+.rule-editor {
+    padding: 4px 0 0;
 }

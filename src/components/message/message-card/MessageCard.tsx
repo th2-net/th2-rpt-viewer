@@ -281,8 +281,8 @@ const RecoverableMessageCard = (props: OwnProps) => {
 		<StateSaver
 			stateKey={keyForMessage(props.message.messageId)}
 			getDefaultState={() => {
-				const declaredRule = workspaceStore.messageDisplayRules.find(
-					rule => rule.session === props.message.sessionId,
+				const declaredRule = workspaceStore.messageDisplayRules.find(rule =>
+					props.message.sessionId.startsWith(rule.session),
 				);
 				return declaredRule
 					? declaredRule.viewType

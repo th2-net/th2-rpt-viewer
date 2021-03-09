@@ -13,36 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import { Timestamp } from './Timestamp';
-import MessageBody from './MessageBody';
-import { ActionType } from './EventAction';
 
-export enum MessageViewType {
-	JSON = 'json',
-	FORMATTED = 'formatted',
-	ASCII = 'ASCII',
-	BINARY = 'binary',
-}
+import { observer } from 'mobx-react-lite';
+import React from 'react';
+import { useActiveWorkspace } from '../../hooks';
+import { MessageDisplayRule } from '../../models/EventMessage';
+import DisplayRule from './DisplayRule';
 
-export type MessageDisplayRule = {
-	session: string;
-	viewType: MessageViewType;
-	removable: boolean;
-	fullyEditable: boolean;
+const RulesList = () => {
+	const activeWorkspace = useActiveWorkspace();
+
+	return (
+		<div className='message-display-rules-body'>
+			{activeWorkspace.messageDisplayRules.map((rule: MessageDisplayRule, i: number) => (
+				<DisplayRule rule={rule} key={i} />
+			))}
+		</div>
+	);
 };
 
-export interface EventMessage {
-	type: ActionType.MESSAGE;
-	messageType: string;
-	messageId: string;
-	timestamp: Timestamp;
-	direction: string;
-	sessionId: string;
-	body: MessageBody | null;
-	bodyBase64: string | null;
-	viewType: MessageViewType;
-}
-
-export function isScreenshotMessage(message: EventMessage): boolean {
-	return /image\/\w+/gi.test(message.messageType);
-}
+export default observer(RulesList);

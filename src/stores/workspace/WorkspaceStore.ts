@@ -99,7 +99,7 @@ export default class WorkspaceStore {
 			session: '*',
 			viewType: MessageViewType.JSON,
 			removable: false,
-			editable: false,
+			fullyEditable: false,
 		},
 	];
 
@@ -113,7 +113,7 @@ export default class WorkspaceStore {
 	public isLoadingAttachedMessages = false;
 
 	@computed
-	public get isActive() {
+	public get isActive(): boolean {
 		return this.workspacesStore.activeWorkspace === this;
 	}
 
@@ -123,7 +123,22 @@ export default class WorkspaceStore {
 	}
 
 	@action setNewMessagesDisplayRule = (rule: MessageDisplayRule) => {
-		this.messageDisplayRules = [...this.messageDisplayRules, rule];
+		const hasSame = this.messageDisplayRules.find(existed => existed.session === rule.session);
+		if (!hasSame) {
+			this.messageDisplayRules = [...this.messageDisplayRules, rule];
+		}
+	};
+
+	@action editMessageDisplayRule = (rule: MessageDisplayRule, newRule: MessageDisplayRule) => {
+		this.messageDisplayRules = this.messageDisplayRules.reduce(
+			(prev: MessageDisplayRule[], curr: MessageDisplayRule) => {
+				if (curr === rule) {
+					return [...prev, newRule];
+				}
+				return [...prev, curr];
+			},
+			[],
+		);
 	};
 
 	@action deleteMessagesDisplayRule = (rule: MessageDisplayRule) => {
