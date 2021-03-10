@@ -62,33 +62,47 @@
 
 	&__icon {
 		@include icon(url(../../resources/icons/filter.svg), 15px, 15px);
-
-		&.applied {
-			background-image: url(../../resources/icons/filter-applied.svg);
-		}
-
-		&.active {
-			background-image: url(../../resources/icons/filter-white.svg);
-		}
 	}
 
 	&__title {
 		-webkit-margin-before: 0em;
 		-webkit-margin-after: 0em;
-		color: $primaryTextColor;
+		color: $controlButtonTextColor;
 		font-size: 12px;
 		line-height: 15px;
 		font-weight: bold;
 		display: inline;
 		white-space: nowrap;
 		padding-left: 5px;
+	}
 
-		&.active {
+	&__button:hover & {
+		&__title {
+			color: $controlButtonTextColorHover;
+		}
+
+		&__icon {
+			background-image: url(../../resources/icons/filter-hover.svg);
+		}
+	}
+
+	&__button.active & {
+		&__title {
 			color: $filterTextColor;
 		}
 
-		&.applied {
+		&__icon {
+			background-image: url(../../resources/icons/filter-white.svg);
+		}
+	}
+
+	&__button.applied & {
+		&__title {
 			color: $filterPrimaryColor;
+		}
+
+		&__icon {
+			background-image: url(../../resources/icons/filter-applied.svg);
 		}
 	}
 
@@ -108,6 +122,7 @@
 	&__bubble {
 		color: #ffffff;
 		background-color: #5eba6e;
+		margin: 2px 5px;
 	}
 
 	&__counter {
@@ -460,7 +475,6 @@
 		position: relative;
 		flex-wrap: wrap;
 		flex-grow: 1;
-		gap: 5px;
 		&.filter-row__input {
 			margin: 0;
 			width: 100%;
