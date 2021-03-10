@@ -81,6 +81,9 @@ export default class SearchWorkspaceStore {
 			initialWorkspaceState.layout = [100, 0];
 		} else {
 			initialWorkspaceState.messages = {
+				timestampTo: timestampToNumber(savedItem.timestamp),
+				timestampFrom: null,
+				streams: [savedItem.sessionId],
 				targetMessage: savedItem,
 			};
 			initialWorkspaceState.layout = [0, 100];
@@ -102,7 +105,6 @@ export default class SearchWorkspaceStore {
 					streams: requestInfo?.state.stream || [],
 					timestampFrom: null,
 					timestampTo: timestampToNumber(resultItem.timestamp),
-					targetMessage: resultItem,
 				},
 				interval: SEARCH_STORE_INTERVAL,
 				layout: [0, 100],
