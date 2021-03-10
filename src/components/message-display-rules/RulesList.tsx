@@ -16,13 +16,15 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useActiveWorkspace } from '../../hooks';
 import { MessageDisplayRule } from '../../models/EventMessage';
+import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import DisplayRule from './DisplayRule';
 
-const RulesList = () => {
-	const activeWorkspace = useActiveWorkspace();
+type Props = {
+	activeWorkspace: WorkspaceStore;
+}
 
+const RulesList = ({activeWorkspace}: Props) => {
 	return (
 		<div className='message-display-rules-body'>
 			<div className='message-display-rules-body__header'>
@@ -30,7 +32,7 @@ const RulesList = () => {
 				<p>Display Rule</p>
 			</div>
 			{activeWorkspace.messageDisplayRules.map((rule: MessageDisplayRule, i: number) => (
-				<DisplayRule rule={rule} key={i} />
+				<DisplayRule activeWorkspace={activeWorkspace} rule={rule} key={i} />
 			))}
 		</div>
 	);

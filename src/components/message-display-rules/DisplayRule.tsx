@@ -15,16 +15,17 @@
  ***************************************************************************** */
 
 import React, { useRef, useState } from 'react';
-import { useActiveWorkspace, useOutsideClickListener } from '../../hooks';
+import { useOutsideClickListener } from '../../hooks';
 import { MessageDisplayRule } from '../../models/EventMessage';
+import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import NewRuleForm from './NewRuleForm';
 
 type DisplayRuleProps = {
 	rule: MessageDisplayRule;
+	activeWorkspace: WorkspaceStore;
 };
 
-const DisplayRuleRenderer = ({ rule }: DisplayRuleProps) => {
-	const activeWorkspace = useActiveWorkspace();
+const DisplayRuleRenderer = ({ rule, activeWorkspace }: DisplayRuleProps) => {
 
 	return (
 		<>
@@ -44,7 +45,7 @@ const DisplayRuleRenderer = ({ rule }: DisplayRuleProps) => {
 	);
 };
 
-const DisplayRule = ({ rule }: DisplayRuleProps) => {
+const DisplayRule = ({ rule, activeWorkspace }: DisplayRuleProps) => {
 	const [startEdit, setStartEdit] = useState(false);
 	const ruleRef = useRef(null);
 	useOutsideClickListener(ruleRef, () => {
@@ -60,6 +61,7 @@ const DisplayRule = ({ rule }: DisplayRuleProps) => {
 			}}>
 			{startEdit ? (
 				<NewRuleForm
+					activeWorkspace={activeWorkspace}
 					rule={rule}
 					className='rule-editor'
 					stopEdit={() => {
@@ -67,7 +69,7 @@ const DisplayRule = ({ rule }: DisplayRuleProps) => {
 					}}
 				/>
 			) : (
-				<DisplayRuleRenderer rule={rule} />
+				<DisplayRuleRenderer rule={rule} activeWorkspace={activeWorkspace}/>
 			)}
 		</div>
 	);

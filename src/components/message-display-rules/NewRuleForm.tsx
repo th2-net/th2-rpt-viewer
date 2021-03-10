@@ -15,21 +15,21 @@
  ***************************************************************************** */
 
 import React, { useCallback, useRef, useState } from 'react';
-import { useActiveWorkspace } from '../../hooks';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
+import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import AutocompleteInput from '../util/AutocompleteInput';
 import Select from '../util/Select';
 
 type NewRuleFormProps = {
+	activeWorkspace: WorkspaceStore;
 	className: string;
 	rule?: MessageDisplayRule;
 	stopEdit?: () => void;
 };
 
-const NewRuleForm = ({ rule, className, stopEdit }: NewRuleFormProps) => {
+const NewRuleForm = ({ rule, className, stopEdit, activeWorkspace }: NewRuleFormProps) => {
 	const inputsClassName = `${className}-inputs`;
 	const buttonsClassName = `${className}-button`;
-	const activeWorkspace = useActiveWorkspace();
 	const [currentSessionValue, setSessionValue] = useState(rule ? rule.session : '');
 	const [currentSelected, setCurrentSelected] = useState(
 		rule ? rule.viewType : MessageViewType.JSON,
