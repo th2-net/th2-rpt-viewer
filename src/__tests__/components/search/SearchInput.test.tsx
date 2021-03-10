@@ -42,6 +42,8 @@ describe('[React] <SearchInput/>', () => {
 		value: 'default value',
 		setValue: () => {},
 		disabled: false,
+		isSearchPanelOpen: true,
+		openSearchPanel: () => {},
 	};
 
 	test('Should render input on click', () => {
