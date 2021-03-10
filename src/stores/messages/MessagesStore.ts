@@ -130,21 +130,27 @@ export default class MessagesStore {
 	}
 
 	@action
-	public toggleMessageDetailedRaw = (messageId: string) => {
-		if (this.detailedRawMessagesIds.includes(messageId)) {
-			this.detailedRawMessagesIds = this.detailedRawMessagesIds.filter(id => id !== messageId);
-		} else {
+	public showDetailedRawMessage = (messageId: string) => {
+		if (!this.detailedRawMessagesIds.includes(messageId)) {
 			this.detailedRawMessagesIds = [...this.detailedRawMessagesIds, messageId];
 		}
 	};
 
 	@action
-	public toggleMessageBeautify = (messageId: string) => {
-		if (this.beautifiedMessages.includes(messageId)) {
-			this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
-		} else {
+	public hideDetailedRawMessage = (messageId: string) => {
+		this.detailedRawMessagesIds = this.detailedRawMessagesIds.filter(id => id !== messageId);
+	};
+
+	@action
+	public beautify = (messageId: string) => {
+		if (!this.beautifiedMessages.includes(messageId)) {
 			this.beautifiedMessages = [...this.beautifiedMessages, messageId];
 		}
+	};
+
+	@action
+	public debeautify = (messageId: string) => {
+		this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
 	};
 
 	@action

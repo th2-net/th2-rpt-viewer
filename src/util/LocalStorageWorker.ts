@@ -64,20 +64,6 @@ class LocalStorageWorker {
 		localStorage.setItem(LocalStorageEntities.GRAPH_SEARCH_HISTORY, JSON.stringify(history));
 	};
 
-	setLastSearchQuery = (query: string) => {
-		localStorage.setItem('last-search-query', query);
-	};
-
-	getLastSearchQuery = (): string => {
-		try {
-			const lastSearchQuery = localStorage.getItem('last-search-query');
-			const parsedLastSearchQuery = lastSearchQuery || '';
-			return parsedLastSearchQuery;
-		} catch (error) {
-			return '';
-		}
-	};
-
 	getSearchHistory = () => {
 		try {
 			const searchHistory = localStorage.getItem(LocalStorageEntities.SEARCH_HISTORY);

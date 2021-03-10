@@ -68,6 +68,10 @@ export default class EventsFilterStore {
 
 	@action
 	public resetEventsFilter() {
-		this.filter = getDefaultEventFilter(this.graphStore.interval);
+		this.filter = {
+			...getDefaultEventFilter(this.graphStore.interval),
+			timestampFrom: this.filter.timestampFrom,
+			timestampTo: this.filter.timestampTo,
+		};
 	}
 }

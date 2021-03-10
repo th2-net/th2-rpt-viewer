@@ -210,6 +210,10 @@
 		}
 	}
 
+	&__radios {
+		display: flex;
+	}
+
 	&__icon {
 		width: 15px;
 		height: 15px;
@@ -224,14 +228,6 @@
 		&.active {
 			opacity: 1;
 		}
-	}
-
-	&__beatutify-button {
-		background: url(../../resources/icons/messages-beautify.svg);
-	}
-
-	&__show-raw-button {
-		background: url(../../resources/icons/bincode.svg);
 	}
 
 	&__download-button {
@@ -302,24 +298,6 @@
 		@include unselectable;
 		color: $primaryTextColor;
 		font-weight: bold;
-	}
-
-	&__display-btn {
-		@include icon(url(../../resources/icons/table-view-icon.svg), 15px, 15px);
-
-		justify-self: center;
-		align-self: center;
-		cursor: pointer;
-		margin-left: 10px;
-		opacity: 0.8;
-
-		&.active {
-			background-image: url(../../resources/icons/expand-on.svg);
-		}
-
-		&:hover {
-			opacity: 1;
-		}
 	}
 
 	&__content {
@@ -664,5 +642,61 @@
 		pointer-events: none;
 		opacity: 0;
 		background: rgba($color: #ade0eb, $alpha: 0.6);
+	}
+}
+
+.message-view-type-radio {
+	&__input {
+		@include visually-hidden();
+	}
+	&__label {
+		display: block;
+		cursor: pointer;
+		width: 15px;
+		height: 15px;
+		
+		&.json,
+		&.formatted,
+		&.binary {
+			opacity: 0.6;
+			&.checked {
+				opacity: 1;
+			}
+		}
+
+		&.ascii {
+			opacity: 0.4;
+			&.checked {
+				opacity: 0.8;
+			}
+		}
+
+		&.json {
+			position: relative;
+			&:before {
+				content: '{~}';
+				position: absolute;
+				font-size: 12px;
+				line-height: 1.25;
+				font-weight: 700;
+				color: grey;
+				top: 0;
+				left: 0;
+				width: inherit;
+				height: inherit;
+			}
+		}
+
+		&.formatted {
+			@include icon(url(../../resources/icons/messages-beautify.svg));
+		}
+
+		&.binary {
+			@include icon(url(../../resources/icons/bincode.svg));
+		}
+
+		&.ascii {
+			@include icon(url(../../resources/icons//table-view-icon.svg));
+		}
 	}
 }

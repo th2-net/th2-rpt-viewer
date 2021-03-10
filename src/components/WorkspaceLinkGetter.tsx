@@ -15,11 +15,12 @@
  ***************************************************************************** */
 import React, { useEffect, useState } from 'react';
 import { copyTextToClipboard } from '../helpers/copyHandler';
-import localStorageWorker from '../util/LocalStorageWorker';
 import '../styles/workspace-link-getter.scss';
+import { useRootStore } from '../hooks';
 
 const WorkspaceLinkGetter = () => {
 	const [disabled, setDisabled] = useState(false);
+	const rootStore = useRootStore();
 
 	useEffect(() => {
 		let timeout: NodeJS.Timeout;
@@ -38,12 +39,12 @@ const WorkspaceLinkGetter = () => {
 			className='workspace-link-getter'
 			disabled={disabled}
 			onClick={() => {
+				const appState = rootStore.getAppState();
+				const searchString = appState
+					? new URLSearchParams({ workspaces: window.btoa(JSON.stringify(appState)) })
+					: null;
 				copyTextToClipboard(
-					[
-						window.location.origin,
-						window.location.pathname,
-						`?${localStorageWorker.getLastSearchQuery()}`,
-					].join(''),
+					[window.location.origin, window.location.pathname, `?${searchString}`].join(''),
 				);
 				setDisabled(true);
 			}}>

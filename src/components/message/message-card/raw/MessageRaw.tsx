@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { useMessagesWorkspaceStore } from '../../../../hooks';
 import DetailedMessageRaw from './DetailedMessageRaw';
 import SimpleMessageRaw from './SimpleMessageRaw';
-import { createBemElement } from '../../../../helpers/styleCreators';
 import { decodeBase64RawContent, getAllRawContent } from '../../../../helpers/rawFormatter';
 import { copyTextToClipboard } from '../../../../helpers/copyHandler';
 import { showNotification } from '../../../../helpers/showNotification';
@@ -35,7 +34,6 @@ function MessageRaw({ rawContent, messageId }: Props) {
 	const messagesStore = useMessagesWorkspaceStore();
 
 	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
-	const displayIconClass = createBemElement('mc-raw', 'display-btn', isDetailed ? 'active' : null);
 
 	const copyAll = () => {
 		const copyContent = isDetailed
@@ -59,11 +57,6 @@ function MessageRaw({ rawContent, messageId }: Props) {
 						<span>Copy All</span>
 					</div>
 				</div>
-				<div
-					className={displayIconClass}
-					onClick={() => messagesStore.toggleMessageDetailedRaw(messageId)}
-					title={`Switch to ${isDetailed ? 'simplified' : 'detailed'} view`}
-				/>
 			</div>
 			{isDetailed ? (
 				<DetailedMessageRaw rawContent={rawContent} />
