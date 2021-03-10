@@ -29,7 +29,7 @@ import {
 	sortEventsByTimestamp,
 } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
-import { getTimestampAsNumber } from '../../helpers/date';
+import { timestampToNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
 import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
@@ -223,7 +223,7 @@ export default class EventsStore {
 
 	@action
 	public onEventSelect = async (savedEventNode: EventTreeNode | EventAction) => {
-		this.graphStore.setTimestamp(getTimestampAsNumber(savedEventNode.startTimestamp));
+		this.graphStore.setTimestamp(timestampToNumber(savedEventNode.startTimestamp));
 		this.workspaceStore.viewStore.activePanel = this;
 		let fullPath: string[] = [];
 		/*
@@ -244,7 +244,7 @@ export default class EventsStore {
 		}
 
 		const [timestampFrom, timestampTo] = calculateTimeRange(
-			getTimestampAsNumber(savedEventNode.startTimestamp),
+			timestampToNumber(savedEventNode.startTimestamp),
 			this.graphStore.interval,
 		);
 

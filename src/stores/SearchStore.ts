@@ -24,7 +24,7 @@ import {
 	FilterState,
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
-import { getTimestampAsNumber } from '../helpers/date';
+import { getTimestampAsNumber, timestampToNumber } from '../helpers/date';
 import { isEventMessage, isEventNode } from '../helpers/event';
 import { getDefaultFilterState } from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
@@ -329,17 +329,11 @@ export class SearchStore {
 		if (!this.currentSearch.results.length) return [];
 
 		const groups: Array<Array<SearchResult>> = [[]];
-		let groupStartTime = getTimestampAsNumber(
-			isEventMessage(this.currentSearch.results[0])
-				? this.currentSearch.results[0].timestamp
-				: this.currentSearch.results[0].startTimestamp,
-		);
+		let groupStartTime = getTimestampAsNumber(this.currentSearch.results[0]);
 		const searchDirection = this.currentSearch.request.state.searchDirection;
 
 		this.currentSearch.results.forEach(result => {
-			const resultTimestamp = getTimestampAsNumber(
-				isEventMessage(result) ? result.timestamp : result.startTimestamp,
-			);
+			const resultTimestamp = getTimestampAsNumber(result);
 			if (
 				(searchDirection === 'next'
 					? resultTimestamp - groupStartTime
@@ -350,9 +344,7 @@ export class SearchStore {
 			) {
 				groups[groups.length - 1].push(result);
 			} else {
-				groupStartTime = getTimestampAsNumber(
-					isEventMessage(result) ? result.timestamp : result.startTimestamp,
-				);
+				groupStartTime = getTimestampAsNumber(result);
 				groups.push([]);
 				groups[groups.length - 1].push(result);
 			}
@@ -381,11 +373,11 @@ export class SearchStore {
 				this.currentSearch.results = [...this.currentSearch.results, JSON.parse(data)];
 			}
 			if (isEventNode(parsedEvent)) {
-				this.currentSearch.progress = getTimestampAsNumber(parsedEvent.startTimestamp);
+				this.currentSearch.progress = timestampToNumber(parsedEvent.startTimestamp);
 				return;
 			}
 			if (isEventMessage(parsedEvent)) {
-				this.currentSearch.progress = getTimestampAsNumber(parsedEvent.timestamp);
+				this.currentSearch.progress = timestampToNumber(parsedEvent.timestamp);
 				return;
 			}
 			this.currentSearch.progress = parsedEvent.timestamp;

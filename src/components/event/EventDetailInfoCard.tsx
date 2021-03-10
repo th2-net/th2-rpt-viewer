@@ -18,7 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SplashScreen from '../SplashScreen';
 import { createBemBlock, createStyleSelector } from '../../helpers/styleCreators';
-import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/date';
+import { formatTime, getElapsedTime, timestampToNumber } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
@@ -86,7 +86,7 @@ function EventDetailInfoCard(props: Props) {
 									<>
 										<div className='event-card__timestamp-label'>Start</div>
 										<div className='event-card__timestamp-value'>
-											{formatTime(getTimestampAsNumber(startTimestamp))}
+											{formatTime(timestampToNumber(startTimestamp))}
 										</div>
 									</>
 								)}
@@ -96,7 +96,7 @@ function EventDetailInfoCard(props: Props) {
 									<>
 										<div className='event-card__timestamp-label'>Finish</div>
 										<div className='event-card__timestamp-value'>
-											{formatTime(getTimestampAsNumber(endTimestamp))}
+											{formatTime(timestampToNumber(endTimestamp))}
 										</div>
 									</>
 								)}

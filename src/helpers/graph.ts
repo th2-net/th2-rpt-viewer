@@ -20,7 +20,7 @@ import { EventMessage } from '../models/EventMessage';
 import { GraphGroup, GraphItem } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { getTimestampAsNumber } from './date';
-import { isEventMessage, isEventNode } from './event';
+import { isEventMessage } from './event';
 
 export function filterListByChunkRange(
 	timeRange: TimeRange,
@@ -28,9 +28,7 @@ export function filterListByChunkRange(
 ) {
 	const [from, to] = timeRange;
 	return list.filter(item => {
-		const itemTimestamp = getTimestampAsNumber(
-			isEventNode(item) ? item.startTimestamp : item.timestamp,
-		);
+		const itemTimestamp = getTimestampAsNumber(item);
 		return moment(itemTimestamp).isBetween(moment(from), moment(to)) || itemTimestamp === to;
 	});
 }
@@ -50,11 +48,7 @@ export function groupGraphItems(
 		return Math.floor(((timestamp - from) / (to - from)) * chunkWidth);
 	}
 
-	const positions = items.map(item =>
-		getGroupLeftPosition(
-			getTimestampAsNumber(isEventMessage(item) ? item.timestamp : item.startTimestamp),
-		),
-	);
+	const positions = items.map(item => getGroupLeftPosition(getTimestampAsNumber(item)));
 
 	const groups: Array<GraphGroup> = [];
 

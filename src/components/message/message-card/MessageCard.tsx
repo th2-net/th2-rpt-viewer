@@ -24,7 +24,7 @@ import {
 } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
-import { formatTime, getTimestampAsNumber } from '../../../helpers/date';
+import { formatTime, timestampToNumber } from '../../../helpers/date';
 import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
 import { MessageScreenshotZoom } from './MessageScreenshot';
@@ -205,7 +205,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 					<div className='mc-header__is-attached-icon'></div>
 					<div className='mc-header__info'>
 						<div className='mc-header__value'>
-							{timestamp && formatTime(getTimestampAsNumber(timestamp))}
+							{timestamp && formatTime(timestampToNumber(timestamp))}
 						</div>
 						<div className='mc-header__item'>
 							<span className='mc-header__key-minified'>nm</span>

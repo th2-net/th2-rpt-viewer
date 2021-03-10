@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import TimeAgo from 'react-timeago';
-import { getTimestampAsNumber } from '../../../helpers/date';
+import { timestampToNumber } from '../../../helpers/date';
 import { isEventAction } from '../../../helpers/event';
 import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
@@ -42,7 +42,7 @@ const GraphSearchDialog = (props: Props) => {
 				<>
 					<p>{isEventAction(foundObject) ? foundObject.eventId : foundObject.messageId}</p>
 					<BookmarkItem item={foundObject} />
-					{time && <TimeAgo date={getTimestampAsNumber(time)} />}
+					{time && <TimeAgo date={timestampToNumber(time)} />}
 				</>
 			)}
 		</div>
