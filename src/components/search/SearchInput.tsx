@@ -51,6 +51,8 @@ interface DispatchProps {
 
 export interface Props extends StateProps, DispatchProps {
 	disabled: boolean;
+	openSearchPanel: () => void;
+	isSearchPanelOpen: boolean;
 }
 
 export class SearchInputBase extends React.PureComponent<Props> {
@@ -72,8 +74,15 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		document.removeEventListener('click', this.documentOnClick);
 	}
 
+	componentDidUpdate(prevProps: Props) {
+		if (this.props.isSearchPanelOpen && !prevProps.isSearchPanelOpen) {
+			this.focus();
+		}
+	}
+
 	focus() {
 		this.props.setIsActive(true);
+		this.props.openSearchPanel();
 		this.inputElement.current?.focus();
 	}
 
@@ -344,16 +353,16 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 interface SearchInputProps {
 	disabled: boolean;
+	openSearchPanel: () => void;
+	isSearchPanelOpen: boolean;
 }
 
 const SearchInput = (props: SearchInputProps) => {
-	const { disabled } = props;
 	const { searchStore } = useWorkspaceEventStore();
 
 	return (
 		<SearchInputBase
 			isActive={searchStore.isActive}
-			disabled={disabled}
 			setIsActive={(isActive: boolean) => (searchStore.isActive = isActive)}
 			searchTokens={searchStore.tokens}
 			resultsCount={searchStore.results.length}
@@ -365,6 +374,7 @@ const SearchInput = (props: SearchInputProps) => {
 			clear={searchStore.clear}
 			value={searchStore.inputValue}
 			setValue={searchStore.setInputValue}
+			{...props}
 		/>
 	);
 };
