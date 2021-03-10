@@ -26,7 +26,6 @@ type DisplayRuleProps = {
 };
 
 const DisplayRuleRenderer = ({ rule, activeWorkspace }: DisplayRuleProps) => {
-
 	return (
 		<>
 			<p className='rule__session'>{rule.session}</p>
@@ -69,7 +68,7 @@ const DisplayRule = ({ rule, activeWorkspace }: DisplayRuleProps) => {
 					}}
 				/>
 			) : (
-				<DisplayRuleRenderer rule={rule} activeWorkspace={activeWorkspace}/>
+				<DisplayRuleRenderer rule={rule} activeWorkspace={activeWorkspace} />
 			)}
 		</div>
 	);

@@ -23,10 +23,10 @@ import NewRuleForm from './NewRuleForm';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 
 type Props = {
-	activeWorkspace: WorkspaceStore
-}
+	activeWorkspace: WorkspaceStore;
+};
 
-const MessageBodyRulesConfigurator = ({activeWorkspace}: Props) => {
+const MessageBodyRulesConfigurator = ({ activeWorkspace }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const modalRef = useRef(null);
 	useOutsideClickListener(modalRef, () => {
@@ -51,11 +51,8 @@ const MessageBodyRulesConfigurator = ({activeWorkspace}: Props) => {
 						<p>Message Display Rules</p>
 						<button onClick={() => setIsOpen(false)}>&#215;</button>
 					</div>
-					<RulesList activeWorkspace={activeWorkspace}/>
-					<NewRuleForm
-						activeWorkspace={activeWorkspace}
-						className='message-display-rules'
-					/>
+					<RulesList activeWorkspace={activeWorkspace} />
+					<NewRuleForm activeWorkspace={activeWorkspace} className='message-display-rules' />
 				</div>
 			</ModalPortal>
 		</>

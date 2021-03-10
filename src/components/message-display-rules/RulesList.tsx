@@ -24,7 +24,7 @@ type Props = {
 	activeWorkspace: WorkspaceStore;
 }
 
-const RulesList = ({activeWorkspace}: Props) => {
+const RulesList = ({ activeWorkspace }: Props) => {
 	return (
 		<div className='message-display-rules-body'>
 			<div className='message-display-rules-body__header'>
