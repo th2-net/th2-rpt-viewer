@@ -31,7 +31,6 @@ interface Props {
 	isDisabled?: boolean;
 	showFilter: boolean;
 	config: FilterRowConfig[];
-	count?: number | null;
 	setShowFilter: (isShown: boolean) => void;
 	onSubmit: () => void;
 	onClearAll: () => void;
@@ -43,7 +42,6 @@ const FilterPanel = ({
 	showFilter,
 	setShowFilter,
 	config,
-	count = null,
 	isDisabled = false,
 	onSubmit,
 	onClearAll,
@@ -74,7 +72,11 @@ const FilterPanel = ({
 		}
 	});
 
-	const filterWrapperClass = createStyleSelector('filter-wrapper', showFilter ? 'active' : null);
+	const filterWrapperClass = createStyleSelector(
+		'filter-wrapper',
+		showFilter ? 'active' : null,
+		isFilterApplied ? 'applied' : null,
+	);
 
 	const filterTitleClass = createBemElement(
 		'filter',
@@ -118,10 +120,7 @@ const FilterPanel = ({
 					}
 				}}>
 				<div className={filterIconClass} />
-				<div className={filterTitleClass}>
-					{isFilterApplied ? 'Filter Applied' : showFilter ? 'Hide Filter' : 'Show Filter'}
-				</div>
-				{count && !isLoading ? <div className='filter__counter'>{count}</div> : null}
+				<div className={filterTitleClass}>{showFilter ? 'Hide Filter' : 'Show Filter'}</div>
 			</div>
 			<ModalPortal isOpen={showFilter}>
 				<div ref={filterBaseRef} className='filter'>
@@ -144,7 +143,7 @@ const FilterPanel = ({
 						{isLoading ? (
 							<div className='filter__loading' />
 						) : (
-							<div className='filter-row__submit-btn' onClick={onSubmitClick}>
+							<div className='filter-row__button' onClick={onSubmitClick}>
 								Submit filter
 							</div>
 						)}

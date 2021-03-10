@@ -120,6 +120,8 @@ export class SearchStore {
 
 	@observable messagesFilterInfo: SSEFilterInfo[] = [];
 
+	@observable isMessageFiltersLoading = false;
+
 	@computed get searchProgress() {
 		return {
 			startTimestamp: this.searchForm.startTimestamp,
@@ -174,6 +176,7 @@ export class SearchStore {
 
 	@action
 	getMessagesFilters = async () => {
+		this.isMessageFiltersLoading = true;
 		try {
 			const filters = await this.api.sse.getFilters('messages');
 			const filtersInfo = await this.api.sse.getFiltersInfo('messages', filters);
@@ -183,6 +186,8 @@ export class SearchStore {
 			});
 		} catch (error) {
 			console.error('Error occured while loading messages filters', error);
+		} finally {
+			this.isMessageFiltersLoading = false;
 		}
 	};
 
