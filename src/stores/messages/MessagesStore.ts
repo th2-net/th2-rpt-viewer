@@ -260,6 +260,12 @@ export default class MessagesStore {
 	*/
 	private handleFilterHint = (message: EventMessage | EventMessage[]): boolean => {
 		this.hintMessages = Array.isArray(message) ? message : [message];
+
+		if (this.hintMessages.length === 0) {
+			this.showFilterChangeHint = false;
+			return this.showFilterChangeHint;
+		}
+
 		const sseFilter = this.filterStore.sseMessagesFilter;
 		const streams = this.filterStore.filter.streams;
 		const areFiltersApplied = [
@@ -278,6 +284,9 @@ export default class MessagesStore {
 	@action
 	public applyFilterHint = () => {
 		if (!this.hintMessages.length) return;
+
+		this.dataStore.searchChannelNext?.stop();
+		this.dataStore.searchChannelPrev?.stop();
 
 		const targetMessage: EventMessage = sortMessagesByTimestamp(this.hintMessages)[0];
 
