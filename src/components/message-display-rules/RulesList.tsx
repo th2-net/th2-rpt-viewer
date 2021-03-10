@@ -22,7 +22,7 @@ import DisplayRule from './DisplayRule';
 
 type Props = {
 	activeWorkspace: WorkspaceStore;
-}
+};
 
 const RulesList = ({ activeWorkspace }: Props) => {
 	return (
