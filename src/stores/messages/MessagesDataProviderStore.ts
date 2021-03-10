@@ -72,6 +72,8 @@ export default class MessagesDataProviderStore {
 	loadMessages = async () => {
 		this.stopMessagesLoading();
 
+		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
+
 		const prevQuery = {
 			...this.messagesStore.filterStore.messsagesSSEConfig.queryParams,
 		} as MessagesSSEParams;
@@ -119,23 +121,31 @@ export default class MessagesDataProviderStore {
 	@action
 	startPreviousMessagesChannel = (query: MessagesSSEParams) => {
 		this.searchChannelPrev = new SSEChannel(
-			this.messagesStore,
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onPrevChannelResponse,
-			this.onPrevChannelClose,
 			this.onPrevChannelError,
 		);
 	};
 
 	@action
 	onPrevChannelResponse = (messages: EventMessage[]) => {
-		this.messages = [...this.messages, ...messages];
-	};
+		if (messages.length !== 0) {
+			const firstNextMessage = messages[0];
 
-	onPrevChannelClose = () => {
-		// this.searchChannelPrev?.stop();
-		// this.searchChannelPrev = null;
+			if (
+				firstNextMessage &&
+				firstNextMessage.messageId === this.messages[this.messages.length - 1]?.messageId
+			) {
+				messages.shift();
+			}
+			this.messages = [...this.messages, ...messages];
+
+			const selectedMessageId = this.messagesStore.selectedMessageId?.valueOf();
+			if (selectedMessageId && messages.find(m => m.messageId === selectedMessageId)) {
+				this.messagesStore.scrollToMessage(selectedMessageId);
+			}
+		}
 	};
 
 	@action
@@ -148,27 +158,24 @@ export default class MessagesDataProviderStore {
 	@action
 	startNextMessagesChannel = (query: MessagesSSEParams) => {
 		this.searchChannelNext = new SSEChannel(
-			this.messagesStore,
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onNextChannelResponse,
-			this.onNextChannelClose,
 			this.onNextChannelError,
 		);
 	};
 
 	@action
 	onNextChannelResponse = (messages: EventMessage[]) => {
-		const messagesToPrepend = messages.filter(
-			m => this.messages.findIndex(topMsg => topMsg.messageId === m.messageId) === -1,
-		);
-		this.startIndex -= messagesToPrepend.length;
-		this.messages = [...messagesToPrepend, ...this.messages];
-	};
+		if (messages.length !== 0) {
+			const firstNextMessage = messages[this.messages.length - 1];
 
-	onNextChannelClose = () => {
-		// this.searchChannelNext?.stop();
-		// this.searchChannelNext = null;
+			if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
+				messages.pop();
+			}
+			this.startIndex -= messages.length;
+			this.messages = [...messages, ...this.messages];
+		}
 	};
 
 	@action
@@ -179,21 +186,21 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public getPreviousMessages = async (): Promise<EventMessage[]> => {
+	public getPreviousMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
 		if (!this.searchChannelPrev || this.searchChannelPrev.isLoading) {
 			return [];
 		}
 
-		return this.searchChannelPrev.load();
+		return this.searchChannelPrev.load(resumeFromId);
 	};
 
 	@action
-	public getNextMessages = async (): Promise<EventMessage[]> => {
+	public getNextMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
 		if (!this.searchChannelNext || this.searchChannelNext.isLoading) {
 			return [];
 		}
 
-		return this.searchChannelNext.load();
+		return this.searchChannelNext.load(resumeFromId);
 	};
 
 	@action

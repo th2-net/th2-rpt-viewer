@@ -15,13 +15,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable } from 'mobx';
+import { action, observable, when } from 'mobx';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams } from '../../api/sse';
 import { isEventMessage } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
-import MessagesStore from './MessagesStore';
+
+type WhenPromise = Promise<void> & {
+	cancel(): void;
+};
 
 export class SSEChannel {
 	private channel: EventSource | null = null;
@@ -30,37 +33,51 @@ export class SSEChannel {
 
 	private chunkSize = 12;
 
-	private updateTimeout = 3500;
+	private initialResponseTimeout: NodeJS.Timeout | null = null;
+
+	private initialResponseTimeoutMs = 1500;
+
+	private updateScheduler: number | null = null;
+
+	private fetchedChunkSubscription: WhenPromise | null = null;
+
+	private updateSchedulerIntervalMs = 1000;
 
 	@observable
 	public isError = false;
 
 	@observable
-	public isLoading = true;
+	public isLoading = false;
 
 	constructor(
-		private messagesStore: MessagesStore,
 		private type: SSEChannelType,
 		private queryParams: MessagesSSEParams,
 		private onResponse: (messages: EventMessage[]) => void,
-		private onClose: () => void,
 		private onError: (event: Event) => void,
-	) {}
+		chunkSize?: number,
+	) {
+		if (chunkSize) this.chunkSize = chunkSize;
+	}
 
 	@action
-	private _onClose = (event: Event) => {
+	private _onClose = () => {
+		this.closeChannel();
 		this.isLoading = false;
-		this.channel?.close();
-		if (event instanceof MessageEvent) {
-			this.onClose();
+		this.clearSchedulersAndTimeouts();
+
+		if (this.fetchedChunkSubscription == null && this.accumulatedMessages.length > 0) {
+			this.onResponse(this.getNextChunk());
+			this.resetSSEState();
 		}
 	};
 
 	@action
 	private _onError = (event: Event) => {
+		this.closeChannel();
+		this.resetSSEState();
+		this.clearFetchedChunkSubscription();
+
 		this.isError = true;
-		this.isLoading = false;
-		this.channel?.close();
 		this.onError(event);
 	};
 
@@ -71,23 +88,12 @@ export class SSEChannel {
 		}
 	};
 
-	messagesResolverInterval: NodeJS.Timeout | null = null;
-
-	messagesResolverTimeout: NodeJS.Timeout | null = null;
-
-	public load = async (): Promise<EventMessage[]> => {
+	public load = async (resumeFromId?: string): Promise<EventMessage[]> => {
+		this.closeChannel();
 		this.resetSSEState();
+		this.clearFetchedChunkSubscription();
+
 		this.isLoading = true;
-
-		let resumeFromId;
-
-		const messages = this.messagesStore.dataStore.messages;
-		if (messages.length > 0) {
-			resumeFromId =
-				this.queryParams.searchDirection === 'next'
-					? messages[0].messageId
-					: messages[messages.length - 1].messageId;
-		}
 
 		this.channel = api.sse.getEventSource({
 			queryParams: {
@@ -103,59 +109,84 @@ export class SSEChannel {
 		this.channel.addEventListener('error', this._onError);
 
 		const messagesChunk = await Promise.race([
-			this.resolveMessagesWithinTimeout(this.updateTimeout),
-			this.resolveMessagesWithinCount(this.chunkSize),
+			this.getInitialResponseWithinTimeout(this.initialResponseTimeoutMs),
+			this.getFetchedChunk(),
 		]);
-
-		this.resetSSEState();
-		this.isLoading = false;
 
 		return messagesChunk;
 	};
 
-	resolveMessagesWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
+	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
 		return new Promise(res => {
-			this.messagesResolverTimeout = setTimeout(() => {
-				res(this.nextChunk());
+			this.initialResponseTimeout = setTimeout(() => {
+				res(this.getNextChunk());
+				this.clearFetchedChunkSubscription();
+				this.initUpdateScheduler();
 			}, timeout);
 		});
 	};
 
-	resolveMessagesWithinCount = (count: number): Promise<EventMessage[]> => {
-		return new Promise(res => {
-			this.messagesResolverInterval = setInterval(() => {
-				if (this.accumulatedMessages.length >= count || !this.isLoading) {
-					res(this.nextChunk());
-				}
-			}, 20);
-		});
+	private initUpdateScheduler = (): void => {
+		this.updateScheduler = window.setInterval(() => {
+			const nextChunk = this.getNextChunk();
+
+			if (nextChunk.length !== 0) {
+				this.onResponse(nextChunk);
+			}
+		}, this.updateSchedulerIntervalMs);
 	};
 
-	public stop = () => {
+	private getFetchedChunk = async (): Promise<EventMessage[]> => {
+		this.fetchedChunkSubscription = when(() => !this.isLoading);
+		await this.fetchedChunkSubscription;
+		const nextChunk = this.getNextChunk();
 		this.resetSSEState();
+		return nextChunk;
 	};
 
-	nextChunk = () => {
-		let chunk = this.accumulatedMessages;
+	public stop = (): void => {
+		this.closeChannel();
+		this.resetSSEState();
+		this.clearFetchedChunkSubscription();
+	};
+
+	private getNextChunk = (chunkSize = this.accumulatedMessages.length): EventMessage[] => {
+		let chunk = this.accumulatedMessages.splice(0, chunkSize);
+
 		if (this.queryParams.searchDirection === 'next') {
 			chunk = chunk.reverse();
 		}
 		return chunk;
 	};
 
-	resetSSEState = () => {
-		if (this.messagesResolverInterval) {
-			clearInterval(this.messagesResolverInterval);
-		}
-
-		if (this.messagesResolverTimeout) {
-			clearInterval(this.messagesResolverTimeout);
-		}
-
+	private closeChannel = () => {
 		this.channel?.close();
 		this.channel = null;
+	};
+
+	@action
+	private resetSSEState = (): void => {
+		this.clearSchedulersAndTimeouts();
+
 		this.accumulatedMessages = [];
-		this.messagesResolverInterval = null;
-		this.messagesResolverTimeout = null;
+		this.isLoading = false;
+		this.isError = false;
+	};
+
+	private clearSchedulersAndTimeouts = (): void => {
+		if (this.initialResponseTimeout) {
+			window.clearInterval(this.initialResponseTimeout);
+			this.initialResponseTimeout = null;
+		}
+
+		if (this.updateScheduler) {
+			window.clearInterval(this.updateScheduler);
+			this.updateScheduler = null;
+		}
+	};
+
+	private clearFetchedChunkSubscription = (): void => {
+		this.fetchedChunkSubscription?.cancel();
+		this.fetchedChunkSubscription = null;
 	};
 }

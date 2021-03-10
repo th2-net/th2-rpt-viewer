@@ -19,7 +19,7 @@ import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
-import { getTimestampAsNumber } from '../../helpers/date';
+import { timestampToNumber } from '../../helpers/date';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';
@@ -118,10 +118,7 @@ export default class MessagesStore {
 		const messageFrom = this.dataStore.messages[endIndex];
 
 		if (messageFrom && messageTo) {
-			return [
-				getTimestampAsNumber(messageFrom.timestamp),
-				getTimestampAsNumber(messageTo.timestamp),
-			];
+			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
 		}
 		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
 		return [timestampTo - 30 * 1000, timestampTo];
@@ -168,6 +165,8 @@ export default class MessagesStore {
 	public applyFilter = (filter: MessagesFilter, sseFilters: MessageFilterState | null) => {
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
+		this.selectedMessageId = null;
+		this.highlightedMessageId = null;
 		this.filterStore.setMessagesFilter(filter, sseFilters);
 	};
 
@@ -185,12 +184,12 @@ export default class MessagesStore {
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
 			this.filterStore.resetMessagesFilter({
 				timestampFrom: null,
-				timestampTo: getTimestampAsNumber(message.timestamp),
+				timestampTo: timestampToNumber(message.timestamp),
 				streams: [message.sessionId],
 			});
 			this.selectedMessageId = new String(message.messageId);
 			this.highlightedMessageId = message.messageId;
-			this.graphStore.setTimestamp(getTimestampAsNumber(message.timestamp));
+			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 			this.hintMessages = [];
 			this.workspaceStore.viewStore.activePanel = this;
 		}
@@ -211,11 +210,11 @@ export default class MessagesStore {
 		const mostRecentMessage = sortMessagesByTimestamp(attachedMessages)[0];
 
 		if (mostRecentMessage) {
-			this.graphStore.setTimestamp(getTimestampAsNumber(mostRecentMessage.timestamp));
+			this.graphStore.setTimestamp(timestampToNumber(mostRecentMessage.timestamp));
 			this.filterStore.filter = {
 				...this.filterStore.filter,
 				streams: [...new Set(attachedMessages.map(({ sessionId }) => sessionId))],
-				timestampTo: getTimestampAsNumber(mostRecentMessage.timestamp),
+				timestampTo: timestampToNumber(mostRecentMessage.timestamp),
 			};
 			this.selectedMessageId = new String(mostRecentMessage.messageId);
 		}
@@ -226,6 +225,7 @@ export default class MessagesStore {
 		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
 		this.selectedMessageId = null;
+		this.hintMessages = [];
 
 		this.filterStore.filter = {
 			...this.filterStore.filter,
@@ -263,14 +263,9 @@ export default class MessagesStore {
 				: [],
 		].some(filterValues => filterValues.length > 0);
 
-		if (isEventMessage(message)) {
-			this.showFilterChangeHint =
-				(streams.length > 0 && !streams.includes(message.messageId)) || areFiltersApplied;
-		} else {
-			this.showFilterChangeHint =
-				(streams.length > 0 && message.some(m => !streams.includes(m.sessionId))) ||
-				areFiltersApplied;
-		}
+		this.showFilterChangeHint =
+			(streams.length > 0 && this.hintMessages.some(m => !streams.includes(m.sessionId))) ||
+			areFiltersApplied;
 
 		return this.showFilterChangeHint;
 	};
@@ -283,10 +278,10 @@ export default class MessagesStore {
 
 		this.filterStore.resetMessagesFilter({
 			streams: [...new Set(this.hintMessages.map(({ sessionId }) => sessionId))],
-			timestampTo: getTimestampAsNumber(targetMessage.timestamp),
+			timestampTo: timestampToNumber(targetMessage.timestamp),
 			timestampFrom: null,
 		});
-		this.graphStore.setTimestamp(getTimestampAsNumber(targetMessage.timestamp));
+		this.graphStore.setTimestamp(timestampToNumber(targetMessage.timestamp));
 
 		this.hintMessages = [];
 		this.selectedMessageId = new String(targetMessage.messageId);
