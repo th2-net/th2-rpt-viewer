@@ -68,10 +68,11 @@ function EventDetailInfoCard(props: Props) {
 				</div>
 				<div className='event-card__info'>
 					<div className='event-card__header'>
-						<div className='event-card__title' title={eventType || eventName}>
-							{eventType || eventName}
+						<div className='event-card__title' title={eventName}>
+							{eventName}
 						</div>
 						<div className='event-card__controls'>
+							{eventType && <span className='event-card__event-type'>{eventType}</span>}
 							{elapsedTime && <span className='event-card__time'>{elapsedTime}</span>}
 							{childrenCount > 0 ? <Chip text={childrenCount.toString()} /> : null}
 							<span className='event-card__status-label'>{status.toUpperCase()}</span>

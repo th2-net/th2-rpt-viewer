@@ -16,6 +16,87 @@
 
 @import './common/vars';
 
+.search {
+	@include scrollbar;
+	@include card-shadow;
+	padding: 12px 15px;
+	border-radius: 0 5px 5px 5px;
+	background-color: $filterPrimaryColor;
+	color: $filterTextColor;
+	font-size: 15px;
+	font-weight: bold;
+	white-space: nowrap;
+	position: fixed;
+	z-index: 120;
+
+	&-wrapper {
+		position: relative;
+		height: 100%;
+		border-radius: 5px 5px 0 0;
+		display: flex;
+		align-items: center;
+
+		&.active {
+			@include card-shadow;
+			background-color: $filterPrimaryColor;
+		}
+	}
+
+	&__button {
+		@include unselectable;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 4px 5px;
+		cursor: pointer;
+
+		&.disabled {
+			opacity: 0.6;
+			cursor: default;
+		}
+
+		&.active {
+			padding: 4px 10px;
+		}
+	}
+
+	&__icon {
+		@include icon(url(../../resources/icons/search.svg), 15px, 15px);
+	}
+
+	&__title {
+		-webkit-margin-before: 0em;
+		-webkit-margin-after: 0em;
+		color: $controlButtonTextColor;
+		font-size: 12px;
+		line-height: 15px;
+		font-weight: bold;
+		display: inline;
+		white-space: nowrap;
+		padding-left: 5px;
+	}
+
+	&__button:hover & {
+		&__title {
+			color: $controlButtonTextColorHover;
+		}
+
+		&__icon {
+			background-image: url(../../resources/icons/search-hover.svg);
+		}
+	}
+
+	&__button.active & {
+		&__title {
+			color: $filterTextColor;
+		}
+
+		&__icon {
+			background-image: url(../../resources/icons/search-white.svg);
+		}
+	}
+}
+
 .found-content {
 	color: #fff;
 	opacity: 0.6;
@@ -29,48 +110,19 @@
 
 .search-field-wrapper {
 	position: relative;
-	height: 30px;
-	width: 240px;
-
-	&.active {
-		width: 455px;
-	}
 }
 
 .search-field {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	height: auto;
-
-	border: 2px solid #808080;
 	border-radius: 3px;
-	background-color: #fff;
+	background-color: rgba(255, 255, 255, 0.5);
 	cursor: text;
-	overflow-x: auto;
-	overflow-y: hidden;
 	display: flex;
-
-	@include hidden-scrollbar;
-
+	align-items: flex-start;
 	min-height: 29px;
-	padding: 0 5px;
+	padding: 3px 5px;
 
-	&__counter {
-		@include unselectable;
-		color: $primaryTextColor;
-		white-space: nowrap;
-		font-size: 12px;
-		padding: 3px 5px;
-		font-weight: bold;
-		margin-left: auto;
-	}
-
-	&__icon {
-		@include icon(url(../../resources/icons/search.svg));
-		display: inline;
-		margin: 3px 0 0 auto;
+	&.active {
+		background-color: white;
 	}
 
 	&__input {
@@ -80,9 +132,9 @@
 		color: $primaryTextColor;
 		height: 18px;
 		margin: 2px;
-		padding-left: 4px;
-		padding-right: 4px;
+		padding: 1px 3px 1px 5px;
 		font-family: inherit;
+		background-color: transparent;
 
 		&:focus {
 			outline: 0;
@@ -90,34 +142,23 @@
 
 		&::placeholder {
 			color: $secondaryTextColor;
-			font-style: italic;
 			font-weight: normal;
 		}
 	}
 
 	&__input-wrapper {
-		margin-left: 4px;
+		margin-left: 3px;
 		font-size: 13px;
-	}
-
-	&__loader {
-		@include spinner(3px);
-
-		display: inline-block;
-		margin: 4px 0 0 auto;
-		flex-shrink: 0;
-	}
-
-	&.active {
-		@include card-shadow;
 	}
 
 	&__child-wrapper {
 		display: flex;
-		overflow-y: auto;
-		overflow-x: hidden;
+		flex-wrap: wrap;
 		margin-right: 3px;
-		@include hidden-scrollbar;
+	}
+
+	&__search-controls {
+		margin-left: auto;
 	}
 }
 
@@ -146,10 +187,34 @@
 }
 
 .search-controls {
+	min-width: 110px;
+	padding-top: 2px;
 	display: inline-flex;
 	flex-direction: row;
 	align-items: center;
-	padding-top: 2px;
+	justify-content: flex-end;
+
+	&__clear-button {
+		@include round-button(url(../../resources/icons/cross-icon.svg));
+		flex-shrink: 0;
+	}
+
+	&__loader {
+		@include spinner(3px);
+		display: inline-block;
+		margin: 0 0 0 2px;
+		flex-shrink: 0;
+	}
+
+	&__counter {
+		@include unselectable;
+		color: $primaryTextColor;
+		white-space: nowrap;
+		font-size: 12px;
+		padding: 3px 5px;
+		font-weight: bold;
+		margin-left: 5px;
+	}
 
 	&__prev {
 		@include round-button(url(../../resources/icons/prev-search-result.svg));
@@ -157,9 +222,5 @@
 
 	&__next {
 		@include round-button(url(../../resources/icons/next-search-result.svg));
-	}
-
-	&__clear {
-		@include round-button(url(../../resources/icons/cross-icon.svg));
 	}
 }

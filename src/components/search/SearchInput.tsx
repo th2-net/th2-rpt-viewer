@@ -27,7 +27,7 @@ import { createSearchToken } from '../../helpers/search/createSearchToken';
 import '../../styles/search.scss';
 
 export const REACTIVE_SEARCH_DELAY = 500;
-const INPUT_PLACEHOLDER = 'Separate words with a space to find multiple words';
+const INPUT_PLACEHOLDER = 'Use Space to separate different words & Tab to finish';
 
 export const COLORS = ['#E69900', '#FF5500', '#1F66AD', '#45A155', '#987DB3'];
 
@@ -80,6 +80,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 	blur() {
 		this.props.setIsActive(false);
 		this.props.setValue('');
+		this.inputElement.current?.blur();
 	}
 
 	render() {
@@ -104,64 +105,63 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 		return (
 			<div className={wrapperClassName}>
-				<div className={rootClassName} ref={this.root} onClick={this.rootOnClick}>
-					{isActive ? (
-						<React.Fragment>
-							<div className='search-field__child-wrapper'>
-								{notActiveTokens.map(({ color, pattern }, index) => (
-									<Bubble
-										key={index}
-										className='search-bubble'
-										size='small'
-										removeIconType='white'
-										submitKeyCodes={[KeyCodes.ENTER, KeyCodes.SPACE]}
-										value={pattern}
-										style={{ backgroundColor: color, color: '#FFF' }}
-										onSubmit={this.bubbleOnChangeFor(index)}
-										onRemove={this.bubbleOnRemoveFor(index)}
-									/>
-								))}
-								<AutosizeInput
-									inputClassName='search-field__input'
-									className='search-field__input-wrapper'
-									inputRef={ref => (this.inputElement.current = ref)}
-									inputStyle={
-										value.length > 0
-											? {
-													backgroundColor: activeTokens?.color ?? this.getNextColor(),
-													color: '#FFF',
-											  }
-											: undefined
-									}
-									placeholder={
-										notActiveTokens.length < 1 && value.length < 1 ? INPUT_PLACEHOLDER : undefined
-									}
-									type='text'
-									spellCheck={false}
-									value={value}
-									onChange={this.inputOnChange}
-									onKeyDown={this.onKeyDown}
-									autoFocus={true}
+				<div className={rootClassName} ref={this.root} onMouseDown={this.onMouseDown}>
+					<React.Fragment>
+						<div className='search-field__child-wrapper' onMouseDown={this.onMouseDown}>
+							{notActiveTokens.map(({ color, pattern }, index) => (
+								<Bubble
+									key={index}
+									className='search-bubble'
+									size='small'
+									removeIconType='white'
+									submitKeyCodes={[KeyCodes.ENTER, KeyCodes.SPACE]}
+									value={pattern}
+									style={{ backgroundColor: color, color: '#FFF' }}
+									onSubmit={this.bubbleOnChangeFor(index)}
+									onRemove={this.bubbleOnRemoveFor(index)}
 								/>
-							</div>
+							))}
+							<AutosizeInput
+								inputClassName='search-field__input'
+								className='search-field__input-wrapper'
+								inputRef={ref => (this.inputElement.current = ref)}
+								inputStyle={
+									value.length > 0
+										? {
+												backgroundColor: activeTokens?.color ?? this.getNextColor(),
+												color: '#FFF',
+										  }
+										: undefined
+								}
+								placeholder={
+									notActiveTokens.length < 1 && value.length < 1 ? INPUT_PLACEHOLDER : undefined
+								}
+								type='text'
+								spellCheck={false}
+								value={value}
+								onChange={this.inputOnChange}
+								onKeyDown={this.onKeyDown}
+								autoFocus={true}
+								onMouseDown={this.onMouseDown}
+							/>
+						</div>
+						<div className='search-field__search-controls search-controls'>
+							<div className='search-controls__clear-button' onClick={this.clear} />
 							{isLoading ? (
-								<div className='search-field__loader' />
+								<div className='search-controls__loader' />
 							) : showControls ? (
-								<span className='search-field__counter'>
+								<span className='search-controls__counter'>
 									{currentIndex !== null ? currentIndex + 1 : 0} of {resultsCount}
 								</span>
 							) : null}
 							{showControls && !isLoading ? (
-								<div className='search-controls'>
+								<>
 									<div className='search-controls__prev' onClick={prevSearchResult} />
 									<div className='search-controls__next' onClick={nextSearchResult} />
-									<div className='search-controls__clear' onClick={this.clear} />
-								</div>
+								</>
 							) : null}
-						</React.Fragment>
-					) : (
-						<div className='search-field__icon' />
-					)}
+						</div>
+					</React.Fragment>
 				</div>
 			</div>
 		);
@@ -178,8 +178,9 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		}
 	};
 
-	private rootOnClick = (e: React.MouseEvent) => {
-		if (e.target === this.root.current) {
+	private onMouseDown = (e: React.MouseEvent) => {
+		if (e.target === e.currentTarget) {
+			e.preventDefault();
 			this.focus();
 		}
 	};
