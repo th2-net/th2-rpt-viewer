@@ -122,6 +122,7 @@
 	&__bubble {
 		color: #ffffff;
 		background-color: #5eba6e;
+		margin: 2px 5px;
 	}
 
 	&__counter {
@@ -474,7 +475,6 @@
 		position: relative;
 		flex-wrap: wrap;
 		flex-grow: 1;
-		gap: 5px;
 		&.filter-row__input {
 			margin: 0;
 			width: 100%;
