@@ -26,7 +26,7 @@ import {
 	useMessagesDataStore,
 } from '../../hooks';
 import MessagesCardList from './message-card-list/MessagesCardList';
-import { getTimestampAsNumber } from '../../helpers/date';
+import { timestampToNumber } from '../../helpers/date';
 
 const MessagesWindow = () => {
 	const messagesStore = useMessagesWorkspaceStore();
@@ -66,8 +66,8 @@ const MessagesWindow = () => {
 		const before = notLoadedMessages
 			.filter(
 				msg =>
-					getTimestampAsNumber(msg.timestamp) < getTimestampAsNumber(headMessage.timestamp) ||
-					(getTimestampAsNumber(msg.timestamp) === getTimestampAsNumber(headMessage.timestamp) &&
+					timestampToNumber(msg.timestamp) < timestampToNumber(headMessage.timestamp) ||
+					(timestampToNumber(msg.timestamp) === timestampToNumber(headMessage.timestamp) &&
 						selectedStore.attachedMessages.indexOf(msg) <
 							selectedStore.attachedMessages.indexOf(headMessage)),
 			)
@@ -75,8 +75,8 @@ const MessagesWindow = () => {
 		const after = notLoadedMessages
 			.filter(
 				msg =>
-					getTimestampAsNumber(msg.timestamp) > getTimestampAsNumber(headMessage.timestamp) ||
-					(getTimestampAsNumber(msg.timestamp) === getTimestampAsNumber(headMessage.timestamp) &&
+					timestampToNumber(msg.timestamp) > timestampToNumber(headMessage.timestamp) ||
+					(timestampToNumber(msg.timestamp) === timestampToNumber(headMessage.timestamp) &&
 						selectedStore.attachedMessages.indexOf(msg) >
 							selectedStore.attachedMessages.indexOf(headMessage)),
 			)

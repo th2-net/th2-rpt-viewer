@@ -19,5 +19,5 @@ import { useMessagesWorkspaceStore } from './useMessagesStore';
 export const useMessagesDataStore = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 
-	return messagesStore.data;
+	return messagesStore.dataStore;
 };

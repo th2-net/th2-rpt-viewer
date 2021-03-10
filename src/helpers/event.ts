@@ -17,7 +17,7 @@
 import { ActionType, EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { EventStatus } from '../models/Status';
-import { getTimestampAsNumber } from './date';
+import { getTimestampAsNumber, timestampToNumber } from './date';
 
 export function getMinifiedStatus(status: string): string {
 	return status
@@ -34,7 +34,7 @@ export function getEventStatus(event: EventAction | EventTreeNode): EventStatus 
 export const isRootEvent = (event: EventTreeNode): boolean => event.parentId === 'null';
 
 export function mapToTimestamps(list: Array<EventTreeNode | EventMessage>) {
-	return list.map(item => getTimestampAsNumber(getTimestamp(item)));
+	return list.map(item => getTimestampAsNumber(item));
 }
 
 export function getTimestamp(item: EventAction | EventMessage | EventTreeNode) {
@@ -55,13 +55,9 @@ export function sortEventsByTimestamp(
 	const copiedEvents = eventNodes.slice();
 	copiedEvents.sort((eventA, eventB) => {
 		if (order === 'desc') {
-			return (
-				getTimestampAsNumber(eventB.startTimestamp) - getTimestampAsNumber(eventA.startTimestamp)
-			);
+			return timestampToNumber(eventB.startTimestamp) - timestampToNumber(eventA.startTimestamp);
 		}
-		return (
-			getTimestampAsNumber(eventA.startTimestamp) - getTimestampAsNumber(eventB.startTimestamp)
-		);
+		return timestampToNumber(eventA.startTimestamp) - timestampToNumber(eventB.startTimestamp);
 	});
 	return copiedEvents;
 }
@@ -99,13 +95,11 @@ export const sortByTimestamp = (
 	order: 'desc' | 'asc' = 'desc',
 ) => {
 	const copiedEvents = items.slice();
-	copiedEvents.sort((eventA, eventB) => {
+	copiedEvents.sort((itemA, itemB) => {
 		if (order === 'desc') {
-			return (
-				getTimestampAsNumber(getTimestamp(eventB)) - getTimestampAsNumber(getTimestamp(eventA))
-			);
+			return getTimestampAsNumber(itemB) - getTimestampAsNumber(itemA);
 		}
-		return getTimestampAsNumber(getTimestamp(eventA)) - getTimestampAsNumber(getTimestamp(eventB));
+		return getTimestampAsNumber(itemA) - getTimestampAsNumber(itemB);
 	});
 	return copiedEvents;
 };

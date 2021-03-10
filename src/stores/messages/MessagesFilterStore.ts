@@ -137,6 +137,8 @@ export default class MessagesFilterStore {
 		this.sseMessagesFilter = Object.keys(filter).length ? (filter as MessageFilterState) : null;
 		this.filter = {
 			...defaultMessagesFilter,
+			timestampFrom: this.filter.timestampFrom,
+			timestampTo: this.filter.timestampTo,
 			...initFilter,
 		};
 	};

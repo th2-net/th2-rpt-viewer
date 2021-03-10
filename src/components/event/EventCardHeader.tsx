@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import TimeAgo from 'react-timeago';
-import { formatTime, getElapsedTime, getTimestampAsNumber } from '../../helpers/date';
+import { formatTime, getElapsedTime, timestampToNumber } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';
@@ -57,7 +57,7 @@ function EventCardHeader({
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const status = getEventStatus(event);
-	const startTimestampValue = getTimestampAsNumber(startTimestamp);
+	const startTimestampValue = timestampToNumber(startTimestamp);
 
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;

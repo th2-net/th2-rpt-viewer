@@ -17,7 +17,11 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
-import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../../hooks';
+import {
+	useDebouncedCallback,
+	useMessagesDataStore,
+	useMessagesWorkspaceStore,
+} from '../../../hooks';
 import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
 
@@ -35,8 +39,8 @@ interface Props {
 	scrolledIndex: Number | null;
 	className?: string;
 	overscan?: number;
-	loadNextMessages: () => Promise<EventMessage[]>;
-	loadPrevMessages: () => Promise<EventMessage[]>;
+	loadNextMessages: (resumeFromId?: string) => Promise<EventMessage[]>;
+	loadPrevMessages: (resumeFromId?: string) => Promise<EventMessage[]>;
 }
 
 const MessagesVirtualizedList = (props: Props) => {
@@ -46,7 +50,6 @@ const MessagesVirtualizedList = (props: Props) => {
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
 	const {
-		rowCount,
 		className,
 		overscan = 3,
 		itemRenderer,
@@ -56,34 +59,6 @@ const MessagesVirtualizedList = (props: Props) => {
 	} = props;
 
 	React.useEffect(() => {
-		async function fetchStartMessages() {
-			const messages = await startReached();
-			messagesDataStore.isEndReached =
-				messages.length === 0 && !messagesDataStore.searchChannelNext?.isLoading;
-		}
-
-		async function fetchEndMessages() {
-			const messages = await endReached();
-			messagesDataStore.isEndReached =
-				messages.length === 0 && !messagesDataStore.searchChannelPrev?.isLoading;
-		}
-		if (messagesDataStore.messages.length < 12) {
-			if (!messagesDataStore.isEndReached) {
-				fetchEndMessages();
-			}
-
-			if (!messagesDataStore.isBeginReached) {
-				fetchStartMessages();
-			}
-		}
-	}, [
-		rowCount,
-		messagesDataStore.messages,
-		messagesDataStore.isBeginReached,
-		messagesDataStore.isEndReached,
-	]);
-
-	React.useEffect(() => {
 		if (scrolledIndex !== null) {
 			raf(() => {
 				virtuoso.current?.scrollToIndex({ index: scrolledIndex.valueOf(), align: 'center' });
@@ -91,30 +66,43 @@ const MessagesVirtualizedList = (props: Props) => {
 		}
 	}, [scrolledIndex]);
 
-	const startReached = React.useCallback(() => {
-		return loadNextMessages().then(messages => {
-			if (messages.length > 0) {
-				messageStore.data.onNextChannelResponse(messages);
+	const debouncedScrollHandler = useDebouncedCallback((event: React.UIEvent<'div'>) => {
+		const scroller = event.target;
+		if (scroller instanceof HTMLDivElement) {
+			const isStartReached = scroller.scrollTop === 0;
+			const isEndReached = scroller.scrollHeight - scroller.scrollTop === scroller.clientHeight;
+			if (
+				isStartReached &&
+				messagesDataStore.searchChannelNext &&
+				!messagesDataStore.searchChannelNext.isLoading
+			) {
+				loadNextMessages(messagesDataStore.messages[0]?.messageId).then(messages =>
+					messageStore.dataStore.onNextChannelResponse(messages),
+				);
 			}
-			return messages;
-		});
-	}, [loadNextMessages, messageStore.data.onNextChannelResponse]);
 
-	const endReached = React.useCallback(() => {
-		return loadPrevMessages().then(messages => {
-			if (messages.length > 0) {
-				messageStore.data.onPrevChannelResponse(messages);
+			if (
+				isEndReached &&
+				messagesDataStore.searchChannelPrev &&
+				!messagesDataStore.searchChannelPrev.isLoading
+			) {
+				loadPrevMessages(
+					messagesDataStore.messages[messagesDataStore.messages.length - 1]?.messageId,
+				).then(messages => messageStore.dataStore.onPrevChannelResponse(messages));
 			}
-			return messages;
-		});
-	}, [loadPrevMessages, messageStore.data.onPrevChannelResponse]);
+		}
+	}, 100);
+
+	const onScroll = (event: React.UIEvent<'div'>) => {
+		event.persist();
+		debouncedScrollHandler(event);
+	};
+
 	return (
 		<Virtuoso
-			startReached={startReached}
-			endReached={endReached}
 			data={messagesDataStore.messages}
 			firstItemIndex={messagesDataStore.startIndex}
-			initialTopMostItemIndex={messagesDataStore.initialItemCount - 1}
+			initialTopMostItemIndex={messagesDataStore.initialItemCount}
 			ref={virtuoso}
 			overscan={overscan}
 			itemContent={itemRenderer}
@@ -122,17 +110,18 @@ const MessagesVirtualizedList = (props: Props) => {
 			className={className}
 			itemsRendered={messages => {
 				messageStore.currentMessagesIndexesRange = {
-					startIndex: (messages.length && messages[0].originalIndex) ?? 0,
-					endIndex: (messages.length && messages[messages.length - 1].originalIndex) ?? 0,
+					startIndex: (messages && messages[0]?.originalIndex) ?? 0,
+					endIndex: (messages && messages[messages.length - 1]?.originalIndex) ?? 0,
 				};
 			}}
+			onScroll={onScroll}
 			components={{
-				// eslint-disable-next-line react/display-name
-				Header: () => <MessagesListSpinner isLoading={messagesDataStore.isLoadingNextMessages} />,
-				// eslint-disable-next-line react/display-name
-				Footer: () => (
-					<MessagesListSpinner isLoading={messagesDataStore.isLoadingPreviousMessages} />
-				),
+				Header: function MessagesListSpinnerNext() {
+					return <MessagesListSpinner isLoading={messagesDataStore.isLoadingNextMessages} />;
+				},
+				Footer: function MessagesListSpinnerPrevious() {
+					return <MessagesListSpinner isLoading={messagesDataStore.isLoadingPreviousMessages} />;
+				},
 			}}
 		/>
 	);

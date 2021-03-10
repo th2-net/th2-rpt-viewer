@@ -24,8 +24,8 @@ import StateSaverProvider from '../../util/StateSaverProvider';
 import { useWorkspaceEventStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
 import { EventTreeNode } from '../../../models/EventAction';
+import { timestampToNumber } from '../../../helpers/date';
 import '../../../styles/action.scss';
-import { getTimestampAsNumber } from '../../../helpers/date';
 
 interface Props {
 	nodes: EventTreeNode[];
@@ -58,9 +58,9 @@ function EventTreeList({ nodes }: Props) {
 
 		const timestamps = {
 			startEventId: selectedRootEventId,
-			startTimestamp: getTimestampAsNumber(eventNodes[rootEventIndex].startTimestamp),
+			startTimestamp: timestampToNumber(eventNodes[rootEventIndex].startTimestamp),
 			endEventId: selectedRootEventId,
-			endTimestamp: getTimestampAsNumber(eventNodes[rootEventIndex].startTimestamp),
+			endTimestamp: timestampToNumber(eventNodes[rootEventIndex].startTimestamp),
 		};
 
 		if (
@@ -68,9 +68,7 @@ function EventTreeList({ nodes }: Props) {
 			eventNodes[rootEventIndex + 1] &&
 			eventNodes[rootEventIndex + 1].parentId === selectedRootEventId
 		) {
-			timestamps.startTimestamp = getTimestampAsNumber(
-				eventNodes[rootEventIndex + 1].startTimestamp,
-			);
+			timestamps.startTimestamp = timestampToNumber(eventNodes[rootEventIndex + 1].startTimestamp);
 			timestamps.endTimestamp = timestamps.startTimestamp;
 
 			for (
@@ -81,7 +79,7 @@ function EventTreeList({ nodes }: Props) {
 				timestamps.endEventId = eventNodes[i].eventId;
 
 				if (eventNodes[i].parents?.length === 1) {
-					const eventTimestamp = getTimestampAsNumber(eventNodes[i].startTimestamp);
+					const eventTimestamp = timestampToNumber(eventNodes[i].startTimestamp);
 
 					if (eventTimestamp < timestamps.startTimestamp) {
 						timestamps.startTimestamp = eventTimestamp;

@@ -24,7 +24,7 @@ import { SearchStore } from '../SearchStore';
 import ApiSchema from '../../api/ApiSchema';
 import { getRangeFromTimestamp, WorkspaceInitialState } from './WorkspaceStore';
 import { isEvent, isEventMessage } from '../../helpers/event';
-import { getTimestampAsNumber } from '../../helpers/date';
+import { getTimestampAsNumber, timestampToNumber } from '../../helpers/date';
 import {
 	EventFilterState,
 	MessageFilterState,
@@ -69,10 +69,7 @@ export default class SearchWorkspaceStore {
 
 	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
-		const timeRange = getRangeFromTimestamp(
-			getTimestampAsNumber(isEvent(savedItem) ? savedItem.startTimestamp : savedItem.timestamp),
-			SEARCH_STORE_INTERVAL,
-		);
+		const timeRange = getRangeFromTimestamp(getTimestampAsNumber(savedItem), SEARCH_STORE_INTERVAL);
 		const initialWorkspaceState: WorkspaceInitialState = {
 			timeRange,
 			interval: SEARCH_STORE_INTERVAL,
@@ -104,18 +101,18 @@ export default class SearchWorkspaceStore {
 					sse: (requestInfo?.filters as MessageFilterState) || null,
 					streams: requestInfo?.state.stream || [],
 					timestampFrom: null,
-					timestampTo: getTimestampAsNumber(resultItem.timestamp),
+					timestampTo: timestampToNumber(resultItem.timestamp),
 					targetMessage: resultItem,
 				},
 				interval: SEARCH_STORE_INTERVAL,
 				layout: [0, 100],
-				timeRange: getRangeFromTimestamp(getTimestampAsNumber(resultItem.timestamp), 15),
+				timeRange: getRangeFromTimestamp(timestampToNumber(resultItem.timestamp), 15),
 			};
 		} else {
 			const requestInfo = this.searchStore.currentSearch?.request;
 			const filter = requestInfo?.filters as EventFilterState | undefined;
 			const [timestampFrom, timestampTo] = getRangeFromTimestamp(
-				getTimestampAsNumber(resultItem.startTimestamp),
+				timestampToNumber(resultItem.startTimestamp),
 				SEARCH_STORE_INTERVAL,
 			);
 			initialWorkspaceState = {

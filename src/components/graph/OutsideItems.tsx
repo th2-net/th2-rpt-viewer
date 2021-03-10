@@ -20,7 +20,7 @@ import moment from 'moment';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { GraphItem, PanelRange } from '../../models/Graph';
-import { isEventNode, sortByTimestamp } from '../../helpers/event';
+import { sortByTimestamp } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { GraphStore } from '../../stores/GraphStore';
@@ -63,16 +63,8 @@ const OutsideItems = (props: OverlayPanelProps) => {
 		];
 
 		return {
-			left: graphItems.filter(
-				item =>
-					getTimestampAsNumber(isEventNode(item) ? item.startTimestamp : item.timestamp) <
-					windowTimeRange[0],
-			),
-			right: graphItems.filter(
-				item =>
-					getTimestampAsNumber(isEventNode(item) ? item.startTimestamp : item.timestamp) >
-					windowTimeRange[1],
-			),
+			left: graphItems.filter(item => getTimestampAsNumber(item) < windowTimeRange[0]),
+			right: graphItems.filter(item => getTimestampAsNumber(item) > windowTimeRange[1]),
 		};
 	}, [from, to, graphItems]);
 

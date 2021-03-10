@@ -82,11 +82,7 @@ export default function GraphItemsMenu({
 							{isEventMessage(item) ? item.messageId : item.eventName}
 						</div>
 						<div className='graph-menu__item-timestamp'>
-							{moment(
-								getTimestampAsNumber(isEventMessage(item) ? item.timestamp : item.startTimestamp),
-							)
-								.utc()
-								.format('DD.MM.YYYY HH:mm:ss:SSS')}
+							{moment(getTimestampAsNumber(item)).utc().format('DD.MM.YYYY HH:mm:ss:SSS')}
 						</div>
 					</li>
 				))}
