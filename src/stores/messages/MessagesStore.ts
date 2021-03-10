@@ -90,10 +90,15 @@ export default class MessagesStore {
 		defaultState: MessagesStoreDefaultStateType,
 	) {
 		if (defaultState) {
-			if (isEventMessage(defaultState.targetMessage)) {
-				this.onMessageSelect(defaultState.targetMessage);
-			}
 			this.filterStore = new MessagesFilterStore(this.searchStore, defaultState);
+			const message = defaultState.targetMessage;
+			if (isEventMessage(message)) {
+				this.selectedMessageId = new String(message.messageId);
+				this.highlightedMessageId = message.messageId;
+				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
+				this.workspaceStore.viewStore.activePanel = this;
+			}
+
 			this.dataStore.loadMessages();
 		}
 
@@ -293,5 +298,7 @@ export default class MessagesStore {
 	public dispose = () => {
 		this.attachedMessagesSubscription();
 		this.filterStore.dispose();
+		this.dataStore.searchChannelPrev?.stop();
+		this.dataStore.searchChannelNext?.stop();
 	};
 }
