@@ -18,10 +18,6 @@
 
 import * as React from 'react';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import { isWorkspaceStore } from '../../helpers/workspace';
-import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
-import SearchWorkspaceStore from '../../stores/workspace/SearchWorkspaceStore';
-import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 
 const MIN_PANEL_WIDTH = 15;
 
@@ -40,6 +36,7 @@ interface Panel {
 		active: string;
 	};
 	minWidth?: number;
+	setActivePanel?: () => void;
 }
 
 export interface Props {
@@ -48,11 +45,10 @@ export interface Props {
 	panels: Array<Panel>;
 	panelsLayout: WorkspacePanelsLayout;
 	setPanelsLayout: (panelsLayout: WorkspacePanelsLayout) => void;
-	workspaceStore: WorkspaceStore | SearchWorkspaceStore;
 }
 
 function WorkspaceSplitter(props: Props) {
-	const { panels, panelsLayout, setPanelsLayout, workspaceStore } = props;
+	const { panels, panelsLayout, setPanelsLayout } = props;
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const clickOffsetX = React.useRef(0);
 	const activeSplitter = React.useRef<HTMLDivElement | null>(null);
@@ -314,12 +310,11 @@ function WorkspaceSplitter(props: Props) {
 						isResizing={isResizing}
 						color={panel.isActive ? panel.color.active : panel.color.default}
 						icon={<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />}
-						title={panel.title}
 						onMouseDown={onMouseDown}
 						disabled={index === 0}
 						ref={splittersRefs.current[index]}
 						isPanelActive={panel.isActive}
-						workspaceStore={workspaceStore}
+						setActivePanel={panel.setActivePanel}
 					/>
 					<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
 						<div className='pane__sidebar'>
@@ -380,30 +375,15 @@ SplittedViewPanel.displayName = 'SplittedViewPanel';
 type SplitterProps = {
 	color: string;
 	icon?: React.ReactNode;
-	title: string;
 	disabled?: boolean;
 	onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void;
 	isResizing: boolean;
 	isPanelActive?: boolean;
-	workspaceStore: WorkspaceStore | SearchWorkspaceStore;
+	setActivePanel?: () => void;
 };
 
 const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
-	({ title, onMouseDown, disabled = false, isPanelActive = false, workspaceStore }, ref) => {
-		const viewStore = useWorkspaceViewStore();
-
-		const setActivePanel = () => {
-			viewStore.setActivePanel(
-				isWorkspaceStore(workspaceStore)
-					? title === 'Events'
-						? workspaceStore.eventsStore
-						: title === 'Messages'
-						? workspaceStore.messagesStore
-						: null
-					: null,
-			);
-		};
-
+	({ onMouseDown, disabled = false, isPanelActive = false, setActivePanel }, ref) => {
 		const splitterClassName = createStyleSelector(
 			'workspace-splitter',
 			isPanelActive ? null : 'inactive',

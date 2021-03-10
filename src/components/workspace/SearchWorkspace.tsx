@@ -40,7 +40,6 @@ function SearchWorkspace() {
 	return (
 		<div className='workspace'>
 			<WorkspaceSplitter
-				workspaceStore={searchWorkspaceStore}
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
 				panels={[
