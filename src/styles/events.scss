@@ -83,11 +83,13 @@
 		display: block;
 	}
 
-	&__time-label {
+	&__time-label,
+	&__event-type {
 		font-size: 9px;
 		color: $secondaryLightTextColor;
 		white-space: nowrap;
-
+	}
+	&__time-label {
 		&-short {
 			display: inline;
 		}
@@ -105,6 +107,10 @@
 		&-full {
 			display: inline;
 		}
+	}
+
+	&__event-type {
+		margin-left: 3px;
 	}
 
 	&__status,
@@ -199,6 +205,11 @@
 		white-space: nowrap;
 		text-overflow: ellipsis;
 		overflow: hidden;
+	}
+
+	&__event-type {
+		white-space: nowrap;
+		color: $eventCardIdColor;
 	}
 
 	&__time {

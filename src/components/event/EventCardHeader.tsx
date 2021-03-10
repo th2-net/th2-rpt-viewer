@@ -49,7 +49,7 @@ function EventCardHeader({
 	parentsCount = 0,
 	rootStyle = {},
 }: Props) {
-	const { eventId, eventName, startTimestamp, endTimestamp } = event;
+	const { eventId, eventName, eventType, startTimestamp, endTimestamp } = event;
 
 	const selectedStore = useSelectedStore();
 	const eventStore = useWorkspaceEventStore();
@@ -121,6 +121,7 @@ function EventCardHeader({
 							<TimeAgo date={startTimestampValue} maxPeriod={5} />
 						</span>
 					</div>
+					{eventType && <span className='event-header-card__event-type'>{eventType}</span>}
 				</>
 			) : null}
 			{isFlatView && parentsCount > 0 ? <Chip text={parentsCount.toString()} /> : null}
