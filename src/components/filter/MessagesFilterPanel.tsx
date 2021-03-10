@@ -49,22 +49,27 @@ const MessagesFilterPanel = () => {
 	});
 
 	React.useEffect(() => {
-		setStreams(filterStore.messagesFilter.streams);
-	}, [filterStore.messagesFilter.streams]);
+		setStreams(filterStore.filter.streams);
+	}, [filterStore.filter.streams]);
 
 	React.useEffect(() => {
 		setSSEFilter(messagesStore.filterStore.sseMessagesFilter);
+		setCurrentValues({
+			type: '',
+			body: '',
+			attachedEventIds: '',
+		});
 	}, [messagesStore.filterStore.sseMessagesFilter]);
 
 	const submitChanges = React.useCallback(() => {
 		messagesStore.applyFilter(
 			{
-				...filterStore.messagesFilter,
+				...filterStore.filter,
 				streams,
 			},
 			sseFilter,
 		);
-	}, [filterStore.messagesFilter, streams, sseFilter]);
+	}, [filterStore.filter, streams, sseFilter]);
 
 	const isLoading = messagesDataStore.messages.length === 0 && messagesDataStore.isLoading;
 	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !isLoading;

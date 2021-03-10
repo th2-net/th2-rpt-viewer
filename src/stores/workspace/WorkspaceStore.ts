@@ -29,12 +29,16 @@ import { EventMessage } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphStore } from '../GraphStore';
-import { isEventAction, isEventMessage, isEventNode } from '../../helpers/event';
+import { isEvent, isEventMessage } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
 import { getTimestampAsNumber } from '../../helpers/date';
+import {
+	EventFilterState,
+	MessageFilterState,
+} from '../../components/search-panel/SearchPanelFilters';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;
@@ -50,7 +54,6 @@ export type WorkspaceInitialState = Partial<{
 	timeRange: TimeRange | null;
 	interval: number | null;
 	layout: WorkspacePanelsLayout;
-	entity: EventTreeNode | EventAction | EventMessage;
 }>;
 
 export default class WorkspaceStore {
@@ -71,17 +74,16 @@ export default class WorkspaceStore {
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
-		const entityRange = getDefaultRange(initialState.entity, 15);
-		this.graphStore = new GraphStore(this.selectedStore, entityRange || initialState.timeRange);
+		this.viewStore = new WorkspaceViewStore({
+			panelsLayout: initialState.layout,
+		});
+		this.graphStore = new GraphStore(this.selectedStore, initialState.timeRange);
 		this.eventsStore = new EventsStore(
 			this,
 			this.graphStore,
 			this.searchStore,
 			this.api,
-			initialState.entity &&
-			(isEventAction(initialState.entity) || isEventNode(initialState.entity))
-				? initialState.entity
-				: initialState.events || null,
+			initialState.events,
 		);
 		this.messagesStore = new MessagesStore(
 			this,
@@ -89,9 +91,8 @@ export default class WorkspaceStore {
 			this.selectedStore,
 			this.searchStore,
 			this.api,
-			isEventMessage(initialState.entity) ? initialState.entity : initialState.messages || null,
+			initialState.messages,
 		);
-		this.viewStore = new WorkspaceViewStore({ panelsLayout: initialState.layout });
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 
@@ -156,13 +157,74 @@ export default class WorkspaceStore {
 	};
 
 	@action
+	public onSearchResultItemSelect = (resultItem: EventTreeNode | EventAction | EventMessage) => {
+		let initialWorkspaceState: WorkspaceInitialState = {};
+
+		if (isEventMessage(resultItem)) {
+			const requestInfo = this.searchStore.currentSearch?.request;
+			initialWorkspaceState = {
+				messages: {
+					sse: (requestInfo?.filters as MessageFilterState) || null,
+					streams: requestInfo?.state.stream || [],
+					timestampFrom: null,
+					timestampTo: getTimestampAsNumber(resultItem.timestamp),
+					targetMessage: resultItem,
+				},
+				interval: this.graphStore.interval,
+				layout: [0, 100],
+				timeRange: getRangeFromTimestamp(getTimestampAsNumber(resultItem.timestamp), 15),
+			};
+		} else {
+			const requestInfo = this.searchStore.currentSearch?.request;
+			const filter = requestInfo?.filters as EventFilterState | undefined;
+			const [timestampFrom, timestampTo] = getRangeFromTimestamp(
+				getTimestampAsNumber(resultItem.startTimestamp),
+				this.graphStore.interval,
+			);
+			initialWorkspaceState = {
+				events: {
+					filter: {
+						eventTypes: filter && !filter.type.negative ? filter.type.values : [],
+						names: filter && !filter.name.negative ? filter.name.values : [],
+						timestampFrom,
+						timestampTo,
+					},
+					targetEvent: resultItem,
+				},
+				layout: [100, 0],
+				interval: this.graphStore.interval,
+				timeRange: [timestampFrom, timestampTo],
+			};
+		}
+
+		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
+		this.workspacesStore.addWorkspace(newWorkspace);
+	};
+
+	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
 		if (this.workspacesStore.searchWorkspace === this) {
-			const newWorkspace = this.workspacesStore.createWorkspace({
-				entity: savedItem,
-				layout: isEventMessage(savedItem) ? [0, 100] : [100, 0],
-			});
+			const timeRange = getRangeFromTimestamp(
+				getTimestampAsNumber(isEvent(savedItem) ? savedItem.startTimestamp : savedItem.timestamp),
+				this.graphStore.interval,
+			);
+			const initialWorkspaceState: WorkspaceInitialState = {
+				timeRange,
+				interval: this.graphStore.interval,
+			};
+			if (isEvent(savedItem)) {
+				initialWorkspaceState.events = {
+					targetEvent: savedItem,
+				};
+				initialWorkspaceState.layout = [100, 0];
+			} else {
+				initialWorkspaceState.messages = {
+					targetMessage: savedItem,
+				};
+				initialWorkspaceState.layout = [0, 100];
+			}
 
+			const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
 			this.workspacesStore.addWorkspace(newWorkspace);
 			return;
 		}
@@ -179,21 +241,20 @@ export default class WorkspaceStore {
 	@action
 	public onTimestampSelect = (timestamp: number) => {
 		if (this.workspacesStore.searchWorkspace === this) {
-			const range = getRangeFromTimestamp(timestamp, this.graphStore.interval);
+			const timeRange = getRangeFromTimestamp(timestamp, this.graphStore.interval);
 			const newWorkspace = this.workspacesStore.createWorkspace({
-				timeRange: range,
+				timeRange,
+				interval: this.graphStore.interval,
 				events: {
 					filter: {
-						timestampFrom: range[0],
-						timestampTo: range[1],
+						timestampFrom: timeRange[0],
+						timestampTo: timeRange[1],
 						eventTypes: [],
 						names: [],
 					},
 				},
 				messages: {
-					filter: {
-						timestampTo: timestamp,
-					},
+					timestampTo: timestamp,
 				},
 			});
 
@@ -212,22 +273,6 @@ export default class WorkspaceStore {
 	public get isSearchWorkspace() {
 		return this === this.workspacesStore.searchWorkspace;
 	}
-}
-
-function getDefaultRange(entity: unknown, interval: number): TimeRange | null {
-	let timestamp;
-
-	if (isEventMessage(entity)) {
-		timestamp = getTimestampAsNumber(entity.timestamp);
-	} else if (isEventAction(entity) || isEventNode(entity)) {
-		timestamp = getTimestampAsNumber(entity.startTimestamp);
-	}
-
-	if (timestamp) {
-		return getRangeFromTimestamp(timestamp, interval);
-	}
-
-	return null;
 }
 
 function getRangeFromTimestamp(timestamp: number, interval: number): TimeRange {

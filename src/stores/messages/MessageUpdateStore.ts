@@ -17,14 +17,14 @@
 import { action, observable, reaction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
-import FilterStore from '../FilterStore';
+import MessagesFilterStore from './MessagesFilterStore';
 
 // TODO: fix store
 export default class MessageUpdateStore {
 	constructor(
 		private api: ApiSchema,
 		private messagesStore: any,
-		private filterStore: FilterStore,
+		private filterStore: MessagesFilterStore,
 	) {
 		reaction(
 			() => this.messagesStore.scrollTopMessageId,
@@ -46,7 +46,7 @@ export default class MessageUpdateStore {
 		);
 
 		reaction(
-			() => this.filterStore.messagesFilter,
+			() => this.filterStore.filter,
 			() => this.disableSubscription(),
 		);
 	}
@@ -109,7 +109,7 @@ export default class MessageUpdateStore {
 				{
 					timestampTo: Date.now(),
 					timestampFrom: null,
-					streams: this.filterStore.messagesFilter.streams,
+					streams: this.filterStore.filter.streams,
 				},
 				this.updateAbortController.signal,
 			);
@@ -142,7 +142,7 @@ export default class MessageUpdateStore {
 						timelineDirection: 'next',
 						limit: this.messagesStore.MESSAGES_CHUNK_SIZE,
 					},
-					this.filterStore.messagesFilter,
+					this.filterStore.filter,
 					this.updateAbortController.signal,
 				);
 

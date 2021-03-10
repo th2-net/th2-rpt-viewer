@@ -23,6 +23,12 @@ interface BaseSSEParams {
 	resultCountLimit?: number;
 	endTimestamp?: number | null;
 }
+
+export interface SSEHeartbeat {
+	id: string;
+	timestamp: number;
+}
+
 export interface SSEFilterInfo {
 	name: any;
 	hint: string;

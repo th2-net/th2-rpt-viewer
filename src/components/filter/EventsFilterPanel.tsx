@@ -27,14 +27,14 @@ function EventsFilterPanel() {
 
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentName, setCurrentName] = React.useState('');
-	const [names, setNames] = React.useState(filterStore.eventsFilter.names);
+	const [names, setNames] = React.useState(filterStore.filter.names);
 	const [currentType, setCurrentEventType] = React.useState('');
-	const [eventTypes, setEventsTypes] = React.useState(filterStore.eventsFilter.names);
+	const [eventTypes, setEventsTypes] = React.useState(filterStore.filter.names);
 
 	React.useEffect(() => {
-		setNames(filterStore.eventsFilter.names);
-		setEventsTypes(filterStore.eventsFilter.eventTypes);
-	}, [filterStore.eventsFilter]);
+		setNames(filterStore.filter.names);
+		setEventsTypes(filterStore.filter.eventTypes);
+	}, [filterStore.filter]);
 
 	const onSubmit = () => {
 		eventWindowStore.filterStore.setEventsFilter({
