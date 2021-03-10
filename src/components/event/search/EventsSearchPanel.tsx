@@ -78,12 +78,16 @@ function EventSearchPanel({ isDisabled = false }: Props) {
 						setShowSearch(!showSearch);
 					}
 				}}>
-				<div className={searchIconClass}></div>
+				<div className={searchIconClass} />
 				<div className={searchTitleClass}>Search</div>
 			</div>
 			<ModalPortal isOpen={showSearch}>
 				<div className='search' ref={searchBaseRef}>
-					<SearchInput disabled={isDisabled} />
+					<SearchInput
+						disabled={isDisabled}
+						openSearchPanel={() => setShowSearch(true)}
+						isSearchPanelOpen={showSearch}
+					/>
 				</div>
 			</ModalPortal>
 		</div>
