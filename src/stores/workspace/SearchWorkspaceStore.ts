@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed } from 'mobx';
+import { action } from 'mobx';
 import { nanoid } from 'nanoid';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';

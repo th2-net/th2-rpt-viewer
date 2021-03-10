@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, reaction, observable } from 'mobx';
-import { EventAction, EventTreeNode } from '../models/EventAction';
+import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import localStorageWorker from '../util/LocalStorageWorker';
