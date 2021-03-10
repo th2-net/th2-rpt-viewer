@@ -17,9 +17,5 @@
 import WorkspaceStore from '../stores/workspace/WorkspaceStore';
 
 export const isWorkspaceStore = (object: unknown): object is WorkspaceStore => {
-	return (
-		typeof object === 'object' &&
-		object !== null &&
-		(object as WorkspaceStore).eventsStore !== undefined
-	);
+	return object instanceof WorkspaceStore;
 };

@@ -19,8 +19,8 @@ import { observer } from 'mobx-react-lite';
 import BookmarksPanel from '../BookmarksPanel';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import SearchPanel from '../search-panel/SearchPanel';
-import '../../styles/workspace.scss';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
+import '../../styles/workspace.scss';
 
 const panelColors = {
 	search: {

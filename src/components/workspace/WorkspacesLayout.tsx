@@ -22,11 +22,11 @@ import { WorkspaceContextProvider } from '../../contexts/workspaceContext';
 import { useWorkspaces } from '../../hooks';
 import Tabs, { TabListRenderProps } from '../tabs/Tabs';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import '../../styles/root.scss';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import SearchWorkspaceStore from '../../stores/workspace/SearchWorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
 import { SearchWorkspaceContextProvider } from '../../contexts/searchWorkspaceContext';
+import '../../styles/root.scss';
 
 const WorkspacesLayout = () => {
 	const workspacesStore = useWorkspaces();

@@ -76,19 +76,6 @@ export class SelectedStore {
 		return sortByTimestamp(filterUniqueGraphItems(items));
 	}
 
-	@computed get selectedEvents() {
-		return this.workspacesStore.eventStores
-			.map(eventStore => eventStore.selectedEvent)
-			.filter(
-				(event, i, self): event is EventAction =>
-					event !== null && self.findIndex(e => e && e.eventId === event.eventId) === i,
-			);
-	}
-
-	@computed get isLoadingEvents() {
-		return this.workspacesStore.eventStores.some(eventStore => eventStore.isSelectedEventLoading);
-	}
-
 	@computed get attachedMessages() {
 		return sortMessagesByTimestamp(
 			isWorkspaceStore(this.workspacesStore.activeWorkspace)

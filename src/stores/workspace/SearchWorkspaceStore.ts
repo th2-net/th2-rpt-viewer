@@ -45,11 +45,6 @@ export default class SearchWorkspaceStore {
 		this.viewStore = new WorkspaceViewStore(undefined);
 	}
 
-	@computed
-	public get isActive() {
-		return this.workspacesStore.activeWorkspace === this;
-	}
-
 	@action
 	public onTimestampSelect = (timestamp: number) => {
 		const timeRange = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);

@@ -25,14 +25,14 @@ import { createStyleSelector } from '../helpers/styleCreators';
 import { useActivePanel, useSelectedStore } from '../hooks';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import '../styles/bookmarks.scss';
 import useSearchWorkspace from '../hooks/useSearchWorkspace';
+import '../styles/bookmarks.scss';
 
 export type BookmarkedItem = EventMessage | EventTreeNode | EventAction;
 
 function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
-	const workspaceStore = useSearchWorkspace();
+	const searchWorkspace = useSearchWorkspace();
 
 	const { ref: panelRef } = useActivePanel(null);
 
@@ -44,7 +44,7 @@ function BookmarksPanel() {
 	}
 
 	function onBookmarkClick(item: BookmarkedItem) {
-		return workspaceStore.onSavedItemSelect(item);
+		return searchWorkspace.onSavedItemSelect(item);
 	}
 
 	function computeKey(index: number) {

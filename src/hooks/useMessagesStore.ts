@@ -14,16 +14,11 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { isWorkspaceStore } from '../helpers/workspace';
 import MessagesStore from '../stores/messages/MessagesStore';
 import { useWorkspaceStore } from './useWorkspaceStore';
 
 export const useMessagesWorkspaceStore = (): MessagesStore => {
 	const workspaceStore = useWorkspaceStore();
-
-	if (!isWorkspaceStore(workspaceStore)) {
-		throw new Error("SearchWorkspace doesn't contain messagesStore");
-	}
 
 	return workspaceStore.messagesStore;
 };

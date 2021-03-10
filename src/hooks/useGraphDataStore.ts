@@ -14,15 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { isWorkspaceStore } from '../helpers/workspace';
 import { useWorkspaceStore } from './useWorkspaceStore';
 
 export const useGraphDataStore = () => {
 	const workspace = useWorkspaceStore();
-
-	if (!isWorkspaceStore(workspace)) {
-		throw new Error("SearchWorkspace doesn't contain graphStore");
-	}
 
 	return workspace.graphStore;
 };

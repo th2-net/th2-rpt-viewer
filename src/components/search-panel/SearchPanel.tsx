@@ -30,9 +30,10 @@ import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 export type SearchPanelType = 'event' | 'message';
 
 const SearchPanel = () => {
-	const activeWorkspace = useSearchWorkspace();
-	const { ref: searchPanelRef } = useActivePanel(null);
+	const searchWorkspace = useSearchWorkspace();
 	const searchStore = useSearchStore();
+
+	const { ref: searchPanelRef } = useActivePanel(null);
 
 	const formTypeTogglerConfig: FilterRowTogglerConfig = React.useMemo(
 		() => ({
@@ -85,7 +86,7 @@ const SearchPanel = () => {
 				<SearchPanelResults
 					resultGroups={searchStore.resultGroups}
 					timestamp={searchStore.currentSearch.timestamp}
-					onResultItemClick={activeWorkspace.onSearchResultItemSelect}
+					onResultItemClick={searchWorkspace.onSearchResultItemSelect}
 					onResultDelete={() => {
 						if (searchStore.currentSearch) {
 							searchStore.deleteHistoryItem(searchStore.currentSearch);
