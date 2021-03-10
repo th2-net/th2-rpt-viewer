@@ -24,7 +24,7 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 		'input',
 		config.value.length ? 'non-empty' : '',
 	);
-	const wrapperClassName = createBemBlock('filter-row', config.className || null);
+	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
 
 	return (
 		<div className={wrapperClassName}>

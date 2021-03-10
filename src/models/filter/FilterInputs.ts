@@ -74,9 +74,9 @@ export enum TimeInputType {
 
 export type FilterRowBaseConfig = {
 	id: string;
-	label: string;
+	label?: string;
 	disabled?: boolean;
-	className?: string;
+	wrapperClassName?: string;
 };
 
 export type FilterRowTimeWindowConfig = FilterRowBaseConfig & {
@@ -97,6 +97,7 @@ export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
 	currentValue: string;
 	setCurrentValue: (currentValue: string) => void;
 	autocompleteList: string[] | null;
+	hint?: string;
 };
 
 export type FilterRowDatetimeRangeConfig = FilterRowBaseConfig & {
@@ -123,5 +124,5 @@ export type ActionFilterConfig = {
 	message: string;
 	actionButtonText: string;
 	action: () => void;
-	isLoading: boolean;
+	isLoading?: boolean;
 };

@@ -40,6 +40,11 @@
 			@include card-shadow;
 			background-color: $filterPrimaryColor;
 		}
+
+		&.applied {
+			background-color: $filterPrimaryColor;
+			border-radius: 5px;
+		}
 	}
 
 	&__button {
@@ -58,10 +63,19 @@
 		&.active {
 			padding: 4px 10px;
 		}
+
 	}
 
 	&__icon {
 		@include icon(url(../../resources/icons/filter.svg), 15px, 15px);
+
+		&.applied {
+			background-image: url(../../resources/icons/filter-white.svg);
+		}
+
+		&.active {
+			background-image: url(../../resources/icons/filter-white.svg);
+		}
 	}
 
 	&__title {
@@ -98,11 +112,11 @@
 
 	&__button.applied & {
 		&__title {
-			color: $filterPrimaryColor;
+			color: white;
 		}
 
 		&__icon {
-			background-image: url(../../resources/icons/filter-applied.svg);
+			background-image: url(../../resources/icons/filter-white.svg);
 		}
 	}
 
@@ -274,6 +288,40 @@
 		& > div:last-child {
 			width: 100%;
 		}
+	}
+
+	&-warning {
+		&-button {
+			@include clickable;
+
+			background-color: transparent;
+			border: 0;
+			padding: 3px;
+			flex-shrink: 0;
+			outline: none;
+			margin-left: 10px;
+		}
+
+		&-icon {
+			@include icon(url(../../resources/icons/attention-error-orange.svg), 16px, 16px);		
+			
+			display: inline-block;
+			flex-shrink: 0;
+		}
+	}
+
+	&-hint-modal {
+		@include card-shadow;
+
+		padding: 10px 15px 5px 15px;
+		border-radius: 5px;
+		background-color: #00bbcc;
+		color: #ffffff;
+		font-size: 15px;
+		font-weight: bold;
+		white-space: nowrap;
+		position: fixed;
+		z-index: 120;
 	}
 }
 
@@ -455,7 +503,6 @@
 	.filter-content {
 		@include scrollbar();
 		width: 100%;
-		overflow: auto;
 		margin: 0 10px;
 		border-radius: 3px;
 		&.active {
@@ -505,6 +552,7 @@
 	}
 
 	&__multiple-values-input-wrapper {
+		min-width: 30px;
 		flex-grow: 1;
 		position: relative;
 		z-index: 1;
@@ -529,5 +577,15 @@
 		font-size: 14px;
 		font-weight: bold;
 		margin-right: 15px;
+	}
+
+	&.scrollable &__input {
+		@include scrollbar;
+
+		width: 30px;
+		overflow-x: auto;
+		overflow-y: hidden;
+		display: flex;
+		flex-wrap: nowrap;
 	}
 }

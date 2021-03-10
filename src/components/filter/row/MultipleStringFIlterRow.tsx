@@ -82,7 +82,7 @@ export default function MultipleStringFilterRow({
 		config.disabled ? 'disabled' : null,
 	);
 
-	const wrapperClassName = createBemBlock('filter-row', config.className || null);
+	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
 
 	return (
 		<div className={wrapperClassName}>
@@ -112,7 +112,7 @@ export default function MultipleStringFilterRow({
 						ref={input}
 						placeholder={
 							config.values.length === 0
-								? 'Use Space to separate different words & Tab to finish'
+								? config.hint || 'Use Space to separate different words & Tab to finish'
 								: ''
 						}
 						disabled={config.disabled}

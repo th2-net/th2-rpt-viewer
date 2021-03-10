@@ -23,7 +23,7 @@ import {
 import DatetimeInput from '../date-time-inputs/DateTimeInput';
 
 export default function DatetimeFilterRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
-	const wrapperClassName = createBemBlock('filter-row', config.className || null);
+	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
 
 	const renderInput = (inputConfig: DateTimeInputType) => [
 		inputConfig.label && (

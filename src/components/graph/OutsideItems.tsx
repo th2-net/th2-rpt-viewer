@@ -132,7 +132,6 @@ const OutsideItems = (props: OverlayPanelProps) => {
 				direction='right'
 				className='outside-items__panels'
 				onItemClick={onOutsidePanelClick}
-				onArrowClick={onOutsideItemsArrowClick}
 			/>
 		</>
 	);

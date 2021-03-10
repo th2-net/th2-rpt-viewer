@@ -113,7 +113,6 @@ export default class MessagesFilterStore {
 	@computed
 	public get isMessagesFilterApplied() {
 		return [
-			this.filter.streams,
 			this.sseMessagesFilter
 				? [
 						this.sseMessagesFilter.attachedEventIds.values,

@@ -561,38 +561,10 @@
 		}
 	}
 
-	.sessions {
-		margin-left: 5px;
-		display: flex;
-		align-items: center;
-		position: relative;
-		height: 100%;
-
-		&__title {
-			color: $primaryTextColor;
-			font-size: 12px;
-			font-weight: bold;
-		}
-
-		&__add-button {
-			height: 19px;
-			display: flex;
-			align-items: center;
-			padding: 0 8px;
-			border-radius: 5px;
-			background-color: #00bbcc;
-			color: #fff;
-			cursor: pointer;
-			font-size: 11px;
-			border: none;
-			margin-left: 5px;
-		}
-	}
-
 	&__session-filter {
 		margin-bottom: 0;
-		margin-left: 20px;
 		flex-grow: 1;
+		margin-left: 10px;
 
 		.filter-row {
 			&__input {
@@ -615,16 +587,23 @@
 		}
 	}
 
-	&__filter-submit-btn {
-		@include icon(url('../../resources/icons/search.svg'), 16px, 16px);
+	&__filter-submit {
+		&-btn {	
+			@include clickable;
 
-		flex-shrink: 0;
-		background-color: transparent;
-		border: none;
-		padding: 4px;
-		margin-left: 15px;
-		padding: 0;
-		cursor: pointer;
+			flex-shrink: 0;
+			background-color: transparent;
+			border: none;
+			margin-left: 10px;
+			cursor: pointer;
+			padding: 4px;
+		}
+
+		&-icon {
+			@include icon(url('../../resources/icons/search.svg'), 16px, 16px);
+
+			display: inline-block;
+		}
 	}
 }
 

@@ -26,7 +26,7 @@ import DateTimeInput from '../date-time-inputs/DateTimeInput';
 import IntervalInput from '../date-time-inputs/IntervalInput';
 
 const TimeWindow = ({ config }: { config: FilterRowTimeWindowConfig }) => {
-	const wrapperClassName = createBemBlock('filter-row', config.className || null);
+	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
 
 	return (
 		<div className={wrapperClassName}>

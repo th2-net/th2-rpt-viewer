@@ -42,7 +42,9 @@ const MessagesFilterSessionFilter = ({ config, sseFilter }: MessagesFilterSessio
 	return (
 		<>
 			<FilterRow rowConfig={config} />
-			<button onClick={submitChanges} className='messages-window-header__filter-submit-btn' />
+			<button onClick={submitChanges} className='messages-window-header__filter-submit-btn'>
+				<i className='messages-window-header__filter-submit-icon' />
+			</button>
 		</>
 	);
 };

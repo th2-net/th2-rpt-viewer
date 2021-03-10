@@ -29,6 +29,7 @@ import { useSearchStore } from '../../hooks/useSearchStore';
 import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import { MessageFilterState } from '../search-panel/SearchPanelFilters';
 import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
+import MessageFilterWarning from './MessageFilterWarning';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -159,13 +160,13 @@ const MessagesFilterPanel = () => {
 		return {
 			type: 'multiple-strings',
 			id: 'messages-stream',
-			label: 'Session name',
 			values: streams,
 			setValues: setStreams,
 			currentValue: currentStream,
 			setCurrentValue: setCurrentStream,
 			autocompleteList: messagesStore.messageSessions,
-			className: 'messages-window-header__session-filter',
+			wrapperClassName: 'messages-window-header__session-filter scrollable',
+			hint: 'Session name',
 		};
 	}, [streams, setStreams, currentStream, setCurrentStream, messagesStore.messageSessions]);
 
@@ -189,13 +190,13 @@ const MessagesFilterPanel = () => {
 			<FilterPanel
 				isLoading={isLoading}
 				isFilterApplied={isApplied}
-				count={isApplied ? messagesDataStore.messages.length : null}
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
 				config={filterConfig}
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
 			/>
+			<MessageFilterWarning />
 			<MessagesFilterSessionFilter config={sessionFilterConfig} sseFilter={sseFilter} />
 		</>
 	);
