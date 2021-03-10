@@ -14,31 +14,19 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useMessagesWorkspaceStore } from '../../hooks';
 import { FilterRowMultipleStringsConfig } from '../../models/filter/FilterInputs';
-import { MessageFilterState } from '../search-panel/SearchPanelFilters';
 import FilterRow from './row';
 
 type MessagesFilterSessionFilterProps = {
 	config: FilterRowMultipleStringsConfig;
-	sseFilter: MessageFilterState | null;
+	submitChanges: () => void;
 };
 
-const MessagesFilterSessionFilter = ({ config, sseFilter }: MessagesFilterSessionFilterProps) => {
-	const messagesStore = useMessagesWorkspaceStore();
-
-	const submitChanges = () => {
-		messagesStore.applyFilter(
-			{
-				...messagesStore.filterStore.filter,
-				streams: config.values,
-			},
-			sseFilter,
-		);
-	};
-
+const MessagesFilterSessionFilter = ({
+	config,
+	submitChanges,
+}: MessagesFilterSessionFilterProps) => {
 	return (
 		<>
 			<FilterRow rowConfig={config} />
@@ -49,4 +37,4 @@ const MessagesFilterSessionFilter = ({ config, sseFilter }: MessagesFilterSessio
 	);
 };
 
-export default observer(MessagesFilterSessionFilter);
+export default MessagesFilterSessionFilter;

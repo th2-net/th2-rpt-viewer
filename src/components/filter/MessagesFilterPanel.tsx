@@ -197,7 +197,7 @@ const MessagesFilterPanel = () => {
 				onClearAll={messagesStore.clearFilters}
 			/>
 			<MessageFilterWarning />
-			<MessagesFilterSessionFilter config={sessionFilterConfig} sseFilter={sseFilter} />
+			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />
 		</>
 	);
 };
