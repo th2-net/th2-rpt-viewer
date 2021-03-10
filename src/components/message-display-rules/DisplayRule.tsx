@@ -33,6 +33,7 @@ const DisplayRuleRenderer = ({ rule }: DisplayRuleProps) => {
 			{rule.removable && (
 				<button
 					className='rule__delete'
+					title='delete rule'
 					onClick={() => {
 						activeWorkspace.deleteMessagesDisplayRule(rule);
 					}}>

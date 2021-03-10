@@ -30,18 +30,15 @@ const MessageBodyRulesConfigurator = () => {
 
 	return (
 		<>
-			<button className='message-display-rules-open' onClick={() => setIsOpen(open => !open)}>
-				Message display rules
-			</button>
+			<button className='message-display-rules-open' onClick={() => setIsOpen(open => !open)} />
 			<ModalPortal
 				isOpen={isOpen}
 				ref={modalRef}
 				style={{
 					position: 'absolute',
 					width: '40%',
-					top: '50%',
-					left: '50%',
-					transform: 'translate(-50%, -50%)',
+					top: '35px',
+					right: '14px',
 					zIndex: 500,
 				}}>
 				<div className='message-display-rules'>

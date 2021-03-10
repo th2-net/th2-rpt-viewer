@@ -25,6 +25,10 @@ const RulesList = () => {
 
 	return (
 		<div className='message-display-rules-body'>
+			<div className='message-display-rules-body__header'>
+				<p>Session</p>
+				<p>Display Rule</p>
+			</div>
 			{activeWorkspace.messageDisplayRules.map((rule: MessageDisplayRule, i: number) => (
 				<DisplayRule rule={rule} key={i} />
 			))}

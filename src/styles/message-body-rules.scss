@@ -17,17 +17,14 @@
 @import './common/vars';
 
 .message-display-rules-open {
+    @include icon(url(../../resources/icons/settings.svg), 23px, 23px);
     cursor: pointer;
     position: absolute;
     top: 12px;
     right: 14px;
-    padding: 3px 6px;
     outline: none;
-    border: 1px solid $workspaceLinkGetterColor;
-    border-radius: 4px;
-    background: transparent;
-    color: $workspaceLinkGetterColor;
-    font: 11px 'Open sans', sans-serif;
+    border: none;
+    background-color: $graphBackgroundColor;
 }
 
 .message-display-rules,
@@ -42,10 +39,6 @@
             }
         }
     }
-    &-buttons {
-        display: flex;
-        justify-content: flex-end;
-    }
 }
 
 .message-display-rules {
@@ -53,31 +46,51 @@
     border-radius: 4px;
     overflow: hidden;
     font: 11px 'Open sans', sans-serif;
-    color:white;
+    background-color: #fff;
+	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14),
+	0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+	border-radius: 6px;
     &-header {
-        background-color: grey;
         display: flex;
+        align-items: center;
         justify-content: space-between;
-        padding: 4px 8px;
+        padding: 4px;
+        border-bottom: 1px solid gray;
         button {
             outline: none;
             background-color: transparent;
             border: none;
             color: inherit;
+            font-size: 18px;
+            line-height: 1;
+            font-weight: bold;
         }
     }
     &-body {
         @include scrollbar();
         overflow: auto;
         max-height: 30vh;
+        border-bottom: 1px solid gray;
+        &__header {
+            padding-right: 12px;
+            display: flex;
+            justify-content: space-between;
+            p {
+                text-decoration: underline;
+            }
+        }
     }
     &-inputs,
-    &-body,
-    &-buttons {
+    &-body {
         padding: 4px;
         width: 100%;
-        background-color: lighten($color: grey, $amount: 5);
     }
+}
+
+.inputs-wrapper {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
 }
 
 .rule {
@@ -97,4 +110,14 @@
 }
 .rule-editor {
     padding: 4px 0 0;
+}
+.rule-editor,
+.message-display-rules {
+    &-button {
+        font-weight: bold;
+        cursor: pointer;
+        background-color: transparent;
+        border: gray solid 1px;
+        border-radius: 4px;
+    }
 }

@@ -28,7 +28,7 @@ type NewRuleFormProps = {
 
 const NewRuleForm = ({ rule, className, stopEdit }: NewRuleFormProps) => {
 	const inputsClassName = `${className}-inputs`;
-	const buttonsClassName = `${className}-buttons`;
+	const buttonsClassName = `${className}-button`;
 	const activeWorkspace = useActiveWorkspace();
 	const [currentSessionValue, setSessionValue] = useState(rule ? rule.session : '');
 	const [currentSelected, setCurrentSelected] = useState(
@@ -68,41 +68,44 @@ const NewRuleForm = ({ rule, className, stopEdit }: NewRuleFormProps) => {
 	return (
 		<>
 			<div className={inputsClassName}>
-				<div className='session'>
-					{!rule || rule.fullyEditable ? (
-						<AutocompleteInput
-							autoresize={false}
-							placeholder='Session'
-							className='session__input'
-							ref={sessionInputRef}
-							value={currentSessionValue}
-							onSubmit={v => {
-								setSessionValue(v);
-							}}
-							notResetOnSubmit
-							autocomplete={activeWorkspace.messagesStore.messageSessions}
-							datalistKey='session-input'
+				<div className='inputs-wrapper'>
+					<div className='session'>
+						{!rule || rule.fullyEditable ? (
+							<AutocompleteInput
+								autoresize={false}
+								placeholder='New session'
+								className='session__input'
+								ref={sessionInputRef}
+								value={currentSessionValue}
+								onSubmit={v => {
+									setSessionValue(v);
+								}}
+								notResetOnSubmit
+								autocomplete={activeWorkspace.messagesStore.messageSessions}
+								datalistKey='session-input'
+							/>
+						) : (
+							<p>{rule.session}</p>
+						)}
+					</div>
+					<div className='view-type'>
+						<Select
+							options={[
+								MessageViewType.JSON,
+								MessageViewType.FORMATTED,
+								MessageViewType.ASCII,
+								MessageViewType.BINARY,
+							]}
+							selected={currentSelected}
+							onChange={(v: MessageViewType) => setCurrentSelected(v)}
 						/>
-					) : (
-						<p>{rule.session}</p>
-					)}
+					</div>
 				</div>
-				<div className='view-type'>
-					<Select
-						options={[
-							MessageViewType.JSON,
-							MessageViewType.FORMATTED,
-							MessageViewType.ASCII,
-							MessageViewType.BINARY,
-						]}
-						selected={currentSelected}
-						onChange={(v: MessageViewType) => setCurrentSelected(v)}
-					/>
-				</div>
-			</div>
-			<div className={buttonsClassName}>
-				<button disabled={!currentSessionValue} onClick={submitHandler}>
-					{rule ? 'Edit Rule' : 'Add Rule'}
+				<button
+					className={buttonsClassName}
+					disabled={!currentSessionValue}
+					onClick={submitHandler}>
+					&#10003;
 				</button>
 			</div>
 		</>

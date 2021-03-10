@@ -25,7 +25,7 @@ import EventsStore, { EventStoreDefaultStateType, EventStoreURLState } from '../
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceViewStore from './WorkspaceViewStore';
-import { EventMessage, MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
+import { EventMessage, MessageDisplayRule } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphStore } from '../GraphStore';
@@ -34,6 +34,7 @@ import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
+import localStorageWorker from '../../util/LocalStorageWorker';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;
@@ -94,14 +95,9 @@ export default class WorkspaceStore {
 		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
 	}
 
-	@observable messageDisplayRules: Array<MessageDisplayRule> = [
-		{
-			session: '*',
-			viewType: MessageViewType.JSON,
-			removable: false,
-			fullyEditable: false,
-		},
-	];
+	@observable messageDisplayRules: Array<
+		MessageDisplayRule
+	> = localStorageWorker.getMessageDisplayRules();
 
 	@observable
 	public attachedMessagesIds: Array<string> = [];
@@ -126,6 +122,7 @@ export default class WorkspaceStore {
 		const hasSame = this.messageDisplayRules.find(existed => existed.session === rule.session);
 		if (!hasSame) {
 			this.messageDisplayRules = [...this.messageDisplayRules, rule];
+			localStorageWorker.setMessageDisplayRules(this.messageDisplayRules);
 		}
 	};
 
@@ -139,10 +136,12 @@ export default class WorkspaceStore {
 			},
 			[],
 		);
+		localStorageWorker.setMessageDisplayRules(this.messageDisplayRules);
 	};
 
 	@action deleteMessagesDisplayRule = (rule: MessageDisplayRule) => {
 		this.messageDisplayRules = this.messageDisplayRules.filter(existedRule => existedRule !== rule);
+		localStorageWorker.setMessageDisplayRules(this.messageDisplayRules);
 	};
 
 	@action
