@@ -22,20 +22,23 @@ import { WorkspaceContextProvider } from '../../contexts/workspaceContext';
 import { useWorkspaces } from '../../hooks';
 import Tabs, { TabListRenderProps } from '../tabs/Tabs';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import '../../styles/root.scss';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
+import SearchWorkspaceStore from '../../stores/workspace/SearchWorkspaceStore';
+import { isWorkspaceStore } from '../../helpers/workspace';
+import { SearchWorkspaceContextProvider } from '../../contexts/searchWorkspaceContext';
+import '../../styles/root.scss';
 
 const WorkspacesLayout = () => {
 	const workspacesStore = useWorkspaces();
 
 	const renderTabs: TabListRenderProps = ({ activeTabIndex, setActiveTab }) => {
-		const getTabLayout = (workspace: WorkspaceStore, index: number, isSearchStore: boolean) => (
+		const getTabLayout = (workspace: WorkspaceStore | SearchWorkspaceStore, index: number) => (
 			<Observer key={workspace.id}>
 				{() => (
 					<div
 						className={`workspace-tab ${activeTabIndex === index ? 'active' : ''}`}
 						onClick={() => setActiveTab(index)}>
-						{!isSearchStore && (
+						{workspacesStore.workspaces.length > 0 && isWorkspaceStore(workspace) && (
 							<span
 								className={createStyleSelector(
 									'workspace-tab__close',
@@ -48,7 +51,7 @@ const WorkspacesLayout = () => {
 							/>
 						)}
 						<h3 className='workspace-tab__title'>
-							{!isSearchStore ? `Workspace ${index}` : 'Search'}
+							{isWorkspaceStore(workspace) ? `Workspace ${index}` : 'Search'}
 						</h3>
 					</div>
 				)}
@@ -56,10 +59,8 @@ const WorkspacesLayout = () => {
 		);
 
 		return [
-			getTabLayout(workspacesStore.searchWorkspace, 0, true),
-			...workspacesStore.workspaces.map((workspace, index) =>
-				getTabLayout(workspace, index + 1, false),
-			),
+			getTabLayout(workspacesStore.searchWorkspace, 0),
+			...workspacesStore.workspaces.map((workspace, index) => getTabLayout(workspace, index + 1)),
 		];
 	};
 
@@ -81,9 +82,11 @@ const WorkspacesLayout = () => {
 				</>
 			)}
 			tabPanels={[
-				<WorkspaceContextProvider value={workspacesStore.searchWorkspace} key='search-workspace'>
+				<SearchWorkspaceContextProvider
+					value={workspacesStore.searchWorkspace}
+					key='search-workspace'>
 					<SearchWorkspace />
-				</WorkspaceContextProvider>,
+				</SearchWorkspaceContextProvider>,
 				...workspacesStore.workspaces.map(workspace => (
 					<WorkspaceContextProvider value={workspace} key={workspace.id}>
 						<Workspace />

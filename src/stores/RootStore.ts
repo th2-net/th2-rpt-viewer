@@ -18,23 +18,19 @@ import { toJS } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
-import { SearchStore } from './SearchStore';
 import EventsStore, { EventStoreURLState } from './events/EventsStore';
 import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
 import { getEventNodeParents } from '../helpers/event';
 import { getObjectKeys } from '../helpers/object';
+import { isWorkspaceStore } from '../helpers/workspace';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
-	searchStore: SearchStore;
-
 	workspacesStore: WorkspacesStore;
 
 	constructor(private api: ApiSchema) {
-		this.searchStore = new SearchStore(this.api);
-
-		this.workspacesStore = new WorkspacesStore(this.searchStore, this.api, this.parseUrlState());
+		this.workspacesStore = new WorkspacesStore(this.api, this.parseUrlState());
 
 		window.history.replaceState({}, '', window.location.pathname);
 	}
@@ -45,7 +41,7 @@ export default class RootStore {
 		let eventStoreState: EventStoreURLState = {};
 		let messagesStoreState: MessagesStoreURLState = {};
 
-		if (activeWorkspace && activeWorkspace !== this.workspacesStore.searchWorkspace) {
+		if (activeWorkspace && isWorkspaceStore(activeWorkspace)) {
 			const eventsStore: EventsStore = activeWorkspace.eventsStore;
 			eventStoreState = {
 				filter: {

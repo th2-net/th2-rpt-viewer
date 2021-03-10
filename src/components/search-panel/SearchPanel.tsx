@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useActivePanel, useActiveWorkspace } from '../../hooks';
+import { useActivePanel } from '../../hooks';
 import TogglerRow from '../filter/row/TogglerRow';
 import SearchPanelFilters from './SearchPanelFilters';
 import SearchPanelForm from './SearchPanelForm';
@@ -25,13 +25,15 @@ import SearchPanelResults from './SearchPanelResults';
 import SearchPanelProgressBar from './SearchPanelProgressBar';
 import { FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
 import '../../styles/search-panel.scss';
+import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 
 export type SearchPanelType = 'event' | 'message';
 
 const SearchPanel = () => {
-	const activeWorkspace = useActiveWorkspace();
-	const { ref: searchPanelRef } = useActivePanel(null);
+	const searchWorkspace = useSearchWorkspace();
 	const searchStore = useSearchStore();
+
+	const { ref: searchPanelRef } = useActivePanel(null);
 
 	const formTypeTogglerConfig: FilterRowTogglerConfig = React.useMemo(
 		() => ({
@@ -59,7 +61,7 @@ const SearchPanel = () => {
 							form={searchStore.searchForm}
 							formType={searchStore.formType}
 							updateForm={searchStore.updateForm}
-							streams={searchStore.formType === 'message' ? searchStore.messageSessions : null}
+							messageSessions={searchStore.messageSessions}
 						/>
 					</div>
 					<div className='filters'>
@@ -84,7 +86,7 @@ const SearchPanel = () => {
 				<SearchPanelResults
 					resultGroups={searchStore.resultGroups}
 					timestamp={searchStore.currentSearch.timestamp}
-					onResultItemClick={activeWorkspace.onSearchResultItemSelect}
+					onResultItemClick={searchWorkspace.onSearchResultItemSelect}
 					onResultDelete={() => {
 						if (searchStore.currentSearch) {
 							searchStore.deleteHistoryItem(searchStore.currentSearch);

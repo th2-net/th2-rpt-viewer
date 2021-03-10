@@ -20,12 +20,15 @@ import moment from 'moment';
 import ResizeObserver from 'resize-observer-polyfill';
 import GraphChunk from './GraphChunk';
 import GraphSearch from './search/GraphSearch';
-import GraphOverlay from './GraphOverlay';
+import OutsideItems from './OutsideItems';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { Chunk, PanelRange } from '../../models/Graph';
+import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
+import { isWorkspaceStore } from '../../helpers/workspace';
+import WorkspaceLinkGetter from '../WorkspaceLinkGetter';
 import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
@@ -39,9 +42,12 @@ const settings: Settings = {
 	startIndex: 0,
 } as const;
 
-function Graph() {
+interface GraphProps {
+	activeWorkspace: WorkspaceStore;
+}
+
+function Graph({ activeWorkspace }: GraphProps) {
 	const selectedStore = useSelectedStore();
-	const activeWorkspace = useActiveWorkspace();
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -127,42 +133,47 @@ function Graph() {
 
 	return (
 		<div className='graph' ref={rootRef}>
-			{!activeWorkspace.isSearchWorkspace && (
-				<GraphChunksVirtualizer
-					chunkWidth={chunkWidth}
-					settings={settings}
-					renderChunk={renderChunk}
-					setRange={activeWorkspace.graphStore.setRange}
-					getChunk={getChunk}
-					interval={activeWorkspace.graphStore.interval}
-					timestamp={activeWorkspace.graphStore.timestamp}
-					key={activeWorkspace.graphStore.timestamp}
-					panelsRange={panelsRange}
-					range={activeWorkspace.graphStore.range}
-				/>
-			)}
-			<GraphOverlay
+			<GraphChunksVirtualizer
+				renderChunk={renderChunk}
+				getChunk={getChunk}
+				chunkWidth={chunkWidth}
+				settings={settings}
+				panelsRange={panelsRange}
+				setRange={activeWorkspace.graphStore.setRange}
+				interval={activeWorkspace.graphStore.interval}
+				timestamp={activeWorkspace.graphStore.timestamp}
+				key={activeWorkspace.graphStore.timestamp}
 				range={activeWorkspace.graphStore.range}
+			/>
+			<OutsideItems
 				onGraphItemClick={onGraphItemClick}
 				getGraphItemType={getGraphItemType}
 				panelsRange={panelsRange}
-				disableInteractions={activeWorkspace.isSearchWorkspace}
+				graphItems={selectedStore.graphItems}
+				range={activeWorkspace.graphStore.range}
+				interval={activeWorkspace.graphStore.interval}
+				onPanelRangeSelect={activeWorkspace.graphStore.setTimestampFromRange}
 			/>
-			<GraphSearch
-				onTimestampSubmit={activeWorkspace.onTimestampSelect}
-				onFoundItemClick={activeWorkspace.onSavedItemSelect}
-			/>
+			<WorkspaceLinkGetter />
 		</div>
 	);
 }
 
-export default observer(Graph);
+const ObservedGraph = observer(Graph);
 
-// 	<select
-// 		name='interval'
-// 		value={graphStore.interval}
-// 		onChange={e => graphStore.setInterval(parseInt(e.target.value) as IntervalOption)}>
-// 		{graphStore.intervalOptions.map(intervalValue => (
-// 			<option key={intervalValue} value={intervalValue}>{`${intervalValue} minutes`}</option>
-// 		))}
-// 	</select>
+const GraphRoot = () => {
+	const activeWorkspace = useActiveWorkspace();
+
+	return (
+		<div className='graph-root'>
+			<i className='th2-logo' />
+			<GraphSearch
+				onTimestampSubmit={activeWorkspace.onTimestampSelect}
+				onFoundItemClick={activeWorkspace.onSavedItemSelect}
+			/>
+			{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}
+		</div>
+	);
+};
+
+export default observer(GraphRoot);

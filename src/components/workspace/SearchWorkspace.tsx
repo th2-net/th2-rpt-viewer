@@ -19,8 +19,8 @@ import { observer } from 'mobx-react-lite';
 import BookmarksPanel from '../BookmarksPanel';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import SearchPanel from '../search-panel/SearchPanel';
+import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import '../../styles/workspace.scss';
-import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 
 const panelColors = {
 	search: {
@@ -33,8 +33,9 @@ const panelColors = {
 	},
 } as const;
 
-function Workspace() {
-	const { panelsLayout, setPanelsLayout } = useWorkspaceViewStore();
+function SearchWorkspace() {
+	const searchWorkspaceStore = useSearchWorkspace();
+	const { panelsLayout, setPanelsLayout } = searchWorkspaceStore.viewStore;
 
 	return (
 		<div className='workspace'>
@@ -60,4 +61,4 @@ function Workspace() {
 	);
 }
 
-export default observer(Workspace);
+export default observer(SearchWorkspace);

@@ -21,6 +21,7 @@ import MessagesFilter from '../filter/MessagesFilterPanel';
 
 function MessagesWindowHeader() {
 	const messagesStore = useMessagesWorkspaceStore();
+
 	// const updateButtonClass = createBemElement(
 	// 	'messages-window-header',
 	// 	'realtime-button',

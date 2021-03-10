@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, reaction, observable } from 'mobx';
-import { EventAction, EventTreeNode } from '../models/EventAction';
+import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import localStorageWorker from '../util/LocalStorageWorker';
@@ -23,6 +23,7 @@ import { sortMessagesByTimestamp } from '../helpers/message';
 import { isEventNode, sortByTimestamp } from '../helpers/event';
 import { GraphItem } from '../models/Graph';
 import { filterUniqueGraphItems } from '../helpers/graph';
+import { isWorkspaceStore } from '../helpers/workspace';
 
 export class SelectedStore {
 	@observable.shallow
@@ -42,14 +43,20 @@ export class SelectedStore {
 	}
 
 	@computed get hoveredEvent(): EventTreeNode | null {
-		return this.workspacesStore.activeWorkspace.eventsStore.hoveredEvent;
+		return isWorkspaceStore(this.workspacesStore.activeWorkspace)
+			? this.workspacesStore.activeWorkspace.eventsStore.hoveredEvent
+			: null;
 	}
 
 	@computed get hoveredMessage(): EventMessage | null {
-		return this.workspacesStore.activeWorkspace.messagesStore.hoveredMessage;
+		return isWorkspaceStore(this.workspacesStore.activeWorkspace)
+			? this.workspacesStore.activeWorkspace.messagesStore.hoveredMessage
+			: null;
 	}
 
 	@computed get graphItems(): Array<GraphItem> {
+		if (!isWorkspaceStore(this.workspacesStore.activeWorkspace)) return [];
+
 		const items = [...this.savedItems, ...this.workspacesStore.activeWorkspace.attachedMessages];
 
 		const selectedEvent = this.workspacesStore.activeWorkspace.eventsStore.selectedNode;
@@ -69,21 +76,12 @@ export class SelectedStore {
 		return sortByTimestamp(filterUniqueGraphItems(items));
 	}
 
-	@computed get selectedEvents() {
-		return this.workspacesStore.eventStores
-			.map(eventStore => eventStore.selectedEvent)
-			.filter(
-				(event, i, self): event is EventAction =>
-					event !== null && self.findIndex(e => e && e.eventId === event.eventId) === i,
-			);
-	}
-
-	@computed get isLoadingEvents() {
-		return this.workspacesStore.eventStores.some(eventStore => eventStore.isSelectedEventLoading);
-	}
-
 	@computed get attachedMessages() {
-		return sortMessagesByTimestamp(this.workspacesStore.activeWorkspace.attachedMessages);
+		return sortMessagesByTimestamp(
+			isWorkspaceStore(this.workspacesStore.activeWorkspace)
+				? this.workspacesStore.activeWorkspace.attachedMessages
+				: [],
+		);
 	}
 
 	@action

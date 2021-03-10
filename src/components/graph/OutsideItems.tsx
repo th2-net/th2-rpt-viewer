@@ -15,180 +15,135 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import GraphItemsMenu from './GraphItemsMenu';
+import { observer } from 'mobx-react-lite';
+import moment from 'moment';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { GraphItem, GraphItemType } from '../../models/Graph';
-import { getEventStatus, isEventNode } from '../../helpers/event';
-import { EventStatus } from '../../models/Status';
+import { GraphItem, PanelRange } from '../../models/Graph';
+import { isEventNode, sortByTimestamp } from '../../helpers/event';
+import { TimeRange } from '../../models/Timestamp';
+import { getTimestampAsNumber } from '../../helpers/date';
 import { GraphStore } from '../../stores/GraphStore';
+import {
+	OutsideItems as IOutsideItems,
+	OutsideItemsMenu,
+	OutsideItemsList,
+} from './OutsideItemsMenu';
 import '../../styles/graph.scss';
 
-const rightIndicatorVariants = {
-	visible: {
-		opacity: 1,
-		right: '14px',
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-	hidden: {
-		opacity: 0,
-		right: '-14px',
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-};
-
-const leftIndicatorVariants = {
-	visible: {
-		opacity: 1,
-		left: '14px',
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-	hidden: {
-		opacity: 0,
-		left: '-14px',
-		transition: {
-			duration: 0.15,
-			type: 'tween',
-		},
-	},
-};
-
-export interface OutsideItems {
-	left: GraphItem[];
-	right: GraphItem[];
-}
-
-interface OutsideItemsMenuProps extends Omit<OutsideItemsListProps, 'itemsMap'> {
-	items: GraphItem[];
-	direction: 'left' | 'right';
+interface OverlayPanelProps {
+	range: TimeRange;
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
+	panelsRange: Array<PanelRange>;
+	interval: number;
+	graphItems: GraphItem[];
+	onPanelRangeSelect: (panelRange: TimeRange) => void;
 }
 
-export function OutsideItemsMenu(props: OutsideItemsMenuProps) {
-	const { items, direction, onGraphItemClick, getGraphItemType, ...listProps } = props;
+const OutsideItems = (props: OverlayPanelProps) => {
+	const {
+		range: [from, to],
+		onGraphItemClick,
+		getGraphItemType,
+		onPanelRangeSelect,
+		panelsRange,
+		interval,
+		graphItems,
+	} = props;
 
-	const rootRef = React.useRef<HTMLDivElement>(null);
-	const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
+	const outsideItems: IOutsideItems = React.useMemo(() => {
+		const windowTimeRange = [
+			moment(from)
+				.subtract(interval / 2, 'minutes')
+				.valueOf(),
+			moment(to)
+				.add(interval / 2, 'minutes')
+				.valueOf(),
+		];
 
-	function openMenu() {
-		setMenuAnchor(rootRef.current);
-	}
+		return {
+			left: graphItems.filter(
+				item =>
+					getTimestampAsNumber(isEventNode(item) ? item.startTimestamp : item.timestamp) <
+					windowTimeRange[0],
+			),
+			right: graphItems.filter(
+				item =>
+					getTimestampAsNumber(isEventNode(item) ? item.startTimestamp : item.timestamp) >
+					windowTimeRange[1],
+			),
+		};
+	}, [from, to, graphItems]);
 
-	const outsideItemsMap = React.useMemo(() => {
-		const map: Partial<Record<EventStatus | GraphItemType, number>> = {};
+	const outsidePanels = React.useMemo(() => {
+		const windowTimeRange = [
+			moment(from)
+				.subtract(interval / 2, 'minutes')
+				.valueOf(),
+			moment(to)
+				.add(interval / 2, 'minutes')
+				.valueOf(),
+		];
 
-		items.forEach(item => {
-			let key: EventStatus | GraphItemType;
-			if (isEventNode(item)) {
-				key = getEventStatus(item);
-			} else {
-				key = getGraphItemType(item);
-			}
-			map[key] = (map[key] || 0) + 1;
-		});
+		return {
+			left: panelsRange
+				.filter(panelRange => panelRange.range != null && panelRange.range[1] < windowTimeRange[0])
+				.reduce((prev, curr) => ({ ...prev, [curr.type]: 1 }), {}),
+			right: panelsRange
+				.filter(panelRange => panelRange.range != null && panelRange.range[0] > windowTimeRange[1])
+				.reduce((prev, curr) => ({ ...prev, [curr.type]: 1 }), {}),
+		};
+	}, [from, to, panelsRange]);
 
-		return map;
-	}, [items]);
+	const onOutsidePanelClick = (panelKey: string) => {
+		const panel = panelsRange.find(p => p.type === panelKey);
+		if (panel) {
+			onPanelRangeSelect(panel.range);
+		}
+	};
+
+	const onOutsideItemsArrowClick = (direction: 'left' | 'right') => {
+		const items = sortByTimestamp(outsideItems[direction]);
+		const utterItem = items[direction === 'right' ? items.length - 1 : 0];
+		if (utterItem) {
+			onGraphItemClick(utterItem);
+		}
+	};
 
 	return (
 		<>
-			<OutsideItemsList
-				{...listProps}
-				ref={rootRef}
-				onClick={openMenu}
-				itemsMap={outsideItemsMap}
-				direction={direction}
-			/>
-			<GraphItemsMenu
-				isMenuOpened={Boolean(menuAnchor)}
+			<OutsideItemsMenu
+				onGraphItemClick={onGraphItemClick}
+				direction='left'
+				items={outsideItems.left}
 				getGraphItemType={getGraphItemType}
-				items={items}
-				onClose={() => setMenuAnchor(null)}
-				onMenuItemClick={onGraphItemClick}
-				anchorEl={menuAnchor}
+				onArrowClick={onOutsideItemsArrowClick}
+			/>
+			<OutsideItemsMenu
+				onGraphItemClick={onGraphItemClick}
+				direction='right'
+				items={outsideItems.right}
+				getGraphItemType={getGraphItemType}
+				onArrowClick={onOutsideItemsArrowClick}
+			/>
+			<OutsideItemsList
+				showCount={false}
+				itemsMap={outsidePanels.left}
+				direction='left'
+				className='outside-items__panels'
+				onItemClick={onOutsidePanelClick}
+			/>
+			<OutsideItemsList
+				showCount={false}
+				itemsMap={outsidePanels.right}
+				direction='right'
+				className='outside-items__panels'
+				onItemClick={onOutsidePanelClick}
+				onArrowClick={onOutsideItemsArrowClick}
 			/>
 		</>
 	);
-}
+};
 
-interface OutsideItemsListProps {
-	itemsMap: Record<string, number | undefined>;
-	direction: 'left' | 'right';
-	onClick?: () => void;
-	onItemClick?: (key: string) => void;
-	onArrowClick?: (direction: 'left' | 'right') => void;
-	className?: string;
-	showCount?: boolean;
-}
-
-export const OutsideItemsList = React.forwardRef<HTMLDivElement, OutsideItemsListProps>(
-	(
-		{
-			itemsMap = {},
-			direction,
-			onClick,
-			className = '',
-			showCount = true,
-			onItemClick,
-			onArrowClick,
-		}: OutsideItemsListProps,
-		ref,
-	) => {
-		return (
-			<AnimatePresence>
-				{Object.values(itemsMap).some(Boolean) && (
-					<motion.div
-						variants={direction === 'left' ? leftIndicatorVariants : rightIndicatorVariants}
-						initial='hidden'
-						animate='visible'
-						exit='hidden'
-						className={`outside-items__indicator ${direction} ${className}`}
-						ref={ref}>
-						<i
-							className={`outside-items__indicator-pointer ${direction}`}
-							onClick={e => {
-								if (onArrowClick) {
-									e.stopPropagation();
-									onArrowClick(direction);
-								}
-							}}
-						/>
-						<div className='outside-items__wrapper' onClick={onClick}>
-							{Object.entries(itemsMap)
-								.filter(item => Boolean(item[1]))
-								.map(([type, count]) => (
-									<div
-										key={type}
-										className={`outside-items__indicator-item ${direction}`}
-										onClick={e => {
-											if (onItemClick) {
-												e.stopPropagation();
-												onItemClick(type);
-											}
-										}}>
-										<i className={`outside-items__indicator-icon ${type.toLowerCase()}`} />
-										{showCount && (
-											<span className='outside-items__indicator-value'>{`+ ${count}`}</span>
-										)}
-									</div>
-								))}
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
-		);
-	},
-);
-
-OutsideItemsList.displayName = 'OutsideItemsList';
+export default observer(OutsideItems);
