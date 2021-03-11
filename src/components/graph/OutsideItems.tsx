@@ -103,6 +103,16 @@ const OutsideItems = (props: OverlayPanelProps) => {
 		}
 	};
 
+	const onOutsidePanelArrowClick = (direction: 'left' | 'right') => {
+		const panelTypes = Object.keys(outsidePanels[direction]);
+		const panels = panelsRange.filter(p => panelTypes.includes(p.type));
+		const panel = panels.sort((p1, p2) => p1.range[0] - p2.range[1])[0];
+
+		if (panel) {
+			onPanelRangeSelect(panel.range);
+		}
+	};
+
 	return (
 		<>
 			<OutsideItemsMenu
@@ -125,6 +135,7 @@ const OutsideItems = (props: OverlayPanelProps) => {
 				direction='left'
 				className='outside-items__panels'
 				onItemClick={onOutsidePanelClick}
+				onArrowClick={onOutsidePanelArrowClick}
 			/>
 			<OutsideItemsList
 				showCount={false}
@@ -132,6 +143,7 @@ const OutsideItems = (props: OverlayPanelProps) => {
 				direction='right'
 				className='outside-items__panels'
 				onItemClick={onOutsidePanelClick}
+				onArrowClick={onOutsidePanelArrowClick}
 			/>
 		</>
 	);
