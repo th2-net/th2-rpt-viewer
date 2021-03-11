@@ -143,7 +143,7 @@ function Graph({ activeWorkspace }: GraphProps) {
 				setRange={activeWorkspace.graphStore.setRange}
 				interval={activeWorkspace.graphStore.interval}
 				timestamp={activeWorkspace.graphStore.timestamp}
-				key={activeWorkspace.graphStore.timestamp}
+				key={activeWorkspace.graphStore.timestamp.valueOf()}
 				range={activeWorkspace.graphStore.range}
 			/>
 			<OutsideItems

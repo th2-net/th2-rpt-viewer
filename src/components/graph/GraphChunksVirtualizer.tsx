@@ -62,7 +62,7 @@ interface Props {
 	settings: Settings;
 	renderChunk: (chunk: Chunk, index: number) => JSX.Element;
 	chunkWidth: number;
-	timestamp: number;
+	timestamp: Number;
 	interval: number;
 	range: TimeRange;
 	setRange: (range: TimeRange) => void;
@@ -102,7 +102,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 
 	const [state] = React.useState<State>(setInitialState(settings));
 
-	const [acnhorTimestamp, setAnchorTimestamp] = React.useState(timestamp);
+	const [anchorTimestamp, setAnchorTimestamp] = React.useState(timestamp.valueOf());
 
 	const [chunks, setChunks] = React.useState<Array<[Chunk, number]>>([]);
 
@@ -120,7 +120,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 		}
 		const firstChunk = viewportElementRef.current?.querySelector(`[data-index="${chunks[0][1]}"]`);
 		if (firstChunk && firstChunk instanceof HTMLDivElement) {
-			const firstChunkRange = getDivInterval(firstChunk);
+			const firstChunkRange = getDivRange(firstChunk);
 			const offset = firstChunk.offsetLeft;
 			if (firstChunkRange) {
 				const panelsMarkerPositions = panelsRange.map(({ range: panelRange, type }) => {
@@ -147,12 +147,12 @@ const GraphChunksVirtualizer = (props: Props) => {
 		raf(() => {
 			if (viewportElementRef.current) {
 				const offset =
-					(timestamp - moment(timestamp).startOf('minute').valueOf()) *
+					(timestamp.valueOf() - moment(timestamp.valueOf()).startOf('minute').valueOf()) *
 					(chunkWidth / (interval * 60 * 1000));
 				viewportElementRef.current.scrollLeft = state.initialPosition - chunkWidth + offset;
 			}
 		}, 2);
-	}, []);
+	}, [timestamp]);
 
 	React.useEffect(() => {
 		document.addEventListener('mousedown', handleMouseDown);
@@ -227,7 +227,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 			nextItemsRef.current.style.width = `${rightPadding}px`;
 		}
 
-		const updatedChunks: [Chunk, number][] = data.map(i => [getChunk(acnhorTimestamp, i), i]);
+		const updatedChunks: [Chunk, number][] = data.map(i => [getChunk(anchorTimestamp, i), i]);
 		const isUpdated =
 			chunks.length === 0 ||
 			updatedChunks.some(
@@ -236,7 +236,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 			);
 
 		if (isUpdated) {
-			setChunks(data.map(i => [getChunk(acnhorTimestamp, i), i]));
+			setChunks(data.map(i => [getChunk(anchorTimestamp, i), i]));
 		}
 	};
 
@@ -265,8 +265,8 @@ const GraphChunksVirtualizer = (props: Props) => {
 				);
 			});
 
-		const targetDiv = divsInInterval.find(getDivInterval);
-		const timestamps = targetDiv && getDivInterval(targetDiv);
+		const targetDiv = divsInInterval.find(getDivRange);
+		const timestamps = targetDiv && getDivRange(targetDiv);
 
 		if (targetDiv && timestamps) {
 			const [from] = timestamps;
@@ -457,7 +457,7 @@ function TimeSelector(props: TimeSelectorProps) {
 	);
 }
 
-function getDivInterval(intervalDiv: HTMLDivElement): null | TimeRange {
+function getDivRange(intervalDiv: HTMLDivElement): null | TimeRange {
 	const from = parseInt(intervalDiv.dataset.from || '');
 	const to = parseInt(intervalDiv.dataset.to || '');
 

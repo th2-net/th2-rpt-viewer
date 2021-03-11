@@ -41,7 +41,7 @@ export class GraphStore {
 
 		reaction(
 			() => this.interval,
-			interval => this.createChunks(interval, this.timestamp),
+			interval => this.createChunks(interval, this.timestamp.valueOf()),
 		);
 
 		reaction(
@@ -49,7 +49,7 @@ export class GraphStore {
 			() => (this.chunks = []),
 		);
 
-		this.createChunks(this.interval, this.timestamp);
+		this.createChunks(this.interval, this.timestamp.valueOf());
 	}
 
 	@observable
@@ -59,14 +59,14 @@ export class GraphStore {
 	public chunks: Chunk[] = [];
 
 	@observable
-	public timestamp: number = moment()
+	public timestamp: Number = moment()
 		.utc()
 		.subtract(this.interval / 2, 'minutes')
 		.valueOf();
 
 	@observable
 	public range: TimeRange = calculateTimeRange(
-		moment(this.timestamp).utc().valueOf(),
+		moment(this.timestamp.valueOf()).utc().valueOf(),
 		this.interval,
 	);
 
@@ -76,7 +76,7 @@ export class GraphStore {
 
 	@action
 	public setTimestamp = (timestamp: number) => {
-		this.timestamp = timestamp;
+		this.timestamp = new Number(timestamp);
 	};
 
 	@action
