@@ -140,16 +140,22 @@ const GraphChunksVirtualizer = (props: Props) => {
 		} else {
 			setPanels([]);
 		}
-	}, [panelsRange, chunks]);
+	}, [panelsRange, chunks, timestamp]);
 
-	React.useEffect(() => {
+	React.useLayoutEffect(() => {
 		getCurrentChunks(state.initialPosition);
 		raf(() => {
 			if (viewportElementRef.current) {
+				const expectedChunkCenterTimestamp = moment
+					.utc(timestamp.valueOf())
+					.subtract(interval / 2, 'minutes')
+					.startOf('minute')
+					.add(interval / 2, 'minutes');
+
 				const offset =
-					(timestamp.valueOf() - moment(timestamp.valueOf()).startOf('minute').valueOf()) *
+					(timestamp.valueOf() - expectedChunkCenterTimestamp.valueOf()) *
 					(chunkWidth / (interval * 60 * 1000));
-				viewportElementRef.current.scrollLeft = state.initialPosition - chunkWidth + offset;
+				viewportElementRef.current.scrollLeft = state.initialPosition - chunkWidth / 2 + offset;
 			}
 		}, 2);
 	}, [timestamp]);

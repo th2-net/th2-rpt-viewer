@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, computed, observable, reaction, toJS } from 'mobx';
 import moment from 'moment';
 import { isEventNode } from '../helpers/event';
 import { calculateTimeRange } from '../helpers/graph';
@@ -46,7 +46,7 @@ export class GraphStore {
 
 		reaction(
 			() => this.timestamp,
-			() => (this.chunks = []),
+			() => this.createChunks(this.interval, this.timestamp.valueOf()),
 		);
 
 		this.createChunks(this.interval, this.timestamp.valueOf());
@@ -59,14 +59,14 @@ export class GraphStore {
 	public chunks: Chunk[] = [];
 
 	@observable
-	public timestamp: Number = moment()
+	public timestamp: Number = moment
 		.utc()
 		.subtract(this.interval / 2, 'minutes')
 		.valueOf();
 
 	@observable
 	public range: TimeRange = calculateTimeRange(
-		moment(this.timestamp.valueOf()).utc().valueOf(),
+		moment.utc(this.timestamp.valueOf()).valueOf(),
 		this.interval,
 	);
 
@@ -90,11 +90,12 @@ export class GraphStore {
 	};
 
 	@action
-	public getChunkByTimestamp = (timestampFrom: number) => {
-		const existedChunk = this.chunks.find(chunk => chunk.from === timestampFrom);
-		if (existedChunk) return existedChunk;
-
-		const chunk = observable(this.createChunk(timestampFrom, this.interval));
+	public getChunkByTimestamp = (timestamp: number) => {
+		let chunk: Chunk | undefined = this.chunks.find(c => timestamp >= c.from && timestamp <= c.to);
+		if (chunk) return chunk;
+		chunk = observable(
+			this.createChunk(moment.utc(timestamp).startOf('minute').valueOf(), this.interval),
+		);
 		this.chunks.push(chunk);
 		return chunk;
 	};
@@ -107,25 +108,16 @@ export class GraphStore {
 
 	@action
 	public createChunks(interval: IntervalOption, timestamp: number) {
-		let chunks: Chunk[] = [this.createChunk(timestamp, interval)];
-		for (let i = 1; i < 3; i++) {
-			chunks = [
-				this.createChunk(
-					moment(timestamp)
-						.startOf('minute')
-						.subtract(i * interval, 'minutes')
-						.valueOf(),
-					interval,
-				),
-				...chunks,
-				this.createChunk(
-					moment(timestamp)
-						.startOf('minute')
-						.add(i * interval, 'minutes')
-						.valueOf(),
-					interval,
-				),
-			];
+		this.chunks = [];
+		const chunkStart = moment
+			.utc(timestamp)
+			.subtract(interval * 3.5, 'minutes')
+			.startOf('minute');
+		const chunks: Chunk[] = [];
+
+		while (chunks.length !== 7) {
+			chunks.push(this.createChunk(chunkStart.valueOf(), interval));
+			chunkStart.add(interval, 'minutes');
 		}
 
 		this.chunks = chunks;
@@ -133,34 +125,13 @@ export class GraphStore {
 
 	private createChunk = (timestamp: number, interval: IntervalOption) => {
 		return {
-			from: moment(timestamp).valueOf(),
-			to: moment(timestamp).add(interval, 'minutes').valueOf(),
+			from: timestamp,
+			to: moment(timestamp)
+				.add(interval - 1, 'minutes')
+				.endOf('minute')
+				.valueOf(),
 			data: [],
 		};
-	};
-
-	@action
-	addPreviousChunk = () => {
-		const firstChunk = this.chunks[0];
-
-		if (firstChunk) {
-			this.chunks = [
-				this.createChunk(
-					moment(firstChunk.from).subtract(this.interval, 'minutes').valueOf(),
-					this.interval,
-				),
-				...this.chunks.slice(0, 4),
-			];
-		}
-	};
-
-	@action
-	addNextChunk = () => {
-		const lastChunk = this.chunks[this.chunks.length - 1];
-
-		if (lastChunk) {
-			this.chunks = [...this.chunks.slice(1), this.createChunk(lastChunk.to, this.interval)];
-		}
 	};
 
 	public getGraphItemType = (item: GraphItem): GraphItemType => {

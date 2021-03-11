@@ -82,14 +82,13 @@ export function groupGraphItems(
 export function getGraphTimeTicks(timeRange: TimeRange, interval: number, tickSize: number) {
 	const ticksArr = [];
 
-	const [from, to] = timeRange;
-
-	const ticksInterval = (to - from) / interval / 1000 / 60;
+	const [from] = timeRange;
 
 	for (let i = 0; i < interval; i += tickSize) {
 		ticksArr.push(
 			moment(from)
-				.add(ticksInterval * i, 'minutes')
+				.startOf('minute')
+				.add(tickSize * i, 'minutes')
 				.valueOf(),
 		);
 	}

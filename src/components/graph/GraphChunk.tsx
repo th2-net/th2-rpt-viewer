@@ -86,24 +86,17 @@ function GraphChunk(props: Props) {
 		};
 	}, []);
 
-	const chunkBoundaries: TimeRange = React.useMemo(() => {
-		return [
-			moment(chunk.from).startOf('minute').valueOf(),
-			moment(chunk.to).startOf('minute').valueOf(),
-		];
-	}, [chunk.from, chunk.to]);
-
 	const graphItems = React.useMemo(() => {
-		return filterListByChunkRange(chunkBoundaries, selectedStore.graphItems);
-	}, [chunkBoundaries, selectedStore.graphItems]);
+		return filterListByChunkRange([chunk.from, chunk.to], selectedStore.graphItems);
+	}, [chunk.from, chunk.to, selectedStore.graphItems]);
 
 	const ticks: Array<string> = React.useMemo(() => {
-		return getGraphTimeTicks(chunkBoundaries, interval, tickSize);
-	}, [chunkBoundaries, interval, tickSize]);
+		return getGraphTimeTicks([chunk.from, chunk.to], interval, tickSize);
+	}, [chunk.from, chunk.to, interval, tickSize]);
 
 	const graphItemsGroups: Array<GraphGroup> = React.useMemo(() => {
-		return groupGraphItems(chunkBoundaries, chunkWidth, graphItems, ATTACHED_ITEM_SIZE);
-	}, [chunkBoundaries, chunkWidth, graphItems]);
+		return groupGraphItems([chunk.from, chunk.to], chunkWidth, graphItems, ATTACHED_ITEM_SIZE);
+	}, [chunk.from, chunk.to, chunkWidth, graphItems]);
 
 	return (
 		<div className='graph-chunk' data-from={chunk.from} data-to={chunk.to}>
