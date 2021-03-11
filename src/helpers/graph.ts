@@ -41,19 +41,27 @@ export function groupGraphItems(
 	timeRange: TimeRange,
 	chunkWidth: number,
 	items: GraphItem[],
-	ATTACHED_ITEM_SIZE: number,
+	ATTACHED_ITEM_SIZE_PX: number,
 ): Array<GraphGroup> {
 	const [from, to] = timeRange;
-	function getGroupLeftPosition(timestamp: number) {
+	function getGroupLeftPosition(timestamp: number): number {
 		return Math.floor(((timestamp - from) / (to - from)) * chunkWidth);
 	}
+	const sortedItems = items.slice();
+	sortedItems.sort((itemA, itemB) => getTimestampAsNumber(itemA) - getTimestampAsNumber(itemB));
 
-	const positions = items.map(item => getGroupLeftPosition(getTimestampAsNumber(item)));
+	const positions = sortedItems.map(item => {
+		const position = getGroupLeftPosition(getTimestampAsNumber(item));
+		return Math.min(
+			Math.max(position - ATTACHED_ITEM_SIZE_PX / 2, 0),
+			chunkWidth - ATTACHED_ITEM_SIZE_PX,
+		);
+	});
 
 	const groups: Array<GraphGroup> = [];
 
 	let i = 0;
-	let headItem = items[i];
+	let headItem = sortedItems[i];
 
 	while (headItem) {
 		const headItemPosition = positions[i];
@@ -61,19 +69,19 @@ export function groupGraphItems(
 			items: [],
 			left: positions[i],
 		};
-		let currItem = items[i];
+		let currItem = sortedItems[i];
 
 		const [leftBoundary, rightBoundary] = [
-			headItemPosition - ATTACHED_ITEM_SIZE,
-			headItemPosition + ATTACHED_ITEM_SIZE,
+			headItemPosition,
+			headItemPosition + ATTACHED_ITEM_SIZE_PX,
 		];
 
 		while (currItem && positions[i] >= leftBoundary && positions[i] <= rightBoundary) {
 			group.items.push(currItem);
-			currItem = items[++i];
+			currItem = sortedItems[++i];
 		}
 		groups.push(group);
-		headItem = items[i];
+		headItem = sortedItems[i];
 	}
 
 	return groups;
