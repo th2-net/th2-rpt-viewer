@@ -156,7 +156,7 @@ function Graph({ activeWorkspace }: GraphProps) {
 				onPanelRangeSelect={activeWorkspace.graphStore.setTimestampFromRange}
 			/>
 			<WorkspaceLinkGetter />
-			<MessageBodyRulesConfigurator activeWorkspace={activeWorkspace} />
+			<MessageBodyRulesConfigurator sessions={activeWorkspace.messagesStore.messageSessions} />
 		</div>
 	);
 }
