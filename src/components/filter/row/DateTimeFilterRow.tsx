@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { createBemBlock } from '../../../helpers/styleCreators';
 import {
 	DateTimeInputType,
 	FilterRowDatetimeRangeConfig,
@@ -22,6 +23,8 @@ import {
 import DatetimeInput from '../date-time-inputs/DateTimeInput';
 
 export default function DatetimeFilterRow({ config }: { config: FilterRowDatetimeRangeConfig }) {
+	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
+
 	const renderInput = (inputConfig: DateTimeInputType) => [
 		inputConfig.label && (
 			<label
@@ -35,7 +38,7 @@ export default function DatetimeFilterRow({ config }: { config: FilterRowDatetim
 	];
 
 	return (
-		<div className='filter-row'>
+		<div className={wrapperClassName}>
 			{config.inputs.map((inputConfig: DateTimeInputType) => renderInput(inputConfig))}
 			<div className='filter-time-controls'>
 				<div className='filter-row__arrow-icon' />

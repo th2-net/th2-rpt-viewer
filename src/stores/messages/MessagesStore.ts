@@ -90,10 +90,15 @@ export default class MessagesStore {
 		defaultState: MessagesStoreDefaultStateType,
 	) {
 		if (defaultState) {
-			if (isEventMessage(defaultState.targetMessage)) {
-				this.onMessageSelect(defaultState.targetMessage);
-			}
 			this.filterStore = new MessagesFilterStore(this.searchStore, defaultState);
+			const message = defaultState.targetMessage;
+			if (isEventMessage(message)) {
+				this.selectedMessageId = new String(message.messageId);
+				this.highlightedMessageId = message.messageId;
+				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
+				this.workspaceStore.viewStore.activePanel = this;
+			}
+
 			this.dataStore.loadMessages();
 		}
 
@@ -255,6 +260,12 @@ export default class MessagesStore {
 	*/
 	private handleFilterHint = (message: EventMessage | EventMessage[]): boolean => {
 		this.hintMessages = Array.isArray(message) ? message : [message];
+
+		if (this.hintMessages.length === 0) {
+			this.showFilterChangeHint = false;
+			return this.showFilterChangeHint;
+		}
+
 		const sseFilter = this.filterStore.sseMessagesFilter;
 		const streams = this.filterStore.filter.streams;
 		const areFiltersApplied = [
@@ -273,6 +284,9 @@ export default class MessagesStore {
 	@action
 	public applyFilterHint = () => {
 		if (!this.hintMessages.length) return;
+
+		this.dataStore.searchChannelNext?.stop();
+		this.dataStore.searchChannelPrev?.stop();
 
 		const targetMessage: EventMessage = sortMessagesByTimestamp(this.hintMessages)[0];
 
@@ -293,5 +307,7 @@ export default class MessagesStore {
 	public dispose = () => {
 		this.attachedMessagesSubscription();
 		this.filterStore.dispose();
+		this.dataStore.searchChannelPrev?.stop();
+		this.dataStore.searchChannelNext?.stop();
 	};
 }

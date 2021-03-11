@@ -76,7 +76,6 @@ function EventsFilterPanel() {
 		<FilterPanel
 			isLoading={eventWindowStore.isLoadingRootEvents}
 			isFilterApplied={filterStore.isEventsFilterApplied}
-			count={filterStore.isEventsFilterApplied ? eventWindowStore.eventTree.length : null}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
 			onSubmit={onSubmit}

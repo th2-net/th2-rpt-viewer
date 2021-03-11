@@ -18,6 +18,7 @@ import * as React from 'react';
 import { raf } from '../../../helpers/raf';
 import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../../hooks';
+import KeyCodes from '../../../util/KeyCodes';
 import SearchInput from '../../search/SearchInput';
 import { ModalPortal } from '../../util/Portal';
 
@@ -49,6 +50,27 @@ function EventSearchPanel({ isDisabled = false }: Props) {
 		}
 	}, [showSearch]);
 
+	const handleKeyDown = React.useCallback(
+		(e: KeyboardEvent) => {
+			if (e.keyCode === KeyCodes.F3 || (e.keyCode === KeyCodes.F && e.ctrlKey)) {
+				// cancel browser search opening
+				if (!isDisabled) {
+					e.preventDefault();
+					setShowSearch(true);
+				}
+			}
+		},
+		[isDisabled],
+	);
+
+	React.useEffect(() => {
+		document.addEventListener('keydown', handleKeyDown);
+
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [handleKeyDown]);
+
 	useOutsideClickListener(searchBaseRef, (e: MouseEvent) => {
 		if (!searchButtonRef.current?.contains(e.target as Element)) {
 			setShowSearch(false);
@@ -61,29 +83,20 @@ function EventSearchPanel({ isDisabled = false }: Props) {
 
 	const searchIconClass = createBemElement('search', 'icon', showSearch ? 'active' : null);
 
-	const searchButtonClass = createBemElement(
-		'search',
-		'button',
-		isDisabled ? 'disabled' : null,
-		showSearch ? 'active' : null,
-	);
+	const searchButtonClass = createBemElement('search', 'button', showSearch ? 'active' : null);
 
 	return (
 		<div className={searchWrapperClass}>
 			<div
 				className={searchButtonClass}
 				ref={searchButtonRef}
-				onClick={() => {
-					if (!isDisabled) {
-						setShowSearch(!showSearch);
-					}
-				}}>
-				<div className={searchIconClass}></div>
+				onClick={() => setShowSearch(isSearchPanelShown => !isSearchPanelShown)}>
+				<div className={searchIconClass} />
 				<div className={searchTitleClass}>Search</div>
 			</div>
 			<ModalPortal isOpen={showSearch}>
 				<div className='search' ref={searchBaseRef}>
-					<SearchInput disabled={isDisabled} />
+					<SearchInput disabled={isDisabled} isActive={showSearch} />
 				</div>
 			</ModalPortal>
 		</div>

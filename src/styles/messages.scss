@@ -511,6 +511,7 @@
 	justify-content: space-between;
 
 	&__group {
+		width: 100%;
 		display: flex;
 		align-items: center;
 	}
@@ -560,31 +561,48 @@
 		}
 	}
 
-	.sessions {
-		margin-left: 5px;
-		display: flex;
-		align-items: center;
-		position: relative;
-		height: 100%;
+	&__session-filter {
+		margin-bottom: 0;
+		flex-grow: 1;
+		margin-left: 10px;
 
-		&__title {
-			color: $primaryTextColor;
-			font-size: 12px;
-			font-weight: bold;
+		.filter-row {
+			&__input {
+				border: 1px solid rgb(94, 94, 94);
+			}
+
+			&__label {
+				width: auto;
+				padding-right: 15px;
+				color: #4d4d4d;
+				font-size: 12px;
+				line-height: 15px;
+				font-weight: bold;
+				white-space: nowrap;
+			}
 		}
 
-		&__add-button {
-			height: 19px;
-			display: flex;
-			align-items: center;
-			padding: 0 8px;
-			border-radius: 5px;
-			background-color: #00bbcc;
-			color: #fff;
-			cursor: pointer;
-			font-size: 11px;
+		.filter-content {
+			margin: 0;
+		}
+	}
+
+	&__filter-submit {
+		&-btn {	
+			@include clickable;
+
+			flex-shrink: 0;
+			background-color: transparent;
 			border: none;
-			margin-left: 5px;
+			margin-left: 10px;
+			cursor: pointer;
+			padding: 4px;
+		}
+
+		&-icon {
+			@include icon(url('../../resources/icons/search.svg'), 16px, 16px);
+
+			display: inline-block;
 		}
 	}
 }

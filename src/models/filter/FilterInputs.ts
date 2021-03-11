@@ -23,7 +23,9 @@ export type FitlerRowItem =
 
 export type CompoundFilterRow = Array<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>;
 
-export type FilterRowConfig = FitlerRowItem | CompoundFilterRow;
+export type ActionFilterRow = ActionFilterConfig;
+
+export type FilterRowConfig = FitlerRowItem | CompoundFilterRow | ActionFilterRow;
 
 export enum DateTimeMask {
 	TIME_MASK = 'HH:mm:ss.SSS',
@@ -72,8 +74,9 @@ export enum TimeInputType {
 
 export type FilterRowBaseConfig = {
 	id: string;
-	label: string;
+	label?: string;
 	disabled?: boolean;
+	wrapperClassName?: string;
 };
 
 export type FilterRowTimeWindowConfig = FilterRowBaseConfig & {
@@ -94,6 +97,7 @@ export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
 	currentValue: string;
 	setCurrentValue: (currentValue: string) => void;
 	autocompleteList: string[] | null;
+	hint?: string;
 };
 
 export type FilterRowDatetimeRangeConfig = FilterRowBaseConfig & {
@@ -112,4 +116,13 @@ export type FilterRowTogglerConfig = FilterRowBaseConfig & {
 	possibleValues: [string, string];
 	toggleValue: () => void;
 	className?: string;
+};
+
+export type ActionFilterConfig = {
+	id: string;
+	type: 'action';
+	message: string;
+	actionButtonText: string;
+	action: () => void;
+	isLoading?: boolean;
 };
