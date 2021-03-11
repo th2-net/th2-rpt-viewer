@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, toJS } from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { isEventNode } from '../helpers/event';
 import { calculateTimeRange } from '../helpers/graph';
@@ -34,7 +34,6 @@ export class GraphStore {
 		timeRange: TimeRange | null = null,
 		defaultInterval: IntervalOption = 15,
 	) {
-		if (timeRange) this.range = timeRange;
 		const range = timeRange || this.range;
 		this.setTimestampFromRange(range);
 		this.interval = defaultInterval;

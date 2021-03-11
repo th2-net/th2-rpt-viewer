@@ -263,12 +263,9 @@ const GraphChunksVirtualizer = (props: Props) => {
 		const divsInInterval = Array.from(viewportElementRef.current.children)
 			.filter(isDivElement)
 			.filter(intervalDiv => {
-				const { left, right } = intervalDiv.getBoundingClientRect();
+				const { left } = intervalDiv.getBoundingClientRect();
 
-				return (
-					(left >= rangeBlockRect.left && left <= rangeBlockRect.right) ||
-					(right >= rangeBlockRect.left && right <= rangeBlockRect.right)
-				);
+				return left >= rangeBlockRect.left && left <= rangeBlockRect.right;
 			});
 
 		const targetDiv = divsInInterval.find(getDivRange);
@@ -279,8 +276,10 @@ const GraphChunksVirtualizer = (props: Props) => {
 			const pixelsDiff = rangeBlockRect.left - targetDiv.getBoundingClientRect().left;
 			const secondsDiff = (pixelsDiff / chunkWidth) * (interval * 60);
 
-			const intervalStart = moment(from).utc().add(secondsDiff, 'seconds');
-			const intervalEnd = moment(intervalStart).utc().add(interval, 'minutes');
+			const intervalStart = moment.utc(from).add(secondsDiff, 'seconds');
+			const intervalEnd = moment
+				.utc(intervalStart)
+				.add((rangeBlockRect.width / chunkWidth) * interval, 'minutes');
 
 			if (intervalStart.isValid() && intervalEnd.isValid()) {
 				const updatedRange: TimeRange = [intervalStart.valueOf(), intervalEnd.valueOf()];
@@ -337,18 +336,6 @@ const GraphChunksVirtualizer = (props: Props) => {
 		}
 	};
 
-	const windowTimeRange: TimeRange = React.useMemo(() => {
-		const [from, to] = range;
-		return [
-			moment(from)
-				.subtract(interval / 2, 'minutes')
-				.valueOf(),
-			moment(to)
-				.add(interval / 2, 'minutes')
-				.valueOf(),
-		];
-	}, [range]);
-
 	return (
 		<div className='graph-virtualizer'>
 			<div
@@ -373,16 +360,12 @@ const GraphChunksVirtualizer = (props: Props) => {
 			{panelsRange.map(panel => (
 				<TimeSelector
 					key={panel.type}
-					windowTimeRange={windowTimeRange}
+					windowTimeRange={range}
 					onClick={panel.setRange}
 					panelType={panel.type}
 				/>
 			))}
-			<div
-				className='graph-virtualizer__dragging-zone'
-				style={{ width: chunkWidth, left: (window.innerWidth - chunkWidth) / 2 }}
-				ref={rangeElementRef}
-			/>
+			<div className='graph-virtualizer__dragging-zone' ref={rangeElementRef} />
 		</div>
 	);
 };
