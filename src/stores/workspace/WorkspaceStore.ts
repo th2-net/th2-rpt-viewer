@@ -25,7 +25,7 @@ import EventsStore, { EventStoreDefaultStateType, EventStoreURLState } from '../
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceViewStore from './WorkspaceViewStore';
-import { EventMessage, MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
+import { EventMessage } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphStore } from '../GraphStore';
@@ -34,7 +34,6 @@ import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
-import localStorageWorker from '../../util/LocalStorageWorker';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;
