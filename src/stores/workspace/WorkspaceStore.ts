@@ -108,6 +108,11 @@ export default class WorkspaceStore {
 		return [...new Set(this.attachedMessages.map(msg => msg.sessionId))];
 	}
 
+	@computed
+	public get isActive(): boolean {
+		return this.workspacesStore.activeWorkspace === this;
+	}
+
 	@action
 	public setAttachedMessagesIds = (attachedMessageIds: string[]) => {
 		this.attachedMessagesIds = [...new Set(attachedMessageIds)];
