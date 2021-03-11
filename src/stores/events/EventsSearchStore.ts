@@ -172,6 +172,7 @@ export default class EventsSearchStore {
 	clear = () => {
 		this.rawResults = [];
 		this.tokens = [];
+		this.inputValue = '';
 		this.scrolledIndex = null;
 	};
 

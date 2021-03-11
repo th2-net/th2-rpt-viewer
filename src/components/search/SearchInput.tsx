@@ -21,7 +21,7 @@ import KeyCodes from '../../util/KeyCodes';
 import SearchToken from '../../models/search/SearchToken';
 import Bubble from '../util/Bubble';
 import { nextCyclicItem, removeByIndex, replaceByIndex } from '../../helpers/array';
-import { createBemBlock } from '../../helpers/styleCreators';
+import { raf } from '../../helpers/raf';
 import { useWorkspaceEventStore } from '../../hooks';
 import { createSearchToken } from '../../helpers/search/createSearchToken';
 import '../../styles/search.scss';
@@ -36,7 +36,6 @@ interface StateProps {
 	currentIndex: number | null;
 	resultsCount: number;
 	isLoading: boolean;
-	isActive: boolean;
 	value: string;
 }
 
@@ -45,14 +44,12 @@ interface DispatchProps {
 	nextSearchResult: () => void;
 	prevSearchResult: () => void;
 	clear: () => void;
-	setIsActive: (isActive: boolean) => void;
 	setValue: (value: string) => void;
 }
 
 export interface Props extends StateProps, DispatchProps {
 	disabled: boolean;
-	openSearchPanel: () => void;
-	isSearchPanelOpen: boolean;
+	isActive: boolean;
 }
 
 export class SearchInputBase extends React.PureComponent<Props> {
@@ -64,32 +61,14 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		super(props);
 	}
 
-	componentDidMount() {
-		document.addEventListener('keydown', this.documentOnKeyDown);
-		document.addEventListener('click', this.documentOnClick);
-	}
-
-	componentWillUnmount() {
-		document.removeEventListener('keydown', this.documentOnKeyDown);
-		document.removeEventListener('click', this.documentOnClick);
-	}
-
 	componentDidUpdate(prevProps: Props) {
-		if (this.props.isSearchPanelOpen && !prevProps.isSearchPanelOpen) {
+		if (this.props.isActive && !prevProps.isActive) {
 			this.focus();
 		}
 	}
 
 	focus() {
-		this.props.setIsActive(true);
-		this.props.openSearchPanel();
-		this.inputElement.current?.focus();
-	}
-
-	blur() {
-		this.props.setIsActive(false);
-		this.props.setValue('');
-		this.inputElement.current?.blur();
+		raf(() => this.inputElement.current?.focus(), 3);
 	}
 
 	render() {
@@ -100,21 +79,16 @@ export class SearchInputBase extends React.PureComponent<Props> {
 			nextSearchResult,
 			searchTokens,
 			isLoading,
-			isActive,
 			value,
 		} = this.props;
-
 		const notActiveTokens = searchTokens.filter(searchToken => !searchToken.isActive);
 		const activeTokens = searchTokens.find(searchToken => searchToken.isActive);
 
 		const showControls = resultsCount > 0;
 
-		const wrapperClassName = createBemBlock('search-field-wrapper', isActive ? 'active' : null);
-		const rootClassName = createBemBlock('search-field', isActive ? 'active' : null);
-
 		return (
-			<div className={wrapperClassName}>
-				<div className={rootClassName} ref={this.root} onMouseDown={this.onMouseDown}>
+			<div className='search-field-wrapper'>
+				<div className='search-field' ref={this.root} onMouseDown={this.onMouseDown}>
 					<React.Fragment>
 						<div className='search-field__child-wrapper' onMouseDown={this.onMouseDown}>
 							{notActiveTokens.map(({ color, pattern }, index) => (
@@ -176,19 +150,8 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		);
 	}
 
-	private documentOnClick = (e: MouseEvent) => {
-		if (
-			!this.root.current?.contains(e.target as HTMLElement) &&
-			this.props.isActive &&
-			this.props.searchTokens.length < 1 &&
-			this.props.value.length < 1
-		) {
-			this.blur();
-		}
-	};
-
 	private onMouseDown = (e: React.MouseEvent) => {
-		if (e.target === e.currentTarget) {
+		if (e.target === this.root.current) {
 			e.preventDefault();
 			this.focus();
 		}
@@ -266,16 +229,6 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		}
 	};
 
-	private documentOnKeyDown = (e: KeyboardEvent) => {
-		if (e.keyCode === KeyCodes.F3 || (e.keyCode === KeyCodes.F && e.ctrlKey)) {
-			// cancel browser search opening
-			if (!this.props.disabled) {
-				e.preventDefault();
-				this.focus();
-			}
-		}
-	};
-
 	private inputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const currentValue = e.target.value;
 
@@ -334,7 +287,6 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 	private clear = () => {
 		this.props.clear();
-		this.blur();
 	};
 
 	private createToken(value: string, color?: string, isActive = true): SearchToken {
@@ -353,8 +305,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 interface SearchInputProps {
 	disabled: boolean;
-	openSearchPanel: () => void;
-	isSearchPanelOpen: boolean;
+	isActive: boolean;
 }
 
 const SearchInput = (props: SearchInputProps) => {
@@ -362,8 +313,6 @@ const SearchInput = (props: SearchInputProps) => {
 
 	return (
 		<SearchInputBase
-			isActive={searchStore.isActive}
-			setIsActive={(isActive: boolean) => (searchStore.isActive = isActive)}
 			searchTokens={searchStore.tokens}
 			resultsCount={searchStore.results.length}
 			currentIndex={searchStore.scrolledIndex}
