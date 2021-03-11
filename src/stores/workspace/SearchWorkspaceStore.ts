@@ -18,19 +18,15 @@ import { action } from 'mobx';
 import { nanoid } from 'nanoid';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { ActionType, EventAction, EventTreeNode } from '../../models/EventAction';
 import WorkspacesStore from './WorkspacesStore';
 import { SearchStore } from '../SearchStore';
 import ApiSchema from '../../api/ApiSchema';
 import { getRangeFromTimestamp, WorkspaceInitialState } from './WorkspaceStore';
 import { isEvent, isEventMessage } from '../../helpers/event';
 import { getTimestampAsNumber, timestampToNumber } from '../../helpers/date';
-import {
-	EventFilterState,
-	MessageFilterState,
-} from '../../components/search-panel/SearchPanelFilters';
 
-const SEARCH_STORE_INTERVAL = 15;
+export const SEARCH_STORE_INTERVAL = 15;
 
 export default class SearchWorkspaceStore {
 	public viewStore: WorkspaceViewStore;
@@ -98,39 +94,29 @@ export default class SearchWorkspaceStore {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 
 		if (isEventMessage(resultItem)) {
-			const requestInfo = this.searchStore.currentSearch?.request;
-			initialWorkspaceState = {
-				messages: {
-					sse: (requestInfo?.filters as MessageFilterState) || null,
-					streams: requestInfo?.state.stream || [],
-					timestampFrom: null,
-					timestampTo: timestampToNumber(resultItem.timestamp),
-				},
-				interval: SEARCH_STORE_INTERVAL,
-				layout: [0, 100],
-				timeRange: getRangeFromTimestamp(timestampToNumber(resultItem.timestamp), 15),
-			};
-		} else {
-			const requestInfo = this.searchStore.currentSearch?.request;
-			const filter = requestInfo?.filters as EventFilterState | undefined;
-			const [timestampFrom, timestampTo] = getRangeFromTimestamp(
-				timestampToNumber(resultItem.startTimestamp),
-				SEARCH_STORE_INTERVAL,
+			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(
+				timestampToNumber(resultItem.timestamp),
+				resultItem,
 			);
-			initialWorkspaceState = {
-				events: {
-					filter: {
-						eventTypes: filter && !filter.type.negative ? filter.type.values : [],
-						names: filter && !filter.name.negative ? filter.name.values : [],
-						timestampFrom,
-						timestampTo,
-					},
-					targetEvent: resultItem,
-				},
-				layout: [100, 0],
-				interval: SEARCH_STORE_INTERVAL,
-				timeRange: [timestampFrom, timestampTo],
-			};
+		} else {
+			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(
+				timestampToNumber(resultItem.startTimestamp),
+				resultItem,
+			);
+		}
+
+		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
+		this.workspacesStore.addWorkspace(newWorkspace);
+	};
+
+	@action
+	public followByTimestamp = (timestamp: number, resultType: ActionType) => {
+		let initialWorkspaceState: WorkspaceInitialState = {};
+
+		if (resultType === 'message') {
+			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(timestamp);
+		} else {
+			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(timestamp);
 		}
 
 		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);

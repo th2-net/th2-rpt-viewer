@@ -21,13 +21,16 @@ import { createBemElement } from '../../helpers/styleCreators';
 import { useSelectedStore } from '../../hooks';
 import { SearchResult } from '../../stores/SearchStore';
 import { BookmarkedItem, BookmarkItem } from '../BookmarksPanel';
+import { getTimestampAsNumber } from '../../helpers/date';
+import { ActionType } from '../../models/EventAction';
 
 interface SearchResultGroup {
 	results: SearchResult[];
 	onResultClick: (searchResult: BookmarkedItem) => void;
+	onGroupClick: (timestamp: number, resultType: ActionType) => void;
 }
 
-const SearchResultGroup = ({ results, onResultClick }: SearchResultGroup) => {
+const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResultGroup) => {
 	const selectedStore = useSelectedStore();
 	const [isExpanded, setIsExpanded] = React.useState(false);
 
@@ -73,12 +76,29 @@ const SearchResultGroup = ({ results, onResultClick }: SearchResultGroup) => {
 		);
 	};
 
+	const onSearchGroupClick = () => {
+		const groupTimestamps = results.map(getTimestampAsNumber);
+
+		let timestamp;
+		if (groupTimestamps.length === 1) {
+			timestamp = groupTimestamps[0];
+		} else {
+			timestamp = (groupTimestamps[0] + groupTimestamps[groupTimestamps.length - 1]) / 2;
+		}
+
+		onGroupClick(
+			timestamp,
+			isEventMessage(results[0]) ? ActionType.MESSAGE : ActionType.EVENT_ACTION,
+		);
+	};
+
 	return (
 		<>
-			<div className='search-result-group' onClick={() => setIsExpanded(!isExpanded)}>
-				<button className={expandButtonClass} />
+			<div className='search-result-group'>
+				<button className={expandButtonClass} onClick={() => setIsExpanded(!isExpanded)} />
 				<div
 					className='search-result-group__header'
+					onClick={onSearchGroupClick}
 					style={{
 						alignItems: mostPopularNames.length > 1 ? 'flex-start' : 'center',
 					}}>
