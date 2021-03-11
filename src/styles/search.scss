@@ -50,11 +50,6 @@
 		padding: 4px 5px;
 		cursor: pointer;
 
-		&.disabled {
-			opacity: 0.6;
-			cursor: default;
-		}
-
 		&.active {
 			padding: 4px 10px;
 		}
@@ -120,10 +115,7 @@
 	align-items: flex-start;
 	min-height: 29px;
 	padding: 3px 5px;
-
-	&.active {
-		background-color: white;
-	}
+	background-color: white;
 
 	&__input {
 		border: 0;

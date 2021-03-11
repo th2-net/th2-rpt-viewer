@@ -33,9 +33,9 @@ export class SSEChannel {
 
 	private chunkSize = 12;
 
-	private initialResponseTimeout: NodeJS.Timeout | null = null;
+	private initialResponseTimeout: number | null = null;
 
-	private initialResponseTimeoutMs = 1500;
+	private initialResponseTimeoutMs = 2000;
 
 	private updateScheduler: number | null = null;
 
@@ -65,7 +65,7 @@ export class SSEChannel {
 		this.isLoading = false;
 		this.clearSchedulersAndTimeouts();
 
-		if (this.fetchedChunkSubscription == null && this.accumulatedMessages.length > 0) {
+		if (this.fetchedChunkSubscription == null) {
 			this.onResponse(this.getNextChunk());
 			this.resetSSEState();
 		}
@@ -118,7 +118,7 @@ export class SSEChannel {
 
 	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
 		return new Promise(res => {
-			this.initialResponseTimeout = setTimeout(() => {
+			this.initialResponseTimeout = window.setTimeout(() => {
 				res(this.getNextChunk());
 				this.clearFetchedChunkSubscription();
 				this.initUpdateScheduler();
@@ -175,7 +175,7 @@ export class SSEChannel {
 
 	private clearSchedulersAndTimeouts = (): void => {
 		if (this.initialResponseTimeout) {
-			window.clearInterval(this.initialResponseTimeout);
+			window.clearTimeout(this.initialResponseTimeout);
 			this.initialResponseTimeout = null;
 		}
 
