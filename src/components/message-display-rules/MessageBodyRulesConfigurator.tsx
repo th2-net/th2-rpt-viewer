@@ -35,13 +35,17 @@ const MessageBodyRulesConfigurator = ({ activeWorkspace }: Props) => {
 
 	return (
 		<>
-			<button className='message-display-rules-open' onClick={() => setIsOpen(open => !open)} />
+			<button
+				className='message-display-rules-open'
+				onClick={() => setIsOpen(open => !open)}
+				title='Message display rules'
+			/>
 			<ModalPortal
 				isOpen={isOpen}
 				ref={modalRef}
 				style={{
 					position: 'absolute',
-					width: '40%',
+					width: '320px',
 					top: '35px',
 					right: '14px',
 					zIndex: 500,
@@ -49,10 +53,10 @@ const MessageBodyRulesConfigurator = ({ activeWorkspace }: Props) => {
 				<div className='message-display-rules'>
 					<div className='message-display-rules-header'>
 						<p>Message Display Rules</p>
-						<button onClick={() => setIsOpen(false)}>&#215;</button>
+						<button onClick={() => setIsOpen(false)} />
 					</div>
-					<RulesList activeWorkspace={activeWorkspace} />
-					<NewRuleForm activeWorkspace={activeWorkspace} className='message-display-rules' />
+					<RulesList autocompleteList={activeWorkspace.messagesStore.messageSessions} />
+					<NewRuleForm autocompleteList={activeWorkspace.messagesStore.messageSessions} />
 				</div>
 			</ModalPortal>
 		</>

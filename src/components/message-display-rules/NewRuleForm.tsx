@@ -14,101 +14,95 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { useMessageDisplayRulesStore } from '../../hooks';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
-import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import AutocompleteInput from '../util/AutocompleteInput';
 import Select from '../util/Select';
 
 type NewRuleFormProps = {
-	activeWorkspace: WorkspaceStore;
-	className: string;
+	autocompleteList: string[];
 	rule?: MessageDisplayRule;
 	stopEdit?: () => void;
 };
 
-const NewRuleForm = ({ rule, className, stopEdit, activeWorkspace }: NewRuleFormProps) => {
-	const inputsClassName = `${className}-inputs`;
-	const buttonsClassName = `${className}-button`;
+const NewRuleForm = ({ rule, stopEdit, autocompleteList }: NewRuleFormProps) => {
+	const rulesStore = useMessageDisplayRulesStore();
 	const [currentSessionValue, setSessionValue] = useState(rule ? rule.session : '');
 	const [currentSelected, setCurrentSelected] = useState(
 		rule ? rule.viewType : MessageViewType.JSON,
 	);
 	const sessionInputRef = useRef(null);
-	const submitHandler = useCallback(
-		(e: React.MouseEvent) => {
-			e.stopPropagation();
-			if (stopEdit) {
-				stopEdit();
-			}
-			if (!rule) {
-				const newRule = {
-					session: currentSessionValue,
-					viewType: currentSelected,
-					removable: true,
-					fullyEditable: true,
-				};
-				activeWorkspace.setNewMessagesDisplayRule(newRule);
-				return;
-			}
-			const isSame =
-				rule && rule.session === currentSessionValue && rule.viewType === currentSelected;
-			if (!isSame) {
-				const newRule = {
-					session: currentSessionValue,
-					viewType: currentSelected,
-					removable: rule.removable,
-					fullyEditable: rule.fullyEditable,
-				};
-				activeWorkspace.editMessageDisplayRule(rule, newRule);
-			}
-		},
-		[rule, currentSessionValue, currentSelected, stopEdit],
-	);
+	const submitHandler = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (stopEdit) {
+			stopEdit();
+		}
+		if (!rule) {
+			const newRule = {
+				session: currentSessionValue,
+				viewType: currentSelected,
+				removable: true,
+				fullyEditable: true,
+			};
+			rulesStore.setNewMessagesDisplayRule(newRule);
+			return;
+		}
+		const isSame =
+			rule && rule.session === currentSessionValue && rule.viewType === currentSelected;
+		if (!isSame) {
+			const newRule = {
+				session: currentSessionValue,
+				viewType: currentSelected,
+				removable: rule.removable,
+				fullyEditable: rule.fullyEditable,
+			};
+			rulesStore.editMessageDisplayRule(rule, newRule);
+		}
+	};
+
 	return (
-		<>
-			<div className={inputsClassName}>
-				<div className='inputs-wrapper'>
-					<div className='session'>
-						{!rule || rule.fullyEditable ? (
-							<AutocompleteInput
-								autoresize={false}
-								placeholder='New session'
-								className='session__input'
-								ref={sessionInputRef}
-								value={currentSessionValue}
-								onSubmit={v => {
-									setSessionValue(v);
-								}}
-								notResetOnSubmit
-								autocomplete={activeWorkspace.messagesStore.messageSessions}
-								datalistKey='session-input'
-							/>
-						) : (
-							<p>{rule.session}</p>
-						)}
-					</div>
-					<div className='view-type'>
-						<Select
-							options={[
-								MessageViewType.JSON,
-								MessageViewType.FORMATTED,
-								MessageViewType.ASCII,
-								MessageViewType.BINARY,
-							]}
-							selected={currentSelected}
-							onChange={(v: MessageViewType) => setCurrentSelected(v)}
+		<div className='rule-inputs'>
+			<div className='inputs-wrapper'>
+				<div className='session'>
+					{!rule || rule.fullyEditable ? (
+						<AutocompleteInput
+							autoresize={false}
+							placeholder='New session'
+							className='session-input'
+							ref={sessionInputRef}
+							value={currentSessionValue}
+							onSubmit={v => {
+								setSessionValue(v);
+							}}
+							notResetOnSubmit
+							autocomplete={autocompleteList}
+							datalistKey='session-input'
 						/>
-					</div>
+					) : (
+						<p>{rule.session}</p>
+					)}
 				</div>
-				<button
-					className={buttonsClassName}
-					disabled={!currentSessionValue}
-					onClick={submitHandler}>
-					&#10003;
-				</button>
+				<div className='view-type'>
+					<Select
+						options={[
+							MessageViewType.JSON,
+							MessageViewType.FORMATTED,
+							MessageViewType.ASCII,
+							MessageViewType.BINARY,
+						]}
+						selected={currentSelected}
+						onChange={(v: MessageViewType) => setCurrentSelected(v)}
+					/>
+				</div>
 			</div>
-		</>
+			<button
+				className='rule-button'
+				disabled={!currentSessionValue}
+				onClick={submitHandler}
+				title='submit'
+			/>
+		</div>
 	);
 };
 

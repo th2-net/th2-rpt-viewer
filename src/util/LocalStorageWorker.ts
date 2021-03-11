@@ -18,7 +18,7 @@ import { isEventNode } from '../helpers/event';
 import { isMessage } from '../helpers/message';
 import { isSearchHistoryEntity } from '../helpers/search';
 import { EventAction, EventTreeNode } from '../models/EventAction';
-import { EventMessage, MessageDisplayRule, MessageViewType } from '../models/EventMessage';
+import { EventMessage, MessageDisplayRule } from '../models/EventMessage';
 import { SearchHistory } from '../stores/SearchStore';
 
 enum LocalStorageEntities {
@@ -29,20 +29,6 @@ enum LocalStorageEntities {
 	DISPLAY_RULES = 'display-rules',
 }
 class LocalStorageWorker {
-	constructor() {
-		const rules = this.getMessageDisplayRules();
-		if (!rules.length) {
-			this.setMessageDisplayRules([
-				{
-					session: '*',
-					viewType: MessageViewType.JSON,
-					removable: false,
-					fullyEditable: false,
-				},
-			]);
-		}
-	}
-
 	getPersistedPinnedMessages(): EventMessage[] {
 		try {
 			const pinnedMessages = localStorage.getItem(LocalStorageEntities.PINNED_MESSAGES);

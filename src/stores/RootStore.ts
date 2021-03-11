@@ -23,9 +23,12 @@ import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
 import { getEventNodeParents } from '../helpers/event';
 import { getObjectKeys } from '../helpers/object';
 import { isWorkspaceStore } from '../helpers/workspace';
+import messageDisplayRulesStoreInstance from './MessageDisplayRulesStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
+
+	messageDisplayRulesStore = messageDisplayRulesStoreInstance;
 
 	workspacesStore: WorkspacesStore;
 

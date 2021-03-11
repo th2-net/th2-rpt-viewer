@@ -27,20 +27,6 @@
     background-color: $graphBackgroundColor;
 }
 
-.message-display-rules,
-.rule-editor {
-    &-inputs {
-        display: flex;
-        justify-content: space-between;
-        .session {
-            display: flex;
-            p {
-                margin-right: 4px;
-            }
-        }
-    }
-}
-
 .message-display-rules {
     width: 100%;
     border-radius: 4px;
@@ -57,13 +43,10 @@
         padding: 4px;
         border-bottom: 1px solid gray;
         button {
+            @include icon(url(../../resources/icons/cross-icon.svg), 24px, 24px);
             outline: none;
             background-color: transparent;
             border: none;
-            color: inherit;
-            font-size: 18px;
-            line-height: 1;
-            font-weight: bold;
         }
     }
     &-body {
@@ -72,18 +55,23 @@
         max-height: 30vh;
         border-bottom: 1px solid gray;
         &__header {
-            padding-right: 12px;
+            padding: 4px 12px 4px 4px;
             display: flex;
             justify-content: space-between;
             p {
                 text-decoration: underline;
             }
         }
-    }
-    &-inputs,
-    &-body {
-        padding: 4px;
-        width: 100%;
+    }  
+    &-inputs {
+        display: flex;
+        justify-content: space-between;
+        .session {
+            display: flex;
+            p {
+                margin-right: 4px;
+            }
+        }
     }
 }
 
@@ -95,29 +83,45 @@
 
 .rule {
     position: relative;
-    padding: 4px 24px 0px 4px;
+    padding: 0 24px 4px 4px;
     display: flex;
     justify-content: space-between;
-    button {
-        outline: none;
-        background-color: transparent;
-        border: none;
-        color: inherit;
+    &.editing {
+        padding: 4px 0 0;
+    }
+    &-delete,
+    &-button {
         position: absolute;
         top: 0;
-        right: 0;
-    }
-}
-.rule-editor {
-    padding: 4px 0 0;
-}
-.rule-editor,
-.message-display-rules {
-    &-button {
-        font-weight: bold;
+        right: 5px;
         cursor: pointer;
+        outline: none;
         background-color: transparent;
-        border: gray solid 1px;
+        border: 1px solid gray;
         border-radius: 4px;
+    }
+    &-delete {
+        @include icon(url(../../resources/icons/cross-icon.svg));
+    }
+    &-button {
+        @include icon(url(../../resources/icons/check.svg));
+        top: 5px;
+        right: 5px;
+        &:disabled {
+            opacity: 0.5;
+        }
+    }
+    &-inputs {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        padding: 4px;
+        width: 100%;
+    }
+    &-filler {
+        flex-grow: 1;
+        margin: 0 2px;
+        height: 11px;
+        border-bottom: dotted 1px gray;
     }
 }

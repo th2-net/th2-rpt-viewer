@@ -16,23 +16,24 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
+import { useMessageDisplayRulesStore } from '../../hooks';
 import { MessageDisplayRule } from '../../models/EventMessage';
-import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import DisplayRule from './DisplayRule';
 
 type Props = {
-	activeWorkspace: WorkspaceStore;
+	autocompleteList: string[];
 };
 
-const RulesList = ({ activeWorkspace }: Props) => {
+const RulesList = ({ autocompleteList }: Props) => {
+	const rulesStore = useMessageDisplayRulesStore();
 	return (
 		<div className='message-display-rules-body'>
 			<div className='message-display-rules-body__header'>
 				<p>Session</p>
 				<p>Display Rule</p>
 			</div>
-			{activeWorkspace.messageDisplayRules.map((rule: MessageDisplayRule, i: number) => (
-				<DisplayRule activeWorkspace={activeWorkspace} rule={rule} key={i} />
+			{rulesStore.messageDisplayRules.map((rule: MessageDisplayRule, i: number) => (
+				<DisplayRule autocompleteList={autocompleteList} rule={rule} key={i} />
 			))}
 		</div>
 	);

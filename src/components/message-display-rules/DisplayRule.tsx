@@ -15,60 +15,61 @@
  ***************************************************************************** */
 
 import React, { useRef, useState } from 'react';
-import { useOutsideClickListener } from '../../hooks';
+import { createStyleSelector } from '../../helpers/styleCreators';
+import { useMessageDisplayRulesStore, useOutsideClickListener } from '../../hooks';
 import { MessageDisplayRule } from '../../models/EventMessage';
-import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import NewRuleForm from './NewRuleForm';
 
 type DisplayRuleProps = {
 	rule: MessageDisplayRule;
-	activeWorkspace: WorkspaceStore;
+	autocompleteList: string[];
 };
 
-const DisplayRuleRenderer = ({ rule, activeWorkspace }: DisplayRuleProps) => {
+const DisplayRuleRenderer = ({ rule }: { rule: MessageDisplayRule }) => {
+	const rulesStore = useMessageDisplayRulesStore();
 	return (
 		<>
-			<p className='rule__session'>{rule.session}</p>
-			<p className='rule__type'>{rule.viewType}</p>
+			<p className='rule-session'>{rule.session}</p>
+			<span className='rule-filler'></span>
+			<p className='rule-type'>{rule.viewType}</p>
 			{rule.removable && (
 				<button
-					className='rule__delete'
-					title='delete rule'
+					className='rule-delete'
+					title='delete'
 					onClick={() => {
-						activeWorkspace.deleteMessagesDisplayRule(rule);
-					}}>
-					&#215;
-				</button>
+						rulesStore.deleteMessagesDisplayRule(rule);
+					}}
+				/>
 			)}
 		</>
 	);
 };
 
-const DisplayRule = ({ rule, activeWorkspace }: DisplayRuleProps) => {
-	const [startEdit, setStartEdit] = useState(false);
+const DisplayRule = ({ rule, autocompleteList }: DisplayRuleProps) => {
+	const [isEditing, setIsEditing] = useState(false);
+	const className = createStyleSelector('rule', isEditing ? 'editing' : null);
 	const ruleRef = useRef(null);
 	useOutsideClickListener(ruleRef, () => {
-		setStartEdit(false);
+		setIsEditing(false);
 	});
 
 	return (
 		<div
-			className={startEdit ? 'rule-editor' : 'rule'}
+			className={className}
 			ref={ruleRef}
 			onClick={() => {
-				setStartEdit(true);
+				setIsEditing(true);
 			}}>
-			{startEdit ? (
+			{isEditing ? (
 				<NewRuleForm
-					activeWorkspace={activeWorkspace}
+					autocompleteList={autocompleteList}
 					rule={rule}
-					className='rule-editor'
 					stopEdit={() => {
-						setStartEdit(false);
+						setIsEditing(false);
 					}}
 				/>
 			) : (
-				<DisplayRuleRenderer rule={rule} activeWorkspace={activeWorkspace} />
+				<DisplayRuleRenderer rule={rule} />
 			)}
 		</div>
 	);

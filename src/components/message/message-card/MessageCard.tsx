@@ -18,6 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import {
 	useMessagesWorkspaceStore,
+	useMessageDisplayRulesStore,
 	useHeatmap,
 	useSelectedStore,
 	useWorkspaceStore,
@@ -275,7 +276,7 @@ function calculateHueValue(session: string): number {
 }
 
 const RecoverableMessageCard = (props: OwnProps) => {
-	const workspaceStore = useWorkspaceStore();
+	const workspaceStore = useMessageDisplayRulesStore();
 
 	return (
 		<StateSaver

@@ -25,7 +25,7 @@ import EventsStore, { EventStoreDefaultStateType, EventStoreURLState } from '../
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceViewStore from './WorkspaceViewStore';
-import { EventMessage, MessageDisplayRule } from '../../models/EventMessage';
+import { EventMessage, MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphStore } from '../GraphStore';
@@ -95,10 +95,6 @@ export default class WorkspaceStore {
 		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
 	}
 
-	@observable messageDisplayRules: Array<
-		MessageDisplayRule
-	> = localStorageWorker.getMessageDisplayRules();
-
 	@observable
 	public attachedMessagesIds: Array<string> = [];
 
@@ -109,40 +105,9 @@ export default class WorkspaceStore {
 	public isLoadingAttachedMessages = false;
 
 	@computed
-	public get isActive(): boolean {
-		return this.workspacesStore.activeWorkspace === this;
-	}
-
-	@computed
 	public get attachedMessagesStreams() {
 		return [...new Set(this.attachedMessages.map(msg => msg.sessionId))];
 	}
-
-	@action setNewMessagesDisplayRule = (rule: MessageDisplayRule) => {
-		const hasSame = this.messageDisplayRules.find(existed => existed.session === rule.session);
-		if (!hasSame) {
-			this.messageDisplayRules = [...this.messageDisplayRules, rule];
-			localStorageWorker.setMessageDisplayRules(this.messageDisplayRules);
-		}
-	};
-
-	@action editMessageDisplayRule = (rule: MessageDisplayRule, newRule: MessageDisplayRule) => {
-		this.messageDisplayRules = this.messageDisplayRules.reduce(
-			(prev: MessageDisplayRule[], curr: MessageDisplayRule) => {
-				if (curr === rule) {
-					return [...prev, newRule];
-				}
-				return [...prev, curr];
-			},
-			[],
-		);
-		localStorageWorker.setMessageDisplayRules(this.messageDisplayRules);
-	};
-
-	@action deleteMessagesDisplayRule = (rule: MessageDisplayRule) => {
-		this.messageDisplayRules = this.messageDisplayRules.filter(existedRule => existedRule !== rule);
-		localStorageWorker.setMessageDisplayRules(this.messageDisplayRules);
-	};
 
 	@action
 	public setAttachedMessagesIds = (attachedMessageIds: string[]) => {
