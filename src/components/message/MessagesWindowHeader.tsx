@@ -15,13 +15,9 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { observer } from 'mobx-react-lite';
-import { useMessagesWorkspaceStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
 
 function MessagesWindowHeader() {
-	const messagesStore = useMessagesWorkspaceStore();
-
 	// const updateButtonClass = createBemElement(
 	// 	'messages-window-header',
 	// 	'realtime-button',
@@ -32,14 +28,6 @@ function MessagesWindowHeader() {
 		<div className='messages-window-header'>
 			<div className='messages-window-header__group'>
 				<MessagesFilter />
-				{messagesStore.showFilterChangeHint && (
-					<div className='sessions'>
-						<p className='sessions__title'>Message may not match the filter</p>{' '}
-						<button className='sessions__add-button' onClick={messagesStore.applyFilterHint}>
-							Change filter
-						</button>
-					</div>
-				)}
 			</div>
 			{/* <div className='messages-window-header__group'>
 				{messagesStore.messagesIds.length > 0 && (
@@ -62,4 +50,4 @@ function MessagesWindowHeader() {
 	);
 }
 
-export default observer(MessagesWindowHeader);
+export default MessagesWindowHeader;

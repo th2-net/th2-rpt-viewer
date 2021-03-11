@@ -15,15 +15,16 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { FitlerRowItem } from '../../../models/filter/FilterInputs';
+import { ActionFilterRow, FitlerRowItem } from '../../../models/filter/FilterInputs';
 import StringFilterRow from './StringRow';
 import MultipleStringFilterRow from './MultipleStringFIlterRow';
 import TimeWindow from './TimeWindow';
 import DatetimeFilterRow from './DateTimeFilterRow';
 import TogglerRow from './TogglerRow';
+import ActionRow from './ActionRow';
 
 interface Props {
-	rowConfig: FitlerRowItem;
+	rowConfig: FitlerRowItem | ActionFilterRow;
 }
 
 export default function FilterRow({ rowConfig }: Props) {
@@ -38,6 +39,8 @@ export default function FilterRow({ rowConfig }: Props) {
 			return <MultipleStringFilterRow config={rowConfig} />;
 		case 'toggler':
 			return <TogglerRow config={rowConfig} />;
+		case 'action':
+			return <ActionRow config={rowConfig} />;
 		default:
 			return null;
 	}

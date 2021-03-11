@@ -37,28 +37,11 @@ describe('[React] <SearchInput/>', () => {
 		nextSearchResult: () => {},
 		prevSearchResult: () => {},
 		clear: () => {},
-		isActive: false,
-		setIsActive: () => {},
 		value: 'default value',
 		setValue: () => {},
 		disabled: false,
-		isSearchPanelOpen: true,
-		openSearchPanel: () => {},
+		isActive: false,
 	};
-
-	test('Should render input on click', () => {
-		const setIsActive = jest.fn();
-		const wrapper = mount(<SearchInputBase {...defaultProps} setIsActive={setIsActive} />);
-
-		expect(wrapper.find('input').length).toEqual(0);
-
-		const field = wrapper.find('.search-field');
-		field.simulate('click', { target: field.getDOMNode() });
-		expect(setIsActive).toBeCalled();
-
-		wrapper.setProps({ isActive: true });
-		expect(wrapper.find('input').length).toEqual(1);
-	});
 
 	test('Reactive delay test', done => {
 		const updateMock = jest.fn();

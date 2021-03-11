@@ -20,7 +20,11 @@ import { removeByIndex, replaceByIndex } from '../../../helpers/array';
 import Bubble from '../../util/Bubble';
 import AutocompleteInput from '../../util/AutocompleteInput';
 import KeyCodes from '../../../util/KeyCodes';
-import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
+import {
+	createBemBlock,
+	createBemElement,
+	createStyleSelector,
+} from '../../../helpers/styleCreators';
 
 export default function MultipleStringFilterRow({
 	config,
@@ -71,22 +75,24 @@ export default function MultipleStringFilterRow({
 		input.current?.focus();
 	};
 
-	const inputRootClassName = createBemElement('filter-row', 'multiple-values');
+	const inputRootClassName = createBemElement('filter-row', 'multiple-values', 'filter-row__input');
 	const filterContentClassName = createStyleSelector(
 		'filter-content',
 		(isFocused || config.values.length > 0) && !config.disabled ? 'active' : null,
 		config.disabled ? 'disabled' : null,
 	);
 
+	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
+
 	return (
-		<div className='filter-row'>
+		<div className={wrapperClassName}>
 			{config.label && (
 				<label className='filter-row__label' htmlFor={config.id}>
 					{config.label}
 				</label>
 			)}
 			<div className={filterContentClassName}>
-				<div className={`${inputRootClassName} filter-row__input`} onClick={rootOnClick}>
+				<div className={inputRootClassName} onClick={rootOnClick}>
 					{config.values.map((value, index) => (
 						<Bubble
 							key={index}
@@ -106,7 +112,7 @@ export default function MultipleStringFilterRow({
 						ref={input}
 						placeholder={
 							config.values.length === 0
-								? 'Use Space to separate different words & Tab to finish'
+								? config.hint || 'Use Space to separate different words & Tab to finish'
 								: ''
 						}
 						disabled={config.disabled}
