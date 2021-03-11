@@ -37,6 +37,7 @@ import MessageCardViewTypeRenderer, {
 import '../../../styles/messages.scss';
 import RadioGroup from '../../util/RadioGroup';
 import { RadioProps } from '../../util/Radio';
+import { matchWildcardRule } from '../../../helpers/regexp';
 
 const HUE_SEGMENTS_COUNT = 36;
 
@@ -282,9 +283,12 @@ const RecoverableMessageCard = (props: OwnProps) => {
 		<StateSaver
 			stateKey={keyForMessage(props.message.messageId)}
 			getDefaultState={() => {
-				const declaredRule = workspaceStore.messageDisplayRules.find(rule =>
-					props.message.sessionId.includes(rule.session),
-				);
+				const declaredRule = workspaceStore.messageDisplayRules.find(rule => {
+					if (rule.session.length > 1 && rule.session.includes('*')) {
+						return matchWildcardRule(props.message.sessionId, rule.session);
+					}
+					return props.message.sessionId.includes(rule.session);
+				});
 				return declaredRule
 					? declaredRule.viewType
 					: workspaceStore.messageDisplayRules[0].viewType;
