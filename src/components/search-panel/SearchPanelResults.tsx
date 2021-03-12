@@ -20,9 +20,11 @@ import { isEventNode } from '../../helpers/event';
 import { BookmarkedItem } from '../BookmarksPanel';
 import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
+import { ActionType } from '../../models/EventAction';
 
 interface SearchPanelResultsProps {
 	onResultItemClick: (searchResult: BookmarkedItem) => void;
+	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
 	onResultDelete: () => void;
 	disableNext: boolean;
 	disablePrev: boolean;
@@ -38,6 +40,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		resultGroups,
 		timestamp,
 		onResultItemClick,
+		onResultGroupClick,
 		onResultDelete,
 		disablePrev,
 		disableNext,
@@ -76,6 +79,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 						key={computeKey(index)}
 						results={group}
 						onResultClick={onResultItemClick}
+						onGroupClick={onResultGroupClick}
 					/>
 				))}
 			</div>
