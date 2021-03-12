@@ -22,7 +22,7 @@ import Select from '../util/Select';
 
 type NewRuleFormProps = {
 	sessions: string[];
-	rule?: MessageDisplayRule;
+	rule?: MessageDisplayRule | null;
 	stopEdit?: () => void;
 };
 
@@ -51,6 +51,13 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 		}
 		const isSame =
 			rule && rule.session === currentSessionValue && rule.viewType === currentSelected;
+		if (rule.session === '*') {
+			rulesStore.setRootDisplayRule({
+				...rule,
+				viewType: currentSelected,
+			});
+			return;
+		}
 		if (!isSame) {
 			const newRule = {
 				session: currentSessionValue,
@@ -74,6 +81,10 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 							ref={sessionInputRef}
 							value={currentSessionValue}
 							onSubmit={v => {
+								if (v === '*') {
+									setSessionValue('');
+									return;
+								}
 								setSessionValue(v);
 							}}
 							notResetOnSubmit

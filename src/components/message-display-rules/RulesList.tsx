@@ -14,33 +14,82 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useRef, useState } from 'react';
+import { move } from '../../helpers/array';
+import { clamp } from '../../helpers/number';
 import { useMessageDisplayRulesStore } from '../../hooks';
 import { MessageDisplayRule } from '../../models/EventMessage';
-import DisplayRule from './DisplayRule';
+import DisplayRule, { DraggableDisplayRule } from './DisplayRule';
 
 type Props = {
 	sessions: string[];
 };
 
+export type Position = {
+	top: number;
+	height: number;
+};
+
 const RulesList = ({ sessions }: Props) => {
 	const rulesStore = useMessageDisplayRulesStore();
-	const [rootRule, ...otherRules] = rulesStore.messageDisplayRules;
+	const [rules, setRules] = useState(rulesStore.messageDisplayRules);
+	const positions = useRef<Position[]>([]).current;
+	const updatePosition = (i: number, offset: Position) => {
+		positions[i] = offset;
+	};
+	const updateOrder = (i: number, dragOffset: number) => {
+		const targetIndex = findIndex(i, dragOffset, positions);
+		if (targetIndex !== i) {
+			setRules(move(rules, i, targetIndex));
+			// rulesStore.reorderMessagesDisplayRule(i, targetIndex);
+		}
+	};
+
 	return (
 		<div className='message-display-rules-body'>
 			<div className='message-display-rules-body__header'>
 				<p>Session</p>
 				<p>Display Rule</p>
 			</div>
-			<DisplayRule sessions={sessions} rule={rootRule} />
-			{otherRules.length
-				? otherRules.map((rule: MessageDisplayRule, i: number) => (
-						<DisplayRule sessions={sessions} rule={rule} key={i} />
+			{rules.length
+				? rules.map((rule: MessageDisplayRule, i: number) => (
+						<DraggableDisplayRule
+							sessions={sessions}
+							rule={rule}
+							key={i}
+							index={i}
+							updateOrder={updateOrder}
+							updatePosition={updatePosition}
+						/>
 				  ))
 				: null}
+			<DisplayRule sessions={sessions} rule={rulesStore.rootDisplayRule} />
 		</div>
 	);
 };
 
-export default observer(RulesList);
+export default RulesList;
+
+const buffer = 4;
+
+export const findIndex = (i: number, yOffset: number, positions: Position[]) => {
+	let target = i;
+	const { top, height } = positions[i];
+	const bottom = top + height;
+	// If moving down
+	if (yOffset > 0) {
+		const nextItem = positions[i + 1];
+		if (nextItem === undefined) return i;
+		const swapOffset = Math.abs(bottom - (nextItem.top + nextItem.height / 2));
+		if (yOffset > swapOffset) target = i + 1;
+		// If moving up
+	} else if (yOffset < 0) {
+		const prevItem = positions[i - 1];
+		if (prevItem === undefined) return i;
+		const prevBottom = prevItem.top + prevItem.height;
+		const swapOffset = Math.abs(top - (prevBottom - prevItem.height / 2)) + buffer;
+		if (yOffset < -swapOffset) target = i - 1;
+	}
+
+	return clamp(0, positions.length, target);
+};

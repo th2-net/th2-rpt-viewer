@@ -15,30 +15,40 @@
  ***************************************************************************** */
 
 import { action, observable, reaction } from 'mobx';
+import { areArraysEqual, move } from '../helpers/array';
 import { MessageDisplayRule, MessageViewType } from '../models/EventMessage';
 import localStorageWorker from '../util/LocalStorageWorker';
 
 class MessageDisplayRulesStore {
 	constructor() {
-		if (localStorageWorker.getMessageDisplayRules().length) {
-			this.messageDisplayRules = localStorageWorker.getMessageDisplayRules();
-		} else {
-			localStorageWorker.setMessageDisplayRules([
-				{
-					session: '*',
-					viewType: MessageViewType.JSON,
-					removable: false,
-					fullyEditable: false,
-				},
-			]);
-			this.messageDisplayRules = localStorageWorker.getMessageDisplayRules();
+		if (!localStorageWorker.getRootDisplayRule()) {
+			localStorageWorker.setRootDisplayRule({
+				session: '*',
+				viewType: MessageViewType.JSON,
+				removable: false,
+				fullyEditable: false,
+			});
+			this.rootDisplayRule = localStorageWorker.getRootDisplayRule();
+			return;
 		}
+		this.rootDisplayRule = localStorageWorker.getRootDisplayRule();
 
 		reaction(() => this.messageDisplayRules, this.onRulesChange);
+		reaction(() => this.rootDisplayRule, this.onRootRuleChange);
 	}
 
 	@observable
-	public messageDisplayRules: MessageDisplayRule[];
+	public messageDisplayRules: MessageDisplayRule[] = localStorageWorker.getMessageDisplayRules();
+
+	@observable
+	public rootDisplayRule: MessageDisplayRule | null;
+
+	@action
+	public setRootDisplayRule = (rule: MessageDisplayRule) => {
+		if (this.rootDisplayRule?.viewType !== rule.viewType) {
+			this.rootDisplayRule = rule;
+		}
+	};
 
 	@action
 	public setNewMessagesDisplayRule = (rule: MessageDisplayRule) => {
@@ -63,8 +73,19 @@ class MessageDisplayRulesStore {
 		this.messageDisplayRules = this.messageDisplayRules.filter(existedRule => existedRule !== rule);
 	};
 
+	@action
+	public reorderMessagesDisplayRule = (from: number, to: number) => {
+		this.messageDisplayRules = move(this.messageDisplayRules, from, to);
+	};
+
 	private onRulesChange = (rules: MessageDisplayRule[]) => {
 		localStorageWorker.setMessageDisplayRules(rules);
+	};
+
+	private onRootRuleChange = (rule: MessageDisplayRule | null) => {
+		if (rule) {
+			localStorageWorker.setRootDisplayRule(rule);
+		}
 	};
 }
 

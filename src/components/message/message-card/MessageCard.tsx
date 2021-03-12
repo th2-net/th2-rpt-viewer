@@ -277,13 +277,14 @@ function calculateHueValue(session: string): number {
 }
 
 const RecoverableMessageCard = (props: OwnProps) => {
-	const workspaceStore = useMessageDisplayRulesStore();
+	const rulesStore = useMessageDisplayRulesStore();
 
 	return (
 		<StateSaver
 			stateKey={keyForMessage(props.message.messageId)}
 			getDefaultState={() => {
-				const declaredRule = workspaceStore.messageDisplayRules.find(rule => {
+				const rootRule = rulesStore.rootDisplayRule;
+				const declaredRule = rulesStore.messageDisplayRules.find(rule => {
 					if (rule.session.length > 1 && rule.session.includes('*')) {
 						return matchWildcardRule(props.message.sessionId, rule.session);
 					}
@@ -291,7 +292,9 @@ const RecoverableMessageCard = (props: OwnProps) => {
 				});
 				return declaredRule
 					? declaredRule.viewType
-					: workspaceStore.messageDisplayRules[0].viewType;
+					: rootRule
+					? rootRule.viewType
+					: MessageViewType.JSON;
 			}}>
 			{(state, saveState) => (
 				<MessageCard

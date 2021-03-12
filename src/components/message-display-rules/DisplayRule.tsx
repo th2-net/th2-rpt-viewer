@@ -14,19 +14,24 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import { useMessageDisplayRulesStore, useOutsideClickListener } from '../../hooks';
 import { MessageDisplayRule } from '../../models/EventMessage';
+import { Position } from './RulesList';
 import NewRuleForm from './NewRuleForm';
 
 type DisplayRuleProps = {
-	rule: MessageDisplayRule;
+	rule: MessageDisplayRule | null;
 	sessions: string[];
 };
 
-const DisplayRuleRenderer = ({ rule }: { rule: MessageDisplayRule }) => {
+const DisplayRuleRenderer = ({ rule }: { rule: MessageDisplayRule | null }) => {
 	const rulesStore = useMessageDisplayRulesStore();
+	if (!rule) {
+		return null;
+	}
 	return (
 		<>
 			<p className='rule-session'>{rule.session}</p>
@@ -76,3 +81,55 @@ const DisplayRule = ({ rule, sessions }: DisplayRuleProps) => {
 };
 
 export default DisplayRule;
+
+interface DraggableDisplayRuleProps extends DisplayRuleProps {
+	index: number;
+	updatePosition: (i: number, offset: Position) => void;
+	updateOrder: (i: number, dragOffset: number) => void;
+}
+
+export const DraggableDisplayRule = (props: DraggableDisplayRuleProps) => {
+	const { rule, sessions, index, updatePosition, updateOrder } = props;
+	const [isDragging, setDragging] = useState(false);
+
+	const ref = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		if (ref.current) {
+			updatePosition(index, {
+				height: ref.current.offsetHeight,
+				top: ref.current.offsetTop,
+			});
+		}
+	});
+
+	return (
+		<motion.div
+			ref={ref}
+			layout
+			initial={false}
+			style={{
+				position: 'relative',
+				background: 'white',
+				padding: 0,
+				zIndex: isDragging ? 2 : 1,
+			}}
+			whileHover={{
+				scale: 1.01,
+				boxShadow: '0px 3px 3px rgba(0,0,0,0.15)',
+			}}
+			whileTap={{
+				scale: 1.03,
+				boxShadow: '0px 5px 5px rgba(0,0,0,0.1)',
+			}}
+			drag='y'
+			onDragStart={() => setDragging(true)}
+			onDragEnd={() => setDragging(false)}
+			onViewportBoxUpdate={(_viewportBox, delta) => {
+				if (isDragging) {
+					updateOrder(index, delta.y.translate);
+				}
+			}}>
+			<DisplayRule rule={rule} sessions={sessions} />
+		</motion.div>
+	);
+};

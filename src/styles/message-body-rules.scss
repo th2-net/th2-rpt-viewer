@@ -51,11 +51,10 @@
     }
     &-body {
         @include scrollbar();
-        overflow: auto;
-        max-height: 30vh;
+        padding: 6px;
         border-bottom: 1px solid gray;
         &__header {
-            padding: 4px 12px 4px 4px;
+            padding: 0 12px 4px 4px;
             display: flex;
             justify-content: space-between;
             p {
