@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useRef, useState } from 'react';
-import { move } from '../../helpers/array';
+import { observer } from 'mobx-react-lite';
+import React, { useRef } from 'react';
 import { clamp } from '../../helpers/number';
 import { useMessageDisplayRulesStore } from '../../hooks';
 import { MessageDisplayRule } from '../../models/EventMessage';
@@ -32,27 +32,22 @@ export type Position = {
 
 const RulesList = ({ sessions }: Props) => {
 	const rulesStore = useMessageDisplayRulesStore();
-	const [rules, setRules] = useState(rulesStore.messageDisplayRules);
 	const positions = useRef<Position[]>([]).current;
 	const updatePosition = (i: number, offset: Position) => {
 		positions[i] = offset;
 	};
 	const updateOrder = (i: number, dragOffset: number) => {
 		const targetIndex = findIndex(i, dragOffset, positions);
-		if (targetIndex !== i) {
-			setRules(move(rules, i, targetIndex));
-			// rulesStore.reorderMessagesDisplayRule(i, targetIndex);
-		}
+		if (targetIndex !== i) rulesStore.reorderMessagesDisplayRule(i, targetIndex);
 	};
-
 	return (
 		<div className='message-display-rules-body'>
 			<div className='message-display-rules-body__header'>
 				<p>Session</p>
 				<p>Display Rule</p>
 			</div>
-			{rules.length
-				? rules.map((rule: MessageDisplayRule, i: number) => (
+			{rulesStore.messageDisplayRules.length
+				? rulesStore.messageDisplayRules.map((rule: MessageDisplayRule, i: number) => (
 						<DraggableDisplayRule
 							sessions={sessions}
 							rule={rule}
@@ -68,7 +63,7 @@ const RulesList = ({ sessions }: Props) => {
 	);
 };
 
-export default RulesList;
+export default observer(RulesList);
 
 const buffer = 4;
 

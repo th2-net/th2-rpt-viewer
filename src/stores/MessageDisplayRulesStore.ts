@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { action, observable, reaction } from 'mobx';
-import { areArraysEqual, move } from '../helpers/array';
+import { move } from '../helpers/array';
 import { MessageDisplayRule, MessageViewType } from '../models/EventMessage';
 import localStorageWorker from '../util/LocalStorageWorker';
 
