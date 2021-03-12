@@ -395,6 +395,25 @@
 	height: 100%;
 	width: 100%;
 
+	&__nav {
+		display: block;
+		margin: 0 auto;
+		cursor: pointer;
+		outline: none;
+		border: none;
+		opacity: 0.8;
+		background-color: transparent;
+		&:hover {
+			opacity: 1;
+		}
+		&.up {
+			@include icon(url(../../resources/icons/arr4-up.svg), 16px, 24px);
+		}
+		&.down {
+			@include icon(url(../../resources/icons/arr4-down.svg), 16px, 24px);
+		}
+	}
+
 	& > div {
 		@include scrollbar;
 		height: 100%;

@@ -67,6 +67,26 @@ export default class EventsFilterStore {
 	}
 
 	@action
+	public raiseFilterTimestamp(ms: number) {
+		const currentFilter = this.filter;
+		this.setEventsFilter({
+			...currentFilter,
+			timestampFrom: currentFilter.timestampFrom + ms,
+			timestampTo: currentFilter.timestampTo + ms,
+		});
+	}
+
+	@action
+	public lowerFilterTimestamp(ms: number) {
+		const currentFilter = this.filter;
+		this.setEventsFilter({
+			...currentFilter,
+			timestampFrom: currentFilter.timestampFrom - ms,
+			timestampTo: currentFilter.timestampTo - ms,
+		});
+	}
+
+	@action
 	public resetEventsFilter() {
 		this.filter = {
 			...getDefaultEventFilter(this.graphStore.interval),

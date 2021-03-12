@@ -26,6 +26,7 @@ import { raf } from '../../../helpers/raf';
 import { EventTreeNode } from '../../../models/EventAction';
 import { timestampToNumber } from '../../../helpers/date';
 import '../../../styles/action.scss';
+import TreeBranchRenderer from '../TreeBranchRenderer';
 
 interface Props {
 	nodes: EventTreeNode[];
@@ -100,14 +101,22 @@ function EventTreeList({ nodes }: Props) {
 	const computeKey = (index: number) => nodes[index].eventId;
 
 	const renderEvent = (index: number): React.ReactElement => (
-		<EventTree
-			eventTreeNode={nodes[index]}
-			startTimestamp={
-				timestamps?.startEventId === nodes[index].eventId ? timestamps.startTimestamp : undefined
-			}
-			endTimestamp={
-				timestamps?.endEventId === nodes[index].eventId ? timestamps.endTimestamp : undefined
-			}
+		<TreeBranchRenderer
+			index={index}
+			lastIndex={nodes.length - 1}
+			Render={() => (
+				<EventTree
+					eventTreeNode={nodes[index]}
+					startTimestamp={
+						timestamps?.startEventId === nodes[index].eventId
+							? timestamps.startTimestamp
+							: undefined
+					}
+					endTimestamp={
+						timestamps?.endEventId === nodes[index].eventId ? timestamps.endTimestamp : undefined
+					}
+				/>
+			)}
 		/>
 	);
 
