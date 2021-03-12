@@ -52,7 +52,7 @@ const FilterDatetimePicker = ({
 		}
 	});
 
-	const change = (dateValue: Moment | null) => {
+	const onDateChangeHandler = (dateValue: Moment | null) => {
 		if (!dateValue) return;
 		if (dateValue.utc().startOf('day').isSameOrBefore(moment().startOf('day'))) {
 			let appliedDate;
@@ -71,6 +71,8 @@ const FilterDatetimePicker = ({
 
 		setValue(moment().utc().startOf('day').valueOf());
 	};
+
+	const onTimeChangeHandler = (nextValue: number | null) => setValue(nextValue);
 
 	const setTimeOffset = (minutes: number) => {
 		setValue(
@@ -105,8 +107,7 @@ const FilterDatetimePicker = ({
 					<Calendar
 						value={moment(value).utcOffset(0)}
 						defaultValue={now}
-						onSelect={change}
-						onChange={change}
+						onChange={onDateChangeHandler}
 						showDateInput={false}
 						showToday={false}
 						className='filter-datetime-picker__datepicker'
@@ -136,7 +137,7 @@ const FilterDatetimePicker = ({
 					/>
 				)}
 				{(type === TimeInputType.DATE_TIME || type === TimeInputType.TIME) && (
-					<FilterTimepicker setValue={setValue} value={value} />
+					<FilterTimepicker setValue={onTimeChangeHandler} value={value} />
 				)}
 			</div>
 		</div>

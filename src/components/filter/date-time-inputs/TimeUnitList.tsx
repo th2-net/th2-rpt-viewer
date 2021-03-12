@@ -74,7 +74,7 @@ const TimeUnitList = (props: TimeUnitListProps) => {
 	}, [selectedUnit, getIsBlocked]);
 
 	return (
-		<ul className='filter-timepicker__scroll'>
+		<ul className='filter-timepicker__scroll' onKeyDown={() => console.log(123)}>
 			{unitList.map(unitItem => (
 				<li
 					ref={unitRefs.current[unitItem.value]}

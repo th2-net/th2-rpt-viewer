@@ -32,6 +32,7 @@ import { ModalPortal } from '../../util/Portal';
 import FilterDatetimePicker from '../../filter/date-time-inputs/FilterDatetimePicker';
 import GraphSearchInput, { DATE_TIME_MASK } from './GraphSearchInput';
 import GraphSearchHistory from './GraphSearchHistory';
+import KeyCodes from '../../../util/KeyCodes';
 
 const getTimestamp = (timestamp: Timestamp) => {
 	const ms = Math.floor(timestamp.nano / 1000000);
@@ -196,6 +197,22 @@ function GraphSearch(props: Props) {
 		foundObject || isLoading || history.length > 0 ? 'bordered' : null,
 	);
 
+	const pickerRef = React.useRef<HTMLDivElement>(null);
+
+	const pickerKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
+		if (e.keyCode === KeyCodes.ENTER && timestamp) {
+			onSubmit(timestamp);
+			toggleTimePicker(false);
+		}
+	};
+
+	useOutsideClickListener(pickerRef, () => {
+		if (timestamp) {
+			onSubmit(timestamp);
+			toggleTimePicker(false);
+		}
+	});
+
 	return (
 		<div className='graph-search' ref={wrapperRef}>
 			<GraphSearchInput
@@ -216,7 +233,7 @@ function GraphSearch(props: Props) {
 					zIndex: 110,
 				}}>
 				{showPicker && (
-					<div className='graph-search-picker'>
+					<div className='graph-search-picker' ref={pickerRef} onKeyDown={pickerKeyDownHandler}>
 						<p className='graph-search-picker__timestamp'>
 							{typeof timestamp === 'number' && moment.utc(timestamp).format(DATE_TIME_MASK)}
 						</p>
