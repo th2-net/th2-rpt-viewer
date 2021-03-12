@@ -113,10 +113,16 @@ export default class SearchWorkspaceStore {
 	public followByTimestamp = (timestamp: number, resultType: ActionType) => {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 
-		if (resultType === 'message') {
-			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(timestamp);
-		} else {
-			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(timestamp);
+		switch (resultType) {
+			case ActionType.EVENT_ACTION:
+			case ActionType.EVENT_TREE_NODE:
+				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(timestamp);
+				break;
+			case ActionType.MESSAGE:
+				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(timestamp);
+				break;
+			default:
+				break;
 		}
 
 		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
