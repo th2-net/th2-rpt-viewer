@@ -83,13 +83,12 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 		if (groupTimestamps.length === 1) {
 			timestamp = groupTimestamps[0];
 		} else {
-			timestamp = (groupTimestamps[0] + groupTimestamps[groupTimestamps.length - 1]) / 2;
+			timestamp = Math.floor(
+				(groupTimestamps[0] + groupTimestamps[groupTimestamps.length - 1]) / 2,
+			);
 		}
 
-		onGroupClick(
-			timestamp,
-			isEventMessage(results[0]) ? ActionType.MESSAGE : ActionType.EVENT_ACTION,
-		);
+		onGroupClick(timestamp, results[0].type);
 	};
 
 	return (
