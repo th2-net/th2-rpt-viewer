@@ -30,6 +30,7 @@ import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
 import WorkspaceLinkGetter from '../WorkspaceLinkGetter';
 import '../../styles/graph.scss';
+import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -165,14 +166,16 @@ const GraphRoot = () => {
 	const activeWorkspace = useActiveWorkspace();
 
 	return (
-		<div className='graph-root'>
-			<i className='th2-logo' />
-			<GraphSearch
-				onTimestampSubmit={activeWorkspace.onTimestampSelect}
-				onFoundItemClick={activeWorkspace.onSavedItemSelect}
-			/>
-			{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}
-		</div>
+		<PointerTimestampProvider>
+			<div className='graph-root'>
+				<i className='th2-logo' />
+				<GraphSearch
+					onTimestampSubmit={activeWorkspace.onTimestampSelect}
+					onFoundItemClick={activeWorkspace.onSavedItemSelect}
+				/>
+				{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}
+			</div>
+		</PointerTimestampProvider>
 	);
 };
 
