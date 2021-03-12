@@ -14,39 +14,37 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable } from 'mobx';
+import { action, observable, reaction } from 'mobx';
 import { MessageDisplayRule, MessageViewType } from '../models/EventMessage';
 import localStorageWorker from '../util/LocalStorageWorker';
 
-function getDefaultMessageDisplayRules() {
-	let rules: MessageDisplayRule[];
-	const firstTry = localStorageWorker.getMessageDisplayRules();
-	if (firstTry.length) {
-		rules = firstTry;
-	} else {
-		localStorageWorker.setMessageDisplayRules([
-			{
-				session: '*',
-				viewType: MessageViewType.JSON,
-				removable: false,
-				fullyEditable: false,
-			},
-		]);
-		rules = localStorageWorker.getMessageDisplayRules();
-	}
-	return rules;
-}
-
 class MessageDisplayRulesStore {
+	constructor() {
+		if (localStorageWorker.getMessageDisplayRules().length) {
+			this.messageDisplayRules = localStorageWorker.getMessageDisplayRules();
+		} else {
+			localStorageWorker.setMessageDisplayRules([
+				{
+					session: '*',
+					viewType: MessageViewType.JSON,
+					removable: false,
+					fullyEditable: false,
+				},
+			]);
+			this.messageDisplayRules = localStorageWorker.getMessageDisplayRules();
+		}
+
+		reaction(() => this.messageDisplayRules, this.onRulesChange);
+	}
+
 	@observable
-	public messageDisplayRules: MessageDisplayRule[] = getDefaultMessageDisplayRules();
+	public messageDisplayRules: MessageDisplayRule[];
 
 	@action
 	public setNewMessagesDisplayRule = (rule: MessageDisplayRule) => {
 		const hasSame = this.messageDisplayRules.find(existed => existed.session === rule.session);
 		if (!hasSame) {
 			this.messageDisplayRules = [...this.messageDisplayRules, rule];
-			localStorageWorker.setMessageDisplayRules(this.messageDisplayRules);
 		}
 	};
 
@@ -58,16 +56,16 @@ class MessageDisplayRulesStore {
 			}
 			return existedRule;
 		});
-		localStorageWorker.setMessageDisplayRules(this.messageDisplayRules);
 	};
 
 	@action
 	public deleteMessagesDisplayRule = (rule: MessageDisplayRule) => {
 		this.messageDisplayRules = this.messageDisplayRules.filter(existedRule => existedRule !== rule);
-		localStorageWorker.setMessageDisplayRules(this.messageDisplayRules);
+	};
+
+	private onRulesChange = (rules: MessageDisplayRule[]) => {
+		localStorageWorker.setMessageDisplayRules(rules);
 	};
 }
 
-const messageDisplayRulesStore = new MessageDisplayRulesStore();
-
-export default messageDisplayRulesStore;
+export default MessageDisplayRulesStore;

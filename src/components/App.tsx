@@ -22,17 +22,25 @@ import Notifier from './notifications/Notifier';
 import WorkspacesLayout from './workspace/WorkspacesLayout';
 import Graph from './graph/Graph';
 import '../styles/root.scss';
+import WorkspaceLinkGetter from './WorkspaceLinkGetter';
+import MessageBodyRulesConfigurator from './message-display-rules/MessageBodyRulesConfigurator';
+import { useSearchStore } from '../hooks/useSearchStore';
 
-const App = () => (
-	<div className='app'>
-		<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={400}>
-			<Graph />
-			<div className='app__workspaces'>
-				<WorkspacesLayout />
-			</div>
-			<Notifier />
-		</ToastProvider>
-	</div>
-);
+const App = () => {
+	const searchStore = useSearchStore();
+	return (
+		<div className='app'>
+			<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={400}>
+				<Graph />
+				<WorkspaceLinkGetter />
+				<MessageBodyRulesConfigurator sessions={searchStore.messageSessions} />
+				<div className='app__workspaces'>
+					<WorkspacesLayout />
+				</div>
+				<Notifier />
+			</ToastProvider>
+		</div>
+	);
+};
 
 export default hot(App);

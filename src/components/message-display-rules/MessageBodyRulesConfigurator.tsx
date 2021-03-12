@@ -28,15 +28,19 @@ type Props = {
 const MessageBodyRulesConfigurator = ({ sessions }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const modalRef = useRef(null);
-	useOutsideClickListener(modalRef, () => {
-		setIsOpen(false);
+	const buttonRef = useRef(null);
+	useOutsideClickListener(modalRef, (e: MouseEvent) => {
+		if (e.target !== buttonRef.current) {
+			setIsOpen(false);
+		}
 	});
 
 	return (
 		<>
 			<button
+				ref={buttonRef}
 				className='message-display-rules-open'
-				onClick={() => setIsOpen(open => !open)}
+				onClick={() => setIsOpen(true)}
 				title='Message display rules'
 			/>
 			<ModalPortal
@@ -54,8 +58,8 @@ const MessageBodyRulesConfigurator = ({ sessions }: Props) => {
 						<p>Message Display Rules</p>
 						<button onClick={() => setIsOpen(false)} />
 					</div>
-					<RulesList autocompleteList={sessions} />
-					<NewRuleForm autocompleteList={sessions} />
+					<RulesList sessions={sessions} />
+					<NewRuleForm sessions={sessions} />
 				</div>
 			</ModalPortal>
 		</>

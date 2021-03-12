@@ -136,6 +136,12 @@ export function complement<T>(arr1: T[], arr2: T[]): T[] {
 	return arr1.filter(item => !arr2.includes(item));
 }
 
+export function move<T>(arr: T[], from: number, to: number) {
+	const clone = [...arr];
+	Array.prototype.splice.call(clone, to, 0, Array.prototype.splice.call(clone, from, 1)[0]);
+	return clone;
+}
+
 export function sliceToChunks<T>(arr: T[], chunkSize: number): T[][] {
 	const chunks = [];
 

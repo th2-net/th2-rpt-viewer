@@ -21,20 +21,24 @@ import { MessageDisplayRule } from '../../models/EventMessage';
 import DisplayRule from './DisplayRule';
 
 type Props = {
-	autocompleteList: string[];
+	sessions: string[];
 };
 
-const RulesList = ({ autocompleteList }: Props) => {
+const RulesList = ({ sessions }: Props) => {
 	const rulesStore = useMessageDisplayRulesStore();
+	const [rootRule, ...otherRules] = rulesStore.messageDisplayRules;
 	return (
 		<div className='message-display-rules-body'>
 			<div className='message-display-rules-body__header'>
 				<p>Session</p>
 				<p>Display Rule</p>
 			</div>
-			{rulesStore.messageDisplayRules.map((rule: MessageDisplayRule, i: number) => (
-				<DisplayRule autocompleteList={autocompleteList} rule={rule} key={i} />
-			))}
+			<DisplayRule sessions={sessions} rule={rootRule} />
+			{otherRules.length
+				? otherRules.map((rule: MessageDisplayRule, i: number) => (
+						<DisplayRule sessions={sessions} rule={rule} key={i} />
+				  ))
+				: null}
 		</div>
 	);
 };

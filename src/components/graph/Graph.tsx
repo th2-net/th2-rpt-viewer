@@ -28,8 +28,6 @@ import { EventMessage } from '../../models/EventMessage';
 import { Chunk, PanelRange } from '../../models/Graph';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
-import WorkspaceLinkGetter from '../WorkspaceLinkGetter';
-import MessageBodyRulesConfigurator from '../message-display-rules/MessageBodyRulesConfigurator';
 import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
@@ -155,8 +153,6 @@ function Graph({ activeWorkspace }: GraphProps) {
 				interval={activeWorkspace.graphStore.interval}
 				onPanelRangeSelect={activeWorkspace.graphStore.setTimestampFromRange}
 			/>
-			<WorkspaceLinkGetter />
-			<MessageBodyRulesConfigurator sessions={activeWorkspace.messagesStore.messageSessions} />
 		</div>
 	);
 }

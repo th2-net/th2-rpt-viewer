@@ -21,12 +21,12 @@ import AutocompleteInput from '../util/AutocompleteInput';
 import Select from '../util/Select';
 
 type NewRuleFormProps = {
-	autocompleteList: string[];
+	sessions: string[];
 	rule?: MessageDisplayRule;
 	stopEdit?: () => void;
 };
 
-const NewRuleForm = ({ rule, stopEdit, autocompleteList }: NewRuleFormProps) => {
+const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
 	const [currentSessionValue, setSessionValue] = useState(rule ? rule.session : '');
 	const [currentSelected, setCurrentSelected] = useState(
@@ -46,6 +46,7 @@ const NewRuleForm = ({ rule, stopEdit, autocompleteList }: NewRuleFormProps) => 
 				fullyEditable: true,
 			};
 			rulesStore.setNewMessagesDisplayRule(newRule);
+			setSessionValue('');
 			return;
 		}
 		const isSame =
@@ -76,7 +77,7 @@ const NewRuleForm = ({ rule, stopEdit, autocompleteList }: NewRuleFormProps) => 
 								setSessionValue(v);
 							}}
 							notResetOnSubmit
-							autocomplete={autocompleteList}
+							autocomplete={sessions}
 							datalistKey='session-input'
 						/>
 					) : (

@@ -22,7 +22,7 @@ import NewRuleForm from './NewRuleForm';
 
 type DisplayRuleProps = {
 	rule: MessageDisplayRule;
-	autocompleteList: string[];
+	sessions: string[];
 };
 
 const DisplayRuleRenderer = ({ rule }: { rule: MessageDisplayRule }) => {
@@ -45,7 +45,7 @@ const DisplayRuleRenderer = ({ rule }: { rule: MessageDisplayRule }) => {
 	);
 };
 
-const DisplayRule = ({ rule, autocompleteList }: DisplayRuleProps) => {
+const DisplayRule = ({ rule, sessions }: DisplayRuleProps) => {
 	const [isEditing, setIsEditing] = useState(false);
 	const className = createStyleSelector('rule', isEditing ? 'editing' : null);
 	const ruleRef = useRef(null);
@@ -57,12 +57,12 @@ const DisplayRule = ({ rule, autocompleteList }: DisplayRuleProps) => {
 		<div
 			className={className}
 			ref={ruleRef}
-			onClick={() => {
+			onDoubleClick={() => {
 				setIsEditing(true);
 			}}>
 			{isEditing ? (
 				<NewRuleForm
-					autocompleteList={autocompleteList}
+					sessions={sessions}
 					rule={rule}
 					stopEdit={() => {
 						setIsEditing(false);
