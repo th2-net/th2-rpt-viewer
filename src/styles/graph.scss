@@ -183,10 +183,6 @@
 		width: 14px;
 		height: 14px;
 		border-radius: 50%;
-
-		&:not(:first-child) {
-			margin-bottom: 1px;
-		}
 	}
 
 	&.hovered-event,
@@ -223,9 +219,10 @@
 	z-index: 10;
 
 	&__dots {
-		display: flex;
-		flex-direction: column-reverse;
-		align-items: center;
+		display: grid;
+		grid-row-gap: 1px;
+		grid-auto-rows: 14px;
+		place-items: center;
 		position: relative;
 		z-index: 101;
 
