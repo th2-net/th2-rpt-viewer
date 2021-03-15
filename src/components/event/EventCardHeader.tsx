@@ -16,7 +16,6 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import TimeAgo from 'react-timeago';
 import { formatTime, getElapsedTime, timestampToNumber } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
@@ -116,9 +115,6 @@ function EventCardHeader({
 					<div className='event-header-card__time-label'>
 						<span className='event-header-card__time-label-full'>
 							{formatTime(startTimestampValue)}
-						</span>
-						<span className='event-header-card__time-label-short'>
-							<TimeAgo date={startTimestampValue} maxPeriod={5} />
 						</span>
 					</div>
 					{eventType && <span className='event-header-card__event-type'>{eventType}</span>}
