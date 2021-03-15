@@ -16,7 +16,6 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import moment from 'moment';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { GraphItem, PanelRange } from '../../models/Graph';
@@ -36,7 +35,6 @@ interface OverlayPanelProps {
 	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
 	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 	panelsRange: Array<PanelRange>;
-	interval: number;
 	graphItems: GraphItem[];
 	onPanelRangeSelect: (panelRange: TimeRange) => void;
 }
@@ -48,42 +46,23 @@ const OutsideItems = (props: OverlayPanelProps) => {
 		getGraphItemType,
 		onPanelRangeSelect,
 		panelsRange,
-		interval,
 		graphItems,
 	} = props;
 
 	const outsideItems: IOutsideItems = React.useMemo(() => {
-		const windowTimeRange = [
-			moment(from)
-				.subtract(interval / 2, 'minutes')
-				.valueOf(),
-			moment(to)
-				.add(interval / 2, 'minutes')
-				.valueOf(),
-		];
-
 		return {
-			left: graphItems.filter(item => getTimestampAsNumber(item) < windowTimeRange[0]),
-			right: graphItems.filter(item => getTimestampAsNumber(item) > windowTimeRange[1]),
+			left: graphItems.filter(item => getTimestampAsNumber(item) < from),
+			right: graphItems.filter(item => getTimestampAsNumber(item) > to),
 		};
 	}, [from, to, graphItems]);
 
 	const outsidePanels = React.useMemo(() => {
-		const windowTimeRange = [
-			moment(from)
-				.subtract(interval / 2, 'minutes')
-				.valueOf(),
-			moment(to)
-				.add(interval / 2, 'minutes')
-				.valueOf(),
-		];
-
 		return {
 			left: panelsRange
-				.filter(panelRange => panelRange.range != null && panelRange.range[1] < windowTimeRange[0])
+				.filter(panelRange => panelRange.range != null && panelRange.range[1] < from)
 				.reduce((prev, curr) => ({ ...prev, [curr.type]: 1 }), {}),
 			right: panelsRange
-				.filter(panelRange => panelRange.range != null && panelRange.range[0] > windowTimeRange[1])
+				.filter(panelRange => panelRange.range != null && panelRange.range[0] > to)
 				.reduce((prev, curr) => ({ ...prev, [curr.type]: 1 }), {}),
 		};
 	}, [from, to, panelsRange]);
