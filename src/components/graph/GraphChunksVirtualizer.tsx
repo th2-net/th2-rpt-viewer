@@ -22,6 +22,7 @@ import { raf } from '../../helpers/raf';
 import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import '../../styles/graph.scss';
+import { usePointerTimestampUpdate } from '../../contexts/pointerTimestampContext';
 
 const setInitialState = (settings: Settings): State => {
 	const { itemWidth, amount, tolerance, minIndex, maxIndex, startIndex } = settings;
@@ -140,16 +141,22 @@ const GraphChunksVirtualizer = (props: Props) => {
 		} else {
 			setPanels([]);
 		}
-	}, [panelsRange, chunks]);
+	}, [panelsRange, chunks, timestamp]);
 
-	React.useEffect(() => {
+	React.useLayoutEffect(() => {
 		getCurrentChunks(state.initialPosition);
 		raf(() => {
 			if (viewportElementRef.current) {
+				const expectedChunkCenterTimestamp = moment
+					.utc(timestamp.valueOf())
+					.subtract(interval / 2, 'minutes')
+					.startOf('minute')
+					.add(interval / 2, 'minutes');
+
 				const offset =
-					(timestamp.valueOf() - moment(timestamp.valueOf()).startOf('minute').valueOf()) *
+					(timestamp.valueOf() - expectedChunkCenterTimestamp.valueOf()) *
 					(chunkWidth / (interval * 60 * 1000));
-				viewportElementRef.current.scrollLeft = state.initialPosition - chunkWidth + offset;
+				viewportElementRef.current.scrollLeft = state.initialPosition - chunkWidth / 2 + offset;
 			}
 		}, 2);
 	}, [timestamp]);
@@ -257,12 +264,9 @@ const GraphChunksVirtualizer = (props: Props) => {
 		const divsInInterval = Array.from(viewportElementRef.current.children)
 			.filter(isDivElement)
 			.filter(intervalDiv => {
-				const { left, right } = intervalDiv.getBoundingClientRect();
+				const { left } = intervalDiv.getBoundingClientRect();
 
-				return (
-					(left >= rangeBlockRect.left && left <= rangeBlockRect.right) ||
-					(right >= rangeBlockRect.left && right <= rangeBlockRect.right)
-				);
+				return left >= rangeBlockRect.left && left <= rangeBlockRect.right;
 			});
 
 		const targetDiv = divsInInterval.find(getDivRange);
@@ -273,8 +277,10 @@ const GraphChunksVirtualizer = (props: Props) => {
 			const pixelsDiff = rangeBlockRect.left - targetDiv.getBoundingClientRect().left;
 			const secondsDiff = (pixelsDiff / chunkWidth) * (interval * 60);
 
-			const intervalStart = moment(from).utc().add(secondsDiff, 'seconds');
-			const intervalEnd = moment(intervalStart).utc().add(interval, 'minutes');
+			const intervalStart = moment.utc(from).add(secondsDiff, 'seconds');
+			const intervalEnd = moment
+				.utc(intervalStart)
+				.add((rangeBlockRect.width / chunkWidth) * interval, 'minutes');
 
 			if (intervalStart.isValid() && intervalEnd.isValid()) {
 				const updatedRange: TimeRange = [intervalStart.valueOf(), intervalEnd.valueOf()];
@@ -331,18 +337,6 @@ const GraphChunksVirtualizer = (props: Props) => {
 		}
 	};
 
-	const windowTimeRange: TimeRange = React.useMemo(() => {
-		const [from, to] = range;
-		return [
-			moment(from)
-				.subtract(interval / 2, 'minutes')
-				.valueOf(),
-			moment(to)
-				.add(interval / 2, 'minutes')
-				.valueOf(),
-		];
-	}, [range]);
-
 	return (
 		<div className='graph-virtualizer'>
 			<div
@@ -367,16 +361,12 @@ const GraphChunksVirtualizer = (props: Props) => {
 			{panelsRange.map(panel => (
 				<TimeSelector
 					key={panel.type}
-					windowTimeRange={windowTimeRange}
+					windowTimeRange={range}
 					onClick={panel.setRange}
 					panelType={panel.type}
 				/>
 			))}
-			<div
-				className='graph-virtualizer__dragging-zone'
-				style={{ width: chunkWidth, left: (window.innerWidth - chunkWidth) / 2 }}
-				ref={rangeElementRef}
-			/>
+			<div className='graph-virtualizer__dragging-zone' ref={rangeElementRef} />
 		</div>
 	);
 };
@@ -397,14 +387,11 @@ function TimeSelector(props: TimeSelectorProps) {
 	const pointerRef = React.useRef<HTMLSpanElement>(null);
 	const dashedLineRef = React.useRef<HTMLDivElement>(null);
 
+	const updatePointerTimestamp = usePointerTimestampUpdate();
+
 	function handleClick(e: React.MouseEvent<HTMLSpanElement>) {
-		if (rootRef.current) {
-			const [from, to] = windowTimeRange;
-			const { left, width } = rootRef.current.getBoundingClientRect();
-			const clickPoint = e.pageX - left;
-			const clickedTime = Math.floor(from + (to - from) * (clickPoint / width));
-			onClick(clickedTime);
-		}
+		const clickedTime = getTimeOffset(e.pageX);
+		onClick(clickedTime);
 	}
 
 	function handleMouseEnter() {
@@ -431,13 +418,27 @@ function TimeSelector(props: TimeSelectorProps) {
 			pointerEl.style.display = 'none';
 			dashedLineEl.style.display = 'none';
 		}
+		updatePointerTimestamp(null);
 	}
 
 	function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
 		const pointerEl = pointerRef.current;
 		if (pointerEl) {
-			pointerEl.style.left = `${e.clientX - pointerEl.offsetWidth / 2}px`;
+			const leftOffset = e.clientX - pointerEl.offsetWidth / 2;
+			pointerEl.style.left = `${leftOffset}px`;
+			const clickedTime = getTimeOffset(leftOffset);
+			updatePointerTimestamp(clickedTime);
 		}
+	}
+
+	function getTimeOffset(offsetInPixels: number) {
+		if (!rootRef.current || !pointerRef.current) return 0;
+
+		const [from, to] = windowTimeRange;
+		const { left, width } = rootRef.current.getBoundingClientRect();
+		const pointerWidth = pointerRef.current.getBoundingClientRect().width;
+		const clickPoint = offsetInPixels - left + pointerWidth / 2;
+		return Math.floor(from + (to - from) * (clickPoint / width));
 	}
 
 	return (

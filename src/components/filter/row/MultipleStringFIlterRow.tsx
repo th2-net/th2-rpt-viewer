@@ -18,7 +18,7 @@ import * as React from 'react';
 import { FilterRowMultipleStringsConfig } from '../../../models/filter/FilterInputs';
 import { removeByIndex, replaceByIndex } from '../../../helpers/array';
 import Bubble from '../../util/Bubble';
-import AutocompleteInput from '../../util/AutocompleteInput';
+import AutocompleteInput from '../../util/AutocompleteInput/AutocompleteInput';
 import KeyCodes from '../../../util/KeyCodes';
 import {
 	createBemBlock,
@@ -26,23 +26,20 @@ import {
 	createStyleSelector,
 } from '../../../helpers/styleCreators';
 
-export default function MultipleStringFilterRow({
-	config,
-}: {
+interface MultipleStringFilterRowProps {
 	config: FilterRowMultipleStringsConfig;
-}) {
+}
+
+export default function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
 	const input = React.useRef<HTMLInputElement>();
+	const rootRef = React.useRef<HTMLDivElement>(null);
+	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
+
 	const [isFocused, setIsFocused] = React.useState(false);
 
-	React.useEffect(() => {
-		input.current?.focus();
-		return () => {
-			const inputValue = input.current?.value;
-			if (inputValue && inputValue.trim()) {
-				inputOnSubmit(inputValue);
-			}
-		};
-	}, []);
+	React.useLayoutEffect(() => {
+		setAutocompleteAnchor(rootRef.current || undefined);
+	}, [setAutocompleteAnchor]);
 
 	const valueBubbleOnChangeFor = (index: number) => (nextValue: string) => {
 		config.setValues(replaceByIndex(config.values, index, nextValue));
@@ -91,14 +88,14 @@ export default function MultipleStringFilterRow({
 					{config.label}
 				</label>
 			)}
-			<div className={filterContentClassName}>
+			<div className={filterContentClassName} ref={rootRef}>
 				<div className={inputRootClassName} onClick={rootOnClick}>
 					{config.values.map((value, index) => (
 						<Bubble
 							key={index}
 							size='small'
 							removeIconType='white'
-							submitKeyCodes={[KeyCodes.SPACE, KeyCodes.ENTER]}
+							submitKeyCodes={[KeyCodes.SPACE]}
 							className='filter__bubble'
 							value={value}
 							onSubmit={valueBubbleOnChangeFor(index)}
@@ -109,6 +106,7 @@ export default function MultipleStringFilterRow({
 						/>
 					))}
 					<AutocompleteInput
+						anchor={autocompleteAnchor}
 						ref={input}
 						placeholder={
 							config.values.length === 0
@@ -116,7 +114,7 @@ export default function MultipleStringFilterRow({
 								: ''
 						}
 						disabled={config.disabled}
-						submitKeyCodes={[KeyCodes.SPACE, KeyCodes.ENTER]}
+						submitKeyCodes={[KeyCodes.SPACE]}
 						className='filter-row__multiple-values-input'
 						wrapperClassName='filter-row__multiple-values-input-wrapper'
 						value={config.currentValue}

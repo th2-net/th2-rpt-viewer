@@ -183,10 +183,6 @@
 		width: 14px;
 		height: 14px;
 		border-radius: 50%;
-
-		&:not(:first-child) {
-			margin-bottom: 1px;
-		}
 	}
 
 	&.hovered-event,
@@ -223,9 +219,10 @@
 	z-index: 10;
 
 	&__dots {
-		display: flex;
-		flex-direction: column-reverse;
-		align-items: center;
+		display: grid;
+		grid-row-gap: 1px;
+		grid-auto-rows: 14px;
+		place-items: center;
 		position: relative;
 		z-index: 101;
 
@@ -359,6 +356,7 @@
 	&__dragging-zone {
 		visibility: hidden;
 		height: 100%;
+		width: 100%;
 		position: absolute;
 		top: 0;
 	}
@@ -367,7 +365,7 @@
 		min-width: 20px;
 		height: 5px;
 		position: absolute;
-		z-index: 50;
+		z-index: 14;
 		border-radius: 2px;
 
 		&.events-panel {
@@ -410,6 +408,10 @@
 
 		& ~ .time-picker {
 			bottom: 6px;
+
+			&::after {
+				height: 94px;
+			}
 		}
 
 		&__pointer {
@@ -421,12 +423,31 @@
 			border-radius: 50%;
 			border: 1px solid #fff;
 
+			&::after {
+				content: '';
+				height: 100px;
+				width: 2px;
+				position: absolute;
+				top: 0;
+				left: 2px;
+				transform: translateY(-100%);
+				background-color: red;
+			}
+
 			&.events-panel {
 				background-color: rgb(247, 167, 110);
+
+				&::after {
+					background-color: rgb(247, 167, 110);
+				}
 			}
 
 			&.messages-panel {
 				background-color: rgb(26, 196, 229);
+
+				&::after {
+					background-color: rgb(26, 196, 229);
+				}
 			}
 		}
 	}
@@ -443,7 +464,7 @@
 
 .graph-search {
 	position: absolute;
-	z-index: 1;
+	z-index: 16;
 	left: 50%;
 	top: 10px;
 	transform: translateX(-50%);
