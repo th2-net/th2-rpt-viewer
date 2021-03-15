@@ -67,8 +67,9 @@ export default class EventsFilterStore {
 	}
 
 	@action
-	public raiseFilterTimestamp(ms: number) {
+	public raiseFilterTimestamp(mins: number) {
 		const currentFilter = this.filter;
+		const ms = mins * 60000;
 		this.setEventsFilter({
 			...currentFilter,
 			timestampFrom: currentFilter.timestampFrom + ms,
@@ -77,8 +78,9 @@ export default class EventsFilterStore {
 	}
 
 	@action
-	public lowerFilterTimestamp(ms: number) {
+	public lowerFilterTimestamp(mins: number) {
 		const currentFilter = this.filter;
+		const ms = mins * 60000;
 		this.setEventsFilter({
 			...currentFilter,
 			timestampFrom: currentFilter.timestampFrom - ms,

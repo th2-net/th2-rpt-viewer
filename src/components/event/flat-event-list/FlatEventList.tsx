@@ -26,8 +26,9 @@ import { raf } from '../../../helpers/raf';
 import CardDisplayType from '../../../util/CardDisplayType';
 import { EventTreeNode } from '../../../models/EventAction';
 import { getEventNodeParents } from '../../../helpers/event';
+import TreeHeader from '../TreeHeader';
+import TreeFooter from '../TreeFooter';
 import '../../../styles/action.scss';
-import TreeBranchRenderer from '../TreeBranchRenderer';
 
 interface Props {
 	nodes: EventTreeNode[];
@@ -57,32 +58,26 @@ function FlatEventList({ nodes }: Props) {
 	const renderEvent = (index: number): React.ReactElement => {
 		const node = nodes[index];
 		return (
-			<TreeBranchRenderer
-				index={index}
-				lastIndex={nodes.length - 1}
-				Render={() => (
-					<Observer>
-						{() => (
-							<div style={{ margin: '4px 5px' }}>
-								<EventCardHeader
-									childrenCount={0}
-									event={node}
-									displayType={CardDisplayType.MINIMAL}
-									onSelect={() => eventWindowStore.selectNode(node)}
-									isSelected={eventWindowStore.isNodeSelected(node)}
-									isFlatView={true}
-									parentsCount={getEventNodeParents(node).length}
-									isActive={
-										eventWindowStore.selectedPath.length > 0 &&
-										eventWindowStore.selectedPath[eventWindowStore.selectedPath.length - 1]
-											.eventId === node.eventId
-									}
-								/>
-							</div>
-						)}
-					</Observer>
+			<Observer>
+				{() => (
+					<div style={{ margin: '4px 5px' }}>
+						<EventCardHeader
+							childrenCount={0}
+							event={node}
+							displayType={CardDisplayType.MINIMAL}
+							onSelect={() => eventWindowStore.selectNode(node)}
+							isSelected={eventWindowStore.isNodeSelected(node)}
+							isFlatView={true}
+							parentsCount={getEventNodeParents(node).length}
+							isActive={
+								eventWindowStore.selectedPath.length > 0 &&
+								eventWindowStore.selectedPath[eventWindowStore.selectedPath.length - 1].eventId ===
+									node.eventId
+							}
+						/>
+					</div>
 				)}
-			/>
+			</Observer>
 		);
 	};
 
@@ -109,6 +104,10 @@ function FlatEventList({ nodes }: Props) {
 					overscan={3}
 					itemContent={renderEvent}
 					style={{ height: '100%' }}
+					components={{
+						Header: TreeHeader,
+						Footer: TreeFooter,
+					}}
 				/>
 			</StateSaverProvider>
 		</div>

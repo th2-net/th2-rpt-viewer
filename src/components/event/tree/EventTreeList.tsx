@@ -25,8 +25,9 @@ import { useWorkspaceEventStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
 import { EventTreeNode } from '../../../models/EventAction';
 import { timestampToNumber } from '../../../helpers/date';
+import TreeHeader from '../TreeHeader';
+import TreeFooter from '../TreeFooter';
 import '../../../styles/action.scss';
-import TreeBranchRenderer from '../TreeBranchRenderer';
 
 interface Props {
 	nodes: EventTreeNode[];
@@ -101,22 +102,14 @@ function EventTreeList({ nodes }: Props) {
 	const computeKey = (index: number) => nodes[index].eventId;
 
 	const renderEvent = (index: number): React.ReactElement => (
-		<TreeBranchRenderer
-			index={index}
-			lastIndex={nodes.length - 1}
-			Render={() => (
-				<EventTree
-					eventTreeNode={nodes[index]}
-					startTimestamp={
-						timestamps?.startEventId === nodes[index].eventId
-							? timestamps.startTimestamp
-							: undefined
-					}
-					endTimestamp={
-						timestamps?.endEventId === nodes[index].eventId ? timestamps.endTimestamp : undefined
-					}
-				/>
-			)}
+		<EventTree
+			eventTreeNode={nodes[index]}
+			startTimestamp={
+				timestamps?.startEventId === nodes[index].eventId ? timestamps.startTimestamp : undefined
+			}
+			endTimestamp={
+				timestamps?.endEventId === nodes[index].eventId ? timestamps.endTimestamp : undefined
+			}
 		/>
 	);
 
@@ -143,6 +136,10 @@ function EventTreeList({ nodes }: Props) {
 					overscan={3}
 					itemContent={renderEvent}
 					style={{ height: '100%' }}
+					components={{
+						Header: TreeHeader,
+						Footer: TreeFooter,
+					}}
 				/>
 			</StateSaverProvider>
 		</div>

@@ -14,7 +14,7 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-export * from './useWorkspaceEventsFilterStore';
+export * from './useEventsFilterStore';
 export * from './useActivePanel';
 export * from './useActiveWorkspace';
 export * from './useAsyncEffect';

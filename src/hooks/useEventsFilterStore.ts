@@ -17,7 +17,7 @@
 import EventsFilterStore from '../stores/events/EventsFilterStore';
 import { useWorkspaceEventStore } from './useEventWindowStore';
 
-export const useWorkspaceEventsFilterStore = (): EventsFilterStore => {
+export const useEventsFilterStore = (): EventsFilterStore => {
 	const workspaceEventStore = useWorkspaceEventStore();
 
 	return workspaceEventStore.filterStore;
