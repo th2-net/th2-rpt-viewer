@@ -126,7 +126,11 @@ function EventTreeList({ nodes }: Props) {
 		}
 		return (
 			<Empty
-				description={`Server responded with ${eventWindowStore.eventTreeStatusCode} code`}
+				description={
+					typeof eventWindowStore.eventTreeStatusCode === 'number'
+						? `Server responded with ${eventWindowStore.eventTreeStatusCode} code`
+						: 'Error occured while loading events'
+				}
 				descriptionStyles={{ position: 'relative', bottom: '19px' }}
 			/>
 		);

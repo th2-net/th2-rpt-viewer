@@ -394,6 +394,8 @@ interface TimeSelectorProps {
 function TimeSelector(props: TimeSelectorProps) {
 	const { onClick, windowTimeRange, panelType } = props;
 
+	const [isHovered, setIsHovered] = React.useState(false);
+
 	const delayedSetState = React.useRef<NodeJS.Timeout | null>(null);
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const pointerRef = React.useRef<HTMLSpanElement>(null);
@@ -415,6 +417,7 @@ function TimeSelector(props: TimeSelectorProps) {
 					pointerEl.style.display = 'block';
 					dashedLineEl.style.display = 'block';
 				}
+				setIsHovered(true);
 			}, 60);
 		}
 	}
@@ -423,6 +426,7 @@ function TimeSelector(props: TimeSelectorProps) {
 		if (delayedSetState.current) {
 			clearTimeout(delayedSetState.current);
 			delayedSetState.current = null;
+			setIsHovered(false);
 		}
 		const pointerEl = pointerRef.current;
 		const dashedLineEl = dashedLineRef.current;
@@ -439,7 +443,9 @@ function TimeSelector(props: TimeSelectorProps) {
 			const leftOffset = e.clientX - pointerEl.offsetWidth / 2;
 			pointerEl.style.left = `${leftOffset}px`;
 			const clickedTime = getTimeOffset(leftOffset);
-			updatePointerTimestamp(clickedTime);
+			if (isHovered) {
+				updatePointerTimestamp(clickedTime);
+			}
 		}
 	}
 

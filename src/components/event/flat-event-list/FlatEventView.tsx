@@ -41,7 +41,11 @@ function EventTreeView() {
 						<Empty description='Select event' />
 					) : (
 						<Empty
-							description={`Server responded with ${eventWindowStore.eventTreeStatusCode} code`}
+							description={
+								typeof eventWindowStore.eventTreeStatusCode === 'number'
+									? `Server responded with ${eventWindowStore.eventTreeStatusCode} code`
+									: 'Error occured while loading event'
+							}
 						/>
 					))}
 				{eventWindowStore.selectedNode && (
