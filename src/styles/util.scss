@@ -133,3 +133,71 @@
 	z-index: 1000;
 	box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.45);
 }
+
+.autocomplete-list {
+	position: absolute;
+	right: 0;
+	left: 0;
+	z-index: 200;
+	background-color: #fff;
+	border-radius: 5px;
+	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14),
+		0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+	max-height: 400px;
+	overflow: auto;
+	opacity: 0;
+	transform: scaleY(0.8);
+	transform-origin: 0 0;
+
+	&.opened {
+		@keyframes open {
+			from {
+				transform: scaleY(0.8);
+				opacity: 0;
+			}
+
+			to {
+				transform: scaleY(1);
+				opacity: 1;
+			}
+		}
+
+		animation: open 0.25s ease-in-out 1 forwards;
+	}
+
+	&.closed {
+		@keyframes close {
+			from {
+				transform: scaleY(1);
+				opacity: 1;
+			}
+			to {
+				transform: scaleY(0.8);
+				opacity: 0;
+			}
+		}
+
+		animation: close 0.15s ease-in-out 1 forwards;
+	}
+
+	&__options {
+		height: 100%;
+		@include scrollbar;
+	}
+
+	&__option {
+		color: $primaryTextColor;
+		font-size: 13px;
+		padding: 2px 6px;
+		cursor: pointer;
+
+		&.active {
+			font-weight: bold;
+			background-color: rgba(#ebfaff, 0.5);
+		}
+
+		&:hover:not(.active) {
+			background-color: rgba(222, 224, 224, 0.5);
+		}
+	}
+}
