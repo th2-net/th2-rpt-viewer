@@ -81,31 +81,6 @@ function Graph({ activeWorkspace }: GraphProps) {
 		selectedStore.graphItems,
 	]);
 
-	const renderChunk = (chunk: Chunk, index: number) => {
-		return (
-			<Observer key={`${chunk.from}-${chunk.to}`}>
-				{() => (
-					<div
-						data-from={moment(chunk.from).startOf('minute').valueOf()}
-						data-to={moment(chunk.to).endOf('minute').valueOf()}
-						className='graph__chunk-item'
-						data-index={index}
-						style={{ width: chunkWidth }}>
-						<GraphChunk
-							tickSize={activeWorkspace.graphStore.tickSize}
-							interval={activeWorkspace.graphStore.interval}
-							chunk={chunk}
-							chunkWidth={chunkWidth}
-							getChunkData={activeWorkspace.graphStore.getChunkData}
-							getGraphItemType={getGraphItemType}
-							onGraphItemClick={onGraphItemClick}
-						/>
-					</div>
-				)}
-			</Observer>
-		);
-	};
-
 	const getChunk = React.useCallback(
 		(timestamp: number, index: number) => {
 			return activeWorkspace.graphStore.getChunkByTimestamp(
@@ -132,6 +107,31 @@ function Graph({ activeWorkspace }: GraphProps) {
 		];
 	}, [activeWorkspace.eventsStore.panelRange, activeWorkspace.messagesStore.panelRange]);
 
+	const renderChunk = (chunk: Chunk, index: number) => {
+		return (
+			<Observer key={`${chunk.from}-${chunk.to}`}>
+				{() => (
+					<div
+						data-from={moment(chunk.from).startOf('minute').valueOf()}
+						data-to={moment(chunk.to).endOf('minute').valueOf()}
+						className='graph__chunk-item'
+						data-index={index}
+						style={{ width: chunkWidth }}>
+						<GraphChunk
+							tickSize={activeWorkspace.graphStore.tickSize}
+							interval={activeWorkspace.graphStore.interval}
+							chunk={chunk}
+							chunkWidth={chunkWidth}
+							getChunkData={activeWorkspace.graphStore.getChunkData}
+							getGraphItemType={getGraphItemType}
+							onGraphItemClick={onGraphItemClick}
+						/>
+					</div>
+				)}
+			</Observer>
+		);
+	};
+
 	return (
 		<div className='graph' ref={rootRef}>
 			<GraphChunksVirtualizer
@@ -152,7 +152,6 @@ function Graph({ activeWorkspace }: GraphProps) {
 				panelsRange={panelsRange}
 				graphItems={selectedStore.graphItems}
 				range={activeWorkspace.graphStore.range}
-				interval={activeWorkspace.graphStore.interval}
 				onPanelRangeSelect={activeWorkspace.graphStore.setTimestampFromRange}
 			/>
 			<WorkspaceLinkGetter />

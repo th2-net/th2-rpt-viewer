@@ -240,6 +240,7 @@ function GraphSearchInput(props: Props) {
 			<input
 				className='graph-search-input__placeholder'
 				type='text'
+				readOnly={true}
 				value={
 					inputConfig.placeholder
 						? inputConfig.value + inputConfig.placeholder.slice(inputConfig.value.length)
