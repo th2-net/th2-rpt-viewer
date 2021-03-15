@@ -15,11 +15,10 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import React, { useRef } from 'react';
-import { clamp } from '../../helpers/number';
+import React from 'react';
+import { Virtuoso } from 'react-virtuoso';
 import { useMessageDisplayRulesStore } from '../../hooks';
-import { MessageDisplayRule } from '../../models/EventMessage';
-import DisplayRule, { DraggableDisplayRule } from './DisplayRule';
+import DisplayRule from './DisplayRule';
 
 type Props = {
 	sessions: string[];
@@ -32,59 +31,48 @@ export type Position = {
 
 const RulesList = ({ sessions }: Props) => {
 	const rulesStore = useMessageDisplayRulesStore();
-	const positions = useRef<Position[]>([]).current;
-	const updatePosition = (i: number, offset: Position) => {
-		positions[i] = offset;
+
+	const computeKey = (index: number) => {
+		const rule = rulesStore.messageDisplayRules[index];
+		return rule.id;
 	};
-	const updateOrder = (i: number, dragOffset: number) => {
-		const targetIndex = findIndex(i, dragOffset, positions);
-		if (targetIndex !== i) rulesStore.reorderMessagesDisplayRule(i, targetIndex);
+
+	const renderRule = (index: number) => {
+		const rule = rulesStore.messageDisplayRules[index];
+		return (
+			<DisplayRule
+				sessions={sessions}
+				rule={rule}
+				key={rule.id}
+				index={index}
+				isFirst={index === 0}
+				isLast={index === rulesStore.messageDisplayRules.length - 1}
+			/>
+		);
 	};
+
 	return (
 		<div className='message-display-rules-body'>
 			<div className='message-display-rules-body__header'>
 				<p>Session</p>
 				<p>Display Rule</p>
 			</div>
-			{rulesStore.messageDisplayRules.length
-				? rulesStore.messageDisplayRules.map((rule: MessageDisplayRule, i: number) => (
-						<DraggableDisplayRule
-							sessions={sessions}
-							rule={rule}
-							key={i}
-							index={i}
-							updateOrder={updateOrder}
-							updatePosition={updatePosition}
-						/>
-				  ))
-				: null}
-			<DisplayRule sessions={sessions} rule={rulesStore.rootDisplayRule} />
+			<DisplayRule
+				sessions={sessions}
+				rule={rulesStore.rootDisplayRule}
+				isFirst={null}
+				isLast={null}
+				index={0}
+			/>
+			<Virtuoso
+				className='rules'
+				itemContent={renderRule}
+				computeItemKey={computeKey}
+				totalCount={rulesStore.messageDisplayRules.length}
+				style={{ height: '72px' }}
+			/>
 		</div>
 	);
 };
 
 export default observer(RulesList);
-
-const buffer = 4;
-
-export const findIndex = (i: number, yOffset: number, positions: Position[]) => {
-	let target = i;
-	const { top, height } = positions[i];
-	const bottom = top + height;
-	// If moving down
-	if (yOffset > 0) {
-		const nextItem = positions[i + 1];
-		if (nextItem === undefined) return i;
-		const swapOffset = Math.abs(bottom - (nextItem.top + nextItem.height / 2));
-		if (yOffset > swapOffset) target = i + 1;
-		// If moving up
-	} else if (yOffset < 0) {
-		const prevItem = positions[i - 1];
-		if (prevItem === undefined) return i;
-		const prevBottom = prevItem.top + prevItem.height;
-		const swapOffset = Math.abs(top - (prevBottom - prevItem.height / 2)) + buffer;
-		if (yOffset < -swapOffset) target = i - 1;
-	}
-
-	return clamp(0, positions.length, target);
-};

@@ -52,9 +52,16 @@
     &-body {
         @include scrollbar();
         padding: 6px;
+        height: 100%;
         border-bottom: 1px solid gray;
+        .rules {
+            margin: 6px 0 0;
+            @include scrollbar();
+            border: 1px solid gray;
+            border-radius: 4px;
+        }
         &__header {
-            padding: 0 12px 4px 4px;
+            padding: 0 4px;
             display: flex;
             justify-content: space-between;
             p {
@@ -82,16 +89,38 @@
 
 .rule {
     position: relative;
-    padding: 0 24px 4px 4px;
+    padding: 4px 24px 0 4px;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    &.editing {
+    &.editing,
+    &.full {
         padding: 4px 0 0;
+    }
+    .reorder {
+        width: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        &-control {
+            cursor: pointer;
+            flex-basis: 100%;
+            outline: none;
+            background-color: transparent;
+            border: 1px solid gray;
+            border-radius: 4px;
+            &.up {
+                @include icon(url(../../resources/icons/arr4-up.svg), 8px, 16px);
+            }
+            &.down {
+                @include icon(url(../../resources/icons/arr4-down.svg), 8px, 16px);
+            }
+        }
     }
     &-delete,
     &-button {
         position: absolute;
-        top: 0;
+        top: 4px;
         right: 5px;
         cursor: pointer;
         outline: none;
@@ -114,7 +143,7 @@
         position: relative;
         display: flex;
         justify-content: space-between;
-        padding: 4px;
+        padding: 6px;
         width: 100%;
     }
     &-filler {

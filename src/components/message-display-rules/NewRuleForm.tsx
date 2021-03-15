@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { nanoid } from 'nanoid';
 import React, { useRef, useState } from 'react';
 import { useMessageDisplayRulesStore } from '../../hooks';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
@@ -40,6 +41,7 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 		}
 		if (!rule) {
 			const newRule = {
+				id: nanoid(),
 				session: currentSessionValue,
 				viewType: currentSelected,
 				removable: true,
@@ -60,6 +62,7 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 		}
 		if (!isSame) {
 			const newRule = {
+				id: rule.id,
 				session: currentSessionValue,
 				viewType: currentSelected,
 				removable: rule.removable,

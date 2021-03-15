@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, observable, reaction } from 'mobx';
+import { nanoid } from 'nanoid';
 import { move } from '../helpers/array';
 import { MessageDisplayRule, MessageViewType } from '../models/EventMessage';
 import localStorageWorker from '../util/LocalStorageWorker';
@@ -23,6 +24,7 @@ class MessageDisplayRulesStore {
 	constructor() {
 		if (!localStorageWorker.getRootDisplayRule()) {
 			localStorageWorker.setRootDisplayRule({
+				id: nanoid(),
 				session: '*',
 				viewType: MessageViewType.JSON,
 				removable: false,

@@ -40,7 +40,7 @@ const MessageBodyRulesConfigurator = ({ sessions }: Props) => {
 			<button
 				ref={buttonRef}
 				className='message-display-rules-open'
-				onClick={() => setIsOpen(true)}
+				onClick={() => setIsOpen(open => !open)}
 				title='Message display rules'
 			/>
 			<ModalPortal

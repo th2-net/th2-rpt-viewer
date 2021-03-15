@@ -25,6 +25,7 @@ export enum MessageViewType {
 }
 
 export type MessageDisplayRule = {
+	id: string;
 	session: string;
 	viewType: MessageViewType;
 	removable: boolean;
