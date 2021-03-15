@@ -30,12 +30,12 @@ import { useTabsStore } from '../hooks';
 
 const App = () => {
 	const searchStore = useSearchStore();
-	const tabsTore = useTabsStore();
+	const tabsStore = useTabsStore();
 	return (
 		<div className='app'>
 			<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={400}>
 				<Graph />
-				{tabsTore.activeTabIndex !== 0 && <WorkspaceLinkGetter />}
+				{tabsStore.activeTabIndex !== 0 && <WorkspaceLinkGetter />}
 				<MessageBodyRulesConfigurator sessions={searchStore.messageSessions} />
 				<div className='app__workspaces'>
 					<WorkspacesLayout />
