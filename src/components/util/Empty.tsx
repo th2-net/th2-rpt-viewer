@@ -19,11 +19,14 @@ import '../../styles/empty.scss';
 
 interface EmptyProps {
 	description: string;
+	descriptionStyles?: React.CSSProperties;
 }
 
-const Empty = ({ description }: EmptyProps) => (
+const Empty = ({ description, descriptionStyles = {} }: EmptyProps) => (
 	<div className='empty'>
-		<span className='empty__description'>{description}</span>
+		<span className='empty__description' style={descriptionStyles}>
+			{description}
+		</span>
 	</div>
 );
 

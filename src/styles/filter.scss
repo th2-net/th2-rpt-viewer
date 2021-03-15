@@ -63,7 +63,6 @@
 		&.active {
 			padding: 4px 10px;
 		}
-
 	}
 
 	&__icon {
@@ -303,8 +302,8 @@
 		}
 
 		&-icon {
-			@include icon(url(../../resources/icons/attention-error-orange.svg), 16px, 16px);		
-			
+			@include icon(url(../../resources/icons/attention-error-orange.svg), 16px, 16px);
+
 			display: inline-block;
 			flex-shrink: 0;
 		}
