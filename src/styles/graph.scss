@@ -368,7 +368,7 @@
 		min-width: 20px;
 		height: 5px;
 		position: absolute;
-		z-index: 50;
+		z-index: 14;
 		border-radius: 2px;
 
 		&.events-panel {
@@ -411,6 +411,10 @@
 
 		& ~ .time-picker {
 			bottom: 6px;
+
+			&::after {
+				height: 94px;
+			}
 		}
 
 		&__pointer {
@@ -422,12 +426,31 @@
 			border-radius: 50%;
 			border: 1px solid #fff;
 
+			&::after {
+				content: '';
+				height: 100px;
+				width: 2px;
+				position: absolute;
+				top: 0;
+				left: 2px;
+				transform: translateY(-100%);
+				background-color: red;
+			}
+
 			&.events-panel {
 				background-color: rgb(247, 167, 110);
+
+				&::after {
+					background-color: rgb(247, 167, 110);
+				}
 			}
 
 			&.messages-panel {
 				background-color: rgb(26, 196, 229);
+
+				&::after {
+					background-color: rgb(26, 196, 229);
+				}
 			}
 		}
 	}
@@ -444,7 +467,7 @@
 
 .graph-search {
 	position: absolute;
-	z-index: 1;
+	z-index: 16;
 	left: 50%;
 	top: 10px;
 	transform: translateX(-50%);

@@ -22,6 +22,7 @@ import { raf } from '../../helpers/raf';
 import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import '../../styles/graph.scss';
+import { usePointerTimestampUpdate } from '../../contexts/pointerTimestampContext';
 
 const setInitialState = (settings: Settings): State => {
 	const { itemWidth, amount, tolerance, minIndex, maxIndex, startIndex } = settings;
@@ -386,14 +387,11 @@ function TimeSelector(props: TimeSelectorProps) {
 	const pointerRef = React.useRef<HTMLSpanElement>(null);
 	const dashedLineRef = React.useRef<HTMLDivElement>(null);
 
+	const updatePointerTimestamp = usePointerTimestampUpdate();
+
 	function handleClick(e: React.MouseEvent<HTMLSpanElement>) {
-		if (rootRef.current) {
-			const [from, to] = windowTimeRange;
-			const { left, width } = rootRef.current.getBoundingClientRect();
-			const clickPoint = e.pageX - left;
-			const clickedTime = Math.floor(from + (to - from) * (clickPoint / width));
-			onClick(clickedTime);
-		}
+		const clickedTime = getTimeOffset(e.pageX);
+		onClick(clickedTime);
 	}
 
 	function handleMouseEnter() {
@@ -420,13 +418,27 @@ function TimeSelector(props: TimeSelectorProps) {
 			pointerEl.style.display = 'none';
 			dashedLineEl.style.display = 'none';
 		}
+		updatePointerTimestamp(null);
 	}
 
 	function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
 		const pointerEl = pointerRef.current;
 		if (pointerEl) {
-			pointerEl.style.left = `${e.clientX - pointerEl.offsetWidth / 2}px`;
+			const leftOffset = e.clientX - pointerEl.offsetWidth / 2;
+			pointerEl.style.left = `${leftOffset}px`;
+			const clickedTime = getTimeOffset(leftOffset);
+			updatePointerTimestamp(clickedTime);
 		}
+	}
+
+	function getTimeOffset(offsetInPixels: number) {
+		if (!rootRef.current || !pointerRef.current) return 0;
+
+		const [from, to] = windowTimeRange;
+		const { left, width } = rootRef.current.getBoundingClientRect();
+		const pointerWidth = pointerRef.current.getBoundingClientRect().width;
+		const clickPoint = offsetInPixels - left + pointerWidth / 2;
+		return Math.floor(from + (to - from) * (clickPoint / width));
 	}
 
 	return (
