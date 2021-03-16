@@ -41,48 +41,25 @@ const DisplayRuleRenderer = ({ rule, isFirst, isLast, index }: DisplayRuleRender
 		return null;
 	}
 	const renderReorder = () => {
-		if (isFirst === null && isLast === null) return null;
-		if (isFirst && isLast) {
-			return null;
-		}
-		if (isFirst) {
-			return (
-				<div className='reorder'>
-					<button
-						className='reorder-control down'
-						onClick={() => {
-							rulesStore.reorderMessagesDisplayRule(index, index + 1);
-						}}
-					/>
-				</div>
-			);
-		}
-		if (isLast) {
-			return (
-				<div className='reorder'>
+		if ((isFirst === null && isLast === null) || (isFirst && isLast)) return null;
+		return (
+			<div className='reorder'>
+				{!isFirst && (
 					<button
 						className='reorder-control up'
 						onClick={() => {
 							rulesStore.reorderMessagesDisplayRule(index, index - 1);
 						}}
 					/>
-				</div>
-			);
-		}
-		return (
-			<div className='reorder'>
-				<button
-					className='reorder-control up'
-					onClick={() => {
-						rulesStore.reorderMessagesDisplayRule(index, index - 1);
-					}}
-				/>
-				<button
-					className='reorder-control down'
-					onClick={() => {
-						rulesStore.reorderMessagesDisplayRule(index, index + 1);
-					}}
-				/>
+				)}
+				{!isLast && (
+					<button
+						className='reorder-control down'
+						onClick={() => {
+							rulesStore.reorderMessagesDisplayRule(index, index + 1);
+						}}
+					/>
+				)}
 			</div>
 		);
 	};

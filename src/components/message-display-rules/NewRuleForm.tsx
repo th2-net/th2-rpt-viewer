@@ -27,13 +27,17 @@ type NewRuleFormProps = {
 	stopEdit?: () => void;
 };
 
+const viewTypes = Object.values(MessageViewType);
+
 const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
+
+	const sessionInputRef = useRef(null);
 	const [currentSessionValue, setSessionValue] = useState(rule ? rule.session : '');
-	const [currentSelected, setCurrentSelected] = useState(
+	const [currentSelectedViewType, setCurrentSelectedViewType] = useState(
 		rule ? rule.viewType : MessageViewType.JSON,
 	);
-	const sessionInputRef = useRef(null);
+
 	const submitHandler = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		if (stopEdit) {
@@ -43,7 +47,7 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 			const newRule = {
 				id: nanoid(),
 				session: currentSessionValue,
-				viewType: currentSelected,
+				viewType: currentSelectedViewType,
 				removable: true,
 				fullyEditable: true,
 			};
@@ -52,11 +56,11 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 			return;
 		}
 		const isSame =
-			rule && rule.session === currentSessionValue && rule.viewType === currentSelected;
+			rule && rule.session === currentSessionValue && rule.viewType === currentSelectedViewType;
 		if (rule.session === '*') {
 			rulesStore.setRootDisplayRule({
 				...rule,
-				viewType: currentSelected,
+				viewType: currentSelectedViewType,
 			});
 			return;
 		}
@@ -64,7 +68,7 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 			const newRule = {
 				id: rule.id,
 				session: currentSessionValue,
-				viewType: currentSelected,
+				viewType: currentSelectedViewType,
 				removable: rule.removable,
 				fullyEditable: rule.fullyEditable,
 			};
@@ -100,14 +104,9 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 				</div>
 				<div className='view-type'>
 					<Select
-						options={[
-							MessageViewType.JSON,
-							MessageViewType.FORMATTED,
-							MessageViewType.ASCII,
-							MessageViewType.BINARY,
-						]}
-						selected={currentSelected}
-						onChange={(v: MessageViewType) => setCurrentSelected(v)}
+						options={viewTypes}
+						selected={currentSelectedViewType}
+						onChange={(v: MessageViewType) => setCurrentSelectedViewType(v)}
 					/>
 				</div>
 			</div>

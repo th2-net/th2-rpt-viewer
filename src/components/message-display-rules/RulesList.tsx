@@ -24,11 +24,6 @@ type Props = {
 	sessions: string[];
 };
 
-export type Position = {
-	top: number;
-	height: number;
-};
-
 const RulesList = ({ sessions }: Props) => {
 	const rulesStore = useMessageDisplayRulesStore();
 
@@ -69,7 +64,7 @@ const RulesList = ({ sessions }: Props) => {
 				itemContent={renderRule}
 				computeItemKey={computeKey}
 				totalCount={rulesStore.messageDisplayRules.length}
-				style={{ height: '72px' }}
+				style={{ height: '120px' }}
 			/>
 		</div>
 	);
