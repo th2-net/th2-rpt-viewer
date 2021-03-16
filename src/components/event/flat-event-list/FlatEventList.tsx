@@ -26,8 +26,8 @@ import { raf } from '../../../helpers/raf';
 import CardDisplayType from '../../../util/CardDisplayType';
 import { EventTreeNode } from '../../../models/EventAction';
 import { getEventNodeParents } from '../../../helpers/event';
-import TreeHeader from '../TreeHeader';
-import TreeFooter from '../TreeFooter';
+import { EventListFooter, EventListHeader } from '../EventListNavigation';
+
 import '../../../styles/action.scss';
 
 interface Props {
@@ -113,8 +113,8 @@ function FlatEventList({ nodes }: Props) {
 					itemContent={renderEvent}
 					style={{ height: '100%' }}
 					components={{
-						Header: TreeHeader,
-						Footer: TreeFooter,
+						Header: EventListHeader,
+						Footer: EventListFooter,
 					}}
 				/>
 			</StateSaverProvider>

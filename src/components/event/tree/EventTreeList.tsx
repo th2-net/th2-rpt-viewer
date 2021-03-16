@@ -25,8 +25,7 @@ import { useWorkspaceEventStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
 import { EventTreeNode } from '../../../models/EventAction';
 import { timestampToNumber } from '../../../helpers/date';
-import TreeHeader from '../TreeHeader';
-import TreeFooter from '../TreeFooter';
+import { EventListFooter, EventListHeader } from '../EventListNavigation';
 import '../../../styles/action.scss';
 
 interface Props {
@@ -145,8 +144,8 @@ function EventTreeList({ nodes }: Props) {
 					itemContent={renderEvent}
 					style={{ height: '100%' }}
 					components={{
-						Header: TreeHeader,
-						Footer: TreeFooter,
+						Header: EventListHeader,
+						Footer: EventListFooter,
 					}}
 				/>
 			</StateSaverProvider>

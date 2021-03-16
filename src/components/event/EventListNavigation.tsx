@@ -14,19 +14,32 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useEventsFilterStore, useGraphDataStore } from '../../hooks';
 
-const TreeFooter = () => {
+export const EventListFooter = observer(() => {
 	const eventFilter = useEventsFilterStore();
 	const graphStore = useGraphDataStore();
+
 	return (
 		<button
 			className='actions-list__nav down'
-			onClick={() => eventFilter.changeTimestamp(-30 - graphStore.interval)}
+			onClick={() => eventFilter.changeTimestamp(-graphStore.interval)}
 			title='Load older events'
 		/>
 	);
-};
+});
 
-export default TreeFooter;
+export const EventListHeader = observer(() => {
+	const eventFilter = useEventsFilterStore();
+	const graphStore = useGraphDataStore();
+
+	return (
+		<button
+			className='actions-list__nav up'
+			onClick={() => eventFilter.changeTimestamp(graphStore.interval)}
+			title='Load newer events'
+		/>
+	);
+});
