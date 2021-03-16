@@ -47,7 +47,8 @@ const DisplayRuleRenderer = ({ rule, isFirst, isLast, index }: DisplayRuleRender
 				{!isFirst && (
 					<button
 						className='reorder-control up'
-						onClick={() => {
+						onClick={(e: React.MouseEvent) => {
+							e.stopPropagation();
 							rulesStore.reorderMessagesDisplayRule(index, index - 1);
 						}}
 					/>
@@ -55,7 +56,8 @@ const DisplayRuleRenderer = ({ rule, isFirst, isLast, index }: DisplayRuleRender
 				{!isLast && (
 					<button
 						className='reorder-control down'
-						onClick={() => {
+						onClick={(e: React.MouseEvent) => {
+							e.stopPropagation();
 							rulesStore.reorderMessagesDisplayRule(index, index + 1);
 						}}
 					/>
