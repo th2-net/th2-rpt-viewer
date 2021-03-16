@@ -56,7 +56,7 @@ class MessageDisplayRulesStore {
 	public setNewMessagesDisplayRule = (rule: MessageDisplayRule) => {
 		const hasSame = this.messageDisplayRules.find(existed => existed.session === rule.session);
 		if (!hasSame) {
-			this.messageDisplayRules = [...this.messageDisplayRules, rule];
+			this.messageDisplayRules = [rule, ...this.messageDisplayRules];
 		}
 	};
 

@@ -27,8 +27,8 @@ type Props = {
 
 const MessageBodyRulesConfigurator = ({ sessions }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
-	const modalRef = useRef(null);
-	const buttonRef = useRef(null);
+	const modalRef = useRef<HTMLDivElement>(null);
+	const buttonRef = useRef<HTMLButtonElement>(null);
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		if (e.target !== buttonRef.current) {
 			setIsOpen(false);

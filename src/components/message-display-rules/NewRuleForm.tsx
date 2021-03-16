@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { nanoid } from 'nanoid';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMessageDisplayRulesStore } from '../../hooks';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
 import AutocompleteInput from '../util/AutocompleteInput';
@@ -32,8 +32,8 @@ const viewTypes = Object.values(MessageViewType);
 const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
 
-	const sessionInputRef = useRef(null);
-	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
+	const sessionInputRef = useRef<HTMLInputElement>(null);
+	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLInputElement>();
 	const [currentSessionValue, setSessionValue] = useState(rule ? rule.session : '');
 	const [currentSelectedViewType, setCurrentSelectedViewType] = useState(
 		rule ? rule.viewType : MessageViewType.JSON,
@@ -49,6 +49,9 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 			stopEdit();
 		}
 		if (!rule) {
+			if (!currentSessionValue) {
+				return;
+			}
 			const newRule = {
 				id: nanoid(),
 				session: currentSessionValue,
@@ -116,12 +119,7 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 					/>
 				</div>
 			</div>
-			<button
-				className='rule-button'
-				disabled={!currentSessionValue}
-				onClick={submitHandler}
-				title='submit'
-			/>
+			<button className='rule-button' onClick={submitHandler} title='submit' />
 		</div>
 	);
 };

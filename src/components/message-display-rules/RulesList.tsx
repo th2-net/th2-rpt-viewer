@@ -52,19 +52,19 @@ const RulesList = ({ sessions }: Props) => {
 				<p>Session</p>
 				<p>Display Rule</p>
 			</div>
-			<DisplayRule
-				sessions={sessions}
-				rule={rulesStore.rootDisplayRule}
-				isFirst={null}
-				isLast={null}
-				index={0}
-			/>
 			<Virtuoso
 				className='rules'
 				itemContent={renderRule}
 				computeItemKey={computeKey}
 				totalCount={rulesStore.messageDisplayRules.length}
 				style={{ height: '120px' }}
+			/>
+			<DisplayRule
+				sessions={sessions}
+				rule={rulesStore.rootDisplayRule}
+				isFirst={null}
+				isLast={null}
+				index={0}
 			/>
 		</div>
 	);
