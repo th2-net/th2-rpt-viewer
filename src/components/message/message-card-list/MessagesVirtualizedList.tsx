@@ -17,6 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import moment from 'moment';
 import {
 	useDebouncedCallback,
 	useMessagesDataStore,
@@ -117,10 +118,42 @@ const MessagesVirtualizedList = (props: Props) => {
 			onScroll={onScroll}
 			components={{
 				Header: function MessagesListSpinnerNext() {
-					return <MessagesListSpinner isLoading={messagesDataStore.isLoadingNextMessages} />;
+					return messagesDataStore.noMatchingMessagesNext ? (
+						<div className='messages-list__loading-message'>
+							<span className='messages-list__loading-message-text'>
+								No more matching messages since&nbsp;
+								{moment(messageStore.filterStore.messsagesSSEConfig.queryParams.startTimestamp)
+									.utc()
+									.format()}
+							</span>
+							<button
+								className='messages-list__load-btn'
+								onClick={() => messagesDataStore.keepLoading('next')}>
+								Keep loading
+							</button>
+						</div>
+					) : (
+						<MessagesListSpinner isLoading={messagesDataStore.isLoadingNextMessages} />
+					);
 				},
 				Footer: function MessagesListSpinnerPrevious() {
-					return <MessagesListSpinner isLoading={messagesDataStore.isLoadingPreviousMessages} />;
+					return messagesDataStore.noMatchingMessagesPrev ? (
+						<div className='messages-list__loading-message'>
+							<span className='messages-list__loading-message-text'>
+								No more matching messages since&nbsp;
+								{moment(messageStore.filterStore.messsagesSSEConfig.queryParams.startTimestamp)
+									.utc()
+									.format()}
+							</span>
+							<button
+								className='messages-list__load-btn'
+								onClick={() => messagesDataStore.keepLoading('previous')}>
+								Keep loading
+							</button>
+						</div>
+					) : (
+						<MessagesListSpinner isLoading={messagesDataStore.isLoadingPreviousMessages} />
+					);
 				},
 			}}
 		/>
