@@ -34,8 +34,9 @@ export class GraphStore {
 		timeRange: TimeRange | null = null,
 		defaultInterval: IntervalOption = 15,
 	) {
-		const range = timeRange || this.range;
-		this.setTimestampFromRange(range);
+		this.range = timeRange || this.range;
+		this.setTimestampFromRange(this.range);
+
 		this.interval = defaultInterval;
 
 		reaction(
@@ -58,10 +59,12 @@ export class GraphStore {
 	public chunks: Chunk[] = [];
 
 	@observable
-	public timestamp: Number = moment
-		.utc()
-		.subtract(this.interval / 2, 'minutes')
-		.valueOf();
+	public timestamp: Number = new Number(
+		moment
+			.utc()
+			.subtract(this.interval / 2, 'minutes')
+			.valueOf(),
+	);
 
 	@observable
 	public range: TimeRange = calculateTimeRange(
@@ -90,7 +93,7 @@ export class GraphStore {
 
 	@action
 	public getChunkByTimestamp = (timestamp: number) => {
-		let chunk: Chunk | undefined = this.chunks.find(c => timestamp >= c.from && timestamp <= c.to);
+		let chunk: Chunk | undefined = this.chunks.find(c => timestamp === c.from);
 		if (chunk) return chunk;
 		chunk = observable(
 			this.createChunk(moment.utc(timestamp).startOf('minute').valueOf(), this.interval),
@@ -150,7 +153,8 @@ export class GraphStore {
 			: GraphItemType.PINNED_MESSAGE;
 	};
 
+	@action
 	setTimestampFromRange = (range: TimeRange) => {
-		this.timestamp = range[0] + (range[1] - range[0]) / 2;
+		this.timestamp = new Number(range[0] + (range[1] - range[0]) / 2);
 	};
 }
