@@ -29,8 +29,8 @@ import { Chunk, PanelRange } from '../../models/Graph';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
 import WorkspaceLinkGetter from '../WorkspaceLinkGetter';
-import '../../styles/graph.scss';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
+import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -112,8 +112,8 @@ function Graph({ activeWorkspace }: GraphProps) {
 			<Observer key={`${chunk.from}-${chunk.to}`}>
 				{() => (
 					<div
-						data-from={moment(chunk.from).startOf('minute').valueOf()}
-						data-to={moment(chunk.to).endOf('minute').valueOf()}
+						data-from={moment.utc(chunk.from).valueOf()}
+						data-to={moment.utc(chunk.to).valueOf()}
 						className='graph__chunk-item'
 						data-index={index}
 						style={{ width: chunkWidth }}>
