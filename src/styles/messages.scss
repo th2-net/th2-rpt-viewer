@@ -78,16 +78,21 @@
 		animation: highlight 1s infinite ease-in-out;
 	}
 
+	&.soft-filtered {
+		border: 1px solid $filterPrimaryColor;
+
+		&:hover {
+			background-color: rgba($color: $filterPrimaryColor, $alpha: 0.1);
+		}
+
+	}
+
 	&.attached {
 		border: 2px solid $attachedMessageCardBorderColor;
 
 		&:hover {
 			border-color: $attachedMessageCardHoverBorderColor;
 			background-color: $attachedMessageCardHoverBackground;
-		}
-
-		.mc-header__is-attached-icon {
-			display: block;
 		}
 	}
 }
@@ -144,7 +149,11 @@
 		margin-top: 3px;
 		margin-left: 3px;
 		margin-right: 4px;
-		display: none;
+	}
+
+	&__is-soft-filtered-icon {
+		@include icon(url(../../resources/icons/filter.svg), 12px, 12px);
+		flex-shrink: 0;
 	}
 
 	&__info {

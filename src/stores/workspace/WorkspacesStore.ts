@@ -104,6 +104,7 @@ export default class WorkspacesStore {
 
 	public getInitialWorkspaceByMessage = (
 		timestamp: number,
+		isSoftFilter = false,
 		targetMessage?: EventMessage,
 	): WorkspaceInitialState => {
 		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
@@ -114,6 +115,7 @@ export default class WorkspacesStore {
 				timestampFrom: null,
 				timestampTo: timestamp,
 				targetMessage,
+				isSoftFilter,
 			},
 			interval: SEARCH_STORE_INTERVAL,
 			layout: [0, 100],
