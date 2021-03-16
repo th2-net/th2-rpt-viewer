@@ -219,7 +219,7 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 			<ModalPortal isOpen={isOpen} closeDelay={150} ref={ref}>
 				<div
 					className={createStyleSelector('autocomplete-list', isOpen ? 'opened' : 'closed')}
-					style={{ height: `${listHeight}px` }}
+					style={{ height: `${listHeight}px`, zIndex: 1000 }}
 					ref={rootRef}>
 					<Virtuoso
 						ref={virtuosoRef}

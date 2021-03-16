@@ -89,7 +89,7 @@ const DisplayRule = ({ rule, isFirst, isLast, sessions, index }: DisplayRuleProp
 		isEditing ? 'editing' : null,
 		rule && !rule.fullyEditable ? 'full' : null,
 	);
-	const ruleRef = useRef(null);
+	const ruleRef = useRef<HTMLDivElement>(null);
 	useOutsideClickListener(ruleRef, () => {
 		setIsEditing(false);
 	});
