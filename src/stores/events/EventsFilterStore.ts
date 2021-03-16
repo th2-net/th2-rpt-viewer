@@ -67,24 +67,12 @@ export default class EventsFilterStore {
 	}
 
 	@action
-	public raiseFilterTimestamp(mins: number) {
+	public changeTimestamp(mins: number) {
 		const currentFilter = this.filter;
-		const ms = mins * 60000;
 		this.setEventsFilter({
 			...currentFilter,
-			timestampFrom: currentFilter.timestampFrom + ms,
-			timestampTo: currentFilter.timestampTo + ms,
-		});
-	}
-
-	@action
-	public lowerFilterTimestamp(mins: number) {
-		const currentFilter = this.filter;
-		const ms = mins * 60000;
-		this.setEventsFilter({
-			...currentFilter,
-			timestampFrom: currentFilter.timestampFrom - ms,
-			timestampTo: currentFilter.timestampTo - ms,
+			timestampFrom: moment.utc(currentFilter.timestampFrom).add(mins, 'minutes').valueOf(),
+			timestampTo: moment.utc(currentFilter.timestampTo).add(mins, 'minutes').valueOf(),
 		});
 	}
 

@@ -22,7 +22,7 @@ const TreeFooter = () => {
 	return (
 		<button
 			className='actions-list__nav down'
-			onClick={() => eventFilter.lowerFilterTimestamp(30)}
+			onClick={() => eventFilter.changeTimestamp(-30)}
 			title='Load older events'
 		/>
 	);

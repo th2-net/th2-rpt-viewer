@@ -22,7 +22,7 @@ const TreeHeader = () => {
 	return (
 		<button
 			className='actions-list__nav up'
-			onClick={() => eventFilter.raiseFilterTimestamp(30)}
+			onClick={() => eventFilter.changeTimestamp(30)}
 			title='Load newer events'
 		/>
 	);
