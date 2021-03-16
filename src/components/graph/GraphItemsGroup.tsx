@@ -73,11 +73,13 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 			);
 		});
 
-		return entries.reduce<string[]>((prev, [type, amount], index, array) => {
-			const maxItems = Math.max(GROUP_MAX_ITEMS - prev.length - (array.length - 1 - index), 0);
-			const step = maxItems >= amount ? amount : maxItems;
-			return [...prev, ...new Array(step).fill(null).map(() => type)];
-		}, []);
+		return entries
+			.reduce<string[]>((prev, [type, amount], index, array) => {
+				const maxItems = Math.max(GROUP_MAX_ITEMS - prev.length - (array.length - 1 - index), 0);
+				const step = maxItems >= amount ? amount : maxItems;
+				return [...prev, ...new Array(step).fill(null).map(() => type)];
+			}, [])
+			.reverse();
 	}, [group]);
 
 	const dotsClassName = createBemElement('graph-item-group', 'dots', menuAnchor ? 'active' : null);

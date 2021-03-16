@@ -46,16 +46,20 @@ interface ModalPortalProps {
 export const ModalPortal = React.forwardRef<HTMLDivElement, ModalPortalProps>(
 	({ closeDelay = 0, children, isOpen, style }, ref) => {
 		const [isShown, setIsShown] = React.useState(false);
+		const closeTimeout = React.useRef<number | null>(null);
 
 		React.useEffect(() => {
 			if (!isOpen && closeDelay !== 0) {
-				setTimeout(() => {
+				closeTimeout.current = window.setTimeout(() => {
 					setIsShown(isOpen);
 				}, closeDelay);
 				return;
 			}
 
 			setIsShown(isOpen);
+			if (closeTimeout.current) {
+				window.clearTimeout(closeTimeout.current);
+			}
 		}, [isOpen]);
 
 		return (

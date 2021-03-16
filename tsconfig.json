@@ -3,7 +3,7 @@
 		"outDir": "./build/",
 		"target": "es6",
 		"keyofStringsOnly": true,
-		"lib": ["es2019", "es2017", "es2016", "dom"],
+		"lib": ["ES2019", "ES2017", "ES2016", "ES2018.Promise", "ES2020", "DOM", "ESNext"],
 		"module": "esnext",
 		"moduleResolution": "node",
 		"removeComments": false,
