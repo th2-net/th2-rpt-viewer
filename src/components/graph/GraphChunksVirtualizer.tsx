@@ -16,13 +16,13 @@
 
 import React from 'react';
 import moment from 'moment';
-import { useDebouncedCallback, usePrevious } from '../../hooks';
+import { useDebouncedCallback } from '../../hooks';
 import { isClickEventInElement, isDivElement } from '../../helpers/dom';
 import { raf } from '../../helpers/raf';
 import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
-import '../../styles/graph.scss';
 import { usePointerTimestampUpdate } from '../../contexts/pointerTimestampContext';
+import '../../styles/graph.scss';
 
 const setInitialState = (settings: Settings): State => {
 	const { itemWidth, amount, tolerance, minIndex, maxIndex, startIndex } = settings;
@@ -34,7 +34,7 @@ const setInitialState = (settings: Settings): State => {
 	const itemsAbove = startIndex - tolerance - minIndex;
 	const leftPadding = itemsAbove * itemWidth;
 	const rightPadding = totalWidth - leftPadding;
-	const initialPosition = leftPadding + toleranceWidth;
+	const initialPosition = leftPadding + toleranceWidth - itemWidth / 2;
 
 	return {
 		settings,
@@ -102,8 +102,15 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const nextItemsRef = React.useRef<HTMLDivElement>(null);
 
 	const [state] = React.useState<State>(setInitialState(settings));
+	const [centerTimestamp, setCenterTimestamp] = React.useState<number | null>(null);
 
-	const [anchorTimestamp, setAnchorTimestamp] = React.useState(timestamp.valueOf());
+	const [anchorTimestamp, setAnchorTimestamp] = React.useState(
+		moment
+			.utc(timestamp.valueOf())
+			.subtract(interval / 2, 'minutes')
+			.startOf('minute')
+			.valueOf(),
+	);
 
 	const [chunks, setChunks] = React.useState<Array<[Chunk, number]>>([]);
 
@@ -123,12 +130,13 @@ const GraphChunksVirtualizer = (props: Props) => {
 		if (firstChunk && firstChunk instanceof HTMLDivElement) {
 			const firstChunkRange = getDivRange(firstChunk);
 			const offset = firstChunk.offsetLeft;
+
 			if (firstChunkRange) {
 				const panelsMarkerPositions = panelsRange.map(({ range: panelRange, type }) => {
 					if (!panelRange) return null;
 					const widthPerMs = chunkWidth / (interval * 60 * 1000);
 					const panelWidth = (panelRange[1] - panelRange[0]) * widthPerMs;
-					const diff = (panelRange[0] - firstChunkRange[0]) * (chunkWidth / (interval * 60 * 1000));
+					const diff = (panelRange[0] - firstChunkRange[0]) * widthPerMs;
 
 					return {
 						left: diff + offset,
@@ -143,23 +151,35 @@ const GraphChunksVirtualizer = (props: Props) => {
 		}
 	}, [panelsRange, chunks, timestamp]);
 
-	React.useLayoutEffect(() => {
+	React.useEffect(() => {
+		setAnchorTimestamp(
+			moment
+				.utc(timestamp.valueOf())
+				.subtract(interval / 2, 'minutes')
+				.startOf('minute')
+				.valueOf(),
+		);
+		setCenterTimestamp(timestamp.valueOf());
+	}, [timestamp]);
+
+	React.useEffect(() => {
 		getCurrentChunks(state.initialPosition);
 		raf(() => {
 			if (viewportElementRef.current) {
-				const expectedChunkCenterTimestamp = moment
-					.utc(timestamp.valueOf())
-					.subtract(interval / 2, 'minutes')
-					.startOf('minute')
-					.add(interval / 2, 'minutes');
+				viewportElementRef.current.scrollLeft = state.initialPosition;
+			}
+		}, 3);
+	}, [anchorTimestamp]);
 
-				const offset =
-					(timestamp.valueOf() - expectedChunkCenterTimestamp.valueOf()) *
-					(chunkWidth / (interval * 60 * 1000));
+	React.useLayoutEffect(() => {
+		raf(() => {
+			if (viewportElementRef.current && centerTimestamp) {
+				const offset = (centerTimestamp - anchorTimestamp) * (chunkWidth / (interval * 60 * 1000));
+				viewportElementRef.current.scrollLeft = state.initialPosition;
 				viewportElementRef.current.scrollLeft = state.initialPosition - chunkWidth / 2 + offset;
 			}
-		}, 2);
-	}, [timestamp]);
+		}, 3);
+	}, [centerTimestamp]);
 
 	React.useEffect(() => {
 		document.addEventListener('mousedown', handleMouseDown);
@@ -172,15 +192,6 @@ const GraphChunksVirtualizer = (props: Props) => {
 	React.useEffect(() => {
 		getTimeRange();
 	}, [chunkWidth]);
-
-	const prevInterval = usePrevious(interval);
-
-	React.useEffect(() => {
-		if (viewportElementRef.current && prevInterval && prevInterval !== interval) {
-			getCurrentChunks(viewportElementRef.current.scrollLeft);
-			getTimeRange();
-		}
-	}, [interval]);
 
 	const handleMouseDown = (event: MouseEvent) => {
 		if (
@@ -340,6 +351,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 	return (
 		<div className='graph-virtualizer'>
 			<div
+				key={anchorTimestamp}
 				className='graph-virtualizer__list'
 				ref={viewportElementRef}
 				onScroll={onScroll}
@@ -431,13 +443,14 @@ function TimeSelector(props: TimeSelectorProps) {
 		}
 	}
 
-	function getTimeOffset(offsetInPixels: number) {
+	function getTimeOffset(pageX: number) {
 		if (!rootRef.current || !pointerRef.current) return 0;
 
 		const [from, to] = windowTimeRange;
 		const { left, width } = rootRef.current.getBoundingClientRect();
 		const pointerWidth = pointerRef.current.getBoundingClientRect().width;
-		const clickPoint = offsetInPixels - left + pointerWidth / 2;
+		const clickPoint = pageX - left + pointerWidth / 2;
+
 		return Math.floor(from + (to - from) * (clickPoint / width));
 	}
 

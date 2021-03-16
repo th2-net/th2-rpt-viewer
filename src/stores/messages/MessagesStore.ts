@@ -216,7 +216,6 @@ export default class MessagesStore {
 		const mostRecentMessage = sortMessagesByTimestamp(attachedMessages)[0];
 
 		if (mostRecentMessage) {
-			this.graphStore.setTimestamp(timestampToNumber(mostRecentMessage.timestamp));
 			const streams = this.filterStore.filter.streams;
 			this.filterStore.filter = {
 				...this.filterStore.filter,

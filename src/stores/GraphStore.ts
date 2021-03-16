@@ -90,7 +90,7 @@ export class GraphStore {
 
 	@action
 	public getChunkByTimestamp = (timestamp: number) => {
-		let chunk: Chunk | undefined = this.chunks.find(c => timestamp >= c.from && timestamp <= c.to);
+		let chunk: Chunk | undefined = this.chunks.find(c => timestamp === c.from);
 		if (chunk) return chunk;
 		chunk = observable(
 			this.createChunk(moment.utc(timestamp).startOf('minute').valueOf(), this.interval),
