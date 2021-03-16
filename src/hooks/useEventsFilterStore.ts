@@ -14,23 +14,11 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-export * from './useEventsFilterStore';
-export * from './useActivePanel';
-export * from './useActiveWorkspace';
-export * from './useAsyncEffect';
-export * from './useGraphDataStore';
-export * from './useDebouncedCallback';
-export * from './useEventWindowStore';
-export * from './useEventWindowViewStore';
-export * from './useHeatmap';
-export * from './useMessagesDataStore';
-export * from './useMessagesStore';
-export * from './useNotificationsStore';
-export * from './useOutsideClickListener';
-export * from './useParentEvents';
-export * from './usePrevious';
-export * from './useRootStore';
-export * from './useSelectListener';
-export * from './useSelectedStore';
-export * from './useWorkspacesStore';
-export * from './useWorkspaceStore';
+import EventsFilterStore from '../stores/events/EventsFilterStore';
+import { useWorkspaceEventStore } from './useEventWindowStore';
+
+export const useEventsFilterStore = (): EventsFilterStore => {
+	const workspaceEventStore = useWorkspaceEventStore();
+
+	return workspaceEventStore.filterStore;
+};
