@@ -116,6 +116,11 @@ export default class MessagesStore {
 	}
 
 	@computed
+	public get attachedMessages(): EventMessage[] {
+		return this.workspaceStore.attachedMessages;
+	}
+
+	@computed
 	public get panelRange(): TimeRange {
 		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
 
@@ -167,12 +172,16 @@ export default class MessagesStore {
 	};
 
 	@action
-	public applyFilter = (filter: MessagesFilter, sseFilters: MessageFilterState | null) => {
+	public applyFilter = (
+		filter: MessagesFilter,
+		sseFilters: MessageFilterState | null,
+		isSoftFilterApplied: boolean,
+	) => {
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
-		this.filterStore.setMessagesFilter(filter, sseFilters);
+		this.filterStore.setMessagesFilter(filter, sseFilters, isSoftFilterApplied);
 	};
 
 	@action
@@ -306,7 +315,6 @@ export default class MessagesStore {
 	public dispose = () => {
 		this.attachedMessagesSubscription();
 		this.filterStore.dispose();
-		this.dataStore.searchChannelPrev?.stop();
-		this.dataStore.searchChannelNext?.stop();
+		this.dataStore.stopMessagesLoading();
 	};
 }

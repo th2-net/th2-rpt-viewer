@@ -28,24 +28,30 @@ const PANEL_WIDTH = 840;
 interface Props {
 	isFilterApplied: boolean;
 	isLoading?: boolean;
+	isLoadingFilteredItems?: boolean;
 	isDisabled?: boolean;
 	showFilter: boolean;
 	config: FilterRowConfig[];
 	setShowFilter: (isShown: boolean) => void;
 	onSubmit: () => void;
 	onClearAll: () => void;
+	renderFooter?: () => React.ReactNode;
 }
 
-const FilterPanel = ({
-	isFilterApplied,
-	isLoading = false,
-	showFilter,
-	setShowFilter,
-	config,
-	isDisabled = false,
-	onSubmit,
-	onClearAll,
-}: Props) => {
+const FilterPanel = (props: Props) => {
+	const {
+		isFilterApplied,
+		isLoading = false,
+		showFilter,
+		setShowFilter,
+		config,
+		isDisabled = false,
+		onSubmit,
+		onClearAll,
+		renderFooter,
+		isLoadingFilteredItems,
+	} = props;
+
 	const filterBaseRef = React.useRef<HTMLDivElement>(null);
 	const filterButtonRef = React.useRef<HTMLDivElement>(null);
 
@@ -71,6 +77,21 @@ const FilterPanel = ({
 			setShowFilter(false);
 		}
 	});
+
+	function onSubmitClick() {
+		onSubmit();
+		setShowFilter(false);
+	}
+
+	function onClearAllClick() {
+		onClearAll();
+	}
+
+	function onClick() {
+		if (!isDisabled) {
+			setShowFilter(!showFilter);
+		}
+	}
 
 	const filterWrapperClass = createStyleSelector(
 		'filter-wrapper',
@@ -100,27 +121,14 @@ const FilterPanel = ({
 		!showFilter && isFilterApplied ? 'applied' : null,
 	);
 
-	const onSubmitClick = () => {
-		onSubmit();
-		setShowFilter(false);
-	};
-
-	const onClearAllClick = () => {
-		onClearAll();
-	};
-
 	return (
 		<div className={filterWrapperClass}>
-			<div
-				className={filterButtonClass}
-				ref={filterButtonRef}
-				onClick={() => {
-					if (!isDisabled) {
-						setShowFilter(!showFilter);
-					}
-				}}>
+			<div className={filterButtonClass} ref={filterButtonRef} onClick={onClick}>
 				<div className={filterIconClass} />
 				<div className={filterTitleClass}>{showFilter ? 'Hide Filter' : 'Show Filter'}</div>
+				{typeof isLoadingFilteredItems === 'boolean'
+					? isLoadingFilteredItems && <div style={{ marginLeft: 5 }} className='filter__loading' />
+					: null}
 			</div>
 			<ModalPortal isOpen={showFilter}>
 				<div ref={filterBaseRef} className='filter'>
@@ -136,6 +144,7 @@ const FilterPanel = ({
 						),
 					)}
 					<div className='filter__controls filter-controls'>
+						{renderFooter && renderFooter()}
 						<div className='filter-controls__clear-btn' onClick={onClearAllClick}>
 							<div className='filter-controls__clear-icon' />
 							Clear All

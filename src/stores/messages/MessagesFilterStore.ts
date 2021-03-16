@@ -33,6 +33,7 @@ function getDefaultMessagesFilter(): MessagesFilter {
 
 export type MessagesFilterStoreInitialState = {
 	sse?: Partial<MessageFilterState>;
+	isSoftFilter?: boolean;
 } & Partial<MessagesFilter>;
 
 export default class MessagesFilterStore {
@@ -46,7 +47,9 @@ export default class MessagesFilterStore {
 				timestampFrom = defaultMessagesFilter.timestampFrom,
 				timestampTo = defaultMessagesFilter.timestampTo,
 				sse = {},
+				isSoftFilter = false,
 			} = initialState;
+
 			const appliedSSEFilter = {
 				...(this.getDefaultMessagesSSEFilter(this.searchStore.messagesFilterInfo) || {}),
 				...sse,
@@ -58,6 +61,7 @@ export default class MessagesFilterStore {
 					timestampTo,
 				},
 				Object.keys(appliedSSEFilter).length > 0 ? appliedSSEFilter : null,
+				isSoftFilter,
 			);
 		} else {
 			this.setSSEMessagesFilter(this.searchStore.messagesFilterInfo);
@@ -69,6 +73,13 @@ export default class MessagesFilterStore {
 	@observable filter: MessagesFilter = getDefaultMessagesFilter();
 
 	@observable sseMessagesFilter: MessageFilterState | null = null;
+
+	/*
+		When isSoftFilter is applied we create two messages channels:
+		1 with filters and second without filters
+		That allows us to highlight the matching messages and keeps the rest visible
+	*/
+	@observable isSoftFilter = false;
 
 	@computed
 	public get messsagesSSEConfig(): EventSourceConfig {
@@ -124,7 +135,12 @@ export default class MessagesFilterStore {
 	}
 
 	@action
-	public setMessagesFilter(filter: MessagesFilter, sseFilters: MessageFilterState | null = null) {
+	public setMessagesFilter(
+		filter: MessagesFilter,
+		sseFilters: MessageFilterState | null = null,
+		isSoftFilterApplied: boolean,
+	) {
+		this.isSoftFilter = isSoftFilterApplied;
 		this.sseMessagesFilter = sseFilters;
 		this.filter = filter;
 	}
@@ -133,6 +149,7 @@ export default class MessagesFilterStore {
 	public resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
 		const filter = getDefaultFilterState(this.searchStore.messagesFilterInfo);
 		const defaultMessagesFilter = getDefaultMessagesFilter();
+		this.isSoftFilter = false;
 		this.sseMessagesFilter = Object.keys(filter).length ? (filter as MessageFilterState) : null;
 		this.filter = {
 			...defaultMessagesFilter,
@@ -157,6 +174,11 @@ export default class MessagesFilterStore {
 		} else {
 			this.setSSEMessagesFilter(filterInfo);
 		}
+	};
+
+	@action
+	public setSoftFilter = (isChecked: boolean): void => {
+		this.isSoftFilter = isChecked;
 	};
 
 	private getDefaultMessagesSSEFilter = (messagesFilterInfo: SSEFilterInfo[]) => {
