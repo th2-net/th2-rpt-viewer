@@ -1,6 +1,6 @@
 {
 	"name": "th2-rpt-viewer",
-	"version": "3.0.43",
+	"version": "3.0.44",
 	"description": "",
 	"main": "index.tsx",
 	"private": true,
@@ -95,7 +95,7 @@
 		"sass-loader": "^8.0.2",
 		"style-loader": "^1.1.3",
 		"ts-jest": "^24.1.0",
-		"typescript": "^3.7.2",
+		"typescript": "^3.7.7",
 		"wait-for-expect": "^3.0.2",
 		"webpack": "^4.41.2",
 		"webpack-cli": "^3.3.10",

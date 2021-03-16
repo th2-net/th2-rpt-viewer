@@ -65,14 +65,14 @@
 	&.highlighted {
 		@keyframes highlight {
 			from {
-				background: rgba($highlightedMessageCardBackground, 1);
+				background: $highlightedMessageCardBackground;
 			}
 
 			50% {
 				background: rgba($highlightedMessageCardBackground, 0);
 			}
 			to {
-				background: rgba($highlightedMessageCardBackground, 1);
+				background: $highlightedMessageCardBackground;
 			}
 		}
 		animation: highlight 1s infinite ease-in-out;
