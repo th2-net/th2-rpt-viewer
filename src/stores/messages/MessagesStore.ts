@@ -196,10 +196,11 @@ export default class MessagesStore {
 		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(message);
 
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
+			const streams = this.filterStore.filter.streams;
 			this.filterStore.resetMessagesFilter({
 				timestampFrom: null,
 				timestampTo: timestampToNumber(message.timestamp),
-				streams: [message.sessionId],
+				streams: [...new Set([...streams, message.sessionId])],
 			});
 			this.selectedMessageId = new String(message.messageId);
 			this.highlightedMessageId = message.messageId;
@@ -225,9 +226,10 @@ export default class MessagesStore {
 
 		if (mostRecentMessage) {
 			this.graphStore.setTimestamp(timestampToNumber(mostRecentMessage.timestamp));
+			const streams = this.filterStore.filter.streams;
 			this.filterStore.filter = {
 				...this.filterStore.filter,
-				streams: [...new Set(attachedMessages.map(({ sessionId }) => sessionId))],
+				streams: [...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)])],
 				timestampTo: timestampToNumber(mostRecentMessage.timestamp),
 			};
 			this.selectedMessageId = new String(mostRecentMessage.messageId);
@@ -276,16 +278,13 @@ export default class MessagesStore {
 		}
 
 		const sseFilter = this.filterStore.sseMessagesFilter;
-		const streams = this.filterStore.filter.streams;
 		const areFiltersApplied = [
 			sseFilter
 				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
 				: [],
 		].some(filterValues => filterValues.length > 0);
 
-		this.showFilterChangeHint =
-			(streams.length > 0 && this.hintMessages.some(m => !streams.includes(m.sessionId))) ||
-			areFiltersApplied;
+		this.showFilterChangeHint = areFiltersApplied;
 
 		return this.showFilterChangeHint;
 	};

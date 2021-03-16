@@ -74,6 +74,12 @@ export default class WorkspacesStore {
 			initialState.forEach(workspaceState =>
 				this.addWorkspace(this.createWorkspace(workspaceState)),
 			);
+		} else {
+			this.addWorkspace(
+				this.createWorkspace({
+					layout: [100, 0],
+				}),
+			);
 		}
 	}
 
