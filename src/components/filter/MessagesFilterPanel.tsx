@@ -30,6 +30,7 @@ import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import { MessageFilterState } from '../search-panel/SearchPanelFilters';
 import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
+import Checkbox from '../util/Checkbox';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -50,10 +51,15 @@ const MessagesFilterPanel = () => {
 		body: '',
 		attachedEventIds: '',
 	});
+	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
 
 	React.useEffect(() => {
 		setStreams(filterStore.filter.streams);
 	}, [filterStore.filter.streams]);
+
+	React.useEffect(() => {
+		setIsSoftFilterApplied(filterStore.isSoftFilter);
+	}, [filterStore.isSoftFilter]);
 
 	React.useEffect(() => {
 		setSSEFilter(messagesStore.filterStore.sseMessagesFilter);
@@ -71,8 +77,9 @@ const MessagesFilterPanel = () => {
 				streams,
 			},
 			sseFilter,
+			isSoftFilterApplied,
 		);
-	}, [filterStore.filter, streams, sseFilter]);
+	}, [filterStore.filter, streams, sseFilter, isSoftFilterApplied]);
 
 	const isLoading = messagesDataStore.messages.length === 0 && messagesDataStore.isLoading;
 	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !isLoading;
@@ -185,16 +192,33 @@ const MessagesFilterPanel = () => {
 		return compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig];
 	}, [compoundFilterRow, sseFiltersErrorConfig]);
 
+	const renderFooter = React.useCallback(() => {
+		if (!messagesStore.filterStore.sseMessagesFilter) return null;
+
+		return (
+			<Checkbox
+				checked={isSoftFilterApplied}
+				onChange={e => {
+					setIsSoftFilterApplied(e.target.checked);
+				}}
+				label='Soft filter'
+				id='soft-filter'
+			/>
+		);
+	}, [messagesStore.filterStore.sseMessagesFilter, isSoftFilterApplied, setIsSoftFilterApplied]);
+
 	return (
 		<>
 			<FilterPanel
 				isLoading={isLoading}
+				isLoadingFilteredItems={isApplied && messagesDataStore.isLoadingSoftFilteredMessages}
 				isFilterApplied={isApplied}
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
 				config={filterConfig}
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
+				renderFooter={renderFooter}
 			/>
 			<MessageFilterWarning />
 			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />

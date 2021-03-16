@@ -20,11 +20,18 @@ import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams } from '../../api/sse';
 import { isEventMessage } from '../../helpers/event';
+import { getObjectKeys } from '../../helpers/object';
 import { EventMessage } from '../../models/EventMessage';
 
 type WhenPromise = Promise<void> & {
 	cancel(): void;
 };
+
+type SSEChannelOptions = Partial<{
+	chunkSize: number;
+	updateSchedulerIntervalMs: number;
+	initialResponseTimeoutMs: number;
+}>;
 
 export class SSEChannel {
 	private channel: EventSource | null = null;
@@ -43,20 +50,31 @@ export class SSEChannel {
 
 	private updateSchedulerIntervalMs = 1000;
 
+	private fetchedMessagesCount = 0;
+
 	@observable
 	public isError = false;
 
 	@observable
 	public isLoading = false;
 
+	@observable isEndReached = false;
+
 	constructor(
 		private type: SSEChannelType,
 		private queryParams: MessagesSSEParams,
 		private onResponse: (messages: EventMessage[]) => void,
 		private onError: (event: Event) => void,
-		chunkSize?: number,
+		options?: SSEChannelOptions,
 	) {
-		if (chunkSize) this.chunkSize = chunkSize;
+		if (options) {
+			getObjectKeys(options).forEach(option => {
+				const value = options[option];
+				if (typeof value === 'number') {
+					this[option] = value;
+				}
+			});
+		}
 	}
 
 	@action
@@ -66,8 +84,11 @@ export class SSEChannel {
 		this.clearSchedulersAndTimeouts();
 
 		if (this.fetchedChunkSubscription == null) {
-			this.onResponse(this.getNextChunk());
-			this.resetSSEState();
+			const chunk = this.getNextChunk();
+			this.onResponse(chunk);
+			this.resetSSEState({
+				isEndReached: this.fetchedMessagesCount !== this.chunkSize,
+			});
 		}
 	};
 
@@ -84,16 +105,19 @@ export class SSEChannel {
 	private onSSEResponse = (ev: Event) => {
 		const data = JSON.parse((ev as MessageEvent).data);
 		if (isEventMessage(data)) {
+			this.fetchedMessagesCount += 1;
 			this.accumulatedMessages.push(data);
 		}
 	};
 
-	public load = async (resumeFromId?: string): Promise<EventMessage[]> => {
+	/*
+		Returns a promise within initialResponseTimeoutMs or successfull fetch
+		and subscribes on changes 
+	*/
+	public loadAndSubscribe = async (resumeFromId?: string): Promise<EventMessage[]> => {
 		this.closeChannel();
-		this.resetSSEState();
+		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
-
-		this.isLoading = true;
 
 		this.channel = api.sse.getEventSource({
 			queryParams: {
@@ -114,6 +138,29 @@ export class SSEChannel {
 		]);
 
 		return messagesChunk;
+	};
+
+	public subscribe = (resumeFromId?: string): void => {
+		this.closeChannel();
+		this.resetSSEState({
+			isLoading: true,
+		});
+		this.clearFetchedChunkSubscription();
+
+		this.channel = api.sse.getEventSource({
+			queryParams: {
+				...this.queryParams,
+				resumeFromId,
+				resultCountLimit: this.chunkSize,
+			},
+			type: this.type,
+		});
+
+		this.channel.addEventListener('message', this.onSSEResponse);
+		this.channel.addEventListener('close', this._onClose);
+		this.channel.addEventListener('error', this._onError);
+
+		this.initUpdateScheduler();
 	};
 
 	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
@@ -165,12 +212,17 @@ export class SSEChannel {
 	};
 
 	@action
-	private resetSSEState = (): void => {
+	private resetSSEState = (
+		initialState: Partial<{ isLoading: boolean; isError: boolean; isEndReached: boolean }> = {},
+	): void => {
+		const { isLoading = false, isError = false, isEndReached = false } = initialState;
 		this.clearSchedulersAndTimeouts();
 
 		this.accumulatedMessages = [];
-		this.isLoading = false;
-		this.isError = false;
+		this.isLoading = isLoading;
+		this.isError = isError;
+		this.isEndReached = isEndReached;
+		this.fetchedMessagesCount = 0;
 	};
 
 	private clearSchedulersAndTimeouts = (): void => {

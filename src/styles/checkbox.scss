@@ -23,16 +23,19 @@
 
 	&__control {
 		@include disable-appearance;
-		@include icon(url(../../resources/icons/checkbox-unchecked.svg), 16px, 16px);
+		width: 16px;
+		height: 16px;
+		border: 1px solid $primaryTextColor;
 
-		background-color: #fff;
+		background-color: #ffdd99e6;
 		border-radius: 3px;
 		cursor: inherit;
 
 		&:checked {
-			@include icon(url(../../resources/icons/checkbox-checked.svg), 16px, 16px);
+			@include icon(url(../../resources/icons/checkmark.svg), 16px, 16px);
+			background-size: 82%;
 		}
-
+	
 		&:focus {
 			outline: none;
 		}
