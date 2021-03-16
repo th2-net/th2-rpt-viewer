@@ -15,14 +15,15 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { useEventsFilterStore } from '../../hooks';
+import { useEventsFilterStore, useGraphDataStore } from '../../hooks';
 
 const TreeHeader = () => {
 	const eventFilter = useEventsFilterStore();
+	const graphStore = useGraphDataStore();
 	return (
 		<button
 			className='actions-list__nav up'
-			onClick={() => eventFilter.changeTimestamp(30)}
+			onClick={() => eventFilter.changeTimestamp(30 + graphStore.interval)}
 			title='Load newer events'
 		/>
 	);
