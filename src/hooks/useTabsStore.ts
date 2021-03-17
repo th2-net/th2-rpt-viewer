@@ -14,32 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import '../../styles/select.scss';
+import { useWorkspaces } from './useWorkspacesStore';
 
-interface Props<T> {
-	className?: string;
-	options: Array<T>;
-	selected: string;
-	prefix?: string;
-	onChange: (option: T) => void;
-}
+export const useTabsStore = () => {
+	const workspaces = useWorkspaces();
 
-export default function Select<T extends string>({
-	options,
-	selected,
-	onChange,
-	className = '',
-	prefix = '',
-}: Props<T>) {
-	return (
-		<select
-			className={`options-select ${className}`}
-			value={prefix + selected}
-			onChange={e => onChange(e.target.value as T)}>
-			{options.map((opt, index) => (
-				<option key={index}>{prefix + opt}</option>
-			))}
-		</select>
-	);
-}
+	return workspaces.tabsStore;
+};

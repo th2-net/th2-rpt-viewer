@@ -1,4 +1,4 @@
-/******************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,26 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-@import './common/vars';
-
-.workspace-link-getter {
-    cursor: pointer;
-    position: absolute;
-    top: 12px;
-    right: 50px;
-    padding: 3px 6px;
-    outline: none;
-    border: 1px solid $workspaceLinkGetterColor;
-    border-radius: 4px;
-    background: transparent;
-    color: $workspaceLinkGetterColor;
-    font: 11px 'Open sans', sans-serif;
-    
-    &:disabled {
-        color: grey;
-        border-color: grey;
-        opacity: .5;
-    }
-}
+export const minmax = (min: number, max: number, v: number) => Math.min(Math.max(v, min), max);

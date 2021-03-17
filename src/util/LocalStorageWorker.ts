@@ -18,7 +18,7 @@ import { isEventNode } from '../helpers/event';
 import { isMessage } from '../helpers/message';
 import { isSearchHistoryEntity } from '../helpers/search';
 import { EventAction, EventTreeNode } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
+import { EventMessage, MessageDisplayRule } from '../models/EventMessage';
 import { SearchHistory } from '../stores/SearchStore';
 
 enum LocalStorageEntities {
@@ -26,6 +26,8 @@ enum LocalStorageEntities {
 	EVENTS = 'events',
 	SEARCH_HISTORY = 'search-history',
 	GRAPH_SEARCH_HISTORY = 'graph-search-history',
+	DISPLAY_RULES = 'display-rules',
+	ROOT_DISPLAY_RULE = 'root-display-rule',
 }
 class LocalStorageWorker {
 	getPersistedPinnedMessages(): EventMessage[] {
@@ -83,6 +85,32 @@ class LocalStorageWorker {
 		} catch (error) {
 			return [];
 		}
+	};
+
+	getRootDisplayRule = (): MessageDisplayRule | null => {
+		try {
+			const rootRule = localStorage.getItem(LocalStorageEntities.ROOT_DISPLAY_RULE);
+			return rootRule ? JSON.parse(rootRule) : null;
+		} catch (error) {
+			return null;
+		}
+	};
+
+	setRootDisplayRule = (rules: MessageDisplayRule) => {
+		localStorage.setItem(LocalStorageEntities.ROOT_DISPLAY_RULE, JSON.stringify(rules));
+	};
+
+	getMessageDisplayRules = (): Array<MessageDisplayRule> => {
+		try {
+			const displayRules = localStorage.getItem(LocalStorageEntities.DISPLAY_RULES);
+			return displayRules ? JSON.parse(displayRules) : [];
+		} catch (error) {
+			return [];
+		}
+	};
+
+	setMessageDisplayRules = (rules: Array<MessageDisplayRule>) => {
+		localStorage.setItem(LocalStorageEntities.DISPLAY_RULES, JSON.stringify(rules));
 	};
 }
 
