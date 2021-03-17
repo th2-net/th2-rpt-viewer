@@ -482,9 +482,15 @@ export default class MessagesDataProviderStore {
 
 		if (direction === 'previous') {
 			this.noMatchingMessagesPrev = false;
-			this.startPreviousMessagesChannel(query);
+			this.startPreviousMessagesChannel({
+				...query,
+				resumeFromId: this.messages[this.messages.length - 1]?.messageId,
+			});
 
-			if (this.messagesStore.filterStore.isSoftFilter) {
+			if (
+				this.messagesStore.filterStore.isSoftFilter &&
+				this.softFilterChannelPrev?.isLoading === false
+			) {
 				this.startPrevSoftFilterChannel({
 					...queryParams,
 					searchDirection: 'previous',
@@ -494,9 +500,15 @@ export default class MessagesDataProviderStore {
 			this.searchChannelPrev.subscribe();
 		} else {
 			this.noMatchingMessagesNext = false;
-			this.startNextMessagesChannel(query);
+			this.startNextMessagesChannel({
+				...query,
+				resumeFromId: this.messages[0]?.messageId,
+			});
 
-			if (this.messagesStore.filterStore.isSoftFilter) {
+			if (
+				this.messagesStore.filterStore.isSoftFilter &&
+				this.softFilterChannelPrev?.isLoading === false
+			) {
 				this.startNextSoftFilterChannel({
 					...queryParams,
 					searchDirection: 'next',
