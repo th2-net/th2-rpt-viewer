@@ -22,13 +22,27 @@ interface SearchPanelProgressBarProps {
 		endTimestamp: number | null;
 		currentPoint: number;
 		searching: boolean;
+		processedObjectCount: number;
 	};
 }
 
 const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
-	const { searching, startTimestamp, endTimestamp, currentPoint } = props.searchProgress;
+	const {
+		searching,
+		startTimestamp,
+		endTimestamp,
+		currentPoint,
+		processedObjectCount,
+	} = props.searchProgress;
 	if (!endTimestamp && searching) {
-		return <div className='spinner' />;
+		return (
+			<>
+				{processedObjectCount !== 0 && (
+					<div className='processed-object-count'>Processed objects: {processedObjectCount}</div>
+				)}
+				<div className='spinner' />
+			</>
+		);
 	}
 
 	const timeInterval = endTimestamp !== null ? endTimestamp - Number(startTimestamp) : null;
@@ -36,19 +50,24 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 	if (timeInterval) {
 		const position = ((currentPoint / timeInterval) * 100).toFixed(2);
 		return (
-			<div className='progress-bar'>
-				<span className='progress-bar-points progress-bar__start'>
-					{moment(startTimestamp).utc().format('DD.MM.YYYY')} <br />
-					{moment(startTimestamp).utc().format('HH:mm:ss.SSS')}
-				</span>
-				<div className='progress-bar__track'>
-					<div className='progress-bar__line' style={{ left: `${position}%` }} />
+			<>
+				{processedObjectCount !== 0 && (
+					<div className='processed-object-count'>Processed objects: {processedObjectCount}</div>
+				)}
+				<div className='progress-bar'>
+					<span className='progress-bar-points progress-bar__start'>
+						{moment(startTimestamp).utc().format('DD.MM.YYYY')} <br />
+						{moment(startTimestamp).utc().format('HH:mm:ss.SSS')}
+					</span>
+					<div className='progress-bar__track'>
+						<div className='progress-bar__line' style={{ left: `${position}%` }} />
+					</div>
+					<span className='progress-bar-points progress-bar__end'>
+						{moment(endTimestamp).utc().format('DD.MM.YYYY')} <br />
+						{moment(endTimestamp).utc().format('HH:mm:ss.SSS')}
+					</span>
 				</div>
-				<span className='progress-bar-points progress-bar__end'>
-					{moment(endTimestamp).utc().format('DD.MM.YYYY')} <br />
-					{moment(endTimestamp).utc().format('HH:mm:ss.SSS')}
-				</span>
-			</div>
+			</>
 		);
 	}
 	return null;

@@ -48,6 +48,7 @@ export type SearchHistory = {
 	results: Array<SearchResult>;
 	request: StateHistory;
 	progress: number;
+	processedObjectCount: number;
 };
 
 export type StateHistory = {
@@ -130,6 +131,7 @@ export class SearchStore {
 				? this.currentSearch?.progress - Number(this.searchForm.startTimestamp)
 				: 0,
 			searching: Boolean(this.searchChannel),
+			processedObjectCount: this.currentSearch?.processedObjectCount || 0,
 		};
 	}
 
@@ -270,6 +272,7 @@ export class SearchStore {
 			request: { type: this.formType, state: this.searchForm, filters: filterParams },
 			results: [],
 			progress: 0,
+			processedObjectCount: 0,
 		});
 
 		function getFilter<T extends keyof FilterState>(name: T) {
@@ -386,6 +389,7 @@ export class SearchStore {
 				return;
 			}
 			this.currentSearch.progress = parsedEvent.timestamp;
+			this.currentSearch.processedObjectCount = parsedEvent.scanCounter;
 		}
 	};
 
