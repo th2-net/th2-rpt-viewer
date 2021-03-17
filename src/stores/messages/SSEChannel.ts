@@ -18,7 +18,7 @@
 import { action, observable, when } from 'mobx';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
-import { MessagesSSEParams } from '../../api/sse';
+import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isEventMessage } from '../../helpers/event';
 import { getObjectKeys } from '../../helpers/object';
 import { EventMessage } from '../../models/EventMessage';
@@ -65,6 +65,7 @@ export class SSEChannel {
 		private queryParams: MessagesSSEParams,
 		private onResponse: (messages: EventMessage[]) => void,
 		private onError: (event: Event) => void,
+		private onKeepAliveResponse?: (event: SSEHeartbeat) => void,
 		options?: SSEChannelOptions,
 	) {
 		if (options) {
@@ -102,6 +103,17 @@ export class SSEChannel {
 		this.onError(event);
 	};
 
+	@action
+	private _onKeepAliveResponse = (event: Event) => {
+		if (this.onKeepAliveResponse) {
+			const keepAlive = JSON.parse((event as MessageEvent).data) as SSEHeartbeat;
+
+			if (keepAlive.timestamp !== 0) {
+				this.onKeepAliveResponse(keepAlive);
+			}
+		}
+	};
+
 	private onSSEResponse = (ev: Event) => {
 		const data = JSON.parse((ev as MessageEvent).data);
 		if (isEventMessage(data)) {
@@ -115,6 +127,22 @@ export class SSEChannel {
 		and subscribes on changes 
 	*/
 	public loadAndSubscribe = async (resumeFromId?: string): Promise<EventMessage[]> => {
+		this.initConnection(resumeFromId);
+
+		const messagesChunk = await Promise.race([
+			this.getInitialResponseWithinTimeout(this.initialResponseTimeoutMs),
+			this.getFetchedChunk(),
+		]);
+
+		return messagesChunk;
+	};
+
+	public subscribe = (resumeFromId?: string): void => {
+		this.initConnection(resumeFromId);
+		this.initUpdateScheduler();
+	};
+
+	private initConnection = (resumeFromId?: string): void => {
 		this.closeChannel();
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
@@ -131,36 +159,7 @@ export class SSEChannel {
 		this.channel.addEventListener('message', this.onSSEResponse);
 		this.channel.addEventListener('close', this._onClose);
 		this.channel.addEventListener('error', this._onError);
-
-		const messagesChunk = await Promise.race([
-			this.getInitialResponseWithinTimeout(this.initialResponseTimeoutMs),
-			this.getFetchedChunk(),
-		]);
-
-		return messagesChunk;
-	};
-
-	public subscribe = (resumeFromId?: string): void => {
-		this.closeChannel();
-		this.resetSSEState({
-			isLoading: true,
-		});
-		this.clearFetchedChunkSubscription();
-
-		this.channel = api.sse.getEventSource({
-			queryParams: {
-				...this.queryParams,
-				resumeFromId,
-				resultCountLimit: this.chunkSize,
-			},
-			type: this.type,
-		});
-
-		this.channel.addEventListener('message', this.onSSEResponse);
-		this.channel.addEventListener('close', this._onClose);
-		this.channel.addEventListener('error', this._onError);
-
-		this.initUpdateScheduler();
+		this.channel.addEventListener('keep_alive', this._onKeepAliveResponse);
 	};
 
 	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> => {

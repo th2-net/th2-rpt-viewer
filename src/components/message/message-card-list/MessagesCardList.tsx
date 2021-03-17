@@ -35,7 +35,7 @@ function MessageCardList() {
 	const [messagesHeightsMap, setMessagesHeightMap] = React.useState<MessagesHeights>({});
 
 	const resizeObserver = React.useRef(
-		new ResizeObserver(entries => {
+		new ResizeObserver((entries: ResizeObserverEntry[]) => {
 			const stateUpdate: MessagesHeights = {};
 			entries.forEach(entry => {
 				const { index } = (entry.target as HTMLDivElement).dataset;
