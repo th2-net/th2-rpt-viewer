@@ -17,10 +17,20 @@
 import { observable, action, computed, reaction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
-import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
+import WorkspaceStore, {
+	WorkspaceUrlState,
+	WorkspaceInitialState,
+	getRangeFromTimestamp,
+} from './WorkspaceStore';
 import TabsStore from './TabsStore';
-import SearchWorkspaceStore from './SearchWorkspaceStore';
+import SearchWorkspaceStore, { SEARCH_STORE_INTERVAL } from './SearchWorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
+import {
+	EventFilterState,
+	MessageFilterState,
+} from '../../components/search-panel/SearchPanelFilters';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { EventMessage } from '../../models/EventMessage';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
@@ -64,6 +74,12 @@ export default class WorkspacesStore {
 			initialState.forEach(workspaceState =>
 				this.addWorkspace(this.createWorkspace(workspaceState)),
 			);
+		} else {
+			this.addWorkspace(
+				this.createWorkspace({
+					layout: [100, 0],
+				}),
+			);
 		}
 	}
 
@@ -90,5 +106,49 @@ export default class WorkspacesStore {
 			this.api,
 			workspaceInitialState,
 		);
+	};
+
+	public getInitialWorkspaceByMessage = (
+		timestamp: number,
+		isSoftFilter = false,
+		targetMessage?: EventMessage,
+	): WorkspaceInitialState => {
+		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
+		return {
+			messages: {
+				sse: (requestInfo?.filters as MessageFilterState) || null,
+				streams: requestInfo?.state.stream || [],
+				timestampFrom: null,
+				timestampTo: timestamp,
+				targetMessage,
+				isSoftFilter,
+			},
+			interval: SEARCH_STORE_INTERVAL,
+			layout: [0, 100],
+			timeRange: getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL),
+		};
+	};
+
+	public getInitialWorkspaceByEvent = (
+		timestamp: number,
+		targetEvent?: EventTreeNode | EventAction,
+	): WorkspaceInitialState => {
+		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
+		const filter = requestInfo?.filters as EventFilterState | undefined;
+		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
+		return {
+			events: {
+				filter: {
+					eventTypes: filter && !filter.type.negative ? filter.type.values : [],
+					names: filter && !filter.name.negative ? filter.name.values : [],
+					timestampFrom,
+					timestampTo,
+				},
+				targetEvent,
+			},
+			layout: [100, 0],
+			interval: SEARCH_STORE_INTERVAL,
+			timeRange: [timestampFrom, timestampTo],
+		};
 	};
 }

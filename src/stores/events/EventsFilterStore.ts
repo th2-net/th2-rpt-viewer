@@ -67,6 +67,16 @@ export default class EventsFilterStore {
 	}
 
 	@action
+	public changeTimestamp(mins: number) {
+		const currentFilter = this.filter;
+		this.setEventsFilter({
+			...currentFilter,
+			timestampFrom: moment.utc(currentFilter.timestampFrom).add(mins, 'minutes').valueOf(),
+			timestampTo: moment.utc(currentFilter.timestampTo).add(mins, 'minutes').valueOf(),
+		});
+	}
+
+	@action
 	public resetEventsFilter() {
 		this.filter = {
 			...getDefaultEventFilter(this.graphStore.interval),

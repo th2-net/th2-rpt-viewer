@@ -35,7 +35,7 @@ function MessageCardList() {
 	const [messagesHeightsMap, setMessagesHeightMap] = React.useState<MessagesHeights>({});
 
 	const resizeObserver = React.useRef(
-		new ResizeObserver(entries => {
+		new ResizeObserver((entries: ResizeObserverEntry[]) => {
 			const stateUpdate: MessagesHeights = {};
 			entries.forEach(entry => {
 				const { index } = (entry.target as HTMLDivElement).dataset;
@@ -72,7 +72,12 @@ function MessageCardList() {
 	}
 
 	if (messagesDataStore.isError) {
-		return <Empty description='Error occured while loading messages' />;
+		return (
+			<Empty
+				description='Error occured while loading messages'
+				descriptionStyles={{ position: 'relative', bottom: '6px' }}
+			/>
+		);
 	}
 
 	if (
@@ -80,7 +85,12 @@ function MessageCardList() {
 		messagesDataStore.messages.length === 0
 	) {
 		if (messagesDataStore.isError === false) {
-			return <Empty description='No messages' />;
+			return (
+				<Empty
+					description='No messages'
+					descriptionStyles={{ position: 'relative', bottom: '6px' }}
+				/>
+			);
 		}
 	}
 

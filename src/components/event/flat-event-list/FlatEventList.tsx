@@ -26,6 +26,8 @@ import { raf } from '../../../helpers/raf';
 import CardDisplayType from '../../../util/CardDisplayType';
 import { EventTreeNode } from '../../../models/EventAction';
 import { getEventNodeParents } from '../../../helpers/event';
+import { EventListFooter, EventListHeader } from '../EventListNavigation';
+
 import '../../../styles/action.scss';
 
 interface Props {
@@ -55,7 +57,6 @@ function FlatEventList({ nodes }: Props) {
 
 	const renderEvent = (index: number): React.ReactElement => {
 		const node = nodes[index];
-
 		return (
 			<Observer>
 				{() => (
@@ -86,10 +87,22 @@ function FlatEventList({ nodes }: Props) {
 
 	if (!eventWindowStore.isLoadingRootEvents && eventWindowStore.eventTree.length === 0) {
 		if (eventWindowStore.eventTreeStatusCode === null) {
-			return <Empty description='No events' />;
+			return (
+				<Empty
+					description='No events'
+					descriptionStyles={{ position: 'relative', bottom: '19px' }}
+				/>
+			);
 		}
 		return (
-			<Empty description={`Server responded with ${eventWindowStore.eventTreeStatusCode} code`} />
+			<Empty
+				description={
+					typeof eventWindowStore.eventTreeStatusCode === 'number'
+						? `Server responded with ${eventWindowStore.eventTreeStatusCode} code`
+						: 'Error occured while loading evnets'
+				}
+				descriptionStyles={{ position: 'relative', bottom: '19px' }}
+			/>
 		);
 	}
 
@@ -103,6 +116,10 @@ function FlatEventList({ nodes }: Props) {
 					overscan={3}
 					itemContent={renderEvent}
 					style={{ height: '100%' }}
+					components={{
+						Header: EventListHeader,
+						Footer: EventListFooter,
+					}}
 				/>
 			</StateSaverProvider>
 		</div>

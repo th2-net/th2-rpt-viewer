@@ -116,6 +116,11 @@ export default class MessagesStore {
 	}
 
 	@computed
+	public get attachedMessages(): EventMessage[] {
+		return this.workspaceStore.attachedMessages;
+	}
+
+	@computed
 	public get panelRange(): TimeRange {
 		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
 
@@ -167,12 +172,16 @@ export default class MessagesStore {
 	};
 
 	@action
-	public applyFilter = (filter: MessagesFilter, sseFilters: MessageFilterState | null) => {
+	public applyFilter = (
+		filter: MessagesFilter,
+		sseFilters: MessageFilterState | null,
+		isSoftFilterApplied: boolean,
+	) => {
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
-		this.filterStore.setMessagesFilter(filter, sseFilters);
+		this.filterStore.setMessagesFilter(filter, sseFilters, isSoftFilterApplied);
 	};
 
 	@action
@@ -187,10 +196,11 @@ export default class MessagesStore {
 		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(message);
 
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
+			const streams = this.filterStore.filter.streams;
 			this.filterStore.resetMessagesFilter({
 				timestampFrom: null,
 				timestampTo: timestampToNumber(message.timestamp),
-				streams: [message.sessionId],
+				streams: [...new Set([...streams, message.sessionId])],
 			});
 			this.selectedMessageId = new String(message.messageId);
 			this.highlightedMessageId = message.messageId;
@@ -215,10 +225,10 @@ export default class MessagesStore {
 		const mostRecentMessage = sortMessagesByTimestamp(attachedMessages)[0];
 
 		if (mostRecentMessage) {
-			this.graphStore.setTimestamp(timestampToNumber(mostRecentMessage.timestamp));
+			const streams = this.filterStore.filter.streams;
 			this.filterStore.filter = {
 				...this.filterStore.filter,
-				streams: [...new Set(attachedMessages.map(({ sessionId }) => sessionId))],
+				streams: [...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)])],
 				timestampTo: timestampToNumber(mostRecentMessage.timestamp),
 			};
 			this.selectedMessageId = new String(mostRecentMessage.messageId);
@@ -267,16 +277,13 @@ export default class MessagesStore {
 		}
 
 		const sseFilter = this.filterStore.sseMessagesFilter;
-		const streams = this.filterStore.filter.streams;
 		const areFiltersApplied = [
 			sseFilter
 				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
 				: [],
 		].some(filterValues => filterValues.length > 0);
 
-		this.showFilterChangeHint =
-			(streams.length > 0 && this.hintMessages.some(m => !streams.includes(m.sessionId))) ||
-			areFiltersApplied;
+		this.showFilterChangeHint = areFiltersApplied;
 
 		return this.showFilterChangeHint;
 	};
@@ -307,7 +314,6 @@ export default class MessagesStore {
 	public dispose = () => {
 		this.attachedMessagesSubscription();
 		this.filterStore.dispose();
-		this.dataStore.searchChannelPrev?.stop();
-		this.dataStore.searchChannelNext?.stop();
+		this.dataStore.stopMessagesLoading();
 	};
 }

@@ -65,17 +65,26 @@
 	&.highlighted {
 		@keyframes highlight {
 			from {
-				background: rgba($highlightedMessageCardBackground, 1);
+				background: $highlightedMessageCardBackground;
 			}
 
 			50% {
 				background: rgba($highlightedMessageCardBackground, 0);
 			}
 			to {
-				background: rgba($highlightedMessageCardBackground, 1);
+				background: $highlightedMessageCardBackground;
 			}
 		}
 		animation: highlight 1s infinite ease-in-out;
+	}
+
+	&.soft-filtered {
+		border: 1px solid $filterPrimaryColor;
+
+		&:hover {
+			background-color: rgba($color: $filterPrimaryColor, $alpha: 0.1);
+		}
+
 	}
 
 	&.attached {
@@ -84,10 +93,6 @@
 		&:hover {
 			border-color: $attachedMessageCardHoverBorderColor;
 			background-color: $attachedMessageCardHoverBackground;
-		}
-
-		.mc-header__is-attached-icon {
-			display: block;
 		}
 	}
 }
@@ -144,7 +149,11 @@
 		margin-top: 3px;
 		margin-left: 3px;
 		margin-right: 4px;
-		display: none;
+	}
+
+	&__is-soft-filtered-icon {
+		@include icon(url(../../resources/icons/filter.svg), 12px, 12px);
+		flex-shrink: 0;
 	}
 
 	&__info {
@@ -421,6 +430,36 @@
 		margin: auto;
 	}
 
+	&__loading-message {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 400px;
+		flex-shrink: 0;
+		margin: 0 auto;
+		gap: 7px;
+
+		&-text {
+			font-size: 13px;
+			color: $messageListLoadButtonTextColor;
+		}
+	}
+
+	&__load-btn {
+		@include clickable;
+
+		display: block;
+		border-radius: 4px;
+		border-width: 1px;
+		border-color: $messageListLoadButtonTextColor;
+		background-color: $messageListLoadButtonColor;
+		font-weight: 600;
+		font-size: 14px;
+		padding: 2px 7px;
+		color: $messageListLoadButtonTextColor;
+		
+	}
+
 	&__overlay-loader {
 		position: absolute;
 		top: 0;
@@ -597,6 +636,7 @@
 			margin-left: 10px;
 			cursor: pointer;
 			padding: 4px;
+			outline: none;
 		}
 
 		&-icon {

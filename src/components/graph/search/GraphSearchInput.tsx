@@ -18,6 +18,7 @@ import * as React from 'react';
 import moment from 'moment';
 import KeyCodes from '../../../util/KeyCodes';
 import { createBemElement } from '../../../helpers/styleCreators';
+import { usePointerTimestamp } from '../../../contexts/pointerTimestampContext';
 
 const TIME_MASK = 'HH:mm:ss.SSS' as const;
 export const DATE_TIME_MASK = 'YYYY.MM.DD HH:mm:ss.SSS' as const;
@@ -68,6 +69,11 @@ export interface GraphSearchInputConfig {
 function GraphSearchInput(props: Props) {
 	const { toggleTimePicker, toggleHistory, timestamp, setTimestamp, onSubmit } = props;
 
+	const pointerTimestamp = usePointerTimestamp();
+
+	const previousPointerTimestamp = React.useRef<number | null>(pointerTimestamp);
+	const savedInputConfig = React.useRef<GraphSearchInputConfig | null>(null);
+
 	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
 		isValid: false,
 		mask: null,
@@ -80,6 +86,7 @@ function GraphSearchInput(props: Props) {
 		if (timestamp !== null && timestamp !== inputConfig.timestamp) {
 			const mask = inputConfig.mask || DATE_TIME_MASK;
 			const placeholder = inputConfig.placeholder || DATE_TIME_PLACEHOLDER;
+
 			setInputConfig({
 				...inputConfig,
 				value: moment.utc(timestamp).format(mask),
@@ -90,6 +97,37 @@ function GraphSearchInput(props: Props) {
 			});
 		}
 	}, [timestamp]);
+
+	React.useEffect(() => {
+		const mask = inputConfig.mask || DATE_TIME_MASK;
+		const placeholder = inputConfig.placeholder || DATE_TIME_PLACEHOLDER;
+
+		if (previousPointerTimestamp.current === null && pointerTimestamp !== null) {
+			savedInputConfig.current = inputConfig;
+		}
+
+		if (
+			previousPointerTimestamp.current !== null &&
+			pointerTimestamp === null &&
+			savedInputConfig.current
+		) {
+			setInputConfig(savedInputConfig.current);
+		} else if (pointerTimestamp !== null) {
+			setInputConfig({
+				...inputConfig,
+				value: pointerTimestamp
+					? moment.utc(pointerTimestamp).format(mask)
+					: timestamp
+					? moment.utc(timestamp).format(mask)
+					: '',
+				mask,
+				placeholder,
+				timestamp,
+				isValid: true,
+			});
+		}
+		previousPointerTimestamp.current = pointerTimestamp;
+	}, [pointerTimestamp]);
 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
 		const { mask, value, placeholder, isValid } = inputConfig;
@@ -165,6 +203,7 @@ function GraphSearchInput(props: Props) {
 				value,
 			});
 			toggleTimePicker(false);
+			setTimestamp(null);
 		}
 	}
 
@@ -196,10 +235,12 @@ function GraphSearchInput(props: Props) {
 				className='graph-search-input__input'
 				onFocus={onInputFocus}
 				onKeyDown={handleKeyDown}
+				type='text'
 			/>
 			<input
 				className='graph-search-input__placeholder'
 				type='text'
+				readOnly={true}
 				value={
 					inputConfig.placeholder
 						? inputConfig.value + inputConfig.placeholder.slice(inputConfig.value.length)

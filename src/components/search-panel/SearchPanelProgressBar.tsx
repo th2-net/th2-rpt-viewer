@@ -24,6 +24,7 @@ interface SearchPanelProgressBarProps {
 		currentPoint: number;
 		searching: boolean;
 		completed: boolean;
+		processedObjectCount: number;
 	};
 }
 
@@ -34,7 +35,14 @@ const toHumanReadableTime = (timestamp: moment.Moment) => {
 };
 
 const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
-	const { searching, startTimestamp, endTimestamp, currentPoint, completed } = props.searchProgress;
+	const {
+		searching,
+		startTimestamp,
+		endTimestamp,
+		currentPoint,
+		completed,
+		processedObjectCount,
+	} = props.searchProgress;
 
 	const timeInterval = endTimestamp !== null ? endTimestamp - Number(startTimestamp) : null;
 
@@ -78,6 +86,11 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 								<span>
 									<span className='search-progress__value'>{timeLeftLabel}</span> left.
 								</span>
+							)}
+							{processedObjectCount !== 0 && (
+								<div className='processed-object-count'>
+									Processed objects: {processedObjectCount}
+								</div>
 							)}
 						</div>
 					)}
