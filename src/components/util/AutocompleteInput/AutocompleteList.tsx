@@ -29,12 +29,13 @@ interface AutocompleteListProps {
 	items: string[];
 	value: string;
 	anchor: HTMLElement | null;
+	className?: string;
 	onSelect?: (value: string) => void;
 }
 
 export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteListProps>(
 	(props, ref) => {
-		const { items, value, anchor, onSelect } = props;
+		const { items, value, anchor, onSelect, className } = props;
 		const [isOpen, setIsOpen] = React.useState(false);
 		const [focusedOption, setFocusedOption] = React.useState<string | null>(null);
 
@@ -218,7 +219,11 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 		return (
 			<ModalPortal isOpen={isOpen} closeDelay={150} ref={ref}>
 				<div
-					className={createStyleSelector('autocomplete-list', isOpen ? 'opened' : 'closed')}
+					className={createStyleSelector(
+						'autocomplete-list',
+						isOpen ? 'opened' : 'closed',
+						className || null,
+					)}
 					style={{ height: `${listHeight}px`, zIndex: 1000 }}
 					ref={rootRef}>
 					<Virtuoso

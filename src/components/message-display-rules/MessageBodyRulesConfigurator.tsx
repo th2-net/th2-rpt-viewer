@@ -30,7 +30,10 @@ const MessageBodyRulesConfigurator = ({ sessions }: Props) => {
 	const modalRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
-		if (e.target !== buttonRef.current) {
+		const isFromAutocomplete = Boolean(
+			(e.target as HTMLElement).closest('.message-display-rules-autocomplete'),
+		);
+		if (e.target !== buttonRef.current && !isFromAutocomplete) {
 			setIsOpen(false);
 		}
 	});

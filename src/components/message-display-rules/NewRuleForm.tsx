@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { nanoid } from 'nanoid';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useMessageDisplayRulesStore } from '../../hooks';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
 import AutocompleteInput from '../util/AutocompleteInput';
@@ -105,6 +105,7 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 							}}
 							notResetOnSubmit
 							autocomplete={sessions}
+							autocompleteClassName='message-display-rules-autocomplete'
 							datalistKey='session-input'
 						/>
 					) : (
