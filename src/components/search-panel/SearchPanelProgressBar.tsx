@@ -88,9 +88,10 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 								</span>
 							)}
 							{processedObjectCount !== 0 && (
-								<div className='processed-object-count'>
-									Processed objects: {processedObjectCount}
-								</div>
+								<span>
+									Processed objects:{' '}
+									<span className='search-progress__value'>{processedObjectCount}</span>
+								</span>
 							)}
 						</div>
 					)}
