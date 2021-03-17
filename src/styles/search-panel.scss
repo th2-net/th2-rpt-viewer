@@ -120,8 +120,6 @@
 .search-results {
 	display: flex;
 	flex-direction: column;
-	flex-grow: 1;
-	min-height: 250px;
 
 	&__controls {
 		padding: 2px 0;
@@ -156,12 +154,7 @@
 	}
 
 	&__list {
-		@include scrollbar;
-
 		width: 100%;
-		overflow-y: auto;
-		flex-grow: 1;
-		flex-basis: 0px;
 	}
 }
 
