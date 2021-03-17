@@ -33,6 +33,7 @@ interface SearchPanelResultsProps {
 	prev: () => void;
 	resultGroups: Array<Array<SearchResult>>;
 	timestamp: number;
+	disabledRemove: boolean;
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
@@ -44,6 +45,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		onResultDelete,
 		disablePrev,
 		disableNext,
+		disabledRemove,
 		showToggler,
 		next,
 		prev,
@@ -69,7 +71,10 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 						.utc()
 						.format('DD.MM.YYYY HH:mm:ss.SSS')}
 				</p>
-				<button className='bookmark-item__remove-btn' onClick={onResultDelete}>
+				<button
+					className='bookmark-item__remove-btn'
+					disabled={disabledRemove}
+					onClick={onResultDelete}>
 					<i className='bookmark-item__remove-btn-icon' />
 				</button>
 			</div>
