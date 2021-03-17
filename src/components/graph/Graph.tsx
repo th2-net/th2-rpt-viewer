@@ -28,7 +28,6 @@ import { EventMessage } from '../../models/EventMessage';
 import { Chunk, PanelRange } from '../../models/Graph';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
-import WorkspaceLinkGetter from '../WorkspaceLinkGetter';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
 import '../../styles/graph.scss';
 
@@ -154,7 +153,6 @@ function Graph({ activeWorkspace }: GraphProps) {
 				range={activeWorkspace.graphStore.range}
 				onPanelRangeSelect={activeWorkspace.graphStore.setTimestampFromRange}
 			/>
-			<WorkspaceLinkGetter />
 		</div>
 	);
 }

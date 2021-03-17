@@ -14,32 +14,9 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import '../../styles/select.scss';
+import { useRootStore } from './useRootStore';
 
-interface Props<T> {
-	className?: string;
-	options: Array<T>;
-	selected: string;
-	prefix?: string;
-	onChange: (option: T) => void;
-}
-
-export default function Select<T extends string>({
-	options,
-	selected,
-	onChange,
-	className = '',
-	prefix = '',
-}: Props<T>) {
-	return (
-		<select
-			className={`options-select ${className}`}
-			value={prefix + selected}
-			onChange={e => onChange(e.target.value as T)}>
-			{options.map((opt, index) => (
-				<option key={index}>{prefix + opt}</option>
-			))}
-		</select>
-	);
-}
+export const useMessageDisplayRulesStore = () => {
+	const rootStore = useRootStore();
+	return rootStore.messageDisplayRulesStore;
+};
