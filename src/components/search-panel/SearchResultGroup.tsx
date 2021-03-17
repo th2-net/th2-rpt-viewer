@@ -23,6 +23,7 @@ import { SearchResult } from '../../stores/SearchStore';
 import { BookmarkedItem, BookmarkItem } from '../BookmarksPanel';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { ActionType } from '../../models/EventAction';
+import moment from 'moment';
 
 interface SearchResultGroup {
 	results: SearchResult[];
@@ -76,7 +77,7 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 		);
 	};
 
-	const onSearchGroupClick = () => {
+	const averageTimestamp = (() => {
 		const groupTimestamps = results.map(getTimestampAsNumber);
 
 		let timestamp;
@@ -87,20 +88,18 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 				(groupTimestamps[0] + groupTimestamps[groupTimestamps.length - 1]) / 2,
 			);
 		}
+		return timestamp;
+	})();
 
-		onGroupClick(timestamp, results[0].type);
+	const onSearchGroupClick = () => {
+		onGroupClick(averageTimestamp, results[0].type);
 	};
 
 	return (
 		<>
 			<div className='search-result-group'>
 				<button className={expandButtonClass} onClick={() => setIsExpanded(!isExpanded)} />
-				<div
-					className='search-result-group__header'
-					onClick={onSearchGroupClick}
-					style={{
-						alignItems: mostPopularNames.length > 1 ? 'flex-start' : 'center',
-					}}>
+				<div className='search-result-group__header' onClick={onSearchGroupClick}>
 					<span className='search-result-group__results-count'>{results.length}</span>
 					<div className='search-result-group__most-popular-names'>
 						{mostPopularNames.map((name, index) => (
@@ -109,6 +108,9 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 							</span>
 						))}
 					</div>
+					<span className='search-result-group__timestamp'>
+						{moment(averageTimestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}
+					</span>
 				</div>
 			</div>
 			{isExpanded &&
