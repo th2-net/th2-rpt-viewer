@@ -494,6 +494,8 @@ export default class MessagesDataProviderStore {
 				this.startPrevSoftFilterChannel({
 					...queryParams,
 					searchDirection: 'previous',
+					resumeFromId: this.softFilterResults[this.softFilterResults.length - 1]?.messageId,
+					startTimestamp: this.prevLoadEndTimestamp!,
 				});
 				this.softFilterChannelPrev?.subscribe();
 			}
@@ -512,6 +514,8 @@ export default class MessagesDataProviderStore {
 				this.startNextSoftFilterChannel({
 					...queryParams,
 					searchDirection: 'next',
+					resumeFromId: this.softFilterResults[0]?.messageId,
+					startTimestamp: this.nextLoadEndTimestamp!,
 				});
 				this.softFilterChannelNext?.subscribe();
 			}
