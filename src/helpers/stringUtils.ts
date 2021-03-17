@@ -36,7 +36,7 @@ export function replaceNonPrintableChars(targetString: string): string {
 /* eslint-disable max-len */
 // https://stackoverflow.com/a/11598864
 const nonPrintableRegExp = createRegExp`
-	[\0-\x1F\x7F-\x9F\xAD\u0378\u0379\u037F-\u0383\u038B\u038D\u03A2\u0528-\u0530
+	[\x7F-\x9F\xAD\u0378\u0379\u037F-\u0383\u038B\u038D\u03A2\u0528-\u0530
 	\u0557\u0558\u0560\u0588\u058B-\u058E\u0590\u05C8-\u05CF\u05EB-\u05EF\u05F5-\u0605\u061C
 	\u061D\u06DD\u070E\u070F\u074B\u074C\u07B2-\u07BF\u07FB-\u07FF\u082E\u082F\u083F\u085C
 	\u085D\u085F-\u089F\u08A1\u08AD-\u08E3\u08FF\u0978\u0980\u0984\u098D\u098E\u0991\u0992
@@ -87,9 +87,13 @@ type PartOfString = {
 	isPrintable: boolean;
 };
 
-export function replaceNonPrintableCharsWithDot(targetString: string): PartOfString[] {
-	const stringParts = targetString.split(nonPrintableRegExp);
+export function splitOnReadableParts(targetString: string): PartOfString[] {
+	const stringParts = targetString.split(createRegExp`
+		[\0-\x1F]
+		${'g'}
+	`);
 	return stringParts.reduce((arr, curr) => {
+		if (curr === '') return arr;
 		arr.push({
 			text: curr,
 			isPrintable: true,
@@ -100,6 +104,14 @@ export function replaceNonPrintableCharsWithDot(targetString: string): PartOfStr
 		});
 		return arr;
 	}, [] as PartOfString[]);
+}
+
+export function replaceNonPrintableCharsWithDot(targetString: string): string {
+	if (!targetString) {
+		return targetString;
+	}
+
+	return targetString.replace(nonPrintableRegExp, '.');
 }
 
 export function replaceUnfilledDateStringWithMinValues(
