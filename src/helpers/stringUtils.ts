@@ -82,12 +82,24 @@ const nonPrintableRegExp = createRegExp`
 	${'g'}
 `;
 
-export function replaceNonPrintableCharsWithDot(targetString: string): string {
-	if (!targetString) {
-		return targetString;
-	}
+type PartOfString = {
+	text: string;
+	isPrintable: boolean;
+};
 
-	return targetString.replace(nonPrintableRegExp, '.');
+export function replaceNonPrintableCharsWithDot(targetString: string): PartOfString[] {
+	const stringParts = targetString.split(nonPrintableRegExp);
+	return stringParts.reduce((arr, curr) => {
+		arr.push({
+			text: curr,
+			isPrintable: true,
+		});
+		arr.push({
+			text: '',
+			isPrintable: false,
+		});
+		return arr;
+	}, [] as PartOfString[]);
 }
 
 export function replaceUnfilledDateStringWithMinValues(

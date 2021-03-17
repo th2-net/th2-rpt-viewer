@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
+import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import { isEventMessage, isEventNode, getItemId } from '../../helpers/event';
 import { createBemElement } from '../../helpers/styleCreators';
@@ -23,7 +24,6 @@ import { SearchResult } from '../../stores/SearchStore';
 import { BookmarkedItem, BookmarkItem } from '../BookmarksPanel';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { ActionType } from '../../models/EventAction';
-import moment from 'moment';
 
 interface SearchResultGroup {
 	results: SearchResult[];
