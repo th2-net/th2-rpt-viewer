@@ -27,7 +27,6 @@ import CardDisplayType from '../../../util/CardDisplayType';
 import { EventTreeNode } from '../../../models/EventAction';
 import { getEventNodeParents } from '../../../helpers/event';
 import { EventListFooter, EventListHeader } from '../EventListNavigation';
-
 import '../../../styles/action.scss';
 
 interface Props {
@@ -60,7 +59,7 @@ function FlatEventList({ nodes }: Props) {
 		return (
 			<Observer>
 				{() => (
-					<div style={{ margin: '4px 5px' }}>
+					<div style={{ padding: '1px 5px' }}>
 						<EventCardHeader
 							childrenCount={0}
 							event={node}
