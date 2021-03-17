@@ -29,7 +29,7 @@ type NewRuleFormProps = {
 
 const viewTypes = Object.values(MessageViewType);
 
-const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
+const NewRuleForm = ({ rule, stopEdit }: NewRuleFormProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
 
 	const sessionInputRef = useRef<HTMLInputElement>(null);
@@ -104,8 +104,8 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 								setSessionValue(v);
 							}}
 							notResetOnSubmit
-							autocomplete={sessions}
-							autocompleteClassName='message-display-rules-autocomplete'
+							autocomplete={null}
+							// autocompleteClassName='message-display-rules-autocomplete'
 							datalistKey='session-input'
 						/>
 					) : (
