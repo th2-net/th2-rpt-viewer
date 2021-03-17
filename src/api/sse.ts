@@ -27,6 +27,7 @@ interface BaseSSEParams {
 export interface SSEHeartbeat {
 	id: string;
 	timestamp: number;
+	scanCounter: number;
 }
 
 export interface SSEFilterInfo {

@@ -41,6 +41,7 @@
 
 	.filter-row {
 		flex-grow: 1;
+		margin-bottom: 4px;
 	}
 
 	.toggler-wrapper {
@@ -53,6 +54,7 @@
 		}
 	}
 }
+
 .progress-bar {
     width: 100%;
     position: relative;
@@ -85,6 +87,11 @@
     }
 }
 
+.processed-object-count {
+	margin: 3px auto;
+	font-size: 14px;
+}
+
 .search-results {
 	display: flex;
 	flex-direction: column;
@@ -92,7 +99,7 @@
 	min-height: 250px;
 
 	&__controls {
-		padding: 8px 0;
+		padding: 2px 0;
 		display: flex;
 		justify-content: space-between;
 	}
