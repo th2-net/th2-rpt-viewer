@@ -509,7 +509,7 @@ export default class MessagesDataProviderStore {
 
 			if (
 				this.messagesStore.filterStore.isSoftFilter &&
-				this.softFilterChannelPrev?.isLoading === false
+				this.softFilterChannelNext?.isLoading === false
 			) {
 				this.startNextSoftFilterChannel({
 					...queryParams,
