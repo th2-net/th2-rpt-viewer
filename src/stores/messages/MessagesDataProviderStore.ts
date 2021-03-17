@@ -18,6 +18,7 @@ import { action, reaction, observable, computed, runInAction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams } from '../../api/sse';
 import { timestampToNumber } from '../../helpers/date';
+import { isEventMessage } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
 import notificationsStore from '../NotificationsStore';
 import MessagesStore from './MessagesStore';
@@ -103,6 +104,8 @@ export default class MessagesDataProviderStore {
 		);
 	}
 
+	private messageAC: AbortController | null = null;
+
 	@action
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
@@ -142,6 +145,43 @@ export default class MessagesDataProviderStore {
 		this.startPreviousMessagesChannel(prevQuery, SEARCH_TIME_FRAME);
 		this.startNextMessagesChannel(nextQuery, SEARCH_TIME_FRAME);
 
+		let message: EventMessage | undefined;
+		if (this.searchChannelPrev && this.searchChannelNext) {
+			if (this.messagesStore.selectedMessageId) {
+				this.messageAC = new AbortController();
+				try {
+					message = await this.api.messages.getMessage(
+						this.messagesStore.selectedMessageId.valueOf(),
+						this.messageAC.signal,
+					);
+				} catch (error) {
+					if (error.name !== 'AbortError') {
+						this.isError = true;
+						return;
+					}
+				}
+			}
+			const [nextMessages, prevMessages] = await Promise.all([
+				this.searchChannelNext.loadAndSubscribe(message?.messageId),
+				this.searchChannelPrev.loadAndSubscribe(message?.messageId),
+			]);
+
+			const firstNextMessage = nextMessages[nextMessages.length - 1];
+
+			if (firstNextMessage && firstNextMessage.messageId === prevMessages[0]?.messageId) {
+				nextMessages.pop();
+			}
+
+			runInAction(() => {
+				this.messages = [...nextMessages, ...[message].filter(isEventMessage), ...prevMessages];
+				this.initialItemCount = this.messages.length;
+			});
+
+			if (this.messagesStore.selectedMessageId) {
+				this.messagesStore.scrollToMessage(this.messagesStore.selectedMessageId?.valueOf());
+			}
+		}
+
 		if (this.messagesStore.filterStore.isSoftFilter) {
 			this.startNextSoftFilterChannel(
 				{
@@ -158,35 +198,14 @@ export default class MessagesDataProviderStore {
 				SEARCH_TIME_FRAME,
 			);
 
-			this.softFilterChannelNext?.subscribe();
-			this.softFilterChannelPrev?.subscribe();
-		}
-
-		if (this.searchChannelPrev && this.searchChannelNext) {
-			const [nextMessages, prevMessages] = await Promise.all([
-				this.searchChannelNext.loadAndSubscribe(),
-				this.searchChannelPrev.loadAndSubscribe(),
-			]);
-
-			const firstNextMessage = nextMessages[nextMessages.length - 1];
-
-			if (firstNextMessage && firstNextMessage.messageId === prevMessages[0]?.messageId) {
-				nextMessages.pop();
-			}
-
-			runInAction(() => {
-				this.messages = [...nextMessages, ...prevMessages];
-				this.initialItemCount = this.messages.length;
-			});
-
-			if (this.messagesStore.selectedMessageId) {
-				this.messagesStore.scrollToMessage(this.messagesStore.selectedMessageId?.valueOf());
-			}
+			this.softFilterChannelNext?.subscribe(message?.messageId);
+			this.softFilterChannelPrev?.subscribe(message?.messageId);
 		}
 	};
 
 	@action
 	public stopMessagesLoading = (isError = false) => {
+		this.messageAC?.abort();
 		this.searchChannelPrev?.stop();
 		this.searchChannelNext?.stop();
 		this.searchChannelPrev = null;
