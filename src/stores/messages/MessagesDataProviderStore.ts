@@ -23,6 +23,8 @@ import notificationsStore from '../NotificationsStore';
 import MessagesStore from './MessagesStore';
 import { SSEChannel } from './SSEChannel';
 
+const SEARCH_TIME_FRAME = 15;
+
 export default class MessagesDataProviderStore {
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
@@ -37,6 +39,12 @@ export default class MessagesDataProviderStore {
 
 	@observable
 	public isBeginReached = false;
+
+	@observable
+	public noMatchingMessagesPrev = false;
+
+	@observable
+	public noMatchingMessagesNext = false;
 
 	@observable
 	public messagesListErrorStatusCode: number | null = null;
@@ -67,6 +75,10 @@ export default class MessagesDataProviderStore {
 
 	@observable
 	public softFilterChannelNext: SSEChannel | null = null;
+
+	prevLoadEndTimestamp: number | null = null;
+
+	nextLoadEndTimestamp: number | null = null;
 
 	@computed
 	public get isLoadingNextMessages(): boolean {
@@ -127,18 +139,24 @@ export default class MessagesDataProviderStore {
 					searchDirection: 'next',
 			  };
 
-		this.startPreviousMessagesChannel(prevQuery);
-		this.startNextMessagesChannel(nextQuery);
+		this.startPreviousMessagesChannel(prevQuery, SEARCH_TIME_FRAME);
+		this.startNextMessagesChannel(nextQuery, SEARCH_TIME_FRAME);
 
 		if (this.messagesStore.filterStore.isSoftFilter) {
-			this.startNextSoftFilterChannel({
-				...queryParams,
-				searchDirection: 'next',
-			});
-			this.startPrevSoftFilterChannel({
-				...queryParams,
-				searchDirection: 'previous',
-			});
+			this.startNextSoftFilterChannel(
+				{
+					...queryParams,
+					searchDirection: 'next',
+				},
+				SEARCH_TIME_FRAME,
+			);
+			this.startPrevSoftFilterChannel(
+				{
+					...queryParams,
+					searchDirection: 'previous',
+				},
+				SEARCH_TIME_FRAME,
+			);
 
 			this.softFilterChannelNext?.subscribe();
 			this.softFilterChannelPrev?.subscribe();
@@ -181,12 +199,23 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public startPreviousMessagesChannel = (query: MessagesSSEParams) => {
+	public startPreviousMessagesChannel = (query: MessagesSSEParams, interval?: number) => {
+		this.prevLoadEndTimestamp = null;
+
 		this.searchChannelPrev = new SSEChannel(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onPrevChannelResponse,
 			this.onLoadingError,
+			interval
+				? e => {
+						if (query.startTimestamp - e.timestamp > interval * 1000 * 60) {
+							this.searchChannelPrev?.stop();
+							this.noMatchingMessagesPrev = true;
+							this.prevLoadEndTimestamp = e.timestamp;
+						}
+				  }
+				: undefined,
 		);
 	};
 
@@ -227,12 +256,23 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public startNextMessagesChannel = (query: MessagesSSEParams) => {
+	public startNextMessagesChannel = (query: MessagesSSEParams, interval?: number) => {
+		this.nextLoadEndTimestamp = null;
+
 		this.searchChannelNext = new SSEChannel(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onNextChannelResponse,
 			this.onLoadingError,
+			interval
+				? e => {
+						if (e.timestamp - query.startTimestamp > interval * 1000 * 60) {
+							this.searchChannelNext?.stop();
+							this.noMatchingMessagesNext = true;
+							this.nextLoadEndTimestamp = e.timestamp;
+						}
+				  }
+				: undefined,
 		);
 	};
 
@@ -274,22 +314,36 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	private startNextSoftFilterChannel = (query: MessagesSSEParams) => {
+	private startNextSoftFilterChannel = (query: MessagesSSEParams, interval?: number) => {
 		this.softFilterChannelNext = new SSEChannel(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onNextSoftFilterChannelResponse,
 			this.onLoadingError,
+			interval
+				? e => {
+						if (e.timestamp - query.startTimestamp > interval * 1000 * 60) {
+							this.softFilterChannelNext?.stop();
+						}
+				  }
+				: undefined,
 		);
 	};
 
 	@action
-	private startPrevSoftFilterChannel = (query: MessagesSSEParams) => {
+	private startPrevSoftFilterChannel = (query: MessagesSSEParams, interval?: number) => {
 		this.softFilterChannelPrev = new SSEChannel(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onPrevSoftFilterChannelResponse,
 			this.onLoadingError,
+			interval
+				? e => {
+						if (query.startTimestamp - e.timestamp > interval * 1000 * 60) {
+							this.softFilterChannelPrev?.stop();
+						}
+				  }
+				: undefined,
 		);
 	};
 
@@ -371,6 +425,10 @@ export default class MessagesDataProviderStore {
 		this.isEndReached = false;
 		this.isError = isError;
 		this.softFilterResults = [];
+		this.noMatchingMessagesNext = false;
+		this.noMatchingMessagesPrev = false;
+		this.prevLoadEndTimestamp = null;
+		this.nextLoadEndTimestamp = null;
 	};
 
 	@observable
@@ -386,5 +444,82 @@ export default class MessagesDataProviderStore {
 		}
 
 		return message;
+	};
+
+	@action
+	keepLoading = async (direction: 'next' | 'previous') => {
+		if (
+			this.messagesStore.filterStore.filter.streams.length === 0 ||
+			!this.searchChannelNext ||
+			!this.searchChannelPrev ||
+			(!this.prevLoadEndTimestamp && !this.nextLoadEndTimestamp)
+		)
+			return;
+
+		const queryParams = this.messagesStore.filterStore.messsagesSSEConfig
+			.queryParams as MessagesSSEParams;
+
+		const { stream, endTimestamp, resultCountLimit, resumeFromId } = queryParams;
+
+		const query: MessagesSSEParams = this.messagesStore.filterStore.isSoftFilter
+			? {
+					startTimestamp:
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+						direction === 'previous' ? this.prevLoadEndTimestamp! : this.nextLoadEndTimestamp!,
+					stream,
+					searchDirection: direction,
+					endTimestamp,
+					resultCountLimit,
+					resumeFromId,
+			  }
+			: {
+					...queryParams,
+					startTimestamp:
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+						direction === 'previous' ? this.prevLoadEndTimestamp! : this.nextLoadEndTimestamp!,
+					searchDirection: direction,
+			  };
+
+		if (direction === 'previous') {
+			this.noMatchingMessagesPrev = false;
+			this.startPreviousMessagesChannel({
+				...query,
+				resumeFromId: this.messages[this.messages.length - 1]?.messageId,
+			});
+
+			if (
+				this.messagesStore.filterStore.isSoftFilter &&
+				this.softFilterChannelPrev?.isLoading === false
+			) {
+				this.startPrevSoftFilterChannel({
+					...queryParams,
+					searchDirection: 'previous',
+					resumeFromId: this.softFilterResults[this.softFilterResults.length - 1]?.messageId,
+					startTimestamp: this.prevLoadEndTimestamp!,
+				});
+				this.softFilterChannelPrev?.subscribe();
+			}
+			this.searchChannelPrev.subscribe();
+		} else {
+			this.noMatchingMessagesNext = false;
+			this.startNextMessagesChannel({
+				...query,
+				resumeFromId: this.messages[0]?.messageId,
+			});
+
+			if (
+				this.messagesStore.filterStore.isSoftFilter &&
+				this.softFilterChannelNext?.isLoading === false
+			) {
+				this.startNextSoftFilterChannel({
+					...queryParams,
+					searchDirection: 'next',
+					resumeFromId: this.softFilterResults[0]?.messageId,
+					startTimestamp: this.nextLoadEndTimestamp!,
+				});
+				this.softFilterChannelNext?.subscribe();
+			}
+			this.searchChannelNext.subscribe();
+		}
 	};
 }
