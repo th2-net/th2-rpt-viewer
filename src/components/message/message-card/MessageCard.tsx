@@ -168,6 +168,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 
 	// session arrow color, we calculating it for each session from-to pair, based on hash
 	const sessionArrowStyle: React.CSSProperties = {
+		display: 'inline-flex',
 		filter: `invert(1) sepia(1) saturate(5) hue-rotate(${calculateHueValue(sessionId)}deg)`,
 	};
 
@@ -189,7 +190,60 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		messagesStore.setHoveredMessage(null);
 	};
 
+	const renderMessageInfo = () => {
+		if (viewType === MessageViewType.FORMATTED || viewType === MessageViewType.BINARY) {
+			return (
+				<div className='mc-header__info'>
+					<div className='mc-header__value'>
+						{timestamp && formatTime(timestampToNumber(timestamp))}
+					</div>
+					<div className='mc-header__item'>
+						<span className='mc-header__key-minified'>nm</span>
+						<span className='mc-header__key'>Name</span>
+						<span className='mc-header__value'>{messageType}</span>
+					</div>
+					<div className='mc-header__item'>
+						<span className='mc-header__key-minified'>ss</span>
+						<span className='mc-header__key'>Session</span>
+						<span className={sessionClass} style={sessionArrowStyle}></span>
+						<span className='mc-header__value'>{sessionId}</span>
+					</div>
+					<div className='mc-header__item messageId'>
+						<span className='mc-header__key'>ID</span>
+						<span className='mc-header__value'>{messageId}</span>
+					</div>
+				</div>
+			);
+		}
+		return null;
+	};
+
+	const renderInlineMessageInfo = () => {
+		if (viewType === MessageViewType.ASCII || viewType === MessageViewType.JSON) {
+			return (
+				<>
+					<span className='mc-header__value'>
+						{timestamp && formatTime(timestampToNumber(timestamp))}{' '}
+					</span>
+					<span className='mc-header__key-minified'>nm</span>
+					<span className='mc-header__key'>Name</span>
+					<span className='mc-header__value'>{messageType} </span>
+					<span className='mc-header__key-minified'>ss</span>
+					<span className='mc-header__key'>Session </span>
+					<span className={`${sessionClass} inline`} style={sessionArrowStyle}></span>
+					<span className='mc-header__value'>{sessionId} </span>
+					<span className='mc-header__item messageId-inline'>
+						<span className='mc-header__key'>ID</span>
+						<span className='mc-header__value'>{messageId} </span>
+					</span>
+				</>
+			);
+		}
+		return null;
+	};
+
 	const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
+		renderInfo: renderInlineMessageInfo,
 		viewType,
 		messageId,
 		messageBody: body,
@@ -203,27 +257,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 			<div className={rootClass}>
 				<div className='mc__mc-header mc-header'>
 					<div className='mc-header__is-attached-icon'></div>
-					<div className='mc-header__info'>
-						<div className='mc-header__value'>
-							{timestamp && formatTime(timestampToNumber(timestamp))}
-						</div>
-						<div className='mc-header__item'>
-							<span className='mc-header__key-minified'>nm</span>
-							<span className='mc-header__key'>Name</span>
-							<span className='mc-header__value'>{messageType}</span>
-						</div>
-						<div className='mc-header__item'>
-							<span className='mc-header__key-minified'>ss</span>
-							<span className='mc-header__key'>Session</span>
-							<span className={sessionClass} style={sessionArrowStyle}></span>
-							<span className='mc-header__value'>{sessionId}</span>
-						</div>
-						<div className='mc-header__item'>
-							<span className='mc-header__key-minified'>id</span>
-							<span className='mc-header__key'>ID</span>
-							<span className='mc-header__value'>{messageId}</span>
-						</div>
-					</div>
+					{renderMessageInfo()}
 					<div className='mc-header__controls'>
 						{!isScreenshotMsg && (
 							<RadioGroup

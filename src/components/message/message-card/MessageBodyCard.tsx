@@ -29,9 +29,10 @@ interface Props {
 	isBeautified: boolean;
 	body: MessageBody | null;
 	isSelected: boolean;
+	renderInfo: () => React.ReactNode;
 }
 
-export default function MessageBodyCard({ isBeautified, body, isSelected }: Props) {
+export default function MessageBodyCard({ isBeautified, body, isSelected, renderInfo }: Props) {
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
 
 	if (body == null) {
@@ -40,6 +41,7 @@ export default function MessageBodyCard({ isBeautified, body, isSelected }: Prop
 
 	return (
 		<pre className='mc-body__human'>
+			{renderInfo && renderInfo()}
 			{!isBeautified && '{'}
 			{Object.entries(body.fields).map(([key, value], idx, arr) => (
 				<React.Fragment key={key}>
@@ -67,6 +69,7 @@ interface FieldProps {
 	setIsHighlighted: (isHighlighted: boolean) => void;
 	isRoot?: boolean;
 	highlightColor: string;
+	renderInfo?: () => React.ReactNode;
 }
 
 function MessageBodyCardField(props: FieldProps) {
@@ -78,6 +81,7 @@ function MessageBodyCardField(props: FieldProps) {
 		isRoot = true,
 		setIsHighlighted,
 		highlightColor,
+		renderInfo,
 	} = props;
 
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
