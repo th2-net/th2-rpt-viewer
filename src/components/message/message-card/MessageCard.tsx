@@ -16,12 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-	useMessagesWorkspaceStore,
-	useHeatmap,
-	useSelectedStore,
-	useWorkspaceStore,
-} from '../../../hooks';
+import { useMessagesWorkspaceStore, useHeatmap, useSelectedStore } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
 import { formatTime, timestampToNumber } from '../../../helpers/date';
@@ -60,8 +55,9 @@ interface Props extends OwnProps, RecoveredProps {}
 function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const messagesStore = useMessagesWorkspaceStore();
 	const selectedStore = useSelectedStore();
-	const workspaceStore = useWorkspaceStore();
+
 	const { heatmapElements } = useHeatmap();
+
 	const [isHighlighted, setHighlighted] = React.useState(false);
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
@@ -150,9 +146,12 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		[messageId, viewType],
 	);
 
-	const isAttached = !!workspaceStore.attachedMessages.find(
+	const isAttached = !!messagesStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
 	);
+
+	const isSoftFiltered =
+		messagesStore.dataStore.softFilterResults.findIndex(m => m.messageId === messageId) !== -1;
 
 	const isScreenshotMsg = isScreenshotMessage(message);
 
@@ -164,6 +163,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		isAttached ? 'attached' : null,
 		isPinned ? 'pinned' : null,
 		isHighlighted ? 'highlighted' : null,
+		isSoftFiltered ? 'soft-filtered' : null,
 	);
 
 	// session arrow color, we calculating it for each session from-to pair, based on hash
@@ -256,7 +256,8 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		<div className='message-card-wrapper' onMouseEnter={hoverMessage} onMouseLeave={unhoverMessage}>
 			<div className={rootClass}>
 				<div className='mc__mc-header mc-header'>
-					<div className='mc-header__is-attached-icon'></div>
+					{isSoftFiltered && <div className='mc-header__is-soft-filtered-icon' />}
+					{isAttached && <div className='mc-header__is-attached-icon' />}
 					{renderMessageInfo()}
 					<div className='mc-header__controls'>
 						{!isScreenshotMsg && (
