@@ -22,16 +22,12 @@
 	flex-direction: column;
 	height: 100%;
 	overflow: auto;
-	.spinner {
-		@include spinner(3px);
-		margin: 4px auto;
-	}
 }
 
 .search-panel {
 	width: 100%;
 	padding: 0 8px 8px;
-	background-color: #ADC2EB;
+	background-color: #adc2eb;
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
@@ -49,40 +45,75 @@
 
 	&__toggle {
 		.filter-row {
-				justify-content: center;
+			justify-content: center;
 		}
 	}
 }
+
+.search-progress {
+	padding: 10px 5px 0;
+	font-size: 12px;
+
+	&__spinner {
+		@include spinner(3px);
+	}
+
+	&__status {
+		color: $secondaryTextColor;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	&__text {
+		margin-left: 10px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	&__value {
+		color: $primaryTextColor;
+	}
+
+	&__progress-bar {
+		margin-top: 10px;
+	}
+}
+
+@keyframes infinite-progress {
+	from {
+		left: -25%;
+	}
+	to {
+		left: 100%;
+	}
+}
+
 .progress-bar {
-    width: 100%;
-    position: relative;
-    padding: 32px 0 10px;
-    .progress-bar-points {
-        position: absolute;
-        font-size: 10px;
-        top: 0
-    }
-    &__start {
-        left: 0;
-    }
-    &__track {
-        width: 100%;
-        height: 8px;
-        overflow: hidden;
-        position: relative;
-        background-color: #000;
-        border: 1px solid #000;
-    }
-    &__line {
-        position: absolute;
-        width: 100%;
-        height: inherit;
-        background-color: #fff;
-    }
-    &__end {
-        right: 0;
-        text-align: right;
-    }
+	width: 100%;
+	position: relative;
+
+	&__track {
+		width: 100%;
+		height: 8px;
+		overflow: hidden;
+		position: relative;
+		background-color: #000;
+		border: 1px solid #000;
+	}
+
+	&__line {
+		position: absolute;
+		width: 100%;
+		height: inherit;
+		background-color: #fff;
+
+		&.infinite {
+			animation: infinite-progress 3s linear infinite;
+			width: 25%;
+		}
+	}
 }
 
 .search-results {
@@ -116,7 +147,7 @@
 		align-items: center;
 		border-bottom: 1px solid;
 		margin-bottom: 5px;
-	
+
 		&__timestamp {
 			margin: 0;
 			font-size: 12px;
@@ -125,7 +156,7 @@
 
 	&__list {
 		@include scrollbar;
-		
+
 		width: 100%;
 		overflow-y: auto;
 		flex-grow: 1;
@@ -181,7 +212,7 @@
 		flex-direction: column;
 		overflow: hidden;
 	}
-	
+
 	&__name {
 		display: inline-block;
 		font-size: 12px;
