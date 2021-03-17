@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { replaceNonPrintableCharsWithDot } from '../../../../helpers/stringUtils';
+import { splitOnReadableParts } from '../../../../helpers/stringUtils';
 import { useSelectListener } from '../../../../hooks';
 import { copyTextToClipboard } from '../../../../helpers/copyHandler';
 
@@ -28,7 +28,7 @@ export default function SimpleMessageRaw({ rawContent }: Props) {
 	const [selectionStart, selectionEnd] = useSelectListener(contentRef);
 
 	const humanReadableContent = atob(rawContent);
-	const convertedArr = replaceNonPrintableCharsWithDot(humanReadableContent);
+	const convertedArr = splitOnReadableParts(humanReadableContent);
 
 	const onCopy = (e: React.ClipboardEvent<HTMLDivElement>) => {
 		if (selectionStart != null && selectionEnd != null) {
