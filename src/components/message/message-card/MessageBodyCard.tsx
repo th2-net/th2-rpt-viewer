@@ -81,7 +81,6 @@ function MessageBodyCardField(props: FieldProps) {
 		isRoot = true,
 		setIsHighlighted,
 		highlightColor,
-		renderInfo,
 	} = props;
 
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
