@@ -21,6 +21,7 @@ import {
 	useMessageDisplayRulesStore,
 	useHeatmap,
 	useSelectedStore,
+	useWorkspaceStore,
 } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
@@ -54,6 +55,7 @@ interface Props extends OwnProps, RecoveredProps {}
 function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const messagesStore = useMessagesWorkspaceStore();
 	const selectedStore = useSelectedStore();
+	const workspaceStore = useWorkspaceStore();
 
 	const { heatmapElements } = useHeatmap();
 
@@ -114,32 +116,32 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		() => [
 			{
 				value: MessageViewType.JSON,
-				id: `${MessageViewType.JSON}-${messageId}`,
-				name: `message-view-type-${messageId}`,
+				id: `${MessageViewType.JSON}-${messageId}-${workspaceStore.id}`,
+				name: `message-view-type-${messageId}-${workspaceStore.id}`,
 				className: 'message-view-type-radio',
 				checked: viewType === MessageViewType.JSON,
 				onChange: toggleViewType,
 			},
 			{
 				value: MessageViewType.FORMATTED,
-				id: `${MessageViewType.FORMATTED}-${messageId}`,
-				name: `message-view-type-${messageId}`,
+				id: `${MessageViewType.FORMATTED}-${messageId}-${workspaceStore.id}`,
+				name: `message-view-type-${messageId}-${workspaceStore.id}`,
 				className: 'message-view-type-radio',
 				checked: viewType === MessageViewType.FORMATTED,
 				onChange: toggleViewType,
 			},
 			{
 				value: MessageViewType.BINARY,
-				id: `${MessageViewType.BINARY}-${messageId}`,
-				name: `message-view-type-${messageId}`,
+				id: `${MessageViewType.BINARY}-${messageId}-${workspaceStore.id}`,
+				name: `message-view-type-${messageId}-${workspaceStore.id}`,
 				className: 'message-view-type-radio',
 				checked: viewType === MessageViewType.BINARY,
 				onChange: toggleViewType,
 			},
 			{
 				value: MessageViewType.ASCII,
-				id: `${MessageViewType.ASCII}-${messageId}`,
-				name: `message-view-type-${messageId}`,
+				id: `${MessageViewType.ASCII}-${messageId}-${workspaceStore.id}`,
+				name: `message-view-type-${messageId}-${workspaceStore.id}`,
 				className: 'message-view-type-radio',
 				checked: viewType === MessageViewType.ASCII,
 				onChange: toggleViewType,
