@@ -183,6 +183,9 @@ export default class MessagesDataProviderStore {
 		}
 
 		if (this.messagesStore.filterStore.isSoftFilter) {
+			if (message) {
+				this.softFilterResults = [message];
+			}
 			this.startNextSoftFilterChannel(
 				{
 					...queryParams,
