@@ -41,6 +41,7 @@ export default function SimpleMessageRaw({ rawContent, renderInfo }: Props) {
 
 	return (
 		<div className='mc-raw__human' ref={contentRef} onCopy={onCopy}>
+			{renderInfo()}
 			{convertedArr.map(part =>
 				part.isPrintable ? (
 					<span style={{ display: '' }}>{part.text}</span>
