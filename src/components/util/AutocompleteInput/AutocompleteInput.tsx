@@ -125,7 +125,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 
 	const onAutocompleteSelect = React.useCallback(
 		(selectedOption: string) => {
-			setCurrentValue('');
+			if (!notResetOnSubmit) {
+				setCurrentValue('');
+			}
 			onSubmit(selectedOption);
 		},
 		[setCurrentValue, onSubmit],

@@ -171,12 +171,9 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 		}, [handleKeyDown]);
 
 		React.useEffect(() => {
-			const showAutocomplete = Boolean(value && list.length);
-
-			if (showAutocomplete !== isOpen) {
-				setIsOpen(showAutocomplete);
-			}
-		}, [value, list, isOpen]);
+			const showAutocomplete = Boolean(value && list.length && value !== focusedOption);
+			setIsOpen(showAutocomplete);
+		}, [value, list, isOpen, focusedOption]);
 
 		React.useEffect(() => {
 			if (isOpen) {
