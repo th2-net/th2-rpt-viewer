@@ -25,6 +25,7 @@ import MessagesStore from './MessagesStore';
 import { SSEChannel } from './SSEChannel';
 
 const SEARCH_TIME_FRAME = 15;
+const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class MessagesDataProviderStore {
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
@@ -80,6 +81,10 @@ export default class MessagesDataProviderStore {
 	prevLoadEndTimestamp: number | null = null;
 
 	nextLoadEndTimestamp: number | null = null;
+
+	private lastPreviousChannelResponseTimestamp: number | null = null;
+
+	private lastNextChannelResponseTimestamp: number | null = null;
 
 	@computed
 	public get isLoadingNextMessages(): boolean {
@@ -231,10 +236,18 @@ export default class MessagesDataProviderStore {
 			this.onLoadingError,
 			interval
 				? e => {
-						if (query.startTimestamp - e.timestamp > interval * 1000 * 60) {
-							this.searchChannelPrev?.stop();
-							this.noMatchingMessagesPrev = true;
-							this.prevLoadEndTimestamp = e.timestamp;
+						if (this.lastPreviousChannelResponseTimestamp === null) {
+							this.lastPreviousChannelResponseTimestamp = Date.now();
+						}
+						if (
+							this.lastPreviousChannelResponseTimestamp !== null &&
+							Date.now() - this.lastPreviousChannelResponseTimestamp >= FIFTEEN_SECONDS
+						) {
+							runInAction(() => {
+								this.noMatchingMessagesPrev = true;
+								this.prevLoadEndTimestamp = e.timestamp;
+								this.searchChannelPrev?.stop();
+							});
 						}
 				  }
 				: undefined,
@@ -243,6 +256,7 @@ export default class MessagesDataProviderStore {
 
 	@action
 	public onPrevChannelResponse = (messages: EventMessage[]) => {
+		this.lastPreviousChannelResponseTimestamp = null;
 		const firstPrevMessage = messages[0];
 
 		if (
@@ -288,10 +302,18 @@ export default class MessagesDataProviderStore {
 			this.onLoadingError,
 			interval
 				? e => {
-						if (e.timestamp - query.startTimestamp > interval * 1000 * 60) {
-							this.searchChannelNext?.stop();
-							this.noMatchingMessagesNext = true;
-							this.nextLoadEndTimestamp = e.timestamp;
+						if (this.lastNextChannelResponseTimestamp === null) {
+							this.lastNextChannelResponseTimestamp = Date.now();
+						}
+						if (
+							this.lastNextChannelResponseTimestamp !== null &&
+							Date.now() - this.lastNextChannelResponseTimestamp >= FIFTEEN_SECONDS
+						) {
+							runInAction(() => {
+								this.noMatchingMessagesNext = true;
+								this.nextLoadEndTimestamp = e.timestamp;
+								this.searchChannelNext?.stop();
+							});
 						}
 				  }
 				: undefined,
@@ -300,6 +322,7 @@ export default class MessagesDataProviderStore {
 
 	@action
 	public onNextChannelResponse = (messages: EventMessage[]) => {
+		this.lastNextChannelResponseTimestamp = null;
 		const firstNextMessage = messages[this.messages.length - 1];
 
 		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
@@ -344,7 +367,13 @@ export default class MessagesDataProviderStore {
 			this.onLoadingError,
 			interval
 				? e => {
-						if (e.timestamp - query.startTimestamp > interval * 1000 * 60) {
+						const lastFetchedMessage = this.messages[0];
+
+						if (
+							this.searchChannelNext?.isLoading === false &&
+							lastFetchedMessage &&
+							e.timestamp > timestampToNumber(lastFetchedMessage.timestamp)
+						) {
 							this.softFilterChannelNext?.stop();
 						}
 				  }
@@ -361,7 +390,13 @@ export default class MessagesDataProviderStore {
 			this.onLoadingError,
 			interval
 				? e => {
-						if (query.startTimestamp - e.timestamp > interval * 1000 * 60) {
+						const firstFetchedMessage = this.messages[this.messages.length - 1];
+
+						if (
+							this.searchChannelPrev?.isLoading === false &&
+							firstFetchedMessage &&
+							e.timestamp < timestampToNumber(firstFetchedMessage.timestamp)
+						) {
 							this.softFilterChannelPrev?.stop();
 						}
 				  }
@@ -393,6 +428,7 @@ export default class MessagesDataProviderStore {
 		) {
 			messages.shift();
 		}
+
 		if (messages.length !== 0) {
 			this.softFilterResults = [...this.softFilterResults, ...messages];
 		}
@@ -451,6 +487,8 @@ export default class MessagesDataProviderStore {
 		this.noMatchingMessagesPrev = false;
 		this.prevLoadEndTimestamp = null;
 		this.nextLoadEndTimestamp = null;
+		this.lastPreviousChannelResponseTimestamp = null;
+		this.lastNextChannelResponseTimestamp = null;
 	};
 
 	@observable
@@ -469,7 +507,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	keepLoading = async (direction: 'next' | 'previous') => {
+	keepLoading = (direction: 'next' | 'previous') => {
 		if (
 			this.messagesStore.filterStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||
