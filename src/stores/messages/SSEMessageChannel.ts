@@ -33,7 +33,7 @@ type SSEChannelOptions = Partial<{
 	initialResponseTimeoutMs: number;
 }>;
 
-export class SSEChannel {
+export class SSEMessageChannel {
 	private channel: EventSource | null = null;
 
 	private accumulatedMessages: EventMessage[] = [];

@@ -38,7 +38,7 @@ function EventTreeView() {
 			</SplitViewPane>
 			<SplitViewPane>
 				{eventWindowStore.selectedNode === null &&
-					!eventDataStore.loadingSelectedEvent &&
+					!eventDataStore.isLoadingSelectedEvent &&
 					(eventDataStore.eventTreeStatusCode === null ? (
 						<Empty description='Select event' />
 					) : (

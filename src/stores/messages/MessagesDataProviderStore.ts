@@ -22,7 +22,7 @@ import { isEventMessage } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
 import notificationsStore from '../NotificationsStore';
 import MessagesStore from './MessagesStore';
-import { SSEChannel } from './SSEChannel';
+import { SSEMessageChannel } from './SSEMessageChannel';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
@@ -58,10 +58,10 @@ export default class MessagesDataProviderStore {
 	public isError = false;
 
 	@observable
-	public searchChannelPrev: SSEChannel | null = null;
+	public searchChannelPrev: SSEMessageChannel | null = null;
 
 	@observable
-	public searchChannelNext: SSEChannel | null = null;
+	public searchChannelNext: SSEMessageChannel | null = null;
 
 	@observable
 	public startIndex = 10000;
@@ -73,10 +73,10 @@ export default class MessagesDataProviderStore {
 	public softFilterResults: Array<EventMessage> = [];
 
 	@observable
-	public softFilterChannelPrev: SSEChannel | null = null;
+	public softFilterChannelPrev: SSEMessageChannel | null = null;
 
 	@observable
-	public softFilterChannelNext: SSEChannel | null = null;
+	public softFilterChannelNext: SSEMessageChannel | null = null;
 
 	prevLoadEndTimestamp: number | null = null;
 
@@ -234,7 +234,7 @@ export default class MessagesDataProviderStore {
 	public startPreviousMessagesChannel = (query: MessagesSSEParams, interval?: number) => {
 		this.prevLoadEndTimestamp = null;
 
-		this.searchChannelPrev = new SSEChannel(
+		this.searchChannelPrev = new SSEMessageChannel(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onPrevChannelResponse,
@@ -300,7 +300,7 @@ export default class MessagesDataProviderStore {
 	public startNextMessagesChannel = (query: MessagesSSEParams, interval?: number) => {
 		this.nextLoadEndTimestamp = null;
 
-		this.searchChannelNext = new SSEChannel(
+		this.searchChannelNext = new SSEMessageChannel(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onNextChannelResponse,
@@ -365,7 +365,7 @@ export default class MessagesDataProviderStore {
 
 	@action
 	private startNextSoftFilterChannel = (query: MessagesSSEParams, interval?: number) => {
-		this.softFilterChannelNext = new SSEChannel(
+		this.softFilterChannelNext = new SSEMessageChannel(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onNextSoftFilterChannelResponse,
@@ -388,7 +388,7 @@ export default class MessagesDataProviderStore {
 
 	@action
 	private startPrevSoftFilterChannel = (query: MessagesSSEParams, interval?: number) => {
-		this.softFilterChannelPrev = new SSEChannel(
+		this.softFilterChannelPrev = new SSEMessageChannel(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onPrevSoftFilterChannelResponse,

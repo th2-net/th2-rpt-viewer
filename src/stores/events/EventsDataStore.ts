@@ -16,15 +16,23 @@
 
 import { action, observable } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
-import { convertEventActionToEventTreeNode, getErrorEventTreeNode } from '../../helpers/event';
-import { EventTreeNode } from '../../models/EventAction';
-import FilterStore from '../FilterStore';
+import { timestampToNumber } from '../../helpers/date';
+import {
+	convertEventActionToEventTreeNode,
+	getErrorEventTreeNode,
+	isEventNode,
+} from '../../helpers/event';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { SSEEventChannel } from '../messages/SSEEventChannel';
+import EventsFilterStore from './EventsFilterStore';
 import EventsStore from './EventsStore';
+
+const EVENTS_CHILD_LIST_GAP = 50;
 
 export default class EventsDataStore {
 	constructor(
 		private eventStore: EventsStore,
-		private filterStore: FilterStore,
+		private filterStore: EventsFilterStore,
 		private api: ApiSchema,
 	) {}
 
@@ -34,11 +42,19 @@ export default class EventsDataStore {
 
 	@observable eventsByParentIdMap: Map<string, Array<EventTreeNode>> = new Map();
 
+	@observable unloadedChildsCountMap: Map<string, number> = new Map();
+
 	@observable isLoadingRootEvents = false;
 
-	@observable loadingSelectedEvent = false;
+	@observable isLoadingSelectedEvent = false;
+
+	@observable isLoadingParentChilds = false;
 
 	@observable eventTreeStatusCode: number | null = null;
+
+	@observable rootNodesMap: Map<string, EventTreeNode> = new Map();
+
+	loadingRootNodes: Promise<EventAction>[] = [];
 
 	@action
 	public fetchEventTree = () => {
@@ -55,10 +71,10 @@ export default class EventsDataStore {
 				this.eventTreeEventSource = this.api.sse.getEventSource({
 					type: 'event',
 					queryParams: {
-						startTimestamp: this.filterStore.eventsFilter.timestampFrom,
-						endTimestamp: this.filterStore.eventsFilter.timestampTo,
-						'name-values': this.filterStore.eventsFilter.names,
-						'type-values': this.filterStore.eventsFilter.eventTypes,
+						startTimestamp: this.filterStore.filter.timestampFrom,
+						endTimestamp: this.filterStore.filter.timestampTo,
+						'name-values': this.filterStore.filter.names,
+						'type-values': this.filterStore.filter.eventTypes,
 					},
 				});
 
@@ -74,46 +90,20 @@ export default class EventsDataStore {
 					}
 				};
 
-				this.eventTreeEventSource.addEventListener('event', e => {
-					const event = observable(JSON.parse((e as MessageEvent).data) as EventTreeNode);
-					const savedEvent = this.comingEventsMap.get(event.eventId);
-					if (savedEvent !== undefined && typeof savedEvent !== 'boolean') return;
-					this.comingEventsMap.set(event.eventId, event);
+				this.eventTreeEventSource.addEventListener('event', this.handleComingEvent);
 
-					const hasParent = event.parentId !== 'null';
-					const parentEvent =
-						hasParent && event.parentId !== null ? this.comingEventsMap.get(event.parentId) : null;
-
-					if (parentEvent) {
-						if (parentEvent === true) {
-							const accumulatedEventsByParentId = event.parentId
-								? this.eventsByParentIdMap.get(event.parentId)
-								: null;
-							if (accumulatedEventsByParentId) {
-								accumulatedEventsByParentId.push(event);
-							} else if (event.parentId) {
-								this.eventsByParentIdMap.set(event.parentId, [event]);
-							}
-						} else {
-							parentEvent.childList.push(event);
+				this.eventTreeEventSource.addEventListener('close', async () => {
+					await Promise.all(this.loadingRootNodes);
+					setTimeout(() => {
+						if (this.eventTreeEventSource) {
+							this.eventTreeEventSource.close();
 						}
-						return;
-					}
-					if (hasParent) {
-						this.loadRootEvent(event);
-						return;
-					}
-					this.eventStore.eventTree.push(event);
-				});
-
-				this.eventTreeEventSource.addEventListener('close', () => {
-					if (this.eventTreeEventSource) {
-						this.eventTreeEventSource.close();
-					}
-					this.isLoadingRootEvents = false;
-					this.comingEventsMap.clear();
-					this.eventsByParentIdMap.clear();
-					res();
+						this.isLoadingRootEvents = false;
+						this.comingEventsMap.clear();
+						this.eventsByParentIdMap.clear();
+						this.loadingRootNodes = [];
+						res();
+					}, 0);
 				});
 			} catch (error) {
 				if (this.eventTreeEventSource) {
@@ -132,9 +122,44 @@ export default class EventsDataStore {
 	};
 
 	@action
+	private handleComingEvent = (e: Event) => {
+		const event = observable(JSON.parse((e as MessageEvent).data) as EventTreeNode);
+		const savedEvent = this.comingEventsMap.get(event.eventId);
+		if (savedEvent !== undefined && typeof savedEvent !== 'boolean') return;
+		this.comingEventsMap.set(event.eventId, event);
+
+		const hasParent = event.parentId !== 'null';
+		const parentEvent =
+			hasParent && event.parentId !== null ? this.comingEventsMap.get(event.parentId) : null;
+
+		if (parentEvent) {
+			if (parentEvent === true) {
+				const accumulatedEventsByParentId = event.parentId
+					? this.eventsByParentIdMap.get(event.parentId)
+					: null;
+				if (accumulatedEventsByParentId) {
+					accumulatedEventsByParentId.push(event);
+				} else if (event.parentId) {
+					this.eventsByParentIdMap.set(event.parentId, [event]);
+				}
+			} else {
+				this.attachChildsToParent(parentEvent, [event]);
+			}
+			return;
+		}
+		if (hasParent) {
+			this.loadRootEvent(event);
+			return;
+		}
+		this.eventStore.eventTree.push(event);
+	};
+
+	@action
 	private loadRootEvent = async (childEvent: EventTreeNode) => {
 		const api = this.api;
 		const comingEventsMap = this.comingEventsMap;
+		const loadingRootNodes = this.loadingRootNodes;
+		const attachChildsToParent = this.attachChildsToParent;
 		// eslint-disable-next-line consistent-return, func-names
 		const parentEventGenerator = async function* (event: EventTreeNode) {
 			let loadedEvent = event;
@@ -144,20 +169,23 @@ export default class EventsDataStore {
 
 				comingEventsMap.set(loadedEvent.parentId, true);
 				try {
+					const promise = api.events.getEvent(loadedEvent.parentId);
+					loadingRootNodes.push(promise);
 					loadedEvent = observable(
 						convertEventActionToEventTreeNode(
 							// eslint-disable-next-line no-await-in-loop
-							await api.events.getEvent(loadedEvent.parentId),
+							await promise,
 						),
 					);
 				} catch {
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 					loadedEvent = observable(getErrorEventTreeNode(loadedEvent.parentId!, [loadedEvent]));
 				}
 				const savedEvent = comingEventsMap.get(loadedEvent.eventId);
 				if (savedEvent === undefined || typeof savedEvent === 'boolean') {
 					comingEventsMap.set(loadedEvent.eventId, loadedEvent);
 				} else {
-					savedEvent.childList.push(...loadedEvent.childList);
+					attachChildsToParent(savedEvent, loadedEvent.childList);
 					loadedEvent = savedEvent;
 					yield null;
 				}
@@ -170,10 +198,11 @@ export default class EventsDataStore {
 
 		for await (const loadedEvent of parentEventGenerator(childEvent)) {
 			if (loadedEvent) {
-				loadedEvent.childList.push(previousChildEvent);
+				this.attachChildsToParent(loadedEvent, [previousChildEvent]);
 				const loadedChildren = this.eventsByParentIdMap.get(loadedEvent.eventId);
+
 				if (loadedChildren) {
-					loadedEvent.childList.push(...loadedChildren);
+					this.attachChildsToParent(loadedEvent, loadedChildren);
 					this.eventsByParentIdMap.delete(loadedEvent.eventId);
 				}
 				previousChildEvent = loadedEvent;
@@ -194,7 +223,7 @@ export default class EventsDataStore {
 		this.detailedEventAC?.abort();
 		this.detailedEventAC = new AbortController();
 
-		this.loadingSelectedEvent = true;
+		this.isLoadingSelectedEvent = true;
 		try {
 			const event = await this.api.events.getEvent(
 				selectedNode.eventId,
@@ -204,7 +233,77 @@ export default class EventsDataStore {
 		} catch (error) {
 			console.error(`Error occurred while loading event ${selectedNode.eventId}`);
 		} finally {
-			this.loadingSelectedEvent = false;
+			this.isLoadingSelectedEvent = false;
+		}
+	};
+
+	@action
+	public loadMoreChilds = (parentId: string) => {
+		const parentNode = this.rootNodesMap.get(parentId);
+
+		if (parentNode && isEventNode(parentNode)) {
+			this.isLoadingParentChilds = true;
+
+			const eventsParentChannel = new SSEEventChannel(
+				{
+					startTimestamp: timestampToNumber(
+						parentNode.childList[parentNode.childList.length - 1].startTimestamp,
+					),
+					endTimestamp: this.filterStore.filter.timestampTo,
+					'name-values': this.filterStore.filter.names,
+					'type-values': this.filterStore.filter.eventTypes,
+					parentEvent: parentId,
+				},
+				events => {
+					const childList = events.splice(1, EVENTS_CHILD_LIST_GAP);
+					parentNode.childList.push(...childList);
+					const unloadedCount =
+						(this.unloadedChildsCountMap.get(parentNode.eventId) ?? 0) - childList.length;
+					this.unloadedChildsCountMap.set(parentNode.eventId, unloadedCount);
+					this.isLoadingParentChilds = false;
+				},
+				e => {
+					this.eventStore.eventTree = [];
+					this.eventStore.isExpandedMap.clear();
+					this.isLoadingRootEvents = false;
+					console.error('Error while loading root events', e);
+				},
+				{
+					chunkSize: EVENTS_CHILD_LIST_GAP + 1,
+				},
+			);
+			eventsParentChannel.subscribe();
+		}
+	};
+
+	@action
+	private attachChildsToParent = (parent: EventTreeNode, childList: EventTreeNode[]) => {
+		const loadedChunks =
+			parent.childList.length <= 50
+				? 0
+				: Math.floor(parent.childList.length / EVENTS_CHILD_LIST_GAP);
+		const availableSpace = parent.childList.length - EVENTS_CHILD_LIST_GAP * loadedChunks;
+
+		if (availableSpace < EVENTS_CHILD_LIST_GAP) {
+			const remainingSpace = EVENTS_CHILD_LIST_GAP - availableSpace;
+
+			if (childList.length < remainingSpace) {
+				parent.childList.push(...childList);
+				this.unloadedChildsCountMap.set(parent.eventId, 0);
+			} else {
+				const unloadedCount =
+					(this.unloadedChildsCountMap.get(parent.eventId) ?? 0) +
+					childList.length -
+					remainingSpace;
+				this.unloadedChildsCountMap.set(parent.eventId, unloadedCount);
+				parent.childList.push(...childList.splice(0, remainingSpace));
+			}
+			this.rootNodesMap.set(parent.eventId, parent);
+		} else {
+			this.unloadedChildsCountMap.set(
+				parent.eventId,
+				(this.unloadedChildsCountMap.get(parent.eventId) ?? 0) + childList.length,
+			);
 		}
 	};
 }

@@ -24,23 +24,31 @@ import { getEventNodeParents } from '../../../helpers/event';
 import CardDisplayType from '../../../util/CardDisplayType';
 import { createBemBlock } from '../../../helpers/styleCreators';
 import { formatTime } from '../../../helpers/date';
+import useEventsDataStore from '../../../hooks/useEventsDataStore';
 
 interface EventTreeProps {
 	eventTreeNode: EventTreeNode;
+	showLoadButton: boolean;
 	startTimestamp?: number;
 	endTimestamp?: number;
 }
 
-function EventTree({ eventTreeNode, startTimestamp, endTimestamp }: EventTreeProps) {
-	const eventWindowStore = useWorkspaceEventStore();
+function EventTree({
+	eventTreeNode,
+	startTimestamp,
+	endTimestamp,
+	showLoadButton,
+}: EventTreeProps) {
+	const eventsWindowStore = useWorkspaceEventStore();
+	const eventsDataStore = useEventsDataStore();
 
-	const onExpandClick = () => eventWindowStore.toggleNode(eventTreeNode);
+	const onExpandClick = () => eventsWindowStore.toggleNode(eventTreeNode);
 
 	let expandIconStatus: 'expanded' | 'hidden' | 'loading' | 'none';
 
 	if (eventTreeNode.childList.length === 0) {
 		expandIconStatus = 'none';
-	} else if (eventWindowStore.isExpandedMap.get(eventTreeNode.eventId)) {
+	} else if (eventsWindowStore.isExpandedMap.get(eventTreeNode.eventId)) {
 		expandIconStatus = 'expanded';
 	} else {
 		expandIconStatus = 'hidden';
@@ -71,11 +79,11 @@ function EventTree({ eventTreeNode, startTimestamp, endTimestamp }: EventTreePro
 						childrenCount={eventTreeNode.childList.length}
 						event={eventTreeNode}
 						displayType={CardDisplayType.MINIMAL}
-						onSelect={() => eventWindowStore.selectNode(eventTreeNode)}
-						isSelected={eventWindowStore.isNodeSelected(eventTreeNode)}
+						onSelect={() => eventsWindowStore.selectNode(eventTreeNode)}
+						isSelected={eventsWindowStore.isNodeSelected(eventTreeNode)}
 						isActive={
-							eventWindowStore.selectedPath.length > 0 &&
-							eventWindowStore.selectedPath[eventWindowStore.selectedPath.length - 1].eventId ===
+							eventsWindowStore.selectedPath.length > 0 &&
+							eventsWindowStore.selectedPath[eventsWindowStore.selectedPath.length - 1].eventId ===
 								eventTreeNode.eventId
 						}
 					/>
@@ -88,6 +96,18 @@ function EventTree({ eventTreeNode, startTimestamp, endTimestamp }: EventTreePro
 					<div className='event-tree-timestamp__value'>{formatTime(endTimestamp)}</div>
 					<div className='event-tree-timestamp__icon' />
 				</div>
+			)}
+			{showLoadButton && !eventsDataStore.isLoadingParentChilds && (
+				<button
+					onClick={() =>
+						eventTreeNode.parentId && eventsDataStore.loadMoreChilds(eventTreeNode.parentId)
+					}
+					className='actions-list__load-button'>
+					Load more
+				</button>
+			)}
+			{showLoadButton && eventsDataStore.isLoadingParentChilds && (
+				<div className='actions-list__spinner' />
 			)}
 		</>
 	);

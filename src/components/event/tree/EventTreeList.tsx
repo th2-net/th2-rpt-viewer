@@ -28,6 +28,7 @@ import { timestampToNumber } from '../../../helpers/date';
 import { EventListFooter, EventListHeader } from '../EventListNavigation';
 import '../../../styles/action.scss';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
+import { isEventNode } from '../../../helpers/event';
 
 interface Props {
 	nodes: EventTreeNode[];
@@ -103,17 +104,39 @@ function EventTreeList({ nodes }: Props) {
 
 	const computeKey = (index: number) => nodes[index].eventId;
 
-	const renderEvent = (index: number): React.ReactElement => (
-		<EventTree
-			eventTreeNode={nodes[index]}
-			startTimestamp={
-				timestamps?.startEventId === nodes[index].eventId ? timestamps.startTimestamp : undefined
+	const renderEvent = (index: number): React.ReactElement => {
+		const node = nodes[index];
+
+		let isLastChild = false;
+
+		if (!eventDataStore.isLoadingRootEvents) {
+			const parentNode =
+				node.parentId !== null ? eventDataStore.rootNodesMap.get(node.parentId) : null;
+
+			if (parentNode && isEventNode(parentNode)) {
+				isLastChild =
+					parentNode.childList[parentNode.childList.length - 1].eventId === node.eventId;
 			}
-			endTimestamp={
-				timestamps?.endEventId === nodes[index].eventId ? timestamps.endTimestamp : undefined
-			}
-		/>
-	);
+		}
+
+		const parentHasMoreChilds =
+			node.parentId !== null ? !!eventDataStore.unloadedChildsCountMap.get(node.parentId) : false;
+
+		const showLoadButton = isLastChild && parentHasMoreChilds;
+
+		return (
+			<EventTree
+				eventTreeNode={node}
+				startTimestamp={
+					timestamps?.startEventId === nodes[index].eventId ? timestamps.startTimestamp : undefined
+				}
+				endTimestamp={
+					timestamps?.endEventId === nodes[index].eventId ? timestamps.endTimestamp : undefined
+				}
+				showLoadButton={showLoadButton}
+			/>
+		);
+	};
 
 	if (eventWindowStore.eventTree.length === 0) {
 		if (eventDataStore.isLoadingRootEvents) {
