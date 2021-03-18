@@ -131,11 +131,18 @@ export class SearchStore {
 				? this.currentSearch?.progress - Number(this.searchForm.startTimestamp)
 				: 0,
 			searching: Boolean(this.searchChannel),
+			completed: this.completed,
 			processedObjectCount: this.currentSearch?.processedObjectCount || 0,
 		};
 	}
 
+	@computed get isSearching(): boolean {
+		return Boolean(this.searchChannel);
+	}
+
 	@observable currentSearch: SearchHistory | null = null;
+
+	@observable completed = this.searchHistory.length > 0;
 
 	@computed get isFormDisabled() {
 		return this.searchHistory.length > 1 && this.currentIndex !== this.searchHistory.length - 1;
@@ -202,6 +209,7 @@ export class SearchStore {
 			...this.searchForm,
 			...stateUpdate,
 		};
+		this.completed = false;
 	};
 
 	@action setEventsFilter = (patch: Partial<EventFilterState>) => {
@@ -211,6 +219,8 @@ export class SearchStore {
 				...patch,
 			};
 		}
+
+		this.completed = false;
 	};
 
 	@action setMessagesFilter = (patch: Partial<MessageFilterState>) => {
@@ -220,15 +230,13 @@ export class SearchStore {
 				...patch,
 			};
 		}
+
+		this.completed = false;
 	};
 
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
 		this.searchHistory = this.searchHistory.filter(item => item !== searchHistoryItem);
-		if (!this.searchHistory[this.currentIndex] && this.searchHistory.length > 0) {
-			this.currentIndex = this.searchHistory.length - 1;
-		} else {
-			this.currentIndex = 0;
-		}
+		this.currentIndex = Math.max(this.currentIndex - 1, 0);
 
 		localStorageWorker.saveSearchHistory(this.searchHistory);
 	};
@@ -236,12 +244,14 @@ export class SearchStore {
 	@action nextSearch = () => {
 		if (this.currentIndex < this.searchHistory.length - 1) {
 			this.currentIndex += 1;
+			this.completed = true;
 		}
 	};
 
 	@action prevSearch = () => {
 		if (this.currentIndex !== 0) {
 			this.currentIndex -= 1;
+			this.completed = true;
 		}
 	};
 
@@ -264,6 +274,7 @@ export class SearchStore {
 	};
 
 	@action startSearch = () => {
+		this.completed = false;
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
 		if (this.searchChannel || !filterParams) return;
 
@@ -328,6 +339,7 @@ export class SearchStore {
 		if (!this.searchChannel) return;
 		this.searchChannel.close();
 		this.searchChannel = null;
+		this.completed = true;
 
 		localStorageWorker.saveSearchHistory(this.searchHistory);
 	};

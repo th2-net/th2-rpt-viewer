@@ -417,6 +417,17 @@
 		font-weight: bold;
 		color: $primaryTextColor;
 	}
+
+	&__non-printing-character {
+		display: inline-block;
+		border: 1px dashed #999;
+		font-size: 5px;
+		padding: 2px 1px;
+		line-height: 6px;
+		margin: 0 1px;
+		color: #333;
+		transform: translateY(-15%);
+	}
 }
 
 .mc-expand-btn {
