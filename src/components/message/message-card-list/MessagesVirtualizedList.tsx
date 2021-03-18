@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
+import { Observer, observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import moment from 'moment';
 import {
@@ -69,13 +69,15 @@ const MessagesVirtualizedList = (props: Props) => {
 
 	const debouncedScrollHandler = useDebouncedCallback((event: React.UIEvent<'div'>) => {
 		const scroller = event.target;
+
 		if (scroller instanceof HTMLDivElement) {
 			const isStartReached = scroller.scrollTop === 0;
 			const isEndReached = scroller.scrollHeight - scroller.scrollTop === scroller.clientHeight;
 			if (
 				isStartReached &&
 				messagesDataStore.searchChannelNext &&
-				!messagesDataStore.searchChannelNext.isLoading
+				!messagesDataStore.searchChannelNext.isLoading &&
+				!messagesDataStore.searchChannelNext.isEndReached
 			) {
 				loadNextMessages(messagesDataStore.messages[0]?.messageId).then(messages =>
 					messageStore.dataStore.onNextChannelResponse(messages),
@@ -85,7 +87,8 @@ const MessagesVirtualizedList = (props: Props) => {
 			if (
 				isEndReached &&
 				messagesDataStore.searchChannelPrev &&
-				!messagesDataStore.searchChannelPrev.isLoading
+				!messagesDataStore.searchChannelPrev.isLoading &&
+				!messagesDataStore.searchChannelPrev.isEndReached
 			) {
 				loadPrevMessages(
 					messagesDataStore.messages[messagesDataStore.messages.length - 1]?.messageId,
@@ -118,41 +121,57 @@ const MessagesVirtualizedList = (props: Props) => {
 			onScroll={onScroll}
 			components={{
 				Header: function MessagesListSpinnerNext() {
-					return messagesDataStore.noMatchingMessagesNext ? (
-						<div className='messages-list__loading-message'>
-							<span className='messages-list__loading-message-text'>
-								No more matching messages since&nbsp;
-								{moment(messageStore.filterStore.messsagesSSEConfig.queryParams.startTimestamp)
-									.utc()
-									.format()}
-							</span>
-							<button
-								className='messages-list__load-btn'
-								onClick={() => messagesDataStore.keepLoading('next')}>
-								Keep loading
-							</button>
-						</div>
-					) : (
-						<MessagesListSpinner isLoading={messagesDataStore.isLoadingNextMessages} />
+					return (
+						<Observer>
+							{() =>
+								messagesDataStore.noMatchingMessagesNext ? (
+									<div className='messages-list__loading-message'>
+										<span className='messages-list__loading-message-text'>
+											No more matching messages since&nbsp;
+											{moment(
+												messageStore.filterStore.messsagesSSEConfig.queryParams.startTimestamp,
+											)
+												.utc()
+												.format()}
+										</span>
+										<button
+											className='messages-list__load-btn'
+											onClick={() => messagesDataStore.keepLoading('next')}>
+											Keep loading
+										</button>
+									</div>
+								) : (
+									<MessagesListSpinner isLoading={messagesDataStore.isLoadingNextMessages} />
+								)
+							}
+						</Observer>
 					);
 				},
 				Footer: function MessagesListSpinnerPrevious() {
-					return messagesDataStore.noMatchingMessagesPrev ? (
-						<div className='messages-list__loading-message'>
-							<span className='messages-list__loading-message-text'>
-								No more matching messages since&nbsp;
-								{moment(messageStore.filterStore.messsagesSSEConfig.queryParams.startTimestamp)
-									.utc()
-									.format()}
-							</span>
-							<button
-								className='messages-list__load-btn'
-								onClick={() => messagesDataStore.keepLoading('previous')}>
-								Keep loading
-							</button>
-						</div>
-					) : (
-						<MessagesListSpinner isLoading={messagesDataStore.isLoadingPreviousMessages} />
+					return (
+						<Observer>
+							{() =>
+								messagesDataStore.noMatchingMessagesPrev ? (
+									<div className='messages-list__loading-message'>
+										<span className='messages-list__loading-message-text'>
+											No more matching messages since&nbsp;
+											{moment(
+												messageStore.filterStore.messsagesSSEConfig.queryParams.startTimestamp,
+											)
+												.utc()
+												.format()}
+										</span>
+										<button
+											className='messages-list__load-btn'
+											onClick={() => messagesDataStore.keepLoading('previous')}>
+											Keep loading
+										</button>
+									</div>
+								) : (
+									<MessagesListSpinner isLoading={messagesDataStore.isLoadingPreviousMessages} />
+								)
+							}
+						</Observer>
 					);
 				},
 			}}
