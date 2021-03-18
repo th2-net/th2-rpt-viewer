@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import { Observer, observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import {
 	CompoundFilterRow,
@@ -196,14 +196,22 @@ const MessagesFilterPanel = () => {
 		if (!messagesStore.filterStore.sseMessagesFilter) return null;
 
 		return (
-			<Checkbox
-				checked={isSoftFilterApplied}
-				onChange={e => {
-					setIsSoftFilterApplied(e.target.checked);
-				}}
-				label='Soft filter'
-				id='soft-filter'
-			/>
+			<Observer>
+				{() => (
+					<div>
+						{messagesStore.filterStore.sseMessagesFilter && (
+							<Checkbox
+								checked={isSoftFilterApplied}
+								onChange={e => {
+									setIsSoftFilterApplied(e.target.checked);
+								}}
+								label='Soft filter'
+								id='soft-filter'
+							/>
+						)}
+					</div>
+				)}
+			</Observer>
 		);
 	}, [messagesStore.filterStore.sseMessagesFilter, isSoftFilterApplied, setIsSoftFilterApplied]);
 

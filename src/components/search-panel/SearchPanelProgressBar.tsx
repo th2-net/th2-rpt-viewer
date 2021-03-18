@@ -15,6 +15,7 @@
  ***************************************************************************** */
 import React from 'react';
 import moment from 'moment';
+import { createBemElement } from '../../helpers/styleCreators';
 
 interface SearchPanelProgressBarProps {
 	searchProgress: {
@@ -22,6 +23,7 @@ interface SearchPanelProgressBarProps {
 		endTimestamp: number | null;
 		currentPoint: number;
 		searching: boolean;
+		completed: boolean;
 		processedObjectCount: number;
 	};
 }
@@ -32,45 +34,55 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 		startTimestamp,
 		endTimestamp,
 		currentPoint,
+		completed,
 		processedObjectCount,
 	} = props.searchProgress;
-	if (!endTimestamp && searching) {
-		return (
-			<>
-				{processedObjectCount !== 0 && (
-					<div className='processed-object-count'>Processed objects: {processedObjectCount}</div>
-				)}
-				<div className='spinner' />
-			</>
-		);
-	}
 
 	const timeInterval = endTimestamp !== null ? endTimestamp - Number(startTimestamp) : null;
 
-	if (timeInterval) {
-		const position = ((currentPoint / timeInterval) * 100).toFixed(2);
-		return (
-			<>
-				{processedObjectCount !== 0 && (
-					<div className='processed-object-count'>Processed objects: {processedObjectCount}</div>
-				)}
-				<div className='progress-bar'>
-					<span className='progress-bar-points progress-bar__start'>
-						{moment(startTimestamp).utc().format('DD.MM.YYYY')} <br />
-						{moment(startTimestamp).utc().format('HH:mm:ss.SSS')}
-					</span>
-					<div className='progress-bar__track'>
-						<div className='progress-bar__line' style={{ left: `${position}%` }} />
-					</div>
-					<span className='progress-bar-points progress-bar__end'>
-						{moment(endTimestamp).utc().format('DD.MM.YYYY')} <br />
-						{moment(endTimestamp).utc().format('HH:mm:ss.SSS')}
-					</span>
+	const position = completed
+		? 100
+		: timeInterval && searching
+		? ((currentPoint / timeInterval) * 100).toFixed(2)
+		: 0;
+
+	const scanningAtTimestamp = (startTimestamp ?? 0) + currentPoint;
+
+	const scanningAtLabel = moment(scanningAtTimestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS');
+
+	const progressBarLineClassName = createBemElement(
+		'progress-bar',
+		'line',
+		!timeInterval && searching ? 'infinite' : null,
+	);
+
+	return (
+		<div className='search-progress'>
+			{searching && (
+				<div className='search-progress__status'>
+					<div className='search-progress__spinner' />
+					{startTimestamp && (
+						<div className='search-progress__text'>
+							<span>
+								Scanning at <span className='search-progress__value'>{scanningAtLabel}</span>.
+							</span>
+							{processedObjectCount !== 0 && (
+								<span>
+									Processed objects:{' '}
+									<span className='search-progress__value'>{processedObjectCount}</span>
+								</span>
+							)}
+						</div>
+					)}
 				</div>
-			</>
-		);
-	}
-	return null;
+			)}
+			<div className='search-progress__progress-bar progress-bar'>
+				<div className='progress-bar__track'>
+					<div className={progressBarLineClassName} style={{ left: `${position}%` }} />
+				</div>
+			</div>
+		</div>
+	);
 };
 
 export default SearchPanelProgressBar;

@@ -81,7 +81,9 @@ const SearchPanel = () => {
 					</div>
 				</div>
 			</div>
-			<SearchPanelProgressBar searchProgress={searchStore.searchProgress} />
+			{searchStore.currentSearch && (
+				<SearchPanelProgressBar searchProgress={searchStore.searchProgress} />
+			)}
 			{searchStore.currentSearch && (
 				<SearchPanelResults
 					resultGroups={searchStore.resultGroups}
@@ -96,8 +98,12 @@ const SearchPanel = () => {
 					showToggler={searchStore.searchHistory.length > 1}
 					next={searchStore.nextSearch}
 					prev={searchStore.prevSearch}
-					disableNext={searchStore.currentIndex === searchStore.searchHistory.length - 1}
-					disablePrev={searchStore.currentIndex === 0}
+					disableNext={
+						searchStore.isSearching ||
+						searchStore.currentIndex === searchStore.searchHistory.length - 1
+					}
+					disablePrev={searchStore.isSearching || searchStore.currentIndex === 0}
+					disabledRemove={searchStore.isSearching}
 				/>
 			)}
 		</div>

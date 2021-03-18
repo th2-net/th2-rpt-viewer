@@ -239,7 +239,6 @@ export default class MessagesStore {
 	public onRangeChange = (timestamp: number) => {
 		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
-		this.selectedMessageId = null;
 		this.hintMessages = [];
 
 		this.filterStore.filter = {

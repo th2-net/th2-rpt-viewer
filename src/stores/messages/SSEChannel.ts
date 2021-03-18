@@ -88,7 +88,7 @@ export class SSEChannel {
 			const chunk = this.getNextChunk();
 			this.onResponse(chunk);
 			this.resetSSEState({
-				isEndReached: this.fetchedMessagesCount !== this.chunkSize,
+				isEndReached: this.fetchedMessagesCount === 0,
 			});
 		}
 	};
