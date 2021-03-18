@@ -101,6 +101,7 @@
 		display: flex;
 		overflow: hidden;
 		min-width: 15px;
+		flex-grow: 1;
 
 		@include scrollbar;
 	}
