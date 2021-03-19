@@ -104,13 +104,13 @@ export default class WorkspaceStore {
 	public isLoadingAttachedMessages = false;
 
 	@computed
-	public get isActive() {
-		return this.workspacesStore.activeWorkspace === this;
+	public get attachedMessagesStreams() {
+		return [...new Set(this.attachedMessages.map(msg => msg.sessionId))];
 	}
 
 	@computed
-	public get attachedMessagesStreams() {
-		return [...new Set(this.attachedMessages.map(msg => msg.sessionId))];
+	public get isActive(): boolean {
+		return this.workspacesStore.activeWorkspace === this;
 	}
 
 	@action

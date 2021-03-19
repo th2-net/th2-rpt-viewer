@@ -28,10 +28,12 @@ interface Props {
 	readonly?: boolean;
 	autoresize?: boolean;
 	autocomplete: string[] | null;
+	autocompleteClassName?: string;
 	datalistKey?: string;
 	placeholder?: string;
 	submitKeyCodes?: number[];
 	onSubmit: (nextValue: string) => void;
+	notResetOnSubmit?: boolean;
 	onRemove?: () => void;
 	onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
 	onBlur?: () => void;
@@ -44,12 +46,14 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	const {
 		value,
 		onSubmit,
+		notResetOnSubmit,
 		onRemove,
 		onEmptyBlur,
 		onBlur = () => null,
 		onFocus,
 		disabled,
 		autocomplete,
+		autocompleteClassName,
 		autoresize = true,
 		readonly = false,
 		datalistKey,
@@ -78,8 +82,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			}
 			onSubmit(currentValue);
 		}
-
-		setCurrentValue('');
+		if (!notResetOnSubmit) {
+			setCurrentValue('');
+		}
 		onBlur();
 	});
 
@@ -106,8 +111,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 
 		if (submitKeyCodes.includes(e.keyCode) && currentValue.length > 0) {
 			onSubmit(currentValue);
-			setCurrentValue('');
-
+			if (!notResetOnSubmit) {
+				setCurrentValue('');
+			}
 			return;
 		}
 
@@ -155,6 +161,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			)}
 			{autocomplete && autocomplete.length > 0 && (
 				<AutocompleteList
+					className={autocompleteClassName}
 					ref={autocompleteListRef}
 					items={autocomplete}
 					value={currentValue.trim()}

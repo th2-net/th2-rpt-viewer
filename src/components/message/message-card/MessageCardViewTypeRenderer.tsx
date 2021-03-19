@@ -15,10 +15,10 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { MessageViewType } from '../../../models/EventMessage';
 import MessageBody from '../../../models/MessageBody';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
-import { MessageViewType } from './MessageCard';
 import MessageRaw from './raw/MessageRaw';
 
 export type MessageCardViewTypeRendererProps = {

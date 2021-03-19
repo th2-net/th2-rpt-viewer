@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { replaceNonPrintableCharsWithDot } from '../../../../helpers/stringUtils';
+import { splitOnReadableParts } from '../../../../helpers/stringUtils';
 import { useSelectListener } from '../../../../hooks';
 import { copyTextToClipboard } from '../../../../helpers/copyHandler';
 
@@ -28,7 +28,7 @@ export default function SimpleMessageRaw({ rawContent }: Props) {
 	const [selectionStart, selectionEnd] = useSelectListener(contentRef);
 
 	const humanReadableContent = atob(rawContent);
-	const beautifiedHumanReadable = replaceNonPrintableCharsWithDot(humanReadableContent);
+	const convertedArr = splitOnReadableParts(humanReadableContent);
 
 	const onCopy = (e: React.ClipboardEvent<HTMLDivElement>) => {
 		if (selectionStart != null && selectionEnd != null) {
@@ -39,8 +39,14 @@ export default function SimpleMessageRaw({ rawContent }: Props) {
 	};
 
 	return (
-		<div className='mc-raw__content' ref={contentRef} onCopy={onCopy}>
-			{beautifiedHumanReadable}
+		<div className='mc-raw__human' ref={contentRef} onCopy={onCopy}>
+			{convertedArr.map(part =>
+				part.isPrintable ? (
+					<span style={{ display: '' }}>{part.text}</span>
+				) : (
+					<span className='mc-raw__non-printing-character'>SOH</span>
+				),
+			)}
 		</div>
 	);
 }

@@ -137,6 +137,10 @@ export class SearchStore {
 		};
 	}
 
+	@computed get isSearching(): boolean {
+		return Boolean(this.searchChannel);
+	}
+
 	@observable currentSearch: SearchHistory | null = null;
 
 	@observable completed = this.searchHistory.length > 0;
@@ -233,10 +237,9 @@ export class SearchStore {
 
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
 		this.searchHistory = this.searchHistory.filter(item => item !== searchHistoryItem);
-		if (!this.searchHistory[this.currentIndex] && this.searchHistory.length > 0) {
-			this.currentIndex = this.searchHistory.length - 1;
-		} else {
-			this.currentIndex = 0;
+		this.currentIndex = Math.max(this.currentIndex - 1, 0);
+		
+		if (this.searchHistory.length === 0) {
 			this.completed = false;
 		}
 

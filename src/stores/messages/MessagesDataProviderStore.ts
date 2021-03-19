@@ -18,12 +18,14 @@ import { action, reaction, observable, computed, runInAction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams } from '../../api/sse';
 import { timestampToNumber } from '../../helpers/date';
+import { isEventMessage } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
 import notificationsStore from '../NotificationsStore';
 import MessagesStore from './MessagesStore';
 import { SSEChannel } from './SSEChannel';
 
 const SEARCH_TIME_FRAME = 15;
+const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class MessagesDataProviderStore {
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
@@ -80,6 +82,10 @@ export default class MessagesDataProviderStore {
 
 	nextLoadEndTimestamp: number | null = null;
 
+	private lastPreviousChannelResponseTimestamp: number | null = null;
+
+	private lastNextChannelResponseTimestamp: number | null = null;
+
 	@computed
 	public get isLoadingNextMessages(): boolean {
 		return Boolean(this.searchChannelNext?.isLoading);
@@ -102,6 +108,8 @@ export default class MessagesDataProviderStore {
 			Boolean(this.softFilterChannelNext?.isLoading)
 		);
 	}
+
+	private messageAC: AbortController | null = null;
 
 	@action
 	public loadMessages = async () => {
@@ -142,7 +150,47 @@ export default class MessagesDataProviderStore {
 		this.startPreviousMessagesChannel(prevQuery, SEARCH_TIME_FRAME);
 		this.startNextMessagesChannel(nextQuery, SEARCH_TIME_FRAME);
 
+		let message: EventMessage | undefined;
+		if (this.searchChannelPrev && this.searchChannelNext) {
+			if (this.messagesStore.selectedMessageId) {
+				this.messageAC = new AbortController();
+				try {
+					message = await this.api.messages.getMessage(
+						this.messagesStore.selectedMessageId.valueOf(),
+						this.messageAC.signal,
+					);
+				} catch (error) {
+					if (error.name !== 'AbortError') {
+						this.isError = true;
+						return;
+					}
+				}
+			}
+			const [nextMessages, prevMessages] = await Promise.all([
+				this.searchChannelNext.loadAndSubscribe(message?.messageId),
+				this.searchChannelPrev.loadAndSubscribe(message?.messageId),
+			]);
+
+			const firstNextMessage = nextMessages[nextMessages.length - 1];
+
+			if (firstNextMessage && firstNextMessage.messageId === prevMessages[0]?.messageId) {
+				nextMessages.pop();
+			}
+
+			runInAction(() => {
+				this.messages = [...nextMessages, ...[message].filter(isEventMessage), ...prevMessages];
+				this.initialItemCount = this.messages.length;
+			});
+
+			if (this.messagesStore.selectedMessageId) {
+				this.messagesStore.scrollToMessage(this.messagesStore.selectedMessageId?.valueOf());
+			}
+		}
+
 		if (this.messagesStore.filterStore.isSoftFilter) {
+			if (message) {
+				this.softFilterResults = [message];
+			}
 			this.startNextSoftFilterChannel(
 				{
 					...queryParams,
@@ -158,35 +206,14 @@ export default class MessagesDataProviderStore {
 				SEARCH_TIME_FRAME,
 			);
 
-			this.softFilterChannelNext?.subscribe();
-			this.softFilterChannelPrev?.subscribe();
-		}
-
-		if (this.searchChannelPrev && this.searchChannelNext) {
-			const [nextMessages, prevMessages] = await Promise.all([
-				this.searchChannelNext.loadAndSubscribe(),
-				this.searchChannelPrev.loadAndSubscribe(),
-			]);
-
-			const firstNextMessage = nextMessages[nextMessages.length - 1];
-
-			if (firstNextMessage && firstNextMessage.messageId === prevMessages[0]?.messageId) {
-				nextMessages.pop();
-			}
-
-			runInAction(() => {
-				this.messages = [...nextMessages, ...prevMessages];
-				this.initialItemCount = this.messages.length;
-			});
-
-			if (this.messagesStore.selectedMessageId) {
-				this.messagesStore.scrollToMessage(this.messagesStore.selectedMessageId?.valueOf());
-			}
+			this.softFilterChannelNext?.subscribe(message?.messageId);
+			this.softFilterChannelPrev?.subscribe(message?.messageId);
 		}
 	};
 
 	@action
 	public stopMessagesLoading = (isError = false) => {
+		this.messageAC?.abort();
 		this.searchChannelPrev?.stop();
 		this.searchChannelNext?.stop();
 		this.searchChannelPrev = null;
@@ -209,10 +236,18 @@ export default class MessagesDataProviderStore {
 			this.onLoadingError,
 			interval
 				? e => {
-						if (query.startTimestamp - e.timestamp > interval * 1000 * 60) {
-							this.searchChannelPrev?.stop();
-							this.noMatchingMessagesPrev = true;
-							this.prevLoadEndTimestamp = e.timestamp;
+						if (this.lastPreviousChannelResponseTimestamp === null) {
+							this.lastPreviousChannelResponseTimestamp = Date.now();
+						}
+						if (
+							this.lastPreviousChannelResponseTimestamp !== null &&
+							Date.now() - this.lastPreviousChannelResponseTimestamp >= FIFTEEN_SECONDS
+						) {
+							runInAction(() => {
+								this.noMatchingMessagesPrev = true;
+								this.prevLoadEndTimestamp = e.timestamp;
+								this.searchChannelPrev?.stop();
+							});
 						}
 				  }
 				: undefined,
@@ -221,6 +256,7 @@ export default class MessagesDataProviderStore {
 
 	@action
 	public onPrevChannelResponse = (messages: EventMessage[]) => {
+		this.lastPreviousChannelResponseTimestamp = null;
 		const firstPrevMessage = messages[0];
 
 		if (
@@ -266,10 +302,18 @@ export default class MessagesDataProviderStore {
 			this.onLoadingError,
 			interval
 				? e => {
-						if (e.timestamp - query.startTimestamp > interval * 1000 * 60) {
-							this.searchChannelNext?.stop();
-							this.noMatchingMessagesNext = true;
-							this.nextLoadEndTimestamp = e.timestamp;
+						if (this.lastNextChannelResponseTimestamp === null) {
+							this.lastNextChannelResponseTimestamp = Date.now();
+						}
+						if (
+							this.lastNextChannelResponseTimestamp !== null &&
+							Date.now() - this.lastNextChannelResponseTimestamp >= FIFTEEN_SECONDS
+						) {
+							runInAction(() => {
+								this.noMatchingMessagesNext = true;
+								this.nextLoadEndTimestamp = e.timestamp;
+								this.searchChannelNext?.stop();
+							});
 						}
 				  }
 				: undefined,
@@ -278,6 +322,7 @@ export default class MessagesDataProviderStore {
 
 	@action
 	public onNextChannelResponse = (messages: EventMessage[]) => {
+		this.lastNextChannelResponseTimestamp = null;
 		const firstNextMessage = messages[this.messages.length - 1];
 
 		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
@@ -322,7 +367,13 @@ export default class MessagesDataProviderStore {
 			this.onLoadingError,
 			interval
 				? e => {
-						if (e.timestamp - query.startTimestamp > interval * 1000 * 60) {
+						const lastFetchedMessage = this.messages[0];
+
+						if (
+							this.searchChannelNext?.isLoading === false &&
+							lastFetchedMessage &&
+							e.timestamp > timestampToNumber(lastFetchedMessage.timestamp)
+						) {
 							this.softFilterChannelNext?.stop();
 						}
 				  }
@@ -339,7 +390,13 @@ export default class MessagesDataProviderStore {
 			this.onLoadingError,
 			interval
 				? e => {
-						if (query.startTimestamp - e.timestamp > interval * 1000 * 60) {
+						const firstFetchedMessage = this.messages[this.messages.length - 1];
+
+						if (
+							this.searchChannelPrev?.isLoading === false &&
+							firstFetchedMessage &&
+							e.timestamp < timestampToNumber(firstFetchedMessage.timestamp)
+						) {
 							this.softFilterChannelPrev?.stop();
 						}
 				  }
@@ -371,6 +428,7 @@ export default class MessagesDataProviderStore {
 		) {
 			messages.shift();
 		}
+
 		if (messages.length !== 0) {
 			this.softFilterResults = [...this.softFilterResults, ...messages];
 		}
@@ -429,6 +487,8 @@ export default class MessagesDataProviderStore {
 		this.noMatchingMessagesPrev = false;
 		this.prevLoadEndTimestamp = null;
 		this.nextLoadEndTimestamp = null;
+		this.lastPreviousChannelResponseTimestamp = null;
+		this.lastNextChannelResponseTimestamp = null;
 	};
 
 	@observable
@@ -447,7 +507,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	keepLoading = async (direction: 'next' | 'previous') => {
+	keepLoading = (direction: 'next' | 'previous') => {
 		if (
 			this.messagesStore.filterStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||

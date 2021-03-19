@@ -50,3 +50,16 @@ export function createRegExp(regExp: TemplateStringsArray, ...options: string[])
 export function toRegExpArray(values: string[], flags = 'gi'): RegExp[] {
 	return values.map(val => new RegExp(escapeSpecialSymbols(val), flags));
 }
+
+/**
+ * Matches given string with wildcard rule string
+ * @param str string to test
+ * @param rule rule string with wildcards ('*some*string')
+ */
+
+export function matchWildcardRule(str: string, rule: string): boolean {
+	// Create a regular expression object for matching string
+	const regex = new RegExp(`^${rule.split('*').map(escapeSpecialSymbols).join('.*')}$`);
+
+	return regex.test(str);
+}

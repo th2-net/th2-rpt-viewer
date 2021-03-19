@@ -16,14 +16,20 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useMessagesWorkspaceStore, useHeatmap, useSelectedStore } from '../../../hooks';
+import {
+	useMessagesWorkspaceStore,
+	useMessageDisplayRulesStore,
+	useHeatmap,
+	useSelectedStore,
+	useWorkspaceStore,
+} from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
 import { formatTime, timestampToNumber } from '../../../helpers/date';
 import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
 import { MessageScreenshotZoom } from './MessageScreenshot';
-import { EventMessage, isScreenshotMessage } from '../../../models/EventMessage';
+import { EventMessage, isScreenshotMessage, MessageViewType } from '../../../models/EventMessage';
 
 import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
@@ -31,6 +37,7 @@ import MessageCardViewTypeRenderer, {
 import '../../../styles/messages.scss';
 import RadioGroup from '../../util/RadioGroup';
 import { RadioProps } from '../../util/Radio';
+import { matchWildcardRule } from '../../../helpers/regexp';
 
 const HUE_SEGMENTS_COUNT = 36;
 
@@ -43,18 +50,12 @@ export interface RecoveredProps {
 	setViewType: (viewType: MessageViewType) => void;
 }
 
-export enum MessageViewType {
-	JSON = 'json',
-	FORMATTED = 'formatted',
-	ASCII = 'ASCII',
-	BINARY = 'binary',
-}
-
 interface Props extends OwnProps, RecoveredProps {}
 
 function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const messagesStore = useMessagesWorkspaceStore();
 	const selectedStore = useSelectedStore();
+	const workspaceStore = useWorkspaceStore();
 
 	const { heatmapElements } = useHeatmap();
 
@@ -70,7 +71,11 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const isPinned = selectedStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
 
 	const toggleViewType = (v: MessageViewType) => {
-		switch (v) {
+		setViewType(v);
+	};
+
+	React.useEffect(() => {
+		switch (viewType) {
 			case MessageViewType.FORMATTED:
 				messagesStore.beautify(messageId);
 				break;
@@ -84,8 +89,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 				messagesStore.debeautify(messageId);
 				break;
 		}
-		setViewType(v);
-	};
+	}, [viewType]);
 
 	React.useEffect(() => {
 		if (!isHighlighted) {
@@ -112,32 +116,32 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		() => [
 			{
 				value: MessageViewType.JSON,
-				id: `${MessageViewType.JSON}-${messageId}`,
-				name: `message-view-type-${messageId}`,
+				id: `${MessageViewType.JSON}-${messageId}-${workspaceStore.id}`,
+				name: `message-view-type-${messageId}-${workspaceStore.id}`,
 				className: 'message-view-type-radio',
 				checked: viewType === MessageViewType.JSON,
 				onChange: toggleViewType,
 			},
 			{
 				value: MessageViewType.FORMATTED,
-				id: `${MessageViewType.FORMATTED}-${messageId}`,
-				name: `message-view-type-${messageId}`,
+				id: `${MessageViewType.FORMATTED}-${messageId}-${workspaceStore.id}`,
+				name: `message-view-type-${messageId}-${workspaceStore.id}`,
 				className: 'message-view-type-radio',
 				checked: viewType === MessageViewType.FORMATTED,
 				onChange: toggleViewType,
 			},
 			{
 				value: MessageViewType.BINARY,
-				id: `${MessageViewType.BINARY}-${messageId}`,
-				name: `message-view-type-${messageId}`,
+				id: `${MessageViewType.BINARY}-${messageId}-${workspaceStore.id}`,
+				name: `message-view-type-${messageId}-${workspaceStore.id}`,
 				className: 'message-view-type-radio',
 				checked: viewType === MessageViewType.BINARY,
 				onChange: toggleViewType,
 			},
 			{
 				value: MessageViewType.ASCII,
-				id: `${MessageViewType.ASCII}-${messageId}`,
-				name: `message-view-type-${messageId}`,
+				id: `${MessageViewType.ASCII}-${messageId}-${workspaceStore.id}`,
+				name: `message-view-type-${messageId}-${workspaceStore.id}`,
 				className: 'message-view-type-radio',
 				checked: viewType === MessageViewType.ASCII,
 				onChange: toggleViewType,
@@ -279,19 +283,36 @@ function calculateHueValue(session: string): number {
 	return (hashCode % HUE_SEGMENTS_COUNT) * (360 / HUE_SEGMENTS_COUNT);
 }
 
-const RecoverableMessageCard = (props: OwnProps) => (
-	<StateSaver
-		stateKey={keyForMessage(props.message.messageId)}
-		getDefaultState={() => MessageViewType.JSON}>
-		{(state, saveState) => (
-			<MessageCard
-				{...props}
-				// we should always show raw content if something found in it
-				viewType={state}
-				setViewType={saveState}
-			/>
-		)}
-	</StateSaver>
-);
+const RecoverableMessageCard = (props: OwnProps) => {
+	const rulesStore = useMessageDisplayRulesStore();
+
+	return (
+		<StateSaver
+			stateKey={keyForMessage(props.message.messageId)}
+			getDefaultState={() => {
+				const rootRule = rulesStore.rootDisplayRule;
+				const declaredRule = rulesStore.messageDisplayRules.find(rule => {
+					if (rule.session.length > 1 && rule.session.includes('*')) {
+						return matchWildcardRule(props.message.sessionId, rule.session);
+					}
+					return props.message.sessionId.includes(rule.session);
+				});
+				return declaredRule
+					? declaredRule.viewType
+					: rootRule
+					? rootRule.viewType
+					: MessageViewType.JSON;
+			}}>
+			{(state, saveState) => (
+				<MessageCard
+					{...props}
+					// we should always show raw content if something found in it
+					viewType={state}
+					setViewType={saveState}
+				/>
+			)}
+		</StateSaver>
+	);
+};
 
 export default RecoverableMessageCard;

@@ -33,4 +33,6 @@ export * from './useRootStore';
 export * from './useSelectListener';
 export * from './useSelectedStore';
 export * from './useWorkspacesStore';
+export * from './useTabsStore';
 export * from './useWorkspaceStore';
+export * from './useMessageDisplayRulesStore';
