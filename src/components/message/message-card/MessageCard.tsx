@@ -198,6 +198,8 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		if (viewType === MessageViewType.FORMATTED || viewType === MessageViewType.BINARY) {
 			return (
 				<div className='mc-header__info'>
+					{isSoftFiltered && <div className='mc-header__is-soft-filtered-icon' />}
+					{isAttached && <div className='mc-header__is-attached-icon' />}
 					<div className='mc-header__value'>
 						{timestamp && formatTime(timestampToNumber(timestamp))}
 					</div>
@@ -226,6 +228,8 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		if (viewType === MessageViewType.ASCII || viewType === MessageViewType.JSON) {
 			return (
 				<>
+					{isSoftFiltered && <span className='mc-header__is-soft-filtered-icon inline' />}
+					{isAttached && <span className='mc-header__is-attached-icon inline' />}
 					<span className='mc-header__value'>
 						{timestamp && formatTime(timestampToNumber(timestamp))}{' '}
 					</span>
@@ -235,7 +239,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 					<span className='mc-header__key-minified'>ss</span>
 					<span className='mc-header__key'>Session </span>
 					<span className={`${sessionClass} inline`} style={sessionArrowStyle}></span>
-					<span className='mc-header__value'>{sessionId} </span>
+					<span className='mc-header__value sessionId-inline'>{sessionId} </span>
 					<span className='mc-header__item messageId-inline'>
 						<span className='mc-header__key'>ID</span>
 						<span className='mc-header__value'>{messageId} </span>
@@ -260,8 +264,6 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		<div className='message-card-wrapper' onMouseEnter={hoverMessage} onMouseLeave={unhoverMessage}>
 			<div className={rootClass}>
 				<div className='mc__mc-header mc-header'>
-					{isSoftFiltered && <div className='mc-header__is-soft-filtered-icon' />}
-					{isAttached && <div className='mc-header__is-attached-icon' />}
 					{renderMessageInfo()}
 					<div className='mc-header__controls'>
 						{!isScreenshotMsg && (
@@ -280,11 +282,11 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 								/>
 							</>
 						)}
-						<div
-							className={bookmarkIconClass}
-							title={isPinned ? 'Remove from bookmarks' : 'Add to bookmarks'}
-							onClick={() => selectedStore.toggleMessagePin(message)}></div>
 					</div>
+					<div
+						className={bookmarkIconClass}
+						title={isPinned ? 'Remove from bookmarks' : 'Add to bookmarks'}
+						onClick={() => selectedStore.toggleMessagePin(message)}></div>
 				</div>
 				<div className='mc__mc-body mc-body'>
 					{isScreenshotMsg ? (

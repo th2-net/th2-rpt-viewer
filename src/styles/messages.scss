@@ -26,6 +26,12 @@
 		background-color: $messageCardHoverBackground;
 	}
 
+	&:hover .mc-raw {
+		&__copy-all {
+			display: inline-flex;
+		}
+	}
+
 	&:hover .mc-header {
 		&__info > *:not(:last-child) {
 			margin-right: 10px;
@@ -58,6 +64,9 @@
 
 		&__value {
 			font-weight: bold;
+			&.sessionId-inline {
+				margin: 0;
+			}
 		}
 
 		&__is-attached-icon {
@@ -145,6 +154,7 @@
 
 .mc-header {
 	display: flex;
+	justify-content: flex-end;
 	white-space: nowrap;
 
 	& > *:not(:last-child) {
@@ -162,11 +172,18 @@
 		margin-top: 3px;
 		margin-left: 3px;
 		margin-right: 4px;
+		&.inline {
+			padding: 4px;
+		}
 	}
 
 	&__is-soft-filtered-icon {
 		@include icon(url(../../resources/icons/filter.svg), 12px, 12px);
 		flex-shrink: 0;
+		&.inline {
+			padding: 6px;
+			margin-right: 4px;
+		}
 	}
 
 	&__info {
@@ -186,6 +203,9 @@
 		&.messageId,
 		&.messageId-inline {
 			display: none;
+		}
+		&.messageId-inline {
+			margin-right: 10px;
 		}
 	}
 
@@ -222,22 +242,17 @@
 
 	&__value {
 		color: $messageCardValueColor;
+		&.sessionId-inline {
+			margin-right: 10px;
+		}
 	}
 
 	&__controls {
 		background-color: $messageCardHoverBackground;
 		display: none;
-		position: absolute;
-		z-index: 1;
-		top: 10px;
-		right: 10px;
 
 		div {
 			cursor: pointer;
-		}
-
-		& > *:not(:last-child) {
-			margin-right: 5px;
 		}
 	}
 
@@ -276,7 +291,6 @@
 
 	&__human {
 		font-family: inherit;
-		padding-top: 2px;
 		line-height: 16px;
 		margin: 0;
 		white-space: pre-wrap;
@@ -380,7 +394,6 @@
 	}
 
 	&__copy-icon {
-		margin: 4px 4px 4px 10px;
 		height: 13px;
 		width: 13px;
 		background-image: url('../../resources/icons/clipboard.svg');
@@ -395,9 +408,11 @@
 	}
 
 	&__copy-all {
-		display: inline-flex;
+		position: absolute;
+		bottom: 0;
+		right: 0;
+		display: none;
 		align-items: center;
-		padding: 2px;
 		cursor: pointer;
 
 		&:hover {
