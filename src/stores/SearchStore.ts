@@ -130,6 +130,7 @@ export class SearchStore {
 			currentPoint: this.currentSearch?.progress
 				? this.currentSearch?.progress - Number(this.searchForm.startTimestamp)
 				: 0,
+			searchDirection: this.searchForm.searchDirection,
 			searching: Boolean(this.searchChannel),
 			completed: this.completed,
 			processedObjectCount: this.currentSearch?.processedObjectCount || 0,

@@ -22,6 +22,7 @@ interface SearchPanelProgressBarProps {
 		startTimestamp: number | null;
 		endTimestamp: number | null;
 		currentPoint: number;
+		searchDirection: 'next' | 'previous';
 		searching: boolean;
 		completed: boolean;
 		processedObjectCount: number;
@@ -40,6 +41,7 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 		startTimestamp,
 		endTimestamp,
 		currentPoint,
+		searchDirection,
 		completed,
 		processedObjectCount,
 	} = props.searchProgress;
@@ -52,14 +54,16 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 		? ((currentPoint / timeInterval) * 100).toFixed(2)
 		: 0;
 
-	const scanningAtTimestamp = (startTimestamp ?? 0) + currentPoint;
+	const scanningAtTimestamp = startTimestamp! + currentPoint;
 
 	const scanningAtLabel = moment(scanningAtTimestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS');
 
-	const scannedTimeLabel = toHumanReadableTime(moment(currentPoint).utc());
+	const scannedTimeLabel = toHumanReadableTime(moment(Math.abs(currentPoint)).utc());
 
 	const timeLeftLabel = timeInterval
-		? toHumanReadableTime(moment(timeInterval - currentPoint))
+		? toHumanReadableTime(
+				moment(timeInterval - (searchDirection === 'next' ? currentPoint : -currentPoint)),
+		  )
 		: null;
 
 	const progressBarLineClassName = createBemElement(
