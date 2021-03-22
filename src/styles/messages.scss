@@ -157,10 +157,6 @@
 	justify-content: flex-end;
 	white-space: nowrap;
 
-	& > *:not(:last-child) {
-		margin-right: 5px;
-	}
-
 	&__is-attached-icon {
 		flex-shrink: 0;
 		width: 8px;
@@ -248,7 +244,7 @@
 	}
 
 	&__controls {
-		display: none;
+		// display: none;
 
 		div {
 			cursor: pointer;
