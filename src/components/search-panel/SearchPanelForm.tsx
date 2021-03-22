@@ -45,6 +45,7 @@ const SearchPanelForm = () => {
 		searchChannel,
 		startSearch,
 		stopSearch,
+		setFormType,
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
@@ -168,6 +169,33 @@ const SearchPanelForm = () => {
 				</button>
 			</div>
 			<div className='search-panel__fields'>
+				<div className='filter-row'>
+					<div className='filter-row__label'>Search for</div>
+					<div className='search-type-switcher'>
+						{['event' as typeof formType, 'message' as typeof formType].map(type => (
+							<button
+								key={type}
+								className={createBemElement(
+									'search-type-switcher',
+									'switch-search-type-button',
+									'switch-search-type-button',
+									type,
+									formType === type ? 'active' : null,
+								)}
+								onClick={() => setFormType(type)}>
+								<i
+									className={createBemElement(
+										'switch-search-type-button',
+										'icon',
+										type,
+										formType === type ? 'active' : null,
+									)}
+								/>
+								<div className='switch-search-type-button__label'>{type}</div>
+							</button>
+						))}
+					</div>
+				</div>
 				<div className='filter-row'>
 					<div className='filter-row__label'>Time Limit</div>
 					<FilterDatetimeInput {...endTimestampInput} />

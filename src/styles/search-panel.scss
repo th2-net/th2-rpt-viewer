@@ -93,8 +93,8 @@
 	}
 
 	&__icon {
-		opacity: 0.65;
-		transition: opacity 0.3s;
+		filter: brightness(1000%);
+		transition: filter 0.3s;
 
 		&.prev {
 			@include icon(url(../../resources/icons/arr1-left-enabled.svg), 15px, 15px);
@@ -105,8 +105,59 @@
 		}
 
 		&.active {
-			opacity: 1;
+			filter: brightness(100%);
 		}
+	}
+}
+
+.search-type-switcher {
+	display: flex;
+
+	&__switch-search-type-button {
+		margin-left: 10px;
+	}
+}
+
+.switch-search-type-button {
+	border: none;
+	outline: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	color: white;
+	background: none;
+	padding: 3px 8px 3px 5px;
+	border-radius: 5px;
+	opacity: 0.8;
+
+	transition: color 0.3s, background-color 0.3s, opacity 0.3s;
+
+	&.active {
+		color: $primaryTextColor;
+		background-color: white;
+		opacity: 1;
+	}
+
+	&__icon {
+		&.event {
+			@include icon(url(../../resources/icons/workspace-events-white.svg), 15px, 15px);
+
+			&.active {
+				@include icon(url(../../resources/icons/workspace-events.svg), 15px, 15px);
+			}
+		}
+		&.message {
+			@include icon(url(../../resources/icons/workspace-messages-white.svg), 15px, 15px);
+
+			&.active {
+				@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
+			}
+		}
+	}
+
+	&__label {
+		margin-left: 3px;
+		font-size: 14px;
 	}
 }
 

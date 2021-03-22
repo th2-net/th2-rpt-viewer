@@ -17,12 +17,10 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useActivePanel } from '../../hooks';
-import TogglerRow from '../filter/row/TogglerRow';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
 import SearchPanelProgressBar from './SearchPanelProgressBar';
-import { FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
 import '../../styles/search-panel.scss';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 
@@ -34,25 +32,9 @@ const SearchPanel = () => {
 
 	const { ref: searchPanelRef } = useActivePanel(null);
 
-	const formTypeTogglerConfig: FilterRowTogglerConfig = React.useMemo(
-		() => ({
-			type: 'toggler',
-			value: searchStore.formType === 'event',
-			disabled: searchStore.isFormDisabled,
-			toggleValue: searchStore.toggleFormType,
-			possibleValues: ['event', 'message'],
-			id: 'source-type',
-			label: '',
-		}),
-		[searchStore.formType, searchStore.isFormDisabled, searchStore.toggleFormType],
-	);
-
 	return (
 		<div className='search-panel-wrapper'>
 			<div className='search-panel' ref={searchPanelRef}>
-				<div className='search-panel__toggle'>
-					<TogglerRow config={formTypeTogglerConfig} />
-				</div>
 				<SearchPanelForm />
 			</div>
 			{searchStore.currentSearch && (

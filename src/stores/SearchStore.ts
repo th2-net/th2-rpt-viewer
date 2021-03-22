@@ -200,8 +200,8 @@ export class SearchStore {
 		}
 	};
 
-	@action toggleFormType = () => {
-		this.formType = this.formType === 'event' ? 'message' : 'event';
+	@action setFormType = (formType: SearchPanelType) => {
+		this.formType = formType;
 	};
 
 	@action updateForm = (stateUpdate: Partial<SearchPanelFormState>) => {
