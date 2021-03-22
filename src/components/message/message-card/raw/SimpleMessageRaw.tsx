@@ -42,11 +42,15 @@ export default function SimpleMessageRaw({ rawContent, renderInfo }: Props) {
 	return (
 		<div className='mc-raw__human' ref={contentRef} onCopy={onCopy}>
 			{renderInfo()}
-			{convertedArr.map(part =>
+			{convertedArr.map((part, index) =>
 				part.isPrintable ? (
-					<span style={{ display: '' }}>{part.text}</span>
+					<span key={index} style={{ display: '' }}>
+						{part.text}
+					</span>
 				) : (
-					<span className='mc-raw__non-printing-character'>SOH</span>
+					<span key={index} className='mc-raw__non-printing-character'>
+						SOH
+					</span>
 				),
 			)}
 		</div>
