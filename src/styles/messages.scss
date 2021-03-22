@@ -244,7 +244,7 @@
 	}
 
 	&__controls {
-		// display: none;
+		display: none;
 
 		div {
 			cursor: pointer;
@@ -328,6 +328,10 @@
 }
 
 .mc-raw {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+
 	&__header {
 		display: flex;
 		flex-direction: row;
@@ -403,12 +407,10 @@
 	}
 
 	&__copy-all {
-		position: absolute;
-		bottom: 0;
-		right: 0;
 		display: none;
 		align-items: center;
 		cursor: pointer;
+		flex-shrink: 0;
 
 		&:hover {
 			background: $messageCardRawHoverBackground;
