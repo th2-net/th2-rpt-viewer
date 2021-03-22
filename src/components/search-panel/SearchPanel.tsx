@@ -18,7 +18,6 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useActivePanel } from '../../hooks';
 import TogglerRow from '../filter/row/TogglerRow';
-import SearchPanelFilters from './SearchPanelFilters';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
@@ -54,32 +53,7 @@ const SearchPanel = () => {
 				<div className='search-panel__toggle'>
 					<TogglerRow config={formTypeTogglerConfig} />
 				</div>
-				<div className='search-panel__form'>
-					<div className='search-panel__fields'>
-						<SearchPanelForm
-							disabled={searchStore.isFormDisabled}
-							form={searchStore.searchForm}
-							formType={searchStore.formType}
-							updateForm={searchStore.updateForm}
-							messageSessions={searchStore.messageSessions}
-						/>
-					</div>
-					<div className='filters'>
-						{searchStore.filters && searchStore.filters.info.length > 0 && (
-							<SearchPanelFilters {...searchStore.filters} />
-						)}
-					</div>
-					<div className='search-panel__buttons'>
-						<button
-							disabled={searchStore.isFormDisabled}
-							className='search-panel__submit'
-							onClick={
-								searchStore.searchChannel ? searchStore.stopSearch : searchStore.startSearch
-							}>
-							{searchStore.searchChannel ? 'stop' : 'start'}
-						</button>
-					</div>
-				</div>
+				<SearchPanelForm />
 			</div>
 			{searchStore.currentSearch && (
 				<SearchPanelProgressBar searchProgress={searchStore.searchProgress} />

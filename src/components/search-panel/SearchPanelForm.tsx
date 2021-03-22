@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React, { useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import {
 	DateTimeInputType,
 	DateTimeMask,
@@ -25,29 +26,28 @@ import FilterRow from '../filter/row';
 import FilterDatetimeInput from '../filter/date-time-inputs/DateTimeInput';
 import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
 import { SearchPanelFormState } from '../../stores/SearchStore';
+import { useSearchStore } from '../../hooks/useSearchStore';
+import SearchPanelFilters from './SearchPanelFilters';
+import { createBemElement } from '../../helpers/styleCreators';
 
 type DateInputProps = {
 	inputConfig: DateTimeInputType;
 };
 
-interface Props {
-	formType: 'event' | 'message';
-	form: SearchPanelFormState;
-	updateForm: (patch: Partial<SearchPanelFormState>) => void;
-	disabled: boolean;
-	messageSessions: string[] | null;
-}
-
-const SearchPanelForm = (props: Props) => {
-	const { disabled, updateForm, form, formType, messageSessions } = props;
+const SearchPanelForm = () => {
+	const {
+		isFormDisabled: disabled,
+		updateForm,
+		searchForm: form,
+		formType,
+		messageSessions,
+		filters,
+		searchChannel,
+		startSearch,
+		stopSearch,
+	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
-
-	const toggleSearchDirection = () => {
-		updateForm({
-			searchDirection: form.searchDirection === 'next' ? 'previous' : 'next',
-		});
-	};
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
@@ -69,15 +69,6 @@ const SearchPanelForm = (props: Props) => {
 			type: 'string',
 			disabled,
 			id: 'result-count-limit',
-		},
-		{
-			label: 'Search Direction',
-			value: form.searchDirection === 'next',
-			toggleValue: toggleSearchDirection,
-			disabled,
-			possibleValues: ['next', 'prev'],
-			type: 'toggler',
-			id: 'search-direction',
 		},
 	];
 
@@ -134,20 +125,70 @@ const SearchPanelForm = (props: Props) => {
 	};
 
 	return (
-		<>
-			<div className='filter-row'>
-				<div className='filter-row__label'>Start Timestamp</div>
-				<FilterDatetimeInput {...startTimestampInput} />
+		<div className='search-panel__search-form search-form'>
+			<div className='search-form__datetime-control datetime-control'>
+				<button
+					className={createBemElement(
+						'datetime-control',
+						'direction-button',
+						'direction-button',
+						'prev',
+						form.searchDirection === 'previous' ? 'active' : null,
+					)}
+					onClick={() => updateForm({ searchDirection: 'previous' })}>
+					<i
+						className={createBemElement(
+							'direction-button',
+							'icon',
+							'prev',
+							form.searchDirection === 'previous' ? 'active' : null,
+						)}
+					/>
+				</button>
+				<div className='datetime-control__input'>
+					<FilterDatetimeInput {...startTimestampInput} />
+				</div>
+				<button
+					className={createBemElement(
+						'datetime-control',
+						'direction-button',
+						'direction-button',
+						'next',
+						form.searchDirection === 'next' ? 'active' : null,
+					)}
+					onClick={() => updateForm({ searchDirection: 'next' })}>
+					<i
+						className={createBemElement(
+							'direction-button',
+							'icon',
+							'next',
+							form.searchDirection === 'next' ? 'active' : null,
+						)}
+					/>
+				</button>
 			</div>
-			<div className='filter-row'>
-				<div className='filter-row__label'>Time Limit</div>
-				<FilterDatetimeInput {...endTimestampInput} />
+			<div className='search-panel__fields'>
+				<div className='filter-row'>
+					<div className='filter-row__label'>Time Limit</div>
+					<FilterDatetimeInput {...endTimestampInput} />
+				</div>
+				{config.map(rowConfig => (
+					<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
+				))}
 			</div>
-			{config.map(rowConfig => (
-				<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
-			))}
-		</>
+			<div className='filters'>
+				{filters && filters.info.length > 0 && <SearchPanelFilters {...filters} />}
+			</div>
+			<div className='search-panel__buttons'>
+				<button
+					disabled={disabled}
+					className='search-panel__submit'
+					onClick={searchChannel ? stopSearch : startSearch}>
+					{searchChannel ? 'stop' : 'start'}
+				</button>
+			</div>
+		</div>
 	);
 };
 
-export default React.memo(SearchPanelForm);
+export default observer(SearchPanelForm);

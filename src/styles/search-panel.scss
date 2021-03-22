@@ -51,6 +51,65 @@
 	}
 }
 
+.search-form {
+	&__datetime-control {
+		margin-bottom: 10px;
+	}
+}
+
+.datetime-control {
+	display: flex;
+	justify-content: center;
+
+	&__input {
+		width: 50%;
+		display: flex;
+	}
+}
+
+.direction-button {
+	border: none;
+	outline: none;
+	background-color: transparent;
+	cursor: pointer;
+	width: 30px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 5px;
+	position: relative;
+	transition: background-color 0.3s;
+
+	&.active {
+		background: white;
+	}
+
+	&.prev {
+		left: 5px;
+	}
+
+	&.next {
+		right: 5px;
+	}
+
+	&__icon {
+		opacity: 0.65;
+		transition: opacity 0.3s;
+
+		&.prev {
+			@include icon(url(../../resources/icons/arr1-left-enabled.svg), 15px, 15px);
+		}
+
+		&.next {
+			@include icon(url(../../resources/icons/arr1-right-enabled.svg), 15px, 15px);
+		}
+
+		&.active {
+			opacity: 1;
+		}
+	}
+}
+
 .search-progress {
 	padding: 10px 5px 0;
 	font-size: 12px;
