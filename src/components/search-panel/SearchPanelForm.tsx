@@ -28,9 +28,10 @@ import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
 import { SearchPanelFormState } from '../../stores/SearchStore';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelFilters from './SearchPanelFilters';
-import { createBemElement } from '../../helpers/styleCreators';
+import SearchTypeSwitcher from './search-form/SearchTypeSwitcher';
+import SearchDatetimeControl from './search-form/SearchDatetimeControl';
 
-type DateInputProps = {
+export type DateInputProps = {
 	inputConfig: DateTimeInputType;
 };
 
@@ -127,74 +128,15 @@ const SearchPanelForm = () => {
 
 	return (
 		<div className='search-panel__search-form search-form'>
-			<div className='search-form__datetime-control datetime-control'>
-				<button
-					className={createBemElement(
-						'datetime-control',
-						'direction-button',
-						'direction-button',
-						'prev',
-						form.searchDirection === 'previous' ? 'active' : null,
-					)}
-					onClick={() => updateForm({ searchDirection: 'previous' })}>
-					<i
-						className={createBemElement(
-							'direction-button',
-							'icon',
-							'prev',
-							form.searchDirection === 'previous' ? 'active' : null,
-						)}
-					/>
-				</button>
-				<div className='datetime-control__input'>
-					<FilterDatetimeInput {...startTimestampInput} />
-				</div>
-				<button
-					className={createBemElement(
-						'datetime-control',
-						'direction-button',
-						'direction-button',
-						'next',
-						form.searchDirection === 'next' ? 'active' : null,
-					)}
-					onClick={() => updateForm({ searchDirection: 'next' })}>
-					<i
-						className={createBemElement(
-							'direction-button',
-							'icon',
-							'next',
-							form.searchDirection === 'next' ? 'active' : null,
-						)}
-					/>
-				</button>
-			</div>
+			<SearchDatetimeControl
+				form={form}
+				updateForm={updateForm}
+				startTimestampInput={startTimestampInput}
+			/>
 			<div className='search-panel__fields'>
 				<div className='filter-row'>
 					<div className='filter-row__label'>Search for</div>
-					<div className='search-type-switcher'>
-						{['event' as typeof formType, 'message' as typeof formType].map(type => (
-							<button
-								key={type}
-								className={createBemElement(
-									'search-type-switcher',
-									'switch-search-type-button',
-									'switch-search-type-button',
-									type,
-									formType === type ? 'active' : null,
-								)}
-								onClick={() => setFormType(type)}>
-								<i
-									className={createBemElement(
-										'switch-search-type-button',
-										'icon',
-										type,
-										formType === type ? 'active' : null,
-									)}
-								/>
-								<div className='switch-search-type-button__label'>{type}</div>
-							</button>
-						))}
-					</div>
+					<SearchTypeSwitcher formType={formType} setFormType={setFormType} />
 				</div>
 				<div className='filter-row'>
 					<div className='filter-row__label'>Time Limit</div>
