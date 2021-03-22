@@ -21,9 +21,10 @@ import { copyTextToClipboard } from '../../../../helpers/copyHandler';
 
 interface Props {
 	rawContent: string;
+	renderInfo: () => React.ReactNode;
 }
 
-export default function SimpleMessageRaw({ rawContent }: Props) {
+export default function SimpleMessageRaw({ rawContent, renderInfo }: Props) {
 	const contentRef = React.useRef<HTMLDivElement>(null);
 	const [selectionStart, selectionEnd] = useSelectListener(contentRef);
 
@@ -40,6 +41,7 @@ export default function SimpleMessageRaw({ rawContent }: Props) {
 
 	return (
 		<div className='mc-raw__human' ref={contentRef} onCopy={onCopy}>
+			{renderInfo()}
 			{convertedArr.map((part, index) =>
 				part.isPrintable ? (
 					<span key={index} style={{ display: '' }}>
