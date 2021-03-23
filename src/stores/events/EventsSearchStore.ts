@@ -15,12 +15,12 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction, makeObservable } from 'mobx';
-import SearchToken from '../../models/search/SearchToken';
-import ApiSchema from '../../api/ApiSchema';
+import SearchToken from 'models/search/SearchToken';
+import ApiSchema from 'api/ApiSchema';
+import { createSearchToken } from 'helpers/search/createSearchToken';
+import { COLORS as SearchTokenColors } from 'components/search/SearchInput';
+import { nextCyclicItemByIndex } from 'helpers/array';
 import EventsStore from './EventsStore';
-import { createSearchToken } from '../../helpers/search/createSearchToken';
-import { COLORS as SearchTokenColors } from '../../components/search/SearchInput';
-import { nextCyclicItemByIndex } from '../../helpers/array';
 
 const defaultState = {
 	tokens: [],

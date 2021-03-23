@@ -14,9 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { createURLSearchParams } from 'helpers/url';
+import MessagesFilter from 'models/filter/MessagesFilter';
 import { MessageApiSchema } from './ApiSchema';
-import { createURLSearchParams } from '../helpers/url';
-import MessagesFilter from '../models/filter/MessagesFilter';
 
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {

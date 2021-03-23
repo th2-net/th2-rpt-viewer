@@ -14,9 +14,9 @@
  *  limitations under the License.
  ***************************************************************************** */
 
+import SearchToken from 'models/search/SearchToken';
+import SearchSplitResult from 'models/search/SearchSplitResult';
 import { createCaseInsensitiveRegexp } from '../regexp';
-import SearchToken from '../../models/search/SearchToken';
-import SearchSplitResult from '../../models/search/SearchSplitResult';
 
 /* eslint-disable no-restricted-syntax */
 export default function multiTokenSplit(

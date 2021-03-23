@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventAction } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
+import { EventAction } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
 
 /* eslint-disable no-restricted-globals */
 

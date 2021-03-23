@@ -15,13 +15,9 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
-import {
-	getHeatmapElements,
-	getHeatmapRange,
-	DEFAULT_PIN_COLOR,
-} from '../../helpers/heatmapCreator';
-import { HeatmapElement, ListRange } from '../../models/Heatmap';
-import { HeatmapContext } from '../../contexts/heatmapContext';
+import { getHeatmapElements, getHeatmapRange, DEFAULT_PIN_COLOR } from 'helpers/heatmapCreator';
+import { HeatmapElement, ListRange } from 'models/Heatmap';
+import { HeatmapContext } from 'contexts/heatmapContext';
 
 interface HeatmapProviderProps {
 	children: React.ReactNode;

@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import MessagesStore from '../stores/messages/MessagesStore';
+import MessagesStore from 'stores/messages/MessagesStore';
 
 const MessagesWindowContext = React.createContext<MessagesStore | null>(null);
 

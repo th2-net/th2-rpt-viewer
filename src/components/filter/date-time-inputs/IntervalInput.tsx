@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { IntervalInputType } from '../../../models/filter/FilterInputs';
-import { createStyleSelector } from '../../../helpers/styleCreators';
+import { IntervalInputType } from 'models/filter/FilterInputs';
+import { createStyleSelector } from 'helpers/styleCreators';
 
 interface DateTimeInputProps {
 	inputConfig: IntervalInputType;

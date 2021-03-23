@@ -14,13 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
 import moment from 'moment';
-import { isEventNode } from '../../helpers/event';
+import { isEventNode } from 'helpers/event';
+import { SearchResult } from 'stores/SearchStore';
+import { ActionType } from 'models/EventAction';
 import { BookmarkedItem } from '../BookmarksPanel';
-import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
-import { ActionType } from '../../models/EventAction';
 
 interface SearchPanelResultsProps {
 	onResultItemClick: (searchResult: BookmarkedItem) => void;

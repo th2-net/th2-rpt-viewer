@@ -14,13 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { useActivePanel, useWorkspaceEventStore, useWorkspaceStore } from 'hooks';
+import { createBemElement } from 'helpers/styleCreators';
+import { isEventsStore } from 'helpers/stores';
 import EventsFilterPanel from '../filter/EventsFilterPanel';
-import { useActivePanel, useWorkspaceEventStore, useWorkspaceStore } from '../../hooks';
-import { createBemElement } from '../../helpers/styleCreators';
 import EventsSearchPanel from './search/EventsSearchPanel';
-import { isEventsStore } from '../../helpers/stores';
 
 function EventWindowHeader() {
 	const { activePanel } = useActivePanel();

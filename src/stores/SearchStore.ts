@@ -16,20 +16,20 @@
 
 import { action, autorun, computed, observable, reaction, runInAction, makeObservable } from 'mobx';
 import moment from 'moment';
-import ApiSchema from '../api/ApiSchema';
-import { SSEFilterInfo, SSEHeartbeat, SSEParams } from '../api/sse';
-import { SearchPanelType } from '../components/search-panel/SearchPanel';
+import ApiSchema from 'api/ApiSchema';
+import { SSEFilterInfo, SSEHeartbeat, SSEParams } from 'api/sse';
+import { SearchPanelType } from 'components/search-panel/SearchPanel';
 import {
 	EventFilterState,
 	FilterState,
 	MessageFilterState,
-} from '../components/search-panel/SearchPanelFilters';
-import { getTimestampAsNumber, timestampToNumber } from '../helpers/date';
-import { isEventMessage, isEventNode } from '../helpers/event';
-import { getDefaultFilterState } from '../helpers/search';
-import { EventTreeNode } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
-import localStorageWorker from '../util/LocalStorageWorker';
+} from 'components/search-panel/SearchPanelFilters';
+import { getTimestampAsNumber, timestampToNumber } from 'helpers/date';
+import { isEventMessage, isEventNode } from 'helpers/event';
+import { getDefaultFilterState } from 'helpers/search';
+import { EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import localStorageWorker from 'util/LocalStorageWorker';
 import notificationsStore from './NotificationsStore';
 
 export type SearchPanelFormState = {

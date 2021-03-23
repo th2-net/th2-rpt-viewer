@@ -15,13 +15,13 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useOutsideClickListener } from '../../hooks';
+import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
+import { useOutsideClickListener } from 'hooks';
+import { FilterRowConfig } from 'models/filter/FilterInputs';
+import { raf } from 'helpers/raf';
 import { ModalPortal } from '../util/Portal';
 import FilterRow from './row';
-import { raf } from '../../helpers/raf';
-import { FilterRowConfig } from '../../models/filter/FilterInputs';
-import '../../styles/filter.scss';
+import 'styles/filter.scss';
 
 const PANEL_WIDTH = 840;
 

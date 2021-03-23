@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { createURLSearchParams } from 'helpers/url';
 import { EventSourceConfig, SSESchema } from './ApiSchema';
-import { createURLSearchParams } from '../helpers/url';
 
 interface BaseSSEParams {
 	startTimestamp: number;

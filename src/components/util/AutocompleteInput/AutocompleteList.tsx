@@ -17,10 +17,10 @@
 import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import { IndexLocationWithAlign, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
-import KeyCodes from '../../../util/KeyCodes';
+import KeyCodes from 'util/KeyCodes';
+import { useOutsideClickListener } from 'hooks';
+import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
 import { ModalPortal } from '../Portal';
-import { useOutsideClickListener } from '../../../hooks';
-import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
 
 const AUTOCOMPLETE_OPTION_HEIGHT = 22;
 const RENDERED_OPTIONS_COUNT = 12;

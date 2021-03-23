@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import moment from 'moment';
-import { createBemElement } from '../../helpers/styleCreators';
+import { createBemElement } from 'helpers/styleCreators';
 
 interface SearchPanelProgressBarProps {
 	searchProgress: {

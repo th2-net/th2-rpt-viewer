@@ -16,7 +16,7 @@
 
 import { action, computed, observable, makeObservable } from 'mobx';
 import moment from 'moment';
-import EventsFilter from '../../models/filter/EventsFilter';
+import EventsFilter from 'models/filter/EventsFilter';
 import { GraphStore } from '../GraphStore';
 
 export function getDefaultEventFilter(interval = 15): EventsFilter {

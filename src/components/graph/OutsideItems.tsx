@@ -16,19 +16,19 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import { GraphItem, PanelRange } from '../../models/Graph';
-import { sortByTimestamp } from '../../helpers/event';
-import { TimeRange } from '../../models/Timestamp';
-import { getTimestampAsNumber } from '../../helpers/date';
-import { GraphStore } from '../../stores/GraphStore';
+import { EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import { GraphItem, PanelRange } from 'models/Graph';
+import { sortByTimestamp } from 'helpers/event';
+import { TimeRange } from 'models/Timestamp';
+import { getTimestampAsNumber } from 'helpers/date';
+import { GraphStore } from 'stores/GraphStore';
 import {
 	OutsideItems as IOutsideItems,
 	OutsideItemsMenu,
 	OutsideItemsList,
 } from './OutsideItemsMenu';
-import '../../styles/graph.scss';
+import 'styles/graph.scss';
 
 interface OverlayPanelProps {
 	range: TimeRange;

@@ -18,13 +18,9 @@ import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import moment from 'moment';
-import {
-	useDebouncedCallback,
-	useMessagesDataStore,
-	useMessagesWorkspaceStore,
-} from '../../../hooks';
-import { EventMessage } from '../../../models/EventMessage';
-import { raf } from '../../../helpers/raf';
+import { useDebouncedCallback, useMessagesDataStore, useMessagesWorkspaceStore } from 'hooks';
+import { EventMessage } from 'models/EventMessage';
+import { raf } from 'helpers/raf';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;

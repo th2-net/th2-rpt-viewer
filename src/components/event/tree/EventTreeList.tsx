@@ -17,16 +17,16 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { useWorkspaceEventStore } from 'hooks';
+import Empty from 'components/util/Empty';
+import SplashScreen from 'components/SplashScreen';
+import StateSaverProvider from 'components/util/StateSaverProvider';
+import { raf } from 'helpers/raf';
+import { EventTreeNode } from 'models/EventAction';
+import { timestampToNumber } from 'helpers/date';
 import EventTree from './EventTree';
-import Empty from '../../util/Empty';
-import SplashScreen from '../../SplashScreen';
-import StateSaverProvider from '../../util/StateSaverProvider';
-import { useWorkspaceEventStore } from '../../../hooks';
-import { raf } from '../../../helpers/raf';
-import { EventTreeNode } from '../../../models/EventAction';
-import { timestampToNumber } from '../../../helpers/date';
 import { EventListFooter, EventListHeader } from '../EventListNavigation';
-import '../../../styles/action.scss';
+import 'styles/action.scss';
 
 interface Props {
 	nodes: EventTreeNode[];

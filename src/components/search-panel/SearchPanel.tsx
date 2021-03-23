@@ -16,16 +16,14 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useActivePanel } from '../../hooks';
+import { useActivePanel, useSearchStore, useSearchWorkspace } from 'hooks';
+import { FilterRowTogglerConfig } from 'models/filter/FilterInputs';
 import TogglerRow from '../filter/row/TogglerRow';
 import SearchPanelFilters from './SearchPanelFilters';
 import SearchPanelForm from './SearchPanelForm';
-import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
 import SearchPanelProgressBar from './SearchPanelProgressBar';
-import { FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
-import '../../styles/search-panel.scss';
-import useSearchWorkspace from '../../hooks/useSearchWorkspace';
+import 'styles/search-panel.scss';
 
 export type SearchPanelType = 'event' | 'message';
 

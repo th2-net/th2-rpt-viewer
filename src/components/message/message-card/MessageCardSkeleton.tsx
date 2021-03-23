@@ -14,8 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-
 function MessageCardSkeleton() {
 	return (
 		<div className='mc-skeleton'>

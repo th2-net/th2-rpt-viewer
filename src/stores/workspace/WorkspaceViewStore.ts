@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { observable, action, makeObservable } from 'mobx';
-import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
+import { WorkspacePanelsLayout } from 'components/workspace/WorkspaceSplitter';
 import EventsStore from '../events/EventsStore';
 import MessagesStore from '../messages/MessagesStore';
 

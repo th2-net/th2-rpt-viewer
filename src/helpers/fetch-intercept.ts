@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import fetchIntercept from 'fetch-intercept';
-import notificationsStore from '../stores/NotificationsStore';
+import notificationsStore from 'stores/NotificationsStore';
 
 export function registerFetchInterceptor(): () => void {
 	return fetchIntercept.register({

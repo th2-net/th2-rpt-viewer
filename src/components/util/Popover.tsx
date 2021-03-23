@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { createStyleSelector } from '../../helpers/styleCreators';
-import { useOutsideClickListener } from '../../hooks';
+import { createStyleSelector } from 'helpers/styleCreators';
+import { useOutsideClickListener } from 'hooks';
 import { ModalPortal } from './Portal';
 
 interface PopoverProps {

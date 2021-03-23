@@ -16,10 +16,10 @@
 
 import { action, computed, observable, reaction, makeObservable } from 'mobx';
 import moment from 'moment';
-import { isEventNode } from '../helpers/event';
-import { calculateTimeRange } from '../helpers/graph';
-import { Chunk, GraphItem, GraphItemType, IntervalOption } from '../models/Graph';
-import { TimeRange } from '../models/Timestamp';
+import { isEventNode } from 'helpers/event';
+import { calculateTimeRange } from 'helpers/graph';
+import { Chunk, GraphItem, GraphItemType, IntervalOption } from 'models/Graph';
+import { TimeRange } from 'models/Timestamp';
 import { SelectedStore } from './SelectedStore';
 
 export class GraphStore {

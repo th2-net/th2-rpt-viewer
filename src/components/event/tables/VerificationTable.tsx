@@ -18,14 +18,14 @@ import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import throttle from 'lodash.throttle';
 import { observer } from 'mobx-react-lite';
-import { EventStatus, eventStatusValues, StatusType } from '../../../models/Status';
-import { createStyleSelector } from '../../../helpers/styleCreators';
-import { getVerificationTablesNodes } from '../../../helpers/tables';
-import StateSaver, { RecoverableElementProps } from '../../util/StateSaver';
-import { replaceNonPrintableChars } from '../../../helpers/stringUtils';
-import { copyTextToClipboard } from '../../../helpers/copyHandler';
-import { VerificationPayload, VerificationPayloadField } from '../../../models/EventActionPayload';
-import '../../../styles/tables.scss';
+import { EventStatus, eventStatusValues, StatusType } from 'models/Status';
+import { createStyleSelector } from 'helpers/styleCreators';
+import { getVerificationTablesNodes } from 'helpers/tables';
+import StateSaver, { RecoverableElementProps } from 'components/util/StateSaver';
+import { replaceNonPrintableChars } from 'helpers/stringUtils';
+import { copyTextToClipboard } from 'helpers/copyHandler';
+import { VerificationPayload, VerificationPayloadField } from 'models/EventActionPayload';
+import 'styles/tables.scss';
 
 const PADDING_LEVEL_VALUE = 10;
 

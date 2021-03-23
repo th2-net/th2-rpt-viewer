@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import React, { useRef, useState } from 'react';
-import { createStyleSelector } from '../../helpers/styleCreators';
-import { useMessageDisplayRulesStore, useOutsideClickListener } from '../../hooks';
-import { MessageDisplayRule } from '../../models/EventMessage';
+import { createStyleSelector } from 'helpers/styleCreators';
+import { useMessageDisplayRulesStore, useOutsideClickListener } from 'hooks';
+import { MessageDisplayRule } from 'models/EventMessage';
 import NewRuleForm from './NewRuleForm';
 
 interface DisplayRuleProps {

@@ -17,13 +17,13 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { isEventMessage, isEventNode, getItemId } from '../../helpers/event';
-import { createBemElement } from '../../helpers/styleCreators';
-import { useSelectedStore } from '../../hooks';
-import { SearchResult } from '../../stores/SearchStore';
+import { isEventMessage, isEventNode, getItemId } from 'helpers/event';
+import { createBemElement } from 'helpers/styleCreators';
+import { useSelectedStore } from 'hooks';
+import { SearchResult } from 'stores/SearchStore';
+import { getTimestampAsNumber } from 'helpers/date';
+import { ActionType } from 'models/EventAction';
 import { BookmarkedItem, BookmarkItem } from '../BookmarksPanel';
-import { getTimestampAsNumber } from '../../helpers/date';
-import { ActionType } from '../../models/EventAction';
 
 interface SearchResultGroup {
 	results: SearchResult[];

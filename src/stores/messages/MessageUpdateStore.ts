@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import { action, observable, reaction, makeObservable } from 'mobx';
-import ApiSchema from '../../api/ApiSchema';
-import { EventMessage } from '../../models/EventMessage';
+import ApiSchema from 'api/ApiSchema';
+import { EventMessage } from 'models/EventMessage';
 import MessagesFilterStore from './MessagesFilterStore';
 
 // TODO: fix store

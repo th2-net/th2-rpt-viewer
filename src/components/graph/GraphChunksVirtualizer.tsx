@@ -16,13 +16,13 @@
 
 import React from 'react';
 import moment from 'moment';
-import { useDebouncedCallback } from '../../hooks';
-import { isClickEventInElement, isDivElement } from '../../helpers/dom';
-import { raf } from '../../helpers/raf';
-import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from '../../models/Graph';
-import { TimeRange } from '../../models/Timestamp';
-import { usePointerTimestampUpdate } from '../../contexts/pointerTimestampContext';
-import '../../styles/graph.scss';
+import { useDebouncedCallback } from 'hooks';
+import { isClickEventInElement, isDivElement } from 'helpers/dom';
+import { raf } from 'helpers/raf';
+import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from 'models/Graph';
+import { TimeRange } from 'models/Timestamp';
+import { usePointerTimestampUpdate } from 'contexts/pointerTimestampContext';
+import 'styles/graph.scss';
 
 const setInitialState = (settings: Settings): State => {
 	const { itemWidth, amount, tolerance, minIndex, maxIndex, startIndex } = settings;

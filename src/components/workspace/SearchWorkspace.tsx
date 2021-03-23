@@ -14,13 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { useSearchWorkspace } from 'hooks';
 import BookmarksPanel from '../BookmarksPanel';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import SearchPanel from '../search-panel/SearchPanel';
-import useSearchWorkspace from '../../hooks/useSearchWorkspace';
-import '../../styles/workspace.scss';
+import 'styles/workspace.scss';
 
 const panelColors = {
 	search: {

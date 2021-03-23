@@ -14,15 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { TableNode } from '../components/event/tables/VerificationTable';
+import { TableNode } from 'components/event/tables/VerificationTable';
 import {
 	TreeTablePayload,
 	TreeTableRow,
 	VerificationPayload,
 	VerificationPayloadField,
 	TreeTableCollection,
-} from '../models/EventActionPayload';
-import { ParamsTableRow } from '../components/event/tables/ParamsTable';
+} from 'models/EventActionPayload';
+import { ParamsTableRow } from 'components/event/tables/ParamsTable';
 
 export interface ParamsTable {
 	rows: ParamsTableRow[];

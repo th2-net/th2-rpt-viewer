@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { MessageViewType } from '../../../models/EventMessage';
-import MessageBody from '../../../models/MessageBody';
-import ErrorBoundary from '../../util/ErrorBoundary';
+import { MessageViewType } from 'models/EventMessage';
+import MessageBody from 'models/MessageBody';
+import ErrorBoundary from 'components/util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import MessageRaw from './raw/MessageRaw';
 

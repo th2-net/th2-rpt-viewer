@@ -16,9 +16,9 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import { FilterRowConfig } from 'models/filter/FilterInputs';
+import { useWorkspaceEventStore, useGraphDataStore } from 'hooks';
 import FilterPanel from './FilterPanel';
-import { FilterRowConfig } from '../../models/filter/FilterInputs';
-import { useWorkspaceEventStore, useGraphDataStore } from '../../hooks';
 
 function EventsFilterPanel() {
 	const eventWindowStore = useWorkspaceEventStore();

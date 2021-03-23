@@ -17,11 +17,11 @@
 import React from 'react';
 import MaskedInput from 'react-text-mask';
 import moment from 'moment';
+import { DateTimeInputType } from 'models/filter/FilterInputs';
+import { formatTimestampValue } from 'helpers/date';
+import { createStyleSelector } from 'helpers/styleCreators';
+import { replaceUnfilledDateStringWithMinValues } from 'helpers/stringUtils';
 import FilterDatetimePicker from './FilterDatetimePicker';
-import { DateTimeInputType } from '../../../models/filter/FilterInputs';
-import { formatTimestampValue } from '../../../helpers/date';
-import { createStyleSelector } from '../../../helpers/styleCreators';
-import { replaceUnfilledDateStringWithMinValues } from '../../../helpers/stringUtils';
 
 interface DateTimeInputProps {
 	inputConfig: DateTimeInputType;

@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import WorkspaceStore from '../stores/workspace/WorkspaceStore';
+import WorkspaceStore from 'stores/workspace/WorkspaceStore';
 
 const WorkspaceContext = React.createContext<WorkspaceStore | null>(null);
 

@@ -16,15 +16,15 @@
 
 import { action, makeObservable } from 'mobx';
 import { nanoid } from 'nanoid';
-import WorkspaceViewStore from './WorkspaceViewStore';
-import { EventMessage } from '../../models/EventMessage';
-import { ActionType, EventAction, EventTreeNode } from '../../models/EventAction';
-import WorkspacesStore from './WorkspacesStore';
-import { SearchStore } from '../SearchStore';
-import ApiSchema from '../../api/ApiSchema';
+import { EventMessage } from 'models/EventMessage';
+import { ActionType, EventAction, EventTreeNode } from 'models/EventAction';
+import { getTimestampAsNumber, timestampToNumber } from 'helpers/date';
+import ApiSchema from 'api/ApiSchema';
+import { isEvent, isEventMessage } from 'helpers/event';
 import { getRangeFromTimestamp, WorkspaceInitialState } from './WorkspaceStore';
-import { isEvent, isEventMessage } from '../../helpers/event';
-import { getTimestampAsNumber, timestampToNumber } from '../../helpers/date';
+import { SearchStore } from '../SearchStore';
+import WorkspaceViewStore from './WorkspaceViewStore';
+import WorkspacesStore from './WorkspacesStore';
 
 export const SEARCH_STORE_INTERVAL = 15;
 

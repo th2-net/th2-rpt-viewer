@@ -15,12 +15,12 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
+import { EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import { GraphGroup, GraphItemType } from 'models/Graph';
+import { GraphStore } from 'stores/GraphStore';
 import GraphItemsMenu from './GraphItemsMenu';
-import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import { GraphGroup, GraphItemType } from '../../models/Graph';
-import { GraphStore } from '../../stores/GraphStore';
 
 type GroupItemType =
 	| GraphItemType.ATTACHED_MESSAGE

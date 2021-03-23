@@ -14,19 +14,18 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
+import { WorkspaceContextProvider } from 'contexts/workspaceContext';
+import { useWorkspaces } from 'hooks';
+import { createStyleSelector } from 'helpers/styleCreators';
+import WorkspaceStore from 'stores/workspace/WorkspaceStore';
+import SearchWorkspaceStore from 'stores/workspace/SearchWorkspaceStore';
+import { isWorkspaceStore } from 'helpers/workspace';
+import { SearchWorkspaceContextProvider } from 'contexts/searchWorkspaceContext';
+import Tabs, { TabListRenderProps } from '../tabs/Tabs';
 import Workspace from './Workspace';
 import SearchWorkspace from './SearchWorkspace';
-import { WorkspaceContextProvider } from '../../contexts/workspaceContext';
-import { useWorkspaces } from '../../hooks';
-import Tabs, { TabListRenderProps } from '../tabs/Tabs';
-import { createStyleSelector } from '../../helpers/styleCreators';
-import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
-import SearchWorkspaceStore from '../../stores/workspace/SearchWorkspaceStore';
-import { isWorkspaceStore } from '../../helpers/workspace';
-import { SearchWorkspaceContextProvider } from '../../contexts/searchWorkspaceContext';
-import '../../styles/root.scss';
+import 'styles/root.scss';
 
 const WorkspacesLayout = () => {
 	const workspacesStore = useWorkspaces();

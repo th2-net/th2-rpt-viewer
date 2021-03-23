@@ -16,14 +16,14 @@
 
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import { GraphItem, GraphItemType } from 'models/Graph';
+import { getEventStatus, isEventNode } from 'helpers/event';
+import { EventStatus } from 'models/Status';
+import { GraphStore } from 'stores/GraphStore';
 import GraphItemsMenu from './GraphItemsMenu';
-import { EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import { GraphItem, GraphItemType } from '../../models/Graph';
-import { getEventStatus, isEventNode } from '../../helpers/event';
-import { EventStatus } from '../../models/Status';
-import { GraphStore } from '../../stores/GraphStore';
-import '../../styles/graph.scss';
+import 'styles/graph.scss';
 
 const rightIndicatorVariants = {
 	visible: {

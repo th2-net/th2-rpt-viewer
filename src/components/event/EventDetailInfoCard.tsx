@@ -16,14 +16,14 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import SplashScreen from '../SplashScreen';
-import { createBemBlock, createStyleSelector } from '../../helpers/styleCreators';
-import { formatTime, getElapsedTime, timestampToNumber } from '../../helpers/date';
-import { getEventStatus } from '../../helpers/event';
+import { useSelectedStore } from 'hooks';
+import { createBemBlock, createStyleSelector } from 'helpers/styleCreators';
+import { formatTime, getElapsedTime, timestampToNumber } from 'helpers/date';
+import { getEventStatus } from 'helpers/event';
+import { EventAction, EventTreeNode } from 'models/EventAction';
 import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { useSelectedStore } from '../../hooks';
+import SplashScreen from '../SplashScreen';
 
 interface Props {
 	node: EventTreeNode;

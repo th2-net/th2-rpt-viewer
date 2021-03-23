@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React, { RefObject } from 'react';
-import { createBemElement } from '../../../helpers/styleCreators';
+import { createBemElement } from 'helpers/styleCreators';
 
 const timeUnitsValues = Object.freeze({
 	hour: [...Array(24).keys()],

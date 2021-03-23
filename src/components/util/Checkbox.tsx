@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import '../../styles/checkbox.scss';
-import { createBemBlock } from '../../helpers/styleCreators';
+import 'styles/checkbox.scss';
+import { createBemBlock } from 'helpers/styleCreators';
 
 interface Props {
 	checked: boolean;

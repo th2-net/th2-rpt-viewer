@@ -18,18 +18,18 @@ import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import moment from 'moment';
 import ResizeObserver from 'resize-observer-polyfill';
+import { useActiveWorkspace, useSelectedStore } from 'hooks';
+import { EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import { Chunk, PanelRange } from 'models/Graph';
+import WorkspaceStore from 'stores/workspace/WorkspaceStore';
+import { isWorkspaceStore } from 'helpers/workspace';
+import PointerTimestampProvider from 'contexts/pointerTimestampContext';
 import GraphChunk from './GraphChunk';
 import GraphSearch from './search/GraphSearch';
 import OutsideItems from './OutsideItems';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
-import { useActiveWorkspace, useSelectedStore } from '../../hooks';
-import { EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import { Chunk, PanelRange } from '../../models/Graph';
-import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
-import { isWorkspaceStore } from '../../helpers/workspace';
-import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
-import '../../styles/graph.scss';
+import 'styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
 

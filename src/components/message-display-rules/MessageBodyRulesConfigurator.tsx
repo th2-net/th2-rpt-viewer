@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import React, { useRef, useState } from 'react';
-import { useOutsideClickListener } from '../../hooks';
+import { useOutsideClickListener } from 'hooks';
 import { ModalPortal } from '../util/Portal';
-import '../../styles/message-body-rules.scss';
+import 'styles/message-body-rules.scss';
 import RulesList from './RulesList';
 import NewRuleForm from './NewRuleForm';
 

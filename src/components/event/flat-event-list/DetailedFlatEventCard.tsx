@@ -15,10 +15,10 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import { useWorkspaceEventStore, useParentEvents } from '../../../hooks';
+import { useWorkspaceEventStore, useParentEvents } from 'hooks';
+import { EventTreeNode } from 'models/EventAction';
 import EventCardHeader from '../EventCardHeader';
 import EventDetailInfoCard from '../EventDetailInfoCard';
-import { EventTreeNode } from '../../../models/EventAction';
 
 interface Props {
 	eventTreeNode: EventTreeNode;

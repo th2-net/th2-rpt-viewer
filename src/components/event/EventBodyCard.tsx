@@ -14,15 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventAction } from '../../models/EventAction';
-import { CustomTable } from './tables/CustomTable';
-import { VerificationTable } from './tables/VerificationTable';
-import { keyForVerification } from '../../helpers/keys';
-import ParamsTable from './tables/ParamsTable';
-import { extractParams } from '../../helpers/tables';
-import { EventBodyPayload, EventBodyPayloadType } from '../../models/EventActionPayload';
+import { EventAction } from 'models/EventAction';
+import { keyForVerification } from 'helpers/keys';
+import { getEventStatus } from 'helpers/event';
+import { extractParams } from 'helpers/tables';
+import { EventBodyPayload, EventBodyPayloadType } from 'models/EventActionPayload';
 import ErrorBoundary from '../util/ErrorBoundary';
-import { getEventStatus } from '../../helpers/event';
+import ParamsTable from './tables/ParamsTable';
+import { VerificationTable } from './tables/VerificationTable';
+import { CustomTable } from './tables/CustomTable';
 
 interface Props {
 	body: EventBodyPayload;

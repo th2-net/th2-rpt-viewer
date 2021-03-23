@@ -16,20 +16,20 @@
 
 import * as React from 'react';
 import moment from 'moment';
-import eventHttpApi from '../../../api/event';
-import messageHttpApi from '../../../api/message';
-import { isEventAction } from '../../../helpers/event';
-import { createBemElement } from '../../../helpers/styleCreators';
-import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
-import { EventAction } from '../../../models/EventAction';
-import { EventMessage } from '../../../models/EventMessage';
-import { TimeInputType } from '../../../models/filter/FilterInputs';
-import { Timestamp } from '../../../models/Timestamp';
+import eventHttpApi from 'api/event';
+import messageHttpApi from 'api/message';
+import { isEventAction } from 'helpers/event';
+import { createBemElement } from 'helpers/styleCreators';
+import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
+import { EventAction } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import { TimeInputType } from 'models/filter/FilterInputs';
+import { Timestamp } from 'models/Timestamp';
+import localStorageWorker from 'util/LocalStorageWorker';
+import WorkspaceStore from 'stores/workspace/WorkspaceStore';
+import { ModalPortal } from 'components/util/Portal';
+import FilterDatetimePicker from 'components/filter/date-time-inputs/FilterDatetimePicker';
 import GraphSearchDialog from './GraphSearchDialog';
-import localStorageWorker from '../../../util/LocalStorageWorker';
-import WorkspaceStore from '../../../stores/workspace/WorkspaceStore';
-import { ModalPortal } from '../../util/Portal';
-import FilterDatetimePicker from '../../filter/date-time-inputs/FilterDatetimePicker';
 import GraphSearchInput, { DATE_TIME_MASK } from './GraphSearchInput';
 import GraphSearchHistory from './GraphSearchHistory';
 

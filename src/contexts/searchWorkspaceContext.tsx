@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import SearchWorkspaceStore from '../stores/workspace/SearchWorkspaceStore';
+import SearchWorkspaceStore from 'stores/workspace/SearchWorkspaceStore';
 
 const SearchWorkspaceContext = React.createContext<SearchWorkspaceStore | null>(null);
 

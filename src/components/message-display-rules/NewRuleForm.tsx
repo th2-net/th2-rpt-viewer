@@ -16,8 +16,8 @@
 
 import { nanoid } from 'nanoid';
 import React, { useRef, useState } from 'react';
-import { useMessageDisplayRulesStore } from '../../hooks';
-import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
+import { useMessageDisplayRulesStore } from 'hooks';
+import { MessageDisplayRule, MessageViewType } from 'models/EventMessage';
 import AutocompleteInput from '../util/AutocompleteInput';
 import Select from '../util/Select';
 

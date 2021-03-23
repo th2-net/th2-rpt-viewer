@@ -17,13 +17,13 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { LineChart, Line } from 'recharts';
+import { GraphStore } from 'stores/GraphStore';
+import { EventMessage } from 'models/EventMessage';
+import { GraphGroup, Chunk } from 'models/Graph';
+import { EventTreeNode } from 'models/EventAction';
+import { getGraphTimeTicks, groupGraphItems, filterListByChunkRange } from 'helpers/graph';
+import { useSelectedStore } from 'hooks';
 import GraphItemsGroup from './GraphItemsGroup';
-import { GraphStore } from '../../stores/GraphStore';
-import { EventMessage } from '../../models/EventMessage';
-import { GraphGroup, Chunk } from '../../models/Graph';
-import { EventTreeNode } from '../../models/EventAction';
-import { getGraphTimeTicks, groupGraphItems, filterListByChunkRange } from '../../helpers/graph';
-import { useSelectedStore } from '../../hooks';
 
 const ATTACHED_ITEM_SIZE = 14;
 

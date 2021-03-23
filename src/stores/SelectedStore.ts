@@ -15,15 +15,15 @@
  ***************************************************************************** */
 
 import { action, computed, reaction, observable, makeObservable } from 'mobx';
-import { EventTreeNode } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
+import { EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import localStorageWorker from 'util/LocalStorageWorker';
+import { sortMessagesByTimestamp } from 'helpers/message';
+import { isEventNode, sortByTimestamp } from 'helpers/event';
+import { GraphItem } from 'models/Graph';
+import { filterUniqueGraphItems } from 'helpers/graph';
+import { isWorkspaceStore } from 'helpers/workspace';
 import WorkspacesStore from './workspace/WorkspacesStore';
-import localStorageWorker from '../util/LocalStorageWorker';
-import { sortMessagesByTimestamp } from '../helpers/message';
-import { isEventNode, sortByTimestamp } from '../helpers/event';
-import { GraphItem } from '../models/Graph';
-import { filterUniqueGraphItems } from '../helpers/graph';
-import { isWorkspaceStore } from '../helpers/workspace';
 
 export class SelectedStore {
 	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();

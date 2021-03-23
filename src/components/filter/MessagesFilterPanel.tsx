@@ -16,19 +16,19 @@
 
 import React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
-import FilterPanel from './FilterPanel';
 import {
 	CompoundFilterRow,
 	FilterRowTogglerConfig,
 	FilterRowMultipleStringsConfig,
 	ActionFilterConfig,
 	FilterRowConfig,
-} from '../../models/filter/FilterInputs';
-import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
-import { useSearchStore } from '../../hooks/useSearchStore';
-import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
+} from 'models/filter/FilterInputs';
+import { useMessagesDataStore, useMessagesWorkspaceStore } from 'hooks';
+import { useSearchStore } from 'hooks/useSearchStore';
+import { SSEFilterInfo, SSEFilterParameter } from 'api/sse';
 import { MessageFilterState } from '../search-panel/SearchPanelFilters';
 import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
+import FilterPanel from './FilterPanel';
 import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
 

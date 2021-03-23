@@ -14,13 +14,12 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import TimeAgo from 'react-timeago';
-import { timestampToNumber } from '../../../helpers/date';
-import { isEventAction } from '../../../helpers/event';
-import { EventAction } from '../../../models/EventAction';
-import { EventMessage } from '../../../models/EventMessage';
-import { BookmarkItem } from '../../BookmarksPanel';
+import { timestampToNumber } from 'helpers/date';
+import { isEventAction } from 'helpers/event';
+import { EventAction } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import { BookmarkItem } from 'components/BookmarksPanel';
 
 interface Props {
 	className: string;

@@ -15,8 +15,11 @@
  ***************************************************************************** */
 
 import { observable, action, computed, reaction, makeObservable } from 'mobx';
-import ApiSchema from '../../api/ApiSchema';
-import { SelectedStore } from '../SelectedStore';
+import ApiSchema from 'api/ApiSchema';
+import { isWorkspaceStore } from 'helpers/workspace';
+import { EventFilterState, MessageFilterState } from 'components/search-panel/SearchPanelFilters';
+import { EventAction, EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
 import WorkspaceStore, {
 	WorkspaceUrlState,
 	WorkspaceInitialState,
@@ -24,13 +27,7 @@ import WorkspaceStore, {
 } from './WorkspaceStore';
 import TabsStore from './TabsStore';
 import SearchWorkspaceStore, { SEARCH_STORE_INTERVAL } from './SearchWorkspaceStore';
-import { isWorkspaceStore } from '../../helpers/workspace';
-import {
-	EventFilterState,
-	MessageFilterState,
-} from '../../components/search-panel/SearchPanelFilters';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
+import { SelectedStore } from '../SelectedStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {

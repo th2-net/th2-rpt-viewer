@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { createStyleSelector } from '../helpers/styleCreators';
+import { createStyleSelector } from 'helpers/styleCreators';
 
 interface Props {
 	text: string | number;

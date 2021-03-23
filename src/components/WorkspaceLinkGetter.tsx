@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import React, { useEffect, useState } from 'react';
-import { copyTextToClipboard } from '../helpers/copyHandler';
-import '../styles/workspace-link-getter.scss';
-import { useRootStore } from '../hooks';
+import { useEffect, useState } from 'react';
+import { copyTextToClipboard } from 'helpers/copyHandler';
+import 'styles/workspace-link-getter.scss';
+import { useRootStore } from 'hooks';
 
 const WorkspaceLinkGetter = () => {
 	const [disabled, setDisabled] = useState(false);

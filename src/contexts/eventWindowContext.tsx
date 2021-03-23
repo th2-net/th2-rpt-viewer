@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import EventsStore from '../stores/events/EventsStore';
+import EventsStore from 'stores/events/EventsStore';
 
 const EventWindowContext = React.createContext<EventsStore | null>(null);
 

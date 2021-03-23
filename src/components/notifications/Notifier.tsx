@@ -17,8 +17,8 @@
 import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 import { useToasts } from 'react-toast-notifications';
-import { complement } from '../../helpers/array';
-import { useNotificationsStore, usePrevious } from '../../hooks';
+import { complement } from 'helpers/array';
+import { useNotificationsStore, usePrevious } from 'hooks';
 import FetchError from './FetchError';
 import UrlError from './UrlError';
 

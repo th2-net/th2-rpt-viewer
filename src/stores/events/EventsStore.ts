@@ -16,24 +16,24 @@
 
 import { action, computed, observable, reaction, runInAction, makeObservable } from 'mobx';
 import moment from 'moment';
-import EventsFilterStore from './EventsFilterStore';
-import ViewStore from '../workspace/WorkspaceViewStore';
-import ApiSchema from '../../api/ApiSchema';
-import { EventAction, EventTree, EventTreeNode } from '../../models/EventAction';
-import EventsSearchStore from './EventsSearchStore';
-import EventsFilter from '../../models/filter/EventsFilter';
+import ViewStore from 'stores/workspace/WorkspaceViewStore';
+import ApiSchema from 'api/ApiSchema';
+import { EventAction, EventTree, EventTreeNode } from 'models/EventAction';
+import EventsFilter from 'models/filter/EventsFilter';
 import {
 	getEventNodeParents,
 	getEventParentId,
 	isEvent,
 	sortEventsByTimestamp,
-} from '../../helpers/event';
-import WorkspaceStore from '../workspace/WorkspaceStore';
-import { timestampToNumber } from '../../helpers/date';
-import { calculateTimeRange } from '../../helpers/graph';
+} from 'helpers/event';
+import WorkspaceStore from 'stores/workspace/WorkspaceStore';
+import { timestampToNumber } from 'helpers/date';
+import { calculateTimeRange } from 'helpers/graph';
+import { TimeRange } from 'models/Timestamp';
 import { GraphStore } from '../GraphStore';
-import { TimeRange } from '../../models/Timestamp';
 import { SearchStore } from '../SearchStore';
+import EventsFilterStore from './EventsFilterStore';
+import EventsSearchStore from './EventsSearchStore';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;

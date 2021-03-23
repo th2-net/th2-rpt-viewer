@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import React, { useState } from 'react';
-import { copyTextToClipboard } from '../../helpers/copyHandler';
-import { createStyleSelector } from '../../helpers/styleCreators';
+import { copyTextToClipboard } from 'helpers/copyHandler';
+import { createStyleSelector } from 'helpers/styleCreators';
 
 interface UrlErrorProps {
 	link: string | null | undefined;

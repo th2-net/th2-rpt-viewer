@@ -15,12 +15,12 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { inRange } from '../../helpers/heatmapCreator';
-import { HeatmapElement } from '../../models/Heatmap';
-import { useHeatmap } from '../../hooks';
+import { inRange } from 'helpers/heatmapCreator';
+import { HeatmapElement } from 'models/Heatmap';
+import { useHeatmap } from 'hooks';
+import { isDivElement } from 'helpers/dom';
 import HeatmapItem from './HeatmapItem';
-import { isDivElement } from '../../helpers/dom';
-import '../../styles/heatmap.scss';
+import 'styles/heatmap.scss';
 
 interface Props {
 	onElementClick: (element: HeatmapElement) => void;

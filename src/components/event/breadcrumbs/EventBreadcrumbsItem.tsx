@@ -14,10 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import { getEventStatus } from '../../../helpers/event';
-import { createBemElement } from '../../../helpers/styleCreators';
-import { EventTreeNode } from '../../../models/EventAction';
+import { getEventStatus } from 'helpers/event';
+import { createBemElement } from 'helpers/styleCreators';
+import { EventTreeNode } from 'models/EventAction';
 
 interface Props {
 	eventNode: EventTreeNode | 'root';

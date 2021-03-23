@@ -14,13 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import SplitViewPane from '../../split-view/SplitViewPane';
+import { useWorkspaceEventStore, useEventWindowViewStore } from 'hooks';
+import SplitViewPane from 'components/split-view/SplitViewPane';
+import Empty from 'components/util/Empty';
+import SplitView from 'components/split-view/SplitView';
 import EventTreeList from './EventTreeList';
-import Empty from '../../util/Empty';
-import SplitView from '../../split-view/SplitView';
-import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks';
 import EventDetailInfoCard from '../EventDetailInfoCard';
 import EventWindowHeader from '../EventWindowHeader';
 

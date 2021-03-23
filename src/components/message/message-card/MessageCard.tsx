@@ -22,22 +22,21 @@ import {
 	useHeatmap,
 	useSelectedStore,
 	useWorkspaceStore,
-} from '../../../hooks';
-import { getHashCode } from '../../../helpers/stringHash';
-import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
-import { formatTime, timestampToNumber } from '../../../helpers/date';
-import { keyForMessage } from '../../../helpers/keys';
-import StateSaver from '../../util/StateSaver';
-import { MessageScreenshotZoom } from './MessageScreenshot';
-import { EventMessage, isScreenshotMessage, MessageViewType } from '../../../models/EventMessage';
-
+} from 'hooks';
+import { getHashCode } from 'helpers/stringHash';
+import { createBemBlock, createStyleSelector } from 'helpers/styleCreators';
+import { formatTime, timestampToNumber } from 'helpers/date';
+import { keyForMessage } from 'helpers/keys';
+import StateSaver from 'components/util/StateSaver';
+import { matchWildcardRule } from 'helpers/regexp';
+import { EventMessage, isScreenshotMessage, MessageViewType } from 'models/EventMessage';
+import RadioGroup from 'components/util/RadioGroup';
+import { RadioProps } from 'components/util/Radio';
 import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
-import '../../../styles/messages.scss';
-import RadioGroup from '../../util/RadioGroup';
-import { RadioProps } from '../../util/Radio';
-import { matchWildcardRule } from '../../../helpers/regexp';
+import { MessageScreenshotZoom } from './MessageScreenshot';
+import 'styles/messages.scss';
 
 const HUE_SEGMENTS_COUNT = 36;
 

@@ -15,14 +15,14 @@
  ***************************************************************************** */
 
 import { toJS } from 'mobx';
-import ApiSchema from '../api/ApiSchema';
+import ApiSchema from 'api/ApiSchema';
+import { getEventNodeParents } from 'helpers/event';
+import { getObjectKeys } from 'helpers/object';
+import { isWorkspaceStore } from 'helpers/workspace';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
 import EventsStore, { EventStoreURLState } from './events/EventsStore';
 import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
-import { getEventNodeParents } from '../helpers/event';
-import { getObjectKeys } from '../helpers/object';
-import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './messages/MessageDisplayRulesStore';
 
 export default class RootStore {

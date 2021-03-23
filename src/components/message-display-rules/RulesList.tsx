@@ -15,9 +15,8 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import React from 'react';
 import { Virtuoso } from 'react-virtuoso';
-import { useMessageDisplayRulesStore } from '../../hooks';
+import { useMessageDisplayRulesStore } from 'hooks';
 import DisplayRule from './DisplayRule';
 
 type Props = {

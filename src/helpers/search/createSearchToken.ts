@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import SearchToken from '../../models/search/SearchToken';
+import SearchToken from 'models/search/SearchToken';
 
 export function createSearchToken(
 	value: string,

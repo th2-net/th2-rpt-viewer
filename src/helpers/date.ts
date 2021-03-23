@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import moment from 'moment';
-import { EventAction, EventTreeNode } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
-import { TimeRange, Timestamp } from '../models/Timestamp';
+import { EventAction, EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import { TimeRange, Timestamp } from 'models/Timestamp';
 import { isEventMessage } from './event';
 
 export function getElapsedTime(

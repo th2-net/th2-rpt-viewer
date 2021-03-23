@@ -18,8 +18,8 @@ import React from 'react';
 import Calendar from 'rc-calendar';
 import moment, { Moment } from 'moment';
 import 'rc-calendar/assets/index.css';
-import { TimeInputType } from '../../../models/filter/FilterInputs';
-import { useOutsideClickListener } from '../../../hooks';
+import { TimeInputType } from 'models/filter/FilterInputs';
+import { useOutsideClickListener } from 'hooks';
 import FilterTimepicker from './FilterTimePicker';
 
 interface FilterDatetimePickerProps {

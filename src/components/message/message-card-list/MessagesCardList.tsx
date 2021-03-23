@@ -17,14 +17,14 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import ResizeObserver from 'resize-observer-polyfill';
+import SplashScreen from 'components/SplashScreen';
+import Empty from 'components/util/Empty';
+import { useMessagesDataStore, useMessagesWorkspaceStore } from 'hooks';
+import { EventMessage } from 'models/EventMessage';
 import MessageCard from '../message-card/MessageCard';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
-import SplashScreen from '../../SplashScreen';
-import Empty from '../../util/Empty';
-import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../../hooks';
 import StateSaverProvider from '../../util/StateSaverProvider';
-import { EventMessage } from '../../../models/EventMessage';
-import '../../../styles/messages.scss';
+import 'styles/messages.scss';
 
 export type MessagesHeights = { [index: number]: number };
 

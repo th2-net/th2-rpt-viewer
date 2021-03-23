@@ -15,12 +15,12 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { raf } from '../../../helpers/raf';
-import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
-import { useOutsideClickListener } from '../../../hooks';
-import KeyCodes from '../../../util/KeyCodes';
-import SearchInput from '../../search/SearchInput';
-import { ModalPortal } from '../../util/Portal';
+import { raf } from 'helpers/raf';
+import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
+import { useOutsideClickListener } from 'hooks';
+import KeyCodes from 'util/KeyCodes';
+import SearchInput from 'components/search/SearchInput';
+import { ModalPortal } from 'components/util/Portal';
 
 const PANEL_WIDTH = 540;
 

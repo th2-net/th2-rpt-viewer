@@ -14,8 +14,7 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import '../../styles/select.scss';
+import 'styles/select.scss';
 
 interface Props<T> {
 	className?: string;

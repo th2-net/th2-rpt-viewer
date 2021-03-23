@@ -14,13 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { useEventWindowViewStore, useWorkspaceEventStore, useActivePanel } from 'hooks';
 import EventTreeView from './tree/EventTreeView';
 import FlatEventView from './flat-event-list/FlatEventView';
 import EventBreadcrumbs from './breadcrumbs/EventBreadcrumbs';
-import { useEventWindowViewStore, useWorkspaceEventStore, useActivePanel } from '../../hooks';
-import '../../styles/events.scss';
+import 'styles/events.scss';
 
 function EventWindow() {
 	const eventWindowViewStore = useEventWindowViewStore();

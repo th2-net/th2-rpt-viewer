@@ -15,11 +15,11 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { stopPropagationHandler } from 'helpers/react';
+import { createBemBlock, createBemElement } from 'helpers/styleCreators';
+import KeyCodes from 'util/KeyCodes';
 import AutocompleteInput from './AutocompleteInput';
-import { stopPropagationHandler } from '../../helpers/react';
-import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
-import KeyCodes from '../../util/KeyCodes';
-import '../../styles/bubble.scss';
+import 'styles/bubble.scss';
 
 interface Props {
 	className?: string;

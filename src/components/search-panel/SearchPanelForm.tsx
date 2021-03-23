@@ -20,11 +20,11 @@ import {
 	DateTimeMask,
 	FitlerRowItem,
 	TimeInputType,
-} from '../../models/filter/FilterInputs';
+} from 'models/filter/FilterInputs';
+import { DATE_TIME_INPUT_MASK } from 'util/filterInputs';
+import { SearchPanelFormState } from 'stores/SearchStore';
 import FilterRow from '../filter/row';
 import FilterDatetimeInput from '../filter/date-time-inputs/DateTimeInput';
-import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
-import { SearchPanelFormState } from '../../stores/SearchStore';
 
 type DateInputProps = {
 	inputConfig: DateTimeInputType;

@@ -14,8 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import '../../../styles/tables.scss';
+import 'styles/tables.scss';
 
 interface CustomTableProps {
 	content: { [key: string]: string | number | null | undefined }[];

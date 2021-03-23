@@ -16,17 +16,17 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import MessagesWindowHeader from './MessagesWindowHeader';
-import { HeatmapProvider } from '../heatmap/HeatmapProvider';
 import {
 	useMessagesWorkspaceStore,
 	useSelectedStore,
 	useActivePanel,
 	useWorkspaceStore,
 	useMessagesDataStore,
-} from '../../hooks';
+} from 'hooks';
+import { timestampToNumber } from 'helpers/date';
 import MessagesCardList from './message-card-list/MessagesCardList';
-import { timestampToNumber } from '../../helpers/date';
+import MessagesWindowHeader from './MessagesWindowHeader';
+import { HeatmapProvider } from '../heatmap/HeatmapProvider';
 
 const MessagesWindow = () => {
 	const messagesStore = useMessagesWorkspaceStore();

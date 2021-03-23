@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { createStyleSelector } from '../../helpers/styleCreators';
-import '../../styles/tabs.scss';
+import { createStyleSelector } from 'helpers/styleCreators';
+import 'styles/tabs.scss';
 
 export interface TabsInjectedProps {
 	activeTabIndex: number;

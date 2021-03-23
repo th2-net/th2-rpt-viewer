@@ -16,9 +16,9 @@
 
 import * as React from 'react';
 import moment from 'moment';
-import KeyCodes from '../../../util/KeyCodes';
-import { createBemElement } from '../../../helpers/styleCreators';
-import { usePointerTimestamp } from '../../../contexts/pointerTimestampContext';
+import KeyCodes from 'util/KeyCodes';
+import { createBemElement } from 'helpers/styleCreators';
+import { usePointerTimestamp } from 'contexts/pointerTimestampContext';
 
 const TIME_MASK = 'HH:mm:ss.SSS' as const;
 export const DATE_TIME_MASK = 'YYYY.MM.DD HH:mm:ss.SSS' as const;

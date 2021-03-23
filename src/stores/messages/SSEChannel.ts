@@ -16,12 +16,12 @@
  ***************************************************************************** */
 
 import { action, observable, when, makeObservable } from 'mobx';
-import api from '../../api';
-import { SSEChannelType } from '../../api/ApiSchema';
-import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
-import { isEventMessage } from '../../helpers/event';
-import { getObjectKeys } from '../../helpers/object';
-import { EventMessage } from '../../models/EventMessage';
+import api from 'api';
+import { SSEChannelType } from 'api/ApiSchema';
+import { MessagesSSEParams, SSEHeartbeat } from 'api/sse';
+import { isEventMessage } from 'helpers/event';
+import { getObjectKeys } from 'helpers/object';
+import { EventMessage } from 'models/EventMessage';
 
 type WhenPromise = Promise<void> & {
 	cancel(): void;

@@ -16,14 +16,13 @@
 
 import { observer } from 'mobx-react-lite';
 import { ToastProvider } from 'react-toast-notifications';
+import { useTabsStore, useSearchStore } from 'hooks';
 import Toast from './notifications/Toast';
 import Notifier from './notifications/Notifier';
 import WorkspacesLayout from './workspace/WorkspacesLayout';
 import Graph from './graph/Graph';
 import WorkspaceLinkGetter from './WorkspaceLinkGetter';
 import MessageBodyRulesConfigurator from './message-display-rules/MessageBodyRulesConfigurator';
-import { useSearchStore } from '../hooks/useSearchStore';
-import { useTabsStore } from '../hooks';
 import 'styles/root.scss';
 
 const App = () => {

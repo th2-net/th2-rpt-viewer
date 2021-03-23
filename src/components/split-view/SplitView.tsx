@@ -16,8 +16,8 @@
 
 import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
-import { createStyleSelector } from '../../helpers/styleCreators';
-import '../../styles/splitter.scss';
+import { createStyleSelector } from 'helpers/styleCreators';
+import 'styles/splitter.scss';
 
 export interface Props {
 	/**

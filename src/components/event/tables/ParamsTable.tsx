@@ -16,9 +16,9 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { createStyleSelector } from '../../../helpers/styleCreators';
-import StateSaver from '../../util/StateSaver';
-import '../../../styles/tables.scss';
+import { createStyleSelector } from 'helpers/styleCreators';
+import StateSaver from 'components/util/StateSaver';
+import 'styles/tables.scss';
 
 export interface ParamsTableRow {
 	subRows: ParamsTableRow[];

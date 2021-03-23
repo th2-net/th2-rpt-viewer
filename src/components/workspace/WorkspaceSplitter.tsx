@@ -18,7 +18,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import * as React from 'react';
-import { createStyleSelector } from '../../helpers/styleCreators';
+import { createStyleSelector } from 'helpers/styleCreators';
 
 const MIN_PANEL_WIDTH = 15;
 

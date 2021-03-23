@@ -16,14 +16,14 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import EventCardHeader from '../EventCardHeader';
-import { useWorkspaceEventStore } from '../../../hooks';
+import { useWorkspaceEventStore } from 'hooks';
+import { EventTreeNode } from 'models/EventAction';
+import { getEventNodeParents } from 'helpers/event';
+import CardDisplayType from 'util/CardDisplayType';
+import { createBemBlock } from 'helpers/styleCreators';
+import { formatTime } from 'helpers/date';
 import EventCardSkeleton from '../EventCardSkeleton';
-import { EventTreeNode } from '../../../models/EventAction';
-import { getEventNodeParents } from '../../../helpers/event';
-import CardDisplayType from '../../../util/CardDisplayType';
-import { createBemBlock } from '../../../helpers/styleCreators';
-import { formatTime } from '../../../helpers/date';
+import EventCardHeader from '../EventCardHeader';
 
 interface EventTreeProps {
 	eventTreeNode: EventTreeNode;

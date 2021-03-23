@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { DateTimeMask } from 'models/filter/FilterInputs';
 import { createRegExp } from './regexp';
-import { DateTimeMask } from '../models/filter/FilterInputs';
 
 const MIDDLE_DOT = '\u00b7';
 const WHITE_SQUARE = '\u25a1';

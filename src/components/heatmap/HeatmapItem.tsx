@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { HeatmapElement } from '../../models/Heatmap';
-import { hexToRGBA } from '../../helpers/color';
-import { createBemElement } from '../../helpers/styleCreators';
+import { HeatmapElement } from 'models/Heatmap';
+import { hexToRGBA } from 'helpers/color';
+import { createBemElement } from 'helpers/styleCreators';
 
 const HEATMAP_ELEMENT_MIN_HEIGHT = 14;
 const PINNED_MIN_HEIGHT = 21;

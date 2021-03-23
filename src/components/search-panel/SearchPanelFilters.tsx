@@ -15,13 +15,13 @@
  ***************************************************************************** */
 
 import React from 'react';
-import useSetState from '../../hooks/useSetState';
+import useSetState from 'hooks/useSetState';
 import {
 	FilterRowMultipleStringsConfig,
 	FilterRowStringConfig,
 	FilterRowTogglerConfig,
-} from '../../models/filter/FilterInputs';
-import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
+} from 'models/filter/FilterInputs';
+import { SSEFilterInfo, SSEFilterParameter } from 'api/sse';
 import FilterRow from '../filter/row';
 
 export type EventFilterState = {

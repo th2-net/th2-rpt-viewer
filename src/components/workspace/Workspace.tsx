@@ -14,15 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { useActivePanel, useWorkspaceStore } from 'hooks';
+import { isEventsStore, isMessagesStore } from 'helpers/stores';
+import { useWorkspaceViewStore } from 'hooks/useWorkspaceViewStore';
 import EventWindow from '../event/EventWindow';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import MessagesWindow from '../message/MessagesWindow';
-import { useActivePanel, useWorkspaceStore } from '../../hooks';
-import { isEventsStore, isMessagesStore } from '../../helpers/stores';
-import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
-import '../../styles/workspace.scss';
+
+import 'styles/workspace.scss';
 
 const panelColors = {
 	events: {

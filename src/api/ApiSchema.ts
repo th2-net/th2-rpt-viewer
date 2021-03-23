@@ -14,11 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventAction, EventTree } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
-import MessagesFilter from '../models/filter/MessagesFilter';
-import EventsFilter from '../models/filter/EventsFilter';
-import { TimeRange } from '../models/Timestamp';
+import { EventAction, EventTree } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
+import { TimeRange } from 'models/Timestamp';
 import { SSEParams, SSEFilterInfo } from './sse';
 
 export default interface ApiSchema {

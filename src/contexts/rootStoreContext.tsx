@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import React from 'react';
-import RootStore from '../stores/RootStore';
-import ApiSchema from '../api/ApiSchema';
+import RootStore from 'stores/RootStore';
+import ApiSchema from 'api/ApiSchema';
 
 const RootStoreContext = React.createContext<RootStore | null>(null);
 

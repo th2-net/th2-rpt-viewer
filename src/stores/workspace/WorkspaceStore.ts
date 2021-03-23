@@ -17,23 +17,23 @@
 import { action, computed, observable, reaction, makeObservable } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
+import ApiSchema from 'api/ApiSchema';
+import { EventMessage } from 'models/EventMessage';
+import { EventAction, EventTreeNode } from 'models/EventAction';
+import { sortMessagesByTimestamp } from 'helpers/message';
+import { isEventMessage } from 'helpers/event';
+import { TimeRange } from 'models/Timestamp';
+import { WorkspacePanelsLayout } from 'components/workspace/WorkspaceSplitter';
+import WorkspacesStore from './WorkspacesStore';
+import { SearchStore } from '../SearchStore';
+import { GraphStore } from '../GraphStore';
+import EventsStore, { EventStoreDefaultStateType, EventStoreURLState } from '../events/EventsStore';
 import MessagesStore, {
 	MessagesStoreDefaultStateType,
 	MessagesStoreURLState,
 } from '../messages/MessagesStore';
-import EventsStore, { EventStoreDefaultStateType, EventStoreURLState } from '../events/EventsStore';
-import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceViewStore from './WorkspaceViewStore';
-import { EventMessage } from '../../models/EventMessage';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { sortMessagesByTimestamp } from '../../helpers/message';
-import { GraphStore } from '../GraphStore';
-import { isEventMessage } from '../../helpers/event';
-import { TimeRange } from '../../models/Timestamp';
-import WorkspacesStore from './WorkspacesStore';
-import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
-import { SearchStore } from '../SearchStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;

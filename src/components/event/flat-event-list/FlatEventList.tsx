@@ -17,17 +17,17 @@
 import * as React from 'react';
 import { observer, Observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
-import EventCardHeader from '../EventCardHeader';
-import Empty from '../../util/Empty';
-import SplashScreen from '../../SplashScreen';
-import StateSaverProvider from '../../util/StateSaverProvider';
-import { useWorkspaceEventStore } from '../../../hooks';
-import { raf } from '../../../helpers/raf';
-import CardDisplayType from '../../../util/CardDisplayType';
-import { EventTreeNode } from '../../../models/EventAction';
-import { getEventNodeParents } from '../../../helpers/event';
+import Empty from 'components/util/Empty';
+import SplashScreen from 'components/SplashScreen';
+import StateSaverProvider from 'components/util/StateSaverProvider';
+import { useWorkspaceEventStore } from 'hooks';
+import { raf } from 'helpers/raf';
+import CardDisplayType from 'util/CardDisplayType';
+import { EventTreeNode } from 'models/EventAction';
+import { getEventNodeParents } from 'helpers/event';
 import { EventListFooter, EventListHeader } from '../EventListNavigation';
-import '../../../styles/action.scss';
+import EventCardHeader from '../EventCardHeader';
+import 'styles/action.scss';
 
 interface Props {
 	nodes: EventTreeNode[];

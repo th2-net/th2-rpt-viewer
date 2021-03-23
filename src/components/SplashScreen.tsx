@@ -14,8 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import '../styles/root.scss';
+import 'styles/root.scss';
 
 const SplashScreen = () => (
 	<div className='splash-screen'>

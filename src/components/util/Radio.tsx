@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { createBemBlock, createBemElement } from '../../helpers/styleCreators';
+import { createBemBlock, createBemElement } from 'helpers/styleCreators';
 
 export interface RadioProps<T extends string> {
 	checked: boolean;

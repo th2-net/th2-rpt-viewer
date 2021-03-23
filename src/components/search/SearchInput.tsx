@@ -17,14 +17,14 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import AutosizeInput from 'react-input-autosize';
-import KeyCodes from '../../util/KeyCodes';
-import SearchToken from '../../models/search/SearchToken';
-import Bubble from '../util/Bubble';
-import { nextCyclicItem, removeByIndex, replaceByIndex } from '../../helpers/array';
-import { raf } from '../../helpers/raf';
-import { useWorkspaceEventStore } from '../../hooks';
-import { createSearchToken } from '../../helpers/search/createSearchToken';
-import '../../styles/search.scss';
+import KeyCodes from 'util/KeyCodes';
+import SearchToken from 'models/search/SearchToken';
+import Bubble from 'components/util/Bubble';
+import { nextCyclicItem, removeByIndex, replaceByIndex } from 'helpers/array';
+import { raf } from 'helpers/raf';
+import { useWorkspaceEventStore } from 'hooks';
+import { createSearchToken } from 'helpers/search/createSearchToken';
+import 'styles/search.scss';
 
 export const REACTIVE_SEARCH_DELAY = 500;
 const INPUT_PLACEHOLDER = 'Use Space to separate different words & Tab to finish';

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { HeatmapElement, ListRange } from '../models/Heatmap';
+import { HeatmapElement, ListRange } from 'models/Heatmap';
 
 export const DEFAULT_HEATMAP_ELEMENT_COLOR = '#987DB3';
 export const DEFAULT_PIN_COLOR = '#A21AE5';

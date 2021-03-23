@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { createURLSearchParams } from 'helpers/url';
 import { EventApiSchema } from './ApiSchema';
-import { createURLSearchParams } from '../helpers/url';
 
 const eventHttpApi: EventApiSchema = {
 	getEventTree: async (filter, signal?) => {

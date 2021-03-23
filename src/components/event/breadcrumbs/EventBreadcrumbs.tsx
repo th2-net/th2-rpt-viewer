@@ -14,8 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import { EventTreeNode } from '../../../models/EventAction';
+import { EventTreeNode } from 'models/EventAction';
 import EventBreadcrumbsItem from './EventBreadcrumbsItem';
 
 interface Props {

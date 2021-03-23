@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
 import MessagesFilter from '../filter/MessagesFilterPanel';
 
 function MessagesWindowHeader() {

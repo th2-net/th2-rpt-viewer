@@ -18,15 +18,14 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
+import { useActivePanel, useSelectedStore, useSearchWorkspace } from 'hooks';
+import { getTimestampAsNumber } from 'helpers/date';
+import { isEventMessage, isEventNode } from 'helpers/event';
+import { createStyleSelector } from 'helpers/styleCreators';
+import { EventAction, EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
 import Empty from './util/Empty';
-import { getTimestampAsNumber } from '../helpers/date';
-import { isEventMessage, isEventNode } from '../helpers/event';
-import { createStyleSelector } from '../helpers/styleCreators';
-import { useActivePanel, useSelectedStore } from '../hooks';
-import { EventAction, EventTreeNode } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
-import useSearchWorkspace from '../hooks/useSearchWorkspace';
-import '../styles/bookmarks.scss';
+import 'styles/bookmarks.scss';
 
 export type BookmarkedItem = EventMessage | EventTreeNode | EventAction;
 

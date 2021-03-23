@@ -15,11 +15,11 @@
  ***************************************************************************** */
 
 import { action, reaction, observable, computed, runInAction, makeObservable } from 'mobx';
-import ApiSchema from '../../api/ApiSchema';
-import { MessagesSSEParams } from '../../api/sse';
-import { timestampToNumber } from '../../helpers/date';
-import { isEventMessage } from '../../helpers/event';
-import { EventMessage } from '../../models/EventMessage';
+import ApiSchema from 'api/ApiSchema';
+import { MessagesSSEParams } from 'api/sse';
+import { timestampToNumber } from 'helpers/date';
+import { isEventMessage } from 'helpers/event';
+import { EventMessage } from 'models/EventMessage';
 import notificationsStore from '../NotificationsStore';
 import MessagesStore from './MessagesStore';
 import { SSEChannel } from './SSEChannel';

@@ -16,14 +16,14 @@
 
 import React from 'react';
 import moment from 'moment';
-import { getTimestampAsNumber } from '../../helpers/date';
-import { createStyleSelector } from '../../helpers/styleCreators';
-import { EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import { GraphItem } from '../../models/Graph';
-import { isEventMessage } from '../../helpers/event';
-import { GraphStore } from '../../stores/GraphStore';
-import Popover from '../util/Popover';
+import { getTimestampAsNumber } from 'helpers/date';
+import { createStyleSelector } from 'helpers/styleCreators';
+import { EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import { GraphItem } from 'models/Graph';
+import { isEventMessage } from 'helpers/event';
+import { GraphStore } from 'stores/GraphStore';
+import Popover from 'components/util/Popover';
 
 interface MenuProps {
 	items: GraphItem[];

@@ -14,10 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import CardDisplayType from '../../util/CardDisplayType';
-import { createBemBlock } from '../../helpers/styleCreators';
-import '../../styles/events.scss';
+import CardDisplayType from 'util/CardDisplayType';
+import { createBemBlock } from 'helpers/styleCreators';
+import 'styles/events.scss';
 
 interface Props {
 	displayType?: CardDisplayType;
