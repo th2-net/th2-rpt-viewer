@@ -130,6 +130,7 @@ export class SearchStore {
 			currentPoint: this.currentSearch?.progress
 				? this.currentSearch?.progress - Number(this.searchForm.startTimestamp)
 				: 0,
+			searchDirection: this.searchForm.searchDirection,
 			searching: Boolean(this.searchChannel),
 			completed: this.completed,
 			processedObjectCount: this.currentSearch?.processedObjectCount || 0,
@@ -237,6 +238,10 @@ export class SearchStore {
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
 		this.searchHistory = this.searchHistory.filter(item => item !== searchHistoryItem);
 		this.currentIndex = Math.max(this.currentIndex - 1, 0);
+
+		if (this.searchHistory.length === 0) {
+			this.completed = false;
+		}
 
 		localStorageWorker.saveSearchHistory(this.searchHistory);
 	};
