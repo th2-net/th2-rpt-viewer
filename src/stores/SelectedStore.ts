@@ -38,23 +38,27 @@ export class SelectedStore {
 		reaction(() => this.pinnedEvents, localStorageWorker.setPersistedPinnedEvents);
 	}
 
-	@computed get savedItems(): Array<EventTreeNode | EventMessage> {
+	@computed
+	public get savedItems(): Array<EventTreeNode | EventMessage> {
 		return sortByTimestamp([...this.pinnedEvents, ...this.pinnedMessages]);
 	}
 
-	@computed get hoveredEvent(): EventTreeNode | null {
+	@computed
+	public get hoveredEvent(): EventTreeNode | null {
 		return isWorkspaceStore(this.workspacesStore.activeWorkspace)
 			? this.workspacesStore.activeWorkspace.eventsStore.hoveredEvent
 			: null;
 	}
 
-	@computed get hoveredMessage(): EventMessage | null {
+	@computed
+	public get hoveredMessage(): EventMessage | null {
 		return isWorkspaceStore(this.workspacesStore.activeWorkspace)
 			? this.workspacesStore.activeWorkspace.messagesStore.hoveredMessage
 			: null;
 	}
 
-	@computed get graphItems(): Array<GraphItem> {
+	@computed
+	public get graphItems(): Array<GraphItem> {
 		if (!isWorkspaceStore(this.workspacesStore.activeWorkspace)) return [];
 
 		const items = [...this.savedItems, ...this.workspacesStore.activeWorkspace.attachedMessages];
@@ -76,7 +80,8 @@ export class SelectedStore {
 		return sortByTimestamp(filterUniqueGraphItems(items));
 	}
 
-	@computed get attachedMessages() {
+	@computed
+	public get attachedMessages(): EventMessage[] {
 		return sortMessagesByTimestamp(
 			isWorkspaceStore(this.workspacesStore.activeWorkspace)
 				? this.workspacesStore.activeWorkspace.attachedMessages
@@ -85,7 +90,7 @@ export class SelectedStore {
 	}
 
 	@action
-	public toggleMessagePin = (message: EventMessage) => {
+	public toggleMessagePin = (message: EventMessage): void => {
 		if (this.pinnedMessages.findIndex(m => m.messageId === message.messageId) === -1) {
 			this.pinnedMessages = this.pinnedMessages.concat(message);
 		} else {
@@ -94,7 +99,7 @@ export class SelectedStore {
 	};
 
 	@action
-	public toggleEventPin = (event: EventTreeNode) => {
+	public toggleEventPin = (event: EventTreeNode): void => {
 		if (this.pinnedEvents.findIndex(e => e.eventId === event.eventId) === -1) {
 			this.pinnedEvents = this.pinnedEvents.concat(event);
 		} else {
@@ -103,7 +108,7 @@ export class SelectedStore {
 	};
 
 	@action
-	public removeSavedItem(savedItem: EventTreeNode | EventMessage) {
+	public removeSavedItem(savedItem: EventTreeNode | EventMessage): void {
 		if (isEventNode(savedItem)) {
 			this.pinnedEvents = this.pinnedEvents.filter(event => event.eventId !== savedItem.eventId);
 		} else {

@@ -14,10 +14,13 @@
  * limitations under the License.
  ******************************************************************************/
 
+const path = require('path');
+
 module.exports = {
 	preset: 'ts-jest',
 	testEnvironment: 'jsdom',
 	setupFiles: ['core-js'],
+	moduleDirectories: ['node_modules', path.join(__dirname, 'src')],
 	setupFilesAfterEnv: ['<rootDir>/src/__tests__/setupTests.ts'],
 	testPathIgnorePatterns: [
 		'<rootDir>/build',
@@ -27,6 +30,7 @@ module.exports = {
 	],
 	watchPathIgnorePatterns: ['<rootDir>/build', '<rootDir>/node_modules/'],
 	watchPlugins: ['jest-watch-typeahead/filename', 'jest-watch-typeahead/testname'],
+	setupFilesAfterEnv: ['@testing-library/jest-dom/extend-expect'],
 	moduleNameMapper: {
 		'\\.(css|less|scss)$': 'identity-obj-proxy',
 	},

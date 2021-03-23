@@ -25,7 +25,7 @@ import { isEventMessage } from './event';
 export function filterListByChunkRange(
 	timeRange: TimeRange,
 	list: Array<EventMessage | EventTreeNode>,
-) {
+): (EventMessage | EventTreeNode)[] {
 	const [from, to] = timeRange;
 	return list.filter(item => {
 		const itemTimestamp = getTimestampAsNumber(item);
@@ -87,7 +87,11 @@ export function groupGraphItems(
 	return groups;
 }
 
-export function getGraphTimeTicks(timeRange: TimeRange, interval: number, tickSize: number) {
+export function getGraphTimeTicks(
+	timeRange: TimeRange,
+	interval: number,
+	tickSize: number,
+): string[] {
 	const ticksArr = [];
 
 	const [from] = timeRange;
@@ -104,10 +108,11 @@ export function getGraphTimeTicks(timeRange: TimeRange, interval: number, tickSi
 	return ticksArr.map(tick => moment(tick).utc().format('HH:mm'));
 }
 
-export function filterUniqueGraphItems(items: GraphItem[]) {
-	return items.filter((item, index, self) => {
-		return index === self.findIndex(selfItem => getGraphItemId(item) === getGraphItemId(selfItem));
-	});
+export function filterUniqueGraphItems(items: GraphItem[]): GraphItem[] {
+	return items.filter(
+		(item, index, self) =>
+			index === self.findIndex(selfItem => getGraphItemId(item) === getGraphItemId(selfItem)),
+	);
 }
 
 function getGraphItemId(item: GraphItem) {

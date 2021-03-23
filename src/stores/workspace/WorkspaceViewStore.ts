@@ -49,22 +49,22 @@ export default class WorkspaceViewStore {
 	public activePanel: EventsStore | MessagesStore | null = null;
 
 	@action
-	public setPanelArea = (panelArea: number) => {
+	public setPanelArea = (panelArea: number): void => {
 		this.eventsPanelArea = panelArea;
 	};
 
 	@action
-	public setPanelsLayout = (panelsLayout: WorkspacePanelsLayout) => {
+	public setPanelsLayout = (panelsLayout: WorkspacePanelsLayout): void => {
 		this.panelsLayout = panelsLayout;
 	};
 
 	@action
-	public setActivePanel = (panel: EventsStore | MessagesStore | null) => {
+	public setActivePanel = (panel: EventsStore | MessagesStore | null): void => {
 		this.activePanel = panel;
 	};
 
 	@action
-	public toggleFlattenEventListView = () => {
+	public toggleFlattenEventListView = (): void => {
 		this.flattenedListView = !this.flattenedListView;
 	};
 

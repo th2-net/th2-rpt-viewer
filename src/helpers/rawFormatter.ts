@@ -108,7 +108,10 @@ export function decodeBase64RawContent(rawBase64Content: string): string[][] {
  * This function returns pair of offsets that form range [startOffset, endOffset] of
  * human readable symbols to be highlited (endOffset not incluede).
  */
-export function mapOctetOffsetsToHumanReadableOffsets(start: number, end: number) {
+export function mapOctetOffsetsToHumanReadableOffsets(
+	start: number,
+	end: number,
+): [number, number] {
 	// legend:
 	// 40 = length of octet line
 	// 17 = length of human-readable line: 16 human readable chars + '\n'
@@ -125,7 +128,10 @@ export function mapOctetOffsetsToHumanReadableOffsets(start: number, end: number
  * This function returns pair of offsets that form range [startOffset, endOffset] of
  * octet symbols to be highlited (endOffset not incluede).
  */
-export function mapHumanReadableOffsetsToOctetOffsets(start: number, end: number) {
+export function mapHumanReadableOffsetsToOctetOffsets(
+	start: number,
+	end: number,
+): [number, number] {
 	// legend:
 	// 40 = length of octet line
 	// 17 = length of human-readable line: 16 human readable chars + '\n'

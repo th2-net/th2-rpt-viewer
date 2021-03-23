@@ -14,8 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import Heatmap from '../../components/heatmap/Heatmap';
 import { HeatmapContext } from '../../contexts/heatmapContext';
 import { getHeatmapElements, DEFAULT_HEATMAP_ELEMENT_COLOR } from '../../helpers/heatmapCreator';
@@ -31,7 +30,7 @@ describe('Heatmap', () => {
 		const heatmapElements = getHeatmapElements(items, selectedItems, pinnedItems);
 		const mockFn = jest.fn();
 
-		const wrapper = mount(
+		const { findAllByTestId } = render(
 			<HeatmapContext.Provider
 				value={{
 					fullRange: null,
@@ -46,8 +45,8 @@ describe('Heatmap', () => {
 			</HeatmapContext.Provider>,
 		);
 
-		const heatmapElementDivs = wrapper.find('[data-testid="heatmap-block"]');
-
-		expect(heatmapElementDivs.length).toBe(heatmapElements.length);
+		findAllByTestId('heatmap-block').then(elements => {
+			expect(elements.length).toBe(heatmapElements.length);
+		});
 	});
 });

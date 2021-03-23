@@ -15,12 +15,17 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import EventsStore from '../stores/events/EventsStore';
 import MessagesStore from '../stores/messages/MessagesStore';
 import { useWorkspaceViewStore } from './useWorkspaceViewStore';
 
-export function useActivePanel(panel: EventsStore | MessagesStore | null = null) {
+export function useActivePanel(
+	panel: EventsStore | MessagesStore | null = null,
+): {
+	ref: React.RefObject<HTMLDivElement>;
+	activePanel: EventsStore | MessagesStore | null;
+} {
 	const panelRef = useRef<HTMLDivElement>(null);
 
 	const workspaceViewStore = useWorkspaceViewStore();

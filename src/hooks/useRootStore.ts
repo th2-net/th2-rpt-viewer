@@ -15,9 +15,10 @@
  ***************************************************************************** */
 
 import React from 'react';
-import RootStoreContext from '../contexts/rootStoreContext';
+import RootStore from 'stores/RootStore';
+import RootStoreContext from 'contexts/rootStoreContext';
 
-export const useRootStore = () => {
+export function useRootStore(): RootStore {
 	const rootStore = React.useContext(RootStoreContext);
 
 	if (!rootStore) {
@@ -25,4 +26,4 @@ export const useRootStore = () => {
 	}
 
 	return rootStore;
-};
+}

@@ -16,7 +16,7 @@
 
 export function createURLSearchParams(
 	_params: Record<string, string | number | boolean | null | string[] | undefined>,
-) {
+): URLSearchParams {
 	const params = new URLSearchParams();
 
 	for (const [key, param] of Object.entries(_params)) {

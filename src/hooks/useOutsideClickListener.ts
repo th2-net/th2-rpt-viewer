@@ -20,7 +20,7 @@ export function useOutsideClickListener(
 	ref: React.MutableRefObject<HTMLElement | null>,
 	handler: (e: MouseEvent) => void,
 	eventType: 'mousedown' | 'mouseup' = 'mousedown',
-) {
+): void {
 	const onOutsideClick = (e: MouseEvent) => {
 		if (!ref.current?.contains(e.target as Element)) {
 			handler(e);

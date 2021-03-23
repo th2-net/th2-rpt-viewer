@@ -53,16 +53,14 @@ function MessageCardList() {
 		}),
 	);
 
-	const renderMsg = (index: number, message: EventMessage) => {
-		return (
-			<MessageWrapper
-				index={index}
-				onMount={ref => resizeObserver.current.observe(ref.current as HTMLDivElement)}
-				onUnmount={ref => resizeObserver.current.unobserve(ref.current as HTMLDivElement)}>
-				<MessageCard message={message} />
-			</MessageWrapper>
-		);
-	};
+	const renderMsg = (index: number, message: EventMessage) => (
+		<MessageWrapper
+			index={index}
+			onMount={ref => resizeObserver.current.observe(ref.current as HTMLDivElement)}
+			onUnmount={ref => resizeObserver.current.unobserve(ref.current as HTMLDivElement)}>
+			<MessageCard message={message} />
+		</MessageWrapper>
+	);
 
 	if (
 		messagesDataStore.messages.length === 0 &&

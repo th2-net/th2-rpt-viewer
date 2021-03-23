@@ -14,23 +14,26 @@
  * limitations under the License.
  ******************************************************************************/
 
-const webpackMerge = require('webpack-merge');
+const webpack = require('webpack');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const { merge } = require('webpack-merge');
 const commonConfig = require('./webpack.common');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { appSrc } = require('./paths');
 
-module.exports = webpackMerge(commonConfig, {
+module.exports = merge(commonConfig, {
+	mode: 'development',
 	output: {
 		publicPath: '/',
 	},
 	mode: 'development',
-	entry: ['react-hot-loader/patch', appSrc],
+	entry: './src/index.tsx',
 	devtool: 'inline-source-map',
 	devServer: {
-		watchOptions: {
-			poll: true,
-			ignored: [/node_modules/, 'src/__tests__/'],
-		},
+		// watchOptions: {
+		// 	poll: true,
+		// 	ignored: [/node_modules/, 'src/__tests__/'],
+		// },
 		compress: true,
 		port: 9001,
 		host: '0.0.0.0',
@@ -46,6 +49,18 @@ module.exports = webpackMerge(commonConfig, {
 	},
 	module: {
 		rules: [
+			{
+				test: /\.[jt]sx?$/,
+				exclude: /node_modules/,
+				use: [
+					{
+						loader: require.resolve('babel-loader'),
+						options: {
+							plugins: [require.resolve('react-refresh/babel')].filter(Boolean),
+						},
+					},
+				],
+			},
 			// {
 			//     test: /\.(ts|tsx)$/,
 			//     enforce: 'pre',
@@ -70,9 +85,25 @@ module.exports = webpackMerge(commonConfig, {
 	},
 	plugins: [
 		new ForkTsCheckerWebpackPlugin({
-			eslint: {
-				files: './src/**/*',
+			typescript: {
+				enabled: true,
+				diagnosticOptions: {
+					semantic: true,
+					syntactic: true,
+				},
+				mode: 'write-references',
 			},
+			eslint: {
+				enabled: true,
+				files: './src/**/*.{ts,tsx,js,jsx}',
+				options: {
+					formatter: require('eslint-formatter-pretty'),
+					loader: 'eslint-loader',
+				},
+			},
+			formatter: 'codeframe',
 		}),
+		new webpack.HotModuleReplacementPlugin(),
+		new ReactRefreshWebpackPlugin(),
 	],
 });

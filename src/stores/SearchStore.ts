@@ -68,6 +68,31 @@ export type SearchHistoryState<T> = {
 
 const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
 
+interface SearchProgress {
+	startTimestamp: number | null;
+	endTimestamp: number | null;
+	currentPoint: number;
+	searching: boolean;
+	searchDirection: 'next' | 'previous';
+	completed: boolean;
+	processedObjectCount: number;
+}
+
+type SearchFilters =
+	| {
+			info: SSEFilterInfo[];
+			state: EventFilterState;
+			setState: (patch: Partial<EventFilterState>) => void;
+			disableAll: boolean;
+	  }
+	| {
+			info: SSEFilterInfo[];
+			state: MessageFilterState;
+			setState: (patch: Partial<MessageFilterState>) => void;
+			disableAll: boolean;
+	  }
+	| null;
+
 export class SearchStore {
 	constructor(private api: ApiSchema) {
 		this.getEventFilters();
@@ -94,15 +119,20 @@ export class SearchStore {
 		);
 	}
 
-	@observable messageSessions: Array<string> = [];
+	@observable
+	public messageSessions: Array<string> = [];
 
-	@observable searchChannel: EventSource | null = null;
+	@observable
+	public searchChannel: EventSource | null = null;
 
-	@observable eventsFilter: EventFilterState | null = null;
+	@observable
+	public eventsFilter: EventFilterState | null = null;
 
-	@observable messagesFilter: MessageFilterState | null = null;
+	@observable
+	public messagesFilter: MessageFilterState | null = null;
 
-	@observable searchForm: SearchPanelFormState = {
+	@observable
+	public searchForm: SearchPanelFormState = {
 		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
 		searchDirection: 'next',
 		resultCountLimit: 50,
@@ -111,19 +141,26 @@ export class SearchStore {
 		stream: [],
 	};
 
-	@observable formType: SearchPanelType = 'event';
+	@observable
+	public formType: SearchPanelType = 'event';
 
-	@observable searchHistory: SearchHistory[] = localStorageWorker.getSearchHistory();
+	@observable
+	public searchHistory: SearchHistory[] = localStorageWorker.getSearchHistory();
 
-	@observable currentIndex = this.searchHistory.length > 0 ? this.searchHistory.length - 1 : 0;
+	@observable
+	public currentIndex = this.searchHistory.length > 0 ? this.searchHistory.length - 1 : 0;
 
-	@observable eventFilterInfo: SSEFilterInfo[] = [];
+	@observable
+	public eventFilterInfo: SSEFilterInfo[] = [];
 
-	@observable messagesFilterInfo: SSEFilterInfo[] = [];
+	@observable
+	public messagesFilterInfo: SSEFilterInfo[] = [];
 
-	@observable isMessageFiltersLoading = false;
+	@observable
+	public isMessageFiltersLoading = false;
 
-	@computed get searchProgress() {
+	@computed
+	public get searchProgress(): SearchProgress {
 		return {
 			startTimestamp: this.searchForm.startTimestamp,
 			endTimestamp: this.searchForm.endTimestamp,
@@ -137,19 +174,24 @@ export class SearchStore {
 		};
 	}
 
-	@computed get isSearching(): boolean {
+	@computed
+	public get isSearching(): boolean {
 		return Boolean(this.searchChannel);
 	}
 
-	@observable currentSearch: SearchHistory | null = null;
+	@observable
+	public currentSearch: SearchHistory | null = null;
 
-	@observable completed = this.searchHistory.length > 0;
+	@observable
+	public completed = this.searchHistory.length > 0;
 
-	@computed get isFormDisabled() {
+	@computed
+	public get isFormDisabled(): boolean {
 		return this.searchHistory.length > 1 && this.currentIndex !== this.searchHistory.length - 1;
 	}
 
-	@computed get filters() {
+	@computed
+	public get filters(): SearchFilters {
 		if (this.formType === 'event') {
 			return this.eventsFilter
 				? {
@@ -171,7 +213,7 @@ export class SearchStore {
 	}
 
 	@action
-	getEventFilters = async () => {
+	public getEventFilters = async (): Promise<void> => {
 		try {
 			const filters = await this.api.sse.getFilters('events');
 			const filtersInfo = await this.api.sse.getFiltersInfo('events', filters);
@@ -185,7 +227,7 @@ export class SearchStore {
 	};
 
 	@action
-	getMessagesFilters = async () => {
+	public getMessagesFilters = async (): Promise<void> => {
 		this.isMessageFiltersLoading = true;
 		try {
 			const filters = await this.api.sse.getFilters('messages');
@@ -201,11 +243,13 @@ export class SearchStore {
 		}
 	};
 
-	@action toggleFormType = () => {
+	@action
+	public toggleFormType = (): void => {
 		this.formType = this.formType === 'event' ? 'message' : 'event';
 	};
 
-	@action updateForm = (stateUpdate: Partial<SearchPanelFormState>) => {
+	@action
+	public updateForm = (stateUpdate: Partial<SearchPanelFormState>): void => {
 		this.searchForm = {
 			...this.searchForm,
 			...stateUpdate,
@@ -213,7 +257,8 @@ export class SearchStore {
 		this.completed = false;
 	};
 
-	@action setEventsFilter = (patch: Partial<EventFilterState>) => {
+	@action
+	public setEventsFilter = (patch: Partial<EventFilterState>): void => {
 		if (this.eventsFilter) {
 			this.eventsFilter = {
 				...this.eventsFilter,
@@ -224,7 +269,8 @@ export class SearchStore {
 		this.completed = false;
 	};
 
-	@action setMessagesFilter = (patch: Partial<MessageFilterState>) => {
+	@action
+	public setMessagesFilter = (patch: Partial<MessageFilterState>): void => {
 		if (this.messagesFilter) {
 			this.messagesFilter = {
 				...this.messagesFilter,
@@ -235,7 +281,8 @@ export class SearchStore {
 		this.completed = false;
 	};
 
-	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
+	@action
+	public deleteHistoryItem = (searchHistoryItem: SearchHistory): void => {
 		this.searchHistory = this.searchHistory.filter(item => item !== searchHistoryItem);
 		this.currentIndex = Math.max(this.currentIndex - 1, 0);
 
@@ -246,26 +293,30 @@ export class SearchStore {
 		localStorageWorker.saveSearchHistory(this.searchHistory);
 	};
 
-	@action nextSearch = () => {
+	@action
+	public nextSearch = (): void => {
 		if (this.currentIndex < this.searchHistory.length - 1) {
 			this.currentIndex += 1;
 			this.completed = true;
 		}
 	};
 
-	@action prevSearch = () => {
+	@action
+	public prevSearch = (): void => {
 		if (this.currentIndex !== 0) {
 			this.currentIndex -= 1;
 			this.completed = true;
 		}
 	};
 
-	@action newSearch = (searchHistoryItem: SearchHistory) => {
+	@action
+	public newSearch = (searchHistoryItem: SearchHistory): void => {
 		this.searchHistory = [...this.searchHistory, searchHistoryItem];
 		this.currentIndex = this.searchHistory.length - 1;
 	};
 
-	@action updateSearchItem = (searchHistoryItem: Partial<SearchHistory>) => {
+	@action
+	public updateSearchItem = (searchHistoryItem: Partial<SearchHistory>): void => {
 		this.searchHistory = this.searchHistory.map(item => {
 			if (item === searchHistoryItem) {
 				return {
@@ -278,7 +329,8 @@ export class SearchStore {
 		});
 	};
 
-	@action startSearch = () => {
+	@action
+	public startSearch = (): void => {
 		this.completed = false;
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
 		if (this.searchChannel || !filterParams) return;
@@ -340,7 +392,7 @@ export class SearchStore {
 	};
 
 	@action
-	stopSearch = () => {
+	public stopSearch = (): void => {
 		if (!this.searchChannel) return;
 		this.searchChannel.close();
 		this.searchChannel = null;
@@ -349,7 +401,8 @@ export class SearchStore {
 		localStorageWorker.saveSearchHistory(this.searchHistory);
 	};
 
-	@computed get resultGroups(): Array<Array<SearchResult>> {
+	@computed
+	public get resultGroups(): Array<Array<SearchResult>> {
 		if (!this.currentSearch) return [];
 		if (!this.currentSearch.results.length) return [];
 
@@ -377,7 +430,7 @@ export class SearchStore {
 		return groups;
 	}
 
-	onError = (ev: Event) => {
+	private onError = (ev: Event) => {
 		const data = (ev as MessageEvent).data;
 		notificationsStore.addResponseError({
 			type: 'error',

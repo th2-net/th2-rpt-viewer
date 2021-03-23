@@ -111,27 +111,31 @@ export const getHeatmapRange = (
 	};
 };
 
-export const inRange = (heatmapElement: HeatmapElement, range: ListRange | null) => {
+export function inRange(heatmapElement: HeatmapElement, range: ListRange | null): boolean {
 	if (!range) return true;
 	const { startIndex, endIndex } = range;
 	const { index, count } = heatmapElement;
 	const elEnd = index + count - 1;
 
 	return elEnd >= startIndex && elEnd <= endIndex;
-};
+}
 
-export const isHeatmapPoint = (heatmapEl: HeatmapElement) => heatmapEl.id !== undefined;
+export function isHeatmapPoint(heatmapEl: HeatmapElement): boolean {
+	return heatmapEl.id !== undefined;
+}
 
-export const createHeatmapElement = (
+export function createHeatmapElement(
 	index: number,
 	count: number,
 	id?: string,
 	colors = [] as string[],
 	isPinned = false,
-): HeatmapElement => ({
-	index,
-	count,
-	id,
-	colors,
-	isPinned,
-});
+): HeatmapElement {
+	return {
+		index,
+		count,
+		id,
+		colors,
+		isPinned,
+	};
+}

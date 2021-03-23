@@ -14,9 +14,11 @@
  *  limitations under the License.
  ***************************************************************************** */
 
+import SearchWorkspaceStore from 'stores/workspace/SearchWorkspaceStore';
+import WorkspaceStore from 'stores/workspace/WorkspaceStore';
 import { useWorkspaces } from './useWorkspacesStore';
 
-export const useActiveWorkspace = () => {
+export const useActiveWorkspace = (): WorkspaceStore | SearchWorkspaceStore => {
 	const workspacesStore = useWorkspaces();
 
 	return workspacesStore.activeWorkspace;

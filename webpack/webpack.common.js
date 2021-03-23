@@ -16,7 +16,6 @@
 
 const path = require('path');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
-const webpack = require('webpack');
 
 const { appSrc, appPath } = require('./paths');
 
@@ -25,7 +24,19 @@ const api_env = process.env.API_ENV || 'http';
 module.exports = {
 	resolve: {
 		extensions: ['.ts', '.tsx', '.scss', '.js'],
+		alias: {
+			hooks: path.resolve(appSrc, 'hooks'),
+			helpers: path.resolve(appSrc, 'helpers'),
+			components: path.resolve(appSrc, 'components'),
+			api: path.resolve(appSrc, 'api'),
+			stores: path.resolve(appSrc, 'stores'),
+			models: path.resolve(appSrc, 'models'),
+			styles: path.resolve(appSrc, 'styles'),
+			util: path.resolve(appSrc, 'util'),
+			contexts: path.resolve(appSrc, 'contexts'),
+		},
 	},
+	mode: 'production',
 	module: {
 		rules: [
 			{
@@ -52,9 +63,6 @@ module.exports = {
 		],
 	},
 	plugins: [
-		new webpack.EnvironmentPlugin({
-			API_ENV: api_env,
-		}),
 		new HtmlWebPackPlugin({
 			title: 'Report viewer',
 			template: path.resolve(appSrc, 'index.html'),

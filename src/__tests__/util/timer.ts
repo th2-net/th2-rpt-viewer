@@ -14,7 +14,7 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-export function timer(delay: number) {
+export function timer(delay: number): Promise<void> {
 	return new Promise<void>(resolve => {
 		setTimeout(() => {
 			resolve();

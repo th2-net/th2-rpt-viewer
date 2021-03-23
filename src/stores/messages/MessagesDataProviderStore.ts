@@ -78,9 +78,9 @@ export default class MessagesDataProviderStore {
 	@observable
 	public softFilterChannelNext: SSEChannel | null = null;
 
-	prevLoadEndTimestamp: number | null = null;
+	private prevLoadEndTimestamp: number | null = null;
 
-	nextLoadEndTimestamp: number | null = null;
+	private nextLoadEndTimestamp: number | null = null;
 
 	private lastPreviousChannelResponseTimestamp: number | null = null;
 
@@ -112,7 +112,7 @@ export default class MessagesDataProviderStore {
 	private messageAC: AbortController | null = null;
 
 	@action
-	public loadMessages = async () => {
+	public loadMessages = async (): Promise<void> => {
 		this.stopMessagesLoading();
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
@@ -212,7 +212,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public stopMessagesLoading = (isError = false) => {
+	public stopMessagesLoading = (isError = false): void => {
 		this.messageAC?.abort();
 		this.searchChannelPrev?.stop();
 		this.searchChannelNext?.stop();
@@ -226,7 +226,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public startPreviousMessagesChannel = (query: MessagesSSEParams, interval?: number) => {
+	public startPreviousMessagesChannel = (query: MessagesSSEParams, interval?: number): void => {
 		this.prevLoadEndTimestamp = null;
 
 		this.searchChannelPrev = new SSEChannel(
@@ -255,7 +255,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public onPrevChannelResponse = (messages: EventMessage[]) => {
+	public onPrevChannelResponse = (messages: EventMessage[]): void => {
 		this.lastPreviousChannelResponseTimestamp = null;
 		const firstPrevMessage = messages[0];
 
@@ -277,7 +277,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	private onLoadingError = (event: Event) => {
+	private onLoadingError = (event: Event): void => {
 		if (event instanceof MessageEvent) {
 			const error = JSON.parse(event.data);
 			notificationsStore.addResponseError({
@@ -292,7 +292,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public startNextMessagesChannel = (query: MessagesSSEParams, interval?: number) => {
+	public startNextMessagesChannel = (query: MessagesSSEParams, interval?: number): void => {
 		this.nextLoadEndTimestamp = null;
 
 		this.searchChannelNext = new SSEChannel(
@@ -321,7 +321,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public onNextChannelResponse = (messages: EventMessage[]) => {
+	public onNextChannelResponse = (messages: EventMessage[]): void => {
 		this.lastNextChannelResponseTimestamp = null;
 		const firstNextMessage = messages[this.messages.length - 1];
 
@@ -495,7 +495,7 @@ export default class MessagesDataProviderStore {
 	public messagesCache: Map<string, EventMessage> = observable.map(new Map(), { deep: false });
 
 	@action
-	public fetchMessage = async (id: string, abortSingal: AbortSignal) => {
+	public fetchMessage = async (id: string, abortSingal: AbortSignal): Promise<EventMessage> => {
 		let message = this.messagesCache.get(id);
 
 		if (!message) {
@@ -507,7 +507,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	keepLoading = (direction: 'next' | 'previous') => {
+	public keepLoading = (direction: 'next' | 'previous'): void => {
 		if (
 			this.messagesStore.filterStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||

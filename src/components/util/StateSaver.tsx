@@ -16,6 +16,7 @@
 
 import * as React from 'react';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface RecoverableElementProps {
 	stateKey: string;
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import moment, { Moment } from 'moment';
+import moment from 'moment';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { TimeRange, Timestamp } from '../models/Timestamp';
@@ -24,7 +24,7 @@ export function getElapsedTime(
 	startTimestamp: Timestamp,
 	endTimestamp: Timestamp,
 	withMiliseconds = true,
-) {
+): string {
 	const diff = timestampToNumber(endTimestamp) - timestampToNumber(startTimestamp);
 	const seconds = Math.floor(diff / 1000);
 	const milliseconds = Math.floor(diff - seconds * 1000);
@@ -34,7 +34,7 @@ export function getElapsedTime(
 	return withMiliseconds ? `${seconds}.${millisecondsFormatted}s` : `${seconds}s`;
 }
 
-export function formatTime(time: string | number) {
+export function formatTime(time: string | number): string {
 	if (time == null) {
 		return '';
 	}
@@ -51,7 +51,7 @@ export function getTimestampAsNumber(entity: EventAction | EventTreeNode | Event
 	return timestampToNumber(entity.startTimestamp);
 }
 
-export function formatTimestampValue(timestamp: number | null, timeMask: string) {
+export function formatTimestampValue(timestamp: number | null, timeMask: string): string {
 	if (timestamp == null) {
 		return '';
 	}
@@ -61,44 +61,13 @@ export function formatTimestampValue(timestamp: number | null, timeMask: string)
 	return moment(utcDate).format(timeMask);
 }
 
-export const getTimeWindow = (
-	_timestamp: number | null,
-	_timeInterval: number | null,
-	limitByDay = false,
-) => {
-	const timestamp = moment.utc(_timestamp);
-	const timeInterval = _timeInterval || 15;
-
-	let timestampFrom = moment.utc(timestamp).subtract(timeInterval, 'minutes');
-	let timestampTo = moment.utc(timestamp).add(timeInterval, 'minutes');
-
-	if (!limitByDay) {
-		return {
-			timestampFrom: timestampFrom.valueOf(),
-			timestampTo: timestampTo.valueOf(),
-		};
-	}
-
-	timestampFrom = timestampFrom.isSame(timestamp, 'day') ? timestampFrom : timestamp.startOf('day');
-	timestampTo = timestampTo.isSame(timestamp, 'day') ? timestampTo : timestamp.endOf('day');
-
-	return {
-		timestampFrom: timestampFrom.valueOf(),
-		timestampTo: timestampTo.valueOf(),
-	};
-};
-
-export const isTimeIntersected = (firstRange: TimeRange, secondRange: TimeRange) => {
+export function isTimeIntersected(firstRange: TimeRange, secondRange: TimeRange): boolean {
 	return (
 		(firstRange[0] >= secondRange[0] && firstRange[0] <= secondRange[1]) ||
 		(secondRange[0] >= firstRange[0] && secondRange[0] <= secondRange[1])
 	);
-};
+}
 
-export const isTimeInsideInterval = (timestamp: number, interval: [number, number]) => {
+export function isTimeInsideInterval(timestamp: number, interval: [number, number]): boolean {
 	return timestamp >= interval[0] && timestamp <= interval[1];
-};
-
-export const toUTC = (date: Moment) => {
-	return date.subtract(moment().utcOffset(), 'minutes');
-};
+}

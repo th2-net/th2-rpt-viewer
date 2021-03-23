@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export function isElementInViewport(el: HTMLElement) {
+export function isElementInViewport(el: HTMLElement): boolean {
 	const rect = el.getBoundingClientRect();
 
 	return (
@@ -29,7 +29,7 @@ export function isDivElement(el: Element): el is HTMLDivElement {
 	return el instanceof HTMLDivElement;
 }
 
-export function isClickEventInElement(event: MouseEvent, element: HTMLElement) {
+export function isClickEventInElement(event: MouseEvent, element: HTMLElement): boolean {
 	const rect = element.getBoundingClientRect();
 	const x = event.clientX;
 	if (x < rect.left || x >= rect.right) return false;
@@ -38,7 +38,7 @@ export function isClickEventInElement(event: MouseEvent, element: HTMLElement) {
 	return true;
 }
 
-export function getElementsFullWidth(el: HTMLElement) {
+export function getElementsFullWidth(el: HTMLElement): number {
 	const style = window.getComputedStyle(el);
 	const width = el.clientWidth;
 	const margin = parseFloat(style.marginLeft) + parseFloat(style.marginRight);

@@ -104,7 +104,7 @@ export default class WorkspaceStore {
 	public isLoadingAttachedMessages = false;
 
 	@computed
-	public get attachedMessagesStreams() {
+	public get attachedMessagesStreams(): string[] {
 		return [...new Set(this.attachedMessages.map(msg => msg.sessionId))];
 	}
 
@@ -114,7 +114,7 @@ export default class WorkspaceStore {
 	}
 
 	@action
-	public setAttachedMessagesIds = (attachedMessageIds: string[]) => {
+	public setAttachedMessagesIds = (attachedMessageIds: string[]): void => {
 		this.attachedMessagesIds = [...new Set(attachedMessageIds)];
 	};
 
@@ -152,7 +152,7 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
+	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage): void => {
 		if (isEventMessage(savedItem)) {
 			this.viewStore.activePanel = this.messagesStore;
 			this.messagesStore.onMessageSelect(savedItem);
@@ -163,7 +163,7 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	public onTimestampSelect = (timestamp: number) => {
+	public onTimestampSelect = (timestamp: number): void => {
 		this.graphStore.setTimestamp(timestamp);
 	};
 

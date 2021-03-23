@@ -17,6 +17,7 @@
 import * as React from 'react';
 import { Provider, StateSaverContext } from './StateSaver';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 interface State {
 	statesMap: Map<string, any>;
 }

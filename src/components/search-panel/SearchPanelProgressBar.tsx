@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import React from 'react';
+
 import moment from 'moment';
 import { createBemElement } from '../../helpers/styleCreators';
 
@@ -29,11 +29,10 @@ interface SearchPanelProgressBarProps {
 	};
 }
 
-const toHumanReadableTime = (timestamp: moment.Moment) => {
-	return timestamp.hour()
+const toHumanReadableTime = (timestamp: moment.Moment) =>
+	timestamp.hour()
 		? timestamp.format('H [hours] m [min] s [sec]')
 		: timestamp.format('m [min] s [sec]');
-};
 
 const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 	const {
@@ -54,7 +53,7 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 		? ((currentPoint / timeInterval) * 100).toFixed(2)
 		: 0;
 
-	const scanningAtTimestamp = startTimestamp! + currentPoint;
+	const scanningAtTimestamp = Number(startTimestamp) + currentPoint;
 
 	const scanningAtLabel = moment(scanningAtTimestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS');
 

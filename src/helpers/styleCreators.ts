@@ -29,7 +29,7 @@ export function createTriStateControlClassName(
 	baseName: string,
 	isActive: boolean,
 	isEnabled?: boolean,
-) {
+): string {
 	return createStyleSelector(
 		baseName,
 		isEnabled != null && !isEnabled ? 'disabled' : isActive ? 'active' : 'inactive',

@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import WorkspaceStore from '../stores/workspace/WorkspaceStore';
+import WorkspaceStore from 'stores/workspace/WorkspaceStore';
 
-export const isWorkspaceStore = (object: unknown): object is WorkspaceStore => {
+export function isWorkspaceStore(object: unknown): object is WorkspaceStore {
 	return object instanceof WorkspaceStore;
-};
+}

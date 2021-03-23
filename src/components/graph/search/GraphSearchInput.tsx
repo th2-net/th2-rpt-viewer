@@ -28,8 +28,8 @@ const DATE_TIME_PLACEHOLDER = '0000.01.01 00:00:00.000' as const;
 const isCompletable = (
 	dateStr: string,
 	dateMask: typeof TIME_MASK | typeof DATE_TIME_MASK,
-): boolean => {
-	return new RegExp(
+): boolean =>
+	new RegExp(
 		dateMask
 			.split('')
 			.slice(0, dateStr.length)
@@ -37,7 +37,6 @@ const isCompletable = (
 			.join(''),
 		'gi',
 	).test(dateStr);
-};
 
 const replaceBlankTimeCharsWithDefaults = (
 	dateStr: string,

@@ -18,7 +18,7 @@ import '../styles/notification.scss';
 
 const NOTIFICATION_TIMEOUT = 1500;
 
-export function showNotification(text: string) {
+export function showNotification(text: string): void {
 	const element = document.createElement('div');
 	element.className = 'notification';
 	element.innerHTML = `<p>${text}</p>`;

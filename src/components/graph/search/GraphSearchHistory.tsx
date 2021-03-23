@@ -32,9 +32,8 @@ const GraphSearchHistory = (props: Props) => {
 	const { history, onHistoryItemDelete } = props;
 	const activeWorkspace = useActiveWorkspace();
 
-	const computeKey = (item: EventAction | EventMessage) => {
-		return isEventAction(item) ? item.eventId : item.messageId;
-	};
+	const computeKey = (item: EventAction | EventMessage) =>
+		isEventAction(item) ? item.eventId : item.messageId;
 
 	if (!history.length) {
 		return (

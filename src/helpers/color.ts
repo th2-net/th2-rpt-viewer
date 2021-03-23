@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export const hexToRGBA = (hex: string, opacity: number) => {
+export function hexToRGBA(hex: string, opacity: number): string {
 	// eslint-disable-next-line no-param-reassign
 	hex = hex.replace('#', '');
 	const r = parseInt(hex.substring(0, 2), 16);
@@ -22,6 +22,8 @@ export const hexToRGBA = (hex: string, opacity: number) => {
 	const b = parseInt(hex.substring(4, 6), 16);
 
 	return `rgba(${r}, ${g}, ${b}, ${opacity / 100})`;
-};
+}
 
-export const randomHexColor = () => `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+export function randomHexColor(): string {
+	return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+}

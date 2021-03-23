@@ -72,27 +72,28 @@ export class GraphStore {
 		this.interval,
 	);
 
-	@computed get tickSize() {
+	@computed
+	public get tickSize(): number {
 		return this.steps[this.interval];
 	}
 
 	@action
-	public setTimestamp = (timestamp: number) => {
+	public setTimestamp = (timestamp: number): void => {
 		this.timestamp = new Number(timestamp);
 	};
 
 	@action
-	public setInterval = (interval: IntervalOption) => {
+	public setInterval = (interval: IntervalOption): void => {
 		this.interval = interval;
 	};
 
 	@action
-	public setRange = (range: TimeRange) => {
+	public setRange = (range: TimeRange): void => {
 		this.range = range;
 	};
 
 	@action
-	public getChunkByTimestamp = (timestamp: number) => {
+	public getChunkByTimestamp = (timestamp: number): Chunk => {
 		let chunk: Chunk | undefined = this.chunks.find(c => timestamp === c.from);
 		if (chunk) return chunk;
 		chunk = observable(
@@ -104,12 +105,12 @@ export class GraphStore {
 
 	@action
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	public getChunkData = (chunk: Chunk, abortSignal?: AbortSignal) => {
+	public getChunkData = (chunk: Chunk, abortSignal?: AbortSignal): void => {
 		// TODO: implement chunk data fetching
 	};
 
 	@action
-	public createChunks(interval: IntervalOption, timestamp: number) {
+	public createChunks(interval: IntervalOption, timestamp: number): void {
 		this.chunks = [];
 		const chunkStart = moment
 			.utc(timestamp)
@@ -125,16 +126,14 @@ export class GraphStore {
 		this.chunks = chunks;
 	}
 
-	private createChunk = (timestamp: number, interval: IntervalOption) => {
-		return {
-			from: timestamp,
-			to: moment(timestamp)
-				.add(interval - 1, 'minutes')
-				.endOf('minute')
-				.valueOf(),
-			data: [],
-		};
-	};
+	private createChunk = (timestamp: number, interval: IntervalOption): Chunk => ({
+		from: timestamp,
+		to: moment(timestamp)
+			.add(interval - 1, 'minutes')
+			.endOf('minute')
+			.valueOf(),
+		data: [],
+	});
 
 	public getGraphItemType = (item: GraphItem): GraphItemType => {
 		if (isEventNode(item)) {
@@ -154,7 +153,7 @@ export class GraphStore {
 	};
 
 	@action
-	setTimestampFromRange = (range: TimeRange) => {
+	public setTimestampFromRange = (range: TimeRange): void => {
 		this.timestamp = new Number(range[0] + (range[1] - range[0]) / 2);
 	};
 }

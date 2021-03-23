@@ -14,23 +14,22 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { hot } from 'react-hot-loader/root';
 import { observer } from 'mobx-react-lite';
-import * as React from 'react';
 import { ToastProvider } from 'react-toast-notifications';
 import Toast from './notifications/Toast';
 import Notifier from './notifications/Notifier';
 import WorkspacesLayout from './workspace/WorkspacesLayout';
 import Graph from './graph/Graph';
-import '../styles/root.scss';
 import WorkspaceLinkGetter from './WorkspaceLinkGetter';
 import MessageBodyRulesConfigurator from './message-display-rules/MessageBodyRulesConfigurator';
 import { useSearchStore } from '../hooks/useSearchStore';
 import { useTabsStore } from '../hooks';
+import 'styles/root.scss';
 
 const App = () => {
 	const searchStore = useSearchStore();
 	const tabsStore = useTabsStore();
+
 	return (
 		<div className='app'>
 			<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={400}>
@@ -46,4 +45,4 @@ const App = () => {
 	);
 };
 
-export default hot(observer(App));
+export default observer(App);

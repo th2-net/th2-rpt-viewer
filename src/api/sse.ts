@@ -88,13 +88,12 @@ const sseApi: SSESchema = {
 	getFiltersInfo: (
 		filterType: 'events' | 'messages',
 		filters: string[],
-	): Promise<SSEFilterInfo[]> => {
-		return Promise.all(
+	): Promise<SSEFilterInfo[]> =>
+		Promise.all(
 			filters.map(filterName =>
 				fetch(`backend/filters/sse-${filterType}/${filterName}`).then(res => res.json()),
 			),
-		);
-	},
+		),
 };
 
 export default sseApi;

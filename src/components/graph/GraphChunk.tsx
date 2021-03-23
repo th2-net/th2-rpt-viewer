@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { LineChart, Line, LineProps } from 'recharts';
+import { LineChart, Line } from 'recharts';
 import GraphItemsGroup from './GraphItemsGroup';
 import { GraphStore } from '../../stores/GraphStore';
 import { EventMessage } from '../../models/EventMessage';
@@ -26,15 +26,6 @@ import { getGraphTimeTicks, groupGraphItems, filterListByChunkRange } from '../.
 import { useSelectedStore } from '../../hooks';
 
 const ATTACHED_ITEM_SIZE = 14;
-
-const lineProps: LineProps = {
-	dataKey: '',
-	type: 'linear',
-	yAxisId: 0,
-	animationDuration: 0,
-	activeDot: false,
-	dot: false,
-} as const;
 
 const graphLines = [
 	{
@@ -84,17 +75,20 @@ function GraphChunk(props: Props) {
 		};
 	}, []);
 
-	const graphItems = React.useMemo(() => {
-		return filterListByChunkRange([chunk.from, chunk.to], selectedStore.graphItems);
-	}, [chunk.from, chunk.to, selectedStore.graphItems]);
+	const graphItems = React.useMemo(
+		() => filterListByChunkRange([chunk.from, chunk.to], selectedStore.graphItems),
+		[chunk.from, chunk.to, selectedStore.graphItems],
+	);
 
-	const ticks: Array<string> = React.useMemo(() => {
-		return getGraphTimeTicks([chunk.from, chunk.to], interval, tickSize);
-	}, [chunk.from, chunk.to, interval, tickSize]);
+	const ticks: Array<string> = React.useMemo(
+		() => getGraphTimeTicks([chunk.from, chunk.to], interval, tickSize),
+		[chunk.from, chunk.to, interval, tickSize],
+	);
 
-	const graphItemsGroups: Array<GraphGroup> = React.useMemo(() => {
-		return groupGraphItems([chunk.from, chunk.to], chunkWidth, graphItems, ATTACHED_ITEM_SIZE);
-	}, [chunk.from, chunk.to, chunkWidth, graphItems]);
+	const graphItemsGroups: Array<GraphGroup> = React.useMemo(
+		() => groupGraphItems([chunk.from, chunk.to], chunkWidth, graphItems, ATTACHED_ITEM_SIZE),
+		[chunk.from, chunk.to, chunkWidth, graphItems],
+	);
 
 	return (
 		<div className='graph-chunk' data-from={chunk.from} data-to={chunk.to}>
@@ -116,7 +110,18 @@ function GraphChunk(props: Props) {
 					cursor: 'inherit',
 				}}>
 				{graphLines.map(line => (
-					<Line key={line.dataKey} {...lineProps} {...line} />
+					<Line
+						key={line.dataKey}
+						{...{
+							dataKey: '',
+							type: 'linear',
+							yAxisId: 0,
+							animationDuration: 0,
+							activeDot: false,
+							dot: false,
+						}}
+						{...line}
+					/>
 				))}
 			</LineChart>
 			<div className='graph-chunk__ticks'>

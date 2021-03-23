@@ -30,55 +30,6 @@ import '../styles/bookmarks.scss';
 
 export type BookmarkedItem = EventMessage | EventTreeNode | EventAction;
 
-function BookmarksPanel() {
-	const selectedStore = useSelectedStore();
-	const searchWorkspace = useSearchWorkspace();
-
-	const { ref: panelRef } = useActivePanel(null);
-
-	function onBookmarkRemove(item: BookmarkedItem) {
-		if (isEventNode(item) || isEventMessage(item)) {
-			return selectedStore.removeSavedItem(item);
-		}
-		return null;
-	}
-
-	function onBookmarkClick(item: BookmarkedItem) {
-		return searchWorkspace.onSavedItemSelect(item);
-	}
-
-	function computeKey(index: number) {
-		const item = selectedStore.savedItems[index];
-
-		return isEventNode(item) ? item.eventId : item.messageId;
-	}
-
-	function renderBookmarkItem(index: number) {
-		return (
-			<BookmarkItem
-				item={selectedStore.savedItems[index]}
-				onRemove={onBookmarkRemove}
-				onClick={onBookmarkClick}
-			/>
-		);
-	}
-
-	return (
-		<div className='bookmarks-panel' ref={panelRef}>
-			{selectedStore.savedItems.length === 0 && <Empty description='No bookmarks added' />}
-			<Virtuoso
-				className='bookmarks-panel__list'
-				totalCount={selectedStore.savedItems.length}
-				itemContent={renderBookmarkItem}
-				computeItemKey={computeKey}
-				style={{ height: '100%' }}
-			/>
-		</div>
-	);
-}
-
-export default observer(BookmarksPanel);
-
 interface BookmarkItemProps {
 	item: BookmarkedItem;
 	onRemove?: (item: BookmarkedItem) => void;
@@ -147,3 +98,52 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 };
 
 export const BookmarkItem = React.memo(BookmarkItemBase);
+
+function BookmarksPanel() {
+	const selectedStore = useSelectedStore();
+	const searchWorkspace = useSearchWorkspace();
+
+	const { ref: panelRef } = useActivePanel(null);
+
+	function onBookmarkRemove(item: BookmarkedItem) {
+		if (isEventNode(item) || isEventMessage(item)) {
+			return selectedStore.removeSavedItem(item);
+		}
+		return null;
+	}
+
+	function onBookmarkClick(item: BookmarkedItem) {
+		return searchWorkspace.onSavedItemSelect(item);
+	}
+
+	function computeKey(index: number) {
+		const item = selectedStore.savedItems[index];
+
+		return isEventNode(item) ? item.eventId : item.messageId;
+	}
+
+	function renderBookmarkItem(index: number) {
+		return (
+			<BookmarkItem
+				item={selectedStore.savedItems[index]}
+				onRemove={onBookmarkRemove}
+				onClick={onBookmarkClick}
+			/>
+		);
+	}
+
+	return (
+		<div className='bookmarks-panel' ref={panelRef}>
+			{selectedStore.savedItems.length === 0 && <Empty description='No bookmarks added' />}
+			<Virtuoso
+				className='bookmarks-panel__list'
+				totalCount={selectedStore.savedItems.length}
+				itemContent={renderBookmarkItem}
+				computeItemKey={computeKey}
+				style={{ height: '100%' }}
+			/>
+		</div>
+	);
+}
+
+export default observer(BookmarksPanel);

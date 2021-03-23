@@ -19,7 +19,7 @@ import { useEffect, useRef } from 'react';
 export function useDebouncedCallback<A extends unknown[]>(
 	callback: (...args: A) => void,
 	wait: number,
-) {
+): (...args: A) => void {
 	const argsRef = useRef<A>();
 	const timeout = useRef<ReturnType<typeof setTimeout>>();
 

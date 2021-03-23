@@ -191,6 +191,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 		if (!prevColumn || !rootRef) return;
 		const { left } = rootRef.getBoundingClientRect();
 		const columnRect = prevColumn.getBoundingClientRect();
+		// eslint-disable-next-line operator-assignment
 		rootRef.scrollLeft = rootRef?.scrollLeft - (left - columnRect.left);
 		this.getHiddenColumns();
 	};
@@ -283,7 +284,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 	}
 
 	private renderTableNodes(node: TableNode, key: string, paddingLevel = 1): React.ReactNodeArray {
-		if (node.status != null && !this.props.visibilityFilter.has(node.status as any)) {
+		if (node.status != null && !this.props.visibilityFilter.has(node.status)) {
 			return [];
 		}
 
@@ -319,10 +320,8 @@ class VerificationTableBase extends React.Component<Props, State> {
 		const expectedReplaced = replaceNonPrintableChars(expected);
 		const actualReplaced = replaceNonPrintableChars(actual);
 
-		const statusAlias =
-			status && STATUS_ALIASES.has(status)
-				? STATUS_ALIASES.get(status)!
-				: { alias: status, className: '' };
+		const alias = STATUS_ALIASES.get(status);
+		const statusAlias = status && alias ? alias : { alias: status, className: '' };
 
 		const rootClassName = createStyleSelector(
 			'ver-table-row',
@@ -445,6 +444,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 	}
 
 	private onCopyFor = (realText: string) => (e: React.ClipboardEvent<HTMLDivElement>) => {
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const selectionRange = window.getSelection()!.getRangeAt(0);
 		const copiedText = realText.substring(selectionRange.startOffset, selectionRange.endOffset);
 

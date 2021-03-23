@@ -23,10 +23,11 @@ import * as React from 'react';
  * @param args callback arguments
  */
 export function stopPropagationHandler<T extends unknown[], R>(
+	// eslint-disable-next-line @typescript-eslint/no-shadow
 	callbackfn: (...args: T) => R,
 	...args: T
 ) {
-	return (e: React.MouseEvent) => {
+	return (e: React.MouseEvent): void => {
 		e.stopPropagation();
 
 		if (callbackfn) {

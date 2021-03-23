@@ -78,36 +78,6 @@ export function prevCyclicItem<T>(array: Array<T>, item: T): T | null {
 }
 
 /**
- * Returns next item after current item in array if it exists
- * or returns first item if it doesn't exist.
- * @param array Target array
- * @param item Current item
- */
-export function findNextCyclicItem<T>(
-	array: Array<T>,
-	predicateFn: (item: T) => boolean,
-): T | null {
-	const item = array.find(predicateFn)!;
-
-	return nextCyclicItem(array, item);
-}
-
-/**
- * Returns previous item before current item in array if it exists
- * or returns last item if it doesn't exist.
- * @param array Target array
- * @param item Current item
- */
-export function findPrevCyclicItem<T>(
-	array: Array<T>,
-	predicateFn: (item: T) => boolean,
-): T | null {
-	const item = array.find(predicateFn)!;
-
-	return prevCyclicItem(array, item);
-}
-
-/**
  * Returns scrolled id for selected items.
  * @param array selected items ids
  * @param prevScrolledId previous scrolled item id
@@ -136,7 +106,7 @@ export function complement<T>(arr1: T[], arr2: T[]): T[] {
 	return arr1.filter(item => !arr2.includes(item));
 }
 
-export function move<T>(arr: T[], from: number, to: number) {
+export function move<T>(arr: T[], from: number, to: number): T[] {
 	const clone = [...arr];
 	Array.prototype.splice.call(clone, to, 0, Array.prototype.splice.call(clone, from, 1)[0]);
 	return clone;

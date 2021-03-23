@@ -23,6 +23,7 @@ import MessagesFilterStore from './MessagesFilterStore';
 export default class MessageUpdateStore {
 	constructor(
 		private api: ApiSchema,
+		// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 		private messagesStore: any,
 		private filterStore: MessagesFilterStore,
 	) {
@@ -66,7 +67,7 @@ export default class MessageUpdateStore {
 	private updateAbortController: AbortController | null = null;
 
 	@observable
-	public toggleSubscribe = () => {
+	public toggleSubscribe = (): void => {
 		if (!this.isSubscriptionActive) {
 			this.activateSubscription();
 		} else {
@@ -75,7 +76,7 @@ export default class MessageUpdateStore {
 	};
 
 	@action
-	public activateSubscription = async () => {
+	public activateSubscription = async (): Promise<void> => {
 		// Object.keys(this.messagesStore.abortControllers).forEach(key => {
 		// 	if (this.messagesStore.abortControllers[key]) {
 		// 		this.messagesStore.abortControllers[key]?.abort();
@@ -168,7 +169,7 @@ export default class MessageUpdateStore {
 	};
 
 	@action
-	public disableSubscription = () => {
+	public disableSubscription = (): void => {
 		if (this.accumulatedMessages.length && !this.isAttachedToTop) {
 			this.addAccumulatedMessagesToList();
 			this.messagesStore.scrollToMessage(this.messagesStore.messagesIds[0]);
@@ -185,7 +186,7 @@ export default class MessageUpdateStore {
 	};
 
 	@action
-	public addAccumulatedMessagesToList = () => {
+	public addAccumulatedMessagesToList = (): void => {
 		if (!this.accumulatedMessages.length) return;
 
 		this.messagesStore.addMessagesToList(this.accumulatedMessages, 'next');

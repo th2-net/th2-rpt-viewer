@@ -21,10 +21,11 @@ import WorkspaceStore from './WorkspaceStore';
 export default class TabsStore {
 	constructor(private workspacesStore: WorkspacesStore) {}
 
-	@observable activeTabIndex = 0;
+	@observable
+	public activeTabIndex = 0;
 
 	@action
-	closeWorkspace = (tab: number | WorkspaceStore) => {
+	public closeWorkspace = (tab: number | WorkspaceStore): void => {
 		const index = typeof tab === 'number' ? tab : this.workspacesStore.workspaces.indexOf(tab);
 		if (index <= this.activeTabIndex) {
 			this.setActiveWorkspace(this.activeTabIndex === 0 ? 0 : this.activeTabIndex - 1);
@@ -35,12 +36,12 @@ export default class TabsStore {
 	};
 
 	@action
-	setActiveWorkspace = (tabIndex: number) => {
+	public setActiveWorkspace = (tabIndex: number): void => {
 		this.activeTabIndex = tabIndex;
 	};
 
 	@action
-	changeWorkspacePosition = (currentTabIndex: number, newIndex: number) => {
+	public changeWorkspacePosition = (currentTabIndex: number, newIndex: number): void => {
 		if (currentTabIndex === newIndex) return;
 		const activeTab = this.workspacesStore.workspaces[this.activeTabIndex];
 		const insertBeforeTab = this.workspacesStore.workspaces[newIndex];

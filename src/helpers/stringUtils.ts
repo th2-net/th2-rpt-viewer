@@ -117,7 +117,7 @@ export function replaceNonPrintableCharsWithDot(targetString: string): string {
 export function replaceUnfilledDateStringWithMinValues(
 	maskedValue: string,
 	dateTimeMask: DateTimeMask,
-) {
+): string {
 	switch (dateTimeMask) {
 		case DateTimeMask.DATE_TIME_MASK:
 			return (

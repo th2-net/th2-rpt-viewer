@@ -49,7 +49,11 @@ export const createHeatmapInputData = (
 	itemsLength: number,
 	selectedItemsIndexes: Map<string, number[]>,
 	pinnedItemsIndexes: number[],
-) => {
+): {
+	items: string[];
+	selectedItems: Map<string, string[]>;
+	pinnedItems: string[];
+} => {
 	const items = Array(itemsLength)
 		.fill(null)
 		.map(() => nanoid());

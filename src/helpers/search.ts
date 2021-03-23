@@ -18,7 +18,9 @@ import { SSEFilterInfo, SSEFilterParameter } from '../api/sse';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { SearchHistory } from '../stores/SearchStore';
 
-export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
+export function getFilterParameterDefaultValue(
+	param: SSEFilterParameter,
+): boolean | string | string[] | null {
 	if (param.defaultValue === null) {
 		switch (param.type.value) {
 			case 'boolean':
@@ -35,14 +37,19 @@ export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
 }
 
 export function getDefaultFilterState(info: SSEFilterInfo[]): FilterState | {} {
-	return info.reduce((prev, curr) => {
-		return {
+	return info.reduce(
+		(prev, curr) => ({
 			...prev,
-			[curr.name]: curr.parameters.reduce((prevParams, currParam) => {
-				return { ...prevParams, [currParam.name]: getFilterParameterDefaultValue(currParam) };
-			}, {}),
-		};
-	}, {});
+			[curr.name]: curr.parameters.reduce(
+				(prevParams, currParam) => ({
+					...prevParams,
+					[currParam.name]: getFilterParameterDefaultValue(currParam),
+				}),
+				{},
+			),
+		}),
+		{},
+	);
 }
 
 export function isSearchHistoryEntity(obj: unknown): obj is SearchHistory {

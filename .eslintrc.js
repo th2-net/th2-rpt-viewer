@@ -39,6 +39,8 @@ module.exports = {
 		},
 	},
 	rules: {
+		'react/jsx-uses-react': 'off',
+		'react/react-in-jsx-scope': 'off',
 		'import/no-unresolved': 'error',
 		'import/named': 'error',
 		'import/default': 'error',
@@ -71,8 +73,6 @@ module.exports = {
 				},
 			},
 		],
-		'@typescript-eslint/no-use-before-define': 'off',
-		'@typescript-eslint/explicit-function-return-type': 'off',
 		'@typescript-eslint/ban-types': 'off',
 		'implicit-arrow-linebreak': 'off',
 		'arrow-parens': ['error', 'as-needed'],
@@ -105,10 +105,25 @@ module.exports = {
 		'prefer-destructuring': 'off',
 		'no-useless-constructor': 'off',
 		'prettier/prettier': ['error'],
+		'no-use-before-define': 'off',
+		// '@typescript-eslint/no-use-before-define': [
+		// 	'error',
+		// 	{ functions: false, classes: true, variables: true },
+		// ],
+		'no-shadow': 'off',
+		'@typescript-eslint/no-shadow': ['error'],
+		'@typescript-eslint/explicit-function-return-type': 'off',
+		'@typescript-eslint/explicit-module-boundary-types': 'off',
+		'@typescript-eslint/explicit-member-accessibility': 'off',
 	},
 	settings: {
 		react: {
 			version: 'detect',
+		},
+		'import/resolver': {
+			webpack: {
+				config: 'webpack/webpack.common.js',
+			},
 		},
 	},
 	overrides: [
@@ -116,6 +131,30 @@ module.exports = {
 			files: ['*.tsx'],
 			rules: {
 				'@typescript-eslint/explicit-function-return-type': 0,
+			},
+		},
+		{
+			files: ['*.ts'],
+			rules: {
+				'@typescript-eslint/explicit-module-boundary-types': ['error'],
+			},
+		},
+		{
+			files: ['*.ts'],
+			rules: {
+				'@typescript-eslint/explicit-member-accessibility': [
+					'error',
+					{
+						accessibility: 'explicit',
+						overrides: {
+							accessors: 'explicit',
+							constructors: 'no-public',
+							methods: 'explicit',
+							properties: 'explicit',
+							parameterProperties: 'explicit',
+						},
+					},
+				],
 			},
 		},
 	],

@@ -17,8 +17,8 @@
 import EventsStore from '../stores/events/EventsStore';
 import { useWorkspaceStore } from './useWorkspaceStore';
 
-export const useWorkspaceEventStore = (): EventsStore => {
+export function useWorkspaceEventStore(): EventsStore {
 	const workspaceStore = useWorkspaceStore();
 
 	return workspaceStore.eventsStore;
-};
+}

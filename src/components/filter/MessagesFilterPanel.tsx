@@ -163,8 +163,8 @@ const MessagesFilterPanel = () => {
 		});
 	}, [searchStore.messagesFilterInfo, sseFilter, setSSEFilter]);
 
-	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
-		return {
+	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(
+		() => ({
 			type: 'multiple-strings',
 			id: 'messages-stream',
 			values: streams,
@@ -174,23 +174,26 @@ const MessagesFilterPanel = () => {
 			autocompleteList: messagesStore.messageSessions,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
-		};
-	}, [streams, setStreams, currentStream, setCurrentStream, messagesStore.messageSessions]);
+		}),
+		[streams, setStreams, currentStream, setCurrentStream, messagesStore.messageSessions],
+	);
 
-	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
-		return {
+	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(
+		() => ({
 			type: 'action',
 			id: 'sse-filtler-error',
 			message: 'Failed to load sse filters',
 			actionButtonText: 'Try again',
 			action: searchStore.getMessagesFilters,
 			isLoading: searchStore.isMessageFiltersLoading,
-		};
-	}, [searchStore.getMessagesFilters, searchStore.isMessageFiltersLoading]);
+		}),
+		[searchStore.getMessagesFilters, searchStore.isMessageFiltersLoading],
+	);
 
-	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
-		return compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig];
-	}, [compoundFilterRow, sseFiltersErrorConfig]);
+	const filterConfig: Array<FilterRowConfig> = React.useMemo(
+		() => (compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig]),
+		[compoundFilterRow, sseFiltersErrorConfig],
+	);
 
 	const renderFooter = React.useCallback(() => {
 		if (!messagesStore.filterStore.sseMessagesFilter) return null;

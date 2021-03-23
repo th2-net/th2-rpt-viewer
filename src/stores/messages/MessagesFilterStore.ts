@@ -70,16 +70,19 @@ export default class MessagesFilterStore {
 		this.sseFilterSubscription = reaction(() => searchStore.messagesFilterInfo, this.initSSEFilter);
 	}
 
-	@observable filter: MessagesFilter = getDefaultMessagesFilter();
+	@observable
+	public filter: MessagesFilter = getDefaultMessagesFilter();
 
-	@observable sseMessagesFilter: MessageFilterState | null = null;
+	@observable
+	public sseMessagesFilter: MessageFilterState | null = null;
 
 	/*
 		When isSoftFilter is applied we create two messages channels:
 		1 with filters and second without filters
 		That allows us to highlight the matching messages and keeps the rest visible
 	*/
-	@observable isSoftFilter = false;
+	@observable
+	public isSoftFilter = false;
 
 	@computed
 	public get messsagesSSEConfig(): EventSourceConfig {
@@ -122,7 +125,7 @@ export default class MessagesFilterStore {
 	}
 
 	@computed
-	public get isMessagesFilterApplied() {
+	public get isMessagesFilterApplied(): boolean {
 		return [
 			this.sseMessagesFilter
 				? [
@@ -139,14 +142,14 @@ export default class MessagesFilterStore {
 		filter: MessagesFilter,
 		sseFilters: MessageFilterState | null = null,
 		isSoftFilterApplied: boolean,
-	) {
+	): void {
 		this.isSoftFilter = isSoftFilterApplied;
 		this.sseMessagesFilter = sseFilters;
 		this.filter = filter;
 	}
 
 	@action
-	public resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
+	public resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}): void => {
 		const filter = getDefaultFilterState(this.searchStore.messagesFilterInfo);
 		const defaultMessagesFilter = getDefaultMessagesFilter();
 		this.isSoftFilter = false;
@@ -165,7 +168,7 @@ export default class MessagesFilterStore {
 	};
 
 	@action
-	private initSSEFilter = (filterInfo: SSEFilterInfo[]) => {
+	private initSSEFilter = (filterInfo: SSEFilterInfo[]): void => {
 		if (this.sseMessagesFilter) {
 			this.sseMessagesFilter = {
 				...getDefaultFilterState(filterInfo),
@@ -187,7 +190,7 @@ export default class MessagesFilterStore {
 		return Object.keys(filter).length > 0 ? (filter as MessageFilterState) : null;
 	};
 
-	public dispose = () => {
+	public dispose = (): void => {
 		this.sseFilterSubscription();
 	};
 }

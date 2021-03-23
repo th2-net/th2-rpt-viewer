@@ -14,15 +14,15 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {
 	SearchInputBase,
 	Props as SearchInputProps,
 	REACTIVE_SEARCH_DELAY,
+	COLORS,
 } from '../../../components/search/SearchInput';
 import SearchToken from '../../../models/search/SearchToken';
-import KeyCodes from '../../../util/KeyCodes';
 import { timer } from '../../util/timer';
 
 /* eslint-disable @typescript-eslint/no-empty-function */
@@ -43,20 +43,33 @@ describe('[React] <SearchInput/>', () => {
 		isActive: false,
 	};
 
+	const searchTokens = [
+		{
+			pattern: 'token1',
+			color: COLORS[0],
+			isActive: false,
+			isScrollable: false,
+		},
+		{
+			pattern: 'token2',
+			color: COLORS[0],
+			isActive: false,
+			isScrollable: false,
+		},
+	];
+
 	test('Reactive delay test', done => {
 		const updateMock = jest.fn();
 
-		const wrapper = mount(
-			<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} isActive={true} />,
+		const { getByTestId } = render(
+			<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} isActive={false} />,
 		);
 
-		const field = wrapper.find('.search-field');
+		const searchWrapper = getByTestId('search-wrapper');
+		userEvent.click(searchWrapper);
 
-		field.simulate('click', { target: field.getDOMNode() });
-
-		const input = wrapper.find('input');
-		input.simulate('change', { target: { value: 'test' } });
-		wrapper.setProps({ value: 'test' });
+		const input = getByTestId('search');
+		userEvent.type(input, 'test');
 		expect(updateMock.mock.calls.length).toEqual(0);
 
 		setTimeout(() => {
@@ -71,19 +84,19 @@ describe('[React] <SearchInput/>', () => {
 	test('Submit by SPACE key down', () => {
 		const updateMock = jest.fn();
 
-		const wrapper = mount(
+		const { getByTestId } = render(
 			<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} isActive={true} />,
 		);
 
-		const field = wrapper.find('.search-field');
-		field.simulate('click', { target: field.getDOMNode() });
+		const searchWrapper = getByTestId('search-wrapper');
+		userEvent.click(searchWrapper);
 
-		const input = wrapper.find('input');
-		input.simulate('change', { target: { value: 'test' } });
-		wrapper.setProps({ value: 'test' });
+		const input = getByTestId('search');
+		userEvent.type(input, 'test');
+
 		expect(updateMock).not.toHaveBeenCalled();
 
-		input.simulate('keydown', { keyCode: KeyCodes.SPACE });
+		userEvent.type(input, ' ');
 
 		expect(updateMock).toHaveBeenCalled();
 
@@ -94,16 +107,15 @@ describe('[React] <SearchInput/>', () => {
 	test('Submit by reactive delay, change input and after that submit by space', async () => {
 		const updateMock = jest.fn();
 
-		const wrapper = mount(
+		const { getByTestId } = render(
 			<SearchInputBase {...defaultProps} updateSearchTokens={updateMock} isActive={true} />,
 		);
 
-		const field = wrapper.find('.search-field');
-		field.simulate('click', { target: field.getDOMNode() });
+		const searchWrapper = getByTestId('search-wrapper');
+		userEvent.click(searchWrapper);
 
-		const input = wrapper.find('input');
-		input.simulate('change', { target: { value: 'test' } });
-		wrapper.setProps({ value: 'test' });
+		const input = getByTestId('search');
+		userEvent.type(input, 'test');
 
 		expect(updateMock).not.toHaveBeenCalled();
 
@@ -114,18 +126,52 @@ describe('[React] <SearchInput/>', () => {
 		expect(reactiveTokens[0]?.pattern).toEqual('test');
 		expect(reactiveTokens[0]?.isActive).toEqual(true);
 
-		wrapper.setProps({
-			searchTokens: reactiveTokens,
-		});
+		userEvent.type(input, ' testsubmit ');
 
-		input.simulate('change', { target: { value: 'testsubmit' } });
-		wrapper.setProps({ value: 'testsubmit' });
-		input.simulate('keydown', { keyCode: KeyCodes.SPACE });
+		expect(updateMock.mock.calls.length).toEqual(3);
 
-		expect(updateMock.mock.calls.length).toEqual(2);
+		const submittedTokens: SearchToken[] = updateMock.mock.calls[2][0];
 
-		const submittedTokens: SearchToken[] = updateMock.mock.calls[1][0];
 		expect(submittedTokens[0]?.pattern).toEqual('testsubmit');
 		expect(submittedTokens[0]?.isActive).toEqual(false);
+	});
+
+	test('Renders predefined tokens on mount', async () => {
+		const { getByTestId, findAllByTestId } = render(
+			<SearchInputBase {...defaultProps} isActive={true} searchTokens={searchTokens} />,
+		);
+
+		const searchWrapper = getByTestId('search-wrapper');
+		userEvent.click(searchWrapper);
+
+		const renderedTokens = await findAllByTestId('bubble');
+		expect(renderedTokens.length).toBe(searchTokens.length);
+	});
+
+	test('Clears input value on clear button click', async () => {
+		const clearMock = jest.fn();
+		const updateTokensMock = jest.fn();
+		const { getByTestId } = render(
+			<SearchInputBase
+				{...defaultProps}
+				isActive={true}
+				searchTokens={searchTokens}
+				clear={clearMock}
+				updateSearchTokens={updateTokensMock}
+			/>,
+		);
+
+		const searchWrapper = getByTestId('search-wrapper');
+		userEvent.click(searchWrapper);
+
+		const input = getByTestId('search');
+		userEvent.type(input, 'token3');
+
+		expect((input as HTMLInputElement).value).toBe('token3');
+
+		const clearButton = getByTestId('clear-search-button');
+		userEvent.click(clearButton);
+
+		expect((input as HTMLInputElement).value).toBe('');
 	});
 });

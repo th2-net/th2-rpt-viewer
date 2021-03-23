@@ -16,7 +16,11 @@
 
 import * as React from 'react';
 
-export function useAsyncEffect(cb: () => Promise<void>, deps?: unknown[], cleanup?: () => void) {
+export function useAsyncEffect(
+	cb: () => Promise<void>,
+	deps?: unknown[],
+	cleanup?: () => void,
+): void {
 	React.useEffect(() => {
 		cb();
 		return cleanup;

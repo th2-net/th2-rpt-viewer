@@ -14,9 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
+import MessageDisplayRulesStore from 'stores/messages/MessageDisplayRulesStore';
 import { useRootStore } from './useRootStore';
 
-export const useMessageDisplayRulesStore = () => {
+export function useMessageDisplayRulesStore(): MessageDisplayRulesStore {
 	const rootStore = useRootStore();
 	return rootStore.messageDisplayRulesStore;
-};
+}

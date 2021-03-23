@@ -15,10 +15,10 @@
  ***************************************************************************** */
 
 import fetchIntercept from 'fetch-intercept';
-import NotificationsStore from '../stores/NotificationsStore';
+import notificationsStore from '../stores/NotificationsStore';
 
-export const registerFetchInterceptor = () =>
-	fetchIntercept.register({
+export function registerFetchInterceptor(): () => void {
+	return fetchIntercept.register({
 		request(url, config) {
 			return [url, config];
 		},
@@ -42,7 +42,7 @@ export const registerFetchInterceptor = () =>
 						break;
 				}
 				response.text().then(text => {
-					NotificationsStore.addResponseError({
+					notificationsStore.addResponseError({
 						type: 'error',
 						header,
 						resource: url,
@@ -57,3 +57,4 @@ export const registerFetchInterceptor = () =>
 			return Promise.reject(error);
 		},
 	});
+}

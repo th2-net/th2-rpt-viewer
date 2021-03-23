@@ -18,7 +18,7 @@ import { createContext } from 'react';
 
 import { HeatmapElement, ListRange } from '../models/Heatmap';
 
-interface HeatmapContextState {
+export interface HeatmapContextState {
 	heatmapElements: HeatmapElement[];
 	setHeatmapElements: (heatmapElements: HeatmapElement[]) => void;
 	visibleRange: ListRange | null;

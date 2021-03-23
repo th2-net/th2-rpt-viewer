@@ -14,10 +14,11 @@
  *  limitations under the License.
  ***************************************************************************** */
 
+import { GraphStore } from 'stores/GraphStore';
 import { useWorkspaceStore } from './useWorkspaceStore';
 
-export const useGraphDataStore = () => {
+export function useGraphDataStore(): GraphStore {
 	const workspace = useWorkspaceStore();
 
 	return workspace.graphStore;
-};
+}

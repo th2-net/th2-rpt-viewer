@@ -19,7 +19,7 @@ import moment from 'moment';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { GraphStore } from '../GraphStore';
 
-export function getDefaultEventFilter(interval = 15) {
+export function getDefaultEventFilter(interval = 15): EventsFilter {
 	const timestampTo = moment.utc().valueOf();
 	const timestampFrom = moment.utc(timestampTo).subtract(interval, 'minutes').valueOf();
 
@@ -57,17 +57,17 @@ export default class EventsFilterStore {
 	public filter: EventsFilter = getDefaultEventFilter(this.graphStore.interval);
 
 	@computed
-	public get isEventsFilterApplied() {
+	public get isEventsFilterApplied(): boolean {
 		return this.filter.eventTypes.length > 0 || this.filter.names.length > 0;
 	}
 
 	@action
-	public setEventsFilter(filter: EventsFilter) {
+	public setEventsFilter(filter: EventsFilter): void {
 		this.filter = filter;
 	}
 
 	@action
-	public changeTimestamp(mins: number) {
+	public changeTimestamp(mins: number): void {
 		const currentFilter = this.filter;
 		this.setEventsFilter({
 			...currentFilter,
@@ -77,7 +77,7 @@ export default class EventsFilterStore {
 	}
 
 	@action
-	public resetEventsFilter() {
+	public resetEventsFilter(): void {
 		this.filter = {
 			...getDefaultEventFilter(this.graphStore.interval),
 			timestampFrom: this.filter.timestampFrom,

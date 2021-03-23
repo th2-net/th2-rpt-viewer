@@ -19,7 +19,7 @@
  * @param callback target callback
  * @param framesCount count of requestAnimationFrame's calls
  */
-export function raf(callback: () => void, framesCount = 1) {
+export function raf(callback: () => void, framesCount = 1): void {
 	if (framesCount < 1) {
 		callback();
 		return;

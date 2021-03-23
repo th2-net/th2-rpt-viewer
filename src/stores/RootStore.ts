@@ -23,14 +23,14 @@ import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
 import { getEventNodeParents } from '../helpers/event';
 import { getObjectKeys } from '../helpers/object';
 import { isWorkspaceStore } from '../helpers/workspace';
-import MessageDisplayRulesStore from './MessageDisplayRulesStore';
+import MessageDisplayRulesStore from './messages/MessageDisplayRulesStore';
 
 export default class RootStore {
-	notificationsStore = notificationStoreInstance;
+	public notificationsStore = notificationStoreInstance;
 
-	messageDisplayRulesStore = new MessageDisplayRulesStore();
+	public messageDisplayRulesStore = new MessageDisplayRulesStore();
 
-	workspacesStore: WorkspacesStore;
+	public workspacesStore: WorkspacesStore;
 
 	constructor(private api: ApiSchema) {
 		this.workspacesStore = new WorkspacesStore(this.api, this.parseUrlState());
@@ -38,7 +38,7 @@ export default class RootStore {
 		window.history.replaceState({}, '', window.location.pathname);
 	}
 
-	getAppState = (): WorkspacesUrlState | null => {
+	public getAppState = (): WorkspacesUrlState | null => {
 		const activeWorkspace = this.workspacesStore.activeWorkspace;
 
 		let eventStoreState: EventStoreURLState = {};
@@ -97,7 +97,7 @@ export default class RootStore {
 		return null;
 	};
 
-	parseUrlState = (): WorkspacesUrlState | null => {
+	public parseUrlState = (): WorkspacesUrlState | null => {
 		try {
 			const searchParams = new URLSearchParams(window.location.search);
 			const workspacesUrlState = searchParams.get('workspaces');

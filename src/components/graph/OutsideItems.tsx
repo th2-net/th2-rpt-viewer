@@ -49,23 +49,25 @@ const OutsideItems = (props: OverlayPanelProps) => {
 		graphItems,
 	} = props;
 
-	const outsideItems: IOutsideItems = React.useMemo(() => {
-		return {
+	const outsideItems: IOutsideItems = React.useMemo(
+		() => ({
 			left: graphItems.filter(item => getTimestampAsNumber(item) < from),
 			right: graphItems.filter(item => getTimestampAsNumber(item) > to),
-		};
-	}, [from, to, graphItems]);
+		}),
+		[from, to, graphItems],
+	);
 
-	const outsidePanels = React.useMemo(() => {
-		return {
+	const outsidePanels = React.useMemo(
+		() => ({
 			left: panelsRange
 				.filter(panelRange => panelRange.range != null && panelRange.range[1] < from)
 				.reduce((prev, curr) => ({ ...prev, [curr.type]: 1 }), {}),
 			right: panelsRange
 				.filter(panelRange => panelRange.range != null && panelRange.range[0] > to)
 				.reduce((prev, curr) => ({ ...prev, [curr.type]: 1 }), {}),
-		};
-	}, [from, to, panelsRange]);
+		}),
+		[from, to, panelsRange],
+	);
 
 	const onOutsidePanelClick = (panelKey: string) => {
 		const panel = panelsRange.find(p => p.type === panelKey);

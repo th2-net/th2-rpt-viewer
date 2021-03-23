@@ -79,11 +79,11 @@ export default class SplitView extends React.Component<Props, State> {
 	}
 
 	get panelsAvailableWidth() {
-		return this.root.current?.offsetWidth! - this.splitterThickness;
+		return (this.root.current?.offsetWidth || window.innerWidth) - this.splitterThickness;
 	}
 
 	get panelsAvailableHeight() {
-		return this.root.current?.offsetHeight! - this.splitterThickness;
+		return (this.root.current?.offsetHeight || window.innerHeight) - this.splitterThickness;
 	}
 
 	private splitterMouseDown = (e: React.MouseEvent) => {
@@ -91,10 +91,10 @@ export default class SplitView extends React.Component<Props, State> {
 			this.root.current.addEventListener('mousemove', this.onMouseMove);
 			this.root.current.addEventListener('mouseleave', this.onMouseUpOrLeave);
 			this.root.current.addEventListener('mouseup', this.onMouseUpOrLeave);
-		}
 
-		this.lastPosition.x = e.clientX - this.root.current!.getBoundingClientRect().left;
-		this.lastPosition.y = e.clientY - this.root.current!.getBoundingClientRect().top;
+			this.lastPosition.x = e.clientX - this.root.current.getBoundingClientRect().left;
+			this.lastPosition.y = e.clientY - this.root.current.getBoundingClientRect().top;
+		}
 
 		this.setState({
 			isDragging: true,
@@ -112,10 +112,12 @@ export default class SplitView extends React.Component<Props, State> {
 	};
 
 	private onMouseMove = (e: MouseEvent) => {
-		this.resetPosition({
-			x: e.clientX - this.root.current!.getBoundingClientRect().left,
-			y: e.clientY - this.root.current!.getBoundingClientRect().top,
-		});
+		if (this.root.current) {
+			this.resetPosition({
+				x: e.clientX - this.root.current.getBoundingClientRect().left,
+				y: e.clientY - this.root.current.getBoundingClientRect().top,
+			});
+		}
 	};
 
 	private onResize(elements: ResizeObserverEntry[]) {

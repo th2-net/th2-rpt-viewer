@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useWorkspaceEventStore, useParentEvents } from '../../../hooks';
 import EventCardHeader from '../EventCardHeader';
@@ -39,8 +38,10 @@ function DetailedFlatEventCard(props: Props) {
 	const event = selectedNode === null ? eventWindowStore.selectedEvent : selectedParentEvent;
 	const node = selectedNode === null ? eventWindowStore.selectedNode : selectedNode;
 
+	if (!node) return null;
+
 	return (
-		<EventDetailInfoCard node={node!} event={event} childrenCount={selectedNode?.childList.length}>
+		<EventDetailInfoCard node={node} event={event} childrenCount={selectedNode?.childList.length}>
 			{parentNodes.length > 0 && (
 				<div className='event-detail-info__parents'>
 					{parentNodes.map(eventNode => (

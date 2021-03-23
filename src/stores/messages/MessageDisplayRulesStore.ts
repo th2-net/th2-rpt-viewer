@@ -16,9 +16,9 @@
 
 import { action, observable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
-import { move } from '../helpers/array';
-import { MessageDisplayRule, MessageViewType } from '../models/EventMessage';
-import localStorageWorker from '../util/LocalStorageWorker';
+import { move } from 'helpers/array';
+import { MessageDisplayRule, MessageViewType } from 'models/EventMessage';
+import localStorageWorker from 'util/LocalStorageWorker';
 
 class MessageDisplayRulesStore {
 	constructor() {
@@ -46,14 +46,14 @@ class MessageDisplayRulesStore {
 	public rootDisplayRule: MessageDisplayRule | null;
 
 	@action
-	public setRootDisplayRule = (rule: MessageDisplayRule) => {
+	public setRootDisplayRule = (rule: MessageDisplayRule): void => {
 		if (this.rootDisplayRule?.viewType !== rule.viewType) {
 			this.rootDisplayRule = rule;
 		}
 	};
 
 	@action
-	public setNewMessagesDisplayRule = (rule: MessageDisplayRule) => {
+	public setNewMessagesDisplayRule = (rule: MessageDisplayRule): void => {
 		const hasSame = this.messageDisplayRules.find(existed => existed.session === rule.session);
 		if (!hasSame) {
 			this.messageDisplayRules = [rule, ...this.messageDisplayRules];
@@ -61,7 +61,7 @@ class MessageDisplayRulesStore {
 	};
 
 	@action
-	public editMessageDisplayRule = (rule: MessageDisplayRule, newRule: MessageDisplayRule) => {
+	public editMessageDisplayRule = (rule: MessageDisplayRule, newRule: MessageDisplayRule): void => {
 		this.messageDisplayRules = this.messageDisplayRules.map(existedRule => {
 			if (existedRule === rule) {
 				return newRule;
@@ -71,12 +71,12 @@ class MessageDisplayRulesStore {
 	};
 
 	@action
-	public deleteMessagesDisplayRule = (rule: MessageDisplayRule) => {
+	public deleteMessagesDisplayRule = (rule: MessageDisplayRule): void => {
 		this.messageDisplayRules = this.messageDisplayRules.filter(existedRule => existedRule !== rule);
 	};
 
 	@action
-	public reorderMessagesDisplayRule = (from: number, to: number) => {
+	public reorderMessagesDisplayRule = (from: number, to: number): void => {
 		this.messageDisplayRules = move(this.messageDisplayRules, from, to);
 	};
 

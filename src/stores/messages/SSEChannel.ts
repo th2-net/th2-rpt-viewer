@@ -58,7 +58,8 @@ export class SSEChannel {
 	@observable
 	public isLoading = false;
 
-	@observable isEndReached = false;
+	@observable
+	public isEndReached = false;
 
 	constructor(
 		private type: SSEChannelType,
@@ -162,15 +163,14 @@ export class SSEChannel {
 		this.channel.addEventListener('keep_alive', this._onKeepAliveResponse);
 	};
 
-	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
-		return new Promise(res => {
+	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> =>
+		new Promise(res => {
 			this.initialResponseTimeout = window.setTimeout(() => {
 				res(this.getNextChunk());
 				this.clearFetchedChunkSubscription();
 				this.initUpdateScheduler();
 			}, timeout);
 		});
-	};
 
 	private initUpdateScheduler = (): void => {
 		this.updateScheduler = window.setInterval(() => {

@@ -18,12 +18,22 @@ module.exports = {
 	presets: [
 		['@babel/env', { targets: '> 0.25%', modules: false }],
 		'@babel/preset-typescript',
-		'@babel/preset-react',
+		[
+			'@babel/preset-react',
+			{
+				runtime: 'automatic',
+			},
+		],
 	],
 	plugins: [
+		[
+			'@babel/plugin-transform-react-jsx',
+			{
+				runtime: 'automatic',
+			},
+		],
 		['@babel/plugin-proposal-decorators', { legacy: true }],
-		['@babel/proposal-class-properties', { legacy: true }],
-		'react-hot-loader/babel',
+		['@babel/proposal-class-properties', { legacy: true, loose: false }],
 		[
 			'const-enum',
 			{

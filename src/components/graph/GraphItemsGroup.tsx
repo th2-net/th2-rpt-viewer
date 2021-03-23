@@ -66,12 +66,11 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 		});
 
 		const entries = Object.entries(map) as Array<[GraphItemType, number]>;
-		entries.sort((entryA, entryB) => {
-			return (
+		entries.sort(
+			(entryA, entryB) =>
 				listIconsPriority[entryB[0] as GroupItemType] -
-				listIconsPriority[entryA[0] as GroupItemType]
-			);
-		});
+				listIconsPriority[entryA[0] as GroupItemType],
+		);
 
 		return entries
 			.reduce<string[]>((prev, [type, amount], index, array) => {

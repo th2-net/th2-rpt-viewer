@@ -22,9 +22,14 @@ import {
 	VerificationPayloadField,
 	TreeTableCollection,
 } from '../models/EventActionPayload';
-import { ParamsTable, ParamsTableRow } from '../components/event/tables/ParamsTable';
+import { ParamsTableRow } from '../components/event/tables/ParamsTable';
 
-export const getVerificationTablesNodes = (body: VerificationPayload) => {
+export interface ParamsTable {
+	rows: ParamsTableRow[];
+	columns: Array<string>;
+}
+
+export const getVerificationTablesNodes = (body: VerificationPayload): TableNode[] => {
 	if (!body || !body.fields) return [];
 	const result = Object.keys(body.fields).map(field => paramsToNodes(body.fields[field], field));
 
@@ -32,7 +37,8 @@ export const getVerificationTablesNodes = (body: VerificationPayload) => {
 		return {
 			subEntries:
 				root.fields !== undefined
-					? Object.keys(root.fields).map(field => paramsToNodes(root.fields![field], field))
+					? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+					  Object.keys(root.fields).map(field => paramsToNodes(root.fields![field], field))
 					: [],
 			isExpanded: true,
 			name,

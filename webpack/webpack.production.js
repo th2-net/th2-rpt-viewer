@@ -14,13 +14,13 @@
  * limitations under the License.
  ******************************************************************************/
 
-const webpackMerge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const commonConfig = require('./webpack.common');
 const path = require('path');
 
 const { appBuild, appPath, appSrc } = require('./paths');
 
-module.exports = webpackMerge(commonConfig, {
+module.exports = merge(commonConfig, {
 	output: {
 		path: path.resolve(appBuild, 'out'),
 		publicPath: '',

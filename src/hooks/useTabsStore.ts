@@ -14,10 +14,11 @@
  *  limitations under the License.
  ***************************************************************************** */
 
+import TabsStore from 'stores/workspace/TabsStore';
 import { useWorkspaces } from './useWorkspacesStore';
 
-export const useTabsStore = () => {
+export function useTabsStore(): TabsStore {
 	const workspaces = useWorkspaces();
 
 	return workspaces.tabsStore;
-};
+}

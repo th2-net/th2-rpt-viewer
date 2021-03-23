@@ -135,36 +135,36 @@ export default class MessagesStore {
 	}
 
 	@action
-	public setHoveredMessage(message: EventMessage | null) {
+	public setHoveredMessage(message: EventMessage | null): void {
 		this.hoveredMessage = message;
 	}
 
 	@action
-	public showDetailedRawMessage = (messageId: string) => {
+	public showDetailedRawMessage = (messageId: string): void => {
 		if (!this.detailedRawMessagesIds.includes(messageId)) {
 			this.detailedRawMessagesIds = [...this.detailedRawMessagesIds, messageId];
 		}
 	};
 
 	@action
-	public hideDetailedRawMessage = (messageId: string) => {
+	public hideDetailedRawMessage = (messageId: string): void => {
 		this.detailedRawMessagesIds = this.detailedRawMessagesIds.filter(id => id !== messageId);
 	};
 
 	@action
-	public beautify = (messageId: string) => {
+	public beautify = (messageId: string): void => {
 		if (!this.beautifiedMessages.includes(messageId)) {
 			this.beautifiedMessages = [...this.beautifiedMessages, messageId];
 		}
 	};
 
 	@action
-	public debeautify = (messageId: string) => {
+	public debeautify = (messageId: string): void => {
 		this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
 	};
 
 	@action
-	public scrollToMessage = async (messageId: string) => {
+	public scrollToMessage = (messageId: string): void => {
 		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === messageId);
 		if (messageIndex !== -1) {
 			this.scrolledIndex = new Number(messageIndex);
@@ -176,7 +176,7 @@ export default class MessagesStore {
 		filter: MessagesFilter,
 		sseFilters: MessageFilterState | null,
 		isSoftFilterApplied: boolean,
-	) => {
+	): void => {
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.selectedMessageId = null;
@@ -192,7 +192,7 @@ export default class MessagesStore {
 	};
 
 	@action
-	public onMessageSelect = async (message: EventMessage) => {
+	public onMessageSelect = async (message: EventMessage): Promise<void> => {
 		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(message);
 
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
@@ -211,7 +211,7 @@ export default class MessagesStore {
 	};
 
 	@action
-	public onAttachedMessagesChange = (attachedMessages: EventMessage[]) => {
+	public onAttachedMessagesChange = (attachedMessages: EventMessage[]): void => {
 		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(attachedMessages);
 
 		if (
@@ -236,7 +236,7 @@ export default class MessagesStore {
 	};
 
 	@action
-	public onRangeChange = (timestamp: number) => {
+	public onRangeChange = (timestamp: number): void => {
 		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
 		this.hintMessages = [];
@@ -253,7 +253,7 @@ export default class MessagesStore {
 	};
 
 	@action
-	public clearFilters = () => {
+	public clearFilters = (): void => {
 		this.hintMessages = [];
 		this.filterStore.resetMessagesFilter();
 		this.dataStore.stopMessagesLoading();
@@ -288,7 +288,7 @@ export default class MessagesStore {
 	};
 
 	@action
-	public applyFilterHint = () => {
+	public applyFilterHint = (): void => {
 		if (!this.hintMessages.length) return;
 
 		this.dataStore.searchChannelNext?.stop();
@@ -310,7 +310,7 @@ export default class MessagesStore {
 	};
 
 	// Unsubcribe from reactions
-	public dispose = () => {
+	public dispose = (): void => {
 		this.attachedMessagesSubscription();
 		this.filterStore.dispose();
 		this.dataStore.stopMessagesLoading();

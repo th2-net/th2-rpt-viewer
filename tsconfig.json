@@ -8,13 +8,26 @@
 		"moduleResolution": "node",
 		"removeComments": false,
 		"sourceMap": true,
-		"jsx": "react",
+		"jsx": "react-jsx",
 		"skipLibCheck": true,
 		"esModuleInterop": true,
 		"experimentalDecorators": true,
 		"strict": true,
 		"resolveJsonModule": true,
-		"noEmit": true
+		"noEmit": true,
+		"baseUrl": "src",
+		"paths": {
+			"hooks": ["./hooks"],
+			"components": ["./components/*"],
+			"api": ["./api"],
+			"stores": ["./stores/*"],
+			"helpers": ["./helpers/*"],
+			"styles": ["./styles/*"],
+			"util": ["./util/*"],
+			"models": ["./models/*"],
+			"contexts": ["./contexts/*"]
+		},
+		"useDefineForClassFields": true
 	},
 	"exclude": ["node_modules"],
 	"include": ["./src/**/*"]

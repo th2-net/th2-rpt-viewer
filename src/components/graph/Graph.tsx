@@ -81,18 +81,17 @@ function Graph({ activeWorkspace }: GraphProps) {
 	]);
 
 	const getChunk = React.useCallback(
-		(timestamp: number, index: number) => {
-			return activeWorkspace.graphStore.getChunkByTimestamp(
+		(timestamp: number, index: number) =>
+			activeWorkspace.graphStore.getChunkByTimestamp(
 				moment(timestamp)
 					.subtract(-index * activeWorkspace.graphStore.interval, 'minutes')
 					.valueOf(),
-			);
-		},
+			),
 		[activeWorkspace, activeWorkspace.graphStore.interval],
 	);
 
-	const panelsRange: Array<PanelRange> = React.useMemo(() => {
-		return [
+	const panelsRange: Array<PanelRange> = React.useMemo(
+		() => [
 			{
 				type: 'events-panel',
 				range: activeWorkspace.eventsStore.panelRange,
@@ -103,33 +102,32 @@ function Graph({ activeWorkspace }: GraphProps) {
 				range: activeWorkspace.messagesStore.panelRange,
 				setRange: activeWorkspace.messagesStore.onRangeChange,
 			},
-		];
-	}, [activeWorkspace.eventsStore.panelRange, activeWorkspace.messagesStore.panelRange]);
+		],
+		[activeWorkspace.eventsStore.panelRange, activeWorkspace.messagesStore.panelRange],
+	);
 
-	const renderChunk = (chunk: Chunk, index: number) => {
-		return (
-			<Observer key={`${chunk.from}-${chunk.to}`}>
-				{() => (
-					<div
-						data-from={moment.utc(chunk.from).valueOf()}
-						data-to={moment.utc(chunk.to).valueOf()}
-						className='graph__chunk-item'
-						data-index={index}
-						style={{ width: chunkWidth }}>
-						<GraphChunk
-							tickSize={activeWorkspace.graphStore.tickSize}
-							interval={activeWorkspace.graphStore.interval}
-							chunk={chunk}
-							chunkWidth={chunkWidth}
-							getChunkData={activeWorkspace.graphStore.getChunkData}
-							getGraphItemType={getGraphItemType}
-							onGraphItemClick={onGraphItemClick}
-						/>
-					</div>
-				)}
-			</Observer>
-		);
-	};
+	const renderChunk = (chunk: Chunk, index: number) => (
+		<Observer key={`${chunk.from}-${chunk.to}`}>
+			{() => (
+				<div
+					data-from={moment.utc(chunk.from).valueOf()}
+					data-to={moment.utc(chunk.to).valueOf()}
+					className='graph__chunk-item'
+					data-index={index}
+					style={{ width: chunkWidth }}>
+					<GraphChunk
+						tickSize={activeWorkspace.graphStore.tickSize}
+						interval={activeWorkspace.graphStore.interval}
+						chunk={chunk}
+						chunkWidth={chunkWidth}
+						getChunkData={activeWorkspace.graphStore.getChunkData}
+						getGraphItemType={getGraphItemType}
+						onGraphItemClick={onGraphItemClick}
+					/>
+				</div>
+			)}
+		</Observer>
+	);
 
 	return (
 		<div className='graph' ref={rootRef}>

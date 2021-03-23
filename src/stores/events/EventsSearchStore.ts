@@ -51,20 +51,26 @@ export default class EventsSearchStore {
 		);
 	}
 
-	@observable tokens: SearchToken[] = [];
+	@observable
+	public tokens: SearchToken[] = [];
 
-	@observable rawResults: string[] = [];
+	@observable
+	public rawResults: string[] = [];
 
-	@observable isLoading = false;
+	@observable
+	public isLoading = false;
 
-	@observable scrolledIndex: number | null = null;
+	@observable
+	public scrolledIndex: number | null = null;
 
-	@observable isActive = false;
+	@observable
+	public isActive = false;
 
-	@observable inputValue = '';
+	@observable
+	public inputValue = '';
 
 	@computed
-	get scrolledItem() {
+	public get scrolledItem(): null | string {
 		if (this.scrolledIndex == null) {
 			return null;
 		}
@@ -72,7 +78,7 @@ export default class EventsSearchStore {
 	}
 
 	@computed
-	get results() {
+	public get results(): string[] {
 		if (this.eventsStore.viewStore.flattenedListView) {
 			return this.eventsStore.flattenedEventList
 				.map(node => node.eventId)
@@ -84,7 +90,7 @@ export default class EventsSearchStore {
 	}
 
 	@action
-	updateTokens = async (nextTokens: SearchToken[]) => {
+	public updateTokens = async (nextTokens: SearchToken[]): Promise<void> => {
 		this.isLoading = true;
 		this.tokens = nextTokens;
 
@@ -98,7 +104,7 @@ export default class EventsSearchStore {
 	};
 
 	@action
-	fetchTokenResults = async (tokenString: string) => {
+	public fetchTokenResults = async (tokenString: string): Promise<string[]> => {
 		const rootEventsResults = await this.api.events.getEventsByName(
 			[
 				this.eventsStore.filterStore.filter.timestampFrom,
@@ -128,7 +134,7 @@ export default class EventsSearchStore {
 	};
 
 	@action
-	appendResultsForEvent = async (eventId: string) => {
+	public appendResultsForEvent = async (eventId: string): Promise<void> => {
 		this.isLoading = true;
 		const results = await Promise.all(
 			this.tokens.map(token =>
@@ -149,19 +155,19 @@ export default class EventsSearchStore {
 	};
 
 	@action
-	removeEventsResults = (nodesIds: string[]) => {
+	public removeEventsResults = (nodesIds: string[]): void => {
 		this.rawResults = this.rawResults.filter(result => !nodesIds.includes(result));
 		this.scrolledIndex = null;
 	};
 
 	@action
-	nextSearchResult = () => {
+	public nextSearchResult = (): void => {
 		this.scrolledIndex =
 			this.scrolledIndex != null ? (this.scrolledIndex + 1) % this.results.length : 0;
 	};
 
 	@action
-	prevSearchResult = () => {
+	public prevSearchResult = (): void => {
 		this.scrolledIndex =
 			this.scrolledIndex != null
 				? (this.results.length + this.scrolledIndex - 1) % this.results.length
@@ -169,7 +175,7 @@ export default class EventsSearchStore {
 	};
 
 	@action
-	clear = () => {
+	public clear = (): void => {
 		this.rawResults = [];
 		this.tokens = [];
 		this.inputValue = '';
@@ -204,7 +210,7 @@ export default class EventsSearchStore {
 	};
 
 	@action
-	setInputValue = (value: string) => {
+	public setInputValue = (value: string): void => {
 		this.inputValue = value;
 	};
 }

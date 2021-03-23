@@ -14,4 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export const minmax = (min: number, max: number, v: number) => Math.min(Math.max(v, min), max);
+export function minmax(min: number, max: number, v: number): number {
+	return Math.min(Math.max(v, min), max);
+}

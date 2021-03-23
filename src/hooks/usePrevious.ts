@@ -16,7 +16,7 @@
 
 import React from 'react';
 
-export function usePrevious<T>(value: T) {
+export function usePrevious<T>(value: T): T | undefined {
 	const valueRef = React.useRef<T>();
 
 	React.useEffect(() => {

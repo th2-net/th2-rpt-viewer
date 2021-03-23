@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export function copyTextToClipboard(str: string) {
+export function copyTextToClipboard(str: string): void {
 	// dirty hack here - we create new invisible element, select it and copy text to the clipboard
 	const element = document.createElement('textarea');
 

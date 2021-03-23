@@ -18,10 +18,10 @@ import { ActionType } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { timestampToNumber } from './date';
 
-export const sortMessagesByTimestamp = (
-	messages: Array<EventMessage>,
+export function sortMessagesByTimestamp(
+	messages: EventMessage[],
 	order: 'desc' | 'asc' = 'desc',
-) => {
+): EventMessage[] {
 	const copiedMessages = messages.slice();
 	copiedMessages.sort((mesA, mesB) => {
 		if (order === 'desc') {
@@ -30,12 +30,12 @@ export const sortMessagesByTimestamp = (
 		return timestampToNumber(mesA.timestamp) - timestampToNumber(mesB.timestamp);
 	});
 	return copiedMessages;
-};
+}
 
-export const isMessage = (object: unknown): object is EventMessage => {
+export function isMessage(object: unknown): object is EventMessage {
 	return (
 		typeof object === 'object' &&
 		object !== null &&
 		(object as EventMessage).type === ActionType.MESSAGE
 	);
-};
+}

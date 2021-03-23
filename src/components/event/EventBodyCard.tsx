@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { EventAction } from '../../models/EventAction';
 import { CustomTable } from './tables/CustomTable';
 import { VerificationTable } from './tables/VerificationTable';
@@ -74,7 +73,7 @@ export function EventBodyPayloadRenderer({ body, parentEvent }: Props) {
 						<ParamsTable
 							columns={columns}
 							rows={rows}
-							actionId={parentEvent.eventId as any}
+							actionId={parentEvent.eventId}
 							stateKey={`${parentEvent.eventId}-input-params-nodes`}
 							name={parentEvent.eventName}
 						/>

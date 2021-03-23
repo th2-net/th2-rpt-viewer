@@ -18,7 +18,7 @@ import React from 'react';
 import { WorkspaceContext } from '../contexts/workspaceContext';
 import WorkspaceStore from '../stores/workspace/WorkspaceStore';
 
-export const useWorkspaceStore = (): WorkspaceStore => {
+export function useWorkspaceStore(): WorkspaceStore {
 	const workspaceStore = React.useContext(WorkspaceContext);
 
 	if (!workspaceStore) {
@@ -26,4 +26,4 @@ export const useWorkspaceStore = (): WorkspaceStore => {
 	}
 
 	return workspaceStore;
-};
+}

@@ -14,9 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { ActionType, EventAction, EventTreeNode } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
-import { EventStatus } from '../models/Status';
+import { Timestamp } from 'models/Timestamp';
+import { ActionType, EventAction, EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import { EventStatus } from 'models/Status';
 import { getTimestampAsNumber, timestampToNumber } from './date';
 
 export function getMinifiedStatus(status: string): string {
@@ -33,11 +34,11 @@ export function getEventStatus(event: EventAction | EventTreeNode): EventStatus 
 
 export const isRootEvent = (event: EventTreeNode): boolean => event.parentId === 'null';
 
-export function mapToTimestamps(list: Array<EventTreeNode | EventMessage>) {
+export function mapToTimestamps(list: Array<EventTreeNode | EventMessage>): number[] {
 	return list.map(item => getTimestampAsNumber(item));
 }
 
-export function getTimestamp(item: EventAction | EventMessage | EventTreeNode) {
+export function getTimestamp(item: EventAction | EventMessage | EventTreeNode): Timestamp {
 	if ('startTimestamp' in item) {
 		return item.startTimestamp;
 	}
@@ -49,9 +50,9 @@ export function getEventNodeParents(event: EventTreeNode): string[] {
 }
 
 export function sortEventsByTimestamp(
-	eventNodes: Array<EventTreeNode>,
+	eventNodes: EventTreeNode[],
 	order: 'desc' | 'asc' = 'desc',
-) {
+): EventTreeNode[] {
 	const copiedEvents = eventNodes.slice();
 	copiedEvents.sort((eventA, eventB) => {
 		if (order === 'desc') {
@@ -93,7 +94,7 @@ export function isEvent(object: unknown): object is EventTreeNode | EventAction 
 export const sortByTimestamp = (
 	items: Array<EventMessage | EventTreeNode>,
 	order: 'desc' | 'asc' = 'desc',
-) => {
+): Array<EventMessage | EventTreeNode> => {
 	const copiedEvents = items.slice();
 	copiedEvents.sort((itemA, itemB) => {
 		if (order === 'desc') {
@@ -104,7 +105,11 @@ export const sortByTimestamp = (
 	return copiedEvents;
 };
 
-export function getItemId(item: EventAction | EventTreeNode | EventMessage) {
+export function getItemId(item: EventAction | EventTreeNode | EventMessage): string {
 	if (isEventMessage(item)) return item.messageId;
 	return item.eventId;
+}
+
+export function getEventParentId(event: EventTreeNode | EventAction): string {
+	return isEventNode(event) ? event.parentId : event.parentEventId;
 }

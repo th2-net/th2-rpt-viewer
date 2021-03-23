@@ -144,51 +144,49 @@ export const OutsideItemsList = React.forwardRef<HTMLDivElement, OutsideItemsLis
 			onArrowClick,
 		}: OutsideItemsListProps,
 		ref,
-	) => {
-		return (
-			<AnimatePresence>
-				{Object.values(itemsMap).some(Boolean) && (
-					<motion.div
-						variants={direction === 'left' ? leftIndicatorVariants : rightIndicatorVariants}
-						initial='hidden'
-						animate='visible'
-						exit='hidden'
-						className={`outside-items__indicator ${direction} ${className}`}
-						ref={ref}>
-						<i
-							className={`outside-items__indicator-pointer ${direction}`}
-							onClick={e => {
-								if (onArrowClick) {
-									e.stopPropagation();
-									onArrowClick(direction);
-								}
-							}}
-						/>
-						<div className='outside-items__wrapper' onClick={onClick}>
-							{Object.entries(itemsMap)
-								.filter(item => Boolean(item[1]))
-								.map(([type, count]) => (
-									<div
-										key={type}
-										className={`outside-items__indicator-item ${direction}`}
-										onClick={e => {
-											if (onItemClick) {
-												e.stopPropagation();
-												onItemClick(type);
-											}
-										}}>
-										<i className={`outside-items__indicator-icon ${type.toLowerCase()}`} />
-										{showCount && (
-											<span className='outside-items__indicator-value'>{`+ ${count}`}</span>
-										)}
-									</div>
-								))}
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
-		);
-	},
+	) => (
+		<AnimatePresence>
+			{Object.values(itemsMap).some(Boolean) && (
+				<motion.div
+					variants={direction === 'left' ? leftIndicatorVariants : rightIndicatorVariants}
+					initial='hidden'
+					animate='visible'
+					exit='hidden'
+					className={`outside-items__indicator ${direction} ${className}`}
+					ref={ref}>
+					<i
+						className={`outside-items__indicator-pointer ${direction}`}
+						onClick={e => {
+							if (onArrowClick) {
+								e.stopPropagation();
+								onArrowClick(direction);
+							}
+						}}
+					/>
+					<div className='outside-items__wrapper' onClick={onClick}>
+						{Object.entries(itemsMap)
+							.filter(item => Boolean(item[1]))
+							.map(([type, count]) => (
+								<div
+									key={type}
+									className={`outside-items__indicator-item ${direction}`}
+									onClick={e => {
+										if (onItemClick) {
+											e.stopPropagation();
+											onItemClick(type);
+										}
+									}}>
+									<i className={`outside-items__indicator-icon ${type.toLowerCase()}`} />
+									{showCount && (
+										<span className='outside-items__indicator-value'>{`+ ${count}`}</span>
+									)}
+								</div>
+							))}
+					</div>
+				</motion.div>
+			)}
+		</AnimatePresence>
+	),
 );
 
 OutsideItemsList.displayName = 'OutsideItemsList';

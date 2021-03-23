@@ -14,10 +14,11 @@
  *  limitations under the License.
  ***************************************************************************** */
 
+import { SelectedStore } from 'stores/SelectedStore';
 import { useWorkspaces } from './useWorkspacesStore';
 
-export const useSelectedStore = () => {
+export function useSelectedStore(): SelectedStore {
 	const windowsStore = useWorkspaces();
 
 	return windowsStore.selectedStore;
-};
+}

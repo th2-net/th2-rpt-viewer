@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 export function useSelectListener(
 	ref: React.MutableRefObject<HTMLElement | null>,

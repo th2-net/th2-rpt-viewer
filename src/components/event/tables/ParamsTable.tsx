@@ -29,15 +29,10 @@ export interface ParamsTableRow {
 	isExpanded: boolean;
 }
 
-export interface ParamsTable {
-	rows: ParamsTableRow[];
-	columns: Array<string>;
-}
-
 const PADDING_LEVEL_VALUE = 10;
 
 interface OwnProps {
-	actionId: number;
+	actionId: string;
 	columns: Array<string>;
 	rows: ParamsTableRow[];
 	name: string;

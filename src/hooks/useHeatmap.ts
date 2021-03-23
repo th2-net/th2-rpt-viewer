@@ -15,12 +15,12 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { HeatmapContext } from '../contexts/heatmapContext';
+import { HeatmapContext, HeatmapContextState } from '../contexts/heatmapContext';
 
-export const useHeatmap = () => {
+export function useHeatmap(): HeatmapContextState {
 	const heatmapContext = React.useContext(HeatmapContext);
 	if (!heatmapContext) {
 		throw new Error('Heatmap context should be used inside of HeatmapContextProvider');
 	}
 	return heatmapContext;
-};
+}

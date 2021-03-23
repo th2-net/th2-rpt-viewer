@@ -24,8 +24,8 @@ import EventsSearchStore from './EventsSearchStore';
 import EventsFilter from '../../models/filter/EventsFilter';
 import {
 	getEventNodeParents,
+	getEventParentId,
 	isEvent,
-	isEventNode,
 	sortEventsByTimestamp,
 } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
@@ -52,11 +52,11 @@ export type EventStoreDefaultStateType =
 	| undefined;
 
 export default class EventsStore {
-	filterStore = new EventsFilterStore(this.graphStore);
+	public filterStore = new EventsFilterStore(this.graphStore);
 
-	viewStore = new ViewStore();
+	public viewStore = new ViewStore();
 
-	searchStore = new EventsSearchStore(this.api, this);
+	public searchStore = new EventsSearchStore(this.api, this);
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
@@ -76,28 +76,38 @@ export default class EventsStore {
 		reaction(() => this.searchStore.scrolledItem, this.onScrolledItemChange);
 	}
 
-	@observable.shallow eventTree: EventTree = [];
+	@observable.shallow
+	public eventTree: EventTree = [];
 
-	@observable isLoadingRootEvents = false;
+	@observable
+	public isLoadingRootEvents = false;
 
-	@observable.ref selectedNode: EventTreeNode | null = null;
+	@observable.ref
+	public selectedNode: EventTreeNode | null = null;
 
-	@observable.ref hoveredEvent: EventTreeNode | null = null;
+	@observable.ref
+	public hoveredEvent: EventTreeNode | null = null;
 
-	@observable.ref selectedParentNode: EventTreeNode | null = null;
+	@observable.ref
+	public selectedParentNode: EventTreeNode | null = null;
 
-	@observable.ref selectedEvent: EventAction | null = null;
+	@observable.ref
+	public selectedEvent: EventAction | null = null;
 
-	@observable loadingSelectedEvent = false;
+	@observable
+	public loadingSelectedEvent = false;
 
-	@observable scrolledIndex: Number | null = null;
+	@observable
+	public scrolledIndex: Number | null = null;
 
-	@observable isExpandedMap: Map<string, boolean> = new Map();
+	@observable
+	public isExpandedMap: Map<string, boolean> = new Map();
 
-	@observable eventTreeStatusCode: number | null = null;
+	@observable
+	public eventTreeStatusCode: number | null = null;
 
 	@computed
-	public get flattenedEventList() {
+	public get flattenedEventList(): EventTreeNode[] {
 		return sortEventsByTimestamp(
 			this.flatExpandedList.filter(
 				eventNode => eventNode.childList.length === 0 && eventNode.filtered,
@@ -111,19 +121,19 @@ export default class EventsStore {
 	}
 
 	@computed
-	public get flatExpandedList() {
+	public get flatExpandedList(): EventTreeNode[] {
 		return this.eventTree.flatMap(eventId => this.getFlatExpandedList(eventId));
 	}
 
 	@computed
-	public get isSelectedEventLoading() {
+	public get isSelectedEventLoading(): boolean {
 		return this.selectedNode !== null && this.selectedEvent === null;
 	}
 
 	// we need this property for correct virtualized tree render -
 	// to get event key by index in tree and list length calculation.
 	@computed
-	public get nodesList() {
+	public get nodesList(): EventTreeNode[] {
 		return sortEventsByTimestamp(this.eventTree, 'desc').flatMap(eventNode =>
 			this.getNodesList(eventNode),
 		);
@@ -141,14 +151,14 @@ export default class EventsStore {
 	}
 
 	@action
-	public setHoveredEvent(event: EventTreeNode | null) {
+	public setHoveredEvent(event: EventTreeNode | null): void {
 		if (event !== this.hoveredEvent) {
 			this.hoveredEvent = event;
 		}
 	}
 
 	@action
-	public toggleNode = (eventTreeNode: EventTreeNode) => {
+	public toggleNode = (eventTreeNode: EventTreeNode): void => {
 		const isExpanded = !this.isExpandedMap.get(eventTreeNode.eventId);
 		this.isExpandedMap.set(eventTreeNode.eventId, isExpanded);
 		if (isExpanded) {
@@ -163,7 +173,7 @@ export default class EventsStore {
 	};
 
 	@action
-	public selectNode = (eventTreeNode: EventTreeNode | null) => {
+	public selectNode = (eventTreeNode: EventTreeNode | null): void => {
 		this.selectedNode = eventTreeNode;
 		if (this.viewStore.eventsPanelArea === 100) {
 			this.viewStore.eventsPanelArea = 50;
@@ -171,7 +181,7 @@ export default class EventsStore {
 	};
 
 	@action
-	public scrollToEvent = (eventId: string | null, parentEventIds: string[] = []) => {
+	public scrollToEvent = (eventId: string | null, parentEventIds: string[] = []): void => {
 		if (!eventId) return;
 		let index = -1;
 		if (!this.viewStore.flattenedListView) {
@@ -222,7 +232,7 @@ export default class EventsStore {
 	};
 
 	@action
-	public onEventSelect = async (savedEventNode: EventTreeNode | EventAction) => {
+	public onEventSelect = async (savedEventNode: EventTreeNode | EventAction): Promise<void> => {
 		this.graphStore.setTimestamp(timestampToNumber(savedEventNode.startTimestamp));
 		this.workspaceStore.viewStore.activePanel = this;
 		let fullPath: string[] = [];
@@ -258,7 +268,7 @@ export default class EventsStore {
 	};
 
 	@action
-	public onRangeChange = (timestamp: number) => {
+	public onRangeChange = (timestamp: number): void => {
 		this.filterStore.filter = {
 			...this.filterStore.filter,
 			timestampFrom: moment(timestamp)
@@ -299,7 +309,7 @@ export default class EventsStore {
 	};
 
 	@action
-	public expandPath = async (selectedIds: string[]) => {
+	public expandPath = async (selectedIds: string[]): Promise<void> => {
 		if (selectedIds.length === 0) return;
 
 		let headNode: EventTreeNode | undefined;
@@ -379,7 +389,7 @@ export default class EventsStore {
 		}
 	}
 
-	isNodeSelected(eventTreeNode: EventTreeNode) {
+	public isNodeSelected(eventTreeNode: EventTreeNode): boolean {
 		if (this.selectedNode == null) {
 			return false;
 		}
@@ -446,6 +456,3 @@ export default class EventsStore {
 		return path;
 	};
 }
-
-const getEventParentId = (event: EventTreeNode | EventAction) =>
-	isEventNode(event) ? event.parentId : event.parentEventId;

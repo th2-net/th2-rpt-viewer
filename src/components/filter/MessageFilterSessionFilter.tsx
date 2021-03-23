@@ -14,8 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import { FilterRowMultipleStringsConfig } from '../../models/filter/FilterInputs';
+import { FilterRowMultipleStringsConfig } from 'models/filter/FilterInputs';
 import FilterRow from './row';
 
 type MessagesFilterSessionFilterProps = {
@@ -26,15 +25,13 @@ type MessagesFilterSessionFilterProps = {
 const MessagesFilterSessionFilter = ({
 	config,
 	submitChanges,
-}: MessagesFilterSessionFilterProps) => {
-	return (
-		<>
-			<FilterRow rowConfig={config} />
-			<button onClick={submitChanges} className='messages-window-header__filter-submit-btn'>
-				<i className='messages-window-header__filter-submit-icon' />
-			</button>
-		</>
-	);
-};
+}: MessagesFilterSessionFilterProps) => (
+	<>
+		<FilterRow rowConfig={config} />
+		<button onClick={submitChanges} className='messages-window-header__filter-submit-btn'>
+			<i className='messages-window-header__filter-submit-icon' />
+		</button>
+	</>
+);
 
 export default MessagesFilterSessionFilter;

@@ -36,9 +36,9 @@ export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
 
-	selectedStore = new SelectedStore(this);
+	public selectedStore = new SelectedStore(this);
 
-	tabsStore = new TabsStore(this);
+	public tabsStore = new TabsStore(this);
 
 	public searchWorkspace: SearchWorkspaceStore;
 
@@ -54,17 +54,11 @@ export default class WorkspacesStore {
 		);
 	}
 
-	@observable workspaces: Array<WorkspaceStore> = [];
+	@observable
+	public workspaces: Array<WorkspaceStore> = [];
 
-	@computed get eventStores() {
-		return this.workspaces.map(workspace => workspace.eventsStore);
-	}
-
-	@computed get isFull() {
-		return this.workspaces.length === this.MAX_WORKSPACES_COUNT;
-	}
-
-	@computed get activeWorkspace() {
+	@computed
+	public get activeWorkspace(): SearchWorkspaceStore | WorkspaceStore {
 		return [this.searchWorkspace, ...this.workspaces][this.tabsStore.activeTabIndex];
 	}
 
@@ -84,12 +78,12 @@ export default class WorkspacesStore {
 	}
 
 	@action
-	public deleteWorkspace = (workspace: WorkspaceStore) => {
+	public deleteWorkspace = (workspace: WorkspaceStore): void => {
 		this.workspaces.splice(this.workspaces.indexOf(workspace), 1);
 	};
 
 	@action
-	public addWorkspace = (workspace: WorkspaceStore) => {
+	public addWorkspace = (workspace: WorkspaceStore): void => {
 		this.workspaces.push(workspace);
 		this.tabsStore.setActiveWorkspace(this.workspaces.length);
 	};
@@ -98,15 +92,14 @@ export default class WorkspacesStore {
 		activeWorkspace.graphStore.setTimestampFromRange(activeWorkspace.graphStore.range);
 	};
 
-	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {
-		return new WorkspaceStore(
+	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}): WorkspaceStore =>
+		new WorkspaceStore(
 			this,
 			this.selectedStore,
 			this.searchWorkspace.searchStore,
 			this.api,
 			workspaceInitialState,
 		);
-	};
 
 	public getInitialWorkspaceByMessage = (
 		timestamp: number,

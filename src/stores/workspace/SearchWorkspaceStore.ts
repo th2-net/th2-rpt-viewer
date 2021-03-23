@@ -42,7 +42,7 @@ export default class SearchWorkspaceStore {
 	}
 
 	@action
-	public onTimestampSelect = (timestamp: number) => {
+	public onTimestampSelect = (timestamp: number): void => {
 		const timeRange = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
 		const newWorkspace = this.workspacesStore.createWorkspace({
 			timeRange,
@@ -64,7 +64,7 @@ export default class SearchWorkspaceStore {
 	};
 
 	@action
-	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
+	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage): void => {
 		const timeRange = getRangeFromTimestamp(getTimestampAsNumber(savedItem), SEARCH_STORE_INTERVAL);
 		const initialWorkspaceState: WorkspaceInitialState = {
 			timeRange,
@@ -90,7 +90,9 @@ export default class SearchWorkspaceStore {
 	};
 
 	@action
-	public onSearchResultItemSelect = (resultItem: EventTreeNode | EventAction | EventMessage) => {
+	public onSearchResultItemSelect = (
+		resultItem: EventTreeNode | EventAction | EventMessage,
+	): void => {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 
 		if (isEventMessage(resultItem)) {
@@ -111,7 +113,7 @@ export default class SearchWorkspaceStore {
 	};
 
 	@action
-	public followByTimestamp = (timestamp: number, resultType: ActionType) => {
+	public followByTimestamp = (timestamp: number, resultType: ActionType): void => {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 
 		switch (resultType) {

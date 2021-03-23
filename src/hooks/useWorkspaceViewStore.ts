@@ -14,8 +14,9 @@
  *  limitations under the License.
  ***************************************************************************** */
 
+import WorkspaceViewStore from 'stores/workspace/WorkspaceViewStore';
 import { useWorkspaces } from './useWorkspacesStore';
 
-export const useWorkspaceViewStore = () => {
+export function useWorkspaceViewStore(): WorkspaceViewStore {
 	return useWorkspaces().activeWorkspace.viewStore;
-};
+}
