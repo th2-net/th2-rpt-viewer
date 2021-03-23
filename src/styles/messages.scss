@@ -18,6 +18,7 @@
 
 .message-card-wrapper {
 	@include bookmark-button($showOnHoverOverParent: true);
+	position: relative;
 	padding-bottom: 5px;
 	margin-right: 10px;
 
@@ -25,9 +26,24 @@
 		background-color: $messageCardHoverBackground;
 	}
 
+	&:hover .mc-raw {
+		&__copy-all {
+			display: inline-flex;
+		}
+	}
+
 	&:hover .mc-header {
 		&__info > *:not(:last-child) {
 			margin-right: 10px;
+		}
+
+		&__item {
+			&.messageId {
+				display: flex;
+			}
+			&.messageId-inline {
+				display: inline;
+			}
 		}
 
 		&__control-button {
@@ -48,10 +64,16 @@
 
 		&__value {
 			font-weight: bold;
+			&.sessionId-inline {
+				margin: 0;
+			}
 		}
 
 		&__is-attached-icon {
 			opacity: 1;
+		}
+		&__controls {
+			display: flex;
 		}
 	}
 }
@@ -132,11 +154,8 @@
 
 .mc-header {
 	display: flex;
+	justify-content: flex-end;
 	white-space: nowrap;
-
-	& > *:not(:last-child) {
-		margin-right: 5px;
-	}
 
 	&__is-attached-icon {
 		flex-shrink: 0;
@@ -149,11 +168,18 @@
 		margin-top: 3px;
 		margin-left: 3px;
 		margin-right: 4px;
+		&.inline {
+			padding: 4px;
+		}
 	}
 
 	&__is-soft-filtered-icon {
 		@include icon(url(../../resources/icons/filter.svg), 12px, 12px);
 		flex-shrink: 0;
+		&.inline {
+			padding: 6px;
+			margin-right: 4px;
+		}
 	}
 
 	&__info {
@@ -170,6 +196,13 @@
 	&__item {
 		display: flex;
 		align-items: center;
+		&.messageId,
+		&.messageId-inline {
+			display: none;
+		}
+		&.messageId-inline {
+			margin-right: 10px;
+		}
 	}
 
 	&__direction-icon {
@@ -205,17 +238,16 @@
 
 	&__value {
 		color: $messageCardValueColor;
+		&.sessionId-inline {
+			margin-right: 10px;
+		}
 	}
 
 	&__controls {
-		display: flex;
+		display: none;
 
 		div {
 			cursor: pointer;
-		}
-
-		& > *:not(:last-child) {
-			margin-right: 5px;
 		}
 	}
 
@@ -226,6 +258,9 @@
 	&__icon {
 		width: 15px;
 		height: 15px;
+		&.inline {
+			transform: translateY(4px);
+		}
 	}
 
 	&__control-button {
@@ -251,7 +286,6 @@
 
 	&__human {
 		font-family: inherit;
-		padding-top: 2px;
 		line-height: 16px;
 		margin: 0;
 		white-space: pre-wrap;
@@ -294,6 +328,10 @@
 }
 
 .mc-raw {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+
 	&__header {
 		display: flex;
 		flex-direction: row;
@@ -355,7 +393,6 @@
 	}
 
 	&__copy-icon {
-		margin: 4px 4px 4px 10px;
 		height: 13px;
 		width: 13px;
 		background-image: url('../../resources/icons/clipboard.svg');
@@ -370,11 +407,10 @@
 	}
 
 	&__copy-all {
-		display: inline-flex;
+		display: none;
 		align-items: center;
-		margin-left: 10px;
-		padding: 2px;
 		cursor: pointer;
+		flex-shrink: 0;
 
 		&:hover {
 			background: $messageCardRawHoverBackground;
@@ -726,14 +762,14 @@
 		
 		&.json,
 		&.formatted,
-		&.binary {
+		&.ascii {
 			opacity: 0.6;
 			&.checked {
 				opacity: 1;
 			}
 		}
 
-		&.ascii {
+		&.binary {
 			opacity: 0.4;
 			&.checked {
 				opacity: 0.8;
@@ -761,11 +797,11 @@
 		}
 
 		&.binary {
-			@include icon(url(../../resources/icons/bincode.svg));
+			@include icon(url(../../resources/icons//table-view-icon.svg));
 		}
 
 		&.ascii {
-			@include icon(url(../../resources/icons//table-view-icon.svg));
+			@include icon(url(../../resources/icons/bincode.svg));
 		}
 	}
 }

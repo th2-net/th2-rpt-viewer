@@ -28,9 +28,10 @@ const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 interface Props {
 	rawContent: string;
 	messageId: string;
+	renderInfo: () => React.ReactNode;
 }
 
-function MessageRaw({ rawContent, messageId }: Props) {
+function MessageRaw({ rawContent, messageId, renderInfo }: Props) {
 	const messagesStore = useMessagesWorkspaceStore();
 
 	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
@@ -46,23 +47,17 @@ function MessageRaw({ rawContent, messageId }: Props) {
 
 	return (
 		<div className='mc-raw'>
-			<div className='mc-raw__header'>
-				<div className='mc-raw__title'>Raw message</div>
-				<div
-					className='mc-raw__copy-all'
-					onClick={copyAll}
-					title='Copy all raw content to clipboard'>
-					<div className='mc-raw__copy-icon' />
-					<div className='mc-raw__copy-title'>
-						<span>Copy All</span>
-					</div>
-				</div>
-			</div>
 			{isDetailed ? (
 				<DetailedMessageRaw rawContent={rawContent} />
 			) : (
-				<SimpleMessageRaw rawContent={rawContent} />
+				<SimpleMessageRaw rawContent={rawContent} renderInfo={renderInfo} />
 			)}
+			<div className='mc-raw__copy-all' onClick={copyAll} title='Copy all raw content to clipboard'>
+				<div className='mc-raw__copy-icon' />
+				<div className='mc-raw__copy-title'>
+					<span>Copy All</span>
+				</div>
+			</div>
 		</div>
 	);
 }
