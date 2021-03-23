@@ -181,12 +181,12 @@ export default class MessagesDataProviderStore {
 		this.startPreviousMessagesChannel(prevQuery, SEARCH_TIME_FRAME);
 		this.startNextMessagesChannel(nextQuery, SEARCH_TIME_FRAME);
 
-		let message: EventMessage | undefined;
+		let centerMessage: EventMessage | undefined;
 		if (this.searchChannelPrev && this.searchChannelNext) {
 			if (this.messagesStore.selectedMessageId) {
 				this.messageAC = new AbortController();
 				try {
-					message = await this.api.messages.getMessage(
+					centerMessage = await this.api.messages.getMessage(
 						this.messagesStore.selectedMessageId.valueOf(),
 						this.messageAC.signal,
 					);
@@ -197,30 +197,39 @@ export default class MessagesDataProviderStore {
 					}
 				}
 			}
-			const [nextMessages, prevMessages] = await Promise.all([
-				this.searchChannelNext.loadAndSubscribe(message?.messageId),
-				this.searchChannelPrev.loadAndSubscribe(message?.messageId),
-			]);
+			try {
+				const [nextMessages, prevMessages] = await Promise.all([
+					this.searchChannelNext.loadAndSubscribe(centerMessage?.messageId),
+					this.searchChannelPrev.loadAndSubscribe(centerMessage?.messageId),
+				]);
 
-			const firstNextMessage = nextMessages[nextMessages.length - 1];
+				const firstNextMessage = nextMessages[nextMessages.length - 1];
 
-			if (firstNextMessage && firstNextMessage.messageId === prevMessages[0]?.messageId) {
-				nextMessages.pop();
-			}
+				if (firstNextMessage && firstNextMessage.messageId === prevMessages[0]?.messageId) {
+					nextMessages.pop();
+				}
 
-			runInAction(() => {
-				this.messages = [...nextMessages, ...[message].filter(isEventMessage), ...prevMessages];
-				this.initialItemCount = this.messages.length;
-			});
+				runInAction(() => {
+					this.messages = [
+						...nextMessages,
+						...[centerMessage].filter(isEventMessage),
+						...prevMessages,
+					];
+					this.initialItemCount = this.messages.length;
+				});
 
-			if (this.messagesStore.selectedMessageId) {
-				this.messagesStore.scrollToMessage(this.messagesStore.selectedMessageId?.valueOf());
+				if (this.messagesStore.selectedMessageId) {
+					this.messagesStore.scrollToMessage(this.messagesStore.selectedMessageId?.valueOf());
+				}
+			} catch (error) {
+				this.isError = true;
+				return;
 			}
 		}
 
 		if (this.messagesStore.filterStore.isSoftFilter) {
-			if (message) {
-				this.softFilterResults = [message];
+			if (centerMessage) {
+				this.softFilterResults = [centerMessage];
 			}
 			this.startNextSoftFilterChannel(
 				{
@@ -237,8 +246,8 @@ export default class MessagesDataProviderStore {
 				SEARCH_TIME_FRAME,
 			);
 
-			this.softFilterChannelNext?.subscribe(message?.messageId);
-			this.softFilterChannelPrev?.subscribe(message?.messageId);
+			this.softFilterChannelNext?.subscribe(centerMessage?.messageId);
+			this.softFilterChannelPrev?.subscribe(centerMessage?.messageId);
 		}
 	};
 

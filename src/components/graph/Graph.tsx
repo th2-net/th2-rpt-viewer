@@ -63,7 +63,9 @@ function Graph({ activeWorkspace }: GraphProps) {
 		if (rootRef.current) resizeObserver.current.observe(rootRef.current);
 
 		return () => {
-			if (rootRef.current) resizeObserver.current.unobserve(rootRef.current);
+			if (rootRef.current) {
+				resizeObserver.current.unobserve(rootRef.current);
+			}
 		};
 	}, []);
 

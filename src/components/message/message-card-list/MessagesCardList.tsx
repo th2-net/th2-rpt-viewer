@@ -57,7 +57,11 @@ function MessageCardList() {
 		<MessageWrapper
 			index={index}
 			onMount={ref => resizeObserver.current.observe(ref.current as HTMLDivElement)}
-			onUnmount={ref => resizeObserver.current.unobserve(ref.current as HTMLDivElement)}>
+			onUnmount={ref => {
+				if (ref.current) {
+					resizeObserver.current.unobserve(ref.current as HTMLDivElement);
+				}
+			}}>
 			<MessageCard message={message} />
 		</MessageWrapper>
 	);

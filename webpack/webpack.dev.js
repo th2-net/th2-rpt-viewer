@@ -19,7 +19,6 @@ const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin'
 const { merge } = require('webpack-merge');
 const commonConfig = require('./webpack.common');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const { appSrc } = require('./paths');
 
 module.exports = merge(commonConfig, {
 	mode: 'development',
@@ -56,7 +55,7 @@ module.exports = merge(commonConfig, {
 					{
 						loader: require.resolve('babel-loader'),
 						options: {
-							plugins: [require.resolve('react-refresh/babel')].filter(Boolean),
+							plugins: [require.resolve('react-refresh/babel')],
 						},
 					},
 				],
@@ -85,23 +84,9 @@ module.exports = merge(commonConfig, {
 	},
 	plugins: [
 		new ForkTsCheckerWebpackPlugin({
-			typescript: {
-				enabled: true,
-				diagnosticOptions: {
-					semantic: true,
-					syntactic: true,
-				},
-				mode: 'write-references',
-			},
 			eslint: {
-				enabled: true,
 				files: './src/**/*.{ts,tsx,js,jsx}',
-				options: {
-					formatter: require('eslint-formatter-pretty'),
-					loader: 'eslint-loader',
-				},
 			},
-			formatter: 'codeframe',
 		}),
 		new webpack.HotModuleReplacementPlugin(),
 		new ReactRefreshWebpackPlugin(),
