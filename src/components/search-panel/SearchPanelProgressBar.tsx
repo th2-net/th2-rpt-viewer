@@ -22,11 +22,18 @@ interface SearchPanelProgressBarProps {
 		startTimestamp: number | null;
 		endTimestamp: number | null;
 		currentPoint: number;
+		searchDirection: 'next' | 'previous';
 		searching: boolean;
 		completed: boolean;
 		processedObjectCount: number;
 	};
 }
+
+const toHumanReadableTime = (timestamp: moment.Moment) => {
+	return timestamp.hour()
+		? timestamp.format('H [hours] m [min] s [sec]')
+		: timestamp.format('m [min] s [sec]');
+};
 
 const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 	const {
@@ -34,6 +41,7 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 		startTimestamp,
 		endTimestamp,
 		currentPoint,
+		searchDirection,
 		completed,
 		processedObjectCount,
 	} = props.searchProgress;
@@ -46,9 +54,17 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 		? ((currentPoint / timeInterval) * 100).toFixed(2)
 		: 0;
 
-	const scanningAtTimestamp = (startTimestamp ?? 0) + currentPoint;
+	const scanningAtTimestamp = startTimestamp! + currentPoint;
 
 	const scanningAtLabel = moment(scanningAtTimestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS');
+
+	const scannedTimeLabel = toHumanReadableTime(moment(Math.abs(currentPoint)).utc());
+
+	const timeLeftLabel = timeInterval
+		? toHumanReadableTime(
+				moment(timeInterval - (searchDirection === 'next' ? currentPoint : -currentPoint)),
+		  )
+		: null;
 
 	const progressBarLineClassName = createBemElement(
 		'progress-bar',
@@ -66,6 +82,15 @@ const SearchPanelProgressBar = (props: SearchPanelProgressBarProps) => {
 							<span>
 								Scanning at <span className='search-progress__value'>{scanningAtLabel}</span>.
 							</span>
+							<span>
+								<span className='search-progress__value'>{scannedTimeLabel}</span> have been scanned
+								already.
+							</span>
+							{timeInterval && (
+								<span>
+									<span className='search-progress__value'>{timeLeftLabel}</span> left.
+								</span>
+							)}
 							{processedObjectCount !== 0 && (
 								<span>
 									Processed objects:{' '}

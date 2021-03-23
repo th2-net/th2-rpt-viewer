@@ -28,9 +28,11 @@ export type MessageCardViewTypeRendererProps = {
 	isBeautified: boolean;
 	isSelected: boolean;
 	messageBody: MessageBody | null;
+	renderInfo: () => React.ReactNode;
 };
 
 const MessageCardViewTypeRenderer = ({
+	renderInfo,
 	viewType,
 	messageId,
 	rawContent,
@@ -45,17 +47,25 @@ const MessageCardViewTypeRenderer = ({
 				<ErrorBoundary
 					fallback={
 						<MessageBodyCardFallback
+							renderInfo={renderInfo}
 							isBeautified={isBeautified}
 							isSelected={isSelected}
 							body={messageBody}
 						/>
 					}>
-					<MessageBodyCard isBeautified={isBeautified} body={messageBody} isSelected={isSelected} />
+					<MessageBodyCard
+						isBeautified={isBeautified}
+						body={messageBody}
+						isSelected={isSelected}
+						renderInfo={renderInfo}
+					/>
 				</ErrorBoundary>
 			);
 		case MessageViewType.ASCII:
 		case MessageViewType.BINARY:
-			return rawContent ? <MessageRaw messageId={messageId} rawContent={rawContent} /> : null;
+			return rawContent ? (
+				<MessageRaw messageId={messageId} rawContent={rawContent} renderInfo={renderInfo} />
+			) : null;
 		default:
 			return null;
 	}
