@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, computed, observable, reaction, makeObservable } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import MessagesStore, {
@@ -69,6 +69,19 @@ export default class WorkspaceStore {
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
+		makeObservable<WorkspaceStore, 'getAttachedMessages' | 'onSelectedEventChange'>(this, {
+			attachedMessagesIds: observable,
+			attachedMessages: observable,
+			isLoadingAttachedMessages: observable,
+			attachedMessagesStreams: computed,
+			isActive: computed,
+			setAttachedMessagesIds: action,
+			getAttachedMessages: action,
+			onSavedItemSelect: action,
+			onTimestampSelect: action,
+			onSelectedEventChange: action,
+		});
+
 		this.viewStore = new WorkspaceViewStore({
 			panelsLayout: initialState.layout,
 		});
@@ -94,33 +107,26 @@ export default class WorkspaceStore {
 		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
 	}
 
-	@observable
 	public attachedMessagesIds: Array<string> = [];
 
-	@observable
 	public attachedMessages: Array<EventMessage> = [];
 
-	@observable
 	public isLoadingAttachedMessages = false;
 
-	@computed
 	public get attachedMessagesStreams(): string[] {
 		return [...new Set(this.attachedMessages.map(msg => msg.sessionId))];
 	}
 
-	@computed
 	public get isActive(): boolean {
 		return this.workspacesStore.activeWorkspace === this;
 	}
 
-	@action
 	public setAttachedMessagesIds = (attachedMessageIds: string[]): void => {
 		this.attachedMessagesIds = [...new Set(attachedMessageIds)];
 	};
 
 	private attachedMessagesAC: AbortController | null = null;
 
-	@action
 	private getAttachedMessages = async (attachedMessagesIds: string[]) => {
 		this.isLoadingAttachedMessages = true;
 		if (this.attachedMessagesAC) {
@@ -151,7 +157,6 @@ export default class WorkspaceStore {
 		}
 	};
 
-	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage): void => {
 		if (isEventMessage(savedItem)) {
 			this.viewStore.activePanel = this.messagesStore;
@@ -162,12 +167,10 @@ export default class WorkspaceStore {
 		}
 	};
 
-	@action
 	public onTimestampSelect = (timestamp: number): void => {
 		this.graphStore.setTimestamp(timestamp);
 	};
 
-	@action
 	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
 		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
 	};

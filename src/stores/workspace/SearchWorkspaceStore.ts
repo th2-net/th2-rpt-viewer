@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action } from 'mobx';
+import { action, makeObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
@@ -36,12 +36,18 @@ export default class SearchWorkspaceStore {
 	public id = nanoid();
 
 	constructor(private workspacesStore: WorkspacesStore, api: ApiSchema) {
+		makeObservable(this, {
+			onTimestampSelect: action,
+			onSavedItemSelect: action,
+			onSearchResultItemSelect: action,
+			followByTimestamp: action,
+		});
+
 		this.searchStore = new SearchStore(api);
 
 		this.viewStore = new WorkspaceViewStore(undefined);
 	}
 
-	@action
 	public onTimestampSelect = (timestamp: number): void => {
 		const timeRange = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
 		const newWorkspace = this.workspacesStore.createWorkspace({
@@ -63,7 +69,6 @@ export default class SearchWorkspaceStore {
 		this.workspacesStore.addWorkspace(newWorkspace);
 	};
 
-	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage): void => {
 		const timeRange = getRangeFromTimestamp(getTimestampAsNumber(savedItem), SEARCH_STORE_INTERVAL);
 		const initialWorkspaceState: WorkspaceInitialState = {
@@ -89,7 +94,6 @@ export default class SearchWorkspaceStore {
 		this.workspacesStore.addWorkspace(newWorkspace);
 	};
 
-	@action
 	public onSearchResultItemSelect = (
 		resultItem: EventTreeNode | EventAction | EventMessage,
 	): void => {
@@ -112,7 +116,6 @@ export default class SearchWorkspaceStore {
 		this.workspacesStore.addWorkspace(newWorkspace);
 	};
 
-	@action
 	public followByTimestamp = (timestamp: number, resultType: ActionType): void => {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 

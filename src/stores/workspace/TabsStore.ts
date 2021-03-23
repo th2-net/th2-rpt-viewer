@@ -14,17 +14,22 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable } from 'mobx';
+import { action, observable, makeObservable } from 'mobx';
 import WorkspacesStore from './WorkspacesStore';
 import WorkspaceStore from './WorkspaceStore';
 
 export default class TabsStore {
-	constructor(private workspacesStore: WorkspacesStore) {}
+	constructor(private workspacesStore: WorkspacesStore) {
+		makeObservable(this, {
+			activeTabIndex: observable,
+			closeWorkspace: action,
+			setActiveWorkspace: action,
+			changeWorkspacePosition: action,
+		});
+	}
 
-	@observable
 	public activeTabIndex = 0;
 
-	@action
 	public closeWorkspace = (tab: number | WorkspaceStore): void => {
 		const index = typeof tab === 'number' ? tab : this.workspacesStore.workspaces.indexOf(tab);
 		if (index <= this.activeTabIndex) {
@@ -35,12 +40,10 @@ export default class TabsStore {
 		this.workspacesStore.workspaces.splice(index, 1);
 	};
 
-	@action
 	public setActiveWorkspace = (tabIndex: number): void => {
 		this.activeTabIndex = tabIndex;
 	};
 
-	@action
 	public changeWorkspacePosition = (currentTabIndex: number, newIndex: number): void => {
 		if (currentTabIndex === newIndex) return;
 		const activeTab = this.workspacesStore.workspaces[this.activeTabIndex];

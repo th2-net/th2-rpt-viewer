@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, reaction, observable, computed, runInAction } from 'mobx';
+import { action, reaction, observable, computed, runInAction, makeObservable } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams } from '../../api/sse';
 import { timestampToNumber } from '../../helpers/date';
@@ -29,6 +29,56 @@ const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class MessagesDataProviderStore {
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
+		makeObservable<
+			MessagesDataProviderStore,
+			| 'onLoadingError'
+			| 'startNextSoftFilterChannel'
+			| 'startPrevSoftFilterChannel'
+			| 'onNextSoftFilterChannelResponse'
+			| 'onPrevSoftFilterChannelResponse'
+			| 'syncFetchedMessagesWithSoftFiltered'
+			| 'onFilterChange'
+			| 'resetMessagesDataState'
+		>(this, {
+			isEndReached: observable,
+			isBeginReached: observable,
+			noMatchingMessagesPrev: observable,
+			noMatchingMessagesNext: observable,
+			messagesListErrorStatusCode: observable,
+			messages: observable.shallow,
+			isError: observable,
+			searchChannelPrev: observable,
+			searchChannelNext: observable,
+			startIndex: observable,
+			initialItemCount: observable,
+			softFilterResults: observable.shallow,
+			softFilterChannelPrev: observable,
+			softFilterChannelNext: observable,
+			isLoadingNextMessages: computed,
+			isLoadingPreviousMessages: computed,
+			isLoading: computed,
+			isLoadingSoftFilteredMessages: computed,
+			loadMessages: action,
+			stopMessagesLoading: action,
+			startPreviousMessagesChannel: action,
+			onPrevChannelResponse: action,
+			onLoadingError: action,
+			startNextMessagesChannel: action,
+			onNextChannelResponse: action,
+			getPreviousMessages: action,
+			getNextMessages: action,
+			startNextSoftFilterChannel: action,
+			startPrevSoftFilterChannel: action,
+			onNextSoftFilterChannelResponse: action,
+			onPrevSoftFilterChannelResponse: action,
+			syncFetchedMessagesWithSoftFiltered: action,
+			onFilterChange: action,
+			resetMessagesDataState: action,
+			messagesCache: observable,
+			fetchMessage: action,
+			keepLoading: action,
+		});
+
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
 
 		reaction(() => this.messages, this.syncFetchedMessagesWithSoftFiltered);
@@ -36,46 +86,32 @@ export default class MessagesDataProviderStore {
 		reaction(() => this.softFilterResults, this.syncFetchedMessagesWithSoftFiltered);
 	}
 
-	@observable
 	public isEndReached = false;
 
-	@observable
 	public isBeginReached = false;
 
-	@observable
 	public noMatchingMessagesPrev = false;
 
-	@observable
 	public noMatchingMessagesNext = false;
 
-	@observable
 	public messagesListErrorStatusCode: number | null = null;
 
-	@observable.shallow
 	public messages: Array<EventMessage> = [];
 
-	@observable
 	public isError = false;
 
-	@observable
 	public searchChannelPrev: SSEChannel | null = null;
 
-	@observable
 	public searchChannelNext: SSEChannel | null = null;
 
-	@observable
 	public startIndex = 10000;
 
-	@observable
 	public initialItemCount = 0;
 
-	@observable.shallow
 	public softFilterResults: Array<EventMessage> = [];
 
-	@observable
 	public softFilterChannelPrev: SSEChannel | null = null;
 
-	@observable
 	public softFilterChannelNext: SSEChannel | null = null;
 
 	private prevLoadEndTimestamp: number | null = null;
@@ -86,22 +122,18 @@ export default class MessagesDataProviderStore {
 
 	private lastNextChannelResponseTimestamp: number | null = null;
 
-	@computed
 	public get isLoadingNextMessages(): boolean {
 		return Boolean(this.searchChannelNext?.isLoading);
 	}
 
-	@computed
 	public get isLoadingPreviousMessages(): boolean {
 		return Boolean(this.searchChannelPrev?.isLoading);
 	}
 
-	@computed
 	public get isLoading(): boolean {
 		return this.isLoadingNextMessages || this.isLoadingPreviousMessages;
 	}
 
-	@computed
 	public get isLoadingSoftFilteredMessages(): boolean {
 		return (
 			Boolean(this.softFilterChannelPrev?.isLoading) ||
@@ -111,7 +143,6 @@ export default class MessagesDataProviderStore {
 
 	private messageAC: AbortController | null = null;
 
-	@action
 	public loadMessages = async (): Promise<void> => {
 		this.stopMessagesLoading();
 
@@ -211,7 +242,6 @@ export default class MessagesDataProviderStore {
 		}
 	};
 
-	@action
 	public stopMessagesLoading = (isError = false): void => {
 		this.messageAC?.abort();
 		this.searchChannelPrev?.stop();
@@ -225,7 +255,6 @@ export default class MessagesDataProviderStore {
 		this.resetMessagesDataState(isError);
 	};
 
-	@action
 	public startPreviousMessagesChannel = (query: MessagesSSEParams, interval?: number): void => {
 		this.prevLoadEndTimestamp = null;
 
@@ -254,7 +283,6 @@ export default class MessagesDataProviderStore {
 		);
 	};
 
-	@action
 	public onPrevChannelResponse = (messages: EventMessage[]): void => {
 		this.lastPreviousChannelResponseTimestamp = null;
 		const firstPrevMessage = messages[0];
@@ -276,7 +304,6 @@ export default class MessagesDataProviderStore {
 		}
 	};
 
-	@action
 	private onLoadingError = (event: Event): void => {
 		if (event instanceof MessageEvent) {
 			const error = JSON.parse(event.data);
@@ -291,7 +318,6 @@ export default class MessagesDataProviderStore {
 		this.stopMessagesLoading(true);
 	};
 
-	@action
 	public startNextMessagesChannel = (query: MessagesSSEParams, interval?: number): void => {
 		this.nextLoadEndTimestamp = null;
 
@@ -320,7 +346,6 @@ export default class MessagesDataProviderStore {
 		);
 	};
 
-	@action
 	public onNextChannelResponse = (messages: EventMessage[]): void => {
 		this.lastNextChannelResponseTimestamp = null;
 		const firstNextMessage = messages[this.messages.length - 1];
@@ -340,7 +365,6 @@ export default class MessagesDataProviderStore {
 		}
 	};
 
-	@action
 	public getPreviousMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
 		if (!this.searchChannelPrev || this.searchChannelPrev.isLoading) {
 			return [];
@@ -349,7 +373,6 @@ export default class MessagesDataProviderStore {
 		return this.searchChannelPrev.loadAndSubscribe(resumeFromId);
 	};
 
-	@action
 	public getNextMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
 		if (!this.searchChannelNext || this.searchChannelNext.isLoading) {
 			return [];
@@ -358,7 +381,6 @@ export default class MessagesDataProviderStore {
 		return this.searchChannelNext.loadAndSubscribe(resumeFromId);
 	};
 
-	@action
 	private startNextSoftFilterChannel = (query: MessagesSSEParams, interval?: number) => {
 		this.softFilterChannelNext = new SSEChannel(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
@@ -381,7 +403,6 @@ export default class MessagesDataProviderStore {
 		);
 	};
 
-	@action
 	private startPrevSoftFilterChannel = (query: MessagesSSEParams, interval?: number) => {
 		this.softFilterChannelPrev = new SSEChannel(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
@@ -404,7 +425,6 @@ export default class MessagesDataProviderStore {
 		);
 	};
 
-	@action
 	private onNextSoftFilterChannelResponse = (messages: EventMessage[]) => {
 		const firstNextMessage = messages[this.messages.length - 1];
 
@@ -417,7 +437,6 @@ export default class MessagesDataProviderStore {
 		}
 	};
 
-	@action
 	private onPrevSoftFilterChannelResponse = (messages: EventMessage[]) => {
 		const firstPrevMessage = messages[0];
 
@@ -434,7 +453,6 @@ export default class MessagesDataProviderStore {
 		}
 	};
 
-	@action
 	private syncFetchedMessagesWithSoftFiltered = () => {
 		if (!this.messagesStore.filterStore.isSoftFilter) return;
 		const fetchedMessages = this.messages;
@@ -467,14 +485,12 @@ export default class MessagesDataProviderStore {
 		}
 	};
 
-	@action
 	private onFilterChange = async () => {
 		this.stopMessagesLoading();
 		this.resetMessagesDataState();
 		this.loadMessages();
 	};
 
-	@action
 	private resetMessagesDataState = (isError = false) => {
 		this.initialItemCount = 0;
 		this.startIndex = 10000;
@@ -491,10 +507,8 @@ export default class MessagesDataProviderStore {
 		this.lastNextChannelResponseTimestamp = null;
 	};
 
-	@observable
 	public messagesCache: Map<string, EventMessage> = observable.map(new Map(), { deep: false });
 
-	@action
 	public fetchMessage = async (id: string, abortSingal: AbortSignal): Promise<EventMessage> => {
 		let message = this.messagesCache.get(id);
 
@@ -506,7 +520,6 @@ export default class MessagesDataProviderStore {
 		return message;
 	};
 
-	@action
 	public keepLoading = (direction: 'next' | 'previous'): void => {
 		if (
 			this.messagesStore.filterStore.filter.streams.length === 0 ||

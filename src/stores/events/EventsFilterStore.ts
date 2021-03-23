@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable } from 'mobx';
+import { action, computed, observable, makeObservable } from 'mobx';
 import moment from 'moment';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { GraphStore } from '../GraphStore';
@@ -35,6 +35,14 @@ export type EventsFilterStoreInitialState = Partial<EventsFilter>;
 
 export default class EventsFilterStore {
 	constructor(private graphStore: GraphStore, initialState?: EventsFilterStoreInitialState) {
+		makeObservable(this, {
+			filter: observable,
+			isEventsFilterApplied: computed,
+			setEventsFilter: action,
+			changeTimestamp: action,
+			resetEventsFilter: action,
+		});
+
 		if (initialState) {
 			const defaultEventsFilter = getDefaultEventFilter(this.graphStore.interval);
 			const {
@@ -53,20 +61,16 @@ export default class EventsFilterStore {
 		}
 	}
 
-	@observable
 	public filter: EventsFilter = getDefaultEventFilter(this.graphStore.interval);
 
-	@computed
 	public get isEventsFilterApplied(): boolean {
 		return this.filter.eventTypes.length > 0 || this.filter.names.length > 0;
 	}
 
-	@action
 	public setEventsFilter(filter: EventsFilter): void {
 		this.filter = filter;
 	}
 
-	@action
 	public changeTimestamp(mins: number): void {
 		const currentFilter = this.filter;
 		this.setEventsFilter({
@@ -76,7 +80,6 @@ export default class EventsFilterStore {
 		});
 	}
 
-	@action
 	public resetEventsFilter(): void {
 		this.filter = {
 			...getDefaultEventFilter(this.graphStore.interval),

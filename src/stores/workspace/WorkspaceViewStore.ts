@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action } from 'mobx';
+import { observable, action, makeObservable } from 'mobx';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import EventsStore from '../events/EventsStore';
 import MessagesStore from '../messages/MessagesStore';
@@ -31,44 +31,47 @@ const defaultPanelsLayout: WorkspacePanelsLayout =
 
 export default class WorkspaceViewStore {
 	constructor(initalState?: InitialState) {
+		makeObservable<WorkspaceViewStore, 'init'>(this, {
+			eventsPanelArea: observable,
+			panelsLayout: observable,
+			flattenedListView: observable,
+			activePanel: observable,
+			setPanelArea: action,
+			setPanelsLayout: action,
+			setActivePanel: action,
+			toggleFlattenEventListView: action,
+			init: action,
+		});
+
 		if (initalState) {
 			this.init(initalState);
 		}
 	}
 
-	@observable
 	public eventsPanelArea = 50;
 
-	@observable
 	public panelsLayout: WorkspacePanelsLayout = defaultPanelsLayout;
 
-	@observable
 	public flattenedListView = false;
 
-	@observable
 	public activePanel: EventsStore | MessagesStore | null = null;
 
-	@action
 	public setPanelArea = (panelArea: number): void => {
 		this.eventsPanelArea = panelArea;
 	};
 
-	@action
 	public setPanelsLayout = (panelsLayout: WorkspacePanelsLayout): void => {
 		this.panelsLayout = panelsLayout;
 	};
 
-	@action
 	public setActivePanel = (panel: EventsStore | MessagesStore | null): void => {
 		this.activePanel = panel;
 	};
 
-	@action
 	public toggleFlattenEventListView = (): void => {
 		this.flattenedListView = !this.flattenedListView;
 	};
 
-	@action
 	private init = (initalState: InitialState) => {
 		this.eventsPanelArea = initalState.panelArea ?? 100;
 		this.flattenedListView = Boolean(initalState.flattenedListView);

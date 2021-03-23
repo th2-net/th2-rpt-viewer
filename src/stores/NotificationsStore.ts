@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable } from 'mobx';
+import { action, observable, makeObservable } from 'mobx';
 import { AppearanceTypes } from 'react-toast-notifications';
 
 interface Notification {
@@ -33,26 +33,31 @@ interface UrlError extends Notification {
 }
 
 export class NotificationsStore {
-	@observable
 	public responseErrors: ResponseError[] = [];
 
-	@observable
 	public urlError: UrlError | null = null;
 
-	@action
 	public addResponseError = (responseError: ResponseError): void => {
 		this.responseErrors = [...this.responseErrors, responseError];
 	};
 
-	@action
 	public delResponseError = (responseError: ResponseError): void => {
 		this.responseErrors = this.responseErrors.filter(re => re !== responseError);
 	};
 
-	@action
 	public setUrlError = (urlError: UrlError | null): void => {
 		this.urlError = urlError;
 	};
+
+	constructor() {
+		makeObservable(this, {
+			responseErrors: observable,
+			urlError: observable,
+			addResponseError: action,
+			delResponseError: action,
+			setUrlError: action,
+		});
+	}
 }
 
 const notificationsStore = new NotificationsStore();

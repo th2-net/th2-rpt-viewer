@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, reaction } from 'mobx';
+import { action, observable, reaction, makeObservable } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
 import MessagesFilterStore from './MessagesFilterStore';
@@ -27,6 +27,17 @@ export default class MessageUpdateStore {
 		private messagesStore: any,
 		private filterStore: MessagesFilterStore,
 	) {
+		makeObservable<MessageUpdateStore, 'subscriptionInterval'>(this, {
+			isSubscriptionActive: observable,
+			subscriptionInterval: observable,
+			isAttachedToTop: observable,
+			accumulatedMessages: observable,
+			toggleSubscribe: observable,
+			activateSubscription: action,
+			disableSubscription: action,
+			addAccumulatedMessagesToList: action,
+		});
+
 		reaction(
 			() => this.messagesStore.scrollTopMessageId,
 			scrollTopMessageId =>
@@ -52,21 +63,16 @@ export default class MessageUpdateStore {
 		);
 	}
 
-	@observable
 	public isSubscriptionActive = false;
 
-	@observable
 	private subscriptionInterval: number | null = null;
 
-	@observable
 	public isAttachedToTop = false;
 
-	@observable
 	public accumulatedMessages: EventMessage[] = [];
 
 	private updateAbortController: AbortController | null = null;
 
-	@observable
 	public toggleSubscribe = (): void => {
 		if (!this.isSubscriptionActive) {
 			this.activateSubscription();
@@ -75,7 +81,6 @@ export default class MessageUpdateStore {
 		}
 	};
 
-	@action
 	public activateSubscription = async (): Promise<void> => {
 		// Object.keys(this.messagesStore.abortControllers).forEach(key => {
 		// 	if (this.messagesStore.abortControllers[key]) {
@@ -168,7 +173,6 @@ export default class MessageUpdateStore {
 		this.subscriptionInterval = window.setTimeout(check, 1000);
 	};
 
-	@action
 	public disableSubscription = (): void => {
 		if (this.accumulatedMessages.length && !this.isAttachedToTop) {
 			this.addAccumulatedMessagesToList();
@@ -185,7 +189,6 @@ export default class MessageUpdateStore {
 		}
 	};
 
-	@action
 	public addAccumulatedMessagesToList = (): void => {
 		if (!this.accumulatedMessages.length) return;
 

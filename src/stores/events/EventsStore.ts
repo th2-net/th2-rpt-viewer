@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, runInAction } from 'mobx';
+import { action, computed, observable, reaction, runInAction, makeObservable } from 'mobx';
 import moment from 'moment';
 import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
@@ -65,6 +65,48 @@ export default class EventsStore {
 		private api: ApiSchema,
 		initialState: EventStoreDefaultStateType,
 	) {
+		makeObservable<
+			EventsStore,
+			| 'fetchEventTree'
+			| 'fetchDetailedEventInfo'
+			| 'onFilterChange'
+			| 'onSelectedNodeChange'
+			| 'onViewChange'
+			| 'onScrolledItemChange'
+			| 'init'
+		>(this, {
+			eventTree: observable.shallow,
+			isLoadingRootEvents: observable,
+			selectedNode: observable.ref,
+			hoveredEvent: observable.ref,
+			selectedParentNode: observable.ref,
+			selectedEvent: observable.ref,
+			loadingSelectedEvent: observable,
+			scrolledIndex: observable,
+			isExpandedMap: observable,
+			eventTreeStatusCode: observable,
+			flattenedEventList: computed,
+			panelRange: computed,
+			flatExpandedList: computed,
+			isSelectedEventLoading: computed,
+			nodesList: computed,
+			selectedPath: computed,
+			setHoveredEvent: action,
+			toggleNode: action,
+			selectNode: action,
+			scrollToEvent: action,
+			fetchEventTree: action,
+			onEventSelect: action,
+			onRangeChange: action,
+			fetchDetailedEventInfo: action,
+			expandPath: action,
+			onFilterChange: action,
+			onSelectedNodeChange: action,
+			onViewChange: action,
+			onScrolledItemChange: action,
+			init: action,
+		});
+
 		this.init(initialState);
 
 		reaction(() => this.filterStore.filter, this.onFilterChange);
@@ -76,37 +118,26 @@ export default class EventsStore {
 		reaction(() => this.searchStore.scrolledItem, this.onScrolledItemChange);
 	}
 
-	@observable.shallow
 	public eventTree: EventTree = [];
 
-	@observable
 	public isLoadingRootEvents = false;
 
-	@observable.ref
 	public selectedNode: EventTreeNode | null = null;
 
-	@observable.ref
 	public hoveredEvent: EventTreeNode | null = null;
 
-	@observable.ref
 	public selectedParentNode: EventTreeNode | null = null;
 
-	@observable.ref
 	public selectedEvent: EventAction | null = null;
 
-	@observable
 	public loadingSelectedEvent = false;
 
-	@observable
 	public scrolledIndex: Number | null = null;
 
-	@observable
 	public isExpandedMap: Map<string, boolean> = new Map();
 
-	@observable
 	public eventTreeStatusCode: number | null = null;
 
-	@computed
 	public get flattenedEventList(): EventTreeNode[] {
 		return sortEventsByTimestamp(
 			this.flatExpandedList.filter(
@@ -115,31 +146,26 @@ export default class EventsStore {
 		);
 	}
 
-	@computed
 	public get panelRange(): TimeRange {
 		return [this.filterStore.filter.timestampFrom, this.filterStore.filter.timestampTo];
 	}
 
-	@computed
 	public get flatExpandedList(): EventTreeNode[] {
 		return this.eventTree.flatMap(eventId => this.getFlatExpandedList(eventId));
 	}
 
-	@computed
 	public get isSelectedEventLoading(): boolean {
 		return this.selectedNode !== null && this.selectedEvent === null;
 	}
 
 	// we need this property for correct virtualized tree render -
 	// to get event key by index in tree and list length calculation.
-	@computed
 	public get nodesList(): EventTreeNode[] {
 		return sortEventsByTimestamp(this.eventTree, 'desc').flatMap(eventNode =>
 			this.getNodesList(eventNode),
 		);
 	}
 
-	@computed
 	public get selectedPath(): EventTreeNode[] {
 		if (this.selectedNode == null) {
 			return [];
@@ -150,14 +176,12 @@ export default class EventsStore {
 		];
 	}
 
-	@action
 	public setHoveredEvent(event: EventTreeNode | null): void {
 		if (event !== this.hoveredEvent) {
 			this.hoveredEvent = event;
 		}
 	}
 
-	@action
 	public toggleNode = (eventTreeNode: EventTreeNode): void => {
 		const isExpanded = !this.isExpandedMap.get(eventTreeNode.eventId);
 		this.isExpandedMap.set(eventTreeNode.eventId, isExpanded);
@@ -172,7 +196,6 @@ export default class EventsStore {
 		}
 	};
 
-	@action
 	public selectNode = (eventTreeNode: EventTreeNode | null): void => {
 		this.selectedNode = eventTreeNode;
 		if (this.viewStore.eventsPanelArea === 100) {
@@ -180,7 +203,6 @@ export default class EventsStore {
 		}
 	};
 
-	@action
 	public scrollToEvent = (eventId: string | null, parentEventIds: string[] = []): void => {
 		if (!eventId) return;
 		let index = -1;
@@ -198,7 +220,6 @@ export default class EventsStore {
 
 	private eventTreeAC: AbortController | null = null;
 
-	@action
 	private fetchEventTree = async () => {
 		if (this.eventTreeAC) {
 			this.eventTreeAC.abort();
@@ -231,7 +252,6 @@ export default class EventsStore {
 		}
 	};
 
-	@action
 	public onEventSelect = async (savedEventNode: EventTreeNode | EventAction): Promise<void> => {
 		this.graphStore.setTimestamp(timestampToNumber(savedEventNode.startTimestamp));
 		this.workspaceStore.viewStore.activePanel = this;
@@ -267,7 +287,6 @@ export default class EventsStore {
 		this.isLoadingRootEvents = false;
 	};
 
-	@action
 	public onRangeChange = (timestamp: number): void => {
 		this.filterStore.filter = {
 			...this.filterStore.filter,
@@ -286,7 +305,6 @@ export default class EventsStore {
 
 	private detailedEventAC: AbortController | null = null;
 
-	@action
 	private fetchDetailedEventInfo = async (selectedNode: EventTreeNode | null) => {
 		this.selectedEvent = null;
 		if (!selectedNode) return;
@@ -308,7 +326,6 @@ export default class EventsStore {
 		}
 	};
 
-	@action
 	public expandPath = async (selectedIds: string[]): Promise<void> => {
 		if (selectedIds.length === 0) return;
 
@@ -331,31 +348,26 @@ export default class EventsStore {
 		}
 	};
 
-	@action
 	private onFilterChange = async () => {
 		await this.fetchEventTree();
 		this.isExpandedMap.clear();
 	};
 
-	@action
 	private onSelectedNodeChange = (selectedNode: EventTreeNode | null) => {
 		this.fetchDetailedEventInfo(selectedNode);
 		this.selectedParentNode = null;
 	};
 
-	@action
 	private onViewChange = () => {
 		if (this.selectedNode) {
 			this.scrollToEvent(this.selectedNode.eventId || null, this.selectedNode.parents);
 		}
 	};
 
-	@action
 	private onScrolledItemChange = (scrolledItemId: string | null) => {
 		this.scrollToEvent(scrolledItemId);
 	};
 
-	@action
 	private async init(initialState: EventStoreDefaultStateType) {
 		if (!initialState) {
 			this.fetchEventTree();

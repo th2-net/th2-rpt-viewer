@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, computed, observable, reaction, makeObservable } from 'mobx';
 import moment from 'moment';
 import { isEventNode } from '../helpers/event';
 import { calculateTimeRange } from '../helpers/graph';
@@ -34,6 +34,21 @@ export class GraphStore {
 		timeRange: TimeRange | null = null,
 		defaultInterval: IntervalOption = 15,
 	) {
+		makeObservable(this, {
+			interval: observable,
+			chunks: observable,
+			timestamp: observable,
+			range: observable,
+			tickSize: computed,
+			setTimestamp: action,
+			setInterval: action,
+			setRange: action,
+			getChunkByTimestamp: action,
+			getChunkData: action,
+			createChunks: action,
+			setTimestampFromRange: action,
+		});
+
 		this.range = timeRange || this.range;
 		this.setTimestampFromRange(this.range);
 
@@ -52,13 +67,10 @@ export class GraphStore {
 		this.createChunks(this.interval, this.timestamp.valueOf());
 	}
 
-	@observable
 	public interval: IntervalOption = 15;
 
-	@observable
 	public chunks: Chunk[] = [];
 
-	@observable
 	public timestamp: Number = new Number(
 		moment
 			.utc()
@@ -66,33 +78,27 @@ export class GraphStore {
 			.valueOf(),
 	);
 
-	@observable
 	public range: TimeRange = calculateTimeRange(
 		moment.utc(this.timestamp.valueOf()).valueOf(),
 		this.interval,
 	);
 
-	@computed
 	public get tickSize(): number {
 		return this.steps[this.interval];
 	}
 
-	@action
 	public setTimestamp = (timestamp: number): void => {
 		this.timestamp = new Number(timestamp);
 	};
 
-	@action
 	public setInterval = (interval: IntervalOption): void => {
 		this.interval = interval;
 	};
 
-	@action
 	public setRange = (range: TimeRange): void => {
 		this.range = range;
 	};
 
-	@action
 	public getChunkByTimestamp = (timestamp: number): Chunk => {
 		let chunk: Chunk | undefined = this.chunks.find(c => timestamp === c.from);
 		if (chunk) return chunk;
@@ -103,13 +109,11 @@ export class GraphStore {
 		return chunk;
 	};
 
-	@action
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public getChunkData = (chunk: Chunk, abortSignal?: AbortSignal): void => {
 		// TODO: implement chunk data fetching
 	};
 
-	@action
 	public createChunks(interval: IntervalOption, timestamp: number): void {
 		this.chunks = [];
 		const chunkStart = moment
@@ -152,7 +156,6 @@ export class GraphStore {
 			: GraphItemType.PINNED_MESSAGE;
 	};
 
-	@action
 	public setTimestampFromRange = (range: TimeRange): void => {
 		this.timestamp = new Number(range[0] + (range[1] - range[0]) / 2);
 	};

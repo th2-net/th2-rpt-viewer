@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, computed, observable, reaction, runInAction } from 'mobx';
+import { action, autorun, computed, observable, reaction, runInAction, makeObservable } from 'mobx';
 import moment from 'moment';
 import ApiSchema from '../api/ApiSchema';
 import { SSEFilterInfo, SSEHeartbeat, SSEParams } from '../api/sse';
@@ -95,6 +95,41 @@ type SearchFilters =
 
 export class SearchStore {
 	constructor(private api: ApiSchema) {
+		makeObservable<SearchStore, 'loadMessageSessions'>(this, {
+			messageSessions: observable,
+			searchChannel: observable,
+			eventsFilter: observable,
+			messagesFilter: observable,
+			searchForm: observable,
+			formType: observable,
+			searchHistory: observable,
+			currentIndex: observable,
+			eventFilterInfo: observable,
+			messagesFilterInfo: observable,
+			isMessageFiltersLoading: observable,
+			searchProgress: computed,
+			isSearching: computed,
+			currentSearch: observable,
+			completed: observable,
+			isFormDisabled: computed,
+			filters: computed,
+			getEventFilters: action,
+			getMessagesFilters: action,
+			toggleFormType: action,
+			updateForm: action,
+			setEventsFilter: action,
+			setMessagesFilter: action,
+			deleteHistoryItem: action,
+			nextSearch: action,
+			prevSearch: action,
+			newSearch: action,
+			updateSearchItem: action,
+			startSearch: action,
+			stopSearch: action,
+			resultGroups: computed,
+			loadMessageSessions: action,
+		});
+
 		this.getEventFilters();
 		this.getMessagesFilters();
 		this.loadMessageSessions();
@@ -119,19 +154,14 @@ export class SearchStore {
 		);
 	}
 
-	@observable
 	public messageSessions: Array<string> = [];
 
-	@observable
 	public searchChannel: EventSource | null = null;
 
-	@observable
 	public eventsFilter: EventFilterState | null = null;
 
-	@observable
 	public messagesFilter: MessageFilterState | null = null;
 
-	@observable
 	public searchForm: SearchPanelFormState = {
 		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
 		searchDirection: 'next',
@@ -141,25 +171,18 @@ export class SearchStore {
 		stream: [],
 	};
 
-	@observable
 	public formType: SearchPanelType = 'event';
 
-	@observable
 	public searchHistory: SearchHistory[] = localStorageWorker.getSearchHistory();
 
-	@observable
 	public currentIndex = this.searchHistory.length > 0 ? this.searchHistory.length - 1 : 0;
 
-	@observable
 	public eventFilterInfo: SSEFilterInfo[] = [];
 
-	@observable
 	public messagesFilterInfo: SSEFilterInfo[] = [];
 
-	@observable
 	public isMessageFiltersLoading = false;
 
-	@computed
 	public get searchProgress(): SearchProgress {
 		return {
 			startTimestamp: this.searchForm.startTimestamp,
@@ -174,23 +197,18 @@ export class SearchStore {
 		};
 	}
 
-	@computed
 	public get isSearching(): boolean {
 		return Boolean(this.searchChannel);
 	}
 
-	@observable
 	public currentSearch: SearchHistory | null = null;
 
-	@observable
 	public completed = this.searchHistory.length > 0;
 
-	@computed
 	public get isFormDisabled(): boolean {
 		return this.searchHistory.length > 1 && this.currentIndex !== this.searchHistory.length - 1;
 	}
 
-	@computed
 	public get filters(): SearchFilters {
 		if (this.formType === 'event') {
 			return this.eventsFilter
@@ -212,7 +230,6 @@ export class SearchStore {
 			: null;
 	}
 
-	@action
 	public getEventFilters = async (): Promise<void> => {
 		try {
 			const filters = await this.api.sse.getFilters('events');
@@ -226,7 +243,6 @@ export class SearchStore {
 		}
 	};
 
-	@action
 	public getMessagesFilters = async (): Promise<void> => {
 		this.isMessageFiltersLoading = true;
 		try {
@@ -243,12 +259,10 @@ export class SearchStore {
 		}
 	};
 
-	@action
 	public toggleFormType = (): void => {
 		this.formType = this.formType === 'event' ? 'message' : 'event';
 	};
 
-	@action
 	public updateForm = (stateUpdate: Partial<SearchPanelFormState>): void => {
 		this.searchForm = {
 			...this.searchForm,
@@ -257,7 +271,6 @@ export class SearchStore {
 		this.completed = false;
 	};
 
-	@action
 	public setEventsFilter = (patch: Partial<EventFilterState>): void => {
 		if (this.eventsFilter) {
 			this.eventsFilter = {
@@ -269,7 +282,6 @@ export class SearchStore {
 		this.completed = false;
 	};
 
-	@action
 	public setMessagesFilter = (patch: Partial<MessageFilterState>): void => {
 		if (this.messagesFilter) {
 			this.messagesFilter = {
@@ -281,7 +293,6 @@ export class SearchStore {
 		this.completed = false;
 	};
 
-	@action
 	public deleteHistoryItem = (searchHistoryItem: SearchHistory): void => {
 		this.searchHistory = this.searchHistory.filter(item => item !== searchHistoryItem);
 		this.currentIndex = Math.max(this.currentIndex - 1, 0);
@@ -293,7 +304,6 @@ export class SearchStore {
 		localStorageWorker.saveSearchHistory(this.searchHistory);
 	};
 
-	@action
 	public nextSearch = (): void => {
 		if (this.currentIndex < this.searchHistory.length - 1) {
 			this.currentIndex += 1;
@@ -301,7 +311,6 @@ export class SearchStore {
 		}
 	};
 
-	@action
 	public prevSearch = (): void => {
 		if (this.currentIndex !== 0) {
 			this.currentIndex -= 1;
@@ -309,13 +318,11 @@ export class SearchStore {
 		}
 	};
 
-	@action
 	public newSearch = (searchHistoryItem: SearchHistory): void => {
 		this.searchHistory = [...this.searchHistory, searchHistoryItem];
 		this.currentIndex = this.searchHistory.length - 1;
 	};
 
-	@action
 	public updateSearchItem = (searchHistoryItem: Partial<SearchHistory>): void => {
 		this.searchHistory = this.searchHistory.map(item => {
 			if (item === searchHistoryItem) {
@@ -329,7 +336,6 @@ export class SearchStore {
 		});
 	};
 
-	@action
 	public startSearch = (): void => {
 		this.completed = false;
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
@@ -391,7 +397,6 @@ export class SearchStore {
 		this.searchChannel.addEventListener('error', this.onError);
 	};
 
-	@action
 	public stopSearch = (): void => {
 		if (!this.searchChannel) return;
 		this.searchChannel.close();
@@ -401,7 +406,6 @@ export class SearchStore {
 		localStorageWorker.saveSearchHistory(this.searchHistory);
 	};
 
-	@computed
 	public get resultGroups(): Array<Array<SearchResult>> {
 		if (!this.currentSearch) return [];
 		if (!this.currentSearch.results.length) return [];
@@ -463,7 +467,6 @@ export class SearchStore {
 		}
 	};
 
-	@action
 	private async loadMessageSessions() {
 		try {
 			const messageSessions = await this.api.messages.getMessageSessions();

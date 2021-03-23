@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed, reaction } from 'mobx';
+import { observable, action, computed, reaction, makeObservable } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, {
@@ -43,6 +43,14 @@ export default class WorkspacesStore {
 	public searchWorkspace: SearchWorkspaceStore;
 
 	constructor(private api: ApiSchema, initialState: WorkspacesUrlState | null) {
+		makeObservable<WorkspacesStore, 'init'>(this, {
+			workspaces: observable,
+			activeWorkspace: computed,
+			init: action,
+			deleteWorkspace: action,
+			addWorkspace: action,
+		});
+
 		this.searchWorkspace = new SearchWorkspaceStore(this, this.api);
 
 		this.init(initialState || null);
@@ -54,15 +62,12 @@ export default class WorkspacesStore {
 		);
 	}
 
-	@observable
 	public workspaces: Array<WorkspaceStore> = [];
 
-	@computed
 	public get activeWorkspace(): SearchWorkspaceStore | WorkspaceStore {
 		return [this.searchWorkspace, ...this.workspaces][this.tabsStore.activeTabIndex];
 	}
 
-	@action
 	private init(initialState: WorkspacesUrlState | null) {
 		if (initialState !== null) {
 			initialState.forEach(workspaceState =>
@@ -77,12 +82,10 @@ export default class WorkspacesStore {
 		}
 	}
 
-	@action
 	public deleteWorkspace = (workspace: WorkspaceStore): void => {
 		this.workspaces.splice(this.workspaces.indexOf(workspace), 1);
 	};
 
-	@action
 	public addWorkspace = (workspace: WorkspaceStore): void => {
 		this.workspaces.push(workspace);
 		this.tabsStore.setActiveWorkspace(this.workspaces.length);

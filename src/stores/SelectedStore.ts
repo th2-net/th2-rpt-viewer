@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, reaction, observable } from 'mobx';
+import { action, computed, reaction, observable, makeObservable } from 'mobx';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './workspace/WorkspacesStore';
@@ -26,38 +26,45 @@ import { filterUniqueGraphItems } from '../helpers/graph';
 import { isWorkspaceStore } from '../helpers/workspace';
 
 export class SelectedStore {
-	@observable.shallow
 	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
 
-	@observable.shallow
 	public pinnedEvents: Array<EventTreeNode> = localStorageWorker.getPersistedPinnedEvents();
 
 	constructor(private workspacesStore: WorkspacesStore) {
+		makeObservable(this, {
+			pinnedMessages: observable.shallow,
+			pinnedEvents: observable.shallow,
+			savedItems: computed,
+			hoveredEvent: computed,
+			hoveredMessage: computed,
+			graphItems: computed,
+			attachedMessages: computed,
+			toggleMessagePin: action,
+			toggleEventPin: action,
+			removeSavedItem: action,
+		});
+
 		reaction(() => this.pinnedMessages, localStorageWorker.setPersistedPinnedMessages);
 
 		reaction(() => this.pinnedEvents, localStorageWorker.setPersistedPinnedEvents);
 	}
 
-	@computed
 	public get savedItems(): Array<EventTreeNode | EventMessage> {
 		return sortByTimestamp([...this.pinnedEvents, ...this.pinnedMessages]);
 	}
 
-	@computed
 	public get hoveredEvent(): EventTreeNode | null {
 		return isWorkspaceStore(this.workspacesStore.activeWorkspace)
 			? this.workspacesStore.activeWorkspace.eventsStore.hoveredEvent
 			: null;
 	}
 
-	@computed
 	public get hoveredMessage(): EventMessage | null {
 		return isWorkspaceStore(this.workspacesStore.activeWorkspace)
 			? this.workspacesStore.activeWorkspace.messagesStore.hoveredMessage
 			: null;
 	}
 
-	@computed
 	public get graphItems(): Array<GraphItem> {
 		if (!isWorkspaceStore(this.workspacesStore.activeWorkspace)) return [];
 
@@ -80,7 +87,6 @@ export class SelectedStore {
 		return sortByTimestamp(filterUniqueGraphItems(items));
 	}
 
-	@computed
 	public get attachedMessages(): EventMessage[] {
 		return sortMessagesByTimestamp(
 			isWorkspaceStore(this.workspacesStore.activeWorkspace)
@@ -89,7 +95,6 @@ export class SelectedStore {
 		);
 	}
 
-	@action
 	public toggleMessagePin = (message: EventMessage): void => {
 		if (this.pinnedMessages.findIndex(m => m.messageId === message.messageId) === -1) {
 			this.pinnedMessages = this.pinnedMessages.concat(message);
@@ -98,7 +103,6 @@ export class SelectedStore {
 		}
 	};
 
-	@action
 	public toggleEventPin = (event: EventTreeNode): void => {
 		if (this.pinnedEvents.findIndex(e => e.eventId === event.eventId) === -1) {
 			this.pinnedEvents = this.pinnedEvents.concat(event);
@@ -107,7 +111,6 @@ export class SelectedStore {
 		}
 	};
 
-	@action
 	public removeSavedItem(savedItem: EventTreeNode | EventMessage): void {
 		if (isEventNode(savedItem)) {
 			this.pinnedEvents = this.pinnedEvents.filter(event => event.eventId !== savedItem.eventId);

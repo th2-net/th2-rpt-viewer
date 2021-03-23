@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, IReactionDisposer } from 'mobx';
+import { action, computed, observable, reaction, IReactionDisposer, makeObservable } from 'mobx';
 import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
@@ -48,31 +48,23 @@ export default class MessagesStore {
 
 	public dataStore = new MessagesDataProviderStore(this, this.api);
 
-	@observable
 	public hoveredMessage: EventMessage | null = null;
 
-	@observable
 	public selectedMessageId: String | null = null;
 
-	@observable
 	public scrolledIndex: Number | null = null;
 
-	@observable
 	public highlightedMessageId: String | null = null;
 
-	@observable
 	public detailedRawMessagesIds: Array<string> = [];
 
-	@observable
 	public beautifiedMessages: Array<string> = [];
 
-	@observable
 	public currentMessagesIndexesRange: ListRange = {
 		startIndex: 0,
 		endIndex: 0,
 	};
 
-	@observable
 	public showFilterChangeHint = false;
 
 	/* 
@@ -89,6 +81,34 @@ export default class MessagesStore {
 		private api: ApiSchema,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
+		makeObservable<MessagesStore, 'onSelectedMessageIdChange' | 'handleFilterHint'>(this, {
+			hoveredMessage: observable,
+			selectedMessageId: observable,
+			scrolledIndex: observable,
+			highlightedMessageId: observable,
+			detailedRawMessagesIds: observable,
+			beautifiedMessages: observable,
+			currentMessagesIndexesRange: observable,
+			showFilterChangeHint: observable,
+			messageSessions: computed,
+			attachedMessages: computed,
+			panelRange: computed,
+			setHoveredMessage: action,
+			showDetailedRawMessage: action,
+			hideDetailedRawMessage: action,
+			beautify: action,
+			debeautify: action,
+			scrollToMessage: action,
+			applyFilter: action,
+			onSelectedMessageIdChange: action,
+			onMessageSelect: action,
+			onAttachedMessagesChange: action,
+			onRangeChange: action,
+			clearFilters: action,
+			handleFilterHint: action,
+			applyFilterHint: action,
+		});
+
 		if (defaultState) {
 			this.filterStore = new MessagesFilterStore(this.searchStore, defaultState);
 			const message = defaultState.targetMessage;
@@ -110,17 +130,14 @@ export default class MessagesStore {
 		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
 	}
 
-	@computed
 	public get messageSessions(): string[] {
 		return this.searchStore.messageSessions;
 	}
 
-	@computed
 	public get attachedMessages(): EventMessage[] {
 		return this.workspaceStore.attachedMessages;
 	}
 
-	@computed
 	public get panelRange(): TimeRange {
 		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
 
@@ -134,36 +151,30 @@ export default class MessagesStore {
 		return [timestampTo - 30 * 1000, timestampTo];
 	}
 
-	@action
 	public setHoveredMessage(message: EventMessage | null): void {
 		this.hoveredMessage = message;
 	}
 
-	@action
 	public showDetailedRawMessage = (messageId: string): void => {
 		if (!this.detailedRawMessagesIds.includes(messageId)) {
 			this.detailedRawMessagesIds = [...this.detailedRawMessagesIds, messageId];
 		}
 	};
 
-	@action
 	public hideDetailedRawMessage = (messageId: string): void => {
 		this.detailedRawMessagesIds = this.detailedRawMessagesIds.filter(id => id !== messageId);
 	};
 
-	@action
 	public beautify = (messageId: string): void => {
 		if (!this.beautifiedMessages.includes(messageId)) {
 			this.beautifiedMessages = [...this.beautifiedMessages, messageId];
 		}
 	};
 
-	@action
 	public debeautify = (messageId: string): void => {
 		this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
 	};
 
-	@action
 	public scrollToMessage = (messageId: string): void => {
 		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === messageId);
 		if (messageIndex !== -1) {
@@ -171,7 +182,6 @@ export default class MessagesStore {
 		}
 	};
 
-	@action
 	public applyFilter = (
 		filter: MessagesFilter,
 		sseFilters: MessageFilterState | null,
@@ -184,14 +194,12 @@ export default class MessagesStore {
 		this.filterStore.setMessagesFilter(filter, sseFilters, isSoftFilterApplied);
 	};
 
-	@action
 	private onSelectedMessageIdChange = (selectedMessageId: String | null) => {
 		if (selectedMessageId !== null) {
 			this.scrollToMessage(selectedMessageId.valueOf());
 		}
 	};
 
-	@action
 	public onMessageSelect = async (message: EventMessage): Promise<void> => {
 		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(message);
 
@@ -210,7 +218,6 @@ export default class MessagesStore {
 		}
 	};
 
-	@action
 	public onAttachedMessagesChange = (attachedMessages: EventMessage[]): void => {
 		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(attachedMessages);
 
@@ -235,7 +242,6 @@ export default class MessagesStore {
 		}
 	};
 
-	@action
 	public onRangeChange = (timestamp: number): void => {
 		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
@@ -252,14 +258,12 @@ export default class MessagesStore {
 		}
 	};
 
-	@action
 	public clearFilters = (): void => {
 		this.hintMessages = [];
 		this.filterStore.resetMessagesFilter();
 		this.dataStore.stopMessagesLoading();
 	};
 
-	@action
 	/*
 		This method handles message select or attached messages change events.
 		When those events occur we want to check if selected message or
@@ -287,7 +291,6 @@ export default class MessagesStore {
 		return this.showFilterChangeHint;
 	};
 
-	@action
 	public applyFilterHint = (): void => {
 		if (!this.hintMessages.length) return;
 

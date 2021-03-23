@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, reaction } from 'mobx';
+import { action, observable, reaction, makeObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { move } from 'helpers/array';
 import { MessageDisplayRule, MessageViewType } from 'models/EventMessage';
@@ -22,6 +22,16 @@ import localStorageWorker from 'util/LocalStorageWorker';
 
 class MessageDisplayRulesStore {
 	constructor() {
+		makeObservable(this, {
+			messageDisplayRules: observable,
+			rootDisplayRule: observable,
+			setRootDisplayRule: action,
+			setNewMessagesDisplayRule: action,
+			editMessageDisplayRule: action,
+			deleteMessagesDisplayRule: action,
+			reorderMessagesDisplayRule: action,
+		});
+
 		if (!localStorageWorker.getRootDisplayRule()) {
 			localStorageWorker.setRootDisplayRule({
 				id: nanoid(),
@@ -39,20 +49,16 @@ class MessageDisplayRulesStore {
 		reaction(() => this.rootDisplayRule, this.onRootRuleChange);
 	}
 
-	@observable
 	public messageDisplayRules: MessageDisplayRule[] = localStorageWorker.getMessageDisplayRules();
 
-	@observable
 	public rootDisplayRule: MessageDisplayRule | null;
 
-	@action
 	public setRootDisplayRule = (rule: MessageDisplayRule): void => {
 		if (this.rootDisplayRule?.viewType !== rule.viewType) {
 			this.rootDisplayRule = rule;
 		}
 	};
 
-	@action
 	public setNewMessagesDisplayRule = (rule: MessageDisplayRule): void => {
 		const hasSame = this.messageDisplayRules.find(existed => existed.session === rule.session);
 		if (!hasSame) {
@@ -60,7 +66,6 @@ class MessageDisplayRulesStore {
 		}
 	};
 
-	@action
 	public editMessageDisplayRule = (rule: MessageDisplayRule, newRule: MessageDisplayRule): void => {
 		this.messageDisplayRules = this.messageDisplayRules.map(existedRule => {
 			if (existedRule === rule) {
@@ -70,12 +75,10 @@ class MessageDisplayRulesStore {
 		});
 	};
 
-	@action
 	public deleteMessagesDisplayRule = (rule: MessageDisplayRule): void => {
 		this.messageDisplayRules = this.messageDisplayRules.filter(existedRule => existedRule !== rule);
 	};
 
-	@action
 	public reorderMessagesDisplayRule = (from: number, to: number): void => {
 		this.messageDisplayRules = move(this.messageDisplayRules, from, to);
 	};

@@ -15,7 +15,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, when } from 'mobx';
+import { action, observable, when, makeObservable } from 'mobx';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
@@ -52,13 +52,10 @@ export class SSEChannel {
 
 	private fetchedMessagesCount = 0;
 
-	@observable
 	public isError = false;
 
-	@observable
 	public isLoading = false;
 
-	@observable
 	public isEndReached = false;
 
 	constructor(
@@ -69,6 +66,19 @@ export class SSEChannel {
 		private onKeepAliveResponse?: (event: SSEHeartbeat) => void,
 		options?: SSEChannelOptions,
 	) {
+		makeObservable<SSEChannel, '_onClose' | '_onError' | '_onKeepAliveResponse' | 'resetSSEState'>(
+			this,
+			{
+				isError: observable,
+				isLoading: observable,
+				isEndReached: observable,
+				_onClose: action,
+				_onError: action,
+				_onKeepAliveResponse: action,
+				resetSSEState: action,
+			},
+		);
+
 		if (options) {
 			getObjectKeys(options).forEach(option => {
 				const value = options[option];
@@ -79,7 +89,6 @@ export class SSEChannel {
 		}
 	}
 
-	@action
 	private _onClose = () => {
 		this.closeChannel();
 		this.isLoading = false;
@@ -94,7 +103,6 @@ export class SSEChannel {
 		}
 	};
 
-	@action
 	private _onError = (event: Event) => {
 		this.closeChannel();
 		this.resetSSEState();
@@ -104,7 +112,6 @@ export class SSEChannel {
 		this.onError(event);
 	};
 
-	@action
 	private _onKeepAliveResponse = (event: Event) => {
 		if (this.onKeepAliveResponse) {
 			const keepAlive = JSON.parse((event as MessageEvent).data) as SSEHeartbeat;
@@ -210,7 +217,6 @@ export class SSEChannel {
 		this.channel = null;
 	};
 
-	@action
 	private resetSSEState = (
 		initialState: Partial<{ isLoading: boolean; isError: boolean; isEndReached: boolean }> = {},
 	): void => {

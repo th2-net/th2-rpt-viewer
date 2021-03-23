@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, computed, observable, reaction, makeObservable } from 'mobx';
 import SearchToken from '../../models/search/SearchToken';
 import ApiSchema from '../../api/ApiSchema';
 import EventsStore from './EventsStore';
@@ -43,6 +43,26 @@ export default class EventsSearchStore {
 		private eventsStore: EventsStore,
 		initialState?: initialState,
 	) {
+		makeObservable<EventsSearchStore, 'init'>(this, {
+			tokens: observable,
+			rawResults: observable,
+			isLoading: observable,
+			scrolledIndex: observable,
+			isActive: observable,
+			inputValue: observable,
+			scrolledItem: computed,
+			results: computed,
+			updateTokens: action,
+			fetchTokenResults: action,
+			appendResultsForEvent: action,
+			removeEventsResults: action,
+			nextSearchResult: action,
+			prevSearchResult: action,
+			clear: action,
+			init: action,
+			setInputValue: action,
+		});
+
 		this.init(initialState);
 
 		reaction(
@@ -51,25 +71,18 @@ export default class EventsSearchStore {
 		);
 	}
 
-	@observable
 	public tokens: SearchToken[] = [];
 
-	@observable
 	public rawResults: string[] = [];
 
-	@observable
 	public isLoading = false;
 
-	@observable
 	public scrolledIndex: number | null = null;
 
-	@observable
 	public isActive = false;
 
-	@observable
 	public inputValue = '';
 
-	@computed
 	public get scrolledItem(): null | string {
 		if (this.scrolledIndex == null) {
 			return null;
@@ -77,7 +90,6 @@ export default class EventsSearchStore {
 		return this.results[this.scrolledIndex];
 	}
 
-	@computed
 	public get results(): string[] {
 		if (this.eventsStore.viewStore.flattenedListView) {
 			return this.eventsStore.flattenedEventList
@@ -89,7 +101,6 @@ export default class EventsSearchStore {
 			.filter(nodeId => this.rawResults.includes(nodeId));
 	}
 
-	@action
 	public updateTokens = async (nextTokens: SearchToken[]): Promise<void> => {
 		this.isLoading = true;
 		this.tokens = nextTokens;
@@ -103,7 +114,6 @@ export default class EventsSearchStore {
 		this.isLoading = false;
 	};
 
-	@action
 	public fetchTokenResults = async (tokenString: string): Promise<string[]> => {
 		const rootEventsResults = await this.api.events.getEventsByName(
 			[
@@ -133,7 +143,6 @@ export default class EventsSearchStore {
 		return [...rootEventsResults, ...subNodesResult.flat(2)];
 	};
 
-	@action
 	public appendResultsForEvent = async (eventId: string): Promise<void> => {
 		this.isLoading = true;
 		const results = await Promise.all(
@@ -154,19 +163,16 @@ export default class EventsSearchStore {
 		this.rawResults.push(...new Set(results.flat()));
 	};
 
-	@action
 	public removeEventsResults = (nodesIds: string[]): void => {
 		this.rawResults = this.rawResults.filter(result => !nodesIds.includes(result));
 		this.scrolledIndex = null;
 	};
 
-	@action
 	public nextSearchResult = (): void => {
 		this.scrolledIndex =
 			this.scrolledIndex != null ? (this.scrolledIndex + 1) % this.results.length : 0;
 	};
 
-	@action
 	public prevSearchResult = (): void => {
 		this.scrolledIndex =
 			this.scrolledIndex != null
@@ -174,7 +180,6 @@ export default class EventsSearchStore {
 				: 0;
 	};
 
-	@action
 	public clear = (): void => {
 		this.rawResults = [];
 		this.tokens = [];
@@ -182,7 +187,6 @@ export default class EventsSearchStore {
 		this.scrolledIndex = null;
 	};
 
-	@action
 	private init = (initialState?: initialState) => {
 		if (!initialState) return;
 		const {
@@ -209,7 +213,6 @@ export default class EventsSearchStore {
 		}
 	};
 
-	@action
 	public setInputValue = (value: string): void => {
 		this.inputValue = value;
 	};
