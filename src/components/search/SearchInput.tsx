@@ -36,7 +36,6 @@ interface StateProps {
 	currentIndex: number | null;
 	resultsCount: number;
 	isLoading: boolean;
-	value: string;
 }
 
 interface DispatchProps {
@@ -44,7 +43,6 @@ interface DispatchProps {
 	nextSearchResult: () => void;
 	prevSearchResult: () => void;
 	clear: () => void;
-	setValue: (value: string) => void;
 }
 
 export interface Props extends StateProps, DispatchProps {
@@ -52,14 +50,18 @@ export interface Props extends StateProps, DispatchProps {
 	isActive: boolean;
 }
 
-export class SearchInputBase extends React.PureComponent<Props> {
+interface State {
+	value: string;
+}
+
+export class SearchInputBase extends React.PureComponent<Props, State> {
 	private inputElement: React.MutableRefObject<HTMLInputElement | null> = React.createRef();
 
 	private root = React.createRef<HTMLDivElement>();
 
-	constructor(props: Props) {
-		super(props);
-	}
+	state = {
+		value: '',
+	};
 
 	componentDidUpdate(prevProps: Props) {
 		if (this.props.isActive && !prevProps.isActive) {
@@ -71,6 +73,10 @@ export class SearchInputBase extends React.PureComponent<Props> {
 		raf(() => this.inputElement.current?.focus(), 3);
 	}
 
+	setInputValue(value: string) {
+		this.setState({ value });
+	}
+
 	render() {
 		const {
 			currentIndex,
@@ -79,8 +85,9 @@ export class SearchInputBase extends React.PureComponent<Props> {
 			nextSearchResult,
 			searchTokens,
 			isLoading,
-			value,
 		} = this.props;
+
+		const { value } = this.state;
 		const notActiveTokens = searchTokens.filter(searchToken => !searchToken.isActive);
 		const activeTokens = searchTokens.find(searchToken => searchToken.isActive);
 
@@ -88,7 +95,11 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 		return (
 			<div className='search-field-wrapper'>
-				<div className='search-field' ref={this.root} onMouseDown={this.onMouseDown}>
+				<div
+					className='search-field'
+					ref={this.root}
+					onMouseDown={this.onMouseDown}
+					data-testid='search-wrapper'>
 					<React.Fragment>
 						<div className='search-field__child-wrapper' onMouseDown={this.onMouseDown}>
 							{notActiveTokens.map(({ color, pattern }, index) => (
@@ -105,6 +116,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 								/>
 							))}
 							<AutosizeInput
+								data-testid='search'
 								inputClassName='search-field__input'
 								className='search-field__input-wrapper'
 								inputRef={ref => (this.inputElement.current = ref)}
@@ -129,7 +141,11 @@ export class SearchInputBase extends React.PureComponent<Props> {
 							/>
 						</div>
 						<div className='search-field__search-controls search-controls'>
-							<div className='search-controls__clear-button' onClick={this.clear} />
+							<div
+								className='search-controls__clear-button'
+								onClick={this.clear}
+								data-testid='clear-search-button'
+							/>
 							{isLoading ? (
 								<div className='search-controls__loader' />
 							) : showControls ? (
@@ -175,7 +191,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 		if (
 			e.keyCode === KeyCodes.BACKSPACE &&
-			this.props.value === '' &&
+			this.state.value === '' &&
 			this.props.searchTokens.length > 0
 		) {
 			// we should check is the last item active or not and remove it
@@ -193,7 +209,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 						isActive: true,
 					},
 				]);
-				this.props.setValue(lastItem.pattern);
+				this.setInputValue(lastItem.pattern);
 			} else {
 				this.props.updateSearchTokens([]);
 			}
@@ -203,7 +219,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 		if (e.keyCode === KeyCodes.SPACE && e.currentTarget.value !== '') {
 			if (e.ctrlKey) {
-				this.props.setValue(`${this.props.value} `);
+				this.setInputValue(`${this.state.value} `);
 				return;
 			}
 
@@ -225,17 +241,17 @@ export class SearchInputBase extends React.PureComponent<Props> {
 				]);
 			}
 
-			this.props.setValue('');
+			this.setInputValue('');
 		}
 	};
 
 	private inputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const currentValue = e.target.value;
 
-		this.props.setValue(currentValue.trim());
+		this.setInputValue(currentValue.trim());
 
 		setTimeout(() => {
-			if (this.props.value === currentValue) {
+			if (this.state.value === currentValue) {
 				// clear last active value
 				if (currentValue === '') {
 					this.props.updateSearchTokens(
@@ -246,7 +262,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 				}
 
 				if (this.props.searchTokens.length === 0) {
-					this.props.updateSearchTokens([this.createToken(this.props.value)]);
+					this.props.updateSearchTokens([this.createToken(this.state.value)]);
 					return;
 				}
 
@@ -257,7 +273,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 						replaceByIndex(
 							this.props.searchTokens,
 							this.props.searchTokens.indexOf(activeItem),
-							this.createToken(this.props.value, activeItem.color),
+							this.createToken(this.state.value, activeItem.color),
 						),
 					);
 					return;
@@ -265,7 +281,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 				this.props.updateSearchTokens([
 					...this.props.searchTokens,
-					this.createToken(this.props.value),
+					this.createToken(this.state.value),
 				]);
 			}
 		}, REACTIVE_SEARCH_DELAY);
@@ -287,6 +303,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 
 	private clear = () => {
 		this.props.clear();
+		this.setInputValue('');
 	};
 
 	private createToken(value: string, color?: string, isActive = true): SearchToken {
@@ -321,8 +338,6 @@ const SearchInput = (props: SearchInputProps) => {
 			nextSearchResult={searchStore.nextSearchResult}
 			prevSearchResult={searchStore.prevSearchResult}
 			clear={searchStore.clear}
-			value={searchStore.inputValue}
-			setValue={searchStore.setInputValue}
 			{...props}
 		/>
 	);

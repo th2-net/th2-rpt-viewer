@@ -37,8 +37,6 @@ describe('[React] <SearchInput/>', () => {
 		nextSearchResult: () => {},
 		prevSearchResult: () => {},
 		clear: () => {},
-		value: 'default value',
-		setValue: () => {},
 		disabled: false,
 		isActive: false,
 	};

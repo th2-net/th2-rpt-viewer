@@ -90,7 +90,8 @@ export default function Bubble(props: Props) {
 			className={`${className} ${rootClass}`}
 			style={style}
 			onBlur={onBlur}
-			onClick={rootOnClick}>
+			onClick={rootOnClick}
+			data-testid='bubble'>
 			{isEditing ? (
 				<AutocompleteInput
 					ref={inputRef}

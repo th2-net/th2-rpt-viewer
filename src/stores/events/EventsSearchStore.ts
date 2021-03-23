@@ -49,7 +49,6 @@ export default class EventsSearchStore {
 			isLoading: observable,
 			scrolledIndex: observable,
 			isActive: observable,
-			inputValue: observable,
 			scrolledItem: computed,
 			results: computed,
 			updateTokens: action,
@@ -60,7 +59,6 @@ export default class EventsSearchStore {
 			prevSearchResult: action,
 			clear: action,
 			init: action,
-			setInputValue: action,
 		});
 
 		this.init(initialState);
@@ -80,8 +78,6 @@ export default class EventsSearchStore {
 	public scrolledIndex: number | null = null;
 
 	public isActive = false;
-
-	public inputValue = '';
 
 	public get scrolledItem(): null | string {
 		if (this.scrolledIndex == null) {
@@ -183,7 +179,6 @@ export default class EventsSearchStore {
 	public clear = (): void => {
 		this.rawResults = [];
 		this.tokens = [];
-		this.inputValue = '';
 		this.scrolledIndex = null;
 	};
 
@@ -211,9 +206,5 @@ export default class EventsSearchStore {
 		} else {
 			this.tokens = tokens;
 		}
-	};
-
-	public setInputValue = (value: string): void => {
-		this.inputValue = value;
 	};
 }
