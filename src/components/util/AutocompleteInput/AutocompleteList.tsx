@@ -85,6 +85,8 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 
 		useOutsideClickListener(rootRef, onClickOutside);
 
+		console.log(isOpen);
+
 		React.useEffect(() => {
 			setFocusedOption(list[0] || null);
 			if (list.length > 0) {
@@ -173,7 +175,7 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 		React.useEffect(() => {
 			const showAutocomplete = Boolean(value && list.length && value !== focusedOption);
 			setIsOpen(showAutocomplete);
-		}, [value, list, isOpen, focusedOption]);
+		}, [value, list, focusedOption]);
 
 		React.useEffect(() => {
 			if (isOpen) {

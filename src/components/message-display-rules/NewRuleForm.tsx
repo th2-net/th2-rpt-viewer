@@ -18,7 +18,7 @@ import { nanoid } from 'nanoid';
 import React, { useRef, useState } from 'react';
 import { useMessageDisplayRulesStore } from '../../hooks';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
-import AutocompleteInput from '../util/AutocompleteInput';
+import SingleAutocompleteInput from '../util/AutocompleteInput/SingleAutocompleteInput';
 import Select from '../util/Select';
 
 type NewRuleFormProps = {
@@ -89,24 +89,15 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 			<div className='inputs-wrapper'>
 				<div className='session'>
 					{!rule || rule.fullyEditable ? (
-						<AutocompleteInput
+						<SingleAutocompleteInput
 							anchor={autocompleteAnchor}
-							autoresize={false}
 							placeholder='New session'
 							className='session-input'
 							ref={sessionInputRef}
 							value={currentSessionValue}
-							onSubmit={v => {
-								if (v === '*') {
-									setSessionValue('');
-									return;
-								}
-								setSessionValue(v);
-							}}
-							notResetOnSubmit
+							setValue={setSessionValue}
 							autocomplete={sessions}
 							autocompleteClassName='message-display-rules-autocomplete'
-							datalistKey='session-input'
 						/>
 					) : (
 						<p>{rule.session}</p>
