@@ -93,12 +93,13 @@ export class GraphStore {
 
 	@action
 	public getChunkByTimestamp = (timestamp: number) => {
-		let chunk: Chunk | undefined = this.chunks.find(c => timestamp === c.from);
+		let chunk: Chunk | undefined = this.chunks.find(c => timestamp >= c.from && timestamp <= c.to);
 		if (chunk) return chunk;
-		chunk = observable(
-			this.createChunk(moment.utc(timestamp).startOf('minute').valueOf(), this.interval),
-		);
+
+		const centralChunkStart = this.getChunkTimestampFrom(timestamp, this.interval);
+		chunk = observable(this.createChunk(centralChunkStart, this.interval));
 		this.chunks.push(chunk);
+
 		return chunk;
 	};
 
@@ -111,15 +112,31 @@ export class GraphStore {
 	@action
 	public createChunks(interval: IntervalOption, timestamp: number) {
 		this.chunks = [];
-		const chunkStart = moment
-			.utc(timestamp)
-			.subtract(interval * 3.5, 'minutes')
-			.startOf('minute');
-		const chunks: Chunk[] = [];
 
-		while (chunks.length !== 7) {
-			chunks.push(this.createChunk(chunkStart.valueOf(), interval));
-			chunkStart.add(interval, 'minutes');
+		const centralChunkStart = this.getChunkTimestampFrom(timestamp, interval);
+		const centralChunk = this.createChunk(centralChunkStart, interval);
+
+		const chunks: Chunk[] = [centralChunk];
+
+		for (let i = 1; i < 4; i++) {
+			chunks.unshift(
+				this.createChunk(
+					moment
+						.utc(centralChunkStart)
+						.subtract(interval * i, 'minutes')
+						.valueOf(),
+					interval,
+				),
+			);
+			chunks.push(
+				this.createChunk(
+					moment
+						.utc(centralChunkStart)
+						.add(interval * i, 'minutes')
+						.valueOf(),
+					interval,
+				),
+			);
 		}
 
 		this.chunks = chunks;
@@ -127,8 +144,9 @@ export class GraphStore {
 
 	private createChunk = (timestamp: number, interval: IntervalOption) => {
 		return {
-			from: timestamp,
-			to: moment(timestamp)
+			from: moment.utc(timestamp).valueOf(),
+			to: moment
+				.utc(timestamp)
 				.add(interval - 1, 'minutes')
 				.endOf('minute')
 				.valueOf(),
@@ -154,7 +172,15 @@ export class GraphStore {
 	};
 
 	@action
-	setTimestampFromRange = (range: TimeRange) => {
+	public setTimestampFromRange = (range: TimeRange) => {
 		this.timestamp = new Number(range[0] + (range[1] - range[0]) / 2);
+	};
+
+	public getChunkTimestampFrom = (timestamp: number, interval: number): number => {
+		const chunkHourStart = moment.utc(timestamp).startOf('hour');
+
+		return chunkHourStart
+			.add(Math.ceil(moment.utc(timestamp).get('minutes') / interval) * interval, 'minutes')
+			.valueOf();
 	};
 }

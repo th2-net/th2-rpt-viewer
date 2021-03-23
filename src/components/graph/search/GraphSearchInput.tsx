@@ -20,6 +20,7 @@ import KeyCodes from '../../../util/KeyCodes';
 import { usePointerTimestamp } from '../../../contexts/pointerTimestampContext';
 import { GraphSearchMode } from './GraphSearch';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
+import { TimeRange } from '../../../models/Timestamp';
 
 const TIME_MASK = DateTimeMask.TIME_MASK;
 export const DATE_TIME_MASK = DateTimeMask.DATE_TIME_MASK;
@@ -67,10 +68,19 @@ interface Props {
 	setMode: (mode: GraphSearchMode) => void;
 	inputConfig: GraphSearchInputConfig;
 	setInputConfig: (config: GraphSearchInputConfig) => void;
+	windowRange: TimeRange | null;
 }
 
 function GraphSearchInput(props: Props) {
-	const { timestamp, setTimestamp, setMode, inputConfig, setInputConfig, mode } = props;
+	const {
+		timestamp,
+		setTimestamp,
+		setMode,
+		inputConfig,
+		setInputConfig,
+		mode,
+		windowRange,
+	} = props;
 
 	const pointerTimestamp = usePointerTimestamp();
 
@@ -96,6 +106,21 @@ function GraphSearchInput(props: Props) {
 			});
 		}
 	}, [timestamp]);
+
+	React.useEffect(() => {
+		if (windowRange) {
+			const [from, to] = windowRange;
+			const centerTimestamp = from + (to - from) / 2;
+
+			setInputConfig({
+				isValidDate: true,
+				mask: DATE_TIME_MASK,
+				placeholder: DATE_TIME_PLACEHOLDER,
+				timestamp: centerTimestamp,
+				value: moment.utc(centerTimestamp).format(DATE_TIME_MASK),
+			});
+		}
+	}, [windowRange]);
 
 	React.useEffect(() => {
 		const mask = inputConfig.mask || DATE_TIME_MASK;

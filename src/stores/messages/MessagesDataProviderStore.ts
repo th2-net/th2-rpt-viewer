@@ -184,6 +184,11 @@ export default class MessagesDataProviderStore {
 
 			if (this.messagesStore.selectedMessageId) {
 				this.messagesStore.scrollToMessage(this.messagesStore.selectedMessageId?.valueOf());
+			} else {
+				const firstPrevMessage = prevMessages[0];
+				if (firstPrevMessage) {
+					this.messagesStore.scrollToMessage(firstPrevMessage.messageId);
+				}
 			}
 		}
 

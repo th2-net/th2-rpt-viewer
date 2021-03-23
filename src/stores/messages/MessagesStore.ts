@@ -108,6 +108,8 @@ export default class MessagesStore {
 		);
 
 		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
+
+		reaction(() => this.hoveredMessage, this.onMessageHover);
 	}
 
 	@computed
@@ -131,7 +133,7 @@ export default class MessagesStore {
 			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
 		}
 		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
-		return [timestampTo - 30 * 1000, timestampTo];
+		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];
 	}
 
 	@action
@@ -314,5 +316,11 @@ export default class MessagesStore {
 		this.attachedMessagesSubscription();
 		this.filterStore.dispose();
 		this.dataStore.stopMessagesLoading();
+	};
+
+	private onMessageHover = (hoveredMessage: EventMessage | null) => {
+		if (hoveredMessage !== null) {
+			this.graphStore.setTimestamp(timestampToNumber(hoveredMessage.timestamp));
+		}
 	};
 }

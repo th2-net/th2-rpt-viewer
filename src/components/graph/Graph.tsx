@@ -169,6 +169,7 @@ const GraphRoot = () => {
 				<GraphSearch
 					onTimestampSubmit={activeWorkspace.onTimestampSelect}
 					onFoundItemClick={activeWorkspace.onSavedItemSelect}
+					windowRange={isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.range : null}
 				/>
 				{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}
 			</div>

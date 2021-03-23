@@ -112,6 +112,17 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		};
 	}, [messagesStore.highlightedMessageId]);
 
+	const hoverMessage = () => {
+		hoverTimeout.current = setTimeout(() => {
+			messagesStore.setHoveredMessage(message);
+		}, 150);
+	};
+
+	const unhoverMessage = () => {
+		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+		messagesStore.setHoveredMessage(null);
+	};
+
 	const messageViewTypeSwitchConfig: RadioProps<MessageViewType>[] = React.useMemo(
 		() => [
 			{
@@ -182,17 +193,6 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	);
 
 	const bookmarkIconClass = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
-
-	const hoverMessage = () => {
-		hoverTimeout.current = setTimeout(() => {
-			messagesStore.setHoveredMessage(message);
-		}, 150);
-	};
-
-	const unhoverMessage = () => {
-		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
-		messagesStore.setHoveredMessage(null);
-	};
 
 	const renderMessageInfo = () => {
 		if (viewType === MessageViewType.FORMATTED || viewType === MessageViewType.BINARY) {
