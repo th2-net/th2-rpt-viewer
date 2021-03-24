@@ -71,6 +71,9 @@ export default class RootStore {
 			messagesStoreState = {
 				timestampFrom: messagesStore.filterStore.filter.timestampFrom,
 				timestampTo: messagesStore.filterStore.filter.timestampTo,
+				streams: messagesStore.filterStore.filter.streams,
+				isSoftFilter: messagesStore.filterStore.isSoftFilter,
+				sse: messagesStore.filterStore.sseMessagesFilter,
 			};
 
 			getObjectKeys(eventStoreState).forEach(key => {
