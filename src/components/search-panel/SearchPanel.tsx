@@ -29,20 +29,21 @@ export type SearchPanelType = 'event' | 'message';
 const SearchPanel = () => {
 	const searchWorkspace = useSearchWorkspace();
 	const searchStore = useSearchStore();
+	const [formCollapsed, setFormCollapsed] = React.useState(false);
 
 	const { ref: searchPanelRef } = useActivePanel(null);
 
 	return (
 		<div className='search-panel-wrapper'>
 			<div className='search-panel' ref={searchPanelRef}>
-				<SearchPanelForm />
+				<SearchPanelForm collapsed={formCollapsed} />
 			</div>
 			{searchStore.currentSearch && (
 				<SearchPanelProgressBar searchProgress={searchStore.searchProgress} />
 			)}
 			{searchStore.currentSearch && (
 				<SearchPanelResults
-					resultGroups={searchStore.resultGroups}
+					resultGroups={searchStore.sortedResultGroups}
 					timestamp={searchStore.currentSearch.timestamp}
 					onResultItemClick={searchWorkspace.onSearchResultItemSelect}
 					onResultGroupClick={searchWorkspace.followByTimestamp}
@@ -60,6 +61,8 @@ const SearchPanel = () => {
 					}
 					disablePrev={searchStore.isSearching || searchStore.currentIndex === 0}
 					disabledRemove={searchStore.isSearching}
+					formCollapsed={formCollapsed}
+					setFormCollapsed={setFormCollapsed}
 				/>
 			)}
 		</div>

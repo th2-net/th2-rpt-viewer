@@ -21,7 +21,6 @@
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	overflow: auto;
 }
 
 .search-panel {
@@ -189,6 +188,7 @@
 
 	&__progress-bar {
 		margin-top: 10px;
+		padding-bottom: 10px;
 	}
 }
 
@@ -228,8 +228,11 @@
 }
 
 .search-results {
+	@include scrollbar;
+	overflow: auto;
 	display: flex;
 	flex-direction: column;
+	padding-right: 5px;
 
 	&__controls {
 		padding: 2px 0;

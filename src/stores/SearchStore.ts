@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, computed, observable, reaction, runInAction } from 'mobx';
+import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
 import ApiSchema from '../api/ApiSchema';
 import { SSEFilterInfo, SSEHeartbeat, SSEParams } from '../api/sse';
@@ -24,7 +24,7 @@ import {
 	FilterState,
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
-import { getTimestampAsNumber, timestampToNumber } from '../helpers/date';
+import { getTimestampAsNumber } from '../helpers/date';
 import { isEventMessage, isEventNode } from '../helpers/event';
 import { getDefaultFilterState } from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
@@ -45,7 +45,7 @@ export type SearchResult = EventTreeNode | EventMessage;
 
 export type SearchHistory = {
 	timestamp: number;
-	results: Array<SearchResult>;
+	results: Record<string, Array<SearchResult>>;
 	request: StateHistory;
 	progress: number;
 	processedObjectCount: number;
@@ -67,7 +67,7 @@ export type SearchHistoryState<T> = {
 };
 
 const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
-
+const SEARCH_CHUNK_SIZE = 500;
 export class SearchStore {
 	constructor(private api: ApiSchema) {
 		this.getEventFilters();
@@ -144,6 +144,8 @@ export class SearchStore {
 
 	@observable completed = this.searchHistory.length > 0;
 
+	searchChunk: Array<SearchResult | SSEHeartbeat> = [];
+
 	@computed get isFormDisabled() {
 		return this.searchHistory.length > 1 && this.currentIndex !== this.searchHistory.length - 1;
 	}
@@ -167,6 +169,16 @@ export class SearchStore {
 					disableAll: this.isFormDisabled,
 			  }
 			: null;
+	}
+
+	@computed get sortedResultGroups() {
+		if (!this.currentSearch) return [];
+
+		const direction = this.currentSearch.request.state.searchDirection === 'next' ? 1 : -1;
+
+		return Object.entries(toJS(this.currentSearch.results)).sort(
+			(a, b) => (+a[0] - +b[0]) * direction,
+		);
 	}
 
 	@action
@@ -281,7 +293,7 @@ export class SearchStore {
 		this.newSearch({
 			timestamp: moment().utc().valueOf(),
 			request: { type: this.formType, state: this.searchForm, filters: filterParams },
-			results: [],
+			results: {},
 			progress: 0,
 			processedObjectCount: 0,
 		});
@@ -342,35 +354,8 @@ export class SearchStore {
 		this.completed = true;
 
 		localStorageWorker.saveSearchHistory(this.searchHistory);
+		this.exportChunkToSearchHistory();
 	};
-
-	@computed get resultGroups(): Array<Array<SearchResult>> {
-		if (!this.currentSearch) return [];
-		if (!this.currentSearch.results.length) return [];
-
-		const groups: Array<Array<SearchResult>> = [[]];
-		let groupStartTime = getTimestampAsNumber(this.currentSearch.results[0]);
-		const searchDirection = this.currentSearch.request.state.searchDirection;
-
-		this.currentSearch.results.forEach(result => {
-			const resultTimestamp = getTimestampAsNumber(result);
-			if (
-				(searchDirection === 'next'
-					? resultTimestamp - groupStartTime
-					: groupStartTime - resultTimestamp) /
-					1000 /
-					60 <
-				SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES
-			) {
-				groups[groups.length - 1].push(result);
-			} else {
-				groupStartTime = getTimestampAsNumber(result);
-				groups.push([]);
-				groups[groups.length - 1].push(result);
-			}
-		});
-		return groups;
-	}
 
 	onError = (ev: Event) => {
 		const data = (ev as MessageEvent).data;
@@ -383,25 +368,18 @@ export class SearchStore {
 		});
 
 		this.stopSearch();
+		this.exportChunkToSearchHistory();
 	};
 
 	private onChannelResponse = (ev: Event) => {
 		if (this.currentSearch) {
 			const data = (ev as MessageEvent).data;
 			const parsedEvent: SearchResult | SSEHeartbeat = JSON.parse(data);
-			if (isEventNode(parsedEvent) || isEventMessage(parsedEvent)) {
-				this.currentSearch.results = [...this.currentSearch.results, JSON.parse(data)];
-			}
-			if (isEventNode(parsedEvent)) {
-				this.currentSearch.progress = timestampToNumber(parsedEvent.startTimestamp);
-				return;
-			}
-			if (isEventMessage(parsedEvent)) {
-				this.currentSearch.progress = timestampToNumber(parsedEvent.timestamp);
-				return;
-			}
-			this.currentSearch.progress = parsedEvent.timestamp;
-			this.currentSearch.processedObjectCount = parsedEvent.scanCounter;
+			this.searchChunk.push(parsedEvent);
+		}
+
+		if (this.searchChunk.length >= SEARCH_CHUNK_SIZE) {
+			this.exportChunkToSearchHistory();
 		}
 	};
 
@@ -414,6 +392,35 @@ export class SearchStore {
 			});
 		} catch (error) {
 			console.error("Couldn't fetch sessions");
+		}
+	}
+
+	@action
+	exportChunkToSearchHistory() {
+		if (this.currentSearch) {
+			this.searchChunk.forEach(parsedEvent => {
+				if (this.currentSearch) {
+					if (isEventNode(parsedEvent) || isEventMessage(parsedEvent)) {
+						const resultGroupKey = Math.floor(
+							getTimestampAsNumber(parsedEvent) /
+								1000 /
+								(SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60),
+						).toString();
+
+						if (!this.currentSearch.results[resultGroupKey]) {
+							this.currentSearch.results[resultGroupKey] = [];
+						}
+
+						this.currentSearch.results[resultGroupKey].push(parsedEvent);
+						this.currentSearch.progress = getTimestampAsNumber(parsedEvent);
+					} else {
+						this.currentSearch.progress = parsedEvent.timestamp;
+						this.currentSearch.processedObjectCount = parsedEvent.scanCounter;
+					}
+				}
+			});
+
+			this.searchChunk = [];
 		}
 	}
 }

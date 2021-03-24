@@ -16,6 +16,7 @@
 
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
 	DateTimeInputType,
 	DateTimeMask,
@@ -35,7 +36,11 @@ export type DateInputProps = {
 	inputConfig: DateTimeInputType;
 };
 
-const SearchPanelForm = () => {
+type Props = {
+	collapsed: boolean;
+};
+
+const SearchPanelForm = ({ collapsed }: Props) => {
 	const {
 		isFormDisabled: disabled,
 		updateForm,
@@ -133,22 +138,37 @@ const SearchPanelForm = () => {
 				updateForm={updateForm}
 				startTimestampInput={startTimestampInput}
 			/>
-			<div className='search-panel__fields'>
-				<div className='filter-row'>
-					<div className='filter-row__label'>Search for</div>
-					<SearchTypeSwitcher formType={formType} setFormType={setFormType} />
-				</div>
-				<div className='filter-row'>
-					<div className='filter-row__label'>Time Limit</div>
-					<FilterDatetimeInput {...endTimestampInput} />
-				</div>
-				{config.map(rowConfig => (
-					<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
-				))}
-			</div>
-			<div className='filters'>
-				{filters && filters.info.length > 0 && <SearchPanelFilters {...filters} />}
-			</div>
+			<AnimatePresence>
+				{!collapsed && (
+					<motion.div
+						initial='collapsed'
+						animate='open'
+						exit='collapsed'
+						variants={{
+							open: { opacity: 1, height: 'auto' },
+							collapsed: { opacity: 0, height: 0 },
+						}}
+						transition={{ duration: 0.3 }}>
+						<div className='search-panel__fields'>
+							<div className='filter-row'>
+								<div className='filter-row__label'>Search for</div>
+								<SearchTypeSwitcher formType={formType} setFormType={setFormType} />
+							</div>
+							<div className='filter-row'>
+								<div className='filter-row__label'>Time Limit</div>
+								<FilterDatetimeInput {...endTimestampInput} />
+							</div>
+							{config.map(rowConfig => (
+								<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
+							))}
+						</div>
+						<div className='filters'>
+							{filters && filters.info.length > 0 && <SearchPanelFilters {...filters} />}
+						</div>
+					</motion.div>
+				)}
+			</AnimatePresence>
+
 			<div className='search-panel__buttons'>
 				<button
 					disabled={disabled}
