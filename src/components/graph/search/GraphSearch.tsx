@@ -47,6 +47,9 @@ function GraphSearch(props: Props) {
 	const { onTimestampSubmit, onFoundItemClick } = props;
 
 	const [currentValue, setCurrentValue] = React.useState('');
+	const [timestamp, setTimestamp] = React.useState<number | null>(null);
+	const [isValid, setIsValid] = React.useState(false);
+
 	const [foundObject, setFoundbject] = React.useState<EventAction | EventMessage | null>(null);
 	const [isLoading, setIsLoading] = React.useState(false);
 	const [isError, setIsError] = React.useState(false);
@@ -55,7 +58,6 @@ function GraphSearch(props: Props) {
 	const [history, setHistory] = React.useState<Array<EventAction | EventMessage>>(
 		localStorageWorker.getGraphSearchHistory(),
 	);
-	const [timestamp, setTimestamp] = React.useState<number | null>(null);
 	const [showHistory, setShowHistory] = React.useState(false);
 
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
@@ -76,6 +78,10 @@ function GraphSearch(props: Props) {
 				setShowPicker(false);
 				setShowDialog(false);
 				setShowHistory(false);
+
+				if (timestamp && isValid) {
+					onTimestampSubmit(timestamp);
+				}
 			}
 		},
 		'mouseup',
@@ -157,18 +163,24 @@ function GraphSearch(props: Props) {
 			});
 	};
 
-	function onSubmit(value: number | string) {
-		if (typeof value === 'number') {
-			onTimestampSubmit(value);
-			setCurrentValue('');
-		} else {
-			setCurrentValue(value);
-		}
-	}
+	const onSubmit = React.useCallback(
+		(value: number | string) => {
+			if (typeof value === 'number') {
+				onTimestampSubmit(value);
+				setCurrentValue('');
+			} else {
+				setCurrentValue(value);
+			}
+		},
+		[onTimestampSubmit, setCurrentValue],
+	);
 
-	function handleTimepickerValueChange(value: number | null) {
-		setTimestamp(value);
-	}
+	const handleTimepickerValueChange = React.useCallback(
+		(value: number | null) => {
+			setTimestamp(value);
+		},
+		[setTimestamp],
+	);
 
 	const toggleTimePicker = React.useCallback(
 		(isOpen: boolean) => {
@@ -184,11 +196,14 @@ function GraphSearch(props: Props) {
 		[setShowHistory, showHistory],
 	);
 
-	function onHistoryItemDelete(historyItem: EventAction | EventMessage) {
-		const updatedHistory = history.filter(item => item !== historyItem);
-		setHistory(updatedHistory);
-		localStorageWorker.saveGraphSearchHistory(updatedHistory);
-	}
+	const onHistoryItemDelete = React.useCallback(
+		(historyItem: EventAction | EventMessage) => {
+			const updatedHistory = history.filter(item => item !== historyItem);
+			setHistory(updatedHistory);
+			localStorageWorker.saveGraphSearchHistory(updatedHistory);
+		},
+		[history, setHistory],
+	);
 
 	const dialogClassName = createBemElement(
 		'graph-search',
@@ -204,6 +219,7 @@ function GraphSearch(props: Props) {
 				setTimestamp={setTimestamp}
 				toggleHistory={toggleHistory}
 				toggleTimePicker={toggleTimePicker}
+				setIsValid={setIsValid}
 			/>
 			<ModalPortal
 				isOpen={showPicker || showDialog || showHistory}

@@ -56,6 +56,7 @@ interface Props {
 	setTimestamp: (ts: null | number) => void;
 	timestamp: number | null;
 	onSubmit: (value: number | string) => void;
+	setIsValid: (isValid: boolean) => void;
 }
 
 export interface GraphSearchInputConfig {
@@ -67,7 +68,7 @@ export interface GraphSearchInputConfig {
 }
 
 function GraphSearchInput(props: Props) {
-	const { toggleTimePicker, toggleHistory, timestamp, setTimestamp, onSubmit } = props;
+	const { toggleTimePicker, toggleHistory, timestamp, setTimestamp, onSubmit, setIsValid } = props;
 
 	const pointerTimestamp = usePointerTimestamp();
 
@@ -84,12 +85,16 @@ function GraphSearchInput(props: Props) {
 
 	React.useEffect(() => {
 		if (timestamp !== null && timestamp !== inputConfig.timestamp) {
-			const mask = inputConfig.mask || DATE_TIME_MASK;
-			const placeholder = inputConfig.placeholder || DATE_TIME_PLACEHOLDER;
+			const updatedTimestamp = moment.utc(timestamp);
+
+			const isToday = updatedTimestamp.isSame(moment.utc(), 'day');
+
+			const mask = isToday ? TIME_MASK : DATE_TIME_MASK;
+			const placeholder = isToday ? TIME_PLACEHOLDER : DATE_TIME_PLACEHOLDER;
 
 			setInputConfig({
 				...inputConfig,
-				value: moment.utc(timestamp).format(mask),
+				value: updatedTimestamp.format(mask),
 				mask,
 				placeholder,
 				timestamp,
@@ -128,6 +133,10 @@ function GraphSearchInput(props: Props) {
 		}
 		previousPointerTimestamp.current = pointerTimestamp;
 	}, [pointerTimestamp]);
+
+	React.useEffect(() => {
+		setIsValid(inputConfig.isValid);
+	}, [inputConfig]);
 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
 		const { mask, value, placeholder, isValid } = inputConfig;
