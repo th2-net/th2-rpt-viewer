@@ -38,9 +38,6 @@ const getTimestamp = (timestamp: Timestamp) => {
 	return +`${timestamp.epochSecond}${ms}`;
 };
 
-// eslint-disable-next-line max-len
-const dateRegexp = /\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01]) (0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])\.\d{3}/g;
-
 interface Props {
 	onTimestampSubmit: (timestamp: number) => void;
 	onFoundItemClick: InstanceType<typeof WorkspaceStore>['onSavedItemSelect'];
@@ -90,12 +87,6 @@ function GraphSearch(props: Props) {
 			ac.abort();
 		};
 		if (currentValue) {
-			if (currentValue.match(dateRegexp)) {
-				const time = moment(currentValue).utc().valueOf();
-				setTimestamp(time);
-				onTimestampSubmit(time);
-				return abort;
-			}
 			setShowDialog(true);
 			setIsLoading(true);
 			setTimestampFromFoundObject(ac);

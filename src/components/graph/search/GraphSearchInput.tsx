@@ -25,6 +25,9 @@ export const DATE_TIME_MASK = 'YYYY.MM.DD HH:mm:ss.SSS' as const;
 const TIME_PLACEHOLDER = '00:00:00.000' as const;
 const DATE_TIME_PLACEHOLDER = '0000.01.01 00:00:00.000' as const;
 
+// eslint-disable-next-line max-len
+const dateRegexp = /\d{4}(-|\.)(0?[1-9]|1[012])(-|\.)(0?[1-9]|[12][0-9]|3[01]) (0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])\.\d{3}/g;
+
 const isCompletable = (
 	dateStr: string,
 	dateMask: typeof TIME_MASK | typeof DATE_TIME_MASK,
@@ -130,11 +133,15 @@ function GraphSearchInput(props: Props) {
 	}, [pointerTimestamp]);
 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-		const { mask, value, placeholder, isValid } = inputConfig;
+		const { mask, value, placeholder } = inputConfig;
 		if (e.keyCode === KeyCodes.ENTER) {
 			toggleHistory(false);
 			toggleTimePicker(false);
-			onSubmit(value && isValid && timestamp ? timestamp : value);
+			if (value.match(dateRegexp)) {
+				const time = moment.utc(value).valueOf();
+				setTimestamp(time);
+				onSubmit(time);
+			}
 		}
 
 		if (e.keyCode === KeyCodes.TAB) {
