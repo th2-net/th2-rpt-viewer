@@ -17,6 +17,7 @@
 import moment, { Moment } from 'moment';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
+import { DateTimeMask } from '../models/filter/FilterInputs';
 import { TimeRange, Timestamp } from '../models/Timestamp';
 import { isEventMessage } from './event';
 
@@ -38,8 +39,7 @@ export function formatTime(time: string | number) {
 	if (time == null) {
 		return '';
 	}
-
-	return new Date(time).toISOString().replace('T', ' ').replace('Z', '');
+	return moment.utc(time).format(DateTimeMask.DATE_TIME_MASK);
 }
 
 export function timestampToNumber(timestamp: Timestamp): number {
@@ -56,9 +56,7 @@ export function formatTimestampValue(timestamp: number | null, timeMask: string)
 		return '';
 	}
 
-	const date = new Date(timestamp);
-	const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-	return moment(utcDate).format(timeMask);
+	return moment.utc(timestamp).format(timeMask);
 }
 
 export const getTimeWindow = (
