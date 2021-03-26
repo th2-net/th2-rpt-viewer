@@ -32,7 +32,7 @@ function getDefaultMessagesFilter(): MessagesFilter {
 }
 
 export type MessagesFilterStoreInitialState = {
-	sse?: Partial<MessageFilterState>;
+	sse?: Partial<MessageFilterState> | null;
 	isSoftFilter?: boolean;
 } & Partial<MessagesFilter>;
 
