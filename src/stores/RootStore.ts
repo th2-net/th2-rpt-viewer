@@ -68,10 +68,25 @@ export default class RootStore {
 						: undefined,
 			};
 			const messagesStore: MessagesStore = activeWorkspace.messagesStore;
+			const currentFilterStreams = messagesStore.filterStore.filter.streams;
+			const currentAttachedMessages = activeWorkspace.attachedMessages;
+			const currentAttachedMessagesSessions = currentAttachedMessages.map(
+				message => message.sessionId,
+			);
+			const filtersMoreThanAttachedMessages =
+				currentFilterStreams.length > currentAttachedMessages.length;
+			const filtersEqaulsToAttachedMessages =
+				currentFilterStreams.length === currentAttachedMessages.length &&
+				currentFilterStreams
+					.map(filter => currentAttachedMessagesSessions.includes(filter))
+					.every(filter => filter);
 			messagesStoreState = {
 				timestampFrom: messagesStore.filterStore.filter.timestampFrom,
 				timestampTo: messagesStore.filterStore.filter.timestampTo,
-				streams: messagesStore.filterStore.filter.streams,
+				streams:
+					filtersMoreThanAttachedMessages || !filtersEqaulsToAttachedMessages
+						? currentFilterStreams
+						: [],
 				isSoftFilter: messagesStore.filterStore.isSoftFilter,
 				sse: messagesStore.filterStore.sseMessagesFilter,
 			};
