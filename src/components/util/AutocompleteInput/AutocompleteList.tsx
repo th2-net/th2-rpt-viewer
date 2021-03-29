@@ -146,17 +146,6 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 						handleSelect(focusedOption);
 					}
 				}
-
-				if (event.keyCode === KeyCodes.TAB) {
-					event.preventDefault();
-					let nextIndex = focusedOption ? list.indexOf(focusedOption) + 1 : 0;
-					if (nextIndex >= list.length) {
-						nextIndex = 0;
-					}
-					const nextOption = list[nextIndex];
-					setFocusedOption(nextOption || null);
-					scrollToOption({ index: nextIndex, align: nextIndex === 0 ? 'start' : 'end' });
-				}
 			},
 			[focusedOption, setFocusedOption, isOpen, list, scrollToOption],
 		);
