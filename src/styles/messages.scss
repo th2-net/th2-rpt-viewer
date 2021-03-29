@@ -17,12 +17,51 @@
 @import './common/vars';
 
 .message-card-wrapper {
+	@include scrollbar();
 	@include bookmark-button($showOnHoverOverParent: true);
 	position: relative;
-	padding-bottom: 5px;
+	overflow: auto;
+	display: flex;
+	padding: 10px;
+	border-radius: 5px;
 	margin-right: 10px;
+	margin-bottom: 4px;
 
-	&:hover .message-card {
+	&.highlighted {
+		@keyframes highlight {
+			from {
+				background: $highlightedMessageCardBackground;
+			}
+
+			50% {
+				background: rgba($highlightedMessageCardBackground, 0);
+			}
+			to {
+				background: $highlightedMessageCardBackground;
+			}
+		}
+		animation: highlight 1s infinite ease-in-out;
+	}
+
+	&.soft-filtered {
+		border: 1px solid $filterPrimaryColor;
+
+		&:hover {
+			background-color: rgba($color: $filterPrimaryColor, $alpha: 0.1);
+		}
+
+	}
+
+	&.attached {
+		border: 2px solid $attachedMessageCardBorderColor;
+
+		&:hover {
+			border-color: $attachedMessageCardHoverBorderColor;
+			background-color: $attachedMessageCardHoverBackground;
+		}
+	}
+
+	&:hover {
 		background-color: $messageCardHoverBackground;
 	}
 
@@ -33,10 +72,6 @@
 	}
 
 	&:hover .mc-header {
-		&__info > *:not(:last-child) {
-			margin-right: 10px;
-		}
-
 		&__item {
 			&.messageId {
 				display: flex;
@@ -73,50 +108,21 @@
 			opacity: 1;
 		}
 		&__controls {
-			display: flex;
+			display: block;
 		}
 	}
 }
 
 .message-card {
+	position: relative;
 	display: flex;
 	flex-direction: column;
-	padding: 10px;
-	border-radius: 5px;
+	flex-grow: 1;
+}
 
-	&.highlighted {
-		@keyframes highlight {
-			from {
-				background: $highlightedMessageCardBackground;
-			}
-
-			50% {
-				background: rgba($highlightedMessageCardBackground, 0);
-			}
-			to {
-				background: $highlightedMessageCardBackground;
-			}
-		}
-		animation: highlight 1s infinite ease-in-out;
-	}
-
-	&.soft-filtered {
-		border: 1px solid $filterPrimaryColor;
-
-		&:hover {
-			background-color: rgba($color: $filterPrimaryColor, $alpha: 0.1);
-		}
-
-	}
-
-	&.attached {
-		border: 2px solid $attachedMessageCardBorderColor;
-
-		&:hover {
-			border-color: $attachedMessageCardHoverBorderColor;
-			background-color: $attachedMessageCardHoverBackground;
-		}
-	}
+.message-card-tools {
+	max-width: 16px;
+	margin-left: 4px;
 }
 
 .mc-label {
@@ -169,7 +175,7 @@
 		margin-left: 3px;
 		margin-right: 4px;
 		&.inline {
-			padding: 4px;
+			display: inline-flex;
 		}
 	}
 
@@ -177,8 +183,7 @@
 		@include icon(url(../../resources/icons/filter.svg), 12px, 12px);
 		flex-shrink: 0;
 		&.inline {
-			padding: 6px;
-			margin-right: 4px;
+			display: inline-flex;
 		}
 	}
 
@@ -186,7 +191,6 @@
 		flex-grow: 1;
 		display: flex;
 		overflow: hidden;
-		align-items: center;
 
 		& > *:not(:last-child) {
 			margin-right: 5px;
@@ -251,10 +255,6 @@
 		}
 	}
 
-	&__radios {
-		display: flex;
-	}
-
 	&__icon {
 		width: 15px;
 		height: 15px;
@@ -281,7 +281,6 @@
 
 .mc-body {
 	font-size: 11px;
-	position: relative;
 	border-radius: 5px;
 
 	&__human {
@@ -397,17 +396,21 @@
 		width: 13px;
 		background-image: url('../../resources/icons/clipboard.svg');
 		background-size: 100%;
+		margin-left: 5px;
 		filter: opacity(0.6);
 	}
 
 	&__copy-title {
 		@include unselectable;
 		color: $primaryTextColor;
-		padding-left: 5px;
 	}
 
 	&__copy-all {
 		display: none;
+		position: absolute;
+		bottom: 0;
+		right: 0;
+		flex-direction: row-reverse;
 		align-items: center;
 		cursor: pointer;
 		flex-shrink: 0;
@@ -781,7 +784,7 @@
 			&:before {
 				content: '{~}';
 				position: absolute;
-				font-size: 12px;
+				font-size: 11px;
 				line-height: 1.25;
 				font-weight: 700;
 				color: grey;
