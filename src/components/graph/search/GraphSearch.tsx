@@ -16,71 +16,64 @@
 
 import * as React from 'react';
 import moment from 'moment';
-import eventHttpApi from '../../../api/event';
-import messageHttpApi from '../../../api/message';
-import { isEventAction } from '../../../helpers/event';
 import { createBemElement } from '../../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
-import { EventAction } from '../../../models/EventAction';
-import { EventMessage } from '../../../models/EventMessage';
-import { TimeInputType } from '../../../models/filter/FilterInputs';
-import { Timestamp } from '../../../models/Timestamp';
 import GraphSearchDialog from './GraphSearchDialog';
-import localStorageWorker from '../../../util/LocalStorageWorker';
 import WorkspaceStore from '../../../stores/workspace/WorkspaceStore';
 import { ModalPortal } from '../../util/Portal';
-import FilterDatetimePicker from '../../filter/date-time-inputs/FilterDatetimePicker';
-import GraphSearchInput, { DATE_TIME_MASK } from './GraphSearchInput';
-import GraphSearchHistory from './GraphSearchHistory';
-
-const getTimestamp = (timestamp: Timestamp) => {
-	const ms = Math.floor(timestamp.nano / 1000000);
-	return +`${timestamp.epochSecond}${ms}`;
-};
+import GraphSearchInput, { GraphSearchInputConfig } from './GraphSearchInput';
+import { GraphSearchTimePicker } from './GraphSearchTimePicker';
+import KeyCodes from '../../../util/KeyCodes';
 
 interface Props {
 	onTimestampSubmit: (timestamp: number) => void;
 	onFoundItemClick: InstanceType<typeof WorkspaceStore>['onSavedItemSelect'];
 }
 
+export type GraphSearchMode = 'date' | 'id';
+
 function GraphSearch(props: Props) {
 	const { onTimestampSubmit, onFoundItemClick } = props;
 
-	const [currentValue, setCurrentValue] = React.useState('');
-	const [timestamp, setTimestamp] = React.useState<number | null>(null);
-	const [isValid, setIsValid] = React.useState(false);
+	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
+		isValidDate: false,
+		mask: null,
+		placeholder: null,
+		timestamp: null,
+		value: '',
+	});
 
-	const [foundObject, setFoundbject] = React.useState<EventAction | EventMessage | null>(null);
-	const [isLoading, setIsLoading] = React.useState(false);
-	const [isError, setIsError] = React.useState(false);
-	const [showPicker, setShowPicker] = React.useState(false);
-	const [showDialog, setShowDialog] = React.useState(false);
-	const [history, setHistory] = React.useState<Array<EventAction | EventMessage>>(
-		localStorageWorker.getGraphSearchHistory(),
-	);
-	const [showHistory, setShowHistory] = React.useState(false);
+	const [timestamp, setTimestamp] = React.useState<number | null>(null);
+	const [submittedId, setSubmittedId] = React.useState<String | null>(null);
+
+	const [mode, setMode] = React.useState<GraphSearchMode>('date');
+	// If user selects mode input will no longer switch automatically based on input value
+	const [isModeLocked, setIsModeLocked] = React.useState(false);
+
+	const [isIdSearchDisabled, setIsIdSearchDisabled] = React.useState(false);
+
+	const [showModal, setShowModal] = React.useState(false);
 
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
-	const timeout = React.useRef<NodeJS.Timeout>();
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	useOutsideClickListener(
 		wrapperRef,
 		e => {
-			const modalIsOpen = showDialog || showHistory || showPicker;
-
 			if (
-				modalIsOpen &&
+				showModal &&
 				e.target instanceof Node &&
 				!wrapperRef.current?.contains(e.target) &&
 				!modalRef.current?.contains(e.target)
 			) {
-				setShowPicker(false);
-				setShowDialog(false);
-				setShowHistory(false);
+				setShowModal(false);
 
-				if (timestamp && isValid) {
-					onTimestampSubmit(timestamp);
+				if (
+					typeof inputConfig.timestamp === 'number' &&
+					inputConfig.isValidDate &&
+					inputConfig.timestamp <= moment.utc().valueOf()
+				) {
+					onTimestampSubmit(inputConfig.timestamp);
 				}
 			}
 		},
@@ -88,92 +81,36 @@ function GraphSearch(props: Props) {
 	);
 
 	React.useEffect(() => {
-		const ac = new AbortController();
-
-		if (currentValue) {
-			setShowDialog(true);
-			setIsLoading(true);
-			setTimestampFromFoundObject(ac);
-			setIsError(false);
-			setFoundbject(null);
-		} else {
-			setShowDialog(false);
-			setIsLoading(false);
-			setIsError(false);
-			setFoundbject(null);
+		if (!showModal) {
+			setIsModeLocked(false);
+			setIsIdSearchDisabled(false);
+			setSubmittedId(null);
 		}
+	}, [showModal]);
 
-		return () => {
-			ac.abort();
-		};
-	}, [currentValue]);
+	const handleKeyDown = React.useCallback(
+		(e: KeyboardEvent) => {
+			const { timestamp: currentTimestamp, isValidDate } = inputConfig;
 
-	React.useEffect(() => {
-		if (foundObject) {
-			setIsLoading(false);
-			setIsError(false);
-			onFoundItemClick(foundObject);
-			const updatedHistory = [...history, foundObject];
-			localStorageWorker.saveGraphSearchHistory(updatedHistory);
-			setHistory(updatedHistory);
-			timeout.current = setTimeout(() => {
-				setShowDialog(false);
-			}, 2000);
-		}
-	}, [foundObject]);
-
-	function onObjectFound(
-		object: null | EventAction | EventMessage,
-		id: string,
-		ac: AbortController,
-	) {
-		setIsLoading(false);
-		if (!object) {
-			return;
-		}
-		ac.abort();
-		const timestamFromFoundObject = isEventAction(object)
-			? getTimestamp(object.startTimestamp)
-			: getTimestamp(object.timestamp);
-		setTimestamp(timestamFromFoundObject);
-	}
-
-	const setTimestampFromFoundObject = (ac: AbortController) => {
-		eventHttpApi
-			.getEvent(currentValue, ac.signal, { probe: true })
-			.then(foundEvent => {
-				setFoundbject(foundEvent);
-				onObjectFound(foundEvent, currentValue, ac);
-			})
-			.catch(err => {
-				if (err.name !== 'AbortError') {
-					setIsError(true);
-				}
-			});
-		messageHttpApi
-			.getMessage(currentValue, ac.signal, { probe: true })
-			.then(message => {
-				setFoundbject(message);
-				onObjectFound(message, currentValue, ac);
-			})
-			.catch(err => {
-				if (err.name !== 'AbortError') {
-					setIsError(true);
-				}
-			});
-	};
-
-	const onSubmit = React.useCallback(
-		(value: number | string) => {
-			if (typeof value === 'number') {
-				onTimestampSubmit(value);
-				setCurrentValue('');
-			} else {
-				setCurrentValue(value);
+			if (
+				mode === 'date' &&
+				isValidDate &&
+				typeof currentTimestamp === 'number' &&
+				e.keyCode === KeyCodes.ENTER
+			) {
+				onTimestampSubmit(currentTimestamp);
+				setShowModal(false);
 			}
 		},
-		[onTimestampSubmit, setCurrentValue],
+		[inputConfig, mode],
 	);
+
+	React.useEffect(() => {
+		document.addEventListener('keydown', handleKeyDown);
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [handleKeyDown]);
 
 	const handleTimepickerValueChange = React.useCallback(
 		(value: number | null) => {
@@ -182,47 +119,70 @@ function GraphSearch(props: Props) {
 		[setTimestamp],
 	);
 
-	const toggleTimePicker = React.useCallback(
-		(isOpen: boolean) => {
-			if (isOpen !== showPicker) setShowPicker(isOpen);
+	const handleModeChange = React.useCallback(
+		(newMode: GraphSearchMode) => {
+			setShowModal(true);
+			if (!isModeLocked) {
+				setMode(newMode);
+			}
 		},
-		[setShowPicker, showPicker],
+		[setMode, setShowModal, isModeLocked],
 	);
 
-	const toggleHistory = React.useCallback(
-		(isOpen: boolean) => {
-			if (isOpen !== showHistory) setShowHistory(false);
+	const setInputValueFromTimestamp = React.useCallback(
+		(ts: number) => {
+			setTimestamp(ts);
 		},
-		[setShowHistory, showHistory],
+		[setTimestamp],
 	);
 
-	const onHistoryItemDelete = React.useCallback(
-		(historyItem: EventAction | EventMessage) => {
-			const updatedHistory = history.filter(item => item !== historyItem);
-			setHistory(updatedHistory);
-			localStorageWorker.saveGraphSearchHistory(updatedHistory);
-		},
-		[history, setHistory],
-	);
+	const onModeSelect = (newMode: GraphSearchMode) => {
+		setMode(newMode);
+		setIsModeLocked(true);
+	};
 
-	const dialogClassName = createBemElement(
+	const handleModalSubmit = () => {
+		if (mode === 'date' && typeof inputConfig.timestamp === 'number' && inputConfig.isValidDate) {
+			onTimestampSubmit(inputConfig.timestamp);
+			setShowModal(false);
+			setIsModeLocked(false);
+		}
+
+		if (mode === 'id') {
+			setSubmittedId(new String(inputConfig.value));
+		}
+	};
+
+	const closeModal = React.useCallback(() => {
+		setShowModal(false);
+	}, [setShowModal]);
+
+	const isSubmitButtonActive = mode === 'date' ? inputConfig.isValidDate : !isIdSearchDisabled;
+
+	const dateButtonClassName = createBemElement(
 		'graph-search',
-		'dialog',
-		foundObject || isLoading || history.length > 0 ? 'bordered' : null,
+		'switcher-button',
+		mode === 'date' ? 'active' : null,
+	);
+
+	const idButtonClassName = createBemElement(
+		'graph-search',
+		'switcher-button',
+		mode === 'id' ? 'active' : null,
 	);
 
 	return (
 		<div className='graph-search' ref={wrapperRef}>
 			<GraphSearchInput
-				onSubmit={onSubmit}
 				timestamp={timestamp}
 				setTimestamp={setTimestamp}
-				toggleHistory={toggleHistory}
-				toggleTimePicker={toggleTimePicker}
-				setIsValid={setIsValid}
+				setMode={handleModeChange}
+				inputConfig={inputConfig}
+				setInputConfig={setInputConfig}
+				mode={mode}
 			/>
 			<ModalPortal
-				isOpen={showPicker || showDialog || showHistory}
+				isOpen={showModal}
 				ref={modalRef}
 				style={{
 					left: '50%',
@@ -231,29 +191,41 @@ function GraphSearch(props: Props) {
 					position: 'absolute',
 					zIndex: 110,
 				}}>
-				{showPicker && (
-					<div className='graph-search-picker'>
-						<p className='graph-search-picker__timestamp'>
-							{typeof timestamp === 'number' && moment.utc(timestamp).format(DATE_TIME_MASK)}
-						</p>
-						<FilterDatetimePicker
-							setValue={handleTimepickerValueChange}
-							type={TimeInputType.DATE_TIME}
-							value={timestamp}
+				<div className='graph-search__modal'>
+					{mode === 'date' && (
+						<GraphSearchTimePicker
+							timestamp={inputConfig.timestamp}
+							setTimestamp={handleTimepickerValueChange}
 						/>
+					)}
+					{mode === 'id' && (
+						<GraphSearchDialog
+							value={inputConfig.value}
+							onSavedItemSelect={onFoundItemClick}
+							setTimestamp={setInputValueFromTimestamp}
+							setIsIdSearchDisabled={setIsIdSearchDisabled}
+							closeModal={closeModal}
+							submittedId={submittedId}
+						/>
+					)}
+					<div className='graph-search__switchers'>
+						<button className={dateButtonClassName} onClick={() => onModeSelect('date')}>
+							Date
+						</button>
+						<button className={idButtonClassName} onClick={() => onModeSelect('id')}>
+							ID
+						</button>
+						<button
+							onClick={handleModalSubmit}
+							className={createBemElement(
+								'graph-search',
+								'submit-button',
+								isSubmitButtonActive ? 'active' : null,
+							)}>
+							OK
+						</button>
 					</div>
-				)}
-				{showDialog && (
-					<GraphSearchDialog
-						isError={isError}
-						className={dialogClassName}
-						isLoading={isLoading}
-						foundObject={foundObject}
-					/>
-				)}
-				{showHistory && (
-					<GraphSearchHistory history={history} onHistoryItemDelete={onHistoryItemDelete} />
-				)}
+				</div>
 			</ModalPortal>
 		</div>
 	);
