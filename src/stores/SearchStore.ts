@@ -287,6 +287,10 @@ export class SearchStore {
 		this.searchHistory = this.searchHistory.filter(item => item !== searchHistoryItem);
 		this.currentIndex = Math.max(this.currentIndex - 1, 0);
 
+		if (this.searchHistory.length === 0) {
+			this.completed = false;
+		}
+
 		localStorageWorker.saveSearchHistory(this.searchHistory);
 	};
 
