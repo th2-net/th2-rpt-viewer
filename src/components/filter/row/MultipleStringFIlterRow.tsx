@@ -109,9 +109,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 						anchor={autocompleteAnchor}
 						ref={input}
 						placeholder={
-							config.values.length === 0
-								? config.hint || 'Use Space to separate different words & Tab to finish'
-								: ''
+							config.values.length === 0 ? config.hint || 'Use Tab to separate different words' : ''
 						}
 						disabled={config.disabled}
 						submitKeyCodes={[KeyCodes.TAB]}
