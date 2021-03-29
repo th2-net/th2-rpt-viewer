@@ -20,7 +20,6 @@ import { useActivePanel } from '../../hooks';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
-import SearchPanelProgressBar from './SearchPanelProgressBar';
 import '../../styles/search-panel.scss';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 
@@ -38,9 +37,6 @@ const SearchPanel = () => {
 			<div className='search-panel' ref={searchPanelRef}>
 				<SearchPanelForm collapsed={formCollapsed} />
 			</div>
-			{searchStore.currentSearch && (
-				<SearchPanelProgressBar searchProgress={searchStore.searchProgress} />
-			)}
 			{searchStore.currentSearch && (
 				<SearchPanelResults
 					resultGroups={searchStore.sortedResultGroups}

@@ -35,15 +35,21 @@ const SearchFormDatetimeControl = ({ form, updateForm, startTimestampInput }: Pr
 					'direction-button',
 					'direction-button',
 					'prev',
-					form.searchDirection === 'previous' ? 'active' : null,
+					form.searchDirection === 'previous' || form.searchDirection === 'both' ? 'active' : null,
 				)}
-				onClick={() => updateForm({ searchDirection: 'previous' })}>
+				onClick={() => {
+					if (form.searchDirection !== 'previous') {
+						updateForm({ searchDirection: form.searchDirection === 'next' ? 'both' : 'next' });
+					}
+				}}>
 				<i
 					className={createBemElement(
 						'direction-button',
 						'icon',
 						'prev',
-						form.searchDirection === 'previous' ? 'active' : null,
+						form.searchDirection === 'previous' || form.searchDirection === 'both'
+							? 'active'
+							: null,
 					)}
 				/>
 			</button>
@@ -56,15 +62,21 @@ const SearchFormDatetimeControl = ({ form, updateForm, startTimestampInput }: Pr
 					'direction-button',
 					'direction-button',
 					'next',
-					form.searchDirection === 'next' ? 'active' : null,
+					form.searchDirection === 'next' || form.searchDirection === 'both' ? 'active' : null,
 				)}
-				onClick={() => updateForm({ searchDirection: 'next' })}>
+				onClick={() => {
+					if (form.searchDirection !== 'next') {
+						updateForm({
+							searchDirection: form.searchDirection === 'previous' ? 'both' : 'previous',
+						});
+					}
+				}}>
 				<i
 					className={createBemElement(
 						'direction-button',
 						'icon',
 						'next',
-						form.searchDirection === 'next' ? 'active' : null,
+						form.searchDirection === 'next' || form.searchDirection === 'both' ? 'active' : null,
 					)}
 				/>
 			</button>

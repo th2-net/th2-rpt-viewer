@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
+import { action, autorun, computed, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
 import ApiSchema from '../api/ApiSchema';
 import { SSEFilterInfo, SSEHeartbeat, SSEParams } from '../api/sse';
@@ -32,11 +32,16 @@ import { EventMessage } from '../models/EventMessage';
 import localStorageWorker from '../util/LocalStorageWorker';
 import notificationsStore from './NotificationsStore';
 
+export type SearchDirectionSSE = 'next' | 'previous';
+
 export type SearchPanelFormState = {
 	startTimestamp: number | null;
-	endTimestamp: number | null;
+	timeLimits: {
+		previous: number | null;
+		next: number | null;
+	};
 	resultCountLimit: number;
-	searchDirection: 'next' | 'previous';
+	searchDirection: SearchDirectionSSE | 'both';
 	parentEvent: string;
 	stream: string[];
 };
@@ -47,8 +52,14 @@ export type SearchHistory = {
 	timestamp: number;
 	results: Record<string, Array<SearchResult>>;
 	request: StateHistory;
-	progress: number;
-	processedObjectCount: number;
+	progress: {
+		previous: number;
+		next: number;
+	};
+	processedObjectCount: {
+		previous: number;
+		next: number;
+	};
 };
 
 export type StateHistory = {
@@ -96,7 +107,13 @@ export class SearchStore {
 
 	@observable messageSessions: Array<string> = [];
 
-	@observable searchChannel: EventSource | null = null;
+	@observable searchChannel: {
+		previous: EventSource | null;
+		next: EventSource | null;
+	} = {
+		previous: null,
+		next: null,
+	};
 
 	@observable eventsFilter: EventFilterState | null = null;
 
@@ -106,7 +123,10 @@ export class SearchStore {
 		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
 		searchDirection: 'next',
 		resultCountLimit: 50,
-		endTimestamp: null,
+		timeLimits: {
+			previous: null,
+			next: null,
+		},
 		parentEvent: '',
 		stream: [],
 	};
@@ -126,23 +146,36 @@ export class SearchStore {
 	@computed get searchProgress() {
 		return {
 			startTimestamp: this.searchForm.startTimestamp,
-			endTimestamp: this.searchForm.endTimestamp,
-			currentPoint: this.currentSearch?.progress
-				? this.currentSearch?.progress - Number(this.searchForm.startTimestamp)
-				: 0,
-			searching: Boolean(this.searchChannel),
+			timeLimits: {
+				previous: this.searchForm.timeLimits.previous,
+				next: this.searchForm.timeLimits.next,
+			},
+			progress: {
+				previous:
+					this.currentSearch && this.currentSearch.progress.previous
+						? this.currentSearch.progress.previous - Number(this.searchForm.startTimestamp)
+						: 0,
+				next:
+					this.currentSearch && this.currentSearch.progress.next
+						? this.currentSearch.progress.next - Number(this.searchForm.startTimestamp)
+						: 0,
+			},
+			searching: this.isSearching,
 			completed: this.completed,
 			processedObjectCount: this.currentSearch?.processedObjectCount || 0,
 		};
 	}
 
 	@computed get isSearching(): boolean {
-		return Boolean(this.searchChannel);
+		return Boolean(this.searchChannel.next || this.searchChannel.previous);
 	}
 
 	@observable currentSearch: SearchHistory | null = null;
 
-	@observable completed = this.searchHistory.length > 0;
+	@observable completed = {
+		previous: this.searchHistory.length > 0,
+		next: this.searchHistory.length > 0,
+	};
 
 	searchChunk: Array<SearchResult | SSEHeartbeat> = [];
 
@@ -174,10 +207,10 @@ export class SearchStore {
 	@computed get sortedResultGroups() {
 		if (!this.currentSearch) return [];
 
-		const direction = this.currentSearch.request.state.searchDirection === 'next' ? 1 : -1;
+		const { searchDirection } = this.currentSearch.request.state;
 
-		return Object.entries(toJS(this.currentSearch.results)).sort(
-			(a, b) => (+a[0] - +b[0]) * direction,
+		return Object.entries(this.currentSearch.results).sort(
+			(a, b) => (+a[0] - +b[0]) * (searchDirection === 'previous' ? -1 : 1),
 		);
 	}
 
@@ -221,7 +254,9 @@ export class SearchStore {
 			...this.searchForm,
 			...stateUpdate,
 		};
-		this.completed = false;
+
+		this.completed.previous = false;
+		this.completed.next = false;
 	};
 
 	@action setEventsFilter = (patch: Partial<EventFilterState>) => {
@@ -232,7 +267,8 @@ export class SearchStore {
 			};
 		}
 
-		this.completed = false;
+		this.completed.previous = false;
+		this.completed.next = false;
 	};
 
 	@action setMessagesFilter = (patch: Partial<MessageFilterState>) => {
@@ -243,7 +279,8 @@ export class SearchStore {
 			};
 		}
 
-		this.completed = false;
+		this.completed.previous = false;
+		this.completed.next = false;
 	};
 
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
@@ -256,14 +293,16 @@ export class SearchStore {
 	@action nextSearch = () => {
 		if (this.currentIndex < this.searchHistory.length - 1) {
 			this.currentIndex += 1;
-			this.completed = true;
+			this.completed.previous = false;
+			this.completed.next = false;
 		}
 	};
 
 	@action prevSearch = () => {
 		if (this.currentIndex !== 0) {
 			this.currentIndex -= 1;
-			this.completed = true;
+			this.completed.previous = false;
+			this.completed.next = false;
 		}
 	};
 
@@ -286,16 +325,24 @@ export class SearchStore {
 	};
 
 	@action startSearch = () => {
-		this.completed = false;
+		this.completed.previous = false;
+		this.completed.next = false;
+
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
-		if (this.searchChannel || !filterParams) return;
+		if (this.searchChannel.next || this.searchChannel.previous || !filterParams) return;
 
 		this.newSearch({
 			timestamp: moment().utc().valueOf(),
 			request: { type: this.formType, state: this.searchForm, filters: filterParams },
 			results: {},
-			progress: 0,
-			processedObjectCount: 0,
+			progress: {
+				previous: 0,
+				next: 0,
+			},
+			processedObjectCount: {
+				previous: 0,
+				next: 0,
+			},
 		});
 
 		function getFilter<T extends keyof FilterState>(name: T) {
@@ -306,7 +353,7 @@ export class SearchStore {
 			startTimestamp: _startTimestamp,
 			searchDirection,
 			resultCountLimit,
-			endTimestamp,
+			timeLimits,
 			parentEvent,
 			stream,
 		} = this.searchForm;
@@ -323,41 +370,79 @@ export class SearchStore {
 			getFilter(filter).negative ? [`${filter}-negative`, getFilter(filter).negative] : [],
 		);
 
-		const params = {
-			startTimestamp: _startTimestamp,
-			searchDirection,
-			resultCountLimit,
-			endTimestamp,
-			filters: filtersToAdd,
-			...Object.fromEntries([...filterValues, ...filterInclusion]),
-		};
+		if (searchDirection === 'next' || searchDirection === 'both') {
+			const params = {
+				startTimestamp: _startTimestamp,
+				searchDirection: 'next',
+				resultCountLimit,
+				endTimestamp: timeLimits.next,
+				filters: filtersToAdd,
+				...Object.fromEntries([...filterValues, ...filterInclusion]),
+			};
 
-		const queryParams: SSEParams =
-			this.formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
+			const queryParams: SSEParams =
+				this.formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
 
-		this.searchChannel = this.api.sse.getEventSource({
-			type: this.formType,
-			queryParams,
-		});
+			this.searchChannel.next = this.api.sse.getEventSource({
+				type: this.formType,
+				queryParams,
+			});
 
-		this.searchChannel.addEventListener(this.formType, this.onChannelResponse);
-		this.searchChannel.addEventListener('keep_alive', this.onChannelResponse);
-		this.searchChannel.addEventListener('close', this.stopSearch);
-		this.searchChannel.addEventListener('error', this.onError);
+			this.searchChannel.next.addEventListener(this.formType, this.onChannelResponse);
+			this.searchChannel.next.addEventListener('keep_alive', this.onChannelResponse);
+			this.searchChannel.next.addEventListener('close', this.stopSearch.bind(this, 'next'));
+			this.searchChannel.next.addEventListener('error', this.onError.bind(this, 'next'));
+		}
+
+		if (searchDirection === 'previous' || searchDirection === 'both') {
+			const params = {
+				startTimestamp: _startTimestamp,
+				searchDirection: 'previous',
+				resultCountLimit,
+				endTimestamp: timeLimits.previous,
+				filters: filtersToAdd,
+				...Object.fromEntries([...filterValues, ...filterInclusion]),
+			};
+
+			const queryParams: SSEParams =
+				this.formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
+
+			this.searchChannel.previous = this.api.sse.getEventSource({
+				type: this.formType,
+				queryParams,
+			});
+
+			this.searchChannel.previous.addEventListener(this.formType, this.onChannelResponse);
+			this.searchChannel.previous.addEventListener('keep_alive', this.onChannelResponse);
+			this.searchChannel.previous.addEventListener('close', this.stopSearch.bind(this, 'previous'));
+			this.searchChannel.previous.addEventListener('error', this.onError.bind(this, 'previous'));
+		}
 	};
 
 	@action
-	stopSearch = () => {
-		if (!this.searchChannel) return;
-		this.searchChannel.close();
-		this.searchChannel = null;
-		this.completed = true;
+	stopSearch = (searchDirection?: SearchDirectionSSE) => {
+		if (!searchDirection) {
+			this.stopSearch('next');
+			this.stopSearch('previous');
+			return;
+		}
 
-		localStorageWorker.saveSearchHistory(this.searchHistory);
+		const searchChannel = this.searchChannel[searchDirection];
+
+		if (!searchChannel) return;
+
+		searchChannel.close();
+		this.searchChannel[searchDirection] = null;
+		this.completed[searchDirection] = true;
+
 		this.exportChunkToSearchHistory();
+
+		if (!this.isSearching) {
+			localStorageWorker.saveSearchHistory(this.searchHistory);
+		}
 	};
 
-	onError = (ev: Event) => {
+	onError = (searchDirection: SearchDirectionSSE, ev: Event) => {
 		const data = (ev as MessageEvent).data;
 		notificationsStore.addResponseError({
 			type: 'error',
@@ -367,8 +452,7 @@ export class SearchStore {
 			responseCode: null,
 		});
 
-		this.stopSearch();
-		this.exportChunkToSearchHistory();
+		this.stopSearch(searchDirection);
 	};
 
 	private onChannelResponse = (ev: Event) => {
@@ -397,30 +481,41 @@ export class SearchStore {
 
 	@action
 	exportChunkToSearchHistory() {
-		if (this.currentSearch) {
-			this.searchChunk.forEach(parsedEvent => {
-				if (this.currentSearch) {
-					if (isEventNode(parsedEvent) || isEventMessage(parsedEvent)) {
-						const resultGroupKey = Math.floor(
-							getTimestampAsNumber(parsedEvent) /
-								1000 /
-								(SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60),
-						).toString();
+		this.searchChunk.forEach(parsedEvent => {
+			if (this.currentSearch) {
+				const eventTimestamp =
+					isEventNode(parsedEvent) || isEventMessage(parsedEvent)
+						? getTimestampAsNumber(parsedEvent)
+						: parsedEvent.timestamp;
 
-						if (!this.currentSearch.results[resultGroupKey]) {
-							this.currentSearch.results[resultGroupKey] = [];
-						}
+				const startTimestamp = this.currentSearch.request.state.startTimestamp!;
 
-						this.currentSearch.results[resultGroupKey].push(parsedEvent);
-						this.currentSearch.progress = getTimestampAsNumber(parsedEvent);
-					} else {
-						this.currentSearch.progress = parsedEvent.timestamp;
-						this.currentSearch.processedObjectCount = parsedEvent.scanCounter;
+				if (isEventNode(parsedEvent) || isEventMessage(parsedEvent)) {
+					const resultGroupKey = Math.floor(
+						eventTimestamp / 1000 / (SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60),
+					).toString();
+
+					if (!this.currentSearch.results[resultGroupKey]) {
+						this.currentSearch.results[resultGroupKey] = [];
 					}
-				}
-			});
 
-			this.searchChunk = [];
-		}
+					this.currentSearch.results[resultGroupKey].push(parsedEvent);
+
+					if (eventTimestamp > startTimestamp) {
+						this.currentSearch.progress.next = eventTimestamp;
+					} else {
+						this.currentSearch.progress.previous = eventTimestamp;
+					}
+				} else if (eventTimestamp > startTimestamp) {
+					this.currentSearch.progress.next = eventTimestamp;
+					this.currentSearch.processedObjectCount.next = parsedEvent.scanCounter;
+				} else {
+					this.currentSearch.progress.previous = eventTimestamp;
+					this.currentSearch.processedObjectCount.previous = parsedEvent.scanCounter;
+				}
+			}
+		});
+
+		this.searchChunk = [];
 	}
 }
