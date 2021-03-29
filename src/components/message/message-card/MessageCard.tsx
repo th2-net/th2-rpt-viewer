@@ -162,7 +162,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const color = heatmapElement?.colors[0];
 
 	const rootClass = createBemBlock(
-		'message-card',
+		'message-card-wrapper',
 		isSelected ? 'selected' : null,
 		isAttached ? 'attached' : null,
 		isPinned ? 'pinned' : null,
@@ -261,33 +261,9 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	};
 
 	return (
-		<div className='message-card-wrapper' onMouseEnter={hoverMessage} onMouseLeave={unhoverMessage}>
-			<div className={rootClass}>
-				<div className='mc__mc-header mc-header'>
-					{renderMessageInfo()}
-					<div className='mc-header__controls'>
-						{!isScreenshotMsg && (
-							<RadioGroup
-								className='mc-header__radios'
-								radioConfigs={messageViewTypeSwitchConfig}
-							/>
-						)}
-						{isScreenshotMsg && (
-							<>
-								<div className='mc-header__control-button mc-header__icon mc-headr__zoom-button' />
-								<a
-									className='mc-header__control-button mc-header__icon mc-header__download-button'
-									download={`${messageId}.${messageType.replace('image/', '')}`}
-									href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}
-								/>
-							</>
-						)}
-					</div>
-					<div
-						className={bookmarkIconClass}
-						title={isPinned ? 'Remove from bookmarks' : 'Add to bookmarks'}
-						onClick={() => selectedStore.toggleMessagePin(message)}></div>
-				</div>
+		<div className={rootClass} onMouseEnter={hoverMessage} onMouseLeave={unhoverMessage}>
+			<div className='message-card'>
+				<div className='mc__mc-header mc-header'>{renderMessageInfo()}</div>
 				<div className='mc__mc-body mc-body'>
 					{isScreenshotMsg ? (
 						<div className='mc-body__screenshot'>
@@ -304,6 +280,27 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 						<div className='mc-body__human'>
 							<MessageCardViewTypeRenderer {...messageViewTypeRendererProps} />
 						</div>
+					)}
+				</div>
+			</div>
+			<div className='message-card-tools'>
+				<div
+					className={bookmarkIconClass}
+					title={isPinned ? 'Remove from bookmarks' : 'Add to bookmarks'}
+					onClick={() => selectedStore.toggleMessagePin(message)}></div>
+				<div className='mc-header__controls'>
+					{!isScreenshotMsg && (
+						<RadioGroup className='mc-header__radios' radioConfigs={messageViewTypeSwitchConfig} />
+					)}
+					{isScreenshotMsg && (
+						<>
+							<div className='mc-header__control-button mc-header__icon mc-headr__zoom-button' />
+							<a
+								className='mc-header__control-button mc-header__icon mc-header__download-button'
+								download={`${messageId}.${messageType.replace('image/', '')}`}
+								href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}
+							/>
+						</>
 					)}
 				</div>
 			</div>
