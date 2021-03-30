@@ -38,7 +38,7 @@ export class SSEChannel {
 
 	private accumulatedMessages: EventMessage[] = [];
 
-	private chunkSize = 12;
+	private chunkSize = 20;
 
 	private initialResponseTimeout: number | null = null;
 
