@@ -206,6 +206,7 @@ function GraphSearch(props: Props) {
 							setIsIdSearchDisabled={setIsIdSearchDisabled}
 							closeModal={closeModal}
 							submittedId={submittedId}
+							isIdMode={showModal && mode === 'id'}
 						/>
 					)}
 					<div className='graph-search__switchers'>
