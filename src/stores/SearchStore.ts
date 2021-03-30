@@ -288,7 +288,8 @@ export class SearchStore {
 		this.currentIndex = Math.max(this.currentIndex - 1, 0);
 
 		if (this.searchHistory.length === 0) {
-			this.completed = false;
+			this.completed.previous = false;
+			this.completed.next = false;
 		}
 
 		localStorageWorker.saveSearchHistory(this.searchHistory);
