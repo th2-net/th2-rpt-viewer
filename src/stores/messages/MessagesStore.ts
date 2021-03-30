@@ -255,7 +255,7 @@ export default class MessagesStore {
 	@action
 	public clearFilters = () => {
 		this.hintMessages = [];
-		this.filterStore.resetMessagesFilter();
+		this.filterStore.resetMessagesFilter({ streams: this.filterStore.filter.streams });
 		this.dataStore.stopMessagesLoading();
 	};
 
