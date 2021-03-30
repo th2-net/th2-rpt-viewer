@@ -39,16 +39,10 @@ function EventTreeView() {
 			<SplitViewPane>
 				{eventWindowStore.selectedNode === null &&
 					!eventDataStore.isLoadingSelectedEvent &&
-					(eventDataStore.eventTreeStatusCode === null ? (
+					(!eventDataStore.isError ? (
 						<Empty description='Select event' />
 					) : (
-						<Empty
-							description={
-								typeof eventDataStore.eventTreeStatusCode === 'number'
-									? `Server responded with ${eventDataStore.eventTreeStatusCode} code`
-									: 'Error occured while loading event'
-							}
-						/>
+						<Empty description='Error occured while loading event' />
 					))}
 				{eventWindowStore.selectedNode && (
 					<EventDetailInfoCard

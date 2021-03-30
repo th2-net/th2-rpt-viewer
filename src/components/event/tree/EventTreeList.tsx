@@ -142,16 +142,12 @@ function EventTreeList({ nodes }: Props) {
 		if (eventDataStore.isLoadingRootEvents) {
 			return <SplashScreen />;
 		}
-		if (!eventDataStore.isLoadingRootEvents && eventDataStore.eventTreeStatusCode === null) {
+		if (!eventDataStore.isLoadingRootEvents && !eventDataStore.isError) {
 			return <Empty description='No events' />;
 		}
 		return (
 			<Empty
-				description={
-					typeof eventDataStore.eventTreeStatusCode === 'number'
-						? `Server responded with ${eventDataStore.eventTreeStatusCode} code`
-						: 'Error occured while loading events'
-				}
+				description='Error occured while loading events'
 				descriptionStyles={{ position: 'relative', bottom: '19px' }}
 			/>
 		);

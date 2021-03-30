@@ -24,6 +24,7 @@ import {
 } from '../../helpers/event';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { SSEEventChannel } from '../messages/SSEEventChannel';
+import notificationsStore from '../NotificationsStore';
 import EventsFilterStore from './EventsFilterStore';
 import EventsStore from './EventsStore';
 
@@ -50,11 +51,11 @@ export default class EventsDataStore {
 
 	@observable isLoadingParentChilds = false;
 
-	@observable eventTreeStatusCode: number | null = null;
+	@observable isError = false;
 
 	@observable rootNodesMap: Map<string, EventTreeNode> = new Map();
 
-	loadingRootNodes: Promise<EventAction>[] = [];
+	private loadingRootNodes: Promise<EventAction>[] = [];
 
 	@action
 	public fetchEventTree = () => {
@@ -62,7 +63,7 @@ export default class EventsDataStore {
 			if (this.eventTreeEventSource) {
 				this.eventTreeEventSource.close();
 			}
-			this.eventTreeStatusCode = null;
+			this.isError = false;
 			this.eventStore.selectedNode = null;
 			this.isLoadingRootEvents = true;
 			this.eventStore.eventTree = [];
@@ -78,17 +79,7 @@ export default class EventsDataStore {
 					},
 				});
 
-				this.eventTreeEventSource.onerror = e => {
-					if (
-						this.eventTreeEventSource &&
-						this.eventTreeEventSource.readyState !== EventSource.CONNECTING
-					) {
-						console.error(e);
-						this.eventStore.eventTree = [];
-						this.eventStore.isExpandedMap.clear();
-						console.error('Error while loading root events', e);
-					}
-				};
+				this.eventTreeEventSource.addEventListener('error', this.onEventTreeFetchError);
 
 				this.eventTreeEventSource.addEventListener('event', this.handleComingEvent);
 
@@ -109,7 +100,7 @@ export default class EventsDataStore {
 				if (this.eventTreeEventSource) {
 					this.eventTreeEventSource.close();
 				}
-				this.eventTreeStatusCode = error.status;
+				this.isError = true;
 				this.eventStore.eventTree = [];
 				this.comingEventsMap.clear();
 				this.eventsByParentIdMap.clear();
@@ -119,6 +110,29 @@ export default class EventsDataStore {
 				rej(error);
 			}
 		});
+	};
+
+	@action
+	private onEventTreeFetchError = (e: Event) => {
+		if (e instanceof MessageEvent) {
+			const errorData = JSON.parse(e.data);
+			notificationsStore.addResponseError({
+				type: 'error',
+				header: errorData.exceptionName,
+				resource: e.target instanceof EventSource ? e.target.url : e.origin,
+				responseBody: errorData.exceptionCause,
+				responseCode: null,
+			});
+			if (this.eventTreeEventSource) {
+				this.eventTreeEventSource.close();
+			}
+			this.isError = true;
+			this.eventStore.eventTree = [];
+			this.comingEventsMap.clear();
+			this.eventsByParentIdMap.clear();
+			this.eventStore.isExpandedMap.clear();
+			this.isLoadingRootEvents = false;
+		}
 	};
 
 	@action
