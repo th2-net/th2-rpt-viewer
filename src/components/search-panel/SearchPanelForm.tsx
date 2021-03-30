@@ -31,7 +31,8 @@ import SearchPanelFilters from './SearchPanelFilters';
 import SearchTypeSwitcher from './search-form/SearchTypeSwitcher';
 import SearchDatetimeControl from './search-form/SearchDatetimeControl';
 import FilterDatetimeInput from '../filter/date-time-inputs/DateTimeInput';
-import { createBemElement } from '../../helpers/styleCreators';
+import SearchProgressBar, { SearchProgressBarConfig } from './search-form/SearchProgressBar';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -124,7 +125,7 @@ const SearchPanelForm = ({ collapsed }: Props) => {
 		inputConfig: {
 			id: 'timeLimitPrevious',
 			value: form.timeLimits.previous,
-			disabled: disabled || form.searchDirection === 'next',
+			disabled: disabled || form.searchDirection === SearchDirection.Next,
 			setValue: nextValue =>
 				updateForm({ timeLimits: { ...form.timeLimits, previous: nextValue } }),
 			type: TimeInputType.DATE_TIME,
@@ -138,7 +139,7 @@ const SearchPanelForm = ({ collapsed }: Props) => {
 		inputConfig: {
 			id: 'timeLimitNext',
 			value: form.timeLimits.next,
-			disabled: disabled || form.searchDirection === 'previous',
+			disabled: disabled || form.searchDirection === SearchDirection.Previous,
 			setValue: nextValue => updateForm({ timeLimits: { ...form.timeLimits, next: nextValue } }),
 			type: TimeInputType.DATE_TIME,
 			dateMask: DateTimeMask.DATE_TIME_MASK,
@@ -147,29 +148,22 @@ const SearchPanelForm = ({ collapsed }: Props) => {
 		},
 	};
 
-	const { completed, progress, timeLimits, startTimestamp } = searchProgress;
+	const { completed, progress, timeLimits, timeIntervals } = searchProgress;
 
-	const nextTimeInterval =
-		timeLimits.next !== null ? timeLimits.next - Number(startTimestamp) : null;
-
-	const prevTimeInterval =
-		timeLimits.previous !== null ? timeLimits.previous - Number(startTimestamp) : null;
-
-	const nextProgressPosition = completed.next
-		? 100
-		: isSearching && nextTimeInterval
-		? ((progress.next / nextTimeInterval) * 100).toFixed(2)
-		: isSearching
-		? 100
-		: 0;
-
-	const prevProgressPosition = completed.previous
-		? 100
-		: isSearching && prevTimeInterval
-		? ((progress.previous / prevTimeInterval) * 100).toFixed(2)
-		: isSearching
-		? 100
-		: 0;
+	const progressBarConfig: SearchProgressBarConfig = {
+		isSearching,
+		searchDirection: form.searchDirection,
+		leftProgress: {
+			completed: completed.previous,
+			isInfinite: !timeLimits.previous,
+			progress: timeIntervals.previous ? (progress.previous / timeIntervals.previous) * 100 : 0,
+		},
+		rightProgress: {
+			completed: completed.next,
+			isInfinite: !timeLimits.next,
+			progress: timeIntervals.next ? (progress.next / timeIntervals.next) * 100 : 0,
+		},
+	};
 
 	return (
 		<div className='search-panel__search-form search-form'>
@@ -178,37 +172,7 @@ const SearchPanelForm = ({ collapsed }: Props) => {
 				updateForm={updateForm}
 				startTimestampInput={startTimestampInput}
 			/>
-			<div className='search-form__progress-bar progress-bar'>
-				<div className='progress-bar__line-wrapper left'>
-					<div
-						className={createBemElement(
-							'progress-bar',
-							'line',
-							'left',
-							isSearching ? 'searching' : null,
-							isSearching && !prevTimeInterval ? 'infinite' : null,
-						)}
-						style={{
-							width: `${prevProgressPosition}%`,
-						}}
-					/>
-				</div>
-				<div className='progress-bar__splitter'></div>
-				<div className='progress-bar__line-wrapper right'>
-					<div
-						className={createBemElement(
-							'progress-bar',
-							'line',
-							'right',
-							isSearching ? 'searching' : null,
-							isSearching && !nextTimeInterval ? 'infinite' : null,
-						)}
-						style={{
-							width: `${nextProgressPosition}%`,
-						}}
-					/>
-				</div>
-			</div>
+			<SearchProgressBar {...progressBarConfig} />
 			<div className='search-time-limit-controls'>
 				<div className='search-progress__time-limit-input previous'>
 					<FilterDatetimeInput {...timeLimitPrevTimestampInput} />

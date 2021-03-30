@@ -172,11 +172,6 @@
 
 	&__time-limit-input {
 		width: 33%;
-		&.previous {
-		}
-
-		&.next {
-		}
 	}
 
 	&__submit {
@@ -212,8 +207,7 @@
 }
 
 .progress-bar {
-	display: grid;
-	grid-template-columns: 1fr auto 1fr;
+	display: flex;
 	align-items: stretch;
 	background: white;
 	border-radius: 10px;
@@ -221,11 +215,20 @@
 
 	&__splitter {
 		width: 3px;
+		opacity: 1;
 		background-color: $graphOverlayEventsColor;
+		transition: width 0.3s, opacity 0.3s;
+
+		&.hidden {
+			opacity: 0;
+			width: 0;
+		}
 	}
 
 	&__line-wrapper {
 		padding: 2px 0;
+		flex: 1;
+		transition: flex 0.3s;
 		display: flex;
 		align-items: stretch;
 
@@ -236,6 +239,10 @@
 
 		&.right {
 			padding-right: 3px;
+		}
+
+		&.hidden {
+			flex: 0;
 		}
 	}
 
@@ -271,19 +278,23 @@
 			opacity: 0.5;
 		}
 
-		&.left {
+		&.rounded-left {
 			border-top-left-radius: 10px;
 			border-bottom-left-radius: 10px;
+		}
 
+		&.rounded-right {
+			border-top-right-radius: 10px;
+			border-bottom-right-radius: 10px;
+		}
+
+		&.left {
 			&::after {
 				animation: progress-left 1.5s linear infinite;
 			}
 		}
 
 		&.right {
-			border-top-right-radius: 10px;
-			border-bottom-right-radius: 10px;
-
 			&::after {
 				animation: progress-right 1.5s linear infinite;
 			}

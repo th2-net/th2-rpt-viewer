@@ -29,10 +29,11 @@ import { isEventMessage, isEventNode } from '../helpers/event';
 import { getDefaultFilterState } from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
+import { SearchDirection } from '../models/search/SearchDirection';
 import localStorageWorker from '../util/LocalStorageWorker';
 import notificationsStore from './NotificationsStore';
 
-export type SearchDirectionSSE = 'next' | 'previous';
+type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
 export type SearchPanelFormState = {
 	startTimestamp: number | null;
@@ -41,7 +42,7 @@ export type SearchPanelFormState = {
 		next: number | null;
 	};
 	resultCountLimit: number;
-	searchDirection: SearchDirectionSSE | 'both';
+	searchDirection: SearchDirection;
 	parentEvent: string;
 	stream: string[];
 };
@@ -121,7 +122,7 @@ export class SearchStore {
 
 	@observable searchForm: SearchPanelFormState = {
 		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
-		searchDirection: 'next',
+		searchDirection: SearchDirection.Next,
 		resultCountLimit: 50,
 		timeLimits: {
 			previous: null,
@@ -144,20 +145,30 @@ export class SearchStore {
 	@observable isMessageFiltersLoading = false;
 
 	@computed get searchProgress() {
+		const startTimestamp = Number(this.searchForm.startTimestamp);
+		const { previous: timeLimitPrevious, next: timeLimitNext } = this.searchForm.timeLimits;
+
+		const timeIntervalPrevious = timeLimitPrevious ? startTimestamp - timeLimitPrevious : null;
+		const timeIntervalNext = timeLimitNext ? timeLimitNext - startTimestamp : null;
+
 		return {
 			startTimestamp: this.searchForm.startTimestamp,
 			timeLimits: {
-				previous: this.searchForm.timeLimits.previous,
-				next: this.searchForm.timeLimits.next,
+				previous: timeLimitPrevious,
+				next: timeLimitNext,
+			},
+			timeIntervals: {
+				previous: timeIntervalPrevious,
+				next: timeIntervalNext,
 			},
 			progress: {
 				previous:
 					this.currentSearch && this.currentSearch.progress.previous
-						? this.currentSearch.progress.previous - Number(this.searchForm.startTimestamp)
+						? startTimestamp - this.currentSearch.progress.previous
 						: 0,
 				next:
 					this.currentSearch && this.currentSearch.progress.next
-						? this.currentSearch.progress.next - Number(this.searchForm.startTimestamp)
+						? this.currentSearch.progress.next - startTimestamp
 						: 0,
 			},
 			searching: this.isSearching,
@@ -210,7 +221,7 @@ export class SearchStore {
 		const { searchDirection } = this.currentSearch.request.state;
 
 		return Object.entries(this.currentSearch.results).sort(
-			(a, b) => (+a[0] - +b[0]) * (searchDirection === 'previous' ? -1 : 1),
+			(a, b) => (+a[0] - +b[0]) * (searchDirection === SearchDirection.Previous ? -1 : 1),
 		);
 	}
 
@@ -375,10 +386,10 @@ export class SearchStore {
 			getFilter(filter).negative ? [`${filter}-negative`, getFilter(filter).negative] : [],
 		);
 
-		if (searchDirection === 'next' || searchDirection === 'both') {
+		if (searchDirection === SearchDirection.Next || searchDirection === SearchDirection.Both) {
 			const params = {
 				startTimestamp: _startTimestamp,
-				searchDirection: 'next',
+				searchDirection: SearchDirection.Next,
 				resultCountLimit,
 				endTimestamp: timeLimits.next,
 				filters: filtersToAdd,
@@ -395,14 +406,20 @@ export class SearchStore {
 
 			this.searchChannel.next.addEventListener(this.formType, this.onChannelResponse);
 			this.searchChannel.next.addEventListener('keep_alive', this.onChannelResponse);
-			this.searchChannel.next.addEventListener('close', this.stopSearch.bind(this, 'next'));
-			this.searchChannel.next.addEventListener('error', this.onError.bind(this, 'next'));
+			this.searchChannel.next.addEventListener(
+				'close',
+				this.stopSearch.bind(this, SearchDirection.Next),
+			);
+			this.searchChannel.next.addEventListener(
+				'error',
+				this.onError.bind(this, SearchDirection.Next),
+			);
 		}
 
-		if (searchDirection === 'previous' || searchDirection === 'both') {
+		if (searchDirection === SearchDirection.Previous || searchDirection === SearchDirection.Both) {
 			const params = {
 				startTimestamp: _startTimestamp,
-				searchDirection: 'previous',
+				searchDirection: SearchDirection.Previous,
 				resultCountLimit,
 				endTimestamp: timeLimits.previous,
 				filters: filtersToAdd,
@@ -419,16 +436,22 @@ export class SearchStore {
 
 			this.searchChannel.previous.addEventListener(this.formType, this.onChannelResponse);
 			this.searchChannel.previous.addEventListener('keep_alive', this.onChannelResponse);
-			this.searchChannel.previous.addEventListener('close', this.stopSearch.bind(this, 'previous'));
-			this.searchChannel.previous.addEventListener('error', this.onError.bind(this, 'previous'));
+			this.searchChannel.previous.addEventListener(
+				'close',
+				this.stopSearch.bind(this, SearchDirection.Previous),
+			);
+			this.searchChannel.previous.addEventListener(
+				'error',
+				this.onError.bind(this, SearchDirection.Previous),
+			);
 		}
 	};
 
 	@action
-	stopSearch = (searchDirection?: SearchDirectionSSE) => {
+	stopSearch = (searchDirection?: SSESearchDirection) => {
 		if (!searchDirection) {
-			this.stopSearch('next');
-			this.stopSearch('previous');
+			this.stopSearch(SearchDirection.Next);
+			this.stopSearch(SearchDirection.Previous);
 			return;
 		}
 
@@ -447,7 +470,7 @@ export class SearchStore {
 		}
 	};
 
-	onError = (searchDirection: SearchDirectionSSE, ev: Event) => {
+	onError = (searchDirection: SSESearchDirection, ev: Event) => {
 		const data = (ev as MessageEvent).data;
 		notificationsStore.addResponseError({
 			type: 'error',

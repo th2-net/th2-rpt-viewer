@@ -16,6 +16,7 @@
 
 import React from 'react';
 import { createBemElement } from '../../../helpers/styleCreators';
+import { SearchDirection } from '../../../models/search/SearchDirection';
 import { SearchPanelFormState } from '../../../stores/SearchStore';
 import FilterDatetimeInput from '../../filter/date-time-inputs/DateTimeInput';
 import { DateInputProps } from '../SearchPanelForm';
@@ -35,11 +36,19 @@ const SearchFormDatetimeControl = ({ form, updateForm, startTimestampInput }: Pr
 					'direction-button',
 					'direction-button',
 					'prev',
-					form.searchDirection === 'previous' || form.searchDirection === 'both' ? 'active' : null,
+					form.searchDirection === SearchDirection.Previous ||
+						form.searchDirection === SearchDirection.Both
+						? 'active'
+						: null,
 				)}
 				onClick={() => {
-					if (form.searchDirection !== 'previous') {
-						updateForm({ searchDirection: form.searchDirection === 'next' ? 'both' : 'next' });
+					if (form.searchDirection !== SearchDirection.Previous) {
+						updateForm({
+							searchDirection:
+								form.searchDirection === SearchDirection.Next
+									? SearchDirection.Both
+									: SearchDirection.Next,
+						});
 					}
 				}}>
 				<i
@@ -47,7 +56,8 @@ const SearchFormDatetimeControl = ({ form, updateForm, startTimestampInput }: Pr
 						'direction-button',
 						'icon',
 						'prev',
-						form.searchDirection === 'previous' || form.searchDirection === 'both'
+						form.searchDirection === SearchDirection.Previous ||
+							form.searchDirection === SearchDirection.Both
 							? 'active'
 							: null,
 					)}
@@ -62,12 +72,18 @@ const SearchFormDatetimeControl = ({ form, updateForm, startTimestampInput }: Pr
 					'direction-button',
 					'direction-button',
 					'next',
-					form.searchDirection === 'next' || form.searchDirection === 'both' ? 'active' : null,
+					form.searchDirection === SearchDirection.Next ||
+						form.searchDirection === SearchDirection.Both
+						? 'active'
+						: null,
 				)}
 				onClick={() => {
-					if (form.searchDirection !== 'next') {
+					if (form.searchDirection !== SearchDirection.Next) {
 						updateForm({
-							searchDirection: form.searchDirection === 'previous' ? 'both' : 'previous',
+							searchDirection:
+								form.searchDirection === SearchDirection.Previous
+									? SearchDirection.Both
+									: SearchDirection.Previous,
 						});
 					}
 				}}>
@@ -76,7 +92,10 @@ const SearchFormDatetimeControl = ({ form, updateForm, startTimestampInput }: Pr
 						'direction-button',
 						'icon',
 						'next',
-						form.searchDirection === 'next' || form.searchDirection === 'both' ? 'active' : null,
+						form.searchDirection === SearchDirection.Next ||
+							form.searchDirection === SearchDirection.Both
+							? 'active'
+							: null,
 					)}
 				/>
 			</button>
