@@ -34,6 +34,7 @@ interface Props {
 	setIsIdSearchDisabled: (isIdSearchDisabled: boolean) => void;
 	closeModal: () => void;
 	submittedId: String | null;
+	isIdMode: boolean;
 }
 
 const GraphSearchDialog = (props: Props) => {
@@ -44,6 +45,7 @@ const GraphSearchDialog = (props: Props) => {
 		setIsIdSearchDisabled,
 		closeModal,
 		submittedId,
+		isIdMode,
 	} = props;
 
 	const [isLoading, setIsLoading] = React.useState(false);
@@ -62,7 +64,7 @@ const GraphSearchDialog = (props: Props) => {
 
 	React.useEffect(() => {
 		setIsIdSearchDisabled(!value || filteredHistory.length > 1 || isLoading);
-	}, [filteredHistory, value, isLoading]);
+	}, [filteredHistory, value, isLoading, isIdMode]);
 
 	React.useEffect(() => {
 		ac.current = new AbortController();
@@ -149,9 +151,7 @@ const GraphSearchDialog = (props: Props) => {
 
 	const onHistoryItemDelete = React.useCallback(
 		(historyItem: EventAction | EventMessage) => {
-			const updatedHistory = history.filter(item => item !== historyItem);
-			setHistory(updatedHistory);
-			localStorageWorker.saveGraphSearchHistory(updatedHistory);
+			setHistory(history.filter(item => item !== historyItem));
 		},
 		[history, setHistory],
 	);
@@ -191,6 +191,14 @@ const GraphSearchDialog = (props: Props) => {
 
 	const searchResultIsEmpty = value && !isLoading && !foundObject;
 
+	const onSearchItemSelect = React.useCallback(
+		(searchItem: EventMessage | EventAction | EventTreeNode) => {
+			onSavedItemSelect(searchItem);
+			closeModal();
+		},
+		[onSavedItemSelect],
+	);
+
 	return (
 		<div className='graph-search-dialog'>
 			{isLoading && <div className='graph-search-dialog__loader' />}
@@ -208,7 +216,7 @@ const GraphSearchDialog = (props: Props) => {
 							<BookmarkItem
 								key={`${computeKey(item)}-${index}`}
 								item={item}
-								onClick={onSavedItemSelect}
+								onClick={onSearchItemSelect}
 								onRemove={() => onHistoryItemDelete(item)}
 							/>
 						))}
