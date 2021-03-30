@@ -59,13 +59,13 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 	};
 
 	const inputOnSubmit = (nextValue: string) => {
-		const { values, setValues } = config;
+		const { values, setValues, setCurrentValue } = config;
+		setCurrentValue('');
 		if (values.length > 0) {
 			setValues([...values, nextValue]);
 			return;
 		}
-
-		config.setValues([...values, nextValue]);
+		setValues([...values, nextValue]);
 	};
 
 	const rootOnClick = () => {
@@ -118,6 +118,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 						className='filter-row__multiple-values-input'
 						wrapperClassName='filter-row__multiple-values-input-wrapper'
 						value={config.currentValue}
+						setValue={config.setCurrentValue}
 						autoresize
 						autocomplete={config.autocompleteList}
 						datalistKey={`autocomplete-${1}`}
