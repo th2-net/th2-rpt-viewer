@@ -17,7 +17,7 @@
 import React from 'react';
 import moment from 'moment';
 import { useDebouncedCallback } from '../../hooks';
-import { isClickEventInElement, isDivElement } from '../../helpers/dom';
+import { isDivElement } from '../../helpers/dom';
 import { raf } from '../../helpers/raf';
 import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
@@ -197,19 +197,17 @@ const GraphChunksVirtualizer = (props: Props) => {
 		if (
 			!rangeElementRef.current ||
 			!viewportElementRef.current ||
-			event.target instanceof HTMLInputElement
+			(event.target instanceof Node && !viewportElementRef.current.contains(event.target))
 		)
 			return;
 
-		if (isClickEventInElement(event, rangeElementRef.current)) {
-			viewportElementRef.current.style.cursor = 'grabbing';
-			isDown.current = true;
-			startX.current = event.pageX - (viewportElementRef.current?.offsetLeft || 0);
-			scrollLeft.current = viewportElementRef.current.scrollLeft;
+		viewportElementRef.current.style.cursor = 'grabbing';
+		isDown.current = true;
+		startX.current = event.pageX - (viewportElementRef.current?.offsetLeft || 0);
+		scrollLeft.current = viewportElementRef.current.scrollLeft;
 
-			document.addEventListener('mouseup', handleMouseUp);
-			document.addEventListener('mousemove', handleMouseMove);
-		}
+		document.addEventListener('mouseup', handleMouseUp);
+		document.addEventListener('mousemove', handleMouseMove);
 	};
 
 	const handleMouseUp = () => {

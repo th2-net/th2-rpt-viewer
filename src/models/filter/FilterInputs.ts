@@ -30,7 +30,7 @@ export type FilterRowConfig = FitlerRowItem | CompoundFilterRow | ActionFilterRo
 export enum DateTimeMask {
 	TIME_MASK = 'HH:mm:ss.SSS',
 	DATE_MASK = 'YYYY-MM-DD',
-	DATE_TIME_MASK = 'YYYY-MM-DD HH:mm:ss.SSS',
+	DATE_TIME_MASK = 'DD.MM.YYYY HH:mm:ss.SSS',
 	INTERVAL_MASK = 'mm',
 }
 
