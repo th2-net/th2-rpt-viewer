@@ -152,6 +152,7 @@ function Graph({ activeWorkspace }: GraphProps) {
 				graphItems={selectedStore.graphItems}
 				range={activeWorkspace.graphStore.range}
 				onPanelRangeSelect={activeWorkspace.graphStore.setTimestampFromRange}
+				goToGraphItem={activeWorkspace.graphStore.goToGraphItem}
 			/>
 		</div>
 	);

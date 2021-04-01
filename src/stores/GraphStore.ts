@@ -16,6 +16,7 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
+import { getTimestampAsNumber } from '../helpers/date';
 import { isEventNode } from '../helpers/event';
 import { calculateTimeRange } from '../helpers/graph';
 import { Chunk, GraphItem, GraphItemType, IntervalOption } from '../models/Graph';
@@ -174,6 +175,11 @@ export class GraphStore {
 	@action
 	public setTimestampFromRange = (range: TimeRange) => {
 		this.timestamp = new Number(range[0] + (range[1] - range[0]) / 2);
+	};
+
+	@action
+	public goToGraphItem = (savedItem: GraphItem) => {
+		this.setTimestamp(getTimestampAsNumber(savedItem));
 	};
 
 	public getChunkTimestampFrom = (timestamp: number, interval: number): number => {
