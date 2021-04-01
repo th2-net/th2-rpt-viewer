@@ -22,7 +22,6 @@
 	position: relative;
 	overflow: auto;
 	display: flex;
-	padding: 10px;
 	border-radius: 5px;
 	margin-right: 10px;
 	margin-bottom: 4px;
@@ -507,7 +506,7 @@
 		font-size: 14px;
 		padding: 2px 7px;
 		color: $messageListLoadButtonTextColor;
-		
+
 	}
 
 	&__overlay-loader {
@@ -677,7 +676,7 @@
 	}
 
 	&__filter-submit {
-		&-btn {	
+		&-btn {
 			@include clickable;
 
 			flex-shrink: 0;
@@ -762,7 +761,7 @@
 		cursor: pointer;
 		width: 15px;
 		height: 15px;
-		
+
 		&.json,
 		&.formatted,
 		&.ascii {
