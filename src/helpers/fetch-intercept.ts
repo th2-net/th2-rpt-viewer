@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import fetchIntercept from 'fetch-intercept';
-import NotificationsStore from '../stores/NotificationsStore';
+import notificationsStore from '../stores/NotificationsStore';
 
 export const registerFetchInterceptor = () =>
 	fetchIntercept.register({
@@ -42,7 +42,7 @@ export const registerFetchInterceptor = () =>
 						break;
 				}
 				response.text().then(text => {
-					NotificationsStore.addResponseError({
+					notificationsStore.addResponseError({
 						type: 'error',
 						header,
 						resource: url,

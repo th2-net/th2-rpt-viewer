@@ -17,13 +17,16 @@
 import * as React from 'react';
 import moment from 'moment';
 import KeyCodes from '../../../util/KeyCodes';
-import { createBemElement } from '../../../helpers/styleCreators';
 import { usePointerTimestamp } from '../../../contexts/pointerTimestampContext';
+import { GraphSearchMode } from './GraphSearch';
+import { DateTimeMask } from '../../../models/filter/FilterInputs';
+import { TimeRange } from '../../../models/Timestamp';
 
-const TIME_MASK = 'HH:mm:ss.SSS' as const;
-export const DATE_TIME_MASK = 'YYYY.MM.DD HH:mm:ss.SSS' as const;
+const TIME_MASK = DateTimeMask.TIME_MASK;
+export const DATE_TIME_MASK = DateTimeMask.DATE_TIME_MASK;
+
 const TIME_PLACEHOLDER = '00:00:00.000' as const;
-const DATE_TIME_PLACEHOLDER = '0000.01.01 00:00:00.000' as const;
+const DATE_TIME_PLACEHOLDER = '01.01.2021 00:00:00.000' as const;
 
 const isCompletable = (
 	dateStr: string,
@@ -50,53 +53,74 @@ const replaceBlankTimeCharsWithDefaults = (
 	return null;
 };
 
-interface Props {
-	toggleTimePicker: (isOpen: boolean) => void;
-	toggleHistory: (isOpen: boolean) => void;
-	setTimestamp: (ts: null | number) => void;
-	timestamp: number | null;
-	onSubmit: (value: number | string) => void;
-}
-
 export interface GraphSearchInputConfig {
-	isValid: boolean;
+	isValidDate: boolean;
 	value: string;
 	timestamp: number | null;
 	placeholder: typeof TIME_PLACEHOLDER | typeof DATE_TIME_PLACEHOLDER | null;
 	mask: typeof TIME_MASK | typeof DATE_TIME_MASK | null;
 }
 
+interface Props {
+	setTimestamp: (ts: null | number) => void;
+	timestamp: number | null;
+	mode: GraphSearchMode;
+	setMode: (mode: GraphSearchMode) => void;
+	inputConfig: GraphSearchInputConfig;
+	setInputConfig: (config: GraphSearchInputConfig) => void;
+	windowRange: TimeRange | null;
+}
+
 function GraphSearchInput(props: Props) {
-	const { toggleTimePicker, toggleHistory, timestamp, setTimestamp, onSubmit } = props;
+	const {
+		timestamp,
+		setTimestamp,
+		setMode,
+		inputConfig,
+		setInputConfig,
+		mode,
+		windowRange,
+	} = props;
 
 	const pointerTimestamp = usePointerTimestamp();
 
 	const previousPointerTimestamp = React.useRef<number | null>(pointerTimestamp);
 	const savedInputConfig = React.useRef<GraphSearchInputConfig | null>(null);
 
-	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
-		isValid: false,
-		mask: null,
-		placeholder: null,
-		timestamp: null,
-		value: '',
-	});
-
 	React.useEffect(() => {
 		if (timestamp !== null && timestamp !== inputConfig.timestamp) {
-			const mask = inputConfig.mask || DATE_TIME_MASK;
-			const placeholder = inputConfig.placeholder || DATE_TIME_PLACEHOLDER;
+			const updatedTimestamp = moment.utc(timestamp);
+
+			const isToday = updatedTimestamp.isSame(moment.utc(), 'day');
+
+			const mask = isToday ? TIME_MASK : DATE_TIME_MASK;
+			const placeholder = isToday ? TIME_PLACEHOLDER : DATE_TIME_PLACEHOLDER;
 
 			setInputConfig({
 				...inputConfig,
-				value: moment.utc(timestamp).format(mask),
+				value: updatedTimestamp.format(mask),
 				mask,
 				placeholder,
 				timestamp,
-				isValid: true,
+				isValidDate: true,
 			});
 		}
 	}, [timestamp]);
+
+	React.useEffect(() => {
+		if (windowRange) {
+			const [from, to] = windowRange;
+			const centerTimestamp = from + (to - from) / 2;
+
+			setInputConfig({
+				isValidDate: true,
+				mask: DATE_TIME_MASK,
+				placeholder: DATE_TIME_PLACEHOLDER,
+				timestamp: centerTimestamp,
+				value: moment.utc(centerTimestamp).format(DATE_TIME_MASK),
+			});
+		}
+	}, [windowRange]);
 
 	React.useEffect(() => {
 		const mask = inputConfig.mask || DATE_TIME_MASK;
@@ -123,21 +147,16 @@ function GraphSearchInput(props: Props) {
 				mask,
 				placeholder,
 				timestamp,
-				isValid: true,
+				isValidDate: true,
 			});
 		}
 		previousPointerTimestamp.current = pointerTimestamp;
 	}, [pointerTimestamp]);
 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-		const { mask, value, placeholder, isValid } = inputConfig;
-		if (e.keyCode === KeyCodes.ENTER) {
-			toggleHistory(false);
-			toggleTimePicker(false);
-			onSubmit(value && isValid && timestamp ? timestamp : value);
-		}
+		const { mask, value, placeholder } = inputConfig;
 
-		if (e.keyCode === KeyCodes.TAB) {
+		if (e.keyCode === KeyCodes.TAB && mode === 'date') {
 			e.preventDefault();
 			if (mask && isCompletable(value, mask) && placeholder) {
 				const fullDate = replaceBlankTimeCharsWithDefaults(value, mask, placeholder);
@@ -146,7 +165,7 @@ function GraphSearchInput(props: Props) {
 					setInputConfig({
 						...inputConfig,
 						value: fullDate,
-						isValid: true,
+						isValidDate: true,
 						timestamp: completedTimestamp.valueOf(),
 					});
 					setTimestamp(completedTimestamp.valueOf());
@@ -157,11 +176,9 @@ function GraphSearchInput(props: Props) {
 
 	function handleInputValueChange(event: React.ChangeEvent<HTMLInputElement>) {
 		const value = event.target.value;
-		onSubmit('');
-		if (value) {
-			toggleHistory(false);
-		} else {
-			toggleHistory(true);
+
+		if (!value) {
+			setMode('id');
 		}
 
 		const replacedTime = replaceBlankTimeCharsWithDefaults(value, TIME_MASK, TIME_PLACEHOLDER);
@@ -176,56 +193,49 @@ function GraphSearchInput(props: Props) {
 
 		if (value.length > 2 && isCompletable(value, TIME_MASK) && parsedTime.isValid()) {
 			setInputConfig({
-				isValid: value.length === TIME_MASK.length && moment(value, TIME_MASK).isValid(),
+				isValidDate: value.length === TIME_MASK.length && moment.utc(value, TIME_MASK).isValid(),
 				mask: TIME_MASK,
 				placeholder: TIME_PLACEHOLDER,
 				timestamp: parsedTime.valueOf(),
 				value,
 			});
 			setTimestamp(parsedTime.valueOf());
-			toggleTimePicker(true);
-		} else if (value.length > 4 && isCompletable(value, DATE_TIME_MASK) && parsedDate.isValid()) {
+			setMode('date');
+		} else if (value.length > 2 && isCompletable(value, DATE_TIME_MASK) && parsedDate.isValid()) {
 			setInputConfig({
-				isValid: value.length === DATE_TIME_MASK.length && moment(value, DATE_TIME_MASK).isValid(),
+				isValidDate:
+					value.length === DATE_TIME_MASK.length && moment.utc(value, DATE_TIME_MASK).isValid(),
 				mask: DATE_TIME_MASK,
 				placeholder: DATE_TIME_PLACEHOLDER,
 				timestamp: parsedDate.valueOf(),
 				value,
 			});
 			setTimestamp(parsedDate.valueOf());
-			toggleTimePicker(true);
+			setMode('date');
 		} else {
 			setInputConfig({
-				isValid: false,
+				isValidDate: false,
 				mask: null,
 				placeholder: null,
 				timestamp: null,
 				value,
 			});
-			toggleTimePicker(false);
 			setTimestamp(null);
+			setMode('id');
 		}
 	}
 
 	function onInputFocus() {
-		if (!inputConfig.value) {
-			toggleHistory(true);
-		} else if (
-			isCompletable(inputConfig.value, DATE_TIME_MASK) ||
-			isCompletable(inputConfig.value, TIME_MASK)
+		if (
+			inputConfig.value.length &&
+			(isCompletable(inputConfig.value, DATE_TIME_MASK) ||
+				isCompletable(inputConfig.value, TIME_MASK))
 		) {
-			toggleTimePicker(true);
+			setMode('date');
+		} else {
+			setMode('id');
 		}
 	}
-
-	function toggleDatepicker() {
-		if (!inputConfig.value) {
-			setTimestamp(moment.utc().valueOf());
-		}
-		toggleTimePicker(true);
-	}
-
-	const datepickerButtonClassName = createBemElement('graph-search-input', 'datepicker-button');
 
 	return (
 		<div className='graph-search-input'>
@@ -237,17 +247,18 @@ function GraphSearchInput(props: Props) {
 				onKeyDown={handleKeyDown}
 				type='text'
 			/>
-			<input
-				className='graph-search-input__placeholder'
-				type='text'
-				readOnly={true}
-				value={
-					inputConfig.placeholder
-						? inputConfig.value + inputConfig.placeholder.slice(inputConfig.value.length)
-						: ''
-				}
-			/>
-			<button className={datepickerButtonClassName} onClick={toggleDatepicker} />
+			{mode === 'date' && (
+				<input
+					className='graph-search-input__placeholder'
+					type='text'
+					readOnly={true}
+					value={
+						inputConfig.placeholder
+							? inputConfig.value + inputConfig.placeholder.slice(inputConfig.value.length)
+							: ''
+					}
+				/>
+			)}
 		</div>
 	);
 }

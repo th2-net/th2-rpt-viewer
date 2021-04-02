@@ -399,7 +399,16 @@
 		transition: width 0.3s;
 		overflow: hidden;
 		background-color: $searchProgressBarColor;
-		border-radius: 10px;
+
+		&.rounded-left {
+			border-top-left-radius: 10px;
+			border-bottom-left-radius: 10px;
+		}
+
+		&.rounded-right {
+			border-top-right-radius: 10px;
+			border-bottom-right-radius: 10px;
+		}
 
 		&.searching.infinite {
 			background-color: inherit;

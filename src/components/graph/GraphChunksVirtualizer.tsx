@@ -17,7 +17,7 @@
 import React from 'react';
 import moment from 'moment';
 import { useDebouncedCallback } from '../../hooks';
-import { isClickEventInElement, isDivElement } from '../../helpers/dom';
+import { isDivElement } from '../../helpers/dom';
 import { raf } from '../../helpers/raf';
 import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
@@ -105,11 +105,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const [centerTimestamp, setCenterTimestamp] = React.useState<number | null>(null);
 
 	const [anchorTimestamp, setAnchorTimestamp] = React.useState(
-		moment
-			.utc(timestamp.valueOf())
-			.subtract(interval / 2, 'minutes')
-			.startOf('minute')
-			.valueOf(),
+		getChunkTimestampFrom(timestamp.valueOf(), interval),
 	);
 
 	const [chunks, setChunks] = React.useState<Array<[Chunk, number]>>([]);
@@ -152,13 +148,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 	}, [panelsRange, chunks, timestamp]);
 
 	React.useEffect(() => {
-		setAnchorTimestamp(
-			moment
-				.utc(timestamp.valueOf())
-				.subtract(interval / 2, 'minutes')
-				.startOf('minute')
-				.valueOf(),
-		);
+		setAnchorTimestamp(getChunkTimestampFrom(timestamp.valueOf(), interval));
 		setCenterTimestamp(timestamp.valueOf());
 	}, [timestamp]);
 
@@ -174,9 +164,12 @@ const GraphChunksVirtualizer = (props: Props) => {
 	React.useLayoutEffect(() => {
 		raf(() => {
 			if (viewportElementRef.current && centerTimestamp) {
-				const offset = (centerTimestamp - anchorTimestamp) * (chunkWidth / (interval * 60 * 1000));
-				viewportElementRef.current.scrollLeft = state.initialPosition;
-				viewportElementRef.current.scrollLeft = state.initialPosition - chunkWidth / 2 + offset;
+				const centralChunkStart = moment.utc(getChunkTimestampFrom(centerTimestamp, interval));
+				const chunkCenter = moment.utc(centralChunkStart).add(interval / 2, 'minutes');
+
+				const offset =
+					(chunkCenter.valueOf() - centerTimestamp) * (chunkWidth / (interval * 60 * 1000));
+				viewportElementRef.current.scrollLeft = state.initialPosition - offset;
 			}
 		}, 3);
 	}, [centerTimestamp]);
@@ -197,19 +190,17 @@ const GraphChunksVirtualizer = (props: Props) => {
 		if (
 			!rangeElementRef.current ||
 			!viewportElementRef.current ||
-			event.target instanceof HTMLInputElement
+			(event.target instanceof Node && !viewportElementRef.current.contains(event.target))
 		)
 			return;
 
-		if (isClickEventInElement(event, rangeElementRef.current)) {
-			viewportElementRef.current.style.cursor = 'grabbing';
-			isDown.current = true;
-			startX.current = event.pageX - (viewportElementRef.current?.offsetLeft || 0);
-			scrollLeft.current = viewportElementRef.current.scrollLeft;
+		viewportElementRef.current.style.cursor = 'grabbing';
+		isDown.current = true;
+		startX.current = event.pageX - (viewportElementRef.current?.offsetLeft || 0);
+		scrollLeft.current = viewportElementRef.current.scrollLeft;
 
-			document.addEventListener('mouseup', handleMouseUp);
-			document.addEventListener('mousemove', handleMouseMove);
-		}
+		document.addEventListener('mouseup', handleMouseUp);
+		document.addEventListener('mousemove', handleMouseMove);
 	};
 
 	const handleMouseUp = () => {
@@ -235,8 +226,10 @@ const GraphChunksVirtualizer = (props: Props) => {
 			bufferedItems,
 			settings: { itemWidth, minIndex },
 		} = state;
+
 		const index = minIndex + Math.floor((_scrollLeft - toleranceWidth) / itemWidth);
 		const data = getIndexes(index, bufferedItems);
+
 		const leftPadding = Math.max((index - minIndex) * itemWidth, 0);
 		const rightPadding = Math.max(totalWidth - leftPadding - data.length * itemWidth, 0);
 
@@ -404,7 +397,8 @@ function TimeSelector(props: TimeSelectorProps) {
 	const updatePointerTimestamp = usePointerTimestampUpdate();
 
 	function handleClick(e: React.MouseEvent<HTMLSpanElement>) {
-		const clickedTime = getTimeOffset(e.pageX);
+		const pointerEl = pointerRef.current;
+		const clickedTime = getTimeOffset(e.pageX - (pointerEl?.offsetWidth || 6) / 2);
 		onClick(clickedTime);
 	}
 
@@ -484,3 +478,11 @@ function getDivRange(intervalDiv: HTMLDivElement): null | TimeRange {
 	if (from && to) return [from, to];
 	return null;
 }
+
+const getChunkTimestampFrom = (timestamp: number, interval: number): number => {
+	const chunkHourStart = moment.utc(timestamp).startOf('hour');
+
+	return chunkHourStart
+		.add(Math.ceil(moment.utc(timestamp).get('minutes') / interval) * interval, 'minutes')
+		.valueOf();
+};

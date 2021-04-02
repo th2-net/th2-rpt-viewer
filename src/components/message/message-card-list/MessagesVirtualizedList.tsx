@@ -67,39 +67,49 @@ const MessagesVirtualizedList = (props: Props) => {
 		}
 	}, [scrolledIndex]);
 
-	const debouncedScrollHandler = useDebouncedCallback((event: React.UIEvent<'div'>) => {
-		const scroller = event.target;
+	const debouncedScrollHandler = useDebouncedCallback(
+		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
+			const scroller = event.target;
 
-		if (scroller instanceof HTMLDivElement) {
-			const isStartReached = scroller.scrollTop === 0;
-			const isEndReached = scroller.scrollHeight - scroller.scrollTop === scroller.clientHeight;
-			if (
-				isStartReached &&
-				messagesDataStore.searchChannelNext &&
-				!messagesDataStore.searchChannelNext.isLoading &&
-				!messagesDataStore.searchChannelNext.isEndReached
-			) {
-				loadNextMessages(messagesDataStore.messages[0]?.messageId).then(messages =>
-					messageStore.dataStore.onNextChannelResponse(messages),
-				);
-			}
+			if (scroller instanceof HTMLDivElement) {
+				const isStartReached = scroller.scrollTop === 0;
+				const isEndReached = scroller.scrollHeight - scroller.scrollTop === scroller.clientHeight;
+				if (
+					isStartReached &&
+					messagesDataStore.searchChannelNext &&
+					!messagesDataStore.searchChannelNext.isLoading &&
+					!messagesDataStore.searchChannelNext.isEndReached &&
+					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
+				) {
+					loadNextMessages(messagesDataStore.messages[0]?.messageId).then(messages =>
+						messageStore.dataStore.onNextChannelResponse(messages),
+					);
+				}
 
-			if (
-				isEndReached &&
-				messagesDataStore.searchChannelPrev &&
-				!messagesDataStore.searchChannelPrev.isLoading &&
-				!messagesDataStore.searchChannelPrev.isEndReached
-			) {
-				loadPrevMessages(
-					messagesDataStore.messages[messagesDataStore.messages.length - 1]?.messageId,
-				).then(messages => messageStore.dataStore.onPrevChannelResponse(messages));
+				if (
+					isEndReached &&
+					messagesDataStore.searchChannelPrev &&
+					!messagesDataStore.searchChannelPrev.isLoading &&
+					!messagesDataStore.searchChannelPrev.isEndReached &&
+					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
+				) {
+					loadPrevMessages(
+						messagesDataStore.messages[messagesDataStore.messages.length - 1]?.messageId,
+					).then(messages => messageStore.dataStore.onPrevChannelResponse(messages));
+				}
 			}
-		}
-	}, 100);
+		},
+		100,
+	);
 
 	const onScroll = (event: React.UIEvent<'div'>) => {
 		event.persist();
 		debouncedScrollHandler(event);
+	};
+
+	const onWheel: React.WheelEventHandler<'div'> = event => {
+		event.persist();
+		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
 	return (
@@ -119,6 +129,7 @@ const MessagesVirtualizedList = (props: Props) => {
 				};
 			}}
 			onScroll={onScroll}
+			onWheel={onWheel}
 			components={{
 				Header: function MessagesListSpinnerNext() {
 					return (

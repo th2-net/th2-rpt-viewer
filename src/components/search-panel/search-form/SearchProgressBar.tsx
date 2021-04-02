@@ -69,7 +69,10 @@ const SearchProgressBar = (props: SearchProgressBarConfig) => {
 		'left',
 		isSearching ? 'searching' : null,
 		isSearching && leftProgress.isInfinite ? 'infinite' : null,
-		searchDirection === SearchDirection.Previous ? 'rounded-right' : null,
+		searchDirection === SearchDirection.Both || searchDirection === SearchDirection.Previous
+			? 'rounded-left'
+			: null,
+		isSearching && searchDirection === SearchDirection.Previous ? 'rounded-right' : null,
 	);
 
 	const rightWrapperClassName = createBemElement(
@@ -91,6 +94,10 @@ const SearchProgressBar = (props: SearchProgressBarConfig) => {
 		'right',
 		isSearching ? 'searching' : null,
 		isSearching && rightProgress.isInfinite ? 'infinite' : null,
+		searchDirection === SearchDirection.Both || searchDirection === SearchDirection.Next
+			? 'rounded-right'
+			: null,
+		isSearching && searchDirection === SearchDirection.Next ? 'rounded-left' : null,
 	);
 
 	return (

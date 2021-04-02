@@ -152,6 +152,7 @@ function Graph({ activeWorkspace }: GraphProps) {
 				graphItems={selectedStore.graphItems}
 				range={activeWorkspace.graphStore.range}
 				onPanelRangeSelect={activeWorkspace.graphStore.setTimestampFromRange}
+				goToGraphItem={activeWorkspace.graphStore.goToGraphItem}
 			/>
 		</div>
 	);
@@ -169,6 +170,7 @@ const GraphRoot = () => {
 				<GraphSearch
 					onTimestampSubmit={activeWorkspace.onTimestampSelect}
 					onFoundItemClick={activeWorkspace.onSavedItemSelect}
+					windowRange={isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.range : null}
 				/>
 				{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}
 			</div>
