@@ -25,79 +25,81 @@ type Props = {
 	form: SearchPanelFormState;
 	updateForm: (stateUpdate: Partial<SearchPanelFormState>) => void;
 	startTimestampInput: DateInputProps;
+	disabled: boolean;
 };
 
-const SearchFormDatetimeControl = ({ form, updateForm, startTimestampInput }: Props) => {
+const SearchFormDatetimeControl = ({ form, updateForm, startTimestampInput, disabled }: Props) => {
+	const directionClicked = (direction: SearchDirection) => {
+		if (disabled || direction === form.searchDirection) return;
+
+		if (form.searchDirection === SearchDirection.Both) {
+			updateForm({
+				searchDirection:
+					direction === SearchDirection.Next ? SearchDirection.Previous : SearchDirection.Next,
+			});
+		} else {
+			updateForm({
+				searchDirection: SearchDirection.Both,
+			});
+		}
+	};
+
+	const prevButtonClassName = createBemElement(
+		'datetime-control',
+		'direction-button',
+		'direction-button',
+		'prev',
+		form.searchDirection === SearchDirection.Previous ||
+			form.searchDirection === SearchDirection.Both
+			? 'active'
+			: null,
+		disabled ? 'disabled' : null,
+	);
+
+	const prevIconClassName = createBemElement(
+		'direction-button',
+		'icon',
+		'prev',
+		form.searchDirection === SearchDirection.Previous ||
+			form.searchDirection === SearchDirection.Both
+			? 'active'
+			: null,
+	);
+
+	const nextButtonClassName = createBemElement(
+		'datetime-control',
+		'direction-button',
+		'direction-button',
+		'next',
+		form.searchDirection === SearchDirection.Next || form.searchDirection === SearchDirection.Both
+			? 'active'
+			: null,
+		disabled ? 'disabled' : null,
+	);
+
+	const nextIconClassName = createBemElement(
+		'direction-button',
+		'icon',
+		'next',
+		form.searchDirection === SearchDirection.Next || form.searchDirection === SearchDirection.Both
+			? 'active'
+			: null,
+	);
+
 	return (
 		<div className='search-form__datetime-control datetime-control'>
 			<button
-				className={createBemElement(
-					'datetime-control',
-					'direction-button',
-					'direction-button',
-					'prev',
-					form.searchDirection === SearchDirection.Previous ||
-						form.searchDirection === SearchDirection.Both
-						? 'active'
-						: null,
-				)}
-				onClick={() => {
-					if (form.searchDirection !== SearchDirection.Previous) {
-						updateForm({
-							searchDirection:
-								form.searchDirection === SearchDirection.Next
-									? SearchDirection.Both
-									: SearchDirection.Next,
-						});
-					}
-				}}>
-				<i
-					className={createBemElement(
-						'direction-button',
-						'icon',
-						'prev',
-						form.searchDirection === SearchDirection.Previous ||
-							form.searchDirection === SearchDirection.Both
-							? 'active'
-							: null,
-					)}
-				/>
+				className={prevButtonClassName}
+				onClick={() => directionClicked(SearchDirection.Previous)}>
+				<i className={prevIconClassName} />
 			</button>
 			<div className='datetime-control__input'>
 				<FilterDatetimeInput {...startTimestampInput} />
 			</div>
 			<button
-				className={createBemElement(
-					'datetime-control',
-					'direction-button',
-					'direction-button',
-					'next',
-					form.searchDirection === SearchDirection.Next ||
-						form.searchDirection === SearchDirection.Both
-						? 'active'
-						: null,
-				)}
-				onClick={() => {
-					if (form.searchDirection !== SearchDirection.Next) {
-						updateForm({
-							searchDirection:
-								form.searchDirection === SearchDirection.Previous
-									? SearchDirection.Both
-									: SearchDirection.Previous,
-						});
-					}
-				}}>
-				<i
-					className={createBemElement(
-						'direction-button',
-						'icon',
-						'next',
-						form.searchDirection === SearchDirection.Next ||
-							form.searchDirection === SearchDirection.Both
-							? 'active'
-							: null,
-					)}
-				/>
+				className={nextButtonClassName}
+				onClick={() => directionClicked(SearchDirection.Next)}>
+				<i className={nextIconClassName} />
 			</button>
 		</div>
 	);

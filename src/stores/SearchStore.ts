@@ -266,8 +266,7 @@ export class SearchStore {
 			...stateUpdate,
 		};
 
-		this.completed.previous = false;
-		this.completed.next = false;
+		this.setCompleted(false);
 	};
 
 	@action setEventsFilter = (patch: Partial<EventFilterState>) => {
@@ -278,8 +277,7 @@ export class SearchStore {
 			};
 		}
 
-		this.completed.previous = false;
-		this.completed.next = false;
+		this.setCompleted(false);
 	};
 
 	@action setMessagesFilter = (patch: Partial<MessageFilterState>) => {
@@ -290,8 +288,7 @@ export class SearchStore {
 			};
 		}
 
-		this.completed.previous = false;
-		this.completed.next = false;
+		this.setCompleted(false);
 	};
 
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
@@ -299,8 +296,7 @@ export class SearchStore {
 		this.currentIndex = Math.max(this.currentIndex - 1, 0);
 
 		if (this.searchHistory.length === 0) {
-			this.completed.previous = false;
-			this.completed.next = false;
+			this.setCompleted(false);
 		}
 
 		localStorageWorker.saveSearchHistory(this.searchHistory);
@@ -309,16 +305,14 @@ export class SearchStore {
 	@action nextSearch = () => {
 		if (this.currentIndex < this.searchHistory.length - 1) {
 			this.currentIndex += 1;
-			this.completed.previous = false;
-			this.completed.next = false;
+			this.setCompleted(true);
 		}
 	};
 
 	@action prevSearch = () => {
 		if (this.currentIndex !== 0) {
 			this.currentIndex -= 1;
-			this.completed.previous = false;
-			this.completed.next = false;
+			this.setCompleted(true);
 		}
 	};
 
@@ -341,8 +335,7 @@ export class SearchStore {
 	};
 
 	@action startSearch = () => {
-		this.completed.previous = false;
-		this.completed.next = false;
+		this.setCompleted(false);
 
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
 		if (this.searchChannel.next || this.searchChannel.previous || !filterParams) return;
@@ -488,10 +481,13 @@ export class SearchStore {
 			const data = (ev as MessageEvent).data;
 			const parsedEvent: SearchResult | SSEHeartbeat = JSON.parse(data);
 			this.searchChunk.push(parsedEvent);
-		}
 
-		if (this.searchChunk.length >= SEARCH_CHUNK_SIZE) {
-			this.exportChunkToSearchHistory();
+			if (
+				this.searchChunk.length >= SEARCH_CHUNK_SIZE ||
+				(!isEventNode(parsedEvent) && !isEventMessage(parsedEvent))
+			) {
+				this.exportChunkToSearchHistory();
+			}
 		}
 	};
 
@@ -517,6 +513,8 @@ export class SearchStore {
 						: parsedEvent.timestamp;
 
 				const startTimestamp = this.currentSearch.request.state.startTimestamp!;
+				const searchDirection =
+					eventTimestamp > startTimestamp ? SearchDirection.Next : SearchDirection.Previous;
 
 				if (isEventNode(parsedEvent) || isEventMessage(parsedEvent)) {
 					const resultGroupKey = Math.floor(
@@ -528,22 +526,24 @@ export class SearchStore {
 					}
 
 					this.currentSearch.results[resultGroupKey].push(parsedEvent);
-
-					if (eventTimestamp > startTimestamp) {
-						this.currentSearch.progress.next = eventTimestamp;
-					} else {
-						this.currentSearch.progress.previous = eventTimestamp;
-					}
-				} else if (eventTimestamp > startTimestamp) {
-					this.currentSearch.progress.next = eventTimestamp;
-					this.currentSearch.processedObjectCount.next = parsedEvent.scanCounter;
+					this.currentSearch.progress[searchDirection] = eventTimestamp;
 				} else {
-					this.currentSearch.progress.previous = eventTimestamp;
-					this.currentSearch.processedObjectCount.previous = parsedEvent.scanCounter;
+					this.currentSearch.progress[searchDirection] = eventTimestamp;
+					this.currentSearch.processedObjectCount[searchDirection] = parsedEvent.scanCounter;
 				}
 			}
 		});
 
 		this.searchChunk = [];
+	}
+
+	@action setCompleted(completed: boolean, searchDirection?: SSESearchDirection) {
+		if (!searchDirection) {
+			this.setCompleted(completed, SearchDirection.Next);
+			this.setCompleted(completed, SearchDirection.Previous);
+			return;
+		}
+
+		this.completed[searchDirection] = completed;
 	}
 }

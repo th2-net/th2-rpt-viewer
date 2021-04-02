@@ -34,8 +34,6 @@ interface SearchPanelResultsProps {
 	resultGroups: [string, SearchResult[]][];
 	timestamp: number;
 	disabledRemove: boolean;
-	formCollapsed: boolean;
-	setFormCollapsed: (collapsed: boolean) => void;
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
@@ -51,8 +49,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		showToggler,
 		next,
 		prev,
-		formCollapsed,
-		setFormCollapsed,
 	} = props;
 
 	function computeKey(index: number) {
@@ -62,20 +58,8 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		return isEventNode(item) ? item.eventId : item.messageId;
 	}
 
-	const onScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
-		if (e.target === e.currentTarget) {
-			if ((e.target as HTMLDivElement).scrollTop === 0 && formCollapsed) {
-				setFormCollapsed(false);
-			} else if ((e.target as HTMLDivElement).scrollTop > 0 && !formCollapsed) {
-				setFormCollapsed(true);
-			}
-
-			e.stopPropagation();
-		}
-	};
-
 	return (
-		<div className='search-results' onScroll={onScroll}>
+		<div className='search-results'>
 			{showToggler && (
 				<div className='search-results__controls'>
 					<button className='search-results__arrow' disabled={disablePrev} onClick={prev} />

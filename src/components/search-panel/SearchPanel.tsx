@@ -28,14 +28,13 @@ export type SearchPanelType = 'event' | 'message';
 const SearchPanel = () => {
 	const searchWorkspace = useSearchWorkspace();
 	const searchStore = useSearchStore();
-	const [formCollapsed, setFormCollapsed] = React.useState(false);
 
 	const { ref: searchPanelRef } = useActivePanel(null);
 
 	return (
 		<div className='search-panel-wrapper'>
 			<div className='search-panel' ref={searchPanelRef}>
-				<SearchPanelForm collapsed={formCollapsed} />
+				<SearchPanelForm />
 			</div>
 			{searchStore.currentSearch && (
 				<SearchPanelResults
@@ -57,8 +56,6 @@ const SearchPanel = () => {
 					}
 					disablePrev={searchStore.isSearching || searchStore.currentIndex === 0}
 					disabledRemove={searchStore.isSearching}
-					formCollapsed={formCollapsed}
-					setFormCollapsed={setFormCollapsed}
 				/>
 			)}
 		</div>

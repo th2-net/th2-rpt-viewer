@@ -21,33 +21,42 @@ import { SearchPanelType } from '../SearchPanel';
 type Props = {
 	formType: SearchPanelType;
 	setFormType: (formType: SearchPanelType) => void;
+	disabled: boolean;
 };
 
-const SearchTypeSwitcher = ({ formType, setFormType }: Props) => {
+const SearchTypeSwitcher = ({ formType, setFormType, disabled }: Props) => {
+	const setType = (type: typeof formType) => {
+		if (!disabled) {
+			setFormType(type);
+		}
+	};
+
 	return (
 		<div className='search-type-switcher'>
-			{['event' as typeof formType, 'message' as typeof formType].map(type => (
-				<button
-					key={type}
-					className={createBemElement(
-						'search-type-switcher',
-						'switch-search-type-button',
-						'switch-search-type-button',
-						type,
-						formType === type ? 'active' : null,
-					)}
-					onClick={() => setFormType(type)}>
-					<i
-						className={createBemElement(
-							'switch-search-type-button',
-							'icon',
-							type,
-							formType === type ? 'active' : null,
-						)}
-					/>
-					<div className='switch-search-type-button__label'>{type}</div>
-				</button>
-			))}
+			{['event' as typeof formType, 'message' as typeof formType].map(type => {
+				const buttonClassName = createBemElement(
+					'search-type-switcher',
+					'switch-search-type-button',
+					'switch-search-type-button',
+					type,
+					formType === type ? 'active' : null,
+					disabled ? 'disabled' : null,
+				);
+
+				const iconClassName = createBemElement(
+					'switch-search-type-button',
+					'icon',
+					type,
+					formType === type ? 'active' : null,
+				);
+
+				return (
+					<button key={type} className={buttonClassName} onClick={() => setType(type)}>
+						<i className={iconClassName} />
+						<div className='switch-search-type-button__label'>{type}</div>
+					</button>
+				);
+			})}
 		</div>
 	);
 };
