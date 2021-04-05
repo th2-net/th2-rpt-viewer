@@ -120,13 +120,12 @@ export const convertEventActionToEventTreeNode = (event: EventAction): EventTree
 	};
 };
 
-export const getErrorEventTreeNode = (
-	eventId: string,
-	childList: EventTreeNode[],
-): EventTreeNode => {
+export const getErrorEventTreeNode = (eventId: string): EventTreeNode => {
 	return {
+		type: ActionType.EVENT_TREE_NODE,
+		isUnknown: true,
 		eventId,
-		childList,
+		childList: [],
 		eventName: 'Unknown event',
 		eventType: '',
 		filtered: true,
@@ -140,7 +139,6 @@ export const getErrorEventTreeNode = (
 			epochSecond: 0,
 		},
 		successful: false,
-		type: ActionType.EVENT_TREE_NODE,
 	};
 };
 

@@ -25,7 +25,6 @@ import CardDisplayType from '../../../util/CardDisplayType';
 import { createBemBlock } from '../../../helpers/styleCreators';
 import { formatTime } from '../../../helpers/date';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
-import { sortEventsByTimestamp } from '../../../helpers/event';
 
 interface EventTreeProps {
 	eventTreeNode: EventTreeNode;
@@ -54,10 +53,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		let parentHasMoreChilds = false;
 
 		if (eventTreeNode.parentId !== null) {
-			const siblings = sortEventsByTimestamp(
-				eventsDataStore.parentChildrensMap.get(eventTreeNode.parentId) || [],
-				'asc',
-			);
+			const siblings = eventsDataStore.getEventChildrenNodes(eventTreeNode.parentId);
 
 			isLastChild =
 				siblings.length > 0 && siblings[siblings.length - 1].eventId === eventTreeNode.eventId;

@@ -20,6 +20,7 @@ import {
 	convertEventActionToEventTreeNode,
 	sortEventsByTimestamp,
 	getErrorEventTreeNode,
+	isEventNode,
 } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventSSELoader } from './EventSSELoader';
@@ -48,7 +49,7 @@ export default class EventsDataStore {
 	public eventsCache: Map<string, EventTreeNode> = new Map();
 
 	@observable
-	public parentChildrensMap: Map<string, EventTreeNode[]> = new Map();
+	public parentChildrensMap: Map<string, string[]> = new Map();
 
 	@observable
 	public loadingParentEvents: Map<string, boolean> = new Map();
@@ -136,14 +137,11 @@ export default class EventsDataStore {
 			}
 		}
 
-		const updatedParentChildrenMapEntries: Map<string, EventTreeNode[]> = observable.map(
-			new Map(),
-			{ deep: false },
-		);
+		const updatedParentChildrenMapEntries: Map<string, string[]> = observable.map();
 
 		Object.keys(eventsByParentId).forEach(parentId => {
 			let eventsChildren = (this.parentChildrensMap.get(parentId) || []).concat(
-				eventsByParentId[parentId],
+				eventsByParentId[parentId].map(event => event.eventId),
 			);
 			if (eventsChildren.length > this.CHUNK_SIZE) {
 				eventsChildren = eventsChildren.slice(0, this.CHUNK_SIZE);
@@ -192,9 +190,8 @@ export default class EventsDataStore {
 				let rootNode = parentNodes[0];
 				if (!rootNode || rootNode.parentId !== null) {
 					const unknownParentNodeId = rootNode?.parentId || parentId;
-					const unknownParentNodeChildren = this.parentChildrensMap.get(unknownParentNodeId) || [];
 
-					rootNode = getErrorEventTreeNode(unknownParentNodeId, unknownParentNodeChildren);
+					rootNode = getErrorEventTreeNode(unknownParentNodeId);
 
 					parentNodes.unshift(rootNode);
 				}
@@ -202,7 +199,7 @@ export default class EventsDataStore {
 				parentNodes.forEach(parentNode => {
 					this.eventsCache.set(parentNode.eventId, parentNode);
 					if (parentNode.parentId !== null) {
-						this.parentChildrensMap.set(parentNode.parentId, [parentNode]);
+						this.parentChildrensMap.set(parentNode.parentId, [parentNode.eventId]);
 					}
 					this.loadingParentEvents.set(parentNode.eventId, false);
 				});
@@ -212,8 +209,7 @@ export default class EventsDataStore {
 				}
 			});
 		} catch (error) {
-			const unknownParentNodeChildren = this.parentChildrensMap.get(parentId) || [];
-			const uknownRootNode = getErrorEventTreeNode(parentId, unknownParentNodeChildren);
+			const uknownRootNode = getErrorEventTreeNode(parentId);
 			this.eventsCache.set(parentId, uknownRootNode);
 			if (!this.rootEventIds.includes(parentId)) {
 				this.rootEventIds = [...this.rootEventIds, parentId];
@@ -229,7 +225,7 @@ export default class EventsDataStore {
 		const parentNode = this.eventsCache.get(parentId);
 
 		if (parentNode) {
-			const eventsChildren = this.parentChildrensMap.get(parentId);
+			const eventsChildren = this.getEventChildrenNodes(parentId);
 			if (!eventsChildren || !this.hasUnloadedChildren.get(parentId)) return;
 
 			this.isLoadingChildren.set(parentId, true);
@@ -262,11 +258,17 @@ export default class EventsDataStore {
 
 	@action
 	private onEventChildrenLoad = (events: EventTreeNode[], parentId: string) => {
+		const newEntries: [string, EventTreeNode][] = events.map(event => [event.eventId, event]);
+		const eventsMap: Map<string, EventTreeNode> = observable.map(
+			new Map([...this.eventsCache, ...newEntries]),
+			{ deep: false },
+		);
+		this.eventsCache = eventsMap;
 		const parentNode = this.eventsCache.get(parentId);
 		if (!parentNode) return;
 
 		const childList = this.parentChildrensMap.get(parentId) || [];
-		this.parentChildrensMap.set(parentId, [...childList, ...events]);
+		this.parentChildrensMap.set(parentId, [...childList, ...events.map(event => event.eventId)]);
 	};
 
 	@action
@@ -340,20 +342,12 @@ export default class EventsDataStore {
 		this.eventStore.isExpandedMap.clear();
 	};
 
-	private getNodesList = (
-		eventTreeNode: EventTreeNode,
-		parents: string[] = [],
-	): EventTreeNode[] => {
-		if (this.eventStore.isExpandedMap.get(eventTreeNode.eventId)) {
-			const children = this.parentChildrensMap.get(eventTreeNode.eventId) || [];
-			return [
-				eventTreeNode,
-				...sortEventsByTimestamp(children, 'asc').flatMap(eventNode =>
-					this.getNodesList(eventNode, [...parents, eventTreeNode.eventId]),
-				),
-			];
-		}
-
-		return [eventTreeNode];
-	};
+	public getEventChildrenNodes(parentId: string) {
+		return sortEventsByTimestamp(
+			(this.parentChildrensMap.get(parentId) || [])
+				.map(childrenId => this.eventsCache.get(childrenId))
+				.filter(isEventNode),
+			'asc',
+		);
+	}
 }

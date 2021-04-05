@@ -86,9 +86,11 @@ function EventCardHeader({
 	};
 
 	const onMouseEnter = () => {
-		hoverTimeout.current = setTimeout(() => {
-			eventStore.setHoveredEvent(event);
-		}, 150);
+		if (!event.isUnknown) {
+			hoverTimeout.current = setTimeout(() => {
+				eventStore.setHoveredEvent(event);
+			}, 150);
+		}
 	};
 
 	const onMouseLeave = () => {

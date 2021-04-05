@@ -328,7 +328,7 @@ export default class EventsStore {
 			if (headNode && !this.isExpandedMap.get(headNode.eventId) && i !== selectedIds.length - 1) {
 				this.toggleNode(headNode);
 			}
-			children = (headNode && this.eventDataStore.parentChildrensMap.get(headNode?.eventId)) || [];
+			children = (headNode && this.eventDataStore.getEventChildrenNodes(headNode.eventId)) || [];
 		}
 		if (headNode) {
 			this.selectNode(headNode);
@@ -375,7 +375,7 @@ export default class EventsStore {
 		eventTreeNode: EventTreeNode,
 		parents: string[] = [],
 	): EventTreeNode[] => {
-		const childList = this.eventDataStore.parentChildrensMap.get(eventTreeNode.eventId) || [];
+		const childList = this.eventDataStore.getEventChildrenNodes(eventTreeNode.eventId) || [];
 
 		if (this.isExpandedMap.get(eventTreeNode.eventId)) {
 			return [
@@ -393,7 +393,7 @@ export default class EventsStore {
 		eventTreeNode: EventTreeNode,
 		parents: string[] = [],
 	): EventTreeNode[] => {
-		const childList = this.eventDataStore.parentChildrensMap.get(eventTreeNode.eventId) || [];
+		const childList = this.eventDataStore.getEventChildrenNodes(eventTreeNode.eventId) || [];
 		return [
 			eventTreeNode,
 			...sortEventsByTimestamp(childList, 'asc').flatMap(node =>

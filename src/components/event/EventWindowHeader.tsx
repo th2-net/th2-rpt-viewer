@@ -21,10 +21,12 @@ import { useActivePanel, useWorkspaceEventStore, useWorkspaceStore } from '../..
 import { createBemElement } from '../../helpers/styleCreators';
 import EventsSearchPanel from './search/EventsSearchPanel';
 import { isEventsStore } from '../../helpers/stores';
+import useEventsDataStore from '../../hooks/useEventsDataStore';
 
 function EventWindowHeader() {
 	const { activePanel } = useActivePanel();
 	const eventStore = useWorkspaceEventStore();
+	const eventDataStore = useEventsDataStore();
 	const workspaceStore = useWorkspaceStore();
 
 	const flattenButtonClassName = createBemElement(
@@ -48,6 +50,14 @@ function EventWindowHeader() {
 						Flat view
 					</div>
 				</div>
+				{eventStore.isLoadingRootEvents ||
+					(eventDataStore.loadingParentEvents.size > 0 && (
+						<div className='event-window-header__loader'>
+							Resolving root events<span>.</span>
+							<span>.</span>
+							<span>.</span>
+						</div>
+					))}
 			</div>
 		</div>
 	);

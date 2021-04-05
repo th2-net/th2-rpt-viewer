@@ -39,6 +39,7 @@ export interface EventTreeNode extends EventBase {
 	filtered: boolean;
 	parentId: string | null;
 	type: ActionType.EVENT_TREE_NODE;
+	isUnknown?: boolean;
 }
 
 export interface EventAction extends EventBase {

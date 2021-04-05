@@ -40,12 +40,12 @@ function DetailedFlatEventCard(props: Props) {
 	const event = selectedNode === null ? eventWindowStore.selectedEvent : selectedParentEvent;
 	const node = selectedNode === null ? eventWindowStore.selectedNode : selectedNode;
 
-	const children = computed(() =>
-		node ? eventsDataStore.parentChildrensMap.get(node.eventId) || [] : [],
+	const childrenCount = computed(
+		() => (node ? eventsDataStore.parentChildrensMap.get(node.eventId) || [] : []).length,
 	).get();
 
 	return (
-		<EventDetailInfoCard node={node!} event={event} childrenCount={children.length}>
+		<EventDetailInfoCard node={node!} event={event} childrenCount={childrenCount}>
 			{parentNodes.length > 0 && (
 				<div className='event-detail-info__parents'>
 					{parentNodes.map(eventNode => (
