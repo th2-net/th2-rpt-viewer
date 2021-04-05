@@ -113,11 +113,16 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 	);
 
 	return (
-		<div onClick={() => onClick && onClick(item)} className={rootClassName}>
+		<div className={rootClassName}>
 			<i className={iconClassName} />
 			<div className='bookmark-item__info'>
-				<div className='bookmark-item__name' title={itemInfo.title}>
-					{itemInfo.title}
+				<div className='bookmark-item__name'>
+					<p
+						className='bookmark-item__title'
+						title={itemInfo.title}
+						onClick={() => onClick && onClick(item)}>
+						{itemInfo.title}
+					</p>
 				</div>
 				<div className='bookmark-item__timestamp'>
 					{moment(itemInfo.timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}
