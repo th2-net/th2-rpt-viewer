@@ -21,7 +21,6 @@ import TimeLimitControl from './TimeLimitControl';
 
 export type SearchTimeLimitControlsConfig = {
 	isSearching: boolean;
-	completed: boolean;
 	searchDirection: SearchDirection;
 	disabled: boolean;
 	previousTimeLimit: {
@@ -40,7 +39,6 @@ export type SearchTimeLimitControlsConfig = {
 
 const SearchTimeLimitControls = ({
 	isSearching,
-	completed,
 	searchDirection,
 	disabled,
 	previousTimeLimit,
@@ -70,7 +68,7 @@ const SearchTimeLimitControls = ({
 				/>
 			</div>
 			<div className='search-time-limit-controls__submit'>
-				{(isSearching || completed) && (
+				{Boolean(processedObjectCount) && (
 					<div className='search-processed-objects'>{processedObjectCount} processed objects</div>
 				)}
 				<button

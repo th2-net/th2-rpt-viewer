@@ -162,7 +162,6 @@ const SearchPanelForm = () => {
 
 	const searchTimeLimitsConfig: SearchTimeLimitControlsConfig = {
 		isSearching,
-		completed: completed.previous && completed.next,
 		searchDirection: form.searchDirection,
 		disabled,
 		previousTimeLimit: {
