@@ -38,14 +38,14 @@
 	width: 100%;
 	border-radius: 6px 0 0 6px;
 	padding: 10px 0;
-	background-color: #cce6ff;
-	color: #3d668f;
+	background-color: $workspaceTabBackground;
+	color: $workspaceTabTextColor;
 	box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.25);
 	cursor: pointer;
 	transition: background-color 0.2s;
 
 	&.active {
-		background-color: #4d80b2;
+		background-color: $workspaceTabActiveBackground;
 		color: white;
 	}
 
@@ -64,7 +64,7 @@
 		text-align: center;
 		height: 25px;
 		padding: 0;
-		color: #4d80b2;
+		color: $workspaceTabActiveBackground;
 		font-size: 20px;
 		line-height: 25px;
 	}

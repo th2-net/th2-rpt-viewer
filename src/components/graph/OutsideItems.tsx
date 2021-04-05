@@ -32,10 +32,11 @@ import '../../styles/graph.scss';
 
 interface OverlayPanelProps {
 	range: TimeRange;
-	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
-	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 	panelsRange: Array<PanelRange>;
 	graphItems: GraphItem[];
+	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
+	goToGraphItem: (item: EventTreeNode | EventMessage) => void;
+	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 	onPanelRangeSelect: (panelRange: TimeRange) => void;
 }
 
@@ -47,6 +48,7 @@ const OutsideItems = (props: OverlayPanelProps) => {
 		onPanelRangeSelect,
 		panelsRange,
 		graphItems,
+		goToGraphItem,
 	} = props;
 
 	const outsideItems: IOutsideItems = React.useMemo(() => {
@@ -78,7 +80,7 @@ const OutsideItems = (props: OverlayPanelProps) => {
 		const items = sortByTimestamp(outsideItems[direction]);
 		const utterItem = items[direction === 'right' ? items.length - 1 : 0];
 		if (utterItem) {
-			onGraphItemClick(utterItem);
+			goToGraphItem(utterItem);
 		}
 	};
 
