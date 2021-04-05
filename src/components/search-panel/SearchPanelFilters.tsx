@@ -91,12 +91,25 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 		return state[name];
 	}
 
-	const [currentValues, setCurrentValues] = useSetState<Values>({
-		type: '',
-		body: '',
-		name: '',
-		attachedEventIds: '',
-	});
+	const [currentValues, setCurrentValues] = useSetState<Values>({});
+
+	React.useEffect(() => {
+		const newStateKeys: Values = {};
+		let hasUpdate = false;
+		Object.keys(state).forEach(stateKey => {
+			if (!currentValues[stateKey] === undefined) {
+				newStateKeys[stateKey] = '';
+				hasUpdate = true;
+			}
+		});
+
+		if (hasUpdate) {
+			setCurrentValues({
+				...currentValues,
+				...newStateKeys,
+			});
+		}
+	}, [state, currentValues]);
 
 	const setCurrentValue = (name: string) => (value: string) => {
 		setCurrentValues({ [name]: value });
@@ -145,6 +158,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 						}
 					},
 				);
+
 				return (
 					<div className='filter-row' key={filter.name}>
 						<p className='filter-row__label'>{label}</p>

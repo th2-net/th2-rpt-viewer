@@ -310,7 +310,10 @@ export class SearchStore {
 					.filter((info: SSEFilterInfo) => getFilter(info.name).values.length !== 0)
 					.map((info: SSEFilterInfo) => info.name);
 
-		const filterValues = filtersToAdd.map(filter => [`${filter}-values`, getFilter(filter).values]);
+		const filterValues = filtersToAdd.map(filter => [
+			`${filter}-${filter === 'status' ? 'value' : 'values'}`,
+			getFilter(filter).values,
+		]);
 
 		const filterInclusion = filtersToAdd.map(filter =>
 			getFilter(filter).negative ? [`${filter}-negative`, getFilter(filter).negative] : [],
