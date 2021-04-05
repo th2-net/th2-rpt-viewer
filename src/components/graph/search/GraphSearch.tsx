@@ -18,6 +18,7 @@ import * as React from 'react';
 import moment from 'moment';
 import { createBemElement } from '../../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
+import { TimeRange } from '../../../models/Timestamp';
 import GraphSearchDialog from './GraphSearchDialog';
 import WorkspaceStore from '../../../stores/workspace/WorkspaceStore';
 import { ModalPortal } from '../../util/Portal';
@@ -28,12 +29,13 @@ import KeyCodes from '../../../util/KeyCodes';
 interface Props {
 	onTimestampSubmit: (timestamp: number) => void;
 	onFoundItemClick: InstanceType<typeof WorkspaceStore>['onSavedItemSelect'];
+	windowRange: TimeRange | null;
 }
 
 export type GraphSearchMode = 'date' | 'id';
 
 function GraphSearch(props: Props) {
-	const { onTimestampSubmit, onFoundItemClick } = props;
+	const { onTimestampSubmit, onFoundItemClick, windowRange } = props;
 
 	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
 		isValidDate: false,
@@ -180,6 +182,7 @@ function GraphSearch(props: Props) {
 				inputConfig={inputConfig}
 				setInputConfig={setInputConfig}
 				mode={mode}
+				windowRange={windowRange}
 			/>
 			<ModalPortal
 				isOpen={showModal}

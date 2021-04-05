@@ -17,13 +17,9 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useActivePanel } from '../../hooks';
-import TogglerRow from '../filter/row/TogglerRow';
-import SearchPanelFilters from './SearchPanelFilters';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
-import SearchPanelProgressBar from './SearchPanelProgressBar';
-import { FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
 import '../../styles/search-panel.scss';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 
@@ -35,58 +31,14 @@ const SearchPanel = () => {
 
 	const { ref: searchPanelRef } = useActivePanel(null);
 
-	const formTypeTogglerConfig: FilterRowTogglerConfig = React.useMemo(
-		() => ({
-			type: 'toggler',
-			value: searchStore.formType === 'event',
-			disabled: searchStore.isFormDisabled,
-			toggleValue: searchStore.toggleFormType,
-			possibleValues: ['event', 'message'],
-			id: 'source-type',
-			label: '',
-		}),
-		[searchStore.formType, searchStore.isFormDisabled, searchStore.toggleFormType],
-	);
-
 	return (
 		<div className='search-panel-wrapper'>
 			<div className='search-panel' ref={searchPanelRef}>
-				<div className='search-panel__toggle'>
-					<TogglerRow config={formTypeTogglerConfig} />
-				</div>
-				<div className='search-panel__form'>
-					<div className='search-panel__fields'>
-						<SearchPanelForm
-							disabled={searchStore.isFormDisabled}
-							form={searchStore.searchForm}
-							formType={searchStore.formType}
-							updateForm={searchStore.updateForm}
-							messageSessions={searchStore.messageSessions}
-						/>
-					</div>
-					<div className='filters'>
-						{searchStore.filters && searchStore.filters.info.length > 0 && (
-							<SearchPanelFilters {...searchStore.filters} />
-						)}
-					</div>
-					<div className='search-panel__buttons'>
-						<button
-							disabled={searchStore.isFormDisabled}
-							className='search-panel__submit'
-							onClick={
-								searchStore.searchChannel ? searchStore.stopSearch : searchStore.startSearch
-							}>
-							{searchStore.searchChannel ? 'stop' : 'start'}
-						</button>
-					</div>
-				</div>
+				<SearchPanelForm />
 			</div>
 			{searchStore.currentSearch && (
-				<SearchPanelProgressBar searchProgress={searchStore.searchProgress} />
-			)}
-			{searchStore.currentSearch && (
 				<SearchPanelResults
-					resultGroups={searchStore.resultGroups}
+					resultGroups={searchStore.sortedResultGroups}
 					timestamp={searchStore.currentSearch.timestamp}
 					onResultItemClick={searchWorkspace.onSearchResultItemSelect}
 					onResultGroupClick={searchWorkspace.followByTimestamp}

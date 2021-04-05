@@ -74,6 +74,8 @@ export default class EventsStore {
 		reaction(() => this.viewStore.flattenedListView, this.onViewChange);
 
 		reaction(() => this.searchStore.scrolledItem, this.onScrolledItemChange);
+
+		reaction(() => this.hoveredEvent, this.onEventHover);
 	}
 
 	@observable.shallow eventTree: EventTree = [];
@@ -444,6 +446,12 @@ export default class EventsStore {
 		}
 
 		return path;
+	};
+
+	private onEventHover = (hoveredEvent: EventTreeNode | null) => {
+		if (hoveredEvent !== null) {
+			this.graphStore.setTimestamp(timestampToNumber(hoveredEvent.startTimestamp));
+		}
 	};
 }
 
