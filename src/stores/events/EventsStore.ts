@@ -14,20 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, _allowStateChangesInsideComputed } from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
-import { EventAction, EventTree, EventTreeNode } from '../../models/EventAction';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
 import EventsFilter from '../../models/filter/EventsFilter';
-import {
-	getEventNodeParents,
-	isEvent,
-	isEventNode,
-	sortEventsByTimestamp,
-} from '../../helpers/event';
+import { getEventParentId, isEvent, isEventNode, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { timestampToNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
@@ -81,8 +76,6 @@ export default class EventsStore {
 		reaction(() => this.hoveredEvent, this.onEventHover);
 	}
 
-	@observable.shallow eventTree: EventTree = [];
-
 	@observable isLoadingRootEvents = false;
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
@@ -98,10 +91,6 @@ export default class EventsStore {
 	@observable isExpandedMap: Map<string, boolean> = new Map();
 
 	@observable eventTreeStatusCode: number | null = null;
-
-	@computed get isActivePanel() {
-		return this.workspaceStore.isActive && this.workspaceStore.viewStore.activePanel === this;
-	}
 
 	@computed
 	public get flattenedEventList() {
@@ -119,7 +108,13 @@ export default class EventsStore {
 
 	@computed
 	public get flatExpandedList() {
-		return this.eventTree.flatMap(eventId => this.getFlatExpandedList(eventId));
+		const rootNodes = sortEventsByTimestamp(
+			this.eventDataStore.rootEventIds
+				.map(eventId => this.eventDataStore.eventsCache.get(eventId))
+				.filter(isEventNode),
+			'desc',
+		);
+		return rootNodes.flatMap(eventNode => this.getFlatExpandedList(eventNode));
 	}
 
 	@computed
@@ -131,9 +126,14 @@ export default class EventsStore {
 	// to get event key by index in tree and list length calculation.
 	@computed
 	public get nodesList() {
-		return sortEventsByTimestamp(this.eventTree, 'desc').flatMap(eventNode =>
-			this.getNodesList(eventNode),
+		const rootNodes = sortEventsByTimestamp(
+			this.eventDataStore.rootEventIds
+				.map(eventId => this.eventDataStore.eventsCache.get(eventId))
+				.filter(isEventNode),
+			'desc',
 		);
+
+		return rootNodes.flatMap(eventNode => this.getNodesList(eventNode));
 	}
 
 	@computed
@@ -141,10 +141,55 @@ export default class EventsStore {
 		if (this.selectedNode == null) {
 			return [];
 		}
-		return [
-			...this.getNodesPath(getEventNodeParents(this.selectedNode), this.nodesList),
-			this.selectedNode,
-		];
+
+		const selectedNodeParents = this.eventDataStore
+			.getParents(this.selectedNode.eventId)
+			.map(node => node.eventId);
+
+		return [...this.getNodesPath(selectedNodeParents, this.nodesList), this.selectedNode];
+	}
+
+	@computed
+	public get selectedPathTimestamps() {
+		if (!this.selectedPath.length) return null;
+
+		const selectedPath = this.selectedPath;
+
+		const selectedRootEventId = selectedPath[0].eventId;
+		const rootEvent = selectedPath[0];
+
+		const timestamps = {
+			startEventId: rootEvent.eventId,
+			startTimestamp: timestampToNumber(rootEvent.startTimestamp),
+			endEventId: rootEvent.eventId,
+			endTimestamp: timestampToNumber(rootEvent.startTimestamp),
+		};
+
+		const eventNodes = this.getNodesList(rootEvent);
+		const rootNodesChildren = this.eventDataStore.parentChildrensMap.get(rootEvent.eventId) || [];
+
+		if (rootNodesChildren.length > 0 && eventNodes[1]) {
+			timestamps.startTimestamp = timestampToNumber(eventNodes[1].startTimestamp);
+			timestamps.endTimestamp = timestamps.startTimestamp;
+
+			for (let i = 1; eventNodes[i] && eventNodes[i].parentId === selectedRootEventId; i++) {
+				timestamps.endEventId = eventNodes[i].eventId;
+
+				if (eventNodes[i].parents?.length === 1) {
+					const eventTimestamp = timestampToNumber(eventNodes[i].startTimestamp);
+
+					if (eventTimestamp < timestamps.startTimestamp) {
+						timestamps.startTimestamp = eventTimestamp;
+					}
+
+					if (eventTimestamp > timestamps.endTimestamp) {
+						timestamps.endTimestamp = eventTimestamp;
+					}
+				}
+			}
+		}
+
+		return timestamps;
 	}
 
 	@action
@@ -203,11 +248,14 @@ export default class EventsStore {
 			without full path, so we have to fetch it first
 			
 		*/
-		if (!savedEventNode.parents) {
+
+		const eventParentId = getEventParentId(savedEventNode);
+		if (eventParentId && !savedEventNode.parents) {
 			try {
 				this.eventDataStore.isLoadingRootEvents = true;
 				this.selectNode(null);
-				fullPath = await this.fetchFullPath(savedEventNode);
+				const parentEvents = await this.api.events.getEventParents(eventParentId);
+				fullPath = parentEvents.map(({ eventId }) => eventId);
 			} catch {
 				this.eventDataStore.isLoadingRootEvents = false;
 			}
@@ -340,14 +388,12 @@ export default class EventsStore {
 		eventTreeNode: EventTreeNode,
 		parents: string[] = [],
 	): EventTreeNode[] => {
-		_allowStateChangesInsideComputed(() => {
-			// eslint-disable-next-line no-param-reassign
-			eventTreeNode.parents = !eventTreeNode.parents ? parents : eventTreeNode.parents;
-		});
+		const childList = this.eventDataStore.parentChildrensMap.get(eventTreeNode.eventId) || [];
+
 		if (this.isExpandedMap.get(eventTreeNode.eventId)) {
 			return [
 				eventTreeNode,
-				...sortEventsByTimestamp(eventTreeNode.childList, 'asc').flatMap(eventNode =>
+				...sortEventsByTimestamp(childList, 'asc').flatMap(eventNode =>
 					this.getNodesList(eventNode, [...parents, eventTreeNode.eventId]),
 				),
 			];
@@ -360,13 +406,10 @@ export default class EventsStore {
 		eventTreeNode: EventTreeNode,
 		parents: string[] = [],
 	): EventTreeNode[] => {
-		_allowStateChangesInsideComputed(() => {
-			// eslint-disable-next-line no-param-reassign
-			eventTreeNode.parents = !eventTreeNode.parents ? parents : eventTreeNode.parents;
-		});
+		const childList = this.eventDataStore.parentChildrensMap.get(eventTreeNode.eventId) || [];
 		return [
 			eventTreeNode,
-			...sortEventsByTimestamp(eventTreeNode.childList).flatMap(node =>
+			...sortEventsByTimestamp(childList, 'asc').flatMap(node =>
 				this.getFlatExpandedList(node, [...parents, eventTreeNode.eventId]),
 			),
 		];
@@ -382,32 +425,9 @@ export default class EventsStore {
 		return targetNode ? [targetNode, ...this.getNodesPath(rest, targetNode.childList ?? [])] : [];
 	}
 
-	private fetchFullPath = async (event: EventTreeNode | EventAction) => {
-		let currentEvent = event;
-		const path: string[] = [event.eventId];
-
-		while (
-			typeof getEventParentId(currentEvent) === 'string' &&
-			getEventParentId(currentEvent) !== 'null' &&
-			getEventParentId(currentEvent) !== null
-		) {
-			const parentId = getEventParentId(currentEvent);
-			if (!parentId) return path;
-
-			path.unshift(parentId);
-			// eslint-disable-next-line no-await-in-loop
-			currentEvent = await this.api.events.getEvent(parentId);
-		}
-
-		return path;
-	};
-
 	private onEventHover = (hoveredEvent: EventTreeNode | null) => {
 		if (hoveredEvent !== null) {
 			this.graphStore.setTimestamp(timestampToNumber(hoveredEvent.startTimestamp));
 		}
 	};
 }
-
-const getEventParentId = (event: EventTreeNode | EventAction) =>
-	isEventNode(event) ? event.parentId : event.parentEventId;

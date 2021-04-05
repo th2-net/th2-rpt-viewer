@@ -17,10 +17,11 @@
 
 import { action, observable, when } from 'mobx';
 import api from '../../api';
-import { EventSSEParams } from '../../api/sse';
-import { isEventNode } from '../../helpers/event';
+import { SSEChannelType } from '../../api/ApiSchema';
+import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
+import { isEventMessage } from '../../helpers/event';
 import { getObjectKeys } from '../../helpers/object';
-import { EventTreeNode } from '../../models/EventAction';
+import { EventMessage } from '../../models/EventMessage';
 
 type WhenPromise = Promise<void> & {
 	cancel(): void;
@@ -32,12 +33,12 @@ type SSEChannelOptions = Partial<{
 	initialResponseTimeoutMs: number;
 }>;
 
-export class SSEEventChannel {
+export class MessagesSSELoader {
 	private channel: EventSource | null = null;
 
-	private accumulatedEvents: EventTreeNode[] = [];
+	private accumulatedMessages: EventMessage[] = [];
 
-	private chunkSize = 10;
+	private chunkSize = 20;
 
 	private initialResponseTimeout: number | null = null;
 
@@ -49,7 +50,7 @@ export class SSEEventChannel {
 
 	private updateSchedulerIntervalMs = 1000;
 
-	private fetchedEventsCount = 0;
+	private fetchedMessagesCount = 0;
 
 	@observable
 	public isError = false;
@@ -60,9 +61,11 @@ export class SSEEventChannel {
 	@observable isEndReached = false;
 
 	constructor(
-		private queryParams: EventSSEParams,
-		private onResponse: (messages: EventTreeNode[]) => void,
+		private type: SSEChannelType,
+		private queryParams: MessagesSSEParams,
+		private onResponse: (messages: EventMessage[]) => void,
 		private onError: (event: Event) => void,
+		private onKeepAliveResponse?: (event: SSEHeartbeat) => void,
 		options?: SSEChannelOptions,
 	) {
 		if (options) {
@@ -85,7 +88,7 @@ export class SSEEventChannel {
 			const chunk = this.getNextChunk();
 			this.onResponse(chunk);
 			this.resetSSEState({
-				isEndReached: this.fetchedEventsCount !== this.chunkSize,
+				isEndReached: this.fetchedMessagesCount === 0,
 			});
 		}
 	};
@@ -100,11 +103,22 @@ export class SSEEventChannel {
 		this.onError(event);
 	};
 
+	@action
+	private _onKeepAliveResponse = (event: Event) => {
+		if (this.onKeepAliveResponse) {
+			const keepAlive = JSON.parse((event as MessageEvent).data) as SSEHeartbeat;
+
+			if (keepAlive.timestamp !== 0) {
+				this.onKeepAliveResponse(keepAlive);
+			}
+		}
+	};
+
 	private onSSEResponse = (ev: Event) => {
 		const data = JSON.parse((ev as MessageEvent).data);
-		if (isEventNode(data)) {
-			this.fetchedEventsCount += 1;
-			this.accumulatedEvents.push(data);
+		if (isEventMessage(data)) {
+			this.fetchedMessagesCount += 1;
+			this.accumulatedMessages.push(data);
 		}
 	};
 
@@ -112,7 +126,23 @@ export class SSEEventChannel {
 		Returns a promise within initialResponseTimeoutMs or successfull fetch
 		and subscribes on changes 
 	*/
-	public loadAndSubscribe = async (resumeFromId?: string): Promise<EventTreeNode[]> => {
+	public loadAndSubscribe = async (resumeFromId?: string): Promise<EventMessage[]> => {
+		this.initConnection(resumeFromId);
+
+		const messagesChunk = await Promise.race([
+			this.getInitialResponseWithinTimeout(this.initialResponseTimeoutMs),
+			this.getFetchedChunk(),
+		]);
+
+		return messagesChunk;
+	};
+
+	public subscribe = (resumeFromId?: string): void => {
+		this.initConnection(resumeFromId);
+		this.initUpdateScheduler();
+	};
+
+	private initConnection = (resumeFromId?: string): void => {
 		this.closeChannel();
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
@@ -123,45 +153,16 @@ export class SSEEventChannel {
 				resumeFromId,
 				resultCountLimit: this.chunkSize,
 			},
-			type: 'event',
+			type: this.type,
 		});
 
-		this.channel.addEventListener('event', this.onSSEResponse);
+		this.channel.addEventListener('message', this.onSSEResponse);
 		this.channel.addEventListener('close', this._onClose);
 		this.channel.addEventListener('error', this._onError);
-
-		const eventsChunk = await Promise.race([
-			this.getInitialResponseWithinTimeout(this.initialResponseTimeoutMs),
-			this.getFetchedChunk(),
-		]);
-
-		return eventsChunk;
+		this.channel.addEventListener('keep_alive', this._onKeepAliveResponse);
 	};
 
-	public subscribe = (resumeFromId?: string): void => {
-		this.closeChannel();
-		this.resetSSEState({
-			isLoading: true,
-		});
-		this.clearFetchedChunkSubscription();
-
-		this.channel = api.sse.getEventSource({
-			queryParams: {
-				...this.queryParams,
-				resumeFromId,
-				resultCountLimit: this.chunkSize,
-			},
-			type: 'event',
-		});
-
-		this.channel.addEventListener('event', this.onSSEResponse);
-		this.channel.addEventListener('close', this._onClose);
-		this.channel.addEventListener('error', this._onError);
-
-		this.initUpdateScheduler();
-	};
-
-	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventTreeNode[]> => {
+	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
 		return new Promise(res => {
 			this.initialResponseTimeout = window.setTimeout(() => {
 				res(this.getNextChunk());
@@ -181,7 +182,7 @@ export class SSEEventChannel {
 		}, this.updateSchedulerIntervalMs);
 	};
 
-	private getFetchedChunk = async (): Promise<EventTreeNode[]> => {
+	private getFetchedChunk = async (): Promise<EventMessage[]> => {
 		this.fetchedChunkSubscription = when(() => !this.isLoading);
 		await this.fetchedChunkSubscription;
 		const nextChunk = this.getNextChunk();
@@ -195,8 +196,8 @@ export class SSEEventChannel {
 		this.clearFetchedChunkSubscription();
 	};
 
-	private getNextChunk = (chunkSize = this.accumulatedEvents.length): EventTreeNode[] => {
-		let chunk = this.accumulatedEvents.splice(0, chunkSize);
+	private getNextChunk = (chunkSize = this.accumulatedMessages.length): EventMessage[] => {
+		let chunk = this.accumulatedMessages.splice(0, chunkSize);
 
 		if (this.queryParams.searchDirection === 'next') {
 			chunk = chunk.reverse();
@@ -216,11 +217,11 @@ export class SSEEventChannel {
 		const { isLoading = false, isError = false, isEndReached = false } = initialState;
 		this.clearSchedulersAndTimeouts();
 
-		this.accumulatedEvents = [];
+		this.accumulatedMessages = [];
 		this.isLoading = isLoading;
 		this.isError = isError;
 		this.isEndReached = isEndReached;
-		this.fetchedEventsCount = 0;
+		this.fetchedMessagesCount = 0;
 	};
 
 	private clearSchedulersAndTimeouts = (): void => {

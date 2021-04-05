@@ -15,11 +15,13 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useWorkspaceEventStore, useParentEvents } from '../../../hooks';
 import EventCardHeader from '../EventCardHeader';
 import EventDetailInfoCard from '../EventDetailInfoCard';
 import { EventTreeNode } from '../../../models/EventAction';
+import useEventsDataStore from '../../../hooks/useEventsDataStore';
 
 interface Props {
 	eventTreeNode: EventTreeNode;
@@ -29,6 +31,7 @@ interface Props {
 function DetailedFlatEventCard(props: Props) {
 	const { eventTreeNode, parentNodes } = props;
 	const eventWindowStore = useWorkspaceEventStore();
+	const eventsDataStore = useEventsDataStore();
 
 	const { selectedParentEvent, setSelectedNode, selectedNode } = useParentEvents(
 		eventTreeNode,
@@ -39,8 +42,12 @@ function DetailedFlatEventCard(props: Props) {
 	const event = selectedNode === null ? eventWindowStore.selectedEvent : selectedParentEvent;
 	const node = selectedNode === null ? eventWindowStore.selectedNode : selectedNode;
 
+	const children = computed(() =>
+		node ? eventsDataStore.parentChildrensMap.get(node.eventId) || [] : [],
+	).get();
+
 	return (
-		<EventDetailInfoCard node={node!} event={event} childrenCount={selectedNode?.childList.length}>
+		<EventDetailInfoCard node={node!} event={event} childrenCount={children.length}>
 			{parentNodes.length > 0 && (
 				<div className='event-detail-info__parents'>
 					{parentNodes.map(eventNode => (

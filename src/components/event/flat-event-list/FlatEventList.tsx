@@ -83,7 +83,7 @@ function FlatEventList({ nodes }: Props) {
 		);
 	};
 
-	if (eventWindowStore.eventTree.length === 0) {
+	if (eventDataStore.rootEventIds.length === 0) {
 		if (eventDataStore.isLoadingRootEvents) {
 			return <SplashScreen />;
 		}

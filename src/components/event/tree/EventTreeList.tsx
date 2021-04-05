@@ -24,11 +24,9 @@ import StateSaverProvider from '../../util/StateSaverProvider';
 import { useWorkspaceEventStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
 import { EventTreeNode } from '../../../models/EventAction';
-import { timestampToNumber } from '../../../helpers/date';
 import { EventListFooter, EventListHeader } from '../EventListNavigation';
 import '../../../styles/action.scss';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
-import { isEventNode } from '../../../helpers/event';
 
 interface Props {
 	nodes: EventTreeNode[];
@@ -55,90 +53,26 @@ function EventTreeList({ nodes }: Props) {
 		}
 	}, [eventWindowStore.scrolledIndex]);
 
-	const getTimestamps = (eventNodes: EventTreeNode[], selectedPath: EventTreeNode[]) => {
-		if (!eventNodes.length || !selectedPath.length) return null;
-
-		const selectedRootEventId = selectedPath[0].eventId;
-		const rootEventIndex = eventNodes.findIndex(e => e.eventId === selectedRootEventId);
-
-		const timestamps = {
-			startEventId: selectedRootEventId,
-			startTimestamp: timestampToNumber(eventNodes[rootEventIndex].startTimestamp),
-			endEventId: selectedRootEventId,
-			endTimestamp: timestampToNumber(eventNodes[rootEventIndex].startTimestamp),
-		};
-
-		if (
-			eventNodes[rootEventIndex].childList.length &&
-			eventNodes[rootEventIndex + 1] &&
-			eventNodes[rootEventIndex + 1].parentId === selectedRootEventId
-		) {
-			timestamps.startTimestamp = timestampToNumber(eventNodes[rootEventIndex + 1].startTimestamp);
-			timestamps.endTimestamp = timestamps.startTimestamp;
-
-			for (
-				let i = rootEventIndex + 1;
-				eventNodes[i] && eventNodes[i].parents![0] === selectedRootEventId;
-				i++
-			) {
-				timestamps.endEventId = eventNodes[i].eventId;
-
-				if (eventNodes[i].parents?.length === 1) {
-					const eventTimestamp = timestampToNumber(eventNodes[i].startTimestamp);
-
-					if (eventTimestamp < timestamps.startTimestamp) {
-						timestamps.startTimestamp = eventTimestamp;
-					}
-
-					if (eventTimestamp > timestamps.endTimestamp) {
-						timestamps.endTimestamp = eventTimestamp;
-					}
-				}
-			}
-		}
-
-		return timestamps;
-	};
-
-	const timestamps = getTimestamps(nodes, eventWindowStore.selectedPath);
-
 	const computeKey = (index: number) => nodes[index].eventId;
 
 	const renderEvent = (index: number): React.ReactElement => {
 		const node = nodes[index];
 
 		let isLastChild = false;
+		let parentHasMoreChilds = false;
 
-		if (!eventDataStore.isLoadingRootEvents) {
-			const parentNode =
-				node.parentId !== null ? eventDataStore.rootNodesMap.get(node.parentId) : null;
-
-			if (parentNode && isEventNode(parentNode)) {
-				isLastChild =
-					parentNode.childList[parentNode.childList.length - 1].eventId === node.eventId;
-			}
+		if (node.parentId !== null) {
+			const siblings = eventDataStore.parentChildrensMap.get(node.parentId) || [];
+			isLastChild = siblings.length > 0 && siblings[siblings.length - 1].eventId === node.eventId;
+			parentHasMoreChilds = eventDataStore.hasUnloadedChildren.get(node.parentId) === true;
 		}
-
-		const parentHasMoreChilds =
-			node.parentId !== null ? !!eventDataStore.unloadedChildsCountMap.get(node.parentId) : false;
 
 		const showLoadButton = isLastChild && parentHasMoreChilds;
 
-		return (
-			<EventTree
-				eventTreeNode={node}
-				startTimestamp={
-					timestamps?.startEventId === nodes[index].eventId ? timestamps.startTimestamp : undefined
-				}
-				endTimestamp={
-					timestamps?.endEventId === nodes[index].eventId ? timestamps.endTimestamp : undefined
-				}
-				showLoadButton={showLoadButton}
-			/>
-		);
+		return <EventTree eventTreeNode={node} showLoadButton={showLoadButton} />;
 	};
 
-	if (eventWindowStore.eventTree.length === 0) {
+	if (eventDataStore.rootEventIds.length === 0) {
 		if (eventDataStore.isLoadingRootEvents) {
 			return <SplashScreen />;
 		}

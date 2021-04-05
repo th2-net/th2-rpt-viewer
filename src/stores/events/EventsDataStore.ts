@@ -14,217 +14,254 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable } from 'mobx';
+import { action, observable, reaction, runInAction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
-import { timestampToNumber } from '../../helpers/date';
 import {
 	convertEventActionToEventTreeNode,
+	sortEventsByTimestamp,
 	getErrorEventTreeNode,
 	isEventNode,
 } from '../../helpers/event';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { SSEEventChannel } from '../messages/SSEEventChannel';
+import { EventTreeNode } from '../../models/EventAction';
+import { EventSSELoader } from './EventSSELoader';
 import notificationsStore from '../NotificationsStore';
 import EventsFilterStore from './EventsFilterStore';
 import EventsStore from './EventsStore';
-
-const EVENTS_CHILD_LIST_GAP = 50;
+import { timestampToNumber } from '../../helpers/date';
 
 export default class EventsDataStore {
+	/*
+		During initial loading all children events over this value will be ingored
+	*/
+	private CHUNK_SIZE = 50;
+
 	constructor(
 		private eventStore: EventsStore,
 		private filterStore: EventsFilterStore,
 		private api: ApiSchema,
-	) {}
+	) {
+		reaction(() => this.rootEventIds, this.onRootEventIdsChange);
+	}
 
-	eventTreeEventSource: EventSource | null = null;
+	eventTreeEventSource: EventSSELoader | null = null;
 
-	@observable comingEventsMap: Map<string, EventTreeNode | boolean> = new Map();
+	@observable
+	public eventsCache: Map<string, EventTreeNode> = new Map();
 
-	@observable eventsByParentIdMap: Map<string, Array<EventTreeNode>> = new Map();
+	@observable
+	public parentChildrensMap: Map<string, EventTreeNode[]> = new Map();
 
-	@observable unloadedChildsCountMap: Map<string, number> = new Map();
+	@observable
+	public loadingParentEvents: Map<string, boolean> = new Map();
 
-	@observable isLoadingRootEvents = false;
+	@observable
+	public isLoadingChildren: Map<string, boolean> = new Map();
 
-	@observable isLoadingSelectedEvent = false;
+	@observable
+	public isLoadingRootEvents = false;
 
-	@observable isLoadingParentChilds = false;
+	@observable
+	public isLoadingSelectedEvent = false;
 
-	@observable isError = false;
+	@observable
+	public isError = false;
 
-	@observable rootNodesMap: Map<string, EventTreeNode> = new Map();
+	@observable
+	public hasUnloadedChildren: Map<string, boolean> = new Map();
 
-	private loadingRootNodes: Promise<EventAction>[] = [];
+	@observable
+	public rootEventIds: string[] = [];
+
+	@action
+	private onRootEventIdsChange = (rootEventIds: string[]) => {
+		if (rootEventIds.length && this.isLoadingRootEvents) {
+			this.isLoadingRootEvents = false;
+		}
+
+		// TODO: expand selected path
+	};
 
 	@action
 	public fetchEventTree = () => {
-		return new Promise<void>((res, rej) => {
-			if (this.eventTreeEventSource) {
-				this.eventTreeEventSource.close();
-			}
-			this.isError = false;
-			this.eventStore.selectedNode = null;
+		try {
 			this.isLoadingRootEvents = true;
-			this.eventStore.eventTree = [];
+			this.eventTreeEventSource = new EventSSELoader(
+				{
+					startTimestamp: this.filterStore.filter.timestampFrom,
+					endTimestamp: this.filterStore.filter.timestampTo,
+					'name-values': this.filterStore.filter.names,
+					'type-values': this.filterStore.filter.eventTypes,
+				},
+				{
+					onResponse: this.handleIncomingEventTreeNodes,
+					onError: this.onEventTreeFetchError,
+				},
+			);
 
-			try {
-				this.eventTreeEventSource = this.api.sse.getEventSource({
-					type: 'event',
-					queryParams: {
-						startTimestamp: this.filterStore.filter.timestampFrom,
-						endTimestamp: this.filterStore.filter.timestampTo,
-						'name-values': this.filterStore.filter.names,
-						'type-values': this.filterStore.filter.eventTypes,
-					},
-				});
+			this.eventTreeEventSource.subscribe();
+		} catch (error) {
+			this.resetEventsTreeState({ isError: true });
+		}
+	};
 
-				this.eventTreeEventSource.addEventListener('error', this.onEventTreeFetchError);
+	@action
+	private handleIncomingEventTreeNodes = (events: EventTreeNode[]) => {
+		const newEntries: [string, EventTreeNode][] = events.map(event => [event.eventId, event]);
+		const eventsMap: Map<string, EventTreeNode> = observable.map(
+			new Map([...this.eventsCache, ...newEntries]),
+			{ deep: false },
+		);
+		this.eventsCache = eventsMap;
 
-				this.eventTreeEventSource.addEventListener('event', this.handleComingEvent);
+		const eventsByParentId: { [eventId: string]: EventTreeNode[] } = {};
+		const rootEvents: EventTreeNode[] = [];
 
-				this.eventTreeEventSource.addEventListener('close', async () => {
-					await Promise.all(this.loadingRootNodes);
-					setTimeout(() => {
-						if (this.eventTreeEventSource) {
-							this.eventTreeEventSource.close();
-						}
-						this.isLoadingRootEvents = false;
-						this.comingEventsMap.clear();
-						this.eventsByParentIdMap.clear();
-						this.loadingRootNodes = [];
-						res();
-					}, 0);
-				});
-			} catch (error) {
-				if (this.eventTreeEventSource) {
-					this.eventTreeEventSource.close();
-				}
-				this.isError = true;
-				this.eventStore.eventTree = [];
-				this.comingEventsMap.clear();
-				this.eventsByParentIdMap.clear();
-				this.eventStore.isExpandedMap.clear();
-				this.isLoadingRootEvents = false;
-				console.error('Error while loading root events', error);
-				rej(error);
+		for (let i = 0; i < events.length; i++) {
+			const event = events[i];
+			if (event.parentId === null) {
+				rootEvents.push(event);
+			} else {
+				eventsByParentId[event.parentId] = (eventsByParentId[event.parentId] || []).concat(event);
+			}
+		}
+
+		this.parentChildrensMap = observable.map(
+			new Map([...this.parentChildrensMap, ...Object.entries(eventsByParentId)]),
+		);
+
+		this.rootEventIds = [...this.rootEventIds, ...rootEvents.map(({ eventId }) => eventId)];
+
+		Object.keys(eventsByParentId).forEach(notLoadedParentId => {
+			let eventsChildren = (this.parentChildrensMap.get(notLoadedParentId) || []).concat(
+				eventsByParentId[notLoadedParentId],
+			);
+			if (eventsChildren.length > this.CHUNK_SIZE) {
+				eventsChildren = eventsChildren.slice(0, this.CHUNK_SIZE);
+				this.hasUnloadedChildren.set(notLoadedParentId, true);
+			}
+			this.parentChildrensMap.set(notLoadedParentId, eventsChildren);
+			if (!this.loadingParentEvents.get(notLoadedParentId)) {
+				this.loadParentNodes(notLoadedParentId);
+				this.loadingParentEvents.set(notLoadedParentId, true);
 			}
 		});
 	};
 
 	@action
 	private onEventTreeFetchError = (e: Event) => {
-		if (e instanceof MessageEvent) {
-			const errorData = JSON.parse(e.data);
-			notificationsStore.addResponseError({
-				type: 'error',
-				header: errorData.exceptionName,
-				resource: e.target instanceof EventSource ? e.target.url : e.origin,
-				responseBody: errorData.exceptionCause,
-				responseCode: null,
+		notificationsStore.handleSSEError(e);
+		this.resetEventsTreeState({ isError: true });
+	};
+
+	private parentNodesLoaderAC: AbortController | null = null;
+
+	@action
+	private loadParentNodes = async (parentId: string) => {
+		try {
+			this.parentNodesLoaderAC = new AbortController();
+			const parentEvents = await this.api.events.getEventParents(
+				parentId,
+				this.parentNodesLoaderAC.signal,
+			);
+
+			const parentNodes = parentEvents.map(convertEventActionToEventTreeNode);
+			runInAction(() => {
+				/*
+					api.events.getEventParents won't throw an error if it fails to load one of parent events
+					it will stop on error and return event chain that already have been loaded
+					If it fails to load parent node we should create 'Unknown event'
+				*/
+				let rootNode = parentNodes[0];
+				if (!rootNode || rootNode.parentId !== null) {
+					const unknownParentNodeId = rootNode?.parentId || parentId;
+					const unknownParentNodeChildren = this.parentChildrensMap.get(unknownParentNodeId) || [];
+
+					rootNode = getErrorEventTreeNode(unknownParentNodeId, unknownParentNodeChildren);
+
+					parentNodes.unshift(rootNode);
+				}
+
+				parentNodes.forEach(parentNode => {
+					this.eventsCache.set(parentNode.eventId, parentNode);
+					if (parentNode.parentId !== null) {
+						this.parentChildrensMap.set(parentNode.parentId, [parentNode]);
+					}
+					this.loadingParentEvents.delete(parentNode.eventId);
+				});
+
+				if (!this.rootEventIds.includes(rootNode.eventId)) {
+					this.rootEventIds.push(rootNode.eventId);
+				}
 			});
-			if (this.eventTreeEventSource) {
-				this.eventTreeEventSource.close();
-			}
-			this.isError = true;
-			this.eventStore.eventTree = [];
-			this.comingEventsMap.clear();
-			this.eventsByParentIdMap.clear();
-			this.eventStore.isExpandedMap.clear();
-			this.isLoadingRootEvents = false;
+		} catch (error) {
+			const unknownParentNodeChildren = this.parentChildrensMap.get(parentId) || [];
+			const uknownRootNode = getErrorEventTreeNode(parentId, unknownParentNodeChildren);
+			this.eventsCache.set(parentId, uknownRootNode);
+			this.rootEventIds.push(parentId);
+		}
+	};
+
+	private loadingChildrenMap: { [parentId: string]: EventSSELoader } = {};
+
+	@action
+	public loadMoreChilds = (parentId: string) => {
+		const parentNode = this.eventsCache.get(parentId);
+
+		if (parentNode) {
+			const eventsChildren = this.parentChildrensMap.get(parentId);
+			if (!eventsChildren || !this.hasUnloadedChildren.get(parentId)) return;
+
+			this.isLoadingChildren.set(parentId, true);
+
+			const sortedChildren = sortEventsByTimestamp(eventsChildren, 'asc');
+			const lastChild = sortedChildren[sortedChildren.length - 1];
+
+			this.loadingChildrenMap[parentId] = new EventSSELoader(
+				{
+					startTimestamp: timestampToNumber(lastChild.startTimestamp),
+					endTimestamp: this.filterStore.filter.timestampTo,
+					'name-values': this.filterStore.filter.names,
+					'type-values': this.filterStore.filter.eventTypes,
+					parentEvent: parentId,
+					resumeFromId: lastChild?.eventId,
+					resultCountLimit: this.CHUNK_SIZE + 1,
+				},
+				{
+					onError: this.onEventTreeFetchError,
+					onResponse: events => this.onEventChildrenLoad(events, parentId),
+					onClose: events => this.onEventChildrenLoadEnd(events, parentId),
+				},
+				{
+					chunkSize: this.CHUNK_SIZE + 1,
+				},
+			);
+			this.loadingChildrenMap[parentId].subscribe();
 		}
 	};
 
 	@action
-	private handleComingEvent = (e: Event) => {
-		const event = observable(JSON.parse((e as MessageEvent).data) as EventTreeNode);
-		const savedEvent = this.comingEventsMap.get(event.eventId);
-		if (savedEvent !== undefined && typeof savedEvent !== 'boolean') return;
-		this.comingEventsMap.set(event.eventId, event);
+	private onEventChildrenLoad = (events: EventTreeNode[], parentId: string) => {
+		const parentNode = this.eventsCache.get(parentId);
+		if (!parentNode) return;
 
-		const hasParent = event.parentId !== 'null';
-		const parentEvent =
-			hasParent && event.parentId !== null ? this.comingEventsMap.get(event.parentId) : null;
-
-		if (parentEvent) {
-			if (parentEvent === true) {
-				const accumulatedEventsByParentId = event.parentId
-					? this.eventsByParentIdMap.get(event.parentId)
-					: null;
-				if (accumulatedEventsByParentId) {
-					accumulatedEventsByParentId.push(event);
-				} else if (event.parentId) {
-					this.eventsByParentIdMap.set(event.parentId, [event]);
-				}
-			} else {
-				this.attachChildsToParent(parentEvent, [event]);
-			}
-			return;
-		}
-		if (hasParent) {
-			this.loadRootEvent(event);
-			return;
-		}
-		this.eventStore.eventTree.push(event);
+		const childList = this.parentChildrensMap.get(parentId) || [];
+		this.parentChildrensMap.set(parentId, [...childList, ...events]);
 	};
 
 	@action
-	private loadRootEvent = async (childEvent: EventTreeNode) => {
-		const api = this.api;
-		const comingEventsMap = this.comingEventsMap;
-		const loadingRootNodes = this.loadingRootNodes;
-		const attachChildsToParent = this.attachChildsToParent;
-		// eslint-disable-next-line consistent-return, func-names
-		const parentEventGenerator = async function* (event: EventTreeNode) {
-			let loadedEvent = event;
+	private onEventChildrenLoadEnd = (events: EventTreeNode[], parentId: string) => {
+		const childList = this.parentChildrensMap.get(parentId) || [];
 
-			while (loadedEvent.parentId !== null) {
-				if (comingEventsMap.has(loadedEvent.parentId)) return null;
-
-				comingEventsMap.set(loadedEvent.parentId, true);
-				try {
-					const promise = api.events.getEvent(loadedEvent.parentId);
-					loadingRootNodes.push(promise);
-					loadedEvent = observable(
-						convertEventActionToEventTreeNode(
-							// eslint-disable-next-line no-await-in-loop
-							await promise,
-						),
-					);
-				} catch {
-					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					loadedEvent = observable(getErrorEventTreeNode(loadedEvent.parentId!, [loadedEvent]));
-				}
-				const savedEvent = comingEventsMap.get(loadedEvent.eventId);
-				if (savedEvent === undefined || typeof savedEvent === 'boolean') {
-					comingEventsMap.set(loadedEvent.eventId, loadedEvent);
-				} else {
-					attachChildsToParent(savedEvent, loadedEvent.childList);
-					loadedEvent = savedEvent;
-					yield null;
-				}
-				yield loadedEvent;
-			}
-			return null;
-		};
-
-		let previousChildEvent = childEvent;
-
-		for await (const loadedEvent of parentEventGenerator(childEvent)) {
-			if (loadedEvent) {
-				this.attachChildsToParent(loadedEvent, [previousChildEvent]);
-				const loadedChildren = this.eventsByParentIdMap.get(loadedEvent.eventId);
-
-				if (loadedChildren) {
-					this.attachChildsToParent(loadedEvent, loadedChildren);
-					this.eventsByParentIdMap.delete(loadedEvent.eventId);
-				}
-				previousChildEvent = loadedEvent;
-				if (loadedEvent.parentId === null) {
-					this.eventStore.eventTree.push(loadedEvent);
-				}
-			}
+		if ((childList.length + events.length) % this.CHUNK_SIZE === 1) {
+			this.hasUnloadedChildren.set(parentId, true);
+			childList.pop();
+		} else {
+			this.hasUnloadedChildren.set(parentId, false);
 		}
+
+		this.onEventChildrenLoad(events, parentId);
+
+		this.isLoadingChildren.set(parentId, false);
 	};
 
 	private detailedEventAC: AbortController | null = null;
@@ -252,72 +289,61 @@ export default class EventsDataStore {
 	};
 
 	@action
-	public loadMoreChilds = (parentId: string) => {
-		const parentNode = this.rootNodesMap.get(parentId);
+	private resetEventsTreeState = (
+		initialState: Partial<{ isError: boolean; isLoading: boolean }> = {},
+	) => {
+		const { isError = false, isLoading = false } = initialState;
 
-		if (parentNode && isEventNode(parentNode)) {
-			this.isLoadingParentChilds = true;
-
-			const eventsParentChannel = new SSEEventChannel(
-				{
-					startTimestamp: timestampToNumber(
-						parentNode.childList[parentNode.childList.length - 1].startTimestamp,
-					),
-					endTimestamp: this.filterStore.filter.timestampTo,
-					'name-values': this.filterStore.filter.names,
-					'type-values': this.filterStore.filter.eventTypes,
-					parentEvent: parentId,
-				},
-				events => {
-					const childList = events.splice(1, EVENTS_CHILD_LIST_GAP);
-					parentNode.childList.push(...childList);
-					const unloadedCount =
-						(this.unloadedChildsCountMap.get(parentNode.eventId) ?? 0) - childList.length;
-					this.unloadedChildsCountMap.set(parentNode.eventId, unloadedCount);
-					this.isLoadingParentChilds = false;
-				},
-				e => {
-					this.eventStore.eventTree = [];
-					this.eventStore.isExpandedMap.clear();
-					this.isLoadingRootEvents = false;
-					console.error('Error while loading root events', e);
-				},
-				{
-					chunkSize: EVENTS_CHILD_LIST_GAP + 1,
-				},
-			);
-			eventsParentChannel.subscribe();
+		if (this.eventTreeEventSource) {
+			this.eventTreeEventSource.stop();
+			this.eventTreeEventSource = null;
 		}
+
+		const pendingChildrenLoaders = Object.values(this.loadingChildrenMap);
+		pendingChildrenLoaders.forEach(loader => loader.stop());
+
+		this.loadingChildrenMap = {};
+
+		if (this.parentNodesLoaderAC) {
+			this.parentNodesLoaderAC.abort();
+			this.parentNodesLoaderAC = null;
+		}
+
+		this.isLoadingRootEvents = isLoading;
+		this.isError = isError;
+		this.eventsCache.clear();
+		this.parentChildrensMap.clear();
+		this.loadingParentEvents.clear();
+		this.isLoadingChildren.clear();
+		this.eventStore.isExpandedMap.clear();
 	};
 
-	@action
-	private attachChildsToParent = (parent: EventTreeNode, childList: EventTreeNode[]) => {
-		const loadedChunks =
-			parent.childList.length <= 50
-				? 0
-				: Math.floor(parent.childList.length / EVENTS_CHILD_LIST_GAP);
-		const availableSpace = parent.childList.length - EVENTS_CHILD_LIST_GAP * loadedChunks;
-
-		if (availableSpace < EVENTS_CHILD_LIST_GAP) {
-			const remainingSpace = EVENTS_CHILD_LIST_GAP - availableSpace;
-
-			if (childList.length < remainingSpace) {
-				parent.childList.push(...childList);
-				this.unloadedChildsCountMap.set(parent.eventId, 0);
-			} else {
-				const unloadedCount =
-					(this.unloadedChildsCountMap.get(parent.eventId) ?? 0) +
-					childList.length -
-					remainingSpace;
-				this.unloadedChildsCountMap.set(parent.eventId, unloadedCount);
-				parent.childList.push(...childList.splice(0, remainingSpace));
-			}
-			this.rootNodesMap.set(parent.eventId, parent);
-		} else {
-			this.unloadedChildsCountMap.set(
-				parent.eventId,
-				(this.unloadedChildsCountMap.get(parent.eventId) ?? 0) + childList.length,
-			);
+	private getNodesList = (
+		eventTreeNode: EventTreeNode,
+		parents: string[] = [],
+	): EventTreeNode[] => {
+		if (this.eventStore.isExpandedMap.get(eventTreeNode.eventId)) {
+			const children = this.parentChildrensMap.get(eventTreeNode.eventId) || [];
+			return [
+				eventTreeNode,
+				...sortEventsByTimestamp(children, 'asc').flatMap(eventNode =>
+					this.getNodesList(eventNode, [...parents, eventTreeNode.eventId]),
+				),
+			];
 		}
+
+		return [eventTreeNode];
 	};
+
+	public getParents(eventId: string): EventTreeNode[] {
+		let event = this.eventsCache.get(eventId);
+		const path = [];
+
+		while (event && event?.parentId !== null) {
+			event = this.eventsCache.get(event.parentId);
+			path.unshift(event);
+		}
+
+		return path.filter(isEventNode);
+	}
 }

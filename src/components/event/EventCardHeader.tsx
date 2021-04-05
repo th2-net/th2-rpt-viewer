@@ -96,8 +96,6 @@ function EventCardHeader({
 		eventStore.setHoveredEvent(null);
 	};
 
-	const hasUnloadedChildren = !!eventStore.eventDataStore.unloadedChildsCountMap.get(event.eventId);
-
 	return (
 		<div
 			className={rootClassName}
@@ -126,7 +124,11 @@ function EventCardHeader({
 			{displayType !== CardDisplayType.STATUS_ONLY &&
 				childrenCount !== undefined &&
 				childrenCount > 0 && (
-					<Chip text={childrenCount.toString().concat(hasUnloadedChildren ? '+' : '')} />
+					<Chip
+						text={childrenCount
+							.toString()
+							.concat(eventStore.eventDataStore.hasUnloadedChildren.get(event.eventId) ? '+' : '')}
+					/>
 				)}
 			<div className={bookmarkClassName} onClick={onPinClicked} />
 		</div>

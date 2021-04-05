@@ -42,6 +42,7 @@ export interface EventApiSchema {
 		queryParams?: Record<string, string | number | boolean | null | string[]>,
 	) => Promise<EventAction>;
 	getEventsByName: (timeRange: TimeRange, name: string, eventId?: string) => Promise<string[]>;
+	getEventParents: (parentId: string, abortSignal?: AbortSignal) => Promise<EventAction[]>;
 }
 
 export interface MessageApiSchema {

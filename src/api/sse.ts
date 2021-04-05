@@ -55,6 +55,7 @@ export interface EventSSEParams extends BaseSSEParams {
 	'type-negative'?: boolean;
 	'name-values'?: string[];
 	'name-negative'?: boolean;
+	resumeFromId?: string;
 }
 
 export interface MessagesSSEParams extends BaseSSEParams {

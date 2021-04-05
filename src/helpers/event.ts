@@ -149,3 +149,7 @@ export const getErrorEventTreeNode = (
 		parents: undefined,
 	};
 };
+
+export function getEventParentId(e: EventTreeNode | EventAction) {
+	return isEventNode(e) ? e.parentId : e.parentEventId;
+}

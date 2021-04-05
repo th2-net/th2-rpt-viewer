@@ -17,11 +17,10 @@
 
 import { action, observable, when } from 'mobx';
 import api from '../../api';
-import { SSEChannelType } from '../../api/ApiSchema';
-import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
-import { isEventMessage } from '../../helpers/event';
+import { EventSSEParams } from '../../api/sse';
+import { isEventNode } from '../../helpers/event';
 import { getObjectKeys } from '../../helpers/object';
-import { EventMessage } from '../../models/EventMessage';
+import { EventTreeNode } from '../../models/EventAction';
 
 type WhenPromise = Promise<void> & {
 	cancel(): void;
@@ -33,12 +32,18 @@ type SSEChannelOptions = Partial<{
 	initialResponseTimeoutMs: number;
 }>;
 
-export class SSEMessageChannel {
+interface SSEEventListeners {
+	onResponse: (events: EventTreeNode[]) => void;
+	onClose?: (events: EventTreeNode[]) => void;
+	onError: (event: Event) => void;
+}
+
+export class EventSSELoader {
 	private channel: EventSource | null = null;
 
-	private accumulatedMessages: EventMessage[] = [];
+	private accumulatedEvents: EventTreeNode[] = [];
 
-	private chunkSize = 20;
+	private chunkSize = 10;
 
 	private initialResponseTimeout: number | null = null;
 
@@ -50,7 +55,7 @@ export class SSEMessageChannel {
 
 	private updateSchedulerIntervalMs = 1000;
 
-	private fetchedMessagesCount = 0;
+	private fetchedEventsCount = 0;
 
 	@observable
 	public isError = false;
@@ -58,14 +63,12 @@ export class SSEMessageChannel {
 	@observable
 	public isLoading = false;
 
-	@observable isEndReached = false;
+	@observable
+	public isEndReached = false;
 
 	constructor(
-		private type: SSEChannelType,
-		private queryParams: MessagesSSEParams,
-		private onResponse: (messages: EventMessage[]) => void,
-		private onError: (event: Event) => void,
-		private onKeepAliveResponse?: (event: SSEHeartbeat) => void,
+		private queryParams: EventSSEParams,
+		private eventListeners: SSEEventListeners,
 		options?: SSEChannelOptions,
 	) {
 		if (options) {
@@ -86,9 +89,13 @@ export class SSEMessageChannel {
 
 		if (this.fetchedChunkSubscription == null) {
 			const chunk = this.getNextChunk();
-			this.onResponse(chunk);
+			if (this.eventListeners.onClose) {
+				this.eventListeners.onClose(chunk);
+			} else {
+				this.eventListeners.onResponse(chunk);
+			}
 			this.resetSSEState({
-				isEndReached: this.fetchedMessagesCount === 0,
+				isEndReached: this.fetchedEventsCount !== this.chunkSize,
 			});
 		}
 	};
@@ -100,25 +107,17 @@ export class SSEMessageChannel {
 		this.clearFetchedChunkSubscription();
 
 		this.isError = true;
-		this.onError(event);
-	};
-
-	@action
-	private _onKeepAliveResponse = (event: Event) => {
-		if (this.onKeepAliveResponse) {
-			const keepAlive = JSON.parse((event as MessageEvent).data) as SSEHeartbeat;
-
-			if (keepAlive.timestamp !== 0) {
-				this.onKeepAliveResponse(keepAlive);
-			}
-		}
+		this.eventListeners.onError(event);
 	};
 
 	private onSSEResponse = (ev: Event) => {
 		const data = JSON.parse((ev as MessageEvent).data);
-		if (isEventMessage(data)) {
-			this.fetchedMessagesCount += 1;
-			this.accumulatedMessages.push(data);
+		if (isEventNode(data)) {
+			if (data.parentId === 'null') {
+				data.parentId = null;
+			}
+			this.fetchedEventsCount += 1;
+			this.accumulatedEvents.push(data);
 		}
 	};
 
@@ -126,23 +125,7 @@ export class SSEMessageChannel {
 		Returns a promise within initialResponseTimeoutMs or successfull fetch
 		and subscribes on changes 
 	*/
-	public loadAndSubscribe = async (resumeFromId?: string): Promise<EventMessage[]> => {
-		this.initConnection(resumeFromId);
-
-		const messagesChunk = await Promise.race([
-			this.getInitialResponseWithinTimeout(this.initialResponseTimeoutMs),
-			this.getFetchedChunk(),
-		]);
-
-		return messagesChunk;
-	};
-
-	public subscribe = (resumeFromId?: string): void => {
-		this.initConnection(resumeFromId);
-		this.initUpdateScheduler();
-	};
-
-	private initConnection = (resumeFromId?: string): void => {
+	public loadAndSubscribe = async (resumeFromId?: string): Promise<EventTreeNode[]> => {
 		this.closeChannel();
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
@@ -153,16 +136,43 @@ export class SSEMessageChannel {
 				resumeFromId,
 				resultCountLimit: this.chunkSize,
 			},
-			type: this.type,
+			type: 'event',
 		});
 
-		this.channel.addEventListener('message', this.onSSEResponse);
+		this.channel.addEventListener('event', this.onSSEResponse);
 		this.channel.addEventListener('close', this._onClose);
 		this.channel.addEventListener('error', this._onError);
-		this.channel.addEventListener('keep_alive', this._onKeepAliveResponse);
+
+		const eventsChunk = await Promise.race([
+			this.getInitialResponseWithinTimeout(this.initialResponseTimeoutMs),
+			this.getFetchedChunk(),
+		]);
+
+		return eventsChunk;
 	};
 
-	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
+	public subscribe = (): void => {
+		this.closeChannel();
+		this.resetSSEState({
+			isLoading: true,
+		});
+		this.clearFetchedChunkSubscription();
+
+		this.channel = api.sse.getEventSource({
+			queryParams: {
+				...this.queryParams,
+			},
+			type: 'event',
+		});
+
+		this.channel.addEventListener('event', this.onSSEResponse);
+		this.channel.addEventListener('close', this._onClose);
+		this.channel.addEventListener('error', this._onError);
+
+		this.initUpdateScheduler();
+	};
+
+	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventTreeNode[]> => {
 		return new Promise(res => {
 			this.initialResponseTimeout = window.setTimeout(() => {
 				res(this.getNextChunk());
@@ -177,12 +187,12 @@ export class SSEMessageChannel {
 			const nextChunk = this.getNextChunk();
 
 			if (nextChunk.length !== 0) {
-				this.onResponse(nextChunk);
+				this.eventListeners.onResponse(nextChunk);
 			}
 		}, this.updateSchedulerIntervalMs);
 	};
 
-	private getFetchedChunk = async (): Promise<EventMessage[]> => {
+	private getFetchedChunk = async (): Promise<EventTreeNode[]> => {
 		this.fetchedChunkSubscription = when(() => !this.isLoading);
 		await this.fetchedChunkSubscription;
 		const nextChunk = this.getNextChunk();
@@ -196,8 +206,8 @@ export class SSEMessageChannel {
 		this.clearFetchedChunkSubscription();
 	};
 
-	private getNextChunk = (chunkSize = this.accumulatedMessages.length): EventMessage[] => {
-		let chunk = this.accumulatedMessages.splice(0, chunkSize);
+	private getNextChunk = (chunkSize = this.accumulatedEvents.length): EventTreeNode[] => {
+		let chunk = this.accumulatedEvents.splice(0, chunkSize);
 
 		if (this.queryParams.searchDirection === 'next') {
 			chunk = chunk.reverse();
@@ -217,11 +227,11 @@ export class SSEMessageChannel {
 		const { isLoading = false, isError = false, isEndReached = false } = initialState;
 		this.clearSchedulersAndTimeouts();
 
-		this.accumulatedMessages = [];
+		this.accumulatedEvents = [];
 		this.isLoading = isLoading;
 		this.isError = isError;
 		this.isEndReached = isEndReached;
-		this.fetchedMessagesCount = 0;
+		this.fetchedEventsCount = 0;
 	};
 
 	private clearSchedulersAndTimeouts = (): void => {
