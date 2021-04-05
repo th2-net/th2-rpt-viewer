@@ -41,13 +41,12 @@
 	grid-template-columns: 1fr 30px;
 	background-color: #fff;
 	border-radius: 6px;
-	padding: 7px 7px 7px 28px;
+	padding: 5px 7px 5px 30px;
 	border-width: 1px;
 	border-style: solid;
 	position: relative;
 	overflow: hidden;
 	margin-bottom: 6px;
-	cursor: pointer;
 
 	&__info {
 		overflow: hidden;
@@ -56,7 +55,8 @@
 			'name name'
 			'timestamp id';
 		grid-template-columns: auto 1fr;
-		gap: 3px 10px;
+		grid-template-rows: 15px auto;
+		gap: 2px 10px;
 	}
 
 	&__buttons {
@@ -70,7 +70,7 @@
 		background-color: transparent;
 		border: none;
 		outline: none;
-	
+
 		&-icon {
 			@include clickable;
 			@include icon(url(../../resources/icons/cross-icon.svg), 20px, 20px);
@@ -89,18 +89,31 @@
 		height: 20px;
 	}
 
-	&__name,
+	&__title,
 	&__timestamp {
 		@include ellipsis();
 	}
 
-	&__name {
-		grid-area: name;
+	&__title {
+		cursor: pointer;
 		white-space: nowrap;
 		font-weight: 600;
 		font-size: 12px;
 		line-height: 14px;
 		color: $graphAttachedItemNameColor;
+		transition: all 0.15s;
+		border-bottom: 1px solid transparent;
+
+		&:hover {
+			color: $bookmarkLinkHoverColor;
+			border-bottom: 1px solid $bookmarkLinkHoverColor;
+		}
+	}
+
+	&__name {
+		grid-area: name;
+		display: flex;
+		justify-content: flex-start;
 	}
 
 	&__timestamp,
@@ -141,7 +154,7 @@
 	}
 
 	&:not(:last-child) {
-		margin-bottom: 10px;
+		margin-bottom: 6px;
 	}
 
 	&.message {

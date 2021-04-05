@@ -170,13 +170,17 @@ $graphAttachedItemNameColor: #bc271a;
 $graphAttachedItemTimestampColor: #666666;
 
 $timestampInputBorderColor: #7a99b8;
-$workspaceLinkGetterColor: #3d668f;
+
 
 $eventCardIdColor: #595959;
 $eventTextColor: #f26c0d;
 $eventTextColorLight: #ffb266;
 
 $workspaceBackground: #eef2f6;
+$workspaceLinkGetterColor: #3d668f;
+$workspaceTabTextColor: $workspaceLinkGetterColor;
+$workspaceTabBackground: #cce6ff;
+$workspaceTabActiveBackground: #4d80b2;
 
 $expandIconBackgroundColor: rgba(0, 0, 0, 0.1);
 
@@ -190,3 +194,5 @@ $searchTextColor: white;
 $searchPanelColor: #adc2eb;
 $searchProgressBarColor: #9163db;
 $searchButtonColor: white;
+
+$bookmarkLinkHoverColor: #4d80b2;
