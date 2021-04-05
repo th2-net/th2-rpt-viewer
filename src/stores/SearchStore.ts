@@ -173,7 +173,10 @@ export class SearchStore {
 			},
 			searching: this.isSearching,
 			completed: this.completed,
-			processedObjectCount: this.currentSearch?.processedObjectCount || 0,
+			processedObjectCount: this.currentSearch?.processedObjectCount
+				? this.currentSearch.processedObjectCount.previous +
+				  this.currentSearch.processedObjectCount.next
+				: 0,
 		};
 	}
 

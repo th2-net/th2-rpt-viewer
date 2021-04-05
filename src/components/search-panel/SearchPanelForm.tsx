@@ -114,7 +114,14 @@ const SearchPanelForm = () => {
 		},
 	};
 
-	const { startTimestamp, completed, progress, timeLimits, timeIntervals } = searchProgress;
+	const {
+		startTimestamp,
+		completed,
+		progress,
+		timeLimits,
+		timeIntervals,
+		processedObjectCount,
+	} = searchProgress;
 
 	const progressBarConfig: SearchProgressBarConfig = {
 		isSearching,
@@ -155,6 +162,7 @@ const SearchPanelForm = () => {
 
 	const searchTimeLimitsConfig: SearchTimeLimitControlsConfig = {
 		isSearching,
+		completed: completed.previous && completed.next,
 		searchDirection: form.searchDirection,
 		disabled,
 		previousTimeLimit: {
@@ -173,6 +181,7 @@ const SearchPanelForm = () => {
 			setValue: nextValue => updateForm({ timeLimits: { ...timeLimits, next: nextValue } }),
 		},
 		progress: commonProgress,
+		processedObjectCount,
 		startSearch,
 		stopSearch,
 	};
