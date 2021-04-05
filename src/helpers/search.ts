@@ -39,7 +39,7 @@ export function getDefaultFilterState(info: SSEFilterInfo[]): FilterState | {} {
 		return {
 			...prev,
 			[curr.name]: curr.parameters.reduce((prevParams, currParam) => {
-				return { ...prevParams, [currParam.name]: getFilterParameterDefaultValue(currParam) };
+				return { ...prevParams, values: getFilterParameterDefaultValue(currParam) };
 			}, {}),
 		};
 	}, {});
