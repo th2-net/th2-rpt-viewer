@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React, { useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import {
 	DateTimeInputType,
 	DateTimeMask,
@@ -22,32 +23,41 @@ import {
 	TimeInputType,
 } from '../../models/filter/FilterInputs';
 import FilterRow from '../filter/row';
-import FilterDatetimeInput from '../filter/date-time-inputs/DateTimeInput';
 import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
 import { SearchPanelFormState } from '../../stores/SearchStore';
+import { useSearchStore } from '../../hooks/useSearchStore';
+import SearchPanelFilters from './SearchPanelFilters';
+import SearchTypeSwitcher from './search-form/SearchTypeSwitcher';
+import SearchDatetimeControl from './search-form/SearchDatetimeControl';
+import SearchProgressBar, { SearchProgressBarConfig } from './search-form/SearchProgressBar';
+import SearchTimeLimitControls, {
+	SearchTimeLimitControlsConfig,
+} from './search-form/SearchTimeLimitControls';
+import SearchResultCountLimit, {
+	ResultCountLimitConfig,
+} from './search-form/SearchResultCountLimit';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
-type DateInputProps = {
+export type DateInputProps = {
 	inputConfig: DateTimeInputType;
 };
 
-interface Props {
-	formType: 'event' | 'message';
-	form: SearchPanelFormState;
-	updateForm: (patch: Partial<SearchPanelFormState>) => void;
-	disabled: boolean;
-	messageSessions: string[] | null;
-}
-
-const SearchPanelForm = (props: Props) => {
-	const { disabled, updateForm, form, formType, messageSessions } = props;
+const SearchPanelForm = () => {
+	const {
+		isFormDisabled: disabled,
+		updateForm,
+		searchForm: form,
+		formType,
+		messageSessions,
+		filters,
+		startSearch,
+		stopSearch,
+		setFormType,
+		isSearching,
+		searchProgress,
+	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
-
-	const toggleSearchDirection = () => {
-		updateForm({
-			searchDirection: form.searchDirection === 'next' ? 'previous' : 'next',
-		});
-	};
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
@@ -61,25 +71,11 @@ const SearchPanelForm = (props: Props) => {
 		}
 	}
 
-	const commonFormConfig: FitlerRowItem[] = [
-		{
-			label: 'Result Count Limit',
-			value: !form.resultCountLimit ? '' : form.resultCountLimit.toString(),
-			setValue: updateCountLimit,
-			type: 'string',
-			disabled,
-			id: 'result-count-limit',
-		},
-		{
-			label: 'Search Direction',
-			value: form.searchDirection === 'next',
-			toggleValue: toggleSearchDirection,
-			disabled,
-			possibleValues: ['next', 'prev'],
-			type: 'toggler',
-			id: 'search-direction',
-		},
-	];
+	const resultCountLimitConfig: ResultCountLimitConfig = {
+		value: !form.resultCountLimit ? '' : form.resultCountLimit.toString(),
+		setValue: updateCountLimit,
+		disabled,
+	};
 
 	const eventsFormTypeConfig: FitlerRowItem = {
 		label: 'Parent Event',
@@ -102,10 +98,8 @@ const SearchPanelForm = (props: Props) => {
 		autocompleteList: messageSessions,
 	};
 
-	const config: FitlerRowItem[] =
-		formType === 'event'
-			? [...commonFormConfig, eventsFormTypeConfig]
-			: [...commonFormConfig, messagesFormTypeConfig];
+	const config: FitlerRowItem =
+		formType === 'event' ? eventsFormTypeConfig : messagesFormTypeConfig;
 
 	const startTimestampInput: DateInputProps = {
 		inputConfig: {
@@ -120,34 +114,94 @@ const SearchPanelForm = (props: Props) => {
 		},
 	};
 
-	const endTimestampInput: DateInputProps = {
-		inputConfig: {
-			id: 'endTimestamp',
-			value: form.endTimestamp,
-			disabled,
-			setValue: getFormStateUpdater('endTimestamp'),
-			type: TimeInputType.DATE_TIME,
-			dateMask: DateTimeMask.DATE_TIME_MASK,
-			placeholder: '',
-			inputMask: DATE_TIME_INPUT_MASK,
+	const { startTimestamp, completed, progress, timeLimits, timeIntervals } = searchProgress;
+
+	const progressBarConfig: SearchProgressBarConfig = {
+		isSearching,
+		searchDirection: form.searchDirection,
+		leftProgress: {
+			completed: completed.previous,
+			isInfinite: !timeLimits.previous,
+			progress: timeIntervals.previous ? (progress.previous / timeIntervals.previous) * 100 : 0,
+		},
+		rightProgress: {
+			completed: completed.next,
+			isInfinite: !timeLimits.next,
+			progress: timeIntervals.next ? (progress.next / timeIntervals.next) * 100 : 0,
 		},
 	};
 
+	let commonProgress: number | null = null;
+
+	if (
+		form.searchDirection === SearchDirection.Both &&
+		!progressBarConfig.leftProgress.isInfinite &&
+		!progressBarConfig.rightProgress.isInfinite
+	) {
+		commonProgress = Math.floor(
+			(progressBarConfig.leftProgress.progress + progressBarConfig.rightProgress.progress) / 2,
+		);
+	} else if (
+		form.searchDirection === SearchDirection.Previous &&
+		!progressBarConfig.leftProgress.isInfinite
+	) {
+		commonProgress = Math.floor(progressBarConfig.leftProgress.progress);
+	} else if (
+		form.searchDirection === SearchDirection.Next &&
+		!progressBarConfig.rightProgress.isInfinite
+	) {
+		commonProgress = Math.floor(progressBarConfig.rightProgress.progress);
+	}
+
+	const searchTimeLimitsConfig: SearchTimeLimitControlsConfig = {
+		isSearching,
+		searchDirection: form.searchDirection,
+		disabled,
+		previousTimeLimit: {
+			value:
+				isSearching && !timeLimits.previous && startTimestamp
+					? startTimestamp - progress.previous
+					: timeLimits.previous,
+			setValue: nextValue =>
+				updateForm({ timeLimits: { ...form.timeLimits, previous: nextValue } }),
+		},
+		nextTimeLimit: {
+			value:
+				isSearching && !timeLimits.next && startTimestamp
+					? startTimestamp + progress.next
+					: timeLimits.next,
+			setValue: nextValue => updateForm({ timeLimits: { ...timeLimits, next: nextValue } }),
+		},
+		progress: commonProgress,
+		startSearch,
+		stopSearch,
+	};
+
 	return (
-		<>
-			<div className='filter-row'>
-				<div className='filter-row__label'>Start Timestamp</div>
-				<FilterDatetimeInput {...startTimestampInput} />
+		<div className='search-panel__search-form search-form'>
+			<SearchDatetimeControl
+				form={form}
+				updateForm={updateForm}
+				startTimestampInput={startTimestampInput}
+				disabled={disabled || isSearching}
+			/>
+			<SearchProgressBar {...progressBarConfig} />
+			<SearchTimeLimitControls {...searchTimeLimitsConfig} />
+			<div className='search-panel__fields'>
+				<div className='filter-row'>
+					<div className='filter-row__label'>Search for</div>
+					<div className='search-type-config'>
+						<SearchTypeSwitcher formType={formType} setFormType={setFormType} disabled={disabled} />
+						<SearchResultCountLimit {...resultCountLimitConfig} />
+					</div>
+				</div>
+				<FilterRow rowConfig={config} />
 			</div>
-			<div className='filter-row'>
-				<div className='filter-row__label'>Time Limit</div>
-				<FilterDatetimeInput {...endTimestampInput} />
+			<div className='filters'>
+				{filters && filters.info.length > 0 && <SearchPanelFilters {...filters} />}
 			</div>
-			{config.map(rowConfig => (
-				<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
-			))}
-		</>
+		</div>
 	);
 };
 
-export default React.memo(SearchPanelForm);
+export default observer(SearchPanelForm);

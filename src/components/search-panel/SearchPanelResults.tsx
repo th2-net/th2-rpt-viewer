@@ -31,7 +31,7 @@ interface SearchPanelResultsProps {
 	showToggler: boolean;
 	next: () => void;
 	prev: () => void;
-	resultGroups: Array<Array<SearchResult>>;
+	resultGroups: [string, SearchResult[]][];
 	timestamp: number;
 	disabledRemove: boolean;
 }
@@ -52,7 +52,8 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	} = props;
 
 	function computeKey(index: number) {
-		const item = resultGroups[index][0] || 'key';
+		const [, results] = resultGroups[index];
+		const item = results[0];
 
 		return isEventNode(item) ? item.eventId : item.messageId;
 	}
@@ -79,10 +80,10 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 				</button>
 			</div>
 			<div className='search-results__list'>
-				{resultGroups.map((group, index) => (
+				{resultGroups.map(([_, results], index) => (
 					<SearchResultGroup
 						key={computeKey(index)}
-						results={group}
+						results={results}
 						onResultClick={onResultItemClick}
 						onGroupClick={onResultGroupClick}
 					/>

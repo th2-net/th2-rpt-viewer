@@ -76,7 +76,7 @@ $tableBodyBackground: #fff;
 $tableBodyBackgroundHighlighted: $tableHeaderBackground;
 
 $messageCardHoverBackground: #f3fafc;
-$attachedMessageColor: #1919E6;
+$attachedMessageColor: #1919e6;
 $highlightedMessageCardBackground: rgba($attachedMessageColor, 0.1);
 $attachedMessageCardHoverBackground: rgba($attachedMessageColor, 0.1);
 $attachedMessageCardBorderColor: rgba($attachedMessageColor, 0.5);
@@ -189,5 +189,10 @@ $controlButtonTextColorHover: #595959;
 
 $messageListLoadButtonColor: #e5eaf0;
 $messageListLoadButtonTextColor: #3d668f;
+
+$searchTextColor: white;
+$searchPanelColor: #adc2eb;
+$searchProgressBarColor: #9163db;
+$searchButtonColor: white;
 
 $bookmarkLinkHoverColor: #4d80b2;
