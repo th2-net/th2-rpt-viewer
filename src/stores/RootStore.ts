@@ -20,7 +20,6 @@ import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore
 import notificationStoreInstance from './NotificationsStore';
 import EventsStore, { EventStoreURLState } from './events/EventsStore';
 import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
-import { getEventNodeParents } from '../helpers/event';
 import { getObjectKeys } from '../helpers/object';
 import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
@@ -54,13 +53,11 @@ export default class RootStore {
 					timestampTo: eventsStore.filterStore.filter.timestampTo,
 				},
 				panelArea: eventsStore.viewStore.eventsPanelArea,
-				selectedNodesPath: eventsStore.selectedNode
-					? [...getEventNodeParents(eventsStore.selectedNode), eventsStore.selectedNode.eventId]
-					: undefined,
 				search:
 					eventsStore.searchStore.tokens.length > 0
 						? eventsStore.searchStore.tokens.map(t => t.pattern)
 						: undefined,
+				selectedEventId: eventsStore.selectedNode?.eventId,
 				flattenedListView: eventsStore.viewStore.flattenedListView,
 				selectedParentId:
 					eventsStore.viewStore.flattenedListView && eventsStore.selectedParentNode

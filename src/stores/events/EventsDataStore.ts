@@ -20,7 +20,6 @@ import {
 	convertEventActionToEventTreeNode,
 	sortEventsByTimestamp,
 	getErrorEventTreeNode,
-	isEventNode,
 } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventSSELoader } from './EventSSELoader';
@@ -78,7 +77,19 @@ export default class EventsDataStore {
 			this.isLoadingRootEvents = false;
 		}
 
-		// TODO: expand selected path
+		const targetId = this.eventStore.targetEventId;
+
+		if (targetId) {
+			const parentIds = this.eventStore
+				.getParents(targetId)
+				.map(parentEventNode => parentEventNode.eventId);
+			const fullPath = [...parentIds, targetId];
+
+			if (this.rootEventIds.includes(fullPath[0])) {
+				this.eventStore.expandPath(fullPath);
+				this.eventStore.targetEventId = null;
+			}
+		}
 	};
 
 	@action
@@ -125,26 +136,33 @@ export default class EventsDataStore {
 			}
 		}
 
-		this.parentChildrensMap = observable.map(
-			new Map([...this.parentChildrensMap, ...Object.entries(eventsByParentId)]),
+		const updatedParentChildrenMapEntries: Map<string, EventTreeNode[]> = observable.map(
+			new Map(),
+			{ deep: false },
 		);
 
-		this.rootEventIds = [...this.rootEventIds, ...rootEvents.map(({ eventId }) => eventId)];
-
-		Object.keys(eventsByParentId).forEach(notLoadedParentId => {
-			let eventsChildren = (this.parentChildrensMap.get(notLoadedParentId) || []).concat(
-				eventsByParentId[notLoadedParentId],
+		Object.keys(eventsByParentId).forEach(parentId => {
+			let eventsChildren = (this.parentChildrensMap.get(parentId) || []).concat(
+				eventsByParentId[parentId],
 			);
 			if (eventsChildren.length > this.CHUNK_SIZE) {
 				eventsChildren = eventsChildren.slice(0, this.CHUNK_SIZE);
-				this.hasUnloadedChildren.set(notLoadedParentId, true);
+				this.hasUnloadedChildren.set(parentId, true);
 			}
-			this.parentChildrensMap.set(notLoadedParentId, eventsChildren);
-			if (!this.loadingParentEvents.get(notLoadedParentId)) {
-				this.loadParentNodes(notLoadedParentId);
-				this.loadingParentEvents.set(notLoadedParentId, true);
+			updatedParentChildrenMapEntries.set(parentId, eventsChildren);
+			if (!this.eventsCache.get(parentId) && !this.loadingParentEvents.get(parentId)) {
+				this.loadParentNodes(parentId);
+				this.loadingParentEvents.set(parentId, true);
 			}
 		});
+
+		this.parentChildrensMap = observable.map(
+			new Map([...this.parentChildrensMap, ...updatedParentChildrenMapEntries]),
+		);
+
+		if (rootEvents.length > 0) {
+			this.rootEventIds = [...this.rootEventIds, ...rootEvents.map(({ eventId }) => eventId)];
+		}
 	};
 
 	@action
@@ -186,18 +204,21 @@ export default class EventsDataStore {
 					if (parentNode.parentId !== null) {
 						this.parentChildrensMap.set(parentNode.parentId, [parentNode]);
 					}
-					this.loadingParentEvents.delete(parentNode.eventId);
+					this.loadingParentEvents.set(parentNode.eventId, false);
 				});
 
 				if (!this.rootEventIds.includes(rootNode.eventId)) {
-					this.rootEventIds.push(rootNode.eventId);
+					this.rootEventIds = [...this.rootEventIds, rootNode.eventId];
 				}
 			});
 		} catch (error) {
 			const unknownParentNodeChildren = this.parentChildrensMap.get(parentId) || [];
 			const uknownRootNode = getErrorEventTreeNode(parentId, unknownParentNodeChildren);
 			this.eventsCache.set(parentId, uknownRootNode);
-			this.rootEventIds.push(parentId);
+			if (!this.rootEventIds.includes(parentId)) {
+				this.rootEventIds = [...this.rootEventIds, parentId];
+			}
+			this.loadingParentEvents.set(parentId, false);
 		}
 	};
 
@@ -289,7 +310,7 @@ export default class EventsDataStore {
 	};
 
 	@action
-	private resetEventsTreeState = (
+	public resetEventsTreeState = (
 		initialState: Partial<{ isError: boolean; isLoading: boolean }> = {},
 	) => {
 		const { isError = false, isLoading = false } = initialState;
@@ -310,6 +331,7 @@ export default class EventsDataStore {
 		}
 
 		this.isLoadingRootEvents = isLoading;
+		this.rootEventIds = [];
 		this.isError = isError;
 		this.eventsCache.clear();
 		this.parentChildrensMap.clear();
@@ -334,16 +356,4 @@ export default class EventsDataStore {
 
 		return [eventTreeNode];
 	};
-
-	public getParents(eventId: string): EventTreeNode[] {
-		let event = this.eventsCache.get(eventId);
-		const path = [];
-
-		while (event && event?.parentId !== null) {
-			event = this.eventsCache.get(event.parentId);
-			path.unshift(event);
-		}
-
-		return path.filter(isEventNode);
-	}
 }

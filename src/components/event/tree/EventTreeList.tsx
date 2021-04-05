@@ -58,18 +58,7 @@ function EventTreeList({ nodes }: Props) {
 	const renderEvent = (index: number): React.ReactElement => {
 		const node = nodes[index];
 
-		let isLastChild = false;
-		let parentHasMoreChilds = false;
-
-		if (node.parentId !== null) {
-			const siblings = eventDataStore.parentChildrensMap.get(node.parentId) || [];
-			isLastChild = siblings.length > 0 && siblings[siblings.length - 1].eventId === node.eventId;
-			parentHasMoreChilds = eventDataStore.hasUnloadedChildren.get(node.parentId) === true;
-		}
-
-		const showLoadButton = isLastChild && parentHasMoreChilds;
-
-		return <EventTree eventTreeNode={node} showLoadButton={showLoadButton} />;
+		return <EventTree eventTreeNode={node} />;
 	};
 
 	if (eventDataStore.rootEventIds.length === 0) {

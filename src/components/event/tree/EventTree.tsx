@@ -25,17 +25,19 @@ import CardDisplayType from '../../../util/CardDisplayType';
 import { createBemBlock } from '../../../helpers/styleCreators';
 import { formatTime } from '../../../helpers/date';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
+import { sortEventsByTimestamp } from '../../../helpers/event';
 
 interface EventTreeProps {
 	eventTreeNode: EventTreeNode;
-	showLoadButton: boolean;
 }
 
-function EventTree({ eventTreeNode, showLoadButton }: EventTreeProps) {
+function EventTree({ eventTreeNode }: EventTreeProps) {
 	const eventsStore = useWorkspaceEventStore();
 	const eventsDataStore = useEventsDataStore();
 
-	const parents = computed(() => eventsDataStore.getParents(eventTreeNode.eventId)).get();
+	const parents = React.useMemo(() => {
+		return eventsStore.getParents(eventTreeNode.eventId);
+	}, [eventsDataStore.eventsCache]);
 
 	const children = computed(
 		() => eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId) || [],
@@ -46,6 +48,25 @@ function EventTree({ eventTreeNode, showLoadButton }: EventTreeProps) {
 	).get();
 
 	const onExpandClick = () => eventsStore.toggleNode(eventTreeNode);
+
+	const showLoadButton = computed(() => {
+		let isLastChild = false;
+		let parentHasMoreChilds = false;
+
+		if (eventTreeNode.parentId !== null) {
+			const siblings = sortEventsByTimestamp(
+				eventsDataStore.parentChildrensMap.get(eventTreeNode.parentId) || [],
+				'asc',
+			);
+
+			isLastChild =
+				siblings.length > 0 && siblings[siblings.length - 1].eventId === eventTreeNode.eventId;
+			parentHasMoreChilds =
+				eventsDataStore.hasUnloadedChildren.get(eventTreeNode.parentId) === true;
+		}
+
+		return isLastChild && parentHasMoreChilds;
+	}).get();
 
 	let expandIconStatus: 'expanded' | 'hidden' | 'loading' | 'none';
 
@@ -101,7 +122,7 @@ function EventTree({ eventTreeNode, showLoadButton }: EventTreeProps) {
 					<EventCardSkeleton />
 				)}
 			</div>
-			{eventsStore.selectedPathTimestamps?.startEventId === eventTreeNode.eventId &&
+			{eventsStore.selectedPathTimestamps?.endEventId === eventTreeNode.eventId &&
 				eventsStore.selectedPathTimestamps.endTimestamp && (
 					<div className='event-tree-timestamp end'>
 						<div className='event-tree-timestamp__value'>

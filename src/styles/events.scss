@@ -507,4 +507,12 @@
 			}
 		}
 	}
+
+	&__loader {
+		@include spinner(2px, 12px);
+
+		&:first-child {
+			margin-right: 5px;
+		}
+	}
 }

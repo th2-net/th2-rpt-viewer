@@ -31,7 +31,11 @@ function EventWindow() {
 	return (
 		<div className='window' ref={panelRef}>
 			<div className='window__breadcrumbs'>
-				<EventBreadcrumbs path={eventsStore.selectedPath} onSelect={eventsStore.selectNode} />
+				<EventBreadcrumbs
+					isLoadingSelectedPath={eventsStore.targetEventId !== null}
+					path={eventsStore.selectedPath}
+					onSelect={eventsStore.selectNode}
+				/>
 			</div>
 			<div className='window__body'>
 				{eventWindowViewStore.flattenedListView ? <FlatEventView /> : <EventTreeView />}
