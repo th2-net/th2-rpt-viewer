@@ -218,11 +218,24 @@ export class SearchStore {
 	@computed get sortedResultGroups() {
 		if (!this.currentSearch) return [];
 
-		const { searchDirection } = this.currentSearch.request.state;
+		const { startTimestamp, searchDirection } = this.currentSearch.request.state;
 
-		return Object.entries(this.currentSearch.results).sort(
-			(a, b) => (+a[0] - +b[0]) * (searchDirection === SearchDirection.Previous ? -1 : 1),
-		);
+		return Object.entries(this.currentSearch.results).sort((a, b) => {
+			const firstResultTimestamp = +a[0] * 1000 * SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60;
+			const secondResultTimestamp = +b[0] * 1000 * SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60;
+
+			if (searchDirection === SearchDirection.Both) {
+				return (
+					Math.abs(firstResultTimestamp - (startTimestamp || 0)) -
+					Math.abs(secondResultTimestamp - (startTimestamp || 0))
+				);
+			}
+
+			return (
+				(firstResultTimestamp - secondResultTimestamp) *
+				(searchDirection === SearchDirection.Next ? 1 : -1)
+			);
+		});
 	}
 
 	@action
