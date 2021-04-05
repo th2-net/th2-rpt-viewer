@@ -32,7 +32,6 @@ interface EventBase {
 	startTimestamp: Timestamp;
 	endTimestamp?: Timestamp | null;
 	successful: boolean;
-	parents?: string[];
 }
 
 export interface EventTreeNode extends EventBase {

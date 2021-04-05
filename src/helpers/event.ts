@@ -44,10 +44,6 @@ export function getTimestamp(item: EventAction | EventMessage | EventTreeNode) {
 	return item.timestamp;
 }
 
-export function getEventNodeParents(event: EventTreeNode): string[] {
-	return event.parents ? event.parents : [];
-}
-
 export function sortEventsByTimestamp(
 	eventNodes: Array<EventTreeNode>,
 	order: 'desc' | 'asc' = 'desc',
@@ -117,7 +113,6 @@ export const convertEventActionToEventTreeNode = (event: EventAction): EventTree
 		startTimestamp: event.startTimestamp,
 		endTimestamp: event.endTimestamp,
 		successful: event.successful,
-		parents: event.parents,
 		childList: [],
 		filtered: true,
 		parentId: event.parentEventId,
@@ -146,7 +141,6 @@ export const getErrorEventTreeNode = (
 		},
 		successful: false,
 		type: ActionType.EVENT_TREE_NODE,
-		parents: undefined,
 	};
 };
 

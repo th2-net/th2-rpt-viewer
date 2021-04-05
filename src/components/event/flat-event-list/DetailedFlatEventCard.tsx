@@ -34,8 +34,6 @@ function DetailedFlatEventCard(props: Props) {
 	const eventsDataStore = useEventsDataStore();
 
 	const { selectedParentEvent, setSelectedNode, selectedNode } = useParentEvents(
-		eventTreeNode,
-		parentNodes,
 		eventWindowStore.selectedParentNode,
 	);
 

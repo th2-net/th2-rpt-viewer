@@ -133,9 +133,10 @@ export default class EventsStore {
 	@computed
 	public get flattenedEventList() {
 		return sortEventsByTimestamp(
-			this.flatExpandedList.filter(
-				eventNode => eventNode.childList.length === 0 && eventNode.filtered,
-			),
+			this.flatExpandedList.filter(eventNode => {
+				const children = this.eventDataStore.parentChildrensMap.get(eventNode.eventId);
+				return (!children || children.length === 0) && eventNode.filtered;
+			}),
 		);
 	}
 
@@ -180,9 +181,10 @@ export default class EventsStore {
 			return [];
 		}
 
-		const selectedNodeParents = this.getParents(this.selectedNode.eventId).map(
-			node => node.eventId,
-		);
+		const selectedNodeParents = this.getParents(
+			this.selectedNode.eventId,
+			this.eventDataStore.eventsCache,
+		).map(node => node.eventId);
 
 		return [...this.getNodesPath(selectedNodeParents, this.nodesList), this.selectedNode];
 	}
@@ -212,8 +214,8 @@ export default class EventsStore {
 
 			for (let i = 1; eventNodes[i] && eventNodes[i].parentId === selectedRootEventId; i++) {
 				timestamps.endEventId = eventNodes[i].eventId;
-
-				if (eventNodes[i].parents?.length === 1) {
+				const parents = this.getParents(eventNodes[i].eventId, this.eventDataStore.eventsCache);
+				if (parents?.length === 1) {
 					const eventTimestamp = timestampToNumber(eventNodes[i].startTimestamp);
 
 					if (eventTimestamp < timestamps.startTimestamp) {
@@ -261,11 +263,12 @@ export default class EventsStore {
 	};
 
 	@action
-	public scrollToEvent = (eventId: string | null, parentEventIds: string[] = []) => {
+	public scrollToEvent = (eventId: string | null) => {
 		if (!eventId) return;
 		let index = -1;
 		if (!this.viewStore.flattenedListView) {
-			[...parentEventIds, eventId].forEach(id => {
+			const parents = this.getParents(eventId, this.eventDataStore.eventsCache);
+			[...parents.map(parentNode => parentNode.eventId), eventId].forEach(id => {
 				const eventIndex = this.nodesList.findIndex(ev => ev.eventId === id);
 				if (eventIndex !== -1 && id !== eventId) this.isExpandedMap.set(id, true);
 				if (id === eventId) this.scrolledIndex = new Number(eventIndex);
@@ -329,10 +332,7 @@ export default class EventsStore {
 		}
 		if (headNode) {
 			this.selectNode(headNode);
-			this.scrollToEvent(
-				headNode.eventId,
-				selectedIds.filter(eventId => eventId !== headNode?.eventId),
-			);
+			this.scrollToEvent(headNode.eventId);
 		}
 	};
 
@@ -354,7 +354,7 @@ export default class EventsStore {
 	@action
 	private onViewChange = () => {
 		if (this.selectedNode) {
-			this.scrollToEvent(this.selectedNode.eventId || null, this.selectedNode.parents);
+			this.scrollToEvent(this.selectedNode.eventId);
 		}
 	};
 
@@ -418,12 +418,12 @@ export default class EventsStore {
 		}
 	};
 
-	public getParents(eventId: string): EventTreeNode[] {
-		let event = this.eventDataStore.eventsCache.get(eventId);
+	public getParents(eventId: string, cache: Map<string, EventTreeNode>): EventTreeNode[] {
+		let event = cache.get(eventId);
 		const path = [];
 
 		while (event && event?.parentId !== null) {
-			event = this.eventDataStore.eventsCache.get(event.parentId);
+			event = cache.get(event.parentId);
 			path.unshift(event);
 		}
 

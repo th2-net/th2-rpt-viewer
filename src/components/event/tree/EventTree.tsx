@@ -36,7 +36,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	const eventsDataStore = useEventsDataStore();
 
 	const parents = React.useMemo(() => {
-		return eventsStore.getParents(eventTreeNode.eventId);
+		return eventsStore.getParents(eventTreeNode.eventId, eventsDataStore.eventsCache);
 	}, [eventsDataStore.eventsCache]);
 
 	const children = computed(

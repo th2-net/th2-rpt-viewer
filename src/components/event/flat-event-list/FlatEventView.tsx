@@ -47,9 +47,12 @@ function EventTreeView() {
 				{eventWindowStore.selectedNode && (
 					<DetailedFlatEventCard
 						eventTreeNode={eventWindowStore.selectedNode}
-						parentNodes={eventWindowStore.selectedPath.filter(
-							node => node !== eventWindowStore.selectedNode,
-						)}
+						parentNodes={
+							eventWindowStore.getParents(
+								eventWindowStore.selectedNode.eventId,
+								eventDataStore.eventsCache,
+							) || []
+						}
 					/>
 				)}
 			</SplitViewPane>

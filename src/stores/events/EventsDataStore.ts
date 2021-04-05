@@ -81,7 +81,7 @@ export default class EventsDataStore {
 
 		if (targetId) {
 			const parentIds = this.eventStore
-				.getParents(targetId)
+				.getParents(targetId, this.eventsCache)
 				.map(parentEventNode => parentEventNode.eventId);
 			const fullPath = [...parentIds, targetId];
 
