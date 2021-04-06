@@ -18,7 +18,7 @@ import { createBemElement } from '../../../helpers/styleCreators';
 import { FilterRowSwitcherConfig } from '../../../models/filter/FilterInputs';
 
 const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
-	const { value, setValue, possibleValues, label, disabled, className = '' } = config;
+	const { value, setValue, possibleValues, disabled } = config;
 
 	const setType = (type: string) => {
 		if (!disabled) {

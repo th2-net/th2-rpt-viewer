@@ -123,9 +123,10 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 				const label = (filter.name.charAt(0).toUpperCase() + filter.name.slice(1))
 					.split(/(?=[A-Z])/)
 					.join(' ');
-
+					
+				let params = filter.parameters;
 				if (filter.name === 'status') {
-					filter.parameters = [
+					params = [
 						{
 							type: { value: 'switcher' },
 							name: 'value',
@@ -135,7 +136,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 					];
 				}
 
-				const config = filter.parameters.map(
+				const config = params.map(
 					(param: SSEFilterParameter): FilterRowConfig => {
 						switch (param.type.value) {
 							case 'boolean':
