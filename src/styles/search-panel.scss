@@ -213,13 +213,6 @@
 				@include icon(url(../../resources/icons/workspace-failed.svg), 15px, 15px);
 			}
 		}
-		&.any {
-			@include icon(url(../../resources/icons/workspace-any-white.svg), 15px, 15px);
-
-			&.active {
-				@include icon(url(../../resources/icons/workspace-any.svg), 15px, 15px);
-			}
-		}
 	}
 
 	&__label {

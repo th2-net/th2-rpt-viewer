@@ -126,6 +126,7 @@ export type FilterRowSwitcherConfig = FilterRowBaseConfig & {
 	setValue: (nextValue: string) => void;
 	possibleValues: [string, string, string];
 	className?: string;
+	defaultValue: string;
 };
 
 export type ActionFilterConfig = {

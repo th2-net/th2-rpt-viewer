@@ -167,6 +167,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									value: getState(filter.name).values,
 									setValue: getValuesUpdater(filter.name),
 									possibleValues: ['passed', 'failed', 'any'],
+									defaultValue: 'any',
 								};
 							default:
 								return {

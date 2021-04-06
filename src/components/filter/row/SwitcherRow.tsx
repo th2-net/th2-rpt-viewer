@@ -18,11 +18,11 @@ import { createBemElement } from '../../../helpers/styleCreators';
 import { FilterRowSwitcherConfig } from '../../../models/filter/FilterInputs';
 
 const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
-	const { value, setValue, possibleValues, disabled } = config;
+	const { value, setValue, possibleValues, disabled, defaultValue } = config;
 
 	const setType = (type: string) => {
 		if (!disabled) {
-			setValue(type === value ? '' : type);
+			setValue(type);
 		}
 	};
 
@@ -34,7 +34,7 @@ const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
 					'switch-search-type-button',
 					'switch-search-type-button',
 					val,
-					value === val ? 'active' : null,
+					value === val || (value === '' && defaultValue === val) ? 'active' : null,
 					disabled ? 'disabled' : null,
 				);
 
@@ -42,7 +42,7 @@ const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
 					'switch-search-type-button',
 					'icon',
 					val,
-					value === val ? 'active' : null,
+					value === val || (value === '' && defaultValue === val) ? 'active' : null,
 				);
 
 				return (
