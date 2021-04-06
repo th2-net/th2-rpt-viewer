@@ -124,8 +124,15 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 					.split(/(?=[A-Z])/)
 					.join(' ');
 
-				if (filter.name == 'status') {
-					filter.parameters = [{type: {value: 'switcher'}, name: 'value', defaultValue: 'any', hint: 'passed, failed, any'}]
+				if (filter.name === 'status') {
+					filter.parameters = [
+						{
+							type: { value: 'switcher' },
+							name: 'value',
+							defaultValue: 'any',
+							hint: 'passed, failed, any',
+						},
+					];
 				}
 
 				const config = filter.parameters.map(

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
- import React from 'react';
- import { createBemElement } from '../../../helpers/styleCreators';
- import { FilterRowSwitcherConfig } from '../../../models/filter/FilterInputs';
- 
- const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
-     const { value, setValue, possibleValues, label, disabled, className = '' } = config;
+import React from 'react';
+import { createBemElement } from '../../../helpers/styleCreators';
+import { FilterRowSwitcherConfig } from '../../../models/filter/FilterInputs';
 
-     const setType = (type: string) => {
+const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
+	const { value, setValue, possibleValues, label, disabled, className = '' } = config;
+
+	const setType = (type: string) => {
 		if (!disabled) {
 			setValue(type === value ? '' : type);
 		}
@@ -54,7 +54,6 @@
 			})}
 		</div>
 	);
- };
- 
- export default SwitcherRow;
- 
+};
+
+export default SwitcherRow;
