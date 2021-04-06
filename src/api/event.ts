@@ -16,6 +16,8 @@
 
 import { EventApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
+import { EventAction } from '../models/EventAction';
+import { getEventParentId } from '../helpers/event';
 
 const eventHttpApi: EventApiSchema = {
 	getEventTree: async (filter, signal?) => {
@@ -65,6 +67,26 @@ const eventHttpApi: EventApiSchema = {
 
 		console.error(res.statusText);
 		return [];
+	},
+	getEventParents: async (firstParentId: string, abortSignal?: AbortSignal) => {
+		let currentParentId: string | null = firstParentId;
+		let currentParentEvent = null;
+		const path: EventAction[] = [];
+
+		try {
+			while (typeof currentParentId === 'string' && currentParentId !== 'null') {
+				// eslint-disable-next-line no-await-in-loop
+				currentParentEvent = await eventHttpApi.getEvent(currentParentId, abortSignal);
+				if (currentParentEvent) {
+					path.unshift(currentParentEvent);
+				}
+				currentParentId = getEventParentId(currentParentEvent);
+			}
+
+			return path;
+		} catch (error) {
+			return path;
+		}
 	},
 };
 

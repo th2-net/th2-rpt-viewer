@@ -1,4 +1,4 @@
-/** ****************************************************************************
+/** *****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,25 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export default interface Tree<T> {
-	readonly value: T;
-	readonly nodes: Array<Tree<T>>;
-}
+import { useWorkspaceEventStore } from './useEventWindowStore';
 
-export const createNode = <T>(value: T, nodes: Array<Tree<T>> = []): Tree<T> => ({
-	value,
-	nodes,
-});
+export default function useEventsDataStore() {
+	const eventWindowStore = useWorkspaceEventStore();
 
-export function mapTree<IN, OUT>(fn: (node: IN) => OUT, tree: Tree<IN>): Tree<OUT> {
-	const newValue = fn(tree.value);
-
-	if (!tree.nodes || tree.nodes.length === 0) {
-		return createNode(newValue);
-	}
-
-	return createNode(
-		newValue,
-		tree.nodes.map(node => mapTree(fn, node)),
-	);
+	return eventWindowStore.eventDataStore;
 }

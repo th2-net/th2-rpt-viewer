@@ -24,8 +24,8 @@ import StateSaverProvider from '../../util/StateSaverProvider';
 import { useWorkspaceEventStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
 import { EventTreeNode } from '../../../models/EventAction';
-import { timestampToNumber } from '../../../helpers/date';
 import { EventListFooter, EventListHeader } from '../EventListNavigation';
+import useEventsDataStore from '../../../hooks/useEventsDataStore';
 import '../../../styles/action.scss';
 
 interface Props {
@@ -34,6 +34,8 @@ interface Props {
 
 function EventTreeList({ nodes }: Props) {
 	const eventWindowStore = useWorkspaceEventStore();
+	const eventDataStore = useEventsDataStore();
+
 	const listRef = React.useRef<VirtuosoHandle | null>(null);
 
 	React.useEffect(() => {
@@ -51,87 +53,24 @@ function EventTreeList({ nodes }: Props) {
 		}
 	}, [eventWindowStore.scrolledIndex]);
 
-	const getTimestamps = (eventNodes: EventTreeNode[], selectedPath: EventTreeNode[]) => {
-		if (!eventNodes.length || !selectedPath.length) return null;
-
-		const selectedRootEventId = selectedPath[0].eventId;
-		const rootEventIndex = eventNodes.findIndex(e => e.eventId === selectedRootEventId);
-
-		const timestamps = {
-			startEventId: selectedRootEventId,
-			startTimestamp: timestampToNumber(eventNodes[rootEventIndex].startTimestamp),
-			endEventId: selectedRootEventId,
-			endTimestamp: timestampToNumber(eventNodes[rootEventIndex].startTimestamp),
-		};
-
-		if (
-			eventNodes[rootEventIndex].childList.length &&
-			eventNodes[rootEventIndex + 1] &&
-			eventNodes[rootEventIndex + 1].parentId === selectedRootEventId
-		) {
-			timestamps.startTimestamp = timestampToNumber(eventNodes[rootEventIndex + 1].startTimestamp);
-			timestamps.endTimestamp = timestamps.startTimestamp;
-
-			for (
-				let i = rootEventIndex + 1;
-				eventNodes[i] && eventNodes[i].parents![0] === selectedRootEventId;
-				i++
-			) {
-				timestamps.endEventId = eventNodes[i].eventId;
-
-				if (eventNodes[i].parents?.length === 1) {
-					const eventTimestamp = timestampToNumber(eventNodes[i].startTimestamp);
-
-					if (eventTimestamp < timestamps.startTimestamp) {
-						timestamps.startTimestamp = eventTimestamp;
-					}
-
-					if (eventTimestamp > timestamps.endTimestamp) {
-						timestamps.endTimestamp = eventTimestamp;
-					}
-				}
-			}
-		}
-
-		return timestamps;
-	};
-
-	const timestamps = getTimestamps(nodes, eventWindowStore.selectedPath);
-
 	const computeKey = (index: number) => nodes[index].eventId;
 
-	const renderEvent = (index: number): React.ReactElement => (
-		<EventTree
-			eventTreeNode={nodes[index]}
-			startTimestamp={
-				timestamps?.startEventId === nodes[index].eventId ? timestamps.startTimestamp : undefined
-			}
-			endTimestamp={
-				timestamps?.endEventId === nodes[index].eventId ? timestamps.endTimestamp : undefined
-			}
-		/>
-	);
+	const renderEvent = (index: number): React.ReactElement => {
+		const node = nodes[index];
 
-	if (eventWindowStore.isLoadingRootEvents) {
-		return <SplashScreen />;
-	}
+		return <EventTree eventTreeNode={node} />;
+	};
 
-	if (!eventWindowStore.isLoadingRootEvents && eventWindowStore.eventTree.length === 0) {
-		if (eventWindowStore.eventTreeStatusCode === null) {
-			return (
-				<Empty
-					description='No events'
-					descriptionStyles={{ position: 'relative', bottom: '19px' }}
-				/>
-			);
+	if (eventDataStore.rootEventIds.length === 0) {
+		if (eventDataStore.isLoading) {
+			return <SplashScreen />;
+		}
+		if (!eventDataStore.isLoading && !eventDataStore.isError) {
+			return <Empty description='No events' />;
 		}
 		return (
 			<Empty
-				description={
-					typeof eventWindowStore.eventTreeStatusCode === 'number'
-						? `Server responded with ${eventWindowStore.eventTreeStatusCode} code`
-						: 'Error occured while loading events'
-				}
+				description='Error occured while loading events'
 				descriptionStyles={{ position: 'relative', bottom: '19px' }}
 			/>
 		);

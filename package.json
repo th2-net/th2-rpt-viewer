@@ -1,16 +1,17 @@
 {
 	"name": "th2-rpt-viewer",
-	"version": "3.0.72",
+	"version": "3.1.1",
 	"description": "",
 	"main": "index.tsx",
 	"private": true,
 	"scripts": {
-		"build": "npm run lint && webpack --config=webpack/webpack.production.js",
+		"build": "npm run validate && webpack --config=webpack/webpack.production.js",
 		"build:dev": "webpack --config=webpack/webpack.dev.js --watch",
 		"start": "webpack-dev-server --config=webpack/webpack.dev.js",
 		"test": "jest",
 		"test:ci": "jest --no-cache",
-		"lint": "tsc && eslint . --ext .js,.js,.ts,.tsx",
+		"lint": "eslint . --ext .js,.js,.ts,.tsx",
+		"validate": "tsc && eslint . --ext .js,.js,.ts,.tsx",
 		"lint:fix": "eslint --fix './src/**/*.{ts,tsx}' && prettier --write src/**"
 	},
 	"dependencies": {

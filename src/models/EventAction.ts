@@ -32,14 +32,14 @@ interface EventBase {
 	startTimestamp: Timestamp;
 	endTimestamp?: Timestamp | null;
 	successful: boolean;
-	parents?: string[];
 }
 
 export interface EventTreeNode extends EventBase {
 	childList: Array<EventTreeNode>;
 	filtered: boolean;
-	parentId: string;
+	parentId: string | null;
 	type: ActionType.EVENT_TREE_NODE;
+	isUnknown?: boolean;
 }
 
 export interface EventAction extends EventBase {

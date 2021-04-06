@@ -20,6 +20,7 @@ import EventTreeView from './tree/EventTreeView';
 import FlatEventView from './flat-event-list/FlatEventView';
 import EventBreadcrumbs from './breadcrumbs/EventBreadcrumbs';
 import { useEventWindowViewStore, useWorkspaceEventStore, useActivePanel } from '../../hooks';
+import { EventTreeNode } from '../../models/EventAction';
 import '../../styles/events.scss';
 
 function EventWindow() {
@@ -28,10 +29,21 @@ function EventWindow() {
 
 	const { ref: panelRef } = useActivePanel(eventsStore);
 
+	const onBreadcrumbItemClick = React.useCallback((node: EventTreeNode | null) => {
+		if (node) {
+			eventsStore.scrollToEvent(node.eventId);
+		}
+		eventsStore.selectNode(node);
+	}, []);
+
 	return (
 		<div className='window' ref={panelRef}>
 			<div className='window__breadcrumbs'>
-				<EventBreadcrumbs path={eventsStore.selectedPath} onSelect={eventsStore.selectNode} />
+				<EventBreadcrumbs
+					isLoadingSelectedPath={eventsStore.targetEventId !== null}
+					path={eventsStore.selectedPath}
+					onSelect={onBreadcrumbItemClick}
+				/>
 			</div>
 			<div className='window__body'>
 				{eventWindowViewStore.flattenedListView ? <FlatEventView /> : <EventTreeView />}

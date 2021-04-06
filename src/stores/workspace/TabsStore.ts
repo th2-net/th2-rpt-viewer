@@ -30,8 +30,8 @@ export default class TabsStore {
 			this.setActiveWorkspace(this.activeTabIndex === 0 ? 0 : this.activeTabIndex - 1);
 		}
 		const workspaceToClose = this.workspacesStore.workspaces[index];
-		workspaceToClose.messagesStore.dispose();
 		this.workspacesStore.workspaces.splice(index, 1);
+		return workspaceToClose;
 	};
 
 	@action

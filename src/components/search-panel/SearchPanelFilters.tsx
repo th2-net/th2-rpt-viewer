@@ -140,7 +140,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									disabled: disableAll,
 									label: '',
 									type: 'string',
-									value: getState(filter.name).values,
+									value: getState(filter.name).values || '',
 									setValue: getValuesUpdater(filter.name),
 								};
 							default:
@@ -151,7 +151,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									type: 'multiple-strings',
 									values: getState(filter.name).values,
 									setValues: getValuesUpdater(filter.name),
-									currentValue: currentValues[filter.name],
+									currentValue: currentValues[filter.name] || '',
 									setCurrentValue: setCurrentValue(filter.name),
 									autocompleteList: null,
 								};
