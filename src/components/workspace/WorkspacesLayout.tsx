@@ -46,7 +46,7 @@ const WorkspacesLayout = () => {
 								)}
 								onClick={e => {
 									e.stopPropagation();
-									workspacesStore.tabsStore.closeWorkspace(workspace);
+									workspacesStore.closeWorkspace(workspace);
 								}}
 							/>
 						)}

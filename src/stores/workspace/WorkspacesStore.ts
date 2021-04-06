@@ -17,11 +17,7 @@
 import { observable, action, computed, reaction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
-import WorkspaceStore, {
-	WorkspaceUrlState,
-	WorkspaceInitialState,
-	getRangeFromTimestamp,
-} from './WorkspaceStore';
+import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
 import SearchWorkspaceStore, { SEARCH_STORE_INTERVAL } from './SearchWorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
@@ -31,6 +27,7 @@ import {
 } from '../../components/search-panel/SearchPanelFilters';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
+import { getRangeFromTimestamp } from '../../helpers/date';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
@@ -127,6 +124,12 @@ export default class WorkspacesStore {
 			layout: [0, 100],
 			timeRange: getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL),
 		};
+	};
+
+	public closeWorkspace = (tab: number | WorkspaceStore) => {
+		const closedWorkspace = this.tabsStore.closeWorkspace(tab);
+
+		closedWorkspace.dispose();
 	};
 
 	public getInitialWorkspaceByEvent = (

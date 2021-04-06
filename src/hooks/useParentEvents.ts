@@ -20,11 +20,7 @@ import { useWorkspaceEventStore } from './useEventWindowStore';
 import api from '../api/event';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 
-export const useParentEvents = (
-	eventIdNode: EventTreeNode,
-	parentIdNodes: EventTreeNode[],
-	initialSelectedNode: EventTreeNode | null,
-) => {
+export const useParentEvents = (initialSelectedNode: EventTreeNode | null) => {
 	const eventWindowStore = useWorkspaceEventStore();
 
 	const [parentEvents, setParentEvents] = React.useState<Map<string, EventAction>>(new Map());

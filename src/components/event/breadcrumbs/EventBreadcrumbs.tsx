@@ -21,12 +21,14 @@ import EventBreadcrumbsItem from './EventBreadcrumbsItem';
 interface Props {
 	path: EventTreeNode[];
 	onSelect: (eventTreeNode: EventTreeNode | null) => void;
+	isLoadingSelectedPath: boolean;
 }
 
 export default function EventBreadcrumbs(props: Props) {
-	const { path, onSelect } = props;
+	const { path, onSelect, isLoadingSelectedPath } = props;
 	return (
 		<div className='event-breadcrumbs'>
+			{isLoadingSelectedPath && <div className='event-breadcrumbs__loader' />}
 			<EventBreadcrumbsItem
 				eventNode='root'
 				onSelect={() => onSelect(null)}
