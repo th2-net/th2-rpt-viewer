@@ -123,7 +123,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 				const label = (filter.name.charAt(0).toUpperCase() + filter.name.slice(1))
 					.split(/(?=[A-Z])/)
 					.join(' ');
-					
+
 				let params = filter.parameters;
 				if (filter.name === 'status') {
 					params = [
