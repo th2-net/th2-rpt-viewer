@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction } from 'mobx';
-import moment from 'moment';
 import { nanoid } from 'nanoid';
 import MessagesStore, {
 	MessagesStoreDefaultStateType,
@@ -171,15 +170,10 @@ export default class WorkspaceStore {
 	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
 		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
 	};
-}
 
-export function getRangeFromTimestamp(timestamp: number, interval: number): TimeRange {
-	return [
-		moment(timestamp)
-			.subtract(interval / 2, 'minutes')
-			.valueOf(),
-		moment(timestamp)
-			.add(interval / 2, 'minutes')
-			.valueOf(),
-	];
+	dispose = () => {
+		// Delete all subscriptions and cancel pending requests
+		this.messagesStore.dispose();
+		this.eventsStore.dispose();
+	};
 }

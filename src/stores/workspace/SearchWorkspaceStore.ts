@@ -22,9 +22,9 @@ import { ActionType, EventAction, EventTreeNode } from '../../models/EventAction
 import WorkspacesStore from './WorkspacesStore';
 import { SearchStore } from '../SearchStore';
 import ApiSchema from '../../api/ApiSchema';
-import { getRangeFromTimestamp, WorkspaceInitialState } from './WorkspaceStore';
+import { WorkspaceInitialState } from './WorkspaceStore';
 import { isEvent, isEventMessage } from '../../helpers/event';
-import { getTimestampAsNumber, timestampToNumber } from '../../helpers/date';
+import { getTimestampAsNumber, timestampToNumber, getRangeFromTimestamp } from '../../helpers/date';
 
 export const SEARCH_STORE_INTERVAL = 15;
 
