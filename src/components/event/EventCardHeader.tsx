@@ -85,8 +85,10 @@ function EventCardHeader({
 		e.stopPropagation();
 	};
 
+	const isUnknown = event.isUnknown;
+
 	const onMouseEnter = () => {
-		if (!event.isUnknown) {
+		if (!isUnknown) {
 			hoverTimeout.current = setTimeout(() => {
 				eventStore.setHoveredEvent(event);
 			}, 150);
@@ -111,7 +113,7 @@ function EventCardHeader({
 					<SearchableContent content={eventName} eventId={eventId} />
 				</div>
 			) : null}
-			{displayType !== CardDisplayType.STATUS_ONLY ? (
+			{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown ? (
 				<>
 					{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
 					<div className='event-header-card__time-label'>
@@ -132,7 +134,7 @@ function EventCardHeader({
 							.concat(eventStore.eventDataStore.hasUnloadedChildren.get(event.eventId) ? '+' : '')}
 					/>
 				)}
-			<div className={bookmarkClassName} onClick={onPinClicked} />
+			{!isUnknown && <div className={bookmarkClassName} onClick={onPinClicked} />}
 		</div>
 	);
 }

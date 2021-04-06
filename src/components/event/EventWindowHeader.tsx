@@ -50,14 +50,14 @@ function EventWindowHeader() {
 						Flat view
 					</div>
 				</div>
-				{eventStore.isLoadingRootEvents ||
-					(eventDataStore.loadingParentEvents.size > 0 && (
-						<div className='event-window-header__loader'>
-							Resolving root events<span>.</span>
-							<span>.</span>
-							<span>.</span>
-						</div>
-					))}
+				{(eventDataStore.eventTreeEventSource?.isLoading ||
+					eventDataStore.loadingParentEvents.size > 0) && (
+					<div className='event-window-header__loader'>
+						Resolving events<span>.</span>
+						<span>.</span>
+						<span>.</span>
+					</div>
+				)}
 			</div>
 		</div>
 	);

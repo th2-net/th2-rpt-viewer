@@ -140,14 +140,22 @@ export default class EventsDataStore {
 		const updatedParentChildrenMapEntries: Map<string, string[]> = observable.map();
 
 		Object.keys(eventsByParentId).forEach(parentId => {
-			let eventsChildren = (this.parentChildrensMap.get(parentId) || []).concat(
-				eventsByParentId[parentId].map(event => event.eventId),
-			);
-			if (eventsChildren.length > this.CHUNK_SIZE) {
-				eventsChildren = eventsChildren.slice(0, this.CHUNK_SIZE);
+			const cachedEventChildren = this.parentChildrensMap.get(parentId) || [];
+			if (cachedEventChildren.length <= this.CHUNK_SIZE) {
+				const fetchedEventChildren = eventsByParentId[parentId]
+					.map(event => event.eventId)
+					.filter(eventId => !cachedEventChildren.includes(eventId));
+
+				let childrenUpdate = cachedEventChildren.concat(fetchedEventChildren);
+
+				if (childrenUpdate.length > this.CHUNK_SIZE) {
+					childrenUpdate = childrenUpdate.slice(0, this.CHUNK_SIZE);
+					this.hasUnloadedChildren.set(parentId, true);
+				}
+				updatedParentChildrenMapEntries.set(parentId, childrenUpdate);
+			} else {
 				this.hasUnloadedChildren.set(parentId, true);
 			}
-			updatedParentChildrenMapEntries.set(parentId, eventsChildren);
 			if (!this.eventsCache.get(parentId) && !this.loadingParentEvents.get(parentId)) {
 				this.loadParentNodes(parentId);
 				this.loadingParentEvents.set(parentId, true);
@@ -157,6 +165,16 @@ export default class EventsDataStore {
 		this.parentChildrensMap = observable.map(
 			new Map([...this.parentChildrensMap, ...updatedParentChildrenMapEntries]),
 		);
+
+		if (
+			this.eventStore.targetEvent &&
+			(this.parentChildrensMap.get(this.eventStore.targetEvent.eventId) || []).includes(
+				this.eventStore.targetEvent.eventId,
+			)
+		) {
+			this.eventStore.targetEvent = null;
+			this.eventStore.targetEventId = null;
+		}
 
 		if (rootEvents.length > 0) {
 			this.rootEventIds = [...this.rootEventIds, ...rootEvents.map(({ eventId }) => eventId)];
@@ -199,9 +217,14 @@ export default class EventsDataStore {
 				parentNodes.forEach(parentNode => {
 					this.eventsCache.set(parentNode.eventId, parentNode);
 					if (parentNode.parentId !== null) {
-						this.parentChildrensMap.set(parentNode.parentId, [parentNode.eventId]);
+						const children = this.parentChildrensMap.get(parentNode.parentId) || [];
+
+						if (!children.includes(parentNode.eventId)) {
+							children.push(parentNode.eventId);
+							this.parentChildrensMap.set(parentNode.parentId, children);
+						}
 					}
-					this.loadingParentEvents.set(parentNode.eventId, false);
+					this.loadingParentEvents.delete(parentNode.eventId);
 				});
 
 				if (!this.rootEventIds.includes(rootNode.eventId)) {
@@ -214,7 +237,7 @@ export default class EventsDataStore {
 			if (!this.rootEventIds.includes(parentId)) {
 				this.rootEventIds = [...this.rootEventIds, parentId];
 			}
-			this.loadingParentEvents.set(parentId, false);
+			this.loadingParentEvents.delete(parentId);
 		}
 	};
 
@@ -226,6 +249,7 @@ export default class EventsDataStore {
 
 		if (parentNode) {
 			const eventsChildren = this.getEventChildrenNodes(parentId);
+
 			if (!eventsChildren || !this.hasUnloadedChildren.get(parentId)) return;
 
 			this.isLoadingChildren.set(parentId, true);
@@ -263,11 +287,20 @@ export default class EventsDataStore {
 			new Map([...this.eventsCache, ...newEntries]),
 			{ deep: false },
 		);
+		if (
+			this.eventStore.targetEvent &&
+			this.eventStore.targetEvent.parentId === parentId &&
+			events.find(event => event.eventId === this.eventStore.targetEvent?.eventId)
+		) {
+			this.eventStore.targetEvent = null;
+			this.eventStore.targetEventId = null;
+		}
 		this.eventsCache = eventsMap;
 		const parentNode = this.eventsCache.get(parentId);
 		if (!parentNode) return;
 
 		const childList = this.parentChildrensMap.get(parentId) || [];
+
 		this.parentChildrensMap.set(parentId, [...childList, ...events.map(event => event.eventId)]);
 	};
 
@@ -277,7 +310,7 @@ export default class EventsDataStore {
 
 		if ((childList.length + events.length) % this.CHUNK_SIZE === 1) {
 			this.hasUnloadedChildren.set(parentId, true);
-			childList.pop();
+			events.pop();
 		} else {
 			this.hasUnloadedChildren.set(parentId, false);
 		}
