@@ -28,11 +28,11 @@ import { SearchPanelFormState } from '../../stores/SearchStore';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelFilters from './SearchPanelFilters';
 import SearchTypeSwitcher from './search-form/SearchTypeSwitcher';
-import SearchDatetimeControl from './search-form/SearchDatetimeControl';
+import SearchDatetimeControls, {
+	SearchDatetimeControlsConfig,
+} from './search-form/SearchDatetimeControls';
 import SearchProgressBar, { SearchProgressBarConfig } from './search-form/SearchProgressBar';
-import SearchTimeLimitControls, {
-	SearchTimeLimitControlsConfig,
-} from './search-form/SearchTimeLimitControls';
+import SearchSubmit, { SearchSubmitConfig } from './search-form/SearchSubmit';
 import SearchResultCountLimit, {
 	ResultCountLimitConfig,
 } from './search-form/SearchResultCountLimit';
@@ -123,6 +123,29 @@ const SearchPanelForm = () => {
 		processedObjectCount,
 	} = searchProgress;
 
+	const searchDatetimeControlsConfig: SearchDatetimeControlsConfig = {
+		isSearching,
+		updateForm,
+		startTimestampInput,
+		disabled: disabled || isSearching,
+		searchDirection: form.searchDirection,
+		previousTimeLimit: {
+			value:
+				isSearching && !timeLimits.previous && startTimestamp
+					? startTimestamp - progress.previous
+					: timeLimits.previous,
+			setValue: nextValue =>
+				updateForm({ timeLimits: { ...form.timeLimits, previous: nextValue } }),
+		},
+		nextTimeLimit: {
+			value:
+				isSearching && !timeLimits.next && startTimestamp
+					? startTimestamp + progress.next
+					: timeLimits.next,
+			setValue: nextValue => updateForm({ timeLimits: { ...timeLimits, next: nextValue } }),
+		},
+	};
+
 	const progressBarConfig: SearchProgressBarConfig = {
 		isSearching,
 		searchDirection: form.searchDirection,
@@ -160,26 +183,10 @@ const SearchPanelForm = () => {
 		commonProgress = Math.floor(progressBarConfig.rightProgress.progress);
 	}
 
-	const searchTimeLimitsConfig: SearchTimeLimitControlsConfig = {
+	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
 		completed: completed.previous && completed.next,
-		searchDirection: form.searchDirection,
 		disabled,
-		previousTimeLimit: {
-			value:
-				isSearching && !timeLimits.previous && startTimestamp
-					? startTimestamp - progress.previous
-					: timeLimits.previous,
-			setValue: nextValue =>
-				updateForm({ timeLimits: { ...form.timeLimits, previous: nextValue } }),
-		},
-		nextTimeLimit: {
-			value:
-				isSearching && !timeLimits.next && startTimestamp
-					? startTimestamp + progress.next
-					: timeLimits.next,
-			setValue: nextValue => updateForm({ timeLimits: { ...timeLimits, next: nextValue } }),
-		},
 		progress: commonProgress,
 		processedObjectCount,
 		startSearch,
@@ -188,14 +195,9 @@ const SearchPanelForm = () => {
 
 	return (
 		<div className='search-panel__search-form search-form'>
-			<SearchDatetimeControl
-				form={form}
-				updateForm={updateForm}
-				startTimestampInput={startTimestampInput}
-				disabled={disabled || isSearching}
-			/>
+			<SearchDatetimeControls {...searchDatetimeControlsConfig} />
 			<SearchProgressBar {...progressBarConfig} />
-			<SearchTimeLimitControls {...searchTimeLimitsConfig} />
+			<SearchSubmit {...searchSubmitConfig} />
 			<div className='search-panel__fields'>
 				<div className='filter-row'>
 					<div className='filter-row__label'>Search for</div>
