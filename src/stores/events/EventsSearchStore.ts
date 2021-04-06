@@ -108,7 +108,9 @@ export default class EventsSearchStore {
 		);
 
 		const expandedSubNodes = this.eventsStore.nodesList.filter(
-			node => this.eventsStore.isExpandedMap.get(node.eventId) && node.childList.length > 0,
+			node =>
+				this.eventsStore.isExpandedMap.get(node.eventId) &&
+				(this.eventsStore.eventDataStore.parentChildrensMap.get(node.eventId) || []).length > 0,
 		);
 
 		const subNodesResult = await Promise.all(

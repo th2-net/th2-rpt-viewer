@@ -33,23 +33,39 @@ interface UrlError extends Notification {
 }
 
 export class NotificationsStore {
-	@observable responseErrors: ResponseError[] = [];
+	@observable
+	public responseErrors: ResponseError[] = [];
+
+	@observable
+	public urlError: UrlError | null = null;
 
 	@action
-	addResponseError = (responseError: ResponseError) => {
+	public addResponseError = (responseError: ResponseError) => {
 		this.responseErrors = [...this.responseErrors, responseError];
 	};
 
 	@action
-	delResponseError = (responseError: ResponseError) => {
+	public delResponseError = (responseError: ResponseError) => {
 		this.responseErrors = this.responseErrors.filter(re => re !== responseError);
 	};
 
-	@observable urlError: UrlError | null = null;
+	@action
+	public setUrlError = (urlError: UrlError | null) => {
+		this.urlError = urlError;
+	};
 
 	@action
-	setUrlError = (urlError: UrlError | null) => {
-		this.urlError = urlError;
+	public handleSSEError = (event: Event) => {
+		if (event instanceof MessageEvent) {
+			const errorData = JSON.parse(event.data);
+			notificationsStore.addResponseError({
+				type: 'error',
+				header: errorData.exceptionName,
+				resource: event.target instanceof EventSource ? event.target.url : event.origin,
+				responseBody: errorData.exceptionCause,
+				responseCode: null,
+			});
+		}
 	};
 }
 
