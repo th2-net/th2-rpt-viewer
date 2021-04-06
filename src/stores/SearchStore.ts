@@ -17,7 +17,7 @@
 import { action, autorun, computed, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
 import ApiSchema from '../api/ApiSchema';
-import { EventSSEParams, SSEFilterInfo, SSEHeartbeat, SSEParams } from '../api/sse';
+import { SSEFilterInfo, SSEHeartbeat, SSEParams } from '../api/sse';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
 	EventFilterState,
@@ -392,7 +392,7 @@ export class SearchStore {
 				...Object.fromEntries([...filterValues, ...filterInclusion]),
 			};
 
-			const queryParams: EventSSEParams =
+			const queryParams: SSEParams =
 				this.formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
 
 			this.searchChannel.next = this.api.sse.getEventSource({

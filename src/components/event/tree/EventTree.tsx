@@ -38,8 +38,8 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		return eventsStore.getParents(eventTreeNode.eventId, eventsDataStore.eventsCache);
 	}, [eventsDataStore.eventsCache]);
 
-	const children = computed(
-		() => eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId) || [],
+	const childrenCount = computed(
+		() => (eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId) || []).length,
 	).get();
 
 	const isLoadingSiblings = computed(
@@ -66,7 +66,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 
 	let expandIconStatus: 'expanded' | 'hidden' | 'loading' | 'none';
 
-	if (children.length === 0) {
+	if (childrenCount === 0) {
 		expandIconStatus = 'none';
 	} else if (eventsStore.isExpandedMap.get(eventTreeNode.eventId)) {
 		expandIconStatus = 'expanded';
@@ -79,6 +79,10 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 			eventsDataStore.loadMoreChilds(eventTreeNode.parentId);
 		}
 	}
+
+	const onNodeSelect = React.useCallback(() => {
+		eventsStore.selectNode(eventTreeNode);
+	}, [eventTreeNode]);
 
 	const nestingLevel = 20 * parents.length;
 
@@ -101,12 +105,10 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 				/>
 				{eventTreeNode ? (
 					<EventCardHeader
-						childrenCount={
-							(eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId) || []).length
-						}
+						childrenCount={childrenCount}
 						event={eventTreeNode}
 						displayType={CardDisplayType.MINIMAL}
-						onSelect={() => eventsStore.selectNode(eventTreeNode)}
+						onSelect={onNodeSelect}
 						isSelected={eventsStore.isNodeSelected(eventTreeNode)}
 						isActive={
 							eventsStore.selectedPath.length > 0 &&

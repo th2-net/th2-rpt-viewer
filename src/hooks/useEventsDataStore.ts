@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { useWorkspaceEventStore } from '.';
+import { useWorkspaceEventStore } from './useEventWindowStore';
 
 export default function useEventsDataStore() {
 	const eventWindowStore = useWorkspaceEventStore();

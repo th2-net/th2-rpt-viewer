@@ -25,8 +25,8 @@ import { useWorkspaceEventStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
 import { EventTreeNode } from '../../../models/EventAction';
 import { EventListFooter, EventListHeader } from '../EventListNavigation';
-import '../../../styles/action.scss';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
+import '../../../styles/action.scss';
 
 interface Props {
 	nodes: EventTreeNode[];
@@ -62,10 +62,10 @@ function EventTreeList({ nodes }: Props) {
 	};
 
 	if (eventDataStore.rootEventIds.length === 0) {
-		if (eventDataStore.isLoadingRootEvents) {
+		if (eventDataStore.isLoading) {
 			return <SplashScreen />;
 		}
-		if (!eventDataStore.isLoadingRootEvents && !eventDataStore.isError) {
+		if (!eventDataStore.isLoading && !eventDataStore.isError) {
 			return <Empty description='No events' />;
 		}
 		return (
