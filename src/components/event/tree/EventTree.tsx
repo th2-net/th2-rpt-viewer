@@ -64,6 +64,10 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		return isLastChild && parentHasMoreChilds;
 	}).get();
 
+	const isSelected = computed(() =>
+		eventsStore.selectedPath.some(n => n.eventId === eventTreeNode.eventId),
+	).get();
+
 	let expandIconStatus: 'expanded' | 'hidden' | 'loading' | 'none';
 
 	if (childrenCount === 0) {
@@ -109,7 +113,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 						event={eventTreeNode}
 						displayType={CardDisplayType.MINIMAL}
 						onSelect={onNodeSelect}
-						isSelected={eventsStore.isNodeSelected(eventTreeNode)}
+						isSelected={isSelected}
 						isActive={
 							eventsStore.selectedPath.length > 0 &&
 							eventsStore.selectedPath[eventsStore.selectedPath.length - 1].eventId ===

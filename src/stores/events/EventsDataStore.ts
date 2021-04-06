@@ -143,15 +143,6 @@ export default class EventsDataStore {
 			new Map([...this.parentChildrensMap, ...updatedParentChildrenMapEntries]),
 		);
 
-		if (
-			this.eventStore.targetNode &&
-			(this.parentChildrensMap.get(this.eventStore.targetNode.eventId) || []).includes(
-				this.eventStore.targetNode.eventId,
-			)
-		) {
-			this.eventStore.targetEventId = null;
-		}
-
 		if (rootEvents.length > 0) {
 			this.rootEventIds = [...this.rootEventIds, ...rootEvents.map(({ eventId }) => eventId)];
 		}
@@ -262,14 +253,7 @@ export default class EventsDataStore {
 			new Map([...this.eventsCache, ...newEntries]),
 			{ deep: false },
 		);
-		if (
-			this.eventStore.targetNode &&
-			this.eventStore.targetNode.parentId === parentId &&
-			events.find(event => event.eventId === this.eventStore.targetNode?.eventId)
-		) {
-			this.eventStore.targetNode = null;
-			this.eventStore.targetEventId = null;
-		}
+
 		this.eventsCache = eventsMap;
 		const parentNode = this.eventsCache.get(parentId);
 		if (!parentNode) return;
