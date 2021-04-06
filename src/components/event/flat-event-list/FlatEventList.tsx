@@ -25,8 +25,8 @@ import { useWorkspaceEventStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
 import CardDisplayType from '../../../util/CardDisplayType';
 import { EventTreeNode } from '../../../models/EventAction';
-import { getEventNodeParents } from '../../../helpers/event';
 import { EventListFooter, EventListHeader } from '../EventListNavigation';
+import useEventsDataStore from '../../../hooks/useEventsDataStore';
 import '../../../styles/action.scss';
 
 interface Props {
@@ -34,15 +34,17 @@ interface Props {
 }
 
 function FlatEventList({ nodes }: Props) {
-	const eventWindowStore = useWorkspaceEventStore();
+	const eventsStore = useWorkspaceEventStore();
+	const eventDataStore = useEventsDataStore();
+
 	const listRef = React.useRef<VirtuosoHandle | null>(null);
 
 	React.useEffect(() => {
 		try {
 			raf(() => {
-				if (eventWindowStore.scrolledIndex !== null) {
+				if (eventsStore.scrolledIndex !== null) {
 					listRef.current?.scrollToIndex({
-						index: eventWindowStore.scrolledIndex.valueOf(),
+						index: eventsStore.scrolledIndex.valueOf(),
 						align: 'center',
 					});
 				}
@@ -50,12 +52,13 @@ function FlatEventList({ nodes }: Props) {
 		} catch (e) {
 			console.error(e);
 		}
-	}, [eventWindowStore.scrolledIndex, eventWindowStore.viewStore.flattenedListView]);
+	}, [eventsStore.scrolledIndex, eventsStore.viewStore.flattenedListView]);
 
 	const computeKey = (index: number) => nodes[index].eventId;
 
 	const renderEvent = (index: number): React.ReactElement => {
 		const node = nodes[index];
+
 		return (
 			<Observer>
 				{() => (
@@ -64,13 +67,13 @@ function FlatEventList({ nodes }: Props) {
 							childrenCount={0}
 							event={node}
 							displayType={CardDisplayType.MINIMAL}
-							onSelect={() => eventWindowStore.selectNode(node)}
-							isSelected={eventWindowStore.isNodeSelected(node)}
+							onSelect={() => eventsStore.selectNode(node)}
+							isSelected={eventsStore.isNodeSelected(node)}
 							isFlatView={true}
-							parentsCount={getEventNodeParents(node).length}
+							parentsCount={eventsStore.getParents(node.eventId, eventDataStore.eventsCache).length}
 							isActive={
-								eventWindowStore.selectedPath.length > 0 &&
-								eventWindowStore.selectedPath[eventWindowStore.selectedPath.length - 1].eventId ===
+								eventsStore.selectedPath.length > 0 &&
+								eventsStore.selectedPath[eventsStore.selectedPath.length - 1].eventId ===
 									node.eventId
 							}
 						/>
@@ -80,26 +83,16 @@ function FlatEventList({ nodes }: Props) {
 		);
 	};
 
-	if (eventWindowStore.isLoadingRootEvents) {
-		return <SplashScreen />;
-	}
-
-	if (!eventWindowStore.isLoadingRootEvents && eventWindowStore.eventTree.length === 0) {
-		if (eventWindowStore.eventTreeStatusCode === null) {
-			return (
-				<Empty
-					description='No events'
-					descriptionStyles={{ position: 'relative', bottom: '19px' }}
-				/>
-			);
+	if (eventDataStore.rootEventIds.length === 0) {
+		if (eventDataStore.isLoading) {
+			return <SplashScreen />;
+		}
+		if (!eventDataStore.isLoading && !eventDataStore.isError) {
+			return <Empty description='No events' />;
 		}
 		return (
 			<Empty
-				description={
-					typeof eventWindowStore.eventTreeStatusCode === 'number'
-						? `Server responded with ${eventWindowStore.eventTreeStatusCode} code`
-						: 'Error occured while loading evnets'
-				}
+				description='Error occured while loading events'
 				descriptionStyles={{ position: 'relative', bottom: '19px' }}
 			/>
 		);

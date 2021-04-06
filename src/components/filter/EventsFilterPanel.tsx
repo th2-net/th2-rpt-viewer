@@ -19,11 +19,13 @@ import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
 import { useWorkspaceEventStore, useGraphDataStore } from '../../hooks';
+import useEventsDataStore from '../../hooks/useEventsDataStore';
 
 function EventsFilterPanel() {
-	const eventWindowStore = useWorkspaceEventStore();
+	const eventsStore = useWorkspaceEventStore();
 	const graphDataStore = useGraphDataStore();
-	const { filterStore } = eventWindowStore;
+	const eventDataStore = useEventsDataStore();
+	const { filterStore } = eventsStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentName, setCurrentName] = React.useState('');
@@ -37,7 +39,7 @@ function EventsFilterPanel() {
 	}, [filterStore.filter]);
 
 	const onSubmit = () => {
-		eventWindowStore.filterStore.setEventsFilter({
+		eventsStore.applyFilter({
 			names,
 			eventTypes,
 			timestampFrom: graphDataStore.range[0],
@@ -46,7 +48,7 @@ function EventsFilterPanel() {
 	};
 
 	const onClear = () => {
-		eventWindowStore.filterStore.resetEventsFilter();
+		eventsStore.clearFilter();
 	};
 
 	const filterConfig: FilterRowConfig[] = [
@@ -74,7 +76,7 @@ function EventsFilterPanel() {
 
 	return (
 		<FilterPanel
-			isLoading={eventWindowStore.isLoadingRootEvents}
+			isLoading={eventDataStore.isLoading}
 			isFilterApplied={filterStore.isEventsFilterApplied}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}

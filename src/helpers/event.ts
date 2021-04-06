@@ -44,10 +44,6 @@ export function getTimestamp(item: EventAction | EventMessage | EventTreeNode) {
 	return item.timestamp;
 }
 
-export function getEventNodeParents(event: EventTreeNode): string[] {
-	return event.parents ? event.parents : [];
-}
-
 export function sortEventsByTimestamp(
 	eventNodes: Array<EventTreeNode>,
 	order: 'desc' | 'asc' = 'desc',
@@ -107,4 +103,45 @@ export const sortByTimestamp = (
 export function getItemId(item: EventAction | EventTreeNode | EventMessage) {
 	if (isEventMessage(item)) return item.messageId;
 	return item.eventId;
+}
+
+export const convertEventActionToEventTreeNode = (event: EventAction): EventTreeNode => {
+	return {
+		eventId: event.eventId,
+		eventName: event.eventName,
+		eventType: event.eventType,
+		startTimestamp: event.startTimestamp,
+		endTimestamp: event.endTimestamp,
+		successful: event.successful,
+		childList: [],
+		filtered: true,
+		parentId: event.parentEventId,
+		type: ActionType.EVENT_TREE_NODE,
+	};
+};
+
+export const getErrorEventTreeNode = (eventId: string): EventTreeNode => {
+	return {
+		type: ActionType.EVENT_TREE_NODE,
+		isUnknown: true,
+		eventId,
+		childList: [],
+		eventName: 'Unknown event',
+		eventType: '',
+		filtered: true,
+		parentId: null,
+		startTimestamp: {
+			nano: 0,
+			epochSecond: 0,
+		},
+		endTimestamp: {
+			nano: 0,
+			epochSecond: 0,
+		},
+		successful: false,
+	};
+};
+
+export function getEventParentId(e: EventTreeNode | EventAction) {
+	return isEventNode(e) ? e.parentId : e.parentEventId;
 }

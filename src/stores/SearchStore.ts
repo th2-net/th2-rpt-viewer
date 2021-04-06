@@ -467,14 +467,7 @@ export class SearchStore {
 	};
 
 	onError = (searchDirection: SSESearchDirection, ev: Event) => {
-		const data = (ev as MessageEvent).data;
-		notificationsStore.addResponseError({
-			type: 'error',
-			header: JSON.parse(data).exceptionName,
-			resource: (ev.target as EventSource).url,
-			responseBody: JSON.parse(data).exceptionCause,
-			responseCode: null,
-		});
+		notificationsStore.handleSSEError(ev);
 
 		this.stopSearch(searchDirection);
 	};
