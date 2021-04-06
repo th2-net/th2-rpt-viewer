@@ -371,6 +371,10 @@ export class SearchStore {
 			? []
 			: this.filters.info
 					.filter((info: SSEFilterInfo) => getFilter(info.name).values.length !== 0)
+					.filter(
+						(info: SSEFilterInfo) =>
+							info.name !== 'status' || getFilter(info.name).values !== 'any',
+					)
 					.map((info: SSEFilterInfo) => info.name);
 
 		const filterValues = filtersToAdd.map(filter => [
