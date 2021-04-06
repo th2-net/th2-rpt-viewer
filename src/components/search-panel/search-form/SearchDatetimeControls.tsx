@@ -35,7 +35,7 @@ export type SearchDatetimeControlsConfig = {
 		value: number | null;
 		setValue: (value: number | null) => void;
 	};
-	searchDirection: SearchDirection;
+	searchDirection: SearchDirection | null;
 };
 
 const SearchDatetimeControls = ({
@@ -48,16 +48,20 @@ const SearchDatetimeControls = ({
 	nextTimeLimit,
 }: SearchDatetimeControlsConfig) => {
 	const directionClicked = (direction: SearchDirection) => {
-		if (disabled || direction === searchDirection) return;
+		if (disabled) return;
 
-		if (searchDirection === SearchDirection.Both) {
+		if (searchDirection === direction) {
+			updateForm({
+				searchDirection: null,
+			});
+		} else if (searchDirection === SearchDirection.Both) {
 			updateForm({
 				searchDirection:
 					direction === SearchDirection.Next ? SearchDirection.Previous : SearchDirection.Next,
 			});
 		} else {
 			updateForm({
-				searchDirection: SearchDirection.Both,
+				searchDirection: !searchDirection ? direction : SearchDirection.Both,
 			});
 		}
 	};

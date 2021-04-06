@@ -186,7 +186,7 @@ const SearchPanelForm = () => {
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
 		completed: completed.previous && completed.next,
-		disabled,
+		disabled: disabled || !form.searchDirection,
 		progress: commonProgress,
 		processedObjectCount,
 		startSearch,

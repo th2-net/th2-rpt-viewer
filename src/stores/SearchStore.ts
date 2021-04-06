@@ -42,7 +42,7 @@ export type SearchPanelFormState = {
 		next: number | null;
 	};
 	resultCountLimit: number;
-	searchDirection: SearchDirection;
+	searchDirection: SearchDirection | null;
 	parentEvent: string;
 	stream: string[];
 };
