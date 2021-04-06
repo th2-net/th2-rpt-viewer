@@ -20,6 +20,7 @@ import {
 	FilterRowMultipleStringsConfig,
 	FilterRowStringConfig,
 	FilterRowTogglerConfig,
+	FilterRowSwitcherConfig,
 } from '../../models/filter/FilterInputs';
 import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import FilterRow from '../filter/row';
@@ -57,6 +58,7 @@ export type MessageFilterState = {
 export type FilterState = EventFilterState | MessageFilterState;
 
 type FilterRowConfig =
+	| FilterRowSwitcherConfig
 	| FilterRowTogglerConfig
 	| FilterRowStringConfig
 	| FilterRowMultipleStringsConfig;
@@ -121,6 +123,11 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 				const label = (filter.name.charAt(0).toUpperCase() + filter.name.slice(1))
 					.split(/(?=[A-Z])/)
 					.join(' ');
+
+				if (filter.name == 'status') {
+					filter.parameters = [{type: {value: 'switcher'}, name: 'value', defaultValue: 'any', hint: 'passed, failed, any'}]
+				}
+
 				const config = filter.parameters.map(
 					(param: SSEFilterParameter): FilterRowConfig => {
 						switch (param.type.value) {
@@ -142,6 +149,16 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									type: 'string',
 									value: getState(filter.name).values,
 									setValue: getValuesUpdater(filter.name),
+								};
+							case 'switcher':
+								return {
+									id: filter.name,
+									disabled: disableAll,
+									label: '',
+									type: 'switcher',
+									value: getState(filter.name).values,
+									setValue: getValuesUpdater(filter.name),
+									possibleValues: ['passed', 'failed'],
 								};
 							default:
 								return {

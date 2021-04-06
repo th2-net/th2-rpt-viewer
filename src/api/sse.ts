@@ -40,7 +40,7 @@ export interface SSEFilterParameter {
 	defaultValue: boolean | string | string[] | null;
 	hint: string;
 	name: string;
-	type: { value: 'string' | 'boolean' | 'string[]' };
+	type: { value: 'string' | 'boolean' | 'string[]' | 'switcher' };
 }
 
 type EventSSEFilters = 'attachedMessageId' | 'type' | 'name';
