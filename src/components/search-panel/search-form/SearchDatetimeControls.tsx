@@ -112,9 +112,9 @@ const SearchDatetimeControls = ({
 				<TimeLimitControl
 					value={previousTimeLimit.value}
 					setValue={previousTimeLimit.setValue}
-					disabled={disabled}
+					disabled={disabled || !searchDirection || searchDirection === SearchDirection.Next}
 					readonly={isSearching}
-					hidden={searchDirection === SearchDirection.Next}
+					hidden={!searchDirection || searchDirection === SearchDirection.Next}
 				/>
 			</div>
 			<div className='search-datetime-controls__start'>
@@ -136,9 +136,9 @@ const SearchDatetimeControls = ({
 				<TimeLimitControl
 					value={nextTimeLimit.value}
 					setValue={nextTimeLimit.setValue}
-					disabled={disabled || searchDirection === SearchDirection.Previous}
+					disabled={disabled || !searchDirection || searchDirection === SearchDirection.Previous}
 					readonly={isSearching}
-					hidden={searchDirection === SearchDirection.Previous}
+					hidden={!searchDirection || searchDirection === SearchDirection.Previous}
 				/>
 			</div>
 		</div>
