@@ -19,7 +19,8 @@ export type FitlerRowItem =
 	| FilterRowTimeWindowConfig
 	| FilterRowStringConfig
 	| FilterRowMultipleStringsConfig
-	| FilterRowTogglerConfig;
+	| FilterRowTogglerConfig
+	| FilterRowSwitcherConfig;
 
 export type CompoundFilterRow = Array<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>;
 
@@ -116,6 +117,16 @@ export type FilterRowTogglerConfig = FilterRowBaseConfig & {
 	possibleValues: [string, string];
 	toggleValue: () => void;
 	className?: string;
+};
+
+export type FilterRowSwitcherConfig = FilterRowBaseConfig & {
+	type: 'switcher';
+	disabled?: boolean;
+	value: string;
+	setValue: (nextValue: string) => void;
+	possibleValues: [string, string, string];
+	className?: string;
+	defaultValue: string;
 };
 
 export type ActionFilterConfig = {
