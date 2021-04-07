@@ -29,7 +29,7 @@ type NewRuleFormProps = {
 
 const viewTypes = Object.values(MessageViewType);
 
-const NewRuleForm = ({ rule, stopEdit }: NewRuleFormProps) => {
+const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
 
 	const sessionInputRef = useRef<HTMLInputElement>(null);
@@ -38,6 +38,13 @@ const NewRuleForm = ({ rule, stopEdit }: NewRuleFormProps) => {
 	const [currentSelectedViewType, setCurrentSelectedViewType] = useState(
 		rule ? rule.viewType : MessageViewType.JSON,
 	);
+
+	React.useEffect(() => {
+		setSessionValue(rule ? rule.session : '');
+		return () => {
+			setSessionValue('');
+		};
+	}, [rule]);
 
 	React.useLayoutEffect(() => {
 		setAutocompleteAnchor(sessionInputRef.current || undefined);
@@ -90,23 +97,16 @@ const NewRuleForm = ({ rule, stopEdit }: NewRuleFormProps) => {
 				<div className='session'>
 					{!rule || rule.fullyEditable ? (
 						<AutocompleteInput
-							anchor={autocompleteAnchor}
 							autoresize={false}
+							anchor={autocompleteAnchor}
 							placeholder='New session'
 							className='session-input'
 							ref={sessionInputRef}
 							value={currentSessionValue}
-							onSubmit={v => {
-								if (v === '*') {
-									setSessionValue('');
-									return;
-								}
-								setSessionValue(v);
-							}}
-							notResetOnSubmit
-							autocomplete={null}
-							// autocompleteClassName='message-display-rules-autocomplete'
-							datalistKey='session-input'
+							setValue={setSessionValue}
+							onSubmit={setSessionValue}
+							autocomplete={sessions}
+							autocompleteClassName='message-display-rules-autocomplete'
 						/>
 					) : (
 						<p>{rule.session}</p>
