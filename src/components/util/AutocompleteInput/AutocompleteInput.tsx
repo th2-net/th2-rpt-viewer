@@ -100,7 +100,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	};
 
 	const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
-		if (e.keyCode === KeyCodes.UP) {
+		if (e.keyCode === KeyCodes.UP || e.keyCode === KeyCodes.TAB) {
 			e.preventDefault();
 		}
 
