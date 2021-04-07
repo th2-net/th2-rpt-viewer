@@ -28,7 +28,7 @@ import { useSelectedStore, useWorkspaceEventStore } from '../../hooks';
 interface Props {
 	displayType?: CardDisplayType;
 	event: EventTreeNode;
-	onSelect: () => void;
+	onSelect?: () => void;
 	isSelected?: boolean;
 	isActive?: boolean;
 	childrenCount?: number;
@@ -69,6 +69,7 @@ function EventCardHeader({
 		displayType,
 		isSelected ? 'selected' : null,
 		isActive ? 'active' : null,
+		onSelect ? null : 'disabled',
 	);
 
 	const iconClassName = createBemBlock(
