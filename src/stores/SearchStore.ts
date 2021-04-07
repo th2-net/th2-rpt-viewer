@@ -42,7 +42,7 @@ export type SearchPanelFormState = {
 		next: number | null;
 	};
 	resultCountLimit: number;
-	searchDirection: SearchDirection;
+	searchDirection: SearchDirection | null;
 	parentEvent: string;
 	stream: string[];
 };
@@ -173,7 +173,10 @@ export class SearchStore {
 			},
 			searching: this.isSearching,
 			completed: this.completed,
-			processedObjectCount: this.currentSearch?.processedObjectCount || 0,
+			processedObjectCount: this.currentSearch?.processedObjectCount
+				? this.currentSearch.processedObjectCount.previous +
+				  this.currentSearch.processedObjectCount.next
+				: 0,
 		};
 	}
 
@@ -218,11 +221,24 @@ export class SearchStore {
 	@computed get sortedResultGroups() {
 		if (!this.currentSearch) return [];
 
-		const { searchDirection } = this.currentSearch.request.state;
+		const { startTimestamp, searchDirection } = this.currentSearch.request.state;
 
-		return Object.entries(this.currentSearch.results).sort(
-			(a, b) => (+a[0] - +b[0]) * (searchDirection === SearchDirection.Previous ? -1 : 1),
-		);
+		return Object.entries(this.currentSearch.results).sort((a, b) => {
+			const firstResultTimestamp = +a[0] * 1000 * SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60;
+			const secondResultTimestamp = +b[0] * 1000 * SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60;
+
+			if (searchDirection === SearchDirection.Both) {
+				return (
+					Math.abs(firstResultTimestamp - (startTimestamp || 0)) -
+					Math.abs(secondResultTimestamp - (startTimestamp || 0))
+				);
+			}
+
+			return (
+				(firstResultTimestamp - secondResultTimestamp) *
+				(searchDirection === SearchDirection.Next ? 1 : -1)
+			);
+		});
 	}
 
 	@action

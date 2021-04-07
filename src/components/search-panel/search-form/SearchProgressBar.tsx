@@ -26,7 +26,7 @@ type Progress = {
 
 export type SearchProgressBarConfig = {
 	isSearching: boolean;
-	searchDirection: SearchDirection;
+	searchDirection: SearchDirection | null;
 	leftProgress: Progress;
 	rightProgress: Progress;
 };
@@ -85,7 +85,7 @@ const SearchProgressBar = (props: SearchProgressBarConfig) => {
 	const startPointClassName = createBemElement(
 		'progress-bar',
 		'start-point',
-		isSearching ? 'hidden' : null,
+		isSearching || !searchDirection ? 'hidden' : null,
 	);
 
 	const rightLineClassName = createBemElement(
