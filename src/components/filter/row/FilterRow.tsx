@@ -22,6 +22,7 @@ import TimeWindow from './TimeWindow';
 import DatetimeFilterRow from './DateTimeFilterRow';
 import TogglerRow from './TogglerRow';
 import ActionRow from './ActionRow';
+import SwitcherRow from './SwitcherRow';
 
 interface Props {
 	rowConfig: FitlerRowItem | ActionFilterRow;
@@ -41,6 +42,8 @@ export default function FilterRow({ rowConfig }: Props) {
 			return <TogglerRow config={rowConfig} />;
 		case 'action':
 			return <ActionRow config={rowConfig} />;
+		case 'switcher':
+			return <SwitcherRow config={rowConfig} />;
 		default:
 			return null;
 	}

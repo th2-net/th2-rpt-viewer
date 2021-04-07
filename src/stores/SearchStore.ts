@@ -371,6 +371,10 @@ export class SearchStore {
 			? []
 			: this.filters.info
 					.filter((info: SSEFilterInfo) => getFilter(info.name).values.length !== 0)
+					.filter(
+						(info: SSEFilterInfo) =>
+							info.name !== 'status' || getFilter(info.name).values !== 'any',
+					)
 					.map((info: SSEFilterInfo) => info.name);
 
 		const filterValues = filtersToAdd.map(filter => [
@@ -467,14 +471,7 @@ export class SearchStore {
 	};
 
 	onError = (searchDirection: SSESearchDirection, ev: Event) => {
-		const data = (ev as MessageEvent).data;
-		notificationsStore.addResponseError({
-			type: 'error',
-			header: JSON.parse(data).exceptionName,
-			resource: (ev.target as EventSource).url,
-			responseBody: JSON.parse(data).exceptionCause,
-			responseCode: null,
-		});
+		notificationsStore.handleSSEError(ev);
 
 		this.stopSearch(searchDirection);
 	};

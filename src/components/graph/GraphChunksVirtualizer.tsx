@@ -18,7 +18,6 @@ import React from 'react';
 import moment from 'moment';
 import { useDebouncedCallback } from '../../hooks';
 import { isDivElement } from '../../helpers/dom';
-import { raf } from '../../helpers/raf';
 import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import { usePointerTimestampUpdate } from '../../contexts/pointerTimestampContext';
@@ -102,10 +101,12 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const nextItemsRef = React.useRef<HTMLDivElement>(null);
 
 	const [state] = React.useState<State>(setInitialState(settings));
-	const [centerTimestamp, setCenterTimestamp] = React.useState<number | null>(null);
 
+	const center = React.useRef<number | null>(timestamp.valueOf());
+
+	// chunk with zero index timestamp from
 	const [anchorTimestamp, setAnchorTimestamp] = React.useState(
-		getChunkTimestampFrom(timestamp.valueOf(), interval),
+		new Number(getChunkTimestampFrom(timestamp.valueOf(), interval)),
 	);
 
 	const [chunks, setChunks] = React.useState<Array<[Chunk, number]>>([]);
@@ -148,31 +149,25 @@ const GraphChunksVirtualizer = (props: Props) => {
 	}, [panelsRange, chunks, timestamp]);
 
 	React.useEffect(() => {
-		setAnchorTimestamp(getChunkTimestampFrom(timestamp.valueOf(), interval));
-		setCenterTimestamp(timestamp.valueOf());
+		center.current = timestamp.valueOf();
+		const anchor = new Number(getChunkTimestampFrom(timestamp.valueOf(), interval));
+		setAnchorTimestamp(anchor);
+		getCurrentChunks(state.initialPosition, anchor.valueOf());
 	}, [timestamp]);
 
-	React.useEffect(() => {
-		getCurrentChunks(state.initialPosition);
-		raf(() => {
-			if (viewportElementRef.current) {
-				viewportElementRef.current.scrollLeft = state.initialPosition;
-			}
-		}, 3);
-	}, [anchorTimestamp]);
-
 	React.useLayoutEffect(() => {
-		raf(() => {
-			if (viewportElementRef.current && centerTimestamp) {
-				const centralChunkStart = moment.utc(getChunkTimestampFrom(centerTimestamp, interval));
-				const chunkCenter = moment.utc(centralChunkStart).add(interval / 2, 'minutes');
-
-				const offset =
-					(chunkCenter.valueOf() - centerTimestamp) * (chunkWidth / (interval * 60 * 1000));
+		getTimeRange();
+		if (chunks.length && center.current) {
+			const centralChunkStart = anchorTimestamp.valueOf();
+			const chunkCenter = moment.utc(centralChunkStart).add(interval / 2, 'minutes');
+			const offset =
+				(chunkCenter.valueOf() - center.current) * (chunkWidth / (interval * 60 * 1000));
+			if (viewportElementRef.current) {
 				viewportElementRef.current.scrollLeft = state.initialPosition - offset;
 			}
-		}, 3);
-	}, [centerTimestamp]);
+			center.current = null;
+		}
+	}, [chunks, anchorTimestamp]);
 
 	React.useEffect(() => {
 		document.addEventListener('mousedown', handleMouseDown);
@@ -219,7 +214,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 		viewportElementRef.current.scrollLeft = scrollLeft.current - (x - startX.current) * 2;
 	};
 
-	const getCurrentChunks = (_scrollLeft: number) => {
+	const getCurrentChunks = (_scrollLeft: number, anchorTs = anchorTimestamp.valueOf()) => {
 		const {
 			totalWidth,
 			toleranceWidth,
@@ -228,17 +223,17 @@ const GraphChunksVirtualizer = (props: Props) => {
 		} = state;
 
 		const index = minIndex + Math.floor((_scrollLeft - toleranceWidth) / itemWidth);
-		const data = getIndexes(index, bufferedItems);
+		const chunksIndexes = getIndexes(index, bufferedItems);
 
 		const leftPadding = Math.max((index - minIndex) * itemWidth, 0);
-		const rightPadding = Math.max(totalWidth - leftPadding - data.length * itemWidth, 0);
+		const rightPadding = Math.max(totalWidth - leftPadding - chunksIndexes.length * itemWidth, 0);
 
 		if (prevItemsRef.current && nextItemsRef.current) {
 			prevItemsRef.current.style.width = `${leftPadding}px`;
 			nextItemsRef.current.style.width = `${rightPadding}px`;
 		}
 
-		const updatedChunks: [Chunk, number][] = data.map(i => [getChunk(anchorTimestamp, i), i]);
+		const updatedChunks: [Chunk, number][] = chunksIndexes.map(i => [getChunk(anchorTs, i), i]);
 		const isUpdated =
 			chunks.length === 0 ||
 			updatedChunks.some(
@@ -247,7 +242,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 			);
 
 		if (isUpdated) {
-			setChunks(data.map(i => [getChunk(anchorTimestamp, i), i]));
+			setChunks(updatedChunks);
 		}
 	};
 
@@ -325,13 +320,13 @@ const GraphChunksVirtualizer = (props: Props) => {
 
 			if (isStartReached) {
 				const firstChunk = chunks[0][0];
-				setAnchorTimestamp(firstChunk.from);
+				setAnchorTimestamp(new Number(firstChunk.from));
 				getCurrentChunks(state.initialPosition);
 				viewportElementRef.current.scrollLeft = state.initialPosition;
 				scrollLeft.current = state.initialPosition;
 			} else if (isEndReached) {
 				const lastChunk = chunks[chunks.length - 1][0];
-				setAnchorTimestamp(lastChunk.from);
+				setAnchorTimestamp(new Number(lastChunk.from));
 				getCurrentChunks(state.initialPosition - chunkWidth * 0.5);
 				viewportElementRef.current.scrollLeft = state.initialPosition - chunkWidth * 0.5;
 				scrollLeft.current = state.initialPosition - chunkWidth * 0.5;
@@ -344,7 +339,6 @@ const GraphChunksVirtualizer = (props: Props) => {
 	return (
 		<div className='graph-virtualizer'>
 			<div
-				key={anchorTimestamp}
 				className='graph-virtualizer__list'
 				ref={viewportElementRef}
 				onScroll={onScroll}

@@ -49,6 +49,7 @@ export default function Bubble(props: Props) {
 	} = props;
 
 	const [isEditing, setIsEditing] = React.useState(false);
+	const [currentValue, setCurrentValue] = React.useState<string>(value);
 	const inputRef = React.useRef<HTMLInputElement>();
 
 	React.useEffect(() => {
@@ -56,6 +57,13 @@ export default function Bubble(props: Props) {
 			inputRef.current?.select();
 		}
 	}, [isEditing]);
+
+	React.useEffect(() => {
+		setCurrentValue(value);
+		return () => {
+			setCurrentValue('');
+		};
+	}, [value]);
 
 	const onBlur = () => {
 		if (inputRef.current?.value === '') {
@@ -76,7 +84,6 @@ export default function Bubble(props: Props) {
 			onRemove();
 			return;
 		}
-
 		onSubmit(nextValue);
 		setIsEditing(false);
 	};
@@ -95,7 +102,8 @@ export default function Bubble(props: Props) {
 				<AutocompleteInput
 					ref={inputRef}
 					className='bubble__input'
-					value={value}
+					value={currentValue}
+					setValue={setCurrentValue}
 					onSubmit={inputOnSubmit}
 					onRemove={onRemove}
 					onEmptyBlur={onRemove}

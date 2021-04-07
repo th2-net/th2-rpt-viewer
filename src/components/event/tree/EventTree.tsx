@@ -15,51 +15,92 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import EventCardHeader from '../EventCardHeader';
 import { useWorkspaceEventStore } from '../../../hooks';
 import EventCardSkeleton from '../EventCardSkeleton';
 import { EventTreeNode } from '../../../models/EventAction';
-import { getEventNodeParents } from '../../../helpers/event';
 import CardDisplayType from '../../../util/CardDisplayType';
 import { createBemBlock } from '../../../helpers/styleCreators';
 import { formatTime } from '../../../helpers/date';
+import useEventsDataStore from '../../../hooks/useEventsDataStore';
 
 interface EventTreeProps {
 	eventTreeNode: EventTreeNode;
-	startTimestamp?: number;
-	endTimestamp?: number;
 }
 
-function EventTree({ eventTreeNode, startTimestamp, endTimestamp }: EventTreeProps) {
-	const eventWindowStore = useWorkspaceEventStore();
+function EventTree({ eventTreeNode }: EventTreeProps) {
+	const eventsStore = useWorkspaceEventStore();
+	const eventsDataStore = useEventsDataStore();
 
-	const onExpandClick = () => eventWindowStore.toggleNode(eventTreeNode);
+	const parents = React.useMemo(() => {
+		return eventsStore.getParents(eventTreeNode.eventId, eventsDataStore.eventsCache);
+	}, [eventsDataStore.eventsCache]);
+
+	const childrenCount = computed(
+		() => (eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId) || []).length,
+	).get();
+
+	const isLoadingSiblings = computed(
+		() => eventTreeNode.parentId && eventsDataStore.isLoadingChildren.get(eventTreeNode.parentId),
+	).get();
+
+	const onExpandClick = () => eventsStore.toggleNode(eventTreeNode);
+
+	const showLoadButton = computed(() => {
+		let isLastChild = false;
+		let parentHasMoreChilds = false;
+
+		if (eventTreeNode.parentId !== null) {
+			const siblings = eventsDataStore.getEventChildrenNodes(eventTreeNode.parentId);
+
+			isLastChild =
+				siblings.length > 0 && siblings[siblings.length - 1].eventId === eventTreeNode.eventId;
+			parentHasMoreChilds =
+				eventsDataStore.hasUnloadedChildren.get(eventTreeNode.parentId) === true;
+		}
+
+		return isLastChild && parentHasMoreChilds;
+	}).get();
+
+	const isSelected = computed(() =>
+		eventsStore.selectedPath.some(n => n.eventId === eventTreeNode.eventId),
+	).get();
 
 	let expandIconStatus: 'expanded' | 'hidden' | 'loading' | 'none';
 
-	if (eventTreeNode.childList.length === 0) {
+	if (childrenCount === 0) {
 		expandIconStatus = 'none';
-	} else if (eventWindowStore.isExpandedMap.get(eventTreeNode.eventId)) {
+	} else if (eventsStore.isExpandedMap.get(eventTreeNode.eventId)) {
 		expandIconStatus = 'expanded';
 	} else {
 		expandIconStatus = 'hidden';
 	}
 
-	// const nestingLevel =
-	// 	(viewStore.eventsPanelArea === PanelArea.P25 ? 20 : 35) *
-	// 	getEventNodeParents(eventTreeNode).length;
+	function loadMoreSiblings() {
+		if (eventTreeNode.parentId) {
+			eventsDataStore.loadMoreChilds(eventTreeNode.parentId);
+		}
+	}
 
-	const nestingLevel = 20 * getEventNodeParents(eventTreeNode).length;
+	const onNodeSelect = React.useCallback(() => {
+		eventsStore.selectNode(eventTreeNode);
+	}, [eventTreeNode]);
+
+	const nestingLevel = 20 * parents.length;
 
 	return (
 		<>
-			{startTimestamp && (
-				<div className='event-tree-timestamp'>
-					<div className='event-tree-timestamp__value'>{formatTime(startTimestamp)}</div>
-					<div className='event-tree-timestamp__icon' />
-				</div>
-			)}
+			{eventsStore.selectedPathTimestamps?.startEventId === eventTreeNode.eventId &&
+				eventsStore.selectedPathTimestamps.startTimestamp && (
+					<div className='event-tree-timestamp'>
+						<div className='event-tree-timestamp__value'>
+							{formatTime(eventsStore.selectedPathTimestamps.startTimestamp)}
+						</div>
+						<div className='event-tree-timestamp__icon' />
+					</div>
+				)}
 			<div className='event-tree-card' style={{ paddingLeft: nestingLevel }}>
 				<ExpandIcon
 					status={expandIconStatus}
@@ -68,14 +109,14 @@ function EventTree({ eventTreeNode, startTimestamp, endTimestamp }: EventTreePro
 				/>
 				{eventTreeNode ? (
 					<EventCardHeader
-						childrenCount={eventTreeNode.childList.length}
+						childrenCount={childrenCount}
 						event={eventTreeNode}
 						displayType={CardDisplayType.MINIMAL}
-						onSelect={() => eventWindowStore.selectNode(eventTreeNode)}
-						isSelected={eventWindowStore.isNodeSelected(eventTreeNode)}
+						onSelect={onNodeSelect}
+						isSelected={isSelected}
 						isActive={
-							eventWindowStore.selectedPath.length > 0 &&
-							eventWindowStore.selectedPath[eventWindowStore.selectedPath.length - 1].eventId ===
+							eventsStore.selectedPath.length > 0 &&
+							eventsStore.selectedPath[eventsStore.selectedPath.length - 1].eventId ===
 								eventTreeNode.eventId
 						}
 					/>
@@ -83,12 +124,21 @@ function EventTree({ eventTreeNode, startTimestamp, endTimestamp }: EventTreePro
 					<EventCardSkeleton />
 				)}
 			</div>
-			{endTimestamp && (
-				<div className='event-tree-timestamp end'>
-					<div className='event-tree-timestamp__value'>{formatTime(endTimestamp)}</div>
-					<div className='event-tree-timestamp__icon' />
-				</div>
+			{eventsStore.selectedPathTimestamps?.endEventId === eventTreeNode.eventId &&
+				eventsStore.selectedPathTimestamps.endTimestamp && (
+					<div className='event-tree-timestamp end'>
+						<div className='event-tree-timestamp__value'>
+							{formatTime(eventsStore.selectedPathTimestamps.endTimestamp)}
+						</div>
+						<div className='event-tree-timestamp__icon' />
+					</div>
+				)}
+			{showLoadButton && !isLoadingSiblings && (
+				<button onClick={loadMoreSiblings} className='actions-list__load-button'>
+					Load more
+				</button>
 			)}
+			{showLoadButton && isLoadingSiblings && <div className='actions-list__spinner' />}
 		</>
 	);
 }

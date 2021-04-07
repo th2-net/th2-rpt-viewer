@@ -22,7 +22,7 @@ import { isEventMessage } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
 import notificationsStore from '../NotificationsStore';
 import MessagesStore from './MessagesStore';
-import { SSEChannel } from './SSEChannel';
+import { MessagesSSELoader } from './MessagesSSELoader';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
@@ -58,10 +58,10 @@ export default class MessagesDataProviderStore {
 	public isError = false;
 
 	@observable
-	public searchChannelPrev: SSEChannel | null = null;
+	public searchChannelPrev: MessagesSSELoader | null = null;
 
 	@observable
-	public searchChannelNext: SSEChannel | null = null;
+	public searchChannelNext: MessagesSSELoader | null = null;
 
 	@observable
 	public startIndex = 10000;
@@ -73,10 +73,10 @@ export default class MessagesDataProviderStore {
 	public softFilterResults: Array<EventMessage> = [];
 
 	@observable
-	public softFilterChannelPrev: SSEChannel | null = null;
+	public softFilterChannelPrev: MessagesSSELoader | null = null;
 
 	@observable
-	public softFilterChannelNext: SSEChannel | null = null;
+	public softFilterChannelNext: MessagesSSELoader | null = null;
 
 	prevLoadEndTimestamp: number | null = null;
 
@@ -234,7 +234,7 @@ export default class MessagesDataProviderStore {
 	public startPreviousMessagesChannel = (query: MessagesSSEParams, interval?: number) => {
 		this.prevLoadEndTimestamp = null;
 
-		this.searchChannelPrev = new SSEChannel(
+		this.searchChannelPrev = new MessagesSSELoader(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onPrevChannelResponse,
@@ -283,16 +283,7 @@ export default class MessagesDataProviderStore {
 
 	@action
 	private onLoadingError = (event: Event) => {
-		if (event instanceof MessageEvent) {
-			const error = JSON.parse(event.data);
-			notificationsStore.addResponseError({
-				type: 'error',
-				header: error.exceptionName,
-				resource: event.target instanceof EventSource ? event.target.url : '',
-				responseBody: error.exceptionCause,
-				responseCode: null,
-			});
-		}
+		notificationsStore.handleSSEError(event);
 		this.stopMessagesLoading(true);
 	};
 
@@ -300,7 +291,7 @@ export default class MessagesDataProviderStore {
 	public startNextMessagesChannel = (query: MessagesSSEParams, interval?: number) => {
 		this.nextLoadEndTimestamp = null;
 
-		this.searchChannelNext = new SSEChannel(
+		this.searchChannelNext = new MessagesSSELoader(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onNextChannelResponse,
@@ -365,7 +356,7 @@ export default class MessagesDataProviderStore {
 
 	@action
 	private startNextSoftFilterChannel = (query: MessagesSSEParams, interval?: number) => {
-		this.softFilterChannelNext = new SSEChannel(
+		this.softFilterChannelNext = new MessagesSSELoader(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onNextSoftFilterChannelResponse,
@@ -388,7 +379,7 @@ export default class MessagesDataProviderStore {
 
 	@action
 	private startPrevSoftFilterChannel = (query: MessagesSSEParams, interval?: number) => {
-		this.softFilterChannelPrev = new SSEChannel(
+		this.softFilterChannelPrev = new MessagesSSELoader(
 			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onPrevSoftFilterChannelResponse,

@@ -100,3 +100,14 @@ export const isTimeInsideInterval = (timestamp: number, interval: [number, numbe
 export const toUTC = (date: Moment) => {
 	return date.subtract(moment().utcOffset(), 'minutes');
 };
+
+export function getRangeFromTimestamp(timestamp: number, interval: number): TimeRange {
+	return [
+		moment(timestamp)
+			.subtract(interval / 2, 'minutes')
+			.valueOf(),
+		moment(timestamp)
+			.add(interval / 2, 'minutes')
+			.valueOf(),
+	];
+}
