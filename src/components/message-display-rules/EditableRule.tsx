@@ -67,7 +67,6 @@ const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: Edi
 	};
 
 	const editRuleSession = useCallback(() => {
-		console.log(session);
 		rulesStore.editMessageDisplayRule(rule, { ...rule, session });
 		setSessionIsEditing(false);
 	}, [session]);

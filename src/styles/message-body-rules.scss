@@ -51,7 +51,6 @@
             @include scrollbar();
         }
         &__header {
-            padding: 0 4px;
             display: flex;
             justify-content: space-between;
             p {
@@ -71,11 +70,6 @@
     }
 }
 
-.inputs-wrapper {
-    width: 90%;
-    display: flex;
-    justify-content: space-between;
-}
 
 .rule {
     position: relative;
@@ -86,12 +80,22 @@
     input, select {
         font: inherit;
     }
-    &.full {
-        padding: 4px 0 0;
+    &.editable {
+        padding-left: 18px;
+        &:hover {
+            .reorder {
+                display: flex;
+            }
+            .rule-delete {
+                display: block;
+            }
+        }
     }
     .reorder {
+        position: absolute;
+        left: 0;
+        display: none;
         width: 16px;
-        display: flex;
         flex-wrap: wrap;
         align-items: center;
         &-control {
@@ -114,17 +118,22 @@
         position: absolute;
         top: 5px;
         right: 0;
-        padding: 0 1px;
         cursor: pointer;
         outline: none;
-        background-color: transparent;
-        border: 1px solid gray;
         border-radius: 4px;
     }
     &-delete {
+        border: 1px solid gray;
+        padding: 0 1px;
+        background-color: transparent;
+        display: none;
         @include icon(url(../../resources/icons/cross-icon.svg));
     }
     &-button {
+        border: none;
+        padding: 1px 2px;
+        color: #fff;
+        background-color: $filterPickerScrollItemActiveColor;
         &:disabled {
             opacity: 0.5;
             cursor: default;

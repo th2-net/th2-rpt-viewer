@@ -45,6 +45,7 @@ const SessionEditor: React.FC<SessionEditorProps> = ({
 			className='session-input'
 			ref={ref}
 			value={value}
+			setValue={setValue}
 			onSubmit={v => {
 				setValue(v);
 				if (onSubmit) {
