@@ -421,9 +421,19 @@ export default class EventsStore {
 
 	@action
 	private onTargetNodePathChange = (targetPath: string[] | null) => {
-		if (targetPath && this.eventDataStore.rootEventIds.includes(targetPath[0])) {
+		if (targetPath && this.targetNode && this.eventDataStore.rootEventIds.includes(targetPath[0])) {
 			this.expandPath(targetPath);
 			this.targetEventId = null;
+
+			const siblings =
+				this.targetNode.parentId === null
+					? this.eventDataStore.rootEventIds
+					: this.eventDataStore.getEventChildrenNodes(this.targetNode.parentId).map(e => e.eventId);
+
+			if (siblings.includes(this.targetNode.eventId)) {
+				this.targetNode = null;
+				this.targetEventId = null;
+			}
 		}
 	};
 
@@ -453,7 +463,8 @@ export default class EventsStore {
 			if (
 				targetNode &&
 				targetNode.parentId !== null &&
-				eventTreeNode.eventId === targetNode.parentId
+				eventTreeNode.eventId === targetNode.parentId &&
+				!childList.some(childEvent => childEvent.eventId === targetNode.eventId)
 			) {
 				path.push(targetNode);
 			}
@@ -482,8 +493,10 @@ export default class EventsStore {
 		}
 		const [currentId, ...rest] = path;
 		const targetNode = nodes.find(n => n.eventId === currentId);
-
-		return targetNode ? [targetNode, ...this.getNodesPath(rest, targetNode.childList ?? [])] : [];
+		const childList = targetNode
+			? this.eventDataStore.getEventChildrenNodes(targetNode.eventId)
+			: [];
+		return targetNode ? [targetNode, ...this.getNodesPath(rest, childList)] : [];
 	}
 
 	private onEventHover = (hoveredEvent: EventTreeNode | null) => {
