@@ -95,7 +95,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 							key={index}
 							size='small'
 							removeIconType='white'
-							submitKeyCodes={[KeyCodes.SPACE]}
+							submitKeyCodes={[KeyCodes.TAB]}
 							className='filter__bubble'
 							value={value}
 							onSubmit={valueBubbleOnChangeFor(index)}
@@ -109,12 +109,10 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 						anchor={autocompleteAnchor}
 						ref={input}
 						placeholder={
-							config.values.length === 0
-								? config.hint || 'Use Space to separate different words & Tab to finish'
-								: ''
+							config.values.length === 0 ? config.hint || 'Use Tab to separate different words' : ''
 						}
 						disabled={config.disabled}
-						submitKeyCodes={[KeyCodes.SPACE]}
+						submitKeyCodes={[KeyCodes.TAB]}
 						className='filter-row__multiple-values-input'
 						wrapperClassName='filter-row__multiple-values-input-wrapper'
 						value={config.currentValue}
