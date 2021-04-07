@@ -23,8 +23,6 @@ import GraphSearch from './search/GraphSearch';
 import OutsideItems from './OutsideItems';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
-import { EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
 import { Chunk, PanelRange } from '../../models/Graph';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
@@ -67,19 +65,6 @@ function Graph({ activeWorkspace }: GraphProps) {
 		};
 	}, []);
 
-	const onGraphItemClick = React.useCallback(
-		(item: EventTreeNode | EventMessage) => {
-			activeWorkspace.onSavedItemSelect(item);
-		},
-		[activeWorkspace.onSavedItemSelect],
-	);
-
-	const getGraphItemType = React.useCallback(activeWorkspace.graphStore.getGraphItemType, [
-		activeWorkspace.graphStore.getGraphItemType,
-		selectedStore.attachedMessages,
-		selectedStore.graphItems,
-	]);
-
 	const getChunk = React.useCallback(
 		(timestamp: number, index: number) => {
 			return activeWorkspace.graphStore.getChunkByTimestamp(
@@ -117,13 +102,14 @@ function Graph({ activeWorkspace }: GraphProps) {
 						data-index={index}
 						style={{ width: chunkWidth }}>
 						<GraphChunk
+							key={`${chunk.from}-${chunk.to}`}
 							tickSize={activeWorkspace.graphStore.tickSize}
 							interval={activeWorkspace.graphStore.interval}
 							chunk={chunk}
 							chunkWidth={chunkWidth}
 							getChunkData={activeWorkspace.graphStore.getChunkData}
-							getGraphItemType={getGraphItemType}
-							onGraphItemClick={onGraphItemClick}
+							getGraphItemType={activeWorkspace.graphStore.getGraphItemType}
+							onGraphItemClick={activeWorkspace.onSavedItemSelect}
 						/>
 					</div>
 				)}
@@ -142,12 +128,11 @@ function Graph({ activeWorkspace }: GraphProps) {
 				setRange={activeWorkspace.graphStore.setRange}
 				interval={activeWorkspace.graphStore.interval}
 				timestamp={activeWorkspace.graphStore.timestamp}
-				key={activeWorkspace.graphStore.timestamp.valueOf()}
 				range={activeWorkspace.graphStore.range}
 			/>
 			<OutsideItems
-				onGraphItemClick={onGraphItemClick}
-				getGraphItemType={getGraphItemType}
+				onGraphItemClick={activeWorkspace.onSavedItemSelect}
+				getGraphItemType={activeWorkspace.graphStore.getGraphItemType}
 				panelsRange={panelsRange}
 				graphItems={selectedStore.graphItems}
 				range={activeWorkspace.graphStore.range}

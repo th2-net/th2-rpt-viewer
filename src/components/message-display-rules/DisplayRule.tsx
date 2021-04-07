@@ -92,8 +92,13 @@ const DisplayRule = ({ rule, isFirst, isLast, sessions, index }: DisplayRuleProp
 		rule && !rule.fullyEditable ? 'full' : null,
 	);
 	const ruleRef = useRef<HTMLDivElement>(null);
-	useOutsideClickListener(ruleRef, () => {
-		setIsEditing(false);
+	useOutsideClickListener(ruleRef, (e: MouseEvent) => {
+		const isFromAutocomplete = Boolean(
+			(e.target as HTMLElement).closest('.message-display-rules-autocomplete'),
+		);
+		if (!isFromAutocomplete) {
+			setIsEditing(false);
+		}
 	});
 
 	return (

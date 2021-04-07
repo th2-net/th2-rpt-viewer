@@ -217,6 +217,20 @@
 				@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
 			}
 		}
+		&.passed {
+			@include icon(url(../../resources/icons/workspace-passed-white.svg), 15px, 15px);
+
+			&.active {
+				@include icon(url(../../resources/icons/workspace-passed.svg), 15px, 15px);
+			}
+		}
+		&.failed {
+			@include icon(url(../../resources/icons/workspace-failed-white.svg), 15px, 15px);
+
+			&.active {
+				@include icon(url(../../resources/icons/workspace-failed.svg), 15px, 15px);
+			}
+		}
 	}
 
 	&__label {

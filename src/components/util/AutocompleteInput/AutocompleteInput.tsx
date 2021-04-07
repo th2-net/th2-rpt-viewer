@@ -25,6 +25,7 @@ interface Props {
 	wrapperClassName?: string;
 	inputStyle?: React.CSSProperties;
 	value: string;
+	setValue: (newValue: string) => void;
 	readonly?: boolean;
 	autoresize?: boolean;
 	autocomplete: string[] | null;
@@ -33,7 +34,6 @@ interface Props {
 	placeholder?: string;
 	submitKeyCodes?: number[];
 	onSubmit: (nextValue: string) => void;
-	notResetOnSubmit?: boolean;
 	onRemove?: () => void;
 	onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
 	onBlur?: () => void;
@@ -45,8 +45,8 @@ interface Props {
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	const {
 		value,
+		setValue,
 		onSubmit,
-		notResetOnSubmit,
 		onRemove,
 		onEmptyBlur,
 		onBlur = () => null,
@@ -65,7 +65,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		anchor,
 	} = props;
 
-	const [currentValue, setCurrentValue] = React.useState<string>(value);
 	const autocompleteListRef = React.useRef<HTMLDivElement>(null);
 
 	useOutsideClickListener(ref, e => {
@@ -76,27 +75,17 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		)
 			return;
 
-		if (currentValue.trim().length > 0) {
+		if (value.trim().length > 0) {
 			if (onEmptyBlur) {
 				onEmptyBlur();
 			}
-			onSubmit(currentValue);
-		}
-		if (!notResetOnSubmit) {
-			setCurrentValue('');
+			onSubmit(value);
 		}
 		onBlur();
 	});
 
-	React.useEffect(() => {
-		setCurrentValue(value);
-		return () => {
-			setCurrentValue('');
-		};
-	}, [value]);
-
 	const onChange: React.ChangeEventHandler<HTMLInputElement> = e => {
-		setCurrentValue(e.target.value);
+		setValue(e.target.value);
 	};
 
 	const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
@@ -104,20 +93,16 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			e.preventDefault();
 		}
 
-		if (!currentValue.trim() && e.keyCode !== KeyCodes.BACKSPACE) {
-			setCurrentValue('');
+		if (!value.trim() && e.keyCode !== KeyCodes.BACKSPACE) {
 			return;
 		}
 
-		if (submitKeyCodes.includes(e.keyCode) && currentValue.length > 0) {
-			onSubmit(currentValue);
-			if (!notResetOnSubmit) {
-				setCurrentValue('');
-			}
+		if (submitKeyCodes.includes(e.keyCode) && value.length > 0) {
+			onSubmit(value);
 			return;
 		}
 
-		if (e.keyCode === KeyCodes.BACKSPACE && currentValue.length < 1 && onRemove) {
+		if (e.keyCode === KeyCodes.BACKSPACE && value.length < 1 && onRemove) {
 			onRemove();
 			e.preventDefault();
 		}
@@ -125,15 +110,14 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 
 	const onAutocompleteSelect = React.useCallback(
 		(selectedOption: string) => {
-			setCurrentValue('');
 			onSubmit(selectedOption);
 		},
-		[setCurrentValue, onSubmit],
+		[setValue, onSubmit],
 	);
 
 	const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
 		readOnly: readonly,
-		value: currentValue,
+		value,
 		list: datalistKey,
 		placeholder,
 		disabled,
@@ -164,7 +148,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 					className={autocompleteClassName}
 					ref={autocompleteListRef}
 					items={autocomplete}
-					value={currentValue.trim()}
+					value={value.trim()}
 					anchor={anchor || null}
 					onSelect={onAutocompleteSelect}
 				/>
