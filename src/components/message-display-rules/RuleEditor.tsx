@@ -11,42 +11,23 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
 
 import * as React from 'react';
-import '../../styles/select.scss';
+import Select from '../util/Select';
+import { MessageViewType } from '../../models/EventMessage';
 
-interface Props<T> {
-	className?: string;
-	options: Array<T>;
+interface RuleEditorProps {
 	selected: string;
-	prefix?: string;
-	onChange: (option: T) => void;
+	setSelected: (v: MessageViewType) => void;
 	onSelect?: () => void;
 }
 
-export default function Select<T extends string>({
-	options,
-	selected,
-	onChange,
-	onSelect,
-	className = '',
-	prefix = '',
-}: Props<T>) {
-	return (
-		<select
-			className={`options-select ${className}`}
-			value={prefix + selected}
-			onChange={e => {
-				onChange(e.target.value as T);
-				if (onSelect) {
-					onSelect();
-				}
-			}}>
-			{options.map((opt, index) => (
-				<option key={index}>{prefix + opt}</option>
-			))}
-		</select>
-	);
-}
+const viewTypes = Object.values(MessageViewType);
+
+const RuleEditor: React.FC<RuleEditorProps> = ({ selected, setSelected, onSelect }) => (
+	<Select options={viewTypes} selected={selected} onChange={setSelected} onSelect={onSelect} />
+);
+
+export default RuleEditor;

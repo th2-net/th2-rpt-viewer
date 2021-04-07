@@ -29,7 +29,8 @@ export type MessageDisplayRule = {
 	session: string;
 	viewType: MessageViewType;
 	removable: boolean;
-	fullyEditable: boolean;
+	editableSession: boolean;
+	editableType: boolean;
 };
 
 export interface EventMessage {

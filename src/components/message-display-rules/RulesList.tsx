@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import { useMessageDisplayRulesStore } from '../../hooks';
-import DisplayRule from './DisplayRule';
+import RuleRow from './RuleRow';
 
 type Props = {
 	sessions: string[];
@@ -35,13 +35,14 @@ const RulesList = ({ sessions }: Props) => {
 	const renderRule = (index: number) => {
 		const rule = rulesStore.messageDisplayRules[index];
 		return (
-			<DisplayRule
+			<RuleRow
 				sessions={sessions}
 				rule={rule}
 				key={rule.id}
 				index={index}
 				isFirst={index === 0}
 				isLast={index === rulesStore.messageDisplayRules.length - 1}
+				autofocus={true}
 			/>
 		);
 	};
@@ -50,7 +51,7 @@ const RulesList = ({ sessions }: Props) => {
 		<div className='message-display-rules-body'>
 			<div className='message-display-rules-body__header'>
 				<p>Session</p>
-				<p>Display Rule</p>
+				<p>Display Mode</p>
 			</div>
 			<Virtuoso
 				className='rules'
@@ -58,13 +59,24 @@ const RulesList = ({ sessions }: Props) => {
 				computeItemKey={computeKey}
 				totalCount={rulesStore.messageDisplayRules.length}
 				style={{ height: '120px' }}
-			/>
-			<DisplayRule
-				sessions={sessions}
-				rule={rulesStore.rootDisplayRule}
-				isFirst={null}
-				isLast={null}
-				index={0}
+				components={{
+					Header: function Header() {
+						return (
+							<RuleRow rule={null} sessions={sessions} index={0} isFirst={null} isLast={null} />
+						);
+					},
+					Footer: function Footer() {
+						return (
+							<RuleRow
+								sessions={sessions}
+								rule={rulesStore.rootDisplayRule}
+								index={0}
+								isFirst={null}
+								isLast={null}
+							/>
+						);
+					},
+				}}
 			/>
 		</div>
 	);

@@ -43,12 +43,12 @@ function SearchWorkspace() {
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
 				panels={[
-					{
-						title: 'Search',
-						color: panelColors.search,
-						component: <SearchPanel />,
-						isActive: false,
-					},
+					// {
+					// 	title: 'Search',
+					// 	color: panelColors.search,
+					// 	component: <SearchPanel />,
+					// 	isActive: false,
+					// },
 					{
 						title: 'Bookmarks',
 						color: panelColors.bookmarks,

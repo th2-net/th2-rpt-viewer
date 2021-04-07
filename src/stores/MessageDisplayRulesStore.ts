@@ -28,7 +28,8 @@ class MessageDisplayRulesStore {
 				session: '*',
 				viewType: MessageViewType.JSON,
 				removable: false,
-				fullyEditable: false,
+				editableSession: false,
+				editableType: true,
 			});
 			this.rootDisplayRule = localStorageWorker.getRootDisplayRule();
 			return;

@@ -38,27 +38,17 @@
 	border-radius: 6px;
     &-header {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 4px;
-        border-bottom: 1px solid gray;
-        button {
-            @include icon(url(../../resources/icons/cross-icon.svg), 24px, 24px);
-            outline: none;
-            background-color: transparent;
-            border: none;
-        }
+        justify-content: center;
+        padding: 4px 0 0;
     }
     &-body {
         @include scrollbar();
-        padding: 6px;
+        padding: 0 6px 6px;
         height: 100%;
         border-bottom: 1px solid gray;
         .rules {
             margin: 6px 0 0;
             @include scrollbar();
-            border: 1px solid gray;
-            border-radius: 4px;
         }
         &__header {
             padding: 0 4px;
@@ -89,11 +79,13 @@
 
 .rule {
     position: relative;
-    padding: 4px 24px 0 4px;
+    padding: 4px 24px 0 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    &.editing,
+    input, select {
+        font: inherit;
+    }
     &.full {
         padding: 4px 0 0;
     }
@@ -120,8 +112,9 @@
     &-delete,
     &-button {
         position: absolute;
-        top: 4px;
-        right: 5px;
+        top: 5px;
+        right: 0;
+        padding: 0 1px;
         cursor: pointer;
         outline: none;
         background-color: transparent;
@@ -132,11 +125,9 @@
         @include icon(url(../../resources/icons/cross-icon.svg));
     }
     &-button {
-        @include icon(url(../../resources/icons/check.svg));
-        top: 5px;
-        right: 5px;
         &:disabled {
             opacity: 0.5;
+            cursor: default;
         }
     }
     &-inputs {
