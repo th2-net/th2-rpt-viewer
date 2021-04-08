@@ -141,12 +141,21 @@ export default class WorkspacesStore {
 		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
 		return {
 			events: {
-				filter: {
-					eventTypes: filter && !filter.type.negative ? filter.type.values : [],
-					names: filter && !filter.name.negative ? filter.name.values : [],
-					timestampFrom,
-					timestampTo,
-				},
+				filter: filter
+					? {
+							type: {
+								type: 'string[]',
+								values: filter.type.values || [],
+								negative: filter.type.negative,
+							},
+							name: {
+								type: 'string[]',
+								values: filter.name.values || [],
+								negative: filter.name.negative,
+							},
+					  }
+					: undefined,
+				range: [timestampFrom, timestampTo],
 				targetEvent,
 			},
 			layout: [100, 0],

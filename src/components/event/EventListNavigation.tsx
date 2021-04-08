@@ -16,10 +16,9 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useEventsFilterStore, useGraphDataStore, useWorkspaceEventStore } from '../../hooks';
+import { useGraphDataStore, useWorkspaceEventStore } from '../../hooks';
 
 export const EventListFooter = observer(() => {
-	const eventFilterStore = useEventsFilterStore();
 	const graphStore = useGraphDataStore();
 	const eventsStore = useWorkspaceEventStore();
 
@@ -28,7 +27,7 @@ export const EventListFooter = observer(() => {
 			className='actions-list__nav down'
 			onClick={() => {
 				eventsStore.cancelTargetPathLoading();
-				eventFilterStore.changeTimestamp(-graphStore.interval);
+				eventsStore.changeEventsRange(-graphStore.interval);
 			}}
 			title='Load older events'
 		/>
@@ -36,7 +35,6 @@ export const EventListFooter = observer(() => {
 });
 
 export const EventListHeader = observer(() => {
-	const eventFilterStore = useEventsFilterStore();
 	const graphStore = useGraphDataStore();
 	const eventsStore = useWorkspaceEventStore();
 
@@ -45,7 +43,7 @@ export const EventListHeader = observer(() => {
 			className='actions-list__nav up'
 			onClick={() => {
 				eventsStore.cancelTargetPathLoading();
-				eventFilterStore.changeTimestamp(graphStore.interval);
+				eventsStore.changeEventsRange(graphStore.interval);
 			}}
 			title='Load newer events'
 		/>

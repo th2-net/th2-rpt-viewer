@@ -14,8 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { SSEFilterInfo, SSEFilterParameter } from '../api/sse';
-import { FilterState } from '../components/search-panel/SearchPanelFilters';
+import { EventsFiltersInfo, MessagesFilterInfo, SSEFilterParameter } from '../api/sse';
+import {
+	EventFilterState,
+	MessageFilterState,
+} from '../components/search-panel/SearchPanelFilters';
 import { SearchHistory } from '../stores/SearchStore';
 
 export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
@@ -34,15 +37,41 @@ export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
 	return param.defaultValue;
 }
 
-export function getDefaultFilterState(info: SSEFilterInfo[]): FilterState | {} {
-	return info.reduce((prev, curr) => {
+export function getDefaultEventsFiltersState(info: EventsFiltersInfo[]): EventFilterState | null {
+	if (!info.length) return null;
+	const state = info.reduce((prev, curr) => {
 		return {
 			...prev,
 			[curr.name]: curr.parameters.reduce((prevParams, currParam) => {
-				return { ...prevParams, values: getFilterParameterDefaultValue(currParam) };
+				return {
+					...prevParams,
+					type: currParam.type.value,
+					values: getFilterParameterDefaultValue(currParam),
+				};
 			}, {}),
 		};
-	}, {});
+	}, {} as EventFilterState);
+
+	return state;
+}
+
+export function getDefaultMessagesFiltersState(
+	info: MessagesFilterInfo[],
+): MessageFilterState | null {
+	if (!info.length) return null;
+	const state = info.reduce((prev, curr) => {
+		return {
+			...prev,
+			[curr.name]: curr.parameters.reduce((prevParams, currParam) => {
+				return {
+					...prevParams,
+					values: getFilterParameterDefaultValue(currParam),
+				};
+			}, {}),
+		};
+	}, {} as MessageFilterState);
+
+	return state;
 }
 
 export function isSearchHistoryEntity(obj: unknown): obj is SearchHistory {

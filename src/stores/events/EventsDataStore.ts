@@ -28,6 +28,14 @@ import notificationsStore from '../NotificationsStore';
 import EventsFilterStore from './EventsFilterStore';
 import EventsStore from './EventsStore';
 import { timestampToNumber } from '../../helpers/date';
+import EventsFilter from '../../models/filter/EventsFilter';
+import { TimeRange } from '../../models/Timestamp';
+
+interface FetchEventTreeOptions {
+	timeRange: TimeRange;
+	filter: EventsFilter | null;
+	targetEventId?: string;
+}
 
 export default class EventsDataStore {
 	private CHUNK_SIZE = 50;
@@ -70,15 +78,26 @@ export default class EventsDataStore {
 	}
 
 	@action
-	public fetchEventTree = () => {
+	public fetchEventTree = (options: FetchEventTreeOptions) => {
+		const {
+			timeRange: [startTimestamp, endTimestamp],
+			filter,
+			targetEventId,
+		} = options;
+
+		this.eventStore.targetEventId = targetEventId || null;
+		this.filterStore.setRange([startTimestamp, endTimestamp]);
+		this.filterStore.setEventsFilter(filter);
+
 		try {
 			this.resetEventsTreeState({ isLoading: true });
 			this.eventTreeEventSource = new EventSSELoader(
 				{
-					startTimestamp: this.filterStore.filter.timestampFrom,
-					endTimestamp: this.filterStore.filter.timestampTo,
-					'name-values': this.filterStore.filter.names,
-					'type-values': this.filterStore.filter.eventTypes,
+					startTimestamp,
+					endTimestamp,
+					// TODO: fix filters
+					// 'name-values': this.filterStore.filter.names,
+					// 'type-values': this.filterStore.filter.eventTypes,
 				},
 				{
 					onResponse: this.handleIncomingEventTreeNodes,
@@ -231,9 +250,10 @@ export default class EventsDataStore {
 			this.loadingChildrenMap[parentId] = new EventSSELoader(
 				{
 					startTimestamp: timestampToNumber(lastChild.startTimestamp),
-					endTimestamp: this.filterStore.filter.timestampTo,
-					'name-values': this.filterStore.filter.names,
-					'type-values': this.filterStore.filter.eventTypes,
+					endTimestamp: this.filterStore.timestampTo,
+					// TODO: fix filters
+					// 'name-values': this.filterStore.filter.names,
+					// 'type-values': this.filterStore.filter.eventTypes,
 					parentEvent: parentId,
 					resumeFromId: lastChild?.eventId,
 					resultCountLimit: this.CHUNK_SIZE + 1,

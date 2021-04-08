@@ -14,12 +14,17 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventAction, EventTree } from '../models/EventAction';
+import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import MessagesFilter from '../models/filter/MessagesFilter';
-import EventsFilter from '../models/filter/EventsFilter';
 import { TimeRange } from '../models/Timestamp';
-import { SSEFilterInfo, SSEParams } from './sse';
+import {
+	EventsFiltersInfo,
+	EventSSEFilters,
+	MessagesFilterInfo,
+	MessagesSSEFilters,
+	SSEParams,
+} from './sse';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
@@ -35,7 +40,6 @@ export interface EventSourceConfig {
 }
 
 export interface EventApiSchema {
-	getEventTree: (filter: EventsFilter, signal?: AbortSignal) => Promise<EventTree>;
 	getEvent: (
 		id: string,
 		abortSignal?: AbortSignal,
@@ -78,9 +82,9 @@ export interface MessageApiSchema {
 
 export interface SSESchema {
 	getEventSource: (config: EventSourceConfig) => EventSource;
-	getFilters: (filterType: 'events' | 'messages') => Promise<string[]>;
-	getFiltersInfo: (
-		filterType: 'events' | 'messages',
-		filters: string[],
-	) => Promise<SSEFilterInfo[]>;
+	getFilters: <T>(filterType: 'events' | 'messages') => Promise<T[]>;
+	getEventFilters: () => Promise<EventSSEFilters[]>;
+	getMessagesFilters: () => Promise<MessagesSSEFilters[]>;
+	getEventsFiltersInfo: (filters: EventSSEFilters[]) => Promise<EventsFiltersInfo[]>;
+	getMessagesFiltersInfo: (filters: MessagesSSEFilters[]) => Promise<MessagesFilterInfo[]>;
 }

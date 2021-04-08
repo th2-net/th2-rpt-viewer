@@ -44,3 +44,7 @@ export function getObjectKeys<O extends object>(obj: O) {
  * @param obj
  */
 export const entries = Object.entries as <T>(obj: T) => [Extract<keyof T, string>, T[keyof T]][];
+
+export function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
+	return value !== null && value !== undefined;
+}

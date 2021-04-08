@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventSourceConfig, SSESchema } from './ApiSchema';
+import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 
 interface BaseSSEParams {
@@ -43,8 +43,20 @@ export interface SSEFilterParameter {
 	type: { value: 'string' | 'boolean' | 'string[]' | 'switcher' };
 }
 
-type EventSSEFilters = 'attachedMessageId' | 'type' | 'name';
-type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body';
+export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status';
+export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body';
+
+export interface EventsFiltersInfo {
+	name: EventSSEFilters;
+	hint: string;
+	parameters: SSEFilterParameter[];
+}
+
+export interface MessagesFilterInfo {
+	name: MessagesSSEFilters;
+	hint: string;
+	parameters: SSEFilterParameter[];
+}
 
 export interface EventSSEParams extends BaseSSEParams {
 	parentEvent?: string;
@@ -73,26 +85,60 @@ export interface MessagesSSEParams extends BaseSSEParams {
 export type SSEParams = EventSSEParams | MessagesSSEParams;
 
 const sseApi: SSESchema = {
-	getEventSource(config: EventSourceConfig) {
+	getEventSource: config => {
 		const { type, queryParams } = config;
 		const params = createURLSearchParams({ ...queryParams });
-		return new EventSource(`backend/search/sse/${type}s/?${params}`);
+		return new EventSource(
+			`http://th2-qa:30000/schema-schema-qa/backend/search/sse/${type}s/?${params}`,
+		);
 	},
-	getFilters: async (filterType: 'events' | 'messages'): Promise<string[]> => {
-		const res = await fetch(`backend/filters/sse-${filterType}`);
+	getFilters: async <T>(filterType: 'events' | 'messages'): Promise<T[]> => {
+		const res = await fetch(
+			`http://th2-qa:30000/schema-schema-qa/backend/filters/sse-${filterType}`,
+		);
 		if (res.ok) {
 			return res.json();
 		}
 
 		throw res;
 	},
-	getFiltersInfo: (
-		filterType: 'events' | 'messages',
-		filters: string[],
-	): Promise<SSEFilterInfo[]> => {
+	getEventFilters: () => {
+		return sseApi.getFilters<EventSSEFilters>('events');
+	},
+	getMessagesFilters: () => {
+		return sseApi.getFilters<MessagesSSEFilters>('messages');
+	},
+	getEventsFiltersInfo: async filters => {
+		const eventFilterInfo = await Promise.all<EventsFiltersInfo>(
+			filters.map(filterName =>
+				fetch(
+					`http://th2-qa:30000/schema-schema-qa/backend/filters/sse-events/${filterName}`,
+				).then(res => res.json()),
+			),
+		);
+
+		return eventFilterInfo.map(filterInfo => {
+			if (filterInfo.name === 'status') {
+				// eslint-disable-next-line no-param-reassign
+				filterInfo.parameters = [
+					{
+						type: { value: 'switcher' },
+						name: 'value',
+						defaultValue: 'any',
+						hint: 'passed, failed, any',
+					},
+				];
+			}
+
+			return filterInfo;
+		});
+	},
+	getMessagesFiltersInfo: filters => {
 		return Promise.all(
 			filters.map(filterName =>
-				fetch(`backend/filters/sse-${filterType}/${filterName}`).then(res => res.json()),
+				fetch(
+					`http://th2-qa:30000/schema-schema-qa/backend/filters/sse-messages/${filterName}`,
+				).then(res => res.json()),
 			),
 		);
 	},

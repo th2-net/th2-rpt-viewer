@@ -17,62 +17,174 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
-import { FilterRowConfig } from '../../models/filter/FilterInputs';
-import { useWorkspaceEventStore, useGraphDataStore } from '../../hooks';
+import {
+	CompoundFilterRow,
+	FilterRowConfig,
+	FilterRowTogglerConfig,
+} from '../../models/filter/FilterInputs';
+import { useWorkspaceEventStore, useEventsFilterStore } from '../../hooks';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
+import { EventSSEFilters } from '../../api/sse';
+import { EventFilterState, Filter } from '../search-panel/SearchPanelFilters';
+import { getObjectKeys, notEmpty } from '../../helpers/object';
+
+type CurrentFilterValues = {
+	[key in EventSSEFilters]: string;
+};
 
 function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
-	const graphDataStore = useGraphDataStore();
 	const eventDataStore = useEventsDataStore();
-	const { filterStore } = eventsStore;
+	const filterStore = useEventsFilterStore();
 
 	const [showFilter, setShowFilter] = React.useState(false);
-	const [currentName, setCurrentName] = React.useState('');
-	const [names, setNames] = React.useState(filterStore.filter.names);
-	const [currentType, setCurrentEventType] = React.useState('');
-	const [eventTypes, setEventsTypes] = React.useState(filterStore.filter.names);
+
+	const [filter, setFilter] = React.useState<EventFilterState | null>(null);
+	const [currentFilterValues, setCurrentFilterValues] = React.useState<CurrentFilterValues | null>(
+		null,
+	);
 
 	React.useEffect(() => {
-		setNames(filterStore.filter.names);
-		setEventsTypes(filterStore.filter.eventTypes);
+		setFilter(filterStore.filter);
+		if (filterStore.filter) {
+			const emptyCurrentFilterValues = getObjectKeys(filterStore.filter).reduce(
+				(values, filterName) => ({
+					...values,
+					[filterName]: '',
+				}),
+				{} as CurrentFilterValues,
+			);
+			setCurrentFilterValues(emptyCurrentFilterValues);
+		}
 	}, [filterStore.filter]);
 
-	const onSubmit = () => {
-		eventsStore.applyFilter({
-			names,
-			eventTypes,
-			timestampFrom: graphDataStore.range[0],
-			timestampTo: graphDataStore.range[1],
-		});
-	};
+	const onSubmit = React.useCallback(() => {
+		if (filter) {
+			eventsStore.applyFilter(filter);
+		}
+	}, [filter]);
 
-	const onClear = () => {
+	const onClear = React.useCallback(() => {
 		eventsStore.clearFilter();
-	};
+	}, []);
 
-	const filterConfig: FilterRowConfig[] = [
-		{
-			type: 'multiple-strings',
-			id: 'events-name',
-			label: 'Events name',
-			values: names,
-			setValues: setNames,
-			currentValue: currentName,
-			setCurrentValue: setCurrentName,
-			autocompleteList: null,
+	const getNegativeToggler = React.useCallback((filterName: EventSSEFilters) => {
+		return function negativeToggler() {
+			const filterValue = filter && filter[filterName];
+			if (filter && filterValue && 'negative' in filterValue) {
+				const updatedFilterValue = {
+					...filterValue,
+					negative: !filterValue.negative,
+				};
+				setFilter({
+					...filter,
+					[filterName]: updatedFilterValue,
+				});
+			}
+		};
+	}, []);
+
+	const getValuesUpdater = React.useCallback(
+		<T extends 'string' | 'string[]' | 'switcher'>(name: EventSSEFilters) => {
+			return function valuesUpdater(values: T extends 'string[]' ? string[] : string) {
+				setFilter(prevState => {
+					if (prevState !== null) {
+						return {
+							...prevState,
+							[name]: { ...prevState[name], values },
+						};
+					}
+
+					return prevState;
+				});
+			};
 		},
-		{
-			type: 'multiple-strings',
-			id: 'events-type',
-			label: 'Events type',
-			values: eventTypes,
-			setValues: setEventsTypes,
-			currentValue: currentType,
-			setCurrentValue: setCurrentEventType,
-			autocompleteList: null,
+		[],
+	);
+
+	const setCurrentValue = React.useCallback(
+		(filterName: EventSSEFilters) => {
+			return function setValue(value: string) {
+				if (currentFilterValues) {
+					setCurrentFilterValues({
+						...currentFilterValues,
+						[filterName]: value,
+					});
+				}
+			};
 		},
-	];
+		[currentFilterValues],
+	);
+
+	const filterConfig: Array<CompoundFilterRow> = React.useMemo(() => {
+		if (!filter || !currentFilterValues) return [];
+
+		const filterNames = getObjectKeys(filter);
+
+		return filterNames.map(filterName => {
+			const filterValues: Filter = filter[filterName];
+
+			const label = (filterName.charAt(0).toUpperCase() + filterName.slice(1))
+				.split(/(?=[A-Z])/)
+				.join(' ');
+
+			let toggler: FilterRowTogglerConfig | null = null;
+
+			if ('negative' in filterValues) {
+				toggler = {
+					id: `${filter.name}-include`,
+					label,
+					disabled: false,
+					type: 'toggler',
+					value: filterValues.negative,
+					toggleValue: getNegativeToggler(filterName),
+					possibleValues: ['excl', 'incl'],
+				};
+			}
+
+			let filterInput: FilterRowConfig | null = null;
+
+			switch (filterValues.type) {
+				case 'string':
+					filterInput = {
+						id: filterName,
+						disabled: false,
+						type: 'string',
+						value: filterValues.values,
+						setValue: getValuesUpdater(filterName),
+					};
+					break;
+				case 'string[]':
+					filterInput = {
+						id: filterName,
+						disabled: false,
+						type: 'multiple-strings',
+						values: filterValues.values,
+						setValues: getValuesUpdater(filterName),
+						currentValue: currentFilterValues[filterName] || '',
+						setCurrentValue: setCurrentValue(filterName),
+						autocompleteList: null,
+					};
+					break;
+				case 'switcher':
+					filterInput = {
+						id: filterName,
+						disabled: false,
+						label,
+						type: 'switcher',
+						value: filterValues.values,
+						setValue: getValuesUpdater(filterName),
+						possibleValues: ['passed', 'failed', 'any'],
+						defaultValue: 'any',
+					};
+					break;
+				default:
+					break;
+			}
+
+			return [toggler, filterInput].filter(notEmpty);
+		});
+	}, [filter, currentFilterValues, setCurrentValue, getValuesUpdater, getNegativeToggler]);
 
 	return (
 		<FilterPanel

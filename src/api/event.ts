@@ -20,26 +20,11 @@ import { EventAction } from '../models/EventAction';
 import { getEventParentId } from '../helpers/event';
 
 const eventHttpApi: EventApiSchema = {
-	getEventTree: async (filter, signal?) => {
-		const params = createURLSearchParams({
-			timestampFrom: filter.timestampFrom,
-			timestampTo: filter.timestampTo,
-			name: filter.names,
-			type: filter.eventTypes,
-		});
-		const res = await fetch(`backend/search/events?${params}`, { signal });
-
-		if (res.ok) {
-			return res.json();
-		}
-
-		console.error(res.statusText);
-
-		throw res;
-	},
 	getEvent: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(`backend/event/${id}?${params}`, { signal });
+		const res = await fetch(`http://th2-qa:30000/schema-schema-qa/backend/event/${id}?${params}`, {
+			signal,
+		});
 
 		if (res.ok) {
 			return res.json();
@@ -58,7 +43,7 @@ const eventHttpApi: EventApiSchema = {
 			flat: true,
 		});
 
-		const path = `backend/search/events?${params}`;
+		const path = `http://th2-qa:30000/schema-schema-qa/backend/search/events?${params}`;
 		const res = await fetch(path);
 
 		if (res.ok) {

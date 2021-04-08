@@ -22,7 +22,7 @@ export type FitlerRowItem =
 	| FilterRowTogglerConfig
 	| FilterRowSwitcherConfig;
 
-export type CompoundFilterRow = Array<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>;
+export type CompoundFilterRow = Array<FitlerRowItem>;
 
 export type ActionFilterRow = ActionFilterConfig;
 
