@@ -86,6 +86,14 @@
 		flex-shrink: 0;
 	}
 
+	&.disabled {
+		cursor: default;
+
+		&:hover::before {
+			display: none;
+		}
+	}
+
 	&__dot {
 		background-color: #414141;
 		width: 3px;

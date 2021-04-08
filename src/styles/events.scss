@@ -28,7 +28,7 @@
 	align-items: center;
 	border: 2px solid transparent;
 	overflow: hidden;
-	cursor: pointer;
+	cursor: default;
 
 	& > *:not(:first-child) {
 		margin-left: 5px;
@@ -65,7 +65,12 @@
 		border-color: var(--status-hover-border-color);
 	}
 
+	&.clickable {
+		cursor: pointer;
+	}
+
 	&.disabled {
+		opacity: 0.6;
 		cursor: default;
 	}
 

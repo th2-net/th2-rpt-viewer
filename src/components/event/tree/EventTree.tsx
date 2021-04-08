@@ -114,6 +114,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 					status={expandIconStatus}
 					className='event-card__children-icon'
 					onClick={onExpandClick}
+					disabled={eventsStore.isLoadingTargetNode}
 				/>
 				{eventTreeNode ? (
 					<EventCardHeader
@@ -127,6 +128,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 							eventsStore.selectedPath[eventsStore.selectedPath.length - 1].eventId ===
 								eventTreeNode.eventId
 						}
+						disabled={eventsStore.isLoadingTargetNode}
 					/>
 				) : (
 					<EventCardSkeleton />
@@ -156,18 +158,31 @@ export default observer(EventTree);
 
 interface Props {
 	status: 'expanded' | 'hidden' | 'loading' | 'none';
-	onClick?: React.MouseEventHandler;
+	onClick?: () => void;
 	className?: string;
 	style?: React.CSSProperties;
+	disabled?: boolean;
 }
 
 function ExpandIcon(props: Props) {
-	const { status, onClick, className, style } = props;
+	const { status, onClick, className, style, disabled = false } = props;
 
-	const rootClass = createBemBlock('expand-icon', status, className || null);
+	const rootClass = createBemBlock(
+		'expand-icon',
+		status,
+		className || null,
+		disabled ? 'disabled' : null,
+	);
 
 	return (
-		<div className={rootClass} style={style} onClick={onClick}>
+		<div
+			className={rootClass}
+			style={style}
+			onClick={() => {
+				if (!disabled && onClick) {
+					onClick();
+				}
+			}}>
 			{props.status === 'loading' ? (
 				<>
 					<div className='expand-icon__dot' />

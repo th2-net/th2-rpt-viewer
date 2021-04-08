@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, runInAction } from 'mobx';
+import { action, computed, IReactionDisposer, observable, runInAction, when } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { convertEventActionToEventTreeNode, getErrorEventTreeNode } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
@@ -38,9 +38,7 @@ export default class EventsDataStore {
 		private eventStore: EventsStore,
 		private filterStore: EventsFilterStore,
 		private api: ApiSchema,
-	) {
-		reaction(() => this.targetNodePath, this.onTargetNodePathChange);
-	}
+	) {}
 
 	@observable.ref eventTreeEventSource: EventSSELoader | null = null;
 
@@ -209,9 +207,9 @@ export default class EventsDataStore {
 
 					parentNodes.unshift(rootNode);
 				}
-
 				parentNodes.forEach(parentNode => {
 					this.eventsCache.set(parentNode.eventId, parentNode);
+
 					if (parentNode.parentId !== null) {
 						const children = this.parentChildrensMap.get(parentNode.parentId) || [];
 
@@ -222,18 +220,19 @@ export default class EventsDataStore {
 					}
 					this.loadingParentEvents.delete(parentNode.eventId);
 				});
-
 				if (!this.rootEventIds.includes(rootNode.eventId)) {
 					this.rootEventIds = [...this.rootEventIds, rootNode.eventId];
 				}
 			});
 		} catch (error) {
-			const uknownRootNode = getErrorEventTreeNode(parentId);
-			this.eventsCache.set(parentId, uknownRootNode);
-			if (!this.rootEventIds.includes(parentId)) {
-				this.rootEventIds = [...this.rootEventIds, parentId];
-			}
-			this.loadingParentEvents.delete(parentId);
+			runInAction(() => {
+				const uknownRootNode = getErrorEventTreeNode(parentId);
+				this.eventsCache.set(parentId, uknownRootNode);
+				if (!this.rootEventIds.includes(parentId)) {
+					this.rootEventIds = [...this.rootEventIds, parentId];
+				}
+				this.loadingParentEvents.delete(parentId);
+			});
 		}
 	};
 
@@ -311,29 +310,33 @@ export default class EventsDataStore {
 
 	private targetEventAC: AbortController | null = null;
 
+	private targetEventLoadSubscription: IReactionDisposer | null = null;
+
 	@action
 	public loadTargetNode = async (targetEventId: string | null) => {
+		if (this.targetEventLoadSubscription) {
+			this.targetEventLoadSubscription();
+		}
+		this.targetNode = null;
+		this.targetEventAC?.abort();
+
 		this.eventStore.targetNodeId = targetEventId;
 		if (targetEventId) {
+			this.targetEventLoadSubscription = when(
+				() => this.targetNodePath !== null && this.rootEventIds.includes(this.targetNodePath[0]),
+				() => this.onTargetNodePathChange(this.targetNodePath),
+			);
 			try {
-				this.targetNode = null;
-				this.targetEventAC?.abort();
 				this.targetEventAC = new AbortController();
-
 				const event = await this.api.events.getEvent(targetEventId, this.targetEventAC.signal);
 				const targetNode = convertEventActionToEventTreeNode(event);
 				this.eventsCache.set(targetNode.eventId, targetNode);
-				const siblings =
-					targetNode.parentId === null
-						? this.rootEventIds
-						: this.eventStore.getChildrenNodes(targetNode.parentId).map(e => e.eventId);
-
-				if (!siblings.includes(targetNode.eventId)) {
-					this.targetNode = targetNode;
-				}
+				this.eventStore.onTargetEventLoad(event, targetNode);
+				this.targetNode = targetNode;
 			} catch (error) {
-				console.error(`Couldnt fetch target event ${targetEventId}`);
+				console.error(`Couldnt fetch target event node ${targetEventId}`);
 				this.eventStore.targetNodeId = null;
+				this.targetEventLoadSubscription();
 			}
 		} else {
 			this.targetEventAC?.abort();
@@ -343,7 +346,7 @@ export default class EventsDataStore {
 	@action
 	public onTargetNodePathChange = (targetPath: string[] | null) => {
 		if (targetPath && this.targetNode && this.rootEventIds.includes(targetPath[0])) {
-			this.eventStore.onTargetEventLoad(targetPath);
+			this.eventStore.onTargetNodeAddedToTree(targetPath);
 		}
 	};
 
@@ -388,6 +391,10 @@ export default class EventsDataStore {
 		}
 
 		this.targetEventAC?.abort();
+
+		if (this.targetEventLoadSubscription) {
+			this.targetEventLoadSubscription();
+		}
 	};
 
 	@action

@@ -272,6 +272,8 @@ export default class EventsStore {
 
 	@action
 	public goToEvent = async (savedEventNode: EventTreeNode | EventAction) => {
+		this.selectedNode = null;
+		this.selectedEvent = null;
 		this.graphStore.setTimestamp(timestampToNumber(savedEventNode.startTimestamp));
 		this.workspaceStore.viewStore.activePanel = this;
 
@@ -339,8 +341,14 @@ export default class EventsStore {
 
 	@action
 	private onSelectedNodeChange = (selectedNode: EventTreeNode | null) => {
-		this.eventDataStore.fetchDetailedEventInfo(selectedNode);
-		this.selectedParentNode = null;
+		if (selectedNode && selectedNode.eventId !== this.selectedEvent?.eventId) {
+			this.selectedNode = selectedNode;
+			this.eventDataStore.fetchDetailedEventInfo(selectedNode);
+			this.selectedParentNode = null;
+		} else if (selectedNode === null) {
+			this.selectedNode = null;
+			this.selectedEvent = null;
+		}
 	};
 
 	@action
@@ -356,7 +364,13 @@ export default class EventsStore {
 	};
 
 	@action
-	public onTargetEventLoad = (targetPath: string[]) => {
+	public onTargetEventLoad = (event: EventAction, node: EventTreeNode) => {
+		this.selectedEvent = event;
+		this.selectNode(node);
+	};
+
+	@action
+	public onTargetNodeAddedToTree = (targetPath: string[]) => {
 		if (this.targetNodeId) {
 			this.expandPath(targetPath);
 			const targetNode = this.eventDataStore.eventsCache.get(this.targetNodeId);
@@ -370,7 +384,6 @@ export default class EventsStore {
 
 				if (siblings.includes(targetNode.eventId)) {
 					this.eventDataStore.targetNode = null;
-					this.targetNodeId = null;
 				}
 			}
 		}
