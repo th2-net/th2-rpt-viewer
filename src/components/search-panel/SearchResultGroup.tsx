@@ -96,13 +96,11 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 	};
 
 	const groupTimestamp =
-		moment(averageTimestamp).utc().format('DD.MM.YYYY') +
-		' ' +
-		moment(getTimestampAsNumber(results[0])).utc().format('HH:mm:ss.SSS') +
-		'-' +
-		moment(getTimestampAsNumber(results[results.length - 1]))
+		`${moment(averageTimestamp).utc().format('DD.MM.YYYY')} ` +
+		`${moment(getTimestampAsNumber(results[0])).utc().format('HH:mm:ss.SSS')}-` +
+		`${moment(getTimestampAsNumber(results[results.length - 1]))
 			.utc()
-			.format('HH:mm:ss.SSS');
+			.format('HH:mm:ss.SSS')}`;
 
 	return (
 		<>
