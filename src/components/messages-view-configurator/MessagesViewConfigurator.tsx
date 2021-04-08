@@ -17,15 +17,18 @@
 import React, { useRef, useState } from 'react';
 import { useOutsideClickListener } from '../../hooks';
 import { ModalPortal } from '../util/Portal';
-import '../../styles/message-body-rules.scss';
+import '../../styles/messages-view-configurator.scss';
 import RulesList from './RulesList';
+import { createStyleSelector } from '../../helpers/styleCreators';
+import BodySortConfig from './BodySortConfig';
 
 type Props = {
 	sessions: string[];
 };
 
-const MessageBodyRulesConfigurator = ({ sessions }: Props) => {
+const MessageViewConfigurator = ({ sessions }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
+	const [mode, setMode] = useState<'display-rules' | 'body-sort'>('display-rules');
 	const modalRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
@@ -35,11 +38,20 @@ const MessageBodyRulesConfigurator = ({ sessions }: Props) => {
 		}
 	});
 
+	const rulesButtonClassName = createStyleSelector(
+		'switcher',
+		mode === 'display-rules' ? 'active' : null,
+	);
+	const sortButtonClassName = createStyleSelector(
+		'switcher',
+		mode === 'body-sort' ? 'active' : null,
+	);
+
 	return (
 		<>
 			<button
 				ref={buttonRef}
-				className='message-display-rules-open'
+				className='messages-view-configurator-open'
 				onClick={() => setIsOpen(open => !open)}
 				title='Message display rules'
 			/>
@@ -53,15 +65,25 @@ const MessageBodyRulesConfigurator = ({ sessions }: Props) => {
 					right: '14px',
 					zIndex: 500,
 				}}>
-				<div className='message-display-rules'>
-					<div className='message-display-rules-header'>
-						<p>Message Display Rules</p>
+				<div className='messages-view-configurator'>
+					<div className='messages-view-configurator-header'>
+						<p>{mode === 'display-rules' ? 'Message Display Rules' : 'Message Body Sort'}</p>
 					</div>
-					<RulesList sessions={sessions} />
+					<div className='messages-view-configurator-body'>
+						{mode === 'display-rules' ? <RulesList sessions={sessions} /> : <BodySortConfig />}
+					</div>
+					<div className='switchers'>
+						<button className={rulesButtonClassName} onClick={() => setMode('display-rules')}>
+							Display rules
+						</button>
+						<button className={sortButtonClassName} onClick={() => setMode('body-sort')}>
+							Body sort
+						</button>
+					</div>
 				</div>
 			</ModalPortal>
 		</>
 	);
 };
 
-export default MessageBodyRulesConfigurator;
+export default MessageViewConfigurator;

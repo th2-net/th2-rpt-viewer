@@ -24,6 +24,11 @@ export enum MessageViewType {
 	BINARY = 'binary',
 }
 
+export type MessageSortOrderItem = {
+	id: string;
+	item: string;
+};
+
 export type MessageDisplayRule = {
 	id: string;
 	session: string;

@@ -23,11 +23,14 @@ import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
 import { getObjectKeys } from '../helpers/object';
 import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
+import MessageBodySortOrderStore from './MessageBodySortStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
 	messageDisplayRulesStore = new MessageDisplayRulesStore();
+
+	messageBodySortStore = new MessageBodySortOrderStore();
 
 	workspacesStore: WorkspacesStore;
 

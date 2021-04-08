@@ -24,7 +24,7 @@ import WorkspacesLayout from './workspace/WorkspacesLayout';
 import Graph from './graph/Graph';
 import '../styles/root.scss';
 import WorkspaceLinkGetter from './WorkspaceLinkGetter';
-import MessageBodyRulesConfigurator from './message-display-rules/MessageBodyRulesConfigurator';
+import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
 import { useSearchStore } from '../hooks/useSearchStore';
 import { useTabsStore } from '../hooks';
 
@@ -36,7 +36,7 @@ const App = () => {
 			<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={400}>
 				<Graph />
 				{tabsStore.activeTabIndex !== 0 && <WorkspaceLinkGetter />}
-				<MessageBodyRulesConfigurator sessions={searchStore.messageSessions} />
+				<MessagesViewConfigurator sessions={searchStore.messageSessions} />
 				<div className='app__workspaces'>
 					<WorkspacesLayout />
 				</div>

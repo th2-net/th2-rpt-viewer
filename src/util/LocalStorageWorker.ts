@@ -18,7 +18,7 @@ import { isEventNode } from '../helpers/event';
 import { isMessage } from '../helpers/message';
 import { isSearchHistoryEntity } from '../helpers/search';
 import { EventAction, EventTreeNode } from '../models/EventAction';
-import { EventMessage, MessageDisplayRule } from '../models/EventMessage';
+import { EventMessage, MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
 import { SearchHistory } from '../stores/SearchStore';
 
 enum LocalStorageEntities {
@@ -28,6 +28,7 @@ enum LocalStorageEntities {
 	GRAPH_SEARCH_HISTORY = 'graph-search-history',
 	DISPLAY_RULES = 'display-rules',
 	ROOT_DISPLAY_RULE = 'root-display-rule',
+	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 }
 class LocalStorageWorker {
 	getPersistedPinnedMessages(): EventMessage[] {
@@ -111,6 +112,19 @@ class LocalStorageWorker {
 
 	setMessageDisplayRules = (rules: Array<MessageDisplayRule>) => {
 		localStorage.setItem(LocalStorageEntities.DISPLAY_RULES, JSON.stringify(rules));
+	};
+
+	getMessageBodySortOrder = (): Array<MessageSortOrderItem> => {
+		try {
+			const order = localStorage.getItem(LocalStorageEntities.MESSAGE_BODY_SORT_ORDER);
+			return order ? JSON.parse(order) : [];
+		} catch (error) {
+			return [];
+		}
+	};
+
+	setMessageBodySortOrder = (order: Array<MessageSortOrderItem>) => {
+		localStorage.setItem(LocalStorageEntities.MESSAGE_BODY_SORT_ORDER, JSON.stringify(order));
 	};
 }
 

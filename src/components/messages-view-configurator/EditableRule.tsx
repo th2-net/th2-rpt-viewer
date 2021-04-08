@@ -19,6 +19,7 @@ import { useMessageDisplayRulesStore } from '../../hooks';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
 import SessionEditor from './SessionEditor';
 import RuleEditor from './RuleEditor';
+import Reorder from './Reorder';
 
 type EditableRuleProps = {
 	rule: MessageDisplayRule;
@@ -38,32 +39,6 @@ const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: Edi
 
 	const deleteHandler = () => {
 		rulesStore.deleteMessagesDisplayRule(rule);
-	};
-
-	const renderReorder = () => {
-		if ((isFirst === null && isLast === null) || (isFirst && isLast)) return null;
-		return (
-			<div className='reorder'>
-				{!isFirst && (
-					<button
-						className='reorder-control up'
-						onClick={(e: React.MouseEvent) => {
-							e.stopPropagation();
-							rulesStore.reorderMessagesDisplayRule(index, index - 1);
-						}}
-					/>
-				)}
-				{!isLast && (
-					<button
-						className='reorder-control down'
-						onClick={(e: React.MouseEvent) => {
-							e.stopPropagation();
-							rulesStore.reorderMessagesDisplayRule(index, index + 1);
-						}}
-					/>
-				)}
-			</div>
-		);
 	};
 
 	const editRuleSession = useCallback(() => {
@@ -110,7 +85,12 @@ const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: Edi
 
 	return (
 		<>
-			{renderReorder()}
+			<Reorder
+				isFirst={isFirst}
+				isLast={isLast}
+				index={index}
+				move={rulesStore.reorderMessagesDisplayRule}
+			/>
 			{renderSession()}
 			{renderViewType()}
 			{rule.removable && (

@@ -20,16 +20,19 @@ import { FilterRowStringConfig } from '../../../models/filter/FilterInputs';
 
 export default function StringFilterRow({ config }: { config: FilterRowStringConfig }) {
 	const inputClassName = createBemElement(
-		'filter-row',
+		config.className || 'filter-row',
 		'input',
 		config.value.length ? 'non-empty' : '',
 	);
-	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
+	const wrapperClassName = createBemBlock(
+		config.className || 'filter-row',
+		config.wrapperClassName || null,
+	);
 
 	return (
 		<div className={wrapperClassName}>
 			{config.label && (
-				<label className='filter-row__label' htmlFor={config.id}>
+				<label className={`${config.className || 'filter-row'}__label`} htmlFor={config.id}>
 					{config.label}
 				</label>
 			)}

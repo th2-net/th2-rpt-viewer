@@ -86,6 +86,7 @@ export type FilterRowTimeWindowConfig = FilterRowBaseConfig & {
 };
 
 export type FilterRowStringConfig = FilterRowBaseConfig & {
+	className?: string;
 	type: 'string';
 	value: string;
 	setValue: (nextValue: string) => void;

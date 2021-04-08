@@ -48,8 +48,8 @@ const RulesList = ({ sessions }: Props) => {
 	};
 
 	return (
-		<div className='message-display-rules-body'>
-			<div className='message-display-rules-body__header'>
+		<>
+			<div className='messages-view-configurator-body__header'>
 				<p>Session</p>
 				<p>Display Mode</p>
 			</div>
@@ -78,7 +78,7 @@ const RulesList = ({ sessions }: Props) => {
 					},
 				}}
 			/>
-		</div>
+		</>
 	);
 };
 
