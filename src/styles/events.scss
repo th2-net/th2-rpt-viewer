@@ -65,6 +65,10 @@
 		border-color: var(--status-hover-border-color);
 	}
 
+	&.disabled {
+		cursor: default;
+	}
+
 	&__title {
 		@include ellipsis();
 		flex-grow: 1;

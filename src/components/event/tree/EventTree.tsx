@@ -90,9 +90,17 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 
 	const nestingLevel = 20 * parents.length;
 
+	const hideTimestampsForUknownEvent =
+		eventTreeNode.isUnknown &&
+		eventsStore.selectedPathTimestamps &&
+		eventsStore.selectedPathTimestamps.startEventId ===
+			eventsStore.selectedPathTimestamps.endEventId &&
+		eventsStore.selectedPathTimestamps.startEventId === eventTreeNode.eventId;
+
 	return (
 		<>
-			{eventsStore.selectedPathTimestamps?.startEventId === eventTreeNode.eventId &&
+			{!hideTimestampsForUknownEvent &&
+				eventsStore.selectedPathTimestamps?.startEventId === eventTreeNode.eventId &&
 				eventsStore.selectedPathTimestamps.startTimestamp && (
 					<div className='event-tree-timestamp'>
 						<div className='event-tree-timestamp__value'>
@@ -112,7 +120,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 						childrenCount={childrenCount}
 						event={eventTreeNode}
 						displayType={CardDisplayType.MINIMAL}
-						onSelect={onNodeSelect}
+						onSelect={eventTreeNode.isUnknown ? undefined : onNodeSelect}
 						isSelected={isSelected}
 						isActive={
 							eventsStore.selectedPath.length > 0 &&
@@ -124,7 +132,8 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 					<EventCardSkeleton />
 				)}
 			</div>
-			{eventsStore.selectedPathTimestamps?.endEventId === eventTreeNode.eventId &&
+			{!hideTimestampsForUknownEvent &&
+				eventsStore.selectedPathTimestamps?.endEventId === eventTreeNode.eventId &&
 				eventsStore.selectedPathTimestamps.endTimestamp && (
 					<div className='event-tree-timestamp end'>
 						<div className='event-tree-timestamp__value'>
