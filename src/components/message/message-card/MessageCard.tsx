@@ -224,17 +224,17 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 			return (
 				<>
 					<span className='mc-header__value' title={`Timestamp: ${formattedTimestamp}`}>
-						{timestamp && formattedTimestamp}{' '}
+						{timestamp && formattedTimestamp}
 					</span>
 					<span className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
-						{sessionId}{' '}
+						{sessionId}
 					</span>
 					<span className='mc-header__item messageId-inline' title={`ID: ${messageId}`}>
 						<span className='mc-header__value'>{messageId} </span>
 					</span>
 					<span className={`${sessionClass} inline`} style={sessionArrowStyle}></span>
 					<span className='mc-header__value' title={`Name: ${messageType}`}>
-						{messageType}{' '}
+						{messageType}
 					</span>
 				</>
 			);

@@ -95,6 +95,15 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 		onGroupClick(averageTimestamp, results[0].type);
 	};
 
+	const groupTimestamp =
+		moment(averageTimestamp).utc().format('DD.MM.YYYY') +
+		' ' +
+		moment(getTimestampAsNumber(results[0])).utc().format('HH:mm:ss.SSS') +
+		'-' +
+		moment(getTimestampAsNumber(results[results.length - 1]))
+			.utc()
+			.format('HH:mm:ss.SSS');
+
 	return (
 		<>
 			<div className='search-result-group'>
@@ -108,15 +117,7 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 							</span>
 						))}
 					</div>
-					<span className='search-result-group__timestamp'>
-						{moment(averageTimestamp).utc().format('DD.MM.YYYY') +
-							' ' +
-							moment(getTimestampAsNumber(results[0])).utc().format('HH:mm:ss.SSS') +
-							'-' +
-							moment(getTimestampAsNumber(results[results.length - 1]))
-								.utc()
-								.format('HH:mm:ss.SSS')}
-					</span>
+					<span className='search-result-group__timestamp'>{groupTimestamp}</span>
 				</div>
 			</div>
 			<div className='search-result-group-items'>
