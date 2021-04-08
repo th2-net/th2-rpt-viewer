@@ -14,14 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, runInAction } from 'mobx';
+import { action, computed, observable, reaction, runInAction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
-import {
-	convertEventActionToEventTreeNode,
-	sortEventsByTimestamp,
-	getErrorEventTreeNode,
-	isEventNode,
-} from '../../helpers/event';
+import { convertEventActionToEventTreeNode, getErrorEventTreeNode } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventSSELoader } from './EventSSELoader';
 import notificationsStore from '../NotificationsStore';
@@ -43,7 +38,9 @@ export default class EventsDataStore {
 		private eventStore: EventsStore,
 		private filterStore: EventsFilterStore,
 		private api: ApiSchema,
-	) {}
+	) {
+		reaction(() => this.targetNodePath, this.onTargetNodePathChange);
+	}
 
 	@observable.ref eventTreeEventSource: EventSSELoader | null = null;
 
@@ -71,26 +68,41 @@ export default class EventsDataStore {
 	@observable
 	public rootEventIds: string[] = [];
 
+	@observable.ref
+	public targetNode: EventTreeNode | null = null;
+
 	@computed
 	public get isLoading(): boolean {
 		return Boolean(this.eventTreeEventSource && this.eventTreeEventSource.isLoading);
+	}
+
+	@computed
+	public get targetNodePath() {
+		if (!this.targetNode) return null;
+		const parentIds = this.eventStore
+			.getParentNodes(this.targetNode.eventId, this.eventsCache)
+			.map(parentEventNode => parentEventNode.eventId);
+		return [...parentIds, this.targetNode.eventId];
 	}
 
 	@action
 	public fetchEventTree = (options: FetchEventTreeOptions) => {
 		const { timeRange, filter, targetEventId } = options;
 
-		this.eventStore.targetEventId = targetEventId || null;
+		this.resetEventsTreeState({ isLoading: true });
+
+		this.loadTargetNode(targetEventId || null);
 		this.filterStore.setRange(timeRange);
 		this.filterStore.setEventsFilter(filter);
 
 		try {
-			this.resetEventsTreeState({ isLoading: true });
 			this.eventTreeEventSource = new EventSSELoader(
 				{
 					timeRange,
 					filter,
-					sseParams: {},
+					sseParams: {
+						searchDirection: 'next',
+					},
 				},
 				{
 					onResponse: this.handleIncomingEventTreeNodes,
@@ -232,7 +244,7 @@ export default class EventsDataStore {
 		const parentNode = this.eventsCache.get(parentId);
 
 		if (parentNode) {
-			const eventsChildren = this.getEventChildrenNodes(parentId);
+			const eventsChildren = this.eventStore.getChildrenNodes(parentId);
 
 			if (!eventsChildren || !this.hasUnloadedChildren.get(parentId)) return;
 
@@ -248,6 +260,7 @@ export default class EventsDataStore {
 						parentEvent: parentId,
 						resumeFromId: lastChild?.eventId,
 						resultCountLimit: this.CHUNK_SIZE + 1,
+						searchDirection: 'next',
 					},
 				},
 				{
@@ -296,6 +309,44 @@ export default class EventsDataStore {
 		this.isLoadingChildren.set(parentId, false);
 	};
 
+	private targetEventAC: AbortController | null = null;
+
+	@action
+	public loadTargetNode = async (targetEventId: string | null) => {
+		this.eventStore.targetNodeId = targetEventId;
+		if (targetEventId) {
+			try {
+				this.targetNode = null;
+				this.targetEventAC?.abort();
+				this.targetEventAC = new AbortController();
+
+				const event = await this.api.events.getEvent(targetEventId, this.targetEventAC.signal);
+				const targetNode = convertEventActionToEventTreeNode(event);
+				this.eventsCache.set(targetNode.eventId, targetNode);
+				const siblings =
+					targetNode.parentId === null
+						? this.rootEventIds
+						: this.eventStore.getChildrenNodes(targetNode.parentId).map(e => e.eventId);
+
+				if (!siblings.includes(targetNode.eventId)) {
+					this.targetNode = targetNode;
+				}
+			} catch (error) {
+				console.error(`Couldnt fetch target event ${targetEventId}`);
+				this.eventStore.targetNodeId = null;
+			}
+		} else {
+			this.targetEventAC?.abort();
+		}
+	};
+
+	@action
+	public onTargetNodePathChange = (targetPath: string[] | null) => {
+		if (targetPath && this.targetNode && this.rootEventIds.includes(targetPath[0])) {
+			this.eventStore.onTargetEventLoad(targetPath);
+		}
+	};
+
 	private detailedEventAC: AbortController | null = null;
 
 	@action
@@ -335,6 +386,8 @@ export default class EventsDataStore {
 			this.parentNodesLoaderAC.abort();
 			this.parentNodesLoaderAC = null;
 		}
+
+		this.targetEventAC?.abort();
 	};
 
 	@action
@@ -353,13 +406,4 @@ export default class EventsDataStore {
 		this.isLoadingChildren.clear();
 		this.hasUnloadedChildren.clear();
 	};
-
-	public getEventChildrenNodes(parentId: string) {
-		return sortEventsByTimestamp(
-			(this.parentChildrensMap.get(parentId) || [])
-				.map(childrenId => this.eventsCache.get(childrenId))
-				.filter(isEventNode),
-			'asc',
-		);
-	}
 }

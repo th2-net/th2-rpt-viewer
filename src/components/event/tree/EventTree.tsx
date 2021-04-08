@@ -35,7 +35,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	const eventsDataStore = useEventsDataStore();
 
 	const parents = React.useMemo(() => {
-		return eventsStore.getParents(eventTreeNode.eventId, eventsDataStore.eventsCache);
+		return eventsStore.getParentNodes(eventTreeNode.eventId, eventsDataStore.eventsCache);
 	}, [eventsDataStore.eventsCache]);
 
 	const childrenCount = computed(
@@ -53,7 +53,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		let parentHasMoreChilds = false;
 
 		if (eventTreeNode.parentId !== null) {
-			const siblings = eventsDataStore.getEventChildrenNodes(eventTreeNode.parentId);
+			const siblings = eventsStore.getChildrenNodes(eventTreeNode.parentId);
 
 			isLastChild =
 				siblings.length > 0 && siblings[siblings.length - 1].eventId === eventTreeNode.eventId;

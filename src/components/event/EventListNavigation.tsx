@@ -25,10 +25,7 @@ export const EventListFooter = observer(() => {
 	return (
 		<button
 			className='actions-list__nav down'
-			onClick={() => {
-				eventsStore.cancelTargetPathLoading();
-				eventsStore.changeEventsRange(-graphStore.interval);
-			}}
+			onClick={() => eventsStore.changeEventsRange(-graphStore.interval)}
 			title='Load older events'
 		/>
 	);
@@ -41,10 +38,7 @@ export const EventListHeader = observer(() => {
 	return (
 		<button
 			className='actions-list__nav up'
-			onClick={() => {
-				eventsStore.cancelTargetPathLoading();
-				eventsStore.changeEventsRange(graphStore.interval);
-			}}
+			onClick={() => eventsStore.changeEventsRange(graphStore.interval)}
 			title='Load newer events'
 		/>
 	);

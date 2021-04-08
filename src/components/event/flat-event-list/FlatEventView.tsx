@@ -48,7 +48,7 @@ function EventTreeView() {
 					<DetailedFlatEventCard
 						eventTreeNode={eventWindowStore.selectedNode}
 						parentNodes={
-							eventWindowStore.getParents(
+							eventWindowStore.getParentNodes(
 								eventWindowStore.selectedNode.eventId,
 								eventDataStore.eventsCache,
 							) || []

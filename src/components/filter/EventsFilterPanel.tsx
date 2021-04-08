@@ -137,6 +137,8 @@ function EventsFilterPanel() {
 					value: filterValues.negative,
 					toggleValue: getNegativeToggler(filterName),
 					possibleValues: ['excl', 'incl'],
+					className: 'filter-row__toggler',
+					labelClassName: 'event-filters-panel-label',
 				};
 			}
 
@@ -174,6 +176,7 @@ function EventsFilterPanel() {
 						setValue: getValuesUpdater(filterName),
 						possibleValues: ['passed', 'failed', 'any'],
 						defaultValue: 'any',
+						labelClassName: 'event-filters-panel-label',
 					};
 					break;
 				default:

@@ -107,8 +107,8 @@ export default class EventsFilterStore {
 	}
 
 	@action
-	public resetEventsFilter() {
-		this.filter = getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
+	public resetEventsFilter(): EventsFilter | null {
+		return getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
 	}
 
 	@action

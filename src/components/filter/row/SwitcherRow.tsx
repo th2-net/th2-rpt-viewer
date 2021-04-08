@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 import React from 'react';
-import { createBemElement } from '../../../helpers/styleCreators';
+import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
 import { FilterRowSwitcherConfig } from '../../../models/filter/FilterInputs';
 
 const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
@@ -26,10 +26,12 @@ const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
 		}
 	};
 
+	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
+
 	return (
 		<div className='search-type-switcher'>
 			{config.label && (
-				<label className='filter-row__label' htmlFor={config.id}>
+				<label className={labelClassName} htmlFor={config.id}>
 					{config.label}
 				</label>
 			)}
