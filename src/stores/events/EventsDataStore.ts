@@ -324,7 +324,11 @@ export default class EventsDataStore {
 		if (targetEventId) {
 			this.targetEventLoadSubscription = when(
 				() => this.targetNodePath !== null && this.rootEventIds.includes(this.targetNodePath[0]),
-				() => this.onTargetNodePathChange(this.targetNodePath),
+				() => {
+					if (this.targetNodePath) {
+						this.eventStore.onTargetNodeAddedToTree(this.targetNodePath);
+					}
+				},
 			);
 			try {
 				this.targetEventAC = new AbortController();
@@ -340,13 +344,6 @@ export default class EventsDataStore {
 			}
 		} else {
 			this.targetEventAC?.abort();
-		}
-	};
-
-	@action
-	public onTargetNodePathChange = (targetPath: string[] | null) => {
-		if (targetPath && this.targetNode && this.rootEventIds.includes(targetPath[0])) {
-			this.eventStore.onTargetNodeAddedToTree(targetPath);
 		}
 	};
 

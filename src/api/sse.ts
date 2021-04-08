@@ -95,7 +95,11 @@ export type SSEParams = EventSSEParams | MessagesSSEParams;
 type ParamsFromFilter = Record<string, string | string[] | boolean>;
 
 function getParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
-	const filters = getObjectKeys(filter).filter(filterName => filter[filterName].values.length > 0);
+	const filters = getObjectKeys(filter).filter(filterName =>
+		filterName === 'status'
+			? filter[filterName].values !== 'any'
+			: filter[filterName].values.length > 0,
+	);
 	return filters.reduce(
 		(params, filterName) => {
 			const currentFilter = filter[filterName];

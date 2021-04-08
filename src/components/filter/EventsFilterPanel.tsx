@@ -23,10 +23,23 @@ import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
 import { EventFilterState, Filter } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
+import EventsFilter from '../../models/filter/EventsFilter';
 
 type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;
 };
+
+function getCurrentFilterValues(filter: EventsFilter | null) {
+	return filter
+		? getObjectKeys(filter).reduce(
+				(values, filterName) => ({
+					...values,
+					[filterName]: '',
+				}),
+				{} as CurrentFilterValues,
+		  )
+		: null;
+}
 
 function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
@@ -35,23 +48,14 @@ function EventsFilterPanel() {
 
 	const [showFilter, setShowFilter] = React.useState(false);
 
-	const [filter, setFilter] = React.useState<EventFilterState | null>(null);
+	const [filter, setFilter] = React.useState<EventFilterState | null>(filterStore.filter);
 	const [currentFilterValues, setCurrentFilterValues] = React.useState<CurrentFilterValues | null>(
-		null,
+		getCurrentFilterValues(filterStore.filter),
 	);
 
 	React.useEffect(() => {
 		setFilter(filterStore.filter);
-		if (filterStore.filter) {
-			const emptyCurrentFilterValues = getObjectKeys(filterStore.filter).reduce(
-				(values, filterName) => ({
-					...values,
-					[filterName]: '',
-				}),
-				{} as CurrentFilterValues,
-			);
-			setCurrentFilterValues(emptyCurrentFilterValues);
-		}
+		setCurrentFilterValues(getCurrentFilterValues(filterStore.filter));
 	}, [filterStore.filter]);
 
 	const onSubmit = React.useCallback(() => {
