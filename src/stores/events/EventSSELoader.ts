@@ -164,12 +164,7 @@ export class EventSSELoader {
 	};
 
 	private getNextChunk = (chunkSize = this.accumulatedEvents.length): EventTreeNode[] => {
-		let chunk = this.accumulatedEvents.splice(0, chunkSize);
-
-		if (this.searchParams.sseParams.searchDirection === 'next') {
-			chunk = chunk.reverse();
-		}
-		return chunk;
+		return this.accumulatedEvents.slice(0, chunkSize);
 	};
 
 	private closeChannel = () => {
