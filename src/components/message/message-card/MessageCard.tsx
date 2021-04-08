@@ -196,27 +196,21 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 
 	const renderMessageInfo = () => {
 		if (viewType === MessageViewType.FORMATTED || viewType === MessageViewType.BINARY) {
+			const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 			return (
 				<div className='mc-header__info'>
-					{isSoftFiltered && <div className='mc-header__is-soft-filtered-icon' />}
-					{isAttached && <div className='mc-header__is-attached-icon' />}
-					<div className='mc-header__value'>
-						{timestamp && formatTime(timestampToNumber(timestamp))}
+					<div className='mc-header__value' title={`Timestamp: ${formattedTimestamp}`}>
+						{timestamp && formattedTimestamp}
 					</div>
-					<div className='mc-header__item'>
-						<span className='mc-header__key-minified'>nm</span>
-						<span className='mc-header__key'>Name</span>
-						<span className='mc-header__value'>{messageType}</span>
-					</div>
-					<div className='mc-header__item'>
-						<span className='mc-header__key-minified'>ss</span>
-						<span className='mc-header__key'>Session</span>
+					<div className='mc-header__item' title={`Session: ${sessionId}`}>
 						<span className={sessionClass} style={sessionArrowStyle}></span>
 						<span className='mc-header__value'>{sessionId}</span>
 					</div>
-					<div className='mc-header__item messageId'>
-						<span className='mc-header__key'>ID</span>
+					<div className='mc-header__item messageId' title={`ID: ${messageId}`}>
 						<span className='mc-header__value'>{messageId}</span>
+					</div>
+					<div className='mc-header__item' title={`Name: ${messageType}`}>
+						<span className='mc-header__value'>{messageType}</span>
 					</div>
 				</div>
 			);
@@ -226,23 +220,21 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 
 	const renderInlineMessageInfo = () => {
 		if (viewType === MessageViewType.ASCII || viewType === MessageViewType.JSON) {
+			const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 			return (
 				<>
-					{isSoftFiltered && <span className='mc-header__is-soft-filtered-icon inline' />}
-					{isAttached && <span className='mc-header__is-attached-icon inline' />}
-					<span className='mc-header__value'>
-						{timestamp && formatTime(timestampToNumber(timestamp))}{' '}
+					<span className='mc-header__value' title={`Timestamp: ${formattedTimestamp}`}>
+						{timestamp && formattedTimestamp}{' '}
 					</span>
-					<span className='mc-header__key-minified'>nm</span>
-					<span className='mc-header__key'>Name</span>
-					<span className='mc-header__value'>{messageType} </span>
-					<span className='mc-header__key-minified'>ss</span>
-					<span className='mc-header__key'>Session </span>
-					<span className={`${sessionClass} inline`} style={sessionArrowStyle}></span>
-					<span className='mc-header__value sessionId-inline'>{sessionId} </span>
-					<span className='mc-header__item messageId-inline'>
-						<span className='mc-header__key'>ID</span>
+					<span className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
+						{sessionId}{' '}
+					</span>
+					<span className='mc-header__item messageId-inline' title={`ID: ${messageId}`}>
 						<span className='mc-header__value'>{messageId} </span>
+					</span>
+					<span className={`${sessionClass} inline`} style={sessionArrowStyle}></span>
+					<span className='mc-header__value' title={`Name: ${messageType}`}>
+						{messageType}{' '}
 					</span>
 				</>
 			);
