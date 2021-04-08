@@ -46,7 +46,9 @@ export function getDefaultEventsFiltersState(info: EventsFiltersInfo[]): EventFi
 				return {
 					...prevParams,
 					type: currParam.type.value,
-					values: getFilterParameterDefaultValue(currParam),
+					[currParam.name.includes('value')
+						? 'values'
+						: currParam.name]: getFilterParameterDefaultValue(currParam),
 				};
 			}, {}),
 		};

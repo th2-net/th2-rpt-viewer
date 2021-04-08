@@ -16,12 +16,15 @@
 
 import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
+import EventsFilter from '../models/filter/EventsFilter';
+import { getObjectKeys } from '../helpers/object';
 
 interface BaseSSEParams {
 	startTimestamp: number;
-	searchDirection?: 'next' | 'previous'; // defaults to next
-	resultCountLimit?: number;
 	endTimestamp?: number | null;
+	resultCountLimit?: number;
+	resumeFromId?: string;
+	searchDirection?: 'next' | 'previous'; // defaults to next
 }
 
 export interface SSEHeartbeat {
@@ -67,7 +70,6 @@ export interface EventSSEParams extends BaseSSEParams {
 	'type-negative'?: boolean;
 	'name-values'?: string[];
 	'name-negative'?: boolean;
-	resumeFromId?: string;
 }
 
 export interface MessagesSSEParams extends BaseSSEParams {
@@ -79,10 +81,40 @@ export interface MessagesSSEParams extends BaseSSEParams {
 	'type-negative'?: boolean;
 	'body-values'?: string[];
 	'body-negative'?: boolean;
+}
+
+export interface SSEParamsEvents {
+	parentEvent?: string;
+	resultCountLimit?: number;
 	resumeFromId?: string;
+	searchDirection?: 'next' | 'previous'; // defaults to next
 }
 
 export type SSEParams = EventSSEParams | MessagesSSEParams;
+
+type ParamsFromFilter = Record<string, string | string[] | boolean>;
+
+function getParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
+	const filters = getObjectKeys(filter).filter(filterName => filter[filterName].values.length > 0);
+	return filters.reduce(
+		(params, filterName) => {
+			const currentFilter = filter[filterName];
+			const currentFilterParams: ParamsFromFilter = {};
+
+			currentFilterParams[`${filterName}-${filterName === 'status' ? 'value' : 'values'}`] =
+				currentFilter.values;
+			if ('negative' in currentFilter) {
+				currentFilterParams[`${filterName}-negative`] = currentFilter.negative;
+			}
+
+			return {
+				...params,
+				...currentFilterParams,
+			};
+		},
+		{ filters },
+	);
+}
 
 const sseApi: SSESchema = {
 	getEventSource: config => {
@@ -90,6 +122,20 @@ const sseApi: SSESchema = {
 		const params = createURLSearchParams({ ...queryParams });
 		return new EventSource(
 			`http://th2-qa:30000/schema-schema-qa/backend/search/sse/${type}s/?${params}`,
+		);
+	},
+	getEventsTreeSource: (timeRange, filter, sseParams) => {
+		const paramFromFilter = filter ? getParamsFromFilter(filter) : {};
+		const params = createURLSearchParams({
+			...{
+				startTimestamp: timeRange[0],
+				endTimestamp: timeRange[1],
+				...paramFromFilter,
+				...sseParams,
+			},
+		});
+		return new EventSource(
+			`http://th2-qa:30000/schema-schema-qa/backend/search/sse/events/?${params}`,
 		);
 	},
 	getFilters: async <T>(filterType: 'events' | 'messages'): Promise<T[]> => {

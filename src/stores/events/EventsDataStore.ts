@@ -36,7 +36,6 @@ interface FetchEventTreeOptions {
 	filter: EventsFilter | null;
 	targetEventId?: string;
 }
-
 export default class EventsDataStore {
 	private CHUNK_SIZE = 50;
 
@@ -79,25 +78,19 @@ export default class EventsDataStore {
 
 	@action
 	public fetchEventTree = (options: FetchEventTreeOptions) => {
-		const {
-			timeRange: [startTimestamp, endTimestamp],
-			filter,
-			targetEventId,
-		} = options;
+		const { timeRange, filter, targetEventId } = options;
 
 		this.eventStore.targetEventId = targetEventId || null;
-		this.filterStore.setRange([startTimestamp, endTimestamp]);
+		this.filterStore.setRange(timeRange);
 		this.filterStore.setEventsFilter(filter);
 
 		try {
 			this.resetEventsTreeState({ isLoading: true });
 			this.eventTreeEventSource = new EventSSELoader(
 				{
-					startTimestamp,
-					endTimestamp,
-					// TODO: fix filters
-					// 'name-values': this.filterStore.filter.names,
-					// 'type-values': this.filterStore.filter.eventTypes,
+					timeRange,
+					filter,
+					sseParams: {},
 				},
 				{
 					onResponse: this.handleIncomingEventTreeNodes,
@@ -249,14 +242,13 @@ export default class EventsDataStore {
 
 			this.loadingChildrenMap[parentId] = new EventSSELoader(
 				{
-					startTimestamp: timestampToNumber(lastChild.startTimestamp),
-					endTimestamp: this.filterStore.timestampTo,
-					// TODO: fix filters
-					// 'name-values': this.filterStore.filter.names,
-					// 'type-values': this.filterStore.filter.eventTypes,
-					parentEvent: parentId,
-					resumeFromId: lastChild?.eventId,
-					resultCountLimit: this.CHUNK_SIZE + 1,
+					timeRange: [timestampToNumber(lastChild.startTimestamp), this.filterStore.timestampTo],
+					filter: this.filterStore.filter,
+					sseParams: {
+						parentEvent: parentId,
+						resumeFromId: lastChild?.eventId,
+						resultCountLimit: this.CHUNK_SIZE + 1,
+					},
 				},
 				{
 					onError: this.onEventTreeFetchError,

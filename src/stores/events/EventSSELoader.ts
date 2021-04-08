@@ -15,12 +15,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, when } from 'mobx';
+import { action, observable } from 'mobx';
 import api from '../../api';
-import { EventSSEParams } from '../../api/sse';
+import { SSEParamsEvents } from '../../api/sse';
 import { isEventNode } from '../../helpers/event';
 import { getObjectKeys } from '../../helpers/object';
 import { EventTreeNode } from '../../models/EventAction';
+import EventsFilter from '../../models/filter/EventsFilter';
+import { TimeRange } from '../../models/Timestamp';
 
 type WhenPromise = Promise<void> & {
 	cancel(): void;
@@ -67,7 +69,11 @@ export class EventSSELoader {
 	public isEndReached = false;
 
 	constructor(
-		private queryParams: EventSSEParams,
+		private searchParams: {
+			timeRange: TimeRange;
+			filter: EventsFilter | null;
+			sseParams: SSEParamsEvents;
+		},
 		private eventListeners: SSEEventListeners,
 		options?: SSEChannelOptions,
 	) {
@@ -121,36 +127,6 @@ export class EventSSELoader {
 		}
 	};
 
-	/*
-		Returns a promise within initialResponseTimeoutMs or successfull fetch
-		and subscribes on changes 
-	*/
-	public loadAndSubscribe = async (resumeFromId?: string): Promise<EventTreeNode[]> => {
-		this.closeChannel();
-		this.resetSSEState({ isLoading: true });
-		this.clearFetchedChunkSubscription();
-
-		this.channel = api.sse.getEventSource({
-			queryParams: {
-				...this.queryParams,
-				resumeFromId,
-				resultCountLimit: this.chunkSize,
-			},
-			type: 'event',
-		});
-
-		this.channel.addEventListener('event', this.onSSEResponse);
-		this.channel.addEventListener('close', this._onClose);
-		this.channel.addEventListener('error', this._onError);
-
-		const eventsChunk = await Promise.race([
-			this.getInitialResponseWithinTimeout(this.initialResponseTimeoutMs),
-			this.getFetchedChunk(),
-		]);
-
-		return eventsChunk;
-	};
-
 	public subscribe = (): void => {
 		this.closeChannel();
 		this.resetSSEState({
@@ -158,28 +134,17 @@ export class EventSSELoader {
 		});
 		this.clearFetchedChunkSubscription();
 
-		this.channel = api.sse.getEventSource({
-			queryParams: {
-				...this.queryParams,
-			},
-			type: 'event',
-		});
+		this.channel = api.sse.getEventsTreeSource(
+			this.searchParams.timeRange,
+			this.searchParams.filter,
+			this.searchParams.sseParams,
+		);
 
 		this.channel.addEventListener('event', this.onSSEResponse);
 		this.channel.addEventListener('close', this._onClose);
 		this.channel.addEventListener('error', this._onError);
 
 		this.initUpdateScheduler();
-	};
-
-	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventTreeNode[]> => {
-		return new Promise(res => {
-			this.initialResponseTimeout = window.setTimeout(() => {
-				res(this.getNextChunk());
-				this.clearFetchedChunkSubscription();
-				this.initUpdateScheduler();
-			}, timeout);
-		});
 	};
 
 	private initUpdateScheduler = (): void => {
@@ -192,14 +157,6 @@ export class EventSSELoader {
 		}, this.updateSchedulerIntervalMs);
 	};
 
-	private getFetchedChunk = async (): Promise<EventTreeNode[]> => {
-		this.fetchedChunkSubscription = when(() => !this.isLoading);
-		await this.fetchedChunkSubscription;
-		const nextChunk = this.getNextChunk();
-		this.resetSSEState();
-		return nextChunk;
-	};
-
 	public stop = (): void => {
 		this.closeChannel();
 		this.resetSSEState();
@@ -209,7 +166,7 @@ export class EventSSELoader {
 	private getNextChunk = (chunkSize = this.accumulatedEvents.length): EventTreeNode[] => {
 		let chunk = this.accumulatedEvents.splice(0, chunkSize);
 
-		if (this.queryParams.searchDirection === 'next') {
+		if (this.searchParams.sseParams.searchDirection === 'next') {
 			chunk = chunk.reverse();
 		}
 		return chunk;

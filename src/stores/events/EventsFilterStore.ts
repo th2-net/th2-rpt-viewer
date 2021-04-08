@@ -88,10 +88,12 @@ export default class EventsFilterStore {
 	@computed
 	public get isEventsFilterApplied(): boolean {
 		if (!this.filter) return false;
-		return getObjectKeys(this.filter).some(
-			(filterName: EventSSEFilters) =>
-				this.filter !== null && this.filter[filterName].values.length > 0,
-		);
+		return getObjectKeys(this.filter).some((filterName: EventSSEFilters) => {
+			if (filterName === 'status') {
+				return this.filter && this.filter[filterName].values !== 'any';
+			}
+			return this.filter !== null && this.filter[filterName].values.length > 0;
+		});
 	}
 
 	@action

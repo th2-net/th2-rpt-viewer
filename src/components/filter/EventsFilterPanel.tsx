@@ -17,11 +17,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
-import {
-	CompoundFilterRow,
-	FilterRowConfig,
-	FilterRowTogglerConfig,
-} from '../../models/filter/FilterInputs';
+import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
 import { useWorkspaceEventStore, useEventsFilterStore } from '../../hooks';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
@@ -68,21 +64,24 @@ function EventsFilterPanel() {
 		eventsStore.clearFilter();
 	}, []);
 
-	const getNegativeToggler = React.useCallback((filterName: EventSSEFilters) => {
-		return function negativeToggler() {
-			const filterValue = filter && filter[filterName];
-			if (filter && filterValue && 'negative' in filterValue) {
-				const updatedFilterValue = {
-					...filterValue,
-					negative: !filterValue.negative,
-				};
-				setFilter({
-					...filter,
-					[filterName]: updatedFilterValue,
-				});
-			}
-		};
-	}, []);
+	const getNegativeToggler = React.useCallback(
+		(filterName: EventSSEFilters) => {
+			return function negativeToggler() {
+				const filterValue = filter && filter[filterName];
+				if (filter && filterValue && 'negative' in filterValue) {
+					const updatedFilterValue = {
+						...filterValue,
+						negative: !filterValue.negative,
+					};
+					setFilter({
+						...filter,
+						[filterName]: updatedFilterValue,
+					});
+				}
+			};
+		},
+		[filter],
+	);
 
 	const getValuesUpdater = React.useCallback(
 		<T extends 'string' | 'string[]' | 'switcher'>(name: EventSSEFilters) => {
@@ -116,14 +115,13 @@ function EventsFilterPanel() {
 		[currentFilterValues],
 	);
 
-	const filterConfig: Array<CompoundFilterRow> = React.useMemo(() => {
+	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
 		if (!filter || !currentFilterValues) return [];
 
 		const filterNames = getObjectKeys(filter);
 
 		return filterNames.map(filterName => {
 			const filterValues: Filter = filter[filterName];
-
 			const label = (filterName.charAt(0).toUpperCase() + filterName.slice(1))
 				.split(/(?=[A-Z])/)
 				.join(' ');
@@ -182,7 +180,8 @@ function EventsFilterPanel() {
 					break;
 			}
 
-			return [toggler, filterInput].filter(notEmpty);
+			const filterRow = [toggler, filterInput].filter(notEmpty);
+			return filterRow.length === 1 ? filterRow[0] : filterRow;
 		});
 	}, [filter, currentFilterValues, setCurrentValue, getValuesUpdater, getNegativeToggler]);
 

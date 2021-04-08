@@ -28,6 +28,11 @@ const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
 
 	return (
 		<div className='search-type-switcher'>
+			{config.label && (
+				<label className='filter-row__label' htmlFor={config.id}>
+					{config.label}
+				</label>
+			)}
 			{possibleValues.map(val => {
 				const buttonClassName = createBemElement(
 					'search-type-switcher',

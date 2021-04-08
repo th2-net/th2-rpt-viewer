@@ -86,6 +86,7 @@ export type SearchHistoryState<T> = {
 
 const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
 const SEARCH_CHUNK_SIZE = 500;
+
 export class SearchStore {
 	constructor(private api: ApiSchema) {
 		this.getEventFilters();
