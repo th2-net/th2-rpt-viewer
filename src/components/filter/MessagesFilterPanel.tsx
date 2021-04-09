@@ -161,7 +161,7 @@ const MessagesFilterPanel = () => {
 				},
 			);
 		});
-	}, [searchStore.messagesFilterInfo, sseFilter, setSSEFilter]);
+	}, [searchStore.messagesFilterInfo, sseFilter, setSSEFilter, currentValues]);
 
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
 		return {
