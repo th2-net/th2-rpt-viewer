@@ -33,7 +33,8 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		const isFromAutocomplete = Boolean((e.target as HTMLElement).closest('.rules-autocomplete'));
-		if (e.target !== buttonRef.current && !isFromAutocomplete) {
+		const isFromSelect = Boolean((e.target as HTMLElement).closest('.rules-select-options-list'));
+		if (e.target !== buttonRef.current && !isFromAutocomplete && !isFromSelect) {
 			setIsOpen(false);
 		}
 	});

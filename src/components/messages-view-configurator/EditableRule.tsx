@@ -46,10 +46,14 @@ const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: Edi
 		setSessionIsEditing(false);
 	}, [session]);
 
-	const editViewType = useCallback(() => {
-		rulesStore.editMessageDisplayRule(rule, { ...rule, viewType });
+	const editViewType = (vType: MessageViewType) => {
+		const newRule = { ...rule, viewType: vType };
+		if (rule.session === '*') {
+			rulesStore.setRootDisplayRule(newRule);
+		}
+		rulesStore.editMessageDisplayRule(rule, newRule);
 		setRuleIsEditing(false);
-	}, [viewType]);
+	};
 
 	const renderSession = () => {
 		return sessionIsEditing && rule.editableSession ? (
@@ -72,14 +76,20 @@ const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: Edi
 
 	const renderViewType = () => {
 		return ruleIsEditing && rule.editableType ? (
-			<RuleEditor selected={viewType} setSelected={setViewType} onSelect={editViewType} />
+			<RuleEditor
+				selected={viewType}
+				setSelected={setViewType}
+				onSelect={editViewType}
+				defaultOpen={true}
+			/>
 		) : (
 			<p
+				className={`view-type ${viewType.toLowerCase()}`}
 				onClick={() => {
 					setRuleIsEditing(true);
-				}}>
-				{viewType}
-			</p>
+				}}
+				title={viewType}
+			/>
 		);
 	};
 

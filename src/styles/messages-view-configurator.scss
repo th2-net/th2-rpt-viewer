@@ -82,6 +82,9 @@
 
 .rule,
 .order-item {
+	.view-type {
+		@extend %icons;
+	}
 	position: relative;
 	padding: 4px 24px 0 0;
 	display: flex;
@@ -150,4 +153,57 @@
 			cursor: default;
 		}
 	}
+}
+
+.rules-select {
+	&-options-list {
+		background: #fff;
+		visibility: hidden;
+		&.show {
+			visibility: visible;
+		}
+	}
+	&-option,
+	&-trigger {
+		@extend %icons;
+	}
+}
+
+%icons {
+	display: block;
+	padding: 0;
+	margin: 0;
+	cursor: pointer;
+	border-style: none;
+	outline: none;
+	width: 16px;
+	height: 16px;
+	&.json {
+		position: relative;
+		&:before {
+			content: '{~}';
+			position: absolute;
+			font-size: 11px;
+			line-height: 1.25;
+			font-weight: 700;
+			color: grey;
+			top: 0;
+			left: 0;
+			width: inherit;
+			height: inherit;
+		}
+	}
+
+	&.formatted {
+		@include icon(url(../../resources/icons/messages-beautify.svg));
+	}
+
+	&.binary {
+		@include icon(url(../../resources/icons//table-view-icon.svg));
+	}
+
+	&.ascii {
+		@include icon(url(../../resources/icons/bincode.svg));
+	}
+
 }

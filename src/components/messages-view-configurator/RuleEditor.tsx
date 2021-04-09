@@ -15,19 +15,82 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import Select from '../util/Select';
 import { MessageViewType } from '../../models/EventMessage';
+import useDimensions from '../../hooks/useDimensions';
+import { createStyleSelector } from '../../helpers/styleCreators';
+import { ModalPortal } from '../util/Portal';
+import { useOutsideClickListener } from '../../hooks';
 
 interface RuleEditorProps {
 	selected: string;
 	setSelected: (v: MessageViewType) => void;
-	onSelect?: () => void;
+	onSelect?: (v: MessageViewType) => void;
+	defaultOpen?: boolean;
 }
 
 const viewTypes = Object.values(MessageViewType);
 
-const RuleEditor: React.FC<RuleEditorProps> = ({ selected, setSelected, onSelect }) => (
-	<Select options={viewTypes} selected={selected} onChange={setSelected} onSelect={onSelect} />
-);
+const RuleEditor: React.FC<RuleEditorProps> = ({
+	selected,
+	setSelected,
+	onSelect,
+	defaultOpen,
+}) => {
+	const [showOptions, setShowOptions] = React.useState(Boolean(defaultOpen));
+
+	const [btnRef, btnDimensions] = useDimensions<HTMLButtonElement>();
+	const listRef = React.useRef(null);
+
+	useOutsideClickListener(listRef, () => {
+		setShowOptions(false);
+	});
+
+	const triggerClassName = createStyleSelector('rules-select-trigger', selected);
+	const optionsListClassName = createStyleSelector(
+		'rules-select-options-list',
+		showOptions ? 'show' : null,
+	);
+
+	return (
+		<div className='rules-select'>
+			<button
+				ref={btnRef}
+				className={triggerClassName}
+				onClick={() => {
+					setShowOptions(show => !show);
+				}}
+			/>
+			{btnDimensions ? (
+				<ModalPortal
+					isOpen={showOptions}
+					style={{
+						position: 'absolute',
+						top: btnDimensions.top + btnDimensions.height,
+						left: btnDimensions.left,
+						zIndex: 500,
+					}}>
+					<div className={optionsListClassName} ref={listRef}>
+						{viewTypes.map((opt, index) => (
+							<button
+								className={`rules-select-option ${opt.toLowerCase()}`}
+								key={index}
+								value={opt}
+								title={opt}
+								onClick={(e: React.MouseEvent) => {
+									const viewType = (e.target as HTMLButtonElement).value as MessageViewType;
+									setSelected(viewType);
+									setShowOptions(false);
+									if (onSelect) {
+										onSelect(viewType);
+									}
+								}}
+							/>
+						))}
+					</div>
+				</ModalPortal>
+			) : null}
+		</div>
+	);
+};
 
 export default RuleEditor;
