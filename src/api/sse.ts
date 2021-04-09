@@ -94,7 +94,7 @@ export type SSEParams = EventSSEParams | MessagesSSEParams;
 
 type ParamsFromFilter = Record<string, string | string[] | boolean>;
 
-function getParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
+function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
 	const filters = getObjectKeys(filter).filter(filterName =>
 		filterName === 'status'
 			? filter[filterName].values !== 'any'
@@ -124,12 +124,10 @@ const sseApi: SSESchema = {
 	getEventSource: config => {
 		const { type, queryParams } = config;
 		const params = createURLSearchParams({ ...queryParams });
-		return new EventSource(
-			`http://th2-qa:30000/schema-schema-qa/backend/search/sse/${type}s/?${params}`,
-		);
+		return new EventSource(`backend/search/sse/${type}s/?${params}`);
 	},
 	getEventsTreeSource: (timeRange, filter, sseParams) => {
-		const paramFromFilter = filter ? getParamsFromFilter(filter) : {};
+		const paramFromFilter = filter ? getEventsSSEParamsFromFilter(filter) : {};
 		const params = createURLSearchParams({
 			...{
 				startTimestamp: timeRange[0],
@@ -138,14 +136,10 @@ const sseApi: SSESchema = {
 				...sseParams,
 			},
 		});
-		return new EventSource(
-			`http://th2-qa:30000/schema-schema-qa/backend/search/sse/events/?${params}`,
-		);
+		return new EventSource(`backend/search/sse/events/?${params}`);
 	},
 	getFilters: async <T>(filterType: 'events' | 'messages'): Promise<T[]> => {
-		const res = await fetch(
-			`http://th2-qa:30000/schema-schema-qa/backend/filters/sse-${filterType}`,
-		);
+		const res = await fetch(`backend/filters/sse-${filterType}`);
 		if (res.ok) {
 			return res.json();
 		}
@@ -161,9 +155,7 @@ const sseApi: SSESchema = {
 	getEventsFiltersInfo: async filters => {
 		const eventFilterInfo = await Promise.all<EventsFiltersInfo>(
 			filters.map(filterName =>
-				fetch(
-					`http://th2-qa:30000/schema-schema-qa/backend/filters/sse-events/${filterName}`,
-				).then(res => res.json()),
+				fetch(`backend/filters/sse-events/${filterName}`).then(res => res.json()),
 			),
 		);
 
@@ -186,9 +178,7 @@ const sseApi: SSESchema = {
 	getMessagesFiltersInfo: filters => {
 		return Promise.all(
 			filters.map(filterName =>
-				fetch(
-					`http://th2-qa:30000/schema-schema-qa/backend/filters/sse-messages/${filterName}`,
-				).then(res => res.json()),
+				fetch(`backend/filters/sse-messages/${filterName}`).then(res => res.json()),
 			),
 		);
 	},

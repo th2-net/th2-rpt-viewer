@@ -29,7 +29,7 @@ type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;
 };
 
-function getCurrentFilterValues(filter: EventsFilter | null) {
+function getDefaultCurrentFilterValues(filter: EventsFilter | null) {
 	return filter
 		? getObjectKeys(filter).reduce(
 				(values, filterName) => ({
@@ -50,12 +50,12 @@ function EventsFilterPanel() {
 
 	const [filter, setFilter] = React.useState<EventFilterState | null>(filterStore.filter);
 	const [currentFilterValues, setCurrentFilterValues] = React.useState<CurrentFilterValues | null>(
-		getCurrentFilterValues(filterStore.filter),
+		getDefaultCurrentFilterValues(filterStore.filter),
 	);
 
 	React.useEffect(() => {
 		setFilter(filterStore.filter);
-		setCurrentFilterValues(getCurrentFilterValues(filterStore.filter));
+		setCurrentFilterValues(getDefaultCurrentFilterValues(filterStore.filter));
 	}, [filterStore.filter]);
 
 	const onSubmit = React.useCallback(() => {
@@ -63,10 +63,6 @@ function EventsFilterPanel() {
 			eventsStore.applyFilter(filter);
 		}
 	}, [filter]);
-
-	const onClear = React.useCallback(() => {
-		eventsStore.clearFilter();
-	}, []);
 
 	const getNegativeToggler = React.useCallback(
 		(filterName: EventSSEFilters) => {
@@ -102,7 +98,7 @@ function EventsFilterPanel() {
 				});
 			};
 		},
-		[],
+		[setFilter],
 	);
 
 	const setCurrentValue = React.useCallback(
@@ -136,7 +132,6 @@ function EventsFilterPanel() {
 				toggler = {
 					id: `${filter.name}-include`,
 					label,
-					disabled: false,
 					type: 'toggler',
 					value: filterValues.negative,
 					toggleValue: getNegativeToggler(filterName),
@@ -152,7 +147,6 @@ function EventsFilterPanel() {
 				case 'string':
 					filterInput = {
 						id: filterName,
-						disabled: false,
 						type: 'string',
 						value: filterValues.values,
 						setValue: getValuesUpdater(filterName),
@@ -161,7 +155,6 @@ function EventsFilterPanel() {
 				case 'string[]':
 					filterInput = {
 						id: filterName,
-						disabled: false,
 						type: 'multiple-strings',
 						values: filterValues.values,
 						setValues: getValuesUpdater(filterName),
@@ -199,7 +192,7 @@ function EventsFilterPanel() {
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
 			onSubmit={onSubmit}
-			onClearAll={onClear}
+			onClearAll={eventsStore.clearFilter}
 			config={filterConfig}
 		/>
 	);

@@ -22,7 +22,7 @@ import { getEventParentId } from '../helpers/event';
 const eventHttpApi: EventApiSchema = {
 	getEvent: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(`http://th2-qa:30000/schema-schema-qa/backend/event/${id}?${params}`, {
+		const res = await fetch(`backend/event/${id}?${params}`, {
 			signal,
 		});
 
@@ -43,7 +43,7 @@ const eventHttpApi: EventApiSchema = {
 			flat: true,
 		});
 
-		const path = `http://th2-qa:30000/schema-schema-qa/backend/search/events?${params}`;
+		const path = `backend/search/events?${params}`;
 		const res = await fetch(path);
 
 		if (res.ok) {

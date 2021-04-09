@@ -284,7 +284,7 @@ export default class EventsStore {
 
 		this.eventDataStore.fetchEventTree({
 			timeRange,
-			filter: null,
+			filter: this.filterStore.filter,
 			targetEventId: savedEventNode.eventId,
 		});
 	};

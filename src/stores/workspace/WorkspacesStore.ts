@@ -139,22 +139,10 @@ export default class WorkspacesStore {
 		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
 		const filter = requestInfo?.filters as EventFilterState | undefined;
 		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
+
 		return {
 			events: {
-				filter: filter
-					? {
-							type: {
-								type: 'string[]',
-								values: filter.type.values || [],
-								negative: filter.type.negative,
-							},
-							name: {
-								type: 'string[]',
-								values: filter.name.values || [],
-								negative: filter.name.negative,
-							},
-					  }
-					: undefined,
+				filter,
 				range: [timestampFrom, timestampTo],
 				targetEvent,
 			},

@@ -21,9 +21,7 @@ import MessagesFilter from '../models/filter/MessagesFilter';
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {
 		const params = createURLSearchParams({ idsOnly: false });
-		const res = await fetch(
-			`http://th2-qa:30000/schema-schema-qa/backend/search/messages?${params}`,
-		);
+		const res = await fetch(`backend/search/messages?${params}`);
 
 		if (res.ok) {
 			return res.json();
@@ -55,10 +53,7 @@ const messageHttpApi: MessageApiSchema = {
 			stream: streams,
 		});
 
-		const res = await fetch(
-			`http://th2-qa:30000/schema-schema-qa/backend/search/messages?${params}`,
-			{ signal: abortSignal },
-		);
+		const res = await fetch(`backend/search/messages?${params}`, { signal: abortSignal });
 
 		if (res.ok) {
 			return res.json();
@@ -74,9 +69,7 @@ const messageHttpApi: MessageApiSchema = {
 			timestampFrom,
 			timestampTo,
 		});
-		const res = await fetch(
-			`http://th2-qa:30000/schema-schema-qa/backend/search/messages?${params}`,
-		);
+		const res = await fetch(`backend/search/messages?${params}`);
 
 		if (res.ok) {
 			return res.json();
@@ -87,10 +80,7 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	getMessage: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(
-			`http://th2-qa:30000/schema-schema-qa/backend/message/${id}?${params}`,
-			{ signal },
-		);
+		const res = await fetch(`backend/message/${id}?${params}`, { signal });
 
 		if (res.ok) {
 			return res.json();
@@ -100,7 +90,7 @@ const messageHttpApi: MessageApiSchema = {
 		return null;
 	},
 	getMessageSessions: async () => {
-		const res = await fetch('http://th2-qa:30000/schema-schema-qa/backend/messageStreams');
+		const res = await fetch('backend/messageStreams');
 
 		if (res.ok) return res.json();
 

@@ -20,7 +20,6 @@ import EventsFilter from '../../models/filter/EventsFilter';
 import { GraphStore } from '../GraphStore';
 import { SearchStore } from '../SearchStore';
 import { EventsFiltersInfo, EventSSEFilters } from '../../api/sse';
-import { EventFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { getDefaultEventsFiltersState } from '../../helpers/search';
 import { TimeRange } from '../../models/Timestamp';
 import { getObjectKeys } from '../../helpers/object';
@@ -32,9 +31,31 @@ function getDefaultTimeRange(interval = 15): TimeRange {
 	return [timestampFrom, timestampTo];
 }
 
+// temporary workaround. search store currently doesnt store filter type
+function getFilterFromInitialState(eventsFilter: Partial<EventsFilter> | null) {
+	if (!eventsFilter) return null;
+
+	return getObjectKeys(eventsFilter).reduce((filterWithTypes, currentFilter) => {
+		const filter = eventsFilter[currentFilter];
+		if (!filter) return filterWithTypes;
+		return {
+			...filterWithTypes,
+			[currentFilter]: {
+				...filter,
+				type:
+					currentFilter === 'status'
+						? 'switcher'
+						: typeof filter.values === 'string'
+						? 'string'
+						: 'string[]',
+			},
+		};
+	}, {} as EventsFilter);
+}
+
 export type EventsFilterStoreInitialState = Partial<{
 	range: TimeRange;
-	filter: Partial<EventFilterState>;
+	filter: Partial<EventsFilter>;
 }>;
 
 export default class EventsFilterStore {
@@ -51,13 +72,14 @@ export default class EventsFilterStore {
 			const { range = defaultRange, filter } = initialState;
 
 			const defaultEventFilter = getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
-			this.filter = filter
-				? {
-						...((defaultEventFilter || {}) as EventsFilter),
-						...filter,
-				  }
-				: defaultEventFilter;
-
+			this.setEventsFilter(
+				filter
+					? {
+							...((defaultEventFilter || {}) as EventsFilter),
+							...getFilterFromInitialState(filter),
+					  }
+					: defaultEventFilter,
+			);
 			this.setEventsRange(range);
 		}
 
