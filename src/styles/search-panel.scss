@@ -67,7 +67,6 @@
 	grid-template-columns: 1fr 2fr 1fr;
 	align-items: center;
 	padding: 10px 10px 7px;
-	align-items: center;
 
 	&__previous {
 		justify-self: start;
@@ -246,10 +245,9 @@
 	align-items: center;
 	font-size: 12px;
 	background-color: transparent;
-	transition: background-color 0.3s, color 0.3s;
+	transition: background-color 0.3s, color 0.3s, opacity 0.3s;
 	border-radius: 5px;
 	opacity: 1;
-	transition: opacity 0.3s;
 
 	&.hoverable {
 		cursor: pointer;
@@ -490,7 +488,11 @@
 		}
 
 		&.searching {
-			@include icon(url(../../resources/icons/stop.svg), 20px, 20px);
+			@include icon(url(../../resources/icons/pause.svg), 20px, 20px);
+		}
+
+		&.paused {
+			@include icon(url(../../resources/icons/play.svg), 20px, 20px);
 		}
 	}
 

@@ -25,7 +25,7 @@ import {
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { getTimestampAsNumber } from '../helpers/date';
-import { isEventMessage, isEventNode } from '../helpers/event';
+import { getItemId, isEventMessage, isEventNode } from '../helpers/event';
 import { getDefaultFilterState } from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
@@ -106,6 +106,11 @@ export class SearchStore {
 		);
 	}
 
+	private resultsCount = {
+		previous: 0,
+		next: 0,
+	};
+
 	@observable messageSessions: Array<string> = [];
 
 	@observable searchChannel: {
@@ -184,6 +189,16 @@ export class SearchStore {
 		return Boolean(this.searchChannel.next || this.searchChannel.previous);
 	}
 
+	@computed get isPaused(): boolean {
+		if (!this.currentSearch) return false;
+		return (
+			!this.isSearching &&
+			!this.completed.previous &&
+			!this.completed.next &&
+			(!!this.lastEventId.previous || !!this.lastEventId.next)
+		);
+	}
+
 	@observable currentSearch: SearchHistory | null = null;
 
 	@observable completed = {
@@ -191,7 +206,18 @@ export class SearchStore {
 		next: this.searchHistory.length > 0,
 	};
 
-	searchChunk: Array<SearchResult | SSEHeartbeat> = [];
+	@observable lastEventId: {
+		previous: string | null;
+		next: string | null;
+	} = {
+		previous: null,
+		next: null,
+	};
+
+	private searchChunk: Array<
+		| (SearchResult & { searchDirection: SSESearchDirection })
+		| (SSEHeartbeat & { searchDirection: SSESearchDirection })
+	> = [];
 
 	@computed get isFormDisabled() {
 		return this.searchHistory.length > 1 && this.currentIndex !== this.searchHistory.length - 1;
@@ -351,24 +377,28 @@ export class SearchStore {
 	};
 
 	@action startSearch = () => {
-		this.setCompleted(false);
-
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
-		if (this.searchChannel.next || this.searchChannel.previous || !filterParams) return;
+		if (this.isSearching || !filterParams) return;
 
-		this.newSearch({
-			timestamp: moment().utc().valueOf(),
-			request: { type: this.formType, state: this.searchForm, filters: filterParams },
-			results: {},
-			progress: {
-				previous: 0,
-				next: 0,
-			},
-			processedObjectCount: {
-				previous: 0,
-				next: 0,
-			},
-		});
+		if (!this.isPaused) {
+			this.setCompleted(false);
+			this.resultsCount.next = 0;
+			this.resultsCount.previous = 0;
+
+			this.newSearch({
+				timestamp: moment().utc().valueOf(),
+				request: { type: this.formType, state: this.searchForm, filters: filterParams },
+				results: {},
+				progress: {
+					previous: 0,
+					next: 0,
+				},
+				processedObjectCount: {
+					previous: 0,
+					next: 0,
+				},
+			});
+		}
 
 		function getFilter<T extends keyof FilterState>(name: T) {
 			return filterParams![name];
@@ -402,72 +432,55 @@ export class SearchStore {
 			getFilter(filter).negative ? [`${filter}-negative`, getFilter(filter).negative] : [],
 		);
 
-		if (searchDirection === SearchDirection.Next || searchDirection === SearchDirection.Both) {
+		const startDirectionalSearch = (direction: SSESearchDirection) => {
 			const params = {
 				startTimestamp: _startTimestamp,
-				searchDirection: SearchDirection.Next,
+				searchDirection: direction,
 				resultCountLimit,
-				endTimestamp: timeLimits.next,
+				endTimestamp: timeLimits[direction],
 				filters: filtersToAdd,
 				...Object.fromEntries([...filterValues, ...filterInclusion]),
 			};
 
-			const queryParams: SSEParams =
-				this.formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
-
-			this.searchChannel.next = this.api.sse.getEventSource({
-				type: this.formType,
-				queryParams,
-			});
-
-			this.searchChannel.next.addEventListener(this.formType, this.onChannelResponse);
-			this.searchChannel.next.addEventListener('keep_alive', this.onChannelResponse);
-			this.searchChannel.next.addEventListener(
-				'close',
-				this.stopSearch.bind(this, SearchDirection.Next),
-			);
-			this.searchChannel.next.addEventListener(
-				'error',
-				this.onError.bind(this, SearchDirection.Next),
-			);
-		}
-
-		if (searchDirection === SearchDirection.Previous || searchDirection === SearchDirection.Both) {
-			const params = {
-				startTimestamp: _startTimestamp,
-				searchDirection: SearchDirection.Previous,
-				resultCountLimit,
-				endTimestamp: timeLimits.previous,
-				filters: filtersToAdd,
-				...Object.fromEntries([...filterValues, ...filterInclusion]),
-			};
+			if (this.isPaused) {
+				params.resumeFromId = this.lastEventId[direction];
+				params.resultCountLimit =
+					this.currentSearch!.request.state.resultCountLimit - this.resultsCount[direction];
+			}
 
 			const queryParams: SSEParams =
 				this.formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
 
-			this.searchChannel.previous = this.api.sse.getEventSource({
+			const searchChannel = this.api.sse.getEventSource({
 				type: this.formType,
 				queryParams,
 			});
 
-			this.searchChannel.previous.addEventListener(this.formType, this.onChannelResponse);
-			this.searchChannel.previous.addEventListener('keep_alive', this.onChannelResponse);
-			this.searchChannel.previous.addEventListener(
-				'close',
-				this.stopSearch.bind(this, SearchDirection.Previous),
-			);
-			this.searchChannel.previous.addEventListener(
-				'error',
-				this.onError.bind(this, SearchDirection.Previous),
-			);
+			this.searchChannel[direction] = searchChannel;
+
+			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));
+			searchChannel.addEventListener('keep_alive', this.onChannelResponse.bind(this, direction));
+			searchChannel.addEventListener('close', this.stopSearch.bind(this, direction, undefined));
+			searchChannel.addEventListener('error', this.onError.bind(this, direction));
+		};
+
+		if (searchDirection === SearchDirection.Both) {
+			startDirectionalSearch(SearchDirection.Previous);
+			startDirectionalSearch(SearchDirection.Next);
+		} else if (searchDirection) {
+			startDirectionalSearch(searchDirection);
 		}
 	};
 
+	@action pauseSearch = () => {
+		this.stopSearch(undefined, true);
+	};
+
 	@action
-	stopSearch = (searchDirection?: SSESearchDirection) => {
+	stopSearch = (searchDirection?: SSESearchDirection, pause = false) => {
 		if (!searchDirection) {
-			this.stopSearch(SearchDirection.Next);
-			this.stopSearch(SearchDirection.Previous);
+			this.stopSearch(SearchDirection.Next, pause);
+			this.stopSearch(SearchDirection.Previous, pause);
 			return;
 		}
 
@@ -477,7 +490,10 @@ export class SearchStore {
 
 		searchChannel.close();
 		this.searchChannel[searchDirection] = null;
-		this.completed[searchDirection] = true;
+
+		if (!pause) {
+			this.completed[searchDirection] = true;
+		}
 
 		this.exportChunkToSearchHistory();
 
@@ -492,17 +508,24 @@ export class SearchStore {
 		this.stopSearch(searchDirection);
 	};
 
-	private onChannelResponse = (ev: Event) => {
+	private onChannelResponse = (searchDirection: SSESearchDirection, ev: Event) => {
 		if (this.currentSearch) {
 			const data = (ev as MessageEvent).data;
 			const parsedEvent: SearchResult | SSEHeartbeat = JSON.parse(data);
-			this.searchChunk.push(parsedEvent);
+			this.searchChunk.push({ ...parsedEvent, searchDirection });
 
 			if (
 				this.searchChunk.length >= SEARCH_CHUNK_SIZE ||
 				(!isEventNode(parsedEvent) && !isEventMessage(parsedEvent))
 			) {
 				this.exportChunkToSearchHistory();
+			}
+
+			if (
+				this.resultsCount.previous + this.resultsCount.next + this.searchChunk.length >=
+				this.currentSearch.request.state.resultCountLimit
+			) {
+				this.stopSearch();
 			}
 		}
 	};
@@ -521,32 +544,33 @@ export class SearchStore {
 
 	@action
 	exportChunkToSearchHistory() {
-		this.searchChunk.forEach(parsedEvent => {
-			if (this.currentSearch) {
-				const eventTimestamp =
-					isEventNode(parsedEvent) || isEventMessage(parsedEvent)
-						? getTimestampAsNumber(parsedEvent)
-						: parsedEvent.timestamp;
+		this.searchChunk.forEach(eventWithSearchDirection => {
+			if (!this.currentSearch) return;
 
-				const startTimestamp = this.currentSearch.request.state.startTimestamp!;
-				const searchDirection =
-					eventTimestamp > startTimestamp ? SearchDirection.Next : SearchDirection.Previous;
+			const { searchDirection, ...parsedEvent } = eventWithSearchDirection;
 
-				if (isEventNode(parsedEvent) || isEventMessage(parsedEvent)) {
-					const resultGroupKey = Math.floor(
-						eventTimestamp / 1000 / (SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60),
-					).toString();
+			const eventTimestamp =
+				isEventNode(parsedEvent) || isEventMessage(parsedEvent)
+					? getTimestampAsNumber(parsedEvent)
+					: parsedEvent.timestamp;
 
-					if (!this.currentSearch.results[resultGroupKey]) {
-						this.currentSearch.results[resultGroupKey] = [];
-					}
+			if (isEventNode(parsedEvent) || isEventMessage(parsedEvent)) {
+				const resultGroupKey = Math.floor(
+					eventTimestamp / 1000 / (SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60),
+				).toString();
 
-					this.currentSearch.results[resultGroupKey].push(parsedEvent);
-					this.currentSearch.progress[searchDirection] = eventTimestamp;
-				} else {
-					this.currentSearch.progress[searchDirection] = eventTimestamp;
-					this.currentSearch.processedObjectCount[searchDirection] = parsedEvent.scanCounter;
+				if (!this.currentSearch.results[resultGroupKey]) {
+					this.currentSearch.results[resultGroupKey] = [];
 				}
+
+				this.currentSearch.results[resultGroupKey].push(parsedEvent);
+				this.currentSearch.progress[searchDirection] = eventTimestamp;
+				this.lastEventId[searchDirection] = getItemId(parsedEvent);
+				this.resultsCount[searchDirection] += 1;
+			} else {
+				this.currentSearch.progress[searchDirection] = eventTimestamp;
+				this.currentSearch.processedObjectCount[searchDirection] = parsedEvent.scanCounter;
+				this.lastEventId[searchDirection] = parsedEvent.id;
 			}
 		});
 
@@ -561,5 +585,10 @@ export class SearchStore {
 		}
 
 		this.completed[searchDirection] = completed;
+
+		if (!completed) {
+			this.lastEventId[searchDirection] = null;
+			this.resultsCount[searchDirection] = 0;
+		}
 	}
 }

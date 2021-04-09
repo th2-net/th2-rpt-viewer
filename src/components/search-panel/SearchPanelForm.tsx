@@ -51,10 +51,11 @@ const SearchPanelForm = () => {
 		messageSessions,
 		filters,
 		startSearch,
-		stopSearch,
+		pauseSearch,
 		setFormType,
 		isSearching,
 		searchProgress,
+		isPaused,
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
@@ -185,12 +186,13 @@ const SearchPanelForm = () => {
 
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
-		completed: completed.previous && completed.next,
+		completed,
 		disabled: disabled || !form.searchDirection,
 		progress: commonProgress,
 		processedObjectCount,
+		isPaused,
 		startSearch,
-		stopSearch,
+		pauseSearch,
 	};
 
 	return (

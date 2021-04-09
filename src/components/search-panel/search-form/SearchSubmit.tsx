@@ -19,12 +19,16 @@ import { createBemElement } from '../../../helpers/styleCreators';
 
 export type SearchSubmitConfig = {
 	isSearching: boolean;
-	completed: boolean;
+	completed: {
+		previous: boolean;
+		next: boolean;
+	};
 	disabled: boolean;
 	progress: number | null;
 	processedObjectCount: number;
+	isPaused: boolean;
 	startSearch: () => void;
-	stopSearch: () => void;
+	pauseSearch: () => void;
 };
 
 const SearchSubmit = ({
@@ -33,26 +37,27 @@ const SearchSubmit = ({
 	disabled,
 	progress,
 	processedObjectCount,
+	isPaused,
 	startSearch,
-	stopSearch,
+	pauseSearch,
 }: SearchSubmitConfig) => {
-	const iconClassName = createBemElement(
-		'search-submit-button',
-		'icon',
-		isSearching ? 'searching' : 'pending',
-	);
+	const getButtonTextWithProgress = (defaultText: string) =>
+		progress === null ? defaultText : `${progress}%`;
 
-	const buttonText = !isSearching ? 'Search' : progress === null ? 'Stop' : `${progress}%`;
+	const [buttonText, buttonState, handleClick] = ((): [string, string, () => void] => {
+		if (isSearching) return [getButtonTextWithProgress('Pause'), 'searching', () => pauseSearch()];
+		if (isPaused) return [getButtonTextWithProgress('Resume'), 'paused', () => startSearch()];
+		return ['Search', 'pending', () => startSearch()];
+	})();
+
+	const iconClassName = createBemElement('search-submit-button', 'icon', buttonState);
 
 	return (
 		<div className='search-form__submit'>
 			{Boolean(processedObjectCount) && (completed || isSearching) && (
 				<div className='search-processed-objects'> {processedObjectCount} processed objects </div>
 			)}
-			<button
-				className='search-submit-button'
-				disabled={disabled}
-				onClick={isSearching ? () => stopSearch() : () => startSearch()}>
+			<button className='search-submit-button' disabled={disabled} onClick={handleClick}>
 				<i className={iconClassName} />
 				<span className='search-submit-button__label'>{buttonText}</span>
 			</button>
