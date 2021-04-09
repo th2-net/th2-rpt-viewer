@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import {
 	useMessagesWorkspaceStore,
 	useMessageDisplayRulesStore,
-	useHeatmap,
 	useSelectedStore,
 	useWorkspaceStore,
 } from '../../../hooks';
@@ -57,16 +56,12 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const selectedStore = useSelectedStore();
 	const workspaceStore = useWorkspaceStore();
 
-	const { heatmapElements } = useHeatmap();
-
 	const [isHighlighted, setHighlighted] = React.useState(false);
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
-	const heatmapElement = heatmapElements.find(el => el.id === message.messageId);
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
-	const isSelected = Boolean(heatmapElement);
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isPinned = selectedStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
 
@@ -170,11 +165,8 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 
 	const isScreenshotMsg = isScreenshotMessage(message);
 
-	const color = heatmapElement?.colors[0];
-
 	const rootClass = createBemBlock(
 		'message-card-wrapper',
-		isSelected ? 'selected' : null,
 		isAttached ? 'attached' : null,
 		isPinned ? 'pinned' : null,
 		isHighlighted ? 'highlighted' : null,
@@ -249,7 +241,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		messageBody: body,
 		isBeautified: isContentBeautified,
 		rawContent: bodyBase64,
-		isSelected: color !== undefined,
+		isSelected: isAttached,
 	};
 
 	return (
