@@ -157,7 +157,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 
 	React.useLayoutEffect(() => {
 		getTimeRange();
-		if (chunks.length && center.current) {
+		if (center.current && chunks.length) {
 			const centralChunkStart = anchorTimestamp.valueOf();
 			const chunkCenter = moment.utc(centralChunkStart).add(interval / 2, 'minutes');
 			const offset =
@@ -236,11 +236,8 @@ const GraphChunksVirtualizer = (props: Props) => {
 		const updatedChunks: [Chunk, number][] = chunksIndexes.map(i => [getChunk(anchorTs, i), i]);
 		const isUpdated =
 			chunks.length === 0 ||
-			updatedChunks.some(
-				([chunk, virtualizerIndex], i) =>
-					chunk !== chunks[i][0] && virtualizerIndex !== chunks[i][1],
-			);
-
+			chunks.length !== updatedChunks.length ||
+			!updatedChunks.every(([chunk], i) => chunks[i] && chunk.from === chunks[i][0].from);
 		if (isUpdated) {
 			setChunks(updatedChunks);
 		}

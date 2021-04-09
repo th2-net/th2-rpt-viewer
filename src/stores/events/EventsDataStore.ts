@@ -144,7 +144,12 @@ export default class EventsDataStore {
 		);
 
 		if (rootEvents.length > 0) {
-			this.rootEventIds = [...this.rootEventIds, ...rootEvents.map(({ eventId }) => eventId)];
+			this.rootEventIds = [
+				...this.rootEventIds,
+				...rootEvents
+					.filter(rootEvent => !this.rootEventIds.includes(rootEvent.eventId))
+					.map(({ eventId }) => eventId),
+			];
 		}
 	};
 
