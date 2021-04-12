@@ -20,6 +20,7 @@ import MessageBody, {
 	MessageBodyField,
 	isListValue,
 } from '../../../models/MessageBody';
+import { useMessageBodySortStore } from '../../../hooks';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 const DEFAULT_HIGHLIGHT_COLOR = '#e2dfdf';
@@ -32,8 +33,30 @@ interface Props {
 	renderInfo: () => React.ReactNode;
 }
 
+const usualSort = (a: [string, MessageBodyField], b: [string, MessageBodyField]) => {
+	const [keyA] = a;
+	const [keyB] = b;
+	return keyA.toLowerCase() > keyB.toLowerCase() ? 1 : -1;
+};
+
 export default function MessageBodyCard({ isBeautified, body, isSelected, renderInfo }: Props) {
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
+	const { sortOrder } = useMessageBodySortStore();
+	const sortOrderItems = sortOrder.map(item => item.item);
+
+	const primarySortedFields: [string, MessageBodyField][] = body
+		? Object.entries(
+				sortOrderItems.reduce((prev, curr) => ({ ...prev, [curr]: body.fields[curr] }), {}),
+		  )
+		: [];
+
+	const secondarySortedFields: [string, MessageBodyField][] = body
+		? Object.entries(body.fields)
+				.filter(([key]) => !sortOrderItems.includes(key))
+				.sort(usualSort)
+		: [];
+
+	const fields = [...primarySortedFields, ...secondarySortedFields];
 
 	if (body == null) {
 		return <pre className='mc-body__human'>null</pre>;
@@ -43,7 +66,7 @@ export default function MessageBodyCard({ isBeautified, body, isSelected, render
 		<pre className='mc-body__human'>
 			{renderInfo && renderInfo()}
 			{!isBeautified && '{'}
-			{Object.entries(body.fields).map(([key, value], idx, arr) => (
+			{fields.map(([key, value], idx, arr) => (
 				<React.Fragment key={key}>
 					<MessageBodyCardField
 						highlightColor={isSelected ? SELECTED_HIGHLIGHT_COLOR : DEFAULT_HIGHLIGHT_COLOR}
