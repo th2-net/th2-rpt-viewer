@@ -16,16 +16,9 @@
 
 import { openDB, IDBPDatabase } from 'idb';
 import { observable, when } from 'mobx';
-import moment from 'moment';
-import { getItemId } from '../helpers/event';
 import { notEmpty } from '../helpers/object';
-import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import notificationsStore from '../stores/NotificationsStore';
-import {
-	OrderRule,
-	ROOT_DISPLAY_NAME_ID,
-	RULES_ORDER_ID,
-} from '../stores/MessageDisplayRulesStore';
+import { OrderRule, RULES_ORDER_ID } from '../stores/MessageDisplayRulesStore';
 import localStorageWorker from '../util/LocalStorageWorker';
 import { MessageDisplayRule } from '../models/EventMessage';
 
@@ -58,17 +51,7 @@ export class IndexedDB {
 					const searchHistory = localStorageWorker.getSearchHistory();
 					const displayRules = localStorageWorker.getMessageDisplayRules();
 					const rootDisplayRule = localStorageWorker.getRootDisplayRule();
-					const graphSearchHistory: GraphSearchResult[] = localStorageWorker
-						.getGraphSearchHistory()
-						.map(searchItem => ({
-							item: searchItem,
-							id: getItemId(searchItem),
-							searchTimestamp: moment.utc().valueOf(),
-						}));
-
-					if (rootDisplayRule) {
-						rootDisplayRule.id = ROOT_DISPLAY_NAME_ID;
-					}
+					const graphSearchHistory = localStorageWorker.getGraphSearchHistory();
 
 					const rulesOrder: OrderRule = {
 						id: RULES_ORDER_ID,
@@ -179,7 +162,7 @@ export class IndexedDB {
 			errorType: 'indexedDbError',
 			type: 'error',
 			header: 'QuotaExceededError',
-			description: 'Storage quota exceeded. Try delete old data',
+			description: 'Storage quota exceeded. Try to delete old data',
 			action: data,
 		});
 	};

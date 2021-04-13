@@ -25,7 +25,7 @@ export default function IndexedDBErrorToast(props: IndexedDbError) {
 			<div className='toast-content__top'>
 				<p className='user-message'>{header}</p>
 			</div>
-			<div className='toast-content__bottom'>{description}</div>
+			<div>{description}</div>
 		</div>
 	);
 }

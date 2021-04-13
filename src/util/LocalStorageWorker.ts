@@ -14,11 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { isEventNode } from '../helpers/event';
+import moment from 'moment';
+import { EventBookmark, MessageBookmark } from '../components/BookmarksPanel';
+import { GraphSearchResult } from '../components/graph/search/GraphSearch';
+import { getItemId } from '../helpers/event';
 import { isMessage } from '../helpers/message';
 import { isSearchHistoryEntity } from '../helpers/search';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage, MessageDisplayRule } from '../models/EventMessage';
+import { ROOT_DISPLAY_NAME_ID } from '../stores/MessageDisplayRulesStore';
 
 enum LocalStorageLegacyEntities {
 	PINNED_MESSAGES = 'pinnedMessages',
@@ -29,21 +33,33 @@ enum LocalStorageLegacyEntities {
 	ROOT_DISPLAY_RULE = 'root-display-rule',
 }
 class LocalStorageWorker {
-	public getPersistedPinnedMessages(): EventMessage[] {
+	public getPersistedPinnedMessages(): MessageBookmark[] {
 		try {
 			const pinnedMessages = localStorage.getItem(LocalStorageLegacyEntities.PINNED_MESSAGES);
 			const parsedMessages = pinnedMessages ? JSON.parse(pinnedMessages) : [];
-			return Array.isArray(parsedMessages) ? parsedMessages.filter(isMessage) : [];
+
+			return parsedMessages.filter(isMessage).map((message: EventMessage) => ({
+				id: message.messageId,
+				item: message,
+				searchTimestamp: moment.utc().valueOf(),
+			}));
 		} catch (error) {
 			return [];
 		}
 	}
 
-	public getPersistedPinnedEvents(): EventTreeNode[] {
+	public getPersistedPinnedEvents(): EventBookmark[] {
 		try {
 			const pinnedEventsNodes = localStorage.getItem(LocalStorageLegacyEntities.EVENTS);
-			const parsedEventNodes = pinnedEventsNodes ? JSON.parse(pinnedEventsNodes) : [];
-			return Array.isArray(parsedEventNodes) ? parsedEventNodes.filter(isEventNode) : [];
+			const parsedEventNodes: EventTreeNode[] = pinnedEventsNodes
+				? JSON.parse(pinnedEventsNodes)
+				: [];
+
+			return parsedEventNodes.map(eventNode => ({
+				id: eventNode.eventId,
+				item: eventNode,
+				searchTimestamp: moment.utc().valueOf(),
+			}));
 		} catch (error) {
 			return [];
 		}
@@ -74,19 +90,35 @@ class LocalStorageWorker {
 
 	public getRootDisplayRule = (): MessageDisplayRule | null => {
 		try {
-			const rootRule = localStorage.getItem(LocalStorageLegacyEntities.ROOT_DISPLAY_RULE);
-			return rootRule ? JSON.parse(rootRule) : null;
+			const savedRootRule = localStorage.getItem(LocalStorageLegacyEntities.ROOT_DISPLAY_RULE);
+			const rootRule: MessageDisplayRule | null = savedRootRule ? JSON.parse(savedRootRule) : null;
+			if (rootRule) {
+				rootRule.id = ROOT_DISPLAY_NAME_ID;
+			}
+			return rootRule;
 		} catch (error) {
 			return null;
 		}
 	};
 
-	public getGraphSearchHistory = (): Array<EventMessage | EventAction> => {
+	public getGraphSearchHistory = (): GraphSearchResult[] => {
 		try {
-			const graphSearchHistory = localStorage.getItem(
+			const savedGraphSearchHistory = localStorage.getItem(
 				LocalStorageLegacyEntities.GRAPH_SEARCH_HISTORY,
 			);
-			return graphSearchHistory ? JSON.parse(graphSearchHistory) : [];
+
+			let graphSearchHistory: GraphSearchResult[] = [];
+			if (savedGraphSearchHistory) {
+				graphSearchHistory = (JSON.parse(savedGraphSearchHistory) as Array<
+					EventMessage | EventAction
+				>).map(searchItem => ({
+					item: searchItem,
+					id: getItemId(searchItem),
+					searchTimestamp: moment.utc().valueOf(),
+				}));
+			}
+
+			return graphSearchHistory;
 		} catch (error) {
 			return [];
 		}

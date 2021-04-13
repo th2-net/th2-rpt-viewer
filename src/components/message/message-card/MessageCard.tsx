@@ -63,7 +63,10 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
-	const isPinned = selectedStore.pinnedMessages.findIndex(m => m.messageId === messageId) !== -1;
+	const isPinned =
+		selectedStore.bookmarkedMessages.findIndex(
+			bookmarkedMessage => bookmarkedMessage.id === messageId,
+		) !== -1;
 
 	const toggleViewType = (v: MessageViewType) => {
 		setViewType(v);

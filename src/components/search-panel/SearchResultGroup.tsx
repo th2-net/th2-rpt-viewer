@@ -137,7 +137,7 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 					results.map((result, index) => (
 						<BookmarkItem
 							key={computeKey(index)}
-							item={result}
+							bookmark={result}
 							onClick={onResultClick}
 							toggleBookmark={getBookmarkToggler(result)}
 							isBookmarked={getIsToggled(result)}

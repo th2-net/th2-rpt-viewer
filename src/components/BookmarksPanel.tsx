@@ -20,7 +20,7 @@ import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
 import Empty from './util/Empty';
 import { getTimestampAsNumber } from '../helpers/date';
-import { isEventMessage, isEventNode } from '../helpers/event';
+import { isEvent, isEventMessage, isEventNode } from '../helpers/event';
 import { createStyleSelector } from '../helpers/styleCreators';
 import { useActivePanel, useSelectedStore } from '../hooks';
 import { EventAction, EventTreeNode } from '../models/EventAction';
@@ -28,7 +28,35 @@ import { EventMessage } from '../models/EventMessage';
 import useSearchWorkspace from '../hooks/useSearchWorkspace';
 import '../styles/bookmarks.scss';
 
-export type BookmarkedItem = EventMessage | EventTreeNode | EventAction;
+export function isBookmark(item: BookmarkedItem): item is Bookmark {
+	return (item as Bookmark).id !== undefined;
+}
+
+export type Item = EventMessage | EventTreeNode | EventAction;
+
+export type BookmarkedItem = Item | MessageBookmark | EventBookmark;
+
+export interface MessageBookmark {
+	searchTimestamp: number;
+	id: string;
+	item: EventMessage;
+}
+
+export interface EventBookmark {
+	searchTimestamp: number;
+	id: string;
+	item: EventMessage | EventTreeNode;
+}
+
+export function isEventBookmark(bookmark: Bookmark): bookmark is EventBookmark {
+	return isEvent(bookmark.item);
+}
+
+export function isMessageBookmark(bookmark: Bookmark): bookmark is MessageBookmark {
+	return isEventMessage(bookmark.item);
+}
+
+export type Bookmark = EventBookmark | MessageBookmark;
 
 function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
@@ -36,15 +64,18 @@ function BookmarksPanel() {
 
 	const { ref: panelRef } = useActivePanel(null);
 
-	function onBookmarkRemove(item: BookmarkedItem) {
-		if (isEventNode(item) || isEventMessage(item)) {
-			return selectedStore.removeSavedItem(item);
+	function onBookmarkRemove(bookmark: BookmarkedItem) {
+		if (isBookmark(bookmark)) {
+			selectedStore.removeBookmark(bookmark);
 		}
-		return null;
 	}
 
-	function onBookmarkClick(item: BookmarkedItem) {
-		return searchWorkspace.onSavedItemSelect(item);
+	function onBookmarkClick(bookmark: BookmarkedItem) {
+		if (isBookmark(bookmark)) {
+			searchWorkspace.onSavedItemSelect(bookmark.item);
+		} else {
+			searchWorkspace.onSavedItemSelect(bookmark);
+		}
 	}
 
 	function computeKey(index: number) {
@@ -56,7 +87,7 @@ function BookmarksPanel() {
 	function renderBookmarkItem(index: number) {
 		return (
 			<BookmarkItem
-				item={selectedStore.savedItems[index]}
+				bookmark={selectedStore.savedItems[index]}
 				onRemove={onBookmarkRemove}
 				onClick={onBookmarkClick}
 			/>
@@ -80,7 +111,7 @@ function BookmarksPanel() {
 export default observer(BookmarksPanel);
 
 interface BookmarkItemProps {
-	item: BookmarkedItem;
+	bookmark: BookmarkedItem;
 	onRemove?: (item: BookmarkedItem) => void;
 	onClick?: (item: BookmarkedItem) => void;
 	isBookmarked?: boolean;
@@ -88,7 +119,12 @@ interface BookmarkItemProps {
 }
 
 const BookmarkItemBase = (props: BookmarkItemProps) => {
-	const { item, onRemove, onClick, toggleBookmark, isBookmarked = true } = props;
+	const { bookmark, onRemove, onClick, toggleBookmark, isBookmarked = true } = props;
+
+	const item: EventMessage | EventTreeNode | EventAction = isBookmark(bookmark)
+		? bookmark.item
+		: bookmark;
+
 	const itemInfo = {
 		id: isEventMessage(item) ? item.messageId : item.eventId,
 		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',

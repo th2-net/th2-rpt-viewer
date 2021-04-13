@@ -17,7 +17,6 @@
 import React, { useState } from 'react';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import '../../styles/toast-content.scss';
 
 interface FetchErrorProps {
 	header: string;

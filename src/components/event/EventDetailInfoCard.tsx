@@ -44,7 +44,10 @@ function EventDetailInfoCard(props: Props) {
 	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId } = event;
 
 	const status = getEventStatus(event);
-	const isPinned = selectedStore.pinnedEvents.findIndex(e => e.eventId === event.eventId) !== -1;
+	const isPinned =
+		selectedStore.bookmarkedEvents.findIndex(
+			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
+		) !== -1;
 
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;

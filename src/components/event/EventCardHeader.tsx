@@ -63,7 +63,10 @@ function EventCardHeader({
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
 
-	const isPinned = selectedStore.pinnedEvents.findIndex(e => e.eventId === event.eventId) !== -1;
+	const isPinned =
+		selectedStore.bookmarkedEvents.findIndex(
+			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
+		) !== -1;
 
 	const rootClassName = createBemBlock(
 		'event-header-card',

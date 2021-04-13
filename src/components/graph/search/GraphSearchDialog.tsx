@@ -219,7 +219,7 @@ const GraphSearchDialog = (props: Props) => {
 						{filteredSearchHistory.map(searchResult => (
 							<BookmarkItem
 								key={searchResult.id}
-								item={searchResult.item}
+								bookmark={searchResult.item}
 								onClick={() => onSearchResultSelect(searchResult)}
 								onRemove={() => onHistoryItemDelete(searchResult)}
 							/>
