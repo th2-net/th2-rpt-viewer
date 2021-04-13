@@ -20,11 +20,16 @@ import eventHttpApi from './event';
 import messageHttpApi from './message';
 import sseApi from './sse';
 
+const envName =
+	process.env.NODE_ENV === 'development'
+		? 'development'
+		: `${window.location.host}${window.location.pathname}`;
+
 const api: ApiSchema = {
 	events: eventHttpApi,
 	messages: messageHttpApi,
 	sse: sseApi,
-	indexedDb: new IndexedDB(),
+	indexedDb: new IndexedDB(envName),
 };
 
 export default api;

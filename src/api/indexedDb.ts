@@ -16,13 +16,9 @@
 
 import { openDB, IDBPDatabase } from 'idb';
 import { observable, when } from 'mobx';
-import { notEmpty } from '../helpers/object';
 import notificationsStore from '../stores/NotificationsStore';
-import { OrderRule, RULES_ORDER_ID } from '../stores/MessageDisplayRulesStore';
 import localStorageWorker from '../util/LocalStorageWorker';
-import { MessageDisplayRule } from '../models/EventMessage';
 
-const dbName = 'th2-db';
 const dbVersion = 1;
 
 export enum IndexedDbStores {
@@ -37,62 +33,28 @@ export class IndexedDB {
 	@observable
 	private db: IDBPDatabase<IndexedDbStores> | null = null;
 
-	constructor() {
+	constructor(private env: string) {
 		this.initDb();
 	}
 
 	private async initDb() {
-		this.db = await openDB(dbName, dbVersion, {
+		this.db = await openDB(this.env, dbVersion, {
 			async upgrade(db, oldVersion, newVersion) {
 				// Migrate data from localStorage
 				if (oldVersion === 0 && newVersion === 1) {
-					const events = localStorageWorker.getPersistedPinnedEvents();
-					const messages = localStorageWorker.getPersistedPinnedMessages();
-					const searchHistory = localStorageWorker.getSearchHistory();
-					const displayRules = localStorageWorker.getMessageDisplayRules();
-					const rootDisplayRule = localStorageWorker.getRootDisplayRule();
-					const graphSearchHistory = localStorageWorker.getGraphSearchHistory();
-
-					const rulesOrder: OrderRule = {
-						id: RULES_ORDER_ID,
-						order: displayRules.map(rule => rule.session),
-					};
-
-					const messageDisplayRules: (MessageDisplayRule | OrderRule)[] = [
-						rootDisplayRule,
-						rulesOrder,
-						...displayRules,
-					].filter(notEmpty);
-
-					const eventsStore = db.createObjectStore(IndexedDbStores.EVENTS, { keyPath: 'id' });
-					const messagesStore = db.createObjectStore(IndexedDbStores.MESSAGES, {
+					db.createObjectStore(IndexedDbStores.EVENTS, { keyPath: 'id' });
+					db.createObjectStore(IndexedDbStores.MESSAGES, {
 						keyPath: 'id',
 					});
-					const searchHistoryStore = db.createObjectStore(IndexedDbStores.SEARCH_HISTORY, {
+					db.createObjectStore(IndexedDbStores.SEARCH_HISTORY, {
 						keyPath: 'timestamp',
 					});
-					const graphSearchHistoryStore = db.createObjectStore(
-						IndexedDbStores.GRAPH_SEARCH_HISTORY,
-						{
-							keyPath: 'id',
-						},
-					);
-					const displayRulesStore = db.createObjectStore(IndexedDbStores.DISPLAY_RULES, {
+					db.createObjectStore(IndexedDbStores.GRAPH_SEARCH_HISTORY, {
 						keyPath: 'id',
 					});
-
-					await Promise.all([
-						Promise.all(events.map(event => eventsStore.put(event))),
-						Promise.all(messages.map(message => messagesStore.put(message))),
-						Promise.all(
-							searchHistory.map(searchHistoryItem => searchHistoryStore.put(searchHistoryItem)),
-						),
-						Promise.all(messageDisplayRules.map(displayRule => displayRulesStore.put(displayRule))),
-						Promise.all(
-							graphSearchHistory.map(searchItem => graphSearchHistoryStore.put(searchItem)),
-						),
-					]);
-
+					db.createObjectStore(IndexedDbStores.DISPLAY_RULES, {
+						keyPath: 'id',
+					});
 					localStorageWorker.clearLocalStorageData();
 				}
 			},
