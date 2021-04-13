@@ -101,7 +101,7 @@
 		font-size: 12px;
 		line-height: 14px;
 		color: $graphAttachedItemNameColor;
-		transition: all 0.15s;
+		transition: color 0.15s, border-bottom 0.15s;
 		border-bottom: 1px solid transparent;
 
 		&:hover {

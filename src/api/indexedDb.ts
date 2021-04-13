@@ -21,8 +21,13 @@ import { getItemId } from '../helpers/event';
 import { notEmpty } from '../helpers/object';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import notificationsStore from '../stores/NotificationsStore';
-import { ROOT_DISPLAY_NAME_ID } from '../stores/MessageDisplayRulesStore';
+import {
+	OrderRule,
+	ROOT_DISPLAY_NAME_ID,
+	RULES_ORDER_ID,
+} from '../stores/MessageDisplayRulesStore';
 import localStorageWorker from '../util/LocalStorageWorker';
+import { MessageDisplayRule } from '../models/EventMessage';
 
 const dbName = 'th2-db';
 const dbVersion = 1;
@@ -64,7 +69,17 @@ export class IndexedDB {
 					if (rootDisplayRule) {
 						rootDisplayRule.id = ROOT_DISPLAY_NAME_ID;
 					}
-					const messageDisplayRules = [rootDisplayRule, ...displayRules].filter(notEmpty);
+
+					const rulesOrder: OrderRule = {
+						id: RULES_ORDER_ID,
+						order: displayRules.map(rule => rule.session),
+					};
+
+					const messageDisplayRules: (MessageDisplayRule | OrderRule)[] = [
+						rootDisplayRule,
+						rulesOrder,
+						...displayRules,
+					].filter(notEmpty);
 
 					const eventsStore = db.createObjectStore(IndexedDbStores.EVENTS, { keyPath: 'eventId' });
 					const messagesStore = db.createObjectStore(IndexedDbStores.MESSAGES, {

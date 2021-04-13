@@ -14,12 +14,24 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, runInAction } from 'mobx';
+import { action, computed, observable, reaction, runInAction } from 'mobx';
 import { IndexedDB, IndexedDbStores } from '../api/indexedDb';
 import { move } from '../helpers/array';
-import { MessageDisplayRule, MessageViewType } from '../models/EventMessage';
+import {
+	isMessageDisplayRule,
+	isOrderRule,
+	MessageDisplayRule,
+	MessageViewType,
+} from '../models/EventMessage';
 
 export const ROOT_DISPLAY_NAME_ID = 'root';
+
+export const RULES_ORDER_ID = 'order';
+
+export interface OrderRule {
+	id: typeof RULES_ORDER_ID;
+	order: string[];
+}
 
 export function isRootDisplayRule(displayRule: MessageDisplayRule) {
 	return displayRule.id === ROOT_DISPLAY_NAME_ID;
@@ -28,7 +40,20 @@ export function isRootDisplayRule(displayRule: MessageDisplayRule) {
 class MessageDisplayRulesStore {
 	constructor(private indexedDb: IndexedDB) {
 		this.init();
+
+		reaction(() => this.rulesOrder, this.saveRulesOrder);
 	}
+
+	@computed
+	public get rulesOrder(): OrderRule {
+		return {
+			id: RULES_ORDER_ID,
+			order: this.messageDisplayRules.map(({ session }) => session),
+		};
+	}
+
+	@observable
+	private isInitializingRules = true;
 
 	@observable
 	public messageDisplayRules: MessageDisplayRule[] = [];
@@ -73,10 +98,14 @@ class MessageDisplayRulesStore {
 	};
 
 	private init = async () => {
-		const displayRules = await this.indexedDb.getStoreValues<MessageDisplayRule>(
+		const rules = await this.indexedDb.getStoreValues<MessageDisplayRule | OrderRule>(
 			IndexedDbStores.DISPLAY_RULES,
 		);
+		const displayRules = rules.filter(isMessageDisplayRule);
+		const orderRule = rules.find(isOrderRule);
+		const order = orderRule?.order || [];
 		const rootRuleIndex = displayRules.findIndex(isRootDisplayRule);
+
 		let rootDisplayRule: MessageDisplayRule;
 		if (rootRuleIndex === -1) {
 			rootDisplayRule = {
@@ -91,10 +120,35 @@ class MessageDisplayRulesStore {
 			rootDisplayRule = displayRules.splice(rootRuleIndex, 1)[0];
 		}
 
+		displayRules.sort((ruleA, ruleB) => {
+			let indexA = order.indexOf(ruleA.session);
+			let indexB = order.indexOf(ruleB.session);
+
+			indexA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
+			indexB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
+
+			if (indexA > indexB) {
+				return 1;
+			}
+
+			if (indexB > indexA) {
+				return -1;
+			}
+
+			return 0;
+		});
+
 		runInAction(() => {
 			this.rootDisplayRule = rootDisplayRule;
 			this.messageDisplayRules = displayRules;
+			this.isInitializingRules = false;
 		});
+	};
+
+	private saveRulesOrder = (orderRule: OrderRule) => {
+		if (!this.isInitializingRules) {
+			this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, orderRule);
+		}
 	};
 }
 

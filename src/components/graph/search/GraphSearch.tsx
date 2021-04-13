@@ -174,6 +174,7 @@ function GraphSearch(props: Props) {
 	const onGraphSearchResultSelect = React.useCallback(
 		(searchResult: GraphSearchResult) => {
 			onFoundItemClick(searchResult.item);
+			setShowModal(false);
 		},
 		[onFoundItemClick],
 	);

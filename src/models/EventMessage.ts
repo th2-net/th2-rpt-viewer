@@ -16,6 +16,8 @@
 import { Timestamp } from './Timestamp';
 import MessageBody from './MessageBody';
 import { ActionType } from './EventAction';
+import { notEmpty } from '../helpers/object';
+import { OrderRule } from '../stores/MessageDisplayRulesStore';
 
 export enum MessageViewType {
 	JSON = 'json',
@@ -46,4 +48,12 @@ export interface EventMessage {
 
 export function isScreenshotMessage(message: EventMessage): boolean {
 	return /image\/\w+/gi.test(message.messageType);
+}
+
+export function isMessageDisplayRule(obj: unknown): obj is MessageDisplayRule {
+	return notEmpty(obj) && (obj as MessageDisplayRule).viewType !== undefined;
+}
+
+export function isOrderRule(obj: unknown): obj is OrderRule {
+	return notEmpty(obj) && (obj as OrderRule).order !== undefined;
 }
