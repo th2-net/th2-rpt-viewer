@@ -95,34 +95,41 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 		onGroupClick(averageTimestamp, results[0].type);
 	};
 
+	const groupTimestamp =
+		`${moment(averageTimestamp).utc().format('DD.MM.YYYY')} ` +
+		`${moment(getTimestampAsNumber(results[0])).utc().format('HH:mm:ss.SSS')}-` +
+		`${moment(getTimestampAsNumber(results[results.length - 1]))
+			.utc()
+			.format('HH:mm:ss.SSS')}`;
+
 	return (
 		<>
 			<div className='search-result-group'>
 				<button className={expandButtonClass} onClick={() => setIsExpanded(!isExpanded)} />
-				<div className='search-result-group__header' onClick={onSearchGroupClick}>
+				<div className='search-result-group__header'>
 					<span className='search-result-group__results-count'>{results.length}</span>
-					<div className='search-result-group__most-popular-names'>
+					<div className='search-result-group__most-popular-names' onClick={onSearchGroupClick}>
 						{mostPopularNames.map((name, index) => (
-							<span key={index} className='search-result-group__name'>
+							<span key={index} className='search-result-group__name' title={name}>
 								{name}
 							</span>
 						))}
 					</div>
-					<span className='search-result-group__timestamp'>
-						{moment(averageTimestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}
-					</span>
+					<span className='search-result-group__timestamp'>{groupTimestamp}</span>
 				</div>
 			</div>
-			{isExpanded &&
-				results.map((result, index) => (
-					<BookmarkItem
-						key={computeKey(index)}
-						item={result}
-						onClick={onResultClick}
-						toggleBookmark={getBookmarkToggler(result)}
-						isBookmarked={getIsToggled(result)}
-					/>
-				))}
+			<div className='search-result-group-items'>
+				{isExpanded &&
+					results.map((result, index) => (
+						<BookmarkItem
+							key={computeKey(index)}
+							item={result}
+							onClick={onResultClick}
+							toggleBookmark={getBookmarkToggler(result)}
+							isBookmarked={getIsToggled(result)}
+						/>
+					))}
+			</div>
 		</>
 	);
 };
