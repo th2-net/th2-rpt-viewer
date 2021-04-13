@@ -41,7 +41,7 @@ const SessionEditor: React.FC<SessionEditorProps> = ({
 		<AutocompleteInput
 			anchor={anchor}
 			autoresize={false}
-			placeholder='New session'
+			placeholder='Enter session name'
 			className='session-input'
 			ref={ref}
 			value={value}

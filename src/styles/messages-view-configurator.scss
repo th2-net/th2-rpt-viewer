@@ -25,6 +25,11 @@
 	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14),
 	0px 3px 14px 2px rgba(0, 0, 0, 0.12);
 	border-radius: 6px;
+	.hint {
+		padding: 6px;
+		font-size: 10px;
+		opacity: .7;
+	}
 	&-open {
 		@include icon(url(../../resources/icons/settings.svg), 23px, 23px);
 		cursor: pointer;
@@ -79,14 +84,23 @@
 	}
 }
 
+.session-input,
+.order-item__input {
+	border-radius: 2px;
+	background-color: lighten($filterPickerScrollItemActiveColor, 24);
+	&:focus {
+		background-color: transparent;
+	}
+}
 
 .rule,
 .order-item {
 	.view-type {
+		border-radius: 2px;
 		@extend %icons;
 	}
 	position: relative;
-	padding: 4px 24px 0 0;
+	padding: 4px 32px 0 0;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -167,10 +181,14 @@
 	&-trigger {
 		@extend %icons;
 	}
+	&-trigger {
+		border-radius: 2px;
+	}
 }
 
 %icons {
 	display: block;
+	background-color: lighten($filterPickerScrollItemActiveColor, 24);
 	padding: 0;
 	margin: 0;
 	cursor: pointer;
@@ -178,6 +196,9 @@
 	outline: none;
 	width: 16px;
 	height: 16px;
+	&:hover {
+		background-color: lighten($filterPickerScrollItemActiveColor, 12);
+	}
 	&.json {
 		position: relative;
 		&:before {

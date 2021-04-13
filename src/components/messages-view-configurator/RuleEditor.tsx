@@ -41,8 +41,10 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
 	const [btnRef, btnDimensions] = useDimensions<HTMLButtonElement>();
 	const listRef = React.useRef(null);
 
-	useOutsideClickListener(listRef, () => {
-		setShowOptions(false);
+	useOutsideClickListener(listRef, (e: MouseEvent) => {
+		if (e.target !== btnRef.current) {
+			setShowOptions(false);
+		}
 	});
 
 	const triggerClassName = createStyleSelector('rules-select-trigger', selected);

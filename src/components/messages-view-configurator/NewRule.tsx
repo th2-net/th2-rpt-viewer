@@ -55,7 +55,7 @@ const NewRule = ({ sessions }: NewRuleProps) => {
 				onClick={submitHandler}
 				title='submit'
 				disabled={session === ''}>
-				ok
+				add
 			</button>
 		</>
 	);

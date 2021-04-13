@@ -73,6 +73,11 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 					<div className='messages-view-configurator-body'>
 						{mode === 'display-rules' ? <RulesList sessions={sessions} /> : <BodySortConfig />}
 					</div>
+					{mode === 'display-rules' ? (
+						<p className='hint'>
+							<i>You can use * character to match an unknown substring as part of session name</i>
+						</p>
+					) : null}
 					<div className='switchers'>
 						<button className={rulesButtonClassName} onClick={() => setMode('display-rules')}>
 							Display rules

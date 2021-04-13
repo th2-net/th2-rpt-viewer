@@ -35,9 +35,10 @@ const NewSortOrderItem = () => {
 		<>
 			<StringFilterRow
 				config={{
-					className: 'order-item__input',
+					className: 'order-item',
 					id: 'new-order-item',
 					type: 'string',
+					placeholder: 'Enter field name',
 					value: newItem,
 					setValue: setNewItem,
 				}}

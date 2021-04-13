@@ -69,7 +69,13 @@ const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: Edi
 				onClick={() => {
 					setSessionIsEditing(true);
 				}}>
-				{session}
+				{session === '*' ? (
+					<>
+						{session} <i>(default)</i>
+					</>
+				) : (
+					session
+				)}
 			</p>
 		);
 	};

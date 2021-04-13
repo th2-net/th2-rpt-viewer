@@ -42,6 +42,7 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 				id={config.id}
 				disabled={config.disabled}
 				value={config.value}
+				placeholder={config.placeholder}
 				onChange={e => config.setValue(e.target.value)}
 			/>
 		</div>
