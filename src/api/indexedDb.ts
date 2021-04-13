@@ -64,9 +64,9 @@ export class IndexedDB {
 						...displayRules,
 					].filter(notEmpty);
 
-					const eventsStore = db.createObjectStore(IndexedDbStores.EVENTS, { keyPath: 'eventId' });
+					const eventsStore = db.createObjectStore(IndexedDbStores.EVENTS, { keyPath: 'id' });
 					const messagesStore = db.createObjectStore(IndexedDbStores.MESSAGES, {
-						keyPath: 'messageId',
+						keyPath: 'id',
 					});
 					const searchHistoryStore = db.createObjectStore(IndexedDbStores.SEARCH_HISTORY, {
 						keyPath: 'timestamp',

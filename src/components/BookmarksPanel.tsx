@@ -20,7 +20,7 @@ import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
 import Empty from './util/Empty';
 import { getTimestampAsNumber } from '../helpers/date';
-import { isEvent, isEventMessage, isEventNode } from '../helpers/event';
+import { isEvent, isEventMessage } from '../helpers/event';
 import { createStyleSelector } from '../helpers/styleCreators';
 import { useActivePanel, useSelectedStore } from '../hooks';
 import { EventAction, EventTreeNode } from '../models/EventAction';
@@ -62,6 +62,20 @@ function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
 	const searchWorkspace = useSearchWorkspace();
 
+	const bookmarks = React.useMemo(() => {
+		const sortedBookmarks: Bookmark[] = [
+			...selectedStore.bookmarkedMessages,
+			...selectedStore.bookmarkedEvents,
+		];
+
+		sortedBookmarks.sort((bookmarkA, bookmarkB) => {
+			if (bookmarkA.searchTimestamp > bookmarkB.searchTimestamp) return -1;
+			if (bookmarkA.searchTimestamp < bookmarkB.searchTimestamp) return 1;
+			return 0;
+		});
+		return sortedBookmarks;
+	}, [selectedStore.bookmarkedMessages, selectedStore.bookmarkedEvents]);
+
 	const { ref: panelRef } = useActivePanel(null);
 
 	function onBookmarkRemove(bookmark: BookmarkedItem) {
@@ -79,15 +93,13 @@ function BookmarksPanel() {
 	}
 
 	function computeKey(index: number) {
-		const item = selectedStore.savedItems[index];
-
-		return isEventNode(item) ? item.eventId : item.messageId;
+		return bookmarks[index].id;
 	}
 
 	function renderBookmarkItem(index: number) {
 		return (
 			<BookmarkItem
-				bookmark={selectedStore.savedItems[index]}
+				bookmark={bookmarks[index]}
 				onRemove={onBookmarkRemove}
 				onClick={onBookmarkClick}
 			/>
@@ -96,10 +108,10 @@ function BookmarksPanel() {
 
 	return (
 		<div className='bookmarks-panel' ref={panelRef}>
-			{selectedStore.savedItems.length === 0 && <Empty description='No bookmarks added' />}
+			{bookmarks.length === 0 && <Empty description='No bookmarks added' />}
 			<Virtuoso
 				className='bookmarks-panel__list'
-				totalCount={selectedStore.savedItems.length}
+				totalCount={bookmarks.length}
 				itemContent={renderBookmarkItem}
 				computeItemKey={computeKey}
 				style={{ height: '100%' }}
