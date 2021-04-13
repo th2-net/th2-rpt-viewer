@@ -33,9 +33,9 @@ export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
 
-	selectedStore = new SelectedStore(this);
+	public selectedStore = new SelectedStore(this, this.api.indexedDb);
 
-	tabsStore = new TabsStore(this);
+	public tabsStore = new TabsStore(this);
 
 	public searchWorkspace: SearchWorkspaceStore;
 

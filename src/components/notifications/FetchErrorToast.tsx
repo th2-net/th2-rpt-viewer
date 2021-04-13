@@ -26,7 +26,7 @@ interface FetchErrorProps {
 	responseBody: string;
 }
 
-export default function FetchError(props: FetchErrorProps) {
+export default function FetchErrorToast(props: FetchErrorProps) {
 	const { resource, responseBody, responseCode, header } = props;
 	const [copied, setCopied] = useState(false);
 	const copyDetailsText = createStyleSelector('copy-details__text', copied ? 'copied' : null);

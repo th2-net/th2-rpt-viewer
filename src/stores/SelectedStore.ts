@@ -14,47 +14,49 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, reaction, observable } from 'mobx';
+import { action, computed, observable, runInAction } from 'mobx';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './workspace/WorkspacesStore';
-import localStorageWorker from '../util/LocalStorageWorker';
 import { sortMessagesByTimestamp } from '../helpers/message';
 import { isEventNode, sortByTimestamp } from '../helpers/event';
 import { GraphItem } from '../models/Graph';
 import { filterUniqueGraphItems } from '../helpers/graph';
 import { isWorkspaceStore } from '../helpers/workspace';
+import { IndexedDB, IndexedDbStores } from '../api/indexedDb';
 
 export class SelectedStore {
 	@observable.shallow
-	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
+	public pinnedMessages: Array<EventMessage> = [];
 
 	@observable.shallow
-	public pinnedEvents: Array<EventTreeNode> = localStorageWorker.getPersistedPinnedEvents();
+	public pinnedEvents: Array<EventTreeNode> = [];
 
-	constructor(private workspacesStore: WorkspacesStore) {
-		reaction(() => this.pinnedMessages, localStorageWorker.setPersistedPinnedMessages);
-
-		reaction(() => this.pinnedEvents, localStorageWorker.setPersistedPinnedEvents);
+	constructor(private workspacesStore: WorkspacesStore, private db: IndexedDB) {
+		this.init();
 	}
 
-	@computed get savedItems(): Array<EventTreeNode | EventMessage> {
+	@computed
+	public get savedItems(): Array<EventTreeNode | EventMessage> {
 		return sortByTimestamp([...this.pinnedEvents, ...this.pinnedMessages]);
 	}
 
-	@computed get hoveredEvent(): EventTreeNode | null {
+	@computed
+	public get hoveredEvent(): EventTreeNode | null {
 		return isWorkspaceStore(this.workspacesStore.activeWorkspace)
 			? this.workspacesStore.activeWorkspace.eventsStore.hoveredEvent
 			: null;
 	}
 
-	@computed get hoveredMessage(): EventMessage | null {
+	@computed
+	public get hoveredMessage(): EventMessage | null {
 		return isWorkspaceStore(this.workspacesStore.activeWorkspace)
 			? this.workspacesStore.activeWorkspace.messagesStore.hoveredMessage
 			: null;
 	}
 
-	@computed get graphItems(): Array<GraphItem> {
+	@computed
+	public get graphItems(): Array<GraphItem> {
 		if (!isWorkspaceStore(this.workspacesStore.activeWorkspace)) return [];
 
 		const items = [...this.savedItems, ...this.workspacesStore.activeWorkspace.attachedMessages];
@@ -76,7 +78,8 @@ export class SelectedStore {
 		return sortByTimestamp(filterUniqueGraphItems(items));
 	}
 
-	@computed get attachedMessages() {
+	@computed
+	public get attachedMessages() {
 		return sortMessagesByTimestamp(
 			isWorkspaceStore(this.workspacesStore.activeWorkspace)
 				? this.workspacesStore.activeWorkspace.attachedMessages
@@ -88,28 +91,61 @@ export class SelectedStore {
 	public toggleMessagePin = (message: EventMessage) => {
 		if (this.pinnedMessages.findIndex(m => m.messageId === message.messageId) === -1) {
 			this.pinnedMessages = this.pinnedMessages.concat(message);
+			this.db.addDbStoreItem(IndexedDbStores.MESSAGES, message);
 		} else {
 			this.removeSavedItem(message);
+			this.db.deleteDbStoreItem(IndexedDbStores.MESSAGES, message.messageId);
 		}
 	};
 
 	@action
-	public toggleEventPin = (event: EventTreeNode) => {
+	public toggleEventPin = async (event: EventTreeNode) => {
 		if (this.pinnedEvents.findIndex(e => e.eventId === event.eventId) === -1) {
+			this.db.addDbStoreItem(IndexedDbStores.EVENTS, event);
 			this.pinnedEvents = this.pinnedEvents.concat(event);
 		} else {
 			this.pinnedEvents = this.pinnedEvents.filter(e => e.eventId !== event.eventId);
+			this.db.deleteDbStoreItem(IndexedDbStores.EVENTS, event.eventId);
 		}
 	};
 
 	@action
-	public removeSavedItem(savedItem: EventTreeNode | EventMessage) {
+	public removeSavedItem = async (savedItem: EventTreeNode | EventMessage) => {
 		if (isEventNode(savedItem)) {
 			this.pinnedEvents = this.pinnedEvents.filter(event => event.eventId !== savedItem.eventId);
+			this.db.deleteDbStoreItem(IndexedDbStores.EVENTS, savedItem.eventId);
 		} else {
 			this.pinnedMessages = this.pinnedMessages.filter(
 				message => message.messageId !== savedItem.messageId,
 			);
+			this.db.deleteDbStoreItem(IndexedDbStores.MESSAGES, savedItem.messageId);
 		}
-	}
+	};
+
+	private init = () => {
+		this.getSavedEvents();
+		this.getSavedMessages();
+	};
+
+	private getSavedEvents = async () => {
+		try {
+			const savedEvents = await this.db.getStoreValues<EventTreeNode>(IndexedDbStores.EVENTS);
+			runInAction(() => {
+				this.pinnedEvents = savedEvents;
+			});
+		} catch (error) {
+			console.error('Failed to fetch saved events');
+		}
+	};
+
+	private getSavedMessages = async () => {
+		try {
+			const savedMessages = await this.db.getStoreValues<EventMessage>(IndexedDbStores.MESSAGES);
+			runInAction(() => {
+				this.pinnedMessages = savedMessages;
+			});
+		} catch (error) {
+			console.error('Failed to fetch saved messages');
+		}
+	};
 }

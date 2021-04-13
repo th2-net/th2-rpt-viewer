@@ -15,21 +15,22 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import eventHttpApi from '../../../api/event';
-import messageHttpApi from '../../../api/message';
+import moment from 'moment';
+import api from '../../../api';
 import { getTimestampAsNumber } from '../../../helpers/date';
-import { getItemId, getItemName, isEventAction } from '../../../helpers/event';
-import { EventAction, EventTreeNode } from '../../../models/EventAction';
+import { getItemId, getItemName } from '../../../helpers/event';
+import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../BookmarksPanel';
 import Empty from '../../util/Empty';
-import localStorageWorker from '../../../util/LocalStorageWorker';
 import { useDebouncedCallback } from '../../../hooks';
 import KeyCodes from '../../../util/KeyCodes';
+import { IndexedDbStores } from '../../../api/indexedDb';
+import { GraphSearchResult } from './GraphSearch';
 
 interface Props {
 	value: string;
-	onSavedItemSelect: (savedItem: EventTreeNode | EventAction | EventMessage) => void;
+	onSearchResultSelect: (savedItem: GraphSearchResult) => void;
 	setTimestamp: (timestamp: number) => void;
 	setIsIdSearchDisabled: (isIdSearchDisabled: boolean) => void;
 	closeModal: () => void;
@@ -39,7 +40,7 @@ interface Props {
 
 const GraphSearchDialog = (props: Props) => {
 	const {
-		onSavedItemSelect,
+		onSearchResultSelect,
 		value,
 		setTimestamp,
 		setIsIdSearchDisabled,
@@ -49,25 +50,41 @@ const GraphSearchDialog = (props: Props) => {
 	} = props;
 
 	const [isLoading, setIsLoading] = React.useState(false);
-	const [foundObject, setFoundbject] = React.useState<EventAction | EventMessage | null>(null);
+	const [currentSearchResult, setCurrentSearchResult] = React.useState<GraphSearchResult | null>(
+		null,
+	);
 
 	const ac = React.useRef<AbortController | null>(null);
 
-	const [history, setHistory] = React.useState<Array<EventAction | EventMessage>>(
-		localStorageWorker.getGraphSearchHistory(),
-	);
+	const [searchHistory, setSearchHistory] = React.useState<GraphSearchResult[]>([]);
 
-	const filteredHistory = React.useMemo(() => {
-		if (!value) return history;
-		return history.filter(
+	const filteredSearchHistory = React.useMemo(() => {
+		if (!value) return searchHistory;
+		return searchHistory.filter(
 			historyItem =>
-				getItemId(historyItem).includes(value) || getItemName(historyItem).includes(value),
+				getItemId(historyItem.item).includes(value) ||
+				getItemName(historyItem.item).includes(value),
 		);
-	}, [history, value]);
+	}, [searchHistory, value]);
 
 	React.useEffect(() => {
-		setIsIdSearchDisabled(!value || filteredHistory.length > 1 || isLoading);
-	}, [filteredHistory, value, isLoading, isIdMode]);
+		async function getGraphSearchHistory() {
+			try {
+				const graphSearchHistory = await api.indexedDb.getStoreValues<GraphSearchResult>(
+					IndexedDbStores.GRAPH_SEARCH_HISTORY,
+				);
+				setSearchHistory(graphSearchHistory);
+			} catch (error) {
+				console.error("Couldn't fetch graph search history");
+			}
+		}
+
+		getGraphSearchHistory();
+	}, []);
+
+	React.useEffect(() => {
+		setIsIdSearchDisabled(!value || filteredSearchHistory.length > 1 || isLoading);
+	}, [filteredSearchHistory, value, isLoading, isIdMode]);
 
 	React.useEffect(() => {
 		ac.current = new AbortController();
@@ -76,7 +93,7 @@ const GraphSearchDialog = (props: Props) => {
 			onValueChangeDebounced(value, ac.current);
 		} else {
 			setIsLoading(false);
-			setFoundbject(null);
+			setCurrentSearchResult(null);
 		}
 
 		return () => {
@@ -90,40 +107,30 @@ const GraphSearchDialog = (props: Props) => {
 		if (submittedId !== null) {
 			const id = submittedId.valueOf();
 
-			if (foundObject && id === getItemId(foundObject)) {
-				onSavedItemSelect(foundObject);
-				setTimestamp(getTimestampAsNumber(foundObject));
+			if (currentSearchResult && id === currentSearchResult.id) {
+				onSearchResultSelect(currentSearchResult);
+				setTimestamp(getTimestampAsNumber(currentSearchResult.item));
 				closeModal();
 			}
-			if (filteredHistory.length === 1) {
-				onSavedItemSelect(filteredHistory[0]);
-				setTimestamp(getTimestampAsNumber(filteredHistory[0]));
+			if (filteredSearchHistory.length === 1) {
+				onSearchResultSelect(filteredSearchHistory[0]);
+				setTimestamp(getTimestampAsNumber(filteredSearchHistory[0].item));
 				closeModal();
 			}
 
-			if (filteredHistory.length !== 1 && !foundObject) {
+			if (filteredSearchHistory.length !== 1 && !currentSearchResult) {
 				ac.current = new AbortController();
 				onValueChange(id, ac.current);
 			}
 		}
 	}, [submittedId]);
 
-	function onSearchSuccess(responseObject: EventAction | EventMessage) {
-		setFoundbject(responseObject);
-		setIsLoading(false);
-		setHistory([...history, responseObject]);
-	}
-
-	React.useEffect(() => {
-		localStorageWorker.saveGraphSearchHistory(history);
-	}, [history]);
-
 	const onKeyDown = React.useCallback(
 		(event: KeyboardEvent) => {
 			if (event.keyCode === KeyCodes.ENTER) {
-				if (filteredHistory.length === 1) {
-					onSavedItemSelect(filteredHistory[0]);
-					setTimestamp(getTimestampAsNumber(filteredHistory[0]));
+				if (filteredSearchHistory.length === 1) {
+					onSearchResultSelect(filteredSearchHistory[0]);
+					setTimestamp(getTimestampAsNumber(filteredSearchHistory[0].item));
 					closeModal();
 				} else {
 					ac.current = new AbortController();
@@ -131,7 +138,7 @@ const GraphSearchDialog = (props: Props) => {
 				}
 			}
 		},
-		[filteredHistory],
+		[filteredSearchHistory],
 	);
 
 	React.useEffect(() => {
@@ -142,24 +149,25 @@ const GraphSearchDialog = (props: Props) => {
 	}, [onKeyDown]);
 
 	const onValueChange = (searchValue: string, abortController: AbortController) => {
-		if (!searchValue || filteredHistory.length > 1) return;
+		if (!isIdMode || !searchValue || filteredSearchHistory.length > 1) return;
 
-		if (filteredHistory.length !== 1) {
+		if (filteredSearchHistory.length !== 1) {
 			fetchObjectById(searchValue, abortController);
-			setFoundbject(null);
+			setCurrentSearchResult(null);
 		}
 	};
 
 	const onValueChangeDebounced = useDebouncedCallback(onValueChange, 350);
 
 	const onHistoryItemDelete = React.useCallback(
-		(historyItem: EventAction | EventMessage) => {
-			setHistory(history.filter(item => item !== historyItem));
+		(historyItem: GraphSearchResult) => {
+			setSearchHistory(searchHistory.filter(item => item !== historyItem));
 		},
-		[history, setHistory],
+		[searchHistory, setSearchHistory],
 	);
 
 	const fetchObjectById = (id: string, abortController: AbortController) => {
+		const searchTimestamp = moment.utc().valueOf();
 		setIsLoading(true);
 		function handleError(err: any) {
 			if (err.name !== 'AbortError') {
@@ -167,20 +175,20 @@ const GraphSearchDialog = (props: Props) => {
 			}
 		}
 		Promise.all([
-			eventHttpApi
+			api.events
 				.getEvent(id, abortController.signal, { probe: true })
 				.then((foundEvent: EventAction | null) => {
 					if (foundEvent !== null) {
-						onSearchSuccess(foundEvent);
+						onSearchSuccess(foundEvent, searchTimestamp);
 						abortController.abort();
 					}
 				})
 				.catch(handleError),
-			messageHttpApi
+			api.messages
 				.getMessage(id, abortController.signal, { probe: true })
 				.then(foundMessage => {
 					if (foundMessage !== null) {
-						onSearchSuccess(foundMessage);
+						onSearchSuccess(foundMessage, searchTimestamp);
 						abortController.abort();
 					}
 				})
@@ -188,38 +196,38 @@ const GraphSearchDialog = (props: Props) => {
 		]).then(() => setIsLoading(false));
 	};
 
-	const computeKey = (item: EventAction | EventMessage) => {
-		return isEventAction(item) ? item.eventId : item.messageId;
-	};
+	function onSearchSuccess(responseObject: EventAction | EventMessage, searchTimestamp: number) {
+		const searchResult: GraphSearchResult = {
+			searchTimestamp,
+			id: getItemId(responseObject),
+			item: responseObject,
+		};
+		setCurrentSearchResult(searchResult);
+		setIsLoading(false);
+		setSearchHistory([...searchHistory, searchResult]);
+		api.indexedDb.addDbStoreItem(IndexedDbStores.GRAPH_SEARCH_HISTORY, searchResult);
+	}
 
-	const searchResultIsEmpty = value && !isLoading && !foundObject;
-
-	const onSearchItemSelect = React.useCallback(
-		(searchItem: EventMessage | EventAction | EventTreeNode) => {
-			onSavedItemSelect(searchItem);
-			closeModal();
-		},
-		[onSavedItemSelect],
-	);
+	const searchResultIsEmpty = value && !isLoading && !currentSearchResult;
 
 	return (
 		<div className='graph-search-dialog'>
 			{isLoading && <div className='graph-search-dialog__loader' />}
-			{filteredHistory.length > 0 && (
+			{filteredSearchHistory.length > 0 && (
 				<>
 					<div className='graph-search-dialog__history-list'>
-						{filteredHistory.map((item, index) => (
+						{filteredSearchHistory.map(searchResult => (
 							<BookmarkItem
-								key={`${computeKey(item)}-${index}`}
-								item={item}
-								onClick={onSearchItemSelect}
-								onRemove={() => onHistoryItemDelete(item)}
+								key={searchResult.id}
+								item={searchResult.item}
+								onClick={() => onSearchResultSelect(searchResult)}
+								onRemove={() => onHistoryItemDelete(searchResult)}
 							/>
 						))}
 					</div>
 				</>
 			)}
-			{filteredHistory.length === 0 && !isLoading && (
+			{filteredSearchHistory.length === 0 && !isLoading && (
 				<div className='graph-search-dialog__history'>
 					<Empty
 						description={searchResultIsEmpty ? 'No results found' : 'Search history is empty'}

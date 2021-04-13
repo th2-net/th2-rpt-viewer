@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { nanoid } from 'nanoid';
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import { useMessageDisplayRulesStore } from '../../hooks';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
 import AutocompleteInput from '../util/AutocompleteInput';
@@ -32,10 +32,10 @@ const viewTypes = Object.values(MessageViewType);
 const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
 
-	const sessionInputRef = useRef<HTMLInputElement>(null);
-	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLInputElement>();
-	const [currentSessionValue, setSessionValue] = useState(rule ? rule.session : '');
-	const [currentSelectedViewType, setCurrentSelectedViewType] = useState(
+	const wrapperRef = React.useRef<HTMLDivElement>(null);
+	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
+	const [currentSessionValue, setSessionValue] = React.useState(rule ? rule.session : '');
+	const [currentSelectedViewType, setCurrentSelectedViewType] = React.useState(
 		rule ? rule.viewType : MessageViewType.JSON,
 	);
 
@@ -47,7 +47,7 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 	}, [rule]);
 
 	React.useLayoutEffect(() => {
-		setAutocompleteAnchor(sessionInputRef.current || undefined);
+		setAutocompleteAnchor(wrapperRef.current || undefined);
 	}, [setAutocompleteAnchor]);
 
 	const submitHandler = (e: React.MouseEvent) => {
@@ -93,7 +93,7 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 
 	return (
 		<div className='rule-inputs'>
-			<div className='inputs-wrapper'>
+			<div className='inputs-wrapper' ref={wrapperRef}>
 				<div className='session'>
 					{!rule || rule.fullyEditable ? (
 						<AutocompleteInput
@@ -101,7 +101,6 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 							anchor={autocompleteAnchor}
 							placeholder='New session'
 							className='session-input'
-							ref={sessionInputRef}
 							value={currentSessionValue}
 							setValue={setSessionValue}
 							onSubmit={setSessionValue}

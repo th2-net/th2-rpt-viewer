@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, computed, observable, reaction, runInAction } from 'mobx';
+import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
 import ApiSchema from '../api/ApiSchema';
 import {
@@ -24,6 +24,7 @@ import {
 	SSEHeartbeat,
 	SSEParams,
 } from '../api/sse';
+import { IndexedDbStores } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
 	EventFilterState,
@@ -36,7 +37,6 @@ import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '..
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
-import localStorageWorker from '../util/LocalStorageWorker';
 import notificationsStore from './NotificationsStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
@@ -89,9 +89,7 @@ const SEARCH_CHUNK_SIZE = 500;
 
 export class SearchStore {
 	constructor(private api: ApiSchema) {
-		this.getEventFilters();
-		this.getMessagesFilters();
-		this.loadMessageSessions();
+		this.init();
 
 		autorun(() => {
 			this.currentSearch = this.searchHistory[this.currentIndex] || null;
@@ -141,7 +139,7 @@ export class SearchStore {
 
 	@observable formType: SearchPanelType = 'event';
 
-	@observable searchHistory: SearchHistory[] = localStorageWorker.getSearchHistory();
+	@observable searchHistory: SearchHistory[] = [];
 
 	@observable currentIndex = this.searchHistory.length > 0 ? this.searchHistory.length - 1 : 0;
 
@@ -150,6 +148,8 @@ export class SearchStore {
 	@observable messagesFilterInfo: MessagesFilterInfo[] = [];
 
 	@observable isMessageFiltersLoading = false;
+
+	@observable isEventsFilterLoading = false;
 
 	@computed get searchProgress() {
 		const startTimestamp = Number(this.searchForm.startTimestamp);
@@ -250,6 +250,7 @@ export class SearchStore {
 
 	@action
 	getEventFilters = async () => {
+		this.isEventsFilterLoading = true;
 		try {
 			const filters = await this.api.sse.getEventFilters();
 			const filtersInfo = await this.api.sse.getEventsFiltersInfo(filters);
@@ -259,6 +260,10 @@ export class SearchStore {
 			});
 		} catch (error) {
 			console.error('Error occured while loading event filters', error);
+		} finally {
+			runInAction(() => {
+				this.isEventsFilterLoading = false;
+			});
 		}
 	};
 
@@ -275,7 +280,9 @@ export class SearchStore {
 		} catch (error) {
 			console.error('Error occured while loading messages filters', error);
 		} finally {
-			this.isMessageFiltersLoading = false;
+			runInAction(() => {
+				this.isMessageFiltersLoading = false;
+			});
 		}
 	};
 
@@ -321,8 +328,10 @@ export class SearchStore {
 		if (this.searchHistory.length === 0) {
 			this.setCompleted(false);
 		}
-
-		localStorageWorker.saveSearchHistory(this.searchHistory);
+		this.api.indexedDb.deleteDbStoreItem(
+			IndexedDbStores.SEARCH_HISTORY,
+			searchHistoryItem.timestamp,
+		);
 	};
 
 	@action nextSearch = () => {
@@ -488,8 +497,8 @@ export class SearchStore {
 
 		this.exportChunkToSearchHistory();
 
-		if (!this.isSearching) {
-			localStorageWorker.saveSearchHistory(this.searchHistory);
+		if (!this.isSearching && this.currentSearch) {
+			this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, toJS(this.currentSearch));
 		}
 	};
 
@@ -513,18 +522,6 @@ export class SearchStore {
 			}
 		}
 	};
-
-	@action
-	private async loadMessageSessions() {
-		try {
-			const messageSessions = await this.api.messages.getMessageSessions();
-			runInAction(() => {
-				this.messageSessions = messageSessions;
-			});
-		} catch (error) {
-			console.error("Couldn't fetch sessions");
-		}
-	}
 
 	@action
 	exportChunkToSearchHistory() {
@@ -569,4 +566,36 @@ export class SearchStore {
 
 		this.completed[searchDirection] = completed;
 	}
+
+	private async loadMessageSessions() {
+		try {
+			const messageSessions = await this.api.messages.getMessageSessions();
+			runInAction(() => {
+				this.messageSessions = messageSessions;
+			});
+		} catch (error) {
+			console.error("Couldn't fetch sessions");
+		}
+	}
+
+	private getSearchHistory = async () => {
+		try {
+			const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
+				IndexedDbStores.SEARCH_HISTORY,
+			);
+			runInAction(() => {
+				this.searchHistory = searchHistory;
+				this.currentIndex = searchHistory.length - 1;
+			});
+		} catch (error) {
+			console.error('Failed to load search history', error);
+		}
+	};
+
+	private init = () => {
+		this.getEventFilters();
+		this.getMessagesFilters();
+		this.loadMessageSessions();
+		this.getSearchHistory();
+	};
 }

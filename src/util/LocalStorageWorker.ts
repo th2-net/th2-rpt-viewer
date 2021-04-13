@@ -19,9 +19,8 @@ import { isMessage } from '../helpers/message';
 import { isSearchHistoryEntity } from '../helpers/search';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage, MessageDisplayRule } from '../models/EventMessage';
-import { SearchHistory } from '../stores/SearchStore';
 
-enum LocalStorageEntities {
+enum LocalStorageLegacyEntities {
 	PINNED_MESSAGES = 'pinnedMessages',
 	EVENTS = 'events',
 	SEARCH_HISTORY = 'search-history',
@@ -30,9 +29,9 @@ enum LocalStorageEntities {
 	ROOT_DISPLAY_RULE = 'root-display-rule',
 }
 class LocalStorageWorker {
-	getPersistedPinnedMessages(): EventMessage[] {
+	public getPersistedPinnedMessages(): EventMessage[] {
 		try {
-			const pinnedMessages = localStorage.getItem(LocalStorageEntities.PINNED_MESSAGES);
+			const pinnedMessages = localStorage.getItem(LocalStorageLegacyEntities.PINNED_MESSAGES);
 			const parsedMessages = pinnedMessages ? JSON.parse(pinnedMessages) : [];
 			return Array.isArray(parsedMessages) ? parsedMessages.filter(isMessage) : [];
 		} catch (error) {
@@ -40,9 +39,9 @@ class LocalStorageWorker {
 		}
 	}
 
-	getPersistedPinnedEvents(): EventTreeNode[] {
+	public getPersistedPinnedEvents(): EventTreeNode[] {
 		try {
-			const pinnedEventsNodes = localStorage.getItem(LocalStorageEntities.EVENTS);
+			const pinnedEventsNodes = localStorage.getItem(LocalStorageLegacyEntities.EVENTS);
 			const parsedEventNodes = pinnedEventsNodes ? JSON.parse(pinnedEventsNodes) : [];
 			return Array.isArray(parsedEventNodes) ? parsedEventNodes.filter(isEventNode) : [];
 		} catch (error) {
@@ -50,67 +49,56 @@ class LocalStorageWorker {
 		}
 	}
 
-	setPersistedPinnedMessages(pinnedMessages: EventMessage[]) {
-		localStorage.setItem(LocalStorageEntities.PINNED_MESSAGES, JSON.stringify(pinnedMessages));
-	}
-
-	setPersistedPinnedEvents(pinnedEvents: EventTreeNode[]) {
-		localStorage.setItem(LocalStorageEntities.EVENTS, JSON.stringify(pinnedEvents));
-	}
-
-	saveSearchHistory = (history: SearchHistory[]) => {
-		localStorage.setItem(LocalStorageEntities.SEARCH_HISTORY, JSON.stringify(history));
-	};
-
-	saveGraphSearchHistory = (history: Array<EventMessage | EventAction>) => {
-		localStorage.setItem(LocalStorageEntities.GRAPH_SEARCH_HISTORY, JSON.stringify(history));
-	};
-
-	getSearchHistory = () => {
+	public getSearchHistory = () => {
 		try {
-			const searchHistory = localStorage.getItem(LocalStorageEntities.SEARCH_HISTORY);
+			const searchHistory = localStorage.getItem(LocalStorageLegacyEntities.SEARCH_HISTORY);
 			const parsedSearchHistory = searchHistory ? JSON.parse(searchHistory) : [];
 			return Array.isArray(parsedSearchHistory)
-				? parsedSearchHistory.filter(isSearchHistoryEntity)
+				? parsedSearchHistory
+						.filter(isSearchHistoryEntity)
+						.filter(searchHistoryItem => !Array.isArray(searchHistoryItem.results))
 				: [];
 		} catch (error) {
 			return [];
 		}
 	};
 
-	getGraphSearchHistory = (): Array<EventMessage | EventAction> => {
+	public getMessageDisplayRules = (): Array<MessageDisplayRule> => {
 		try {
-			const graphSearchHistory = localStorage.getItem(LocalStorageEntities.GRAPH_SEARCH_HISTORY);
-			return graphSearchHistory ? JSON.parse(graphSearchHistory) : [];
-		} catch (error) {
-			return [];
-		}
-	};
-
-	getRootDisplayRule = (): MessageDisplayRule | null => {
-		try {
-			const rootRule = localStorage.getItem(LocalStorageEntities.ROOT_DISPLAY_RULE);
-			return rootRule ? JSON.parse(rootRule) : null;
-		} catch (error) {
-			return null;
-		}
-	};
-
-	setRootDisplayRule = (rules: MessageDisplayRule) => {
-		localStorage.setItem(LocalStorageEntities.ROOT_DISPLAY_RULE, JSON.stringify(rules));
-	};
-
-	getMessageDisplayRules = (): Array<MessageDisplayRule> => {
-		try {
-			const displayRules = localStorage.getItem(LocalStorageEntities.DISPLAY_RULES);
+			const displayRules = localStorage.getItem(LocalStorageLegacyEntities.DISPLAY_RULES);
 			return displayRules ? JSON.parse(displayRules) : [];
 		} catch (error) {
 			return [];
 		}
 	};
 
-	setMessageDisplayRules = (rules: Array<MessageDisplayRule>) => {
-		localStorage.setItem(LocalStorageEntities.DISPLAY_RULES, JSON.stringify(rules));
+	public getRootDisplayRule = (): MessageDisplayRule | null => {
+		try {
+			const rootRule = localStorage.getItem(LocalStorageLegacyEntities.ROOT_DISPLAY_RULE);
+			return rootRule ? JSON.parse(rootRule) : null;
+		} catch (error) {
+			return null;
+		}
+	};
+
+	public getGraphSearchHistory = (): Array<EventMessage | EventAction> => {
+		try {
+			const graphSearchHistory = localStorage.getItem(
+				LocalStorageLegacyEntities.GRAPH_SEARCH_HISTORY,
+			);
+			return graphSearchHistory ? JSON.parse(graphSearchHistory) : [];
+		} catch (error) {
+			return [];
+		}
+	};
+
+	public clearLocalStorageData = (): void => {
+		localStorage.removeItem(LocalStorageLegacyEntities.ROOT_DISPLAY_RULE);
+		localStorage.removeItem(LocalStorageLegacyEntities.DISPLAY_RULES);
+		localStorage.removeItem(LocalStorageLegacyEntities.PINNED_MESSAGES);
+		localStorage.removeItem(LocalStorageLegacyEntities.EVENTS);
+		localStorage.removeItem(LocalStorageLegacyEntities.SEARCH_HISTORY);
+		localStorage.removeItem(LocalStorageLegacyEntities.GRAPH_SEARCH_HISTORY);
 	};
 }
 

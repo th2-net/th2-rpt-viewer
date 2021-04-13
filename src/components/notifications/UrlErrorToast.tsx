@@ -17,13 +17,9 @@
 import React, { useState } from 'react';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { createStyleSelector } from '../../helpers/styleCreators';
+import { UrlError } from '../../stores/NotificationsStore';
 
-interface UrlErrorProps {
-	link: string | null | undefined;
-	error: Error;
-}
-
-export default function UrlError(props: UrlErrorProps) {
+export default function UrlErrorToast(props: UrlError) {
 	const { link, error } = props;
 	const [copied, setCopied] = useState(false);
 	const copyDetailsText = createStyleSelector('copy-details__text', copied ? 'copied' : null);

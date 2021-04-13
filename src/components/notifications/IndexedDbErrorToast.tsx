@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,17 +14,18 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from './ApiSchema';
-import { IndexedDB } from './indexedDb';
-import eventHttpApi from './event';
-import messageHttpApi from './message';
-import sseApi from './sse';
+import React from 'react';
+import { IndexedDbError } from '../../stores/NotificationsStore';
 
-const api: ApiSchema = {
-	events: eventHttpApi,
-	messages: messageHttpApi,
-	sse: sseApi,
-	indexedDb: new IndexedDB(),
-};
+export default function IndexedDBErrorToast(props: IndexedDbError) {
+	const { description, header } = props;
 
-export default api;
+	return (
+		<div className='toast-content'>
+			<div className='toast-content__top'>
+				<p className='user-message'>{header}</p>
+			</div>
+			<div className='toast-content__bottom'>{description}</div>
+		</div>
+	);
+}

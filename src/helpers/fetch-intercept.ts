@@ -42,12 +42,13 @@ export const registerFetchInterceptor = () =>
 						break;
 				}
 				response.text().then(text => {
-					notificationsStore.addResponseError({
+					notificationsStore.addError({
 						type: 'error',
 						header,
 						resource: url,
 						responseCode: status,
 						responseBody: text,
+						errorType: 'responseError',
 					});
 				});
 			}

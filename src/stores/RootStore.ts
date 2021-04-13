@@ -27,7 +27,7 @@ import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
-	messageDisplayRulesStore = new MessageDisplayRulesStore();
+	messageDisplayRulesStore = new MessageDisplayRulesStore(this.api.indexedDb);
 
 	workspacesStore: WorkspacesStore;
 
@@ -96,7 +96,8 @@ export default class RootStore {
 			const parsedState = workspacesUrlState ? JSON.parse(window.atob(workspacesUrlState)) : null;
 			return parsedState;
 		} catch (error) {
-			this.notificationsStore.setUrlError({
+			this.notificationsStore.addError({
+				errorType: 'urlError',
 				type: 'error',
 				link: window.location.href,
 				error,

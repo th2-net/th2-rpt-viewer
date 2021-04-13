@@ -14,41 +14,33 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, reaction } from 'mobx';
-import { nanoid } from 'nanoid';
+import { action, observable, runInAction } from 'mobx';
+import { IndexedDB, IndexedDbStores } from '../api/indexedDb';
 import { move } from '../helpers/array';
 import { MessageDisplayRule, MessageViewType } from '../models/EventMessage';
-import localStorageWorker from '../util/LocalStorageWorker';
+
+export const ROOT_DISPLAY_NAME_ID = 'root';
+
+export function isRootDisplayRule(displayRule: MessageDisplayRule) {
+	return displayRule.id === ROOT_DISPLAY_NAME_ID;
+}
 
 class MessageDisplayRulesStore {
-	constructor() {
-		if (!localStorageWorker.getRootDisplayRule()) {
-			localStorageWorker.setRootDisplayRule({
-				id: nanoid(),
-				session: '*',
-				viewType: MessageViewType.JSON,
-				removable: false,
-				fullyEditable: false,
-			});
-			this.rootDisplayRule = localStorageWorker.getRootDisplayRule();
-			return;
-		}
-		this.rootDisplayRule = localStorageWorker.getRootDisplayRule();
-
-		reaction(() => this.messageDisplayRules, this.onRulesChange);
-		reaction(() => this.rootDisplayRule, this.onRootRuleChange);
+	constructor(private indexedDb: IndexedDB) {
+		this.init();
 	}
 
 	@observable
-	public messageDisplayRules: MessageDisplayRule[] = localStorageWorker.getMessageDisplayRules();
+	public messageDisplayRules: MessageDisplayRule[] = [];
 
 	@observable
-	public rootDisplayRule: MessageDisplayRule | null;
+	public rootDisplayRule: MessageDisplayRule | null = null;
 
 	@action
 	public setRootDisplayRule = (rule: MessageDisplayRule) => {
 		if (this.rootDisplayRule?.viewType !== rule.viewType) {
 			this.rootDisplayRule = rule;
+			this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, rule);
 		}
 	};
 
@@ -57,22 +49,22 @@ class MessageDisplayRulesStore {
 		const hasSame = this.messageDisplayRules.find(existed => existed.session === rule.session);
 		if (!hasSame) {
 			this.messageDisplayRules = [rule, ...this.messageDisplayRules];
+			this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, rule);
 		}
 	};
 
 	@action
 	public editMessageDisplayRule = (rule: MessageDisplayRule, newRule: MessageDisplayRule) => {
-		this.messageDisplayRules = this.messageDisplayRules.map(existedRule => {
-			if (existedRule === rule) {
-				return newRule;
-			}
-			return existedRule;
-		});
+		this.messageDisplayRules = this.messageDisplayRules.map(existedRule =>
+			existedRule.id === rule.id ? newRule : existedRule,
+		);
+		this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, newRule);
 	};
 
 	@action
 	public deleteMessagesDisplayRule = (rule: MessageDisplayRule) => {
 		this.messageDisplayRules = this.messageDisplayRules.filter(existedRule => existedRule !== rule);
+		this.indexedDb.deleteDbStoreItem(IndexedDbStores.DISPLAY_RULES, rule.id);
 	};
 
 	@action
@@ -80,14 +72,29 @@ class MessageDisplayRulesStore {
 		this.messageDisplayRules = move(this.messageDisplayRules, from, to);
 	};
 
-	private onRulesChange = (rules: MessageDisplayRule[]) => {
-		localStorageWorker.setMessageDisplayRules(rules);
-	};
-
-	private onRootRuleChange = (rule: MessageDisplayRule | null) => {
-		if (rule) {
-			localStorageWorker.setRootDisplayRule(rule);
+	private init = async () => {
+		const displayRules = await this.indexedDb.getStoreValues<MessageDisplayRule>(
+			IndexedDbStores.DISPLAY_RULES,
+		);
+		const rootRuleIndex = displayRules.findIndex(isRootDisplayRule);
+		let rootDisplayRule: MessageDisplayRule;
+		if (rootRuleIndex === -1) {
+			rootDisplayRule = {
+				id: ROOT_DISPLAY_NAME_ID,
+				session: '*',
+				viewType: MessageViewType.JSON,
+				removable: false,
+				fullyEditable: false,
+			};
+			this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, rootDisplayRule);
+		} else {
+			rootDisplayRule = displayRules.splice(rootRuleIndex, 1)[0];
 		}
+
+		runInAction(() => {
+			this.rootDisplayRule = rootDisplayRule;
+			this.messageDisplayRules = displayRules;
+		});
 	};
 }
 

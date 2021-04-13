@@ -17,53 +17,58 @@
 import { action, observable } from 'mobx';
 import { AppearanceTypes } from 'react-toast-notifications';
 
-interface Notification {
+interface BaseNotificationError {
 	type: AppearanceTypes;
+	errorType: 'responseError' | 'urlError' | 'indexedDbError';
 }
-interface ResponseError extends Notification {
+export interface ResponseError extends BaseNotificationError {
+	errorType: 'responseError';
 	resource: string;
 	header: string;
 	responseBody: string;
 	responseCode: number | null;
 }
 
-interface UrlError extends Notification {
+export interface UrlError extends BaseNotificationError {
+	errorType: 'urlError';
 	link: string | null | undefined;
 	error: Error;
 }
 
+export interface IndexedDbError extends BaseNotificationError {
+	errorType: 'indexedDbError';
+	header: string;
+	description: string;
+	action?: unknown;
+}
+
+export type NotificationError = ResponseError | UrlError | IndexedDbError;
+
 export class NotificationsStore {
 	@observable
-	public responseErrors: ResponseError[] = [];
-
-	@observable
-	public urlError: UrlError | null = null;
+	public errors: NotificationError[] = [];
 
 	@action
-	public addResponseError = (responseError: ResponseError) => {
-		this.responseErrors = [...this.responseErrors, responseError];
+	public addError = (error: NotificationError) => {
+		this.errors = [...this.errors, error];
 	};
 
 	@action
-	public delResponseError = (responseError: ResponseError) => {
-		this.responseErrors = this.responseErrors.filter(re => re !== responseError);
-	};
-
-	@action
-	public setUrlError = (urlError: UrlError | null) => {
-		this.urlError = urlError;
+	public deleteError = (error: NotificationError) => {
+		this.errors = this.errors.filter(e => e !== error);
 	};
 
 	@action
 	public handleSSEError = (event: Event) => {
 		if (event instanceof MessageEvent) {
 			const errorData = JSON.parse(event.data);
-			notificationsStore.addResponseError({
+			notificationsStore.addError({
 				type: 'error',
 				header: errorData.exceptionName,
 				resource: event.target instanceof EventSource ? event.target.url : event.origin,
 				responseBody: errorData.exceptionCause,
 				responseCode: null,
+				errorType: 'responseError',
 			});
 		}
 	};

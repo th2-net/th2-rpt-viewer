@@ -18,39 +18,42 @@ import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 import { useToasts } from 'react-toast-notifications';
 import { complement } from '../../helpers/array';
+import { isIndexedDbError, isResponseError, isURLError } from '../../helpers/errors';
 import { useNotificationsStore, usePrevious } from '../../hooks';
-import FetchError from './FetchError';
-import UrlError from './UrlError';
+import FetchErrorToast from './FetchErrorToast';
+import IndexedDBErrorToast from './IndexedDbErrorToast';
+import UrlErrorToast from './UrlErrorToast';
 
 function Notifier() {
 	const { addToast } = useToasts();
 
-	const { responseErrors, delResponseError, urlError, setUrlError } = useNotificationsStore();
+	const notificiationStore = useNotificationsStore();
 
-	const prevResponseErrors = usePrevious(responseErrors);
+	const prevResponseErrors = usePrevious(notificiationStore.errors);
 
 	useEffect(() => {
 		const currentResponseErrors = !prevResponseErrors
-			? responseErrors
-			: complement(responseErrors, prevResponseErrors);
-		currentResponseErrors.forEach(n => {
-			const { type, ...props } = n;
-			addToast(<FetchError {...props} />, {
-				appearance: type,
-				onDismiss: () => delResponseError(n),
-			});
+			? notificiationStore.errors
+			: complement(notificiationStore.errors, prevResponseErrors);
+		currentResponseErrors.forEach(notificationError => {
+			if (isURLError(notificationError)) {
+				addToast(<UrlErrorToast {...notificationError} />, {
+					appearance: notificationError.type,
+					onDismiss: () => notificiationStore.deleteError(notificationError),
+				});
+			} else if (isResponseError(notificationError)) {
+				addToast(<FetchErrorToast {...notificationError} />, {
+					appearance: notificationError.type,
+					onDismiss: () => notificiationStore.deleteError(notificationError),
+				});
+			} else if (isIndexedDbError(notificationError)) {
+				addToast(<IndexedDBErrorToast {...notificationError} />, {
+					appearance: notificationError.type,
+					onDismiss: () => notificiationStore.deleteError(notificationError),
+				});
+			}
 		});
-	}, [responseErrors]);
-
-	useEffect(() => {
-		if (urlError) {
-			const { type, link, error } = urlError;
-			addToast(<UrlError link={link} error={error} />, {
-				appearance: type,
-				onDismiss: () => setUrlError(null),
-			});
-		}
-	}, [urlError]);
+	}, [notificiationStore.errors]);
 
 	return null;
 }
