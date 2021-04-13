@@ -46,7 +46,10 @@ export default function MessageBodyCard({ isBeautified, body, isSelected, render
 
 	const primarySortedFields: [string, MessageBodyField][] = body
 		? Object.entries(
-				sortOrderItems.reduce((prev, curr) => ({ ...prev, [curr]: body.fields[curr] }), {}),
+				sortOrderItems.reduce(
+					(prev, curr) => (body.fields[curr] ? { ...prev, [curr]: body.fields[curr] } : prev),
+					{},
+				),
 		  )
 		: [];
 
