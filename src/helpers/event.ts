@@ -105,6 +105,11 @@ export function getItemId(item: EventAction | EventTreeNode | EventMessage) {
 	return item.eventId;
 }
 
+export function getItemName(item: EventAction | EventTreeNode | EventMessage) {
+	if (isEventMessage(item)) return item.messageType;
+	return item.eventName;
+}
+
 export const convertEventActionToEventTreeNode = (event: EventAction): EventTreeNode => {
 	return {
 		eventId: event.eventId,

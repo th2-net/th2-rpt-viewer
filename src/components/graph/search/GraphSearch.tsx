@@ -32,7 +32,7 @@ interface Props {
 	windowRange: TimeRange | null;
 }
 
-export type GraphSearchMode = 'date' | 'id';
+export type GraphSearchMode = 'timestamp' | 'history';
 
 function GraphSearch(props: Props) {
 	const { onTimestampSubmit, onFoundItemClick, windowRange } = props;
@@ -48,7 +48,7 @@ function GraphSearch(props: Props) {
 	const [timestamp, setTimestamp] = React.useState<number | null>(null);
 	const [submittedId, setSubmittedId] = React.useState<String | null>(null);
 
-	const [mode, setMode] = React.useState<GraphSearchMode>('date');
+	const [mode, setMode] = React.useState<GraphSearchMode>('timestamp');
 	// If user selects mode input will no longer switch automatically based on input value
 	const [isModeLocked, setIsModeLocked] = React.useState(false);
 
@@ -95,7 +95,7 @@ function GraphSearch(props: Props) {
 			const { timestamp: currentTimestamp, isValidDate } = inputConfig;
 
 			if (
-				mode === 'date' &&
+				mode === 'timestamp' &&
 				isValidDate &&
 				typeof currentTimestamp === 'number' &&
 				e.keyCode === KeyCodes.ENTER
@@ -144,13 +144,17 @@ function GraphSearch(props: Props) {
 	};
 
 	const handleModalSubmit = () => {
-		if (mode === 'date' && typeof inputConfig.timestamp === 'number' && inputConfig.isValidDate) {
+		if (
+			mode === 'timestamp' &&
+			typeof inputConfig.timestamp === 'number' &&
+			inputConfig.isValidDate
+		) {
 			onTimestampSubmit(inputConfig.timestamp);
 			setShowModal(false);
 			setIsModeLocked(false);
 		}
 
-		if (mode === 'id') {
+		if (mode === 'history') {
 			setSubmittedId(new String(inputConfig.value));
 		}
 	};
@@ -159,18 +163,18 @@ function GraphSearch(props: Props) {
 		setShowModal(false);
 	}, [setShowModal]);
 
-	const isSubmitButtonActive = mode === 'date' ? inputConfig.isValidDate : !isIdSearchDisabled;
+	const isSubmitButtonActive = mode === 'timestamp' ? inputConfig.isValidDate : !isIdSearchDisabled;
 
 	const dateButtonClassName = createBemElement(
 		'graph-search',
 		'switcher-button',
-		mode === 'date' ? 'active' : null,
+		mode === 'timestamp' ? 'active' : null,
 	);
 
 	const idButtonClassName = createBemElement(
 		'graph-search',
 		'switcher-button',
-		mode === 'id' ? 'active' : null,
+		mode === 'history' ? 'active' : null,
 	);
 
 	return (
@@ -195,13 +199,13 @@ function GraphSearch(props: Props) {
 					zIndex: 110,
 				}}>
 				<div className='graph-search__modal'>
-					{mode === 'date' && (
+					{mode === 'timestamp' && (
 						<GraphSearchTimePicker
 							timestamp={inputConfig.timestamp}
 							setTimestamp={handleTimepickerValueChange}
 						/>
 					)}
-					{mode === 'id' && (
+					{mode === 'history' && (
 						<GraphSearchDialog
 							value={inputConfig.value}
 							onSavedItemSelect={onFoundItemClick}
@@ -209,15 +213,15 @@ function GraphSearch(props: Props) {
 							setIsIdSearchDisabled={setIsIdSearchDisabled}
 							closeModal={closeModal}
 							submittedId={submittedId}
-							isIdMode={showModal && mode === 'id'}
+							isIdMode={showModal && mode === 'history'}
 						/>
 					)}
 					<div className='graph-search__switchers'>
-						<button className={dateButtonClassName} onClick={() => onModeSelect('date')}>
-							Date
+						<button className={dateButtonClassName} onClick={() => onModeSelect('timestamp')}>
+							Timestamp
 						</button>
-						<button className={idButtonClassName} onClick={() => onModeSelect('id')}>
-							ID
+						<button className={idButtonClassName} onClick={() => onModeSelect('history')}>
+							History
 						</button>
 						<button
 							onClick={handleModalSubmit}
