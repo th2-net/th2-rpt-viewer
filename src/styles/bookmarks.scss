@@ -87,6 +87,11 @@
 		border-radius: 50%;
 		width: 20px;
 		height: 20px;
+
+		&.disabled {
+			opacity: 0.6;
+			cursor: default;
+		}
 	}
 
 	&__title,

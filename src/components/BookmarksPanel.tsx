@@ -21,7 +21,7 @@ import { Virtuoso } from 'react-virtuoso';
 import Empty from './util/Empty';
 import { getTimestampAsNumber } from '../helpers/date';
 import { isEvent, isEventMessage } from '../helpers/event';
-import { createStyleSelector } from '../helpers/styleCreators';
+import { createBemElement, createStyleSelector } from '../helpers/styleCreators';
 import { useActivePanel, useSelectedStore } from '../hooks';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
@@ -102,6 +102,7 @@ function BookmarksPanel() {
 				bookmark={bookmarks[index]}
 				onRemove={onBookmarkRemove}
 				onClick={onBookmarkClick}
+				isBookmarkeButtonDisabled={selectedStore.isBookmarksFull}
 			/>
 		);
 	}
@@ -126,12 +127,20 @@ interface BookmarkItemProps {
 	bookmark: BookmarkedItem;
 	onRemove?: (item: BookmarkedItem) => void;
 	onClick?: (item: BookmarkedItem) => void;
-	isBookmarked?: boolean;
 	toggleBookmark?: () => void;
+	isBookmarked?: boolean;
+	isBookmarkeButtonDisabled: boolean;
 }
 
 const BookmarkItemBase = (props: BookmarkItemProps) => {
-	const { bookmark, onRemove, onClick, toggleBookmark, isBookmarked = true } = props;
+	const {
+		bookmark,
+		onRemove,
+		onClick,
+		toggleBookmark,
+		isBookmarked = true,
+		isBookmarkeButtonDisabled,
+	} = props;
 
 	const item: EventMessage | EventTreeNode | EventAction = isBookmark(bookmark)
 		? bookmark.item
@@ -160,6 +169,12 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		itemInfo.status,
 	);
 
+	const bookmarkButtonClassname = createBemElement(
+		'bookmark-item',
+		'toggle-btn',
+		isBookmarkeButtonDisabled ? 'disabled' : null,
+	);
+
 	return (
 		<div className={rootClassName}>
 			<i className={iconClassName} />
@@ -184,12 +199,19 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 					</button>
 				)}
 				{!onRemove && toggleBookmark && (
-					<div className='bookmark-item__toggle-btn'>
+					<div className={bookmarkButtonClassname}>
 						<div
+							title={
+								isBookmarkeButtonDisabled
+									? 'Maximum bookmarks limit reached. Delete old bookmarks'
+									: undefined
+							}
 							className={createStyleSelector('bookmark-button', isBookmarked ? 'pinned' : null)}
 							onClick={e => {
-								e.stopPropagation();
-								toggleBookmark();
+								if (!isBookmarkeButtonDisabled) {
+									e.stopPropagation();
+									toggleBookmark();
+								}
 							}}
 						/>
 					</div>

@@ -23,7 +23,7 @@ import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../BookmarksPanel';
 import Empty from '../../util/Empty';
-import { useDebouncedCallback } from '../../../hooks';
+import { useDebouncedCallback, useRootStore } from '../../../hooks';
 import KeyCodes from '../../../util/KeyCodes';
 import { IndexedDbStores } from '../../../api/indexedDb';
 import { GraphSearchResult } from './GraphSearch';
@@ -48,6 +48,8 @@ const GraphSearchDialog = (props: Props) => {
 		submittedId,
 		isIdMode,
 	} = props;
+
+	const rootStore = useRootStore();
 
 	const [isLoading, setIsLoading] = React.useState(false);
 	const [currentSearchResult, setCurrentSearchResult] = React.useState<GraphSearchResult | null>(
@@ -226,18 +228,17 @@ const GraphSearchDialog = (props: Props) => {
 		<div className='graph-search-dialog'>
 			{isLoading && <div className='graph-search-dialog__loader' />}
 			{filteredSearchHistory.length > 0 && (
-				<>
-					<div className='graph-search-dialog__history-list'>
-						{filteredSearchHistory.map(searchResult => (
-							<BookmarkItem
-								key={searchResult.id}
-								bookmark={searchResult.item}
-								onClick={() => onSearchResultSelect(searchResult)}
-								onRemove={() => onHistoryItemDelete(searchResult)}
-							/>
-						))}
-					</div>
-				</>
+				<div className='graph-search-dialog__history-list'>
+					{filteredSearchHistory.map(searchResult => (
+						<BookmarkItem
+							key={searchResult.id}
+							bookmark={searchResult.item}
+							onClick={() => onSearchResultSelect(searchResult)}
+							onRemove={() => onHistoryItemDelete(searchResult)}
+							isBookmarkeButtonDisabled={rootStore.isBookmarksFull}
+						/>
+					))}
+				</div>
 			)}
 			{filteredSearchHistory.length === 0 && !isLoading && (
 				<div className='graph-search-dialog__history'>

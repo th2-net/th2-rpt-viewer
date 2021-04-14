@@ -24,7 +24,7 @@ import { sortByTimestamp } from '../helpers/event';
 import { GraphItem } from '../models/Graph';
 import { filterUniqueGraphItems } from '../helpers/graph';
 import { isWorkspaceStore } from '../helpers/workspace';
-import { IndexedDB, IndexedDbStores } from '../api/indexedDb';
+import { IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import {
 	EventBookmark,
 	MessageBookmark,
@@ -42,6 +42,13 @@ export class SelectedStore {
 
 	constructor(private workspacesStore: WorkspacesStore, private db: IndexedDB) {
 		this.init();
+	}
+
+	@computed
+	public get isBookmarksFull(): boolean {
+		return (
+			this.bookmarkedMessages.length + this.bookmarkedEvents.length >= indexedDbLimits.bookmarks
+		);
 	}
 
 	@computed
