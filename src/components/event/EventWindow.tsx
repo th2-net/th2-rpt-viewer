@@ -40,7 +40,7 @@ function EventWindow() {
 		<div className='window' ref={panelRef}>
 			<div className='window__breadcrumbs'>
 				<EventBreadcrumbs
-					isLoadingSelectedPath={eventsStore.targetEventId !== null}
+					isLoadingSelectedPath={eventsStore.isLoadingTargetNode}
 					path={eventsStore.selectedPath}
 					onSelect={onBreadcrumbItemClick}
 				/>

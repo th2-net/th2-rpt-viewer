@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
 import { createStyleSelector } from '../../../helpers/styleCreators';
 import StateSaver from '../../util/StateSaver';
 import '../../../styles/tables.scss';
@@ -37,7 +36,6 @@ export interface ParamsTable {
 const PADDING_LEVEL_VALUE = 10;
 
 interface OwnProps {
-	actionId: number;
 	columns: Array<string>;
 	rows: ParamsTableRow[];
 	name: string;
@@ -265,8 +263,4 @@ export const RecoverableParamsTable = ({
 	</StateSaver>
 );
 
-const ParamsTable = observer(({ actionId, ...rest }: OwnProps) => (
-	<RecoverableParamsTable expandPath={[]} {...rest} actionId={actionId} />
-));
-
-export default ParamsTable;
+export default RecoverableParamsTable;

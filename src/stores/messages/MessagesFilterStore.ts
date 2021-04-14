@@ -19,8 +19,8 @@ import moment from 'moment';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { SearchStore } from '../SearchStore';
-import { getDefaultFilterState } from '../../helpers/search';
-import { MessagesSSEParams, SSEFilterInfo } from '../../api/sse';
+import { getDefaultMessagesFiltersState } from '../../helpers/search';
+import { MessagesFilterInfo, MessagesSSEParams } from '../../api/sse';
 import { EventSourceConfig } from '../../api/ApiSchema';
 
 function getDefaultMessagesFilter(): MessagesFilter {
@@ -51,7 +51,7 @@ export default class MessagesFilterStore {
 			} = initialState;
 
 			const appliedSSEFilter = {
-				...(this.getDefaultMessagesSSEFilter(this.searchStore.messagesFilterInfo) || {}),
+				...(getDefaultMessagesFiltersState(this.searchStore.messagesFilterInfo) || {}),
 				...sse,
 			} as MessageFilterState;
 			this.setMessagesFilter(
@@ -147,10 +147,10 @@ export default class MessagesFilterStore {
 
 	@action
 	public resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
-		const filter = getDefaultFilterState(this.searchStore.messagesFilterInfo);
+		const filter = getDefaultMessagesFiltersState(this.searchStore.messagesFilterInfo);
 		const defaultMessagesFilter = getDefaultMessagesFilter();
 		this.isSoftFilter = false;
-		this.sseMessagesFilter = Object.keys(filter).length ? (filter as MessageFilterState) : null;
+		this.sseMessagesFilter = filter;
 		this.filter = {
 			...defaultMessagesFilter,
 			timestampFrom: this.filter.timestampFrom,
@@ -160,15 +160,16 @@ export default class MessagesFilterStore {
 	};
 
 	@action
-	private setSSEMessagesFilter = (messagesFilterInfo: SSEFilterInfo[]) => {
-		this.sseMessagesFilter = this.getDefaultMessagesSSEFilter(messagesFilterInfo);
+	private setSSEMessagesFilter = (messagesFilterInfo: MessagesFilterInfo[]) => {
+		this.sseMessagesFilter = getDefaultMessagesFiltersState(messagesFilterInfo);
 	};
 
 	@action
-	private initSSEFilter = (filterInfo: SSEFilterInfo[]) => {
+	private initSSEFilter = (filterInfo: MessagesFilterInfo[]) => {
 		if (this.sseMessagesFilter) {
+			const defaultState = getDefaultMessagesFiltersState(filterInfo) || {};
 			this.sseMessagesFilter = {
-				...getDefaultFilterState(filterInfo),
+				...defaultState,
 				...this.sseMessagesFilter,
 			};
 		} else {
@@ -179,12 +180,6 @@ export default class MessagesFilterStore {
 	@action
 	public setSoftFilter = (isChecked: boolean): void => {
 		this.isSoftFilter = isChecked;
-	};
-
-	private getDefaultMessagesSSEFilter = (messagesFilterInfo: SSEFilterInfo[]) => {
-		const filter = getDefaultFilterState(messagesFilterInfo);
-
-		return Object.keys(filter).length > 0 ? (filter as MessageFilterState) : null;
 	};
 
 	public dispose = () => {

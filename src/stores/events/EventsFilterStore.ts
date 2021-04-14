@@ -14,74 +14,143 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable } from 'mobx';
+import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import moment from 'moment';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { GraphStore } from '../GraphStore';
+import { SearchStore } from '../SearchStore';
+import { EventsFiltersInfo, EventSSEFilters } from '../../api/sse';
+import { getDefaultEventsFiltersState } from '../../helpers/search';
+import { TimeRange } from '../../models/Timestamp';
+import { getObjectKeys } from '../../helpers/object';
 
-export function getDefaultEventFilter(interval = 15) {
+function getDefaultTimeRange(interval = 15): TimeRange {
 	const timestampTo = moment.utc().valueOf();
 	const timestampFrom = moment.utc(timestampTo).subtract(interval, 'minutes').valueOf();
 
-	return {
-		timestampTo,
-		timestampFrom,
-		eventTypes: [],
-		names: [],
-	};
+	return [timestampFrom, timestampTo];
 }
 
-export type EventsFilterStoreInitialState = Partial<EventsFilter>;
+// temporary workaround. search store currently doesnt store filter type
+function getFilterFromInitialState(eventsFilter: Partial<EventsFilter> | null) {
+	if (!eventsFilter) return null;
+
+	return getObjectKeys(eventsFilter).reduce((filterWithTypes, currentFilter) => {
+		const filter = eventsFilter[currentFilter];
+		if (!filter) return filterWithTypes;
+		return {
+			...filterWithTypes,
+			[currentFilter]: {
+				...filter,
+				type:
+					currentFilter === 'status'
+						? 'switcher'
+						: typeof filter.values === 'string'
+						? 'string'
+						: 'string[]',
+			},
+		};
+	}, {} as EventsFilter);
+}
+
+export type EventsFilterStoreInitialState = Partial<{
+	range: TimeRange;
+	filter: Partial<EventsFilter>;
+}>;
 
 export default class EventsFilterStore {
-	constructor(private graphStore: GraphStore, initialState?: EventsFilterStoreInitialState) {
-		if (initialState) {
-			const defaultEventsFilter = getDefaultEventFilter(this.graphStore.interval);
-			const {
-				names = defaultEventsFilter.names,
-				eventTypes = defaultEventsFilter.eventTypes,
-				timestampTo = defaultEventsFilter.timestampTo,
-				timestampFrom = defaultEventsFilter.timestampFrom,
-			} = initialState;
+	private sseFilterSubscription: IReactionDisposer;
 
-			this.setEventsFilter({
-				names,
-				eventTypes,
-				timestampTo,
-				timestampFrom,
-			});
+	constructor(
+		private graphStore: GraphStore,
+		private searchStore: SearchStore,
+		initialState?: EventsFilterStoreInitialState,
+	) {
+		if (initialState) {
+			const defaultRange = getDefaultTimeRange(this.graphStore.interval);
+
+			const { range = defaultRange, filter } = initialState;
+
+			const defaultEventFilter = getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
+			this.setEventsFilter(
+				filter
+					? {
+							...((defaultEventFilter || {}) as EventsFilter),
+							...getFilterFromInitialState(filter),
+					  }
+					: defaultEventFilter,
+			);
+			this.setEventsRange(range);
 		}
+
+		this.sseFilterSubscription = reaction(
+			() => this.searchStore.eventFilterInfo,
+			this.initSSEFilter,
+		);
 	}
 
 	@observable
-	public filter: EventsFilter = getDefaultEventFilter(this.graphStore.interval);
+	public range: TimeRange = getDefaultTimeRange(this.graphStore.interval);
 
 	@computed
-	public get isEventsFilterApplied() {
-		return this.filter.eventTypes.length > 0 || this.filter.names.length > 0;
+	public get timestampFrom(): number {
+		return this.range[0];
 	}
 
-	@action
-	public setEventsFilter(filter: EventsFilter) {
-		this.filter = filter;
+	@computed
+	public get timestampTo(): number {
+		return this.range[1];
 	}
 
-	@action
-	public changeTimestamp(mins: number) {
-		const currentFilter = this.filter;
-		this.setEventsFilter({
-			...currentFilter,
-			timestampFrom: moment.utc(currentFilter.timestampFrom).add(mins, 'minutes').valueOf(),
-			timestampTo: moment.utc(currentFilter.timestampTo).add(mins, 'minutes').valueOf(),
+	@observable
+	public filter: null | EventsFilter = getDefaultEventsFiltersState(
+		this.searchStore.eventFilterInfo,
+	);
+
+	@computed
+	public get isEventsFilterApplied(): boolean {
+		if (!this.filter) return false;
+		return getObjectKeys(this.filter).some((filterName: EventSSEFilters) => {
+			if (filterName === 'status') {
+				return this.filter && this.filter[filterName].values !== 'any';
+			}
+			return this.filter !== null && this.filter[filterName].values.length > 0;
 		});
 	}
 
 	@action
-	public resetEventsFilter() {
-		this.filter = {
-			...getDefaultEventFilter(this.graphStore.interval),
-			timestampFrom: this.filter.timestampFrom,
-			timestampTo: this.filter.timestampTo,
-		};
+	public setRange = (range: TimeRange) => {
+		this.range = range;
+	};
+
+	@action
+	public setEventsFilter(filter: EventsFilter | null) {
+		this.filter = filter;
 	}
+
+	@action
+	public resetEventsFilter(): EventsFilter | null {
+		return getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
+	}
+
+	@action
+	private initSSEFilter = (filterInfo: EventsFiltersInfo[]) => {
+		if (this.filter) {
+			this.filter = {
+				...(getDefaultEventsFiltersState(filterInfo) || {}),
+				...this.filter,
+			};
+		} else {
+			this.filter = getDefaultEventsFiltersState(filterInfo);
+		}
+	};
+
+	@action
+	public setEventsRange = (range: TimeRange) => {
+		this.range = range;
+	};
+
+	public dispose = () => {
+		this.sseFilterSubscription();
+	};
 }

@@ -46,12 +46,8 @@ export default class RootStore {
 		if (activeWorkspace && isWorkspaceStore(activeWorkspace)) {
 			const eventsStore: EventsStore = activeWorkspace.eventsStore;
 			eventStoreState = {
-				filter: {
-					eventTypes: eventsStore.filterStore.filter.eventTypes,
-					names: eventsStore.filterStore.filter.names,
-					timestampFrom: eventsStore.filterStore.filter.timestampFrom,
-					timestampTo: eventsStore.filterStore.filter.timestampTo,
-				},
+				filter: eventsStore.filterStore.filter || undefined,
+				range: eventsStore.filterStore.range,
 				panelArea: eventsStore.viewStore.eventsPanelArea,
 				search:
 					eventsStore.searchStore.tokens.length > 0
@@ -59,10 +55,6 @@ export default class RootStore {
 						: undefined,
 				selectedEventId: eventsStore.selectedNode?.eventId,
 				flattenedListView: eventsStore.viewStore.flattenedListView,
-				selectedParentId:
-					eventsStore.viewStore.flattenedListView && eventsStore.selectedParentNode
-						? eventsStore.selectedParentNode.eventId
-						: undefined,
 			};
 			const messagesStore: MessagesStore = activeWorkspace.messagesStore;
 			messagesStoreState = {

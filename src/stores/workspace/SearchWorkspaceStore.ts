@@ -43,17 +43,12 @@ export default class SearchWorkspaceStore {
 
 	@action
 	public onTimestampSelect = (timestamp: number) => {
-		const timeRange = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
+		const range = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
 		const newWorkspace = this.workspacesStore.createWorkspace({
-			timeRange,
+			timeRange: range,
 			interval: SEARCH_STORE_INTERVAL,
 			events: {
-				filter: {
-					timestampFrom: timeRange[0],
-					timestampTo: timeRange[1],
-					eventTypes: [],
-					names: [],
-				},
+				range,
 			},
 			messages: {
 				timestampTo: timestamp,
