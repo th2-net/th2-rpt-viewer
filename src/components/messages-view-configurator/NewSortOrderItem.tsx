@@ -48,7 +48,7 @@ const NewSortOrderItem = () => {
 				onClick={submitHandler}
 				title='submit'
 				disabled={newItem === ''}>
-				ok
+				add
 			</button>
 		</>
 	);
