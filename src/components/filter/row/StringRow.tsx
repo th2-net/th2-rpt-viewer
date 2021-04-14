@@ -15,7 +15,11 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { createBemBlock, createBemElement } from '../../../helpers/styleCreators';
+import {
+	createBemBlock,
+	createBemElement,
+	createStyleSelector,
+} from '../../../helpers/styleCreators';
 import { FilterRowStringConfig } from '../../../models/filter/FilterInputs';
 
 export default function StringFilterRow({ config }: { config: FilterRowStringConfig }) {
@@ -28,11 +32,15 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 		config.className || 'filter-row',
 		config.wrapperClassName || null,
 	);
+	const labelClassName = createStyleSelector(
+		`${config.className || 'filter-row'}__label`,
+		config.labelClassName || null,
+	);
 
 	return (
 		<div className={wrapperClassName}>
 			{config.label && (
-				<label className={`${config.className || 'filter-row'}__label`} htmlFor={config.id}>
+				<label className={labelClassName} htmlFor={config.id}>
 					{config.label}
 				</label>
 			)}

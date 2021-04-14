@@ -22,7 +22,7 @@ export type FitlerRowItem =
 	| FilterRowTogglerConfig
 	| FilterRowSwitcherConfig;
 
-export type CompoundFilterRow = Array<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>;
+export type CompoundFilterRow = Array<FitlerRowItem>;
 
 export type ActionFilterRow = ActionFilterConfig;
 
@@ -91,6 +91,7 @@ export type FilterRowStringConfig = FilterRowBaseConfig & {
 	type: 'string';
 	value: string;
 	setValue: (nextValue: string) => void;
+	labelClassName?: string;
 };
 
 export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
@@ -101,6 +102,7 @@ export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
 	setCurrentValue: (currentValue: string) => void;
 	autocompleteList: string[] | null;
 	hint?: string;
+	labelClassName?: string;
 };
 
 export type FilterRowDatetimeRangeConfig = FilterRowBaseConfig & {
@@ -118,6 +120,7 @@ export type FilterRowTogglerConfig = FilterRowBaseConfig & {
 	value: boolean;
 	possibleValues: [string, string];
 	toggleValue: () => void;
+	labelClassName?: string;
 	className?: string;
 };
 
@@ -128,6 +131,7 @@ export type FilterRowSwitcherConfig = FilterRowBaseConfig & {
 	setValue: (nextValue: string) => void;
 	possibleValues: [string, string, string];
 	className?: string;
+	labelClassName?: string;
 	defaultValue: string;
 };
 

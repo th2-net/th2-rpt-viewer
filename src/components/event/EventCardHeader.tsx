@@ -28,13 +28,14 @@ import { useSelectedStore, useWorkspaceEventStore } from '../../hooks';
 interface Props {
 	displayType?: CardDisplayType;
 	event: EventTreeNode;
-	onSelect: () => void;
+	onSelect?: () => void;
 	isSelected?: boolean;
 	isActive?: boolean;
 	childrenCount?: number;
 	isFlatView?: boolean;
 	parentsCount?: number;
 	rootStyle?: React.CSSProperties;
+	disabled?: boolean;
 }
 
 function EventCardHeader({
@@ -47,6 +48,7 @@ function EventCardHeader({
 	isFlatView = false,
 	parentsCount = 0,
 	rootStyle = {},
+	disabled = false,
 }: Props) {
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp } = event;
 
@@ -69,6 +71,8 @@ function EventCardHeader({
 		displayType,
 		isSelected ? 'selected' : null,
 		isActive ? 'active' : null,
+		onSelect ? 'clickable' : null,
+		disabled ? 'disabled' : null,
 	);
 
 	const iconClassName = createBemBlock(
@@ -103,7 +107,11 @@ function EventCardHeader({
 	return (
 		<div
 			className={rootClassName}
-			onClick={onSelect}
+			onClick={() => {
+				if (!disabled && onSelect) {
+					onSelect();
+				}
+			}}
 			style={rootStyle}
 			onMouseEnter={onMouseEnter}
 			onMouseLeave={onMouseLeave}>

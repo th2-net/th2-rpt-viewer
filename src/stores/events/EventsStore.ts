@@ -21,13 +21,7 @@ import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
-import EventsFilter from '../../models/filter/EventsFilter';
-import {
-	convertEventActionToEventTreeNode,
-	isEvent,
-	isEventNode,
-	sortEventsByTimestamp,
-} from '../../helpers/event';
+import { isEvent, isEventNode, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { timestampToNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
@@ -35,15 +29,16 @@ import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
 import { SearchStore } from '../SearchStore';
 import EventsDataStore from './EventsDataStore';
+import { EventFilterState } from '../../components/search-panel/SearchPanelFilters';
+import EventsFilter from '../../models/filter/EventsFilter';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
-	filter: EventsFilter;
+	filter: Partial<EventsFilter>;
+	range: TimeRange;
 	selectedEventId: string;
-	selectedNodesPath: string[];
 	search: string[];
 	flattenedListView: boolean;
-	selectedParentId: string;
 }>;
 
 export type EventStoreDefaultStateType =
@@ -54,13 +49,13 @@ export type EventStoreDefaultStateType =
 	| undefined;
 
 export default class EventsStore {
-	filterStore: EventsFilterStore;
+	public filterStore: EventsFilterStore;
 
-	viewStore: ViewStore;
+	public viewStore: ViewStore;
 
-	searchStore: EventsSearchStore;
+	public searchStore: EventsSearchStore;
 
-	eventDataStore: EventsDataStore;
+	public eventDataStore: EventsDataStore;
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
@@ -69,42 +64,27 @@ export default class EventsStore {
 		private api: ApiSchema,
 		initialState: EventStoreDefaultStateType,
 	) {
-		this.filterStore = new EventsFilterStore(this.graphStore, initialState?.filter);
-		this.searchStore = new EventsSearchStore(this.api, this, {
-			searchPatterns: initialState?.search,
+		this.filterStore = new EventsFilterStore(this.graphStore, this.searchPanelStore, {
+			filter: initialState?.filter,
+			range: initialState?.range,
 		});
 		this.viewStore = new ViewStore({
 			flattenedListView: initialState?.flattenedListView,
 			panelArea: initialState?.panelArea,
 		});
+		this.searchStore = new EventsSearchStore(this.api, this, {
+			searchPatterns: initialState?.search,
+		});
 		this.eventDataStore = new EventsDataStore(this, this.filterStore, this.api);
 
-		if (initialState) {
-			if (isEvent(initialState.targetEvent)) {
-				this.onEventSelect(initialState.targetEvent);
-				this.onTargetEventIdChange(initialState.targetEvent.eventId);
-			}
-
-			if (
-				!isEvent(initialState.targetEvent) &&
-				(initialState.selectedEventId || initialState.selectedNodesPath)
-			) {
-				const targetEventId = initialState.selectedNodesPath
-					? initialState.selectedNodesPath[initialState.selectedNodesPath.length - 1]
-					: initialState.selectedEventId;
-
-				if (targetEventId) {
-					this.targetEventId = targetEventId;
-					this.onTargetEventIdChange(targetEventId);
-				}
-			}
-
-			if (!isEvent(initialState.targetEvent) && initialState.selectedParentId) {
-				const parentNode = this.selectedPath.find(
-					eventNode => eventNode.eventId === initialState.selectedParentId,
-				);
-				this.selectedParentNode = parentNode ?? null;
-			}
+		if (initialState && isEvent(initialState.targetEvent)) {
+			this.goToEvent(initialState.targetEvent);
+		} else {
+			this.eventDataStore.fetchEventTree({
+				filter: this.filterStore.filter,
+				timeRange: this.filterStore.range,
+				targetEventId: initialState?.selectedEventId,
+			});
 		}
 
 		reaction(() => this.filterStore.filter, this.onFilterChange);
@@ -115,13 +95,7 @@ export default class EventsStore {
 
 		reaction(() => this.searchStore.scrolledItem, this.onScrolledItemChange);
 
-		reaction(() => this.hoveredEvent, this.onEventHover);
-
-		reaction(() => this.targetEventId, this.onTargetEventIdChange);
-
-		reaction(() => this.targetEventPath, this.onTargetNodePathChange);
-
-		this.eventDataStore.fetchEventTree();
+		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
 	}
 
 	@observable isLoadingRootEvents = false;
@@ -140,17 +114,11 @@ export default class EventsStore {
 
 	@observable eventTreeStatusCode: number | null = null;
 
-	@observable targetEventId: string | null = null;
-
-	@observable.ref targetNode: EventTreeNode | null = null;
+	@observable targetNodeId: string | null = null;
 
 	@computed
-	public get targetEventPath() {
-		if (!this.targetNode) return null;
-		const parentIds = this.getParents(this.targetNode.eventId, this.eventDataStore.eventsCache).map(
-			parentEventNode => parentEventNode.eventId,
-		);
-		return [...parentIds, this.targetNode.eventId];
+	public get isLoadingTargetNode(): boolean {
+		return this.targetNodeId !== null;
 	}
 
 	@computed
@@ -165,7 +133,7 @@ export default class EventsStore {
 
 	@computed
 	public get panelRange(): TimeRange {
-		return [this.filterStore.filter.timestampFrom, this.filterStore.filter.timestampTo];
+		return this.filterStore.range;
 	}
 
 	@computed
@@ -195,7 +163,9 @@ export default class EventsStore {
 			'desc',
 		);
 
-		return rootNodes.flatMap(eventNode => this.getNodesList(eventNode, [], this.targetNode));
+		return rootNodes.flatMap(eventNode =>
+			this.getNodesList(eventNode, [], this.eventDataStore.targetNode),
+		);
 	}
 
 	@computed
@@ -204,7 +174,7 @@ export default class EventsStore {
 			return [];
 		}
 
-		const selectedNodeParents = this.getParents(
+		const selectedNodeParents = this.getParentNodes(
 			this.selectedNode.eventId,
 			this.eventDataStore.eventsCache,
 		).map(node => node.eventId);
@@ -235,7 +205,7 @@ export default class EventsStore {
 
 			for (let i = 1; eventNodes[i]; i++) {
 				timestamps.endEventId = eventNodes[i].eventId;
-				const parents = this.getParents(eventNodes[i].eventId, this.eventDataStore.eventsCache);
+				const parents = this.getParentNodes(eventNodes[i].eventId, this.eventDataStore.eventsCache);
 				if (parents?.length === 1) {
 					const eventTimestamp = timestampToNumber(eventNodes[i].startTimestamp);
 
@@ -288,7 +258,7 @@ export default class EventsStore {
 		if (!eventId) return;
 		let index = -1;
 		if (!this.viewStore.flattenedListView) {
-			const parents = this.getParents(eventId, this.eventDataStore.eventsCache);
+			const parents = this.getParentNodes(eventId, this.eventDataStore.eventsCache);
 			[...parents.map(parentNode => parentNode.eventId), eventId].forEach(id => {
 				const eventIndex = this.nodesList.findIndex(ev => ev.eventId === id);
 				if (eventIndex !== -1 && id !== eventId) this.isExpandedMap.set(id, true);
@@ -301,37 +271,32 @@ export default class EventsStore {
 	};
 
 	@action
-	public onEventSelect = async (savedEventNode: EventTreeNode | EventAction) => {
+	public goToEvent = async (savedEventNode: EventTreeNode | EventAction) => {
+		this.selectedNode = null;
+		this.selectedEvent = null;
 		this.graphStore.setTimestamp(timestampToNumber(savedEventNode.startTimestamp));
 		this.workspaceStore.viewStore.activePanel = this;
 
-		const [timestampFrom, timestampTo] = calculateTimeRange(
+		const timeRange = calculateTimeRange(
 			timestampToNumber(savedEventNode.startTimestamp),
 			this.graphStore.interval,
 		);
 
-		this.filterStore.filter = {
-			timestampFrom,
-			timestampTo,
-			eventTypes: [],
-			names: [],
-		};
-
-		this.targetEventId = savedEventNode.eventId;
+		this.eventDataStore.fetchEventTree({
+			timeRange,
+			filter: this.filterStore.filter,
+			targetEventId: savedEventNode.eventId,
+		});
 	};
 
 	@action
-	public onRangeChange = (timestamp: number) => {
-		this.cancelTargetPathLoading();
-		this.filterStore.filter = {
-			...this.filterStore.filter,
-			timestampFrom: moment(timestamp)
-				.subtract((this.graphStore.interval * 60) / 2, 'seconds')
-				.valueOf(),
-			timestampTo: moment(timestamp)
-				.add((this.graphStore.interval * 60) / 2, 'seconds')
-				.valueOf(),
-		};
+	public onRangeChange = (timestampFrom: number) => {
+		const timeRange = calculateTimeRange(timestampFrom, this.graphStore.interval);
+
+		this.eventDataStore.fetchEventTree({
+			timeRange,
+			filter: this.filterStore.filter,
+		});
 
 		if (this.workspaceStore.viewStore.panelsLayout[0] < 20) {
 			this.workspaceStore.viewStore.setPanelsLayout([50, 50]);
@@ -351,10 +316,13 @@ export default class EventsStore {
 			if (headNode && !this.isExpandedMap.get(headNode.eventId) && i !== selectedIds.length - 1) {
 				this.toggleNode(headNode);
 			}
-			children = (headNode && this.eventDataStore.getEventChildrenNodes(headNode.eventId)) || [];
+			children = (headNode && this.getChildrenNodes(headNode.eventId)) || [];
 
-			if (this.targetNode && headNode?.eventId === this.targetNode.parentId) {
-				children.push(this.targetNode);
+			if (
+				this.eventDataStore.targetNode &&
+				headNode?.eventId === this.eventDataStore.targetNode.parentId
+			) {
+				children.push(this.eventDataStore.targetNode);
 			}
 		}
 		if (headNode) {
@@ -369,14 +337,18 @@ export default class EventsStore {
 		this.selectedParentNode = null;
 		this.selectedNode = null;
 		this.selectedEvent = null;
-		this.targetEventAC?.abort();
-		this.eventDataStore.fetchEventTree();
 	};
 
 	@action
 	private onSelectedNodeChange = (selectedNode: EventTreeNode | null) => {
-		this.eventDataStore.fetchDetailedEventInfo(selectedNode);
-		this.selectedParentNode = null;
+		if (selectedNode && selectedNode.eventId !== this.selectedEvent?.eventId) {
+			this.selectedNode = selectedNode;
+			this.eventDataStore.fetchDetailedEventInfo(selectedNode);
+			this.selectedParentNode = null;
+		} else if (selectedNode === null) {
+			this.selectedNode = null;
+			this.selectedEvent = null;
+		}
 	};
 
 	@action
@@ -391,48 +363,28 @@ export default class EventsStore {
 		this.scrollToEvent(scrolledItemId);
 	};
 
-	private targetEventAC: AbortController | null = null;
-
-	private onTargetEventIdChange = async (targetEventId: string | null) => {
-		if (targetEventId) {
-			try {
-				this.targetNode = null;
-				this.targetEventAC?.abort();
-				this.targetEventAC = new AbortController();
-
-				const event = await this.api.events.getEvent(targetEventId, this.targetEventAC.signal);
-				const targetNode = convertEventActionToEventTreeNode(event);
-				this.eventDataStore.eventsCache.set(targetNode.eventId, targetNode);
-
-				const siblings =
-					targetNode.parentId === null
-						? this.eventDataStore.rootEventIds
-						: this.eventDataStore.getEventChildrenNodes(targetNode.parentId).map(e => e.eventId);
-
-				if (!siblings.includes(targetNode.eventId)) {
-					this.targetNode = targetNode;
-				}
-			} catch (error) {
-				console.error(`Couldnt fetch target event ${targetEventId}`);
-				this.targetEventId = null;
-			}
-		}
+	@action
+	public onTargetEventLoad = (event: EventAction, node: EventTreeNode) => {
+		this.selectedEvent = event;
+		this.selectNode(node);
 	};
 
 	@action
-	private onTargetNodePathChange = (targetPath: string[] | null) => {
-		if (targetPath && this.targetNode && this.eventDataStore.rootEventIds.includes(targetPath[0])) {
+	public onTargetNodeAddedToTree = (targetPath: string[]) => {
+		if (this.targetNodeId) {
 			this.expandPath(targetPath);
-			this.targetEventId = null;
+			const targetNode = this.eventDataStore.eventsCache.get(this.targetNodeId);
 
-			const siblings =
-				this.targetNode.parentId === null
-					? this.eventDataStore.rootEventIds
-					: this.eventDataStore.getEventChildrenNodes(this.targetNode.parentId).map(e => e.eventId);
+			if (targetNode) {
+				this.targetNodeId = null;
+				const siblings =
+					targetNode.parentId === null
+						? this.eventDataStore.rootEventIds
+						: this.getChildrenNodes(targetNode.parentId).map(e => e.eventId);
 
-			if (siblings.includes(this.targetNode.eventId)) {
-				this.targetNode = null;
-				this.targetEventId = null;
+				if (siblings.includes(targetNode.eventId)) {
+					this.eventDataStore.targetNode = null;
+				}
 			}
 		}
 	};
@@ -450,7 +402,7 @@ export default class EventsStore {
 		parents: string[],
 		targetNode: EventTreeNode | null = null,
 	): EventTreeNode[] => {
-		const childList = this.eventDataStore.getEventChildrenNodes(eventTreeNode.eventId);
+		const childList = this.getChildrenNodes(eventTreeNode.eventId);
 
 		if (this.isExpandedMap.get(eventTreeNode.eventId)) {
 			const path = [
@@ -478,7 +430,7 @@ export default class EventsStore {
 		eventTreeNode: EventTreeNode,
 		parents: string[] = [],
 	): EventTreeNode[] => {
-		const childList = this.eventDataStore.getEventChildrenNodes(eventTreeNode.eventId);
+		const childList = this.getChildrenNodes(eventTreeNode.eventId);
 		return [
 			eventTreeNode,
 			...childList.flatMap(node =>
@@ -493,19 +445,17 @@ export default class EventsStore {
 		}
 		const [currentId, ...rest] = path;
 		const targetNode = nodes.find(n => n.eventId === currentId);
-		const childList = targetNode
-			? this.eventDataStore.getEventChildrenNodes(targetNode.eventId)
-			: [];
+		const childList = targetNode ? this.getChildrenNodes(targetNode.eventId) : [];
 		return targetNode ? [targetNode, ...this.getNodesPath(rest, childList)] : [];
 	}
 
-	private onEventHover = (hoveredEvent: EventTreeNode | null) => {
+	private onHoveredEventChange = (hoveredEvent: EventTreeNode | null) => {
 		if (hoveredEvent !== null) {
 			this.graphStore.setTimestamp(timestampToNumber(hoveredEvent.startTimestamp));
 		}
 	};
 
-	public getParents(eventId: string, cache: Map<string, EventTreeNode>): EventTreeNode[] {
+	public getParentNodes(eventId: string, cache: Map<string, EventTreeNode>): EventTreeNode[] {
 		let event = cache.get(eventId);
 		const path = [];
 
@@ -517,25 +467,45 @@ export default class EventsStore {
 		return path.filter(isEventNode);
 	}
 
+	public getChildrenNodes(parentId: string) {
+		return sortEventsByTimestamp(
+			(this.eventDataStore.parentChildrensMap.get(parentId) || [])
+				.map(childrenId => this.eventDataStore.eventsCache.get(childrenId))
+				.filter(isEventNode),
+			'asc',
+		);
+	}
+
 	public dispose = () => {
+		this.filterStore.dispose();
 		this.eventDataStore.stopCurrentRequests();
-		this.targetEventAC?.abort();
 	};
 
-	public applyFilter = (filter: EventsFilter) => {
-		this.filterStore.setEventsFilter(filter);
-		this.cancelTargetPathLoading();
+	public applyFilter = (filter: EventFilterState) => {
+		this.eventDataStore.fetchEventTree({ filter, timeRange: this.filterStore.range });
 	};
 
 	public clearFilter = () => {
-		this.filterStore.resetEventsFilter();
-		this.cancelTargetPathLoading();
+		const defaultFilter = this.filterStore.resetEventsFilter();
+		this.eventDataStore.fetchEventTree({
+			filter: defaultFilter,
+			timeRange: this.filterStore.range,
+		});
 	};
 
-	@action
-	public cancelTargetPathLoading = () => {
-		this.targetEventId = null;
-		this.targetEventAC?.abort();
-		this.targetNode = null;
+	public changeEventsRange = (minutesOffset: number) => {
+		const timestampFrom = moment
+			.utc(this.filterStore.timestampFrom)
+			.add(minutesOffset, 'minutes')
+			.valueOf();
+		const timestampTo = moment
+			.utc(timestampFrom)
+			.add(this.graphStore.interval, 'minutes')
+			.valueOf();
+
+		this.eventDataStore.fetchEventTree({
+			timeRange: [timestampFrom, timestampTo],
+			filter: this.filterStore.filter,
+		});
 	};
 }

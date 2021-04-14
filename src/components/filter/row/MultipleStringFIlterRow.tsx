@@ -78,13 +78,13 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 		(isFocused || config.values.length > 0) && !config.disabled ? 'active' : null,
 		config.disabled ? 'disabled' : null,
 	);
-
 	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
+	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
 
 	return (
 		<div className={wrapperClassName}>
 			{config.label && (
-				<label className='filter-row__label' htmlFor={config.id}>
+				<label className={labelClassName} htmlFor={config.id}>
 					{config.label}
 				</label>
 			)}

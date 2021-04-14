@@ -157,7 +157,7 @@ export default class WorkspaceStore {
 			this.messagesStore.onMessageSelect(savedItem);
 		} else {
 			this.viewStore.activePanel = this.eventsStore;
-			this.eventsStore.onEventSelect(savedItem);
+			this.eventsStore.goToEvent(savedItem);
 		}
 	};
 

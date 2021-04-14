@@ -72,9 +72,9 @@ export function EventBodyPayloadRenderer({ body, parentEvent }: Props) {
 					<div>
 						{body.name && <div className='ac-body__item-title'>{body.name}</div>}
 						<ParamsTable
+							expandPath={[]}
 							columns={columns}
 							rows={rows}
-							actionId={parentEvent.eventId as any}
 							stateKey={`${parentEvent.eventId}-input-params-nodes`}
 							name={parentEvent.eventName}
 						/>

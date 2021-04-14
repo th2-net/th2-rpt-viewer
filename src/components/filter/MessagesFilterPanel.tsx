@@ -26,7 +26,7 @@ import {
 } from '../../models/filter/FilterInputs';
 import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
-import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
+import { MessagesFilterInfo } from '../../api/sse';
 import { MessageFilterState } from '../search-panel/SearchPanelFilters';
 import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
@@ -128,12 +128,12 @@ const MessagesFilterPanel = () => {
 			setCurrentValues(prevState => ({ ...prevState, [name]: value }));
 		};
 
-		return searchStore.messagesFilterInfo.map<CompoundFilterRow>((filter: SSEFilterInfo) => {
+		return searchStore.messagesFilterInfo.map<CompoundFilterRow>((filter: MessagesFilterInfo) => {
 			const label = (filter.name.charAt(0).toUpperCase() + filter.name.slice(1))
 				.split(/(?=[A-Z])/)
 				.join(' ');
 			return filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
-				(param: SSEFilterParameter) => {
+				param => {
 					switch (param.type.value) {
 						case 'boolean':
 							return {
@@ -145,7 +145,7 @@ const MessagesFilterPanel = () => {
 								toggleValue: getNegativeToggler(filter.name),
 								possibleValues: ['excl', 'incl'],
 								className: 'filter-row__toggler',
-							};
+							} as any;
 						default:
 							return {
 								id: filter.name,
@@ -161,7 +161,7 @@ const MessagesFilterPanel = () => {
 				},
 			);
 		});
-	}, [searchStore.messagesFilterInfo, sseFilter, setSSEFilter]);
+	}, [searchStore.messagesFilterInfo, sseFilter, setSSEFilter, currentValues]);
 
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
 		return {

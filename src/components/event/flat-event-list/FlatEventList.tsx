@@ -70,7 +70,11 @@ function FlatEventList({ nodes }: Props) {
 							onSelect={() => eventsStore.selectNode(node)}
 							isSelected={eventsStore.isNodeSelected(node)}
 							isFlatView={true}
-							parentsCount={eventsStore.getParents(node.eventId, eventDataStore.eventsCache).length}
+							parentsCount={
+								node.parentId === null
+									? 0
+									: eventsStore.getParentNodes(node.eventId, eventDataStore.eventsCache).length
+							}
 							isActive={
 								eventsStore.selectedPath.length > 0 &&
 								eventsStore.selectedPath[eventsStore.selectedPath.length - 1].eventId ===

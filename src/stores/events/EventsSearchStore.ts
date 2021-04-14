@@ -100,10 +100,7 @@ export default class EventsSearchStore {
 	@action
 	fetchTokenResults = async (tokenString: string) => {
 		const rootEventsResults = await this.api.events.getEventsByName(
-			[
-				this.eventsStore.filterStore.filter.timestampFrom,
-				this.eventsStore.filterStore.filter.timestampTo,
-			],
+			[this.eventsStore.filterStore.timestampFrom, this.eventsStore.filterStore.timestampTo],
 			tokenString,
 		);
 
@@ -116,10 +113,7 @@ export default class EventsSearchStore {
 		const subNodesResult = await Promise.all(
 			expandedSubNodes.map(node =>
 				this.api.events.getEventsByName(
-					[
-						this.eventsStore.filterStore.filter.timestampFrom,
-						this.eventsStore.filterStore.filter.timestampTo,
-					],
+					[this.eventsStore.filterStore.timestampFrom, this.eventsStore.filterStore.timestampTo],
 					tokenString,
 					node.eventId,
 				),
@@ -135,10 +129,7 @@ export default class EventsSearchStore {
 		const results = await Promise.all(
 			this.tokens.map(token =>
 				this.api.events.getEventsByName(
-					[
-						this.eventsStore.filterStore.filter.timestampFrom,
-						this.eventsStore.filterStore.filter.timestampTo,
-					],
+					[this.eventsStore.filterStore.timestampFrom, this.eventsStore.filterStore.timestampTo],
 					token.pattern,
 					eventId,
 				),
