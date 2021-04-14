@@ -164,7 +164,7 @@ export class SelectedStore {
 			this.db.addDbStoreItem(store, data);
 		} catch (error) {
 			if (error.name === 'QuotaExceededError') {
-				this.workspacesStore.handleQuotaExceededError(data, store);
+				this.workspacesStore.handleQuotaExceededError();
 			}
 		}
 	};

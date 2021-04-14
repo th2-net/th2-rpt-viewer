@@ -30,8 +30,7 @@ import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import notificationsStore from '../NotificationsStore';
-import { DbData, IndexedDbStores } from '../../api/indexedDb';
-import { getObjectKeys } from '../../helpers/object';
+import { IndexedDbStores } from '../../api/indexedDb';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -163,94 +162,34 @@ export default class WorkspacesStore {
 		};
 	};
 
-	// When there is no space left to save data to indexedDb
-	// propose user to delete 10% of old data
-	public handleQuotaExceededError = async (unsavedData: DbData, store: IndexedDbStores) => {
-		try {
-			const [
-				searchHistoryTimestamps,
-				bookmarkedEventIds,
-				bookmarkedMessagesIds,
-			] = await Promise.all([
-				this.api.indexedDb.getIndexedKeys<number>(IndexedDbStores.SEARCH_HISTORY, 10, 'prev'),
-				this.api.indexedDb.getIndexedKeys<string>(IndexedDbStores.EVENTS, 10, 'prev'),
-				this.api.indexedDb.getIndexedKeys<string>(IndexedDbStores.MESSAGES, 10, 'prev'),
-			]);
-
-			const removeDataMap: SyncData = {
-				[IndexedDbStores.SEARCH_HISTORY]: searchHistoryTimestamps,
-				[IndexedDbStores.EVENTS]: bookmarkedEventIds,
-				[IndexedDbStores.MESSAGES]: bookmarkedMessagesIds,
-			};
-
-			const dataTypes = ['search result', 'bookmark'];
-			const removableData = [
-				removeDataMap[IndexedDbStores.SEARCH_HISTORY],
-				[...removeDataMap[IndexedDbStores.EVENTS], ...removeDataMap[IndexedDbStores.MESSAGES]],
-			]
-				.filter(dataToRemove => dataToRemove.length > 0)
-				.map(
-					(dataToRemove, index) =>
-						`${dataToRemove.length} ${dataTypes[index]}${dataToRemove.length === 1 ? '' : 's'}`,
-				)
-				.join(', ');
-
-			const errorId = nanoid();
-			notificationsStore.addMessage({
-				errorType: 'indexedDbMessage',
-				type: 'error',
-				header: 'QuotaExceededError',
-				description: `
-					Not enough storage space to save data.
-					Remove ${removableData} ?
-				`,
-				action: {
-					label: 'OK',
-					callback: () => {
-						this.syncData(removeDataMap, unsavedData, store, errorId);
-					},
-				},
-				id: errorId,
-			});
-		} catch (error) {
-			notificationsStore.addMessage({
-				errorType: 'indexedDbMessage',
-				type: 'error',
-				header: 'QuotaExceededError',
-				description: `
-					Not enough storage space to save item.
-					Try to delete old data
-					`,
-				id: nanoid(),
-			});
-		}
+	public handleQuotaExceededError = async () => {
+		const errorId = nanoid();
+		notificationsStore.addMessage({
+			errorType: 'indexedDbMessage',
+			type: 'error',
+			header: 'QuotaExceededError',
+			description: `
+				Not enough storage space to save data.
+			`,
+			// action: {
+			// 	label: 'OK',
+			// 	callback: () => {
+			// 		this.clearAllData(errorId);
+			// 	},
+			// },
+			id: errorId,
+		});
 	};
 
-	public syncData = async (
-		dataToDelete: SyncData,
-		unsavedData: DbData,
-		store: IndexedDbStores,
-		errorId: string,
-	) => {
+	public clearAllData = async (errorId: string) => {
 		notificationsStore.deleteMessage(errorId);
 		try {
-			await Promise.all(
-				getObjectKeys(dataToDelete).map(itemStore =>
-					Promise.all(
-						(dataToDelete[itemStore] as (string | number)[]).map((key: string | number) =>
-							this.api.indexedDb.deleteDbStoreItem(itemStore, key),
-						),
-					),
-				),
-			);
-			await this.api.indexedDb.addDbStoreItem(store, unsavedData);
-			this.searchWorkspace.searchStore.syncData();
-			this.selectedStore.syncData(dataToDelete);
+			await this.api.indexedDb.clearAllData();
 			notificationsStore.addMessage({
 				errorType: 'indexedDbMessage',
 				type: 'success',
-				header: 'Data saved',
-				description: 'Data has been saved',
+				header: 'Data has been removed',
+				description: '',
 				id: nanoid(),
 			});
 		} catch (error) {

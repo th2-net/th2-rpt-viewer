@@ -219,6 +219,7 @@ const GraphSearchDialog = (props: Props) => {
 		setCurrentSearchResult(searchResult);
 		setIsLoading(false);
 		setSearchHistory([...searchHistory, searchResult]);
+
 		api.indexedDb.addDbStoreItem(IndexedDbStores.GRAPH_SEARCH_HISTORY, searchResult);
 	}
 

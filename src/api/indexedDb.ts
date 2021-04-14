@@ -206,4 +206,21 @@ export class IndexedDB {
 
 		return (data as unknown) as Promise<T[]>;
 	};
+
+	public clearAllData = async () => {
+		const db = await this.getDb();
+		const stores = db.objectStoreNames;
+
+		await Promise.all([...stores].map(store => this.clearStore(store)));
+	};
+
+	private clearStore = async (storeName: IndexedDbStores) => {
+		const db = await this.getDb();
+
+		const tx = await db.transaction(storeName, 'readwrite');
+		const store = await tx.objectStore(storeName);
+		if (store.clear) {
+			store.clear();
+		}
+	};
 }

@@ -16,7 +16,8 @@
 
 import { action, computed, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
-import { IndexedDB, IndexedDbStores } from '../api/indexedDb';
+import { nanoid } from 'nanoid';
+import { IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import { move } from '../helpers/array';
 import {
 	isMessageDisplayRule,
@@ -24,6 +25,7 @@ import {
 	MessageDisplayRule,
 	MessageViewType,
 } from '../models/EventMessage';
+import notificationsStore from './NotificationsStore';
 
 export const ROOT_DISPLAY_NAME_ID = 'root';
 
@@ -44,6 +46,11 @@ class MessageDisplayRulesStore {
 		this.init();
 
 		reaction(() => this.rulesOrder, this.saveRulesOrder);
+	}
+
+	@computed
+	public get isDisplayRulesFull(): boolean {
+		return this.messageDisplayRules.length >= indexedDbLimits[IndexedDbStores.DISPLAY_RULES];
 	}
 
 	@computed
@@ -73,8 +80,20 @@ class MessageDisplayRulesStore {
 	};
 
 	@action
-	public setNewMessagesDisplayRule = (rule: MessageDisplayRule) => {
+	public setNewMessagesDisplayRule = (rule: MessageDisplayRule): void => {
 		const hasSame = this.messageDisplayRules.find(existed => existed.session === rule.session);
+
+		if (this.isDisplayRulesFull) {
+			notificationsStore.addMessage({
+				errorType: 'indexedDbMessage',
+				type: 'error',
+				header: `Display rules limit of ${indexedDbLimits['display-rules']} reached`,
+				description: 'Delete old rules',
+				id: nanoid(),
+			});
+			return;
+		}
+
 		if (!hasSame) {
 			this.messageDisplayRules = [rule, ...this.messageDisplayRules];
 			this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, rule);

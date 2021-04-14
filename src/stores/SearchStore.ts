@@ -609,7 +609,7 @@ export class SearchStore {
 			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
 		} catch (error) {
 			if (error.name === 'QuotaExceededError') {
-				this.workspacesStore.handleQuotaExceededError(search, IndexedDbStores.SEARCH_HISTORY);
+				this.workspacesStore.handleQuotaExceededError();
 			}
 		}
 	};
