@@ -67,7 +67,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
 					isOpen={showOptions}
 					style={{
 						position: 'absolute',
-						top: btnDimensions.top + btnDimensions.height,
+						top: btnDimensions.top,
 						left: btnDimensions.left,
 						zIndex: 500,
 					}}>

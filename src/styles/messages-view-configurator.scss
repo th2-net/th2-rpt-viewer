@@ -87,7 +87,7 @@
 .session-input,
 .order-item__input {
 	border-radius: 2px;
-	background-color: lighten($filterPickerScrollItemActiveColor, 24);
+	background-color: $skeletonBackgroundColor;
 	&:focus {
 		background-color: transparent;
 	}
@@ -192,11 +192,11 @@
 		outline: none;
 		width: 100%;
 		font-size: 10px;
-		background-color: lighten($filterPickerScrollItemActiveColor, 24);
+		background-color: $skeletonBackgroundColor;
 		&:hover {
-			background-color: lighten($filterPickerScrollItemActiveColor, 12);
+			background-color: darken($skeletonBackgroundColor, 12);
 			.select-icon {
-				background-color: lighten($filterPickerScrollItemActiveColor, 12);
+				background-color: darken($skeletonBackgroundColor, 12);
 			}
 		}
 		.select-icon {
@@ -210,7 +210,7 @@
 
 %icons {
 	display: block;
-	background-color: lighten($filterPickerScrollItemActiveColor, 24);
+	background-color: $skeletonBackgroundColor;
 	padding: 0;
 	margin: 0 2px 0 0;
 	cursor: pointer;
