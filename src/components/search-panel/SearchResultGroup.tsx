@@ -102,6 +102,20 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 			.utc()
 			.format('HH:mm:ss.SSS')}`;
 
+	if (results.length === 1) {
+		return (
+			<div className='search-result-single-item'>
+				<BookmarkItem
+					key={computeKey(0)}
+					item={results[0]}
+					onClick={onResultClick}
+					toggleBookmark={getBookmarkToggler(results[0])}
+					isBookmarked={getIsToggled(results[0])}
+				/>
+			</div>
+		);
+	}
+
 	return (
 		<>
 			<div className='search-result-group'>
