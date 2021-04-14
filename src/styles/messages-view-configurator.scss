@@ -97,7 +97,17 @@
 .order-item {
 	.view-type {
 		border-radius: 2px;
+		background-color: $skeletonBackgroundColor;
 		@extend %icons;
+	}
+	p {
+		border-radius: 2px;
+		background-color: $skeletonBackgroundColor;
+		padding: 0 2px;
+	}
+	.root-rule {
+		background-color: transparent;
+		cursor: default;
 	}
 	.order-item {
 		padding: 0;

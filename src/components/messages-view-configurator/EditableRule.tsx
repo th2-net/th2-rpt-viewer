@@ -68,7 +68,8 @@ const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: Edi
 			<p
 				onClick={() => {
 					setSessionIsEditing(true);
-				}}>
+				}}
+				className={session === '*' ? 'root-rule' : ''}>
 				{session === '*' ? (
 					<>
 						{session} <i>(default)</i>
