@@ -177,9 +177,28 @@
 			visibility: visible;
 		}
 	}
-	&-option,
 	&-trigger {
 		@extend %icons;
+	}
+	&-option {
+		display: flex;
+		align-items: center;
+		padding: 0 4px 2px 2px;
+		margin: 0;
+		border: none;
+		outline: none;
+		width: 100%;
+		font-size: 10px;
+		background-color: lighten($filterPickerScrollItemActiveColor, 24);
+		&:hover {
+			background-color: lighten($filterPickerScrollItemActiveColor, 12);
+			.select-icon {
+				background-color: lighten($filterPickerScrollItemActiveColor, 12);
+			}
+		}
+		.select-icon {
+			@extend %icons
+		}
 	}
 	&-trigger {
 		border-radius: 2px;
@@ -190,15 +209,12 @@
 	display: block;
 	background-color: lighten($filterPickerScrollItemActiveColor, 24);
 	padding: 0;
-	margin: 0;
+	margin: 0 2px 0 0;
 	cursor: pointer;
 	border-style: none;
 	outline: none;
 	width: 16px;
 	height: 16px;
-	&:hover {
-		background-color: lighten($filterPickerScrollItemActiveColor, 12);
-	}
 	&.json {
 		position: relative;
 		&:before {

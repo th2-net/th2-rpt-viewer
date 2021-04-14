@@ -74,19 +74,21 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
 					<div className={optionsListClassName} ref={listRef}>
 						{viewTypes.map((opt, index) => (
 							<button
-								className={`rules-select-option ${opt.toLowerCase()}`}
+								className={`rules-select-option`}
 								key={index}
 								value={opt}
 								title={opt}
 								onClick={(e: React.MouseEvent) => {
-									const viewType = (e.target as HTMLButtonElement).value as MessageViewType;
+									const viewType = (e.currentTarget as HTMLButtonElement).value as MessageViewType;
 									setSelected(viewType);
 									setShowOptions(false);
 									if (onSelect) {
 										onSelect(viewType);
 									}
-								}}
-							/>
+								}}>
+								<span className={`select-icon ${opt.toLowerCase()}`} />
+								{opt}
+							</button>
 						))}
 					</div>
 				</ModalPortal>
