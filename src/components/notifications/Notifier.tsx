@@ -18,14 +18,18 @@ import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 import { useToasts } from 'react-toast-notifications';
 import { complement } from '../../helpers/array';
-import { isIndexedDbError, isResponseError, isURLError } from '../../helpers/errors';
+import { isIndexedDbMessage, isResponseError, isURLError } from '../../helpers/errors';
 import { useNotificationsStore, usePrevious } from '../../hooks';
 import FetchErrorToast from './FetchErrorToast';
-import IndexedDBErrorToast from './IndexedDbErrorToast';
+import IndexedDBMessageToast from './IndexedDBMessageToast';
 import UrlErrorToast from './UrlErrorToast';
 
 function Notifier() {
-	const { addToast } = useToasts();
+	const { addToast, removeToast } = useToasts();
+
+	// react-toast-notifications uses their own inner ids
+	// in order to delete toast from outside of component we need to know inner id
+	const idsMap = React.useRef<Record<string, string>>({});
 
 	const notificiationStore = useNotificationsStore();
 
@@ -35,22 +39,28 @@ function Notifier() {
 		const currentResponseErrors = !prevResponseErrors
 			? notificiationStore.errors
 			: complement(notificiationStore.errors, prevResponseErrors);
+
+		const removedErrors = prevResponseErrors
+			? prevResponseErrors.filter(error => !notificiationStore.errors.includes(error))
+			: [];
+
+		// We need this to be able to delete toast from outside of toast component
+		removedErrors.forEach(error => removeToast(idsMap.current[error.id]));
+
 		currentResponseErrors.forEach(notificationError => {
+			const options = {
+				appearance: notificationError.type,
+				onDismiss: () => notificiationStore.deleteMessage(notificationError),
+			};
+
+			const registerId = (id: string) => (idsMap.current[notificationError.id] = id);
+
 			if (isURLError(notificationError)) {
-				addToast(<UrlErrorToast {...notificationError} />, {
-					appearance: notificationError.type,
-					onDismiss: () => notificiationStore.deleteError(notificationError),
-				});
+				addToast(<UrlErrorToast {...notificationError} />, options, registerId);
 			} else if (isResponseError(notificationError)) {
-				addToast(<FetchErrorToast {...notificationError} />, {
-					appearance: notificationError.type,
-					onDismiss: () => notificiationStore.deleteError(notificationError),
-				});
-			} else if (isIndexedDbError(notificationError)) {
-				addToast(<IndexedDBErrorToast {...notificationError} />, {
-					appearance: notificationError.type,
-					onDismiss: () => notificiationStore.deleteError(notificationError),
-				});
+				addToast(<FetchErrorToast {...notificationError} />, options, registerId);
+			} else if (isIndexedDbMessage(notificationError)) {
+				addToast(<IndexedDBMessageToast {...notificationError} />, options, registerId);
 			}
 		});
 	}, [notificiationStore.errors]);

@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { observable, action, computed, reaction } from 'mobx';
+import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
@@ -28,8 +29,18 @@ import {
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { getRangeFromTimestamp } from '../../helpers/date';
+import notificationsStore from '../NotificationsStore';
+import { DbData, IndexedDbStores } from '../../api/indexedDb';
+import { getObjectKeys } from '../../helpers/object';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
+
+export interface SyncData {
+	[IndexedDbStores.EVENTS]: string[];
+	[IndexedDbStores.MESSAGES]: string[];
+	[IndexedDbStores.SEARCH_HISTORY]: number[];
+}
+
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
 
@@ -150,5 +161,101 @@ export default class WorkspacesStore {
 			interval: SEARCH_STORE_INTERVAL,
 			timeRange: [timestampFrom, timestampTo],
 		};
+	};
+
+	// When there is no space left to save data to indexedDb
+	// propose user to delete 10% of old data
+	public handleQuotaExceededError = async (unsavedData: DbData, store: IndexedDbStores) => {
+		try {
+			const [
+				searchHistoryTimestamps,
+				bookmarkedEventIds,
+				bookmarkedMessagesIds,
+			] = await Promise.all([
+				this.api.indexedDb.getIndexedKeys<number>(IndexedDbStores.SEARCH_HISTORY, 10, 'prev'),
+				this.api.indexedDb.getIndexedKeys<string>(IndexedDbStores.EVENTS, 10, 'prev'),
+				this.api.indexedDb.getIndexedKeys<string>(IndexedDbStores.MESSAGES, 10, 'prev'),
+			]);
+
+			const removeDataMap: SyncData = {
+				[IndexedDbStores.SEARCH_HISTORY]: searchHistoryTimestamps,
+				[IndexedDbStores.EVENTS]: bookmarkedEventIds,
+				[IndexedDbStores.MESSAGES]: bookmarkedMessagesIds,
+			};
+
+			const dataTypes = ['search result', 'bookmark'];
+			const removableData = [
+				removeDataMap[IndexedDbStores.SEARCH_HISTORY],
+				[...removeDataMap[IndexedDbStores.EVENTS], ...removeDataMap[IndexedDbStores.MESSAGES]],
+			]
+				.filter(dataToRemove => dataToRemove.length > 0)
+				.map(
+					(dataToRemove, index) =>
+						`${dataToRemove.length} ${dataTypes[index]}${dataToRemove.length === 1 ? '' : 's'}`,
+				)
+				.join(', ');
+
+			const errorId = nanoid();
+			notificationsStore.addMessage({
+				errorType: 'indexedDbMessage',
+				type: 'error',
+				header: 'QuotaExceededError',
+				description: `
+					Not enough storage space to save data.
+					Remove ${removableData} ?
+				`,
+				action: {
+					label: 'OK',
+					callback: () => {
+						this.syncData(removeDataMap, unsavedData, store, errorId);
+					},
+				},
+				id: errorId,
+			});
+		} catch (error) {
+			notificationsStore.addMessage({
+				errorType: 'indexedDbMessage',
+				type: 'error',
+				header: 'QuotaExceededError',
+				description: `
+					Not enough storage space to save item.
+					Try to delete old data
+					`,
+				id: nanoid(),
+			});
+		}
+	};
+
+	public syncData = async (
+		dataToDelete: SyncData,
+		unsavedData: DbData,
+		store: IndexedDbStores,
+		errorId: string,
+	) => {
+		notificationsStore.deleteMessage(errorId);
+		try {
+			await Promise.all(
+				getObjectKeys(dataToDelete).map(itemStore =>
+					Promise.all(
+						(dataToDelete[itemStore] as (string | number)[]).map((key: string | number) =>
+							this.api.indexedDb.deleteDbStoreItem(itemStore, key),
+						),
+					),
+				),
+			);
+			await this.api.indexedDb.addDbStoreItem(store, unsavedData);
+			this.searchWorkspace.searchStore.syncData();
+			this.selectedStore.syncData(dataToDelete);
+			notificationsStore.addMessage({
+				errorType: 'indexedDbMessage',
+				type: 'success',
+				header: 'Data saved',
+				description: 'Data has been saved',
+				id: nanoid(),
+			});
+		} catch (error) {
+			this.searchWorkspace.searchStore.syncData();
+			this.selectedStore.syncData();
+		}
 	};
 }

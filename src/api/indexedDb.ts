@@ -14,10 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { openDB, IDBPDatabase } from 'idb';
+import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
-import notificationsStore from '../stores/NotificationsStore';
-import localStorageWorker from '../util/LocalStorageWorker';
+import { EventBookmark, MessageBookmark } from '../components/BookmarksPanel';
+import { GraphSearchResult } from '../components/graph/search/GraphSearch';
+import { MessageDisplayRule } from '../models/EventMessage';
+import { OrderRule } from '../stores/MessageDisplayRulesStore';
+import { SearchHistory } from '../stores/SearchStore';
 
 const dbVersion = 1;
 
@@ -29,44 +32,100 @@ export enum IndexedDbStores {
 	DISPLAY_RULES = 'display-rules',
 }
 
+export type DbData =
+	| EventBookmark
+	| MessageBookmark
+	| SearchHistory
+	| GraphSearchResult
+	| MessageDisplayRule
+	| OrderRule;
+
+interface TH2DB extends DBSchema {
+	[IndexedDbStores.EVENTS]: {
+		key: string;
+		value: EventBookmark;
+		indexes: {
+			timestamp: number;
+		};
+	};
+	[IndexedDbStores.MESSAGES]: {
+		key: string;
+		value: MessageBookmark;
+		indexes: {
+			timestamp: number;
+		};
+	};
+	[IndexedDbStores.SEARCH_HISTORY]: {
+		key: number;
+		value: SearchHistory;
+		indexes: {
+			timestamp: number;
+		};
+	};
+	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: {
+		key: string;
+		value: GraphSearchResult;
+		indexes: {
+			timestamp: number;
+		};
+	};
+	[IndexedDbStores.DISPLAY_RULES]: {
+		key: string;
+		value: MessageDisplayRule | OrderRule;
+		indexes: {
+			timestamp: number;
+		};
+	};
+}
+
 export class IndexedDB {
 	@observable
-	private db: IDBPDatabase<IndexedDbStores> | null = null;
+	private db: IDBPDatabase<TH2DB> | null = null;
 
 	constructor(private env: string) {
 		this.initDb();
 	}
 
 	private async initDb() {
-		this.db = await openDB(this.env, dbVersion, {
+		this.db = await openDB<TH2DB>(this.env, dbVersion, {
 			async upgrade(db, oldVersion, newVersion) {
-				// Migrate data from localStorage
 				if (oldVersion === 0 && newVersion === 1) {
-					db.createObjectStore(IndexedDbStores.EVENTS, { keyPath: 'id' });
-					db.createObjectStore(IndexedDbStores.MESSAGES, {
+					const eventsStore = db.createObjectStore(IndexedDbStores.EVENTS, { keyPath: 'id' });
+					eventsStore.createIndex('timestamp', 'timestamp');
+
+					const messagesStore = db.createObjectStore(IndexedDbStores.MESSAGES, {
 						keyPath: 'id',
 					});
-					db.createObjectStore(IndexedDbStores.SEARCH_HISTORY, {
+					messagesStore.createIndex('timestamp', 'timestamp');
+
+					const searchHistoryStore = db.createObjectStore(IndexedDbStores.SEARCH_HISTORY, {
 						keyPath: 'timestamp',
 					});
-					db.createObjectStore(IndexedDbStores.GRAPH_SEARCH_HISTORY, {
+					searchHistoryStore.createIndex('timestamp', 'timestamp');
+
+					const graphSearchHistoryStore = db.createObjectStore(
+						IndexedDbStores.GRAPH_SEARCH_HISTORY,
+						{
+							keyPath: 'id',
+						},
+					);
+					graphSearchHistoryStore.createIndex('timestamp', 'timestamp');
+
+					const messageDisplayRulesStore = db.createObjectStore(IndexedDbStores.DISPLAY_RULES, {
 						keyPath: 'id',
 					});
-					db.createObjectStore(IndexedDbStores.DISPLAY_RULES, {
-						keyPath: 'id',
-					});
-					localStorageWorker.clearLocalStorageData();
+					messageDisplayRulesStore.createIndex('timestamp', 'timestamp');
 				}
 			},
 		});
 	}
 
-	private getDb = async (): Promise<IDBPDatabase<IndexedDbStores>> => {
+	private getDb = async (): Promise<IDBPDatabase<TH2DB>> => {
 		if (this.db) return this.db;
 		if (!this.db) {
 			await when(() => this.db !== null);
 		}
-		return (this.db as unknown) as IDBPDatabase<IndexedDbStores>;
+		return (this.db as unknown) as IDBPDatabase<TH2DB>;
 	};
 
 	public deleteDbStoreItem = async (storeName: IndexedDbStores, key: string | number) => {
@@ -78,37 +137,24 @@ export class IndexedDB {
 		await tx.done;
 	};
 
-	public addDbStoreItem = async <T>(storeName: IndexedDbStores, data: T) => {
+	public addDbStoreItem = async <T extends DbData>(storeName: IndexedDbStores, data: T) => {
+		const db = await this.getDb();
+		const tx = await db.transaction(storeName, 'readwrite');
+		const store = await tx.objectStore(storeName);
+		await store.add(data);
+		await tx.done;
+	};
+
+	public updateDbStoreItem = async <T extends DbData>(storeName: IndexedDbStores, data: T) => {
 		const db = await this.getDb();
 		const tx = await db.transaction(storeName, 'readwrite');
 		const store = await tx.objectStore(storeName);
 
-		try {
-			await store.add(data);
-			await tx.done;
-		} catch (error) {
-			if (error.name === 'QuotaExceededError') {
-				this.handleQuotaExceededError(data);
-			}
-		}
+		await store.put(data);
+		await tx.done;
 	};
 
-	public updateDbStoreItem = async <T>(storeName: IndexedDbStores, data: T) => {
-		const db = await this.getDb();
-		const tx = await db.transaction(storeName, 'readwrite');
-		const store = await tx.objectStore(storeName);
-
-		try {
-			await store.put(data);
-			await tx.done;
-		} catch (error) {
-			if (error.name === 'QuotaExceededError') {
-				this.handleQuotaExceededError(data);
-			}
-		}
-	};
-
-	public getStoreValues = async <T>(storeName: IndexedDbStores): Promise<T[]> => {
+	public getStoreValues = async <T extends DbData>(storeName: IndexedDbStores): Promise<T[]> => {
 		const db = await this.getDb();
 
 		const tx = await db.transaction(storeName, 'readonly');
@@ -119,13 +165,38 @@ export class IndexedDB {
 		return values as Promise<T[]>;
 	};
 
-	private handleQuotaExceededError = (data: unknown) => {
-		notificationsStore.addError({
-			errorType: 'indexedDbError',
-			type: 'error',
-			header: 'QuotaExceededError',
-			description: 'Storage quota exceeded. Try to delete old data',
-			action: data,
-		});
+	public getStoreKeys = async <T>(storeName: IndexedDbStores): Promise<T[]> => {
+		const db = await this.getDb();
+
+		const tx = await db.transaction(storeName, 'readonly');
+		const store = await tx.objectStore(storeName);
+
+		const values = store.getAllKeys();
+
+		return (values as unknown) as Promise<T[]>;
+	};
+
+	public getIndexedKeys = async <T extends IDBValidKey>(
+		storeName: IndexedDbStores,
+		countLimitPercent?: number,
+		direction: IDBCursorDirection = 'next',
+	): Promise<T[]> => {
+		const db = await this.getDb();
+
+		const tx = await db.transaction(storeName, 'readonly');
+		const count = await tx.store.count();
+		let cursor = await tx.store.index('timestamp').openCursor(null, direction);
+
+		const data: IDBValidKey[] = [];
+
+		const limit = countLimitPercent ? Math.round(count / countLimitPercent) : count;
+
+		while (cursor && data.length !== limit) {
+			data.push(cursor.key);
+			// eslint-disable-next-line no-await-in-loop
+			cursor = await cursor.continue();
+		}
+
+		return (data as unknown) as Promise<T[]>;
 	};
 }

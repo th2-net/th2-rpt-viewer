@@ -14,8 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { nanoid } from 'nanoid';
 import React from 'react';
+import moment from 'moment';
+import { nanoid } from 'nanoid';
 import { useMessageDisplayRulesStore } from '../../hooks';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
 import AutocompleteInput from '../util/AutocompleteInput';
@@ -59,12 +60,13 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 			if (!currentSessionValue) {
 				return;
 			}
-			const newRule = {
+			const newRule: MessageDisplayRule = {
 				id: nanoid(),
 				session: currentSessionValue,
 				viewType: currentSelectedViewType,
 				removable: true,
 				fullyEditable: true,
+				timestamp: moment.utc().valueOf(),
 			};
 			rulesStore.setNewMessagesDisplayRule(newRule);
 			setSessionValue('');
@@ -80,12 +82,13 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 			return;
 		}
 		if (!isSame) {
-			const newRule = {
+			const newRule: MessageDisplayRule = {
 				id: rule.id,
 				session: currentSessionValue,
 				viewType: currentSelectedViewType,
 				removable: rule.removable,
 				fullyEditable: rule.fullyEditable,
+				timestamp: moment.utc().valueOf(),
 			};
 			rulesStore.editMessageDisplayRule(rule, newRule);
 		}

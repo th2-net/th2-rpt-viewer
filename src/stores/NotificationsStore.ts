@@ -15,11 +15,13 @@
  ***************************************************************************** */
 
 import { action, observable } from 'mobx';
+import { nanoid } from 'nanoid';
 import { AppearanceTypes } from 'react-toast-notifications';
 
 interface BaseNotificationError {
 	type: AppearanceTypes;
-	errorType: 'responseError' | 'urlError' | 'indexedDbError';
+	errorType: 'responseError' | 'urlError' | 'indexedDbMessage';
+	id: string;
 }
 export interface ResponseError extends BaseNotificationError {
 	errorType: 'responseError';
@@ -36,10 +38,13 @@ export interface UrlError extends BaseNotificationError {
 }
 
 export interface IndexedDbError extends BaseNotificationError {
-	errorType: 'indexedDbError';
+	errorType: 'indexedDbMessage';
 	header: string;
 	description: string;
-	action?: unknown;
+	action?: {
+		label: string;
+		callback: () => void;
+	};
 }
 
 export type NotificationError = ResponseError | UrlError | IndexedDbError;
@@ -49,26 +54,31 @@ export class NotificationsStore {
 	public errors: NotificationError[] = [];
 
 	@action
-	public addError = (error: NotificationError) => {
+	public addMessage = (error: NotificationError) => {
 		this.errors = [...this.errors, error];
 	};
 
 	@action
-	public deleteError = (error: NotificationError) => {
-		this.errors = this.errors.filter(e => e !== error);
+	public deleteMessage = (error: NotificationError | string) => {
+		if (typeof error === 'string') {
+			this.errors = this.errors.filter(e => e.id !== error);
+		} else {
+			this.errors = this.errors.filter(e => e !== error);
+		}
 	};
 
 	@action
 	public handleSSEError = (event: Event) => {
 		if (event instanceof MessageEvent) {
 			const errorData = JSON.parse(event.data);
-			notificationsStore.addError({
+			notificationsStore.addMessage({
 				type: 'error',
 				header: errorData.exceptionName,
 				resource: event.target instanceof EventSource ? event.target.url : event.origin,
 				responseBody: errorData.exceptionCause,
 				responseCode: null,
 				errorType: 'responseError',
+				id: nanoid(),
 			});
 		}
 	};

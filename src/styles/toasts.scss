@@ -50,10 +50,18 @@
 		background-color: $toastErrorBackground;
 	}
 
+	&.success {
+		background-color: $toastSuccessBackground;
+	}
+
 	&__icon {
 		min-width: 24px;
 		&.error {
 			@include icon(url(../../resources/icons/toast-error.svg), 24px, 24px);
+		}
+
+		&.success {
+			@include icon(url(../../resources/icons/checkmark-light.svg), 24px, 24px);
 		}
 	}
 
@@ -108,23 +116,27 @@
 		justify-content: flex-end;
 	}
 
-	.copy-details {
-		margin: 4px 0 0;
-		display: flex;
-		background-color: transparent;
-		color: #fff;
-		cursor: pointer;
-		border: none;
+	&__description {
+		font-size: 14px;
+	}
+}
 
-		&__icon {
-			margin: 0 4px 0 0;
-			@include icon(url(../../resources/icons/toast-copy.svg), 16px, 17px);
-		}
+.toast-action {
+	margin: 4px 0 0;
+	display: flex;
+	background-color: transparent;
+	color: #fff;
+	cursor: pointer;
+	border: none;
 
-		&__text {
-			&.copied {
-				color: gray;
-			}
+	&__copy-icon {
+		margin: 0 4px 0 0;
+		@include icon(url(../../resources/icons/toast-copy.svg), 16px, 17px);
+	}
+
+	&__text {
+		&.copied {
+			color: gray;
 		}
 	}
 }

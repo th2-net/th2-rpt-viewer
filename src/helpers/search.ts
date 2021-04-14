@@ -77,5 +77,10 @@ export function getDefaultMessagesFiltersState(
 }
 
 export function isSearchHistoryEntity(obj: unknown): obj is SearchHistory {
-	return typeof obj === 'object' && obj !== null && (obj as SearchHistory).request !== undefined;
+	return (
+		typeof obj === 'object' &&
+		obj !== null &&
+		(obj as SearchHistory).request !== undefined &&
+		(obj as SearchHistory).results !== undefined
+	);
 }

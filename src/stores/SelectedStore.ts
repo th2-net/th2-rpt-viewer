@@ -14,11 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, runInAction } from 'mobx';
+import { action, computed, observable, runInAction, toJS } from 'mobx';
 import moment from 'moment';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import WorkspacesStore from './workspace/WorkspacesStore';
+import WorkspacesStore, { SyncData } from './workspace/WorkspacesStore';
 import { sortMessagesByTimestamp } from '../helpers/message';
 import { sortByTimestamp } from '../helpers/event';
 import { GraphItem } from '../models/Graph';
@@ -126,7 +126,7 @@ export class SelectedStore {
 		} else {
 			const eventBookmark = this.createEventBookmark(event);
 			this.bookmarkedEvents = this.bookmarkedEvents.concat(eventBookmark);
-			this.db.addDbStoreItem(IndexedDbStores.EVENTS, eventBookmark);
+			this.saveBookmark(IndexedDbStores.EVENTS, toJS(eventBookmark));
 		}
 	};
 
@@ -150,6 +150,16 @@ export class SelectedStore {
 	private init = () => {
 		this.getSavedEvents();
 		this.getSavedMessages();
+	};
+
+	private saveBookmark = (store: IndexedDbStores, data: EventBookmark | MessageBookmark) => {
+		try {
+			this.db.addDbStoreItem(store, data);
+		} catch (error) {
+			if (error.name === 'QuotaExceededError') {
+				this.workspacesStore.handleQuotaExceededError(data, store);
+			}
+		}
 	};
 
 	private getSavedEvents = async () => {
@@ -177,16 +187,33 @@ export class SelectedStore {
 	private createMessageBookmark = (message: EventMessage): MessageBookmark => {
 		return {
 			id: message.messageId,
-			searchTimestamp: moment.utc().valueOf(),
-			item: message,
+			timestamp: moment.utc().valueOf(),
+			item: toJS(message),
 		};
 	};
 
 	private createEventBookmark = (event: EventTreeNode): EventBookmark => {
 		return {
 			id: event.eventId,
-			searchTimestamp: moment.utc().valueOf(),
-			item: event,
+			timestamp: moment.utc().valueOf(),
+			item: toJS(event),
 		};
+	};
+
+	public syncData = (removedData?: SyncData) => {
+		if (removedData) {
+			const deletedEvents = removedData.events;
+			const deletedMessages = removedData.messages;
+
+			this.bookmarkedEvents = this.bookmarkedEvents.filter(
+				bookmarkedEvent => !deletedEvents.includes(bookmarkedEvent.id),
+			);
+			this.bookmarkedMessages = this.bookmarkedMessages.filter(
+				bookmarkedMessages => !deletedMessages.includes(bookmarkedMessages.id),
+			);
+		} else {
+			this.getSavedEvents();
+			this.getSavedMessages();
+		}
 	};
 }

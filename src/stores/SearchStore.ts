@@ -38,6 +38,7 @@ import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
+import WorkspacesStore, { SyncData } from './workspace/WorkspacesStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -88,7 +89,7 @@ const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
 const SEARCH_CHUNK_SIZE = 500;
 
 export class SearchStore {
-	constructor(private api: ApiSchema) {
+	constructor(private workspacesStore: WorkspacesStore, private api: ApiSchema) {
 		this.init();
 
 		autorun(() => {
@@ -498,7 +499,7 @@ export class SearchStore {
 		this.exportChunkToSearchHistory();
 
 		if (!this.isSearching && this.currentSearch) {
-			this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, toJS(this.currentSearch));
+			this.saveSearchResults(toJS(this.currentSearch));
 		}
 	};
 
@@ -578,14 +579,18 @@ export class SearchStore {
 		}
 	}
 
-	private getSearchHistory = async () => {
+	private getSearchHistory = async (historyTimestamp?: number) => {
 		try {
 			const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
 				IndexedDbStores.SEARCH_HISTORY,
 			);
 			runInAction(() => {
 				this.searchHistory = searchHistory;
-				this.currentIndex = searchHistory.length - 1;
+				const defaultIndex = searchHistory.length - 1;
+				const index = historyTimestamp
+					? searchHistory.findIndex(search => search.timestamp === historyTimestamp)
+					: -1;
+				this.currentIndex = index === -1 ? defaultIndex : index;
 			});
 		} catch (error) {
 			console.error('Failed to load search history', error);
@@ -597,5 +602,37 @@ export class SearchStore {
 		this.getMessagesFilters();
 		this.loadMessageSessions();
 		this.getSearchHistory();
+	};
+
+	private saveSearchResults = async (search: SearchHistory) => {
+		try {
+			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
+		} catch (error) {
+			if (error.name === 'QuotaExceededError') {
+				this.workspacesStore.handleQuotaExceededError(search, IndexedDbStores.SEARCH_HISTORY);
+			}
+		}
+	};
+
+	@action
+	public syncData = (removedData?: SyncData) => {
+		if (this.isSearching) {
+			this.stopSearch();
+		}
+		if (removedData) {
+			const updatedSearchHistory = this.searchHistory.filter(
+				searchHistory => !removedData['search-history'].includes(searchHistory.timestamp),
+			);
+
+			this.searchHistory = updatedSearchHistory;
+			if (this.currentSearch && this.currentSearch !== updatedSearchHistory[this.currentIndex]) {
+				const restoredIndex = updatedSearchHistory.findIndex(
+					search => this.currentSearch?.timestamp === search.timestamp,
+				);
+				this.currentIndex = restoredIndex === -1 ? updatedSearchHistory.length - 1 : restoredIndex;
+			}
+		} else {
+			this.getSearchHistory(this.currentSearch?.timestamp);
+		}
 	};
 }

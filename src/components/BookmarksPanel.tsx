@@ -37,13 +37,13 @@ export type Item = EventMessage | EventTreeNode | EventAction;
 export type BookmarkedItem = Item | MessageBookmark | EventBookmark;
 
 export interface MessageBookmark {
-	searchTimestamp: number;
+	timestamp: number;
 	id: string;
 	item: EventMessage;
 }
 
 export interface EventBookmark {
-	searchTimestamp: number;
+	timestamp: number;
 	id: string;
 	item: EventMessage | EventTreeNode;
 }
@@ -69,8 +69,8 @@ function BookmarksPanel() {
 		];
 
 		sortedBookmarks.sort((bookmarkA, bookmarkB) => {
-			if (bookmarkA.searchTimestamp > bookmarkB.searchTimestamp) return -1;
-			if (bookmarkA.searchTimestamp < bookmarkB.searchTimestamp) return 1;
+			if (bookmarkA.timestamp > bookmarkB.timestamp) return -1;
+			if (bookmarkA.timestamp < bookmarkB.timestamp) return 1;
 			return 0;
 		});
 		return sortedBookmarks;

@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { toJS } from 'mobx';
+import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
@@ -96,11 +97,12 @@ export default class RootStore {
 			const parsedState = workspacesUrlState ? JSON.parse(window.atob(workspacesUrlState)) : null;
 			return parsedState;
 		} catch (error) {
-			this.notificationsStore.addError({
+			this.notificationsStore.addMessage({
 				errorType: 'urlError',
 				type: 'error',
 				link: window.location.href,
 				error,
+				id: nanoid(),
 			});
 			return null;
 		}

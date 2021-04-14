@@ -17,15 +17,22 @@
 import React from 'react';
 import { IndexedDbError } from '../../stores/NotificationsStore';
 
-export default function IndexedDBErrorToast(props: IndexedDbError) {
-	const { description, header } = props;
+export default function IndexedDBMessageToast(props: IndexedDbError) {
+	const { description, header, action } = props;
 
 	return (
 		<div className='toast-content'>
 			<div className='toast-content__top'>
 				<p className='user-message'>{header}</p>
 			</div>
-			<div>{description}</div>
+			<div className='toast-content__description'>{description}</div>
+			{action && (
+				<div className='toast-content__bottom'>
+					<button className='toast-action' onClick={action.callback}>
+						<span className='toast-action__text'>{action.label}</span>
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }

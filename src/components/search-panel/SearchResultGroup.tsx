@@ -107,7 +107,7 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 			<div className='search-result-single-item'>
 				<BookmarkItem
 					key={computeKey(0)}
-					item={results[0]}
+					bookmark={results[0]}
 					onClick={onResultClick}
 					toggleBookmark={getBookmarkToggler(results[0])}
 					isBookmarked={getIsToggled(results[0])}

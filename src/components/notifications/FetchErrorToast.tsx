@@ -28,7 +28,7 @@ interface FetchErrorProps {
 export default function FetchErrorToast(props: FetchErrorProps) {
 	const { resource, responseBody, responseCode, header } = props;
 	const [copied, setCopied] = useState(false);
-	const copyDetailsText = createStyleSelector('copy-details__text', copied ? 'copied' : null);
+	const copyDetailsText = createStyleSelector('toast-action__text', copied ? 'copied' : null);
 
 	const copy = () => {
 		const value = JSON.stringify({ resource, responseBody, responseCode }, null, ' ');
@@ -46,8 +46,8 @@ export default function FetchErrorToast(props: FetchErrorProps) {
 			</div>
 			<div className='toast-content__middle'>{responseBody}</div>
 			<div className='toast-content__bottom'>
-				<button className='copy-details' disabled={copied} onClick={copy}>
-					{!copied && <span className='copy-details__icon' />}
+				<button className='toast-action' disabled={copied} onClick={copy}>
+					{!copied && <span className='toast-action__copy-icon' />}
 					<span className={copyDetailsText}>{copied ? 'Copied' : ' Copy details'}</span>
 				</button>
 			</div>

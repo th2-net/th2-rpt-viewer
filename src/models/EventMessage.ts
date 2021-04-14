@@ -32,6 +32,7 @@ export type MessageDisplayRule = {
 	viewType: MessageViewType;
 	removable: boolean;
 	fullyEditable: boolean;
+	timestamp: number;
 };
 
 export interface EventMessage {

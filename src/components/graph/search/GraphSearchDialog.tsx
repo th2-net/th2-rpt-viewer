@@ -58,14 +58,25 @@ const GraphSearchDialog = (props: Props) => {
 
 	const [searchHistory, setSearchHistory] = React.useState<GraphSearchResult[]>([]);
 
+	const sortedSearchHistory: GraphSearchResult[] = React.useMemo(() => {
+		const sortedHistory = searchHistory.slice();
+		searchHistory.sort((itemA, itemB) => {
+			if (itemA.timestamp > itemB.timestamp) return -1;
+			if (itemA.timestamp < itemB.timestamp) return 1;
+			return 0;
+		});
+
+		return sortedHistory;
+	}, [searchHistory]);
+
 	const filteredSearchHistory = React.useMemo(() => {
-		if (!value) return searchHistory;
-		return searchHistory.filter(
+		if (!value) return sortedSearchHistory;
+		return sortedSearchHistory.filter(
 			historyItem =>
 				getItemId(historyItem.item).includes(value) ||
 				getItemName(historyItem.item).includes(value),
 		);
-	}, [searchHistory, value]);
+	}, [sortedSearchHistory, value]);
 
 	React.useEffect(() => {
 		async function getGraphSearchHistory() {
@@ -127,6 +138,7 @@ const GraphSearchDialog = (props: Props) => {
 
 	const onKeyDown = React.useCallback(
 		(event: KeyboardEvent) => {
+			if (!isIdMode) return;
 			if (event.keyCode === KeyCodes.ENTER) {
 				if (filteredSearchHistory.length === 1) {
 					onSearchResultSelect(filteredSearchHistory[0]);
@@ -138,7 +150,7 @@ const GraphSearchDialog = (props: Props) => {
 				}
 			}
 		},
-		[filteredSearchHistory],
+		[filteredSearchHistory, value, isIdMode],
 	);
 
 	React.useEffect(() => {
@@ -198,7 +210,7 @@ const GraphSearchDialog = (props: Props) => {
 
 	function onSearchSuccess(responseObject: EventAction | EventMessage, searchTimestamp: number) {
 		const searchResult: GraphSearchResult = {
-			searchTimestamp,
+			timestamp: searchTimestamp,
 			id: getItemId(responseObject),
 			item: responseObject,
 		};

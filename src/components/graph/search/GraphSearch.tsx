@@ -36,7 +36,7 @@ interface Props {
 
 export type GraphSearchMode = 'timestamp' | 'history';
 export interface GraphSearchResult {
-	searchTimestamp: number;
+	timestamp: number;
 	id: string;
 	item: EventAction | EventMessage;
 }

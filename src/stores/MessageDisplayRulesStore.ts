@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction, runInAction } from 'mobx';
+import moment from 'moment';
 import { IndexedDB, IndexedDbStores } from '../api/indexedDb';
 import { move } from '../helpers/array';
 import {
@@ -31,6 +32,7 @@ export const RULES_ORDER_ID = 'order';
 export interface OrderRule {
 	id: typeof RULES_ORDER_ID;
 	order: string[];
+	timestamp: number;
 }
 
 export function isRootDisplayRule(displayRule: MessageDisplayRule) {
@@ -49,6 +51,7 @@ class MessageDisplayRulesStore {
 		return {
 			id: RULES_ORDER_ID,
 			order: this.messageDisplayRules.map(({ session }) => session),
+			timestamp: moment.utc().valueOf(),
 		};
 	}
 
@@ -114,6 +117,7 @@ class MessageDisplayRulesStore {
 				viewType: MessageViewType.JSON,
 				removable: false,
 				fullyEditable: false,
+				timestamp: moment.utc().valueOf(),
 			};
 			this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, rootDisplayRule);
 		} else {
