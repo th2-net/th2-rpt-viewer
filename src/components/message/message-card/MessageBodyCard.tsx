@@ -19,6 +19,7 @@ import MessageBody, {
 	isSimpleValue,
 	MessageBodyField,
 	isListValue,
+	MessageBodyFields,
 } from '../../../models/MessageBody';
 import { useMessageBodySortStore } from '../../../hooks';
 
@@ -39,27 +40,24 @@ const usualSort = (a: [string, MessageBodyField], b: [string, MessageBodyField])
 	return keyA.toLowerCase() > keyB.toLowerCase() ? 1 : -1;
 };
 
+const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
+	const primarySortedFields: [string, MessageBodyField][] = Object.entries(
+		sortOrder.reduce((prev, curr) => (fields[curr] ? { ...prev, [curr]: fields[curr] } : prev), {}),
+	);
+
+	const secondarySortedFields: [string, MessageBodyField][] = Object.entries(fields)
+		.filter(([key]) => !sortOrder.includes(key))
+		.sort(usualSort);
+
+	return [...primarySortedFields, ...secondarySortedFields];
+};
+
 export default function MessageBodyCard({ isBeautified, body, isSelected, renderInfo }: Props) {
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
 	const { sortOrder } = useMessageBodySortStore();
 	const sortOrderItems = sortOrder.map(item => item.item);
 
-	const primarySortedFields: [string, MessageBodyField][] = body
-		? Object.entries(
-				sortOrderItems.reduce(
-					(prev, curr) => (body.fields[curr] ? { ...prev, [curr]: body.fields[curr] } : prev),
-					{},
-				),
-		  )
-		: [];
-
-	const secondarySortedFields: [string, MessageBodyField][] = body
-		? Object.entries(body.fields)
-				.filter(([key]) => !sortOrderItems.includes(key))
-				.sort(usualSort)
-		: [];
-
-	const fields = [...primarySortedFields, ...secondarySortedFields];
+	const fields = getSortedFields(body ? body.fields : {}, sortOrderItems);
 
 	if (body == null) {
 		return <pre className='mc-body__human'>null</pre>;
@@ -110,6 +108,8 @@ function MessageBodyCardField(props: FieldProps) {
 	} = props;
 
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
+	const { sortOrder } = useMessageBodySortStore();
+	const sortOrderItems = sortOrder.map(item => item.item);
 
 	if (isRoot) {
 		return (
@@ -124,6 +124,15 @@ function MessageBodyCardField(props: FieldProps) {
 			/>
 		);
 	}
+
+	const subFields =
+		!isSimpleValue(field) && !isListValue(field)
+			? field.messageValue && field.messageValue.fields
+				? field.messageValue.fields
+				: {}
+			: {};
+
+	const sortedSubFields = getSortedFields(subFields, sortOrderItems);
 
 	return (
 		<span
@@ -171,7 +180,7 @@ function MessageBodyCardField(props: FieldProps) {
 							display: isBeautified ? 'block' : undefined,
 							paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
 						}}>
-						{Object.entries(field.messageValue?.fields || {}).map(([key, subField], idx, arr) => (
+						{sortedSubFields.map(([key, subField], idx, arr) => (
 							<React.Fragment key={key}>
 								<MessageBodyCardField
 									field={subField}

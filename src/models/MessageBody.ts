@@ -25,8 +25,10 @@ export default interface MessageBody {
 		timestamp: string;
 		messageType: string;
 	};
-	fields: { [key: string]: MessageBodyField };
+	fields: MessageBodyFields;
 }
+
+export type MessageBodyFields = { [key: string]: MessageBodyField };
 
 export type ListValueField = {
 	listValue: {
