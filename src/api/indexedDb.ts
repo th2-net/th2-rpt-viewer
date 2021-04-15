@@ -18,7 +18,7 @@ import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
 import { EventBookmark, MessageBookmark } from '../components/BookmarksPanel';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
-import { MessageDisplayRule } from '../models/EventMessage';
+import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { SearchHistory } from '../stores/SearchStore';
 
@@ -30,6 +30,7 @@ export enum IndexedDbStores {
 	SEARCH_HISTORY = 'search-history',
 	GRAPH_SEARCH_HISTORY = 'graph-search-history',
 	DISPLAY_RULES = 'display-rules',
+	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 }
 
 export type DbData =
@@ -38,7 +39,8 @@ export type DbData =
 	| SearchHistory
 	| GraphSearchResult
 	| MessageDisplayRule
-	| OrderRule;
+	| OrderRule
+	| MessageSortOrderItem;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.EVENTS]: {
@@ -72,6 +74,13 @@ interface TH2DB extends DBSchema {
 	[IndexedDbStores.DISPLAY_RULES]: {
 		key: string;
 		value: MessageDisplayRule | OrderRule;
+		indexes: {
+			timestamp: number;
+		};
+	};
+	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: {
+		key: string;
+		value: MessageSortOrderItem;
 		indexes: {
 			timestamp: number;
 		};
@@ -122,6 +131,14 @@ export class IndexedDB {
 						keyPath: 'id',
 					});
 					messageDisplayRulesStore.createIndex('timestamp', 'timestamp');
+
+					const messageBodySortOrderStore = db.createObjectStore(
+						IndexedDbStores.MESSAGE_BODY_SORT_ORDER,
+						{
+							keyPath: 'id',
+						},
+					);
+					messageBodySortOrderStore.createIndex('timestamp', 'timestamp');
 				}
 			},
 		});

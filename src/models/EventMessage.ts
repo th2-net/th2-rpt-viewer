@@ -26,14 +26,20 @@ export enum MessageViewType {
 	BINARY = 'binary',
 }
 
-export type MessageDisplayRule = {
+export interface MessageSortOrderItem {
+	id: string;
+	item: string;
+	timestamp: number;
+}
+
+export interface MessageDisplayRule {
 	id: string;
 	session: string;
 	viewType: MessageViewType;
 	removable: boolean;
 	fullyEditable: boolean;
 	timestamp: number;
-};
+}
 
 export interface EventMessage {
 	type: ActionType.MESSAGE;
