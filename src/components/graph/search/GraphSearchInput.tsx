@@ -156,7 +156,7 @@ function GraphSearchInput(props: Props) {
 	function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
 		const { mask, value, placeholder } = inputConfig;
 
-		if (e.keyCode === KeyCodes.TAB && mode === 'date') {
+		if (e.keyCode === KeyCodes.TAB && mode === 'timestamp') {
 			e.preventDefault();
 			if (mask && isCompletable(value, mask) && placeholder) {
 				const fullDate = replaceBlankTimeCharsWithDefaults(value, mask, placeholder);
@@ -178,7 +178,7 @@ function GraphSearchInput(props: Props) {
 		const value = event.target.value;
 
 		if (!value) {
-			setMode('id');
+			setMode('history');
 		}
 
 		const replacedTime = replaceBlankTimeCharsWithDefaults(value, TIME_MASK, TIME_PLACEHOLDER);
@@ -200,7 +200,7 @@ function GraphSearchInput(props: Props) {
 				value,
 			});
 			setTimestamp(parsedTime.valueOf());
-			setMode('date');
+			setMode('timestamp');
 		} else if (value.length > 2 && isCompletable(value, DATE_TIME_MASK) && parsedDate.isValid()) {
 			setInputConfig({
 				isValidDate:
@@ -211,7 +211,7 @@ function GraphSearchInput(props: Props) {
 				value,
 			});
 			setTimestamp(parsedDate.valueOf());
-			setMode('date');
+			setMode('timestamp');
 		} else {
 			setInputConfig({
 				isValidDate: false,
@@ -221,7 +221,7 @@ function GraphSearchInput(props: Props) {
 				value,
 			});
 			setTimestamp(null);
-			setMode('id');
+			setMode('history');
 		}
 	}
 
@@ -231,9 +231,9 @@ function GraphSearchInput(props: Props) {
 			(isCompletable(inputConfig.value, DATE_TIME_MASK) ||
 				isCompletable(inputConfig.value, TIME_MASK))
 		) {
-			setMode('date');
+			setMode('timestamp');
 		} else {
-			setMode('id');
+			setMode('history');
 		}
 	}
 
@@ -247,7 +247,7 @@ function GraphSearchInput(props: Props) {
 				onKeyDown={handleKeyDown}
 				type='text'
 			/>
-			{mode === 'date' && (
+			{mode === 'timestamp' && (
 				<input
 					className='graph-search-input__placeholder'
 					type='text'
