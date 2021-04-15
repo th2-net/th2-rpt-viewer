@@ -18,7 +18,7 @@ import * as React from 'react';
 import eventHttpApi from '../../../api/event';
 import messageHttpApi from '../../../api/message';
 import { getTimestampAsNumber } from '../../../helpers/date';
-import { getItemId, isEventAction } from '../../../helpers/event';
+import { getItemId, getItemName, isEventAction } from '../../../helpers/event';
 import { EventAction, EventTreeNode } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../BookmarksPanel';
@@ -59,7 +59,10 @@ const GraphSearchDialog = (props: Props) => {
 
 	const filteredHistory = React.useMemo(() => {
 		if (!value) return history;
-		return history.filter(historyItem => getItemId(historyItem).includes(value));
+		return history.filter(
+			historyItem =>
+				getItemId(historyItem).includes(value) || getItemName(historyItem).includes(value),
+		);
 	}, [history, value]);
 
 	React.useEffect(() => {
@@ -202,15 +205,8 @@ const GraphSearchDialog = (props: Props) => {
 	return (
 		<div className='graph-search-dialog'>
 			{isLoading && <div className='graph-search-dialog__loader' />}
-			{!isLoading && foundObject && (
-				<div className='graph-search-dialog__result'>
-					<BookmarkItem item={foundObject} />
-				</div>
-			)}
 			{filteredHistory.length > 0 && (
 				<>
-					<h4 className='graph-search-dialog__history-title'>Search history</h4>
-					<hr />
 					<div className='graph-search-dialog__history-list'>
 						{filteredHistory.map((item, index) => (
 							<BookmarkItem

@@ -20,13 +20,16 @@ import '../../../styles/toggler.scss';
 
 const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
 	const { value, toggleValue, possibleValues, label, disabled, className = '' } = config;
+	const [firstLabel, secondLabel] = possibleValues;
+
 	const togglerClassName = createStyleSelector('toggler', disabled ? 'disabled' : '');
 	const togglerBarClassName = createStyleSelector('toggler__bar', className, value ? 'on' : 'off');
-	const [firstLabel, secondLabel] = possibleValues;
+
+	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
 
 	return (
 		<div className='filter-row toggler-wrapper'>
-			{label && <p className='filter-row__label'>{label}</p>}
+			{label && <p className={labelClassName}>{label}</p>}
 			<div
 				className={togglerClassName}
 				onClick={() => {

@@ -163,30 +163,6 @@
 	justify-content: flex-end;
 	white-space: nowrap;
 
-	&__is-attached-icon {
-		flex-shrink: 0;
-		width: 8px;
-		height: 8px;
-		transform: rotate(45deg);
-		transform-origin: center;
-		background-color: $attachedMessageCardIconColor;
-		opacity: 0.43;
-		margin-top: 3px;
-		margin-left: 3px;
-		margin-right: 4px;
-		&.inline {
-			display: inline-flex;
-		}
-	}
-
-	&__is-soft-filtered-icon {
-		@include icon(url(../../resources/icons/filter.svg), 12px, 12px);
-		flex-shrink: 0;
-		&.inline {
-			display: inline-flex;
-		}
-	}
-
 	&__info {
 		flex-grow: 1;
 		display: flex;
@@ -203,9 +179,6 @@
 		&.messageId,
 		&.messageId-inline {
 			display: none;
-		}
-		&.messageId-inline {
-			margin-right: 10px;
 		}
 	}
 
@@ -233,6 +206,7 @@
 	&__value {
 		font-size: 9px;
 		line-height: 15px;
+		margin: 0 5px;
 	}
 
 	&__key,
@@ -242,9 +216,6 @@
 
 	&__value {
 		color: $messageCardValueColor;
-		&.sessionId-inline {
-			margin-right: 10px;
-		}
 	}
 
 	&__controls {

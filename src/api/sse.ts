@@ -14,14 +14,17 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventSourceConfig, SSESchema } from './ApiSchema';
+import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
+import EventsFilter from '../models/filter/EventsFilter';
+import { getObjectKeys } from '../helpers/object';
 
 interface BaseSSEParams {
 	startTimestamp: number;
-	searchDirection?: 'next' | 'previous'; // defaults to next
-	resultCountLimit?: number;
 	endTimestamp?: number | null;
+	resultCountLimit?: number;
+	resumeFromId?: string;
+	searchDirection?: 'next' | 'previous'; // defaults to next
 }
 
 export interface SSEHeartbeat {
@@ -43,8 +46,20 @@ export interface SSEFilterParameter {
 	type: { value: 'string' | 'boolean' | 'string[]' | 'switcher' };
 }
 
-type EventSSEFilters = 'attachedMessageId' | 'type' | 'name';
-type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body';
+export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status';
+export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body';
+
+export interface EventsFiltersInfo {
+	name: EventSSEFilters;
+	hint: string;
+	parameters: SSEFilterParameter[];
+}
+
+export interface MessagesFilterInfo {
+	name: MessagesSSEFilters;
+	hint: string;
+	parameters: SSEFilterParameter[];
+}
 
 export interface EventSSEParams extends BaseSSEParams {
 	parentEvent?: string;
@@ -55,7 +70,6 @@ export interface EventSSEParams extends BaseSSEParams {
 	'type-negative'?: boolean;
 	'name-values'?: string[];
 	'name-negative'?: boolean;
-	resumeFromId?: string;
 }
 
 export interface MessagesSSEParams extends BaseSSEParams {
@@ -67,18 +81,64 @@ export interface MessagesSSEParams extends BaseSSEParams {
 	'type-negative'?: boolean;
 	'body-values'?: string[];
 	'body-negative'?: boolean;
+}
+
+export interface SSEParamsEvents {
+	parentEvent?: string;
+	resultCountLimit?: number;
 	resumeFromId?: string;
+	searchDirection?: 'next' | 'previous'; // defaults to next
 }
 
 export type SSEParams = EventSSEParams | MessagesSSEParams;
 
+type ParamsFromFilter = Record<string, string | string[] | boolean>;
+
+function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
+	const filters = getObjectKeys(filter).filter(filterName =>
+		filterName === 'status'
+			? filter[filterName].values !== 'any'
+			: filter[filterName].values.length > 0,
+	);
+	return filters.reduce(
+		(params, filterName) => {
+			const currentFilter = filter[filterName];
+			const currentFilterParams: ParamsFromFilter = {};
+
+			currentFilterParams[`${filterName}-${filterName === 'status' ? 'value' : 'values'}`] =
+				currentFilter.values;
+			if ('negative' in currentFilter) {
+				currentFilterParams[`${filterName}-negative`] = currentFilter.negative;
+			}
+
+			return {
+				...params,
+				...currentFilterParams,
+			};
+		},
+		{ filters },
+	);
+}
+
 const sseApi: SSESchema = {
-	getEventSource(config: EventSourceConfig) {
+	getEventSource: config => {
 		const { type, queryParams } = config;
 		const params = createURLSearchParams({ ...queryParams });
 		return new EventSource(`backend/search/sse/${type}s/?${params}`);
 	},
-	getFilters: async (filterType: 'events' | 'messages'): Promise<string[]> => {
+	getEventsTreeSource: (timeRange, filter, sseParams) => {
+		const paramFromFilter = filter ? getEventsSSEParamsFromFilter(filter) : {};
+		const params = createURLSearchParams({
+			...{
+				startTimestamp: timeRange[0],
+				endTimestamp: timeRange[1],
+				...paramFromFilter,
+				...sseParams,
+			},
+		});
+		return new EventSource(`backend/search/sse/events/?${params}`);
+	},
+	getFilters: async <T>(filterType: 'events' | 'messages'): Promise<T[]> => {
 		const res = await fetch(`backend/filters/sse-${filterType}`);
 		if (res.ok) {
 			return res.json();
@@ -86,13 +146,39 @@ const sseApi: SSESchema = {
 
 		throw res;
 	},
-	getFiltersInfo: (
-		filterType: 'events' | 'messages',
-		filters: string[],
-	): Promise<SSEFilterInfo[]> => {
+	getEventFilters: () => {
+		return sseApi.getFilters<EventSSEFilters>('events');
+	},
+	getMessagesFilters: () => {
+		return sseApi.getFilters<MessagesSSEFilters>('messages');
+	},
+	getEventsFiltersInfo: async filters => {
+		const eventFilterInfo = await Promise.all<EventsFiltersInfo>(
+			filters.map(filterName =>
+				fetch(`backend/filters/sse-events/${filterName}`).then(res => res.json()),
+			),
+		);
+
+		return eventFilterInfo.map(filterInfo => {
+			if (filterInfo.name === 'status') {
+				// eslint-disable-next-line no-param-reassign
+				filterInfo.parameters = [
+					{
+						type: { value: 'switcher' },
+						name: 'value',
+						defaultValue: 'any',
+						hint: 'passed, failed, any',
+					},
+				];
+			}
+
+			return filterInfo;
+		});
+	},
+	getMessagesFiltersInfo: filters => {
 		return Promise.all(
 			filters.map(filterName =>
-				fetch(`backend/filters/sse-${filterType}/${filterName}`).then(res => res.json()),
+				fetch(`backend/filters/sse-messages/${filterName}`).then(res => res.json()),
 			),
 		);
 	},

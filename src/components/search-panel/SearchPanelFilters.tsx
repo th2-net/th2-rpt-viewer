@@ -25,19 +25,31 @@ import {
 import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import FilterRow from '../filter/row';
 
+export type StringFilter = {
+	type: 'string';
+	values: string;
+	negative: boolean;
+};
+
+export type MultipleStringFilter = {
+	type: 'string[]';
+	values: string[];
+	negative: boolean;
+};
+
+export type SwitcherFilter = {
+	type: 'switcher';
+	values: string;
+};
+
+export type Filter = StringFilter | MultipleStringFilter | SwitcherFilter;
+
 export type EventFilterState = {
-	attachedMessageId: {
-		negative: boolean;
-		values: string;
-	};
-	type: {
-		negative: boolean;
-		values: string[];
-	};
-	name: {
-		negative: boolean;
-		values: string[];
-	};
+	attachedMessageId: StringFilter;
+	type: MultipleStringFilter;
+	body: MultipleStringFilter;
+	name: MultipleStringFilter;
+	status: SwitcherFilter;
 };
 
 export type MessageFilterState = {
@@ -124,19 +136,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 					.split(/(?=[A-Z])/)
 					.join(' ');
 
-				let params = filter.parameters;
-				if (filter.name === 'status') {
-					params = [
-						{
-							type: { value: 'switcher' },
-							name: 'value',
-							defaultValue: 'any',
-							hint: 'passed, failed, any',
-						},
-					];
-				}
-
-				const config = params.map(
+				const config = filter.parameters.map(
 					(param: SSEFilterParameter): FilterRowConfig => {
 						switch (param.type.value) {
 							case 'boolean':

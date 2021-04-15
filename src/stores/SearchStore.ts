@@ -17,7 +17,13 @@
 import { action, autorun, computed, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
 import ApiSchema from '../api/ApiSchema';
-import { SSEFilterInfo, SSEHeartbeat, SSEParams } from '../api/sse';
+import {
+	EventsFiltersInfo,
+	MessagesFilterInfo,
+	SSEFilterInfo,
+	SSEHeartbeat,
+	SSEParams,
+} from '../api/sse';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
 	EventFilterState,
@@ -26,7 +32,7 @@ import {
 } from '../components/search-panel/SearchPanelFilters';
 import { getTimestampAsNumber } from '../helpers/date';
 import { getItemId, isEventMessage, isEventNode } from '../helpers/event';
-import { getDefaultFilterState } from '../helpers/search';
+import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
@@ -80,6 +86,7 @@ export type SearchHistoryState<T> = {
 
 const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
 const SEARCH_CHUNK_SIZE = 500;
+
 export class SearchStore {
 	constructor(private api: ApiSchema) {
 		this.getEventFilters();
@@ -143,9 +150,9 @@ export class SearchStore {
 
 	@observable currentIndex = this.searchHistory.length > 0 ? this.searchHistory.length - 1 : 0;
 
-	@observable eventFilterInfo: SSEFilterInfo[] = [];
+	@observable eventFilterInfo: EventsFiltersInfo[] = [];
 
-	@observable messagesFilterInfo: SSEFilterInfo[] = [];
+	@observable messagesFilterInfo: MessagesFilterInfo[] = [];
 
 	@observable isMessageFiltersLoading = false;
 
@@ -279,11 +286,11 @@ export class SearchStore {
 	@action
 	getEventFilters = async () => {
 		try {
-			const filters = await this.api.sse.getFilters('events');
-			const filtersInfo = await this.api.sse.getFiltersInfo('events', filters);
+			const filters = await this.api.sse.getEventFilters();
+			const filtersInfo = await this.api.sse.getEventsFiltersInfo(filters);
 			runInAction(() => {
 				this.eventFilterInfo = filtersInfo;
-				this.eventsFilter = getDefaultFilterState(filtersInfo) as EventFilterState;
+				this.eventsFilter = getDefaultEventsFiltersState(filtersInfo);
 			});
 		} catch (error) {
 			console.error('Error occured while loading event filters', error);
@@ -294,11 +301,11 @@ export class SearchStore {
 	getMessagesFilters = async () => {
 		this.isMessageFiltersLoading = true;
 		try {
-			const filters = await this.api.sse.getFilters('messages');
-			const filtersInfo = await this.api.sse.getFiltersInfo('messages', filters);
+			const filters = await this.api.sse.getMessagesFilters();
+			const filtersInfo = await this.api.sse.getMessagesFiltersInfo(filters);
 			runInAction(() => {
 				this.messagesFilterInfo = filtersInfo;
-				this.messagesFilter = getDefaultFilterState(filtersInfo) as MessageFilterState;
+				this.messagesFilter = getDefaultMessagesFiltersState(filtersInfo);
 			});
 		} catch (error) {
 			console.error('Error occured while loading messages filters', error);
@@ -440,7 +447,7 @@ export class SearchStore {
 
 		const filtersToAdd = !this.filters
 			? []
-			: this.filters.info
+			: (this.filters.info as EventsFiltersInfo[])
 					.filter((info: SSEFilterInfo) => getFilter(info.name).values.length !== 0)
 					.filter(
 						(info: SSEFilterInfo) =>

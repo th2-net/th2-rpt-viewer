@@ -26,7 +26,7 @@ import EventWindowHeader from '../EventWindowHeader';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
 
 function EventTreeView() {
-	const eventWindowStore = useWorkspaceEventStore();
+	const eventsStore = useWorkspaceEventStore();
 	const viewStore = useEventWindowViewStore();
 	const eventDataStore = useEventsDataStore();
 
@@ -34,24 +34,26 @@ function EventTreeView() {
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
 				<EventWindowHeader />
-				<FlatEventList nodes={eventWindowStore.flattenedEventList} />
+				<FlatEventList nodes={eventsStore.flattenedEventList} />
 			</SplitViewPane>
 			<SplitViewPane>
-				{eventWindowStore.selectedNode === null &&
+				{eventsStore.selectedNode === null &&
 					!eventDataStore.isLoadingSelectedEvent &&
 					(!eventDataStore.isError ? (
 						<Empty description='Select event' />
 					) : (
 						<Empty description='Error occured while loading event' />
 					))}
-				{eventWindowStore.selectedNode && (
+				{eventsStore.selectedNode && (
 					<DetailedFlatEventCard
-						eventTreeNode={eventWindowStore.selectedNode}
+						eventTreeNode={eventsStore.selectedNode}
 						parentNodes={
-							eventWindowStore.getParents(
-								eventWindowStore.selectedNode.eventId,
-								eventDataStore.eventsCache,
-							) || []
+							eventsStore.selectedNode.parentId === null
+								? []
+								: eventsStore.getParentNodes(
+										eventsStore.selectedNode.eventId,
+										eventDataStore.eventsCache,
+								  )
 						}
 					/>
 				)}

@@ -212,7 +212,7 @@ const SearchPanelForm = () => {
 				<FilterRow rowConfig={config} />
 			</div>
 			<div className='filters'>
-				{filters && filters.info.length > 0 && <SearchPanelFilters {...filters} />}
+				{filters && filters.info.length > 0 && <SearchPanelFilters {...(filters as any)} />}
 			</div>
 		</div>
 	);

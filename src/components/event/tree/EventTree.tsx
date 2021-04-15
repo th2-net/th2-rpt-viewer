@@ -35,7 +35,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	const eventsDataStore = useEventsDataStore();
 
 	const parents = React.useMemo(() => {
-		return eventsStore.getParents(eventTreeNode.eventId, eventsDataStore.eventsCache);
+		return eventsStore.getParentNodes(eventTreeNode.eventId, eventsDataStore.eventsCache);
 	}, [eventsDataStore.eventsCache]);
 
 	const childrenCount = computed(
@@ -53,7 +53,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		let parentHasMoreChilds = false;
 
 		if (eventTreeNode.parentId !== null) {
-			const siblings = eventsDataStore.getEventChildrenNodes(eventTreeNode.parentId);
+			const siblings = eventsStore.getChildrenNodes(eventTreeNode.parentId);
 
 			isLastChild =
 				siblings.length > 0 && siblings[siblings.length - 1].eventId === eventTreeNode.eventId;
@@ -90,9 +90,17 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 
 	const nestingLevel = 20 * parents.length;
 
+	const hideTimestampsForUknownEvent =
+		eventTreeNode.isUnknown &&
+		eventsStore.selectedPathTimestamps &&
+		eventsStore.selectedPathTimestamps.startEventId ===
+			eventsStore.selectedPathTimestamps.endEventId &&
+		eventsStore.selectedPathTimestamps.startEventId === eventTreeNode.eventId;
+
 	return (
 		<>
-			{eventsStore.selectedPathTimestamps?.startEventId === eventTreeNode.eventId &&
+			{!hideTimestampsForUknownEvent &&
+				eventsStore.selectedPathTimestamps?.startEventId === eventTreeNode.eventId &&
 				eventsStore.selectedPathTimestamps.startTimestamp && (
 					<div className='event-tree-timestamp'>
 						<div className='event-tree-timestamp__value'>
@@ -106,25 +114,28 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 					status={expandIconStatus}
 					className='event-card__children-icon'
 					onClick={onExpandClick}
+					disabled={eventsStore.isLoadingTargetNode}
 				/>
 				{eventTreeNode ? (
 					<EventCardHeader
 						childrenCount={childrenCount}
 						event={eventTreeNode}
 						displayType={CardDisplayType.MINIMAL}
-						onSelect={onNodeSelect}
+						onSelect={eventTreeNode.isUnknown ? undefined : onNodeSelect}
 						isSelected={isSelected}
 						isActive={
 							eventsStore.selectedPath.length > 0 &&
 							eventsStore.selectedPath[eventsStore.selectedPath.length - 1].eventId ===
 								eventTreeNode.eventId
 						}
+						disabled={eventsStore.isLoadingTargetNode}
 					/>
 				) : (
 					<EventCardSkeleton />
 				)}
 			</div>
-			{eventsStore.selectedPathTimestamps?.endEventId === eventTreeNode.eventId &&
+			{!hideTimestampsForUknownEvent &&
+				eventsStore.selectedPathTimestamps?.endEventId === eventTreeNode.eventId &&
 				eventsStore.selectedPathTimestamps.endTimestamp && (
 					<div className='event-tree-timestamp end'>
 						<div className='event-tree-timestamp__value'>
@@ -147,18 +158,31 @@ export default observer(EventTree);
 
 interface Props {
 	status: 'expanded' | 'hidden' | 'loading' | 'none';
-	onClick?: React.MouseEventHandler;
+	onClick?: () => void;
 	className?: string;
 	style?: React.CSSProperties;
+	disabled?: boolean;
 }
 
 function ExpandIcon(props: Props) {
-	const { status, onClick, className, style } = props;
+	const { status, onClick, className, style, disabled = false } = props;
 
-	const rootClass = createBemBlock('expand-icon', status, className || null);
+	const rootClass = createBemBlock(
+		'expand-icon',
+		status,
+		className || null,
+		disabled ? 'disabled' : null,
+	);
 
 	return (
-		<div className={rootClass} style={style} onClick={onClick}>
+		<div
+			className={rootClass}
+			style={style}
+			onClick={() => {
+				if (!disabled && onClick) {
+					onClick();
+				}
+			}}>
 			{props.status === 'loading' ? (
 				<>
 					<div className='expand-icon__dot' />

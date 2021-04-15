@@ -14,9 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import {
+	MultipleStringFilter,
+	StringFilter,
+	SwitcherFilter,
+} from '../../components/search-panel/SearchPanelFilters';
+
 export default interface EventsFilter {
-	timestampFrom: number;
-	timestampTo: number;
-	eventTypes: Array<string>;
-	names: Array<string>;
+	attachedMessageId: StringFilter;
+	type: MultipleStringFilter;
+	body: MultipleStringFilter;
+	name: MultipleStringFilter;
+	status: SwitcherFilter;
 }
