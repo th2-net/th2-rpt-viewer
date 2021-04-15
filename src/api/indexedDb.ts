@@ -161,42 +161,50 @@ export class IndexedDB {
 		await tx.done;
 	};
 
-	public getStoreValues = async <T extends DbData>(storeName: IndexedDbStores): Promise<T[]> => {
-		const db = await this.getDb();
-
-		const tx = await db.transaction(storeName, 'readonly');
-		const store = await tx.objectStore(storeName);
-
-		const values = store.getAll();
-
-		return values as Promise<T[]>;
-	};
-
-	public getStoreKeys = async <T>(storeName: IndexedDbStores): Promise<T[]> => {
-		const db = await this.getDb();
-
-		const tx = await db.transaction(storeName, 'readonly');
-		const store = await tx.objectStore(storeName);
-
-		const values = store.getAllKeys();
-
-		return (values as unknown) as Promise<T[]>;
-	};
-
-	public getIndexedKeys = async <T extends IDBValidKey>(
+	public getStoreValues = async <T extends DbData>(
 		storeName: IndexedDbStores,
-		countLimitPercent?: number,
-		direction: IDBCursorDirection = 'next',
+		query: {
+			countLimit?: number;
+			direction?: IDBCursorDirection;
+		} = {},
 	): Promise<T[]> => {
-		const db = await this.getDb();
+		const { direction = 'next', countLimit } = query;
 
+		const db = await this.getDb();
 		const tx = await db.transaction(storeName, 'readonly');
-		const count = await tx.store.count();
+
+		let cursor = await tx.store.index('timestamp').openCursor(null, direction);
+
+		const data: T[] = [];
+
+		const limit = countLimit || Number.MAX_SAFE_INTEGER;
+
+		while (cursor && data.length !== limit) {
+			data.push(cursor.value as T);
+			// eslint-disable-next-line no-await-in-loop
+			cursor = await cursor.continue();
+		}
+
+		return (data as unknown) as Promise<T[]>;
+	};
+
+	public getStoreKeys = async <T extends IDBValidKey>(
+		storeName: IndexedDbStores,
+		query: {
+			countLimit?: number;
+			direction?: IDBCursorDirection;
+		},
+	): Promise<T[]> => {
+		const { direction = 'next', countLimit } = query;
+
+		const db = await this.getDb();
+		const tx = await db.transaction(storeName, 'readonly');
+
 		let cursor = await tx.store.index('timestamp').openCursor(null, direction);
 
 		const data: IDBValidKey[] = [];
 
-		const limit = countLimitPercent ? Math.round(count / countLimitPercent) : count;
+		const limit = typeof countLimit === 'number' ? countLimit : Number.MAX_SAFE_INTEGER;
 
 		while (cursor && data.length !== limit) {
 			data.push(cursor.key);

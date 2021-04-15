@@ -24,7 +24,7 @@ import {
 	SSEHeartbeat,
 	SSEParams,
 } from '../api/sse';
-import { IndexedDbStores } from '../api/indexedDb';
+import { indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
 	EventFilterState,
@@ -606,6 +606,23 @@ export class SearchStore {
 
 	private saveSearchResults = async (search: SearchHistory) => {
 		try {
+			const savedSearchResultKeys = await this.api.indexedDb.getStoreKeys<number>(
+				IndexedDbStores.SEARCH_HISTORY,
+				{
+					direction: 'prev',
+				},
+			);
+			if (savedSearchResultKeys.length >= indexedDbLimits['search-history']) {
+				const keysToDelete = savedSearchResultKeys.slice(
+					0,
+					savedSearchResultKeys.length - indexedDbLimits['search-history'] + 1,
+				);
+				await Promise.all(
+					keysToDelete.map(searchHistoryKey =>
+						this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SEARCH_HISTORY, searchHistoryKey),
+					),
+				);
+			}
 			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
 		} catch (error) {
 			if (error.name === 'QuotaExceededError') {

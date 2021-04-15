@@ -16,6 +16,7 @@
 
 import * as React from 'react';
 import moment from 'moment';
+import { observer } from 'mobx-react-lite';
 import api from '../../../api';
 import { getTimestampAsNumber } from '../../../helpers/date';
 import { getItemId, getItemName } from '../../../helpers/event';
@@ -236,7 +237,7 @@ const GraphSearchDialog = (props: Props) => {
 							bookmark={searchResult.item}
 							onClick={() => onSearchResultSelect(searchResult)}
 							onRemove={() => onHistoryItemDelete(searchResult)}
-							isBookmarkeButtonDisabled={rootStore.isBookmarksFull}
+							isBookmarkButtonDisabled={rootStore.isBookmarksFull}
 						/>
 					))}
 				</div>
@@ -252,4 +253,4 @@ const GraphSearchDialog = (props: Props) => {
 	);
 };
 
-export default GraphSearchDialog;
+export default observer(GraphSearchDialog);

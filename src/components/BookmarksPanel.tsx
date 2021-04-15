@@ -102,7 +102,7 @@ function BookmarksPanel() {
 				bookmark={bookmarks[index]}
 				onRemove={onBookmarkRemove}
 				onClick={onBookmarkClick}
-				isBookmarkeButtonDisabled={selectedStore.isBookmarksFull}
+				isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
 			/>
 		);
 	}
@@ -129,7 +129,7 @@ interface BookmarkItemProps {
 	onClick?: (item: BookmarkedItem) => void;
 	toggleBookmark?: () => void;
 	isBookmarked?: boolean;
-	isBookmarkeButtonDisabled: boolean;
+	isBookmarkButtonDisabled: boolean;
 }
 
 const BookmarkItemBase = (props: BookmarkItemProps) => {
@@ -139,7 +139,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		onClick,
 		toggleBookmark,
 		isBookmarked = true,
-		isBookmarkeButtonDisabled,
+		isBookmarkButtonDisabled,
 	} = props;
 
 	const item: EventMessage | EventTreeNode | EventAction = isBookmark(bookmark)
@@ -172,7 +172,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 	const bookmarkButtonClassname = createBemElement(
 		'bookmark-item',
 		'toggle-btn',
-		isBookmarkeButtonDisabled ? 'disabled' : null,
+		isBookmarkButtonDisabled ? 'disabled' : null,
 	);
 
 	return (
@@ -202,13 +202,13 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 					<div className={bookmarkButtonClassname}>
 						<div
 							title={
-								isBookmarkeButtonDisabled
+								isBookmarkButtonDisabled
 									? 'Maximum bookmarks limit reached. Delete old bookmarks'
 									: undefined
 							}
 							className={createStyleSelector('bookmark-button', isBookmarked ? 'pinned' : null)}
 							onClick={e => {
-								if (!isBookmarkeButtonDisabled) {
+								if (!isBookmarkButtonDisabled) {
 									e.stopPropagation();
 									toggleBookmark();
 								}
