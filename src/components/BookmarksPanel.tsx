@@ -29,7 +29,7 @@ import useSearchWorkspace from '../hooks/useSearchWorkspace';
 import '../styles/bookmarks.scss';
 
 export function isBookmark(item: BookmarkedItem): item is Bookmark {
-	return (item as Bookmark).id !== undefined;
+	return (item as Bookmark).id !== undefined && (item as Bookmark).item !== undefined;
 }
 
 export type Item = EventMessage | EventTreeNode | EventAction;
@@ -157,7 +157,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 	function onBookmarkRemove(event: React.MouseEvent<HTMLButtonElement>) {
 		if (onRemove) {
 			event.stopPropagation();
-			onRemove(item);
+			onRemove(bookmark);
 		}
 	}
 
@@ -208,10 +208,8 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 							}
 							className={createStyleSelector('bookmark-button', isBookmarked ? 'pinned' : null)}
 							onClick={e => {
-								if (!isBookmarkButtonDisabled) {
-									e.stopPropagation();
-									toggleBookmark();
-								}
+								e.stopPropagation();
+								toggleBookmark();
 							}}
 						/>
 					</div>

@@ -80,9 +80,9 @@ interface TH2DB extends DBSchema {
 
 export const indexedDbLimits = {
 	bookmarks: 1000,
-	[IndexedDbStores.DISPLAY_RULES]: 1000,
+	[IndexedDbStores.DISPLAY_RULES]: 100,
 	[IndexedDbStores.SEARCH_HISTORY]: 5,
-	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 100,
+	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
 } as const;
 
 export class IndexedDB {
@@ -207,7 +207,7 @@ export class IndexedDB {
 		const limit = typeof countLimit === 'number' ? countLimit : Number.MAX_SAFE_INTEGER;
 
 		while (cursor && data.length !== limit) {
-			data.push(cursor.key);
+			data.push(cursor.primaryKey);
 			// eslint-disable-next-line no-await-in-loop
 			cursor = await cursor.continue();
 		}

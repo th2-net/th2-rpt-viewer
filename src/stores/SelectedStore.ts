@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, observable, runInAction, toJS } from 'mobx';
+import { nanoid } from 'nanoid';
 import moment from 'moment';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
@@ -32,6 +33,7 @@ import {
 	isEventBookmark,
 	isMessageBookmark,
 } from '../components/BookmarksPanel';
+import notificationsStore from './NotificationsStore';
 
 export class SelectedStore {
 	@observable.shallow
@@ -113,10 +115,12 @@ export class SelectedStore {
 		if (bookmark) {
 			this.removeBookmark(bookmark);
 			this.db.deleteDbStoreItem(IndexedDbStores.MESSAGES, bookmark.id);
-		} else {
+		} else if (!this.isBookmarksFull) {
 			const messageBookmark = this.createMessageBookmark(message);
 			this.bookmarkedMessages = this.bookmarkedMessages.concat(messageBookmark);
-			this.db.addDbStoreItem(IndexedDbStores.MESSAGES, messageBookmark);
+			this.saveBookmark(IndexedDbStores.MESSAGES, toJS(messageBookmark));
+		} else {
+			this.onLimitReached();
 		}
 	};
 
@@ -130,10 +134,12 @@ export class SelectedStore {
 				eventBookmark => eventBookmark !== bookmark,
 			);
 			this.db.deleteDbStoreItem(IndexedDbStores.EVENTS, bookmark.id);
-		} else {
+		} else if (!this.isBookmarksFull) {
 			const eventBookmark = this.createEventBookmark(event);
 			this.bookmarkedEvents = this.bookmarkedEvents.concat(eventBookmark);
 			this.saveBookmark(IndexedDbStores.EVENTS, toJS(eventBookmark));
+		} else {
+			this.onLimitReached();
 		}
 	};
 
@@ -222,5 +228,15 @@ export class SelectedStore {
 			this.getSavedEvents();
 			this.getSavedMessages();
 		}
+	};
+
+	private onLimitReached = () => {
+		notificationsStore.addMessage({
+			errorType: 'indexedDbMessage',
+			type: 'error',
+			header: 'Limit reached',
+			description: 'Maximum bookmarks limit reached. Delete old bookmarks',
+			id: nanoid(),
+		});
 	};
 }

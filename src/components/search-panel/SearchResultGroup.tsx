@@ -111,7 +111,7 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 					onClick={onResultClick}
 					toggleBookmark={getBookmarkToggler(results[0])}
 					isBookmarked={getIsToggled(results[0])}
-					isBookmarkeButtonDisabled={selectedStore.isBookmarksFull}
+					isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
 				/>
 			</div>
 		);

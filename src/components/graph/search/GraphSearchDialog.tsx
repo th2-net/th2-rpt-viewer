@@ -26,7 +26,7 @@ import { BookmarkItem } from '../../BookmarksPanel';
 import Empty from '../../util/Empty';
 import { useDebouncedCallback, useRootStore } from '../../../hooks';
 import KeyCodes from '../../../util/KeyCodes';
-import { IndexedDbStores } from '../../../api/indexedDb';
+import { indexedDbLimits, IndexedDbStores } from '../../../api/indexedDb';
 import { GraphSearchResult } from './GraphSearch';
 
 interface Props {
@@ -63,7 +63,7 @@ const GraphSearchDialog = (props: Props) => {
 
 	const sortedSearchHistory: GraphSearchResult[] = React.useMemo(() => {
 		const sortedHistory = searchHistory.slice();
-		searchHistory.sort((itemA, itemB) => {
+		sortedHistory.sort((itemA, itemB) => {
 			if (itemA.timestamp > itemB.timestamp) return -1;
 			if (itemA.timestamp < itemB.timestamp) return 1;
 			return 0;
@@ -105,6 +105,7 @@ const GraphSearchDialog = (props: Props) => {
 
 		if (value) {
 			onValueChangeDebounced(value, ac.current);
+			setCurrentSearchResult(null);
 		} else {
 			setIsLoading(false);
 			setCurrentSearchResult(null);
@@ -175,8 +176,12 @@ const GraphSearchDialog = (props: Props) => {
 	const onValueChangeDebounced = useDebouncedCallback(onValueChange, 350);
 
 	const onHistoryItemDelete = React.useCallback(
-		(historyItem: GraphSearchResult) => {
-			setSearchHistory(searchHistory.filter(item => item !== historyItem));
+		async (historyItem: GraphSearchResult) => {
+			try {
+				await api.indexedDb.deleteDbStoreItem(IndexedDbStores.GRAPH_SEARCH_HISTORY, historyItem.id);
+			} finally {
+				setSearchHistory(searchHistory.filter(item => item !== historyItem));
+			}
 		},
 		[searchHistory, setSearchHistory],
 	);
@@ -211,17 +216,43 @@ const GraphSearchDialog = (props: Props) => {
 		]).then(() => setIsLoading(false));
 	};
 
-	function onSearchSuccess(responseObject: EventAction | EventMessage, searchTimestamp: number) {
+	async function onSearchSuccess(
+		responseObject: EventAction | EventMessage,
+		searchTimestamp: number,
+	) {
 		const searchResult: GraphSearchResult = {
 			timestamp: searchTimestamp,
 			id: getItemId(responseObject),
 			item: responseObject,
 		};
 		setCurrentSearchResult(searchResult);
-		setIsLoading(false);
-		setSearchHistory([...searchHistory, searchResult]);
 
-		api.indexedDb.addDbStoreItem(IndexedDbStores.GRAPH_SEARCH_HISTORY, searchResult);
+		try {
+			const graphSearchHistoryIds = await api.indexedDb.getStoreKeys<string>(
+				IndexedDbStores.GRAPH_SEARCH_HISTORY,
+				{ direction: 'prev' },
+			);
+
+			if (graphSearchHistoryIds.length >= indexedDbLimits['graph-search-history']) {
+				const keysToDelete = graphSearchHistoryIds.slice(
+					0,
+					graphSearchHistoryIds.length - indexedDbLimits['graph-search-history'] + 1,
+				);
+
+				await Promise.all(
+					keysToDelete.map(graphSearchHistoryId =>
+						api.indexedDb.deleteDbStoreItem(
+							IndexedDbStores.GRAPH_SEARCH_HISTORY,
+							graphSearchHistoryId,
+						),
+					),
+				);
+			}
+			await api.indexedDb.addDbStoreItem(IndexedDbStores.GRAPH_SEARCH_HISTORY, searchResult);
+		} finally {
+			setSearchHistory(history => [...history, searchResult]);
+			setIsLoading(false);
+		}
 	}
 
 	const searchResultIsEmpty = value && !isLoading && !currentSearchResult;
