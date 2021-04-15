@@ -95,8 +95,8 @@ export class IndexedDB {
 
 	private async initDb() {
 		this.db = await openDB<TH2DB>(this.env, dbVersion, {
-			async upgrade(db, oldVersion, newVersion) {
-				if (oldVersion === 0 && newVersion === 1) {
+			async upgrade(db, oldVersion) {
+				if (oldVersion === 0) {
 					const eventsStore = db.createObjectStore(IndexedDbStores.EVENTS, { keyPath: 'id' });
 					eventsStore.createIndex('timestamp', 'timestamp');
 
@@ -193,7 +193,7 @@ export class IndexedDB {
 		query: {
 			countLimit?: number;
 			direction?: IDBCursorDirection;
-		},
+		} = {},
 	): Promise<T[]> => {
 		const { direction = 'next', countLimit } = query;
 

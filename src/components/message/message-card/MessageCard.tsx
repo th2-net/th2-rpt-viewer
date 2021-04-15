@@ -63,7 +63,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
-	const isPinned =
+	const isBookmarked =
 		selectedStore.bookmarkedMessages.findIndex(
 			bookmarkedMessage => bookmarkedMessage.id === messageId,
 		) !== -1;
@@ -171,7 +171,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const rootClass = createBemBlock(
 		'message-card-wrapper',
 		isAttached ? 'attached' : null,
-		isPinned ? 'pinned' : null,
+		isBookmarked ? 'pinned' : null,
 		isHighlighted ? 'highlighted' : null,
 		isSoftFiltered ? 'soft-filtered' : null,
 	);
@@ -187,7 +187,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		direction?.toLowerCase(),
 	);
 
-	const bookmarkIconClass = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
+	const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	const renderMessageInfo = () => {
 		if (viewType === MessageViewType.FORMATTED || viewType === MessageViewType.BINARY) {
@@ -273,7 +273,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 			<div className='message-card-tools'>
 				<div
 					className={bookmarkIconClass}
-					title={isPinned ? 'Remove from bookmarks' : 'Add to bookmarks'}
+					title={isBookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
 					onClick={() => selectedStore.toggleMessagePin(message)}></div>
 				<div className='mc-header__controls'>
 					{!isScreenshotMsg && (

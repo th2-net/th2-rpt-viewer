@@ -35,6 +35,7 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
+
 	const [currentSessionValue, setSessionValue] = React.useState(rule ? rule.session : '');
 	const [currentSelectedViewType, setCurrentSelectedViewType] = React.useState(
 		rule ? rule.viewType : MessageViewType.JSON,
@@ -49,7 +50,7 @@ const NewRuleForm = ({ rule, stopEdit, sessions }: NewRuleFormProps) => {
 
 	React.useLayoutEffect(() => {
 		setAutocompleteAnchor(wrapperRef.current || undefined);
-	}, [setAutocompleteAnchor]);
+	}, []);
 
 	const submitHandler = (e: React.MouseEvent) => {
 		e.stopPropagation();

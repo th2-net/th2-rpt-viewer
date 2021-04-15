@@ -28,13 +28,13 @@ import { EventMessage } from '../models/EventMessage';
 import useSearchWorkspace from '../hooks/useSearchWorkspace';
 import '../styles/bookmarks.scss';
 
-export function isBookmark(item: BookmarkedItem): item is Bookmark {
+export type Bookmark = EventBookmark | MessageBookmark;
+
+export type BookmarkedItem = Bookmark | EventMessage | EventTreeNode | EventAction;
+
+export function isBookmark(item: unknown): item is Bookmark {
 	return (item as Bookmark).id !== undefined && (item as Bookmark).item !== undefined;
 }
-
-export type Item = EventMessage | EventTreeNode | EventAction;
-
-export type BookmarkedItem = Item | MessageBookmark | EventBookmark;
 
 export interface MessageBookmark {
 	timestamp: number;
@@ -48,15 +48,13 @@ export interface EventBookmark {
 	item: EventMessage | EventTreeNode;
 }
 
-export function isEventBookmark(bookmark: Bookmark): bookmark is EventBookmark {
-	return isEvent(bookmark.item);
+export function isEventBookmark(bookmark: unknown): bookmark is EventBookmark {
+	return isBookmark(bookmark) && isEvent(bookmark.item);
 }
 
-export function isMessageBookmark(bookmark: Bookmark): bookmark is MessageBookmark {
-	return isEventMessage(bookmark.item);
+export function isMessageBookmark(bookmark: unknown): bookmark is MessageBookmark {
+	return isBookmark(bookmark) && isEventMessage(bookmark.item);
 }
-
-export type Bookmark = EventBookmark | MessageBookmark;
 
 function BookmarksPanel() {
 	const selectedStore = useSelectedStore();

@@ -17,7 +17,7 @@
 import { action, computed, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
-import { IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
+import { DbData, IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import { move } from '../helpers/array';
 import {
 	isMessageDisplayRule,
@@ -26,6 +26,7 @@ import {
 	MessageViewType,
 } from '../models/EventMessage';
 import notificationsStore from './NotificationsStore';
+import RootStore from './RootStore';
 
 export const ROOT_DISPLAY_NAME_ID = 'root';
 
@@ -42,7 +43,7 @@ export function isRootDisplayRule(displayRule: MessageDisplayRule) {
 }
 
 class MessageDisplayRulesStore {
-	constructor(private indexedDb: IndexedDB) {
+	constructor(private rootStore: RootStore, private indexedDb: IndexedDB) {
 		this.init();
 
 		reaction(() => this.rulesOrder, this.saveRulesOrder);
@@ -75,14 +76,12 @@ class MessageDisplayRulesStore {
 	public setRootDisplayRule = (rule: MessageDisplayRule) => {
 		if (this.rootDisplayRule?.viewType !== rule.viewType) {
 			this.rootDisplayRule = rule;
-			this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, rule);
+			this.updateRule(rule);
 		}
 	};
 
 	@action
-	public setNewMessagesDisplayRule = (rule: MessageDisplayRule): void => {
-		const hasSame = this.messageDisplayRules.find(existed => existed.session === rule.session);
-
+	public setNewMessagesDisplayRule = async (rule: MessageDisplayRule): Promise<void> => {
 		if (this.isDisplayRulesFull) {
 			notificationsStore.addMessage({
 				errorType: 'indexedDbMessage',
@@ -94,9 +93,9 @@ class MessageDisplayRulesStore {
 			return;
 		}
 
-		if (!hasSame) {
+		if (!this.messageDisplayRules.find(existed => existed.session === rule.session)) {
 			this.messageDisplayRules = [rule, ...this.messageDisplayRules];
-			this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, rule);
+			this.saveRule(rule);
 		}
 	};
 
@@ -105,7 +104,7 @@ class MessageDisplayRulesStore {
 		this.messageDisplayRules = this.messageDisplayRules.map(existedRule =>
 			existedRule.id === rule.id ? newRule : existedRule,
 		);
-		this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, newRule);
+		this.updateRule(rule);
 	};
 
 	@action
@@ -171,6 +170,49 @@ class MessageDisplayRulesStore {
 	private saveRulesOrder = (orderRule: OrderRule) => {
 		if (!this.isInitializingRules) {
 			this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, orderRule);
+		}
+	};
+
+	private saveRule = async (rule: MessageDisplayRule) => {
+		try {
+			await this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, rule);
+		} catch (error) {
+			if (error.name === 'QuotaExceededError') {
+				this.rootStore.handleQuotaExceededError(rule);
+			} else {
+				notificationsStore.addMessage({
+					errorType: 'indexedDbMessage',
+					type: 'error',
+					header: `Failed to save rule ${rule.session}`,
+					description: '',
+					id: nanoid(),
+				});
+			}
+		}
+	};
+
+	private updateRule = async (rule: MessageDisplayRule) => {
+		try {
+			await this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, rule);
+		} catch (error) {
+			if (error.name === 'QuotaExceededError') {
+				this.rootStore.handleQuotaExceededError(rule);
+			} else {
+				notificationsStore.addMessage({
+					errorType: 'indexedDbMessage',
+					type: 'error',
+					header: `Failed to update rule ${rule.session}`,
+					description: '',
+					id: nanoid(),
+				});
+			}
+		}
+	};
+
+	public syncData = async (unsavedData?: DbData) => {
+		await this.init();
+		if (isMessageDisplayRule(unsavedData)) {
+			await this.saveRule(unsavedData);
 		}
 	};
 }

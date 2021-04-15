@@ -81,20 +81,27 @@ const GraphSearchDialog = (props: Props) => {
 		);
 	}, [sortedSearchHistory, value]);
 
-	React.useEffect(() => {
-		async function getGraphSearchHistory() {
-			try {
-				const graphSearchHistory = await api.indexedDb.getStoreValues<GraphSearchResult>(
-					IndexedDbStores.GRAPH_SEARCH_HISTORY,
-				);
-				setSearchHistory(graphSearchHistory);
-			} catch (error) {
-				console.error("Couldn't fetch graph search history");
-			}
+	async function getGraphSearchHistory() {
+		try {
+			const graphSearchHistory = await api.indexedDb.getStoreValues<GraphSearchResult>(
+				IndexedDbStores.GRAPH_SEARCH_HISTORY,
+			);
+			setSearchHistory(graphSearchHistory);
+		} catch (error) {
+			console.error("Couldn't fetch graph search history");
 		}
+	}
 
+	React.useEffect(() => {
 		getGraphSearchHistory();
 	}, []);
+
+	React.useEffect(() => {
+		if (rootStore.resetGraphSearchData) {
+			getGraphSearchHistory();
+			rootStore.resetGraphSearchData = false;
+		}
+	}, [rootStore.resetGraphSearchData]);
 
 	React.useEffect(() => {
 		setIsIdSearchDisabled(!value || filteredSearchHistory.length > 1 || isLoading);
@@ -180,10 +187,10 @@ const GraphSearchDialog = (props: Props) => {
 			try {
 				await api.indexedDb.deleteDbStoreItem(IndexedDbStores.GRAPH_SEARCH_HISTORY, historyItem.id);
 			} finally {
-				setSearchHistory(searchHistory.filter(item => item !== historyItem));
+				setSearchHistory(history => history.filter(item => item !== historyItem));
 			}
 		},
-		[searchHistory, setSearchHistory],
+		[setSearchHistory],
 	);
 
 	const fetchObjectById = (id: string, abortController: AbortController) => {
@@ -216,12 +223,9 @@ const GraphSearchDialog = (props: Props) => {
 		]).then(() => setIsLoading(false));
 	};
 
-	async function onSearchSuccess(
-		responseObject: EventAction | EventMessage,
-		searchTimestamp: number,
-	) {
+	async function onSearchSuccess(responseObject: EventAction | EventMessage, timestamp: number) {
 		const searchResult: GraphSearchResult = {
-			timestamp: searchTimestamp,
+			timestamp,
 			id: getItemId(responseObject),
 			item: responseObject,
 		};
@@ -230,7 +234,6 @@ const GraphSearchDialog = (props: Props) => {
 		try {
 			const graphSearchHistoryIds = await api.indexedDb.getStoreKeys<string>(
 				IndexedDbStores.GRAPH_SEARCH_HISTORY,
-				{ direction: 'prev' },
 			);
 
 			if (graphSearchHistoryIds.length >= indexedDbLimits['graph-search-history']) {

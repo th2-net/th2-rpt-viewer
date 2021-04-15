@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import { observable, action, computed, reaction } from 'mobx';
-import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
@@ -29,16 +28,10 @@ import {
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { getRangeFromTimestamp } from '../../helpers/date';
-import notificationsStore from '../NotificationsStore';
-import { IndexedDbStores } from '../../api/indexedDb';
+import { DbData } from '../../api/indexedDb';
+import RootStore from '../RootStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
-
-export interface SyncData {
-	[IndexedDbStores.EVENTS]: string[];
-	[IndexedDbStores.MESSAGES]: string[];
-	[IndexedDbStores.SEARCH_HISTORY]: number[];
-}
 
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
@@ -49,7 +42,11 @@ export default class WorkspacesStore {
 
 	public searchWorkspace: SearchWorkspaceStore;
 
-	constructor(private api: ApiSchema, initialState: WorkspacesUrlState | null) {
+	constructor(
+		private rootStore: RootStore,
+		private api: ApiSchema,
+		initialState: WorkspacesUrlState | null,
+	) {
 		this.searchWorkspace = new SearchWorkspaceStore(this, this.api);
 
 		this.init(initialState || null);
@@ -162,39 +159,19 @@ export default class WorkspacesStore {
 		};
 	};
 
-	public handleQuotaExceededError = async () => {
-		const errorId = nanoid();
-		notificationsStore.addMessage({
-			errorType: 'indexedDbMessage',
-			type: 'error',
-			header: 'QuotaExceededError',
-			description: `
-				Not enough storage space to save data.
-			`,
-			// action: {
-			// 	label: 'OK',
-			// 	callback: () => {
-			// 		this.clearAllData(errorId);
-			// 	},
-			// },
-			id: errorId,
-		});
-	};
-
-	public clearAllData = async (errorId: string) => {
-		notificationsStore.deleteMessage(errorId);
+	public syncData = async (unsavedData?: DbData) => {
 		try {
-			await this.api.indexedDb.clearAllData();
-			notificationsStore.addMessage({
-				errorType: 'indexedDbMessage',
-				type: 'success',
-				header: 'Data has been removed',
-				description: '',
-				id: nanoid(),
-			});
+			await Promise.all([
+				this.searchWorkspace.searchStore.syncData(unsavedData),
+				this.selectedStore.syncData(unsavedData),
+			]);
 		} catch (error) {
 			this.searchWorkspace.searchStore.syncData();
 			this.selectedStore.syncData();
 		}
+	};
+
+	public onQuotaExceededError = (unsavedData?: DbData) => {
+		this.rootStore.handleQuotaExceededError(unsavedData);
 	};
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { computed, toJS } from 'mobx';
+import { action, computed, observable, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
@@ -24,16 +24,17 @@ import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
 import { getObjectKeys } from '../helpers/object';
 import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
+import { DbData } from '../api/indexedDb';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
-	messageDisplayRulesStore = new MessageDisplayRulesStore(this.api.indexedDb);
+	messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
 
 	workspacesStore: WorkspacesStore;
 
 	constructor(private api: ApiSchema) {
-		this.workspacesStore = new WorkspacesStore(this.api, this.parseUrlState());
+		this.workspacesStore = new WorkspacesStore(this, this.api, this.parseUrlState());
 
 		window.history.replaceState({}, '', window.location.pathname);
 	}
@@ -43,7 +44,7 @@ export default class RootStore {
 		return this.workspacesStore.selectedStore.isBookmarksFull;
 	}
 
-	getAppState = (): WorkspacesUrlState | null => {
+	public getAppState = (): WorkspacesUrlState | null => {
 		const activeWorkspace = this.workspacesStore.activeWorkspace;
 
 		let eventStoreState: EventStoreURLState = {};
@@ -95,7 +96,7 @@ export default class RootStore {
 		return null;
 	};
 
-	parseUrlState = (): WorkspacesUrlState | null => {
+	private parseUrlState = (): WorkspacesUrlState | null => {
 		try {
 			const searchParams = new URLSearchParams(window.location.search);
 			const workspacesUrlState = searchParams.get('workspaces');
@@ -110,6 +111,48 @@ export default class RootStore {
 				id: nanoid(),
 			});
 			return null;
+		}
+	};
+
+	// workaround to reset graph search state as it uses internal state
+	@observable resetGraphSearchData = false;
+
+	@action
+	public handleQuotaExceededError = async (unsavedData?: DbData) => {
+		const errorId = nanoid();
+		this.notificationsStore.addMessage({
+			errorType: 'indexedDbMessage',
+			type: 'error',
+			header: 'QuotaExceededError',
+			description: 'Not enough storage space to save data. Clear all data?',
+			action: {
+				label: 'OK',
+				callback: () => this.clearAppData(errorId, unsavedData),
+			},
+			id: errorId,
+		});
+	};
+
+	public clearAppData = async (errorId: string, unsavedData?: DbData) => {
+		this.notificationsStore.deleteMessage(errorId);
+		try {
+			await this.api.indexedDb.clearAllData();
+
+			await Promise.all([
+				this.workspacesStore.syncData(unsavedData),
+				this.messageDisplayRulesStore.syncData(unsavedData),
+			]);
+
+			this.notificationsStore.addMessage({
+				errorType: 'indexedDbMessage',
+				type: 'success',
+				header: 'Data has been removed',
+				description: '',
+				id: nanoid(),
+			});
+		} catch (error) {
+			this.workspacesStore.syncData(unsavedData);
+			this.messageDisplayRulesStore.syncData(unsavedData);
 		}
 	};
 }

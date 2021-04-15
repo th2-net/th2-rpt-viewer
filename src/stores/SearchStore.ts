@@ -16,6 +16,7 @@
 
 import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
+import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import {
 	EventsFiltersInfo,
@@ -24,7 +25,7 @@ import {
 	SSEHeartbeat,
 	SSEParams,
 } from '../api/sse';
-import { indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
+import { DbData, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
 	EventFilterState,
@@ -33,12 +34,16 @@ import {
 } from '../components/search-panel/SearchPanelFilters';
 import { getTimestampAsNumber } from '../helpers/date';
 import { isEventMessage, isEventNode } from '../helpers/event';
-import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../helpers/search';
+import {
+	getDefaultEventsFiltersState,
+	getDefaultMessagesFiltersState,
+	isSearchHistoryEntity,
+} from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
-import WorkspacesStore, { SyncData } from './workspace/WorkspacesStore';
+import WorkspacesStore from './workspace/WorkspacesStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -608,9 +613,6 @@ export class SearchStore {
 		try {
 			const savedSearchResultKeys = await this.api.indexedDb.getStoreKeys<number>(
 				IndexedDbStores.SEARCH_HISTORY,
-				{
-					direction: 'prev',
-				},
 			);
 			if (savedSearchResultKeys.length >= indexedDbLimits['search-history']) {
 				const keysToDelete = savedSearchResultKeys.slice(
@@ -626,30 +628,28 @@ export class SearchStore {
 			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
 		} catch (error) {
 			if (error.name === 'QuotaExceededError') {
-				this.workspacesStore.handleQuotaExceededError();
+				this.workspacesStore.onQuotaExceededError(search);
+			} else {
+				notificationsStore.addMessage({
+					errorType: 'indexedDbMessage',
+					type: 'error',
+					header: `Failed to save current search result`,
+					description: '',
+					id: nanoid(),
+				});
 			}
 		}
 	};
 
 	@action
-	public syncData = (removedData?: SyncData) => {
+	public syncData = async (unsavedData?: DbData) => {
 		if (this.isSearching) {
 			this.stopSearch();
 		}
-		if (removedData) {
-			const updatedSearchHistory = this.searchHistory.filter(
-				searchHistory => !removedData['search-history'].includes(searchHistory.timestamp),
-			);
 
-			this.searchHistory = updatedSearchHistory;
-			if (this.currentSearch && this.currentSearch !== updatedSearchHistory[this.currentIndex]) {
-				const restoredIndex = updatedSearchHistory.findIndex(
-					search => this.currentSearch?.timestamp === search.timestamp,
-				);
-				this.currentIndex = restoredIndex === -1 ? updatedSearchHistory.length - 1 : restoredIndex;
-			}
-		} else {
-			this.getSearchHistory(this.currentSearch?.timestamp);
+		await this.getSearchHistory();
+		if (unsavedData && isSearchHistoryEntity(unsavedData)) {
+			await this.saveSearchResults(unsavedData);
 		}
 	};
 }

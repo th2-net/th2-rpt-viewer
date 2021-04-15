@@ -19,13 +19,13 @@ import { nanoid } from 'nanoid';
 import moment from 'moment';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import WorkspacesStore, { SyncData } from './workspace/WorkspacesStore';
+import WorkspacesStore from './workspace/WorkspacesStore';
 import { sortMessagesByTimestamp } from '../helpers/message';
-import { sortByTimestamp } from '../helpers/event';
+import { getItemName, sortByTimestamp } from '../helpers/event';
 import { GraphItem } from '../models/Graph';
 import { filterUniqueGraphItems } from '../helpers/graph';
 import { isWorkspaceStore } from '../helpers/workspace';
-import { IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
+import { DbData, IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import {
 	EventBookmark,
 	MessageBookmark,
@@ -118,7 +118,7 @@ export class SelectedStore {
 		} else if (!this.isBookmarksFull) {
 			const messageBookmark = this.createMessageBookmark(message);
 			this.bookmarkedMessages = this.bookmarkedMessages.concat(messageBookmark);
-			this.saveBookmark(IndexedDbStores.MESSAGES, toJS(messageBookmark));
+			this.saveBookmark(toJS(messageBookmark));
 		} else {
 			this.onLimitReached();
 		}
@@ -137,7 +137,7 @@ export class SelectedStore {
 		} else if (!this.isBookmarksFull) {
 			const eventBookmark = this.createEventBookmark(event);
 			this.bookmarkedEvents = this.bookmarkedEvents.concat(eventBookmark);
-			this.saveBookmark(IndexedDbStores.EVENTS, toJS(eventBookmark));
+			this.saveBookmark(toJS(eventBookmark));
 		} else {
 			this.onLimitReached();
 		}
@@ -165,12 +165,21 @@ export class SelectedStore {
 		this.getSavedMessages();
 	};
 
-	private saveBookmark = (store: IndexedDbStores, data: EventBookmark | MessageBookmark) => {
+	private saveBookmark = async (bookmark: EventBookmark | MessageBookmark) => {
+		const store = isEventBookmark(bookmark) ? IndexedDbStores.EVENTS : IndexedDbStores.MESSAGES;
 		try {
-			this.db.addDbStoreItem(store, data);
+			await this.db.addDbStoreItem(store, bookmark);
 		} catch (error) {
 			if (error.name === 'QuotaExceededError') {
-				this.workspacesStore.handleQuotaExceededError();
+				this.workspacesStore.onQuotaExceededError(bookmark);
+			} else {
+				notificationsStore.addMessage({
+					errorType: 'indexedDbMessage',
+					type: 'error',
+					header: `Failed to save bookmark ${getItemName(bookmark.item)}`,
+					description: '',
+					id: nanoid(),
+				});
 			}
 		}
 	};
@@ -213,20 +222,17 @@ export class SelectedStore {
 		};
 	};
 
-	public syncData = (removedData?: SyncData) => {
-		if (removedData) {
-			const deletedEvents = removedData.events;
-			const deletedMessages = removedData.messages;
+	public syncData = async (unsavedData?: DbData) => {
+		await Promise.all([this.getSavedEvents(), this.getSavedMessages()]);
 
-			this.bookmarkedEvents = this.bookmarkedEvents.filter(
-				bookmarkedEvent => !deletedEvents.includes(bookmarkedEvent.id),
-			);
-			this.bookmarkedMessages = this.bookmarkedMessages.filter(
-				bookmarkedMessages => !deletedMessages.includes(bookmarkedMessages.id),
-			);
-		} else {
-			this.getSavedEvents();
-			this.getSavedMessages();
+		if (isEventBookmark(unsavedData)) {
+			await this.saveBookmark(unsavedData);
+			this.bookmarkedEvents.push(unsavedData);
+		}
+
+		if (isMessageBookmark(unsavedData)) {
+			await this.saveBookmark(unsavedData);
+			this.bookmarkedMessages.push(unsavedData);
 		}
 	};
 
