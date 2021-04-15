@@ -56,6 +56,8 @@ const SearchPanel = () => {
 					}
 					disablePrev={searchStore.isSearching || searchStore.currentIndex === 0}
 					disabledRemove={searchStore.isSearching}
+					showLoadMoreButton={searchStore.isCompleted}
+					loadMore={() => searchStore.startSearch(true)}
 				/>
 			)}
 		</div>

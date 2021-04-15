@@ -189,14 +189,15 @@ export class SearchStore {
 		return Boolean(this.searchChannel.next || this.searchChannel.previous);
 	}
 
-	@computed get isPaused(): boolean {
-		if (!this.currentSearch) return false;
-		return (
-			!this.isSearching &&
-			!this.completed.previous &&
-			!this.completed.next &&
-			(!!this.lastEventId.previous || !!this.lastEventId.next)
-		);
+	@computed get isCompleted() {
+		const { searchDirection } = this.searchForm;
+
+		if (!searchDirection) return false;
+
+		if (searchDirection === SearchDirection.Both)
+			return this.completed[SearchDirection.Previous] && this.completed[SearchDirection.Next];
+
+		return this.completed[searchDirection];
 	}
 
 	@observable currentSearch: SearchHistory | null = null;
@@ -213,6 +214,14 @@ export class SearchStore {
 		previous: null,
 		next: null,
 	};
+
+	@computed get isPaused() {
+		return (
+			!this.isSearching &&
+			!this.isCompleted &&
+			(!!this.lastEventId.previous || !!this.lastEventId.next)
+		);
+	}
 
 	private searchChunk: Array<
 		| (SearchResult & { searchDirection: SSESearchDirection })
@@ -309,6 +318,7 @@ export class SearchStore {
 		};
 
 		this.setCompleted(false);
+		this.resetResultsState();
 	};
 
 	@action setEventsFilter = (patch: Partial<EventFilterState>) => {
@@ -320,6 +330,7 @@ export class SearchStore {
 		}
 
 		this.setCompleted(false);
+		this.resetResultsState();
 	};
 
 	@action setMessagesFilter = (patch: Partial<MessageFilterState>) => {
@@ -331,6 +342,7 @@ export class SearchStore {
 		}
 
 		this.setCompleted(false);
+		this.resetResultsState();
 	};
 
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
@@ -341,6 +353,8 @@ export class SearchStore {
 			this.setCompleted(false);
 		}
 
+		this.resetResultsState();
+
 		localStorageWorker.saveSearchHistory(this.searchHistory);
 	};
 
@@ -348,6 +362,7 @@ export class SearchStore {
 		if (this.currentIndex < this.searchHistory.length - 1) {
 			this.currentIndex += 1;
 			this.setCompleted(true);
+			this.resetResultsState();
 		}
 	};
 
@@ -355,12 +370,15 @@ export class SearchStore {
 		if (this.currentIndex !== 0) {
 			this.currentIndex -= 1;
 			this.setCompleted(true);
+			this.resetResultsState();
 		}
 	};
 
 	@action newSearch = (searchHistoryItem: SearchHistory) => {
 		this.searchHistory = [...this.searchHistory, searchHistoryItem];
 		this.currentIndex = this.searchHistory.length - 1;
+		this.setCompleted(false);
+		this.resetResultsState();
 	};
 
 	@action updateSearchItem = (searchHistoryItem: Partial<SearchHistory>) => {
@@ -376,15 +394,22 @@ export class SearchStore {
 		});
 	};
 
-	@action startSearch = () => {
+	@action startSearch = (loadMore = false) => {
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
 		if (this.isSearching || !filterParams) return;
+		const isPaused = this.isPaused;
+		this.setCompleted(false);
 
-		if (!this.isPaused) {
-			this.setCompleted(false);
-			this.resultsCount.next = 0;
-			this.resultsCount.previous = 0;
+		if (loadMore) {
+			if (isPaused) {
+				this.startSearch();
+				return;
+			}
 
+			this.resetResultsCount();
+		}
+
+		if (!isPaused && !loadMore) {
 			this.newSearch({
 				timestamp: moment().utc().valueOf(),
 				request: { type: this.formType, state: this.searchForm, filters: filterParams },
@@ -442,8 +467,11 @@ export class SearchStore {
 				...Object.fromEntries([...filterValues, ...filterInclusion]),
 			};
 
-			if (this.isPaused) {
+			if (isPaused || loadMore) {
 				params.resumeFromId = this.lastEventId[direction];
+			}
+
+			if (isPaused) {
 				params.resultCountLimit =
 					this.currentSearch!.request.state.resultCountLimit - this.resultsCount[direction];
 			}
@@ -585,10 +613,30 @@ export class SearchStore {
 		}
 
 		this.completed[searchDirection] = completed;
+	}
 
-		if (!completed) {
-			this.lastEventId[searchDirection] = null;
-			this.resultsCount[searchDirection] = 0;
+	@action resetResultsCount(searchDirection?: SSESearchDirection) {
+		if (!searchDirection) {
+			this.resetResultsCount(SearchDirection.Previous);
+			this.resetResultsCount(SearchDirection.Next);
+			return;
 		}
+
+		this.resultsCount[searchDirection] = 0;
+	}
+
+	@action resetLastEventId(searchDirection?: SSESearchDirection) {
+		if (!searchDirection) {
+			this.resetLastEventId(SearchDirection.Previous);
+			this.resetLastEventId(SearchDirection.Next);
+			return;
+		}
+
+		this.lastEventId[searchDirection] = null;
+	}
+
+	@action resetResultsState() {
+		this.resetResultsCount();
+		this.resetLastEventId();
 	}
 }
