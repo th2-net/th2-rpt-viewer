@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React, { useState } from 'react';
+import moment from 'moment';
 import { nanoid } from 'nanoid';
 import { useMessageBodySortStore } from '../../hooks';
 import StringFilterRow from '../filter/row/StringRow';
@@ -25,7 +26,7 @@ const NewSortOrderItem = () => {
 
 	const submitHandler = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		sortOrder.setNewItem({ id: nanoid(), item: newItem });
+		sortOrder.setNewItem({ id: nanoid(), item: newItem, timestamp: moment.utc().valueOf() });
 	};
 
 	return (

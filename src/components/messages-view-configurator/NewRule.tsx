@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { nanoid } from 'nanoid';
+import moment from 'moment';
 import React, { useState } from 'react';
 import { useMessageDisplayRulesStore } from '../../hooks';
 import { MessageViewType } from '../../models/EventMessage';
@@ -40,6 +41,7 @@ const NewRule = ({ sessions }: NewRuleProps) => {
 			removable: true,
 			editableSession: true,
 			editableType: true,
+			timestamp: moment.utc().valueOf(),
 		});
 	};
 
