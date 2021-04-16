@@ -25,14 +25,11 @@ const NewSortOrderItem = () => {
 
 	const submitHandler = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		const hasSame = sortOrder.sortOrder.findIndex(({ item }) => item === newItem) !== -1;
-		if (!hasSame) {
-			sortOrder.setNewItem({ id: nanoid(), item: newItem });
-		}
+		sortOrder.setNewItem({ id: nanoid(), item: newItem });
 	};
 
 	return (
-		<>
+		<div className='order-item'>
 			<StringFilterRow
 				config={{
 					className: 'order-item',
@@ -50,7 +47,7 @@ const NewSortOrderItem = () => {
 				disabled={newItem === ''}>
 				add
 			</button>
-		</>
+		</div>
 	);
 };
 

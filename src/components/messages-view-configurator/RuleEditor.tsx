@@ -30,12 +30,7 @@ interface RuleEditorProps {
 
 const viewTypes = Object.values(MessageViewType);
 
-const RuleEditor: React.FC<RuleEditorProps> = ({
-	selected,
-	setSelected,
-	onSelect,
-	defaultOpen,
-}) => {
+const RuleEditor = ({ selected, setSelected, onSelect, defaultOpen }: RuleEditorProps) => {
 	const [showOptions, setShowOptions] = React.useState(Boolean(defaultOpen));
 
 	const [btnRef, btnDimensions] = useDimensions<HTMLButtonElement>();

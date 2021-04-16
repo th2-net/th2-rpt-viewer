@@ -101,7 +101,7 @@ const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: Edi
 	};
 
 	return (
-		<>
+		<div className='rule editable'>
 			<Reorder
 				isFirst={isFirst}
 				isLast={isLast}
@@ -113,7 +113,7 @@ const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: Edi
 			{rule.removable && (
 				<button className='rule-delete' onClick={deleteHandler} title='delete'></button>
 			)}
-		</>
+		</div>
 	);
 };
 

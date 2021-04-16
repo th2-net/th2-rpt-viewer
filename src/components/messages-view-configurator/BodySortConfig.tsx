@@ -51,11 +51,7 @@ const BodySortConfig = () => {
 			style={{ height: '120px' }}
 			components={{
 				Header: function Header() {
-					return (
-						<div className='order-item'>
-							<NewSortOrderItem />
-						</div>
-					);
+					return <NewSortOrderItem />;
 				},
 			}}
 		/>

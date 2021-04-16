@@ -29,7 +29,7 @@ class MessageBodySortOrderStore {
 
 	@action
 	public setNewItem = (orderItem: MessageSortOrderItem) => {
-		const hasSame = this.sortOrder.find(existed => existed === orderItem);
+		const hasSame = this.sortOrder.find(({ item }) => item === orderItem.item);
 		if (!hasSame) {
 			this.sortOrder = [orderItem, ...this.sortOrder];
 		}

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { FC } from 'react';
+import React from 'react';
 
 interface ReorderProps {
 	isFirst: boolean | null;
@@ -23,7 +23,7 @@ interface ReorderProps {
 	move: (from: number, to: number) => void;
 }
 
-const Reorder: FC<ReorderProps> = ({ isFirst, isLast, index, move }) => {
+const Reorder = ({ isFirst, isLast, index, move }: ReorderProps) => {
 	if ((isFirst === null && isLast === null) || (isFirst && isLast)) return null;
 	return (
 		<div className='reorder'>

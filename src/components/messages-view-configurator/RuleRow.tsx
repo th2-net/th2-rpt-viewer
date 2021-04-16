@@ -17,7 +17,6 @@
 import * as React from 'react';
 import { MessageDisplayRule } from '../../models/EventMessage';
 import NewRule from './NewRule';
-import { createStyleSelector } from '../../helpers/styleCreators';
 import EditableRule from './EditableRule';
 
 interface RuleRowProps {
@@ -29,16 +28,13 @@ interface RuleRowProps {
 	autofocus?: boolean;
 }
 
-const RuleRow: React.FC<RuleRowProps> = props => {
+const RuleRow = (props: RuleRowProps) => {
 	const { rule, sessions, ...restProps } = props;
-	const ruleClassName = createStyleSelector('rule', rule ? 'editable' : null);
-	const renderRow = () => {
-		if (rule) {
-			return <EditableRule rule={rule} sessions={sessions} {...restProps} />;
-		}
-		return <NewRule sessions={sessions} />;
-	};
-	return <div className={ruleClassName}>{renderRow()}</div>;
+	return rule ? (
+		<EditableRule rule={rule} sessions={sessions} {...restProps} />
+	) : (
+		<NewRule sessions={sessions} />
+	);
 };
 
 export default RuleRow;

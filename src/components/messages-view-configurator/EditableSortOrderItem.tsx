@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useMessageBodySortStore } from '../../hooks';
 import Reorder from './Reorder';
 import AutocompleteInput from '../util/AutocompleteInput';
@@ -28,18 +28,16 @@ type EditableSortOrderItemProps = {
 };
 
 const EditableSortOrderItem = ({ item, isFirst, isLast, index }: EditableSortOrderItemProps) => {
-	const sortOrder = useMessageBodySortStore();
+	const sortOrderStore = useMessageBodySortStore();
 	const [currentItem, setCurrentItem] = useState(item.item);
 	const [itemIsEditing, setItemIsEditing] = useState(false);
 
 	const deleteHandler = () => {
-		sortOrder.deleteItem(item);
+		sortOrderStore.deleteItem(item);
 	};
 
-	const ref = useRef();
-
 	const editItemSession = useCallback(() => {
-		sortOrder.editItem(item, { ...item, item: currentItem });
+		sortOrderStore.editItem(item, { ...item, item: currentItem });
 		setItemIsEditing(false);
 	}, [currentItem]);
 
@@ -47,7 +45,6 @@ const EditableSortOrderItem = ({ item, isFirst, isLast, index }: EditableSortOrd
 		return itemIsEditing ? (
 			<AutocompleteInput
 				value={currentItem}
-				ref={ref}
 				autoresize={false}
 				setValue={setCurrentItem}
 				onSubmit={editItemSession}
@@ -66,7 +63,7 @@ const EditableSortOrderItem = ({ item, isFirst, isLast, index }: EditableSortOrd
 
 	return (
 		<>
-			<Reorder isFirst={isFirst} isLast={isLast} index={index} move={sortOrder.reorder} />
+			<Reorder isFirst={isFirst} isLast={isLast} index={index} move={sortOrderStore.reorder} />
 			{renderEditor()}
 			<button className='order-item-delete' onClick={deleteHandler} title='delete'></button>
 		</>

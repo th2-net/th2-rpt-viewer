@@ -27,27 +27,24 @@ type NewRuleProps = {
 
 const NewRule = ({ sessions }: NewRuleProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
+	
 	const [session, setSession] = useState('');
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
 	const submitHandler = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		const hasSame =
-			rulesStore.messageDisplayRules.findIndex(rule => rule.session === session) !== -1;
-		if (!hasSame) {
-			rulesStore.setNewMessagesDisplayRule({
-				id: nanoid(),
-				session,
-				viewType,
-				removable: true,
-				editableSession: true,
-				editableType: true,
-			});
-		}
+		rulesStore.setNewMessagesDisplayRule({
+			id: nanoid(),
+			session,
+			viewType,
+			removable: true,
+			editableSession: true,
+			editableType: true,
+		});
 	};
 
 	return (
-		<>
+		<div className='rule'>
 			<SessionEditor value={session} setValue={setSession} sessions={sessions} />
 			<RuleEditor selected={viewType} setSelected={setViewType} />
 			<button
@@ -57,7 +54,7 @@ const NewRule = ({ sessions }: NewRuleProps) => {
 				disabled={session === ''}>
 				add
 			</button>
-		</>
+		</div>
 	);
 };
 

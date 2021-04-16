@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 import MessageBody, {
 	isSimpleValue,
 	MessageBodyField,
@@ -34,12 +35,6 @@ interface Props {
 	renderInfo: () => React.ReactNode;
 }
 
-const usualSort = (a: [string, MessageBodyField], b: [string, MessageBodyField]) => {
-	const [keyA] = a;
-	const [keyB] = b;
-	return keyA.toLowerCase() > keyB.toLowerCase() ? 1 : -1;
-};
-
 const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 	const primarySortedFields: [string, MessageBodyField][] = Object.entries(
 		sortOrder.reduce((prev, curr) => (fields[curr] ? { ...prev, [curr]: fields[curr] } : prev), {}),
@@ -47,12 +42,16 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 
 	const secondarySortedFields: [string, MessageBodyField][] = Object.entries(fields)
 		.filter(([key]) => !sortOrder.includes(key))
-		.sort(usualSort);
+		.sort((a: [string, MessageBodyField], b: [string, MessageBodyField]) => {
+			const [keyA] = a;
+			const [keyB] = b;
+			return keyA.toLowerCase() > keyB.toLowerCase() ? 1 : -1;
+		});
 
 	return [...primarySortedFields, ...secondarySortedFields];
 };
 
-export default function MessageBodyCard({ isBeautified, body, isSelected, renderInfo }: Props) {
+function MessageBodyCard({ isBeautified, body, isSelected, renderInfo }: Props) {
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
 	const { sortOrder } = useMessageBodySortStore();
 	const sortOrderItems = sortOrder.map(item => item.item);
@@ -70,6 +69,7 @@ export default function MessageBodyCard({ isBeautified, body, isSelected, render
 			{fields.map(([key, value], idx, arr) => (
 				<React.Fragment key={key}>
 					<MessageBodyCardField
+						primarySort={sortOrderItems}
 						highlightColor={isSelected ? SELECTED_HIGHLIGHT_COLOR : DEFAULT_HIGHLIGHT_COLOR}
 						label={key}
 						field={value}
@@ -93,6 +93,7 @@ interface FieldProps {
 	setIsHighlighted: (isHighlighted: boolean) => void;
 	isRoot?: boolean;
 	highlightColor: string;
+	primarySort: string[];
 	renderInfo?: () => React.ReactNode;
 }
 
@@ -114,6 +115,7 @@ function MessageBodyCardField(props: FieldProps) {
 	if (isRoot) {
 		return (
 			<MessageBodyCardField
+				primarySort={sortOrderItems}
 				highlightColor={highlightColor}
 				isBeautified={isBeautified}
 				field={field}
@@ -159,6 +161,7 @@ function MessageBodyCardField(props: FieldProps) {
 						}}>
 						{field.listValue.values?.map((value, idx) => (
 							<MessageBodyCardField
+								primarySort={sortOrderItems}
 								key={idx}
 								field={value}
 								label={''}
@@ -183,6 +186,7 @@ function MessageBodyCardField(props: FieldProps) {
 						{sortedSubFields.map(([key, subField], idx, arr) => (
 							<React.Fragment key={key}>
 								<MessageBodyCardField
+									primarySort={sortOrderItems}
 									field={subField}
 									label={key}
 									isBeautified={isBeautified}
@@ -201,6 +205,8 @@ function MessageBodyCardField(props: FieldProps) {
 		</span>
 	);
 }
+
+export default observer(MessageBodyCard);
 
 export function MessageBodyCardFallback({ body, isBeautified }: Props) {
 	return (
