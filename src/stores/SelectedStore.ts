@@ -168,7 +168,7 @@ export class SelectedStore {
 	private saveBookmark = async (bookmark: EventBookmark | MessageBookmark) => {
 		const store = isEventBookmark(bookmark) ? IndexedDbStores.EVENTS : IndexedDbStores.MESSAGES;
 		try {
-			await this.db.addDbStoreItem(store, bookmark);
+			await this.db.addDbStoreItem(store, toJS(bookmark));
 		} catch (error) {
 			if (error.name === 'QuotaExceededError') {
 				this.workspacesStore.onQuotaExceededError(bookmark);
