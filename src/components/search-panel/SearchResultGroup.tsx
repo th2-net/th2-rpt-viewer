@@ -107,10 +107,11 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 			<div className='search-result-single-item'>
 				<BookmarkItem
 					key={computeKey(0)}
-					item={results[0]}
+					bookmark={results[0]}
 					onClick={onResultClick}
 					toggleBookmark={getBookmarkToggler(results[0])}
 					isBookmarked={getIsToggled(results[0])}
+					isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
 				/>
 			</div>
 		);
@@ -137,10 +138,11 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 					results.map((result, index) => (
 						<BookmarkItem
 							key={computeKey(index)}
-							item={result}
+							bookmark={result}
 							onClick={onResultClick}
 							toggleBookmark={getBookmarkToggler(result)}
 							isBookmarked={getIsToggled(result)}
+							isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
 						/>
 					))}
 			</div>

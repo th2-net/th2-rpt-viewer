@@ -25,6 +25,8 @@ import { ModalPortal } from '../../util/Portal';
 import GraphSearchInput, { GraphSearchInputConfig } from './GraphSearchInput';
 import { GraphSearchTimePicker } from './GraphSearchTimePicker';
 import KeyCodes from '../../../util/KeyCodes';
+import { EventAction } from '../../../models/EventAction';
+import { EventMessage } from '../../../models/EventMessage';
 
 interface Props {
 	onTimestampSubmit: (timestamp: number) => void;
@@ -33,6 +35,11 @@ interface Props {
 }
 
 export type GraphSearchMode = 'timestamp' | 'history';
+export interface GraphSearchResult {
+	timestamp: number;
+	id: string;
+	item: EventAction | EventMessage;
+}
 
 function GraphSearch(props: Props) {
 	const { onTimestampSubmit, onFoundItemClick, windowRange } = props;
@@ -96,6 +103,7 @@ function GraphSearch(props: Props) {
 
 			if (
 				mode === 'timestamp' &&
+				showModal &&
 				isValidDate &&
 				typeof currentTimestamp === 'number' &&
 				e.keyCode === KeyCodes.ENTER
@@ -104,7 +112,7 @@ function GraphSearch(props: Props) {
 				setShowModal(false);
 			}
 		},
-		[inputConfig, mode],
+		[inputConfig, mode, showModal],
 	);
 
 	React.useEffect(() => {
@@ -163,6 +171,14 @@ function GraphSearch(props: Props) {
 		setShowModal(false);
 	}, [setShowModal]);
 
+	const onGraphSearchResultSelect = React.useCallback(
+		(searchResult: GraphSearchResult) => {
+			onFoundItemClick(searchResult.item);
+			setShowModal(false);
+		},
+		[onFoundItemClick],
+	);
+
 	const isSubmitButtonActive = mode === 'timestamp' ? inputConfig.isValidDate : !isIdSearchDisabled;
 
 	const dateButtonClassName = createBemElement(
@@ -208,7 +224,7 @@ function GraphSearch(props: Props) {
 					{mode === 'history' && (
 						<GraphSearchDialog
 							value={inputConfig.value}
-							onSavedItemSelect={onFoundItemClick}
+							onSearchResultSelect={onGraphSearchResultSelect}
 							setTimestamp={setInputValueFromTimestamp}
 							setIsIdSearchDisabled={setIsIdSearchDisabled}
 							closeModal={closeModal}

@@ -87,7 +87,7 @@ export default class EventsStore {
 			});
 		}
 
-		reaction(() => this.filterStore.filter, this.onFilterChange);
+		reaction(() => this.filterStore.filter, this.clearStoreData);
 
 		reaction(() => this.selectedNode, this.onSelectedNodeChange);
 
@@ -291,6 +291,7 @@ export default class EventsStore {
 
 	@action
 	public onRangeChange = (timestampFrom: number) => {
+		this.clearStoreData();
 		const timeRange = calculateTimeRange(timestampFrom, this.graphStore.interval);
 
 		this.eventDataStore.fetchEventTree({
@@ -332,7 +333,7 @@ export default class EventsStore {
 	};
 
 	@action
-	private onFilterChange = () => {
+	private clearStoreData = () => {
 		this.isExpandedMap.clear();
 		this.selectedParentNode = null;
 		this.selectedNode = null;

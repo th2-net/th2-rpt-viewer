@@ -21,7 +21,6 @@
 	max-width: 500px;
 }
 
-
 .toast-message {
 	display: flex;
 	justify-content: space-between;
@@ -34,34 +33,45 @@
 	&.entering {
 		transform: translate3d(100%, 0, 0) scale(0.9);
 	}
-	
+
 	&.entered {
 		transform: translate3d(0, 0, 0) scale(1);
 	}
-	
+
 	&.exiting {
 		transform: translate3d(100%, 0, 0) scale(0.9);
 	}
-	
+
 	&.exited {
 		transform: translate3d(100%, 0, 0) scale(0.9);
 	}
-	
+
 	&.error {
 		background-color: $toastErrorBackground;
 	}
+
+	&.success {
+		background-color: $toastSuccessBackground;
+	}
+
 	&__icon {
 		min-width: 24px;
 		&.error {
 			@include icon(url(../../resources/icons/toast-error.svg), 24px, 24px);
 		}
+
+		&.success {
+			@include icon(url(../../resources/icons/checkmark-light.svg), 24px, 24px);
+		}
 	}
+
 	&__content {
 		flex-grow: 1;
 		position: relative;
 		max-width: 84%;
 		height: 100%;
 		padding: 0 14px;
+
 		&:after {
 			content: '';
 			position: absolute;
@@ -72,11 +82,61 @@
 			background-color: #fff;
 		}
 	}
+
 	&__close {
 		min-width: 20px;
 		border: none;
 		background-color: transparent;
 		cursor: pointer;
 		@include icon(url(../../resources/icons/cross-icon-white.svg), 20px, 20px);
+	}
+}
+
+.toast-content {
+	color: #fff;
+
+	&__top {
+		display: flex;
+		justify-content: space-between;
+		font-size: 14px;
+		font-weight: bold;
+		gap: 4px;
+		.response-body {
+			@include ellipsis();
+		}
+	}
+
+	&__middle {
+		word-break: break-all;
+		font-size: 12px;
+	}
+
+	&__bottom {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	&__description {
+		font-size: 14px;
+	}
+}
+
+.toast-action {
+	margin: 4px 0 0;
+	display: flex;
+	background-color: transparent;
+	color: #fff;
+	cursor: pointer;
+	border: none;
+
+	&__copy-icon {
+		margin: 0 4px 0 0;
+		@include icon(url(../../resources/icons/toast-copy.svg), 16px, 17px);
+	}
+
+	&__text {
+		&.copied {
+			color: gray;
+		}
 	}
 }

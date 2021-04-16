@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +14,21 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from './ApiSchema';
-import { IndexedDB } from './indexedDb';
-import eventHttpApi from './event';
-import messageHttpApi from './message';
-import sseApi from './sse';
+import {
+	NotificationError,
+	UrlError,
+	ResponseError,
+	IndexedDbError,
+} from '../stores/NotificationsStore';
 
-const envName =
-	process.env.NODE_ENV === 'development'
-		? 'development'
-		: `${window.location.host}${window.location.pathname}`;
+export function isURLError(error: NotificationError): error is UrlError {
+	return error.errorType === 'urlError';
+}
 
-const api: ApiSchema = {
-	events: eventHttpApi,
-	messages: messageHttpApi,
-	sse: sseApi,
-	indexedDb: new IndexedDB(envName),
-};
+export function isResponseError(error: NotificationError): error is ResponseError {
+	return error.errorType === 'responseError';
+}
 
-export default api;
+export function isIndexedDbMessage(error: NotificationError): error is IndexedDbError {
+	return error.errorType === 'indexedDbMessage';
+}

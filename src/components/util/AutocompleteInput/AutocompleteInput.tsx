@@ -67,6 +67,8 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 
 	const autocompleteListRef = React.useRef<HTMLDivElement>(null);
 
+	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLElement | null>(null);
+
 	useOutsideClickListener(ref, e => {
 		if (
 			autocompleteListRef.current &&
@@ -82,6 +84,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			onSubmit(value);
 		}
 		onBlur();
+		setAutocompleteAnchor(null);
 	});
 
 	const onChange: React.ChangeEventHandler<HTMLInputElement> = e => {
@@ -123,8 +126,14 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		disabled,
 		onKeyDown,
 		onChange,
-		onFocus,
+		onFocus: e => {
+			if (onFocus) {
+				onFocus(e);
+			}
+			setAutocompleteAnchor(null);
+		},
 		autoFocus: false,
+		onClick: () => setAutocompleteAnchor(anchor || null),
 	};
 
 	return (
@@ -149,7 +158,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 					ref={autocompleteListRef}
 					items={autocomplete}
 					value={value.trim()}
-					anchor={anchor || null}
+					anchor={autocompleteAnchor}
 					onSelect={onAutocompleteSelect}
 				/>
 			)}
