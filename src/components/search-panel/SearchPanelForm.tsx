@@ -54,7 +54,6 @@ const SearchPanelForm = () => {
 		pauseSearch,
 		setFormType,
 		isSearching,
-		isCompleted,
 		searchProgress,
 		isPaused,
 	} = useSearchStore();
@@ -187,7 +186,6 @@ const SearchPanelForm = () => {
 
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
-		isCompleted,
 		disabled: disabled || !form.searchDirection,
 		progress: commonProgress,
 		processedObjectCount,

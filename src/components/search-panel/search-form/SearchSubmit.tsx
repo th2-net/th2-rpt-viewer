@@ -19,7 +19,6 @@ import { createBemElement } from '../../../helpers/styleCreators';
 
 export type SearchSubmitConfig = {
 	isSearching: boolean;
-	isCompleted: boolean;
 	disabled: boolean;
 	progress: number | null;
 	processedObjectCount: number;
@@ -30,7 +29,6 @@ export type SearchSubmitConfig = {
 
 const SearchSubmit = ({
 	isSearching,
-	isCompleted,
 	disabled,
 	progress,
 	processedObjectCount,
@@ -51,7 +49,7 @@ const SearchSubmit = ({
 
 	return (
 		<div className='search-form__submit'>
-			{Boolean(processedObjectCount) && (isCompleted || isSearching) && (
+			{Boolean(processedObjectCount) && (
 				<div className='search-processed-objects'> {processedObjectCount} processed objects </div>
 			)}
 			<button className='search-submit-button' disabled={disabled} onClick={handleClick}>

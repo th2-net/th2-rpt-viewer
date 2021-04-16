@@ -80,8 +80,15 @@ export type SearchHistoryState<T> = {
 	limit: number;
 	disableForward: boolean;
 	disableBackward: boolean;
-	currrentSearch: null | T;
+	currentSearch: null | T;
 	history: Array<T>;
+};
+
+type SearchProgressState = {
+	completed: boolean;
+	lastEventId: string | null;
+	lastProcessedObjectCount: number;
+	resultCount: number;
 };
 
 const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
@@ -112,11 +119,6 @@ export class SearchStore {
 			},
 		);
 	}
-
-	private resultsCount = {
-		previous: 0,
-		next: 0,
-	};
 
 	@observable messageSessions: Array<string> = [];
 
@@ -156,6 +158,26 @@ export class SearchStore {
 
 	@observable isMessageFiltersLoading = false;
 
+	@observable currentSearch: SearchHistory | null = null;
+
+	@observable searchProgressState: {
+		previous: SearchProgressState;
+		next: SearchProgressState;
+	} = {
+		previous: {
+			completed: this.searchHistory.length > 0,
+			lastEventId: null,
+			lastProcessedObjectCount: 0,
+			resultCount: 0,
+		},
+		next: {
+			completed: this.searchHistory.length > 0,
+			lastEventId: null,
+			lastProcessedObjectCount: 0,
+			resultCount: 0,
+		},
+	};
+
 	@computed get searchProgress() {
 		const startTimestamp = Number(this.searchForm.startTimestamp);
 		const { previous: timeLimitPrevious, next: timeLimitNext } = this.searchForm.timeLimits;
@@ -165,6 +187,10 @@ export class SearchStore {
 
 		return {
 			startTimestamp: this.searchForm.startTimestamp,
+			completed: {
+				previous: this.searchProgressState.previous.completed,
+				next: this.searchProgressState.next.completed,
+			},
 			timeLimits: {
 				previous: timeLimitPrevious,
 				next: timeLimitNext,
@@ -183,13 +209,19 @@ export class SearchStore {
 						? this.currentSearch.progress.next - startTimestamp
 						: 0,
 			},
-			searching: this.isSearching,
-			completed: this.completed,
-			processedObjectCount: this.currentSearch?.processedObjectCount
+			processedObjectCount: this.currentSearch
 				? this.currentSearch.processedObjectCount.previous +
 				  this.currentSearch.processedObjectCount.next
 				: 0,
 		};
+	}
+
+	@computed get resultCount(): number {
+		return (
+			this.searchProgressState.previous.resultCount +
+			this.searchProgressState.next.resultCount +
+			this.searchChunk.length
+		);
 	}
 
 	@computed get isSearching(): boolean {
@@ -202,31 +234,20 @@ export class SearchStore {
 		if (!searchDirection) return false;
 
 		if (searchDirection === SearchDirection.Both)
-			return this.completed[SearchDirection.Previous] && this.completed[SearchDirection.Next];
+			return (
+				this.searchProgressState[SearchDirection.Previous].completed &&
+				this.searchProgressState[SearchDirection.Next].completed
+			);
 
-		return this.completed[searchDirection];
+		return this.searchProgressState[searchDirection].completed;
 	}
-
-	@observable currentSearch: SearchHistory | null = null;
-
-	@observable completed = {
-		previous: this.searchHistory.length > 0,
-		next: this.searchHistory.length > 0,
-	};
-
-	@observable lastEventId: {
-		previous: string | null;
-		next: string | null;
-	} = {
-		previous: null,
-		next: null,
-	};
 
 	@computed get isPaused() {
 		return (
 			!this.isSearching &&
 			!this.isCompleted &&
-			(!!this.lastEventId.previous || !!this.lastEventId.next)
+			(!!this.searchProgressState.previous.lastEventId ||
+				!!this.searchProgressState.next.lastEventId)
 		);
 	}
 
@@ -263,22 +284,16 @@ export class SearchStore {
 	@computed get sortedResultGroups() {
 		if (!this.currentSearch) return [];
 
-		const { startTimestamp, searchDirection } = this.currentSearch.request.state;
+		const startTimestamp = this.currentSearch.request.state.startTimestamp || 0;
 
 		return Object.entries(this.currentSearch.results).sort((a, b) => {
-			const firstResultTimestamp = +a[0] * 1000 * SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60;
-			const secondResultTimestamp = +b[0] * 1000 * SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60;
-
-			if (searchDirection === SearchDirection.Both) {
-				return (
-					Math.abs(firstResultTimestamp - (startTimestamp || 0)) -
-					Math.abs(secondResultTimestamp - (startTimestamp || 0))
-				);
-			}
+			const [firstResultGroupTimestamp, secondResultGroupTimestamp] = [a, b].map(
+				resultGroup => +resultGroup[0] * 1000 * SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60,
+			);
 
 			return (
-				(firstResultTimestamp - secondResultTimestamp) *
-				(searchDirection === SearchDirection.Next ? 1 : -1)
+				Math.abs(firstResultGroupTimestamp - startTimestamp) -
+				Math.abs(secondResultGroupTimestamp - startTimestamp)
 			);
 		});
 	}
@@ -324,8 +339,7 @@ export class SearchStore {
 			...stateUpdate,
 		};
 
-		this.setCompleted(false);
-		this.resetResultsState();
+		this.resetSearchProgressState();
 	};
 
 	@action setEventsFilter = (patch: Partial<EventFilterState>) => {
@@ -336,8 +350,7 @@ export class SearchStore {
 			};
 		}
 
-		this.setCompleted(false);
-		this.resetResultsState();
+		this.resetSearchProgressState();
 	};
 
 	@action setMessagesFilter = (patch: Partial<MessageFilterState>) => {
@@ -348,19 +361,18 @@ export class SearchStore {
 			};
 		}
 
-		this.setCompleted(false);
-		this.resetResultsState();
+		this.resetSearchProgressState();
 	};
 
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
 		this.searchHistory = this.searchHistory.filter(item => item !== searchHistoryItem);
 		this.currentIndex = Math.max(this.currentIndex - 1, 0);
 
-		if (this.searchHistory.length === 0) {
-			this.setCompleted(false);
-		}
+		this.resetSearchProgressState();
 
-		this.resetResultsState();
+		if (this.searchHistory.length !== 0) {
+			this.setCompleted(true);
+		}
 
 		localStorageWorker.saveSearchHistory(this.searchHistory);
 	};
@@ -368,24 +380,23 @@ export class SearchStore {
 	@action nextSearch = () => {
 		if (this.currentIndex < this.searchHistory.length - 1) {
 			this.currentIndex += 1;
+			this.resetSearchProgressState();
 			this.setCompleted(true);
-			this.resetResultsState();
 		}
 	};
 
 	@action prevSearch = () => {
 		if (this.currentIndex !== 0) {
 			this.currentIndex -= 1;
+			this.resetSearchProgressState();
 			this.setCompleted(true);
-			this.resetResultsState();
 		}
 	};
 
 	@action newSearch = (searchHistoryItem: SearchHistory) => {
 		this.searchHistory = [...this.searchHistory, searchHistoryItem];
 		this.currentIndex = this.searchHistory.length - 1;
-		this.setCompleted(false);
-		this.resetResultsState();
+		this.resetSearchProgressState();
 	};
 
 	@action updateSearchItem = (searchHistoryItem: Partial<SearchHistory>) => {
@@ -413,7 +424,8 @@ export class SearchStore {
 				return;
 			}
 
-			this.resetResultsCount();
+			this.searchProgressState[SearchDirection.Previous].resultCount = 0;
+			this.searchProgressState[SearchDirection.Next].resultCount = 1;
 		}
 
 		if (!isPaused && !loadMore) {
@@ -475,12 +487,13 @@ export class SearchStore {
 			};
 
 			if (isPaused || loadMore) {
-				params.resumeFromId = this.lastEventId[direction];
+				params.resumeFromId = this.searchProgressState[direction].lastEventId;
 			}
 
 			if (isPaused) {
 				params.resultCountLimit =
-					this.currentSearch!.request.state.resultCountLimit - this.resultsCount[direction];
+					this.currentSearch!.request.state.resultCountLimit -
+					this.searchProgressState[direction].resultCount;
 			}
 
 			const queryParams: SSEParams =
@@ -508,6 +521,12 @@ export class SearchStore {
 	};
 
 	@action pauseSearch = () => {
+		if (this.currentSearch) {
+			const { processedObjectCount } = this.currentSearch;
+			this.searchProgressState.previous.lastProcessedObjectCount = processedObjectCount.previous;
+			this.searchProgressState.next.lastProcessedObjectCount = processedObjectCount.next;
+		}
+
 		this.stopSearch(undefined, true);
 	};
 
@@ -527,7 +546,7 @@ export class SearchStore {
 		this.searchChannel[searchDirection] = null;
 
 		if (!pause) {
-			this.completed[searchDirection] = true;
+			this.searchProgressState[searchDirection].completed = true;
 		}
 
 		this.exportChunkToSearchHistory();
@@ -556,10 +575,7 @@ export class SearchStore {
 				this.exportChunkToSearchHistory();
 			}
 
-			if (
-				this.resultsCount.previous + this.resultsCount.next + this.searchChunk.length >=
-				this.currentSearch.request.state.resultCountLimit
-			) {
+			if (this.resultCount >= this.currentSearch.request.state.resultCountLimit) {
 				this.stopSearch();
 			}
 		}
@@ -600,12 +616,20 @@ export class SearchStore {
 
 				this.currentSearch.results[resultGroupKey].push(parsedEvent);
 				this.currentSearch.progress[searchDirection] = eventTimestamp;
-				this.lastEventId[searchDirection] = getItemId(parsedEvent);
-				this.resultsCount[searchDirection] += 1;
+				this.searchProgressState[searchDirection].lastEventId = getItemId(parsedEvent);
+				this.searchProgressState[searchDirection].resultCount += 1;
 			} else {
-				this.currentSearch.progress[searchDirection] = eventTimestamp;
-				this.currentSearch.processedObjectCount[searchDirection] = parsedEvent.scanCounter;
-				this.lastEventId[searchDirection] = parsedEvent.id;
+				if (eventTimestamp) {
+					this.currentSearch.progress[searchDirection] = eventTimestamp;
+				}
+
+				this.currentSearch.processedObjectCount[searchDirection] =
+					parsedEvent.scanCounter +
+					this.searchProgressState[searchDirection].lastProcessedObjectCount;
+
+				if (parsedEvent.id) {
+					this.searchProgressState[searchDirection].lastEventId = parsedEvent.id;
+				}
 			}
 		});
 
@@ -619,31 +643,23 @@ export class SearchStore {
 			return;
 		}
 
-		this.completed[searchDirection] = completed;
+		this.searchProgressState[searchDirection].completed = completed;
 	}
 
-	@action resetResultsCount(searchDirection?: SSESearchDirection) {
-		if (!searchDirection) {
-			this.resetResultsCount(SearchDirection.Previous);
-			this.resetResultsCount(SearchDirection.Next);
-			return;
-		}
-
-		this.resultsCount[searchDirection] = 0;
-	}
-
-	@action resetLastEventId(searchDirection?: SSESearchDirection) {
-		if (!searchDirection) {
-			this.resetLastEventId(SearchDirection.Previous);
-			this.resetLastEventId(SearchDirection.Next);
-			return;
-		}
-
-		this.lastEventId[searchDirection] = null;
-	}
-
-	@action resetResultsState() {
-		this.resetResultsCount();
-		this.resetLastEventId();
+	@action resetSearchProgressState() {
+		this.searchProgressState = {
+			previous: {
+				completed: false,
+				lastEventId: null,
+				lastProcessedObjectCount: 0,
+				resultCount: 0,
+			},
+			next: {
+				completed: false,
+				lastEventId: null,
+				lastProcessedObjectCount: 0,
+				resultCount: 0,
+			},
+		};
 	}
 }
