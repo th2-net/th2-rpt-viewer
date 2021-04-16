@@ -27,7 +27,7 @@ type NewRuleProps = {
 
 const NewRule = ({ sessions }: NewRuleProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
-	
+
 	const [session, setSession] = useState('');
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
