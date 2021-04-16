@@ -15,55 +15,70 @@
  ***************************************************************************** */
 
 import { action, observable } from 'mobx';
+import { nanoid } from 'nanoid';
 import { AppearanceTypes } from 'react-toast-notifications';
 
-interface Notification {
+interface BaseNotificationError {
 	type: AppearanceTypes;
+	errorType: 'responseError' | 'urlError' | 'indexedDbMessage';
+	id: string;
 }
-interface ResponseError extends Notification {
+export interface ResponseError extends BaseNotificationError {
+	errorType: 'responseError';
 	resource: string;
 	header: string;
 	responseBody: string;
 	responseCode: number | null;
 }
 
-interface UrlError extends Notification {
+export interface UrlError extends BaseNotificationError {
+	errorType: 'urlError';
 	link: string | null | undefined;
 	error: Error;
 }
 
+export interface IndexedDbError extends BaseNotificationError {
+	errorType: 'indexedDbMessage';
+	header: string;
+	description: string;
+	action?: {
+		label: string;
+		callback: () => void;
+	};
+}
+
+export type NotificationError = ResponseError | UrlError | IndexedDbError;
+
 export class NotificationsStore {
 	@observable
-	public responseErrors: ResponseError[] = [];
-
-	@observable
-	public urlError: UrlError | null = null;
+	public errors: NotificationError[] = [];
 
 	@action
-	public addResponseError = (responseError: ResponseError) => {
-		this.responseErrors = [...this.responseErrors, responseError];
+	public addMessage = (error: NotificationError) => {
+		this.errors = [...this.errors, error];
 	};
 
 	@action
-	public delResponseError = (responseError: ResponseError) => {
-		this.responseErrors = this.responseErrors.filter(re => re !== responseError);
-	};
-
-	@action
-	public setUrlError = (urlError: UrlError | null) => {
-		this.urlError = urlError;
+	public deleteMessage = (error: NotificationError | string) => {
+		if (typeof error === 'string') {
+			this.errors = this.errors.filter(e => e.id !== error);
+		} else {
+			this.errors = this.errors.filter(e => e !== error);
+		}
 	};
 
 	@action
 	public handleSSEError = (event: Event) => {
 		if (event instanceof MessageEvent) {
 			const errorData = JSON.parse(event.data);
-			notificationsStore.addResponseError({
+			notificationsStore.addMessage({
 				type: 'error',
 				header: errorData.exceptionName,
 				resource: event.target instanceof EventSource ? event.target.url : event.origin,
 				responseBody: errorData.exceptionCause,
 				responseCode: null,
+				errorType: 'responseError',
+				id: nanoid(),
 			});
 		}
 	};

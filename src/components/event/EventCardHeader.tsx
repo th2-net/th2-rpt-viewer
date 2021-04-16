@@ -63,7 +63,10 @@ function EventCardHeader({
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
 
-	const isPinned = selectedStore.pinnedEvents.findIndex(e => e.eventId === event.eventId) !== -1;
+	const isBookmarked =
+		selectedStore.bookmarkedEvents.findIndex(
+			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
+		) !== -1;
 
 	const rootClassName = createBemBlock(
 		'event-header-card',
@@ -82,7 +85,7 @@ function EventCardHeader({
 		isActive ? 'active' : null,
 	);
 
-	const bookmarkClassName = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
+	const bookmarkClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	const onPinClicked = (e: React.MouseEvent) => {
 		selectedStore.toggleEventPin(event);

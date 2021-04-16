@@ -27,11 +27,13 @@ import {
 	MessagesSSEFilters,
 	SSEParams,
 } from './sse';
+import { IndexedDB } from './indexedDb';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
 	messages: MessageApiSchema;
 	sse: SSESchema;
+	indexedDb: IndexedDB;
 }
 
 export type SSEChannelType = 'event' | 'message';

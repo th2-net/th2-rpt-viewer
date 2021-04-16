@@ -20,9 +20,9 @@ import { Virtuoso } from 'react-virtuoso';
 import { useMessageDisplayRulesStore } from '../../hooks';
 import RuleRow from './RuleRow';
 
-type Props = {
+interface Props {
 	sessions: string[];
-};
+}
 
 const RulesList = ({ sessions }: Props) => {
 	const rulesStore = useMessageDisplayRulesStore();

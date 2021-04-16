@@ -44,7 +44,11 @@ function EventDetailInfoCard(props: Props) {
 	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId } = event;
 
 	const status = getEventStatus(event);
-	const isPinned = selectedStore.pinnedEvents.findIndex(e => e.eventId === event.eventId) !== -1;
+
+	const isBookmarked =
+		selectedStore.bookmarkedEvents.findIndex(
+			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
+		) !== -1;
 
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
@@ -57,7 +61,7 @@ function EventDetailInfoCard(props: Props) {
 
 	const cardClassName = createStyleSelector('event-detail-info__event-card', 'event-card', status);
 
-	const bookmarkButtonClassName = createBemBlock('bookmark-button', isPinned ? 'pinned' : null);
+	const bookmarkButtonClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	return (
 		<div className='event-detail-info'>

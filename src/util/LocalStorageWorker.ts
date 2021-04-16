@@ -14,14 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { isEventNode } from '../helpers/event';
-import { isMessage } from '../helpers/message';
-import { isSearchHistoryEntity } from '../helpers/search';
-import { EventAction, EventTreeNode } from '../models/EventAction';
-import { EventMessage, MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
-import { SearchHistory } from '../stores/SearchStore';
+import { MessageSortOrderItem } from '../models/EventMessage';
 
-enum LocalStorageEntities {
+enum LocalStorageLegacyEntities {
 	PINNED_MESSAGES = 'pinnedMessages',
 	EVENTS = 'events',
 	SEARCH_HISTORY = 'search-history',
@@ -31,92 +26,18 @@ enum LocalStorageEntities {
 	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 }
 class LocalStorageWorker {
-	getPersistedPinnedMessages(): EventMessage[] {
-		try {
-			const pinnedMessages = localStorage.getItem(LocalStorageEntities.PINNED_MESSAGES);
-			const parsedMessages = pinnedMessages ? JSON.parse(pinnedMessages) : [];
-			return Array.isArray(parsedMessages) ? parsedMessages.filter(isMessage) : [];
-		} catch (error) {
-			return [];
-		}
-	}
-
-	getPersistedPinnedEvents(): EventTreeNode[] {
-		try {
-			const pinnedEventsNodes = localStorage.getItem(LocalStorageEntities.EVENTS);
-			const parsedEventNodes = pinnedEventsNodes ? JSON.parse(pinnedEventsNodes) : [];
-			return Array.isArray(parsedEventNodes) ? parsedEventNodes.filter(isEventNode) : [];
-		} catch (error) {
-			return [];
-		}
-	}
-
-	setPersistedPinnedMessages(pinnedMessages: EventMessage[]) {
-		localStorage.setItem(LocalStorageEntities.PINNED_MESSAGES, JSON.stringify(pinnedMessages));
-	}
-
-	setPersistedPinnedEvents(pinnedEvents: EventTreeNode[]) {
-		localStorage.setItem(LocalStorageEntities.EVENTS, JSON.stringify(pinnedEvents));
-	}
-
-	saveSearchHistory = (history: SearchHistory[]) => {
-		localStorage.setItem(LocalStorageEntities.SEARCH_HISTORY, JSON.stringify(history));
-	};
-
-	saveGraphSearchHistory = (history: Array<EventMessage | EventAction>) => {
-		localStorage.setItem(LocalStorageEntities.GRAPH_SEARCH_HISTORY, JSON.stringify(history));
-	};
-
-	getSearchHistory = () => {
-		try {
-			const searchHistory = localStorage.getItem(LocalStorageEntities.SEARCH_HISTORY);
-			const parsedSearchHistory = searchHistory ? JSON.parse(searchHistory) : [];
-			return Array.isArray(parsedSearchHistory)
-				? parsedSearchHistory.filter(isSearchHistoryEntity)
-				: [];
-		} catch (error) {
-			return [];
-		}
-	};
-
-	getGraphSearchHistory = (): Array<EventMessage | EventAction> => {
-		try {
-			const graphSearchHistory = localStorage.getItem(LocalStorageEntities.GRAPH_SEARCH_HISTORY);
-			return graphSearchHistory ? JSON.parse(graphSearchHistory) : [];
-		} catch (error) {
-			return [];
-		}
-	};
-
-	getRootDisplayRule = (): MessageDisplayRule | null => {
-		try {
-			const rootRule = localStorage.getItem(LocalStorageEntities.ROOT_DISPLAY_RULE);
-			return rootRule ? JSON.parse(rootRule) : null;
-		} catch (error) {
-			return null;
-		}
-	};
-
-	setRootDisplayRule = (rules: MessageDisplayRule) => {
-		localStorage.setItem(LocalStorageEntities.ROOT_DISPLAY_RULE, JSON.stringify(rules));
-	};
-
-	getMessageDisplayRules = (): Array<MessageDisplayRule> => {
-		try {
-			const displayRules = localStorage.getItem(LocalStorageEntities.DISPLAY_RULES);
-			return displayRules ? JSON.parse(displayRules) : [];
-		} catch (error) {
-			return [];
-		}
-	};
-
-	setMessageDisplayRules = (rules: Array<MessageDisplayRule>) => {
-		localStorage.setItem(LocalStorageEntities.DISPLAY_RULES, JSON.stringify(rules));
+	public clearLocalStorageData = (): void => {
+		localStorage.removeItem(LocalStorageLegacyEntities.ROOT_DISPLAY_RULE);
+		localStorage.removeItem(LocalStorageLegacyEntities.DISPLAY_RULES);
+		localStorage.removeItem(LocalStorageLegacyEntities.PINNED_MESSAGES);
+		localStorage.removeItem(LocalStorageLegacyEntities.EVENTS);
+		localStorage.removeItem(LocalStorageLegacyEntities.SEARCH_HISTORY);
+		localStorage.removeItem(LocalStorageLegacyEntities.GRAPH_SEARCH_HISTORY);
 	};
 
 	getMessageBodySortOrder = (): Array<MessageSortOrderItem> => {
 		try {
-			const order = localStorage.getItem(LocalStorageEntities.MESSAGE_BODY_SORT_ORDER);
+			const order = localStorage.getItem(LocalStorageLegacyEntities.MESSAGE_BODY_SORT_ORDER);
 			return order ? JSON.parse(order) : [];
 		} catch (error) {
 			return [];
@@ -124,7 +45,7 @@ class LocalStorageWorker {
 	};
 
 	setMessageBodySortOrder = (order: Array<MessageSortOrderItem>) => {
-		localStorage.setItem(LocalStorageEntities.MESSAGE_BODY_SORT_ORDER, JSON.stringify(order));
+		localStorage.setItem(LocalStorageLegacyEntities.MESSAGE_BODY_SORT_ORDER, JSON.stringify(order));
 	};
 }
 

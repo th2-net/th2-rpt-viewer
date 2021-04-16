@@ -1,6 +1,6 @@
 {
 	"name": "th2-rpt-viewer",
-	"version": "3.1.11",
+	"version": "3.1.12",
 	"description": "",
 	"main": "index.tsx",
 	"private": true,
@@ -28,6 +28,7 @@
 		"cross-env": "^6.0.3",
 		"fetch-intercept": "^2.3.1",
 		"framer-motion": "^3.6.7",
+		"idb": "^6.0.0",
 		"lodash.throttle": "^4.1.1",
 		"mobx": "^5.2.1",
 		"mobx-react-lite": "^1.5.2",
