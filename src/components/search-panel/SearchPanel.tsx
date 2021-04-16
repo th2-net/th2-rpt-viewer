@@ -20,8 +20,9 @@ import { useActivePanel } from '../../hooks';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
-import '../../styles/search-panel.scss';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
+import { BookmarkedItem, isBookmark } from '../BookmarksPanel';
+import '../../styles/search-panel.scss';
 
 export type SearchPanelType = 'event' | 'message';
 
@@ -30,6 +31,17 @@ const SearchPanel = () => {
 	const searchStore = useSearchStore();
 
 	const { ref: searchPanelRef } = useActivePanel(null);
+
+	const onResultItemClick = React.useCallback(
+		(bookmark: BookmarkedItem) => {
+			if (isBookmark(bookmark)) {
+				searchWorkspace.onSearchResultItemSelect(bookmark.item);
+			} else {
+				searchWorkspace.onSearchResultItemSelect(bookmark);
+			}
+		},
+		[searchWorkspace.onSearchResultItemSelect],
+	);
 
 	return (
 		<div className='search-panel-wrapper'>
@@ -40,7 +52,7 @@ const SearchPanel = () => {
 				<SearchPanelResults
 					resultGroups={searchStore.sortedResultGroups}
 					timestamp={searchStore.currentSearch.timestamp}
-					onResultItemClick={searchWorkspace.onSearchResultItemSelect}
+					onResultItemClick={onResultItemClick}
 					onResultGroupClick={searchWorkspace.followByTimestamp}
 					onResultDelete={() => {
 						if (searchStore.currentSearch) {

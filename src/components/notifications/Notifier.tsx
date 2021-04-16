@@ -18,39 +18,52 @@ import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 import { useToasts } from 'react-toast-notifications';
 import { complement } from '../../helpers/array';
+import { isIndexedDbMessage, isResponseError, isURLError } from '../../helpers/errors';
 import { useNotificationsStore, usePrevious } from '../../hooks';
-import FetchError from './FetchError';
-import UrlError from './UrlError';
+import FetchErrorToast from './FetchErrorToast';
+import IndexedDBMessageToast from './IndexedDBMessageToast';
+import UrlErrorToast from './UrlErrorToast';
 
 function Notifier() {
-	const { addToast } = useToasts();
+	const { addToast, removeToast } = useToasts();
 
-	const { responseErrors, delResponseError, urlError, setUrlError } = useNotificationsStore();
+	// react-toast-notifications uses their own inner ids
+	// in order to delete toast from outside of component we need to know inner id
+	const idsMap = React.useRef<Record<string, string>>({});
 
-	const prevResponseErrors = usePrevious(responseErrors);
+	const notificiationStore = useNotificationsStore();
+
+	const prevResponseErrors = usePrevious(notificiationStore.errors);
 
 	useEffect(() => {
 		const currentResponseErrors = !prevResponseErrors
-			? responseErrors
-			: complement(responseErrors, prevResponseErrors);
-		currentResponseErrors.forEach(n => {
-			const { type, ...props } = n;
-			addToast(<FetchError {...props} />, {
-				appearance: type,
-				onDismiss: () => delResponseError(n),
-			});
-		});
-	}, [responseErrors]);
+			? notificiationStore.errors
+			: complement(notificiationStore.errors, prevResponseErrors);
 
-	useEffect(() => {
-		if (urlError) {
-			const { type, link, error } = urlError;
-			addToast(<UrlError link={link} error={error} />, {
-				appearance: type,
-				onDismiss: () => setUrlError(null),
-			});
-		}
-	}, [urlError]);
+		const removedErrors = prevResponseErrors
+			? prevResponseErrors.filter(error => !notificiationStore.errors.includes(error))
+			: [];
+
+		// We need this to be able to delete toast from outside of toast component
+		removedErrors.forEach(error => removeToast(idsMap.current[error.id]));
+
+		currentResponseErrors.forEach(notificationError => {
+			const options = {
+				appearance: notificationError.type,
+				onDismiss: () => notificiationStore.deleteMessage(notificationError),
+			};
+
+			const registerId = (id: string) => (idsMap.current[notificationError.id] = id);
+
+			if (isURLError(notificationError)) {
+				addToast(<UrlErrorToast {...notificationError} />, options, registerId);
+			} else if (isResponseError(notificationError)) {
+				addToast(<FetchErrorToast {...notificationError} />, options, registerId);
+			} else if (isIndexedDbMessage(notificationError)) {
+				addToast(<IndexedDBMessageToast {...notificationError} />, options, registerId);
+			}
+		});
+	}, [notificiationStore.errors]);
 
 	return null;
 }

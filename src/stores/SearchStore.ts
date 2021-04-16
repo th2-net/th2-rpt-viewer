@@ -14,8 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, computed, observable, reaction, runInAction } from 'mobx';
+import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
+import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import {
 	EventsFiltersInfo,
@@ -24,6 +25,7 @@ import {
 	SSEHeartbeat,
 	SSEParams,
 } from '../api/sse';
+import { DbData, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
 	EventFilterState,
@@ -32,12 +34,16 @@ import {
 } from '../components/search-panel/SearchPanelFilters';
 import { getTimestampAsNumber } from '../helpers/date';
 import { getItemId, isEventMessage, isEventNode } from '../helpers/event';
-import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../helpers/search';
+import {
+	getDefaultEventsFiltersState,
+	getDefaultMessagesFiltersState,
+	isSearchHistoryEntity,
+} from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
-import localStorageWorker from '../util/LocalStorageWorker';
 import notificationsStore from './NotificationsStore';
+import WorkspacesStore from './workspace/WorkspacesStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -95,10 +101,8 @@ const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
 const SEARCH_CHUNK_SIZE = 500;
 
 export class SearchStore {
-	constructor(private api: ApiSchema) {
-		this.getEventFilters();
-		this.getMessagesFilters();
-		this.loadMessageSessions();
+	constructor(private workspacesStore: WorkspacesStore, private api: ApiSchema) {
+		this.init();
 
 		autorun(() => {
 			this.currentSearch = this.searchHistory[this.currentIndex] || null;
@@ -148,7 +152,7 @@ export class SearchStore {
 
 	@observable formType: SearchPanelType = 'event';
 
-	@observable searchHistory: SearchHistory[] = localStorageWorker.getSearchHistory();
+	@observable searchHistory: SearchHistory[] = [];
 
 	@observable currentIndex = this.searchHistory.length > 0 ? this.searchHistory.length - 1 : 0;
 
@@ -177,6 +181,8 @@ export class SearchStore {
 			resultCount: 0,
 		},
 	};
+
+	@observable isEventsFilterLoading = false;
 
 	@computed get searchProgress() {
 		const startTimestamp = Number(this.searchForm.startTimestamp);
@@ -300,6 +306,7 @@ export class SearchStore {
 
 	@action
 	getEventFilters = async () => {
+		this.isEventsFilterLoading = true;
 		try {
 			const filters = await this.api.sse.getEventFilters();
 			const filtersInfo = await this.api.sse.getEventsFiltersInfo(filters);
@@ -309,6 +316,10 @@ export class SearchStore {
 			});
 		} catch (error) {
 			console.error('Error occured while loading event filters', error);
+		} finally {
+			runInAction(() => {
+				this.isEventsFilterLoading = false;
+			});
 		}
 	};
 
@@ -325,7 +336,9 @@ export class SearchStore {
 		} catch (error) {
 			console.error('Error occured while loading messages filters', error);
 		} finally {
-			this.isMessageFiltersLoading = false;
+			runInAction(() => {
+				this.isMessageFiltersLoading = false;
+			});
 		}
 	};
 
@@ -373,8 +386,10 @@ export class SearchStore {
 		if (this.searchHistory.length !== 0) {
 			this.setCompleted(true);
 		}
-
-		localStorageWorker.saveSearchHistory(this.searchHistory);
+		this.api.indexedDb.deleteDbStoreItem(
+			IndexedDbStores.SEARCH_HISTORY,
+			searchHistoryItem.timestamp,
+		);
 	};
 
 	@action nextSearch = () => {
@@ -551,8 +566,8 @@ export class SearchStore {
 
 		this.exportChunkToSearchHistory();
 
-		if (!this.isSearching) {
-			localStorageWorker.saveSearchHistory(this.searchHistory);
+		if (!this.isSearching && this.currentSearch) {
+			this.saveSearchResults(toJS(this.currentSearch));
 		}
 	};
 
@@ -580,18 +595,6 @@ export class SearchStore {
 			}
 		}
 	};
-
-	@action
-	private async loadMessageSessions() {
-		try {
-			const messageSessions = await this.api.messages.getMessageSessions();
-			runInAction(() => {
-				this.messageSessions = messageSessions;
-			});
-		} catch (error) {
-			console.error("Couldn't fetch sessions");
-		}
-	}
 
 	@action
 	exportChunkToSearchHistory() {
@@ -662,4 +665,84 @@ export class SearchStore {
 			},
 		};
 	}
+
+	private async loadMessageSessions() {
+		try {
+			const messageSessions = await this.api.messages.getMessageSessions();
+			runInAction(() => {
+				this.messageSessions = messageSessions;
+			});
+		} catch (error) {
+			console.error("Couldn't fetch sessions");
+		}
+	}
+
+	private getSearchHistory = async (historyTimestamp?: number) => {
+		try {
+			const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
+				IndexedDbStores.SEARCH_HISTORY,
+			);
+			runInAction(() => {
+				this.searchHistory = searchHistory;
+				const defaultIndex = searchHistory.length - 1;
+				const index = historyTimestamp
+					? searchHistory.findIndex(search => search.timestamp === historyTimestamp)
+					: -1;
+				this.currentIndex = index === -1 ? defaultIndex : index;
+			});
+		} catch (error) {
+			console.error('Failed to load search history', error);
+		}
+	};
+
+	private init = () => {
+		this.getEventFilters();
+		this.getMessagesFilters();
+		this.loadMessageSessions();
+		this.getSearchHistory();
+	};
+
+	private saveSearchResults = async (search: SearchHistory) => {
+		try {
+			const savedSearchResultKeys = await this.api.indexedDb.getStoreKeys<number>(
+				IndexedDbStores.SEARCH_HISTORY,
+			);
+			if (savedSearchResultKeys.length >= indexedDbLimits['search-history']) {
+				const keysToDelete = savedSearchResultKeys.slice(
+					0,
+					savedSearchResultKeys.length - indexedDbLimits['search-history'] + 1,
+				);
+				await Promise.all(
+					keysToDelete.map(searchHistoryKey =>
+						this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SEARCH_HISTORY, searchHistoryKey),
+					),
+				);
+			}
+			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
+		} catch (error) {
+			if (error.name === 'QuotaExceededError') {
+				this.workspacesStore.onQuotaExceededError(search);
+			} else {
+				notificationsStore.addMessage({
+					errorType: 'indexedDbMessage',
+					type: 'error',
+					header: `Failed to save current search result`,
+					description: '',
+					id: nanoid(),
+				});
+			}
+		}
+	};
+
+	@action
+	public syncData = async (unsavedData?: DbData) => {
+		if (this.isSearching) {
+			this.stopSearch();
+		}
+
+		await this.getSearchHistory();
+		if (unsavedData && isSearchHistoryEntity(unsavedData)) {
+			await this.saveSearchResults(unsavedData);
+		}
+	};
 }

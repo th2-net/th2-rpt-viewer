@@ -28,18 +28,25 @@ import {
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { getRangeFromTimestamp } from '../../helpers/date';
+import { DbData } from '../../api/indexedDb';
+import RootStore from '../RootStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
+
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
 
-	selectedStore = new SelectedStore(this);
+	public selectedStore = new SelectedStore(this, this.api.indexedDb);
 
-	tabsStore = new TabsStore(this);
+	public tabsStore = new TabsStore(this);
 
 	public searchWorkspace: SearchWorkspaceStore;
 
-	constructor(private api: ApiSchema, initialState: WorkspacesUrlState | null) {
+	constructor(
+		private rootStore: RootStore,
+		private api: ApiSchema,
+		initialState: WorkspacesUrlState | null,
+	) {
 		this.searchWorkspace = new SearchWorkspaceStore(this, this.api);
 
 		this.init(initialState || null);
@@ -150,5 +157,21 @@ export default class WorkspacesStore {
 			interval: SEARCH_STORE_INTERVAL,
 			timeRange: [timestampFrom, timestampTo],
 		};
+	};
+
+	public syncData = async (unsavedData?: DbData) => {
+		try {
+			await Promise.all([
+				this.searchWorkspace.searchStore.syncData(unsavedData),
+				this.selectedStore.syncData(unsavedData),
+			]);
+		} catch (error) {
+			this.searchWorkspace.searchStore.syncData();
+			this.selectedStore.syncData();
+		}
+	};
+
+	public onQuotaExceededError = (unsavedData?: DbData) => {
+		this.rootStore.handleQuotaExceededError(unsavedData);
 	};
 }

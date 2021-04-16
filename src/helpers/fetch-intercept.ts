@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import fetchIntercept from 'fetch-intercept';
+import { nanoid } from 'nanoid';
 import notificationsStore from '../stores/NotificationsStore';
 
 export const registerFetchInterceptor = () =>
@@ -42,12 +43,14 @@ export const registerFetchInterceptor = () =>
 						break;
 				}
 				response.text().then(text => {
-					notificationsStore.addResponseError({
+					notificationsStore.addMessage({
 						type: 'error',
 						header,
 						resource: url,
 						responseCode: status,
 						responseBody: text,
+						errorType: 'responseError',
+						id: nanoid(),
 					});
 				});
 			}

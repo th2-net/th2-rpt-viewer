@@ -14,47 +14,69 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, reaction, observable } from 'mobx';
+import { action, computed, observable, runInAction, toJS } from 'mobx';
+import { nanoid } from 'nanoid';
+import moment from 'moment';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './workspace/WorkspacesStore';
-import localStorageWorker from '../util/LocalStorageWorker';
 import { sortMessagesByTimestamp } from '../helpers/message';
-import { isEventNode, sortByTimestamp } from '../helpers/event';
+import { getItemName, sortByTimestamp } from '../helpers/event';
 import { GraphItem } from '../models/Graph';
 import { filterUniqueGraphItems } from '../helpers/graph';
 import { isWorkspaceStore } from '../helpers/workspace';
+import { DbData, IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
+import {
+	EventBookmark,
+	MessageBookmark,
+	Bookmark,
+	isEventBookmark,
+	isMessageBookmark,
+} from '../components/BookmarksPanel';
+import notificationsStore from './NotificationsStore';
 
 export class SelectedStore {
 	@observable.shallow
-	public pinnedMessages: Array<EventMessage> = localStorageWorker.getPersistedPinnedMessages();
+	public bookmarkedMessages: MessageBookmark[] = [];
 
 	@observable.shallow
-	public pinnedEvents: Array<EventTreeNode> = localStorageWorker.getPersistedPinnedEvents();
+	public bookmarkedEvents: EventBookmark[] = [];
 
-	constructor(private workspacesStore: WorkspacesStore) {
-		reaction(() => this.pinnedMessages, localStorageWorker.setPersistedPinnedMessages);
-
-		reaction(() => this.pinnedEvents, localStorageWorker.setPersistedPinnedEvents);
+	constructor(private workspacesStore: WorkspacesStore, private db: IndexedDB) {
+		this.init();
 	}
 
-	@computed get savedItems(): Array<EventTreeNode | EventMessage> {
-		return sortByTimestamp([...this.pinnedEvents, ...this.pinnedMessages]);
+	@computed
+	public get isBookmarksFull(): boolean {
+		return (
+			this.bookmarkedMessages.length + this.bookmarkedEvents.length >= indexedDbLimits.bookmarks
+		);
 	}
 
-	@computed get hoveredEvent(): EventTreeNode | null {
+	@computed
+	public get savedItems(): Array<EventTreeNode | EventMessage> {
+		return sortByTimestamp([
+			...this.bookmarkedEvents.map(bookmark => bookmark.item),
+			...this.bookmarkedMessages.map(bookmark => bookmark.item),
+		]);
+	}
+
+	@computed
+	public get hoveredEvent(): EventTreeNode | null {
 		return isWorkspaceStore(this.workspacesStore.activeWorkspace)
 			? this.workspacesStore.activeWorkspace.eventsStore.hoveredEvent
 			: null;
 	}
 
-	@computed get hoveredMessage(): EventMessage | null {
+	@computed
+	public get hoveredMessage(): EventMessage | null {
 		return isWorkspaceStore(this.workspacesStore.activeWorkspace)
 			? this.workspacesStore.activeWorkspace.messagesStore.hoveredMessage
 			: null;
 	}
 
-	@computed get graphItems(): Array<GraphItem> {
+	@computed
+	public get graphItems(): Array<GraphItem> {
 		if (!isWorkspaceStore(this.workspacesStore.activeWorkspace)) return [];
 
 		const items = [...this.savedItems, ...this.workspacesStore.activeWorkspace.attachedMessages];
@@ -76,7 +98,8 @@ export class SelectedStore {
 		return sortByTimestamp(filterUniqueGraphItems(items));
 	}
 
-	@computed get attachedMessages() {
+	@computed
+	public get attachedMessages() {
 		return sortMessagesByTimestamp(
 			isWorkspaceStore(this.workspacesStore.activeWorkspace)
 				? this.workspacesStore.activeWorkspace.attachedMessages
@@ -86,30 +109,140 @@ export class SelectedStore {
 
 	@action
 	public toggleMessagePin = (message: EventMessage) => {
-		if (this.pinnedMessages.findIndex(m => m.messageId === message.messageId) === -1) {
-			this.pinnedMessages = this.pinnedMessages.concat(message);
+		const bookmark = this.bookmarkedMessages.find(
+			messageBookmark => messageBookmark.id === message.messageId,
+		);
+		if (bookmark) {
+			this.removeBookmark(bookmark);
+			this.db.deleteDbStoreItem(IndexedDbStores.MESSAGES, bookmark.id);
+		} else if (!this.isBookmarksFull) {
+			const messageBookmark = this.createMessageBookmark(message);
+			this.bookmarkedMessages = this.bookmarkedMessages.concat(messageBookmark);
+			this.saveBookmark(toJS(messageBookmark));
 		} else {
-			this.removeSavedItem(message);
+			this.onLimitReached();
 		}
 	};
 
 	@action
-	public toggleEventPin = (event: EventTreeNode) => {
-		if (this.pinnedEvents.findIndex(e => e.eventId === event.eventId) === -1) {
-			this.pinnedEvents = this.pinnedEvents.concat(event);
-		} else {
-			this.pinnedEvents = this.pinnedEvents.filter(e => e.eventId !== event.eventId);
-		}
-	};
-
-	@action
-	public removeSavedItem(savedItem: EventTreeNode | EventMessage) {
-		if (isEventNode(savedItem)) {
-			this.pinnedEvents = this.pinnedEvents.filter(event => event.eventId !== savedItem.eventId);
-		} else {
-			this.pinnedMessages = this.pinnedMessages.filter(
-				message => message.messageId !== savedItem.messageId,
+	public toggleEventPin = async (event: EventTreeNode) => {
+		const bookmark = this.bookmarkedEvents.find(
+			eventBookmark => eventBookmark.id === event.eventId,
+		);
+		if (bookmark) {
+			this.bookmarkedEvents = this.bookmarkedEvents.filter(
+				eventBookmark => eventBookmark !== bookmark,
 			);
+			this.db.deleteDbStoreItem(IndexedDbStores.EVENTS, bookmark.id);
+		} else if (!this.isBookmarksFull) {
+			const eventBookmark = this.createEventBookmark(event);
+			this.bookmarkedEvents = this.bookmarkedEvents.concat(eventBookmark);
+			this.saveBookmark(toJS(eventBookmark));
+		} else {
+			this.onLimitReached();
 		}
-	}
+	};
+
+	@action
+	public removeBookmark = async (bookmark: Bookmark) => {
+		if (isEventBookmark(bookmark)) {
+			this.bookmarkedEvents = this.bookmarkedEvents.filter(
+				eventBookmark => eventBookmark !== bookmark,
+			);
+			this.db.deleteDbStoreItem(IndexedDbStores.EVENTS, bookmark.id);
+		}
+
+		if (isMessageBookmark(bookmark)) {
+			this.bookmarkedMessages = this.bookmarkedMessages.filter(
+				messageBookmark => messageBookmark !== bookmark,
+			);
+			this.db.deleteDbStoreItem(IndexedDbStores.MESSAGES, bookmark.id);
+		}
+	};
+
+	private init = () => {
+		this.getSavedEvents();
+		this.getSavedMessages();
+	};
+
+	private saveBookmark = async (bookmark: EventBookmark | MessageBookmark) => {
+		const store = isEventBookmark(bookmark) ? IndexedDbStores.EVENTS : IndexedDbStores.MESSAGES;
+		try {
+			await this.db.addDbStoreItem(store, toJS(bookmark));
+		} catch (error) {
+			if (error.name === 'QuotaExceededError') {
+				this.workspacesStore.onQuotaExceededError(bookmark);
+			} else {
+				notificationsStore.addMessage({
+					errorType: 'indexedDbMessage',
+					type: 'error',
+					header: `Failed to save bookmark ${getItemName(bookmark.item)}`,
+					description: '',
+					id: nanoid(),
+				});
+			}
+		}
+	};
+
+	private getSavedEvents = async () => {
+		try {
+			const savedEvents = await this.db.getStoreValues<EventBookmark>(IndexedDbStores.EVENTS);
+			runInAction(() => {
+				this.bookmarkedEvents = savedEvents;
+			});
+		} catch (error) {
+			console.error('Failed to fetch saved events');
+		}
+	};
+
+	private getSavedMessages = async () => {
+		try {
+			const savedMessages = await this.db.getStoreValues<MessageBookmark>(IndexedDbStores.MESSAGES);
+			runInAction(() => {
+				this.bookmarkedMessages = savedMessages;
+			});
+		} catch (error) {
+			console.error('Failed to fetch saved messages');
+		}
+	};
+
+	private createMessageBookmark = (message: EventMessage): MessageBookmark => {
+		return {
+			id: message.messageId,
+			timestamp: moment.utc().valueOf(),
+			item: toJS(message),
+		};
+	};
+
+	private createEventBookmark = (event: EventTreeNode): EventBookmark => {
+		return {
+			id: event.eventId,
+			timestamp: moment.utc().valueOf(),
+			item: toJS(event),
+		};
+	};
+
+	public syncData = async (unsavedData?: DbData) => {
+		await Promise.all([this.getSavedEvents(), this.getSavedMessages()]);
+
+		if (isEventBookmark(unsavedData)) {
+			await this.saveBookmark(unsavedData);
+			this.bookmarkedEvents.push(unsavedData);
+		}
+
+		if (isMessageBookmark(unsavedData)) {
+			await this.saveBookmark(unsavedData);
+			this.bookmarkedMessages.push(unsavedData);
+		}
+	};
+
+	private onLimitReached = () => {
+		notificationsStore.addMessage({
+			errorType: 'indexedDbMessage',
+			type: 'error',
+			header: 'Limit reached',
+			description: 'Maximum bookmarks limit reached. Delete old bookmarks',
+			id: nanoid(),
+		});
+	};
 }

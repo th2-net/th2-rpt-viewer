@@ -74,13 +74,14 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 		const onClickOutside = React.useCallback(
 			(e: MouseEvent) => {
 				if (
+					isOpen &&
 					!anchor?.contains(e.target as HTMLElement) &&
 					!rootRef.current?.contains(e.target as HTMLElement)
 				) {
 					setIsOpen(false);
 				}
 			},
-			[anchor],
+			[anchor, isOpen],
 		);
 
 		useOutsideClickListener(rootRef, onClickOutside);
