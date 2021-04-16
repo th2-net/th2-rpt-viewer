@@ -62,6 +62,10 @@ export function isMessageDisplayRule(obj: unknown): obj is MessageDisplayRule {
 	return notEmpty(obj) && (obj as MessageDisplayRule).viewType !== undefined;
 }
 
+export function isMessageBodySortOrderItem(obj: unknown): obj is MessageSortOrderItem {
+	return notEmpty(obj) && (obj as MessageSortOrderItem).item !== undefined;
+}
+
 export function isOrderRule(obj: unknown): obj is OrderRule {
 	return notEmpty(obj) && (obj as OrderRule).order !== undefined;
 }

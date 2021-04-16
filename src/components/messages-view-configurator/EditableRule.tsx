@@ -50,6 +50,8 @@ const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: Edi
 		const newRule = { ...rule, viewType: vType };
 		if (rule.session === '*') {
 			rulesStore.setRootDisplayRule(newRule);
+			setRuleIsEditing(false);
+			return;
 		}
 		rulesStore.editMessageDisplayRule(rule, newRule);
 		setRuleIsEditing(false);

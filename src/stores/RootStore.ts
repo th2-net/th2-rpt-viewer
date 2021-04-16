@@ -32,7 +32,7 @@ export default class RootStore {
 
 	messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
 
-	messageBodySortStore = new MessageBodySortOrderStore();
+	messageBodySortStore = new MessageBodySortOrderStore(this, this.api.indexedDb);
 
 	workspacesStore: WorkspacesStore;
 
@@ -144,6 +144,7 @@ export default class RootStore {
 			await Promise.all([
 				this.workspacesStore.syncData(unsavedData),
 				this.messageDisplayRulesStore.syncData(unsavedData),
+				this.messageBodySortStore.syncData(unsavedData),
 			]);
 
 			this.notificationsStore.addMessage({
@@ -156,6 +157,7 @@ export default class RootStore {
 		} catch (error) {
 			this.workspacesStore.syncData(unsavedData);
 			this.messageDisplayRulesStore.syncData(unsavedData);
+			this.messageBodySortStore.syncData(unsavedData);
 		}
 	};
 }

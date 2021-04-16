@@ -14,8 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { MessageSortOrderItem } from '../models/EventMessage';
-
 enum LocalStorageLegacyEntities {
 	PINNED_MESSAGES = 'pinnedMessages',
 	EVENTS = 'events',
@@ -33,19 +31,6 @@ class LocalStorageWorker {
 		localStorage.removeItem(LocalStorageLegacyEntities.EVENTS);
 		localStorage.removeItem(LocalStorageLegacyEntities.SEARCH_HISTORY);
 		localStorage.removeItem(LocalStorageLegacyEntities.GRAPH_SEARCH_HISTORY);
-	};
-
-	getMessageBodySortOrder = (): Array<MessageSortOrderItem> => {
-		try {
-			const order = localStorage.getItem(LocalStorageLegacyEntities.MESSAGE_BODY_SORT_ORDER);
-			return order ? JSON.parse(order) : [];
-		} catch (error) {
-			return [];
-		}
-	};
-
-	setMessageBodySortOrder = (order: Array<MessageSortOrderItem>) => {
-		localStorage.setItem(LocalStorageLegacyEntities.MESSAGE_BODY_SORT_ORDER, JSON.stringify(order));
 	};
 }
 

@@ -104,7 +104,7 @@ class MessageDisplayRulesStore {
 		this.messageDisplayRules = this.messageDisplayRules.map(existedRule =>
 			existedRule.id === rule.id ? newRule : existedRule,
 		);
-		this.updateRule(rule);
+		this.updateRule(newRule);
 	};
 
 	@action
