@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useGraphDataStore, useWorkspaceEventStore } from '../../hooks';
 
-export const EventListFooter = observer(() => {
+export const EventListNavDowm = observer(() => {
 	const graphStore = useGraphDataStore();
 	const eventsStore = useWorkspaceEventStore();
 
@@ -31,7 +31,7 @@ export const EventListFooter = observer(() => {
 	);
 });
 
-export const EventListHeader = observer(() => {
+export const EventListNavUp = observer(() => {
 	const graphStore = useGraphDataStore();
 	const eventsStore = useWorkspaceEventStore();
 

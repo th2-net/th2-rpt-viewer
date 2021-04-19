@@ -20,6 +20,7 @@ import EventsFilterPanel from '../filter/EventsFilterPanel';
 import { useActivePanel, useWorkspaceEventStore, useWorkspaceStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
 import EventsSearchPanel from './search/EventsSearchPanel';
+import { EventListNavUp, EventListNavDowm } from './EventListNavigation';
 import { isEventsStore } from '../../helpers/stores';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 
@@ -55,6 +56,12 @@ function EventWindowHeader() {
 						Resolving events<span>.</span>
 						<span>.</span>
 						<span>.</span>
+					</div>
+				)}
+				{!eventDataStore.isLoading && (
+					<div className='event-window-header__nav'>
+						<EventListNavUp />
+						<EventListNavDowm />
 					</div>
 				)}
 			</div>
