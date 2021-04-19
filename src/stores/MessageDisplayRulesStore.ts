@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, runInAction } from 'mobx';
+import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import { DbData, IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
@@ -104,7 +104,7 @@ class MessageDisplayRulesStore {
 		this.messageDisplayRules = this.messageDisplayRules.map(existedRule =>
 			existedRule.id === rule.id ? newRule : existedRule,
 		);
-		this.updateRule(rule);
+		this.updateRule(newRule);
 	};
 
 	@action
@@ -169,13 +169,13 @@ class MessageDisplayRulesStore {
 
 	private saveRulesOrder = (orderRule: OrderRule) => {
 		if (!this.isInitializingRules) {
-			this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, orderRule);
+			this.updateRule(orderRule);
 		}
 	};
 
 	private saveRule = async (rule: MessageDisplayRule) => {
 		try {
-			await this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, rule);
+			await this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, toJS(rule));
 		} catch (error) {
 			if (error.name === 'QuotaExceededError') {
 				this.rootStore.handleQuotaExceededError(rule);
@@ -191,9 +191,9 @@ class MessageDisplayRulesStore {
 		}
 	};
 
-	private updateRule = async (rule: MessageDisplayRule) => {
+	private updateRule = async (rule: MessageDisplayRule | OrderRule) => {
 		try {
-			await this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, rule);
+			await this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, toJS(rule));
 		} catch (error) {
 			if (error.name === 'QuotaExceededError') {
 				this.rootStore.handleQuotaExceededError(rule);
@@ -201,7 +201,9 @@ class MessageDisplayRulesStore {
 				notificationsStore.addMessage({
 					errorType: 'indexedDbMessage',
 					type: 'error',
-					header: `Failed to update rule ${rule.session}`,
+					header: isMessageDisplayRule(rule)
+						? `Failed to update rule ${rule.session}`
+						: 'Failed to update rules order',
 					description: '',
 					id: nanoid(),
 				});
