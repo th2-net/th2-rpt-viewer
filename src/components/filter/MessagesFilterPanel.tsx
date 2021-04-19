@@ -218,6 +218,7 @@ const MessagesFilterPanel = () => {
 	return (
 		<>
 			<FilterPanel
+				type='messages'
 				isLoading={isLoading}
 				isLoadingFilteredItems={isApplied && messagesDataStore.isLoadingSoftFilteredMessages}
 				isFilterApplied={isApplied}

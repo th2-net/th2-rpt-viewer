@@ -26,6 +26,7 @@ import '../../styles/filter.scss';
 const PANEL_WIDTH = 840;
 
 interface Props {
+	type: 'messages' | 'events';
 	isFilterApplied: boolean;
 	isLoading?: boolean;
 	isLoadingFilteredItems?: boolean;
@@ -40,6 +41,7 @@ interface Props {
 
 const FilterPanel = (props: Props) => {
 	const {
+		type,
 		isFilterApplied,
 		isLoading = false,
 		showFilter,
@@ -121,6 +123,23 @@ const FilterPanel = (props: Props) => {
 		!showFilter && isFilterApplied ? 'applied' : null,
 	);
 
+	const renderSubmit = () => {
+		if (type === 'messages') {
+			return isLoading ? (
+				<div className='filter__loading' />
+			) : (
+				<div className='filter-row__button' onClick={onSubmitClick}>
+					Submit filter
+				</div>
+			);
+		}
+		return (
+			<div className='filter-row__button' onClick={onSubmitClick}>
+				Submit filter
+			</div>
+		);
+	};
+
 	return (
 		<div className={filterWrapperClass}>
 			<div className={filterButtonClass} ref={filterButtonRef} onClick={onClick}>
@@ -149,13 +168,7 @@ const FilterPanel = (props: Props) => {
 							<div className='filter-controls__clear-icon' />
 							Clear All
 						</div>
-						{isLoading ? (
-							<div className='filter__loading' />
-						) : (
-							<div className='filter-row__button' onClick={onSubmitClick}>
-								Submit filter
-							</div>
-						)}
+						{renderSubmit()}
 					</div>
 				</div>
 			</ModalPortal>
