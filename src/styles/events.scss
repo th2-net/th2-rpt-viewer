@@ -372,6 +372,9 @@
 			animation-delay: 0.4s;
 		}
 	}
+	&__nav {
+		display: flex;
+	}
 }
 
 .event-window-header-button {

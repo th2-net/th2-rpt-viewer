@@ -24,10 +24,11 @@ export const EventListNavDowm = observer(() => {
 
 	return (
 		<button
-			className='actions-list__nav down'
-			onClick={() => eventsStore.changeEventsRange(-graphStore.interval)}
-			title='Load older events'
-		/>
+			className='actions-list__nav'
+			onClick={() => eventsStore.changeEventsRange(-graphStore.interval)}>
+			<span className='down'></span>
+			<span className='label'>Older</span>
+		</button>
 	);
 });
 
@@ -37,9 +38,10 @@ export const EventListNavUp = observer(() => {
 
 	return (
 		<button
-			className='actions-list__nav up'
-			onClick={() => eventsStore.changeEventsRange(graphStore.interval)}
-			title='Load newer events'
-		/>
+			className='actions-list__nav'
+			onClick={() => eventsStore.changeEventsRange(graphStore.interval)}>
+			<span className='up'></span>
+			<span className='label'>Newer</span>
+		</button>
 	);
 });
