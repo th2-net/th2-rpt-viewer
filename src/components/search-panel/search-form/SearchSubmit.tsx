@@ -39,13 +39,19 @@ const SearchSubmit = ({
 	const getButtonTextWithProgress = (defaultText: string) =>
 		progress === null ? defaultText : `${progress}%`;
 
-	const [buttonText, buttonState, handleClick] = ((): [string, string, () => void] => {
-		if (isSearching) return [getButtonTextWithProgress('Pause'), 'searching', () => pauseSearch()];
-		if (isPaused) return [getButtonTextWithProgress('Resume'), 'paused', () => startSearch()];
-		return ['Search', 'pending', () => startSearch()];
-	})();
+	const buttonText = isSearching
+		? getButtonTextWithProgress('Pause')
+		: isPaused
+		? getButtonTextWithProgress('Resume')
+		: 'Search';
 
-	const iconClassName = createBemElement('search-submit-button', 'icon', buttonState);
+	const iconClassName = createBemElement(
+		'search-submit-button',
+		'icon',
+		isSearching ? 'searching' : isPaused ? 'paused' : 'pending',
+	);
+
+	const handleClick = isSearching ? () => pauseSearch() : () => startSearch();
 
 	return (
 		<div className='search-form__submit'>
