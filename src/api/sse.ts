@@ -88,6 +88,7 @@ export interface SSEParamsEvents {
 	resultCountLimit?: number;
 	resumeFromId?: string;
 	searchDirection?: 'next' | 'previous'; // defaults to next
+	limitForParent: number;
 }
 
 export type SSEParams = EventSSEParams | MessagesSSEParams;

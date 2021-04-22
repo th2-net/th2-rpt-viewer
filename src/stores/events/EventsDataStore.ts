@@ -100,6 +100,7 @@ export default class EventsDataStore {
 					filter,
 					sseParams: {
 						searchDirection: 'next',
+						limitForParent: 51,
 					},
 				},
 				{
@@ -260,6 +261,7 @@ export default class EventsDataStore {
 						resumeFromId: lastChild?.eventId,
 						resultCountLimit: this.CHUNK_SIZE + 1,
 						searchDirection: 'next',
+						limitForParent: 51,
 					},
 				},
 				{
