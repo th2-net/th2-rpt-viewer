@@ -19,8 +19,13 @@
 .bookmarks-panel {
 	width: 100%;
 	height: 100%;
-	padding: 8px;
 	background-color: #fff;
+
+	&__container {
+		padding: 8px;
+		width: 100%;
+		height: 100%;
+	}
 
 	&__list {
 		@include scrollbar;
@@ -175,5 +180,185 @@
 		&.failed {
 			border-color: $graphOverlayFailedEventsColor;
 		}
+	}
+}
+
+.bookmarks-panel-item {
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	width: 100%;
+	height: auto;
+
+	&__content {
+		width: calc(100% - 30px);
+	}
+}
+
+.bookmarks-panel-checkbox {
+	margin: 0 5px;
+
+	.checkbox__control {
+		background-color: $bookmarkPanelCheckboxColor;
+	}
+}
+
+.bookmark-panel-header {
+	padding: 0 8px 8px;
+	background-color: $bookmarkPanelHeaderColor;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	color: #fff;
+	border-radius: 0 0 5px 5px;
+	flex-shrink: 0;
+
+	&__row {
+		min-height: 32px;
+		font-size: 14px;
+		font-weight: bold;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		margin-bottom: 5px;
+
+		&-input {
+			width: 100%;
+			padding: 3px 5px;
+			margin: 0 10px;
+			border-radius: $bubbleBorderRadius;
+			min-height: 30px;
+			background-color: rgba(#ffffff, 0.5);
+			font-size: 13px;
+			color: $primaryTextColor;
+			box-sizing: border-box;
+			// workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
+			min-width: 0;
+			&:disabled {
+				opacity: 0.5;
+			}
+			&:focus {
+				background-color: #fff;
+
+				&::placeholder {
+					color: $secondaryTextColor;
+				}
+			}
+
+			&.non-empty {
+				background-color: #fff;
+			}
+		}
+
+		&-label {
+			width: 80px;
+			font-weight: bold;
+			font-size: 14px;
+			flex-shrink: 0;
+		}
+	}
+}
+
+.bookmark-panel-header-actions {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	height: auto;
+
+	.button {
+		padding: 3px 0;
+		border-radius: 3px;
+		display: flex;
+		align-items: center;
+		font-size: 14px;
+		font-weight: bold;
+		color: $bookmarkPanelButtonTextColor;
+		background: $bookmarkPanelButtonBackgroundColor;
+		font-family: 'Open Sans', sans-serif;
+		cursor: pointer;
+		outline: none;
+		border: none;
+
+		&:hover {
+			background: rgba($bookmarkPanelButtonTextColor, 0.2);
+		}
+
+		&__icon {
+			margin-left: 3px;
+			margin-right: 1px;
+			flex-shrink: 0;
+			opacity: 0.85;
+			@include icon(url(../../resources/icons/cross-icon-white.svg), 20px, 20px);
+		}
+
+		&__label {
+			margin-right: 6px;
+		}
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: inherit;
+		}
+	}
+
+	.bookmarks-panel-checkbox {
+		margin-right: 10px;
+	}
+}
+
+.bookmark-type-switcher {
+	display: flex;
+
+	&__switch-bookmark-type-button {
+		margin-left: 10px;
+	}
+}
+
+.switch-bookmark-type-button {
+	border: none;
+	outline: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	color: white;
+	background: none;
+	padding: 3px 8px 3px 5px;
+	border-radius: 5px;
+	opacity: 0.8;
+
+	transition: color 0.3s, background-color 0.3s, opacity 0.3s;
+
+	&.active {
+		color: $primaryTextColor;
+		background-color: white;
+		opacity: 1;
+	}
+
+	&.disabled {
+		opacity: 0.5;
+		cursor: inherit;
+	}
+
+	&__icon {
+		&.event {
+			@include icon(url(../../resources/icons/workspace-events-white.svg), 15px, 15px);
+
+			&.active {
+				@include icon(url(../../resources/icons/workspace-events.svg), 15px, 15px);
+			}
+		}
+		&.message {
+			@include icon(url(../../resources/icons/workspace-messages-white.svg), 15px, 15px);
+
+			&.active {
+				@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
+			}
+		}
+	}
+
+	&__label {
+		margin-left: 3px;
+		font-size: 14px;
 	}
 }

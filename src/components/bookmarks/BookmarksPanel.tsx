@@ -18,19 +18,25 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
-import Empty from './util/Empty';
-import { getTimestampAsNumber } from '../helpers/date';
-import { isEvent, isEventMessage } from '../helpers/event';
-import { createBemElement, createStyleSelector } from '../helpers/styleCreators';
-import { useActivePanel, useSelectedStore } from '../hooks';
-import { EventAction, EventTreeNode } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
-import useSearchWorkspace from '../hooks/useSearchWorkspace';
-import '../styles/bookmarks.scss';
+import Empty from '../util/Empty';
+import { getTimestampAsNumber } from '../../helpers/date';
+import { getItemId, getItemName, isEvent, isEventMessage } from '../../helpers/event';
+import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
+import { useActivePanel, useSelectedStore } from '../../hooks';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { EventMessage } from '../../models/EventMessage';
+import useSearchWorkspace from '../../hooks/useSearchWorkspace';
+import '../../styles/bookmarks.scss';
+import { useState } from 'react';
+import BookmarkTextSearch from './BookmarkTextSearch';
+import BookmarkTypeSwitcher from './BookmarkTypeSwitcher';
+import Checkbox from '../util/Checkbox';
 
 export type Bookmark = EventBookmark | MessageBookmark;
 
 export type BookmarkedItem = Bookmark | EventMessage | EventTreeNode | EventAction;
+
+export type BookmarkType = 'event' | 'message';
 
 export function isBookmark(item: unknown): item is Bookmark {
 	return (item as Bookmark).id !== undefined && (item as Bookmark).item !== undefined;
@@ -60,6 +66,10 @@ function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
 	const searchWorkspace = useSearchWorkspace();
 
+	const [bookmarkType, setBookmarkType] = useState<BookmarkType | null>(null);
+	const [textSearch, setTextSearch] = useState('');
+	const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
+
 	const bookmarks = React.useMemo(() => {
 		const sortedBookmarks: Bookmark[] = [
 			...selectedStore.bookmarkedMessages,
@@ -74,13 +84,22 @@ function BookmarksPanel() {
 		return sortedBookmarks;
 	}, [selectedStore.bookmarkedMessages, selectedStore.bookmarkedEvents]);
 
-	const { ref: panelRef } = useActivePanel(null);
+	const filteredBookmarks = React.useMemo(() => {
+		return bookmarks
+			.filter(
+				bookmark =>
+					bookmarkType === null ||
+					(bookmarkType === 'event' && isEventBookmark(bookmark)) ||
+					(bookmarkType === 'message' && isMessageBookmark(bookmark)),
+			)
+			.filter(
+				bookmark =>
+					getItemId(bookmark.item).includes(textSearch) ||
+					getItemName(bookmark.item).includes(textSearch),
+			);
+	}, [bookmarks, bookmarkType, textSearch]);
 
-	function onBookmarkRemove(bookmark: BookmarkedItem) {
-		if (isBookmark(bookmark)) {
-			selectedStore.removeBookmark(bookmark);
-		}
-	}
+	const { ref: panelRef } = useActivePanel(null);
 
 	function onBookmarkClick(bookmark: BookmarkedItem) {
 		if (isBookmark(bookmark)) {
@@ -91,30 +110,87 @@ function BookmarksPanel() {
 	}
 
 	function computeKey(index: number) {
-		return bookmarks[index].id;
+		return filteredBookmarks[index].id;
+	}
+
+	function selectItem(index: number) {
+		if (!selectedBookmarks.includes(filteredBookmarks[index].id)) {
+			setSelectedBookmarks([...selectedBookmarks, filteredBookmarks[index].id]);
+		} else {
+			setSelectedBookmarks(selectedBookmarks.filter(item => filteredBookmarks[index].id !== item));
+		}
+	}
+
+	function selectAll() {
+		if (selectedBookmarks.length !== filteredBookmarks.length) {
+			setSelectedBookmarks(filteredBookmarks.map(bookmark => bookmark.id));
+		} else {
+			setSelectedBookmarks([]);
+		}
+	}
+
+	function selectedRemove() {
+		filteredBookmarks
+			.filter(bookmark => selectedBookmarks.includes(bookmark.id))
+			.forEach(bookmark => selectedStore.removeBookmark(bookmark));
 	}
 
 	function renderBookmarkItem(index: number) {
 		return (
-			<BookmarkItem
-				bookmark={bookmarks[index]}
-				onRemove={onBookmarkRemove}
-				onClick={onBookmarkClick}
-				isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
-			/>
+			<div className='bookmarks-panel-item'>
+				<div className='bookmarks-panel-item__content'>
+					<BookmarkItem
+						bookmark={filteredBookmarks[index]}
+						onClick={onBookmarkClick}
+						isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
+					/>
+				</div>
+				<Checkbox
+					className='bookmarks-panel-checkbox'
+					checked={selectedBookmarks.includes(filteredBookmarks[index].id)}
+					onChange={() => selectItem(index)}
+				/>
+			</div>
 		);
 	}
 
+	const iconButtonClassName = createBemElement('button', 'icon');
+
 	return (
 		<div className='bookmarks-panel' ref={panelRef}>
-			{bookmarks.length === 0 && <Empty description='No bookmarks added' />}
-			<Virtuoso
-				className='bookmarks-panel__list'
-				totalCount={bookmarks.length}
-				itemContent={renderBookmarkItem}
-				computeItemKey={computeKey}
-				style={{ height: '100%' }}
-			/>
+			<div className='bookmark-panel-header'>
+				<BookmarkTypeSwitcher value={bookmarkType} setValue={setBookmarkType} label='Type' />
+				<BookmarkTextSearch value={textSearch} setValue={setTextSearch} label='Search' />
+
+				<div className='bookmark-panel-header-actions'>
+					<div className='bookmark-panel-header-actions_left-side'>
+						<button
+							className='button'
+							disabled={selectedBookmarks.length === 0}
+							onClick={() => selectedRemove()}>
+							<i className={iconButtonClassName} />
+							<span className='button__label'>Delete</span>
+						</button>
+					</div>
+					<div className='bookmark-panel-header-actions_right-side'>
+						<Checkbox
+							className='bookmarks-panel-checkbox'
+							checked={selectedBookmarks.length === filteredBookmarks.length}
+							onChange={() => selectAll()}
+						/>
+					</div>
+				</div>
+			</div>
+			<div className='bookmarks-panel__container'>
+				{bookmarks.length === 0 && <Empty description='No bookmarks added' />}
+				<Virtuoso
+					className='bookmarks-panel__list'
+					totalCount={filteredBookmarks.length}
+					itemContent={renderBookmarkItem}
+					computeItemKey={computeKey}
+					style={{ height: '100%' }}
+				/>
+			</div>
 		</div>
 	);
 }
