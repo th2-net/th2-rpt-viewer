@@ -16,7 +16,7 @@
 
 import moment from 'moment';
 import React, { useRef, useState } from 'react';
-import { createBemBlock } from '../../../helpers/styleCreators';
+import { createBemBlock, createBemElement } from '../../../helpers/styleCreators';
 import { TimeInputType } from '../../../models/filter/FilterInputs';
 import FilterDatetimePicker from '../../filter/date-time-inputs/FilterDatetimePicker';
 
@@ -24,6 +24,9 @@ type Props = {
 	value: number | null;
 	setValue: (nextValue: number | null) => void;
 	disabled: boolean;
+	showError: boolean;
+	errorPosition: 'left' | 'right';
+	errorTextRows: string[];
 	hidden?: boolean;
 	readonly?: boolean;
 };
@@ -32,6 +35,9 @@ const TimeLimitControl = ({
 	value,
 	setValue,
 	disabled,
+	showError,
+	errorPosition = 'left',
+	errorTextRows,
 	hidden = false,
 	readonly = false,
 }: Props) => {
@@ -59,6 +65,13 @@ const TimeLimitControl = ({
 		hidden ? 'hidden' : null,
 	);
 
+	const errorClassName = createBemElement(
+		'search-time-limit',
+		'error',
+		showError ? null : 'hidden',
+		errorPosition,
+	);
+
 	return (
 		<>
 			<div className={rootClassName} onClick={handleRootClick} ref={rootRef}>
@@ -73,6 +86,14 @@ const TimeLimitControl = ({
 				) : (
 					<div className='search-time-limit__infinite' />
 				)}
+				<div className={errorClassName}>
+					{errorTextRows.map(errorText => (
+						<>
+							{errorText}
+							<br />
+						</>
+					))}
+				</div>
 			</div>
 			{showPicker && (
 				<FilterDatetimePicker
