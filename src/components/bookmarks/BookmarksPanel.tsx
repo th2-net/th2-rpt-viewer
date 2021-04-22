@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
@@ -27,7 +27,6 @@ import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import '../../styles/bookmarks.scss';
-import { useState } from 'react';
 import BookmarkTextSearch from './BookmarkTextSearch';
 import BookmarkTypeSwitcher from './BookmarkTypeSwitcher';
 import Checkbox from '../util/Checkbox';
@@ -66,9 +65,9 @@ function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
 	const searchWorkspace = useSearchWorkspace();
 
-	const [bookmarkType, setBookmarkType] = useState<BookmarkType | null>(null);
-	const [textSearch, setTextSearch] = useState('');
-	const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
+	const [bookmarkType, setBookmarkType] = React.useState<BookmarkType | null>(null);
+	const [textSearch, setTextSearch] = React.useState('');
+	const [selectedBookmarks, setSelectedBookmarks] = React.useState<string[]>([]);
 
 	const bookmarks = React.useMemo(() => {
 		const sortedBookmarks: Bookmark[] = [

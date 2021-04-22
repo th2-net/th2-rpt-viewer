@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { createBemElement, createBemBlock, createStyleSelector } from '../../helpers/styleCreators';
+import { createStyleSelector } from '../../helpers/styleCreators';
 
 type Props = {
 	value: string;

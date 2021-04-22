@@ -21,7 +21,7 @@ import WorkspaceSplitter from './WorkspaceSplitter';
 import SearchPanel from '../search-panel/SearchPanel';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import '../../styles/workspace.scss';
-import { useWorkspaces, useWorkspaceStore } from '../../hooks';
+import { useWorkspaces } from '../../hooks';
 
 const panelColors = {
 	search: {
