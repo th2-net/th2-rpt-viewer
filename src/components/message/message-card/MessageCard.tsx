@@ -121,24 +121,8 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		messagesStore.setHoveredMessage(null);
 	};
 
-	const messageViewTypeSwitchConfig: RadioProps<MessageViewType>[] = React.useMemo(
-		() => [
-			{
-				value: MessageViewType.JSON,
-				id: `${MessageViewType.JSON}-${messageId}-${workspaceStore.id}`,
-				name: `message-view-type-${messageId}-${workspaceStore.id}`,
-				className: 'message-view-type-radio',
-				checked: viewType === MessageViewType.JSON,
-				onChange: toggleViewType,
-			},
-			{
-				value: MessageViewType.FORMATTED,
-				id: `${MessageViewType.FORMATTED}-${messageId}-${workspaceStore.id}`,
-				name: `message-view-type-${messageId}-${workspaceStore.id}`,
-				className: 'message-view-type-radio',
-				checked: viewType === MessageViewType.FORMATTED,
-				onChange: toggleViewType,
-			},
+	const messageViewTypeSwitchConfig: RadioProps<MessageViewType>[] = React.useMemo(() => {
+		const viewTypes = [
 			{
 				value: MessageViewType.BINARY,
 				id: `${MessageViewType.BINARY}-${messageId}-${workspaceStore.id}`,
@@ -155,9 +139,29 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 				checked: viewType === MessageViewType.ASCII,
 				onChange: toggleViewType,
 			},
-		],
-		[messageId, viewType],
-	);
+		];
+		return body
+			? [
+					{
+						value: MessageViewType.JSON,
+						id: `${MessageViewType.JSON}-${messageId}-${workspaceStore.id}`,
+						name: `message-view-type-${messageId}-${workspaceStore.id}`,
+						className: 'message-view-type-radio',
+						checked: viewType === MessageViewType.JSON,
+						onChange: toggleViewType,
+					},
+					{
+						value: MessageViewType.FORMATTED,
+						id: `${MessageViewType.FORMATTED}-${messageId}-${workspaceStore.id}`,
+						name: `message-view-type-${messageId}-${workspaceStore.id}`,
+						className: 'message-view-type-radio',
+						checked: viewType === MessageViewType.FORMATTED,
+						onChange: toggleViewType,
+					},
+					...viewTypes,
+			  ]
+			: viewTypes;
+	}, [messageId, viewType, body]);
 
 	const isAttached = !!messagesStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
@@ -317,6 +321,19 @@ const RecoverableMessageCard = (props: OwnProps) => {
 					}
 					return props.message.sessionId.includes(rule.session);
 				});
+				if (!props.message.body) {
+					return declaredRule
+						? declaredRule.viewType === MessageViewType.ASCII ||
+						  declaredRule.viewType === MessageViewType.BINARY
+							? declaredRule.viewType
+							: MessageViewType.ASCII
+						: rootRule
+						? rootRule.viewType === MessageViewType.ASCII ||
+						  rootRule.viewType === MessageViewType.BINARY
+							? rootRule.viewType
+							: MessageViewType.ASCII
+						: MessageViewType.ASCII;
+				}
 				return declaredRule
 					? declaredRule.viewType
 					: rootRule
