@@ -132,6 +132,7 @@ function BookmarksPanel() {
 		filteredBookmarks
 			.filter(bookmark => selectedBookmarks.includes(bookmark.id))
 			.forEach(bookmark => selectedStore.removeBookmark(bookmark));
+		setSelectedBookmarks([]);
 	}
 
 	function renderBookmarkItem(index: number) {
