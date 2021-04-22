@@ -26,6 +26,8 @@ import { timestampToNumber } from '../../helpers/date';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { TimeRange } from '../../models/Timestamp';
 
+const LIMIT_FOR_PARENT = 51;
+
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
 	filter: EventsFilter | null;
@@ -100,7 +102,7 @@ export default class EventsDataStore {
 					filter,
 					sseParams: {
 						searchDirection: 'next',
-						limitForParent: 51,
+						limitForParent: LIMIT_FOR_PARENT,
 					},
 				},
 				{
@@ -261,7 +263,7 @@ export default class EventsDataStore {
 						resumeFromId: lastChild?.eventId,
 						resultCountLimit: this.CHUNK_SIZE + 1,
 						searchDirection: 'next',
-						limitForParent: 51,
+						limitForParent: LIMIT_FOR_PARENT,
 					},
 				},
 				{
