@@ -51,10 +51,11 @@ const SearchPanelForm = () => {
 		messageSessions,
 		filters,
 		startSearch,
-		stopSearch,
+		pauseSearch,
 		setFormType,
 		isSearching,
 		searchProgress,
+		isPaused,
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
@@ -96,6 +97,8 @@ const SearchPanelForm = () => {
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
 		autocompleteList: messageSessions,
+		isInvalid: true,
+		required: true,
 	};
 
 	const config: FitlerRowItem =
@@ -185,12 +188,13 @@ const SearchPanelForm = () => {
 
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
-		completed: completed.previous && completed.next,
-		disabled: disabled || !form.searchDirection,
+		disabled:
+			disabled || !form.searchDirection || (formType === 'message' && form.stream.length === 0),
 		progress: commonProgress,
 		processedObjectCount,
+		isPaused,
 		startSearch,
-		stopSearch,
+		pauseSearch,
 	};
 
 	return (
