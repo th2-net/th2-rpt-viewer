@@ -21,10 +21,7 @@ import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './Work
 import TabsStore from './TabsStore';
 import SearchWorkspaceStore, { SEARCH_STORE_INTERVAL } from './SearchWorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
-import {
-	EventFilterState,
-	MessageFilterState,
-} from '../../components/search-panel/SearchPanelFilters';
+import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { getRangeFromTimestamp } from '../../helpers/date';
@@ -143,7 +140,6 @@ export default class WorkspacesStore {
 		timestamp: number,
 		targetEvent?: EventTreeNode | EventAction,
 	): WorkspaceInitialState => {
-		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
 		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
 
 		return {
