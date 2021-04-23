@@ -144,12 +144,10 @@ export default class WorkspacesStore {
 		targetEvent?: EventTreeNode | EventAction,
 	): WorkspaceInitialState => {
 		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
-		const filter = requestInfo?.filters as EventFilterState | undefined;
 		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
 
 		return {
 			events: {
-				filter,
 				range: [timestampFrom, timestampTo],
 				targetEvent,
 			},
