@@ -29,13 +29,11 @@ import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
 import { MessageScreenshotZoom } from './MessageScreenshot';
 import { EventMessage, isScreenshotMessage, MessageViewType } from '../../../models/EventMessage';
-
 import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
 import '../../../styles/messages.scss';
 import RadioGroup from '../../util/RadioGroup';
-import { RadioProps } from '../../util/Radio';
 import { matchWildcardRule } from '../../../helpers/regexp';
 
 const HUE_SEGMENTS_COUNT = 36;
@@ -121,24 +119,8 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		messagesStore.setHoveredMessage(null);
 	};
 
-	const messageViewTypeSwitchConfig: RadioProps<MessageViewType>[] = React.useMemo(
+	const rawViewTypes = React.useMemo(
 		() => [
-			{
-				value: MessageViewType.JSON,
-				id: `${MessageViewType.JSON}-${messageId}-${workspaceStore.id}`,
-				name: `message-view-type-${messageId}-${workspaceStore.id}`,
-				className: 'message-view-type-radio',
-				checked: viewType === MessageViewType.JSON,
-				onChange: toggleViewType,
-			},
-			{
-				value: MessageViewType.FORMATTED,
-				id: `${MessageViewType.FORMATTED}-${messageId}-${workspaceStore.id}`,
-				name: `message-view-type-${messageId}-${workspaceStore.id}`,
-				className: 'message-view-type-radio',
-				checked: viewType === MessageViewType.FORMATTED,
-				onChange: toggleViewType,
-			},
 			{
 				value: MessageViewType.BINARY,
 				id: `${MessageViewType.BINARY}-${messageId}-${workspaceStore.id}`,
@@ -156,8 +138,31 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 				onChange: toggleViewType,
 			},
 		],
-		[messageId, viewType],
+		[viewType, messageId],
 	);
+
+	const parsedViewTypes = React.useMemo(() => {
+		return body
+			? [
+					{
+						value: MessageViewType.JSON,
+						id: `${MessageViewType.JSON}-${messageId}-${workspaceStore.id}`,
+						name: `message-view-type-${messageId}-${workspaceStore.id}`,
+						className: 'message-view-type-radio',
+						checked: viewType === MessageViewType.JSON,
+						onChange: toggleViewType,
+					},
+					{
+						value: MessageViewType.FORMATTED,
+						id: `${MessageViewType.FORMATTED}-${messageId}-${workspaceStore.id}`,
+						name: `message-view-type-${messageId}-${workspaceStore.id}`,
+						className: 'message-view-type-radio',
+						checked: viewType === MessageViewType.FORMATTED,
+						onChange: toggleViewType,
+					},
+			  ]
+			: [];
+	}, [messageId, viewType, body]);
 
 	const isAttached = !!messagesStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
@@ -277,7 +282,10 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 					onClick={() => selectedStore.toggleMessagePin(message)}></div>
 				<div className='mc-header__controls'>
 					{!isScreenshotMsg && (
-						<RadioGroup className='mc-header__radios' radioConfigs={messageViewTypeSwitchConfig} />
+						<RadioGroup
+							className='mc-header__radios'
+							radioConfigs={[...parsedViewTypes, ...rawViewTypes]}
+						/>
 					)}
 					{isScreenshotMsg && (
 						<>
@@ -317,6 +325,13 @@ const RecoverableMessageCard = (props: OwnProps) => {
 					}
 					return props.message.sessionId.includes(rule.session);
 				});
+				if (!props.message.body) {
+					return declaredRule
+						? getRawViewType(declaredRule.viewType)
+						: rootRule
+						? getRawViewType(rootRule.viewType)
+						: MessageViewType.ASCII;
+				}
 				return declaredRule
 					? declaredRule.viewType
 					: rootRule
@@ -336,3 +351,11 @@ const RecoverableMessageCard = (props: OwnProps) => {
 };
 
 export default RecoverableMessageCard;
+
+function isRawViewType(viewType: MessageViewType) {
+	return viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
+}
+
+function getRawViewType(viewType: MessageViewType) {
+	return isRawViewType(viewType) ? viewType : MessageViewType.ASCII;
+}
