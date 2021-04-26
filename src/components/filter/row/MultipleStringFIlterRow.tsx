@@ -72,7 +72,13 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 		input.current?.focus();
 	};
 
-	const inputRootClassName = createBemElement('filter-row', 'multiple-values', 'filter-row__input');
+	const inputRootClassName = createBemElement(
+		'filter-row',
+		'multiple-values',
+		'filter-row__input',
+		config.isInvalid ? 'invalid' : null,
+	);
+
 	const filterContentClassName = createStyleSelector(
 		'filter-content',
 		(isFocused || config.values.length > 0) && !config.disabled ? 'active' : null,
@@ -109,7 +115,10 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 						anchor={autocompleteAnchor}
 						ref={input}
 						placeholder={
-							config.values.length === 0 ? config.hint || 'Use Tab to separate different words' : ''
+							config.values.length === 0
+								? config.hint ||
+								  `${config.required ? 'Required. ' : ''}Use Tab to separate different words`
+								: ''
 						}
 						disabled={config.disabled}
 						submitKeyCodes={[KeyCodes.TAB]}
