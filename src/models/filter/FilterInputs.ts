@@ -78,6 +78,8 @@ export type FilterRowBaseConfig = {
 	label?: string;
 	disabled?: boolean;
 	wrapperClassName?: string;
+	isInvalid?: boolean;
+	required?: boolean;
 };
 
 export type FilterRowTimeWindowConfig = FilterRowBaseConfig & {
