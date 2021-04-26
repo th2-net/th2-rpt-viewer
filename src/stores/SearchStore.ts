@@ -44,8 +44,11 @@ import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
+import localStorageWorker from '../util/LocalStorageWorker';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
+
+const SAVED_FILTERS_LIMIT = 10;
 
 export type SearchPanelFormState = {
 	startTimestamp: number | null;
@@ -518,6 +521,49 @@ export class SearchStore {
 				type: this.formType,
 				queryParams,
 			});
+
+			const valuesToSave = Object.fromEntries(
+				filterValues.map(([key, value]) => [key.split('-')[0], toJS(value)]),
+			);
+
+			const filtersToSave: { [k: string]: string | string[] } =
+				this.formType === 'event' ? { ...valuesToSave, parentEvent } : valuesToSave;
+
+			const savedFilters = localStorageWorker.getSavedFilters();
+
+			const newSavedFilters = Object.entries(filtersToSave).map(([key, value]) => {
+				const currentFilterValues = savedFilters[key];
+				if (typeof value === 'string') {
+					if (!currentFilterValues) {
+						return [key, [value]];
+					}
+					if (currentFilterValues.length < SAVED_FILTERS_LIMIT) {
+						return [key, [...currentFilterValues, value]];
+					}
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const [_, ...rest] = currentFilterValues;
+					return [key, [...rest, value]];
+				}
+				if (!currentFilterValues) {
+					return [key, value];
+				}
+				const newLength = currentFilterValues.length + value.length;
+				const to = newLength - SAVED_FILTERS_LIMIT;
+				if (currentFilterValues.length < SAVED_FILTERS_LIMIT) {
+					if (newLength < SAVED_FILTERS_LIMIT) {
+						return [key, [...currentFilterValues, ...value]];
+					}
+					return [key, [...currentFilterValues, ...value.slice(0, to)]];
+				}
+				return [key, [...currentFilterValues.slice(to), ...value]];
+			});
+
+			localStorageWorker.setSavedFilters({
+				...savedFilters,
+				...Object.fromEntries(newSavedFilters),
+			});
+
+			console.log(localStorageWorker.getSavedFilters());
 
 			this.searchChannel[direction] = searchChannel;
 

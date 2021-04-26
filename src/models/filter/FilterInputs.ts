@@ -92,6 +92,7 @@ export type FilterRowStringConfig = FilterRowBaseConfig & {
 	value: string;
 	setValue: (nextValue: string) => void;
 	labelClassName?: string;
+	autocompleteList?: string[];
 };
 
 export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
