@@ -34,6 +34,8 @@ interface SearchPanelResultsProps {
 	resultGroups: [string, SearchResult[]][];
 	timestamp: number;
 	disabledRemove: boolean;
+	showLoadMoreButton: boolean;
+	loadMore: () => void;
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
@@ -49,6 +51,8 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		showToggler,
 		next,
 		prev,
+		showLoadMoreButton,
+		loadMore,
 	} = props;
 
 	function computeKey(index: number) {
@@ -87,6 +91,11 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 						onGroupClick={onResultGroupClick}
 					/>
 				))}
+				{showLoadMoreButton && (
+					<button onClick={loadMore} className='actions-list__load-button'>
+						Load more
+					</button>
+				)}
 			</div>
 		</div>
 	);
