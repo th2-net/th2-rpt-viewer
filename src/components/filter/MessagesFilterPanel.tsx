@@ -172,6 +172,7 @@ const MessagesFilterPanel = () => {
 			currentValue: currentStream,
 			setCurrentValue: setCurrentStream,
 			autocompleteList: messagesStore.messageSessions,
+			validateBubbles: true,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
 		};

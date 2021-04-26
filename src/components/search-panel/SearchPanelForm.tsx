@@ -37,6 +37,7 @@ import SearchResultCountLimit, {
 	ResultCountLimitConfig,
 } from './search-form/SearchResultCountLimit';
 import { SearchDirection } from '../../models/search/SearchDirection';
+import localStorageWorker from '../../util/LocalStorageWorker';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -59,6 +60,8 @@ const SearchPanelForm = () => {
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
+
+	const savedFilters = localStorageWorker.getSavedFilters();
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
@@ -85,6 +88,7 @@ const SearchPanelForm = () => {
 		setValue: getFormStateUpdater('parentEvent'),
 		type: 'string',
 		id: 'parent-event',
+		autocompleteList: savedFilters.parentEvent,
 	};
 
 	const messagesFormTypeConfig: FitlerRowItem = {
@@ -213,7 +217,9 @@ const SearchPanelForm = () => {
 				<FilterRow rowConfig={config} />
 			</div>
 			<div className='filters'>
-				{filters && filters.info.length > 0 && <SearchPanelFilters {...(filters as any)} />}
+				{filters && filters.info.length > 0 && (
+					<SearchPanelFilters {...(filters as any)} type={formType} />
+				)}
 			</div>
 		</div>
 	);

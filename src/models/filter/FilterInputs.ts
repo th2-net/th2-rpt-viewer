@@ -102,6 +102,7 @@ export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
 	currentValue: string;
 	setCurrentValue: (currentValue: string) => void;
 	autocompleteList: string[] | null;
+	validateBubbles?: boolean;
 	hint?: string;
 	labelClassName?: string;
 };

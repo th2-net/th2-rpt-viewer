@@ -533,37 +533,40 @@ export class SearchStore {
 
 			const newSavedFilters = Object.entries(filtersToSave).map(([key, value]) => {
 				const currentFilterValues = savedFilters[key];
+				const keyToAdd = key === 'type' || key === 'body' ? `${this.formType}-${key}` : key;
 				if (typeof value === 'string') {
 					if (!currentFilterValues) {
-						return [key, [value]];
+						return [keyToAdd, [value]];
+					}
+					if (currentFilterValues.includes(value)) {
+						return [keyToAdd, currentFilterValues];
 					}
 					if (currentFilterValues.length < SAVED_FILTERS_LIMIT) {
-						return [key, [...currentFilterValues, value]];
+						return [keyToAdd, [...currentFilterValues, value]];
 					}
 					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					const [_, ...rest] = currentFilterValues;
-					return [key, [...rest, value]];
+					return [keyToAdd, [...rest, value]];
 				}
 				if (!currentFilterValues) {
-					return [key, value];
+					return [keyToAdd, value];
 				}
-				const newLength = currentFilterValues.length + value.length;
-				const to = newLength - SAVED_FILTERS_LIMIT;
+				const valuesToAdd = value.filter(v => !currentFilterValues.includes(v));
+				const newLength = currentFilterValues.length + valuesToAdd.length;
+				const slicePoint = newLength - SAVED_FILTERS_LIMIT;
 				if (currentFilterValues.length < SAVED_FILTERS_LIMIT) {
 					if (newLength < SAVED_FILTERS_LIMIT) {
-						return [key, [...currentFilterValues, ...value]];
+						return [keyToAdd, [...currentFilterValues, ...valuesToAdd]];
 					}
-					return [key, [...currentFilterValues, ...value.slice(0, to)]];
+					return [keyToAdd, [...currentFilterValues, ...valuesToAdd.slice(0, slicePoint)]];
 				}
-				return [key, [...currentFilterValues.slice(to), ...value]];
+				return [keyToAdd, [...currentFilterValues.slice(slicePoint), ...valuesToAdd]];
 			});
 
 			localStorageWorker.setSavedFilters({
 				...savedFilters,
 				...Object.fromEntries(newSavedFilters),
 			});
-
-			console.log(localStorageWorker.getSavedFilters());
 
 			this.searchChannel[direction] = searchChannel;
 

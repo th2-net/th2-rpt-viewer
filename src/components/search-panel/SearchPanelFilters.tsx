@@ -24,6 +24,8 @@ import {
 } from '../../models/filter/FilterInputs';
 import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import FilterRow from '../filter/row';
+import localStorageWorker from '../../util/LocalStorageWorker';
+import { SearchPanelType } from './SearchPanel';
 
 export type StringFilter = {
 	type: 'string';
@@ -76,6 +78,7 @@ type FilterRowConfig =
 	| FilterRowMultipleStringsConfig;
 
 interface SearchPanelFiltersProps {
+	type: SearchPanelType;
 	info: SSEFilterInfo[];
 	state: FilterState;
 	setState: (patch: Partial<FilterState>) => void;
@@ -87,7 +90,7 @@ type Values = {
 };
 
 const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
-	const { info, state, setState, disableAll } = props;
+	const { type, info, state, setState, disableAll } = props;
 
 	function getValuesUpdater<T extends keyof FilterState>(name: T) {
 		return function valuesUpdater<K extends FilterState[T]>(values: K) {
@@ -129,6 +132,8 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 		setCurrentValues({ [name]: value });
 	};
 
+	const savedFilters = localStorageWorker.getSavedFilters();
+
 	return (
 		<>
 			{info.map((filter: SSEFilterInfo) => {
@@ -138,6 +143,10 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 
 				const config = filter.parameters.map(
 					(param: SSEFilterParameter): FilterRowConfig => {
+						const autocompleteListKey =
+							filter.name === 'type' || filter.name === 'body'
+								? `${type}-${filter.name}`
+								: filter.name;
 						switch (param.type.value) {
 							case 'boolean':
 								return {
@@ -157,6 +166,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									type: 'string',
 									value: getState(filter.name).values || '',
 									setValue: getValuesUpdater(filter.name),
+									autocompleteList: savedFilters[autocompleteListKey],
 								};
 							case 'switcher':
 								return {
@@ -179,7 +189,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									setValues: getValuesUpdater(filter.name),
 									currentValue: currentValues[filter.name] || '',
 									setCurrentValue: setCurrentValue(filter.name),
-									autocompleteList: null,
+									autocompleteList: savedFilters[autocompleteListKey],
 								};
 						}
 					},
