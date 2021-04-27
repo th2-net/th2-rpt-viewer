@@ -15,7 +15,8 @@
  ***************************************************************************** */
 
 import moment from 'moment';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, Fragment } from 'react';
+import { nanoid } from 'nanoid';
 import { createBemBlock, createBemElement } from '../../../helpers/styleCreators';
 import { TimeInputType } from '../../../models/filter/FilterInputs';
 import FilterDatetimePicker from '../../filter/date-time-inputs/FilterDatetimePicker';
@@ -88,10 +89,10 @@ const TimeLimitControl = ({
 				)}
 				<div className={errorClassName}>
 					{errorTextRows.map(errorText => (
-						<>
+						<Fragment key={nanoid()}>
 							{errorText}
 							<br />
-						</>
+						</Fragment>
 					))}
 				</div>
 			</div>
