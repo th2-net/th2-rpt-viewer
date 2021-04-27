@@ -187,7 +187,6 @@ function EventsFilterPanel() {
 
 	return (
 		<FilterPanel
-			type='events'
 			isLoading={eventDataStore.isLoading}
 			isFilterApplied={filterStore.isEventsFilterApplied}
 			setShowFilter={setShowFilter}

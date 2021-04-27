@@ -71,6 +71,7 @@ const MessagesFilterPanel = () => {
 	}, [messagesStore.filterStore.sseMessagesFilter]);
 
 	const submitChanges = React.useCallback(() => {
+		searchStore.stopSearch();
 		messagesStore.applyFilter(
 			{
 				...filterStore.filter,
@@ -218,7 +219,6 @@ const MessagesFilterPanel = () => {
 	return (
 		<>
 			<FilterPanel
-				type='messages'
 				isLoading={isLoading}
 				isLoadingFilteredItems={isApplied && messagesDataStore.isLoadingSoftFilteredMessages}
 				isFilterApplied={isApplied}
