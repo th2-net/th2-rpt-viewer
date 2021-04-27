@@ -60,6 +60,8 @@ export default class WorkspacesStore {
 
 	@observable workspaces: Array<WorkspaceStore> = [];
 
+	public filterAutocompletesStore = this.rootStore.filtersAutocompletesStore;
+
 	@computed get eventStores() {
 		return this.workspaces.map(workspace => workspace.eventsStore);
 	}

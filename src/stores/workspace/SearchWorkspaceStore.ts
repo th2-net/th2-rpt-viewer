@@ -36,7 +36,11 @@ export default class SearchWorkspaceStore {
 	public id = nanoid();
 
 	constructor(private workspacesStore: WorkspacesStore, api: ApiSchema) {
-		this.searchStore = new SearchStore(this.workspacesStore, api);
+		this.searchStore = new SearchStore(
+			this.workspacesStore,
+			api,
+			this.workspacesStore.filterAutocompletesStore,
+		);
 
 		this.viewStore = new WorkspaceViewStore(undefined);
 	}

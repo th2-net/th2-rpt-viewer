@@ -44,11 +44,9 @@ import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
-import localStorageWorker from '../util/LocalStorageWorker';
+import FilterAutocompletesStore, { FiltersToSave } from './FilterAutocompletesStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
-
-const SAVED_FILTERS_LIMIT = 10;
 
 export type SearchPanelFormState = {
 	startTimestamp: number | null;
@@ -104,7 +102,11 @@ const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
 const SEARCH_CHUNK_SIZE = 500;
 
 export class SearchStore {
-	constructor(private workspacesStore: WorkspacesStore, private api: ApiSchema) {
+	constructor(
+		private workspacesStore: WorkspacesStore,
+		private api: ApiSchema,
+		private filtersAutocomplete: FilterAutocompletesStore,
+	) {
 		this.init();
 
 		autorun(() => {
@@ -526,49 +528,12 @@ export class SearchStore {
 				filterValues.map(([key, value]) => [key.split('-')[0], toJS(value)]),
 			);
 
-			const filtersToSave: { [k: string]: string | string[] } =
+			const filtersToSave: FiltersToSave =
 				this.formType === 'event' ? { ...valuesToSave, parentEvent } : valuesToSave;
 
-			const savedFilters = localStorageWorker.getSavedFilters();
-
-			const newSavedFilters = Object.entries(filtersToSave).map(([key, value]) => {
-				const currentFilterValues = savedFilters[key];
-				const keyToAdd = key === 'type' || key === 'body' ? `${this.formType}-${key}` : key;
-				if (typeof value === 'string') {
-					if (!currentFilterValues) {
-						return [keyToAdd, [value]];
-					}
-					if (currentFilterValues.includes(value)) {
-						return [keyToAdd, currentFilterValues];
-					}
-					if (currentFilterValues.length < SAVED_FILTERS_LIMIT) {
-						return [keyToAdd, [...currentFilterValues, value]];
-					}
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars
-					const [_, ...rest] = currentFilterValues;
-					return [keyToAdd, [...rest, value]];
-				}
-				if (!currentFilterValues) {
-					return [keyToAdd, value];
-				}
-				const valuesToAdd = value.filter(v => !currentFilterValues.includes(v));
-				const newLength = currentFilterValues.length + valuesToAdd.length;
-				const slicePoint = newLength - SAVED_FILTERS_LIMIT;
-				if (currentFilterValues.length < SAVED_FILTERS_LIMIT) {
-					if (newLength < SAVED_FILTERS_LIMIT) {
-						return [keyToAdd, [...currentFilterValues, ...valuesToAdd]];
-					}
-					return [keyToAdd, [...currentFilterValues, ...valuesToAdd.slice(0, slicePoint)]];
-				}
-				return [keyToAdd, [...currentFilterValues.slice(slicePoint), ...valuesToAdd]];
-			});
-
-			localStorageWorker.setSavedFilters({
-				...savedFilters,
-				...Object.fromEntries(newSavedFilters),
-			});
-
 			this.searchChannel[direction] = searchChannel;
+
+			this.filtersAutocomplete.saveAutocompletes(filtersToSave, this.formType);
 
 			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));
 			searchChannel.addEventListener('keep_alive', this.onChannelResponse.bind(this, direction));

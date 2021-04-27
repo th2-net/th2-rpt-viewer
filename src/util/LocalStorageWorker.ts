@@ -23,8 +23,6 @@ enum LocalStorageLegacyEntities {
 	ROOT_DISPLAY_RULE = 'root-display-rule',
 }
 
-const SAVED_SEARCH_FILTERS = 'saved-search-filters';
-
 interface SavedSearchFilters {
 	[k: string]: string[];
 }
@@ -36,21 +34,6 @@ class LocalStorageWorker {
 		localStorage.removeItem(LocalStorageLegacyEntities.EVENTS);
 		localStorage.removeItem(LocalStorageLegacyEntities.SEARCH_HISTORY);
 		localStorage.removeItem(LocalStorageLegacyEntities.GRAPH_SEARCH_HISTORY);
-	};
-
-	public getSavedFilters = (): SavedSearchFilters => {
-		try {
-			const filters = localStorage.getItem(SAVED_SEARCH_FILTERS);
-			const parsedFilters = filters ? JSON.parse(filters) : {};
-			return parsedFilters;
-		} catch (error) {
-			console.error(error);
-			return {};
-		}
-	};
-
-	public setSavedFilters = (filters: SavedSearchFilters) => {
-		localStorage.setItem(SAVED_SEARCH_FILTERS, JSON.stringify(filters));
 	};
 }
 

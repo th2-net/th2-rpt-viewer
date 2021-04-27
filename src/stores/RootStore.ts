@@ -25,9 +25,12 @@ import { getObjectKeys } from '../helpers/object';
 import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import { DbData } from '../api/indexedDb';
+import FilterAutocompletesStore from './FilterAutocompletesStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
+
+	filtersAutocompletesStore = new FilterAutocompletesStore(this.api.indexedDb);
 
 	messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
 
