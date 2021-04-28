@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useGraphDataStore, useWorkspaceEventStore } from '../../hooks';
 
-export const EventListNavDowm = observer(() => {
+export const EventListNavDown = observer(() => {
 	const graphStore = useGraphDataStore();
 	const eventsStore = useWorkspaceEventStore();
 
