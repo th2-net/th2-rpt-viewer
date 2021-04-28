@@ -179,8 +179,6 @@ export default class MessagesStore {
 		sseFilters: MessageFilterState | null,
 		isSoftFilterApplied: boolean,
 	) => {
-		console.log(sseFilters);
-
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.selectedMessageId = null;
