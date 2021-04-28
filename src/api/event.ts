@@ -61,7 +61,9 @@ const eventHttpApi: EventApiSchema = {
 		try {
 			while (typeof currentParentId === 'string' && currentParentId !== 'null') {
 				// eslint-disable-next-line no-await-in-loop
-				currentParentEvent = await eventHttpApi.getEvent(currentParentId, abortSignal);
+				currentParentEvent = await eventHttpApi.getEvent(currentParentId, abortSignal, {
+					probe: true,
+				});
 				if (currentParentEvent) {
 					path.unshift(currentParentEvent);
 				}
