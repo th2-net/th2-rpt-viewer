@@ -15,15 +15,21 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
-import { useWorkspaceEventStore, useEventsFilterStore } from '../../hooks';
+import {
+	useWorkspaceEventStore,
+	useEventsFilterStore,
+	useFilterAutocompletesStore,
+} from '../../hooks';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
 import { EventFilterState, Filter } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
+import { FiltersToSave } from '../../stores/FilterAutocompletesStore';
 
 type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;
@@ -45,6 +51,7 @@ function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
+	const { autocompletes, saveAutocompletes } = useFilterAutocompletesStore();
 
 	const [showFilter, setShowFilter] = React.useState(false);
 
@@ -60,6 +67,12 @@ function EventsFilterPanel() {
 
 	const onSubmit = React.useCallback(() => {
 		if (filter) {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { status, ...restFilters } = filter;
+			const filtersToSave: FiltersToSave = Object.fromEntries(
+				Object.entries(restFilters).map(([key, value]) => [key, toJS(value.values)]),
+			);
+			saveAutocompletes(filtersToSave, 'event');
 			eventsStore.applyFilter(filter);
 		}
 	}, [filter]);
@@ -142,7 +155,8 @@ function EventsFilterPanel() {
 			}
 
 			let filterInput: FilterRowConfig | null = null;
-
+			const autocompleteListKey =
+				filterName === 'type' || filterName === 'body' ? `event-${filterName}` : filterName;
 			switch (filterValues.type) {
 				case 'string':
 					filterInput = {
@@ -150,6 +164,7 @@ function EventsFilterPanel() {
 						type: 'string',
 						value: filterValues.values,
 						setValue: getValuesUpdater(filterName),
+						autocompleteList: autocompletes[autocompleteListKey],
 					};
 					break;
 				case 'string[]':
@@ -160,7 +175,7 @@ function EventsFilterPanel() {
 						setValues: getValuesUpdater(filterName),
 						currentValue: currentFilterValues[filterName] || '',
 						setCurrentValue: setCurrentValue(filterName),
-						autocompleteList: null,
+						autocompleteList: autocompletes[autocompleteListKey],
 					};
 					break;
 				case 'switcher':

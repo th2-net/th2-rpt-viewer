@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { toJS } from 'mobx';
 import { Observer, observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import {
@@ -24,13 +25,18 @@ import {
 	ActionFilterConfig,
 	FilterRowConfig,
 } from '../../models/filter/FilterInputs';
-import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
+import {
+	useMessagesDataStore,
+	useMessagesWorkspaceStore,
+	useFilterAutocompletesStore,
+} from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
 import { MessageFilterState } from '../search-panel/SearchPanelFilters';
 import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
+import { FiltersToSave } from '../../stores/FilterAutocompletesStore';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -40,6 +46,7 @@ const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
+	const { autocompletes, saveAutocompletes } = useFilterAutocompletesStore();
 	const { filterStore } = messagesStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);
@@ -71,6 +78,12 @@ const MessagesFilterPanel = () => {
 	}, [messagesStore.filterStore.sseMessagesFilter]);
 
 	const submitChanges = React.useCallback(() => {
+		if (sseFilter) {
+			const filtersToSave: FiltersToSave = Object.fromEntries(
+				Object.entries(sseFilter).map(([key, value]) => [key, toJS(value.values)]),
+			);
+			saveAutocompletes(filtersToSave, 'message');
+		}
 		messagesStore.applyFilter(
 			{
 				...filterStore.filter,
@@ -134,6 +147,10 @@ const MessagesFilterPanel = () => {
 				.join(' ');
 			return filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
 				param => {
+					const autocompleteListKey =
+						filter.name === 'type' || filter.name === 'body'
+							? `message-${filter.name}`
+							: filter.name;
 					switch (param.type.value) {
 						case 'boolean':
 							return {
@@ -155,7 +172,7 @@ const MessagesFilterPanel = () => {
 								setValues: getValuesUpdater(filter.name),
 								currentValue: currentValues[filter.name as keyof MessageFilterState],
 								setCurrentValue: setCurrentValue(filter.name),
-								autocompleteList: null,
+								autocompleteList: autocompletes[autocompleteListKey],
 							};
 					}
 				},
