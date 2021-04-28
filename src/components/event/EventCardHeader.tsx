@@ -23,7 +23,8 @@ import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
 import SearchableContent from '../search/SearchableContent';
-import { useSelectedStore, useWorkspaceEventStore } from '../../hooks';
+import { useSelectedStore, useWorkspaceEventStore, useTabsStore } from '../../hooks';
+import { useSearchStore } from '../../hooks/useSearchStore';
 
 interface Props {
 	displayType?: CardDisplayType;
@@ -54,6 +55,8 @@ function EventCardHeader({
 
 	const selectedStore = useSelectedStore();
 	const eventStore = useWorkspaceEventStore();
+	const { setActiveWorkspace } = useTabsStore();
+	const { stopSearch, setFormType, updateForm } = useSearchStore();
 
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
@@ -90,6 +93,14 @@ function EventCardHeader({
 	const onPinClicked = (e: React.MouseEvent) => {
 		selectedStore.toggleEventPin(event);
 		e.stopPropagation();
+	};
+
+	const onSearchClicked = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		stopSearch();
+		setFormType('event');
+		updateForm({ parentEvent: eventId });
+		setActiveWorkspace(0);
 	};
 
 	const isUnknown = event.isUnknown;
@@ -145,6 +156,7 @@ function EventCardHeader({
 							.concat(eventStore.eventDataStore.hasUnloadedChildren.get(event.eventId) ? '+' : '')}
 					/>
 				)}
+			{!isUnknown && <div className='search-by-parent' onClick={onSearchClicked} />}
 			{!isUnknown && <div className={bookmarkClassName} onClick={onPinClicked} />}
 		</div>
 	);
