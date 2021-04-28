@@ -21,7 +21,7 @@ import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
-import { BookmarkedItem, isBookmark } from '../BookmarksPanel';
+import { BookmarkedItem, isBookmark } from '../bookmarks/BookmarksPanel';
 import '../../styles/search-panel.scss';
 
 export type SearchPanelType = 'event' | 'message';

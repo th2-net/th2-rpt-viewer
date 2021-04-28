@@ -32,7 +32,7 @@ import {
 	Bookmark,
 	isEventBookmark,
 	isMessageBookmark,
-} from '../components/BookmarksPanel';
+} from '../components/bookmarks/BookmarksPanel';
 import notificationsStore from './NotificationsStore';
 
 export class SelectedStore {

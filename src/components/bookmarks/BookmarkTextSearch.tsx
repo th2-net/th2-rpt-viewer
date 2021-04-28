@@ -11,46 +11,36 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
 
 import * as React from 'react';
-import '../../styles/checkbox.scss';
-import { createBemBlock } from '../../helpers/styleCreators';
+import { createStyleSelector } from '../../helpers/styleCreators';
 
-interface Props {
-	checked: boolean;
-	label?: string;
-	id?: string;
-	isDisabled?: boolean;
-	className?: string;
-	onChange: React.ChangeEventHandler<HTMLInputElement>;
-}
+type Props = {
+	value: string;
+	setValue: (value: string) => void;
+	label: string;
+};
 
-export default function Checkbox({
-	checked,
-	label,
-	onChange,
-	isDisabled = false,
-	className = '',
-	id = '',
-}: Props) {
-	const rootClassName = createBemBlock('checkbox', isDisabled ? 'disabled' : null);
+export default function BookmarkTextSearch({ value, setValue, label }: Props) {
+	const inputClassName = createStyleSelector(
+		'bookmark-panel-header__row-input',
+		value.length ? 'non-empty' : '',
+	);
 
 	return (
-		<div className={`${rootClassName} ${className}`}>
+		<div className='bookmark-panel-header__row'>
+			<label className='bookmark-panel-header__row-label' htmlFor='bookmark-text-search'>
+				{label}
+			</label>
 			<input
-				className='checkbox__control'
-				type='checkbox'
-				id={id}
-				checked={checked}
-				onChange={onChange}
+				type='text'
+				className={inputClassName}
+				id='bookmark-text-search'
+				value={value}
+				onChange={e => setValue(e.target.value)}
 			/>
-			{label && (
-				<label className='checkbox__label' htmlFor={id}>
-					{label}
-				</label>
-			)}
 		</div>
 	);
 }
