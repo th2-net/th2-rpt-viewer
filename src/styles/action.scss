@@ -394,10 +394,15 @@
 .actions-list {
 	height: 100%;
 	width: 100%;
-	.title-for-unknowns{
-		font: bold 12px 'Open Sans', sans-serif;
-		margin: 10px 0 0;
-		color: $alternativeTextColor
+	.unknowns {
+		&__title {
+			margin: 10px 0 0;
+			font: bold 12px 'Open Sans', sans-serif;
+			color: $alternativeTextColor
+		}
+		&__list {
+			@include scrollbar;
+		}
 	}
 	&__nav {
 		display: flex;

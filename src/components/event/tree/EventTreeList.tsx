@@ -27,6 +27,8 @@ import { EventTreeNode } from '../../../models/EventAction';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
 import '../../../styles/action.scss';
 
+const EVENT_NODE_HEIGHT = 25;
+
 interface Props {
 	nodes: EventTreeNode[];
 }
@@ -92,16 +94,18 @@ function EventTreeList({ nodes }: Props) {
 		if (!unknowns.length) {
 			return null;
 		}
+
 		return (
-			<>
-				<p className='title-for-unknowns'>Unknown Events</p>
+			<div className='unknowns'>
+				<p className='unknowns__title'>Unknown Events</p>
 				<Virtuoso
+					className='unknowns__list'
 					totalCount={unknowns.length}
 					computeItemKey={computeKeyFactory(unknowns)}
 					itemContent={renderEventFactory(unknowns)}
-					style={{ height: '100px' }}
+					style={{ height: `${unknowns.length * EVENT_NODE_HEIGHT}px` }}
 				/>
-			</>
+			</div>
 		);
 	}
 
