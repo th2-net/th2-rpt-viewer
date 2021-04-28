@@ -394,7 +394,11 @@
 .actions-list {
 	height: 100%;
 	width: 100%;
-
+	.title-for-unknowns{
+		font: bold 12px 'Open Sans', sans-serif;
+		margin: 10px 0 0;
+		color: $alternativeTextColor
+	}
 	&__nav {
 		display: flex;
 		cursor: pointer;

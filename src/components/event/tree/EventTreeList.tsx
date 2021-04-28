@@ -37,6 +37,18 @@ function EventTreeList({ nodes }: Props) {
 
 	const listRef = React.useRef<VirtuosoHandle | null>(null);
 
+	let knowns: EventTreeNode[] = [];
+	let unknowns: EventTreeNode[] = [];
+
+	for (const node of nodes) {
+		if (node.isUnknown) {
+			unknowns = [...unknowns, node];
+			// eslint-disable-next-line no-continue
+			continue;
+		}
+		knowns = [...knowns, node];
+	}
+
 	React.useEffect(() => {
 		try {
 			raf(() => {
@@ -52,10 +64,11 @@ function EventTreeList({ nodes }: Props) {
 		}
 	}, [eventWindowStore.scrolledIndex]);
 
-	const computeKey = (index: number) => nodes[index].eventId;
+	const computeKeyFactory = (nodeList: EventTreeNode[]) => (index: number) =>
+		nodeList[index].eventId;
 
-	const renderEvent = (index: number): React.ReactElement => {
-		const node = nodes[index];
+	const renderEventFactory = (nodeList: EventTreeNode[]) => (index: number): React.ReactElement => {
+		const node = nodeList[index];
 
 		return <EventTree eventTreeNode={node} />;
 	};
@@ -75,16 +88,36 @@ function EventTreeList({ nodes }: Props) {
 		);
 	}
 
+	function Footer() {
+		if (!unknowns.length) {
+			return null;
+		}
+		return (
+			<>
+				<p className='title-for-unknowns'>Unknown Events</p>
+				<Virtuoso
+					totalCount={unknowns.length}
+					computeItemKey={computeKeyFactory(unknowns)}
+					itemContent={renderEventFactory(unknowns)}
+					style={{ height: '100px' }}
+				/>
+			</>
+		);
+	}
+
 	return (
 		<div className='actions-list'>
 			<StateSaverProvider>
 				<Virtuoso
 					ref={listRef}
-					totalCount={nodes.length}
-					computeItemKey={computeKey}
+					totalCount={knowns.length}
+					computeItemKey={computeKeyFactory(knowns)}
 					overscan={3}
-					itemContent={renderEvent}
+					itemContent={renderEventFactory(knowns)}
 					style={{ height: '100%' }}
+					components={{
+						Footer,
+					}}
 				/>
 			</StateSaverProvider>
 		</div>
