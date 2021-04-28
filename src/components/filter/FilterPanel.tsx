@@ -41,7 +41,6 @@ interface Props {
 const FilterPanel = (props: Props) => {
 	const {
 		isFilterApplied,
-		isLoading = false,
 		showFilter,
 		setShowFilter,
 		config,
@@ -149,13 +148,9 @@ const FilterPanel = (props: Props) => {
 							<div className='filter-controls__clear-icon' />
 							Clear All
 						</div>
-						{isLoading ? (
-							<div className='filter__loading' />
-						) : (
-							<div className='filter-row__button' onClick={onSubmitClick}>
-								Submit filter
-							</div>
-						)}
+						<div className='filter-row__button' onClick={onSubmitClick}>
+							Submit filter
+						</div>
 					</div>
 				</div>
 			</ModalPortal>
