@@ -18,28 +18,30 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useGraphDataStore, useWorkspaceEventStore } from '../../hooks';
 
-export const EventListFooter = observer(() => {
+export const EventListNavDown = observer(() => {
 	const graphStore = useGraphDataStore();
 	const eventsStore = useWorkspaceEventStore();
 
 	return (
 		<button
-			className='actions-list__nav down'
-			onClick={() => eventsStore.changeEventsRange(-graphStore.interval)}
-			title='Load older events'
-		/>
+			className='actions-list__nav'
+			onClick={() => eventsStore.changeEventsRange(-graphStore.interval)}>
+			<span className='down'></span>
+			<span className='label'>Older</span>
+		</button>
 	);
 });
 
-export const EventListHeader = observer(() => {
+export const EventListNavUp = observer(() => {
 	const graphStore = useGraphDataStore();
 	const eventsStore = useWorkspaceEventStore();
 
 	return (
 		<button
-			className='actions-list__nav up'
-			onClick={() => eventsStore.changeEventsRange(graphStore.interval)}
-			title='Load newer events'
-		/>
+			className='actions-list__nav'
+			onClick={() => eventsStore.changeEventsRange(graphStore.interval)}>
+			<span className='up'></span>
+			<span className='label'>Newer</span>
+		</button>
 	);
 });

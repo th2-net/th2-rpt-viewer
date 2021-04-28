@@ -21,7 +21,7 @@ import { isEventMessage, isEventNode, getItemId } from '../../helpers/event';
 import { createBemElement } from '../../helpers/styleCreators';
 import { useSelectedStore } from '../../hooks';
 import { SearchResult } from '../../stores/SearchStore';
-import { BookmarkedItem, BookmarkItem } from '../BookmarksPanel';
+import { BookmarkedItem, BookmarkItem } from '../bookmarks/BookmarksPanel';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { ActionType } from '../../models/EventAction';
 

@@ -96,6 +96,7 @@ export default class EventsDataStore {
 		this.filterStore.setEventsFilter(filter);
 
 		try {
+			this.eventTreeEventSource?.stop();
 			this.eventTreeEventSource = new EventSSELoader(
 				{
 					timeRange,

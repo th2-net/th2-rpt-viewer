@@ -24,7 +24,6 @@ import StateSaverProvider from '../../util/StateSaverProvider';
 import { useWorkspaceEventStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
 import { EventTreeNode } from '../../../models/EventAction';
-import { EventListFooter, EventListHeader } from '../EventListNavigation';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
 import '../../../styles/action.scss';
 
@@ -86,10 +85,6 @@ function EventTreeList({ nodes }: Props) {
 					overscan={3}
 					itemContent={renderEvent}
 					style={{ height: '100%' }}
-					components={{
-						Header: EventListHeader,
-						Footer: EventListFooter,
-					}}
 				/>
 			</StateSaverProvider>
 		</div>

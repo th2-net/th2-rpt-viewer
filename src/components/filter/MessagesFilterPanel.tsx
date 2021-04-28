@@ -84,6 +84,7 @@ const MessagesFilterPanel = () => {
 			);
 			saveAutocompletes(filtersToSave, 'message');
 		}
+		searchStore.stopSearch();
 		messagesStore.applyFilter(
 			{
 				...filterStore.filter,
