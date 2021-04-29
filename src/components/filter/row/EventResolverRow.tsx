@@ -42,9 +42,9 @@ export default function StringFilterRow({ config }: { config: FilterRowEventReso
 
 	const iconClassName = createStyleSelector(
 		'filter-row__event-card-icon',
-		isLoading ? 'loading' : '',
+		isLoading ? 'loader' : '',
 		event ? (event!.successful ? 'passed' : 'failed') : '',
-		event === null && config.value !== '' ? 'not-found' : 'empty',
+		event === null && !isLoading && config.value !== '' ? 'not-found' : '',
 	);
 
 	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);

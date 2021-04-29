@@ -103,15 +103,17 @@
 						content: '!';
 						font-style: normal;
 						font-weight: bold;
+						font-size: 12px;
+						text-shadow: 0 0 2px #000;
+						text-align: center;
 						color: #fff;
 						position: absolute;
-						top: 0;
-						left: -1px;
+						width: 20px;
+						height: 12px;
+						line-height: 12px;
+						top: 3px;
+						left: -10px;
 					}
-				}
-
-				.empty {
-					display: none;
 				}
 
 				&.loader {
