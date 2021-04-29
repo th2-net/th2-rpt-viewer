@@ -18,7 +18,7 @@ import moment from 'moment';
 import * as React from 'react';
 import { useState, useRef } from 'react';
 import api from '../../../api';
-import { getElapsedTime, getTimestampAsNumber } from '../../../helpers/date';
+import { getTimestampAsNumber } from '../../../helpers/date';
 import {
 	createBemBlock,
 	createBemElement,
