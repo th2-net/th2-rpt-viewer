@@ -16,7 +16,7 @@
 
 import moment from 'moment';
 import * as React from 'react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import api from '../../../api';
 import { getTimestampAsNumber } from '../../../helpers/date';
 import {
@@ -49,6 +49,12 @@ export default function StringFilterRow({ config }: { config: FilterRowEventReso
 
 	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
 	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
+
+	useEffect(() => {
+		if (!isInput && config.value !== '') {
+			fetchObjectById(config.value, new AbortController());
+		}
+	}, [config.value]);
 
 	const switchType = () => {
 		setIsInput(!isInput);
