@@ -53,6 +53,15 @@ const MessageCardTools = ({
 
 	const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
+	const viewTypes = message.body
+		? [
+				MessageViewType.JSON,
+				MessageViewType.FORMATTED,
+				MessageViewType.BINARY,
+				MessageViewType.ASCII,
+		  ]
+		: [MessageViewType.BINARY, MessageViewType.ASCII];
+
 	return (
 		<div className='message-card-tools' ref={rootRef}>
 			<div
@@ -93,12 +102,7 @@ const MessageCardTools = ({
 							/>
 						</div>
 						{!isScreenshotMsg &&
-							[
-								MessageViewType.JSON,
-								MessageViewType.FORMATTED,
-								MessageViewType.BINARY,
-								MessageViewType.ASCII,
-							].map(viewType => {
+							viewTypes.map(viewType => {
 								const iconClassName = createBemElement('message-card-tools', 'icon', viewType);
 								const indicatorClassName = createBemElement(
 									'message-card-tools',
