@@ -17,7 +17,6 @@
 import React, { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createBemBlock, createBemElement } from '../../../helpers/styleCreators';
-import { RadioProps } from '../../util/Radio';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import { useOutsideClickListener } from '../../../hooks';
 
@@ -30,7 +29,6 @@ export type MessageCardToolsConfig = {
 	isBookmarked: boolean;
 	toggleMessagePin: () => void;
 	isScreenshotMsg: boolean;
-	messageViewTypeSwitchConfig: RadioProps<MessageViewType>[];
 };
 
 const MessageCardTools = ({

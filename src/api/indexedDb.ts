@@ -16,7 +16,7 @@
 
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
-import { EventBookmark, MessageBookmark } from '../components/BookmarksPanel';
+import { EventBookmark, MessageBookmark } from '../components/bookmarks/BookmarksPanel';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
 import { OrderRule } from '../stores/MessageDisplayRulesStore';

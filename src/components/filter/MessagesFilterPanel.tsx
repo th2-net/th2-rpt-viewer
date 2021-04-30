@@ -71,6 +71,7 @@ const MessagesFilterPanel = () => {
 	}, [messagesStore.filterStore.sseMessagesFilter]);
 
 	const submitChanges = React.useCallback(() => {
+		searchStore.stopSearch();
 		messagesStore.applyFilter(
 			{
 				...filterStore.filter,

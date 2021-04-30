@@ -129,6 +129,20 @@
 		line-height: 15px;
 		font-weight: bold;
 	}
+
+	& .search-by-parent {
+		display: none;
+		cursor: pointer;
+		width: 15px;
+		height: 15px;
+		flex-shrink: 0;
+		background: url(../../resources/icons/filter.svg);
+	}
+
+	&:hover .search-by-parent {
+		display: block;
+		background: url(../../resources/icons/filter-hover.svg);
+	}
 }
 
 .event-detail-info {
@@ -371,6 +385,9 @@
 		& span:nth-child(3) {
 			animation-delay: 0.4s;
 		}
+	}
+	&__nav {
+		display: flex;
 	}
 }
 

@@ -106,6 +106,16 @@ const SearchDatetimeControls = ({
 			: null,
 	);
 
+	const isLeftTimeLimitInvalid =
+		previousTimeLimit.value !== null &&
+		startTimestampInput.inputConfig.value !== null &&
+		previousTimeLimit.value > startTimestampInput.inputConfig.value;
+
+	const isRightTimeControlInvalid =
+		nextTimeLimit.value !== null &&
+		startTimestampInput.inputConfig.value !== null &&
+		nextTimeLimit.value < startTimestampInput.inputConfig.value;
+
 	return (
 		<div className='search-form__search-datetime-controls search-datetime-controls'>
 			<div className='search-datetime-controls__previous'>
@@ -115,6 +125,9 @@ const SearchDatetimeControls = ({
 					disabled={disabled || !searchDirection || searchDirection === SearchDirection.Next}
 					readonly={isSearching}
 					hidden={!searchDirection || searchDirection === SearchDirection.Next}
+					showError={isLeftTimeLimitInvalid}
+					errorTextRows={['Should be less than start timestamp']}
+					errorPosition='left'
 				/>
 			</div>
 			<div className='search-datetime-controls__start'>
@@ -139,6 +152,9 @@ const SearchDatetimeControls = ({
 					disabled={disabled || !searchDirection || searchDirection === SearchDirection.Previous}
 					readonly={isSearching}
 					hidden={!searchDirection || searchDirection === SearchDirection.Previous}
+					showError={isRightTimeControlInvalid}
+					errorTextRows={['Should be greater than start timestamp']}
+					errorPosition='right'
 				/>
 			</div>
 		</div>

@@ -20,7 +20,6 @@ import {
 	useMessagesWorkspaceStore,
 	useMessageDisplayRulesStore,
 	useSelectedStore,
-	useWorkspaceStore,
 } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
@@ -29,12 +28,10 @@ import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
 import { MessageScreenshotZoom } from './MessageScreenshot';
 import { EventMessage, isScreenshotMessage, MessageViewType } from '../../../models/EventMessage';
-
 import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
 import '../../../styles/messages.scss';
-import { RadioProps } from '../../util/Radio';
 import { matchWildcardRule } from '../../../helpers/regexp';
 import MessageCardTools, { MessageCardToolsConfig } from './MessageCardTools';
 
@@ -54,7 +51,6 @@ interface Props extends OwnProps, RecoveredProps {}
 function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const messagesStore = useMessagesWorkspaceStore();
 	const selectedStore = useSelectedStore();
-	const workspaceStore = useWorkspaceStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
@@ -120,44 +116,6 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
 		messagesStore.setHoveredMessage(null);
 	};
-
-	const messageViewTypeSwitchConfig: RadioProps<MessageViewType>[] = React.useMemo(
-		() => [
-			{
-				value: MessageViewType.JSON,
-				id: `${MessageViewType.JSON}-${messageId}-${workspaceStore.id}`,
-				name: `message-view-type-${messageId}-${workspaceStore.id}`,
-				className: 'message-view-type-radio',
-				checked: viewType === MessageViewType.JSON,
-				onChange: toggleViewType,
-			},
-			{
-				value: MessageViewType.FORMATTED,
-				id: `${MessageViewType.FORMATTED}-${messageId}-${workspaceStore.id}`,
-				name: `message-view-type-${messageId}-${workspaceStore.id}`,
-				className: 'message-view-type-radio',
-				checked: viewType === MessageViewType.FORMATTED,
-				onChange: toggleViewType,
-			},
-			{
-				value: MessageViewType.BINARY,
-				id: `${MessageViewType.BINARY}-${messageId}-${workspaceStore.id}`,
-				name: `message-view-type-${messageId}-${workspaceStore.id}`,
-				className: 'message-view-type-radio',
-				checked: viewType === MessageViewType.BINARY,
-				onChange: toggleViewType,
-			},
-			{
-				value: MessageViewType.ASCII,
-				id: `${MessageViewType.ASCII}-${messageId}-${workspaceStore.id}`,
-				name: `message-view-type-${messageId}-${workspaceStore.id}`,
-				className: 'message-view-type-radio',
-				checked: viewType === MessageViewType.ASCII,
-				onChange: toggleViewType,
-			},
-		],
-		[messageId, viewType],
-	);
 
 	const isAttached = !!messagesStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
@@ -254,7 +212,6 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		isBookmarked,
 		toggleMessagePin: () => selectedStore.toggleMessagePin(message),
 		isScreenshotMsg,
-		messageViewTypeSwitchConfig,
 	};
 
 	return (
@@ -307,6 +264,13 @@ const RecoverableMessageCard = (props: OwnProps) => {
 					}
 					return props.message.sessionId.includes(rule.session);
 				});
+				if (!props.message.body) {
+					return declaredRule
+						? getRawViewType(declaredRule.viewType)
+						: rootRule
+						? getRawViewType(rootRule.viewType)
+						: MessageViewType.ASCII;
+				}
 				return declaredRule
 					? declaredRule.viewType
 					: rootRule
@@ -326,3 +290,11 @@ const RecoverableMessageCard = (props: OwnProps) => {
 };
 
 export default RecoverableMessageCard;
+
+function isRawViewType(viewType: MessageViewType) {
+	return viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
+}
+
+function getRawViewType(viewType: MessageViewType) {
+	return isRawViewType(viewType) ? viewType : MessageViewType.ASCII;
+}

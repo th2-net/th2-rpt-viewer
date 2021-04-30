@@ -17,7 +17,7 @@
 import React from 'react';
 import moment from 'moment';
 import { isEventNode } from '../../helpers/event';
-import { BookmarkedItem } from '../BookmarksPanel';
+import { BookmarkedItem } from '../bookmarks/BookmarksPanel';
 import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
@@ -34,6 +34,8 @@ interface SearchPanelResultsProps {
 	resultGroups: [string, SearchResult[]][];
 	timestamp: number;
 	disabledRemove: boolean;
+	showLoadMoreButton: boolean;
+	loadMore: () => void;
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
@@ -49,6 +51,8 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		showToggler,
 		next,
 		prev,
+		showLoadMoreButton,
+		loadMore,
 	} = props;
 
 	function computeKey(index: number) {
@@ -88,6 +92,11 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 						onGroupClick={onResultGroupClick}
 					/>
 				))}
+				{showLoadMoreButton && (
+					<button onClick={loadMore} className='actions-list__load-button'>
+						Load more
+					</button>
+				)}
 			</div>
 		</div>
 	);
