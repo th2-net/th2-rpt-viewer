@@ -34,9 +34,9 @@ import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
 import '../../../styles/messages.scss';
-import RadioGroup from '../../util/RadioGroup';
 import { RadioProps } from '../../util/Radio';
 import { matchWildcardRule } from '../../../helpers/regexp';
+import MessageCardTools, { MessageCardToolsConfig } from './MessageCardTools';
 
 const HUE_SEGMENTS_COUNT = 36;
 
@@ -187,8 +187,6 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		direction?.toLowerCase(),
 	);
 
-	const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
-
 	const renderMessageInfo = () => {
 		if (viewType === MessageViewType.FORMATTED || viewType === MessageViewType.BINARY) {
 			const formattedTimestamp = formatTime(timestampToNumber(timestamp));
@@ -198,7 +196,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 						{timestamp && formattedTimestamp}
 					</div>
 					<div className='mc-header__item' title={`Session: ${sessionId}`}>
-						<span className={sessionClass} style={sessionArrowStyle}></span>
+						<span className={sessionClass} style={sessionArrowStyle} />
 						<span className='mc-header__value'>{sessionId}</span>
 					</div>
 					<div className='mc-header__item messageId' title={`ID: ${messageId}`}>
@@ -227,7 +225,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 					<span className='mc-header__item messageId-inline' title={`ID: ${messageId}`}>
 						<span className='mc-header__value'>{messageId} </span>
 					</span>
-					<span className={`${sessionClass} inline`} style={sessionArrowStyle}></span>
+					<span className={`${sessionClass} inline`} style={sessionArrowStyle} />
 					<span className='mc-header__value' title={`Name: ${messageType}`}>
 						{messageType}
 					</span>
@@ -245,6 +243,18 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		isBeautified: isContentBeautified,
 		rawContent: bodyBase64,
 		isSelected: isAttached,
+	};
+
+	const messageCardToolsConfig: MessageCardToolsConfig = {
+		message,
+		messageId,
+		messageType,
+		messageViewType: viewType,
+		toggleViewType,
+		isBookmarked,
+		toggleMessagePin: () => selectedStore.toggleMessagePin(message),
+		isScreenshotMsg,
+		messageViewTypeSwitchConfig,
 	};
 
 	return (
@@ -270,27 +280,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 					)}
 				</div>
 			</div>
-			<div className='message-card-tools'>
-				<div
-					className={bookmarkIconClass}
-					title={isBookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
-					onClick={() => selectedStore.toggleMessagePin(message)}></div>
-				<div className='mc-header__controls'>
-					{!isScreenshotMsg && (
-						<RadioGroup className='mc-header__radios' radioConfigs={messageViewTypeSwitchConfig} />
-					)}
-					{isScreenshotMsg && (
-						<>
-							<div className='mc-header__control-button mc-header__icon mc-headr__zoom-button' />
-							<a
-								className='mc-header__control-button mc-header__icon mc-header__download-button'
-								download={`${messageId}.${messageType.replace('image/', '')}`}
-								href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}
-							/>
-						</>
-					)}
-				</div>
-			</div>
+			<MessageCardTools {...messageCardToolsConfig} />
 		</div>
 	);
 }
