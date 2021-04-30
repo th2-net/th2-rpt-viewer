@@ -19,6 +19,8 @@ import { createURLSearchParams } from '../helpers/url';
 import { EventAction } from '../models/EventAction';
 import { getEventParentId } from '../helpers/event';
 
+const loadedParents: Map<string, EventAction> = new Map();
+
 const eventHttpApi: EventApiSchema = {
 	getEvent: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
@@ -55,19 +57,38 @@ const eventHttpApi: EventApiSchema = {
 	},
 	getEventParents: async (firstParentId: string, abortSignal?: AbortSignal) => {
 		let currentParentId: string | null = firstParentId;
-		let currentParentEvent = null;
+		let currentParentEvent: EventAction | undefined;
 		const path: EventAction[] = [];
 
 		try {
 			while (typeof currentParentId === 'string' && currentParentId !== 'null') {
-				// eslint-disable-next-line no-await-in-loop
-				currentParentEvent = await eventHttpApi.getEvent(currentParentId, abortSignal, {
-					probe: true,
-				});
-				if (currentParentEvent) {
+				if (!currentParentEvent) {
+					// eslint-disable-next-line no-await-in-loop
+					currentParentEvent = await eventHttpApi.getEvent(currentParentId, abortSignal, {
+						probe: true,
+					});
+					if (!loadedParents.has(currentParentId)) {
+						loadedParents.set(currentParentId, currentParentEvent);
+					}
 					path.unshift(currentParentEvent);
+					currentParentId = getEventParentId(currentParentEvent);
+				} else {
+					const alreadyLoaded = loadedParents.get(currentParentId);
+					if (alreadyLoaded) {
+						path.unshift(alreadyLoaded);
+						break;
+					} else {
+						// eslint-disable-next-line no-await-in-loop
+						currentParentEvent = await eventHttpApi.getEvent(currentParentId, abortSignal, {
+							probe: true,
+						});
+						if (!loadedParents.has(currentParentId)) {
+							loadedParents.set(currentParentId, currentParentEvent);
+						}
+						path.unshift(currentParentEvent);
+						currentParentId = getEventParentId(currentParentEvent);
+					}
 				}
-				currentParentId = getEventParentId(currentParentEvent);
 			}
 
 			return path;
