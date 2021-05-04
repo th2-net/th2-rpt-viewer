@@ -284,6 +284,16 @@
 	}
 }
 
+@mixin improved-clickable ($bgc, $rad: 2px) {
+	cursor: pointer;
+	border-radius: $rad;
+	background-color: $bgc;
+
+	&:hover {
+		background-color: darken($color: $bgc, $amount: 2);
+	}
+}
+
 @mixin icon($image, $height: 16px, $width: 16px) {
 	height: $height;
 	width: $width;

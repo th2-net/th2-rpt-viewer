@@ -37,6 +37,7 @@ import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
 import { FiltersToSave } from '../../stores/FilterAutocompletesStore';
+import FiltersHistory from '../filter-autocompletes/FiltersHistory';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -217,7 +218,8 @@ const MessagesFilterPanel = () => {
 		return (
 			<Observer>
 				{() => (
-					<div>
+					<div className='filter-footer'>
+						<FiltersHistory />
 						{messagesStore.filterStore.sseMessagesFilter && (
 							<Checkbox
 								checked={isSoftFilterApplied}

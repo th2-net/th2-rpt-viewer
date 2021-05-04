@@ -30,6 +30,7 @@ import { EventFilterState, Filter } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { FiltersToSave } from '../../stores/FilterAutocompletesStore';
+import FiltersHistory from '../filter-autocompletes/FiltersHistory';
 
 type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;
@@ -204,6 +205,7 @@ function EventsFilterPanel() {
 		<FilterPanel
 			isLoading={eventDataStore.isLoading}
 			isFilterApplied={filterStore.isEventsFilterApplied}
+			renderFooter={() => filter && <FiltersHistory />}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
 			onSubmit={onSubmit}
