@@ -18,10 +18,10 @@ import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 import { useToasts } from 'react-toast-notifications';
 import { complement } from '../../helpers/array';
-import { isIndexedDbMessage, isResponseError, isURLError } from '../../helpers/errors';
+import { isGenericErrorMessage, isResponseError, isURLError } from '../../helpers/errors';
 import { useNotificationsStore, usePrevious } from '../../hooks';
 import FetchErrorToast from './FetchErrorToast';
-import IndexedDBMessageToast from './IndexedDBMessageToast';
+import GenericErrorToast from './GenericErrorToast';
 import UrlErrorToast from './UrlErrorToast';
 
 function Notifier() {
@@ -59,8 +59,8 @@ function Notifier() {
 				addToast(<UrlErrorToast {...notificationError} />, options, registerId);
 			} else if (isResponseError(notificationError)) {
 				addToast(<FetchErrorToast {...notificationError} />, options, registerId);
-			} else if (isIndexedDbMessage(notificationError)) {
-				addToast(<IndexedDBMessageToast {...notificationError} />, options, registerId);
+			} else if (isGenericErrorMessage(notificationError)) {
+				addToast(<GenericErrorToast {...notificationError} />, options, registerId);
 			}
 		});
 	}, [notificiationStore.errors]);

@@ -211,25 +211,16 @@ export default class EventsDataStore {
 					{ probe: true },
 				);
 
-				if (!currentParentEvent) {
-					notificationsStore.addMessage({
-						errorType: 'indexedDbMessage',
-						header: `Couldn't fetch event ${currentParentId}`,
-						description: `${currentParentId} not found`,
-						id: nanoid(),
-						type: 'error',
-					});
-					break;
-				}
 				const parentNode = convertEventActionToEventTreeNode(currentParentEvent);
 				parentNodes.unshift(parentNode);
 				currentParentId = parentNode.parentId;
 			}
 		} catch (error) {
+			console.error(error);
 			notificationsStore.addMessage({
-				errorType: 'indexedDbMessage',
+				errorType: 'genericError',
 				header: `Error occured while fetching event ${currentParentId}`,
-				description: `${currentParentId} not found`,
+				description: 'Something went wrong',
 				id: nanoid(),
 				type: 'error',
 			});
