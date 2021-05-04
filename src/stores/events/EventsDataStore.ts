@@ -210,6 +210,8 @@ export default class EventsDataStore {
 					{ probe: true },
 				);
 
+				if (!currentParentEvent) break;
+
 				const parentNode = convertEventActionToEventTreeNode(currentParentEvent);
 				parentNodes.unshift(parentNode);
 				currentParentId = parentNode.parentId;
@@ -329,8 +331,6 @@ export default class EventsDataStore {
 
 		const childList = this.parentChildrensMap.get(parentId) || [];
 		this.parentChildrensMap.set(parentId, [...childList, ...events.map(event => event.eventId)]);
-
-		delete this.childrenLoaders[parentId];
 	};
 
 	@action
@@ -346,8 +346,9 @@ export default class EventsDataStore {
 		}
 
 		this.onEventChildrenChunkLoaded(events, parentId);
-
 		this.isLoadingChildren.set(parentId, false);
+
+		delete this.childrenLoaders[parentId];
 	};
 
 	private targetEventAC: AbortController | null = null;
@@ -393,7 +394,6 @@ export default class EventsDataStore {
 
 	@action
 	public fetchDetailedEventInfo = async (selectedNode: EventTreeNode | null) => {
-		this.eventStore.selectedEvent = null;
 		if (!selectedNode) return;
 
 		this.detailedEventAC?.abort();
@@ -405,7 +405,9 @@ export default class EventsDataStore {
 				selectedNode.eventId,
 				this.detailedEventAC.signal,
 			);
-			this.eventStore.selectedEvent = event;
+			runInAction(() => {
+				this.eventStore.selectedEvent = event;
+			});
 		} catch (error) {
 			console.error(`Error occurred while loading event ${selectedNode.eventId}`);
 		} finally {
