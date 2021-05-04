@@ -236,11 +236,9 @@ export default class EventsStore {
 		this.isExpandedMap.set(eventTreeNode.eventId, isExpanded);
 		if (isExpanded) {
 			this.searchStore.appendResultsForEvent(eventTreeNode.eventId);
-		} else if (eventTreeNode.childList.length) {
+		} else {
 			this.searchStore.removeEventsResults(
-				eventTreeNode.childList
-					.flatMap(eventNode => this.getNodesList(eventNode, []))
-					.map(node => node.eventId),
+				this.getNodesList(eventTreeNode, []).map(node => node.eventId),
 			);
 		}
 	};
