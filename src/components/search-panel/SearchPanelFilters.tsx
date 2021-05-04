@@ -25,7 +25,7 @@ import {
 import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import FilterRow from '../filter/row';
 import { SearchPanelType } from './SearchPanel';
-import { FilterAutocompletes } from '../../stores/FilterAutocompletesStore';
+import { SavedFilters } from '../../stores/FilterAutocompletesStore';
 
 export type StringFilter = {
 	type: 'string';
@@ -79,7 +79,7 @@ type FilterRowConfig =
 
 interface SearchPanelFiltersProps {
 	type: SearchPanelType;
-	autocompletes: FilterAutocompletes;
+	autocompletes: SavedFilters;
 	info: SSEFilterInfo[];
 	state: FilterState;
 	setState: (patch: Partial<FilterState>) => void;

@@ -26,9 +26,12 @@ import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import { DbData } from '../api/indexedDb';
 import FilterAutocompletesStore from './FilterAutocompletesStore';
+import FiltersHistoryStore from './FiltersHistoryStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
+
+	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb);
 
 	filtersAutocompletesStore = new FilterAutocompletesStore(this.api.indexedDb);
 

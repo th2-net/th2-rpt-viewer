@@ -30,7 +30,7 @@ import { EventFilterState, Filter } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { FiltersToSave } from '../../stores/FilterAutocompletesStore';
-import FiltersHistory from '../filter-autocompletes/FiltersHistory';
+import FiltersHistory from '../filters-history/FiltersHistory';
 
 type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;

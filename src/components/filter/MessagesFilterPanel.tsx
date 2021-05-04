@@ -37,7 +37,7 @@ import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
 import { FiltersToSave } from '../../stores/FilterAutocompletesStore';
-import FiltersHistory from '../filter-autocompletes/FiltersHistory';
+import FiltersHistory from '../filters-history/FiltersHistory';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;

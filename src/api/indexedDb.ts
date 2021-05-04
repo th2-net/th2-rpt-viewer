@@ -22,6 +22,7 @@ import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { SearchHistory } from '../stores/SearchStore';
 import { FilterAutocompletesObject } from '../stores/FilterAutocompletesStore';
+import { FiltersHistory } from '../stores/FiltersHistoryStore';
 
 const dbVersion = 1;
 
@@ -33,6 +34,7 @@ export enum IndexedDbStores {
 	DISPLAY_RULES = 'display-rules',
 	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 	FILTER_AUTOCOMPLETES = 'filter-autocompletes',
+	FILTERS_HISTORY = 'filters-history',
 }
 
 export type DbData =
@@ -43,7 +45,8 @@ export type DbData =
 	| MessageDisplayRule
 	| OrderRule
 	| MessageSortOrderItem
-	| FilterAutocompletesObject;
+	| FilterAutocompletesObject
+	| FiltersHistory;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.EVENTS]: {
@@ -95,11 +98,19 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
+	[IndexedDbStores.FILTERS_HISTORY]: {
+		key: string;
+		value: FiltersHistory;
+		indexes: {
+			timestamp: number;
+		};
+	};
 }
 
 export const indexedDbLimits = {
 	bookmarks: 1000,
 	[IndexedDbStores.FILTER_AUTOCOMPLETES]: 10,
+	[IndexedDbStores.FILTERS_HISTORY]: 10,
 	[IndexedDbStores.DISPLAY_RULES]: 100,
 	[IndexedDbStores.SEARCH_HISTORY]: 5,
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
@@ -158,6 +169,11 @@ export class IndexedDB {
 						},
 					);
 					filterAutocompletesStore.createIndex('timestamp', 'timestamp');
+
+					const filterHistoryStroe = db.createObjectStore(IndexedDbStores.FILTERS_HISTORY, {
+						keyPath: 'timestamp',
+					});
+					filterHistoryStroe.createIndex('timestamp', 'timestamp');
 				}
 			},
 		});

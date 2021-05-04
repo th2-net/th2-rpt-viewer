@@ -38,7 +38,7 @@ import SearchResultCountLimit, {
 } from './search-form/SearchResultCountLimit';
 import { SearchDirection } from '../../models/search/SearchDirection';
 import { useFilterAutocompletesStore } from '../../hooks';
-import FiltersHistory from '../filter-autocompletes/FiltersHistory';
+import FiltersHistory from '../filters-history/FiltersHistory';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
