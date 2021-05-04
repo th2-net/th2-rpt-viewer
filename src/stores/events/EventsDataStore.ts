@@ -15,8 +15,13 @@
  ***************************************************************************** */
 
 import { action, computed, IReactionDisposer, observable, runInAction, when } from 'mobx';
+import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
-import { convertEventActionToEventTreeNode, getErrorEventTreeNode } from '../../helpers/event';
+import {
+	convertEventActionToEventTreeNode,
+	getErrorEventTreeNode,
+	isRootEvent,
+} from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventSSELoader } from './EventSSELoader';
 import notificationsStore from '../NotificationsStore';
@@ -91,9 +96,10 @@ export default class EventsDataStore {
 
 		this.resetEventsTreeState({ isLoading: true });
 
-		this.loadTargetNode(targetEventId || null);
 		this.filterStore.setRange(timeRange);
 		this.filterStore.setEventsFilter(filter);
+
+		this.loadTargetNode(targetEventId || null);
 
 		try {
 			this.eventTreeEventSource?.stop();
@@ -127,7 +133,7 @@ export default class EventsDataStore {
 		);
 		this.eventsCache = eventsMap;
 
-		const eventsByParentId: { [eventId: string]: EventTreeNode[] } = {};
+		const eventsByParentId: { [parentEventId: string]: EventTreeNode[] } = {};
 		const rootEvents: EventTreeNode[] = [];
 
 		for (let i = 0; i < events.length; i++) {
@@ -159,7 +165,7 @@ export default class EventsDataStore {
 			} else {
 				this.hasUnloadedChildren.set(parentId, true);
 			}
-			if (!this.eventsCache.get(parentId) && !this.loadingParentEvents.get(parentId)) {
+			if (!this.eventsCache.get(parentId) && !this.loadingParentEvents.has(parentId)) {
 				this.loadParentNodes(parentId);
 				this.loadingParentEvents.set(parentId, true);
 			}
@@ -189,28 +195,59 @@ export default class EventsDataStore {
 
 	@action
 	private loadParentNodes = async (parentId: string) => {
+		const parentNodes: EventTreeNode[] = [];
+		let currentParentId: string | null = parentId;
+		let currentParentEvent = null;
+
 		try {
 			this.parentNodesLoaderAC = new AbortController();
-			const parentEvents = await this.api.events.getEventParents(
-				parentId,
-				this.parentNodesLoaderAC.signal,
-			);
 
-			const parentNodes = parentEvents.map(convertEventActionToEventTreeNode);
+			while (typeof currentParentId === 'string' && !this.eventsCache.has(currentParentId)) {
+				this.loadingParentEvents.set(currentParentId, true);
+				// eslint-disable-next-line no-await-in-loop
+				currentParentEvent = await this.api.events.getEvent(
+					currentParentId,
+					this.parentNodesLoaderAC.signal,
+					{ probe: true },
+				);
+
+				if (!currentParentEvent) {
+					notificationsStore.addMessage({
+						errorType: 'indexedDbMessage',
+						header: `Couldn't fetch event ${currentParentId}`,
+						description: `${currentParentId} not found`,
+						id: nanoid(),
+						type: 'error',
+					});
+					break;
+				}
+				const parentNode = convertEventActionToEventTreeNode(currentParentEvent);
+				parentNodes.unshift(parentNode);
+				currentParentId = parentNode.parentId;
+			}
+		} catch (error) {
+			notificationsStore.addMessage({
+				errorType: 'indexedDbMessage',
+				header: `Error occured while fetching event ${currentParentId}`,
+				description: `${currentParentId} not found`,
+				id: nanoid(),
+				type: 'error',
+			});
+		} finally {
 			runInAction(() => {
-				/*
-					api.events.getEventParents won't throw an error if it fails to load one of parent events
-					it will stop on error and return event chain that already have been loaded
-					If it fails to load parent node we should create 'Unknown event'
-				*/
 				let rootNode = parentNodes[0];
-				if (!rootNode || rootNode.parentId !== null) {
-					const unknownParentNodeId = rootNode?.parentId || parentId;
 
-					rootNode = getErrorEventTreeNode(unknownParentNodeId);
-
+				if (!rootNode || !isRootEvent(rootNode)) {
+					const cachedRootNode =
+						rootNode && rootNode.parentId !== null ? this.eventsCache.get(rootNode.parentId) : null;
+					if (cachedRootNode) {
+						rootNode = cachedRootNode;
+					} else {
+						rootNode = getErrorEventTreeNode(rootNode?.parentId || parentId);
+					}
 					parentNodes.unshift(rootNode);
 				}
+
 				parentNodes.forEach(parentNode => {
 					this.eventsCache.set(parentNode.eventId, parentNode);
 
@@ -222,20 +259,15 @@ export default class EventsDataStore {
 							this.parentChildrensMap.set(parentNode.parentId, children);
 						}
 					}
-					this.loadingParentEvents.delete(parentNode.eventId);
+					this.loadingParentEvents.set(parentNode.eventId, false);
 				});
-				if (!this.rootEventIds.includes(rootNode.eventId)) {
+
+				if (
+					(isRootEvent(rootNode) || rootNode.isUnknown) &&
+					!this.rootEventIds.includes(rootNode.eventId)
+				) {
 					this.rootEventIds = [...this.rootEventIds, rootNode.eventId];
 				}
-			});
-		} catch (error) {
-			runInAction(() => {
-				const uknownRootNode = getErrorEventTreeNode(parentId);
-				this.eventsCache.set(parentId, uknownRootNode);
-				if (!this.rootEventIds.includes(parentId)) {
-					this.rootEventIds = [...this.rootEventIds, parentId];
-				}
-				this.loadingParentEvents.delete(parentId);
 			});
 		}
 	};
