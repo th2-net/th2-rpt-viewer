@@ -262,10 +262,17 @@ export default class EventsDataStore {
 		}
 	};
 
-	private loadingChildrenMap: { [parentId: string]: EventSSELoader } = {};
+	private childrenLoaders: {
+		[parentId: string]: {
+			loader: EventSSELoader;
+			initialCount: number;
+		};
+	} = {};
 
 	@action
 	public loadMoreChilds = (parentId: string) => {
+		if (this.childrenLoaders[parentId]) return;
+
 		const parentNode = this.eventsCache.get(parentId);
 
 		if (parentNode) {
@@ -277,7 +284,7 @@ export default class EventsDataStore {
 
 			const lastChild = eventsChildren[eventsChildren.length - 1];
 
-			this.loadingChildrenMap[parentId] = new EventSSELoader(
+			const loader = new EventSSELoader(
 				{
 					timeRange: [timestampToNumber(lastChild.startTimestamp), this.filterStore.timestampTo],
 					filter: this.filterStore.filter,
@@ -291,19 +298,25 @@ export default class EventsDataStore {
 				},
 				{
 					onError: this.onEventTreeFetchError,
-					onResponse: events => this.onEventChildrenLoad(events, parentId),
+					onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
 					onClose: events => this.onEventChildrenLoadEnd(events, parentId),
 				},
 				{
 					chunkSize: this.CHILDREN_COUNT_LIMIT + 1,
 				},
 			);
-			this.loadingChildrenMap[parentId].subscribe();
+
+			this.childrenLoaders[parentId] = {
+				loader,
+				initialCount: eventsChildren.length,
+			};
+
+			this.childrenLoaders[parentId].loader.subscribe();
 		}
 	};
 
 	@action
-	private onEventChildrenLoad = (events: EventTreeNode[], parentId: string) => {
+	private onEventChildrenChunkLoaded = (events: EventTreeNode[], parentId: string) => {
 		const newEntries: [string, EventTreeNode][] = events.map(event => [event.eventId, event]);
 		const eventsMap: Map<string, EventTreeNode> = observable.map(
 			new Map([...this.eventsCache, ...newEntries]),
@@ -315,22 +328,24 @@ export default class EventsDataStore {
 		if (!parentNode) return;
 
 		const childList = this.parentChildrensMap.get(parentId) || [];
-
 		this.parentChildrensMap.set(parentId, [...childList, ...events.map(event => event.eventId)]);
+
+		delete this.childrenLoaders[parentId];
 	};
 
 	@action
 	private onEventChildrenLoadEnd = (events: EventTreeNode[], parentId: string) => {
 		const childList = this.parentChildrensMap.get(parentId) || [];
+		const initialCount = this.childrenLoaders[parentId].initialCount;
 
-		if ((childList.length + events.length) % this.CHILDREN_COUNT_LIMIT === 1) {
+		if (childList.length + events.length - (initialCount + this.CHILDREN_COUNT_LIMIT) === 1) {
 			this.hasUnloadedChildren.set(parentId, true);
 			events.pop();
 		} else {
 			this.hasUnloadedChildren.set(parentId, false);
 		}
 
-		this.onEventChildrenLoad(events, parentId);
+		this.onEventChildrenChunkLoaded(events, parentId);
 
 		this.isLoadingChildren.set(parentId, false);
 	};
@@ -404,10 +419,10 @@ export default class EventsDataStore {
 			this.eventTreeEventSource = null;
 		}
 
-		const pendingChildrenLoaders = Object.values(this.loadingChildrenMap);
-		pendingChildrenLoaders.forEach(loader => loader.stop());
+		const pendingChildrenLoaders = Object.values(this.childrenLoaders);
+		pendingChildrenLoaders.forEach(loader => loader.loader.stop());
 
-		this.loadingChildrenMap = {};
+		this.childrenLoaders = {};
 
 		if (this.parentNodesLoaderAC) {
 			this.parentNodesLoaderAC.abort();
