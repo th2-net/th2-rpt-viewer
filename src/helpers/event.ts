@@ -120,7 +120,7 @@ export const convertEventActionToEventTreeNode = (event: EventAction): EventTree
 		successful: event.successful,
 		childList: [],
 		filtered: true,
-		parentId: event.parentEventId === 'null' ? null : event.parentEventId,
+		parentId: event.parentEventId,
 		type: ActionType.EVENT_TREE_NODE,
 	};
 };

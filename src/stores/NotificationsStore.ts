@@ -20,7 +20,7 @@ import { AppearanceTypes } from 'react-toast-notifications';
 
 interface BaseNotificationError {
 	type: AppearanceTypes;
-	errorType: 'responseError' | 'urlError' | 'indexedDbMessage';
+	errorType: 'responseError' | 'urlError' | 'genericError';
 	id: string;
 }
 export interface ResponseError extends BaseNotificationError {
@@ -37,8 +37,8 @@ export interface UrlError extends BaseNotificationError {
 	error: Error;
 }
 
-export interface IndexedDbError extends BaseNotificationError {
-	errorType: 'indexedDbMessage';
+export interface GenericError extends BaseNotificationError {
+	errorType: 'genericError';
 	header: string;
 	description: string;
 	action?: {
@@ -47,7 +47,7 @@ export interface IndexedDbError extends BaseNotificationError {
 	};
 }
 
-export type NotificationError = ResponseError | UrlError | IndexedDbError;
+export type NotificationError = ResponseError | UrlError | GenericError;
 
 export class NotificationsStore {
 	@observable
