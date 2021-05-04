@@ -42,8 +42,9 @@ function EventDetailInfoCard(props: Props) {
 	}
 
 	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId } = event;
+	const { isUnknown } = node;
 
-	const status = getEventStatus(event);
+	const status = isUnknown ? 'unknown' : getEventStatus(event);
 
 	const isBookmarked =
 		selectedStore.bookmarkedEvents.findIndex(
