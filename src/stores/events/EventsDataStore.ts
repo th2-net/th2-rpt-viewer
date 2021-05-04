@@ -31,15 +31,13 @@ import { timestampToNumber } from '../../helpers/date';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { TimeRange } from '../../models/Timestamp';
 
-const LIMIT_FOR_PARENT = 51;
-
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
 	filter: EventsFilter | null;
 	targetEventId?: string;
 }
 export default class EventsDataStore {
-	private CHUNK_SIZE = 50;
+	private CHILDREN_COUNT_LIMIT = 50;
 
 	constructor(
 		private eventStore: EventsStore,
@@ -109,7 +107,8 @@ export default class EventsDataStore {
 					filter,
 					sseParams: {
 						searchDirection: 'next',
-						limitForParent: LIMIT_FOR_PARENT,
+						// load 1 more to see if there are more children
+						limitForParent: this.CHILDREN_COUNT_LIMIT + 1,
 					},
 				},
 				{
@@ -149,7 +148,7 @@ export default class EventsDataStore {
 
 		Object.keys(eventsByParentId).forEach(parentId => {
 			const cachedEventChildren = this.parentChildrensMap.get(parentId) || [];
-			if (cachedEventChildren.length <= this.CHUNK_SIZE) {
+			if (cachedEventChildren.length <= this.CHILDREN_COUNT_LIMIT) {
 				const fetchedEventChildren = eventsByParentId[parentId]
 					.map(event => event.eventId)
 					.filter(eventId => !cachedEventChildren.includes(eventId));
@@ -157,8 +156,8 @@ export default class EventsDataStore {
 				let childrenUpdate = cachedEventChildren.concat(fetchedEventChildren);
 
 				// Ignore events over chunk size on initial load
-				if (childrenUpdate.length > this.CHUNK_SIZE) {
-					childrenUpdate = childrenUpdate.slice(0, this.CHUNK_SIZE);
+				if (childrenUpdate.length > this.CHILDREN_COUNT_LIMIT) {
+					childrenUpdate = childrenUpdate.slice(0, this.CHILDREN_COUNT_LIMIT);
 					this.hasUnloadedChildren.set(parentId, true);
 				}
 				updatedParentChildrenMapEntries.set(parentId, childrenUpdate);
@@ -285,9 +284,9 @@ export default class EventsDataStore {
 					sseParams: {
 						parentEvent: parentId,
 						resumeFromId: lastChild?.eventId,
-						resultCountLimit: this.CHUNK_SIZE + 1,
+						// load 1 more to see if there are more children
+						resultCountLimit: this.CHILDREN_COUNT_LIMIT + 1,
 						searchDirection: 'next',
-						limitForParent: LIMIT_FOR_PARENT,
 					},
 				},
 				{
@@ -296,7 +295,7 @@ export default class EventsDataStore {
 					onClose: events => this.onEventChildrenLoadEnd(events, parentId),
 				},
 				{
-					chunkSize: this.CHUNK_SIZE + 1,
+					chunkSize: this.CHILDREN_COUNT_LIMIT + 1,
 				},
 			);
 			this.loadingChildrenMap[parentId].subscribe();
@@ -324,7 +323,7 @@ export default class EventsDataStore {
 	private onEventChildrenLoadEnd = (events: EventTreeNode[], parentId: string) => {
 		const childList = this.parentChildrensMap.get(parentId) || [];
 
-		if ((childList.length + events.length) % this.CHUNK_SIZE === 1) {
+		if ((childList.length + events.length) % this.CHILDREN_COUNT_LIMIT === 1) {
 			this.hasUnloadedChildren.set(parentId, true);
 			events.pop();
 		} else {
