@@ -29,6 +29,7 @@ import {
 	useMessagesDataStore,
 	useMessagesWorkspaceStore,
 	useFilterAutocompletesStore,
+	useFiltersHistoryStore,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -48,6 +49,7 @@ const MessagesFilterPanel = () => {
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
 	const { autocompletes, saveAutocompletes } = useFilterAutocompletesStore();
+	const { addHistoryItem } = useFiltersHistoryStore();
 	const { filterStore } = messagesStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);
@@ -81,8 +83,18 @@ const MessagesFilterPanel = () => {
 	const submitChanges = React.useCallback(() => {
 		if (sseFilter) {
 			const filtersToSave: FiltersToSave = Object.fromEntries(
-				Object.entries(sseFilter).map(([key, value]) => [key, toJS(value.values)]),
+				Object.entries(sseFilter).map(([key, value]) => [
+					key,
+					toJS(typeof value.values === 'string' ? value.values : value.values.sort()),
+				]),
 			);
+			if (Object.values(filtersToSave).some(v => v.length > 0)) {
+				addHistoryItem({
+					timestamp: Date.now(),
+					filters: filtersToSave,
+					type: 'event',
+				});
+			}
 			saveAutocompletes(filtersToSave, 'message');
 		}
 		searchStore.stopSearch();
@@ -219,7 +231,7 @@ const MessagesFilterPanel = () => {
 			<Observer>
 				{() => (
 					<div className='filter-footer'>
-						<FiltersHistory />
+						<FiltersHistory type='message' />
 						{messagesStore.filterStore.sseMessagesFilter && (
 							<Checkbox
 								checked={isSoftFilterApplied}

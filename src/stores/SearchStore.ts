@@ -44,7 +44,8 @@ import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
-import FilterAutocompletesStore, { FiltersToSave } from './FilterAutocompletesStore';
+import FilterAutocompletesStore from './FilterAutocompletesStore';
+import FiltersHistoryStore from './FiltersHistoryStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -106,6 +107,7 @@ export class SearchStore {
 		private workspacesStore: WorkspacesStore,
 		private api: ApiSchema,
 		private filtersAutocomplete: FilterAutocompletesStore,
+		private filtersHistory: FiltersHistoryStore,
 	) {
 		this.init();
 
@@ -487,7 +489,7 @@ export class SearchStore {
 					)
 					.map((info: SSEFilterInfo) => info.name);
 
-		const filterValues = filtersToAdd.map(filter => [
+		const filterValues: [string, string | string[]][] = filtersToAdd.map(filter => [
 			`${filter}-${filter === 'status' ? 'value' : 'values'}`,
 			getFilter(filter).values,
 		]);
@@ -525,15 +527,23 @@ export class SearchStore {
 			});
 
 			const valuesToSave = Object.fromEntries(
-				filterValues.map(([key, value]) => [key.split('-')[0], toJS(value)]),
+				filterValues.map(([key, value]) => [
+					key.split('-')[0],
+					toJS(typeof value === 'string' ? value : value.sort()),
+				]),
 			);
-
-			const filtersToSave: FiltersToSave =
-				this.formType === 'event' ? { ...valuesToSave, parentEvent } : valuesToSave;
 
 			this.searchChannel[direction] = searchChannel;
 
-			this.filtersAutocomplete.saveAutocompletes(filtersToSave, this.formType);
+			this.filtersAutocomplete.saveAutocompletes(valuesToSave, this.formType);
+
+			if (Object.keys(valuesToSave).length) {
+				this.filtersHistory.addHistoryItem({
+					timestamp: Date.now(),
+					filters: valuesToSave,
+					type: this.formType,
+				});
+			}
 
 			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));
 			searchChannel.addEventListener('keep_alive', this.onChannelResponse.bind(this, direction));

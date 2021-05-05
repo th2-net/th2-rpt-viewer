@@ -17,12 +17,12 @@
 import { observable, computed, action } from 'mobx';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
-import { SavedFilters } from './FilterAutocompletesStore';
+import { FiltersToSave } from './FilterAutocompletesStore';
 
 export interface FiltersHistory {
 	timestamp: number;
 	type: SearchPanelType;
-	filters: SavedFilters;
+	filters: FiltersToSave;
 }
 
 class FiltersHistoryStore {
@@ -34,11 +34,17 @@ class FiltersHistoryStore {
 	public history: FiltersHistory[] = [];
 
 	@action
-	public addHistoryItem = async (filters: FiltersHistory) => {
+	public addHistoryItem = async (newFilters: FiltersHistory) => {
+		const hasSame = this.history.some(({ filters }) => {
+			return JSON.stringify(filters) === JSON.stringify(newFilters.filters);
+		});
+		if (hasSame) {
+			return;
+		}
 		if (this.isFull) {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const [_, ...rest] = this.history;
-			this.history = [...rest, filters];
+			this.history = [...rest, newFilters];
 
 			const all = await this.indexedDb.getStoreValues<FiltersHistory>(
 				IndexedDbStores.FILTERS_HISTORY,
@@ -47,11 +53,11 @@ class FiltersHistoryStore {
 			if (first) {
 				this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, first.timestamp);
 			}
-			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filters);
+			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, newFilters);
 			return;
 		}
-		this.history = [...this.history, filters];
-		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filters);
+		this.history = [...this.history, newFilters];
+		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, newFilters);
 	};
 
 	@computed

@@ -284,13 +284,13 @@
 	}
 }
 
-@mixin improved-clickable ($bgc, $rad: 2px) {
+@mixin improved-clickable ($bgc, $rad: 2px, $amount: 2) {
 	cursor: pointer;
 	border-radius: $rad;
 	background-color: $bgc;
 
 	&:hover {
-		background-color: darken($color: $bgc, $amount: 2);
+		background-color: darken($color: $bgc, $amount: $amount);
 	}
 }
 

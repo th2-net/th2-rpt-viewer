@@ -14,17 +14,48 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ModalPortal } from '../util/Portal';
 import '../../styles/filters-history.scss';
-import { useOutsideClickListener } from '../../hooks';
+import { useOutsideClickListener, useFiltersHistoryStore } from '../../hooks';
 import { raf } from '../../helpers/raf';
+import { SearchPanelType } from '../search-panel/SearchPanel';
+import FiltersHistoryItem from './FiltersHistoryItem';
+import { useSearchStore } from '../../hooks/useSearchStore';
+import { EventFilterState, MessageFilterState } from '../search-panel/SearchPanelFilters';
 
-const FiltersHistory = () => {
+interface Props {
+	type?: SearchPanelType;
+}
+
+export type FiltersState = {
+	state: EventFilterState | MessageFilterState;
+	setState:
+		| ((patch: Partial<EventFilterState>) => void)
+		| ((patch: Partial<MessageFilterState>) => void);
+} | null;
+
+const FiltersHistory = ({ type }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const historyRef = useRef<HTMLDivElement>(null);
+	const { history } = useFiltersHistoryStore();
+	const { filters, formType } = useSearchStore();
+
+	const toShow = useMemo(
+		() => history.filter(item => (type ? item.type === type : item.type === formType)),
+		[history, type, formType],
+	);
+
+	const filtersState: FiltersState = useMemo(() => {
+		return filters
+			? {
+					state: filters.state,
+					setState: filters.setState,
+			  }
+			: null;
+	}, [filters]);
 
 	React.useLayoutEffect(() => {
 		if (isOpen) {
@@ -43,7 +74,8 @@ const FiltersHistory = () => {
 			setIsOpen(false);
 		}
 	});
-	return (
+
+	return toShow.length ? (
 		<>
 			<button
 				ref={buttonRef}
@@ -56,11 +88,13 @@ const FiltersHistory = () => {
 
 			<ModalPortal isOpen={isOpen}>
 				<div ref={historyRef} className='filters-history'>
-					filters history
+					{toShow.map(item => (
+						<FiltersHistoryItem key={item.timestamp} item={item} filter={filtersState} />
+					))}
 				</div>
 			</ModalPortal>
 		</>
-	);
+	) : null;
 };
 
 export default observer(FiltersHistory);

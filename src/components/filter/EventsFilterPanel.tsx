@@ -23,6 +23,7 @@ import {
 	useWorkspaceEventStore,
 	useEventsFilterStore,
 	useFilterAutocompletesStore,
+	useFiltersHistoryStore,
 } from '../../hooks';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
@@ -53,6 +54,7 @@ function EventsFilterPanel() {
 	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
 	const { autocompletes, saveAutocompletes } = useFilterAutocompletesStore();
+	const { addHistoryItem } = useFiltersHistoryStore();
 
 	const [showFilter, setShowFilter] = React.useState(false);
 
@@ -71,9 +73,19 @@ function EventsFilterPanel() {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { status, ...restFilters } = filter;
 			const filtersToSave: FiltersToSave = Object.fromEntries(
-				Object.entries(restFilters).map(([key, value]) => [key, toJS(value.values)]),
+				Object.entries(restFilters).map(([key, value]) => [
+					key,
+					toJS(typeof value.values === 'string' ? value.values : value.values.sort()),
+				]),
 			);
 			saveAutocompletes(filtersToSave, 'event');
+			if (Object.values(filtersToSave).some(v => v.length > 0)) {
+				addHistoryItem({
+					timestamp: Date.now(),
+					filters: filtersToSave,
+					type: 'event',
+				});
+			}
 			eventsStore.applyFilter(filter);
 		}
 	}, [filter]);
@@ -205,7 +217,7 @@ function EventsFilterPanel() {
 		<FilterPanel
 			isLoading={eventDataStore.isLoading}
 			isFilterApplied={filterStore.isEventsFilterApplied}
-			renderFooter={() => filter && <FiltersHistory />}
+			renderFooter={() => filter && <FiltersHistory type='event' />}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
 			onSubmit={onSubmit}

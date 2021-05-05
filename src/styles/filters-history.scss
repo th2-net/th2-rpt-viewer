@@ -26,7 +26,43 @@
 }
 
 .filters-history {
+	@include scrollbar();
 	position: absolute;
+	overflow: auto;
 	z-index: 130;
 	width: 320px;
+	max-height: 320px;
+	font: 11px 'Open sans', sans-serif;
+	padding: 10px;
+  background-color: #fff;
+	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14),
+	0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+	border-radius: 6px;
+	&__item {
+		.title {
+			text-decoration: underline;
+		}
+		.content {
+			&__item {
+				display: flex;
+				align-items: center;
+				margin: 0 0 4px;
+			}
+			&__label {
+				margin: 0 4px 0 0;
+			}
+			&__values {
+				flex-grow: 1;
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: flex-end;
+				button {
+					color: #fff;
+					outline: none;
+					border: none;
+					@include improved-clickable($filterPickerScrollItemActiveColor, 10px, 10)
+				}
+			}
+		}
+	}
 }

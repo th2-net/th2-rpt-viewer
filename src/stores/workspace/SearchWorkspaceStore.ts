@@ -40,6 +40,7 @@ export default class SearchWorkspaceStore {
 			this.workspacesStore,
 			api,
 			this.workspacesStore.filterAutocompletesStore,
+			this.workspacesStore.filtersHistoryStore,
 		);
 
 		this.viewStore = new WorkspaceViewStore(undefined);
