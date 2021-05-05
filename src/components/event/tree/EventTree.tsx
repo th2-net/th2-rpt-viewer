@@ -87,7 +87,8 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 
 	function loadMoreSiblings() {
 		if (eventTreeNode.parentId) {
-			eventsDataStore.loadMoreChilds(eventTreeNode.parentId);
+			eventsDataStore.isLoadingChildren.set(eventTreeNode.parentId, true);
+			eventsDataStore.loadChildren(eventTreeNode.parentId);
 		}
 	}
 

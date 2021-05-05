@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, IReactionDisposer, observable, runInAction, when } from 'mobx';
+import { action, computed, IReactionDisposer, observable, reaction, runInAction, when } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
 import {
@@ -27,7 +27,6 @@ import { EventSSELoader } from './EventSSELoader';
 import notificationsStore from '../NotificationsStore';
 import EventsFilterStore from './EventsFilterStore';
 import EventsStore from './EventsStore';
-import { timestampToNumber } from '../../helpers/date';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { TimeRange } from '../../models/Timestamp';
 
@@ -43,9 +42,20 @@ export default class EventsDataStore {
 		private eventStore: EventsStore,
 		private filterStore: EventsFilterStore,
 		private api: ApiSchema,
-	) {}
+	) {
+		reaction(() => this.targetNodePath, this.preloadSelectedPathChildren, {
+			equals: (pathA: string[], pathB: string[]) => {
+				return (
+					Boolean(pathA && pathB) &&
+					pathA.length === pathB.length &&
+					pathA.every((id, index) => id === pathB[index])
+				);
+			},
+		});
+	}
 
-	@observable.ref eventTreeEventSource: EventSSELoader | null = null;
+	@observable.ref
+	private eventTreeEventSource: EventSSELoader | null = null;
 
 	@observable
 	public eventsCache: Map<string, EventTreeNode> = new Map();
@@ -341,23 +351,22 @@ export default class EventsDataStore {
 	} = {};
 
 	@action
-	public loadMoreChilds = (parentId: string) => {
-		if (this.childrenLoaders[parentId]) return;
+	public loadChildren = (parentId: string) => {
+		if (this.childrenLoaders[parentId]) {
+			this.childrenLoaders[parentId].loader.stop();
+			delete this.childrenLoaders[parentId];
+		}
 
 		const parentNode = this.eventsCache.get(parentId);
 
 		if (parentNode) {
 			const eventsChildren = this.eventStore.getChildrenNodes(parentId);
 
-			if (!eventsChildren || !this.hasUnloadedChildren.get(parentId)) return;
-
-			this.isLoadingChildren.set(parentId, true);
-
 			const lastChild = eventsChildren[eventsChildren.length - 1];
 
 			const loader = new EventSSELoader(
 				{
-					timeRange: [timestampToNumber(lastChild.startTimestamp), this.filterStore.timestampTo],
+					timeRange: [this.filterStore.timestampFrom, this.filterStore.timestampTo],
 					filter: this.filterStore.filter,
 					sseParams: {
 						parentEvent: parentId,
@@ -388,6 +397,19 @@ export default class EventsDataStore {
 
 	@action
 	private onEventChildrenChunkLoaded = (events: EventTreeNode[], parentId: string) => {
+		const childList = this.parentChildrensMap.get(parentId) || [];
+		// eslint-disable-next-line no-param-reassign
+		events = events.filter(event => !childList.includes(event.eventId));
+
+		const initialCount = this.childrenLoaders[parentId].initialCount;
+		const expectedChildrenCountLoaded =
+			(Math.floor(initialCount / this.CHILDREN_COUNT_LIMIT) + 1) * this.CHILDREN_COUNT_LIMIT;
+
+		if (childList.length + events.length > expectedChildrenCountLoaded) {
+			// eslint-disable-next-line no-param-reassign
+			events = events.slice(0, expectedChildrenCountLoaded - childList.length);
+		}
+
 		const newEntries: [string, EventTreeNode][] = events.map(event => [event.eventId, event]);
 		const eventsMap: Map<string, EventTreeNode> = observable.map(
 			new Map([...this.eventsCache, ...newEntries]),
@@ -398,18 +420,23 @@ export default class EventsDataStore {
 		const parentNode = this.eventsCache.get(parentId);
 		if (!parentNode) return;
 
-		const childList = this.parentChildrensMap.get(parentId) || [];
 		this.parentChildrensMap.set(parentId, [...childList, ...events.map(event => event.eventId)]);
 	};
 
 	@action
 	private onEventChildrenLoadEnd = (events: EventTreeNode[], parentId: string) => {
 		const childList = this.parentChildrensMap.get(parentId) || [];
-		const initialCount = this.childrenLoaders[parentId].initialCount;
 
-		if (childList.length + events.length - (initialCount + this.CHILDREN_COUNT_LIMIT) === 1) {
+		// eslint-disable-next-line no-param-reassign
+		events = events.filter(event => !childList.includes(event.eventId));
+		const initialCount = this.childrenLoaders[parentId].initialCount;
+		const expectedChildrenCountLoaded =
+			(Math.floor(initialCount / this.CHILDREN_COUNT_LIMIT) + 1) * this.CHILDREN_COUNT_LIMIT;
+
+		if (childList.length + events.length > expectedChildrenCountLoaded) {
 			this.hasUnloadedChildren.set(parentId, true);
-			events.pop();
+			// eslint-disable-next-line no-param-reassign
+			events = events.slice(0, expectedChildrenCountLoaded - childList.length);
 		} else {
 			this.hasUnloadedChildren.set(parentId, false);
 		}
@@ -526,5 +553,16 @@ export default class EventsDataStore {
 		this.isLoadingChildren.clear();
 		this.hasUnloadedChildren.clear();
 		this.eventStore.isExpandedMap.clear();
+	};
+
+	private preloadSelectedPathChildren = (selectedPath: string[] | null) => {
+		if (selectedPath) {
+			selectedPath
+				.filter(eventId => {
+					const loadedChildren = this.parentChildrensMap.get(eventId);
+					return !loadedChildren || loadedChildren.length < this.CHILDREN_COUNT_LIMIT;
+				})
+				.forEach(this.loadChildren);
+		}
 	};
 }
