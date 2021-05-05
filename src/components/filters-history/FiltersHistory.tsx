@@ -27,6 +27,7 @@ import { EventFilterState, MessageFilterState } from '../search-panel/SearchPane
 
 interface Props {
 	type?: SearchPanelType;
+	sseFilter?: FiltersState;
 }
 
 export type FiltersState = {
@@ -36,7 +37,7 @@ export type FiltersState = {
 		| ((patch: Partial<MessageFilterState>) => void);
 } | null;
 
-const FiltersHistory = ({ type }: Props) => {
+const FiltersHistory = ({ type, sseFilter }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const historyRef = useRef<HTMLDivElement>(null);
@@ -49,13 +50,16 @@ const FiltersHistory = ({ type }: Props) => {
 	);
 
 	const filtersState: FiltersState = useMemo(() => {
+		if (sseFilter) {
+			return sseFilter;
+		}
 		return filters
 			? {
 					state: filters.state,
 					setState: filters.setState,
 			  }
 			: null;
-	}, [filters]);
+	}, [filters, sseFilter]);
 
 	React.useLayoutEffect(() => {
 		if (isOpen) {

@@ -129,6 +129,13 @@ export default class EventsFilterStore {
 	}
 
 	@action
+	public setSSEFilter = (patch: Partial<EventsFilter>) => {
+		this.filter = this.filter
+			? { ...this.filter, ...patch }
+			: getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
+	};
+
+	@action
 	public resetEventsFilter(): EventsFilter | null {
 		return getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
 	}

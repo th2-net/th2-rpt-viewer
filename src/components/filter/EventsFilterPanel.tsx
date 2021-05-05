@@ -217,7 +217,14 @@ function EventsFilterPanel() {
 		<FilterPanel
 			isLoading={eventDataStore.isLoading}
 			isFilterApplied={filterStore.isEventsFilterApplied}
-			renderFooter={() => filter && <FiltersHistory type='event' />}
+			renderFooter={() =>
+				filterStore.filter && (
+					<FiltersHistory
+						type='event'
+						sseFilter={{ state: filterStore.filter, setState: filterStore.setSSEFilter }}
+					/>
+				)
+			}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
 			onSubmit={onSubmit}

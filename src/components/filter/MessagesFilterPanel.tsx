@@ -231,7 +231,15 @@ const MessagesFilterPanel = () => {
 			<Observer>
 				{() => (
 					<div className='filter-footer'>
-						<FiltersHistory type='message' />
+						{filterStore.sseMessagesFilter && (
+							<FiltersHistory
+								type='message'
+								sseFilter={{
+									state: filterStore.sseMessagesFilter,
+									setState: filterStore.setSSEFilter,
+								}}
+							/>
+						)}
 						{messagesStore.filterStore.sseMessagesFilter && (
 							<Checkbox
 								checked={isSoftFilterApplied}
