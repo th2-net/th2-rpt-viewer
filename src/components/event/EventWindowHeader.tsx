@@ -51,7 +51,8 @@ function EventWindowHeader() {
 						Flat view
 					</div>
 				</div>
-				{(eventDataStore.isLoading || eventDataStore.loadingParentEvents.size > 0) && (
+				{(eventDataStore.isLoading ||
+					[...eventDataStore.loadingParentEvents.values()].some(Boolean)) && (
 					<div className='event-window-header__loader'>
 						Resolving events<span>.</span>
 						<span>.</span>
