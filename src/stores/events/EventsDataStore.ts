@@ -31,15 +31,13 @@ import { timestampToNumber } from '../../helpers/date';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { TimeRange } from '../../models/Timestamp';
 
-const LIMIT_FOR_PARENT = 51;
-
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
 	filter: EventsFilter | null;
 	targetEventId?: string;
 }
 export default class EventsDataStore {
-	private CHUNK_SIZE = 50;
+	private CHILDREN_COUNT_LIMIT = 50;
 
 	constructor(
 		private eventStore: EventsStore,
@@ -109,7 +107,8 @@ export default class EventsDataStore {
 					filter,
 					sseParams: {
 						searchDirection: 'next',
-						limitForParent: LIMIT_FOR_PARENT,
+						// load 1 more to see if there are more children
+						limitForParent: this.CHILDREN_COUNT_LIMIT + 1,
 					},
 				},
 				{
@@ -149,7 +148,7 @@ export default class EventsDataStore {
 
 		Object.keys(eventsByParentId).forEach(parentId => {
 			const cachedEventChildren = this.parentChildrensMap.get(parentId) || [];
-			if (cachedEventChildren.length <= this.CHUNK_SIZE) {
+			if (cachedEventChildren.length <= this.CHILDREN_COUNT_LIMIT) {
 				const fetchedEventChildren = eventsByParentId[parentId]
 					.map(event => event.eventId)
 					.filter(eventId => !cachedEventChildren.includes(eventId));
@@ -157,8 +156,8 @@ export default class EventsDataStore {
 				let childrenUpdate = cachedEventChildren.concat(fetchedEventChildren);
 
 				// Ignore events over chunk size on initial load
-				if (childrenUpdate.length > this.CHUNK_SIZE) {
-					childrenUpdate = childrenUpdate.slice(0, this.CHUNK_SIZE);
+				if (childrenUpdate.length > this.CHILDREN_COUNT_LIMIT) {
+					childrenUpdate = childrenUpdate.slice(0, this.CHILDREN_COUNT_LIMIT);
 					this.hasUnloadedChildren.set(parentId, true);
 				}
 				updatedParentChildrenMapEntries.set(parentId, childrenUpdate);
@@ -210,6 +209,8 @@ export default class EventsDataStore {
 					this.parentNodesLoaderAC.signal,
 					{ probe: true },
 				);
+
+				if (!currentParentEvent) break;
 
 				const parentNode = convertEventActionToEventTreeNode(currentParentEvent);
 				parentNodes.unshift(parentNode);
@@ -263,10 +264,17 @@ export default class EventsDataStore {
 		}
 	};
 
-	private loadingChildrenMap: { [parentId: string]: EventSSELoader } = {};
+	private childrenLoaders: {
+		[parentId: string]: {
+			loader: EventSSELoader;
+			initialCount: number;
+		};
+	} = {};
 
 	@action
 	public loadMoreChilds = (parentId: string) => {
+		if (this.childrenLoaders[parentId]) return;
+
 		const parentNode = this.eventsCache.get(parentId);
 
 		if (parentNode) {
@@ -278,33 +286,39 @@ export default class EventsDataStore {
 
 			const lastChild = eventsChildren[eventsChildren.length - 1];
 
-			this.loadingChildrenMap[parentId] = new EventSSELoader(
+			const loader = new EventSSELoader(
 				{
 					timeRange: [timestampToNumber(lastChild.startTimestamp), this.filterStore.timestampTo],
 					filter: this.filterStore.filter,
 					sseParams: {
 						parentEvent: parentId,
 						resumeFromId: lastChild?.eventId,
-						resultCountLimit: this.CHUNK_SIZE + 1,
+						// load 1 more to see if there are more children
+						resultCountLimit: this.CHILDREN_COUNT_LIMIT + 1,
 						searchDirection: 'next',
-						limitForParent: LIMIT_FOR_PARENT,
 					},
 				},
 				{
 					onError: this.onEventTreeFetchError,
-					onResponse: events => this.onEventChildrenLoad(events, parentId),
+					onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
 					onClose: events => this.onEventChildrenLoadEnd(events, parentId),
 				},
 				{
-					chunkSize: this.CHUNK_SIZE + 1,
+					chunkSize: this.CHILDREN_COUNT_LIMIT + 1,
 				},
 			);
-			this.loadingChildrenMap[parentId].subscribe();
+
+			this.childrenLoaders[parentId] = {
+				loader,
+				initialCount: eventsChildren.length,
+			};
+
+			this.childrenLoaders[parentId].loader.subscribe();
 		}
 	};
 
 	@action
-	private onEventChildrenLoad = (events: EventTreeNode[], parentId: string) => {
+	private onEventChildrenChunkLoaded = (events: EventTreeNode[], parentId: string) => {
 		const newEntries: [string, EventTreeNode][] = events.map(event => [event.eventId, event]);
 		const eventsMap: Map<string, EventTreeNode> = observable.map(
 			new Map([...this.eventsCache, ...newEntries]),
@@ -316,24 +330,25 @@ export default class EventsDataStore {
 		if (!parentNode) return;
 
 		const childList = this.parentChildrensMap.get(parentId) || [];
-
 		this.parentChildrensMap.set(parentId, [...childList, ...events.map(event => event.eventId)]);
 	};
 
 	@action
 	private onEventChildrenLoadEnd = (events: EventTreeNode[], parentId: string) => {
 		const childList = this.parentChildrensMap.get(parentId) || [];
+		const initialCount = this.childrenLoaders[parentId].initialCount;
 
-		if ((childList.length + events.length) % this.CHUNK_SIZE === 1) {
+		if (childList.length + events.length - (initialCount + this.CHILDREN_COUNT_LIMIT) === 1) {
 			this.hasUnloadedChildren.set(parentId, true);
 			events.pop();
 		} else {
 			this.hasUnloadedChildren.set(parentId, false);
 		}
 
-		this.onEventChildrenLoad(events, parentId);
-
+		this.onEventChildrenChunkLoaded(events, parentId);
 		this.isLoadingChildren.set(parentId, false);
+
+		delete this.childrenLoaders[parentId];
 	};
 
 	private targetEventAC: AbortController | null = null;
@@ -379,7 +394,6 @@ export default class EventsDataStore {
 
 	@action
 	public fetchDetailedEventInfo = async (selectedNode: EventTreeNode | null) => {
-		this.eventStore.selectedEvent = null;
 		if (!selectedNode) return;
 
 		this.detailedEventAC?.abort();
@@ -391,7 +405,9 @@ export default class EventsDataStore {
 				selectedNode.eventId,
 				this.detailedEventAC.signal,
 			);
-			this.eventStore.selectedEvent = event;
+			runInAction(() => {
+				this.eventStore.selectedEvent = event;
+			});
 		} catch (error) {
 			console.error(`Error occurred while loading event ${selectedNode.eventId}`);
 		} finally {
@@ -405,10 +421,10 @@ export default class EventsDataStore {
 			this.eventTreeEventSource = null;
 		}
 
-		const pendingChildrenLoaders = Object.values(this.loadingChildrenMap);
-		pendingChildrenLoaders.forEach(loader => loader.stop());
+		const pendingChildrenLoaders = Object.values(this.childrenLoaders);
+		pendingChildrenLoaders.forEach(loader => loader.loader.stop());
 
-		this.loadingChildrenMap = {};
+		this.childrenLoaders = {};
 
 		if (this.parentNodesLoaderAC) {
 			this.parentNodesLoaderAC.abort();
