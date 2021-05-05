@@ -92,7 +92,7 @@ const MessagesFilterPanel = () => {
 				addHistoryItem({
 					timestamp: Date.now(),
 					filters: filtersToSave,
-					type: 'event',
+					type: 'message',
 				});
 			}
 			saveAutocompletes(filtersToSave, 'message');
