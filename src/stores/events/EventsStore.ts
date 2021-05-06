@@ -87,8 +87,6 @@ export default class EventsStore {
 			});
 		}
 
-		reaction(() => this.filterStore.filter, this.clearStoreData);
-
 		reaction(() => this.selectedNode, this.onSelectedNodeChange);
 
 		reaction(() => this.viewStore.flattenedListView, this.onViewChange);
@@ -292,7 +290,6 @@ export default class EventsStore {
 
 	@action
 	public onRangeChange = (timestampFrom: number) => {
-		this.clearStoreData();
 		const timeRange = calculateTimeRange(timestampFrom, this.graphStore.interval);
 
 		this.eventDataStore.fetchEventTree({
@@ -331,11 +328,6 @@ export default class EventsStore {
 			this.selectNode(headNode);
 			this.scrollToEvent(headNode.eventId);
 		}
-	};
-
-	@action
-	private clearStoreData = () => {
-		this.isExpandedMap.clear();
 	};
 
 	@action
