@@ -161,14 +161,13 @@ export default class EventsDataStore {
 
 		Object.keys(eventsByParentId).forEach(parentId => {
 			const cachedEventChildren = this.parentChildrensMap.get(parentId) || [];
-			if (cachedEventChildren.length <= this.CHILDREN_COUNT_LIMIT) {
+			if (cachedEventChildren.length < this.CHILDREN_COUNT_LIMIT) {
 				const fetchedEventChildren = eventsByParentId[parentId]
 					.map(event => event.eventId)
 					.filter(eventId => !cachedEventChildren.includes(eventId));
 
 				let childrenUpdate = cachedEventChildren.concat(fetchedEventChildren);
 
-				// Ignore events over chunk size on initial load
 				if (childrenUpdate.length > this.CHILDREN_COUNT_LIMIT) {
 					childrenUpdate = childrenUpdate.slice(0, this.CHILDREN_COUNT_LIMIT);
 					this.hasUnloadedChildren.set(parentId, true);
@@ -292,7 +291,6 @@ export default class EventsDataStore {
 
 	private parentNodesUpdater = () => {
 		const parentNodes = this.loadedParentNodes;
-
 		if (!parentNodes.length) return;
 
 		const parentChildrenMapUpdate: Map<string, string[]> = new Map();

@@ -380,19 +380,12 @@ export default class EventsStore {
 	public onTargetNodeAddedToTree = (targetPath: string[]) => {
 		if (this.targetNodeId) {
 			this.expandPath(targetPath);
-			const targetNode = this.eventDataStore.eventsCache.get(this.targetNodeId);
 
+			const targetNode = this.eventDataStore.eventsCache.get(this.targetNodeId);
 			if (targetNode) {
 				this.targetNodeId = null;
-				const siblings =
-					targetNode.parentId === null
-						? this.eventDataStore.rootEventIds
-						: this.getChildrenNodes(targetNode.parentId).map(e => e.eventId);
 
-				if (siblings.includes(targetNode.eventId)) {
-					this.eventDataStore.targetNode = null;
-					this.eventDataStore.targetNodeParents = [];
-				}
+				// TODO: delete target nodes after they are added to event tree
 			}
 		}
 	};

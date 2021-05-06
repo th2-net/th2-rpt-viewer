@@ -17,24 +17,33 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SplitViewPane from '../../split-view/SplitViewPane';
-import FlatEventList from './FlatEventList';
+import EventList from '../EventList';
 import Empty from '../../util/Empty';
 import SplitView from '../../split-view/SplitView';
 import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks';
 import DetailedFlatEventCard from './DetailedFlatEventCard';
 import EventWindowHeader from '../EventWindowHeader';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
+import { EventTreeNode } from '../../../models/EventAction';
+import FlatEventListItem from './FlatEventListItem';
 
 function EventTreeView() {
 	const eventsStore = useWorkspaceEventStore();
 	const viewStore = useEventWindowViewStore();
 	const eventDataStore = useEventsDataStore();
 
+	const renderEvent = React.useCallback(
+		(index: number, node: EventTreeNode): React.ReactElement => {
+			return <FlatEventListItem node={node} />;
+		},
+		[],
+	);
+
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
 				<EventWindowHeader />
-				<FlatEventList nodes={eventsStore.flattenedEventList} />
+				<EventList events={eventsStore.flattenedEventList} renderEvent={renderEvent} />
 			</SplitViewPane>
 			<SplitViewPane>
 				{eventsStore.selectedNode === null &&
