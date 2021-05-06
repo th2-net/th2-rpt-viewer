@@ -93,7 +93,7 @@ class FilterAutocompletesStore {
 			} catch (err) {
 				error = err;
 				notificationsStore.addMessage({
-					errorType: 'indexedDbMessage',
+					errorType: 'genericError',
 					type: 'error',
 					header: `Failed to save filters`,
 					description: '',
