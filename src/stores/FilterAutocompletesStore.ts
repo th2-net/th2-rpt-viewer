@@ -22,14 +22,14 @@ import { SearchPanelType } from '../components/search-panel/SearchPanel';
 
 export interface FilterAutocompletesObject {
 	timestamp: number;
-	filters: FilterAutocompletes;
+	filters: SavedFilters;
 }
 
 export interface FiltersToSave {
 	[k: string]: string | string[];
 }
 
-export interface FilterAutocompletes {
+export interface SavedFilters {
 	[k: string]: string[];
 }
 
@@ -41,7 +41,7 @@ class FilterAutocompletesStore {
 	public idbId: number | null = null;
 
 	@observable
-	public autocompletes: FilterAutocompletes = {};
+	public autocompletes: SavedFilters = {};
 
 	public saveAutocompletes = async (FiltersToSave: FiltersToSave, type: SearchPanelType) => {
 		const savedFilters = toJS(this.autocompletes);
@@ -108,7 +108,7 @@ class FilterAutocompletesStore {
 	};
 
 	@action
-	private setAutocompletes = (filters: FilterAutocompletes) => {
+	private setAutocompletes = (filters: SavedFilters) => {
 		this.autocompletes = filters;
 	};
 
@@ -117,7 +117,7 @@ class FilterAutocompletesStore {
 			IndexedDbStores.FILTER_AUTOCOMPLETES,
 		);
 		let timestamp: number;
-		let filters: FilterAutocompletes;
+		let filters: SavedFilters;
 		if (!autocomletes.length) {
 			timestamp = Date.now();
 			filters = {
@@ -134,9 +134,10 @@ class FilterAutocompletesStore {
 				timestamp,
 				filters,
 			});
+		} else {
+			timestamp = autocomletes[0].timestamp;
+			filters = autocomletes[0].filters;
 		}
-		timestamp = autocomletes[0].timestamp;
-		filters = autocomletes[0].filters;
 		runInAction(() => {
 			this.autocompletes = filters;
 			this.idbId = timestamp;

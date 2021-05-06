@@ -14,24 +14,9 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import { useRootStore } from './useRootStore';
 
-export function useOutsideClickListener(
-	ref: React.MutableRefObject<HTMLElement | null>,
-	handler: (e: MouseEvent) => void,
-	eventType: 'mousedown' | 'mouseup' = 'mousedown',
-) {
-	const onOutsideClick = (e: MouseEvent) => {
-		if (ref && !ref.current?.contains(e.target as Element)) {
-			handler(e);
-		}
-	};
-
-	React.useEffect(() => {
-		document.addEventListener(eventType, onOutsideClick);
-
-		return () => {
-			document.removeEventListener(eventType, onOutsideClick);
-		};
-	}, [handler]);
-}
+export const useFiltersHistoryStore = () => {
+	const rootStore = useRootStore();
+	return rootStore.filtersHistoryStore;
+};

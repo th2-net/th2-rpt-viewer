@@ -59,6 +59,8 @@ export default class WorkspacesStore {
 
 	public filterAutocompletesStore = this.rootStore.filtersAutocompletesStore;
 
+	public filtersHistoryStore = this.rootStore.filtersHistoryStore;
+
 	@computed get eventStores() {
 		return this.workspaces.map(workspace => workspace.eventsStore);
 	}

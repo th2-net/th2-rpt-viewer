@@ -160,6 +160,13 @@ export default class MessagesFilterStore {
 	};
 
 	@action
+	public setSSEFilter = (patch: Partial<MessageFilterState>) => {
+		this.sseMessagesFilter = this.sseMessagesFilter
+			? { ...this.sseMessagesFilter, ...patch }
+			: getDefaultMessagesFiltersState(this.searchStore.messagesFilterInfo);
+	};
+
+	@action
 	private setSSEMessagesFilter = (messagesFilterInfo: MessagesFilterInfo[]) => {
 		this.sseMessagesFilter = getDefaultMessagesFiltersState(messagesFilterInfo);
 	};

@@ -38,6 +38,7 @@ import SearchResultCountLimit, {
 } from './search-form/SearchResultCountLimit';
 import { SearchDirection } from '../../models/search/SearchDirection';
 import { useFilterAutocompletesStore } from '../../hooks';
+import FiltersHistory from '../filters-history/FiltersHistory';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -206,6 +207,7 @@ const SearchPanelForm = () => {
 			<SearchProgressBar {...progressBarConfig} />
 			<SearchSubmit {...searchSubmitConfig} />
 			<div className='search-panel__fields'>
+				<FiltersHistory />
 				<div className='filter-row'>
 					<div className='filter-row__label'>Search for</div>
 					<div className='search-type-config'>

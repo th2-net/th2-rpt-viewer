@@ -23,6 +23,7 @@ import {
 	useWorkspaceEventStore,
 	useEventsFilterStore,
 	useFilterAutocompletesStore,
+	useFiltersHistoryStore,
 } from '../../hooks';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
@@ -30,6 +31,7 @@ import { EventFilterState, Filter } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { FiltersToSave } from '../../stores/FilterAutocompletesStore';
+import FiltersHistory from '../filters-history/FiltersHistory';
 
 type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;
@@ -52,6 +54,7 @@ function EventsFilterPanel() {
 	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
 	const { autocompletes, saveAutocompletes } = useFilterAutocompletesStore();
+	const { addHistoryItem } = useFiltersHistoryStore();
 
 	const [showFilter, setShowFilter] = React.useState(false);
 
@@ -70,9 +73,19 @@ function EventsFilterPanel() {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { status, ...restFilters } = filter;
 			const filtersToSave: FiltersToSave = Object.fromEntries(
-				Object.entries(restFilters).map(([key, value]) => [key, toJS(value.values)]),
+				Object.entries(restFilters).map(([key, value]) => [
+					key,
+					toJS(typeof value.values === 'string' ? value.values : value.values.sort()),
+				]),
 			);
 			saveAutocompletes(filtersToSave, 'event');
+			if (Object.values(filtersToSave).some(v => v.length > 0)) {
+				addHistoryItem({
+					timestamp: Date.now(),
+					filters: filtersToSave,
+					type: 'event',
+				});
+			}
 			eventsStore.applyFilter(filter);
 		}
 	}, [filter]);
@@ -204,6 +217,14 @@ function EventsFilterPanel() {
 		<FilterPanel
 			isLoading={eventDataStore.isLoading}
 			isFilterApplied={filterStore.isEventsFilterApplied}
+			renderFooter={() =>
+				filterStore.filter && (
+					<FiltersHistory
+						type='event'
+						sseFilter={{ state: filterStore.filter, setState: filterStore.setSSEFilter }}
+					/>
+				)
+			}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
 			onSubmit={onSubmit}

@@ -29,6 +29,7 @@ import {
 	useMessagesDataStore,
 	useMessagesWorkspaceStore,
 	useFilterAutocompletesStore,
+	useFiltersHistoryStore,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -37,6 +38,7 @@ import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
 import { FiltersToSave } from '../../stores/FilterAutocompletesStore';
+import FiltersHistory from '../filters-history/FiltersHistory';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -47,6 +49,7 @@ const MessagesFilterPanel = () => {
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
 	const { autocompletes, saveAutocompletes } = useFilterAutocompletesStore();
+	const { addHistoryItem } = useFiltersHistoryStore();
 	const { filterStore } = messagesStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);
@@ -80,8 +83,18 @@ const MessagesFilterPanel = () => {
 	const submitChanges = React.useCallback(() => {
 		if (sseFilter) {
 			const filtersToSave: FiltersToSave = Object.fromEntries(
-				Object.entries(sseFilter).map(([key, value]) => [key, toJS(value.values)]),
+				Object.entries(sseFilter).map(([key, value]) => [
+					key,
+					toJS(typeof value.values === 'string' ? value.values : value.values.sort()),
+				]),
 			);
+			if (Object.values(filtersToSave).some(v => v.length > 0)) {
+				addHistoryItem({
+					timestamp: Date.now(),
+					filters: filtersToSave,
+					type: 'message',
+				});
+			}
 			saveAutocompletes(filtersToSave, 'message');
 		}
 		searchStore.stopSearch();
@@ -217,7 +230,16 @@ const MessagesFilterPanel = () => {
 		return (
 			<Observer>
 				{() => (
-					<div>
+					<div className='filter-footer'>
+						{filterStore.sseMessagesFilter && (
+							<FiltersHistory
+								type='message'
+								sseFilter={{
+									state: filterStore.sseMessagesFilter,
+									setState: filterStore.setSSEFilter,
+								}}
+							/>
+						)}
 						{messagesStore.filterStore.sseMessagesFilter && (
 							<Checkbox
 								checked={isSoftFilterApplied}
