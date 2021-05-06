@@ -527,10 +527,13 @@ export class SearchStore {
 			});
 
 			const valuesToSave = Object.fromEntries(
-				filterValues.map(([key, value]) => [
-					key.split('-')[0],
-					toJS(typeof value === 'string' ? value : value.sort()),
-				]),
+				filterValues
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					.filter(([_, value]) => value.length > 0)
+					.map(([key, value]) => [
+						key.split('-')[0],
+						toJS(typeof value === 'string' ? value : value.sort()),
+					]),
 			);
 
 			this.searchChannel[direction] = searchChannel;

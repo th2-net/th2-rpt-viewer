@@ -73,10 +73,13 @@ function EventsFilterPanel() {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { status, ...restFilters } = filter;
 			const filtersToSave: FiltersToSave = Object.fromEntries(
-				Object.entries(restFilters).map(([key, value]) => [
-					key,
-					toJS(typeof value.values === 'string' ? value.values : value.values.sort()),
-				]),
+				Object.entries(restFilters)
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					.filter(([_, value]) => value.values.length > 0)
+					.map(([key, value]) => [
+						key,
+						toJS(typeof value.values === 'string' ? value.values : value.values.sort()),
+					]),
 			);
 			saveAutocompletes(filtersToSave, 'event');
 			if (Object.values(filtersToSave).some(v => v.length > 0)) {

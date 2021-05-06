@@ -83,10 +83,13 @@ const MessagesFilterPanel = () => {
 	const submitChanges = React.useCallback(() => {
 		if (sseFilter) {
 			const filtersToSave: FiltersToSave = Object.fromEntries(
-				Object.entries(sseFilter).map(([key, value]) => [
-					key,
-					toJS(typeof value.values === 'string' ? value.values : value.values.sort()),
-				]),
+				Object.entries(sseFilter)
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					.filter(([_, value]) => value.values.length > 0)
+					.map(([key, value]) => [
+						key,
+						toJS(typeof value.values === 'string' ? value.values : value.values.sort()),
+					]),
 			);
 			if (Object.values(filtersToSave).some(v => v.length > 0)) {
 				addHistoryItem({
