@@ -127,7 +127,7 @@ export default class RootStore {
 	public handleQuotaExceededError = async (unsavedData?: DbData) => {
 		const errorId = nanoid();
 		this.notificationsStore.addMessage({
-			errorType: 'indexedDbMessage',
+			errorType: 'genericError',
 			type: 'error',
 			header: 'QuotaExceededError',
 			description: 'Not enough storage space to save data. Clear all data?',
@@ -150,7 +150,7 @@ export default class RootStore {
 			]);
 
 			this.notificationsStore.addMessage({
-				errorType: 'indexedDbMessage',
+				errorType: 'genericError',
 				type: 'success',
 				header: 'Data has been removed',
 				description: '',

@@ -35,7 +35,6 @@ interface EventBase {
 }
 
 export interface EventTreeNode extends EventBase {
-	childList: Array<EventTreeNode>;
 	filtered: boolean;
 	parentId: string | null;
 	type: ActionType.EVENT_TREE_NODE;

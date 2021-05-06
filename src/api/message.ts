@@ -82,6 +82,12 @@ const messageHttpApi: MessageApiSchema = {
 		const params = createURLSearchParams(queryParams);
 		const res = await fetch(`backend/message/${id}?${params}`, { signal });
 
+		// if probe param is provided server will respond with empty body if messsage wasn't found
+		if (res.ok && queryParams.probe) {
+			const body = await res.text();
+			return body ? JSON.parse(body) : null;
+		}
+
 		if (res.ok) {
 			return res.json();
 		}

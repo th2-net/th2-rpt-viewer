@@ -236,18 +236,19 @@ export default class EventsStore {
 		this.isExpandedMap.set(eventTreeNode.eventId, isExpanded);
 		if (isExpanded) {
 			this.searchStore.appendResultsForEvent(eventTreeNode.eventId);
-		} else if (eventTreeNode.childList.length) {
+		} else {
 			this.searchStore.removeEventsResults(
-				eventTreeNode.childList
-					.flatMap(eventNode => this.getNodesList(eventNode, []))
-					.map(node => node.eventId),
+				this.getNodesList(eventTreeNode, []).map(node => node.eventId),
 			);
 		}
 	};
 
 	@action
 	public selectNode = (eventTreeNode: EventTreeNode | null) => {
-		this.selectedNode = eventTreeNode;
+		if (eventTreeNode === null || eventTreeNode.eventId !== this.selectedNode?.eventId) {
+			this.selectedNode = eventTreeNode;
+		}
+
 		if (this.viewStore.eventsPanelArea === 100) {
 			this.viewStore.eventsPanelArea = 50;
 		}
@@ -335,20 +336,19 @@ export default class EventsStore {
 	@action
 	private clearStoreData = () => {
 		this.isExpandedMap.clear();
-		this.selectedParentNode = null;
-		this.selectedNode = null;
-		this.selectedEvent = null;
 	};
 
 	@action
 	private onSelectedNodeChange = (selectedNode: EventTreeNode | null) => {
 		if (selectedNode && selectedNode.eventId !== this.selectedEvent?.eventId) {
+			this.selectedEvent = null;
+			this.selectedParentNode = null;
 			this.selectedNode = selectedNode;
 			this.eventDataStore.fetchDetailedEventInfo(selectedNode);
-			this.selectedParentNode = null;
 		} else if (selectedNode === null) {
 			this.selectedNode = null;
 			this.selectedEvent = null;
+			this.selectedParentNode = null;
 		}
 	};
 
@@ -367,7 +367,9 @@ export default class EventsStore {
 	@action
 	public onTargetEventLoad = (event: EventAction, node: EventTreeNode) => {
 		this.selectedEvent = event;
-		this.selectNode(node);
+		if (node.eventId !== this.selectedNode?.eventId) {
+			this.selectedNode = node;
+		}
 	};
 
 	@action

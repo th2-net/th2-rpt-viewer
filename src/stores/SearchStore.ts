@@ -748,7 +748,7 @@ export class SearchStore {
 				this.workspacesStore.onQuotaExceededError(search);
 			} else {
 				notificationsStore.addMessage({
-					errorType: 'indexedDbMessage',
+					errorType: 'genericError',
 					type: 'error',
 					header: `Failed to save current search result`,
 					description: '',

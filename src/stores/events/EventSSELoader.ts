@@ -119,9 +119,6 @@ export class EventSSELoader {
 	private onSSEResponse = (ev: Event) => {
 		const data = JSON.parse((ev as MessageEvent).data);
 		if (isEventNode(data)) {
-			if (data.parentId === 'null') {
-				data.parentId = null;
-			}
 			this.fetchedEventsCount += 1;
 			this.accumulatedEvents.push(data);
 		}
