@@ -38,9 +38,16 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		return eventsStore.getParentNodes(eventTreeNode.eventId, eventsDataStore.eventsCache);
 	}, [eventsDataStore.eventsCache]);
 
-	const childrenCount = computed(
-		() => (eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId) || []).length,
-	).get();
+	const childrenCount = computed(() => {
+		const children = eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId);
+		if (children) return children.length;
+
+		return eventsDataStore.targetNodeParents.some(
+			parentNode => parentNode.eventId === eventTreeNode.eventId,
+		)
+			? 1
+			: 0;
+	}).get();
 
 	const isLoadingSiblings = computed(
 		() => eventTreeNode.parentId && eventsDataStore.isLoadingChildren.get(eventTreeNode.parentId),

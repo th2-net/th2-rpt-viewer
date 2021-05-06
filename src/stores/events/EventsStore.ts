@@ -21,7 +21,7 @@ import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
-import { isEvent, isEventNode, sortEventsByTimestamp } from '../../helpers/event';
+import { isEvent, isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { timestampToNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
@@ -154,6 +154,19 @@ export default class EventsStore {
 	// to get event key by index in tree and list length calculation.
 	@computed
 	public get nodesList() {
+		const rootIds = this.eventDataStore.rootEventIds.slice();
+
+		if (this.eventDataStore.targetNodeParents.length) {
+			const rootNode = this.eventDataStore.targetNodeParents[0];
+
+			if (
+				(isRootEvent(rootNode) || rootNode.isUnknown) &&
+				!this.eventDataStore.rootEventIds.includes(rootNode.eventId)
+			) {
+				rootIds.push(rootNode.eventId);
+			}
+		}
+
 		const rootNodes = sortEventsByTimestamp(
 			this.eventDataStore.rootEventIds
 				.map(eventId => this.eventDataStore.eventsCache.get(eventId))
@@ -162,7 +175,13 @@ export default class EventsStore {
 		);
 
 		return rootNodes.flatMap(eventNode =>
-			this.getNodesList(eventNode, [], this.eventDataStore.targetNode),
+			this.getNodesList(
+				eventNode,
+				[],
+				[...this.eventDataStore.targetNodeParents, this.eventDataStore.targetNode].filter(
+					isEventNode,
+				),
+			),
 		);
 	}
 
@@ -316,13 +335,6 @@ export default class EventsStore {
 				this.toggleNode(headNode);
 			}
 			children = (headNode && this.getChildrenNodes(headNode.eventId)) || [];
-
-			if (
-				this.eventDataStore.targetNode &&
-				headNode?.eventId === this.eventDataStore.targetNode.parentId
-			) {
-				children.push(this.eventDataStore.targetNode);
-			}
 		}
 		if (headNode) {
 			this.selectNode(headNode);
@@ -379,6 +391,7 @@ export default class EventsStore {
 
 				if (siblings.includes(targetNode.eventId)) {
 					this.eventDataStore.targetNode = null;
+					this.eventDataStore.targetNodeParents = [];
 				}
 			}
 		}
@@ -395,26 +408,24 @@ export default class EventsStore {
 	private getNodesList = (
 		eventTreeNode: EventTreeNode,
 		parents: string[],
-		targetNode: EventTreeNode | null = null,
+		targetNodes: EventTreeNode[] = [],
 	): EventTreeNode[] => {
 		const childList = this.getChildrenNodes(eventTreeNode.eventId);
+
+		const targetNode = targetNodes.find(eventNode => eventNode.parentId === eventTreeNode.eventId);
+
+		if (targetNode && !childList.some(childEvent => childEvent.eventId === targetNode.eventId)) {
+			childList.push(targetNode);
+		}
 
 		if (this.isExpandedMap.get(eventTreeNode.eventId)) {
 			const path = [
 				eventTreeNode,
 				...childList.flatMap(eventNode =>
-					this.getNodesList(eventNode, [...parents, eventTreeNode.eventId], targetNode),
+					this.getNodesList(eventNode, [...parents, eventTreeNode.eventId], targetNodes),
 				),
 			];
 
-			if (
-				targetNode &&
-				targetNode.parentId !== null &&
-				eventTreeNode.eventId === targetNode.parentId &&
-				!childList.some(childEvent => childEvent.eventId === targetNode.eventId)
-			) {
-				path.push(targetNode);
-			}
 			return path;
 		}
 

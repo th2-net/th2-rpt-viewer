@@ -74,6 +74,9 @@ export default class EventsDataStore {
 	@observable.ref
 	public targetNode: EventTreeNode | null = null;
 
+	@observable.ref
+	public targetNodeParents: EventTreeNode[] = [];
+
 	@computed
 	public get targetNodePath() {
 		if (!this.targetNode) return null;
@@ -197,7 +200,7 @@ export default class EventsDataStore {
 	private parentNodesUpdateScheduler: number | null = null;
 
 	@action
-	private loadParentNodes = async (parentId: string) => {
+	private loadParentNodes = async (parentId: string, isTargetNodes = false) => {
 		if (!this.parentNodesUpdateScheduler) {
 			this.parentNodesUpdateScheduler = window.setInterval(this.parentNodesUpdater, 600);
 
@@ -266,15 +269,24 @@ export default class EventsDataStore {
 					this.eventsCache.set(eventNode.eventId, eventNode);
 				}
 			});
-
-			this.loadedParentNodes.push(parentNodes);
+			if (isTargetNodes) {
+				parentNodes.forEach(parentNode =>
+					this.eventStore.isExpandedMap.set(parentNode.eventId, true),
+				);
+				this.targetNodeParents = parentNodes;
+			} else {
+				this.loadedParentNodes.push(parentNodes);
+			}
 		}
 	};
 
 	private parentNodesUpdater = () => {
 		const parentNodes = this.loadedParentNodes;
 
+		if (!parentNodes.length) return;
+
 		const parentChildrenMapUpdate: Map<string, string[]> = new Map();
+		const parentLoadingStatusUpdate: Map<string, boolean> = new Map();
 		const rootNodes: string[] = [];
 
 		parentNodes.forEach(parentNodePath => {
@@ -296,16 +308,18 @@ export default class EventsDataStore {
 					}
 				}
 
-				this.loadingParentEvents.set(event.eventId, false);
+				parentLoadingStatusUpdate.set(event.eventId, false);
 			}
 		});
 
-		if (rootNodes.length !== 0) {
-			this.rootEventIds = [
-				...this.rootEventIds,
-				...rootNodes.filter(eventId => !this.rootEventIds.includes(eventId)),
-			];
-		}
+		runInAction(() => {
+			if (rootNodes.length !== 0) {
+				this.rootEventIds = [
+					...this.rootEventIds,
+					...rootNodes.filter(eventId => !this.rootEventIds.includes(eventId)),
+				];
+			}
+		});
 
 		this.parentChildrensMap = observable.map(
 			new Map([...this.parentChildrensMap, ...parentChildrenMapUpdate]),
@@ -313,7 +327,9 @@ export default class EventsDataStore {
 				deep: false,
 			},
 		);
-
+		this.loadingParentEvents = observable.map(
+			new Map([...this.loadingParentEvents, ...parentLoadingStatusUpdate]),
+		);
 		this.loadedParentNodes = [];
 	};
 
@@ -430,6 +446,9 @@ export default class EventsDataStore {
 				this.targetEventAC = new AbortController();
 				const event = await this.api.events.getEvent(targetEventId, this.targetEventAC.signal);
 				const targetNode = convertEventActionToEventTreeNode(event);
+				if (targetNode.parentId !== null) {
+					this.loadParentNodes(targetNode.parentId, true);
+				}
 				this.eventsCache.set(targetNode.eventId, targetNode);
 				this.eventStore.onTargetEventLoad(event, targetNode);
 				this.targetNode = targetNode;
