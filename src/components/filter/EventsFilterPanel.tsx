@@ -27,7 +27,7 @@ import {
 } from '../../hooks';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
-import { EventFilterState, Filter } from '../search-panel/SearchPanelFilters';
+import { Filter } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { FiltersToSave } from '../../stores/FilterAutocompletesStore';
@@ -58,20 +58,18 @@ function EventsFilterPanel() {
 
 	const [showFilter, setShowFilter] = React.useState(false);
 
-	const [filter, setFilter] = React.useState<EventFilterState | null>(filterStore.filter);
 	const [currentFilterValues, setCurrentFilterValues] = React.useState<CurrentFilterValues | null>(
 		getDefaultCurrentFilterValues(filterStore.filter),
 	);
 
 	React.useEffect(() => {
-		setFilter(filterStore.filter);
 		setCurrentFilterValues(getDefaultCurrentFilterValues(filterStore.filter));
 	}, [filterStore.filter]);
 
 	const onSubmit = React.useCallback(() => {
-		if (filter) {
+		if (filterStore.filter) {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const { status, ...restFilters } = filter;
+			const { status, ...restFilters } = filterStore.filter;
 			const filtersToSave: FiltersToSave = Object.fromEntries(
 				Object.entries(restFilters)
 					// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -89,45 +87,45 @@ function EventsFilterPanel() {
 					type: 'event',
 				});
 			}
-			eventsStore.applyFilter(filter);
+			eventsStore.applyFilter(filterStore.filter);
 		}
-	}, [filter]);
+	}, [filterStore.filter]);
 
 	const getNegativeToggler = React.useCallback(
 		(filterName: EventSSEFilters) => {
 			return function negativeToggler() {
-				const filterValue = filter && filter[filterName];
-				if (filter && filterValue && 'negative' in filterValue) {
-					const updatedFilterValue = {
-						...filterValue,
-						negative: !filterValue.negative,
-					};
-					setFilter({
-						...filter,
-						[filterName]: updatedFilterValue,
-					});
+				const filter = filterStore.filter;
+				if (filter) {
+					const filterValue = filter[filterName];
+					if (filter && filterValue && 'negative' in filterValue) {
+						const updatedFilterValue = {
+							...filterValue,
+							negative: !filterValue.negative,
+						};
+						filterStore.setSSEFilter({
+							...filter,
+							[filterName]: updatedFilterValue,
+						});
+					}
 				}
 			};
 		},
-		[filter],
+		[filterStore.filter],
 	);
 
 	const getValuesUpdater = React.useCallback(
 		<T extends 'string' | 'string[]' | 'switcher'>(name: EventSSEFilters) => {
 			return function valuesUpdater(values: T extends 'string[]' ? string[] : string) {
-				setFilter(prevState => {
-					if (prevState !== null) {
-						return {
-							...prevState,
-							[name]: { ...prevState[name], values },
-						};
-					}
-
-					return prevState;
-				});
+				const filter = filterStore.filter;
+				if (filter) {
+					filterStore.setSSEFilter({
+						...filter,
+						[name]: { ...filter[name], values },
+					});
+				}
 			};
 		},
-		[setFilter],
+		[filterStore.setSSEFilter],
 	);
 
 	const setCurrentValue = React.useCallback(
@@ -145,6 +143,7 @@ function EventsFilterPanel() {
 	);
 
 	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
+		const filter = filterStore.filter;
 		if (!filter || !currentFilterValues) return [];
 
 		const filterNames = getObjectKeys(filter);
@@ -214,7 +213,13 @@ function EventsFilterPanel() {
 			const filterRow = [toggler, filterInput].filter(notEmpty);
 			return filterRow.length === 1 ? filterRow[0] : filterRow;
 		});
-	}, [filter, currentFilterValues, setCurrentValue, getValuesUpdater, getNegativeToggler]);
+	}, [
+		filterStore.filter,
+		currentFilterValues,
+		setCurrentValue,
+		getValuesUpdater,
+		getNegativeToggler,
+	]);
 
 	return (
 		<FilterPanel

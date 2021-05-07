@@ -55,7 +55,6 @@ const MessagesFilterPanel = () => {
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentStream, setCurrentStream] = React.useState('');
 	const [streams, setStreams] = React.useState<Array<string>>([]);
-	const [sseFilter, setSSEFilter] = React.useState<MessageFilterState | null>(null);
 	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
 		type: '',
 		body: '',
@@ -72,18 +71,17 @@ const MessagesFilterPanel = () => {
 	}, [filterStore.isSoftFilter]);
 
 	React.useEffect(() => {
-		setSSEFilter(messagesStore.filterStore.sseMessagesFilter);
 		setCurrentValues({
 			type: '',
 			body: '',
 			attachedEventIds: '',
 		});
-	}, [messagesStore.filterStore.sseMessagesFilter]);
+	}, []);
 
 	const submitChanges = React.useCallback(() => {
-		if (sseFilter) {
+		if (filterStore.sseMessagesFilter) {
 			const filtersToSave: FiltersToSave = Object.fromEntries(
-				Object.entries(sseFilter)
+				Object.entries(filterStore.sseMessagesFilter)
 					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					.filter(([_, value]) => value.values.length > 0)
 					.map(([key, value]) => [
@@ -106,18 +104,18 @@ const MessagesFilterPanel = () => {
 				...filterStore.filter,
 				streams,
 			},
-			sseFilter,
+			filterStore.sseMessagesFilter,
 			isSoftFilterApplied,
 		);
-	}, [filterStore.filter, streams, sseFilter, isSoftFilterApplied]);
+	}, [filterStore.filter, streams, isSoftFilterApplied]);
 
 	const isLoading = messagesDataStore.messages.length === 0 && messagesDataStore.isLoading;
 	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !isLoading;
 
 	const compoundFilterRow: Array<CompoundFilterRow> = React.useMemo(() => {
-		if (!sseFilter) return [];
+		if (!filterStore.sseMessagesFilter) return [];
 		// eslint-disable-next-line no-underscore-dangle
-		const _sseFilter = sseFilter;
+		const _sseFilter = filterStore.sseMessagesFilter;
 		function getState(
 			name: keyof MessageFilterState,
 		): MessageFilterState[keyof MessageFilterState] {
@@ -126,31 +124,21 @@ const MessagesFilterPanel = () => {
 
 		function getValuesUpdater<T extends keyof MessageFilterState>(name: T) {
 			return function valuesUpdater<K extends MessageFilterState[T]>(values: K) {
-				setSSEFilter(prevState => {
-					if (prevState !== null) {
-						return {
-							...prevState,
-							[name]: { ...prevState[name], values },
-						};
-					}
-
-					return prevState;
-				});
+				const filter = filterStore.sseMessagesFilter;
+				if (filter) {
+					filterStore.setSSEFilter({ [name]: { ...filter[name], values } });
+				}
 			};
 		}
 
 		function getNegativeToggler<T extends keyof MessageFilterState>(name: T) {
 			return function negativeToggler() {
-				setSSEFilter(prevState => {
-					if (prevState !== null) {
-						return {
-							...prevState,
-							[name]: { ...prevState[name], negative: !prevState[name].negative },
-						};
-					}
-
-					return prevState;
-				});
+				const filter = filterStore.sseMessagesFilter;
+				if (filter) {
+					filterStore.setSSEFilter({
+						[name]: { ...filter[name], negative: !filter[name].negative },
+					});
+				}
 			};
 		}
 
@@ -195,7 +183,12 @@ const MessagesFilterPanel = () => {
 				},
 			);
 		});
-	}, [searchStore.messagesFilterInfo, sseFilter, setSSEFilter, currentValues]);
+	}, [
+		searchStore.messagesFilterInfo,
+		filterStore.sseMessagesFilter,
+		filterStore.setSSEFilter,
+		currentValues,
+	]);
 
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
 		return {
