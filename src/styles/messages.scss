@@ -180,6 +180,10 @@
 		&.messageId-inline {
 			display: none;
 		}
+		&.messageType {
+			max-width: 48px;
+			@include ellipsis();
+		}
 	}
 
 	&__direction-icon {
@@ -216,6 +220,11 @@
 
 	&__value {
 		color: $messageCardValueColor;
+		&.messageType {
+			display: inline-flex;
+			max-width: 48px;
+			@include ellipsis();
+		}
 	}
 
 	&__controls {

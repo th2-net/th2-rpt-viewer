@@ -209,7 +209,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 					<div className='mc-header__item messageId' title={`ID: ${messageId}`}>
 						<span className='mc-header__value'>{messageId}</span>
 					</div>
-					<div className='mc-header__item' title={`Name: ${messageType}`}>
+					<div className='mc-header__item messageType' title={`Name: ${messageType}`}>
 						<span className='mc-header__value'>{messageType}</span>
 					</div>
 				</div>
@@ -233,7 +233,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 						<span className='mc-header__value'>{messageId} </span>
 					</span>
 					<span className={`${sessionClass} inline`} style={sessionArrowStyle}></span>
-					<span className='mc-header__value' title={`Name: ${messageType}`}>
+					<span className='mc-header__value messageType' title={`Name: ${messageType}`}>
 						{messageType}
 					</span>
 				</>
