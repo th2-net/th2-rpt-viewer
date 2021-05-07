@@ -24,26 +24,24 @@ import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks'
 import DetailedFlatEventCard from './DetailedFlatEventCard';
 import EventWindowHeader from '../EventWindowHeader';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
-import { EventTreeNode } from '../../../models/EventAction';
-import FlatEventListItem from './FlatEventListItem';
 
 function EventTreeView() {
 	const eventsStore = useWorkspaceEventStore();
 	const viewStore = useEventWindowViewStore();
 	const eventDataStore = useEventsDataStore();
 
-	const renderEvent = React.useCallback(
-		(index: number, node: EventTreeNode): React.ReactElement => {
-			return <FlatEventListItem node={node} />;
-		},
-		[],
-	);
+	// const renderEvent = React.useCallback(
+	// 	(index: number, node: EventTreeNode): React.ReactElement => {
+	// 		return <FlatEventListItem node={node} />;
+	// 	},
+	// 	[],
+	// );
 
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
 				<EventWindowHeader />
-				<EventList events={eventsStore.flattenedEventList} renderEvent={renderEvent} />
+				<EventList />
 			</SplitViewPane>
 			<SplitViewPane>
 				{eventsStore.selectedNode === null &&

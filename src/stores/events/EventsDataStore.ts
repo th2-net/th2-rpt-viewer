@@ -348,6 +348,9 @@ export default class EventsDataStore {
 		};
 	} = {};
 
+	@observable
+	public childrenAreUnknown: Map<string, boolean> = new Map();
+
 	@action
 	public loadChildren = (parentId: string) => {
 		if (this.childrenLoaders[parentId]) {
@@ -398,6 +401,8 @@ export default class EventsDataStore {
 		const childList = this.parentChildrensMap.get(parentId) || [];
 		// eslint-disable-next-line no-param-reassign
 		events = events.filter(event => !childList.includes(event.eventId));
+
+		events.forEach(event => this.childrenAreUnknown.set(event.eventId, true));
 
 		const initialCount = this.childrenLoaders[parentId].initialCount;
 		const expectedChildrenCountLoaded =

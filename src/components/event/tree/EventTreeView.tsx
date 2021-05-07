@@ -24,24 +24,17 @@ import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks'
 import EventDetailInfoCard from '../EventDetailInfoCard';
 import EventWindowHeader from '../EventWindowHeader';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
-import { EventTreeNode } from '../../../models/EventAction';
-import EventTree from './EventTree';
 
 function EventTreeView() {
 	const eventsStore = useWorkspaceEventStore();
 	const viewStore = useEventWindowViewStore();
 	const eventsDataStore = useEventsDataStore();
 
-	const renderEvent = React.useCallback(
-		(index: number, node: EventTreeNode) => <EventTree eventTreeNode={node} />,
-		[],
-	);
-
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
 				<EventWindowHeader />
-				<EventList renderEvent={renderEvent} events={eventsStore.nodesList} />
+				<EventList />
 			</SplitViewPane>
 			<SplitViewPane>
 				{eventsStore.selectedNode === null &&

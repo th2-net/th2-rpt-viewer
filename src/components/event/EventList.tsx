@@ -25,18 +25,20 @@ import { raf } from '../../helpers/raf';
 import { EventTreeNode } from '../../models/EventAction';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import '../../styles/action.scss';
+import EventTree from './tree/EventTree';
 
 interface Props {
-	nodes: EventTreeNode[];
 	scrolledIndex: Number | null;
 	selectedNode: EventTreeNode | null;
-	renderEvent: (index: number, event: EventTreeNode) => React.ReactNode;
 }
 
 const START_INDEX = 100_000;
 
 function EventTreeListBase(props: Props) {
-	const { nodes, scrolledIndex, selectedNode, renderEvent } = props;
+	const eventStore = useWorkspaceEventStore();
+	const { scrolledIndex, selectedNode } = props;
+
+	const nodes = eventStore.nodesList;
 
 	const initialItemCount = React.useRef(nodes.length);
 	const virtuosoRef = React.useRef<VirtuosoHandle | null>(null);
@@ -47,6 +49,11 @@ function EventTreeListBase(props: Props) {
 	const [eventNodes, setEventNodes] = React.useState<EventTreeNode[]>(nodes.slice());
 
 	const prevNodes = usePrevious(nodes);
+
+	const renderEvent = React.useCallback(
+		(index: number, node: EventTreeNode) => <EventTree eventTreeNode={node} />,
+		[],
+	);
 
 	React.useEffect(() => {
 		let adjustedIndex = firstItemIndex;
@@ -68,7 +75,7 @@ function EventTreeListBase(props: Props) {
 		}
 
 		if (prevNodes?.length !== nodes.length) {
-			setEventNodes(nodes.slice());
+			setEventNodes(nodes);
 		}
 	}, [nodes, selectedNode, eventNodes, firstItemIndex]);
 
@@ -130,14 +137,9 @@ function EventTreeListBase(props: Props) {
 	);
 }
 
-const EventTreeList = React.memo(EventTreeListBase);
+const EventTreeList = observer(EventTreeListBase);
 
-interface EventListWrapperProps {
-	renderEvent: (index: number, event: EventTreeNode) => React.ReactNode;
-	events: EventTreeNode[];
-}
-
-function EventTreeListWrapper(props: EventListWrapperProps) {
+function EventTreeListWrapper() {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 
@@ -158,10 +160,8 @@ function EventTreeListWrapper(props: EventListWrapperProps) {
 
 	return (
 		<EventTreeList
-			nodes={props.events}
 			scrolledIndex={eventsStore.scrolledIndex}
 			selectedNode={eventsStore.selectedNode}
-			renderEvent={props.renderEvent}
 		/>
 	);
 }
