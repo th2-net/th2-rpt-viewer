@@ -30,18 +30,11 @@ function EventTreeView() {
 	const viewStore = useEventWindowViewStore();
 	const eventDataStore = useEventsDataStore();
 
-	// const renderEvent = React.useCallback(
-	// 	(index: number, node: EventTreeNode): React.ReactElement => {
-	// 		return <FlatEventListItem node={node} />;
-	// 	},
-	// 	[],
-	// );
-
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
 				<EventWindowHeader />
-				<EventList />
+				<EventList isFlat={true} />
 			</SplitViewPane>
 			<SplitViewPane>
 				{eventsStore.selectedNode === null &&

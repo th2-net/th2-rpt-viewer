@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import Empty from '../util/Empty';
 import SplashScreen from '../SplashScreen';
 import StateSaverProvider from '../util/StateSaverProvider';
@@ -26,80 +26,91 @@ import { EventTreeNode } from '../../models/EventAction';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import '../../styles/action.scss';
 import EventTree from './tree/EventTree';
+import FlatEventListItem from './flat-event-list/FlatEventListItem';
 
 interface Props {
 	scrolledIndex: Number | null;
 	selectedNode: EventTreeNode | null;
+	isFlat?: boolean;
 }
 
 const START_INDEX = 100_000;
 
 function EventTreeListBase(props: Props) {
 	const eventStore = useWorkspaceEventStore();
-	const { scrolledIndex, selectedNode } = props;
+	const { scrolledIndex, selectedNode, isFlat = false } = props;
 
-	const nodes = eventStore.nodesList;
+	const nodes = !isFlat ? eventStore.nodesList : eventStore.flattenedEventList;
+	console.log({ nodes: eventStore.flattenedEventList, nodes2: eventStore.flatExpandedList });
+	const eventsInViewport = React.useRef<ListItem<EventTreeNode>[]>([]);
 
 	const initialItemCount = React.useRef(nodes.length);
 	const virtuosoRef = React.useRef<VirtuosoHandle | null>(null);
 	const listRef = React.useRef<HTMLDivElement>(null);
 
-	const [isFollowingSelectedNode, setIsFollowingSelectedNode] = React.useState(true);
 	const [firstItemIndex, setFirstItemIndex] = React.useState(START_INDEX);
 	const [eventNodes, setEventNodes] = React.useState<EventTreeNode[]>(nodes.slice());
 
 	const prevNodes = usePrevious(nodes);
+	const prevIsExpandedMap = React.useRef<Map<string, boolean>>(new Map());
 
 	const renderEvent = React.useCallback(
-		(index: number, node: EventTreeNode) => <EventTree eventTreeNode={node} />,
-		[],
+		(index: number, node: EventTreeNode) => {
+			if (isFlat) {
+				return <FlatEventListItem node={node} />;
+			}
+
+			return <EventTree eventTreeNode={node} />;
+		},
+		[isFlat],
 	);
 
 	React.useEffect(() => {
+		let isExpandedMapChanged = false;
+		const expandedMapChanges: [string, boolean][] = [];
+		if (prevIsExpandedMap.current) {
+			eventStore.isExpandedMap.forEach((value, key) => {
+				if (value !== prevIsExpandedMap.current.get(key) || !prevIsExpandedMap.current.has(key)) {
+					isExpandedMapChanged = true;
+					expandedMapChanges.push([key, value]);
+				}
+			});
+			prevIsExpandedMap.current = new Map([...eventStore.isExpandedMap]);
+		}
 		let adjustedIndex = firstItemIndex;
-		if (prevNodes && nodes.length > prevNodes?.length) {
-			if (selectedNode) {
-				const selectedNodeIndex = eventNodes.findIndex(
-					node => node.eventId === selectedNode.eventId,
-				);
-				const newIndex = nodes.findIndex(node => node.eventId === selectedNode.eventId);
 
-				if (selectedNodeIndex !== newIndex) {
-					adjustedIndex = firstItemIndex - (newIndex - selectedNodeIndex);
+		if (selectedNode && expandedMapChanges.some(([eventId]) => eventId === selectedNode.eventId)) {
+			isExpandedMapChanged = false;
+		}
+
+		if (!isExpandedMapChanged && prevNodes && nodes.length > prevNodes?.length) {
+			let originalIndex = -1;
+			let relativeEvent: EventTreeNode | null;
+			if (
+				selectedNode &&
+				eventsInViewport.current.find(event => event.data?.eventId === selectedNode.eventId)
+			) {
+				relativeEvent = selectedNode;
+				originalIndex = eventNodes.findIndex(event => event.eventId === selectedNode.eventId);
+			} else {
+				const firstListItem = eventsInViewport.current[0];
+				relativeEvent = firstListItem.data || null;
+				originalIndex = firstListItem.originalIndex || -1;
+			}
+			if (relativeEvent) {
+				const newIndex = nodes.findIndex(node => node.eventId === relativeEvent!.eventId);
+				if (originalIndex !== -1 && newIndex !== -1 && originalIndex !== newIndex) {
+					adjustedIndex = firstItemIndex - (newIndex - originalIndex);
 				}
 			}
 
-			if (isFollowingSelectedNode) {
-				setFirstItemIndex(adjustedIndex);
-			}
+			setFirstItemIndex(adjustedIndex);
 		}
 
 		if (prevNodes?.length !== nodes.length) {
 			setEventNodes(nodes);
 		}
 	}, [nodes, selectedNode, eventNodes, firstItemIndex]);
-
-	React.useEffect(() => {
-		if (!selectedNode) {
-			setIsFollowingSelectedNode(false);
-		}
-
-		function handleClick() {
-			setIsFollowingSelectedNode(() => false);
-		}
-
-		if (listRef.current && selectedNode) {
-			listRef.current.addEventListener('click', handleClick);
-			listRef.current.addEventListener('scroll', handleClick);
-		}
-
-		return () => {
-			if (listRef.current) {
-				listRef.current.removeEventListener('click', handleClick);
-				listRef.current.removeEventListener('scroll', handleClick);
-			}
-		};
-	}, [selectedNode]);
 
 	React.useEffect(() => {
 		try {
@@ -131,6 +142,9 @@ function EventTreeListBase(props: Props) {
 					overscan={3}
 					itemContent={renderEvent}
 					style={{ height: '100%' }}
+					itemsRendered={events => {
+						eventsInViewport.current = events;
+					}}
 				/>
 			</StateSaverProvider>
 		</div>
@@ -139,7 +153,11 @@ function EventTreeListBase(props: Props) {
 
 const EventTreeList = observer(EventTreeListBase);
 
-function EventTreeListWrapper() {
+interface EventTreeListWrapperProps {
+	isFlat?: boolean;
+}
+
+function EventTreeListWrapper(props: EventTreeListWrapperProps) {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 
@@ -162,6 +180,7 @@ function EventTreeListWrapper() {
 		<EventTreeList
 			scrolledIndex={eventsStore.scrolledIndex}
 			selectedNode={eventsStore.selectedNode}
+			isFlat={props.isFlat}
 		/>
 	);
 }

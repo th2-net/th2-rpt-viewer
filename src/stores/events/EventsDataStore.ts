@@ -283,6 +283,13 @@ export default class EventsDataStore {
 					this.eventStore.isExpandedMap.set(parentNode.eventId, true),
 				);
 				this.targetNodeParents = parentNodes;
+				if (
+					rootNode &&
+					(isRootEvent(rootNode) || rootNode.isUnknown) &&
+					!this.rootEventIds.includes(rootNode.eventId)
+				) {
+					this.rootEventIds.push(rootNode.eventId);
+				}
 			} else {
 				this.loadedParentNodes.push(parentNodes);
 			}

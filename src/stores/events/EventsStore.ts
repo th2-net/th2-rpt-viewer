@@ -124,7 +124,7 @@ export default class EventsStore {
 		return sortEventsByTimestamp(
 			this.flatExpandedList.filter(eventNode => {
 				const children = this.eventDataStore.parentChildrensMap.get(eventNode.eventId);
-				return (!children || children.length === 0) && eventNode.filtered;
+				return !children || children.length === 0;
 			}),
 		);
 	}
@@ -136,10 +136,20 @@ export default class EventsStore {
 
 	@computed
 	public get flatExpandedList() {
+		const rootIds = this.eventDataStore.rootEventIds.slice();
+
+		if (this.eventDataStore.targetNodeParents.length) {
+			const rootNode = this.eventDataStore.targetNodeParents[0];
+
+			if (
+				(isRootEvent(rootNode) || rootNode.isUnknown) &&
+				!this.eventDataStore.rootEventIds.includes(rootNode.eventId)
+			) {
+				rootIds.push(rootNode.eventId);
+			}
+		}
 		const rootNodes = sortEventsByTimestamp(
-			this.eventDataStore.rootEventIds
-				.map(eventId => this.eventDataStore.eventsCache.get(eventId))
-				.filter(isEventNode),
+			rootIds.map(eventId => this.eventDataStore.eventsCache.get(eventId)).filter(isEventNode),
 			'desc',
 		);
 		return rootNodes.flatMap(eventNode => this.getFlatExpandedList(eventNode));
@@ -168,9 +178,7 @@ export default class EventsStore {
 		}
 
 		const rootNodes = sortEventsByTimestamp(
-			this.eventDataStore.rootEventIds
-				.map(eventId => this.eventDataStore.eventsCache.get(eventId))
-				.filter(isEventNode),
+			rootIds.map(eventId => this.eventDataStore.eventsCache.get(eventId)).filter(isEventNode),
 			'desc',
 		);
 
