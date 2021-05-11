@@ -58,7 +58,7 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 
 		if (config.value) {
 			setIsLoading(true);
-			debouncedFetchObject(config.value, ac);
+			fetchObjectById(config.value, ac);
 		}
 		return () => {
 			ac.abort();
@@ -66,36 +66,31 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 	}, [config.value]);
 
 	const switchType = () => {
-		setIsInput(!isInput);
-		if (!isInput && input.current) {
+		if (isInput && event) {
+			setIsInput(false);
+		} else if (!isInput && input.current) {
+			setIsInput(true);
 			input.current.focus();
-		} else {
-			setEvent(null);
-			fetchObjectById(config.value, new AbortController());
 		}
 	};
 
-	const fetchObjectById = React.useCallback(
+	const fetchObjectById = useDebouncedCallback(
 		async (id: string, abortController: AbortController) => {
 			try {
 				const foundEvent = await api.events.getEvent(id, abortController.signal, { probe: true });
 				setEvent(foundEvent);
-				if (foundEvent) {
-					setIsInput(false);
-					setIsError(false);
-				} else {
-					setIsError(true);
-				}
+				setIsInput(!foundEvent);
+				setIsError(!foundEvent);
 				setIsLoading(false);
 			} catch (error) {
 				setIsLoading(false);
 				setEvent(null);
+				setIsInput(true);
 				setIsError(true);
 			}
 		},
-		[],
+		400,
 	);
-	const debouncedFetchObject = useDebouncedCallback(fetchObjectById, 400);
 
 	return (
 		<div className={wrapperClassName}>
