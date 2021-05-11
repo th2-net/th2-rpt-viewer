@@ -19,19 +19,18 @@ import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import api from '../../../api';
 import { getTimestampAsNumber } from '../../../helpers/date';
-import {
-	createBemBlock,
-	createBemElement,
-	createStyleSelector,
-} from '../../../helpers/styleCreators';
+import { getEventStatus } from '../../../helpers/event';
+import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
+import { useDebouncedCallback } from '../../../hooks';
 import { EventAction } from '../../../models/EventAction';
 import { FilterRowEventResolverConfig } from '../../../models/filter/FilterInputs';
 
-export default function StringFilterRow({ config }: { config: FilterRowEventResolverConfig }) {
+export default function EventResolverRow({ config }: { config: FilterRowEventResolverConfig }) {
 	const [isInput, setIsInput] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [isError, setIsError] = useState(false);
 	const [event, setEvent] = useState<EventAction | null>(null);
-	const input = useRef(null);
+	const input = useRef<HTMLInputElement>(null);
 
 	const inputClassName = createBemElement(
 		'filter-row',
@@ -40,49 +39,63 @@ export default function StringFilterRow({ config }: { config: FilterRowEventReso
 		isInput ? '' : 'hide',
 	);
 
-	const iconClassName = createStyleSelector(
-		'filter-row__event-card-icon',
-		isLoading ? 'loader' : '',
-		event ? (event!.successful ? 'passed' : 'failed') : '',
-		event === null && !isLoading && config.value !== '' ? 'not-found' : '',
+	const searchStatusIconClassname = createStyleSelector(
+		'filter-row__search-status',
+		isLoading ? 'loading' : null,
+		isError && !isLoading && config.value !== '' ? 'not-found' : '',
 	);
 
-	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
+	const iconClassName = createStyleSelector(
+		'filter-row__event-card-icon',
+		event ? getEventStatus(event).toLowerCase() : '',
+	);
+
+	const wrapperClassName = createStyleSelector('filter-row', 'event-resolver');
 	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
 
 	useEffect(() => {
-		if (!isInput && config.value !== '') {
-			fetchObjectById(config.value, new AbortController());
+		const ac = new AbortController();
+
+		if (config.value) {
+			setIsLoading(true);
+			debouncedFetchObject(config.value, ac);
 		}
+		return () => {
+			ac.abort();
+		};
 	}, [config.value]);
 
 	const switchType = () => {
 		setIsInput(!isInput);
-		if (!isInput) {
-			(input!.current as any).focus();
+		if (!isInput && input.current) {
+			input.current.focus();
 		} else {
 			setEvent(null);
 			fetchObjectById(config.value, new AbortController());
 		}
 	};
 
-	const fetchObjectById = (id: string, abortController: AbortController) => {
-		setIsLoading(true);
-		function handleError(err: any) {
-			if (err.name !== 'AbortError') {
+	const fetchObjectById = React.useCallback(
+		async (id: string, abortController: AbortController) => {
+			try {
+				const foundEvent = await api.events.getEvent(id, abortController.signal, { probe: true });
+				setEvent(foundEvent);
+				if (foundEvent) {
+					setIsInput(false);
+					setIsError(false);
+				} else {
+					setIsError(true);
+				}
 				setIsLoading(false);
+			} catch (error) {
+				setIsLoading(false);
+				setEvent(null);
+				setIsError(true);
 			}
-		}
-		Promise.all([
-			api.events
-				.getEvent(id, abortController.signal, { probe: true })
-				.then((foundEvent: EventAction | null) => {
-					setEvent(foundEvent);
-					abortController.abort();
-				})
-				.catch(handleError),
-		]).then(() => setIsLoading(false));
-	};
+		},
+		[],
+	);
+	const debouncedFetchObject = useDebouncedCallback(fetchObjectById, 400);
 
 	return (
 		<div className={wrapperClassName}>
@@ -91,26 +104,20 @@ export default function StringFilterRow({ config }: { config: FilterRowEventReso
 					{config.label}
 				</label>
 			)}
-
 			{!isInput && (
-				<div className='filter-row__event-card' onClick={() => switchType()}>
+				<div className='filter-row__event-card' onClick={switchType}>
 					<i className={iconClassName} />
 					<div className='filter-row__event-card-title'>
 						{event ? event?.eventName : config.value}
 					</div>
 					{event && (
-						<div className='filter-row__event-card-info'>
-							<div className='filter-row__event-card-id'>{event?.eventId}</div>
-							<div className='filter-row__event-card-timestamp'>
-								{moment(getTimestampAsNumber(event as EventAction))
-									.utc()
-									.format('DD.MM.YYYY HH:mm:ss.SSS')}
-							</div>
+						<div className='filter-row__event-card-timestamp'>
+							{moment.utc(getTimestampAsNumber(event)).format('DD.MM.YYYY HH:mm:ss.SSS')}
 						</div>
 					)}
 				</div>
 			)}
-
+			<div className={searchStatusIconClassname} />
 			<input
 				type='text'
 				className={inputClassName}
