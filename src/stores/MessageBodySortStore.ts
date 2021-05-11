@@ -128,7 +128,7 @@ class MessageBodySortOrderStore {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {
 				notificationsStore.addMessage({
-					errorType: 'indexedDbMessage',
+					errorType: 'genericError',
 					type: 'error',
 					header: `Failed to save order rule ${rule.id}`,
 					description: '',
@@ -146,7 +146,7 @@ class MessageBodySortOrderStore {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {
 				notificationsStore.addMessage({
-					errorType: 'indexedDbMessage',
+					errorType: 'genericError',
 					type: 'error',
 					header: isMessageBodySortOrderItem(rule)
 						? `Failed to update order rule ${rule.id}`
