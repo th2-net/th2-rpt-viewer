@@ -46,7 +46,7 @@ const MessageCardTools = ({
 	const dropDownRef = useRef<HTMLDivElement>(null);
 
 	useOutsideClickListener(rootRef, (e: MouseEvent) => {
-		if (!rootRef.current?.contains(e.target as Element)) {
+		if (e.target instanceof Element && rootRef.current && !rootRef.current.contains(e.target)) {
 			toggleDropdown(false);
 		}
 	});
@@ -66,7 +66,7 @@ const MessageCardTools = ({
 		<div className='message-card-tools' ref={rootRef}>
 			<div
 				className={createBemElement('message-card-tools', 'button', showDropdown ? 'active' : null)}
-				onClick={() => toggleDropdown(!showDropdown)}>
+				onClick={() => toggleDropdown(isDropdownShown => !isDropdownShown)}>
 				<div
 					className={bookmarkIconClass}
 					title={isBookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}

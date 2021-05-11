@@ -103,13 +103,11 @@ const MessagesVirtualizedList = (props: Props) => {
 	);
 
 	const onScroll = (event: React.UIEvent<'div'>) => {
-		if (event.target !== event.currentTarget) return;
 		event.persist();
 		debouncedScrollHandler(event);
 	};
 
 	const onWheel: React.WheelEventHandler<'div'> = event => {
-		if (event.target !== event.currentTarget) return;
 		event.persist();
 		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
