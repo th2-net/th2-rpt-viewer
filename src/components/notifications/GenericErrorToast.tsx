@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { IndexedDbError } from '../../stores/NotificationsStore';
+import { GenericError } from '../../stores/NotificationsStore';
 
-export default function IndexedDBMessageToast(props: IndexedDbError) {
+export default function GenericErrorToast(props: GenericError) {
 	const { description, header, action } = props;
 
 	return (
