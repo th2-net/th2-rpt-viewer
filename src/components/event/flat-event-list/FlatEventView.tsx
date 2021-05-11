@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SplitViewPane from '../../split-view/SplitViewPane';
-import FlatEventList from './FlatEventList';
+import EventList from '../EventList';
 import Empty from '../../util/Empty';
 import SplitView from '../../split-view/SplitView';
 import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks';
@@ -34,7 +34,7 @@ function EventTreeView() {
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
 				<EventWindowHeader />
-				<FlatEventList nodes={eventsStore.flattenedEventList} />
+				<EventList isFlat={true} />
 			</SplitViewPane>
 			<SplitViewPane>
 				{eventsStore.selectedNode === null &&

@@ -31,7 +31,6 @@ type WhenPromise = Promise<void> & {
 type SSEChannelOptions = Partial<{
 	chunkSize: number;
 	updateSchedulerIntervalMs: number;
-	initialResponseTimeoutMs: number;
 }>;
 
 interface SSEEventListeners {
@@ -48,8 +47,6 @@ export class EventSSELoader {
 	private chunkSize = 10;
 
 	private initialResponseTimeout: number | null = null;
-
-	private initialResponseTimeoutMs = 2000;
 
 	private updateScheduler: number | null = null;
 
@@ -161,7 +158,7 @@ export class EventSSELoader {
 	};
 
 	private getNextChunk = (chunkSize = this.accumulatedEvents.length): EventTreeNode[] => {
-		return this.accumulatedEvents.slice(0, chunkSize);
+		return this.accumulatedEvents.splice(0, chunkSize);
 	};
 
 	private closeChannel = () => {
