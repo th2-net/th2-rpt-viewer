@@ -26,6 +26,12 @@ const eventHttpApi: EventApiSchema = {
 			signal,
 		});
 
+		// if probe param is provided server will respond with empty body if event wasn't found
+		if (res.ok && queryParams.probe) {
+			const body = await res.text();
+			return body ? JSON.parse(body) : null;
+		}
+
 		if (res.ok) {
 			return res.json();
 		}

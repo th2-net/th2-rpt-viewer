@@ -31,7 +31,7 @@ export function getEventStatus(event: EventAction | EventTreeNode): EventStatus 
 	return event.successful ? EventStatus.PASSED : EventStatus.FAILED;
 }
 
-export const isRootEvent = (event: EventTreeNode): boolean => event.parentId === 'null';
+export const isRootEvent = (event: EventTreeNode): boolean => event.parentId === null;
 
 export function mapToTimestamps(list: Array<EventTreeNode | EventMessage>) {
 	return list.map(item => getTimestampAsNumber(item));
@@ -118,7 +118,6 @@ export const convertEventActionToEventTreeNode = (event: EventAction): EventTree
 		startTimestamp: event.startTimestamp,
 		endTimestamp: event.endTimestamp,
 		successful: event.successful,
-		childList: [],
 		filtered: true,
 		parentId: event.parentEventId,
 		type: ActionType.EVENT_TREE_NODE,
@@ -130,7 +129,6 @@ export const getErrorEventTreeNode = (eventId: string): EventTreeNode => {
 		type: ActionType.EVENT_TREE_NODE,
 		isUnknown: true,
 		eventId,
-		childList: [],
 		eventName: 'Unknown event',
 		eventType: '',
 		filtered: true,
