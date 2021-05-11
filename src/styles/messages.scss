@@ -19,9 +19,9 @@
 .message-card-wrapper {
 	@include scrollbar();
 	@include bookmark-button($showOnHoverOverParent: true);
-	position: relative;
 	overflow: auto;
 	display: flex;
+	align-items: flex-start;
 	border-radius: 5px;
 	margin-right: 10px;
 	padding: 1px 0;
@@ -64,6 +64,10 @@
 		background-color: $messageCardHoverBackground;
 	}
 
+	&:hover .message-card-tools__ellipsis {
+		display: block;
+	}
+
 	&:hover .mc-raw {
 		&__copy-all {
 			display: inline-flex;
@@ -80,40 +84,17 @@
 			}
 		}
 
-		&__control-button {
-			display: block;
-		}
-
-		&__key-minified {
-			display: none;
-		}
-
-		&__key {
-			display: inline;
-		}
-
-		&__info {
-			flex-wrap: wrap;
-		}
-
 		&__value {
 			font-weight: bold;
-			&.sessionId-inline {
-				margin: 0;
-			}
 		}
 
 		&__is-attached-icon {
 			opacity: 1;
 		}
-		&__controls {
-			display: block;
-		}
 	}
 }
 
 .message-card {
-	position: relative;
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
@@ -121,8 +102,122 @@
 }
 
 .message-card-tools {
-	max-width: 16px;
-	margin-left: 4px;
+	margin: 0 4px;
+	align-self: flex-start;
+
+	&__button {
+		display: flex;
+		align-items: center;
+		cursor: pointer;
+	}
+
+	&__button.active &__ellipsis {
+		display: block;
+	}
+
+	&__ellipsis {
+		display: none;
+		margin-left: 2px;
+		flex-shrink: 0;
+		@include icon(url(../../resources/icons/ellipsis.svg), 15px, 15px);
+	}
+
+	&__controls {
+		position: absolute;
+		right: 11px;
+		background-color: white;
+		box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
+		display: flex;
+		flex-direction: column;
+		z-index: 2;
+	}
+
+	&__item {
+		display: flex;
+		justify-content: center;
+		padding: 2px 4px;
+		cursor: pointer;
+
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.07);
+		}
+	}
+
+	&__icon {
+		width: 15px;
+		height: 15px;
+		flex-shrink: 0;
+
+		&.bookmark {
+			@include icon(url(../../resources/icons/bookmark-add-hover.svg));
+			background-size: auto;
+
+			&.pinned {
+				background-image: url(../../resources/icons/bookmark-added-hover.svg);
+			}
+		}
+
+		&.json {
+			position: relative;
+			&:before {
+				content: '{~}';
+				position: absolute;
+				font-size: 11px;
+				line-height: 1.25;
+				font-weight: 700;
+				color: grey;
+				top: 0;
+				left: 0;
+				width: inherit;
+				height: inherit;
+			}
+		}
+
+		&.formatted {
+			@include icon(url(../../resources/icons/messages-beautify.svg));
+		}
+
+		&.binary {
+			@include icon(url(../../resources/icons/table-view-icon.svg));
+			opacity: 0.7;
+		}
+
+		&.ascii {
+			@include icon(url(../../resources/icons/bincode.svg));
+		}
+
+		&.download {
+			@include icon(url(../../resources/icons/download.svg), 15px, 15px);
+		}
+	}
+
+	&__indicator {
+		width: 15px;
+		height: 15px;
+		flex-shrink: 0;
+		position: relative;
+
+		&:after {
+			content: '';
+			position: absolute;
+			width: 4px;
+			height: 4px;
+			right: 4px;
+			top: 6px;
+			border-radius: 50%;
+			background-color: $secondaryTextColor;
+			opacity: 0;
+			transition: opacity 0.15s;
+		}
+
+		&.active:after {
+			opacity: 1;
+		}
+
+		&.bookmark:after {
+			background-color: $bookmarkIconColor;
+		}
+	}
 }
 
 .mc-label {
@@ -218,35 +313,12 @@
 		color: $messageCardValueColor;
 	}
 
-	&__controls {
-		display: none;
-
-		div {
-			cursor: pointer;
-		}
-	}
-
 	&__icon {
 		width: 15px;
 		height: 15px;
 		&.inline {
 			transform: translateY(4px);
 		}
-	}
-
-	&__control-button {
-		display: none;
-		background-size: cover;
-		opacity: 0.77;
-
-		&:hover,
-		&.active {
-			opacity: 1;
-		}
-	}
-
-	&__download-button {
-		@include icon(url(../../resources/icons/download.svg), 15px, 15px);
 	}
 }
 
@@ -301,6 +373,7 @@
 	display: flex;
 	gap: 10px;
 	align-items: center;
+	position: relative;
 
 	&__header {
 		display: flex;
@@ -721,61 +794,5 @@
 		pointer-events: none;
 		opacity: 0;
 		background: rgba($color: #ade0eb, $alpha: 0.6);
-	}
-}
-
-.message-view-type-radio {
-	&__input {
-		@include visually-hidden();
-	}
-	&__label {
-		display: block;
-		cursor: pointer;
-		width: 15px;
-		height: 15px;
-
-		&.json,
-		&.formatted,
-		&.ascii {
-			opacity: 0.6;
-			&.checked {
-				opacity: 1;
-			}
-		}
-
-		&.binary {
-			opacity: 0.4;
-			&.checked {
-				opacity: 0.8;
-			}
-		}
-
-		&.json {
-			position: relative;
-			&:before {
-				content: '{~}';
-				position: absolute;
-				font-size: 11px;
-				line-height: 1.25;
-				font-weight: 700;
-				color: grey;
-				top: 0;
-				left: 0;
-				width: inherit;
-				height: inherit;
-			}
-		}
-
-		&.formatted {
-			@include icon(url(../../resources/icons/messages-beautify.svg));
-		}
-
-		&.binary {
-			@include icon(url(../../resources/icons//table-view-icon.svg));
-		}
-
-		&.ascii {
-			@include icon(url(../../resources/icons/bincode.svg));
-		}
 	}
 }
