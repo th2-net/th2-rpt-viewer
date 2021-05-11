@@ -52,7 +52,7 @@ function DetailedFlatEventCard(props: Props) {
 						<EventCardHeader
 							key={eventNode.eventId}
 							event={eventNode}
-							onSelect={() => setSelectedNode(eventNode)}
+							onSelect={!eventNode.isUnknown ? () => setSelectedNode(eventNode) : undefined}
 							isActive={selectedNode === eventNode}
 						/>
 					))}
