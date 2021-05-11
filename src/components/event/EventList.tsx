@@ -88,14 +88,14 @@ function EventTreeListBase(props: Props) {
 			let relativeEvent: EventTreeNode | null;
 			if (
 				selectedNode &&
-				eventsInViewport.current.find(event => event.data?.eventId === selectedNode.eventId)
+				eventsInViewport.current.find(event => event?.data?.eventId === selectedNode.eventId)
 			) {
 				relativeEvent = selectedNode;
 				originalIndex = eventNodes.findIndex(event => event.eventId === selectedNode.eventId);
 			} else {
 				const firstListItem = eventsInViewport.current[0];
-				relativeEvent = firstListItem.data || null;
-				originalIndex = firstListItem.originalIndex || -1;
+				relativeEvent = firstListItem?.data || null;
+				originalIndex = firstListItem?.originalIndex || -1;
 			}
 			if (relativeEvent) {
 				const newIndex = nodes.findIndex(node => node.eventId === relativeEvent!.eventId);
