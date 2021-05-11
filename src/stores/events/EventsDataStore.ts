@@ -279,9 +279,10 @@ export default class EventsDataStore {
 				}
 			});
 			if (isTargetNodes) {
-				parentNodes.forEach(parentNode =>
-					this.eventStore.isExpandedMap.set(parentNode.eventId, true),
-				);
+				parentNodes.forEach(parentNode => {
+					this.eventStore.isExpandedMap.set(parentNode.eventId, true);
+					this.loadingParentEvents.set(parentNode.eventId, false);
+				});
 				this.targetNodeParents = parentNodes;
 				if (
 					rootNode &&
