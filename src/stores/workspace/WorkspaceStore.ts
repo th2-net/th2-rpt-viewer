@@ -169,6 +169,23 @@ export default class WorkspaceStore {
 	};
 
 	@action
+	public refreshPanels = (timestamp: number) => {
+		this.eventsStore.eventDataStore.fetchEventTree({
+			timeRange: [timestamp, timestamp],
+			filter: this.eventsStore.filterStore.filter,
+		});
+		this.messagesStore.applyFilter(
+			{
+				...this.messagesStore.filterStore.filter,
+				timestampFrom: timestamp,
+				timestampTo: timestamp,
+			},
+			this.messagesStore.filterStore.sseMessagesFilter,
+			this.messagesStore.filterStore.isSoftFilter,
+		);
+	};
+
+	@action
 	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
 		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
 	};
