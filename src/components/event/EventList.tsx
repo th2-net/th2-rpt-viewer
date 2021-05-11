@@ -41,7 +41,7 @@ function EventTreeListBase(props: Props) {
 	const { scrolledIndex, selectedNode, isFlat = false } = props;
 
 	const nodes = !isFlat ? eventStore.nodesList : eventStore.flattenedEventList;
-	console.log({ nodes: eventStore.flattenedEventList, nodes2: eventStore.flatExpandedList });
+
 	const eventsInViewport = React.useRef<ListItem<EventTreeNode>[]>([]);
 
 	const initialItemCount = React.useRef(nodes.length);
@@ -67,12 +67,12 @@ function EventTreeListBase(props: Props) {
 
 	React.useEffect(() => {
 		let isExpandedMapChanged = false;
-		const expandedMapChanges: [string, boolean][] = [];
+		const expandedMapChanges: string[] = [];
 		if (prevIsExpandedMap.current) {
 			eventStore.isExpandedMap.forEach((value, key) => {
 				if (value !== prevIsExpandedMap.current.get(key) || !prevIsExpandedMap.current.has(key)) {
 					isExpandedMapChanged = true;
-					expandedMapChanges.push([key, value]);
+					expandedMapChanges.push(key);
 				}
 			});
 			prevIsExpandedMap.current = new Map([...eventStore.isExpandedMap]);

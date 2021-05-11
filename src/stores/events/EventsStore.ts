@@ -199,12 +199,10 @@ export default class EventsStore {
 			return [];
 		}
 
-		const selectedNodeParents = this.getParentNodes(
-			this.selectedNode.eventId,
-			this.eventDataStore.eventsCache,
-		).map(node => node.eventId);
-
-		return [...this.getNodesPath(selectedNodeParents, this.nodesList), this.selectedNode];
+		return [
+			...this.getParentNodes(this.selectedNode.eventId, this.eventDataStore.eventsCache),
+			this.selectedNode,
+		];
 	}
 
 	@computed
@@ -392,8 +390,6 @@ export default class EventsStore {
 			const targetNode = this.eventDataStore.eventsCache.get(this.targetNodeId);
 			if (targetNode) {
 				this.targetNodeId = null;
-
-				// TODO: delete target nodes after they are added to event tree
 			}
 		}
 	};
