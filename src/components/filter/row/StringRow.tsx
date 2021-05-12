@@ -24,6 +24,9 @@ import { FilterRowStringConfig } from '../../../models/filter/FilterInputs';
 import AutocompleteInput from '../../util/AutocompleteInput';
 
 export default function StringFilterRow({ config }: { config: FilterRowStringConfig }) {
+	const ref = React.useRef();
+	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
+
 	const inputClassName = createBemElement(
 		'filter-row',
 		'input',
@@ -31,11 +34,11 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 	);
 	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
 	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
-	const ref = React.useRef();
-	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
+
 	React.useLayoutEffect(() => {
 		setAutocompleteAnchor(ref.current || undefined);
 	}, [setAutocompleteAnchor]);
+
 	return (
 		<div className={wrapperClassName}>
 			{config.label && (

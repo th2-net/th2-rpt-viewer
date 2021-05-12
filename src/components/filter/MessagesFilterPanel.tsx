@@ -82,11 +82,10 @@ const MessagesFilterPanel = () => {
 		if (filterStore.temporaryFilter) {
 			const filtersToSave: FiltersToSave = Object.fromEntries(
 				Object.entries(filterStore.temporaryFilter)
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					.filter(([_, value]) => value.values.length > 0)
 					.map(([key, value]) => [
 						key,
-						toJS(typeof value.values === 'string' ? value.values : value.values.sort()),
+						toJS(typeof value.values === 'string' ? value.values : toJS(value.values).sort()),
 					]),
 			);
 			if (Object.values(filtersToSave).some(v => v.length > 0)) {

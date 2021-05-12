@@ -27,6 +27,8 @@ import { EventMessage } from '../../models/EventMessage';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
+import FilterAutocompletesStore from '../FilterAutocompletesStore';
+import FiltersHistoryStore from '../FiltersHistoryStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -42,6 +44,8 @@ export default class WorkspacesStore {
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
+		public filterAutocompletesStore: FilterAutocompletesStore,
+		public filtersHistoryStore: FiltersHistoryStore,
 		initialState: WorkspacesUrlState | null,
 	) {
 		this.searchWorkspace = new SearchWorkspaceStore(this, this.api);
@@ -56,10 +60,6 @@ export default class WorkspacesStore {
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
-
-	public filterAutocompletesStore = this.rootStore.filtersAutocompletesStore;
-
-	public filtersHistoryStore = this.rootStore.filtersHistoryStore;
 
 	@computed get eventStores() {
 		return this.workspaces.map(workspace => workspace.eventsStore);

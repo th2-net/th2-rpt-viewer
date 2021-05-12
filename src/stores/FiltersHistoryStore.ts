@@ -42,17 +42,9 @@ class FiltersHistoryStore {
 			return;
 		}
 		if (this.isFull) {
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const [_, ...rest] = this.history;
-			this.history = [...rest, newFilters];
+			this.history = [...this.history.slice(1), newFilters];
 
-			const all = await this.indexedDb.getStoreValues<FiltersHistory>(
-				IndexedDbStores.FILTERS_HISTORY,
-			);
-			const first = all[0];
-			if (first) {
-				this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, first.timestamp);
-			}
+			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, newFilters.timestamp);
 			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, newFilters);
 			return;
 		}

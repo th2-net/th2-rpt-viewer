@@ -40,7 +40,13 @@ export default class RootStore {
 	workspacesStore: WorkspacesStore;
 
 	constructor(private api: ApiSchema) {
-		this.workspacesStore = new WorkspacesStore(this, this.api, this.parseUrlState());
+		this.workspacesStore = new WorkspacesStore(
+			this,
+			this.api,
+			this.filtersAutocompletesStore,
+			this.filtersHistoryStore,
+			this.parseUrlState(),
+		);
 
 		window.history.replaceState({}, '', window.location.pathname);
 	}

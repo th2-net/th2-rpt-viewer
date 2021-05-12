@@ -68,15 +68,13 @@ function EventsFilterPanel() {
 
 	const onSubmit = React.useCallback(() => {
 		if (filterStore.temporaryFilter) {
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { status, ...restFilters } = filterStore.temporaryFilter;
 			const filtersToSave: FiltersToSave = Object.fromEntries(
 				Object.entries(restFilters)
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					.filter(([_, value]) => value.values.length > 0)
 					.map(([key, value]) => [
 						key,
-						toJS(typeof value.values === 'string' ? value.values : value.values.sort()),
+						toJS(typeof value.values === 'string' ? value.values : toJS(value.values).sort()),
 					]),
 			);
 			saveAutocompletes(filtersToSave, 'event');
