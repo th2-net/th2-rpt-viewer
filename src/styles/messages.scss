@@ -48,7 +48,6 @@
 		&:hover {
 			background-color: rgba($color: $filterPrimaryColor, $alpha: 0.1);
 		}
-
 	}
 
 	&.attached {
@@ -551,7 +550,6 @@
 		font-size: 14px;
 		padding: 2px 7px;
 		color: $messageListLoadButtonTextColor;
-
 	}
 
 	&__overlay-loader {
@@ -774,8 +772,8 @@
 			width: auto;
 			height: auto;
 			margin: auto;
-			max-width:100%;
-			max-height:100%;
+			max-width: 100%;
+			max-height: 100%;
 		}
 
 		.shade {
@@ -794,5 +792,102 @@
 		pointer-events: none;
 		opacity: 0;
 		background: rgba($color: #ade0eb, $alpha: 0.6);
+	}
+}
+
+.replay {
+	display: grid;
+	row-gap: 5px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 800px;
+	background-color: #0bc;
+	padding: 30px 20px 20px 20px;
+	border-radius: 6px;
+	color: white;
+	z-index: 300;
+
+	&__toggle-button {
+		color: #808080;
+		font-size: 12px;
+		line-height: 15px;
+		font-weight: bold;
+		display: inline;
+		white-space: nowrap;
+		padding-left: 5px;
+		border: none;
+		background: none;
+		cursor: pointer;
+		position: relative;
+
+		&:hover {
+			color: $controlButtonTextColorHover;
+		}
+	}
+
+	.filter-row {
+		margin-bottom: 0;
+		margin-left: 0;
+	}
+
+	.filter-content {
+		margin-right: 0;
+	}
+
+	.filter-row__label {
+		color: #fff;
+		font-size: 14px;
+	}
+
+	.filter-row__input:last-child {
+		margin-right: 0;
+	}
+
+	.filter-row__input:first-child {
+		margin-left: 0;
+	}
+
+	&__generated-text {
+		background-color: rgba(255, 255, 255, 0.8);
+		padding: 3px 15px;
+		position: relative;
+		color: #4d4d4d;
+		white-space: pre-wrap;
+		word-break: break-all;
+		margin: 10px 0;
+
+		&::before {
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 5px;
+			height: 100%;
+			background-color: #ffdd99;
+		}
+	}
+
+	&__copy-button {
+		padding: 3px 10px;
+		min-width: 100px;
+		width: fit-content;
+		background-color: #ffdd99;
+		border: 1px solid #4d4d4d;
+		color: #4d4d4d;
+		font-size: 14px;
+		border-radius: 6px;
+		justify-self: end;
+	}
+
+	&__close-button {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		border: none;
+		background-color: transparent;
+
+		@include round-button(url(../../resources/icons/cross-icon-white.svg));
 	}
 }

@@ -31,11 +31,12 @@ interface AutocompleteListProps {
 	anchor: HTMLElement | null;
 	className?: string;
 	onSelect?: (value: string) => void;
+	minWidth?: number;
 }
 
 export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteListProps>(
 	(props, ref) => {
-		const { items, value, anchor, onSelect, className } = props;
+		const { items, value, anchor, onSelect, className, minWidth = 250 } = props;
 		const [isOpen, setIsOpen] = React.useState(false);
 		const [focusedOption, setFocusedOption] = React.useState<string | null>(null);
 
@@ -44,13 +45,7 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 
 		const anchorResizerObserver = React.useRef(
 			new ResizeObserver((entries: ResizeObserverEntry[]) => {
-				const anchorEl = entries[0]?.target;
-				if (anchorEl && rootRef.current) {
-					const { bottom, left, right } = anchorEl.getBoundingClientRect();
-					rootRef.current.style.width = `${right - left}px`;
-					rootRef.current.style.left = `${left}px`;
-					rootRef.current.style.top = `${bottom}px`;
-				}
+				adjustAutocompleteListPosition(entries[0]?.target || null);
 			}),
 		);
 
@@ -161,9 +156,34 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 		}, [handleKeyDown]);
 
 		React.useEffect(() => {
-			const showAutocomplete = Boolean(value && list.length && value !== focusedOption);
+			const showAutocomplete = Boolean(anchor && value && list.length && value !== focusedOption);
+			toggleAutocompleteList(showAutocomplete);
+		}, [value, list, focusedOption, anchor]);
+
+		function toggleAutocompleteList(showAutocomplete: boolean) {
+			if (showAutocomplete) {
+				adjustAutocompleteListPosition(anchor);
+			}
 			setIsOpen(showAutocomplete);
-		}, [value, list, focusedOption]);
+		}
+
+		function adjustAutocompleteListPosition(anchorEl: Element | null) {
+			if (anchorEl && rootRef.current) {
+				const { bottom, left: anchorLeft, right } = anchorEl.getBoundingClientRect();
+				let width = right - anchorLeft;
+				let left = anchorLeft;
+				if (width < minWidth) {
+					width = minWidth;
+				}
+
+				if (width + anchorLeft > window.innerWidth) {
+					left = window.innerWidth - width;
+				}
+				rootRef.current.style.width = `${width}px`;
+				rootRef.current.style.left = `${left}px`;
+				rootRef.current.style.top = `${bottom}px`;
+			}
+		}
 
 		React.useEffect(() => {
 			if (isOpen) {

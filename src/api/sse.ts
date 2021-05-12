@@ -14,10 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import moment from 'moment';
 import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import EventsFilter from '../models/filter/EventsFilter';
 import { getObjectKeys } from '../helpers/object';
+import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
 
 interface BaseSSEParams {
 	startTimestamp: number;
@@ -119,6 +121,46 @@ function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
 		},
 		{ filters },
 	);
+}
+
+export function getMessagesSSEParamsFromFilter(
+	filter: MessageFilterState | null,
+	streams: string[],
+	startTimestamp: number | null,
+	endTimestamp: number | null = null,
+	searchDirection = 'previous',
+	resultCountLimit?: number,
+): URLSearchParams {
+	const filtersToAdd: Array<keyof MessageFilterState> = !filter
+		? []
+		: Object.entries(filter)
+				.filter(([_, filterValues]) => filterValues.values.length > 0)
+				.map(([filterName]) => filterName as keyof MessageFilterState);
+
+	const filterValues = filtersToAdd
+		.map(filterName => (filter ? [`${filterName}-values`, filter[filterName].values] : []))
+		.filter(Boolean);
+
+	const filterInclusion = filtersToAdd.map(filterName =>
+		filter && filter[filterName].negative
+			? [`${filterName}-negative`, filter[filterName].negative]
+			: [],
+	);
+
+	const timestampTo = moment().utc().subtract(30, 'minutes').valueOf();
+	const defaultStartTimestamp = moment(timestampTo).add(5, 'minutes').valueOf();
+
+	const queryParams: MessagesSSEParams = {
+		startTimestamp: startTimestamp || defaultStartTimestamp,
+		endTimestamp: endTimestamp || undefined,
+		stream: streams,
+		searchDirection,
+		resultCountLimit,
+		filters: filtersToAdd,
+		...Object.fromEntries([...filterValues, ...filterInclusion]),
+	};
+
+	return createURLSearchParams({ ...queryParams });
 }
 
 const sseApi: SSESchema = {
