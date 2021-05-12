@@ -23,9 +23,6 @@ enum LocalStorageLegacyEntities {
 	ROOT_DISPLAY_RULE = 'root-display-rule',
 }
 
-interface SavedSearchFilters {
-	[k: string]: string[];
-}
 class LocalStorageWorker {
 	public clearLocalStorageData = (): void => {
 		localStorage.removeItem(LocalStorageLegacyEntities.ROOT_DISPLAY_RULE);

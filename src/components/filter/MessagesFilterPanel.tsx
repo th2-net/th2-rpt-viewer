@@ -79,9 +79,9 @@ const MessagesFilterPanel = () => {
 	}, []);
 
 	const submitChanges = React.useCallback(() => {
-		if (filterStore.sseMessagesFilter) {
+		if (filterStore.temporaryFilter) {
 			const filtersToSave: FiltersToSave = Object.fromEntries(
-				Object.entries(filterStore.sseMessagesFilter)
+				Object.entries(filterStore.temporaryFilter)
 					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					.filter(([_, value]) => value.values.length > 0)
 					.map(([key, value]) => [
@@ -104,7 +104,7 @@ const MessagesFilterPanel = () => {
 				...filterStore.filter,
 				streams,
 			},
-			filterStore.sseMessagesFilter,
+			filterStore.temporaryFilter,
 			isSoftFilterApplied,
 		);
 	}, [filterStore.filter, streams, isSoftFilterApplied]);
@@ -113,9 +113,9 @@ const MessagesFilterPanel = () => {
 	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !isLoading;
 
 	const compoundFilterRow: Array<CompoundFilterRow> = React.useMemo(() => {
-		if (!filterStore.sseMessagesFilter) return [];
+		if (!filterStore.temporaryFilter) return [];
 		// eslint-disable-next-line no-underscore-dangle
-		const _sseFilter = filterStore.sseMessagesFilter;
+		const _sseFilter = filterStore.temporaryFilter;
 		function getState(
 			name: keyof MessageFilterState,
 		): MessageFilterState[keyof MessageFilterState] {
@@ -124,18 +124,18 @@ const MessagesFilterPanel = () => {
 
 		function getValuesUpdater<T extends keyof MessageFilterState>(name: T) {
 			return function valuesUpdater<K extends MessageFilterState[T]>(values: K) {
-				const filter = filterStore.sseMessagesFilter;
+				const filter = filterStore.temporaryFilter;
 				if (filter) {
-					filterStore.setSSEFilter({ [name]: { ...filter[name], values } });
+					filterStore.setTemporaryFilter({ [name]: { ...filter[name], values } });
 				}
 			};
 		}
 
 		function getNegativeToggler<T extends keyof MessageFilterState>(name: T) {
 			return function negativeToggler() {
-				const filter = filterStore.sseMessagesFilter;
+				const filter = filterStore.temporaryFilter;
 				if (filter) {
-					filterStore.setSSEFilter({
+					filterStore.setTemporaryFilter({
 						[name]: { ...filter[name], negative: !filter[name].negative },
 					});
 				}
@@ -185,8 +185,8 @@ const MessagesFilterPanel = () => {
 		});
 	}, [
 		searchStore.messagesFilterInfo,
-		filterStore.sseMessagesFilter,
-		filterStore.setSSEFilter,
+		filterStore.temporaryFilter,
+		filterStore.setTemporaryFilter,
 		currentValues,
 	]);
 
@@ -221,22 +221,22 @@ const MessagesFilterPanel = () => {
 	}, [compoundFilterRow, sseFiltersErrorConfig]);
 
 	const renderFooter = React.useCallback(() => {
-		if (!messagesStore.filterStore.sseMessagesFilter) return null;
+		if (!messagesStore.filterStore.temporaryFilter) return null;
 
 		return (
 			<Observer>
 				{() => (
 					<div className='filter-footer'>
-						{filterStore.sseMessagesFilter && (
+						{filterStore.temporaryFilter && (
 							<FiltersHistory
 								type='message'
 								sseFilter={{
-									state: filterStore.sseMessagesFilter,
-									setState: filterStore.setSSEFilter,
+									state: filterStore.temporaryFilter,
+									setState: filterStore.setTemporaryFilter,
 								}}
 							/>
 						)}
-						{messagesStore.filterStore.sseMessagesFilter && (
+						{messagesStore.filterStore.temporaryFilter && (
 							<Checkbox
 								checked={isSoftFilterApplied}
 								onChange={e => {
@@ -250,7 +250,7 @@ const MessagesFilterPanel = () => {
 				)}
 			</Observer>
 		);
-	}, [messagesStore.filterStore.sseMessagesFilter, isSoftFilterApplied, setIsSoftFilterApplied]);
+	}, [messagesStore.filterStore.temporaryFilter, isSoftFilterApplied, setIsSoftFilterApplied]);
 
 	return (
 		<>

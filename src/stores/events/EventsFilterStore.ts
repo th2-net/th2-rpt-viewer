@@ -87,6 +87,15 @@ export default class EventsFilterStore {
 			() => this.searchStore.eventFilterInfo,
 			this.initSSEFilter,
 		);
+
+		reaction(
+			() => this.filter,
+			filter => {
+				if (filter) {
+					this.setTemporaryFilter(filter);
+				}
+			},
+		);
 	}
 
 	@observable
@@ -106,6 +115,9 @@ export default class EventsFilterStore {
 	public filter: null | EventsFilter = getDefaultEventsFiltersState(
 		this.searchStore.eventFilterInfo,
 	);
+
+	@observable
+	public temporaryFilter: null | EventsFilter = null;
 
 	@computed
 	public get isEventsFilterApplied(): boolean {
@@ -129,9 +141,9 @@ export default class EventsFilterStore {
 	}
 
 	@action
-	public setSSEFilter = (patch: Partial<EventsFilter>) => {
-		this.filter = this.filter
-			? { ...this.filter, ...patch }
+	public setTemporaryFilter = (patch: Partial<EventsFilter>) => {
+		this.temporaryFilter = this.temporaryFilter
+			? { ...this.temporaryFilter, ...patch }
 			: getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
 	};
 
@@ -150,6 +162,7 @@ export default class EventsFilterStore {
 		} else {
 			this.filter = getDefaultEventsFiltersState(filterInfo);
 		}
+		this.temporaryFilter = this.filter;
 	};
 
 	@action
