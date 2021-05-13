@@ -17,18 +17,15 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import EventsFilterPanel from '../filter/EventsFilterPanel';
-import { useActivePanel, useWorkspaceEventStore, useWorkspaceStore } from '../../hooks';
+import { useWorkspaceEventStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
 import EventsSearchPanel from './search/EventsSearchPanel';
 import { EventListNavUp, EventListNavDown } from './EventListNavigation';
-import { isEventsStore } from '../../helpers/stores';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 
 function EventWindowHeader() {
-	const { activePanel } = useActivePanel();
 	const eventStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
-	const workspaceStore = useWorkspaceStore();
 
 	const flattenButtonClassName = createBemElement(
 		'event-window-header',
@@ -41,7 +38,8 @@ function EventWindowHeader() {
 			<div className='event-window-header'>
 				<div className='event-window-header__group'>
 					<EventsSearchPanel
-						isDisabled={workspaceStore.isActive ? !isEventsStore(activePanel) : true}
+						// isDisabled={workspaceStore.isActive ? !isEventsStore(activePanel) : true}
+						isDisabled={true}
 					/>
 					<EventsFilterPanel />
 					<div

@@ -14,13 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
+// TODO: fix component once search is migrated to sse
+
 import * as React from 'react';
 import { raf } from '../../../helpers/raf';
 import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../../hooks';
 import KeyCodes from '../../../util/KeyCodes';
-import SearchInput from '../../search/SearchInput';
-import { ModalPortal } from '../../util/Portal';
+// import SearchInput from '../../search/SearchInput';
+// import { ModalPortal } from '../../util/Portal';
 
 const PANEL_WIDTH = 540;
 
@@ -83,22 +85,30 @@ function EventSearchPanel({ isDisabled = false }: Props) {
 
 	const searchIconClass = createBemElement('search', 'icon', showSearch ? 'active' : null);
 
-	const searchButtonClass = createBemElement('search', 'button', showSearch ? 'active' : null);
+	const searchButtonClass = createBemElement(
+		'search',
+		'button',
+		showSearch ? 'active' : null,
+		// TODO delete 'disabled' class once search is migrated to sse
+		'disabled',
+	);
+
+	function handleSearchButtonClick() {
+		// TODO delete restore function once search is migrated to sse
+		// setShowSearch(isSearchPanelShown => !isSearchPanelShown)}
+	}
 
 	return (
 		<div className={searchWrapperClass}>
-			<div
-				className={searchButtonClass}
-				ref={searchButtonRef}
-				onClick={() => setShowSearch(isSearchPanelShown => !isSearchPanelShown)}>
+			<div className={searchButtonClass} ref={searchButtonRef} onClick={handleSearchButtonClick}>
 				<div className={searchIconClass} />
 				<div className={searchTitleClass}>Search</div>
 			</div>
-			<ModalPortal isOpen={showSearch}>
+			{/* <ModalPortal isOpen={showSearch}>
 				<div className='search' ref={searchBaseRef}>
 					<SearchInput disabled={isDisabled} isActive={showSearch} />
 				</div>
-			</ModalPortal>
+			</ModalPortal> */}
 		</div>
 	);
 }
