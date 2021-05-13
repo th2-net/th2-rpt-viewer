@@ -24,6 +24,8 @@ svg g {
 body {
 	margin: 0;
 	font-family: Open sans;
+	display: flex;
+
 	div {
 		box-sizing: border-box;
 	}
@@ -56,6 +58,7 @@ ul {
 	height: 100vh;
 	box-sizing: border-box;
 	overflow: hidden;
+	flex-grow: 1;
 }
 
 input {

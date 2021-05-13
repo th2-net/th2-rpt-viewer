@@ -84,7 +84,7 @@ const SearchPanelForm = () => {
 		value: form.parentEvent,
 		disabled,
 		setValue: getFormStateUpdater('parentEvent'),
-		type: 'string',
+		type: 'event-resolver',
 		id: 'parent-event',
 	};
 

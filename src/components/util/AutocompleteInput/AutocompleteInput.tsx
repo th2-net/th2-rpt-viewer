@@ -69,23 +69,30 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLElement | null>(null);
 
-	useOutsideClickListener(ref, e => {
-		if (
-			autocompleteListRef.current &&
-			e.target instanceof HTMLElement &&
-			autocompleteListRef.current.contains(e.target)
-		)
-			return;
-
-		if (value.trim().length > 0) {
-			if (onEmptyBlur) {
-				onEmptyBlur();
+	const onClickOutside = React.useCallback(
+		(e: MouseEvent) => {
+			if (
+				autocompleteListRef.current &&
+				e.target instanceof HTMLElement &&
+				autocompleteListRef.current.contains(e.target)
+			) {
+				e.stopImmediatePropagation();
+				return;
 			}
-			onSubmit(value);
-		}
-		onBlur();
-		setAutocompleteAnchor(null);
-	});
+
+			if (value.trim().length > 0) {
+				if (onEmptyBlur) {
+					onEmptyBlur();
+				}
+				onSubmit(value);
+			}
+			onBlur();
+			setAutocompleteAnchor(null);
+		},
+		[value],
+	);
+
+	useOutsideClickListener(ref, onClickOutside);
 
 	const onChange: React.ChangeEventHandler<HTMLInputElement> = e => {
 		setValue(e.target.value);
@@ -130,11 +137,17 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			if (onFocus) {
 				onFocus(e);
 			}
-			setAutocompleteAnchor(null);
+			setAutocompleteAnchor(anchor || null);
 		},
 		autoFocus: false,
 		onClick: () => setAutocompleteAnchor(anchor || null),
 	};
+
+	React.useEffect(() => {
+		if (value && !autocompleteAnchor) {
+			setAutocompleteAnchor(anchor || null);
+		}
+	}, [value]);
 
 	return (
 		<React.Fragment>

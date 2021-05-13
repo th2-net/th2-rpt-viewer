@@ -38,6 +38,7 @@ import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
 import FiltersHistory from '../filters-history/FiltersHistory';
+import MessageReplayModal from '../message/MessageReplayModal';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -260,6 +261,7 @@ const MessagesFilterPanel = () => {
 				onClearAll={messagesStore.clearFilters}
 				renderFooter={renderFooter}
 			/>
+			<MessageReplayModal />
 			<MessageFilterWarning />
 			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />
 		</>
