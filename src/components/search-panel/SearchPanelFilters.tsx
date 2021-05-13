@@ -25,7 +25,6 @@ import {
 import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import FilterRow from '../filter/row';
 import { SearchPanelType } from './SearchPanel';
-import { SavedFilters } from '../../stores/FilterAutocompletesStore';
 
 export type StringFilter = {
 	type: 'string';
@@ -79,7 +78,6 @@ type FilterRowConfig =
 
 interface SearchPanelFiltersProps {
 	type: SearchPanelType;
-	autocompletes: SavedFilters;
 	info: SSEFilterInfo[];
 	state: FilterState;
 	setState: (patch: Partial<FilterState>) => void;
@@ -91,7 +89,7 @@ type Values = {
 };
 
 const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
-	const { type, info, state, setState, disableAll, autocompletes } = props;
+	const { info, state, setState, disableAll } = props;
 
 	function getValuesUpdater<T extends keyof FilterState>(name: T) {
 		return function valuesUpdater<K extends FilterState[T]>(values: K) {
@@ -142,10 +140,6 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 
 				const config = filter.parameters.map(
 					(param: SSEFilterParameter): FilterRowConfig => {
-						const autocompleteListKey =
-							filter.name === 'type' || filter.name === 'body'
-								? `${type}-${filter.name}`
-								: filter.name;
 						switch (param.type.value) {
 							case 'boolean':
 								return {
@@ -165,7 +159,6 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									type: 'string',
 									value: getState(filter.name).values || '',
 									setValue: getValuesUpdater(filter.name),
-									autocompleteList: autocompletes[autocompleteListKey],
 								};
 							case 'switcher':
 								return {
@@ -188,7 +181,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									setValues: getValuesUpdater(filter.name),
 									currentValue: currentValues[filter.name] || '',
 									setCurrentValue: setCurrentValue(filter.name),
-									autocompleteList: autocompletes[autocompleteListKey],
+									autocompleteList: null,
 								};
 						}
 					},

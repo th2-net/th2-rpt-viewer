@@ -32,6 +32,23 @@ class LocalStorageWorker {
 		localStorage.removeItem(LocalStorageLegacyEntities.SEARCH_HISTORY);
 		localStorage.removeItem(LocalStorageLegacyEntities.GRAPH_SEARCH_HISTORY);
 	};
+
+	public getDBVersion = (): number => {
+		try {
+			const version = localStorage.getItem('version');
+			if (!version) {
+				return 1;
+			}
+			return JSON.parse(version);
+		} catch (error) {
+			return 1;
+		}
+	};
+
+	public addDBVersion = (): void => {
+		const currVersion = this.getDBVersion();
+		localStorage.setItem('version', JSON.stringify(currVersion + 1));
+	};
 }
 
 const localStorageWorker = new LocalStorageWorker();

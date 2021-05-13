@@ -15,22 +15,21 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { toJS } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import { toJS } from 'mobx';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
 import {
 	useWorkspaceEventStore,
 	useEventsFilterStore,
-	useFilterAutocompletesStore,
 	useFiltersHistoryStore,
+	useEventFilterAutocompletesStore,
 } from '../../hooks';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
 import { Filter } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
-import { FiltersToSave } from '../../stores/FilterAutocompletesStore';
 import FiltersHistory from '../filters-history/FiltersHistory';
 
 type CurrentFilterValues = {
@@ -53,8 +52,8 @@ function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
-	const { autocompletes, saveAutocompletes } = useFilterAutocompletesStore();
 	const { addHistoryItem } = useFiltersHistoryStore();
+	const { autocompletes, addFilter } = useEventFilterAutocompletesStore();
 
 	const [showFilter, setShowFilter] = React.useState(false);
 
@@ -69,7 +68,7 @@ function EventsFilterPanel() {
 	const onSubmit = React.useCallback(() => {
 		if (filterStore.temporaryFilter) {
 			const { status, ...restFilters } = filterStore.temporaryFilter;
-			const filtersToSave: FiltersToSave = Object.fromEntries(
+			const filtersToSave = Object.fromEntries(
 				Object.entries(restFilters)
 					.filter(([_, value]) => value.values.length > 0)
 					.map(([key, value]) => [
@@ -77,14 +76,18 @@ function EventsFilterPanel() {
 						toJS(typeof value.values === 'string' ? value.values : toJS(value.values).sort()),
 					]),
 			);
-			saveAutocompletes(filtersToSave, 'event');
+			const timestamp = Date.now();
+
 			if (Object.values(filtersToSave).some(v => v.length > 0)) {
 				addHistoryItem({
-					timestamp: Date.now(),
+					timestamp,
 					filters: filtersToSave,
 					type: 'event',
 				});
 			}
+
+			addFilter({ ...toJS(filterStore.temporaryFilter), timestamp });
+
 			eventsStore.applyFilter(filterStore.temporaryFilter);
 		}
 	}, [filterStore.temporaryFilter]);
@@ -168,8 +171,6 @@ function EventsFilterPanel() {
 			}
 
 			let filterInput: FilterRowConfig | null = null;
-			const autocompleteListKey =
-				filterName === 'type' || filterName === 'body' ? `event-${filterName}` : filterName;
 			switch (filterValues.type) {
 				case 'string':
 					filterInput = {
@@ -177,7 +178,7 @@ function EventsFilterPanel() {
 						type: 'string',
 						value: filterValues.values,
 						setValue: getValuesUpdater(filterName),
-						autocompleteList: autocompletes[autocompleteListKey],
+						autocompleteList: autocompletes.map(item => item[filterName].values).flat(),
 					};
 					break;
 				case 'string[]':
@@ -188,7 +189,7 @@ function EventsFilterPanel() {
 						setValues: getValuesUpdater(filterName),
 						currentValue: currentFilterValues[filterName] || '',
 						setCurrentValue: setCurrentValue(filterName),
-						autocompleteList: autocompletes[autocompleteListKey],
+						autocompleteList: autocompletes.map(item => item[filterName].values).flat(),
 					};
 					break;
 				case 'switcher':

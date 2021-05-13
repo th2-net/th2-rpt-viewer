@@ -72,8 +72,11 @@ const FilterPanel = (props: Props) => {
 	}, [showFilter]);
 
 	useOutsideClickListener(filterBaseRef, (e: MouseEvent) => {
-		const fromFiltersHistory = Boolean((e.target as HTMLElement).closest('.filters-history'));
-		if (!filterButtonRef.current?.contains(e.target as Element) && !fromFiltersHistory) {
+		const target = e.target as Element;
+		if (target.classList.contains('filter-history__item')) {
+			e.stopImmediatePropagation();
+		}
+		if (!filterButtonRef.current?.contains(target)) {
 			setShowFilter(false);
 		}
 	});

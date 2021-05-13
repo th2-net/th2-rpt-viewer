@@ -44,8 +44,9 @@ import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
-import FilterAutocompletesStore from './FilterAutocompletesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
+import MessageFilterAutocompleteStore from './MessageFilterAutocompleteStore';
+import EventFilterAutocompleteStore from './EventFilterAutocompleteStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -106,7 +107,8 @@ export class SearchStore {
 	constructor(
 		private workspacesStore: WorkspacesStore,
 		private api: ApiSchema,
-		private filtersAutocomplete: FilterAutocompletesStore,
+		private messageFiltersAutocomplete: MessageFilterAutocompleteStore,
+		private eventFiltersAutocomplete: EventFilterAutocompleteStore,
 		private filtersHistory: FiltersHistoryStore,
 	) {
 		this.init();
@@ -528,24 +530,31 @@ export class SearchStore {
 
 			const valuesToSave = Object.fromEntries(
 				filterValues
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					.filter(([_, value]) => value.length > 0)
 					.map(([key, value]) => [
 						key.split('-')[0],
-						toJS(typeof value === 'string' ? value : value.sort()),
+						toJS(typeof value === 'string' ? value : toJS(value).sort()),
 					]),
 			);
 
 			this.searchChannel[direction] = searchChannel;
 
-			this.filtersAutocomplete.saveAutocompletes(valuesToSave, this.formType);
+			const timestamp = Date.now();
 
 			if (Object.keys(valuesToSave).length) {
 				this.filtersHistory.addHistoryItem({
-					timestamp: Date.now(),
+					timestamp,
 					filters: valuesToSave,
-					type: this.formType,
+					type: toJS(this.formType),
 				});
+			}
+
+			if (this.formType === 'event') {
+				if (this.eventsFilter) {
+					this.eventFiltersAutocomplete.addFilter({ ...this.eventsFilter, timestamp });
+				}
+			} else if (this.messagesFilter) {
+				this.messageFiltersAutocomplete.addFilter({ ...this.messagesFilter, timestamp });
 			}
 
 			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));

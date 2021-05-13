@@ -28,8 +28,8 @@ import {
 import {
 	useMessagesDataStore,
 	useMessagesWorkspaceStore,
-	useFilterAutocompletesStore,
 	useFiltersHistoryStore,
+	useMessageFilterAutocompletesStore,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -37,7 +37,6 @@ import { MessageFilterState } from '../search-panel/SearchPanelFilters';
 import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
-import { FiltersToSave } from '../../stores/FilterAutocompletesStore';
 import FiltersHistory from '../filters-history/FiltersHistory';
 
 type CurrentSSEValues = {
@@ -48,8 +47,8 @@ const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
-	const { autocompletes, saveAutocompletes } = useFilterAutocompletesStore();
 	const { addHistoryItem } = useFiltersHistoryStore();
+	const { autocompletes, addFilter } = useMessageFilterAutocompletesStore();
 	const { filterStore } = messagesStore;
 
 	const [showFilter, setShowFilter] = React.useState(false);
@@ -80,7 +79,7 @@ const MessagesFilterPanel = () => {
 
 	const submitChanges = React.useCallback(() => {
 		if (filterStore.temporaryFilter) {
-			const filtersToSave: FiltersToSave = Object.fromEntries(
+			const filtersToSave = Object.fromEntries(
 				Object.entries(filterStore.temporaryFilter)
 					.filter(([_, value]) => value.values.length > 0)
 					.map(([key, value]) => [
@@ -88,14 +87,15 @@ const MessagesFilterPanel = () => {
 						toJS(typeof value.values === 'string' ? value.values : toJS(value.values).sort()),
 					]),
 			);
+			const timestamp = Date.now();
 			if (Object.values(filtersToSave).some(v => v.length > 0)) {
 				addHistoryItem({
-					timestamp: Date.now(),
+					timestamp,
 					filters: filtersToSave,
 					type: 'message',
 				});
 			}
-			saveAutocompletes(filtersToSave, 'message');
+			addFilter({ ...toJS(filterStore.temporaryFilter), timestamp });
 		}
 		searchStore.stopSearch();
 		messagesStore.applyFilter(
@@ -151,10 +151,6 @@ const MessagesFilterPanel = () => {
 				.join(' ');
 			return filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
 				param => {
-					const autocompleteListKey =
-						filter.name === 'type' || filter.name === 'body'
-							? `message-${filter.name}`
-							: filter.name;
 					switch (param.type.value) {
 						case 'boolean':
 							return {
@@ -176,7 +172,7 @@ const MessagesFilterPanel = () => {
 								setValues: getValuesUpdater(filter.name),
 								currentValue: currentValues[filter.name as keyof MessageFilterState],
 								setCurrentValue: setCurrentValue(filter.name),
-								autocompleteList: autocompletes[autocompleteListKey],
+								autocompleteList: autocompletes.map(item => item[filter.name].values).flat(),
 							};
 					}
 				},

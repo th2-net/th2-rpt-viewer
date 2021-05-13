@@ -55,6 +55,7 @@ const FiltersHistoryItem = ({ item, filter }: Props) => {
 							<div className='content__values'>
 								{typeof value === 'string' ? (
 									<button
+										className='filter-history__item'
 										key={`${key}-${i}`}
 										onClick={() => {
 											update(value as any);
@@ -62,9 +63,10 @@ const FiltersHistoryItem = ({ item, filter }: Props) => {
 										{value}
 									</button>
 								) : (
-									value.map((val, j) => {
+									value.map((val: string, j: number) => {
 										return (
 											<button
+												className='filter-history__item'
 												key={`${key}-${i}-${j}`}
 												onClick={() => {
 													const values = state ? state.values : [];

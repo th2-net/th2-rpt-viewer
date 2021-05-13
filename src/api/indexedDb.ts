@@ -14,17 +14,19 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { openDB, IDBPDatabase, DBSchema } from 'idb';
+import { openDB, IDBPDatabase, DBSchema, deleteDB } from 'idb';
 import { observable, when } from 'mobx';
 import { EventBookmark, MessageBookmark } from '../components/bookmarks/BookmarksPanel';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { SearchHistory } from '../stores/SearchStore';
-import { FilterAutocompletesObject } from '../stores/FilterAutocompletesStore';
 import { FiltersHistory } from '../stores/FiltersHistoryStore';
-
-const dbVersion = 1;
+import {
+	EventFilterState,
+	MessageFilterState,
+} from '../components/search-panel/SearchPanelFilters';
+import localStorageWorker from '../util/LocalStorageWorker';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',
@@ -33,8 +35,21 @@ export enum IndexedDbStores {
 	GRAPH_SEARCH_HISTORY = 'graph-search-history',
 	DISPLAY_RULES = 'display-rules',
 	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
-	FILTER_AUTOCOMPLETES = 'filter-autocompletes',
 	FILTERS_HISTORY = 'filters-history',
+	MESSAGE_FILTER_AUTOCOMPLETES = 'message-filter-autocompletes',
+	EVENT_FILTER_AUTOCOMPLETES = 'event-filter-autocompletes',
+}
+
+type indexedDbStoresKeyPaths = {
+	[k in IndexedDbStores]: string;
+};
+
+export interface MessageFilterAutocomplete extends MessageFilterState {
+	timestamp: number;
+}
+
+export interface EventFilterAutocomplete extends EventFilterState {
+	timestamp: number;
 }
 
 export type DbData =
@@ -45,8 +60,9 @@ export type DbData =
 	| MessageDisplayRule
 	| OrderRule
 	| MessageSortOrderItem
-	| FilterAutocompletesObject
-	| FiltersHistory;
+	| FiltersHistory
+	| MessageFilterAutocomplete
+	| EventFilterAutocomplete;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.EVENTS]: {
@@ -91,16 +107,23 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
-	[IndexedDbStores.FILTER_AUTOCOMPLETES]: {
+	[IndexedDbStores.FILTERS_HISTORY]: {
 		key: string;
-		value: FilterAutocompletesObject;
+		value: FiltersHistory;
 		indexes: {
 			timestamp: number;
 		};
 	};
-	[IndexedDbStores.FILTERS_HISTORY]: {
+	[IndexedDbStores.EVENT_FILTER_AUTOCOMPLETES]: {
 		key: string;
-		value: FiltersHistory;
+		value: EventFilterAutocomplete;
+		indexes: {
+			timestamp: number;
+		};
+	};
+	[IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES]: {
+		key: string;
+		value: MessageFilterAutocomplete;
 		indexes: {
 			timestamp: number;
 		};
@@ -109,12 +132,25 @@ interface TH2DB extends DBSchema {
 
 export const indexedDbLimits = {
 	bookmarks: 1000,
-	[IndexedDbStores.FILTER_AUTOCOMPLETES]: 10,
 	[IndexedDbStores.FILTERS_HISTORY]: 10,
+	[IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES]: 10,
+	[IndexedDbStores.EVENT_FILTER_AUTOCOMPLETES]: 10,
 	[IndexedDbStores.DISPLAY_RULES]: 100,
 	[IndexedDbStores.SEARCH_HISTORY]: 5,
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
 } as const;
+
+const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
+	[IndexedDbStores.EVENTS]: 'id',
+	[IndexedDbStores.MESSAGES]: 'id',
+	[IndexedDbStores.SEARCH_HISTORY]: 'timestamp',
+	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 'id',
+	[IndexedDbStores.DISPLAY_RULES]: 'id',
+	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 'id',
+	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
+	[IndexedDbStores.EVENT_FILTER_AUTOCOMPLETES]: 'timestamp',
+	[IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES]: 'timestamp',
+};
 
 export class IndexedDB {
 	@observable
@@ -125,58 +161,37 @@ export class IndexedDB {
 	}
 
 	private async initDb() {
+		const dbVersion = localStorageWorker.getDBVersion();
 		this.db = await openDB<TH2DB>(this.env, dbVersion, {
-			async upgrade(db, oldVersion) {
-				if (oldVersion === 0) {
-					const eventsStore = db.createObjectStore(IndexedDbStores.EVENTS, { keyPath: 'id' });
-					eventsStore.createIndex('timestamp', 'timestamp');
-
-					const messagesStore = db.createObjectStore(IndexedDbStores.MESSAGES, {
-						keyPath: 'id',
-					});
-					messagesStore.createIndex('timestamp', 'timestamp');
-
-					const searchHistoryStore = db.createObjectStore(IndexedDbStores.SEARCH_HISTORY, {
-						keyPath: 'timestamp',
-					});
-					searchHistoryStore.createIndex('timestamp', 'timestamp');
-
-					const graphSearchHistoryStore = db.createObjectStore(
-						IndexedDbStores.GRAPH_SEARCH_HISTORY,
-						{
-							keyPath: 'id',
-						},
-					);
-					graphSearchHistoryStore.createIndex('timestamp', 'timestamp');
-
-					const messageDisplayRulesStore = db.createObjectStore(IndexedDbStores.DISPLAY_RULES, {
-						keyPath: 'id',
-					});
-					messageDisplayRulesStore.createIndex('timestamp', 'timestamp');
-
-					const messageBodySortOrderStore = db.createObjectStore(
-						IndexedDbStores.MESSAGE_BODY_SORT_ORDER,
-						{
-							keyPath: 'id',
-						},
-					);
-					messageBodySortOrderStore.createIndex('timestamp', 'timestamp');
-
-					const filterAutocompletesStore = db.createObjectStore(
-						IndexedDbStores.FILTER_AUTOCOMPLETES,
-						{
-							keyPath: 'timestamp',
-						},
-					);
-					filterAutocompletesStore.createIndex('timestamp', 'timestamp');
-
-					const filterHistoryStroe = db.createObjectStore(IndexedDbStores.FILTERS_HISTORY, {
-						keyPath: 'timestamp',
-					});
-					filterHistoryStroe.createIndex('timestamp', 'timestamp');
-				}
+			async upgrade(db) {
+				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
+					const store = db.createObjectStore(storeName as IndexedDbStores, { keyPath });
+					store.createIndex('timestamp', 'timestamp');
+				});
 			},
 		});
+		this.upgradeDb(this.db);
+	}
+
+	private async upgradeDb(currentDb: IDBPDatabase<TH2DB>) {
+		if (currentDb.objectStoreNames.length < Object.keys(indexedDBkeyPaths).length) {
+			localStorageWorker.addDBVersion();
+			const dbVersion = localStorageWorker.getDBVersion();
+			deleteDB(this.env).then(async () => {
+				await openDB<TH2DB>(this.env, dbVersion, {
+					async upgrade(db) {
+						Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
+							const store = db.createObjectStore(storeName as IndexedDbStores, { keyPath });
+							store.createIndex('timestamp', 'timestamp');
+						});
+					},
+				});
+			});
+			// FIXME We have to find the way to get latest DB version without reload
+			window.location.reload();
+		} else {
+			this.db = currentDb;
+		}
 	}
 
 	private getDb = async (): Promise<IDBPDatabase<TH2DB>> => {

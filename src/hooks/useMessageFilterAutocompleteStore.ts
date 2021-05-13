@@ -14,9 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useRootStore } from './useRootStore';
+import { useWorkspaces } from '.';
 
-export const useFilterAutocompletesStore = () => {
-	const rootStore = useRootStore();
-	return rootStore.filtersAutocompletesStore;
+export const useMessageFilterAutocompletesStore = () => {
+	const rootStore = useWorkspaces();
+
+	return rootStore.messageFilterAutocompletesStore;
 };

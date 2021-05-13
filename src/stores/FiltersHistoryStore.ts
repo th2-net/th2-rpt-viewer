@@ -17,12 +17,15 @@
 import { observable, computed, action } from 'mobx';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
-import { FiltersToSave } from './FilterAutocompletesStore';
+import {
+	EventFilterState,
+	MessageFilterState,
+} from '../components/search-panel/SearchPanelFilters';
 
 export interface FiltersHistory {
 	timestamp: number;
 	type: SearchPanelType;
-	filters: FiltersToSave;
+	filters: Partial<EventFilterState> | Partial<MessageFilterState>;
 }
 
 class FiltersHistoryStore {
