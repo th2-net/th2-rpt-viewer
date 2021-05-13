@@ -17,7 +17,11 @@
 import React from 'react';
 import moment from 'moment';
 import { FiltersHistory } from '../../stores/FiltersHistoryStore';
-import { FilterState } from '../search-panel/SearchPanelFilters';
+import {
+	FilterState,
+	EventFilterState,
+	MessageFilterState,
+} from '../search-panel/SearchPanelFilters';
 import { FiltersState } from './FiltersHistory';
 
 interface Props {
@@ -42,33 +46,42 @@ const FiltersHistoryItem = ({ item, filter }: Props) => {
 	}
 
 	return (
-		<div className='filters-history__item'>
+		<div
+			className='filters-history__item'
+			onClick={() => {
+				filter.setState(item.filters as Partial<EventFilterState> & Partial<MessageFilterState>);
+			}}>
 			<p className='title'>{moment(item.timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}</p>
 			<div className='content'>
 				{Object.entries(item.filters).map(([key, value], i) => {
 					const label = (key.charAt(0).toUpperCase() + key.slice(1)).split(/(?=[A-Z])/).join(' ');
 					const update = getValuesUpdater(key as keyof FilterState);
 					const state = getState(key as keyof FilterState);
+					if (!value) {
+						return null;
+					}
 					return (
 						<div key={key} className='content__item'>
 							<p className='content__label'>{label}:</p>
 							<div className='content__values'>
-								{typeof value === 'string' ? (
+								{typeof value.values === 'string' ? (
 									<button
-										className='filter-history__item'
+										className='history-bubble'
 										key={`${key}-${i}`}
-										onClick={() => {
-											update(value);
+										onClick={(e: React.MouseEvent) => {
+											e.stopPropagation();
+											update(value.values);
 										}}>
-										{value}
+										{value.values}
 									</button>
 								) : (
-									value.map((val: string, j: number) => {
+									value.values.map((val: string, j: number) => {
 										return (
 											<button
-												className='filter-history__item'
+												className='history-bubble'
 												key={`${key}-${i}-${j}`}
-												onClick={() => {
+												onClick={(e: React.MouseEvent) => {
+													e.stopPropagation();
 													const values = state ? state.values : [];
 													if (!values.includes(val)) {
 														update([...values, val]);

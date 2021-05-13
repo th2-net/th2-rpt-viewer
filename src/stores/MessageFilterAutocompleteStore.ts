@@ -15,12 +15,14 @@
  ***************************************************************************** */
 
 import { observable, computed, action } from 'mobx';
-import {
-	IndexedDB,
-	IndexedDbStores,
-	indexedDbLimits,
-	MessageFilterAutocomplete,
-} from '../api/indexedDb';
+import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
+import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
+import { getEquilizedFilterState } from '../helpers/search';
+
+export interface MessageFilterAutocomplete {
+	timestamp: number;
+	filters: MessageFilterState;
+}
 
 class MessageFilterAutocompleteStore {
 	constructor(private indexedDb: IndexedDB) {
@@ -32,24 +34,24 @@ class MessageFilterAutocompleteStore {
 
 	@action
 	public addFilter = async (newFilters: MessageFilterAutocomplete) => {
+		const { timestamp } = newFilters;
+		const equalizedFilter = getEquilizedFilterState(newFilters.filters);
 		const hasSame = this.autocompletes.some(filters => {
-			return JSON.stringify(filters) === JSON.stringify(newFilters);
+			return JSON.stringify(filters) === JSON.stringify(equalizedFilter);
 		});
 		if (hasSame) {
 			return;
 		}
+		const filter = { timestamp, filters: equalizedFilter as MessageFilterState };
 		if (this.isFull) {
-			this.autocompletes = [...this.autocompletes.slice(1), newFilters];
+			this.autocompletes = [...this.autocompletes.slice(1), filter];
 
-			this.indexedDb.deleteDbStoreItem(
-				IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES,
-				newFilters.timestamp,
-			);
-			this.indexedDb.addDbStoreItem(IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES, newFilters);
+			this.indexedDb.deleteDbStoreItem(IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES, timestamp);
+			this.indexedDb.addDbStoreItem(IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES, filter);
 			return;
 		}
-		this.autocompletes = [...this.autocompletes, newFilters];
-		this.indexedDb.addDbStoreItem(IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES, newFilters);
+		this.autocompletes = [...this.autocompletes, filter];
+		this.indexedDb.addDbStoreItem(IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES, filter);
 	};
 
 	@computed

@@ -22,10 +22,8 @@ import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { SearchHistory } from '../stores/SearchStore';
 import { FiltersHistory } from '../stores/FiltersHistoryStore';
-import {
-	EventFilterState,
-	MessageFilterState,
-} from '../components/search-panel/SearchPanelFilters';
+import { MessageFilterAutocomplete } from '../stores/MessageFilterAutocompleteStore';
+import { EventFilterAutocomplete } from '../stores/EventFilterAutocompleteStore';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',
@@ -42,14 +40,6 @@ export enum IndexedDbStores {
 type indexedDbStoresKeyPaths = {
 	[k in IndexedDbStores]: string;
 };
-
-export interface MessageFilterAutocomplete extends MessageFilterState {
-	timestamp: number;
-}
-
-export interface EventFilterAutocomplete extends EventFilterState {
-	timestamp: number;
-}
 
 export type DbData =
 	| EventBookmark
@@ -151,19 +141,18 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES]: 'timestamp',
 };
 
+const dbVersion = 2;
+
 export class IndexedDB {
 	@observable
 	private db: IDBPDatabase<TH2DB> | null = null;
-
-	@observable
-	private dbVersion = 1;
 
 	constructor(private env: string) {
 		this.initDb();
 	}
 
 	private async initDb() {
-		this.db = await openDB<TH2DB>(this.env, this.dbVersion, {
+		this.db = await openDB<TH2DB>(this.env, dbVersion, {
 			upgrade: async db => {
 				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
 					const name = storeName as IndexedDbStores;

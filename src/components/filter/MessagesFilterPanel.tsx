@@ -39,6 +39,7 @@ import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import MessageReplayModal from '../message/MessageReplayModal';
+import { getArrayOfUniques } from '../../helpers/array';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -80,23 +81,15 @@ const MessagesFilterPanel = () => {
 
 	const submitChanges = React.useCallback(() => {
 		if (filterStore.temporaryFilter) {
-			const filtersToSave = Object.fromEntries(
-				Object.entries(filterStore.temporaryFilter)
-					.filter(([_, value]) => value.values.length > 0)
-					.map(([key, value]) => [
-						key,
-						toJS(typeof value.values === 'string' ? value.values : toJS(value.values).sort()),
-					]),
-			);
 			const timestamp = Date.now();
-			if (Object.values(filtersToSave).some(v => v.length > 0)) {
+			if (Object.values(filterStore.temporaryFilter).some(v => v.values.length > 0)) {
 				addHistoryItem({
 					timestamp,
-					filters: filtersToSave,
+					filters: toJS(filterStore.temporaryFilter),
 					type: 'message',
 				});
 			}
-			addFilter({ ...toJS(filterStore.temporaryFilter), timestamp });
+			addFilter({ filters: toJS(filterStore.temporaryFilter), timestamp });
 		}
 		searchStore.stopSearch();
 		messagesStore.applyFilter(
@@ -173,7 +166,9 @@ const MessagesFilterPanel = () => {
 								setValues: getValuesUpdater(filter.name),
 								currentValue: currentValues[filter.name as keyof MessageFilterState],
 								setCurrentValue: setCurrentValue(filter.name),
-								autocompleteList: autocompletes.map(item => item[filter.name].values).flat(),
+								autocompleteList: getArrayOfUniques(
+									autocompletes.map(item => item.filters[filter.name].values).flat(),
+								),
 							};
 					}
 				},

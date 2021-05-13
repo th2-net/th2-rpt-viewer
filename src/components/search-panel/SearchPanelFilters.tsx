@@ -25,6 +25,9 @@ import {
 import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import FilterRow from '../filter/row';
 import { SearchPanelType } from './SearchPanel';
+import { EventFilterAutocomplete } from '../../stores/EventFilterAutocompleteStore';
+import { MessageFilterAutocomplete } from '../../stores/MessageFilterAutocompleteStore';
+import { getArrayOfUniques } from '../../helpers/array';
 
 export type StringFilter = {
 	type: 'string';
@@ -82,6 +85,7 @@ interface SearchPanelFiltersProps {
 	state: FilterState;
 	setState: (patch: Partial<FilterState>) => void;
 	disableAll: boolean;
+	autocompletes: (EventFilterAutocomplete | MessageFilterAutocomplete)[];
 }
 
 type Values = {
@@ -89,7 +93,7 @@ type Values = {
 };
 
 const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
-	const { info, state, setState, disableAll } = props;
+	const { info, state, setState, disableAll, autocompletes } = props;
 
 	function getValuesUpdater<T extends keyof FilterState>(name: T) {
 		return function valuesUpdater<K extends FilterState[T]>(values: K) {
@@ -159,6 +163,11 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									type: 'string',
 									value: getState(filter.name).values || '',
 									setValue: getValuesUpdater(filter.name),
+									autocompleteList: getArrayOfUniques(
+										autocompletes
+											.map(item => item.filters[filter.name as keyof FilterState].values)
+											.flat(),
+									),
 								};
 							case 'switcher':
 								return {
@@ -181,7 +190,11 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									setValues: getValuesUpdater(filter.name),
 									currentValue: currentValues[filter.name] || '',
 									setCurrentValue: setCurrentValue(filter.name),
-									autocompleteList: null,
+									autocompleteList: getArrayOfUniques(
+										autocompletes
+											.map(item => item.filters[filter.name as keyof FilterState].values)
+											.flat(),
+									),
 								};
 						}
 					},

@@ -31,6 +31,7 @@ import { Filter } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
 import FiltersHistory from '../filters-history/FiltersHistory';
+import { getArrayOfUniques } from '../../helpers/array';
 
 type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;
@@ -67,26 +68,17 @@ function EventsFilterPanel() {
 
 	const onSubmit = React.useCallback(() => {
 		if (filterStore.temporaryFilter) {
-			const { status, ...restFilters } = filterStore.temporaryFilter;
-			const filtersToSave = Object.fromEntries(
-				Object.entries(restFilters)
-					.filter(([_, value]) => value.values.length > 0)
-					.map(([key, value]) => [
-						key,
-						toJS(typeof value.values === 'string' ? value.values : toJS(value.values).sort()),
-					]),
-			);
 			const timestamp = Date.now();
 
-			if (Object.values(filtersToSave).some(v => v.length > 0)) {
+			if (Object.values(filterStore.temporaryFilter).some(v => v.values.length > 0)) {
 				addHistoryItem({
 					timestamp,
-					filters: filtersToSave,
+					filters: toJS(filterStore.temporaryFilter),
 					type: 'event',
 				});
 			}
 
-			addFilter({ ...toJS(filterStore.temporaryFilter), timestamp });
+			addFilter({ filters: filterStore.temporaryFilter, timestamp });
 
 			eventsStore.applyFilter(filterStore.temporaryFilter);
 		}
@@ -178,7 +170,9 @@ function EventsFilterPanel() {
 						type: 'string',
 						value: filterValues.values,
 						setValue: getValuesUpdater(filterName),
-						autocompleteList: autocompletes.map(item => item[filterName].values).flat(),
+						autocompleteList: getArrayOfUniques(
+							autocompletes.map(item => item.filters[filterName].values).flat(),
+						),
 					};
 					break;
 				case 'string[]':
@@ -189,7 +183,9 @@ function EventsFilterPanel() {
 						setValues: getValuesUpdater(filterName),
 						currentValue: currentFilterValues[filterName] || '',
 						setCurrentValue: setCurrentValue(filterName),
-						autocompleteList: autocompletes.map(item => item[filterName].values).flat(),
+						autocompleteList: getArrayOfUniques(
+							autocompletes.map(item => item.filters[filterName].values).flat(),
+						),
 					};
 					break;
 				case 'switcher':

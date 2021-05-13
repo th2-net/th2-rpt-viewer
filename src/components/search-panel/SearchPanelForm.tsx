@@ -38,6 +38,7 @@ import SearchResultCountLimit, {
 } from './search-form/SearchResultCountLimit';
 import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
+import { useMessageFilterAutocompletesStore, useEventFilterAutocompletesStore } from '../../hooks';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -60,6 +61,8 @@ const SearchPanelForm = () => {
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
+	const messagesAutocompletesStore = useMessageFilterAutocompletesStore();
+	const eventsAutocompletesStore = useEventFilterAutocompletesStore();
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
@@ -216,7 +219,15 @@ const SearchPanelForm = () => {
 			</div>
 			<div className='filters'>
 				{filters && filters.info.length > 0 && (
-					<SearchPanelFilters {...(filters as any)} type={formType} />
+					<SearchPanelFilters
+						{...(filters as any)}
+						type={formType}
+						autocompletes={
+							formType === 'event'
+								? eventsAutocompletesStore.autocompletes
+								: messagesAutocompletesStore.autocompletes
+						}
+					/>
 				)}
 			</div>
 		</div>

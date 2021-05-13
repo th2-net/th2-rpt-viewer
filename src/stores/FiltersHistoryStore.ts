@@ -20,7 +20,9 @@ import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
 	EventFilterState,
 	MessageFilterState,
+	FilterState,
 } from '../components/search-panel/SearchPanelFilters';
+import { getEquilizedFilterState } from '../helpers/search';
 
 export interface FiltersHistory {
 	timestamp: number;
@@ -38,21 +40,27 @@ class FiltersHistoryStore {
 
 	@action
 	public addHistoryItem = async (newFilters: FiltersHistory) => {
+		const { type, timestamp } = newFilters;
+		const equalizedFilter = getEquilizedFilterState(newFilters.filters as FilterState);
+
 		const hasSame = this.history.some(({ filters }) => {
-			return JSON.stringify(filters) === JSON.stringify(newFilters.filters);
+			return JSON.stringify(filters) === JSON.stringify(equalizedFilter);
 		});
 		if (hasSame) {
 			return;
 		}
-		if (this.isFull) {
-			this.history = [...this.history.slice(1), newFilters];
 
-			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, newFilters.timestamp);
-			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, newFilters);
+		const filter = { timestamp, type, filters: equalizedFilter };
+
+		if (this.isFull) {
+			this.history = [...this.history.slice(1), filter];
+
+			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, timestamp);
+			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
 			return;
 		}
-		this.history = [...this.history, newFilters];
-		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, newFilters);
+		this.history = [...this.history, filter];
+		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
 	};
 
 	@computed

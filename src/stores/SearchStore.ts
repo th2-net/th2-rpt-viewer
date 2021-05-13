@@ -528,33 +528,27 @@ export class SearchStore {
 				queryParams,
 			});
 
-			const valuesToSave = Object.fromEntries(
-				filterValues
-					.filter(([_, value]) => value.length > 0)
-					.map(([key, value]) => [
-						key.split('-')[0],
-						toJS(typeof value === 'string' ? value : toJS(value).sort()),
-					]),
-			);
-
 			this.searchChannel[direction] = searchChannel;
 
 			const timestamp = Date.now();
 
-			if (Object.keys(valuesToSave).length) {
+			if (Object.values(filterParams).some(v => v.values.length > 0)) {
 				this.filtersHistory.addHistoryItem({
 					timestamp,
-					filters: valuesToSave,
+					filters: toJS(filterParams),
 					type: toJS(this.formType),
 				});
 			}
 
 			if (this.formType === 'event') {
 				if (this.eventsFilter) {
-					this.eventFiltersAutocomplete.addFilter({ ...this.eventsFilter, timestamp });
+					this.eventFiltersAutocomplete.addFilter({ filters: toJS(this.eventsFilter), timestamp });
 				}
 			} else if (this.messagesFilter) {
-				this.messageFiltersAutocomplete.addFilter({ ...this.messagesFilter, timestamp });
+				this.messageFiltersAutocomplete.addFilter({
+					filters: toJS(this.messagesFilter),
+					timestamp,
+				});
 			}
 
 			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));

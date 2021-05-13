@@ -14,10 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { toJS } from 'mobx';
 import { EventsFiltersInfo, MessagesFilterInfo, SSEFilterParameter } from '../api/sse';
 import {
 	EventFilterState,
 	MessageFilterState,
+	FilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { SearchHistory } from '../stores/SearchStore';
 
@@ -82,5 +84,24 @@ export function isSearchHistoryEntity(obj: unknown): obj is SearchHistory {
 		obj !== null &&
 		(obj as SearchHistory).request !== undefined &&
 		(obj as SearchHistory).results !== undefined
+	);
+}
+
+export function getEquilizedFilterState(filter: FilterState) {
+	return Object.fromEntries(
+		Object.entries(filter)
+			.filter(
+				([key, value]) => key !== 'status' && value && value.values && value.values.length > 0,
+			)
+			.map(([key, value]) => [
+				key,
+				toJS(
+					value
+						? typeof value.values === 'string'
+							? value
+							: { ...value, values: toJS(value.values).sort() }
+						: {},
+				),
+			]),
 	);
 }
