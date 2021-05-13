@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { openDB, IDBPDatabase, DBSchema, deleteDB } from 'idb';
+import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
 import { EventBookmark, MessageBookmark } from '../components/bookmarks/BookmarksPanel';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
@@ -26,7 +26,6 @@ import {
 	EventFilterState,
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
-import localStorageWorker from '../util/LocalStorageWorker';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',
@@ -156,42 +155,25 @@ export class IndexedDB {
 	@observable
 	private db: IDBPDatabase<TH2DB> | null = null;
 
+	@observable
+	private dbVersion = 1;
+
 	constructor(private env: string) {
 		this.initDb();
 	}
 
 	private async initDb() {
-		const dbVersion = localStorageWorker.getDBVersion();
-		this.db = await openDB<TH2DB>(this.env, dbVersion, {
-			async upgrade(db) {
+		this.db = await openDB<TH2DB>(this.env, this.dbVersion, {
+			upgrade: async db => {
 				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
-					const store = db.createObjectStore(storeName as IndexedDbStores, { keyPath });
-					store.createIndex('timestamp', 'timestamp');
+					const name = storeName as IndexedDbStores;
+					if (!db.objectStoreNames.contains(name)) {
+						const store = db.createObjectStore(name, { keyPath });
+						store.createIndex('timestamp', 'timestamp');
+					}
 				});
 			},
 		});
-		this.upgradeDb(this.db);
-	}
-
-	private async upgradeDb(currentDb: IDBPDatabase<TH2DB>) {
-		if (currentDb.objectStoreNames.length < Object.keys(indexedDBkeyPaths).length) {
-			localStorageWorker.addDBVersion();
-			const dbVersion = localStorageWorker.getDBVersion();
-			deleteDB(this.env).then(async () => {
-				await openDB<TH2DB>(this.env, dbVersion, {
-					async upgrade(db) {
-						Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
-							const store = db.createObjectStore(storeName as IndexedDbStores, { keyPath });
-							store.createIndex('timestamp', 'timestamp');
-						});
-					},
-				});
-			});
-			// FIXME We have to find the way to get latest DB version without reload
-			window.location.reload();
-		} else {
-			this.db = currentDb;
-		}
 	}
 
 	private getDb = async (): Promise<IDBPDatabase<TH2DB>> => {
