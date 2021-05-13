@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { computed } from 'mobx';
 import { Observer, observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import {
@@ -83,8 +84,12 @@ const MessagesFilterPanel = () => {
 		);
 	}, [filterStore.filter, streams, sseFilter, isSoftFilterApplied]);
 
-	const isLoading = messagesDataStore.messages.length === 0 && messagesDataStore.isLoading;
-	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !isLoading;
+	const isLoading = computed(
+		() =>
+			(messagesDataStore.messages.length === 0 && messagesDataStore.isLoading) ||
+			(filterStore.isSoftFilter &&
+				[...messagesDataStore.isMatchingMessages.values()].some(Boolean)),
+	).get();
 
 	const compoundFilterRow: Array<CompoundFilterRow> = React.useMemo(() => {
 		if (!sseFilter) return [];
@@ -221,8 +226,7 @@ const MessagesFilterPanel = () => {
 		<>
 			<FilterPanel
 				isLoading={isLoading}
-				isLoadingFilteredItems={isApplied && messagesDataStore.isLoadingSoftFilteredMessages}
-				isFilterApplied={isApplied}
+				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
 				config={filterConfig}
