@@ -19,9 +19,9 @@
 .message-card-wrapper {
 	@include scrollbar();
 	@include bookmark-button($showOnHoverOverParent: true);
-	position: relative;
 	overflow: auto;
 	display: flex;
+	align-items: flex-start;
 	border-radius: 5px;
 	margin-right: 10px;
 	padding: 1px 0;
@@ -48,7 +48,6 @@
 		&:hover {
 			background-color: rgba($color: $filterPrimaryColor, $alpha: 0.1);
 		}
-
 	}
 
 	&.attached {
@@ -62,6 +61,10 @@
 
 	&:hover {
 		background-color: $messageCardHoverBackground;
+	}
+
+	&:hover .message-card-tools__ellipsis {
+		display: block;
 	}
 
 	&:hover .mc-raw {
@@ -80,40 +83,17 @@
 			}
 		}
 
-		&__control-button {
-			display: block;
-		}
-
-		&__key-minified {
-			display: none;
-		}
-
-		&__key {
-			display: inline;
-		}
-
-		&__info {
-			flex-wrap: wrap;
-		}
-
 		&__value {
 			font-weight: bold;
-			&.sessionId-inline {
-				margin: 0;
-			}
 		}
 
 		&__is-attached-icon {
 			opacity: 1;
 		}
-		&__controls {
-			display: block;
-		}
 	}
 }
 
 .message-card {
-	position: relative;
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
@@ -121,8 +101,122 @@
 }
 
 .message-card-tools {
-	max-width: 16px;
-	margin-left: 4px;
+	margin: 0 4px;
+	align-self: flex-start;
+
+	&__button {
+		display: flex;
+		align-items: center;
+		cursor: pointer;
+	}
+
+	&__button.active &__ellipsis {
+		display: block;
+	}
+
+	&__ellipsis {
+		display: none;
+		margin-left: 2px;
+		flex-shrink: 0;
+		@include icon(url(../../resources/icons/ellipsis.svg), 15px, 15px);
+	}
+
+	&__controls {
+		position: absolute;
+		right: 11px;
+		background-color: white;
+		box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
+		display: flex;
+		flex-direction: column;
+		z-index: 2;
+	}
+
+	&__item {
+		display: flex;
+		justify-content: center;
+		padding: 2px 4px;
+		cursor: pointer;
+
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.07);
+		}
+	}
+
+	&__icon {
+		width: 15px;
+		height: 15px;
+		flex-shrink: 0;
+
+		&.bookmark {
+			@include icon(url(../../resources/icons/bookmark-add-hover.svg));
+			background-size: auto;
+
+			&.pinned {
+				background-image: url(../../resources/icons/bookmark-added-hover.svg);
+			}
+		}
+
+		&.json {
+			position: relative;
+			&:before {
+				content: '{~}';
+				position: absolute;
+				font-size: 11px;
+				line-height: 1.25;
+				font-weight: 700;
+				color: grey;
+				top: 0;
+				left: 0;
+				width: inherit;
+				height: inherit;
+			}
+		}
+
+		&.formatted {
+			@include icon(url(../../resources/icons/messages-beautify.svg));
+		}
+
+		&.binary {
+			@include icon(url(../../resources/icons/table-view-icon.svg));
+			opacity: 0.7;
+		}
+
+		&.ascii {
+			@include icon(url(../../resources/icons/bincode.svg));
+		}
+
+		&.download {
+			@include icon(url(../../resources/icons/download.svg), 15px, 15px);
+		}
+	}
+
+	&__indicator {
+		width: 15px;
+		height: 15px;
+		flex-shrink: 0;
+		position: relative;
+
+		&:after {
+			content: '';
+			position: absolute;
+			width: 4px;
+			height: 4px;
+			right: 4px;
+			top: 6px;
+			border-radius: 50%;
+			background-color: $secondaryTextColor;
+			opacity: 0;
+			transition: opacity 0.15s;
+		}
+
+		&.active:after {
+			opacity: 1;
+		}
+
+		&.bookmark:after {
+			background-color: $bookmarkIconColor;
+		}
+	}
 }
 
 .mc-label {
@@ -218,35 +312,12 @@
 		color: $messageCardValueColor;
 	}
 
-	&__controls {
-		display: none;
-
-		div {
-			cursor: pointer;
-		}
-	}
-
 	&__icon {
 		width: 15px;
 		height: 15px;
 		&.inline {
 			transform: translateY(4px);
 		}
-	}
-
-	&__control-button {
-		display: none;
-		background-size: cover;
-		opacity: 0.77;
-
-		&:hover,
-		&.active {
-			opacity: 1;
-		}
-	}
-
-	&__download-button {
-		@include icon(url(../../resources/icons/download.svg), 15px, 15px);
 	}
 }
 
@@ -301,6 +372,7 @@
 	display: flex;
 	gap: 10px;
 	align-items: center;
+	position: relative;
 
 	&__header {
 		display: flex;
@@ -478,7 +550,6 @@
 		font-size: 14px;
 		padding: 2px 7px;
 		color: $messageListLoadButtonTextColor;
-
 	}
 
 	&__overlay-loader {
@@ -701,8 +772,8 @@
 			width: auto;
 			height: auto;
 			margin: auto;
-			max-width:100%;
-			max-height:100%;
+			max-width: 100%;
+			max-height: 100%;
 		}
 
 		.shade {
@@ -724,58 +795,99 @@
 	}
 }
 
-.message-view-type-radio {
-	&__input {
-		@include visually-hidden();
-	}
-	&__label {
-		display: block;
+.replay {
+	display: grid;
+	row-gap: 5px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 800px;
+	background-color: #0bc;
+	padding: 30px 20px 20px 20px;
+	border-radius: 6px;
+	color: white;
+	z-index: 300;
+
+	&__toggle-button {
+		color: #808080;
+		font-size: 12px;
+		line-height: 15px;
+		font-weight: bold;
+		display: inline;
+		white-space: nowrap;
+		padding-left: 5px;
+		border: none;
+		background: none;
 		cursor: pointer;
-		width: 15px;
-		height: 15px;
+		position: relative;
 
-		&.json,
-		&.formatted,
-		&.ascii {
-			opacity: 0.6;
-			&.checked {
-				opacity: 1;
-			}
+		&:hover {
+			color: $controlButtonTextColorHover;
 		}
+	}
 
-		&.binary {
-			opacity: 0.4;
-			&.checked {
-				opacity: 0.8;
-			}
-		}
+	.filter-row {
+		margin-bottom: 0;
+		margin-left: 0;
+	}
 
-		&.json {
-			position: relative;
-			&:before {
-				content: '{~}';
-				position: absolute;
-				font-size: 11px;
-				line-height: 1.25;
-				font-weight: 700;
-				color: grey;
-				top: 0;
-				left: 0;
-				width: inherit;
-				height: inherit;
-			}
-		}
+	.filter-content {
+		margin-right: 0;
+	}
 
-		&.formatted {
-			@include icon(url(../../resources/icons/messages-beautify.svg));
-		}
+	.filter-row__label {
+		color: #fff;
+		font-size: 14px;
+	}
 
-		&.binary {
-			@include icon(url(../../resources/icons//table-view-icon.svg));
-		}
+	.filter-row__input:last-child {
+		margin-right: 0;
+	}
 
-		&.ascii {
-			@include icon(url(../../resources/icons/bincode.svg));
+	.filter-row__input:first-child {
+		margin-left: 0;
+	}
+
+	&__generated-text {
+		background-color: rgba(255, 255, 255, 0.8);
+		padding: 3px 15px;
+		position: relative;
+		color: #4d4d4d;
+		white-space: pre-wrap;
+		word-break: break-all;
+		margin: 10px 0;
+
+		&::before {
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 5px;
+			height: 100%;
+			background-color: #ffdd99;
 		}
+	}
+
+	&__copy-button {
+		padding: 3px 10px;
+		min-width: 100px;
+		width: fit-content;
+		background-color: #ffdd99;
+		border: 1px solid #4d4d4d;
+		color: #4d4d4d;
+		font-size: 14px;
+		border-radius: 6px;
+		justify-self: end;
+	}
+
+	&__close-button {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		border: none;
+		background-color: transparent;
+
+		@include round-button(url(../../resources/icons/cross-icon-white.svg));
 	}
 }

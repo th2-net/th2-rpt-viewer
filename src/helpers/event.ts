@@ -129,7 +129,7 @@ export const getErrorEventTreeNode = (eventId: string): EventTreeNode => {
 		type: ActionType.EVENT_TREE_NODE,
 		isUnknown: true,
 		eventId,
-		eventName: 'Unknown event',
+		eventName: eventId,
 		eventType: '',
 		filtered: true,
 		parentId: null,

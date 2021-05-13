@@ -20,7 +20,8 @@ export type FitlerRowItem =
 	| FilterRowStringConfig
 	| FilterRowMultipleStringsConfig
 	| FilterRowTogglerConfig
-	| FilterRowSwitcherConfig;
+	| FilterRowSwitcherConfig
+	| FilterRowEventResolverConfig;
 
 export type CompoundFilterRow = Array<FitlerRowItem>;
 
@@ -135,6 +136,13 @@ export type FilterRowSwitcherConfig = FilterRowBaseConfig & {
 	className?: string;
 	labelClassName?: string;
 	defaultValue: string;
+};
+
+export type FilterRowEventResolverConfig = FilterRowBaseConfig & {
+	type: 'event-resolver';
+	value: string;
+	setValue: (nextValue: string) => void;
+	labelClassName?: string;
 };
 
 export type ActionFilterConfig = {
