@@ -30,7 +30,7 @@ const FiltersHistoryItem = ({ item, filter }: Props) => {
 		return null;
 	}
 	function getValuesUpdater<T extends keyof FilterState>(name: T) {
-		return function valuesUpdater<K extends FilterState[T]>(values: K) {
+		return function valuesUpdater(values: string | string[]) {
 			if (filter) {
 				filter.setState({ [name]: { ...filter.state[name], values } });
 			}
@@ -58,7 +58,7 @@ const FiltersHistoryItem = ({ item, filter }: Props) => {
 										className='filter-history__item'
 										key={`${key}-${i}`}
 										onClick={() => {
-											update(value as any);
+											update(value);
 										}}>
 										{value}
 									</button>
@@ -71,7 +71,7 @@ const FiltersHistoryItem = ({ item, filter }: Props) => {
 												onClick={() => {
 													const values = state ? state.values : [];
 													if (!values.includes(val)) {
-														update([...values, val] as any);
+														update([...values, val]);
 													}
 												}}>
 												{val}

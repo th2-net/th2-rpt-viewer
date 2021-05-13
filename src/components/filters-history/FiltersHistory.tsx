@@ -74,6 +74,9 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 	}, [isOpen]);
 
 	useOutsideClickListener(historyRef, (e: MouseEvent) => {
+		if ((e.target as Element).classList.contains('filter-history__item')) {
+			e.stopImmediatePropagation();
+		}
 		if (e.target !== buttonRef.current) {
 			setIsOpen(false);
 		}
