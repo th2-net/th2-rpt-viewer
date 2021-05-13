@@ -127,7 +127,7 @@ function EventTreeListBase(props: Props) {
 		}
 	}, [scrolledIndex]);
 
-	const computeKey = (index: number) => eventNodes[index].eventId;
+	const computeKey = (index: number) => eventNodes[index]?.eventId || index;
 
 	return (
 		<div className='actions-list' ref={listRef}>

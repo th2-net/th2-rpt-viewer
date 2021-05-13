@@ -96,8 +96,6 @@ export default class EventsStore {
 		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
 	}
 
-	@observable isLoadingRootEvents = false;
-
 	@observable.ref selectedNode: EventTreeNode | null = null;
 
 	@observable.ref hoveredEvent: EventTreeNode | null = null;

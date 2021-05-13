@@ -33,6 +33,8 @@ function EventWindowHeader() {
 		eventStore.viewStore.flattenedListView ? 'active' : null,
 	);
 
+	// TODO: fix isDisabled once search is working
+
 	return (
 		<div className='window__controls'>
 			<div className='event-window-header'>
@@ -49,8 +51,7 @@ function EventWindowHeader() {
 						Flat view
 					</div>
 				</div>
-				{(eventDataStore.isLoading ||
-					[...eventDataStore.loadingParentEvents.values()].some(Boolean)) && (
+				{eventDataStore.isLoading && (
 					<div className='event-window-header__loader'>
 						Resolving events<span>.</span>
 						<span>.</span>
