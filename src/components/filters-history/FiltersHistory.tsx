@@ -24,6 +24,7 @@ import { SearchPanelType } from '../search-panel/SearchPanel';
 import FiltersHistoryItem from './FiltersHistoryItem';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { EventFilterState, MessageFilterState } from '../search-panel/SearchPanelFilters';
+import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 
 interface Props {
 	type?: SearchPanelType;
@@ -44,10 +45,13 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 	const { history } = useFiltersHistoryStore();
 	const { filters, formType } = useSearchStore();
 
-	const toShow = useMemo(
-		() => history.filter(item => (type ? item.type === type : item.type === formType)),
-		[history, type, formType],
-	);
+	const toShow: (
+		| FiltersHistoryType<EventFilterState>
+		| FiltersHistoryType<MessageFilterState>
+	)[] = useMemo(() => {
+		const fType = type || formType;
+		return history[fType === 'event' ? 0 : 1];
+	}, [history, type, formType]);
 
 	const filtersState: FiltersState = useMemo(() => {
 		if (sseFilter) {

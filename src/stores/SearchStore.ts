@@ -529,7 +529,7 @@ export class SearchStore {
 			const timestamp = Date.now();
 
 			if (Object.values(filterParams).some(v => v.values.length > 0)) {
-				this.filtersHistory.addHistoryItem({
+				this.filtersHistory.addHistoryItem<FilterState>({
 					timestamp,
 					filters: toJS(filterParams),
 					type: toJS(this.formType),

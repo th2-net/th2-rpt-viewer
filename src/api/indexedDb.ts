@@ -21,7 +21,8 @@ import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { SearchHistory } from '../stores/SearchStore';
-import { FiltersHistory } from '../stores/FiltersHistoryStore';
+import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
+import { FilterState } from '../components/search-panel/SearchPanelFilters';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',
@@ -45,7 +46,7 @@ export type DbData =
 	| MessageDisplayRule
 	| OrderRule
 	| MessageSortOrderItem
-	| FiltersHistory;
+	| FiltersHistoryType<FilterState>;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.EVENTS]: {
@@ -92,7 +93,7 @@ interface TH2DB extends DBSchema {
 	};
 	[IndexedDbStores.FILTERS_HISTORY]: {
 		key: string;
-		value: FiltersHistory;
+		value: FiltersHistoryType<FilterState>;
 		indexes: {
 			timestamp: number;
 		};

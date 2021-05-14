@@ -26,7 +26,7 @@ import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import FilterRow from '../filter/row';
 import { SearchPanelType } from './SearchPanel';
 import { getArrayOfUniques } from '../../helpers/array';
-import { FiltersHistory } from '../../stores/FiltersHistoryStore';
+import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 
 export type StringFilter = {
 	type: 'string';
@@ -84,7 +84,7 @@ interface SearchPanelFiltersProps {
 	state: FilterState;
 	setState: (patch: Partial<FilterState>) => void;
 	disableAll: boolean;
-	autocompletes: FiltersHistory[];
+	autocompletes: (FiltersHistoryType<EventFilterState> | FiltersHistoryType<MessageFilterState>)[];
 }
 
 type Values = {

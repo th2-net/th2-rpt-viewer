@@ -63,7 +63,7 @@ const SearchPanelForm = () => {
 	const [currentStream, setCurrentStream] = useState('');
 	const { history } = useFiltersHistoryStore();
 
-	const autocompletes = useMemo(() => history.filter(({ type }) => type === formType), [formType]);
+	const autocompletes = useMemo(() => (formType === 'event' ? history[0] : history[1]), [formType]);
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {

@@ -57,7 +57,7 @@ function EventsFilterPanel() {
 		getDefaultCurrentFilterValues(filterStore.filter),
 	);
 
-	const autocompletes = history.filter(({ type }) => type === 'event');
+	const autocompletes = history[0];
 
 	React.useEffect(() => {
 		setFilter(filterStore.filter);

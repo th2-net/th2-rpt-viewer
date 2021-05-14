@@ -16,7 +16,7 @@
 
 import React from 'react';
 import moment from 'moment';
-import { FiltersHistory } from '../../stores/FiltersHistoryStore';
+import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 import {
 	FilterState,
 	EventFilterState,
@@ -25,7 +25,7 @@ import {
 import { FiltersState } from './FiltersHistory';
 
 interface Props {
-	item: FiltersHistory;
+	item: FiltersHistoryType<FilterState>;
 	filter: FiltersState;
 }
 

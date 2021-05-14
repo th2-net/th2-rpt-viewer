@@ -63,7 +63,7 @@ const MessagesFilterPanel = () => {
 	});
 	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
 
-	const autocompletes = history.filter(({ type }) => type === 'message');
+	const autocompletes = history[1];
 
 	React.useEffect(() => {
 		setFilter(filterStore.sseMessagesFilter);
