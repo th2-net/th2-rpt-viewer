@@ -82,6 +82,11 @@ export class NotificationsStore {
 			});
 		}
 	};
+
+	@action
+	public clearAll = () => {
+		this.errors = [];
+	};
 }
 
 const notificationsStore = new NotificationsStore();

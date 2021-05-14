@@ -14,12 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { reaction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 import { useToasts } from 'react-toast-notifications';
 import { complement } from '../../helpers/array';
 import { isGenericErrorMessage, isResponseError, isURLError } from '../../helpers/errors';
-import { useNotificationsStore, usePrevious } from '../../hooks';
+import { useNotificationsStore } from '../../hooks';
+import { NotificationError } from '../../stores/NotificationsStore';
 import FetchErrorToast from './FetchErrorToast';
 import GenericErrorToast from './GenericErrorToast';
 import UrlErrorToast from './UrlErrorToast';
@@ -33,16 +35,20 @@ function Notifier() {
 
 	const notificiationStore = useNotificationsStore();
 
-	const prevResponseErrors = usePrevious(notificiationStore.errors);
+	const prevResponseErrors = React.useRef<NotificationError[]>(notificiationStore.errors);
 
 	useEffect(() => {
-		const currentResponseErrors = !prevResponseErrors
-			? notificiationStore.errors
-			: complement(notificiationStore.errors, prevResponseErrors);
+		reaction(() => notificiationStore.errors, onNotificationsUpdate);
+	}, []);
 
-		const removedErrors = prevResponseErrors
-			? prevResponseErrors.filter(error => !notificiationStore.errors.includes(error))
-			: [];
+	function onNotificationsUpdate(notifications: NotificationError[]) {
+		const currentResponseErrors = !prevResponseErrors
+			? notifications
+			: complement(notifications, prevResponseErrors.current);
+
+		const removedErrors = prevResponseErrors.current.filter(
+			error => !notifications.includes(error),
+		);
 
 		// We need this to be able to delete toast from outside of toast component
 		removedErrors.forEach(error => removeToast(idsMap.current[error.id]));
@@ -63,7 +69,9 @@ function Notifier() {
 				addToast(<GenericErrorToast {...notificationError} />, options, registerId);
 			}
 		});
-	}, [notificiationStore.errors]);
+
+		prevResponseErrors.current = notifications;
+	}
 
 	return null;
 }
