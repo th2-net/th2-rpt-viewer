@@ -707,6 +707,12 @@ export class SearchStore {
 			const savedSearchResultKeys = await this.api.indexedDb.getStoreKeys<number>(
 				IndexedDbStores.SEARCH_HISTORY,
 			);
+
+			if (savedSearchResultKeys.includes(search.timestamp)) {
+				await this.api.indexedDb.updateDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
+				return;
+			}
+
 			if (savedSearchResultKeys.length >= indexedDbLimits['search-history']) {
 				const keysToDelete = savedSearchResultKeys.slice(
 					0,
