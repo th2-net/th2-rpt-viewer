@@ -40,6 +40,7 @@ import Checkbox from '../util/Checkbox';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import MessageReplayModal from '../message/MessageReplayModal';
 import { getArrayOfUniques } from '../../helpers/array';
+import useSetState from '../../hooks/useSetState';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -53,6 +54,7 @@ const MessagesFilterPanel = () => {
 	const { autocompletes, addFilter } = useMessageFilterAutocompletesStore();
 	const { filterStore } = messagesStore;
 
+	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentStream, setCurrentStream] = React.useState('');
 	const [streams, setStreams] = React.useState<Array<string>>([]);
@@ -62,6 +64,10 @@ const MessagesFilterPanel = () => {
 		attachedEventIds: '',
 	});
 	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
+
+	React.useEffect(() => {
+		setFilter(filterStore.sseMessagesFilter);
+	}, [filterStore.sseMessagesFilter]);
 
 	React.useEffect(() => {
 		setStreams(filterStore.filter.streams);
@@ -80,16 +86,16 @@ const MessagesFilterPanel = () => {
 	}, []);
 
 	const submitChanges = React.useCallback(() => {
-		if (filterStore.temporaryFilter) {
+		if (filter) {
 			const timestamp = Date.now();
-			if (Object.values(filterStore.temporaryFilter).some(v => v.values.length > 0)) {
+			if (Object.values(filter).some(v => v.values.length > 0)) {
 				addHistoryItem({
 					timestamp,
-					filters: toJS(filterStore.temporaryFilter),
+					filters: toJS(filter),
 					type: 'message',
 				});
 			}
-			addFilter({ filters: toJS(filterStore.temporaryFilter), timestamp });
+			addFilter({ filters: toJS(filter), timestamp });
 		}
 		searchStore.stopSearch();
 		messagesStore.applyFilter(
@@ -97,18 +103,19 @@ const MessagesFilterPanel = () => {
 				...filterStore.filter,
 				streams,
 			},
-			filterStore.temporaryFilter,
+			filter,
 			isSoftFilterApplied,
 		);
-	}, [filterStore.filter, streams, isSoftFilterApplied]);
+	}, [filter, filterStore.filter, streams, isSoftFilterApplied]);
 
 	const isLoading = messagesDataStore.messages.length === 0 && messagesDataStore.isLoading;
 	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !isLoading;
 
 	const compoundFilterRow: Array<CompoundFilterRow> = React.useMemo(() => {
-		if (!filterStore.temporaryFilter) return [];
+		if (!filter || Object.keys(filter).length === 0) return [];
 		// eslint-disable-next-line no-underscore-dangle
-		const _sseFilter = filterStore.temporaryFilter;
+		const _sseFilter = filter;
+
 		function getState(
 			name: keyof MessageFilterState,
 		): MessageFilterState[keyof MessageFilterState] {
@@ -117,19 +124,17 @@ const MessagesFilterPanel = () => {
 
 		function getValuesUpdater<T extends keyof MessageFilterState>(name: T) {
 			return function valuesUpdater<K extends MessageFilterState[T]>(values: K) {
-				const filter = filterStore.temporaryFilter;
-				if (filter) {
-					filterStore.setTemporaryFilter({ [name]: { ...filter[name], values } });
+				if (_sseFilter) {
+					setFilter({ [name]: { ..._sseFilter[name], values } });
 				}
 			};
 		}
 
 		function getNegativeToggler<T extends keyof MessageFilterState>(name: T) {
 			return function negativeToggler() {
-				const filter = filterStore.temporaryFilter;
 				if (filter) {
-					filterStore.setTemporaryFilter({
-						[name]: { ...filter[name], negative: !filter[name].negative },
+					setFilter({
+						[name]: { ..._sseFilter[name], negative: !_sseFilter[name].negative },
 					});
 				}
 			};
@@ -139,47 +144,52 @@ const MessagesFilterPanel = () => {
 			setCurrentValues(prevState => ({ ...prevState, [name]: value }));
 		};
 
-		return searchStore.messagesFilterInfo.map<CompoundFilterRow>((filter: MessagesFilterInfo) => {
-			const label = (filter.name.charAt(0).toUpperCase() + filter.name.slice(1))
-				.split(/(?=[A-Z])/)
-				.join(' ');
-			return filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
-				param => {
-					switch (param.type.value) {
-						case 'boolean':
-							return {
-								id: `${filter.name}-include`,
-								label,
-								disabled: false,
-								type: 'toggler',
-								value: getState(filter.name).negative,
-								toggleValue: getNegativeToggler(filter.name),
-								possibleValues: ['excl', 'incl'],
-								className: 'filter-row__toggler',
-							} as any;
-						default:
-							return {
-								id: filter.name,
-								label: '',
-								type: 'multiple-strings',
-								values: getState(filter.name).values,
-								setValues: getValuesUpdater(filter.name),
-								currentValue: currentValues[filter.name as keyof MessageFilterState],
-								setCurrentValue: setCurrentValue(filter.name),
-								autocompleteList: getArrayOfUniques(
-									autocompletes.map(item => item.filters[filter.name].values).flat(),
-								),
-							};
-					}
-				},
-			);
-		});
-	}, [
-		searchStore.messagesFilterInfo,
-		filterStore.temporaryFilter,
-		filterStore.setTemporaryFilter,
-		currentValues,
-	]);
+		return searchStore.messagesFilterInfo.map<CompoundFilterRow>(
+			(filterInfo: MessagesFilterInfo) => {
+				const label = (filterInfo.name.charAt(0).toUpperCase() + filterInfo.name.slice(1))
+					.split(/(?=[A-Z])/)
+					.join(' ');
+
+				const autocompleteList = getArrayOfUniques(
+					autocompletes
+						.filter(item => item.filters[(filterInfo.name as unknown) as keyof MessageFilterState])
+						.map(
+							item => item.filters[(filterInfo.name as unknown) as keyof MessageFilterState].values,
+						)
+						.flat(),
+				);
+
+				return filterInfo.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
+					param => {
+						switch (param.type.value) {
+							case 'boolean':
+								return {
+									id: `${filterInfo.name}-include`,
+									label,
+									disabled: false,
+									type: 'toggler',
+									value: getState(filterInfo.name).negative,
+									toggleValue: getNegativeToggler(filterInfo.name),
+									possibleValues: ['excl', 'incl'],
+									className: 'filter-row__toggler',
+								} as any;
+							default:
+								return {
+									id: filterInfo.name,
+									label: '',
+									type: 'multiple-strings',
+									values: getState(filterInfo.name).values,
+									setValues: getValuesUpdater(filterInfo.name),
+									currentValue: currentValues[filterInfo.name as keyof MessageFilterState],
+									setCurrentValue: setCurrentValue(filterInfo.name),
+									autocompleteList,
+								};
+						}
+					},
+				);
+			},
+		);
+	}, [searchStore.messagesFilterInfo, filter, currentValues]);
 
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
 		return {
@@ -212,22 +222,22 @@ const MessagesFilterPanel = () => {
 	}, [compoundFilterRow, sseFiltersErrorConfig]);
 
 	const renderFooter = React.useCallback(() => {
-		if (!messagesStore.filterStore.temporaryFilter) return null;
+		if (!filter) return null;
 
 		return (
 			<Observer>
 				{() => (
 					<div className='filter-footer'>
-						{filterStore.temporaryFilter && (
+						{filter && (
 							<FiltersHistory
 								type='message'
 								sseFilter={{
-									state: filterStore.temporaryFilter,
-									setState: filterStore.setTemporaryFilter,
+									state: filter,
+									setState: setFilter,
 								}}
 							/>
 						)}
-						{messagesStore.filterStore.temporaryFilter && (
+						{filter && (
 							<Checkbox
 								checked={isSoftFilterApplied}
 								onChange={e => {
@@ -241,7 +251,7 @@ const MessagesFilterPanel = () => {
 				)}
 			</Observer>
 		);
-	}, [messagesStore.filterStore.temporaryFilter, isSoftFilterApplied, setIsSoftFilterApplied]);
+	}, [filter, isSoftFilterApplied, setIsSoftFilterApplied]);
 
 	return (
 		<>

@@ -68,21 +68,11 @@ export default class MessagesFilterStore {
 		}
 
 		this.sseFilterSubscription = reaction(() => searchStore.messagesFilterInfo, this.initSSEFilter);
-		reaction(
-			() => this.sseMessagesFilter,
-			filter => {
-				if (filter) {
-					this.setTemporaryFilter(filter);
-				}
-			},
-		);
 	}
 
 	@observable filter: MessagesFilter = getDefaultMessagesFilter();
 
 	@observable sseMessagesFilter: MessageFilterState | null = null;
-
-	@observable temporaryFilter: MessageFilterState | null = null;
 
 	/*
 		When isSoftFilter is applied we create two messages channels:
@@ -170,13 +160,6 @@ export default class MessagesFilterStore {
 	};
 
 	@action
-	public setTemporaryFilter = (patch: Partial<MessageFilterState>) => {
-		this.temporaryFilter = this.temporaryFilter
-			? { ...this.temporaryFilter, ...patch }
-			: getDefaultMessagesFiltersState(this.searchStore.messagesFilterInfo);
-	};
-
-	@action
 	private setSSEMessagesFilter = (messagesFilterInfo: MessagesFilterInfo[]) => {
 		this.sseMessagesFilter = getDefaultMessagesFiltersState(messagesFilterInfo);
 	};
@@ -192,7 +175,6 @@ export default class MessagesFilterStore {
 		} else {
 			this.setSSEMessagesFilter(filterInfo);
 		}
-		this.temporaryFilter = this.sseMessagesFilter;
 	};
 
 	@action

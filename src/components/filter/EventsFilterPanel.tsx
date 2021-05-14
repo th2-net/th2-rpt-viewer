@@ -16,7 +16,6 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { toJS } from 'mobx';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
 import {
@@ -27,11 +26,12 @@ import {
 } from '../../hooks';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
-import { Filter } from '../search-panel/SearchPanelFilters';
+import { Filter, EventFilterState } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import { getArrayOfUniques } from '../../helpers/array';
+import useSetState from '../../hooks/useSetState';
 
 type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;
@@ -56,6 +56,7 @@ function EventsFilterPanel() {
 	const { addHistoryItem } = useFiltersHistoryStore();
 	const { autocompletes, addFilter } = useEventFilterAutocompletesStore();
 
+	const [filter, setFilter] = useSetState<EventFilterState | null>(filterStore.filter);
 	const [showFilter, setShowFilter] = React.useState(false);
 
 	const [currentFilterValues, setCurrentFilterValues] = React.useState<CurrentFilterValues | null>(
@@ -63,62 +64,55 @@ function EventsFilterPanel() {
 	);
 
 	React.useEffect(() => {
+		setFilter(filterStore.filter);
 		setCurrentFilterValues(getDefaultCurrentFilterValues(filterStore.filter));
 	}, [filterStore.filter]);
 
 	const onSubmit = React.useCallback(() => {
-		if (filterStore.temporaryFilter) {
+		if (filter) {
 			const timestamp = Date.now();
 
-			if (Object.values(filterStore.temporaryFilter).some(v => v.values.length > 0)) {
+			if (Object.values(filter).some(v => v.values.length > 0)) {
 				addHistoryItem({
 					timestamp,
-					filters: toJS(filterStore.temporaryFilter),
+					filters: filter,
 					type: 'event',
 				});
 			}
 
-			addFilter({ filters: filterStore.temporaryFilter, timestamp });
+			addFilter({ filters: filter, timestamp });
 
-			eventsStore.applyFilter(filterStore.temporaryFilter);
+			eventsStore.applyFilter(filter);
 		}
-	}, [filterStore.temporaryFilter]);
+	}, [filter]);
 
 	const getNegativeToggler = React.useCallback(
 		(filterName: EventSSEFilters) => {
 			return function negativeToggler() {
-				const filter = filterStore.temporaryFilter;
 				if (filter) {
 					const filterValue = filter[filterName];
-					if (filter && filterValue && 'negative' in filterValue) {
+					if (filterValue && 'negative' in filterValue) {
 						const updatedFilterValue = {
 							...filterValue,
 							negative: !filterValue.negative,
 						};
-						filterStore.setTemporaryFilter({
-							...filter,
-							[filterName]: updatedFilterValue,
-						});
+						setFilter({ [filterName]: updatedFilterValue });
 					}
 				}
 			};
 		},
-		[filterStore.temporaryFilter],
+		[filter],
 	);
 
 	const getValuesUpdater = React.useCallback(
 		<T extends 'string' | 'string[]' | 'switcher'>(name: EventSSEFilters) => {
 			return function valuesUpdater(values: T extends 'string[]' ? string[] : string) {
-				const filter = filterStore.temporaryFilter;
 				if (filter) {
-					filterStore.setTemporaryFilter({
-						...filter,
-						[name]: { ...filter[name], values },
-					});
+					setFilter({ [name]: { ...filter[name], values } });
 				}
 			};
 		},
-		[filterStore.temporaryFilter, filterStore.setTemporaryFilter],
+		[filter],
 	);
 
 	const setCurrentValue = React.useCallback(
@@ -136,7 +130,6 @@ function EventsFilterPanel() {
 	);
 
 	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
-		const filter = filterStore.temporaryFilter;
 		if (!filter || !currentFilterValues) return [];
 
 		const filterNames = getObjectKeys(filter);
@@ -148,6 +141,13 @@ function EventsFilterPanel() {
 				.join(' ');
 
 			let toggler: FilterRowTogglerConfig | null = null;
+
+			const autocompleteList = getArrayOfUniques(
+				autocompletes
+					.filter(item => item.filters[(filter.name as unknown) as keyof EventFilterState])
+					.map(item => item.filters[(filter.name as unknown) as keyof EventFilterState].values)
+					.flat(),
+			);
 
 			if ('negative' in filterValues) {
 				toggler = {
@@ -170,9 +170,7 @@ function EventsFilterPanel() {
 						type: 'string',
 						value: filterValues.values,
 						setValue: getValuesUpdater(filterName),
-						autocompleteList: getArrayOfUniques(
-							autocompletes.map(item => item.filters[filterName].values).flat(),
-						),
+						autocompleteList,
 					};
 					break;
 				case 'string[]':
@@ -183,9 +181,7 @@ function EventsFilterPanel() {
 						setValues: getValuesUpdater(filterName),
 						currentValue: currentFilterValues[filterName] || '',
 						setCurrentValue: setCurrentValue(filterName),
-						autocompleteList: getArrayOfUniques(
-							autocompletes.map(item => item.filters[filterName].values).flat(),
-						),
+						autocompleteList,
 					};
 					break;
 				case 'switcher':
@@ -208,25 +204,19 @@ function EventsFilterPanel() {
 			const filterRow = [toggler, filterInput].filter(notEmpty);
 			return filterRow.length === 1 ? filterRow[0] : filterRow;
 		});
-	}, [
-		filterStore.temporaryFilter,
-		currentFilterValues,
-		setCurrentValue,
-		getValuesUpdater,
-		getNegativeToggler,
-	]);
+	}, [filter, currentFilterValues, setCurrentValue, getValuesUpdater, getNegativeToggler]);
 
 	return (
 		<FilterPanel
 			isLoading={eventDataStore.isLoading}
 			isFilterApplied={filterStore.isEventsFilterApplied}
 			renderFooter={() =>
-				filterStore.temporaryFilter && (
+				filter && (
 					<FiltersHistory
 						type='event'
 						sseFilter={{
-							state: filterStore.temporaryFilter,
-							setState: filterStore.setTemporaryFilter,
+							state: filter,
+							setState: setFilter,
 						}}
 					/>
 				)

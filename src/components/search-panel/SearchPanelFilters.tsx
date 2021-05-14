@@ -142,6 +142,13 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 					.split(/(?=[A-Z])/)
 					.join(' ');
 
+				const autocompleteList = getArrayOfUniques(
+					autocompletes
+						.filter(item => item.filters[filter.name as keyof FilterState])
+						.map(item => item.filters[filter.name as keyof FilterState].values)
+						.flat(),
+				);
+
 				const config = filter.parameters.map(
 					(param: SSEFilterParameter): FilterRowConfig => {
 						switch (param.type.value) {
@@ -163,11 +170,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									type: 'string',
 									value: getState(filter.name).values || '',
 									setValue: getValuesUpdater(filter.name),
-									autocompleteList: getArrayOfUniques(
-										autocompletes
-											.map(item => item.filters[filter.name as keyof FilterState].values)
-											.flat(),
-									),
+									autocompleteList,
 								};
 							case 'switcher':
 								return {
@@ -190,11 +193,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									setValues: getValuesUpdater(filter.name),
 									currentValue: currentValues[filter.name] || '',
 									setCurrentValue: setCurrentValue(filter.name),
-									autocompleteList: getArrayOfUniques(
-										autocompletes
-											.map(item => item.filters[filter.name as keyof FilterState].values)
-											.flat(),
-									),
+									autocompleteList,
 								};
 						}
 					},
