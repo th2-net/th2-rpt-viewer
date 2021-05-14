@@ -26,17 +26,11 @@ import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import { DbData } from '../api/indexedDb';
 import FiltersHistoryStore from './FiltersHistoryStore';
-import MessageFilterAutocompleteStore from './MessageFilterAutocompleteStore';
-import EventFilterAutocompleteStore from './EventFilterAutocompleteStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
 	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb);
-
-	messageFilterAutocompletesStore = new MessageFilterAutocompleteStore(this.api.indexedDb);
-
-	eventFilterAutocompletesStore = new EventFilterAutocompleteStore(this.api.indexedDb);
 
 	messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
 
@@ -46,8 +40,6 @@ export default class RootStore {
 		this.workspacesStore = new WorkspacesStore(
 			this,
 			this.api,
-			this.messageFilterAutocompletesStore,
-			this.eventFilterAutocompletesStore,
 			this.filtersHistoryStore,
 			this.parseUrlState(),
 		);

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
 	DateTimeInputType,
@@ -38,7 +38,7 @@ import SearchResultCountLimit, {
 } from './search-form/SearchResultCountLimit';
 import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
-import { useMessageFilterAutocompletesStore, useEventFilterAutocompletesStore } from '../../hooks';
+import { useFiltersHistoryStore } from '../../hooks';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -61,8 +61,9 @@ const SearchPanelForm = () => {
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
-	const messagesAutocompletesStore = useMessageFilterAutocompletesStore();
-	const eventsAutocompletesStore = useEventFilterAutocompletesStore();
+	const { history } = useFiltersHistoryStore();
+
+	const autocompletes = useMemo(() => history.filter(({ type }) => type === formType), [formType]);
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
@@ -219,15 +220,7 @@ const SearchPanelForm = () => {
 			</div>
 			<div className='filters'>
 				{filters && filters.info.length > 0 && (
-					<SearchPanelFilters
-						{...(filters as any)}
-						type={formType}
-						autocompletes={
-							formType === 'event'
-								? eventsAutocompletesStore.autocompletes
-								: messagesAutocompletesStore.autocompletes
-						}
-					/>
+					<SearchPanelFilters {...(filters as any)} type={formType} autocompletes={autocompletes} />
 				)}
 			</div>
 		</div>

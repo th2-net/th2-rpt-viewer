@@ -25,9 +25,8 @@ import {
 import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import FilterRow from '../filter/row';
 import { SearchPanelType } from './SearchPanel';
-import { EventFilterAutocomplete } from '../../stores/EventFilterAutocompleteStore';
-import { MessageFilterAutocomplete } from '../../stores/MessageFilterAutocompleteStore';
 import { getArrayOfUniques } from '../../helpers/array';
+import { FiltersHistory } from '../../stores/FiltersHistoryStore';
 
 export type StringFilter = {
 	type: 'string';
@@ -85,7 +84,7 @@ interface SearchPanelFiltersProps {
 	state: FilterState;
 	setState: (patch: Partial<FilterState>) => void;
 	disableAll: boolean;
-	autocompletes: (EventFilterAutocomplete | MessageFilterAutocomplete)[];
+	autocompletes: FiltersHistory[];
 }
 
 type Values = {
@@ -145,7 +144,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 				const autocompleteList = getArrayOfUniques(
 					autocompletes
 						.filter(item => item.filters[filter.name as keyof FilterState])
-						.map(item => item.filters[filter.name as keyof FilterState].values)
+						.map(item => item.filters[filter.name as keyof FilterState]?.values)
 						.flat(),
 				);
 

@@ -18,12 +18,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
-import {
-	useWorkspaceEventStore,
-	useEventsFilterStore,
-	useFiltersHistoryStore,
-	useEventFilterAutocompletesStore,
-} from '../../hooks';
+import { useWorkspaceEventStore, useEventsFilterStore, useFiltersHistoryStore } from '../../hooks';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
 import { Filter, EventFilterState } from '../search-panel/SearchPanelFilters';
@@ -53,8 +48,7 @@ function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
-	const { addHistoryItem } = useFiltersHistoryStore();
-	const { autocompletes, addFilter } = useEventFilterAutocompletesStore();
+	const { history } = useFiltersHistoryStore();
 
 	const [filter, setFilter] = useSetState<EventFilterState | null>(filterStore.filter);
 	const [showFilter, setShowFilter] = React.useState(false);
@@ -63,6 +57,8 @@ function EventsFilterPanel() {
 		getDefaultCurrentFilterValues(filterStore.filter),
 	);
 
+	const autocompletes = history.filter(({ type }) => type === 'event');
+
 	React.useEffect(() => {
 		setFilter(filterStore.filter);
 		setCurrentFilterValues(getDefaultCurrentFilterValues(filterStore.filter));
@@ -70,18 +66,6 @@ function EventsFilterPanel() {
 
 	const onSubmit = React.useCallback(() => {
 		if (filter) {
-			const timestamp = Date.now();
-
-			if (Object.values(filter).some(v => v.values.length > 0)) {
-				addHistoryItem({
-					timestamp,
-					filters: filter,
-					type: 'event',
-				});
-			}
-
-			addFilter({ filters: filter, timestamp });
-
 			eventsStore.applyFilter(filter);
 		}
 	}, [filter]);
@@ -142,16 +126,17 @@ function EventsFilterPanel() {
 
 			let toggler: FilterRowTogglerConfig | null = null;
 
+			const name = filterName as keyof EventFilterState;
 			const autocompleteList = getArrayOfUniques(
 				autocompletes
-					.filter(item => item.filters[(filter.name as unknown) as keyof EventFilterState])
-					.map(item => item.filters[(filter.name as unknown) as keyof EventFilterState].values)
+					.filter(item => (item.filters as EventFilterState)[name])
+					.map(item => (item.filters as EventFilterState)[name].values)
 					.flat(),
 			);
 
 			if ('negative' in filterValues) {
 				toggler = {
-					id: `${filter.name}-include`,
+					id: `${filterName}-include`,
 					label,
 					type: 'toggler',
 					value: filterValues.negative,

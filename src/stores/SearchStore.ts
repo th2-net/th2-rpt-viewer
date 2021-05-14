@@ -45,8 +45,6 @@ import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
-import MessageFilterAutocompleteStore from './MessageFilterAutocompleteStore';
-import EventFilterAutocompleteStore from './EventFilterAutocompleteStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -107,8 +105,6 @@ export class SearchStore {
 	constructor(
 		private workspacesStore: WorkspacesStore,
 		private api: ApiSchema,
-		private messageFiltersAutocomplete: MessageFilterAutocompleteStore,
-		private eventFiltersAutocomplete: EventFilterAutocompleteStore,
 		private filtersHistory: FiltersHistoryStore,
 	) {
 		this.init();
@@ -537,17 +533,6 @@ export class SearchStore {
 					timestamp,
 					filters: toJS(filterParams),
 					type: toJS(this.formType),
-				});
-			}
-
-			if (this.formType === 'event') {
-				if (this.eventsFilter) {
-					this.eventFiltersAutocomplete.addFilter({ filters: toJS(this.eventsFilter), timestamp });
-				}
-			} else if (this.messagesFilter) {
-				this.messageFiltersAutocomplete.addFilter({
-					filters: toJS(this.messagesFilter),
-					timestamp,
 				});
 			}
 

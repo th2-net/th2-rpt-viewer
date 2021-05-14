@@ -28,8 +28,6 @@ import { getRangeFromTimestamp } from '../../helpers/date';
 import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
-import MessageFilterAutocompleteStore from '../MessageFilterAutocompleteStore';
-import EventFilterAutocompleteStore from '../EventFilterAutocompleteStore';
 import { getObjectKeys } from '../../helpers/object';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
@@ -46,8 +44,6 @@ export default class WorkspacesStore {
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
-		public messageFilterAutocompletesStore: MessageFilterAutocompleteStore,
-		public eventFilterAutocompletesStore: EventFilterAutocompleteStore,
 		public filtersHistoryStore: FiltersHistoryStore,
 		initialState: WorkspacesUrlState | null,
 	) {

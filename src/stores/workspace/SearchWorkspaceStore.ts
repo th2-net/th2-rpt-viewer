@@ -39,8 +39,6 @@ export default class SearchWorkspaceStore {
 		this.searchStore = new SearchStore(
 			this.workspacesStore,
 			api,
-			this.workspacesStore.messageFilterAutocompletesStore,
-			this.workspacesStore.eventFilterAutocompletesStore,
 			this.workspacesStore.filtersHistoryStore,
 		);
 

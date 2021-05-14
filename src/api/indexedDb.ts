@@ -22,8 +22,6 @@ import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { SearchHistory } from '../stores/SearchStore';
 import { FiltersHistory } from '../stores/FiltersHistoryStore';
-import { MessageFilterAutocomplete } from '../stores/MessageFilterAutocompleteStore';
-import { EventFilterAutocomplete } from '../stores/EventFilterAutocompleteStore';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',
@@ -33,8 +31,6 @@ export enum IndexedDbStores {
 	DISPLAY_RULES = 'display-rules',
 	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 	FILTERS_HISTORY = 'filters-history',
-	MESSAGE_FILTER_AUTOCOMPLETES = 'message-filter-autocompletes',
-	EVENT_FILTER_AUTOCOMPLETES = 'event-filter-autocompletes',
 }
 
 type indexedDbStoresKeyPaths = {
@@ -49,9 +45,7 @@ export type DbData =
 	| MessageDisplayRule
 	| OrderRule
 	| MessageSortOrderItem
-	| FiltersHistory
-	| MessageFilterAutocomplete
-	| EventFilterAutocomplete;
+	| FiltersHistory;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.EVENTS]: {
@@ -103,27 +97,11 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
-	[IndexedDbStores.EVENT_FILTER_AUTOCOMPLETES]: {
-		key: string;
-		value: EventFilterAutocomplete;
-		indexes: {
-			timestamp: number;
-		};
-	};
-	[IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES]: {
-		key: string;
-		value: MessageFilterAutocomplete;
-		indexes: {
-			timestamp: number;
-		};
-	};
 }
 
 export const indexedDbLimits = {
 	bookmarks: 1000,
 	[IndexedDbStores.FILTERS_HISTORY]: 10,
-	[IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES]: 10,
-	[IndexedDbStores.EVENT_FILTER_AUTOCOMPLETES]: 10,
 	[IndexedDbStores.DISPLAY_RULES]: 100,
 	[IndexedDbStores.SEARCH_HISTORY]: 5,
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
@@ -137,8 +115,6 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.DISPLAY_RULES]: 'id',
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 'id',
 	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
-	[IndexedDbStores.EVENT_FILTER_AUTOCOMPLETES]: 'timestamp',
-	[IndexedDbStores.MESSAGE_FILTER_AUTOCOMPLETES]: 'timestamp',
 };
 
 const dbVersion = 2;

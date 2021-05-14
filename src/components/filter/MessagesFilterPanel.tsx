@@ -29,7 +29,6 @@ import {
 	useMessagesDataStore,
 	useMessagesWorkspaceStore,
 	useFiltersHistoryStore,
-	useMessageFilterAutocompletesStore,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -50,8 +49,7 @@ const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
-	const { addHistoryItem } = useFiltersHistoryStore();
-	const { autocompletes, addFilter } = useMessageFilterAutocompletesStore();
+	const { history } = useFiltersHistoryStore();
 	const { filterStore } = messagesStore;
 
 	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
@@ -64,6 +62,8 @@ const MessagesFilterPanel = () => {
 		attachedEventIds: '',
 	});
 	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
+
+	const autocompletes = history.filter(({ type }) => type === 'message');
 
 	React.useEffect(() => {
 		setFilter(filterStore.sseMessagesFilter);
@@ -86,17 +86,6 @@ const MessagesFilterPanel = () => {
 	}, []);
 
 	const submitChanges = React.useCallback(() => {
-		if (filter) {
-			const timestamp = Date.now();
-			if (Object.values(filter).some(v => v.values.length > 0)) {
-				addHistoryItem({
-					timestamp,
-					filters: filter,
-					type: 'message',
-				});
-			}
-			addFilter({ filters: filter, timestamp });
-		}
 		searchStore.stopSearch();
 		messagesStore.applyFilter(
 			{
@@ -153,13 +142,11 @@ const MessagesFilterPanel = () => {
 				const label = (filterInfo.name.charAt(0).toUpperCase() + filterInfo.name.slice(1))
 					.split(/(?=[A-Z])/)
 					.join(' ');
-
+				const filterName = filterInfo.name as keyof MessageFilterState;
 				const autocompleteList = getArrayOfUniques(
 					autocompletes
-						.filter(item => item.filters[(filterInfo.name as unknown) as keyof MessageFilterState])
-						.map(
-							item => item.filters[(filterInfo.name as unknown) as keyof MessageFilterState].values,
-						)
+						.filter(item => (item.filters as MessageFilterState)[filterName])
+						.map(item => (item.filters as MessageFilterState)[filterName].values)
 						.flat(),
 				);
 
