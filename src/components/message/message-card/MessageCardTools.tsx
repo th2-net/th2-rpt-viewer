@@ -19,6 +19,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { createBemBlock, createBemElement } from '../../../helpers/styleCreators';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import { useOutsideClickListener } from '../../../hooks';
+import { decodeBase64RawContent, getAllRawContent } from '../../../helpers/rawFormatter';
+import { copyTextToClipboard } from '../../../helpers/copyHandler';
+import { showNotification } from '../../../helpers/showNotification';
+
+const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 export type MessageCardToolsConfig = {
 	message: EventMessage;
@@ -61,6 +66,34 @@ const MessageCardTools = ({
 				MessageViewType.ASCII,
 		  ]
 		: [MessageViewType.BINARY, MessageViewType.ASCII];
+
+	function onCopy() {
+		let content: string;
+
+		switch (messageViewType) {
+			case MessageViewType.ASCII:
+				content = message.bodyBase64 ? atob(message.bodyBase64) : '';
+				break;
+			case MessageViewType.BINARY:
+				content = message.bodyBase64
+					? getAllRawContent(decodeBase64RawContent(message.bodyBase64))
+					: '';
+				break;
+			case MessageViewType.FORMATTED:
+				content = message.body ? JSON.stringify(message.body, null, 4) : '';
+				break;
+			case MessageViewType.JSON:
+				content = message.body ? JSON.stringify(message.body) : '';
+				break;
+			default:
+				content = '';
+		}
+
+		if (content) {
+			copyTextToClipboard(content);
+			showNotification(COPY_NOTIFICATION_TEXT);
+		}
+	}
 
 	return (
 		<div className='message-card-tools' ref={rootRef}>
@@ -112,6 +145,7 @@ const MessageCardTools = ({
 
 								return (
 									<div
+										title={viewType}
 										className='message-card-tools__item'
 										key={viewType}
 										onClick={() => toggleViewType(viewType)}>
@@ -133,6 +167,11 @@ const MessageCardTools = ({
 					</motion.div>
 				)}
 			</AnimatePresence>
+			{!isScreenshotMsg && (
+				<div className='message-card-tools__copy-all' title='Copy content to clipboard'>
+					<div className='message-card-tools__copy-icon' onClick={onCopy} />
+				</div>
+			)}
 		</div>
 	);
 };
