@@ -17,14 +17,14 @@
 import React from 'react';
 
 interface ReorderProps {
-	isFirst: boolean | null;
-	isLast: boolean | null;
+	isFirst?: boolean;
+	isLast?: boolean;
 	index: number;
 	move: (from: number, to: number) => void;
 }
 
 const Reorder = ({ isFirst, isLast, index, move }: ReorderProps) => {
-	if ((isFirst === null && isLast === null) || (isFirst && isLast)) return null;
+	if ((isFirst === undefined && isLast === undefined) || (isFirst && isLast)) return null;
 	return (
 		<div className='reorder'>
 			{!isFirst && (

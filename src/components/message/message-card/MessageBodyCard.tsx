@@ -53,10 +53,12 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 
 function MessageBodyCard({ isBeautified, body, isSelected, renderInfo }: Props) {
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
-	const { sortOrder } = useMessageBodySortStore();
-	const sortOrderItems = sortOrder.map(item => item.item);
+	const { sortOrderItems } = useMessageBodySortStore();
 
-	const fields = getSortedFields(body ? body.fields : {}, sortOrderItems);
+	const fields = React.useMemo(() => getSortedFields(body ? body.fields : {}, sortOrderItems), [
+		body,
+		sortOrderItems,
+	]);
 
 	if (body == null) {
 		return <pre className='mc-body__human'>null</pre>;
@@ -99,6 +101,7 @@ interface FieldProps {
 
 function MessageBodyCardField(props: FieldProps) {
 	const {
+		primarySort,
 		field,
 		label,
 		isBeautified,
@@ -109,13 +112,11 @@ function MessageBodyCardField(props: FieldProps) {
 	} = props;
 
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
-	const { sortOrder } = useMessageBodySortStore();
-	const sortOrderItems = sortOrder.map(item => item.item);
 
 	if (isRoot) {
 		return (
 			<MessageBodyCardField
-				primarySort={sortOrderItems}
+				primarySort={primarySort}
 				highlightColor={highlightColor}
 				isBeautified={isBeautified}
 				field={field}
@@ -134,7 +135,7 @@ function MessageBodyCardField(props: FieldProps) {
 				: {}
 			: {};
 
-	const sortedSubFields = getSortedFields(subFields, sortOrderItems);
+	const sortedSubFields = getSortedFields(subFields, primarySort);
 
 	return (
 		<span
@@ -161,7 +162,7 @@ function MessageBodyCardField(props: FieldProps) {
 						}}>
 						{field.listValue.values?.map((value, idx) => (
 							<MessageBodyCardField
-								primarySort={sortOrderItems}
+								primarySort={primarySort}
 								key={idx}
 								field={value}
 								label={''}
@@ -186,7 +187,7 @@ function MessageBodyCardField(props: FieldProps) {
 						{sortedSubFields.map(([key, subField], idx, arr) => (
 							<React.Fragment key={key}>
 								<MessageBodyCardField
-									primarySort={sortOrderItems}
+									primarySort={primarySort}
 									field={subField}
 									label={key}
 									isBeautified={isBeautified}

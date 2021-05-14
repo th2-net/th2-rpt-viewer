@@ -33,6 +33,7 @@ export interface MessageSortOrderItem {
 }
 
 export interface MessageDisplayRule {
+	[x: string]: any;
 	id: string;
 	session: string;
 	viewType: MessageViewType;

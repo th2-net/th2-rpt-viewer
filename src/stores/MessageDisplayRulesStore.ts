@@ -122,6 +122,7 @@ class MessageDisplayRulesStore {
 		const rules = await this.indexedDb.getStoreValues<MessageDisplayRule | OrderRule>(
 			IndexedDbStores.DISPLAY_RULES,
 		);
+
 		const displayRules = rules.filter(isMessageDisplayRule);
 		const orderRule = rules.find(isOrderRule);
 		const order = orderRule?.order || [];
@@ -141,6 +142,12 @@ class MessageDisplayRulesStore {
 			this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, rootDisplayRule);
 		} else {
 			rootDisplayRule = displayRules.splice(rootRuleIndex, 1)[0];
+			// eslint-disable-next-line no-prototype-builtins
+			if (rootDisplayRule.hasOwnProperty('fullyEditable')) {
+				delete rootDisplayRule.fullyEditable;
+				rootDisplayRule = { ...rootDisplayRule, editableSession: false, editableType: true };
+				this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, rootDisplayRule);
+			}
 		}
 
 		displayRules.sort((ruleA, ruleB) => {

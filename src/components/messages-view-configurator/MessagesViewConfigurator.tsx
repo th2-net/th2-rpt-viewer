@@ -75,7 +75,7 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 					</div>
 					{mode === 'display-rules' ? (
 						<p className='hint'>
-							<i>You can use * character to match an unknown substring as part of session name</i>
+							<i>Use * character to match an unknown substring as part of session name</i>
 						</p>
 					) : null}
 					<div className='switchers'>

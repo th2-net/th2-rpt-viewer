@@ -45,7 +45,7 @@ const NewSortOrderItem = () => {
 				className='rule-button'
 				onClick={submitHandler}
 				title='submit'
-				disabled={newItem === ''}>
+				disabled={!newItem.trim()}>
 				add
 			</button>
 		</div>

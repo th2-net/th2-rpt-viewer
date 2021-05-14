@@ -23,8 +23,8 @@ import { MessageSortOrderItem } from '../../models/EventMessage';
 type EditableSortOrderItemProps = {
 	item: MessageSortOrderItem;
 	index: number;
-	isFirst: boolean | null;
-	isLast: boolean | null;
+	isFirst?: boolean;
+	isLast?: boolean;
 };
 
 const EditableSortOrderItem = ({ item, isFirst, isLast, index }: EditableSortOrderItemProps) => {

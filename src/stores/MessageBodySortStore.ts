@@ -46,6 +46,11 @@ class MessageBodySortOrderStore {
 	}
 
 	@computed
+	public get sortOrderItems(): string[] {
+		return this.sortOrder.map(s => s.item);
+	}
+
+	@computed
 	public get rulesOrder(): OrderRule {
 		return {
 			id: RULES_ORDER_ID,

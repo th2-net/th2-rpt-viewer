@@ -22,20 +22,20 @@ import NewSortOrderItem from './NewSortOrderItem';
 import EditableSortOrderItem from './EditableSortOrderItem';
 
 const BodySortConfig = () => {
-	const sortOrder = useMessageBodySortStore();
+	const { sortOrder } = useMessageBodySortStore();
 
 	const computeKey = (index: number) => {
-		return sortOrder.sortOrder[index].id;
+		return sortOrder[index].id;
 	};
 
 	const renderSortRule = (index: number) => {
-		const item = sortOrder.sortOrder[index];
+		const item = sortOrder[index];
 		return (
 			<div className='order-item editable'>
 				<EditableSortOrderItem
 					item={item}
 					index={index}
-					isLast={index === sortOrder.sortOrder.length - 1}
+					isLast={index === sortOrder.length - 1}
 					isFirst={index === 0}
 				/>
 			</div>
@@ -47,7 +47,7 @@ const BodySortConfig = () => {
 			className='sorts'
 			itemContent={renderSortRule}
 			computeItemKey={computeKey}
-			totalCount={sortOrder.sortOrder.length}
+			totalCount={sortOrder.length}
 			style={{ height: '120px' }}
 			components={{
 				Header: function Header() {

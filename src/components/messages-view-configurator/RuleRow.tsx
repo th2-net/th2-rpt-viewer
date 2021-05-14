@@ -23,8 +23,8 @@ interface RuleRowProps {
 	rule: MessageDisplayRule | null;
 	sessions: string[];
 	index: number;
-	isFirst: boolean | null;
-	isLast: boolean | null;
+	isFirst?: boolean;
+	isLast?: boolean;
 	autofocus?: boolean;
 }
 

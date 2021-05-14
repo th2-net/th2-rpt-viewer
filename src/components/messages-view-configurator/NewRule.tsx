@@ -53,7 +53,7 @@ const NewRule = ({ sessions }: NewRuleProps) => {
 				className='rule-button'
 				onClick={submitHandler}
 				title='submit'
-				disabled={session === ''}>
+				disabled={!session.trim()}>
 				add
 			</button>
 		</div>

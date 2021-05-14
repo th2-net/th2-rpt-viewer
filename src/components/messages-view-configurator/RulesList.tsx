@@ -61,20 +61,10 @@ const RulesList = ({ sessions }: Props) => {
 				style={{ height: '120px' }}
 				components={{
 					Header: function Header() {
-						return (
-							<RuleRow rule={null} sessions={sessions} index={0} isFirst={null} isLast={null} />
-						);
+						return <RuleRow rule={null} sessions={sessions} index={0} />;
 					},
 					Footer: function Footer() {
-						return (
-							<RuleRow
-								sessions={sessions}
-								rule={rulesStore.rootDisplayRule}
-								index={0}
-								isFirst={null}
-								isLast={null}
-							/>
-						);
+						return <RuleRow sessions={sessions} rule={rulesStore.rootDisplayRule} index={0} />;
 					},
 				}}
 			/>
