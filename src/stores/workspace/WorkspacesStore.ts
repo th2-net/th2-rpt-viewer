@@ -27,6 +27,7 @@ import { EventMessage } from '../../models/EventMessage';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
+import { getObjectKeys } from '../../helpers/object';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -115,14 +116,18 @@ export default class WorkspacesStore {
 		targetMessage?: EventMessage,
 	): WorkspaceInitialState => {
 		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
+		const filters: MessageFilterState | null = (requestInfo?.filters as MessageFilterState) || null;
+		const areFiltersApplied =
+			Boolean(filters) && getObjectKeys(filters).some(key => filters[key].values.length > 0);
+
 		return {
 			messages: {
-				sse: (requestInfo?.filters as MessageFilterState) || null,
+				sse: filters,
 				streams: requestInfo?.state.stream || [],
 				timestampFrom: null,
 				timestampTo: timestamp,
 				targetMessage,
-				isSoftFilter,
+				isSoftFilter: isSoftFilter && areFiltersApplied,
 			},
 			interval: SEARCH_STORE_INTERVAL,
 			layout: [0, 100],

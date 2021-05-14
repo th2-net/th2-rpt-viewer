@@ -20,6 +20,7 @@ import {
 	useMessagesWorkspaceStore,
 	useMessageDisplayRulesStore,
 	useSelectedStore,
+	useMessagesDataStore,
 } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
@@ -49,14 +50,16 @@ export interface RecoveredProps {
 interface Props extends OwnProps, RecoveredProps {}
 
 function MessageCardBase({ message, viewType, setViewType }: Props) {
+	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
+
 	const messagesStore = useMessagesWorkspaceStore();
+	const messagesDataStore = useMessagesDataStore();
 	const selectedStore = useSelectedStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
+
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
-
-	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isBookmarked =
@@ -64,9 +67,26 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 			bookmarkedMessage => bookmarkedMessage.id === messageId,
 		) !== -1;
 
+	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
+
 	const toggleViewType = (v: MessageViewType) => {
 		setViewType(v);
 	};
+
+	React.useEffect(() => {
+		const abortController = new AbortController();
+
+		if (
+			messagesStore.filterStore.isSoftFilter &&
+			messagesDataStore.isSoftFiltered.get(messageId) === undefined
+		) {
+			messagesDataStore.matchMessage(messageId, abortController.signal);
+		}
+
+		return () => {
+			abortController.abort();
+		};
+	}, []);
 
 	React.useEffect(() => {
 		switch (viewType) {
@@ -120,9 +140,6 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const isAttached = !!messagesStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
 	);
-
-	const isSoftFiltered =
-		messagesStore.dataStore.softFilterResults.findIndex(m => m.messageId === messageId) !== -1;
 
 	const isScreenshotMsg = isScreenshotMessage(message);
 
