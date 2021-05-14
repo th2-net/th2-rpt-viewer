@@ -98,7 +98,10 @@ export default class EventsDataStore {
 
 	@computed
 	public get isLoading(): boolean {
-		return Boolean(this.eventTreeEventSource && this.eventTreeEventSource.isLoading);
+		return (
+			Boolean(this.eventTreeEventSource && this.eventTreeEventSource.isLoading) ||
+			[...this.loadingParentEvents.values()].some(Boolean)
+		);
 	}
 
 	@action
@@ -216,10 +219,7 @@ export default class EventsDataStore {
 			this.parentNodesUpdateScheduler = window.setInterval(this.parentNodesUpdater, 600);
 
 			when(
-				() =>
-					this.rootEventIds.length > 0 &&
-					!this.isLoading &&
-					![...this.parentChildrensMap.values()].some(Boolean),
+				() => this.rootEventIds.length > 0 && !this.isLoading,
 				() => {
 					if (this.parentNodesUpdateScheduler) {
 						window.clearInterval(this.parentNodesUpdateScheduler);

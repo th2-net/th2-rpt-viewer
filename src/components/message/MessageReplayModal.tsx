@@ -188,7 +188,7 @@ function MessageReplayModal() {
 				inputs: [
 					{
 						dateMask: DateTimeMask.DATE_TIME_MASK,
-						id: 'from',
+						id: 'replay-startTimestamp',
 						inputMask: DATE_TIME_INPUT_MASK,
 						placeholder: '',
 						setValue: setStartTimestamp,
@@ -197,7 +197,7 @@ function MessageReplayModal() {
 					},
 					{
 						dateMask: DateTimeMask.DATE_TIME_MASK,
-						id: 'from',
+						id: 'replay-endTimestamp',
 						inputMask: DATE_TIME_INPUT_MASK,
 						placeholder: '',
 						setValue: setEndTimestamp,

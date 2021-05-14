@@ -15,19 +15,28 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { ToastProps } from 'react-toast-notifications';
-import { createStyleSelector } from '../../helpers/styleCreators';
+import { ToastContainerProps } from 'react-toast-notifications';
+import { createBemElement } from '../../helpers/styleCreators';
+import notificationsStore from '../../stores/NotificationsStore';
+import '../../styles/toasts.scss';
 
-export default function Toast(props: ToastProps) {
-	const { appearance, children, onDismiss, transitionState } = props;
-	const toastMessageClassname = createStyleSelector('toast-message', appearance, transitionState);
-	const toastMessageIconClassname = createStyleSelector('toast-message__icon', appearance);
+function ToastContainer(props: ToastContainerProps) {
+	const { hasToasts, children } = props;
+
+	const closeAllButtonClassname = createBemElement('toast-container', 'close-all');
+
+	if (!hasToasts) return null;
 
 	return (
-		<div className={toastMessageClassname}>
-			<div className={toastMessageIconClassname} />
-			<div className='toast-message__content'>{children}</div>
-			<button className='toast-message__close' onClick={() => onDismiss()} />
+		<div className='toast-container'>
+			<div
+				className={closeAllButtonClassname}
+				title='Close all'
+				onClick={() => notificationsStore.clearAll()}
+			/>
+			<div className='toast-container__list'>{children}</div>
 		</div>
 	);
 }
+
+export default ToastContainer;
