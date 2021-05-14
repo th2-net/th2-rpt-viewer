@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { toJS } from 'mobx';
 import { Observer, observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import {
@@ -91,11 +90,11 @@ const MessagesFilterPanel = () => {
 			if (Object.values(filter).some(v => v.values.length > 0)) {
 				addHistoryItem({
 					timestamp,
-					filters: toJS(filter),
+					filters: filter,
 					type: 'message',
 				});
 			}
-			addFilter({ filters: toJS(filter), timestamp });
+			addFilter({ filters: filter, timestamp });
 		}
 		searchStore.stopSearch();
 		messagesStore.applyFilter(
