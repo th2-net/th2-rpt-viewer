@@ -30,6 +30,7 @@ import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import MessageFilterAutocompleteStore from '../MessageFilterAutocompleteStore';
 import EventFilterAutocompleteStore from '../EventFilterAutocompleteStore';
+import { getObjectKeys } from '../../helpers/object';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -121,14 +122,18 @@ export default class WorkspacesStore {
 		targetMessage?: EventMessage,
 	): WorkspaceInitialState => {
 		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
+		const filters: MessageFilterState | null = (requestInfo?.filters as MessageFilterState) || null;
+		const areFiltersApplied =
+			Boolean(filters) && getObjectKeys(filters).some(key => filters[key].values.length > 0);
+
 		return {
 			messages: {
-				sse: (requestInfo?.filters as MessageFilterState) || null,
+				sse: filters,
 				streams: requestInfo?.state.stream || [],
 				timestampFrom: null,
 				timestampTo: timestamp,
 				targetMessage,
-				isSoftFilter,
+				isSoftFilter: isSoftFilter && areFiltersApplied,
 			},
 			interval: SEARCH_STORE_INTERVAL,
 			layout: [0, 100],

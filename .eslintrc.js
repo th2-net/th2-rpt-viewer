@@ -79,7 +79,10 @@ module.exports = {
 		'no-plusplus': 'off',
 		radix: 'off',
 		'no-unused-vars': 'off',
-		'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', ignoreRestSiblings: true }],
+		'@typescript-eslint/no-unused-vars': [
+			'error',
+			{ argsIgnorePattern: '^_', ignoreRestSiblings: true },
+		],
 		'no-unused-expressions': 'off',
 		'@typescript-eslint/no-unused-expressions': ['error'],
 		'import/no-unassigned-import': [
