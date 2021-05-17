@@ -36,3 +36,4 @@ export * from './useWorkspacesStore';
 export * from './useTabsStore';
 export * from './useWorkspaceStore';
 export * from './useMessageDisplayRulesStore';
+export * from './useFiltersHistoryStore';

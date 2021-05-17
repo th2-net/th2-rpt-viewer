@@ -27,6 +27,7 @@ import { EventMessage } from '../../models/EventMessage';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
+import FiltersHistoryStore from '../FiltersHistoryStore';
 import { getObjectKeys } from '../../helpers/object';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
@@ -43,6 +44,7 @@ export default class WorkspacesStore {
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
+		public filtersHistoryStore: FiltersHistoryStore,
 		initialState: WorkspacesUrlState | null,
 	) {
 		this.searchWorkspace = new SearchWorkspaceStore(this, this.api);

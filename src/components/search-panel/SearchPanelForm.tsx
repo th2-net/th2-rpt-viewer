@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
 	DateTimeInputType,
@@ -37,6 +37,8 @@ import SearchResultCountLimit, {
 	ResultCountLimitConfig,
 } from './search-form/SearchResultCountLimit';
 import { SearchDirection } from '../../models/search/SearchDirection';
+import FiltersHistory from '../filters-history/FiltersHistory';
+import { useFiltersHistoryStore } from '../../hooks';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -59,6 +61,13 @@ const SearchPanelForm = () => {
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
+	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
+
+	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
+		formType,
+		eventsHistory,
+		messagesHistory,
+	]);
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
@@ -203,6 +212,7 @@ const SearchPanelForm = () => {
 			<SearchProgressBar {...progressBarConfig} />
 			<SearchSubmit {...searchSubmitConfig} />
 			<div className='search-panel__fields'>
+				<FiltersHistory />
 				<div className='filter-row'>
 					<div className='filter-row__label'>Search for</div>
 					<div className='search-type-config'>
@@ -213,7 +223,9 @@ const SearchPanelForm = () => {
 				<FilterRow rowConfig={config} />
 			</div>
 			<div className='filters'>
-				{filters && filters.info.length > 0 && <SearchPanelFilters {...(filters as any)} />}
+				{filters && filters.info.length > 0 && (
+					<SearchPanelFilters {...(filters as any)} type={formType} autocompletes={autocompletes} />
+				)}
 			</div>
 		</div>
 	);

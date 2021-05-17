@@ -31,6 +31,7 @@ import { isEventMessage } from '../../helpers/event';
 import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
+import FiltersHistoryStore from '../FiltersHistoryStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -87,6 +88,7 @@ export default class MessagesStore {
 		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
 		private api: ApiSchema,
+		private filterHistoryStore: FiltersHistoryStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
 		if (defaultState) {
@@ -179,6 +181,15 @@ export default class MessagesStore {
 		sseFilters: MessageFilterState | null,
 		isSoftFilterApplied: boolean,
 	) => {
+		if (sseFilters) {
+			const timestamp = Date.now();
+			this.filterHistoryStore.addToMessagesHistory({
+				timestamp,
+				filters: sseFilters,
+				type: 'message',
+			});
+		}
+
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.selectedMessageId = null;
