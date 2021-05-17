@@ -24,22 +24,9 @@ import {
 	FilterState,
 } from '../components/search-panel/SearchPanelFilters';
 
-function getEquilizedFilterState(filter: FilterState) {
+function getNonEmptyFilters(filter: FilterState) {
 	return Object.fromEntries(
-		Object.entries(filter)
-			.filter(
-				([key, value]) => key !== 'status' && value && value.values && value.values.length > 0,
-			)
-			.map(([key, value]) => [
-				key,
-				toJS(
-					value
-						? typeof value.values === 'string'
-							? value
-							: { ...value, values: value.values.sort() }
-						: {},
-				),
-			]),
+		Object.entries(filter).filter(([_, value]) => value && value.values && value.values.length > 0),
 	);
 }
 
@@ -69,7 +56,7 @@ class FiltersHistoryStore {
 		}
 
 		const { type, timestamp } = newFilters;
-		const equilizedFilter = toJS(getEquilizedFilterState(newFilters.filters as T));
+		const equilizedFilter = toJS(getNonEmptyFilters(newFilters.filters as T));
 
 		const hasSame = this.eventsHistory.some(({ filters }) => {
 			return isEqual(filters, equilizedFilter);
@@ -101,7 +88,7 @@ class FiltersHistoryStore {
 		}
 
 		const { type, timestamp } = newFilters;
-		const equilizedFilter = toJS(getEquilizedFilterState(newFilters.filters as T));
+		const equilizedFilter = toJS(getNonEmptyFilters(newFilters.filters as T));
 
 		const hasSame = this.eventsHistory.some(({ filters }) => {
 			return isEqual(filters, equilizedFilter);
@@ -125,9 +112,10 @@ class FiltersHistoryStore {
 	};
 
 	private isFull(type: 'event' | 'message'): boolean {
+		const limit = indexedDbLimits[IndexedDbStores.FILTERS_HISTORY] / 2;
 		return type === 'event'
-			? this.eventsHistory.length >= indexedDbLimits[IndexedDbStores.FILTERS_HISTORY]
-			: this.messagesHistory.length >= indexedDbLimits[IndexedDbStores.FILTERS_HISTORY];
+			? this.eventsHistory.length >= limit
+			: this.messagesHistory.length >= limit;
 	}
 
 	private init = async <T extends FilterState>() => {

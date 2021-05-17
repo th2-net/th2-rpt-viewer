@@ -124,11 +124,8 @@ function EventsFilterPanel() {
 
 			let toggler: FilterRowTogglerConfig | null = null;
 
-			const autocompleteList = getArrayOfUniques(
-				eventsHistory
-					.filter(item => item.filters[filterName])
-					.map(item => item.filters[filterName]?.values)
-					.flat(),
+			const autocompleteList: string[] = getArrayOfUniques(
+				eventsHistory.map(item => item.filters[filterName]?.values).flat(),
 			);
 
 			if ('negative' in filterValues) {
