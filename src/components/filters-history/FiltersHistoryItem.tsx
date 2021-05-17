@@ -18,8 +18,8 @@ import React from 'react';
 import moment from 'moment';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 import {
-	FilterState,
 	EventFilterState,
+	FilterState,
 	MessageFilterState,
 } from '../search-panel/SearchPanelFilters';
 import { FiltersState } from './FiltersHistory';
@@ -49,7 +49,31 @@ const FiltersHistoryItem = ({ item, filter }: Props) => {
 		<div
 			className='filters-history__item'
 			onClick={() => {
-				filter.setState(item.filters as Partial<EventFilterState> & Partial<MessageFilterState>);
+				const toReset = Object.fromEntries(
+					Object.entries(filter.state)
+						.filter(([key]) => !Object.keys(item.filters).includes(key))
+						.map(([key, value]) => {
+							let resetedValue: string | string[];
+							switch (value.type) {
+								case 'string':
+									resetedValue = '';
+									break;
+								case 'string[]':
+									resetedValue = [];
+									break;
+								case 'switcher':
+									resetedValue = 'any';
+									break;
+								default:
+									resetedValue = '';
+									break;
+							}
+							return [key, { ...value, negative: false, values: resetedValue }];
+						}),
+				);
+
+				filter.setState({ ...toReset, ...item.filters } as Partial<EventFilterState> &
+					Partial<MessageFilterState>);
 			}}>
 			<p className='title'>{moment(item.timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}</p>
 			<div className='content'>

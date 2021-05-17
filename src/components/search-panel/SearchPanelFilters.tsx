@@ -57,18 +57,9 @@ export type EventFilterState = {
 };
 
 export type MessageFilterState = {
-	attachedEventIds: {
-		negative: boolean;
-		values: string[];
-	};
-	type: {
-		negative: boolean;
-		values: string[];
-	};
-	body: {
-		negative: boolean;
-		values: string[];
-	};
+	attachedEventIds: MultipleStringFilter;
+	type: MultipleStringFilter;
+	body: MultipleStringFilter;
 };
 
 export type FilterState = EventFilterState | MessageFilterState;
