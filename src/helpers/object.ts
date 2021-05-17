@@ -15,23 +15,6 @@
  ***************************************************************************** */
 
 /**
- * Deep equal for two objects.
- * @param obj1
- * @param obj2
- */
-export function isEqual(obj1: Record<string, any>, obj2: Record<string, any>): boolean {
-	return Object.entries(obj1).every(([key, value1]) => {
-		const value2 = obj2[key];
-
-		if (typeof value1 === 'object' && typeof value2 === 'object') {
-			return isEqual(value1, value2);
-		}
-
-		return value1 === value2;
-	});
-}
-
-/**
  * Returns typed object keys
  * @param obj
  */

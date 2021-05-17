@@ -42,7 +42,7 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const historyRef = useRef<HTMLDivElement>(null);
-	const { history } = useFiltersHistoryStore();
+	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
 	const { filters, formType } = useSearchStore();
 
 	const toShow: (
@@ -50,8 +50,8 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 		| FiltersHistoryType<MessageFilterState>
 	)[] = useMemo(() => {
 		const fType = type || formType;
-		return history[fType === 'event' ? 0 : 1];
-	}, [history, type, formType]);
+		return fType === 'event' ? eventsHistory : messagesHistory;
+	}, [eventsHistory, messagesHistory, type, formType]);
 
 	const filtersState: FiltersState = useMemo(() => {
 		if (sseFilter) {
@@ -81,6 +81,7 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 		const target = e.target as Element;
 		if (target.closest('.filters-history__item')) {
 			e.stopImmediatePropagation();
+			return;
 		}
 		if (target !== buttonRef.current) {
 			setIsOpen(false);

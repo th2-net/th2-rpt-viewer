@@ -183,13 +183,11 @@ export default class MessagesStore {
 	) => {
 		if (sseFilters) {
 			const timestamp = Date.now();
-			if (Object.values(sseFilters).some(v => v.values.length > 0)) {
-				this.filterHistoryStore.addHistoryItem({
-					timestamp,
-					filters: sseFilters,
-					type: 'message',
-				});
-			}
+			this.filterHistoryStore.addToMessagesHistory({
+				timestamp,
+				filters: sseFilters,
+				type: 'message',
+			});
 		}
 
 		this.hintMessages = [];

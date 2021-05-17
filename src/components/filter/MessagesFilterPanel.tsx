@@ -49,7 +49,7 @@ const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
-	const { history } = useFiltersHistoryStore();
+	const { messagesHistory } = useFiltersHistoryStore();
 	const { filterStore } = messagesStore;
 
 	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
@@ -62,8 +62,6 @@ const MessagesFilterPanel = () => {
 		attachedEventIds: '',
 	});
 	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
-
-	const autocompletes = history[1];
 
 	React.useEffect(() => {
 		setFilter(filterStore.sseMessagesFilter);
@@ -142,11 +140,10 @@ const MessagesFilterPanel = () => {
 				const label = (filterInfo.name.charAt(0).toUpperCase() + filterInfo.name.slice(1))
 					.split(/(?=[A-Z])/)
 					.join(' ');
-				const filterName = filterInfo.name as keyof MessageFilterState;
 				const autocompleteList = getArrayOfUniques(
-					autocompletes
-						.filter(item => (item.filters as MessageFilterState)[filterName])
-						.map(item => (item.filters as MessageFilterState)[filterName].values)
+					messagesHistory
+						.filter(item => item.filters[filterInfo.name])
+						.map(item => item.filters[filterInfo.name]?.values)
 						.flat(),
 				);
 
@@ -180,7 +177,7 @@ const MessagesFilterPanel = () => {
 				);
 			},
 		);
-	}, [searchStore.messagesFilterInfo, filter, currentValues]);
+	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
 
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
 		return {

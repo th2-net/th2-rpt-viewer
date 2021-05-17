@@ -48,7 +48,7 @@ function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
-	const { history } = useFiltersHistoryStore();
+	const { eventsHistory } = useFiltersHistoryStore();
 
 	const [filter, setFilter] = useSetState<EventFilterState | null>(filterStore.filter);
 	const [showFilter, setShowFilter] = React.useState(false);
@@ -56,8 +56,6 @@ function EventsFilterPanel() {
 	const [currentFilterValues, setCurrentFilterValues] = React.useState<CurrentFilterValues | null>(
 		getDefaultCurrentFilterValues(filterStore.filter),
 	);
-
-	const autocompletes = history[0];
 
 	React.useEffect(() => {
 		setFilter(filterStore.filter);
@@ -126,11 +124,10 @@ function EventsFilterPanel() {
 
 			let toggler: FilterRowTogglerConfig | null = null;
 
-			const name = filterName as keyof EventFilterState;
 			const autocompleteList = getArrayOfUniques(
-				autocompletes
-					.filter(item => (item.filters as EventFilterState)[name])
-					.map(item => (item.filters as EventFilterState)[name].values)
+				eventsHistory
+					.filter(item => item.filters[filterName])
+					.map(item => item.filters[filterName]?.values)
 					.flat(),
 			);
 
@@ -189,7 +186,14 @@ function EventsFilterPanel() {
 			const filterRow = [toggler, filterInput].filter(notEmpty);
 			return filterRow.length === 1 ? filterRow[0] : filterRow;
 		});
-	}, [filter, currentFilterValues, setCurrentValue, getValuesUpdater, getNegativeToggler]);
+	}, [
+		filter,
+		eventsHistory,
+		currentFilterValues,
+		setCurrentValue,
+		getValuesUpdater,
+		getNegativeToggler,
+	]);
 
 	return (
 		<FilterPanel

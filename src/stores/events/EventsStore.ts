@@ -486,13 +486,11 @@ export default class EventsStore {
 
 	public applyFilter = (filter: EventFilterState) => {
 		const timestamp = Date.now();
-		if (Object.values(filter).some(v => v.values.length > 0)) {
-			this.filterHistoryStore.addHistoryItem({
-				timestamp,
-				filters: filter,
-				type: 'event',
-			});
-		}
+		this.filterHistoryStore.addToEventsHistory({
+			timestamp,
+			filters: filter,
+			type: 'event',
+		});
 
 		this.eventDataStore.fetchEventTree({ filter, timeRange: this.filterStore.range });
 	};

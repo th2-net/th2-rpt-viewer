@@ -14,7 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action } from 'mobx';
+import { observable, action, toJS } from 'mobx';
+import isEqual from 'lodash.isequal';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
@@ -22,7 +23,25 @@ import {
 	MessageFilterState,
 	FilterState,
 } from '../components/search-panel/SearchPanelFilters';
-import { getEquilizedFilterState } from '../helpers/search';
+
+function getEquilizedFilterState(filter: FilterState) {
+	return Object.fromEntries(
+		Object.entries(filter)
+			.filter(
+				([key, value]) => key !== 'status' && value && value.values && value.values.length > 0,
+			)
+			.map(([key, value]) => [
+				key,
+				toJS(
+					value
+						? typeof value.values === 'string'
+							? value
+							: { ...value, values: value.values.sort() }
+						: {},
+				),
+			]),
+	);
+}
 
 export interface FiltersHistoryType<T extends FilterState> {
 	timestamp: number;
@@ -30,65 +49,98 @@ export interface FiltersHistoryType<T extends FilterState> {
 	filters: Partial<T>;
 }
 
-type History = [FiltersHistoryType<EventFilterState>[], FiltersHistoryType<MessageFilterState>[]];
-
 class FiltersHistoryStore {
 	constructor(private indexedDb: IndexedDB) {
 		this.init();
 	}
 
 	@observable
-	public history: History = [[], []];
+	public eventsHistory: FiltersHistoryType<EventFilterState>[] = [];
+
+	@observable
+	public messagesHistory: FiltersHistoryType<MessageFilterState>[] = [];
 
 	@action
-	public addHistoryItem = async <T extends FilterState>(newFilters: FiltersHistoryType<T>) => {
+	public addToEventsHistory = async <T extends EventFilterState>(
+		newFilters: FiltersHistoryType<T>,
+	) => {
+		if (!Object.values(newFilters.filters).some(v => v.values.length > 0)) {
+			return;
+		}
+
 		const { type, timestamp } = newFilters;
-		const equalizedFilter = getEquilizedFilterState(newFilters.filters as T);
-		const index = type === 'event' ? 0 : 1;
+		const equilizedFilter = toJS(getEquilizedFilterState(newFilters.filters as T));
 
-		const historyToChange: (
-			| FiltersHistoryType<EventFilterState>
-			| FiltersHistoryType<MessageFilterState>
-		)[] = this.history[index];
-
-		const hasSame = historyToChange.some(({ filters }) => {
-			return JSON.stringify(filters) === JSON.stringify(equalizedFilter);
+		const hasSame = this.eventsHistory.some(({ filters }) => {
+			return isEqual(filters, equilizedFilter);
 		});
 		if (hasSame) {
 			return;
 		}
 
-		const filter = { timestamp, type, filters: equalizedFilter };
+		const filter = { timestamp, type, filters: equilizedFilter };
 
-		if (this.isFull(index)) {
-			this.history[index].shift();
-			this.history[index].push(filter);
+		if (this.isFull('event')) {
+			this.eventsHistory.shift();
+			this.eventsHistory.push(filter);
 
 			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, timestamp);
 			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
 			return;
 		}
-		this.history[index].push(filter);
+		this.eventsHistory.push(filter);
 		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
 	};
 
-	private isFull(index: number): boolean {
-		return this.history[index].length >= indexedDbLimits[IndexedDbStores.FILTERS_HISTORY];
+	@action
+	public addToMessagesHistory = async <T extends MessageFilterState>(
+		newFilters: FiltersHistoryType<T>,
+	) => {
+		if (!Object.values(newFilters.filters).some(v => v.values.length > 0)) {
+			return;
+		}
+
+		const { type, timestamp } = newFilters;
+		const equilizedFilter = toJS(getEquilizedFilterState(newFilters.filters as T));
+
+		const hasSame = this.eventsHistory.some(({ filters }) => {
+			return isEqual(filters, equilizedFilter);
+		});
+		if (hasSame) {
+			return;
+		}
+
+		const filter = { timestamp, type, filters: equilizedFilter };
+
+		if (this.isFull('event')) {
+			this.messagesHistory.shift();
+			this.messagesHistory.push(filter);
+
+			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, timestamp);
+			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
+			return;
+		}
+		this.messagesHistory.push(filter);
+		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
+	};
+
+	private isFull(type: 'event' | 'message'): boolean {
+		return type === 'event'
+			? this.eventsHistory.length >= indexedDbLimits[IndexedDbStores.FILTERS_HISTORY]
+			: this.messagesHistory.length >= indexedDbLimits[IndexedDbStores.FILTERS_HISTORY];
 	}
 
 	private init = async <T extends FilterState>() => {
 		const history = await this.indexedDb.getStoreValues<FiltersHistoryType<T>>(
 			IndexedDbStores.FILTERS_HISTORY,
 		);
-		const separatedHistory: History = [[], []];
 		for (const item of history) {
 			if (item.type === 'event') {
-				separatedHistory[0].push(item as FiltersHistoryType<EventFilterState>);
+				this.eventsHistory.push(item as FiltersHistoryType<EventFilterState>);
 			} else {
-				separatedHistory[1].push(item as FiltersHistoryType<MessageFilterState>);
+				this.messagesHistory.push(item as FiltersHistoryType<MessageFilterState>);
 			}
 		}
-		this.history = separatedHistory;
 	};
 }
 
