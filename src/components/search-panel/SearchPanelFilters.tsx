@@ -27,6 +27,7 @@ import FilterRow from '../filter/row';
 import { SearchPanelType } from './SearchPanel';
 import { getArrayOfUniques } from '../../helpers/array';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
+import { notEmpty } from '../../helpers/object';
 
 export type StringFilter = {
 	type: 'string';
@@ -143,8 +144,8 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 
 				const autocompleteList = getArrayOfUniques(
 					autocompletes
-						.map(item => item.filters[filter.name as keyof FilterState]?.values || '')
-						.filter(item => item !== '')
+						.map(item => item.filters[filter.name as keyof FilterState]?.values)
+						.filter(notEmpty)
 						.flat(),
 				);
 

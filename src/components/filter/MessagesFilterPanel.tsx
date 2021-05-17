@@ -40,6 +40,7 @@ import FiltersHistory from '../filters-history/FiltersHistory';
 import MessageReplayModal from '../message/MessageReplayModal';
 import { getArrayOfUniques } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
+import { notEmpty } from '../../helpers/object';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -142,8 +143,8 @@ const MessagesFilterPanel = () => {
 					.join(' ');
 				const autocompleteList = getArrayOfUniques<string>(
 					messagesHistory
-						.map(item => item.filters[filterInfo.name]?.values || '')
-						.filter(item => item !== '')
+						.map(item => item.filters[filterInfo.name]?.values)
+						.filter(notEmpty)
 						.flat(),
 				);
 

@@ -23,12 +23,12 @@ import {
 	MessageFilterState,
 	FilterState,
 } from '../components/search-panel/SearchPanelFilters';
-
-function getNonEmptyFilters(filter: FilterState) {
-	return Object.fromEntries(
-		Object.entries(filter).filter(([_, value]) => value && value.values && value.values.length > 0),
-	);
-}
+import {
+	getNonEmptyFilters,
+	isEmptyFilter,
+	isEventsFilterHistory,
+	isMessagesFilterHistory,
+} from '../helpers/filters';
 
 export interface FiltersHistoryType<T extends FilterState> {
 	timestamp: number;
@@ -48,22 +48,13 @@ class FiltersHistoryStore {
 	public messagesHistory: FiltersHistoryType<MessageFilterState>[] = [];
 
 	@action
-	public addToEventsHistory = async <T extends EventFilterState>(
-		newFilters: FiltersHistoryType<T>,
-	) => {
-		if (!Object.values(newFilters.filters).some(v => v.values.length > 0)) {
-			return;
-		}
+	public addToEventsHistory = async (newFilters: FiltersHistoryType<EventFilterState>) => {
+		if (isEmptyFilter(newFilters.filters)) return;
 
 		const { type, timestamp } = newFilters;
-		const equilizedFilter = toJS(getNonEmptyFilters(newFilters.filters as T));
+		const equilizedFilter = toJS(getNonEmptyFilters(newFilters.filters));
 
-		const hasSame = this.eventsHistory.some(({ filters }) => {
-			return isEqual(filters, equilizedFilter);
-		});
-		if (hasSame) {
-			return;
-		}
+		if (this.eventsHistory.some(({ filters }) => isEqual(filters, equilizedFilter))) return;
 
 		const filter = { timestamp, type, filters: equilizedFilter };
 
@@ -118,17 +109,13 @@ class FiltersHistoryStore {
 			: this.messagesHistory.length >= limit;
 	}
 
-	private init = async <T extends FilterState>() => {
-		const history = await this.indexedDb.getStoreValues<FiltersHistoryType<T>>(
-			IndexedDbStores.FILTERS_HISTORY,
-		);
-		for (const item of history) {
-			if (item.type === 'event') {
-				this.eventsHistory.push(item as FiltersHistoryType<EventFilterState>);
-			} else {
-				this.messagesHistory.push(item as FiltersHistoryType<MessageFilterState>);
-			}
-		}
+	private init = async () => {
+		const history = await this.indexedDb.getStoreValues<
+			FiltersHistoryType<EventFilterState | MessageFilterState>
+		>(IndexedDbStores.FILTERS_HISTORY);
+
+		this.eventsHistory = history.filter(isEventsFilterHistory);
+		this.messagesHistory = history.filter(isMessagesFilterHistory);
 	};
 }
 

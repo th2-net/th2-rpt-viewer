@@ -126,8 +126,8 @@ function EventsFilterPanel() {
 
 			const autocompleteList = getArrayOfUniques(
 				eventsHistory
-					.map(item => item.filters[filterName]?.values || '')
-					.filter(item => item !== '')
+					.map(item => item.filters[filterName]?.values)
+					.filter(notEmpty)
 					.flat(),
 			);
 
