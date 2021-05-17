@@ -31,6 +31,7 @@ import { SearchStore } from '../SearchStore';
 import EventsDataStore from './EventsDataStore';
 import { EventFilterState } from '../../components/search-panel/SearchPanelFilters';
 import EventsFilter from '../../models/filter/EventsFilter';
+import FiltersHistoryStore from '../FiltersHistoryStore';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
@@ -62,6 +63,7 @@ export default class EventsStore {
 		private graphStore: GraphStore,
 		private searchPanelStore: SearchStore,
 		private api: ApiSchema,
+		private filterHistoryStore: FiltersHistoryStore,
 		initialState: EventStoreDefaultStateType,
 	) {
 		this.filterStore = new EventsFilterStore(this.graphStore, this.searchPanelStore, {
@@ -95,8 +97,6 @@ export default class EventsStore {
 
 		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
 	}
-
-	@observable isLoadingRootEvents = false;
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
 
@@ -485,6 +485,13 @@ export default class EventsStore {
 	};
 
 	public applyFilter = (filter: EventFilterState) => {
+		const timestamp = Date.now();
+		this.filterHistoryStore.addToEventsHistory({
+			timestamp,
+			filters: filter,
+			type: 'event',
+		});
+
 		this.eventDataStore.fetchEventTree({ filter, timeRange: this.filterStore.range });
 	};
 

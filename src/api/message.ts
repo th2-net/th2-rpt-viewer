@@ -17,6 +17,12 @@
 import { MessageApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import MessagesFilter from '../models/filter/MessagesFilter';
+import { MessagesSSEParams } from './sse';
+
+export type MatchMessageParams = Omit<
+	MessagesSSEParams,
+	'resultCountLimit' | 'resumeFromId' | 'searchDirection'
+>;
 
 const messageHttpApi: MessageApiSchema = {
 	getAll: async () => {
@@ -53,7 +59,9 @@ const messageHttpApi: MessageApiSchema = {
 			stream: streams,
 		});
 
-		const res = await fetch(`backend/search/messages?${params}`, { signal: abortSignal });
+		const res = await fetch(`backend/search/messages?${params}`, {
+			signal: abortSignal,
+		});
 
 		if (res.ok) {
 			return res.json();
@@ -80,7 +88,9 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	getMessage: async (id, signal?, queryParams = {}) => {
 		const params = createURLSearchParams(queryParams);
-		const res = await fetch(`backend/message/${id}?${params}`, { signal });
+		const res = await fetch(`backend/message/${id}?${params}`, {
+			signal,
+		});
 
 		// if probe param is provided server will respond with empty body if messsage wasn't found
 		if (res.ok && queryParams.probe) {
@@ -97,6 +107,17 @@ const messageHttpApi: MessageApiSchema = {
 	},
 	getMessageSessions: async () => {
 		const res = await fetch('backend/messageStreams');
+
+		if (res.ok) return res.json();
+
+		console.error(res.statusText);
+		return [];
+	},
+	matchMessage: async (messageId: string, filter: MatchMessageParams, signal?: AbortSignal) => {
+		const params = createURLSearchParams({ ...filter });
+		const res = await fetch(`backend/match/message/${messageId}?${params}`, {
+			signal,
+		});
 
 		if (res.ok) return res.json();
 

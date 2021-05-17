@@ -14,20 +14,29 @@
  * limitations under the License.
  ***************************************************************************** */
 
-/**
- * Returns typed object keys
- * @param obj
- */
-export function getObjectKeys<O extends object>(obj: O) {
-	return Object.keys(obj) as Array<keyof O>;
+import React from 'react';
+import { ToastContainerProps } from 'react-toast-notifications';
+import { createBemElement } from '../../helpers/styleCreators';
+import notificationsStore from '../../stores/NotificationsStore';
+import '../../styles/toasts.scss';
+
+function ToastContainer(props: ToastContainerProps) {
+	const { hasToasts, children } = props;
+
+	const closeAllButtonClassname = createBemElement('toast-container', 'close-all');
+
+	if (!hasToasts) return null;
+
+	return (
+		<div className='toast-container'>
+			<div
+				className={closeAllButtonClassname}
+				title='Close all'
+				onClick={() => notificationsStore.clearAll()}
+			/>
+			<div className='toast-container__list'>{children}</div>
+		</div>
+	);
 }
 
-/**
- * Returns typed object entries
- * @param obj
- */
-export const entries = Object.entries as <T>(obj: T) => [Extract<keyof T, string>, T[keyof T]][];
-
-export function notEmpty<TValue>(value: TValue | null | undefined | string): value is TValue {
-	return value !== null && value !== undefined && value !== '';
-}
+export default ToastContainer;

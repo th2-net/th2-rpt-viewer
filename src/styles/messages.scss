@@ -25,6 +25,8 @@
 	border-radius: 5px;
 	margin-right: 10px;
 	padding: 1px 0;
+	display: flex;
+	justify-content: space-between;
 
 	&.highlighted {
 		@keyframes highlight {
@@ -67,10 +69,8 @@
 		display: block;
 	}
 
-	&:hover .mc-raw {
-		&__copy-all {
-			display: inline-flex;
-		}
+	&:hover .message-card-tools__copy-all {
+		display: block;
 	}
 
 	&:hover .mc-header {
@@ -102,7 +102,12 @@
 
 .message-card-tools {
 	margin: 0 4px;
-	align-self: flex-start;
+	padding: 3px 0;
+	align-self: stretch;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: center;
 
 	&__button {
 		display: flex;
@@ -216,6 +221,31 @@
 		&.bookmark:after {
 			background-color: $bookmarkIconColor;
 		}
+	}
+
+	&__copy-btn {
+		display: inline-block;
+		margin: 4px 4px 4px 10px;
+		cursor: pointer;
+
+		&:hover {
+			filter: opacity(1);
+		}
+	}
+
+	&__copy-icon {
+		height: 13px;
+		width: 13px;
+		background-image: url('../../resources/icons/clipboard.svg');
+		background-size: 100%;
+		filter: opacity(0.6);
+	}
+
+	&__copy-all {
+		flex-direction: row-reverse;
+		cursor: pointer;
+		flex-shrink: 0;
+		display: none;
 	}
 }
 
@@ -421,45 +451,6 @@
 
 		&.secondary {
 			color: $secondaryTextColor;
-		}
-	}
-
-	&__copy-btn {
-		display: inline-block;
-		margin: 4px 4px 4px 10px;
-		cursor: pointer;
-
-		&:hover {
-			filter: opacity(1);
-		}
-	}
-
-	&__copy-icon {
-		height: 13px;
-		width: 13px;
-		background-image: url('../../resources/icons/clipboard.svg');
-		background-size: 100%;
-		margin-left: 5px;
-		filter: opacity(0.6);
-	}
-
-	&__copy-title {
-		@include unselectable;
-		color: $primaryTextColor;
-	}
-
-	&__copy-all {
-		display: none;
-		position: absolute;
-		bottom: 0;
-		right: 0;
-		flex-direction: row-reverse;
-		align-items: center;
-		cursor: pointer;
-		flex-shrink: 0;
-
-		&:hover {
-			background: $messageCardRawHoverBackground;
 		}
 	}
 

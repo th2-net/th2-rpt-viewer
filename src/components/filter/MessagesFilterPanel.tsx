@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { computed } from 'mobx';
 import { Observer, observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import {
@@ -24,14 +25,22 @@ import {
 	ActionFilterConfig,
 	FilterRowConfig,
 } from '../../models/filter/FilterInputs';
-import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
+import {
+	useMessagesDataStore,
+	useMessagesWorkspaceStore,
+	useFiltersHistoryStore,
+} from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
 import { MessageFilterState } from '../search-panel/SearchPanelFilters';
 import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
+import FiltersHistory from '../filters-history/FiltersHistory';
 import MessageReplayModal from '../message/MessageReplayModal';
+import { getArrayOfUniques } from '../../helpers/array';
+import useSetState from '../../hooks/useSetState';
+import { notEmpty } from '../../helpers/object';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -41,18 +50,23 @@ const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
+	const { messagesHistory } = useFiltersHistoryStore();
 	const { filterStore } = messagesStore;
 
+	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentStream, setCurrentStream] = React.useState('');
 	const [streams, setStreams] = React.useState<Array<string>>([]);
-	const [sseFilter, setSSEFilter] = React.useState<MessageFilterState | null>(null);
 	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
 		type: '',
 		body: '',
 		attachedEventIds: '',
 	});
 	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
+
+	React.useEffect(() => {
+		setFilter(filterStore.sseMessagesFilter);
+	}, [filterStore.sseMessagesFilter]);
 
 	React.useEffect(() => {
 		setStreams(filterStore.filter.streams);
@@ -63,13 +77,12 @@ const MessagesFilterPanel = () => {
 	}, [filterStore.isSoftFilter]);
 
 	React.useEffect(() => {
-		setSSEFilter(messagesStore.filterStore.sseMessagesFilter);
 		setCurrentValues({
 			type: '',
 			body: '',
 			attachedEventIds: '',
 		});
-	}, [messagesStore.filterStore.sseMessagesFilter]);
+	}, []);
 
 	const submitChanges = React.useCallback(() => {
 		searchStore.stopSearch();
@@ -78,18 +91,23 @@ const MessagesFilterPanel = () => {
 				...filterStore.filter,
 				streams,
 			},
-			sseFilter,
+			filter,
 			isSoftFilterApplied,
 		);
-	}, [filterStore.filter, streams, sseFilter, isSoftFilterApplied]);
+	}, [filter, filterStore.filter, streams, isSoftFilterApplied]);
 
-	const isLoading = messagesDataStore.messages.length === 0 && messagesDataStore.isLoading;
-	const isApplied = messagesStore.filterStore.isMessagesFilterApplied && !isLoading;
+	const isLoading = computed(
+		() =>
+			(messagesDataStore.messages.length === 0 && messagesDataStore.isLoading) ||
+			(filterStore.isSoftFilter &&
+				[...messagesDataStore.isMatchingMessages.values()].some(Boolean)),
+	).get();
 
 	const compoundFilterRow: Array<CompoundFilterRow> = React.useMemo(() => {
-		if (!sseFilter) return [];
+		if (!filter || Object.keys(filter).length === 0) return [];
 		// eslint-disable-next-line no-underscore-dangle
-		const _sseFilter = sseFilter;
+		const _sseFilter = filter;
+
 		function getState(
 			name: keyof MessageFilterState,
 		): MessageFilterState[keyof MessageFilterState] {
@@ -98,31 +116,19 @@ const MessagesFilterPanel = () => {
 
 		function getValuesUpdater<T extends keyof MessageFilterState>(name: T) {
 			return function valuesUpdater<K extends MessageFilterState[T]>(values: K) {
-				setSSEFilter(prevState => {
-					if (prevState !== null) {
-						return {
-							...prevState,
-							[name]: { ...prevState[name], values },
-						};
-					}
-
-					return prevState;
-				});
+				if (_sseFilter) {
+					setFilter({ [name]: { ..._sseFilter[name], values } });
+				}
 			};
 		}
 
 		function getNegativeToggler<T extends keyof MessageFilterState>(name: T) {
 			return function negativeToggler() {
-				setSSEFilter(prevState => {
-					if (prevState !== null) {
-						return {
-							...prevState,
-							[name]: { ...prevState[name], negative: !prevState[name].negative },
-						};
-					}
-
-					return prevState;
-				});
+				if (filter) {
+					setFilter({
+						[name]: { ..._sseFilter[name], negative: !_sseFilter[name].negative },
+					});
+				}
 			};
 		}
 
@@ -130,40 +136,49 @@ const MessagesFilterPanel = () => {
 			setCurrentValues(prevState => ({ ...prevState, [name]: value }));
 		};
 
-		return searchStore.messagesFilterInfo.map<CompoundFilterRow>((filter: MessagesFilterInfo) => {
-			const label = (filter.name.charAt(0).toUpperCase() + filter.name.slice(1))
-				.split(/(?=[A-Z])/)
-				.join(' ');
-			return filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
-				param => {
-					switch (param.type.value) {
-						case 'boolean':
-							return {
-								id: `${filter.name}-include`,
-								label,
-								disabled: false,
-								type: 'toggler',
-								value: getState(filter.name).negative,
-								toggleValue: getNegativeToggler(filter.name),
-								possibleValues: ['excl', 'incl'],
-								className: 'filter-row__toggler',
-							} as any;
-						default:
-							return {
-								id: filter.name,
-								label: '',
-								type: 'multiple-strings',
-								values: getState(filter.name).values,
-								setValues: getValuesUpdater(filter.name),
-								currentValue: currentValues[filter.name as keyof MessageFilterState],
-								setCurrentValue: setCurrentValue(filter.name),
-								autocompleteList: null,
-							};
-					}
-				},
-			);
-		});
-	}, [searchStore.messagesFilterInfo, sseFilter, setSSEFilter, currentValues]);
+		return searchStore.messagesFilterInfo.map<CompoundFilterRow>(
+			(filterInfo: MessagesFilterInfo) => {
+				const label = (filterInfo.name.charAt(0).toUpperCase() + filterInfo.name.slice(1))
+					.split(/(?=[A-Z])/)
+					.join(' ');
+				const autocompleteList = getArrayOfUniques<string>(
+					messagesHistory
+						.map(item => item.filters[filterInfo.name]?.values)
+						.filter(notEmpty)
+						.flat(),
+				);
+
+				return filterInfo.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
+					param => {
+						switch (param.type.value) {
+							case 'boolean':
+								return {
+									id: `${filterInfo.name}-include`,
+									label,
+									disabled: false,
+									type: 'toggler',
+									value: getState(filterInfo.name).negative,
+									toggleValue: getNegativeToggler(filterInfo.name),
+									possibleValues: ['excl', 'incl'],
+									className: 'filter-row__toggler',
+								} as any;
+							default:
+								return {
+									id: filterInfo.name,
+									label: '',
+									type: 'multiple-strings',
+									values: getState(filterInfo.name).values,
+									setValues: getValuesUpdater(filterInfo.name),
+									currentValue: currentValues[filterInfo.name as keyof MessageFilterState],
+									setCurrentValue: setCurrentValue(filterInfo.name),
+									autocompleteList,
+								};
+						}
+					},
+				);
+			},
+		);
+	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
 
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
 		return {
@@ -174,6 +189,7 @@ const MessagesFilterPanel = () => {
 			currentValue: currentStream,
 			setCurrentValue: setCurrentStream,
 			autocompleteList: messagesStore.messageSessions,
+			validateBubbles: true,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
 		};
@@ -195,13 +211,22 @@ const MessagesFilterPanel = () => {
 	}, [compoundFilterRow, sseFiltersErrorConfig]);
 
 	const renderFooter = React.useCallback(() => {
-		if (!messagesStore.filterStore.sseMessagesFilter) return null;
+		if (!filter) return null;
 
 		return (
 			<Observer>
 				{() => (
-					<div>
-						{messagesStore.filterStore.sseMessagesFilter && (
+					<div className='filter-footer'>
+						{filter && (
+							<FiltersHistory
+								type='message'
+								sseFilter={{
+									state: filter,
+									setState: setFilter,
+								}}
+							/>
+						)}
+						{filter && (
 							<Checkbox
 								checked={isSoftFilterApplied}
 								onChange={e => {
@@ -215,14 +240,13 @@ const MessagesFilterPanel = () => {
 				)}
 			</Observer>
 		);
-	}, [messagesStore.filterStore.sseMessagesFilter, isSoftFilterApplied, setIsSoftFilterApplied]);
+	}, [filter, isSoftFilterApplied, setIsSoftFilterApplied]);
 
 	return (
 		<>
 			<FilterPanel
 				isLoading={isLoading}
-				isLoadingFilteredItems={isApplied && messagesDataStore.isLoadingSoftFilteredMessages}
-				isFilterApplied={isApplied}
+				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
 				config={filterConfig}

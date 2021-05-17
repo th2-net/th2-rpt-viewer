@@ -108,7 +108,11 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 							onRemove={valueBubbleOnRemoveFor(index)}
 							autocompleteVariants={config.autocompleteList}
 							isValid={
-								config.autocompleteList ? config.autocompleteList.includes(value) : undefined
+								config.validateBubbles
+									? config.autocompleteList
+										? config.autocompleteList.includes(value)
+										: undefined
+									: undefined
 							}
 						/>
 					))}

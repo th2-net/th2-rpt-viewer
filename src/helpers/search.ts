@@ -67,6 +67,7 @@ export function getDefaultMessagesFiltersState(
 			[curr.name]: curr.parameters.reduce((prevParams, currParam) => {
 				return {
 					...prevParams,
+					type: currParam.type.value,
 					values: getFilterParameterDefaultValue(currParam),
 				};
 			}, {}),

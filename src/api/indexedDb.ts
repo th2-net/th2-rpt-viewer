@@ -21,8 +21,8 @@ import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { SearchHistory } from '../stores/SearchStore';
-
-const dbVersion = 1;
+import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
+import { FilterState } from '../components/search-panel/SearchPanelFilters';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',
@@ -31,7 +31,12 @@ export enum IndexedDbStores {
 	GRAPH_SEARCH_HISTORY = 'graph-search-history',
 	DISPLAY_RULES = 'display-rules',
 	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
+	FILTERS_HISTORY = 'filters-history',
 }
+
+type indexedDbStoresKeyPaths = {
+	[k in IndexedDbStores]: string;
+};
 
 export type DbData =
 	| EventBookmark
@@ -40,7 +45,8 @@ export type DbData =
 	| GraphSearchResult
 	| MessageDisplayRule
 	| OrderRule
-	| MessageSortOrderItem;
+	| MessageSortOrderItem
+	| FiltersHistoryType<FilterState>;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.EVENTS]: {
@@ -85,15 +91,35 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
+	[IndexedDbStores.FILTERS_HISTORY]: {
+		key: string;
+		value: FiltersHistoryType<FilterState>;
+		indexes: {
+			timestamp: number;
+		};
+	};
 }
 
 export const indexedDbLimits = {
 	bookmarks: 1000,
+	[IndexedDbStores.FILTERS_HISTORY]: 20,
 	[IndexedDbStores.DISPLAY_RULES]: 100,
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 100,
 	[IndexedDbStores.SEARCH_HISTORY]: 5,
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
 } as const;
+
+const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
+	[IndexedDbStores.EVENTS]: 'id',
+	[IndexedDbStores.MESSAGES]: 'id',
+	[IndexedDbStores.SEARCH_HISTORY]: 'timestamp',
+	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 'id',
+	[IndexedDbStores.DISPLAY_RULES]: 'id',
+	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 'id',
+	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
+};
+
+const dbVersion = 2;
 
 export class IndexedDB {
 	@observable
@@ -105,42 +131,14 @@ export class IndexedDB {
 
 	private async initDb() {
 		this.db = await openDB<TH2DB>(this.env, dbVersion, {
-			async upgrade(db, oldVersion) {
-				if (oldVersion === 0) {
-					const eventsStore = db.createObjectStore(IndexedDbStores.EVENTS, { keyPath: 'id' });
-					eventsStore.createIndex('timestamp', 'timestamp');
-
-					const messagesStore = db.createObjectStore(IndexedDbStores.MESSAGES, {
-						keyPath: 'id',
-					});
-					messagesStore.createIndex('timestamp', 'timestamp');
-
-					const searchHistoryStore = db.createObjectStore(IndexedDbStores.SEARCH_HISTORY, {
-						keyPath: 'timestamp',
-					});
-					searchHistoryStore.createIndex('timestamp', 'timestamp');
-
-					const graphSearchHistoryStore = db.createObjectStore(
-						IndexedDbStores.GRAPH_SEARCH_HISTORY,
-						{
-							keyPath: 'id',
-						},
-					);
-					graphSearchHistoryStore.createIndex('timestamp', 'timestamp');
-
-					const messageDisplayRulesStore = db.createObjectStore(IndexedDbStores.DISPLAY_RULES, {
-						keyPath: 'id',
-					});
-					messageDisplayRulesStore.createIndex('timestamp', 'timestamp');
-
-					const messageBodySortOrderStore = db.createObjectStore(
-						IndexedDbStores.MESSAGE_BODY_SORT_ORDER,
-						{
-							keyPath: 'id',
-						},
-					);
-					messageBodySortOrderStore.createIndex('timestamp', 'timestamp');
-				}
+			upgrade: async db => {
+				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
+					const name = storeName as IndexedDbStores;
+					if (!db.objectStoreNames.contains(name)) {
+						const store = db.createObjectStore(name, { keyPath });
+						store.createIndex('timestamp', 'timestamp');
+					}
+				});
 			},
 		});
 	}

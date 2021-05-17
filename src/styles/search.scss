@@ -53,6 +53,11 @@
 		&.active {
 			padding: 4px 10px;
 		}
+
+		&.disabled {
+			cursor: default;
+			opacity: 0.4;
+		}
 	}
 
 	&__icon {
@@ -71,7 +76,7 @@
 		padding-left: 5px;
 	}
 
-	&__button:hover & {
+	&__button:hover(:not(.disabled)) & {
 		&__title {
 			color: $controlButtonTextColorHover;
 		}
