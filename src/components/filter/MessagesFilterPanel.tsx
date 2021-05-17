@@ -140,8 +140,11 @@ const MessagesFilterPanel = () => {
 				const label = (filterInfo.name.charAt(0).toUpperCase() + filterInfo.name.slice(1))
 					.split(/(?=[A-Z])/)
 					.join(' ');
-				const autocompleteList: string[] = getArrayOfUniques(
-					messagesHistory.map(item => item.filters[filterInfo.name]?.values).flat(),
+				const autocompleteList = getArrayOfUniques<string>(
+					messagesHistory
+						.map(item => item.filters[filterInfo.name]?.values || '')
+						.filter(item => item !== '')
+						.flat(),
 				);
 
 				return filterInfo.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(

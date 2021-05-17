@@ -143,8 +143,8 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 
 				const autocompleteList = getArrayOfUniques(
 					autocompletes
-						.filter(item => item.filters[filter.name as keyof FilterState])
-						.map(item => item.filters[filter.name as keyof FilterState]?.values)
+						.map(item => item.filters[filter.name as keyof FilterState]?.values || '')
+						.filter(item => item !== '')
 						.flat(),
 				);
 
