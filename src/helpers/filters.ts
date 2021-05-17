@@ -37,11 +37,18 @@ export function isEventsFilterHistory(
 export function isMessagesFilterHistory(
 	filter: unknown,
 ): filter is FiltersHistoryType<MessageFilterState> {
-	return notEmpty(filter) && (filter as FiltersHistoryType<EventFilterState>).type === 'event';
+	return notEmpty(filter) && (filter as FiltersHistoryType<EventFilterState>).type === 'message';
 }
 
 export function isEmptyFilter(filter: Partial<EventFilterState>) {
 	return !Object.values(filter)
 		.filter(notEmpty)
 		.some(filterValues => filterValues.values.length > 0);
+}
+
+export function sortByTimestamp(
+	a: FiltersHistoryType<FilterState>,
+	b: FiltersHistoryType<FilterState>,
+) {
+	return a.timestamp > b.timestamp ? -1 : 1;
 }

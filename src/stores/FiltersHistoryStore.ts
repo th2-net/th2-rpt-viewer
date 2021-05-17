@@ -28,6 +28,7 @@ import {
 	isEmptyFilter,
 	isEventsFilterHistory,
 	isMessagesFilterHistory,
+	sortByTimestamp,
 } from '../helpers/filters';
 
 export interface FiltersHistoryType<T extends FilterState> {
@@ -52,21 +53,24 @@ class FiltersHistoryStore {
 		if (isEmptyFilter(newFilters.filters)) return;
 
 		const { type, timestamp } = newFilters;
-		const equilizedFilter = toJS(getNonEmptyFilters(newFilters.filters));
+		const equilizedFilter = toJS(getNonEmptyFilters(toJS(newFilters.filters)));
 
 		if (this.eventsHistory.some(({ filters }) => isEqual(filters, equilizedFilter))) return;
 
 		const filter = { timestamp, type, filters: equilizedFilter };
 
 		if (this.isFull('event')) {
-			this.eventsHistory.shift();
-			this.eventsHistory.push(filter);
+			const last = this.eventsHistory.pop();
+			this.eventsHistory.unshift(filter);
 
-			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, timestamp);
+			if (last) {
+				this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, last.timestamp);
+			}
 			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
 			return;
 		}
-		this.eventsHistory.push(filter);
+		this.eventsHistory.unshift(filter);
+
 		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
 	};
 
@@ -91,14 +95,16 @@ class FiltersHistoryStore {
 		const filter = { timestamp, type, filters: equilizedFilter };
 
 		if (this.isFull('event')) {
-			this.messagesHistory.shift();
-			this.messagesHistory.push(filter);
+			const last = this.messagesHistory.pop();
+			this.messagesHistory.unshift(filter);
 
-			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, timestamp);
+			if (last) {
+				this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, last.timestamp);
+			}
 			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
 			return;
 		}
-		this.messagesHistory.push(filter);
+		this.messagesHistory.unshift(filter);
 		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
 	};
 
@@ -114,8 +120,8 @@ class FiltersHistoryStore {
 			FiltersHistoryType<EventFilterState | MessageFilterState>
 		>(IndexedDbStores.FILTERS_HISTORY);
 
-		this.eventsHistory = history.filter(isEventsFilterHistory);
-		this.messagesHistory = history.filter(isMessagesFilterHistory);
+		this.eventsHistory = history.filter(isEventsFilterHistory).sort(sortByTimestamp);
+		this.messagesHistory = history.filter(isMessagesFilterHistory).sort(sortByTimestamp);
 	};
 }
 
