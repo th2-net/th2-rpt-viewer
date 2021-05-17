@@ -43,7 +43,7 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const historyRef = useRef<HTMLDivElement>(null);
 	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
-	const { filters, formType } = useSearchStore();
+	const { filters, formType, eventFilterInfo, messagesFilterInfo } = useSearchStore();
 
 	const toShow: (
 		| FiltersHistoryType<EventFilterState>
@@ -102,7 +102,13 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 			<ModalPortal isOpen={isOpen}>
 				<div ref={historyRef} className='filters-history'>
 					{toShow.map(item => (
-						<FiltersHistoryItem key={item.timestamp} item={item} filter={filtersState} />
+						<FiltersHistoryItem
+							key={item.timestamp}
+							item={item}
+							filter={filtersState}
+							eventsFilterInfo={eventFilterInfo}
+							messagesFilterInfo={messagesFilterInfo}
+						/>
 					))}
 				</div>
 			</ModalPortal>

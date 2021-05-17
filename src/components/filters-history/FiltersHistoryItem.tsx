@@ -17,19 +17,19 @@
 import React from 'react';
 import moment from 'moment';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
-import {
-	EventFilterState,
-	FilterState,
-	MessageFilterState,
-} from '../search-panel/SearchPanelFilters';
+import { FilterState } from '../search-panel/SearchPanelFilters';
 import { FiltersState } from './FiltersHistory';
+import { EventsFiltersInfo, MessagesFilterInfo } from '../../api/sse';
+import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../../helpers/search';
 
 interface Props {
 	item: FiltersHistoryType<FilterState>;
 	filter: FiltersState;
+	eventsFilterInfo: EventsFiltersInfo[];
+	messagesFilterInfo: MessagesFilterInfo[];
 }
 
-const FiltersHistoryItem = ({ item, filter }: Props) => {
+const FiltersHistoryItem = ({ item, filter, eventsFilterInfo, messagesFilterInfo }: Props) => {
 	if (!filter) {
 		return null;
 	}
@@ -44,36 +44,16 @@ const FiltersHistoryItem = ({ item, filter }: Props) => {
 	function getState<T extends keyof FilterState>(name: T) {
 		return filter && filter.state[name];
 	}
+	const defaultState =
+		item.type === 'event'
+			? getDefaultEventsFiltersState(eventsFilterInfo)
+			: getDefaultMessagesFiltersState(messagesFilterInfo);
 
 	return (
 		<div
 			className='filters-history__item'
 			onClick={() => {
-				const toReset = Object.fromEntries(
-					Object.entries(filter.state)
-						.filter(([key]) => !Object.keys(item.filters).includes(key))
-						.map(([key, value]) => {
-							let resetedValue: string | string[];
-							switch (value.type) {
-								case 'string':
-									resetedValue = '';
-									break;
-								case 'string[]':
-									resetedValue = [];
-									break;
-								case 'switcher':
-									resetedValue = 'any';
-									break;
-								default:
-									resetedValue = '';
-									break;
-							}
-							return [key, { ...value, negative: false, values: resetedValue }];
-						}),
-				);
-
-				filter.setState({ ...toReset, ...item.filters } as Partial<EventFilterState> &
-					Partial<MessageFilterState>);
+				filter.setState({ ...defaultState, ...item.filters });
 			}}>
 			<p className='title'>{moment(item.timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}</p>
 			<div className='content'>
