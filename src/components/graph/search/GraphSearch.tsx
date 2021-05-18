@@ -20,6 +20,7 @@ import { createBemElement } from '../../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { TimeRange } from '../../../models/Timestamp';
 import GraphSearchDialog from './GraphSearchDialog';
+import GraphSearchConfirm from './GraphSearchConfirm';
 import WorkspaceStore from '../../../stores/workspace/WorkspaceStore';
 import { ModalPortal } from '../../util/Portal';
 import GraphSearchInput, { GraphSearchInputConfig } from './GraphSearchInput';
@@ -259,29 +260,18 @@ function GraphSearch(props: Props) {
 						/>
 					)}
 					{mode === 'confirm' && refreshPanels && (
-						<div className='graph-search-confirm'>
-							<p className='graph-search-confirm__text'>Do you want to refresh panels?</p>
-							<div className='graph-search-confirm__controls'>
-								<button
-									className='graph-search-confirm__button'
-									onClick={() => {
-										if (timestamp) {
-											refreshPanels(timestamp);
-										}
-										setShowModal(false);
-										setMode('timestamp');
-									}}>
-									Yes
-								</button>
-								<button
-									className='graph-search-confirm__button'
-									onClick={() => {
-										setMode('timestamp');
-									}}>
-									No
-								</button>
-							</div>
-						</div>
+						<GraphSearchConfirm
+							onConfirm={() => {
+								if (timestamp && refreshPanels) {
+									refreshPanels(timestamp);
+								}
+								setShowModal(false);
+								setMode('timestamp');
+							}}
+							onDecline={() => {
+								setMode('timestamp');
+							}}
+						/>
 					)}
 					<div className='graph-search__switchers'>
 						{mode === 'confirm' ? null : (

@@ -174,15 +174,17 @@ export default class WorkspaceStore {
 			timeRange: [timestamp, timestamp],
 			filter: this.eventsStore.filterStore.filter,
 		});
-		this.messagesStore.applyFilter(
-			{
-				...this.messagesStore.filterStore.filter,
-				timestampFrom: timestamp,
-				timestampTo: timestamp,
-			},
-			this.messagesStore.filterStore.sseMessagesFilter,
-			this.messagesStore.filterStore.isSoftFilter,
-		);
+		if (this.messagesStore.filterStore.filter.streams.length) {
+			this.messagesStore.applyFilter(
+				{
+					...this.messagesStore.filterStore.filter,
+					timestampFrom: timestamp,
+					timestampTo: timestamp,
+				},
+				this.messagesStore.filterStore.sseMessagesFilter,
+				this.messagesStore.filterStore.isSoftFilter,
+			);
+		}
 	};
 
 	@action
