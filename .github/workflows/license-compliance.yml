@@ -1,0 +1,51 @@
+name: Check license compliance
+
+on: [push]
+
+jobs:
+  LicenseFinder:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+# Python setup
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Change pip and display versions
+      run: |
+        pip install pip==20.0.2
+        echo "Python version: $(python -c "import sys; print(sys.version)")"
+        echo "Pip version: $(pip3 -V)"
+# Node JS setup 
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '12'
+# License finder setup
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6
+    - name: Install LicenseFInder
+      run: gem install license_finder
+# Number of dependencies
+    - name: Install dependencies
+      run: echo "::set-output name=value::$(license_finder report --prepare --python-version=3 -q --format=json | jq '.dependencies | length')"
+      id: deps_num
+    - name: Number of dependencies
+      run: echo "Number of dependencies - ${{ steps.deps_num.outputs.value }}"
+# License report
+    - name: LicenseFinder full report
+      if: ${{ steps.deps_num.outputs.value > 0 }}
+      run: license_finder report --python-version=3
+    - name: List of used licenses
+      if: ${{ steps.deps_num.outputs.value > 0 }}
+      run: license_finder report --python-version=3 -q --format=json | jq -r '.dependencies[] | .licenses[]' | sort | uniq
+# license check
+    - name: append all licenses to permitted, define restricted licenses
+      if: ${{ steps.deps_num.outputs.value > 0 }}
+      run: |
+        license_finder report --python-version=3 -q --format=json | jq -r '.dependencies[] | .licenses[]' | sort | uniq | sed -e "s/.*/'&'/" | xargs -L1 license_finder permitted_licenses add
+        curl -s https://raw.githubusercontent.com/th2-net/.github/main/license-compliance/restricted-licenses.txt | xargs -L1 license_finder restricted_licenses add
+    - name: check license compliance
+      if: ${{ steps.deps_num.outputs.value > 0 }}
+      run: license_finder --python-version=3
