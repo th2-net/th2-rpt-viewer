@@ -81,12 +81,7 @@ class FiltersHistoryStore {
 		const { type, timestamp } = newFilters;
 		const equilizedFilter = getNonEmptyFilters(newFilters.filters);
 
-		const hasSame = this.messagesHistory.some(({ filters }) => {
-			return isEqual(filters, equilizedFilter);
-		});
-		if (hasSame) {
-			return;
-		}
+		if (this.messagesHistory.some(({ filters }) => isEqual(filters, equilizedFilter))) return;
 
 		const filter = { timestamp, type, filters: equilizedFilter };
 

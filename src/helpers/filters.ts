@@ -40,7 +40,7 @@ export function isEventsFilterHistory(
 export function isMessagesFilterHistory(
 	filter: unknown,
 ): filter is FiltersHistoryType<MessageFilterState> {
-	return notEmpty(filter) && (filter as FiltersHistoryType<EventFilterState>).type === 'message';
+	return notEmpty(filter) && (filter as FiltersHistoryType<MessageFilterState>).type === 'message';
 }
 
 export function isEmptyFilter(filter: Partial<EventFilterState>) {
