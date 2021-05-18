@@ -58,15 +58,21 @@ const FiltersHistoryItem = ({ item, filter, eventsFilterInfo, messagesFilterInfo
 			<p className='title'>{moment(item.timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}</p>
 			<div className='content'>
 				{Object.entries(item.filters).map(([key, value], i) => {
+					const filterName = key as keyof FilterState;
 					const label = (key.charAt(0).toUpperCase() + key.slice(1)).split(/(?=[A-Z])/).join(' ');
-					const update = getValuesUpdater(key as keyof FilterState);
-					const state = getState(key as keyof FilterState);
+					const update = getValuesUpdater(filterName);
+					const state = getState(filterName);
 					if (!value) {
 						return null;
 					}
 					return (
 						<div key={key} className='content__item'>
-							<p className='content__label'>{label}:</p>
+							<p className='content__label'>
+								{item.filters[filterName]?.negative ? (
+									<span className='content__excluded' title='Excluded' />
+								) : null}
+								{label}:
+							</p>
 							<div className='content__values'>
 								{typeof value.values === 'string' ? (
 									<button

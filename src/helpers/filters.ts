@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { toJS } from 'mobx';
 import {
 	EventFilterState,
 	FilterState,
@@ -24,7 +25,9 @@ import { notEmpty } from './object';
 
 export function getNonEmptyFilters(filter: Partial<FilterState>) {
 	return Object.fromEntries(
-		Object.entries(filter).filter(([_, value]) => value && value.values && value.values.length > 0),
+		Object.entries(filter)
+			.filter(([_, value]) => value && value.values && value.values.length > 0)
+			.map(([k, v]) => [k, toJS(v)]),
 	);
 }
 
