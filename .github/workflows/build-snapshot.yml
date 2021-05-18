@@ -3,6 +3,7 @@ name: build & publish dev snapshot image to ghcr.io
 on:
   push:
     branches-ignore:
+      - th-1156
       - master
       - version-*
 
