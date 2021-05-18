@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, toJS } from 'mobx';
+import { observable, action } from 'mobx';
 import isEqual from 'lodash.isequal';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
@@ -53,7 +53,7 @@ class FiltersHistoryStore {
 		if (isEmptyFilter(newFilters.filters)) return;
 
 		const { type, timestamp } = newFilters;
-		const equilizedFilter = toJS(getNonEmptyFilters(toJS(newFilters.filters)));
+		const equilizedFilter = getNonEmptyFilters(newFilters.filters);
 
 		if (this.eventsHistory.some(({ filters }) => isEqual(filters, equilizedFilter))) return;
 
@@ -75,22 +75,13 @@ class FiltersHistoryStore {
 	};
 
 	@action
-	public addToMessagesHistory = async <T extends MessageFilterState>(
-		newFilters: FiltersHistoryType<T>,
-	) => {
-		if (!Object.values(newFilters.filters).some(v => v.values.length > 0)) {
-			return;
-		}
+	public addToMessagesHistory = async (newFilters: FiltersHistoryType<MessageFilterState>) => {
+		if (isEmptyFilter(newFilters.filters)) return;
 
 		const { type, timestamp } = newFilters;
-		const equilizedFilter = toJS(getNonEmptyFilters(newFilters.filters as T));
+		const equilizedFilter = getNonEmptyFilters(newFilters.filters);
 
-		const hasSame = this.eventsHistory.some(({ filters }) => {
-			return isEqual(filters, equilizedFilter);
-		});
-		if (hasSame) {
-			return;
-		}
+		if (this.messagesHistory.some(({ filters }) => isEqual(filters, equilizedFilter))) return;
 
 		const filter = { timestamp, type, filters: equilizedFilter };
 
