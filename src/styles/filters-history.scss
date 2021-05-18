@@ -47,12 +47,17 @@
 			background-color: darken($color: #fff, $amount: 10);
 		}
 		.content {
+			&__excluded {
+				@include icon(url(../../resources/icons/cross-icon-dark.svg), 16px, 16px)
+			}
 			&__item {
 				display: flex;
 				align-items: center;
 				margin: 0 0 4px;
 			}
 			&__label {
+				display: flex;
+				align-items: center;
 				margin: 0 4px 0 0;
 			}
 			&__values {
