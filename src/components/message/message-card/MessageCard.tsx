@@ -20,7 +20,7 @@ import {
 	useMessagesWorkspaceStore,
 	useMessageDisplayRulesStore,
 	useSelectedStore,
-	useWorkspaceStore,
+	useMessagesDataStore,
 } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
@@ -33,8 +33,8 @@ import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
 import '../../../styles/messages.scss';
-import RadioGroup from '../../util/RadioGroup';
 import { matchWildcardRule } from '../../../helpers/regexp';
+import MessageCardTools, { MessageCardToolsConfig } from './MessageCardTools';
 
 const HUE_SEGMENTS_COUNT = 36;
 
@@ -50,15 +50,16 @@ export interface RecoveredProps {
 interface Props extends OwnProps, RecoveredProps {}
 
 function MessageCardBase({ message, viewType, setViewType }: Props) {
+	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
+
 	const messagesStore = useMessagesWorkspaceStore();
+	const messagesDataStore = useMessagesDataStore();
 	const selectedStore = useSelectedStore();
-	const workspaceStore = useWorkspaceStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
+
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
-
-	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isBookmarked =
@@ -66,9 +67,26 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 			bookmarkedMessage => bookmarkedMessage.id === messageId,
 		) !== -1;
 
+	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
+
 	const toggleViewType = (v: MessageViewType) => {
 		setViewType(v);
 	};
+
+	React.useEffect(() => {
+		const abortController = new AbortController();
+
+		if (
+			messagesStore.filterStore.isSoftFilter &&
+			messagesDataStore.isSoftFiltered.get(messageId) === undefined
+		) {
+			messagesDataStore.matchMessage(messageId, abortController.signal);
+		}
+
+		return () => {
+			abortController.abort();
+		};
+	}, []);
 
 	React.useEffect(() => {
 		switch (viewType) {
@@ -119,57 +137,9 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		messagesStore.setHoveredMessage(null);
 	};
 
-	const rawViewTypes = React.useMemo(
-		() => [
-			{
-				value: MessageViewType.BINARY,
-				id: `${MessageViewType.BINARY}-${messageId}-${workspaceStore.id}`,
-				name: `message-view-type-${messageId}-${workspaceStore.id}`,
-				className: 'message-view-type-radio',
-				checked: viewType === MessageViewType.BINARY,
-				onChange: toggleViewType,
-			},
-			{
-				value: MessageViewType.ASCII,
-				id: `${MessageViewType.ASCII}-${messageId}-${workspaceStore.id}`,
-				name: `message-view-type-${messageId}-${workspaceStore.id}`,
-				className: 'message-view-type-radio',
-				checked: viewType === MessageViewType.ASCII,
-				onChange: toggleViewType,
-			},
-		],
-		[viewType, messageId],
-	);
-
-	const parsedViewTypes = React.useMemo(() => {
-		return body
-			? [
-					{
-						value: MessageViewType.JSON,
-						id: `${MessageViewType.JSON}-${messageId}-${workspaceStore.id}`,
-						name: `message-view-type-${messageId}-${workspaceStore.id}`,
-						className: 'message-view-type-radio',
-						checked: viewType === MessageViewType.JSON,
-						onChange: toggleViewType,
-					},
-					{
-						value: MessageViewType.FORMATTED,
-						id: `${MessageViewType.FORMATTED}-${messageId}-${workspaceStore.id}`,
-						name: `message-view-type-${messageId}-${workspaceStore.id}`,
-						className: 'message-view-type-radio',
-						checked: viewType === MessageViewType.FORMATTED,
-						onChange: toggleViewType,
-					},
-			  ]
-			: [];
-	}, [messageId, viewType, body]);
-
 	const isAttached = !!messagesStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
 	);
-
-	const isSoftFiltered =
-		messagesStore.dataStore.softFilterResults.findIndex(m => m.messageId === messageId) !== -1;
 
 	const isScreenshotMsg = isScreenshotMessage(message);
 
@@ -192,8 +162,6 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		direction?.toLowerCase(),
 	);
 
-	const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
-
 	const renderMessageInfo = () => {
 		if (viewType === MessageViewType.FORMATTED || viewType === MessageViewType.BINARY) {
 			const formattedTimestamp = formatTime(timestampToNumber(timestamp));
@@ -203,7 +171,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 						{timestamp && formattedTimestamp}
 					</div>
 					<div className='mc-header__item' title={`Session: ${sessionId}`}>
-						<span className={sessionClass} style={sessionArrowStyle}></span>
+						<span className={sessionClass} style={sessionArrowStyle} />
 						<span className='mc-header__value'>{sessionId}</span>
 					</div>
 					<div className='mc-header__item messageId' title={`ID: ${messageId}`}>
@@ -252,6 +220,17 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		isSelected: isAttached,
 	};
 
+	const messageCardToolsConfig: MessageCardToolsConfig = {
+		message,
+		messageId,
+		messageType,
+		messageViewType: viewType,
+		toggleViewType,
+		isBookmarked,
+		toggleMessagePin: () => selectedStore.toggleMessagePin(message),
+		isScreenshotMsg,
+	};
+
 	return (
 		<div className={rootClass} onMouseEnter={hoverMessage} onMouseLeave={unhoverMessage}>
 			<div className='message-card'>
@@ -275,30 +254,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 					)}
 				</div>
 			</div>
-			<div className='message-card-tools'>
-				<div
-					className={bookmarkIconClass}
-					title={isBookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
-					onClick={() => selectedStore.toggleMessagePin(message)}></div>
-				<div className='mc-header__controls'>
-					{!isScreenshotMsg && (
-						<RadioGroup
-							className='mc-header__radios'
-							radioConfigs={[...parsedViewTypes, ...rawViewTypes]}
-						/>
-					)}
-					{isScreenshotMsg && (
-						<>
-							<div className='mc-header__control-button mc-header__icon mc-headr__zoom-button' />
-							<a
-								className='mc-header__control-button mc-header__icon mc-header__download-button'
-								download={`${messageId}.${messageType.replace('image/', '')}`}
-								href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}
-							/>
-						</>
-					)}
-				</div>
-			</div>
+			<MessageCardTools {...messageCardToolsConfig} />
 		</div>
 	);
 }

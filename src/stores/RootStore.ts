@@ -25,16 +25,24 @@ import { getObjectKeys } from '../helpers/object';
 import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import { DbData } from '../api/indexedDb';
+import FiltersHistoryStore from './FiltersHistoryStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
+
+	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb);
 
 	messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
 
 	workspacesStore: WorkspacesStore;
 
 	constructor(private api: ApiSchema) {
-		this.workspacesStore = new WorkspacesStore(this, this.api, this.parseUrlState());
+		this.workspacesStore = new WorkspacesStore(
+			this,
+			this.api,
+			this.filtersHistoryStore,
+			this.parseUrlState(),
+		);
 
 		window.history.replaceState({}, '', window.location.pathname);
 	}

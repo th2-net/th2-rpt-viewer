@@ -21,7 +21,6 @@ import { MessageFilterState } from '../../components/search-panel/SearchPanelFil
 import { SearchStore } from '../SearchStore';
 import { getDefaultMessagesFiltersState } from '../../helpers/search';
 import { MessagesFilterInfo, MessagesSSEParams } from '../../api/sse';
-import { EventSourceConfig } from '../../api/ApiSchema';
 
 function getDefaultMessagesFilter(): MessagesFilter {
 	return {
@@ -75,14 +74,13 @@ export default class MessagesFilterStore {
 	@observable sseMessagesFilter: MessageFilterState | null = null;
 
 	/*
-		When isSoftFilter is applied we create two messages channels:
-		1 with filters and second without filters
-		That allows us to highlight the matching messages and keeps the rest visible
+		When isSoftFilter is applied messages that don't match filter are not excluded,
+		instead we highlight messages that matched filter
 	*/
 	@observable isSoftFilter = false;
 
 	@computed
-	public get messsagesSSEConfig(): EventSourceConfig {
+	public get filterParams(): MessagesSSEParams {
 		const sseFilters = this.sseMessagesFilter;
 
 		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
@@ -115,9 +113,18 @@ export default class MessagesFilterStore {
 			...Object.fromEntries([...filterValues, ...filterInclusion]),
 		};
 
+		return queryParams;
+	}
+
+	@computed
+	public get softFilterParams(): MessagesSSEParams {
 		return {
-			type: 'message',
-			queryParams,
+			startTimestamp: this.filterParams.startTimestamp,
+			stream: this.filterParams.stream,
+			searchDirection: this.filterParams.searchDirection,
+			endTimestamp: this.filterParams.endTimestamp,
+			resultCountLimit: this.filterParams.resultCountLimit,
+			resumeFromId: this.filterParams.resumeFromId,
 		};
 	}
 

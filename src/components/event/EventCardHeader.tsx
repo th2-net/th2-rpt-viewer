@@ -51,7 +51,7 @@ function EventCardHeader({
 	rootStyle = {},
 	disabled = false,
 }: Props) {
-	const { eventId, eventName, eventType, startTimestamp, endTimestamp } = event;
+	const { eventId, eventName, eventType, startTimestamp, endTimestamp, isUnknown } = event;
 
 	const selectedStore = useSelectedStore();
 	const eventStore = useWorkspaceEventStore();
@@ -60,7 +60,7 @@ function EventCardHeader({
 
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
-	const status = getEventStatus(event);
+	const status = isUnknown ? 'unknown' : getEventStatus(event);
 	const startTimestampValue = timestampToNumber(startTimestamp);
 
 	const elapsedTime =
@@ -102,8 +102,6 @@ function EventCardHeader({
 		updateForm({ parentEvent: eventId });
 		setActiveWorkspace(0);
 	};
-
-	const isUnknown = event.isUnknown;
 
 	const onMouseEnter = () => {
 		if (!isUnknown) {

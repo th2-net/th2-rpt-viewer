@@ -139,11 +139,7 @@ const MessagesVirtualizedList = (props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment(
-												messageStore.filterStore.messsagesSSEConfig.queryParams.startTimestamp,
-											)
-												.utc()
-												.format()}
+											{moment.utc(messageStore.filterStore.filterParams.startTimestamp).format()}
 										</span>
 										<button
 											className='messages-list__load-btn'
@@ -166,11 +162,7 @@ const MessagesVirtualizedList = (props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment(
-												messageStore.filterStore.messsagesSSEConfig.queryParams.startTimestamp,
-											)
-												.utc()
-												.format()}
+											{moment(messageStore.filterStore.filterParams.startTimestamp).utc().format()}
 										</span>
 										<button
 											className='messages-list__load-btn'

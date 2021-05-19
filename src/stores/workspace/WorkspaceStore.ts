@@ -77,6 +77,7 @@ export default class WorkspaceStore {
 			this.graphStore,
 			this.searchStore,
 			this.api,
+			this.workspacesStore.filtersHistoryStore,
 			initialState.events,
 		);
 		this.messagesStore = new MessagesStore(
@@ -85,6 +86,7 @@ export default class WorkspaceStore {
 			this.selectedStore,
 			this.searchStore,
 			this.api,
+			this.workspacesStore.filtersHistoryStore,
 			initialState.messages,
 		);
 

@@ -98,7 +98,10 @@ export default class EventsDataStore {
 
 	@computed
 	public get isLoading(): boolean {
-		return Boolean(this.eventTreeEventSource && this.eventTreeEventSource.isLoading);
+		return (
+			Boolean(this.eventTreeEventSource && this.eventTreeEventSource.isLoading) ||
+			[...this.loadingParentEvents.values()].some(Boolean)
+		);
 	}
 
 	@action
@@ -110,7 +113,9 @@ export default class EventsDataStore {
 		this.filterStore.setRange(timeRange);
 		this.filterStore.setEventsFilter(filter);
 
-		this.loadTargetNode(targetEventId || null);
+		if (targetEventId) {
+			this.loadTargetNode(targetEventId);
+		}
 
 		try {
 			this.eventTreeEventSource?.stop();
@@ -214,10 +219,7 @@ export default class EventsDataStore {
 			this.parentNodesUpdateScheduler = window.setInterval(this.parentNodesUpdater, 600);
 
 			when(
-				() =>
-					this.rootEventIds.length > 0 &&
-					!this.isLoading &&
-					![...this.parentChildrensMap.values()].some(Boolean),
+				() => this.rootEventIds.length > 0 && !this.isLoading,
 				() => {
 					if (this.parentNodesUpdateScheduler) {
 						window.clearInterval(this.parentNodesUpdateScheduler);
@@ -467,6 +469,7 @@ export default class EventsDataStore {
 		if (this.targetEventLoadSubscription) {
 			this.targetEventLoadSubscription();
 		}
+		this.isPreloadingTargetEventsChildren.clear();
 		this.targetNode = null;
 		this.targetEventAC?.abort();
 
@@ -564,7 +567,12 @@ export default class EventsDataStore {
 		this.isLoadingChildren.clear();
 		this.hasUnloadedChildren.clear();
 		this.eventStore.isExpandedMap.clear();
+		this.targetNode = null;
+		this.targetNodeParents = [];
+		this.isPreloadingTargetEventsChildren.clear();
 	};
+
+	private isPreloadingTargetEventsChildren: Map<string, boolean> = new Map();
 
 	private preloadSelectedPathChildren = (selectedPath: string[] | null) => {
 		if (selectedPath) {
@@ -573,7 +581,12 @@ export default class EventsDataStore {
 					const loadedChildren = this.parentChildrensMap.get(eventId);
 					return !loadedChildren || loadedChildren.length < this.CHILDREN_COUNT_LIMIT;
 				})
-				.forEach(this.loadChildren);
+				.forEach(eventId => {
+					if (!this.isPreloadingTargetEventsChildren.get(eventId)) {
+						this.loadChildren(eventId);
+						this.isPreloadingTargetEventsChildren.set(eventId, true);
+					}
+				});
 		}
 	};
 }

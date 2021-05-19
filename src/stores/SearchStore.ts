@@ -44,6 +44,7 @@ import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
+import FiltersHistoryStore from './FiltersHistoryStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -101,7 +102,11 @@ const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
 const SEARCH_CHUNK_SIZE = 500;
 
 export class SearchStore {
-	constructor(private workspacesStore: WorkspacesStore, private api: ApiSchema) {
+	constructor(
+		private workspacesStore: WorkspacesStore,
+		private api: ApiSchema,
+		private filtersHistory: FiltersHistoryStore,
+	) {
 		this.init();
 
 		autorun(() => {
@@ -482,7 +487,7 @@ export class SearchStore {
 					)
 					.map((info: SSEFilterInfo) => info.name);
 
-		const filterValues = filtersToAdd.map(filter => [
+		const filterValues: [string, string | string[]][] = filtersToAdd.map(filter => [
 			`${filter}-${filter === 'status' ? 'value' : 'values'}`,
 			getFilter(filter).values,
 		]);
@@ -520,6 +525,22 @@ export class SearchStore {
 			});
 
 			this.searchChannel[direction] = searchChannel;
+
+			const timestamp = Date.now();
+
+			if (this.formType === 'event') {
+				this.filtersHistory.addToEventsHistory({
+					timestamp,
+					type: this.formType,
+					filters: filterParams as EventFilterState,
+				});
+			} else {
+				this.filtersHistory.addToMessagesHistory({
+					timestamp,
+					type: this.formType,
+					filters: filterParams as MessageFilterState,
+				});
+			}
 
 			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));
 			searchChannel.addEventListener('keep_alive', this.onChannelResponse.bind(this, direction));
@@ -707,6 +728,12 @@ export class SearchStore {
 			const savedSearchResultKeys = await this.api.indexedDb.getStoreKeys<number>(
 				IndexedDbStores.SEARCH_HISTORY,
 			);
+
+			if (savedSearchResultKeys.includes(search.timestamp)) {
+				await this.api.indexedDb.updateDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
+				return;
+			}
+
 			if (savedSearchResultKeys.length >= indexedDbLimits['search-history']) {
 				const keysToDelete = savedSearchResultKeys.slice(
 					0,

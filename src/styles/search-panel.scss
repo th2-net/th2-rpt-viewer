@@ -34,9 +34,114 @@
 	border-radius: 0 0 5px 5px;
 	flex-shrink: 0;
 
+	.filters-history-open {
+		@include improved-clickable($searchPanelColor, 10px);
+	}
+
 	.filter-row {
 		flex-grow: 1;
 		margin-bottom: 4px;
+
+		&.event-resolver {
+			position: relative;
+		}
+
+		&__search-status {
+			flex-shrink: 0;
+			&.loading {
+				@include spinner(3px, 15px);
+			}
+
+			&.not-found {
+				background-color: transparent;
+				border-radius: 0;
+				border: 10px solid transparent;
+				width: 0;
+				height: 0;
+				border-bottom: 15px solid $searchNotFoundEventsColor;
+				margin-top: -10px;
+				position: relative;
+
+				&::after {
+					display: block;
+					content: '!';
+					font-style: normal;
+					font-weight: bold;
+					font-size: 12px;
+					text-shadow: 0 0 2px #000;
+					text-align: center;
+					color: #fff;
+					position: absolute;
+					width: 20px;
+					height: 12px;
+					line-height: 12px;
+					top: 3px;
+					left: -10px;
+				}
+			}
+		}
+
+		&__event-card {
+			width: 100%;
+			height: 30px;
+			min-height: 30px;
+			cursor: pointer;
+			user-select: none;
+			position: relative;
+			padding: 3px 5px;
+			margin: 0 10px;
+			border-radius: $bubbleBorderRadius;
+			background-color: rgba(#ffffff, 0.5);
+			font-size: 13px;
+			color: rgba(#000, 0.7);
+			display: flex;
+			justify-content: flex-start;
+			align-items: center;
+			@include ellipsis();
+
+			&-title {
+				@include ellipsis();
+				width: auto;
+				max-width: calc(100% - 250px);
+				margin: 0 5px;
+				margin-right: 10px;
+			}
+
+			&-timestamp {
+				@include ellipsis();
+				width: 200px;
+				height: 15px;
+				line-height: 15px;
+				font-size: 11px;
+				color: rgba(#000, 0.5);
+			}
+
+			&-icon {
+				display: block;
+				width: 12px;
+				height: 12px;
+				margin: 1px;
+				border-radius: 50%;
+
+				&.passed {
+					background-color: $graphOverlayPassedEventsColor;
+				}
+
+				&.failed {
+					background-color: $graphOverlayFailedEventsColor;
+				}
+			}
+		}
+
+		&__input {
+			&.hide {
+				opacity: 0;
+				width: 0;
+				height: 0;
+				margin: 0;
+				padding: 0;
+			}
+		}
 	}
 
 	.toggler-wrapper {

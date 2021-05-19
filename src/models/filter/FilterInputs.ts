@@ -20,7 +20,8 @@ export type FitlerRowItem =
 	| FilterRowStringConfig
 	| FilterRowMultipleStringsConfig
 	| FilterRowTogglerConfig
-	| FilterRowSwitcherConfig;
+	| FilterRowSwitcherConfig
+	| FilterRowEventResolverConfig;
 
 export type CompoundFilterRow = Array<FitlerRowItem>;
 
@@ -92,6 +93,7 @@ export type FilterRowStringConfig = FilterRowBaseConfig & {
 	value: string;
 	setValue: (nextValue: string) => void;
 	labelClassName?: string;
+	autocompleteList?: string[];
 };
 
 export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
@@ -101,6 +103,7 @@ export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
 	currentValue: string;
 	setCurrentValue: (currentValue: string) => void;
 	autocompleteList: string[] | null;
+	validateBubbles?: boolean;
 	hint?: string;
 	labelClassName?: string;
 };
@@ -133,6 +136,13 @@ export type FilterRowSwitcherConfig = FilterRowBaseConfig & {
 	className?: string;
 	labelClassName?: string;
 	defaultValue: string;
+};
+
+export type FilterRowEventResolverConfig = FilterRowBaseConfig & {
+	type: 'event-resolver';
+	value: string;
+	setValue: (nextValue: string) => void;
+	labelClassName?: string;
 };
 
 export type ActionFilterConfig = {

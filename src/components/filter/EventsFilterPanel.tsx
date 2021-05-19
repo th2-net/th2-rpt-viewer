@@ -18,12 +18,15 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
-import { useWorkspaceEventStore, useEventsFilterStore } from '../../hooks';
+import { useWorkspaceEventStore, useEventsFilterStore, useFiltersHistoryStore } from '../../hooks';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
-import { EventFilterState, Filter } from '../search-panel/SearchPanelFilters';
+import { Filter, EventFilterState } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
+import FiltersHistory from '../filters-history/FiltersHistory';
+import { getArrayOfUniques } from '../../helpers/array';
+import useSetState from '../../hooks/useSetState';
 
 type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;
@@ -45,10 +48,11 @@ function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
+	const { eventsHistory } = useFiltersHistoryStore();
 
+	const [filter, setFilter] = useSetState<EventFilterState | null>(filterStore.filter);
 	const [showFilter, setShowFilter] = React.useState(false);
 
-	const [filter, setFilter] = React.useState<EventFilterState | null>(filterStore.filter);
 	const [currentFilterValues, setCurrentFilterValues] = React.useState<CurrentFilterValues | null>(
 		getDefaultCurrentFilterValues(filterStore.filter),
 	);
@@ -67,16 +71,15 @@ function EventsFilterPanel() {
 	const getNegativeToggler = React.useCallback(
 		(filterName: EventSSEFilters) => {
 			return function negativeToggler() {
-				const filterValue = filter && filter[filterName];
-				if (filter && filterValue && 'negative' in filterValue) {
-					const updatedFilterValue = {
-						...filterValue,
-						negative: !filterValue.negative,
-					};
-					setFilter({
-						...filter,
-						[filterName]: updatedFilterValue,
-					});
+				if (filter) {
+					const filterValue = filter[filterName];
+					if (filterValue && 'negative' in filterValue) {
+						const updatedFilterValue = {
+							...filterValue,
+							negative: !filterValue.negative,
+						};
+						setFilter({ [filterName]: updatedFilterValue });
+					}
 				}
 			};
 		},
@@ -86,19 +89,12 @@ function EventsFilterPanel() {
 	const getValuesUpdater = React.useCallback(
 		<T extends 'string' | 'string[]' | 'switcher'>(name: EventSSEFilters) => {
 			return function valuesUpdater(values: T extends 'string[]' ? string[] : string) {
-				setFilter(prevState => {
-					if (prevState !== null) {
-						return {
-							...prevState,
-							[name]: { ...prevState[name], values },
-						};
-					}
-
-					return prevState;
-				});
+				if (filter) {
+					setFilter({ [name]: { ...filter[name], values } });
+				}
 			};
 		},
-		[setFilter],
+		[filter],
 	);
 
 	const setCurrentValue = React.useCallback(
@@ -128,9 +124,16 @@ function EventsFilterPanel() {
 
 			let toggler: FilterRowTogglerConfig | null = null;
 
+			const autocompleteList = getArrayOfUniques(
+				eventsHistory
+					.map(item => item.filters[filterName]?.values)
+					.filter(notEmpty)
+					.flat(),
+			);
+
 			if ('negative' in filterValues) {
 				toggler = {
-					id: `${filter.name}-include`,
+					id: `${filterName}-include`,
 					label,
 					type: 'toggler',
 					value: filterValues.negative,
@@ -142,7 +145,6 @@ function EventsFilterPanel() {
 			}
 
 			let filterInput: FilterRowConfig | null = null;
-
 			switch (filterValues.type) {
 				case 'string':
 					filterInput = {
@@ -150,6 +152,7 @@ function EventsFilterPanel() {
 						type: 'string',
 						value: filterValues.values,
 						setValue: getValuesUpdater(filterName),
+						autocompleteList,
 					};
 					break;
 				case 'string[]':
@@ -160,7 +163,7 @@ function EventsFilterPanel() {
 						setValues: getValuesUpdater(filterName),
 						currentValue: currentFilterValues[filterName] || '',
 						setCurrentValue: setCurrentValue(filterName),
-						autocompleteList: null,
+						autocompleteList,
 					};
 					break;
 				case 'switcher':
@@ -183,12 +186,30 @@ function EventsFilterPanel() {
 			const filterRow = [toggler, filterInput].filter(notEmpty);
 			return filterRow.length === 1 ? filterRow[0] : filterRow;
 		});
-	}, [filter, currentFilterValues, setCurrentValue, getValuesUpdater, getNegativeToggler]);
+	}, [
+		filter,
+		eventsHistory,
+		currentFilterValues,
+		setCurrentValue,
+		getValuesUpdater,
+		getNegativeToggler,
+	]);
 
 	return (
 		<FilterPanel
 			isLoading={eventDataStore.isLoading}
 			isFilterApplied={filterStore.isEventsFilterApplied}
+			renderFooter={() =>
+				filter && (
+					<FiltersHistory
+						type='event'
+						sseFilter={{
+							state: filter,
+							setState: setFilter,
+						}}
+					/>
+				)
+			}
 			setShowFilter={setShowFilter}
 			showFilter={showFilter}
 			onSubmit={onSubmit}
