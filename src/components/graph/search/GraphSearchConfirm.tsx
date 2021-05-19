@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
+import KeyCodes from '../../../util/KeyCodes';
 
 interface Props {
 	onConfirm: () => void;
@@ -41,6 +42,22 @@ const GraphSearchConfirm = ({ onConfirm, onDecline }: Props) => {
 			}
 		};
 	}, []);
+
+	React.useEffect(() => {
+		const listener = (e: KeyboardEvent) => {
+			if (e.keyCode === KeyCodes.ENTER) {
+				onConfirm();
+				return;
+			}
+			if (e.keyCode === KeyCodes.ESCAPE) {
+				onDecline();
+			}
+		};
+		document.addEventListener('keydown', listener);
+		return () => {
+			document.removeEventListener('keydown', listener);
+		};
+	});
 
 	return (
 		<div className='graph-search-confirm'>
