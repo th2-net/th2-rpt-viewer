@@ -120,6 +120,8 @@ export default class EventsDataStore {
 			this.loadTargetNode(targetEventId);
 		}
 
+		this.eventStore.searchStore.onFilterChange();
+
 		try {
 			this.eventTreeEventSource?.stop();
 			this.eventTreeEventSource = new EventSSELoader(

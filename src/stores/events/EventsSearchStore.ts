@@ -14,13 +14,17 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
+import debounce from 'lodash.debounce';
 import SearchToken from '../../models/search/SearchToken';
 import ApiSchema from '../../api/ApiSchema';
 import EventsStore from './EventsStore';
 import { createSearchToken } from '../../helpers/search/createSearchToken';
 import { COLORS as SearchTokenColors } from '../../components/search/SearchInput';
 import { nextCyclicItemByIndex } from '../../helpers/array';
+import { EventSSELoader } from './EventSSELoader';
+import EventsFilter from '../../models/filter/EventsFilter';
+import { EventTreeNode } from '../../models/EventAction';
 
 const defaultState = {
 	tokens: [],
@@ -31,9 +35,7 @@ const defaultState = {
 
 type initialState = Partial<{
 	tokens: SearchToken[];
-	isLoading: boolean;
 	scrolledIndex: number | null;
-	rawResults: string[];
 	searchPatterns: string[];
 }>;
 
@@ -51,138 +53,83 @@ export default class EventsSearchStore {
 		);
 	}
 
-	@observable tokens: SearchToken[] = [];
+	@observable
+	public tokens: SearchToken[] = [];
 
-	@observable rawResults: string[] = [];
+	@observable
+	public rawResults: string[] = [];
 
-	@observable isLoading = false;
+	@observable
+	public results: string[] = [];
 
-	@observable scrolledIndex: number | null = null;
+	@observable
+	public inputValue = '';
 
-	@observable isActive = false;
+	@observable
+	public currentEventId: string | null = null;
 
-	@observable inputValue = '';
+	@observable
+	public scrolledIndex: number | null = null;
+
+	@observable
+	private isLoadingSearchResults = false;
+
+	@observable
+	private isProccessingSearchResults = false;
 
 	@computed
-	get scrolledItem() {
-		if (this.scrolledIndex == null) {
-			return null;
-		}
-		return this.results[this.scrolledIndex];
-	}
-
-	@computed
-	get results() {
-		if (this.eventsStore.viewStore.flattenedListView) {
-			return this.eventsStore.flattenedEventList
-				.map(node => node.eventId)
-				.filter(nodeId => this.rawResults.includes(nodeId));
-		}
-		return this.eventsStore.nodesList
-			.map(node => node.eventId)
-			.filter(nodeId => this.rawResults.includes(nodeId));
+	public get isLoading() {
+		return this.isLoadingSearchResults || this.isProccessingSearchResults;
 	}
 
 	@action
-	updateTokens = async (nextTokens: SearchToken[]) => {
-		this.isLoading = true;
+	updateTokens = (nextTokens: SearchToken[]) => {
+		if (
+			nextTokens.some(
+				nextToken => !this.tokens.map(t => t.pattern.trim()).includes(nextToken.pattern.trim()),
+			)
+		) {
+			this.onSearchTokensUpdate(nextTokens);
+		}
+
 		this.tokens = nextTokens;
-
-		const rootEventsResults = await Promise.all(
-			nextTokens.map(token => this.fetchTokenResults(token.pattern)),
-		);
-		// only unique ids
-		this.rawResults = [...new Set(rootEventsResults.flat())];
-		this.scrolledIndex = null;
-		this.isLoading = false;
-	};
-
-	@action
-	fetchTokenResults = async (tokenString: string) => {
-		const rootEventsResults = await this.api.events.getEventsByName(
-			[this.eventsStore.filterStore.timestampFrom, this.eventsStore.filterStore.timestampTo],
-			tokenString,
-		);
-
-		const expandedSubNodes = this.eventsStore.nodesList.filter(
-			node =>
-				this.eventsStore.isExpandedMap.get(node.eventId) &&
-				(this.eventsStore.eventDataStore.parentChildrensMap.get(node.eventId) || []).length > 0,
-		);
-
-		const subNodesResult = await Promise.all(
-			expandedSubNodes.map(node =>
-				this.api.events.getEventsByName(
-					[this.eventsStore.filterStore.timestampFrom, this.eventsStore.filterStore.timestampTo],
-					tokenString,
-					node.eventId,
-				),
-			),
-		);
-
-		return [...rootEventsResults, ...subNodesResult.flat(2)];
-	};
-
-	@action
-	appendResultsForEvent = async (eventId: string) => {
-		this.isLoading = true;
-		const results = await Promise.all(
-			this.tokens.map(token =>
-				this.api.events.getEventsByName(
-					[this.eventsStore.filterStore.timestampFrom, this.eventsStore.filterStore.timestampTo],
-					token.pattern,
-					eventId,
-				),
-			),
-		);
-		this.isLoading = false;
-		this.scrolledIndex = null;
-
-		this.rawResults.push(...new Set(results.flat()));
-	};
-
-	@action
-	removeEventsResults = (nodesIds: string[]) => {
-		this.rawResults = this.rawResults.filter(result => !nodesIds.includes(result));
-		this.scrolledIndex = null;
 	};
 
 	@action
 	nextSearchResult = () => {
-		this.scrolledIndex =
+		const nextIndex =
 			this.scrolledIndex != null ? (this.scrolledIndex + 1) % this.results.length : 0;
+		this.scrolledIndex = nextIndex;
+		this.currentEventId = this.results[nextIndex];
+		this.eventsStore.scrollToEvent(this.currentEventId);
 	};
 
 	@action
 	prevSearchResult = () => {
-		this.scrolledIndex =
+		const prevIndex =
 			this.scrolledIndex != null
 				? (this.results.length + this.scrolledIndex - 1) % this.results.length
 				: 0;
+		this.scrolledIndex = prevIndex;
+		this.currentEventId = this.results[prevIndex];
+		this.eventsStore.scrollToEvent(this.currentEventId);
 	};
 
 	@action
 	clear = () => {
-		this.rawResults = [];
-		this.tokens = [];
-		this.inputValue = '';
-		this.scrolledIndex = null;
+		this.resetState();
 	};
 
 	@action
 	private init = (initialState?: initialState) => {
 		if (!initialState) return;
 		const {
-			isLoading = defaultState.isLoading,
-			rawResults = defaultState.rawResults,
 			scrolledIndex = defaultState.scrolledIndex,
 			tokens = defaultState.tokens,
 			searchPatterns,
 		} = initialState;
 
-		this.isLoading = isLoading;
 		this.scrolledIndex = scrolledIndex;
-		this.rawResults = rawResults;
 
 		if (searchPatterns && searchPatterns.length) {
 			const tokensFromUrl = searchPatterns.map((patt, index) =>
@@ -190,7 +137,6 @@ export default class EventsSearchStore {
 			);
 			this.tokens = tokensFromUrl;
 			this.updateTokens(tokensFromUrl);
-			this.isActive = true;
 		} else {
 			this.tokens = tokens;
 		}
@@ -200,4 +146,146 @@ export default class EventsSearchStore {
 	setInputValue = (value: string) => {
 		this.inputValue = value;
 	};
+
+	private getSearchFilter = (searchTokens: SearchToken[]) => {
+		const filter: EventsFilter | null = this.eventsStore.filterStore.filter
+			? {
+					...this.eventsStore.filterStore.filter,
+					name: {
+						...this.eventsStore.filterStore.filter.name,
+						negative: false,
+						values: searchTokens.map(token => token.pattern),
+					},
+			  }
+			: null;
+
+		return filter;
+	};
+
+	private loader: EventSSELoader | null = null;
+
+	private searchResultsUpdateReaction: IReactionDisposer | null = null;
+
+	private worker: Worker | null = null;
+
+	@action
+	public fetchSearchResults = (searchTokens: SearchToken[]) => {
+		this.loader?.stop();
+		this.worker?.terminate();
+		this.rawResults = [];
+		this.scrolledIndex = null;
+
+		if (this.searchResultsUpdateReaction) {
+			this.searchResultsUpdateReaction();
+		}
+
+		if (searchTokens.length === 0) return;
+
+		this.isLoadingSearchResults = true;
+
+		this.loader = new EventSSELoader(
+			{
+				filter: this.getSearchFilter(searchTokens),
+				sseParams: {
+					searchDirection: 'next',
+				},
+				timeRange: this.eventsStore.filterStore.range,
+			},
+			{
+				onError: this.onSearchError,
+				onResponse: this.onSearchResultsResponse,
+				onClose: this.onClose,
+			},
+		);
+
+		this.worker = new Worker('src/search-worker.js');
+
+		this.worker.onmessage = this.onSearchResultsUpdateWorker;
+
+		this.searchResultsUpdateReaction = reaction(
+			() =>
+				[
+					this.rawResults,
+					this.eventsStore.viewStore.flattenedListView
+						? this.eventsStore.flattenedEventList
+						: this.eventsStore.flatExpandedList,
+				] as [string[], EventTreeNode[]],
+			([rawResults, nodes]) => {
+				this.isProccessingSearchResults = Boolean(rawResults.length > 0 && nodes.length > 0);
+
+				this.onSearchDataUpdate(rawResults, nodes);
+			},
+		);
+
+		this.loader.subscribe();
+	};
+
+	@action
+	private onSearchResultsResponse = (events: EventTreeNode[]) => {
+		this.rawResults = [...this.rawResults, ...events.map(event => event.eventId)];
+	};
+
+	private onSearchError = () => {
+		this.resetState();
+	};
+
+	@action
+	private onSearchResultsUpdateWorker = (e: MessageEvent) => {
+		const { results, currentIndex } = e.data;
+		this.scrolledIndex = currentIndex;
+		this.results = results;
+
+		this.isProccessingSearchResults = false;
+	};
+
+	@action
+	private onClose = (events: EventTreeNode[]) => {
+		this.onSearchResultsResponse(events);
+		this.isLoadingSearchResults = false;
+	};
+
+	public dispose = () => {
+		this.resetState();
+	};
+
+	@action
+	private resetState = () => {
+		this.isLoadingSearchResults = false;
+		this.isProccessingSearchResults = false;
+		this.scrolledIndex = null;
+		this.currentEventId = null;
+		this.results = [];
+		this.rawResults = [];
+
+		this.loader?.stop();
+		this.loader = null;
+
+		if (this.searchResultsUpdateReaction) {
+			this.searchResultsUpdateReaction();
+		}
+
+		this.worker?.terminate();
+		this.worker = null;
+	};
+
+	private onSearchTokensUpdate = (searchTokens: SearchToken[]) => {
+		this.isProccessingSearchResults = Boolean(searchTokens.length);
+
+		if (searchTokens.length !== 0) {
+			this.debouncedFetchSearchResults(searchTokens);
+		} else {
+			this.resetState();
+		}
+	};
+
+	private debouncedFetchSearchResults = debounce(this.fetchSearchResults, 650);
+
+	public onFilterChange = () => {
+		this.resetState();
+		this.fetchSearchResults(this.tokens);
+	};
+
+	private onSearchDataUpdate = debounce((rawResults: string[], nodes: EventTreeNode[]) => {
+		this.worker?.postMessage({ rawResults: rawResults.slice(), nodes: nodes.slice() });
+	}, 600);
 }
