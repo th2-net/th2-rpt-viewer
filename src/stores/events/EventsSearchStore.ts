@@ -16,6 +16,7 @@
 
 import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import debounce from 'lodash.debounce';
+import SearchWorker from '../../search.worker';
 import SearchToken from '../../models/search/SearchToken';
 import ApiSchema from '../../api/ApiSchema';
 import EventsStore from './EventsStore';
@@ -166,7 +167,7 @@ export default class EventsSearchStore {
 
 	private searchResultsUpdateReaction: IReactionDisposer | null = null;
 
-	private worker: Worker | null = null;
+	private worker: typeof SearchWorker | null = null;
 
 	@action
 	public fetchSearchResults = (searchTokens: SearchToken[]) => {
@@ -198,7 +199,7 @@ export default class EventsSearchStore {
 			},
 		);
 
-		this.worker = new Worker('src/search-worker.js');
+		this.worker = new SearchWorker();
 
 		this.worker.onmessage = this.onSearchResultsUpdateWorker;
 
@@ -286,6 +287,10 @@ export default class EventsSearchStore {
 	};
 
 	private onSearchDataUpdate = debounce((rawResults: string[], nodes: EventTreeNode[]) => {
-		this.worker?.postMessage({ rawResults: rawResults.slice(), nodes: nodes.slice() });
+		this.worker?.postMessage({
+			rawResults: rawResults.slice(),
+			nodes: nodes.slice(),
+			currentEventId: this.currentEventId,
+		});
 	}, 600);
 }
