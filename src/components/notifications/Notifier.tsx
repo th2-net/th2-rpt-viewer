@@ -20,7 +20,7 @@ import React, { useEffect } from 'react';
 import { useToasts } from 'react-toast-notifications';
 import { complement } from '../../helpers/array';
 import { isGenericErrorMessage, isResponseError, isURLError } from '../../helpers/errors';
-import { useNotificationsStore, usePrevious } from '../../hooks';
+import { useNotificationsStore } from '../../hooks';
 import { NotificationError } from '../../stores/NotificationsStore';
 import FetchErrorToast from './FetchErrorToast';
 import GenericErrorToast from './GenericErrorToast';
@@ -35,16 +35,16 @@ function Notifier() {
 
 	const notificiationStore = useNotificationsStore();
 
-	const prevResponseErrors = usePrevious(notificiationStore.errors);
+	const prevResponseErrors = React.useRef<NotificationError[]>([]);
 
 	useEffect(() => {
 		function onNotificationsUpdate(notifications: NotificationError[]) {
 			const currentResponseErrors = !prevResponseErrors
 				? notifications
-				: complement(notifications, prevResponseErrors);
+				: complement(notifications, prevResponseErrors.current);
 
 			const removedErrors =
-				prevResponseErrors?.filter(error => !notifications.includes(error)) || [];
+				prevResponseErrors.current.filter(error => !notifications.includes(error)) || [];
 
 			// We need this to be able to delete toast from outside of toast component
 			removedErrors.forEach(error => removeToast(idsMap.current[error.id]));
@@ -65,9 +65,10 @@ function Notifier() {
 					addToast(<GenericErrorToast {...notificationError} />, options, registerId);
 				}
 			});
+			prevResponseErrors.current = notifications;
 		}
 		reaction(() => notificiationStore.errors, onNotificationsUpdate, { fireImmediately: true });
-	}, []);
+	}, [notificiationStore.errors]);
 
 	return null;
 }
