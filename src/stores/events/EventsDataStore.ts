@@ -254,13 +254,15 @@ export default class EventsDataStore {
 			}
 		} catch (error) {
 			console.error(error);
-			notificationsStore.addMessage({
-				errorType: 'genericError',
-				header: `Error occured while fetching event ${currentParentId}`,
-				description: 'Something went wrong',
-				id: nanoid(),
-				type: 'error',
-			});
+			if (error.name !== 'AbortError') {
+				notificationsStore.addMessage({
+					errorType: 'genericError',
+					header: `Error occured while fetching event ${currentParentId}`,
+					description: 'Something went wrong',
+					id: nanoid(),
+					type: 'error',
+				});
+			}
 		} finally {
 			let rootNode = parentNodes[0];
 
