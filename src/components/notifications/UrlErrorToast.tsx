@@ -25,7 +25,7 @@ export default function UrlErrorToast(props: UrlError) {
 	const copyDetailsText = createStyleSelector('toast-action__text', copied ? 'copied' : null);
 
 	const copy = () => {
-		const value = JSON.stringify({ link, error }, null, ' ');
+		const value = JSON.stringify({ link, error: error.message }, null, ' ');
 		copyTextToClipboard(value);
 		setCopied(true);
 	};

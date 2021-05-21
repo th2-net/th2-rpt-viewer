@@ -26,6 +26,9 @@ import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import { DbData } from '../api/indexedDb';
 import FiltersHistoryStore from './FiltersHistoryStore';
+import { intervalOptions } from '../models/Graph';
+import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
+import { getRangeFromTimestamp } from '../helpers/date';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -106,10 +109,54 @@ export default class RootStore {
 
 	private parseUrlState = (): WorkspacesUrlState | null => {
 		try {
+			if (window.location.search.split('&').length > 1) {
+				throw new Error('Only one query parameter expected.');
+			}
 			const searchParams = new URLSearchParams(window.location.search);
 			const workspacesUrlState = searchParams.get('workspaces');
-			const parsedState = workspacesUrlState ? JSON.parse(window.atob(workspacesUrlState)) : null;
-			return parsedState;
+			const timestamp = searchParams.get('timestamp');
+			const eventId = searchParams.get('eventId');
+			const messageId = searchParams.get('messageId');
+			if (workspacesUrlState) {
+				return JSON.parse(window.atob(workspacesUrlState));
+			}
+			const interval = intervalOptions[0];
+			const defaultUrlState = {
+				interval,
+				timeRange: getRangeFromTimestamp(Date.now(), interval),
+				layout: defaultPanelsLayout,
+			};
+			if (timestamp) {
+				const timeRange = getRangeFromTimestamp(+timestamp, interval);
+				return [
+					{
+						messages: {},
+						events: {
+							range: timeRange,
+						},
+						...defaultUrlState,
+					},
+				];
+			}
+			if (eventId) {
+				return [
+					{
+						events: eventId,
+						messages: {},
+						...defaultUrlState,
+					},
+				];
+			}
+			if (messageId) {
+				return [
+					{
+						events: {},
+						messages: messageId,
+						...defaultUrlState,
+					},
+				];
+			}
+			return null;
 		} catch (error) {
 			this.notificationsStore.addMessage({
 				errorType: 'urlError',
