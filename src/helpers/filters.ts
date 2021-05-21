@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { observable, toJS } from 'mobx';
 import {
 	EventFilterState,
 	FilterState,
@@ -24,7 +25,9 @@ import { notEmpty } from './object';
 
 export function getNonEmptyFilters(filter: Partial<FilterState>) {
 	return Object.fromEntries(
-		Object.entries(filter).filter(([_, value]) => value && value.values && value.values.length > 0),
+		Object.entries(toJS(observable(filter)))
+			.filter(([_, value]) => value && value.values && value.values.length > 0)
+			.map(([k, v]) => [k, v]),
 	);
 }
 
@@ -37,7 +40,7 @@ export function isEventsFilterHistory(
 export function isMessagesFilterHistory(
 	filter: unknown,
 ): filter is FiltersHistoryType<MessageFilterState> {
-	return notEmpty(filter) && (filter as FiltersHistoryType<EventFilterState>).type === 'message';
+	return notEmpty(filter) && (filter as FiltersHistoryType<MessageFilterState>).type === 'message';
 }
 
 export function isEmptyFilter(filter: Partial<EventFilterState>) {
