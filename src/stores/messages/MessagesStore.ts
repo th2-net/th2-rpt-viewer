@@ -141,6 +141,7 @@ export default class MessagesStore {
 	@action
 	public setHoveredMessage(message: EventMessage | null) {
 		this.hoveredMessage = message;
+		this.graphStore.setHoveredTimestamp(message);
 	}
 
 	@action
