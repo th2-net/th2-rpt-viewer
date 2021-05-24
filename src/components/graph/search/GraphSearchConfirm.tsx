@@ -47,7 +47,6 @@ const GraphSearchConfirm = ({ onConfirm, onDecline }: Props) => {
 		const listener = (e: KeyboardEvent) => {
 			if (e.keyCode === KeyCodes.ENTER) {
 				onConfirm();
-				return;
 			}
 			if (e.keyCode === KeyCodes.ESCAPE) {
 				onDecline();
@@ -57,7 +56,7 @@ const GraphSearchConfirm = ({ onConfirm, onDecline }: Props) => {
 		return () => {
 			document.removeEventListener('keydown', listener);
 		};
-	});
+	}, []);
 
 	return (
 		<div className='graph-search-confirm'>

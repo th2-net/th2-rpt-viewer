@@ -33,6 +33,7 @@ import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
+import { getRangeFromTimestamp } from '../../helpers/date';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -170,16 +171,18 @@ export default class WorkspaceStore {
 
 	@action
 	public refreshPanels = (timestamp: number) => {
+		const timeRange = getRangeFromTimestamp(timestamp, this.graphStore.interval);
 		this.eventsStore.eventDataStore.fetchEventTree({
-			timeRange: [timestamp, timestamp],
+			timeRange,
 			filter: this.eventsStore.filterStore.filter,
 		});
 		if (this.messagesStore.filterStore.filter.streams.length) {
+			const [timestampFrom, timestampTo] = timeRange;
 			this.messagesStore.applyFilter(
 				{
 					...this.messagesStore.filterStore.filter,
-					timestampFrom: timestamp,
-					timestampTo: timestamp,
+					timestampFrom,
+					timestampTo,
 				},
 				this.messagesStore.filterStore.sseMessagesFilter,
 				this.messagesStore.filterStore.isSoftFilter,
