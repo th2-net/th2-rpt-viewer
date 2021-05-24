@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import KeyCodes from '../../util/KeyCodes';
 import AutocompleteInput from '../util/AutocompleteInput';
 
 interface SessionEditorProps {
@@ -52,6 +53,7 @@ const SessionEditor: React.FC<SessionEditorProps> = ({
 					onSubmit();
 				}
 			}}
+			submitKeyCodes={[KeyCodes.ENTER]}
 			autofocus={autofocus}
 			autocomplete={sessions}
 			autocompleteClassName='rules-autocomplete'

@@ -130,11 +130,16 @@ const ViewType = ({ rule }: { rule: MessageDisplayRule }) => {
 const Delete = ({ rule }: { rule: MessageDisplayRule }) => {
 	const rulesStore = useMessageDisplayRulesStore();
 
-	const deleteHandler = () => {
-		rulesStore.deleteMessagesDisplayRule(rule);
-	};
 	if (!rule.removable) {
 		return null;
 	}
-	return <button className='rule-delete' onClick={deleteHandler} title='delete' />;
+	return (
+		<button
+			className='rule-delete'
+			onClick={() => {
+				rulesStore.deleteMessagesDisplayRule(rule);
+			}}
+			title='delete'
+		/>
+	);
 };

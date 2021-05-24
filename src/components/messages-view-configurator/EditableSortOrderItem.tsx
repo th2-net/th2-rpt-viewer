@@ -19,6 +19,7 @@ import { useMessageBodySortStore } from '../../hooks';
 import Reorder from './Reorder';
 import AutocompleteInput from '../util/AutocompleteInput';
 import { MessageSortOrderItem } from '../../models/EventMessage';
+import KeyCodes from '../../util/KeyCodes';
 
 type EditableSortOrderItemProps = {
 	item: MessageSortOrderItem;
@@ -29,45 +30,59 @@ type EditableSortOrderItemProps = {
 
 const EditableSortOrderItem = ({ item, isFirst, isLast, index }: EditableSortOrderItemProps) => {
 	const sortOrderStore = useMessageBodySortStore();
-	const [currentItem, setCurrentItem] = useState(item.item);
-	const [itemIsEditing, setItemIsEditing] = useState(false);
-
-	const deleteHandler = () => {
-		sortOrderStore.deleteItem(item);
-	};
-
-	const editItemSession = useCallback(() => {
-		sortOrderStore.editItem(item, { ...item, item: currentItem });
-		setItemIsEditing(false);
-	}, [currentItem]);
-
-	const renderEditor = () => {
-		return itemIsEditing ? (
-			<AutocompleteInput
-				value={currentItem}
-				autoresize={false}
-				setValue={setCurrentItem}
-				onSubmit={editItemSession}
-				autocomplete={null}
-				autofocus={true}
-			/>
-		) : (
-			<p
-				onClick={() => {
-					setItemIsEditing(true);
-				}}>
-				{currentItem}
-			</p>
-		);
-	};
 
 	return (
 		<>
 			<Reorder isFirst={isFirst} isLast={isLast} index={index} move={sortOrderStore.reorder} />
-			{renderEditor()}
-			<button className='order-item-delete' onClick={deleteHandler} title='delete'></button>
+			<Editor item={item} />
+			<Delete item={item} />
 		</>
 	);
 };
 
 export default EditableSortOrderItem;
+
+const Editor = ({ item }: { item: MessageSortOrderItem }) => {
+	const sortOrderStore = useMessageBodySortStore();
+
+	const [value, setValue] = useState(item.item);
+	const [isEditing, setIsEditing] = useState(false);
+
+	const editItemSession = useCallback(() => {
+		sortOrderStore.editItem(item, { ...item, item: value });
+		setIsEditing(false);
+	}, [value]);
+
+	return isEditing ? (
+		<AutocompleteInput
+			value={value}
+			autoresize={false}
+			setValue={setValue}
+			onSubmit={editItemSession}
+			submitKeyCodes={[KeyCodes.ENTER]}
+			autocomplete={null}
+			autofocus={true}
+		/>
+	) : (
+		<p
+			onClick={() => {
+				setIsEditing(true);
+			}}>
+			{value}
+		</p>
+	);
+};
+
+const Delete = ({ item }: { item: MessageSortOrderItem }) => {
+	const sortOrderStore = useMessageBodySortStore();
+
+	return (
+		<button
+			className='rule-delete'
+			onClick={() => {
+				sortOrderStore.deleteItem(item);
+			}}
+			title='delete'
+		/>
+	);
+};

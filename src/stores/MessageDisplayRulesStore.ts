@@ -142,45 +142,25 @@ class MessageDisplayRulesStore {
 			this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, rootDisplayRule);
 		} else {
 			rootDisplayRule = displayRules.splice(rootRuleIndex, 1)[0];
-			// getting rid of deprecated rule property
-			// eslint-disable-next-line no-prototype-builtins
-			if (rootDisplayRule.hasOwnProperty('fullyEditable')) {
-				this.indexedDb.deleteDbStoreItem(IndexedDbStores.DISPLAY_RULES, rootDisplayRule.id);
-				delete rootDisplayRule.fullyEditable;
-				rootDisplayRule = { ...rootDisplayRule, editableSession: false, editableType: true };
-				this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, rootDisplayRule);
-			}
 		}
 
-		displayRules
-			.map(rule => {
-				// eslint-disable-next-line no-prototype-builtins
-				if (rule.hasOwnProperty('fullyEditable')) {
-					this.indexedDb.deleteDbStoreItem(IndexedDbStores.DISPLAY_RULES, rule.id);
-					const { fullyEditable, ...restRule } = rule;
-					const newRule = { ...restRule, editableSession: true, editableType: true };
-					this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, newRule);
-					return newRule;
-				}
-				return rule;
-			})
-			.sort((ruleA, ruleB) => {
-				let indexA = order.indexOf(ruleA.session);
-				let indexB = order.indexOf(ruleB.session);
+		displayRules.sort((ruleA, ruleB) => {
+			let indexA = order.indexOf(ruleA.session);
+			let indexB = order.indexOf(ruleB.session);
 
-				indexA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
-				indexB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
+			indexA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
+			indexB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
 
-				if (indexA > indexB) {
-					return 1;
-				}
+			if (indexA > indexB) {
+				return 1;
+			}
 
-				if (indexB > indexA) {
-					return -1;
-				}
+			if (indexB > indexA) {
+				return -1;
+			}
 
-				return 0;
-			});
+			return 0;
+		});
 
 		runInAction(() => {
 			this.rootDisplayRule = rootDisplayRule;
