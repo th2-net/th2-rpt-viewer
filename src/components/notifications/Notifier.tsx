@@ -68,7 +68,7 @@ function Notifier() {
 			prevResponseErrors.current = notifications;
 		}
 		reaction(() => notificiationStore.errors, onNotificationsUpdate, { fireImmediately: true });
-	}, [notificiationStore.errors]);
+	}, []);
 
 	return null;
 }
