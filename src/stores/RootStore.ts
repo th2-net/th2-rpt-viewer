@@ -121,11 +121,15 @@ export default class RootStore {
 				return JSON.parse(window.atob(workspacesUrlState));
 			}
 			const interval = intervalOptions[0];
+			const timeRange = timestamp ? getRangeFromTimestamp(+timestamp, interval) : undefined;
 			return [
 				{
-					events: eventId || {},
-					messages: messageId || {},
-					timeRange: timestamp ? getRangeFromTimestamp(+timestamp, interval) : null,
+					events: eventId || { range: timeRange },
+					messages: messageId || {
+						timestampFrom: timeRange ? timeRange[0] : undefined,
+						timestampTo: timeRange ? timeRange[1] : undefined,
+					},
+					timeRange,
 					interval,
 					layout: defaultPanelsLayout,
 				},
