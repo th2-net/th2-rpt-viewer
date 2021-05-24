@@ -122,12 +122,12 @@ export default class RootStore {
 			}
 			const interval = intervalOptions[0];
 			const timeRange = timestamp ? getRangeFromTimestamp(+timestamp, interval) : undefined;
+
 			return [
 				{
 					events: eventId || { range: timeRange },
 					messages: messageId || {
-						timestampFrom: timeRange ? timeRange[0] : undefined,
-						timestampTo: timeRange ? timeRange[1] : undefined,
+						timestampTo: timestamp ? parseInt(timestamp) : null,
 					},
 					timeRange,
 					interval,

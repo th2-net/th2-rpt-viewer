@@ -405,12 +405,9 @@ export default class EventsStore {
 					getRangeFromTimestamp(timestampToNumber(event.startTimestamp), this.graphStore.interval),
 				);
 				initialState = { ...initialState, selectedEventId: event.eventId, targetEvent: event };
+				this.goToEvent(event);
 			} catch (error) {
 				console.error(`Couldnt fetch target event node ${defaultState}`);
-			}
-			if (isEvent(initialState.targetEvent)) {
-				this.goToEvent(initialState.targetEvent);
-			} else {
 				this.eventDataStore.fetchEventTree({
 					filter: this.filterStore.filter,
 					timeRange: this.filterStore.range,
