@@ -65,6 +65,21 @@ export default class EventsStore {
 		private filterHistoryStore: FiltersHistoryStore,
 		defaultState: EventStoreDefaultStateType,
 	) {
+		const initialState = !defaultState || typeof defaultState === 'string' ? {} : defaultState;
+
+		this.filterStore = new EventsFilterStore(this.graphStore, this.searchPanelStore, {
+			filter: initialState.filter,
+			range: initialState.range,
+		});
+		this.viewStore = new ViewStore({
+			flattenedListView: initialState.flattenedListView,
+			panelArea: initialState.panelArea,
+		});
+		this.searchStore = new EventsSearchStore(this.api, this, {
+			searchPatterns: initialState.search,
+		});
+		this.eventDataStore = new EventsDataStore(this, this.filterStore, this.api);
+
 		this.init(defaultState);
 
 		reaction(() => this.selectedNode, this.onSelectedNodeChange);
@@ -382,19 +397,6 @@ export default class EventsStore {
 
 	private init = async (defaultState: EventStoreDefaultStateType) => {
 		let initialState = !defaultState || typeof defaultState === 'string' ? {} : defaultState;
-
-		this.filterStore = new EventsFilterStore(this.graphStore, this.searchPanelStore, {
-			filter: initialState?.filter,
-			range: initialState?.range,
-		});
-		this.viewStore = new ViewStore({
-			flattenedListView: initialState.flattenedListView,
-			panelArea: initialState.panelArea,
-		});
-		this.searchStore = new EventsSearchStore(this.api, this, {
-			searchPatterns: initialState.search,
-		});
-		this.eventDataStore = new EventsDataStore(this, this.filterStore, this.api);
 
 		if (typeof defaultState === 'string') {
 			try {

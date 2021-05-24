@@ -125,7 +125,7 @@ export default class RootStore {
 				{
 					events: eventId || {},
 					messages: messageId || {},
-					timeRange: getRangeFromTimestamp(timestamp ? +timestamp : Date.now(), interval),
+					timeRange: timestamp ? getRangeFromTimestamp(+timestamp, interval) : null,
 					interval,
 					layout: defaultPanelsLayout,
 				},
