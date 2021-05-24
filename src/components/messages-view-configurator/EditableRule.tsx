@@ -32,19 +32,71 @@ type EditableRuleProps = {
 
 const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: EditableRuleProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
-	const [session, setSession] = useState(rule.session);
-	const [viewType, setViewType] = useState<MessageViewType>(rule.viewType);
-	const [sessionIsEditing, setSessionIsEditing] = useState(false);
-	const [ruleIsEditing, setRuleIsEditing] = useState(false);
 
-	const deleteHandler = () => {
-		rulesStore.deleteMessagesDisplayRule(rule);
-	};
+	return (
+		<div className='rule editable'>
+			<Reorder
+				isFirst={isFirst}
+				isLast={isLast}
+				index={index}
+				move={rulesStore.reorderMessagesDisplayRule}
+			/>
+			<Session rule={rule} sessions={sessions} autofocus={autofocus} />
+			<ViewType rule={rule} />
+			<Delete rule={rule} />
+		</div>
+	);
+};
+
+export default EditableRule;
+
+interface SessionProps {
+	rule: MessageDisplayRule;
+	sessions: string[];
+	autofocus?: boolean;
+}
+
+const Session = ({ rule, sessions, autofocus }: SessionProps) => {
+	const rulesStore = useMessageDisplayRulesStore();
+
+	const [value, setValue] = useState(rule.session);
+	const [isEditing, setIsEditing] = useState(false);
 
 	const editRuleSession = useCallback(() => {
-		rulesStore.editMessageDisplayRule(rule, { ...rule, session });
-		setSessionIsEditing(false);
-	}, [session]);
+		rulesStore.editMessageDisplayRule(rule, { ...rule, value });
+		setIsEditing(false);
+	}, [value]);
+
+	return isEditing && rule.editableSession ? (
+		<SessionEditor
+			value={value}
+			setValue={setValue}
+			sessions={sessions}
+			onSubmit={editRuleSession}
+			autofocus={autofocus}
+		/>
+	) : (
+		<p
+			onClick={() => {
+				setIsEditing(true);
+			}}
+			className={value === '*' ? 'root-rule' : ''}>
+			{value === '*' ? (
+				<>
+					{value} <i>(default)</i>
+				</>
+			) : (
+				value
+			)}
+		</p>
+	);
+};
+
+const ViewType = ({ rule }: { rule: MessageDisplayRule }) => {
+	const rulesStore = useMessageDisplayRulesStore();
+
+	const [viewType, setViewType] = useState<MessageViewType>(rule.viewType);
+	const [ruleIsEditing, setRuleIsEditing] = useState(false);
 
 	const editViewType = (vType: MessageViewType) => {
 		const newRule = { ...rule, viewType: vType };
@@ -57,66 +109,32 @@ const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: Edi
 		setRuleIsEditing(false);
 	};
 
-	const renderSession = () => {
-		return sessionIsEditing && rule.editableSession ? (
-			<SessionEditor
-				value={session}
-				setValue={setSession}
-				sessions={sessions}
-				onSubmit={editRuleSession}
-				autofocus={autofocus}
-			/>
-		) : (
-			<p
-				onClick={() => {
-					setSessionIsEditing(true);
-				}}
-				className={session === '*' ? 'root-rule' : ''}>
-				{session === '*' ? (
-					<>
-						{session} <i>(default)</i>
-					</>
-				) : (
-					session
-				)}
-			</p>
-		);
-	};
-
-	const renderViewType = () => {
-		return ruleIsEditing && rule.editableType ? (
-			<RuleEditor
-				selected={viewType}
-				setSelected={setViewType}
-				onSelect={editViewType}
-				defaultOpen={true}
-			/>
-		) : (
-			<p
-				className={`view-type ${viewType.toLowerCase()}`}
-				onClick={() => {
-					setRuleIsEditing(true);
-				}}
-				title={viewType}
-			/>
-		);
-	};
-
-	return (
-		<div className='rule editable'>
-			<Reorder
-				isFirst={isFirst}
-				isLast={isLast}
-				index={index}
-				move={rulesStore.reorderMessagesDisplayRule}
-			/>
-			{renderSession()}
-			{renderViewType()}
-			{rule.removable && (
-				<button className='rule-delete' onClick={deleteHandler} title='delete'></button>
-			)}
-		</div>
+	return ruleIsEditing && rule.editableType ? (
+		<RuleEditor
+			selected={viewType}
+			setSelected={setViewType}
+			onSelect={editViewType}
+			defaultOpen={true}
+		/>
+	) : (
+		<p
+			className={`view-type ${viewType.toLowerCase()}`}
+			onClick={() => {
+				setRuleIsEditing(true);
+			}}
+			title={viewType}
+		/>
 	);
 };
 
-export default EditableRule;
+const Delete = ({ rule }: { rule: MessageDisplayRule }) => {
+	const rulesStore = useMessageDisplayRulesStore();
+
+	const deleteHandler = () => {
+		rulesStore.deleteMessagesDisplayRule(rule);
+	};
+	if (!rule.removable) {
+		return null;
+	}
+	return <button className='rule-delete' onClick={deleteHandler} title='delete' />;
+};

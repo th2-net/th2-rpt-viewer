@@ -21,6 +21,7 @@ import MessageBody, {
 	MessageBodyField,
 	isListValue,
 	MessageBodyFields,
+	isMessageValue,
 } from '../../../models/MessageBody';
 import { useMessageBodySortStore } from '../../../hooks';
 
@@ -128,12 +129,11 @@ function MessageBodyCardField(props: FieldProps) {
 		);
 	}
 
-	const subFields =
-		!isSimpleValue(field) && !isListValue(field)
-			? field.messageValue && field.messageValue.fields
-				? field.messageValue.fields
-				: {}
-			: {};
+	const subFields = isMessageValue(field)
+		? field.messageValue && field.messageValue.fields
+			? field.messageValue.fields
+			: {}
+		: {};
 
 	const sortedSubFields = getSortedFields(subFields, primarySort);
 
