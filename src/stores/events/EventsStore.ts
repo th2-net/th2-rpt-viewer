@@ -397,26 +397,31 @@ export default class EventsStore {
 		this.eventDataStore = new EventsDataStore(this, this.filterStore, this.api);
 
 		if (typeof defaultState === 'string') {
-			const event = await this.api.events.getEvent(defaultState);
-			this.filterStore.setRange(
-				getRangeFromTimestamp(timestampToNumber(event.startTimestamp), this.graphStore.interval),
-			);
-			initialState = { ...initialState, selectedEventId: event.eventId, targetEvent: event };
-			this.goToTargetEvent(initialState);
-			return;
-		}
-
-		this.goToTargetEvent(initialState);
-	};
-
-	private goToTargetEvent = (defaultState: EventStoreDefaultState) => {
-		if (defaultState && isEvent(defaultState.targetEvent)) {
-			this.goToEvent(defaultState.targetEvent);
+			try {
+				const event = await this.api.events.getEvent(defaultState);
+				this.filterStore.setRange(
+					getRangeFromTimestamp(timestampToNumber(event.startTimestamp), this.graphStore.interval),
+				);
+				initialState = { ...initialState, selectedEventId: event.eventId, targetEvent: event };
+			} catch (error) {
+				console.error(`Couldnt fetch target event node ${defaultState}`);
+			}
+			if (isEvent(initialState.targetEvent)) {
+				this.goToEvent(initialState.targetEvent);
+			} else {
+				this.eventDataStore.fetchEventTree({
+					filter: this.filterStore.filter,
+					timeRange: this.filterStore.range,
+					targetEventId: initialState.selectedEventId,
+				});
+			}
+		} else if (isEvent(initialState.targetEvent)) {
+			this.goToEvent(initialState.targetEvent);
 		} else {
 			this.eventDataStore.fetchEventTree({
 				filter: this.filterStore.filter,
 				timeRange: this.filterStore.range,
-				targetEventId: defaultState.selectedEventId,
+				targetEventId: initialState.selectedEventId,
 			});
 		}
 	};

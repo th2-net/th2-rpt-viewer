@@ -121,42 +121,15 @@ export default class RootStore {
 				return JSON.parse(window.atob(workspacesUrlState));
 			}
 			const interval = intervalOptions[0];
-			const defaultUrlState = {
-				interval,
-				timeRange: getRangeFromTimestamp(Date.now(), interval),
-				layout: defaultPanelsLayout,
-			};
-			if (timestamp) {
-				const timeRange = getRangeFromTimestamp(+timestamp, interval);
-				return [
-					{
-						messages: {},
-						events: {
-							range: timeRange,
-						},
-						...defaultUrlState,
-					},
-				];
-			}
-			if (eventId) {
-				return [
-					{
-						events: eventId,
-						messages: {},
-						...defaultUrlState,
-					},
-				];
-			}
-			if (messageId) {
-				return [
-					{
-						events: {},
-						messages: messageId,
-						...defaultUrlState,
-					},
-				];
-			}
-			return null;
+			return [
+				{
+					events: eventId || {},
+					messages: messageId || {},
+					timeRange: getRangeFromTimestamp(timestamp ? +timestamp : Date.now(), interval),
+					interval,
+					layout: defaultPanelsLayout,
+				},
+			];
 		} catch (error) {
 			this.notificationsStore.addMessage({
 				errorType: 'urlError',

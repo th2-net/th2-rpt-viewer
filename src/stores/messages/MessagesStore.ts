@@ -190,24 +190,21 @@ export default class MessagesStore {
 			return;
 		}
 		if (typeof defaultState === 'string') {
-			const message = await this.api.messages.getMessage(defaultState);
-			this.initFilterStore({
-				targetMessage: message,
-				streams: [message.sessionId],
-			});
-			return;
-		}
-		this.initFilterStore(defaultState);
-	};
-
-	private initFilterStore = (defaultState: MessagesStoreDefaultState) => {
-		this.filterStore = new MessagesFilterStore(this.searchStore, defaultState);
-		const message = defaultState.targetMessage;
-		if (isEventMessage(message)) {
-			this.selectedMessageId = new String(message.messageId);
-			this.highlightedMessageId = message.messageId;
-			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
-			this.workspaceStore.viewStore.activePanel = this;
+			try {
+				const message = await this.api.messages.getMessage(defaultState);
+				this.onMessageSelect(message);
+			} catch (error) {
+				console.error(`Couldnt fetch target message ${defaultState}`);
+			}
+		} else {
+			this.filterStore = new MessagesFilterStore(this.searchStore, defaultState);
+			const message = defaultState.targetMessage;
+			if (isEventMessage(message)) {
+				this.selectedMessageId = new String(message.messageId);
+				this.highlightedMessageId = message.messageId;
+				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
+				this.workspaceStore.viewStore.activePanel = this;
+			}
 		}
 		this.dataStore.loadMessages();
 	};
