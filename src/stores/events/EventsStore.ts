@@ -243,6 +243,7 @@ export default class EventsStore {
 	public setHoveredEvent(event: EventTreeNode | null) {
 		if (event !== this.hoveredEvent) {
 			this.hoveredEvent = event;
+			this.graphStore.setHoveredTimestamp(event);
 		}
 	}
 

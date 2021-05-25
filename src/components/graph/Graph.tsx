@@ -153,6 +153,9 @@ const GraphRoot = () => {
 			<div className='graph-root'>
 				<i className='th2-logo' />
 				<GraphSearch
+					hoveredTimestamp={
+						isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.hoveredTimestamp : null
+					}
 					onTimestampSubmit={activeWorkspace.onTimestampSelect}
 					onFoundItemClick={activeWorkspace.onSavedItemSelect}
 					windowRange={isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.range : null}

@@ -32,6 +32,7 @@ interface Props {
 	onTimestampSubmit: (timestamp: number) => void;
 	onFoundItemClick: InstanceType<typeof WorkspaceStore>['onSavedItemSelect'];
 	windowRange: TimeRange | null;
+	hoveredTimestamp: number | null;
 }
 
 export type GraphSearchMode = 'timestamp' | 'history';
@@ -42,7 +43,7 @@ export interface GraphSearchResult {
 }
 
 function GraphSearch(props: Props) {
-	const { onTimestampSubmit, onFoundItemClick, windowRange } = props;
+	const { onTimestampSubmit, onFoundItemClick, windowRange, hoveredTimestamp } = props;
 
 	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
 		isValidDate: false,
@@ -203,6 +204,8 @@ function GraphSearch(props: Props) {
 				setInputConfig={setInputConfig}
 				mode={mode}
 				windowRange={windowRange}
+				hoveredTimestamp={hoveredTimestamp}
+				submitTimestamp={onTimestampSubmit}
 			/>
 			<ModalPortal
 				isOpen={showModal}
