@@ -35,12 +35,11 @@ import FiltersHistoryStore from '../FiltersHistoryStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
-export type MessagesStoreDefaultStateType =
-	| (MessagesStoreURLState & {
-			targetMessage?: EventMessage;
-	  })
-	| null
-	| undefined;
+type MessagesStoreDefaultState = MessagesStoreURLState & {
+	targetMessage?: EventMessage;
+};
+
+export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string | null | undefined;
 
 export default class MessagesStore {
 	private attachedMessagesSubscription: IReactionDisposer;
@@ -91,18 +90,7 @@ export default class MessagesStore {
 		private filterHistoryStore: FiltersHistoryStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
-		if (defaultState) {
-			this.filterStore = new MessagesFilterStore(this.searchStore, defaultState);
-			const message = defaultState.targetMessage;
-			if (isEventMessage(message)) {
-				this.selectedMessageId = new String(message.messageId);
-				this.highlightedMessageId = message.messageId;
-				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
-				this.workspaceStore.viewStore.activePanel = this;
-			}
-
-			this.dataStore.loadMessages();
-		}
+		this.init(defaultState);
 
 		this.attachedMessagesSubscription = reaction(
 			() => this.workspaceStore.attachedMessages,
@@ -196,6 +184,30 @@ export default class MessagesStore {
 		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
 		this.filterStore.setMessagesFilter(filter, sseFilters, isSoftFilterApplied);
+	};
+
+	private init = async (defaultState: MessagesStoreDefaultStateType) => {
+		if (!defaultState) {
+			return;
+		}
+		if (typeof defaultState === 'string') {
+			try {
+				const message = await this.api.messages.getMessage(defaultState);
+				this.onMessageSelect(message);
+			} catch (error) {
+				console.error(`Couldnt fetch target message ${defaultState}`);
+			}
+		} else {
+			this.filterStore = new MessagesFilterStore(this.searchStore, defaultState);
+			const message = defaultState.targetMessage;
+			if (isEventMessage(message)) {
+				this.selectedMessageId = new String(message.messageId);
+				this.highlightedMessageId = message.messageId;
+				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
+				this.workspaceStore.viewStore.activePanel = this;
+			}
+		}
+		this.dataStore.loadMessages();
 	};
 
 	@action

@@ -35,9 +35,9 @@ import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplit
 import { SearchStore } from '../SearchStore';
 
 export interface WorkspaceUrlState {
-	events: Partial<EventStoreURLState>;
-	messages: Partial<MessagesStoreURLState>;
-	timeRange: TimeRange | null;
+	events: Partial<EventStoreURLState> | string;
+	messages: Partial<MessagesStoreURLState> | string;
+	timeRange?: TimeRange;
 	interval: number | null;
 	layout: WorkspacePanelsLayout;
 }
@@ -45,7 +45,7 @@ export interface WorkspaceUrlState {
 export type WorkspaceInitialState = Partial<{
 	events: EventStoreDefaultStateType;
 	messages: MessagesStoreDefaultStateType;
-	timeRange: TimeRange | null;
+	timeRange?: TimeRange;
 	interval: number | null;
 	layout: WorkspacePanelsLayout;
 }>;

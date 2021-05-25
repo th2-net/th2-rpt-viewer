@@ -39,32 +39,7 @@ export default class MessagesFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
 
 	constructor(private searchStore: SearchStore, initialState?: MessagesFilterStoreInitialState) {
-		if (initialState) {
-			const defaultMessagesFilter = getDefaultMessagesFilter();
-			const {
-				streams = defaultMessagesFilter.streams,
-				timestampFrom = defaultMessagesFilter.timestampFrom,
-				timestampTo = defaultMessagesFilter.timestampTo,
-				sse = {},
-				isSoftFilter = false,
-			} = initialState;
-
-			const appliedSSEFilter = {
-				...(getDefaultMessagesFiltersState(this.searchStore.messagesFilterInfo) || {}),
-				...sse,
-			} as MessageFilterState;
-			this.setMessagesFilter(
-				{
-					streams,
-					timestampFrom,
-					timestampTo,
-				},
-				Object.keys(appliedSSEFilter).length > 0 ? appliedSSEFilter : null,
-				isSoftFilter,
-			);
-		} else {
-			this.setSSEMessagesFilter(this.searchStore.messagesFilterInfo);
-		}
+		this.init(initialState);
 
 		this.sseFilterSubscription = reaction(() => searchStore.messagesFilterInfo, this.initSSEFilter);
 	}
@@ -164,6 +139,35 @@ export default class MessagesFilterStore {
 			timestampTo: this.filter.timestampTo,
 			...initFilter,
 		};
+	};
+
+	private init = (initialState?: MessagesFilterStoreInitialState) => {
+		if (initialState) {
+			const defaultMessagesFilter = getDefaultMessagesFilter();
+			const {
+				streams = defaultMessagesFilter.streams,
+				timestampFrom = defaultMessagesFilter.timestampFrom,
+				timestampTo = defaultMessagesFilter.timestampTo,
+				sse = {},
+				isSoftFilter = false,
+			} = initialState;
+
+			const appliedSSEFilter = {
+				...(getDefaultMessagesFiltersState(this.searchStore.messagesFilterInfo) || {}),
+				...sse,
+			} as MessageFilterState;
+			this.setMessagesFilter(
+				{
+					streams,
+					timestampFrom,
+					timestampTo,
+				},
+				Object.keys(appliedSSEFilter).length > 0 ? appliedSSEFilter : null,
+				isSoftFilter,
+			);
+		} else {
+			this.setSSEMessagesFilter(this.searchStore.messagesFilterInfo);
+		}
 	};
 
 	@action
