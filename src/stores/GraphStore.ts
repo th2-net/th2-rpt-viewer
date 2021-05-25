@@ -73,7 +73,11 @@ export class GraphStore {
 		this.interval,
 	);
 
-	@computed get tickSize() {
+	@observable
+	public hoveredTimestamp: number | null = null;
+
+	@computed
+	public get tickSize() {
 		return this.steps[this.interval];
 	}
 
@@ -180,6 +184,11 @@ export class GraphStore {
 	@action
 	public goToGraphItem = (savedItem: GraphItem) => {
 		this.setTimestamp(getTimestampAsNumber(savedItem));
+	};
+
+	@action
+	public setHoveredTimestamp = (item: GraphItem | null) => {
+		this.hoveredTimestamp = item ? getTimestampAsNumber(item) : null;
 	};
 
 	public getChunkTimestampFrom = (timestamp: number, interval: number): number => {

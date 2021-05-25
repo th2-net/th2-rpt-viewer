@@ -110,6 +110,9 @@ export default class EventsDataStore {
 
 		this.resetEventsTreeState({ isLoading: true });
 
+		this.eventStore.selectedNode = null;
+		this.eventStore.selectedEvent = null;
+
 		this.filterStore.setRange(timeRange);
 		this.filterStore.setEventsFilter(filter);
 
