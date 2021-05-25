@@ -118,14 +118,14 @@ function GraphSearch(props: Props) {
 				e.keyCode === KeyCodes.ENTER
 			) {
 				onTimestampSubmit(currentTimestamp);
-				if (!refreshPanels) {
-					setShowModal(false);
-					return;
-				}
-				if (timestamp) {
+				if (refreshPanels) {
 					setMode('confirm');
-					return;
+				} else {
+					setShowModal(false);
 				}
+			}
+
+			if (e.keyCode === KeyCodes.ESCAPE) {
 				setShowModal(false);
 			}
 		},
@@ -176,15 +176,11 @@ function GraphSearch(props: Props) {
 		) {
 			onTimestampSubmit(inputConfig.timestamp);
 			setIsModeLocked(false);
-			if (!refreshPanels) {
-				setShowModal(false);
-				return;
-			}
-			if (timestamp) {
+			if (refreshPanels) {
 				setMode('confirm');
-				return;
+			} else {
+				setShowModal(false);
 			}
-			setShowModal(false);
 		}
 
 		if (mode === 'history') {
@@ -268,9 +264,7 @@ function GraphSearch(props: Props) {
 								setShowModal(false);
 								setMode('timestamp');
 							}}
-							onDecline={() => {
-								setMode('timestamp');
-							}}
+							onDecline={() => setShowModal(false)}
 						/>
 					)}
 					<div className='graph-search__switchers'>
