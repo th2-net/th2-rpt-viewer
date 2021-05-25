@@ -287,6 +287,18 @@
 	justify-content: flex-end;
 	white-space: nowrap;
 
+	&__timestamp {
+		padding: 0 2px;
+		transition: all 0.15s;
+		border: 1px solid transparent;
+		border-radius: 4px;
+
+		&:hover {
+			color: $graphTextColor;
+			border: 1px solid $graphTextColor;
+		}
+	}
+
 	&__info {
 		flex-grow: 1;
 		display: flex;

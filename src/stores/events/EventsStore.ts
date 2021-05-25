@@ -23,7 +23,7 @@ import { EventAction, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
 import { isEvent, isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
-import { timestampToNumber } from '../../helpers/date';
+import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
 import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
@@ -42,21 +42,20 @@ export type EventStoreURLState = Partial<{
 	flattenedListView: boolean;
 }>;
 
-export type EventStoreDefaultStateType =
-	| (EventStoreURLState & {
-			targetEvent?: EventTreeNode | EventAction;
-	  })
-	| null
-	| undefined;
+type EventStoreDefaultState = EventStoreURLState & {
+	targetEvent?: EventTreeNode | EventAction;
+};
+
+export type EventStoreDefaultStateType = EventStoreDefaultState | string | null | undefined;
 
 export default class EventsStore {
-	public filterStore: EventsFilterStore;
+	public filterStore!: EventsFilterStore;
 
-	public viewStore: ViewStore;
+	public viewStore!: ViewStore;
 
-	public searchStore: EventsSearchStore;
+	public searchStore!: EventsSearchStore;
 
-	public eventDataStore: EventsDataStore;
+	public eventDataStore!: EventsDataStore;
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
@@ -64,30 +63,24 @@ export default class EventsStore {
 		private searchPanelStore: SearchStore,
 		private api: ApiSchema,
 		private filterHistoryStore: FiltersHistoryStore,
-		initialState: EventStoreDefaultStateType,
+		defaultState: EventStoreDefaultStateType,
 	) {
+		const initialState = !defaultState || typeof defaultState === 'string' ? {} : defaultState;
+
 		this.filterStore = new EventsFilterStore(this.graphStore, this.searchPanelStore, {
-			filter: initialState?.filter,
-			range: initialState?.range,
+			filter: initialState.filter,
+			range: initialState.range,
 		});
 		this.viewStore = new ViewStore({
-			flattenedListView: initialState?.flattenedListView,
-			panelArea: initialState?.panelArea,
+			flattenedListView: initialState.flattenedListView,
+			panelArea: initialState.panelArea,
 		});
 		this.searchStore = new EventsSearchStore(this.api, this, {
-			searchPatterns: initialState?.search,
+			searchPatterns: initialState.search,
 		});
 		this.eventDataStore = new EventsDataStore(this, this.filterStore, this.api);
 
-		if (initialState && isEvent(initialState.targetEvent)) {
-			this.goToEvent(initialState.targetEvent);
-		} else {
-			this.eventDataStore.fetchEventTree({
-				filter: this.filterStore.filter,
-				timeRange: this.filterStore.range,
-				targetEventId: initialState?.selectedEventId,
-			});
-		}
+		this.init(defaultState);
 
 		reaction(() => this.selectedNode, this.onSelectedNodeChange);
 
@@ -250,6 +243,7 @@ export default class EventsStore {
 	public setHoveredEvent(event: EventTreeNode | null) {
 		if (event !== this.hoveredEvent) {
 			this.hoveredEvent = event;
+			this.graphStore.setHoveredTimestamp(event);
 		}
 	}
 
@@ -401,6 +395,36 @@ export default class EventsStore {
 
 		return this.selectedPath.some(n => n.eventId === eventTreeNode.eventId);
 	}
+
+	private init = async (defaultState: EventStoreDefaultStateType) => {
+		let initialState = !defaultState || typeof defaultState === 'string' ? {} : defaultState;
+
+		if (typeof defaultState === 'string') {
+			try {
+				const event = await this.api.events.getEvent(defaultState);
+				this.filterStore.setRange(
+					getRangeFromTimestamp(timestampToNumber(event.startTimestamp), this.graphStore.interval),
+				);
+				initialState = { ...initialState, selectedEventId: event.eventId, targetEvent: event };
+				this.goToEvent(event);
+			} catch (error) {
+				console.error(`Couldnt fetch target event node ${defaultState}`);
+				this.eventDataStore.fetchEventTree({
+					filter: this.filterStore.filter,
+					timeRange: this.filterStore.range,
+					targetEventId: initialState.selectedEventId,
+				});
+			}
+		} else if (isEvent(initialState.targetEvent)) {
+			this.goToEvent(initialState.targetEvent);
+		} else {
+			this.eventDataStore.fetchEventTree({
+				filter: this.filterStore.filter,
+				timeRange: this.filterStore.range,
+				targetEventId: initialState.selectedEventId,
+			});
+		}
+	};
 
 	private getNodesList = (
 		eventTreeNode: EventTreeNode,

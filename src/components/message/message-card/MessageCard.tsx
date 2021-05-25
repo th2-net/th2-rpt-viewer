@@ -129,7 +129,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const hoverMessage = () => {
 		hoverTimeout.current = setTimeout(() => {
 			messagesStore.setHoveredMessage(message);
-		}, 150);
+		}, 600);
 	};
 
 	const unhoverMessage = () => {
@@ -167,7 +167,11 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 			const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 			return (
 				<div className='mc-header__info'>
-					<div className='mc-header__value' title={`Timestamp: ${formattedTimestamp}`}>
+					<div
+						className='mc-header__value mc-header__timestamp'
+						title={`Timestamp: ${formattedTimestamp}`}
+						onMouseEnter={hoverMessage}
+						onMouseLeave={unhoverMessage}>
 						{timestamp && formattedTimestamp}
 					</div>
 					<div className='mc-header__item' title={`Session: ${sessionId}`}>
@@ -191,7 +195,11 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 			const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 			return (
 				<>
-					<span className='mc-header__value' title={`Timestamp: ${formattedTimestamp}`}>
+					<span
+						className='mc-header__value mc-header__timestamp'
+						title={`Timestamp: ${formattedTimestamp}`}
+						onMouseEnter={hoverMessage}
+						onMouseLeave={unhoverMessage}>
 						{timestamp && formattedTimestamp}
 					</span>
 					<span className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
@@ -232,7 +240,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	};
 
 	return (
-		<div className={rootClass} onMouseEnter={hoverMessage} onMouseLeave={unhoverMessage}>
+		<div className={rootClass}>
 			<div className='message-card'>
 				<div className='mc__mc-header mc-header'>{renderMessageInfo()}</div>
 				<div className='mc__mc-body mc-body'>

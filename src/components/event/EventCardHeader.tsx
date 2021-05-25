@@ -90,43 +90,40 @@ function EventCardHeader({
 
 	const bookmarkClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
-	const onPinClicked = (e: React.MouseEvent) => {
+	function onPinClicked(e: React.MouseEvent) {
 		selectedStore.toggleEventPin(event);
 		e.stopPropagation();
-	};
+	}
 
-	const onSearchClicked = (e: React.MouseEvent) => {
+	function onSearchClicked(e: React.MouseEvent) {
 		e.stopPropagation();
 		stopSearch();
 		setFormType('event');
 		updateForm({ parentEvent: eventId });
 		setActiveWorkspace(0);
-	};
+	}
 
-	const onMouseEnter = () => {
+	function onMouseEnter() {
 		if (!isUnknown) {
 			hoverTimeout.current = setTimeout(() => {
 				eventStore.setHoveredEvent(event);
-			}, 150);
+			}, 600);
 		}
-	};
+	}
 
-	const onMouseLeave = () => {
+	function onMouseLeave() {
 		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
 		eventStore.setHoveredEvent(null);
-	};
+	}
+
+	function onRootClick() {
+		if (!disabled && onSelect) {
+			onSelect();
+		}
+	}
 
 	return (
-		<div
-			className={rootClassName}
-			onClick={() => {
-				if (!disabled && onSelect) {
-					onSelect();
-				}
-			}}
-			style={rootStyle}
-			onMouseEnter={onMouseEnter}
-			onMouseLeave={onMouseLeave}>
+		<div className={rootClassName} onClick={onRootClick} style={rootStyle}>
 			<div className={iconClassName} />
 			{displayType !== CardDisplayType.STATUS_ONLY ? (
 				<div className='event-header-card__title' title={eventName}>
@@ -136,7 +133,10 @@ function EventCardHeader({
 			{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown ? (
 				<>
 					{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
-					<div className='event-header-card__time-label'>
+					<div
+						className='event-header-card__time-label'
+						onMouseEnter={onMouseEnter}
+						onMouseLeave={onMouseLeave}>
 						<span className='event-header-card__time-label-full'>
 							{formatTime(startTimestampValue)}
 						</span>
