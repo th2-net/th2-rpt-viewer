@@ -49,7 +49,7 @@ class FiltersHistoryStore {
 	public messagesHistory: FiltersHistoryType<MessageFilterState>[] = [];
 
 	@action
-	public addToEventsHistory = async (newFilters: FiltersHistoryType<EventFilterState>) => {
+	public addToEventsHistory = (newFilters: FiltersHistoryType<EventFilterState>) => {
 		if (isEmptyFilter(newFilters.filters)) return;
 
 		const { type, timestamp } = newFilters;
@@ -75,7 +75,29 @@ class FiltersHistoryStore {
 	};
 
 	@action
-	public addToMessagesHistory = async (newFilters: FiltersHistoryType<MessageFilterState>) => {
+	public addToEventsHistoryStart = (newFilters: FiltersHistoryType<EventFilterState>) => {
+		if (this.eventsHistory.some(({ filters }) => isEqual(filters, newFilters.filters))) return;
+
+		const filter = { ...newFilters, timestamp: Date.now() };
+
+		if (this.isFull('event')) {
+			const last = this.eventsHistory.pop();
+			this.eventsHistory.unshift(filter);
+			console.log(this.eventsHistory);
+
+			if (last) {
+				this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, last.timestamp);
+			}
+			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
+			return;
+		}
+		this.eventsHistory.unshift(filter);
+
+		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
+	};
+
+	@action
+	public addToMessagesHistory = (newFilters: FiltersHistoryType<MessageFilterState>) => {
 		if (isEmptyFilter(newFilters.filters)) return;
 
 		const { type, timestamp } = newFilters;
@@ -96,6 +118,27 @@ class FiltersHistoryStore {
 			return;
 		}
 		this.messagesHistory.unshift(filter);
+		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
+	};
+
+	@action
+	public addToMessagesHistoryStart = (newFilters: FiltersHistoryType<EventFilterState>) => {
+		if (this.messagesHistory.some(({ filters }) => isEqual(filters, newFilters.filters))) return;
+
+		const filter = { ...newFilters, timestamp: Date.now() };
+
+		if (this.isFull('event')) {
+			const last = this.messagesHistory.pop();
+			this.messagesHistory.unshift(filter);
+
+			if (last) {
+				this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, last.timestamp);
+			}
+			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
+			return;
+		}
+		this.messagesHistory.unshift(filter);
+
 		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
 	};
 

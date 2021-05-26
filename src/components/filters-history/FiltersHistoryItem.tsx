@@ -15,12 +15,13 @@
  ***************************************************************************** */
 
 import React from 'react';
-import moment from 'moment';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 import { FilterState } from '../search-panel/SearchPanelFilters';
 import { FiltersState } from './FiltersHistory';
 import { EventsFiltersInfo, MessagesFilterInfo } from '../../api/sse';
 import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../../helpers/search';
+import { copyTextToClipboard } from '../../helpers/copyHandler';
+import { showNotification } from '../../helpers/showNotification';
 
 interface Props {
 	item: FiltersHistoryType<FilterState>;
@@ -44,6 +45,7 @@ const FiltersHistoryItem = ({ item, filter, eventsFilterInfo, messagesFilterInfo
 	function getState<T extends keyof FilterState>(name: T) {
 		return filter && filter.state[name];
 	}
+
 	const defaultState =
 		item.type === 'event'
 			? getDefaultEventsFiltersState(eventsFilterInfo)
@@ -55,7 +57,20 @@ const FiltersHistoryItem = ({ item, filter, eventsFilterInfo, messagesFilterInfo
 			onClick={() => {
 				filter.setState({ ...defaultState, ...item.filters });
 			}}>
-			<p className='title'>{moment(item.timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}</p>
+			<button
+				className='share'
+				title='Share filters'
+				onClick={(e: React.MouseEvent) => {
+					e.stopPropagation();
+					const filters = new URLSearchParams({
+						filters: window.btoa(JSON.stringify(item)),
+					});
+					copyTextToClipboard(
+						[window.location.origin, window.location.pathname, `?${filters}`].join(''),
+					);
+					showNotification('Filter copied to clipboard');
+				}}
+			/>
 			<div className='content'>
 				{Object.entries(item.filters).map(([key, value], i) => {
 					const filterName = key as keyof FilterState;

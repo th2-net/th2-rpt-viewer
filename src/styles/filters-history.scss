@@ -30,7 +30,7 @@
 	position: absolute;
 	overflow: auto;
 	z-index: 130;
-	width: 320px;
+	width: 340px;
 	max-height: 320px;
 	font: 11px 'Open sans', sans-serif;
   background-color: #fff;
@@ -38,13 +38,30 @@
 	0px 3px 14px 2px rgba(0, 0, 0, 0.12);
 	border-radius: 6px;
 	&__item {
+		cursor: pointer;
+		padding: 10px 24px 10px 10px;
+		position: relative;
+		.share {
+			position: absolute;
+			top: 4px;
+			right: 4px;
+			display: none;
+			opacity: 0.5;
+			border: none;
+			cursor: pointer;
+			&:hover {
+				background-color: darken($color: #fff, $amount: 20);
+			}
+			@include icon(url(../../resources/icons/share-option.svg), 16px, 16px)
+		}
 		.title {
 			text-decoration: underline;
 		}
-		cursor: pointer;
-		padding: 10px;
 		&:hover {
 			background-color: darken($color: #fff, $amount: 10);
+			.share {
+				display: block;
+			}
 		}
 		.content {
 			&__excluded {

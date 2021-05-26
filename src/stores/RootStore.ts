@@ -25,10 +25,11 @@ import { getObjectKeys } from '../helpers/object';
 import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import { DbData } from '../api/indexedDb';
-import FiltersHistoryStore from './FiltersHistoryStore';
+import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
 import { intervalOptions } from '../models/Graph';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
 import { getRangeFromTimestamp } from '../helpers/date';
+import { FilterState } from '../components/search-panel/SearchPanelFilters';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -113,10 +114,22 @@ export default class RootStore {
 				throw new Error('Only one query parameter expected.');
 			}
 			const searchParams = new URLSearchParams(window.location.search);
+			const filtersToPin = searchParams.get('filters');
 			const workspacesUrlState = searchParams.get('workspaces');
 			const timestamp = searchParams.get('timestamp');
 			const eventId = searchParams.get('eventId');
 			const messageId = searchParams.get('messageId');
+			if (filtersToPin) {
+				const filtersHistoryItem: FiltersHistoryType<FilterState> = JSON.parse(
+					window.atob(filtersToPin),
+				);
+				const { type } = filtersHistoryItem;
+				if (type === 'event') {
+					this.filtersHistoryStore.addToEventsHistoryStart(filtersHistoryItem);
+				} else {
+					this.filtersHistoryStore.addToMessagesHistoryStart(filtersHistoryItem);
+				}
+			}
 			if (workspacesUrlState) {
 				return JSON.parse(window.atob(workspacesUrlState));
 			}
