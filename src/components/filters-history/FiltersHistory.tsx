@@ -79,7 +79,7 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 
 	useOutsideClickListener(historyRef, (e: MouseEvent) => {
 		const target = e.target as Element;
-		if (target.closest('.filters-history__item')) {
+		if (target.closest('.filter-history-item')) {
 			e.stopImmediatePropagation();
 			return;
 		}
@@ -87,6 +87,8 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 			setIsOpen(false);
 		}
 	});
+
+	const closeHistory = React.useCallback(() => setIsOpen(false), [setIsOpen]);
 
 	return toShow.length ? (
 		<>
@@ -108,6 +110,7 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 							filter={filtersState}
 							eventsFilterInfo={eventFilterInfo}
 							messagesFilterInfo={messagesFilterInfo}
+							closeHistory={closeHistory}
 						/>
 					))}
 				</div>

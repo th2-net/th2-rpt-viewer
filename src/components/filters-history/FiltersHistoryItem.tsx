@@ -21,18 +21,25 @@ import { FilterState } from '../search-panel/SearchPanelFilters';
 import { FiltersState } from './FiltersHistory';
 import { EventsFiltersInfo, MessagesFilterInfo } from '../../api/sse';
 import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../../helpers/search';
+import { prettifyCamelcase } from '../../helpers/stringUtils';
+
+const FILTER_HISTORY_DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss.SSS' as const;
 
 interface Props {
 	item: FiltersHistoryType<FilterState>;
 	filter: FiltersState;
 	eventsFilterInfo: EventsFiltersInfo[];
 	messagesFilterInfo: MessagesFilterInfo[];
+	closeHistory: () => void;
 }
 
-const FiltersHistoryItem = ({ item, filter, eventsFilterInfo, messagesFilterInfo }: Props) => {
+const FiltersHistoryItem = (props: Props) => {
+	const { item, filter, eventsFilterInfo, messagesFilterInfo, closeHistory } = props;
+
 	if (!filter) {
 		return null;
 	}
+
 	function getValuesUpdater<T extends keyof FilterState>(name: T) {
 		return function valuesUpdater(values: string | string[]) {
 			if (filter) {
@@ -44,72 +51,113 @@ const FiltersHistoryItem = ({ item, filter, eventsFilterInfo, messagesFilterInfo
 	function getState<T extends keyof FilterState>(name: T) {
 		return filter && filter.state[name];
 	}
-	const defaultState =
-		item.type === 'event'
-			? getDefaultEventsFiltersState(eventsFilterInfo)
-			: getDefaultMessagesFiltersState(messagesFilterInfo);
+
+	function onFilterSelect() {
+		if (filter) {
+			const defaultState =
+				item.type === 'event'
+					? getDefaultEventsFiltersState(eventsFilterInfo)
+					: getDefaultMessagesFiltersState(messagesFilterInfo);
+			filter.setState({ ...defaultState, ...item.filters });
+			closeHistory();
+		}
+	}
+
+	function onFilterBubbleSelect(filterName: keyof FilterState, bubbleValue: string) {
+		const state = getState(filterName);
+		const stateValues = state?.values;
+		const updaterFn = getValuesUpdater(filterName);
+
+		if (typeof stateValues === 'string') {
+			updaterFn(bubbleValue);
+		}
+
+		if (stateValues && Array.isArray(stateValues)) {
+			if (!stateValues.includes(bubbleValue)) {
+				updaterFn([...stateValues, bubbleValue]);
+			}
+		}
+	}
+
+	function onFilterPin() {
+		// TODO: handle filter pin
+	}
 
 	return (
-		<div
-			className='filters-history__item'
-			onClick={() => {
-				filter.setState({ ...defaultState, ...item.filters });
-			}}>
-			<p className='title'>{moment(item.timestamp).utc().format('DD.MM.YYYY HH:mm:ss.SSS')}</p>
-			<div className='content'>
+		<div className='filter-history-item' onClick={onFilterSelect}>
+			<p className='filter-history-item__title'>
+				{moment.utc(item.timestamp).format(FILTER_HISTORY_DATE_FORMAT)}
+			</p>
+			<>
 				{Object.entries(item.filters).map(([key, value], i) => {
 					const filterName = key as keyof FilterState;
-					const label = (key.charAt(0).toUpperCase() + key.slice(1)).split(/(?=[A-Z])/).join(' ');
-					const update = getValuesUpdater(filterName);
-					const state = getState(filterName);
-					if (!value) {
-						return null;
-					}
+
 					return (
-						<div key={key} className='content__item'>
-							<p className='content__label'>
-								{item.filters[filterName]?.negative ? (
-									<span className='content__excluded' title='Excluded' />
-								) : null}
-								{label}:
-							</p>
-							<div className='content__values'>
-								{typeof value.values === 'string' ? (
-									<button
-										className='history-bubble'
-										key={`${key}-${i}`}
-										onClick={(e: React.MouseEvent) => {
-											e.stopPropagation();
-											update(value.values);
-										}}>
-										{value.values}
-									</button>
-								) : (
-									value.values.map((val: string, j: number) => {
-										return (
-											<button
-												className='history-bubble'
-												key={`${key}-${i}-${j}`}
-												onClick={(e: React.MouseEvent) => {
-													e.stopPropagation();
-													const values = state ? state.values : [];
-													if (!values.includes(val)) {
-														update([...values, val]);
-													}
-												}}>
-												{val}
-											</button>
-										);
-									})
-								)}
-							</div>
-						</div>
+						value && (
+							<FilterHistoryItemRow
+								onFilterPin={onFilterPin}
+								onBubbleClick={onFilterBubbleSelect}
+								filterName={filterName}
+								value={value.values}
+								isExcluded={Boolean(item.filters[filterName]?.negative)}
+							/>
+						)
 					);
 				})}
-			</div>
+			</>
 			<hr />
 		</div>
 	);
 };
 
-export default FiltersHistoryItem;
+export default React.memo(FiltersHistoryItem);
+
+interface FilterHistoryItemRowProps {
+	filterName: keyof FilterState;
+	isExcluded: boolean;
+	value: string | string[];
+	onBubbleClick: (filterName: keyof FilterState, value: string) => void;
+	onFilterPin: () => void;
+}
+
+function FilterHistoryItemRow(props: FilterHistoryItemRowProps) {
+	const { filterName, isExcluded, value, onBubbleClick, onFilterPin } = props;
+
+	const label = prettifyCamelcase(filterName);
+
+	function handleBubbleClick(e: React.MouseEvent, bubbleValue: string) {
+		e.stopPropagation();
+		onBubbleClick(filterName, bubbleValue);
+	}
+
+	function handleFilterPin(e: React.MouseEvent) {
+		e.stopPropagation();
+		onFilterPin();
+	}
+
+	const values = typeof value === 'string' ? [value] : value;
+
+	return (
+		<div key={filterName} className='filter-history-item__row'>
+			<p className='filter-history-item__row-label'>
+				{isExcluded && <span className='filter-history-item__excluded-icon' title='Excluded' />}
+				{label}:
+			</p>
+			<button style={{ position: 'absolute', top: 0, right: 0 }} onClick={handleFilterPin}>
+				Pin
+			</button>
+			<div className='filter-history-item__row-values'>
+				{values.map(filterValue => {
+					return (
+						<button
+							className='filter-history-item__row-bubble'
+							key={`${filterName}-${filterValue}`}
+							onClick={e => handleBubbleClick(e, filterValue)}>
+							{filterValue}
+						</button>
+					);
+				})}
+			</div>
+		</div>
+	);
+}

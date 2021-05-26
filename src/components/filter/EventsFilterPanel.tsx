@@ -27,6 +27,7 @@ import EventsFilter from '../../models/filter/EventsFilter';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import { getArrayOfUniques } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
+import { prettifyCamelcase } from '../../helpers/stringUtils';
 
 type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;
@@ -118,9 +119,7 @@ function EventsFilterPanel() {
 
 		return filterNames.map(filterName => {
 			const filterValues: Filter = filter[filterName];
-			const label = (filterName.charAt(0).toUpperCase() + filterName.slice(1))
-				.split(/(?=[A-Z])/)
-				.join(' ');
+			const label = prettifyCamelcase(filterName);
 
 			let toggler: FilterRowTogglerConfig | null = null;
 
