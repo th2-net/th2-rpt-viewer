@@ -529,13 +529,13 @@ export class SearchStore {
 			const timestamp = Date.now();
 
 			if (this.formType === 'event') {
-				this.filtersHistory.addToEventsHistory({
+				this.filtersHistory.onEventFilterSubmit({
 					timestamp,
 					type: this.formType,
 					filters: filterParams as EventFilterState,
 				});
 			} else {
-				this.filtersHistory.addToMessagesHistory({
+				this.filtersHistory.onMessageFilterSubmit({
 					timestamp,
 					type: this.formType,
 					filters: filterParams as MessageFilterState,

@@ -42,7 +42,7 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const historyRef = useRef<HTMLDivElement>(null);
-	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
+	const { eventsHistory, messagesHistory, toggleFilterPin } = useFiltersHistoryStore();
 	const { filters, formType, eventFilterInfo, messagesFilterInfo } = useSearchStore();
 
 	const toShow: (
@@ -88,6 +88,19 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 		}
 	});
 
+	const onFilterPin = React.useCallback(
+		(filter: FiltersHistoryType<EventFilterState | MessageFilterState>) => {
+			const isPinnedUpdated = !filter.isPinned;
+			toggleFilterPin(filter);
+			if (isPinnedUpdated) {
+				raf(() => {
+					historyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+				}, 2);
+			}
+		},
+		[toggleFilterPin],
+	);
+
 	const closeHistory = React.useCallback(() => setIsOpen(false), [setIsOpen]);
 
 	return toShow.length ? (
@@ -100,18 +113,20 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 				}}>
 				Filters history
 			</button>
-
 			<ModalPortal isOpen={isOpen}>
 				<div ref={historyRef} className='filters-history'>
-					{toShow.map(item => (
-						<FiltersHistoryItem
-							key={item.timestamp}
-							item={item}
-							filter={filtersState}
-							eventsFilterInfo={eventFilterInfo}
-							messagesFilterInfo={messagesFilterInfo}
-							closeHistory={closeHistory}
-						/>
+					{toShow.map((item, index) => (
+						<React.Fragment key={item.timestamp}>
+							<FiltersHistoryItem
+								item={item}
+								filter={filtersState}
+								eventsFilterInfo={eventFilterInfo}
+								messagesFilterInfo={messagesFilterInfo}
+								closeHistory={closeHistory}
+								toggleFilterPin={onFilterPin}
+							/>
+							{toShow.length - 1 > index && <hr />}
+						</React.Fragment>
 					))}
 				</div>
 			</ModalPortal>

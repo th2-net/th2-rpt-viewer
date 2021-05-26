@@ -102,7 +102,7 @@ interface TH2DB extends DBSchema {
 
 export const indexedDbLimits = {
 	bookmarks: 1000,
-	[IndexedDbStores.FILTERS_HISTORY]: 20,
+	[IndexedDbStores.FILTERS_HISTORY]: 30,
 	[IndexedDbStores.DISPLAY_RULES]: 100,
 	[IndexedDbStores.SEARCH_HISTORY]: 5,
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,

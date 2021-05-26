@@ -22,6 +22,8 @@ import { FiltersState } from './FiltersHistory';
 import { EventsFiltersInfo, MessagesFilterInfo } from '../../api/sse';
 import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../../helpers/search';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
+import { createBemElement } from '../../helpers/styleCreators';
+import { useDebouncedCallback } from '../../hooks';
 
 const FILTER_HISTORY_DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss.SSS' as const;
 
@@ -31,10 +33,57 @@ interface Props {
 	eventsFilterInfo: EventsFiltersInfo[];
 	messagesFilterInfo: MessagesFilterInfo[];
 	closeHistory: () => void;
+	toggleFilterPin: (filter: FiltersHistoryType<FilterState>) => void;
 }
 
 const FiltersHistoryItem = (props: Props) => {
-	const { item, filter, eventsFilterInfo, messagesFilterInfo, closeHistory } = props;
+	const {
+		item,
+		filter,
+		eventsFilterInfo,
+		messagesFilterInfo,
+		closeHistory,
+		toggleFilterPin,
+	} = props;
+
+	const bubblesContainerRef = React.useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+	const pinButtonRef = React.useRef<HTMLButtonElement>(null);
+
+	const rootRef = React.useRef<HTMLDivElement>(null);
+
+	const isHovered = React.useRef(false);
+
+	const onMouseOver = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+		e.persist();
+		isHovered.current = true;
+		onMouseOverDebounced(e);
+	};
+
+	const onMouseOverDebounced = useDebouncedCallback(
+		(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+			if (!isHovered.current) return;
+			const buttons = [...Object.values(bubblesContainerRef.current)].filter(Boolean);
+			if (
+				e.target instanceof Element &&
+				(pinButtonRef.current?.contains(e.target) ||
+					buttons.some(
+						buttonContainer =>
+							e.target !== buttonContainer && buttonContainer?.contains(e.target as Element),
+					))
+			) {
+				rootRef.current?.classList.remove('active');
+			} else {
+				rootRef.current?.classList.add('active');
+			}
+		},
+		55,
+	);
+
+	const onMouseLeave = () => {
+		isHovered.current = false;
+		rootRef.current?.classList.remove('active');
+	};
 
 	if (!filter) {
 		return null;
@@ -79,33 +128,51 @@ const FiltersHistoryItem = (props: Props) => {
 		}
 	}
 
-	function onFilterPin() {
-		// TODO: handle filter pin
+	function onFilterPin(e: React.MouseEvent<HTMLSpanElement>) {
+		e.stopPropagation();
+		toggleFilterPin(item);
 	}
 
-	return (
-		<div className='filter-history-item' onClick={onFilterSelect}>
-			<p className='filter-history-item__title'>
-				{moment.utc(item.timestamp).format(FILTER_HISTORY_DATE_FORMAT)}
-			</p>
-			<>
-				{Object.entries(item.filters).map(([key, value], i) => {
-					const filterName = key as keyof FilterState;
+	const pinButtonClassname = createBemElement(
+		'filter-history-item',
+		'pin-icon',
+		item.isPinned ? 'pinned' : null,
+	);
 
-					return (
-						value && (
-							<FilterHistoryItemRow
-								onFilterPin={onFilterPin}
-								onBubbleClick={onFilterBubbleSelect}
-								filterName={filterName}
-								value={value.values}
-								isExcluded={Boolean(item.filters[filterName]?.negative)}
-							/>
-						)
-					);
-				})}
-			</>
-			<hr />
+	return (
+		<div
+			className='filter-history-item'
+			onClick={onFilterSelect}
+			onMouseOver={onMouseOver}
+			onMouseLeave={onMouseLeave}
+			ref={rootRef}>
+			<p className='filter-history-item__title' data-timestamp={item.timestamp}>
+				{moment.utc(item.timestamp).format(FILTER_HISTORY_DATE_FORMAT)}
+				<button
+					className={pinButtonClassname}
+					onClick={onFilterPin}
+					ref={pinButtonRef}
+					title={item.isPinned ? 'Unpin filter' : 'Pin filter'}>
+					<i></i>
+				</button>
+			</p>
+			{Object.entries(item.filters).map(([key, value]) => {
+				const filterName = key as keyof FilterState;
+
+				return (
+					value && (
+						<FilterHistoryItemRow
+							key={`${item.timestamp}-${filterName}`}
+							onBubbleClick={onFilterBubbleSelect}
+							filterName={filterName}
+							value={value.values}
+							isExcluded={Boolean(item.filters[filterName]?.negative)}
+							isPinned={item.isPinned}
+							ref={ref => (bubblesContainerRef.current[filterName] = ref)}
+						/>
+					)
+				);
+			})}
 		</div>
 	);
 };
@@ -115,49 +182,44 @@ export default React.memo(FiltersHistoryItem);
 interface FilterHistoryItemRowProps {
 	filterName: keyof FilterState;
 	isExcluded: boolean;
+	isPinned?: boolean;
 	value: string | string[];
 	onBubbleClick: (filterName: keyof FilterState, value: string) => void;
-	onFilterPin: () => void;
 }
 
-function FilterHistoryItemRow(props: FilterHistoryItemRowProps) {
-	const { filterName, isExcluded, value, onBubbleClick, onFilterPin } = props;
+const FilterHistoryItemRow = React.forwardRef<HTMLDivElement, FilterHistoryItemRowProps>(
+	(props, bubblesContainerRef) => {
+		const { filterName, isExcluded, value, onBubbleClick } = props;
 
-	const label = prettifyCamelcase(filterName);
+		const label = prettifyCamelcase(filterName);
 
-	function handleBubbleClick(e: React.MouseEvent, bubbleValue: string) {
-		e.stopPropagation();
-		onBubbleClick(filterName, bubbleValue);
-	}
+		function handleBubbleClick(e: React.MouseEvent, bubbleValue: string) {
+			e.stopPropagation();
+			onBubbleClick(filterName, bubbleValue);
+		}
 
-	function handleFilterPin(e: React.MouseEvent) {
-		e.stopPropagation();
-		onFilterPin();
-	}
+		const values = typeof value === 'string' ? [value] : [...new Set(value)];
 
-	const values = typeof value === 'string' ? [value] : value;
-
-	return (
-		<div key={filterName} className='filter-history-item__row'>
-			<p className='filter-history-item__row-label'>
-				{isExcluded && <span className='filter-history-item__excluded-icon' title='Excluded' />}
-				{label}:
-			</p>
-			<button style={{ position: 'absolute', top: 0, right: 0 }} onClick={handleFilterPin}>
-				Pin
-			</button>
-			<div className='filter-history-item__row-values'>
-				{values.map(filterValue => {
-					return (
+		return (
+			<div key={filterName} className='filter-history-item__row'>
+				<p className='filter-history-item__row-label'>
+					{isExcluded && <span className='filter-history-item__excluded-icon' title='Excluded' />}
+					{label}:
+				</p>
+				<div className='filter-history-item__row-values' ref={bubblesContainerRef}>
+					{values.map(filterValue => (
 						<button
+							title={filterValue}
 							className='filter-history-item__row-bubble'
 							key={`${filterName}-${filterValue}`}
 							onClick={e => handleBubbleClick(e, filterValue)}>
 							{filterValue}
 						</button>
-					);
-				})}
+					))}
+				</div>
 			</div>
-		</div>
-	);
-}
+		);
+	},
+);
+
+FilterHistoryItemRow.displayName = 'FilterHistoryItemRow';

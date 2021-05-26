@@ -14,8 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action } from 'mobx';
+import { observable, action, toJS, computed } from 'mobx';
 import isEqual from 'lodash.isequal';
+import moment from 'moment';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
@@ -35,6 +36,7 @@ export interface FiltersHistoryType<T extends FilterState> {
 	timestamp: number;
 	type: SearchPanelType;
 	filters: Partial<T>;
+	isPinned?: boolean;
 }
 
 class FiltersHistoryStore {
@@ -42,14 +44,35 @@ class FiltersHistoryStore {
 		this.init();
 	}
 
-	@observable
-	public eventsHistory: FiltersHistoryType<EventFilterState>[] = [];
+	private dbItemsPerType = indexedDbLimits[IndexedDbStores.FILTERS_HISTORY] / 3;
 
 	@observable
-	public messagesHistory: FiltersHistoryType<MessageFilterState>[] = [];
+	public filterHistory: FiltersHistoryType<EventFilterState | MessageFilterState>[] = [];
+
+	@computed
+	public get eventsHistory(): FiltersHistoryType<EventFilterState>[] {
+		const eventFilters = this.filterHistory.filter(isEventsFilterHistory);
+		const pinnedFilters = eventFilters.filter(filter => filter.isPinned);
+
+		return [
+			...pinnedFilters.sort(sortByTimestamp),
+			...eventFilters.filter(filter => !pinnedFilters.includes(filter)).sort(sortByTimestamp),
+		];
+	}
+
+	@computed
+	public get messagesHistory(): FiltersHistoryType<MessageFilterState>[] {
+		const messagesFilters = this.filterHistory.filter(isMessagesFilterHistory);
+		const pinnedFilters = messagesFilters.filter(filter => filter.isPinned);
+
+		return [
+			...pinnedFilters.sort(sortByTimestamp),
+			...messagesFilters.filter(filter => !pinnedFilters.includes(filter)).sort(sortByTimestamp),
+		];
+	}
 
 	@action
-	public addToEventsHistory = async (newFilters: FiltersHistoryType<EventFilterState>) => {
+	public onEventFilterSubmit = async (newFilters: FiltersHistoryType<EventFilterState>) => {
 		if (isEmptyFilter(newFilters.filters)) return;
 
 		const { type, timestamp } = newFilters;
@@ -57,25 +80,26 @@ class FiltersHistoryStore {
 
 		if (this.eventsHistory.some(({ filters }) => isEqual(filters, equilizedFilter))) return;
 
-		const filter = { timestamp, type, filters: equilizedFilter };
+		const filter: FiltersHistoryType<EventFilterState> = {
+			timestamp,
+			type,
+			filters: equilizedFilter,
+			isPinned: false,
+		};
 
-		if (this.isFull('event')) {
-			const last = this.eventsHistory.pop();
-			this.eventsHistory.unshift(filter);
-
-			if (last) {
-				this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, last.timestamp);
-			}
-			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
-			return;
-		}
-		this.eventsHistory.unshift(filter);
-
+		const itemsToDelete = this.eventsHistory
+			.slice()
+			.filter(f => !f.isPinned)
+			.splice(this.dbItemsPerType);
+		itemsToDelete.forEach(item => {
+			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, item.timestamp);
+		});
 		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
+		this.filterHistory = [...this.filterHistory.filter(f => !itemsToDelete.includes(f)), filter];
 	};
 
 	@action
-	public addToMessagesHistory = async (newFilters: FiltersHistoryType<MessageFilterState>) => {
+	public onMessageFilterSubmit = async (newFilters: FiltersHistoryType<MessageFilterState>) => {
 		if (isEmptyFilter(newFilters.filters)) return;
 
 		const { type, timestamp } = newFilters;
@@ -83,36 +107,60 @@ class FiltersHistoryStore {
 
 		if (this.messagesHistory.some(({ filters }) => isEqual(filters, equilizedFilter))) return;
 
-		const filter = { timestamp, type, filters: equilizedFilter };
+		const filter: FiltersHistoryType<MessageFilterState> = {
+			timestamp,
+			type,
+			filters: equilizedFilter,
+			isPinned: false,
+		};
 
-		if (this.isFull('event')) {
-			const last = this.messagesHistory.pop();
-			this.messagesHistory.unshift(filter);
+		const itemsToDelete = this.messagesHistory
+			.slice()
+			.filter(f => !f.isPinned)
+			.splice(this.dbItemsPerType);
 
-			if (last) {
-				this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, last.timestamp);
-			}
-			this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
-			return;
-		}
-		this.messagesHistory.unshift(filter);
+		itemsToDelete.forEach(item => {
+			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, item.timestamp);
+		});
 		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
+		this.filterHistory = [...this.filterHistory.filter(f => !itemsToDelete.includes(f)), filter];
 	};
 
-	private isFull(type: 'event' | 'message'): boolean {
-		const limit = indexedDbLimits[IndexedDbStores.FILTERS_HISTORY] / 2;
-		return type === 'event'
-			? this.eventsHistory.length >= limit
-			: this.messagesHistory.length >= limit;
-	}
+	@action
+	public toggleFilterPin = (filter: FiltersHistoryType<MessageFilterState | EventFilterState>) => {
+		const filterToUpdate = this.filterHistory.find(f => f === filter);
+
+		if (filterToUpdate) {
+			const isPinned = !filter.isPinned;
+			const timestamp = moment.utc().valueOf();
+			const itemsToDelete = this.filterHistory
+				.slice()
+				.sort(sortByTimestamp)
+				.filter(f => !f.isPinned)
+				.splice(this.dbItemsPerType);
+
+			itemsToDelete.forEach(item => {
+				this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, item.timestamp);
+			});
+
+			filterToUpdate.isPinned = isPinned;
+			filterToUpdate.timestamp = timestamp;
+			this.indexedDb.updateDbStoreItem(IndexedDbStores.FILTERS_HISTORY, {
+				...toJS(observable(filter)),
+				isPinned,
+				timestamp,
+			});
+
+			this.filterHistory = this.filterHistory.filter(f => !itemsToDelete.includes(f));
+		}
+	};
 
 	private init = async () => {
 		const history = await this.indexedDb.getStoreValues<
 			FiltersHistoryType<EventFilterState | MessageFilterState>
 		>(IndexedDbStores.FILTERS_HISTORY);
 
-		this.eventsHistory = history.filter(isEventsFilterHistory).sort(sortByTimestamp);
-		this.messagesHistory = history.filter(isMessagesFilterHistory).sort(sortByTimestamp);
+		this.filterHistory = history.sort(sortByTimestamp);
 	};
 }
 
