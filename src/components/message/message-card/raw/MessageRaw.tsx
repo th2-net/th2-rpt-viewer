@@ -19,11 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { useMessagesWorkspaceStore } from '../../../../hooks';
 import DetailedMessageRaw from './DetailedMessageRaw';
 import SimpleMessageRaw from './SimpleMessageRaw';
-import { decodeBase64RawContent, getAllRawContent } from '../../../../helpers/rawFormatter';
-import { copyTextToClipboard } from '../../../../helpers/copyHandler';
-import { showNotification } from '../../../../helpers/showNotification';
-
-const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 interface Props {
 	rawContent: string;
@@ -36,15 +31,6 @@ function MessageRaw({ rawContent, messageId, renderInfo }: Props) {
 
 	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
 
-	const copyAll = () => {
-		const copyContent = isDetailed
-			? getAllRawContent(decodeBase64RawContent(rawContent))
-			: atob(rawContent);
-
-		copyTextToClipboard(copyContent);
-		showNotification(COPY_NOTIFICATION_TEXT);
-	};
-
 	return (
 		<div className='mc-raw'>
 			{isDetailed ? (
@@ -52,12 +38,6 @@ function MessageRaw({ rawContent, messageId, renderInfo }: Props) {
 			) : (
 				<SimpleMessageRaw rawContent={rawContent} renderInfo={renderInfo} />
 			)}
-			<div className='mc-raw__copy-all' onClick={copyAll} title='Copy all raw content to clipboard'>
-				<div className='mc-raw__copy-icon' />
-				<div className='mc-raw__copy-title'>
-					<span>Copy All</span>
-				</div>
-			</div>
 		</div>
 	);
 }

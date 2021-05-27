@@ -529,6 +529,9 @@
 			background-color: $filterPickerScrollItemActiveColor;
 			cursor: pointer;
 		}
+		&.hide {
+			display: none;
+		}
 	}
 
 	&__modal {
@@ -661,5 +664,28 @@
 	&__history-list {
 		@include scrollbar();
 		overflow: auto;
+	}
+}
+
+.graph-search-confirm {
+	font: 13px 'Open Sans', sans-serif;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%,-50%);
+	&__controls {
+		width: 100px;
+		margin: 20px auto 0;
+		display: flex;
+		justify-content: space-between;
+	}
+	&__button {
+		border: none;
+		border-radius: 4px;
+		padding: 4px 8px;
+		outline: none;
+		color: #fff;
+		background-color: $filterPickerScrollItemActiveColor;
+		cursor: pointer;
 	}
 }

@@ -29,6 +29,10 @@ module.exports = {
 	module: {
 		rules: [
 			{
+				test: /\.worker\.ts$/,
+				use: { loader: 'worker-loader' },
+			},
+			{
 				test: /\.css$/i,
 				use: ['style-loader', 'css-loader'],
 			},

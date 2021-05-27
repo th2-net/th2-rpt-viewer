@@ -60,8 +60,9 @@ export class MessagesSSELoader {
 
 	@observable isEndReached = false;
 
+	private type: SSEChannelType = 'message';
+
 	constructor(
-		private type: SSEChannelType,
 		private queryParams: MessagesSSEParams,
 		private onResponse: (messages: EventMessage[]) => void,
 		private onError: (event: Event) => void,

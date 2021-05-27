@@ -16,8 +16,7 @@
 
 import { action, reaction, observable, computed, runInAction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
-import { MessagesSSEParams } from '../../api/sse';
-import { timestampToNumber } from '../../helpers/date';
+import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isEventMessage } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
 import notificationsStore from '../NotificationsStore';
@@ -30,17 +29,7 @@ const FIFTEEN_SECONDS = 15 * 1000;
 export default class MessagesDataProviderStore {
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
-
-		reaction(() => this.messages, this.syncFetchedMessagesWithSoftFiltered);
-
-		reaction(() => this.softFilterResults, this.syncFetchedMessagesWithSoftFiltered);
 	}
-
-	@observable
-	public isEndReached = false;
-
-	@observable
-	public isBeginReached = false;
 
 	@observable
 	public noMatchingMessagesPrev = false;
@@ -69,14 +58,11 @@ export default class MessagesDataProviderStore {
 	@observable
 	public initialItemCount = 0;
 
-	@observable.shallow
-	public softFilterResults: Array<EventMessage> = [];
+	@observable
+	public isSoftFiltered: Map<string, boolean> = new Map();
 
 	@observable
-	public softFilterChannelPrev: MessagesSSELoader | null = null;
-
-	@observable
-	public softFilterChannelNext: MessagesSSELoader | null = null;
+	public isMatchingMessages: Map<string, boolean> = new Map();
 
 	prevLoadEndTimestamp: number | null = null;
 
@@ -101,14 +87,6 @@ export default class MessagesDataProviderStore {
 		return this.isLoadingNextMessages || this.isLoadingPreviousMessages;
 	}
 
-	@computed
-	public get isLoadingSoftFilteredMessages(): boolean {
-		return (
-			Boolean(this.softFilterChannelPrev?.isLoading) ||
-			Boolean(this.softFilterChannelNext?.isLoading)
-		);
-	}
-
 	private messageAC: AbortController | null = null;
 
 	@action
@@ -117,38 +95,24 @@ export default class MessagesDataProviderStore {
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
-		const queryParams = this.messagesStore.filterStore.messsagesSSEConfig
-			.queryParams as MessagesSSEParams;
+		const queryParams = this.messagesStore.filterStore.isSoftFilter
+			? this.messagesStore.filterStore.softFilterParams
+			: this.messagesStore.filterStore.filterParams;
 
-		const { startTimestamp, stream, endTimestamp, resultCountLimit, resumeFromId } = queryParams;
-
-		const prevQuery: MessagesSSEParams = this.messagesStore.filterStore.isSoftFilter
-			? {
-					startTimestamp,
-					stream,
-					searchDirection: 'previous',
-					endTimestamp,
-					resultCountLimit,
-					resumeFromId,
-			  }
-			: queryParams;
-
-		const nextQuery: MessagesSSEParams = this.messagesStore.filterStore.isSoftFilter
-			? {
-					startTimestamp,
-					stream,
-					searchDirection: 'next',
-					endTimestamp,
-					resultCountLimit,
-					resumeFromId,
-			  }
-			: {
-					...queryParams,
-					searchDirection: 'next',
-			  };
-
-		this.startPreviousMessagesChannel(prevQuery, SEARCH_TIME_FRAME);
-		this.startNextMessagesChannel(nextQuery, SEARCH_TIME_FRAME);
+		this.createPreviousMessageChannelEventSource(
+			{
+				...queryParams,
+				searchDirection: 'previous',
+			},
+			SEARCH_TIME_FRAME,
+		);
+		this.createNextMessageChannelEventSource(
+			{
+				...queryParams,
+				searchDirection: 'next',
+			},
+			SEARCH_TIME_FRAME,
+		);
 
 		let message: EventMessage | undefined;
 		if (this.searchChannelPrev && this.searchChannelNext) {
@@ -178,8 +142,9 @@ export default class MessagesDataProviderStore {
 			}
 
 			runInAction(() => {
-				this.messages = [...nextMessages, ...[message].filter(isEventMessage), ...prevMessages];
-				this.initialItemCount = this.messages.length;
+				const messages = [...nextMessages, ...[message].filter(isEventMessage), ...prevMessages];
+				this.messages = messages;
+				this.initialItemCount = messages.length;
 			});
 
 			if (this.messagesStore.selectedMessageId) {
@@ -192,27 +157,8 @@ export default class MessagesDataProviderStore {
 			}
 		}
 
-		if (this.messagesStore.filterStore.isSoftFilter) {
-			if (message) {
-				this.softFilterResults = [message];
-			}
-			this.startNextSoftFilterChannel(
-				{
-					...queryParams,
-					searchDirection: 'next',
-				},
-				SEARCH_TIME_FRAME,
-			);
-			this.startPrevSoftFilterChannel(
-				{
-					...queryParams,
-					searchDirection: 'previous',
-				},
-				SEARCH_TIME_FRAME,
-			);
-
-			this.softFilterChannelNext?.subscribe(message?.messageId);
-			this.softFilterChannelPrev?.subscribe(message?.messageId);
+		if (this.messagesStore.filterStore.isSoftFilter && message) {
+			this.isSoftFiltered.set(message.messageId, true);
 		}
 	};
 
@@ -223,40 +169,44 @@ export default class MessagesDataProviderStore {
 		this.searchChannelNext?.stop();
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
-		this.softFilterChannelPrev?.stop();
-		this.softFilterChannelNext?.stop();
-		this.softFilterChannelPrev = null;
-		this.softFilterChannelNext = null;
 		this.resetMessagesDataState(isError);
 	};
 
 	@action
-	public startPreviousMessagesChannel = (query: MessagesSSEParams, interval?: number) => {
+	private onLoadingError = (event: Event) => {
+		notificationsStore.handleSSEError(event);
+		this.stopMessagesLoading(true);
+	};
+
+	@action
+	public createPreviousMessageChannelEventSource = (
+		query: MessagesSSEParams,
+		interval?: number,
+	) => {
 		this.prevLoadEndTimestamp = null;
 
 		this.searchChannelPrev = new MessagesSSELoader(
-			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onPrevChannelResponse,
 			this.onLoadingError,
-			interval
-				? e => {
-						if (this.lastPreviousChannelResponseTimestamp === null) {
-							this.lastPreviousChannelResponseTimestamp = Date.now();
-						}
-						if (
-							this.lastPreviousChannelResponseTimestamp !== null &&
-							Date.now() - this.lastPreviousChannelResponseTimestamp >= FIFTEEN_SECONDS
-						) {
-							runInAction(() => {
-								this.noMatchingMessagesPrev = true;
-								this.prevLoadEndTimestamp = e.timestamp;
-								this.searchChannelPrev?.stop();
-							});
-						}
-				  }
-				: undefined,
+			typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
 		);
+	};
+
+	private onKeepAliveMessagePrevious = (e: SSEHeartbeat) => {
+		if (this.lastPreviousChannelResponseTimestamp === null) {
+			this.lastPreviousChannelResponseTimestamp = Date.now();
+		}
+		if (
+			this.lastPreviousChannelResponseTimestamp !== null &&
+			Date.now() - this.lastPreviousChannelResponseTimestamp >= FIFTEEN_SECONDS
+		) {
+			runInAction(() => {
+				this.noMatchingMessagesPrev = true;
+				this.prevLoadEndTimestamp = e.timestamp;
+				this.searchChannelPrev?.stop();
+			});
+		}
 	};
 
 	@action
@@ -282,37 +232,14 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	private onLoadingError = (event: Event) => {
-		notificationsStore.handleSSEError(event);
-		this.stopMessagesLoading(true);
-	};
-
-	@action
-	public startNextMessagesChannel = (query: MessagesSSEParams, interval?: number) => {
+	public createNextMessageChannelEventSource = (query: MessagesSSEParams, interval?: number) => {
 		this.nextLoadEndTimestamp = null;
 
 		this.searchChannelNext = new MessagesSSELoader(
-			this.messagesStore.filterStore.messsagesSSEConfig.type,
 			query,
 			this.onNextChannelResponse,
 			this.onLoadingError,
-			interval
-				? e => {
-						if (this.lastNextChannelResponseTimestamp === null) {
-							this.lastNextChannelResponseTimestamp = Date.now();
-						}
-						if (
-							this.lastNextChannelResponseTimestamp !== null &&
-							Date.now() - this.lastNextChannelResponseTimestamp >= FIFTEEN_SECONDS
-						) {
-							runInAction(() => {
-								this.noMatchingMessagesNext = true;
-								this.nextLoadEndTimestamp = e.timestamp;
-								this.searchChannelNext?.stop();
-							});
-						}
-				  }
-				: undefined,
+			typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
 		);
 	};
 
@@ -336,6 +263,22 @@ export default class MessagesDataProviderStore {
 		}
 	};
 
+	private onKeepAliveMessageNext = (e: SSEHeartbeat) => {
+		if (this.lastNextChannelResponseTimestamp === null) {
+			this.lastNextChannelResponseTimestamp = Date.now();
+		}
+		if (
+			this.lastNextChannelResponseTimestamp !== null &&
+			Date.now() - this.lastNextChannelResponseTimestamp >= FIFTEEN_SECONDS
+		) {
+			runInAction(() => {
+				this.noMatchingMessagesNext = true;
+				this.nextLoadEndTimestamp = e.timestamp;
+				this.searchChannelNext?.stop();
+			});
+		}
+	};
+
 	@action
 	public getPreviousMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
 		if (!this.searchChannelPrev || this.searchChannelPrev.isLoading) {
@@ -355,115 +298,6 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	private startNextSoftFilterChannel = (query: MessagesSSEParams, interval?: number) => {
-		this.softFilterChannelNext = new MessagesSSELoader(
-			this.messagesStore.filterStore.messsagesSSEConfig.type,
-			query,
-			this.onNextSoftFilterChannelResponse,
-			this.onLoadingError,
-			interval
-				? e => {
-						const lastFetchedMessage = this.messages[0];
-
-						if (
-							this.searchChannelNext?.isLoading === false &&
-							lastFetchedMessage &&
-							e.timestamp > timestampToNumber(lastFetchedMessage.timestamp)
-						) {
-							this.softFilterChannelNext?.stop();
-						}
-				  }
-				: undefined,
-		);
-	};
-
-	@action
-	private startPrevSoftFilterChannel = (query: MessagesSSEParams, interval?: number) => {
-		this.softFilterChannelPrev = new MessagesSSELoader(
-			this.messagesStore.filterStore.messsagesSSEConfig.type,
-			query,
-			this.onPrevSoftFilterChannelResponse,
-			this.onLoadingError,
-			interval
-				? e => {
-						const firstFetchedMessage = this.messages[this.messages.length - 1];
-
-						if (
-							this.searchChannelPrev?.isLoading === false &&
-							firstFetchedMessage &&
-							e.timestamp < timestampToNumber(firstFetchedMessage.timestamp)
-						) {
-							this.softFilterChannelPrev?.stop();
-						}
-				  }
-				: undefined,
-		);
-	};
-
-	@action
-	private onNextSoftFilterChannelResponse = (messages: EventMessage[]) => {
-		const firstNextMessage = messages[this.messages.length - 1];
-
-		if (firstNextMessage && firstNextMessage.messageId === this.softFilterResults[0]?.messageId) {
-			messages.pop();
-		}
-
-		if (messages.length !== 0) {
-			this.softFilterResults = [...messages, ...this.softFilterResults];
-		}
-	};
-
-	@action
-	private onPrevSoftFilterChannelResponse = (messages: EventMessage[]) => {
-		const firstPrevMessage = messages[0];
-
-		if (
-			firstPrevMessage &&
-			firstPrevMessage.messageId ===
-				this.softFilterResults[this.softFilterResults.length - 1]?.messageId
-		) {
-			messages.shift();
-		}
-
-		if (messages.length !== 0) {
-			this.softFilterResults = [...this.softFilterResults, ...messages];
-		}
-	};
-
-	@action
-	private syncFetchedMessagesWithSoftFiltered = () => {
-		if (!this.messagesStore.filterStore.isSoftFilter) return;
-		const fetchedMessages = this.messages;
-		const softFilteredMessages = this.softFilterResults;
-
-		if (softFilteredMessages.length > 0 && fetchedMessages.length > 0) {
-			const firstFetchedMessage = fetchedMessages[fetchedMessages.length - 1];
-			const lastFetchedMessage = fetchedMessages[0];
-
-			const firstSoftFilteredMessage = softFilteredMessages[softFilteredMessages.length - 1];
-			const lastSoftFilteredMessage = softFilteredMessages[0];
-
-			if (
-				!this.softFilterChannelNext?.isLoading &&
-				!this.softFilterChannelNext?.isEndReached &&
-				timestampToNumber(lastFetchedMessage.timestamp) >
-					timestampToNumber(lastSoftFilteredMessage.timestamp)
-			) {
-				this.softFilterChannelNext?.subscribe(lastSoftFilteredMessage.messageId);
-			}
-
-			if (
-				!this.softFilterChannelPrev?.isLoading &&
-				!this.softFilterChannelPrev?.isEndReached &&
-				timestampToNumber(firstFetchedMessage.timestamp) <
-					timestampToNumber(firstSoftFilteredMessage.timestamp)
-			) {
-				this.softFilterChannelPrev?.subscribe(firstSoftFilteredMessage.messageId);
-			}
-		}
-	};
-
-	@action
 	private onFilterChange = async () => {
 		this.stopMessagesLoading();
 		this.resetMessagesDataState();
@@ -475,10 +309,9 @@ export default class MessagesDataProviderStore {
 		this.initialItemCount = 0;
 		this.startIndex = 10000;
 		this.messages = [];
-		this.isBeginReached = false;
-		this.isEndReached = false;
 		this.isError = isError;
-		this.softFilterResults = [];
+		this.isSoftFiltered.clear();
+		this.isMatchingMessages.clear();
 		this.noMatchingMessagesNext = false;
 		this.noMatchingMessagesPrev = false;
 		this.prevLoadEndTimestamp = null;
@@ -503,7 +336,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	keepLoading = (direction: 'next' | 'previous') => {
+	public keepLoading = (direction: 'next' | 'previous') => {
 		if (
 			this.messagesStore.filterStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||
@@ -512,8 +345,7 @@ export default class MessagesDataProviderStore {
 		)
 			return;
 
-		const queryParams = this.messagesStore.filterStore.messsagesSSEConfig
-			.queryParams as MessagesSSEParams;
+		const queryParams = this.messagesStore.filterStore.filterParams;
 
 		const { stream, endTimestamp, resultCountLimit, resumeFromId } = queryParams;
 
@@ -538,44 +370,46 @@ export default class MessagesDataProviderStore {
 
 		if (direction === 'previous') {
 			this.noMatchingMessagesPrev = false;
-			this.startPreviousMessagesChannel({
+			this.createPreviousMessageChannelEventSource({
 				...query,
 				resumeFromId: this.messages[this.messages.length - 1]?.messageId,
 			});
-
-			if (
-				this.messagesStore.filterStore.isSoftFilter &&
-				this.softFilterChannelPrev?.isLoading === false
-			) {
-				this.startPrevSoftFilterChannel({
-					...queryParams,
-					searchDirection: 'previous',
-					resumeFromId: this.softFilterResults[this.softFilterResults.length - 1]?.messageId,
-					startTimestamp: this.prevLoadEndTimestamp!,
-				});
-				this.softFilterChannelPrev?.subscribe();
-			}
 			this.searchChannelPrev.subscribe();
 		} else {
 			this.noMatchingMessagesNext = false;
-			this.startNextMessagesChannel({
+			this.createNextMessageChannelEventSource({
 				...query,
 				resumeFromId: this.messages[0]?.messageId,
 			});
-
-			if (
-				this.messagesStore.filterStore.isSoftFilter &&
-				this.softFilterChannelNext?.isLoading === false
-			) {
-				this.startNextSoftFilterChannel({
-					...queryParams,
-					searchDirection: 'next',
-					resumeFromId: this.softFilterResults[0]?.messageId,
-					startTimestamp: this.nextLoadEndTimestamp!,
-				});
-				this.softFilterChannelNext?.subscribe();
-			}
 			this.searchChannelNext.subscribe();
+		}
+	};
+
+	@action
+	public matchMessage = async (messageId: string, abortSignal: AbortSignal) => {
+		if (this.isSoftFiltered.get(messageId) !== undefined) return;
+		this.isMatchingMessages.set(messageId, true);
+
+		try {
+			const {
+				resultCountLimit,
+				resumeFromId,
+				searchDirection,
+				...filterParams
+			} = this.messagesStore.filterStore.filterParams;
+			const isMatch = await this.api.messages.matchMessage(messageId, filterParams, abortSignal);
+
+			runInAction(() => {
+				this.isSoftFiltered.set(messageId, isMatch);
+				this.isMatchingMessages.set(messageId, false);
+			});
+		} catch (error) {
+			runInAction(() => {
+				if (error.name !== 'AbortError') {
+					this.isSoftFiltered.set(messageId, false);
+				}
+				this.isMatchingMessages.set(messageId, false);
+			});
 		}
 	};
 }

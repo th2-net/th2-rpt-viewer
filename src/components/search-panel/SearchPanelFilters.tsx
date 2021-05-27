@@ -24,6 +24,10 @@ import {
 } from '../../models/filter/FilterInputs';
 import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import FilterRow from '../filter/row';
+import { SearchPanelType } from './SearchPanel';
+import { getArrayOfUniques } from '../../helpers/array';
+import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
+import { notEmpty } from '../../helpers/object';
 
 export type StringFilter = {
 	type: 'string';
@@ -53,18 +57,9 @@ export type EventFilterState = {
 };
 
 export type MessageFilterState = {
-	attachedEventIds: {
-		negative: boolean;
-		values: string[];
-	};
-	type: {
-		negative: boolean;
-		values: string[];
-	};
-	body: {
-		negative: boolean;
-		values: string[];
-	};
+	attachedEventIds: MultipleStringFilter;
+	type: MultipleStringFilter;
+	body: MultipleStringFilter;
 };
 
 export type FilterState = EventFilterState | MessageFilterState;
@@ -76,10 +71,12 @@ type FilterRowConfig =
 	| FilterRowMultipleStringsConfig;
 
 interface SearchPanelFiltersProps {
+	type: SearchPanelType;
 	info: SSEFilterInfo[];
 	state: FilterState;
 	setState: (patch: Partial<FilterState>) => void;
 	disableAll: boolean;
+	autocompletes: (FiltersHistoryType<EventFilterState> | FiltersHistoryType<MessageFilterState>)[];
 }
 
 type Values = {
@@ -87,7 +84,7 @@ type Values = {
 };
 
 const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
-	const { info, state, setState, disableAll } = props;
+	const { info, state, setState, disableAll, autocompletes } = props;
 
 	function getValuesUpdater<T extends keyof FilterState>(name: T) {
 		return function valuesUpdater<K extends FilterState[T]>(values: K) {
@@ -136,6 +133,13 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 					.split(/(?=[A-Z])/)
 					.join(' ');
 
+				const autocompleteList = getArrayOfUniques(
+					autocompletes
+						.map(item => item.filters[filter.name as keyof FilterState]?.values)
+						.filter(notEmpty)
+						.flat(),
+				);
+
 				const config = filter.parameters.map(
 					(param: SSEFilterParameter): FilterRowConfig => {
 						switch (param.type.value) {
@@ -157,6 +161,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									type: 'string',
 									value: getState(filter.name).values || '',
 									setValue: getValuesUpdater(filter.name),
+									autocompleteList,
 								};
 							case 'switcher':
 								return {
@@ -179,7 +184,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									setValues: getValuesUpdater(filter.name),
 									currentValue: currentValues[filter.name] || '',
 									setCurrentValue: setCurrentValue(filter.name),
-									autocompleteList: null,
+									autocompleteList,
 								};
 						}
 					},

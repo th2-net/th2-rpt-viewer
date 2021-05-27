@@ -173,3 +173,7 @@ export function areArraysEqual<T extends unknown[]>(arr1: T, arr2: T): boolean {
 
 	return true;
 }
+
+export function getArrayOfUniques<T>(arr: T[]) {
+	return [...new Set(arr)];
+}

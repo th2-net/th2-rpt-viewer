@@ -29,6 +29,10 @@
 	position: fixed;
 	z-index: 120;
 
+	&-footer {
+		display: flex;
+	}
+
 	&-wrapper {
 		position: relative;
 		height: 100%;
@@ -54,6 +58,9 @@
 		align-items: center;
 		padding: 4px 5px;
 		cursor: pointer;
+		background-color: transparent;
+		border: none;
+		outline: none;
 
 		&.disabled {
 			opacity: 0.6;
@@ -330,6 +337,10 @@
 	justify-content: flex-end;
 	align-items: center;
 	font-size: 14px;
+
+	.filters-history-open {
+		@include improved-clickable($filterPrimaryColor, 10px)
+	}
 
 	&__counts {
 		flex: auto;

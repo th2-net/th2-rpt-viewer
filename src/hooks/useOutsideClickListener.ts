@@ -22,7 +22,7 @@ export function useOutsideClickListener(
 	eventType: 'mousedown' | 'mouseup' = 'mousedown',
 ) {
 	const onOutsideClick = (e: MouseEvent) => {
-		if (!ref.current?.contains(e.target as Element)) {
+		if (ref && !ref.current?.contains(e.target as Element)) {
 			handler(e);
 		}
 	};

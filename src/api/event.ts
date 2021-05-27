@@ -26,32 +26,18 @@ const eventHttpApi: EventApiSchema = {
 			signal,
 		});
 
+		// if probe param is provided server will respond with empty body if event wasn't found
+		if (res.ok && queryParams.probe) {
+			const body = await res.text();
+			return body ? JSON.parse(body) : null;
+		}
+
 		if (res.ok) {
 			return res.json();
 		}
 
 		console.error(res.statusText);
 		return null;
-	},
-	getEventsByName: async (timeRange, name) => {
-		const [timestampFrom, timestampTo] = timeRange;
-
-		const params = createURLSearchParams({
-			name,
-			timestampFrom,
-			timestampTo,
-			flat: true,
-		});
-
-		const path = `backend/search/events?${params}`;
-		const res = await fetch(path);
-
-		if (res.ok) {
-			return res.json();
-		}
-
-		console.error(res.statusText);
-		return [];
 	},
 	getEventParents: async (firstParentId: string, abortSignal?: AbortSignal) => {
 		let currentParentId: string | null = firstParentId;

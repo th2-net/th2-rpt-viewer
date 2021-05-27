@@ -19,21 +19,25 @@ import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import { ToastProvider } from 'react-toast-notifications';
 import Toast from './notifications/Toast';
+import ToastContainer from './notifications/ToastContainer';
 import Notifier from './notifications/Notifier';
 import WorkspacesLayout from './workspace/WorkspacesLayout';
 import Graph from './graph/Graph';
-import '../styles/root.scss';
 import WorkspaceLinkGetter from './WorkspaceLinkGetter';
 import MessageBodyRulesConfigurator from './message-display-rules/MessageBodyRulesConfigurator';
 import { useSearchStore } from '../hooks/useSearchStore';
 import { useTabsStore } from '../hooks';
+import '../styles/root.scss';
 
 const App = () => {
 	const searchStore = useSearchStore();
 	const tabsStore = useTabsStore();
 	return (
 		<div className='app'>
-			<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={400}>
+			<ToastProvider
+				placement='top-right'
+				components={{ Toast, ToastContainer }}
+				transitionDuration={400}>
 				<Graph />
 				{tabsStore.activeTabIndex !== 0 && <WorkspaceLinkGetter />}
 				<MessageBodyRulesConfigurator sessions={searchStore.messageSessions} />

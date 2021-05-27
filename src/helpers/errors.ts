@@ -18,7 +18,7 @@ import {
 	NotificationError,
 	UrlError,
 	ResponseError,
-	IndexedDbError,
+	GenericError,
 } from '../stores/NotificationsStore';
 
 export function isURLError(error: NotificationError): error is UrlError {
@@ -29,6 +29,6 @@ export function isResponseError(error: NotificationError): error is ResponseErro
 	return error.errorType === 'responseError';
 }
 
-export function isIndexedDbMessage(error: NotificationError): error is IndexedDbError {
-	return error.errorType === 'indexedDbMessage';
+export function isGenericErrorMessage(error: NotificationError): error is GenericError {
+	return error.errorType === 'genericError';
 }

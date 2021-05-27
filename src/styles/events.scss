@@ -99,6 +99,16 @@
 		white-space: nowrap;
 	}
 	&__time-label {
+		padding: 0 2px;
+		transition: all 0.15s;
+		border: 1px solid transparent;
+		border-radius: 4px;
+
+		&:hover {
+			color: $graphTextColor;
+			border: 1px solid $graphTextColor;
+		}
+
 		&-short {
 			display: inline;
 		}

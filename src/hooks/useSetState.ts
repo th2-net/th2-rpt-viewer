@@ -16,7 +16,7 @@
 
 import { useCallback, useState } from 'react';
 
-const useSetState = <T extends object>(
+const useSetState = <T extends object | null>(
 	defaultState: T = {} as T,
 ): [T, (patch: Partial<T> | ((prevState: T) => Partial<T>)) => void] => {
 	const [state, set] = useState<T>(defaultState);

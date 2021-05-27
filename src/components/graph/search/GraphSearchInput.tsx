@@ -21,6 +21,7 @@ import { usePointerTimestamp } from '../../../contexts/pointerTimestampContext';
 import { GraphSearchMode } from './GraphSearch';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
 import { TimeRange } from '../../../models/Timestamp';
+import { usePrevious } from '../../../hooks';
 
 const TIME_MASK = DateTimeMask.TIME_MASK;
 export const DATE_TIME_MASK = DateTimeMask.DATE_TIME_MASK;
@@ -69,6 +70,8 @@ interface Props {
 	inputConfig: GraphSearchInputConfig;
 	setInputConfig: (config: GraphSearchInputConfig) => void;
 	windowRange: TimeRange | null;
+	hoveredTimestamp: number | null;
+	submitTimestamp: (timestamp: number) => void;
 }
 
 function GraphSearchInput(props: Props) {
@@ -80,6 +83,8 @@ function GraphSearchInput(props: Props) {
 		setInputConfig,
 		mode,
 		windowRange,
+		hoveredTimestamp,
+		submitTimestamp,
 	} = props;
 
 	const pointerTimestamp = usePointerTimestamp();
@@ -138,7 +143,6 @@ function GraphSearchInput(props: Props) {
 			setInputConfig(savedInputConfig.current);
 		} else if (pointerTimestamp !== null) {
 			setInputConfig({
-				...inputConfig,
 				value: pointerTimestamp
 					? moment.utc(pointerTimestamp).format(mask)
 					: timestamp
@@ -152,6 +156,46 @@ function GraphSearchInput(props: Props) {
 		}
 		previousPointerTimestamp.current = pointerTimestamp;
 	}, [pointerTimestamp]);
+
+	const restoreTimestampTimer = React.useRef<NodeJS.Timeout | null>();
+
+	const prevHoveredTimestamp = usePrevious(hoveredTimestamp);
+
+	React.useEffect(() => {
+		if (hoveredTimestamp && restoreTimestampTimer.current) {
+			clearTimeout(restoreTimestampTimer.current);
+			restoreTimestampTimer.current = null;
+		}
+
+		if (prevHoveredTimestamp === null && hoveredTimestamp !== null) {
+			savedInputConfig.current = inputConfig;
+		}
+
+		if (hoveredTimestamp) {
+			const mask = inputConfig.mask || DateTimeMask.DATE_TIME_MASK;
+			setInputConfig({
+				...inputConfig,
+				value: moment.utc(hoveredTimestamp).format(mask),
+				mask,
+				placeholder: inputConfig.placeholder || DATE_TIME_PLACEHOLDER,
+				timestamp: hoveredTimestamp,
+				isValidDate: true,
+			});
+		}
+
+		if (!hoveredTimestamp && prevHoveredTimestamp) {
+			restoreTimestampTimer.current = setTimeout(() => {
+				if (savedInputConfig.current) {
+					setInputConfig({
+						...savedInputConfig.current,
+					});
+					if (savedInputConfig.current.timestamp) {
+						submitTimestamp(savedInputConfig.current.timestamp);
+					}
+				}
+			}, 800);
+		}
+	}, [hoveredTimestamp]);
 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
 		const { mask, value, placeholder } = inputConfig;

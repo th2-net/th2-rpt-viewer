@@ -16,9 +16,55 @@
 
 @import './common/vars';
 
-.react-toast-notifications__container {
+.toast-container {
 	width: 70%;
 	max-width: 500px;
+	box-sizing: border-box;
+	max-height: 100%;
+	position: fixed;
+	z-index: 1000;
+	top: 0;
+	right: 0;
+	display: flex;
+
+	&__list {
+		max-height: 100%;
+		width: 100%;
+		overflow-x: hidden;
+		overflow-y: auto;
+		padding: 8px;
+	}
+
+	&__close-all {
+		position: absolute;
+		top: 6px;
+		left: -17px;
+		min-width: 20px;
+		border: none;
+		background-color: transparent;
+		cursor: pointer;
+		@include icon(url(../../resources/icons/cross-icon-dark.svg), 20px, 20px);
+		opacity: 0;
+		animation: fade-in 0.5s forwards, move-down 0.5s forwards;
+		animation-delay: 0.4s;
+
+		@keyframes fade-in {
+			from {
+				opacity: 0;
+			}
+			to {
+				opacity: 1;
+			}
+		}
+		@keyframes move-down {
+			from {
+				transform: translateY(-15px);
+			}
+			to {
+				transform: translateY(0);
+			}
+		}
+	}
 }
 
 .toast-message {

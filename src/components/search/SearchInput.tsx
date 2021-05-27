@@ -97,7 +97,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 									className='search-bubble'
 									size='small'
 									removeIconType='white'
-									submitKeyCodes={[KeyCodes.ENTER, KeyCodes.SPACE]}
+									submitKeyCodes={[KeyCodes.ENTER]}
 									value={pattern}
 									style={{ backgroundColor: color, color: '#FFF' }}
 									onSubmit={this.bubbleOnChangeFor(index)}
@@ -201,7 +201,8 @@ export class SearchInputBase extends React.PureComponent<Props> {
 			e.preventDefault();
 		}
 
-		if (e.keyCode === KeyCodes.SPACE && e.currentTarget.value !== '') {
+		if (e.keyCode === KeyCodes.TAB && e.currentTarget.value !== '') {
+			e.preventDefault();
 			if (e.ctrlKey) {
 				this.props.setValue(`${this.props.value} `);
 				return;
@@ -232,7 +233,7 @@ export class SearchInputBase extends React.PureComponent<Props> {
 	private inputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const currentValue = e.target.value;
 
-		this.props.setValue(currentValue.trim());
+		this.props.setValue(currentValue.trimLeft());
 
 		setTimeout(() => {
 			if (this.props.value === currentValue) {

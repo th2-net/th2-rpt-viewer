@@ -34,13 +34,28 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	const eventsStore = useWorkspaceEventStore();
 	const eventsDataStore = useEventsDataStore();
 
-	const parents = React.useMemo(() => {
-		return eventsStore.getParentNodes(eventTreeNode.eventId, eventsDataStore.eventsCache);
-	}, [eventsDataStore.eventsCache]);
+	React.useEffect(() => {
+		const children = eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId);
+		if (eventsDataStore.childrenAreUnknown.get(eventTreeNode.eventId) && !children) {
+			eventsDataStore.childrenAreUnknown.set(eventTreeNode.eventId, false);
+			eventsDataStore.loadChildren(eventTreeNode.eventId);
+		}
+	}, []);
 
-	const childrenCount = computed(
-		() => (eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId) || []).length,
-	).get();
+	const parents = computed(() => {
+		return eventsStore.getParentNodes(eventTreeNode.eventId, eventsDataStore.eventsCache);
+	}).get();
+
+	const childrenCount = computed(() => {
+		const children = eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId);
+		if (children) return children.length;
+
+		return eventsDataStore.targetNodeParents.some(
+			parentNode => parentNode.eventId === eventTreeNode.eventId,
+		)
+			? 1
+			: 0;
+	}).get();
 
 	const isLoadingSiblings = computed(
 		() => eventTreeNode.parentId && eventsDataStore.isLoadingChildren.get(eventTreeNode.parentId),
@@ -80,7 +95,8 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 
 	function loadMoreSiblings() {
 		if (eventTreeNode.parentId) {
-			eventsDataStore.loadMoreChilds(eventTreeNode.parentId);
+			eventsDataStore.isLoadingChildren.set(eventTreeNode.parentId, true);
+			eventsDataStore.loadChildren(eventTreeNode.parentId);
 		}
 	}
 

@@ -14,6 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
+// TODO: fix component once search is migrated to sse
+
 import * as React from 'react';
 import { raf } from '../../../helpers/raf';
 import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
@@ -72,7 +74,7 @@ function EventSearchPanel({ isDisabled = false }: Props) {
 	}, [handleKeyDown]);
 
 	useOutsideClickListener(searchBaseRef, (e: MouseEvent) => {
-		if (!searchButtonRef.current?.contains(e.target as Element)) {
+		if (e.target instanceof Element && !searchButtonRef.current?.contains(e.target)) {
 			setShowSearch(false);
 		}
 	});
@@ -85,12 +87,13 @@ function EventSearchPanel({ isDisabled = false }: Props) {
 
 	const searchButtonClass = createBemElement('search', 'button', showSearch ? 'active' : null);
 
+	function handleSearchButtonClick() {
+		setShowSearch(isSearchPanelShown => !isSearchPanelShown);
+	}
+
 	return (
 		<div className={searchWrapperClass}>
-			<div
-				className={searchButtonClass}
-				ref={searchButtonRef}
-				onClick={() => setShowSearch(isSearchPanelShown => !isSearchPanelShown)}>
+			<div className={searchButtonClass} ref={searchButtonRef} onClick={handleSearchButtonClick}>
 				<div className={searchIconClass} />
 				<div className={searchTitleClass}>Search</div>
 			</div>

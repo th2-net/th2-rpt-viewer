@@ -21,8 +21,12 @@ import {
 	createStyleSelector,
 } from '../../../helpers/styleCreators';
 import { FilterRowStringConfig } from '../../../models/filter/FilterInputs';
+import AutocompleteInput from '../../util/AutocompleteInput';
 
 export default function StringFilterRow({ config }: { config: FilterRowStringConfig }) {
+	const ref = React.useRef();
+	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
+
 	const inputClassName = createBemElement(
 		'filter-row',
 		'input',
@@ -31,6 +35,10 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
 	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
 
+	React.useLayoutEffect(() => {
+		setAutocompleteAnchor(ref.current || undefined);
+	}, [setAutocompleteAnchor]);
+
 	return (
 		<div className={wrapperClassName}>
 			{config.label && (
@@ -38,14 +46,28 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 					{config.label}
 				</label>
 			)}
-			<input
-				type='text'
-				className={inputClassName}
-				id={config.id}
-				disabled={config.disabled}
-				value={config.value}
-				onChange={e => config.setValue(e.target.value)}
-			/>
+			{config.autocompleteList ? (
+				<AutocompleteInput
+					anchor={autocompleteAnchor}
+					autoresize={false}
+					className={inputClassName}
+					ref={ref}
+					autocomplete={config.autocompleteList}
+					value={config.value}
+					setValue={config.setValue}
+					onSubmit={config.setValue}
+				/>
+			) : (
+				<input
+					type='text'
+					className={inputClassName}
+					id={config.id}
+					autoComplete='off'
+					disabled={config.disabled}
+					value={config.value}
+					onChange={e => config.setValue(e.target.value)}
+				/>
+			)}
 		</div>
 	);
 }

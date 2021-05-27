@@ -28,6 +28,7 @@ import {
 	SSEParams,
 } from './sse';
 import { IndexedDB } from './indexedDb';
+import { MatchMessageParams } from './message';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
@@ -49,7 +50,6 @@ export interface EventApiSchema {
 		abortSignal?: AbortSignal,
 		queryParams?: Record<string, string | number | boolean | null | string[]>,
 	) => Promise<EventAction>;
-	getEventsByName: (timeRange: TimeRange, name: string, eventId?: string) => Promise<string[]>;
 	getEventParents: (parentId: string, abortSignal?: AbortSignal) => Promise<EventAction[]>;
 }
 
@@ -82,6 +82,11 @@ export interface MessageApiSchema {
 		queryParams?: Record<string, string | number | boolean | null | string[]>,
 	) => Promise<EventMessage>;
 	getMessageSessions: () => Promise<string[]>;
+	matchMessage: (
+		messageId: string,
+		filter: MatchMessageParams,
+		abortSignal?: AbortSignal,
+	) => Promise<boolean>;
 }
 
 export interface SSESchema {

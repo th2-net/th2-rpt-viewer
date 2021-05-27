@@ -70,8 +70,7 @@ const MessagesVirtualizedList = (props: Props) => {
 	const debouncedScrollHandler = useDebouncedCallback(
 		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
 			const scroller = event.target;
-
-			if (scroller instanceof HTMLDivElement) {
+			if (scroller instanceof Element) {
 				const isStartReached = scroller.scrollTop === 0;
 				const isEndReached = scroller.scrollHeight - scroller.scrollTop === scroller.clientHeight;
 				if (
@@ -139,11 +138,7 @@ const MessagesVirtualizedList = (props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment(
-												messageStore.filterStore.messsagesSSEConfig.queryParams.startTimestamp,
-											)
-												.utc()
-												.format()}
+											{moment.utc(messageStore.filterStore.filterParams.startTimestamp).format()}
 										</span>
 										<button
 											className='messages-list__load-btn'
@@ -166,11 +161,7 @@ const MessagesVirtualizedList = (props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment(
-												messageStore.filterStore.messsagesSSEConfig.queryParams.startTimestamp,
-											)
-												.utc()
-												.format()}
+											{moment(messageStore.filterStore.filterParams.startTimestamp).utc().format()}
 										</span>
 										<button
 											className='messages-list__load-btn'

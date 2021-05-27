@@ -48,18 +48,28 @@ export default function Bubble(props: Props) {
 		submitKeyCodes = [KeyCodes.ENTER],
 	} = props;
 
+	const [anchor, setAnchor] = React.useState<HTMLDivElement>();
 	const [isEditing, setIsEditing] = React.useState(false);
 	const [currentValue, setCurrentValue] = React.useState<string>(value);
 	const inputRef = React.useRef<HTMLInputElement>();
+	const rootRef = React.useRef<HTMLDivElement>(null);
 
 	React.useEffect(() => {
 		if (isEditing) {
 			inputRef.current?.select();
+			if (!anchor) {
+				setAnchor(rootRef.current || undefined);
+			}
 		}
 	}, [isEditing]);
 
 	React.useEffect(() => {
 		setCurrentValue(value);
+
+		if (value && !anchor) {
+			setAnchor(rootRef.current || undefined);
+		}
+
 		return () => {
 			setCurrentValue('');
 		};
@@ -97,9 +107,11 @@ export default function Bubble(props: Props) {
 			className={`${className} ${rootClass}`}
 			style={style}
 			onBlur={onBlur}
-			onClick={rootOnClick}>
+			onClick={rootOnClick}
+			ref={rootRef}>
 			{isEditing ? (
 				<AutocompleteInput
+					anchor={anchor}
 					ref={inputRef}
 					className='bubble__input'
 					value={currentValue}

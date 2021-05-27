@@ -128,7 +128,7 @@ function BookmarksPanel() {
 		}
 	}
 
-	function selectedRemove() {
+	function removeSelected() {
 		filteredBookmarks
 			.filter(bookmark => selectedBookmarks.includes(bookmark.id))
 			.forEach(bookmark => selectedStore.removeBookmark(bookmark));
@@ -167,7 +167,7 @@ function BookmarksPanel() {
 						<button
 							className='button'
 							disabled={selectedBookmarks.length === 0}
-							onClick={() => selectedRemove()}>
+							onClick={removeSelected}>
 							<i className={iconButtonClassName} />
 							<span className='button__label'>Delete</span>
 						</button>
@@ -176,7 +176,7 @@ function BookmarksPanel() {
 						<Checkbox
 							className='bookmarks-panel-checkbox'
 							checked={selectedBookmarks.length === filteredBookmarks.length}
-							onChange={() => selectAll()}
+							onChange={selectAll}
 						/>
 					</div>
 				</div>

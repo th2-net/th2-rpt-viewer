@@ -25,16 +25,27 @@ import { getObjectKeys } from '../helpers/object';
 import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import { DbData } from '../api/indexedDb';
+import FiltersHistoryStore from './FiltersHistoryStore';
+import { intervalOptions } from '../models/Graph';
+import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
+import { getRangeFromTimestamp } from '../helpers/date';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
+
+	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb);
 
 	messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
 
 	workspacesStore: WorkspacesStore;
 
 	constructor(private api: ApiSchema) {
-		this.workspacesStore = new WorkspacesStore(this, this.api, this.parseUrlState());
+		this.workspacesStore = new WorkspacesStore(
+			this,
+			this.api,
+			this.filtersHistoryStore,
+			this.parseUrlState(),
+		);
 
 		window.history.replaceState({}, '', window.location.pathname);
 	}
@@ -98,10 +109,31 @@ export default class RootStore {
 
 	private parseUrlState = (): WorkspacesUrlState | null => {
 		try {
+			if (window.location.search.split('&').length > 1) {
+				throw new Error('Only one query parameter expected.');
+			}
 			const searchParams = new URLSearchParams(window.location.search);
 			const workspacesUrlState = searchParams.get('workspaces');
-			const parsedState = workspacesUrlState ? JSON.parse(window.atob(workspacesUrlState)) : null;
-			return parsedState;
+			const timestamp = searchParams.get('timestamp');
+			const eventId = searchParams.get('eventId');
+			const messageId = searchParams.get('messageId');
+			if (workspacesUrlState) {
+				return JSON.parse(window.atob(workspacesUrlState));
+			}
+			const interval = intervalOptions[0];
+			const timeRange = timestamp ? getRangeFromTimestamp(+timestamp, interval) : undefined;
+
+			return [
+				{
+					events: eventId || { range: timeRange },
+					messages: messageId || {
+						timestampTo: timestamp ? parseInt(timestamp) : null,
+					},
+					timeRange,
+					interval,
+					layout: defaultPanelsLayout,
+				},
+			];
 		} catch (error) {
 			this.notificationsStore.addMessage({
 				errorType: 'urlError',
@@ -121,7 +153,7 @@ export default class RootStore {
 	public handleQuotaExceededError = async (unsavedData?: DbData) => {
 		const errorId = nanoid();
 		this.notificationsStore.addMessage({
-			errorType: 'indexedDbMessage',
+			errorType: 'genericError',
 			type: 'error',
 			header: 'QuotaExceededError',
 			description: 'Not enough storage space to save data. Clear all data?',
@@ -144,7 +176,7 @@ export default class RootStore {
 			]);
 
 			this.notificationsStore.addMessage({
-				errorType: 'indexedDbMessage',
+				errorType: 'genericError',
 				type: 'success',
 				header: 'Data has been removed',
 				description: '',
