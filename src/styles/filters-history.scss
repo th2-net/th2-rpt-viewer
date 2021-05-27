@@ -75,9 +75,9 @@
 
 	&__row-values {
 		flex-grow: 1;
-    justify-content: flex-end;
-    display: flex;
-    flex-wrap: wrap;
+		justify-content: flex-end;
+		display: flex;
+		flex-wrap: wrap;
 	}
 
 	&__row-bubble {
@@ -111,11 +111,14 @@
 		& i {
 			display: inline-block;
 			@include icon(url(../../resources/icons/pin.svg), 14px, 14px);
-			transition: all 0.15s;
+			transition: transform 0.15s;
 		}
 
-		&.pinned i {
-			transform: rotate(-45deg);
+		&.pinned {
+			background-color: rgba(0, 0, 0, 0.1);
+			& i {
+				transform: rotate(-45deg);
+			}
 		}
 	}
 }

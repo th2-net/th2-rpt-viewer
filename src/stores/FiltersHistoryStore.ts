@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, toJS, computed } from 'mobx';
+import { observable, action, toJS, computed, reaction } from 'mobx';
 import isEqual from 'lodash.isequal';
 import moment from 'moment';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
@@ -42,33 +42,74 @@ export interface FiltersHistoryType<T extends FilterState> {
 class FiltersHistoryStore {
 	constructor(private indexedDb: IndexedDB) {
 		this.init();
+
+		reaction(
+			() => [
+				this.pinnedEventFilters,
+				this.eventFilters,
+				this.pinnedMessageFilters,
+				this.messageFilters,
+			],
+			filterHistory => {
+				const filtersToDelete = filterHistory
+					.filter(history => history.length > this.dbItemsPerType)
+					.flatMap(history => history.slice(this.dbItemsPerType));
+
+				if (filtersToDelete.length) {
+					filtersToDelete.forEach(f => {
+						this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, f.timestamp);
+					});
+					this.filterHistory = this.filterHistory.filter(
+						filter => !filtersToDelete.includes(filter),
+					);
+				}
+			},
+		);
 	}
 
-	private dbItemsPerType = indexedDbLimits[IndexedDbStores.FILTERS_HISTORY] / 3;
+	private dbItemsPerType = indexedDbLimits[IndexedDbStores.FILTERS_HISTORY] / 4;
 
 	@observable
 	public filterHistory: FiltersHistoryType<EventFilterState | MessageFilterState>[] = [];
 
 	@computed
-	public get eventsHistory(): FiltersHistoryType<EventFilterState>[] {
-		const eventFilters = this.filterHistory.filter(isEventsFilterHistory);
-		const pinnedFilters = eventFilters.filter(filter => filter.isPinned);
+	private get allEventFilters() {
+		return this.filterHistory.filter(isEventsFilterHistory).sort(sortByTimestamp);
+	}
 
-		return [
-			...pinnedFilters.sort(sortByTimestamp),
-			...eventFilters.filter(filter => !pinnedFilters.includes(filter)).sort(sortByTimestamp),
-		];
+	@computed
+	private get pinnedEventFilters() {
+		return this.allEventFilters.filter(f => f.isPinned);
+	}
+
+	@computed
+	private get eventFilters() {
+		return this.allEventFilters.filter(f => !f.isPinned);
+	}
+
+	@computed
+	private get allMessageFilters() {
+		return this.filterHistory.filter(isMessagesFilterHistory).sort(sortByTimestamp);
+	}
+
+	@computed
+	private get pinnedMessageFilters() {
+		return this.allMessageFilters.filter(f => f.isPinned);
+	}
+
+	@computed
+	private get messageFilters() {
+		return this.allMessageFilters.filter(f => !f.isPinned);
+	}
+
+	@computed
+	public get eventsHistory(): FiltersHistoryType<EventFilterState>[] {
+		return [...this.pinnedEventFilters, ...this.eventFilters];
 	}
 
 	@computed
 	public get messagesHistory(): FiltersHistoryType<MessageFilterState>[] {
-		const messagesFilters = this.filterHistory.filter(isMessagesFilterHistory);
-		const pinnedFilters = messagesFilters.filter(filter => filter.isPinned);
-
-		return [
-			...pinnedFilters.sort(sortByTimestamp),
-			...messagesFilters.filter(filter => !pinnedFilters.includes(filter)).sort(sortByTimestamp),
-		];
+		return [...this.pinnedMessageFilters, ...this.messageFilters];
 	}
 
 	@action
@@ -87,15 +128,8 @@ class FiltersHistoryStore {
 			isPinned: false,
 		};
 
-		const itemsToDelete = this.eventsHistory
-			.slice()
-			.filter(f => !f.isPinned)
-			.splice(this.dbItemsPerType);
-		itemsToDelete.forEach(item => {
-			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, item.timestamp);
-		});
 		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
-		this.filterHistory = [...this.filterHistory.filter(f => !itemsToDelete.includes(f)), filter];
+		this.filterHistory = [...this.filterHistory, filter];
 	};
 
 	@action
@@ -114,34 +148,16 @@ class FiltersHistoryStore {
 			isPinned: false,
 		};
 
-		const itemsToDelete = this.messagesHistory
-			.slice()
-			.filter(f => !f.isPinned)
-			.splice(this.dbItemsPerType);
-
-		itemsToDelete.forEach(item => {
-			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, item.timestamp);
-		});
 		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
-		this.filterHistory = [...this.filterHistory.filter(f => !itemsToDelete.includes(f)), filter];
+		this.filterHistory = [...this.filterHistory, filter];
 	};
 
 	@action
 	public toggleFilterPin = (filter: FiltersHistoryType<MessageFilterState | EventFilterState>) => {
 		const filterToUpdate = this.filterHistory.find(f => f === filter);
-
 		if (filterToUpdate) {
 			const isPinned = !filter.isPinned;
 			const timestamp = moment.utc().valueOf();
-			const itemsToDelete = this.filterHistory
-				.slice()
-				.sort(sortByTimestamp)
-				.filter(f => !f.isPinned)
-				.splice(this.dbItemsPerType);
-
-			itemsToDelete.forEach(item => {
-				this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, item.timestamp);
-			});
 
 			filterToUpdate.isPinned = isPinned;
 			filterToUpdate.timestamp = timestamp;
@@ -150,8 +166,6 @@ class FiltersHistoryStore {
 				isPinned,
 				timestamp,
 			});
-
-			this.filterHistory = this.filterHistory.filter(f => !itemsToDelete.includes(f));
 		}
 	};
 
