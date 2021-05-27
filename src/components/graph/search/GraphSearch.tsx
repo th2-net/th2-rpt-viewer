@@ -20,6 +20,7 @@ import { createBemElement } from '../../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { TimeRange } from '../../../models/Timestamp';
 import GraphSearchDialog from './GraphSearchDialog';
+import GraphSearchConfirm from './GraphSearchConfirm';
 import WorkspaceStore from '../../../stores/workspace/WorkspaceStore';
 import { ModalPortal } from '../../util/Portal';
 import GraphSearchInput, { GraphSearchInputConfig } from './GraphSearchInput';
@@ -29,12 +30,14 @@ import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 
 interface Props {
+	refreshPanels: ((timestamp: number) => void) | null;
 	onTimestampSubmit: (timestamp: number) => void;
 	onFoundItemClick: InstanceType<typeof WorkspaceStore>['onSavedItemSelect'];
 	windowRange: TimeRange | null;
+	hoveredTimestamp: number | null;
 }
 
-export type GraphSearchMode = 'timestamp' | 'history';
+export type GraphSearchMode = 'timestamp' | 'history' | 'confirm';
 export interface GraphSearchResult {
 	timestamp: number;
 	id: string;
@@ -42,7 +45,13 @@ export interface GraphSearchResult {
 }
 
 function GraphSearch(props: Props) {
-	const { onTimestampSubmit, onFoundItemClick, windowRange } = props;
+	const {
+		onTimestampSubmit,
+		onFoundItemClick,
+		windowRange,
+		refreshPanels,
+		hoveredTimestamp,
+	} = props;
 
 	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
 		isValidDate: false,
@@ -109,10 +118,18 @@ function GraphSearch(props: Props) {
 				e.keyCode === KeyCodes.ENTER
 			) {
 				onTimestampSubmit(currentTimestamp);
+				if (refreshPanels) {
+					setMode('confirm');
+				} else {
+					setShowModal(false);
+				}
+			}
+
+			if (e.keyCode === KeyCodes.ESCAPE) {
 				setShowModal(false);
 			}
 		},
-		[inputConfig, mode, showModal],
+		[inputConfig, mode, showModal, refreshPanels, timestamp],
 	);
 
 	React.useEffect(() => {
@@ -158,8 +175,12 @@ function GraphSearch(props: Props) {
 			inputConfig.isValidDate
 		) {
 			onTimestampSubmit(inputConfig.timestamp);
-			setShowModal(false);
 			setIsModeLocked(false);
+			if (refreshPanels) {
+				setMode('confirm');
+			} else {
+				setShowModal(false);
+			}
 		}
 
 		if (mode === 'history') {
@@ -203,6 +224,8 @@ function GraphSearch(props: Props) {
 				setInputConfig={setInputConfig}
 				mode={mode}
 				windowRange={windowRange}
+				hoveredTimestamp={hoveredTimestamp}
+				submitTimestamp={onTimestampSubmit}
 			/>
 			<ModalPortal
 				isOpen={showModal}
@@ -232,19 +255,36 @@ function GraphSearch(props: Props) {
 							isIdMode={showModal && mode === 'history'}
 						/>
 					)}
+					{mode === 'confirm' && refreshPanels && (
+						<GraphSearchConfirm
+							onConfirm={() => {
+								if (timestamp && refreshPanels) {
+									refreshPanels(timestamp);
+								}
+								setShowModal(false);
+								setMode('timestamp');
+							}}
+							onDecline={() => setShowModal(false)}
+						/>
+					)}
 					<div className='graph-search__switchers'>
-						<button className={dateButtonClassName} onClick={() => onModeSelect('timestamp')}>
-							Timestamp
-						</button>
-						<button className={idButtonClassName} onClick={() => onModeSelect('history')}>
-							History
-						</button>
+						{mode === 'confirm' ? null : (
+							<>
+								<button className={dateButtonClassName} onClick={() => onModeSelect('timestamp')}>
+									Timestamp
+								</button>
+								<button className={idButtonClassName} onClick={() => onModeSelect('history')}>
+									History
+								</button>
+							</>
+						)}
 						<button
 							onClick={handleModalSubmit}
 							className={createBemElement(
 								'graph-search',
 								'submit-button',
 								isSubmitButtonActive ? 'active' : null,
+								mode === 'confirm' ? 'hide' : null,
 							)}>
 							OK
 						</button>

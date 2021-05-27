@@ -26,7 +26,7 @@ type InitialState = Partial<{
 	panelsLayout: WorkspacePanelsLayout;
 }>;
 
-const defaultPanelsLayout: WorkspacePanelsLayout =
+export const defaultPanelsLayout: WorkspacePanelsLayout =
 	process.env.NODE_ENV === 'development' ? [50, 50] : [100, 0];
 
 export default class WorkspaceViewStore {
