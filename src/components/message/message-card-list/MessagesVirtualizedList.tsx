@@ -70,8 +70,7 @@ const MessagesVirtualizedList = (props: Props) => {
 	const debouncedScrollHandler = useDebouncedCallback(
 		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
 			const scroller = event.target;
-
-			if (scroller instanceof HTMLDivElement) {
+			if (scroller instanceof Element) {
 				const isStartReached = scroller.scrollTop === 0;
 				const isEndReached = scroller.scrollHeight - scroller.scrollTop === scroller.clientHeight;
 				if (

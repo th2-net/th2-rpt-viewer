@@ -21,8 +21,8 @@ import { raf } from '../../../helpers/raf';
 import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../../hooks';
 import KeyCodes from '../../../util/KeyCodes';
-// import SearchInput from '../../search/SearchInput';
-// import { ModalPortal } from '../../util/Portal';
+import SearchInput from '../../search/SearchInput';
+import { ModalPortal } from '../../util/Portal';
 
 const PANEL_WIDTH = 540;
 
@@ -74,7 +74,7 @@ function EventSearchPanel({ isDisabled = false }: Props) {
 	}, [handleKeyDown]);
 
 	useOutsideClickListener(searchBaseRef, (e: MouseEvent) => {
-		if (!searchButtonRef.current?.contains(e.target as Element)) {
+		if (e.target instanceof Element && !searchButtonRef.current?.contains(e.target)) {
 			setShowSearch(false);
 		}
 	});
@@ -85,17 +85,10 @@ function EventSearchPanel({ isDisabled = false }: Props) {
 
 	const searchIconClass = createBemElement('search', 'icon', showSearch ? 'active' : null);
 
-	const searchButtonClass = createBemElement(
-		'search',
-		'button',
-		showSearch ? 'active' : null,
-		// TODO delete 'disabled' class once search is migrated to sse
-		'disabled',
-	);
+	const searchButtonClass = createBemElement('search', 'button', showSearch ? 'active' : null);
 
 	function handleSearchButtonClick() {
-		// TODO delete restore function once search is migrated to sse
-		// setShowSearch(isSearchPanelShown => !isSearchPanelShown)}
+		setShowSearch(isSearchPanelShown => !isSearchPanelShown);
 	}
 
 	return (
@@ -104,11 +97,11 @@ function EventSearchPanel({ isDisabled = false }: Props) {
 				<div className={searchIconClass} />
 				<div className={searchTitleClass}>Search</div>
 			</div>
-			{/* <ModalPortal isOpen={showSearch}>
+			<ModalPortal isOpen={showSearch}>
 				<div className='search' ref={searchBaseRef}>
 					<SearchInput disabled={isDisabled} isActive={showSearch} />
 				</div>
-			</ModalPortal> */}
+			</ModalPortal>
 		</div>
 	);
 }

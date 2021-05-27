@@ -37,7 +37,7 @@ function SearchableContent({ content, eventId }: Props) {
 
 	const contentPartClass = createBemBlock(
 		'found-content',
-		searchStore.scrolledItem === eventId ? 'target' : null,
+		searchStore.currentEventId === eventId ? 'target' : null,
 	);
 
 	return (

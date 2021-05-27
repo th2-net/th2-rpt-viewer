@@ -3,7 +3,7 @@
 		"outDir": "./build/",
 		"target": "es6",
 		"keyofStringsOnly": true,
-		"lib": ["ES2019", "ES2017", "ES2016", "ES2018.Promise", "ES2020", "DOM", "ESNext"],
+		"lib": ["ES2019", "ES2017", "ES2016", "ES2018.Promise", "ES2020", "DOM", "ESNext", "WebWorker"],
 		"module": "esnext",
 		"moduleResolution": "node",
 		"removeComments": false,
@@ -14,7 +14,8 @@
 		"experimentalDecorators": true,
 		"strict": true,
 		"resolveJsonModule": true,
-		"noEmit": true
+		"noEmit": true,
+		"allowJs": true
 	},
 	"exclude": ["node_modules"],
 	"include": ["./src/**/*"]
