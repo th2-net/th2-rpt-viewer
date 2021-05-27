@@ -86,8 +86,6 @@ export default class EventsStore {
 
 		reaction(() => this.viewStore.flattenedListView, this.onViewChange);
 
-		reaction(() => this.searchStore.scrolledItem, this.onScrolledItemChange);
-
 		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
 	}
 
@@ -251,13 +249,6 @@ export default class EventsStore {
 	public toggleNode = (eventTreeNode: EventTreeNode) => {
 		const isExpanded = !this.isExpandedMap.get(eventTreeNode.eventId);
 		this.isExpandedMap.set(eventTreeNode.eventId, isExpanded);
-		if (isExpanded) {
-			this.searchStore.appendResultsForEvent(eventTreeNode.eventId);
-		} else {
-			this.searchStore.removeEventsResults(
-				this.getNodesList(eventTreeNode, []).map(node => node.eventId),
-			);
-		}
 	};
 
 	@action
@@ -505,6 +496,7 @@ export default class EventsStore {
 
 	public dispose = () => {
 		this.filterStore.dispose();
+		this.searchStore.dispose();
 		this.eventDataStore.stopCurrentRequests();
 	};
 

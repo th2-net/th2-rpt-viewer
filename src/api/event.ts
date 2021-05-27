@@ -39,26 +39,6 @@ const eventHttpApi: EventApiSchema = {
 		console.error(res.statusText);
 		return null;
 	},
-	getEventsByName: async (timeRange, name) => {
-		const [timestampFrom, timestampTo] = timeRange;
-
-		const params = createURLSearchParams({
-			name,
-			timestampFrom,
-			timestampTo,
-			flat: true,
-		});
-
-		const path = `backend/search/events?${params}`;
-		const res = await fetch(path);
-
-		if (res.ok) {
-			return res.json();
-		}
-
-		console.error(res.statusText);
-		return [];
-	},
 	getEventParents: async (firstParentId: string, abortSignal?: AbortSignal) => {
 		let currentParentId: string | null = firstParentId;
 		let currentParentEvent = null;
