@@ -24,7 +24,7 @@ import Notifier from './notifications/Notifier';
 import WorkspacesLayout from './workspace/WorkspacesLayout';
 import Graph from './graph/Graph';
 import WorkspaceLinkGetter from './WorkspaceLinkGetter';
-import MessageBodyRulesConfigurator from './message-display-rules/MessageBodyRulesConfigurator';
+import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
 import { useSearchStore } from '../hooks/useSearchStore';
 import { useTabsStore } from '../hooks';
 import '../styles/root.scss';
@@ -40,7 +40,7 @@ const App = () => {
 				transitionDuration={400}>
 				<Graph />
 				{tabsStore.activeTabIndex !== 0 && <WorkspaceLinkGetter />}
-				<MessageBodyRulesConfigurator sessions={searchStore.messageSessions} />
+				<MessagesViewConfigurator sessions={searchStore.messageSessions} />
 				<div className='app__workspaces'>
 					<WorkspacesLayout />
 				</div>
