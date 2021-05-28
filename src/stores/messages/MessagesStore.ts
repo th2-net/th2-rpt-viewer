@@ -176,6 +176,7 @@ export default class MessagesStore {
 				timestamp,
 				filters: sseFilters,
 				type: 'message',
+				isPinned: false,
 			});
 		}
 

@@ -58,6 +58,9 @@
 		display: flex;
 		justify-content: space-between;
 		margin-bottom: 3px;
+		.controls {
+			display: flex;
+		}
 	}
 
 	&__row {
@@ -94,6 +97,8 @@
 		@include icon(url(../../resources/icons/cross-icon-dark.svg), 16px, 16px);
 	}
 
+
+	&__share-icon,
 	&__pin-icon {
 		width: 18px;
 		height: 18px;
@@ -107,18 +112,29 @@
 		&:hover {
 			background-color: rgba(0, 0, 0, 0.1);
 		}
-
+	}
+	&__pin-icon {
 		& i {
 			display: inline-block;
-			@include icon(url(../../resources/icons/pin.svg), 14px, 14px);
 			transition: transform 0.15s;
+			@include icon(url(../../resources/icons/pin.svg), 14px, 14px);
 		}
-
 		&.pinned {
 			background-color: rgba(0, 0, 0, 0.1);
 			& i {
 				transform: rotate(-45deg);
 			}
+		}
+	}
+	&__share-icon {
+		position: relative;
+		& i {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			opacity: 0.5;
+			@include icon(url(../../resources/icons/share-option.svg), 14px, 14px);
 		}
 	}
 }

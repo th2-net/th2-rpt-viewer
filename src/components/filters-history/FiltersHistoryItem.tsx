@@ -24,6 +24,8 @@ import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '..
 import { prettifyCamelcase } from '../../helpers/stringUtils';
 import { createBemElement } from '../../helpers/styleCreators';
 import { useDebouncedCallback } from '../../hooks';
+import { copyTextToClipboard } from '../../helpers/copyHandler';
+import { showNotification } from '../../helpers/showNotification';
 
 const FILTER_HISTORY_DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss.SSS' as const;
 
@@ -49,6 +51,7 @@ const FiltersHistoryItem = (props: Props) => {
 	const bubblesContainerRef = React.useRef<{ [key: string]: HTMLDivElement | null }>({});
 
 	const pinButtonRef = React.useRef<HTMLButtonElement>(null);
+	const shareButtonRef = React.useRef<HTMLButtonElement>(null);
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -67,6 +70,7 @@ const FiltersHistoryItem = (props: Props) => {
 			if (
 				e.target instanceof Element &&
 				(pinButtonRef.current?.contains(e.target) ||
+					shareButtonRef.current?.contains(e.target) ||
 					buttons.some(
 						buttonContainer =>
 							e.target !== buttonContainer && buttonContainer?.contains(e.target as Element),
@@ -128,9 +132,20 @@ const FiltersHistoryItem = (props: Props) => {
 		}
 	}
 
-	function onFilterPin(e: React.MouseEvent<HTMLSpanElement>) {
+	function onFilterPin(e: React.MouseEvent<HTMLButtonElement>) {
 		e.stopPropagation();
 		toggleFilterPin(item);
+	}
+
+	function onShareClick(e: React.MouseEvent<HTMLButtonElement>) {
+		e.stopPropagation();
+		const searchString = new URLSearchParams({
+			filters: window.btoa(JSON.stringify(item)),
+		});
+		copyTextToClipboard(
+			[window.location.origin, window.location.pathname, `?${searchString}`].join(''),
+		);
+		showNotification('Copied to clipboard');
 	}
 
 	const pinButtonClassname = createBemElement(
@@ -146,16 +161,25 @@ const FiltersHistoryItem = (props: Props) => {
 			onMouseOver={onMouseOver}
 			onMouseLeave={onMouseLeave}
 			ref={rootRef}>
-			<p className='filter-history-item__title' data-timestamp={item.timestamp}>
+			<div className='filter-history-item__title'>
 				{moment.utc(item.timestamp).format(FILTER_HISTORY_DATE_FORMAT)}
-				<button
-					className={pinButtonClassname}
-					onClick={onFilterPin}
-					ref={pinButtonRef}
-					title={item.isPinned ? 'Unpin filter' : 'Pin filter'}>
-					<i></i>
-				</button>
-			</p>
+				<div className='controls'>
+					<button
+						className={pinButtonClassname}
+						onClick={onFilterPin}
+						ref={pinButtonRef}
+						title={item.isPinned ? 'Unpin filter' : 'Pin filter'}>
+						<i></i>
+					</button>
+					<button
+						className='filter-history-item__share-icon'
+						onClick={onShareClick}
+						ref={shareButtonRef}
+						title='Share filters'>
+						<i></i>
+					</button>
+				</div>
+			</div>
 			{Object.entries(item.filters).map(([key, value]) => {
 				const filterName = key as keyof FilterState;
 

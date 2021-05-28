@@ -127,11 +127,13 @@ export default class RootStore {
 					window.atob(filtersToPin),
 				);
 				const { type } = filtersHistoryItem;
+				const newItem = { ...filtersHistoryItem, timestamp: Date.now(), isPinned: true };
 				if (type === 'event') {
-					this.filtersHistoryStore.addToEventsHistoryStart(filtersHistoryItem);
+					this.filtersHistoryStore.onEventFilterSubmit(newItem);
 				} else {
-					this.filtersHistoryStore.addToMessagesHistoryStart(filtersHistoryItem);
+					this.filtersHistoryStore.onMessageFilterSubmit(newItem);
 				}
+				return null;
 			}
 			if (workspacesUrlState) {
 				return JSON.parse(window.atob(workspacesUrlState));

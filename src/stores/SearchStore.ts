@@ -533,12 +533,14 @@ export class SearchStore {
 					timestamp,
 					type: this.formType,
 					filters: filterParams as EventFilterState,
+					isPinned: false,
 				});
 			} else {
 				this.filtersHistory.onMessageFilterSubmit({
 					timestamp,
 					type: this.formType,
 					filters: filterParams as MessageFilterState,
+					isPinned: false,
 				});
 			}
 
