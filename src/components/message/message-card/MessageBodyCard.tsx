@@ -15,11 +15,15 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 import MessageBody, {
 	isSimpleValue,
 	MessageBodyField,
 	isListValue,
+	MessageBodyFields,
+	isMessageValue,
 } from '../../../models/MessageBody';
+import { useMessageBodySortStore } from '../../../hooks';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 const DEFAULT_HIGHLIGHT_COLOR = '#e2dfdf';
@@ -32,8 +36,30 @@ interface Props {
 	renderInfo: () => React.ReactNode;
 }
 
-export default function MessageBodyCard({ isBeautified, body, isSelected, renderInfo }: Props) {
+const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
+	const primarySortedFields: [string, MessageBodyField][] = Object.entries(
+		sortOrder.reduce((prev, curr) => (fields[curr] ? { ...prev, [curr]: fields[curr] } : prev), {}),
+	);
+
+	const secondarySortedFields: [string, MessageBodyField][] = Object.entries(fields)
+		.filter(([key]) => !sortOrder.includes(key))
+		.sort((a: [string, MessageBodyField], b: [string, MessageBodyField]) => {
+			const [keyA] = a;
+			const [keyB] = b;
+			return keyA.toLowerCase() > keyB.toLowerCase() ? 1 : -1;
+		});
+
+	return [...primarySortedFields, ...secondarySortedFields];
+};
+
+function MessageBodyCard({ isBeautified, body, isSelected, renderInfo }: Props) {
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
+	const { sortOrderItems } = useMessageBodySortStore();
+
+	const fields = React.useMemo(() => getSortedFields(body ? body.fields : {}, sortOrderItems), [
+		body,
+		sortOrderItems,
+	]);
 
 	if (body == null) {
 		return <pre className='mc-body__human'>null</pre>;
@@ -43,9 +69,10 @@ export default function MessageBodyCard({ isBeautified, body, isSelected, render
 		<pre className='mc-body__human'>
 			{renderInfo && renderInfo()}
 			{!isBeautified && '{'}
-			{Object.entries(body.fields).map(([key, value], idx, arr) => (
+			{fields.map(([key, value], idx, arr) => (
 				<React.Fragment key={key}>
 					<MessageBodyCardField
+						primarySort={sortOrderItems}
 						highlightColor={isSelected ? SELECTED_HIGHLIGHT_COLOR : DEFAULT_HIGHLIGHT_COLOR}
 						label={key}
 						field={value}
@@ -69,11 +96,13 @@ interface FieldProps {
 	setIsHighlighted: (isHighlighted: boolean) => void;
 	isRoot?: boolean;
 	highlightColor: string;
+	primarySort: string[];
 	renderInfo?: () => React.ReactNode;
 }
 
 function MessageBodyCardField(props: FieldProps) {
 	const {
+		primarySort,
 		field,
 		label,
 		isBeautified,
@@ -88,6 +117,7 @@ function MessageBodyCardField(props: FieldProps) {
 	if (isRoot) {
 		return (
 			<MessageBodyCardField
+				primarySort={primarySort}
 				highlightColor={highlightColor}
 				isBeautified={isBeautified}
 				field={field}
@@ -98,6 +128,14 @@ function MessageBodyCardField(props: FieldProps) {
 			/>
 		);
 	}
+
+	const subFields = isMessageValue(field)
+		? field.messageValue && field.messageValue.fields
+			? field.messageValue.fields
+			: {}
+		: {};
+
+	const sortedSubFields = getSortedFields(subFields, primarySort);
 
 	return (
 		<span
@@ -124,6 +162,7 @@ function MessageBodyCardField(props: FieldProps) {
 						}}>
 						{field.listValue.values?.map((value, idx) => (
 							<MessageBodyCardField
+								primarySort={primarySort}
 								key={idx}
 								field={value}
 								label={''}
@@ -145,9 +184,10 @@ function MessageBodyCardField(props: FieldProps) {
 							display: isBeautified ? 'block' : undefined,
 							paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
 						}}>
-						{Object.entries(field.messageValue?.fields || {}).map(([key, subField], idx, arr) => (
+						{sortedSubFields.map(([key, subField], idx, arr) => (
 							<React.Fragment key={key}>
 								<MessageBodyCardField
+									primarySort={primarySort}
 									field={subField}
 									label={key}
 									isBeautified={isBeautified}
@@ -166,6 +206,8 @@ function MessageBodyCardField(props: FieldProps) {
 		</span>
 	);
 }
+
+export default observer(MessageBodyCard);
 
 export function MessageBodyCardFallback({ body, isBeautified }: Props) {
 	return (

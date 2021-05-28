@@ -122,6 +122,7 @@ class MessageDisplayRulesStore {
 		const rules = await this.indexedDb.getStoreValues<MessageDisplayRule | OrderRule>(
 			IndexedDbStores.DISPLAY_RULES,
 		);
+
 		const displayRules = rules.filter(isMessageDisplayRule);
 		const orderRule = rules.find(isOrderRule);
 		const order = orderRule?.order || [];
@@ -134,7 +135,8 @@ class MessageDisplayRulesStore {
 				session: '*',
 				viewType: MessageViewType.JSON,
 				removable: false,
-				fullyEditable: false,
+				editableSession: false,
+				editableType: true,
 				timestamp: moment.utc().valueOf(),
 			};
 			this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, rootDisplayRule);

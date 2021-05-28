@@ -316,6 +316,10 @@
 		&.messageId-inline {
 			display: none;
 		}
+		&.messageType {
+			max-width: 48px;
+			@include ellipsis();
+		}
 	}
 
 	&__direction-icon {
@@ -351,15 +355,19 @@
 	}
 
 	&__value {
+		display: inline-block;
 		color: $messageCardValueColor;
+		vertical-align: middle;
+		&.messageType {
+			max-width: 48px;
+			@include ellipsis();
+		}
 	}
 
 	&__icon {
 		width: 15px;
 		height: 15px;
-		&.inline {
-			transform: translateY(4px);
-		}
+		vertical-align: middle;
 	}
 }
 

@@ -11,42 +11,30 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
 
 import * as React from 'react';
-import '../../styles/select.scss';
+import { MessageDisplayRule } from '../../models/EventMessage';
+import NewRule from './NewRule';
+import EditableRule from './EditableRule';
 
-interface Props<T> {
-	className?: string;
-	options: Array<T>;
-	selected: string;
-	prefix?: string;
-	onChange: (option: T) => void;
-	onSelect?: () => void;
+interface RuleRowProps {
+	rule: MessageDisplayRule | null;
+	sessions: string[];
+	index: number;
+	isFirst?: boolean;
+	isLast?: boolean;
+	autofocus?: boolean;
 }
 
-export default function Select<T extends string>({
-	options,
-	selected,
-	onChange,
-	onSelect,
-	className = '',
-	prefix = '',
-}: Props<T>) {
-	return (
-		<select
-			className={`options-select ${className}`}
-			value={prefix + selected}
-			onChange={e => {
-				onChange(e.target.value as T);
-				if (onSelect) {
-					onSelect();
-				}
-			}}>
-			{options.map((opt, index) => (
-				<option key={index}>{prefix + opt}</option>
-			))}
-		</select>
+const RuleRow = (props: RuleRowProps) => {
+	const { rule, sessions, ...restProps } = props;
+	return rule ? (
+		<EditableRule rule={rule} sessions={sessions} {...restProps} />
+	) : (
+		<NewRule sessions={sessions} />
 	);
-}
+};
+
+export default RuleRow;

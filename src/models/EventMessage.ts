@@ -33,11 +33,13 @@ export interface MessageSortOrderItem {
 }
 
 export interface MessageDisplayRule {
+	[x: string]: any;
 	id: string;
 	session: string;
 	viewType: MessageViewType;
 	removable: boolean;
-	fullyEditable: boolean;
+	editableSession: boolean;
+	editableType: boolean;
 	timestamp: number;
 }
 
@@ -59,6 +61,10 @@ export function isScreenshotMessage(message: EventMessage): boolean {
 
 export function isMessageDisplayRule(obj: unknown): obj is MessageDisplayRule {
 	return notEmpty(obj) && (obj as MessageDisplayRule).viewType !== undefined;
+}
+
+export function isMessageBodySortOrderItem(obj: unknown): obj is MessageSortOrderItem {
+	return notEmpty(obj) && (obj as MessageSortOrderItem).item !== undefined;
 }
 
 export function isOrderRule(obj: unknown): obj is OrderRule {
