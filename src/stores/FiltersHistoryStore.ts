@@ -156,6 +156,7 @@ class FiltersHistoryStore {
 	public toggleFilterPin = (filter: FiltersHistoryType<MessageFilterState | EventFilterState>) => {
 		const filterToUpdate = this.filterHistory.find(f => f === filter);
 		if (filterToUpdate) {
+			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter.timestamp);
 			const isPinned = !filter.isPinned;
 			const timestamp = moment.utc().valueOf();
 
