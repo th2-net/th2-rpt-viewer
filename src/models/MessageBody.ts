@@ -25,8 +25,10 @@ export default interface MessageBody {
 		timestamp: string;
 		messageType: string;
 	};
-	fields: { [key: string]: MessageBodyField };
+	fields: MessageBodyFields;
 }
+
+export type MessageBodyFields = { [key: string]: MessageBodyField };
 
 export type ListValueField = {
 	listValue: {
@@ -52,4 +54,8 @@ export function isSimpleValue(field: MessageBodyField): field is SimpleValueFiel
 
 export function isListValue(field: MessageBodyField): field is ListValueField {
 	return field != null && typeof (field as ListValueField).listValue === 'object';
+}
+
+export function isMessageValue(field: MessageBodyField): field is MessageValueField {
+	return field != null && typeof (field as MessageValueField).messageValue === 'object';
 }

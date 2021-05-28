@@ -79,6 +79,7 @@ export type FilterRowBaseConfig = {
 	label?: string;
 	disabled?: boolean;
 	wrapperClassName?: string;
+	placeholder?: string;
 	isInvalid?: boolean;
 	required?: boolean;
 };
@@ -89,6 +90,7 @@ export type FilterRowTimeWindowConfig = FilterRowBaseConfig & {
 };
 
 export type FilterRowStringConfig = FilterRowBaseConfig & {
+	className?: string;
 	type: 'string';
 	value: string;
 	setValue: (nextValue: string) => void;
