@@ -28,12 +28,18 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
 
 	const inputClassName = createBemElement(
-		'filter-row',
+		config.className || 'filter-row',
 		'input',
 		config.value.length ? 'non-empty' : '',
 	);
-	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
-	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
+	const wrapperClassName = createBemBlock(
+		config.className || 'filter-row',
+		config.wrapperClassName || null,
+	);
+	const labelClassName = createStyleSelector(
+		`${config.className || 'filter-row'}__label`,
+		config.labelClassName || null,
+	);
 
 	React.useLayoutEffect(() => {
 		setAutocompleteAnchor(ref.current || undefined);
