@@ -100,7 +100,7 @@ function EventCardHeader(props: Props) {
 		e.stopPropagation();
 		stopSearch();
 		setFormType('event');
-		updateForm({ parentEvent: eventId });
+		updateForm({ parentEvent: eventId, startTimestamp: startTimestampValue });
 		setActiveWorkspace(0);
 	}
 

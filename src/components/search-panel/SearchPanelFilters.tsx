@@ -28,6 +28,7 @@ import { SearchPanelType } from './SearchPanel';
 import { getArrayOfUniques } from '../../helpers/array';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 import { notEmpty } from '../../helpers/object';
+import { prettifyCamelcase } from '../../helpers/stringUtils';
 
 export type StringFilter = {
 	type: 'string';
@@ -129,9 +130,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 	return (
 		<>
 			{info.map((filter: SSEFilterInfo) => {
-				const label = (filter.name.charAt(0).toUpperCase() + filter.name.slice(1))
-					.split(/(?=[A-Z])/)
-					.join(' ');
+				const label = prettifyCamelcase(filter.name);
 
 				const autocompleteList = getArrayOfUniques(
 					autocompletes

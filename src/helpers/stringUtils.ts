@@ -156,3 +156,15 @@ export function replaceUnfilledDateStringWithMinValues(
 			return maskedValue;
 	}
 }
+
+/**
+ * Splits and capitalizes camel cased string
+ *  * @example
+ * // returns Attached message
+ * prettifyCamelcase('attachedMessage');
+ */
+export function prettifyCamelcase(camelCasedString: string) {
+	return (camelCasedString.charAt(0).toUpperCase() + camelCasedString.slice(1))
+		.split(/(?=[A-Z])/)
+		.join(' ');
+}

@@ -172,7 +172,7 @@ export default class MessagesStore {
 	) => {
 		if (sseFilters) {
 			const timestamp = Date.now();
-			this.filterHistoryStore.addToMessagesHistory({
+			this.filterHistoryStore.onMessageFilterSubmit({
 				timestamp,
 				filters: sseFilters,
 				type: 'message',
