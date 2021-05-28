@@ -41,6 +41,7 @@ import MessageReplayModal from '../message/MessageReplayModal';
 import { getArrayOfUniques } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
 import { notEmpty } from '../../helpers/object';
+import { prettifyCamelcase } from '../../helpers/stringUtils';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -138,9 +139,7 @@ const MessagesFilterPanel = () => {
 
 		return searchStore.messagesFilterInfo.map<CompoundFilterRow>(
 			(filterInfo: MessagesFilterInfo) => {
-				const label = (filterInfo.name.charAt(0).toUpperCase() + filterInfo.name.slice(1))
-					.split(/(?=[A-Z])/)
-					.join(' ');
+				const label = prettifyCamelcase(filterInfo.name);
 				const autocompleteList = getArrayOfUniques<string>(
 					messagesHistory
 						.map(item => item.filters[filterInfo.name]?.values)
