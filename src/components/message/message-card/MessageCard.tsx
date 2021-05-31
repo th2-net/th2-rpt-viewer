@@ -277,7 +277,7 @@ function calculateHueValue(session: string): number {
 	return (hashCode % HUE_SEGMENTS_COUNT) * (360 / HUE_SEGMENTS_COUNT);
 }
 
-const RecoverableMessageCard = (props: OwnProps) => {
+const RecoverableMessageCard = React.memo((props: OwnProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
 
 	return (
@@ -314,7 +314,9 @@ const RecoverableMessageCard = (props: OwnProps) => {
 			)}
 		</StateSaver>
 	);
-};
+});
+
+RecoverableMessageCard.displayName = 'RecoverableMessageCard';
 
 export default RecoverableMessageCard;
 
