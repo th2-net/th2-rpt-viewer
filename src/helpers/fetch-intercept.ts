@@ -49,7 +49,7 @@ export const registerFetchInterceptor = () =>
 						resource: url,
 						responseCode: status,
 						responseBody: text,
-						errorType: 'responseError',
+						notificationType: 'responseError',
 						id: nanoid(),
 					});
 				});

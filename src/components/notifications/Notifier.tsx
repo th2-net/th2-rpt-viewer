@@ -19,11 +19,17 @@ import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 import { useToasts } from 'react-toast-notifications';
 import { complement } from '../../helpers/array';
-import { isGenericErrorMessage, isResponseError, isURLError } from '../../helpers/errors';
+import {
+	isGenericErrorMessage,
+	isResponseError,
+	isSuccessNotification,
+	isURLError,
+} from '../../helpers/notifications';
 import { useNotificationsStore } from '../../hooks';
-import { NotificationError } from '../../stores/NotificationsStore';
+import { Notification } from '../../stores/NotificationsStore';
 import FetchErrorToast from './FetchErrorToast';
 import GenericErrorToast from './GenericErrorToast';
+import SuccessNotificationToast from './SuccessNotification';
 import UrlErrorToast from './UrlErrorToast';
 
 function Notifier() {
@@ -35,10 +41,10 @@ function Notifier() {
 
 	const notificiationStore = useNotificationsStore();
 
-	const prevResponseErrors = React.useRef<NotificationError[]>([]);
+	const prevResponseErrors = React.useRef<Notification[]>([]);
 
 	useEffect(() => {
-		function onNotificationsUpdate(notifications: NotificationError[]) {
+		function onNotificationsUpdate(notifications: Notification[]) {
 			const currentResponseErrors = !prevResponseErrors
 				? notifications
 				: complement(notifications, prevResponseErrors.current);
@@ -49,20 +55,22 @@ function Notifier() {
 			// We need this to be able to delete toast from outside of toast component
 			removedErrors.forEach(error => removeToast(idsMap.current[error.id]));
 
-			currentResponseErrors.forEach(notificationError => {
+			currentResponseErrors.forEach(notification => {
 				const options = {
-					appearance: notificationError.type,
-					onDismiss: () => notificiationStore.deleteMessage(notificationError),
+					appearance: notification.type,
+					onDismiss: () => notificiationStore.deleteMessage(notification),
 				};
 
-				const registerId = (id: string) => (idsMap.current[notificationError.id] = id);
+				const registerId = (id: string) => (idsMap.current[notification.id] = id);
 
-				if (isURLError(notificationError)) {
-					addToast(<UrlErrorToast {...notificationError} />, options, registerId);
-				} else if (isResponseError(notificationError)) {
-					addToast(<FetchErrorToast {...notificationError} />, options, registerId);
-				} else if (isGenericErrorMessage(notificationError)) {
-					addToast(<GenericErrorToast {...notificationError} />, options, registerId);
+				if (isURLError(notification)) {
+					addToast(<UrlErrorToast {...notification} />, options, registerId);
+				} else if (isResponseError(notification)) {
+					addToast(<FetchErrorToast {...notification} />, options, registerId);
+				} else if (isGenericErrorMessage(notification)) {
+					addToast(<GenericErrorToast {...notification} />, options, registerId);
+				} else if (isSuccessNotification(notification)) {
+					addToast(<SuccessNotificationToast {...notification} />, options, registerId);
 				}
 			});
 			prevResponseErrors.current = notifications;

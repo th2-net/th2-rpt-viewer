@@ -15,20 +15,25 @@
  ***************************************************************************** */
 
 import {
-	NotificationError,
+	Notification,
 	UrlError,
 	ResponseError,
 	GenericError,
+	SuccessNotification,
 } from '../stores/NotificationsStore';
 
-export function isURLError(error: NotificationError): error is UrlError {
-	return error.errorType === 'urlError';
+export function isURLError(error: Notification): error is UrlError {
+	return error.notificationType === 'urlError';
 }
 
-export function isResponseError(error: NotificationError): error is ResponseError {
-	return error.errorType === 'responseError';
+export function isResponseError(error: Notification): error is ResponseError {
+	return error.notificationType === 'responseError';
 }
 
-export function isGenericErrorMessage(error: NotificationError): error is GenericError {
-	return error.errorType === 'genericError';
+export function isGenericErrorMessage(error: Notification): error is GenericError {
+	return error.notificationType === 'genericError';
+}
+
+export function isSuccessNotification(error: Notification): error is SuccessNotification {
+	return error.notificationType === 'success';
 }

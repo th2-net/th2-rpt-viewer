@@ -529,16 +529,18 @@ export class SearchStore {
 			const timestamp = Date.now();
 
 			if (this.formType === 'event') {
-				this.filtersHistory.addToEventsHistory({
+				this.filtersHistory.onEventFilterSubmit({
 					timestamp,
 					type: this.formType,
 					filters: filterParams as EventFilterState,
+					isPinned: false,
 				});
 			} else {
-				this.filtersHistory.addToMessagesHistory({
+				this.filtersHistory.onMessageFilterSubmit({
 					timestamp,
 					type: this.formType,
 					filters: filterParams as MessageFilterState,
+					isPinned: false,
 				});
 			}
 
@@ -751,7 +753,7 @@ export class SearchStore {
 				this.workspacesStore.onQuotaExceededError(search);
 			} else {
 				notificationsStore.addMessage({
-					errorType: 'genericError',
+					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save current search result`,
 					description: '',

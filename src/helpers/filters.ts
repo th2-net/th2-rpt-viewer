@@ -27,7 +27,17 @@ export function getNonEmptyFilters(filter: Partial<FilterState>) {
 	return Object.fromEntries(
 		Object.entries(toJS(observable(filter)))
 			.filter(([_, value]) => value && value.values && value.values.length > 0)
-			.map(([k, v]) => [k, v]),
+			.map(([k, v]) => {
+				return typeof v.values === 'string'
+					? [k, v]
+					: [
+							k,
+							{
+								...v,
+								values: [...new Set(v.values.sort())],
+							},
+					  ];
+			}),
 	);
 }
 

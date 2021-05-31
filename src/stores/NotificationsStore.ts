@@ -18,27 +18,28 @@ import { action, observable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { AppearanceTypes } from 'react-toast-notifications';
 
-interface BaseNotificationError {
+interface BaseNotification {
 	type: AppearanceTypes;
-	errorType: 'responseError' | 'urlError' | 'genericError';
+	notificationType: 'responseError' | 'urlError' | 'genericError' | 'success';
 	id: string;
 }
-export interface ResponseError extends BaseNotificationError {
-	errorType: 'responseError';
+
+export interface ResponseError extends BaseNotification {
+	notificationType: 'responseError';
 	resource: string;
 	header: string;
 	responseBody: string;
 	responseCode: number | null;
 }
 
-export interface UrlError extends BaseNotificationError {
-	errorType: 'urlError';
+export interface UrlError extends BaseNotification {
+	notificationType: 'urlError';
 	link: string | null | undefined;
 	error: Error;
 }
 
-export interface GenericError extends BaseNotificationError {
-	errorType: 'genericError';
+export interface GenericError extends BaseNotification {
+	notificationType: 'genericError';
 	header: string;
 	description: string;
 	action?: {
@@ -47,19 +48,24 @@ export interface GenericError extends BaseNotificationError {
 	};
 }
 
-export type NotificationError = ResponseError | UrlError | GenericError;
+export interface SuccessNotification extends BaseNotification {
+	notificationType: 'success';
+	description: string;
+}
+
+export type Notification = ResponseError | UrlError | GenericError | SuccessNotification;
 
 export class NotificationsStore {
 	@observable
-	public errors: NotificationError[] = [];
+	public errors: Notification[] = [];
 
 	@action
-	public addMessage = (error: NotificationError) => {
+	public addMessage = (error: Notification) => {
 		this.errors = [...this.errors, error];
 	};
 
 	@action
-	public deleteMessage = (error: NotificationError | string) => {
+	public deleteMessage = (error: Notification | string) => {
 		if (typeof error === 'string') {
 			this.errors = this.errors.filter(e => e.id !== error);
 		} else {
@@ -77,7 +83,7 @@ export class NotificationsStore {
 				resource: event.target instanceof EventSource ? event.target.url : event.origin,
 				responseBody: errorData.exceptionCause,
 				responseCode: null,
-				errorType: 'responseError',
+				notificationType: 'responseError',
 				id: nanoid(),
 			});
 		}

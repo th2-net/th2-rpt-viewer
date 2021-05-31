@@ -84,7 +84,7 @@ class MessageDisplayRulesStore {
 	public setNewMessagesDisplayRule = async (rule: MessageDisplayRule): Promise<void> => {
 		if (this.isDisplayRulesFull) {
 			notificationsStore.addMessage({
-				errorType: 'genericError',
+				notificationType: 'genericError',
 				type: 'error',
 				header: `Display rules limit of ${indexedDbLimits['display-rules']} reached`,
 				description: 'Delete old rules',
@@ -183,7 +183,7 @@ class MessageDisplayRulesStore {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {
 				notificationsStore.addMessage({
-					errorType: 'genericError',
+					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save rule ${rule.session}`,
 					description: '',
@@ -201,7 +201,7 @@ class MessageDisplayRulesStore {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {
 				notificationsStore.addMessage({
-					errorType: 'genericError',
+					notificationType: 'genericError',
 					type: 'error',
 					header: isMessageDisplayRule(rule)
 						? `Failed to update rule ${rule.session}`

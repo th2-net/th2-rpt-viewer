@@ -16,8 +16,6 @@
 
 import * as React from 'react';
 import { splitOnReadableParts } from '../../../../helpers/stringUtils';
-import { useSelectListener } from '../../../../hooks';
-import { copyTextToClipboard } from '../../../../helpers/copyHandler';
 
 interface Props {
 	rawContent: string;
@@ -26,21 +24,12 @@ interface Props {
 
 export default function SimpleMessageRaw({ rawContent, renderInfo }: Props) {
 	const contentRef = React.useRef<HTMLDivElement>(null);
-	const [selectionStart, selectionEnd] = useSelectListener(contentRef);
 
 	const humanReadableContent = atob(rawContent);
 	const convertedArr = splitOnReadableParts(humanReadableContent);
 
-	const onCopy = (e: React.ClipboardEvent<HTMLDivElement>) => {
-		if (selectionStart != null && selectionEnd != null) {
-			const copyPart = humanReadableContent.substring(selectionStart, selectionEnd);
-			e.preventDefault();
-			copyTextToClipboard(copyPart);
-		}
-	};
-
 	return (
-		<div className='mc-raw__human' ref={contentRef} onCopy={onCopy}>
+		<div className='mc-raw__human' ref={contentRef}>
 			{renderInfo()}
 			{convertedArr.map((part, index) =>
 				part.isPrintable ? (

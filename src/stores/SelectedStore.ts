@@ -174,7 +174,7 @@ export class SelectedStore {
 				this.workspacesStore.onQuotaExceededError(bookmark);
 			} else {
 				notificationsStore.addMessage({
-					errorType: 'genericError',
+					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save bookmark ${getItemName(bookmark.item)}`,
 					description: '',
@@ -238,7 +238,7 @@ export class SelectedStore {
 
 	private onLimitReached = () => {
 		notificationsStore.addMessage({
-			errorType: 'genericError',
+			notificationType: 'genericError',
 			type: 'error',
 			header: 'Limit reached',
 			description: 'Maximum bookmarks limit reached. Delete old bookmarks',
