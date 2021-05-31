@@ -129,13 +129,13 @@ export default class RootStore {
 				const { type } = filtersHistoryItem;
 				const newItem = { ...filtersHistoryItem, timestamp: Date.now(), isPinned: true };
 				if (type === 'event') {
-					this.filtersHistoryStore
-						.onEventFilterSubmit(newItem)
-						.then(this.filtersHistoryStore.showSuccessNotification);
+					this.filtersHistoryStore.onEventFilterSubmit(newItem).then(() => {
+						this.filtersHistoryStore.showSuccessNotification(type);
+					});
 				} else {
-					this.filtersHistoryStore
-						.onMessageFilterSubmit(newItem)
-						.then(this.filtersHistoryStore.showSuccessNotification);
+					this.filtersHistoryStore.onMessageFilterSubmit(newItem).then(() => {
+						this.filtersHistoryStore.showSuccessNotification(type);
+					});
 				}
 				return null;
 			}

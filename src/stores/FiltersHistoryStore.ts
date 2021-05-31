@@ -156,11 +156,11 @@ class FiltersHistoryStore {
 	};
 
 	@action
-	public showSuccessNotification = () => {
+	public showSuccessNotification = (type: SearchPanelType) => {
 		this.notificationsStore.addMessage({
 			type: 'success',
 			notificationType: 'success',
-			description: 'Filter successfully saved!',
+			description: `${type.charAt(0).toUpperCase()}${type.slice(1)} filter successfully saved!`,
 			id: nanoid(),
 		});
 	};
@@ -180,6 +180,7 @@ class FiltersHistoryStore {
 		);
 		if (existedFilter) {
 			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, existedFilter.timestamp);
+			this.filterHistory = this.filterHistory.filter(f => f !== existedFilter);
 		}
 		this.addHistoryItem(newItem);
 	};
@@ -191,6 +192,7 @@ class FiltersHistoryStore {
 		);
 		if (existedFilter) {
 			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, existedFilter.timestamp);
+			this.filterHistory = this.filterHistory.filter(f => f !== existedFilter);
 		}
 		this.addHistoryItem(newItem);
 	};
