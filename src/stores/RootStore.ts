@@ -129,9 +129,9 @@ export default class RootStore {
 				const { type } = filtersHistoryItem;
 				const newItem = { ...filtersHistoryItem, timestamp: Date.now(), isPinned: true };
 				if (type === 'event') {
-					this.filtersHistoryStore.onEventFilterSubmit(newItem);
+					this.filtersHistoryStore.onEventFilterSubmit(newItem, true);
 				} else {
-					this.filtersHistoryStore.onMessageFilterSubmit(newItem);
+					this.filtersHistoryStore.onMessageFilterSubmit(newItem, true);
 				}
 				return null;
 			}

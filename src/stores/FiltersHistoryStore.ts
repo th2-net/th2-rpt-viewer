@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, toJS, computed, reaction } from 'mobx';
+import { observable, action, toJS, computed, reaction, when } from 'mobx';
 import isEqual from 'lodash.isequal';
 import moment from 'moment';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
@@ -31,6 +31,7 @@ import {
 	isMessagesFilterHistory,
 	sortByTimestamp,
 } from '../helpers/filters';
+import { showNotification } from '../helpers/showNotification';
 
 export interface FiltersHistoryType<T extends FilterState> {
 	timestamp: number;
@@ -67,9 +68,10 @@ class FiltersHistoryStore {
 		);
 	}
 
-	private initialized = false;
-
 	private dbItemsPerType = indexedDbLimits[IndexedDbStores.FILTERS_HISTORY] / 4;
+
+	@observable
+	private initialized = false;
 
 	@observable
 	public filterHistory: FiltersHistoryType<EventFilterState | MessageFilterState>[] = [];
@@ -115,32 +117,34 @@ class FiltersHistoryStore {
 	}
 
 	@action
-	public onEventFilterSubmit = async (newItem: FiltersHistoryType<EventFilterState>) => {
+	public onEventFilterSubmit = async (
+		newItem: FiltersHistoryType<EventFilterState>,
+		notify?: boolean,
+	) => {
 		if (isEmptyFilter(newItem.filters)) return;
 
 		const filter = getEquilizedItem(newItem);
 
-		if (this.initialized) {
-			this.addEventHistoryItem(filter);
-		} else {
-			this.init().then(() => {
-				this.addEventHistoryItem(filter);
-			});
+		await when(() => this.initialized);
+		this.addEventHistoryItem(filter);
+		if (notify) {
+			showNotification('Filter successfully saved');
 		}
 	};
 
 	@action
-	public onMessageFilterSubmit = async (newItem: FiltersHistoryType<MessageFilterState>) => {
+	public onMessageFilterSubmit = async (
+		newItem: FiltersHistoryType<MessageFilterState>,
+		notify?: boolean,
+	) => {
 		if (isEmptyFilter(newItem.filters)) return;
 
 		const filter = getEquilizedItem(newItem);
 
-		if (this.initialized) {
-			this.addMessageHistoryItem(filter);
-		} else {
-			this.init().then(() => {
-				this.addMessageHistoryItem(filter);
-			});
+		await when(() => this.initialized);
+		this.addMessageHistoryItem(filter);
+		if (notify) {
+			showNotification('Filter successfully saved');
 		}
 	};
 
@@ -172,13 +176,33 @@ class FiltersHistoryStore {
 
 	@action
 	private addEventHistoryItem = async (newItem: FiltersHistoryType<EventFilterState>) => {
-		if (this.eventsHistory.some(({ filters }) => isEqual(filters, newItem.filters))) return;
+		const existedFilter = this.eventsHistory.find(({ filters }) =>
+			isEqual(filters, newItem.filters),
+		);
+		if (existedFilter) {
+			existedFilter.timestamp = newItem.timestamp;
+			this.indexedDb.updateDbStoreItem(IndexedDbStores.FILTERS_HISTORY, {
+				...toJS(observable(existedFilter)),
+				timestamp: newItem.timestamp,
+			});
+			return;
+		}
 		this.addHistoryItem(newItem);
 	};
 
 	@action
 	private addMessageHistoryItem = async (newItem: FiltersHistoryType<MessageFilterState>) => {
-		if (this.messagesHistory.some(({ filters }) => isEqual(filters, newItem.filters))) return;
+		const existedFilter = this.messagesHistory.find(({ filters }) =>
+			isEqual(filters, newItem.filters),
+		);
+		if (existedFilter) {
+			existedFilter.timestamp = newItem.timestamp;
+			this.indexedDb.updateDbStoreItem(IndexedDbStores.FILTERS_HISTORY, {
+				...toJS(observable(existedFilter)),
+				timestamp: newItem.timestamp,
+			});
+			return;
+		}
 		this.addHistoryItem(newItem);
 	};
 
