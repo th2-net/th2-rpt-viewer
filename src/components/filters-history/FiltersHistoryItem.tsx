@@ -163,7 +163,7 @@ const FiltersHistoryItem = (props: Props) => {
 			ref={rootRef}>
 			<div className='filter-history-item__title'>
 				{moment.utc(item.timestamp).format(FILTER_HISTORY_DATE_FORMAT)}
-				<div className='controls'>
+				<div className='filter-history-item__controls'>
 					<button
 						className={pinButtonClassname}
 						onClick={onFilterPin}

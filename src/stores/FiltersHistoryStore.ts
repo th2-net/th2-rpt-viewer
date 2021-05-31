@@ -17,6 +17,7 @@
 import { observable, action, toJS, computed, reaction, when } from 'mobx';
 import isEqual from 'lodash.isequal';
 import moment from 'moment';
+import { nanoid } from 'nanoid';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
@@ -31,7 +32,7 @@ import {
 	isMessagesFilterHistory,
 	sortByTimestamp,
 } from '../helpers/filters';
-import { showNotification } from '../helpers/showNotification';
+import { NotificationsStore } from './NotificationsStore';
 
 export interface FiltersHistoryType<T extends FilterState> {
 	timestamp: number;
@@ -41,7 +42,7 @@ export interface FiltersHistoryType<T extends FilterState> {
 }
 
 class FiltersHistoryStore {
-	constructor(private indexedDb: IndexedDB) {
+	constructor(private indexedDb: IndexedDB, private notificationsStore: NotificationsStore) {
 		this.init();
 
 		reaction(
@@ -117,35 +118,23 @@ class FiltersHistoryStore {
 	}
 
 	@action
-	public onEventFilterSubmit = async (
-		newItem: FiltersHistoryType<EventFilterState>,
-		notify?: boolean,
-	) => {
+	public onEventFilterSubmit = async (newItem: FiltersHistoryType<EventFilterState>) => {
 		if (isEmptyFilter(newItem.filters)) return;
 
 		const filter = getEquilizedItem(newItem);
 
 		await when(() => this.initialized);
 		this.addEventHistoryItem(filter);
-		if (notify) {
-			showNotification('Filter successfully saved');
-		}
 	};
 
 	@action
-	public onMessageFilterSubmit = async (
-		newItem: FiltersHistoryType<MessageFilterState>,
-		notify?: boolean,
-	) => {
+	public onMessageFilterSubmit = async (newItem: FiltersHistoryType<MessageFilterState>) => {
 		if (isEmptyFilter(newItem.filters)) return;
 
 		const filter = getEquilizedItem(newItem);
 
 		await when(() => this.initialized);
 		this.addMessageHistoryItem(filter);
-		if (notify) {
-			showNotification('Filter successfully saved');
-		}
 	};
 
 	@action
@@ -166,6 +155,16 @@ class FiltersHistoryStore {
 		}
 	};
 
+	@action
+	public showSuccessNotification = () => {
+		this.notificationsStore.addMessage({
+			type: 'success',
+			notificationType: 'success',
+			description: 'Filter successfully saved!',
+			id: nanoid(),
+		});
+	};
+
 	private init = async () => {
 		const history = await this.indexedDb.getStoreValues<
 			FiltersHistoryType<EventFilterState | MessageFilterState>
@@ -180,12 +179,7 @@ class FiltersHistoryStore {
 			isEqual(filters, newItem.filters),
 		);
 		if (existedFilter) {
-			existedFilter.timestamp = newItem.timestamp;
-			this.indexedDb.updateDbStoreItem(IndexedDbStores.FILTERS_HISTORY, {
-				...toJS(observable(existedFilter)),
-				timestamp: newItem.timestamp,
-			});
-			return;
+			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, existedFilter.timestamp);
 		}
 		this.addHistoryItem(newItem);
 	};
@@ -196,12 +190,7 @@ class FiltersHistoryStore {
 			isEqual(filters, newItem.filters),
 		);
 		if (existedFilter) {
-			existedFilter.timestamp = newItem.timestamp;
-			this.indexedDb.updateDbStoreItem(IndexedDbStores.FILTERS_HISTORY, {
-				...toJS(observable(existedFilter)),
-				timestamp: newItem.timestamp,
-			});
-			return;
+			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, existedFilter.timestamp);
 		}
 		this.addHistoryItem(newItem);
 	};

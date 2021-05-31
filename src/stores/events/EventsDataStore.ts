@@ -261,7 +261,7 @@ export default class EventsDataStore {
 			console.error(error);
 			if (error.name !== 'AbortError') {
 				notificationsStore.addMessage({
-					errorType: 'genericError',
+					notificationType: 'genericError',
 					header: `Error occured while fetching event ${currentParentId}`,
 					description: 'Something went wrong',
 					id: nanoid(),

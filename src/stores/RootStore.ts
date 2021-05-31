@@ -35,7 +35,7 @@ import { FilterState } from '../components/search-panel/SearchPanelFilters';
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
-	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb);
+	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb, this.notificationsStore);
 
 	messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
 
@@ -129,9 +129,13 @@ export default class RootStore {
 				const { type } = filtersHistoryItem;
 				const newItem = { ...filtersHistoryItem, timestamp: Date.now(), isPinned: true };
 				if (type === 'event') {
-					this.filtersHistoryStore.onEventFilterSubmit(newItem, true);
+					this.filtersHistoryStore
+						.onEventFilterSubmit(newItem)
+						.then(this.filtersHistoryStore.showSuccessNotification);
 				} else {
-					this.filtersHistoryStore.onMessageFilterSubmit(newItem, true);
+					this.filtersHistoryStore
+						.onMessageFilterSubmit(newItem)
+						.then(this.filtersHistoryStore.showSuccessNotification);
 				}
 				return null;
 			}
@@ -154,7 +158,7 @@ export default class RootStore {
 			];
 		} catch (error) {
 			this.notificationsStore.addMessage({
-				errorType: 'urlError',
+				notificationType: 'urlError',
 				type: 'error',
 				link: window.location.href,
 				error,
@@ -171,7 +175,7 @@ export default class RootStore {
 	public handleQuotaExceededError = async (unsavedData?: DbData) => {
 		const errorId = nanoid();
 		this.notificationsStore.addMessage({
-			errorType: 'genericError',
+			notificationType: 'genericError',
 			type: 'error',
 			header: 'QuotaExceededError',
 			description: 'Not enough storage space to save data. Clear all data?',
@@ -195,7 +199,7 @@ export default class RootStore {
 			]);
 
 			this.notificationsStore.addMessage({
-				errorType: 'genericError',
+				notificationType: 'genericError',
 				type: 'success',
 				header: 'Data has been removed',
 				description: '',

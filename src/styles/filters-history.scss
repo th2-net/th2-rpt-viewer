@@ -58,9 +58,10 @@
 		display: flex;
 		justify-content: space-between;
 		margin-bottom: 3px;
-		.controls {
-			display: flex;
-		}
+	}
+	
+	&__controls {
+		display: flex;
 	}
 
 	&__row {
