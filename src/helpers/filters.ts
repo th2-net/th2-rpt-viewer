@@ -58,10 +58,3 @@ export function isEmptyFilter(filter: Partial<EventFilterState>) {
 		.filter(notEmpty)
 		.some(filterValues => filterValues.values.length > 0);
 }
-
-export function sortByTimestamp(
-	a: FiltersHistoryType<FilterState>,
-	b: FiltersHistoryType<FilterState>,
-) {
-	return a.timestamp > b.timestamp ? -1 : 1;
-}

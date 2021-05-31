@@ -45,6 +45,7 @@ import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
+import { SessionsStore } from './messages/SessionsStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -106,6 +107,7 @@ export class SearchStore {
 		private workspacesStore: WorkspacesStore,
 		private api: ApiSchema,
 		private filtersHistory: FiltersHistoryStore,
+		private sessionsStore: SessionsStore,
 	) {
 		this.init();
 
@@ -526,22 +528,11 @@ export class SearchStore {
 
 			this.searchChannel[direction] = searchChannel;
 
-			const timestamp = Date.now();
-
 			if (this.formType === 'event') {
-				this.filtersHistory.onEventFilterSubmit({
-					timestamp,
-					type: this.formType,
-					filters: filterParams as EventFilterState,
-					isPinned: false,
-				});
+				this.filtersHistory.onEventFilterSubmit(filterParams as EventFilterState);
 			} else {
-				this.filtersHistory.onMessageFilterSubmit({
-					timestamp,
-					type: this.formType,
-					filters: filterParams as MessageFilterState,
-					isPinned: false,
-				});
+				this.sessionsStore.saveSessions(stream);
+				this.filtersHistory.onMessageFilterSubmit(filterParams as MessageFilterState);
 			}
 
 			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));
