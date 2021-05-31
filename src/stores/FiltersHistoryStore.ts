@@ -14,9 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, toJS, computed, reaction } from 'mobx';
+import { observable, action, toJS, computed, reaction, when } from 'mobx';
 import isEqual from 'lodash.isequal';
 import moment from 'moment';
+import { nanoid } from 'nanoid';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
@@ -31,6 +32,7 @@ import {
 	isMessagesFilterHistory,
 	sortByTimestamp,
 } from '../helpers/filters';
+import { NotificationsStore } from './NotificationsStore';
 
 export interface FiltersHistoryType<T extends FilterState> {
 	timestamp: number;
@@ -40,7 +42,7 @@ export interface FiltersHistoryType<T extends FilterState> {
 }
 
 class FiltersHistoryStore {
-	constructor(private indexedDb: IndexedDB) {
+	constructor(private indexedDb: IndexedDB, private notificationsStore: NotificationsStore) {
 		this.init();
 
 		reaction(
@@ -68,6 +70,9 @@ class FiltersHistoryStore {
 	}
 
 	private dbItemsPerType = indexedDbLimits[IndexedDbStores.FILTERS_HISTORY] / 4;
+
+	@observable
+	private initialized = false;
 
 	@observable
 	public filterHistory: FiltersHistoryType<EventFilterState | MessageFilterState>[] = [];
@@ -113,43 +118,23 @@ class FiltersHistoryStore {
 	}
 
 	@action
-	public onEventFilterSubmit = async (newFilters: FiltersHistoryType<EventFilterState>) => {
-		if (isEmptyFilter(newFilters.filters)) return;
+	public onEventFilterSubmit = async (newItem: FiltersHistoryType<EventFilterState>) => {
+		if (isEmptyFilter(newItem.filters)) return;
 
-		const { type, timestamp } = newFilters;
-		const equilizedFilter = getNonEmptyFilters(newFilters.filters);
+		const filter = getEquilizedItem(newItem);
 
-		if (this.eventsHistory.some(({ filters }) => isEqual(filters, equilizedFilter))) return;
-
-		const filter: FiltersHistoryType<EventFilterState> = {
-			timestamp,
-			type,
-			filters: equilizedFilter,
-			isPinned: false,
-		};
-
-		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
-		this.filterHistory = [...this.filterHistory, filter];
+		await when(() => this.initialized);
+		this.addEventHistoryItem(filter);
 	};
 
 	@action
-	public onMessageFilterSubmit = async (newFilters: FiltersHistoryType<MessageFilterState>) => {
-		if (isEmptyFilter(newFilters.filters)) return;
+	public onMessageFilterSubmit = async (newItem: FiltersHistoryType<MessageFilterState>) => {
+		if (isEmptyFilter(newItem.filters)) return;
 
-		const { type, timestamp } = newFilters;
-		const equilizedFilter = getNonEmptyFilters(newFilters.filters);
+		const filter = getEquilizedItem(newItem);
 
-		if (this.messagesHistory.some(({ filters }) => isEqual(filters, equilizedFilter))) return;
-
-		const filter: FiltersHistoryType<MessageFilterState> = {
-			timestamp,
-			type,
-			filters: equilizedFilter,
-			isPinned: false,
-		};
-
-		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter);
-		this.filterHistory = [...this.filterHistory, filter];
+		await when(() => this.initialized);
+		this.addMessageHistoryItem(filter);
 	};
 
 	@action
@@ -170,13 +155,64 @@ class FiltersHistoryStore {
 		}
 	};
 
+	@action
+	public showSuccessNotification = (type: SearchPanelType) => {
+		this.notificationsStore.addMessage({
+			type: 'success',
+			notificationType: 'success',
+			description: `${type.charAt(0).toUpperCase()}${type.slice(1)} filter successfully saved!`,
+			id: nanoid(),
+		});
+	};
+
 	private init = async () => {
 		const history = await this.indexedDb.getStoreValues<
 			FiltersHistoryType<EventFilterState | MessageFilterState>
 		>(IndexedDbStores.FILTERS_HISTORY);
-
 		this.filterHistory = history.sort(sortByTimestamp);
+		this.initialized = true;
+	};
+
+	@action
+	private addEventHistoryItem = async (newItem: FiltersHistoryType<EventFilterState>) => {
+		const existedFilter = this.eventsHistory.find(({ filters }) =>
+			isEqual(filters, newItem.filters),
+		);
+		if (existedFilter) {
+			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, existedFilter.timestamp);
+			this.filterHistory = this.filterHistory.filter(f => f !== existedFilter);
+		}
+		this.addHistoryItem(newItem);
+	};
+
+	@action
+	private addMessageHistoryItem = async (newItem: FiltersHistoryType<MessageFilterState>) => {
+		const existedFilter = this.messagesHistory.find(({ filters }) =>
+			isEqual(filters, newItem.filters),
+		);
+		if (existedFilter) {
+			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, existedFilter.timestamp);
+			this.filterHistory = this.filterHistory.filter(f => f !== existedFilter);
+		}
+		this.addHistoryItem(newItem);
+	};
+
+	@action
+	private addHistoryItem = async (newItem: FiltersHistoryType<FilterState>) => {
+		this.indexedDb.addDbStoreItem(IndexedDbStores.FILTERS_HISTORY, newItem);
+		this.filterHistory = [...this.filterHistory, newItem];
 	};
 }
 
 export default FiltersHistoryStore;
+
+function getEquilizedItem(newItem: FiltersHistoryType<FilterState>) {
+	const { type, timestamp, isPinned } = newItem;
+	const equilizedFilter = getNonEmptyFilters(newItem.filters);
+	return {
+		timestamp,
+		type,
+		filters: equilizedFilter,
+		isPinned,
+	} as FiltersHistoryType<FilterState>;
+}

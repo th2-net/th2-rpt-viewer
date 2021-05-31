@@ -506,6 +506,7 @@ export default class EventsStore {
 			timestamp,
 			filters: filter,
 			type: 'event',
+			isPinned: false,
 		});
 
 		this.eventDataStore.fetchEventTree({ filter, timeRange: this.filterStore.range });

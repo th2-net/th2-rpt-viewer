@@ -533,12 +533,14 @@ export class SearchStore {
 					timestamp,
 					type: this.formType,
 					filters: filterParams as EventFilterState,
+					isPinned: false,
 				});
 			} else {
 				this.filtersHistory.onMessageFilterSubmit({
 					timestamp,
 					type: this.formType,
 					filters: filterParams as MessageFilterState,
+					isPinned: false,
 				});
 			}
 
@@ -751,7 +753,7 @@ export class SearchStore {
 				this.workspacesStore.onQuotaExceededError(search);
 			} else {
 				notificationsStore.addMessage({
-					errorType: 'genericError',
+					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save current search result`,
 					description: '',
