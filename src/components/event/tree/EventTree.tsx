@@ -116,15 +116,15 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	return (
 		<>
 			{!hideTimestampsForUknownEvent &&
-				eventsStore.selectedPathTimestamps?.startEventId === eventTreeNode.eventId &&
-				eventsStore.selectedPathTimestamps.startTimestamp && (
-					<div className='event-tree-timestamp'>
-						<div className='event-tree-timestamp__value'>
-							{formatTime(eventsStore.selectedPathTimestamps.startTimestamp)}
-						</div>
-						<div className='event-tree-timestamp__icon' />
+			eventsStore.selectedPathTimestamps?.startEventId === eventTreeNode.eventId &&
+			eventsStore.selectedPathTimestamps.startTimestamp ? (
+				<div className='event-tree-timestamp'>
+					<div className='event-tree-timestamp__value'>
+						{formatTime(eventsStore.selectedPathTimestamps.startTimestamp)}
 					</div>
-				)}
+					<div className='event-tree-timestamp__icon' />
+				</div>
+			) : null}
 			<div className='event-tree-card' style={{ paddingLeft: nestingLevel }}>
 				<ExpandIcon
 					status={expandIconStatus}
@@ -151,15 +151,15 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 				)}
 			</div>
 			{!hideTimestampsForUknownEvent &&
-				eventsStore.selectedPathTimestamps?.endEventId === eventTreeNode.eventId &&
-				eventsStore.selectedPathTimestamps.endTimestamp && (
-					<div className='event-tree-timestamp end'>
-						<div className='event-tree-timestamp__value'>
-							{formatTime(eventsStore.selectedPathTimestamps.endTimestamp)}
-						</div>
-						<div className='event-tree-timestamp__icon' />
+			eventsStore.selectedPathTimestamps?.endEventId === eventTreeNode.eventId &&
+			eventsStore.selectedPathTimestamps.endTimestamp ? (
+				<div className='event-tree-timestamp end'>
+					<div className='event-tree-timestamp__value'>
+						{formatTime(eventsStore.selectedPathTimestamps.endTimestamp)}
 					</div>
-				)}
+					<div className='event-tree-timestamp__icon' />
+				</div>
+			) : null}
 			{showLoadButton && !isLoadingSiblings && (
 				<button onClick={loadMoreSiblings} className='actions-list__load-button'>
 					Load more
