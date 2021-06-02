@@ -24,20 +24,31 @@ import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
 import { getObjectKeys } from '../helpers/object';
 import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
+import MessageBodySortOrderStore from './MessageBodySortStore';
 import { DbData } from '../api/indexedDb';
-import FiltersHistoryStore from './FiltersHistoryStore';
+import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
 import { intervalOptions } from '../models/Graph';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
 import { getRangeFromTimestamp } from '../helpers/date';
+import {
+	EventFilterState,
+	FilterState,
+	MessageFilterState,
+} from '../components/search-panel/SearchPanelFilters';
+import { SessionsStore } from './messages/SessionsStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
-	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb);
+	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb, this.notificationsStore);
 
 	messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
 
+	messageBodySortStore = new MessageBodySortOrderStore(this, this.api.indexedDb);
+
 	workspacesStore: WorkspacesStore;
+
+	sessionsStore = new SessionsStore(this.api.indexedDb);
 
 	constructor(private api: ApiSchema) {
 		this.workspacesStore = new WorkspacesStore(
@@ -113,10 +124,32 @@ export default class RootStore {
 				throw new Error('Only one query parameter expected.');
 			}
 			const searchParams = new URLSearchParams(window.location.search);
+			const filtersToPin = searchParams.get('filters');
 			const workspacesUrlState = searchParams.get('workspaces');
 			const timestamp = searchParams.get('timestamp');
 			const eventId = searchParams.get('eventId');
 			const messageId = searchParams.get('messageId');
+			if (filtersToPin) {
+				const filtersHistoryItem: FiltersHistoryType<FilterState> = JSON.parse(
+					window.atob(filtersToPin),
+				);
+				const { type, filters } = filtersHistoryItem;
+
+				if (type === 'event') {
+					this.filtersHistoryStore
+						.onEventFilterSubmit(filters as EventFilterState, true)
+						.then(() => {
+							this.filtersHistoryStore.showSuccessNotification(type);
+						});
+				} else {
+					this.filtersHistoryStore
+						.onMessageFilterSubmit(filters as MessageFilterState, true)
+						.then(() => {
+							this.filtersHistoryStore.showSuccessNotification(type);
+						});
+				}
+				return null;
+			}
 			if (workspacesUrlState) {
 				return JSON.parse(window.atob(workspacesUrlState));
 			}
@@ -136,7 +169,7 @@ export default class RootStore {
 			];
 		} catch (error) {
 			this.notificationsStore.addMessage({
-				errorType: 'urlError',
+				notificationType: 'urlError',
 				type: 'error',
 				link: window.location.href,
 				error,
@@ -153,7 +186,7 @@ export default class RootStore {
 	public handleQuotaExceededError = async (unsavedData?: DbData) => {
 		const errorId = nanoid();
 		this.notificationsStore.addMessage({
-			errorType: 'genericError',
+			notificationType: 'genericError',
 			type: 'error',
 			header: 'QuotaExceededError',
 			description: 'Not enough storage space to save data. Clear all data?',
@@ -173,10 +206,11 @@ export default class RootStore {
 			await Promise.all([
 				this.workspacesStore.syncData(unsavedData),
 				this.messageDisplayRulesStore.syncData(unsavedData),
+				this.messageBodySortStore.syncData(unsavedData),
 			]);
 
 			this.notificationsStore.addMessage({
-				errorType: 'genericError',
+				notificationType: 'genericError',
 				type: 'success',
 				header: 'Data has been removed',
 				description: '',
@@ -185,6 +219,7 @@ export default class RootStore {
 		} catch (error) {
 			this.workspacesStore.syncData(unsavedData);
 			this.messageDisplayRulesStore.syncData(unsavedData);
+			this.messageBodySortStore.syncData(unsavedData);
 		}
 	};
 }

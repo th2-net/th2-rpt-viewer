@@ -47,7 +47,7 @@ export default class WorkspacesStore {
 		public filtersHistoryStore: FiltersHistoryStore,
 		initialState: WorkspacesUrlState | null,
 	) {
-		this.searchWorkspace = new SearchWorkspaceStore(this, this.api);
+		this.searchWorkspace = new SearchWorkspaceStore(this.rootStore, this, this.api);
 
 		this.init(initialState || null);
 
@@ -107,6 +107,7 @@ export default class WorkspacesStore {
 			this,
 			this.selectedStore,
 			this.searchWorkspace.searchStore,
+			this.rootStore.sessionsStore,
 			this.api,
 			workspaceInitialState,
 		);

@@ -33,6 +33,7 @@ import FilterRow from '../filter/row';
 import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { ModalPortal } from '../util/Portal';
+import { prettifyCamelcase } from '../../helpers/stringUtils';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -133,9 +134,7 @@ function MessageReplayModal() {
 		};
 
 		return searchStore.messagesFilterInfo.map<CompoundFilterRow>((filter: MessagesFilterInfo) => {
-			const label = (filter.name.charAt(0).toUpperCase() + filter.name.slice(1))
-				.split(/(?=[A-Z])/)
-				.join(' ');
+			const label = prettifyCamelcase(filter.name);
 			return filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
 				param => {
 					switch (param.type.value) {

@@ -33,6 +33,7 @@ interface Props {
 	datalistKey?: string;
 	placeholder?: string;
 	submitKeyCodes?: number[];
+	autofocus?: boolean;
 	onSubmit: (nextValue: string) => void;
 	onRemove?: () => void;
 	onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
@@ -57,6 +58,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		autoresize = true,
 		readonly = false,
 		datalistKey,
+		autofocus,
 		className = '',
 		inputStyle = {},
 		wrapperClassName = '',
@@ -139,8 +141,9 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			}
 			setAutocompleteAnchor(anchor || null);
 		},
-		autoFocus: false,
+		autoFocus: autofocus,
 		onClick: () => setAutocompleteAnchor(anchor || null),
+		spellCheck: false,
 	};
 
 	React.useEffect(() => {

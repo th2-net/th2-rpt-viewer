@@ -32,6 +32,7 @@ import { MessageFilterState } from '../../components/search-panel/SearchPanelFil
 import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
+import { SessionsStore } from './SessionsStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -88,6 +89,7 @@ export default class MessagesStore {
 		private searchStore: SearchStore,
 		private api: ApiSchema,
 		private filterHistoryStore: FiltersHistoryStore,
+		private sessionsStore: SessionsStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
 		this.init(defaultState);
@@ -171,14 +173,10 @@ export default class MessagesStore {
 		isSoftFilterApplied: boolean,
 	) => {
 		if (sseFilters) {
-			const timestamp = Date.now();
-			this.filterHistoryStore.addToMessagesHistory({
-				timestamp,
-				filters: sseFilters,
-				type: 'message',
-			});
+			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
 		}
 
+		this.sessionsStore.saveSessions(filter.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.selectedMessageId = null;

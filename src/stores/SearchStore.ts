@@ -45,6 +45,7 @@ import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
+import { SessionsStore } from './messages/SessionsStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -106,6 +107,7 @@ export class SearchStore {
 		private workspacesStore: WorkspacesStore,
 		private api: ApiSchema,
 		private filtersHistory: FiltersHistoryStore,
+		private sessionsStore: SessionsStore,
 	) {
 		this.init();
 
@@ -526,20 +528,11 @@ export class SearchStore {
 
 			this.searchChannel[direction] = searchChannel;
 
-			const timestamp = Date.now();
-
 			if (this.formType === 'event') {
-				this.filtersHistory.addToEventsHistory({
-					timestamp,
-					type: this.formType,
-					filters: filterParams as EventFilterState,
-				});
+				this.filtersHistory.onEventFilterSubmit(filterParams as EventFilterState);
 			} else {
-				this.filtersHistory.addToMessagesHistory({
-					timestamp,
-					type: this.formType,
-					filters: filterParams as MessageFilterState,
-				});
+				this.sessionsStore.saveSessions(stream);
+				this.filtersHistory.onMessageFilterSubmit(filterParams as MessageFilterState);
 			}
 
 			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));
@@ -587,7 +580,11 @@ export class SearchStore {
 
 		this.exportChunkToSearchHistory();
 
-		if (!this.isSearching && this.currentSearch) {
+		if (
+			!this.isSearching &&
+			this.currentSearch &&
+			Object.values(this.currentSearch.results).some(results => results.length > 0)
+		) {
 			this.saveSearchResults(toJS(this.currentSearch));
 		}
 	};
@@ -751,7 +748,7 @@ export class SearchStore {
 				this.workspacesStore.onQuotaExceededError(search);
 			} else {
 				notificationsStore.addMessage({
-					errorType: 'genericError',
+					notificationType: 'genericError',
 					type: 'error',
 					header: `Failed to save current search result`,
 					description: '',

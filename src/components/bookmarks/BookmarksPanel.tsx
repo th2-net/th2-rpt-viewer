@@ -26,10 +26,10 @@ import { useActivePanel, useSelectedStore } from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
-import '../../styles/bookmarks.scss';
 import BookmarkTextSearch from './BookmarkTextSearch';
 import BookmarkTypeSwitcher from './BookmarkTypeSwitcher';
 import Checkbox from '../util/Checkbox';
+import '../../styles/bookmarks.scss';
 
 export type Bookmark = EventBookmark | MessageBookmark;
 
@@ -161,7 +161,6 @@ function BookmarksPanel() {
 			<div className='bookmark-panel-header'>
 				<BookmarkTypeSwitcher value={bookmarkType} setValue={setBookmarkType} label='Type' />
 				<BookmarkTextSearch value={textSearch} setValue={setTextSearch} label='Search' />
-
 				<div className='bookmark-panel-header-actions'>
 					<div className='bookmark-panel-header-actions_left-side'>
 						<button
@@ -169,7 +168,9 @@ function BookmarksPanel() {
 							disabled={selectedBookmarks.length === 0}
 							onClick={removeSelected}>
 							<i className={iconButtonClassName} />
-							<span className='button__label'>Delete</span>
+							<span className='button__label'>
+								Delete {selectedBookmarks.length > 0 && `(${selectedBookmarks.length})`}
+							</span>
 						</button>
 					</div>
 					<div className='bookmark-panel-header-actions_right-side'>
@@ -223,7 +224,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 	const itemInfo = {
 		id: isEventMessage(item) ? item.messageId : item.eventId,
 		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
-		title: isEventMessage(item) ? item.messageType : item.eventName,
+		title: isEventMessage(item) ? item.messageType || 'unknown type' : item.eventName,
 		timestamp: getTimestampAsNumber(item),
 		type: item.type,
 	};

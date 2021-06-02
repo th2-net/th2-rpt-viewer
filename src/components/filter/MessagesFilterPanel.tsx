@@ -29,6 +29,7 @@ import {
 	useMessagesDataStore,
 	useMessagesWorkspaceStore,
 	useFiltersHistoryStore,
+	useSessionsStore,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -41,6 +42,7 @@ import MessageReplayModal from '../message/MessageReplayModal';
 import { getArrayOfUniques } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
 import { notEmpty } from '../../helpers/object';
+import { prettifyCamelcase } from '../../helpers/stringUtils';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -51,6 +53,7 @@ const MessagesFilterPanel = () => {
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
 	const { messagesHistory } = useFiltersHistoryStore();
+	const sessionsStore = useSessionsStore();
 	const { filterStore } = messagesStore;
 
 	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
@@ -138,9 +141,7 @@ const MessagesFilterPanel = () => {
 
 		return searchStore.messagesFilterInfo.map<CompoundFilterRow>(
 			(filterInfo: MessagesFilterInfo) => {
-				const label = (filterInfo.name.charAt(0).toUpperCase() + filterInfo.name.slice(1))
-					.split(/(?=[A-Z])/)
-					.join(' ');
+				const label = prettifyCamelcase(filterInfo.name);
 				const autocompleteList = getArrayOfUniques<string>(
 					messagesHistory
 						.map(item => item.filters[filterInfo.name]?.values)
@@ -180,6 +181,15 @@ const MessagesFilterPanel = () => {
 		);
 	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
 
+	const sessionsAutocomplete: string[] = React.useMemo(() => {
+		return [
+			...sessionsStore.sessions.map(s => s.session),
+			...messagesStore.messageSessions.filter(
+				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
+			),
+		];
+	}, [messagesStore.messageSessions, sessionsStore.sessions]);
+
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
 		return {
 			type: 'multiple-strings',
@@ -188,12 +198,12 @@ const MessagesFilterPanel = () => {
 			setValues: setStreams,
 			currentValue: currentStream,
 			setCurrentValue: setCurrentStream,
-			autocompleteList: messagesStore.messageSessions,
+			autocompleteList: sessionsAutocomplete,
 			validateBubbles: true,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
 		};
-	}, [streams, setStreams, currentStream, setCurrentStream, messagesStore.messageSessions]);
+	}, [streams, setStreams, currentStream, setCurrentStream, sessionsAutocomplete]);
 
 	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
 		return {

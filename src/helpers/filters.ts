@@ -27,7 +27,17 @@ export function getNonEmptyFilters(filter: Partial<FilterState>) {
 	return Object.fromEntries(
 		Object.entries(toJS(observable(filter)))
 			.filter(([_, value]) => value && value.values && value.values.length > 0)
-			.map(([k, v]) => [k, v]),
+			.map(([k, v]) => {
+				return typeof v.values === 'string'
+					? [k, v]
+					: [
+							k,
+							{
+								...v,
+								values: [...new Set(v.values.sort())],
+							},
+					  ];
+			}),
 	);
 }
 
@@ -47,11 +57,4 @@ export function isEmptyFilter(filter: Partial<EventFilterState>) {
 	return !Object.values(filter)
 		.filter(notEmpty)
 		.some(filterValues => filterValues.values.length > 0);
-}
-
-export function sortByTimestamp(
-	a: FiltersHistoryType<FilterState>,
-	b: FiltersHistoryType<FilterState>,
-) {
-	return a.timestamp > b.timestamp ? -1 : 1;
 }

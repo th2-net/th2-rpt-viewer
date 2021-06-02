@@ -39,18 +39,19 @@ interface Props {
 	disabled?: boolean;
 }
 
-function EventCardHeader({
-	displayType = CardDisplayType.MINIMAL,
-	event,
-	onSelect,
-	isSelected = false,
-	isActive = false,
-	childrenCount,
-	isFlatView = false,
-	parentsCount = 0,
-	rootStyle = {},
-	disabled = false,
-}: Props) {
+function EventCardHeader(props: Props) {
+	const {
+		displayType = CardDisplayType.MINIMAL,
+		event,
+		onSelect,
+		isSelected = false,
+		isActive = false,
+		childrenCount,
+		isFlatView = false,
+		parentsCount = 0,
+		rootStyle = {},
+		disabled = false,
+	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp, isUnknown } = event;
 
 	const selectedStore = useSelectedStore();
@@ -99,7 +100,7 @@ function EventCardHeader({
 		e.stopPropagation();
 		stopSearch();
 		setFormType('event');
-		updateForm({ parentEvent: eventId });
+		updateForm({ parentEvent: eventId, startTimestamp: startTimestampValue });
 		setActiveWorkspace(0);
 	}
 

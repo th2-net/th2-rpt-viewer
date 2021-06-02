@@ -25,6 +25,7 @@ import ApiSchema from '../../api/ApiSchema';
 import { WorkspaceInitialState } from './WorkspaceStore';
 import { isEvent, isEventMessage } from '../../helpers/event';
 import { getTimestampAsNumber, timestampToNumber, getRangeFromTimestamp } from '../../helpers/date';
+import RootStore from '../RootStore';
 
 export const SEARCH_STORE_INTERVAL = 15;
 
@@ -35,11 +36,16 @@ export default class SearchWorkspaceStore {
 
 	public id = nanoid();
 
-	constructor(private workspacesStore: WorkspacesStore, api: ApiSchema) {
+	constructor(
+		private rootStore: RootStore,
+		private workspacesStore: WorkspacesStore,
+		api: ApiSchema,
+	) {
 		this.searchStore = new SearchStore(
 			this.workspacesStore,
 			api,
 			this.workspacesStore.filtersHistoryStore,
+			this.rootStore.sessionsStore,
 		);
 
 		this.viewStore = new WorkspaceViewStore(undefined);
