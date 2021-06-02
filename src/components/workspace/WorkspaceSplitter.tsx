@@ -305,7 +305,7 @@ function WorkspaceSplitter(props: Props) {
 	return (
 		<div ref={rootRef} className='workspace-split-view'>
 			{panels.map((panel, index) => (
-				<React.Fragment key={panel.title}>
+				<React.Fragment key={panel.color.default}>
 					<Splitter
 						isResizing={isResizing}
 						color={panel.isActive ? panel.color.active : panel.color.default}
@@ -359,7 +359,7 @@ function WorkspaceSplitter(props: Props) {
 	);
 }
 
-export default WorkspaceSplitter;
+export default React.memo(WorkspaceSplitter);
 
 interface SplittedViewPanelProps {
 	children: React.ReactNode;

@@ -580,7 +580,11 @@ export class SearchStore {
 
 		this.exportChunkToSearchHistory();
 
-		if (!this.isSearching && this.currentSearch) {
+		if (
+			!this.isSearching &&
+			this.currentSearch &&
+			Object.values(this.currentSearch.results).some(results => results.length > 0)
+		) {
 			this.saveSearchResults(toJS(this.currentSearch));
 		}
 	};
