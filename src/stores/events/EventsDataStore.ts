@@ -21,6 +21,7 @@ import {
 	convertEventActionToEventTreeNode,
 	getErrorEventTreeNode,
 	isRootEvent,
+	unknownRoot,
 } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventSSELoader } from './EventSSELoader';
@@ -320,7 +321,11 @@ export default class EventsDataStore {
 
 				const { isUnknown, parentId, eventId } = event;
 
-				if ((isRootEvent(event) || isUnknown) && !rootNodes.includes(eventId)) {
+				if (
+					(isRootEvent(event) || isUnknown) &&
+					!rootNodes.includes(eventId) &&
+					parentId !== 'unknown-root'
+				) {
 					rootNodes.push(eventId);
 				}
 
@@ -330,6 +335,12 @@ export default class EventsDataStore {
 					if (!siblings.includes(event.eventId)) {
 						siblings.push(event.eventId);
 						parentChildrenMapUpdate.set(parentId, [...new Set(siblings)]);
+					}
+				}
+				if (parentId === 'unknown-root') {
+					if (!this.eventsCache.has('unknown-root')) {
+						this.eventsCache.set('unknown-root', unknownRoot);
+						this.rootEventIds.push('unknown-root');
 					}
 				}
 
