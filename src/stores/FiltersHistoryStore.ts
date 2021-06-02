@@ -30,9 +30,9 @@ import {
 	isEmptyFilter,
 	isEventsFilterHistory,
 	isMessagesFilterHistory,
-	sortByTimestamp,
 } from '../helpers/filters';
 import { NotificationsStore } from './NotificationsStore';
+import { sortByTimestamp } from '../helpers/date';
 
 export interface FiltersHistoryType<T extends FilterState> {
 	timestamp: number;
@@ -79,7 +79,7 @@ class FiltersHistoryStore {
 
 	@computed
 	private get allEventFilters() {
-		return this.filterHistory.filter(isEventsFilterHistory).sort(sortByTimestamp);
+		return sortByTimestamp(this.filterHistory.filter(isEventsFilterHistory));
 	}
 
 	@computed
@@ -94,7 +94,7 @@ class FiltersHistoryStore {
 
 	@computed
 	private get allMessageFilters() {
-		return this.filterHistory.filter(isMessagesFilterHistory).sort(sortByTimestamp);
+		return sortByTimestamp(this.filterHistory.filter(isMessagesFilterHistory));
 	}
 
 	@computed
@@ -118,23 +118,33 @@ class FiltersHistoryStore {
 	}
 
 	@action
-	public onEventFilterSubmit = async (newItem: FiltersHistoryType<EventFilterState>) => {
-		if (isEmptyFilter(newItem.filters)) return;
-
-		const filter = getEquilizedItem(newItem);
+	public onEventFilterSubmit = async (filters: EventFilterState, isPinned = false) => {
+		if (isEmptyFilter(filters)) return;
 
 		await when(() => this.initialized);
-		this.addEventHistoryItem(filter);
+		this.addEventHistoryItem(
+			getEquilizedItem({
+				filters,
+				timestamp: Date.now(),
+				type: 'event',
+				isPinned,
+			}),
+		);
 	};
 
 	@action
-	public onMessageFilterSubmit = async (newItem: FiltersHistoryType<MessageFilterState>) => {
-		if (isEmptyFilter(newItem.filters)) return;
-
-		const filter = getEquilizedItem(newItem);
+	public onMessageFilterSubmit = async (filters: MessageFilterState, isPinned = false) => {
+		if (isEmptyFilter(filters)) return;
 
 		await when(() => this.initialized);
-		this.addMessageHistoryItem(filter);
+		this.addMessageHistoryItem(
+			getEquilizedItem({
+				filters,
+				timestamp: Date.now(),
+				type: 'message',
+				isPinned,
+			}),
+		);
 	};
 
 	@action
@@ -169,7 +179,7 @@ class FiltersHistoryStore {
 		const history = await this.indexedDb.getStoreValues<
 			FiltersHistoryType<EventFilterState | MessageFilterState>
 		>(IndexedDbStores.FILTERS_HISTORY);
-		this.filterHistory = history.sort(sortByTimestamp);
+		this.filterHistory = history;
 		this.initialized = true;
 	};
 

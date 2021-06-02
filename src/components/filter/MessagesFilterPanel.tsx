@@ -29,6 +29,7 @@ import {
 	useMessagesDataStore,
 	useMessagesWorkspaceStore,
 	useFiltersHistoryStore,
+	useSessionsStore,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -52,6 +53,7 @@ const MessagesFilterPanel = () => {
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
 	const { messagesHistory } = useFiltersHistoryStore();
+	const sessionsStore = useSessionsStore();
 	const { filterStore } = messagesStore;
 
 	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
@@ -179,6 +181,15 @@ const MessagesFilterPanel = () => {
 		);
 	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
 
+	const sessionsAutocomplete: string[] = React.useMemo(() => {
+		return [
+			...sessionsStore.sessions.map(s => s.session),
+			...messagesStore.messageSessions.filter(
+				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
+			),
+		];
+	}, [messagesStore.messageSessions, sessionsStore.sessions]);
+
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
 		return {
 			type: 'multiple-strings',
@@ -187,12 +198,12 @@ const MessagesFilterPanel = () => {
 			setValues: setStreams,
 			currentValue: currentStream,
 			setCurrentValue: setCurrentStream,
-			autocompleteList: messagesStore.messageSessions,
+			autocompleteList: sessionsAutocomplete,
 			validateBubbles: true,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
 		};
-	}, [streams, setStreams, currentStream, setCurrentStream, messagesStore.messageSessions]);
+	}, [streams, setStreams, currentStream, setCurrentStream, sessionsAutocomplete]);
 
 	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
 		return {

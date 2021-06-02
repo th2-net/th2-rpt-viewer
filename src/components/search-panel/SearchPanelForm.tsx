@@ -38,7 +38,7 @@ import SearchResultCountLimit, {
 } from './search-form/SearchResultCountLimit';
 import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
-import { useFiltersHistoryStore } from '../../hooks';
+import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -61,7 +61,17 @@ const SearchPanelForm = () => {
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
+	const sessionsStore = useSessionsStore();
 	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
+
+	const sessionsAutocomplete: string[] = React.useMemo(() => {
+		return [
+			...sessionsStore.sessions.map(s => s.session),
+			...messageSessions.filter(
+				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
+			),
+		];
+	}, [messageSessions, sessionsStore.sessions]);
 
 	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
 		formType,
@@ -105,7 +115,7 @@ const SearchPanelForm = () => {
 		setValues: getFormStateUpdater('stream'),
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
-		autocompleteList: messageSessions,
+		autocompleteList: sessionsAutocomplete,
 		isInvalid: true,
 		required: true,
 	};
