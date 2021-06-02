@@ -501,13 +501,7 @@ export default class EventsStore {
 	};
 
 	public applyFilter = (filter: EventFilterState) => {
-		const timestamp = Date.now();
-		this.filterHistoryStore.onEventFilterSubmit({
-			timestamp,
-			filters: filter,
-			type: 'event',
-			isPinned: false,
-		});
+		this.filterHistoryStore.onEventFilterSubmit(filter);
 
 		this.eventDataStore.fetchEventTree({ filter, timeRange: this.filterStore.range });
 	};

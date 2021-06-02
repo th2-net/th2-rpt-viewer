@@ -23,6 +23,7 @@ import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { SearchHistory } from '../stores/SearchStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';
+import { Session } from '../stores/messages/SessionsStore';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',
@@ -32,6 +33,7 @@ export enum IndexedDbStores {
 	DISPLAY_RULES = 'display-rules',
 	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 	FILTERS_HISTORY = 'filters-history',
+	SESSIONS_HISTORY = 'sessions-history',
 }
 
 type indexedDbStoresKeyPaths = {
@@ -46,7 +48,8 @@ export type DbData =
 	| MessageDisplayRule
 	| OrderRule
 	| MessageSortOrderItem
-	| FiltersHistoryType<FilterState>;
+	| FiltersHistoryType<FilterState>
+	| Session;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.EVENTS]: {
@@ -98,6 +101,13 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
+	[IndexedDbStores.SESSIONS_HISTORY]: {
+		key: string;
+		value: Session;
+		indexes: {
+			timestamp: number;
+		};
+	};
 }
 
 export const indexedDbLimits = {
@@ -107,6 +117,7 @@ export const indexedDbLimits = {
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 100,
 	[IndexedDbStores.SEARCH_HISTORY]: 5,
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
+	[IndexedDbStores.SESSIONS_HISTORY]: 20,
 } as const;
 
 const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
@@ -117,9 +128,10 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.DISPLAY_RULES]: 'id',
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 'id',
 	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
+	[IndexedDbStores.SESSIONS_HISTORY]: 'session',
 };
 
-const dbVersion = 2;
+const dbVersion = 3;
 
 export class IndexedDB {
 	@observable

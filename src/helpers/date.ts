@@ -111,3 +111,22 @@ export function getRangeFromTimestamp(timestamp: number, interval: number): Time
 			.valueOf(),
 	];
 }
+
+export function sortByTimestamp<T extends { timestamp: number | Timestamp }>(
+	array: T[],
+	order: 'desc' | 'asc' = 'desc',
+) {
+	const copiedArray = array.slice();
+	copiedArray.sort((itemA, itemB) => {
+		const timestampA =
+			typeof itemA.timestamp === 'number' ? itemA.timestamp : timestampToNumber(itemA.timestamp);
+		const timestampB =
+			typeof itemB.timestamp === 'number' ? itemB.timestamp : timestampToNumber(itemB.timestamp);
+
+		if (order === 'desc') {
+			return timestampB - timestampA;
+		}
+		return timestampA - timestampB;
+	});
+	return copiedArray;
+}

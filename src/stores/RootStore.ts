@@ -30,7 +30,12 @@ import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
 import { intervalOptions } from '../models/Graph';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
 import { getRangeFromTimestamp } from '../helpers/date';
-import { FilterState } from '../components/search-panel/SearchPanelFilters';
+import {
+	EventFilterState,
+	FilterState,
+	MessageFilterState,
+} from '../components/search-panel/SearchPanelFilters';
+import { SessionsStore } from './messages/SessionsStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -42,6 +47,8 @@ export default class RootStore {
 	messageBodySortStore = new MessageBodySortOrderStore(this, this.api.indexedDb);
 
 	workspacesStore: WorkspacesStore;
+
+	sessionsStore = new SessionsStore(this.api.indexedDb);
 
 	constructor(private api: ApiSchema) {
 		this.workspacesStore = new WorkspacesStore(
@@ -126,16 +133,20 @@ export default class RootStore {
 				const filtersHistoryItem: FiltersHistoryType<FilterState> = JSON.parse(
 					window.atob(filtersToPin),
 				);
-				const { type } = filtersHistoryItem;
-				const newItem = { ...filtersHistoryItem, timestamp: Date.now(), isPinned: true };
+				const { type, filters } = filtersHistoryItem;
+
 				if (type === 'event') {
-					this.filtersHistoryStore.onEventFilterSubmit(newItem).then(() => {
-						this.filtersHistoryStore.showSuccessNotification(type);
-					});
+					this.filtersHistoryStore
+						.onEventFilterSubmit(filters as EventFilterState, true)
+						.then(() => {
+							this.filtersHistoryStore.showSuccessNotification(type);
+						});
 				} else {
-					this.filtersHistoryStore.onMessageFilterSubmit(newItem).then(() => {
-						this.filtersHistoryStore.showSuccessNotification(type);
-					});
+					this.filtersHistoryStore
+						.onMessageFilterSubmit(filters as MessageFilterState, true)
+						.then(() => {
+							this.filtersHistoryStore.showSuccessNotification(type);
+						});
 				}
 				return null;
 			}

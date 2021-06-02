@@ -34,6 +34,7 @@ import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
+import { SessionsStore } from '../messages/SessionsStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -66,6 +67,7 @@ export default class WorkspaceStore {
 		private workspacesStore: WorkspacesStore,
 		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
+		private sessionsStore: SessionsStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
@@ -88,6 +90,7 @@ export default class WorkspaceStore {
 			this.searchStore,
 			this.api,
 			this.workspacesStore.filtersHistoryStore,
+			this.sessionsStore,
 			initialState.messages,
 		);
 

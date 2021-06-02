@@ -143,6 +143,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		},
 		autoFocus: autofocus,
 		onClick: () => setAutocompleteAnchor(anchor || null),
+		spellCheck: false,
 	};
 
 	React.useEffect(() => {
