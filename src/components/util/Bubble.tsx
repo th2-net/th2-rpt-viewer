@@ -90,6 +90,9 @@ export default function Bubble(props: Props) {
 	};
 
 	const inputOnSubmit = (nextValue: string) => {
+		// eslint-disable-next-line no-param-reassign
+		nextValue = nextValue.trim();
+		setCurrentValue(nextValue);
 		if (nextValue.length === 0) {
 			onRemove();
 			return;

@@ -18,7 +18,7 @@
 import { action, observable, when } from 'mobx';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
-import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
+import { MessagesSSEParams, SSEHeartbeat, MessagesIdsEvent } from '../../api/sse';
 import { isEventMessage } from '../../helpers/event';
 import { getObjectKeys } from '../../helpers/object';
 import { EventMessage } from '../../models/EventMessage';
@@ -58,7 +58,8 @@ export class MessagesSSELoader {
 	@observable
 	public isLoading = false;
 
-	@observable isEndReached = false;
+	@observable
+	public isEndReached = false;
 
 	private type: SSEChannelType = 'message';
 
@@ -79,6 +80,8 @@ export class MessagesSSELoader {
 		}
 	}
 
+	private messagesIdsEvent: MessagesIdsEvent | null = null;
+
 	@action
 	private _onClose = () => {
 		this.closeChannel();
@@ -91,6 +94,8 @@ export class MessagesSSELoader {
 			this.resetSSEState({
 				isEndReached: this.fetchedMessagesCount === 0,
 			});
+		} else {
+			this.isEndReached = this.fetchedMessagesCount === 0;
 		}
 	};
 
@@ -148,11 +153,17 @@ export class MessagesSSELoader {
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
 
+		const messageId: string[] = this.messagesIdsEvent
+			? (Object.values(this.messagesIdsEvent.messageIds).filter(Boolean) as string[])
+			: [];
+
+		this.messagesIdsEvent = null;
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
 				resumeFromId,
 				resultCountLimit: this.chunkSize,
+				messageId,
 			},
 			type: this.type,
 		});
@@ -161,6 +172,7 @@ export class MessagesSSELoader {
 		this.channel.addEventListener('close', this._onClose);
 		this.channel.addEventListener('error', this._onError);
 		this.channel.addEventListener('keep_alive', this._onKeepAliveResponse);
+		this.channel.addEventListener('message_ids', this.onMessageIdsEvent);
 	};
 
 	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
@@ -187,8 +199,16 @@ export class MessagesSSELoader {
 		this.fetchedChunkSubscription = when(() => !this.isLoading);
 		await this.fetchedChunkSubscription;
 		const nextChunk = this.getNextChunk();
-		this.resetSSEState();
+		this.resetSSEState({ isEndReached: nextChunk.length === 0 });
 		return nextChunk;
+	};
+
+	private onMessageIdsEvent = (e: Event) => {
+		if (e instanceof MessageEvent) {
+			this.messagesIdsEvent = e.data ? JSON.parse(e.data) : null;
+		} else {
+			this.messagesIdsEvent = null;
+		}
 	};
 
 	public stop = (): void => {
