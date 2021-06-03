@@ -282,6 +282,12 @@ export default class EventsDataStore {
 				}
 				parentNodes.unshift(rootNode);
 			}
+			if (rootNode.parentId === 'unknown-root') {
+				if (!this.eventsCache.has('unknown-root')) {
+					this.eventsCache.set('unknown-root', unknownRoot);
+					this.rootEventIds.push('unknown-root');
+				}
+			}
 
 			parentNodes.forEach(eventNode => {
 				if (!this.eventsCache.has(eventNode.eventId)) {
@@ -289,6 +295,9 @@ export default class EventsDataStore {
 				}
 			});
 			if (isTargetNodes) {
+				if (rootNode.parentId === 'unknown-root') {
+					parentNodes.unshift(unknownRoot);
+				}
 				parentNodes.forEach(parentNode => {
 					this.eventStore.isExpandedMap.set(parentNode.eventId, true);
 					this.loadingParentEvents.set(parentNode.eventId, false);
@@ -297,6 +306,7 @@ export default class EventsDataStore {
 				if (
 					rootNode &&
 					(isRootEvent(rootNode) || rootNode.isUnknown) &&
+					rootNode.parentId !== 'unknown-root' &&
 					!this.rootEventIds.includes(rootNode.eventId)
 				) {
 					this.rootEventIds.push(rootNode.eventId);
@@ -335,12 +345,6 @@ export default class EventsDataStore {
 					if (!siblings.includes(event.eventId)) {
 						siblings.push(event.eventId);
 						parentChildrenMapUpdate.set(parentId, [...new Set(siblings)]);
-					}
-				}
-				if (parentId === 'unknown-root') {
-					if (!this.eventsCache.has('unknown-root')) {
-						this.eventsCache.set('unknown-root', unknownRoot);
-						this.rootEventIds.push('unknown-root');
 					}
 				}
 
