@@ -59,6 +59,8 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 	};
 
 	const inputOnSubmit = (nextValue: string) => {
+		// eslint-disable-next-line no-param-reassign
+		nextValue = nextValue.trim();
 		const { values, setValues, setCurrentValue } = config;
 		setCurrentValue('');
 		if (values.length > 0) {
@@ -110,7 +112,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 							isValid={
 								config.validateBubbles
 									? config.autocompleteList
-										? config.autocompleteList.includes(value)
+										? config.autocompleteList.includes(value.trim())
 										: undefined
 									: undefined
 							}
