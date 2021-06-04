@@ -101,17 +101,12 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	};
 
 	const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
-		if (e.keyCode === KeyCodes.UP || e.keyCode === KeyCodes.TAB) {
+		if (e.keyCode === KeyCodes.UP || e.keyCode === KeyCodes.DOWN || e.keyCode === KeyCodes.TAB) {
 			e.preventDefault();
 		}
 
-		if (!value.trim() && e.keyCode !== KeyCodes.BACKSPACE) {
-			return;
-		}
-
-		if (submitKeyCodes.includes(e.keyCode) && value.length > 0) {
-			onSubmit(value);
-			return;
+		if (value.trim().length > 0 && submitKeyCodes.includes(e.keyCode)) {
+			onSubmit(value.trim());
 		}
 
 		if (e.keyCode === KeyCodes.BACKSPACE && value.length < 1 && onRemove) {

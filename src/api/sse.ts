@@ -83,6 +83,7 @@ export interface MessagesSSEParams extends BaseSSEParams {
 	'type-negative'?: boolean;
 	'body-values'?: string[];
 	'body-negative'?: boolean;
+	messageId?: string[];
 }
 
 export interface SSEParamsEvents {
@@ -91,6 +92,14 @@ export interface SSEParamsEvents {
 	resumeFromId?: string;
 	searchDirection?: 'next' | 'previous'; // defaults to next
 	limitForParent?: number;
+}
+
+export interface MessagesIdsEvent {
+	reason: string;
+	// session: messageId
+	messageIds: {
+		[session: string]: string | null;
+	};
 }
 
 export type SSEParams = EventSSEParams | MessagesSSEParams;
