@@ -101,7 +101,9 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	}
 
 	const onNodeSelect = React.useCallback(() => {
-		eventsStore.selectNode(eventTreeNode);
+		if (!eventTreeNode.isUnknown) {
+			eventsStore.selectNode(eventTreeNode);
+		}
 	}, [eventTreeNode]);
 
 	const nestingLevel = 20 * parents.length;

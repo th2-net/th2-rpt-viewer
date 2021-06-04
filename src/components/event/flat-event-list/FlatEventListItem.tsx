@@ -38,7 +38,11 @@ function FlatEventListItem(props: FlatEventListItemProps) {
 				childrenCount={0}
 				event={node}
 				displayType={CardDisplayType.MINIMAL}
-				onSelect={() => eventsStore.selectNode(node)}
+				onSelect={() => {
+					if (!node.isUnknown) {
+						eventsStore.selectNode(node);
+					}
+				}}
 				isSelected={eventsStore.isNodeSelected(node)}
 				isFlatView={true}
 				parentsCount={
