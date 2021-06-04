@@ -21,7 +21,13 @@ import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
-import { isEvent, isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
+import {
+	isEvent,
+	isEventNode,
+	isRootEvent,
+	sortEventsByTimestamp,
+	unknownRoot,
+} from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
@@ -253,7 +259,12 @@ export default class EventsStore {
 
 	@action
 	public selectNode = (eventTreeNode: EventTreeNode | null) => {
-		if (eventTreeNode === null || eventTreeNode.eventId !== this.selectedNode?.eventId) {
+		if (
+			eventTreeNode === null ||
+			(eventTreeNode.eventId !== this.selectedNode?.eventId &&
+				eventTreeNode.eventId !== unknownRoot.eventId &&
+				eventTreeNode.parentId !== unknownRoot.eventId)
+		) {
 			this.selectedNode = eventTreeNode;
 		}
 

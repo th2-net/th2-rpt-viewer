@@ -382,7 +382,7 @@ export default class EventsDataStore {
 
 		const parentNode = this.eventsCache.get(parentId);
 
-		if (parentNode) {
+		if (parentNode && parentNode.parentId !== unknownRoot.eventId) {
 			const eventsChildren = this.eventStore.getChildrenNodes(parentId);
 
 			const lastChild = eventsChildren[eventsChildren.length - 1];
