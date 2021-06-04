@@ -282,11 +282,12 @@ export default class EventsDataStore {
 				}
 				parentNodes.unshift(rootNode);
 			}
-			if (rootNode.parentId === 'unknown-root') {
-				if (!this.eventsCache.has('unknown-root')) {
-					this.eventsCache.set('unknown-root', unknownRoot);
-					this.rootEventIds.push('unknown-root');
+			if (rootNode.parentId === unknownRoot.eventId) {
+				if (!this.eventsCache.has(unknownRoot.eventId)) {
+					this.eventsCache.set(unknownRoot.eventId, unknownRoot);
+					this.rootEventIds.push(unknownRoot.eventId);
 				}
+				parentNodes.unshift(unknownRoot);
 			}
 
 			parentNodes.forEach(eventNode => {
@@ -294,21 +295,14 @@ export default class EventsDataStore {
 					this.eventsCache.set(eventNode.eventId, eventNode);
 				}
 			});
+
 			if (isTargetNodes) {
-				if (rootNode.parentId === 'unknown-root') {
-					parentNodes.unshift(unknownRoot);
-				}
 				parentNodes.forEach(parentNode => {
 					this.eventStore.isExpandedMap.set(parentNode.eventId, true);
 					this.loadingParentEvents.set(parentNode.eventId, false);
 				});
 				this.targetNodeParents = parentNodes;
-				if (
-					rootNode &&
-					(isRootEvent(rootNode) || rootNode.isUnknown) &&
-					rootNode.parentId !== 'unknown-root' &&
-					!this.rootEventIds.includes(rootNode.eventId)
-				) {
+				if (isRootEvent(rootNode) && !this.rootEventIds.includes(rootNode.eventId)) {
 					this.rootEventIds.push(rootNode.eventId);
 				}
 			} else {
@@ -329,13 +323,9 @@ export default class EventsDataStore {
 			for (let i = 0; i < parentNodePath.length; i++) {
 				const event = parentNodePath[i];
 
-				const { isUnknown, parentId, eventId } = event;
+				const { parentId, eventId } = event;
 
-				if (
-					(isRootEvent(event) || isUnknown) &&
-					!rootNodes.includes(eventId) &&
-					parentId !== 'unknown-root'
-				) {
+				if (isRootEvent(event) && !rootNodes.includes(eventId)) {
 					rootNodes.push(eventId);
 				}
 
