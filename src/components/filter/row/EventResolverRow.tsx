@@ -55,6 +55,8 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 
 	useEffect(() => {
 		const ac = new AbortController();
+		setEvent(null);
+		setIsError(false);
 
 		if (config.value) {
 			setIsLoading(true);
