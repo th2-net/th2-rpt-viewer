@@ -63,6 +63,8 @@ export class MessagesSSELoader {
 
 	private type: SSEChannelType = 'message';
 
+	private messagesIdsEvent: MessagesIdsEvent | null = null;
+
 	constructor(
 		private queryParams: MessagesSSEParams,
 		private onResponse: (messages: EventMessage[]) => void,
@@ -80,22 +82,22 @@ export class MessagesSSELoader {
 		}
 	}
 
-	private messagesIdsEvent: MessagesIdsEvent | null = null;
-
 	@action
 	private _onClose = () => {
 		this.closeChannel();
 		this.isLoading = false;
 		this.clearSchedulersAndTimeouts();
 
+		const isEndReached = this.messagesIdsEvent
+			? Object.values(this.messagesIdsEvent.messageIds).every(messageId => messageId === null)
+			: false;
+
 		if (this.fetchedChunkSubscription == null) {
 			const chunk = this.getNextChunk();
 			this.onResponse(chunk);
-			this.resetSSEState({
-				isEndReached: this.fetchedMessagesCount === 0,
-			});
+			this.resetSSEState({ isEndReached });
 		} else {
-			this.isEndReached = this.fetchedMessagesCount === 0;
+			this.isEndReached = isEndReached;
 		}
 	};
 
@@ -161,7 +163,7 @@ export class MessagesSSELoader {
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
-				resumeFromId,
+				resumeFromId: messageId.length ? undefined : resumeFromId,
 				resultCountLimit: this.chunkSize,
 				messageId,
 			},
@@ -199,16 +201,12 @@ export class MessagesSSELoader {
 		this.fetchedChunkSubscription = when(() => !this.isLoading);
 		await this.fetchedChunkSubscription;
 		const nextChunk = this.getNextChunk();
-		this.resetSSEState({ isEndReached: nextChunk.length === 0 });
+		this.resetSSEState({ isEndReached: this.isEndReached });
 		return nextChunk;
 	};
 
 	private onMessageIdsEvent = (e: Event) => {
-		if (e instanceof MessageEvent) {
-			this.messagesIdsEvent = e.data ? JSON.parse(e.data) : null;
-		} else {
-			this.messagesIdsEvent = null;
-		}
+		this.messagesIdsEvent = e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
 	};
 
 	public stop = (): void => {
