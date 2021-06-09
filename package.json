@@ -24,7 +24,7 @@
 		"@types/react-input-autosize": "^2.2.0",
 		"@types/react-text-mask": "^5.4.6",
 		"@types/recharts": "^1.8.16",
-		"core-js": "^3.6.5",
+		"core-js": "^3.12.1",
 		"cross-env": "^6.0.3",
 		"fetch-intercept": "^2.3.1",
 		"framer-motion": "^3.10.6",
