@@ -56,10 +56,10 @@ function MessageBodyCard({ isBeautified, body, isSelected, renderInfo }: Props) 
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
 	const { sortOrderItems } = useMessageBodySortStore();
 
-	const fields = React.useMemo(() => getSortedFields(body ? body.fields : {}, sortOrderItems), [
-		body,
-		sortOrderItems,
-	]);
+	const fields = React.useMemo(
+		() => getSortedFields(body?.fields ? body.fields : {}, sortOrderItems),
+		[body, sortOrderItems],
+	);
 
 	if (body == null) {
 		return <pre className='mc-body__human'>null</pre>;
