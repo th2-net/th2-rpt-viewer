@@ -44,7 +44,6 @@ const BodySortConfig = () => {
 
 	return (
 		<Virtuoso
-			className='sorts'
 			itemContent={renderSortRule}
 			computeItemKey={computeKey}
 			totalCount={sortOrder.length}

@@ -70,12 +70,9 @@ class MessageBodySortOrderStore {
 
 	@action
 	public editItem = (orderItem: MessageSortOrderItem, newOrderItem: MessageSortOrderItem) => {
-		this.sortOrder = this.sortOrder.map(existedOrderItem => {
-			if (existedOrderItem === orderItem) {
-				return newOrderItem;
-			}
-			return existedOrderItem;
-		});
+		this.sortOrder = this.sortOrder.map(existedOrderItem =>
+			existedOrderItem === orderItem ? newOrderItem : existedOrderItem,
+		);
 		this.updateRule(newOrderItem);
 	};
 
