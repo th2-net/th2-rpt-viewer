@@ -16,6 +16,12 @@
 
 import { ActionType } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
+import {
+	isMessageValue,
+	isSimpleValue,
+	MessageBodyField,
+	MessageBodyFields,
+} from '../models/MessageBody';
 import { timestampToNumber } from './date';
 
 export const sortMessagesByTimestamp = (
@@ -39,3 +45,28 @@ export const isMessage = (object: unknown): object is EventMessage => {
 		(object as EventMessage).type === ActionType.MESSAGE
 	);
 };
+
+export function normalizeFields(fields: MessageBodyFields) {
+	return Object.entries(fields).reduce((acc, [name, field]) => {
+		return {
+			...acc,
+			[name]: normalizeField(field),
+		};
+	}, {});
+}
+
+export function normalizeField(field: MessageBodyField): string | object {
+	if (isSimpleValue(field)) return field.simpleValue;
+	if (isMessageValue(field)) {
+		return Object.entries(field.messageValue.fields || {}).reduce(
+			(acc, [fieldName, fieldValue]) => {
+				return {
+					...acc,
+					[fieldName]: normalizeField(fieldValue),
+				};
+			},
+			{},
+		);
+	}
+	return field.listValue.values?.map(listValueField => normalizeField(listValueField)) || [];
+}
