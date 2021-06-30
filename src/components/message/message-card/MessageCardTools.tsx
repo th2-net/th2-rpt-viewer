@@ -22,6 +22,7 @@ import { useOutsideClickListener } from '../../../hooks';
 import { decodeBase64RawContent, getAllRawContent } from '../../../helpers/rawFormatter';
 import { copyTextToClipboard } from '../../../helpers/copyHandler';
 import { showNotification } from '../../../helpers/showNotification';
+import { normalizeFields } from '../../../helpers/message';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
@@ -46,13 +47,18 @@ const MessageCardTools = ({
 	toggleMessagePin,
 	isScreenshotMsg,
 }: MessageCardToolsConfig) => {
-	const [showDropdown, toggleDropdown] = useState(false);
+	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
+	const [isCopyMenuOpen, setIsCopyMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
-	const dropDownRef = useRef<HTMLDivElement>(null);
+
+	React.useEffect(() => {
+		setIsCopyMenuOpen(false);
+	}, [messageViewType, isViewMenuOpen]);
 
 	useOutsideClickListener(rootRef, (e: MouseEvent) => {
 		if (e.target instanceof Element && rootRef.current && !rootRef.current.contains(e.target)) {
-			toggleDropdown(false);
+			setIsViewMenuOpen(false);
+			setIsCopyMenuOpen(false);
 		}
 	});
 
@@ -67,8 +73,15 @@ const MessageCardTools = ({
 		  ]
 		: [MessageViewType.BINARY, MessageViewType.ASCII];
 
-	function onCopy() {
+	function onCopy(jsonObjectToCopy: 'body' | 'fields' = 'body') {
 		let content: string;
+
+		const jsonToCopy =
+			jsonObjectToCopy === 'fields'
+				? message.body?.fields
+					? normalizeFields(message.body.fields)
+					: null
+				: message.body;
 
 		switch (messageViewType) {
 			case MessageViewType.ASCII:
@@ -80,10 +93,10 @@ const MessageCardTools = ({
 					: '';
 				break;
 			case MessageViewType.FORMATTED:
-				content = message.body ? JSON.stringify(message.body, null, 4) : '';
+				content = jsonToCopy ? JSON.stringify(jsonToCopy, null, 4) : '';
 				break;
 			case MessageViewType.JSON:
-				content = message.body ? JSON.stringify(message.body) : '';
+				content = jsonToCopy ? JSON.stringify(jsonToCopy) : '';
 				break;
 			default:
 				content = '';
@@ -93,87 +106,129 @@ const MessageCardTools = ({
 			copyTextToClipboard(content);
 			showNotification(COPY_NOTIFICATION_TEXT);
 		}
+
+		if (isCopyMenuOpen) {
+			setIsCopyMenuOpen(false);
+		}
 	}
 
 	return (
 		<div className='message-card-tools' ref={rootRef}>
 			<div
-				className={createBemElement('message-card-tools', 'button', showDropdown ? 'active' : null)}
-				onClick={() => toggleDropdown(isDropdownShown => !isDropdownShown)}>
+				className={createBemElement(
+					'message-card-tools',
+					'button',
+					isViewMenuOpen ? 'active' : null,
+				)}
+				onClick={() => setIsViewMenuOpen(isOpen => !isOpen)}>
 				<div
 					className={bookmarkIconClass}
 					title={isBookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
 				/>
 				<div className='message-card-tools__ellipsis' />
 			</div>
-			<AnimatePresence>
-				{showDropdown && (
-					<motion.div
-						className='message-card-tools__controls'
-						ref={dropDownRef}
-						style={{ transformOrigin: 'top' }}
-						initial={{ opacity: 0, scale: 0.5 }}
-						animate={{ opacity: 1, scale: 1 }}
-						exit={{ opacity: 0, scale: 0.5 }}
-						transition={{ duration: 0.15, ease: 'easeOut' }}>
-						<div className='message-card-tools__item' onClick={() => toggleMessagePin()}>
-							<div
-								className={createBemElement(
-									'message-card-tools',
-									'icon',
-									'bookmark',
-									isBookmarked ? 'pinned' : null,
-								)}
-							/>
-							<div
-								className={createBemElement(
-									'message-card-tools',
-									'indicator',
-									'bookmark',
-									isBookmarked ? 'active' : null,
-								)}
-							/>
-						</div>
-						{!isScreenshotMsg &&
-							viewTypes.map(viewType => {
-								const iconClassName = createBemElement('message-card-tools', 'icon', viewType);
-								const indicatorClassName = createBemElement(
-									'message-card-tools',
-									'indicator',
-									viewType === messageViewType ? 'active' : null,
-								);
-
-								return (
-									<div
-										title={viewType}
-										className='message-card-tools__item'
-										key={viewType}
-										onClick={() => toggleViewType(viewType)}>
-										<div className={iconClassName} />
-										<div className={indicatorClassName} />
-									</div>
-								);
-							})}
-						{isScreenshotMsg && (
-							<>
-								<a
-									className='message-card-tools__item'
-									download={`${messageId}.${messageType.replace('image/', '')}`}
-									href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}>
-									<div className='message-card-tools__icon download' />
-								</a>
-							</>
+			<MessagePopup isOpen={isViewMenuOpen}>
+				<div className='message-card-tools__item' onClick={() => toggleMessagePin()}>
+					<div
+						className={createBemElement(
+							'message-card-tools',
+							'icon',
+							'bookmark',
+							isBookmarked ? 'pinned' : null,
 						)}
-					</motion.div>
-				)}
-			</AnimatePresence>
-			{!isScreenshotMsg && (
-				<div className='message-card-tools__copy-all' title='Copy content to clipboard'>
-					<div className='message-card-tools__copy-icon' onClick={onCopy} />
+					/>
+					<div
+						className={createBemElement(
+							'message-card-tools',
+							'indicator',
+							'bookmark',
+							isBookmarked ? 'active' : null,
+						)}
+					/>
 				</div>
-			)}
+				{!isScreenshotMsg &&
+					viewTypes.map(viewType => {
+						const iconClassName = createBemElement('message-card-tools', 'icon', viewType);
+						const indicatorClassName = createBemElement(
+							'message-card-tools',
+							'indicator',
+							viewType === messageViewType ? 'active' : null,
+						);
+
+						return (
+							<div
+								title={viewType}
+								className='message-card-tools__item'
+								key={viewType}
+								onClick={() => toggleViewType(viewType)}>
+								<div className={iconClassName} />
+								<div className={indicatorClassName} />
+							</div>
+						);
+					})}
+				{isScreenshotMsg && (
+					<>
+						<a
+							className='message-card-tools__item'
+							download={`${messageId}.${messageType.replace('image/', '')}`}
+							href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}>
+							<div className='message-card-tools__icon download' />
+						</a>
+					</>
+				)}
+			</MessagePopup>
+			{!isScreenshotMsg &&
+				(messageViewType === MessageViewType.ASCII ||
+					messageViewType === MessageViewType.BINARY) && (
+					<div className='message-card-tools__copy-all' title='Copy content to clipboard'>
+						<div className='message-card-tools__copy-icon' onClick={() => onCopy()} />
+					</div>
+				)}
+			{!isScreenshotMsg &&
+				(messageViewType === MessageViewType.JSON ||
+					messageViewType === MessageViewType.FORMATTED) && (
+					<div>
+						<div
+							className='message-card-tools__copy-all'
+							title='Copy content to clipboard'
+							onClick={() => setIsCopyMenuOpen(isOpen => !isOpen)}>
+							<div className='message-card-tools__copy-icon' />
+						</div>
+						<MessagePopup isOpen={isCopyMenuOpen}>
+							<div className='message-card-tools__item' onClick={() => onCopy()}>
+								Copy full
+							</div>
+							<div className='message-card-tools__item' onClick={() => onCopy('fields')}>
+								Copy simplified
+							</div>
+						</MessagePopup>
+					</div>
+				)}
 		</div>
 	);
 };
 
 export default MessageCardTools;
+
+interface MessagePopupProps {
+	isOpen: boolean;
+	children: React.ReactNode;
+}
+
+function MessagePopup({ isOpen, children }: MessagePopupProps) {
+	return (
+		<AnimatePresence>
+			{isOpen && (
+				<motion.div
+					className='message-card-tools__controls'
+					style={{ transformOrigin: 'top' }}
+					initial={{ opacity: 0, scale: 0.5 }}
+					animate={{ opacity: 1, scale: 1 }}
+					exit={{ opacity: 0, scale: 0.5 }}
+					transition={{ duration: 0.15, ease: 'easeOut' }}>
+					{children}
+				</motion.div>
+			)}
+		</AnimatePresence>
+	);
+}
