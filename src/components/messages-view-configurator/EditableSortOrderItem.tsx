@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React, { useState, useCallback } from 'react';
-import { useMessageBodySortStore } from '../../hooks';
+import { useMessageBodySortStore, usePrevious } from '../../hooks';
 import Reorder from './Reorder';
 import AutocompleteInput from '../util/AutocompleteInput';
 import { MessageSortOrderItem } from '../../models/EventMessage';
@@ -35,7 +35,11 @@ const EditableSortOrderItem = ({ item, isFirst, isLast, index }: EditableSortOrd
 		<>
 			<Reorder isFirst={isFirst} isLast={isLast} index={index} move={sortOrderStore.reorder} />
 			<Editor item={item} />
-			<Delete item={item} />
+			<button
+				className='rule-delete'
+				onClick={() => sortOrderStore.deleteItem(item)}
+				title='delete'
+			/>
 		</>
 	);
 };
@@ -48,10 +52,17 @@ const Editor = ({ item }: { item: MessageSortOrderItem }) => {
 	const [value, setValue] = useState(item.item);
 	const [isEditing, setIsEditing] = useState(false);
 
+	const isEditingPrev = usePrevious(isEditing);
+
+	React.useEffect(() => {
+		if (!isEditing && isEditingPrev && value !== item.item) {
+			sortOrderStore.editItem(item, { ...item, item: value });
+		}
+	}, [isEditing, isEditingPrev, value]);
+
 	const editItemSession = useCallback(() => {
-		sortOrderStore.editItem(item, { ...item, item: value });
 		setIsEditing(false);
-	}, [value]);
+	}, []);
 
 	return isEditing ? (
 		<AutocompleteInput
@@ -70,19 +81,5 @@ const Editor = ({ item }: { item: MessageSortOrderItem }) => {
 			}}>
 			{value}
 		</p>
-	);
-};
-
-const Delete = ({ item }: { item: MessageSortOrderItem }) => {
-	const sortOrderStore = useMessageBodySortStore();
-
-	return (
-		<button
-			className='rule-delete'
-			onClick={() => {
-				sortOrderStore.deleteItem(item);
-			}}
-			title='delete'
-		/>
 	);
 };

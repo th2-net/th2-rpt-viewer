@@ -29,8 +29,10 @@ type Props = {
 const MessageViewConfigurator = ({ sessions }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [mode, setMode] = useState<'display-rules' | 'body-sort'>('display-rules');
+
 	const modalRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
+
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		const isFromAutocomplete = Boolean((e.target as HTMLElement).closest('.rules-autocomplete'));
 		const isFromSelect = Boolean((e.target as HTMLElement).closest('.rules-select-options-list'));

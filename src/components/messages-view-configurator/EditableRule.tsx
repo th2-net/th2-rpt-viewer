@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React, { useState, useCallback } from 'react';
-import { useMessageDisplayRulesStore } from '../../hooks';
+import { useMessageDisplayRulesStore, usePrevious } from '../../hooks';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
 import SessionEditor from './SessionEditor';
 import RuleEditor from './RuleEditor';
@@ -43,7 +43,15 @@ const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: Edi
 			/>
 			<Session rule={rule} sessions={sessions} autofocus={autofocus} />
 			<ViewType rule={rule} />
-			<Delete rule={rule} />
+			{rule.removable && (
+				<button
+					className='rule-delete'
+					onClick={() => {
+						rulesStore.deleteMessagesDisplayRule(rule);
+					}}
+					title='delete'
+				/>
+			)}
 		</div>
 	);
 };
@@ -62,10 +70,17 @@ const Session = ({ rule, sessions, autofocus }: SessionProps) => {
 	const [value, setValue] = useState(rule.session);
 	const [isEditing, setIsEditing] = useState(false);
 
+	const isEditingPrev = usePrevious(isEditing);
+
+	React.useEffect(() => {
+		if (!isEditing && isEditingPrev && value !== rule.session) {
+			rulesStore.editMessageDisplayRule(rule, { ...rule, session: value });
+		}
+	}, [isEditing, isEditingPrev, value]);
+
 	const editRuleSession = useCallback(() => {
-		rulesStore.editMessageDisplayRule(rule, { ...rule, value });
 		setIsEditing(false);
-	}, [value]);
+	}, []);
 
 	return isEditing && rule.editableSession ? (
 		<SessionEditor
@@ -123,23 +138,6 @@ const ViewType = ({ rule }: { rule: MessageDisplayRule }) => {
 				setRuleIsEditing(true);
 			}}
 			title={viewType}
-		/>
-	);
-};
-
-const Delete = ({ rule }: { rule: MessageDisplayRule }) => {
-	const rulesStore = useMessageDisplayRulesStore();
-
-	if (!rule.removable) {
-		return null;
-	}
-	return (
-		<button
-			className='rule-delete'
-			onClick={() => {
-				rulesStore.deleteMessagesDisplayRule(rule);
-			}}
-			title='delete'
 		/>
 	);
 };
