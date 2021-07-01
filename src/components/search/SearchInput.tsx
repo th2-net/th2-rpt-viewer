@@ -22,7 +22,7 @@ import SearchToken from '../../models/search/SearchToken';
 import Bubble from '../util/Bubble';
 import { nextCyclicItem, removeByIndex, replaceByIndex } from '../../helpers/array';
 import { raf } from '../../helpers/raf';
-import { useWorkspaceEventStore } from '../../hooks';
+import { useWorkspaceEventStore } from '../../hooks/useEventWindowStore';
 import { createSearchToken } from '../../helpers/search/createSearchToken';
 import '../../styles/search.scss';
 

@@ -83,7 +83,7 @@ describe('[React] <SearchInput/>', () => {
 		wrapper.setProps({ value: 'test' });
 		expect(updateMock).not.toHaveBeenCalled();
 
-		input.simulate('keydown', { keyCode: KeyCodes.SPACE });
+		input.simulate('keydown', { keyCode: KeyCodes.TAB });
 
 		expect(updateMock).toHaveBeenCalled();
 
@@ -120,7 +120,7 @@ describe('[React] <SearchInput/>', () => {
 
 		input.simulate('change', { target: { value: 'testsubmit' } });
 		wrapper.setProps({ value: 'testsubmit' });
-		input.simulate('keydown', { keyCode: KeyCodes.SPACE });
+		input.simulate('keydown', { keyCode: KeyCodes.TAB });
 
 		expect(updateMock.mock.calls.length).toEqual(2);
 
