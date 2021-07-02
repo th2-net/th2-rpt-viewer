@@ -76,6 +76,12 @@ export default class MessagesFilterStore {
 				: [],
 		);
 
+		const filterConjunct = filtersToAdd.map(filterName =>
+			sseFilters && sseFilters[filterName].conjunct
+				? [`${filterName}-conjunct`, sseFilters[filterName].conjunct]
+				: [],
+		);
+
 		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
 		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
 
@@ -85,7 +91,7 @@ export default class MessagesFilterStore {
 			searchDirection: 'previous',
 			resultCountLimit: 15,
 			filters: filtersToAdd,
-			...Object.fromEntries([...filterValues, ...filterInclusion]),
+			...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
 		};
 
 		return queryParams;
