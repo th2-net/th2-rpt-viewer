@@ -28,7 +28,7 @@
 		"cross-env": "^6.0.3",
 		"fetch-intercept": "^2.3.1",
 		"framer-motion": "^3.10.6",
-		"idb": "^6.0.0",
+		"idb": "^6.1.2",
 		"lodash.debounce": "^4.0.8",
 		"lodash.isequal": "^4.5.0",
 		"lodash.throttle": "^4.1.1",

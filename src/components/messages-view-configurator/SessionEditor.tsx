@@ -34,10 +34,13 @@ const SessionEditor: React.FC<SessionEditorProps> = ({
 	autofocus,
 }) => {
 	const ref = React.useRef<HTMLInputElement>(null);
+
 	const [anchor, setAnchor] = React.useState<HTMLInputElement>();
+
 	React.useLayoutEffect(() => {
 		setAnchor(ref.current || undefined);
 	}, [setAnchor]);
+
 	return (
 		<AutocompleteInput
 			anchor={anchor}

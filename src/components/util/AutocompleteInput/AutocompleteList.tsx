@@ -19,7 +19,7 @@ import ResizeObserver from 'resize-observer-polyfill';
 import { IndexLocationWithAlign, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import KeyCodes from '../../../util/KeyCodes';
 import { ModalPortal } from '../Portal';
-import { useOutsideClickListener } from '../../../hooks';
+import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
 
 const AUTOCOMPLETE_OPTION_HEIGHT = 22;
