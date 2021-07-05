@@ -6,7 +6,7 @@ This is a web app that displays the stored test data (events and messages) using
 Major versions of report-viewer and report-data-provider are compatible.
 
 # API
-This app needs `report-data-provider 3.0.0 (or newer)` backend component to function. 
+This app needs `report-data-provider 5.1.0 (or newer)` backend component to function. It should be accessible at `{rpt-viewer-path}/backend/*`
 
 # Configuration
 To include this component in your schema, a following yml file needs to be created
