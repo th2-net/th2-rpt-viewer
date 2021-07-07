@@ -111,7 +111,8 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 				onClick={() => {
 					setIsOpen(o => !o);
 				}}
-				title={'Filters history'}>
+				title={'Filters history'}
+			>
 			</button>
 			<ModalPortal isOpen={isOpen}>
 				<div ref={historyRef} className='filters-history'>
