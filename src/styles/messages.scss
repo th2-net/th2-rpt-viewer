@@ -166,7 +166,7 @@
 		&.json {
 			position: relative;
 			&:before {
-				content: '{~}';
+				content: url(../../resources/icons/json.svg);
 				position: absolute;
 				font-size: 11px;
 				line-height: 1.25;
@@ -184,12 +184,12 @@
 		}
 
 		&.binary {
-			@include icon(url(../../resources/icons/table-view-icon.svg));
+			@include icon(url(../../resources/icons/binar.svg));
 			opacity: 0.7;
 		}
 
 		&.ascii {
-			@include icon(url(../../resources/icons/bincode.svg));
+			@include icon(url(../../resources/icons/ascii.svg));
 		}
 
 		&.download {
