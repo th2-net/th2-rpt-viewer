@@ -34,8 +34,8 @@ interface Props {
 export type FiltersState = {
 	state: EventFilterState | MessageFilterState;
 	setState:
-		| ((patch: Partial<EventFilterState>) => void)
-		| ((patch: Partial<MessageFilterState>) => void);
+	| ((patch: Partial<EventFilterState>) => void)
+	| ((patch: Partial<MessageFilterState>) => void);
 } | null;
 
 const FiltersHistory = ({ type, sseFilter }: Props) => {
@@ -59,9 +59,9 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 		}
 		return filters
 			? {
-					state: filters.state,
-					setState: filters.setState,
-			  }
+				state: filters.state,
+				setState: filters.setState,
+			}
 			: null;
 	}, [filters, sseFilter]);
 
@@ -111,8 +111,7 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 				onClick={() => {
 					setIsOpen(o => !o);
 				}}
-				title={'Filters history'}
-				>
+				title={'Filters history'}>
 			</button>
 			<ModalPortal isOpen={isOpen}>
 				<div ref={historyRef} className='filters-history'>
