@@ -148,8 +148,8 @@ function GraphSearchInput(props: Props) {
 				value: pointerTimestamp
 					? moment.utc(pointerTimestamp).format(mask)
 					: timestamp
-						? moment.utc(timestamp).format(mask)
-						: '',
+					? moment.utc(timestamp).format(mask)
+					: '',
 				mask,
 				placeholder,
 				timestamp,
