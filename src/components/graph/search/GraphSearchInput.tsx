@@ -148,8 +148,8 @@ function GraphSearchInput(props: Props) {
 				value: pointerTimestamp
 					? moment.utc(pointerTimestamp).format(mask)
 					: timestamp
-					? moment.utc(timestamp).format(mask)
-					: '',
+						? moment.utc(timestamp).format(mask)
+						: '',
 				mask,
 				placeholder,
 				timestamp,
@@ -296,26 +296,23 @@ function GraphSearchInput(props: Props) {
 		return newHandlers;
 	}
 
-	const refInput:React.MutableRefObject<HTMLInputElement | null> = useRef<HTMLInputElement | null>(null);
+	const refInput = useRef<HTMLInputElement | null>(null);
 
 	function hotkeyFocusHandler() {
 		refInput.current?.focus();
-	};
+	}
 
 	const keyMap = {
-		INPUT_FOCUS: 'Shift+T'
+		INPUT_FOCUS: 'Shift+T',
 	};
 
 	const handlers = preventDefaultHandlers({
-		INPUT_FOCUS: hotkeyFocusHandler
+		INPUT_FOCUS: hotkeyFocusHandler,
 	});
 
 	return (
 		<div className='graph-search-input'>
-			<GlobalHotKeys 
-			keyMap={keyMap} 
-			handlers={handlers}
-			/>
+			<GlobalHotKeys keyMap={keyMap} handlers={handlers} />
 			<input
 				value={inputConfig.value}
 				onChange={handleInputValueChange}
