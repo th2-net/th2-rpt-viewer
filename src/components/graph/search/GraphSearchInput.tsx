@@ -16,14 +16,14 @@
 
 import * as React from 'react';
 import moment from 'moment';
+import { GlobalHotKeys } from 'react-hotkeys';
+import { useRef } from 'react';
 import KeyCodes from '../../../util/KeyCodes';
 import { usePointerTimestamp } from '../../../contexts/pointerTimestampContext';
 import { GraphSearchMode } from './GraphSearch';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
 import { TimeRange } from '../../../models/Timestamp';
 import { usePrevious } from '../../../hooks';
-import { GlobalHotKeys } from 'react-hotkeys';
-import { useRef } from 'react';
 
 const TIME_MASK = DateTimeMask.TIME_MASK;
 export const DATE_TIME_MASK = DateTimeMask.DATE_TIME_MASK;
@@ -296,23 +296,26 @@ function GraphSearchInput(props: Props) {
 		return newHandlers;
 	}
 
-	const refInput:React.MutableRefObject<HTMLInputElement|null> = useRef<HTMLInputElement|null>(null)
+	const refInput:React.MutableRefObject<HTMLInputElement | null> = useRef<HTMLInputElement | null>(null);
 
 	function hotkeyFocusHandler() {
-		refInput.current?.focus()
-	}
+		refInput.current?.focus();
+	};
 
 	const keyMap = {
-		INPUT_FOCUS:"Shift+T"
-	}
+		INPUT_FOCUS: 'Shift+T'
+	};
 
 	const handlers = preventDefaultHandlers({
-		INPUT_FOCUS:hotkeyFocusHandler
-	})
+		INPUT_FOCUS: hotkeyFocusHandler
+	});
 
 	return (
 		<div className='graph-search-input'>
-			<GlobalHotKeys keyMap={keyMap} handlers={handlers}/>
+			<GlobalHotKeys 
+			keyMap={keyMap} 
+			handlers={handlers}
+			/>
 			<input
 				value={inputConfig.value}
 				onChange={handleInputValueChange}
