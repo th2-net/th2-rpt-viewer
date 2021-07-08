@@ -29,6 +29,10 @@
 	background-size: cover;
 	width: 25px;
 	height: 25px;
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
 }
 
 .filters-history {
