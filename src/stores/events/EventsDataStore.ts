@@ -21,6 +21,7 @@ import {
 	convertEventActionToEventTreeNode,
 	getErrorEventTreeNode,
 	isRootEvent,
+	unknownRoot,
 } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventSSELoader } from './EventSSELoader';
@@ -281,23 +282,27 @@ export default class EventsDataStore {
 				}
 				parentNodes.unshift(rootNode);
 			}
+			if (rootNode.parentId === unknownRoot.eventId) {
+				if (!this.eventsCache.has(unknownRoot.eventId)) {
+					this.eventsCache.set(unknownRoot.eventId, unknownRoot);
+					this.rootEventIds.push(unknownRoot.eventId);
+				}
+				parentNodes.unshift(unknownRoot);
+			}
 
 			parentNodes.forEach(eventNode => {
 				if (!this.eventsCache.has(eventNode.eventId)) {
 					this.eventsCache.set(eventNode.eventId, eventNode);
 				}
 			});
+
 			if (isTargetNodes) {
 				parentNodes.forEach(parentNode => {
 					this.eventStore.isExpandedMap.set(parentNode.eventId, true);
 					this.loadingParentEvents.set(parentNode.eventId, false);
 				});
 				this.targetNodeParents = parentNodes;
-				if (
-					rootNode &&
-					(isRootEvent(rootNode) || rootNode.isUnknown) &&
-					!this.rootEventIds.includes(rootNode.eventId)
-				) {
+				if (isRootEvent(rootNode) && !this.rootEventIds.includes(rootNode.eventId)) {
 					this.rootEventIds.push(rootNode.eventId);
 				}
 			} else {
@@ -318,9 +323,9 @@ export default class EventsDataStore {
 			for (let i = 0; i < parentNodePath.length; i++) {
 				const event = parentNodePath[i];
 
-				const { isUnknown, parentId, eventId } = event;
+				const { parentId, eventId } = event;
 
-				if ((isRootEvent(event) || isUnknown) && !rootNodes.includes(eventId)) {
+				if (isRootEvent(event) && !rootNodes.includes(eventId)) {
 					rootNodes.push(eventId);
 				}
 
@@ -377,7 +382,7 @@ export default class EventsDataStore {
 
 		const parentNode = this.eventsCache.get(parentId);
 
-		if (parentNode) {
+		if (parentNode && parentNode.parentId !== unknownRoot.eventId) {
 			const eventsChildren = this.eventStore.getChildrenNodes(parentId);
 
 			const lastChild = eventsChildren[eventsChildren.length - 1];
