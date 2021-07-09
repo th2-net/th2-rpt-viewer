@@ -281,8 +281,8 @@ function MessageReplayModal() {
 			<span className='replay__toggle-button' onClick={toggleReplayModal}>
 				Replay
 			</span>
-			<motion.div className='replay__drag-area' ref={refConstrains} />
 			<ModalPortal isOpen={isOpen}>
+				<motion.div className='replay__drag-area' ref={refConstrains} />
 				<motion.div
 					dragElastic={false}
 					dragMomentum={false}
