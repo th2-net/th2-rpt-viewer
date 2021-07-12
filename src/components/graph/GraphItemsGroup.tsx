@@ -21,7 +21,6 @@ import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { GraphGroup, GraphItemType } from '../../models/Graph';
 import { GraphStore } from '../../stores/GraphStore';
-import { groupGraphItems } from '../../helpers/graph';
 
 type GroupItemType =
 	| GraphItemType.ATTACHED_MESSAGE
@@ -93,10 +92,7 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 		<div className='graph-item-group' ref={groupRef} style={{ left: group.left }}>
 			<div className={dotsClassName} onClick={handleClick}>
 				{groupHeader.map((itemType, index) => (
-					<div
-						className={`graph-dot-bg-${itemType}`}
-						key={`graph-dot-bg-${itemType}-${index}`}
-					>
+					<div className={`graph-dot-bg-${itemType}`} key={`graph-dot-bg-${itemType}-${index}`}>
 						{console.log(itemType)}
 						<div
 							className={createStyleSelector('graph-dot', itemType)}

@@ -213,7 +213,7 @@
 	&.pinned-message {
 		width: 12px;
 		height: 12px;
-		background-color: #1AC4E6;
+		background-color: #1ac4e6;
 		transform: rotate(45deg);
 		border: #fff 2px solid;
 		margin-left: auto;
@@ -224,14 +224,14 @@
 
 .graph-dot-bg-pinned-message,
 .graph-dot-bg-passed,
-.graph-dot-bg-failed{
-	@include icon(url(../../resources/icons/bookmark_shield.svg),22px,18px);
+.graph-dot-bg-failed {
+	@include icon(url(../../resources/icons/bookmark_shield.svg), 22px, 18px);
 }
 
 .graph-dot-bg-hovered-message,
 .graph-dot-bg-hovered-event-passed,
-.graph-dot-bg-hovered-event-failed{
-	@include icon(url(../../resources/icons//hovered-graph-icon.svg),22px,18px)
+.graph-dot-bg-hovered-event-failed {
+	@include icon(url(../../resources/icons//hovered-graph-icon.svg), 22px, 18px);
 }
 
 .graph-item-group {
@@ -693,7 +693,7 @@
 	position: absolute;
 	top: 50%;
 	left: 50%;
-	transform: translate(-50%,-50%);
+	transform: translate(-50%, -50%);
 	&__controls {
 		width: 100px;
 		margin: 20px auto 0;
