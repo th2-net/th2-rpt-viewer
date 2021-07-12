@@ -93,7 +93,6 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 			<div className={dotsClassName} onClick={handleClick}>
 				{groupHeader.map((itemType, index) => (
 					<div className={`graph-dot-bg-${itemType}`} key={`graph-dot-bg-${itemType}-${index}`}>
-						{console.log(itemType)}
 						<div
 							className={createStyleSelector('graph-dot', itemType)}
 							key={`${itemType}-${index}`}
