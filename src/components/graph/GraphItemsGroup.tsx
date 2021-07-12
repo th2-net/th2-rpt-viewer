@@ -21,11 +21,14 @@ import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { GraphGroup, GraphItemType } from '../../models/Graph';
 import { GraphStore } from '../../stores/GraphStore';
+import { groupGraphItems } from '../../helpers/graph';
 
 type GroupItemType =
 	| GraphItemType.ATTACHED_MESSAGE
 	| GraphItemType.PINNED_MESSAGE
 	| GraphItemType.HOVERED_EVENT
+	| GraphItemType.HOVERED_EVENT_PASSED
+	| GraphItemType.HOVERED_EVENT_FAILED
 	| GraphItemType.HOVERED_MESSAGE
 	| GraphItemType.FAILED
 	| GraphItemType.PASSED;
@@ -33,6 +36,8 @@ type GroupItemType =
 const listIconsPriority: { [key in GroupItemType]: number } = {
 	[GraphItemType.HOVERED_MESSAGE]: 4,
 	[GraphItemType.HOVERED_EVENT]: 4,
+	[GraphItemType.HOVERED_EVENT_PASSED]: 4,
+	[GraphItemType.HOVERED_EVENT_FAILED]: 4,
 	[GraphItemType.ATTACHED_MESSAGE]: 3,
 	[GraphItemType.PINNED_MESSAGE]: 2,
 	[GraphItemType.FAILED]: 1,
@@ -89,9 +94,15 @@ function GraphItemsGroup(props: GraphItemsGroupProps) {
 			<div className={dotsClassName} onClick={handleClick}>
 				{groupHeader.map((itemType, index) => (
 					<div
-						className={createStyleSelector('graph-dot', itemType)}
-						key={`${itemType}-${index}`}
-					/>
+						className={`graph-dot-bg-${itemType}`}
+						key={`graph-dot-bg-${itemType}-${index}`}
+					>
+						{console.log(itemType)}
+						<div
+							className={createStyleSelector('graph-dot', itemType)}
+							key={`${itemType}-${index}`}
+						/>
+					</div>
 				))}
 			</div>
 			<GraphItemsMenu

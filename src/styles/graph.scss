@@ -179,10 +179,15 @@
 
 	&.passed,
 	&.failed,
-	&.hovered-event {
+	&.hovered-event-failed,
+	&.hovered-event-passed {
 		width: 14px;
 		height: 14px;
 		border-radius: 50%;
+		margin-left: auto;
+		margin-right: auto;
+		margin-top: 10%;
+		border: #fff 2px solid;
 	}
 
 	&.hovered-event,
@@ -190,16 +195,12 @@
 		background-color: grey;
 	}
 
-	&.hovered-message {
-		width: 10px;
-		height: 10px;
-		transform: rotate(45deg);
-	}
-
+	&.hovered-event-passed,
 	&.passed {
 		background-color: $graphAttachedEventPassedColor;
 	}
 
+	&.hovered-event-failed,
 	&.failed {
 		background-color: $graphAttachedEventFailedColor;
 	}
@@ -208,9 +209,29 @@
 		@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
 	}
 
+	&.hovered-message,
 	&.pinned-message {
-		@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
+		width: 12px;
+		height: 12px;
+		background-color: #1AC4E6;
+		transform: rotate(45deg);
+		border: #fff 2px solid;
+		margin-left: auto;
+		margin-right: auto;
+		margin-top: 10%;
 	}
+}
+
+.graph-dot-bg-pinned-message,
+.graph-dot-bg-passed,
+.graph-dot-bg-failed{
+	@include icon(url(../../resources/icons/bookmark_shield.svg),22px,18px);
+}
+
+.graph-dot-bg-hovered-message,
+.graph-dot-bg-hovered-event-passed,
+.graph-dot-bg-hovered-event-failed{
+	@include icon(url(../../resources/icons//hovered-graph-icon.svg),22px,18px)
 }
 
 .graph-item-group {
