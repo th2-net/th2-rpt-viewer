@@ -164,19 +164,8 @@
 		}
 
 		&.json {
-			position: relative;
-			&:before {
-				content: url(../../resources/icons/json.svg);
-				position: absolute;
-				font-size: 11px;
-				line-height: 1.25;
-				font-weight: 700;
-				color: grey;
-				top: 0;
-				left: 0;
-				width: inherit;
-				height: inherit;
-			}
+			@include icon(url(../../resources/icons/json.svg));
+			margin-top: 5%;
 		}
 
 		&.formatted {
