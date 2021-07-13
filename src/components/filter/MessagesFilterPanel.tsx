@@ -199,12 +199,17 @@ const MessagesFilterPanel = () => {
 		];
 	}, [messagesStore.messageSessions, sessionsStore.sessions]);
 
+	const updateStream = (newStreams: string[]) => {
+		filterStore.filter.streams = newStreams;
+		setStreams(newStreams);
+	};
+
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
 		return {
 			type: 'multiple-strings',
 			id: 'messages-stream',
 			values: streams,
-			setValues: setStreams,
+			setValues: updateStream,
 			currentValue: currentStream,
 			setCurrentValue: setCurrentStream,
 			autocompleteList: sessionsAutocomplete,
