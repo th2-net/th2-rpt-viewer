@@ -209,7 +209,6 @@ class ParamsTableBase extends React.Component<Props, State> {
 		const nameStyle = {
 			paddingLeft: PADDING_LEVEL_VALUE * paddingLevel,
 		};
-
 		return (
 			<tr className={rootClass} key={key} onClick={this.togglerClickHandler(node)}>
 				<td
@@ -227,6 +226,8 @@ class ParamsTableBase extends React.Component<Props, State> {
 		only if it contains some search results
 	*/
 	private renderContent(contentKey: string, content: string): React.ReactNode {
+		if (typeof content === 'boolean' && (content as boolean))
+			return <div className='boolean-value-cell' />;
 		return content;
 	}
 
