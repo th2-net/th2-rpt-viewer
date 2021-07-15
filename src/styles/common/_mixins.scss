@@ -285,7 +285,7 @@
 	}
 }
 
-@mixin improved-clickable ($bgc, $rad: 2px, $amount: 2) {
+@mixin improved-clickable($bgc, $rad: 2px, $amount: 2) {
 	cursor: pointer;
 	border-radius: $rad;
 	background-color: $bgc;

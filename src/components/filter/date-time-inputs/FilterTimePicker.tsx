@@ -67,9 +67,10 @@ const FilterTimepicker = (props: FilterTimepickerProps) => {
 		[time],
 	);
 
-	const getBlockedHours = React.useCallback((hour: number) => isToday && hour > today.hour(), [
-		time,
-	]);
+	const getBlockedHours = React.useCallback(
+		(hour: number) => isToday && hour > today.hour(),
+		[time],
+	);
 
 	return (
 		<div className='filter-timepicker'>
