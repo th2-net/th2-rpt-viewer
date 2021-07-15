@@ -45,8 +45,13 @@ export interface GraphSearchResult {
 }
 
 function GraphSearch(props: Props) {
-	const { onTimestampSubmit, onFoundItemClick, windowRange, refreshPanels, hoveredTimestamp } =
-		props;
+	const {
+		onTimestampSubmit,
+		onFoundItemClick,
+		windowRange,
+		refreshPanels,
+		hoveredTimestamp,
+	} = props;
 
 	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
 		isValidDate: false,

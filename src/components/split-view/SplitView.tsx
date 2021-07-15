@@ -188,8 +188,9 @@ export default class SplitView extends React.Component<Props, State> {
 				const [topHeight, bottomHeight] = this.getPanelsHeightByArea(panelArea);
 				rootStyle = { gridTemplateRows: `${topHeight}px auto ${bottomHeight}px` };
 
-				const [topPreviewHeight, bottomPreviewHeight] =
-					this.getPanelsHeightByArea(previewPanelArea);
+				const [topPreviewHeight, bottomPreviewHeight] = this.getPanelsHeightByArea(
+					previewPanelArea,
+				);
 				previewStyle = {
 					gridTemplateRows: `${topPreviewHeight}px auto ${bottomPreviewHeight}px`,
 				};

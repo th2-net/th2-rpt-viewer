@@ -45,11 +45,13 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 	const { eventsHistory, messagesHistory, toggleFilterPin } = useFiltersHistoryStore();
 	const { filters, formType, eventFilterInfo, messagesFilterInfo } = useSearchStore();
 
-	const toShow: (FiltersHistoryType<EventFilterState> | FiltersHistoryType<MessageFilterState>)[] =
-		useMemo(() => {
-			const fType = type || formType;
-			return fType === 'event' ? eventsHistory : messagesHistory;
-		}, [eventsHistory, messagesHistory, type, formType]);
+	const toShow: (
+		| FiltersHistoryType<EventFilterState>
+		| FiltersHistoryType<MessageFilterState>
+	)[] = useMemo(() => {
+		const fType = type || formType;
+		return fType === 'event' ? eventsHistory : messagesHistory;
+	}, [eventsHistory, messagesHistory, type, formType]);
 
 	const filtersState: FiltersState = useMemo(() => {
 		if (sseFilter) {

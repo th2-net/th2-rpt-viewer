@@ -31,10 +31,6 @@ export const DATE_TIME_MASK = DateTimeMask.DATE_TIME_MASK;
 const TIME_PLACEHOLDER = '00:00:00.000' as const;
 const DATE_TIME_PLACEHOLDER = '01.01.2021 00:00:00.000' as const;
 
-type KeyboardHandler = {
-	[key: string]: (keyEvent?: KeyboardEvent | undefined) => void;
-};
-
 const isCompletable = (
 	dateStr: string,
 	dateMask: typeof TIME_MASK | typeof DATE_TIME_MASK,
@@ -287,10 +283,10 @@ function GraphSearchInput(props: Props) {
 		}
 	}
 
-	function preventDefaultHandlers(handlers: KeyboardHandler) {
-		const newHandlers: KeyboardHandler = {};
+	function preventDefaultHandlers(handlers: Object) {
+		const newHandlers: any = {};
 		for (const [action, handler] of Object.entries(handlers)) {
-			newHandlers[action] = event => {
+			newHandlers[action] = (event: React.FormEvent) => {
 				if (event) {
 					event.preventDefault();
 				}

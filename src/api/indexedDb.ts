@@ -160,7 +160,7 @@ export class IndexedDB {
 		if (!this.db) {
 			await when(() => this.db !== null);
 		}
-		return this.db as unknown as IDBPDatabase<TH2DB>;
+		return (this.db as unknown) as IDBPDatabase<TH2DB>;
 	};
 
 	public deleteDbStoreItem = async (storeName: IndexedDbStores, key: string | number) => {
@@ -213,7 +213,7 @@ export class IndexedDB {
 			cursor = await cursor.continue();
 		}
 
-		return data as unknown as Promise<T[]>;
+		return (data as unknown) as Promise<T[]>;
 	};
 
 	public getStoreKeys = async <T extends IDBValidKey>(
@@ -240,7 +240,7 @@ export class IndexedDB {
 			cursor = await cursor.continue();
 		}
 
-		return data as unknown as Promise<T[]>;
+		return (data as unknown) as Promise<T[]>;
 	};
 
 	public clearAllData = async () => {

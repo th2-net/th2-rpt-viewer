@@ -23,12 +23,12 @@
 	font: 11px 'Open sans', sans-serif;
 	background-color: #fff;
 	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14),
-		0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+	0px 3px 14px 2px rgba(0, 0, 0, 0.12);
 	border-radius: 6px;
 	.hint {
 		padding: 6px;
 		font-size: 10px;
-		opacity: 0.7;
+		opacity: .7;
 	}
 	&-open {
 		@include icon(url(../../resources/icons/settings.svg), 23px, 23px);
@@ -117,19 +117,18 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	input,
-	select {
-		font: inherit;
+	input, select {
+			font: inherit;
 	}
 	&.editable {
 		padding-left: 18px;
 		&:hover {
 			.reorder {
-				display: flex;
+					display: flex;
 			}
 			.rule-delete,
 			.order-item-delete {
-				display: block;
+					display: block;
 			}
 		}
 	}
@@ -151,7 +150,7 @@
 				@include icon(url(../../resources/icons/arr4-up.svg), 8px, 16px);
 			}
 			&.down {
-				@include icon(url(../../resources/icons/arr4-down.svg), 8px, 16px);
+				@include icon(url(../../resources/icons/arr4-down.svg), 8px, 16px);	
 			}
 		}
 	}
@@ -187,7 +186,7 @@
 	&-options-list {
 		background: #fff;
 		box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14),
-			0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+		0px 3px 14px 2px rgba(0, 0, 0, 0.12);
 		visibility: hidden;
 		&.show {
 			visibility: visible;
@@ -214,7 +213,7 @@
 			}
 		}
 		.select-icon {
-			@extend %icons;
+			@extend %icons
 		}
 	}
 	&-trigger {
@@ -258,4 +257,5 @@
 	&.ascii {
 		@include icon(url(../../resources/icons/bincode.svg));
 	}
+
 }

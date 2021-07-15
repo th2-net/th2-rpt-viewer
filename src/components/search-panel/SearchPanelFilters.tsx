@@ -139,53 +139,55 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 						.flat(),
 				);
 
-				const config = filter.parameters.map((param: SSEFilterParameter): FilterRowConfig => {
-					switch (param.type.value) {
-						case 'boolean':
-							return {
-								id: `${filter.name}-include`,
-								label: '',
-								disabled: disableAll,
-								type: 'toggler',
-								value: getState(filter.name).negative,
-								toggleValue: getNegativeToggler(filter.name),
-								possibleValues: ['excl', 'incl'],
-							};
-						case 'string':
-							return {
-								id: filter.name,
-								disabled: disableAll,
-								label: '',
-								type: 'string',
-								value: getState(filter.name).values || '',
-								setValue: getValuesUpdater(filter.name),
-								autocompleteList,
-							};
-						case 'switcher':
-							return {
-								id: filter.name,
-								disabled: disableAll,
-								label: '',
-								type: 'switcher',
-								value: getState(filter.name).values,
-								setValue: getValuesUpdater(filter.name),
-								possibleValues: ['passed', 'failed', 'any'],
-								defaultValue: 'any',
-							};
-						default:
-							return {
-								id: filter.name,
-								disabled: disableAll,
-								label: '',
-								type: 'multiple-strings',
-								values: getState(filter.name).values,
-								setValues: getValuesUpdater(filter.name),
-								currentValue: currentValues[filter.name] || '',
-								setCurrentValue: setCurrentValue(filter.name),
-								autocompleteList,
-							};
-					}
-				});
+				const config = filter.parameters.map(
+					(param: SSEFilterParameter): FilterRowConfig => {
+						switch (param.type.value) {
+							case 'boolean':
+								return {
+									id: `${filter.name}-include`,
+									label: '',
+									disabled: disableAll,
+									type: 'toggler',
+									value: getState(filter.name).negative,
+									toggleValue: getNegativeToggler(filter.name),
+									possibleValues: ['excl', 'incl'],
+								};
+							case 'string':
+								return {
+									id: filter.name,
+									disabled: disableAll,
+									label: '',
+									type: 'string',
+									value: getState(filter.name).values || '',
+									setValue: getValuesUpdater(filter.name),
+									autocompleteList,
+								};
+							case 'switcher':
+								return {
+									id: filter.name,
+									disabled: disableAll,
+									label: '',
+									type: 'switcher',
+									value: getState(filter.name).values,
+									setValue: getValuesUpdater(filter.name),
+									possibleValues: ['passed', 'failed', 'any'],
+									defaultValue: 'any',
+								};
+							default:
+								return {
+									id: filter.name,
+									disabled: disableAll,
+									label: '',
+									type: 'multiple-strings',
+									values: getState(filter.name).values,
+									setValues: getValuesUpdater(filter.name),
+									currentValue: currentValues[filter.name] || '',
+									setCurrentValue: setCurrentValue(filter.name),
+									autocompleteList,
+								};
+						}
+					},
+				);
 
 				return (
 					<div className='filter-row' key={filter.name}>

@@ -339,7 +339,7 @@
 	font-size: 14px;
 
 	.filters-history-open {
-		@include improved-clickable($filterPrimaryColor, 10px);
+		@include improved-clickable($filterPrimaryColor, 10px)
 	}
 
 	&__counts {

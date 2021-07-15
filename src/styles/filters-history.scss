@@ -59,7 +59,7 @@
 		justify-content: space-between;
 		margin-bottom: 3px;
 	}
-
+	
 	&__controls {
 		display: flex;
 	}
@@ -97,6 +97,7 @@
 	&__excluded-icon {
 		@include icon(url(../../resources/icons/cross-icon-dark.svg), 16px, 16px);
 	}
+
 
 	&__share-icon,
 	&__pin-icon {

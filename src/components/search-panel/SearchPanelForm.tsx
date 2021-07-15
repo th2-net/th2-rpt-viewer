@@ -73,10 +73,11 @@ const SearchPanelForm = () => {
 		];
 	}, [messageSessions, sessionsStore.sessions]);
 
-	const autocompletes = useMemo(
-		() => (formType === 'event' ? eventsHistory : messagesHistory),
-		[formType, eventsHistory, messagesHistory],
-	);
+	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
+		formType,
+		eventsHistory,
+		messagesHistory,
+	]);
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
@@ -135,8 +136,14 @@ const SearchPanelForm = () => {
 		},
 	};
 
-	const { startTimestamp, completed, progress, timeLimits, timeIntervals, processedObjectCount } =
-		searchProgress;
+	const {
+		startTimestamp,
+		completed,
+		progress,
+		timeLimits,
+		timeIntervals,
+		processedObjectCount,
+	} = searchProgress;
 
 	const searchDatetimeControlsConfig: SearchDatetimeControlsConfig = {
 		isSearching,
