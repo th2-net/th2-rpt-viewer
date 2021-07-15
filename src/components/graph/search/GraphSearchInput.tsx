@@ -290,7 +290,7 @@ function GraphSearchInput(props: Props) {
 	function preventDefaultHandlers(handlers: KeyboardHandler) {
 		const newHandlers: KeyboardHandler = {};
 		for (const [action, handler] of Object.entries(handlers)) {
-			newHandlers[action] = (event) => {
+			newHandlers[action] = (event: KeyboardEvent | undefined) => {
 				if (event) {
 					event.preventDefault();
 				}
