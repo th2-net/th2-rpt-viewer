@@ -68,10 +68,13 @@ export interface EventSSEParams extends BaseSSEParams {
 	filters?: Array<EventSSEFilters>;
 	'attachedMessageId-values'?: string;
 	'attachedMessageId-negative'?: boolean;
+	'attachedMessageId-conjunct'?: boolean;
 	'type-values'?: string[];
 	'type-negative'?: boolean;
+	'type-conjunct'?: boolean;
 	'name-values'?: string[];
 	'name-negative'?: boolean;
+	'name-conjunct'?: boolean;
 }
 
 export interface MessagesSSEParams extends BaseSSEParams {
@@ -79,10 +82,13 @@ export interface MessagesSSEParams extends BaseSSEParams {
 	filters?: Array<MessagesSSEFilters>;
 	'attachedEventIds-values'?: string[];
 	'attachedEventIds-negative'?: boolean;
+	'attachedEventIds-conjunct'?: boolean;
 	'type-values'?: string[];
 	'type-negative'?: boolean;
+	'type-conjunct'?: boolean;
 	'body-values'?: string[];
 	'body-negative'?: boolean;
+	'body-conjunct'?: boolean;
 	messageId?: string[];
 }
 
@@ -122,6 +128,9 @@ function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
 			if ('negative' in currentFilter) {
 				currentFilterParams[`${filterName}-negative`] = currentFilter.negative;
 			}
+			if ('conjunct' in currentFilter) {
+				currentFilterParams[`${filterName}-conjunct`] = currentFilter.conjunct;
+			}
 
 			return {
 				...params,
@@ -156,6 +165,12 @@ export function getMessagesSSEParamsFromFilter(
 			: [],
 	);
 
+	const filterConjunct = filtersToAdd.map(filterName =>
+		filter && filter[filterName].conjunct
+			? [`${filterName}-conjunct`, filter[filterName].conjunct]
+			: [],
+	);
+
 	const timestampTo = moment().utc().subtract(30, 'minutes').valueOf();
 	const defaultStartTimestamp = moment(timestampTo).add(5, 'minutes').valueOf();
 
@@ -166,7 +181,7 @@ export function getMessagesSSEParamsFromFilter(
 		searchDirection,
 		resultCountLimit,
 		filters: filtersToAdd,
-		...Object.fromEntries([...filterValues, ...filterInclusion]),
+		...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
 	};
 
 	return createURLSearchParams({ ...queryParams });
