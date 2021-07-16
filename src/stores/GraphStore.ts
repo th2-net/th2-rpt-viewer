@@ -162,7 +162,9 @@ export class GraphStore {
 	public getGraphItemType = (item: GraphItem): GraphItemType => {
 		if (isEventNode(item)) {
 			return item.eventId === this.selectedStore.hoveredEvent?.eventId
-				? GraphItemType.HOVERED_EVENT
+				? item.successful
+					? GraphItemType.HOVERED_EVENT_PASSED
+					: GraphItemType.HOVERED_EVENT_FAILED
 				: item.successful
 				? GraphItemType.PASSED
 				: GraphItemType.FAILED;
