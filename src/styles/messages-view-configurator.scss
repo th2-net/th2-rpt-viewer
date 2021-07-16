@@ -231,31 +231,21 @@
 	width: 16px;
 	height: 16px;
 	&.json {
-		position: relative;
-		&:before {
-			content: '{~}';
-			position: absolute;
-			font-size: 11px;
-			line-height: 1.25;
-			font-weight: 700;
-			color: grey;
-			top: 0;
-			left: 0;
-			width: inherit;
-			height: inherit;
-		}
+		@include icon(url(../../resources/icons/json.svg));
+		background-position: 1.5px 3px;
 	}
 
 	&.formatted {
-		@include icon(url(../../resources/icons/messages-beautify.svg));
+		@include icon(url(../../resources/icons/formatted.svg));
+		background-position: 1px;
 	}
 
 	&.binary {
-		@include icon(url(../../resources/icons//table-view-icon.svg));
+		@include icon(url(../../resources/icons/binar.svg));
 	}
 
 	&.ascii {
-		@include icon(url(../../resources/icons/bincode.svg));
+		@include icon(url(../../resources/icons/ascii.svg));
 	}
 
 }
