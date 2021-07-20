@@ -33,7 +33,7 @@ import {
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
-import { MessageFilterState } from '../search-panel/SearchPanelFilters';
+import { MessageFilterState, MultipleStringFilter } from '../search-panel/SearchPanelFilters';
 import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
@@ -125,11 +125,17 @@ const MessagesFilterPanel = () => {
 			};
 		}
 
-		function getNegativeToggler<T extends keyof MessageFilterState>(name: T) {
-			return function negativeToggler() {
+		function getToggler<T extends keyof MessageFilterState>(
+			filterName: T,
+			paramName: keyof MultipleStringFilter,
+		) {
+			return function toggler() {
 				if (filter) {
 					setFilter({
-						[name]: { ..._sseFilter[name], negative: !_sseFilter[name].negative },
+						[filterName]: {
+							..._sseFilter[filterName],
+							[paramName]: !_sseFilter[filterName][paramName],
+						},
 					});
 				}
 			};
@@ -154,13 +160,16 @@ const MessagesFilterPanel = () => {
 						switch (param.type.value) {
 							case 'boolean':
 								return {
-									id: `${filterInfo.name}-include`,
-									label,
+									id: `${filterInfo.name}-${param.name}`,
+									label: param.name === 'negative' ? label : '',
 									disabled: false,
 									type: 'toggler',
-									value: getState(filterInfo.name).negative,
-									toggleValue: getNegativeToggler(filterInfo.name),
-									possibleValues: ['excl', 'incl'],
+									value: getState(filterInfo.name)[param.name as keyof MultipleStringFilter],
+									toggleValue: getToggler(
+										filterInfo.name,
+										param.name as keyof MultipleStringFilter,
+									),
+									possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
 									className: 'filter-row__toggler',
 								} as any;
 							default:

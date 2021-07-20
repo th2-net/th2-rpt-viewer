@@ -69,15 +69,15 @@ function EventsFilterPanel() {
 		}
 	}, [filter]);
 
-	const getNegativeToggler = React.useCallback(
-		(filterName: EventSSEFilters) => {
-			return function negativeToggler() {
+	const getToggler = React.useCallback(
+		(filterName: EventSSEFilters, paramName: keyof Filter) => {
+			return function toggler() {
 				if (filter) {
 					const filterValue = filter[filterName];
-					if (filterValue && 'negative' in filterValue) {
+					if (filterValue && paramName in filterValue) {
 						const updatedFilterValue = {
 							...filterValue,
-							negative: !filterValue.negative,
+							[paramName]: !filterValue[paramName],
 						};
 						setFilter({ [filterName]: updatedFilterValue });
 					}
@@ -121,7 +121,8 @@ function EventsFilterPanel() {
 			const filterValues: Filter = filter[filterName];
 			const label = prettifyCamelcase(filterName);
 
-			let toggler: FilterRowTogglerConfig | null = null;
+			let togglerNegative: FilterRowTogglerConfig | null = null;
+			let togglerConjunct: FilterRowTogglerConfig | null = null;
 
 			const autocompleteList = getArrayOfUniques(
 				eventsHistory
@@ -131,13 +132,26 @@ function EventsFilterPanel() {
 			);
 
 			if ('negative' in filterValues) {
-				toggler = {
+				togglerNegative = {
 					id: `${filterName}-include`,
 					label,
 					type: 'toggler',
 					value: filterValues.negative,
-					toggleValue: getNegativeToggler(filterName),
+					toggleValue: getToggler(filterName, 'negative' as keyof Filter),
 					possibleValues: ['excl', 'incl'],
+					className: 'filter-row__toggler',
+					labelClassName: 'event-filters-panel-label',
+				};
+			}
+
+			if ('conjunct' in filterValues) {
+				togglerConjunct = {
+					id: `${filterName}-conjunct`,
+					label: '',
+					type: 'toggler',
+					value: filterValues.conjunct,
+					toggleValue: getToggler(filterName, 'conjunct' as keyof Filter),
+					possibleValues: ['and', 'or'],
 					className: 'filter-row__toggler',
 					labelClassName: 'event-filters-panel-label',
 				};
@@ -182,17 +196,10 @@ function EventsFilterPanel() {
 					break;
 			}
 
-			const filterRow = [toggler, filterInput].filter(notEmpty);
+			const filterRow = [togglerNegative, togglerConjunct, filterInput].filter(notEmpty);
 			return filterRow.length === 1 ? filterRow[0] : filterRow;
 		});
-	}, [
-		filter,
-		eventsHistory,
-		currentFilterValues,
-		setCurrentValue,
-		getValuesUpdater,
-		getNegativeToggler,
-	]);
+	}, [filter, eventsHistory, currentFilterValues, setCurrentValue, getValuesUpdater, getToggler]);
 
 	return (
 		<FilterPanel
