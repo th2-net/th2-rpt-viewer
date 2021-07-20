@@ -50,6 +50,8 @@ export default class RootStore {
 
 	sessionsStore = new SessionsStore(this.api.indexedDb);
 
+	isEmbedded = false;
+
 	constructor(private api: ApiSchema) {
 		this.workspacesStore = new WorkspacesStore(
 			this,
@@ -120,15 +122,13 @@ export default class RootStore {
 
 	private parseUrlState = (): WorkspacesUrlState | null => {
 		try {
-			if (window.location.search.split('&').length > 1) {
-				throw new Error('Only one query parameter expected.');
-			}
 			const searchParams = new URLSearchParams(window.location.search);
 			const filtersToPin = searchParams.get('filters');
 			const workspacesUrlState = searchParams.get('workspaces');
 			const timestamp = searchParams.get('timestamp');
 			const eventId = searchParams.get('eventId');
 			const messageId = searchParams.get('messageId');
+			this.isEmbedded = this.checkEmbeddedParameter(searchParams.get('embedded'));
 			if (filtersToPin) {
 				const filtersHistoryItem: FiltersHistoryType<FilterState> = JSON.parse(
 					window.atob(filtersToPin),
@@ -178,6 +178,14 @@ export default class RootStore {
 			return null;
 		}
 	};
+
+	private checkEmbeddedParameter(value: string | null) {
+		if (value === null) return false;
+		if (value === 'true' || value === 'false') {
+			return value === 'true';
+		}
+		throw Error(`${value} the value is not supported in the query parameter "embedded"`);
+	}
 
 	// workaround to reset graph search state as it uses internal state
 	@observable resetGraphSearchData = false;

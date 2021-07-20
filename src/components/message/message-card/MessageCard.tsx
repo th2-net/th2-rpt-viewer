@@ -269,6 +269,8 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	);
 }
 
+export const BaseMessage = MessageCardBase;
+
 const MessageCard = observer(MessageCardBase);
 
 function calculateHueValue(session: string): number {
