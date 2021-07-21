@@ -60,6 +60,7 @@ const MessagesFilterPanel = () => {
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentStream, setCurrentStream] = React.useState('');
 	const [streams, setStreams] = React.useState<Array<string>>([]);
+	const [isFocused, setIsFocused] = React.useState<Boolean>(false);
 	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
 		type: '',
 		body: '',
@@ -199,9 +200,20 @@ const MessagesFilterPanel = () => {
 		];
 	}, [messagesStore.messageSessions, sessionsStore.sessions]);
 
-	const updateStream = (newStreams: string[]) => {
-		filterStore.filter.streams = newStreams;
-		setStreams(newStreams);
+	const updateStreams = (newSteams: string[]) => {
+		if (isFocused) {
+			setStreams(newSteams);
+		} else {
+			searchStore.stopSearch();
+			messagesStore.applyFilter(
+				{
+					...filterStore.filter,
+					streams: newSteams,
+				},
+				filter,
+				isSoftFilterApplied,
+			);
+		}
 	};
 
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
@@ -209,7 +221,7 @@ const MessagesFilterPanel = () => {
 			type: 'multiple-strings',
 			id: 'messages-stream',
 			values: streams,
-			setValues: updateStream,
+			setValues: updateStreams,
 			currentValue: currentStream,
 			setCurrentValue: setCurrentStream,
 			autocompleteList: sessionsAutocomplete,
@@ -280,7 +292,11 @@ const MessagesFilterPanel = () => {
 			/>
 			<MessageReplayModal />
 			<MessageFilterWarning />
-			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />
+			<MessagesFilterSessionFilter
+				config={sessionFilterConfig}
+				setIsFocused={setIsFocused}
+				submitChanges={submitChanges}
+			/>
 		</>
 	);
 };

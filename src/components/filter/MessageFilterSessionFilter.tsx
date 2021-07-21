@@ -16,20 +16,22 @@
 
 import React from 'react';
 import { FilterRowMultipleStringsConfig } from '../../models/filter/FilterInputs';
-import FilterRow from './row';
+import MultipleStringFilterRow from './row/MultipleStringFIlterRow';
 
 type MessagesFilterSessionFilterProps = {
 	config: FilterRowMultipleStringsConfig;
 	submitChanges: () => void;
+	setIsFocused?: (value: Boolean) => void;
 };
 
 const MessagesFilterSessionFilter = ({
 	config,
 	submitChanges,
+	setIsFocused,
 }: MessagesFilterSessionFilterProps) => {
 	return (
 		<>
-			<FilterRow rowConfig={config} />
+			<MultipleStringFilterRow config={config} setIsInputFocused={setIsFocused} />
 			<button onClick={submitChanges} className='messages-window-header__filter-submit-btn'>
 				<i className='messages-window-header__filter-submit-icon' />
 			</button>

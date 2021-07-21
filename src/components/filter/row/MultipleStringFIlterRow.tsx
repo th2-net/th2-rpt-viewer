@@ -28,14 +28,25 @@ import {
 
 interface MultipleStringFilterRowProps {
 	config: FilterRowMultipleStringsConfig;
+	setIsInputFocused?: (value: Boolean) => void;
 }
 
-export default function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
+export default function MultipleStringFilterRow({
+	config,
+	setIsInputFocused,
+}: MultipleStringFilterRowProps) {
 	const input = React.useRef<HTMLInputElement>();
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
 
-	const [isFocused, setIsFocused] = React.useState(false);
+	const [isFocused, setIsFocused] = React.useState<Boolean>(false);
+
+	const updateIsFocused = (value: Boolean) => {
+		setIsFocused(value);
+		if (setIsInputFocused) {
+			setIsInputFocused(value);
+		}
+	};
 
 	React.useLayoutEffect(() => {
 		setAutocompleteAnchor(rootRef.current || undefined);
@@ -138,8 +149,8 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 						datalistKey={`autocomplete-${1}`}
 						onSubmit={inputOnSubmit}
 						onRemove={inputOnRemove}
-						onFocus={() => setIsFocused(true)}
-						onBlur={() => setIsFocused(false)}
+						onFocus={() => updateIsFocused(true)}
+						onBlur={() => updateIsFocused(false)}
 						inputStyle={{ width: '100%' }}
 					/>
 				</div>
