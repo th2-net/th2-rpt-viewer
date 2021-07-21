@@ -18,7 +18,7 @@ function EmbeddedMessageCard({ workspace }: { workspace: WorkspaceStore }) {
 	if (message !== undefined) {
 		return <MessageCardBase viewType={viewType} setViewType={setViewType} message={message} />;
 	}
-	return null;
+	return <p>Message not found</p>;
 }
 
 export default observer(EmbeddedMessageCard);
