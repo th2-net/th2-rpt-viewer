@@ -28,9 +28,10 @@ import { GraphSearchTimePicker } from './GraphSearchTimePicker';
 import KeyCodes from '../../../util/KeyCodes';
 import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
+import { TimestampPosition } from '../../../models/Graph';
 
 interface Props {
-	refreshPanels: ((timestamp: number) => void) | null;
+	refreshPanels: ((timestamp: number, position: TimestampPosition) => void) | null;
 	onTimestampSubmit: (timestamp: number) => void;
 	onFoundItemClick: InstanceType<typeof WorkspaceStore>['onSavedItemSelect'];
 	windowRange: TimeRange | null;
@@ -214,6 +215,14 @@ function GraphSearch(props: Props) {
 		mode === 'history' ? 'active' : null,
 	);
 
+	const confirm = (position: TimestampPosition) => {
+		if (timestamp && refreshPanels) {
+			refreshPanels(timestamp, position);
+		}
+		setShowModal(false);
+		setMode('timestamp');
+	};
+
 	return (
 		<div className='graph-search' ref={wrapperRef}>
 			<GraphSearchInput
@@ -257,13 +266,7 @@ function GraphSearch(props: Props) {
 					)}
 					{mode === 'confirm' && refreshPanels && (
 						<GraphSearchConfirm
-							onConfirm={() => {
-								if (timestamp && refreshPanels) {
-									refreshPanels(timestamp);
-								}
-								setShowModal(false);
-								setMode('timestamp');
-							}}
+							onConfirm={(positon: TimestampPosition) => confirm(positon)}
 							onDecline={() => setShowModal(false)}
 						/>
 					)}

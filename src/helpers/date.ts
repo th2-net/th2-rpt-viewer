@@ -18,6 +18,7 @@ import moment, { Moment } from 'moment';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { DateTimeMask } from '../models/filter/FilterInputs';
+import { TimestampPosition } from '../models/Graph';
 import { TimeRange, Timestamp } from '../models/Timestamp';
 import { isEventMessage } from './event';
 
@@ -101,15 +102,36 @@ export const toUTC = (date: Moment) => {
 	return date.subtract(moment().utcOffset(), 'minutes');
 };
 
-export function getRangeFromTimestamp(timestamp: number, interval: number): TimeRange {
-	return [
-		moment(timestamp)
-			.subtract(interval / 2, 'minutes')
-			.valueOf(),
-		moment(timestamp)
-			.add(interval / 2, 'minutes')
-			.valueOf(),
-	];
+export function getRangeFromTimestamp(
+	timestamp: number,
+	interval: number,
+	_position: TimestampPosition = 'center',
+): TimeRange {
+	switch (_position) {
+		case 'left': {
+			return [
+				moment(timestamp).subtract(interval, 'minutes').valueOf(),
+				moment(timestamp).add(0, 'minutes').valueOf(),
+			];
+		}
+		case 'right': {
+			return [
+				moment(timestamp).subtract(0, 'minutes').valueOf(),
+				moment(timestamp).add(interval, 'minutes').valueOf(),
+			];
+		}
+		case 'center':
+		default: {
+			return [
+				moment(timestamp)
+					.subtract(interval / 2, 'minutes')
+					.valueOf(),
+				moment(timestamp)
+					.add(interval / 2, 'minutes')
+					.valueOf(),
+			];
+		}
+	}
 }
 
 export function sortByTimestamp<T extends { timestamp: number | Timestamp }>(

@@ -35,6 +35,7 @@ import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplit
 import { SearchStore } from '../SearchStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import { SessionsStore } from '../messages/SessionsStore';
+import { TimestampPosition } from '../../models/Graph';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -173,8 +174,8 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	public refreshPanels = (timestamp: number) => {
-		const timeRange = getRangeFromTimestamp(timestamp, this.graphStore.interval);
+	public refreshPanels = (timestamp: number, _position: TimestampPosition = 'center') => {
+		const timeRange = getRangeFromTimestamp(timestamp, this.graphStore.interval, _position);
 		this.eventsStore.eventDataStore.fetchEventTree({
 			timeRange,
 			filter: this.eventsStore.filterStore.filter,
@@ -182,8 +183,14 @@ export default class WorkspaceStore {
 		this.messagesStore.applyFilter(
 			{
 				...this.messagesStore.filterStore.filter,
-				timestampFrom: null,
-				timestampTo: timestamp,
+				timestampFrom:
+					_position === 'left' ? timestamp : _position === 'right' ? timestamp + 30 * 1000 : null,
+				timestampTo:
+					_position === 'left'
+						? timestamp - 30 * 1000
+						: _position === 'right'
+						? timestamp
+						: timestamp,
 			},
 			this.messagesStore.filterStore.sseMessagesFilter,
 			this.messagesStore.filterStore.isSoftFilter,
