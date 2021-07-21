@@ -49,7 +49,7 @@ export interface RecoveredProps {
 
 interface Props extends OwnProps, RecoveredProps {}
 
-function MessageCardBase({ message, viewType, setViewType }: Props) {
+export function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
@@ -268,8 +268,6 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		</div>
 	);
 }
-
-export const BaseMessage = MessageCardBase;
 
 const MessageCard = observer(MessageCardBase);
 

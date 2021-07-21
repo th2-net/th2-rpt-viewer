@@ -48,8 +48,9 @@ function Workspace() {
 	const workspaceStore = useWorkspaceStore();
 	const eventsStore: EventsStore = useWorkspaceEventStore();
 	const messagesStore: MessagesStore = useMessagesWorkspaceStore();
+
 	if (messagesStore.selectedMessageId !== null && eventsStore.selectedEvent === null) {
-		setPanelsLayout([0.81, 99.19]);
+		setPanelsLayout([0, 100]);
 	}
 
 	return (

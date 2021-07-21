@@ -60,6 +60,7 @@ export default class RootStore {
 			this.parseUrlState(),
 		);
 
+		this.isEmbedded = this.getIsEmbedded();
 		window.history.replaceState({}, '', window.location.pathname);
 	}
 
@@ -128,7 +129,7 @@ export default class RootStore {
 			const timestamp = searchParams.get('timestamp');
 			const eventId = searchParams.get('eventId');
 			const messageId = searchParams.get('messageId');
-			this.isEmbedded = this.checkEmbeddedParameter(searchParams.get('embedded'));
+
 			if (filtersToPin) {
 				const filtersHistoryItem: FiltersHistoryType<FilterState> = JSON.parse(
 					window.atob(filtersToPin),
@@ -179,12 +180,9 @@ export default class RootStore {
 		}
 	};
 
-	private checkEmbeddedParameter(value: string | null) {
-		if (value === null) return false;
-		if (value === 'true' || value === 'false') {
-			return value === 'true';
-		}
-		throw Error(`${value} the value is not supported in the query parameter "embedded"`);
+	private getIsEmbedded() {
+		const searchParams = new URLSearchParams(window.location.search);
+		return searchParams.get('viewMode') === 'embedded';
 	}
 
 	// workaround to reset graph search state as it uses internal state
