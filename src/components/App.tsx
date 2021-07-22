@@ -29,13 +29,16 @@ import { useSearchStore } from '../hooks/useSearchStore';
 import { useRootStore, useTabsStore } from '../hooks';
 import '../styles/root.scss';
 import EmbeddedLayout from './embedded/EmbeddedLayout';
+import { createBemBlock } from '../helpers/styleCreators';
 
 const App = () => {
 	const searchStore = useSearchStore();
 	const tabsStore = useTabsStore();
 	const rootStore = useRootStore();
+	const appClassName = createBemBlock('app', rootStore.isEmbedded ? 'embedded' : null);
+
 	return (
-		<div className={`app${rootStore.isEmbedded ? '__embedded' : ''}`}>
+		<div className={appClassName}>
 			{!rootStore.isEmbedded && (
 				<ToastProvider
 					placement='top-right'

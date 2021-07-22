@@ -98,8 +98,8 @@ input {
 		}
 	}
 
-	&__embedded {
-		background-color: #fff;
+	&.embedded {
+		background-color: $backgroundEmbeddedColor;
 	}
 
 	div:focus {

@@ -10,6 +10,7 @@ function EmbeddedWorkspace({ workspace }: { workspace: WorkspaceStore }) {
 			<EventDetailInfoCard
 				node={workspace.eventsStore.selectedNode}
 				event={workspace.eventsStore.selectedEvent}
+				isEmbedded={true}
 			/>
 		);
 	}

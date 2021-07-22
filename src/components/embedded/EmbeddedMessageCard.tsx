@@ -16,7 +16,14 @@ function EmbeddedMessageCard({ workspace }: { workspace: WorkspaceStore }) {
 
 	if (!messagesDataStore.isLoading) {
 		if (message !== undefined) {
-			return <MessageCardBase viewType={viewType} setViewType={setViewType} message={message} />;
+			return (
+				<MessageCardBase
+					isEmbedded={true}
+					viewType={viewType}
+					setViewType={setViewType}
+					message={message}
+				/>
+			);
 		}
 		return <p>Message not found</p>;
 	}

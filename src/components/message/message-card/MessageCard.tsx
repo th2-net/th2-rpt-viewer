@@ -21,7 +21,6 @@ import {
 	useMessageDisplayRulesStore,
 	useSelectedStore,
 	useMessagesDataStore,
-	useRootStore,
 } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
@@ -41,6 +40,7 @@ const HUE_SEGMENTS_COUNT = 36;
 
 export interface OwnProps {
 	message: EventMessage;
+	isEmbedded: boolean;
 }
 
 export interface RecoveredProps {
@@ -50,13 +50,12 @@ export interface RecoveredProps {
 
 interface Props extends OwnProps, RecoveredProps {}
 
-export function MessageCardBase({ message, viewType, setViewType }: Props) {
+export function MessageCardBase({ message, viewType, setViewType, isEmbedded }: Props) {
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const selectedStore = useSelectedStore();
-	const rootStore = useRootStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
@@ -146,11 +145,12 @@ export function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const isScreenshotMsg = isScreenshotMessage(message);
 
 	const rootClass = createBemBlock(
-		`message-card-wrapper${rootStore.isEmbedded ? '__embedded' : ''}`,
+		'message-card-wrapper',
 		isAttached ? 'attached' : null,
 		isBookmarked ? 'pinned' : null,
 		isHighlighted ? 'highlighted' : null,
 		isSoftFiltered ? 'soft-filtered' : null,
+		isEmbedded ? 'embedded' : null,
 	);
 
 	// session arrow color, we calculating it for each session from-to pair, based on hash
