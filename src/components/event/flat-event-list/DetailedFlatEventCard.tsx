@@ -45,10 +45,7 @@ function DetailedFlatEventCard(props: Props) {
 	).get();
 
 	return (
-		<EventDetailInfoCard
-			node={node!}
-			event={event}
-			childrenCount={childrenCount}>
+		<EventDetailInfoCard node={node!} event={event} childrenCount={childrenCount}>
 			{parentNodes.length > 0 && (
 				<div className='event-detail-info__parents'>
 					{parentNodes.map(eventNode => (
