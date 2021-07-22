@@ -30,12 +30,13 @@ interface Props {
 	event: EventAction | null;
 	childrenCount?: number;
 	children?: React.ReactNode;
+	isEmbedded?: boolean;
 }
 
 function EventDetailInfoCard(props: Props) {
 	const selectedStore = useSelectedStore();
 
-	const { event, childrenCount = 0, node, children } = props;
+	const { event, childrenCount = 0, node, children, isEmbedded } = props;
 
 	if (!event) {
 		return <SplashScreen />;
@@ -64,8 +65,10 @@ function EventDetailInfoCard(props: Props) {
 
 	const bookmarkButtonClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
+	const rootClassName = createBemBlock('event-detail-info', isEmbedded ? 'embedded' : null);
+
 	return (
-		<div className='event-detail-info'>
+		<div className={rootClassName}>
 			{children}
 			<div className={cardClassName}>
 				<div className='event-card__status'>

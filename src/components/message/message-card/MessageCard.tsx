@@ -40,6 +40,7 @@ const HUE_SEGMENTS_COUNT = 36;
 
 export interface OwnProps {
 	message: EventMessage;
+	isEmbedded?: boolean;
 }
 
 export interface RecoveredProps {
@@ -49,7 +50,7 @@ export interface RecoveredProps {
 
 interface Props extends OwnProps, RecoveredProps {}
 
-function MessageCardBase({ message, viewType, setViewType }: Props) {
+export function MessageCardBase({ message, viewType, setViewType, isEmbedded }: Props) {
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
@@ -149,6 +150,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		isBookmarked ? 'pinned' : null,
 		isHighlighted ? 'highlighted' : null,
 		isSoftFiltered ? 'soft-filtered' : null,
+		isEmbedded ? 'embedded' : null,
 	);
 
 	// session arrow color, we calculating it for each session from-to pair, based on hash
