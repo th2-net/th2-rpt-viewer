@@ -12,13 +12,15 @@ function EmbeddedMessageCard({ workspace }: { workspace: WorkspaceStore }) {
 	const getMessage = (id: string | null | undefined) => {
 		return messagesDataStore.messages.find(msg => msg.messageId === id);
 	};
-
 	const message = getMessage(workspace.messagesStore.selectedMessageId?.toString());
 
-	if (message !== undefined) {
-		return <MessageCardBase viewType={viewType} setViewType={setViewType} message={message} />;
+	if (!messagesDataStore.isLoading) {
+		if (message !== undefined) {
+			return <MessageCardBase viewType={viewType} setViewType={setViewType} message={message} />;
+		}
+		return <p>Message not found</p>;
 	}
-	return <p>Message not found</p>;
+	return null;
 }
 
 export default observer(EmbeddedMessageCard);

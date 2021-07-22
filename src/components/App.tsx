@@ -35,7 +35,7 @@ const App = () => {
 	const tabsStore = useTabsStore();
 	const rootStore = useRootStore();
 	return (
-		<div className='app'>
+		<div className={`app${rootStore.isEmbedded ? '__embedded' : ''}`}>
 			{!rootStore.isEmbedded && (
 				<ToastProvider
 					placement='top-right'

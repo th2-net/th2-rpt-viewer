@@ -21,6 +21,7 @@ import {
 	useMessageDisplayRulesStore,
 	useSelectedStore,
 	useMessagesDataStore,
+	useRootStore,
 } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
@@ -55,6 +56,7 @@ export function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const selectedStore = useSelectedStore();
+	const rootStore = useRootStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
@@ -144,7 +146,7 @@ export function MessageCardBase({ message, viewType, setViewType }: Props) {
 	const isScreenshotMsg = isScreenshotMessage(message);
 
 	const rootClass = createBemBlock(
-		'message-card-wrapper',
+		`message-card-wrapper${rootStore.isEmbedded ? '__embedded' : ''}`,
 		isAttached ? 'attached' : null,
 		isBookmarked ? 'pinned' : null,
 		isHighlighted ? 'highlighted' : null,

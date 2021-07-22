@@ -98,6 +98,10 @@ input {
 		}
 	}
 
+	&__embedded {
+		background-color: #fff;
+	}
+
 	div:focus {
 		outline: unset;
 	}

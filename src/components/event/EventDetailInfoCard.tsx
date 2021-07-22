@@ -23,7 +23,7 @@ import { getEventStatus } from '../../helpers/event';
 import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { useSelectedStore } from '../../hooks';
+import { useRootStore, useSelectedStore } from '../../hooks';
 
 interface Props {
 	node: EventTreeNode;
@@ -34,6 +34,7 @@ interface Props {
 
 function EventDetailInfoCard(props: Props) {
 	const selectedStore = useSelectedStore();
+	const rootStore = useRootStore();
 
 	const { event, childrenCount = 0, node, children } = props;
 
@@ -65,7 +66,7 @@ function EventDetailInfoCard(props: Props) {
 	const bookmarkButtonClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	return (
-		<div className='event-detail-info'>
+		<div className={`event-detail-info${rootStore.isEmbedded ? '_embedded' : ''}`}>
 			{children}
 			<div className={cardClassName}>
 				<div className='event-card__status'>
