@@ -34,7 +34,6 @@ import {
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
 import { MessageFilterState, MultipleStringFilter } from '../search-panel/SearchPanelFilters';
-import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
 import FiltersHistory from '../filters-history/FiltersHistory';
@@ -43,6 +42,7 @@ import { getArrayOfUniques } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
 import { notEmpty } from '../../helpers/object';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
+import MultipleStringFilterRow from './row/MultipleStringFIlterRow';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -60,6 +60,7 @@ const MessagesFilterPanel = () => {
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentStream, setCurrentStream] = React.useState('');
 	const [streams, setStreams] = React.useState<Array<string>>([]);
+	const [isFocused, setIsFocused] = React.useState<Boolean>(false);
 	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
 		type: '',
 		body: '',
@@ -199,12 +200,27 @@ const MessagesFilterPanel = () => {
 		];
 	}, [messagesStore.messageSessions, sessionsStore.sessions]);
 
+	const updateStreams = (newSteams: string[]) => {
+		if (isFocused) {
+			setStreams(newSteams);
+		} else {
+			messagesStore.applyFilter(
+				{
+					...filterStore.filter,
+					streams: newSteams,
+				},
+				filter,
+				isSoftFilterApplied,
+			);
+		}
+	};
+
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
 		return {
 			type: 'multiple-strings',
 			id: 'messages-stream',
 			values: streams,
-			setValues: setStreams,
+			setValues: updateStreams,
 			currentValue: currentStream,
 			setCurrentValue: setCurrentStream,
 			autocompleteList: sessionsAutocomplete,
@@ -275,7 +291,7 @@ const MessagesFilterPanel = () => {
 			/>
 			<MessageReplayModal />
 			<MessageFilterWarning />
-			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />
+			<MultipleStringFilterRow config={sessionFilterConfig} setIsInputFocused={setIsFocused} />
 		</>
 	);
 };
