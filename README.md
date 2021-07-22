@@ -3,7 +3,6 @@
 ![](https://img.shields.io/github/workflow/status/th2-net/th2-rpt-viewer/build%20&%20publish%20release%20image%20to%20ghcr.io)
 
 This is a web app that displays the stored test data (events and messages) using `report-data-provider`. 
-Major versions of report-viewer and report-data-provider are compatible.
 
 # API
 This app needs `report-data-provider 5.1.0 (or newer)` backend component to function. It should be accessible at `{rpt-viewer-path}/backend/*`
