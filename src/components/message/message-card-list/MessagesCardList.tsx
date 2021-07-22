@@ -32,7 +32,7 @@ function MessageCardList() {
 	const messagesDataStore = useMessagesDataStore();
 
 	const renderMsg = (index: number, message: EventMessage) => {
-		return <MessageCard isEmbedded={false} message={message} />;
+		return <MessageCard message={message} />;
 	};
 
 	if (

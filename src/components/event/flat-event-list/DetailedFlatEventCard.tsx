@@ -46,7 +46,6 @@ function DetailedFlatEventCard(props: Props) {
 
 	return (
 		<EventDetailInfoCard
-			isEmbedded={false}
 			node={node!}
 			event={event}
 			childrenCount={childrenCount}>

@@ -40,7 +40,7 @@ const HUE_SEGMENTS_COUNT = 36;
 
 export interface OwnProps {
 	message: EventMessage;
-	isEmbedded: boolean;
+	isEmbedded?: boolean;
 }
 
 export interface RecoveredProps {

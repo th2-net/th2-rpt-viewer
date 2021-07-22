@@ -18,7 +18,7 @@ function EmbeddedMessageCard({ workspace }: { workspace: WorkspaceStore }) {
 		if (message !== undefined) {
 			return (
 				<MessageCardBase
-					isEmbedded={true}
+					isEmbedded
 					viewType={viewType}
 					setViewType={setViewType}
 					message={message}

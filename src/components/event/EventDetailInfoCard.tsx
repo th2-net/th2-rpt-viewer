@@ -30,7 +30,7 @@ interface Props {
 	event: EventAction | null;
 	childrenCount?: number;
 	children?: React.ReactNode;
-	isEmbedded: boolean;
+	isEmbedded?: boolean;
 }
 
 function EventDetailInfoCard(props: Props) {

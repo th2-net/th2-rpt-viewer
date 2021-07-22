@@ -52,7 +52,6 @@ function EventTreeView() {
 							(eventsDataStore.parentChildrensMap.get(eventsStore.selectedNode.eventId) || [])
 								.length
 						}
-						isEmbedded={false}
 					/>
 				)}
 			</SplitViewPane>
