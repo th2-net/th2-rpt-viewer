@@ -34,7 +34,6 @@ import {
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
 import { MessageFilterState, MultipleStringFilter } from '../search-panel/SearchPanelFilters';
-import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
 import FiltersHistory from '../filters-history/FiltersHistory';
@@ -43,6 +42,7 @@ import { getArrayOfUniques } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
 import { notEmpty } from '../../helpers/object';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
+import MultipleStringFilterRow from './row/MultipleStringFIlterRow';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -204,7 +204,6 @@ const MessagesFilterPanel = () => {
 		if (isFocused) {
 			setStreams(newSteams);
 		} else {
-			searchStore.stopSearch();
 			messagesStore.applyFilter(
 				{
 					...filterStore.filter,
@@ -292,11 +291,7 @@ const MessagesFilterPanel = () => {
 			/>
 			<MessageReplayModal />
 			<MessageFilterWarning />
-			<MessagesFilterSessionFilter
-				config={sessionFilterConfig}
-				setIsFocused={setIsFocused}
-				submitChanges={submitChanges}
-			/>
+			<MultipleStringFilterRow config={sessionFilterConfig} setIsInputFocused={setIsFocused} />
 		</>
 	);
 };
