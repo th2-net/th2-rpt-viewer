@@ -801,8 +801,8 @@
 	display: grid;
 	row-gap: 5px;
 	position: absolute;
-	top: 35%;
-	left: 29%;
+	top: calc(50% - 200px);
+	left: calc(50% - 400px);
 	width: 800px;
 	background-color: #0bc;
 	padding: 30px 20px 20px 20px;
