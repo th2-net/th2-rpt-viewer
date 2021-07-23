@@ -15,10 +15,11 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { TimestampPosition } from '../../../models/Graph';
 import KeyCodes from '../../../util/KeyCodes';
 
 interface Props {
-	onConfirm: () => void;
+	onConfirm: (position: TimestampPosition) => void;
 	onDecline: () => void;
 }
 
@@ -46,7 +47,7 @@ const GraphSearchConfirm = ({ onConfirm, onDecline }: Props) => {
 	React.useEffect(() => {
 		const listener = (e: KeyboardEvent) => {
 			if (e.keyCode === KeyCodes.ENTER) {
-				onConfirm();
+				onConfirm('center');
 			}
 			if (e.keyCode === KeyCodes.ESCAPE) {
 				onDecline();
@@ -62,8 +63,14 @@ const GraphSearchConfirm = ({ onConfirm, onDecline }: Props) => {
 		<div className='graph-search-confirm'>
 			<p className='graph-search-confirm__text'>Do you want to refresh panels?</p>
 			<div className='graph-search-confirm__controls'>
-				<button className='graph-search-confirm__button' onClick={onConfirm}>
+				<button className='graph-search-confirm__button' onClick={() => onConfirm('center')}>
 					Yes
+				</button>
+				<button className='graph-search-confirm__button' onClick={() => onConfirm('left')}>
+					Yes, left
+				</button>
+				<button className='graph-search-confirm__button' onClick={() => onConfirm('right')}>
+					Yes, right
 				</button>
 				<button className='graph-search-confirm__button' onClick={onDecline}>
 					No ({countdown})

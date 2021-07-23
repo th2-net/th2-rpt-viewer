@@ -21,6 +21,7 @@ import { TimeRange } from './Timestamp';
 export const intervalOptions = [15, 30, 60] as const;
 
 export type IntervalOption = typeof intervalOptions[number];
+export type TimestampPosition = 'center' | 'left' | 'right';
 
 export interface Chunk {
 	from: number;
