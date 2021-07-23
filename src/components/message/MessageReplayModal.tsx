@@ -16,6 +16,7 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import { motion } from 'framer-motion';
 import { MessageFilterState, MultipleStringFilter } from '../search-panel/SearchPanelFilters';
 import {
 	CompoundFilterRow,
@@ -279,13 +280,22 @@ function MessageReplayModal() {
 		setIsCopied(true);
 	}
 
+	const refConstrains = React.useRef(null);
+
 	return (
 		<>
 			<span className='replay__toggle-button' onClick={toggleReplayModal}>
 				Replay
 			</span>
 			<ModalPortal isOpen={isOpen}>
-				<div className='replay' ref={rootRef}>
+				<motion.div className='replay__drag-area' ref={refConstrains} />
+				<motion.div
+					dragElastic={false}
+					dragMomentum={false}
+					dragConstraints={refConstrains}
+					drag
+					className='replay'
+					ref={rootRef}>
 					<button className='replay__close-button' onClick={() => setIsOpen(false)}>
 						<i></i>
 					</button>
@@ -310,7 +320,7 @@ function MessageReplayModal() {
 						onClick={onCopy}>
 						{isCopied ? 'Copied to clipboard' : 'Copy'}
 					</button>
-				</div>
+				</motion.div>
 			</ModalPortal>
 		</>
 	);
