@@ -673,8 +673,9 @@
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%,-50%);
+	text-align: center;
 	&__controls {
-		width: 100px;
+		width: min-content;
 		margin: 20px auto 0;
 		display: flex;
 		justify-content: space-between;
@@ -687,5 +688,7 @@
 		color: #fff;
 		background-color: $filterPickerScrollItemActiveColor;
 		cursor: pointer;
+		width: max-content;
+		margin: 5px;
 	}
 }

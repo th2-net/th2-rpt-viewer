@@ -124,9 +124,6 @@ export default class MessagesStore {
 		if (messageFrom && messageTo) {
 			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
 		}
-		if (this.filterStore.filter.timestampTo && this.filterStore.filter.timestampFrom) {
-			return [this.filterStore.filter.timestampTo, this.filterStore.filter.timestampFrom];
-		}
 
 		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
 		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];

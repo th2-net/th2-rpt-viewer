@@ -183,13 +183,12 @@ export default class WorkspaceStore {
 		this.messagesStore.applyFilter(
 			{
 				...this.messagesStore.filterStore.filter,
-				timestampFrom:
-					_position === 'left' ? timestamp : _position === 'right' ? timestamp + 30 * 1000 : null,
+				timestampFrom: null,
 				timestampTo:
 					_position === 'left'
-						? timestamp - 30 * 1000
+						? timestamp - 15 * 1000
 						: _position === 'right'
-						? timestamp
+						? timestamp + 15 * 1000
 						: timestamp,
 			},
 			this.messagesStore.filterStore.sseMessagesFilter,
