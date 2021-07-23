@@ -50,6 +50,8 @@ function MessageReplayModal() {
 
 	const [isOpen, setIsOpen] = React.useState(false);
 
+	const [draggable, setDragable] = React.useState(true);
+
 	const [sseFilter, setSSEFilter] = React.useState<MessageFilterState | null>(null);
 	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
 		type: '',
@@ -293,9 +295,14 @@ function MessageReplayModal() {
 					dragElastic={false}
 					dragMomentum={false}
 					dragConstraints={refConstrains}
-					drag
+					drag={draggable}
 					className='replay'
 					ref={rootRef}>
+					<div
+						className='dragable-area'
+						onMouseOver={() => setDragable(true)}
+						onMouseLeave={() => setDragable(false)}
+					/>
 					<button className='replay__close-button' onClick={() => setIsOpen(false)}>
 						<i></i>
 					</button>

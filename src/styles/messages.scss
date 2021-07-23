@@ -805,7 +805,7 @@
 	left: calc(50% - 400px);
 	width: 800px;
 	background-color: #0bc;
-	padding: 30px 20px 20px 20px;
+	padding: 0px 20px 20px 20px;
 	border-radius: 6px;
 	color: white;
 	z-index: 300;
@@ -891,6 +891,15 @@
 		background-color: transparent;
 
 		@include round-button(url(../../resources/icons/cross-icon-white.svg));
+	}
+
+	.dragable-area {
+		height: 30px;
+		width: 100%;
+	}
+
+	.dragable-area:hover{
+		cursor: move;
 	}
 }
 
