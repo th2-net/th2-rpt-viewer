@@ -50,7 +50,8 @@ function MessageReplayModal() {
 
 	const [isOpen, setIsOpen] = React.useState(false);
 
-	const [draggable, setDragable] = React.useState(true);
+	const [drag, setDrag] = React.useState(false);
+	const [mouseDown, setMouseDown] = React.useState(false);
 
 	const [sseFilter, setSSEFilter] = React.useState<MessageFilterState | null>(null);
 	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
@@ -295,20 +296,27 @@ function MessageReplayModal() {
 					dragElastic={false}
 					dragMomentum={false}
 					dragConstraints={refConstrains}
-					drag={draggable}
+					drag={drag || mouseDown}
 					className='replay'
-					ref={rootRef}>
+					ref={rootRef}
+					onMouseDown={() => setMouseDown(true)}
+					onMouseUp={() => setMouseDown(false)}>
 					<div
 						className='dragable-area'
-						onMouseOver={() => setDragable(true)}
-						onMouseLeave={() => setDragable(false)}
+						onMouseOver={() => setDrag(true)}
+						onMouseLeave={() => setDrag(false)}
+						onMouseDown={() => setMouseDown(true)}
+						onMouseUp={() => setMouseDown(false)}
 					/>
 					<button className='replay__close-button' onClick={() => setIsOpen(false)}>
 						<i></i>
 					</button>
 					{filterConfig.map(rowConfig =>
 						Array.isArray(rowConfig) ? (
-							<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
+							<div
+								onMouseOver={() => setDrag(false)}
+								className='filter__compound'
+								key={rowConfig.map(c => c.id).join('-')}>
 								{rowConfig.map(_rowConfig => (
 									<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
 								))}
