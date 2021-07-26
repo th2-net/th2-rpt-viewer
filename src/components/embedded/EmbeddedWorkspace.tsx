@@ -19,7 +19,7 @@ function EmbeddedWorkspace({ workspace }: { workspace: WorkspaceStore }) {
 		return <EmbeddedMessageCard workspace={workspace} />;
 	}
 
-	return <p>Not found message ID or event ID in url</p>;
+	return <p>Message or event by ID not found</p>;
 }
 
 export default observer(EmbeddedWorkspace);
