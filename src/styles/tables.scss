@@ -482,6 +482,13 @@
 	}
 }
 
+.boolean-value-cell{
+	background-image: url(../../resources/icons/check.svg);
+	width: 11px;
+	height: 11px;
+	background-position: center;
+}
+
 .user-table {
 	overflow: auto;
 	@include scrollbar;
