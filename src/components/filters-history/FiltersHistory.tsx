@@ -110,9 +110,8 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 				className='filters-history-open'
 				onClick={() => {
 					setIsOpen(o => !o);
-				}}>
-				Filters history
-			</button>
+				}}
+				title={'Filters history'}></button>
 			<ModalPortal isOpen={isOpen}>
 				<div ref={historyRef} className='filters-history'>
 					{toShow.map((item, index) => (
@@ -131,7 +130,13 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 				</div>
 			</ModalPortal>
 		</>
-	) : null;
+	) : (
+		<button
+			ref={buttonRef}
+			className='filters-history-open'
+			title={'Filters history'}
+			disabled={true}></button>
+	);
 };
 
 export default observer(FiltersHistory);

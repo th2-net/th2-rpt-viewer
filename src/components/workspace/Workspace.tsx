@@ -19,17 +19,10 @@ import { observer } from 'mobx-react-lite';
 import EventWindow from '../event/EventWindow';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import MessagesWindow from '../message/MessagesWindow';
-import {
-	useActivePanel,
-	useMessagesWorkspaceStore,
-	useWorkspaceEventStore,
-	useWorkspaceStore,
-} from '../../hooks';
+import { useActivePanel, useWorkspaceStore } from '../../hooks';
 import { isEventsStore, isMessagesStore } from '../../helpers/stores';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 import '../../styles/workspace.scss';
-import MessagesStore from '../../stores/messages/MessagesStore';
-import EventsStore from '../../stores/events/EventsStore';
 
 const panelColors = {
 	events: {
@@ -46,12 +39,6 @@ function Workspace() {
 	const { activePanel } = useActivePanel(null);
 	const { panelsLayout, setPanelsLayout } = useWorkspaceViewStore();
 	const workspaceStore = useWorkspaceStore();
-	const eventsStore: EventsStore = useWorkspaceEventStore();
-	const messagesStore: MessagesStore = useMessagesWorkspaceStore();
-
-	if (messagesStore.selectedMessageId !== null && eventsStore.selectedEvent === null) {
-		setPanelsLayout([0, 100]);
-	}
 
 	return (
 		<div className='workspace'>
