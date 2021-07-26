@@ -168,7 +168,7 @@ export default class RootStore {
 					},
 					timeRange,
 					interval,
-					layout: defaultPanelsLayout,
+					layout: messageId ? [0, 100] : defaultPanelsLayout,
 				},
 			];
 		} catch (error) {
