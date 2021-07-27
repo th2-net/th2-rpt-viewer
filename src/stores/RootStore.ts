@@ -50,10 +50,7 @@ export default class RootStore {
 
 	sessionsStore = new SessionsStore(this.api.indexedDb);
 
-	isEmbedded = false;
-
 	constructor(private api: ApiSchema) {
-		this.isEmbedded = this.getIsEmbedded();
 		this.workspacesStore = new WorkspacesStore(
 			this,
 			this.api,
@@ -123,7 +120,7 @@ export default class RootStore {
 
 	private parseUrlState = (): WorkspacesUrlState | null => {
 		try {
-			if (!this.isEmbedded && window.location.search.split('&').length > 1) {
+			if (window.location.search.split('&').length > 1) {
 				throw new Error('Only one query parameter expected.');
 			}
 			const searchParams = new URLSearchParams(window.location.search);
@@ -182,24 +179,6 @@ export default class RootStore {
 			return null;
 		}
 	};
-
-	private getIsEmbedded() {
-		const searchParams = new URLSearchParams(window.location.search);
-		const isEmbedded = searchParams.get('viewMode') === 'embedded';
-
-		if (isEmbedded) {
-			const eventId = searchParams.get('eventId');
-			const messageId = searchParams.get('messageId');
-
-			if (eventId && messageId) {
-				throw new Error('Message Id and event Id cannot be specified at the same time');
-			} else if (!eventId && !messageId) {
-				throw new Error('Message or event ID not specified');
-			}
-		}
-
-		return isEmbedded;
-	}
 
 	// workaround to reset graph search state as it uses internal state
 	@observable resetGraphSearchData = false;

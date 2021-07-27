@@ -98,10 +98,6 @@ input {
 		}
 	}
 
-	&.embedded {
-		background-color: $backgroundEmbeddedColor;
-	}
-
 	div:focus {
 		outline: unset;
 	}

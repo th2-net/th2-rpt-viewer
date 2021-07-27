@@ -26,34 +26,27 @@ import Graph from './graph/Graph';
 import WorkspaceLinkGetter from './WorkspaceLinkGetter';
 import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
 import { useSearchStore } from '../hooks/useSearchStore';
-import { useRootStore, useTabsStore } from '../hooks';
+import { useTabsStore } from '../hooks';
 import '../styles/root.scss';
-import EmbeddedLayout from './embedded/EmbeddedLayout';
-import { createBemBlock } from '../helpers/styleCreators';
 
 const App = () => {
 	const searchStore = useSearchStore();
 	const tabsStore = useTabsStore();
-	const rootStore = useRootStore();
-	const appClassName = createBemBlock('app', rootStore.isEmbedded ? 'embedded' : null);
 
 	return (
-		<div className={appClassName}>
-			{!rootStore.isEmbedded && (
-				<ToastProvider
-					placement='top-right'
-					components={{ Toast, ToastContainer }}
-					transitionDuration={400}>
-					<Graph />
-					{tabsStore.activeTabIndex !== 0 && <WorkspaceLinkGetter />}
-					<MessagesViewConfigurator sessions={searchStore.messageSessions} />
-					<div className='app__workspaces'>
-						<WorkspacesLayout />
-					</div>
-					<Notifier />
-				</ToastProvider>
-			)}
-			{rootStore.isEmbedded && <EmbeddedLayout />}
+		<div className='app'>
+			<ToastProvider
+				placement='top-right'
+				components={{ Toast, ToastContainer }}
+				transitionDuration={400}>
+				<Graph />
+				{tabsStore.activeTabIndex !== 0 && <WorkspaceLinkGetter />}
+				<MessagesViewConfigurator sessions={searchStore.messageSessions} />
+				<div className='app__workspaces'>
+					<WorkspacesLayout />
+				</div>
+				<Notifier />
+			</ToastProvider>
 		</div>
 	);
 };
