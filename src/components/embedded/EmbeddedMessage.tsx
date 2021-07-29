@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../api';
-import { EventMessage } from '../../models/EventMessage';
+import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import { MinimalMessageCard } from '../message/message-card/MessageCard';
 
 function EmbeddedMessage({ messageId }: { messageId: string }) {
-	const [message, setMessage] = useState<EventMessage | null>(null);
+	const [message, setMessage] = useState<EventMessage | null>();
+	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
 	useEffect(() => {
 		getMessage();
@@ -12,10 +14,15 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	async function getMessage() {
 		const res = await api.messages.getMessage(messageId);
 		setMessage(res);
-		console.log(message);
+		setViewType(message?.viewType ? message.viewType : MessageViewType.JSON);
+		console.log(res);
 	}
 
-	return <p>{messageId}</p>;
+	if (message) {
+		return <MinimalMessageCard message={message} setViewType={setViewType} viewType={viewType} />;
+	}
+
+	return <p>loading</p>;
 }
 
 export default EmbeddedMessage;
