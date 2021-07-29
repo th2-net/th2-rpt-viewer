@@ -45,7 +45,7 @@ interface Props {
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	const {
-		value,
+		value = '',
 		setValue,
 		onSubmit,
 		onRemove,

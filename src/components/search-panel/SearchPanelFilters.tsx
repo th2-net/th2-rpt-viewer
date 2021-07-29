@@ -40,6 +40,7 @@ export type MultipleStringFilter = {
 	type: 'string[]';
 	values: string[];
 	negative: boolean;
+	conjunct: boolean;
 };
 
 export type SwitcherFilter = {
@@ -93,9 +94,14 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 		};
 	}
 
-	function getNegativeToggler<T extends keyof FilterState>(name: T) {
-		return function negativeToggler() {
-			setState({ [name]: { ...state[name], negative: !state[name].negative } });
+	function getToggler<T extends keyof FilterState>(
+		filterName: T,
+		paramName: keyof MultipleStringFilter,
+	) {
+		return function toggler() {
+			setState({
+				[filterName]: { ...state[filterName], [paramName]: !state[filterName][paramName] },
+			});
 		};
 	}
 
@@ -144,13 +150,13 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 						switch (param.type.value) {
 							case 'boolean':
 								return {
-									id: `${filter.name}-include`,
+									id: `${filter.name}-${param.name}`,
 									label: '',
 									disabled: disableAll,
 									type: 'toggler',
-									value: getState(filter.name).negative,
-									toggleValue: getNegativeToggler(filter.name),
-									possibleValues: ['excl', 'incl'],
+									value: getState(filter.name)[param.name],
+									toggleValue: getToggler(filter.name, param.name as keyof Filter),
+									possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
 								};
 							case 'string':
 								return {

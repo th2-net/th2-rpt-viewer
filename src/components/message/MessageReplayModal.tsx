@@ -16,7 +16,8 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { MessageFilterState } from '../search-panel/SearchPanelFilters';
+import { motion } from 'framer-motion';
+import { MessageFilterState, MultipleStringFilter } from '../search-panel/SearchPanelFilters';
 import {
 	CompoundFilterRow,
 	FilterRowConfig,
@@ -48,6 +49,9 @@ function MessageReplayModal() {
 	const [isCopied, setIsCopied] = React.useState(false);
 
 	const [isOpen, setIsOpen] = React.useState(false);
+
+	const [drag, setDrag] = React.useState(false);
+	const [mouseDown, setMouseDown] = React.useState(false);
 
 	const [sseFilter, setSSEFilter] = React.useState<MessageFilterState | null>(null);
 	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
@@ -114,13 +118,19 @@ function MessageReplayModal() {
 			};
 		}
 
-		function getNegativeToggler<T extends keyof MessageFilterState>(name: T) {
-			return function negativeToggler() {
+		function getToggler<T extends keyof MessageFilterState>(
+			filterName: T,
+			paramName: keyof MultipleStringFilter,
+		) {
+			return function toggler() {
 				setSSEFilter(prevState => {
 					if (prevState !== null) {
 						return {
 							...prevState,
-							[name]: { ...prevState[name], negative: !prevState[name].negative },
+							[filterName]: {
+								...prevState[filterName],
+								[paramName]: !prevState[filterName][paramName],
+							},
 						};
 					}
 
@@ -140,13 +150,13 @@ function MessageReplayModal() {
 					switch (param.type.value) {
 						case 'boolean':
 							return {
-								id: `${filter.name}-include`,
-								label,
+								id: `${filter.name}-${param.name}`,
+								label: param.name === 'negative' ? label : '',
 								disabled: false,
 								type: 'toggler',
-								value: getState(filter.name).negative,
-								toggleValue: getNegativeToggler(filter.name),
-								possibleValues: ['excl', 'incl'],
+								value: getState(filter.name)[param.name as keyof MultipleStringFilter],
+								toggleValue: getToggler(filter.name, param.name as keyof MultipleStringFilter),
+								possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
 								className: 'filter-row__toggler',
 							} as any;
 						default:
@@ -273,19 +283,40 @@ function MessageReplayModal() {
 		setIsCopied(true);
 	}
 
+	const refConstrains = React.useRef(null);
+
 	return (
 		<>
 			<span className='replay__toggle-button' onClick={toggleReplayModal}>
 				Replay
 			</span>
 			<ModalPortal isOpen={isOpen}>
-				<div className='replay' ref={rootRef}>
+				<motion.div className='replay__drag-area' ref={refConstrains} />
+				<motion.div
+					dragElastic={false}
+					dragMomentum={false}
+					dragConstraints={refConstrains}
+					drag={drag || mouseDown}
+					className='replay'
+					ref={rootRef}
+					onMouseDown={() => setMouseDown(true)}
+					onMouseUp={() => setMouseDown(false)}>
+					<div
+						className='dragable-area'
+						onMouseOver={() => setDrag(true)}
+						onMouseLeave={() => setDrag(false)}
+						onMouseDown={() => setMouseDown(true)}
+						onMouseUp={() => setMouseDown(false)}
+					/>
 					<button className='replay__close-button' onClick={() => setIsOpen(false)}>
 						<i></i>
 					</button>
 					{filterConfig.map(rowConfig =>
 						Array.isArray(rowConfig) ? (
-							<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
+							<div
+								onMouseOver={() => setDrag(false)}
+								className='filter__compound'
+								key={rowConfig.map(c => c.id).join('-')}>
 								{rowConfig.map(_rowConfig => (
 									<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
 								))}
@@ -304,7 +335,7 @@ function MessageReplayModal() {
 						onClick={onCopy}>
 						{isCopied ? 'Copied to clipboard' : 'Copy'}
 					</button>
-				</div>
+				</motion.div>
 			</ModalPortal>
 		</>
 	);
