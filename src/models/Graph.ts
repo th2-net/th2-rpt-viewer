@@ -57,6 +57,8 @@ export enum GraphItemType {
 	PASSED = 'passed',
 	FAILED = 'failed',
 	HOVERED_EVENT = 'hovered-event',
+	HOVERED_EVENT_PASSED = 'hovered-event-passed',
+	HOVERED_EVENT_FAILED = 'hovered-event-failed',
 	HOVERED_MESSAGE = 'hovered-message',
 }
 
