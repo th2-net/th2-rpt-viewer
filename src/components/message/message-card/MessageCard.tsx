@@ -21,6 +21,7 @@ import {
 	useMessageDisplayRulesStore,
 	useSelectedStore,
 	useMessagesDataStore,
+	useMessageBodySortStore,
 } from '../../../hooks';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
@@ -47,7 +48,7 @@ export interface RecoveredProps {
 	setViewType: (viewType: MessageViewType) => void;
 }
 
-export interface MinimalMessageCardProps extends OwnProps, RecoveredProps {
+export interface MessageCardBaseProps extends OwnProps, RecoveredProps {
 	hoverMessage?: () => void;
 	unhoverMessage?: () => void;
 	isAttached?: boolean;
@@ -58,6 +59,7 @@ export interface MinimalMessageCardProps extends OwnProps, RecoveredProps {
 	toogleMessagePin?: () => void;
 	isDetailed?: boolean;
 	isEmbedded?: boolean;
+	sortOrderItems?: string[];
 }
 
 interface Props extends OwnProps, RecoveredProps {}
@@ -75,7 +77,8 @@ export function MessageCardBase({
 	toogleMessagePin,
 	isEmbedded,
 	isDetailed,
-}: MinimalMessageCardProps) {
+	sortOrderItems,
+}: MessageCardBaseProps) {
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
 	const renderInlineMessageInfo = () => {
@@ -142,6 +145,7 @@ export function MessageCardBase({
 		rawContent: bodyBase64,
 		isSelected: isAttached || false,
 		isDetailed,
+		sortOrderItems: sortOrderItems || [],
 	};
 
 	const messageCardToolsConfig: MessageCardToolsConfig = {
@@ -218,6 +222,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const selectedStore = useSelectedStore();
+	const { sortOrderItems } = useMessageBodySortStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
@@ -319,6 +324,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			isSoftFiltered={isSoftFiltered}
 			toogleMessagePin={toogleMessagePin}
 			isDetailed={isDetailed}
+			sortOrderItems={sortOrderItems}
 		/>
 	);
 });
