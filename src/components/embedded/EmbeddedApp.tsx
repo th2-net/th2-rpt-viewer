@@ -25,7 +25,6 @@ function EmbeddedApp() {
 	const searchParams = new URLSearchParams(window.location.search);
 	const eventId = searchParams.get('eventId');
 	const messageId = searchParams.get('messageId');
-	window.history.replaceState({}, '', window.location.pathname);
 
 	if (eventId) {
 		return <EmbeddedEvent eventId={eventId} />;
