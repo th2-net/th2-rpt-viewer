@@ -35,6 +35,7 @@ export type MessageCardToolsConfig = {
 	isBookmarked: boolean;
 	toggleMessagePin: () => void;
 	isScreenshotMsg: boolean;
+	isEmbedded?: boolean;
 };
 
 const MessageCardTools = ({
@@ -46,6 +47,7 @@ const MessageCardTools = ({
 	isBookmarked,
 	toggleMessagePin,
 	isScreenshotMsg,
+	isEmbedded,
 }: MessageCardToolsConfig) => {
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const [isCopyMenuOpen, setIsCopyMenuOpen] = useState(false);
@@ -121,31 +123,36 @@ const MessageCardTools = ({
 					isViewMenuOpen ? 'active' : null,
 				)}
 				onClick={() => setIsViewMenuOpen(isOpen => !isOpen)}>
-				<div
-					className={bookmarkIconClass}
-					title={isBookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
-				/>
+				{!isEmbedded && (
+					<div
+						className={bookmarkIconClass}
+						title={isBookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
+					/>
+				)}
 				<div className='message-card-tools__ellipsis' />
 			</div>
 			<MessagePopup isOpen={isViewMenuOpen}>
-				<div className='message-card-tools__item' onClick={() => toggleMessagePin()}>
-					<div
-						className={createBemElement(
-							'message-card-tools',
-							'icon',
-							'bookmark',
-							isBookmarked ? 'pinned' : null,
-						)}
-					/>
-					<div
-						className={createBemElement(
-							'message-card-tools',
-							'indicator',
-							'bookmark',
-							isBookmarked ? 'active' : null,
-						)}
-					/>
-				</div>
+				{!isEmbedded && (
+					<div className='message-card-tools__item' onClick={() => toggleMessagePin()}>
+						<div
+							className={createBemElement(
+								'message-card-tools',
+								'icon',
+								'bookmark',
+								isBookmarked ? 'pinned' : null,
+							)}
+						/>
+
+						<div
+							className={createBemElement(
+								'message-card-tools',
+								'indicator',
+								'bookmark',
+								isBookmarked ? 'active' : null,
+							)}
+						/>
+					</div>
+				)}
 				{!isScreenshotMsg &&
 					viewTypes.map(viewType => {
 						const iconClassName = createBemElement('message-card-tools', 'icon', viewType);

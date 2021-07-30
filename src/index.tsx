@@ -24,14 +24,21 @@ import App from './components/App';
 import ErrorBoundary from './components/util/ErrorBoundary';
 import StoresProvider from './components/StoresProvider';
 import { registerFetchInterceptor } from './helpers/fetch-intercept';
+import EmbeddedApp from './components/embedded/EmbeddedApp';
 
 registerFetchInterceptor();
 
+const searchParams = new URLSearchParams(window.location.search);
+const isEmbedded = searchParams.get('viewMode') === 'embedded';
+
 ReactDOM.render(
 	<ErrorBoundary>
-		<StoresProvider>
-			<App />
-		</StoresProvider>
+		{isEmbedded && <EmbeddedApp />}
+		{!isEmbedded && (
+			<StoresProvider>
+				<App />
+			</StoresProvider>
+		)}
 	</ErrorBoundary>,
 	document.getElementById('index'),
 );

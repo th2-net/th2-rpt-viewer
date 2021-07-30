@@ -129,6 +129,7 @@ export default class RootStore {
 			const timestamp = searchParams.get('timestamp');
 			const eventId = searchParams.get('eventId');
 			const messageId = searchParams.get('messageId');
+
 			if (filtersToPin) {
 				const filtersHistoryItem: FiltersHistoryType<FilterState> = JSON.parse(
 					window.atob(filtersToPin),

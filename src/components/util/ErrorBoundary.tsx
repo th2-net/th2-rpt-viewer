@@ -23,25 +23,29 @@ interface Props {
 
 interface State {
 	hasError: boolean;
+	message: string;
 }
 
 export default class ErrorBoundary extends React.Component<Props, State> {
 	state = {
 		hasError: false,
+		message: '',
 	};
 
-	static getDerivedStateFromError(): State {
+	static getDerivedStateFromError(error: Error): State {
 		return {
 			hasError: true,
+			message: error.message,
 		};
 	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 		console.error(`${error.stack}, component stack: ${errorInfo.componentStack}`);
+		this.setState({ message: error.message });
 	}
 
 	render() {
-		const errorMessage = this.props.errorMessage || 'Something went wrong...';
+		const errorMessage = this.state.message || 'Something went wrong...';
 		const { hasError } = this.state;
 		const { fallback } = this.props;
 		if (hasError) {
