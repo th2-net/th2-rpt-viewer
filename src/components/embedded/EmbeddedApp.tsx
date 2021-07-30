@@ -1,4 +1,3 @@
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 import EmbeddedEvent from './EmbeddedEvent';
 import EmbeddedMessage from './EmbeddedMessage';
@@ -18,7 +17,7 @@ function EmbeddedApp() {
 	if (messageId) {
 		return <EmbeddedMessage messageId={messageId} />;
 	}
-	return <p>Message or event ID not found</p>;
+	throw new Error('Message or event ID not found');
 }
 
-export default observer(EmbeddedApp);
+export default EmbeddedApp;

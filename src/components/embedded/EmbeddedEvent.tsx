@@ -1,19 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import api from '../../api';
 import { EventAction } from '../../models/EventAction';
 import EventBodyCard from '../event/EventBodyCard';
 import SplashScreen from '../SplashScreen';
 
 function EmbeddedEvent({ eventId }: { eventId: string }) {
 	const [event, setEvent] = useState<EventAction | null>(null);
+	const [errorStatus, setErrorStatus] = useState<string | null>(null);
 
 	useEffect(() => {
-		getMessage();
+		getEvent();
 	}, []);
 
-	async function getMessage() {
-		const eventRes = await api.events.getEvent(eventId);
-		setEvent(eventRes);
+	async function getEvent() {
+		const res = await fetch(`backend/event/${eventId}`);
+		if (res.ok) {
+			setEvent(await res.json());
+		} else {
+			setErrorStatus(`${res.status} ${res.statusText}`);
+		}
+	}
+
+	if (errorStatus) {
+		throw new Error(errorStatus);
 	}
 
 	if (event) {
@@ -33,7 +41,6 @@ function EmbeddedEvent({ eventId }: { eventId: string }) {
 			</>
 		);
 	}
-
 	return <SplashScreen />;
 }
 

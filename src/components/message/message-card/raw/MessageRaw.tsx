@@ -16,58 +16,16 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useMessagesWorkspaceStore } from '../../../../hooks';
 import DetailedMessageRaw from './DetailedMessageRaw';
 import SimpleMessageRaw from './SimpleMessageRaw';
-import { MessageViewType } from '../../../../models/EventMessage';
 
 interface Props {
 	rawContent: string;
-	messageId: string;
 	renderInfo: () => React.ReactNode;
-	isEmbedded?: boolean;
-	viewType: MessageViewType.ASCII | MessageViewType.BINARY;
+	isDetailed: boolean;
 }
 
-interface EmbeddedProps {
-	rawContent: string;
-	renderInfo: () => React.ReactNode;
-	viewType: MessageViewType;
-}
-
-function MessageRaw({ rawContent, messageId, renderInfo, isEmbedded, viewType }: Props) {
-	if (isEmbedded) {
-		return (
-			<EmbeddedMessageRaw rawContent={rawContent} renderInfo={renderInfo} viewType={viewType} />
-		);
-	}
-	return (
-		<DefaultMessageRaw
-			rawContent={rawContent}
-			messageId={messageId}
-			renderInfo={renderInfo}
-			viewType={viewType}
-		/>
-	);
-}
-
-function EmbeddedMessageRaw({ rawContent, renderInfo, viewType }: EmbeddedProps) {
-	return (
-		<div className='mc-raw'>
-			{viewType === MessageViewType.BINARY ? (
-				<DetailedMessageRaw rawContent={rawContent} />
-			) : (
-				<SimpleMessageRaw rawContent={rawContent} renderInfo={renderInfo} />
-			)}
-		</div>
-	);
-}
-
-function DefaultMessageRaw({ rawContent, messageId, renderInfo }: Props) {
-	const messagesStore = useMessagesWorkspaceStore();
-
-	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
-
+function MessageRaw({ rawContent, renderInfo, isDetailed }: Props) {
 	return (
 		<div className='mc-raw'>
 			{isDetailed ? (

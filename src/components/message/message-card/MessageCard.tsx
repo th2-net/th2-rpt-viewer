@@ -56,12 +56,13 @@ export interface MinimalMessageCardProps extends OwnProps, RecoveredProps {
 	isSoftFiltered?: boolean;
 	isContentBeautified?: boolean;
 	toogleMessagePin?: () => void;
+	isDetailed?: boolean;
 	isEmbedded?: boolean;
 }
 
 interface Props extends OwnProps, RecoveredProps {}
 
-export function MinimalMessageCard({
+export function MessageCardBase({
 	message,
 	viewType,
 	setViewType,
@@ -71,9 +72,9 @@ export function MinimalMessageCard({
 	isBookmarked,
 	isHighlighted,
 	isSoftFiltered,
-	isContentBeautified,
 	toogleMessagePin,
 	isEmbedded,
+	isDetailed,
 }: MinimalMessageCardProps) {
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
@@ -137,10 +138,10 @@ export function MinimalMessageCard({
 		viewType,
 		messageId,
 		messageBody: body,
-		isBeautified: isContentBeautified || false,
+		isBeautified: viewType === MessageViewType.FORMATTED,
 		rawContent: bodyBase64,
 		isSelected: isAttached || false,
-		isEmbedded,
+		isDetailed,
 	};
 
 	const messageCardToolsConfig: MessageCardToolsConfig = {
@@ -211,7 +212,7 @@ export function MinimalMessageCard({
 	);
 }
 
-function MessageCardBase({ message, viewType, setViewType }: Props) {
+const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const { messageId } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
@@ -230,6 +231,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 		) !== -1;
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
+	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
@@ -304,7 +306,7 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 	}
 
 	return (
-		<MinimalMessageCard
+		<MessageCardBase
 			message={message}
 			viewType={viewType}
 			setViewType={setViewType}
@@ -316,11 +318,10 @@ function MessageCardBase({ message, viewType, setViewType }: Props) {
 			isContentBeautified={isContentBeautified}
 			isSoftFiltered={isSoftFiltered}
 			toogleMessagePin={toogleMessagePin}
+			isDetailed={isDetailed}
 		/>
 	);
-}
-
-const MessageCard = observer(MessageCardBase);
+});
 
 function calculateHueValue(session: string): number {
 	const hashCode = getHashCode(session);
