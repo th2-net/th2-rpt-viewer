@@ -29,16 +29,20 @@ export type MessageCardViewTypeRendererProps = {
 	isSelected: boolean;
 	messageBody: MessageBody | null;
 	renderInfo: () => React.ReactNode;
+	isEmbedded?: boolean;
+	isDetailed?: boolean;
+	sortOrderItems: string[];
 };
 
 const MessageCardViewTypeRenderer = ({
 	renderInfo,
 	viewType,
-	messageId,
 	rawContent,
 	isBeautified,
 	isSelected,
 	messageBody,
+	isDetailed,
+	sortOrderItems,
 }: MessageCardViewTypeRendererProps) => {
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
@@ -51,6 +55,7 @@ const MessageCardViewTypeRenderer = ({
 							isBeautified={isBeautified}
 							isSelected={isSelected}
 							body={messageBody}
+							sortOrderItems={sortOrderItems}
 						/>
 					}>
 					<MessageBodyCard
@@ -58,13 +63,18 @@ const MessageCardViewTypeRenderer = ({
 						body={messageBody}
 						isSelected={isSelected}
 						renderInfo={renderInfo}
+						sortOrderItems={sortOrderItems}
 					/>
 				</ErrorBoundary>
 			);
 		case MessageViewType.ASCII:
 		case MessageViewType.BINARY:
 			return rawContent ? (
-				<MessageRaw messageId={messageId} rawContent={rawContent} renderInfo={renderInfo} />
+				<MessageRaw
+					rawContent={rawContent}
+					renderInfo={renderInfo}
+					isDetailed={isDetailed || viewType === MessageViewType.BINARY}
+				/>
 			) : null;
 		default:
 			return null;

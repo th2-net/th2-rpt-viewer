@@ -52,7 +52,6 @@ export interface EventMessage {
 	sessionId: string;
 	body: MessageBody | null;
 	bodyBase64: string | null;
-	viewType: MessageViewType;
 }
 
 export function isScreenshotMessage(message: EventMessage): boolean {

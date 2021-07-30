@@ -23,7 +23,6 @@ import MessageBody, {
 	MessageBodyFields,
 	isMessageValue,
 } from '../../../models/MessageBody';
-import { useMessageBodySortStore } from '../../../hooks';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 const DEFAULT_HIGHLIGHT_COLOR = '#e2dfdf';
@@ -34,6 +33,7 @@ interface Props {
 	body: MessageBody | null;
 	isSelected: boolean;
 	renderInfo: () => React.ReactNode;
+	sortOrderItems: string[];
 }
 
 const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
@@ -52,13 +52,12 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 	return [...primarySortedFields, ...secondarySortedFields];
 };
 
-function MessageBodyCard({ isBeautified, body, isSelected, renderInfo }: Props) {
+function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrderItems }: Props) {
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
-	const { sortOrderItems } = useMessageBodySortStore();
 
 	const fields = React.useMemo(
 		() => getSortedFields(body?.fields ? body.fields : {}, sortOrderItems),
-		[body, sortOrderItems],
+		[body, [sortOrderItems]],
 	);
 
 	if (body == null) {
