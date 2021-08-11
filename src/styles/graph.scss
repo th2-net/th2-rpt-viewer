@@ -168,6 +168,9 @@
 }
 
 .graph-dot {
+	&.bookmarked-passed,
+	&.bookmarked-failed,
+	&.bookmarked-pinned-message,
 	&.attached-message,
 	&.pinned-message,
 	&.passed,
@@ -177,6 +180,8 @@
 		cursor: pointer;
 	}
 
+	&.bookmarked-passed,
+	&.bookmarked-failed,
 	&.passed,
 	&.failed,
 	&.hovered-event-failed,
@@ -196,11 +201,13 @@
 	}
 
 	&.hovered-event-passed,
+	&.bookmarked-passed,
 	&.passed {
 		background-color: $graphAttachedEventPassedColor;
 	}
 
 	&.hovered-event-failed,
+	&.bookmarked-failed,
 	&.failed {
 		background-color: $graphAttachedEventFailedColor;
 	}
@@ -210,6 +217,7 @@
 	}
 
 	&.hovered-message,
+	&.bookmarked-pinned-message,
 	&.pinned-message {
 		width: 12px;
 		height: 12px;
@@ -222,9 +230,9 @@
 	}
 }
 
-.graph-dot-bg-pinned-message,
-.graph-dot-bg-passed,
-.graph-dot-bg-failed {
+.graph-dot-bg-bookmarked-pinned-message,
+.graph-dot-bg-bookmarked-passed,
+.graph-dot-bg-bookmarked-failed {
 	@include icon(url(../../resources/icons/bookmark_shield.svg), 22px, 18px);
 }
 
@@ -263,6 +271,7 @@
 
 		&.active {
 			&::before {
+				z-index: -1;
 				background-color: #fff;
 				box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.45);
 			}

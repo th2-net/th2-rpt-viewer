@@ -22,6 +22,7 @@ import { calculateTimeRange } from '../helpers/graph';
 import { Chunk, GraphItem, GraphItemType, IntervalOption } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { SelectedStore } from './SelectedStore';
+import { isEventBookmark, isMessageBookmark } from '../components/bookmarks/BookmarksPanel';
 
 export class GraphStore {
 	public readonly steps = {
@@ -165,6 +166,10 @@ export class GraphStore {
 				? item.successful
 					? GraphItemType.HOVERED_EVENT_PASSED
 					: GraphItemType.HOVERED_EVENT_FAILED
+				: this.selectedStore.savedItems.includes(item)
+				? item.successful
+					? GraphItemType.BOOKMARKED_PASSED
+					: GraphItemType.BOOKMARKED_FAILED
 				: item.successful
 				? GraphItemType.PASSED
 				: GraphItemType.FAILED;
@@ -175,6 +180,8 @@ export class GraphStore {
 					attMsg => attMsg.messageId === item.messageId,
 			  ) !== -1
 			? GraphItemType.ATTACHED_MESSAGE
+			: this.selectedStore.savedItems.includes(item)
+			? GraphItemType.BOOKMARKED_PINNED_MESSAGE
 			: GraphItemType.PINNED_MESSAGE;
 	};
 
