@@ -56,7 +56,7 @@ export default function Bubble(props: Props) {
 
 	React.useEffect(() => {
 		if (isEditing) {
-			inputRef.current?.select();
+			inputRef.current?.focus();
 			if (!anchor) {
 				setAnchor(rootRef.current || undefined);
 			}
