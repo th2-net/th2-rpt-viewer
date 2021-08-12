@@ -22,7 +22,6 @@ import { calculateTimeRange } from '../helpers/graph';
 import { Chunk, GraphItem, GraphItemType, IntervalOption } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { SelectedStore } from './SelectedStore';
-import { isEventBookmark, isMessageBookmark } from '../components/bookmarks/BookmarksPanel';
 
 export class GraphStore {
 	public readonly steps = {
