@@ -40,9 +40,8 @@ export default function DetailedMessageRaw({ rawContent }: Props) {
 
 	const decodedRawContent = React.useMemo(() => decodeBase64RawContent(rawContent), [rawContent]);
 
-	const [offset, hexadecimal, humanReadable, beautifiedHumanReadable] = getRawContent(
-		decodedRawContent,
-	);
+	const [offset, hexadecimal, humanReadable, beautifiedHumanReadable] =
+		getRawContent(decodedRawContent);
 
 	const humanContentOnCopy = (e: React.ClipboardEvent<HTMLPreElement>) => {
 		if (humanSelectionStart != null && humanSelectionEnd != null) {
