@@ -34,7 +34,7 @@ interface Props {
 	onRemove: () => void;
 }
 
-export default function Bubble(props: Props) {
+const Bubble = React.forwardRef((props: Props, ref: any) => {
 	const {
 		value,
 		autocompleteVariants,
@@ -74,6 +74,10 @@ export default function Bubble(props: Props) {
 			setCurrentValue('');
 		};
 	}, [value]);
+
+	React.useImperativeHandle(ref, () => ({
+		focus: () => setIsEditing(true),
+	}));
 
 	const onBlur = () => {
 		if (inputRef.current?.value === '') {
@@ -137,4 +141,6 @@ export default function Bubble(props: Props) {
 			)}
 		</div>
 	);
-}
+});
+
+export default Bubble;

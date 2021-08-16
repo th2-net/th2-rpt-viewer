@@ -32,6 +32,7 @@ interface MultipleStringFilterRowProps {
 
 export default function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
 	const input = React.useRef<HTMLInputElement>();
+	const bubbleRef = React.useRef<HTMLInputElement>();
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
 
@@ -74,6 +75,15 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 		input.current?.focus();
 	};
 
+	const focusBubble: React.KeyboardEventHandler<HTMLInputElement> = e => {
+		if (e.keyCode === KeyCodes.LEFT) {
+			bubbleRef.current?.focus();
+		}
+		if (e.keyCode === KeyCodes.RIGHT) {
+			input.current?.focus();
+		}
+	};
+
 	const inputRootClassName = createBemElement(
 		'filter-row',
 		'multiple-values',
@@ -97,9 +107,10 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 				</label>
 			)}
 			<div className={filterContentClassName} ref={rootRef}>
-				<div className={inputRootClassName} onClick={rootOnClick}>
+				<div className={inputRootClassName} onClick={rootOnClick} onKeyDown={focusBubble}>
 					{config.values.map((value, index) => (
 						<Bubble
+							ref={bubbleRef}
 							key={index}
 							size='small'
 							removeIconType='white'
@@ -118,6 +129,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 							}
 						/>
 					))}
+
 					<AutocompleteInput
 						anchor={autocompleteAnchor}
 						ref={input}
