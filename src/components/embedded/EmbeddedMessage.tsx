@@ -16,7 +16,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { EventMessage, MessageViewType } from '../../models/EventMessage';
-import { MessageCardBase } from '../message/message-card/MessageCard';
+import { MessageCardBase } from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
 import '../../styles/embedded.scss';
 

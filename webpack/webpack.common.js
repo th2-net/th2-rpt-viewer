@@ -17,6 +17,7 @@
 const path = require('path');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const { appSrc, appPath } = require('./paths');
 
@@ -56,6 +57,7 @@ module.exports = {
 		],
 	},
 	plugins: [
+		new CleanWebpackPlugin(),
 		new webpack.EnvironmentPlugin({
 			API_ENV: api_env,
 		}),
@@ -64,5 +66,6 @@ module.exports = {
 			template: path.resolve(appSrc, 'index.html'),
 			favicon: path.resolve(appPath, 'resources', 'icons', 'favicon.svg'),
 		}),
+		new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
 	],
 };

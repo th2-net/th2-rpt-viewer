@@ -1,6 +1,6 @@
 {
 	"name": "th2-rpt-viewer",
-	"version": "3.1.61",
+	"version": "3.1.65",
 	"description": "",
 	"main": "index.tsx",
 	"private": true,
@@ -75,6 +75,7 @@
 		"babel-loader": "^8.1.0",
 		"babel-plugin-const-enum": "^1.0.1",
 		"babel-preset-minify": "^0.5.1",
+		"clean-webpack-plugin": "^4.0.0-alpha.0",
 		"css-loader": "^3.5.2",
 		"cssnano": "^4.1.10",
 		"enzyme": "^3.10.0",

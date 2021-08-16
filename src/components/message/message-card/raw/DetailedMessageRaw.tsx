@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { copyTextToClipboard } from '../../../../helpers/copyHandler';
 import { showNotification } from '../../../../helpers/showNotification';
-import { useSelectListener } from '../../../../hooks';
+import { useSelectListener } from '../../../../hooks/useSelectListener';
 import {
 	decodeBase64RawContent,
 	getRawContent,

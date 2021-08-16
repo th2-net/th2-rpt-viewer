@@ -24,8 +24,8 @@ module.exports = webpackMerge(commonConfig, {
 	output: {
 		path: path.resolve(appBuild, 'out'),
 		publicPath: '',
-		filename: '[name].bundle.js',
-		chunkFilename: '[name].bundle.js',
+		filename: '[name].[contenthash].js',
+		chunkFilename: '[name].[contenthash].js',
 	},
 	mode: 'production',
 	entry: path.resolve(appSrc, 'index.tsx'),
