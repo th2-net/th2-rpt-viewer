@@ -143,4 +143,5 @@ const Bubble = React.forwardRef((props: Props, ref: any) => {
 	);
 });
 
+Bubble.displayName = 'Bubble';
 export default Bubble;
