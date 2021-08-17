@@ -27,9 +27,9 @@ interface Props {
 	style?: React.CSSProperties;
 	removeIconType?: 'default' | 'white';
 	value: string;
-	id: number;
-	selectNext: number;
-	selectPrev: number;
+	id?: number;
+	selectNext?: number;
+	selectPrev?: number;
 	isValid?: boolean;
 	autocompleteVariants?: string[] | null;
 	submitKeyCodes?: number[];
