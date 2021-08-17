@@ -27,6 +27,9 @@ interface Props {
 	style?: React.CSSProperties;
 	removeIconType?: 'default' | 'white';
 	value: string;
+	id: number;
+	selectNext: number;
+	selectPrev: number;
 	isValid?: boolean;
 	autocompleteVariants?: string[] | null;
 	submitKeyCodes?: number[];
@@ -39,6 +42,9 @@ type BubbleRef = { focus: () => void };
 const Bubble = React.forwardRef<BubbleRef, Props>((props: Props, ref: any) => {
 	const {
 		value,
+		id,
+		selectNext,
+		selectPrev,
 		autocompleteVariants,
 		onRemove,
 		onSubmit = () => null,
@@ -52,6 +58,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props: Props, ref: any) => {
 
 	const [anchor, setAnchor] = React.useState<HTMLDivElement>();
 	const [isEditing, setIsEditing] = React.useState(false);
+	const [isFocused, setIsFocused] = React.useState(false);
 	const [currentValue, setCurrentValue] = React.useState<string>(value);
 	const [selectionStart, setSelectionStart] = React.useState<number | null>();
 	const inputRef = React.useRef<HTMLInputElement>();
@@ -80,8 +87,15 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props: Props, ref: any) => {
 
 	React.useImperativeHandle(ref, () => ({
 		selectionStart,
-		focus: () => setIsEditing(true),
+		focus: () => {
+			setIsEditing(true);
+			setIsFocused(true);
+		},
 		value: currentValue,
+		id,
+		selectNext,
+		selectPrev,
+		isFocused,
 	}));
 
 	const onBlur = () => {
@@ -90,11 +104,13 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props: Props, ref: any) => {
 		}
 
 		setIsEditing(false);
+		setIsFocused(false);
 	};
 
 	const rootOnClick = () => {
 		if (!isEditing) {
 			setIsEditing(true);
+			setIsFocused(true);
 		}
 	};
 
@@ -108,6 +124,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props: Props, ref: any) => {
 		}
 		onSubmit(nextValue);
 		setIsEditing(false);
+		setIsFocused(false);
 	};
 
 	const onKeyUp: React.KeyboardEventHandler<HTMLInputElement> = () => {

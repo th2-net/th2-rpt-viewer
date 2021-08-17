@@ -32,7 +32,7 @@ interface MultipleStringFilterRowProps {
 
 export default function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
 	const input = React.useRef<HTMLInputElement>();
-	const bubble = React.useRef<HTMLInputElement>(null);
+	const bubble = React.useRef<any>([]);
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
 
@@ -75,15 +75,50 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 		input.current?.focus();
 	};
 
+	const focusBubble: React.KeyboardEventHandler<HTMLInputElement> = e => {
+		bubble.current.forEach(
+			(element: {
+				selectionStart: number;
+				id: number;
+				value: string;
+				selectNext: number;
+				selectPrev: number;
+				isFocused: boolean;
+			}) => {
+				if (element.isFocused)
+					switch (e.keyCode) {
+						case KeyCodes.LEFT:
+							if (element.selectionStart === 0 && bubble.current[element.selectPrev]) {
+								bubble.current[element.selectPrev].focus();
+							}
+
+							break;
+
+						case KeyCodes.RIGHT:
+							if (
+								element.selectionStart === element.value.length &&
+								bubble.current[element.selectNext]
+							) {
+								bubble.current[element.selectNext].focus();
+							}
+							if (
+								element.selectionStart === element.value.length &&
+								!bubble.current[element.selectNext]
+							) {
+								input.current?.focus();
+							}
+
+							break;
+						default:
+							break;
+					}
+			},
+		);
+	};
+
 	const focusDiv: React.KeyboardEventHandler<HTMLInputElement> = e => {
 		if (e.keyCode === KeyCodes.LEFT && input.current?.selectionStart === 0) {
-			bubble.current?.focus();
-		}
-		if (
-			e.keyCode === KeyCodes.RIGHT &&
-			bubble.current?.selectionStart === bubble.current?.value.length
-		) {
-			input.current?.focus();
+			bubble.current[bubble.current.length - 1].focus();
 		}
 	};
 
@@ -111,11 +146,14 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 			)}
 			<div className={filterContentClassName} ref={rootRef}>
 				<div className={inputRootClassName} onClick={rootOnClick}>
-					<div onKeyDown={focusDiv}>
+					<div onKeyDown={focusBubble}>
 						{config.values.map((value, index) => (
 							<Bubble
-								ref={bubble}
+								ref={e => (bubble.current[index] = e)}
 								key={index}
+								id={index}
+								selectNext={index + 1}
+								selectPrev={index - 1}
 								size='small'
 								removeIconType='white'
 								submitKeyCodes={[KeyCodes.TAB]}
