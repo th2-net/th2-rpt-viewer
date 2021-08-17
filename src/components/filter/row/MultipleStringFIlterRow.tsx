@@ -111,8 +111,8 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 			)}
 			<div className={filterContentClassName} ref={rootRef}>
 				<div className={inputRootClassName} onClick={rootOnClick}>
-					{config.values.map((value, index) => (
-						<div onKeyDown={focusDiv}>
+					<div onKeyDown={focusDiv}>
+						{config.values.map((value, index) => (
 							<Bubble
 								ref={bubble}
 								key={index}
@@ -132,8 +132,8 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 										: undefined
 								}
 							/>
-						</div>
-					))}
+						))}
+					</div>
 					<div onKeyDown={focusDiv}>
 						<AutocompleteInput
 							anchor={autocompleteAnchor}
