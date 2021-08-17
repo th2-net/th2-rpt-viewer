@@ -32,7 +32,7 @@ interface MultipleStringFilterRowProps {
 
 export default function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
 	const input = React.useRef<HTMLInputElement>();
-	const bubbleRef = React.useRef<HTMLInputElement>();
+	const bubble = React.useRef<HTMLInputElement>(null);
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
 
@@ -75,11 +75,14 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 		input.current?.focus();
 	};
 
-	const focusBubble: React.KeyboardEventHandler<HTMLInputElement> = e => {
-		if (e.keyCode === KeyCodes.LEFT) {
-			bubbleRef.current?.focus();
+	const focusDiv: React.KeyboardEventHandler<HTMLInputElement> = e => {
+		if (e.keyCode === KeyCodes.LEFT && input.current?.selectionStart === 0) {
+			bubble.current?.focus();
 		}
-		if (e.keyCode === KeyCodes.RIGHT) {
+		if (
+			e.keyCode === KeyCodes.RIGHT &&
+			bubble.current?.selectionStart === bubble.current?.value.length
+		) {
 			input.current?.focus();
 		}
 	};
@@ -107,53 +110,56 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 				</label>
 			)}
 			<div className={filterContentClassName} ref={rootRef}>
-				<div className={inputRootClassName} onClick={rootOnClick} onKeyDown={focusBubble}>
+				<div className={inputRootClassName} onClick={rootOnClick}>
 					{config.values.map((value, index) => (
-						<Bubble
-							ref={bubbleRef}
-							key={index}
-							size='small'
-							removeIconType='white'
-							submitKeyCodes={[KeyCodes.TAB]}
-							className='filter__bubble'
-							value={value}
-							onSubmit={valueBubbleOnChangeFor(index)}
-							onRemove={valueBubbleOnRemoveFor(index)}
-							autocompleteVariants={config.autocompleteList}
-							isValid={
-								config.validateBubbles
-									? config.autocompleteList
-										? config.autocompleteList.includes(value.trim())
+						<div onKeyDown={focusDiv}>
+							<Bubble
+								ref={bubble}
+								key={index}
+								size='small'
+								removeIconType='white'
+								submitKeyCodes={[KeyCodes.TAB]}
+								className='filter__bubble'
+								value={value}
+								onSubmit={valueBubbleOnChangeFor(index)}
+								onRemove={valueBubbleOnRemoveFor(index)}
+								autocompleteVariants={config.autocompleteList}
+								isValid={
+									config.validateBubbles
+										? config.autocompleteList
+											? config.autocompleteList.includes(value.trim())
+											: undefined
 										: undefined
-									: undefined
-							}
-						/>
+								}
+							/>
+						</div>
 					))}
-
-					<AutocompleteInput
-						anchor={autocompleteAnchor}
-						ref={input}
-						placeholder={
-							config.values.length === 0
-								? config.hint ||
-								  `${config.required ? 'Required. ' : ''}Use Tab to separate different words`
-								: ''
-						}
-						disabled={config.disabled}
-						submitKeyCodes={[KeyCodes.TAB]}
-						className='filter-row__multiple-values-input'
-						wrapperClassName='filter-row__multiple-values-input-wrapper'
-						value={config.currentValue}
-						setValue={config.setCurrentValue}
-						autoresize
-						autocomplete={config.autocompleteList}
-						datalistKey={`autocomplete-${1}`}
-						onSubmit={inputOnSubmit}
-						onRemove={inputOnRemove}
-						onFocus={() => setIsFocused(true)}
-						onBlur={() => setIsFocused(false)}
-						inputStyle={{ width: '100%' }}
-					/>
+					<div onKeyDown={focusDiv}>
+						<AutocompleteInput
+							anchor={autocompleteAnchor}
+							ref={input}
+							placeholder={
+								config.values.length === 0
+									? config.hint ||
+									  `${config.required ? 'Required. ' : ''}Use Tab to separate different words`
+									: ''
+							}
+							disabled={config.disabled}
+							submitKeyCodes={[KeyCodes.TAB]}
+							className='filter-row__multiple-values-input'
+							wrapperClassName='filter-row__multiple-values-input-wrapper'
+							value={config.currentValue}
+							setValue={config.setCurrentValue}
+							autoresize
+							autocomplete={config.autocompleteList}
+							datalistKey={`autocomplete-${1}`}
+							onSubmit={inputOnSubmit}
+							onRemove={inputOnRemove}
+							onFocus={() => setIsFocused(true)}
+							onBlur={() => setIsFocused(false)}
+							inputStyle={{ width: '100%' }}
+						/>
+					</div>
 				</div>
 			</div>
 		</div>

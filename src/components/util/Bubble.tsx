@@ -34,7 +34,9 @@ interface Props {
 	onRemove: () => void;
 }
 
-const Bubble = React.forwardRef((props: Props, ref: any) => {
+type BubbleRef = { focus: () => void };
+
+const Bubble = React.forwardRef<BubbleRef, Props>((props: Props, ref: any) => {
 	const {
 		value,
 		autocompleteVariants,
@@ -51,6 +53,7 @@ const Bubble = React.forwardRef((props: Props, ref: any) => {
 	const [anchor, setAnchor] = React.useState<HTMLDivElement>();
 	const [isEditing, setIsEditing] = React.useState(false);
 	const [currentValue, setCurrentValue] = React.useState<string>(value);
+	const [selectionStart, setSelectionStart] = React.useState<number | null>();
 	const inputRef = React.useRef<HTMLInputElement>();
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -76,7 +79,9 @@ const Bubble = React.forwardRef((props: Props, ref: any) => {
 	}, [value]);
 
 	React.useImperativeHandle(ref, () => ({
+		selectionStart,
 		focus: () => setIsEditing(true),
+		value: currentValue,
 	}));
 
 	const onBlur = () => {
@@ -105,6 +110,10 @@ const Bubble = React.forwardRef((props: Props, ref: any) => {
 		setIsEditing(false);
 	};
 
+	const onKeyUp: React.KeyboardEventHandler<HTMLInputElement> = () => {
+		setSelectionStart(inputRef.current?.selectionStart);
+	};
+
 	const rootClass = createBemBlock('bubble', size, !isValid && !isEditing ? 'invalid' : null);
 
 	const iconClass = createBemElement('bubble', 'remove-icon', removeIconType);
@@ -115,7 +124,8 @@ const Bubble = React.forwardRef((props: Props, ref: any) => {
 			style={style}
 			onBlur={onBlur}
 			onClick={rootOnClick}
-			ref={rootRef}>
+			ref={rootRef}
+			onKeyUp={onKeyUp}>
 			{isEditing ? (
 				<AutocompleteInput
 					anchor={anchor}
