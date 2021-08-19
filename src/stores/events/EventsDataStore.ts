@@ -197,6 +197,7 @@ export default class EventsDataStore {
 		);
 
 		if (rootEvents.length > 0) {
+			// extra event is here
 			this.rootEventIds = [
 				...this.rootEventIds,
 				...rootEvents

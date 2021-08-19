@@ -16,6 +16,7 @@
 
 import React from 'react';
 import moment from 'moment';
+import { AnimatePresence, motion, useMotionValue } from 'framer-motion';
 import { useDebouncedCallback } from '../../hooks';
 import { isDivElement } from '../../helpers/dom';
 import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from '../../models/Graph';
@@ -117,6 +118,8 @@ const GraphChunksVirtualizer = (props: Props) => {
 	const innerRange = React.useRef<null | TimeRange>(null);
 
 	const [panels, setPanels] = React.useState<Array<PanelsRangeMarker | null>>([]);
+
+	const panelsX = [useMotionValue(0), useMotionValue(0)];
 
 	React.useLayoutEffect(() => {
 		if (!chunks.length) {
@@ -333,6 +336,10 @@ const GraphChunksVirtualizer = (props: Props) => {
 		}
 	};
 
+	const setX = (index: number) => (value: number) => {
+		panelsX[index].set(value);
+	};
+
 	return (
 		<div className='graph-virtualizer'>
 			<div
@@ -343,23 +350,33 @@ const GraphChunksVirtualizer = (props: Props) => {
 				<div ref={prevItemsRef} style={{ flexShrink: 0 }} />
 				{chunks.map(([chunk, index]) => props.renderChunk(chunk, index))}
 				<div ref={nextItemsRef} style={{ flexShrink: 0 }} />
-				{panels.map(
-					(panel, index) =>
-						panel && (
-							<div
-								key={panel.type}
-								className={`graph-virtualizer__panel-marker ${panel.type}`}
-								style={{ left: panel.left, bottom: index * 6, width: panel.width }}
-							/>
-						),
-				)}
+				<AnimatePresence>
+					{panels.map(
+						(panel, index) =>
+							panel && (
+								<motion.div
+									key={panel.type}
+									className={`graph-virtualizer__panel-marker ${panel.type}`}
+									animate='visible'
+									style={{
+										left: panel.left,
+										bottom: index * 6,
+										width: panel.width,
+										x: panelsX[index],
+									}}
+								/>
+							),
+					)}
+				</AnimatePresence>
 			</div>
-			{panelsRange.map(panel => (
+			{panelsRange.map((panel, index) => (
 				<TimeSelector
 					key={panel.type}
+					setX={setX(index)}
 					windowTimeRange={range}
 					onClick={panel.setRange}
 					panelType={panel.type}
+					panelRange={panel.range}
 				/>
 			))}
 			<div className='graph-virtualizer__dragging-zone' ref={rangeElementRef} />
@@ -373,11 +390,12 @@ interface TimeSelectorProps {
 	onClick: (clickedTimestamp: number) => void;
 	windowTimeRange: TimeRange;
 	panelType: GraphPanelType;
+	setX: (value: number) => void;
+	panelRange: TimeRange;
 }
 
 function TimeSelector(props: TimeSelectorProps) {
-	const { onClick, windowTimeRange, panelType } = props;
-
+	const { onClick, windowTimeRange, panelType, setX, panelRange } = props;
 	const [isHovered, setIsHovered] = React.useState(false);
 
 	const delayedSetState = React.useRef<NodeJS.Timeout | null>(null);
@@ -385,15 +403,10 @@ function TimeSelector(props: TimeSelectorProps) {
 	const pointerRef = React.useRef<HTMLSpanElement>(null);
 	const dashedLineRef = React.useRef<HTMLDivElement>(null);
 
-	const isDown = React.useRef(false);
-
 	const updatePointerTimestamp = usePointerTimestampUpdate();
 
-	function handleClick(e: React.MouseEvent<HTMLSpanElement>) {
-		const pointerEl = pointerRef.current;
-		const clickedTime = getTimeOffset(e.pageX - (pointerEl?.offsetWidth || 6) / 2);
-		onClick(clickedTime);
-	}
+	const startOffset = React.useRef(0);
+	const isDown = React.useRef(false);
 
 	function handleMouseEnter() {
 		if (!delayedSetState.current) {
@@ -447,28 +460,38 @@ function TimeSelector(props: TimeSelectorProps) {
 		return Math.floor(from + (to - from) * (clickPoint / width));
 	}
 
-	function handleMouseDown(event: React.MouseEvent<HTMLDivElement>) {
-		if (
-			!rootRef.current ||
-			(event.target instanceof Node && !rootRef.current.contains(event.target))
-		)
+	function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
+		const pointerEl = pointerRef.current;
+		if (!pointerEl) {
 			return;
-
+		}
 		isDown.current = true;
+		startOffset.current = e.clientX;
 		document.addEventListener('mousemove', handleMouseDrag);
 		document.addEventListener('mouseup', handleMouseUp);
 	}
 
-	function handleMouseDrag(event: MouseEvent) {
-		if (!rootRef.current || !isDown.current) return;
-		event.preventDefault();
+	function handleMouseDrag(e: MouseEvent) {
 		const pointerEl = pointerRef.current;
-		const clickedTime = getTimeOffset(event.pageX - (pointerEl?.offsetWidth || 6) / 2);
-		onClick(clickedTime);
+		if (!isDown.current || !pointerEl) {
+			return;
+		}
+		setX(e.clientX - startOffset.current);
 	}
 
-	function handleMouseUp() {
+	function handleMouseUp(e: MouseEvent) {
 		isDown.current = false;
+		const pointerEl = pointerRef.current;
+		const withoutOff = e.pageX - (pointerEl?.offsetWidth || 6) / 2;
+		const offset = e.clientX - startOffset.current;
+		const x0 = (panelRange[0] + panelRange[1]) / 2;
+		if (Math.abs(offset) > 10) {
+			onClick(x0 + getTimeOffset(offset) - windowTimeRange[0]);
+		} else {
+			onClick(getTimeOffset(withoutOff));
+		}
+		startOffset.current = 0;
+		setX(0);
 		document.removeEventListener('mousemove', handleMouseDrag);
 		document.removeEventListener('mouseup', handleMouseUp);
 	}
@@ -482,11 +505,7 @@ function TimeSelector(props: TimeSelectorProps) {
 			onMouseLeave={handleMouseOut}
 			onMouseMove={handleMouseMove}>
 			<div ref={dashedLineRef} className={`time-picker__dashed-line ${panelType}`} />
-			<span
-				className={`time-picker__pointer ${panelType}`}
-				ref={pointerRef}
-				onClick={handleClick}
-			/>
+			<span className={`time-picker__pointer ${panelType}`} ref={pointerRef} />
 		</div>
 	);
 }
