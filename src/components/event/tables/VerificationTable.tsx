@@ -124,7 +124,6 @@ class VerificationTableBase extends React.Component<Props, State> {
 
 		this.resizeObserver = new ResizeObserver(() => this.getHiddenColumns());
 		this.resizeObserver.observe(this.rootRef.current as HTMLDivElement);
-		this.setExpandStatus(false);
 	}
 
 	componentDidUpdate(prevProps: Props) {
