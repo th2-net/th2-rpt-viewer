@@ -459,7 +459,6 @@ function TimeSelector(props: TimeSelectorProps) {
 	}
 
 	function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
-		e.preventDefault();
 		const pointerEl = pointerRef.current;
 		if (!pointerEl) {
 			return;
@@ -471,6 +470,7 @@ function TimeSelector(props: TimeSelectorProps) {
 	}
 
 	function handleMouseDrag(e: MouseEvent) {
+		e.preventDefault();
 		const pointerEl = pointerRef.current;
 		if (!isDown.current || !pointerEl) {
 			return;
