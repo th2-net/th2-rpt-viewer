@@ -16,7 +16,7 @@
 
 import React from 'react';
 import moment from 'moment';
-import { AnimatePresence, motion, useMotionValue } from 'framer-motion';
+import { motion, useMotionValue } from 'framer-motion';
 import { useDebouncedCallback } from '../../hooks';
 import { isDivElement } from '../../helpers/dom';
 import { Chunk, GraphPanelType, PanelRange, PanelsRangeMarker } from '../../models/Graph';
@@ -350,24 +350,22 @@ const GraphChunksVirtualizer = (props: Props) => {
 				<div ref={prevItemsRef} style={{ flexShrink: 0 }} />
 				{chunks.map(([chunk, index]) => props.renderChunk(chunk, index))}
 				<div ref={nextItemsRef} style={{ flexShrink: 0 }} />
-				<AnimatePresence>
-					{panels.map(
-						(panel, index) =>
-							panel && (
-								<motion.div
-									key={panel.type}
-									className={`graph-virtualizer__panel-marker ${panel.type}`}
-									animate='visible'
-									style={{
-										left: panel.left,
-										bottom: index * 6,
-										width: panel.width,
-										x: panelsX[index],
-									}}
-								/>
-							),
-					)}
-				</AnimatePresence>
+				{panels.map(
+					(panel, index) =>
+						panel && (
+							<motion.div
+								key={panel.type}
+								className={`graph-virtualizer__panel-marker ${panel.type}`}
+								animate='visible'
+								style={{
+									left: panel.left,
+									bottom: index * 6,
+									width: panel.width,
+									x: panelsX[index],
+								}}
+							/>
+						),
+				)}
 			</div>
 			{panelsRange.map((panel, index) => (
 				<TimeSelector
@@ -461,6 +459,7 @@ function TimeSelector(props: TimeSelectorProps) {
 	}
 
 	function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
+		e.preventDefault();
 		const pointerEl = pointerRef.current;
 		if (!pointerEl) {
 			return;
