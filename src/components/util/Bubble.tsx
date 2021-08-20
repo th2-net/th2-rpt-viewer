@@ -22,14 +22,14 @@ import KeyCodes from '../../util/KeyCodes';
 import '../../styles/bubble.scss';
 
 interface Props {
+	id?: number;
 	className?: string;
 	size?: 'small' | 'medium' | 'large';
 	style?: React.CSSProperties;
 	removeIconType?: 'default' | 'white';
 	value: string;
-	id?: number;
-	selectNext?: number;
-	selectPrev?: number;
+	selectNext?: () => void | null;
+	selectPrev?: () => void | null;
 	isValid?: boolean;
 	autocompleteVariants?: string[] | null;
 	submitKeyCodes?: number[];
@@ -37,12 +37,12 @@ interface Props {
 	onRemove: () => void;
 }
 
-type BubbleRef = { focus: () => void };
+export type BubbleRef = { focus: () => void };
 
-const Bubble = React.forwardRef<BubbleRef, Props>((props: Props, ref: any) => {
+const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 	const {
-		value,
 		id,
+		value,
 		selectNext,
 		selectPrev,
 		autocompleteVariants,
@@ -58,7 +58,6 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props: Props, ref: any) => {
 
 	const [anchor, setAnchor] = React.useState<HTMLDivElement>();
 	const [isEditing, setIsEditing] = React.useState(false);
-	const [isFocused, setIsFocused] = React.useState(false);
 	const [currentValue, setCurrentValue] = React.useState<string>(value);
 	const [selectionStart, setSelectionStart] = React.useState<number | null>();
 	const inputRef = React.useRef<HTMLInputElement>();
@@ -67,6 +66,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props: Props, ref: any) => {
 	React.useEffect(() => {
 		if (isEditing) {
 			inputRef.current?.focus();
+			window.addEventListener('keyup', bubbleSwitch);
 			if (!anchor) {
 				setAnchor(rootRef.current || undefined);
 			}
@@ -86,16 +86,9 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props: Props, ref: any) => {
 	}, [value]);
 
 	React.useImperativeHandle(ref, () => ({
-		selectionStart,
 		focus: () => {
 			setIsEditing(true);
-			setIsFocused(true);
 		},
-		value: currentValue,
-		id,
-		selectNext,
-		selectPrev,
-		isFocused,
 	}));
 
 	const onBlur = () => {
@@ -104,13 +97,11 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props: Props, ref: any) => {
 		}
 
 		setIsEditing(false);
-		setIsFocused(false);
 	};
 
 	const rootOnClick = () => {
 		if (!isEditing) {
 			setIsEditing(true);
-			setIsFocused(true);
 		}
 	};
 
@@ -124,11 +115,31 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props: Props, ref: any) => {
 		}
 		onSubmit(nextValue);
 		setIsEditing(false);
-		setIsFocused(false);
 	};
 
-	const onKeyUp: React.KeyboardEventHandler<HTMLInputElement> = () => {
+	const bubbleSwitch = (e: { keyCode: any }, selectNext?: () => void, selectPrev?: () => void) => {
+		switch (e.keyCode) {
+			case KeyCodes.LEFT:
+				if (selectionStart === 0 && id !== 0) {
+					selectPrev;
+				}
+
+				break;
+
+			case KeyCodes.RIGHT:
+				if (selectionStart === currentValue.length) {
+					selectNext;
+				}
+
+				break;
+			default:
+				break;
+		}
+	};
+
+	const onKeyUp: React.KeyboardEventHandler<HTMLInputElement> = e => {
 		setSelectionStart(inputRef.current?.selectionStart);
+		bubbleSwitch(e, selectNext, selectPrev);
 	};
 
 	const rootClass = createBemBlock('bubble', size, !isValid && !isEditing ? 'invalid' : null);

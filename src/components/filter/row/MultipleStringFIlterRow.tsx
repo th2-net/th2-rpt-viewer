@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { FilterRowMultipleStringsConfig } from '../../../models/filter/FilterInputs';
 import { removeByIndex, replaceByIndex } from '../../../helpers/array';
-import Bubble from '../../util/Bubble';
+import Bubble, { BubbleRef } from '../../util/Bubble';
 import AutocompleteInput from '../../util/AutocompleteInput/AutocompleteInput';
 import KeyCodes from '../../../util/KeyCodes';
 import {
@@ -32,7 +32,7 @@ interface MultipleStringFilterRowProps {
 
 export default function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
 	const input = React.useRef<HTMLInputElement>();
-	const bubble = React.useRef<any>([]);
+	const bubble = React.useRef<{ [index: number]: BubbleRef | null }>({});
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
 
@@ -75,50 +75,16 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 		input.current?.focus();
 	};
 
-	const focusBubble: React.KeyboardEventHandler<HTMLInputElement> = e => {
-		bubble.current.forEach(
-			(element: {
-				selectionStart: number;
-				id: number;
-				value: string;
-				selectNext: number;
-				selectPrev: number;
-				isFocused: boolean;
-			}) => {
-				if (element.isFocused)
-					switch (e.keyCode) {
-						case KeyCodes.LEFT:
-							if (element.selectionStart === 0 && bubble.current[element.selectPrev]) {
-								bubble.current[element.selectPrev].focus();
-							}
-
-							break;
-
-						case KeyCodes.RIGHT:
-							if (
-								element.selectionStart === element.value.length &&
-								bubble.current[element.selectNext]
-							) {
-								bubble.current[element.selectNext].focus();
-							}
-							if (
-								element.selectionStart === element.value.length &&
-								!bubble.current[element.selectNext]
-							) {
-								input.current?.focus();
-							}
-
-							break;
-						default:
-							break;
-					}
-			},
-		);
+	const focusBubbleOrInput = (index: number) => {
+		if (index >= config.values.length) input.current?.focus();
+		else {
+			bubble.current[index]?.focus();
+		}
 	};
 
-	const focusDiv: React.KeyboardEventHandler<HTMLInputElement> = e => {
+	const focusBubbles: React.KeyboardEventHandler<HTMLInputElement> = e => {
 		if (e.keyCode === KeyCodes.LEFT && input.current?.selectionStart === 0) {
-			bubble.current[bubble.current.length - 1].focus();
+			focusBubbleOrInput(config.values.length - 1);
 		}
 	};
 
@@ -146,33 +112,32 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 			)}
 			<div className={filterContentClassName} ref={rootRef}>
 				<div className={inputRootClassName} onClick={rootOnClick}>
-					<div onKeyDown={focusBubble}>
-						{config.values.map((value, index) => (
-							<Bubble
-								ref={e => (bubble.current[index] = e)}
-								key={index}
-								id={index}
-								selectNext={index + 1}
-								selectPrev={index - 1}
-								size='small'
-								removeIconType='white'
-								submitKeyCodes={[KeyCodes.TAB]}
-								className='filter__bubble'
-								value={value}
-								onSubmit={valueBubbleOnChangeFor(index)}
-								onRemove={valueBubbleOnRemoveFor(index)}
-								autocompleteVariants={config.autocompleteList}
-								isValid={
-									config.validateBubbles
-										? config.autocompleteList
-											? config.autocompleteList.includes(value.trim())
-											: undefined
+					{config.values.map((value, index) => (
+						<Bubble
+							ref={e => (bubble.current[index] = e)}
+							key={index}
+							id={index}
+							selectNext={() => focusBubbleOrInput(index + 1)}
+							selectPrev={() => focusBubbleOrInput(index - 1)}
+							size='small'
+							removeIconType='white'
+							submitKeyCodes={[KeyCodes.TAB]}
+							className='filter__bubble'
+							value={value}
+							onSubmit={valueBubbleOnChangeFor(index)}
+							onRemove={valueBubbleOnRemoveFor(index)}
+							autocompleteVariants={config.autocompleteList}
+							isValid={
+								config.validateBubbles
+									? config.autocompleteList
+										? config.autocompleteList.includes(value.trim())
 										: undefined
-								}
-							/>
-						))}
-					</div>
-					<div onKeyDown={focusDiv}>
+									: undefined
+							}
+						/>
+					))}
+
+					<div onKeyDown={focusBubbles}>
 						<AutocompleteInput
 							anchor={autocompleteAnchor}
 							ref={input}
