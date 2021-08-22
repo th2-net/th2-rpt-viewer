@@ -22,14 +22,13 @@ import KeyCodes from '../../util/KeyCodes';
 import '../../styles/bubble.scss';
 
 interface Props {
-	id?: number;
 	className?: string;
 	size?: 'small' | 'medium' | 'large';
 	style?: React.CSSProperties;
 	removeIconType?: 'default' | 'white';
 	value: string;
-	selectNext?: () => void | null;
-	selectPrev?: () => void | null;
+	selectNext?: () => void;
+	selectPrev?: () => void;
 	isValid?: boolean;
 	autocompleteVariants?: string[] | null;
 	submitKeyCodes?: number[];
@@ -41,7 +40,6 @@ export type BubbleRef = { focus: () => void };
 
 const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 	const {
-		id,
 		value,
 		selectNext,
 		selectPrev,
@@ -59,14 +57,12 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 	const [anchor, setAnchor] = React.useState<HTMLDivElement>();
 	const [isEditing, setIsEditing] = React.useState(false);
 	const [currentValue, setCurrentValue] = React.useState<string>(value);
-	const [selectionStart, setSelectionStart] = React.useState<number | null>();
 	const inputRef = React.useRef<HTMLInputElement>();
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
 	React.useEffect(() => {
 		if (isEditing) {
 			inputRef.current?.focus();
-			window.addEventListener('keyup', bubbleSwitch);
 			if (!anchor) {
 				setAnchor(rootRef.current || undefined);
 			}
@@ -117,29 +113,28 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 		setIsEditing(false);
 	};
 
-	const bubbleSwitch = (e: { keyCode: any }, selectNext?: () => void, selectPrev?: () => void) => {
-		switch (e.keyCode) {
-			case KeyCodes.LEFT:
-				if (selectionStart === 0 && id !== 0) {
-					selectPrev;
-				}
+	const bubbleSwitch: React.KeyboardEventHandler<HTMLInputElement> = e => {
+		if (e.target instanceof HTMLInputElement) {
+			const selectionStart = e.target.selectionStart;
 
-				break;
+			switch (e.keyCode) {
+				case KeyCodes.LEFT:
+					if (selectionStart === 0 && typeof selectPrev !== 'undefined') {
+						selectPrev();
+					}
 
-			case KeyCodes.RIGHT:
-				if (selectionStart === currentValue.length) {
-					selectNext;
-				}
+					break;
 
-				break;
-			default:
-				break;
+				case KeyCodes.RIGHT:
+					if (selectionStart === currentValue.length && typeof selectNext !== 'undefined') {
+						selectNext();
+					}
+
+					break;
+				default:
+					break;
+			}
 		}
-	};
-
-	const onKeyUp: React.KeyboardEventHandler<HTMLInputElement> = e => {
-		setSelectionStart(inputRef.current?.selectionStart);
-		bubbleSwitch(e, selectNext, selectPrev);
 	};
 
 	const rootClass = createBemBlock('bubble', size, !isValid && !isEditing ? 'invalid' : null);
@@ -153,7 +148,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 			onBlur={onBlur}
 			onClick={rootOnClick}
 			ref={rootRef}
-			onKeyUp={onKeyUp}>
+			onKeyUp={bubbleSwitch}>
 			{isEditing ? (
 				<AutocompleteInput
 					anchor={anchor}

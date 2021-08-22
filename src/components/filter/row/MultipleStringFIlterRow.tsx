@@ -32,7 +32,7 @@ interface MultipleStringFilterRowProps {
 
 export default function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
 	const input = React.useRef<HTMLInputElement>();
-	const bubble = React.useRef<{ [index: number]: BubbleRef | null }>({});
+	const bubbleRefs = React.useRef<{ [index: number]: BubbleRef | null }>({});
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
 
@@ -78,7 +78,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 	const focusBubbleOrInput = (index: number) => {
 		if (index >= config.values.length) input.current?.focus();
 		else {
-			bubble.current[index]?.focus();
+			bubbleRefs.current[index]?.focus();
 		}
 	};
 
@@ -114,9 +114,8 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 				<div className={inputRootClassName} onClick={rootOnClick}>
 					{config.values.map((value, index) => (
 						<Bubble
-							ref={e => (bubble.current[index] = e)}
+							ref={ref => (bubbleRefs.current[index] = ref)}
 							key={index}
-							id={index}
 							selectNext={() => focusBubbleOrInput(index + 1)}
 							selectPrev={() => focusBubbleOrInput(index - 1)}
 							size='small'
@@ -136,33 +135,31 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 							}
 						/>
 					))}
-
-					<div onKeyDown={focusBubbles}>
-						<AutocompleteInput
-							anchor={autocompleteAnchor}
-							ref={input}
-							placeholder={
-								config.values.length === 0
-									? config.hint ||
-									  `${config.required ? 'Required. ' : ''}Use Tab to separate different words`
-									: ''
-							}
-							disabled={config.disabled}
-							submitKeyCodes={[KeyCodes.TAB]}
-							className='filter-row__multiple-values-input'
-							wrapperClassName='filter-row__multiple-values-input-wrapper'
-							value={config.currentValue}
-							setValue={config.setCurrentValue}
-							autoresize
-							autocomplete={config.autocompleteList}
-							datalistKey={`autocomplete-${1}`}
-							onSubmit={inputOnSubmit}
-							onRemove={inputOnRemove}
-							onFocus={() => setIsFocused(true)}
-							onBlur={() => setIsFocused(false)}
-							inputStyle={{ width: '100%' }}
-						/>
-					</div>
+					<AutocompleteInput
+						anchor={autocompleteAnchor}
+						focusBubbles={focusBubbles}
+						ref={input}
+						placeholder={
+							config.values.length === 0
+								? config.hint ||
+								  `${config.required ? 'Required. ' : ''}Use Tab to separate different words`
+								: ''
+						}
+						disabled={config.disabled}
+						submitKeyCodes={[KeyCodes.TAB]}
+						className='filter-row__multiple-values-input'
+						wrapperClassName='filter-row__multiple-values-input-wrapper'
+						value={config.currentValue}
+						setValue={config.setCurrentValue}
+						autoresize
+						autocomplete={config.autocompleteList}
+						datalistKey={`autocomplete-${1}`}
+						onSubmit={inputOnSubmit}
+						onRemove={inputOnRemove}
+						onFocus={() => setIsFocused(true)}
+						onBlur={() => setIsFocused(false)}
+						inputStyle={{ width: '100%' }}
+					/>
 				</div>
 			</div>
 		</div>
