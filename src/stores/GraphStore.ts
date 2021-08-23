@@ -165,6 +165,10 @@ export class GraphStore {
 				? item.successful
 					? GraphItemType.HOVERED_EVENT_PASSED
 					: GraphItemType.HOVERED_EVENT_FAILED
+				: this.selectedStore.savedItems.includes(item)
+				? item.successful
+					? GraphItemType.BOOKMARKED_PASSED
+					: GraphItemType.BOOKMARKED_FAILED
 				: item.successful
 				? GraphItemType.PASSED
 				: GraphItemType.FAILED;

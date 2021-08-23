@@ -36,6 +36,7 @@ interface Props {
 	autofocus?: boolean;
 	onSubmit: (nextValue: string) => void;
 	onRemove?: () => void;
+	onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 	onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
 	onBlur?: () => void;
 	onEmptyBlur?: () => void;
@@ -45,6 +46,7 @@ interface Props {
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	const {
+		onKeyDown: onKeyDownProp,
 		value = '',
 		setValue,
 		onSubmit,
@@ -101,6 +103,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	};
 
 	const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
+		if (typeof onKeyDownProp !== 'undefined') onKeyDownProp(e);
 		if (e.keyCode === KeyCodes.UP || e.keyCode === KeyCodes.DOWN || e.keyCode === KeyCodes.TAB) {
 			e.preventDefault();
 		}
