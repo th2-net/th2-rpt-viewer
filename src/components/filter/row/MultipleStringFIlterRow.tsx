@@ -137,7 +137,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 					))}
 					<AutocompleteInput
 						anchor={autocompleteAnchor}
-						focusBubbles={focusBubbles}
+						onKeyDown={focusBubbles}
 						ref={input}
 						placeholder={
 							config.values.length === 0

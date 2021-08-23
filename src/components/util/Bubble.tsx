@@ -147,8 +147,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 			style={style}
 			onBlur={onBlur}
 			onClick={rootOnClick}
-			ref={rootRef}
-			onKeyUp={bubbleSwitch}>
+			ref={rootRef}>
 			{isEditing ? (
 				<AutocompleteInput
 					anchor={anchor}
@@ -156,6 +155,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 					className='bubble__input'
 					value={currentValue}
 					setValue={setCurrentValue}
+					onKeyDown={bubbleSwitch}
 					onSubmit={inputOnSubmit}
 					onRemove={onRemove}
 					onEmptyBlur={onRemove}

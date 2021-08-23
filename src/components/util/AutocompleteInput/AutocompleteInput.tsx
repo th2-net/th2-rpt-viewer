@@ -36,7 +36,7 @@ interface Props {
 	autofocus?: boolean;
 	onSubmit: (nextValue: string) => void;
 	onRemove?: () => void;
-	focusBubbles?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+	onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 	onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
 	onBlur?: () => void;
 	onEmptyBlur?: () => void;
@@ -46,7 +46,7 @@ interface Props {
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	const {
-		focusBubbles,
+		onKeyDown: onKeyDownProp,
 		value = '',
 		setValue,
 		onSubmit,
@@ -103,7 +103,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	};
 
 	const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
-		if (typeof focusBubbles !== 'undefined') focusBubbles(e);
+		if (typeof onKeyDownProp !== 'undefined') onKeyDownProp(e);
 		if (e.keyCode === KeyCodes.UP || e.keyCode === KeyCodes.DOWN || e.keyCode === KeyCodes.TAB) {
 			e.preventDefault();
 		}

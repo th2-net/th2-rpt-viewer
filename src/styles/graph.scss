@@ -347,25 +347,31 @@
 	}
 
 	&__item-icon {
+		&.bookmarked-message-icon,
 		&.message-icon {
 			@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
 		}
 
+		&.bookmarked-pinned-message-icon,
 		&.pinned-message-icon {
 			@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
 		}
 
+		&.bookmarked-failed-icon,
 		&.failed-icon,
+		&.bookmarked-passed-icon,
 		&.passed-icon {
 			width: 12px;
 			height: 12px;
 			margin: 1px;
 			border-radius: 50%;
 		}
+		&.bookmarked-passed-icon,
 		&.passed-icon {
 			background-color: $graphOverlayPassedEventsColor;
 		}
 
+		&.bookmarked-failed-icon,
 		&.failed-icon {
 			background-color: $graphOverlayFailedEventsColor;
 		}
