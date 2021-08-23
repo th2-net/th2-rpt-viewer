@@ -34,7 +34,7 @@ export const getVerificationTablesNodes = (body: VerificationPayload) => {
 				root.fields !== undefined
 					? Object.keys(root.fields).map(field => paramsToNodes(root.fields![field], field))
 					: [],
-			isExpanded: true,
+			isExpanded: false,
 			name,
 			...root,
 		};
