@@ -32,8 +32,7 @@ type GroupItemType =
 	| GraphItemType.FAILED
 	| GraphItemType.PASSED
 	| GraphItemType.BOOKMARKED_PASSED
-	| GraphItemType.BOOKMARKED_FAILED
-	| GraphItemType.BOOKMARKED_PINNED_MESSAGE;
+	| GraphItemType.BOOKMARKED_FAILED;
 
 const listIconsPriority: { [key in GroupItemType]: number } = {
 	[GraphItemType.HOVERED_MESSAGE]: 4,
@@ -42,7 +41,6 @@ const listIconsPriority: { [key in GroupItemType]: number } = {
 	[GraphItemType.HOVERED_EVENT_FAILED]: 4,
 	[GraphItemType.ATTACHED_MESSAGE]: 3,
 	[GraphItemType.PINNED_MESSAGE]: 2,
-	[GraphItemType.BOOKMARKED_PINNED_MESSAGE]: 2,
 	[GraphItemType.FAILED]: 1,
 	[GraphItemType.PASSED]: 1,
 	[GraphItemType.BOOKMARKED_PASSED]: 1,

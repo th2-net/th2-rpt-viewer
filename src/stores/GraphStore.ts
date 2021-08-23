@@ -179,8 +179,6 @@ export class GraphStore {
 					attMsg => attMsg.messageId === item.messageId,
 			  ) !== -1
 			? GraphItemType.ATTACHED_MESSAGE
-			: this.selectedStore.savedItems.includes(item)
-			? GraphItemType.BOOKMARKED_PINNED_MESSAGE
 			: GraphItemType.PINNED_MESSAGE;
 	};
 

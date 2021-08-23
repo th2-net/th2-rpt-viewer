@@ -170,7 +170,6 @@
 .graph-dot {
 	&.bookmarked-passed,
 	&.bookmarked-failed,
-	&.bookmarked-pinned-message,
 	&.attached-message,
 	&.pinned-message,
 	&.passed,
@@ -217,7 +216,6 @@
 	}
 
 	&.hovered-message,
-	&.bookmarked-pinned-message,
 	&.pinned-message {
 		width: 12px;
 		height: 12px;
@@ -230,7 +228,6 @@
 	}
 }
 
-.graph-dot-bg-bookmarked-pinned-message,
 .graph-dot-bg-bookmarked-passed,
 .graph-dot-bg-bookmarked-failed {
 	@include icon(url(../../resources/icons/bookmark_shield.svg), 22px, 18px);
@@ -347,12 +344,10 @@
 	}
 
 	&__item-icon {
-		&.bookmarked-message-icon,
 		&.message-icon {
 			@include icon(url(../../resources/icons/attached-message.svg), 14px, 14px);
 		}
 
-		&.bookmarked-pinned-message-icon,
 		&.pinned-message-icon {
 			@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
 		}
