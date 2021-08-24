@@ -297,8 +297,7 @@ function MessageReplayModal() {
 					dragConstraints={refConstrains}
 					drag={drag || mouseDown}
 					className='replay'
-					ref={rootRef}
-				>
+					ref={rootRef}>
 					<div
 						className='dragable-area'
 						onMouseOver={() => setDrag(true)}
@@ -323,7 +322,11 @@ function MessageReplayModal() {
 							<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
 						),
 					)}
-					<p className='replay__generated-text'><a href={textToCopy} rel='noopener' target='_blank'>{textToCopy}</a></p>
+					<p className='replay__generated-text'>
+						<a href={textToCopy} rel='noopener noreferrer' target='_blank'>
+							{textToCopy}
+						</a>
+					</p>
 					<button
 						style={{
 							cursor: isCopied ? 'default' : 'pointer',
