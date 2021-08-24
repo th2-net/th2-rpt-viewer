@@ -24,12 +24,14 @@ interface Props {
 	id?: string;
 	isDisabled?: boolean;
 	className?: string;
+	title?: string;
 	onChange: React.ChangeEventHandler<HTMLInputElement>;
 }
 
 export default function Checkbox({
 	checked,
 	label,
+	title,
 	onChange,
 	isDisabled = false,
 	className = '',
@@ -45,9 +47,10 @@ export default function Checkbox({
 				id={id}
 				checked={checked}
 				onChange={onChange}
+				title={title}
 			/>
 			{label && (
-				<label className='checkbox__label' htmlFor={id}>
+				<label className='checkbox__label' htmlFor={id} title={title}>
 					{label}
 				</label>
 			)}

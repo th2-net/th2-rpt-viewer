@@ -251,6 +251,7 @@ const MessagesFilterPanel = () => {
 								onChange={e => {
 									setIsSoftFilterApplied(e.target.checked);
 								}}
+								title='Show most relevant'
 								label='Soft filter'
 								id='soft-filter'
 							/>
