@@ -27,6 +27,8 @@ interface Props {
 	style?: React.CSSProperties;
 	removeIconType?: 'default' | 'white';
 	value: string;
+	selectNext?: () => void;
+	selectPrev?: () => void;
 	isValid?: boolean;
 	autocompleteVariants?: string[] | null;
 	submitKeyCodes?: number[];
@@ -34,9 +36,13 @@ interface Props {
 	onRemove: () => void;
 }
 
-export default function Bubble(props: Props) {
+export type BubbleRef = { focus: () => void };
+
+const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 	const {
 		value,
+		selectNext,
+		selectPrev,
 		autocompleteVariants,
 		onRemove,
 		onSubmit = () => null,
@@ -56,7 +62,7 @@ export default function Bubble(props: Props) {
 
 	React.useEffect(() => {
 		if (isEditing) {
-			inputRef.current?.select();
+			inputRef.current?.focus();
 			if (!anchor) {
 				setAnchor(rootRef.current || undefined);
 			}
@@ -74,6 +80,12 @@ export default function Bubble(props: Props) {
 			setCurrentValue('');
 		};
 	}, [value]);
+
+	React.useImperativeHandle(ref, () => ({
+		focus: () => {
+			setIsEditing(true);
+		},
+	}));
 
 	const onBlur = () => {
 		if (inputRef.current?.value === '') {
@@ -101,6 +113,30 @@ export default function Bubble(props: Props) {
 		setIsEditing(false);
 	};
 
+	const bubbleSwitch: React.KeyboardEventHandler<HTMLInputElement> = e => {
+		if (e.target instanceof HTMLInputElement) {
+			const selectionStart = e.target.selectionStart;
+
+			switch (e.keyCode) {
+				case KeyCodes.LEFT:
+					if (selectionStart === 0 && typeof selectPrev !== 'undefined') {
+						selectPrev();
+					}
+
+					break;
+
+				case KeyCodes.RIGHT:
+					if (selectionStart === currentValue.length && typeof selectNext !== 'undefined') {
+						selectNext();
+					}
+
+					break;
+				default:
+					break;
+			}
+		}
+	};
+
 	const rootClass = createBemBlock('bubble', size, !isValid && !isEditing ? 'invalid' : null);
 
 	const iconClass = createBemElement('bubble', 'remove-icon', removeIconType);
@@ -119,6 +155,7 @@ export default function Bubble(props: Props) {
 					className='bubble__input'
 					value={currentValue}
 					setValue={setCurrentValue}
+					onKeyDown={bubbleSwitch}
 					onSubmit={inputOnSubmit}
 					onRemove={onRemove}
 					onEmptyBlur={onRemove}
@@ -137,4 +174,7 @@ export default function Bubble(props: Props) {
 			)}
 		</div>
 	);
-}
+});
+
+Bubble.displayName = 'Bubble';
+export default Bubble;
