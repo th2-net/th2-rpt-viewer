@@ -242,7 +242,7 @@ export default class EventsDataStore {
 		try {
 			this.parentNodesLoaderAC = new AbortController();
 
-			while (typeof currentParentId === 'string' && !this.eventsCache.has(currentParentId)) {
+			while (typeof currentParentId === 'string') {
 				this.loadingParentEvents.set(currentParentId, true);
 				// eslint-disable-next-line no-await-in-loop
 				currentParentEvent = await this.api.events.getEvent(
