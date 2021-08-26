@@ -224,7 +224,6 @@ function MessageReplayModal() {
 	}, [compoundFilterRow, timestampFromConfig, sessionFilterConfig]);
 
 	const textToCopy = React.useMemo(() => {
-		const prefix = 'replay.py -u=';
 		const link = [
 			window.location.origin,
 			window.location.pathname,
@@ -255,7 +254,7 @@ function MessageReplayModal() {
 			endTimestamp,
 			'next',
 		).toString();
-		return `${prefix}'${link}?${params}'`;
+		return `${link}?${params}`;
 	}, [streams, startTimestamp, endTimestamp, sseFilter, currentStream, currentValues]);
 
 	function toggleReplayModal() {
@@ -298,9 +297,7 @@ function MessageReplayModal() {
 					dragConstraints={refConstrains}
 					drag={drag || mouseDown}
 					className='replay'
-					ref={rootRef}
-					onMouseDown={() => setMouseDown(true)}
-					onMouseUp={() => setMouseDown(false)}>
+					ref={rootRef}>
 					<div
 						className='dragable-area'
 						onMouseOver={() => setDrag(true)}
@@ -325,7 +322,11 @@ function MessageReplayModal() {
 							<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
 						),
 					)}
-					<p className='replay__generated-text'>{textToCopy}</p>
+					<p className='replay__generated-text'>
+						<a href={textToCopy} rel='noopener noreferrer' target='_blank'>
+							{textToCopy}
+						</a>
+					</p>
 					<button
 						style={{
 							cursor: isCopied ? 'default' : 'pointer',
