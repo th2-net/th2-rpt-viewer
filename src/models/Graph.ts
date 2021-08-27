@@ -56,6 +56,8 @@ export enum GraphItemType {
 	PINNED_MESSAGE = 'pinned-message',
 	PASSED = 'passed',
 	FAILED = 'failed',
+	BOOKMARKED_FAILED = 'bookmarked-failed',
+	BOOKMARKED_PASSED = 'bookmarked-passed',
 	HOVERED_EVENT = 'hovered-event',
 	HOVERED_EVENT_PASSED = 'hovered-event-passed',
 	HOVERED_EVENT_FAILED = 'hovered-event-failed',
