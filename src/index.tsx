@@ -24,17 +24,20 @@ import App from './components/App';
 import ErrorBoundary from './components/util/ErrorBoundary';
 import StoresProvider from './components/StoresProvider';
 import { registerFetchInterceptor } from './helpers/fetch-intercept';
+import EmbeddedMessagePanel from './components/embedded/EmbeddedMessagePanel';
 import EmbeddedApp from './components/embedded/EmbeddedApp';
 
 registerFetchInterceptor();
 
 const searchParams = new URLSearchParams(window.location.search);
 const isEmbedded = searchParams.get('viewMode') === 'embedded';
+const isEmbeddedMessagePanel = searchParams.get('viewMode') === 'embeddedMessagePanel';
 
 ReactDOM.render(
 	<ErrorBoundary>
 		{isEmbedded && <EmbeddedApp />}
-		{!isEmbedded && (
+		{isEmbeddedMessagePanel && <EmbeddedMessagePanel />}
+		{!isEmbeddedMessagePanel && !isEmbedded && (
 			<StoresProvider>
 				<App />
 			</StoresProvider>
