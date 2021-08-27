@@ -18,6 +18,7 @@ import { hot } from 'react-hot-loader/root';
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import { ToastProvider } from 'react-toast-notifications';
+import StoresProvider from './StoresProvider';
 import Toast from './notifications/Toast';
 import ToastContainer from './notifications/ToastContainer';
 import Notifier from './notifications/Notifier';
@@ -29,7 +30,7 @@ import { useSearchStore } from '../hooks/useSearchStore';
 import { useTabsStore } from '../hooks';
 import '../styles/root.scss';
 
-const App = () => {
+const AppRootBase = () => {
 	const searchStore = useSearchStore();
 	const tabsStore = useTabsStore();
 
@@ -51,4 +52,14 @@ const App = () => {
 	);
 };
 
-export default hot(observer(App));
+AppRootBase.displayName = 'AppRootBase';
+
+const AppRoot = hot(observer(AppRootBase));
+
+export default function App() {
+	return (
+		<StoresProvider>
+			<AppRoot />
+		</StoresProvider>
+	);
+}
