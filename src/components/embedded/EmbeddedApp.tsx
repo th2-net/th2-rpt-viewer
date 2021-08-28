@@ -17,6 +17,7 @@
 import React from 'react';
 import EmbeddedEvent from './EmbeddedEvent';
 import EmbeddedMessage from './EmbeddedMessage';
+import '../../styles/embedded.scss';
 
 function EmbeddedApp() {
 	if (window.location.search.split('&').length > 2) {
