@@ -166,6 +166,7 @@ function EventsFilterPanel() {
 						value: filterValues.values,
 						setValue: getValuesUpdater(filterName),
 						autocompleteList,
+						hint: filterValues.hint,
 					};
 					break;
 				case 'string[]':
@@ -177,6 +178,7 @@ function EventsFilterPanel() {
 						currentValue: currentFilterValues[filterName] || '',
 						setCurrentValue: setCurrentValue(filterName),
 						autocompleteList,
+						hint: filterValues.hint,
 					};
 					break;
 				case 'switcher':

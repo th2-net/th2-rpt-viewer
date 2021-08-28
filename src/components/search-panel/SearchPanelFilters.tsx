@@ -34,6 +34,7 @@ export type StringFilter = {
 	type: 'string';
 	values: string;
 	negative: boolean;
+	hint: string;
 };
 
 export type MultipleStringFilter = {
@@ -41,6 +42,7 @@ export type MultipleStringFilter = {
 	values: string[];
 	negative: boolean;
 	conjunct: boolean;
+	hint: string;
 };
 
 export type SwitcherFilter = {
@@ -167,6 +169,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									value: getState(filter.name).values || '',
 									setValue: getValuesUpdater(filter.name),
 									autocompleteList,
+									hint: filter.hint,
 								};
 							case 'switcher':
 								return {
@@ -190,6 +193,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 									currentValue: currentValues[filter.name] || '',
 									setCurrentValue: setCurrentValue(filter.name),
 									autocompleteList,
+									hint: filter.hint,
 								};
 						}
 					},
