@@ -141,8 +141,9 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 						ref={input}
 						placeholder={
 							config.values.length === 0
-								? config.hint ||
-								  `${config.required ? 'Required. ' : ''}Use Tab to separate different words`
+								? config.hint && !isFocused
+									? config.hint
+									: `${config.required ? 'Required. ' : ''}Use Tab to separate different words`
 								: ''
 						}
 						disabled={config.disabled}
