@@ -14,142 +14,258 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState, useEffect } from 'react';
-import { MessageViewType, EventMessage } from '../../models/EventMessage';
+import React, { useEffect, useState } from 'react';
+import { EventMessage, MessageViewType } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
 import { MessageCardBase } from '../message/message-card/MessageCard';
 import '../../styles/embedded.scss';
 import moment from 'moment';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import api from '../../api';
+import { observer, Observer } from 'mobx-react-lite';
+import StateSaverProvider from '../util/StateSaverProvider';
+import Empty from '../util/Empty';
+import { useDebouncedCallback } from '../../hooks';
+import { raf } from '../../helpers/raf';
+import EmbeddedSearchStore from './embedded-stores/EmbeddedSearchStore';
+import { EmbeddedMessagesStore } from './embedded-stores/EmbeddedMessagesStore';
+
+const searchStore = new EmbeddedSearchStore(api);
+const messagesStore = new EmbeddedMessagesStore(searchStore, api);
 
 function EmbeddedMessagePanel() {
-	const searchParams = new URLSearchParams(window.location.search);
-	const session = searchParams.get('session');
-
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
-	const [fetchedMessages, setFetchedMessages] = useState<EventMessage[]>([]);
-	const [errorStatus, setErrorStatus] = useState<string | null>(null);
-	const [requestPrevious, setRequestPrevious] = useState<string>('backend/search/sse/messages/?');
-	const [requestNext, setRequestNext] = useState<string>('backend/search/sse/messages/?');
 
 	useEffect(() => {
-		getUrlRequest();
-		getMessages();
+		messagesStore.dataStore.loadMessages();
 	}, []);
 
-	async function getMessages() {
-		const resPrev = await fetch(`${requestPrevious}`);
-		const resNext = await fetch(`${requestNext}`);
+	const renderMsg = (index: number, message: EventMessage) => {
+		return (
+			<MessageCardBase
+				isEmbedded
+				key={index}
+				message={message}
+				setViewType={setViewType}
+				viewType={viewType}
+			/>
+		);
+	};
 
-		if (resPrev.ok && resNext.ok) {
-			setFetchedMessages(fetchedMessages.concat(await resPrev.json()));
-			setFetchedMessages(fetchedMessages.concat(await resNext.json()));
-		} else if (!resPrev.ok) {
-			setErrorStatus(`${resPrev.status} ${resPrev.statusText}`);
-		} else if (!resNext.ok) {
-			setErrorStatus(`${resNext.status} ${resNext.statusText}`);
+	if (
+		messagesStore.dataStore.messages.length === 0 &&
+		(messagesStore.dataStore.isLoadingNextMessages ||
+			messagesStore.dataStore.isLoadingPreviousMessages)
+	) {
+		return <SplashScreen />;
+	}
+
+	if (messagesStore.dataStore.isError) {
+		return (
+			<Empty
+				description='Error occured while loading messages'
+				descriptionStyles={{ position: 'relative', bottom: '6px' }}
+			/>
+		);
+	}
+
+	if (
+		!(
+			messagesStore.dataStore.isLoadingNextMessages ||
+			messagesStore.dataStore.isLoadingPreviousMessages
+		) &&
+		messagesStore.dataStore.messages.length === 0
+	) {
+		if (messagesStore.dataStore.isError === false) {
+			return (
+				<Empty
+					description='No messages'
+					descriptionStyles={{ position: 'relative', bottom: '6px' }}
+				/>
+			);
 		}
 	}
 
-	function getUrlRequest() {
-		const startTimestamp = moment(moment().utc().subtract(30, 'minutes').valueOf())
-			.add(5, 'minutes')
-			.valueOf();
-		setRequestPrevious(
-			requestPrevious =>
-				requestPrevious +
-				'startTimestamp=' +
-				startTimestamp.toString() +
-				'&stream=' +
-				session +
-				'&searchDirection=previous',
-		);
-		setRequestNext(
-			requestNext =>
-				requestNext +
-				'startTimestamp=' +
-				startTimestamp.toString() +
-				'&stream=' +
-				session +
-				'&searchDirection=next',
-		);
-		console.log(requestPrevious);
-
-		searchParams.forEach(param => {
-			switch (param) {
-				case 'body':
-					setRequestPrevious(
-						requestPrevious =>
-							requestPrevious + '&filters=body&filters-values=' + searchParams.get('body'),
-					);
-					setRequestNext(
-						requestNext => requestNext + '&filters=body&filters-values=' + searchParams.get('body'),
-					);
-					break;
-				case 'bodyBinary':
-					setRequestPrevious(
-						requestPrevious =>
-							requestPrevious +
-							'&filters=bodyBinary&filters-values=' +
-							searchParams.get('bodyBinary'),
-					);
-					setRequestNext(
-						requestNext =>
-							requestNext + '&filters=bodyBinary&filters-values=' + searchParams.get('bodyBinary'),
-					);
-					break;
-				case 'Type':
-					setRequestPrevious(
-						requestPrevious =>
-							requestPrevious + '&filters=type&filters-values=' + searchParams.get('type'),
-					);
-					setRequestNext(
-						requestNext => requestNext + '&filters=type&filters-values=' + searchParams.get('type'),
-					);
-					break;
-				// case 'attachedEventIds':
-				// 	setCustomFilter(searchParams.get('attachedEventIds'));
-				// setFilteredMessages(
-				// 	fetchedMessages.filter(
-				// 		message => message.sessionId === session && message. === customFilter,
-				// 	),
-				// );
-				// break;
-			}
-			console.log(requestNext);
-			console.log(requestPrevious);
-		});
-	}
-
-	if (errorStatus) {
-		throw new Error(errorStatus);
-	}
-
-	if (fetchedMessages) {
-		return (
-			<div className='embedded-wrapper'>
-				{Array.isArray(fetchedMessages) ? (
-					fetchedMessages.map((message, index) => (
-						<MessageCardBase
-							key={`body-${session}-${index}`}
-							isEmbedded
-							message={message}
-							setViewType={setViewType}
-							viewType={viewType}
-						/>
-					))
-				) : (
-					<MessageCardBase
-						key={session}
-						isEmbedded
-						message={fetchedMessages}
-						setViewType={setViewType}
-						viewType={viewType}
-					/>
-				)}
-			</div>
-		);
-	}
-	return <SplashScreen />;
+	return (
+		<div className='messages-list'>
+			<StateSaverProvider>
+				<MessagesVirtualizedList
+					className='messages-list__items'
+					rowCount={messagesStore.dataStore.messages.length}
+					scrolledIndex={messagesStore.scrolledIndex}
+					itemRenderer={renderMsg}
+					overscan={0}
+					loadNextMessages={messagesStore.dataStore.getNextMessages}
+					loadPrevMessages={messagesStore.dataStore.getPreviousMessages}
+				/>
+			</StateSaverProvider>
+		</div>
+	);
 }
 
-export default EmbeddedMessagePanel;
+export default observer(EmbeddedMessagePanel);
+
+interface Props {
+	computeItemKey?: (idx: number) => React.Key;
+	rowCount: number;
+	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
+	/*
+		 Number objects is used here because in some cases (eg one message / action was
+		 selected several times by different entities)
+		 We can't understand that we need to scroll to the selected entity again when
+		 we are comparing primitive numbers.
+		 Objects and reference comparison is the only way to handle numbers changing in this case.
+	 */
+	scrolledIndex: Number | null;
+	className?: string;
+	overscan?: number;
+	loadNextMessages: (resumeFromId?: string) => Promise<EventMessage[]>;
+	loadPrevMessages: (resumeFromId?: string) => Promise<EventMessage[]>;
+}
+
+const MessagesVirtualizedList = observer((props: Props) => {
+	const virtuoso = React.useRef<VirtuosoHandle>(null);
+
+	const {
+		className,
+		overscan = 3,
+		itemRenderer,
+		loadPrevMessages,
+		loadNextMessages,
+		scrolledIndex,
+	} = props;
+
+	React.useEffect(() => {
+		if (scrolledIndex !== null) {
+			raf(() => {
+				virtuoso.current?.scrollToIndex({ index: scrolledIndex.valueOf(), align: 'center' });
+			}, 3);
+		}
+	}, [scrolledIndex]);
+
+	const debouncedScrollHandler = useDebouncedCallback(
+		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
+			const scroller = event.target;
+			if (scroller instanceof Element) {
+				const isStartReached = scroller.scrollTop === 0;
+				const isEndReached = scroller.scrollHeight - scroller.scrollTop === scroller.clientHeight;
+				if (
+					isStartReached &&
+					messagesStore.dataStore.searchChannelNext &&
+					!messagesStore.dataStore.searchChannelNext.isLoading &&
+					!messagesStore.dataStore.searchChannelNext.isEndReached &&
+					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
+				) {
+					loadNextMessages(messagesStore.dataStore.messages[0]?.messageId).then(messages =>
+						messagesStore.dataStore.onNextChannelResponse(messages),
+					);
+				}
+
+				if (
+					isEndReached &&
+					messagesStore.dataStore.searchChannelPrev &&
+					!messagesStore.dataStore.searchChannelPrev.isLoading &&
+					!messagesStore.dataStore.searchChannelPrev.isEndReached &&
+					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
+				) {
+					loadPrevMessages(
+						messagesStore.dataStore.messages[messagesStore.dataStore.messages.length - 1]
+							?.messageId,
+					).then(messages => messagesStore.dataStore.onPrevChannelResponse(messages));
+				}
+			}
+		},
+		100,
+	);
+
+	const onScroll = (event: React.UIEvent<'div'>) => {
+		event.persist();
+		debouncedScrollHandler(event);
+	};
+
+	const onWheel: React.WheelEventHandler<'div'> = event => {
+		event.persist();
+		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
+	};
+
+	return (
+		<Virtuoso
+			data={messagesStore.dataStore.messages}
+			firstItemIndex={messagesStore.dataStore.startIndex}
+			initialTopMostItemIndex={messagesStore.dataStore.initialItemCount}
+			ref={virtuoso}
+			overscan={overscan}
+			itemContent={itemRenderer}
+			style={{ height: '100%', width: '100%' }}
+			className={className}
+			itemsRendered={messages => {
+				messagesStore.currentMessagesIndexesRange = {
+					startIndex: (messages && messages[0]?.originalIndex) ?? 0,
+					endIndex: (messages && messages[messages.length - 1]?.originalIndex) ?? 0,
+				};
+			}}
+			onScroll={onScroll}
+			onWheel={onWheel}
+			components={{
+				Header: function MessagesListSpinnerNext() {
+					return (
+						<Observer>
+							{() =>
+								messagesStore.dataStore.noMatchingMessagesNext ? (
+									<div className='messages-list__loading-message'>
+										<span className='messages-list__loading-message-text'>
+											No more matching messages since&nbsp;
+											{moment.utc(messagesStore.filterStore.filterParams.startTimestamp).format()}
+										</span>
+										<button
+											className='messages-list__load-btn'
+											onClick={() => messagesStore.dataStore.keepLoading('next')}>
+											Keep loading
+										</button>
+									</div>
+								) : (
+									<MessagesListSpinner isLoading={messagesStore.dataStore.isLoadingNextMessages} />
+								)
+							}
+						</Observer>
+					);
+				},
+				Footer: function MessagesListSpinnerPrevious() {
+					return (
+						<Observer>
+							{() =>
+								messagesStore.dataStore.noMatchingMessagesPrev ? (
+									<div className='messages-list__loading-message'>
+										<span className='messages-list__loading-message-text'>
+											No more matching messages since&nbsp;
+											{moment(messagesStore.filterStore.filterParams.startTimestamp).utc().format()}
+										</span>
+										<button
+											className='messages-list__load-btn'
+											onClick={() => messagesStore.dataStore.keepLoading('previous')}>
+											Keep loading
+										</button>
+									</div>
+								) : (
+									<MessagesListSpinner
+										isLoading={messagesStore.dataStore.isLoadingPreviousMessages}
+									/>
+								)
+							}
+						</Observer>
+					);
+				},
+			}}
+		/>
+	);
+});
+
+export { MessagesVirtualizedList };
+
+interface SpinnerProps {
+	isLoading: boolean;
+}
+const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
+	if (!isLoading) return null;
+	return <div className='messages-list__spinner' />;
+};
