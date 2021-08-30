@@ -18,7 +18,6 @@ import React, { useEffect, useState } from 'react';
 import { EventMessage, MessageViewType } from '../../models/EventMessage';
 import { MessageCardBase } from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
-import '../../styles/embedded.scss';
 
 function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
