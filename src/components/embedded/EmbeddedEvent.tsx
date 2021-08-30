@@ -18,6 +18,7 @@ import React, { useEffect, useState } from 'react';
 import { EventAction } from '../../models/EventAction';
 import EventBodyCard from '../event/EventBodyCard';
 import SplashScreen from '../SplashScreen';
+import EmbeddedEventHeader from './EmbeddedEventHeader';
 
 function EmbeddedEvent({ eventId }: { eventId: string }) {
 	const [event, setEvent] = useState<EventAction | null>(null);
@@ -43,6 +44,7 @@ function EmbeddedEvent({ eventId }: { eventId: string }) {
 	if (event) {
 		return (
 			<div className='embedded-wrapper'>
+				<EmbeddedEventHeader event={event} />
 				{Array.isArray(event.body) ? (
 					event.body.map((bodyPayloadItem, index) => (
 						<EventBodyCard
