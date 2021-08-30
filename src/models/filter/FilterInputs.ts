@@ -96,6 +96,7 @@ export type FilterRowStringConfig = FilterRowBaseConfig & {
 	setValue: (nextValue: string) => void;
 	labelClassName?: string;
 	autocompleteList?: string[];
+	hint?: string;
 };
 
 export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
@@ -145,6 +146,7 @@ export type FilterRowEventResolverConfig = FilterRowBaseConfig & {
 	value: string;
 	setValue: (nextValue: string) => void;
 	labelClassName?: string;
+	hint?: string;
 };
 
 export type ActionFilterConfig = {
