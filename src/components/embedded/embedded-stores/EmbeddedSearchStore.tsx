@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+import { autorun, reaction, observable, computed, action, runInAction, toJS } from 'mobx';
+import { nanoid } from 'nanoid';
+import moment from 'moment';
 import {
 	isSearchHistoryEntity,
 	getDefaultEventsFiltersState,
@@ -20,7 +23,6 @@ import {
 } from '../../../helpers/search';
 import { DbData, IndexedDbStores, indexedDbLimits } from '../../../api/indexedDb';
 import ApiSchema from '../../../api/ApiSchema';
-import { autorun, reaction, observable, computed, action, runInAction, toJS } from 'mobx';
 import {
 	EventFilterState,
 	MessageFilterState,
@@ -31,7 +33,6 @@ import { EventMessage } from '../../../models/EventMessage';
 import { SearchDirection } from '../../../models/search/SearchDirection';
 import { MessagesStoreURLState } from '../../../stores/messages/MessagesStore';
 import { SearchPanelType } from '../../search-panel/SearchPanel';
-import moment from 'moment';
 import {
 	EventsFiltersInfo,
 	MessagesFilterInfo,
@@ -42,7 +43,6 @@ import {
 import notificationsStore from '../../../stores/NotificationsStore';
 import { isEventMessage, isEventNode, getItemId } from '../../../helpers/event';
 import { getTimestampAsNumber } from '../../../helpers/date';
-import { nanoid } from 'nanoid';
 
 type SearchProgressState = {
 	completed: boolean;

@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 import { IReactionDisposer, reaction, observable, computed, action } from 'mobx';
-import EmbeddedSearchStore from './EmbeddedSearchStore';
 import moment from 'moment';
+import EmbeddedSearchStore from './EmbeddedSearchStore';
 import MessagesFilter from '../../../models/filter/MessagesFilter';
 import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
 import { MessagesSSEParams, MessagesFilterInfo } from '../../../api/sse';
@@ -67,25 +67,26 @@ export default class EmbeddedMessagesFilterStore {
 	@computed
 	public get filterParams(): MessagesSSEParams {
 		const sseFilters = this.sseMessagesFilter;
-		const filtersToAdd: ('attachedEventIds' | 'type' | 'body')[] = [];
+		const filtersToAdd: ('attachedEventIds' | 'type' | 'body' | 'bodyBinary')[] = [];
 		const searchParams = new URLSearchParams(window.location.search);
 		if (searchParams.has('body')) filtersToAdd.push('body');
 		if (searchParams.has('type')) filtersToAdd.push('type');
 		if (searchParams.has('attachedEventIds')) filtersToAdd.push('attachedEventIds');
+		if (searchParams.has('bodyBinary')) filtersToAdd.push('bodyBinary');
 
 		const filterValues = filtersToAdd
 			.map(filterName => [`${filterName}-values`, searchParams.get(filterName)])
 			.filter(Boolean);
 
 		const filterInclusion = filtersToAdd.map(filterName =>
-			sseFilters && sseFilters[filterName].negative
-				? [`${filterName}-negative`, sseFilters[filterName].negative]
+			sseFilters && sseFilters[filterName]?.negative
+				? [`${filterName}-negative`, sseFilters[filterName]?.negative]
 				: [],
 		);
 
 		const filterConjunct = filtersToAdd.map(filterName =>
-			sseFilters && sseFilters[filterName].conjunct
-				? [`${filterName}-conjunct`, sseFilters[filterName].conjunct]
+			sseFilters && sseFilters[filterName]?.conjunct
+				? [`${filterName}-conjunct`, sseFilters[filterName]?.conjunct]
 				: [],
 		);
 
@@ -102,6 +103,7 @@ export default class EmbeddedMessagesFilterStore {
 
 		return queryParams;
 	}
+
 	@computed
 	public get softFilterParams(): MessagesSSEParams {
 		return {
@@ -113,6 +115,7 @@ export default class EmbeddedMessagesFilterStore {
 			resumeFromId: this.filterParams.resumeFromId,
 		};
 	}
+
 	@computed
 	public get isMessagesFilterApplied() {
 		return [

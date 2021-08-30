@@ -62,6 +62,7 @@ export type MessageFilterState = {
 	attachedEventIds: MultipleStringFilter;
 	type: MultipleStringFilter;
 	body: MultipleStringFilter;
+	bodyBinary: MultipleStringFilter;
 };
 
 export type FilterState = EventFilterState | MessageFilterState;

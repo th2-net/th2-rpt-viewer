@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+import moment from 'moment';
+import { ListRange } from 'react-virtuoso';
+import { action, computed, reaction, observable } from 'mobx';
 import { timestampToNumber } from '../../../helpers/date';
 import { sortMessagesByTimestamp } from '../../../helpers/message';
 import { EventMessage } from '../../../models/EventMessage';
-import { action, computed, reaction, observable } from 'mobx';
 import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
 import MessagesFilter from '../../../models/filter/MessagesFilter';
-import moment from 'moment';
 import { TimeRange } from '../../../models/Timestamp';
 import { isEventMessage } from '../../../helpers/event';
 import EmbeddedMessagesFilterStore from './EmbeddedMessagesFilterStore';
 import EmbeddedSearchStore from './EmbeddedSearchStore';
 import ApiSchema from '../../../api/ApiSchema';
 import { MessagesStoreURLState } from '../../../stores/messages/MessagesStore';
-import { ListRange } from 'react-virtuoso';
 import { EmbeddedMessagesDataProviderStore } from './EmbeddedMessagesDataProviderStore';
 
 type MessagesStoreDefaultState = MessagesStoreURLState & {

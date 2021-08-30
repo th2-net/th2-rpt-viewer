@@ -15,14 +15,14 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { observer, Observer } from 'mobx-react-lite';
+import moment from 'moment';
 import { EventMessage, MessageViewType } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
 import { MessageCardBase } from '../message/message-card/MessageCard';
 import '../../styles/embedded.scss';
-import moment from 'moment';
-import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import api from '../../api';
-import { observer, Observer } from 'mobx-react-lite';
 import StateSaverProvider from '../util/StateSaverProvider';
 import Empty from '../util/Empty';
 import { useDebouncedCallback } from '../../hooks';

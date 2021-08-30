@@ -64,6 +64,7 @@ const MessagesFilterPanel = () => {
 		type: '',
 		body: '',
 		attachedEventIds: '',
+		bodyBinary: '',
 	});
 	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
 
@@ -84,6 +85,7 @@ const MessagesFilterPanel = () => {
 			type: '',
 			body: '',
 			attachedEventIds: '',
+			bodyBinary: '',
 		});
 	}, []);
 
