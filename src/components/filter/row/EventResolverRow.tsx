@@ -50,6 +50,8 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 		event ? getEventStatus(event).toLowerCase() : 'hide',
 	);
 
+	const clearClassName = createStyleSelector('filter-row__clear', config.value ? 'show' : null);
+
 	const wrapperClassName = createStyleSelector('filter-row', 'event-resolver');
 	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
 	const eventCardTitleClassName = createStyleSelector(
@@ -129,6 +131,13 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 				onChange={e => config.setValue(e.target.value)}
 				onBlur={() => switchType()}
 				ref={input}
+			/>
+			<button
+				className={clearClassName}
+				onClick={() => {
+					config.setValue('');
+					input.current?.focus();
+				}}
 			/>
 		</div>
 	);
