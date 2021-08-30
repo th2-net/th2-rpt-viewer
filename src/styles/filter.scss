@@ -602,6 +602,19 @@
 		display: flex;
 		flex-wrap: nowrap;
 	}
+	&__clear {
+		display: none;
+		position: absolute;
+		right: 16px;
+		@include clickable();
+		@include icon(url(../../resources/icons/cross-icon.svg), 16px, 16px);
+		background-color: transparent;
+		outline: none;
+		border: none;
+		&.show {
+			display: block;
+		}
+	}
 }
 
 .event-filters-panel-label {
