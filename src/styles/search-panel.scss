@@ -102,9 +102,15 @@
 			&-title {
 				@include ellipsis();
 				width: auto;
-				max-width: calc(100% - 250px);
-				margin: 0 5px;
-				margin-right: 10px;
+				font: normal 13.6px 'Open Sans', sans-serif;
+				opacity: .75;
+				&.non-empty {
+					opacity: 1;
+					font-weight: bold;
+					max-width: calc(100% - 250px);
+					margin: 0 5px;
+					margin-right: 10px;
+				}
 			}
 
 			&-timestamp {
@@ -130,10 +136,15 @@
 				&.failed {
 					background-color: $graphOverlayFailedEventsColor;
 				}
+
+				&.hide {
+					display: none;
+				}
 			}
 		}
 
 		&__input {
+			font-size: 14px;
 			&.hide {
 				opacity: 0;
 				width: 0;

@@ -78,15 +78,6 @@ export default class EmbeddedMessagesStore {
 
 	@observable filter: MessagesFilter = getDefaultMessagesFilter();
 
-	@observable
-	public showFilterChangeHint = false;
-
-	/*
-		  This is used for filter change hint. Represents either last clicked message
-		  or attached messages
-	  */
-	public hintMessages: EventMessage[] = [];
-
 	constructor(private api: ApiSchema, defaultState?: MessagesStoreDefaultStateType) {
 		this.init(defaultState);
 		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
@@ -171,40 +162,7 @@ export default class EmbeddedMessagesStore {
 
 	@action
 	public onMessageSelect = async (message: EventMessage) => {
-		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(message);
-
-		if (!shouldShowFilterHintBeforeRefetchingMessages) {
-			this.selectedMessageId = new String(message.messageId);
-			this.highlightedMessageId = message.messageId;
-			this.hintMessages = [];
-		}
-	};
-
-	@action
-	/*
-		  This method handles message select or attached messages change events.
-		  When those events occur we want to check if selected message or
-		  attached messages match current filter and streams. If it doesn't match
-		  filter change hint window is shown to a user. And it is up to him to decide
-		  if he wants to reset streams to message(s) streams and update filters
-	  */
-	private handleFilterHint = (message: EventMessage | EventMessage[]): boolean => {
-		this.hintMessages = Array.isArray(message) ? message : [message];
-
-		if (this.hintMessages.length === 0) {
-			this.showFilterChangeHint = false;
-			return this.showFilterChangeHint;
-		}
-
-		const sseFilter = this.sseMessagesFilter;
-		const areFiltersApplied = [
-			sseFilter
-				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
-				: [],
-		].some(filterValues => filterValues.length > 0);
-
-		this.showFilterChangeHint = areFiltersApplied;
-
-		return this.showFilterChangeHint;
+		this.selectedMessageId = new String(message.messageId);
+		this.highlightedMessageId = message.messageId;
 	};
 }

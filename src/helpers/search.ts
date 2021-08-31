@@ -44,6 +44,7 @@ export function getDefaultEventsFiltersState(info: EventsFiltersInfo[]): EventFi
 			...prev,
 			[curr.name]: curr.parameters.reduce((prevParams, currParam) => {
 				return {
+					hint: curr.hint,
 					...prevParams,
 					type: currParam.type.value,
 					[currParam.name.includes('value')
@@ -53,7 +54,6 @@ export function getDefaultEventsFiltersState(info: EventsFiltersInfo[]): EventFi
 			}, {}),
 		};
 	}, {} as EventFilterState);
-
 	return state;
 }
 
@@ -66,6 +66,7 @@ export function getDefaultMessagesFiltersState(
 			...prev,
 			[curr.name]: curr.parameters.reduce((prevParams, currParam) => {
 				return {
+					hint: curr.hint,
 					...prevParams,
 					type: currParam.type.value,
 					values: getFilterParameterDefaultValue(currParam),

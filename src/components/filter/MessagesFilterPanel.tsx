@@ -184,6 +184,7 @@ const MessagesFilterPanel = () => {
 									currentValue: currentValues[filterInfo.name as keyof MessageFilterState],
 									setCurrentValue: setCurrentValue(filterInfo.name),
 									autocompleteList,
+									hint: filterInfo.hint,
 								};
 						}
 					},

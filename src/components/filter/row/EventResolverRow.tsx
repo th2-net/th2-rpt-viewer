@@ -47,11 +47,17 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 
 	const iconClassName = createStyleSelector(
 		'filter-row__event-card-icon',
-		event ? getEventStatus(event).toLowerCase() : '',
+		event ? getEventStatus(event).toLowerCase() : 'hide',
 	);
+
+	const clearClassName = createStyleSelector('filter-row__clear', config.value ? 'show' : null);
 
 	const wrapperClassName = createStyleSelector('filter-row', 'event-resolver');
 	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
+	const eventCardTitleClassName = createStyleSelector(
+		'filter-row__event-card-title',
+		event?.eventName || config.value ? 'non-empty' : null,
+	);
 
 	useEffect(() => {
 		const ac = new AbortController();
@@ -104,8 +110,8 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 			{!isInput && (
 				<div className='filter-row__event-card' onClick={switchType}>
 					<i className={iconClassName} />
-					<div className='filter-row__event-card-title'>
-						{event ? event?.eventName : config.value}
+					<div className={eventCardTitleClassName}>
+						{event ? event?.eventName : config.value || config.placeholder}
 					</div>
 					{event && (
 						<div className='filter-row__event-card-timestamp'>
@@ -119,11 +125,19 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 				type='text'
 				className={inputClassName}
 				id={config.id}
+				placeholder={config.placeholder}
 				disabled={config.disabled}
 				value={config.value}
 				onChange={e => config.setValue(e.target.value)}
 				onBlur={() => switchType()}
 				ref={input}
+			/>
+			<button
+				className={clearClassName}
+				onClick={() => {
+					config.setValue('');
+					input.current?.focus();
+				}}
 			/>
 		</div>
 	);

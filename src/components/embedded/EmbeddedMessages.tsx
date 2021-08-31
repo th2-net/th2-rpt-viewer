@@ -31,7 +31,7 @@ import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
-function EmbeddedMessagePanel() {
+function EmbeddedMessages() {
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
 	useEffect(() => {
@@ -101,7 +101,7 @@ function EmbeddedMessagePanel() {
 	);
 }
 
-export default observer(EmbeddedMessagePanel);
+export default observer(EmbeddedMessages);
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;

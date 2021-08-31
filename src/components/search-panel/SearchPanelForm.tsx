@@ -104,6 +104,7 @@ const SearchPanelForm = () => {
 		setValue: getFormStateUpdater('parentEvent'),
 		type: 'event-resolver',
 		id: 'parent-event',
+		placeholder: 'matches events by the specified parent event id',
 	};
 
 	const messagesFormTypeConfig: FitlerRowItem = {

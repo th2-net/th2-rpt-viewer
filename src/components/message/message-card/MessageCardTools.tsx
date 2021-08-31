@@ -18,7 +18,7 @@ import React, { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createBemBlock, createBemElement } from '../../../helpers/styleCreators';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
-import { useOutsideClickListener } from '../../../hooks';
+import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { decodeBase64RawContent, getAllRawContent } from '../../../helpers/rawFormatter';
 import { copyTextToClipboard } from '../../../helpers/copyHandler';
 import { showNotification } from '../../../helpers/showNotification';
