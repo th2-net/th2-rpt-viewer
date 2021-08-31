@@ -17,23 +17,19 @@
 @import './common/vars';
 
 .bookmarks-panel {
-	width: 100%;
 	height: 100%;
 	background-color: #fff;
-
+	display: flex;
+	flex-direction: column;
+	
 	&__container {
-		padding: 8px;
-		width: 100%;
-		height: 100%;
+		padding: 8px 2px 8px 8px;
+		width: inherit;
+		height: inherit;
 	}
-
+	
 	&__list {
 		@include scrollbar;
-
-		height: 100%;
-		width: 100%;
-		overflow-y: auto;
-
 		& > div {
 			padding-right: 5px;
 		}
