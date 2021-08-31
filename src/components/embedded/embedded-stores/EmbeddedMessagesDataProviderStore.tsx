@@ -16,7 +16,7 @@
 import { runInAction, action, observable, reaction, computed } from 'mobx';
 import { MessagesSSEParams, SSEHeartbeat } from '../../../api/sse';
 import { EventMessage } from '../../../models/EventMessage';
-import { EmbeddedMessagesStore } from './EmbeddedMessagesStore';
+import EmbeddedMessagesStore from './EmbeddedMessagesStore';
 import ApiSchema from '../../../api/ApiSchema';
 import { MessagesSSELoader } from '../../../stores/messages/MessagesSSELoader';
 import notificationsStore from '../../../stores/NotificationsStore';
@@ -25,9 +25,9 @@ import { isEventMessage } from '../../../helpers/event';
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
 
-export class EmbeddedMessagesDataProviderStore {
+export default class EmbeddedMessagesDataProviderStore {
 	constructor(private messagesStore: EmbeddedMessagesStore, private api: ApiSchema) {
-		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
+		reaction(() => this.messagesStore.filter, this.onFilterChange);
 	}
 
 	@observable
@@ -41,8 +41,6 @@ export class EmbeddedMessagesDataProviderStore {
 
 	@observable.shallow
 	public messages: Array<EventMessage> = [];
-
-	public messagesOutput: Array<EventMessage> = [];
 
 	@observable
 	public isError = false;
@@ -58,9 +56,6 @@ export class EmbeddedMessagesDataProviderStore {
 
 	@observable
 	public initialItemCount = 0;
-
-	@observable
-	public isSoftFiltered: Map<string, boolean> = new Map();
 
 	@observable
 	public isMatchingMessages: Map<string, boolean> = new Map();
@@ -88,20 +83,15 @@ export class EmbeddedMessagesDataProviderStore {
 		return this.isLoadingNextMessages || this.isLoadingPreviousMessages;
 	}
 
-	@computed
-	public get getMessages(): EventMessage[] {
-		return this.messagesOutput;
-	}
-
 	private messageAC: AbortController | null = null;
 
 	@action
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
 
-		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
+		if (this.messagesStore.filter.streams.length === 0) return;
 
-		const queryParams = this.messagesStore.filterStore.filterParams;
+		const queryParams = this.messagesStore.filterParams;
 
 		this.createPreviousMessageChannelEventSource(
 			{
@@ -140,7 +130,6 @@ export class EmbeddedMessagesDataProviderStore {
 			]);
 
 			const firstNextMessage = nextMessages[nextMessages.length - 1];
-			this.messagesOutput = prevMessages;
 
 			if (firstNextMessage && firstNextMessage.messageId === prevMessages[0]?.messageId) {
 				nextMessages.pop();
@@ -160,10 +149,6 @@ export class EmbeddedMessagesDataProviderStore {
 					this.messagesStore.scrollToMessage(firstPrevMessage.messageId);
 				}
 			}
-		}
-
-		if (this.messagesStore.filterStore.isSoftFilter && message) {
-			this.isSoftFiltered.set(message.messageId, true);
 		}
 	};
 
@@ -315,7 +300,6 @@ export class EmbeddedMessagesDataProviderStore {
 		this.startIndex = 10000;
 		this.messages = [];
 		this.isError = isError;
-		this.isSoftFiltered.clear();
 		this.isMatchingMessages.clear();
 		this.noMatchingMessagesNext = false;
 		this.noMatchingMessagesPrev = false;
@@ -325,53 +309,25 @@ export class EmbeddedMessagesDataProviderStore {
 		this.lastNextChannelResponseTimestamp = null;
 	};
 
-	@observable
-	public messagesCache: Map<string, EventMessage> = observable.map(new Map(), { deep: false });
-
-	@action
-	public fetchMessage = async (id: string, abortSingal: AbortSignal) => {
-		let message = this.messagesCache.get(id);
-
-		if (!message) {
-			message = await this.api.messages.getMessage(id, abortSingal);
-			this.messagesCache.set(id, message);
-		}
-
-		return message;
-	};
-
 	@action
 	public keepLoading = (direction: 'next' | 'previous') => {
 		if (
-			this.messagesStore.filterStore.filter.streams.length === 0 ||
+			this.messagesStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||
 			!this.searchChannelPrev ||
 			(!this.prevLoadEndTimestamp && !this.nextLoadEndTimestamp)
 		)
 			return;
 
-		const queryParams = this.messagesStore.filterStore.filterParams;
+		const queryParams = this.messagesStore.filterParams;
 
-		const { stream, endTimestamp, resultCountLimit, resumeFromId } = queryParams;
-
-		const query: MessagesSSEParams = this.messagesStore.filterStore.isSoftFilter
-			? {
-					startTimestamp:
-						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-						direction === 'previous' ? this.prevLoadEndTimestamp! : this.nextLoadEndTimestamp!,
-					stream,
-					searchDirection: direction,
-					endTimestamp,
-					resultCountLimit,
-					resumeFromId,
-			  }
-			: {
-					...queryParams,
-					startTimestamp:
-						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-						direction === 'previous' ? this.prevLoadEndTimestamp! : this.nextLoadEndTimestamp!,
-					searchDirection: direction,
-			  };
+		const query: MessagesSSEParams = {
+			...queryParams,
+			startTimestamp:
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				direction === 'previous' ? this.prevLoadEndTimestamp! : this.nextLoadEndTimestamp!,
+			searchDirection: direction,
+		};
 
 		if (direction === 'previous') {
 			this.noMatchingMessagesPrev = false;
@@ -387,34 +343,6 @@ export class EmbeddedMessagesDataProviderStore {
 				resumeFromId: this.messages[0]?.messageId,
 			});
 			this.searchChannelNext.subscribe();
-		}
-	};
-
-	@action
-	public matchMessage = async (messageId: string, abortSignal: AbortSignal) => {
-		if (this.isSoftFiltered.get(messageId) !== undefined) return;
-		this.isMatchingMessages.set(messageId, true);
-
-		try {
-			const {
-				resultCountLimit,
-				resumeFromId,
-				searchDirection,
-				...filterParams
-			} = this.messagesStore.filterStore.filterParams;
-			const isMatch = await this.api.messages.matchMessage(messageId, filterParams, abortSignal);
-
-			runInAction(() => {
-				this.isSoftFiltered.set(messageId, isMatch);
-				this.isMatchingMessages.set(messageId, false);
-			});
-		} catch (error) {
-			runInAction(() => {
-				if (error.name !== 'AbortError') {
-					this.isSoftFiltered.set(messageId, false);
-				}
-				this.isMatchingMessages.set(messageId, false);
-			});
 		}
 	};
 }

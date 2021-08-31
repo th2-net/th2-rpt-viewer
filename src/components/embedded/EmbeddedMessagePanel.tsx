@@ -27,11 +27,9 @@ import StateSaverProvider from '../util/StateSaverProvider';
 import Empty from '../util/Empty';
 import { useDebouncedCallback } from '../../hooks';
 import { raf } from '../../helpers/raf';
-import EmbeddedSearchStore from './embedded-stores/EmbeddedSearchStore';
-import { EmbeddedMessagesStore } from './embedded-stores/EmbeddedMessagesStore';
+import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 
-const searchStore = new EmbeddedSearchStore(api);
-const messagesStore = new EmbeddedMessagesStore(searchStore, api);
+const messagesStore = new EmbeddedMessagesStore(api);
 
 function EmbeddedMessagePanel() {
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
@@ -215,7 +213,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment.utc(messagesStore.filterStore.filterParams.startTimestamp).format()}
+											{moment.utc(messagesStore.filterParams.startTimestamp).format()}
 										</span>
 										<button
 											className='messages-list__load-btn'
@@ -238,7 +236,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment(messagesStore.filterStore.filterParams.startTimestamp).utc().format()}
+											{moment(messagesStore.filterParams.startTimestamp).utc().format()}
 										</span>
 										<button
 											className='messages-list__load-btn'

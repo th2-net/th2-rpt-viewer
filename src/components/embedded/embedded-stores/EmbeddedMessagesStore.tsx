@@ -15,19 +15,31 @@
  ***************************************************************************** */
 import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
-import { action, computed, reaction, observable } from 'mobx';
-import { timestampToNumber } from '../../../helpers/date';
-import { sortMessagesByTimestamp } from '../../../helpers/message';
+import { action, reaction, observable } from 'mobx';
 import { EventMessage } from '../../../models/EventMessage';
 import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
 import MessagesFilter from '../../../models/filter/MessagesFilter';
-import { TimeRange } from '../../../models/Timestamp';
 import { isEventMessage } from '../../../helpers/event';
-import EmbeddedMessagesFilterStore from './EmbeddedMessagesFilterStore';
-import EmbeddedSearchStore from './EmbeddedSearchStore';
 import ApiSchema from '../../../api/ApiSchema';
 import { MessagesStoreURLState } from '../../../stores/messages/MessagesStore';
-import { EmbeddedMessagesDataProviderStore } from './EmbeddedMessagesDataProviderStore';
+import EmbeddedMessagesDataProviderStore from './EmbeddedMessagesDataProviderStore';
+import { MessagesSSEParams } from '../../../api/sse';
+
+function getDefaultMessagesFilter(): MessagesFilter {
+	const searchParams = new URLSearchParams(window.location.search);
+	const sessions: string[] = [];
+	const session = searchParams.get('session');
+
+	function defineSessions(): string[] {
+		if (session) sessions[0] = session;
+		return sessions;
+	}
+	return {
+		timestampFrom: null,
+		timestampTo: moment.utc().valueOf(),
+		streams: defineSessions(),
+	};
+}
 
 type MessagesStoreDefaultState = MessagesStoreURLState & {
 	targetMessage?: EventMessage;
@@ -35,9 +47,7 @@ type MessagesStoreDefaultState = MessagesStoreURLState & {
 
 export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string | null | undefined;
 
-export class EmbeddedMessagesStore {
-	public filterStore = new EmbeddedMessagesFilterStore(this.searchStore);
-
+export default class EmbeddedMessagesStore {
 	public dataStore = new EmbeddedMessagesDataProviderStore(this, this.api);
 
 	@observable
@@ -58,11 +68,15 @@ export class EmbeddedMessagesStore {
 	@observable
 	public beautifiedMessages: Array<string> = [];
 
+	@observable sseMessagesFilter: MessageFilterState | null = null;
+
 	@observable
 	public currentMessagesIndexesRange: ListRange = {
 		startIndex: 0,
 		endIndex: 0,
 	};
+
+	@observable filter: MessagesFilter = getDefaultMessagesFilter();
 
 	@observable
 	public showFilterChangeHint = false;
@@ -73,11 +87,7 @@ export class EmbeddedMessagesStore {
 	  */
 	public hintMessages: EventMessage[] = [];
 
-	constructor(
-		private searchStore: EmbeddedSearchStore,
-		private api: ApiSchema,
-		defaultState?: MessagesStoreDefaultStateType,
-	) {
+	constructor(private api: ApiSchema, defaultState?: MessagesStoreDefaultStateType) {
 		this.init(defaultState);
 		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
 	}
@@ -94,7 +104,6 @@ export class EmbeddedMessagesStore {
 				console.error(`Couldnt fetch target message ${defaultState}`);
 			}
 		} else {
-			this.filterStore = new EmbeddedMessagesFilterStore(this.searchStore, defaultState);
 			const message = defaultState.targetMessage;
 			if (isEventMessage(message)) {
 				this.selectedMessageId = new String(message.messageId);
@@ -104,48 +113,44 @@ export class EmbeddedMessagesStore {
 		this.dataStore.loadMessages();
 	};
 
-	@computed
-	public get panelRange(): TimeRange {
-		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
+	public get filterParams(): MessagesSSEParams {
+		const sseFilters = this.sseMessagesFilter;
+		const filtersToAdd: ('attachedEventIds' | 'type' | 'body' | 'bodyBinary')[] = [];
+		const searchParams = new URLSearchParams(window.location.search);
+		if (searchParams.has('body')) filtersToAdd.push('body');
+		if (searchParams.has('type')) filtersToAdd.push('type');
+		if (searchParams.has('attachedEventIds')) filtersToAdd.push('attachedEventIds');
+		if (searchParams.has('bodyBinary')) filtersToAdd.push('bodyBinary');
 
-		const messageTo = this.dataStore.messages[startIndex];
-		const messageFrom = this.dataStore.messages[endIndex];
+		const filterValues = filtersToAdd
+			.map(filterName => [`${filterName}-values`, searchParams.get(filterName)])
+			.filter(Boolean);
 
-		if (messageFrom && messageTo) {
-			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
-		}
-		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
-		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];
+		const filterInclusion = filtersToAdd.map(filterName =>
+			sseFilters && sseFilters[filterName]?.negative
+				? [`${filterName}-negative`, sseFilters[filterName]?.negative]
+				: [],
+		);
+
+		const filterConjunct = filtersToAdd.map(filterName =>
+			sseFilters && sseFilters[filterName]?.conjunct
+				? [`${filterName}-conjunct`, sseFilters[filterName]?.conjunct]
+				: [],
+		);
+
+		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
+		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
+
+		const queryParams: MessagesSSEParams = {
+			startTimestamp: this.filter.timestampTo || startTimestamp,
+			stream: this.filter.streams,
+			resultCountLimit: 20,
+			filters: filtersToAdd,
+			...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
+		};
+
+		return queryParams;
 	}
-
-	@action
-	public setHoveredMessage(message: EventMessage | null) {
-		this.hoveredMessage = message;
-	}
-
-	@action
-	public showDetailedRawMessage = (messageId: string) => {
-		if (!this.detailedRawMessagesIds.includes(messageId)) {
-			this.detailedRawMessagesIds = [...this.detailedRawMessagesIds, messageId];
-		}
-	};
-
-	@action
-	public hideDetailedRawMessage = (messageId: string) => {
-		this.detailedRawMessagesIds = this.detailedRawMessagesIds.filter(id => id !== messageId);
-	};
-
-	@action
-	public beautify = (messageId: string) => {
-		if (!this.beautifiedMessages.includes(messageId)) {
-			this.beautifiedMessages = [...this.beautifiedMessages, messageId];
-		}
-	};
-
-	@action
-	public debeautify = (messageId: string) => {
-		this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
-	};
 
 	@action
 	public scrollToMessage = async (messageId: string) => {
@@ -155,19 +160,6 @@ export class EmbeddedMessagesStore {
 		if (messageIndex !== -1) {
 			this.scrolledIndex = new Number(messageIndex);
 		}
-	};
-
-	@action
-	public applyFilter = (
-		filter: MessagesFilter,
-		sseFilters: MessageFilterState | null,
-		isSoftFilterApplied: boolean,
-	) => {
-		this.hintMessages = [];
-		this.showFilterChangeHint = false;
-		this.selectedMessageId = null;
-		this.highlightedMessageId = null;
-		this.filterStore.setMessagesFilter(filter, sseFilters, isSoftFilterApplied);
 	};
 
 	@action
@@ -182,61 +174,10 @@ export class EmbeddedMessagesStore {
 		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(message);
 
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
-			const streams = this.filterStore.filter.streams;
-			this.filterStore.resetMessagesFilter({
-				timestampFrom: null,
-				timestampTo: timestampToNumber(message.timestamp),
-				streams: [...new Set([...streams, message.sessionId])],
-			});
 			this.selectedMessageId = new String(message.messageId);
 			this.highlightedMessageId = message.messageId;
 			this.hintMessages = [];
 		}
-	};
-
-	@action
-	public onAttachedMessagesChange = (attachedMessages: EventMessage[]) => {
-		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(attachedMessages);
-
-		if (
-			this.dataStore.isLoadingNextMessages ||
-			this.dataStore.isLoadingPreviousMessages ||
-			shouldShowFilterHintBeforeRefetchingMessages
-		) {
-			return;
-		}
-
-		const mostRecentMessage = sortMessagesByTimestamp(attachedMessages)[0];
-
-		if (mostRecentMessage) {
-			const streams = this.filterStore.filter.streams;
-			this.filterStore.filter = {
-				...this.filterStore.filter,
-				streams: [...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)])],
-				timestampTo: timestampToNumber(mostRecentMessage.timestamp),
-			};
-			this.selectedMessageId = new String(mostRecentMessage.messageId);
-		}
-	};
-
-	@action
-	public onRangeChange = (timestamp: number) => {
-		this.selectedMessageId = null;
-		this.highlightedMessageId = null;
-		this.hintMessages = [];
-
-		this.filterStore.filter = {
-			...this.filterStore.filter,
-			timestampFrom: null,
-			timestampTo: timestamp,
-		};
-	};
-
-	@action
-	public clearFilters = () => {
-		this.hintMessages = [];
-		this.filterStore.resetMessagesFilter({ streams: this.filterStore.filter.streams });
-		this.dataStore.stopMessagesLoading();
 	};
 
 	@action
@@ -255,7 +196,7 @@ export class EmbeddedMessagesStore {
 			return this.showFilterChangeHint;
 		}
 
-		const sseFilter = this.filterStore.sseMessagesFilter;
+		const sseFilter = this.sseMessagesFilter;
 		const areFiltersApplied = [
 			sseFilter
 				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
@@ -265,32 +206,5 @@ export class EmbeddedMessagesStore {
 		this.showFilterChangeHint = areFiltersApplied;
 
 		return this.showFilterChangeHint;
-	};
-
-	@action
-	public applyFilterHint = () => {
-		if (!this.hintMessages.length) return;
-
-		this.dataStore.searchChannelNext?.stop();
-		this.dataStore.searchChannelPrev?.stop();
-
-		const targetMessage: EventMessage = sortMessagesByTimestamp(this.hintMessages)[0];
-
-		this.filterStore.resetMessagesFilter({
-			streams: [...new Set(this.hintMessages.map(({ sessionId }) => sessionId))],
-			timestampTo: timestampToNumber(targetMessage.timestamp),
-			timestampFrom: null,
-		});
-
-		this.hintMessages = [];
-		this.selectedMessageId = new String(targetMessage.messageId);
-		this.highlightedMessageId = targetMessage.messageId;
-		this.showFilterChangeHint = false;
-	};
-
-	// Unsubcribe from reactions
-	public dispose = () => {
-		this.filterStore.dispose();
-		this.dataStore.stopMessagesLoading();
 	};
 }
