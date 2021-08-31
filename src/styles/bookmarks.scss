@@ -19,13 +19,11 @@
 .bookmarks-panel {
 	height: 100%;
 	background-color: #fff;
-	display: flex;
-	flex-direction: column;
+	display: grid;
+	grid-template-rows: auto 1fr;
 	
 	&__container {
-		padding: 8px 2px 8px 8px;
-		width: inherit;
-		height: inherit;
+		padding: 8px 2px 0 8px;
 	}
 	
 	&__list {
