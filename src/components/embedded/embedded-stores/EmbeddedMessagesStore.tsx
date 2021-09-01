@@ -15,6 +15,7 @@
  ***************************************************************************** */
 import moment from 'moment';
 import { action, reaction, observable } from 'mobx';
+import * as queryString from 'querystring';
 import { EventMessage } from '../../../models/EventMessage';
 import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
 import MessagesFilter from '../../../models/filter/MessagesFilter';
@@ -25,9 +26,9 @@ import EmbeddedMessagesDataProviderStore from './EmbeddedMessagesDataProviderSto
 import { MessagesSSEParams } from '../../../api/sse';
 
 function getDefaultMessagesFilter(): MessagesFilter {
-	const searchParams = new URLSearchParams(window.location.search);
+	const searchParams = queryString.parse(window.location.search);
 	const sessions: string[] = [];
-	const session = searchParams.get('session');
+	const session = searchParams['session'].toString();
 
 	function defineSessions(): string[] {
 		if (session) sessions[0] = session;
@@ -100,14 +101,14 @@ export default class EmbeddedMessagesStore {
 	public get filterParams(): MessagesSSEParams {
 		const sseFilters = this.sseMessagesFilter;
 		const filtersToAdd: ('attachedEventIds' | 'type' | 'body' | 'bodyBinary')[] = [];
-		const searchParams = new URLSearchParams(window.location.search);
-		if (searchParams.has('body')) filtersToAdd.push('body');
-		if (searchParams.has('type')) filtersToAdd.push('type');
-		if (searchParams.has('attachedEventIds')) filtersToAdd.push('attachedEventIds');
-		if (searchParams.has('bodyBinary')) filtersToAdd.push('bodyBinary');
+		const searchParams = queryString.parse(window.location.search);
+		if (searchParams.hasOwnProperty('body')) filtersToAdd.push('body');
+		if (searchParams.hasOwnProperty('type')) filtersToAdd.push('type');
+		if (searchParams.hasOwnProperty('attachedEventIds')) filtersToAdd.push('attachedEventIds');
+		if (searchParams.hasOwnProperty('bodyBinary')) filtersToAdd.push('bodyBinary');
 
 		const filterValues = filtersToAdd
-			.map(filterName => [`${filterName}-values`, searchParams.get(filterName)])
+			.map(filterName => [`${filterName}-values`, searchParams[filterName]])
 			.filter(Boolean);
 
 		const filterInclusion = filtersToAdd.map(filterName =>
