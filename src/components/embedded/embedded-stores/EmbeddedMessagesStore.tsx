@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 import moment from 'moment';
-import { ListRange } from 'react-virtuoso';
 import { action, reaction, observable } from 'mobx';
 import { EventMessage } from '../../../models/EventMessage';
 import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
@@ -69,12 +68,6 @@ export default class EmbeddedMessagesStore {
 	public beautifiedMessages: Array<string> = [];
 
 	@observable sseMessagesFilter: MessageFilterState | null = null;
-
-	@observable
-	public currentMessagesIndexesRange: ListRange = {
-		startIndex: 0,
-		endIndex: 0,
-	};
 
 	@observable filter: MessagesFilter = getDefaultMessagesFilter();
 

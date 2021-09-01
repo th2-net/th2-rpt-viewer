@@ -20,7 +20,7 @@ import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { EventMessage, MessageViewType } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
-import { MessageCardBase } from '../message/message-card/MessageCard';
+import { MessageCardBase } from '../message/message-card/MessageCardBase';
 import '../../styles/embedded.scss';
 import api from '../../api';
 import StateSaverProvider from '../util/StateSaverProvider';
@@ -31,7 +31,7 @@ import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
-function EmbeddedMessages() {
+const EmbeddedMessages = () => {
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
 	useEffect(() => {
@@ -99,9 +99,14 @@ function EmbeddedMessages() {
 			</StateSaverProvider>
 		</div>
 	);
-}
+};
 
-export default observer(EmbeddedMessages);
+EmbeddedMessages.displayName = 'EmbeddedMessages';
+
+const EmbeddedMessagesApp = observer(EmbeddedMessages);
+export default function MessagesApp() {
+	return <EmbeddedMessagesApp />;
+}
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
@@ -196,12 +201,6 @@ const MessagesVirtualizedList = observer((props: Props) => {
 			itemContent={itemRenderer}
 			style={{ height: '100%', width: '100%' }}
 			className={className}
-			itemsRendered={messages => {
-				messagesStore.currentMessagesIndexesRange = {
-					startIndex: (messages && messages[0]?.originalIndex) ?? 0,
-					endIndex: (messages && messages[messages.length - 1]?.originalIndex) ?? 0,
-				};
-			}}
 			onScroll={onScroll}
 			onWheel={onWheel}
 			components={{
