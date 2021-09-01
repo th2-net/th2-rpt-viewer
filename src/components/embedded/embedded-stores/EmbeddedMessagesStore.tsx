@@ -28,7 +28,7 @@ import { MessagesSSEParams } from '../../../api/sse';
 function getDefaultMessagesFilter(): MessagesFilter {
 	const searchParams = queryString.parse(window.location.search);
 	const sessions: string[] = [];
-	const session = searchParams['session'].toString();
+	const session = searchParams.session.toString();
 
 	function defineSessions(): string[] {
 		if (session) sessions[0] = session;
@@ -102,10 +102,10 @@ export default class EmbeddedMessagesStore {
 		const sseFilters = this.sseMessagesFilter;
 		const filtersToAdd: ('attachedEventIds' | 'type' | 'body' | 'bodyBinary')[] = [];
 		const searchParams = queryString.parse(window.location.search);
-		if (searchParams.hasOwnProperty('body')) filtersToAdd.push('body');
-		if (searchParams.hasOwnProperty('type')) filtersToAdd.push('type');
-		if (searchParams.hasOwnProperty('attachedEventIds')) filtersToAdd.push('attachedEventIds');
-		if (searchParams.hasOwnProperty('bodyBinary')) filtersToAdd.push('bodyBinary');
+		if (searchParams.body) filtersToAdd.push('body');
+		if (searchParams.type) filtersToAdd.push('type');
+		if (searchParams.attachedEventIds) filtersToAdd.push('attachedEventIds');
+		if (searchParams.bodyBinary) filtersToAdd.push('bodyBinary');
 
 		const filterValues = filtersToAdd
 			.map(filterName => [`${filterName}-values`, searchParams[filterName]])
