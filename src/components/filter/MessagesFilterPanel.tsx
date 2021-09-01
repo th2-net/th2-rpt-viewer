@@ -64,7 +64,6 @@ const MessagesFilterPanel = () => {
 		type: '',
 		body: '',
 		attachedEventIds: '',
-		bodyBinary: '',
 	});
 	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
 
@@ -85,7 +84,6 @@ const MessagesFilterPanel = () => {
 			type: '',
 			body: '',
 			attachedEventIds: '',
-			bodyBinary: '',
 		});
 	}, []);
 
@@ -144,7 +142,7 @@ const MessagesFilterPanel = () => {
 		}
 
 		const setCurrentValue = (name: keyof MessageFilterState) => (value: string) => {
-			setCurrentValues(prevState => ({ ...prevState, [name]: value }));
+			setCurrentValues((prevState: CurrentSSEValues) => ({ ...prevState, [name]: value }));
 		};
 
 		return searchStore.messagesFilterInfo.map<CompoundFilterRow>(
