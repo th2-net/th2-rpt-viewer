@@ -28,7 +28,7 @@ import { MessagesSSEParams } from '../../../api/sse';
 function getDefaultMessagesFilter(): MessagesFilter {
 	const searchParams = queryString.parse(window.location.search);
 	const sessions: string[] = [];
-	const session = searchParams.session.toString();
+	const session = searchParams.stream.toString();
 
 	function defineSessions(): string[] {
 		if (session) sessions[0] = session;
@@ -99,42 +99,9 @@ export default class EmbeddedMessagesStore {
 	};
 
 	public get filterParams(): MessagesSSEParams {
-		const sseFilters = this.sseMessagesFilter;
-		const filtersToAdd: ('attachedEventIds' | 'type' | 'body' | 'bodyBinary')[] = [];
 		const searchParams = queryString.parse(window.location.search);
-		if (searchParams.body) filtersToAdd.push('body');
-		if (searchParams.type) filtersToAdd.push('type');
-		if (searchParams.attachedEventIds) filtersToAdd.push('attachedEventIds');
-		if (searchParams.bodyBinary) filtersToAdd.push('bodyBinary');
-
-		const filterValues = filtersToAdd
-			.map(filterName => [`${filterName}-values`, searchParams[filterName]])
-			.filter(Boolean);
-
-		const filterInclusion = filtersToAdd.map(filterName =>
-			sseFilters && sseFilters[filterName]?.negative
-				? [`${filterName}-negative`, sseFilters[filterName]?.negative]
-				: [],
-		);
-
-		const filterConjunct = filtersToAdd.map(filterName =>
-			sseFilters && sseFilters[filterName]?.conjunct
-				? [`${filterName}-conjunct`, sseFilters[filterName]?.conjunct]
-				: [],
-		);
-
-		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
-		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
-
-		const queryParams: MessagesSSEParams = {
-			startTimestamp: this.filter.timestampTo || startTimestamp,
-			stream: this.filter.streams,
-			resultCountLimit: 20,
-			filters: filtersToAdd,
-			...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
-		};
-
-		return queryParams;
+		delete searchParams['?viewMode'];
+		return (searchParams as unknown) as MessagesSSEParams;
 	}
 
 	@action
