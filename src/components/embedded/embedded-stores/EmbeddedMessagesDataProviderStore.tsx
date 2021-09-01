@@ -89,8 +89,6 @@ export default class EmbeddedMessagesDataProviderStore {
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
 
-		if (this.messagesStore.filter.streams.length === 0) return;
-
 		const queryParams = this.messagesStore.filterParams;
 
 		this.createPreviousMessageChannelEventSource(
@@ -312,7 +310,6 @@ export default class EmbeddedMessagesDataProviderStore {
 	@action
 	public keepLoading = (direction: 'next' | 'previous') => {
 		if (
-			this.messagesStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||
 			!this.searchChannelPrev ||
 			(!this.prevLoadEndTimestamp && !this.nextLoadEndTimestamp)

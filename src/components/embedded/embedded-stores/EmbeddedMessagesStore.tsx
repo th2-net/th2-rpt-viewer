@@ -19,25 +19,16 @@ import * as queryString from 'querystring';
 import { EventMessage } from '../../../models/EventMessage';
 import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
 import MessagesFilter from '../../../models/filter/MessagesFilter';
-import { isEventMessage } from '../../../helpers/event';
 import ApiSchema from '../../../api/ApiSchema';
 import { MessagesStoreURLState } from '../../../stores/messages/MessagesStore';
 import EmbeddedMessagesDataProviderStore from './EmbeddedMessagesDataProviderStore';
 import { MessagesSSEParams } from '../../../api/sse';
 
 function getDefaultMessagesFilter(): MessagesFilter {
-	const searchParams = queryString.parse(window.location.search);
-	const sessions: string[] = [];
-	const session = searchParams.stream.toString();
-
-	function defineSessions(): string[] {
-		if (session) sessions[0] = session;
-		return sessions;
-	}
 	return {
 		timestampFrom: null,
 		timestampTo: moment.utc().valueOf(),
-		streams: defineSessions(),
+		streams: [],
 	};
 }
 
@@ -72,31 +63,9 @@ export default class EmbeddedMessagesStore {
 
 	@observable filter: MessagesFilter = getDefaultMessagesFilter();
 
-	constructor(private api: ApiSchema, defaultState?: MessagesStoreDefaultStateType) {
-		this.init(defaultState);
+	constructor(private api: ApiSchema) {
 		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
 	}
-
-	private init = async (defaultState: MessagesStoreDefaultStateType) => {
-		if (!defaultState) {
-			return;
-		}
-		if (typeof defaultState === 'string') {
-			try {
-				const message = await this.api.messages.getMessage(defaultState);
-				this.onMessageSelect(message);
-			} catch (error) {
-				console.error(`Couldnt fetch target message ${defaultState}`);
-			}
-		} else {
-			const message = defaultState.targetMessage;
-			if (isEventMessage(message)) {
-				this.selectedMessageId = new String(message.messageId);
-				this.highlightedMessageId = message.messageId;
-			}
-		}
-		this.dataStore.loadMessages();
-	};
 
 	public get filterParams(): MessagesSSEParams {
 		const searchParams = queryString.parse(window.location.search);
@@ -119,11 +88,5 @@ export default class EmbeddedMessagesStore {
 		if (selectedMessageId !== null) {
 			this.scrollToMessage(selectedMessageId.valueOf());
 		}
-	};
-
-	@action
-	public onMessageSelect = async (message: EventMessage) => {
-		this.selectedMessageId = new String(message.messageId);
-		this.highlightedMessageId = message.messageId;
 	};
 }
