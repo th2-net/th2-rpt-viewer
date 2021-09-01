@@ -31,6 +31,8 @@ let App: React.LazyExoticComponent<() => JSX.Element>;
 
 if (searchParams.get('viewMode') === 'embedded') {
 	App = React.lazy(() => import('./components/embedded/EmbeddedApp'));
+} else if (searchParams.get('viewMode') === 'embeddedMessages') {
+	App = React.lazy(() => import('./components/embedded/EmbeddedMessages'));
 } else {
 	App = React.lazy(() => import('./components/App'));
 }
