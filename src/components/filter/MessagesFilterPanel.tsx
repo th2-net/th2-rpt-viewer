@@ -142,7 +142,7 @@ const MessagesFilterPanel = () => {
 		}
 
 		const setCurrentValue = (name: keyof MessageFilterState) => (value: string) => {
-			setCurrentValues(prevState => ({ ...prevState, [name]: value }));
+			setCurrentValues((prevState: CurrentSSEValues) => ({ ...prevState, [name]: value }));
 		};
 
 		return searchStore.messagesFilterInfo.map<CompoundFilterRow>(

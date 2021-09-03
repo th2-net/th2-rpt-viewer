@@ -1,6 +1,6 @@
 {
 	"name": "th2-rpt-viewer",
-	"version": "3.1.66",
+	"version": "3.1.68",
 	"description": "",
 	"main": "index.tsx",
 	"private": true,
@@ -15,6 +15,7 @@
 		"lint:fix": "eslint --fix './src/**/*.{ts,tsx}' && prettier --write src/**"
 	},
 	"dependencies": {
+		"@types/core-js": "^2.5.5",
 		"@types/enzyme": "^3.10.3",
 		"@types/enzyme-adapter-react-16": "^1.0.5",
 		"@types/jest": "^24.0.23",
@@ -24,6 +25,7 @@
 		"@types/react-input-autosize": "^2.2.0",
 		"@types/react-text-mask": "^5.4.6",
 		"@types/recharts": "^1.8.16",
+		"@types/regenerator-runtime": "^0.13.1",
 		"core-js": "^3.12.1",
 		"cross-env": "^6.0.3",
 		"fetch-intercept": "^2.3.1",
@@ -36,6 +38,7 @@
 		"mobx-react-lite": "^1.5.2",
 		"moment": "^2.27.0",
 		"nanoid": "^3.1.23",
+		"query-string": "^7.0.1",
 		"rc-calendar": "^9.15.11",
 		"react": "^16.13.0",
 		"react-dom": "^16.13.0",
