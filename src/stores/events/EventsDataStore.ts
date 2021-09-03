@@ -247,7 +247,7 @@ export default class EventsDataStore {
 				// eslint-disable-next-line no-await-in-loop
 				currentParentEvent = await this.api.events.getEvent(
 					currentParentId,
-					this.parentNodesLoaderAC.signal,
+					this.parentNodesLoaderAC?.signal,
 					{ probe: true },
 				);
 
