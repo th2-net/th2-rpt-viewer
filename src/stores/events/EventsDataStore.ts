@@ -218,12 +218,14 @@ export default class EventsDataStore {
 
 	private parentNodesUpdateScheduler: number | null = null;
 
+	private onParentEventsLoadedSub: IReactionDisposer | null = null;
+
 	@action
 	private loadParentNodes = async (parentId: string, isTargetNodes = false) => {
 		if (!this.parentNodesUpdateScheduler) {
 			this.parentNodesUpdateScheduler = window.setInterval(this.parentNodesUpdater, 600);
 
-			when(
+			this.onParentEventsLoadedSub = when(
 				() => this.rootEventIds.length > 0 && !this.isLoading,
 				() => {
 					if (this.parentNodesUpdateScheduler) {
@@ -234,7 +236,7 @@ export default class EventsDataStore {
 				},
 			);
 		}
-
+		let isAborted = false;
 		const parentNodes: EventTreeNode[] = [];
 		let currentParentId: string | null = parentId;
 		let currentParentEvent = null;
@@ -247,7 +249,7 @@ export default class EventsDataStore {
 				// eslint-disable-next-line no-await-in-loop
 				currentParentEvent = await this.api.events.getEvent(
 					currentParentId,
-					this.parentNodesLoaderAC?.signal,
+					this.parentNodesLoaderAC.signal,
 					{ probe: true },
 				);
 
@@ -267,41 +269,45 @@ export default class EventsDataStore {
 					id: nanoid(),
 					type: 'error',
 				});
+			} else {
+				isAborted = true;
 			}
 		} finally {
-			let rootNode = parentNodes[0];
+			if (!isAborted) {
+				let rootNode = parentNodes[0];
 
-			if (!rootNode || !isRootEvent(rootNode)) {
-				const cachedRootNode =
-					rootNode && rootNode.parentId !== null ? this.eventsCache.get(rootNode.parentId) : null;
-				if (cachedRootNode) {
-					rootNode = cachedRootNode;
-				} else {
-					rootNode = getErrorEventTreeNode(rootNode?.parentId || parentId);
+				if (!rootNode || !isRootEvent(rootNode)) {
+					const cachedRootNode =
+						rootNode && rootNode.parentId !== null ? this.eventsCache.get(rootNode.parentId) : null;
+					if (cachedRootNode) {
+						rootNode = cachedRootNode;
+					} else {
+						rootNode = getErrorEventTreeNode(rootNode?.parentId || parentId);
+					}
+					parentNodes.unshift(rootNode);
 				}
-				parentNodes.unshift(rootNode);
-			}
 
-			parentNodes.forEach(eventNode => {
-				if (!this.eventsCache.has(eventNode.eventId)) {
-					this.eventsCache.set(eventNode.eventId, eventNode);
-				}
-			});
-			if (isTargetNodes) {
-				parentNodes.forEach(parentNode => {
-					this.eventStore.isExpandedMap.set(parentNode.eventId, true);
-					this.loadingParentEvents.set(parentNode.eventId, false);
+				parentNodes.forEach(eventNode => {
+					if (!this.eventsCache.has(eventNode.eventId)) {
+						this.eventsCache.set(eventNode.eventId, eventNode);
+					}
 				});
-				this.targetNodeParents = parentNodes;
-				if (
-					rootNode &&
-					(isRootEvent(rootNode) || rootNode.isUnknown) &&
-					!this.rootEventIds.includes(rootNode.eventId)
-				) {
-					this.rootEventIds.push(rootNode.eventId);
+				if (isTargetNodes) {
+					parentNodes.forEach(parentNode => {
+						this.eventStore.isExpandedMap.set(parentNode.eventId, true);
+						this.loadingParentEvents.set(parentNode.eventId, false);
+					});
+					this.targetNodeParents = parentNodes;
+					if (
+						rootNode &&
+						(isRootEvent(rootNode) || rootNode.isUnknown) &&
+						!this.rootEventIds.includes(rootNode.eventId)
+					) {
+						this.rootEventIds.push(rootNode.eventId);
+					}
+				} else {
+					this.loadedParentNodes.push(parentNodes);
 				}
-			} else {
-				this.loadedParentNodes.push(parentNodes);
 			}
 		}
 	};
@@ -546,9 +552,17 @@ export default class EventsDataStore {
 
 		this.childrenLoaders = {};
 
+		if (this.onParentEventsLoadedSub) {
+			this.onParentEventsLoadedSub();
+		}
+
 		if (this.parentNodesLoaderAC) {
 			this.parentNodesLoaderAC.abort();
-			this.parentNodesLoaderAC = null;
+		}
+		this.loadedParentNodes = [];
+		if (this.parentNodesUpdateScheduler) {
+			window.clearInterval(this.parentNodesUpdateScheduler);
+			this.parentNodesUpdateScheduler = null;
 		}
 
 		this.targetEventAC?.abort();
