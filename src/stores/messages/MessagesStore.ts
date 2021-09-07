@@ -249,10 +249,9 @@ export default class MessagesStore {
 		const mostRecentMessage = sortMessagesByTimestamp(attachedMessages)[0];
 
 		if (mostRecentMessage) {
-			const streams = this.filterStore.filter.streams;
 			this.filterStore.filter = {
 				...this.filterStore.filter,
-				streams: [...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)])],
+				streams: [...new Set([...attachedMessages.map(({ sessionId }) => sessionId)])],
 				timestampTo: timestampToNumber(mostRecentMessage.timestamp),
 			};
 			this.selectedMessageId = new String(mostRecentMessage.messageId);
