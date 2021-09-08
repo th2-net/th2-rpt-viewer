@@ -33,6 +33,7 @@ function getDefaultMessagesFilter(): MessagesFilter {
 export type MessagesFilterStoreInitialState = {
 	sse?: Partial<MessageFilterState> | null;
 	isSoftFilter?: boolean;
+	selectedMessageId?: string;
 } & Partial<MessagesFilter>;
 
 export default class MessagesFilterStore {

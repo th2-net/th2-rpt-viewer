@@ -202,8 +202,18 @@ export default class MessagesStore {
 				this.selectedMessageId = new String(message.messageId);
 				this.highlightedMessageId = message.messageId;
 				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
-				this.workspaceStore.viewStore.activePanel = this;
 			}
+			if (defaultState.selectedMessageId) {
+				this.selectedMessageId = defaultState.selectedMessageId;
+				this.highlightedMessageId = defaultState.selectedMessageId;
+				const selectedMessage = this.dataStore.messages.find(
+					({ messageId }) => messageId === this.selectedMessageId,
+				);
+				if (selectedMessage) {
+					this.graphStore.setTimestamp(timestampToNumber(selectedMessage.timestamp));
+				}
+			}
+			this.workspaceStore.viewStore.activePanel = this;
 		}
 		this.dataStore.loadMessages();
 	};

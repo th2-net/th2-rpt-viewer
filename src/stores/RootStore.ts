@@ -92,6 +92,7 @@ export default class RootStore {
 				streams: messagesStore.filterStore.filter.streams,
 				isSoftFilter: messagesStore.filterStore.isSoftFilter,
 				sse: messagesStore.filterStore.sseMessagesFilter,
+				selectedMessageId: messagesStore.selectedMessageId?.valueOf(),
 			};
 
 			getObjectKeys(eventStoreState).forEach(key => {
