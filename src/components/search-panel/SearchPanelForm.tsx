@@ -74,13 +74,10 @@ const SearchPanelForm = () => {
 	}, [messageSessions, sessionsStore.sessions]);
 
 	const areSessionInvalid: boolean = React.useMemo(() => {
-		if (
-			form.stream.length > 0 &&
-			form.stream.some(stream => !messageSessions.includes(stream.trim()) === true)
-		) {
-			return true;
-		}
-		return false;
+		return (
+			form.stream.length === 0 ||
+			form.stream.some(stream => !messageSessions.includes(stream.trim()))
+		);
 	}, [form.stream, messageSessions]);
 
 	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
