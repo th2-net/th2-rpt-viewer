@@ -73,19 +73,14 @@ const SearchPanelForm = () => {
 		];
 	}, [messageSessions, sessionsStore.sessions]);
 
-	const invalidCheck: boolean = React.useMemo(() => {
-		const valide: string[] = [];
-		form.stream.forEach(mes => {
-			messageSessions.forEach(s => {
-				if (mes === s) {
-					valide.push(mes);
-				}
-			});
-		});
-		if (valide.length === form.stream.length) {
-			return false;
+	const areSessionInvalid: boolean = React.useMemo(() => {
+		if (
+			form.stream.length > 0 &&
+			form.stream.some(stream => !messageSessions.includes(stream.trim()) === true)
+		) {
+			return true;
 		}
-		return true;
+		return false;
 	}, [form.stream, messageSessions]);
 
 	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
@@ -132,7 +127,7 @@ const SearchPanelForm = () => {
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
 		autocompleteList: sessionsAutocomplete,
-		isInvalid: invalidCheck,
+		isInvalid: areSessionInvalid,
 		required: true,
 		validateBubbles: true,
 	};
