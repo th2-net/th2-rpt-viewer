@@ -75,6 +75,8 @@ function GraphSearch(props: Props) {
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
+	const [timeMode, setTimeMode] = React.useState(false);
+
 	useOutsideClickListener(
 		wrapperRef,
 		e => {
@@ -117,12 +119,7 @@ function GraphSearch(props: Props) {
 				typeof currentTimestamp === 'number' &&
 				e.keyCode === KeyCodes.ENTER
 			) {
-				onTimestampSubmit(currentTimestamp);
-				if (refreshPanels) {
-					setMode('confirm');
-				} else {
-					setShowModal(false);
-				}
+				timestampSearch(currentTimestamp);
 			}
 
 			if (e.keyCode === KeyCodes.ESCAPE) {
@@ -164,9 +161,17 @@ function GraphSearch(props: Props) {
 	);
 
 	const onModeSelect = (newMode: GraphSearchMode) => {
+		setTimestamp(null);
+		setTimeMode(false);
 		setMode(newMode);
 		setIsModeLocked(true);
 	};
+
+	const timestampSearch = (startTimestamp: number) => {
+		setTimestamp(startTimestamp);
+		setTimeMode(true);
+		setMode('history');
+	}
 
 	const handleModalSubmit = () => {
 		if (
@@ -174,13 +179,7 @@ function GraphSearch(props: Props) {
 			typeof inputConfig.timestamp === 'number' &&
 			inputConfig.isValidDate
 		) {
-			onTimestampSubmit(inputConfig.timestamp);
-			setIsModeLocked(false);
-			if (refreshPanels) {
-				setMode('confirm');
-			} else {
-				setShowModal(false);
-			}
+			timestampSearch(inputConfig.timestamp);
 		}
 
 		if (mode === 'history') {
@@ -190,6 +189,8 @@ function GraphSearch(props: Props) {
 
 	const closeModal = React.useCallback(() => {
 		setShowModal(false);
+		setTimestamp(null);
+		setTimeMode(false);
 	}, [setShowModal]);
 
 	const onGraphSearchResultSelect = React.useCallback(
@@ -252,7 +253,9 @@ function GraphSearch(props: Props) {
 							setIsIdSearchDisabled={setIsIdSearchDisabled}
 							closeModal={closeModal}
 							submittedId={submittedId}
+							startTimestamp={timestamp}
 							isIdMode={showModal && mode === 'history'}
+							timeMode={timeMode}
 						/>
 					)}
 					{mode === 'confirm' && refreshPanels && (
