@@ -73,6 +73,13 @@ const SearchPanelForm = () => {
 		];
 	}, [messageSessions, sessionsStore.sessions]);
 
+	const areSessionInvalid: boolean = React.useMemo(() => {
+		return (
+			form.stream.length === 0 ||
+			form.stream.some(stream => !messageSessions.includes(stream.trim()))
+		);
+	}, [form.stream, messageSessions]);
+
 	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
 		formType,
 		eventsHistory,
@@ -117,8 +124,9 @@ const SearchPanelForm = () => {
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
 		autocompleteList: sessionsAutocomplete,
-		isInvalid: true,
+		isInvalid: areSessionInvalid,
 		required: true,
+		validateBubbles: true,
 	};
 
 	const config: FitlerRowItem =
