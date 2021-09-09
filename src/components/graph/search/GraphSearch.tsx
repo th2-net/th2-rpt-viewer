@@ -171,7 +171,7 @@ function GraphSearch(props: Props) {
 		setTimestamp(startTimestamp);
 		setTimeMode(true);
 		setMode('history');
-	}
+	};
 
 	const handleModalSubmit = () => {
 		if (

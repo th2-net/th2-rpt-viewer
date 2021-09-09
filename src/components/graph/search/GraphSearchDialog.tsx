@@ -42,7 +42,7 @@ interface Props {
 	submittedId: String | null;
 	isIdMode: boolean;
 	startTimestamp: number | null;
-	timeMode: boolean,
+	timeMode: boolean;
 }
 
 const GraphSearchDialog = (props: Props) => {
@@ -92,7 +92,11 @@ const GraphSearchDialog = (props: Props) => {
 
 	const filteredSearchHistory = React.useMemo(() => {
 		if (!value) return sortedSearchHistory;
-		return sortedSearchHistory.filter(
+		const idIndex = sortedSearchHistory.map(historyItem => getItemId(historyItem.item));
+		const uniqueSortedSearchHistory = sortedSearchHistory.filter(
+			(historyItem, index) => idIndex.indexOf(getItemId(historyItem.item)) === index,
+		);
+		return uniqueSortedSearchHistory.filter(
 			historyItem =>
 				getItemId(historyItem.item).includes(value) ||
 				getItemName(historyItem.item).includes(value) ||
@@ -206,14 +210,14 @@ const GraphSearchDialog = (props: Props) => {
 
 		dirSearchChannel.addEventListener('event', onChannelResponse);
 		dirSearchChannel.addEventListener('close', () => stopSearch(undefined));
-	}
+	};
 
 	React.useEffect(() => {
 		if (startTimestamp && timeMode) {
 			startDirectionalSearch(SearchDirection.Previous);
 			startDirectionalSearch(SearchDirection.Next);
 		}
-	}, [startTimestamp])
+	}, [startTimestamp]);
 
 	const onKeyDown = React.useCallback(
 		(event: KeyboardEvent) => {
