@@ -147,6 +147,7 @@ const MessagesFilterPanel = () => {
 
 		return searchStore.messagesFilterInfo.map<CompoundFilterRow>(
 			(filterInfo: MessagesFilterInfo) => {
+				const state = getState(filterInfo.name);
 				const label = prettifyCamelcase(filterInfo.name);
 				const autocompleteList = getArrayOfUniques<string>(
 					messagesHistory
@@ -155,38 +156,40 @@ const MessagesFilterPanel = () => {
 						.flat(),
 				);
 
-				return filterInfo.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
-					param => {
-						switch (param.type.value) {
-							case 'boolean':
-								return {
-									id: `${filterInfo.name}-${param.name}`,
-									label: param.name === 'negative' ? label : '',
-									disabled: false,
-									type: 'toggler',
-									value: getState(filterInfo.name)[param.name as keyof MultipleStringFilter],
-									toggleValue: getToggler(
-										filterInfo.name,
-										param.name as keyof MultipleStringFilter,
-									),
-									possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
-									className: 'filter-row__toggler',
-								} as any;
-							default:
-								return {
-									id: filterInfo.name,
-									label: '',
-									type: 'multiple-strings',
-									values: getState(filterInfo.name).values,
-									setValues: getValuesUpdater(filterInfo.name),
-									currentValue: currentValues[filterInfo.name as keyof MessageFilterState],
-									setCurrentValue: setCurrentValue(filterInfo.name),
-									autocompleteList,
-									hint: filterInfo.hint,
-								};
-						}
-					},
-				);
+				return state
+					? filterInfo.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
+							param => {
+								switch (param.type.value) {
+									case 'boolean':
+										return {
+											id: `${filterInfo.name}-${param.name}`,
+											label: param.name === 'negative' ? label : '',
+											disabled: false,
+											type: 'toggler',
+											value: state[param.name as keyof MultipleStringFilter],
+											toggleValue: getToggler(
+												filterInfo.name,
+												param.name as keyof MultipleStringFilter,
+											),
+											possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+											className: 'filter-row__toggler',
+										} as any;
+									default:
+										return {
+											id: filterInfo.name,
+											label: '',
+											type: 'multiple-strings',
+											values: state.values,
+											setValues: getValuesUpdater(filterInfo.name),
+											currentValue: currentValues[filterInfo.name as keyof MessageFilterState],
+											setCurrentValue: setCurrentValue(filterInfo.name),
+											autocompleteList,
+											hint: filterInfo.hint,
+										};
+								}
+							},
+					  )
+					: [];
 			},
 		);
 	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
