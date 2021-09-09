@@ -39,7 +39,6 @@ import SearchResultCountLimit, {
 import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
-import { values } from 'core-js/core/array';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -76,9 +75,6 @@ const SearchPanelForm = () => {
 
 	const invalidCheck: boolean = React.useMemo(() => {
 		const valide: string[] = [];
-		if (form.stream.length === 0) {
-			return true;
-		}
 		form.stream.forEach(mes => {
 			messageSessions.forEach(s => {
 				if (mes === s) {
