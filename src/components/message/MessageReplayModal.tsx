@@ -144,35 +144,36 @@ function MessageReplayModal() {
 		};
 
 		return searchStore.messagesFilterInfo.map<CompoundFilterRow>((filter: MessagesFilterInfo) => {
+			const state = getState(filter.name);
 			const label = prettifyCamelcase(filter.name);
-			return filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
-				param => {
-					switch (param.type.value) {
-						case 'boolean':
-							return {
-								id: `${filter.name}-${param.name}`,
-								label: param.name === 'negative' ? label : '',
-								disabled: false,
-								type: 'toggler',
-								value: getState(filter.name)[param.name as keyof MultipleStringFilter],
-								toggleValue: getToggler(filter.name, param.name as keyof MultipleStringFilter),
-								possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
-								className: 'filter-row__toggler',
-							} as any;
-						default:
-							return {
-								id: filter.name,
-								label: '',
-								type: 'multiple-strings',
-								values: getState(filter.name).values,
-								setValues: getValuesUpdater(filter.name),
-								currentValue: currentValues[filter.name as keyof MessageFilterState],
-								setCurrentValue: setCurrentValue(filter.name),
-								autocompleteList: null,
-							};
-					}
-				},
-			);
+			return state
+				? filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(param => {
+						switch (param.type.value) {
+							case 'boolean':
+								return {
+									id: `${filter.name}-${param.name}`,
+									label: param.name === 'negative' ? label : '',
+									disabled: false,
+									type: 'toggler',
+									value: state[param.name as keyof MultipleStringFilter],
+									toggleValue: getToggler(filter.name, param.name as keyof MultipleStringFilter),
+									possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+									className: 'filter-row__toggler',
+								} as any;
+							default:
+								return {
+									id: filter.name,
+									label: '',
+									type: 'multiple-strings',
+									values: state.values,
+									setValues: getValuesUpdater(filter.name),
+									currentValue: currentValues[filter.name as keyof MessageFilterState],
+									setCurrentValue: setCurrentValue(filter.name),
+									autocompleteList: null,
+								};
+						}
+				  })
+				: [];
 		});
 	}, [searchStore.messagesFilterInfo, sseFilter, setSSEFilter, currentValues]);
 
