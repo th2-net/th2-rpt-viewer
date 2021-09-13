@@ -43,7 +43,6 @@ export interface MessageCardBaseProps {
 	sortOrderItems?: string[];
 	viewType: MessageViewType;
 	bodyItemIndex: number;
-
 	setViewType: (viewType: MessageViewType) => void;
 }
 
@@ -68,8 +67,6 @@ export function MessageCardBase({
 	const renderInlineMessageInfo = (index: number) => {
 		if (viewType === MessageViewType.ASCII || viewType === MessageViewType.JSON) {
 			const formattedTimestamp = formatTime(timestampToNumber(timestamp));
-
-			console.log(index);
 
 			return (
 				<>
@@ -186,7 +183,6 @@ export function MessageCardBase({
 		return null;
 	};
 
-	console.log(body, bodyItemIndex);
 	return (
 		<div className={rootClass}>
 			<div className='message-card'>

@@ -86,9 +86,9 @@ export default class MessagesFilterStore {
 		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
 
 		const queryParams: MessagesSSEParams = {
-			startTimestamp: 1615389400068,
+			startTimestamp: this.filter.timestampTo || startTimestamp,
 			stream: this.filter.streams,
-
+			searchDirection: 'previous',
 			resultCountLimit: 15,
 			filters: filtersToAdd,
 			...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),

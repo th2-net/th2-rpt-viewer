@@ -136,8 +136,8 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	}
 
 	return (
-		<>
-			{message.body?.map((item, index) => (
+		<div>
+			{message.body?.map((item, itemIndex) => (
 				<MessageCardBase
 					message={message}
 					viewType={viewType}
@@ -152,10 +152,10 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 					toogleMessagePin={toogleMessagePin}
 					isDetailed={isDetailed}
 					sortOrderItems={sortOrderItems}
-					bodyItemIndex={index}
+					bodyItemIndex={itemIndex}
 				/>
 			))}
-		</>
+		</div>
 	);
 });
 

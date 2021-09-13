@@ -102,6 +102,7 @@ export default class MessagesDataProviderStore {
 		this.createPreviousMessageChannelEventSource(
 			{
 				...queryParams,
+				searchDirection: 'previous',
 			},
 			SEARCH_TIME_FRAME,
 		);

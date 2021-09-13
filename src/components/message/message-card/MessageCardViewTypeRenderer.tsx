@@ -49,7 +49,7 @@ const MessageCardViewTypeRenderer = ({
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
 		case MessageViewType.JSON:
-			if (index && index >= 0) {
+			if (index !== undefined) {
 				return (
 					<ErrorBoundary
 						fallback={
@@ -74,7 +74,7 @@ const MessageCardViewTypeRenderer = ({
 			}
 		case MessageViewType.ASCII:
 		case MessageViewType.BINARY:
-			return rawContent && index ? (
+			return rawContent && index !== undefined ? (
 				<MessageRaw
 					index={index}
 					rawContent={rawContent}

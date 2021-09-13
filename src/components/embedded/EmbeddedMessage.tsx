@@ -43,19 +43,19 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 
 	if (message) {
 		return (
-			<>
-				{message.body?.map((item, index) => (
+			<div>
+				{message.body?.map((item, intemIndex) => (
 					<div className='embedded-wrapper'>
 						<MessageCardBase
 							isEmbedded
 							message={message}
 							setViewType={setViewType}
 							viewType={viewType}
-							bodyItemIndex={index}
+							bodyItemIndex={intemIndex}
 						/>
 					</div>
 				))}
-			</>
+			</div>
 		);
 	}
 

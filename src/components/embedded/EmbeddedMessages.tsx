@@ -40,18 +40,18 @@ const EmbeddedMessages = () => {
 
 	const renderMsg = (index: number, message: EventMessage) => {
 		return (
-			<>
-				{message.body?.map((item, indexItem) => (
+			<div>
+				{message.body?.map((item, itemIndex) => (
 					<MessageCardBase
 						isEmbedded
-						key={indexItem}
-						bodyItemIndex={indexItem}
+						key={index}
+						bodyItemIndex={itemIndex}
 						message={message}
 						setViewType={setViewType}
 						viewType={viewType}
 					/>
 				))}
-			</>
+			</div>
 		);
 	};
 
