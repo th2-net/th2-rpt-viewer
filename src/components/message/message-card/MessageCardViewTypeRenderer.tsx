@@ -72,6 +72,7 @@ const MessageCardViewTypeRenderer = ({
 					</ErrorBoundary>
 				);
 			}
+			break;
 		case MessageViewType.ASCII:
 		case MessageViewType.BINARY:
 			return rawContent && index !== undefined ? (

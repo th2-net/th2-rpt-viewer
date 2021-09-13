@@ -193,7 +193,8 @@ export function MessageCardBase({
 							<MessageScreenshotZoom
 								src={
 									typeof bodyBase64 === 'string' && bodyItemIndex
-										? `data:${body?.[bodyItemIndex].message.metadata.messageType};base64,${message.bodyBase64}`
+										? `data:${body?.[bodyItemIndex].message.metadata.messageType};base64,
+										${message.bodyBase64}`
 										: ''
 								}
 								alt={message.messageId}
