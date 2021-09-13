@@ -25,7 +25,6 @@ import MessageCardViewTypeRenderer, {
 } from './MessageCardViewTypeRenderer';
 import MessageCardTools, { MessageCardToolsConfig } from './MessageCardTools';
 import '../../../styles/messages.scss';
-import MessageBody from '../../../models/MessageBody';
 
 const HUE_SEGMENTS_COUNT = 36;
 
