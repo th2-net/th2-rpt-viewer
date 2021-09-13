@@ -16,6 +16,7 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import { motion } from 'framer-motion';
 import { MessageFilterState, MultipleStringFilter } from '../search-panel/SearchPanelFilters';
 import {
 	CompoundFilterRow,
@@ -48,6 +49,9 @@ function MessageReplayModal() {
 	const [isCopied, setIsCopied] = React.useState(false);
 
 	const [isOpen, setIsOpen] = React.useState(false);
+
+	const [drag, setDrag] = React.useState(false);
+	const [mouseDown, setMouseDown] = React.useState(false);
 
 	const [sseFilter, setSSEFilter] = React.useState<MessageFilterState | null>(null);
 	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
@@ -279,19 +283,40 @@ function MessageReplayModal() {
 		setIsCopied(true);
 	}
 
+	const refConstrains = React.useRef(null);
+
 	return (
 		<>
 			<span className='replay__toggle-button' onClick={toggleReplayModal}>
 				Replay
 			</span>
 			<ModalPortal isOpen={isOpen}>
-				<div className='replay' ref={rootRef}>
+				<motion.div className='replay__drag-area' ref={refConstrains} />
+				<motion.div
+					dragElastic={false}
+					dragMomentum={false}
+					dragConstraints={refConstrains}
+					drag={drag || mouseDown}
+					className='replay'
+					ref={rootRef}
+					onMouseDown={() => setMouseDown(true)}
+					onMouseUp={() => setMouseDown(false)}>
+					<div
+						className='dragable-area'
+						onMouseOver={() => setDrag(true)}
+						onMouseLeave={() => setDrag(false)}
+						onMouseDown={() => setMouseDown(true)}
+						onMouseUp={() => setMouseDown(false)}
+					/>
 					<button className='replay__close-button' onClick={() => setIsOpen(false)}>
 						<i></i>
 					</button>
 					{filterConfig.map(rowConfig =>
 						Array.isArray(rowConfig) ? (
-							<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
+							<div
+								onMouseOver={() => setDrag(false)}
+								className='filter__compound'
+								key={rowConfig.map(c => c.id).join('-')}>
 								{rowConfig.map(_rowConfig => (
 									<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
 								))}
@@ -310,7 +335,7 @@ function MessageReplayModal() {
 						onClick={onCopy}>
 						{isCopied ? 'Copied to clipboard' : 'Copy'}
 					</button>
-				</div>
+				</motion.div>
 			</ModalPortal>
 		</>
 	);

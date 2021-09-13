@@ -129,6 +129,7 @@ export default class RootStore {
 			const timestamp = searchParams.get('timestamp');
 			const eventId = searchParams.get('eventId');
 			const messageId = searchParams.get('messageId');
+
 			if (filtersToPin) {
 				const filtersHistoryItem: FiltersHistoryType<FilterState> = JSON.parse(
 					window.atob(filtersToPin),
@@ -164,7 +165,7 @@ export default class RootStore {
 					},
 					timeRange,
 					interval,
-					layout: defaultPanelsLayout,
+					layout: messageId ? [0, 100] : defaultPanelsLayout,
 				},
 			];
 		} catch (error) {

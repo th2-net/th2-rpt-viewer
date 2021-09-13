@@ -32,6 +32,7 @@ import '../styles/root.scss';
 const App = () => {
 	const searchStore = useSearchStore();
 	const tabsStore = useTabsStore();
+
 	return (
 		<div className='app'>
 			<ToastProvider

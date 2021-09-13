@@ -16,21 +16,16 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useMessagesWorkspaceStore } from '../../../../hooks';
 import DetailedMessageRaw from './DetailedMessageRaw';
 import SimpleMessageRaw from './SimpleMessageRaw';
 
 interface Props {
 	rawContent: string;
-	messageId: string;
 	renderInfo: () => React.ReactNode;
+	isDetailed: boolean;
 }
 
-function MessageRaw({ rawContent, messageId, renderInfo }: Props) {
-	const messagesStore = useMessagesWorkspaceStore();
-
-	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
-
+function MessageRaw({ rawContent, renderInfo, isDetailed }: Props) {
 	return (
 		<div className='mc-raw'>
 			{isDetailed ? (
