@@ -136,21 +136,26 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	}
 
 	return (
-		<MessageCardBase
-			message={message}
-			viewType={viewType}
-			setViewType={setViewType}
-			isHighlighted={isHighlighted}
-			hoverMessage={hoverMessage}
-			unhoverMessage={unhoverMessage}
-			isBookmarked={isBookmarked}
-			isAttached={isAttached}
-			isContentBeautified={isContentBeautified}
-			isSoftFiltered={isSoftFiltered}
-			toogleMessagePin={toogleMessagePin}
-			isDetailed={isDetailed}
-			sortOrderItems={sortOrderItems}
-		/>
+		<>
+			{message.body?.map((item, index) => (
+				<MessageCardBase
+					message={message}
+					viewType={viewType}
+					setViewType={setViewType}
+					isHighlighted={isHighlighted}
+					hoverMessage={hoverMessage}
+					unhoverMessage={unhoverMessage}
+					isBookmarked={isBookmarked}
+					isAttached={isAttached}
+					isContentBeautified={isContentBeautified}
+					isSoftFiltered={isSoftFiltered}
+					toogleMessagePin={toogleMessagePin}
+					isDetailed={isDetailed}
+					sortOrderItems={sortOrderItems}
+					bodyItemIndex={index}
+				/>
+			))}
+		</>
 	);
 });
 

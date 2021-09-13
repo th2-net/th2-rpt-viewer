@@ -21,17 +21,18 @@ import SimpleMessageRaw from './SimpleMessageRaw';
 
 interface Props {
 	rawContent: string;
-	renderInfo: () => React.ReactNode;
+	renderInfo: (index: number) => React.ReactNode;
 	isDetailed: boolean;
+	index: number;
 }
 
-function MessageRaw({ rawContent, renderInfo, isDetailed }: Props) {
+function MessageRaw({ rawContent, renderInfo, isDetailed, index }: Props) {
 	return (
 		<div className='mc-raw'>
 			{isDetailed ? (
 				<DetailedMessageRaw rawContent={rawContent} />
 			) : (
-				<SimpleMessageRaw rawContent={rawContent} renderInfo={renderInfo} />
+				<SimpleMessageRaw rawContent={rawContent} renderInfo={renderInfo} index={index} />
 			)}
 		</div>
 	);

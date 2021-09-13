@@ -43,14 +43,19 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 
 	if (message) {
 		return (
-			<div className='embedded-wrapper'>
-				<MessageCardBase
-					isEmbedded
-					message={message}
-					setViewType={setViewType}
-					viewType={viewType}
-				/>
-			</div>
+			<>
+				{message.body?.map((item, index) => (
+					<div className='embedded-wrapper'>
+						<MessageCardBase
+							isEmbedded
+							message={message}
+							setViewType={setViewType}
+							viewType={viewType}
+							bodyItemIndex={index}
+						/>
+					</div>
+				))}
+			</>
 		);
 	}
 

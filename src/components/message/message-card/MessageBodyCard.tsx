@@ -32,7 +32,8 @@ interface Props {
 	isBeautified: boolean;
 	body: MessageBody | null;
 	isSelected: boolean;
-	renderInfo: () => React.ReactNode;
+	renderInfo?: (index: number) => React.ReactNode;
+	index: number;
 	sortOrderItems: string[];
 }
 
@@ -52,11 +53,22 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 	return [...primarySortedFields, ...secondarySortedFields];
 };
 
-function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrderItems }: Props) {
+function MessageBodyCard({
+	index,
+	isBeautified,
+	body,
+	isSelected,
+	renderInfo,
+	sortOrderItems,
+}: Props) {
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
 
 	const fields = React.useMemo(
-		() => getSortedFields(body?.fields ? body.fields : {}, sortOrderItems),
+		() =>
+			getSortedFields(
+				body?.[index]?.message.fields ? body?.[index].message.fields : {},
+				sortOrderItems,
+			),
 		[body, [sortOrderItems]],
 	);
 
@@ -66,7 +78,7 @@ function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrder
 
 	return (
 		<pre className='mc-body__human'>
-			{renderInfo && renderInfo()}
+			{renderInfo && renderInfo(index)}
 			{!isBeautified && '{'}
 			{fields.map(([key, value], idx, arr) => (
 				<React.Fragment key={key}>
@@ -96,7 +108,6 @@ interface FieldProps {
 	isRoot?: boolean;
 	highlightColor: string;
 	primarySort: string[];
-	renderInfo?: () => React.ReactNode;
 }
 
 function MessageBodyCardField(props: FieldProps) {
@@ -217,7 +228,7 @@ export function MessageBodyCardFallback({ body, isBeautified }: Props) {
 }
 
 const backgroundGradient = (strings: TemplateStringsArray, color: string) =>
-	`linear-gradient(to bottom, 
+	`linear-gradient(to bottom,
         transparent 0%,
         transparent 2px,
         ${color} 2px,

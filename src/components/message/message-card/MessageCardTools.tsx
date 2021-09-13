@@ -27,6 +27,7 @@ import { normalizeFields } from '../../../helpers/message';
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 export type MessageCardToolsConfig = {
+	index?: number;
 	message: EventMessage;
 	messageId: string;
 	messageType: string;
@@ -39,6 +40,7 @@ export type MessageCardToolsConfig = {
 };
 
 const MessageCardTools = ({
+	index,
 	message,
 	messageId,
 	messageType,
@@ -79,9 +81,9 @@ const MessageCardTools = ({
 		let content: string;
 
 		const jsonToCopy =
-			jsonObjectToCopy === 'fields'
-				? message.body?.fields
-					? normalizeFields(message.body.fields)
+			jsonObjectToCopy === 'fields' && index && message.body
+				? message.body[index].message.fields
+					? normalizeFields(message.body[index].message.fields)
 					: null
 				: message.body;
 

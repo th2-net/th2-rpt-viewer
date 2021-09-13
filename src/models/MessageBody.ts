@@ -14,19 +14,30 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export default interface MessageBody {
-	metadata: {
-		id: {
-			connectionId: {
-				sessionAlias: string;
+export interface MessageBodyItem {
+	subsequenceId: [number];
+	protocol: string;
+	messageType: string;
+	message: {
+		metadata: {
+			id: {
+				connectionId: {
+					sessionAlias: string;
+				};
+				direction: string;
+				sequence: string;
+				subsequence: [number];
 			};
-			sequence: string;
+			timestamp: string;
+			messageType: string;
+			protocol: string;
 		};
-		timestamp: string;
-		messageType: string;
+		fields: MessageBodyFields;
 	};
-	fields: MessageBodyFields;
+	filtered: boolean;
 }
+
+export default interface MessageBody extends Array<MessageBodyItem> {}
 
 export type MessageBodyFields = { [key: string]: MessageBodyField };
 

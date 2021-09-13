@@ -28,7 +28,8 @@ export type MessageCardViewTypeRendererProps = {
 	isBeautified: boolean;
 	isSelected: boolean;
 	messageBody: MessageBody | null;
-	renderInfo: () => React.ReactNode;
+	renderInfo: (index: number) => React.ReactNode;
+	index?: number;
 	isEmbedded?: boolean;
 	isDetailed?: boolean;
 	sortOrderItems: string[];
@@ -42,35 +43,40 @@ const MessageCardViewTypeRenderer = ({
 	isSelected,
 	messageBody,
 	isDetailed,
+	index,
 	sortOrderItems,
 }: MessageCardViewTypeRendererProps) => {
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
 		case MessageViewType.JSON:
-			return (
-				<ErrorBoundary
-					fallback={
-						<MessageBodyCardFallback
-							renderInfo={renderInfo}
+			if (index && index >= 0) {
+				return (
+					<ErrorBoundary
+						fallback={
+							<MessageBodyCardFallback
+								index={index}
+								isBeautified={isBeautified}
+								isSelected={isSelected}
+								body={messageBody}
+								sortOrderItems={sortOrderItems}
+							/>
+						}>
+						<MessageBodyCard
+							index={index}
 							isBeautified={isBeautified}
-							isSelected={isSelected}
 							body={messageBody}
+							isSelected={isSelected}
+							renderInfo={renderInfo}
 							sortOrderItems={sortOrderItems}
 						/>
-					}>
-					<MessageBodyCard
-						isBeautified={isBeautified}
-						body={messageBody}
-						isSelected={isSelected}
-						renderInfo={renderInfo}
-						sortOrderItems={sortOrderItems}
-					/>
-				</ErrorBoundary>
-			);
+					</ErrorBoundary>
+				);
+			}
 		case MessageViewType.ASCII:
 		case MessageViewType.BINARY:
-			return rawContent ? (
+			return rawContent && index ? (
 				<MessageRaw
+					index={index}
 					rawContent={rawContent}
 					renderInfo={renderInfo}
 					isDetailed={isDetailed || viewType === MessageViewType.BINARY}

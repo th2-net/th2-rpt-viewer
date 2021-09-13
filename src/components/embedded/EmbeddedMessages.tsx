@@ -40,13 +40,18 @@ const EmbeddedMessages = () => {
 
 	const renderMsg = (index: number, message: EventMessage) => {
 		return (
-			<MessageCardBase
-				isEmbedded
-				key={index}
-				message={message}
-				setViewType={setViewType}
-				viewType={viewType}
-			/>
+			<>
+				{message.body?.map((item, indexItem) => (
+					<MessageCardBase
+						isEmbedded
+						key={indexItem}
+						bodyItemIndex={indexItem}
+						message={message}
+						setViewType={setViewType}
+						viewType={viewType}
+					/>
+				))}
+			</>
 		);
 	};
 
@@ -113,12 +118,12 @@ interface Props {
 	rowCount: number;
 	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
 	/*
-		 Number objects is used here because in some cases (eg one message / action was
-		 selected several times by different entities)
-		 We can't understand that we need to scroll to the selected entity again when
-		 we are comparing primitive numbers.
-		 Objects and reference comparison is the only way to handle numbers changing in this case.
-	 */
+		  Number objects is used here because in some cases (eg one message / action was
+		  selected several times by different entities)
+		  We can't understand that we need to scroll to the selected entity again when
+		  we are comparing primitive numbers.
+		  Objects and reference comparison is the only way to handle numbers changing in this case.
+	  */
 	scrolledIndex: Number | null;
 	className?: string;
 	overscan?: number;
