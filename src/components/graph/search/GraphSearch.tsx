@@ -20,7 +20,6 @@ import { createBemElement } from '../../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { TimeRange } from '../../../models/Timestamp';
 import GraphSearchDialog from './GraphSearchDialog';
-import GraphSearchConfirm from './GraphSearchConfirm';
 import WorkspaceStore from '../../../stores/workspace/WorkspaceStore';
 import { ModalPortal } from '../../util/Portal';
 import GraphSearchInput, { GraphSearchInputConfig } from './GraphSearchInput';
@@ -30,14 +29,13 @@ import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 
 interface Props {
-	refreshPanels: ((timestamp: number) => void) | null;
 	onTimestampSubmit: (timestamp: number) => void;
 	onFoundItemClick: InstanceType<typeof WorkspaceStore>['onSavedItemSelect'];
 	windowRange: TimeRange | null;
 	hoveredTimestamp: number | null;
 }
 
-export type GraphSearchMode = 'timestamp' | 'history' | 'confirm';
+export type GraphSearchMode = 'timestamp' | 'history';
 export interface GraphSearchResult {
 	timestamp: number;
 	id: string;
@@ -45,13 +43,7 @@ export interface GraphSearchResult {
 }
 
 function GraphSearch(props: Props) {
-	const {
-		onTimestampSubmit,
-		onFoundItemClick,
-		windowRange,
-		refreshPanels,
-		hoveredTimestamp,
-	} = props;
+	const { onTimestampSubmit, onFoundItemClick, windowRange, hoveredTimestamp } = props;
 
 	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
 		isValidDate: false,
@@ -74,8 +66,6 @@ function GraphSearch(props: Props) {
 
 	const wrapperRef = React.useRef<HTMLDivElement>(null);
 	const modalRef = React.useRef<HTMLDivElement>(null);
-
-	const [timeMode, setTimeMode] = React.useState(false);
 
 	useOutsideClickListener(
 		wrapperRef,
@@ -126,7 +116,7 @@ function GraphSearch(props: Props) {
 				setShowModal(false);
 			}
 		},
-		[inputConfig, mode, showModal, refreshPanels, timestamp],
+		[inputConfig, mode, showModal, timestamp],
 	);
 
 	React.useEffect(() => {
@@ -162,14 +152,12 @@ function GraphSearch(props: Props) {
 
 	const onModeSelect = (newMode: GraphSearchMode) => {
 		setTimestamp(null);
-		setTimeMode(false);
 		setMode(newMode);
 		setIsModeLocked(true);
 	};
 
 	const timestampSearch = (startTimestamp: number) => {
 		setTimestamp(startTimestamp);
-		setTimeMode(true);
 		setMode('history');
 	};
 
@@ -190,7 +178,6 @@ function GraphSearch(props: Props) {
 	const closeModal = React.useCallback(() => {
 		setShowModal(false);
 		setTimestamp(null);
-		setTimeMode(false);
 	}, [setShowModal]);
 
 	const onGraphSearchResultSelect = React.useCallback(
@@ -253,41 +240,25 @@ function GraphSearch(props: Props) {
 							setIsIdSearchDisabled={setIsIdSearchDisabled}
 							closeModal={closeModal}
 							submittedId={submittedId}
-							startTimestamp={timestamp}
+							submittedTimestamp={timestamp}
 							isIdMode={showModal && mode === 'history'}
-							timeMode={timeMode}
-						/>
-					)}
-					{mode === 'confirm' && refreshPanels && (
-						<GraphSearchConfirm
-							onConfirm={() => {
-								if (timestamp && refreshPanels) {
-									refreshPanels(timestamp);
-								}
-								setShowModal(false);
-								setMode('timestamp');
-							}}
-							onDecline={() => setShowModal(false)}
 						/>
 					)}
 					<div className='graph-search__switchers'>
-						{mode === 'confirm' ? null : (
-							<>
-								<button className={dateButtonClassName} onClick={() => onModeSelect('timestamp')}>
-									Timestamp
-								</button>
-								<button className={idButtonClassName} onClick={() => onModeSelect('history')}>
-									History
-								</button>
-							</>
-						)}
+						<>
+							<button className={dateButtonClassName} onClick={() => onModeSelect('timestamp')}>
+								Timestamp
+							</button>
+							<button className={idButtonClassName} onClick={() => onModeSelect('history')}>
+								History
+							</button>
+						</>
 						<button
 							onClick={handleModalSubmit}
 							className={createBemElement(
 								'graph-search',
 								'submit-button',
 								isSubmitButtonActive ? 'active' : null,
-								mode === 'confirm' ? 'hide' : null,
 							)}>
 							OK
 						</button>
