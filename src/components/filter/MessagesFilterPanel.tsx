@@ -30,7 +30,6 @@ import {
 	useMessagesWorkspaceStore,
 	useFiltersHistoryStore,
 	useSessionsStore,
-	useDebouncedCallback,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
