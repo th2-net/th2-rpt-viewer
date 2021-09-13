@@ -49,30 +49,28 @@ const MessageCardViewTypeRenderer = ({
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
 		case MessageViewType.JSON:
-			if (index !== undefined) {
-				return (
-					<ErrorBoundary
-						fallback={
-							<MessageBodyCardFallback
-								index={index}
-								isBeautified={isBeautified}
-								isSelected={isSelected}
-								body={messageBody}
-								sortOrderItems={sortOrderItems}
-							/>
-						}>
-						<MessageBodyCard
+			return index !== undefined ? (
+				<ErrorBoundary
+					fallback={
+						<MessageBodyCardFallback
 							index={index}
 							isBeautified={isBeautified}
-							body={messageBody}
 							isSelected={isSelected}
-							renderInfo={renderInfo}
+							body={messageBody}
 							sortOrderItems={sortOrderItems}
 						/>
-					</ErrorBoundary>
-				);
-			}
-			break;
+					}>
+					<MessageBodyCard
+						index={index}
+						isBeautified={isBeautified}
+						body={messageBody}
+						isSelected={isSelected}
+						renderInfo={renderInfo}
+						sortOrderItems={sortOrderItems}
+					/>
+				</ErrorBoundary>
+			) : null;
+
 		case MessageViewType.ASCII:
 		case MessageViewType.BINARY:
 			return rawContent && index !== undefined ? (
