@@ -29,7 +29,7 @@ import KeyCodes from '../../../util/KeyCodes';
 import { indexedDbLimits, IndexedDbStores } from '../../../api/indexedDb';
 import { GraphSearchResult } from './GraphSearch';
 import { SearchDirection } from '../../../models/search/SearchDirection';
-import { SSEParams } from '../../../api/sse';
+import { DateTimeMask } from '../../../models/filter/FilterInputs';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -41,8 +41,7 @@ interface Props {
 	closeModal: () => void;
 	submittedId: String | null;
 	isIdMode: boolean;
-	startTimestamp: number | null;
-	timeMode: boolean;
+	submittedTimestamp: number | null;
 }
 
 const GraphSearchDialog = (props: Props) => {
@@ -54,8 +53,7 @@ const GraphSearchDialog = (props: Props) => {
 		closeModal,
 		submittedId,
 		isIdMode,
-		startTimestamp,
-		timeMode,
+		submittedTimestamp,
 	} = props;
 
 	const rootStore = useRootStore();
@@ -66,14 +64,6 @@ const GraphSearchDialog = (props: Props) => {
 	);
 
 	const ac = React.useRef<AbortController | null>(null);
-
-	const searchChannel: {
-		previous: EventSource | null;
-		next: EventSource | null;
-	} = {
-		previous: null,
-		next: null,
-	};
 
 	const [foundId, setFoundId] = React.useState<string | null>(null);
 
@@ -148,29 +138,6 @@ const GraphSearchDialog = (props: Props) => {
 		};
 	}, [value]);
 
-	const onChannelResponse = (ev: any) => {
-		const data = (ev as MessageEvent).data;
-		const parsedEvent = JSON.parse(data);
-		const id = getItemId(parsedEvent);
-		ac.current = new AbortController();
-		onValueChange(id, ac.current);
-		setFoundId(id);
-	};
-
-	const stopSearch = (direction?: SSESearchDirection) => {
-		if (!direction) {
-			stopSearch(SearchDirection.Next);
-			stopSearch(SearchDirection.Previous);
-			return;
-		}
-		const searchChannelDirection = searchChannel[direction];
-
-		if (!searchChannelDirection) return;
-
-		searchChannelDirection.close();
-		searchChannel[direction] = null;
-	};
-
 	React.useEffect(() => {
 		if (submittedId !== null) {
 			const id = submittedId.valueOf();
@@ -192,32 +159,54 @@ const GraphSearchDialog = (props: Props) => {
 		}
 	}, [submittedId]);
 
-	const startDirectionalSearch = (direction: SSESearchDirection) => {
-		if (!startTimestamp) return;
-
-		const queryParams: SSEParams = {
-			startTimestamp,
-			searchDirection: direction,
-			resultCountLimit: 1,
+	React.useEffect(() => {
+		const searchChannels = {
+			previous: submittedTimestamp
+				? api.sse.getEventSource({
+						type: 'event',
+						queryParams: {
+							startTimestamp: submittedTimestamp,
+							resultCountLimit: 1,
+							searchDirection: SearchDirection.Previous,
+						},
+				  })
+				: null,
+			next: submittedTimestamp
+				? api.sse.getEventSource({
+						type: 'event',
+						queryParams: {
+							startTimestamp: submittedTimestamp,
+							resultCountLimit: 1,
+							searchDirection: SearchDirection.Next,
+						},
+				  })
+				: null,
 		};
 
-		const dirSearchChannel = api.sse.getEventSource({
-			type: 'event',
-			queryParams,
-		});
+		const stopSearch = () => {
+			searchChannels.next?.close();
+			searchChannels.previous?.close();
+		};
 
-		searchChannel[direction] = dirSearchChannel;
+		const onChannelResponse = (ev: any) => {
+			stopSearch();
+			const data = (ev as MessageEvent).data;
+			const parsedEvent = JSON.parse(data);
+			const id = getItemId(parsedEvent);
+			ac.current = new AbortController();
+			onValueChange(id, ac.current);
+			setFoundId(id);
+		};
 
-		dirSearchChannel.addEventListener('event', onChannelResponse);
-		dirSearchChannel.addEventListener('close', () => stopSearch(undefined));
-	};
+		searchChannels.previous?.addEventListener('event', onChannelResponse);
+		searchChannels.next?.addEventListener('event', onChannelResponse);
+		searchChannels.previous?.addEventListener('close', () => stopSearch);
+		searchChannels.next?.addEventListener('close', () => stopSearch);
 
-	React.useEffect(() => {
-		if (startTimestamp && timeMode) {
-			startDirectionalSearch(SearchDirection.Previous);
-			startDirectionalSearch(SearchDirection.Next);
-		}
-	}, [startTimestamp]);
+		return () => {
+			stopSearch();
+		};
+	}, [submittedTimestamp]);
 
 	const onKeyDown = React.useCallback(
 		(event: KeyboardEvent) => {
@@ -267,6 +256,11 @@ const GraphSearchDialog = (props: Props) => {
 
 	const fetchObjectById = (id: string, abortController: AbortController) => {
 		const searchTimestamp = moment.utc().valueOf();
+		if (
+			moment(id, DateTimeMask.TIME_MASK).isValid() ||
+			moment(id, DateTimeMask.DATE_TIME_MASK).isValid()
+		)
+			return;
 		setIsLoading(true);
 		function handleError(err: any) {
 			if (err.name !== 'AbortError') {
