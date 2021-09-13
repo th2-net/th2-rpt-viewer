@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export interface MessageBodyItem {
+export default interface MessageBody extends Array<MessageBody> {
 	subsequenceId: [number];
 	protocol: string;
 	messageType: string;
@@ -36,8 +36,6 @@ export interface MessageBodyItem {
 	};
 	filtered: boolean;
 }
-
-export default interface MessageBody extends Array<MessageBodyItem> {}
 
 export type MessageBodyFields = { [key: string]: MessageBodyField };
 
