@@ -28,7 +28,7 @@ import {
 
 interface MultipleStringFilterRowProps {
 	config: FilterRowMultipleStringsConfig;
-	setIsInputFocused?: (value: Boolean) => void;
+	setIsInputFocused?: (value: boolean) => void;
 }
 
 export default function MultipleStringFilterRow({
@@ -39,9 +39,9 @@ export default function MultipleStringFilterRow({
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
 
-	const [isFocused, setIsFocused] = React.useState<Boolean>(false);
+	const [isFocused, setIsFocused] = React.useState<boolean>(false);
 
-	const updateIsFocused = (value: Boolean) => {
+	const updateIsFocused = (value: boolean) => {
 		setIsFocused(value);
 		if (setIsInputFocused) {
 			setIsInputFocused(value);

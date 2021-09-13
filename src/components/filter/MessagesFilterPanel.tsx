@@ -30,6 +30,7 @@ import {
 	useMessagesWorkspaceStore,
 	useFiltersHistoryStore,
 	useSessionsStore,
+	useDebouncedCallback,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -60,6 +61,7 @@ const MessagesFilterPanel = () => {
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentStream, setCurrentStream] = React.useState('');
 	const [streams, setStreams] = React.useState<Array<string>>([]);
+	const [focusedTimeout, setFocusedTimeout] = React.useState<NodeJS.Timeout>();
 	const [isFocused, setIsFocused] = React.useState<Boolean>(false);
 	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
 		type: '',
@@ -200,19 +202,36 @@ const MessagesFilterPanel = () => {
 		];
 	}, [messagesStore.messageSessions, sessionsStore.sessions]);
 
-	const updateStreams = (newSteams: string[]) => {
-		if (isFocused) {
-			setStreams(newSteams);
-		} else {
+	React.useEffect(() => {
+		if (!isFocused) {
 			messagesStore.applyFilter(
 				{
 					...filterStore.filter,
-					streams: newSteams,
+					streams,
 				},
 				filter,
 				isSoftFilterApplied,
 			);
 		}
+	}, [isFocused]);
+
+	const updateFocus = (value: boolean) => {
+		if (value && !isFocused) {
+			setIsFocused(value);
+		}
+
+		if (focusedTimeout) {
+			clearTimeout(focusedTimeout);
+			if (value) {
+				return;
+			}
+		}
+
+		setFocusedTimeout(
+			setTimeout(() => {
+				setIsFocused(value);
+			}, 300),
+		);
 	};
 
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
@@ -220,7 +239,7 @@ const MessagesFilterPanel = () => {
 			type: 'multiple-strings',
 			id: 'messages-stream',
 			values: streams,
-			setValues: updateStreams,
+			setValues: setStreams,
 			currentValue: currentStream,
 			setCurrentValue: setCurrentStream,
 			autocompleteList: sessionsAutocomplete,
@@ -291,7 +310,7 @@ const MessagesFilterPanel = () => {
 			/>
 			<MessageReplayModal />
 			<MessageFilterWarning />
-			<MultipleStringFilterRow config={sessionFilterConfig} setIsInputFocused={setIsFocused} />
+			<MultipleStringFilterRow config={sessionFilterConfig} setIsInputFocused={updateFocus} />
 		</>
 	);
 };
