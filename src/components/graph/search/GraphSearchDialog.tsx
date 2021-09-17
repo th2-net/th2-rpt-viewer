@@ -31,8 +31,6 @@ import { GraphSearchResult } from './GraphSearch';
 import { SearchDirection } from '../../../models/search/SearchDirection';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
 
-type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
-
 interface Props {
 	value: string;
 	onSearchResultSelect: (savedItem: GraphSearchResult) => void;
@@ -82,9 +80,9 @@ const GraphSearchDialog = (props: Props) => {
 
 	const filteredSearchHistory = React.useMemo(() => {
 		if (!value) return sortedSearchHistory;
-		const idIndex = sortedSearchHistory.map(historyItem => getItemId(historyItem.item));
+		const onlyIdFromHistory = sortedSearchHistory.map(historyItem => getItemId(historyItem.item));
 		const uniqueSortedSearchHistory = sortedSearchHistory.filter(
-			(historyItem, index) => idIndex.indexOf(getItemId(historyItem.item)) === index,
+			(historyItem, index) => onlyIdFromHistory.indexOf(getItemId(historyItem.item)) === index,
 		);
 		return uniqueSortedSearchHistory.filter(
 			historyItem =>
@@ -189,12 +187,13 @@ const GraphSearchDialog = (props: Props) => {
 		};
 
 		const onChannelResponse = (ev: any) => {
+			if (!submittedTimestamp) return;
 			stopSearch();
 			const data = (ev as MessageEvent).data;
 			const parsedEvent = JSON.parse(data);
 			const id = getItemId(parsedEvent);
 			ac.current = new AbortController();
-			onValueChange(id, ac.current);
+			onSearchSuccess(parsedEvent, submittedTimestamp);
 			setFoundId(id);
 		};
 
