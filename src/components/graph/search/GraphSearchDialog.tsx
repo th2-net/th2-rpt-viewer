@@ -231,10 +231,18 @@ const GraphSearchDialog = (props: Props) => {
 		};
 	}, [onKeyDown]);
 
+	const isTimestamp = (searchValue: string) => {
+		return (
+			moment(searchValue, DateTimeMask.TIME_MASK).isValid() ||
+			moment(searchValue, DateTimeMask.DATE_TIME_MASK).isValid()
+		);
+	};
+
 	const onValueChange = (searchValue: string, abortController: AbortController) => {
 		if (!isIdMode || !searchValue || filteredSearchHistory.length > 1) return;
 
 		if (filteredSearchHistory.length !== 1) {
+			if (isTimestamp(searchValue)) return;
 			fetchObjectById(searchValue, abortController);
 			setCurrentSearchResult(null);
 		}
@@ -255,11 +263,6 @@ const GraphSearchDialog = (props: Props) => {
 
 	const fetchObjectById = (id: string, abortController: AbortController) => {
 		const searchTimestamp = moment.utc().valueOf();
-		if (
-			moment(id, DateTimeMask.TIME_MASK).isValid() ||
-			moment(id, DateTimeMask.DATE_TIME_MASK).isValid()
-		)
-			return;
 		setIsLoading(true);
 		function handleError(err: any) {
 			if (err.name !== 'AbortError') {
