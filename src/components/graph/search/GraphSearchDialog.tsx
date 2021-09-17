@@ -239,10 +239,10 @@ const GraphSearchDialog = (props: Props) => {
 	};
 
 	const onValueChange = (searchValue: string, abortController: AbortController) => {
-		if (!isIdMode || !searchValue || filteredSearchHistory.length > 1) return;
+		if (!isIdMode || !searchValue || filteredSearchHistory.length > 1 || isTimestamp(searchValue))
+			return;
 
 		if (filteredSearchHistory.length !== 1) {
-			if (isTimestamp(searchValue)) return;
 			fetchObjectById(searchValue, abortController);
 			setCurrentSearchResult(null);
 		}
