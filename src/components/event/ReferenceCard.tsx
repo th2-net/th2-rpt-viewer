@@ -6,13 +6,13 @@ import { createBemBlock } from '../../helpers/styleCreators';
 
 interface Props {
 	eventId: string;
-	body: EventBodyPayload[] | null;
+	body: EventBodyPayload[];
 	parentEvent: EventAction | null;
 	referenceHistory?: Array<string>;
 }
 
 export const ReferenceCard = ({ eventId, body, parentEvent, referenceHistory = [] }: Props) => {
-	const [isOpen, setIsOpen] = React.useState(true);
+	const [isOpen, setIsOpen] = React.useState(false);
 	const referenceName = `Referenced from ${eventId}`;
 
 	return (
@@ -27,30 +27,30 @@ export const ReferenceCard = ({ eventId, body, parentEvent, referenceHistory = [
 				/>
 			</div>
 			<div className='event-reference'>
-				{body ? (
-					isOpen &&
-					(referenceHistory.includes(eventId) ? (
-						<div className='event-reference__error'>
-							Event {eventId} already rendered in reference chain.
-						</div>
-					) : (
-						parentEvent &&
-						(body.length > 0 ? (
-							body.map((bodyPayloadItem, index) => (
-								<EventBodyCard
-									key={`body-${eventId}-${index}`}
-									body={bodyPayloadItem}
-									parentEvent={parentEvent}
-									referenceHistory={[...referenceHistory, eventId]}
-								/>
-							))
+				{isOpen &&
+					(parentEvent ? (
+						referenceHistory.includes(eventId) ? (
+							<div className='event-reference__error'>
+								Event {eventId} already rendered in reference chain.
+							</div>
 						) : (
-							<div className='event-reference__error'> Event {eventId} have empty body</div>
-						))
-					))
-				) : (
-					<div className='event-reference__error'>Event {eventId} does not exist</div>
-				)}
+							parentEvent &&
+							(body.length > 0 ? (
+								body.map((bodyPayloadItem, index) => (
+									<EventBodyCard
+										key={`body-${eventId}-${index}`}
+										body={bodyPayloadItem}
+										parentEvent={parentEvent}
+										referenceHistory={[...referenceHistory, eventId]}
+									/>
+								))
+							) : (
+								<div className='event-reference__error'> Event {eventId} have empty body</div>
+							))
+						)
+					) : (
+						<div className='event-reference__error'>Event {eventId} does not exist</div>
+					))}
 			</div>
 		</div>
 	);

@@ -36,14 +36,17 @@ interface Props {
 export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory = [] }: Props) {
 	const ac = new AbortController();
 	const [referencedEvent, setReferencedEvent] = React.useState<EventAction | null>(null);
-	const [referencedBody, setReferencedBody] = React.useState<EventBodyPayload[] | null>(null);
+	const [referencedBody, setReferencedBody] = React.useState<EventBodyPayload[]>([]);
 
 	React.useEffect(() => {
 		if (body.type === EventBodyPayloadType.REFERENCE) {
-			api.events.getEvent(body.eventId, ac.signal, { probe: true }).then(ev => {
-				setReferencedEvent(ev);
-				setReferencedBody(ev.body);
-			});
+			api.events
+				.getEvent(body.eventId, ac.signal, { probe: true })
+				.then(ev => {
+					setReferencedEvent(ev);
+					setReferencedBody(ev.body);
+				})
+				.catch(() => setReferencedEvent(null));
 		}
 	}, [body]);
 

@@ -587,7 +587,7 @@
 }
 
 .event-reference-card {
-	padding: 1px;
+	padding: 2px 3px;
 	padding-bottom: 0px;
 	line-height: 15px;
 	width: 100%;
@@ -610,6 +610,7 @@
 		align-items: center;
 		background-color: $skeletonBackgroundColor;
 		padding: 5px;
+		margin: 0px 0px 2px;
 	}
 }
 
@@ -617,7 +618,6 @@
 	display: flex;
 	flex-direction: column;
 	align-items: left;
-	padding: 3px 4px 0px;
 	border-radius: 5px;
 	color: $primaryTextColor;
 
@@ -629,6 +629,4 @@
 		background-color: $failedBackgroundColor;
 		color: $failedTextColor;
 	}
-
-
 }
