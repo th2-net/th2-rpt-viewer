@@ -617,7 +617,7 @@
 .event-reference {
 	display: flex;
 	flex-direction: column;
-	align-items: left;
+	align-items: stretch;
 	color: $primaryTextColor;
 
 	&__error{

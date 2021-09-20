@@ -7,11 +7,11 @@ import { createBemBlock } from '../../helpers/styleCreators';
 interface Props {
 	eventId: string;
 	body: EventBodyPayload[];
-	parentEvent: EventAction | null;
+	referencedEvent: EventAction | null;
 	referenceHistory?: Array<string>;
 }
 
-export const ReferenceCard = ({ eventId, body, parentEvent, referenceHistory = [] }: Props) => {
+export const ReferenceCard = ({ eventId, body, referencedEvent, referenceHistory = [] }: Props) => {
 	const [isOpen, setIsOpen] = React.useState(false);
 	const referenceName = `Referenced from ${eventId}`;
 
@@ -28,24 +28,24 @@ export const ReferenceCard = ({ eventId, body, parentEvent, referenceHistory = [
 			</div>
 			<div className='event-reference'>
 				{isOpen &&
-					(parentEvent ? (
+					(referencedEvent ? (
 						referenceHistory.includes(eventId) ? (
 							<div className='event-reference__error'>
 								Event {eventId} already rendered in reference chain.
 							</div>
 						) : (
-							parentEvent &&
+							referencedEvent &&
 							(body.length > 0 ? (
 								body.map((bodyPayloadItem, index) => (
 									<EventBodyCard
 										key={`body-${eventId}-${index}`}
 										body={bodyPayloadItem}
-										parentEvent={parentEvent}
+										parentEvent={referencedEvent}
 										referenceHistory={[...referenceHistory, eventId]}
 									/>
 								))
 							) : (
-								<div className='event-reference__error'> Event {eventId} have empty body</div>
+								<div className='event-reference__error'> Event {eventId} has empty body</div>
 							))
 						)
 					) : (

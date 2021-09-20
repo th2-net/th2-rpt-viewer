@@ -34,11 +34,11 @@ interface Props {
 }
 
 export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory = [] }: Props) {
-	const ac = new AbortController();
 	const [referencedEvent, setReferencedEvent] = React.useState<EventAction | null>(null);
 	const [referencedBody, setReferencedBody] = React.useState<EventBodyPayload[]>([]);
 
 	React.useEffect(() => {
+		const ac = new AbortController();
 		if (body.type === EventBodyPayloadType.REFERENCE) {
 			api.events
 				.getEvent(body.eventId, ac.signal, { probe: true })
@@ -48,6 +48,7 @@ export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory =
 				})
 				.catch(() => setReferencedEvent(null));
 		}
+		return ac.abort;
 	}, [body]);
 
 	switch (body.type) {
@@ -106,7 +107,7 @@ export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory =
 					<ReferenceCard
 						eventId={body.eventId}
 						body={referencedBody}
-						parentEvent={referencedEvent}
+						referencedEvent={referencedEvent}
 						referenceHistory={referenceHistory}
 					/>
 				</ErrorBoundary>
