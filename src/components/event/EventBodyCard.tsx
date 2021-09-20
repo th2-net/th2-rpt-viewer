@@ -24,13 +24,29 @@ import { extractParams } from '../../helpers/tables';
 import { EventBodyPayload, EventBodyPayloadType } from '../../models/EventActionPayload';
 import ErrorBoundary from '../util/ErrorBoundary';
 import { getEventStatus } from '../../helpers/event';
+import api from '../../api';
+import { ReferenceCard } from './ReferenceCard';
 
 interface Props {
 	body: EventBodyPayload;
 	parentEvent: EventAction;
+	referenceHistory?: Array<string>;
 }
 
-export function EventBodyPayloadRenderer({ body, parentEvent }: Props) {
+export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory = [] }: Props) {
+	const ac = new AbortController();
+	const [referencedEvent, setReferencedEvent] = React.useState<EventAction | null>(null);
+	const [referencedBody, setReferencedBody] = React.useState<EventBodyPayload[] | null>(null);
+
+	React.useEffect(() => {
+		if (body.type === EventBodyPayloadType.REFERENCE) {
+			api.events.getEvent(body.eventId, ac.signal, { probe: true }).then(ev => {
+				setReferencedEvent(ev);
+				setReferencedBody(ev.body);
+			});
+		}
+	}, [body]);
+
 	switch (body.type) {
 		case EventBodyPayloadType.MESSAGE:
 			return (
@@ -81,15 +97,30 @@ export function EventBodyPayloadRenderer({ body, parentEvent }: Props) {
 					</div>
 				</ErrorBoundary>
 			);
+		case EventBodyPayloadType.REFERENCE:
+			return (
+				<ErrorBoundary>
+					<ReferenceCard
+						eventId={body.eventId}
+						body={referencedBody}
+						parentEvent={referencedEvent}
+						referenceHistory={referenceHistory}
+					/>
+				</ErrorBoundary>
+			);
 		default:
 			return <JSONBodyFallback body={body} />;
 	}
 }
 
-export default function EventBodyCard({ parentEvent, body }: Props) {
+export default function EventBodyCard({ parentEvent, body, referenceHistory }: Props) {
 	return (
 		<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
-			<EventBodyPayloadRenderer body={body} parentEvent={parentEvent} />
+			<EventBodyPayloadRenderer
+				body={body}
+				parentEvent={parentEvent}
+				referenceHistory={referenceHistory}
+			/>
 		</ErrorBoundary>
 	);
 }
