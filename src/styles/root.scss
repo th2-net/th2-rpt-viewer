@@ -73,7 +73,7 @@ input {
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
-	background-color: $windowsLayoutBackgroundColor;
+	@include variable(app-background-color, background-color, $windowsLayoutBackgroundColor);
 
 	&__workspaces {
 		position: relative;

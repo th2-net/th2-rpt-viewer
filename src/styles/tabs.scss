@@ -40,7 +40,7 @@
 	}
 
 	&__content {
-		background-color: $workspaceBackground;
+		@include variable(workspace-background-color, background-color, $workspaceBackground);
 		padding: 0 7px;
 		position: relative;
 		border-top-right-radius: 5px;

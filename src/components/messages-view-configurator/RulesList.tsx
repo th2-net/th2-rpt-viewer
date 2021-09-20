@@ -48,8 +48,9 @@ const RulesList = ({ sessions }: Props) => {
 	};
 
 	return (
-		<>
-			<div className='messages-view-configurator-body__header'>
+		<div className='app-settings-part'>
+			<h3>Messages display mode</h3>
+			<div className='app-settings-part__header'>
 				<p>Session</p>
 				<p>Display Mode</p>
 			</div>
@@ -58,17 +59,24 @@ const RulesList = ({ sessions }: Props) => {
 				itemContent={renderRule}
 				computeItemKey={computeKey}
 				totalCount={rulesStore.messageDisplayRules.length}
-				style={{ height: '120px' }}
+				style={{ height: '100%' }}
 				components={{
 					Header: function Header() {
-						return <RuleRow rule={null} sessions={sessions} index={0} />;
+						return (
+							<>
+								<RuleRow rule={null} sessions={sessions} index={0} />
+								<p className='hint'>
+									<i>Use * character to match an unknown substring as part of session name</i>
+								</p>
+							</>
+						);
 					},
 					Footer: function Footer() {
 						return <RuleRow sessions={sessions} rule={rulesStore.rootDisplayRule} index={0} />;
 					},
 				}}
 			/>
-		</>
+		</div>
 	);
 };
 

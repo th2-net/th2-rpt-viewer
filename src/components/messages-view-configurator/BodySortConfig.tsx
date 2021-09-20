@@ -43,17 +43,23 @@ const BodySortConfig = () => {
 	};
 
 	return (
-		<Virtuoso
-			itemContent={renderSortRule}
-			computeItemKey={computeKey}
-			totalCount={sortOrder.length}
-			style={{ height: '120px' }}
-			components={{
-				Header: function Header() {
-					return <NewSortOrderItem />;
-				},
-			}}
-		/>
+		<div className='app-settings-part'>
+			<Virtuoso
+				itemContent={renderSortRule}
+				computeItemKey={computeKey}
+				totalCount={sortOrder.length}
+				components={{
+					Header: function Header() {
+						return (
+							<>
+								<h3>Message body sort order</h3>
+								<NewSortOrderItem />
+							</>
+						);
+					},
+				}}
+			/>
+		</div>
 	);
 };
 
