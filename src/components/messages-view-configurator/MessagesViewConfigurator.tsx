@@ -93,7 +93,9 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 									possibleValues: [ThemeNames.LIGHT, ThemeNames.DARK],
 									value: theme === ThemeNames.LIGHT,
 									toggleValue: () => {
-										setTheme(v => (v === ThemeNames.LIGHT ? ThemeNames.DARK : ThemeNames.LIGHT));
+										setTheme((v: ThemeNames) =>
+											v === ThemeNames.LIGHT ? ThemeNames.DARK : ThemeNames.LIGHT,
+										);
 									},
 								}}
 							/>
@@ -105,7 +107,7 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 									possibleValues: [HighlightNames.KEYS, HighlightNames.VALUES],
 									value: highlight === HighlightNames.KEYS,
 									toggleValue: () => {
-										setHighlight(v =>
+										setHighlight((v: HighlightNames) =>
 											v === HighlightNames.KEYS ? HighlightNames.VALUES : HighlightNames.KEYS,
 										);
 									},
