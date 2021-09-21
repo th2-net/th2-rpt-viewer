@@ -245,14 +245,12 @@ function GraphSearch(props: Props) {
 						/>
 					)}
 					<div className='graph-search__switchers'>
-						<>
-							<button className={dateButtonClassName} onClick={() => onModeSelect('timestamp')}>
-								Timestamp
-							</button>
-							<button className={idButtonClassName} onClick={() => onModeSelect('history')}>
-								History
-							</button>
-						</>
+						<button className={dateButtonClassName} onClick={() => onModeSelect('timestamp')}>
+							Timestamp
+						</button>
+						<button className={idButtonClassName} onClick={() => onModeSelect('history')}>
+							History
+						</button>
 						<button
 							onClick={handleModalSubmit}
 							className={createBemElement(
