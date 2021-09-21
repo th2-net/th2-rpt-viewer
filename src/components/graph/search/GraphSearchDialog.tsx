@@ -263,11 +263,6 @@ const GraphSearchDialog = (props: Props) => {
 
 	const fetchObjectById = (id: string, abortController: AbortController) => {
 		const searchTimestamp = moment.utc().valueOf();
-		if (
-			moment(id, DateTimeMask.TIME_MASK).isValid() ||
-			moment(id, DateTimeMask.DATE_TIME_MASK).isValid()
-		)
-			return;
 		setIsLoading(true);
 		function handleError(err: any) {
 			if (err.name !== 'AbortError') {
