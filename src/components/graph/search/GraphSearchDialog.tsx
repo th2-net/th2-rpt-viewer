@@ -187,6 +187,7 @@ const GraphSearchDialog = (props: Props) => {
 		};
 
 		const onChannelResponse = (ev: any) => {
+			if (!submittedTimestamp) return;
 			stopSearch();
 			const data = (ev as MessageEvent).data;
 			const parsedEvent = JSON.parse(data);
