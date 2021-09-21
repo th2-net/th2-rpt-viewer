@@ -27,34 +27,14 @@ type Props = {
 	sessions: string[];
 };
 
-enum ThemeNames {
+export enum ThemeNames {
 	LIGHT = 'light',
 	DARK = 'dark',
 }
 
-function invertColor(str: string) {
-	let hex = str;
-	if (hex.indexOf('#') === 0) {
-		hex = hex.slice(1);
-	}
-	// convert 3-digit hex to 6-digits.
-	if (hex.length === 3) {
-		hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-	}
-	if (hex.length !== 6) {
-		throw new Error('Invalid HEX color.');
-	}
-	// invert color components
-	const r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16);
-	const g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16);
-	const b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16);
-	// pad each with zeros and return
-	return `#${padZero(r, r.length)}${padZero(g, g.length)}${padZero(b, g.length)}`;
-}
-
-function padZero(str: string, len = 2) {
-	const zeros = new Array(len).join('0');
-	return (zeros + str).slice(-len);
+export enum HighlightNames {
+	KEYS = 'keys',
+	VALUES = 'values',
 }
 
 const themes: { [k: string]: Theme } = {
@@ -65,19 +45,26 @@ const themes: { [k: string]: Theme } = {
 		'workspace-background-color': '#eef2f6',
 		'workspace-tab-background': '#cce6ff',
 		'workspace-active-tab-background': '#4d80b2',
+		// ...
 	},
+	// waiting for color scheme
 	dark: {
-		'app-background-color': invertColor('#bdccdb'),
-		'graph-background-color': invertColor('#dee5ed'),
-		'panel-background-color': invertColor('#ffffff'),
-		'workspace-background-color': invertColor('#eef2f6'),
-		'workspace-tab-background': invertColor('#cce6ff'),
-		'workspace-active-tab-background': invertColor('#4d80b2'),
+		'app-background-color': '#bdccdb',
+		'graph-background-color': '#dee5ed',
+		'panel-background-color': '#ffffff',
+		'workspace-background-color': '#eef2f6',
+		'workspace-tab-background': '#cce6ff',
+		'workspace-active-tab-background': '#4d80b2',
+		// ...
 	},
 };
 
 const MessageViewConfigurator = ({ sessions }: Props) => {
 	const [theme, setTheme] = useLocalStorage<ThemeNames>('theme', ThemeNames.LIGHT);
+	const [highlight, setHighlight] = useLocalStorage<HighlightNames>(
+		'message-body-highlight',
+		HighlightNames.KEYS,
+	);
 	const [isOpen, setIsOpen] = useState(false);
 	useTheme(themes[theme]);
 
@@ -96,19 +83,36 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 				<div className='app-settings'>
 					<h2 className='app-settings-header'>Settings</h2>
 					<button onClick={() => setIsOpen(false)} className='app-settings-close' />
-					<TogglerRow
-						config={{
-							id: 'theme',
-							type: 'toggler',
-							possibleValues: [ThemeNames.LIGHT, ThemeNames.DARK],
-							value: theme === ThemeNames.LIGHT,
-							toggleValue: () => {
-								setTheme(v => (v === ThemeNames.LIGHT ? ThemeNames.DARK : ThemeNames.LIGHT));
-							},
-						}}
-					/>
 					<div className='app-settings-body'>
 						<div className='app-settings-body-row'>
+							<TogglerRow
+								config={{
+									id: 'theme',
+									type: 'toggler',
+									label: 'Theme',
+									possibleValues: [ThemeNames.LIGHT, ThemeNames.DARK],
+									value: theme === ThemeNames.LIGHT,
+									toggleValue: () => {
+										setTheme(v => (v === ThemeNames.LIGHT ? ThemeNames.DARK : ThemeNames.LIGHT));
+									},
+								}}
+							/>
+							<TogglerRow
+								config={{
+									id: 'highlight',
+									type: 'toggler',
+									label: 'Message body highlight',
+									possibleValues: [HighlightNames.KEYS, HighlightNames.VALUES],
+									value: highlight === HighlightNames.KEYS,
+									toggleValue: () => {
+										setHighlight(v =>
+											v === HighlightNames.KEYS ? HighlightNames.VALUES : HighlightNames.KEYS,
+										);
+									},
+								}}
+							/>
+						</div>
+						<div className='app-settings-body-messages'>
 							<RulesList sessions={sessions} />
 							<BodySortConfig />
 						</div>
