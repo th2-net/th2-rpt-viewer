@@ -32,6 +32,7 @@ export interface MessageCardBaseProps {
 	message: EventMessage;
 	hoverMessage?: () => void;
 	unhoverMessage?: () => void;
+	bodyHighlight?: string;
 	isAttached?: boolean;
 	isBookmarked?: boolean;
 	isHighlighted?: boolean;
@@ -51,6 +52,7 @@ export function MessageCardBase({
 	setViewType,
 	hoverMessage,
 	unhoverMessage,
+	bodyHighlight,
 	isAttached,
 	isBookmarked,
 	isHighlighted,
@@ -120,6 +122,7 @@ export function MessageCardBase({
 	const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
 		renderInfo: renderInlineMessageInfo,
 		viewType,
+		bodyHighlight,
 		messageId,
 		messageBody: body,
 		isBeautified: viewType === MessageViewType.FORMATTED,

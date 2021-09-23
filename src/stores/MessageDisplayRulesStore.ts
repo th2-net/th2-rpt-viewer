@@ -67,6 +67,9 @@ class MessageDisplayRulesStore {
 	private isInitializingRules = true;
 
 	@observable
+	public bodyHighLight = localStorage.getItem('message-body-highlight') || 'keys';
+
+	@observable
 	public messageDisplayRules: MessageDisplayRule[] = [];
 
 	@observable
@@ -116,6 +119,12 @@ class MessageDisplayRulesStore {
 	@action
 	public reorderMessagesDisplayRule = (from: number, to: number) => {
 		this.messageDisplayRules = move(this.messageDisplayRules, from, to);
+	};
+
+	@action
+	public toggleBodyHighlight = () => {
+		this.bodyHighLight = this.bodyHighLight === 'keys' ? 'values' : 'keys';
+		localStorage.setItem('message-body-highlight', this.bodyHighLight);
 	};
 
 	private init = async () => {

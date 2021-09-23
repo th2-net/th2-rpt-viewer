@@ -20,7 +20,11 @@ import MessageCard from '../message-card/MessageCard';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
 import SplashScreen from '../../SplashScreen';
 import Empty from '../../util/Empty';
-import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../../hooks';
+import {
+	useMessageDisplayRulesStore,
+	useMessagesDataStore,
+	useMessagesWorkspaceStore,
+} from '../../../hooks';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import { EventMessage } from '../../../models/EventMessage';
 import '../../../styles/messages.scss';
@@ -29,10 +33,11 @@ export type MessagesHeights = { [index: number]: number };
 
 function MessageCardList() {
 	const messagesStore = useMessagesWorkspaceStore();
+	const { bodyHighLight } = useMessageDisplayRulesStore();
 	const messagesDataStore = useMessagesDataStore();
 
 	const renderMsg = (index: number, message: EventMessage) => {
-		return <MessageCard message={message} />;
+		return <MessageCard message={message} bodyHighlight={bodyHighLight} />;
 	};
 
 	if (

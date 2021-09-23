@@ -15,13 +15,15 @@
  ***************************************************************************** */
 
 import React, { useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { ModalPortal } from '../util/Portal';
-import '../../styles/app-settings.scss';
 import RulesList from './RulesList';
 import BodySortConfig from './BodySortConfig';
 import useTheme, { Theme } from '../../hooks/useTheme';
 import useLocalStorage from '../../hooks/useLocalStorage';
 import TogglerRow from '../filter/row/TogglerRow';
+import { useMessageDisplayRulesStore } from '../../hooks';
+import '../../styles/app-settings.scss';
 
 type Props = {
 	sessions: string[];
@@ -60,11 +62,8 @@ const themes: { [k: string]: Theme } = {
 };
 
 const MessageViewConfigurator = ({ sessions }: Props) => {
+	const { bodyHighLight, toggleBodyHighlight } = useMessageDisplayRulesStore();
 	const [theme, setTheme] = useLocalStorage<ThemeNames>('theme', ThemeNames.LIGHT);
-	const [highlight, setHighlight] = useLocalStorage<HighlightNames>(
-		'message-body-highlight',
-		HighlightNames.KEYS,
-	);
 	const [isOpen, setIsOpen] = useState(false);
 	useTheme(themes[theme]);
 
@@ -104,13 +103,9 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 									id: 'highlight',
 									type: 'toggler',
 									label: 'Message body highlight',
-									possibleValues: [HighlightNames.KEYS, HighlightNames.VALUES],
-									value: highlight === HighlightNames.KEYS,
-									toggleValue: () => {
-										setHighlight((v: HighlightNames) =>
-											v === HighlightNames.KEYS ? HighlightNames.VALUES : HighlightNames.KEYS,
-										);
-									},
+									possibleValues: ['keys', 'values'],
+									value: bodyHighLight === 'keys',
+									toggleValue: toggleBodyHighlight,
 								}}
 							/>
 						</div>
@@ -125,4 +120,4 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 	);
 };
 
-export default MessageViewConfigurator;
+export default observer(MessageViewConfigurator);

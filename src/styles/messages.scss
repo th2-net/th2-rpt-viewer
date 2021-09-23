@@ -383,14 +383,13 @@
 		width: fit-content;
 	}
 
+	&__field-simple-value,
 	&__field-label {
 		display: inline-block;
-		height: 100%;
-	}
-
-	&__field-simple-value {
-		font-weight: 600;
-		color: $activeTextColor;
+		&.bold {
+			color: $activeTextColor;
+			font-weight: 700;
+		}
 	}
 
 	&__raw {

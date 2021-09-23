@@ -23,6 +23,7 @@ import MessageBody, {
 	MessageBodyFields,
 	isMessageValue,
 } from '../../../models/MessageBody';
+import { createBemElement } from '../../../helpers/styleCreators';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 const DEFAULT_HIGHLIGHT_COLOR = '#e2dfdf';
@@ -31,6 +32,7 @@ const SELECTED_HIGHLIGHT_COLOR = '#fff';
 interface Props {
 	isBeautified: boolean;
 	body: MessageBody | null;
+	bodyHighlight?: string;
 	isSelected: boolean;
 	renderInfo: () => React.ReactNode;
 	sortOrderItems: string[];
@@ -52,7 +54,14 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 	return [...primarySortedFields, ...secondarySortedFields];
 };
 
-function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrderItems }: Props) {
+function MessageBodyCard({
+	isBeautified,
+	body,
+	bodyHighlight,
+	isSelected,
+	renderInfo,
+	sortOrderItems,
+}: Props) {
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
 
 	const fields = React.useMemo(
@@ -72,6 +81,7 @@ function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrder
 				<React.Fragment key={key}>
 					<MessageBodyCardField
 						primarySort={sortOrderItems}
+						bodyHightlight={bodyHighlight}
 						highlightColor={isSelected ? SELECTED_HIGHLIGHT_COLOR : DEFAULT_HIGHLIGHT_COLOR}
 						label={key}
 						field={value}
@@ -91,6 +101,7 @@ interface FieldProps {
 	isBeautified: boolean;
 	label: string;
 	field: MessageBodyField;
+	bodyHightlight?: string;
 	isHighlighted?: boolean;
 	setIsHighlighted: (isHighlighted: boolean) => void;
 	isRoot?: boolean;
@@ -105,6 +116,7 @@ function MessageBodyCardField(props: FieldProps) {
 		field,
 		label,
 		isBeautified,
+		bodyHightlight,
 		isHighlighted = false,
 		isRoot = true,
 		setIsHighlighted,
@@ -117,6 +129,7 @@ function MessageBodyCardField(props: FieldProps) {
 		return (
 			<MessageBodyCardField
 				primarySort={primarySort}
+				bodyHightlight={bodyHightlight}
 				highlightColor={highlightColor}
 				isBeautified={isBeautified}
 				field={field}
@@ -136,6 +149,17 @@ function MessageBodyCardField(props: FieldProps) {
 
 	const sortedSubFields = getSortedFields(subFields, primarySort);
 
+	const fieldLabelClassName = createBemElement(
+		'mc-body',
+		'field-label',
+		bodyHightlight === 'keys' ? 'bold' : null,
+	);
+	const fieldValueClassName = createBemElement(
+		'mc-body',
+		'field-simple-value',
+		bodyHightlight === 'values' ? 'bold' : null,
+	);
+
 	return (
 		<span
 			className='mc-body__field'
@@ -146,11 +170,11 @@ function MessageBodyCardField(props: FieldProps) {
 			<span
 				onMouseEnter={() => setIsHighlighted(true)}
 				onMouseLeave={() => setIsHighlighted(false)}
-				className='mc-body__field-label'>
+				className={fieldLabelClassName}>
 				{label ? (isBeautified ? `${label}: ` : `"${label}": `) : ''}
 			</span>
 			{isSimpleValue(field) ? (
-				<span className='mc-body__field-simple-value'>{field.simpleValue}</span>
+				<span className={fieldValueClassName}>{field.simpleValue}</span>
 			) : isListValue(field) ? (
 				<>
 					{'['}
@@ -162,6 +186,7 @@ function MessageBodyCardField(props: FieldProps) {
 						{field.listValue.values?.map((value, idx) => (
 							<MessageBodyCardField
 								primarySort={primarySort}
+								bodyHightlight={bodyHightlight}
 								key={idx}
 								field={value}
 								label={''}
@@ -187,6 +212,7 @@ function MessageBodyCardField(props: FieldProps) {
 							<React.Fragment key={key}>
 								<MessageBodyCardField
 									primarySort={primarySort}
+									bodyHightlight={bodyHightlight}
 									field={subField}
 									label={key}
 									isBeautified={isBeautified}

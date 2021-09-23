@@ -24,6 +24,7 @@ import MessageRaw from './raw/MessageRaw';
 export type MessageCardViewTypeRendererProps = {
 	viewType: MessageViewType;
 	messageId: string;
+	bodyHighlight?: string;
 	rawContent: string | null;
 	isBeautified: boolean;
 	isSelected: boolean;
@@ -37,6 +38,7 @@ export type MessageCardViewTypeRendererProps = {
 const MessageCardViewTypeRenderer = ({
 	renderInfo,
 	viewType,
+	bodyHighlight,
 	rawContent,
 	isBeautified,
 	isSelected,
@@ -53,6 +55,7 @@ const MessageCardViewTypeRenderer = ({
 						<MessageBodyCardFallback
 							renderInfo={renderInfo}
 							isBeautified={isBeautified}
+							bodyHighlight={bodyHighlight}
 							isSelected={isSelected}
 							body={messageBody}
 							sortOrderItems={sortOrderItems}
@@ -61,6 +64,7 @@ const MessageCardViewTypeRenderer = ({
 					<MessageBodyCard
 						isBeautified={isBeautified}
 						body={messageBody}
+						bodyHighlight={bodyHighlight}
 						isSelected={isSelected}
 						renderInfo={renderInfo}
 						sortOrderItems={sortOrderItems}

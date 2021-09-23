@@ -32,6 +32,7 @@ import '../../../styles/messages.scss';
 
 export interface OwnProps {
 	message: EventMessage;
+	bodyHighlight: string;
 }
 
 export interface RecoveredProps {
@@ -41,7 +42,7 @@ export interface RecoveredProps {
 
 interface Props extends OwnProps, RecoveredProps {}
 
-const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
+const MessageCard = observer(({ message, bodyHighlight, viewType, setViewType }: Props) => {
 	const { messageId } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
@@ -138,6 +139,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	return (
 		<MessageCardBase
 			message={message}
+			bodyHighlight={bodyHighlight}
 			viewType={viewType}
 			setViewType={setViewType}
 			isHighlighted={isHighlighted}
