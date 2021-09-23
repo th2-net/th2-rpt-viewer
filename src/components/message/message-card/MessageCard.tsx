@@ -32,7 +32,7 @@ import '../../../styles/messages.scss';
 
 export interface OwnProps {
 	message: EventMessage;
-	bodyHighlight: string;
+	bodyHighlight?: string;
 }
 
 export interface RecoveredProps {
