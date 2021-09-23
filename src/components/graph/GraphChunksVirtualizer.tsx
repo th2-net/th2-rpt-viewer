@@ -156,7 +156,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 		const anchor = new Number(getChunkTimestampFrom(timestamp.valueOf(), interval));
 		setAnchorTimestamp(anchor);
 		getCurrentChunks(state.initialPosition, anchor.valueOf());
-	}, [timestamp]);
+	}, [timestamp, interval]);
 
 	React.useLayoutEffect(() => {
 		getTimeRange();

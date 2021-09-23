@@ -720,3 +720,33 @@
 		cursor: pointer;
 	}
 }
+
+.zoom-list {
+	position: absolute;
+	z-index: 16;
+	left: 35%;
+	top: 10px;
+	transform: translateX(-50%);
+	display: flex;
+	flex-direction: row;
+	justify-content: space-evenly;
+	width: 110px;
+}
+
+.zoom-item {
+	font-size: 12px;
+    text-align: center;
+	background-color: $workspaceTabBackground;
+	z-index: 17;
+	border: 1px transparent;
+	border-radius: 5px;
+	box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.4);
+	color: $workspaceTabTextColor;
+	width: 30px;
+	height: 20px;
+
+	&:hover {
+		background-color: $workspaceTabActiveBackground;
+		color: white;
+	}
+}

@@ -18,7 +18,7 @@ import { EventTreeNode } from './EventAction';
 import { EventMessage } from './EventMessage';
 import { TimeRange } from './Timestamp';
 
-export const intervalOptions = [15, 30, 60] as const;
+export const intervalOptions = [15, 60, 240] as const;
 
 export type IntervalOption = typeof intervalOptions[number];
 

@@ -33,7 +33,7 @@ export function filterListByChunkRange(
 	});
 }
 
-export function calculateTimeRange(timestamp: number, interval: number): TimeRange {
+export function calculateTimeRange(timestamp: number, interval = 15): TimeRange {
 	return [timestamp - (interval / 2) * 60 * 1000, timestamp + (interval / 2) * 60 * 1000];
 }
 
@@ -93,12 +93,7 @@ export function getGraphTimeTicks(timeRange: TimeRange, interval: number, tickSi
 	const [from] = timeRange;
 
 	for (let i = 0; i < interval; i += tickSize) {
-		ticksArr.push(
-			moment(from)
-				.startOf('minute')
-				.add(tickSize * i, 'minutes')
-				.valueOf(),
-		);
+		ticksArr.push(moment(from).startOf('minute').add(i, 'minutes').valueOf());
 	}
 
 	return ticksArr.map(tick => moment(tick).utc().format('HH:mm'));

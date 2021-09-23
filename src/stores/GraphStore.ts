@@ -26,8 +26,8 @@ import { SelectedStore } from './SelectedStore';
 export class GraphStore {
 	public readonly steps = {
 		15: 1,
-		30: 3,
-		60: 5,
+		60: 4,
+		240: 16,
 	};
 
 	constructor(
@@ -68,10 +68,7 @@ export class GraphStore {
 	);
 
 	@observable
-	public range: TimeRange = calculateTimeRange(
-		moment.utc(this.timestamp.valueOf()).valueOf(),
-		this.interval,
-	);
+	public range: TimeRange = calculateTimeRange(moment.utc(this.timestamp.valueOf()).valueOf());
 
 	@observable
 	public hoveredTimestamp: number | null = null;
