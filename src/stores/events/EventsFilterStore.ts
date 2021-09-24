@@ -67,9 +67,7 @@ export default class EventsFilterStore {
 		initialState?: EventsFilterStoreInitialState,
 	) {
 		if (initialState) {
-			const defaultRange = getDefaultTimeRange();
-
-			const { range = defaultRange, filter } = initialState;
+			const { filter } = initialState;
 
 			const defaultEventFilter = getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
 			this.setEventsFilter(
@@ -80,7 +78,6 @@ export default class EventsFilterStore {
 					  }
 					: defaultEventFilter,
 			);
-			this.setEventsRange(range);
 		}
 
 		this.sseFilterSubscription = reaction(
@@ -90,7 +87,7 @@ export default class EventsFilterStore {
 	}
 
 	@observable
-	public range: TimeRange = getDefaultTimeRange();
+	public range: TimeRange = getDefaultTimeRange(this.graphStore.defaultInterval);
 
 	@computed
 	public get timestampFrom(): number {

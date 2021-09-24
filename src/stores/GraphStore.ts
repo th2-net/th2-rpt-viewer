@@ -39,6 +39,7 @@ export class GraphStore {
 		this.setTimestampFromRange(this.range);
 
 		this.interval = defaultInterval;
+		this.defaultInterval = defaultInterval;
 
 		reaction(
 			() => this.interval,
@@ -57,6 +58,9 @@ export class GraphStore {
 	public interval: IntervalOption = 15;
 
 	@observable
+	public defaultInterval: IntervalOption = 15;
+
+	@observable
 	public chunks: Chunk[] = [];
 
 	@observable
@@ -68,7 +72,10 @@ export class GraphStore {
 	);
 
 	@observable
-	public range: TimeRange = calculateTimeRange(moment.utc(this.timestamp.valueOf()).valueOf());
+	public range: TimeRange = calculateTimeRange(
+		moment.utc(this.timestamp.valueOf()).valueOf(),
+		this.defaultInterval,
+	);
 
 	@observable
 	public hoveredTimestamp: number | null = null;

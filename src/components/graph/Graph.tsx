@@ -28,7 +28,7 @@ import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
 import '../../styles/graph.scss';
-import GraphZoom from './GraphZoom';
+import GraphZoomOptions from './GraphZoom';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -153,11 +153,13 @@ const GraphRoot = () => {
 		<PointerTimestampProvider>
 			<div className='graph-root'>
 				<i className='th2-logo' />
-				<GraphZoom
-					setInterval={
-						isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.setInterval : null
-					}
-				/>
+				{isWorkspaceStore(activeWorkspace) ? (
+					<GraphZoomOptions
+						setInterval={activeWorkspace.graphStore.setInterval}
+						setTimestamp={activeWorkspace.graphStore.setTimestamp}
+						windowRange={activeWorkspace.graphStore.range}
+					/>
+				) : null}
 				<GraphSearch
 					hoveredTimestamp={
 						isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.hoveredTimestamp : null

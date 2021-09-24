@@ -17,7 +17,7 @@
 import moment from 'moment';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import { GraphGroup, GraphItem } from '../models/Graph';
+import { GraphGroup, GraphItem, IntervalOption } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { getTimestampAsNumber } from './date';
 import { isEventMessage } from './event';
@@ -33,7 +33,7 @@ export function filterListByChunkRange(
 	});
 }
 
-export function calculateTimeRange(timestamp: number, interval = 15): TimeRange {
+export function calculateTimeRange(timestamp: number, interval: IntervalOption): TimeRange {
 	return [timestamp - (interval / 2) * 60 * 1000, timestamp + (interval / 2) * 60 * 1000];
 }
 

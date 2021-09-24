@@ -286,7 +286,10 @@ export default class EventsStore {
 		this.graphStore.setTimestamp(timestampToNumber(savedEventNode.startTimestamp));
 		this.workspaceStore.viewStore.activePanel = this;
 
-		const timeRange = calculateTimeRange(timestampToNumber(savedEventNode.startTimestamp));
+		const timeRange = calculateTimeRange(
+			timestampToNumber(savedEventNode.startTimestamp),
+			this.graphStore.defaultInterval,
+		);
 
 		this.eventDataStore.fetchEventTree({
 			timeRange,
@@ -297,7 +300,7 @@ export default class EventsStore {
 
 	@action
 	public onRangeChange = (timestampFrom: number) => {
-		const timeRange = calculateTimeRange(timestampFrom);
+		const timeRange = calculateTimeRange(timestampFrom, this.graphStore.defaultInterval);
 
 		this.eventDataStore.fetchEventTree({
 			timeRange,

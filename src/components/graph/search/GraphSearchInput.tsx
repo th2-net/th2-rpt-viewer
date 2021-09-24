@@ -122,16 +122,13 @@ function GraphSearchInput(props: Props) {
 		if (windowRange) {
 			const [from, to] = windowRange;
 			const centerTimestamp = from + (to - from) / 2;
-			if (!inputConfig.timestamp || Math.abs(centerTimestamp - inputConfig.timestamp) > 30000) {
-				submitTimestamp(centerTimestamp);
-				setInputConfig({
-					isValidDate: true,
-					mask: DATE_TIME_MASK,
-					placeholder: DATE_TIME_PLACEHOLDER,
-					timestamp: centerTimestamp,
-					value: moment.utc(centerTimestamp).format(DATE_TIME_MASK),
-				});
-			}
+			setInputConfig({
+				isValidDate: true,
+				mask: DATE_TIME_MASK,
+				placeholder: DATE_TIME_PLACEHOLDER,
+				timestamp: centerTimestamp,
+				value: moment.utc(centerTimestamp).format(DATE_TIME_MASK),
+			});
 		}
 	}, [windowRange]);
 
