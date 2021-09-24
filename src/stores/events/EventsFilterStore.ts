@@ -87,7 +87,7 @@ export default class EventsFilterStore {
 	}
 
 	@observable
-	public range: TimeRange = getDefaultTimeRange(this.graphStore.defaultInterval);
+	public range: TimeRange = getDefaultTimeRange(this.graphStore.eventsSearchInterval);
 
 	@computed
 	public get timestampFrom(): number {

@@ -30,7 +30,7 @@ export class GraphStore {
 		240: 16,
 	};
 
-	public readonly defaultInterval: IntervalOption = 15;
+	public readonly eventsSearchInterval: IntervalOption = 15;
 
 	constructor(
 		private selectedStore: SelectedStore,
@@ -72,7 +72,7 @@ export class GraphStore {
 	@observable
 	public range: TimeRange = calculateTimeRange(
 		moment.utc(this.timestamp.valueOf()).valueOf(),
-		this.defaultInterval,
+		this.eventsSearchInterval,
 	);
 
 	@observable
