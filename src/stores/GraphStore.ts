@@ -48,6 +48,11 @@ export class GraphStore {
 		);
 
 		reaction(
+			() => this.range,
+			range => this.setTimestampFromRange(range),
+		);
+
+		reaction(
 			() => this.timestamp,
 			() => this.createChunks(this.interval, this.timestamp.valueOf()),
 		);
