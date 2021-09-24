@@ -158,6 +158,7 @@ const GraphRoot = () => {
 						setInterval={activeWorkspace.graphStore.setInterval}
 						setTimestamp={activeWorkspace.graphStore.setTimestamp}
 						windowRange={activeWorkspace.graphStore.range}
+						interval={activeWorkspace.graphStore.interval}
 					/>
 				)}
 				<GraphSearch

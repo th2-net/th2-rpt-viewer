@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { createBemBlock } from '../../helpers/styleCreators';
 import { IntervalOption } from '../../models/Graph';
 import { TimeRange } from '../../models/Timestamp';
 import '../../styles/graph.scss';
@@ -7,26 +8,25 @@ interface Props {
 	setInterval: (interval: IntervalOption) => void;
 	setTimestamp: (timestamp: number) => void;
 	windowRange: TimeRange;
+	interval: number;
 }
 
 type zoomItem = {
 	value: IntervalOption;
 	text: string;
-	toggle: boolean;
 };
 
 const GraphZoomOptions = (props: Props) => {
-	const { setInterval, setTimestamp, windowRange } = props;
-	const [zoomItems, setZoomItems] = React.useState<Array<zoomItem>>([
-		{ value: 15, text: '1x', toggle: true },
-		{ value: 60, text: '4x', toggle: false },
-		{ value: 240, text: '16x', toggle: false },
-	]);
+	const { setInterval, setTimestamp, windowRange, interval } = props;
+	const zoomItems: Array<zoomItem> = [
+		{ value: 15, text: '1x' },
+		{ value: 60, text: '4x' },
+		{ value: 240, text: '16x' },
+	];
 
 	const handleClick = (zoomValue: IntervalOption) => {
 		const [from, to] = windowRange;
 		const centerTimestamp = from + (to - from) / 2;
-		setZoomItems(zoomItems.map(item => ({ ...item, toggle: item.value === zoomValue })));
 		setInterval(zoomValue);
 		setTimestamp(centerTimestamp);
 	};
@@ -36,7 +36,7 @@ const GraphZoomOptions = (props: Props) => {
 			{zoomItems.map(item => (
 				<button
 					key={item.value}
-					className={`zoom-item ${item.toggle ? 'active' : ''}`}
+					className={createBemBlock('zoom-item', item.value === interval ? 'active' : null)}
 					onClick={() => handleClick(item.value)}>
 					{item.text}
 				</button>
