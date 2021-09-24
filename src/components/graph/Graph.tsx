@@ -153,13 +153,13 @@ const GraphRoot = () => {
 		<PointerTimestampProvider>
 			<div className='graph-root'>
 				<i className='th2-logo' />
-				{isWorkspaceStore(activeWorkspace) ? (
+				{isWorkspaceStore(activeWorkspace) && (
 					<GraphZoomOptions
 						setInterval={activeWorkspace.graphStore.setInterval}
 						setTimestamp={activeWorkspace.graphStore.setTimestamp}
 						windowRange={activeWorkspace.graphStore.range}
 					/>
-				) : null}
+				)}
 				<GraphSearch
 					hoveredTimestamp={
 						isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.hoveredTimestamp : null

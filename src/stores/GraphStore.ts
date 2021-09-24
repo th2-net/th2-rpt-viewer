@@ -30,6 +30,8 @@ export class GraphStore {
 		240: 16,
 	};
 
+	public readonly defaultInterval: IntervalOption = 15;
+
 	constructor(
 		private selectedStore: SelectedStore,
 		timeRange: TimeRange | null = null,
@@ -39,7 +41,6 @@ export class GraphStore {
 		this.setTimestampFromRange(this.range);
 
 		this.interval = defaultInterval;
-		this.defaultInterval = defaultInterval;
 
 		reaction(
 			() => this.interval,
@@ -56,9 +57,6 @@ export class GraphStore {
 
 	@observable
 	public interval: IntervalOption = 15;
-
-	@observable
-	public defaultInterval: IntervalOption = 15;
 
 	@observable
 	public chunks: Chunk[] = [];
