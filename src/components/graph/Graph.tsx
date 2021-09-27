@@ -156,7 +156,6 @@ const GraphRoot = () => {
 					hoveredTimestamp={
 						isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.hoveredTimestamp : null
 					}
-					refreshPanels={isWorkspaceStore(activeWorkspace) ? activeWorkspace.refreshPanels : null}
 					onTimestampSubmit={activeWorkspace.onTimestampSelect}
 					onFoundItemClick={activeWorkspace.onSavedItemSelect}
 					windowRange={isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.range : null}
