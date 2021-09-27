@@ -33,22 +33,22 @@ body {
 	overflow: hidden;
 
 	&.light {
-		--app-background-color: '#bdccdb';
-		--graph-background-color: '#dee5ed';
-		--panel-background-color: '#ffffff';
-		--workspace-background-color: '#eef2f6';
-		--workspace-tab-background: '#cce6ff';
-		--workspace-active-tabbackground: '#4d80b2';
+		--app-background-color: #bdccdb;
+		--graph-background-color: #dee5ed;
+		--panel-background-color: #ffffff;
+		--workspace-background-color: #eef2f6;
+		--workspace-tab-background: #cce6ff;
+		--workspace-active-tabbackground: #4d80b2;
 		// ...
 	}
 	// waiting for color scheme
 	&.dark {
-		--app-background-color: '#bdccdb';
-		--graph-background-color: '#dee5ed';
-		--panel-background-color: '#ffffff';
-		--workspace-background-color: '#eef2f6';
-		--workspace-tab-background: '#cce6ff';
-		--workspace-active-tabbackground: '#4d80b2';
+		--app-background-color: #bdccdb;
+		--graph-background-color: #dee5ed;
+		--panel-background-color: #ffffff;
+		--workspace-background-color: #eef2f6;
+		--workspace-tab-background: #cce6ff;
+		--workspace-active-tabbackground: #4d80b2;
 		// ...
 	}
 }
