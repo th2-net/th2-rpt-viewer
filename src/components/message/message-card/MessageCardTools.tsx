@@ -52,7 +52,6 @@ const MessageCardTools = ({
 	isScreenshotMsg,
 	isEmbedded,
 	bodyItem,
-	subsequenceId,
 }: MessageCardToolsConfig) => {
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const [isCopyMenuOpen, setIsCopyMenuOpen] = useState(false);
