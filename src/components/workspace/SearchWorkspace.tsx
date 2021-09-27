@@ -41,7 +41,7 @@ function SearchWorkspace() {
 		panelsLayout,
 		setPanelsLayout,
 		resetToDefaulLayout,
-		collapseLayoutSide,
+		collapsePanel,
 	} = searchWorkspaceStore.viewStore;
 
 	const bookmarksCounter =
@@ -76,7 +76,7 @@ function SearchWorkspace() {
 				setPanelsLayout={setPanelsLayout}
 				panels={searchWorkspacePanels}
 				resetToDefaulLayout={resetToDefaulLayout}
-				collapseLayoutSide={collapseLayoutSide}
+				collapsePanel={collapsePanel}
 			/>
 		</div>
 	);

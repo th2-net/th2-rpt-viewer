@@ -41,7 +41,7 @@ function Workspace() {
 		panelsLayout,
 		setPanelsLayout,
 		resetToDefaulLayout,
-		collapseLayoutSide,
+		collapsePanel,
 	} = useWorkspaceViewStore();
 	const workspaceStore = useWorkspaceStore();
 
@@ -51,7 +51,7 @@ function Workspace() {
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
 				resetToDefaulLayout={resetToDefaulLayout}
-				collapseLayoutSide={collapseLayoutSide}
+				collapsePanel={collapsePanel}
 				panels={[
 					{
 						title: 'Events',

@@ -64,7 +64,7 @@ export default class WorkspaceViewStore {
 	};
 
 	@action
-	public collapseLayoutSide = (index: number) => {
+	public collapsePanel = (index: number) => {
 		this.panelsLayout = index === 0 ? [0, 100] : [100, 0];
 	};
 
