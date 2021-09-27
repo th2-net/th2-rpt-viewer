@@ -29,7 +29,6 @@ const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 export type MessageCardToolsConfig = {
 	bodyItem: MessageBodyPayload;
-	subsequenceId: number;
 	message: EventMessage;
 	messageId: string;
 	messageType: string;

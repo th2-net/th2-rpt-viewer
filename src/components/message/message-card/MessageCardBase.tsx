@@ -151,7 +151,6 @@ export function MessageCardBase({
 		isScreenshotMsg,
 		isEmbedded,
 		bodyItem,
-		subsequenceId: bodyItem.subsequenceId[0],
 	};
 
 	const renderMessageInfo = () => {
