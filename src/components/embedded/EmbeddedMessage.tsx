@@ -16,6 +16,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import { MessageBodyPayload } from '../../models/MessageBody';
 import { MessageCardBase } from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
 
@@ -38,20 +39,20 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	}
 
 	if (errorStatus) {
-		throw new Error(errorStatus);
+		throw new Error();
 	}
 
 	if (message) {
 		return (
 			<div>
-				{message.body?.map((item, intemIndex) => (
-					<div className='embedded-wrapper'>
+				{message.body?.map((item: MessageBodyPayload) => (
+					<div className='embedded-wrapper' key={item.subsequenceId[0]}>
 						<MessageCardBase
 							isEmbedded
 							message={message}
 							setViewType={setViewType}
 							viewType={viewType}
-							bodyItemIndex={intemIndex}
+							bodyItem={item}
 						/>
 					</div>
 				))}

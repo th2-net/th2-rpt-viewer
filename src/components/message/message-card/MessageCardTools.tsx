@@ -23,11 +23,13 @@ import { decodeBase64RawContent, getAllRawContent } from '../../../helpers/rawFo
 import { copyTextToClipboard } from '../../../helpers/copyHandler';
 import { showNotification } from '../../../helpers/showNotification';
 import { normalizeFields } from '../../../helpers/message';
+import { MessageBodyPayload } from '../../../models/MessageBody';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 export type MessageCardToolsConfig = {
-	index?: number;
+	bodyItem: MessageBodyPayload;
+	subsequenceId: number;
 	message: EventMessage;
 	messageId: string;
 	messageType: string;
@@ -40,7 +42,6 @@ export type MessageCardToolsConfig = {
 };
 
 const MessageCardTools = ({
-	index,
 	message,
 	messageId,
 	messageType,
@@ -50,6 +51,8 @@ const MessageCardTools = ({
 	toggleMessagePin,
 	isScreenshotMsg,
 	isEmbedded,
+	bodyItem,
+	subsequenceId,
 }: MessageCardToolsConfig) => {
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const [isCopyMenuOpen, setIsCopyMenuOpen] = useState(false);
@@ -68,7 +71,7 @@ const MessageCardTools = ({
 
 	const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
-	const viewTypes = message.body
+	const viewTypes = bodyItem
 		? [
 				MessageViewType.JSON,
 				MessageViewType.FORMATTED,
@@ -81,11 +84,11 @@ const MessageCardTools = ({
 		let content: string;
 
 		const jsonToCopy =
-			jsonObjectToCopy === 'fields' && index && message.body
-				? message.body[index].message.fields
-					? normalizeFields(message.body[index].message.fields)
+			jsonObjectToCopy === 'fields'
+				? bodyItem.message.fields
+					? normalizeFields(bodyItem.message.fields)
 					: null
-				: message.body;
+				: bodyItem;
 
 		switch (messageViewType) {
 			case MessageViewType.ASCII:

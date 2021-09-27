@@ -16,12 +16,13 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import MessageBody, {
+import {
 	isSimpleValue,
 	MessageBodyField,
 	isListValue,
 	MessageBodyFields,
 	isMessageValue,
+	MessageBodyPayload,
 } from '../../../models/MessageBody';
 
 const BEAUTIFIED_PAD_VALUE = 15;
@@ -30,10 +31,9 @@ const SELECTED_HIGHLIGHT_COLOR = '#fff';
 
 interface Props {
 	isBeautified: boolean;
-	body: MessageBody | null;
+	body: MessageBodyPayload;
 	isSelected: boolean;
-	renderInfo?: (index: number) => React.ReactNode;
-	index: number;
+	renderInfo?: () => React.ReactNode;
 	sortOrderItems: string[];
 }
 
@@ -53,22 +53,11 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 	return [...primarySortedFields, ...secondarySortedFields];
 };
 
-function MessageBodyCard({
-	index,
-	isBeautified,
-	body,
-	isSelected,
-	renderInfo,
-	sortOrderItems,
-}: Props) {
+function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrderItems }: Props) {
 	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
 
 	const fields = React.useMemo(
-		() =>
-			getSortedFields(
-				body?.[index]?.message.fields ? body?.[index].message.fields : {},
-				sortOrderItems,
-			),
+		() => getSortedFields(body.message.fields ? body.message.fields : {}, sortOrderItems),
 		[body, [sortOrderItems]],
 	);
 
@@ -78,7 +67,7 @@ function MessageBodyCard({
 
 	return (
 		<pre className='mc-body__human'>
-			{renderInfo && renderInfo(index)}
+			{renderInfo && renderInfo()}
 			{!isBeautified && '{'}
 			{fields.map(([key, value], idx, arr) => (
 				<React.Fragment key={key}>
@@ -229,10 +218,10 @@ export function MessageBodyCardFallback({ body, isBeautified }: Props) {
 
 const backgroundGradient = (strings: TemplateStringsArray, color: string) =>
 	`linear-gradient(to bottom,
-        transparent 0%,
-        transparent 2px,
-        ${color} 2px,
-        ${color} calc(100% - 2px),
-        transparent calc(100% - 2px),
-        transparent 100%
-	)`;
+		 transparent 0%,
+		 transparent 2px,
+		 ${color} 2px,
+		 ${color} calc(100% - 2px),
+		 transparent calc(100% - 2px),
+		 transparent 100%
+	 )`;

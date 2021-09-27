@@ -29,6 +29,7 @@ import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import { matchWildcardRule } from '../../../helpers/regexp';
 import { MessageCardBase } from './MessageCardBase';
 import '../../../styles/messages.scss';
+import { MessageBodyPayload } from '../../../models/MessageBody';
 
 export interface OwnProps {
 	message: EventMessage;
@@ -137,8 +138,9 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	return (
 		<div>
-			{message.body?.map((item, itemIndex) => (
+			{message.body?.map((item: MessageBodyPayload) => (
 				<MessageCardBase
+					key={item.subsequenceId[0]}
 					message={message}
 					viewType={viewType}
 					setViewType={setViewType}
@@ -152,7 +154,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 					toogleMessagePin={toogleMessagePin}
 					isDetailed={isDetailed}
 					sortOrderItems={sortOrderItems}
-					bodyItemIndex={itemIndex}
+					bodyItem={item}
 				/>
 			))}
 		</div>

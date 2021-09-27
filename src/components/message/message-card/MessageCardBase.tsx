@@ -25,6 +25,7 @@ import MessageCardViewTypeRenderer, {
 } from './MessageCardViewTypeRenderer';
 import MessageCardTools, { MessageCardToolsConfig } from './MessageCardTools';
 import '../../../styles/messages.scss';
+import { MessageBodyPayload } from '../../../models/MessageBody';
 
 const HUE_SEGMENTS_COUNT = 36;
 
@@ -42,7 +43,7 @@ export interface MessageCardBaseProps {
 	isEmbedded?: boolean;
 	sortOrderItems?: string[];
 	viewType: MessageViewType;
-	bodyItemIndex: number;
+	bodyItem: MessageBodyPayload;
 	setViewType: (viewType: MessageViewType) => void;
 }
 
@@ -60,11 +61,11 @@ export function MessageCardBase({
 	isEmbedded,
 	isDetailed,
 	sortOrderItems,
-	bodyItemIndex,
+	bodyItem,
 }: MessageCardBaseProps) {
-	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
+	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64 } = message;
 
-	const renderInlineMessageInfo = (index: number) => {
+	const renderInlineMessageInfo = () => {
 		if (viewType === MessageViewType.ASCII || viewType === MessageViewType.JSON) {
 			const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
@@ -80,17 +81,21 @@ export function MessageCardBase({
 					<span className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
 						{sessionId}
 					</span>
-					<span className='mc-header__item messageId-inline' title={`ID: ${messageId}`}>
-						<span className='mc-header__value'>{messageId} </span>
+					<span
+						className='mc-header__item messageId-inline'
+						title={`ID: ${messageId}:${bodyItem.subsequenceId[0]}`}>
+						<span className='mc-header__value'>
+							{messageId}:{bodyItem.subsequenceId[0]}
+						</span>
 					</span>
 					<span className={sessionClass} style={sessionArrowStyle}></span>
 					<span
 						className='mc-header__value messageType'
 						title={
-							body?.[index].message.metadata.messageType &&
-							`Name: ${body?.[index].message.metadata.messageType}`
+							bodyItem.message.metadata.messageType &&
+							`Name: ${bodyItem.message.metadata.messageType}`
 						}>
-						{body?.[index].message.metadata.messageType}
+						{bodyItem.message.metadata.messageType}
 					</span>
 				</>
 			);
@@ -127,7 +132,7 @@ export function MessageCardBase({
 		renderInfo: renderInlineMessageInfo,
 		viewType,
 		messageId,
-		messageBody: body,
+		messageBody: bodyItem,
 		isBeautified: viewType === MessageViewType.FORMATTED,
 		rawContent: bodyBase64,
 		isSelected: isAttached || false,
@@ -145,9 +150,11 @@ export function MessageCardBase({
 		toggleMessagePin: toogleMessagePin || (() => null),
 		isScreenshotMsg,
 		isEmbedded,
+		bodyItem,
+		subsequenceId: bodyItem.subsequenceId[0],
 	};
 
-	const renderMessageInfo = (index: number) => {
+	const renderMessageInfo = () => {
 		if (viewType === MessageViewType.FORMATTED || viewType === MessageViewType.BINARY) {
 			const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
@@ -164,17 +171,21 @@ export function MessageCardBase({
 						<span className={sessionClass} style={sessionArrowStyle} />
 						<span className='mc-header__value'>{sessionId}</span>
 					</div>
-					<div className='mc-header__item messageId' title={`ID: ${messageId}`}>
-						<span className='mc-header__value'>{messageId}</span>
+					<div
+						className='mc-header__item messageId'
+						title={`ID: ${messageId}:${bodyItem.subsequenceId[0]}`}>
+						<span className='mc-header__value'>
+							{messageId}:{bodyItem.subsequenceId[0]}
+						</span>
 					</div>
 					<div
 						className='mc-header__item'
 						title={
-							body?.[index].message.metadata.messageType &&
-							`Name: ${body[index].message.metadata.messageType}`
+							bodyItem.message.metadata.messageType &&
+							`Name: ${bodyItem.message.metadata.messageType}`
 						}>
 						<span className='mc-header__value messageType'>
-							{body?.[index].message.metadata.messageType}
+							{bodyItem.message.metadata.messageType}
 						</span>
 					</div>
 				</div>
@@ -186,15 +197,14 @@ export function MessageCardBase({
 	return (
 		<div className={rootClass}>
 			<div className='message-card'>
-				<div className='mc__mc-header mc-header'>{renderMessageInfo(bodyItemIndex)}</div>
+				<div className='mc__mc-header mc-header'>{renderMessageInfo()}</div>
 				<div className='mc__mc-body mc-body'>
 					{isScreenshotMsg ? (
 						<div className='mc-body__screenshot'>
 							<MessageScreenshotZoom
 								src={
-									typeof bodyBase64 === 'string' && bodyItemIndex
-										? `data:${body?.[bodyItemIndex].message.metadata.messageType};base64,
-										${message.bodyBase64}`
+									typeof bodyBase64 === 'string'
+										? `data:${bodyItem.message.metadata.messageType};base64,${message.bodyBase64}`
 										: ''
 								}
 								alt={message.messageId}
@@ -202,15 +212,12 @@ export function MessageCardBase({
 						</div>
 					) : (
 						<div className='mc-body__human'>
-							<MessageCardViewTypeRenderer
-								{...messageViewTypeRendererProps}
-								index={bodyItemIndex}
-							/>
+							<MessageCardViewTypeRenderer {...messageViewTypeRendererProps} />
 						</div>
 					)}
 				</div>
 			</div>
-			<MessageCardTools {...messageCardToolsConfig} index={bodyItemIndex} />
+			<MessageCardTools {...messageCardToolsConfig} />
 		</div>
 	);
 }

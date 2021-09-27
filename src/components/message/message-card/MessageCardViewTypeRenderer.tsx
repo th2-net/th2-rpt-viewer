@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { MessageViewType } from '../../../models/EventMessage';
-import MessageBody from '../../../models/MessageBody';
+import { MessageBodyPayload } from '../../../models/MessageBody';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import MessageRaw from './raw/MessageRaw';
@@ -27,9 +27,8 @@ export type MessageCardViewTypeRendererProps = {
 	rawContent: string | null;
 	isBeautified: boolean;
 	isSelected: boolean;
-	messageBody: MessageBody | null;
-	renderInfo: (index: number) => React.ReactNode;
-	index?: number;
+	messageBody: MessageBodyPayload;
+	renderInfo: () => React.ReactNode;
 	isEmbedded?: boolean;
 	isDetailed?: boolean;
 	sortOrderItems: string[];
@@ -43,17 +42,15 @@ const MessageCardViewTypeRenderer = ({
 	isSelected,
 	messageBody,
 	isDetailed,
-	index,
 	sortOrderItems,
 }: MessageCardViewTypeRendererProps) => {
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
 		case MessageViewType.JSON:
-			return index !== undefined ? (
+			return (
 				<ErrorBoundary
 					fallback={
 						<MessageBodyCardFallback
-							index={index}
 							isBeautified={isBeautified}
 							isSelected={isSelected}
 							body={messageBody}
@@ -61,7 +58,6 @@ const MessageCardViewTypeRenderer = ({
 						/>
 					}>
 					<MessageBodyCard
-						index={index}
 						isBeautified={isBeautified}
 						body={messageBody}
 						isSelected={isSelected}
@@ -69,13 +65,12 @@ const MessageCardViewTypeRenderer = ({
 						sortOrderItems={sortOrderItems}
 					/>
 				</ErrorBoundary>
-			) : null;
+			);
 
 		case MessageViewType.ASCII:
 		case MessageViewType.BINARY:
-			return rawContent && index !== undefined ? (
+			return rawContent ? (
 				<MessageRaw
-					index={index}
 					rawContent={rawContent}
 					renderInfo={renderInfo}
 					isDetailed={isDetailed || viewType === MessageViewType.BINARY}
