@@ -320,7 +320,7 @@ function WorkspaceSplitter(props: Props) {
 					/>
 					<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
 						<div
-							className='pane__sidebar' 
+							className='pane__sidebar'
 							style={{ cursor: 'pointer' }}
 							onClick={resetToDefaulLayout}>
 							<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />
