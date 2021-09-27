@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { ModalPortal } from '../util/Portal';
 import RulesList from './RulesList';
 import BodySortConfig from './BodySortConfig';
-import useTheme, { Theme } from '../../hooks/useTheme';
+import useTheme from '../../hooks/useTheme';
 import useLocalStorage from '../../hooks/useLocalStorage';
 import TogglerRow from '../filter/row/TogglerRow';
 import { useMessageDisplayRulesStore } from '../../hooks';
@@ -39,33 +39,13 @@ export enum HighlightNames {
 	VALUES = 'values',
 }
 
-const themes: { [k: string]: Theme } = {
-	light: {
-		'app-background-color': '#bdccdb',
-		'graph-background-color': '#dee5ed',
-		'panel-background-color': '#ffffff',
-		'workspace-background-color': '#eef2f6',
-		'workspace-tab-background': '#cce6ff',
-		'workspace-active-tab-background': '#4d80b2',
-		// ...
-	},
-	// waiting for color scheme
-	dark: {
-		'app-background-color': '#bdccdb',
-		'graph-background-color': '#dee5ed',
-		'panel-background-color': '#ffffff',
-		'workspace-background-color': '#eef2f6',
-		'workspace-tab-background': '#cce6ff',
-		'workspace-active-tab-background': '#4d80b2',
-		// ...
-	},
-};
+export type ThemeClassNames = 'light' | 'dark';
 
 const MessageViewConfigurator = ({ sessions }: Props) => {
 	const { bodyHighLight, toggleBodyHighlight } = useMessageDisplayRulesStore();
 	const [theme, setTheme] = useLocalStorage<ThemeNames>('theme', ThemeNames.LIGHT);
 	const [isOpen, setIsOpen] = useState(false);
-	useTheme(themes[theme]);
+	useTheme(theme);
 
 	return (
 		<>

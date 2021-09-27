@@ -16,14 +16,8 @@
 
 import { useLayoutEffect } from 'react';
 
-export interface Theme {
-	[prop: string]: string;
-}
-
-export default function useTheme(theme: Theme) {
+export default function useTheme(themeClassName: string) {
 	useLayoutEffect((): void => {
-		Object.entries(theme).forEach(([variable, value]) => {
-			document.documentElement.style.setProperty(`--${variable}`, value);
-		});
-	}, [theme]);
+		document.body.className = themeClassName;
+	}, [themeClassName]);
 }
