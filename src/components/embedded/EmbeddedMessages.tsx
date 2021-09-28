@@ -20,7 +20,6 @@ import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { EventMessage, MessageViewType } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
-import { MessageCardBase } from '../message/message-card/MessageCardBase';
 import '../../styles/embedded.scss';
 import api from '../../api';
 import StateSaverProvider from '../util/StateSaverProvider';
@@ -29,6 +28,7 @@ import { useDebouncedCallback } from '../../hooks';
 import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import { MessageBodyPayload } from '../../models/MessageBody';
+import { EmbeddedMessageCardBase } from './EmbeddedMessageCardBase';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
@@ -43,7 +43,7 @@ const EmbeddedMessages = () => {
 		return (
 			<div>
 				{message.body?.map((item: MessageBodyPayload) => (
-					<MessageCardBase
+					<EmbeddedMessageCardBase
 						isEmbedded
 						key={item.subsequenceId[0]}
 						bodyItem={item}

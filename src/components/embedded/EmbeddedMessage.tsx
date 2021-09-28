@@ -17,8 +17,8 @@
 import React, { useEffect, useState } from 'react';
 import { EventMessage, MessageViewType } from '../../models/EventMessage';
 import { MessageBodyPayload } from '../../models/MessageBody';
-import { MessageCardBase } from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
+import { EmbeddedMessageCardBase } from './EmbeddedMessageCardBase';
 
 function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
@@ -47,7 +47,7 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 			<div>
 				{message.body?.map((item: MessageBodyPayload) => (
 					<div className='embedded-wrapper' key={item.subsequenceId[0]}>
-						<MessageCardBase
+						<EmbeddedMessageCardBase
 							isEmbedded
 							message={message}
 							setViewType={setViewType}
