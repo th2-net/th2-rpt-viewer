@@ -15,14 +15,8 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
-import {
-	useMessagesWorkspaceStore,
-	useMessageDisplayRulesStore,
-	useSelectedStore,
-	useMessagesDataStore,
-	useMessageBodySortStore,
-} from '../../../hooks';
+
+import { useMessageDisplayRulesStore } from '../../../hooks';
 import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
@@ -40,7 +34,7 @@ export interface RecoveredProps {
 	setViewType: (viewType: MessageViewType) => void;
 }
 
-interface Props extends OwnProps, RecoveredProps {}
+// interface Props extends OwnProps, RecoveredProps {}
 
 // const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 // 	const { messageId } = message;
