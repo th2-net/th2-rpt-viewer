@@ -26,6 +26,7 @@ import MessageCardViewTypeRenderer, {
 import MessageCardTools, { MessageCardToolsConfig } from './MessageCardTools';
 import '../../../styles/messages.scss';
 import { MessageBodyPayload } from '../../../models/MessageBody';
+import { useMessagesWorkspaceStore } from '../../../hooks';
 
 const HUE_SEGMENTS_COUNT = 36;
 
@@ -64,6 +65,24 @@ export function MessageCardBase({
 	bodyItem,
 }: MessageCardBaseProps) {
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64 } = message;
+	const messagesStore = useMessagesWorkspaceStore();
+
+	React.useEffect(() => {
+		switch (viewType) {
+			case MessageViewType.FORMATTED:
+				messagesStore.beautify(`${messageId}-${bodyItem.subsequenceId[0]}`);
+				break;
+			case MessageViewType.ASCII:
+				messagesStore.hideDetailedRawMessage(`${messageId}-${bodyItem.subsequenceId[0]}`);
+				break;
+			case MessageViewType.BINARY:
+				messagesStore.showDetailedRawMessage(`${messageId}-${bodyItem.subsequenceId[0]}`);
+				break;
+			default:
+				messagesStore.debeautify(`${messageId}-${bodyItem.subsequenceId[0]}`);
+				break;
+		}
+	}, [viewType]);
 
 	const renderInlineMessageInfo = () => {
 		if (viewType === MessageViewType.ASCII || viewType === MessageViewType.JSON) {

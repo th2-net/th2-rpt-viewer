@@ -165,38 +165,43 @@ const RecoverableMessageCard = React.memo((props: OwnProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
 
 	return (
-		<StateSaver
-			stateKey={keyForMessage(props.message.messageId)}
-			getDefaultState={() => {
-				const rootRule = rulesStore.rootDisplayRule;
-				const declaredRule = rulesStore.messageDisplayRules.find(rule => {
-					if (rule.session.length > 1 && rule.session.includes('*')) {
-						return matchWildcardRule(props.message.sessionId, rule.session);
-					}
-					return props.message.sessionId.includes(rule.session);
-				});
-				if (!props.message.body) {
-					return declaredRule
-						? getRawViewType(declaredRule.viewType)
-						: rootRule
-						? getRawViewType(rootRule.viewType)
-						: MessageViewType.ASCII;
-				}
-				return declaredRule
-					? declaredRule.viewType
-					: rootRule
-					? rootRule.viewType
-					: MessageViewType.JSON;
-			}}>
-			{(state, saveState) => (
-				<MessageCard
-					{...props}
-					// we should always show raw content if something found in it
-					viewType={state}
-					setViewType={saveState}
-				/>
-			)}
-		</StateSaver>
+		<div>
+			{props.message.body?.map((item: MessageBodyPayload) => (
+				<StateSaver
+					stateKey={keyForMessage(`${props.message.messageId}-${item.subsequenceId[0]}`)}
+					getDefaultState={() => {
+						const rootRule = rulesStore.rootDisplayRule;
+						const declaredRule = rulesStore.messageDisplayRules.find(rule => {
+							if (rule.session.length > 1 && rule.session.includes('*')) {
+								return matchWildcardRule(props.message.sessionId, rule.session);
+							}
+							return props.message.sessionId.includes(rule.session);
+						});
+						if (!props.message.body) {
+							return declaredRule
+								? getRawViewType(declaredRule.viewType)
+								: rootRule
+								? getRawViewType(rootRule.viewType)
+								: MessageViewType.ASCII;
+						}
+						return declaredRule
+							? declaredRule.viewType
+							: rootRule
+							? rootRule.viewType
+							: MessageViewType.JSON;
+					}}>
+					{(state, saveState) => (
+						<MessageCardBase
+							{...props}
+							// we should always show raw content if something found in it
+							bodyItem={item}
+							viewType={state}
+							setViewType={saveState}
+						/>
+					)}
+				</StateSaver>
+			))}
+		</div>
 	);
 });
 
