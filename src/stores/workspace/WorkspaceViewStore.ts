@@ -59,6 +59,16 @@ export default class WorkspaceViewStore {
 	};
 
 	@action
+	public resetToDefaulLayout = () => {
+		this.panelsLayout = [50, 50];
+	};
+
+	@action
+	public collapsePanel = (index: number) => {
+		this.panelsLayout = index === 0 ? [0, 100] : [100, 0];
+	};
+
+	@action
 	public setActivePanel = (panel: EventsStore | MessagesStore | null) => {
 		this.activePanel = panel;
 	};
