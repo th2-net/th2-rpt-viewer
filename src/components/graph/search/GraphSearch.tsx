@@ -143,13 +143,6 @@ function GraphSearch(props: Props) {
 		[setMode, setShowModal, isModeLocked],
 	);
 
-	const setInputValueFromTimestamp = React.useCallback(
-		(ts: number) => {
-			setTimestamp(ts);
-		},
-		[setTimestamp],
-	);
-
 	const onModeSelect = (newMode: GraphSearchMode) => {
 		setTimestamp(null);
 		setMode(newMode);
@@ -206,7 +199,7 @@ function GraphSearch(props: Props) {
 		<div className='graph-search' ref={wrapperRef}>
 			<GraphSearchInput
 				timestamp={timestamp}
-				setTimestamp={setTimestamp}
+				setTimestamp={handleTimepickerValueChange}
 				setMode={handleModeChange}
 				inputConfig={inputConfig}
 				setInputConfig={setInputConfig}
@@ -236,7 +229,7 @@ function GraphSearch(props: Props) {
 						<GraphSearchDialog
 							value={inputConfig.value}
 							onSearchResultSelect={onGraphSearchResultSelect}
-							setTimestamp={setInputValueFromTimestamp}
+							setTimestamp={handleTimepickerValueChange}
 							setIsIdSearchDisabled={setIsIdSearchDisabled}
 							closeModal={closeModal}
 							submittedId={submittedId}

@@ -36,7 +36,7 @@ const WorkspaceLinkGetter = () => {
 
 	return (
 		<button
-			className='workspace-link-getter'
+			className='graph-button workspace-link-getter'
 			disabled={disabled}
 			onClick={() => {
 				const appState = rootStore.getAppState();
