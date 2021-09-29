@@ -61,6 +61,13 @@
 		}
 	}
 
+	&.exported {
+		background-color: $exportedMessageCardBackground;
+		&:hover {
+			background-color: $exportedMessageCardHoverBackground;
+		}
+	}
+
 	&:hover {
 		background-color: $messageCardHoverBackground;
 	}
@@ -736,6 +743,47 @@
 		&-icon {
 			@include icon(url('../../resources/icons/search.svg'), 16px, 16px);
 
+			display: inline-block;
+		}
+	}
+
+	&__export {
+		&-btn {
+			@include clickable;
+
+			cursor: pointer;
+			background-color: transparent;
+			border: none;
+			margin-left: 10px;
+			padding: 4px;
+			outline: none;
+		}
+
+		&-tool{
+			display: flex;
+			justify-content: center;
+			background-color: transparent;
+			border: none;
+			padding: 2px 4px;
+			cursor: pointer;
+			font-size: 11px;
+			color: $primaryTextColor;
+	
+			&:hover {
+				background-color: rgba(0, 0, 0, 0.07);
+			}
+		}
+
+		&-enable-icon {
+			@include icon(url('../../resources/icons/export.svg'), 16px, 16px);
+			display: inline-block;
+		}
+		&-disable-icon {
+			@include icon(url('../../resources/icons/cross-icon.svg'), 16px, 16px);
+			display: inline-block;
+		}
+		&-end-icon {
+			@include icon(url('../../resources/icons/download.svg'), 16px, 16px);
 			display: inline-block;
 		}
 	}

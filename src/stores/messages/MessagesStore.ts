@@ -18,7 +18,7 @@ import { action, computed, observable, reaction, IReactionDisposer } from 'mobx'
 import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
-import { EventMessage } from '../../models/EventMessage';
+import { EventMessage, MessageViewType } from '../../models/EventMessage';
 import { timestampToNumber } from '../../helpers/date';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import { SelectedStore } from '../SelectedStore';
@@ -33,6 +33,7 @@ import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
+import { decodeBase64RawContent, getAllRawContent } from '../../helpers/rawFormatter';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -48,6 +49,14 @@ export default class MessagesStore {
 	public filterStore = new MessagesFilterStore(this.searchStore);
 
 	public dataStore = new MessagesDataProviderStore(this, this.api);
+
+	@observable
+	public isExport = false;
+
+	@observable
+	public exportMessages: Array<EventMessage> = [];
+
+	public exportMessagesAscii: Array<string> = [];
 
 	@observable
 	public hoveredMessage: EventMessage | null = null;
@@ -126,6 +135,91 @@ export default class MessagesStore {
 		}
 		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
 		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];
+	}
+
+	public includes(message: EventMessage) {
+		return (
+			this.exportMessages.filter(exportMessage => exportMessage.messageId === message.messageId)
+				.length > 0
+		);
+	}
+
+	@action
+	public addMessageToExport(message: EventMessage) {
+		if (!this.isExport) return;
+		if (this.includes(message)) {
+			this.exportMessages = this.exportMessages.filter(
+				exportMessage => exportMessage.messageId !== message.messageId,
+			);
+		} else {
+			this.exportMessages.push(message);
+		}
+	}
+
+	@action
+	public enableExport() {
+		this.isExport = true;
+		this.exportMessages = [];
+		this.exportMessagesAscii = [];
+	}
+
+	@action
+	public disableExport() {
+		this.isExport = false;
+		this.exportMessages = [];
+		this.exportMessagesAscii = [];
+	}
+
+	private convertMessage(messageToConvert: EventMessage, messageViewType: MessageViewType) {
+		let content: string;
+
+		const jsonToCopy = messageToConvert.body;
+
+		switch (messageViewType) {
+			case MessageViewType.ASCII:
+				content = messageToConvert.bodyBase64 ? atob(messageToConvert.bodyBase64) : '';
+				break;
+			case MessageViewType.BINARY:
+				content = messageToConvert.bodyBase64
+					? getAllRawContent(decodeBase64RawContent(messageToConvert.bodyBase64))
+					: '';
+				break;
+			case MessageViewType.FORMATTED:
+				content = jsonToCopy ? JSON.stringify(jsonToCopy, null, 4) : '';
+				break;
+			case MessageViewType.JSON:
+				content = jsonToCopy ? JSON.stringify(jsonToCopy) : '';
+				break;
+			default:
+				content = '';
+		}
+
+		return content;
+	}
+
+	@action
+	public endExport(messageViewType: MessageViewType) {
+		this.isExport = false;
+		if (this.exportMessages.length === 0) return;
+		const exportUrl = URL.createObjectURL(
+			new File(
+				[
+					this.exportMessages
+						.map(exportMessage => this.convertMessage(exportMessage, messageViewType))
+						.join('\n'),
+				],
+				'exported_messages.txt',
+				{ type: 'text/plain;charset=UTF-8;base64' },
+			),
+		);
+		const link = document.createElement('a');
+		link.download = 'exported_messages.txt';
+		link.href = exportUrl;
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		this.exportMessages = [];
+		this.exportMessagesAscii = [];
 	}
 
 	@action

@@ -40,9 +40,11 @@ export interface MessageCardBaseProps {
 	toogleMessagePin?: () => void;
 	isDetailed?: boolean;
 	isEmbedded?: boolean;
+	isExported?: boolean;
 	sortOrderItems?: string[];
 	viewType: MessageViewType;
 	setViewType: (viewType: MessageViewType) => void;
+	addMessageToExport?: () => void;
 }
 
 export function MessageCardBase({
@@ -58,7 +60,9 @@ export function MessageCardBase({
 	toogleMessagePin,
 	isEmbedded,
 	isDetailed,
+	isExported,
 	sortOrderItems,
+	addMessageToExport,
 }: MessageCardBaseProps) {
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
@@ -98,6 +102,7 @@ export function MessageCardBase({
 		isBookmarked ? 'pinned' : null,
 		isHighlighted ? 'highlighted' : null,
 		isSoftFiltered ? 'soft-filtered' : null,
+		isExported ? 'exported' : null,
 	);
 
 	// session arrow color, we calculating it for each session from-to pair, based on hash
@@ -170,7 +175,7 @@ export function MessageCardBase({
 	};
 
 	return (
-		<div className={rootClass}>
+		<div className={rootClass} onClick={addMessageToExport}>
 			<div className='message-card'>
 				<div className='mc__mc-header mc-header'>{renderMessageInfo()}</div>
 				<div className='mc__mc-body mc-body'>
