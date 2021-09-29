@@ -58,6 +58,8 @@ const SearchPanelForm = () => {
 		isSearching,
 		searchProgress,
 		isPaused,
+		eventAutocompleteList,
+		resetEventAutocompleteList,
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
@@ -111,7 +113,9 @@ const SearchPanelForm = () => {
 		setValue: getFormStateUpdater('parentEvent'),
 		type: 'event-resolver',
 		id: 'parent-event',
-		placeholder: 'matches events by the specified parent event id',
+		placeholder: 'matches events by the specified parent event id or event name',
+		autocompleteList: eventAutocompleteList.map(event => event.eventId),
+		onAutocompleteSelect: resetEventAutocompleteList,
 	};
 
 	const messagesFormTypeConfig: FitlerRowItem = {

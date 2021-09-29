@@ -19,30 +19,25 @@ import AutosizeInput from 'react-input-autosize';
 import KeyCodes from '../../../util/KeyCodes';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { AutocompleteList } from './AutocompleteList';
+import { Override } from '../../../util/types';
 
-interface Props {
-	className?: string;
+type Props = Override<
+	React.InputHTMLAttributes<HTMLInputElement>,
+	{ onSubmit: (nextValue: string) => void; value: string; onBlur?: () => void }
+> & {
 	wrapperClassName?: string;
 	inputStyle?: React.CSSProperties;
-	value: string;
 	setValue: (newValue: string) => void;
-	readonly?: boolean;
 	autoresize?: boolean;
-	autocomplete: string[] | null;
+	alwaysShowAutocomplete?: boolean;
+	autoCompleteList?: string[];
 	autocompleteClassName?: string;
 	datalistKey?: string;
-	placeholder?: string;
 	submitKeyCodes?: number[];
-	autofocus?: boolean;
-	onSubmit: (nextValue: string) => void;
 	onRemove?: () => void;
-	onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
-	onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
-	onBlur?: () => void;
 	onEmptyBlur?: () => void;
-	disabled?: boolean;
 	anchor?: HTMLElement;
-}
+};
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	const {
@@ -54,19 +49,18 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onEmptyBlur,
 		onBlur = () => null,
 		onFocus,
-		disabled,
-		autocomplete,
+		autoCompleteList,
 		autocompleteClassName,
 		autoresize = true,
-		readonly = false,
+		spellCheck = false,
 		datalistKey,
-		autofocus,
 		className = '',
 		inputStyle = {},
 		wrapperClassName = '',
-		placeholder = '',
 		submitKeyCodes = [KeyCodes.ENTER],
 		anchor,
+		alwaysShowAutocomplete,
+		...lastInputProps
 	} = props;
 
 	const autocompleteListRef = React.useRef<HTMLDivElement>(null);
@@ -126,22 +120,17 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	);
 
 	const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
-		readOnly: readonly,
+		...lastInputProps,
 		value,
 		list: datalistKey,
-		placeholder,
-		disabled,
 		onKeyDown,
 		onChange,
 		onFocus: e => {
-			if (onFocus) {
-				onFocus(e);
-			}
+			onFocus?.(e);
 			setAutocompleteAnchor(anchor || null);
 		},
-		autoFocus: autofocus,
 		onClick: () => setAutocompleteAnchor(anchor || null),
-		spellCheck: false,
+		spellCheck,
 	};
 
 	React.useEffect(() => {
@@ -166,14 +155,15 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			) : (
 				<input {...inputProps} ref={ref} className={className} />
 			)}
-			{autocomplete && autocomplete.length > 0 && (
+			{autoCompleteList && autoCompleteList.length > 0 && (
 				<AutocompleteList
 					className={autocompleteClassName}
 					ref={autocompleteListRef}
-					items={autocomplete}
+					items={autoCompleteList}
 					value={value.trim()}
 					anchor={autocompleteAnchor}
 					onSelect={onAutocompleteSelect}
+					alwaysShow={alwaysShowAutocomplete}
 				/>
 			)}
 		</React.Fragment>
