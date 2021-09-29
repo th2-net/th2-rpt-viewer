@@ -24,6 +24,7 @@ import { createBemElement, createStyleSelector } from '../../../helpers/styleCre
 import { useDebouncedCallback } from '../../../hooks';
 import { EventAction } from '../../../models/EventAction';
 import { FilterRowEventResolverConfig } from '../../../models/filter/FilterInputs';
+import AutocompleteInput from '../../util/AutocompleteInput';
 
 export default function EventResolverRow({ config }: { config: FilterRowEventResolverConfig }) {
 	const [isInput, setIsInput] = useState(false);
@@ -31,6 +32,18 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 	const [isError, setIsError] = useState(false);
 	const [event, setEvent] = useState<EventAction | null>(null);
 	const input = useRef<HTMLInputElement>(null);
+
+	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
+
+	React.useLayoutEffect(() => {
+		setAutocompleteAnchor(input.current || undefined);
+	}, [setAutocompleteAnchor]);
+
+	const inputWrapperClassName = createBemElement(
+		'filter-row',
+		'wrapper',
+		!isInput ? 'hidden' : null,
+	);
 
 	const inputClassName = createBemElement(
 		'filter-row',
@@ -100,6 +113,11 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 		400,
 	);
 
+	const onAutocompleteValueSelect = React.useCallback((nextValue: string) => {
+		config.setValue(nextValue);
+		config.onAutocompleteSelect?.();
+	}, []);
+
 	return (
 		<div className={wrapperClassName}>
 			{config.label && (
@@ -120,17 +138,27 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 					)}
 				</div>
 			)}
-			<div className={searchStatusIconClassname} />
-			<input
-				type='text'
+			{(isLoading || isError) && <div className={searchStatusIconClassname} />}
+			<AutocompleteInput
+				value={config.value}
+				setValue={config.setValue}
+				onSubmit={onAutocompleteValueSelect}
+				ref={input}
+				wrapperClassName={inputWrapperClassName}
 				className={inputClassName}
 				id={config.id}
 				placeholder={config.placeholder}
 				disabled={config.disabled}
-				value={config.value}
-				onChange={e => config.setValue(e.target.value)}
+				autoComplete='off'
+				autoCompleteList={config.autocompleteList}
 				onBlur={() => switchType()}
-				ref={input}
+				anchor={autocompleteAnchor}
+				inputStyle={{
+					boxSizing: 'border-box',
+					flexGrow: 1,
+					width: '100%',
+				}}
+				alwaysShowAutocomplete
 			/>
 			<button
 				className={clearClassName}
