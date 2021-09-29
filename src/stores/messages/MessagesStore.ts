@@ -56,8 +56,6 @@ export default class MessagesStore {
 	@observable
 	public exportMessages: Array<EventMessage> = [];
 
-	public exportMessagesAscii: Array<string> = [];
-
 	@observable
 	public hoveredMessage: EventMessage | null = null;
 
@@ -160,14 +158,12 @@ export default class MessagesStore {
 	public enableExport() {
 		this.isExport = true;
 		this.exportMessages = [];
-		this.exportMessagesAscii = [];
 	}
 
 	@action
 	public disableExport() {
 		this.isExport = false;
 		this.exportMessages = [];
-		this.exportMessagesAscii = [];
 	}
 
 	private convertMessage(messageToConvert: EventMessage, messageViewType: MessageViewType) {
@@ -219,7 +215,6 @@ export default class MessagesStore {
 		link.click();
 		document.body.removeChild(link);
 		this.exportMessages = [];
-		this.exportMessagesAscii = [];
 	}
 
 	@action

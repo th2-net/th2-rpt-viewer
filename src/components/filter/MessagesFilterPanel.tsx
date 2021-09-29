@@ -290,6 +290,7 @@ const MessagesFilterPanel = () => {
 					enableExport={() => messagesStore.enableExport()}
 					disableExport={() => messagesStore.disableExport()}
 					endExport={(messageViewType: MessageViewType) => messagesStore.endExport(messageViewType)}
+					exportAmount={messagesStore.exportMessages.length}
 				/>
 			)}
 		</>
