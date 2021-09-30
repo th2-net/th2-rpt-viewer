@@ -28,51 +28,55 @@ const MessageExport = (props: Props) => {
 	return (
 		<>
 			{isExport ? (
-				<div className='messages-window-header__export'>
-					<div className='messages-window-header__export-counter'> {exportAmount} </div>
-					<button className='messages-window-header__export-btn' onClick={() => setIsOpen(!isOpen)}>
-						<i className='messages-window-header__export-end' />
-					</button>
-					<AnimatePresence>
-						{isOpen && (
-							<motion.div
-								className='messages-window-header__export-controls'
-								style={{ transformOrigin: 'top' }}
-								initial={{ opacity: 0, scale: 0.5 }}
-								animate={{ opacity: 1, scale: 1 }}
-								exit={{ opacity: 0, scale: 0.5 }}
-								transition={{ duration: 0.15, ease: 'easeOut' }}>
-								<button
-									className='messages-window-header__export-tool'
-									title='Export to JSON'
-									onClick={() => exportMessages(MessageViewType.JSON)}>
-									<i className='messages-window-header__export-json' />
-								</button>
-								<button
-									className='messages-window-header__export-tool'
-									title='Export to formatted JSON'
-									onClick={() => exportMessages(MessageViewType.FORMATTED)}>
-									<i className='messages-window-header__export-formatted' />
-								</button>
-								<button
-									className='messages-window-header__export-tool'
-									title='Export to binary'
-									onClick={() => exportMessages(MessageViewType.BINARY)}>
-									<i className='messages-window-header__export-binary' />
-								</button>
-								<button
-									className='messages-window-header__export-tool'
-									title='Export to ASCII'
-									onClick={() => exportMessages(MessageViewType.ASCII)}>
-									<i className='messages-window-header__export-ascii' />
-								</button>
-							</motion.div>
-						)}
-					</AnimatePresence>
-					<button className='messages-window-header__export-btn' onClick={closeExport}>
-						<i className='messages-window-header__export-disable' />
-					</button>
-				</div>
+				<>
+					<span className='messages-window-header__export-counter'> {exportAmount} </span>
+					<div className='messages-window-header__export'>
+						<button
+							className='messages-window-header__export-btn'
+							onClick={() => setIsOpen(!isOpen)}>
+							<i className='messages-window-header__export-end' />
+						</button>
+						<AnimatePresence>
+							{isOpen && (
+								<motion.div
+									className='messages-window-header__export-controls'
+									style={{ transformOrigin: 'top' }}
+									initial={{ opacity: 0, scale: 0.5 }}
+									animate={{ opacity: 1, scale: 1 }}
+									exit={{ opacity: 0, scale: 0.5 }}
+									transition={{ duration: 0.15, ease: 'easeOut' }}>
+									<button
+										className='messages-window-header__export-tool'
+										title='Export to JSON'
+										onClick={() => exportMessages(MessageViewType.JSON)}>
+										<i className='messages-window-header__export-json' />
+									</button>
+									<button
+										className='messages-window-header__export-tool'
+										title='Export to formatted JSON'
+										onClick={() => exportMessages(MessageViewType.FORMATTED)}>
+										<i className='messages-window-header__export-formatted' />
+									</button>
+									<button
+										className='messages-window-header__export-tool'
+										title='Export to binary'
+										onClick={() => exportMessages(MessageViewType.BINARY)}>
+										<i className='messages-window-header__export-binary' />
+									</button>
+									<button
+										className='messages-window-header__export-tool'
+										title='Export to ASCII'
+										onClick={() => exportMessages(MessageViewType.ASCII)}>
+										<i className='messages-window-header__export-ascii' />
+									</button>
+								</motion.div>
+							)}
+						</AnimatePresence>
+						<button className='messages-window-header__export-btn' onClick={closeExport}>
+							<i className='messages-window-header__export-disable' />
+						</button>
+					</div>
+				</>
 			) : (
 				<button className='messages-window-header__export-btn' onClick={enableExport}>
 					<i className='messages-window-header__export-enable' />

@@ -265,6 +265,7 @@ export default class MessagesStore {
 			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
 		}
 
+		this.disableExport();
 		this.sessionsStore.saveSessions(filter.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
@@ -353,6 +354,7 @@ export default class MessagesStore {
 		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
 		this.hintMessages = [];
+		this.disableExport();
 
 		this.filterStore.filter = {
 			...this.filterStore.filter,

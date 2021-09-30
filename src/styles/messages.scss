@@ -770,12 +770,15 @@
 		}
 
 		&-counter {
-			color: #4d4d4d;
+			color: #808080;
 			font-size: 12px;
 			line-height: 15px;
 			margin-left: 10px;
 			font-weight: bold;
 			display: inline;
+			&:hover {
+				color: $controlButtonTextColorHover;
+			}
 		}
 
 		&-tool{
@@ -800,7 +803,7 @@
 		}
 
 		&-disable {
-			@include icon(url('../../resources/icons/cross-icon.svg'), 16px, 16px);
+			@include icon(url('../../resources/icons/cross-icon-big.svg'), 16px, 16px);
 			display: inline-block;
 		}
 
