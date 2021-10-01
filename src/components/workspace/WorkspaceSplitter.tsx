@@ -45,10 +45,12 @@ export interface Props {
 	panels: Array<Panel>;
 	panelsLayout: WorkspacePanelsLayout;
 	setPanelsLayout: (panelsLayout: WorkspacePanelsLayout) => void;
+	resetToDefaulLayout: () => void;
+	collapsePanel: (index: number) => void;
 }
 
 function WorkspaceSplitter(props: Props) {
-	const { panels, panelsLayout, setPanelsLayout } = props;
+	const { panels, panelsLayout, setPanelsLayout, resetToDefaulLayout, collapsePanel } = props;
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const clickOffsetX = React.useRef(0);
 	const activeSplitter = React.useRef<HTMLDivElement | null>(null);
@@ -317,7 +319,7 @@ function WorkspaceSplitter(props: Props) {
 						setActivePanel={panel.setActivePanel}
 					/>
 					<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
-						<div className='pane__sidebar'>
+						<div className='pane__sidebar' onClick={resetToDefaulLayout}>
 							<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />
 							<div className='pane__title'>{panel.title}</div>
 							<div
@@ -336,7 +338,9 @@ function WorkspaceSplitter(props: Props) {
 										panel.title === 'Search' || panel.title.includes('Bookmarks')
 											? '5px 5px 0 0'
 											: '5px',
-								}}>
+									cursor: 'pointer',
+								}}
+								onClick={() => collapsePanel(index)}>
 								<i
 									className={
 										'pane__header-icon ' +

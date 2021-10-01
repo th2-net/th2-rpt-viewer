@@ -17,21 +17,7 @@
 @import './common/vars';
 
 .workspace-link-getter {
-    cursor: pointer;
     position: absolute;
     top: 12px;
     right: 50px;
-    padding: 3px 6px;
-    outline: none;
-    border: 1px solid $workspaceLinkGetterColor;
-    border-radius: 4px;
-    background: transparent;
-    color: $workspaceLinkGetterColor;
-    font: 11px 'Open sans', sans-serif;
-    
-    &:disabled {
-        color: grey;
-        border-color: grey;
-        opacity: .5;
-    }
 }
