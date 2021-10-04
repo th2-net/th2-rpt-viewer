@@ -233,8 +233,8 @@ const GraphSearchDialog = (props: Props) => {
 
 	const isTimestamp = (searchValue: string) => {
 		return (
-			moment(searchValue, DateTimeMask.TIME_MASK).isValid() ||
-			moment(searchValue, DateTimeMask.DATE_TIME_MASK).isValid()
+			moment(searchValue, DateTimeMask.TIME_MASK, true).isValid() ||
+			moment(searchValue, DateTimeMask.DATE_TIME_MASK, true).isValid()
 		);
 	};
 
