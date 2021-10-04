@@ -41,6 +41,7 @@ export interface MessageCardBaseProps {
 	isDetailed?: boolean;
 	isEmbedded?: boolean;
 	isExported?: boolean;
+	isExport?: boolean;
 	sortOrderItems?: string[];
 	viewType: MessageViewType;
 	setViewType: (viewType: MessageViewType) => void;
@@ -61,6 +62,7 @@ export function MessageCardBase({
 	isEmbedded,
 	isDetailed,
 	isExported,
+	isExport,
 	sortOrderItems,
 	addMessageToExport,
 }: MessageCardBaseProps) {
@@ -102,6 +104,7 @@ export function MessageCardBase({
 		isBookmarked ? 'pinned' : null,
 		isHighlighted ? 'highlighted' : null,
 		isSoftFiltered ? 'soft-filtered' : null,
+		isExport ? 'export-mode' : null,
 		isExported ? 'exported' : null,
 	);
 

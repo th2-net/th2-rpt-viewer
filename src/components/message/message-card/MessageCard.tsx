@@ -152,6 +152,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			toogleMessagePin={toogleMessagePin}
 			isDetailed={isDetailed}
 			isExported={isExported}
+			isExport={messagesStore.exportStore.isExport}
 			sortOrderItems={sortOrderItems}
 			addMessageToExport={() => messagesStore.exportStore.addMessageToExport(message)}
 		/>

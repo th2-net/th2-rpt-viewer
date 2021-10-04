@@ -68,6 +68,13 @@
 		}
 	}
 
+	&.export-mode {
+		cursor: pointer;
+		&:hover {
+			border: 2px dashed $attachedMessageCardBorderColor;
+		}
+	}
+
 	&:hover {
 		background-color: $messageCardHoverBackground;
 	}

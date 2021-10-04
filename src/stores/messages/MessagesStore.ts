@@ -270,7 +270,6 @@ export default class MessagesStore {
 		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
 		this.hintMessages = [];
-		this.exportStore.disableExport();
 
 		this.filterStore.filter = {
 			...this.filterStore.filter,
@@ -286,7 +285,6 @@ export default class MessagesStore {
 	@action
 	public clearFilters = () => {
 		this.hintMessages = [];
-		this.exportStore.disableExport();
 		this.filterStore.resetMessagesFilter({ streams: this.filterStore.filter.streams });
 		this.dataStore.stopMessagesLoading();
 	};
