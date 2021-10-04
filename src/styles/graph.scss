@@ -499,10 +499,7 @@
 	left: 50%;
 	top: 10px;
 	transform: translateX(-50%);
-	width: 240px;
 	height: 24px;
-	border: 1px solid $timestampInputBorderColor;
-	border-radius: 4px;
 	overflow: hidden;
 
 	&__switchers {
@@ -576,13 +573,32 @@
 			0px 3px 14px 2px rgba(0, 0, 0, 0.12);
 		overflow: hidden;
 	}
+
+	&__last-events-btn {
+		cursor: pointer;
+		padding: 3px 6px;
+		outline: none;
+		border: 1px solid $workspaceLinkGetterColor;
+		border-radius: 4px;
+		background: transparent;
+		color: $workspaceLinkGetterColor;
+		font: 11px 'Open sans', sans-serif;
+		
+		&:disabled {
+			color: grey;
+			border-color: grey;
+			opacity: .5;
+		}
+	}
 }
 
 .graph-search-input {
 	position: relative;
-	min-width: 220px;
+	width: 240px;
 	background-color: #fff;
 	height: 100%;
+	border: 1px solid #7a99b8;
+	border-radius: 4px;
 
 	@mixin searchInput {
 		width: 100%;
@@ -719,4 +735,30 @@
 		background-color: $filterPickerScrollItemActiveColor;
 		cursor: pointer;
 	}
+}
+
+.graph-last-events-button {
+	position: absolute;
+	left: 50%;
+	top: 10px;
+	transform: translateX(130%);
+	z-index: 15;
+}
+
+.graph-button {
+	cursor: pointer;
+    padding: 3px 6px;
+    outline: none;
+    border: 1px solid $workspaceLinkGetterColor;
+    border-radius: 4px;
+    background: transparent;
+    color: $workspaceLinkGetterColor;
+    font: 11px 'Open sans', sans-serif;
+	text-transform: capitalize;
+    
+    &:disabled {
+        color: grey;
+        border-color: grey;
+        opacity: .5;
+    }
 }

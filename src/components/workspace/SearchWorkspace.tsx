@@ -37,7 +37,12 @@ const panelColors = {
 function SearchWorkspace() {
 	const searchWorkspaceStore = useSearchWorkspace();
 	const selectedStore = useWorkspaces().selectedStore;
-	const { panelsLayout, setPanelsLayout } = searchWorkspaceStore.viewStore;
+	const {
+		panelsLayout,
+		setPanelsLayout,
+		resetToDefaulLayout,
+		collapsePanel,
+	} = searchWorkspaceStore.viewStore;
 
 	const bookmarksCounter =
 		selectedStore.bookmarkedMessages.length + selectedStore.bookmarkedEvents.length;
@@ -70,6 +75,8 @@ function SearchWorkspace() {
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
 				panels={searchWorkspacePanels}
+				resetToDefaulLayout={resetToDefaulLayout}
+				collapsePanel={collapsePanel}
 			/>
 		</div>
 	);
