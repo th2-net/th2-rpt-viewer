@@ -26,16 +26,16 @@ export default class MessagesExportStore {
 	}
 
 	@action
-	public enableExport() {
+	public enableExport = () => {
 		this.isExport = true;
 		this.exportMessages = [];
-	}
+	};
 
 	@action
-	public disableExport() {
+	public disableExport = () => {
 		this.isExport = false;
 		this.exportMessages = [];
-	}
+	};
 
 	private convertMessage(messageToConvert: EventMessage, messageViewType: MessageViewType) {
 		let content: string;
@@ -65,7 +65,7 @@ export default class MessagesExportStore {
 	}
 
 	@action
-	public endExport(messageViewType: MessageViewType) {
+	public endExport = (messageViewType: MessageViewType) => {
 		this.isExport = false;
 		if (this.exportMessages.length === 0) return;
 		downloadTxtFile(
@@ -77,5 +77,5 @@ export default class MessagesExportStore {
 			`exported_messages_${moment.utc().toISOString()}.txt`,
 		);
 		this.exportMessages = [];
-	}
+	};
 }
