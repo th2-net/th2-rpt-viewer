@@ -18,7 +18,7 @@ import { action, computed, observable, reaction, IReactionDisposer } from 'mobx'
 import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
-import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import { EventMessage } from '../../models/EventMessage';
 import { timestampToNumber } from '../../helpers/date';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import { SelectedStore } from '../SelectedStore';
@@ -33,7 +33,7 @@ import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
-import { decodeBase64RawContent, getAllRawContent } from '../../helpers/rawFormatter';
+import MessagesExportStore from './MessagesExportStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -50,11 +50,7 @@ export default class MessagesStore {
 
 	public dataStore = new MessagesDataProviderStore(this, this.api);
 
-	@observable
-	public isExport = false;
-
-	@observable
-	public exportMessages: Array<EventMessage> = [];
+	public exportStore = new MessagesExportStore();
 
 	@observable
 	public hoveredMessage: EventMessage | null = null;
@@ -109,6 +105,8 @@ export default class MessagesStore {
 		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
 
 		reaction(() => this.hoveredMessage, this.onMessageHover);
+
+		reaction(() => this.filterStore.filter, this.exportStore.disableExport);
 	}
 
 	@computed
@@ -133,88 +131,6 @@ export default class MessagesStore {
 		}
 		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
 		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];
-	}
-
-	public includes(message: EventMessage) {
-		return (
-			this.exportMessages.filter(exportMessage => exportMessage.messageId === message.messageId)
-				.length > 0
-		);
-	}
-
-	@action
-	public addMessageToExport(message: EventMessage) {
-		if (!this.isExport) return;
-		if (this.includes(message)) {
-			this.exportMessages = this.exportMessages.filter(
-				exportMessage => exportMessage.messageId !== message.messageId,
-			);
-		} else {
-			this.exportMessages.push(message);
-		}
-	}
-
-	@action
-	public enableExport() {
-		this.isExport = true;
-		this.exportMessages = [];
-	}
-
-	@action
-	public disableExport() {
-		this.isExport = false;
-		this.exportMessages = [];
-	}
-
-	private convertMessage(messageToConvert: EventMessage, messageViewType: MessageViewType) {
-		let content: string;
-
-		const jsonToCopy = messageToConvert.body;
-
-		switch (messageViewType) {
-			case MessageViewType.ASCII:
-				content = messageToConvert.bodyBase64 ? atob(messageToConvert.bodyBase64) : '';
-				break;
-			case MessageViewType.BINARY:
-				content = messageToConvert.bodyBase64
-					? getAllRawContent(decodeBase64RawContent(messageToConvert.bodyBase64))
-					: '';
-				break;
-			case MessageViewType.FORMATTED:
-				content = jsonToCopy ? JSON.stringify(jsonToCopy, null, 4) : '';
-				break;
-			case MessageViewType.JSON:
-				content = jsonToCopy ? JSON.stringify(jsonToCopy) : '';
-				break;
-			default:
-				content = '';
-		}
-
-		return content;
-	}
-
-	@action
-	public endExport(messageViewType: MessageViewType) {
-		this.isExport = false;
-		if (this.exportMessages.length === 0) return;
-		const exportUrl = URL.createObjectURL(
-			new File(
-				[
-					this.exportMessages
-						.map(exportMessage => this.convertMessage(exportMessage, messageViewType))
-						.join('\n'),
-				],
-				'exported_messages.txt',
-				{ type: 'text/plain;charset=UTF-8;base64' },
-			),
-		);
-		const link = document.createElement('a');
-		link.download = 'exported_messages.txt';
-		link.href = exportUrl;
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-		this.exportMessages = [];
 	}
 
 	@action
@@ -265,7 +181,7 @@ export default class MessagesStore {
 			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
 		}
 
-		this.disableExport();
+		this.exportStore.disableExport();
 		this.sessionsStore.saveSessions(filter.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
@@ -354,7 +270,7 @@ export default class MessagesStore {
 		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
 		this.hintMessages = [];
-		this.disableExport();
+		this.exportStore.disableExport();
 
 		this.filterStore.filter = {
 			...this.filterStore.filter,
@@ -370,6 +286,7 @@ export default class MessagesStore {
 	@action
 	public clearFilters = () => {
 		this.hintMessages = [];
+		this.exportStore.disableExport();
 		this.filterStore.resetMessagesFilter({ streams: this.filterStore.filter.streams });
 		this.dataStore.stopMessagesLoading();
 	};

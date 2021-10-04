@@ -284,15 +284,17 @@ const MessagesFilterPanel = () => {
 			<MessageReplayModal />
 			<MessageFilterWarning />
 			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />
-			{true && (
+			{
 				<MessageExport
-					isExport={messagesStore.isExport}
-					enableExport={() => messagesStore.enableExport()}
-					disableExport={() => messagesStore.disableExport()}
-					endExport={(messageViewType: MessageViewType) => messagesStore.endExport(messageViewType)}
-					exportAmount={messagesStore.exportMessages.length}
+					isExport={messagesStore.exportStore.isExport}
+					enableExport={() => messagesStore.exportStore.enableExport()}
+					disableExport={() => messagesStore.exportStore.disableExport()}
+					endExport={(messageViewType: MessageViewType) =>
+						messagesStore.exportStore.endExport(messageViewType)
+					}
+					exportAmount={messagesStore.exportStore.exportMessages.length}
 				/>
-			)}
+			}
 		</>
 	);
 };
