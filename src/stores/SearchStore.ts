@@ -748,7 +748,7 @@ export class SearchStore {
 			}
 			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
 		} catch (error) {
-			if (error.name === 'QuotaExceededError') {
+			if (error instanceof DOMException && error.code === error.QUOTA_EXCEEDED_ERR) {
 				this.workspacesStore.onQuotaExceededError(search);
 			} else {
 				notificationsStore.addMessage({
