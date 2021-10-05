@@ -33,6 +33,7 @@ import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
+import MessagesExportStore from './MessagesExportStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -48,6 +49,8 @@ export default class MessagesStore {
 	public filterStore = new MessagesFilterStore(this.searchStore);
 
 	public dataStore = new MessagesDataProviderStore(this, this.api);
+
+	public exportStore = new MessagesExportStore();
 
 	@observable
 	public hoveredMessage: EventMessage | null = null;
@@ -102,6 +105,8 @@ export default class MessagesStore {
 		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
 
 		reaction(() => this.hoveredMessage, this.onMessageHover);
+
+		reaction(() => this.filterStore.filter, this.exportStore.disableExport);
 	}
 
 	@computed
@@ -176,6 +181,7 @@ export default class MessagesStore {
 			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
 		}
 
+		this.exportStore.disableExport();
 		this.sessionsStore.saveSessions(filter.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;

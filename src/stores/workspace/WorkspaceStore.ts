@@ -158,6 +158,7 @@ export default class WorkspaceStore {
 	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
 		if (isEventMessage(savedItem)) {
+			this.messagesStore.exportStore.disableExport();
 			this.viewStore.activePanel = this.messagesStore;
 			this.messagesStore.onMessageSelect(savedItem);
 		} else {
