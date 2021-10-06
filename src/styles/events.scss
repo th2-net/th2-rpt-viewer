@@ -97,6 +97,12 @@
 		font-size: 9px;
 		color: $secondaryLightTextColor;
 		white-space: nowrap;
+		&:hover{
+			color: $graphTextColor;
+			border: 1px solid $graphTextColor;
+			padding: 0 2px;
+			border-radius: 4px;
+		}
 	}
 	&__time-label {
 		padding: 0 2px;

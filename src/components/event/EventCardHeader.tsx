@@ -125,6 +125,12 @@ function EventCardHeader(props: Props) {
 		}
 	}
 
+	const handleTypeClick = (ev: React.MouseEvent) => {
+		if (!onEventTypeSelect) return;
+		ev.stopPropagation();
+		onEventTypeSelect(eventType);
+	};
+
 	return (
 		<div className={rootClassName} onClick={onRootClick} style={rootStyle}>
 			<div className={iconClassName} />
@@ -145,9 +151,7 @@ function EventCardHeader(props: Props) {
 						</span>
 					</div>
 					{eventType && (
-						<span
-							className='event-header-card__event-type'
-							onClick={onEventTypeSelect ? () => onEventTypeSelect(eventType) : undefined}>
+						<span className='event-header-card__event-type' onClick={handleTypeClick}>
 							{eventType}
 						</span>
 					)}
