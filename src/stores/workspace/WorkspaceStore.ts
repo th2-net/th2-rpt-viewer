@@ -33,7 +33,6 @@ import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
-import { getRangeFromTimestamp } from '../../helpers/date';
 import { SessionsStore } from '../messages/SessionsStore';
 
 export interface WorkspaceUrlState {
@@ -159,6 +158,7 @@ export default class WorkspaceStore {
 	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
 		if (isEventMessage(savedItem)) {
+			this.messagesStore.exportStore.disableExport();
 			this.viewStore.activePanel = this.messagesStore;
 			this.messagesStore.onMessageSelect(savedItem);
 		} else {
@@ -170,24 +170,6 @@ export default class WorkspaceStore {
 	@action
 	public onTimestampSelect = (timestamp: number) => {
 		this.graphStore.setTimestamp(timestamp);
-	};
-
-	@action
-	public refreshPanels = (timestamp: number) => {
-		const timeRange = getRangeFromTimestamp(timestamp, this.graphStore.interval);
-		this.eventsStore.eventDataStore.fetchEventTree({
-			timeRange,
-			filter: this.eventsStore.filterStore.filter,
-		});
-		this.messagesStore.applyFilter(
-			{
-				...this.messagesStore.filterStore.filter,
-				timestampFrom: null,
-				timestampTo: timestamp,
-			},
-			this.messagesStore.filterStore.sseMessagesFilter,
-			this.messagesStore.filterStore.isSoftFilter,
-		);
 	};
 
 	@action

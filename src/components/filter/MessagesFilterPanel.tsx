@@ -43,6 +43,7 @@ import { getArrayOfUniques } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
 import { notEmpty } from '../../helpers/object';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
+import MessageExport from '../message/MessageExport';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -282,6 +283,13 @@ const MessagesFilterPanel = () => {
 			<MessageReplayModal />
 			<MessageFilterWarning />
 			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />
+			<MessageExport
+				isExport={messagesStore.exportStore.isExport}
+				enableExport={messagesStore.exportStore.enableExport}
+				disableExport={messagesStore.exportStore.disableExport}
+				endExport={messagesStore.exportStore.endExport}
+				exportAmount={messagesStore.exportStore.exportMessages.length}
+			/>
 		</>
 	);
 };
