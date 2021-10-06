@@ -30,6 +30,7 @@ interface Props {
 	displayType?: CardDisplayType;
 	event: EventTreeNode;
 	onSelect?: () => void;
+	onEventTypeSelect?: (eventType: string) => void;
 	isSelected?: boolean;
 	isActive?: boolean;
 	childrenCount?: number;
@@ -44,6 +45,7 @@ function EventCardHeader(props: Props) {
 		displayType = CardDisplayType.MINIMAL,
 		event,
 		onSelect,
+		onEventTypeSelect,
 		isSelected = false,
 		isActive = false,
 		childrenCount,
@@ -142,7 +144,13 @@ function EventCardHeader(props: Props) {
 							{formatTime(startTimestampValue)}
 						</span>
 					</div>
-					{eventType && <span className='event-header-card__event-type'>{eventType}</span>}
+					{eventType && (
+						<span
+							className='event-header-card__event-type'
+							onClick={onEventTypeSelect ? () => onEventTypeSelect(eventType) : undefined}>
+							{eventType}
+						</span>
+					)}
 				</>
 			) : null}
 			{isFlatView && parentsCount > 0 ? <Chip text={parentsCount.toString()} /> : null}
