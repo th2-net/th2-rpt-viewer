@@ -80,7 +80,7 @@
 
 	tr {
 		display: grid;
-		grid-template-columns: minmax(130px, 250px) minmax(125px, 250px) minmax(125px, 250px) 60px 80px 50px;
+		grid-template-columns: minmax(130px, 1fr) minmax(125px, 1fr) minmax(125px, 1fr) 60px 80px 50px;
 		grid-auto-rows: minmax(24px, auto);
 	}
 
