@@ -77,7 +77,7 @@
 		box-sizing: border-box;
 		border-bottom: 1px solid $tableCellBorderColor;
 	}
-	thead,
+
 	tr {
 		display: grid;
 		grid-template-columns: minmax(130px, 250px) minmax(125px, 250px) minmax(125px, 250px) 60px 80px 50px;
