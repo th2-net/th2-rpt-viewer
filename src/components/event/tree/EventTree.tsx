@@ -104,6 +104,14 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		eventsStore.selectNode(eventTreeNode);
 	}, [eventTreeNode]);
 
+	const onEventTypeSelect = (eventType: string) => {
+		const defaultFilter = eventsStore.filterStore.resetEventsFilter();
+		if (!defaultFilter) return;
+		defaultFilter.type.values.push(eventType);
+		eventsStore.filterStore.setEventsFilter(defaultFilter);
+		eventsStore.filterStore.setIsOpen(true);
+	};
+
 	const nestingLevel = 20 * parents.length;
 
 	const hideTimestampsForUknownEvent =
@@ -138,6 +146,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 						event={eventTreeNode}
 						displayType={CardDisplayType.MINIMAL}
 						onSelect={eventTreeNode.isUnknown ? undefined : onNodeSelect}
+						onEventTypeSelect={onEventTypeSelect}
 						isSelected={isSelected}
 						isActive={
 							eventsStore.selectedPath.length > 0 &&
