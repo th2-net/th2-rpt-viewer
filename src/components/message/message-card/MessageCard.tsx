@@ -23,12 +23,13 @@ import {
 	useMessagesDataStore,
 	useMessageBodySortStore,
 } from '../../../hooks';
-import { keyForMessage } from '../../../helpers/keys';
-import StateSaver from '../../util/StateSaver';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import { matchWildcardRule } from '../../../helpers/regexp';
 import { MessageCardBase } from './MessageCardBase';
 import '../../../styles/messages.scss';
+import savedViewTypesStore from '../../../stores/messages/SavedMessagesViewTypesStore';
+import { SavedMessageViewType } from '../../../stores/messages/SavedMessageViewType';
+import { keyForMessage } from '../../../helpers/keys';
 
 export interface OwnProps {
 	message: EventMessage;
@@ -77,23 +78,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			abortController.abort();
 		};
 	}, []);
-
-	React.useEffect(() => {
-		switch (viewType) {
-			case MessageViewType.FORMATTED:
-				messagesStore.beautify(messageId);
-				break;
-			case MessageViewType.ASCII:
-				messagesStore.hideDetailedRawMessage(messageId);
-				break;
-			case MessageViewType.BINARY:
-				messagesStore.showDetailedRawMessage(messageId);
-				break;
-			default:
-				messagesStore.debeautify(messageId);
-				break;
-		}
-	}, [viewType]);
 
 	React.useEffect(() => {
 		if (!isHighlighted) {
@@ -159,48 +143,64 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	);
 });
 
-const RecoverableMessageCard = React.memo((props: OwnProps) => {
-	const rulesStore = useMessageDisplayRulesStore();
+const RecoverableMessageCard = (props: OwnProps) => {
+	const { rootDisplayRule, messageDisplayRules } = useMessageDisplayRulesStore();
+	const key = keyForMessage(props.message.messageId);
+	const savedState = savedViewTypesStore.getSavedViewType(key);
+
+	const declaredRule = React.useMemo(
+		() =>
+			messageDisplayRules.find(rule => {
+				if (rule.session.length > 1 && rule.session.includes('*')) {
+					return matchWildcardRule(props.message.sessionId, rule.session);
+				}
+				return props.message.sessionId.includes(rule.session);
+			}),
+		[messageDisplayRules],
+	);
+
+	const defaultViewType = React.useMemo(() => {
+		if (!props.message.body) {
+			return declaredRule
+				? getRawViewType(declaredRule.viewType)
+				: rootDisplayRule
+				? getRawViewType(rootDisplayRule.viewType)
+				: MessageViewType.ASCII;
+		}
+		return declaredRule
+			? declaredRule.viewType
+			: rootDisplayRule
+			? rootDisplayRule.viewType
+			: MessageViewType.JSON;
+	}, [rootDisplayRule?.viewType, declaredRule?.viewType]);
+
+	const [viewType, setViewType] = React.useState(defaultViewType);
+
+	React.useEffect(() => {
+		setViewType(defaultViewType);
+	}, [defaultViewType]);
 
 	return (
-		<StateSaver
-			stateKey={keyForMessage(props.message.messageId)}
-			getDefaultState={() => {
-				const rootRule = rulesStore.rootDisplayRule;
-				const declaredRule = rulesStore.messageDisplayRules.find(rule => {
-					if (rule.session.length > 1 && rule.session.includes('*')) {
-						return matchWildcardRule(props.message.sessionId, rule.session);
-					}
-					return props.message.sessionId.includes(rule.session);
-				});
-				if (!props.message.body) {
-					return declaredRule
-						? getRawViewType(declaredRule.viewType)
-						: rootRule
-						? getRawViewType(rootRule.viewType)
-						: MessageViewType.ASCII;
-				}
-				return declaredRule
-					? declaredRule.viewType
-					: rootRule
-					? rootRule.viewType
-					: MessageViewType.JSON;
-			}}>
-			{(state, saveState) => (
-				<MessageCard
-					{...props}
-					// we should always show raw content if something found in it
-					viewType={state}
-					setViewType={saveState}
-				/>
-			)}
-		</StateSaver>
+		<MessageCard
+			message={props.message}
+			viewType={savedState?.viewType || viewType}
+			setViewType={
+				savedState
+					? (v: MessageViewType) => {
+							savedState.setViewType(v);
+					  }
+					: (v: MessageViewType) => {
+							setViewType(v);
+							savedViewTypesStore.saveViewType(key, new SavedMessageViewType(v));
+					  }
+			}
+		/>
 	);
-});
+};
 
 RecoverableMessageCard.displayName = 'RecoverableMessageCard';
 
-export default RecoverableMessageCard;
+export default observer(RecoverableMessageCard);
 
 function isRawViewType(viewType: MessageViewType) {
 	return viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;

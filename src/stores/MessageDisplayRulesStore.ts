@@ -27,6 +27,7 @@ import {
 } from '../models/EventMessage';
 import notificationsStore from './NotificationsStore';
 import RootStore from './RootStore';
+import savedViewTypes from './messages/SavedMessagesViewTypesStore';
 
 export const ROOT_DISPLAY_NAME_ID = 'root';
 
@@ -195,7 +196,9 @@ class MessageDisplayRulesStore {
 
 	private updateRule = async (rule: MessageDisplayRule | OrderRule) => {
 		try {
-			await this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, toJS(rule));
+			await this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, toJS(rule)).then(() => {
+				savedViewTypes.resetSavedViewTypes();
+			});
 		} catch (error) {
 			if (error.name === 'QuotaExceededError') {
 				this.rootStore.handleQuotaExceededError(rule);
