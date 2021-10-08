@@ -14,13 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 import moment from 'moment';
-import { action, reaction, observable } from 'mobx';
-import * as queryString from 'querystring';
+import { action, reaction, observable, runInAction } from 'mobx';
 import { EventMessage } from '../../../models/EventMessage';
 import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
 import MessagesFilter from '../../../models/filter/MessagesFilter';
 import ApiSchema from '../../../api/ApiSchema';
-import { MessagesStoreURLState } from '../../../stores/messages/MessagesStore';
 import EmbeddedMessagesDataProviderStore from './EmbeddedMessagesDataProviderStore';
 import { MessagesSSEParams } from '../../../api/sse';
 
@@ -32,14 +30,15 @@ function getDefaultMessagesFilter(): MessagesFilter {
 	};
 }
 
-type MessagesStoreDefaultState = MessagesStoreURLState & {
-	targetMessage?: EventMessage;
+type EmbeddedMessagesFilterInitialState = {
+	timestampFrom: number | null;
+	timestampTo: number | null;
+	streams: string[];
+	sse: MessageFilterState;
 };
 
-export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string | null | undefined;
-
 export default class EmbeddedMessagesStore {
-	public dataStore = new EmbeddedMessagesDataProviderStore(this, this.api);
+	public dataStore: EmbeddedMessagesDataProviderStore;
 
 	@observable
 	public hoveredMessage: EventMessage | null = null;
@@ -64,13 +63,52 @@ export default class EmbeddedMessagesStore {
 	@observable filter: MessagesFilter = getDefaultMessagesFilter();
 
 	constructor(private api: ApiSchema) {
+		this.dataStore = new EmbeddedMessagesDataProviderStore(this, this.api);
+		this.init(this.getURLState());
+
 		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
 	}
 
 	public get filterParams(): MessagesSSEParams {
-		const searchParams = queryString.parse(window.location.search);
-		delete searchParams['?viewMode'];
-		return (searchParams as unknown) as MessagesSSEParams;
+		const sseFilters = this.sseMessagesFilter;
+
+		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
+			? []
+			: Object.entries(sseFilters)
+					.filter(([_, filter]) => filter.values.length > 0)
+					.map(([filterName]) => filterName as keyof MessageFilterState);
+
+		const filterValues = filtersToAdd
+			.map(filterName =>
+				sseFilters ? [`${filterName}-values`, sseFilters[filterName].values] : [],
+			)
+			.filter(Boolean);
+
+		const filterInclusion = filtersToAdd.map(filterName =>
+			sseFilters && sseFilters[filterName].negative
+				? [`${filterName}-negative`, sseFilters[filterName].negative]
+				: [],
+		);
+
+		const filterConjunct = filtersToAdd.map(filterName =>
+			sseFilters && sseFilters[filterName].conjunct
+				? [`${filterName}-conjunct`, sseFilters[filterName].conjunct]
+				: [],
+		);
+
+		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
+		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
+
+		const queryParams: MessagesSSEParams = {
+			startTimestamp: this.filter.timestampTo || startTimestamp,
+			stream: this.filter.streams,
+			searchDirection: 'previous',
+			resultCountLimit: 15,
+			filters: filtersToAdd,
+			...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
+		};
+
+		return queryParams;
 	}
 
 	@action
@@ -88,5 +126,49 @@ export default class EmbeddedMessagesStore {
 		if (selectedMessageId !== null) {
 			this.scrollToMessage(selectedMessageId.valueOf());
 		}
+	};
+
+	@action
+	public loadLastMessages = () => {
+		this.filter = {
+			...this.filter,
+			timestampFrom: null,
+			timestampTo: moment().utc().valueOf(),
+		};
+	};
+
+	private getURLState = (): EmbeddedMessagesFilterInitialState => {
+		if (window.location.search.split('&').length !== 2) {
+			throw new Error('Only two query parameters expected.');
+		}
+
+		const searchParams = new URLSearchParams(window.location.search);
+		const messagesUrlState = searchParams.get('messages');
+
+		if (!messagesUrlState) throw new Error("The query parameter 'Messages' was not passed");
+
+		return JSON.parse(window.atob(messagesUrlState));
+	};
+
+	private init = async (initialState?: EmbeddedMessagesFilterInitialState) => {
+		if (!initialState) {
+			return;
+		}
+
+		const defaultMessagesFilter = getDefaultMessagesFilter();
+		const {
+			streams,
+			timestampFrom = defaultMessagesFilter.timestampFrom,
+			timestampTo = defaultMessagesFilter.timestampTo,
+		} = initialState;
+
+		runInAction(() => {
+			this.filter = {
+				streams,
+				timestampFrom,
+				timestampTo,
+			};
+			this.sseMessagesFilter = initialState.sse;
+		});
 	};
 }

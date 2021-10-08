@@ -16,31 +16,22 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { createBemElement } from '../../helpers/styleCreators';
 import { useMessagesDataStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
+import MessagesUpdateButton from './MessagesUpdateButton';
 
 function MessagesWindowHeader() {
-	const { updatedStore, searchChannelNext } = useMessagesDataStore();
-
-	const { subscribeOnChanges, stopSubscription, isLoading } = updatedStore;
-
-	const updateButtonClass = createBemElement(
-		'messages-window-header',
-		'realtime-button',
-		isLoading ? 'active' : null,
-	);
-
-	const toggleSubscribe = updatedStore.isLoading ? stopSubscription : subscribeOnChanges;
+	const { searchChannelNext, updateStore } = useMessagesDataStore();
 
 	return (
 		<div className='messages-window-header'>
 			<div className='messages-window-header__group'>
-				{searchChannelNext?.isEndReached && (
-					<button onClick={toggleSubscribe} className={updateButtonClass}>
-						<i className='messages-window-header__realtime-button-icon' />
-					</button>
-				)}
+				<MessagesUpdateButton
+					isShow={searchChannelNext?.isEndReached ?? false}
+					isLoading={updateStore.isLoading}
+					subscribeOnChanges={updateStore.subscribeOnChanges}
+					stopSubscription={updateStore.stopSubscription}
+				/>
 				<MessagesFilter />
 			</div>
 		</div>

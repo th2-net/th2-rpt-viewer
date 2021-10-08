@@ -192,7 +192,9 @@ const sseApi: SSESchema = {
 	getEventSource: config => {
 		const { type, queryParams } = config;
 		const params = createURLSearchParams({ ...queryParams });
-		return new EventSource(`backend/search/sse/${type}s/?${params}`);
+		return new EventSource(
+			`http://th2-qa:30000/th2-commonv3/backend/search/sse/${type}s/?${params}`,
+		);
 	},
 	getEventsTreeSource: (timeRange, filter, sseParams) => {
 		const paramFromFilter = filter ? getEventsSSEParamsFromFilter(filter) : {};
