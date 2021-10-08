@@ -5,3 +5,4 @@ build
 
 # Ignore Gradle project-specific cache directory
 .gradle
+licenses.csv

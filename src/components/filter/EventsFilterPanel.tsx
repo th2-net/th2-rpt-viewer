@@ -52,7 +52,6 @@ function EventsFilterPanel() {
 	const { eventsHistory } = useFiltersHistoryStore();
 
 	const [filter, setFilter] = useSetState<EventFilterState | null>(filterStore.filter);
-	const [showFilter, setShowFilter] = React.useState(false);
 
 	const [currentFilterValues, setCurrentFilterValues] = React.useState<CurrentFilterValues | null>(
 		getDefaultCurrentFilterValues(filterStore.filter),
@@ -218,8 +217,8 @@ function EventsFilterPanel() {
 					/>
 				)
 			}
-			setShowFilter={setShowFilter}
-			showFilter={showFilter}
+			setShowFilter={filterStore.setIsOpen}
+			showFilter={filterStore.isOpen}
 			onSubmit={onSubmit}
 			onClearAll={eventsStore.clearFilter}
 			config={filterConfig}
