@@ -114,10 +114,11 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
-				resumeFromId: messageId.length ? undefined : resumeFromId,
+				resumeFromId:
+					(messageId.length ? undefined : resumeFromId) ?? this.queryParams.resumeFromId,
 				...(this.queryParams.keepOpen
 					? {
-							keepOpen: true,
+							resultCountLimit: undefined,
 					  }
 					: {
 							resultCountLimit: this.chunkSize,

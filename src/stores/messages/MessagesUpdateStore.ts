@@ -15,13 +15,13 @@
  ***************************************************************************** */
 
 import { action, computed, observable } from 'mobx';
-import MessagesDataProviderStore from './MessagesDataProviderStore';
 import { MessagesSSELoader } from './MessagesSSELoader';
 import notificationsStore from '../NotificationsStore';
+import { MessagesDataStore } from '../../models/Stores';
 
 export default class MessagesUpdateStore {
 	constructor(
-		private messagesDataStore: MessagesDataProviderStore,
+		private messagesDataStore: MessagesDataStore,
 		private scrollToMessage: (messageId: string) => void,
 	) {}
 
@@ -40,6 +40,7 @@ export default class MessagesUpdateStore {
 			{
 				...queryParams,
 				searchDirection: 'next',
+				keepOpen: true,
 				...(messages[0]?.messageId
 					? {
 							resumeFromId: messages[0].messageId,
@@ -55,10 +56,6 @@ export default class MessagesUpdateStore {
 				}
 			},
 			this.onLoadingError,
-			undefined,
-			{
-				keepOpen: true,
-			},
 		);
 
 		this.channel.subscribe(messages[0]?.messageId);
