@@ -23,14 +23,19 @@ import { EventMessage } from '../../models/EventMessage';
 import notificationsStore from '../NotificationsStore';
 import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
+import MessagesUpdateStore from './MessagesUpdateStore';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class MessagesDataProviderStore {
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
+		this.updatedStore = new MessagesUpdateStore(this, this.messagesStore.scrollToMessage);
+
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
 	}
+
+	public updatedStore: MessagesUpdateStore;
 
 	@observable
 	public noMatchingMessagesPrev = false;
@@ -96,9 +101,7 @@ export default class MessagesDataProviderStore {
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
-		const queryParams = this.messagesStore.filterStore.isSoftFilter
-			? this.messagesStore.filterStore.softFilterParams
-			: this.messagesStore.filterStore.filterParams;
+		const queryParams = this.getFilterParams();
 
 		this.createPreviousMessageChannelEventSource(
 			{
@@ -300,6 +303,7 @@ export default class MessagesDataProviderStore {
 	@action
 	private onFilterChange = async () => {
 		this.stopMessagesLoading();
+		this.updatedStore.stopSubscription();
 		this.resetMessagesDataState();
 		this.loadMessages();
 	};
@@ -333,6 +337,13 @@ export default class MessagesDataProviderStore {
 		}
 
 		return message;
+	};
+
+	@action
+	public getFilterParams = () => {
+		return this.messagesStore.filterStore.isSoftFilter
+			? this.messagesStore.filterStore.softFilterParams
+			: this.messagesStore.filterStore.filterParams;
 	};
 
 	@action
