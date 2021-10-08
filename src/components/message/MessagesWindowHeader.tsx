@@ -14,40 +14,37 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { observer } from 'mobx-react-lite';
 import React from 'react';
+import { createBemElement } from '../../helpers/styleCreators';
+import { useMessagesDataStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
 
 function MessagesWindowHeader() {
-	// const updateButtonClass = createBemElement(
-	// 	'messages-window-header',
-	// 	'realtime-button',
-	// 	messageUpdateStore.isSubscriptionActive ? 'active' : null,
-	// );
+	const { updatedStore, searchChannelNext } = useMessagesDataStore();
+
+	const { subscribeOnChanges, stopSubscription, isLoading } = updatedStore;
+
+	const updateButtonClass = createBemElement(
+		'messages-window-header',
+		'realtime-button',
+		isLoading ? 'active' : null,
+	);
+
+	const toggleSubscribe = updatedStore.isLoading ? stopSubscription : subscribeOnChanges;
 
 	return (
 		<div className='messages-window-header'>
 			<div className='messages-window-header__group'>
-				<MessagesFilter />
-			</div>
-			{/* <div className='messages-window-header__group'>
-				{messagesStore.messagesIds.length > 0 && (
-					<button onClick={messageUpdateStore.toggleSubscribe} className={updateButtonClass}>
-						{messageUpdateStore.accumulatedMessages.length === 0 ? (
-							<i className='messages-window-header__realtime-button-icon' />
-						) : (
-							<span
-								className='messages-window-header__realtime-button-count'
-								style={{
-									fontSize: messageUpdateStore.accumulatedMessages.length > 99 ? '11px' : '14px',
-								}}>
-								{messageUpdateStore.accumulatedMessages.length}
-							</span>
-						)}
+				{searchChannelNext?.isEndReached && (
+					<button onClick={toggleSubscribe} className={updateButtonClass}>
+						<i className='messages-window-header__realtime-button-icon' />
 					</button>
 				)}
-			</div> */}
+				<MessagesFilter />
+			</div>
 		</div>
 	);
 }
 
-export default MessagesWindowHeader;
+export default observer(MessagesWindowHeader);
