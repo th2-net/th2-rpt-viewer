@@ -325,12 +325,14 @@ function GraphSearchInput(props: Props) {
 				onKeyDown={handleKeyDown}
 				type='text'
 				ref={refInput}
+				spellCheck='false'
 			/>
 			{mode === 'timestamp' && (
 				<input
 					className='graph-search-input__placeholder'
 					type='text'
 					readOnly={true}
+					spellCheck='false'
 					value={
 						inputConfig.placeholder
 							? inputConfig.value + inputConfig.placeholder.slice(inputConfig.value.length)

@@ -100,6 +100,8 @@ const MessageCard = observer(({ message, isHighlighted }: OwnProps) => {
 		selectedStore.toggleMessagePin(message);
 	}
 
+	const isExported = messagesStore.exportStore.isExported(message);
+
 	return (
 		<RecoverableMessageCard
 			message={message}
@@ -110,7 +112,10 @@ const MessageCard = observer(({ message, isHighlighted }: OwnProps) => {
 			hoverMessage={hoverMessage}
 			unhoverMessage={unhoverMessage}
 			toogleMessagePin={toogleMessagePin}
+			isExported={isExported}
+			isExport={messagesStore.exportStore.isExport}
 			sortOrderItems={sortOrderItems}
+			addMessageToExport={() => messagesStore.exportStore.addMessageToExport(message)}
 		/>
 	);
 });
