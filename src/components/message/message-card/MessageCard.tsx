@@ -34,11 +34,11 @@ import { MessageBodyPayload } from '../../../models/MessageBody';
 
 export interface OwnProps {
 	message: EventMessage;
-	isHighlighted?: boolean;
 }
 
 export interface RecoveredProps {
 	message: EventMessage;
+	bodyItem: MessageBodyPayload;
 	isEmbedded?: boolean;
 	isAttached?: boolean;
 	isBookmarked?: boolean;
@@ -53,7 +53,7 @@ export interface RecoveredProps {
 	addMessageToExport?: () => void;
 }
 
-const MessageCard = observer(({ message, isHighlighted }: OwnProps) => {
+const MessageCard = observer(({ message }: OwnProps) => {
 	const { messageId } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
@@ -62,6 +62,7 @@ const MessageCard = observer(({ message, isHighlighted }: OwnProps) => {
 	const { sortOrderItems } = useMessageBodySortStore();
 
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
+	const highlightTimer = React.useRef<NodeJS.Timeout>();
 
 	const isBookmarked =
 		selectedStore.bookmarkedMessages.findIndex(
@@ -73,6 +74,30 @@ const MessageCard = observer(({ message, isHighlighted }: OwnProps) => {
 	const isAttached = !!messagesStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
 	);
+
+	const [isHighlighted, setHighlighted] = React.useState(false);
+
+	React.useEffect(() => {
+		if (!isHighlighted) {
+			if (messagesStore.highlightedMessageId === 'messageId') {
+				setHighlighted(true);
+
+				highlightTimer.current = setTimeout(() => {
+					setHighlighted(false);
+					messagesStore.highlightedMessageId = null;
+				}, 3000);
+			} else if (messagesStore.highlightedMessageId !== null) {
+				setHighlighted(false);
+			}
+		}
+
+		return () => {
+			if (highlightTimer.current) {
+				window.clearTimeout(highlightTimer.current);
+			}
+		};
+	}, [messagesStore.highlightedMessageId]);
+
 	React.useEffect(() => {
 		const abortController = new AbortController();
 
@@ -106,20 +131,26 @@ const MessageCard = observer(({ message, isHighlighted }: OwnProps) => {
 	const isExported = messagesStore.exportStore.isExported(message);
 
 	return (
-		<RecoverableMessageCard
-			message={message}
-			isHighlighted={isHighlighted}
-			isAttached={isAttached}
-			isBookmarked={isBookmarked}
-			isSoftFiltered={isSoftFiltered}
-			hoverMessage={hoverMessage}
-			unhoverMessage={unhoverMessage}
-			toogleMessagePin={toogleMessagePin}
-			isExported={isExported}
-			isExport={messagesStore.exportStore.isExport}
-			sortOrderItems={sortOrderItems}
-			addMessageToExport={() => messagesStore.exportStore.addMessageToExport(message)}
-		/>
+		<div>
+			{message.body?.map((item: MessageBodyPayload) => (
+				<RecoverableMessageCard
+					key={`${message.messageId}-${item.subsequenceId[0]}`}
+					message={message}
+					bodyItem={item}
+					isHighlighted={isHighlighted}
+					isAttached={isAttached}
+					isBookmarked={isBookmarked}
+					isSoftFiltered={isSoftFiltered}
+					hoverMessage={hoverMessage}
+					unhoverMessage={unhoverMessage}
+					toogleMessagePin={toogleMessagePin}
+					isExported={isExported}
+					isExport={messagesStore.exportStore.isExport}
+					sortOrderItems={sortOrderItems}
+					addMessageToExport={() => messagesStore.exportStore.addMessageToExport(message)}
+				/>
+			))}
+		</div>
 	);
 });
 
@@ -129,44 +160,38 @@ export const RecoverableMessageCard = React.memo((props: RecoveredProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
 
 	return (
-		<div>
-			{props.message.body?.map((item: MessageBodyPayload) => (
-				<StateSaver
-					stateKey={keyForMessage(`${props.message.messageId}-${item.subsequenceId[0]}`)}
-					key={`${props.message.messageId}-${item.subsequenceId[0]}`}
-					getDefaultState={() => {
-						const rootRule = rulesStore.rootDisplayRule;
-						const declaredRule = rulesStore.messageDisplayRules.find(rule => {
-							if (rule.session.length > 1 && rule.session.includes('*')) {
-								return matchWildcardRule(props.message.sessionId, rule.session);
-							}
-							return props.message.sessionId.includes(rule.session);
-						});
-						if (!props.message.body) {
-							return declaredRule
-								? getRawViewType(declaredRule.viewType)
-								: rootRule
-								? getRawViewType(rootRule.viewType)
-								: MessageViewType.ASCII;
-						}
-						return declaredRule
-							? declaredRule.viewType
-							: rootRule
-							? rootRule.viewType
-							: MessageViewType.JSON;
-					}}>
-					{(state, saveState) => (
-						<MessageCardBase
-							{...props}
-							bodyItem={item}
-							// we should always show raw content if something found in it
-							viewType={state}
-							setViewType={saveState}
-						/>
-					)}
-				</StateSaver>
-			))}
-		</div>
+		<StateSaver
+			stateKey={keyForMessage(`${props.message.messageId}-${props.bodyItem.subsequenceId[0]}`)}
+			getDefaultState={() => {
+				const rootRule = rulesStore.rootDisplayRule;
+				const declaredRule = rulesStore.messageDisplayRules.find(rule => {
+					if (rule.session.length > 1 && rule.session.includes('*')) {
+						return matchWildcardRule(props.message.sessionId, rule.session);
+					}
+					return props.message.sessionId.includes(rule.session);
+				});
+				if (!props.message.body) {
+					return declaredRule
+						? getRawViewType(declaredRule.viewType)
+						: rootRule
+						? getRawViewType(rootRule.viewType)
+						: MessageViewType.ASCII;
+				}
+				return declaredRule
+					? declaredRule.viewType
+					: rootRule
+					? rootRule.viewType
+					: MessageViewType.JSON;
+			}}>
+			{(state, saveState) => (
+				<MessageCardBase
+					{...props}
+					// we should always show raw content if something found in it
+					viewType={state}
+					setViewType={saveState}
+				/>
+			)}
+		</StateSaver>
 	);
 });
 
