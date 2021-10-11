@@ -95,7 +95,8 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 		setIsEditing(false);
 	};
 
-	const rootOnClick = () => {
+	const rootOnClick = (e: React.MouseEvent) => {
+		e.stopPropagation();
 		if (!isEditing) {
 			setIsEditing(true);
 		}
