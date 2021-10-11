@@ -44,10 +44,13 @@ export interface RecoveredProps {
 	isBookmarked?: boolean;
 	isSoftFiltered?: boolean;
 	isHighlighted?: boolean;
+	isExported?: boolean;
+	isExport?: boolean;
 	hoverMessage?: () => void;
 	unhoverMessage?: () => void;
 	toogleMessagePin?: () => void;
 	sortOrderItems?: string[];
+	addMessageToExport?: () => void;
 }
 
 const MessageCard = observer(({ message, isHighlighted }: OwnProps) => {
