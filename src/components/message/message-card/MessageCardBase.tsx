@@ -66,7 +66,6 @@ export function MessageCardBase({
 	isExported,
 	isExport,
 	addMessageToExport,
-
 }: MessageCardBaseProps) {
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64 } = message;
 
