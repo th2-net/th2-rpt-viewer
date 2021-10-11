@@ -53,7 +53,9 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 							message={message}
 							setViewType={viewType => {
 								setViewTypeMap(
-									viewTypeMap.set(`${message.messageId}-${item.subsequenceId[0]}`, viewType),
+									new Map(
+										viewTypeMap.set(`${message.messageId}-${item.subsequenceId[0]}`, viewType),
+									),
 								);
 							}}
 							viewType={

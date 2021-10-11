@@ -34,6 +34,7 @@ const messagesStore = new EmbeddedMessagesStore(api);
 
 const EmbeddedMessages = () => {
 	const [viewTypeMap, setViewTypeMap] = useState<Map<string, MessageViewType>>(new Map());
+
 	useEffect(() => {
 		messagesStore.dataStore.loadMessages();
 	}, []);
@@ -49,7 +50,7 @@ const EmbeddedMessages = () => {
 						message={message}
 						setViewType={viewType => {
 							setViewTypeMap(
-								viewTypeMap.set(`${message.messageId}-${item.subsequenceId[0]}`, viewType),
+								new Map(viewTypeMap.set(`${message.messageId}-${item.subsequenceId[0]}`, viewType)),
 							);
 						}}
 						viewType={
