@@ -65,7 +65,6 @@ export function MessageCardBase({
 	bodyItem,
 	isExported,
 	isExport,
-	sortOrderItems,
 	addMessageToExport,
 
 }: MessageCardBaseProps) {
