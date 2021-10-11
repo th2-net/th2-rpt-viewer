@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 
 import {
 	useMessageDisplayRulesStore,
@@ -30,7 +31,6 @@ import { matchWildcardRule } from '../../../helpers/regexp';
 import { MessageCardBase } from './MessageCardBase';
 import '../../../styles/messages.scss';
 import { MessageBodyPayload } from '../../../models/MessageBody';
-import { observer } from 'mobx-react-lite';
 
 export interface OwnProps {
 	message: EventMessage;
