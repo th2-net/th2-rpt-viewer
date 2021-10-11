@@ -16,7 +16,13 @@
 
 import * as React from 'react';
 
-import { useMessageDisplayRulesStore } from '../../../hooks';
+import {
+	useMessageDisplayRulesStore,
+	useMessagesWorkspaceStore,
+	useMessagesDataStore,
+	useSelectedStore,
+	useMessageBodySortStore,
+} from '../../../hooks';
 import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
@@ -24,136 +30,133 @@ import { matchWildcardRule } from '../../../helpers/regexp';
 import { MessageCardBase } from './MessageCardBase';
 import '../../../styles/messages.scss';
 import { MessageBodyPayload } from '../../../models/MessageBody';
+import { observer } from 'mobx-react-lite';
 
 export interface OwnProps {
 	message: EventMessage;
 }
 
 export interface RecoveredProps {
+	bodyItem: MessageBodyPayload;
 	viewType: MessageViewType;
 	setViewType: (viewType: MessageViewType) => void;
 }
 
-// interface Props extends OwnProps, RecoveredProps {}
+interface Props extends OwnProps, RecoveredProps {}
 
-// const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
-// 	const { messageId } = message;
-//
-// 	const messagesStore = useMessagesWorkspaceStore();
-// 	const messagesDataStore = useMessagesDataStore();
-// 	const selectedStore = useSelectedStore();
-// 	const { sortOrderItems } = useMessageBodySortStore();
-//
-// 	const [isHighlighted, setHighlighted] = React.useState(false);
-//
-// 	const highlightTimer = React.useRef<NodeJS.Timeout>();
-// 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
-//
-// 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
-// 	const isBookmarked =
-// 		selectedStore.bookmarkedMessages.findIndex(
-// 			bookmarkedMessage => bookmarkedMessage.id === messageId,
-// 		) !== -1;
-//
-// 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
-// 	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
-//
-// 	React.useEffect(() => {
-// 		const abortController = new AbortController();
-//
-// 		if (
-// 			messagesStore.filterStore.isSoftFilter &&
-// 			messagesDataStore.isSoftFiltered.get(messageId) === undefined
-// 		) {
-// 			messagesDataStore.matchMessage(messageId, abortController.signal);
-// 		}
-//
-// 		return () => {
-// 			abortController.abort();
-// 		};
-// 	}, []);
-//
-// 	React.useEffect(() => {
-// 		switch (viewType) {
-// 			case MessageViewType.FORMATTED:
-// 				messagesStore.beautify(messageId);
-// 				break;
-// 			case MessageViewType.ASCII:
-// 				messagesStore.hideDetailedRawMessage(messageId);
-// 				break;
-// 			case MessageViewType.BINARY:
-// 				messagesStore.showDetailedRawMessage(messageId);
-// 				break;
-// 			default:
-// 				messagesStore.debeautify(messageId);
-// 				break;
-// 		}
-// 	}, [viewType]);
-//
-// 	React.useEffect(() => {
-// 		if (!isHighlighted) {
-// 			if (messagesStore.highlightedMessageId === messageId) {
-// 				setHighlighted(true);
-//
-// 				highlightTimer.current = setTimeout(() => {
-// 					setHighlighted(false);
-// 					messagesStore.highlightedMessageId = null;
-// 				}, 3000);
-// 			} else if (messagesStore.highlightedMessageId !== null) {
-// 				setHighlighted(false);
-// 			}
-// 		}
-//
-// 		return () => {
-// 			if (highlightTimer.current) {
-// 				window.clearTimeout(highlightTimer.current);
-// 			}
-// 		};
-// 	}, [messagesStore.highlightedMessageId]);
-//
-// 	const hoverMessage = () => {
-// 		hoverTimeout.current = setTimeout(() => {
-// 			messagesStore.setHoveredMessage(message);
-// 		}, 600);
-// 	};
-//
-// 	const unhoverMessage = () => {
-// 		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
-// 		messagesStore.setHoveredMessage(null);
-// 	};
-//
-// 	const isAttached = !!messagesStore.attachedMessages.find(
-// 		attMsg => attMsg.messageId === message.messageId,
-// 	);
-//
-// 	function toogleMessagePin() {
-// 		selectedStore.toggleMessagePin(message);
-// 	}
-//
-// 	return (
-// 		<div>
-// 			{message.body?.map((item: MessageBodyPayload) => (
-// 				<MessageCardBase
-// 					key={item.subsequenceId[0]}
-// 					message={message}
-// 					viewType={viewType}
-// 					setViewType={setViewType}
-// 					isHighlighted={isHighlighted}
-// 					hoverMessage={hoverMessage}
-// 					unhoverMessage={unhoverMessage}
-// 					isBookmarked={isBookmarked}
-// 					isAttached={isAttached}
-// 					isContentBeautified={isContentBeautified}
-// 					isSoftFiltered={isSoftFiltered}
-// 					toogleMessagePin={toogleMessagePin}
-// 					isDetailed={isDetailed}
-// 					sortOrderItems={sortOrderItems}
-// 					bodyItem={item}
-// 				/>
-// 			))}
-// 		</div>
-// 	);
-// });
+const MessageCard = observer(({ message, viewType, setViewType, bodyItem }: Props) => {
+	const { messageId } = message;
+
+	const messagesStore = useMessagesWorkspaceStore();
+	const messagesDataStore = useMessagesDataStore();
+	const selectedStore = useSelectedStore();
+	const { sortOrderItems } = useMessageBodySortStore();
+
+	const [isHighlighted, setHighlighted] = React.useState(false);
+
+	const highlightTimer = React.useRef<NodeJS.Timeout>();
+	const hoverTimeout = React.useRef<NodeJS.Timeout>();
+
+	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
+	const isBookmarked =
+		selectedStore.bookmarkedMessages.findIndex(
+			bookmarkedMessage => bookmarkedMessage.id === messageId,
+		) !== -1;
+
+	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
+	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
+
+	React.useEffect(() => {
+		const abortController = new AbortController();
+
+		if (
+			messagesStore.filterStore.isSoftFilter &&
+			messagesDataStore.isSoftFiltered.get(messageId) === undefined
+		) {
+			messagesDataStore.matchMessage(messageId, abortController.signal);
+		}
+
+		return () => {
+			abortController.abort();
+		};
+	}, []);
+
+	React.useEffect(() => {
+		switch (viewType) {
+			case MessageViewType.FORMATTED:
+				messagesStore.beautify(messageId);
+				break;
+			case MessageViewType.ASCII:
+				messagesStore.hideDetailedRawMessage(messageId);
+				break;
+			case MessageViewType.BINARY:
+				messagesStore.showDetailedRawMessage(messageId);
+				break;
+			default:
+				messagesStore.debeautify(messageId);
+				break;
+		}
+	}, [viewType]);
+
+	React.useEffect(() => {
+		if (!isHighlighted) {
+			if (messagesStore.highlightedMessageId === messageId) {
+				setHighlighted(true);
+
+				highlightTimer.current = setTimeout(() => {
+					setHighlighted(false);
+					messagesStore.highlightedMessageId = null;
+				}, 3000);
+			} else if (messagesStore.highlightedMessageId !== null) {
+				setHighlighted(false);
+			}
+		}
+
+		return () => {
+			if (highlightTimer.current) {
+				window.clearTimeout(highlightTimer.current);
+			}
+		};
+	}, [messagesStore.highlightedMessageId]);
+
+	const hoverMessage = () => {
+		hoverTimeout.current = setTimeout(() => {
+			messagesStore.setHoveredMessage(message);
+		}, 600);
+	};
+
+	const unhoverMessage = () => {
+		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+		messagesStore.setHoveredMessage(null);
+	};
+
+	const isAttached = !!messagesStore.attachedMessages.find(
+		attMsg => attMsg.messageId === message.messageId,
+	);
+
+	function toogleMessagePin() {
+		selectedStore.toggleMessagePin(message);
+	}
+
+	return (
+		<MessageCardBase
+			message={message}
+			viewType={viewType}
+			setViewType={setViewType}
+			isHighlighted={isHighlighted}
+			hoverMessage={hoverMessage}
+			unhoverMessage={unhoverMessage}
+			isBookmarked={isBookmarked}
+			isAttached={isAttached}
+			isContentBeautified={isContentBeautified}
+			isSoftFiltered={isSoftFiltered}
+			toogleMessagePin={toogleMessagePin}
+			isDetailed={isDetailed}
+			sortOrderItems={sortOrderItems}
+			bodyItem={bodyItem}
+		/>
+	);
+});
 
 const RecoverableMessageCard = React.memo((props: OwnProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
@@ -163,6 +166,7 @@ const RecoverableMessageCard = React.memo((props: OwnProps) => {
 			{props.message.body?.map((item: MessageBodyPayload) => (
 				<StateSaver
 					stateKey={keyForMessage(`${props.message.messageId}-${item.subsequenceId[0]}`)}
+					key={`${props.message.messageId}-${item.subsequenceId[0]}`}
 					getDefaultState={() => {
 						const rootRule = rulesStore.rootDisplayRule;
 						const declaredRule = rulesStore.messageDisplayRules.find(rule => {
@@ -185,10 +189,10 @@ const RecoverableMessageCard = React.memo((props: OwnProps) => {
 							: MessageViewType.JSON;
 					}}>
 					{(state, saveState) => (
-						<MessageCardBase
+						<MessageCard
 							{...props}
-							// we should always show raw content if something found in it
 							bodyItem={item}
+							// we should always show raw content if something found in it
 							viewType={state}
 							setViewType={saveState}
 						/>

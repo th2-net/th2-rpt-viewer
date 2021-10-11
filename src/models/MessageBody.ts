@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 export interface MessageBodyPayload {
-	subsequenceId: [number];
+	subsequenceId: number[];
 	protocol: string;
 	messageType: string;
 	message: {
@@ -26,7 +26,7 @@ export interface MessageBodyPayload {
 				};
 				direction: string;
 				sequence: string;
-				subsequence: [number];
+				subsequence: number[];
 			};
 			timestamp: string;
 			messageType: string;

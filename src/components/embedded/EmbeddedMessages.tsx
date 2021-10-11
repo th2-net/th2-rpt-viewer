@@ -27,14 +27,13 @@ import Empty from '../util/Empty';
 import { useDebouncedCallback } from '../../hooks';
 import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
+import { MessageCardBase } from '../message/message-card/MessageCardBase';
 import { MessageBodyPayload } from '../../models/MessageBody';
-import { EmbeddedMessageCardBase } from './EmbeddedMessageCardBase';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
 const EmbeddedMessages = () => {
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
-
 	useEffect(() => {
 		messagesStore.dataStore.loadMessages();
 	}, []);
@@ -43,7 +42,7 @@ const EmbeddedMessages = () => {
 		return (
 			<div>
 				{message.body?.map((item: MessageBodyPayload) => (
-					<EmbeddedMessageCardBase
+					<MessageCardBase
 						isEmbedded
 						key={item.subsequenceId[0]}
 						bodyItem={item}
@@ -119,12 +118,12 @@ interface Props {
 	rowCount: number;
 	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
 	/*
-		   Number objects is used here because in some cases (eg one message / action was
-		   selected several times by different entities)
-		   We can't understand that we need to scroll to the selected entity again when
-		   we are comparing primitive numbers.
-		   Objects and reference comparison is the only way to handle numbers changing in this case.
-	   */
+			Number objects is used here because in some cases (eg one message / action was
+			selected several times by different entities)
+			We can't understand that we need to scroll to the selected entity again when
+			we are comparing primitive numbers.
+			Objects and reference comparison is the only way to handle numbers changing in this case.
+		*/
 	scrolledIndex: Number | null;
 	className?: string;
 	overscan?: number;
