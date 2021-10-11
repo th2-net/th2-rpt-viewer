@@ -34,17 +34,23 @@ import { MessageBodyPayload } from '../../../models/MessageBody';
 
 export interface OwnProps {
 	message: EventMessage;
+	isHighlighted?: boolean;
 }
 
 export interface RecoveredProps {
-	bodyItem: MessageBodyPayload;
-	viewType: MessageViewType;
-	setViewType: (viewType: MessageViewType) => void;
+	message: EventMessage;
+	isEmbedded?: boolean;
+	isAttached?: boolean;
+	isBookmarked?: boolean;
+	isSoftFiltered?: boolean;
+	isHighlighted?: boolean;
+	hoverMessage?: () => void;
+	unhoverMessage?: () => void;
+	toogleMessagePin?: () => void;
+	sortOrderItems?: string[];
 }
 
-interface Props extends OwnProps, RecoveredProps {}
-
-const MessageCard = observer(({ message, viewType, setViewType, bodyItem }: Props) => {
+const MessageCard = observer(({ message, isHighlighted }: OwnProps) => {
 	const { messageId } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
@@ -52,20 +58,18 @@ const MessageCard = observer(({ message, viewType, setViewType, bodyItem }: Prop
 	const selectedStore = useSelectedStore();
 	const { sortOrderItems } = useMessageBodySortStore();
 
-	const [isHighlighted, setHighlighted] = React.useState(false);
-
-	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
-	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isBookmarked =
 		selectedStore.bookmarkedMessages.findIndex(
 			bookmarkedMessage => bookmarkedMessage.id === messageId,
 		) !== -1;
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
-	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
 
+	const isAttached = !!messagesStore.attachedMessages.find(
+		attMsg => attMsg.messageId === message.messageId,
+	);
 	React.useEffect(() => {
 		const abortController = new AbortController();
 
@@ -81,44 +85,6 @@ const MessageCard = observer(({ message, viewType, setViewType, bodyItem }: Prop
 		};
 	}, []);
 
-	React.useEffect(() => {
-		switch (viewType) {
-			case MessageViewType.FORMATTED:
-				messagesStore.beautify(messageId);
-				break;
-			case MessageViewType.ASCII:
-				messagesStore.hideDetailedRawMessage(messageId);
-				break;
-			case MessageViewType.BINARY:
-				messagesStore.showDetailedRawMessage(messageId);
-				break;
-			default:
-				messagesStore.debeautify(messageId);
-				break;
-		}
-	}, [viewType]);
-
-	React.useEffect(() => {
-		if (!isHighlighted) {
-			if (messagesStore.highlightedMessageId === messageId) {
-				setHighlighted(true);
-
-				highlightTimer.current = setTimeout(() => {
-					setHighlighted(false);
-					messagesStore.highlightedMessageId = null;
-				}, 3000);
-			} else if (messagesStore.highlightedMessageId !== null) {
-				setHighlighted(false);
-			}
-		}
-
-		return () => {
-			if (highlightTimer.current) {
-				window.clearTimeout(highlightTimer.current);
-			}
-		};
-	}, [messagesStore.highlightedMessageId]);
-
 	const hoverMessage = () => {
 		hoverTimeout.current = setTimeout(() => {
 			messagesStore.setHoveredMessage(message);
@@ -130,35 +96,28 @@ const MessageCard = observer(({ message, viewType, setViewType, bodyItem }: Prop
 		messagesStore.setHoveredMessage(null);
 	};
 
-	const isAttached = !!messagesStore.attachedMessages.find(
-		attMsg => attMsg.messageId === message.messageId,
-	);
-
 	function toogleMessagePin() {
 		selectedStore.toggleMessagePin(message);
 	}
 
 	return (
-		<MessageCardBase
+		<RecoverableMessageCard
 			message={message}
-			viewType={viewType}
-			setViewType={setViewType}
 			isHighlighted={isHighlighted}
+			isAttached={isAttached}
+			isBookmarked={isBookmarked}
+			isSoftFiltered={isSoftFiltered}
 			hoverMessage={hoverMessage}
 			unhoverMessage={unhoverMessage}
-			isBookmarked={isBookmarked}
-			isAttached={isAttached}
-			isContentBeautified={isContentBeautified}
-			isSoftFiltered={isSoftFiltered}
 			toogleMessagePin={toogleMessagePin}
-			isDetailed={isDetailed}
 			sortOrderItems={sortOrderItems}
-			bodyItem={bodyItem}
 		/>
 	);
 });
 
-const RecoverableMessageCard = React.memo((props: OwnProps) => {
+export default MessageCard;
+
+export const RecoverableMessageCard = React.memo((props: RecoveredProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
 
 	return (
@@ -189,7 +148,7 @@ const RecoverableMessageCard = React.memo((props: OwnProps) => {
 							: MessageViewType.JSON;
 					}}>
 					{(state, saveState) => (
-						<MessageCard
+						<MessageCardBase
 							{...props}
 							bodyItem={item}
 							// we should always show raw content if something found in it
@@ -204,8 +163,6 @@ const RecoverableMessageCard = React.memo((props: OwnProps) => {
 });
 
 RecoverableMessageCard.displayName = 'RecoverableMessageCard';
-
-export default RecoverableMessageCard;
 
 function isRawViewType(viewType: MessageViewType) {
 	return viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;

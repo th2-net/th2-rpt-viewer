@@ -39,7 +39,6 @@ export interface MessageCardBaseProps {
 	isSoftFiltered?: boolean;
 	isContentBeautified?: boolean;
 	toogleMessagePin?: () => void;
-	isDetailed?: boolean;
 	isEmbedded?: boolean;
 	sortOrderItems?: string[];
 	viewType: MessageViewType;
@@ -59,11 +58,12 @@ export function MessageCardBase({
 	isSoftFiltered,
 	toogleMessagePin,
 	isEmbedded,
-	isDetailed,
 	sortOrderItems,
 	bodyItem,
 }: MessageCardBaseProps) {
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64 } = message;
+
+	const isDetailed = viewType === MessageViewType.BINARY;
 
 	const renderInlineMessageInfo = () => {
 		if (viewType === MessageViewType.ASCII || viewType === MessageViewType.JSON) {

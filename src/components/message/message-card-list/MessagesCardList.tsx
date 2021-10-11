@@ -31,8 +31,33 @@ function MessageCardList() {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 
+	const [isHighlighted, setHighlighted] = React.useState(false);
+
+	const highlightTimer = React.useRef<NodeJS.Timeout>();
+
+	React.useEffect(() => {
+		if (!isHighlighted) {
+			if (messagesStore.highlightedMessageId === 'messageId') {
+				setHighlighted(true);
+
+				highlightTimer.current = setTimeout(() => {
+					setHighlighted(false);
+					messagesStore.highlightedMessageId = null;
+				}, 3000);
+			} else if (messagesStore.highlightedMessageId !== null) {
+				setHighlighted(false);
+			}
+		}
+
+		return () => {
+			if (highlightTimer.current) {
+				window.clearTimeout(highlightTimer.current);
+			}
+		};
+	}, [messagesStore.highlightedMessageId]);
+
 	const renderMsg = (index: number, message: EventMessage) => {
-		return <MessageCard message={message} />;
+		return <MessageCard message={message} isHighlighted={isHighlighted} />;
 	};
 
 	if (

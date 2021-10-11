@@ -23,7 +23,8 @@ import { MessageCardBase } from '../message/message-card/MessageCardBase';
 function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
 	const [errorStatus, setErrorStatus] = useState<string | null>(null);
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
+
+	const [viewTypeMap, setViewTypeMap] = useState<Map<string, MessageViewType>>(new Map());
 
 	useEffect(() => {
 		getMessage();
@@ -46,12 +47,19 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 		return (
 			<div>
 				{message.body?.map((item: MessageBodyPayload) => (
-					<div className='embedded-wrapper' key={item.subsequenceId[0]}>
+					<div className='embedded-wrapper' key={`${message.messageId}-${item.subsequenceId[0]}`}>
 						<MessageCardBase
 							isEmbedded
 							message={message}
-							setViewType={setViewType}
-							viewType={viewType}
+							setViewType={viewType => {
+								setViewTypeMap(
+									viewTypeMap.set(`${message.messageId}-${item.subsequenceId[0]}`, viewType),
+								);
+							}}
+							viewType={
+								viewTypeMap.get(`${message.messageId}-${item.subsequenceId[0]}`) ||
+								MessageViewType.JSON
+							}
 							bodyItem={item}
 						/>
 					</div>
