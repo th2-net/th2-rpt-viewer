@@ -18,9 +18,10 @@ import { MessagesSSEParams, SSEHeartbeat } from '../../../api/sse';
 import { EventMessage } from '../../../models/EventMessage';
 import EmbeddedMessagesStore from './EmbeddedMessagesStore';
 import ApiSchema from '../../../api/ApiSchema';
-import { MessagesSSELoader } from '../../../stores/messages/MessagesSSELoader';
 import notificationsStore from '../../../stores/NotificationsStore';
 import { isEventMessage } from '../../../helpers/event';
+import { MessagesSSEChannel } from '../../../stores/SSEChannel/MessagesSSEChannel';
+import { isAbortError } from '../../../helpers/fetch';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
@@ -46,10 +47,10 @@ export default class EmbeddedMessagesDataProviderStore {
 	public isError = false;
 
 	@observable
-	public searchChannelPrev: MessagesSSELoader | null = null;
+	public searchChannelPrev: MessagesSSEChannel | null = null;
 
 	@observable
-	public searchChannelNext: MessagesSSELoader | null = null;
+	public searchChannelNext: MessagesSSEChannel | null = null;
 
 	@observable
 	public startIndex = 10000;
@@ -116,7 +117,7 @@ export default class EmbeddedMessagesDataProviderStore {
 						this.messageAC.signal,
 					);
 				} catch (error) {
-					if (error.name !== 'AbortError') {
+					if (!isAbortError(error)) {
 						this.isError = true;
 						return;
 					}
@@ -173,12 +174,12 @@ export default class EmbeddedMessagesDataProviderStore {
 	) => {
 		this.prevLoadEndTimestamp = null;
 
-		this.searchChannelPrev = new MessagesSSELoader(
-			query,
-			this.onPrevChannelResponse,
-			this.onLoadingError,
-			typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
-		);
+		this.searchChannelPrev = new MessagesSSEChannel(query, {
+			onResponse: this.onPrevChannelResponse,
+			onError: this.onLoadingError,
+			onKeepAliveResponse:
+				typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+		});
 	};
 
 	private onKeepAliveMessagePrevious = (e: SSEHeartbeat) => {
@@ -223,12 +224,11 @@ export default class EmbeddedMessagesDataProviderStore {
 	public createNextMessageChannelEventSource = (query: MessagesSSEParams, interval?: number) => {
 		this.nextLoadEndTimestamp = null;
 
-		this.searchChannelNext = new MessagesSSELoader(
-			query,
-			this.onNextChannelResponse,
-			this.onLoadingError,
-			typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
-		);
+		this.searchChannelNext = new MessagesSSEChannel(query, {
+			onResponse: this.onNextChannelResponse,
+			onError: this.onLoadingError,
+			onKeepAliveResponse: typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+		});
 	};
 
 	@action

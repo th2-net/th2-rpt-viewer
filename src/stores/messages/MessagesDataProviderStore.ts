@@ -18,10 +18,11 @@ import { action, reaction, observable, computed, runInAction } from 'mobx';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isEventMessage } from '../../helpers/event';
+import { isAbortError } from '../../helpers/fetch';
 import { EventMessage } from '../../models/EventMessage';
 import notificationsStore from '../NotificationsStore';
+import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
-import { MessagesSSELoader } from './MessagesSSELoader';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
@@ -47,10 +48,10 @@ export default class MessagesDataProviderStore {
 	public isError = false;
 
 	@observable
-	public searchChannelPrev: MessagesSSELoader | null = null;
+	public searchChannelPrev: MessagesSSEChannel | null = null;
 
 	@observable
-	public searchChannelNext: MessagesSSELoader | null = null;
+	public searchChannelNext: MessagesSSEChannel | null = null;
 
 	@observable
 	public startIndex = 10000;
@@ -124,7 +125,7 @@ export default class MessagesDataProviderStore {
 						this.messageAC.signal,
 					);
 				} catch (error) {
-					if (error.name !== 'AbortError') {
+					if (!isAbortError(error)) {
 						this.isError = true;
 						return;
 					}
@@ -185,12 +186,12 @@ export default class MessagesDataProviderStore {
 	) => {
 		this.prevLoadEndTimestamp = null;
 
-		this.searchChannelPrev = new MessagesSSELoader(
-			query,
-			this.onPrevChannelResponse,
-			this.onLoadingError,
-			typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
-		);
+		this.searchChannelPrev = new MessagesSSEChannel(query, {
+			onResponse: this.onPrevChannelResponse,
+			onError: this.onLoadingError,
+			onKeepAliveResponse:
+				typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+		});
 	};
 
 	private onKeepAliveMessagePrevious = (e: SSEHeartbeat) => {
@@ -235,12 +236,11 @@ export default class MessagesDataProviderStore {
 	public createNextMessageChannelEventSource = (query: MessagesSSEParams, interval?: number) => {
 		this.nextLoadEndTimestamp = null;
 
-		this.searchChannelNext = new MessagesSSELoader(
-			query,
-			this.onNextChannelResponse,
-			this.onLoadingError,
-			typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
-		);
+		this.searchChannelNext = new MessagesSSEChannel(query, {
+			onResponse: this.onNextChannelResponse,
+			onError: this.onLoadingError,
+			onKeepAliveResponse: typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+		});
 	};
 
 	@action
@@ -405,7 +405,7 @@ export default class MessagesDataProviderStore {
 			});
 		} catch (error) {
 			runInAction(() => {
-				if (error.name !== 'AbortError') {
+				if (!isAbortError(error)) {
 					this.isSoftFiltered.set(messageId, false);
 				}
 				this.isMatchingMessages.set(messageId, false);
