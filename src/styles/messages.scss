@@ -28,22 +28,6 @@
 	display: flex;
 	justify-content: space-between;
 
-	&.highlighted {
-		@keyframes highlight {
-			from {
-				background: $highlightedMessageCardBackground;
-			}
-
-			50% {
-				background: rgba($highlightedMessageCardBackground, 0);
-			}
-			to {
-				background: $highlightedMessageCardBackground;
-			}
-		}
-		animation: highlight 1s infinite ease-in-out;
-	}
-
 	&.soft-filtered {
 		border: 1px solid $filterPrimaryColor;
 
@@ -109,6 +93,22 @@
 	flex-direction: column;
 	flex-grow: 1;
 	padding: 0 2px;
+
+	&.highlighted {
+		@keyframes highlight {
+			from {
+				background: $highlightedMessageCardBackground;
+			}
+
+			50% {
+				background: rgba($highlightedMessageCardBackground, 0);
+			}
+			to {
+				background: $highlightedMessageCardBackground;
+			}
+		}
+		animation: highlight 1s infinite ease-in-out;
+	}
 }
 
 .message-card-tools {
@@ -788,7 +788,7 @@
 			}
 		}
 
-		&-tool{
+		&-tool {
 			display: flex;
 			justify-content: center;
 			background-color: transparent;
@@ -797,7 +797,7 @@
 			cursor: pointer;
 			font-size: 13px;
 			color: $primaryTextColor;
-	
+
 			&:hover {
 				background-color: #00000012;
 			}
@@ -995,7 +995,7 @@
 		width: 100%;
 	}
 
-	.dragable-area:hover{
+	.dragable-area:hover {
 		cursor: move;
 	}
 }
