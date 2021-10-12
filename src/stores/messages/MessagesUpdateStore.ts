@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import { action, computed, observable } from 'mobx';
-import { MessagesSSELoader } from './MessagesSSELoader';
 import notificationsStore from '../NotificationsStore';
 import { MessagesDataStore } from '../../models/Stores';
+import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 
 export default class MessagesUpdateStore {
 	constructor(
@@ -26,7 +26,7 @@ export default class MessagesUpdateStore {
 	) {}
 
 	@observable
-	private channel: MessagesSSELoader | null = null;
+	private channel: MessagesSSEChannel | null = null;
 
 	@action
 	public subscribeOnChanges = async () => {
@@ -36,7 +36,7 @@ export default class MessagesUpdateStore {
 
 		const { onNextChannelResponse, messages } = this.messagesDataStore;
 
-		this.channel = new MessagesSSELoader(
+		this.channel = new MessagesSSEChannel(
 			{
 				...queryParams,
 				searchDirection: 'next',
@@ -49,13 +49,15 @@ export default class MessagesUpdateStore {
 					: {}),
 				resultCountLimit: undefined,
 			},
-			incommingMessages => {
-				if (messages.length) {
-					onNextChannelResponse(incommingMessages);
-					this.scrollToMessage(incommingMessages[0].messageId);
-				}
+			{
+				onResponse: incommingMessages => {
+					if (messages.length) {
+						onNextChannelResponse(incommingMessages);
+						this.scrollToMessage(incommingMessages[0].messageId);
+					}
+				},
+				onError: this.onLoadingError,
 			},
-			this.onLoadingError,
 		);
 
 		this.channel.subscribe(messages[0]?.messageId);
