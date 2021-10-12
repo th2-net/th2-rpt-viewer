@@ -89,9 +89,9 @@ export function MessageCardBase({
 					</span>
 					<span
 						className='mc-header__item messageId-inline'
-						title={`ID: ${messageId}:${bodyItem.subsequenceId[0]}`}>
+						title={`ID: ${messageId}:subsequenceId:${bodyItem.subsequenceId[0]}`}>
 						<span className='mc-header__value'>
-							{messageId}:{bodyItem.subsequenceId[0]}
+							{messageId}:subsequenceId:{bodyItem.subsequenceId[0]}
 						</span>
 					</span>
 					<span className={sessionClass} style={sessionArrowStyle}></span>
@@ -180,9 +180,9 @@ export function MessageCardBase({
 					</div>
 					<div
 						className='mc-header__item messageId'
-						title={`ID: ${messageId}:${bodyItem.subsequenceId[0]}`}>
+						title={`ID: ${messageId}:subsequenceId:${bodyItem.subsequenceId[0]}`}>
 						<span className='mc-header__value'>
-							{messageId}:{bodyItem.subsequenceId[0]}
+							{messageId}:subsequenceId:{bodyItem.subsequenceId[0]}
 						</span>
 					</div>
 					<div
