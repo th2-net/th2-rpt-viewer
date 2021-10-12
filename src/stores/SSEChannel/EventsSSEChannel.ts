@@ -62,7 +62,7 @@ export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 	}
 
 	@action
-	protected onClose(): void {
+	protected onClose = (): void => {
 		this.closeChannel();
 		this.isLoading = false;
 		this.clearSchedulersAndTimeouts();
@@ -78,5 +78,5 @@ export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 				isEndReached: this.fetchedEventsCount !== this.chunkSize,
 			});
 		}
-	}
+	};
 }
