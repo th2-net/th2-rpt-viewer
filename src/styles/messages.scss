@@ -353,6 +353,8 @@
 		display: inline-block;
 		color: $messageCardValueColor;
 		vertical-align: middle;
+		font-weight: bold;
+
 		&.messageType {
 			max-width: 48px;
 			@include ellipsis();
