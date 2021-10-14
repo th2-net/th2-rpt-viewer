@@ -400,6 +400,15 @@
 		height: 100%;
 	}
 
+	&__field-border {
+		padding: 1px 2px;
+		&.active{
+			border: 1px solid $graphTickColor;
+			padding: 0 1px;
+			border-radius: '4px';
+		}
+	}
+
 	&__field-simple-value {
 		font-weight: 600;
 		color: $activeTextColor;
