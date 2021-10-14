@@ -184,10 +184,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		query: MessagesSSEParams,
 		interval?: number,
 	) => {
-		const params = query;
 		this.prevLoadEndTimestamp = null;
-
-		delete params.keepOpen;
 
 		this.searchChannelPrev = new MessagesSSEChannel(query, {
 			onResponse: this.onPrevChannelResponse,
