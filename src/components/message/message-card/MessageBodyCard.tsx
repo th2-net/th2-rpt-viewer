@@ -252,13 +252,3 @@ export function MessageBodyCardFallback({ body, isBeautified }: Props) {
 		</pre>
 	);
 }
-
-const backgroundGradient = (strings: TemplateStringsArray, color: string) =>
-	`linear-gradient(to bottom, 
-        transparent 0%,
-        transparent 2px,
-        ${color} 2px,
-        ${color} calc(100% - 2px),
-        transparent calc(100% - 2px),
-        transparent 100%
-	)`;
