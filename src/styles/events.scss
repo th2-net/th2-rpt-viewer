@@ -269,12 +269,12 @@
 		color: white;
 
 		white-space: nowrap;
-		left: 1px;
+		left: -1px;
 
 		&:before {
 			content: '';
 			position: absolute;
-			left: 1px;
+			left: 3px;
 			top: -4px;
 			border-left: 7px solid transparent;
 			border-right: 7px solid transparent;
