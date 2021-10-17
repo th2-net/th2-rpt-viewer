@@ -37,7 +37,7 @@ function EventDetailInfoCard(props: Props) {
 	const eventStore = useWorkspaceEventStore();
 
 	const { event, eventTreeNode, node, children } = props;
-	const [isOpen, setIsOpen] = React.useState(false);
+	const [isStatusShown, setIsStatusShown] = React.useState(false);
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	if (!event) {
@@ -56,7 +56,7 @@ function EventDetailInfoCard(props: Props) {
 		) !== -1;
 
 	function showStatus() {
-		setIsOpen(!isOpen);
+		setIsStatusShown(!isStatusShown);
 	}
 
 	function onEventPin() {
@@ -79,7 +79,10 @@ function EventDetailInfoCard(props: Props) {
 	}
 
 	const cardClassName = createStyleSelector('event-detail-info__event-card', 'event-card', status);
-	const statusClassName = createBemBlock('event-card__status-label', isOpen ? null : 'closed');
+	const statusClassName = createBemBlock(
+		'event-card__status-label',
+		isStatusShown ? null : 'closed',
+	);
 
 	const bookmarkButtonClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
