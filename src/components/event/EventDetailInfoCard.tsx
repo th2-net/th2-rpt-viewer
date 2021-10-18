@@ -117,7 +117,7 @@ function EventDetailInfoCard(props: Props) {
 									onMouseEnter={onMouseEnter}
 									onMouseLeave={onMouseLeave}>
 									{formatTime(startTimestampValue)}
-									{endTimestampValue && endTimestampValue != startTimestampValue ? (
+									{endTimestampValue && endTimestampValue !== startTimestampValue ? (
 										<> &ndash; {formatTime(endTimestampValue)}</>
 									) : null}
 								</div>
