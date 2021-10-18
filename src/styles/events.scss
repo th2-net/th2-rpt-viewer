@@ -318,6 +318,8 @@
 		border: 1px solid transparent;
 		border-radius: 4px;
 		flex-shrink: 0;
+		white-space: nowrap;
+		overflow: hidden;
 
 		&:hover {
 			color: $graphTextColor;
