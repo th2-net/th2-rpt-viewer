@@ -294,17 +294,22 @@
 		margin-top: 2px;
 		display: flex;
 		justify-content: space-between;
-		align-items: flex-start;
+		align-items: center;
 		font-size: 10px;
 	}
 
 	&__id {
 		color: $eventCardIdColor;
+		flex-shrink: 2;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
 	}
 
 	&__timestamp {
 		justify-content: flex-end;
 		display: flex;
+		text-overflow: ellipsis;
 		flex-wrap: wrap;
 		min-width: 0;
 		margin-left: 5px;
@@ -312,6 +317,7 @@
 		transition: all 0.15s;
 		border: 1px solid transparent;
 		border-radius: 4px;
+		flex-shrink: 0;
 
 		&:hover {
 			color: $graphTextColor;

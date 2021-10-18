@@ -44,11 +44,13 @@ function EventDetailInfoCard(props: Props) {
 		return <SplashScreen />;
 	}
 
-	const { startTimestamp, eventType, eventName, body, eventId } = event;
+	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId } = event;
 	const { isUnknown } = node;
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
 	const startTimestampValue = timestampToNumber(startTimestamp);
+	let endTimestampValue;
+	if (endTimestamp) endTimestampValue = timestampToNumber(endTimestamp);
 
 	const isBookmarked =
 		selectedStore.bookmarkedEvents.findIndex(
@@ -100,7 +102,7 @@ function EventDetailInfoCard(props: Props) {
 				<div className='event-card__info'>
 					<div className='event-card__header'>
 						<div className='event-card__title' title={eventName}>
-							{eventName}
+							r{eventName}
 						</div>
 						<div className='event-card__controls'>
 							{eventType && <span className='event-card__event-type'>{eventType}</span>}
@@ -115,6 +117,9 @@ function EventDetailInfoCard(props: Props) {
 									onMouseEnter={onMouseEnter}
 									onMouseLeave={onMouseLeave}>
 									{formatTime(startTimestampValue)}
+									{endTimestampValue && endTimestampValue != startTimestampValue ? (
+										<> &ndash; {formatTime(endTimestampValue)}</>
+									) : null}
 								</div>
 							)}
 						</div>
