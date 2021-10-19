@@ -103,7 +103,7 @@
 				@include ellipsis();
 				width: auto;
 				font: normal 13.6px 'Open Sans', sans-serif;
-				opacity: .75;
+				opacity: 0.75;
 				&.non-empty {
 					opacity: 1;
 					font-weight: bold;

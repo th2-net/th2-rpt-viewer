@@ -97,7 +97,7 @@
 		font-size: 9px;
 		color: $secondaryLightTextColor;
 		white-space: nowrap;
-		&:hover{
+		&:hover {
 			color: $graphTextColor;
 			border: 1px solid $graphTextColor;
 			padding: 0 2px;
@@ -191,11 +191,14 @@
 		}
 	}
 
-	&__message {
+	&__message-wrapper {
 		@include message-background;
+		overflow-x: auto;
+	}
+
+	&__message {
 		font-size: 11px;
 	}
-	
 }
 
 .event-card {
@@ -204,10 +207,10 @@
 	@include bookmark-button($showOnHoverOverParent: false);
 	@include scrollbar;
 	display: flex;
+
 	padding: 2px 3px;
 	border-radius: 5px;
-	background-color: var(--status-secondary-background-color);
-	border: 2px solid var(--status-hover-border-color);
+	background-color: $workspaceBackground;
 	font-size: 11px;
 	line-height: 15px;
 	overflow: hidden;
@@ -215,6 +218,9 @@
 	&__status {
 		& .event-status-icon {
 			margin: 3px 2px;
+			&:hover .event-card__status-label {
+				display: block;
+			}
 		}
 	}
 
@@ -258,8 +264,26 @@
 	}
 
 	&__status-label {
+		display: none;
 		font-weight: 600;
-		color: var(--status-primary-color);
+		position: absolute;
+		padding: 5px 10px;
+		border-radius: 5px;
+		background-color: var(--status-primary-color-light);
+		color: white;
+		white-space: nowrap;
+		left: -1px;
+		top: 17px;
+
+		&:before {
+			content: '';
+			position: absolute;
+			left: 3px;
+			top: -4px;
+			border-left: 7px solid transparent;
+			border-right: 7px solid transparent;
+			border-bottom: 7px solid var(--status-primary-color-light);
+		}
 	}
 
 	&__controls {
@@ -272,43 +296,33 @@
 
 	&__body {
 		margin-top: 2px;
-		display: flex;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, min-content);
+		overflow: hidden;
 		justify-content: space-between;
-		align-items: flex-start;
+		align-items: center;
 		font-size: 10px;
 	}
 
 	&__id {
+		@include ellipsis();
 		color: $eventCardIdColor;
 	}
 
 	&__timestamp {
-		justify-content: flex-end;
-		display: flex;
-		flex-wrap: wrap;
+		@include ellipsis();
 		min-width: 0;
 		margin-left: 5px;
-	}
+		padding: 0 2px;
+		transition: all 0.15s;
+		border: 1px solid transparent;
+		border-radius: 4px;
+		text-align: right;
 
-	&__timestamp-item {
-		margin-left: 5px;
-		display: flex;
-		min-width: 0;
-	}
-
-	&__timestamp-label {
-		font-size: 9px;
-		color: $alternativeTextColor;
-	}
-
-	&__timestamp-value {
-		margin-left: 5px;
-		font-size: 10px;
-		color: $activeTextColor;
-		font-weight: 600;
-		overflow: hidden;
-		white-space: nowrap;
-		text-overflow: ellipsis;
+		&:hover {
+			color: $graphTextColor;
+			border: 1px solid $graphTextColor;
+		}
 	}
 
 	&__bookmark {
@@ -599,18 +613,16 @@
 	width: 100%;
 	overflow: hidden;
 	cursor: default;
-	
+
 	&__title {
+		@include ellipsis();
 		flex-grow: 1;
 		flex-shrink: 1;
 		font-weight: 600;
 		color: $tableTitleColor;
-		white-space: nowrap;
-		text-overflow: ellipsis;
-		overflow: hidden;
 	}
 
-	&__header{
+	&__header {
 		font-size: 13px;
 		display: flex;
 		align-items: center;
@@ -626,7 +638,7 @@
 	align-items: stretch;
 	color: $primaryTextColor;
 
-	&__error{
+	&__error {
 		font-size: 10px;
 		border: 1px $failedBorderColor solid;
 		border-radius: 5px;

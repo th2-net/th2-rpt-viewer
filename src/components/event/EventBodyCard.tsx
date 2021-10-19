@@ -55,7 +55,7 @@ export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory =
 		case EventBodyPayloadType.MESSAGE:
 			return (
 				<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
-					<div style={{ overflowX: 'auto' }}>
+					<div className='event-detail-info__message-wrapper'>
 						<div key='message' className='event-detail-info__message'>
 							{body.data}
 						</div>
