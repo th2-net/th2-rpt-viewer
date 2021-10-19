@@ -48,7 +48,7 @@ function EventDetailInfoCard(props: Props) {
 	const { isUnknown } = node;
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
-	const startTimestampValue = timestampToNumber(startTimestamp);
+	const startTimestampValue = startTimestamp && timestampToNumber(startTimestamp);
 	const endTimestampValue = endTimestamp && timestampToNumber(endTimestamp);
 
 	const isBookmarked =
@@ -114,17 +114,10 @@ function EventDetailInfoCard(props: Props) {
 							className='event-card__timestamp'
 							onMouseEnter={onMouseEnter}
 							onMouseLeave={onMouseLeave}>
-							{startTimestamp && (
-								<div
-									className='event-card__timestamp-item'
-									onMouseEnter={onMouseEnter}
-									onMouseLeave={onMouseLeave}>
-									{formatTime(startTimestampValue)}
-									{endTimestampValue && endTimestampValue !== startTimestampValue ? (
-										<> &ndash; {formatTime(endTimestampValue)}</>
-									) : null}
-								</div>
-							)}
+							{formatTime(startTimestampValue)}
+							{endTimestampValue && endTimestampValue !== startTimestampValue ? (
+								<> &ndash; {formatTime(endTimestampValue)}</>
+							) : null}
 						</div>
 					</div>
 				</div>
