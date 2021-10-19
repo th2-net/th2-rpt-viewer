@@ -210,7 +210,7 @@
 
 	padding: 2px 3px;
 	border-radius: 5px;
-	background-color: #eef2f6;
+	background-color: $workspaceBackground;
 	font-size: 11px;
 	line-height: 15px;
 	overflow: hidden;
@@ -280,6 +280,9 @@
 			border-right: 7px solid transparent;
 			border-bottom: 7px solid var(--status-primary-color-light);
 		}
+		&.closed {
+			display: none;
+		}
 	}
 
 	&__controls {
@@ -299,17 +302,14 @@
 	}
 
 	&__id {
+		@include ellipsis();
 		color: $eventCardIdColor;
-		flex-shrink: 2;
-		overflow: hidden;
-		white-space: nowrap;
-		text-overflow: ellipsis;
+		flex-shrink: 3;
 	}
 
 	&__timestamp {
 		justify-content: flex-end;
 		display: flex;
-		text-overflow: ellipsis;
 		flex-wrap: wrap;
 		min-width: 0;
 		margin-left: 5px;
@@ -317,9 +317,7 @@
 		transition: all 0.15s;
 		border: 1px solid transparent;
 		border-radius: 4px;
-		flex-shrink: 0;
-		white-space: nowrap;
-		overflow: hidden;
+		flex-shrink: 1;
 
 		&:hover {
 			color: $graphTextColor;
@@ -328,9 +326,9 @@
 	}
 
 	&__timestamp-item {
+		@include ellipsis();
 		text-align: right;
 		margin-left: 5px;
-		display: flex;
 		min-width: 0;
 	}
 
@@ -339,10 +337,6 @@
 		align-items: center;
 		flex-shrink: 0;
 	}
-}
-
-.closed {
-	display: none;
 }
 
 .event-body-fallback {
@@ -628,13 +622,11 @@
 	cursor: default;
 
 	&__title {
+		@include ellipsis();
 		flex-grow: 1;
 		flex-shrink: 1;
 		font-weight: 600;
 		color: $tableTitleColor;
-		white-space: nowrap;
-		text-overflow: ellipsis;
-		overflow: hidden;
 	}
 
 	&__header {

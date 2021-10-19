@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SplashScreen from '../SplashScreen';
-import { createBemBlock, createStyleSelector } from '../../helpers/styleCreators';
+import { createBemBlock, createStyleSelector, createBemElement } from '../../helpers/styleCreators';
 import { formatTime, timestampToNumber } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import EventBodyCard from './EventBodyCard';
@@ -49,8 +49,7 @@ function EventDetailInfoCard(props: Props) {
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
 	const startTimestampValue = timestampToNumber(startTimestamp);
-	let endTimestampValue;
-	if (endTimestamp) endTimestampValue = timestampToNumber(endTimestamp);
+	const endTimestampValue = endTimestamp && timestampToNumber(endTimestamp);
 
 	const isBookmarked =
 		selectedStore.bookmarkedEvents.findIndex(
@@ -81,11 +80,11 @@ function EventDetailInfoCard(props: Props) {
 	}
 
 	const cardClassName = createStyleSelector('event-detail-info__event-card', 'event-card', status);
-	const statusClassName = createBemBlock(
-		'event-card__status-label',
+	const statusClassName = createBemElement(
+		'event-card',
+		'status-label',
 		isStatusShown ? null : 'closed',
 	);
-
 	const bookmarkButtonClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	return (
@@ -96,13 +95,14 @@ function EventDetailInfoCard(props: Props) {
 					<div
 						className='event-status-icon active'
 						onMouseEnter={showStatus}
-						onMouseLeave={showStatus}></div>
+						onMouseLeave={showStatus}
+					/>
 					<div className={statusClassName}>{status.toUpperCase()}</div>
 				</div>
 				<div className='event-card__info'>
 					<div className='event-card__header'>
 						<div className='event-card__title' title={eventName}>
-							r{eventName}
+							{eventName}
 						</div>
 						<div className='event-card__controls'>
 							{eventType && <span className='event-card__event-type'>{eventType}</span>}
@@ -110,7 +110,10 @@ function EventDetailInfoCard(props: Props) {
 					</div>
 					<div className='event-card__body'>
 						<div className='event-card__id'>{eventId}</div>
-						<div className='event-card__timestamp'>
+						<div
+							className='event-card__timestamp'
+							onMouseEnter={onMouseEnter}
+							onMouseLeave={onMouseLeave}>
 							{startTimestamp && (
 								<div
 									className='event-card__timestamp-item'
