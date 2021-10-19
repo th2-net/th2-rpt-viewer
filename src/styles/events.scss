@@ -218,6 +218,9 @@
 	&__status {
 		& .event-status-icon {
 			margin: 3px 2px;
+			&:hover .event-card__status-label {
+				display: block;
+			}
 		}
 	}
 
@@ -261,15 +264,16 @@
 	}
 
 	&__status-label {
+		display: none;
 		font-weight: 600;
 		position: absolute;
 		padding: 5px 10px;
 		border-radius: 5px;
 		background-color: var(--status-primary-color-light);
 		color: white;
-
 		white-space: nowrap;
 		left: -1px;
+		top: 17px;
 
 		&:before {
 			content: '';
@@ -279,9 +283,6 @@
 			border-left: 7px solid transparent;
 			border-right: 7px solid transparent;
 			border-bottom: 7px solid var(--status-primary-color-light);
-		}
-		&.closed {
-			display: none;
 		}
 	}
 

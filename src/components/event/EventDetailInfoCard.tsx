@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SplashScreen from '../SplashScreen';
-import { createBemBlock, createStyleSelector, createBemElement } from '../../helpers/styleCreators';
+import { createBemBlock, createStyleSelector } from '../../helpers/styleCreators';
 import { formatTime, timestampToNumber } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import EventBodyCard from './EventBodyCard';
@@ -37,7 +37,6 @@ function EventDetailInfoCard(props: Props) {
 	const eventStore = useWorkspaceEventStore();
 
 	const { event, eventTreeNode, node, children } = props;
-	const [isStatusShown, setIsStatusShown] = React.useState(false);
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	if (!event) {
@@ -55,10 +54,6 @@ function EventDetailInfoCard(props: Props) {
 		selectedStore.bookmarkedEvents.findIndex(
 			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
 		) !== -1;
-
-	function showStatus() {
-		setIsStatusShown(!isStatusShown);
-	}
 
 	function onEventPin() {
 		if (event === null) return;
@@ -80,11 +75,6 @@ function EventDetailInfoCard(props: Props) {
 	}
 
 	const cardClassName = createStyleSelector('event-detail-info__event-card', 'event-card', status);
-	const statusClassName = createBemElement(
-		'event-card',
-		'status-label',
-		isStatusShown ? null : 'closed',
-	);
 	const bookmarkButtonClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	return (
@@ -92,12 +82,9 @@ function EventDetailInfoCard(props: Props) {
 			{children}
 			<div className={cardClassName}>
 				<div className='event-card__status'>
-					<div
-						className='event-status-icon active'
-						onMouseEnter={showStatus}
-						onMouseLeave={showStatus}
-					/>
-					<div className={statusClassName}>{status.toUpperCase()}</div>
+					<div className='event-status-icon active'>
+						<div className='event-card__status-label'>{status.toUpperCase()}</div>
+					</div>
 				</div>
 				<div className='event-card__info'>
 					<div className='event-card__header'>
