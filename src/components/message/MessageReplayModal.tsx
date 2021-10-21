@@ -59,6 +59,7 @@ function MessageReplayModal() {
 		body: '',
 		attachedEventIds: '',
 		bodyBinary: '',
+		text: '',
 	});
 
 	const [startTimestamp, setStartTimestamp] = React.useState<null | number>(null);
@@ -92,6 +93,7 @@ function MessageReplayModal() {
 			body: '',
 			attachedEventIds: '',
 			bodyBinary: '',
+			text: '',
 		});
 	}, [messagesStore.filterStore.sseMessagesFilter]);
 
@@ -273,6 +275,7 @@ function MessageReplayModal() {
 				body: '',
 				attachedEventIds: '',
 				bodyBinary: '',
+				text: '',
 			});
 			setSSEFilter(messagesStore.filterStore.sseMessagesFilter);
 			setIsOpen(true);

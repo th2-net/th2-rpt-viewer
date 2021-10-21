@@ -48,8 +48,8 @@ export interface SSEFilterParameter {
 	type: { value: 'string' | 'boolean' | 'string[]' | 'switcher' };
 }
 
-export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status';
-export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body';
+export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status' | 'text';
+export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body' | 'text';
 
 export interface EventsFiltersInfo {
 	name: EventSSEFilters;
@@ -111,6 +111,37 @@ export interface MessagesIdsEvent {
 export type SSEParams = EventSSEParams | MessagesSSEParams;
 
 type ParamsFromFilter = Record<string, string | string[] | boolean>;
+
+const textFilter: EventsFiltersInfo | MessagesFilterInfo = {
+	name: 'text',
+	hint: 'matches events by one of the specified names',
+	parameters: [
+		{
+			name: 'negative',
+			type: {
+				value: 'boolean',
+			},
+			defaultValue: false,
+			hint: '',
+		},
+		{
+			name: 'conjunct',
+			type: {
+				value: 'boolean',
+			},
+			defaultValue: false,
+			hint: '',
+		},
+		{
+			name: 'values',
+			type: {
+				value: 'string[]',
+			},
+			defaultValue: null,
+			hint: 'Text, ...',
+		},
+	],
+};
 
 function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
 	const filters = getObjectKeys(filter).filter(filterName =>
@@ -214,16 +245,23 @@ const sseApi: SSESchema = {
 		throw res;
 	},
 	getEventFilters: () => {
-		return sseApi.getFilters<EventSSEFilters>('events');
+		return sseApi
+			.getFilters<EventSSEFilters>('events')
+			.then(res => (res.includes('text') ? res : [...res, 'text']));
 	},
 	getMessagesFilters: () => {
-		return sseApi.getFilters<MessagesSSEFilters>('messages');
+		return sseApi
+			.getFilters<MessagesSSEFilters>('messages')
+			.then(res => (res.includes('text') ? res : [...res, 'text']));
 	},
 	getEventsFiltersInfo: async filters => {
 		const eventFilterInfo = await Promise.all<EventsFiltersInfo>(
-			filters.map(filterName =>
-				fetch(`backend/filters/sse-events/${filterName}`).then(res => res.json()),
-			),
+			filters.map(filterName => {
+				if (filterName === 'text') {
+					return textFilter as EventsFiltersInfo;
+				}
+				return fetch(`backend/filters/sse-events/${filterName}`).then(res => res.json());
+			}),
 		);
 
 		return eventFilterInfo.map(filterInfo => {
@@ -244,9 +282,12 @@ const sseApi: SSESchema = {
 	},
 	getMessagesFiltersInfo: filters => {
 		return Promise.all(
-			filters.map(filterName =>
-				fetch(`backend/filters/sse-messages/${filterName}`).then(res => res.json()),
-			),
+			filters.map(filterName => {
+				if (filterName === 'text') {
+					return textFilter as MessagesFilterInfo;
+				}
+				return fetch(`backend/filters/sse-messages/${filterName}`).then(res => res.json());
+			}),
 		);
 	},
 };
