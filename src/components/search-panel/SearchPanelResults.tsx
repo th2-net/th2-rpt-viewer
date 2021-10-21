@@ -89,6 +89,9 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 						results={results}
 						onResultClick={onResultItemClick}
 						onGroupClick={onResultGroupClick}
+						prevElement={
+							index > 0 ? resultGroups[index - 1][1][resultGroups[index - 1][1].length - 1] : null
+						}
 					/>
 				))}
 				{showLoadMoreButton && (
