@@ -317,7 +317,6 @@ export class SearchStore {
 		try {
 			const filters = await this.api.sse.getEventFilters();
 			const filtersInfo = await this.api.sse.getEventsFiltersInfo(filters);
-			console.log(filters, filtersInfo);
 			runInAction(() => {
 				this.eventFilterInfo = filtersInfo;
 				this.eventsFilter = getDefaultEventsFiltersState(filtersInfo);
