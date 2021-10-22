@@ -112,37 +112,6 @@ export type SSEParams = EventSSEParams | MessagesSSEParams;
 
 type ParamsFromFilter = Record<string, string | string[] | boolean>;
 
-const textFilter: EventsFiltersInfo | MessagesFilterInfo = {
-	name: 'text',
-	hint: 'matches events by one of the specified names',
-	parameters: [
-		{
-			name: 'negative',
-			type: {
-				value: 'boolean',
-			},
-			defaultValue: false,
-			hint: '',
-		},
-		{
-			name: 'conjunct',
-			type: {
-				value: 'boolean',
-			},
-			defaultValue: false,
-			hint: '',
-		},
-		{
-			name: 'values',
-			type: {
-				value: 'string[]',
-			},
-			defaultValue: null,
-			hint: 'Text, ...',
-		},
-	],
-};
-
 function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
 	const filters = getObjectKeys(filter).filter(filterName =>
 		filterName === 'status'
@@ -245,23 +214,16 @@ const sseApi: SSESchema = {
 		throw res;
 	},
 	getEventFilters: () => {
-		return sseApi
-			.getFilters<EventSSEFilters>('events')
-			.then(res => (res.includes('text') ? res : [...res, 'text']));
+		return sseApi.getFilters<EventSSEFilters>('events');
 	},
 	getMessagesFilters: () => {
-		return sseApi
-			.getFilters<MessagesSSEFilters>('messages')
-			.then(res => (res.includes('text') ? res : [...res, 'text']));
+		return sseApi.getFilters<MessagesSSEFilters>('messages');
 	},
 	getEventsFiltersInfo: async filters => {
 		const eventFilterInfo = await Promise.all<EventsFiltersInfo>(
-			filters.map(filterName => {
-				if (filterName === 'text') {
-					return textFilter as EventsFiltersInfo;
-				}
-				return fetch(`backend/filters/sse-events/${filterName}`).then(res => res.json());
-			}),
+			filters.map(filterName =>
+				fetch(`backend/filters/sse-events/${filterName}`).then(res => res.json()),
+			),
 		);
 
 		return eventFilterInfo.map(filterInfo => {
@@ -282,12 +244,9 @@ const sseApi: SSESchema = {
 	},
 	getMessagesFiltersInfo: filters => {
 		return Promise.all(
-			filters.map(filterName => {
-				if (filterName === 'text') {
-					return textFilter as MessagesFilterInfo;
-				}
-				return fetch(`backend/filters/sse-messages/${filterName}`).then(res => res.json());
-			}),
+			filters.map(filterName =>
+				fetch(`backend/filters/sse-messages/${filterName}`).then(res => res.json()),
+			),
 		);
 	},
 };
