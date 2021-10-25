@@ -211,7 +211,13 @@ const MessageCardTools = ({
 								const isDev = process.env.NODE_ENV === 'development';
 
 								window.parent.postMessage(
-									{ payload: message as unknown, action: 'replayMessage' } as CrossOriginMessage,
+									{
+										payload: {
+											...message,
+											jsonBody: message.body && normalizeFields(message.body?.fields),
+										} as unknown,
+										action: 'replayMessage',
+									} as CrossOriginMessage,
 									isDev ? 'http://localhost:9002' : window.location.origin,
 								);
 								setIsViewMenuOpen(false);
