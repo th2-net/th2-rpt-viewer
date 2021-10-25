@@ -38,6 +38,10 @@ const EmbeddedMessages = () => {
 
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
+	React.useEffect(() => {
+		updateStore.subscribeOnChanges();
+	}, [updateStore]);
+
 	const renderMsg = (index: number, message: EventMessage) => {
 		return (
 			<MessageCardBase
