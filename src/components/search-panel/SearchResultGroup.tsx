@@ -115,9 +115,8 @@ const SearchResultGroup = ({
 			<>
 				{prevElement && (
 					<SearchPanelSeparator
-						timestamp={Math.abs(
-							getTimestampAsNumber(prevElement) - getTimestampAsNumber(results[0]),
-						)}
+						prevElement={getTimestampAsNumber(prevElement)}
+						nextElement={getTimestampAsNumber(results[0])}
 					/>
 				)}
 				<div className='search-result-single-item'>
@@ -138,7 +137,8 @@ const SearchResultGroup = ({
 		<>
 			{prevElement && (
 				<SearchPanelSeparator
-					timestamp={Math.abs(getTimestampAsNumber(prevElement) - getTimestampAsNumber(results[0]))}
+					prevElement={getTimestampAsNumber(prevElement)}
+					nextElement={getTimestampAsNumber(results[0])}
 				/>
 			)}
 			<div className='search-result-group'>
