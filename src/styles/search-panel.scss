@@ -796,10 +796,20 @@
 }
 
 .search-result-separator {
-	font-size: 14px;
+	font-size: 11px;
 	display: block;
+	text-align: center;
 	margin-left: 24px;
 	margin-bottom: 10px;
+	border-bottom: 1px solid $secondaryTextColor;
+	color: $eventCardIdColor;
+	line-height: 0.1em;
+
+	&__text {
+		background-color: $workspaceBackground;
+		padding: 0 45px;
+		width: 10px;
+	}
 }
 
 .search-result-group-items {

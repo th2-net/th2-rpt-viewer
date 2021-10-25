@@ -25,6 +25,7 @@ import { BookmarkedItem, BookmarkItem } from '../bookmarks/BookmarksPanel';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { ActionType, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
+import SearchPanelSeparator from './SearchPanelSeparator';
 
 interface SearchResultGroup {
 	results: SearchResult[];
@@ -113,12 +114,11 @@ const SearchResultGroup = ({
 		return (
 			<>
 				{prevElement && (
-					<div className={'search-result-separator'}>
-						Time passed
-						{moment(Math.abs(getTimestampAsNumber(prevElement) - getTimestampAsNumber(results[0])))
-							.utc()
-							.format(' HH:mm:ss.SSS')}
-					</div>
+					<SearchPanelSeparator
+						timestamp={Math.abs(
+							getTimestampAsNumber(prevElement) - getTimestampAsNumber(results[0]),
+						)}
+					/>
 				)}
 				<div className='search-result-single-item'>
 					<BookmarkItem
@@ -137,12 +137,9 @@ const SearchResultGroup = ({
 	return (
 		<>
 			{prevElement && (
-				<div className={'search-result-separator'}>
-					Time passed
-					{moment(Math.abs(getTimestampAsNumber(prevElement) - getTimestampAsNumber(results[0])))
-						.utc()
-						.format(' HH:mm:ss.SSS')}
-				</div>
+				<SearchPanelSeparator
+					timestamp={Math.abs(getTimestampAsNumber(prevElement) - getTimestampAsNumber(results[0]))}
+				/>
 			)}
 			<div className='search-result-group'>
 				<button className={expandButtonClass} onClick={() => setIsExpanded(!isExpanded)} />
