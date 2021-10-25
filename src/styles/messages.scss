@@ -793,7 +793,7 @@
 			}
 		}
 
-		&-tool{
+		&-tool {
 			display: flex;
 			justify-content: center;
 			background-color: transparent;
@@ -802,7 +802,7 @@
 			cursor: pointer;
 			font-size: 13px;
 			color: $primaryTextColor;
-	
+
 			&:hover {
 				background-color: #00000012;
 			}
@@ -839,6 +839,31 @@
 
 		&-ascii {
 			@include icon(url(../../resources/icons/ascii.svg), 20px, 20px);
+		}
+	}
+
+	&__attached-messages {
+		display: flex;
+		padding-left: 5px;
+		font-size: 12px;
+		line-height: 15px;
+		font-weight: bold;
+
+		&-button {
+			text-align: center;
+			width: 15px;
+			color: #7b7b7b;
+			background: none;
+			cursor: pointer;
+
+			&:hover {
+				background-color: #e8e8e8;
+			}
+		}
+
+		&-text {
+			color: #808080;
+			white-space: nowrap;
 		}
 	}
 }
@@ -1000,7 +1025,7 @@
 		width: 100%;
 	}
 
-	.dragable-area:hover{
+	.dragable-area:hover {
 		cursor: move;
 	}
 }

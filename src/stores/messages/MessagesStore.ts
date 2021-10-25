@@ -79,7 +79,7 @@ export default class MessagesStore {
 	@observable
 	public showFilterChangeHint = false;
 
-	/* 
+	/*
 		This is used for filter change hint. Represents either last clicked message
 		or attached messages
 	*/
