@@ -87,7 +87,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	};
 
 	/*
-		Returns a promise within initialResponseTimeoutMs or successfull fetch
+		Returns a promise within initialResponseTimeoutMs or successful fetch
 		and subscribes on changes 
 	*/
 	public loadAndSubscribe = async (resumeFromId?: string): Promise<EventMessage[]> => {
@@ -114,8 +114,15 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
-				resumeFromId: messageId.length ? undefined : resumeFromId,
-				resultCountLimit: this.chunkSize,
+				resumeFromId:
+					(messageId.length ? undefined : resumeFromId) ?? this.queryParams.resumeFromId,
+				...(this.queryParams.keepOpen
+					? {
+							resultCountLimit: undefined,
+					  }
+					: {
+							resultCountLimit: this.chunkSize,
+					  }),
 				messageId,
 			},
 			type: this.type,

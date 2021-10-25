@@ -27,9 +27,14 @@ module.exports = webpackMerge(commonConfig, {
 	entry: ['react-hot-loader/patch', appSrc],
 	devtool: 'inline-source-map',
 	devServer: {
-		watchOptions: {
-			poll: true,
-			ignored: [/node_modules/, 'src/__tests__/'],
+		watchFiles: {
+			options: {
+				usePolling: true,
+				ignored: ['src/__tests__/', '**/node_modules'],
+			},
+		},
+		client: {
+			overlay: false,
 		},
 		compress: true,
 		port: 9001,

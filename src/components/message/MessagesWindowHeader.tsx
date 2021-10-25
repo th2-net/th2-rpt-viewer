@@ -14,40 +14,28 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { observer } from 'mobx-react-lite';
 import React from 'react';
+import { useMessagesDataStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
+import MessagesUpdateButton from './MessagesUpdateButton';
 
 function MessagesWindowHeader() {
-	// const updateButtonClass = createBemElement(
-	// 	'messages-window-header',
-	// 	'realtime-button',
-	// 	messageUpdateStore.isSubscriptionActive ? 'active' : null,
-	// );
+	const { searchChannelNext, updateStore } = useMessagesDataStore();
 
 	return (
 		<div className='messages-window-header'>
 			<div className='messages-window-header__group'>
+				<MessagesUpdateButton
+					isShow={searchChannelNext?.isEndReached ?? false}
+					isLoading={updateStore.isLoading}
+					subscribeOnChanges={updateStore.subscribeOnChanges}
+					stopSubscription={updateStore.stopSubscription}
+				/>
 				<MessagesFilter />
 			</div>
-			{/* <div className='messages-window-header__group'>
-				{messagesStore.messagesIds.length > 0 && (
-					<button onClick={messageUpdateStore.toggleSubscribe} className={updateButtonClass}>
-						{messageUpdateStore.accumulatedMessages.length === 0 ? (
-							<i className='messages-window-header__realtime-button-icon' />
-						) : (
-							<span
-								className='messages-window-header__realtime-button-count'
-								style={{
-									fontSize: messageUpdateStore.accumulatedMessages.length > 99 ? '11px' : '14px',
-								}}>
-								{messageUpdateStore.accumulatedMessages.length}
-							</span>
-						)}
-					</button>
-				)}
-			</div> */}
 		</div>
 	);
 }
 
-export default MessagesWindowHeader;
+export default observer(MessagesWindowHeader);

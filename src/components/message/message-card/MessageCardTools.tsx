@@ -23,6 +23,9 @@ import { decodeBase64RawContent, getAllRawContent } from '../../../helpers/rawFo
 import { copyTextToClipboard } from '../../../helpers/copyHandler';
 import { showNotification } from '../../../helpers/showNotification';
 import { normalizeFields } from '../../../helpers/message';
+import useViewMode from '../../../hooks/useViewMode';
+import { ViewMode } from '../../../contexts/viewModeContext';
+import { CrossOriginMessage } from '../../../models/PostMessage';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
@@ -50,17 +53,12 @@ const MessageCardTools = ({
 	isEmbedded,
 }: MessageCardToolsConfig) => {
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
-	const [isCopyMenuOpen, setIsCopyMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
-
-	React.useEffect(() => {
-		setIsCopyMenuOpen(false);
-	}, [messageViewType, isViewMenuOpen]);
+	const appViewMode = useViewMode();
 
 	useOutsideClickListener(rootRef, (e: MouseEvent) => {
 		if (e.target instanceof Element && rootRef.current && !rootRef.current.contains(e.target)) {
 			setIsViewMenuOpen(false);
-			setIsCopyMenuOpen(false);
 		}
 	});
 
@@ -105,10 +103,6 @@ const MessageCardTools = ({
 		if (content) {
 			copyTextToClipboard(content);
 			showNotification(COPY_NOTIFICATION_TEXT);
-		}
-
-		if (isCopyMenuOpen) {
-			setIsCopyMenuOpen(false);
 		}
 	}
 
@@ -207,6 +201,32 @@ const MessageCardTools = ({
 							<div className='message-card-tools__icon download' />
 						</a>
 					</>
+				)}
+				{appViewMode === ViewMode.EmbeddedMessages && (
+					<div className='message-card-tools__controls-group'>
+						<div
+							title='Send to history'
+							className='message-card-tools__item'
+							onClick={() => {
+								const isDev = process.env.NODE_ENV === 'development';
+
+								window.parent.postMessage(
+									{
+										payload: {
+											...message,
+											jsonBody: message.body && normalizeFields(message.body?.fields),
+										} as unknown,
+										action: 'replayMessage',
+									} as CrossOriginMessage,
+									isDev ? 'http://localhost:9002' : window.location.origin,
+								);
+								setIsViewMenuOpen(false);
+							}}>
+							<span className='message-card-tools__item-title'>Send to replay</span>
+							<div className='message-card-tools__copy-icon' />
+							<div className={createBemElement('message-card-tools', 'indicator', 'bookmark')} />
+						</div>
+					</div>
 				)}
 			</MessagePopup>
 			{!isScreenshotMsg &&

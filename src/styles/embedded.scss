@@ -130,6 +130,38 @@
 	&__message {
 		@include message-background;
 		font-size: 11px;
+	}	
+}
+
+.messages-list {
+	&__header {
+		width: 100%;
+		height: 40px;
+		padding: 5px 10px;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		box-shadow: 0px 1px 8px 0px rgba(0, 0, 0, 0.35);
+		color: $primaryTextColor;
+		font-size: 14px;
+		line-height: 15px;
+		font-weight: bold;
+
+		.filter-icon {
+			@include icon(url(../../resources/icons/filter.svg), 15px, 15px);
+		}
+
+		.button	{
+			@include clickable;
+
+			padding: 4px 5px;
+			background-color: transparent;
+			border: none;
+			outline: none;
+			color: $primaryTextColor;
+			font-size: 14px;
+			line-height: 15px;
+			font-weight: bold;
+		}
 	}
-	
 }
