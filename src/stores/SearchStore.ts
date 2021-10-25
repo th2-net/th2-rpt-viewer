@@ -315,17 +315,12 @@ export class SearchStore {
 	@computed get sortedResultGroups() {
 		if (!this.currentSearch) return [];
 
-		const startTimestamp = this.currentSearch.request.state.startTimestamp || 0;
-
 		return Object.entries(this.currentSearch.results).sort((a, b) => {
 			const [firstResultGroupTimestamp, secondResultGroupTimestamp] = [a, b].map(
 				resultGroup => +resultGroup[0] * 1000 * SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60,
 			);
 
-			return (
-				Math.abs(firstResultGroupTimestamp - startTimestamp) -
-				Math.abs(secondResultGroupTimestamp - startTimestamp)
-			);
+			return firstResultGroupTimestamp - secondResultGroupTimestamp;
 		});
 	}
 

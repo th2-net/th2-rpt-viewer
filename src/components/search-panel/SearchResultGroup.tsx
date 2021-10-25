@@ -23,23 +23,15 @@ import { useSelectedStore } from '../../hooks';
 import { SearchResult } from '../../stores/SearchStore';
 import { BookmarkedItem, BookmarkItem } from '../bookmarks/BookmarksPanel';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { ActionType, EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import SearchPanelSeparator from './SearchPanelSeparator';
+import { ActionType } from '../../models/EventAction';
 
 interface SearchResultGroup {
 	results: SearchResult[];
 	onResultClick: (searchResult: BookmarkedItem) => void;
 	onGroupClick: (timestamp: number, resultType: ActionType) => void;
-	prevElement: EventMessage | EventTreeNode | null;
 }
 
-const SearchResultGroup = ({
-	results,
-	onResultClick,
-	onGroupClick,
-	prevElement,
-}: SearchResultGroup) => {
+const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResultGroup) => {
 	const selectedStore = useSelectedStore();
 	const [isExpanded, setIsExpanded] = React.useState(false);
 
@@ -112,35 +104,21 @@ const SearchResultGroup = ({
 
 	if (results.length === 1) {
 		return (
-			<>
-				{prevElement && (
-					<SearchPanelSeparator
-						prevElement={getTimestampAsNumber(prevElement)}
-						nextElement={getTimestampAsNumber(results[0])}
-					/>
-				)}
-				<div className='search-result-single-item'>
-					<BookmarkItem
-						key={computeKey(0)}
-						bookmark={results[0]}
-						onClick={onResultClick}
-						toggleBookmark={getBookmarkToggler(results[0])}
-						isBookmarked={getIsToggled(results[0])}
-						isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
-					/>
-				</div>
-			</>
+			<div className='search-result-single-item'>
+				<BookmarkItem
+					key={computeKey(0)}
+					bookmark={results[0]}
+					onClick={onResultClick}
+					toggleBookmark={getBookmarkToggler(results[0])}
+					isBookmarked={getIsToggled(results[0])}
+					isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
+				/>
+			</div>
 		);
 	}
 
 	return (
 		<>
-			{prevElement && (
-				<SearchPanelSeparator
-					prevElement={getTimestampAsNumber(prevElement)}
-					nextElement={getTimestampAsNumber(results[0])}
-				/>
-			)}
 			<div className='search-result-group'>
 				<button className={expandButtonClass} onClick={() => setIsExpanded(!isExpanded)} />
 				<div className='search-result-group__header'>

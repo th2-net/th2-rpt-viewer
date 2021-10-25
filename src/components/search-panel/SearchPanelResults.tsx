@@ -21,6 +21,8 @@ import { BookmarkedItem } from '../bookmarks/BookmarksPanel';
 import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
+import SearchPanelSeparator from './SearchPanelSeparator';
+import { getTimestampAsNumber } from '../../helpers/date';
 
 interface SearchPanelResultsProps {
 	onResultItemClick: (searchResult: BookmarkedItem) => void;
@@ -84,13 +86,19 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 			</div>
 			<div className='search-results__list'>
 				{resultGroups.map(([_, results], index) => (
-					<SearchResultGroup
-						key={computeKey(index)}
-						results={results}
-						onResultClick={onResultItemClick}
-						onGroupClick={onResultGroupClick}
-						prevElement={index > 0 ? resultGroups[index - 1][1].slice(-1)[0] : null}
-					/>
+					<div key={computeKey(index)}>
+						{index > 0 && (
+							<SearchPanelSeparator
+								prevElement={getTimestampAsNumber(resultGroups[index - 1][1].slice(-1)[0])}
+								nextElement={getTimestampAsNumber(results[0])}
+							/>
+						)}
+						<SearchResultGroup
+							results={results}
+							onResultClick={onResultItemClick}
+							onGroupClick={onResultGroupClick}
+						/>
+					</div>
 				))}
 				{showLoadMoreButton && (
 					<button onClick={loadMore} className='actions-list__load-button'>
