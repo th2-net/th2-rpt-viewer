@@ -48,14 +48,6 @@
 
 			.filter-row__wrapper {
 				display: flex !important;
-
-				&.hidden {
-					position: absolute;
-					visibility: hidden;
-					width: 0px;
-					height: 0px;
-					// display: none !important;
-				}
 			}
 		}
 

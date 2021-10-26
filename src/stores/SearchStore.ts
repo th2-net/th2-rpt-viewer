@@ -17,6 +17,7 @@
 import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
+import debounce from 'lodash.debounce';
 import ApiSchema from '../api/ApiSchema';
 import {
 	EventsFiltersInfo,
@@ -132,8 +133,15 @@ export class SearchStore {
 
 		reaction(
 			() => this.searchForm.parentEvent,
-			parentEvent =>
-				parentEvent && !isEventId(parentEvent) && this.loadEventAutocompleteList(parentEvent),
+			parentEvent => {
+				if (parentEvent) {
+					if (!isEventId(parentEvent)) {
+						this.loadEventAutocompleteList(parentEvent);
+					}
+				} else {
+					this.resetEventAutocompleteList();
+				}
+			},
 		);
 	}
 
@@ -702,15 +710,16 @@ export class SearchStore {
 		this.eventAutocompleteList = [];
 	};
 
-	private loadEventAutocompleteList(parentEventName: string) {
+	private loadEventAutocompleteList = debounce((parentEventName: string) => {
 		if (this.eventAutocompleteSseChannel) {
 			this.eventAutocompleteSseChannel.close();
-			this.resetEventAutocompleteList();
 		}
+		this.resetEventAutocompleteList();
 
 		this.eventAutocompleteSseChannel = this.api.sse.getEventSource({
 			type: 'event',
 			queryParams: {
+				filters: ['name'],
 				'name-values': [parentEventName],
 				startTimestamp: moment().utc().valueOf(),
 				searchDirection: 'previous',
@@ -727,7 +736,7 @@ export class SearchStore {
 			this.eventAutocompleteSseChannel?.close();
 			this.eventAutocompleteSseChannel = null;
 		});
-	}
+	}, 400);
 
 	private async loadMessageSessions() {
 		try {
