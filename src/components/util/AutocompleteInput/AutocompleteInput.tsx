@@ -47,7 +47,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		onSubmit,
 		onRemove,
 		onEmptyBlur,
-		onBlur = () => null,
 		onFocus,
 		autoCompleteList,
 		autocompleteClassName,
@@ -84,7 +83,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 				}
 				onSubmit(value);
 			}
-			onBlur();
 			setAutocompleteAnchor(null);
 		},
 		[value],

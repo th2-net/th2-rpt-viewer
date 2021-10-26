@@ -51,7 +51,7 @@ const SearchSubmit = ({
 		isSearching ? 'searching' : isPaused ? 'paused' : 'pending',
 	);
 
-	const handleClick = isSearching ? pauseSearch : startSearch;
+	const handleClick = isSearching ? () => pauseSearch() : () => startSearch();
 
 	return (
 		<div className='search-form__submit'>
