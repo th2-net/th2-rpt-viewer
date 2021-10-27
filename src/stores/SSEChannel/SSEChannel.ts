@@ -68,6 +68,8 @@ export default abstract class SSEChannel<T> implements ISSEChannel {
 	@observable
 	public isEndReached = false;
 
+	public onStop?: () => void;
+
 	constructor(
 		protected typeGuard: (data: unknown) => data is T,
 		protected eventListeners: SSEEventListeners<T>,
@@ -135,6 +137,7 @@ export default abstract class SSEChannel<T> implements ISSEChannel {
 		this.closeChannel();
 		this.resetSSEState();
 		this.clearFetchedChunkSubscription();
+		this.onStop?.();
 	};
 
 	protected closeChannel = () => {

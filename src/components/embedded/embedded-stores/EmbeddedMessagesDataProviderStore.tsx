@@ -135,6 +135,17 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 					}
 				}
 			}
+
+			this.searchChannelNext.onStop = () =>
+				!this.searchChannelPrev?.isLoading &&
+				!this.updateStore.isLoading &&
+				this.updateStore.subscribeOnChanges();
+
+			this.searchChannelPrev.onStop = () =>
+				!this.searchChannelNext?.isLoading &&
+				!this.updateStore.isLoading &&
+				this.updateStore.subscribeOnChanges();
+
 			const [nextMessages, prevMessages] = await Promise.all([
 				this.searchChannelNext.loadAndSubscribe(message?.messageId),
 				this.searchChannelPrev.loadAndSubscribe(message?.messageId),
@@ -170,6 +181,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.searchChannelNext?.stop();
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
+		this.updateStore.stopSubscription();
 		this.resetMessagesDataState(isError);
 	};
 
