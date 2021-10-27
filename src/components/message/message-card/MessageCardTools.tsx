@@ -64,7 +64,7 @@ const MessageCardTools = ({
 			setIsViewMenuOpen(false);
 		}
 	});
-	
+
 	const viewTypes = bodyItem
 		? [
 				MessageViewType.JSON,
