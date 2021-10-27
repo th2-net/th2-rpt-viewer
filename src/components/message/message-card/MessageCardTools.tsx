@@ -16,7 +16,7 @@
 
 import React, { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { createBemBlock, createBemElement } from '../../../helpers/styleCreators';
+import { createBemElement } from '../../../helpers/styleCreators';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { decodeBase64RawContent, getAllRawContent } from '../../../helpers/rawFormatter';
@@ -64,9 +64,7 @@ const MessageCardTools = ({
 			setIsViewMenuOpen(false);
 		}
 	});
-
-	const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
-
+	
 	const viewTypes = bodyItem
 		? [
 				MessageViewType.JSON,
