@@ -150,11 +150,7 @@ export default class EmbeddedMessagesStore {
 		return JSON.parse(window.atob(messagesUrlState));
 	};
 
-	private init = async (initialState?: EmbeddedMessagesFilterInitialState) => {
-		if (!initialState) {
-			return;
-		}
-
+	private init = async (initialState: EmbeddedMessagesFilterInitialState) => {
 		const defaultMessagesFilter = getDefaultMessagesFilter();
 		const {
 			streams,

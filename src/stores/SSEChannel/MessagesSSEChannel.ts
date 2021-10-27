@@ -23,7 +23,7 @@ import { isEventMessage } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
 
-type MessageSSEEventListeners = SSEEventListeners<EventMessage> & {
+export type MessageSSEEventListeners = SSEEventListeners<EventMessage> & {
 	onKeepAliveResponse?: (event: SSEHeartbeat) => void;
 };
 
@@ -58,12 +58,8 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 
 	@action
 	protected onClose = () => {
-		this.closeChannel();
-		this.isLoading = false;
-		this.clearSchedulersAndTimeouts();
-
-		const isEndReached = this.messagesIdsEvent
-			? Object.values(this.messagesIdsEvent.messageIds).every(messageId => messageId === null)
+		const isEndReached = !this.queryParams.keepOpen
+			? this.fetchedEventsCount !== this.chunkSize
 			: false;
 
 		if (this.fetchedChunkSubscription == null) {
@@ -73,6 +69,11 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		} else {
 			this.isEndReached = isEndReached;
 		}
+
+		this.closeChannel();
+		this.isLoading = false;
+		this.clearSchedulersAndTimeouts();
+		this.onStop?.();
 	};
 
 	@action

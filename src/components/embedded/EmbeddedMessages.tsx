@@ -38,10 +38,6 @@ const EmbeddedMessages = () => {
 
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
-	React.useEffect(() => {
-		updateStore.subscribeOnChanges();
-	}, [updateStore]);
-
 	const renderMsg = (index: number, message: EventMessage) => {
 		return (
 			<MessageCardBase
@@ -81,7 +77,7 @@ const EmbeddedMessages = () => {
 		<div className='messages-list'>
 			<div className='messages-list__header'>
 				<MessagesUpdateButton
-					isShow={dataStore.searchChannelNext?.isEndReached ?? false}
+					isShow={dataStore.searchChannelNext?.isEndReached || dataStore.updateStore.isLoading}
 					isLoading={updateStore.isLoading}
 					subscribeOnChanges={updateStore.subscribeOnChanges}
 					stopSubscription={updateStore.stopSubscription}
@@ -171,6 +167,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 					messagesStore.dataStore.searchChannelNext &&
 					!messagesStore.dataStore.searchChannelNext.isLoading &&
 					!messagesStore.dataStore.searchChannelNext.isEndReached &&
+					!messagesStore.dataStore.updateStore.isLoading &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
 					loadNextMessages(messagesStore.dataStore.messages[0]?.messageId).then(messages =>

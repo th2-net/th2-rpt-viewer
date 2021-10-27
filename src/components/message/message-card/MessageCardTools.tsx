@@ -25,7 +25,7 @@ import { showNotification } from '../../../helpers/showNotification';
 import { normalizeFields } from '../../../helpers/message';
 import useViewMode from '../../../hooks/useViewMode';
 import { ViewMode } from '../../../contexts/viewModeContext';
-import { CrossOriginMessage } from '../../../models/PostMessage';
+import { Apps, CrossOriginMessage } from '../../../models/PostMessage';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
@@ -219,6 +219,7 @@ const MessageCardTools = ({
 												JSON.stringify(normalizeFields(message.body?.fields), null, '    '),
 										} as unknown,
 										action: 'replayMessage',
+										publisher: Apps.ReportViewer,
 									} as CrossOriginMessage,
 									isDev ? 'http://localhost:9002' : window.location.origin,
 								);
