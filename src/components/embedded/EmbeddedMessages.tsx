@@ -37,7 +37,7 @@ const EmbeddedMessages = () => {
 	const [viewTypeMap, setViewTypeMap] = useState<Map<string, MessageViewType>>(new Map());
 	const { dataStore, filter, sseMessagesFilter, scrolledIndex, loadLastMessages } = messagesStore;
 	const { updateStore } = dataStore;
-  
+	
 	React.useEffect(() => {
 		updateStore.subscribeOnChanges();
 	}, [updateStore]);
