@@ -220,8 +220,8 @@ const MessageCardTools = ({
 										payload: {
 											...message,
 											jsonBody:
-												message.body &&
-												JSON.stringify(normalizeFields(message.body?.fields), null, '    '),
+												bodyItem &&
+												JSON.stringify(normalizeFields(bodyItem.message.fields), null, '    '),
 										} as unknown,
 										action: 'replayMessage',
 									} as CrossOriginMessage,
