@@ -46,9 +46,9 @@ export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string |
 export default class MessagesStore {
 	private attachedMessagesSubscription: IReactionDisposer;
 
-	public filterStore = new MessagesFilterStore(this.searchStore);
+	public filterStore: MessagesFilterStore;
 
-	public dataStore = new MessagesDataProviderStore(this, this.api);
+	public dataStore: MessagesDataProviderStore;
 
 	public exportStore = new MessagesExportStore();
 
@@ -89,6 +89,8 @@ export default class MessagesStore {
 		private sessionsStore: SessionsStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
+		this.filterStore = new MessagesFilterStore(this.searchStore);
+		this.dataStore = new MessagesDataProviderStore(this, this.api);
 		this.init(defaultState);
 
 		this.attachedMessagesSubscription = reaction(
@@ -136,9 +138,10 @@ export default class MessagesStore {
 	@action
 	public scrollToMessage = async (messageId: string) => {
 		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === messageId);
-		if (messageIndex !== -1) {
-			this.scrolledIndex = new Number(messageIndex);
-		}
+
+		if (messageIndex === -1) throw new Error(`Message with ${messageId} id doesn't exists`);
+
+		this.scrolledIndex = new Number(messageIndex);
 	};
 
 	@action

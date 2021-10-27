@@ -18,24 +18,26 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SplashScreen from '../SplashScreen';
 import { createBemBlock, createStyleSelector } from '../../helpers/styleCreators';
-import { formatTime, getElapsedTime, timestampToNumber } from '../../helpers/date';
+import { formatTime, timestampToNumber } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
-import { Chip } from '../Chip';
 import EventBodyCard from './EventBodyCard';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { useSelectedStore } from '../../hooks';
+import { useSelectedStore, useWorkspaceEventStore } from '../../hooks';
 
 interface Props {
 	node: EventTreeNode;
 	event: EventAction | null;
+	eventTreeNode: EventTreeNode;
 	childrenCount?: number;
 	children?: React.ReactNode;
 }
 
 function EventDetailInfoCard(props: Props) {
 	const selectedStore = useSelectedStore();
+	const eventStore = useWorkspaceEventStore();
 
-	const { event, childrenCount = 0, node, children } = props;
+	const { event, eventTreeNode, node, children } = props;
+	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	if (!event) {
 		return <SplashScreen />;
@@ -45,14 +47,13 @@ function EventDetailInfoCard(props: Props) {
 	const { isUnknown } = node;
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
+	const startTimestampValue = startTimestamp && timestampToNumber(startTimestamp);
+	const endTimestampValue = endTimestamp && timestampToNumber(endTimestamp);
 
 	const isBookmarked =
 		selectedStore.bookmarkedEvents.findIndex(
 			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
 		) !== -1;
-
-	const elapsedTime =
-		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
 
 	function onEventPin() {
 		if (event === null) return;
@@ -60,8 +61,20 @@ function EventDetailInfoCard(props: Props) {
 		selectedStore.toggleEventPin(node);
 	}
 
-	const cardClassName = createStyleSelector('event-detail-info__event-card', 'event-card', status);
+	function onMouseEnter() {
+		if (!isUnknown) {
+			hoverTimeout.current = setTimeout(() => {
+				eventStore.setHoveredEvent(eventTreeNode);
+			}, 600);
+		}
+	}
 
+	function onMouseLeave() {
+		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+		eventStore.setHoveredEvent(null);
+	}
+
+	const cardClassName = createStyleSelector('event-detail-info__event-card', 'event-card', status);
 	const bookmarkButtonClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	return (
@@ -69,7 +82,9 @@ function EventDetailInfoCard(props: Props) {
 			{children}
 			<div className={cardClassName}>
 				<div className='event-card__status'>
-					<div className={`event-status-icon active`}></div>
+					<div className='event-status-icon active'>
+						<div className='event-card__status-label'>{status.toUpperCase()}</div>
+					</div>
 				</div>
 				<div className='event-card__info'>
 					<div className='event-card__header'>
@@ -78,34 +93,18 @@ function EventDetailInfoCard(props: Props) {
 						</div>
 						<div className='event-card__controls'>
 							{eventType && <span className='event-card__event-type'>{eventType}</span>}
-							{elapsedTime && <span className='event-card__time'>{elapsedTime}</span>}
-							{childrenCount > 0 ? <Chip text={childrenCount.toString()} /> : null}
-							<span className='event-card__status-label'>{status.toUpperCase()}</span>
 						</div>
 					</div>
 					<div className='event-card__body'>
 						<div className='event-card__id'>{eventId}</div>
-						<div className='event-card__timestamp'>
-							<div className='event-card__timestamp-item'>
-								{startTimestamp && (
-									<>
-										<div className='event-card__timestamp-label'>Start</div>
-										<div className='event-card__timestamp-value'>
-											{formatTime(timestampToNumber(startTimestamp))}
-										</div>
-									</>
-								)}
-							</div>
-							<div className='event-card__timestamp-item'>
-								{endTimestamp && (
-									<>
-										<div className='event-card__timestamp-label'>Finish</div>
-										<div className='event-card__timestamp-value'>
-											{formatTime(timestampToNumber(endTimestamp))}
-										</div>
-									</>
-								)}
-							</div>
+						<div
+							className='event-card__timestamp'
+							onMouseEnter={onMouseEnter}
+							onMouseLeave={onMouseLeave}>
+							{formatTime(startTimestampValue)}
+							{endTimestampValue && endTimestampValue !== startTimestampValue ? (
+								<> &ndash; {formatTime(endTimestampValue)}</>
+							) : null}
 						</div>
 					</div>
 				</div>

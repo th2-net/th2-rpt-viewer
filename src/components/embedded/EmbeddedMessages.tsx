@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
@@ -29,15 +29,18 @@ import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import { MessageCardBase } from '../message/message-card/MessageCardBase';
 import { MessageBodyPayload } from '../../models/MessageBody';
+import MessagesUpdateButton from '../message/MessagesUpdateButton';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
 const EmbeddedMessages = () => {
 	const [viewTypeMap, setViewTypeMap] = useState<Map<string, MessageViewType>>(new Map());
-
-	useEffect(() => {
-		messagesStore.dataStore.loadMessages();
-	}, []);
+	const { dataStore, filter, sseMessagesFilter, scrolledIndex, loadLastMessages } = messagesStore;
+	const { updateStore } = dataStore;
+  
+	React.useEffect(() => {
+		updateStore.subscribeOnChanges();
+	}, [updateStore]);
 
 	const renderMsg = (index: number, message: EventMessage) => {
 		return (
@@ -63,15 +66,7 @@ const EmbeddedMessages = () => {
 		);
 	};
 
-	if (
-		messagesStore.dataStore.messages.length === 0 &&
-		(messagesStore.dataStore.isLoadingNextMessages ||
-			messagesStore.dataStore.isLoadingPreviousMessages)
-	) {
-		return <SplashScreen />;
-	}
-
-	if (messagesStore.dataStore.isError) {
+	if (dataStore.isError) {
 		return (
 			<Empty
 				description='Error occured while loading messages'
@@ -81,13 +76,10 @@ const EmbeddedMessages = () => {
 	}
 
 	if (
-		!(
-			messagesStore.dataStore.isLoadingNextMessages ||
-			messagesStore.dataStore.isLoadingPreviousMessages
-		) &&
-		messagesStore.dataStore.messages.length === 0
+		!(dataStore.isLoadingNextMessages || dataStore.isLoadingPreviousMessages) &&
+		dataStore.messages.length === 0
 	) {
-		if (messagesStore.dataStore.isError === false) {
+		if (dataStore.isError === false) {
 			return (
 				<Empty
 					description='No messages'
@@ -99,17 +91,38 @@ const EmbeddedMessages = () => {
 
 	return (
 		<div className='messages-list'>
-			<StateSaverProvider>
-				<MessagesVirtualizedList
-					className='messages-list__items'
-					rowCount={messagesStore.dataStore.messages.length}
-					scrolledIndex={messagesStore.scrolledIndex}
-					itemRenderer={renderMsg}
-					overscan={0}
-					loadNextMessages={messagesStore.dataStore.getNextMessages}
-					loadPrevMessages={messagesStore.dataStore.getPreviousMessages}
+			<div className='messages-list__header'>
+				<MessagesUpdateButton
+					isShow={dataStore.searchChannelNext?.isEndReached ?? false}
+					isLoading={updateStore.isLoading}
+					subscribeOnChanges={updateStore.subscribeOnChanges}
+					stopSubscription={updateStore.stopSubscription}
 				/>
-			</StateSaverProvider>
+				<span>Streams: {filter.streams.join(', ')}</span>
+				{sseMessagesFilter &&
+					Object.values(sseMessagesFilter).some(sseFilter => sseFilter.values.length) && (
+						<div className='filter-icon' />
+					)}
+				<button className='button' onClick={loadLastMessages}>
+					Load last messages
+				</button>
+			</div>
+			{dataStore.messages.length === 0 &&
+			(dataStore.isLoadingNextMessages || dataStore.isLoadingPreviousMessages) ? (
+				<SplashScreen />
+			) : (
+				<StateSaverProvider>
+					<MessagesVirtualizedList
+						className='messages-list__items'
+						rowCount={dataStore.messages.length}
+						scrolledIndex={scrolledIndex}
+						itemRenderer={renderMsg}
+						overscan={0}
+						loadNextMessages={dataStore.getNextMessages}
+						loadPrevMessages={dataStore.getPreviousMessages}
+					/>
+				</StateSaverProvider>
+			)}
 		</div>
 	);
 };
@@ -277,5 +290,6 @@ interface SpinnerProps {
 }
 const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
 	if (!isLoading) return null;
+
 	return <div className='messages-list__spinner' />;
 };

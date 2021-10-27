@@ -23,9 +23,9 @@ import EventsStore from './EventsStore';
 import { createSearchToken } from '../../helpers/search/createSearchToken';
 import { COLORS as SearchTokenColors } from '../../components/search/SearchInput';
 import { nextCyclicItemByIndex } from '../../helpers/array';
-import { EventSSELoader } from './EventSSELoader';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { EventTreeNode } from '../../models/EventAction';
+import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 
 const defaultState = {
 	tokens: [],
@@ -163,7 +163,7 @@ export default class EventsSearchStore {
 		return filter;
 	};
 
-	private loader: EventSSELoader | null = null;
+	private channel: EventsSSEChannel | null = null;
 
 	private searchResultsUpdateReaction: IReactionDisposer | null = null;
 
@@ -171,7 +171,7 @@ export default class EventsSearchStore {
 
 	@action
 	public fetchSearchResults = (searchTokens: SearchToken[]) => {
-		this.loader?.stop();
+		this.channel?.stop();
 		this.worker?.terminate();
 		this.rawResults = [];
 		this.scrolledIndex = null;
@@ -184,7 +184,7 @@ export default class EventsSearchStore {
 
 		this.isLoadingSearchResults = true;
 
-		this.loader = new EventSSELoader(
+		this.channel = new EventsSSEChannel(
 			{
 				filter: this.getSearchFilter(searchTokens),
 				sseParams: {
@@ -218,7 +218,7 @@ export default class EventsSearchStore {
 			},
 		);
 
-		this.loader.subscribe();
+		this.channel.subscribe();
 	};
 
 	@action
@@ -258,8 +258,8 @@ export default class EventsSearchStore {
 		this.results = [];
 		this.rawResults = [];
 
-		this.loader?.stop();
-		this.loader = null;
+		this.channel?.stop();
+		this.channel = null;
 
 		if (this.searchResultsUpdateReaction) {
 			this.searchResultsUpdateReaction();

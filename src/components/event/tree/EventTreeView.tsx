@@ -48,6 +48,7 @@ function EventTreeView() {
 					<EventDetailInfoCard
 						node={eventsStore.selectedNode}
 						event={eventsStore.selectedEvent}
+						eventTreeNode={eventsStore.selectedNode}
 						childrenCount={
 							(eventsDataStore.parentChildrensMap.get(eventsStore.selectedNode.eventId) || [])
 								.length

@@ -119,6 +119,8 @@ export function MessageCardBase({
 		isExported ? 'exported' : null,
 	);
 
+	const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : 'hidden');
+
 	// session arrow color, we calculating it for each session from-to pair, based on hash
 	const sessionArrowStyle: React.CSSProperties = {
 		display: 'inline-flex',
@@ -203,6 +205,7 @@ export function MessageCardBase({
 
 	return (
 		<div className={rootClass} onClick={addMessageToExport}>
+			{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
 			<div className='message-card'>
 				<div className='mc__mc-header mc-header'>{renderMessageInfo()}</div>
 				<div className='mc__mc-body mc-body'>
