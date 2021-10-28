@@ -16,7 +16,7 @@
 
 import React from 'react';
 import moment from 'moment';
-import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { Virtuoso } from 'react-virtuoso';
 import { isEventNode } from '../../helpers/event';
 import { BookmarkedItem } from '../bookmarks/BookmarksPanel';
 import { SearchResult } from '../../stores/SearchStore';
@@ -57,7 +57,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		prev,
 		loadMore,
 	} = props;
-	const virtuosoRef = React.useRef<VirtuosoHandle | null>(null);
 
 	function computeKey(index: number) {
 		const [, results] = resultGroups[index];
@@ -118,7 +117,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 						data={resultGroups}
 						className={'search-results__list-virtual'}
 						style={{ height: '100%' }}
-						ref={virtuosoRef}
 						components={{
 							Footer: loadMoreButton,
 						}}
