@@ -702,6 +702,10 @@
 
 	&__list {
 		width: 100%;
+		height: 310px;
+		&-virtual {
+			@include scrollbar();
+		}
 	}
 }
 
