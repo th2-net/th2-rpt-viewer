@@ -136,6 +136,13 @@ export default class MessagesDataProviderStore {
 					}
 				}
 			}
+
+			const { selectedMessageId, scrollToMessage } = this.messagesStore;
+			this.searchChannelNext.onStop = () =>
+				selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
+			this.searchChannelPrev.onStop = () =>
+				selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
+
 			const [nextMessages, prevMessages] = await Promise.all([
 				this.searchChannelNext.loadAndSubscribe(message?.messageId),
 				this.searchChannelPrev.loadAndSubscribe(message?.messageId),
