@@ -20,27 +20,29 @@ const MessageAttachedSelection = (props: Props) => {
 	});
 
 	const onPrevious = () => {
-		messageIndex !== 0 && messagesDataStore.messages.includes(attachedMessages[messageIndex])
-			? (messagesStore.scrollToMessage(attachedMessages[messageIndex].messageId),
-			  setMessageIndex(messageIndex - 1))
-			: messageIndex !== 0
-			? (messagesStore.onMessageSelect(attachedMessages[messageIndex]),
-			  setMessageIndex(messageIndex - 1))
-			: null;
+		if (messageIndex !== 0 && messagesDataStore.messages.includes(attachedMessages[messageIndex])) {
+			messagesStore.scrollToMessage(attachedMessages[messageIndex].messageId);
+			setMessageIndex(messageIndex - 1);
+		} else if (messageIndex !== 0) {
+			messagesStore.onMessageSelect(attachedMessages[messageIndex]);
+			setMessageIndex(messageIndex - 1);
+		}
 	};
 
 	const onNext = () => {
-		messageIndex !== attachedMessages.length - 1 &&
-		messagesDataStore.messages.includes(attachedMessages[messageIndex])
-			? (messagesStore.scrollToMessage(attachedMessages[messageIndex].messageId),
-			  setMessageIndex(messageIndex + 1))
-			: messageIndex !== attachedMessages.length - 1
-			? (messagesStore.onMessageSelect(attachedMessages[messageIndex]),
-			  setMessageIndex(messageIndex + 1))
-			: null;
+		if (
+			messageIndex !== attachedMessages.length - 1 &&
+			messagesDataStore.messages.includes(attachedMessages[messageIndex])
+		) {
+			messagesStore.scrollToMessage(attachedMessages[messageIndex].messageId);
+			setMessageIndex(messageIndex + 1);
+		} else if (messageIndex !== attachedMessages.length - 1) {
+			messagesStore.onMessageSelect(attachedMessages[messageIndex]);
+			setMessageIndex(messageIndex + 1);
+		}
 	};
 
-	if (attachedMessages.length == 0) return null;
+	if (attachedMessages.length === 0) return null;
 
 	return (
 		<div className='messages-window-header__attached-messages'>
