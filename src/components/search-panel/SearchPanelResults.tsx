@@ -16,6 +16,7 @@
 
 import React from 'react';
 import moment from 'moment';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { isEventNode } from '../../helpers/event';
 import { BookmarkedItem } from '../bookmarks/BookmarksPanel';
 import { SearchResult } from '../../stores/SearchStore';
@@ -23,6 +24,7 @@ import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
 import SearchPanelSeparator from './SearchPanelSeparator';
 import { getTimestampAsNumber } from '../../helpers/date';
+import StateSaverProvider from '../util/StateSaverProvider';
 
 interface SearchPanelResultsProps {
 	onResultItemClick: (searchResult: BookmarkedItem) => void;
@@ -53,15 +55,41 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		showToggler,
 		next,
 		prev,
-		showLoadMoreButton,
 		loadMore,
 	} = props;
+	const virtuosoRef = React.useRef<VirtuosoHandle | null>(null);
 
 	function computeKey(index: number) {
 		const [, results] = resultGroups[index];
 		const item = results[0];
 		return isEventNode(item) ? item.eventId : item.messageId;
 	}
+
+	const renderResult = (index: number, [_, results]: [string, SearchResult[]]) => {
+		return (
+			<React.Fragment key={computeKey(index)}>
+				{index > 0 && (
+					<SearchPanelSeparator
+						prevElement={getTimestampAsNumber(resultGroups[index - 1][1].slice(-1)[0])}
+						nextElement={getTimestampAsNumber(results[0])}
+					/>
+				)}
+				<SearchResultGroup
+					results={results}
+					onResultClick={onResultItemClick}
+					onGroupClick={onResultGroupClick}
+				/>
+			</React.Fragment>
+		);
+	};
+
+	const loadMoreButton = () => {
+		return !loadMoreButton ? null : (
+			<button onClick={loadMore} className='actions-list__load-button'>
+				Load more
+			</button>
+		);
+	};
 
 	return (
 		<div className='search-results'>
@@ -85,26 +113,18 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 				</button>
 			</div>
 			<div className='search-results__list'>
-				{resultGroups.map(([_, results], index) => (
-					<div key={computeKey(index)}>
-						{index > 0 && (
-							<SearchPanelSeparator
-								prevElement={getTimestampAsNumber(resultGroups[index - 1][1].slice(-1)[0])}
-								nextElement={getTimestampAsNumber(results[0])}
-							/>
-						)}
-						<SearchResultGroup
-							results={results}
-							onResultClick={onResultItemClick}
-							onGroupClick={onResultGroupClick}
-						/>
-					</div>
-				))}
-				{showLoadMoreButton && (
-					<button onClick={loadMore} className='actions-list__load-button'>
-						Load more
-					</button>
-				)}
+				<StateSaverProvider>
+					<Virtuoso
+						data={resultGroups}
+						className={'search-results__list-virtual'}
+						style={{ height: '100%' }}
+						ref={virtuosoRef}
+						components={{
+							Footer: loadMoreButton,
+						}}
+						itemContent={renderResult}
+					/>
+				</StateSaverProvider>
 			</div>
 		</div>
 	);
