@@ -20,8 +20,13 @@ const MessageAttachedSelection = (props: Props) => {
 	});
 
 	const onPrevious = () => {
-		if (messageIndex !== 0 && messagesDataStore.messages.includes(attachedMessages[messageIndex])) {
-			messagesStore.scrollToMessage(attachedMessages[messageIndex].messageId);
+		if (
+			messageIndex !== 0 &&
+			messagesDataStore.messages.findIndex(
+				m => m.messageId === attachedMessages[messageIndex].messageId,
+			) !== -1
+		) {
+			messagesStore.onAttachedMessageScroll(attachedMessages[messageIndex]);
 			setMessageIndex(messageIndex - 1);
 		} else if (messageIndex !== 0) {
 			messagesStore.onMessageSelect(attachedMessages[messageIndex]);
@@ -32,9 +37,11 @@ const MessageAttachedSelection = (props: Props) => {
 	const onNext = () => {
 		if (
 			messageIndex !== attachedMessages.length - 1 &&
-			messagesDataStore.messages.includes(attachedMessages[messageIndex])
+			messagesDataStore.messages.findIndex(
+				m => m.messageId === attachedMessages[messageIndex].messageId,
+			) !== -1
 		) {
-			messagesStore.scrollToMessage(attachedMessages[messageIndex].messageId);
+			messagesStore.onAttachedMessageScroll(attachedMessages[messageIndex]);
 			setMessageIndex(messageIndex + 1);
 		} else if (messageIndex !== attachedMessages.length - 1) {
 			messagesStore.onMessageSelect(attachedMessages[messageIndex]);
