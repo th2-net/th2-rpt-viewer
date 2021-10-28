@@ -300,7 +300,7 @@ const MessagesFilterPanel = () => {
 				endExport={messagesStore.exportStore.endExport}
 				exportAmount={messagesStore.exportStore.exportMessages.length}
 			/>
-			<MessagesAttachedSelection attachedMessages={messagesStore.attachedMessages} />
+			<MessagesAttachedSelection />
 		</>
 	);
 };

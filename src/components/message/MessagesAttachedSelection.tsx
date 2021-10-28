@@ -1,50 +1,33 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useMessagesWorkspaceStore, useMessagesDataStore } from '../../hooks';
+import { useMessagesWorkspaceStore } from '../../hooks';
 import { EventMessage } from '../../models/EventMessage';
 
-interface Props {
-	attachedMessages: EventMessage[];
-}
-
-const MessageAttachedSelection = (props: Props) => {
-	const { attachedMessages } = props;
-
+const MessageAttachedSelection = () => {
 	const messagesStore = useMessagesWorkspaceStore();
-	const messagesDataStore = useMessagesDataStore();
 
+	const { attachedMessages } = messagesStore;
+
+	const [currentAttachedMessages, setCurrentAttachedMessages] = React.useState<EventMessage[]>([]);
 	const [messageIndex, setMessageIndex] = React.useState<number>(0);
 
 	React.useEffect(() => {
-		if (attachedMessages.length === 0) setMessageIndex(0);
-	});
+		if (attachedMessages !== currentAttachedMessages) {
+			setCurrentAttachedMessages(attachedMessages);
+			setMessageIndex(0);
+		}
+	}, [attachedMessages]);
 
 	const onPrevious = () => {
-		if (
-			messageIndex !== 0 &&
-			messagesDataStore.messages.findIndex(
-				m => m.messageId === attachedMessages[messageIndex].messageId,
-			) !== -1
-		) {
-			messagesStore.onAttachedMessageScroll(attachedMessages[messageIndex]);
-			setMessageIndex(messageIndex - 1);
-		} else if (messageIndex !== 0) {
-			messagesStore.onMessageSelect(attachedMessages[messageIndex]);
+		if (messageIndex !== 0) {
+			messagesStore.selectAttachedMessage(attachedMessages[messageIndex]);
 			setMessageIndex(messageIndex - 1);
 		}
 	};
 
 	const onNext = () => {
-		if (
-			messageIndex !== attachedMessages.length - 1 &&
-			messagesDataStore.messages.findIndex(
-				m => m.messageId === attachedMessages[messageIndex].messageId,
-			) !== -1
-		) {
-			messagesStore.onAttachedMessageScroll(attachedMessages[messageIndex]);
-			setMessageIndex(messageIndex + 1);
-		} else if (messageIndex !== attachedMessages.length - 1) {
-			messagesStore.onMessageSelect(attachedMessages[messageIndex]);
+		if (messageIndex !== attachedMessages.length - 1) {
+			messagesStore.selectAttachedMessage(attachedMessages[messageIndex]);
 			setMessageIndex(messageIndex + 1);
 		}
 	};
@@ -53,19 +36,15 @@ const MessageAttachedSelection = (props: Props) => {
 
 	return (
 		<div className='messages-window-header__attached-messages'>
-			{attachedMessages.length > 1 ? (
-				<div className='messages-window-header__attached-messages-button' onClick={onPrevious}>
-					&#8249;
-				</div>
-			) : null}
+			<div className='messages-window-header__attached-messages-button' onClick={onPrevious}>
+				&#8249;
+			</div>
 			<span className='messages-window-header__attached-messages-text'>
 				{messageIndex + 1} of {attachedMessages.length}
 			</span>
-			{attachedMessages.length > 1 ? (
-				<div className='messages-window-header__attached-messages-button' onClick={onNext}>
-					&#8250;
-				</div>
-			) : null}
+			<div className='messages-window-header__attached-messages-button' onClick={onNext}>
+				&#8250;
+			</div>
 		</div>
 	);
 };

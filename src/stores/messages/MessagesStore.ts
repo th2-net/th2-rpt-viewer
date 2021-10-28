@@ -244,12 +244,14 @@ export default class MessagesStore {
 	};
 
 	@action
-	public onAttachedMessageScroll = (message: EventMessage) => {
+	public selectAttachedMessage = (message: EventMessage) => {
 		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === message.messageId);
-
-		this.selectedMessageId = new String(message.messageId);
-		this.highlightedMessageId = message.messageId;
-		this.scrolledIndex = new Number(messageIndex);
+		if (messageIndex !== -1) {
+			this.selectedMessageId = new String(message.messageId);
+			this.highlightedMessageId = message.messageId;
+		} else {
+			this.onMessageSelect(message);
+		}
 	};
 
 	@action
