@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useMessagesWorkspaceStore } from '../../hooks';
+import { useMessagesWorkspaceStore, useMessagesDataStore } from '../../hooks';
 import { EventMessage } from '../../models/EventMessage';
 
 interface Props {
@@ -11,54 +11,53 @@ const MessageAttachedSelection = (props: Props) => {
 	const { attachedMessages } = props;
 
 	const messagesStore = useMessagesWorkspaceStore();
+	const messagesDataStore = useMessagesDataStore();
 
-	const [isAttachedMessages, setIsAttachedMessages] = React.useState<boolean>(false);
 	const [messageIndex, setMessageIndex] = React.useState<number>(0);
 
 	React.useEffect(() => {
-		if (attachedMessages.length !== 0) {
-			setIsAttachedMessages(true);
-			messagesStore.onMessageSelect(attachedMessages[messageIndex]);
-		} else {
-			setIsAttachedMessages(false);
-			setMessageIndex(0);
-		}
+		if (attachedMessages.length === 0) setMessageIndex(0);
 	});
 
 	const onPrevious = () => {
-		if (messageIndex !== 0) {
-			setMessageIndex(messageIndex - 1);
-			messagesStore.onMessageSelect(attachedMessages[messageIndex]);
-		}
+		messageIndex !== 0 && messagesDataStore.messages.includes(attachedMessages[messageIndex])
+			? (messagesStore.scrollToMessage(attachedMessages[messageIndex].messageId),
+			  setMessageIndex(messageIndex - 1))
+			: messageIndex !== 0
+			? (messagesStore.onMessageSelect(attachedMessages[messageIndex]),
+			  setMessageIndex(messageIndex - 1))
+			: null;
 	};
 
 	const onNext = () => {
-		if (messageIndex !== attachedMessages.length - 1) {
-			setMessageIndex(messageIndex + 1);
-			messagesStore.onMessageSelect(attachedMessages[messageIndex]);
-		}
+		messageIndex !== attachedMessages.length - 1 &&
+		messagesDataStore.messages.includes(attachedMessages[messageIndex])
+			? (messagesStore.scrollToMessage(attachedMessages[messageIndex].messageId),
+			  setMessageIndex(messageIndex + 1))
+			: messageIndex !== attachedMessages.length - 1
+			? (messagesStore.onMessageSelect(attachedMessages[messageIndex]),
+			  setMessageIndex(messageIndex + 1))
+			: null;
 	};
 
+	if (attachedMessages.length == 0) return null;
+
 	return (
-		<>
-			{isAttachedMessages ? (
-				<div className='messages-window-header__attached-messages'>
-					{attachedMessages.length > 1 ? (
-						<div className='messages-window-header__attached-messages-button' onClick={onPrevious}>
-							&#8249;
-						</div>
-					) : null}
-					<span className='messages-window-header__attached-messages-text'>
-						{messageIndex + 1} of {attachedMessages.length}
-					</span>
-					{attachedMessages.length > 1 ? (
-						<div className='messages-window-header__attached-messages-button' onClick={onNext}>
-							&#8250;
-						</div>
-					) : null}
+		<div className='messages-window-header__attached-messages'>
+			{attachedMessages.length > 1 ? (
+				<div className='messages-window-header__attached-messages-button' onClick={onPrevious}>
+					&#8249;
 				</div>
 			) : null}
-		</>
+			<span className='messages-window-header__attached-messages-text'>
+				{messageIndex + 1} of {attachedMessages.length}
+			</span>
+			{attachedMessages.length > 1 ? (
+				<div className='messages-window-header__attached-messages-button' onClick={onNext}>
+					&#8250;
+				</div>
+			) : null}
+		</div>
 	);
 };
 
