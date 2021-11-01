@@ -305,6 +305,9 @@ export default class EventsDataStore {
 						(isRootEvent(rootNode) || rootNode.isUnknown) &&
 						!this.rootEventIds.includes(rootNode.eventId)
 					) {
+						if (this.eventStore.targetNodeId) {
+							this.eventStore.scrollToEvent(this.eventStore.targetNodeId);
+						}
 						this.rootEventIds.push(rootNode.eventId);
 					}
 				} else {

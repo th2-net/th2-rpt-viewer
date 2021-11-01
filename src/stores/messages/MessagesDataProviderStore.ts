@@ -106,6 +106,8 @@ export default class MessagesDataProviderStore {
 
 		const queryParams = this.getFilterParams();
 
+		const { selectedMessageId, scrollToMessage } = this.messagesStore;
+
 		const [messageAnchor] = await new MessagesSSEChannel(
 			{
 				...queryParams,
@@ -130,7 +132,10 @@ export default class MessagesDataProviderStore {
 					  }
 					: {}),
 			},
-			SEARCH_TIME_FRAME,
+			{
+				interval: SEARCH_TIME_FRAME,
+				onClose: () => selectedMessageId && scrollToMessage(selectedMessageId.valueOf()),
+			},
 		);
 		this.createNextMessageChannelEventSource(
 			{
@@ -142,7 +147,10 @@ export default class MessagesDataProviderStore {
 					  }
 					: {}),
 			},
-			SEARCH_TIME_FRAME,
+			{
+				interval: SEARCH_TIME_FRAME,
+				onClose: () => selectedMessageId && scrollToMessage(selectedMessageId.valueOf()),
+			},
 		);
 
 		let message: EventMessage | undefined;
@@ -161,12 +169,6 @@ export default class MessagesDataProviderStore {
 					}
 				}
 			}
-
-			const { selectedMessageId, scrollToMessage } = this.messagesStore;
-			this.searchChannelNext.onStop = () =>
-				selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
-			this.searchChannelPrev.onStop = () =>
-				selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
 
 			const [nextMessages, prevMessages] = await Promise.all([
 				this.searchChannelNext.loadAndSubscribe(message?.messageId),
@@ -219,7 +221,10 @@ export default class MessagesDataProviderStore {
 	@action
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
-		interval?: number,
+		options?: {
+			onClose?: () => void;
+			interval?: number;
+		},
 	) => {
 		this.prevLoadEndTimestamp = null;
 
@@ -227,7 +232,15 @@ export default class MessagesDataProviderStore {
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
 			onKeepAliveResponse:
-				typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+				typeof options?.interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+			...(options?.onClose
+				? {
+						onClose: messages => {
+							this.onPrevChannelResponse(messages);
+							options.onClose?.();
+						},
+				  }
+				: {}),
 		});
 	};
 
@@ -276,13 +289,28 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public createNextMessageChannelEventSource = (query: MessagesSSEParams, interval?: number) => {
+	public createNextMessageChannelEventSource = (
+		query: MessagesSSEParams,
+		options?: {
+			onClose?: () => void;
+			interval?: number;
+		},
+	) => {
 		this.nextLoadEndTimestamp = null;
 
 		this.searchChannelNext = new MessagesSSEChannel(query, {
 			onResponse: this.onNextChannelResponse,
 			onError: this.onLoadingError,
-			onKeepAliveResponse: typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+			onKeepAliveResponse:
+				typeof options?.interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+			...(options?.onClose
+				? {
+						onClose: messages => {
+							this.onNextChannelResponse(messages);
+							options.onClose?.();
+						},
+				  }
+				: {}),
 		});
 	};
 

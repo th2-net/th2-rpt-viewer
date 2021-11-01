@@ -73,7 +73,6 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.closeChannel();
 		this.isLoading = false;
 		this.clearSchedulersAndTimeouts();
-		this.onStop?.();
 	};
 
 	@action
