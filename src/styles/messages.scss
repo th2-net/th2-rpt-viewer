@@ -585,6 +585,54 @@
 	&__overlay-spinner {
 		@include spinner(5px, 40px, 2s);
 	}
+
+	&__attached-messages {
+		display: flex;
+		font-size: 9px;
+		margin-bottom: 10px;
+		line-height: 15px;
+		font-weight: bold;
+
+		&-btn {
+			cursor: pointer;
+			flex-shrink: 0;
+			background-color: transparent;
+			border: none;
+			outline: none;
+			margin-top: 3px;
+
+			&-previous {
+				@include icon(url(../../resources/icons/arr5-left.svg), 8px, 13px);
+
+				&:hover {
+					@include icon(url(../../resources/icons/arr5-left-enabled.svg), 8px, 13px);
+				}
+			}
+
+			&-next {
+				@include icon(url(../../resources/icons/arr5-right.svg), 8px, 13px);
+
+				&:hover {
+					@include icon(url(../../resources/icons/arr5-right-enabled.svg), 8px, 13px);
+				}
+			}
+		}
+
+		&-text {
+			color: $controlButtonTextColor;
+			white-space: nowrap;
+			margin: 3px 10px 0 10px;
+
+			&-counter {
+				margin-top: 1px;
+				color: #999999;
+
+				&-current {
+					color: $messageCardValueColor;
+				}
+			}
+		}
+	}
 }
 
 .mc-skeleton {
@@ -829,31 +877,6 @@
 
 		&-ascii {
 			@include icon(url(../../resources/icons/ascii.svg), 20px, 20px);
-		}
-	}
-
-	&__attached-messages {
-		display: flex;
-		padding-left: 5px;
-		font-size: 12px;
-		line-height: 15px;
-		font-weight: bold;
-
-		&-button {
-			text-align: center;
-			width: 15px;
-			color: #7b7b7b;
-			background: none;
-			cursor: pointer;
-
-			&:hover {
-				background-color: #e8e8e8;
-			}
-		}
-
-		&-text {
-			color: #808080;
-			white-space: nowrap;
 		}
 	}
 }

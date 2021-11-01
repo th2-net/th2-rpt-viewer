@@ -35,16 +35,22 @@ const MessageAttachedSelection = () => {
 	if (attachedMessages.length === 0) return null;
 
 	return (
-		<div className='messages-window-header__attached-messages'>
-			<div className='messages-window-header__attached-messages-button' onClick={onPrevious}>
-				&#8249;
-			</div>
-			<span className='messages-window-header__attached-messages-text'>
-				{messageIndex + 1} of {attachedMessages.length}
+		<div className='messages-list__attached-messages'>
+			<button className='messages-list__attached-messages-btn' onClick={onPrevious}>
+				<div className='messages-list__attached-messages-btn-previous' />
+			</button>
+			<span className='messages-list__attached-messages-text'>Show previous</span>
+
+			<span className='messages-list__attached-messages-text-counter'>
+				<span className='messages-list__attached-messages-text-counter-current'>
+					{messageIndex + 1}{' '}
+				</span>
+				| {attachedMessages.length}
 			</span>
-			<div className='messages-window-header__attached-messages-button' onClick={onNext}>
-				&#8250;
-			</div>
+			<span className='messages-list__attached-messages-text'>Show next</span>
+			<button className='messages-list__attached-messages-btn' onClick={onNext}>
+				<div className='messages-list__attached-messages-btn-next' />
+			</button>
 		</div>
 	);
 };

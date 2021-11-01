@@ -44,7 +44,6 @@ import useSetState from '../../hooks/useSetState';
 import { notEmpty } from '../../helpers/object';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
 import MessageExport from '../message/MessageExport';
-import MessagesAttachedSelection from '../message/MessagesAttachedSelection';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -300,7 +299,6 @@ const MessagesFilterPanel = () => {
 				endExport={messagesStore.exportStore.endExport}
 				exportAmount={messagesStore.exportStore.exportMessages.length}
 			/>
-			<MessagesAttachedSelection />
 		</>
 	);
 };
