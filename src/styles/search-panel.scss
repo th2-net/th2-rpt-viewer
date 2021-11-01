@@ -44,10 +44,17 @@
 
 		&.event-resolver {
 			position: relative;
+			margin-bottom: 10px;
+
+			.filter-row__wrapper {
+				display: flex !important;
+			}
 		}
 
 		&__search-status {
 			flex-shrink: 0;
+			margin-left: 10px;
+
 			&.loading {
 				@include spinner(3px, 15px);
 			}
@@ -59,7 +66,7 @@
 				width: 0;
 				height: 0;
 				border-bottom: 15px solid $searchNotFoundEventsColor;
-				margin-top: -10px;
+				margin-bottom: 10px;
 				position: relative;
 
 				&::after {

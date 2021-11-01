@@ -57,8 +57,8 @@ const SessionEditor: React.FC<SessionEditorProps> = ({
 				}
 			}}
 			submitKeyCodes={[KeyCodes.ENTER]}
-			autofocus={autofocus}
-			autocomplete={sessions}
+			autoFocus={autofocus}
+			autoCompleteList={sessions}
 			autocompleteClassName='rules-autocomplete'
 			datalistKey='session-input'
 		/>

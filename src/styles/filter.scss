@@ -431,6 +431,7 @@
 
 	&__input {
 		width: 100%;
+		flex-grow: 1;
 		padding: 3px 5px;
 		margin: 0 10px;
 		border-radius: $bubbleBorderRadius;
