@@ -150,11 +150,15 @@
 		line-height: 15px;
 		font-weight: bold;
 
-		.filter-icon {
-			@include icon(url(../../resources/icons/filter.svg), 15px, 15px);
+		.filter-row {
+			margin-bottom: 0;
+
+			.filter-content {
+				margin: 0;
+			}
 		}
 
-		.button	{
+		.report-viewer-link	{
 			@include clickable;
 
 			padding: 4px 5px;
@@ -165,6 +169,7 @@
 			font-size: 14px;
 			line-height: 15px;
 			font-weight: bold;
+			text-decoration: none;
 		}
 	}
 }

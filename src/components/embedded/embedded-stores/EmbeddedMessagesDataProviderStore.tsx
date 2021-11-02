@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import { runInAction, action, observable, reaction, computed } from 'mobx';
+import { runInAction, action, observable, computed, autorun } from 'mobx';
 import { MessagesSSEParams, SSEHeartbeat } from '../../../api/sse';
 import { EventMessage } from '../../../models/EventMessage';
 import EmbeddedMessagesStore from './EmbeddedMessagesStore';
@@ -34,7 +34,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	constructor(private messagesStore: EmbeddedMessagesStore, private api: ApiSchema) {
 		this.updateStore = new MessagesUpdateStore(this, this.messagesStore.scrollToMessage);
 
-		reaction(() => this.messagesStore.filter, this.onFilterChange);
+		autorun(() => this.messagesStore.filterStore.filter && this.onFilterChange());
 	}
 
 	public updateStore: MessagesUpdateStore;
@@ -95,14 +95,14 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	private messageAC: AbortController | null = null;
 
 	public getFilterParams = () => {
-		return this.messagesStore.filterParams;
+		return this.messagesStore.filterStore.filterParams;
 	};
 
 	@action
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
 
-		const queryParams = this.messagesStore.filterParams;
+		const queryParams = this.messagesStore.filterStore.filterParams;
 
 		this.createPreviousMessageChannelEventSource(
 			{
@@ -355,7 +355,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		)
 			return;
 
-		const queryParams = this.messagesStore.filterParams;
+		const queryParams = this.messagesStore.filterStore.filterParams;
 
 		const query: MessagesSSEParams = {
 			...queryParams,

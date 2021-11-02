@@ -29,11 +29,12 @@ import { useDebouncedCallback } from '../../hooks';
 import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import MessagesUpdateButton from '../message/MessagesUpdateButton';
+import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
 const EmbeddedMessages = () => {
-	const { dataStore, filter, sseMessagesFilter, scrolledIndex, loadLastMessages } = messagesStore;
+	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
 
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
@@ -50,6 +51,28 @@ const EmbeddedMessages = () => {
 		);
 	};
 
+	const reportURL = React.useMemo(() => {
+		const messagesStoreState = {
+			timestampFrom: messagesStore.filterStore.filter.timestampFrom,
+			timestampTo: messagesStore.filterStore.filter.timestampTo,
+			streams: messagesStore.filterStore.filter.streams,
+			sse: messagesStore.filterStore.sseMessagesFilter,
+			isSoftFilter: false,
+		};
+
+		const searchString = new URLSearchParams({
+			workspaces: window.btoa(
+				JSON.stringify([
+					{
+						messages: messagesStoreState,
+					},
+				]),
+			),
+		});
+
+		return [window.location.origin, window.location.pathname, `?${searchString}`].join('');
+	}, [messagesStore.filterStore.filter, messagesStore.filterStore.sseMessagesFilter]);
+
 	if (dataStore.isError) {
 		return (
 			<Empty
@@ -57,20 +80,6 @@ const EmbeddedMessages = () => {
 				descriptionStyles={{ position: 'relative', bottom: '6px' }}
 			/>
 		);
-	}
-
-	if (
-		!(dataStore.isLoadingNextMessages || dataStore.isLoadingPreviousMessages) &&
-		dataStore.messages.length === 0
-	) {
-		if (dataStore.isError === false) {
-			return (
-				<Empty
-					description='No messages'
-					descriptionStyles={{ position: 'relative', bottom: '6px' }}
-				/>
-			);
-		}
 	}
 
 	return (
@@ -82,18 +91,20 @@ const EmbeddedMessages = () => {
 					subscribeOnChanges={updateStore.subscribeOnChanges}
 					stopSubscription={updateStore.stopSubscription}
 				/>
-				<span>Streams: {filter.streams.join(', ')}</span>
-				{sseMessagesFilter &&
-					Object.values(sseMessagesFilter).some(sseFilter => sseFilter.values.length) && (
-						<div className='filter-icon' />
-					)}
-				<button className='button' onClick={loadLastMessages}>
-					Load last messages
-				</button>
+				<EmbeddedMessagesFilterPanel messagesStore={messagesStore} />
+				<a href={reportURL} target='_black' className='report-viewer-link'>
+					Report viewer
+				</a>
 			</div>
 			{dataStore.messages.length === 0 &&
 			(dataStore.isLoadingNextMessages || dataStore.isLoadingPreviousMessages) ? (
 				<SplashScreen />
+			) : dataStore.messages.length === 0 &&
+			  !(dataStore.isLoadingNextMessages || dataStore.isLoadingPreviousMessages) ? (
+				<Empty
+					description='No messages'
+					descriptionStyles={{ position: 'relative', bottom: '6px' }}
+				/>
 			) : (
 				<StateSaverProvider>
 					<MessagesVirtualizedList
@@ -223,7 +234,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment.utc(messagesStore.filterParams.startTimestamp).format()}
+											{moment.utc(messagesStore.filterStore.filterParams.startTimestamp).format()}
 										</span>
 										<button
 											className='messages-list__load-btn'
@@ -246,7 +257,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment(messagesStore.filterParams.startTimestamp).utc().format()}
+											{moment(messagesStore.filterStore.filterParams.startTimestamp).utc().format()}
 										</span>
 										<button
 											className='messages-list__load-btn'
