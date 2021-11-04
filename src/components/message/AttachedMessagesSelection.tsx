@@ -18,7 +18,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useMessagesWorkspaceStore } from '../../hooks';
 
-const MessageAttachedSelection = () => {
+const AttachedMessagesSelection = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 
 	const { attachedMessages } = messagesStore;
@@ -66,4 +66,4 @@ const MessageAttachedSelection = () => {
 	);
 };
 
-export default observer(MessageAttachedSelection);
+export default observer(AttachedMessagesSelection);

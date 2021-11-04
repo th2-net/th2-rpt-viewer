@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import MessagesWindowHeader from './MessagesWindowHeader';
 import { useMessagesWorkspaceStore, useActivePanel } from '../../hooks';
 import MessagesCardList from './message-card-list/MessagesCardList';
-import MessagesAttachedSelection from './MessagesAttachedSelection';
+import AttachedMessagesSelection from './AttachedMessagesSelection';
 
 const MessagesWindow = () => {
 	const messagesStore = useMessagesWorkspaceStore();
@@ -32,7 +32,7 @@ const MessagesWindow = () => {
 				<MessagesWindowHeader />
 			</div>
 			<div className='window__body'>
-				<MessagesAttachedSelection />
+				<AttachedMessagesSelection />
 				<MessagesCardList />
 			</div>
 		</div>
