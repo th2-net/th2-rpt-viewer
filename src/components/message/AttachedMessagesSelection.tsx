@@ -49,8 +49,8 @@ const AttachedMessagesSelection = () => {
 		<div className='messages-list__attached-messages'>
 			<button className='messages-list__attached-messages-btn' onClick={onPrevious}>
 				<div className='messages-list__attached-messages-btn-previous' />
+				<span className='messages-list__attached-messages-text'>Show previous</span>
 			</button>
-			<span className='messages-list__attached-messages-text'>Show previous</span>
 
 			<span className='messages-list__attached-messages-text-counter'>
 				<span className='messages-list__attached-messages-text-counter-current'>
@@ -58,8 +58,8 @@ const AttachedMessagesSelection = () => {
 				</span>
 				| {attachedMessages.length}
 			</span>
-			<span className='messages-list__attached-messages-text'>Show next</span>
 			<button className='messages-list__attached-messages-btn' onClick={onNext}>
+				<span className='messages-list__attached-messages-text'>Show next</span>
 				<div className='messages-list__attached-messages-btn-next' />
 			</button>
 		</div>
