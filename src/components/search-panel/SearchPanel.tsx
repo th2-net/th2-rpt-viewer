@@ -50,7 +50,7 @@ const SearchPanel = () => {
 			</div>
 			{searchStore.currentSearch && (
 				<SearchPanelResults
-					resultGroups={searchStore.sortedResultGroups}
+					flattenedResult={searchStore.flattenedResult}
 					timestamp={searchStore.currentSearch.timestamp}
 					onResultItemClick={onResultItemClick}
 					onResultGroupClick={searchWorkspace.followByTimestamp}
