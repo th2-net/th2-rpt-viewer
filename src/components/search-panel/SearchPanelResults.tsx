@@ -23,8 +23,10 @@ import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
 import SearchPanelSeparator from './SearchPanelSeparator';
-import { getTimestampAsNumber } from '../../helpers/date';
 import StateSaverProvider from '../util/StateSaverProvider';
+
+type Separator = [number, number];
+type FlattenedResult = SearchResult[] | Separator;
 
 interface SearchPanelResultsProps {
 	onResultItemClick: (searchResult: BookmarkedItem) => void;
@@ -35,7 +37,7 @@ interface SearchPanelResultsProps {
 	showToggler: boolean;
 	next: () => void;
 	prev: () => void;
-	resultGroups: [string, SearchResult[]][];
+	flattenedResult: FlattenedResult[];
 	timestamp: number;
 	disabledRemove: boolean;
 	showLoadMoreButton: boolean;
@@ -44,7 +46,7 @@ interface SearchPanelResultsProps {
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const {
-		resultGroups,
+		flattenedResult,
 		timestamp,
 		onResultItemClick,
 		onResultGroupClick,
@@ -59,20 +61,26 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	} = props;
 
 	function computeKey(index: number) {
-		const [, results] = resultGroups[index];
+		const results = flattenedResult[index];
+		if (isSeparator(results)) return results[0];
 		const item = results[0];
 		return isEventNode(item) ? item.eventId : item.messageId;
 	}
 
-	const renderResult = (index: number, [_, results]: [string, SearchResult[]]) => {
+	const isSeparator = (object: any): object is Separator => {
+		return !Number.isNaN(+object[0]);
+	};
+
+	const renderResult = (index: number, results: FlattenedResult) => {
+		if (isSeparator(results)) {
+			return (
+				<React.Fragment>
+					<SearchPanelSeparator prevElement={results[0]} nextElement={results[1]} />
+				</React.Fragment>
+			);
+		}
 		return (
-			<React.Fragment key={computeKey(index)}>
-				{index > 0 && (
-					<SearchPanelSeparator
-						prevElement={getTimestampAsNumber(resultGroups[index - 1][1].slice(-1)[0])}
-						nextElement={getTimestampAsNumber(results[0])}
-					/>
-				)}
+			<React.Fragment>
 				<SearchResultGroup
 					results={results}
 					onResultClick={onResultItemClick}
@@ -114,9 +122,10 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 			<div className='search-results__list'>
 				<StateSaverProvider>
 					<Virtuoso
-						data={resultGroups}
+						data={flattenedResult}
 						className={'search-results__list-virtual'}
 						style={{ height: '100%' }}
+						computeItemKey={computeKey}
 						components={{
 							Footer: loadMoreButton,
 						}}
