@@ -225,7 +225,7 @@ function GraphSearchInput(props: Props) {
 	}
 
 	function handleInputValueChange(event: React.ChangeEvent<HTMLInputElement>) {
-		const value = event.target.value;
+		const value = event.target.value.trim();
 
 		if (!value) {
 			setMode('history');
