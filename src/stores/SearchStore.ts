@@ -356,7 +356,9 @@ export class SearchStore {
 			const filtersInfo = await this.api.sse.getMessagesFiltersInfo(filters);
 			runInAction(() => {
 				this.messagesFilterInfo = filtersInfo;
-				this.messagesFilter = getDefaultMessagesFiltersState(filtersInfo);
+				if (!this.messagesFilter) {
+					this.messagesFilter = getDefaultMessagesFiltersState(filtersInfo);
+				}
 			});
 		} catch (error) {
 			console.error('Error occured while loading messages filters', error);

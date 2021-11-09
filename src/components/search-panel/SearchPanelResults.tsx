@@ -17,13 +17,13 @@
 import React from 'react';
 import moment from 'moment';
 import { isEventNode } from '../../helpers/event';
-import { BookmarkedItem } from '../bookmarks/BookmarksPanel';
 import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
+import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
 
 interface SearchPanelResultsProps {
-	onResultItemClick: (searchResult: BookmarkedItem) => void;
+	onResultItemClick: (searchResult: SearchResult) => void;
 	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
 	onResultDelete: () => void;
 	disableNext: boolean;
@@ -32,6 +32,7 @@ interface SearchPanelResultsProps {
 	next: () => void;
 	prev: () => void;
 	resultGroups: [string, SearchResult[]][];
+	filters: EventFilterState | MessageFilterState;
 	timestamp: number;
 	disabledRemove: boolean;
 	showLoadMoreButton: boolean;
@@ -41,6 +42,7 @@ interface SearchPanelResultsProps {
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const {
 		resultGroups,
+		filters,
 		timestamp,
 		onResultItemClick,
 		onResultGroupClick,
@@ -87,6 +89,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 					<SearchResultGroup
 						key={computeKey(index)}
 						results={results}
+						filters={filters}
 						onResultClick={onResultItemClick}
 						onGroupClick={onResultGroupClick}
 					/>
