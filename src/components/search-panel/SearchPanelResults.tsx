@@ -23,7 +23,6 @@ import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
 import SearchPanelSeparator from './SearchPanelSeparator';
-import StateSaverProvider from '../util/StateSaverProvider';
 
 type Separator = [number, number];
 type FlattenedResult = SearchResult[] | Separator;
@@ -67,7 +66,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		return isEventNode(item) ? item.eventId : item.messageId;
 	}
 
-	const isSeparator = (object: any): object is Separator => {
+	const isSeparator = (object: FlattenedResult): object is Separator => {
 		return !Number.isNaN(+object[0]);
 	};
 
@@ -120,18 +119,16 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 				</button>
 			</div>
 			<div className='search-results__list'>
-				<StateSaverProvider>
-					<Virtuoso
-						data={flattenedResult}
-						className={'search-results__list-virtual'}
-						style={{ height: '100%' }}
-						computeItemKey={computeKey}
-						components={{
-							Footer: loadMoreButton,
-						}}
-						itemContent={renderResult}
-					/>
-				</StateSaverProvider>
+				<Virtuoso
+					data={flattenedResult}
+					className={'search-results__list-virtual'}
+					style={{ height: '100%' }}
+					computeItemKey={computeKey}
+					components={{
+						Footer: loadMoreButton,
+					}}
+					itemContent={renderResult}
+				/>
 			</div>
 		</div>
 	);
