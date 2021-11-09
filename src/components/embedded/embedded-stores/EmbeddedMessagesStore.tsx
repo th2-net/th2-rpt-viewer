@@ -14,13 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 import moment from 'moment';
-import { action, reaction, observable, runInAction } from 'mobx';
+import { action, reaction, observable } from 'mobx';
 import { EventMessage } from '../../../models/EventMessage';
 import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
 import MessagesFilter from '../../../models/filter/MessagesFilter';
 import ApiSchema from '../../../api/ApiSchema';
 import EmbeddedMessagesDataProviderStore from './EmbeddedMessagesDataProviderStore';
-import { MessagesSSEParams } from '../../../api/sse';
+import EmbeddedMessagesFilterStore, {
+	EmbeddedMessagesFilterInitialState,
+} from './EmbeddedMessagesFilterStore';
 
 function getDefaultMessagesFilter(): MessagesFilter {
 	return {
@@ -30,15 +32,10 @@ function getDefaultMessagesFilter(): MessagesFilter {
 	};
 }
 
-type EmbeddedMessagesFilterInitialState = {
-	timestampFrom: number | null;
-	timestampTo: number | null;
-	streams: string[];
-	sse: MessageFilterState;
-};
-
 export default class EmbeddedMessagesStore {
 	public dataStore: EmbeddedMessagesDataProviderStore;
+
+	public filterStore: EmbeddedMessagesFilterStore;
 
 	@observable
 	public hoveredMessage: EventMessage | null = null;
@@ -58,58 +55,30 @@ export default class EmbeddedMessagesStore {
 	@observable
 	public beautifiedMessages: Array<string> = [];
 
-	@observable sseMessagesFilter: MessageFilterState | null = null;
-
-	@observable filter: MessagesFilter = getDefaultMessagesFilter();
-
 	constructor(private api: ApiSchema) {
+		const initialState = this.getURLState();
+		const defaultMessagesFilter = getDefaultMessagesFilter();
+		const {
+			timestampFrom = defaultMessagesFilter.timestampFrom,
+			timestampTo = defaultMessagesFilter.timestampTo,
+		} = initialState;
+
+		this.filterStore = new EmbeddedMessagesFilterStore(this.api, {
+			...initialState,
+			timestampFrom,
+			timestampTo,
+		});
 		this.dataStore = new EmbeddedMessagesDataProviderStore(this, this.api);
-		this.init(this.getURLState());
 
 		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
 	}
 
-	public get filterParams(): MessagesSSEParams {
-		const sseFilters = this.sseMessagesFilter;
-
-		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
-			? []
-			: Object.entries(sseFilters)
-					.filter(([_, filter]) => filter.values.length > 0)
-					.map(([filterName]) => filterName as keyof MessageFilterState);
-
-		const filterValues = filtersToAdd
-			.map(filterName =>
-				sseFilters ? [`${filterName}-values`, sseFilters[filterName].values] : [],
-			)
-			.filter(Boolean);
-
-		const filterInclusion = filtersToAdd.map(filterName =>
-			sseFilters && sseFilters[filterName].negative
-				? [`${filterName}-negative`, sseFilters[filterName].negative]
-				: [],
-		);
-
-		const filterConjunct = filtersToAdd.map(filterName =>
-			sseFilters && sseFilters[filterName].conjunct
-				? [`${filterName}-conjunct`, sseFilters[filterName].conjunct]
-				: [],
-		);
-
-		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
-		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
-
-		const queryParams: MessagesSSEParams = {
-			startTimestamp: this.filter.timestampTo || startTimestamp,
-			stream: this.filter.streams,
-			searchDirection: 'previous',
-			resultCountLimit: 15,
-			filters: filtersToAdd,
-			...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
-		};
-
-		return queryParams;
-	}
+	@action
+	public applyFilter = (filter: MessagesFilter, sseFilters: MessageFilterState | null) => {
+		this.selectedMessageId = null;
+		this.highlightedMessageId = null;
+		this.filterStore.setMessagesFilter(filter, sseFilters);
+	};
 
 	@action
 	public scrollToMessage = async (messageId: string) => {
@@ -128,15 +97,6 @@ export default class EmbeddedMessagesStore {
 		}
 	};
 
-	@action
-	public loadLastMessages = () => {
-		this.filter = {
-			...this.filter,
-			timestampFrom: null,
-			timestampTo: moment().utc().valueOf(),
-		};
-	};
-
 	private getURLState = (): EmbeddedMessagesFilterInitialState => {
 		if (window.location.search.split('&').length !== 2) {
 			throw new Error('Only two query parameters expected.');
@@ -150,21 +110,9 @@ export default class EmbeddedMessagesStore {
 		return JSON.parse(window.atob(messagesUrlState));
 	};
 
-	private init = async (initialState: EmbeddedMessagesFilterInitialState) => {
-		const defaultMessagesFilter = getDefaultMessagesFilter();
-		const {
-			streams,
-			timestampFrom = defaultMessagesFilter.timestampFrom,
-			timestampTo = defaultMessagesFilter.timestampTo,
-		} = initialState;
-
-		runInAction(() => {
-			this.filter = {
-				streams,
-				timestampFrom,
-				timestampTo,
-			};
-			this.sseMessagesFilter = initialState.sse;
-		});
+	@action
+	public clearFilters = () => {
+		this.filterStore.resetMessagesFilter({ streams: this.filterStore.filter.streams });
+		this.dataStore.stopMessagesLoading();
 	};
 }

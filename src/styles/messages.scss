@@ -23,15 +23,9 @@
 	display: flex;
 	align-items: flex-start;
 	border-radius: 5px;
-	padding: 1px 0;
-	padding-left: 15px;
-	padding-right: 30px;
+	padding: 1px 3px;
 	display: flex;
 	justify-content: space-between;
-
-	&.pinned {
-		padding-left: 0px;
-	}
 
 	&.highlighted {
 		@keyframes highlight {
@@ -79,7 +73,6 @@
 
 	&:hover {
 		background-color: $messageCardHoverBackground;
-		padding-right: 5px;
 	}
 
 	&:hover .message-card-tools__ellipsis {
@@ -105,13 +98,14 @@
 }
 
 .message-card-tools {
-	margin: 0 4px;
-	padding: 3px 0;
+	margin: 1px 4px 0 4px;
 	align-self: stretch;
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
 	align-items: center;
+	min-width: 17px;
+	
 
 	&__button {
 		display: flex;
