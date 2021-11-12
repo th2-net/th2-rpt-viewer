@@ -20,14 +20,19 @@ import EventWindow from '../event/EventWindow';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import MessagesWindow from '../message/MessagesWindow';
 import { useActivePanel, useWorkspaceStore } from '../../hooks';
-import { isEventsStore, isMessagesStore } from '../../helpers/stores';
+import { isEventsStore, isMessagesStore, isSearchStore } from '../../helpers/stores';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 import '../../styles/workspace.scss';
+import SearchPanel from '../search-panel/SearchPanel';
 
 const panelColors = {
 	events: {
 		default: '#F5C5A3',
 		active: '#F7A76E',
+	},
+	search: {
+		default: '#5C85D6',
+		active: '#5C85D6',
 	},
 	messages: {
 		default: '#ADE0EB',
@@ -61,6 +66,13 @@ function Workspace() {
 						isActive: isEventsStore(activePanel),
 						setActivePanel: () =>
 							workspaceStore.viewStore.setActivePanel(workspaceStore.eventsStore),
+					},
+					{
+						title: 'Smart Search',
+						color: panelColors.search,
+						component: <SearchPanel />,
+						minWidth: 300,
+						isActive: isSearchStore(activePanel),
 					},
 					{
 						title: 'Messages',

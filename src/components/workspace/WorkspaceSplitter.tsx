@@ -21,7 +21,7 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 
 const MIN_PANEL_WIDTH = 15;
 
-export type WorkspacePanelsLayout = [number, number];
+export type WorkspacePanelsLayout = [number, number, number];
 
 function minmax(num: number, min: number, max: number) {
 	return Math.min(Math.max(num, min), max);
@@ -390,7 +390,7 @@ type SplitterProps = {
 };
 
 const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
-	({ onMouseDown, disabled = false, isPanelActive = false, setActivePanel }, ref) => {
+	({ onMouseDown, disabled, isPanelActive, setActivePanel }, ref) => {
 		const splitterClassName = createStyleSelector(
 			'workspace-splitter',
 			isPanelActive ? null : 'inactive',

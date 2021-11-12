@@ -27,7 +27,7 @@ type InitialState = Partial<{
 }>;
 
 export const defaultPanelsLayout: WorkspacePanelsLayout =
-	process.env.NODE_ENV === 'development' ? [50, 50] : [100, 0];
+	process.env.NODE_ENV === 'development' ? [25, 25, 50] : [100, 0, 0];
 
 export default class WorkspaceViewStore {
 	constructor(initalState?: InitialState) {
@@ -60,12 +60,12 @@ export default class WorkspaceViewStore {
 
 	@action
 	public resetToDefaulLayout = () => {
-		this.panelsLayout = [50, 50];
+		this.panelsLayout = [25, 25, 50];
 	};
 
 	@action
 	public collapsePanel = (index: number) => {
-		this.panelsLayout = index === 0 ? [0, 100] : [100, 0];
+		this.panelsLayout = index === 0 ? [0, 50, 50] : [100, 0, 0];
 	};
 
 	@action

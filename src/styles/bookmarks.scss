@@ -21,11 +21,11 @@
 	background-color: #fff;
 	display: grid;
 	grid-template-rows: auto 1fr;
-	
+
 	&__container {
 		padding: 8px 2px 0 8px;
 	}
-	
+
 	&__list {
 		@include scrollbar;
 		& > div {

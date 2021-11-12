@@ -29,6 +29,8 @@
 	background-color: $searchPanelColor;
 	overflow: hidden;
 	display: flex;
+	width: 100%;
+	min-width: 350px;
 	flex-direction: column;
 	color: #fff;
 	border-radius: 0 0 5px 5px;
@@ -797,6 +799,9 @@
 
 .search-result-group-items {
 	margin-left: 40px;
+	border-left: solid;
+	border-width: 2px;
+	border-color: #ffb266;
 }
 
 .search-result-single-item {

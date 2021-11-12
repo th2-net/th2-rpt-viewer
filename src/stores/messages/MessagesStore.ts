@@ -79,7 +79,7 @@ export default class MessagesStore {
 	@observable
 	public showFilterChangeHint = false;
 
-	/* 
+	/*
 		This is used for filter change hint. Represents either last clicked message
 		or attached messages
 	*/
@@ -281,7 +281,7 @@ export default class MessagesStore {
 		};
 
 		if (this.workspaceStore.viewStore.panelsLayout[1] < 20) {
-			this.workspaceStore.viewStore.setPanelsLayout([50, 50]);
+			this.workspaceStore.viewStore.setPanelsLayout([25, 25, 50]);
 		}
 	};
 
