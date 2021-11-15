@@ -29,11 +29,18 @@ interface SearchResultGroup {
 	results: SearchResult[];
 	onResultClick: (searchResult: BookmarkedItem) => void;
 	onGroupClick: (timestamp: number, resultType: ActionType) => void;
+	isExpanded: boolean;
+	setIsExpanded: (nextState: boolean) => void;
 }
 
-const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResultGroup) => {
+const SearchResultGroup = ({
+	results,
+	onResultClick,
+	onGroupClick,
+	isExpanded,
+	setIsExpanded,
+}: SearchResultGroup) => {
 	const selectedStore = useSelectedStore();
-	const [isExpanded, setIsExpanded] = React.useState(false);
 
 	const expandButtonClass = createBemElement(
 		'search-result-group',

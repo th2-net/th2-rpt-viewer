@@ -17,12 +17,14 @@
 import React from 'react';
 import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
-import { isEventNode } from '../../helpers/event';
+import { getItemId } from '../../helpers/event';
 import { BookmarkedItem } from '../bookmarks/BookmarksPanel';
 import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
 import SearchPanelSeparator from './SearchPanelSeparator';
+import StateSaver from '../util/StateSaver';
+import StateSaverProvider from '../util/StateSaverProvider';
 
 type Separator = [number, number];
 type FlattenedResult = SearchResult[] | Separator;
@@ -56,14 +58,17 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		showToggler,
 		next,
 		prev,
+		showLoadMoreButton,
 		loadMore,
 	} = props;
 
+	const listRef = React.useRef<HTMLDivElement>(null);
+
 	function computeKey(index: number) {
 		const results = flattenedResult[index];
-		if (isSeparator(results)) return results[0];
+		if (isSeparator(results)) return results[0].toString();
 		const item = results[0];
-		return isEventNode(item) ? item.eventId : item.messageId;
+		return getItemId(item);
 	}
 
 	const isSeparator = (object: FlattenedResult): object is Separator => {
@@ -72,25 +77,29 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 
 	const renderResult = (index: number, results: FlattenedResult) => {
 		if (isSeparator(results)) {
-			return (
-				<React.Fragment>
-					<SearchPanelSeparator prevElement={results[0]} nextElement={results[1]} />
-				</React.Fragment>
-			);
+			return <SearchPanelSeparator prevElement={results[0]} nextElement={results[1]} />;
 		}
 		return (
-			<React.Fragment>
-				<SearchResultGroup
-					results={results}
-					onResultClick={onResultItemClick}
-					onGroupClick={onResultGroupClick}
-				/>
-			</React.Fragment>
+			<StateSaver
+				stateKey={computeKey(index)}
+				getDefaultState={() => {
+					return false;
+				}}>
+				{(state, saveState) => (
+					<SearchResultGroup
+						results={results}
+						onResultClick={onResultItemClick}
+						onGroupClick={onResultGroupClick}
+						isExpanded={state}
+						setIsExpanded={saveState}
+					/>
+				)}
+			</StateSaver>
 		);
 	};
 
 	const loadMoreButton = () => {
-		return !loadMoreButton ? null : (
+		return showLoadMoreButton ? null : (
 			<button onClick={loadMore} className='actions-list__load-button'>
 				Load more
 			</button>
@@ -118,17 +127,19 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 					<i className='bookmark-item__remove-btn-icon' />
 				</button>
 			</div>
-			<div className='search-results__list'>
-				<Virtuoso
-					data={flattenedResult}
-					className={'search-results__list-virtual'}
-					style={{ height: '100%' }}
-					computeItemKey={computeKey}
-					components={{
-						Footer: loadMoreButton,
-					}}
-					itemContent={renderResult}
-				/>
+			<div className='search-results__list' ref={listRef}>
+				<StateSaverProvider>
+					<Virtuoso
+						data={flattenedResult}
+						style={{ height: '100%' }}
+						className={'search-results__list-items'}
+						computeItemKey={computeKey}
+						components={{
+							Footer: loadMoreButton,
+						}}
+						itemContent={renderResult}
+					/>
+				</StateSaverProvider>
 			</div>
 		</div>
 	);

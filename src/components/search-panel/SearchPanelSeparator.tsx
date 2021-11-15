@@ -10,8 +10,8 @@ const SearchPanelSeparator = (props: Props) => {
 	const { prevElement, nextElement } = props;
 	const time = moment(Math.abs(nextElement - prevElement)).utc();
 	return (
-		<div className={'search-result-separator'}>
-			<span className={'search-result-separator__text'}>
+		<div className='search-result-separator'>
+			<span className='search-result-separator__text'>
 				No Data for
 				<b>
 					{time.hour() > 0 && ` ${time.hour()}h`}
