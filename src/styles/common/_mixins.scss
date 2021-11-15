@@ -295,14 +295,14 @@
 	}
 }
 
-@mixin icon($image, $height: 16px, $width: 16px, $bgsz: 100%) {
+@mixin icon($image, $height: 16px, $width: 16px) {
 	height: $height;
 	width: $width;
 
 	background: {
 		image: $image;
 		repeat: no-repeat;
-		size: $bgsz;
+		size: 100%;
 		position: center;
 	}
 }

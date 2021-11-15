@@ -177,11 +177,11 @@
 		}
 
 		&.formatted {
-			@include icon(url(../../resources/icons/messages-beautify.svg), 16px, 16px, 75%);
+			@include icon(url(../../resources/icons/messages-beautify.svg));
 		}
 
 		&.binary {
-			@include icon(url(../../resources/icons/binar.svg), 16px, 16px, 65%);
+			@include icon(url(../../resources/icons/binar.svg));
 			opacity: 0.7;
 		}
 
