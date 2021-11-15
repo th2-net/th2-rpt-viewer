@@ -71,7 +71,7 @@ function Workspace() {
 						title: 'Smart Search',
 						color: panelColors.search,
 						component: <SearchPanel />,
-						minWidth: 300,
+						minWidth: 500,
 						isActive: isSearchStore(activePanel),
 					},
 					{

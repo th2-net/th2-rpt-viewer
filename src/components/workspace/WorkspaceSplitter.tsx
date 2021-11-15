@@ -231,24 +231,27 @@ function WorkspaceSplitter(props: Props) {
 		});
 	}
 
-	const getFreeSpaceAroundSplitter = (splitterIndex: number, activeSplitterLeftPostion: number) => {
+	const getFreeSpaceAroundSplitter = (
+		splitterIndex: number,
+		activeSplitterLeftPosition: number,
+	) => {
 		const splitter = splittersRefs.current[splitterIndex].current!;
 		const leftSplitter = splittersRefs.current[splitterIndex - 1]?.current;
 		const rightSplitter = splittersRefs.current[splitterIndex + 1]?.current;
 
 		return {
 			left: leftSplitter
-				? activeSplitterLeftPostion -
+				? activeSplitterLeftPosition -
 				  leftSplitter.clientLeft -
 				  MIN_PANEL_WIDTH -
 				  splitter.clientWidth
-				: activeSplitterLeftPostion,
+				: activeSplitterLeftPosition,
 			right: rightSplitter
-				? rightSplitter.clientLeft - activeSplitterLeftPostion
+				? rightSplitter.clientLeft + activeSplitterLeftPosition
 				: rootRef.current!.clientWidth -
 				  MIN_PANEL_WIDTH -
 				  splitter.clientWidth -
-				  activeSplitterLeftPostion,
+				  activeSplitterLeftPosition,
 		};
 	};
 
