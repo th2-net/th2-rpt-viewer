@@ -40,7 +40,7 @@ function SearchWorkspace() {
 	const {
 		panelsLayout,
 		setPanelsLayout,
-		resetToDefaulLayout,
+		resetToDefaultLayout,
 		collapsePanel,
 	} = searchWorkspaceStore.viewStore;
 
@@ -75,7 +75,7 @@ function SearchWorkspace() {
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
 				panels={searchWorkspacePanels}
-				resetToDefaulLayout={resetToDefaulLayout}
+				resetToDefaultLayout={resetToDefaultLayout}
 				collapsePanel={collapsePanel}
 			/>
 		</div>

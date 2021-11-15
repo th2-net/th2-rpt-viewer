@@ -45,7 +45,7 @@ function Workspace() {
 	const {
 		panelsLayout,
 		setPanelsLayout,
-		resetToDefaulLayout,
+		resetToDefaultLayout,
 		collapsePanel,
 	} = useWorkspaceViewStore();
 	const workspaceStore = useWorkspaceStore();
@@ -55,7 +55,7 @@ function Workspace() {
 			<WorkspaceSplitter
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
-				resetToDefaulLayout={resetToDefaulLayout}
+				resetToDefaultLayout={resetToDefaultLayout}
 				collapsePanel={collapsePanel}
 				panels={[
 					{
@@ -71,7 +71,7 @@ function Workspace() {
 						title: 'Smart Search',
 						color: panelColors.search,
 						component: <SearchPanel />,
-						minWidth: 500,
+						minWidth: 400,
 						isActive: isSearchStore(activePanel),
 					},
 					{

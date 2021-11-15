@@ -59,13 +59,13 @@ export default class WorkspaceViewStore {
 	};
 
 	@action
-	public resetToDefaulLayout = () => {
+	public resetToDefaultLayout = () => {
 		this.panelsLayout = [25, 25, 50];
 	};
 
 	@action
 	public collapsePanel = (index: number) => {
-		this.panelsLayout = index === 0 ? [0, 50, 50] : [100, 0, 0];
+		this.panelsLayout = index === 0 ? [0, 50, 50] : index === 1 ? [50, 0, 50] : [50, 50, 0];
 	};
 
 	@action

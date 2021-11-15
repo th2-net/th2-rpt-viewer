@@ -45,12 +45,12 @@ export interface Props {
 	panels: Array<Panel>;
 	panelsLayout: WorkspacePanelsLayout;
 	setPanelsLayout: (panelsLayout: WorkspacePanelsLayout) => void;
-	resetToDefaulLayout: () => void;
+	resetToDefaultLayout: () => void;
 	collapsePanel: (index: number) => void;
 }
 
 function WorkspaceSplitter(props: Props) {
-	const { panels, panelsLayout, setPanelsLayout, resetToDefaulLayout, collapsePanel } = props;
+	const { panels, panelsLayout, setPanelsLayout, resetToDefaultLayout, collapsePanel } = props;
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const clickOffsetX = React.useRef(0);
 	const activeSplitter = React.useRef<HTMLDivElement | null>(null);
@@ -146,18 +146,18 @@ function WorkspaceSplitter(props: Props) {
 			}
 		});
 
-		const spliiterWidth = splittersRefs.current[0].current!.clientWidth;
+		const splitterWidth = splittersRefs.current[0].current!.clientWidth;
 
 		overlaysRefs.current.forEach((overlayRef, index) => {
 			if (overlayRef.current) {
-				overlayRef.current.style.left = `${splittersLeftPositions[index] + spliiterWidth}px`;
+				overlayRef.current.style.left = `${splittersLeftPositions[index] + splitterWidth}px`;
 				const overlayWidth =
 					index === overlaysRefs.current.length - 1
 						? rootRef.current!.offsetLeft +
 						  rootWidth -
 						  splittersLeftPositions[index] -
-						  spliiterWidth
-						: splittersLeftPositions[index + 1] - splittersLeftPositions[index] - spliiterWidth;
+						  splitterWidth
+						: splittersLeftPositions[index + 1] - splittersLeftPositions[index] - splitterWidth;
 				overlayRef.current.style.width = `${overlayWidth}px`;
 			}
 		});
@@ -322,7 +322,7 @@ function WorkspaceSplitter(props: Props) {
 						setActivePanel={panel.setActivePanel}
 					/>
 					<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
-						<div className='pane__sidebar' onClick={resetToDefaulLayout}>
+						<div className='pane__sidebar' onClick={resetToDefaultLayout}>
 							<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />
 							<div className='pane__title'>{panel.title}</div>
 							<div
