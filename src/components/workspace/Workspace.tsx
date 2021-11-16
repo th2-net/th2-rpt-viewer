@@ -59,20 +59,20 @@ function Workspace() {
 				collapsePanel={collapsePanel}
 				panels={[
 					{
-						title: 'Events',
-						color: panelColors.events,
-						component: <EventWindow />,
-						minWidth: 500,
-						isActive: isEventsStore(activePanel),
-						setActivePanel: () =>
-							workspaceStore.viewStore.setActivePanel(workspaceStore.eventsStore),
-					},
-					{
 						title: 'Smart Search',
 						color: panelColors.search,
 						component: <SearchPanel />,
-						minWidth: 400,
+						minWidth: 300,
 						isActive: isSearchStore(activePanel),
+					},
+					{
+						title: 'Events',
+						color: panelColors.events,
+						component: <EventWindow />,
+						minWidth: 400,
+						isActive: isEventsStore(activePanel),
+						setActivePanel: () =>
+							workspaceStore.viewStore.setActivePanel(workspaceStore.eventsStore),
 					},
 					{
 						title: 'Messages',
