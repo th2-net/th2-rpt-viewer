@@ -53,6 +53,7 @@ function SearchWorkspace() {
 			color: panelColors.search,
 			component: <SearchPanel />,
 			isActive: false,
+			minWidth: 300,
 		};
 	}, []);
 
@@ -62,6 +63,7 @@ function SearchWorkspace() {
 			color: panelColors.bookmarks,
 			component: <BookmarksPanel />,
 			isActive: false,
+			minWidth: 300,
 		};
 	}, [bookmarksCounter]);
 

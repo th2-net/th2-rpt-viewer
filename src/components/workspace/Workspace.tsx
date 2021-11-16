@@ -62,14 +62,14 @@ function Workspace() {
 						title: 'Smart Search',
 						color: panelColors.search,
 						component: <SearchPanel />,
-						minWidth: 300,
+						minWidth: 500,
 						isActive: isSearchStore(activePanel),
 					},
 					{
 						title: 'Events',
 						color: panelColors.events,
 						component: <EventWindow />,
-						minWidth: 400,
+						minWidth: 500,
 						isActive: isEventsStore(activePanel),
 						setActivePanel: () =>
 							workspaceStore.viewStore.setActivePanel(workspaceStore.eventsStore),

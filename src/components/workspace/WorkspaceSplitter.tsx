@@ -35,7 +35,7 @@ interface Panel {
 		default: string;
 		active: string;
 	};
-	minWidth?: number;
+	minWidth: number;
 	setActivePanel?: () => void;
 }
 
@@ -222,10 +222,10 @@ function WorkspaceSplitter(props: Props) {
 			if (!splitterRef.current) {
 				return [0, window.innerWidth];
 			}
-			const min = (splitterRef.current.clientWidth + MIN_PANEL_WIDTH) * index;
+			const min = (splitterRef.current.clientWidth + panels[index].minWidth) * index;
 			const max =
 				rootOffsetWidth -
-				(splitterRef.current.clientWidth + MIN_PANEL_WIDTH) *
+				(splitterRef.current.clientWidth + panels[index].minWidth) *
 					(splittersRefs.current.length - index);
 			return [min, max];
 		});
@@ -283,7 +283,7 @@ function WorkspaceSplitter(props: Props) {
 			}
 
 			const { left, width } = resizerRef.current!.getBoundingClientRect();
-			const fullWidth = width + MIN_PANEL_WIDTH;
+			const fullWidth = width + panels[index].minWidth;
 
 			if (
 				index < activeSplitterIndex &&
