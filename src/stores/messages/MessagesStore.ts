@@ -79,7 +79,7 @@ export default class MessagesStore {
 	@observable
 	public showFilterChangeHint = false;
 
-	/* 
+	/*
 		This is used for filter change hint. Represents either last clicked message
 		or attached messages
 	*/
@@ -240,6 +240,17 @@ export default class MessagesStore {
 			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 			this.hintMessages = [];
 			this.workspaceStore.viewStore.activePanel = this;
+		}
+	};
+
+	@action
+	public selectAttachedMessage = (message: EventMessage) => {
+		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === message.messageId);
+		if (messageIndex !== -1) {
+			this.selectedMessageId = new String(message.messageId);
+			this.highlightedMessageId = message.messageId;
+		} else {
+			this.onMessageSelect(message);
 		}
 	};
 
