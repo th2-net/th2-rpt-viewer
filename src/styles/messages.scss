@@ -603,14 +603,14 @@
 
 			&-previous {
 				@include icon(url(../../resources/icons/arr5-left.svg), 8px, 13px);
-				:hover > & {
+				&:hover {
 					@include icon(url(../../resources/icons/arr5-left-enabled.svg), 8px, 13px);
 				}
 			}
 
 			&-next {
 				@include icon(url(../../resources/icons/arr5-right.svg), 8px, 13px);
-				:hover > & {
+				&:hover {
 					@include icon(url(../../resources/icons/arr5-right-enabled.svg), 8px, 13px);
 				}
 			}
