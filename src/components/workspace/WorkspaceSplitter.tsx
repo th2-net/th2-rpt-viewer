@@ -222,10 +222,10 @@ function WorkspaceSplitter(props: Props) {
 			if (!splitterRef.current) {
 				return [0, window.innerWidth];
 			}
-			const min = (splitterRef.current.clientWidth + panels[index].minWidth) * index;
+			const min = (splitterRef.current.clientWidth + MIN_PANEL_WIDTH) * index;
 			const max =
 				rootOffsetWidth -
-				(splitterRef.current.clientWidth + panels[index].minWidth) *
+				(splitterRef.current.clientWidth + MIN_PANEL_WIDTH) *
 					(splittersRefs.current.length - index);
 			return [min, max];
 		});
@@ -268,14 +268,12 @@ function WorkspaceSplitter(props: Props) {
 					index,
 					activeSplitterLeft,
 				);
-
 				const rootWidth = rootRef.current!.clientWidth;
 
-				if (leftSpace / rootWidth < 0.2) {
+				if (leftSpace / rootWidth < 0.4 && index === 1) {
 					return activeSplitterLeft - leftSpace;
 				}
-
-				if (rightSpace / rootWidth < 0.2) {
+				if (rightSpace / rootWidth < 0.2 && index === 2) {
 					return activeSplitterLeft + rightSpace;
 				}
 
@@ -283,7 +281,7 @@ function WorkspaceSplitter(props: Props) {
 			}
 
 			const { left, width } = resizerRef.current!.getBoundingClientRect();
-			const fullWidth = width + panels[index].minWidth;
+			const fullWidth = width + MIN_PANEL_WIDTH;
 
 			if (
 				index < activeSplitterIndex &&

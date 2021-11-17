@@ -308,7 +308,7 @@ export default class EventsStore {
 		});
 
 		if (this.workspaceStore.viewStore.panelsLayout[0] < 20) {
-			this.workspaceStore.viewStore.setPanelsLayout([30, 25, 45]);
+			this.workspaceStore.viewStore.setPanelsLayout([45, 30, 25]);
 		}
 	};
 
