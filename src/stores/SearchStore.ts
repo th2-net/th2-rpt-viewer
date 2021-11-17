@@ -207,6 +207,8 @@ export class SearchStore {
 
 	@observable eventAutocompleteList: EventTreeNode[] = [];
 
+	@observable selectedBodyFilterRange: [number, number] | null = null;
+
 	eventAutocompleteSseChannel: EventSource | null = null;
 
 	@computed get searchProgress() {
@@ -365,7 +367,9 @@ export class SearchStore {
 			const filtersInfo = await this.api.sse.getMessagesFiltersInfo(filters);
 			runInAction(() => {
 				this.messagesFilterInfo = filtersInfo;
-				this.messagesFilter = getDefaultMessagesFiltersState(filtersInfo);
+				if (!this.messagesFilter) {
+					this.messagesFilter = getDefaultMessagesFiltersState(filtersInfo);
+				}
 			});
 		} catch (error) {
 			console.error('Error occured while loading messages filters', error);
@@ -717,6 +721,10 @@ export class SearchStore {
 
 	@action resetEventAutocompleteList = () => {
 		this.eventAutocompleteList = [];
+	};
+
+	@action setSelectedBodyFilterRange = (range: [number, number] | null) => {
+		this.selectedBodyFilterRange = range;
 	};
 
 	private loadEventAutocompleteList = debounce((parentEventName: string) => {

@@ -363,7 +363,6 @@
 
 	&__timestamp {
 		transition: all 0.15s;
-		border: 1px solid transparent;
 		border-radius: 4px;
 		margin-left: 0;
 
@@ -380,7 +379,7 @@
 
 	&__human {
 		font-family: inherit;
-		line-height: 16px;
+		line-height: 15px;
 		margin: 0;
 		white-space: pre-wrap;
 		word-break: break-all;
@@ -427,6 +426,14 @@
 		width: auto;
 		height: 100px;
 		padding: 5px 0;
+	}
+
+	.filtered {
+		background-color: $filteredTextColor;
+	}
+
+	.highlighted {
+		background-color: $highlightedTextColor !important;
 	}
 }
 

@@ -21,8 +21,8 @@ import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
-import { BookmarkedItem, isBookmark } from '../bookmarks/BookmarksPanel';
 import '../../styles/search-panel.scss';
+import { SearchResult } from '../../stores/SearchStore';
 
 export type SearchPanelType = 'event' | 'message';
 
@@ -33,12 +33,8 @@ const SearchPanel = () => {
 	const { ref: searchPanelRef } = useActivePanel(null);
 
 	const onResultItemClick = React.useCallback(
-		(bookmark: BookmarkedItem) => {
-			if (isBookmark(bookmark)) {
-				searchWorkspace.onSearchResultItemSelect(bookmark.item);
-			} else {
-				searchWorkspace.onSearchResultItemSelect(bookmark);
-			}
+		(bookmark: SearchResult) => {
+			searchWorkspace.onSearchResultItemSelect(bookmark);
 		},
 		[searchWorkspace.onSearchResultItemSelect],
 	);
@@ -51,9 +47,11 @@ const SearchPanel = () => {
 			{searchStore.currentSearch && (
 				<SearchPanelResults
 					flattenedResult={searchStore.flattenedResult}
+					filters={searchStore.currentSearch.request.filters}
 					timestamp={searchStore.currentSearch.timestamp}
 					onResultItemClick={onResultItemClick}
 					onResultGroupClick={searchWorkspace.followByTimestamp}
+					onResultFilterClick={searchStore.setSelectedBodyFilterRange}
 					onResultDelete={() => {
 						if (searchStore.currentSearch) {
 							searchStore.deleteHistoryItem(searchStore.currentSearch);

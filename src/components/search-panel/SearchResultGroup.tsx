@@ -17,22 +17,29 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { isEventMessage, isEventNode, getItemId } from '../../helpers/event';
+import { isEventMessage, isEventNode } from '../../helpers/event';
 import { createBemElement } from '../../helpers/styleCreators';
-import { useSelectedStore } from '../../hooks';
 import { SearchResult } from '../../stores/SearchStore';
-import { BookmarkedItem, BookmarkItem } from '../bookmarks/BookmarksPanel';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { ActionType } from '../../models/EventAction';
+import SearchResultItem from './SearchResultItem';
+import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
 
 interface SearchResultGroup {
 	results: SearchResult[];
-	onResultClick: (searchResult: BookmarkedItem) => void;
+	filters: EventFilterState | MessageFilterState;
+	onResultClick: (searchResult: SearchResult) => void;
 	onGroupClick: (timestamp: number, resultType: ActionType) => void;
+	onFilterClick: (range: [number, number]) => void;
 }
 
-const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResultGroup) => {
-	const selectedStore = useSelectedStore();
+const SearchResultGroup = ({
+	results,
+	filters,
+	onResultClick,
+	onGroupClick,
+	onFilterClick,
+}: SearchResultGroup) => {
 	const [isExpanded, setIsExpanded] = React.useState(false);
 
 	const expandButtonClass = createBemElement(
@@ -63,19 +70,20 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 		.map(entry => entry[0])
 		.splice(0, 3);
 
-	const getBookmarkToggler = (searchResult: SearchResult) => () => {
-		if (isEventMessage(searchResult)) {
-			selectedStore.toggleMessagePin(searchResult);
-		} else {
-			selectedStore.toggleEventPin(searchResult);
-		}
-	};
+	// const getBookmarkToggler = (searchResult: SearchResult) => () => {
+	// 	if (isEventMessage(searchResult)) {
+	// 		selectedStore.toggleMessagePin(searchResult);
+	// 	} else {
+	// 		selectedStore.toggleEventPin(searchResult);
+	// 	}
+	// };
 
-	const getIsToggled = (searchResult: SearchResult): boolean => {
-		return Boolean(
-			selectedStore.savedItems.find(savedItem => getItemId(savedItem) === getItemId(searchResult)),
-		);
-	};
+	// const getIsToggled = (searchResult: SearchResult): boolean => {
+	// 	return Boolean(
+	// 		selectedStore.savedItems.find(savedItem =>
+	// getItemId(savedItem) === getItemId(searchResult)),
+	// 	);
+	// };
 
 	const averageTimestamp = (() => {
 		const groupTimestamps = results.map(getTimestampAsNumber);
@@ -105,13 +113,11 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 	if (results.length === 1) {
 		return (
 			<div className='search-result-single-item'>
-				<BookmarkItem
-					key={computeKey(0)}
-					bookmark={results[0]}
-					onClick={onResultClick}
-					toggleBookmark={getBookmarkToggler(results[0])}
-					isBookmarked={getIsToggled(results[0])}
-					isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
+				<SearchResultItem
+					result={results[0]}
+					filters={filters}
+					onResultClick={onResultClick}
+					onFilterClick={onFilterClick}
 				/>
 			</div>
 		);
@@ -136,13 +142,12 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 			<div className='search-result-group-items'>
 				{isExpanded &&
 					results.map((result, index) => (
-						<BookmarkItem
+						<SearchResultItem
 							key={computeKey(index)}
-							bookmark={result}
-							onClick={onResultClick}
-							toggleBookmark={getBookmarkToggler(result)}
-							isBookmarked={getIsToggled(result)}
-							isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
+							result={result}
+							filters={filters}
+							onResultClick={onResultClick}
+							onFilterClick={onFilterClick}
 						/>
 					))}
 			</div>

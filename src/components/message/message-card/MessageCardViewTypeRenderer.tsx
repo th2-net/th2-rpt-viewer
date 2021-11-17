@@ -31,7 +31,7 @@ export type MessageCardViewTypeRendererProps = {
 	renderInfo: () => React.ReactNode;
 	isEmbedded?: boolean;
 	isDetailed?: boolean;
-	sortOrderItems: string[];
+	applyFilterToBody?: boolean;
 };
 
 const MessageCardViewTypeRenderer = ({
@@ -42,7 +42,7 @@ const MessageCardViewTypeRenderer = ({
 	isSelected,
 	messageBody,
 	isDetailed,
-	sortOrderItems,
+	applyFilterToBody,
 }: MessageCardViewTypeRendererProps) => {
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
@@ -55,7 +55,7 @@ const MessageCardViewTypeRenderer = ({
 							isBeautified={isBeautified}
 							isSelected={isSelected}
 							body={messageBody}
-							sortOrderItems={sortOrderItems}
+							applyFilterToBody={applyFilterToBody}
 						/>
 					}>
 					<MessageBodyCard
@@ -63,7 +63,7 @@ const MessageCardViewTypeRenderer = ({
 						body={messageBody}
 						isSelected={isSelected}
 						renderInfo={renderInfo}
-						sortOrderItems={sortOrderItems}
+						applyFilterToBody={applyFilterToBody}
 					/>
 				</ErrorBoundary>
 			);

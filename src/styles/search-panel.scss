@@ -818,6 +818,99 @@
 	}
 }
 
+.search-result {
+	display: grid;
+	grid-template-areas:
+		'icon name timestamp'
+		'body body body';
+	grid-template-columns: 15px 1fr auto;
+	grid-template-rows: 15px auto;
+	gap: 5px 7px;
+	padding: 5px 5px 5px 0;
+	margin-bottom: 5px;
+
+	&__icon {
+		grid-area: icon;
+
+		&.message-icon {
+			@include icon(url(../../resources/icons/bookmark-added-hover.svg), 15px, 15px);
+		}
+
+		&.event-icon,
+		&.eventtreenode-icon {
+			width: 11px;
+			height: 11px;
+			margin: 2px;
+			border-radius: 50%;
+
+			&.passed {
+				background-color: $graphOverlayPassedEventsColor;
+			}
+
+			&.failed {
+				background-color: $graphOverlayFailedEventsColor;
+			}
+		}
+	}
+	
+	&__name {
+		@include ellipsis();
+
+		grid-area: name;
+		font-weight: 700;
+		font-size: 10px;
+		line-height: 15px;
+		cursor: pointer;
+
+		&.message {
+			color: #087A91;
+		}
+
+		&.eventtreenode {
+			&.success {
+				color: $passedTextColor;
+			}
+
+			&.fail {
+				color: $failedTextColor;
+			}
+		}
+
+		&:hover {
+			color: $bookmarkLinkHoverColor;
+			text-decoration: underline;
+		}
+	}
+
+	&__timestamp {
+		grid-area: timestamp;
+		color: #808080;
+		font-size: 9px;
+		line-height: 15px;
+	}
+
+	&__body {
+		grid-area: body;
+		font-size: 10px;
+		line-height: 15px;
+		color: $alternativeTextColor;
+		word-wrap: break-word;
+
+		&-key {
+			font-weight: 600;
+		}
+
+		&-value {
+			font-weight: 400;
+		}
+
+		.filtered {
+			background-color: $filteredTextColor;
+			cursor: pointer;
+		}
+	}
+}
+
 .search-result-group-items {
 	margin-left: 40px;
 }

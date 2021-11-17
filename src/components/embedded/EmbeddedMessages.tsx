@@ -34,7 +34,7 @@ import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
 const messagesStore = new EmbeddedMessagesStore(api);
 
 const EmbeddedMessages = () => {
-	const { dataStore, scrolledIndex } = messagesStore;
+	const { dataStore, scrolledIndex, selectedMessageId } = messagesStore;
 	const { updateStore } = dataStore;
 
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
@@ -47,6 +47,7 @@ const EmbeddedMessages = () => {
 				message={message}
 				setViewType={setViewType}
 				viewType={viewType}
+				applyFilterToBody={message.messageId === selectedMessageId}
 			/>
 		);
 	};

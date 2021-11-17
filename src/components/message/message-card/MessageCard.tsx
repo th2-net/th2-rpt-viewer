@@ -21,7 +21,6 @@ import {
 	useMessageDisplayRulesStore,
 	useSelectedStore,
 	useMessagesDataStore,
-	useMessageBodySortStore,
 } from '../../../hooks';
 import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
@@ -47,7 +46,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const selectedStore = useSelectedStore();
-	const { sortOrderItems } = useMessageBodySortStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
@@ -62,6 +60,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
 	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
+	const applyFilterToBody = messagesStore.selectedMessageId?.valueOf() === message.messageId;
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
@@ -153,8 +152,8 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			isDetailed={isDetailed}
 			isExported={isExported}
 			isExport={messagesStore.exportStore.isExport}
-			sortOrderItems={sortOrderItems}
 			addMessageToExport={() => messagesStore.exportStore.addMessageToExport(message)}
+			applyFilterToBody={applyFilterToBody}
 		/>
 	);
 });

@@ -18,18 +18,19 @@ import React from 'react';
 import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
 import { isEventNode } from '../../helpers/event';
-import { BookmarkedItem } from '../bookmarks/BookmarksPanel';
 import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
 import SearchPanelSeparator from './SearchPanelSeparator';
+import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
 
 type Separator = [number, number];
 type FlattenedResult = SearchResult[] | Separator;
 
 interface SearchPanelResultsProps {
-	onResultItemClick: (searchResult: BookmarkedItem) => void;
+	onResultItemClick: (searchResult: SearchResult) => void;
 	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
+	onResultFilterClick: (range: [number, number]) => void;
 	onResultDelete: () => void;
 	disableNext: boolean;
 	disablePrev: boolean;
@@ -37,6 +38,7 @@ interface SearchPanelResultsProps {
 	next: () => void;
 	prev: () => void;
 	flattenedResult: FlattenedResult[];
+	filters: EventFilterState | MessageFilterState;
 	timestamp: number;
 	disabledRemove: boolean;
 	showLoadMoreButton: boolean;
@@ -46,9 +48,11 @@ interface SearchPanelResultsProps {
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const {
 		flattenedResult,
+		filters,
 		timestamp,
 		onResultItemClick,
 		onResultGroupClick,
+		onResultFilterClick,
 		onResultDelete,
 		disablePrev,
 		disableNext,
@@ -82,8 +86,10 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 			<React.Fragment>
 				<SearchResultGroup
 					results={results}
+					filters={filters}
 					onResultClick={onResultItemClick}
 					onGroupClick={onResultGroupClick}
+					onFilterClick={onResultFilterClick}
 				/>
 			</React.Fragment>
 		);

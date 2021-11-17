@@ -42,10 +42,10 @@ export interface MessageCardBaseProps {
 	isEmbedded?: boolean;
 	isExported?: boolean;
 	isExport?: boolean;
-	sortOrderItems?: string[];
 	viewType: MessageViewType;
 	setViewType: (viewType: MessageViewType) => void;
 	addMessageToExport?: () => void;
+	applyFilterToBody?: boolean;
 }
 
 export function MessageCardBase({
@@ -63,8 +63,8 @@ export function MessageCardBase({
 	isDetailed,
 	isExported,
 	isExport,
-	sortOrderItems,
 	addMessageToExport,
+	applyFilterToBody,
 }: MessageCardBaseProps) {
 	const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
@@ -136,7 +136,7 @@ export function MessageCardBase({
 		rawContent: bodyBase64,
 		isSelected: isAttached || false,
 		isDetailed,
-		sortOrderItems: sortOrderItems || [],
+		applyFilterToBody,
 	};
 
 	const messageCardToolsConfig: MessageCardToolsConfig = {
