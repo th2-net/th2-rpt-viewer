@@ -17,7 +17,7 @@
 import React from 'react';
 import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
-import { isEventNode } from '../../helpers/event';
+import { getItemId } from '../../helpers/event';
 import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
@@ -66,8 +66,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	function computeKey(index: number) {
 		const results = flattenedResult[index];
 		if (isSeparator(results)) return results[0];
-		const item = results[0];
-		return isEventNode(item) ? item.eventId : item.messageId;
+		return getItemId(results[0]);
 	}
 
 	const isSeparator = (object: FlattenedResult): object is Separator => {

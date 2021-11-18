@@ -158,16 +158,6 @@ function EventsFilterPanel() {
 
 			let filterInput: FilterRowConfig | null = null;
 			switch (filterValues.type) {
-				case 'string':
-					filterInput = {
-						id: filterName,
-						type: 'string',
-						value: filterValues.values,
-						setValue: getValuesUpdater(filterName),
-						autocompleteList,
-						hint: filterValues.hint,
-					};
-					break;
 				case 'string[]':
 					filterInput = {
 						id: filterName,

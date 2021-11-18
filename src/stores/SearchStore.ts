@@ -34,13 +34,13 @@ import {
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { getTimestampAsNumber } from '../helpers/date';
-import { getItemId, isEventId, isEventMessage, isEventNode } from '../helpers/event';
+import { getItemId, isEventAction, isEventId, isEventMessage } from '../helpers/event';
 import {
 	getDefaultEventsFiltersState,
 	getDefaultMessagesFiltersState,
 	isSearchHistoryEntity,
 } from '../helpers/search';
-import { EventTreeNode } from '../models/EventAction';
+import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
@@ -62,7 +62,7 @@ export type SearchPanelFormState = {
 	stream: string[];
 };
 
-export type SearchResult = EventTreeNode | EventMessage;
+export type SearchResult = EventAction | EventMessage;
 
 export type SearchHistory = {
 	timestamp: number;
@@ -541,6 +541,7 @@ export class SearchStore {
 				endTimestamp: timeLimits[direction],
 				filters: filtersToAdd,
 				...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
+				metadataOnly: false,
 			};
 
 			if (isPaused || loadMore) {
@@ -638,7 +639,7 @@ export class SearchStore {
 
 			if (
 				this.searchChunk.length >= SEARCH_CHUNK_SIZE ||
-				(!isEventNode(parsedEvent) && !isEventMessage(parsedEvent))
+				(!isEventAction(parsedEvent) && !isEventMessage(parsedEvent))
 			) {
 				this.exportChunkToSearchHistory();
 			}
@@ -657,11 +658,11 @@ export class SearchStore {
 			const { searchDirection, ...parsedEvent } = eventWithSearchDirection;
 
 			const eventTimestamp =
-				isEventNode(parsedEvent) || isEventMessage(parsedEvent)
+				isEventAction(parsedEvent) || isEventMessage(parsedEvent)
 					? getTimestampAsNumber(parsedEvent)
 					: parsedEvent.timestamp;
 
-			if (isEventNode(parsedEvent) || isEventMessage(parsedEvent)) {
+			if (isEventAction(parsedEvent) || isEventMessage(parsedEvent)) {
 				const resultGroupKey = Math.floor(
 					eventTimestamp / 1000 / (SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60),
 				).toString();

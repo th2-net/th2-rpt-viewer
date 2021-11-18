@@ -17,7 +17,7 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { isEventMessage, isEventNode } from '../../helpers/event';
+import { getItemId, isEventMessage } from '../../helpers/event';
 import { createBemElement } from '../../helpers/styleCreators';
 import { SearchResult } from '../../stores/SearchStore';
 import { getTimestampAsNumber } from '../../helpers/date';
@@ -51,7 +51,7 @@ const SearchResultGroup = ({
 	function computeKey(index: number) {
 		const item = results[index];
 
-		return isEventNode(item) ? item.eventId : item.messageId;
+		return getItemId(item);
 	}
 
 	const namesEncountersMap = new Map<string, number>();

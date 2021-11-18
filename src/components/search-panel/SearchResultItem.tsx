@@ -17,10 +17,10 @@
 
 import React from 'react';
 import { formatTime, getTimestampAsNumber } from '../../helpers/date';
-import { getItemName, isEventMessage, isEventNode } from '../../helpers/event';
+import { getItemName, isEventAction, isEventMessage } from '../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { useMessageBodySortStore } from '../../hooks';
-import { ActionType, EventAction, EventTreeNode } from '../../models/EventAction';
+import { ActionType, EventAction } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { SearchResult } from '../../stores/SearchStore';
 import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
@@ -67,11 +67,10 @@ type SearchResultItemProps = {
 	onFilterClick: (range: [number, number]) => void;
 };
 
-type ResultActionType = Exclude<ActionType, ActionType.EVENT_ACTION>;
+type ResultActionType = Exclude<ActionType, ActionType.EVENT_TREE_NODE>;
 
 type ItemByActionType<T extends ResultActionType> = {
 	event: EventAction;
-	eventTreeNode: EventTreeNode;
 	message: EventMessage;
 }[T];
 
@@ -88,10 +87,52 @@ const SearchResultItem = ({
 			[k in keyof ItemByActionType<key>]?: (value: ItemByActionType<key>[k]) => JSX.Element;
 		};
 	} = {
-		eventTreeNode: {
-			parentId: id => <>{id}</>,
-			type: type => <>{type}</>,
-			eventName: eventName => <>{eventName}</>,
+		event: {
+			parentEventId: parentId => <>{parentId || 'null'}</>,
+			attachedMessageIds: ids => (
+				<>
+					[
+					{ids
+						.filter(id =>
+							(filters as EventFilterState).attachedMessageId.values.some(filterId =>
+								id.includes(filterId),
+							),
+						)
+						.join(', ')}
+					]
+				</>
+			),
+			body: body => {
+				if (!body) return <>{null}</>;
+
+				const bodyAsString = JSON.stringify(body).replace(
+					/:[{|[|"]/gm,
+					(str: string) => `${str[0]} ${str[1]}`,
+				);
+
+				if (!filters.body.values.length || filters.body.negative)
+					return <>{trimValue(bodyAsString)}</>;
+
+				const sortedEntries = getSortedEntries(bodyAsString, filters.body.values);
+
+				return (
+					<>
+						{sortedEntries.flat().map(({ value, range }, idx, arr) => (
+							<React.Fragment key={`${value}-${idx}`}>
+								<span
+									className='filtered'
+									onClick={() => {
+										onResultClick(result);
+										onFilterClick(range);
+									}}>
+									{value}
+								</span>
+								{arr.length !== idx + 1 ? ', ' : ''}
+							</React.Fragment>
+						))}
+					</>
+				);
+			},
 		},
 		message: {
 			messageType: messageType => {
@@ -164,7 +205,7 @@ const SearchResultItem = ({
 		'search-result',
 		'name',
 		result.type,
-		isEventNode(result) ? (result.successful ? 'success' : 'fail') : null,
+		isEventAction(result) ? (result.successful ? 'success' : 'fail') : null,
 	);
 
 	const iconClassName = createStyleSelector(

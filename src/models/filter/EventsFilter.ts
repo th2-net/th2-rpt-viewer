@@ -16,12 +16,11 @@
 
 import {
 	MultipleStringFilter,
-	StringFilter,
 	SwitcherFilter,
 } from '../../components/search-panel/SearchPanelFilters';
 
 export default interface EventsFilter {
-	attachedMessageId: StringFilter;
+	attachedMessageId: MultipleStringFilter;
 	type: MultipleStringFilter;
 	body: MultipleStringFilter;
 	name: MultipleStringFilter;
