@@ -54,6 +54,7 @@ const EmbeddedMessagesFilterPanel = ({
 		body: '',
 		attachedEventIds: '',
 		bodyBinary: '',
+		text: '',
 	});
 
 	React.useEffect(() => {
@@ -70,6 +71,7 @@ const EmbeddedMessagesFilterPanel = ({
 			body: '',
 			attachedEventIds: '',
 			bodyBinary: '',
+			text: '',
 		});
 	}, []);
 
