@@ -173,7 +173,6 @@ function MessageReplayModal() {
 									setValues: getValuesUpdater(filter.name),
 									currentValue: currentValues[filter.name as keyof MessageFilterState],
 									setCurrentValue: setCurrentValue(filter.name),
-									autocompleteList: null,
 								};
 						}
 				  })

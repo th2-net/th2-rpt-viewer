@@ -402,8 +402,8 @@ export default class EventsDataStore {
 					},
 				},
 				{
-					onError: this.onEventTreeFetchError,
 					onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
+					onError: this.onEventTreeFetchError,
 					onClose: events => this.onEventChildrenLoadEnd(events, parentId),
 				},
 				{

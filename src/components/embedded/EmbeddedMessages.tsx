@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
@@ -28,15 +28,16 @@ import Empty from '../util/Empty';
 import { useDebouncedCallback } from '../../hooks';
 import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
+import MessagesUpdateButton from '../message/MessagesUpdateButton';
+import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
 const EmbeddedMessages = () => {
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
+	const { dataStore, scrolledIndex } = messagesStore;
+	const { updateStore } = dataStore;
 
-	useEffect(() => {
-		messagesStore.dataStore.loadMessages();
-	}, []);
+	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
 	const renderMsg = (index: number, message: EventMessage) => {
 		return (
@@ -50,15 +51,29 @@ const EmbeddedMessages = () => {
 		);
 	};
 
-	if (
-		messagesStore.dataStore.messages.length === 0 &&
-		(messagesStore.dataStore.isLoadingNextMessages ||
-			messagesStore.dataStore.isLoadingPreviousMessages)
-	) {
-		return <SplashScreen />;
-	}
+	const reportURL = React.useMemo(() => {
+		const messagesStoreState = {
+			timestampFrom: messagesStore.filterStore.filter.timestampFrom,
+			timestampTo: messagesStore.filterStore.filter.timestampTo,
+			streams: messagesStore.filterStore.filter.streams,
+			sse: messagesStore.filterStore.sseMessagesFilter,
+			isSoftFilter: false,
+		};
 
-	if (messagesStore.dataStore.isError) {
+		const searchString = new URLSearchParams({
+			workspaces: window.btoa(
+				JSON.stringify([
+					{
+						messages: messagesStoreState,
+					},
+				]),
+			),
+		});
+
+		return [window.location.origin, window.location.pathname, `?${searchString}`].join('');
+	}, [messagesStore.filterStore.filter, messagesStore.filterStore.sseMessagesFilter]);
+
+	if (dataStore.isError) {
 		return (
 			<Empty
 				description='Error occured while loading messages'
@@ -67,36 +82,42 @@ const EmbeddedMessages = () => {
 		);
 	}
 
-	if (
-		!(
-			messagesStore.dataStore.isLoadingNextMessages ||
-			messagesStore.dataStore.isLoadingPreviousMessages
-		) &&
-		messagesStore.dataStore.messages.length === 0
-	) {
-		if (messagesStore.dataStore.isError === false) {
-			return (
+	return (
+		<div className='messages-list'>
+			<div className='messages-list__header'>
+				<MessagesUpdateButton
+					isShow={dataStore.searchChannelNext?.isEndReached || dataStore.updateStore.isLoading}
+					isLoading={updateStore.isLoading}
+					subscribeOnChanges={updateStore.subscribeOnChanges}
+					stopSubscription={updateStore.stopSubscription}
+				/>
+				<EmbeddedMessagesFilterPanel messagesStore={messagesStore} />
+				<a href={reportURL} target='_black' className='report-viewer-link'>
+					Report viewer
+				</a>
+			</div>
+			{dataStore.messages.length === 0 &&
+			(dataStore.isLoadingNextMessages || dataStore.isLoadingPreviousMessages) ? (
+				<SplashScreen />
+			) : dataStore.messages.length === 0 &&
+			  !(dataStore.isLoadingNextMessages || dataStore.isLoadingPreviousMessages) ? (
 				<Empty
 					description='No messages'
 					descriptionStyles={{ position: 'relative', bottom: '6px' }}
 				/>
-			);
-		}
-	}
-
-	return (
-		<div className='messages-list'>
-			<StateSaverProvider>
-				<MessagesVirtualizedList
-					className='messages-list__items'
-					rowCount={messagesStore.dataStore.messages.length}
-					scrolledIndex={messagesStore.scrolledIndex}
-					itemRenderer={renderMsg}
-					overscan={0}
-					loadNextMessages={messagesStore.dataStore.getNextMessages}
-					loadPrevMessages={messagesStore.dataStore.getPreviousMessages}
-				/>
-			</StateSaverProvider>
+			) : (
+				<StateSaverProvider>
+					<MessagesVirtualizedList
+						className='messages-list__items'
+						rowCount={dataStore.messages.length}
+						scrolledIndex={scrolledIndex}
+						itemRenderer={renderMsg}
+						overscan={0}
+						loadNextMessages={dataStore.getNextMessages}
+						loadPrevMessages={dataStore.getPreviousMessages}
+					/>
+				</StateSaverProvider>
+			)}
 		</div>
 	);
 };
@@ -157,6 +178,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 					messagesStore.dataStore.searchChannelNext &&
 					!messagesStore.dataStore.searchChannelNext.isLoading &&
 					!messagesStore.dataStore.searchChannelNext.isEndReached &&
+					!messagesStore.dataStore.updateStore.isLoading &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
 					loadNextMessages(messagesStore.dataStore.messages[0]?.messageId).then(messages =>
@@ -212,7 +234,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment.utc(messagesStore.filterParams.startTimestamp).format()}
+											{moment.utc(messagesStore.filterStore.filterParams.startTimestamp).format()}
 										</span>
 										<button
 											className='messages-list__load-btn'
@@ -235,7 +257,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment(messagesStore.filterParams.startTimestamp).utc().format()}
+											{moment(messagesStore.filterStore.filterParams.startTimestamp).utc().format()}
 										</span>
 										<button
 											className='messages-list__load-btn'
@@ -264,5 +286,6 @@ interface SpinnerProps {
 }
 const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
 	if (!isLoading) return null;
+
 	return <div className='messages-list__spinner' />;
 };

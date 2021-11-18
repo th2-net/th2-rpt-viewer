@@ -23,14 +23,21 @@ import { EventMessage } from '../../models/EventMessage';
 import notificationsStore from '../NotificationsStore';
 import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
+import MessagesUpdateStore from './MessagesUpdateStore';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class MessagesDataProviderStore {
+	private readonly messagesLimit = 250;
+
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
+		this.updateStore = new MessagesUpdateStore(this, this.messagesStore.scrollToMessage);
+
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
 	}
+
+	public updateStore: MessagesUpdateStore;
 
 	@observable
 	public noMatchingMessagesPrev = false;
@@ -96,9 +103,7 @@ export default class MessagesDataProviderStore {
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
-		const queryParams = this.messagesStore.filterStore.isSoftFilter
-			? this.messagesStore.filterStore.softFilterParams
-			: this.messagesStore.filterStore.filterParams;
+		const queryParams = this.getFilterParams();
 
 		this.createPreviousMessageChannelEventSource(
 			{
@@ -131,6 +136,13 @@ export default class MessagesDataProviderStore {
 					}
 				}
 			}
+
+			const { selectedMessageId, scrollToMessage } = this.messagesStore;
+			this.searchChannelNext.onStop = () =>
+				selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
+			this.searchChannelPrev.onStop = () =>
+				selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
+
 			const [nextMessages, prevMessages] = await Promise.all([
 				this.searchChannelNext.loadAndSubscribe(message?.messageId),
 				this.searchChannelPrev.loadAndSubscribe(message?.messageId),
@@ -223,7 +235,13 @@ export default class MessagesDataProviderStore {
 		}
 
 		if (messages.length) {
-			this.messages = [...this.messages, ...messages];
+			let newMessagesList = [...this.messages, ...messages];
+
+			if (newMessagesList.length > this.messagesLimit) {
+				newMessagesList = newMessagesList.slice(-this.messagesLimit);
+			}
+
+			this.messages = newMessagesList;
 
 			const selectedMessageId = this.messagesStore.selectedMessageId?.valueOf();
 			if (selectedMessageId && messages.find(m => m.messageId === selectedMessageId)) {
@@ -254,7 +272,13 @@ export default class MessagesDataProviderStore {
 
 		if (messages.length !== 0) {
 			this.startIndex -= messages.length;
-			this.messages = [...messages, ...this.messages];
+
+			let newMessagesList = [...messages, ...this.messages];
+
+			if (newMessagesList.length > this.messagesLimit) {
+				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
+			}
+			this.messages = newMessagesList;
 
 			const selectedMessageId = this.messagesStore.selectedMessageId?.valueOf();
 			if (selectedMessageId && messages.find(m => m.messageId === selectedMessageId)) {
@@ -300,6 +324,7 @@ export default class MessagesDataProviderStore {
 	@action
 	private onFilterChange = async () => {
 		this.stopMessagesLoading();
+		this.updateStore.stopSubscription();
 		this.resetMessagesDataState();
 		this.loadMessages();
 	};
@@ -333,6 +358,13 @@ export default class MessagesDataProviderStore {
 		}
 
 		return message;
+	};
+
+	@action
+	public getFilterParams = () => {
+		return this.messagesStore.filterStore.isSoftFilter
+			? this.messagesStore.filterStore.softFilterParams
+			: this.messagesStore.filterStore.filterParams;
 	};
 
 	@action
