@@ -232,7 +232,6 @@ function WorkspaceSplitter(props: Props) {
 	}
 
 	const getFreeSpaceAroundSplitter = (
-		splittersRefs: React.MutableRefObject<React.RefObject<HTMLDivElement>[]>,
 		splitterIndex: number,
 		activeSplitterLeftPosition: number,
 	) => {
@@ -266,7 +265,6 @@ function WorkspaceSplitter(props: Props) {
 		return splittersRefs.current.map((resizerRef, index) => {
 			if (resizerRef.current === activeSplitter.current) {
 				const { left: leftSpace, right: rightSpace } = getFreeSpaceAroundSplitter(
-					splittersRefs,
 					index,
 					activeSplitterLeft,
 				);
