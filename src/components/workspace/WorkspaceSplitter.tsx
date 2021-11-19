@@ -196,7 +196,7 @@ function WorkspaceSplitter(props: Props) {
 			if (panelRef.current) {
 				panelRef.current.style.width = `${widths[index]}px`;
 
-				if (Math.round(widths[index]) === MIN_PANEL_WIDTH) {
+				if (Math.round(widths[index]) <= MIN_PANEL_WIDTH) {
 					if (!panelRef.current.classList.contains('minified')) {
 						panelRef.current.classList.add('minified');
 					}
@@ -232,6 +232,7 @@ function WorkspaceSplitter(props: Props) {
 	}
 
 	const getFreeSpaceAroundSplitter = (
+		splittersRefs: React.MutableRefObject<React.RefObject<HTMLDivElement>[]>,
 		splitterIndex: number,
 		activeSplitterLeftPosition: number,
 	) => {
@@ -242,12 +243,12 @@ function WorkspaceSplitter(props: Props) {
 		return {
 			left: leftSplitter
 				? activeSplitterLeftPosition -
-				  leftSplitter.clientLeft -
+				  leftSplitter.offsetLeft -
 				  MIN_PANEL_WIDTH -
 				  splitter.clientWidth
 				: activeSplitterLeftPosition,
 			right: rightSplitter
-				? rightSplitter.clientLeft + activeSplitterLeftPosition
+				? rightSplitter.offsetLeft - activeSplitterLeftPosition
 				: rootRef.current!.clientWidth -
 				  MIN_PANEL_WIDTH -
 				  splitter.clientWidth -
@@ -265,16 +266,30 @@ function WorkspaceSplitter(props: Props) {
 		return splittersRefs.current.map((resizerRef, index) => {
 			if (resizerRef.current === activeSplitter.current) {
 				const { left: leftSpace, right: rightSpace } = getFreeSpaceAroundSplitter(
+					splittersRefs,
 					index,
 					activeSplitterLeft,
 				);
 				const rootWidth = rootRef.current!.clientWidth;
 
-				if (leftSpace / rootWidth < 0.4 && index === 1) {
-					return activeSplitterLeft - leftSpace;
+				if (index === 1) {
+					if (leftSpace / rootWidth < 0.3) {
+						return activeSplitterLeft - leftSpace;
+					}
+
+					if (rightSpace / rootWidth < 0.2) {
+						return activeSplitterLeft + rightSpace - MIN_PANEL_WIDTH;
+					}
 				}
-				if (rightSpace / rootWidth < 0.2 && index === 2) {
-					return activeSplitterLeft + rightSpace;
+
+				if (index === 2) {
+					if (leftSpace / rootWidth < 0.2) {
+						return activeSplitterLeft - leftSpace;
+					}
+
+					if (rightSpace / rootWidth < 0.2) {
+						return activeSplitterLeft + rightSpace;
+					}
 				}
 
 				return minmax(activeSplitterLeft, ...splittersMinxMaxPositions.current[index]);
