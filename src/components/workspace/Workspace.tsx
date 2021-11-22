@@ -42,12 +42,7 @@ const panelColors = {
 
 function Workspace() {
 	const { activePanel } = useActivePanel(null);
-	const {
-		panelsLayout,
-		setPanelsLayout,
-		resetToDefaultLayout,
-		collapsePanel,
-	} = useWorkspaceViewStore();
+	const { panelsLayout, setPanelsLayout, collapsePanel } = useWorkspaceViewStore();
 	const workspaceStore = useWorkspaceStore();
 
 	return (
@@ -55,21 +50,18 @@ function Workspace() {
 			<WorkspaceSplitter
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
-				resetToDefaultLayout={resetToDefaultLayout}
 				collapsePanel={collapsePanel}
 				panels={[
 					{
 						title: 'Smart Search',
 						color: panelColors.search,
 						component: <SearchPanel />,
-						minWidth: 600,
 						isActive: isSearchStore(activePanel),
 					},
 					{
 						title: 'Events',
 						color: panelColors.events,
 						component: <EventWindow />,
-						minWidth: 500,
 						isActive: isEventsStore(activePanel),
 						setActivePanel: () =>
 							workspaceStore.viewStore.setActivePanel(workspaceStore.eventsStore),
@@ -78,7 +70,6 @@ function Workspace() {
 						title: 'Messages',
 						color: panelColors.messages,
 						component: <MessagesWindow />,
-						minWidth: 400,
 						isActive: isMessagesStore(activePanel),
 						setActivePanel: () =>
 							workspaceStore.viewStore.setActivePanel(workspaceStore.messagesStore),

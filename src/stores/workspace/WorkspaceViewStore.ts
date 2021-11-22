@@ -59,13 +59,39 @@ export default class WorkspaceViewStore {
 	};
 
 	@action
-	public resetToDefaultLayout = () => {
-		this.panelsLayout = [45, 30, 25];
-	};
+	public collapsePanel = (index: number, collapsedPanels: number[]) => {
+		if (collapsedPanels.length === 0) {
+			this.panelsLayout = index === 0 ? [0, 50, 50] : index === 1 ? [50, 0, 50] : [50, 50, 0];
+		}
+		if (collapsedPanels.length === 1 && collapsedPanels.includes(index)) {
+			this.panelsLayout = [45, 30, 25];
+		}
+		if (collapsedPanels.length === 1 && !collapsedPanels.includes(index)) {
+			if (index === 0) {
+				this.panelsLayout = collapsedPanels.includes(1) ? [0, 0, 100] : [0, 100, 0];
+			}
 
-	@action
-	public collapsePanel = (index: number) => {
-		this.panelsLayout = index === 0 ? [0, 50, 50] : index === 1 ? [50, 0, 50] : [50, 50, 0];
+			if (index === 1) {
+				this.panelsLayout = collapsedPanels.includes(0) ? [0, 0, 100] : [100, 0, 0];
+			}
+
+			if (index === 2) {
+				this.panelsLayout = collapsedPanels.includes(0) ? [0, 100, 0] : [100, 0, 0];
+			}
+		}
+		if (collapsedPanels.length === 2 && collapsedPanels.includes(index)) {
+			if (index === 0) {
+				this.panelsLayout = collapsedPanels.includes(1) ? [50, 0, 50] : [50, 50, 0];
+			}
+
+			if (index === 1) {
+				this.panelsLayout = collapsedPanels.includes(0) ? [0, 50, 50] : [50, 50, 0];
+			}
+
+			if (index === 2) {
+				this.panelsLayout = collapsedPanels.includes(0) ? [0, 50, 50] : [50, 0, 50];
+			}
+		}
 	};
 
 	@action

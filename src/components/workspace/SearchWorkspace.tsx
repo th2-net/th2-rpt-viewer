@@ -37,12 +37,7 @@ const panelColors = {
 function SearchWorkspace() {
 	const searchWorkspaceStore = useSearchWorkspace();
 	const selectedStore = useWorkspaces().selectedStore;
-	const {
-		panelsLayout,
-		setPanelsLayout,
-		resetToDefaultLayout,
-		collapsePanel,
-	} = searchWorkspaceStore.viewStore;
+	const { panelsLayout, setPanelsLayout, collapsePanel } = searchWorkspaceStore.viewStore;
 
 	const bookmarksCounter =
 		selectedStore.bookmarkedMessages.length + selectedStore.bookmarkedEvents.length;
@@ -53,7 +48,6 @@ function SearchWorkspace() {
 			color: panelColors.search,
 			component: <SearchPanel />,
 			isActive: false,
-			minWidth: 300,
 		};
 	}, []);
 
@@ -63,7 +57,6 @@ function SearchWorkspace() {
 			color: panelColors.bookmarks,
 			component: <BookmarksPanel />,
 			isActive: false,
-			minWidth: 300,
 		};
 	}, [bookmarksCounter]);
 
@@ -77,7 +70,6 @@ function SearchWorkspace() {
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
 				panels={searchWorkspacePanels}
-				resetToDefaultLayout={resetToDefaultLayout}
 				collapsePanel={collapsePanel}
 			/>
 		</div>
