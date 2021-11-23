@@ -29,7 +29,6 @@ export type SearchPanelType = 'event' | 'message';
 const SearchPanel = () => {
 	const searchWorkspace = useSearchWorkspace();
 	const searchStore = useSearchStore();
-
 	const { ref: searchPanelRef } = useActivePanel(null);
 
 	const onResultItemClick = React.useCallback(

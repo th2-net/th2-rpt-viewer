@@ -86,7 +86,7 @@ function WorkspaceSplitter(props: Props) {
 			if (panelRef) {
 				panelRef.style.width = `${panelsLayout[index]}%`;
 				const widthInPx = (rootEl.getBoundingClientRect().width * panelsLayout[index]) / 100;
-				if (Math.floor(widthInPx) <= MIN_PANEL_WIDTH) {
+				if (Math.floor(widthInPx) <= MIN_PANEL_WIDTH * 2) {
 					if (!panelRef.classList.contains('minified')) {
 						panelRef.classList.add('minified');
 						setCollapsedPanels([...collapsedPanels, index]);
@@ -96,6 +96,7 @@ function WorkspaceSplitter(props: Props) {
 					setCollapsedPanels([...collapsedPanels.filter(idx => idx !== index)]);
 				}
 			}
+			console.log(collapsedPanels);
 		});
 	}, [panelsLayout]);
 
@@ -198,7 +199,7 @@ function WorkspaceSplitter(props: Props) {
 			if (panelRef.current) {
 				panelRef.current.style.width = `${widths[index]}px`;
 
-				if (Math.round(widths[index]) <= MIN_PANEL_WIDTH) {
+				if (Math.round(widths[index]) <= MIN_PANEL_WIDTH * 2) {
 					if (!panelRef.current.classList.contains('minified')) {
 						panelRef.current.classList.add('minified');
 						setCollapsedPanels([...collapsedPanels, index]);
@@ -251,7 +252,10 @@ function WorkspaceSplitter(props: Props) {
 				  splitter.clientWidth
 				: activeSplitterLeftPosition - MIN_PANEL_WIDTH,
 			right: rightSplitter
-				? rightSplitter.offsetLeft - activeSplitterLeftPosition - MIN_PANEL_WIDTH * 0.5
+				? rightSplitter.offsetLeft -
+				  activeSplitterLeftPosition -
+				  MIN_PANEL_WIDTH -
+				  splitter.clientWidth
 				: rootRef.current!.clientWidth -
 				  MIN_PANEL_WIDTH -
 				  splitter.clientWidth -
@@ -278,7 +282,7 @@ function WorkspaceSplitter(props: Props) {
 					}
 
 					if (rightSpace / rootWidth < 0.2) {
-						return activeSplitterLeft + rightSpace - MIN_PANEL_WIDTH;
+						return activeSplitterLeft + rightSpace;
 					}
 				}
 
@@ -302,19 +306,13 @@ function WorkspaceSplitter(props: Props) {
 				index < activeSplitterIndex &&
 				left + (activeSplitterIndex - index) * fullWidth > activeSplitterLeft
 			) {
-				return minmax(
-					activeSplitterLeft - (activeSplitterIndex - index) * fullWidth,
-					...splittersMinxMaxPositions.current[index],
-				);
+				return minmax(activeSplitterLeft - fullWidth, ...splittersMinxMaxPositions.current[index]);
 			}
 			if (
 				index > activeSplitterIndex &&
 				activeSplitterLeft + (index - activeSplitterIndex) * fullWidth > left
 			) {
-				return minmax(
-					activeSplitterLeft + (index - activeSplitterIndex) * fullWidth,
-					...splittersMinxMaxPositions.current[index],
-				);
+				return minmax(activeSplitterLeft + fullWidth, ...splittersMinxMaxPositions.current[index]);
 			}
 			return left - rootRef.current!.getBoundingClientRect().left;
 		});

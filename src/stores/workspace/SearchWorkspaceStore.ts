@@ -79,7 +79,7 @@ export default class SearchWorkspaceStore {
 			initialWorkspaceState.events = {
 				targetEvent: savedItem,
 			};
-			initialWorkspaceState.layout = [100, 0, 0];
+			initialWorkspaceState.layout = [0, 100, 0];
 		} else {
 			initialWorkspaceState.messages = {
 				timestampTo: timestampToNumber(savedItem.timestamp),

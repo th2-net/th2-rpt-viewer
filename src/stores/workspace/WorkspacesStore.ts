@@ -150,7 +150,7 @@ export default class WorkspacesStore {
 				range: [timestampFrom, timestampTo],
 				targetEvent,
 			},
-			layout: [100, 0, 0],
+			layout: [0, 100, 0],
 			interval: SEARCH_STORE_INTERVAL,
 			timeRange: [timestampFrom, timestampTo],
 		};
