@@ -37,7 +37,13 @@ const panelColors = {
 function SearchWorkspace() {
 	const searchWorkspaceStore = useSearchWorkspace();
 	const selectedStore = useWorkspaces().selectedStore;
-	const { panelsLayout, setPanelsLayout, collapsePanel } = searchWorkspaceStore.viewStore;
+	const {
+		panelsLayout,
+		setPanelsLayout,
+		collapsedPanels,
+		setCollapsedPanels,
+		collapsePanel,
+	} = searchWorkspaceStore.viewStore;
 
 	const bookmarksCounter =
 		selectedStore.bookmarkedMessages.length + selectedStore.bookmarkedEvents.length;
@@ -67,6 +73,8 @@ function SearchWorkspace() {
 	return (
 		<div className='workspace'>
 			<WorkspaceSplitter
+				collapsedPanels={collapsedPanels}
+				setCollapsedPanels={setCollapsedPanels}
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
 				panels={searchWorkspacePanels}

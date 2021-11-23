@@ -48,6 +48,9 @@ export default class WorkspaceViewStore {
 	@observable
 	public activePanel: EventsStore | MessagesStore | null = null;
 
+	@observable
+	public collapsedPanels: number[] = [];
+
 	@action
 	public setPanelArea = (panelArea: number) => {
 		this.eventsPanelArea = panelArea;
@@ -59,37 +62,43 @@ export default class WorkspaceViewStore {
 	};
 
 	@action
-	public collapsePanel = (index: number, collapsedPanels: number[]) => {
-		if (collapsedPanels.length === 0) {
+	public setCollapsedPanels = (collapsedPanels: number[]) => {
+		this.collapsedPanels = collapsedPanels;
+	};
+
+	@action
+	public collapsePanel = (index: number) => {
+		console.log(this.collapsedPanels);
+		if (this.collapsedPanels.length === 0) {
 			this.panelsLayout = index === 0 ? [0, 50, 50] : index === 1 ? [50, 0, 50] : [50, 50, 0];
 		}
-		if (collapsedPanels.length === 1 && collapsedPanels.includes(index)) {
+		if (this.collapsedPanels.length === 1 && this.collapsedPanels.includes(index)) {
 			this.panelsLayout = [45, 30, 25];
 		}
-		if (collapsedPanels.length === 1 && !collapsedPanels.includes(index)) {
+		if (this.collapsedPanels.length === 1 && !this.collapsedPanels.includes(index)) {
 			if (index === 0) {
-				this.panelsLayout = collapsedPanels.includes(1) ? [0, 0, 100] : [0, 100, 0];
+				this.panelsLayout = this.collapsedPanels.includes(1) ? [0, 0, 100] : [0, 100, 0];
 			}
 
 			if (index === 1) {
-				this.panelsLayout = collapsedPanels.includes(0) ? [0, 0, 100] : [100, 0, 0];
+				this.panelsLayout = this.collapsedPanels.includes(0) ? [0, 0, 100] : [100, 0, 0];
 			}
 
 			if (index === 2) {
-				this.panelsLayout = collapsedPanels.includes(0) ? [0, 100, 0] : [100, 0, 0];
+				this.panelsLayout = this.collapsedPanels.includes(0) ? [0, 100, 0] : [100, 0, 0];
 			}
 		}
-		if (collapsedPanels.length === 2 && collapsedPanels.includes(index)) {
+		if (this.collapsedPanels.length === 2 && this.collapsedPanels.includes(index)) {
 			if (index === 0) {
-				this.panelsLayout = collapsedPanels.includes(1) ? [50, 0, 50] : [50, 50, 0];
+				this.panelsLayout = this.collapsedPanels.includes(1) ? [50, 0, 50] : [50, 50, 0];
 			}
 
 			if (index === 1) {
-				this.panelsLayout = collapsedPanels.includes(0) ? [0, 50, 50] : [50, 50, 0];
+				this.panelsLayout = this.collapsedPanels.includes(0) ? [0, 50, 50] : [50, 50, 0];
 			}
 
 			if (index === 2) {
-				this.panelsLayout = collapsedPanels.includes(0) ? [0, 50, 50] : [50, 0, 50];
+				this.panelsLayout = this.collapsedPanels.includes(0) ? [0, 50, 50] : [50, 0, 50];
 			}
 		}
 	};

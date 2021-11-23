@@ -44,18 +44,25 @@ export interface Props {
 	panels: Array<Panel>;
 	panelsLayout: WorkspacePanelsLayout;
 	setPanelsLayout: (panelsLayout: WorkspacePanelsLayout) => void;
-	collapsePanel: (index: number, collapsedPanels: number[]) => void;
+	collapsePanel: (index: number) => void;
+	collapsedPanels: number[];
+	setCollapsedPanels: (collapsedPanels: number[]) => void;
 }
 
 function WorkspaceSplitter(props: Props) {
-	const { panels, panelsLayout, setPanelsLayout, collapsePanel } = props;
+	const {
+		panels,
+		panelsLayout,
+		setPanelsLayout,
+		setCollapsedPanels,
+		collapsedPanels,
+		collapsePanel,
+	} = props;
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const clickOffsetX = React.useRef(0);
 	const activeSplitter = React.useRef<HTMLDivElement | null>(null);
 
 	const [isResizing, setIsResizing] = React.useState(false);
-
-	const [collapsedPanels, setCollapsedPanels] = React.useState<number[]>([]);
 
 	const panelsRefs = React.useRef(
 		Array(panels.length)
@@ -80,6 +87,7 @@ function WorkspaceSplitter(props: Props) {
 	React.useLayoutEffect(() => {
 		const rootEl = rootRef.current;
 		if (!rootEl) return;
+		let newCollapsedPanels = [...collapsedPanels];
 
 		panelsRefs.current.forEach((ref, index) => {
 			const panelRef = ref.current;
@@ -88,17 +96,18 @@ function WorkspaceSplitter(props: Props) {
 				const widthInPx = (rootEl.getBoundingClientRect().width * panelsLayout[index]) / 100;
 				if (Math.floor(widthInPx) <= MIN_PANEL_WIDTH * 2) {
 					if (!panelRef.classList.contains('minified')) {
+						console.log(index);
 						panelRef.classList.add('minified');
-						setCollapsedPanels([...collapsedPanels, index]);
+						newCollapsedPanels.push(index);
+						setCollapsedPanels(newCollapsedPanels);
 					}
 				} else if (panelRef.classList.contains('minified')) {
 					panelRef.classList.remove('minified');
 					setCollapsedPanels([...collapsedPanels.filter(idx => idx !== index)]);
 				}
 			}
-			console.log(collapsedPanels);
 		});
-	}, [panelsLayout]);
+	}, [panelsLayout, collapsedPanels]);
 
 	function onMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
 		setIsResizing(true);
@@ -195,14 +204,18 @@ function WorkspaceSplitter(props: Props) {
 			) as WorkspacePanelsLayout,
 		);
 
+		let newCollapsedPanels = [...collapsedPanels];
+
 		panelsRefs.current.forEach((panelRef, index) => {
 			if (panelRef.current) {
 				panelRef.current.style.width = `${widths[index]}px`;
+				console.log(widths[index]);
 
 				if (Math.round(widths[index]) <= MIN_PANEL_WIDTH * 2) {
 					if (!panelRef.current.classList.contains('minified')) {
 						panelRef.current.classList.add('minified');
-						setCollapsedPanels([...collapsedPanels, index]);
+						newCollapsedPanels.push(index);
+						setCollapsedPanels(newCollapsedPanels);
 					}
 				} else if (panelRef.current.classList.contains('minified')) {
 					panelRef.current.classList.remove('minified');
@@ -250,7 +263,7 @@ function WorkspaceSplitter(props: Props) {
 				  leftSplitter.offsetLeft -
 				  MIN_PANEL_WIDTH -
 				  splitter.clientWidth
-				: activeSplitterLeftPosition - MIN_PANEL_WIDTH,
+				: activeSplitterLeftPosition,
 			right: rightSplitter
 				? rightSplitter.offsetLeft -
 				  activeSplitterLeftPosition -
@@ -267,6 +280,8 @@ function WorkspaceSplitter(props: Props) {
 		const activeSplitterIndex = splittersRefs.current.findIndex(
 			splitter => splitter.current === activeSplitter.current,
 		);
+
+		const { left: rootOffsetLeft } = rootRef.current!.getBoundingClientRect();
 
 		return splittersRefs.current.map((resizerRef, index) => {
 			if (resizerRef.current === activeSplitter.current) {
@@ -304,15 +319,21 @@ function WorkspaceSplitter(props: Props) {
 
 			if (
 				index < activeSplitterIndex &&
-				left + (activeSplitterIndex - index) * fullWidth > activeSplitterLeft
+				left - rootOffsetLeft + fullWidth * (activeSplitterIndex - index) > activeSplitterLeft
 			) {
-				return minmax(activeSplitterLeft - fullWidth, ...splittersMinxMaxPositions.current[index]);
+				return minmax(
+					activeSplitterLeft - (activeSplitterIndex - index) * fullWidth,
+					...splittersMinxMaxPositions.current[index],
+				);
 			}
 			if (
 				index > activeSplitterIndex &&
-				activeSplitterLeft + (index - activeSplitterIndex) * fullWidth > left
+				activeSplitterLeft + (index - activeSplitterIndex) * fullWidth > left - rootOffsetLeft
 			) {
-				return minmax(activeSplitterLeft + fullWidth, ...splittersMinxMaxPositions.current[index]);
+				return minmax(
+					activeSplitterLeft + (index - activeSplitterIndex) * fullWidth,
+					...splittersMinxMaxPositions.current[index],
+				);
 			}
 			return left - rootRef.current!.getBoundingClientRect().left;
 		});
@@ -333,7 +354,7 @@ function WorkspaceSplitter(props: Props) {
 						setActivePanel={panel.setActivePanel}
 					/>
 					<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
-						<div className='pane__sidebar' onClick={() => collapsePanel(index, collapsedPanels)}>
+						<div className='pane__sidebar' onClick={() => collapsePanel(index)}>
 							<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />
 							<div className='pane__title'>{panel.title}</div>
 							<div
@@ -354,7 +375,7 @@ function WorkspaceSplitter(props: Props) {
 											: '5px',
 									cursor: 'pointer',
 								}}
-								onClick={() => collapsePanel(index, collapsedPanels)}>
+								onClick={() => collapsePanel(index)}>
 								<i
 									className={
 										'pane__header-icon ' +
