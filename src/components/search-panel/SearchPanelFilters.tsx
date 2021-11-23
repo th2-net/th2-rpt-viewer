@@ -58,6 +58,7 @@ export type EventFilterState = {
 	body: MultipleStringFilter;
 	name: MultipleStringFilter;
 	status: SwitcherFilter;
+	text: MultipleStringFilter;
 };
 
 export type MessageFilterState = {
@@ -65,6 +66,7 @@ export type MessageFilterState = {
 	type: MultipleStringFilter;
 	body: MultipleStringFilter;
 	bodyBinary: MultipleStringFilter;
+	text: MultipleStringFilter;
 };
 
 export type FilterState = EventFilterState | MessageFilterState;
