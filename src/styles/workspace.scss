@@ -283,6 +283,10 @@
 		overflow: hidden;
 	}
 
+	&.minified &__wrapper {
+		display: none;
+	}
+
 	&.minified &__sidebar {
 		width: 15px;
 	}

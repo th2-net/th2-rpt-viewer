@@ -98,6 +98,7 @@ function WorkspaceSplitter(props: Props) {
 					if (!panelRef.classList.contains('minified')) {
 						panelRef.classList.add('minified');
 						newCollapsedPanels.push(index);
+						newCollapsedPanels = Array.from(new Set(newCollapsedPanels));
 						setCollapsedPanels(newCollapsedPanels);
 					}
 				} else if (panelRef.classList.contains('minified')) {
@@ -260,6 +261,7 @@ function WorkspaceSplitter(props: Props) {
 		const activeSplitterIndex = splittersRefs.current.findIndex(
 			splitter => splitter.current === activeSplitter.current,
 		);
+		const rootWidth = rootRef.current!.clientWidth;
 
 		const { left: rootOffsetLeft } = rootRef.current!.getBoundingClientRect();
 
@@ -269,7 +271,6 @@ function WorkspaceSplitter(props: Props) {
 					index,
 					activeSplitterLeft,
 				);
-				const rootWidth = rootRef.current!.clientWidth;
 
 				if (index === 1) {
 					if (leftSpace / rootWidth < 0.3) {
@@ -301,6 +302,9 @@ function WorkspaceSplitter(props: Props) {
 				index < activeSplitterIndex &&
 				left - rootOffsetLeft + fullWidth * (activeSplitterIndex - index) > activeSplitterLeft
 			) {
+				if (left / rootWidth < 0.2) {
+					return rootOffsetLeft;
+				}
 				return minmax(
 					activeSplitterLeft - (activeSplitterIndex - index) * fullWidth,
 					...splittersMinxMaxPositions.current[index],
@@ -310,6 +314,9 @@ function WorkspaceSplitter(props: Props) {
 				index > activeSplitterIndex &&
 				activeSplitterLeft + (index - activeSplitterIndex) * fullWidth > left - rootOffsetLeft
 			) {
+				if (left / rootWidth > 0.8) {
+					return rootWidth - fullWidth;
+				}
 				return minmax(
 					activeSplitterLeft + (index - activeSplitterIndex) * fullWidth,
 					...splittersMinxMaxPositions.current[index],
