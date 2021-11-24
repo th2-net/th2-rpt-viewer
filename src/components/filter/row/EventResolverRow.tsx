@@ -19,18 +19,21 @@ import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import api from '../../../api';
 import { getTimestampAsNumber } from '../../../helpers/date';
-import { getEventStatus } from '../../../helpers/event';
+import { getEventStatus, isEventId } from '../../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
 import { useDebouncedCallback } from '../../../hooks';
 import { EventAction } from '../../../models/EventAction';
 import { FilterRowEventResolverConfig } from '../../../models/filter/FilterInputs';
+import AutocompleteInput from '../../util/AutocompleteInput';
 
 export default function EventResolverRow({ config }: { config: FilterRowEventResolverConfig }) {
-	const [isInput, setIsInput] = useState(false);
+	const [isInput, setIsInput] = useState(true);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isError, setIsError] = useState(false);
 	const [event, setEvent] = useState<EventAction | null>(null);
 	const input = useRef<HTMLInputElement>(null);
+
+	const inputWrapperClassName = createBemElement('filter-row', 'wrapper');
 
 	const inputClassName = createBemElement(
 		'filter-row',
@@ -65,7 +68,6 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 		setIsError(false);
 
 		if (config.value) {
-			setIsLoading(true);
 			fetchObjectById(config.value, ac);
 		}
 		return () => {
@@ -73,32 +75,41 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 		};
 	}, [config.value]);
 
-	const switchType = () => {
-		if (isInput && event) {
+	const showInput = React.useCallback(() => {
+		setIsInput(true);
+	}, [setIsInput]);
+
+	const showEventCard = React.useCallback(() => {
+		if (event) {
 			setIsInput(false);
-		} else if (!isInput && input.current) {
-			setIsInput(true);
-			input.current.focus();
 		}
-	};
+	}, [event, setIsInput]);
 
 	const fetchObjectById = useDebouncedCallback(
 		async (id: string, abortController: AbortController) => {
-			try {
-				const foundEvent = await api.events.getEvent(id, abortController.signal, { probe: true });
-				setEvent(foundEvent);
-				setIsInput(!foundEvent);
-				setIsError(!foundEvent);
-				setIsLoading(false);
-			} catch (error) {
-				setIsLoading(false);
-				setEvent(null);
-				setIsInput(true);
-				setIsError(true);
+			if (isEventId(id)) {
+				try {
+					setIsLoading(true);
+					const foundEvent = await api.events.getEvent(id, abortController.signal, { probe: true });
+					setEvent(foundEvent);
+					setIsInput(!foundEvent);
+					setIsError(!foundEvent);
+					setIsLoading(false);
+				} catch (error) {
+					setIsLoading(false);
+					setEvent(null);
+					setIsInput(true);
+					setIsError(true);
+				}
 			}
 		},
 		400,
 	);
+
+	const onAutocompleteValueSelect = React.useCallback((nextValue: string) => {
+		config.setValue(nextValue);
+		config.onAutocompleteSelect?.();
+	}, []);
 
 	return (
 		<div className={wrapperClassName}>
@@ -108,7 +119,7 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 				</label>
 			)}
 			{!isInput && (
-				<div className='filter-row__event-card' onClick={switchType}>
+				<div className='filter-row__event-card' onClick={showInput}>
 					<i className={iconClassName} />
 					<div className={eventCardTitleClassName}>
 						{event ? event?.eventName : config.value || config.placeholder}
@@ -120,18 +131,31 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 					)}
 				</div>
 			)}
-			<div className={searchStatusIconClassname} />
-			<input
-				type='text'
-				className={inputClassName}
-				id={config.id}
-				placeholder={config.placeholder}
-				disabled={config.disabled}
-				value={config.value}
-				onChange={e => config.setValue(e.target.value)}
-				onBlur={() => switchType()}
-				ref={input}
-			/>
+			{(isLoading || isError) && <div className={searchStatusIconClassname} />}
+			{isInput && (
+				<AutocompleteInput
+					value={config.value}
+					setValue={config.setValue}
+					onSubmit={onAutocompleteValueSelect}
+					ref={input}
+					wrapperClassName={inputWrapperClassName}
+					className={inputClassName}
+					id={config.id}
+					placeholder={config.placeholder}
+					disabled={config.disabled}
+					autoComplete='off'
+					autoFocus
+					autoCompleteList={config.autocompleteList}
+					onBlur={showEventCard}
+					anchor={input.current || undefined}
+					inputStyle={{
+						boxSizing: 'border-box',
+						flexGrow: 1,
+						width: '100%',
+					}}
+					alwaysShowAutocomplete
+				/>
+			)}
 			<button
 				className={clearClassName}
 				onClick={() => {

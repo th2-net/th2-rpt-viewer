@@ -23,8 +23,7 @@
 	display: flex;
 	align-items: flex-start;
 	border-radius: 5px;
-	margin-right: 10px;
-	padding: 1px 0;
+	padding: 1px 3px;
 	display: flex;
 	justify-content: space-between;
 
@@ -80,20 +79,7 @@
 		display: block;
 	}
 
-	&:hover .message-card-tools__copy-all {
-		display: block;
-	}
-
 	&:hover .mc-header {
-		&__item {
-			&.messageId {
-				display: flex;
-			}
-			&.messageId-inline {
-				display: inline;
-			}
-		}
-
 		&__value {
 			font-weight: bold;
 		}
@@ -112,13 +98,14 @@
 }
 
 .message-card-tools {
-	margin: 0 4px;
-	padding: 3px 0;
+	margin: 1px 4px 0 4px;
 	align-self: stretch;
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
 	align-items: center;
+	min-width: 17px;
+	
 
 	&__button {
 		display: flex;
@@ -143,17 +130,30 @@
 		background-color: white;
 		box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
 		display: flex;
+		padding: 4px 0;
+		gap: 4px;
 		flex-direction: column;
 		z-index: 2;
+
+		&-group {
+			display: flex;
+			flex-direction: column;
+		}
 	}
 
 	&__item {
 		display: flex;
-		justify-content: center;
-		padding: 2px 4px;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 4px;
+		padding: 2px 4px 2px 10px;
 		cursor: pointer;
 		font-size: 11px;
 		color: $primaryTextColor;
+
+		&-title {
+			text-transform: capitalize;
+		}
 
 		&:hover {
 			background-color: rgba(0, 0, 0, 0.07);
@@ -176,7 +176,6 @@
 
 		&.json {
 			@include icon(url(../../resources/icons/json.svg));
-			margin-top: 5%;
 		}
 
 		&.formatted {
@@ -198,8 +197,8 @@
 	}
 
 	&__indicator {
-		width: 15px;
-		height: 15px;
+		width: 16px;
+		height: 16px;
 		flex-shrink: 0;
 		position: relative;
 
@@ -208,7 +207,7 @@
 			position: absolute;
 			width: 4px;
 			height: 4px;
-			right: 4px;
+			right: 6px;
 			top: 6px;
 			border-radius: 50%;
 			background-color: $secondaryTextColor;
@@ -236,10 +235,10 @@
 	}
 
 	&__copy-icon {
-		height: 13px;
-		width: 13px;
-		background-image: url('../../resources/icons/clipboard.svg');
-		background-size: 100%;
+		height: 16px;
+		width: 16px;
+		@include icon(url(../../resources/icons/clipboard.svg), 16px, 16px);
+		background-size: 80%;
 		filter: opacity(0.6);
 	}
 
@@ -304,7 +303,7 @@
 		align-items: center;
 		&.messageId,
 		&.messageId-inline {
-			display: none;
+			display: inline;
 		}
 		&.messageType {
 			max-width: 48px;
@@ -348,6 +347,8 @@
 		display: inline-block;
 		color: $messageCardValueColor;
 		vertical-align: middle;
+		font-weight: bold;
+
 		&.messageType {
 			max-width: 48px;
 			@include ellipsis();
@@ -397,6 +398,15 @@
 	&__field-label {
 		display: inline-block;
 		height: 100%;
+	}
+
+	&__field-border {
+		padding: 1px 2px;
+		&.active{
+			border: 1px solid $graphTickColor;
+			padding: 0 1px;
+			border-radius: '4px';
+		}
 	}
 
 	&__field-simple-value {
@@ -578,6 +588,58 @@
 	&__overlay-spinner {
 		@include spinner(5px, 40px, 2s);
 	}
+
+	&__attached-messages {
+		display: flex;
+		font-size: 9px;
+		margin-bottom: 10px;
+		line-height: 15px;
+		font-weight: bold;
+
+		&-btn {
+			display: flex;
+			align-items: center;
+			font-size: 9px;
+			line-height: 15px;
+			font-weight: bold;
+			cursor: pointer;
+			flex-shrink: 0;
+			padding: 0;
+			background-color: transparent;
+			border: none;
+			outline: none;
+			margin-top: 3px;
+
+			&-previous {
+				@include icon(url(../../resources/icons/arr5-left.svg), 8px, 13px);
+				&:hover {
+					@include icon(url(../../resources/icons/arr5-left-enabled.svg), 8px, 13px);
+				}
+			}
+
+			&-next {
+				@include icon(url(../../resources/icons/arr5-right.svg), 8px, 13px);
+				&:hover {
+					@include icon(url(../../resources/icons/arr5-right-enabled.svg), 8px, 13px);
+				}
+			}
+		}
+
+		&-text {
+			color: $controlButtonTextColor;
+			white-space: nowrap;
+			margin: 0 10px 0 10px;
+
+			&-counter {
+				margin-top: 1px;
+				color: #999999;
+
+				&-current {
+					color: $messageCardValueColor;
+				}
+			}
+		}
+	}
 }
 
 .mc-skeleton {
@@ -658,17 +720,17 @@
 		width: 100%;
 		display: flex;
 		align-items: center;
+		gap: 10px;
 	}
 
 	&__realtime-button {
 		@include clickable;
 
-		border: 2px solid $realtimeButtonBorderColor;
+		border: none;
 		border-radius: 6px;
 		background-color: transparent;
 		width: 28px;
 		height: 28px;
-		margin: 0 -2px 0 15px;
 		display: flex;
 		justify-content: center;
 		padding: 0;
@@ -680,10 +742,6 @@
 			@include icon(url(../../resources/icons/update.svg), 16px, 16px);
 
 			display: inline-block;
-		}
-
-		&.active {
-			background-color: $realtimeButtonActiveColor;
 		}
 
 		&.active &-icon {
@@ -698,21 +756,18 @@
 				}
 			}
 		}
-
-		&-count {
-			color: $primaryTextColor;
-			font-weight: 600;
-		}
 	}
 
 	&__session-filter {
 		margin-bottom: 0;
 		flex-grow: 1;
-		margin-left: 10px;
 
 		.filter-row {
 			&__input {
 				border: 1px solid rgb(94, 94, 94);
+				&.invalid {
+					border: 1px solid $toastErrorBackground;
+				}
 			}
 
 			&__label {
@@ -738,7 +793,6 @@
 			flex-shrink: 0;
 			background-color: transparent;
 			border: none;
-			margin-left: 10px;
 			cursor: pointer;
 			padding: 4px;
 			outline: none;
@@ -768,7 +822,6 @@
 			cursor: pointer;
 			background-color: transparent;
 			border: none;
-			margin-left: 10px;
 			padding: 4px;
 			outline: none;
 		}
@@ -785,7 +838,7 @@
 			}
 		}
 
-		&-tool{
+		&-tool {
 			display: flex;
 			justify-content: center;
 			background-color: transparent;
@@ -794,7 +847,7 @@
 			cursor: pointer;
 			font-size: 13px;
 			color: $primaryTextColor;
-	
+
 			&:hover {
 				background-color: #00000012;
 			}
@@ -912,7 +965,6 @@
 		font-weight: bold;
 		display: inline;
 		white-space: nowrap;
-		padding-left: 5px;
 		border: none;
 		background: none;
 		cursor: pointer;
@@ -992,7 +1044,7 @@
 		width: 100%;
 	}
 
-	.dragable-area:hover{
+	.dragable-area:hover {
 		cursor: move;
 	}
 }

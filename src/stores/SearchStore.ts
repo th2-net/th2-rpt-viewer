@@ -17,6 +17,7 @@
 import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
+import debounce from 'lodash.debounce';
 import ApiSchema from '../api/ApiSchema';
 import {
 	EventsFiltersInfo,
@@ -33,7 +34,7 @@ import {
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { getTimestampAsNumber } from '../helpers/date';
-import { getItemId, isEventMessage, isEventNode } from '../helpers/event';
+import { getItemId, isEventId, isEventMessage, isEventNode } from '../helpers/event';
 import {
 	getDefaultEventsFiltersState,
 	getDefaultMessagesFiltersState,
@@ -129,6 +130,19 @@ export class SearchStore {
 				}
 			},
 		);
+
+		reaction(
+			() => this.searchForm.parentEvent,
+			parentEvent => {
+				if (parentEvent) {
+					if (!isEventId(parentEvent)) {
+						this.loadEventAutocompleteList(parentEvent);
+					}
+				} else {
+					this.resetEventAutocompleteList();
+				}
+			},
+		);
 	}
 
 	@observable messageSessions: Array<string> = [];
@@ -190,6 +204,10 @@ export class SearchStore {
 	};
 
 	@observable isEventsFilterLoading = false;
+
+	@observable eventAutocompleteList: EventTreeNode[] = [];
+
+	eventAutocompleteSseChannel: EventSource | null = null;
 
 	@computed get searchProgress() {
 		const startTimestamp = Number(this.searchForm.startTimestamp);
@@ -688,6 +706,38 @@ export class SearchStore {
 		};
 	}
 
+	@action resetEventAutocompleteList = () => {
+		this.eventAutocompleteList = [];
+	};
+
+	private loadEventAutocompleteList = debounce((parentEventName: string) => {
+		if (this.eventAutocompleteSseChannel) {
+			this.eventAutocompleteSseChannel.close();
+		}
+		this.resetEventAutocompleteList();
+
+		this.eventAutocompleteSseChannel = this.api.sse.getEventSource({
+			type: 'event',
+			queryParams: {
+				filters: ['name'],
+				'name-values': [parentEventName],
+				startTimestamp: moment().utc().valueOf(),
+				searchDirection: 'previous',
+				resultCountLimit: 10,
+			},
+		});
+		this.eventAutocompleteSseChannel.addEventListener('event', (ev: Event) =>
+			runInAction(() => {
+				const event: EventTreeNode = JSON.parse((ev as MessageEvent).data);
+				this.eventAutocompleteList.push(event);
+			}),
+		);
+		this.eventAutocompleteSseChannel.addEventListener('close', () => {
+			this.eventAutocompleteSseChannel?.close();
+			this.eventAutocompleteSseChannel = null;
+		});
+	}, 400);
+
 	private async loadMessageSessions() {
 		try {
 			const messageSessions = await this.api.messages.getMessageSessions();
@@ -748,7 +798,7 @@ export class SearchStore {
 			}
 			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
 		} catch (error) {
-			if (error.name === 'QuotaExceededError') {
+			if (error instanceof DOMException && error.code === error.QUOTA_EXCEEDED_ERR) {
 				this.workspacesStore.onQuotaExceededError(search);
 			} else {
 				notificationsStore.addMessage({

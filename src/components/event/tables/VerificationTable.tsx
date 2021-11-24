@@ -26,6 +26,7 @@ import { replaceNonPrintableChars } from '../../../helpers/stringUtils';
 import { copyTextToClipboard } from '../../../helpers/copyHandler';
 import { VerificationPayload, VerificationPayloadField } from '../../../models/EventActionPayload';
 import '../../../styles/tables.scss';
+import Popover from '../../util/Popover';
 
 const PADDING_LEVEL_VALUE = 10;
 
@@ -61,6 +62,13 @@ interface State {
 	nodes: TableNode[];
 	prevColumns: Array<React.RefObject<HTMLTableHeaderCellElement>>;
 	nextColumns: Array<React.RefObject<HTMLTableHeaderCellElement>>;
+	tooltip: Tooltip;
+}
+
+interface Tooltip {
+	target: HTMLElement | null;
+	message: string;
+	isOpen: boolean;
 }
 
 export interface TableNode extends VerificationPayloadField {
@@ -74,9 +82,14 @@ class VerificationTableBase extends React.Component<Props, State> {
 		nodes: this.props.nodes,
 		prevColumns: [],
 		nextColumns: [],
+		tooltip: {
+			target: null,
+			message: '',
+			isOpen: false,
+		},
 	};
 
-	columnsRefs: Array<React.RefObject<HTMLTableHeaderCellElement>> = Array(6)
+	columnsRefs: Array<React.RefObject<HTMLTableHeaderCellElement>> = Array(7)
 		.fill(null)
 		.map(() => React.createRef());
 
@@ -197,7 +210,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 
 	render() {
 		const { status, keyPrefix, precision } = this.props;
-		const { nodes } = this.state;
+		const { nodes, tooltip } = this.state;
 
 		const rootClass = createStyleSelector('ver-table', status);
 
@@ -271,6 +284,9 @@ class VerificationTableBase extends React.Component<Props, State> {
 								<th className='ver-table-key' ref={this.columnsRefs[5]}>
 									Key
 								</th>
+								<th className='ver-table-hint' ref={this.columnsRefs[6]}>
+									Hint
+								</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -278,6 +294,14 @@ class VerificationTableBase extends React.Component<Props, State> {
 						</tbody>
 					</table>
 				</div>
+				{tooltip && (
+					<Popover
+						isOpen={tooltip.isOpen}
+						anchorEl={tooltip.target}
+						onClickOutside={() => this.hideTooltip()}>
+						<div className='ver-table__tooltip'>{tooltip.message}</div>
+					</Popover>
+				)}
 			</div>
 		);
 	}
@@ -312,6 +336,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 			subEntries,
 			key: keyField,
 			operation,
+			hint,
 		} = node;
 
 		const isToggler = subEntries != null && subEntries.length > 0;
@@ -363,6 +388,8 @@ class VerificationTableBase extends React.Component<Props, State> {
 
 		const operationClassName = createStyleSelector('ver-table-row-operation', operation);
 
+		const hintClassName = createStyleSelector('ver-table-row-hint', hint ? 'visible' : null);
+
 		return (
 			<tr className={rootClassName} key={key}>
 				{isToggler ? (
@@ -371,6 +398,13 @@ class VerificationTableBase extends React.Component<Props, State> {
 							{this.renderContent(`${key}-name`, name)}
 						</p>
 						<span className='ver-table-row-count'>{subEntries.length}</span>
+						<div className='ver-table-row-spacer' />
+						<div
+							onClick={e => hint && this.showTooltip(e, hint)}
+							title={hint}
+							className='ver-table-row-wrapper inner'>
+							{this.renderContent(`${key}-hint`, '', hintClassName)}
+						</div>
 					</td>
 				) : (
 					<td
@@ -411,10 +445,42 @@ class VerificationTableBase extends React.Component<Props, State> {
 							</div>
 						</td>
 						<td className={statusClassName}>{keyField && <div className='ver-table__check' />}</td>
+						<td className={actualClassName}>
+							<div
+								onClick={e => hint && this.showTooltip(e, hint)}
+								title={hint}
+								className='ver-table-row-wrapper'>
+								{this.renderContent(`${key}-hint`, '', hintClassName)}
+							</div>
+						</td>
 					</>
 				)}
 			</tr>
 		);
+	}
+
+	private hideTooltip(): void {
+		this.setState({
+			...this.state,
+			tooltip: {
+				target: null,
+				message: '',
+				isOpen: false,
+			},
+		});
+	}
+
+	private showTooltip(e: React.MouseEvent<HTMLDivElement>, message: string): void {
+		this.setState({
+			...this.state,
+			tooltip: {
+				target: e.currentTarget,
+				message,
+				isOpen: true,
+			},
+		});
+
+		e.stopPropagation();
 	}
 
 	/**

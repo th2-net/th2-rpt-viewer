@@ -160,7 +160,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 					onSubmit={inputOnSubmit}
 					onRemove={onRemove}
 					onEmptyBlur={onRemove}
-					autocomplete={autocompleteVariants as string[]}
+					autoCompleteList={autocompleteVariants as string[]}
 					datalistKey='bubble-autocomplete'
 					submitKeyCodes={submitKeyCodes}
 				/>

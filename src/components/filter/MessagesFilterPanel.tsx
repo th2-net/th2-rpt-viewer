@@ -66,6 +66,7 @@ const MessagesFilterPanel = () => {
 		body: '',
 		attachedEventIds: '',
 		bodyBinary: '',
+		text: '',
 	});
 	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
 
@@ -87,6 +88,7 @@ const MessagesFilterPanel = () => {
 			body: '',
 			attachedEventIds: '',
 			bodyBinary: '',
+			text: '',
 		});
 	}, []);
 
@@ -206,6 +208,13 @@ const MessagesFilterPanel = () => {
 		];
 	}, [messagesStore.messageSessions, sessionsStore.sessions]);
 
+	const areSessionInvalid: boolean = React.useMemo(() => {
+		return (
+			streams.length === 0 ||
+			streams.some(stream => !messagesStore.messageSessions.includes(stream.trim()))
+		);
+	}, [streams, messagesStore.messageSessions]);
+
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
 		return {
 			type: 'multiple-strings',
@@ -216,6 +225,8 @@ const MessagesFilterPanel = () => {
 			setCurrentValue: setCurrentStream,
 			autocompleteList: sessionsAutocomplete,
 			validateBubbles: true,
+			isInvalid: areSessionInvalid,
+			required: true,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
 		};

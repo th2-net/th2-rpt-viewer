@@ -13,22 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import { runInAction, action, observable, reaction, computed } from 'mobx';
+import { runInAction, action, observable, computed, autorun } from 'mobx';
 import { MessagesSSEParams, SSEHeartbeat } from '../../../api/sse';
 import { EventMessage } from '../../../models/EventMessage';
 import EmbeddedMessagesStore from './EmbeddedMessagesStore';
 import ApiSchema from '../../../api/ApiSchema';
-import { MessagesSSELoader } from '../../../stores/messages/MessagesSSELoader';
 import notificationsStore from '../../../stores/NotificationsStore';
 import { isEventMessage } from '../../../helpers/event';
+import { isAbortError } from '../../../helpers/fetch';
+import { MessagesDataStore } from '../../../models/Stores';
+import MessagesUpdateStore from '../../../stores/messages/MessagesUpdateStore';
+import { MessagesSSEChannel } from '../../../stores/SSEChannel/MessagesSSEChannel';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
 
-export default class EmbeddedMessagesDataProviderStore {
+export default class EmbeddedMessagesDataProviderStore implements MessagesDataStore {
+	private readonly messagesLimit = 250;
+
 	constructor(private messagesStore: EmbeddedMessagesStore, private api: ApiSchema) {
-		reaction(() => this.messagesStore.filter, this.onFilterChange);
+		this.updateStore = new MessagesUpdateStore(this, this.messagesStore.scrollToMessage);
+
+		autorun(() => this.messagesStore.filterStore.filter && this.onFilterChange());
 	}
+
+	public updateStore: MessagesUpdateStore;
 
 	@observable
 	public noMatchingMessagesPrev = false;
@@ -46,10 +55,10 @@ export default class EmbeddedMessagesDataProviderStore {
 	public isError = false;
 
 	@observable
-	public searchChannelPrev: MessagesSSELoader | null = null;
+	public searchChannelPrev: MessagesSSEChannel | null = null;
 
 	@observable
-	public searchChannelNext: MessagesSSELoader | null = null;
+	public searchChannelNext: MessagesSSEChannel | null = null;
 
 	@observable
 	public startIndex = 10000;
@@ -85,11 +94,15 @@ export default class EmbeddedMessagesDataProviderStore {
 
 	private messageAC: AbortController | null = null;
 
+	public getFilterParams = () => {
+		return this.messagesStore.filterStore.filterParams;
+	};
+
 	@action
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
 
-		const queryParams = this.messagesStore.filterParams;
+		const queryParams = this.messagesStore.filterStore.filterParams;
 
 		this.createPreviousMessageChannelEventSource(
 			{
@@ -116,12 +129,23 @@ export default class EmbeddedMessagesDataProviderStore {
 						this.messageAC.signal,
 					);
 				} catch (error) {
-					if (error.name !== 'AbortError') {
+					if (!isAbortError(error)) {
 						this.isError = true;
 						return;
 					}
 				}
 			}
+
+			this.searchChannelNext.onStop = () =>
+				!this.searchChannelPrev?.isLoading &&
+				!this.updateStore.isLoading &&
+				this.updateStore.subscribeOnChanges();
+
+			this.searchChannelPrev.onStop = () =>
+				!this.searchChannelNext?.isLoading &&
+				!this.updateStore.isLoading &&
+				this.updateStore.subscribeOnChanges();
+
 			const [nextMessages, prevMessages] = await Promise.all([
 				this.searchChannelNext.loadAndSubscribe(message?.messageId),
 				this.searchChannelPrev.loadAndSubscribe(message?.messageId),
@@ -157,6 +181,7 @@ export default class EmbeddedMessagesDataProviderStore {
 		this.searchChannelNext?.stop();
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
+		this.updateStore.stopSubscription();
 		this.resetMessagesDataState(isError);
 	};
 
@@ -173,12 +198,12 @@ export default class EmbeddedMessagesDataProviderStore {
 	) => {
 		this.prevLoadEndTimestamp = null;
 
-		this.searchChannelPrev = new MessagesSSELoader(
-			query,
-			this.onPrevChannelResponse,
-			this.onLoadingError,
-			typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
-		);
+		this.searchChannelPrev = new MessagesSSEChannel(query, {
+			onResponse: this.onPrevChannelResponse,
+			onError: this.onLoadingError,
+			onKeepAliveResponse:
+				typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+		});
 	};
 
 	private onKeepAliveMessagePrevious = (e: SSEHeartbeat) => {
@@ -210,7 +235,13 @@ export default class EmbeddedMessagesDataProviderStore {
 		}
 
 		if (messages.length) {
-			this.messages = [...this.messages, ...messages];
+			let newMessagesList = [...this.messages, ...messages];
+
+			if (newMessagesList.length > this.messagesLimit) {
+				newMessagesList = newMessagesList.slice(-this.messagesLimit);
+			}
+
+			this.messages = newMessagesList;
 
 			const selectedMessageId = this.messagesStore.selectedMessageId?.valueOf();
 			if (selectedMessageId && messages.find(m => m.messageId === selectedMessageId)) {
@@ -223,12 +254,14 @@ export default class EmbeddedMessagesDataProviderStore {
 	public createNextMessageChannelEventSource = (query: MessagesSSEParams, interval?: number) => {
 		this.nextLoadEndTimestamp = null;
 
-		this.searchChannelNext = new MessagesSSELoader(
-			query,
-			this.onNextChannelResponse,
-			this.onLoadingError,
-			typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
-		);
+		this.searchChannelNext = new MessagesSSEChannel(query, {
+			onResponse: messages => {
+				this.onNextChannelResponse(messages);
+				if (query.keepOpen) this.messagesStore.scrollToMessage(messages[0].messageId);
+			},
+			onError: this.onLoadingError,
+			onKeepAliveResponse: typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+		});
 	};
 
 	@action
@@ -242,7 +275,13 @@ export default class EmbeddedMessagesDataProviderStore {
 
 		if (messages.length !== 0) {
 			this.startIndex -= messages.length;
-			this.messages = [...messages, ...this.messages];
+
+			let newMessagesList = [...messages, ...this.messages];
+
+			if (newMessagesList.length > this.messagesLimit) {
+				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
+			}
+			this.messages = newMessagesList;
 
 			const selectedMessageId = this.messagesStore.selectedMessageId?.valueOf();
 			if (selectedMessageId && messages.find(m => m.messageId === selectedMessageId)) {
@@ -316,7 +355,7 @@ export default class EmbeddedMessagesDataProviderStore {
 		)
 			return;
 
-		const queryParams = this.messagesStore.filterParams;
+		const queryParams = this.messagesStore.filterStore.filterParams;
 
 		const query: MessagesSSEParams = {
 			...queryParams,

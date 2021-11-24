@@ -86,6 +86,13 @@ export function isEvent(object: unknown): object is EventTreeNode | EventAction 
 	return isEventNode(object) || isEventAction(object);
 }
 
+export const isEventId = (str: string): boolean => {
+	// eslint-disable-next-line max-len
+	return /[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}(:[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})?/.test(
+		str,
+	);
+};
+
 export const sortByTimestamp = (
 	items: Array<EventMessage | EventTreeNode>,
 	order: 'desc' | 'asc' = 'desc',

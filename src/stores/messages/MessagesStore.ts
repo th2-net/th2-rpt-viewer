@@ -46,9 +46,9 @@ export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string |
 export default class MessagesStore {
 	private attachedMessagesSubscription: IReactionDisposer;
 
-	public filterStore = new MessagesFilterStore(this.searchStore);
+	public filterStore: MessagesFilterStore;
 
-	public dataStore = new MessagesDataProviderStore(this, this.api);
+	public dataStore: MessagesDataProviderStore;
 
 	public exportStore = new MessagesExportStore();
 
@@ -79,7 +79,7 @@ export default class MessagesStore {
 	@observable
 	public showFilterChangeHint = false;
 
-	/* 
+	/*
 		This is used for filter change hint. Represents either last clicked message
 		or attached messages
 	*/
@@ -95,6 +95,8 @@ export default class MessagesStore {
 		private sessionsStore: SessionsStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
+		this.filterStore = new MessagesFilterStore(this.searchStore);
+		this.dataStore = new MessagesDataProviderStore(this, this.api);
 		this.init(defaultState);
 
 		this.attachedMessagesSubscription = reaction(
@@ -164,11 +166,12 @@ export default class MessagesStore {
 	};
 
 	@action
-	public scrollToMessage = async (messageId: string) => {
+	public scrollToMessage = (messageId: string) => {
 		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === messageId);
-		if (messageIndex !== -1) {
-			this.scrolledIndex = new Number(messageIndex);
-		}
+
+		if (messageIndex === -1) throw new Error(`Message with ${messageId} id doesn't exists`);
+
+		this.scrolledIndex = new Number(messageIndex);
 	};
 
 	@action
@@ -237,6 +240,17 @@ export default class MessagesStore {
 			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 			this.hintMessages = [];
 			this.workspaceStore.viewStore.activePanel = this;
+		}
+	};
+
+	@action
+	public selectAttachedMessage = (message: EventMessage) => {
+		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === message.messageId);
+		if (messageIndex !== -1) {
+			this.selectedMessageId = new String(message.messageId);
+			this.highlightedMessageId = message.messageId;
+		} else {
+			this.onMessageSelect(message);
 		}
 	};
 

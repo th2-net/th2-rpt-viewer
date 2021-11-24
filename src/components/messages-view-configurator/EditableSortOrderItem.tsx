@@ -71,8 +71,7 @@ const Editor = ({ item }: { item: MessageSortOrderItem }) => {
 			setValue={setValue}
 			onSubmit={editItemSession}
 			submitKeyCodes={[KeyCodes.ENTER]}
-			autocomplete={null}
-			autofocus={true}
+			autoFocus={true}
 		/>
 	) : (
 		<p
