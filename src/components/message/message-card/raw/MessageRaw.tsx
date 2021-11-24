@@ -23,15 +23,20 @@ interface Props {
 	rawContent: string;
 	renderInfo: () => React.ReactNode;
 	isDetailed: boolean;
+	applyFilterToBody?: boolean;
 }
 
-function MessageRaw({ rawContent, renderInfo, isDetailed }: Props) {
+function MessageRaw({ rawContent, renderInfo, isDetailed, applyFilterToBody }: Props) {
 	return (
 		<div className='mc-raw'>
 			{isDetailed ? (
-				<DetailedMessageRaw rawContent={rawContent} />
+				<DetailedMessageRaw rawContent={rawContent} applyFilterToBody={applyFilterToBody} />
 			) : (
-				<SimpleMessageRaw rawContent={rawContent} renderInfo={renderInfo} />
+				<SimpleMessageRaw
+					rawContent={rawContent}
+					renderInfo={renderInfo}
+					applyFilterToBody={applyFilterToBody}
+				/>
 			)}
 		</div>
 	);

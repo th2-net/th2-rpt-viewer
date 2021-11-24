@@ -88,10 +88,7 @@ type PartOfString = {
 };
 
 export function splitOnReadableParts(targetString: string): PartOfString[] {
-	const stringParts = targetString.split(createRegExp`
-		[\01]
-		${'g'}
-	`);
+	const stringParts = targetString.split(/\01/g);
 	return stringParts.reduce((arr, curr) => {
 		if (curr === '') return arr;
 		arr.push({

@@ -39,6 +39,13 @@ export function useSelectListener(
 		}
 
 		const range = selection!.getRangeAt(0);
+		console.log(
+			selection,
+			selection?.focusOffset,
+			selection?.anchorOffset,
+			selection?.focusNode,
+			selection?.anchorNode,
+		);
 
 		if (selection?.focusNode === selection?.anchorNode) {
 			setStartOffset(range.startOffset);
@@ -46,9 +53,9 @@ export function useSelectListener(
 			return;
 		}
 
-		if (refIsAnchorNode || refIsFocusNode) {
+		if (range.commonAncestorContainer === ref.current) {
 			setStartOffset(range.startOffset);
-			setEndOffset(ref.current.textContent!.length);
+			setEndOffset(range.startOffset + range.toString().length);
 			return;
 		}
 

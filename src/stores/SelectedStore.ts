@@ -170,7 +170,7 @@ export class SelectedStore {
 		try {
 			await this.db.addDbStoreItem(store, toJS(bookmark));
 		} catch (error) {
-			if (error.name === 'QuotaExceededError') {
+			if (error instanceof DOMException && error.code === error.QUOTA_EXCEEDED_ERR) {
 				this.workspacesStore.onQuotaExceededError(bookmark);
 			} else {
 				notificationsStore.addMessage({

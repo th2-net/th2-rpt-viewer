@@ -95,13 +95,18 @@ export default class SearchWorkspaceStore {
 	};
 
 	@action
-	public onSearchResultItemSelect = (resultItem: EventTreeNode | EventAction | EventMessage) => {
+	public onSearchResultItemSelect = (
+		resultItem: EventTreeNode | EventAction | EventMessage,
+		filter?: { type: 'body' | 'bodyBinary'; range: [number, number] },
+	) => {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 
 		if (isEventMessage(resultItem)) {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(
 				timestampToNumber(resultItem.timestamp),
 				resultItem,
+				filter?.type === 'body' ? filter.range : undefined,
+				filter?.type === 'bodyBinary' ? filter.range : undefined,
 			);
 		} else {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(

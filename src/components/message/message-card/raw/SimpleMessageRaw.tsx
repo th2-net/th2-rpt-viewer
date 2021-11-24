@@ -14,34 +14,107 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { observer } from 'mobx-react-lite';
 import * as React from 'react';
+import { BodyFilter, uniteFilters, wrapString } from '../../../../helpers/filters';
+import { isRangesIntersect, trimRange } from '../../../../helpers/range';
 import { splitOnReadableParts } from '../../../../helpers/stringUtils';
+import { createBemElement } from '../../../../helpers/styleCreators';
+import { useMessagesWorkspaceStore } from '../../../../hooks';
+import { useSearchStore } from '../../../../hooks/useSearchStore';
+import { MessageFilterState } from '../../../search-panel/SearchPanelFilters';
 
 interface Props {
 	rawContent: string;
 	renderInfo: () => React.ReactNode;
+	applyFilterToBody?: boolean;
 }
 
-export default function SimpleMessageRaw({ rawContent, renderInfo }: Props) {
+function SimpleMessageRaw({ rawContent, renderInfo, applyFilterToBody }: Props) {
+	const { currentSearch } = useSearchStore();
+	const { selectedBodyBinaryFilterRange } = useMessagesWorkspaceStore();
 	const contentRef = React.useRef<HTMLDivElement>(null);
 
 	const humanReadableContent = atob(rawContent);
 	const convertedArr = splitOnReadableParts(humanReadableContent);
 
+	const filterEntries: Array<BodyFilter> = React.useMemo(() => {
+		if (!applyFilterToBody) return [];
+
+		const res: Array<BodyFilter> = [];
+
+		(currentSearch?.request.filters as MessageFilterState).bodyBinary.values.forEach(value => {
+			let lastIndex = -1;
+
+			do {
+				lastIndex = humanReadableContent.indexOf(
+					value,
+					lastIndex !== -1 ? lastIndex + value.length : 0,
+				);
+
+				if (lastIndex !== -1) {
+					const entryRange: [number, number] = [lastIndex, lastIndex + value.length - 1];
+					res.push({
+						type: new Set([
+							entryRange[0] === selectedBodyBinaryFilterRange?.[0] &&
+							entryRange[1] === selectedBodyBinaryFilterRange?.[1]
+								? 'highlighted'
+								: 'filtered',
+						]),
+						range: entryRange,
+					});
+				}
+			} while (lastIndex !== -1);
+		});
+		return uniteFilters(res);
+	}, [currentSearch?.request.filters]);
+
+	let binaryPartPosition = 0;
+
 	return (
 		<div className='mc-raw__human' ref={contentRef}>
 			{renderInfo()}
-			{convertedArr.map((part, index) =>
-				part.isPrintable ? (
-					<span key={index} style={{ display: '' }}>
-						{part.text}
-					</span>
-				) : (
-					<span key={index} className='mc-raw__non-printing-character'>
+			{convertedArr.map((part, index) => {
+				if (part.isPrintable) {
+					const valueRange: [number, number] = [
+						binaryPartPosition,
+						binaryPartPosition + part.text.length - 1,
+					];
+					const trimedFilters = filterEntries
+						.map(entry => ({
+							type: entry.type,
+							range: trimRange(entry.range, valueRange),
+						}))
+						.filter(entry => isRangesIntersect(entry.range, valueRange));
+					const value =
+						applyFilterToBody && trimedFilters.length
+							? wrapString(part.text, trimedFilters, valueRange)
+							: part.text;
+
+					binaryPartPosition += part.text.length;
+
+					return <span key={index}>{value}</span>;
+				}
+
+				const filteredEntries = filterEntries.filter(entry =>
+					isRangesIntersect(entry.range, [binaryPartPosition, binaryPartPosition]),
+				);
+				binaryPartPosition += 1;
+
+				const SOHCharacterClassName = createBemElement(
+					'mc-raw',
+					'non-printing-character',
+					filteredEntries.length > 0 ? 'highlighted' : null,
+				);
+
+				return (
+					<span key={index} className={SOHCharacterClassName}>
 						SOH
 					</span>
-				),
-			)}
+				);
+			})}
 		</div>
 	);
 }
+
+export default observer(SimpleMessageRaw);

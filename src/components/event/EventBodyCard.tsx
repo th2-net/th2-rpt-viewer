@@ -26,14 +26,21 @@ import ErrorBoundary from '../util/ErrorBoundary';
 import { getEventStatus } from '../../helpers/event';
 import api from '../../api';
 import { ReferenceCard } from './ReferenceCard';
+import { wrapString } from '../../helpers/filters';
 
 interface Props {
 	body: EventBodyPayload;
 	parentEvent: EventAction;
+	filters?: string[];
 	referenceHistory?: Array<string>;
 }
 
-export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory = [] }: Props) {
+export function EventBodyPayloadRenderer({
+	body,
+	parentEvent,
+	filters,
+	referenceHistory = [],
+}: Props) {
 	const [referencedEvent, setReferencedEvent] = React.useState<EventAction | null>(null);
 	const [referencedBody, setReferencedBody] = React.useState<EventBodyPayload[]>([]);
 
@@ -52,24 +59,37 @@ export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory =
 	}, [body]);
 
 	switch (body.type) {
-		case EventBodyPayloadType.MESSAGE:
+		case EventBodyPayloadType.MESSAGE: {
+			const inludingFilters = (filters ?? []).filter(f => body.data.includes(f));
+
+			const wrappedContent = inludingFilters.length
+				? wrapString(
+						body.data,
+						inludingFilters.map(filter => ({
+							type: new Set(['filtered']),
+							range: [body.data.indexOf(filter), filter.length - 1],
+						})),
+				  )
+				: body.data;
+
 			return (
 				<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
 					<div className='event-detail-info__message-wrapper'>
 						<div key='message' className='event-detail-info__message'>
-							{body.data}
+							{wrappedContent}
 						</div>
 					</div>
 				</ErrorBoundary>
 			);
-		case EventBodyPayloadType.TABLE:
+		}
+		case EventBodyPayloadType.TABLE: {
 			return (
 				<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
-					<CustomTable content={body.rows} key='table' />
+					<CustomTable content={body.rows} key='table' filters={filters ?? []} />
 				</ErrorBoundary>
 			);
-		case EventBodyPayloadType.VERIFICATION:
-			// eslint-disable-next-line no-case-declarations
+		}
+		case EventBodyPayloadType.VERIFICATION: {
 			const key = keyForVerification(parentEvent.parentEventId, parentEvent.eventId);
 
 			return (
@@ -80,12 +100,13 @@ export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory =
 							status={getEventStatus(parentEvent)}
 							keyPrefix={key}
 							stateKey={`${key}-nodes`}
+							filters={filters ?? []}
 						/>
 					</div>
 				</ErrorBoundary>
 			);
-		case EventBodyPayloadType.TREE_TABLE:
-			// eslint-disable-next-line no-case-declarations
+		}
+		case EventBodyPayloadType.TREE_TABLE: {
 			const { columns, rows } = extractParams(body);
 			return (
 				<ErrorBoundary>
@@ -97,10 +118,12 @@ export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory =
 							rows={rows}
 							stateKey={`${parentEvent.eventId}-input-params-nodes`}
 							name={parentEvent.eventName}
+							filters={filters ?? []}
 						/>
 					</div>
 				</ErrorBoundary>
 			);
+		}
 		case EventBodyPayloadType.REFERENCE:
 			return (
 				<ErrorBoundary>
@@ -117,13 +140,14 @@ export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory =
 	}
 }
 
-export default function EventBodyCard({ parentEvent, body, referenceHistory }: Props) {
+export default function EventBodyCard({ parentEvent, body, referenceHistory, filters }: Props) {
 	return (
 		<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
 			<EventBodyPayloadRenderer
 				body={body}
 				parentEvent={parentEvent}
 				referenceHistory={referenceHistory}
+				filters={filters}
 			/>
 		</ErrorBoundary>
 	);

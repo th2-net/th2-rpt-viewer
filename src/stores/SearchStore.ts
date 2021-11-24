@@ -47,6 +47,7 @@ import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { SessionsStore } from './messages/SessionsStore';
+import { EventBodyPayload } from '../models/EventActionPayload';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -98,6 +99,12 @@ type SearchProgressState = {
 	lastEventId: string | null;
 	lastProcessedObjectCount: number;
 	resultCount: number;
+};
+
+export type FilterEntry = {
+	value: string;
+	path: string[];
+	range: [number, number];
 };
 
 const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
@@ -207,7 +214,7 @@ export class SearchStore {
 
 	@observable eventAutocompleteList: EventTreeNode[] = [];
 
-	@observable selectedBodyFilterRange: [number, number] | null = null;
+	@observable selectedEventBodyFilter: [EventBodyPayload, FilterEntry] | null = null;
 
 	eventAutocompleteSseChannel: EventSource | null = null;
 
@@ -722,10 +729,6 @@ export class SearchStore {
 
 	@action resetEventAutocompleteList = () => {
 		this.eventAutocompleteList = [];
-	};
-
-	@action setSelectedBodyFilterRange = (range: [number, number] | null) => {
-		this.selectedBodyFilterRange = range;
 	};
 
 	private loadEventAutocompleteList = debounce((parentEventName: string) => {

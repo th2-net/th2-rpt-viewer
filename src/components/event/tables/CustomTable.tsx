@@ -15,13 +15,15 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { wrapString } from '../../../helpers/filters';
 import '../../../styles/tables.scss';
 
 interface CustomTableProps {
 	content: { [key: string]: string | number | null | undefined }[];
+	filters: string[];
 }
 
-export function CustomTable({ content }: CustomTableProps) {
+export function CustomTable({ content, filters }: CustomTableProps) {
 	if (!content || content.length < 1) {
 		return null;
 	}
@@ -32,7 +34,7 @@ export function CustomTable({ content }: CustomTableProps) {
 		<div className='user-table'>
 			<table
 				style={{
-					gridTemplateColumns: `repeat(${headers.length}, minmax(150px, 250px))`,
+					gridTemplateColumns: `repeat(${headers.length}, minmax(150px, auto))`,
 				}}>
 				<thead>
 					<tr>
@@ -44,9 +46,23 @@ export function CustomTable({ content }: CustomTableProps) {
 				<tbody>
 					{content.map((row, index) => (
 						<tr key={index}>
-							{headers.map(cell => (
-								<td key={row[cell] ?? index}>{row[cell]}</td>
-							))}
+							{headers.map(cell => {
+								const value = row[cell];
+								const inludingFilters = filters.filter(f => value?.toString().includes(f));
+
+								const wrappedContent =
+									value && inludingFilters.length
+										? wrapString(
+												value.toString(),
+												inludingFilters.map(filter => ({
+													type: new Set(['filtered']),
+													range: [value.toString().indexOf(filter), filter.length - 1],
+												})),
+										  )
+										: value;
+
+								return <td key={row[cell] ?? index}>{wrappedContent}</td>;
+							})}
 						</tr>
 					))}
 				</tbody>

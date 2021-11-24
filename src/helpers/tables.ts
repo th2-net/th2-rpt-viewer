@@ -82,5 +82,6 @@ export const extractParams = (body: TreeTablePayload): ParamsTable => {
 		}
 		return paramTableRows;
 	}, []);
+
 	return { rows: tableRows, columns: tableColumns };
 };

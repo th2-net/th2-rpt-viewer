@@ -136,3 +136,19 @@ input {
 		background-color: $graphOverlayFailedEventsColor;
 	}
 }
+
+.filtered {
+	background-color: $filteredTextColor;
+
+	&.highlighted {
+		display: inline-block;
+		line-height: 11px;
+		height: 11px;
+		border-top: 2px solid $filteredTextColor;
+		border-bottom: 2px solid $filteredTextColor;
+	}
+}
+
+.highlighted {
+	background-color: $highlightedTextColor !important;
+}

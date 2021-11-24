@@ -28,9 +28,11 @@ type Separator = [number, number];
 type FlattenedResult = SearchResult[] | Separator;
 
 interface SearchPanelResultsProps {
-	onResultItemClick: (searchResult: SearchResult) => void;
+	onResultItemClick: (
+		searchResult: SearchResult,
+		filter?: { type: 'body' | 'bodyBinary'; range: [number, number] },
+	) => void;
 	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
-	onResultFilterClick: (range: [number, number]) => void;
 	onResultDelete: () => void;
 	disableNext: boolean;
 	disablePrev: boolean;
@@ -52,7 +54,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		timestamp,
 		onResultItemClick,
 		onResultGroupClick,
-		onResultFilterClick,
 		onResultDelete,
 		disablePrev,
 		disableNext,
@@ -88,7 +89,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 					filters={filters}
 					onResultClick={onResultItemClick}
 					onGroupClick={onResultGroupClick}
-					onFilterClick={onResultFilterClick}
 				/>
 			</React.Fragment>
 		);

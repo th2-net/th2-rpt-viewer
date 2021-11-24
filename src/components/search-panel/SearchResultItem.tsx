@@ -21,6 +21,13 @@ import { getItemName, isEventAction, isEventMessage } from '../../helpers/event'
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { useMessageBodySortStore } from '../../hooks';
 import { ActionType, EventAction } from '../../models/EventAction';
+import {
+	EventBodyPayloadType,
+	TablePayload,
+	TreeTablePayload,
+	VerificationPayload,
+	VerificationPayloadField,
+} from '../../models/EventActionPayload';
 import { EventMessage } from '../../models/EventMessage';
 import { SearchResult } from '../../stores/SearchStore';
 import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
@@ -42,17 +49,17 @@ const getSortedEntries = (
 	}> = [];
 
 	filters.forEach(value => {
-		let lastIndex = 0;
+		let lastIndex = -1;
 
-		while (lastIndex !== -1) {
-			lastIndex = string.indexOf(value, lastIndex ? lastIndex + value.length : 0);
+		do {
+			lastIndex = string.indexOf(value, lastIndex !== -1 ? lastIndex + value.length : 0);
 			if (lastIndex !== -1) {
 				entries.push({
 					value,
 					range: [lastIndex, lastIndex + value.length - 1],
 				});
 			}
-		}
+		} while (lastIndex !== -1);
 	});
 
 	return entries.sort(
@@ -63,8 +70,10 @@ const getSortedEntries = (
 type SearchResultItemProps = {
 	result: SearchResult;
 	filters: EventFilterState | MessageFilterState;
-	onResultClick: (item: SearchResult) => void;
-	onFilterClick: (range: [number, number]) => void;
+	onResultClick: (
+		item: SearchResult,
+		filter?: { type: 'body' | 'bodyBinary'; range: [number, number] },
+	) => void;
 };
 
 type ResultActionType = Exclude<ActionType, ActionType.EVENT_TREE_NODE>;
@@ -74,12 +83,7 @@ type ItemByActionType<T extends ResultActionType> = {
 	message: EventMessage;
 }[T];
 
-const SearchResultItem = ({
-	result,
-	filters,
-	onResultClick,
-	onFilterClick,
-}: SearchResultItemProps) => {
+const SearchResultItem = ({ result, filters, onResultClick }: SearchResultItemProps) => {
 	const { getSortedFields } = useMessageBodySortStore();
 
 	const keysToDisplay: {
@@ -105,31 +109,95 @@ const SearchResultItem = ({
 			body: body => {
 				if (!body) return <>{null}</>;
 
+				const treeTableEntries = (bodyPart: TablePayload | TreeTablePayload): string[] => {
+					if (!bodyPart.rows) return [];
+
+					return Object.entries(bodyPart.rows)
+						.map(rowEntry => {
+							if (rowEntry[1].type === 'row') {
+								return [
+									rowEntry[0],
+									...(Object.values(rowEntry[1].columns) as (string | boolean)[]).map(v =>
+										v.toString(),
+									),
+								];
+							}
+							return [...treeTableEntries(rowEntry[1])];
+						})
+						.flat();
+				};
+
+				const verificationEntries = (
+					bodyPart: VerificationPayload | VerificationPayloadField,
+				): string[] => {
+					if (!bodyPart.fields) return [];
+
+					return Object.entries(bodyPart.fields)
+						.map(rowPart => {
+							if (rowPart[1].fields) return verificationEntries(rowPart[1]);
+
+							return [
+								rowPart[0],
+								...(Object.values(rowPart[1]) as (string | boolean)[]).map(v => v.toString()),
+							];
+						})
+						.flat();
+				};
+
 				const bodyAsString = JSON.stringify(body).replace(
-					/:[{|[|"]/gm,
+					/:[{|[]/gm,
 					(str: string) => `${str[0]} ${str[1]}`,
 				);
 
 				if (!filters.body.values.length || filters.body.negative)
 					return <>{trimValue(bodyAsString)}</>;
 
+				const values = [
+					...new Set(
+						body
+							.map(bodyPart => {
+								switch (bodyPart.type) {
+									case EventBodyPayloadType.MESSAGE:
+										return [bodyPart.data];
+									case EventBodyPayloadType.TABLE: {
+										if (!bodyPart.rows) return [];
+
+										return bodyPart.rows.flatMap(row => Object.values(row));
+									}
+									case EventBodyPayloadType.TREE_TABLE:
+										return treeTableEntries(bodyPart);
+									case EventBodyPayloadType.VERIFICATION:
+										return verificationEntries(bodyPart);
+									default:
+										return [];
+								}
+							})
+							.flat(),
+					),
+				];
+
 				const sortedEntries = getSortedEntries(bodyAsString, filters.body.values);
 
 				return (
 					<>
-						{sortedEntries.flat().map(({ value, range }, idx, arr) => (
-							<React.Fragment key={`${value}-${idx}`}>
-								<span
-									className='filtered'
-									onClick={() => {
-										onResultClick(result);
-										onFilterClick(range);
-									}}>
-									{value}
-								</span>
-								{arr.length !== idx + 1 ? ', ' : ''}
-							</React.Fragment>
-						))}
+						{sortedEntries.flat().map(({ value }, idx, arr) => {
+							const clickable = values.some(v => v.includes(value));
+							return (
+								<React.Fragment key={`${value}-${idx}`}>
+									<span
+										className={clickable ? 'filtered' : undefined}
+										onClick={() => {
+											if (clickable) {
+												onResultClick(result);
+												// onFilterClick(range, 'body');
+											}
+										}}>
+										{value}
+									</span>
+									{arr.length !== idx + 1 ? ', ' : ''}
+								</React.Fragment>
+							);
+						})}
 					</>
 				);
 			},
@@ -149,7 +217,12 @@ const SearchResultItem = ({
 			body: body => {
 				if (!body) return <>{null}</>;
 
-				const sortedObject = Object.fromEntries(getSortedFields(body?.fields ? body.fields : {}));
+				const { fields, ...bodyWithoutFields } = body;
+
+				const sortedObject = {
+					...body,
+					fields: Object.fromEntries(getSortedFields(body.fields)),
+				};
 
 				const bodyAsString = JSON.stringify(sortedObject).replace(
 					/:[{|[|"]/gm,
@@ -161,6 +234,14 @@ const SearchResultItem = ({
 
 				const sortedEntries = getSortedEntries(bodyAsString, filters.body.values);
 
+				const offset =
+					JSON.stringify(bodyWithoutFields).replace(
+						/:[{|[|"]/gm,
+						(str: string) => `${str[0]} ${str[1]}`,
+					).length +
+					',"fields": '.length -
+					1;
+
 				return (
 					<>
 						{sortedEntries.flat().map(({ value, range }, idx, arr) => (
@@ -168,8 +249,10 @@ const SearchResultItem = ({
 								<span
 									className='filtered'
 									onClick={() => {
-										onResultClick(result);
-										onFilterClick(range);
+										onResultClick(result, {
+											range: [range[0] - offset, range[1] - offset],
+											type: 'body',
+										});
 									}}>
 									{value}
 								</span>
@@ -185,13 +268,22 @@ const SearchResultItem = ({
 				const bodyBinary = (filters as MessageFilterState).bodyBinary;
 				if (!bodyBinary.values.length || bodyBinary.negative) return <>{trimValue(binary)}</>;
 
-				const sortedEntries = getSortedEntries(binary, bodyBinary.values);
+				const sortedEntries = getSortedEntries(window.atob(binary), bodyBinary.values);
 
 				return (
 					<>
-						{sortedEntries.flat().map(({ value }, idx, arr) => (
+						{sortedEntries.flat().map(({ value, range }, idx, arr) => (
 							<React.Fragment key={`${value}-${idx}`}>
-								<span className='filtered'>{value}</span>
+								<span
+									className='filtered'
+									onClick={() => {
+										onResultClick(result, {
+											range: [range[0], range[1]],
+											type: 'bodyBinary',
+										});
+									}}>
+									{value}
+								</span>
 								{arr.length !== idx + 1 ? ', ' : ''}
 							</React.Fragment>
 						))}

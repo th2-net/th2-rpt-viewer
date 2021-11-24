@@ -18,6 +18,7 @@ import * as React from 'react';
 import { createStyleSelector } from '../../../helpers/styleCreators';
 import StateSaver from '../../util/StateSaver';
 import '../../../styles/tables.scss';
+import { wrapString } from '../../../helpers/filters';
 
 export interface ParamsTableRow {
 	subRows: ParamsTableRow[];
@@ -39,6 +40,7 @@ interface OwnProps {
 	columns: Array<string>;
 	rows: ParamsTableRow[];
 	name: string;
+	filters: string[];
 	stateKey: string;
 }
 
@@ -51,7 +53,7 @@ interface RecoveredProps {
 	saveState: (state: ParamsTableRow[]) => void;
 }
 
-interface Props extends Omit<OwnProps, 'params'>, StateProps, RecoveredProps {}
+interface Props extends Omit<OwnProps, 'params' | 'rows'>, StateProps, RecoveredProps {}
 
 interface State {
 	nodes: ParamsTableRow[];
@@ -161,7 +163,7 @@ class ParamsTableBase extends React.Component<Props, State> {
 	}
 
 	private renderNodes(node: ParamsTableRow, paddingLevel = 1, key = ''): React.ReactNodeArray {
-		if (node.subRows && node.subRows.length !== 0) {
+		if (node.subRows.length !== 0) {
 			const subNodes = node.isExpanded
 				? node.subRows.reduce(
 						(list, n, index) =>
@@ -226,9 +228,25 @@ class ParamsTableBase extends React.Component<Props, State> {
 		only if it contains some search results
 	*/
 	private renderContent(contentKey: string, content: string): React.ReactNode {
+		if (!content) return content;
 		if (typeof content === 'boolean' && (content as boolean))
 			return <div className='boolean-value-cell' />;
-		return content;
+
+		const { filters } = this.props;
+
+		const inludingFilters = filters.filter(f => content.includes(f));
+
+		const wrappedContent = inludingFilters.length
+			? wrapString(
+					content,
+					inludingFilters.map(filter => ({
+						type: new Set(['filtered']),
+						range: [content.indexOf(filter), filter.length - 1],
+					})),
+			  )
+			: content;
+
+		return wrappedContent;
 	}
 
 	private togglerClickHandler = (targetNode: ParamsTableRow) => (e: React.MouseEvent) => {
@@ -253,13 +271,7 @@ export const RecoverableParamsTable = ({
 	// at first table render, we need to generate table nodes if we don't find previous table's state
 	<StateSaver stateKey={stateKey} getDefaultState={() => props.rows}>
 		{(state: ParamsTableRow[], stateSaver) => (
-			<ParamsTableBase
-				{...props}
-				saveState={stateSaver}
-				rows={state}
-				nodes={state}
-				stateKey={stateKey}
-			/>
+			<ParamsTableBase {...props} saveState={stateSaver} nodes={state} stateKey={stateKey} />
 		)}
 	</StateSaver>
 );

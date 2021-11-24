@@ -23,6 +23,7 @@ import { getEventStatus } from '../../helpers/event';
 import EventBodyCard from './EventBodyCard';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { useSelectedStore, useWorkspaceEventStore } from '../../hooks';
+import { useSearchStore } from '../../hooks/useSearchStore';
 
 interface Props {
 	node: EventTreeNode;
@@ -35,6 +36,8 @@ interface Props {
 function EventDetailInfoCard(props: Props) {
 	const selectedStore = useSelectedStore();
 	const eventStore = useWorkspaceEventStore();
+	const { currentSearch } = useSearchStore();
+	const bodyFilters = currentSearch?.request.filters.body.values ?? [];
 
 	const { event, eventTreeNode, node, children } = props;
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
@@ -119,10 +122,11 @@ function EventDetailInfoCard(props: Props) {
 							key={`body-${eventId}-${index}`}
 							body={bodyPayloadItem}
 							parentEvent={event}
+							filters={bodyFilters}
 						/>
 					))
 				) : (
-					<EventBodyCard key={eventId} body={body} parentEvent={event} />
+					<EventBodyCard key={eventId} body={body} parentEvent={event} filters={bodyFilters} />
 				)}
 			</div>
 		</div>

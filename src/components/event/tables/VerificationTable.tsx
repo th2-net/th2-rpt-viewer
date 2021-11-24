@@ -26,6 +26,7 @@ import { replaceNonPrintableChars } from '../../../helpers/stringUtils';
 import { copyTextToClipboard } from '../../../helpers/copyHandler';
 import { VerificationPayload, VerificationPayloadField } from '../../../models/EventActionPayload';
 import '../../../styles/tables.scss';
+import { wrapString } from '../../../helpers/filters';
 
 const PADDING_LEVEL_VALUE = 10;
 
@@ -41,6 +42,7 @@ interface OwnProps {
 	status: EventStatus;
 	keyPrefix: string;
 	stateKey: string;
+	filters: string[];
 }
 
 interface StateProps {
@@ -433,11 +435,22 @@ class VerificationTableBase extends React.Component<Props, State> {
 		wrapperClassName: string | null = null,
 		fakeContent: string = content || '',
 	): React.ReactNode {
-		if (content == null) {
-			return wrap(wrapperClassName, null);
-		}
+		const { filters } = this.props;
+		const cellValue = content == null ? 'null' : fakeContent;
 
-		return wrap(wrapperClassName, fakeContent);
+		const inludingFilters = filters.filter(f => cellValue.includes(f));
+
+		const wrappedContent = inludingFilters.length
+			? wrapString(
+					cellValue,
+					inludingFilters.map(filter => ({
+						type: new Set(['filtered']),
+						range: [cellValue.indexOf(filter), filter.length - 1],
+					})),
+			  )
+			: content;
+
+		return wrap(wrapperClassName, wrappedContent);
 
 		function wrap(className: string | null, data: React.ReactNode): React.ReactNode {
 			return className == null ? data : <div className={className}>{data}</div>;

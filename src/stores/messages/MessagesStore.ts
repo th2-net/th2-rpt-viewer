@@ -39,6 +39,8 @@ export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
 type MessagesStoreDefaultState = MessagesStoreURLState & {
 	targetMessage?: EventMessage;
+	targetMessageBodyRange?: [number, number];
+	targetMessageBodyBinaryRange?: [number, number];
 };
 
 export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string | null | undefined;
@@ -78,6 +80,10 @@ export default class MessagesStore {
 
 	@observable
 	public showFilterChangeHint = false;
+
+	@observable selectedBodyFilterRange: [number, number] | null = null;
+
+	@observable selectedBodyBinaryFilterRange: [number, number] | null = null;
 
 	/* 
 		This is used for filter change hint. Represents either last clicked message
@@ -212,6 +218,12 @@ export default class MessagesStore {
 				this.highlightedMessageId = message.messageId;
 				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 				this.workspaceStore.viewStore.activePanel = this;
+				if (defaultState.targetMessageBodyRange) {
+					this.selectedBodyFilterRange = defaultState.targetMessageBodyRange;
+				}
+				if (defaultState.targetMessageBodyBinaryRange) {
+					this.selectedBodyBinaryFilterRange = defaultState.targetMessageBodyBinaryRange;
+				}
 			}
 		}
 		this.dataStore.loadMessages();

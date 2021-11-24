@@ -28,9 +28,11 @@ import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
 interface SearchResultGroup {
 	results: SearchResult[];
 	filters: EventFilterState | MessageFilterState;
-	onResultClick: (searchResult: SearchResult) => void;
+	onResultClick: (
+		searchResult: SearchResult,
+		filter?: { type: 'body' | 'bodyBinary'; range: [number, number] },
+	) => void;
 	onGroupClick: (timestamp: number, resultType: ActionType) => void;
-	onFilterClick: (range: [number, number]) => void;
 }
 
 const SearchResultGroup = ({
@@ -38,7 +40,6 @@ const SearchResultGroup = ({
 	filters,
 	onResultClick,
 	onGroupClick,
-	onFilterClick,
 }: SearchResultGroup) => {
 	const [isExpanded, setIsExpanded] = React.useState(false);
 
@@ -113,12 +114,7 @@ const SearchResultGroup = ({
 	if (results.length === 1) {
 		return (
 			<div className='search-result-single-item'>
-				<SearchResultItem
-					result={results[0]}
-					filters={filters}
-					onResultClick={onResultClick}
-					onFilterClick={onFilterClick}
-				/>
+				<SearchResultItem result={results[0]} filters={filters} onResultClick={onResultClick} />
 			</div>
 		);
 	}
@@ -147,7 +143,6 @@ const SearchResultGroup = ({
 							result={result}
 							filters={filters}
 							onResultClick={onResultClick}
-							onFilterClick={onFilterClick}
 						/>
 					))}
 			</div>

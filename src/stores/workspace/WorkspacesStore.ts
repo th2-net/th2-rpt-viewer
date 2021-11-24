@@ -115,6 +115,8 @@ export default class WorkspacesStore {
 	public getInitialWorkspaceByMessage = (
 		timestamp: number,
 		targetMessage?: EventMessage,
+		targetMessageBodyRange?: [number, number],
+		targetMessageBodyBinaryRange?: [number, number],
 	): WorkspaceInitialState => {
 		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
 		const filters: MessageFilterState | null = (requestInfo?.filters as MessageFilterState) || null;
@@ -126,6 +128,8 @@ export default class WorkspacesStore {
 				timestampFrom: null,
 				timestampTo: timestamp,
 				targetMessage,
+				targetMessageBodyRange,
+				targetMessageBodyBinaryRange,
 			},
 			interval: SEARCH_STORE_INTERVAL,
 			layout: [0, 100],

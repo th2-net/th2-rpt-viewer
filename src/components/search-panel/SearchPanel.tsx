@@ -33,8 +33,8 @@ const SearchPanel = () => {
 	const { ref: searchPanelRef } = useActivePanel(null);
 
 	const onResultItemClick = React.useCallback(
-		(bookmark: SearchResult) => {
-			searchWorkspace.onSearchResultItemSelect(bookmark);
+		(bookmark: SearchResult, filter?: { type: 'body' | 'bodyBinary'; range: [number, number] }) => {
+			searchWorkspace.onSearchResultItemSelect(bookmark, filter);
 		},
 		[searchWorkspace.onSearchResultItemSelect],
 	);
@@ -51,7 +51,6 @@ const SearchPanel = () => {
 					timestamp={searchStore.currentSearch.timestamp}
 					onResultItemClick={onResultItemClick}
 					onResultGroupClick={searchWorkspace.followByTimestamp}
-					onResultFilterClick={searchStore.setSelectedBodyFilterRange}
 					onResultDelete={() => {
 						if (searchStore.currentSearch) {
 							searchStore.deleteHistoryItem(searchStore.currentSearch);

@@ -42,7 +42,7 @@ module.exports = webpackMerge(commonConfig, {
 		historyApiFallback: true,
 		proxy: {
 			'/': {
-				target: 'http://th2-qa:30000/th2-commonv3/',
+				target: 'http://th2-qa:30000/th2-commonv3/provider-debug/',
 				changeOrigin: true,
 				secure: false,
 			},

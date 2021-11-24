@@ -74,6 +74,7 @@ const MessageCardViewTypeRenderer = ({
 					rawContent={rawContent}
 					renderInfo={renderInfo}
 					isDetailed={isDetailed || viewType === MessageViewType.BINARY}
+					applyFilterToBody={applyFilterToBody}
 				/>
 			) : null;
 		default:
