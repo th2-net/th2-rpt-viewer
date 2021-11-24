@@ -68,7 +68,6 @@ export default class WorkspaceViewStore {
 
 	@action
 	public collapsePanel = (index: number) => {
-		console.log(this.collapsedPanels);
 		if (this.collapsedPanels.length === 0) {
 			this.panelsLayout = index === 0 ? [0, 50, 50] : index === 1 ? [50, 0, 50] : [50, 50, 0];
 		}

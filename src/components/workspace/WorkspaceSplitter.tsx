@@ -96,14 +96,14 @@ function WorkspaceSplitter(props: Props) {
 				const widthInPx = (rootEl.getBoundingClientRect().width * panelsLayout[index]) / 100;
 				if (Math.floor(widthInPx) <= MIN_PANEL_WIDTH * 2) {
 					if (!panelRef.classList.contains('minified')) {
-						console.log(index);
 						panelRef.classList.add('minified');
 						newCollapsedPanels.push(index);
 						setCollapsedPanels(newCollapsedPanels);
 					}
 				} else if (panelRef.classList.contains('minified')) {
 					panelRef.classList.remove('minified');
-					setCollapsedPanels([...collapsedPanels.filter(idx => idx !== index)]);
+					newCollapsedPanels = newCollapsedPanels.filter(idx => idx !== index);
+					setCollapsedPanels(newCollapsedPanels);
 				}
 			}
 		});
@@ -203,26 +203,6 @@ function WorkspaceSplitter(props: Props) {
 				parseFloat(((w / (rootWidth - splitterWidth * panels.length)) * 100).toFixed(2)),
 			) as WorkspacePanelsLayout,
 		);
-
-		let newCollapsedPanels = [...collapsedPanels];
-
-		panelsRefs.current.forEach((panelRef, index) => {
-			if (panelRef.current) {
-				panelRef.current.style.width = `${widths[index]}px`;
-				console.log(widths[index]);
-
-				if (Math.round(widths[index]) <= MIN_PANEL_WIDTH * 2) {
-					if (!panelRef.current.classList.contains('minified')) {
-						panelRef.current.classList.add('minified');
-						newCollapsedPanels.push(index);
-						setCollapsedPanels(newCollapsedPanels);
-					}
-				} else if (panelRef.current.classList.contains('minified')) {
-					panelRef.current.classList.remove('minified');
-					setCollapsedPanels([...collapsedPanels.filter(idx => idx !== index)]);
-				}
-			}
-		});
 
 		splittersRefs.current.forEach(resizerRef => {
 			if (resizerRef.current) {
