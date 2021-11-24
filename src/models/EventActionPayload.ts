@@ -83,6 +83,7 @@ export interface VerificationPayloadField {
 	key: boolean;
 	actual: string;
 	expected: string;
+	hint?: string;
 	fields?: {
 		[field: string]: VerificationPayloadField;
 	};
