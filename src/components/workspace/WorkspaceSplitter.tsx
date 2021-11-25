@@ -235,7 +235,8 @@ function WorkspaceSplitter(props: Props) {
 		activeSplitterLeftPosition: number,
 	) => {
 		const splitter = splittersRefs.current[splitterIndex].current!;
-		const leftSplitter = splittersRefs.current[splitterIndex - 1]?.current;
+		const leftSplitter =
+			splitterIndex === 1 ? null : splittersRefs.current[splitterIndex - 1]?.current;
 		const rightSplitter = splittersRefs.current[splitterIndex + 1]?.current;
 
 		return {
@@ -244,7 +245,7 @@ function WorkspaceSplitter(props: Props) {
 				  leftSplitter.offsetLeft -
 				  MIN_PANEL_WIDTH -
 				  splitter.clientWidth
-				: activeSplitterLeftPosition,
+				: activeSplitterLeftPosition - MIN_PANEL_WIDTH - splitter.clientWidth,
 			right: rightSplitter
 				? rightSplitter.offsetLeft -
 				  activeSplitterLeftPosition -
@@ -300,6 +301,7 @@ function WorkspaceSplitter(props: Props) {
 
 			if (
 				index < activeSplitterIndex &&
+				index !== 0 &&
 				left - rootOffsetLeft + fullWidth * (activeSplitterIndex - index) > activeSplitterLeft
 			) {
 				if (left / rootWidth < 0.2) {
