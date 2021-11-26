@@ -15,60 +15,19 @@
  ***************************************************************************** */
 
 import React from 'react';
-import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import { isEventMessage, isEventNode, getItemId } from '../../helpers/event';
-import { createBemElement } from '../../helpers/styleCreators';
 import { useSelectedStore } from '../../hooks';
 import { SearchResult } from '../../stores/SearchStore';
 import { BookmarkedItem, BookmarkItem } from '../bookmarks/BookmarksPanel';
-import { getTimestampAsNumber } from '../../helpers/date';
-import { ActionType } from '../../models/EventAction';
 
 interface SearchResultGroup {
-	results: SearchResult[];
+	result: SearchResult;
 	onResultClick: (searchResult: BookmarkedItem) => void;
-	onGroupClick: (timestamp: number, resultType: ActionType) => void;
-	isExpanded: boolean;
-	setIsExpanded: (nextState: boolean) => void;
 }
 
-const SearchResultGroup = ({
-	results,
-	onResultClick,
-	onGroupClick,
-	isExpanded,
-	setIsExpanded,
-}: SearchResultGroup) => {
+const SearchResultGroup = ({ result, onResultClick }: SearchResultGroup) => {
 	const selectedStore = useSelectedStore();
-
-	const expandButtonClass = createBemElement(
-		'search-result-group',
-		'expand-button',
-		isExpanded ? 'expanded' : null,
-	);
-
-	function computeKey(index: number) {
-		const item = results[index];
-
-		return isEventNode(item) ? item.eventId : item.messageId;
-	}
-
-	const namesEncountersMap = new Map<string, number>();
-	results
-		.map(result => (isEventMessage(result) ? result.messageType : result.eventName))
-		.forEach(name => {
-			if (namesEncountersMap.has(name)) {
-				let counter = namesEncountersMap.get(name);
-				if (counter) namesEncountersMap.set(name, ++counter);
-			} else {
-				namesEncountersMap.set(name, 1);
-			}
-		});
-	const mostPopularNames = Array.from(namesEncountersMap)
-		.sort((a, b) => b[1] - a[1])
-		.map(entry => entry[0])
-		.splice(0, 3);
 
 	const getBookmarkToggler = (searchResult: SearchResult) => () => {
 		if (isEventMessage(searchResult)) {
@@ -84,76 +43,17 @@ const SearchResultGroup = ({
 		);
 	};
 
-	const averageTimestamp = (() => {
-		const groupTimestamps = results.map(getTimestampAsNumber);
-
-		let timestamp;
-		if (groupTimestamps.length === 1) {
-			timestamp = groupTimestamps[0];
-		} else {
-			timestamp = Math.floor(
-				(groupTimestamps[0] + groupTimestamps[groupTimestamps.length - 1]) / 2,
-			);
-		}
-		return timestamp;
-	})();
-
-	const onSearchGroupClick = () => {
-		onGroupClick(averageTimestamp, results[0].type);
-	};
-
-	const groupTimestamp =
-		`${moment(averageTimestamp).utc().format('DD.MM.YYYY')} ` +
-		`${moment(getTimestampAsNumber(results[0])).utc().format('HH:mm:ss.SSS')}-` +
-		`${moment(getTimestampAsNumber(results[results.length - 1]))
-			.utc()
-			.format('HH:mm:ss.SSS')}`;
-
-	if (results.length === 1) {
-		return (
-			<div className='search-result-single-item'>
-				<BookmarkItem
-					key={computeKey(0)}
-					bookmark={results[0]}
-					onClick={onResultClick}
-					toggleBookmark={getBookmarkToggler(results[0])}
-					isBookmarked={getIsToggled(results[0])}
-					isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
-				/>
-			</div>
-		);
-	}
-
 	return (
-		<>
-			<div className='search-result-group'>
-				<button className={expandButtonClass} onClick={() => setIsExpanded(!isExpanded)} />
-				<div className='search-result-group__header'>
-					<span className='search-result-group__results-count'>{results.length}</span>
-					<div className='search-result-group__most-popular-names' onClick={onSearchGroupClick}>
-						{mostPopularNames.map((name, index) => (
-							<span key={index} className='search-result-group__name' title={name}>
-								{name}
-							</span>
-						))}
-					</div>
-					<span className='search-result-group__timestamp'>{groupTimestamp}</span>
-				</div>
-			</div>
-			<div className='search-result-group-items'>
-				{isExpanded &&
-					results.map((result, index) => (
-						<BookmarkItem
-							key={computeKey(index)}
-							bookmark={result}
-							onClick={onResultClick}
-							toggleBookmark={getBookmarkToggler(result)}
-							isBookmarked={getIsToggled(result)}
-							isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
-						/>
-					))}
-			</div>
-		</>
+		<div className='search-result-single-item'>
+			<BookmarkItem
+				key={isEventNode(result) ? result.eventId : result.messageId}
+				bookmark={result}
+				onClick={onResultClick}
+				toggleBookmark={getBookmarkToggler(result)}
+				isBookmarked={getIsToggled(result)}
+				isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
+			/>
+		</div>
 	);
 };
 

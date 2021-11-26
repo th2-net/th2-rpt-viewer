@@ -308,14 +308,14 @@ export class SearchStore {
 
 	@computed get flattenedResult() {
 		if (!this.currentSearch) return [];
-		const result: (SearchResult[] | [number, number])[] = [];
+		const result: (SearchResult | [number, number])[] = [];
 		this.sortedResultGroups.forEach(([, value], index) => {
 			if (index > 0)
 				result.push([
 					getTimestampAsNumber(this.sortedResultGroups[index - 1][1].slice(-1)[0]),
 					getTimestampAsNumber(value[0]),
 				]);
-			result.push(value);
+			result.push(...value);
 		});
 		return result;
 	}
