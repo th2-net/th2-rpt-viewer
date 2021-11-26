@@ -125,8 +125,8 @@ export default class MessagesStore {
 	public get panelRange(): TimeRange {
 		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
 
-		const messageTo = this.dataStore.messages[startIndex];
-		const messageFrom = this.dataStore.messages[endIndex];
+		const messageTo = startIndex > 0 ? this.dataStore.messages[startIndex] : null;
+		const messageFrom = endIndex > 0 ? this.dataStore.messages[endIndex] : null;
 
 		if (messageFrom && messageTo) {
 			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];

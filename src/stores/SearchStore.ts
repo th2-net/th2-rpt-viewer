@@ -113,7 +113,7 @@ export class SearchStore {
 		this.init();
 
 		autorun(() => {
-			this.currentSearch = this.searchHistory[this.currentIndex] || null;
+			this.currentSearch = this.currentIndex > 0 ? this.searchHistory[this.currentIndex] : null;
 		});
 
 		reaction(
