@@ -23,7 +23,7 @@ import { isEventMessage } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
 
-type MessageSSEEventListeners = SSEEventListeners<EventMessage> & {
+export type MessageSSEEventListeners = SSEEventListeners<EventMessage> & {
 	onKeepAliveResponse?: (event: SSEHeartbeat) => void;
 };
 
@@ -58,12 +58,8 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 
 	@action
 	protected onClose = () => {
-		this.closeChannel();
-		this.isLoading = false;
-		this.clearSchedulersAndTimeouts();
-
-		const isEndReached = this.messagesIdsEvent
-			? Object.values(this.messagesIdsEvent.messageIds).every(messageId => messageId === null)
+		const isEndReached = !this.queryParams.keepOpen
+			? this.fetchedEventsCount !== this.chunkSize
 			: false;
 
 		if (this.fetchedChunkSubscription == null) {
@@ -73,6 +69,11 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		} else {
 			this.isEndReached = isEndReached;
 		}
+
+		this.closeChannel();
+		this.isLoading = false;
+		this.clearSchedulersAndTimeouts();
+		this.onStop?.();
 	};
 
 	@action
@@ -87,7 +88,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	};
 
 	/*
-		Returns a promise within initialResponseTimeoutMs or successfull fetch
+		Returns a promise within initialResponseTimeoutMs or successful fetch
 		and subscribes on changes 
 	*/
 	public loadAndSubscribe = async (resumeFromId?: string): Promise<EventMessage[]> => {
@@ -114,8 +115,15 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
-				resumeFromId: messageId.length ? undefined : resumeFromId,
-				resultCountLimit: this.chunkSize,
+				resumeFromId:
+					(messageId.length ? undefined : resumeFromId) ?? this.queryParams.resumeFromId,
+				...(this.queryParams.keepOpen
+					? {
+							resultCountLimit: undefined,
+					  }
+					: {
+							resultCountLimit: this.chunkSize,
+					  }),
 				messageId,
 			},
 			type: this.type,

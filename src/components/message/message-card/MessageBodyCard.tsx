@@ -16,6 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { createBemElement } from '../../../helpers/styleCreators';
 import MessageBody, {
 	isSimpleValue,
 	MessageBodyField,
@@ -53,7 +54,7 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 };
 
 function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrderItems }: Props) {
-	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
+	const [areSameContext, highlightSameContext] = React.useState(false);
 
 	const fields = React.useMemo(
 		() => getSortedFields(body?.fields ? body.fields : {}, sortOrderItems),
@@ -67,7 +68,12 @@ function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrder
 	return (
 		<pre className='mc-body__human'>
 			{renderInfo && renderInfo()}
-			{!isBeautified && '{'}
+			{!isBeautified && (
+				<span
+					className={createBemElement('mc-body', 'field-border', areSameContext ? 'active' : null)}>
+					{'{'}
+				</span>
+			)}
 			{fields.map(([key, value], idx, arr) => (
 				<React.Fragment key={key}>
 					<MessageBodyCardField
@@ -76,13 +82,17 @@ function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrder
 						label={key}
 						field={value}
 						isBeautified={isBeautified}
-						isHighlighted={areSiblingsHighlighed}
-						setIsHighlighted={highlightSiblings}
+						setIsHighlighted={highlightSameContext}
 					/>
 					{isBeautified || idx === arr.length - 1 ? null : ', '}
 				</React.Fragment>
 			))}
-			{!isBeautified && '}'}
+			{!isBeautified && (
+				<span
+					className={createBemElement('mc-body', 'field-border', areSameContext ? 'active' : null)}>
+					{'}'}
+				</span>
+			)}
 		</pre>
 	);
 }
@@ -91,7 +101,6 @@ interface FieldProps {
 	isBeautified: boolean;
 	label: string;
 	field: MessageBodyField;
-	isHighlighted?: boolean;
 	setIsHighlighted: (isHighlighted: boolean) => void;
 	isRoot?: boolean;
 	highlightColor: string;
@@ -105,13 +114,12 @@ function MessageBodyCardField(props: FieldProps) {
 		field,
 		label,
 		isBeautified,
-		isHighlighted = false,
 		isRoot = true,
 		setIsHighlighted,
 		highlightColor,
 	} = props;
 
-	const [areSiblingsHighlighed, highlightSiblings] = React.useState(false);
+	const [areSameContext, highlightSameContext] = React.useState(false);
 
 	if (isRoot) {
 		return (
@@ -122,7 +130,6 @@ function MessageBodyCardField(props: FieldProps) {
 				field={field}
 				label={label}
 				isRoot={false}
-				isHighlighted={isHighlighted}
 				setIsHighlighted={setIsHighlighted}
 			/>
 		);
@@ -141,19 +148,30 @@ function MessageBodyCardField(props: FieldProps) {
 			className='mc-body__field'
 			style={{
 				display: isBeautified ? 'block' : undefined,
-				background: isHighlighted ? backgroundGradient`${highlightColor}` : undefined,
 			}}>
 			<span
 				onMouseEnter={() => setIsHighlighted(true)}
 				onMouseLeave={() => setIsHighlighted(false)}
 				className='mc-body__field-label'>
-				{label ? (isBeautified ? `${label}: ` : `"${label}": `) : ''}
+				{label ? `${label}: ` : ''}
 			</span>
 			{isSimpleValue(field) ? (
-				<span className='mc-body__field-simple-value'>{field.simpleValue}</span>
+				<span
+					onMouseEnter={() => setIsHighlighted(true)}
+					onMouseLeave={() => setIsHighlighted(false)}
+					className='mc-body__field-simple-value'>
+					{field.simpleValue}
+				</span>
 			) : isListValue(field) ? (
 				<>
-					{'['}
+					<span
+						className={createBemElement(
+							'mc-body',
+							'field-border',
+							areSameContext ? 'active' : null,
+						)}>
+						{'['}
+					</span>
 					<span
 						style={{
 							display: isBeautified ? 'block' : undefined,
@@ -166,18 +184,31 @@ function MessageBodyCardField(props: FieldProps) {
 								field={value}
 								label={''}
 								isBeautified={isBeautified}
-								isHighlighted={isHighlighted}
 								isRoot={true}
-								setIsHighlighted={highlightSiblings}
+								setIsHighlighted={highlightSameContext}
 								highlightColor={highlightColor}
 							/>
 						))}
 					</span>
-					{']'}
+					<span
+						className={createBemElement(
+							'mc-body',
+							'field-border',
+							areSameContext ? 'active' : null,
+						)}>
+						{']'}
+					</span>
 				</>
 			) : (
 				<>
-					{'{'}
+					<span
+						className={createBemElement(
+							'mc-body',
+							'field-border',
+							areSameContext ? 'active' : null,
+						)}>
+						{'{'}
+					</span>
 					<span
 						style={{
 							display: isBeautified ? 'block' : undefined,
@@ -190,16 +221,22 @@ function MessageBodyCardField(props: FieldProps) {
 									field={subField}
 									label={key}
 									isBeautified={isBeautified}
-									isHighlighted={areSiblingsHighlighed}
 									isRoot={false}
-									setIsHighlighted={highlightSiblings}
+									setIsHighlighted={highlightSameContext}
 									highlightColor={highlightColor}
 								/>
 								{isBeautified || idx === arr.length - 1 ? null : ', '}
 							</React.Fragment>
 						))}
 					</span>
-					{'}'}
+					<span
+						className={createBemElement(
+							'mc-body',
+							'field-border',
+							areSameContext ? 'active' : null,
+						)}>
+						{'}'}
+					</span>
 				</>
 			)}
 		</span>
@@ -215,13 +252,3 @@ export function MessageBodyCardFallback({ body, isBeautified }: Props) {
 		</pre>
 	);
 }
-
-const backgroundGradient = (strings: TemplateStringsArray, color: string) =>
-	`linear-gradient(to bottom, 
-        transparent 0%,
-        transparent 2px,
-        ${color} 2px,
-        ${color} calc(100% - 2px),
-        transparent calc(100% - 2px),
-        transparent 100%
-	)`;

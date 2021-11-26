@@ -22,6 +22,7 @@ import 'core-js/features/array/flat-map';
 import 'core-js/features/array/flat';
 import ErrorBoundary from './components/util/ErrorBoundary';
 import { registerFetchInterceptor } from './helpers/fetch-intercept';
+import { ViewMode, ViewModeProvider } from './contexts/viewModeContext';
 
 registerFetchInterceptor();
 
@@ -37,10 +38,15 @@ if (searchParams.get('viewMode') === 'embedded') {
 	App = React.lazy(() => import('./components/App'));
 }
 
+const viewModeParam = searchParams.get('viewMode');
+const viewMode = (viewModeParam === null ? ViewMode.Full : viewModeParam) as ViewMode;
+
 ReactDOM.render(
 	<ErrorBoundary>
 		<React.Suspense fallback={<div>Loading...</div>}>
-			<App />
+			<ViewModeProvider value={viewMode}>
+				<App />
+			</ViewModeProvider>
 		</React.Suspense>
 	</ErrorBoundary>,
 	document.getElementById('index'),
