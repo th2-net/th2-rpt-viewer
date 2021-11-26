@@ -27,7 +27,7 @@ type InitialState = Partial<{
 }>;
 
 export const defaultPanelsLayout: WorkspacePanelsLayout =
-	process.env.NODE_ENV === 'development' ? [45, 30, 25] : [100, 0, 0];
+	process.env.NODE_ENV === 'development' ? [45, 30, 25, 0] : [0, 100, 0, 0];
 
 export default class WorkspaceViewStore {
 	constructor(initalState?: InitialState) {
@@ -69,35 +69,156 @@ export default class WorkspaceViewStore {
 	@action
 	public collapsePanel = (index: number) => {
 		if (this.collapsedPanels.length === 0) {
-			this.panelsLayout = index === 0 ? [0, 50, 50] : index === 1 ? [50, 0, 50] : [50, 50, 0];
+			this.panelsLayout =
+				index === 0
+					? [0, 35, 35, 30]
+					: index === 1
+					? [35, 0, 35, 30]
+					: index === 2
+					? [35, 35, 0, 30]
+					: [35, 35, 30, 0];
 		}
 		if (this.collapsedPanels.length === 1 && this.collapsedPanels.includes(index)) {
-			this.panelsLayout = [45, 30, 25];
+			this.panelsLayout = [35, 25, 20, 20];
 		}
 		if (this.collapsedPanels.length === 1 && !this.collapsedPanels.includes(index)) {
 			if (index === 0) {
-				this.panelsLayout = this.collapsedPanels.includes(1) ? [0, 0, 100] : [0, 100, 0];
+				this.panelsLayout = this.collapsedPanels.includes(1)
+					? [0, 0, 50, 50]
+					: this.collapsedPanels.includes(2)
+					? [0, 50, 0, 50]
+					: [0, 50, 50, 0];
 			}
 
 			if (index === 1) {
-				this.panelsLayout = this.collapsedPanels.includes(0) ? [0, 0, 100] : [100, 0, 0];
+				this.panelsLayout = this.collapsedPanels.includes(0)
+					? [0, 0, 50, 50]
+					: this.collapsedPanels.includes(2)
+					? [50, 0, 0, 50]
+					: [50, 0, 50, 0];
 			}
 
 			if (index === 2) {
-				this.panelsLayout = this.collapsedPanels.includes(0) ? [0, 100, 0] : [100, 0, 0];
+				this.panelsLayout = this.collapsedPanels.includes(0)
+					? [0, 50, 0, 50]
+					: this.collapsedPanels.includes(1)
+					? [50, 0, 0, 50]
+					: [50, 50, 0, 0];
+			}
+
+			if (index === 3) {
+				this.panelsLayout = this.collapsedPanels.includes(0)
+					? [0, 50, 50, 0]
+					: this.collapsedPanels.includes(1)
+					? [50, 0, 50, 0]
+					: [50, 50, 0, 0];
 			}
 		}
 		if (this.collapsedPanels.length === 2 && this.collapsedPanels.includes(index)) {
 			if (index === 0) {
-				this.panelsLayout = this.collapsedPanels.includes(1) ? [50, 0, 50] : [50, 50, 0];
+				this.panelsLayout = this.collapsedPanels.includes(1)
+					? [45, 0, 30, 25]
+					: this.collapsedPanels.includes(2)
+					? [45, 30, 0, 25]
+					: [45, 30, 25, 0];
 			}
 
 			if (index === 1) {
-				this.panelsLayout = this.collapsedPanels.includes(0) ? [0, 50, 50] : [50, 50, 0];
+				this.panelsLayout = this.collapsedPanels.includes(0)
+					? [0, 35, 35, 30]
+					: this.collapsedPanels.includes(2)
+					? [35, 35, 0, 30]
+					: [35, 35, 30, 0];
 			}
 
 			if (index === 2) {
-				this.panelsLayout = this.collapsedPanels.includes(0) ? [0, 50, 50] : [50, 0, 50];
+				this.panelsLayout = this.collapsedPanels.includes(0)
+					? [0, 35, 35, 30]
+					: this.collapsedPanels.includes(1)
+					? [35, 0, 35, 30]
+					: [35, 35, 30, 0];
+			}
+
+			if (index === 3) {
+				this.panelsLayout = this.collapsedPanels.includes(0)
+					? [0, 35, 35, 30]
+					: this.collapsedPanels.includes(1)
+					? [35, 0, 35, 30]
+					: [35, 35, 0, 30];
+			}
+		}
+		if (this.collapsedPanels.length === 2 && !this.collapsedPanels.includes(index)) {
+			if (index === 0) {
+				this.panelsLayout =
+					this.collapsedPanels.includes(1) && this.collapsedPanels.includes(2)
+						? [0, 0, 0, 100]
+						: this.collapsedPanels.includes(1) && this.collapsedPanels.includes(3)
+						? [0, 0, 100, 0]
+						: [0, 100, 0, 0];
+			}
+
+			if (index === 1) {
+				this.panelsLayout =
+					this.collapsedPanels.includes(0) && this.collapsedPanels.includes(2)
+						? [0, 0, 0, 100]
+						: this.collapsedPanels.includes(0) && this.collapsedPanels.includes(3)
+						? [0, 0, 100, 0]
+						: [100, 0, 0, 0];
+			}
+
+			if (index === 2) {
+				this.panelsLayout =
+					this.collapsedPanels.includes(0) && this.collapsedPanels.includes(1)
+						? [0, 0, 0, 100]
+						: this.collapsedPanels.includes(0) && this.collapsedPanels.includes(3)
+						? [0, 100, 0, 0]
+						: [100, 0, 0, 0];
+			}
+
+			if (index === 3) {
+				this.panelsLayout =
+					this.collapsedPanels.includes(0) && this.collapsedPanels.includes(1)
+						? [0, 0, 100, 0]
+						: this.collapsedPanels.includes(0) && this.collapsedPanels.includes(2)
+						? [0, 100, 0, 0]
+						: [100, 0, 0, 0];
+			}
+		}
+		if (this.collapsedPanels.length === 3 && this.collapsedPanels.includes(index)) {
+			if (index === 0) {
+				this.panelsLayout =
+					this.collapsedPanels.includes(1) && this.collapsedPanels.includes(2)
+						? [50, 0, 0, 50]
+						: this.collapsedPanels.includes(1) && this.collapsedPanels.includes(3)
+						? [50, 0, 50, 0]
+						: [50, 50, 0, 0];
+			}
+
+			if (index === 1) {
+				this.panelsLayout =
+					this.collapsedPanels.includes(0) && this.collapsedPanels.includes(2)
+						? [0, 50, 0, 50]
+						: this.collapsedPanels.includes(0) && this.collapsedPanels.includes(3)
+						? [0, 50, 50, 0]
+						: [50, 50, 0, 0];
+			}
+
+			if (index === 2) {
+				this.panelsLayout =
+					this.collapsedPanels.includes(0) && this.collapsedPanels.includes(1)
+						? [0, 0, 50, 50]
+						: this.collapsedPanels.includes(0) && this.collapsedPanels.includes(3)
+						? [0, 50, 50, 0]
+						: [50, 0, 50, 0];
+			}
+
+			if (index === 3) {
+				this.panelsLayout =
+					this.collapsedPanels.includes(0) && this.collapsedPanels.includes(1)
+						? [0, 0, 50, 50]
+						: this.collapsedPanels.includes(0) && this.collapsedPanels.includes(2)
+						? [0, 50, 0, 50]
+						: [50, 0, 0, 50];
 			}
 		}
 	};

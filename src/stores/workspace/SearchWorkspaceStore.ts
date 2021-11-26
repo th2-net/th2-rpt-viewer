@@ -79,7 +79,7 @@ export default class SearchWorkspaceStore {
 			initialWorkspaceState.events = {
 				targetEvent: savedItem,
 			};
-			initialWorkspaceState.layout = [0, 100, 0];
+			initialWorkspaceState.layout = [0, 100, 0, 0];
 		} else {
 			initialWorkspaceState.messages = {
 				timestampTo: timestampToNumber(savedItem.timestamp),
@@ -87,7 +87,7 @@ export default class SearchWorkspaceStore {
 				streams: [savedItem.sessionId],
 				targetMessage: savedItem,
 			};
-			initialWorkspaceState.layout = [0, 0, 100];
+			initialWorkspaceState.layout = [0, 0, 100, 0];
 		}
 
 		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);

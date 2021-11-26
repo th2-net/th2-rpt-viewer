@@ -21,7 +21,7 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 
 const MIN_PANEL_WIDTH = 15;
 
-export type WorkspacePanelsLayout = [number, number, number];
+export type WorkspacePanelsLayout = [number, number, number, number];
 
 function minmax(num: number, min: number, max: number) {
 	return Math.min(Math.max(num, min), max);
@@ -273,24 +273,16 @@ function WorkspaceSplitter(props: Props) {
 					activeSplitterLeft,
 				);
 
-				if (index === 1) {
-					if (leftSpace / rootWidth < 0.3) {
-						return activeSplitterLeft - leftSpace;
-					}
-
-					if (rightSpace / rootWidth < 0.2) {
-						return activeSplitterLeft + rightSpace;
-					}
+				if (leftSpace / rootWidth < 0.3 && index === 1) {
+					return activeSplitterLeft - leftSpace;
 				}
 
-				if (index === 2) {
-					if (leftSpace / rootWidth < 0.2) {
-						return activeSplitterLeft - leftSpace;
-					}
+				if (leftSpace / rootWidth < 0.2 && index !== 1) {
+					return activeSplitterLeft - leftSpace;
+				}
 
-					if (rightSpace / rootWidth < 0.2) {
-						return activeSplitterLeft + rightSpace;
-					}
+				if (rightSpace / rootWidth < 0.2) {
+					return activeSplitterLeft + rightSpace;
 				}
 
 				return minmax(activeSplitterLeft, ...splittersMinxMaxPositions.current[index]);
@@ -305,8 +297,10 @@ function WorkspaceSplitter(props: Props) {
 				left - rootOffsetLeft + fullWidth * (activeSplitterIndex - index) > activeSplitterLeft
 			) {
 				if (left / rootWidth < 0.2) {
-					return rootOffsetLeft;
+					if (index === 2) return rootOffsetLeft + width * 2 - 2;
+					return rootOffsetLeft - width + 3;
 				}
+
 				return minmax(
 					activeSplitterLeft - (activeSplitterIndex - index) * fullWidth,
 					...splittersMinxMaxPositions.current[index],
@@ -317,8 +311,10 @@ function WorkspaceSplitter(props: Props) {
 				activeSplitterLeft + (index - activeSplitterIndex) * fullWidth > left - rootOffsetLeft
 			) {
 				if (left / rootWidth > 0.8) {
+					if (index === 2) return rootWidth - fullWidth * 2;
 					return rootWidth - fullWidth;
 				}
+
 				return minmax(
 					activeSplitterLeft + (index - activeSplitterIndex) * fullWidth,
 					...splittersMinxMaxPositions.current[index],

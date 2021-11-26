@@ -20,10 +20,16 @@ import EventWindow from '../event/EventWindow';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import MessagesWindow from '../message/MessagesWindow';
 import { useActivePanel, useWorkspaceStore } from '../../hooks';
-import { isEventsStore, isMessagesStore, isSearchStore } from '../../helpers/stores';
+import {
+	isEventsStore,
+	isMessagesStore,
+	isSearchStore,
+	isBookmarksStore,
+} from '../../helpers/stores';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 import '../../styles/workspace.scss';
 import SearchPanel from '../search-panel/SearchPanel';
+import BookmarksPanel from '../bookmarks/BookmarksPanel';
 
 const panelColors = {
 	events: {
@@ -37,6 +43,10 @@ const panelColors = {
 	messages: {
 		default: '#ADE0EB',
 		active: '#1AC4E5',
+	},
+	bookmarks: {
+		default: '#CCA3F5',
+		active: '#CCA3F5',
 	},
 } as const;
 
@@ -81,6 +91,12 @@ function Workspace() {
 						isActive: isMessagesStore(activePanel),
 						setActivePanel: () =>
 							workspaceStore.viewStore.setActivePanel(workspaceStore.messagesStore),
+					},
+					{
+						title: 'Bookmarks',
+						color: panelColors.bookmarks,
+						component: <BookmarksPanel />,
+						isActive: isBookmarksStore(activePanel),
 					},
 				]}
 			/>

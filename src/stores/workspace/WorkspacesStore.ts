@@ -80,7 +80,7 @@ export default class WorkspacesStore {
 		} else {
 			this.addWorkspace(
 				this.createWorkspace({
-					layout: [100, 0, 0],
+					layout: [100, 0, 0, 0],
 				}),
 			);
 		}
@@ -128,7 +128,7 @@ export default class WorkspacesStore {
 				targetMessage,
 			},
 			interval: SEARCH_STORE_INTERVAL,
-			layout: [0, 0, 100],
+			layout: [0, 0, 100, 0],
 			timeRange: getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL),
 		};
 	};
@@ -150,7 +150,7 @@ export default class WorkspacesStore {
 				range: [timestampFrom, timestampTo],
 				targetEvent,
 			},
-			layout: [0, 100, 0],
+			layout: [0, 100, 0, 0],
 			interval: SEARCH_STORE_INTERVAL,
 			timeRange: [timestampFrom, timestampTo],
 		};

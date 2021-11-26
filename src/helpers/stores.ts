@@ -17,6 +17,7 @@
 import EventsStore from '../stores/events/EventsStore';
 import MessagesStore from '../stores/messages/MessagesStore';
 import { SearchStore } from '../stores/SearchStore';
+import { SelectedStore } from '../stores/SelectedStore';
 
 export const isEventsStore = (object: unknown): object is EventsStore => {
 	return object instanceof EventsStore;
@@ -28,4 +29,8 @@ export const isMessagesStore = (object: unknown): object is MessagesStore => {
 
 export const isSearchStore = (object: unknown): object is SearchStore => {
 	return object instanceof SearchStore;
+};
+
+export const isBookmarksStore = (object: unknown): object is SelectedStore => {
+	return object instanceof SelectedStore;
 };

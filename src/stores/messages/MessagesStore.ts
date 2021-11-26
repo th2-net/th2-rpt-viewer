@@ -281,7 +281,7 @@ export default class MessagesStore {
 		};
 
 		if (this.workspaceStore.viewStore.panelsLayout[1] < 20) {
-			this.workspaceStore.viewStore.setPanelsLayout([45, 30, 25]);
+			this.workspaceStore.viewStore.setPanelsLayout([45, 30, 25, 0]);
 		}
 	};
 
