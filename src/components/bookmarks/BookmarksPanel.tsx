@@ -27,7 +27,6 @@ import {
 	useSelectedStore,
 	useWorkspaceStore,
 	useMessagesWorkspaceStore,
-	useMessagesDataStore,
 } from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
@@ -206,6 +205,8 @@ export default observer(BookmarksPanel);
 interface BookmarkItemProps {
 	bookmark: BookmarkedItem;
 	messages?: EventMessage[];
+	currentStartIndex?: number;
+	currentEndIndex?: number;
 	onRemove?: (item: BookmarkedItem) => void;
 	onClick?: (item: BookmarkedItem) => void;
 	toggleBookmark?: () => void;
@@ -217,6 +218,8 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 	const {
 		messages,
 		bookmark,
+		currentEndIndex,
+		currentStartIndex,
 		onRemove,
 		onClick,
 		toggleBookmark,
@@ -224,22 +227,18 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		isBookmarkButtonDisabled,
 	} = props;
 
-	const messagesStore = useMessagesWorkspaceStore();
-
 	const [isHighlighted, setIsHighlighted] = React.useState<boolean>(false);
 
 	React.useEffect(() => {
-		isEventMessage(item) &&
-		messages &&
-		messages
-			.slice(
-				messagesStore.currentMessagesIndexesRange.startIndex,
-				messagesStore.currentMessagesIndexesRange.endIndex + 1,
-			)
-			.filter(elem => elem.messageId === item.messageId).length > 0
-			? setIsHighlighted(true)
-			: setIsHighlighted(false);
-	});
+		if (isEventMessage(item) && currentStartIndex && currentEndIndex) {
+			messages &&
+			messages
+				.slice(currentStartIndex, currentEndIndex + 1)
+				.filter(elem => elem.messageId === item.messageId).length > 0
+				? setIsHighlighted(true)
+				: setIsHighlighted(false);
+		}
+	}, [currentStartIndex, currentEndIndex]);
 
 	const item: EventMessage | EventTreeNode | EventAction = isBookmark(bookmark)
 		? bookmark.item
