@@ -22,7 +22,13 @@ import Empty from '../util/Empty';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { getItemId, getItemName, isEvent, isEventMessage } from '../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useActivePanel, useSelectedStore, useWorkspaceStore } from '../../hooks';
+import {
+	useActivePanel,
+	useSelectedStore,
+	useWorkspaceStore,
+	useMessagesWorkspaceStore,
+	useMessagesDataStore,
+} from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import BookmarkTextSearch from './BookmarkTextSearch';
@@ -199,7 +205,6 @@ export default observer(BookmarksPanel);
 
 interface BookmarkItemProps {
 	bookmark: BookmarkedItem;
-	messagesList?: EventMessage[];
 	onRemove?: (item: BookmarkedItem) => void;
 	onClick?: (item: BookmarkedItem) => void;
 	toggleBookmark?: () => void;
@@ -210,13 +215,29 @@ interface BookmarkItemProps {
 const BookmarkItemBase = (props: BookmarkItemProps) => {
 	const {
 		bookmark,
-		messagesList,
 		onRemove,
 		onClick,
 		toggleBookmark,
 		isBookmarked = true,
 		isBookmarkButtonDisabled,
 	} = props;
+
+	const messagesStore = useMessagesWorkspaceStore();
+	const messagesDataStore = useMessagesDataStore();
+
+	const [isHighlighted, setIsHighlighted] = React.useState<boolean>(false);
+
+	React.useEffect(() => {
+		isEventMessage(item) &&
+		messagesDataStore.messages
+			.slice(
+				messagesStore.currentMessagesIndexesRange.startIndex,
+				messagesStore.currentMessagesIndexesRange.endIndex + 1,
+			)
+			.filter(elem => elem.messageId === item.messageId).length > 0
+			? setIsHighlighted(true)
+			: setIsHighlighted(false);
+	}, [setIsHighlighted]);
 
 	const item: EventMessage | EventTreeNode | EventAction = isBookmark(bookmark)
 		? bookmark.item
@@ -241,7 +262,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		'bookmark-item',
 		itemInfo.type,
 		itemInfo.status,
-		isEventMessage(item) ? (messagesList?.includes(item) ? 'highlighted' : null) : null,
+		isHighlighted ? 'highlighted' : null,
 	);
 
 	const iconClassName = createStyleSelector(
@@ -255,7 +276,6 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		'toggle-btn',
 		isBookmarkButtonDisabled ? 'disabled' : null,
 	);
-
 	return (
 		<div className={rootClassName}>
 			<i className={iconClassName} />
