@@ -19,7 +19,7 @@ import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import { isEventMessage, isEventNode, getItemId } from '../../helpers/event';
 import { createBemElement } from '../../helpers/styleCreators';
-import { useSelectedStore } from '../../hooks';
+import { useSelectedStore, useMessagesDataStore } from '../../hooks';
 import { SearchResult } from '../../stores/SearchStore';
 import { BookmarkedItem, BookmarkItem } from '../bookmarks/BookmarksPanel';
 import { getTimestampAsNumber } from '../../helpers/date';
@@ -33,6 +33,7 @@ interface SearchResultGroup {
 
 const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResultGroup) => {
 	const selectedStore = useSelectedStore();
+	const messagesDataStore = useMessagesDataStore();
 	const [isExpanded, setIsExpanded] = React.useState(false);
 
 	const expandButtonClass = createBemElement(
@@ -108,6 +109,7 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 				<BookmarkItem
 					key={computeKey(0)}
 					bookmark={results[0]}
+					messagesList={messagesDataStore.messages}
 					onClick={onResultClick}
 					toggleBookmark={getBookmarkToggler(results[0])}
 					isBookmarked={getIsToggled(results[0])}

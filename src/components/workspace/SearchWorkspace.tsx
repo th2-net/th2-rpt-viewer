@@ -67,7 +67,7 @@ function SearchWorkspace() {
 	}, [bookmarksCounter]);
 
 	const searchWorkspacePanels = React.useMemo(() => {
-		return [searchPanel, bookmarksPanel];
+		return [];
 	}, [searchPanel, bookmarksPanel]);
 
 	return (

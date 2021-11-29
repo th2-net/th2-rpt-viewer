@@ -25,15 +25,17 @@ import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { EventAction, EventTreeNode, ActionType } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphStore } from '../GraphStore';
-import { isEventMessage } from '../../helpers/event';
+import { isEventMessage, isEvent } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
+import RootStore from '../RootStore';
+import { timestampToNumber, getRangeFromTimestamp, getTimestampAsNumber } from '../../helpers/date';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -51,6 +53,8 @@ export type WorkspaceInitialState = Partial<{
 	layout: WorkspacePanelsLayout;
 }>;
 
+export const SEARCH_STORE_INTERVAL = 15;
+
 export default class WorkspaceStore {
 	public eventsStore: EventsStore;
 
@@ -63,6 +67,7 @@ export default class WorkspaceStore {
 	public id = nanoid();
 
 	constructor(
+		private rootStore: RootStore,
 		private workspacesStore: WorkspacesStore,
 		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
@@ -70,6 +75,12 @@ export default class WorkspaceStore {
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
+		this.searchStore = new SearchStore(
+			this.workspacesStore,
+			api,
+			this.workspacesStore.filtersHistoryStore,
+			this.rootStore.sessionsStore,
+		);
 		this.viewStore = new WorkspaceViewStore({
 			panelsLayout: initialState.layout,
 		});
@@ -175,6 +186,89 @@ export default class WorkspaceStore {
 	@action
 	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
 		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
+	};
+
+	@action
+	public onTimestampSelectSearch = (timestamp: number) => {
+		const range = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
+		const newWorkspace = this.workspacesStore.createWorkspace({
+			timeRange: range,
+			interval: SEARCH_STORE_INTERVAL,
+			events: {
+				range,
+			},
+			messages: {
+				timestampTo: timestamp,
+			},
+		});
+
+		this.workspacesStore.addWorkspace(newWorkspace);
+	};
+
+	@action
+	public onSavedItemSelectSearch = (savedItem: EventTreeNode | EventAction | EventMessage) => {
+		const timeRange = getRangeFromTimestamp(getTimestampAsNumber(savedItem), SEARCH_STORE_INTERVAL);
+		const initialWorkspaceState: WorkspaceInitialState = {
+			timeRange,
+			interval: SEARCH_STORE_INTERVAL,
+		};
+		if (isEvent(savedItem)) {
+			initialWorkspaceState.events = {
+				targetEvent: savedItem,
+			};
+			initialWorkspaceState.layout = [0, 100, 0, 0];
+		} else {
+			initialWorkspaceState.messages = {
+				timestampTo: timestampToNumber(savedItem.timestamp),
+				timestampFrom: null,
+				streams: [savedItem.sessionId],
+				targetMessage: savedItem,
+			};
+			initialWorkspaceState.layout = [0, 0, 100, 0];
+		}
+
+		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
+		this.workspacesStore.addWorkspace(newWorkspace);
+	};
+
+	@action
+	public onSearchResultItemSelect = (resultItem: EventTreeNode | EventAction | EventMessage) => {
+		let initialWorkspaceState: WorkspaceInitialState = {};
+
+		if (isEventMessage(resultItem)) {
+			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(
+				timestampToNumber(resultItem.timestamp),
+				resultItem,
+			);
+		} else {
+			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(
+				timestampToNumber(resultItem.startTimestamp),
+				resultItem,
+			);
+		}
+
+		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
+		this.workspacesStore.addWorkspace(newWorkspace);
+	};
+
+	@action
+	public followByTimestamp = (timestamp: number, resultType: ActionType) => {
+		let initialWorkspaceState: WorkspaceInitialState = {};
+
+		switch (resultType) {
+			case ActionType.EVENT_ACTION:
+			case ActionType.EVENT_TREE_NODE:
+				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(timestamp);
+				break;
+			case ActionType.MESSAGE:
+				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(timestamp);
+				break;
+			default:
+				break;
+		}
+
+		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
+		this.workspacesStore.addWorkspace(newWorkspace);
 	};
 
 	dispose = () => {

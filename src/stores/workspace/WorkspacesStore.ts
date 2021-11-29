@@ -103,6 +103,7 @@ export default class WorkspacesStore {
 
 	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {
 		return new WorkspaceStore(
+			this.rootStore,
 			this,
 			this.selectedStore,
 			this.searchWorkspace.searchStore,
