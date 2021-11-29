@@ -225,7 +225,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 	const [isHighlighted, setIsHighlighted] = React.useState<boolean>(false);
 
 	React.useEffect(() => {
-		if (isEventMessage(item)) changeHighlighting(item);
+		changeHighlighting();
 	}, [currentStartIndex, currentEndIndex]);
 
 	const item: EventMessage | EventTreeNode | EventAction = isBookmark(bookmark)
@@ -240,8 +240,8 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		type: item.type,
 	};
 
-	function changeHighlighting(item: EventMessage) {
-		if (currentStartIndex && currentEndIndex && messages) {
+	function changeHighlighting() {
+		if (isEventMessage(item) && currentStartIndex && currentEndIndex && messages) {
 			messages
 				.slice(currentStartIndex, currentEndIndex + 1)
 				.filter(elem => elem.messageId === item.messageId).length > 0
