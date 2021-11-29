@@ -242,11 +242,15 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 
 	function changeHighlighting() {
 		if (isEventMessage(item) && currentStartIndex && currentEndIndex && messages) {
-			messages
-				.slice(currentStartIndex, currentEndIndex + 1)
-				.filter(elem => elem.messageId === item.messageId).length > 0
-				? setIsHighlighted(true)
-				: setIsHighlighted(false);
+			if (
+				messages
+					.slice(currentStartIndex, currentEndIndex + 1)
+					.filter(elem => elem.messageId === item.messageId).length > 0
+			) {
+				setIsHighlighted(true);
+			} else {
+				setIsHighlighted(false);
+			}
 		}
 	}
 
