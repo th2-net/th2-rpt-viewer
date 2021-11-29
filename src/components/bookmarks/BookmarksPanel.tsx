@@ -22,12 +22,7 @@ import Empty from '../util/Empty';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { getItemId, getItemName, isEvent, isEventMessage } from '../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import {
-	useActivePanel,
-	useSelectedStore,
-	useWorkspaceStore,
-	useMessagesWorkspaceStore,
-} from '../../hooks';
+import { useActivePanel, useSelectedStore, useWorkspaceStore } from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import BookmarkTextSearch from './BookmarkTextSearch';
@@ -230,14 +225,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 	const [isHighlighted, setIsHighlighted] = React.useState<boolean>(false);
 
 	React.useEffect(() => {
-		if (isEventMessage(item) && currentStartIndex && currentEndIndex) {
-			messages &&
-			messages
-				.slice(currentStartIndex, currentEndIndex + 1)
-				.filter(elem => elem.messageId === item.messageId).length > 0
-				? setIsHighlighted(true)
-				: setIsHighlighted(false);
-		}
+		if (isEventMessage(item)) changeHighlighting(item);
 	}, [currentStartIndex, currentEndIndex]);
 
 	const item: EventMessage | EventTreeNode | EventAction = isBookmark(bookmark)
@@ -251,6 +239,16 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		timestamp: getTimestampAsNumber(item),
 		type: item.type,
 	};
+
+	function changeHighlighting(item: EventMessage) {
+		if (currentStartIndex && currentEndIndex && messages) {
+			messages
+				.slice(currentStartIndex, currentEndIndex + 1)
+				.filter(elem => elem.messageId === item.messageId).length > 0
+				? setIsHighlighted(true)
+				: setIsHighlighted(false);
+		}
+	}
 
 	function onBookmarkRemove(event: React.MouseEvent<HTMLButtonElement>) {
 		if (onRemove) {
