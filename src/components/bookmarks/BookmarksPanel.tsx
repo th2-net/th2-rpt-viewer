@@ -205,6 +205,7 @@ export default observer(BookmarksPanel);
 
 interface BookmarkItemProps {
 	bookmark: BookmarkedItem;
+	messages?: EventMessage[];
 	onRemove?: (item: BookmarkedItem) => void;
 	onClick?: (item: BookmarkedItem) => void;
 	toggleBookmark?: () => void;
@@ -214,6 +215,7 @@ interface BookmarkItemProps {
 
 const BookmarkItemBase = (props: BookmarkItemProps) => {
 	const {
+		messages,
 		bookmark,
 		onRemove,
 		onClick,
@@ -223,13 +225,13 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 	} = props;
 
 	const messagesStore = useMessagesWorkspaceStore();
-	const messagesDataStore = useMessagesDataStore();
 
 	const [isHighlighted, setIsHighlighted] = React.useState<boolean>(false);
 
 	React.useEffect(() => {
 		isEventMessage(item) &&
-		messagesDataStore.messages
+		messages &&
+		messages
 			.slice(
 				messagesStore.currentMessagesIndexesRange.startIndex,
 				messagesStore.currentMessagesIndexesRange.endIndex + 1,
@@ -237,7 +239,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 			.filter(elem => elem.messageId === item.messageId).length > 0
 			? setIsHighlighted(true)
 			: setIsHighlighted(false);
-	}, [setIsHighlighted]);
+	});
 
 	const item: EventMessage | EventTreeNode | EventAction = isBookmark(bookmark)
 		? bookmark.item
