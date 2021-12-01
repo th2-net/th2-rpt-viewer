@@ -352,6 +352,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 		const rootClassName = createStyleSelector(
 			'ver-table-row',
 			statusAlias.className,
+			name === 'NULL_VALUE' ? 'null' : null,
 			isTransparent ? 'transparent' : null,
 			isToggler ? 'subheader' : null,
 		);
