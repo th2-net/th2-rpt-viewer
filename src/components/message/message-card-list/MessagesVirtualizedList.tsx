@@ -38,6 +38,7 @@ interface Props {
 		Objects and reference comparison is the only way to handle numbers changing in this case.
 	*/
 	scrolledIndex: Number | null;
+	setScrolledByUser: (scrolledByUser: boolean) => void;
 	className?: string;
 	overscan?: number;
 	loadNextMessages: (resumeFromId?: string) => Promise<EventMessage[]>;
@@ -70,6 +71,7 @@ const MessagesVirtualizedList = (props: Props) => {
 		loadPrevMessages,
 		loadNextMessages,
 		scrolledIndex,
+		setScrolledByUser,
 	} = props;
 
 	React.useEffect(() => {
@@ -116,11 +118,13 @@ const MessagesVirtualizedList = (props: Props) => {
 
 	const onScroll = (event: React.UIEvent<'div'>) => {
 		event.persist();
+		setScrolledByUser(true);
 		debouncedScrollHandler(event);
 	};
 
 	const onWheel: React.WheelEventHandler<'div'> = event => {
 		event.persist();
+		setScrolledByUser(true);
 		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 

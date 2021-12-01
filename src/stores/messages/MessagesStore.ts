@@ -62,6 +62,9 @@ export default class MessagesStore {
 	public scrolledIndex: Number | null = null;
 
 	@observable
+	public scrolledByUser = false;
+
+	@observable
 	public highlightedMessageId: String | null = null;
 
 	@observable
@@ -172,6 +175,10 @@ export default class MessagesStore {
 		if (messageIndex === -1) throw new Error(`Message with ${messageId} id doesn't exists`);
 
 		this.scrolledIndex = new Number(messageIndex);
+	};
+
+	@action setScrolledByUser = (scrolledByUser: boolean) => {
+		this.scrolledByUser = scrolledByUser;
 	};
 
 	@action

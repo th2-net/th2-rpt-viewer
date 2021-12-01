@@ -95,6 +95,11 @@ export default class MessagesDataProviderStore {
 		return this.isLoadingNextMessages || this.isLoadingPreviousMessages;
 	}
 
+	@computed
+	public get scrolledByUser(): boolean {
+		return this.messagesStore.scrolledByUser;
+	}
+
 	private messageAC: AbortController | null = null;
 
 	@action
@@ -139,9 +144,9 @@ export default class MessagesDataProviderStore {
 
 			const { selectedMessageId, scrollToMessage } = this.messagesStore;
 			this.searchChannelNext.onStop = () =>
-				selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
+				!this.scrolledByUser && selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
 			this.searchChannelPrev.onStop = () =>
-				selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
+				!this.scrolledByUser && selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
 
 			const [nextMessages, prevMessages] = await Promise.all([
 				this.searchChannelNext.loadAndSubscribe(message?.messageId),

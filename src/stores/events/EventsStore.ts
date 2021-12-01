@@ -257,6 +257,8 @@ export default class EventsStore {
 			this.selectedNode = eventTreeNode;
 		}
 
+		this.workspaceStore.messagesStore.setScrolledByUser(false);
+
 		if (this.viewStore.eventsPanelArea === 100) {
 			this.viewStore.eventsPanelArea = 50;
 		}

@@ -72,6 +72,7 @@ function MessageCardList() {
 					className='messages-list__items'
 					rowCount={messagesDataStore.messages.length}
 					scrolledIndex={messagesStore.scrolledIndex}
+					setScrolledByUser={messagesStore.setScrolledByUser}
 					itemRenderer={renderMsg}
 					overscan={0}
 					loadNextMessages={messagesDataStore.getNextMessages}
