@@ -24,12 +24,14 @@ import { ActionType, EventAction } from '../../models/EventAction';
 import {
 	EventBodyPayloadType,
 	TablePayload,
+	TreeTableCollection,
 	TreeTablePayload,
+	TreeTableRow,
 	VerificationPayload,
 	VerificationPayloadField,
 } from '../../models/EventActionPayload';
 import { EventMessage } from '../../models/EventMessage';
-import { SearchResult } from '../../stores/SearchStore';
+import { FilterEntry, SearchResult } from '../../stores/SearchStore';
 import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
 
 const DETAIL_VALUE_LENGTH_LIMIT = 40;
@@ -72,7 +74,7 @@ type SearchResultItemProps = {
 	filters: EventFilterState | MessageFilterState;
 	onResultClick: (
 		item: SearchResult,
-		filter?: { type: 'body' | 'bodyBinary'; range: [number, number] },
+		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
 	) => void;
 };
 
@@ -109,39 +111,92 @@ const SearchResultItem = ({ result, filters, onResultClick }: SearchResultItemPr
 			body: body => {
 				if (!body) return <>{null}</>;
 
-				const treeTableEntries = (bodyPart: TablePayload | TreeTablePayload): string[] => {
-					if (!bodyPart.rows) return [];
+				const tableEntries = (
+					bodyPayload: TablePayload,
+					path: string[],
+				): {
+					path: string[];
+					value: string;
+				}[] => {
+					return bodyPayload.rows.flatMap((row, idx) => {
+						return Object.entries(row).map(([key, value]) => ({
+							path: [...path, idx.toString(), key],
+							value,
+						}));
+					});
+				};
 
-					return Object.entries(bodyPart.rows)
-						.map(rowEntry => {
-							if (rowEntry[1].type === 'row') {
-								return [
-									rowEntry[0],
-									...(Object.values(rowEntry[1].columns) as (string | boolean)[]).map(v =>
-										v.toString(),
-									),
-								];
-							}
-							return [...treeTableEntries(rowEntry[1])];
-						})
-						.flat();
+				const treeTableEntries = (
+					bodyPayload: TreeTablePayload,
+					path: string[],
+				): {
+					path: string[];
+					value: string;
+				}[] => {
+					if (!bodyPayload.rows) return [];
+
+					const extractValue = (
+						bodyPart: TreeTableRow | TreeTableCollection,
+						pathToValue: string[],
+					): {
+						path: string[];
+						value: string;
+					}[] => {
+						if (bodyPart.type === 'collection')
+							return Object.entries(bodyPart.rows).flatMap(([key, value], index) => {
+								const newPath = [...pathToValue, index.toString()];
+								return [{ path: newPath, value: key }, ...extractValue(value, newPath)];
+							});
+
+						return Object.entries(bodyPart.columns).map(([, value], index) => ({
+							path: [...pathToValue, index.toString()],
+							value: value.toString(),
+						}));
+					};
+
+					const res = Object.entries(bodyPayload.rows).flatMap(([key, value], index) => {
+						const newPath = [...path, index.toString()];
+						return [{ path: newPath, value: key }, ...extractValue(value, newPath)];
+					});
+					return res;
 				};
 
 				const verificationEntries = (
-					bodyPart: VerificationPayload | VerificationPayloadField,
-				): string[] => {
+					bodyPart: VerificationPayload,
+					path: string[],
+				): {
+					path: string[];
+					value: string;
+				}[] => {
 					if (!bodyPart.fields) return [];
 
-					return Object.entries(bodyPart.fields)
-						.map(rowPart => {
-							if (rowPart[1].fields) return verificationEntries(rowPart[1]);
+					const extractValue = (
+						field: VerificationPayloadField,
+						pathToValue: string[],
+					): {
+						path: string[];
+						value: string;
+					}[] => {
+						if (field.type === 'field')
+							return Object.entries(field)
+								.filter(([key]) => key !== 'type')
+								.map(([key, value]: [string, string | boolean]) => ({
+									path: [...pathToValue, key],
+									value: value.toString(),
+								}));
 
-							return [
-								rowPart[0],
-								...(Object.values(rowPart[1]) as (string | boolean)[]).map(v => v.toString()),
-							];
-						})
-						.flat();
+						if (!field.fields) throw new Error("Body collection hasn't 'fields' prop");
+
+						return Object.entries(field.fields).flatMap(([key, value], index) => {
+							const newPath = [...pathToValue, index.toString()];
+							return [{ path: newPath, value: key }, ...extractValue(value, newPath)];
+						});
+					};
+
+					return Object.entries(bodyPart.fields).flatMap(([key, value], index) => {
+						const newPath = [...path, index.toString()];
+						return [{ path: newPath, value: key }, ...extractValue(value, newPath)];
+					});
 				};
 
 				const bodyAsString = JSON.stringify(body).replace(
@@ -152,44 +207,62 @@ const SearchResultItem = ({ result, filters, onResultClick }: SearchResultItemPr
 				if (!filters.body.values.length || filters.body.negative)
 					return <>{trimValue(bodyAsString)}</>;
 
-				const values = [
-					...new Set(
-						body
-							.map(bodyPart => {
-								switch (bodyPart.type) {
-									case EventBodyPayloadType.MESSAGE:
-										return [bodyPart.data];
-									case EventBodyPayloadType.TABLE: {
-										if (!bodyPart.rows) return [];
-
-										return bodyPart.rows.flatMap(row => Object.values(row));
-									}
-									case EventBodyPayloadType.TREE_TABLE:
-										return treeTableEntries(bodyPart);
-									case EventBodyPayloadType.VERIFICATION:
-										return verificationEntries(bodyPart);
-									default:
-										return [];
-								}
-							})
-							.flat(),
-					),
-				];
+				const values = body.flatMap((bodyPart, index) => {
+					switch (bodyPart.type) {
+						case EventBodyPayloadType.MESSAGE:
+							return [
+								{
+									path: [index.toString()],
+									value: bodyPart.data,
+								},
+							];
+						case EventBodyPayloadType.TABLE:
+							return tableEntries(bodyPart, [index.toString()]);
+						case EventBodyPayloadType.TREE_TABLE:
+							return treeTableEntries(bodyPart, [index.toString()]);
+						case EventBodyPayloadType.VERIFICATION:
+							return verificationEntries(bodyPart, [index.toString()]);
+						default:
+							return [];
+					}
+				});
 
 				const sortedEntries = getSortedEntries(bodyAsString, filters.body.values);
 
+				const uniqueValues = [...new Set(values.map(({ value }) => value))];
+
+				const entryCounts = new Map<string, Map<number, number>>();
+
 				return (
 					<>
-						{sortedEntries.flat().map(({ value }, idx, arr) => {
-							const clickable = values.some(v => v.includes(value));
+						{sortedEntries.map(({ value }, idx, arr) => {
+							const clickable = uniqueValues.some(v => v.includes(value));
+
+							const valueMaps = entryCounts.get(value);
+							if (valueMaps) {
+								valueMaps.set(idx, valueMaps.size + 1);
+							} else {
+								entryCounts.set(value, new Map([[idx, 1]]));
+							}
+
 							return (
 								<React.Fragment key={`${value}-${idx}`}>
 									<span
 										className={clickable ? 'filtered' : undefined}
 										onClick={() => {
 											if (clickable) {
-												onResultClick(result);
-												// onFilterClick(range, 'body');
+												const filterEntry = values.filter(({ value: v }) => v.includes(value))[
+													// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+													entryCounts.get(value)!.get(idx)! - 1
+												];
+												const valueIndex = filterEntry.value.indexOf(value);
+												onResultClick(result, {
+													type: 'body',
+													entry: {
+														path: filterEntry.path,
+														range: [valueIndex, valueIndex + value.length - 1],
+													},
+												});
 											}
 										}}>
 										{value}
@@ -250,7 +323,10 @@ const SearchResultItem = ({ result, filters, onResultClick }: SearchResultItemPr
 									className='filtered'
 									onClick={() => {
 										onResultClick(result, {
-											range: [range[0] - offset, range[1] - offset],
+											entry: {
+												path: [],
+												range: [range[0] - offset, range[1] - offset] as [number, number],
+											},
 											type: 'body',
 										});
 									}}>
@@ -278,7 +354,10 @@ const SearchResultItem = ({ result, filters, onResultClick }: SearchResultItemPr
 									className='filtered'
 									onClick={() => {
 										onResultClick(result, {
-											range: [range[0], range[1]],
+											entry: {
+												path: [],
+												range: [range[0], range[1]],
+											},
 											type: 'bodyBinary',
 										});
 									}}>

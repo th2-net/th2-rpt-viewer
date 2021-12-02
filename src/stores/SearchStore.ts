@@ -102,7 +102,6 @@ type SearchProgressState = {
 };
 
 export type FilterEntry = {
-	value: string;
 	path: string[];
 	range: [number, number];
 };
@@ -355,7 +354,9 @@ export class SearchStore {
 			const filtersInfo = await this.api.sse.getEventsFiltersInfo(filters);
 			runInAction(() => {
 				this.eventFilterInfo = filtersInfo;
-				this.eventsFilter = getDefaultEventsFiltersState(filtersInfo);
+				if (!this.eventsFilter) {
+					this.eventsFilter = getDefaultEventsFiltersState(filtersInfo);
+				}
 			});
 		} catch (error) {
 			console.error('Error occured while loading event filters', error);

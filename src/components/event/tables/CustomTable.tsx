@@ -16,14 +16,16 @@
 
 import * as React from 'react';
 import { wrapString } from '../../../helpers/filters';
+import { FilterEntry } from '../../../stores/SearchStore';
 import '../../../styles/tables.scss';
 
 interface CustomTableProps {
 	content: { [key: string]: string | number | null | undefined }[];
 	filters: string[];
+	target?: FilterEntry;
 }
 
-export function CustomTable({ content, filters }: CustomTableProps) {
+export function CustomTable({ content, filters, target }: CustomTableProps) {
 	if (!content || content.length < 1) {
 		return null;
 	}
@@ -55,7 +57,11 @@ export function CustomTable({ content, filters }: CustomTableProps) {
 										? wrapString(
 												value.toString(),
 												inludingFilters.map(filter => ({
-													type: new Set(['filtered']),
+													type: new Set([
+														target && index === parseInt(target.path[1]) && cell === target.path[2]
+															? 'highlighted'
+															: 'filtered',
+													]),
 													range: [value.toString().indexOf(filter), filter.length - 1],
 												})),
 										  )

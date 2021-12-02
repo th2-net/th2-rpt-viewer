@@ -27,7 +27,7 @@ import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
 import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
-import { SearchStore } from '../SearchStore';
+import { FilterEntry, SearchStore } from '../SearchStore';
 import EventsDataStore from './EventsDataStore';
 import { EventFilterState } from '../../components/search-panel/SearchPanelFilters';
 import EventsFilter from '../../models/filter/EventsFilter';
@@ -44,6 +44,7 @@ export type EventStoreURLState = Partial<{
 
 type EventStoreDefaultState = EventStoreURLState & {
 	targetEvent?: EventTreeNode | EventAction;
+	targetEventBodyRange?: FilterEntry | undefined;
 };
 
 export type EventStoreDefaultStateType = EventStoreDefaultState | string | null | undefined;
@@ -87,6 +88,8 @@ export default class EventsStore {
 		reaction(() => this.viewStore.flattenedListView, this.onViewChange);
 
 		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
+
+		reaction(() => this.selectedEvent, this.onSelectedEventChange);
 	}
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
@@ -104,6 +107,8 @@ export default class EventsStore {
 	@observable eventTreeStatusCode: number | null = null;
 
 	@observable targetNodeId: string | null = null;
+
+	@observable selectedBodyFilter: FilterEntry | null = null;
 
 	@computed
 	public get isLoadingTargetNode(): boolean {
@@ -256,10 +261,6 @@ export default class EventsStore {
 		if (eventTreeNode === null || eventTreeNode.eventId !== this.selectedNode?.eventId) {
 			this.selectedNode = eventTreeNode;
 		}
-
-		if (this.viewStore.eventsPanelArea === 100) {
-			this.viewStore.eventsPanelArea = 50;
-		}
 	};
 
 	@action
@@ -347,6 +348,14 @@ export default class EventsStore {
 		}
 	};
 
+	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
+		if (!selectedEvent) return;
+
+		if (this.viewStore.eventsPanelArea === 100) {
+			this.viewStore.eventsPanelArea = 50;
+		}
+	};
+
 	@action
 	private onViewChange = () => {
 		if (this.selectedNode) {
@@ -407,6 +416,9 @@ export default class EventsStore {
 				});
 			}
 		} else if (isEvent(initialState.targetEvent)) {
+			if (defaultState?.targetEventBodyRange) {
+				this.selectedBodyFilter = defaultState.targetEventBodyRange;
+			}
 			this.goToEvent(initialState.targetEvent);
 		} else {
 			this.eventDataStore.fetchEventTree({

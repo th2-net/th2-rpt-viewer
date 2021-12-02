@@ -24,7 +24,7 @@ import MessagesFilter from '../../models/filter/MessagesFilter';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { TimeRange } from '../../models/Timestamp';
-import { SearchStore } from '../SearchStore';
+import { FilterEntry, SearchStore } from '../SearchStore';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { isEventMessage } from '../../helpers/event';
@@ -39,8 +39,8 @@ export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
 type MessagesStoreDefaultState = MessagesStoreURLState & {
 	targetMessage?: EventMessage;
-	targetMessageBodyRange?: [number, number];
-	targetMessageBodyBinaryRange?: [number, number];
+	targetMessageBodyRange?: FilterEntry;
+	targetMessageBodyBinaryRange?: FilterEntry;
 };
 
 export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string | null | undefined;
@@ -81,9 +81,9 @@ export default class MessagesStore {
 	@observable
 	public showFilterChangeHint = false;
 
-	@observable selectedBodyFilterRange: [number, number] | null = null;
+	@observable selectedBodyFilter: FilterEntry | null = null;
 
-	@observable selectedBodyBinaryFilterRange: [number, number] | null = null;
+	@observable selectedBodyBinaryFilter: FilterEntry | null = null;
 
 	/* 
 		This is used for filter change hint. Represents either last clicked message
@@ -219,10 +219,10 @@ export default class MessagesStore {
 				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 				this.workspaceStore.viewStore.activePanel = this;
 				if (defaultState.targetMessageBodyRange) {
-					this.selectedBodyFilterRange = defaultState.targetMessageBodyRange;
+					this.selectedBodyFilter = defaultState.targetMessageBodyRange;
 				}
 				if (defaultState.targetMessageBodyBinaryRange) {
-					this.selectedBodyBinaryFilterRange = defaultState.targetMessageBodyBinaryRange;
+					this.selectedBodyBinaryFilter = defaultState.targetMessageBodyBinaryRange;
 				}
 			}
 		}

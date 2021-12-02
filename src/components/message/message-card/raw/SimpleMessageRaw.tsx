@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
-import { BodyFilter, uniteFilters, wrapString } from '../../../../helpers/filters';
+import { BodyFilter, getFiltersEntries, wrapString } from '../../../../helpers/filters';
 import { isRangesIntersect, trimRange } from '../../../../helpers/range';
 import { splitOnReadableParts } from '../../../../helpers/stringUtils';
 import { createBemElement } from '../../../../helpers/styleCreators';
@@ -32,41 +32,21 @@ interface Props {
 
 function SimpleMessageRaw({ rawContent, renderInfo, applyFilterToBody }: Props) {
 	const { currentSearch } = useSearchStore();
-	const { selectedBodyBinaryFilterRange } = useMessagesWorkspaceStore();
+	const { selectedBodyBinaryFilter } = useMessagesWorkspaceStore();
 	const contentRef = React.useRef<HTMLDivElement>(null);
 
 	const humanReadableContent = atob(rawContent);
 	const convertedArr = splitOnReadableParts(humanReadableContent);
 
 	const filterEntries: Array<BodyFilter> = React.useMemo(() => {
-		if (!applyFilterToBody) return [];
+		if (!applyFilterToBody || !(currentSearch?.request.filters as MessageFilterState).bodyBinary)
+			return [];
 
-		const res: Array<BodyFilter> = [];
-
-		(currentSearch?.request.filters as MessageFilterState).bodyBinary.values.forEach(value => {
-			let lastIndex = -1;
-
-			do {
-				lastIndex = humanReadableContent.indexOf(
-					value,
-					lastIndex !== -1 ? lastIndex + value.length : 0,
-				);
-
-				if (lastIndex !== -1) {
-					const entryRange: [number, number] = [lastIndex, lastIndex + value.length - 1];
-					res.push({
-						type: new Set([
-							entryRange[0] === selectedBodyBinaryFilterRange?.[0] &&
-							entryRange[1] === selectedBodyBinaryFilterRange?.[1]
-								? 'highlighted'
-								: 'filtered',
-						]),
-						range: entryRange,
-					});
-				}
-			} while (lastIndex !== -1);
-		});
-		return uniteFilters(res);
+		return getFiltersEntries(
+			humanReadableContent,
+			(currentSearch?.request.filters as MessageFilterState).bodyBinary.values,
+			selectedBodyBinaryFilter || undefined,
+		);
 	}, [currentSearch?.request.filters]);
 
 	let binaryPartPosition = 0;

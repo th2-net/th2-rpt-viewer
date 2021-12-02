@@ -22,7 +22,6 @@ import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import '../../styles/search-panel.scss';
-import { SearchResult } from '../../stores/SearchStore';
 
 export type SearchPanelType = 'event' | 'message';
 
@@ -31,13 +30,6 @@ const SearchPanel = () => {
 	const searchStore = useSearchStore();
 
 	const { ref: searchPanelRef } = useActivePanel(null);
-
-	const onResultItemClick = React.useCallback(
-		(bookmark: SearchResult, filter?: { type: 'body' | 'bodyBinary'; range: [number, number] }) => {
-			searchWorkspace.onSearchResultItemSelect(bookmark, filter);
-		},
-		[searchWorkspace.onSearchResultItemSelect],
-	);
 
 	return (
 		<div className='search-panel-wrapper'>
@@ -49,7 +41,7 @@ const SearchPanel = () => {
 					flattenedResult={searchStore.flattenedResult}
 					filters={searchStore.currentSearch.request.filters}
 					timestamp={searchStore.currentSearch.timestamp}
-					onResultItemClick={onResultItemClick}
+					onResultItemClick={searchWorkspace.onSearchResultItemSelect}
 					onResultGroupClick={searchWorkspace.followByTimestamp}
 					onResultDelete={() => {
 						if (searchStore.currentSearch) {

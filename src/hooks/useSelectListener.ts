@@ -39,13 +39,6 @@ export function useSelectListener(
 		}
 
 		const range = selection!.getRangeAt(0);
-		console.log(
-			selection,
-			selection?.focusOffset,
-			selection?.anchorOffset,
-			selection?.focusNode,
-			selection?.anchorNode,
-		);
 
 		if (selection?.focusNode === selection?.anchorNode) {
 			setStartOffset(range.startOffset);

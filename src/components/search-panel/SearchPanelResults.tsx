@@ -18,7 +18,7 @@ import React from 'react';
 import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
 import { getItemId } from '../../helpers/event';
-import { SearchResult } from '../../stores/SearchStore';
+import { FilterEntry, SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
 import SearchPanelSeparator from './SearchPanelSeparator';
@@ -30,7 +30,7 @@ type FlattenedResult = SearchResult[] | Separator;
 interface SearchPanelResultsProps {
 	onResultItemClick: (
 		searchResult: SearchResult,
-		filter?: { type: 'body' | 'bodyBinary'; range: [number, number] },
+		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
 	) => void;
 	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
 	onResultDelete: () => void;

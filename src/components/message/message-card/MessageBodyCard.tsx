@@ -21,7 +21,7 @@ import MessageBody, { isListValue, isMessageValue } from '../../../models/Messag
 import { useSearchStore } from '../../../hooks/useSearchStore';
 import { isRangesIntersect, trimRange } from '../../../helpers/range';
 import { useMessageBodySortStore, useMessagesWorkspaceStore } from '../../../hooks';
-import { BodyFilter, uniteFilters, wrapString } from '../../../helpers/filters';
+import { BodyFilter, getFiltersEntries, wrapString } from '../../../helpers/filters';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 const DEFAULT_HIGHLIGHT_COLOR = '#e2dfdf';
@@ -37,7 +37,7 @@ interface Props {
 
 function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, applyFilterToBody }: Props) {
 	const { currentSearch } = useSearchStore();
-	const { selectedBodyFilterRange } = useMessagesWorkspaceStore();
+	const { selectedBodyFilter } = useMessagesWorkspaceStore();
 	const { getSortedFields, sortOrderItems } = useMessageBodySortStore();
 
 	const sortedObject = React.useMemo(
@@ -53,29 +53,11 @@ function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, applyFilt
 	const filterEntries: Array<BodyFilter> = React.useMemo(() => {
 		if (!applyFilterToBody) return [];
 
-		const res: Array<BodyFilter> = [];
-		currentSearch?.request.filters.body.values.forEach(value => {
-			let lastIndex = -1;
-
-			do {
-				lastIndex = bodyAsString.indexOf(value, lastIndex !== -1 ? lastIndex + value.length : 0);
-
-				if (lastIndex !== -1) {
-					const entryRange: [number, number] = [lastIndex, lastIndex + value.length - 1];
-
-					res.push({
-						type: new Set([
-							entryRange[0] === selectedBodyFilterRange?.[0] &&
-							entryRange[1] === selectedBodyFilterRange?.[1]
-								? 'highlighted'
-								: 'filtered',
-						]),
-						range: entryRange,
-					});
-				}
-			} while (lastIndex !== -1);
-		});
-		return uniteFilters(res);
+		return getFiltersEntries(
+			bodyAsString,
+			currentSearch?.request.filters.body.values,
+			selectedBodyFilter || undefined,
+		);
 	}, [currentSearch?.request.filters]);
 
 	if (body == null) {

@@ -123,10 +123,24 @@ function EventDetailInfoCard(props: Props) {
 							body={bodyPayloadItem}
 							parentEvent={event}
 							filters={bodyFilters}
+							// eslint-disable-next-line eqeqeq
+							target={
+								eventStore.selectedBodyFilter
+									? parseInt(eventStore.selectedBodyFilter.path[0]) === index
+										? eventStore.selectedBodyFilter
+										: undefined
+									: undefined
+							}
 						/>
 					))
 				) : (
-					<EventBodyCard key={eventId} body={body} parentEvent={event} filters={bodyFilters} />
+					<EventBodyCard
+						key={eventId}
+						body={body}
+						parentEvent={event}
+						filters={bodyFilters}
+						target={eventStore.selectedBodyFilter || undefined}
+					/>
 				)}
 			</div>
 		</div>

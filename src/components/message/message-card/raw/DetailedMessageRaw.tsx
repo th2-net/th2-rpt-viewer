@@ -25,7 +25,7 @@ import {
 	mapOctetOffsetsToHumanReadableOffsets,
 } from '../../../../helpers/rawFormatter';
 import '../../../../styles/messages.scss';
-import { BodyFilter, uniteFilters, wrapString } from '../../../../helpers/filters';
+import { BodyFilter, getFiltersEntries, wrapString } from '../../../../helpers/filters';
 import { MessageFilterState } from '../../../search-panel/SearchPanelFilters';
 import { useSearchStore } from '../../../../hooks/useSearchStore';
 import { useMessagesWorkspaceStore } from '../../../../hooks';
@@ -40,7 +40,7 @@ interface Props {
 
 export default function DetailedMessageRaw({ rawContent, applyFilterToBody }: Props) {
 	const { currentSearch } = useSearchStore();
-	const { selectedBodyBinaryFilterRange } = useMessagesWorkspaceStore();
+	const { selectedBodyBinaryFilter } = useMessagesWorkspaceStore();
 
 	const hexadecimalRef = React.useRef<HTMLPreElement>(null);
 	const humanReadableRef = React.useRef<HTMLPreElement>(null);
@@ -64,29 +64,11 @@ export default function DetailedMessageRaw({ rawContent, applyFilterToBody }: Pr
 	const filterEntriesHuman: Array<BodyFilter> = React.useMemo(() => {
 		if (!applyFilterToBody) return [];
 
-		const res: Array<BodyFilter> = [];
-
-		(currentSearch?.request.filters as MessageFilterState).bodyBinary.values.forEach(value => {
-			let lastIndex = -1;
-
-			do {
-				lastIndex = humanReadable.indexOf(value, lastIndex !== -1 ? lastIndex + value.length : 0);
-
-				if (lastIndex !== -1) {
-					const entryRange: [number, number] = [lastIndex, lastIndex + value.length - 1];
-					res.push({
-						type: new Set([
-							entryRange[0] === selectedBodyBinaryFilterRange?.[0] &&
-							entryRange[1] === selectedBodyBinaryFilterRange?.[1]
-								? 'highlighted'
-								: 'filtered',
-						]),
-						range: entryRange,
-					});
-				}
-			} while (lastIndex !== -1);
-		});
-		return uniteFilters(res);
+		return getFiltersEntries(
+			humanReadable,
+			(currentSearch?.request.filters as MessageFilterState).bodyBinary.values,
+			selectedBodyBinaryFilter || undefined,
+		);
 	}, [currentSearch?.request.filters]);
 
 	const filterEntriesHex = React.useMemo(() => {
@@ -100,7 +82,7 @@ export default function DetailedMessageRaw({ rawContent, applyFilterToBody }: Pr
 	}, [filterEntriesHuman]);
 
 	const renderHumanReadable = (content: string) => {
-		if (hexSelectionStart === hexSelectionEnd) {
+		if (humanSelectionStart === humanSelectionEnd && hexSelectionStart === hexSelectionEnd) {
 			if (!applyFilterToBody) return <span ref={humanReadableRef}>{content}</span>;
 
 			const splitedContent = content.split('\n');
@@ -144,7 +126,7 @@ export default function DetailedMessageRaw({ rawContent, applyFilterToBody }: Pr
 	};
 
 	const renderOctet = (content: string) => {
-		if (humanSelectionStart === humanSelectionEnd) {
+		if (humanSelectionStart === humanSelectionEnd && hexSelectionStart === hexSelectionEnd) {
 			if (!applyFilterToBody) return <span ref={hexadecimalRef}>{content}</span>;
 
 			const splitedContent = content.split('\n');

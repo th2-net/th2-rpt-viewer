@@ -28,6 +28,7 @@ import { getRangeFromTimestamp } from '../../helpers/date';
 import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
+import { FilterEntry } from '../SearchStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -115,8 +116,8 @@ export default class WorkspacesStore {
 	public getInitialWorkspaceByMessage = (
 		timestamp: number,
 		targetMessage?: EventMessage,
-		targetMessageBodyRange?: [number, number],
-		targetMessageBodyBinaryRange?: [number, number],
+		targetMessageBodyRange?: FilterEntry,
+		targetMessageBodyBinaryRange?: FilterEntry,
 	): WorkspaceInitialState => {
 		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
 		const filters: MessageFilterState | null = (requestInfo?.filters as MessageFilterState) || null;
@@ -146,6 +147,7 @@ export default class WorkspacesStore {
 	public getInitialWorkspaceByEvent = (
 		timestamp: number,
 		targetEvent?: EventTreeNode | EventAction,
+		targetEventBodyRange?: FilterEntry | undefined,
 	): WorkspaceInitialState => {
 		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
 
@@ -153,6 +155,7 @@ export default class WorkspacesStore {
 			events: {
 				range: [timestampFrom, timestampTo],
 				targetEvent,
+				targetEventBodyRange,
 			},
 			layout: [100, 0],
 			interval: SEARCH_STORE_INTERVAL,

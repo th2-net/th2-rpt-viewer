@@ -25,6 +25,7 @@ import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { areArraysEqual } from './array';
 import { notEmpty } from './object';
 import { getRangesIntersection, isInsideRange, isRangesIntersect, isValidRange } from './range';
+import { FilterEntry } from '../stores/SearchStore';
 
 export function getNonEmptyFilters(filter: Partial<FilterState>) {
 	return Object.fromEntries(
@@ -140,28 +141,32 @@ export const uniteFilters = (_filters: BodyFilter[]): BodyFilter[] => {
 	let filters: (BodyFilter | undefined)[] = _filters.slice();
 
 	let tempRes: BodyFilter[] = [];
+	const processedFilters = new Set<BodyFilter>();
+
 	for (let i = 0; i < filters.length; i += tempRes.length ? 0 : 1) {
 		tempRes = [];
+		const firstFilter = filters[i];
 
 		for (let j = i + 1; j < filters.length; j++) {
-			if (isRangesIntersect(filters[i]?.range, filters[j]?.range)) {
-				const filtersIntersects = getFiltersIntersect(filters[i], filters[j]).filter(
+			const secondFilter = filters[j];
+			if (firstFilter && secondFilter && isRangesIntersect(firstFilter.range, secondFilter.range)) {
+				const filtersIntersects = getFiltersIntersect(firstFilter, secondFilter).filter(
 					// eslint-disable-next-line no-loop-func
 					filter => {
-						const processedFilter = filters[j];
 						return (
-							(processedFilter && isFiltersEqual(filter, processedFilter)) ||
-							(!filters.find(f => (f ? isFiltersEqual(f, filter) : false)) &&
-								!tempRes.find(f => isFiltersEqual(f, filter)))
+							isFiltersEqual(filter, secondFilter) ||
+							![...processedFilters].some(f => isFiltersEqual(f, filter))
 						);
 					},
 				);
 
+				processedFilters.add(secondFilter);
 				filters[j] = undefined;
 				tempRes.push(...filtersIntersects);
 			}
 		}
-		if (tempRes.length) {
+		if (tempRes.length && firstFilter) {
+			processedFilters.add(firstFilter);
 			filters[i] = undefined;
 			filters = [...tempRes, ...filters.filter(Boolean)];
 		}
@@ -207,4 +212,34 @@ export const wrapString = (
 			])}
 		</>
 	);
+};
+
+export const getFiltersEntries = (
+	string: string,
+	filters?: string[],
+	target?: FilterEntry,
+): BodyFilter[] => {
+	const res: Array<BodyFilter> = [];
+	filters?.forEach(value => {
+		let lastIndex = -1;
+
+		do {
+			lastIndex = string.indexOf(value, lastIndex !== -1 ? lastIndex + value.length : 0);
+
+			if (lastIndex !== -1) {
+				const entryRange: [number, number] = [lastIndex, lastIndex + value.length - 1];
+
+				res.push({
+					type: new Set([
+						entryRange[0] === target?.range[0] && entryRange[1] === target?.range[1]
+							? 'highlighted'
+							: 'filtered',
+					]),
+					range: entryRange,
+				});
+			}
+		} while (lastIndex !== -1);
+	});
+
+	return uniteFilters(res);
 };

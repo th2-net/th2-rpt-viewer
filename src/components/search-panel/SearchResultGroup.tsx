@@ -19,7 +19,7 @@ import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import { getItemId, isEventMessage } from '../../helpers/event';
 import { createBemElement } from '../../helpers/styleCreators';
-import { SearchResult } from '../../stores/SearchStore';
+import { FilterEntry, SearchResult } from '../../stores/SearchStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { ActionType } from '../../models/EventAction';
 import SearchResultItem from './SearchResultItem';
@@ -30,7 +30,7 @@ interface SearchResultGroup {
 	filters: EventFilterState | MessageFilterState;
 	onResultClick: (
 		searchResult: SearchResult,
-		filter?: { type: 'body' | 'bodyBinary'; range: [number, number] },
+		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
 	) => void;
 	onGroupClick: (timestamp: number, resultType: ActionType) => void;
 }

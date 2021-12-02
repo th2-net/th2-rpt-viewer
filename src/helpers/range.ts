@@ -18,7 +18,7 @@ export const isValidRange = (range: [number, number]): boolean => {
 	return range[0] >= 0 && range[1] >= 0 && range[1] >= range[0];
 };
 
-export const isRangesIntersect = (first?: [number, number], second?: [number, number]): boolean => {
+export const isRangesIntersect = (first: [number, number], second: [number, number]): boolean => {
 	if (!first || !second) throw new Error('One of ranges is undefined');
 
 	const min = first[0] < second[0] ? first : second;

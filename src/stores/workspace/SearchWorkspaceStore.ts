@@ -20,7 +20,7 @@ import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
 import { ActionType, EventAction, EventTreeNode } from '../../models/EventAction';
 import WorkspacesStore from './WorkspacesStore';
-import { SearchStore } from '../SearchStore';
+import { FilterEntry, SearchStore } from '../SearchStore';
 import ApiSchema from '../../api/ApiSchema';
 import { WorkspaceInitialState } from './WorkspaceStore';
 import { isEvent, isEventMessage } from '../../helpers/event';
@@ -97,7 +97,10 @@ export default class SearchWorkspaceStore {
 	@action
 	public onSearchResultItemSelect = (
 		resultItem: EventTreeNode | EventAction | EventMessage,
-		filter?: { type: 'body' | 'bodyBinary'; range: [number, number] },
+		filter?: {
+			type: 'body' | 'bodyBinary';
+			entry: FilterEntry;
+		},
 	) => {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 
@@ -105,13 +108,14 @@ export default class SearchWorkspaceStore {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(
 				timestampToNumber(resultItem.timestamp),
 				resultItem,
-				filter?.type === 'body' ? filter.range : undefined,
-				filter?.type === 'bodyBinary' ? filter.range : undefined,
+				filter?.type === 'body' ? filter.entry : undefined,
+				filter?.type === 'bodyBinary' ? filter.entry : undefined,
 			);
 		} else {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(
 				timestampToNumber(resultItem.startTimestamp),
 				resultItem,
+				filter?.entry,
 			);
 		}
 
