@@ -183,12 +183,17 @@ export default class MessagesStore {
 		if (sseFilters) {
 			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
 		}
+		if (
+			this.selectedMessageId &&
+			!this.workspaceStore.attachedMessagesIds.includes(this.selectedMessageId.valueOf())
+		) {
+			this.selectedMessageId = null;
+		}
 
 		this.exportStore.disableExport();
 		this.sessionsStore.saveSessions(filter.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
-		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
 		this.filterStore.setMessagesFilter(filter, sseFilters, isSoftFilterApplied);
 	};
