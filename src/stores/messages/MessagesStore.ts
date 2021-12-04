@@ -169,7 +169,8 @@ export default class MessagesStore {
 	public scrollToMessage = (messageId: string) => {
 		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === messageId);
 
-		if (messageIndex === -1) throw new Error(`Message with ${messageId} id doesn't exists`);
+		if (messageIndex === -1 && this.dataStore.messages.length > 1)
+			throw new Error(`Message with ${messageId} id doesn't exists`);
 
 		this.scrolledIndex = new Number(messageIndex);
 	};
