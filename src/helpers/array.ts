@@ -185,5 +185,5 @@ export function getArrayOfUniques<T>(arr: T[]) {
  * @param index index of element
  */
 export function getItemAt<T>(arr: T[], index: number): T | null {
-	return index < arr.length ? arr[index] : null;
+	return index < arr.length && index >= 0 ? arr[index] : null;
 }
