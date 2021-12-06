@@ -34,6 +34,7 @@ import MessagesFilterStore, { MessagesFilterStoreInitialState } from './Messages
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
+import { getItemAt } from '../../helpers/array';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -125,8 +126,8 @@ export default class MessagesStore {
 	public get panelRange(): TimeRange {
 		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
 
-		const messageTo = startIndex > 0 ? this.dataStore.messages[startIndex] : null;
-		const messageFrom = endIndex > 0 ? this.dataStore.messages[endIndex] : null;
+		const messageTo = getItemAt(this.dataStore.messages, startIndex);
+		const messageFrom = getItemAt(this.dataStore.messages, endIndex);
 
 		if (messageFrom && messageTo) {
 			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
@@ -266,7 +267,7 @@ export default class MessagesStore {
 			return;
 		}
 
-		const mostRecentMessage = sortMessagesByTimestamp(attachedMessages)[0];
+		const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
 
 		if (mostRecentMessage) {
 			const streams = this.filterStore.filter.streams;

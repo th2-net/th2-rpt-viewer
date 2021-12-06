@@ -47,6 +47,7 @@ import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { SessionsStore } from './messages/SessionsStore';
+import { getItemAt } from '../helpers/array';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -113,7 +114,7 @@ export class SearchStore {
 		this.init();
 
 		autorun(() => {
-			this.currentSearch = this.currentIndex > 0 ? this.searchHistory[this.currentIndex] : null;
+			this.currentSearch = getItemAt(this.searchHistory, this.currentIndex);
 		});
 
 		reaction(
