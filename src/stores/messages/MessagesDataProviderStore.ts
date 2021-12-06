@@ -106,10 +106,29 @@ export default class MessagesDataProviderStore {
 
 		const queryParams = this.getFilterParams();
 
+		const [messageAnchor] = await new MessagesSSEChannel(
+			{
+				...queryParams,
+				searchDirection: 'previous',
+			},
+			{
+				onResponse: () => null,
+				onError: this.onLoadingError,
+			},
+			{
+				chunkSize: 1,
+			},
+		).loadAndSubscribe();
+
 		this.createPreviousMessageChannelEventSource(
 			{
 				...queryParams,
 				searchDirection: 'previous',
+				...(messageAnchor
+					? {
+							resumeFromId: messageAnchor.messageId,
+					  }
+					: {}),
 			},
 			SEARCH_TIME_FRAME,
 		);
@@ -117,6 +136,11 @@ export default class MessagesDataProviderStore {
 			{
 				...queryParams,
 				searchDirection: 'next',
+				...(messageAnchor
+					? {
+							resumeFromId: messageAnchor.messageId,
+					  }
+					: {}),
 			},
 			SEARCH_TIME_FRAME,
 		);

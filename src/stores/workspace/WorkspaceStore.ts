@@ -34,6 +34,7 @@ import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
+import { isAbortError } from '../../helpers/fetch';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -145,7 +146,7 @@ export default class WorkspaceStore {
 				[...cachedMessages, ...messages].filter(Boolean),
 			);
 		} catch (error) {
-			if (error.name !== 'AbortError') {
+			if (!isAbortError(error)) {
 				console.error('Error while loading attached messages', error);
 			}
 			this.attachedMessages = [];

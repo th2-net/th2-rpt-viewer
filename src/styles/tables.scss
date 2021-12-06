@@ -170,6 +170,16 @@
 			&:hover td {
 				background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 10);
 			}
+
+			&.null {
+				& td {
+					background-color: $tableRowFailedNullBackgroundColor;
+				}
+
+				&:hover td {
+					background-color: darken($color: $tableRowFailedNullBackgroundColor, $amount: 10);
+				}
+			}
 		}
 
 		&.na {
@@ -237,8 +247,8 @@
 			margin-top: calc(50% - 8px);
 
 			&.visible {
-              cursor: pointer;
-              @include icon(url(../../resources/icons/info.svg), 16px, 16px);
+				cursor: pointer;
+				@include icon(url(../../resources/icons/info.svg), 16px, 16px);
 			}
 		}
 
