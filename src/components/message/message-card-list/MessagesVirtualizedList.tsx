@@ -30,14 +30,7 @@ interface Props {
 	computeItemKey?: (idx: number) => React.Key;
 	rowCount: number;
 	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
-	/*
-		Number objects is used here because in some cases (eg one message / action was 
-		selected several times by different entities)
-		We can't understand that we need to scroll to the selected entity again when
-		we are comparing primitive numbers.
-		Objects and reference comparison is the only way to handle numbers changing in this case.
-	*/
-	scrolledIndex: Number | null;
+	scrolledIndex: number | null;
 	className?: string;
 	overscan?: number;
 	loadNextMessages: (resumeFromId?: string) => Promise<EventMessage[]>;
@@ -75,7 +68,10 @@ const MessagesVirtualizedList = (props: Props) => {
 	React.useEffect(() => {
 		if (scrolledIndex !== null) {
 			raf(() => {
-				virtuoso.current?.scrollToIndex({ index: scrolledIndex.valueOf(), align: 'center' });
+				virtuoso.current?.scrollToIndex({
+					index: scrolledIndex,
+					behavior: 'smooth',
+				});
 			}, 3);
 		}
 	}, [scrolledIndex]);
