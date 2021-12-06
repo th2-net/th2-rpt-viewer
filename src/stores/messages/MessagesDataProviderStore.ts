@@ -24,6 +24,7 @@ import notificationsStore from '../NotificationsStore';
 import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
 import MessagesUpdateStore from './MessagesUpdateStore';
+import { getItemAt } from '../../helpers/array';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
@@ -428,14 +429,14 @@ export default class MessagesDataProviderStore {
 			this.noMatchingMessagesPrev = false;
 			this.createPreviousMessageChannelEventSource({
 				...query,
-				resumeFromId: this.messages[this.messages.length - 1]?.messageId,
+				resumeFromId: getItemAt(this.messages, this.messages.length - 1)?.messageId,
 			});
 			this.searchChannelPrev.subscribe();
 		} else {
 			this.noMatchingMessagesNext = false;
 			this.createNextMessageChannelEventSource({
 				...query,
-				resumeFromId: this.messages[0]?.messageId,
+				resumeFromId: getItemAt(this.messages, 0)?.messageId,
 			});
 			this.searchChannelNext.subscribe();
 		}
