@@ -38,12 +38,12 @@ import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import MessageReplayModal from '../message/MessageReplayModal';
-import { getArrayOfUniques } from '../../helpers/array';
+import { getArrayOfUniques, complement } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
 import { notEmpty } from '../../helpers/object';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
-import MessagesSessionFilterRow from './MessagesSessionFilterRow';
 import MessageExport from '../message/MessageExport';
+import MultipleStringFilterRow from './row/MultipleStringFilterRow';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -61,8 +61,6 @@ const MessagesFilterPanel = () => {
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentStream, setCurrentStream] = React.useState('');
 	const [streams, setStreams] = React.useState<Array<string>>([]);
-	const [focusedTimeout, setFocusedTimeout] = React.useState<NodeJS.Timeout>();
-	const [isFocused, setIsFocused] = React.useState<Boolean>(false);
 	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
 		type: '',
 		body: '',
@@ -71,6 +69,8 @@ const MessagesFilterPanel = () => {
 		text: '',
 	});
 	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
+
+	const applySessionsDelayedRef = React.useRef<NodeJS.Timeout | null>();
 
 	React.useEffect(() => {
 		setFilter(filterStore.sseMessagesFilter);
@@ -210,37 +210,26 @@ const MessagesFilterPanel = () => {
 		];
 	}, [messagesStore.messageSessions, sessionsStore.sessions]);
 
-	React.useEffect(() => {
-		if (!isFocused) {
-			messagesStore.applyFilter(
-				{
-					...filterStore.filter,
-					streams,
-				},
-				filter,
-				isSoftFilterApplied,
-			);
-		}
-	}, [isFocused]);
-
-	const updateFocus = (value: boolean) => {
-		if (value && !isFocused) {
-			setIsFocused(value);
-		}
-
-		if (focusedTimeout) {
-			clearTimeout(focusedTimeout);
-			if (value) {
-				return;
+	const onFocusChange = React.useCallback(
+		(isFocused: boolean) => {
+			if (isFocused) {
+				if (applySessionsDelayedRef.current) clearTimeout(applySessionsDelayedRef.current);
+				applySessionsDelayedRef.current = null;
+			} else if (streams.length > 0 && !areSessionsEqual(filterStore.filter.streams, streams)) {
+				applySessionsDelayedRef.current = setTimeout(() => {
+					messagesStore.applyFilter(
+						{
+							...filterStore.filter,
+							streams,
+						},
+						filter,
+						isSoftFilterApplied,
+					);
+				}, 1500);
 			}
-		}
-
-		setFocusedTimeout(
-			setTimeout(() => {
-				setIsFocused(value);
-			}, 300),
-		);
-	};
+		},
+		[streams, isSoftFilterApplied, filter],
+	);
 
 	const areSessionInvalid: boolean = React.useMemo(() => {
 		return (
@@ -250,6 +239,8 @@ const MessagesFilterPanel = () => {
 	}, [streams, messagesStore.messageSessions]);
 
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
+		const onBlur = onFocusChange.bind(null, false);
+		const onFocus = onFocusChange.bind(null, true);
 		return {
 			type: 'multiple-strings',
 			id: 'messages-stream',
@@ -263,8 +254,10 @@ const MessagesFilterPanel = () => {
 			required: true,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
+			onBlur,
+			onFocus,
 		};
-	}, [streams, setStreams, currentStream, setCurrentStream, sessionsAutocomplete]);
+	}, [streams, setStreams, currentStream, setCurrentStream, sessionsAutocomplete, onFocusChange]);
 
 	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
 		return {
@@ -327,7 +320,7 @@ const MessagesFilterPanel = () => {
 			/>
 			<MessageReplayModal />
 			<MessageFilterWarning />
-			<MessagesSessionFilterRow config={sessionFilterConfig} submitChanges={submitChanges} />
+			<MultipleStringFilterRow config={sessionFilterConfig} />
 			<MessageExport
 				isExport={messagesStore.exportStore.isExport}
 				enableExport={messagesStore.exportStore.enableExport}
@@ -340,3 +333,6 @@ const MessagesFilterPanel = () => {
 };
 
 export default observer(MessagesFilterPanel);
+
+const areSessionsEqual = (sessions1: string[], sessions2: string[]) =>
+	sessions1.length === sessions2.length && complement(sessions1, sessions2).length === 0;

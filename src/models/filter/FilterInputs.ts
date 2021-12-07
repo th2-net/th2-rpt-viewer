@@ -109,6 +109,8 @@ export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
 	validateBubbles?: boolean;
 	hint?: string;
 	labelClassName?: string;
+	onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
+	onBlur?: () => void;
 };
 
 export type FilterRowDatetimeRangeConfig = FilterRowBaseConfig & {

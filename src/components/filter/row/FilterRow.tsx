@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { ActionFilterRow, FitlerRowItem } from '../../../models/filter/FilterInputs';
 import StringFilterRow from './StringRow';
 import MultipleStringFilterRow from './MultipleStringFilterRow';
 import TimeWindow from './TimeWindow';
@@ -24,6 +23,7 @@ import TogglerRow from './TogglerRow';
 import ActionRow from './ActionRow';
 import SwitcherRow from './SwitcherRow';
 import EventResolverRow from './EventResolverRow';
+import { ActionFilterRow, FitlerRowItem } from '../../../models/filter/FilterInputs';
 
 interface Props {
 	rowConfig: FitlerRowItem | ActionFilterRow;

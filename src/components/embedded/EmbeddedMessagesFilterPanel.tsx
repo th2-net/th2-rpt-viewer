@@ -29,8 +29,8 @@ import { MessageFilterState, MultipleStringFilter } from '../search-panel/Search
 import useSetState from '../../hooks/useSetState';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
 import FilterPanel from '../filter/FilterPanel';
-import MessagesFilterSessionFilter from '../filter/MessageFilterSessionFilter';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
+import MultipleStringFilterRow from '../filter/row/MultipleStringFilterRow';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -212,7 +212,7 @@ const EmbeddedMessagesFilterPanel = ({
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
 			/>
-			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />
+			<MultipleStringFilterRow config={sessionFilterConfig} />
 		</>
 	);
 };

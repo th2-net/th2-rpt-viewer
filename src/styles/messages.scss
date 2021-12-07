@@ -786,25 +786,6 @@
 		}
 	}
 
-	&__filter-submit {
-		&-btn {
-			@include clickable;
-
-			flex-shrink: 0;
-			background-color: transparent;
-			border: none;
-			cursor: pointer;
-			padding: 4px;
-			outline: none;
-		}
-
-		&-icon {
-			@include icon(url('../../resources/icons/search.svg'), 16px, 16px);
-
-			display: inline-block;
-		}
-	}
-
 	&__export {
 		&-controls {
 			position: absolute;
