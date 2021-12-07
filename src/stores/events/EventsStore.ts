@@ -263,8 +263,7 @@ export default class EventsStore {
 	};
 
 	@action
-	public scrollToEvent = (eventId: string | null) => {
-		if (!eventId) return;
+	public scrollToEvent = (eventId: string) => {
 		let index = -1;
 		if (!this.viewStore.flattenedListView) {
 			const parents = this.getParentNodes(eventId, this.eventDataStore.eventsCache);
@@ -352,11 +351,6 @@ export default class EventsStore {
 		if (this.selectedNode) {
 			this.scrollToEvent(this.selectedNode.eventId);
 		}
-	};
-
-	@action
-	private onScrolledItemChange = (scrolledItemId: string | null) => {
-		this.scrollToEvent(scrolledItemId);
 	};
 
 	@action

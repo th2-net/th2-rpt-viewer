@@ -109,14 +109,26 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				...queryParams,
 				searchDirection: 'previous',
 			},
-			SEARCH_TIME_FRAME,
+			{
+				interval: SEARCH_TIME_FRAME,
+				onClose: () =>
+					!this.searchChannelNext?.isLoading &&
+					!this.updateStore.isLoading &&
+					this.updateStore.subscribeOnChanges(),
+			},
 		);
 		this.createNextMessageChannelEventSource(
 			{
 				...queryParams,
 				searchDirection: 'next',
 			},
-			SEARCH_TIME_FRAME,
+			{
+				interval: SEARCH_TIME_FRAME,
+				onClose: () =>
+					!this.searchChannelPrev?.isLoading &&
+					!this.updateStore.isLoading &&
+					this.updateStore.subscribeOnChanges(),
+			},
 		);
 
 		let message: EventMessage | undefined;
@@ -135,16 +147,6 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 					}
 				}
 			}
-
-			this.searchChannelNext.onStop = () =>
-				!this.searchChannelPrev?.isLoading &&
-				!this.updateStore.isLoading &&
-				this.updateStore.subscribeOnChanges();
-
-			this.searchChannelPrev.onStop = () =>
-				!this.searchChannelNext?.isLoading &&
-				!this.updateStore.isLoading &&
-				this.updateStore.subscribeOnChanges();
 
 			const [nextMessages, prevMessages] = await Promise.all([
 				this.searchChannelNext.loadAndSubscribe(message?.messageId),
@@ -194,7 +196,10 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
-		interval?: number,
+		options?: {
+			onClose?: () => void;
+			interval?: number;
+		},
 	) => {
 		this.prevLoadEndTimestamp = null;
 
@@ -202,7 +207,15 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
 			onKeepAliveResponse:
-				typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+				typeof options?.interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+			...(options?.onClose
+				? {
+						onClose: messages => {
+							this.onPrevChannelResponse(messages);
+							options.onClose?.();
+						},
+				  }
+				: {}),
 		});
 	};
 
@@ -251,7 +264,13 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	};
 
 	@action
-	public createNextMessageChannelEventSource = (query: MessagesSSEParams, interval?: number) => {
+	public createNextMessageChannelEventSource = (
+		query: MessagesSSEParams,
+		options?: {
+			onClose?: () => void;
+			interval?: number;
+		},
+	) => {
 		this.nextLoadEndTimestamp = null;
 
 		this.searchChannelNext = new MessagesSSEChannel(query, {
@@ -260,7 +279,16 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				if (query.keepOpen) this.messagesStore.scrollToMessage(messages[0].messageId);
 			},
 			onError: this.onLoadingError,
-			onKeepAliveResponse: typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+			onKeepAliveResponse:
+				typeof options?.interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+			...(options?.onClose
+				? {
+						onClose: messages => {
+							this.onNextChannelResponse(messages);
+							options.onClose?.();
+						},
+				  }
+				: {}),
 		});
 	};
 

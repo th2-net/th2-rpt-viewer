@@ -80,7 +80,7 @@
 
 	tr {
 		display: grid;
-		grid-template-columns: minmax(130px, 1fr) minmax(125px, 1fr) minmax(125px, 1fr) 60px 80px 50px;
+		grid-template-columns: minmax(130px, 1fr) minmax(125px, 1fr) minmax(125px, 1fr) 60px 80px 50px 40px;
 		grid-auto-rows: minmax(24px, auto);
 	}
 
@@ -147,6 +147,10 @@
 		text-align: left;
 	}
 
+	&__tooltip {
+		padding: 10px;
+	}
+
 	&-row {
 		&.passed {
 			& td {
@@ -166,6 +170,16 @@
 			&:hover td {
 				background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 10);
 			}
+
+			&.null {
+				& td {
+					background-color: $tableRowFailedNullBackgroundColor;
+				}
+
+				&:hover td {
+					background-color: darken($color: $tableRowFailedNullBackgroundColor, $amount: 10);
+				}
+			}
 		}
 
 		&.na {
@@ -174,16 +188,17 @@
 			}
 		}
 
-		&:hover &-hint {
-			visibility: visible;
-		}
-
 		&-wrapper {
 			display: flex;
 			flex-direction: column;
 			justify-content: space-between;
+			align-items: center;
 			width: 100%;
 			height: 100%;
+
+			&.inner {
+				width: 26px;
+			}
 		}
 
 		&-operation {
@@ -224,70 +239,16 @@
 			}
 		}
 
+		&-spacer {
+			flex-grow: 1 !important;
+		}
+
 		&-hint {
-			&-inner {
-				padding: 5px 10px;
-				font-size: 10pt;
-				color: $hintTextColor;
-				text-align: center;
-				word-break: break-word;
-			}
+			margin-top: calc(50% - 8px);
 
-			visibility: hidden;
-
-			background-color: $hintBackgroundColor;
-			border-radius: 10px;
-			z-index: 1;
-
-			box-shadow: 3px 3px 3px $hintShadowColor;
-
-			position: absolute;
-			bottom: calc(100% + 12px);
-			left: calc(50% - 12px);
-
-			width: max-content;
-			max-width: 400px;
-
-			height: auto;
-
-			$hintBorderWidth: 2px;
-
-			border: $hintBorderWidth solid $hintBorderColor;
-
-			$baseDisplacement: 10px;
-			$triangleSize: 20px;
-
-			&::after {
-				content: '';
-
-				position: absolute;
-				left: $baseDisplacement;
-				top: 100%;
-
-				width: $triangleSize;
-				height: $triangleSize;
-				clip-path: polygon(0% 0%, 100% 0%, 0% 100%);
-
-				background-color: $hintBorderColor;
-
-				z-index: 2;
-			}
-
-			&::before {
-				$innerTriangleSize: $triangleSize - 2 * $hintBorderWidth;
-
-				content: '';
-				position: absolute;
-				left: $baseDisplacement + $hintBorderWidth;
-				width: $innerTriangleSize;
-
-				// 1 extra pixel fixes a border rendering artifact
-				top: calc(100% - 1px);
-				height: $innerTriangleSize + 1;
-				clip-path: polygon(0% 0%, 100% 0%, 100% 1px, 0% 100%);
-
-				background-color: $hintBackgroundColor;
-				z-index: 3;
+			&.visible {
+				cursor: pointer;
+				@include icon(url(../../resources/icons/info.svg), 16px, 16px);
 			}
 		}
 
@@ -363,7 +324,7 @@
 			padding-bottom: 4px;
 			cursor: pointer;
 			color: $tableTitleColor;
-			grid-column: 1 / 7;
+			grid-column: 1 / 8;
 
 			p {
 				display: inline;
@@ -503,6 +464,7 @@
 
 	&-row-toogler {
 		@include unselectable;
+
 		&:hover td {
 			background-color: darken($color: $tableHeaderBackgroundSecondary, $amount: 10) !important;
 		}

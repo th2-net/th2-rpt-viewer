@@ -64,7 +64,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 
 		if (this.fetchedChunkSubscription == null) {
 			const chunk = this.getNextChunk();
-			this.eventListeners.onResponse(chunk);
+			(this.eventListeners.onClose || this.eventListeners.onResponse)(chunk);
 			this.resetSSEState({ isEndReached });
 		} else {
 			this.isEndReached = isEndReached;
@@ -73,7 +73,6 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.closeChannel();
 		this.isLoading = false;
 		this.clearSchedulersAndTimeouts();
-		this.onStop?.();
 	};
 
 	@action

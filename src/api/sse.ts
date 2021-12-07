@@ -49,8 +49,8 @@ export interface SSEFilterParameter {
 	type: { value: 'string' | 'boolean' | 'string[]' | 'switcher' };
 }
 
-export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status';
-export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body';
+export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status' | 'text';
+export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body' | 'text';
 
 export interface EventsFiltersInfo {
 	name: EventSSEFilters;
