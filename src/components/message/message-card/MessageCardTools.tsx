@@ -64,10 +64,10 @@ const MessageCardTools = ({
 
 	const viewTypes = message.body
 		? [
+				MessageViewType.JSON,
 				MessageViewType.FORMATTED,
 				MessageViewType.ASCII,
 				MessageViewType.BINARY,
-				MessageViewType.JSON,
 		  ]
 		: [MessageViewType.BINARY, MessageViewType.ASCII];
 
