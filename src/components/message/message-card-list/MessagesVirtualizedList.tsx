@@ -25,6 +25,8 @@ import {
 } from '../../../hooks';
 import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
+import { SSEHeartbeat } from '../../../api/sse';
+import { formatTime } from '../../../helpers/date';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
@@ -59,6 +61,8 @@ const MessagesVirtualizedList = (props: Props) => {
 		isLoadingPreviousMessages,
 		onNextChannelResponse,
 		onPrevChannelResponse,
+		prevLoadHeartbeat,
+		nextLoadHeartbeat,
 	} = useMessagesDataStore();
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
@@ -158,7 +162,10 @@ const MessagesVirtualizedList = (props: Props) => {
 										</button>
 									</div>
 								) : (
-									<MessagesListSpinner isLoading={isLoadingNextMessages} />
+									<MessagesListSpinner
+										isLoading={isLoadingNextMessages}
+										searchInfo={nextLoadHeartbeat}
+									/>
 								)
 							}
 						</Observer>
@@ -181,7 +188,10 @@ const MessagesVirtualizedList = (props: Props) => {
 										</button>
 									</div>
 								) : (
-									<MessagesListSpinner isLoading={isLoadingPreviousMessages} />
+									<MessagesListSpinner
+										isLoading={isLoadingPreviousMessages}
+										searchInfo={prevLoadHeartbeat}
+									/>
 								)
 							}
 						</Observer>
@@ -196,8 +206,19 @@ export default observer(MessagesVirtualizedList);
 
 interface SpinnerProps {
 	isLoading: boolean;
+	searchInfo: SSEHeartbeat | null;
 }
-const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
+const MessagesListSpinner = ({ isLoading, searchInfo }: SpinnerProps) => {
 	if (!isLoading) return null;
-	return <div className='messages-list__spinner' />;
+	return (
+		<div className='messages-list__spinner-wrapper'>
+			<div className='messages-list__spinner' />
+			{searchInfo && (
+				<div className='messages-list__search-info'>
+					<span>Processed items: {searchInfo.scanCounter}</span>
+					<span>Current search position: {formatTime(searchInfo.timestamp)}</span>
+				</div>
+			)}
+		</div>
+	);
 };
