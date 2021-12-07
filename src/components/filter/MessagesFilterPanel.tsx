@@ -111,10 +111,12 @@ const MessagesFilterPanel = () => {
 	React.useEffect(() => {
 		if (streams.length && !isFocused && !areSessionsEqual(streams, filterStore.filter.streams)) {
 			applySessionsDelayedRef.current = setTimeout(submitChanges, 1500);
-		} else {
+		}
+
+		return () => {
 			if (applySessionsDelayedRef.current) clearTimeout(applySessionsDelayedRef.current);
 			applySessionsDelayedRef.current = null;
-		}
+		};
 	}, [streams, filterStore, isFocused, submitChanges]);
 
 	const isLoading = computed(
