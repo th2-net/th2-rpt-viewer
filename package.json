@@ -1,6 +1,6 @@
 {
 	"name": "th2-rpt-viewer",
-	"version": "3.1.60",
+	"version": "3.1.99",
 	"description": "",
 	"main": "index.tsx",
 	"private": true,
@@ -12,9 +12,11 @@
 		"test:ci": "jest --no-cache",
 		"lint": "eslint . --ext .js,.js,.ts,.tsx",
 		"validate": "tsc && eslint . --ext .js,.js,.ts,.tsx",
-		"lint:fix": "eslint --fix './src/**/*.{ts,tsx}' && prettier --write src/**"
+		"lint:fix": "eslint --fix './src/**/*.{ts,tsx}' && prettier --write src/**",
+		"licenses": "license-checker --production --csv --out licenses.csv"
 	},
 	"dependencies": {
+		"@types/core-js": "^2.5.5",
 		"@types/enzyme": "^3.10.3",
 		"@types/enzyme-adapter-react-16": "^1.0.5",
 		"@types/jest": "^24.0.23",
@@ -24,6 +26,7 @@
 		"@types/react-input-autosize": "^2.2.0",
 		"@types/react-text-mask": "^5.4.6",
 		"@types/recharts": "^1.8.16",
+		"@types/regenerator-runtime": "^0.13.1",
 		"core-js": "^3.12.1",
 		"cross-env": "^6.0.3",
 		"fetch-intercept": "^2.3.1",
@@ -36,6 +39,7 @@
 		"mobx-react-lite": "^1.5.2",
 		"moment": "^2.27.0",
 		"nanoid": "^3.1.23",
+		"query-string": "^7.0.1",
 		"rc-calendar": "^9.15.11",
 		"react": "^16.13.0",
 		"react-dom": "^16.13.0",
@@ -75,6 +79,7 @@
 		"babel-loader": "^8.1.0",
 		"babel-plugin-const-enum": "^1.0.1",
 		"babel-preset-minify": "^0.5.1",
+		"clean-webpack-plugin": "^4.0.0-alpha.0",
 		"css-loader": "^3.5.2",
 		"cssnano": "^4.1.10",
 		"enzyme": "^3.10.0",
@@ -96,6 +101,7 @@
 		"jest": "^24.9.0",
 		"jest-enzyme": "^7.1.2",
 		"jest-watch-typeahead": "^0.6.0",
+		"license-checker": "^25.0.1",
 		"node-sass": "^4.13.1",
 		"postcss-loader": "^3.0.0",
 		"prettier": "^2.1.2",
@@ -105,8 +111,8 @@
 		"typescript": "^3.7.7",
 		"wait-for-expect": "^3.0.2",
 		"webpack": "^4.41.2",
-		"webpack-cli": "^3.3.10",
-		"webpack-dev-server": "^3.9.0",
+		"webpack-cli": "^4.9.1",
+		"webpack-dev-server": "^4.3.1",
 		"webpack-merge": "^4.2.2",
 		"worker-loader": "^3.0.8"
 	}

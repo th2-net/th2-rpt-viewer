@@ -58,6 +58,8 @@ function MessageReplayModal() {
 		type: '',
 		body: '',
 		attachedEventIds: '',
+		bodyBinary: '',
+		text: '',
 	});
 
 	const [startTimestamp, setStartTimestamp] = React.useState<null | number>(null);
@@ -90,6 +92,8 @@ function MessageReplayModal() {
 			type: '',
 			body: '',
 			attachedEventIds: '',
+			bodyBinary: '',
+			text: '',
 		});
 	}, [messagesStore.filterStore.sseMessagesFilter]);
 
@@ -144,35 +148,35 @@ function MessageReplayModal() {
 		};
 
 		return searchStore.messagesFilterInfo.map<CompoundFilterRow>((filter: MessagesFilterInfo) => {
+			const state = getState(filter.name);
 			const label = prettifyCamelcase(filter.name);
-			return filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
-				param => {
-					switch (param.type.value) {
-						case 'boolean':
-							return {
-								id: `${filter.name}-${param.name}`,
-								label: param.name === 'negative' ? label : '',
-								disabled: false,
-								type: 'toggler',
-								value: getState(filter.name)[param.name as keyof MultipleStringFilter],
-								toggleValue: getToggler(filter.name, param.name as keyof MultipleStringFilter),
-								possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
-								className: 'filter-row__toggler',
-							} as any;
-						default:
-							return {
-								id: filter.name,
-								label: '',
-								type: 'multiple-strings',
-								values: getState(filter.name).values,
-								setValues: getValuesUpdater(filter.name),
-								currentValue: currentValues[filter.name as keyof MessageFilterState],
-								setCurrentValue: setCurrentValue(filter.name),
-								autocompleteList: null,
-							};
-					}
-				},
-			);
+			return state
+				? filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(param => {
+						switch (param.type.value) {
+							case 'boolean':
+								return {
+									id: `${filter.name}-${param.name}`,
+									label: param.name === 'negative' ? label : '',
+									disabled: false,
+									type: 'toggler',
+									value: state[param.name as keyof MultipleStringFilter],
+									toggleValue: getToggler(filter.name, param.name as keyof MultipleStringFilter),
+									possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+									className: 'filter-row__toggler',
+								} as any;
+							default:
+								return {
+									id: filter.name,
+									label: '',
+									type: 'multiple-strings',
+									values: state.values,
+									setValues: getValuesUpdater(filter.name),
+									currentValue: currentValues[filter.name as keyof MessageFilterState],
+									setCurrentValue: setCurrentValue(filter.name),
+								};
+						}
+				  })
+				: [];
 		});
 	}, [searchStore.messagesFilterInfo, sseFilter, setSSEFilter, currentValues]);
 
@@ -224,7 +228,6 @@ function MessageReplayModal() {
 	}, [compoundFilterRow, timestampFromConfig, sessionFilterConfig]);
 
 	const textToCopy = React.useMemo(() => {
-		const prefix = 'replay.py -u=';
 		const link = [
 			window.location.origin,
 			window.location.pathname,
@@ -255,7 +258,7 @@ function MessageReplayModal() {
 			endTimestamp,
 			'next',
 		).toString();
-		return `${prefix}'${link}?${params}'`;
+		return `${link}?${params}`;
 	}, [streams, startTimestamp, endTimestamp, sseFilter, currentStream, currentValues]);
 
 	function toggleReplayModal() {
@@ -270,6 +273,8 @@ function MessageReplayModal() {
 				type: '',
 				body: '',
 				attachedEventIds: '',
+				bodyBinary: '',
+				text: '',
 			});
 			setSSEFilter(messagesStore.filterStore.sseMessagesFilter);
 			setIsOpen(true);
@@ -298,9 +303,7 @@ function MessageReplayModal() {
 					dragConstraints={refConstrains}
 					drag={drag || mouseDown}
 					className='replay'
-					ref={rootRef}
-					onMouseDown={() => setMouseDown(true)}
-					onMouseUp={() => setMouseDown(false)}>
+					ref={rootRef}>
 					<div
 						className='dragable-area'
 						onMouseOver={() => setDrag(true)}
@@ -325,7 +328,11 @@ function MessageReplayModal() {
 							<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
 						),
 					)}
-					<p className='replay__generated-text'>{textToCopy}</p>
+					<p className='replay__generated-text'>
+						<a href={textToCopy} rel='noopener noreferrer' target='_blank'>
+							{textToCopy}
+						</a>
+					</p>
 					<button
 						style={{
 							cursor: isCopied ? 'default' : 'pointer',

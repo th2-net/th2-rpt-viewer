@@ -34,6 +34,7 @@ export type StringFilter = {
 	type: 'string';
 	values: string;
 	negative: boolean;
+	hint: string;
 };
 
 export type MultipleStringFilter = {
@@ -41,6 +42,7 @@ export type MultipleStringFilter = {
 	values: string[];
 	negative: boolean;
 	conjunct: boolean;
+	hint: string;
 };
 
 export type SwitcherFilter = {
@@ -56,12 +58,15 @@ export type EventFilterState = {
 	body: MultipleStringFilter;
 	name: MultipleStringFilter;
 	status: SwitcherFilter;
+	text: MultipleStringFilter;
 };
 
 export type MessageFilterState = {
 	attachedEventIds: MultipleStringFilter;
 	type: MultipleStringFilter;
 	body: MultipleStringFilter;
+	bodyBinary: MultipleStringFilter;
+	text: MultipleStringFilter;
 };
 
 export type FilterState = EventFilterState | MessageFilterState;
@@ -136,8 +141,8 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 	return (
 		<>
 			{info.map((filter: SSEFilterInfo) => {
+				const filterState = getState(filter.name);
 				const label = prettifyCamelcase(filter.name);
-
 				const autocompleteList = getArrayOfUniques(
 					autocompletes
 						.map(item => item.filters[filter.name as keyof FilterState]?.values)
@@ -145,55 +150,59 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 						.flat(),
 				);
 
-				const config = filter.parameters.map(
-					(param: SSEFilterParameter): FilterRowConfig => {
-						switch (param.type.value) {
-							case 'boolean':
-								return {
-									id: `${filter.name}-${param.name}`,
-									label: '',
-									disabled: disableAll,
-									type: 'toggler',
-									value: getState(filter.name)[param.name],
-									toggleValue: getToggler(filter.name, param.name as keyof Filter),
-									possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
-								};
-							case 'string':
-								return {
-									id: filter.name,
-									disabled: disableAll,
-									label: '',
-									type: 'string',
-									value: getState(filter.name).values || '',
-									setValue: getValuesUpdater(filter.name),
-									autocompleteList,
-								};
-							case 'switcher':
-								return {
-									id: filter.name,
-									disabled: disableAll,
-									label: '',
-									type: 'switcher',
-									value: getState(filter.name).values,
-									setValue: getValuesUpdater(filter.name),
-									possibleValues: ['passed', 'failed', 'any'],
-									defaultValue: 'any',
-								};
-							default:
-								return {
-									id: filter.name,
-									disabled: disableAll,
-									label: '',
-									type: 'multiple-strings',
-									values: getState(filter.name).values,
-									setValues: getValuesUpdater(filter.name),
-									currentValue: currentValues[filter.name] || '',
-									setCurrentValue: setCurrentValue(filter.name),
-									autocompleteList,
-								};
-						}
-					},
-				);
+				const config = filterState
+					? filter.parameters.map(
+							(param: SSEFilterParameter): FilterRowConfig => {
+								switch (param.type.value) {
+									case 'boolean':
+										return {
+											id: `${filter.name}-${param.name}`,
+											label: '',
+											disabled: disableAll,
+											type: 'toggler',
+											value: filterState[param.name],
+											toggleValue: getToggler(filter.name, param.name as keyof Filter),
+											possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+										};
+									case 'string':
+										return {
+											id: filter.name,
+											disabled: disableAll,
+											label: '',
+											type: 'string',
+											value: filterState.values || '',
+											setValue: getValuesUpdater(filter.name),
+											autocompleteList,
+											hint: filter.hint,
+										};
+									case 'switcher':
+										return {
+											id: filter.name,
+											disabled: disableAll,
+											label: '',
+											type: 'switcher',
+											value: filterState.values,
+											setValue: getValuesUpdater(filter.name),
+											possibleValues: ['passed', 'failed', 'any'],
+											defaultValue: 'any',
+										};
+									default:
+										return {
+											id: filter.name,
+											disabled: disableAll,
+											label: '',
+											type: 'multiple-strings',
+											values: filterState.values,
+											setValues: getValuesUpdater(filter.name),
+											currentValue: currentValues[filter.name] || '',
+											setCurrentValue: setCurrentValue(filter.name),
+											autocompleteList,
+											hint: filter.hint,
+										};
+								}
+							},
+					  )
+					: [];
 
 				return (
 					<div className='filter-row' key={filter.name}>

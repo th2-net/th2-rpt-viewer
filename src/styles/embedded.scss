@@ -14,7 +14,162 @@
  * limitations under the License.
  ******************************************************************************/
 
+ @import 'common/vars';
+
 .embedded-wrapper {
     height: 100%;
     overflow: auto;
+}
+
+.event-body-fallback {
+	overflow-x: auto;
+	@include scrollbar;
+	@include message-background;
+	margin-top: 15px;
+}
+
+.event-header-card {
+	@include status-card;
+	@include bookmark-button($showOnHoverOverParent: true);
+	line-height: 15px;
+	width: 100%;
+	border-radius: 5px;
+	padding: 0px 5px;
+	display: flex;
+	align-items: center;
+	border: 2px solid transparent;
+	overflow: hidden;
+	cursor: default;
+
+	& > *:not(:first-child) {
+		margin-left: 5px;
+	}
+
+	& .event-status-icon {
+		margin: 5px 1px 5px 0;
+        flex-shrink: 0;
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		background-color: var(--status-icon-color);
+	}
+
+    background-color: var(--status-secondary-background-color);
+    border-color: var(--status-hover-border-color);
+
+	&__title {
+		@include ellipsis();
+		flex-grow: 1;
+		display: inline-block;
+	}
+
+	&__elapsed-time {
+		color: $activeTextColor;
+		font-weight: 600;
+		font-size: 10px;
+		line-height: 15px;
+	}
+
+	&__time-label,
+	&__event-type {
+		font-size: 9px;
+		color: $secondaryLightTextColor;
+		white-space: nowrap;
+	}
+	&__time-label {
+		padding: 0 2px;
+		transition: all 0.15s;
+		border: 1px solid transparent;
+		border-radius: 4px;
+        color: $graphTextColor;
+        border: 1px solid $graphTextColor;
+		&-full {
+			display: inline;    
+		}
+	}
+
+	&__status,
+	&__title {
+		color: var(--status-primary-color);
+		font-size: 11px;
+		line-height: 15px;
+		font-weight: bold;
+	}
+}
+
+.event-detail-info {
+	@include scrollbar;
+	overflow-y: auto;
+	width: 100%;
+	height: 100%;
+	padding-right: 5px;
+
+	&__parents {
+		display: flex;
+		flex-direction: column;
+		padding-bottom: 10px;
+
+		& > *:not(:first-child) {
+			margin-top: 3px;
+		}
+	}
+
+	&__event-card {
+		margin-bottom: 10px;
+	}
+
+	&__list {
+		display: flex;
+		flex-direction: column;
+
+		& > *:not(:first-child) {
+			margin-top: 5px;
+		}
+	}
+
+	&__message {
+		@include message-background;
+		font-size: 11px;
+	}	
+}
+
+.messages-list {
+	display: flex;
+	flex-direction: column;
+
+	&__header {
+		width: 100%;
+		height: 40px;
+		padding: 5px 10px;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		box-shadow: 0px 1px 8px 0px rgba(0, 0, 0, 0.35);
+		color: $primaryTextColor;
+		font-size: 14px;
+		line-height: 15px;
+		font-weight: bold;
+
+		.filter-row {
+			margin-bottom: 0;
+
+			.filter-content {
+				margin: 0;
+			}
+		}
+
+		.report-viewer-link	{
+			@include clickable;
+
+			padding: 4px 5px;
+			background-color: transparent;
+			border: none;
+			outline: none;
+			color: $primaryTextColor;
+			font-size: 14px;
+			line-height: 15px;
+			font-weight: bold;
+			text-decoration: none;
+		}
+	}
 }

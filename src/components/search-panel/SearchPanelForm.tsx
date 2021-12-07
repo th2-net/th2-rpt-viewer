@@ -58,6 +58,8 @@ const SearchPanelForm = () => {
 		isSearching,
 		searchProgress,
 		isPaused,
+		eventAutocompleteList,
+		resetEventAutocompleteList,
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
@@ -72,6 +74,13 @@ const SearchPanelForm = () => {
 			),
 		];
 	}, [messageSessions, sessionsStore.sessions]);
+
+	const areSessionInvalid: boolean = React.useMemo(() => {
+		return (
+			form.stream.length === 0 ||
+			form.stream.some(stream => !messageSessions.includes(stream.trim()))
+		);
+	}, [form.stream, messageSessions]);
 
 	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
 		formType,
@@ -104,6 +113,9 @@ const SearchPanelForm = () => {
 		setValue: getFormStateUpdater('parentEvent'),
 		type: 'event-resolver',
 		id: 'parent-event',
+		placeholder: 'matches events by the specified parent event id or event name',
+		autocompleteList: eventAutocompleteList.map(event => event.eventId),
+		onAutocompleteSelect: resetEventAutocompleteList,
 	};
 
 	const messagesFormTypeConfig: FitlerRowItem = {
@@ -116,8 +128,9 @@ const SearchPanelForm = () => {
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
 		autocompleteList: sessionsAutocomplete,
-		isInvalid: true,
+		isInvalid: areSessionInvalid,
 		required: true,
+		validateBubbles: true,
 	};
 
 	const config: FitlerRowItem =

@@ -42,7 +42,8 @@ import { getArrayOfUniques } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
 import { notEmpty } from '../../helpers/object';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
-import MultipleStringFilterRow from './row/MultipleStringFIlterRow';
+import MessagesSessionFilterRow from './MessagesSessionFilterRow';
+import MessageExport from '../message/MessageExport';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -66,6 +67,8 @@ const MessagesFilterPanel = () => {
 		type: '',
 		body: '',
 		attachedEventIds: '',
+		bodyBinary: '',
+		text: '',
 	});
 	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
 
@@ -86,6 +89,8 @@ const MessagesFilterPanel = () => {
 			type: '',
 			body: '',
 			attachedEventIds: '',
+			bodyBinary: '',
+			text: '',
 		});
 	}, []);
 
@@ -144,11 +149,12 @@ const MessagesFilterPanel = () => {
 		}
 
 		const setCurrentValue = (name: keyof MessageFilterState) => (value: string) => {
-			setCurrentValues(prevState => ({ ...prevState, [name]: value }));
+			setCurrentValues((prevState: CurrentSSEValues) => ({ ...prevState, [name]: value }));
 		};
 
 		return searchStore.messagesFilterInfo.map<CompoundFilterRow>(
 			(filterInfo: MessagesFilterInfo) => {
+				const state = getState(filterInfo.name);
 				const label = prettifyCamelcase(filterInfo.name);
 				const autocompleteList = getArrayOfUniques<string>(
 					messagesHistory
@@ -157,37 +163,40 @@ const MessagesFilterPanel = () => {
 						.flat(),
 				);
 
-				return filterInfo.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
-					param => {
-						switch (param.type.value) {
-							case 'boolean':
-								return {
-									id: `${filterInfo.name}-${param.name}`,
-									label: param.name === 'negative' ? label : '',
-									disabled: false,
-									type: 'toggler',
-									value: getState(filterInfo.name)[param.name as keyof MultipleStringFilter],
-									toggleValue: getToggler(
-										filterInfo.name,
-										param.name as keyof MultipleStringFilter,
-									),
-									possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
-									className: 'filter-row__toggler',
-								} as any;
-							default:
-								return {
-									id: filterInfo.name,
-									label: '',
-									type: 'multiple-strings',
-									values: getState(filterInfo.name).values,
-									setValues: getValuesUpdater(filterInfo.name),
-									currentValue: currentValues[filterInfo.name as keyof MessageFilterState],
-									setCurrentValue: setCurrentValue(filterInfo.name),
-									autocompleteList,
-								};
-						}
-					},
-				);
+				return state
+					? filterInfo.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
+							param => {
+								switch (param.type.value) {
+									case 'boolean':
+										return {
+											id: `${filterInfo.name}-${param.name}`,
+											label: param.name === 'negative' ? label : '',
+											disabled: false,
+											type: 'toggler',
+											value: state[param.name as keyof MultipleStringFilter],
+											toggleValue: getToggler(
+												filterInfo.name,
+												param.name as keyof MultipleStringFilter,
+											),
+											possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+											className: 'filter-row__toggler',
+										} as any;
+									default:
+										return {
+											id: filterInfo.name,
+											label: '',
+											type: 'multiple-strings',
+											values: state.values,
+											setValues: getValuesUpdater(filterInfo.name),
+											currentValue: currentValues[filterInfo.name as keyof MessageFilterState],
+											setCurrentValue: setCurrentValue(filterInfo.name),
+											autocompleteList,
+											hint: filterInfo.hint,
+										};
+								}
+							},
+					  )
+					: [];
 			},
 		);
 	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
@@ -233,6 +242,13 @@ const MessagesFilterPanel = () => {
 		);
 	};
 
+	const areSessionInvalid: boolean = React.useMemo(() => {
+		return (
+			streams.length === 0 ||
+			streams.some(stream => !messagesStore.messageSessions.includes(stream.trim()))
+		);
+	}, [streams, messagesStore.messageSessions]);
+
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
 		return {
 			type: 'multiple-strings',
@@ -243,6 +259,8 @@ const MessagesFilterPanel = () => {
 			setCurrentValue: setCurrentStream,
 			autocompleteList: sessionsAutocomplete,
 			validateBubbles: true,
+			isInvalid: areSessionInvalid,
+			required: true,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
 		};
@@ -309,7 +327,14 @@ const MessagesFilterPanel = () => {
 			/>
 			<MessageReplayModal />
 			<MessageFilterWarning />
-			<MultipleStringFilterRow config={sessionFilterConfig} setIsInputFocused={updateFocus} />
+			<MessagesSessionFilterRow config={sessionFilterConfig} submitChanges={submitChanges} />
+			<MessageExport
+				isExport={messagesStore.exportStore.isExport}
+				enableExport={messagesStore.exportStore.enableExport}
+				disableExport={messagesStore.exportStore.disableExport}
+				endExport={messagesStore.exportStore.endExport}
+				exportAmount={messagesStore.exportStore.exportMessages.length}
+			/>
 		</>
 	);
 };

@@ -22,11 +22,12 @@ import { getObjectKeys } from '../helpers/object';
 import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
 
 interface BaseSSEParams {
-	startTimestamp: number;
+	startTimestamp?: number;
 	endTimestamp?: number | null;
 	resultCountLimit?: number;
 	resumeFromId?: string;
 	searchDirection?: 'next' | 'previous'; // defaults to next
+	keepOpen?: boolean;
 }
 
 export interface SSEHeartbeat {
@@ -48,8 +49,8 @@ export interface SSEFilterParameter {
 	type: { value: 'string' | 'boolean' | 'string[]' | 'switcher' };
 }
 
-export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status';
-export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body';
+export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status' | 'text';
+export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body' | 'text';
 
 export interface EventsFiltersInfo {
 	name: EventSSEFilters;
@@ -196,12 +197,10 @@ const sseApi: SSESchema = {
 	getEventsTreeSource: (timeRange, filter, sseParams) => {
 		const paramFromFilter = filter ? getEventsSSEParamsFromFilter(filter) : {};
 		const params = createURLSearchParams({
-			...{
-				startTimestamp: timeRange[0],
-				endTimestamp: timeRange[1],
-				...paramFromFilter,
-				...sseParams,
-			},
+			startTimestamp: timeRange[0],
+			endTimestamp: timeRange[1],
+			...paramFromFilter,
+			...sseParams,
 		});
 		return new EventSource(`backend/search/sse/events/?${params}`);
 	},

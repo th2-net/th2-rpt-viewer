@@ -20,25 +20,34 @@ import 'regenerator-runtime/runtime';
 import 'core-js/stable';
 import 'core-js/features/array/flat-map';
 import 'core-js/features/array/flat';
-import App from './components/App';
 import ErrorBoundary from './components/util/ErrorBoundary';
-import StoresProvider from './components/StoresProvider';
 import { registerFetchInterceptor } from './helpers/fetch-intercept';
-import EmbeddedApp from './components/embedded/EmbeddedApp';
+import { ViewMode, ViewModeProvider } from './contexts/viewModeContext';
 
 registerFetchInterceptor();
 
 const searchParams = new URLSearchParams(window.location.search);
-const isEmbedded = searchParams.get('viewMode') === 'embedded';
+
+let App: React.LazyExoticComponent<() => JSX.Element>;
+
+if (searchParams.get('viewMode') === 'embedded') {
+	App = React.lazy(() => import('./components/embedded/EmbeddedApp'));
+} else if (searchParams.get('viewMode') === 'embeddedMessages') {
+	App = React.lazy(() => import('./components/embedded/EmbeddedMessages'));
+} else {
+	App = React.lazy(() => import('./components/App'));
+}
+
+const viewModeParam = searchParams.get('viewMode');
+const viewMode = (viewModeParam === null ? ViewMode.Full : viewModeParam) as ViewMode;
 
 ReactDOM.render(
 	<ErrorBoundary>
-		{isEmbedded && <EmbeddedApp />}
-		{!isEmbedded && (
-			<StoresProvider>
+		<React.Suspense fallback={<div>Loading...</div>}>
+			<ViewModeProvider value={viewMode}>
 				<App />
-			</StoresProvider>
-		)}
+			</ViewModeProvider>
+		</React.Suspense>
 	</ErrorBoundary>,
 	document.getElementById('index'),
 );

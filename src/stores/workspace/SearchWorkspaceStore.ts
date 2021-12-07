@@ -101,7 +101,6 @@ export default class SearchWorkspaceStore {
 		if (isEventMessage(resultItem)) {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(
 				timestampToNumber(resultItem.timestamp),
-				true,
 				resultItem,
 			);
 		} else {

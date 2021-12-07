@@ -27,9 +27,14 @@ module.exports = webpackMerge(commonConfig, {
 	entry: ['react-hot-loader/patch', appSrc],
 	devtool: 'inline-source-map',
 	devServer: {
-		watchOptions: {
-			poll: true,
-			ignored: [/node_modules/, 'src/__tests__/'],
+		watchFiles: {
+			options: {
+				usePolling: true,
+				ignored: ['src/__tests__/', '**/node_modules'],
+			},
+		},
+		client: {
+			overlay: false,
 		},
 		compress: true,
 		port: 9001,
@@ -37,7 +42,7 @@ module.exports = webpackMerge(commonConfig, {
 		historyApiFallback: true,
 		proxy: {
 			'/': {
-				target: 'http://th2-qa:30000/schema-schema-qa/',
+				target: 'http://th2-qa:30000/th2-commonv3/',
 				changeOrigin: true,
 				secure: false,
 			},

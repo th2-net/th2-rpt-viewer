@@ -52,7 +52,6 @@ function EventsFilterPanel() {
 	const { eventsHistory } = useFiltersHistoryStore();
 
 	const [filter, setFilter] = useSetState<EventFilterState | null>(filterStore.filter);
-	const [showFilter, setShowFilter] = React.useState(false);
 
 	const [currentFilterValues, setCurrentFilterValues] = React.useState<CurrentFilterValues | null>(
 		getDefaultCurrentFilterValues(filterStore.filter),
@@ -166,6 +165,7 @@ function EventsFilterPanel() {
 						value: filterValues.values,
 						setValue: getValuesUpdater(filterName),
 						autocompleteList,
+						hint: filterValues.hint,
 					};
 					break;
 				case 'string[]':
@@ -177,6 +177,7 @@ function EventsFilterPanel() {
 						currentValue: currentFilterValues[filterName] || '',
 						setCurrentValue: setCurrentValue(filterName),
 						autocompleteList,
+						hint: filterValues.hint,
 					};
 					break;
 				case 'switcher':
@@ -216,8 +217,8 @@ function EventsFilterPanel() {
 					/>
 				)
 			}
-			setShowFilter={setShowFilter}
-			showFilter={showFilter}
+			setShowFilter={filterStore.setIsOpen}
+			showFilter={filterStore.isOpen}
 			onSubmit={onSubmit}
 			onClearAll={eventsStore.clearFilter}
 			config={filterConfig}

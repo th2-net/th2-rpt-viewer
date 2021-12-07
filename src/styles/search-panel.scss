@@ -44,10 +44,17 @@
 
 		&.event-resolver {
 			position: relative;
+			margin-bottom: 10px;
+
+			.filter-row__wrapper {
+				display: flex !important;
+			}
 		}
 
 		&__search-status {
 			flex-shrink: 0;
+			margin-left: 10px;
+
 			&.loading {
 				@include spinner(3px, 15px);
 			}
@@ -59,7 +66,7 @@
 				width: 0;
 				height: 0;
 				border-bottom: 15px solid $searchNotFoundEventsColor;
-				margin-top: -10px;
+				margin-bottom: 10px;
 				position: relative;
 
 				&::after {
@@ -102,9 +109,15 @@
 			&-title {
 				@include ellipsis();
 				width: auto;
-				max-width: calc(100% - 250px);
-				margin: 0 5px;
-				margin-right: 10px;
+				font: normal 13.6px 'Open Sans', sans-serif;
+				opacity: 0.75;
+				&.non-empty {
+					opacity: 1;
+					font-weight: bold;
+					max-width: calc(100% - 250px);
+					margin: 0 5px;
+					margin-right: 10px;
+				}
 			}
 
 			&-timestamp {
@@ -130,10 +143,15 @@
 				&.failed {
 					background-color: $graphOverlayFailedEventsColor;
 				}
+
+				&.hide {
+					display: none;
+				}
 			}
 		}
 
 		&__input {
+			font-size: 14px;
 			&.hide {
 				opacity: 0;
 				width: 0;

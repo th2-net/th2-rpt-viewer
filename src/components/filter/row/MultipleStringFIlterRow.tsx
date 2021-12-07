@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { FilterRowMultipleStringsConfig } from '../../../models/filter/FilterInputs';
 import { removeByIndex, replaceByIndex } from '../../../helpers/array';
-import Bubble from '../../util/Bubble';
+import Bubble, { BubbleRef } from '../../util/Bubble';
 import AutocompleteInput from '../../util/AutocompleteInput/AutocompleteInput';
 import KeyCodes from '../../../util/KeyCodes';
 import {
@@ -36,6 +36,7 @@ export default function MultipleStringFilterRow({
 	setIsInputFocused,
 }: MultipleStringFilterRowProps) {
 	const input = React.useRef<HTMLInputElement>();
+	const bubbleRefs = React.useRef<{ [index: number]: BubbleRef | null }>({});
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLDivElement>();
 
@@ -85,6 +86,19 @@ export default function MultipleStringFilterRow({
 		input.current?.focus();
 	};
 
+	const focusBubbleOrInput = (index: number) => {
+		if (index >= config.values.length) input.current?.focus();
+		else {
+			bubbleRefs.current[index]?.focus();
+		}
+	};
+
+	const focusBubbles: React.KeyboardEventHandler<HTMLInputElement> = e => {
+		if (e.keyCode === KeyCodes.LEFT && input.current?.selectionStart === 0) {
+			focusBubbleOrInput(config.values.length - 1);
+		}
+	};
+
 	const inputRootClassName = createBemElement(
 		'filter-row',
 		'multiple-values',
@@ -111,7 +125,10 @@ export default function MultipleStringFilterRow({
 				<div className={inputRootClassName} onClick={rootOnClick}>
 					{config.values.map((value, index) => (
 						<Bubble
+							ref={ref => (bubbleRefs.current[index] = ref)}
 							key={index}
+							selectNext={() => focusBubbleOrInput(index + 1)}
+							selectPrev={() => focusBubbleOrInput(index - 1)}
 							size='small'
 							removeIconType='white'
 							submitKeyCodes={[KeyCodes.TAB]}
@@ -131,11 +148,13 @@ export default function MultipleStringFilterRow({
 					))}
 					<AutocompleteInput
 						anchor={autocompleteAnchor}
+						onKeyDown={focusBubbles}
 						ref={input}
 						placeholder={
 							config.values.length === 0
-								? config.hint ||
-								  `${config.required ? 'Required. ' : ''}Use Tab to separate different words`
+								? config.hint && !isFocused
+									? config.hint
+									: `${config.required ? 'Required. ' : ''}Use Tab to separate different words`
 								: ''
 						}
 						disabled={config.disabled}
@@ -145,7 +164,7 @@ export default function MultipleStringFilterRow({
 						value={config.currentValue}
 						setValue={config.setCurrentValue}
 						autoresize
-						autocomplete={config.autocompleteList}
+						autoCompleteList={config.autocompleteList}
 						datalistKey={`autocomplete-${1}`}
 						onSubmit={inputOnSubmit}
 						onRemove={inputOnRemove}

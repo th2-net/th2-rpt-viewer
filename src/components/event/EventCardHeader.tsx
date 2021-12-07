@@ -30,6 +30,7 @@ interface Props {
 	displayType?: CardDisplayType;
 	event: EventTreeNode;
 	onSelect?: () => void;
+	onEventTypeSelect?: (eventType: string) => void;
 	isSelected?: boolean;
 	isActive?: boolean;
 	childrenCount?: number;
@@ -44,6 +45,7 @@ function EventCardHeader(props: Props) {
 		displayType = CardDisplayType.MINIMAL,
 		event,
 		onSelect,
+		onEventTypeSelect,
 		isSelected = false,
 		isActive = false,
 		childrenCount,
@@ -100,7 +102,10 @@ function EventCardHeader(props: Props) {
 		e.stopPropagation();
 		stopSearch();
 		setFormType('event');
-		updateForm({ parentEvent: eventId, startTimestamp: startTimestampValue });
+		updateForm({
+			parentEvent: eventId,
+			startTimestamp: startTimestampValue,
+		});
 		setActiveWorkspace(0);
 	}
 
@@ -123,6 +128,12 @@ function EventCardHeader(props: Props) {
 		}
 	}
 
+	const handleTypeClick = (ev: React.MouseEvent) => {
+		if (!onEventTypeSelect) return;
+		ev.stopPropagation();
+		onEventTypeSelect(eventType);
+	};
+
 	return (
 		<div className={rootClassName} onClick={onRootClick} style={rootStyle}>
 			<div className={iconClassName} />
@@ -142,7 +153,11 @@ function EventCardHeader(props: Props) {
 							{formatTime(startTimestampValue)}
 						</span>
 					</div>
-					{eventType && <span className='event-header-card__event-type'>{eventType}</span>}
+					{eventType && (
+						<span className='event-header-card__event-type' onClick={handleTypeClick}>
+							{eventType}
+						</span>
+					)}
 				</>
 			) : null}
 			{isFlatView && parentsCount > 0 ? <Chip text={parentsCount.toString()} /> : null}

@@ -96,6 +96,7 @@ export type FilterRowStringConfig = FilterRowBaseConfig & {
 	setValue: (nextValue: string) => void;
 	labelClassName?: string;
 	autocompleteList?: string[];
+	hint?: string;
 };
 
 export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
@@ -104,7 +105,7 @@ export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {
 	setValues: (nextValues: string[]) => void;
 	currentValue: string;
 	setCurrentValue: (currentValue: string) => void;
-	autocompleteList: string[] | null;
+	autocompleteList?: string[];
 	validateBubbles?: boolean;
 	hint?: string;
 	labelClassName?: string;
@@ -144,7 +145,10 @@ export type FilterRowEventResolverConfig = FilterRowBaseConfig & {
 	type: 'event-resolver';
 	value: string;
 	setValue: (nextValue: string) => void;
+	autocompleteList?: string[];
+	onAutocompleteSelect?: () => void;
 	labelClassName?: string;
+	hint?: string;
 };
 
 export type ActionFilterConfig = {

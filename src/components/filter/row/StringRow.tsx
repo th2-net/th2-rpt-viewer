@@ -54,11 +54,12 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 			)}
 			{config.autocompleteList ? (
 				<AutocompleteInput
+					placeholder={config.hint}
 					anchor={autocompleteAnchor}
 					autoresize={false}
 					className={inputClassName}
 					ref={ref}
-					autocomplete={config.autocompleteList}
+					autoCompleteList={config.autocompleteList}
 					value={config.value}
 					setValue={config.setValue}
 					onSubmit={config.setValue}
@@ -66,6 +67,7 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 			) : (
 				<input
 					type='text'
+					placeholder={config.hint}
 					className={inputClassName}
 					id={config.id}
 					autoComplete='off'

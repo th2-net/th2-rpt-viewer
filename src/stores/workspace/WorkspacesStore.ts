@@ -28,7 +28,6 @@ import { getRangeFromTimestamp } from '../../helpers/date';
 import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
-import { getObjectKeys } from '../../helpers/object';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -115,13 +114,10 @@ export default class WorkspacesStore {
 
 	public getInitialWorkspaceByMessage = (
 		timestamp: number,
-		isSoftFilter = false,
 		targetMessage?: EventMessage,
 	): WorkspaceInitialState => {
 		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
 		const filters: MessageFilterState | null = (requestInfo?.filters as MessageFilterState) || null;
-		const areFiltersApplied =
-			Boolean(filters) && getObjectKeys(filters).some(key => filters[key].values.length > 0);
 
 		return {
 			messages: {
@@ -130,7 +126,6 @@ export default class WorkspacesStore {
 				timestampFrom: null,
 				timestampTo: timestamp,
 				targetMessage,
-				isSoftFilter: isSoftFilter && areFiltersApplied,
 			},
 			interval: SEARCH_STORE_INTERVAL,
 			layout: [0, 100],

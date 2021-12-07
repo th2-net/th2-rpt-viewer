@@ -431,6 +431,7 @@
 
 	&__input {
 		width: 100%;
+		flex-grow: 1;
 		padding: 3px 5px;
 		margin: 0 10px;
 		border-radius: $bubbleBorderRadius;
@@ -601,6 +602,19 @@
 		overflow-y: hidden;
 		display: flex;
 		flex-wrap: nowrap;
+	}
+	&__clear {
+		display: none;
+		position: absolute;
+		right: 16px;
+		@include clickable();
+		@include icon(url(../../resources/icons/cross-icon.svg), 16px, 16px);
+		background-color: transparent;
+		outline: none;
+		border: none;
+		&.show {
+			display: block;
+		}
 	}
 }
 
