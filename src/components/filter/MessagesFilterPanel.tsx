@@ -70,6 +70,8 @@ const MessagesFilterPanel = () => {
 	});
 	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
 
+	const [isFocused, setIsFocused] = React.useState(false);
+
 	const applySessionsDelayedRef = React.useRef<NodeJS.Timeout | null>();
 
 	React.useEffect(() => {
@@ -105,6 +107,15 @@ const MessagesFilterPanel = () => {
 			isSoftFilterApplied,
 		);
 	}, [filter, filterStore.filter, streams, isSoftFilterApplied]);
+
+	React.useEffect(() => {
+		if (streams.length && !isFocused && !areSessionsEqual(streams, filterStore.filter.streams)) {
+			applySessionsDelayedRef.current = setTimeout(submitChanges, 1500);
+		} else {
+			if (applySessionsDelayedRef.current) clearTimeout(applySessionsDelayedRef.current);
+			applySessionsDelayedRef.current = null;
+		}
+	}, [streams, filterStore, isFocused, submitChanges]);
 
 	const isLoading = computed(
 		() =>
@@ -210,27 +221,6 @@ const MessagesFilterPanel = () => {
 		];
 	}, [messagesStore.messageSessions, sessionsStore.sessions]);
 
-	const onFocusChange = React.useCallback(
-		(isFocused: boolean) => {
-			if (isFocused) {
-				if (applySessionsDelayedRef.current) clearTimeout(applySessionsDelayedRef.current);
-				applySessionsDelayedRef.current = null;
-			} else if (streams.length > 0 && !areSessionsEqual(filterStore.filter.streams, streams)) {
-				applySessionsDelayedRef.current = setTimeout(() => {
-					messagesStore.applyFilter(
-						{
-							...filterStore.filter,
-							streams,
-						},
-						filter,
-						isSoftFilterApplied,
-					);
-				}, 1500);
-			}
-		},
-		[streams, isSoftFilterApplied, filter],
-	);
-
 	const areSessionInvalid: boolean = React.useMemo(() => {
 		return (
 			streams.length === 0 ||
@@ -239,8 +229,8 @@ const MessagesFilterPanel = () => {
 	}, [streams, messagesStore.messageSessions]);
 
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
-		const onBlur = onFocusChange.bind(null, false);
-		const onFocus = onFocusChange.bind(null, true);
+		const onBlur = setIsFocused.bind(null, false);
+		const onFocus = setIsFocused.bind(null, true);
 		return {
 			type: 'multiple-strings',
 			id: 'messages-stream',
@@ -257,7 +247,7 @@ const MessagesFilterPanel = () => {
 			onBlur,
 			onFocus,
 		};
-	}, [streams, setStreams, currentStream, setCurrentStream, sessionsAutocomplete, onFocusChange]);
+	}, [streams, setStreams, currentStream, setCurrentStream, sessionsAutocomplete]);
 
 	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
 		return {
