@@ -586,6 +586,58 @@
 	&__overlay-spinner {
 		@include spinner(5px, 40px, 2s);
 	}
+
+	&__attached-messages {
+		display: flex;
+		font-size: 9px;
+		margin-bottom: 10px;
+		line-height: 15px;
+		font-weight: bold;
+
+		&-btn {
+			display: flex;
+			align-items: center;
+			font-size: 9px;
+			line-height: 15px;
+			font-weight: bold;
+			cursor: pointer;
+			flex-shrink: 0;
+			padding: 0;
+			background-color: transparent;
+			border: none;
+			outline: none;
+			margin-top: 3px;
+
+			&-previous {
+				@include icon(url(../../resources/icons/arr5-left.svg), 8px, 13px);
+				&:hover {
+					@include icon(url(../../resources/icons/arr5-left-enabled.svg), 8px, 13px);
+				}
+			}
+
+			&-next {
+				@include icon(url(../../resources/icons/arr5-right.svg), 8px, 13px);
+				&:hover {
+					@include icon(url(../../resources/icons/arr5-right-enabled.svg), 8px, 13px);
+				}
+			}
+		}
+
+		&-text {
+			color: $controlButtonTextColor;
+			white-space: nowrap;
+			margin: 0 10px 0 10px;
+
+			&-counter {
+				margin-top: 1px;
+				color: #999999;
+
+				&-current {
+					color: $messageCardValueColor;
+				}
+			}
+		}
+	}
 }
 
 .mc-skeleton {
@@ -784,7 +836,7 @@
 			}
 		}
 
-		&-tool{
+		&-tool {
 			display: flex;
 			justify-content: center;
 			background-color: transparent;
@@ -793,7 +845,7 @@
 			cursor: pointer;
 			font-size: 13px;
 			color: $primaryTextColor;
-	
+
 			&:hover {
 				background-color: #00000012;
 			}
@@ -990,7 +1042,7 @@
 		width: 100%;
 	}
 
-	.dragable-area:hover{
+	.dragable-area:hover {
 		cursor: move;
 	}
 }

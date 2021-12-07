@@ -177,3 +177,13 @@ export function areArraysEqual<T extends unknown[]>(arr1: T, arr2: T): boolean {
 export function getArrayOfUniques<T>(arr: T[]) {
 	return [...new Set(arr)];
 }
+
+/**
+ * This function is used to safely get the element from array
+ * Helps to avoid mobx warnings
+ * @param arr array to get element from
+ * @param index index of element
+ */
+export function getItemAt<T>(arr: T[], index: number): T | null {
+	return index < arr.length && index >= 0 ? arr[index] : null;
+}

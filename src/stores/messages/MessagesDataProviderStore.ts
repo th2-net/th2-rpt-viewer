@@ -24,6 +24,7 @@ import notificationsStore from '../NotificationsStore';
 import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
 import MessagesUpdateStore from './MessagesUpdateStore';
+import { getItemAt } from '../../helpers/array';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
@@ -105,19 +106,51 @@ export default class MessagesDataProviderStore {
 
 		const queryParams = this.getFilterParams();
 
-		this.createPreviousMessageChannelEventSource(
+		const { selectedMessageId, scrollToMessage } = this.messagesStore;
+
+		const [messageAnchor] = await new MessagesSSEChannel(
 			{
 				...queryParams,
 				searchDirection: 'previous',
 			},
-			SEARCH_TIME_FRAME,
+			{
+				onResponse: () => null,
+				onError: this.onLoadingError,
+			},
+			{
+				chunkSize: 1,
+			},
+		).loadAndSubscribe();
+
+		this.createPreviousMessageChannelEventSource(
+			{
+				...queryParams,
+				searchDirection: 'previous',
+				...(messageAnchor
+					? {
+							resumeFromId: messageAnchor.messageId,
+					  }
+					: {}),
+			},
+			{
+				interval: SEARCH_TIME_FRAME,
+				onClose: () => selectedMessageId && scrollToMessage(selectedMessageId.valueOf()),
+			},
 		);
 		this.createNextMessageChannelEventSource(
 			{
 				...queryParams,
 				searchDirection: 'next',
+				...(messageAnchor
+					? {
+							resumeFromId: messageAnchor.messageId,
+					  }
+					: {}),
 			},
-			SEARCH_TIME_FRAME,
+			{
+				interval: SEARCH_TIME_FRAME,
+				onClose: () => selectedMessageId && scrollToMessage(selectedMessageId.valueOf()),
+			},
 		);
 
 		let message: EventMessage | undefined;
@@ -136,12 +169,6 @@ export default class MessagesDataProviderStore {
 					}
 				}
 			}
-
-			const { selectedMessageId, scrollToMessage } = this.messagesStore;
-			this.searchChannelNext.onStop = () =>
-				selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
-			this.searchChannelPrev.onStop = () =>
-				selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
 
 			const [nextMessages, prevMessages] = await Promise.all([
 				this.searchChannelNext.loadAndSubscribe(message?.messageId),
@@ -194,7 +221,10 @@ export default class MessagesDataProviderStore {
 	@action
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
-		interval?: number,
+		options?: {
+			onClose?: () => void;
+			interval?: number;
+		},
 	) => {
 		this.prevLoadEndTimestamp = null;
 
@@ -202,7 +232,15 @@ export default class MessagesDataProviderStore {
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
 			onKeepAliveResponse:
-				typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+				typeof options?.interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+			...(options?.onClose
+				? {
+						onClose: messages => {
+							this.onPrevChannelResponse(messages);
+							options.onClose?.();
+						},
+				  }
+				: {}),
 		});
 	};
 
@@ -251,13 +289,28 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public createNextMessageChannelEventSource = (query: MessagesSSEParams, interval?: number) => {
+	public createNextMessageChannelEventSource = (
+		query: MessagesSSEParams,
+		options?: {
+			onClose?: () => void;
+			interval?: number;
+		},
+	) => {
 		this.nextLoadEndTimestamp = null;
 
 		this.searchChannelNext = new MessagesSSEChannel(query, {
 			onResponse: this.onNextChannelResponse,
 			onError: this.onLoadingError,
-			onKeepAliveResponse: typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+			onKeepAliveResponse:
+				typeof options?.interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+			...(options?.onClose
+				? {
+						onClose: messages => {
+							this.onNextChannelResponse(messages);
+							options.onClose?.();
+						},
+				  }
+				: {}),
 		});
 	};
 
@@ -404,14 +457,14 @@ export default class MessagesDataProviderStore {
 			this.noMatchingMessagesPrev = false;
 			this.createPreviousMessageChannelEventSource({
 				...query,
-				resumeFromId: this.messages[this.messages.length - 1]?.messageId,
+				resumeFromId: getItemAt(this.messages, this.messages.length - 1)?.messageId,
 			});
 			this.searchChannelPrev.subscribe();
 		} else {
 			this.noMatchingMessagesNext = false;
 			this.createNextMessageChannelEventSource({
 				...query,
-				resumeFromId: this.messages[0]?.messageId,
+				resumeFromId: getItemAt(this.messages, 0)?.messageId,
 			});
 			this.searchChannelNext.subscribe();
 		}
