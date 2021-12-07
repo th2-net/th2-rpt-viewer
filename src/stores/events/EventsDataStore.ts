@@ -23,12 +23,14 @@ import {
 	isRootEvent,
 } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
-import { EventSSELoader } from './EventSSELoader';
 import notificationsStore from '../NotificationsStore';
 import EventsFilterStore from './EventsFilterStore';
 import EventsStore from './EventsStore';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { TimeRange } from '../../models/Timestamp';
+import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
+import { isAbortError } from '../../helpers/fetch';
+import { getItemAt } from '../../helpers/array';
 
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
@@ -55,7 +57,7 @@ export default class EventsDataStore {
 	}
 
 	@observable.ref
-	private eventTreeEventSource: EventSSELoader | null = null;
+	private eventTreeEventSource: EventsSSEChannel | null = null;
 
 	@observable
 	public eventsCache: Map<string, EventTreeNode> = new Map();
@@ -124,7 +126,7 @@ export default class EventsDataStore {
 
 		try {
 			this.eventTreeEventSource?.stop();
-			this.eventTreeEventSource = new EventSSELoader(
+			this.eventTreeEventSource = new EventsSSEChannel(
 				{
 					timeRange,
 					filter,
@@ -261,7 +263,7 @@ export default class EventsDataStore {
 			}
 		} catch (error) {
 			console.error(error);
-			if (error.name !== 'AbortError') {
+			if (!isAbortError(error)) {
 				notificationsStore.addMessage({
 					notificationType: 'genericError',
 					header: `Error occured while fetching event ${currentParentId}`,
@@ -274,7 +276,7 @@ export default class EventsDataStore {
 			}
 		} finally {
 			if (!isAborted) {
-				let rootNode = parentNodes[0];
+				let rootNode = getItemAt(parentNodes, 0);
 
 				if (!rootNode || !isRootEvent(rootNode)) {
 					const cachedRootNode =
@@ -303,6 +305,9 @@ export default class EventsDataStore {
 						(isRootEvent(rootNode) || rootNode.isUnknown) &&
 						!this.rootEventIds.includes(rootNode.eventId)
 					) {
+						if (this.eventStore.targetNodeId) {
+							this.eventStore.scrollToEvent(this.eventStore.targetNodeId);
+						}
 						this.rootEventIds.push(rootNode.eventId);
 					}
 				} else {
@@ -366,7 +371,7 @@ export default class EventsDataStore {
 
 	private childrenLoaders: {
 		[parentId: string]: {
-			loader: EventSSELoader;
+			loader: EventsSSEChannel;
 			initialCount: number;
 		};
 	} = {};
@@ -386,9 +391,9 @@ export default class EventsDataStore {
 		if (parentNode) {
 			const eventsChildren = this.eventStore.getChildrenNodes(parentId);
 
-			const lastChild = eventsChildren[eventsChildren.length - 1];
+			const lastChild = getItemAt(eventsChildren, eventsChildren.length - 1);
 
-			const loader = new EventSSELoader(
+			const loader = new EventsSSEChannel(
 				{
 					timeRange: [this.filterStore.timestampFrom, this.filterStore.timestampTo],
 					filter: this.filterStore.filter,
@@ -401,8 +406,8 @@ export default class EventsDataStore {
 					},
 				},
 				{
-					onError: this.onEventTreeFetchError,
 					onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
+					onError: this.onEventTreeFetchError,
 					onClose: events => this.onEventChildrenLoadEnd(events, parentId),
 				},
 				{

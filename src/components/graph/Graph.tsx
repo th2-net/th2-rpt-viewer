@@ -28,6 +28,7 @@ import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
 import '../../styles/graph.scss';
+import GraphLastEventsButton from './GraphLastEventsButton';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -156,11 +157,17 @@ const GraphRoot = () => {
 					hoveredTimestamp={
 						isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.hoveredTimestamp : null
 					}
-					refreshPanels={isWorkspaceStore(activeWorkspace) ? activeWorkspace.refreshPanels : null}
 					onTimestampSubmit={activeWorkspace.onTimestampSelect}
 					onFoundItemClick={activeWorkspace.onSavedItemSelect}
 					windowRange={isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.range : null}
 				/>
+				{isWorkspaceStore(activeWorkspace) && (
+					<GraphLastEventsButton
+						onTimestampSubmit={activeWorkspace.onTimestampSelect}
+						setRange={activeWorkspace.eventsStore.onRangeChange}
+						interval={activeWorkspace.graphStore.interval}
+					/>
+				)}
 				{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}
 			</div>
 		</PointerTimestampProvider>

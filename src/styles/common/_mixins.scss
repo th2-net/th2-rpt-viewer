@@ -285,7 +285,7 @@
 	}
 }
 
-@mixin improved-clickable ($bgc, $rad: 2px, $amount: 2) {
+@mixin improved-clickable($bgc, $rad: 2px, $amount: 2) {
 	cursor: pointer;
 	border-radius: $rad;
 	background-color: $bgc;
@@ -358,13 +358,13 @@
 		background: url(../../resources/icons/bookmark-add.svg);
 
 		&.pinned {
-			display: block;
+			display: inline-block;
 			background: url(../../resources/icons/bookmark-added.svg);
 		}
 	}
 
 	&:hover .bookmark-button {
-		display: block;
+		display: inline-block;
 		background: url(../../resources/icons/bookmark-add-hover.svg);
 
 		&.pinned {

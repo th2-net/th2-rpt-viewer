@@ -46,7 +46,20 @@ interface Props {
 
 const MessagesVirtualizedList = (props: Props) => {
 	const messageStore = useMessagesWorkspaceStore();
-	const messagesDataStore = useMessagesDataStore();
+	const {
+		messages: messageList,
+		searchChannelNext,
+		searchChannelPrev,
+		startIndex,
+		initialItemCount,
+		noMatchingMessagesNext,
+		noMatchingMessagesPrev,
+		keepLoading,
+		isLoadingNextMessages,
+		isLoadingPreviousMessages,
+		onNextChannelResponse,
+		onPrevChannelResponse,
+	} = useMessagesDataStore();
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
@@ -75,26 +88,26 @@ const MessagesVirtualizedList = (props: Props) => {
 				const isEndReached = scroller.scrollHeight - scroller.scrollTop === scroller.clientHeight;
 				if (
 					isStartReached &&
-					messagesDataStore.searchChannelNext &&
-					!messagesDataStore.searchChannelNext.isLoading &&
-					!messagesDataStore.searchChannelNext.isEndReached &&
+					searchChannelNext &&
+					!searchChannelNext.isLoading &&
+					!searchChannelNext.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
-					loadNextMessages(messagesDataStore.messages[0]?.messageId).then(messages =>
-						messageStore.dataStore.onNextChannelResponse(messages),
+					loadNextMessages(messageList[0]?.messageId).then(messages =>
+						onNextChannelResponse(messages),
 					);
 				}
 
 				if (
 					isEndReached &&
-					messagesDataStore.searchChannelPrev &&
-					!messagesDataStore.searchChannelPrev.isLoading &&
-					!messagesDataStore.searchChannelPrev.isEndReached &&
+					searchChannelPrev &&
+					!searchChannelPrev.isLoading &&
+					!searchChannelPrev.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
 				) {
-					loadPrevMessages(
-						messagesDataStore.messages[messagesDataStore.messages.length - 1]?.messageId,
-					).then(messages => messageStore.dataStore.onPrevChannelResponse(messages));
+					loadPrevMessages(messageList[messageList.length - 1]?.messageId).then(messages =>
+						onPrevChannelResponse(messages),
+					);
 				}
 			}
 		},
@@ -113,9 +126,9 @@ const MessagesVirtualizedList = (props: Props) => {
 
 	return (
 		<Virtuoso
-			data={messagesDataStore.messages}
-			firstItemIndex={messagesDataStore.startIndex}
-			initialTopMostItemIndex={messagesDataStore.initialItemCount}
+			data={messageList}
+			firstItemIndex={startIndex}
+			initialTopMostItemIndex={initialItemCount}
 			ref={virtuoso}
 			overscan={overscan}
 			itemContent={itemRenderer}
@@ -134,20 +147,18 @@ const MessagesVirtualizedList = (props: Props) => {
 					return (
 						<Observer>
 							{() =>
-								messagesDataStore.noMatchingMessagesNext ? (
+								noMatchingMessagesNext ? (
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
 											{moment.utc(messageStore.filterStore.filterParams.startTimestamp).format()}
 										</span>
-										<button
-											className='messages-list__load-btn'
-											onClick={() => messagesDataStore.keepLoading('next')}>
+										<button className='messages-list__load-btn' onClick={() => keepLoading('next')}>
 											Keep loading
 										</button>
 									</div>
 								) : (
-									<MessagesListSpinner isLoading={messagesDataStore.isLoadingNextMessages} />
+									<MessagesListSpinner isLoading={isLoadingNextMessages} />
 								)
 							}
 						</Observer>
@@ -157,7 +168,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					return (
 						<Observer>
 							{() =>
-								messagesDataStore.noMatchingMessagesPrev ? (
+								noMatchingMessagesPrev ? (
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
@@ -165,12 +176,12 @@ const MessagesVirtualizedList = (props: Props) => {
 										</span>
 										<button
 											className='messages-list__load-btn'
-											onClick={() => messagesDataStore.keepLoading('previous')}>
+											onClick={() => keepLoading('previous')}>
 											Keep loading
 										</button>
 									</div>
 								) : (
-									<MessagesListSpinner isLoading={messagesDataStore.isLoadingPreviousMessages} />
+									<MessagesListSpinner isLoading={isLoadingPreviousMessages} />
 								)
 							}
 						</Observer>

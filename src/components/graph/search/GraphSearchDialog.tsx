@@ -28,6 +28,8 @@ import { useDebouncedCallback, useRootStore } from '../../../hooks';
 import KeyCodes from '../../../util/KeyCodes';
 import { indexedDbLimits, IndexedDbStores } from '../../../api/indexedDb';
 import { GraphSearchResult } from './GraphSearch';
+import { SearchDirection } from '../../../models/search/SearchDirection';
+import { DateTimeMask } from '../../../models/filter/FilterInputs';
 
 interface Props {
 	value: string;
@@ -37,6 +39,7 @@ interface Props {
 	closeModal: () => void;
 	submittedId: String | null;
 	isIdMode: boolean;
+	submittedTimestamp: number | null;
 }
 
 const GraphSearchDialog = (props: Props) => {
@@ -48,6 +51,7 @@ const GraphSearchDialog = (props: Props) => {
 		closeModal,
 		submittedId,
 		isIdMode,
+		submittedTimestamp,
 	} = props;
 
 	const rootStore = useRootStore();
@@ -58,6 +62,8 @@ const GraphSearchDialog = (props: Props) => {
 	);
 
 	const ac = React.useRef<AbortController | null>(null);
+
+	const [foundId, setFoundId] = React.useState<string | null>(null);
 
 	const [searchHistory, setSearchHistory] = React.useState<GraphSearchResult[]>([]);
 
@@ -74,12 +80,17 @@ const GraphSearchDialog = (props: Props) => {
 
 	const filteredSearchHistory = React.useMemo(() => {
 		if (!value) return sortedSearchHistory;
-		return sortedSearchHistory.filter(
+		const onlyIdFromHistory = sortedSearchHistory.map(historyItem => getItemId(historyItem.item));
+		const uniqueSortedSearchHistory = sortedSearchHistory.filter(
+			(historyItem, index) => onlyIdFromHistory.indexOf(getItemId(historyItem.item)) === index,
+		);
+		return uniqueSortedSearchHistory.filter(
 			historyItem =>
 				getItemId(historyItem.item).includes(value) ||
-				getItemName(historyItem.item).includes(value),
+				getItemName(historyItem.item).includes(value) ||
+				(foundId && getItemId(historyItem.item).includes(foundId)),
 		);
-	}, [sortedSearchHistory, value]);
+	}, [sortedSearchHistory, value, foundId]);
 
 	async function getGraphSearchHistory() {
 		try {
@@ -108,8 +119,8 @@ const GraphSearchDialog = (props: Props) => {
 	}, [filteredSearchHistory, value, isLoading, isIdMode]);
 
 	React.useEffect(() => {
+		setFoundId(null);
 		ac.current = new AbortController();
-
 		if (value) {
 			onValueChangeDebounced(value, ac.current);
 			setCurrentSearchResult(null);
@@ -139,13 +150,62 @@ const GraphSearchDialog = (props: Props) => {
 				setTimestamp(getTimestampAsNumber(filteredSearchHistory[0].item));
 				closeModal();
 			}
-
 			if (filteredSearchHistory.length !== 1 && !currentSearchResult) {
 				ac.current = new AbortController();
 				onValueChange(id, ac.current);
 			}
 		}
 	}, [submittedId]);
+
+	React.useEffect(() => {
+		const searchChannels = {
+			previous: submittedTimestamp
+				? api.sse.getEventSource({
+						type: 'event',
+						queryParams: {
+							startTimestamp: submittedTimestamp,
+							resultCountLimit: 1,
+							searchDirection: SearchDirection.Previous,
+						},
+				  })
+				: null,
+			next: submittedTimestamp
+				? api.sse.getEventSource({
+						type: 'event',
+						queryParams: {
+							startTimestamp: submittedTimestamp,
+							resultCountLimit: 1,
+							searchDirection: SearchDirection.Next,
+						},
+				  })
+				: null,
+		};
+
+		const stopSearch = () => {
+			searchChannels.next?.close();
+			searchChannels.previous?.close();
+		};
+
+		const onChannelResponse = (ev: any) => {
+			if (!submittedTimestamp) return;
+			stopSearch();
+			const data = (ev as MessageEvent).data;
+			const parsedEvent = JSON.parse(data);
+			const id = getItemId(parsedEvent);
+			ac.current = new AbortController();
+			onSearchSuccess(parsedEvent, submittedTimestamp);
+			setFoundId(id);
+		};
+
+		searchChannels.previous?.addEventListener('event', onChannelResponse);
+		searchChannels.next?.addEventListener('event', onChannelResponse);
+		searchChannels.previous?.addEventListener('close', () => stopSearch);
+		searchChannels.next?.addEventListener('close', () => stopSearch);
+
+		return () => {
+			stopSearch();
+		};
+	}, [submittedTimestamp]);
 
 	const onKeyDown = React.useCallback(
 		(event: KeyboardEvent) => {
@@ -171,8 +231,16 @@ const GraphSearchDialog = (props: Props) => {
 		};
 	}, [onKeyDown]);
 
+	const isTimestamp = (searchValue: string) => {
+		return (
+			moment(searchValue, DateTimeMask.TIME_MASK, true).isValid() ||
+			moment(searchValue, DateTimeMask.DATE_TIME_MASK, true).isValid()
+		);
+	};
+
 	const onValueChange = (searchValue: string, abortController: AbortController) => {
-		if (!isIdMode || !searchValue || filteredSearchHistory.length > 1) return;
+		if (!isIdMode || !searchValue || filteredSearchHistory.length > 1 || isTimestamp(searchValue))
+			return;
 
 		if (filteredSearchHistory.length !== 1) {
 			fetchObjectById(searchValue, abortController);

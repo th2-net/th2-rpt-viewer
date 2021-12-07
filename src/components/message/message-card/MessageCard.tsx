@@ -135,6 +135,8 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		selectedStore.toggleMessagePin(message);
 	}
 
+	const isExported = messagesStore.exportStore.isExported(message);
+
 	return (
 		<MessageCardBase
 			message={message}
@@ -149,7 +151,10 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			isSoftFiltered={isSoftFiltered}
 			toogleMessagePin={toogleMessagePin}
 			isDetailed={isDetailed}
+			isExported={isExported}
+			isExport={messagesStore.exportStore.isExport}
 			sortOrderItems={sortOrderItems}
+			addMessageToExport={() => messagesStore.exportStore.addMessageToExport(message)}
 		/>
 	);
 });

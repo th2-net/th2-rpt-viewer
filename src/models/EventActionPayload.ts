@@ -20,13 +20,15 @@ export type EventBodyPayload =
 	| MessagePayload
 	| TablePayload
 	| VerificationPayload
-	| TreeTablePayload;
+	| TreeTablePayload
+	| ReferencePayload;
 
 export enum EventBodyPayloadType {
 	MESSAGE = 'message',
 	TABLE = 'table',
 	TREE_TABLE = 'treeTable',
 	VERIFICATION = 'verification',
+	REFERENCE = 'reference',
 }
 
 export interface MessagePayload {
@@ -45,6 +47,11 @@ export interface TreeTablePayload {
 	rows: {
 		[rowName: string]: TreeTableRow | TreeTableCollection;
 	};
+}
+
+export interface ReferencePayload {
+	type: EventBodyPayloadType.REFERENCE;
+	eventId: string;
 }
 
 export interface TreeTableRow {
@@ -76,6 +83,7 @@ export interface VerificationPayloadField {
 	key: boolean;
 	actual: string;
 	expected: string;
+	hint?: string;
 	fields?: {
 		[field: string]: VerificationPayloadField;
 	};

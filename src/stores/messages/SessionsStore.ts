@@ -66,7 +66,7 @@ export class SessionsStore {
 			);
 			this.sessions = sortByTimestamp(sessions);
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		}
 	};
 }

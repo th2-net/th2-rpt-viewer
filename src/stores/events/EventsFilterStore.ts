@@ -92,6 +92,9 @@ export default class EventsFilterStore {
 	@observable
 	public range: TimeRange = getDefaultTimeRange(this.graphStore.interval);
 
+	@observable
+	public isOpen = false;
+
 	@computed
 	public get timestampFrom(): number {
 		return this.range[0];
@@ -124,14 +127,19 @@ export default class EventsFilterStore {
 	};
 
 	@action
-	public setEventsFilter(filter: EventsFilter | null) {
+	public setEventsFilter = (filter: EventsFilter | null) => {
 		this.filter = filter;
-	}
+	};
 
 	@action
-	public resetEventsFilter(): EventsFilter | null {
+	public resetEventsFilter = (): EventsFilter | null => {
 		return getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
-	}
+	};
+
+	@action
+	public setIsOpen = (state: boolean) => {
+		this.isOpen = state;
+	};
 
 	@action
 	private initSSEFilter = (filterInfo: EventsFiltersInfo[]) => {

@@ -33,6 +33,8 @@ import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
+import MessagesExportStore from './MessagesExportStore';
+import { getItemAt } from '../../helpers/array';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -45,9 +47,11 @@ export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string |
 export default class MessagesStore {
 	private attachedMessagesSubscription: IReactionDisposer;
 
-	public filterStore = new MessagesFilterStore(this.searchStore);
+	public filterStore: MessagesFilterStore;
 
-	public dataStore = new MessagesDataProviderStore(this, this.api);
+	public dataStore: MessagesDataProviderStore;
+
+	public exportStore = new MessagesExportStore();
 
 	@observable
 	public hoveredMessage: EventMessage | null = null;
@@ -76,7 +80,7 @@ export default class MessagesStore {
 	@observable
 	public showFilterChangeHint = false;
 
-	/* 
+	/*
 		This is used for filter change hint. Represents either last clicked message
 		or attached messages
 	*/
@@ -92,6 +96,8 @@ export default class MessagesStore {
 		private sessionsStore: SessionsStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
+		this.filterStore = new MessagesFilterStore(this.searchStore);
+		this.dataStore = new MessagesDataProviderStore(this, this.api);
 		this.init(defaultState);
 
 		this.attachedMessagesSubscription = reaction(
@@ -102,6 +108,8 @@ export default class MessagesStore {
 		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
 
 		reaction(() => this.hoveredMessage, this.onMessageHover);
+
+		reaction(() => this.filterStore.filter, this.exportStore.disableExport);
 	}
 
 	@computed
@@ -118,8 +126,8 @@ export default class MessagesStore {
 	public get panelRange(): TimeRange {
 		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
 
-		const messageTo = this.dataStore.messages[startIndex];
-		const messageFrom = this.dataStore.messages[endIndex];
+		const messageTo = getItemAt(this.dataStore.messages, startIndex);
+		const messageFrom = getItemAt(this.dataStore.messages, endIndex);
 
 		if (messageFrom && messageTo) {
 			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
@@ -159,11 +167,12 @@ export default class MessagesStore {
 	};
 
 	@action
-	public scrollToMessage = async (messageId: string) => {
+	public scrollToMessage = (messageId: string) => {
 		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === messageId);
-		if (messageIndex !== -1) {
-			this.scrolledIndex = new Number(messageIndex);
-		}
+
+		if (messageIndex === -1) throw new Error(`Message with ${messageId} id doesn't exists`);
+
+		this.scrolledIndex = new Number(messageIndex);
 	};
 
 	@action
@@ -175,11 +184,17 @@ export default class MessagesStore {
 		if (sseFilters) {
 			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
 		}
+		if (
+			this.selectedMessageId &&
+			!this.workspaceStore.attachedMessagesIds.includes(this.selectedMessageId.valueOf())
+		) {
+			this.selectedMessageId = null;
+		}
 
+		this.exportStore.disableExport();
 		this.sessionsStore.saveSessions(filter.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
-		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
 		this.filterStore.setMessagesFilter(filter, sseFilters, isSoftFilterApplied);
 	};
@@ -235,6 +250,17 @@ export default class MessagesStore {
 	};
 
 	@action
+	public selectAttachedMessage = (message: EventMessage) => {
+		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === message.messageId);
+		if (messageIndex !== -1) {
+			this.selectedMessageId = new String(message.messageId);
+			this.highlightedMessageId = message.messageId;
+		} else {
+			this.onMessageSelect(message);
+		}
+	};
+
+	@action
 	public onAttachedMessagesChange = (attachedMessages: EventMessage[]) => {
 		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(attachedMessages);
 
@@ -246,7 +272,7 @@ export default class MessagesStore {
 			return;
 		}
 
-		const mostRecentMessage = sortMessagesByTimestamp(attachedMessages)[0];
+		const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
 
 		if (mostRecentMessage) {
 			const streams = this.filterStore.filter.streams;
