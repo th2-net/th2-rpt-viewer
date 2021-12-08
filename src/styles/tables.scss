@@ -170,16 +170,6 @@
 			&:hover td {
 				background-color: darken($color: $tableRowFailedBackgroundColor, $amount: 10);
 			}
-
-			&.null {
-				& td {
-					background-color: $tableRowFailedNullBackgroundColor;
-				}
-
-				&:hover td {
-					background-color: darken($color: $tableRowFailedNullBackgroundColor, $amount: 10);
-				}
-			}
 		}
 
 		&.na {
