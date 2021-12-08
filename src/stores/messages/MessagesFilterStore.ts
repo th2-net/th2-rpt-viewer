@@ -91,7 +91,11 @@ export default class MessagesFilterStore {
 			searchDirection: 'previous',
 			resultCountLimit: 15,
 			filters: filtersToAdd,
-			...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
+			...Object.fromEntries(
+				[...filterValues, ...filterInclusion, ...filterConjunct].filter(
+					filtersArr => filtersArr.length,
+				),
+			),
 		};
 
 		return queryParams;
