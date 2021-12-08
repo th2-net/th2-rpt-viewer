@@ -317,7 +317,7 @@ export default class MessagesStore {
 		filter change hint window is shown to a user. And it is up to him to decide
 		if he wants to reset streams to message(s) streams and update filters
 	*/
-	private handleFilterHint = (message: EventMessage | EventMessage[]): boolean => {
+	private handleFilterHint = async (message: EventMessage | EventMessage[]): Promise<boolean> => {
 		this.hintMessages = Array.isArray(message) ? message : [message];
 
 		if (this.hintMessages.length === 0) {
@@ -325,14 +325,13 @@ export default class MessagesStore {
 			return this.showFilterChangeHint;
 		}
 
-		const sseFilter = this.filterStore.sseMessagesFilter;
-		const areFiltersApplied = [
-			sseFilter
-				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
-				: [],
-		].some(filterValues => filterValues.length > 0);
+		const matchMessageParams = this.filterStore.filterParams;
 
-		this.showFilterChangeHint = areFiltersApplied;
+		const hintMessagesMatch = await Promise.all(
+			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.messageId, matchMessageParams)),
+		);
+
+		this.showFilterChangeHint = !hintMessagesMatch.every(m => m);
 
 		return this.showFilterChangeHint;
 	};
