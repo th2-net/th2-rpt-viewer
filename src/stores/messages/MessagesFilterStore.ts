@@ -139,7 +139,9 @@ export default class MessagesFilterStore {
 
 	@action
 	public resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
+		const filter = getDefaultMessagesFiltersState(this.searchStore.messagesFilterInfo);
 		const defaultMessagesFilter = getDefaultMessagesFilter();
+		this.sseMessagesFilter = filter;
 		this.isSoftFilter = false;
 		this.filter = {
 			...defaultMessagesFilter,

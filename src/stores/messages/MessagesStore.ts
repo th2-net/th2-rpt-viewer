@@ -232,7 +232,7 @@ export default class MessagesStore {
 
 	@action
 	public onMessageSelect = async (message: EventMessage) => {
-		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(message);
+		const shouldShowFilterHintBeforeRefetchingMessages = await this.handleFilterHint(message);
 
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
 			const streams = this.filterStore.filter.streams;
@@ -261,8 +261,10 @@ export default class MessagesStore {
 	};
 
 	@action
-	public onAttachedMessagesChange = (attachedMessages: EventMessage[]) => {
-		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(attachedMessages);
+	public onAttachedMessagesChange = async (attachedMessages: EventMessage[]) => {
+		const shouldShowFilterHintBeforeRefetchingMessages = await this.handleFilterHint(
+			attachedMessages,
+		);
 
 		if (
 			this.dataStore.isLoadingNextMessages ||
