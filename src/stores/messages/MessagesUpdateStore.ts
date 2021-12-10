@@ -51,7 +51,7 @@ export default class MessagesUpdateStore {
 			},
 			{
 				onResponse: incommingMessages => {
-					if (messages.length) {
+					if (incommingMessages.length) {
 						onNextChannelResponse(incommingMessages);
 						this.scrollToMessage(incommingMessages[0].messageId);
 					}

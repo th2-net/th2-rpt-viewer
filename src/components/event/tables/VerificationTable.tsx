@@ -383,7 +383,6 @@ class VerificationTableBase extends React.Component<Props, State> {
 		const expectedValueClassName = createStyleSelector(
 			'ver-table-row-value',
 			isToggler ? 'notype' : null,
-			expected === 'null' ? 'novalue' : null,
 		);
 
 		const operationClassName = createStyleSelector('ver-table-row-operation', operation);
@@ -499,8 +498,16 @@ class VerificationTableBase extends React.Component<Props, State> {
 		wrapperClassName: string | null = null,
 		fakeContent: string = content || '',
 	): React.ReactNode {
-		if (content == null) {
-			return wrap(wrapperClassName, null);
+		if (content === null) {
+			return wrap(createStyleSelector(wrapperClassName || '', 'novalue'), 'null');
+		}
+
+		if (content === '') {
+			return content;
+		}
+
+		if (content === undefined) {
+			return wrap(createStyleSelector(wrapperClassName || '', 'novalue'), 'missing value');
 		}
 
 		return wrap(wrapperClassName, fakeContent);

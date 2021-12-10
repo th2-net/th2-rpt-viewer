@@ -34,6 +34,7 @@ import MessagesFilterStore, { MessagesFilterStoreInitialState } from './Messages
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
+import { getItemAt } from '../../helpers/array';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -125,8 +126,8 @@ export default class MessagesStore {
 	public get panelRange(): TimeRange {
 		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
 
-		const messageTo = this.dataStore.messages[startIndex];
-		const messageFrom = this.dataStore.messages[endIndex];
+		const messageTo = getItemAt(this.dataStore.messages, startIndex);
+		const messageFrom = getItemAt(this.dataStore.messages, endIndex);
 
 		if (messageFrom && messageTo) {
 			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
@@ -183,12 +184,17 @@ export default class MessagesStore {
 		if (sseFilters) {
 			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
 		}
+		if (
+			this.selectedMessageId &&
+			!this.workspaceStore.attachedMessagesIds.includes(this.selectedMessageId.valueOf())
+		) {
+			this.selectedMessageId = null;
+		}
 
 		this.exportStore.disableExport();
 		this.sessionsStore.saveSessions(filter.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
-		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
 		this.filterStore.setMessagesFilter(filter, sseFilters, isSoftFilterApplied);
 	};
@@ -266,7 +272,7 @@ export default class MessagesStore {
 			return;
 		}
 
-		const mostRecentMessage = sortMessagesByTimestamp(attachedMessages)[0];
+		const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
 
 		if (mostRecentMessage) {
 			const streams = this.filterStore.filter.streams;

@@ -30,6 +30,7 @@ import EventsFilter from '../../models/filter/EventsFilter';
 import { TimeRange } from '../../models/Timestamp';
 import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import { isAbortError } from '../../helpers/fetch';
+import { getItemAt } from '../../helpers/array';
 
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
@@ -275,7 +276,7 @@ export default class EventsDataStore {
 			}
 		} finally {
 			if (!isAborted) {
-				let rootNode = parentNodes[0];
+				let rootNode = getItemAt(parentNodes, 0);
 
 				if (!rootNode || !isRootEvent(rootNode)) {
 					const cachedRootNode =
@@ -304,6 +305,9 @@ export default class EventsDataStore {
 						(isRootEvent(rootNode) || rootNode.isUnknown) &&
 						!this.rootEventIds.includes(rootNode.eventId)
 					) {
+						if (this.eventStore.targetNodeId) {
+							this.eventStore.scrollToEvent(this.eventStore.targetNodeId);
+						}
 						this.rootEventIds.push(rootNode.eventId);
 					}
 				} else {
@@ -387,7 +391,7 @@ export default class EventsDataStore {
 		if (parentNode) {
 			const eventsChildren = this.eventStore.getChildrenNodes(parentId);
 
-			const lastChild = eventsChildren[eventsChildren.length - 1];
+			const lastChild = getItemAt(eventsChildren, eventsChildren.length - 1);
 
 			const loader = new EventsSSEChannel(
 				{

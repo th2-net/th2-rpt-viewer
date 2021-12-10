@@ -237,8 +237,8 @@
 			margin-top: calc(50% - 8px);
 
 			&.visible {
-              cursor: pointer;
-              @include icon(url(../../resources/icons/info.svg), 16px, 16px);
+				cursor: pointer;
+				@include icon(url(../../resources/icons/info.svg), 16px, 16px);
 			}
 		}
 
