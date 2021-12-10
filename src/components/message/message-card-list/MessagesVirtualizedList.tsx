@@ -67,22 +67,33 @@ const MessagesVirtualizedList = (props: Props) => {
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
-	const {
-		className,
-		overscan = 3,
-		itemRenderer,
-		loadPrevMessages,
-		loadNextMessages,
-		scrolledIndex,
-	} = props;
+	const { className, overscan = 3, itemRenderer, loadPrevMessages, loadNextMessages } = props;
+
+	const [[firstPrevChunkIsLoaded, firstNextChunkIsLoaded], setLoadedChunks] = React.useState<
+		[boolean, boolean]
+	>([false, false]);
 
 	React.useEffect(() => {
-		if (scrolledIndex !== null) {
+		if (!searchChannelNext?.isLoading) setLoadedChunks(loadedChunks => [true, loadedChunks[1]]);
+		if (!searchChannelPrev?.isLoading) setLoadedChunks(loadedChunks => [loadedChunks[0], true]);
+	}, [searchChannelNext?.isLoading, searchChannelPrev?.isLoading]);
+
+	React.useEffect(() => {
+		const selectedMessageId = messageStore.selectedMessageId?.valueOf();
+		if (selectedMessageId) {
 			raf(() => {
-				virtuoso.current?.scrollToIndex({ index: scrolledIndex.valueOf(), align: 'center' });
+				const index = messageStore.dataStore.messages.findIndex(
+					m => m.messageId === selectedMessageId,
+				);
+				if (index !== -1) virtuoso.current?.scrollToIndex({ index, align: 'center' });
 			}, 3);
 		}
-	}, [scrolledIndex]);
+	}, [
+		messageStore.selectedMessageId,
+		messageStore,
+		firstPrevChunkIsLoaded,
+		firstNextChunkIsLoaded,
+	]);
 
 	const debouncedScrollHandler = useDebouncedCallback(
 		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
@@ -132,16 +143,17 @@ const MessagesVirtualizedList = (props: Props) => {
 		<Virtuoso
 			data={messageList}
 			firstItemIndex={startIndex}
-			initialTopMostItemIndex={initialItemCount}
+			initialTopMostItemIndex={initialItemCount - 1}
 			ref={virtuoso}
 			overscan={overscan}
 			itemContent={itemRenderer}
 			style={{ height: '100%', width: '100%' }}
 			className={className}
-			itemsRendered={messages => {
+			itemsRendered={renderedMessages => {
 				messageStore.currentMessagesIndexesRange = {
-					startIndex: (messages && messages[0]?.originalIndex) ?? 0,
-					endIndex: (messages && messages[messages.length - 1]?.originalIndex) ?? 0,
+					startIndex: (renderedMessages && renderedMessages[0]?.originalIndex) ?? 0,
+					endIndex:
+						(renderedMessages && renderedMessages[renderedMessages.length - 1]?.originalIndex) ?? 0,
 				};
 			}}
 			onScroll={onScroll}
