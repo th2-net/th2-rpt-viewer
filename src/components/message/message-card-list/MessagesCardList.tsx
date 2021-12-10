@@ -37,7 +37,9 @@ function MessageCardList() {
 
 	if (
 		messagesDataStore.messages.length === 0 &&
-		(messagesDataStore.isLoadingNextMessages || messagesDataStore.isLoadingPreviousMessages)
+		(messagesDataStore.isLoadingNextMessages ||
+			messagesDataStore.isLoadingPreviousMessages ||
+			messagesStore.isLoadingAttachedMessages)
 	) {
 		return <SplashScreen />;
 	}
