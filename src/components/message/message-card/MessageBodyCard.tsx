@@ -43,14 +43,24 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 	);
 
 	const secondarySortedFields: [string, MessageBodyField][] = Object.entries(fields)
-		.filter(([key]) => !sortOrder.includes(key))
+		.filter(([key]) => key.includes('-') && !sortOrder.includes(key))
+		.sort((a: [string, MessageBodyField], b: [string, MessageBodyField]) => {
+			const [keyA] = a;
+			const [keyB] = b;
+			return +keyA.charAt(keyA.length - 1) > +keyB.charAt(keyB.length - 1) ? 1 : -1;
+		});
+
+	const secondarySortedKeys = secondarySortedFields.map(([key]) => key);
+
+	const tertiarySortedFields: [string, MessageBodyField][] = Object.entries(fields)
+		.filter(([key]) => !sortOrder.includes(key) && !secondarySortedKeys.includes(key))
 		.sort((a: [string, MessageBodyField], b: [string, MessageBodyField]) => {
 			const [keyA] = a;
 			const [keyB] = b;
 			return keyA.toLowerCase() > keyB.toLowerCase() ? 1 : -1;
 		});
 
-	return [...primarySortedFields, ...secondarySortedFields];
+	return [...primarySortedFields, ...secondarySortedFields, ...tertiarySortedFields];
 };
 
 function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrderItems }: Props) {
