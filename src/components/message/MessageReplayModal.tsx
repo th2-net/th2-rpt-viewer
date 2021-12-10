@@ -17,6 +17,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'framer-motion';
+import moment from 'moment';
 import { MessageFilterState, MultipleStringFilter } from '../search-panel/SearchPanelFilters';
 import {
 	CompoundFilterRow,
@@ -263,12 +264,12 @@ function MessageReplayModal() {
 
 	function toggleReplayModal() {
 		if (!isOpen) {
-			const { timestampTo } = messagesStore.filterStore.filter;
+			const { timestampTo, timestampFrom } = messagesStore.filterStore.filter;
 
 			setStreams(messagesStore.filterStore.filter.streams.slice());
 			setCurrentStream('');
-			setStartTimestamp(timestampTo);
-			setEndTimestamp(timestampTo ? timestampTo + 15 * 60 * 1000 : null);
+			setStartTimestamp(timestampFrom || moment().subtract(30, 'minutes').valueOf());
+			setEndTimestamp(timestampTo);
 			setCurrentValues({
 				type: '',
 				body: '',
