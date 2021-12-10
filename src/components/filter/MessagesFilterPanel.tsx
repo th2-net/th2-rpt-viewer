@@ -108,7 +108,8 @@ const MessagesFilterPanel = () => {
 		() =>
 			(messagesDataStore.messages.length === 0 && messagesDataStore.isLoading) ||
 			(filterStore.isSoftFilter &&
-				[...messagesDataStore.isMatchingMessages.values()].some(Boolean)),
+				[...messagesDataStore.isMatchingMessages.values()].some(Boolean)) ||
+			messagesStore.isLoadingAttachedMessages,
 	).get();
 
 	const compoundFilterRow: Array<CompoundFilterRow> = React.useMemo(() => {
