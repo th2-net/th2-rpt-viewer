@@ -100,7 +100,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 		(isFocused || config.values.length > 0) && !config.disabled ? 'active' : null,
 		config.disabled ? 'disabled' : null,
 	);
-	const wrapperClassName = createBemBlock('filter-row', config.wrapperClassName || null);
+	const wrapperClassName = createBemBlock('filter-row scrollable', config.wrapperClassName || null);
 	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
 
 	return (
