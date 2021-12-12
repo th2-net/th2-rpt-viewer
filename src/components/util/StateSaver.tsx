@@ -20,15 +20,15 @@ export interface RecoverableElementProps {
 	stateKey: string;
 }
 
-export interface StateSaverContext {
+export type StateSaverContextType = {
 	states: Map<string, any>;
 	saveState: (stateId: string, nextState: any) => any;
-}
+};
 
-export const { Provider, Consumer } = React.createContext({} as StateSaverContext);
+export const StateSaverContext = React.createContext({} as StateSaverContextType);
 
 export interface StateSaverProps<S> extends RecoverableElementProps {
-	children: (state: S, stateHandler: (nextState: S) => void) => React.ReactNode;
+	children: (state: S, stateHandler: (nextState: S) => void) => JSX.Element;
 	getDefaultState?: () => S;
 }
 
@@ -37,29 +37,33 @@ export interface StateSaverProps<S> extends RecoverableElementProps {
  * @param props renderChild - child render function that recieves recovered state,
  * stateKey - key for recovering state from store
  */
-const StateSaver = <S extends {}>({ children, stateKey, getDefaultState }: StateSaverProps<S>) => (
-	<Consumer>
-		{({ states = new Map(), saveState }: StateSaverContext) => {
-			const saveNextState = (nextState: S) => {
-				if (saveState) {
-					saveState(stateKey, nextState);
-				}
-			};
 
-			if (states.has(stateKey) || !getDefaultState) {
-				return children(states.get(stateKey), saveNextState);
+const StateSaver = <S extends {}>({ children, stateKey, getDefaultState }: StateSaverProps<S>) => {
+	const { states = new Map(), saveState } = React.useContext(StateSaverContext);
+	const [defaultState] = React.useState(() => getDefaultState?.());
+
+	const savedState = states.get(stateKey);
+	const prevSavedState = React.useRef(defaultState);
+
+	const saveNextState = React.useCallback(
+		(nextState: S) => {
+			if (saveState) {
+				saveState(stateKey, nextState);
 			}
-			const defaultState = getDefaultState();
+		},
+		[saveState],
+	);
 
-			return (
-				<DefaultStateSaver saveState={saveNextState} defaultState={defaultState}>
-					{children(defaultState, saveNextState)}
-				</DefaultStateSaver>
-			);
-		}}
-	</Consumer>
-);
-
+	if ((savedState && savedState !== prevSavedState.current) || !defaultState) {
+		prevSavedState.current = savedState;
+		return children(savedState, saveNextState);
+	}
+	return (
+		<DefaultStateSaver saveState={saveNextState} defaultState={defaultState}>
+			{children(defaultState, saveNextState)}
+		</DefaultStateSaver>
+	);
+};
 interface DefaultStateSaverProps<S> {
 	saveState: (nextState: S) => void;
 	defaultState: S;
