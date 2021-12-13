@@ -157,7 +157,7 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 		}, [handleKeyDown]);
 
 		React.useEffect(() => {
-			const showAutocomplete = Boolean((alwaysShow || (anchor && value)) && list.length !== 1);
+			const showAutocomplete = Boolean(alwaysShow || (anchor && value));
 
 			toggleAutocompleteList(showAutocomplete);
 		}, [value, list, focusedOption, anchor]);

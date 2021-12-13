@@ -64,6 +64,8 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 
 	const autocompleteListRef = React.useRef<HTMLDivElement>(null);
 
+	const selectedOptionRef = React.useRef<string | null>(null);
+
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLElement | null>(null);
 
 	const onClickOutside = React.useCallback(
@@ -92,6 +94,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 
 	const onChange: React.ChangeEventHandler<HTMLInputElement> = e => {
 		setValue(e.target.value);
+		selectedOptionRef.current = null;
 	};
 
 	const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
@@ -114,6 +117,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		(selectedOption: string) => {
 			onSubmit(selectedOption);
 			setAutocompleteAnchor(null);
+			selectedOptionRef.current = selectedOption;
 		},
 		[setValue, onSubmit],
 	);
@@ -133,7 +137,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	};
 
 	React.useEffect(() => {
-		if (value && !autocompleteAnchor) {
+		if (value && !autocompleteAnchor && selectedOptionRef.current !== value) {
 			setAutocompleteAnchor(anchor || null);
 		}
 	}, [value]);
