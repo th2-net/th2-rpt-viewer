@@ -162,6 +162,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 					anchor={autocompleteAnchor}
 					onSelect={onAutocompleteSelect}
 					alwaysShow={alwaysShowAutocomplete}
+					setAnchor={setAutocompleteAnchor}
 				/>
 			)}
 		</React.Fragment>
