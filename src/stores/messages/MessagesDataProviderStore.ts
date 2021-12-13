@@ -61,6 +61,9 @@ export default class MessagesDataProviderStore {
 	public searchChannelNext: MessagesSSEChannel | null = null;
 
 	@observable
+	public anchorChannel: MessagesSSEChannel | null = null;
+
+	@observable
 	public startIndex = 10000;
 
 	@observable
@@ -94,7 +97,11 @@ export default class MessagesDataProviderStore {
 
 	@computed
 	public get isLoading(): boolean {
-		return this.isLoadingNextMessages || this.isLoadingPreviousMessages;
+		return (
+			this.isLoadingNextMessages ||
+			this.isLoadingPreviousMessages ||
+			Boolean(this.anchorChannel?.isLoading)
+		);
 	}
 
 	private messageAC: AbortController | null = null;
@@ -143,7 +150,7 @@ export default class MessagesDataProviderStore {
 					}
 				}
 			} else {
-				const anchorChannel = new MessagesSSEChannel(
+				this.anchorChannel = new MessagesSSEChannel(
 					{
 						...queryParams,
 						searchDirection: 'previous',
@@ -156,14 +163,14 @@ export default class MessagesDataProviderStore {
 						chunkSize: 1,
 					},
 				);
-
-				[message] = await anchorChannel.loadAndSubscribe();
-				if (!message) anchorChannel.stop();
+				[message] = await this.anchorChannel.loadAndSubscribe({ initialResponseTimeoutMs: null });
+				if (!message) this.anchorChannel.stop();
+				this.anchorChannel = null;
 			}
 
 			const [nextMessages, prevMessages] = await Promise.all([
-				this.searchChannelNext.loadAndSubscribe(message?.messageId),
-				this.searchChannelPrev.loadAndSubscribe(message?.messageId),
+				this.searchChannelNext.loadAndSubscribe({ resumeFromId: message?.messageId }),
+				this.searchChannelPrev.loadAndSubscribe({ resumeFromId: message?.messageId }),
 			]);
 
 			const firstNextMessage = nextMessages[nextMessages.length - 1];
@@ -195,8 +202,10 @@ export default class MessagesDataProviderStore {
 		this.messageAC?.abort();
 		this.searchChannelPrev?.stop();
 		this.searchChannelNext?.stop();
+		this.anchorChannel?.stop();
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
+		this.anchorChannel = null;
 		this.resetMessagesDataState(isError);
 	};
 
@@ -351,7 +360,7 @@ export default class MessagesDataProviderStore {
 			return [];
 		}
 
-		return this.searchChannelPrev.loadAndSubscribe(resumeFromId);
+		return this.searchChannelPrev.loadAndSubscribe({ resumeFromId });
 	};
 
 	@action
@@ -364,7 +373,7 @@ export default class MessagesDataProviderStore {
 			return [];
 		}
 
-		return this.searchChannelNext.loadAndSubscribe(resumeFromId);
+		return this.searchChannelNext.loadAndSubscribe({ resumeFromId });
 	};
 
 	@action

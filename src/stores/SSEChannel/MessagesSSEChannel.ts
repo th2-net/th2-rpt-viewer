@@ -30,8 +30,6 @@ export type MessageSSEEventListeners = SSEEventListeners<EventMessage> & {
 export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	private readonly type: SSEChannelType = 'message';
 
-	private readonly initialResponseTimeoutMs = 2000;
-
 	private messagesIdsEvent: MessagesIdsEvent | null = null;
 
 	constructor(
@@ -90,13 +88,19 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		Returns a promise within initialResponseTimeoutMs or successful fetch
 		and subscribes on changes 
 	*/
-	public loadAndSubscribe = async (resumeFromId?: string): Promise<EventMessage[]> => {
+	public loadAndSubscribe = async (options?: {
+		resumeFromId?: string;
+		initialResponseTimeoutMs?: number | null;
+	}): Promise<EventMessage[]> => {
+		const { resumeFromId, initialResponseTimeoutMs = 2000 } = options || {};
 		this.initConnection(resumeFromId);
 
-		const messagesChunk = await Promise.race([
-			this.getInitialResponseWithinTimeout(this.initialResponseTimeoutMs),
-			this.getFetchedChunk(),
-		]);
+		const messagesChunk = await (initialResponseTimeoutMs
+			? Promise.race([
+					this.getInitialResponseWithinTimeout(initialResponseTimeoutMs),
+					this.getFetchedChunk(),
+			  ])
+			: this.getFetchedChunk());
 
 		return messagesChunk;
 	};
