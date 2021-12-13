@@ -113,6 +113,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 	const onAutocompleteSelect = React.useCallback(
 		(selectedOption: string) => {
 			onSubmit(selectedOption);
+			setAutocompleteAnchor(null);
 		},
 		[setValue, onSubmit],
 	);
@@ -162,7 +163,6 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 					anchor={autocompleteAnchor}
 					onSelect={onAutocompleteSelect}
 					alwaysShow={alwaysShowAutocomplete}
-					setAnchor={setAutocompleteAnchor}
 				/>
 			)}
 		</React.Fragment>
