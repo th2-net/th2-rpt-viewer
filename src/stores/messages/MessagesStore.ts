@@ -123,6 +123,11 @@ export default class MessagesStore {
 	}
 
 	@computed
+	public get isLoadingAttachedMessages() {
+		return this.workspaceStore.isLoadingAttachedMessages;
+	}
+
+	@computed
 	public get panelRange(): TimeRange {
 		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
 
