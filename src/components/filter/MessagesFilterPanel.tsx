@@ -293,7 +293,11 @@ const MessagesFilterPanel = () => {
 				renderFooter={renderFooter}
 			/>
 			<MessageReplayModal />
-			<MessageFilterWarning />
+			{messagesStore.checkingAttachedMessages ? (
+				<div style={{ marginLeft: 5 }} className='filter__loading' />
+			) : (
+				<MessageFilterWarning />
+			)}
 			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />
 			<MessageExport
 				isExport={messagesStore.exportStore.isExport}

@@ -80,6 +80,9 @@ export default class MessagesStore {
 	@observable
 	public showFilterChangeHint = false;
 
+	@observable
+	public checkingAttachedMessages = false;
+
 	/*
 		This is used for filter change hint. Represents either last clicked message
 		or attached messages
@@ -140,6 +143,11 @@ export default class MessagesStore {
 		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
 		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];
 	}
+
+	@action
+	private setCheckingAttachedMessages = (isChecking: boolean) => {
+		this.checkingAttachedMessages = isChecking;
+	};
 
 	@action
 	public setHoveredMessage(message: EventMessage | null) {
@@ -332,11 +340,16 @@ export default class MessagesStore {
 			return this.showFilterChangeHint;
 		}
 
+		this.setCheckingAttachedMessages(true);
+
 		const matchMessageParams = this.filterStore.filterParams;
 
 		const hintMessagesMatch = await Promise.all(
 			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.messageId, matchMessageParams)),
-		);
+		).then(match => {
+			this.setCheckingAttachedMessages(false);
+			return match;
+		});
 
 		this.showFilterChangeHint = !hintMessagesMatch.every(m => m);
 
