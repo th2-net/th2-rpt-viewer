@@ -23,6 +23,7 @@ import { EventMessage, isScreenshotMessage, MessageViewType } from '../../../mod
 import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
+import Checkbox from '../../util/Checkbox';
 import MessageCardTools, { MessageCardToolsConfig } from './MessageCardTools';
 import '../../../styles/messages.scss';
 
@@ -218,4 +219,21 @@ function calculateHueValue(session: string): number {
 	const hashCode = getHashCode(session);
 
 	return (hashCode % HUE_SEGMENTS_COUNT) * (360 / HUE_SEGMENTS_COUNT);
+}
+
+function getMessageIdWithHighlightedSession(part: string, i: number) {
+	if (i === 0) {
+		return <b>{part}</b>;
+	}
+	return `:${part}`;
+}
+
+function extendedGetMessageIdWithHighlightedSession(part: string, i: number) {
+	if (i === 0) {
+		return <b>{part}</b>;
+	}
+	if (i === 1) {
+		return <b>{`:${part}`}</b>;
+	}
+	return `:${part}`;
 }
