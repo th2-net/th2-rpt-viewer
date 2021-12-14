@@ -109,7 +109,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
 
-		const queryParams = this.messagesStore.filterStore.filterParams;
+		const queryParams = await this.messagesStore.filterStore.filterParams;
 
 		this.createPreviousMessageChannelEventSource(
 			{
@@ -403,7 +403,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	};
 
 	@action
-	public keepLoading = (direction: 'next' | 'previous') => {
+	public keepLoading = async (direction: 'next' | 'previous') => {
 		if (
 			!this.searchChannelNext ||
 			!this.searchChannelPrev ||
@@ -411,7 +411,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		)
 			return;
 
-		const queryParams = this.messagesStore.filterStore.filterParams;
+		const queryParams = await this.messagesStore.filterStore.filterParams;
 
 		const query: MessagesSSEParams = {
 			...queryParams,

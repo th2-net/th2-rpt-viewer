@@ -32,6 +32,7 @@ import EventsDataStore from './EventsDataStore';
 import { EventFilterState } from '../../components/search-panel/SearchPanelFilters';
 import EventsFilter from '../../models/filter/EventsFilter';
 import FiltersHistoryStore from '../FiltersHistoryStore';
+import BooksStore from '../BooksStore';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
@@ -63,6 +64,7 @@ export default class EventsStore {
 		private searchPanelStore: SearchStore,
 		private api: ApiSchema,
 		private filterHistoryStore: FiltersHistoryStore,
+		private booksStore: BooksStore,
 		defaultState: EventStoreDefaultStateType,
 	) {
 		const initialState = !defaultState || typeof defaultState === 'string' ? {} : defaultState;
@@ -75,10 +77,16 @@ export default class EventsStore {
 			flattenedListView: initialState.flattenedListView,
 			panelArea: initialState.panelArea,
 		});
-		this.searchStore = new EventsSearchStore(this.api, this, {
+		this.searchStore = new EventsSearchStore(this.api, this, this.booksStore, {
 			searchPatterns: initialState.search,
 		});
-		this.eventDataStore = new EventsDataStore(this, this.filterStore, this.api);
+		this.eventDataStore = new EventsDataStore(
+			this,
+			this.filterStore,
+			this.booksStore,
+			this.api,
+			initialState.selectedEventId,
+		);
 
 		this.init(defaultState);
 

@@ -31,6 +31,7 @@ import { TimeRange } from '../../models/Timestamp';
 import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import { isAbortError } from '../../helpers/fetch';
 import { getItemAt } from '../../helpers/array';
+import BooksStore from '../BooksStore';
 
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
@@ -43,7 +44,9 @@ export default class EventsDataStore {
 	constructor(
 		private eventStore: EventsStore,
 		private filterStore: EventsFilterStore,
+		private booksStore: BooksStore,
 		private api: ApiSchema,
+		targetEventId?: string,
 	) {
 		reaction(() => this.targetNodePath, this.preloadSelectedPathChildren, {
 			equals: (pathA: string[], pathB: string[]) => {
@@ -54,6 +57,18 @@ export default class EventsDataStore {
 				);
 			},
 		});
+
+		reaction(
+			() => this.booksStore.selectedBook,
+			(selectedBook, prevSelectedBook) =>
+				selectedBook &&
+				prevSelectedBook &&
+				this.fetchEventTree({
+					filter: this.filterStore.filter,
+					timeRange: this.filterStore.range,
+					targetEventId,
+				}),
+		);
 	}
 
 	@observable.ref
@@ -107,7 +122,7 @@ export default class EventsDataStore {
 	}
 
 	@action
-	public fetchEventTree = (options: FetchEventTreeOptions) => {
+	public fetchEventTree = async (options: FetchEventTreeOptions) => {
 		const { timeRange, filter, targetEventId } = options;
 
 		this.resetEventsTreeState({ isLoading: true });
@@ -117,6 +132,14 @@ export default class EventsDataStore {
 
 		this.filterStore.setRange(timeRange);
 		this.filterStore.setEventsFilter(filter);
+
+		if (this.booksStore.isLoading) {
+			await when(() => !this.booksStore.isLoading);
+		}
+
+		if (!this.booksStore.selectedBook) {
+			throw new Error("BooksStore doesn't contain a selected books");
+		}
 
 		if (targetEventId) {
 			this.loadTargetNode(targetEventId);
@@ -134,6 +157,7 @@ export default class EventsDataStore {
 						searchDirection: 'next',
 						// load 1 more to see if there are more children
 						limitForParent: this.CHILDREN_COUNT_LIMIT + 1,
+						book: this.booksStore.selectedBook.name,
 					},
 				},
 				{
@@ -380,10 +404,18 @@ export default class EventsDataStore {
 	public childrenAreUnknown: Map<string, boolean> = new Map();
 
 	@action
-	public loadChildren = (parentId: string) => {
+	public loadChildren = async (parentId: string) => {
 		if (this.childrenLoaders[parentId]) {
 			this.childrenLoaders[parentId].loader.stop();
 			delete this.childrenLoaders[parentId];
+		}
+
+		if (this.booksStore.isLoading) {
+			await when(() => !this.booksStore.isLoading);
+		}
+
+		if (!this.booksStore.selectedBook) {
+			throw new Error("BooksStore doesn't contain a selected books");
 		}
 
 		const parentNode = this.eventsCache.get(parentId);
@@ -403,6 +435,7 @@ export default class EventsDataStore {
 						// load 1 more to see if there are more children
 						resultCountLimit: this.CHILDREN_COUNT_LIMIT + 1,
 						searchDirection: 'next',
+						book: this.booksStore.selectedBook.name,
 					},
 				},
 				{

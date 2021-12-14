@@ -30,6 +30,7 @@ import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import MessagesUpdateButton from '../message/MessagesUpdateButton';
 import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
+import { timestampToNumber } from '../../helpers/date';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
@@ -159,6 +160,8 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		scrolledIndex,
 	} = props;
 
+	const messageList = messagesStore.dataStore.messages;
+
 	React.useEffect(() => {
 		if (scrolledIndex !== null) {
 			raf(() => {
@@ -234,7 +237,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment.utc(messagesStore.filterStore.filterParams.startTimestamp).format()}
+											{moment.utc(timestampToNumber(messageList[0].timestamp)).format()}
 										</span>
 										<button
 											className='messages-list__load-btn'
@@ -257,7 +260,9 @@ const MessagesVirtualizedList = observer((props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment(messagesStore.filterStore.filterParams.startTimestamp).utc().format()}
+											{moment
+												.utc(timestampToNumber(messageList[messageList.length - 1].timestamp))
+												.format()}
 										</span>
 										<button
 											className='messages-list__load-btn'

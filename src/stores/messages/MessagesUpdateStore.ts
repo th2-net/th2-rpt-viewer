@@ -32,7 +32,7 @@ export default class MessagesUpdateStore {
 	public subscribeOnChanges = async () => {
 		// For some reason MessagesUpdateStore doesn't react on
 		// filter changes in MessagesFilterStore
-		const queryParams = this.messagesDataStore.getFilterParams();
+		const queryParams = await this.messagesDataStore.getFilterParams();
 
 		const { onNextChannelResponse, messages } = this.messagesDataStore;
 

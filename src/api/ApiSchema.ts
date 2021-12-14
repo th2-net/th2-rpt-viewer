@@ -29,10 +29,12 @@ import {
 } from './sse';
 import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
+import { Book } from '../models/Books';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
 	messages: MessageApiSchema;
+	books: BooksApiSchema;
 	sse: SSESchema;
 	indexedDb: IndexedDB;
 }
@@ -87,6 +89,10 @@ export interface MessageApiSchema {
 		filter: MatchMessageParams,
 		abortSignal?: AbortSignal,
 	) => Promise<boolean>;
+}
+
+export interface BooksApiSchema {
+	getBooksList: () => Promise<Book[]>;
 }
 
 export interface SSESchema {

@@ -35,6 +35,7 @@ import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplit
 import { SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
 import { isAbortError } from '../../helpers/fetch';
+import BooksStore from '../BooksStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -68,6 +69,7 @@ export default class WorkspaceStore {
 		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
 		private sessionsStore: SessionsStore,
+		private booksStore: BooksStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
@@ -81,6 +83,7 @@ export default class WorkspaceStore {
 			this.searchStore,
 			this.api,
 			this.workspacesStore.filtersHistoryStore,
+			this.booksStore,
 			initialState.events,
 		);
 		this.messagesStore = new MessagesStore(
@@ -91,6 +94,7 @@ export default class WorkspaceStore {
 			this.api,
 			this.workspacesStore.filtersHistoryStore,
 			this.sessionsStore,
+			this.booksStore,
 			initialState.messages,
 		);
 

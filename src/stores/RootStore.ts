@@ -36,6 +36,7 @@ import {
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { SessionsStore } from './messages/SessionsStore';
+import BooksStore from './BooksStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -50,11 +51,15 @@ export default class RootStore {
 
 	sessionsStore = new SessionsStore(this.api.indexedDb);
 
+	bookStore: BooksStore;
+
 	constructor(private api: ApiSchema) {
+		this.bookStore = new BooksStore(this.api);
 		this.workspacesStore = new WorkspacesStore(
 			this,
 			this.api,
 			this.filtersHistoryStore,
+			this.bookStore,
 			this.parseUrlState(),
 		);
 

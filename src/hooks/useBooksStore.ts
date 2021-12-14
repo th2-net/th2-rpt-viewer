@@ -14,24 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from './ApiSchema';
-import { IndexedDB } from './indexedDb';
-import eventHttpApi from './event';
-import messageHttpApi from './message';
-import sseApi from './sse';
-import booksHttpApi from './books';
+import { useRootStore } from '.';
 
-const envName =
-	process.env.NODE_ENV === 'development'
-		? 'development'
-		: `${window.location.host}${window.location.pathname}`;
+export default function useBooksStore() {
+	const rootStore = useRootStore();
 
-const api: ApiSchema = {
-	events: eventHttpApi,
-	messages: messageHttpApi,
-	books: booksHttpApi,
-	sse: sseApi,
-	indexedDb: new IndexedDB(envName),
-};
-
-export default api;
+	return rootStore.bookStore;
+}

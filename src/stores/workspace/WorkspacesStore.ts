@@ -28,6 +28,7 @@ import { getRangeFromTimestamp } from '../../helpers/date';
 import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
+import BooksStore from '../BooksStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -44,9 +45,15 @@ export default class WorkspacesStore {
 		private rootStore: RootStore,
 		private api: ApiSchema,
 		public filtersHistoryStore: FiltersHistoryStore,
+		private booksStore: BooksStore,
 		initialState: WorkspacesUrlState | null,
 	) {
-		this.searchWorkspace = new SearchWorkspaceStore(this.rootStore, this, this.api);
+		this.searchWorkspace = new SearchWorkspaceStore(
+			this.rootStore,
+			this,
+			this.booksStore,
+			this.api,
+		);
 
 		this.init(initialState || null);
 
@@ -107,6 +114,7 @@ export default class WorkspacesStore {
 			this.selectedStore,
 			this.searchWorkspace.searchStore,
 			this.rootStore.sessionsStore,
+			this.booksStore,
 			this.api,
 			workspaceInitialState,
 		);

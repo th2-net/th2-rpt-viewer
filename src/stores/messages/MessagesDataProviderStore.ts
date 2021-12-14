@@ -20,6 +20,7 @@ import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isEventMessage } from '../../helpers/event';
 import { isAbortError } from '../../helpers/fetch';
 import { EventMessage } from '../../models/EventMessage';
+import BooksStore from '../BooksStore';
 import notificationsStore from '../NotificationsStore';
 import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
@@ -31,10 +32,19 @@ const FIFTEEN_SECONDS = 15 * 1000;
 export default class MessagesDataProviderStore {
 	private readonly messagesLimit = 250;
 
-	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
+	constructor(
+		private messagesStore: MessagesStore,
+		private api: ApiSchema,
+		private booksStore: BooksStore,
+	) {
 		this.updateStore = new MessagesUpdateStore(this, this.messagesStore.scrollToMessage);
 
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
+
+		reaction(
+			() => this.booksStore.selectedBook,
+			(selectedBook, prevSelectedBook) => prevSelectedBook && selectedBook && this.loadMessages(),
+		);
 	}
 
 	public updateStore: MessagesUpdateStore;
@@ -112,7 +122,7 @@ export default class MessagesDataProviderStore {
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
-		const queryParams = this.getFilterParams();
+		const queryParams = await this.getFilterParams();
 
 		this.createPreviousMessageChannelEventSource(
 			{
@@ -423,7 +433,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public keepLoading = (direction: 'next' | 'previous') => {
+	public keepLoading = async (direction: 'next' | 'previous') => {
 		if (
 			this.messagesStore.filterStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||
@@ -434,7 +444,7 @@ export default class MessagesDataProviderStore {
 		if (!this.prevLoadHeartbeat && !this.nextLoadHeartbeat)
 			throw new Error('Load could not continue because loadHeathbeat is missing');
 
-		const queryParams = this.messagesStore.filterStore.filterParams;
+		const queryParams = await this.messagesStore.filterStore.filterParams;
 
 		const { stream, endTimestamp, resultCountLimit } = queryParams;
 
@@ -450,6 +460,7 @@ export default class MessagesDataProviderStore {
 					searchDirection: direction,
 					endTimestamp,
 					resultCountLimit,
+					book: queryParams.book,
 			  }
 			: {
 					...queryParams,
@@ -488,12 +499,8 @@ export default class MessagesDataProviderStore {
 		this.isMatchingMessages.set(messageId, true);
 
 		try {
-			const {
-				resultCountLimit,
-				resumeFromId,
-				searchDirection,
-				...filterParams
-			} = this.messagesStore.filterStore.filterParams;
+			const { resultCountLimit, resumeFromId, searchDirection, ...filterParams } = await this
+				.messagesStore.filterStore.filterParams;
 			const isMatch = await this.api.messages.matchMessage(messageId, filterParams, abortSignal);
 
 			runInAction(() => {

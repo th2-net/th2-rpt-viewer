@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
+import { action, computed, IReactionDisposer, observable, reaction, when } from 'mobx';
 import debounce from 'lodash.debounce';
 import SearchWorker from '../../search.worker';
 import SearchToken from '../../models/search/SearchToken';
@@ -26,6 +26,7 @@ import { nextCyclicItemByIndex } from '../../helpers/array';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { EventTreeNode } from '../../models/EventAction';
 import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
+import BooksStore from '../BooksStore';
 
 const defaultState = {
 	tokens: [],
@@ -44,6 +45,7 @@ export default class EventsSearchStore {
 	constructor(
 		private api: ApiSchema,
 		private eventsStore: EventsStore,
+		private booksStore: BooksStore,
 		initialState?: initialState,
 	) {
 		this.init(initialState);
@@ -170,11 +172,19 @@ export default class EventsSearchStore {
 	private worker: typeof SearchWorker | null = null;
 
 	@action
-	public fetchSearchResults = (searchTokens: SearchToken[]) => {
+	public fetchSearchResults = async (searchTokens: SearchToken[]) => {
 		this.channel?.stop();
 		this.worker?.terminate();
 		this.rawResults = [];
 		this.scrolledIndex = null;
+
+		if (this.booksStore.isLoading) {
+			await when(() => !this.booksStore.isLoading);
+		}
+
+		if (!this.booksStore.selectedBook) {
+			throw new Error("BooksStore doesn't contain a selected books");
+		}
 
 		if (this.searchResultsUpdateReaction) {
 			this.searchResultsUpdateReaction();
@@ -189,6 +199,7 @@ export default class EventsSearchStore {
 				filter: this.getSearchFilter(searchTokens),
 				sseParams: {
 					searchDirection: 'next',
+					book: this.booksStore.selectedBook.name,
 				},
 				timeRange: this.eventsStore.filterStore.range,
 			},

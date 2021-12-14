@@ -14,24 +14,23 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from './ApiSchema';
-import { IndexedDB } from './indexedDb';
-import eventHttpApi from './event';
-import messageHttpApi from './message';
-import sseApi from './sse';
-import booksHttpApi from './books';
+import { BooksApiSchema } from './ApiSchema';
 
-const envName =
-	process.env.NODE_ENV === 'development'
-		? 'development'
-		: `${window.location.host}${window.location.pathname}`;
+const booksHttpApi: BooksApiSchema = {
+	getBooksList: async () => {
+		return Promise.resolve([
+			{ id: '1', name: 'Book1' },
+			{ id: '2', name: 'Book2' },
+			{ id: '3', name: 'Book3' },
+			{ id: '4', name: 'Book4' },
+		]);
+		// const res = await fetch('backend/messageStreams');
 
-const api: ApiSchema = {
-	events: eventHttpApi,
-	messages: messageHttpApi,
-	books: booksHttpApi,
-	sse: sseApi,
-	indexedDb: new IndexedDB(envName),
+		// if (res.ok) return res.json();
+
+		// console.error(res.statusText);
+		// return [];
+	},
 };
 
-export default api;
+export default booksHttpApi;

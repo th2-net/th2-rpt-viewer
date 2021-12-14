@@ -27,6 +27,7 @@ interface BaseSSEParams {
 	resumeFromId?: string;
 	searchDirection?: 'next' | 'previous'; // defaults to next
 	keepOpen?: boolean;
+	book: string;
 }
 
 export interface SSEHeartbeat {
@@ -98,6 +99,7 @@ export interface SSEParamsEvents {
 	resumeFromId?: string;
 	searchDirection?: 'next' | 'previous'; // defaults to next
 	limitForParent?: number;
+	book: string;
 }
 
 export interface MessagesIdsEvent {

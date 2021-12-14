@@ -14,13 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
+import { action, computed, IReactionDisposer, observable, reaction, when } from 'mobx';
 import moment from 'moment';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { SearchStore } from '../SearchStore';
 import { getDefaultMessagesFiltersState } from '../../helpers/search';
 import { MessagesFilterInfo, MessagesSSEParams } from '../../api/sse';
+import BooksStore from '../BooksStore';
 
 function getDefaultMessagesFilter(): MessagesFilter {
 	return {
@@ -38,7 +39,11 @@ export type MessagesFilterStoreInitialState = {
 export default class MessagesFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
 
-	constructor(private searchStore: SearchStore, initialState?: MessagesFilterStoreInitialState) {
+	constructor(
+		private searchStore: SearchStore,
+		private booksStore: BooksStore,
+		initialState?: MessagesFilterStoreInitialState,
+	) {
 		this.init(initialState);
 
 		this.sseFilterSubscription = reaction(() => searchStore.messagesFilterInfo, this.initSSEFilter);
@@ -55,7 +60,7 @@ export default class MessagesFilterStore {
 	@observable isSoftFilter = false;
 
 	@computed
-	public get filterParams(): MessagesSSEParams {
+	public get filterParams(): Promise<MessagesSSEParams> {
 		const sseFilters = this.sseMessagesFilter;
 
 		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
@@ -85,7 +90,7 @@ export default class MessagesFilterStore {
 		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
 		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
 
-		const queryParams: MessagesSSEParams = {
+		const queryParams = {
 			startTimestamp: this.filter.timestampTo || startTimestamp,
 			stream: this.filter.streams,
 			searchDirection: 'previous',
@@ -98,19 +103,40 @@ export default class MessagesFilterStore {
 			),
 		};
 
-		return queryParams;
+		if (this.booksStore.isLoading) {
+			return when(() => !this.booksStore.isLoading).then(() => {
+				if (!this.booksStore.selectedBook) {
+					throw new Error("BooksStore doesn't contain a selected books");
+				}
+				return {
+					...queryParams,
+					book: this.booksStore.selectedBook.name,
+				};
+			});
+		}
+
+		if (!this.booksStore.selectedBook) {
+			throw new Error("BooksStore doesn't contain a selected books");
+		}
+		return Promise.resolve({
+			...queryParams,
+			book: this.booksStore.selectedBook.name,
+		});
 	}
 
 	@computed
-	public get softFilterParams(): MessagesSSEParams {
-		return {
-			startTimestamp: this.filterParams.startTimestamp,
-			stream: this.filterParams.stream,
-			searchDirection: this.filterParams.searchDirection,
-			endTimestamp: this.filterParams.endTimestamp,
-			resultCountLimit: this.filterParams.resultCountLimit,
-			resumeFromId: this.filterParams.resumeFromId,
-		};
+	public get softFilterParams(): Promise<MessagesSSEParams> {
+		return this.filterParams.then(filterParams => {
+			return {
+				startTimestamp: filterParams.startTimestamp,
+				stream: filterParams.stream,
+				searchDirection: filterParams.searchDirection,
+				endTimestamp: filterParams.endTimestamp,
+				resultCountLimit: filterParams.resultCountLimit,
+				resumeFromId: filterParams.resumeFromId,
+				book: filterParams.book,
+			};
+		});
 	}
 
 	@computed

@@ -30,6 +30,7 @@ import { indexedDbLimits, IndexedDbStores } from '../../../api/indexedDb';
 import { GraphSearchResult } from './GraphSearch';
 import { SearchDirection } from '../../../models/search/SearchDirection';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
+import useBooksStore from '../../../hooks/useBooksStore';
 
 interface Props {
 	value: string;
@@ -55,6 +56,7 @@ const GraphSearchDialog = (props: Props) => {
 	} = props;
 
 	const rootStore = useRootStore();
+	const { selectedBook } = useBooksStore();
 
 	const [isLoading, setIsLoading] = React.useState(false);
 	const [currentSearchResult, setCurrentSearchResult] = React.useState<GraphSearchResult | null>(
@@ -158,6 +160,9 @@ const GraphSearchDialog = (props: Props) => {
 	}, [submittedId]);
 
 	React.useEffect(() => {
+		if (!selectedBook) {
+			throw new Error("BooksStore doesn't contain a selected books");
+		}
 		const searchChannels = {
 			previous: submittedTimestamp
 				? api.sse.getEventSource({
@@ -166,6 +171,7 @@ const GraphSearchDialog = (props: Props) => {
 							startTimestamp: submittedTimestamp,
 							resultCountLimit: 1,
 							searchDirection: SearchDirection.Previous,
+							book: selectedBook.name,
 						},
 				  })
 				: null,
@@ -176,6 +182,7 @@ const GraphSearchDialog = (props: Props) => {
 							startTimestamp: submittedTimestamp,
 							resultCountLimit: 1,
 							searchDirection: SearchDirection.Next,
+							book: selectedBook.name,
 						},
 				  })
 				: null,

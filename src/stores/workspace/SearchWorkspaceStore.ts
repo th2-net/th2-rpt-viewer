@@ -26,6 +26,7 @@ import { WorkspaceInitialState } from './WorkspaceStore';
 import { isEvent, isEventMessage } from '../../helpers/event';
 import { getTimestampAsNumber, timestampToNumber, getRangeFromTimestamp } from '../../helpers/date';
 import RootStore from '../RootStore';
+import BooksStore from '../BooksStore';
 
 export const SEARCH_STORE_INTERVAL = 15;
 
@@ -39,6 +40,7 @@ export default class SearchWorkspaceStore {
 	constructor(
 		private rootStore: RootStore,
 		private workspacesStore: WorkspacesStore,
+		private booksStore: BooksStore,
 		api: ApiSchema,
 	) {
 		this.searchStore = new SearchStore(
@@ -46,6 +48,7 @@ export default class SearchWorkspaceStore {
 			api,
 			this.workspacesStore.filtersHistoryStore,
 			this.rootStore.sessionsStore,
+			this.booksStore,
 		);
 
 		this.viewStore = new WorkspaceViewStore(undefined);

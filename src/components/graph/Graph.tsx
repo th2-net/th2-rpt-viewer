@@ -29,6 +29,7 @@ import { isWorkspaceStore } from '../../helpers/workspace';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
 import '../../styles/graph.scss';
 import GraphLastEventsButton from './GraphLastEventsButton';
+import BooksInput from '../books/BooksInput';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -153,6 +154,7 @@ const GraphRoot = () => {
 		<PointerTimestampProvider>
 			<div className='graph-root'>
 				<i className='th2-logo' />
+				<BooksInput />
 				<GraphSearch
 					hoveredTimestamp={
 						isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.hoveredTimestamp : null

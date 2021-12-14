@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
+import { action, autorun, computed, observable, reaction, runInAction, toJS, when } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import debounce from 'lodash.debounce';
@@ -48,6 +48,7 @@ import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { SessionsStore } from './messages/SessionsStore';
 import { getItemAt } from '../helpers/array';
+import BooksStore from './BooksStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -110,6 +111,7 @@ export class SearchStore {
 		private api: ApiSchema,
 		private filtersHistory: FiltersHistoryStore,
 		private sessionsStore: SessionsStore,
+		private booksStore: BooksStore,
 	) {
 		this.init();
 
@@ -143,6 +145,15 @@ export class SearchStore {
 					this.resetEventAutocompleteList();
 				}
 			},
+		);
+
+		reaction(
+			() => this.booksStore.selectedBook,
+			(selectedBook, prevSelectedBook) =>
+				prevSelectedBook &&
+				selectedBook &&
+				this.searchHistory.length &&
+				this.startSearch(false, this.searchHistory[0].request),
 		);
 	}
 
@@ -453,8 +464,9 @@ export class SearchStore {
 		});
 	};
 
-	@action startSearch = (loadMore = false) => {
-		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
+	@action startSearch = (loadMore = false, history?: StateHistory) => {
+		const filterParams =
+			history?.filters || this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
 		if (this.isSearching || !filterParams) return;
 		const isPaused = this.isPaused;
 		this.setCompleted(false);
@@ -472,7 +484,11 @@ export class SearchStore {
 		if (!isPaused && !loadMore) {
 			this.newSearch({
 				timestamp: moment().utc().valueOf(),
-				request: { type: this.formType, state: this.searchForm, filters: filterParams },
+				request: {
+					type: history?.type || this.formType,
+					state: history?.state || this.searchForm,
+					filters: history?.filters || filterParams,
+				},
 				results: {},
 				progress: {
 					previous: 0,
@@ -496,11 +512,20 @@ export class SearchStore {
 			timeLimits,
 			parentEvent,
 			stream,
-		} = this.searchForm;
+		} = history?.state || this.searchForm;
 
-		const filtersToAdd = !this.filters
+		const filters = history
+			? {
+					info: this.eventFilterInfo,
+					state: history.filters,
+					setState: this.setEventsFilter,
+					disableAll: this.isFormDisabled,
+			  }
+			: this.filters;
+
+		const filtersToAdd = !filters
 			? []
-			: (this.filters.info as EventsFiltersInfo[])
+			: (filters.info as EventsFiltersInfo[])
 					.filter((info: SSEFilterInfo) => getFilter(info.name).values.length !== 0)
 					.filter(
 						(info: SSEFilterInfo) =>
@@ -542,10 +567,12 @@ export class SearchStore {
 			}
 
 			const queryParams: SSEParams =
-				this.formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
+				(history?.type || this.formType) === 'event'
+					? { ...params, parentEvent }
+					: { ...params, stream };
 
 			const searchChannel = this.api.sse.getEventSource({
-				type: this.formType,
+				type: history?.type || this.formType,
 				queryParams,
 			});
 
@@ -558,7 +585,10 @@ export class SearchStore {
 				this.filtersHistory.onMessageFilterSubmit(filterParams as MessageFilterState);
 			}
 
-			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));
+			searchChannel.addEventListener(
+				history?.type || this.formType,
+				this.onChannelResponse.bind(this, direction),
+			);
 			searchChannel.addEventListener('keep_alive', this.onChannelResponse.bind(this, direction));
 			searchChannel.addEventListener('close', this.stopSearch.bind(this, direction, undefined));
 			searchChannel.addEventListener('error', this.onError.bind(this, direction));
@@ -711,10 +741,18 @@ export class SearchStore {
 		this.eventAutocompleteList = [];
 	};
 
-	private loadEventAutocompleteList = debounce((parentEventName: string) => {
+	private loadEventAutocompleteList = debounce(async (parentEventName: string) => {
 		if (this.eventAutocompleteSseChannel) {
 			this.eventAutocompleteSseChannel.close();
 		}
+
+		if (this.booksStore.isLoading) {
+			await when(() => !this.booksStore.isLoading);
+		}
+		if (!this.booksStore.selectedBook) {
+			throw new Error("BooksStore doesn't contain a selected books");
+		}
+
 		this.resetEventAutocompleteList();
 
 		this.eventAutocompleteSseChannel = this.api.sse.getEventSource({
@@ -725,6 +763,7 @@ export class SearchStore {
 				startTimestamp: moment().utc().valueOf(),
 				searchDirection: 'previous',
 				resultCountLimit: 10,
+				book: this.booksStore.selectedBook.name,
 			},
 		});
 		this.eventAutocompleteSseChannel.addEventListener('event', (ev: Event) =>

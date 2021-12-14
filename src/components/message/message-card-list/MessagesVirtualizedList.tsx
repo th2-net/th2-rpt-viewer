@@ -26,7 +26,7 @@ import {
 import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
 import { SSEHeartbeat } from '../../../api/sse';
-import { formatTime } from '../../../helpers/date';
+import { formatTime, timestampToNumber } from '../../../helpers/date';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
@@ -169,7 +169,7 @@ const MessagesVirtualizedList = (props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment.utc(messageStore.filterStore.filterParams.startTimestamp).format()}
+											{moment.utc(timestampToNumber(messageList[0].timestamp)).format()}
 										</span>
 										<button className='messages-list__load-btn' onClick={() => keepLoading('next')}>
 											Keep loading
@@ -193,7 +193,9 @@ const MessagesVirtualizedList = (props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment(messageStore.filterStore.filterParams.startTimestamp).utc().format()}
+											{moment(timestampToNumber(messageList[messageList.length - 1].timestamp))
+												.utc()
+												.format()}
 										</span>
 										<button
 											className='messages-list__load-btn'
