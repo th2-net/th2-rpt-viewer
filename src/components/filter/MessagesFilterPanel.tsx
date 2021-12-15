@@ -109,7 +109,8 @@ const MessagesFilterPanel = () => {
 			(messagesDataStore.messages.length === 0 && messagesDataStore.isLoading) ||
 			(filterStore.isSoftFilter &&
 				[...messagesDataStore.isMatchingMessages.values()].some(Boolean)) ||
-			messagesStore.isLoadingAttachedMessages,
+			messagesStore.isLoadingAttachedMessages ||
+			messagesStore.filteringAttachedMessages,
 	).get();
 
 	const compoundFilterRow: Array<CompoundFilterRow> = React.useMemo(() => {
@@ -293,11 +294,7 @@ const MessagesFilterPanel = () => {
 				renderFooter={renderFooter}
 			/>
 			<MessageReplayModal />
-			{messagesStore.checkingAttachedMessages ? (
-				<div style={{ marginLeft: 5 }} className='filter__loading' />
-			) : (
-				<MessageFilterWarning />
-			)}
+			<MessageFilterWarning />
 			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />
 			<MessageExport
 				isExport={messagesStore.exportStore.isExport}

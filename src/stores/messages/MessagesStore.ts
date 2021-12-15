@@ -81,7 +81,7 @@ export default class MessagesStore {
 	public showFilterChangeHint = false;
 
 	@observable
-	public checkingAttachedMessages = false;
+	public filteringAttachedMessages = false;
 
 	/*
 		This is used for filter change hint. Represents either last clicked message
@@ -145,8 +145,8 @@ export default class MessagesStore {
 	}
 
 	@action
-	private setCheckingAttachedMessages = (isChecking: boolean) => {
-		this.checkingAttachedMessages = isChecking;
+	private setFilteringAttachedMessages = (isFiltering: boolean) => {
+		this.filteringAttachedMessages = isFiltering;
 	};
 
 	@action
@@ -340,16 +340,17 @@ export default class MessagesStore {
 			return this.showFilterChangeHint;
 		}
 
-		this.setCheckingAttachedMessages(true);
+		this.setFilteringAttachedMessages(true);
 
 		const matchMessageParams = this.filterStore.filterParams;
 
 		const hintMessagesMatch = await Promise.all(
 			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.messageId, matchMessageParams)),
-		).then(match => {
-			this.setCheckingAttachedMessages(false);
-			return match;
-		});
+		)
+			.then(match => match)
+			.finally(() => {
+				this.setFilteringAttachedMessages(false);
+			});
 
 		this.showFilterChangeHint = !hintMessagesMatch.every(m => m);
 
