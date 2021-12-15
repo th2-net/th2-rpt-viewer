@@ -346,13 +346,11 @@ export default class MessagesStore {
 
 		const hintMessagesMatch = await Promise.all(
 			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.messageId, matchMessageParams)),
-		)
-			.then(match => match)
-			.finally(() => {
-				this.setFilteringAttachedMessages(false);
-			});
+		).finally(() => {
+			this.setFilteringAttachedMessages(false);
+		});
 
-		this.showFilterChangeHint = !hintMessagesMatch.every(m => m);
+		this.showFilterChangeHint = hintMessagesMatch.some(isMatched => !isMatched);
 
 		return this.showFilterChangeHint;
 	};
