@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
-import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { Virtuoso, VirtuosoHandle, ListItem } from 'react-virtuoso';
 import moment from 'moment';
 import {
 	useDebouncedCallback,
@@ -139,6 +139,14 @@ const MessagesVirtualizedList = (props: Props) => {
 		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
+	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
+		messageStore.currentMessagesIndexesRange = {
+			startIndex: (renderedMessages && renderedMessages[0]?.originalIndex) ?? 0,
+			endIndex:
+				(renderedMessages && renderedMessages[renderedMessages.length - 1]?.originalIndex) ?? 0,
+		};
+	}, 100);
+
 	return (
 		<Virtuoso
 			data={messageList}
@@ -149,13 +157,7 @@ const MessagesVirtualizedList = (props: Props) => {
 			itemContent={itemRenderer}
 			style={{ height: '100%', width: '100%' }}
 			className={className}
-			itemsRendered={renderedMessages => {
-				messageStore.currentMessagesIndexesRange = {
-					startIndex: (renderedMessages && renderedMessages[0]?.originalIndex) ?? 0,
-					endIndex:
-						(renderedMessages && renderedMessages[renderedMessages.length - 1]?.originalIndex) ?? 0,
-				};
-			}}
+			itemsRendered={onMessagesRendered}
 			onScroll={onScroll}
 			onWheel={onWheel}
 			components={{

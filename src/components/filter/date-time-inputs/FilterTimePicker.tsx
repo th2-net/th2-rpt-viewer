@@ -95,4 +95,4 @@ const FilterTimepicker = (props: FilterTimepickerProps) => {
 	);
 };
 
-export default FilterTimepicker;
+export default React.memo(FilterTimepicker);

@@ -16,6 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import debounce from 'lodash.debounce';
 import { createBemElement } from '../../../helpers/styleCreators';
 import MessageBody, {
 	isSimpleValue,
@@ -58,7 +59,7 @@ function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrder
 
 	const fields = React.useMemo(
 		() => getSortedFields(body?.fields ? body.fields : {}, sortOrderItems),
-		[body, [sortOrderItems]],
+		[body, sortOrderItems],
 	);
 
 	if (body == null) {
@@ -121,6 +122,15 @@ function MessageBodyCardField(props: FieldProps) {
 
 	const [areSameContext, highlightSameContext] = React.useState(false);
 
+	const highlight = React.useMemo(() => {
+		return debounce(() => setIsHighlighted(true), 60);
+	}, []);
+
+	const removeHighlight = React.useCallback(() => {
+		highlight.cancel();
+		setIsHighlighted(false);
+	}, [highlight]);
+
 	if (isRoot) {
 		return (
 			<MessageBodyCardField
@@ -150,15 +160,15 @@ function MessageBodyCardField(props: FieldProps) {
 				display: isBeautified ? 'block' : undefined,
 			}}>
 			<span
-				onMouseEnter={() => setIsHighlighted(true)}
-				onMouseLeave={() => setIsHighlighted(false)}
+				onMouseEnter={highlight}
+				onMouseLeave={removeHighlight}
 				className='mc-body__field-label'>
 				{label ? `${label}: ` : ''}
 			</span>
 			{isSimpleValue(field) ? (
 				<span
-					onMouseEnter={() => setIsHighlighted(true)}
-					onMouseLeave={() => setIsHighlighted(false)}
+					onMouseEnter={highlight}
+					onMouseLeave={removeHighlight}
 					className='mc-body__field-simple-value'>
 					{field.simpleValue}
 				</span>

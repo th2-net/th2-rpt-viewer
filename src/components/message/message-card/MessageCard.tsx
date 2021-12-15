@@ -27,7 +27,7 @@ import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import { matchWildcardRule } from '../../../helpers/regexp';
-import { MessageCardBase } from './MessageCardBase';
+import MessageCardBase from './MessageCardBase';
 import '../../../styles/messages.scss';
 
 export interface OwnProps {
@@ -116,24 +116,29 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		};
 	}, [messagesStore.highlightedMessageId]);
 
-	const hoverMessage = () => {
+	const hoverMessage = React.useCallback(() => {
 		hoverTimeout.current = setTimeout(() => {
 			messagesStore.setHoveredMessage(message);
 		}, 600);
-	};
+	}, [messagesStore.setHoveredMessage]);
 
-	const unhoverMessage = () => {
+	const unhoverMessage = React.useCallback(() => {
 		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
 		messagesStore.setHoveredMessage(null);
-	};
+	}, [messagesStore.setHoveredMessage]);
 
 	const isAttached = !!messagesStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
 	);
 
-	function toogleMessagePin() {
+	const toogleMessagePin = React.useCallback(() => {
 		selectedStore.toggleMessagePin(message);
-	}
+	}, [selectedStore.toggleMessagePin]);
+
+	const addMessagesToExport = React.useCallback(
+		() => messagesStore.exportStore.addMessageToExport(message),
+		[messagesStore.exportStore.addMessageToExport],
+	);
 
 	const isExported = messagesStore.exportStore.isExported(message);
 
@@ -154,38 +159,38 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			isExported={isExported}
 			isExport={messagesStore.exportStore.isExport}
 			sortOrderItems={sortOrderItems}
-			addMessageToExport={() => messagesStore.exportStore.addMessageToExport(message)}
+			addMessageToExport={addMessagesToExport}
 		/>
 	);
 });
 
-const RecoverableMessageCard = React.memo((props: OwnProps) => {
-	const rulesStore = useMessageDisplayRulesStore();
+const RecoverableMessageCard = (props: OwnProps) => {
+	const { rootDisplayRule, messageDisplayRules } = useMessageDisplayRulesStore();
+
+	const getDefaultState = React.useCallback(() => {
+		const rootRule = rootDisplayRule;
+		const declaredRule = messageDisplayRules.find(rule => {
+			if (rule.session.length > 1 && rule.session.includes('*')) {
+				return matchWildcardRule(props.message.sessionId, rule.session);
+			}
+			return props.message.sessionId.includes(rule.session);
+		});
+		if (!props.message.body) {
+			return declaredRule
+				? getRawViewType(declaredRule.viewType)
+				: rootRule
+				? getRawViewType(rootRule.viewType)
+				: MessageViewType.ASCII;
+		}
+		return declaredRule
+			? declaredRule.viewType
+			: rootRule
+			? rootRule.viewType
+			: MessageViewType.JSON;
+	}, [rootDisplayRule, messageDisplayRules]);
 
 	return (
-		<StateSaver
-			stateKey={keyForMessage(props.message.messageId)}
-			getDefaultState={() => {
-				const rootRule = rulesStore.rootDisplayRule;
-				const declaredRule = rulesStore.messageDisplayRules.find(rule => {
-					if (rule.session.length > 1 && rule.session.includes('*')) {
-						return matchWildcardRule(props.message.sessionId, rule.session);
-					}
-					return props.message.sessionId.includes(rule.session);
-				});
-				if (!props.message.body) {
-					return declaredRule
-						? getRawViewType(declaredRule.viewType)
-						: rootRule
-						? getRawViewType(rootRule.viewType)
-						: MessageViewType.ASCII;
-				}
-				return declaredRule
-					? declaredRule.viewType
-					: rootRule
-					? rootRule.viewType
-					: MessageViewType.JSON;
-			}}>
+		<StateSaver stateKey={keyForMessage(props.message.messageId)} getDefaultState={getDefaultState}>
 			{(state, saveState) => (
 				<MessageCard
 					{...props}
@@ -196,11 +201,9 @@ const RecoverableMessageCard = React.memo((props: OwnProps) => {
 			)}
 		</StateSaver>
 	);
-});
+};
 
-RecoverableMessageCard.displayName = 'RecoverableMessageCard';
-
-export default RecoverableMessageCard;
+export default observer(RecoverableMessageCard);
 
 function isRawViewType(viewType: MessageViewType) {
 	return viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
