@@ -40,10 +40,6 @@ export interface StateSaverProps<S> extends RecoverableElementProps {
 
 const StateSaver = <S extends {}>({ children, stateKey, getDefaultState }: StateSaverProps<S>) => {
 	const { states = new Map(), saveState } = React.useContext(StateSaverContext);
-	const [defaultState] = React.useState(() => getDefaultState?.());
-
-	const savedState = states.get(stateKey);
-	const prevSavedState = React.useRef(defaultState);
 
 	const saveNextState = React.useCallback(
 		(nextState: S) => {
@@ -54,10 +50,12 @@ const StateSaver = <S extends {}>({ children, stateKey, getDefaultState }: State
 		[saveState],
 	);
 
-	if ((savedState && savedState !== prevSavedState.current) || !defaultState) {
-		prevSavedState.current = savedState;
-		return children(savedState, saveNextState);
+	if (states.has(stateKey) || !getDefaultState) {
+		return children(states.get(stateKey), saveNextState);
 	}
+
+	const defaultState = getDefaultState();
+
 	return (
 		<DefaultStateSaver saveState={saveNextState} defaultState={defaultState}>
 			{children(defaultState, saveNextState)}
