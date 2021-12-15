@@ -25,7 +25,7 @@ import {
 } from '../../../hooks';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import { matchWildcardRule } from '../../../helpers/regexp';
-import { MessageCardBase } from './MessageCardBase';
+import MessageCardBase from './MessageCardBase';
 import '../../../styles/messages.scss';
 import savedViewTypesStore from '../../../stores/messages/SavedMessagesViewTypesStore';
 import { SavedMessageViewType } from '../../../stores/messages/SavedMessageViewType';
@@ -100,24 +100,29 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		};
 	}, [messagesStore.highlightedMessageId]);
 
-	const hoverMessage = () => {
+	const hoverMessage = React.useCallback(() => {
 		hoverTimeout.current = setTimeout(() => {
 			messagesStore.setHoveredMessage(message);
 		}, 600);
-	};
+	}, [messagesStore.setHoveredMessage]);
 
-	const unhoverMessage = () => {
+	const unhoverMessage = React.useCallback(() => {
 		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
 		messagesStore.setHoveredMessage(null);
-	};
+	}, [messagesStore.setHoveredMessage]);
 
 	const isAttached = !!messagesStore.attachedMessages.find(
 		attMsg => attMsg.messageId === message.messageId,
 	);
 
-	function toogleMessagePin() {
+	const toogleMessagePin = React.useCallback(() => {
 		selectedStore.toggleMessagePin(message);
-	}
+	}, [selectedStore.toggleMessagePin]);
+
+	const addMessagesToExport = React.useCallback(
+		() => messagesStore.exportStore.addMessageToExport(message),
+		[messagesStore.exportStore.addMessageToExport],
+	);
 
 	const isExported = messagesStore.exportStore.isExported(message);
 
@@ -138,7 +143,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			isExported={isExported}
 			isExport={messagesStore.exportStore.isExport}
 			sortOrderItems={sortOrderItems}
-			addMessageToExport={() => messagesStore.exportStore.addMessageToExport(message)}
+			addMessageToExport={addMessagesToExport}
 		/>
 	);
 });
