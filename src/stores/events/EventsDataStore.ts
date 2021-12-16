@@ -32,6 +32,8 @@ import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import { isAbortError } from '../../helpers/fetch';
 import { getItemAt } from '../../helpers/array';
 import BooksStore from '../BooksStore';
+import { Book } from '../../models/Books';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
@@ -46,7 +48,6 @@ export default class EventsDataStore {
 		private filterStore: EventsFilterStore,
 		private booksStore: BooksStore,
 		private api: ApiSchema,
-		targetEventId?: string,
 	) {
 		reaction(() => this.targetNodePath, this.preloadSelectedPathChildren, {
 			equals: (pathA: string[], pathB: string[]) => {
@@ -58,17 +59,7 @@ export default class EventsDataStore {
 			},
 		});
 
-		reaction(
-			() => this.booksStore.selectedBook,
-			(selectedBook, prevSelectedBook) =>
-				selectedBook &&
-				prevSelectedBook &&
-				this.fetchEventTree({
-					filter: this.filterStore.filter,
-					timeRange: this.filterStore.range,
-					targetEventId,
-				}),
-		);
+		reaction(() => this.booksStore.selectedBook, this.onSelectedBookChange);
 	}
 
 	@observable.ref
@@ -125,10 +116,14 @@ export default class EventsDataStore {
 	public fetchEventTree = async (options: FetchEventTreeOptions) => {
 		const { timeRange, filter, targetEventId } = options;
 
+		const bookId = this.booksStore.selectedBook?.name;
+
 		this.resetEventsTreeState({ isLoading: true });
 
 		this.eventStore.selectedNode = null;
 		this.eventStore.selectedEvent = null;
+
+		if (!bookId) return;
 
 		this.filterStore.setRange(timeRange);
 		this.filterStore.setEventsFilter(filter);
@@ -157,7 +152,7 @@ export default class EventsDataStore {
 						searchDirection: 'next',
 						// load 1 more to see if there are more children
 						limitForParent: this.CHILDREN_COUNT_LIMIT + 1,
-						book: this.booksStore.selectedBook.name,
+						bookId,
 					},
 				},
 				{
@@ -405,6 +400,7 @@ export default class EventsDataStore {
 
 	@action
 	public loadChildren = async (parentId: string) => {
+		if (!this.booksStore.selectedBook) return;
 		if (this.childrenLoaders[parentId]) {
 			this.childrenLoaders[parentId].loader.stop();
 			delete this.childrenLoaders[parentId];
@@ -434,8 +430,8 @@ export default class EventsDataStore {
 						resumeFromId: lastChild?.eventId,
 						// load 1 more to see if there are more children
 						resultCountLimit: this.CHILDREN_COUNT_LIMIT + 1,
-						searchDirection: 'next',
-						book: this.booksStore.selectedBook.name,
+						searchDirection: SearchDirection.Next,
+						bookId: this.booksStore.selectedBook.name,
 					},
 				},
 				{
@@ -646,6 +642,15 @@ export default class EventsDataStore {
 						this.isPreloadingTargetEventsChildren.set(eventId, true);
 					}
 				});
+		}
+	};
+
+	private onSelectedBookChange = (selectedBook: Book | null) => {
+		if (selectedBook) {
+			this.fetchEventTree({
+				filter: this.filterStore.filter,
+				timeRange: this.filterStore.range,
+			});
 		}
 	};
 }

@@ -71,7 +71,11 @@ export default class EmbeddedMessagesStore {
 		this.dataStore = new EmbeddedMessagesDataProviderStore(this, this.api);
 
 		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
+
+		this.bookId = initialState.bookId;
 	}
+
+	public bookId: string;
 
 	@action
 	public applyFilter = (filter: MessagesFilter, sseFilters: MessageFilterState | null) => {

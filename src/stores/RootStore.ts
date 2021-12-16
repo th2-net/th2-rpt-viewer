@@ -38,6 +38,11 @@ import {
 import { SessionsStore } from './messages/SessionsStore';
 import BooksStore from './BooksStore';
 
+interface AppState {
+	workspaces: WorkspacesUrlState;
+	bookId?: string;
+}
+
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
@@ -54,13 +59,16 @@ export default class RootStore {
 	bookStore: BooksStore;
 
 	constructor(private api: ApiSchema) {
-		this.bookStore = new BooksStore(this.api);
+		const defaultState = this.parseUrlState();
+
+		this.bookStore = new BooksStore(this.api, defaultState?.bookId);
+
 		this.workspacesStore = new WorkspacesStore(
 			this,
 			this.api,
 			this.filtersHistoryStore,
 			this.bookStore,
-			this.parseUrlState(),
+			defaultState?.workspaces || null,
 		);
 
 		window.history.replaceState({}, '', window.location.pathname);
@@ -71,7 +79,7 @@ export default class RootStore {
 		return this.workspacesStore.selectedStore.isBookmarksFull;
 	}
 
-	public getAppState = (): WorkspacesUrlState | null => {
+	public getAppState = (): AppState | null => {
 		const activeWorkspace = this.workspacesStore.activeWorkspace;
 
 		let eventStoreState: EventStoreURLState = {};
@@ -110,20 +118,23 @@ export default class RootStore {
 					delete messagesStoreState[key];
 				}
 			});
-			return [
-				toJS({
-					events: eventStoreState,
-					messages: messagesStoreState,
-					timeRange: activeWorkspace.graphStore.range,
-					interval: activeWorkspace.graphStore.interval,
-					layout: activeWorkspace.viewStore.panelsLayout,
-				}),
-			];
+			return {
+				workspaces: [
+					toJS({
+						events: eventStoreState,
+						messages: messagesStoreState,
+						timeRange: activeWorkspace.graphStore.range,
+						interval: activeWorkspace.graphStore.interval,
+						layout: activeWorkspace.viewStore.panelsLayout,
+					}),
+				],
+				bookId: this.bookStore.selectedBook?.name,
+			};
 		}
 		return null;
 	};
 
-	private parseUrlState = (): WorkspacesUrlState | null => {
+	private parseUrlState = (): AppState | null => {
 		try {
 			if (window.location.search.split('&').length > 1) {
 				throw new Error('Only one query parameter expected.');
@@ -134,6 +145,7 @@ export default class RootStore {
 			const timestamp = searchParams.get('timestamp');
 			const eventId = searchParams.get('eventId');
 			const messageId = searchParams.get('messageId');
+			const bookId = searchParams.get('bookId') || undefined;
 
 			if (filtersToPin) {
 				const filtersHistoryItem: FiltersHistoryType<FilterState> = JSON.parse(
@@ -162,17 +174,20 @@ export default class RootStore {
 			const interval = intervalOptions[0];
 			const timeRange = timestamp ? getRangeFromTimestamp(+timestamp, interval) : undefined;
 
-			return [
-				{
-					events: eventId || { range: timeRange },
-					messages: messageId || {
-						timestampTo: timestamp ? parseInt(timestamp) : null,
+			return {
+				workspaces: [
+					{
+						events: eventId || { range: timeRange },
+						messages: messageId || {
+							timestampTo: timestamp ? parseInt(timestamp) : null,
+						},
+						timeRange,
+						interval,
+						layout: messageId ? [0, 100] : defaultPanelsLayout,
 					},
-					timeRange,
-					interval,
-					layout: messageId ? [0, 100] : defaultPanelsLayout,
-				},
-			];
+				],
+				bookId,
+			};
 		} catch (error) {
 			this.notificationsStore.addMessage({
 				notificationType: 'urlError',

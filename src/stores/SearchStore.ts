@@ -115,6 +115,15 @@ export class SearchStore {
 	) {
 		this.init();
 
+		reaction(
+			() => this.booksStore.selectedBook,
+			selectedBook => {
+				if (selectedBook) {
+					this.loadMessageSessions(selectedBook.name);
+				}
+			},
+		);
+
 		autorun(() => {
 			this.currentSearch = getItemAt(this.searchHistory, this.currentIndex);
 		});
@@ -553,6 +562,7 @@ export class SearchStore {
 				resultCountLimit,
 				endTimestamp: timeLimits[direction],
 				filters: filtersToAdd,
+				bookId: this.booksStore.selectedBook?.name,
 				...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
 			};
 
@@ -761,9 +771,9 @@ export class SearchStore {
 				filters: ['name'],
 				'name-values': [parentEventName],
 				startTimestamp: moment().utc().valueOf(),
-				searchDirection: 'previous',
+				searchDirection: SearchDirection.Previous,
 				resultCountLimit: 10,
-				book: this.booksStore.selectedBook.name,
+				bookId: this.booksStore.selectedBook.name,
 			},
 		});
 		this.eventAutocompleteSseChannel.addEventListener('event', (ev: Event) =>
@@ -778,9 +788,9 @@ export class SearchStore {
 		});
 	}, 400);
 
-	private async loadMessageSessions() {
+	private async loadMessageSessions(book: string) {
 		try {
-			const messageSessions = await this.api.messages.getMessageSessions();
+			const messageSessions = await this.api.messages.getMessageSessions(book);
 			runInAction(() => {
 				this.messageSessions = messageSessions;
 			});
@@ -810,7 +820,6 @@ export class SearchStore {
 	private init = () => {
 		this.getEventFilters();
 		this.getMessagesFilters();
-		this.loadMessageSessions();
 		this.getSearchHistory();
 	};
 

@@ -105,8 +105,8 @@ const messageHttpApi: MessageApiSchema = {
 		console.error(res.statusText);
 		return null;
 	},
-	getMessageSessions: async () => {
-		const res = await fetch('backend/messageStreams');
+	getMessageSessions: async book => {
+		const res = await fetch(`backend/messageStreams?bookId=${book}`);
 
 		if (res.ok) return res.json();
 

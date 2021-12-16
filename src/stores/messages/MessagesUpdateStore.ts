@@ -18,10 +18,13 @@ import { action, computed, observable } from 'mobx';
 import notificationsStore from '../NotificationsStore';
 import { MessagesDataStore } from '../../models/Stores';
 import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
+import BooksStore from '../BooksStore';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
 export default class MessagesUpdateStore {
 	constructor(
 		private messagesDataStore: MessagesDataStore,
+		private booksStore: BooksStore | string,
 		private scrollToMessage: (messageId: string) => void,
 	) {}
 
@@ -30,37 +33,40 @@ export default class MessagesUpdateStore {
 
 	@action
 	public subscribeOnChanges = async () => {
-		// For some reason MessagesUpdateStore doesn't react on
-		// filter changes in MessagesFilterStore
-		const queryParams = await this.messagesDataStore.getFilterParams();
+		const bookId =
+			typeof this.booksStore === 'string' ? this.booksStore : this.booksStore.selectedBook?.name;
+		if (bookId) {
+			const queryParams = this.messagesDataStore.getFilterParams();
 
-		const { onNextChannelResponse, messages } = this.messagesDataStore;
+			const { onNextChannelResponse, messages } = this.messagesDataStore;
 
-		this.channel = new MessagesSSEChannel(
-			{
-				...queryParams,
-				searchDirection: 'next',
-				keepOpen: true,
-				...(messages[0]?.messageId
-					? {
-							resumeFromId: messages[0].messageId,
-							startTimestamp: undefined,
-					  }
-					: {}),
-				resultCountLimit: undefined,
-			},
-			{
-				onResponse: incommingMessages => {
-					if (incommingMessages.length) {
-						onNextChannelResponse(incommingMessages);
-						this.scrollToMessage(incommingMessages[0].messageId);
-					}
+			this.channel = new MessagesSSEChannel(
+				{
+					...queryParams,
+					searchDirection: SearchDirection.Next,
+					keepOpen: true,
+					...(messages[0]?.messageId
+						? {
+								resumeFromId: messages[0].messageId,
+								startTimestamp: undefined,
+						  }
+						: {}),
+					resultCountLimit: undefined,
+					bookId,
 				},
-				onError: this.onLoadingError,
-			},
-		);
+				{
+					onResponse: incommingMessages => {
+						if (incommingMessages.length) {
+							onNextChannelResponse(incommingMessages);
+							this.scrollToMessage(incommingMessages[0].messageId);
+						}
+					},
+					onError: this.onLoadingError,
+				},
+			);
 
-		this.channel.subscribe(messages[0]?.messageId);
+			this.channel.subscribe(messages[0]?.messageId);
+		}
 	};
 
 	private onLoadingError = (event: Event) => {

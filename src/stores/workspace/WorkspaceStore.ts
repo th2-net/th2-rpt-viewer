@@ -43,6 +43,7 @@ export interface WorkspaceUrlState {
 	timeRange?: TimeRange;
 	interval: number | null;
 	layout: WorkspacePanelsLayout;
+	bookId?: string;
 }
 
 export type WorkspaceInitialState = Partial<{

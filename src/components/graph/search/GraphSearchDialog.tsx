@@ -30,7 +30,7 @@ import { indexedDbLimits, IndexedDbStores } from '../../../api/indexedDb';
 import { GraphSearchResult } from './GraphSearch';
 import { SearchDirection } from '../../../models/search/SearchDirection';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
-import useBooksStore from '../../../hooks/useBooksStore';
+import { useBooksStore } from '../../../hooks/useBooksStore';
 
 interface Props {
 	value: string;
@@ -160,59 +160,58 @@ const GraphSearchDialog = (props: Props) => {
 	}, [submittedId]);
 
 	React.useEffect(() => {
-		if (!selectedBook) {
-			throw new Error("BooksStore doesn't contain a selected books");
+		// eslint-disable-next-line @typescript-eslint/no-empty-function
+		let stopSearch = () => {};
+
+		if (selectedBook) {
+			const searchChannels = {
+				previous: submittedTimestamp
+					? api.sse.getEventSource({
+							type: 'event',
+							queryParams: {
+								startTimestamp: submittedTimestamp,
+								resultCountLimit: 1,
+								searchDirection: SearchDirection.Previous,
+								bookId: selectedBook.name,
+							},
+					  })
+					: null,
+				next: submittedTimestamp
+					? api.sse.getEventSource({
+							type: 'event',
+							queryParams: {
+								startTimestamp: submittedTimestamp,
+								resultCountLimit: 1,
+								searchDirection: SearchDirection.Next,
+								bookId: selectedBook.name,
+							},
+					  })
+					: null,
+			};
+			stopSearch = () => {
+				searchChannels.next?.close();
+				searchChannels.previous?.close();
+			};
+
+			const onChannelResponse = (ev: any) => {
+				if (!submittedTimestamp) return;
+				stopSearch();
+				const data = (ev as MessageEvent).data;
+				const parsedEvent = JSON.parse(data);
+				const id = getItemId(parsedEvent);
+				ac.current = new AbortController();
+				onSearchSuccess(parsedEvent, submittedTimestamp);
+				setFoundId(id);
+			};
+
+			searchChannels.previous?.addEventListener('event', onChannelResponse);
+			searchChannels.next?.addEventListener('event', onChannelResponse);
+			searchChannels.previous?.addEventListener('close', () => stopSearch);
+			searchChannels.next?.addEventListener('close', () => stopSearch);
 		}
-		const searchChannels = {
-			previous: submittedTimestamp
-				? api.sse.getEventSource({
-						type: 'event',
-						queryParams: {
-							startTimestamp: submittedTimestamp,
-							resultCountLimit: 1,
-							searchDirection: SearchDirection.Previous,
-							book: selectedBook.name,
-						},
-				  })
-				: null,
-			next: submittedTimestamp
-				? api.sse.getEventSource({
-						type: 'event',
-						queryParams: {
-							startTimestamp: submittedTimestamp,
-							resultCountLimit: 1,
-							searchDirection: SearchDirection.Next,
-							book: selectedBook.name,
-						},
-				  })
-				: null,
-		};
 
-		const stopSearch = () => {
-			searchChannels.next?.close();
-			searchChannels.previous?.close();
-		};
-
-		const onChannelResponse = (ev: any) => {
-			if (!submittedTimestamp) return;
-			stopSearch();
-			const data = (ev as MessageEvent).data;
-			const parsedEvent = JSON.parse(data);
-			const id = getItemId(parsedEvent);
-			ac.current = new AbortController();
-			onSearchSuccess(parsedEvent, submittedTimestamp);
-			setFoundId(id);
-		};
-
-		searchChannels.previous?.addEventListener('event', onChannelResponse);
-		searchChannels.next?.addEventListener('event', onChannelResponse);
-		searchChannels.previous?.addEventListener('close', () => stopSearch);
-		searchChannels.next?.addEventListener('close', () => stopSearch);
-
-		return () => {
-			stopSearch();
-		};
-	}, [submittedTimestamp]);
+		return stopSearch;
+	}, [submittedTimestamp, selectedBook]);
 
 	const onKeyDown = React.useCallback(
 		(event: KeyboardEvent) => {

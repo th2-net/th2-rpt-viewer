@@ -27,6 +27,7 @@ import EventsFilter from '../../models/filter/EventsFilter';
 import { EventTreeNode } from '../../models/EventAction';
 import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import BooksStore from '../BooksStore';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
 const defaultState = {
 	tokens: [],
@@ -172,7 +173,7 @@ export default class EventsSearchStore {
 	private worker: typeof SearchWorker | null = null;
 
 	@action
-	public fetchSearchResults = async (searchTokens: SearchToken[]) => {
+	public fetchSearchResults = async (searchTokens: SearchToken[], bookId: string) => {
 		this.channel?.stop();
 		this.worker?.terminate();
 		this.rawResults = [];
@@ -198,8 +199,8 @@ export default class EventsSearchStore {
 			{
 				filter: this.getSearchFilter(searchTokens),
 				sseParams: {
-					searchDirection: 'next',
-					book: this.booksStore.selectedBook.name,
+					searchDirection: SearchDirection.Next,
+					bookId,
 				},
 				timeRange: this.eventsStore.filterStore.range,
 			},
@@ -283,8 +284,8 @@ export default class EventsSearchStore {
 	private onSearchTokensUpdate = (searchTokens: SearchToken[]) => {
 		this.isProccessingSearchResults = Boolean(searchTokens.length);
 
-		if (searchTokens.length !== 0) {
-			this.debouncedFetchSearchResults(searchTokens);
+		if (searchTokens.length !== 0 && this.booksStore.selectedBook) {
+			this.debouncedFetchSearchResults(searchTokens, this.booksStore.selectedBook.name);
 		} else {
 			this.resetState();
 		}
@@ -294,7 +295,9 @@ export default class EventsSearchStore {
 
 	public onFilterChange = () => {
 		this.resetState();
-		this.fetchSearchResults(this.tokens);
+		if (this.booksStore.selectedBook) {
+			this.fetchSearchResults(this.tokens, this.booksStore.selectedBook.name);
+		}
 	};
 
 	private onSearchDataUpdate = debounce((rawResults: string[], nodes: EventTreeNode[]) => {

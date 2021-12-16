@@ -35,7 +35,7 @@ export type EmbeddedMessagesFilterInitialState = {
 	timestampTo: number | null;
 	streams: string[];
 	sse: MessageFilterState;
-	book: string;
+	bookId: string;
 };
 
 export default class EmbeddedMessagesFilterStore {
@@ -43,10 +43,12 @@ export default class EmbeddedMessagesFilterStore {
 
 	constructor(private api: ApiSchema, initialState: EmbeddedMessagesFilterInitialState) {
 		this.init(initialState);
-		this.book = initialState.book;
-
 		this.sseFilterSubscription = reaction(() => this.messagesFilterInfo, this.initSSEFilter);
+
+		this.bookId = initialState.bookId;
 	}
+
+	private bookId: string;
 
 	@observable filter: MessagesFilter = getDefaultMessagesFilter();
 
@@ -58,10 +60,8 @@ export default class EmbeddedMessagesFilterStore {
 
 	@observable messagesFilter: MessageFilterState | null = null;
 
-	private book: string;
-
 	@computed
-	public get filterParams(): Promise<MessagesSSEParams> {
+	public get filterParams(): MessagesSSEParams {
 		const sseFilters = this.sseMessagesFilter;
 
 		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
@@ -91,15 +91,15 @@ export default class EmbeddedMessagesFilterStore {
 		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
 		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
 
-		return Promise.resolve({
+		return {
 			startTimestamp: this.filter.timestampTo || startTimestamp,
 			stream: this.filter.streams,
 			searchDirection: 'previous',
 			resultCountLimit: 15,
 			filters: filtersToAdd,
+			bookId: this.bookId,
 			...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
-			book: this.book,
-		});
+		};
 	}
 
 	@computed

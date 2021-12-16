@@ -80,13 +80,7 @@ export default class EventsStore {
 		this.searchStore = new EventsSearchStore(this.api, this, this.booksStore, {
 			searchPatterns: initialState.search,
 		});
-		this.eventDataStore = new EventsDataStore(
-			this,
-			this.filterStore,
-			this.booksStore,
-			this.api,
-			initialState.selectedEventId,
-		);
+		this.eventDataStore = new EventsDataStore(this, this.filterStore, this.booksStore, this.api);
 
 		this.init(defaultState);
 

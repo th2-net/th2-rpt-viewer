@@ -18,18 +18,12 @@ import { BooksApiSchema } from './ApiSchema';
 
 const booksHttpApi: BooksApiSchema = {
 	getBooksList: async () => {
-		return Promise.resolve([
-			{ id: '1', name: 'Book1' },
-			{ id: '2', name: 'Book2' },
-			{ id: '3', name: 'Book3' },
-			{ id: '4', name: 'Book4' },
-		]);
-		// const res = await fetch('backend/messageStreams');
+		const res = await fetch('backend/bookIds');
 
-		// if (res.ok) return res.json();
+		if (res.ok) return res.json();
 
-		// console.error(res.statusText);
-		// return [];
+		console.error(res.statusText);
+		return [];
 	},
 };
 

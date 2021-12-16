@@ -16,7 +16,7 @@
 
 import { useRootStore } from '.';
 
-export default function useBooksStore() {
+export function useBooksStore() {
 	const rootStore = useRootStore();
 
 	return rootStore.bookStore;

@@ -142,7 +142,7 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.SELECTED_BOOK]: 'id',
 };
 
-const dbVersion = 3;
+const dbVersion = 4;
 
 export class IndexedDB {
 	@observable

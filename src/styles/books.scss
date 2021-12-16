@@ -18,11 +18,12 @@
 	box-sizing: border-box;
 	width: 150px;
 	height: 24px;
-	border: 1px solid #7a99b8;
 	border-radius: 4px;
 	position: absolute;
 	top: 12px;
 	left: 100px;
 	outline: none;
 	z-index: 4;
+	border: 1px solid #7a99b8 !important;
+	background-color: #fff !important;
 }

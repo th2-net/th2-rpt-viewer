@@ -27,6 +27,7 @@ import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
 import { SSEHeartbeat } from '../../../api/sse';
 import { formatTime, timestampToNumber } from '../../../helpers/date';
+import { SearchDirection } from '../../../models/search/SearchDirection';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
@@ -171,7 +172,9 @@ const MessagesVirtualizedList = (props: Props) => {
 											No more matching messages since&nbsp;
 											{moment.utc(timestampToNumber(messageList[0].timestamp)).format()}
 										</span>
-										<button className='messages-list__load-btn' onClick={() => keepLoading('next')}>
+										<button
+											className='messages-list__load-btn'
+											onClick={() => keepLoading(SearchDirection.Next)}>
 											Keep loading
 										</button>
 									</div>
@@ -199,7 +202,7 @@ const MessagesVirtualizedList = (props: Props) => {
 										</span>
 										<button
 											className='messages-list__load-btn'
-											onClick={() => keepLoading('previous')}>
+											onClick={() => keepLoading(SearchDirection.Previous)}>
 											Keep loading
 										</button>
 									</div>

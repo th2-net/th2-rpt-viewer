@@ -347,7 +347,12 @@ export default class MessagesStore {
 		const matchMessageParams = this.filterStore.filterParams;
 
 		const hintMessagesMatch = await Promise.all(
-			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.messageId, matchMessageParams)),
+			this.hintMessages.map(hm =>
+				this.api.messages.matchMessage(hm.messageId, {
+					...matchMessageParams,
+					bookId: this.booksStore.selectedBook!.name,
+				}),
+			),
 		).finally(() => {
 			this.setFilteringAttachedMessages(false);
 		});

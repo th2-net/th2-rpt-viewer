@@ -19,15 +19,16 @@ import { createURLSearchParams } from '../helpers/url';
 import EventsFilter from '../models/filter/EventsFilter';
 import { getObjectKeys } from '../helpers/object';
 import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
+import { SearchDirection } from '../models/search/SearchDirection';
 
 interface BaseSSEParams {
 	startTimestamp?: number;
 	endTimestamp?: number | null;
 	resultCountLimit?: number;
 	resumeFromId?: string;
-	searchDirection?: 'next' | 'previous'; // defaults to next
+	searchDirection?: SearchDirection; // defaults to next
 	keepOpen?: boolean;
-	book: string;
+	bookId: string;
 }
 
 export interface SSEHeartbeat {
@@ -99,7 +100,7 @@ export interface SSEParamsEvents {
 	resumeFromId?: string;
 	searchDirection?: 'next' | 'previous'; // defaults to next
 	limitForParent?: number;
-	book: string;
+	bookId: string;
 }
 
 export interface MessagesIdsEvent {

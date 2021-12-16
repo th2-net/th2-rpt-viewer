@@ -25,6 +25,7 @@ import notificationsStore from '../NotificationsStore';
 import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
 import MessagesUpdateStore from './MessagesUpdateStore';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
@@ -37,13 +38,17 @@ export default class MessagesDataProviderStore {
 		private api: ApiSchema,
 		private booksStore: BooksStore,
 	) {
-		this.updateStore = new MessagesUpdateStore(this, this.messagesStore.scrollToMessage);
+		this.updateStore = new MessagesUpdateStore(
+			this,
+			booksStore,
+			this.messagesStore.scrollToMessage,
+		);
 
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
 
 		reaction(
 			() => this.booksStore.selectedBook,
-			(selectedBook, prevSelectedBook) => prevSelectedBook && selectedBook && this.loadMessages(),
+			selectedBook => selectedBook && this.loadMessages(),
 		);
 	}
 
@@ -119,15 +124,17 @@ export default class MessagesDataProviderStore {
 	@action
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
+		const bookId = this.booksStore.selectedBook?.name;
 
-		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
+		if (this.messagesStore.filterStore.filter.streams.length === 0 || !bookId) return;
 
 		const queryParams = await this.getFilterParams();
 
 		this.createPreviousMessageChannelEventSource(
 			{
 				...queryParams,
-				searchDirection: 'previous',
+				searchDirection: SearchDirection.Previous,
+				bookId,
 			},
 			{
 				interval: SEARCH_TIME_FRAME,
@@ -136,7 +143,8 @@ export default class MessagesDataProviderStore {
 		this.createNextMessageChannelEventSource(
 			{
 				...queryParams,
-				searchDirection: 'next',
+				searchDirection: SearchDirection.Next,
+				bookId,
 			},
 			{
 				interval: SEARCH_TIME_FRAME,
@@ -163,7 +171,8 @@ export default class MessagesDataProviderStore {
 				this.anchorChannel = new MessagesSSEChannel(
 					{
 						...queryParams,
-						searchDirection: 'previous',
+						searchDirection: SearchDirection.Previous,
+						bookId,
 					},
 					{
 						onResponse: () => null,
@@ -433,11 +442,13 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public keepLoading = async (direction: 'next' | 'previous') => {
+	public keepLoading = async (direction: SearchDirection) => {
+		const bookId = this.booksStore.selectedBook?.name;
 		if (
 			this.messagesStore.filterStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||
-			!this.searchChannelPrev
+			!this.searchChannelPrev ||
+			!bookId
 		)
 			return;
 
@@ -449,7 +460,7 @@ export default class MessagesDataProviderStore {
 		const { stream, endTimestamp, resultCountLimit } = queryParams;
 
 		const keepLoadingStartTimestamp =
-			direction === 'previous'
+			direction === SearchDirection.Previous
 				? this.prevLoadHeartbeat!.timestamp
 				: this.nextLoadHeartbeat!.timestamp;
 
@@ -460,15 +471,16 @@ export default class MessagesDataProviderStore {
 					searchDirection: direction,
 					endTimestamp,
 					resultCountLimit,
-					book: queryParams.book,
+					bookId,
 			  }
 			: {
 					...queryParams,
 					startTimestamp: keepLoadingStartTimestamp,
 					searchDirection: direction,
+					bookId,
 			  };
 
-		if (direction === 'previous') {
+		if (direction === SearchDirection.Previous) {
 			this.prevLoadHeartbeat = {
 				timestamp: keepLoadingStartTimestamp,
 				scanCounter: 0,
@@ -482,7 +494,7 @@ export default class MessagesDataProviderStore {
 			};
 		}
 
-		if (direction === 'previous') {
+		if (direction === SearchDirection.Previous) {
 			this.noMatchingMessagesPrev = false;
 			this.createPreviousMessageChannelEventSource(query);
 			this.searchChannelPrev.subscribe();
@@ -495,13 +507,18 @@ export default class MessagesDataProviderStore {
 
 	@action
 	public matchMessage = async (messageId: string, abortSignal: AbortSignal) => {
-		if (this.isSoftFiltered.get(messageId) !== undefined) return;
+		const bookId = this.booksStore.selectedBook?.name;
+		if (this.isSoftFiltered.get(messageId) !== undefined || !bookId) return;
 		this.isMatchingMessages.set(messageId, true);
 
 		try {
 			const { resultCountLimit, resumeFromId, searchDirection, ...filterParams } = await this
 				.messagesStore.filterStore.filterParams;
-			const isMatch = await this.api.messages.matchMessage(messageId, filterParams, abortSignal);
+			const isMatch = await this.api.messages.matchMessage(
+				messageId,
+				{ ...filterParams, bookId },
+				abortSignal,
+			);
 
 			runInAction(() => {
 				this.isSoftFiltered.set(messageId, isMatch);

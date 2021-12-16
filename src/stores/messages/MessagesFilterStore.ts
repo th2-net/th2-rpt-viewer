@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, IReactionDisposer, observable, reaction, when } from 'mobx';
+import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import moment from 'moment';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
@@ -60,7 +60,7 @@ export default class MessagesFilterStore {
 	@observable isSoftFilter = false;
 
 	@computed
-	public get filterParams(): Promise<MessagesSSEParams> {
+	public get filterParams(): Omit<MessagesSSEParams, 'bookId'> {
 		const sseFilters = this.sseMessagesFilter;
 
 		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
@@ -103,40 +103,19 @@ export default class MessagesFilterStore {
 			),
 		};
 
-		if (this.booksStore.isLoading) {
-			return when(() => !this.booksStore.isLoading).then(() => {
-				if (!this.booksStore.selectedBook) {
-					throw new Error("BooksStore doesn't contain a selected books");
-				}
-				return {
-					...queryParams,
-					book: this.booksStore.selectedBook.name,
-				};
-			});
-		}
-
-		if (!this.booksStore.selectedBook) {
-			throw new Error("BooksStore doesn't contain a selected books");
-		}
-		return Promise.resolve({
-			...queryParams,
-			book: this.booksStore.selectedBook.name,
-		});
+		return queryParams;
 	}
 
 	@computed
-	public get softFilterParams(): Promise<MessagesSSEParams> {
-		return this.filterParams.then(filterParams => {
-			return {
-				startTimestamp: filterParams.startTimestamp,
-				stream: filterParams.stream,
-				searchDirection: filterParams.searchDirection,
-				endTimestamp: filterParams.endTimestamp,
-				resultCountLimit: filterParams.resultCountLimit,
-				resumeFromId: filterParams.resumeFromId,
-				book: filterParams.book,
-			};
-		});
+	public get softFilterParams(): Omit<MessagesSSEParams, 'bookId'> {
+		return {
+			startTimestamp: this.filterParams.startTimestamp,
+			stream: this.filterParams.stream,
+			searchDirection: this.filterParams.searchDirection,
+			endTimestamp: this.filterParams.endTimestamp,
+			resultCountLimit: this.filterParams.resultCountLimit,
+			resumeFromId: this.filterParams.resumeFromId,
+		};
 	}
 
 	@computed

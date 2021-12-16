@@ -22,5 +22,5 @@ export interface MessagesDataStore {
 	loadMessages: () => Promise<void>;
 	onNextChannelResponse: (messages: EventMessage[]) => void;
 	onPrevChannelResponse: (messages: EventMessage[]) => void;
-	getFilterParams: () => Promise<MessagesSSEParams>;
+	getFilterParams: () => Omit<MessagesSSEParams, 'bookId'>;
 }

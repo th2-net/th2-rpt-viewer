@@ -24,6 +24,7 @@ import { isAbortError } from '../../../helpers/fetch';
 import { MessagesDataStore } from '../../../models/Stores';
 import MessagesUpdateStore from '../../../stores/messages/MessagesUpdateStore';
 import { MessagesSSEChannel } from '../../../stores/SSEChannel/MessagesSSEChannel';
+import { SearchDirection } from '../../../models/search/SearchDirection';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
@@ -32,7 +33,11 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	private readonly messagesLimit = 250;
 
 	constructor(private messagesStore: EmbeddedMessagesStore, private api: ApiSchema) {
-		this.updateStore = new MessagesUpdateStore(this, this.messagesStore.scrollToMessage);
+		this.updateStore = new MessagesUpdateStore(
+			this,
+			this.messagesStore.bookId,
+			this.messagesStore.scrollToMessage,
+		);
 
 		autorun(() => this.messagesStore.filterStore.filter && this.onFilterChange());
 	}
@@ -109,12 +114,12 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
 
-		const queryParams = await this.messagesStore.filterStore.filterParams;
+		const queryParams = this.messagesStore.filterStore.filterParams;
 
 		this.createPreviousMessageChannelEventSource(
 			{
 				...queryParams,
-				searchDirection: 'previous',
+				searchDirection: SearchDirection.Previous,
 			},
 			{
 				interval: SEARCH_TIME_FRAME,
@@ -127,7 +132,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.createNextMessageChannelEventSource(
 			{
 				...queryParams,
-				searchDirection: 'next',
+				searchDirection: SearchDirection.Next,
 			},
 			{
 				interval: SEARCH_TIME_FRAME,
@@ -157,7 +162,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				this.anchorChannel = new MessagesSSEChannel(
 					{
 						...queryParams,
-						searchDirection: 'previous',
+						searchDirection: SearchDirection.Previous,
 					},
 					{
 						onResponse: () => null,
@@ -403,7 +408,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	};
 
 	@action
-	public keepLoading = async (direction: 'next' | 'previous') => {
+	public keepLoading = async (direction: SearchDirection) => {
 		if (
 			!this.searchChannelNext ||
 			!this.searchChannelPrev ||
@@ -417,7 +422,9 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			...queryParams,
 			startTimestamp:
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				direction === 'previous' ? this.prevLoadEndTimestamp! : this.nextLoadEndTimestamp!,
+				direction === SearchDirection.Previous
+					? this.prevLoadEndTimestamp!
+					: this.nextLoadEndTimestamp!,
 			searchDirection: direction,
 		};
 

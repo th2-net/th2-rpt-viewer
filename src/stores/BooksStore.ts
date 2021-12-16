@@ -14,14 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, runInAction } from 'mobx';
+import { action, observable, runInAction, toJS } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { IndexedDbStores } from '../api/indexedDb';
 import { Book } from '../models/Books';
 
 export default class BooksStore {
-	constructor(private api: ApiSchema) {
-		this.init();
+	constructor(private api: ApiSchema, bookId?: string) {
+		this.init(bookId);
 	}
 
 	@observable
@@ -31,7 +31,7 @@ export default class BooksStore {
 	selectedBook: Book | null = null;
 
 	@observable
-	isLoading = false;
+	isLoading = true;
 
 	loadBooksList = async () => {
 		try {
@@ -43,22 +43,40 @@ export default class BooksStore {
 			runInAction(() => {
 				this.books = books;
 			});
+			return this.books;
 		} finally {
 			this.isLoading = false;
 		}
 	};
 
 	@action
-	setSelectedBook = (book: Book) => {
+	selectBook = (book: Book | null) => {
 		this.selectedBook = book;
-		// this.api.indexedDb.addDbStoreItem(IndexedDbStores.SELECTED_BOOK, book);
+		if (book) {
+			this.api.indexedDb.updateDbStoreItem(
+				IndexedDbStores.SELECTED_BOOK,
+				toJS({
+					...book,
+					id: IndexedDbStores.SELECTED_BOOK,
+					timestamp: Date.now(),
+				}),
+			);
+		}
 	};
 
-	private init = async () => {
-		const [selectedBookDBObject] = await this.api.indexedDb.getStoreValues<Book>(
-			IndexedDbStores.SELECTED_BOOK,
-		);
-		await this.loadBooksList();
-		this.setSelectedBook(this.books[0]);
+	private init = async (bookId?: string) => {
+		let initialBook: Book | null | undefined;
+		try {
+			const books = await this.loadBooksList();
+			initialBook = (bookId && books.find(b => b.name === bookId)) || null;
+			if (!initialBook) {
+				const [lastSelectedBook] = await this.api.indexedDb.getStoreValues<Book>(
+					IndexedDbStores.SELECTED_BOOK,
+				);
+				initialBook = lastSelectedBook && books.find(book => book.name === lastSelectedBook.name);
+			}
+		} finally {
+			this.selectBook(initialBook || this.books[0] || null);
+		}
 	};
 }
