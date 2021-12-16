@@ -19,7 +19,7 @@ import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import api from '../../../api';
 import { getTimestampAsNumber } from '../../../helpers/date';
-import { getItemId, getItemName } from '../../../helpers/event';
+import { getItemId, getItemName, isEventAction } from '../../../helpers/event';
 import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../bookmarks/BookmarksPanel';
@@ -161,53 +161,46 @@ const GraphSearchDialog = (props: Props) => {
 
 	React.useEffect(() => {
 		// eslint-disable-next-line @typescript-eslint/no-empty-function
-		let stopSearch = () => {};
+		let stopSearch;
 
-		if (selectedBook) {
-			const searchChannels = {
-				previous: submittedTimestamp
-					? api.sse.getEventSource({
-							type: 'event',
-							queryParams: {
-								startTimestamp: submittedTimestamp,
-								resultCountLimit: 1,
-								searchDirection: SearchDirection.Previous,
-								bookId: selectedBook.name,
-							},
-					  })
-					: null,
-				next: submittedTimestamp
-					? api.sse.getEventSource({
-							type: 'event',
-							queryParams: {
-								startTimestamp: submittedTimestamp,
-								resultCountLimit: 1,
-								searchDirection: SearchDirection.Next,
-								bookId: selectedBook.name,
-							},
-					  })
-					: null,
-			};
+		if (selectedBook && submittedTimestamp) {
+			const config = {
+				type: 'event',
+				queryParams: {
+					startTimestamp: submittedTimestamp,
+					resultCountLimit: 1,
+					searchDirection: SearchDirection.Previous,
+					bookId: selectedBook.name,
+				},
+			} as const;
+
+			const previousChannel = api.sse.getEventSource(config);
+			const nextChannel = api.sse.getEventSource({
+				...config,
+				queryParams: {
+					...config.queryParams,
+					searchDirection: SearchDirection.Next,
+				},
+			});
+
 			stopSearch = () => {
-				searchChannels.next?.close();
-				searchChannels.previous?.close();
+				previousChannel.close();
+				nextChannel.close();
 			};
 
-			const onChannelResponse = (ev: any) => {
-				if (!submittedTimestamp) return;
-				stopSearch();
-				const data = (ev as MessageEvent).data;
-				const parsedEvent = JSON.parse(data);
-				const id = getItemId(parsedEvent);
-				ac.current = new AbortController();
-				onSearchSuccess(parsedEvent, submittedTimestamp);
-				setFoundId(id);
+			const onChannelResponse = (ev: Event) => {
+				const data = ev instanceof MessageEvent ? JSON.parse(ev.data) : null;
+				if (isEventAction(data)) {
+					ac.current = new AbortController();
+					onSearchSuccess(data, submittedTimestamp);
+					setFoundId(data.eventId);
+				}
 			};
 
-			searchChannels.previous?.addEventListener('event', onChannelResponse);
-			searchChannels.next?.addEventListener('event', onChannelResponse);
-			searchChannels.previous?.addEventListener('close', () => stopSearch);
-			searchChannels.next?.addEventListener('close', () => stopSearch);
+			previousChannel.addEventListener('event', onChannelResponse);
+			nextChannel.addEventListener('event', onChannelResponse);
+			previousChannel.addEventListener('close', stopSearch);
+			nextChannel.addEventListener('close', stopSearch);
 		}
 
 		return stopSearch;
