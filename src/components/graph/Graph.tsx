@@ -27,9 +27,9 @@ import { Chunk, PanelRange } from '../../models/Graph';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
-import '../../styles/graph.scss';
 import GraphLastEventsButton from './GraphLastEventsButton';
 import BookSelect from '../books/BookSelect';
+import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
