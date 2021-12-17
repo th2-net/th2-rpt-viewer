@@ -23,11 +23,14 @@ import EventsSearchPanel from './search/EventsSearchPanel';
 import { EventListNavUp, EventListNavDown } from './EventListNavigation';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { isEventsStore } from '../../helpers/stores';
+import Select from '../util/Select';
+import { useBooksStore } from '../../hooks/useBooksStore';
 
 function EventWindowHeader() {
 	const eventStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 	const workspaceStore = useWorkspaceStore();
+	const booksStore = useBooksStore();
 
 	const { activePanel } = useActivePanel();
 
@@ -52,6 +55,16 @@ function EventWindowHeader() {
 						Flat view
 					</div>
 				</div>
+				<Select
+					className='event-window-header__scope'
+					options={booksStore.scopeList}
+					onChange={scope => {
+						if (scope) {
+							eventStore.selectScope(scope);
+						}
+					}}
+					selected={eventStore.scope || ''}
+				/>
 				{eventDataStore.isLoading && (
 					<div className='event-window-header__loader'>
 						Resolving events<span>.</span>

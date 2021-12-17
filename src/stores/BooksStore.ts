@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, toJS } from 'mobx';
+import { action, observable, toJS, runInAction, reaction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { IndexedDbStores } from '../api/indexedDb';
 import { Book } from '../models/Books';
@@ -23,6 +23,8 @@ export default class BooksStore {
 	constructor(private api: ApiSchema, books: Book[], initialBook: Book) {
 		this.books = books;
 		this.selectedBook = initialBook;
+
+		reaction(() => this.selectedBook, this.getScopeList, { fireImmediately: true });
 	}
 
 	@observable
@@ -31,9 +33,16 @@ export default class BooksStore {
 	@observable
 	selectedBook: Book;
 
+	@observable
+	scopeList: string[] = [];
+
+	@observable
+	isLoadingScope = false;
+
 	@action
 	selectBook = (book: Book) => {
 		this.selectedBook = book;
+		this.scopeList = [];
 		if (book) {
 			this.api.indexedDb.updateDbStoreItem(
 				IndexedDbStores.SELECTED_BOOK,
@@ -43,6 +52,25 @@ export default class BooksStore {
 					timestamp: Date.now(),
 				}),
 			);
+		}
+	};
+
+	@action
+	getScopeList = async (book: Book) => {
+		this.scopeList = [];
+		this.isLoadingScope = true;
+
+		try {
+			const scopeList = await this.api.books.getBookScope(book.name);
+			runInAction(() => {
+				this.scopeList = scopeList;
+			});
+		} catch (error) {
+			console.error('Failed to load scope list');
+		} finally {
+			runInAction(() => {
+				this.isLoadingScope = false;
+			});
 		}
 	};
 }

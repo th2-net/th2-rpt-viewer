@@ -108,7 +108,7 @@ export class SelectedStore {
 	}
 
 	@action
-	public toggleMessagePin = (message: EventMessage) => {
+	public toggleMessagePin = (message: EventMessage, bookId: string) => {
 		const bookmark = this.bookmarkedMessages.find(
 			messageBookmark => messageBookmark.id === message.messageId,
 		);
@@ -116,7 +116,7 @@ export class SelectedStore {
 			this.removeBookmark(bookmark);
 			this.db.deleteDbStoreItem(IndexedDbStores.MESSAGES, bookmark.id);
 		} else if (!this.isBookmarksFull) {
-			const messageBookmark = this.createMessageBookmark(message);
+			const messageBookmark = this.createMessageBookmark(message, bookId);
 			this.bookmarkedMessages = this.bookmarkedMessages.concat(messageBookmark);
 			this.saveBookmark(toJS(messageBookmark));
 		} else {
@@ -125,7 +125,7 @@ export class SelectedStore {
 	};
 
 	@action
-	public toggleEventPin = async (event: EventTreeNode) => {
+	public toggleEventPin = async (event: EventTreeNode, bookId: string, scope: string) => {
 		const bookmark = this.bookmarkedEvents.find(
 			eventBookmark => eventBookmark.id === event.eventId,
 		);
@@ -135,7 +135,7 @@ export class SelectedStore {
 			);
 			this.db.deleteDbStoreItem(IndexedDbStores.EVENTS, bookmark.id);
 		} else if (!this.isBookmarksFull) {
-			const eventBookmark = this.createEventBookmark(event);
+			const eventBookmark = this.createEventBookmark(event, bookId, scope);
 			this.bookmarkedEvents = this.bookmarkedEvents.concat(eventBookmark);
 			this.saveBookmark(toJS(eventBookmark));
 		} else {
@@ -206,19 +206,26 @@ export class SelectedStore {
 		}
 	};
 
-	private createMessageBookmark = (message: EventMessage): MessageBookmark => {
+	private createMessageBookmark = (message: EventMessage, bookId: string): MessageBookmark => {
 		return {
 			id: message.messageId,
 			timestamp: moment.utc().valueOf(),
 			item: toJS(message),
+			bookId,
 		};
 	};
 
-	private createEventBookmark = (event: EventTreeNode): EventBookmark => {
+	private createEventBookmark = (
+		event: EventTreeNode,
+		bookId: string,
+		scope: string,
+	): EventBookmark => {
 		return {
 			id: event.eventId,
 			timestamp: moment.utc().valueOf(),
 			item: toJS(event),
+			bookId,
+			scope,
 		};
 	};
 

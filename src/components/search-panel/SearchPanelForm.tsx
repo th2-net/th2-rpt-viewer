@@ -39,6 +39,7 @@ import SearchResultCountLimit, {
 import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
+import SelectFilterRow from '../filter/row/SelectFilterRow';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -249,6 +250,19 @@ const SearchPanelForm = () => {
 			<div className='filters'>
 				{filters && filters.info.length > 0 && (
 					<SearchPanelFilters {...(filters as any)} type={formType} autocompletes={autocompletes} />
+				)}
+				{/* TODO: fix scope select */}
+				{formType === 'event' && (
+					<SelectFilterRow
+						config={{
+							options: ['scope_1', 'scope_2', 'scope_3'],
+							setValue: v => updateForm({ scope: v }),
+							id: 'scope',
+							type: 'select',
+							value: form.scope,
+							label: 'Scope',
+						}}
+					/>
 				)}
 			</div>
 		</div>

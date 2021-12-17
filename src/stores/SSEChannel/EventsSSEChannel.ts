@@ -30,6 +30,7 @@ export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 			timeRange: TimeRange;
 			filter: EventsFilter | null;
 			sseParams: SSEParamsEvents;
+			scope: string;
 		},
 		protected eventListeners: SSEEventListeners<EventTreeNode>,
 		protected options?: SSEChannelOptions,

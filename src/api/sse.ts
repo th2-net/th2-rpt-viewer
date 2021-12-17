@@ -77,6 +77,7 @@ export interface EventSSEParams extends BaseSSEParams {
 	'name-values'?: string[];
 	'name-negative'?: boolean;
 	'name-conjunct'?: boolean;
+	scope: string;
 }
 
 export interface MessagesSSEParams extends BaseSSEParams {

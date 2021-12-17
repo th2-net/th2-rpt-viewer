@@ -24,6 +24,7 @@ import TogglerRow from './TogglerRow';
 import ActionRow from './ActionRow';
 import SwitcherRow from './SwitcherRow';
 import EventResolverRow from './EventResolverRow';
+import SelectFilterRow from './SelectFilterRow';
 
 interface Props {
 	rowConfig: FitlerRowItem | ActionFilterRow;
@@ -37,6 +38,8 @@ export default function FilterRow({ rowConfig }: Props) {
 			return <TimeWindow config={rowConfig} />;
 		case 'string':
 			return <StringFilterRow config={rowConfig} />;
+		case 'select':
+			return <SelectFilterRow config={rowConfig} />;
 		case 'multiple-strings':
 			return <MultipleStringFilterRow config={rowConfig} />;
 		case 'toggler':

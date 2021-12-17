@@ -62,6 +62,7 @@ export type SearchPanelFormState = {
 	searchDirection: SearchDirection | null;
 	parentEvent: string;
 	stream: string[];
+	scope: string;
 };
 
 export type SearchResult = EventTreeNode | EventMessage;
@@ -80,11 +81,20 @@ export type SearchHistory = {
 	};
 };
 
-export type StateHistory = {
-	type: SearchPanelType;
-	state: SearchPanelFormState;
-	filters: EventFilterState | MessageFilterState;
-};
+export type StateHistory =
+	| {
+			type: SearchPanelType;
+			state: SearchPanelFormState;
+			filters: EventFilterState;
+			bookId: string;
+			scope: string;
+	  }
+	| {
+			type: SearchPanelType;
+			state: SearchPanelFormState;
+			filters: MessageFilterState;
+			bookId: string;
+	  };
 
 export type SearchHistoryState<T> = {
 	index: number;
@@ -146,6 +156,11 @@ export class SearchStore {
 				}
 			},
 		);
+
+		reaction(
+			() => this.booksStore.selectedBook,
+			() => this.stopSearch(),
+		);
 	}
 
 	@observable searchChannel: {
@@ -161,7 +176,7 @@ export class SearchStore {
 	@observable messagesFilter: MessageFilterState | null = null;
 
 	@observable searchForm: SearchPanelFormState = {
-		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
+		startTimestamp: moment.utc().subtract(30, 'minutes').valueOf(),
 		searchDirection: SearchDirection.Next,
 		resultCountLimit: 50,
 		timeLimits: {
@@ -170,6 +185,7 @@ export class SearchStore {
 		},
 		parentEvent: '',
 		stream: [],
+		scope: '',
 	};
 
 	@observable formType: SearchPanelType = 'event';
@@ -208,7 +224,7 @@ export class SearchStore {
 
 	@observable eventAutocompleteList: EventTreeNode[] = [];
 
-	eventAutocompleteSseChannel: EventSource | null = null;
+	private eventAutocompleteSseChannel: EventSource | null = null;
 
 	@computed get searchProgress() {
 		const startTimestamp = Number(this.searchForm.startTimestamp);
@@ -453,15 +469,16 @@ export class SearchStore {
 		});
 	};
 
-	@action startSearch = (loadMore = false, history?: StateHistory) => {
-		const filterParams =
-			history?.filters || this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
-		if (this.isSearching || !filterParams) return;
-		const isPaused = this.isPaused;
+	@action startSearch = (loadMore = false) => {
+		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
+		const bookId = this.booksStore.selectedBook.name;
+		const scope = this.searchForm.scope;
+
+		if (this.isSearching || !filterParams || (this.formType === 'event' && !scope.trim())) return;
 		this.setCompleted(false);
 
 		if (loadMore) {
-			if (isPaused) {
+			if (this.isPaused) {
 				this.startSearch();
 				return;
 			}
@@ -470,14 +487,16 @@ export class SearchStore {
 			this.searchProgressState[SearchDirection.Next].resultCount = 1;
 		}
 
-		if (!isPaused && !loadMore) {
+		if (!this.isPaused && !loadMore) {
 			this.newSearch({
 				timestamp: moment().utc().valueOf(),
 				request: {
-					type: history?.type || this.formType,
-					state: history?.state || this.searchForm,
-					filters: history?.filters || filterParams,
-				},
+					type: this.formType,
+					state: this.searchForm,
+					filters: filterParams,
+					bookId,
+					scope,
+				} as any,
 				results: {},
 				progress: {
 					previous: 0,
@@ -501,20 +520,11 @@ export class SearchStore {
 			timeLimits,
 			parentEvent,
 			stream,
-		} = history?.state || this.searchForm;
+		} = this.searchForm;
 
-		const filters = history
-			? {
-					info: this.eventFilterInfo,
-					state: history.filters,
-					setState: this.setEventsFilter,
-					disableAll: this.isFormDisabled,
-			  }
-			: this.filters;
-
-		const filtersToAdd = !filters
+		const filtersToAdd = !this.filters
 			? []
-			: (filters.info as EventsFiltersInfo[])
+			: (this.filters.info as EventsFiltersInfo[])
 					.filter((info: SSEFilterInfo) => getFilter(info.name).values.length !== 0)
 					.filter(
 						(info: SSEFilterInfo) =>
@@ -546,26 +556,23 @@ export class SearchStore {
 				...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
 			};
 
-			if (isPaused || loadMore) {
+			if (this.isPaused || loadMore) {
 				params.resumeFromId = this.searchProgressState[direction].lastEventId;
 			}
 
-			if (isPaused) {
+			if (this.isPaused) {
 				params.resultCountLimit =
 					this.currentSearch!.request.state.resultCountLimit -
 					this.searchProgressState[direction].resultCount;
 			}
 
 			const queryParams: SSEParams =
-				(history?.type || this.formType) === 'event'
-					? { ...params, parentEvent }
-					: { ...params, stream };
+				this.formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
 
 			const searchChannel = this.api.sse.getEventSource({
-				type: history?.type || this.formType,
+				type: this.formType,
 				queryParams,
 			});
-
 			this.searchChannel[direction] = searchChannel;
 
 			if (this.formType === 'event') {
@@ -575,10 +582,7 @@ export class SearchStore {
 				this.filtersHistory.onMessageFilterSubmit(filterParams as MessageFilterState);
 			}
 
-			searchChannel.addEventListener(
-				history?.type || this.formType,
-				this.onChannelResponse.bind(this, direction),
-			);
+			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));
 			searchChannel.addEventListener('keep_alive', this.onChannelResponse.bind(this, direction));
 			searchChannel.addEventListener('close', this.stopSearch.bind(this, direction, undefined));
 			searchChannel.addEventListener('error', this.onError.bind(this, direction));
@@ -747,6 +751,7 @@ export class SearchStore {
 				searchDirection: SearchDirection.Previous,
 				resultCountLimit: 10,
 				bookId: this.booksStore.selectedBook.name,
+				scope: this.searchForm.scope,
 			},
 		});
 		this.eventAutocompleteSseChannel.addEventListener('event', (ev: Event) =>

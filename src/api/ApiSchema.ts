@@ -93,6 +93,7 @@ export interface MessageApiSchema {
 
 export interface BooksApiSchema {
 	getBooksList: () => Promise<Book[]>;
+	getBookScope: (bookId: string) => Promise<string[]>;
 }
 
 export interface SSESchema {

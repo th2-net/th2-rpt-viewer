@@ -45,12 +45,15 @@ export interface MessageBookmark {
 	timestamp: number;
 	id: string;
 	item: EventMessage;
+	bookId: string;
 }
 
 export interface EventBookmark {
 	timestamp: number;
 	id: string;
 	item: EventMessage | EventTreeNode;
+	bookId: string;
+	scope: string;
 }
 
 export function isEventBookmark(bookmark: unknown): bookmark is EventBookmark {

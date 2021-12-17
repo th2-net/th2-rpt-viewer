@@ -38,7 +38,7 @@ import { isAbortError } from '../../helpers/fetch';
 import BooksStore from '../BooksStore';
 
 export interface WorkspaceUrlState {
-	events: Partial<EventStoreURLState> | string;
+	events: Partial<EventStoreURLState>;
 	messages: Partial<MessagesStoreURLState> | string;
 	timeRange?: TimeRange;
 	interval: number | null;

@@ -28,6 +28,7 @@ import StateSaver from '../../util/StateSaver';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import { matchWildcardRule } from '../../../helpers/regexp';
 import MessageCardBase from './MessageCardBase';
+import { useBooksStore } from '../../../hooks/useBooksStore';
 import '../../../styles/messages.scss';
 
 export interface OwnProps {
@@ -48,6 +49,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const messagesDataStore = useMessagesDataStore();
 	const selectedStore = useSelectedStore();
 	const { sortOrderItems } = useMessageBodySortStore();
+	const booksStore = useBooksStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
@@ -132,8 +134,8 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	);
 
 	const toogleMessagePin = React.useCallback(() => {
-		selectedStore.toggleMessagePin(message);
-	}, [selectedStore.toggleMessagePin]);
+		selectedStore.toggleMessagePin(message, booksStore.selectedBook.name);
+	}, [selectedStore.toggleMessagePin, booksStore.selectedBook]);
 
 	const addMessagesToExport = React.useCallback(
 		() => messagesStore.exportStore.addMessageToExport(message),

@@ -154,7 +154,14 @@ export class IndexedDB {
 
 	private async initDb() {
 		this.db = await openDB<TH2DB>(this.env, dbVersion, {
-			upgrade: async db => {
+			upgrade: async (db, _oldVersion, newVersion) => {
+				if (newVersion === 4) {
+					await Promise.all([
+						db.clear(IndexedDbStores.SEARCH_HISTORY),
+						db.clear(IndexedDbStores.EVENTS),
+						db.clear(IndexedDbStores.MESSAGES),
+					]);
+				}
 				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
 					const name = storeName as IndexedDbStores;
 					if (!db.objectStoreNames.contains(name)) {

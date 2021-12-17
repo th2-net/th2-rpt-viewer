@@ -183,7 +183,9 @@ export default class EventsSearchStore {
 			this.searchResultsUpdateReaction();
 		}
 
-		if (searchTokens.length === 0) return;
+		const scope = this.eventsStore.scope;
+
+		if (searchTokens.length === 0 || !scope) return;
 
 		this.isLoadingSearchResults = true;
 
@@ -195,6 +197,7 @@ export default class EventsSearchStore {
 					bookId,
 				},
 				timeRange: this.eventsStore.filterStore.range,
+				scope,
 			},
 			{
 				onError: this.onSearchError,

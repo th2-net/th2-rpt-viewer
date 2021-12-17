@@ -32,13 +32,13 @@ import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import { isAbortError } from '../../helpers/fetch';
 import { getItemAt } from '../../helpers/array';
 import BooksStore from '../BooksStore';
-import { Book } from '../../models/Books';
 import { SearchDirection } from '../../models/search/SearchDirection';
 
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
 	filter: EventsFilter | null;
 	targetEventId?: string;
+	scope: string;
 }
 export default class EventsDataStore {
 	private CHILDREN_COUNT_LIMIT = 50;
@@ -59,7 +59,7 @@ export default class EventsDataStore {
 			},
 		});
 
-		reaction(() => this.booksStore.selectedBook, this.onSelectedBookChange);
+		reaction(() => this.eventStore.scope, this.onScopeChange);
 	}
 
 	@observable.ref
@@ -114,7 +114,7 @@ export default class EventsDataStore {
 
 	@action
 	public fetchEventTree = async (options: FetchEventTreeOptions) => {
-		const { timeRange, filter, targetEventId } = options;
+		const { timeRange, filter, targetEventId, scope } = options;
 
 		const bookId = this.booksStore.selectedBook.name;
 
@@ -144,6 +144,7 @@ export default class EventsDataStore {
 						limitForParent: this.CHILDREN_COUNT_LIMIT + 1,
 						bookId,
 					},
+					scope,
 				},
 				{
 					onResponse: this.handleIncomingEventTreeNodes,
@@ -415,6 +416,7 @@ export default class EventsDataStore {
 						searchDirection: SearchDirection.Next,
 						bookId: this.booksStore.selectedBook.name,
 					},
+					scope: this.eventStore.scope!,
 				},
 				{
 					onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),
@@ -627,11 +629,12 @@ export default class EventsDataStore {
 		}
 	};
 
-	private onSelectedBookChange = (selectedBook: Book | null) => {
-		if (selectedBook) {
+	private onScopeChange = (scope: string | null) => {
+		if (scope) {
 			this.fetchEventTree({
 				filter: this.filterStore.filter,
 				timeRange: this.filterStore.range,
+				scope,
 			});
 		}
 	};

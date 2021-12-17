@@ -14,12 +14,9 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-// TODO: fix messages update store
+import React from 'react';
+import { EventsScopeContext } from '../contexts/eventsScopeProvider';
 
-// import { useMessagesWorkspaceStore } from './useMessagesStore';
-
-// export const useMessageUpdateStore = () => {
-// 	const messageStore = useMessagesWorkspaceStore();
-
-// 	return messageStore.messageUpdateStore;
-// };
+export const useScope = () => {
+	return React.useContext(EventsScopeContext);
+};

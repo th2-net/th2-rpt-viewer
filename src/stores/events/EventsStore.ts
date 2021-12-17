@@ -21,9 +21,9 @@ import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
-import { isEvent, isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
+import { isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
-import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
+import { timestampToNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
 import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
@@ -41,13 +41,14 @@ export type EventStoreURLState = Partial<{
 	selectedEventId: string;
 	search: string[];
 	flattenedListView: boolean;
+	scope: string;
 }>;
 
 type EventStoreDefaultState = EventStoreURLState & {
 	targetEvent?: EventTreeNode | EventAction;
 };
 
-export type EventStoreDefaultStateType = EventStoreDefaultState | string | null | undefined;
+export type EventStoreDefaultStateType = EventStoreDefaultState | null | undefined;
 
 export default class EventsStore {
 	public filterStore!: EventsFilterStore;
@@ -67,7 +68,7 @@ export default class EventsStore {
 		private booksStore: BooksStore,
 		defaultState: EventStoreDefaultStateType,
 	) {
-		const initialState = !defaultState || typeof defaultState === 'string' ? {} : defaultState;
+		const initialState = defaultState || {};
 
 		this.filterStore = new EventsFilterStore(this.graphStore, this.searchPanelStore, {
 			filter: initialState.filter,
@@ -106,6 +107,8 @@ export default class EventsStore {
 	@observable eventTreeStatusCode: number | null = null;
 
 	@observable targetNodeId: string | null = null;
+
+	@observable scope: string | null = null;
 
 	@computed
 	public get isLoadingTargetNode(): boolean {
@@ -240,6 +243,11 @@ export default class EventsStore {
 	}
 
 	@action
+	public selectScope = (scope: string) => {
+		this.scope = scope;
+	};
+
+	@action
 	public setHoveredEvent(event: EventTreeNode | null) {
 		if (event !== this.hoveredEvent) {
 			this.hoveredEvent = event;
@@ -287,26 +295,30 @@ export default class EventsStore {
 		this.graphStore.setTimestamp(timestampToNumber(savedEventNode.startTimestamp));
 		this.workspaceStore.viewStore.activePanel = this;
 
-		const timeRange = calculateTimeRange(
-			timestampToNumber(savedEventNode.startTimestamp),
-			this.graphStore.interval,
-		);
+		// TODO: bookmarks should have scope
 
-		this.eventDataStore.fetchEventTree({
-			timeRange,
-			filter: this.filterStore.filter,
-			targetEventId: savedEventNode.eventId,
-		});
+		// const timeRange = calculateTimeRange(
+		// 	timestampToNumber(savedEventNode.startTimestamp),
+		// 	this.graphStore.interval,
+		// );
+		// this.eventDataStore.fetchEventTree({
+		// 	timeRange,
+		// 	filter: this.filterStore.filter,
+		// 	targetEventId: savedEventNode.eventId,
+		// });
 	};
 
 	@action
 	public onRangeChange = (timestampFrom: number) => {
 		const timeRange = calculateTimeRange(timestampFrom, this.graphStore.interval);
 
-		this.eventDataStore.fetchEventTree({
-			timeRange,
-			filter: this.filterStore.filter,
-		});
+		if (this.scope) {
+			this.eventDataStore.fetchEventTree({
+				timeRange,
+				filter: this.filterStore.filter,
+				scope: this.scope,
+			});
+		}
 
 		if (this.workspaceStore.viewStore.panelsLayout[0] < 20) {
 			this.workspaceStore.viewStore.setPanelsLayout([50, 50]);
@@ -384,31 +396,16 @@ export default class EventsStore {
 	}
 
 	private init = async (defaultState: EventStoreDefaultStateType) => {
-		let initialState = !defaultState || typeof defaultState === 'string' ? {} : defaultState;
+		const initialState = defaultState || {};
+		const scope = initialState.scope;
 
-		if (typeof defaultState === 'string') {
-			try {
-				const event = await this.api.events.getEvent(defaultState);
-				this.filterStore.setRange(
-					getRangeFromTimestamp(timestampToNumber(event.startTimestamp), this.graphStore.interval),
-				);
-				initialState = { ...initialState, selectedEventId: event.eventId, targetEvent: event };
-				this.goToEvent(event);
-			} catch (error) {
-				console.error(`Couldnt fetch target event node ${defaultState}`);
-				this.eventDataStore.fetchEventTree({
-					filter: this.filterStore.filter,
-					timeRange: this.filterStore.range,
-					targetEventId: initialState.selectedEventId,
-				});
-			}
-		} else if (isEvent(initialState.targetEvent)) {
-			this.goToEvent(initialState.targetEvent);
-		} else {
+		if (scope) {
+			this.scope = scope;
 			this.eventDataStore.fetchEventTree({
 				filter: this.filterStore.filter,
 				timeRange: this.filterStore.range,
 				targetEventId: initialState.selectedEventId,
+				scope,
 			});
 		}
 	};
@@ -499,15 +496,26 @@ export default class EventsStore {
 	public applyFilter = (filter: EventFilterState) => {
 		this.filterHistoryStore.onEventFilterSubmit(filter);
 
-		this.eventDataStore.fetchEventTree({ filter, timeRange: this.filterStore.range });
+		if (this.scope) {
+			this.eventDataStore.fetchEventTree({
+				filter,
+				timeRange: this.filterStore.range,
+				scope: this.scope,
+			});
+		}
 	};
 
 	public clearFilter = () => {
 		const defaultFilter = this.filterStore.resetEventsFilter();
-		this.eventDataStore.fetchEventTree({
-			filter: defaultFilter,
-			timeRange: this.filterStore.range,
-		});
+		if (this.scope) {
+			this.eventDataStore.fetchEventTree({
+				filter: defaultFilter,
+				timeRange: this.filterStore.range,
+				scope: this.scope,
+			});
+		} else {
+			this.filterStore.setEventsFilter(defaultFilter);
+		}
 	};
 
 	public changeEventsRange = (minutesOffset: number) => {
@@ -520,9 +528,12 @@ export default class EventsStore {
 			.add(this.graphStore.interval, 'minutes')
 			.valueOf();
 
-		this.eventDataStore.fetchEventTree({
-			timeRange: [timestampFrom, timestampTo],
-			filter: this.filterStore.filter,
-		});
+		if (this.scope) {
+			this.eventDataStore.fetchEventTree({
+				timeRange: [timestampFrom, timestampTo],
+				filter: this.filterStore.filter,
+				scope: this.scope,
+			});
+		}
 	};
 }

@@ -51,10 +51,12 @@ export class SessionsStore {
 			},
 		);
 
-		reaction(() => this.booksStore.selectedBook, this.loadMessageSessions);
+		reaction(() => this.booksStore.selectedBook, this.loadMessageSessions, {
+			fireImmediately: true,
+		});
 	}
 
-	private async loadMessageSessions(book: Book) {
+	private loadMessageSessions = async (book: Book) => {
 		runInAction(() => {
 			this.messageSessions = [];
 			this.isLoadingSessions = true;
@@ -69,7 +71,7 @@ export class SessionsStore {
 		} finally {
 			runInAction(() => (this.isLoadingSessions = false));
 		}
-	}
+	};
 
 	@action
 	public saveSessions = (sessions: string[]) => {

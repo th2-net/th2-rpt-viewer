@@ -27,9 +27,6 @@ import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import MessageBodySortOrderStore from './MessageBodySortStore';
 import { DbData } from '../api/indexedDb';
 import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
-import { intervalOptions } from '../models/Graph';
-import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
-import { getRangeFromTimestamp } from '../helpers/date';
 import {
 	EventFilterState,
 	FilterState,
@@ -95,6 +92,7 @@ export default class RootStore {
 						: undefined,
 				selectedEventId: eventsStore.selectedNode?.eventId,
 				flattenedListView: eventsStore.viewStore.flattenedListView,
+				scope: eventsStore.scope || undefined,
 			};
 			const messagesStore: MessagesStore = activeWorkspace.messagesStore;
 			messagesStoreState = {
@@ -116,6 +114,7 @@ export default class RootStore {
 					delete messagesStoreState[key];
 				}
 			});
+
 			return {
 				workspaces: [
 					toJS({
@@ -137,9 +136,6 @@ export default class RootStore {
 			const searchParams = new URLSearchParams(window.location.search);
 			const filtersToPin = searchParams.get('filters');
 			const workspacesUrlState = searchParams.get('workspaces');
-			const timestamp = searchParams.get('timestamp');
-			const eventId = searchParams.get('eventId');
-			const messageId = searchParams.get('messageId');
 			const bookId = searchParams.get('bookId') || undefined;
 
 			if (filtersToPin) {
@@ -163,24 +159,9 @@ export default class RootStore {
 				}
 				return null;
 			}
-			if (workspacesUrlState) {
-				return JSON.parse(window.atob(workspacesUrlState));
-			}
-			const interval = intervalOptions[0];
-			const timeRange = timestamp ? getRangeFromTimestamp(+timestamp, interval) : undefined;
 
 			return {
-				workspaces: [
-					{
-						events: eventId || { range: timeRange },
-						messages: messageId || {
-							timestampTo: timestamp ? parseInt(timestamp) : null,
-						},
-						timeRange,
-						interval,
-						layout: messageId ? [0, 100] : defaultPanelsLayout,
-					},
-				],
+				workspaces: workspacesUrlState ? JSON.parse(window.atob(workspacesUrlState)) : undefined,
 				bookId,
 			};
 		} catch (error) {

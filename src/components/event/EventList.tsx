@@ -24,9 +24,10 @@ import { usePrevious, useWorkspaceEventStore } from '../../hooks';
 import { raf } from '../../helpers/raf';
 import { EventTreeNode } from '../../models/EventAction';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
-import '../../styles/action.scss';
 import EventTree from './tree/EventTree';
 import FlatEventListItem from './flat-event-list/FlatEventListItem';
+import { EventsScopeProvider } from '../../contexts/eventsScopeProvider';
+import '../../styles/action.scss';
 
 interface Props {
 	scrolledIndex: Number | null;
@@ -129,26 +130,31 @@ function EventTreeListBase(props: Props) {
 
 	const computeKey = (index: number) => eventNodes[index]?.eventId || index;
 
-	return (
-		<div className='actions-list' ref={listRef}>
-			<StateSaverProvider>
-				<Virtuoso
-					firstItemIndex={firstItemIndex}
-					initialTopMostItemIndex={initialItemCount.current - 1}
-					data={eventNodes}
-					ref={virtuosoRef}
-					totalCount={eventNodes.length}
-					computeItemKey={computeKey}
-					overscan={3}
-					itemContent={renderEvent}
-					style={{ height: '100%' }}
-					itemsRendered={events => {
-						eventsInViewport.current = events;
-					}}
-				/>
-			</StateSaverProvider>
-		</div>
-	);
+	if (eventStore.scope) {
+		return (
+			<EventsScopeProvider scope={eventStore.scope}>
+				<div className='actions-list' ref={listRef}>
+					<StateSaverProvider>
+						<Virtuoso
+							firstItemIndex={firstItemIndex}
+							initialTopMostItemIndex={initialItemCount.current - 1}
+							data={eventNodes}
+							ref={virtuosoRef}
+							totalCount={eventNodes.length}
+							computeItemKey={computeKey}
+							overscan={3}
+							itemContent={renderEvent}
+							style={{ height: '100%' }}
+							itemsRendered={events => {
+								eventsInViewport.current = events;
+							}}
+						/>
+					</StateSaverProvider>
+				</div>
+			</EventsScopeProvider>
+		);
+	}
+	return null;
 }
 
 const EventTreeList = observer(EventTreeListBase);

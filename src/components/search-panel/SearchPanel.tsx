@@ -22,6 +22,7 @@ import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import { BookmarkedItem, isBookmark } from '../bookmarks/BookmarksPanel';
+import { EventsScopeProvider } from '../../contexts/eventsScopeProvider';
 import '../../styles/search-panel.scss';
 
 export type SearchPanelType = 'event' | 'message';
@@ -48,30 +49,33 @@ const SearchPanel = () => {
 			<div className='search-panel' ref={searchPanelRef}>
 				<SearchPanelForm />
 			</div>
-			{searchStore.currentSearch && (
-				<SearchPanelResults
-					resultGroups={searchStore.sortedResultGroups}
-					timestamp={searchStore.currentSearch.timestamp}
-					onResultItemClick={onResultItemClick}
-					onResultGroupClick={searchWorkspace.followByTimestamp}
-					onResultDelete={() => {
-						if (searchStore.currentSearch) {
-							searchStore.deleteHistoryItem(searchStore.currentSearch);
+			{/* TODO: fix scope */}
+			<EventsScopeProvider scope={'scope_1'}>
+				{searchStore.currentSearch && (
+					<SearchPanelResults
+						resultGroups={searchStore.sortedResultGroups}
+						timestamp={searchStore.currentSearch.timestamp}
+						onResultItemClick={onResultItemClick}
+						onResultGroupClick={searchWorkspace.followByTimestamp}
+						onResultDelete={() => {
+							if (searchStore.currentSearch) {
+								searchStore.deleteHistoryItem(searchStore.currentSearch);
+							}
+						}}
+						showToggler={searchStore.searchHistory.length > 1}
+						next={searchStore.nextSearch}
+						prev={searchStore.prevSearch}
+						disableNext={
+							searchStore.isSearching ||
+							searchStore.currentIndex === searchStore.searchHistory.length - 1
 						}
-					}}
-					showToggler={searchStore.searchHistory.length > 1}
-					next={searchStore.nextSearch}
-					prev={searchStore.prevSearch}
-					disableNext={
-						searchStore.isSearching ||
-						searchStore.currentIndex === searchStore.searchHistory.length - 1
-					}
-					disablePrev={searchStore.isSearching || searchStore.currentIndex === 0}
-					disabledRemove={searchStore.isSearching}
-					showLoadMoreButton={searchStore.isCompleted && !searchStore.isFormDisabled}
-					loadMore={() => searchStore.startSearch(true)}
-				/>
-			)}
+						disablePrev={searchStore.isSearching || searchStore.currentIndex === 0}
+						disabledRemove={searchStore.isSearching}
+						showLoadMoreButton={searchStore.isCompleted && !searchStore.isFormDisabled}
+						loadMore={() => searchStore.startSearch(true)}
+					/>
+				)}
+			</EventsScopeProvider>
 		</div>
 	);
 };

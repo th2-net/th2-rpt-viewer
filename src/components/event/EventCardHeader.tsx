@@ -25,6 +25,7 @@ import { Chip } from '../Chip';
 import SearchableContent from '../search/SearchableContent';
 import { useSelectedStore, useWorkspaceEventStore, useTabsStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
+import { useScope } from '../../hooks/useScope';
 
 interface Props {
 	displayType?: CardDisplayType;
@@ -55,6 +56,8 @@ function EventCardHeader(props: Props) {
 		disabled = false,
 	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp, isUnknown } = event;
+
+	const { scope, bookId } = useScope();
 
 	const selectedStore = useSelectedStore();
 	const eventStore = useWorkspaceEventStore();
@@ -94,7 +97,7 @@ function EventCardHeader(props: Props) {
 	const bookmarkClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	function onPinClicked(e: React.MouseEvent) {
-		selectedStore.toggleEventPin(event);
+		selectedStore.toggleEventPin(event, bookId, scope);
 		e.stopPropagation();
 	}
 

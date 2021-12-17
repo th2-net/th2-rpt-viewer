@@ -19,7 +19,7 @@ import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import api from '../../../api';
 import { getTimestampAsNumber } from '../../../helpers/date';
-import { getItemId, getItemName, isEventAction } from '../../../helpers/event';
+import { getItemId, getItemName } from '../../../helpers/event';
 import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../bookmarks/BookmarksPanel';
@@ -28,9 +28,7 @@ import { useDebouncedCallback, useRootStore } from '../../../hooks';
 import KeyCodes from '../../../util/KeyCodes';
 import { indexedDbLimits, IndexedDbStores } from '../../../api/indexedDb';
 import { GraphSearchResult } from './GraphSearch';
-import { SearchDirection } from '../../../models/search/SearchDirection';
 import { DateTimeMask } from '../../../models/filter/FilterInputs';
-import { useBooksStore } from '../../../hooks/useBooksStore';
 
 interface Props {
 	value: string;
@@ -52,11 +50,9 @@ const GraphSearchDialog = (props: Props) => {
 		closeModal,
 		submittedId,
 		isIdMode,
-		submittedTimestamp,
 	} = props;
 
 	const rootStore = useRootStore();
-	const booksStore = useBooksStore();
 
 	const [isLoading, setIsLoading] = React.useState(false);
 	const [currentSearchResult, setCurrentSearchResult] = React.useState<GraphSearchResult | null>(
@@ -159,52 +155,54 @@ const GraphSearchDialog = (props: Props) => {
 		}
 	}, [submittedId]);
 
-	React.useEffect(() => {
-		// eslint-disable-next-line @typescript-eslint/no-empty-function
-		let stopSearch;
+	// TODO: searching for closest event will not work without scope
+	// React.useEffect(() => {
+	// 	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	// 	let stopSearch;
 
-		if (submittedTimestamp) {
-			const config = {
-				type: 'event',
-				queryParams: {
-					startTimestamp: submittedTimestamp,
-					resultCountLimit: 1,
-					searchDirection: SearchDirection.Previous,
-					bookId: booksStore.selectedBook.name,
-				},
-			} as const;
+	// 	if (submittedTimestamp) {
+	// 		const config: EventSourceConfig = {
+	// 			type: 'event',
+	// 			queryParams: {
+	// 				startTimestamp: submittedTimestamp,
+	// 				resultCountLimit: 1,
+	// 				searchDirection: SearchDirection.Previous,
+	// 				bookId: booksStore.selectedBook.name,
+	// 				scope: '',
+	// 			},
+	// 		};
 
-			const previousChannel = api.sse.getEventSource(config);
-			const nextChannel = api.sse.getEventSource({
-				...config,
-				queryParams: {
-					...config.queryParams,
-					searchDirection: SearchDirection.Next,
-				},
-			});
+	// 		const previousChannel = api.sse.getEventSource(config);
+	// 		const nextChannel = api.sse.getEventSource({
+	// 			...config,
+	// 			queryParams: {
+	// 				...config.queryParams,
+	// 				searchDirection: SearchDirection.Next,
+	// 			},
+	// 		});
 
-			stopSearch = () => {
-				previousChannel.close();
-				nextChannel.close();
-			};
+	// 		stopSearch = () => {
+	// 			previousChannel.close();
+	// 			nextChannel.close();
+	// 		};
 
-			const onChannelResponse = (ev: Event) => {
-				const data = ev instanceof MessageEvent ? JSON.parse(ev.data) : null;
-				if (isEventAction(data)) {
-					ac.current = new AbortController();
-					onSearchSuccess(data, submittedTimestamp);
-					setFoundId(data.eventId);
-				}
-			};
+	// 		const onChannelResponse = (ev: Event) => {
+	// 			const data = ev instanceof MessageEvent ? JSON.parse(ev.data) : null;
+	// 			if (isEventAction(data)) {
+	// 				ac.current = new AbortController();
+	// 				onSearchSuccess(data, submittedTimestamp);
+	// 				setFoundId(data.eventId);
+	// 			}
+	// 		};
 
-			previousChannel.addEventListener('event', onChannelResponse);
-			nextChannel.addEventListener('event', onChannelResponse);
-			previousChannel.addEventListener('close', stopSearch);
-			nextChannel.addEventListener('close', stopSearch);
-		}
+	// 		previousChannel.addEventListener('event', onChannelResponse);
+	// 		nextChannel.addEventListener('event', onChannelResponse);
+	// 		previousChannel.addEventListener('close', stopSearch);
+	// 		nextChannel.addEventListener('close', stopSearch);
+	// 	}
 
-		return stopSearch;
-	}, [submittedTimestamp]);
+	// 	return stopSearch;
+	// }, [submittedTimestamp]);
 
 	const onKeyDown = React.useCallback(
 		(event: KeyboardEvent) => {
