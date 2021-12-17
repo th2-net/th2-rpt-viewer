@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, computed, observable, reaction, runInAction, toJS, when } from 'mobx';
+import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import debounce from 'lodash.debounce';
@@ -118,9 +118,7 @@ export class SearchStore {
 		reaction(
 			() => this.booksStore.selectedBook,
 			selectedBook => {
-				if (selectedBook) {
-					this.loadMessageSessions(selectedBook.name);
-				}
+				this.loadMessageSessions(selectedBook.name);
 			},
 		);
 
@@ -154,15 +152,6 @@ export class SearchStore {
 					this.resetEventAutocompleteList();
 				}
 			},
-		);
-
-		reaction(
-			() => this.booksStore.selectedBook,
-			(selectedBook, prevSelectedBook) =>
-				prevSelectedBook &&
-				selectedBook &&
-				this.searchHistory.length &&
-				this.startSearch(false, this.searchHistory[0].request),
 		);
 	}
 
@@ -562,7 +551,7 @@ export class SearchStore {
 				resultCountLimit,
 				endTimestamp: timeLimits[direction],
 				filters: filtersToAdd,
-				bookId: this.booksStore.selectedBook?.name,
+				bookId: this.booksStore.selectedBook.name,
 				...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
 			};
 
@@ -754,13 +743,6 @@ export class SearchStore {
 	private loadEventAutocompleteList = debounce(async (parentEventName: string) => {
 		if (this.eventAutocompleteSseChannel) {
 			this.eventAutocompleteSseChannel.close();
-		}
-
-		if (this.booksStore.isLoading) {
-			await when(() => !this.booksStore.isLoading);
-		}
-		if (!this.booksStore.selectedBook) {
-			throw new Error("BooksStore doesn't contain a selected books");
 		}
 
 		this.resetEventAutocompleteList();

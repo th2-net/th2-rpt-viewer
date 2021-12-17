@@ -23,6 +23,7 @@ import 'core-js/features/array/flat';
 import ErrorBoundary from './components/util/ErrorBoundary';
 import { registerFetchInterceptor } from './helpers/fetch-intercept';
 import { ViewMode, ViewModeProvider } from './contexts/viewModeContext';
+import SplashScreen from './components/SplashScreen';
 
 registerFetchInterceptor();
 
@@ -43,7 +44,12 @@ const viewMode = (viewModeParam === null ? ViewMode.Full : viewModeParam) as Vie
 
 ReactDOM.render(
 	<ErrorBoundary>
-		<React.Suspense fallback={<div>Loading...</div>}>
+		<React.Suspense
+			fallback={
+				<div className='app-suspense-fallback'>
+					<SplashScreen />
+				</div>
+			}>
 			<ViewModeProvider value={viewMode}>
 				<App />
 			</ViewModeProvider>

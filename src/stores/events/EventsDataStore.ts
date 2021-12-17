@@ -116,25 +116,15 @@ export default class EventsDataStore {
 	public fetchEventTree = async (options: FetchEventTreeOptions) => {
 		const { timeRange, filter, targetEventId } = options;
 
-		const bookId = this.booksStore.selectedBook?.name;
+		const bookId = this.booksStore.selectedBook.name;
 
 		this.resetEventsTreeState({ isLoading: true });
 
 		this.eventStore.selectedNode = null;
 		this.eventStore.selectedEvent = null;
 
-		if (!bookId) return;
-
 		this.filterStore.setRange(timeRange);
 		this.filterStore.setEventsFilter(filter);
-
-		if (this.booksStore.isLoading) {
-			await when(() => !this.booksStore.isLoading);
-		}
-
-		if (!this.booksStore.selectedBook) {
-			throw new Error("BooksStore doesn't contain a selected books");
-		}
 
 		if (targetEventId) {
 			this.loadTargetNode(targetEventId);
@@ -404,14 +394,6 @@ export default class EventsDataStore {
 		if (this.childrenLoaders[parentId]) {
 			this.childrenLoaders[parentId].loader.stop();
 			delete this.childrenLoaders[parentId];
-		}
-
-		if (this.booksStore.isLoading) {
-			await when(() => !this.booksStore.isLoading);
-		}
-
-		if (!this.booksStore.selectedBook) {
-			throw new Error("BooksStore doesn't contain a selected books");
 		}
 
 		const parentNode = this.eventsCache.get(parentId);

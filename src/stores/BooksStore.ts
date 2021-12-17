@@ -14,43 +14,25 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, runInAction, toJS } from 'mobx';
+import { action, observable, toJS } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { IndexedDbStores } from '../api/indexedDb';
 import { Book } from '../models/Books';
 
 export default class BooksStore {
-	constructor(private api: ApiSchema, bookId?: string) {
-		this.init(bookId);
+	constructor(private api: ApiSchema, books: Book[], initialBook: Book) {
+		this.books = books;
+		this.selectedBook = initialBook;
 	}
 
 	@observable
 	books: Book[] = [];
 
 	@observable
-	selectedBook: Book | null = null;
-
-	@observable
-	isLoading = true;
-
-	loadBooksList = async () => {
-		try {
-			this.isLoading = true;
-			const books = await this.api.books.getBooksList();
-
-			if (!books.length) throw new Error('Empty books list was received');
-
-			runInAction(() => {
-				this.books = books;
-			});
-			return this.books;
-		} finally {
-			this.isLoading = false;
-		}
-	};
+	selectedBook: Book;
 
 	@action
-	selectBook = (book: Book | null) => {
+	selectBook = (book: Book) => {
 		this.selectedBook = book;
 		if (book) {
 			this.api.indexedDb.updateDbStoreItem(
@@ -61,22 +43,6 @@ export default class BooksStore {
 					timestamp: Date.now(),
 				}),
 			);
-		}
-	};
-
-	private init = async (bookId?: string) => {
-		let initialBook: Book | null | undefined;
-		try {
-			const books = await this.loadBooksList();
-			initialBook = (bookId && books.find(b => b.name === bookId)) || null;
-			if (!initialBook) {
-				const [lastSelectedBook] = await this.api.indexedDb.getStoreValues<Book>(
-					IndexedDbStores.SELECTED_BOOK,
-				);
-				initialBook = lastSelectedBook && books.find(book => book.name === lastSelectedBook.name);
-			}
-		} finally {
-			this.selectBook(initialBook || this.books[0] || null);
 		}
 	};
 }

@@ -34,7 +34,7 @@ export default class MessagesUpdateStore {
 	@action
 	public subscribeOnChanges = async () => {
 		const bookId =
-			typeof this.booksStore === 'string' ? this.booksStore : this.booksStore.selectedBook?.name;
+			typeof this.booksStore === 'string' ? this.booksStore : this.booksStore.selectedBook.name;
 		if (bookId) {
 			const queryParams = this.messagesDataStore.getFilterParams();
 

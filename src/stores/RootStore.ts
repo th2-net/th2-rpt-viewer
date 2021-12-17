@@ -56,12 +56,8 @@ export default class RootStore {
 
 	sessionsStore = new SessionsStore(this.api.indexedDb);
 
-	bookStore: BooksStore;
-
-	constructor(private api: ApiSchema) {
+	constructor(private api: ApiSchema, public bookStore: BooksStore) {
 		const defaultState = this.parseUrlState();
-
-		this.bookStore = new BooksStore(this.api, defaultState?.bookId);
 
 		this.workspacesStore = new WorkspacesStore(
 			this,
@@ -128,7 +124,7 @@ export default class RootStore {
 						layout: activeWorkspace.viewStore.panelsLayout,
 					}),
 				],
-				bookId: this.bookStore.selectedBook?.name,
+				bookId: this.bookStore.selectedBook.name,
 			};
 		}
 		return null;
@@ -136,9 +132,6 @@ export default class RootStore {
 
 	private parseUrlState = (): AppState | null => {
 		try {
-			if (window.location.search.split('&').length > 1) {
-				throw new Error('Only one query parameter expected.');
-			}
 			const searchParams = new URLSearchParams(window.location.search);
 			const filtersToPin = searchParams.get('filters');
 			const workspacesUrlState = searchParams.get('workspaces');

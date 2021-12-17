@@ -41,7 +41,10 @@ const WorkspaceLinkGetter = () => {
 			onClick={() => {
 				const appState = rootStore.getAppState();
 				const searchString = appState
-					? new URLSearchParams({ workspaces: window.btoa(JSON.stringify(appState)) })
+					? new URLSearchParams({
+							workspaces: window.btoa(JSON.stringify(appState.workspaces)),
+							bookId: appState.bookId || '',
+					  })
 					: null;
 				copyTextToClipboard(
 					[window.location.origin, window.location.pathname, `?${searchString}`].join(''),

@@ -48,7 +48,7 @@ export default class MessagesDataProviderStore {
 
 		reaction(
 			() => this.booksStore.selectedBook,
-			selectedBook => selectedBook && this.loadMessages(),
+			() => this.loadMessages(),
 		);
 	}
 
@@ -124,9 +124,9 @@ export default class MessagesDataProviderStore {
 	@action
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
-		const bookId = this.booksStore.selectedBook?.name;
+		const bookId = this.booksStore.selectedBook.name;
 
-		if (this.messagesStore.filterStore.filter.streams.length === 0 || !bookId) return;
+		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
 		const queryParams = await this.getFilterParams();
 
@@ -443,12 +443,11 @@ export default class MessagesDataProviderStore {
 
 	@action
 	public keepLoading = async (direction: SearchDirection) => {
-		const bookId = this.booksStore.selectedBook?.name;
+		const bookId = this.booksStore.selectedBook.name;
 		if (
 			this.messagesStore.filterStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||
-			!this.searchChannelPrev ||
-			!bookId
+			!this.searchChannelPrev
 		)
 			return;
 
@@ -507,8 +506,8 @@ export default class MessagesDataProviderStore {
 
 	@action
 	public matchMessage = async (messageId: string, abortSignal: AbortSignal) => {
-		const bookId = this.booksStore.selectedBook?.name;
-		if (this.isSoftFiltered.get(messageId) !== undefined || !bookId) return;
+		const bookId = this.booksStore.selectedBook.name;
+		if (this.isSoftFiltered.get(messageId) !== undefined) return;
 		this.isMatchingMessages.set(messageId, true);
 
 		try {

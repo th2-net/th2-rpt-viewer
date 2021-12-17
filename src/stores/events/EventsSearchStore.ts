@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, IReactionDisposer, observable, reaction, when } from 'mobx';
+import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import debounce from 'lodash.debounce';
 import SearchWorker from '../../search.worker';
 import SearchToken from '../../models/search/SearchToken';
@@ -179,14 +179,6 @@ export default class EventsSearchStore {
 		this.rawResults = [];
 		this.scrolledIndex = null;
 
-		if (this.booksStore.isLoading) {
-			await when(() => !this.booksStore.isLoading);
-		}
-
-		if (!this.booksStore.selectedBook) {
-			throw new Error("BooksStore doesn't contain a selected books");
-		}
-
 		if (this.searchResultsUpdateReaction) {
 			this.searchResultsUpdateReaction();
 		}
@@ -284,7 +276,7 @@ export default class EventsSearchStore {
 	private onSearchTokensUpdate = (searchTokens: SearchToken[]) => {
 		this.isProccessingSearchResults = Boolean(searchTokens.length);
 
-		if (searchTokens.length !== 0 && this.booksStore.selectedBook) {
+		if (searchTokens.length !== 0) {
 			this.debouncedFetchSearchResults(searchTokens, this.booksStore.selectedBook.name);
 		} else {
 			this.resetState();

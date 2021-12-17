@@ -29,7 +29,7 @@ const BookSelect = () => {
 	return (
 		<Select
 			options={books}
-			selected={booksStore.selectedBook?.name || ''}
+			selected={booksStore.selectedBook.name}
 			onChange={bookName => {
 				const selectedBook = booksStore.books.find(b => b.name === bookName);
 				if (selectedBook) {

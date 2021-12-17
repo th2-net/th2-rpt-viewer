@@ -350,7 +350,7 @@ export default class MessagesStore {
 			this.hintMessages.map(hm =>
 				this.api.messages.matchMessage(hm.messageId, {
 					...matchMessageParams,
-					bookId: this.booksStore.selectedBook!.name,
+					bookId: this.booksStore.selectedBook.name,
 				}),
 			),
 		).finally(() => {

@@ -56,7 +56,7 @@ const GraphSearchDialog = (props: Props) => {
 	} = props;
 
 	const rootStore = useRootStore();
-	const { selectedBook } = useBooksStore();
+	const booksStore = useBooksStore();
 
 	const [isLoading, setIsLoading] = React.useState(false);
 	const [currentSearchResult, setCurrentSearchResult] = React.useState<GraphSearchResult | null>(
@@ -163,14 +163,14 @@ const GraphSearchDialog = (props: Props) => {
 		// eslint-disable-next-line @typescript-eslint/no-empty-function
 		let stopSearch;
 
-		if (selectedBook && submittedTimestamp) {
+		if (submittedTimestamp) {
 			const config = {
 				type: 'event',
 				queryParams: {
 					startTimestamp: submittedTimestamp,
 					resultCountLimit: 1,
 					searchDirection: SearchDirection.Previous,
-					bookId: selectedBook.name,
+					bookId: booksStore.selectedBook.name,
 				},
 			} as const;
 
@@ -204,7 +204,7 @@ const GraphSearchDialog = (props: Props) => {
 		}
 
 		return stopSearch;
-	}, [submittedTimestamp, selectedBook]);
+	}, [submittedTimestamp]);
 
 	const onKeyDown = React.useCallback(
 		(event: KeyboardEvent) => {
