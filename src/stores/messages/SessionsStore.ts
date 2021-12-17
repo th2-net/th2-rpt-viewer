@@ -14,9 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, reaction } from 'mobx';
-import { IndexedDB, indexedDbLimits, IndexedDbStores } from '../../api/indexedDb';
+import { action, observable, reaction, runInAction } from 'mobx';
+import { indexedDbLimits, IndexedDbStores } from '../../api/indexedDb';
 import { sortByTimestamp } from '../../helpers/date';
+import { Book } from '../../models/Books';
+import ApiSchema from '../../api/ApiSchema';
+import BooksStore from '../BooksStore';
 
 export interface Session {
 	session: string;
@@ -27,7 +30,11 @@ export class SessionsStore {
 	@observable.ref
 	public sessions: Session[] = [];
 
-	constructor(private indexedDb: IndexedDB) {
+	@observable messageSessions: Array<string> = [];
+
+	@observable isLoadingSessions = true;
+
+	constructor(private api: ApiSchema, private booksStore: BooksStore) {
 		this.init();
 
 		reaction(
@@ -37,12 +44,31 @@ export class SessionsStore {
 
 				if (sessionsToDelete.length !== 0) {
 					sessionsToDelete.forEach(session => {
-						this.indexedDb.deleteDbStoreItem(IndexedDbStores.SESSIONS_HISTORY, session.session);
+						this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SESSIONS_HISTORY, session.session);
 					});
 					this.sessions = sessions.filter(s => !sessionsToDelete.includes(s));
 				}
 			},
 		);
+
+		reaction(() => this.booksStore.selectedBook, this.loadMessageSessions);
+	}
+
+	private async loadMessageSessions(book: Book) {
+		runInAction(() => {
+			this.messageSessions = [];
+			this.isLoadingSessions = true;
+		});
+		try {
+			const messageSessions = await this.api.messages.getMessageSessions(book.name);
+			runInAction(() => {
+				this.messageSessions = messageSessions;
+			});
+		} catch (error) {
+			console.error("Couldn't fetch sessions");
+		} finally {
+			runInAction(() => (this.isLoadingSessions = false));
+		}
 	}
 
 	@action
@@ -54,14 +80,14 @@ export class SessionsStore {
 			...this.sessions.filter(session => !sessions.includes(session.session)),
 		]);
 		newSessions.forEach(session => {
-			this.indexedDb.updateDbStoreItem(IndexedDbStores.SESSIONS_HISTORY, session);
+			this.api.indexedDb.updateDbStoreItem(IndexedDbStores.SESSIONS_HISTORY, session);
 		});
 	};
 
 	@action
 	private init = async () => {
 		try {
-			const sessions = await this.indexedDb.getStoreValues<Session>(
+			const sessions = await this.api.indexedDb.getStoreValues<Session>(
 				IndexedDbStores.SESSIONS_HISTORY,
 			);
 			this.sessions = sortByTimestamp(sessions);

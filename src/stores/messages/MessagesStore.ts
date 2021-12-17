@@ -119,7 +119,7 @@ export default class MessagesStore {
 
 	@computed
 	public get messageSessions(): string[] {
-		return this.searchStore.messageSessions;
+		return this.sessionsStore.messageSessions;
 	}
 
 	@computed

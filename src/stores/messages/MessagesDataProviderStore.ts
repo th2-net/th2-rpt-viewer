@@ -46,10 +46,7 @@ export default class MessagesDataProviderStore {
 
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
 
-		reaction(
-			() => this.booksStore.selectedBook,
-			() => this.loadMessages(),
-		);
+		reaction(() => this.booksStore.selectedBook, this.loadMessages);
 	}
 
 	public updateStore: MessagesUpdateStore;

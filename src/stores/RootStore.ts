@@ -54,10 +54,12 @@ export default class RootStore {
 
 	workspacesStore: WorkspacesStore;
 
-	sessionsStore = new SessionsStore(this.api.indexedDb);
+	sessionsStore: SessionsStore;
 
 	constructor(private api: ApiSchema, public bookStore: BooksStore) {
 		const defaultState = this.parseUrlState();
+
+		this.sessionsStore = new SessionsStore(this.api, this.bookStore);
 
 		this.workspacesStore = new WorkspacesStore(
 			this,

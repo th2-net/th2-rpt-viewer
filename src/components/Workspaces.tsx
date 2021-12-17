@@ -25,12 +25,11 @@ import WorkspacesLayout from './workspace/WorkspacesLayout';
 import Graph from './graph/Graph';
 import WorkspaceLinkGetter from './WorkspaceLinkGetter';
 import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
-import { useSearchStore } from '../hooks/useSearchStore';
-import { useTabsStore } from '../hooks';
+import { useTabsStore, useSessionsStore } from '../hooks';
 import '../styles/root.scss';
 
 const Workspaces = () => {
-	const searchStore = useSearchStore();
+	const sessionsStore = useSessionsStore();
 	const tabsStore = useTabsStore();
 
 	return (
@@ -41,7 +40,7 @@ const Workspaces = () => {
 				transitionDuration={400}>
 				<Graph />
 				{tabsStore.activeTabIndex !== 0 && <WorkspaceLinkGetter />}
-				<MessagesViewConfigurator sessions={searchStore.messageSessions} />
+				<MessagesViewConfigurator sessions={sessionsStore.messageSessions} />
 				<div className='workspaces-root__workspaces'>
 					<WorkspacesLayout />
 				</div>

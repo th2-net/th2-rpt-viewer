@@ -50,7 +50,6 @@ const SearchPanelForm = () => {
 		updateForm,
 		searchForm: form,
 		formType,
-		messageSessions,
 		filters,
 		startSearch,
 		pauseSearch,
@@ -61,6 +60,8 @@ const SearchPanelForm = () => {
 		eventAutocompleteList,
 		resetEventAutocompleteList,
 	} = useSearchStore();
+
+	const { messageSessions } = useSessionsStore();
 
 	const [currentStream, setCurrentStream] = useState('');
 	const sessionsStore = useSessionsStore();

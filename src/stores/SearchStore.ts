@@ -115,13 +115,6 @@ export class SearchStore {
 	) {
 		this.init();
 
-		reaction(
-			() => this.booksStore.selectedBook,
-			selectedBook => {
-				this.loadMessageSessions(selectedBook.name);
-			},
-		);
-
 		autorun(() => {
 			this.currentSearch = getItemAt(this.searchHistory, this.currentIndex);
 		});
@@ -154,8 +147,6 @@ export class SearchStore {
 			},
 		);
 	}
-
-	@observable messageSessions: Array<string> = [];
 
 	@observable searchChannel: {
 		previous: EventSource | null;
@@ -769,17 +760,6 @@ export class SearchStore {
 			this.eventAutocompleteSseChannel = null;
 		});
 	}, 400);
-
-	private async loadMessageSessions(book: string) {
-		try {
-			const messageSessions = await this.api.messages.getMessageSessions(book);
-			runInAction(() => {
-				this.messageSessions = messageSessions;
-			});
-		} catch (error) {
-			console.error("Couldn't fetch sessions");
-		}
-	}
 
 	private getSearchHistory = async (historyTimestamp?: number) => {
 		try {
