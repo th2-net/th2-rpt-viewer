@@ -23,9 +23,9 @@ import SearchPanelResults from './SearchPanelResults';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import { BookmarkedItem, isBookmark } from '../bookmarks/BookmarksPanel';
 import { EventsScopeProvider } from '../../contexts/eventsScopeProvider';
-import '../../styles/search-panel.scss';
 import { SearchHistory } from '../../stores/SearchStore';
 import { ActionType } from '../../models/EventAction';
+import '../../styles/search-panel.scss';
 
 export type SearchPanelType = 'event' | 'message';
 

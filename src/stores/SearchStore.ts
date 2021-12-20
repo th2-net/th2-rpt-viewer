@@ -772,11 +772,10 @@ export class SearchStore {
 				this.searchHistory = searchHistory.filter(
 					search => search.bookId === this.booksStore.selectedBook.name,
 				);
-				const defaultIndex = searchHistory.length - 1;
 				const index = historyTimestamp
-					? searchHistory.findIndex(search => search.timestamp === historyTimestamp)
+					? this.searchHistory.findIndex(search => search.timestamp === historyTimestamp)
 					: -1;
-				this.currentIndex = index === -1 ? defaultIndex : index;
+				this.currentIndex = index === -1 ? this.searchHistory.length - 1 : index;
 			});
 		} catch (error) {
 			console.error('Failed to load search history', error);
