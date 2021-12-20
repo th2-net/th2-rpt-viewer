@@ -18,6 +18,7 @@ import { ActionType, EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { EventStatus } from '../models/Status';
 import { getTimestampAsNumber, timestampToNumber } from './date';
+import { Bookmark, isBookmark } from '../components/bookmarks/BookmarksPanel';
 
 export function getMinifiedStatus(status: string): string {
 	return status
@@ -94,20 +95,23 @@ export const isEventId = (str: string): boolean => {
 };
 
 export const sortByTimestamp = (
-	items: Array<EventMessage | EventTreeNode>,
+	items: Array<EventMessage | EventTreeNode | EventAction | Bookmark>,
 	order: 'desc' | 'asc' = 'desc',
 ) => {
 	const copiedEvents = items.slice();
 	copiedEvents.sort((itemA, itemB) => {
+		const entityA = isBookmark(itemA) ? itemA.item : itemA;
+		const entityB = isBookmark(itemB) ? itemB.item : itemB;
 		if (order === 'desc') {
-			return getTimestampAsNumber(itemB) - getTimestampAsNumber(itemA);
+			return getTimestampAsNumber(entityB) - getTimestampAsNumber(entityA);
 		}
-		return getTimestampAsNumber(itemA) - getTimestampAsNumber(itemB);
+		return getTimestampAsNumber(entityA) - getTimestampAsNumber(entityB);
 	});
 	return copiedEvents;
 };
 
-export function getItemId(item: EventAction | EventTreeNode | EventMessage) {
+export function getItemId(item: EventAction | EventTreeNode | EventMessage | Bookmark): string {
+	if (isBookmark(item)) return getItemId(item.item);
 	if (isEventMessage(item)) return item.messageId;
 	return item.eventId;
 }

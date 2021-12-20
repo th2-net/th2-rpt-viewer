@@ -17,8 +17,6 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import GraphItemsMenu from './GraphItemsMenu';
-import { EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
 import { GraphItem, GraphItemType } from '../../models/Graph';
 import { getEventStatus, isEventNode } from '../../helpers/event';
 import { EventStatus } from '../../models/Status';
@@ -71,7 +69,7 @@ export interface OutsideItems {
 interface OutsideItemsMenuProps extends Omit<OutsideItemsListProps, 'itemsMap'> {
 	items: GraphItem[];
 	direction: 'left' | 'right';
-	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
+	onGraphItemClick: (item: GraphItem) => void;
 	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 }
 

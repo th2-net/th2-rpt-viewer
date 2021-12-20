@@ -36,6 +36,9 @@ import {
 import notificationsStore from './NotificationsStore';
 import BooksStore from './BooksStore';
 import { Book } from '../models/Books';
+import { getRangeFromTimestamp, getTimestampAsNumber, timestampToNumber } from '../helpers/date';
+import { WorkspaceInitialState } from './workspace/WorkspaceStore';
+import { SEARCH_STORE_INTERVAL } from './workspace/SearchWorkspaceStore';
 
 export class SelectedStore {
 	@observable.shallow
@@ -60,11 +63,8 @@ export class SelectedStore {
 	}
 
 	@computed
-	public get savedItems(): Array<EventTreeNode | EventMessage> {
-		return sortByTimestamp([
-			...this.bookmarkedEvents.map(bookmark => bookmark.item),
-			...this.bookmarkedMessages.map(bookmark => bookmark.item),
-		]);
+	public get savedItems(): Array<GraphItem> {
+		return sortByTimestamp([...this.bookmarkedEvents, ...this.bookmarkedMessages]);
 	}
 
 	@computed
@@ -164,6 +164,48 @@ export class SelectedStore {
 			);
 			this.db.deleteDbStoreItem(IndexedDbStores.MESSAGES, bookmark.id);
 		}
+	};
+
+	@action
+	public onBookmarkSelect = (bookmark: Bookmark) => {
+		let initialWorkspaceState: WorkspaceInitialState = {
+			interval: SEARCH_STORE_INTERVAL,
+		};
+		if (isEventBookmark(bookmark)) {
+			const timeRange = getRangeFromTimestamp(
+				getTimestampAsNumber(bookmark.item),
+				SEARCH_STORE_INTERVAL,
+			);
+			initialWorkspaceState = {
+				...initialWorkspaceState,
+				timeRange,
+				layout: [100, 0],
+				events: {
+					targetEvent: bookmark.item,
+					range: timeRange,
+					scope: bookmark.scope,
+				},
+			};
+		} else {
+			const timeRange = getRangeFromTimestamp(
+				getTimestampAsNumber(bookmark.item),
+				SEARCH_STORE_INTERVAL,
+			);
+			initialWorkspaceState = {
+				...initialWorkspaceState,
+				layout: [0, 100],
+				timeRange,
+				messages: {
+					timestampTo: timestampToNumber(bookmark.item.timestamp),
+					timestampFrom: null,
+					streams: [bookmark.item.sessionId],
+					targetMessage: bookmark.item,
+				},
+			};
+		}
+
+		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
+		this.workspacesStore.addWorkspace(newWorkspace);
 	};
 
 	private getBookmarks = (book: Book) => {

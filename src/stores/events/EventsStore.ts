@@ -21,7 +21,7 @@ import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
-import { isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
+import { isEventNode, isRootEvent, sortEventsByTimestamp, isEvent } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { timestampToNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
@@ -289,23 +289,24 @@ export default class EventsStore {
 	};
 
 	@action
-	public goToEvent = async (savedEventNode: EventTreeNode | EventAction) => {
+	public goToEvent = async (savedEventNode: EventTreeNode | EventAction, scope = this.scope) => {
+		if (!scope || !this.booksStore.scopeList.includes(scope)) return;
+		this.scope = scope;
+
 		this.selectedNode = null;
 		this.selectedEvent = null;
 		this.graphStore.setTimestamp(timestampToNumber(savedEventNode.startTimestamp));
 		this.workspaceStore.viewStore.activePanel = this;
 
-		// TODO: bookmarks should have scope
-
-		// const timeRange = calculateTimeRange(
-		// 	timestampToNumber(savedEventNode.startTimestamp),
-		// 	this.graphStore.interval,
-		// );
-		// this.eventDataStore.fetchEventTree({
-		// 	timeRange,
-		// 	filter: this.filterStore.filter,
-		// 	targetEventId: savedEventNode.eventId,
-		// });
+		this.eventDataStore.fetchEventTree({
+			timeRange: calculateTimeRange(
+				timestampToNumber(savedEventNode.startTimestamp),
+				this.graphStore.interval,
+			),
+			filter: this.filterStore.filter,
+			targetEventId: savedEventNode.eventId,
+			scope,
+		});
 	};
 
 	@action
@@ -399,15 +400,20 @@ export default class EventsStore {
 		const initialState = defaultState || {};
 		const scope = initialState.scope;
 
-		if (scope) {
-			this.scope = scope;
-			this.eventDataStore.fetchEventTree({
-				filter: this.filterStore.filter,
-				timeRange: this.filterStore.range,
-				targetEventId: initialState.selectedEventId,
-				scope,
-			});
-		}
+		if (!scope) return;
+
+		this.scope = scope;
+
+		const targetEventId = isEvent(initialState.targetEvent)
+			? initialState.targetEvent.eventId
+			: initialState.selectedEventId;
+
+		this.eventDataStore.fetchEventTree({
+			filter: this.filterStore.filter,
+			timeRange: this.filterStore.range,
+			targetEventId,
+			scope,
+		});
 	};
 
 	private getNodesList = (
@@ -503,6 +509,12 @@ export default class EventsStore {
 				scope: this.scope,
 			});
 		}
+	};
+
+	@action
+	public applyScope = (scope: string) => {
+		this.scope = scope;
+		this.eventDataStore.onScopeChange(scope);
 	};
 
 	public clearFilter = () => {

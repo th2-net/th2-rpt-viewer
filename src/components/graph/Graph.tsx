@@ -160,7 +160,9 @@ const GraphRoot = () => {
 						isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.hoveredTimestamp : null
 					}
 					onTimestampSubmit={activeWorkspace.onTimestampSelect}
-					onFoundItemClick={activeWorkspace.onSavedItemSelect}
+					onFoundItemClick={() => {
+						// TODO: fix result selection
+					}}
 					windowRange={isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.range : null}
 				/>
 				{isWorkspaceStore(activeWorkspace) && (

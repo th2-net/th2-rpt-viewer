@@ -226,7 +226,10 @@ const SearchPanelForm = () => {
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
 		disabled:
-			disabled || !form.searchDirection || (formType === 'message' && form.stream.length === 0),
+			disabled ||
+			!form.searchDirection ||
+			(formType === 'message' && form.stream.length === 0) ||
+			(formType === 'event' && !form.scope),
 		progress: commonProgress,
 		processedObjectCount,
 		isPaused,

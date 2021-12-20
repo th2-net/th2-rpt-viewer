@@ -83,7 +83,7 @@ export interface MessageApiSchema {
 		signal?: AbortSignal,
 		queryParams?: Record<string, string | number | boolean | null | string[]>,
 	) => Promise<EventMessage>;
-	getMessageSessions: (book: string) => Promise<string[]>;
+	getMessageSessions: (bookId: string) => Promise<string[]>;
 	matchMessage: (
 		messageId: string,
 		filter: MatchMessageParams,

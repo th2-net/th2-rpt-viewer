@@ -25,10 +25,10 @@ import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { EventAction } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { GraphStore } from '../GraphStore';
-import { isEventMessage } from '../../helpers/event';
+import { isEventMessage, isEvent } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
@@ -36,6 +36,8 @@ import { SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
 import { isAbortError } from '../../helpers/fetch';
 import BooksStore from '../BooksStore';
+import { GraphItem } from '../../models/Graph';
+import { isEventBookmark, isMessageBookmark } from '../../components/bookmarks/BookmarksPanel';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;
@@ -162,14 +164,30 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
-		if (isEventMessage(savedItem)) {
-			this.messagesStore.exportStore.disableExport();
-			this.viewStore.activePanel = this.messagesStore;
-			this.messagesStore.onMessageSelect(savedItem);
-		} else {
+	public onSavedItemSelect = (graphItem: GraphItem) => {
+		let event = isEvent(graphItem) ? graphItem : null;
+		let scope: string | null = null;
+
+		if (isEventBookmark(graphItem)) {
+			event = graphItem.item;
+			scope = graphItem.scope;
+		}
+
+		if (event) {
 			this.viewStore.activePanel = this.eventsStore;
-			this.eventsStore.goToEvent(savedItem);
+			this.eventsStore.goToEvent(event, scope);
+			return;
+		}
+
+		const message = isMessageBookmark(graphItem)
+			? graphItem.item
+			: isEventMessage(graphItem)
+			? graphItem
+			: null;
+
+		if (message) {
+			this.viewStore.activePanel = this.messagesStore;
+			this.messagesStore.onMessageSelect(message);
 		}
 	};
 

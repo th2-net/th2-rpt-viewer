@@ -15,20 +15,21 @@
  ***************************************************************************** */
 
 import moment from 'moment';
-import { EventTreeNode } from '../models/EventAction';
+import { EventTreeNode, EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { GraphGroup, GraphItem } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { getTimestampAsNumber } from './date';
 import { isEventMessage } from './event';
+import { Bookmark, isBookmark } from '../components/bookmarks/BookmarksPanel';
 
 export function filterListByChunkRange(
 	timeRange: TimeRange,
-	list: Array<EventMessage | EventTreeNode>,
+	list: Array<EventMessage | EventTreeNode | EventAction | Bookmark>,
 ) {
 	const [from, to] = timeRange;
 	return list.filter(item => {
-		const itemTimestamp = getTimestampAsNumber(item);
+		const itemTimestamp = getTimestampAsNumber(isBookmark(item) ? item.item : item);
 		return moment(itemTimestamp).isBetween(moment(from), moment(to)) || itemTimestamp === to;
 	});
 }
@@ -110,7 +111,8 @@ export function filterUniqueGraphItems(items: GraphItem[]) {
 	});
 }
 
-function getGraphItemId(item: GraphItem) {
+export function getGraphItemId(item: GraphItem): string {
+	if (isBookmark(item)) return getGraphItemId(item.item);
 	if (isEventMessage(item)) return item.messageId;
 	return item.eventId;
 }

@@ -102,6 +102,7 @@ export interface SSEParamsEvents {
 	searchDirection?: 'next' | 'previous'; // defaults to next
 	limitForParent?: number;
 	bookId: string;
+	scope: string;
 }
 
 export interface MessagesIdsEvent {

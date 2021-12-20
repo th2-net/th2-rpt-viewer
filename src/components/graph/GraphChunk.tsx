@@ -19,9 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { LineChart, Line, LineProps } from 'recharts';
 import GraphItemsGroup from './GraphItemsGroup';
 import { GraphStore } from '../../stores/GraphStore';
-import { EventMessage } from '../../models/EventMessage';
-import { GraphGroup, Chunk } from '../../models/Graph';
-import { EventTreeNode } from '../../models/EventAction';
+import { GraphGroup, Chunk, GraphItem } from '../../models/Graph';
 import { getGraphTimeTicks, groupGraphItems, filterListByChunkRange } from '../../helpers/graph';
 import { useSelectedStore } from '../../hooks';
 
@@ -56,7 +54,7 @@ interface Props {
 	chunkWidth: number;
 	getChunkData: InstanceType<typeof GraphStore>['getChunkData'];
 	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
-	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
+	onGraphItemClick: (item: GraphItem) => void;
 	interval: number;
 	tickSize: number;
 }

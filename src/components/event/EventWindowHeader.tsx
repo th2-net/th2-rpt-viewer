@@ -60,7 +60,7 @@ function EventWindowHeader() {
 					options={booksStore.scopeList}
 					onChange={scope => {
 						if (scope) {
-							eventStore.selectScope(scope);
+							eventStore.applyScope(scope);
 						}
 					}}
 					selected={eventStore.scope || ''}

@@ -25,7 +25,6 @@ import { createBemElement, createStyleSelector } from '../../helpers/styleCreato
 import { useActivePanel, useSelectedStore } from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import BookmarkTextSearch from './BookmarkTextSearch';
 import BookmarkTypeSwitcher from './BookmarkTypeSwitcher';
 import Checkbox from '../util/Checkbox';
@@ -51,7 +50,7 @@ export interface MessageBookmark {
 export interface EventBookmark {
 	timestamp: number;
 	id: string;
-	item: EventMessage | EventTreeNode;
+	item: EventAction | EventTreeNode;
 	bookId: string;
 	scope: string;
 }
@@ -66,7 +65,6 @@ export function isMessageBookmark(bookmark: unknown): bookmark is MessageBookmar
 
 function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
-	const searchWorkspace = useSearchWorkspace();
 
 	const [bookmarkType, setBookmarkType] = React.useState<BookmarkType | null>(null);
 	const [textSearch, setTextSearch] = React.useState('');
@@ -78,13 +76,13 @@ function BookmarksPanel() {
 			...selectedStore.bookmarkedEvents,
 		];
 
-		sortedBookmarks.sort((bookmarkA, bookmarkB) => {
-			if (bookmarkA.timestamp > bookmarkB.timestamp) return -1;
-			if (bookmarkA.timestamp < bookmarkB.timestamp) return 1;
-			return 0;
-		});
+		sortedBookmarks.sort((bookmarkA, bookmarkB) => bookmarkB.timestamp - bookmarkA.timestamp);
 		return sortedBookmarks;
 	}, [selectedStore.bookmarkedMessages, selectedStore.bookmarkedEvents]);
+
+	React.useEffect(() => {
+		setSelectedBookmarks([]);
+	}, [bookmarks]);
 
 	const filteredBookmarks = React.useMemo(() => {
 		return bookmarks
@@ -105,9 +103,7 @@ function BookmarksPanel() {
 
 	function onBookmarkClick(bookmark: BookmarkedItem) {
 		if (isBookmark(bookmark)) {
-			searchWorkspace.onSavedItemSelect(bookmark.item);
-		} else {
-			searchWorkspace.onSavedItemSelect(bookmark);
+			selectedStore.onBookmarkSelect(bookmark);
 		}
 	}
 
@@ -261,7 +257,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 					<p
 						className='bookmark-item__title'
 						title={itemInfo.title}
-						onClick={() => onClick && onClick(item)}>
+						onClick={() => onClick && onClick(bookmark)}>
 						{itemInfo.title}
 					</p>
 				</div>

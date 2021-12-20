@@ -58,8 +58,6 @@ export default class EventsDataStore {
 				);
 			},
 		});
-
-		reaction(() => this.eventStore.scope, this.onScopeChange);
 	}
 
 	@observable.ref
@@ -118,7 +116,7 @@ export default class EventsDataStore {
 
 		const bookId = this.booksStore.selectedBook.name;
 
-		this.resetEventsTreeState({ isLoading: true });
+		this.resetEventsTreeState();
 
 		this.eventStore.selectedNode = null;
 		this.eventStore.selectedEvent = null;
@@ -591,11 +589,9 @@ export default class EventsDataStore {
 	};
 
 	@action
-	public resetEventsTreeState = (
-		initialState: Partial<{ isError: boolean; isLoading: boolean }> = {},
-	) => {
+	public resetEventsTreeState = (initialState: Partial<{ isError: boolean }> = {}) => {
 		this.stopCurrentRequests();
-		const { isError = false, isLoading = false } = initialState;
+		const { isError = false } = initialState;
 
 		this.isError = isError;
 
@@ -629,7 +625,7 @@ export default class EventsDataStore {
 		}
 	};
 
-	private onScopeChange = (scope: string | null) => {
+	public onScopeChange = (scope: string | null) => {
 		if (scope) {
 			this.fetchEventTree({
 				filter: this.filterStore.filter,

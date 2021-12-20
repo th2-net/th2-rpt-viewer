@@ -20,6 +20,7 @@ import { EventMessage } from '../models/EventMessage';
 import { DateTimeMask } from '../models/filter/FilterInputs';
 import { TimeRange, Timestamp } from '../models/Timestamp';
 import { isEventMessage } from './event';
+import { Bookmark, isBookmark } from '../components/bookmarks/BookmarksPanel';
 
 export function getElapsedTime(
 	startTimestamp: Timestamp,
@@ -46,7 +47,10 @@ export function timestampToNumber(timestamp: Timestamp): number {
 	return Math.floor(timestamp.epochSecond * 1000 + timestamp.nano / 1_000_000);
 }
 
-export function getTimestampAsNumber(entity: EventAction | EventTreeNode | EventMessage): number {
+export function getTimestampAsNumber(
+	entity: EventAction | EventTreeNode | EventMessage | Bookmark,
+): number {
+	if (isBookmark(entity)) return getTimestampAsNumber(entity.item);
 	if (isEventMessage(entity)) return timestampToNumber(entity.timestamp);
 	return timestampToNumber(entity.startTimestamp);
 }
