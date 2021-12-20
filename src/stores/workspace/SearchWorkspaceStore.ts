@@ -98,7 +98,11 @@ export default class SearchWorkspaceStore {
 	};
 
 	@action
-	public onSearchResultItemSelect = (resultItem: EventTreeNode | EventAction | EventMessage) => {
+	public onSearchResultItemSelect = (
+		resultItem: EventTreeNode | EventAction | EventMessage,
+		bookId: string,
+		scope: string,
+	) => {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 
 		if (isEventMessage(resultItem)) {
@@ -109,6 +113,7 @@ export default class SearchWorkspaceStore {
 		} else {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(
 				timestampToNumber(resultItem.startTimestamp),
+				scope,
 				resultItem,
 			);
 		}
@@ -118,13 +123,15 @@ export default class SearchWorkspaceStore {
 	};
 
 	@action
-	public followByTimestamp = (timestamp: number, resultType: ActionType) => {
+	public followByTimestamp = (timestamp: number, resultType: ActionType, scope: string) => {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 
 		switch (resultType) {
 			case ActionType.EVENT_ACTION:
 			case ActionType.EVENT_TREE_NODE:
-				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(timestamp);
+				if (scope) {
+					initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(timestamp, scope);
+				}
 				break;
 			case ActionType.MESSAGE:
 				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(timestamp);

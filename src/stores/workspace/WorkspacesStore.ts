@@ -35,7 +35,7 @@ export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
 
-	public selectedStore = new SelectedStore(this, this.api.indexedDb);
+	public selectedStore = new SelectedStore(this, this.api.indexedDb, this.booksStore);
 
 	public tabsStore = new TabsStore(this);
 
@@ -149,6 +149,7 @@ export default class WorkspacesStore {
 
 	public getInitialWorkspaceByEvent = (
 		timestamp: number,
+		scope: string,
 		targetEvent?: EventTreeNode | EventAction,
 	): WorkspaceInitialState => {
 		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
@@ -157,6 +158,7 @@ export default class WorkspacesStore {
 			events: {
 				range: [timestampFrom, timestampTo],
 				targetEvent,
+				scope,
 			},
 			layout: [100, 0],
 			interval: SEARCH_STORE_INTERVAL,

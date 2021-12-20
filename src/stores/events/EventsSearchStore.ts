@@ -195,9 +195,9 @@ export default class EventsSearchStore {
 				sseParams: {
 					searchDirection: SearchDirection.Next,
 					bookId,
+					scope,
 				},
 				timeRange: this.eventsStore.filterStore.range,
-				scope,
 			},
 			{
 				onError: this.onSearchError,

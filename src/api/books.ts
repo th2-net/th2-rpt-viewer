@@ -25,8 +25,13 @@ const booksHttpApi: BooksApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
-	getBookScope: async () => {
-		return Promise.resolve(['scope_1', 'scope_2', 'scope_3']);
+	getBookScope: async bookId => {
+		const res = await fetch(`backend/scopeIds?bookId=${bookId}`);
+
+		if (res.ok) return res.json();
+
+		console.error(res.statusText);
+		return [];
 	},
 };
 

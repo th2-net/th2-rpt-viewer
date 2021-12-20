@@ -143,8 +143,8 @@ export default class EventsDataStore {
 						// load 1 more to see if there are more children
 						limitForParent: this.CHILDREN_COUNT_LIMIT + 1,
 						bookId,
+						scope,
 					},
-					scope,
 				},
 				{
 					onResponse: this.handleIncomingEventTreeNodes,
@@ -415,8 +415,8 @@ export default class EventsDataStore {
 						resultCountLimit: this.CHILDREN_COUNT_LIMIT + 1,
 						searchDirection: SearchDirection.Next,
 						bookId: this.booksStore.selectedBook.name,
+						scope: this.eventStore.scope!,
 					},
-					scope: this.eventStore.scope!,
 				},
 				{
 					onResponse: events => this.onEventChildrenChunkLoaded(events, parentId),

@@ -24,6 +24,8 @@ import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import { BookmarkedItem, isBookmark } from '../bookmarks/BookmarksPanel';
 import { EventsScopeProvider } from '../../contexts/eventsScopeProvider';
 import '../../styles/search-panel.scss';
+import { SearchHistory } from '../../stores/SearchStore';
+import { ActionType } from '../../models/EventAction';
 
 export type SearchPanelType = 'event' | 'message';
 
@@ -34,14 +36,22 @@ const SearchPanel = () => {
 	const { ref: searchPanelRef } = useActivePanel(null);
 
 	const onResultItemClick = React.useCallback(
-		(bookmark: BookmarkedItem) => {
+		(bookmark: BookmarkedItem, search: SearchHistory) => {
+			const { bookId, scope } = search.request;
 			if (isBookmark(bookmark)) {
-				searchWorkspace.onSearchResultItemSelect(bookmark.item);
+				searchWorkspace.onSearchResultItemSelect(bookmark.item, bookId, scope);
 			} else {
-				searchWorkspace.onSearchResultItemSelect(bookmark);
+				searchWorkspace.onSearchResultItemSelect(bookmark, bookId, scope);
 			}
 		},
 		[searchWorkspace.onSearchResultItemSelect],
+	);
+
+	const onResultGroupClick = React.useCallback(
+		(timestamp: number, resultType: ActionType, search: SearchHistory) => {
+			searchWorkspace.followByTimestamp(timestamp, resultType, search.request.scope);
+		},
+		[searchWorkspace.followByTimestamp],
 	);
 
 	return (
@@ -49,14 +59,17 @@ const SearchPanel = () => {
 			<div className='search-panel' ref={searchPanelRef}>
 				<SearchPanelForm />
 			</div>
-			{/* TODO: fix scope */}
-			<EventsScopeProvider scope={'scope_1'}>
-				{searchStore.currentSearch && (
+			{searchStore.currentSearch && (
+				<EventsScopeProvider scope={searchStore.currentSearch.request.scope || ''}>
 					<SearchPanelResults
 						resultGroups={searchStore.sortedResultGroups}
 						timestamp={searchStore.currentSearch.timestamp}
-						onResultItemClick={onResultItemClick}
-						onResultGroupClick={searchWorkspace.followByTimestamp}
+						onResultItemClick={(bookmark: BookmarkedItem) =>
+							onResultItemClick(bookmark, searchStore.currentSearch!)
+						}
+						onResultGroupClick={(timestamp, resultType) =>
+							onResultGroupClick(timestamp, resultType, searchStore.currentSearch!)
+						}
 						onResultDelete={() => {
 							if (searchStore.currentSearch) {
 								searchStore.deleteHistoryItem(searchStore.currentSearch);
@@ -74,8 +87,8 @@ const SearchPanel = () => {
 						showLoadMoreButton={searchStore.isCompleted && !searchStore.isFormDisabled}
 						loadMore={() => searchStore.startSearch(true)}
 					/>
-				)}
-			</EventsScopeProvider>
+				</EventsScopeProvider>
+			)}
 		</div>
 	);
 };

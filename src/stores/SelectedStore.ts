@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, runInAction, toJS } from 'mobx';
+import { action, computed, observable, runInAction, toJS, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import moment from 'moment';
 import { EventTreeNode } from '../models/EventAction';
@@ -34,6 +34,8 @@ import {
 	isMessageBookmark,
 } from '../components/bookmarks/BookmarksPanel';
 import notificationsStore from './NotificationsStore';
+import BooksStore from './BooksStore';
+import { Book } from '../models/Books';
 
 export class SelectedStore {
 	@observable.shallow
@@ -42,8 +44,12 @@ export class SelectedStore {
 	@observable.shallow
 	public bookmarkedEvents: EventBookmark[] = [];
 
-	constructor(private workspacesStore: WorkspacesStore, private db: IndexedDB) {
-		this.init();
+	constructor(
+		private workspacesStore: WorkspacesStore,
+		private db: IndexedDB,
+		private booksStore: BooksStore,
+	) {
+		reaction(() => this.booksStore.selectedBook, this.getBookmarks, { fireImmediately: true });
 	}
 
 	@computed
@@ -160,9 +166,11 @@ export class SelectedStore {
 		}
 	};
 
-	private init = () => {
-		this.getSavedEvents();
-		this.getSavedMessages();
+	private getBookmarks = (book: Book) => {
+		this.bookmarkedEvents = [];
+		this.bookmarkedMessages = [];
+		this.getSavedEvents(book);
+		this.getSavedMessages(book);
 	};
 
 	private saveBookmark = async (bookmark: EventBookmark | MessageBookmark) => {
@@ -184,22 +192,22 @@ export class SelectedStore {
 		}
 	};
 
-	private getSavedEvents = async () => {
+	private getSavedEvents = async (book: Book) => {
 		try {
 			const savedEvents = await this.db.getStoreValues<EventBookmark>(IndexedDbStores.EVENTS);
 			runInAction(() => {
-				this.bookmarkedEvents = savedEvents;
+				this.bookmarkedEvents = savedEvents.filter(bookmark => bookmark.bookId === book.name);
 			});
 		} catch (error) {
 			console.error('Failed to fetch saved events');
 		}
 	};
 
-	private getSavedMessages = async () => {
+	private getSavedMessages = async (book: Book) => {
 		try {
 			const savedMessages = await this.db.getStoreValues<MessageBookmark>(IndexedDbStores.MESSAGES);
 			runInAction(() => {
-				this.bookmarkedMessages = savedMessages;
+				this.bookmarkedMessages = savedMessages.filter(bookmark => bookmark.bookId === book.name);
 			});
 		} catch (error) {
 			console.error('Failed to fetch saved messages');
@@ -230,7 +238,10 @@ export class SelectedStore {
 	};
 
 	public syncData = async (unsavedData?: DbData) => {
-		await Promise.all([this.getSavedEvents(), this.getSavedMessages()]);
+		await Promise.all([
+			this.getSavedEvents(this.booksStore.selectedBook),
+			this.getSavedMessages(this.booksStore.selectedBook),
+		]);
 
 		if (isEventBookmark(unsavedData)) {
 			await this.saveBookmark(unsavedData);

@@ -125,7 +125,7 @@ export const indexedDbLimits = {
 	[IndexedDbStores.FILTERS_HISTORY]: 40,
 	[IndexedDbStores.DISPLAY_RULES]: 100,
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 100,
-	[IndexedDbStores.SEARCH_HISTORY]: 5,
+	[IndexedDbStores.SEARCH_HISTORY]: 15,
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
 	[IndexedDbStores.SESSIONS_HISTORY]: 20,
 } as const;

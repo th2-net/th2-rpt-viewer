@@ -40,6 +40,7 @@ import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
 import SelectFilterRow from '../filter/row/SelectFilterRow';
+import { useBooksStore } from '../../hooks/useBooksStore';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -61,6 +62,8 @@ const SearchPanelForm = () => {
 		eventAutocompleteList,
 		resetEventAutocompleteList,
 	} = useSearchStore();
+
+	const booksStore = useBooksStore();
 
 	const { messageSessions } = useSessionsStore();
 
@@ -255,7 +258,7 @@ const SearchPanelForm = () => {
 				{formType === 'event' && (
 					<SelectFilterRow
 						config={{
-							options: ['scope_1', 'scope_2', 'scope_3'],
+							options: booksStore.scopeList,
 							setValue: v => updateForm({ scope: v }),
 							id: 'scope',
 							type: 'select',

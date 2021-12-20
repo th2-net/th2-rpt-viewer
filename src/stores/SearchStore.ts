@@ -69,6 +69,7 @@ export type SearchResult = EventTreeNode | EventMessage;
 
 export type SearchHistory = {
 	timestamp: number;
+	bookId: string;
 	results: Record<string, Array<SearchResult>>;
 	request: StateHistory;
 	progress: {
@@ -81,20 +82,12 @@ export type SearchHistory = {
 	};
 };
 
-export type StateHistory =
-	| {
-			type: SearchPanelType;
-			state: SearchPanelFormState;
-			filters: EventFilterState;
-			bookId: string;
-			scope: string;
-	  }
-	| {
-			type: SearchPanelType;
-			state: SearchPanelFormState;
-			filters: MessageFilterState;
-			bookId: string;
-	  };
+export type StateHistory = {
+	type: SearchPanelType;
+	state: SearchPanelFormState;
+	filters: EventFilterState | MessageFilterState;
+	scope: string;
+};
 
 export type SearchHistoryState<T> = {
 	index: number;
@@ -159,7 +152,10 @@ export class SearchStore {
 
 		reaction(
 			() => this.booksStore.selectedBook,
-			() => this.stopSearch(),
+			() => {
+				this.stopSearch();
+				this.getSearchHistory();
+			},
 		);
 	}
 
@@ -494,9 +490,9 @@ export class SearchStore {
 					type: this.formType,
 					state: this.searchForm,
 					filters: filterParams,
-					bookId,
 					scope,
 				} as any,
+				bookId,
 				results: {},
 				progress: {
 					previous: 0,
@@ -553,6 +549,7 @@ export class SearchStore {
 				endTimestamp: timeLimits[direction],
 				filters: filtersToAdd,
 				bookId: this.booksStore.selectedBook.name,
+				scope,
 				...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
 			};
 
@@ -772,7 +769,9 @@ export class SearchStore {
 				IndexedDbStores.SEARCH_HISTORY,
 			);
 			runInAction(() => {
-				this.searchHistory = searchHistory;
+				this.searchHistory = searchHistory.filter(
+					search => search.bookId === this.booksStore.selectedBook.name,
+				);
 				const defaultIndex = searchHistory.length - 1;
 				const index = historyTimestamp
 					? searchHistory.findIndex(search => search.timestamp === historyTimestamp)
