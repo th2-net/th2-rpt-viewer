@@ -37,7 +37,8 @@ const SearchPanel = () => {
 
 	const onResultItemClick = React.useCallback(
 		(bookmark: BookmarkedItem, search: SearchHistory) => {
-			const { bookId, scope } = search.request;
+			const bookId = search.bookId;
+			const scope = search.request.scope;
 			if (isBookmark(bookmark)) {
 				searchWorkspace.onSearchResultItemSelect(bookmark.item, bookId, scope);
 			} else {
