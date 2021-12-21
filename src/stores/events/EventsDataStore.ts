@@ -40,6 +40,7 @@ interface FetchEventTreeOptions {
 	targetEventId?: string;
 	scope: string;
 }
+
 export default class EventsDataStore {
 	private CHILDREN_COUNT_LIMIT = 50;
 

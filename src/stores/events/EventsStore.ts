@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, computed, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
 import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
@@ -33,6 +33,8 @@ import { EventFilterState } from '../../components/search-panel/SearchPanelFilte
 import EventsFilter from '../../models/filter/EventsFilter';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import BooksStore from '../BooksStore';
+import { Book } from '../../models/Books';
+import { isAbortError } from '../../helpers/fetch';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
@@ -90,6 +92,8 @@ export default class EventsStore {
 		reaction(() => this.viewStore.flattenedListView, this.onViewChange);
 
 		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
+
+		reaction(() => this.booksStore.selectedBook, this.onSelectedBookChange);
 	}
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
@@ -527,6 +531,33 @@ export default class EventsStore {
 			});
 		} else {
 			this.filterStore.setEventsFilter(defaultFilter);
+		}
+	};
+
+	private scopeAC: AbortController | null = null;
+
+	private onSelectedBookChange = async (selectedBook: Book) => {
+		this.eventDataStore.resetEventsTreeState();
+		runInAction(() => {
+			this.selectedNode = null;
+			this.selectedEvent = null;
+			this.hoveredEvent = null;
+			this.scope = null;
+		});
+		try {
+			if (!this.scopeAC) {
+				this.scopeAC = new AbortController();
+			} else {
+				this.scopeAC.abort();
+			}
+			const scopeList = await this.api.books.getBookScope(selectedBook.name, this.scopeAC.signal);
+			this.applyScope(scopeList[0]);
+		} catch (error) {
+			if (!isAbortError(error)) {
+				console.error('Failed to load scope list');
+			}
+		} finally {
+			this.scopeAC = null;
 		}
 	};
 

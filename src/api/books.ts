@@ -25,8 +25,8 @@ const booksHttpApi: BooksApiSchema = {
 		console.error(res.statusText);
 		return [];
 	},
-	getBookScope: async bookId => {
-		const res = await fetch(`backend/scopeIds?bookId=${bookId}`);
+	getBookScope: async (bookId, signal) => {
+		const res = await fetch(`backend/scopeIds?bookId=${bookId}`, { signal });
 
 		if (res.ok) return res.json();
 
