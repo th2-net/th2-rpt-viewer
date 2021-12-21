@@ -416,7 +416,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		)
 			return;
 
-		const queryParams = await this.messagesStore.filterStore.filterParams;
+		const queryParams = this.messagesStore.filterStore.filterParams;
 
 		const query: MessagesSSEParams = {
 			...queryParams,

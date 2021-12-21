@@ -24,11 +24,11 @@ import '../../styles/books.scss';
 const BookSelect = () => {
 	const booksStore = useBooksStore();
 
-	const books = computed(() => booksStore.books.map(b => b.name)).get();
+	const booksIds = computed(() => booksStore.books.map(b => b.name)).get();
 
 	return (
 		<Select
-			options={books}
+			options={booksIds}
 			selected={booksStore.selectedBook.name}
 			onChange={bookName => {
 				const selectedBook = booksStore.books.find(b => b.name === bookName);

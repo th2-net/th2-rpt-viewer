@@ -125,7 +125,7 @@ export default class MessagesDataProviderStore {
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
-		const queryParams = await this.getFilterParams();
+		const queryParams = this.getFilterParams();
 
 		this.createPreviousMessageChannelEventSource(
 			{
@@ -508,8 +508,12 @@ export default class MessagesDataProviderStore {
 		this.isMatchingMessages.set(messageId, true);
 
 		try {
-			const { resultCountLimit, resumeFromId, searchDirection, ...filterParams } = await this
-				.messagesStore.filterStore.filterParams;
+			const {
+				resultCountLimit,
+				resumeFromId,
+				searchDirection,
+				...filterParams
+			} = this.messagesStore.filterStore.filterParams;
 			const isMatch = await this.api.messages.matchMessage(
 				messageId,
 				{ ...filterParams, bookId },
