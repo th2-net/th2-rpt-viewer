@@ -27,9 +27,10 @@ export interface Session {
 }
 
 export class SessionsStore {
-	@observable.ref
-	public sessions: Session[] = [];
+	// Session submitted by user
+	@observable.ref sessions: Session[] = [];
 
+	// session list for book
 	@observable messageSessions: Array<string> = [];
 
 	@observable isLoadingSessions = true;
@@ -75,7 +76,9 @@ export class SessionsStore {
 
 	@action
 	public saveSessions = (sessions: string[]) => {
-		const newSessions: Session[] = sessions.map(session => ({ session, timestamp: Date.now() }));
+		const newSessions: Session[] = sessions
+			.filter(session => this.messageSessions.includes(session))
+			.map(session => ({ session, timestamp: Date.now() }));
 
 		this.sessions = sortByTimestamp([
 			...newSessions,
