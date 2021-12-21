@@ -20,7 +20,7 @@ import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import Empty from '../util/Empty';
 import SplashScreen from '../SplashScreen';
 import StateSaverProvider from '../util/StateSaverProvider';
-import { usePrevious, useWorkspaceEventStore } from '../../hooks';
+import { useWorkspaceEventStore } from '../../hooks';
 import { raf } from '../../helpers/raf';
 import { EventTreeNode } from '../../models/EventAction';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
@@ -49,9 +49,8 @@ function EventTreeListBase(props: Props) {
 	const listRef = React.useRef<HTMLDivElement>(null);
 
 	const [firstItemIndex, setFirstItemIndex] = React.useState(START_INDEX);
-	const [eventNodes, setEventNodes] = React.useState<EventTreeNode[]>(nodes.slice());
+	const [currentNodes, setCurrentNodes] = React.useState<EventTreeNode[]>(nodes.slice());
 
-	const prevNodes = usePrevious(nodes);
 	const prevIsExpandedMap = React.useRef<Map<string, boolean>>(new Map());
 
 	const renderEvent = React.useCallback(
@@ -83,7 +82,7 @@ function EventTreeListBase(props: Props) {
 			isExpandedMapChanged = false;
 		}
 
-		if (!isExpandedMapChanged && prevNodes && nodes.length > prevNodes?.length) {
+		if (!isExpandedMapChanged && nodes.length > currentNodes.length) {
 			let originalIndex = -1;
 			let relativeEvent: EventTreeNode | null;
 			if (
@@ -91,7 +90,7 @@ function EventTreeListBase(props: Props) {
 				eventsInViewport.current.find(event => event?.data?.eventId === selectedNode.eventId)
 			) {
 				relativeEvent = selectedNode;
-				originalIndex = eventNodes.findIndex(event => event.eventId === selectedNode.eventId);
+				originalIndex = currentNodes.findIndex(event => event.eventId === selectedNode.eventId);
 			} else {
 				const firstListItem = eventsInViewport.current[0];
 				relativeEvent = firstListItem?.data || null;
@@ -107,10 +106,10 @@ function EventTreeListBase(props: Props) {
 			setFirstItemIndex(adjustedIndex);
 		}
 
-		if (prevNodes?.length !== nodes.length) {
-			setEventNodes(nodes);
+		if (currentNodes.length !== nodes.length) {
+			setCurrentNodes(nodes.slice());
 		}
-	}, [nodes, selectedNode, eventNodes, firstItemIndex]);
+	}, [nodes, selectedNode, currentNodes, firstItemIndex]);
 
 	React.useEffect(() => {
 		try {
@@ -127,7 +126,7 @@ function EventTreeListBase(props: Props) {
 		}
 	}, [scrolledIndex]);
 
-	const computeKey = (index: number) => eventNodes[index]?.eventId || index;
+	const computeKey = (index: number) => currentNodes[index]?.eventId || index;
 
 	return (
 		<div className='actions-list' ref={listRef}>
@@ -135,9 +134,9 @@ function EventTreeListBase(props: Props) {
 				<Virtuoso
 					firstItemIndex={firstItemIndex}
 					initialTopMostItemIndex={initialItemCount.current - 1}
-					data={eventNodes}
+					data={currentNodes}
 					ref={virtuosoRef}
-					totalCount={eventNodes.length}
+					totalCount={currentNodes.length}
 					computeItemKey={computeKey}
 					overscan={3}
 					itemContent={renderEvent}
