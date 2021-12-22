@@ -142,7 +142,7 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.SELECTED_BOOK]: 'id',
 };
 
-const dbVersion = 4;
+const dbVersion = 5;
 
 export class IndexedDB {
 	@observable
@@ -156,11 +156,11 @@ export class IndexedDB {
 		this.db = await openDB<TH2DB>(this.env, dbVersion, {
 			upgrade: async (db, _oldVersion, newVersion) => {
 				if (newVersion === 4) {
-					await Promise.all([
-						db.clear(IndexedDbStores.SEARCH_HISTORY),
-						db.clear(IndexedDbStores.EVENTS),
-						db.clear(IndexedDbStores.MESSAGES),
-					]);
+					await [
+						IndexedDbStores.SEARCH_HISTORY,
+						IndexedDbStores.EVENTS,
+						IndexedDbStores.MESSAGES,
+					].map(store => this.clearStore(store));
 				}
 				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
 					const name = storeName as IndexedDbStores;

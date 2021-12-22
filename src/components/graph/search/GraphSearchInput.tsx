@@ -80,6 +80,10 @@ interface Props {
 	submitTimestamp: (timestamp: number) => void;
 }
 
+const keyMap = {
+	INPUT_FOCUS: 'Shift+T',
+};
+
 function GraphSearchInput(props: Props) {
 	const {
 		timestamp,
@@ -306,10 +310,6 @@ function GraphSearchInput(props: Props) {
 	function hotkeyFocusHandler() {
 		refInput.current?.focus();
 	}
-
-	const keyMap = {
-		INPUT_FOCUS: 'Shift+T',
-	};
 
 	const handlers = preventDefaultHandlers({
 		INPUT_FOCUS: hotkeyFocusHandler,
