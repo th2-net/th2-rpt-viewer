@@ -70,11 +70,30 @@ const MessageCardBase = React.memo(
 	}: MessageCardBaseProps) => {
 		const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
+		const iconsClassName = createBemBlock(
+			'message-card-icons',
+			isAttached ? 'attached' : null,
+			isBookmarked ? 'pinned' : null,
+		);
+
 		const renderInlineMessageInfo = () => {
 			if (viewType === MessageViewType.ASCII || viewType === MessageViewType.JSON) {
 				const formattedTimestamp = formatTime(timestampToNumber(timestamp));
+				const splittedMessageId = messageId.split(':');
+				const messageIdWithHighlightedSession = splittedMessageId.map(
+					getMessageIdWithHighlightedSession,
+				);
 				return (
 					<>
+						{isExport && (
+							<Checkbox
+								id={messageId}
+								checked={!!isExported}
+								onChange={() => addMessageToExport?.()}
+							/>
+						)}
+						<span className={iconsClassName} />
+						<span className={sessionClass} style={sessionArrowStyle}></span>
 						<span
 							className='mc-header__value mc-header__timestamp'
 							title={`Timestamp: ${formattedTimestamp}`}
@@ -82,13 +101,7 @@ const MessageCardBase = React.memo(
 							onMouseLeave={unhoverMessage}>
 							{timestamp && formattedTimestamp}
 						</span>
-						<span className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
-							{sessionId}
-						</span>
-						<span className='mc-header__item messageId-inline' title={`ID: ${messageId}`}>
-							<span className='mc-header__value'>{messageId} </span>
-						</span>
-						<span className={sessionClass} style={sessionArrowStyle}></span>
+						<span className='mc-header__value'>{messageIdWithHighlightedSession} </span>
 						<span
 							className='mc-header__value messageType'
 							title={messageType && `Name: ${messageType}`}>
@@ -106,11 +119,7 @@ const MessageCardBase = React.memo(
 			isBookmarked ? 'pinned' : null,
 			isHighlighted ? 'highlighted' : null,
 			isSoftFiltered ? 'soft-filtered' : null,
-			isExport ? 'export-mode' : null,
-			isExported ? 'exported' : null,
 		);
-
-		const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : 'hidden');
 
 		// session arrow color, we calculating it for each session from-to pair, based on hash
 		const sessionArrowStyle: React.CSSProperties = {
@@ -156,8 +165,21 @@ const MessageCardBase = React.memo(
 		const renderMessageInfo = () => {
 			if (viewType === MessageViewType.FORMATTED || viewType === MessageViewType.BINARY) {
 				const formattedTimestamp = formatTime(timestampToNumber(timestamp));
+				const splittedMessageId = messageId.split(':');
+				const messageIdWithHighlightedSession = splittedMessageId.map(
+					getMessageIdWithHighlightedSession,
+				);
 				return (
 					<div className='mc-header__info'>
+						{isExport && (
+							<Checkbox
+								id={messageId}
+								checked={!!isExported}
+								onChange={() => addMessageToExport?.()}
+							/>
+						)}
+						<div className={iconsClassName} />
+						<div className={sessionClass} style={sessionArrowStyle} />
 						<div
 							className='mc-header__value mc-header__timestamp'
 							title={`Timestamp: ${formattedTimestamp}`}
@@ -165,12 +187,8 @@ const MessageCardBase = React.memo(
 							onMouseLeave={unhoverMessage}>
 							{timestamp && formattedTimestamp}
 						</div>
-						<div className='mc-header__item' title={`Session: ${sessionId}`}>
-							<span className={sessionClass} style={sessionArrowStyle} />
-							<span className='mc-header__value'>{sessionId}</span>
-						</div>
 						<div className='mc-header__item messageId' title={`ID: ${messageId}`}>
-							<span className='mc-header__value'>{messageId}</span>
+							<span className='mc-header__value'>{messageIdWithHighlightedSession}</span>
 						</div>
 						<div className='mc-header__item' title={messageType && `Name: ${messageType}`}>
 							<span className='mc-header__value messageType'>{messageType}</span>
@@ -183,7 +201,6 @@ const MessageCardBase = React.memo(
 
 		return (
 			<div className={rootClass} onClick={addMessageToExport}>
-				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
 				<div className='message-card'>
 					<div className='mc__mc-header mc-header'>{renderMessageInfo()}</div>
 					<div className='mc__mc-body mc-body'>
@@ -221,14 +238,11 @@ function calculateHueValue(session: string): number {
 	return (hashCode % HUE_SEGMENTS_COUNT) * (360 / HUE_SEGMENTS_COUNT);
 }
 
-function getMessageIdWithHighlightedSession(part: string, i: number) {
-	if (i === 0) {
-		return <b>{part}</b>;
+function getMessageIdWithHighlightedSession(part: string, i: number, arr: string[]) {
+	if (arr.length > 3) {
+		return i === 0 ? <b>{part}</b> : `:${part}`;
 	}
-	return `:${part}`;
-}
 
-function extendedGetMessageIdWithHighlightedSession(part: string, i: number) {
 	if (i === 0) {
 		return <b>{part}</b>;
 	}

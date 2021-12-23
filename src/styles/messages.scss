@@ -68,11 +68,11 @@
 
 	&.pinned {
 		&:after {
-			background-color: $bookmarkedMessageColor;
+			background-color: $pinnedMessageCardColor;
 		}
 		&:hover {
-			border-color: $bookmarkedMessageColor;
-			background-color: $hoveredBookmarkedMessageColor;
+			border-color: $pinnedMessageCardColor;
+			background-color: $hoveredPinnedMessageCardColor;
 		}
 	}
 
