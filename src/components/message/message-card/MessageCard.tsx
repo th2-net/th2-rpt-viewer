@@ -203,8 +203,6 @@ const RecoverableMessageCard = (props: OwnProps) => {
 	);
 };
 
-RecoverableMessageCard.displayName = 'RecoverableMessageCard';
-
 export default observer(RecoverableMessageCard);
 
 function isRawViewType(viewType: MessageViewType) {
