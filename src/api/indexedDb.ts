@@ -276,5 +276,6 @@ export class IndexedDB {
 		if (store.clear) {
 			store.clear();
 		}
+		await tx.done;
 	};
 }
