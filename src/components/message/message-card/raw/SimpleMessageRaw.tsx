@@ -19,18 +19,16 @@ import { splitOnReadableParts } from '../../../../helpers/stringUtils';
 
 interface Props {
 	rawContent: string;
-	renderInfo: () => React.ReactNode;
 }
 
-export default function SimpleMessageRaw({ rawContent, renderInfo }: Props) {
+export default function SimpleMessageRaw({ rawContent }: Props) {
 	const contentRef = React.useRef<HTMLDivElement>(null);
 
 	const humanReadableContent = atob(rawContent);
 	const convertedArr = splitOnReadableParts(humanReadableContent);
 
 	return (
-		<div className='mc-raw__human' ref={contentRef}>
-			{renderInfo()}
+		<div className='mc-raw__asci' ref={contentRef}>
 			{convertedArr.map((part, index) =>
 				part.isPrintable ? (
 					<span key={index} style={{ display: '' }}>

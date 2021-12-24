@@ -61,7 +61,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		) !== -1;
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
-	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
@@ -155,7 +154,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			isContentBeautified={isContentBeautified}
 			isSoftFiltered={isSoftFiltered}
 			toogleMessagePin={toogleMessagePin}
-			isDetailed={isDetailed}
 			isExported={isExported}
 			isExport={messagesStore.exportStore.isExport}
 			sortOrderItems={sortOrderItems}
