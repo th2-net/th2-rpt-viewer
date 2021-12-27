@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
 	useMessagesWorkspaceStore,
@@ -123,9 +124,9 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		messagesStore.setHoveredMessage(null);
 	}, [messagesStore.setHoveredMessage]);
 
-	const isAttached = !!messagesStore.attachedMessages.find(
-		attMsg => attMsg.messageId === message.messageId,
-	);
+	const isAttached = computed(
+		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.messageId === message.messageId),
+	).get();
 
 	const toogleMessagePin = React.useCallback(() => {
 		selectedStore.toggleMessagePin(message);

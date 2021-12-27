@@ -376,7 +376,6 @@ export default class MessagesDataProviderStore {
 		return this.searchChannelNext.loadAndSubscribe({ resumeFromId });
 	};
 
-	@action
 	private onFilterChange = async () => {
 		this.stopMessagesLoading();
 		this.updateStore.stopSubscription();
