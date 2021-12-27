@@ -135,12 +135,11 @@ export class SearchStore {
 		reaction(
 			() => this.searchForm.parentEvent,
 			parentEvent => {
-				if (parentEvent) {
-					if (!isEventId(parentEvent)) {
-						this.loadEventAutocompleteList(parentEvent);
-					}
+				if (parentEvent && !isEventId(parentEvent)) {
+					this.loadEventAutocompleteList(parentEvent);
 				} else {
 					this.resetEventAutocompleteList();
+					this.loadEventAutocompleteList.cancel();
 				}
 			},
 		);
@@ -208,7 +207,11 @@ export class SearchStore {
 
 	@observable eventAutocompleteList: EventTreeNode[] = [];
 
-	eventAutocompleteSseChannel: EventSource | null = null;
+	@observable.ref eventAutocompleteSseChannel: EventSource | null = null;
+
+	@computed get isLoadingEventAutocompleteList() {
+		return Boolean(this.eventAutocompleteSseChannel);
+	}
 
 	@computed get searchProgress() {
 		const startTimestamp = Number(this.searchForm.startTimestamp);
@@ -708,6 +711,8 @@ export class SearchStore {
 	}
 
 	@action resetEventAutocompleteList = () => {
+		this.eventAutocompleteSseChannel?.close();
+		this.eventAutocompleteSseChannel = null;
 		this.eventAutocompleteList = [];
 	};
 

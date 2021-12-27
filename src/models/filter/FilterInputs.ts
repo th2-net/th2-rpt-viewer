@@ -146,6 +146,7 @@ export type FilterRowEventResolverConfig = FilterRowBaseConfig & {
 	value: string;
 	setValue: (nextValue: string) => void;
 	autocompleteList?: string[];
+	isLoading?: boolean;
 	onAutocompleteSelect?: () => void;
 	labelClassName?: string;
 	hint?: string;
