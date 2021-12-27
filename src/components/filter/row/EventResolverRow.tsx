@@ -28,10 +28,13 @@ import AutocompleteInput from '../../util/AutocompleteInput';
 
 export default function EventResolverRow({ config }: { config: FilterRowEventResolverConfig }) {
 	const [isInput, setIsInput] = useState(true);
-	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingEvent, setIsLoading] = useState(false);
 	const [isError, setIsError] = useState(false);
 	const [event, setEvent] = useState<EventAction | null>(null);
 	const input = useRef<HTMLInputElement>(null);
+
+	const isLoadingAutocompleteList = Boolean(config.isLoading);
+	const isLoading = isLoadingAutocompleteList || isLoadingEvent;
 
 	const inputWrapperClassName = createBemElement('filter-row', 'wrapper');
 
