@@ -47,7 +47,7 @@ const StateSaver = <S extends {}>({ children, stateKey, getDefaultState }: State
 				saveState(stateKey, nextState);
 			}
 		},
-		[saveState],
+		[saveState, stateKey],
 	);
 
 	if (states.has(stateKey) || !getDefaultState) {
