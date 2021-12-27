@@ -124,9 +124,9 @@ const MessageCardBase = React.memo(
 								/>
 							</div>
 						) : (
-							<p className='mc-body__human'>
+							<div className='mc-body__human'>
 								<MessageCardViewTypeRenderer {...messageViewTypeRendererProps} />
-							</p>
+							</div>
 						)}
 					</div>
 				</div>
