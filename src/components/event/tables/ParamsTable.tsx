@@ -142,20 +142,24 @@ class ParamsTableBase extends React.Component<Props, State> {
 						</span>
 					</div>
 				</div>
-				<table
-					style={{
-						gridTemplateColumns: `repeat(${this.props.columns.length + 1}, minmax(150px, 250px))`,
-					}}>
-					<thead>
-						<tr>
-							<th></th>
-							{this.props.columns.map(columnTitle => (
-								<th key={columnTitle}>{columnTitle}</th>
-							))}
-						</tr>
-					</thead>
-					<tbody>{this.state.nodes.map(nodes => this.renderNodes(nodes, 1))}</tbody>
-				</table>
+				<div className='params-table-wrapper'>
+					<table
+						style={{
+							gridTemplateColumns: `1fr repeat(${this.props.columns.length}, minmax(150px, 250px))`,
+						}}>
+						<thead>
+							<tr>
+								<th style={{ gridColumn: '1 / 2' }}></th>
+								{this.props.columns.map((columnTitle, idx) => (
+									<th style={{ gridColumn: `${idx + 2}/${idx + 3}` }} key={columnTitle}>
+										{columnTitle}
+									</th>
+								))}
+							</tr>
+						</thead>
+						<tbody>{this.state.nodes.map(nodes => this.renderNodes(nodes, 1))}</tbody>
+					</table>
+				</div>
 			</div>
 		);
 	}
@@ -211,12 +215,10 @@ class ParamsTableBase extends React.Component<Props, State> {
 		};
 		return (
 			<tr className={rootClass} key={key} onClick={this.togglerClickHandler(node)}>
-				<td
-					style={{
-						gridColumn: `1 / ${this.props.columns.length + 2}`,
-					}}>
+				<td>
 					<p style={nameStyle}>{this.renderContent(`${key}-name`, node.title)}</p>
 				</td>
+				<td></td>
 			</tr>
 		);
 	}
