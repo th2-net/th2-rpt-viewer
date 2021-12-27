@@ -95,23 +95,20 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	}, [viewType]);
 
 	React.useEffect(() => {
-		if (!isHighlighted) {
-			if (messagesStore.highlightedMessageId === messageId) {
-				setHighlighted(true);
+		if (!isHighlighted && messagesStore.highlightedMessageId === messageId) {
+			setHighlighted(true);
 
-				highlightTimer.current = setTimeout(() => {
-					setHighlighted(false);
-					messagesStore.highlightedMessageId = null;
-				}, 3000);
-			} else if (messagesStore.highlightedMessageId !== null) {
+			highlightTimer.current = setTimeout(() => {
 				setHighlighted(false);
-			}
+				messagesStore.highlightedMessageId = null;
+			}, 3000);
 		}
 
 		return () => {
 			if (highlightTimer.current) {
 				window.clearTimeout(highlightTimer.current);
 			}
+			setHighlighted(false);
 		};
 	}, [messagesStore.highlightedMessageId]);
 

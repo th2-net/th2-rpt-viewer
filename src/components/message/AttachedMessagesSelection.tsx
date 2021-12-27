@@ -31,15 +31,17 @@ const AttachedMessagesSelection = () => {
 
 	const onPrevious = () => {
 		if (messageIndex !== 0) {
-			messagesStore.selectAttachedMessage(attachedMessages[messageIndex]);
-			setMessageIndex(messageIndex - 1);
+			const nextIndex = messageIndex - 1;
+			messagesStore.selectAttachedMessage(attachedMessages[nextIndex]);
+			setMessageIndex(nextIndex);
 		}
 	};
 
 	const onNext = () => {
 		if (messageIndex !== attachedMessages.length - 1) {
-			messagesStore.selectAttachedMessage(attachedMessages[messageIndex]);
-			setMessageIndex(messageIndex + 1);
+			const nextIndex = messageIndex + 1;
+			messagesStore.selectAttachedMessage(attachedMessages[nextIndex]);
+			setMessageIndex(nextIndex);
 		}
 	};
 
