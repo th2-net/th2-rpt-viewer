@@ -137,9 +137,9 @@ function EventTreeListBase(props: Props) {
 						<Virtuoso
 							firstItemIndex={firstItemIndex}
 							initialTopMostItemIndex={initialItemCount.current - 1}
-							data={eventNodes}
+							data={currentNodes}
 							ref={virtuosoRef}
-							totalCount={eventNodes.length}
+							totalCount={currentNodes.length}
 							computeItemKey={computeKey}
 							overscan={3}
 							itemContent={renderEvent}

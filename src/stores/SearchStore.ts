@@ -225,7 +225,6 @@ export class SearchStore {
 		return Boolean(this.eventAutocompleteSseChannel);
 	}
 
-
 	@computed get searchProgress() {
 		const startTimestamp = Number(this.searchForm.startTimestamp);
 		const { previous: timeLimitPrevious, next: timeLimitNext } = this.searchForm.timeLimits;
