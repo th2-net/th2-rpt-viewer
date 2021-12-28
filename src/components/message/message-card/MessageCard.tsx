@@ -26,7 +26,7 @@ import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import { matchWildcardRule } from '../../../helpers/regexp';
-import { MessageCardBase } from './MessageCardBase';
+import MessageCardBase from './MessageCardBase';
 import '../../../styles/messages.scss';
 
 export interface OwnProps {

@@ -20,7 +20,7 @@ import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { EventMessage, MessageViewType } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
-import { MessageCardBase } from '../message/message-card/MessageCardBase';
+import MessageCardBase from '../message/message-card/MessageCardBase';
 import '../../styles/embedded.scss';
 import api from '../../api';
 import StateSaverProvider from '../util/StateSaverProvider';
