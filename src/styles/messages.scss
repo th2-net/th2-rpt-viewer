@@ -19,11 +19,13 @@
 .message-card-wrapper {
 	@include scrollbar();
 	@include bookmark-button($showOnHoverOverParent: true);
-	overflow: auto;
+	position: relative;
+	height: 100%;
 	display: flex;
 	align-items: flex-start;
 	border-radius: 5px;
-	padding: 1px 3px;
+	margin: 0 0 4px;
+	padding: 0 3px 0 8px;
 	display: flex;
 	justify-content: space-between;
 
@@ -51,19 +53,35 @@
 		}
 	}
 
-	&.attached {
-		border: 2px solid $attachedMessageCardBorderColor;
-
+	&.attached,
+	&.pinned {
+		&:after {
+			position: absolute;
+			width: 4px;
+			height: inherit;
+			top: 0;
+			left: 0;
+			border-radius: 4px;
+			content: '';
+		}
+	}
+	&.pinned {
+		&:after {
+			background-color: $pinnedMessageCardColor;
+		}
 		&:hover {
-			border-color: $attachedMessageCardHoverBorderColor;
-			background-color: $attachedMessageCardHoverBackground;
+			border-color: $pinnedMessageCardColor;
+			background-color: $hoveredPinnedMessageCardColor;
 		}
 	}
 
-	&.exported {
-		background-color: $exportedMessageCardBackground;
+	&.attached {
+		&:after {
+			background-color: $attachedMessageCardColor;
+		}
 		&:hover {
-			background-color: $exportedMessageCardHoverBackground;
+			border-color: $attachedMessageCardColor;
+			background-color: $hoveredAttachedMessageCardColor;
 		}
 	}
 
@@ -78,16 +96,6 @@
 	&:hover .message-card-tools__ellipsis {
 		display: block;
 	}
-
-	&:hover .mc-header {
-		&__value {
-			font-weight: bold;
-		}
-
-		&__is-attached-icon {
-			opacity: 1;
-		}
-	}
 }
 
 .message-card {
@@ -95,6 +103,40 @@
 	flex-direction: column;
 	flex-grow: 1;
 	padding: 0 2px;
+	&-icons {
+		display: inline-flex;
+		vertical-align: middle;
+		position: relative;
+		margin: 0 5px 0 0;
+		@include icon(url(../../resources/icons/message-icon.svg), 14px, 14px);
+		&.attached,
+		&.pinned {
+			&:after {
+				z-index: 3;
+				position: absolute;
+				width: 4px;
+				height: inherit;
+				top: -1px;
+				left: 6px;
+				content: '';
+			}
+		}
+
+		&.pinned {
+			&:after {
+				@include icon(url(../../resources/icons/bookmarks.svg), 12px, 12px);
+				filter: drop-shadow(-1px 1px 0px white);
+			}
+		}
+
+		&.attached {
+			&:after {
+				@include icon(url(../../resources/icons/attached-message-icon.svg), 12px, 12px);
+				filter: none;
+			}
+		}
+
+	}
 }
 
 .message-card-tools {
@@ -291,11 +333,9 @@
 	&__info {
 		flex-grow: 1;
 		display: flex;
+		align-items: center;
 		overflow: hidden;
-
-		& > *:not(:last-child) {
-			margin-right: 5px;
-		}
+		height: 18px;
 	}
 
 	&__item {
@@ -347,7 +387,9 @@
 		display: inline-block;
 		color: $messageCardValueColor;
 		vertical-align: middle;
-		font-weight: bold;
+		b {
+			font-size: 10px;
+		}
 
 		&.messageType {
 			max-width: 48px;
@@ -365,10 +407,25 @@
 		transition: all 0.15s;
 		border-radius: 4px;
 		margin-left: 0;
+		border: 1px solid transparent;
 
 		&:hover {
 			color: $graphTextColor;
 			border: 1px solid $graphTextColor;
+		}
+	}
+}
+
+.mc-body,
+.mc-header__info {
+	.checkbox {
+		display: inline;
+		vertical-align: middle;
+		&__control {
+			background-color: #fff;
+			width: 12px;
+			height: 12px;
+			margin: 0 7px 0 0;
 		}
 	}
 }
@@ -379,13 +436,9 @@
 
 	&__human {
 		font-family: inherit;
-		line-height: 15px;
-		margin: 0;
 		white-space: pre-wrap;
 		word-break: break-all;
 		color: $alternativeTextColor;
-		flex-grow: 1;
-		flex-shrink: 1;
 		overflow: hidden;
 	}
 
