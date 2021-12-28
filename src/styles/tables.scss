@@ -53,88 +53,14 @@
 }
 
 .ver-table {
+	@include default-table;
 	@include scrollbar;
 	width: 100%;
 	overflow: auto;
 
 	table {
 		width: fit-content;
-		border-collapse: collapse;
-		border-style: hidden;
-		table-layout: fixed;
-		border-radius: 4px;
-		min-width: 100%;
-		min-height: 100%;
-	}
-
-	th,
-	td {
-		@include ellipsis();
-		font-size: 11px;
-		line-height: 16px;
-		padding-top: 0;
-		padding-bottom: 0;
-		box-sizing: border-box;
-		border-bottom: 1px solid $tableCellBorderColor;
-	}
-
-	tr {
-		display: grid;
-		grid-template-columns: minmax(130px, 1fr) minmax(125px, 1fr) minmax(125px, 1fr) 60px 80px 50px 40px;
-		grid-auto-rows: minmax(24px, auto);
-	}
-
-	td {
-		word-break: break-all;
-		white-space: pre-wrap;
-		background-color: $tableBodyBackground;
-		border-right: 0;
-		border-left: 0;
-		display: flex;
-		align-items: center;
-
-		&.transparent {
-			background-color: transparent;
-			border-color: transparent;
-		}
-	}
-
-	th {
-		font-weight: bold;
-		line-height: 16px;
-		color: white;
-		background-color: $tableHeaderBackground;
-		padding: 4px;
-
-		&.transparent {
-			background-color: transparent;
-			border-color: transparent;
-		}
-
-		&:first-child {
-			border-radius: 4px 0 0 0;
-		}
-
-		&:last-child {
-			border-radius: 0 4px 0 0;
-		}
-	}
-
-	td,
-	th {
-		&:first-child {
-			padding-left: 10px;
-		}
-	}
-
-	tr {
-		&:hover td {
-			background-color: darken($color: $tableBodyBackground, $amount: 10);
-
-			&.transparent {
-				background-color: transparent;
-			}
-		}
+		grid-template-columns: minmax(130px, 250px) minmax(125px, 250px) minmax(125px, 250px) 60px 80px 50px;
 	}
 
 	&-indicator {
@@ -347,6 +273,8 @@
 		}
 	}
 
+	&-expected,
+	&-operation,
 	&-status,
 	&-operation,
 	&-key {
@@ -439,7 +367,10 @@
 
 .params-table {
 	@include default-table;
-	@include scrollbar;
+
+	&-wrapper {
+		overflow-x: auto;
+	}
 
 	td,
 	th {
@@ -484,15 +415,11 @@
 			}
 		}
 
-		p::before {
-			padding-right: 2px;
-			margin-left: -3px;
-		}
-
 		p {
 			margin: 0;
 			text-decoration: none;
 			display: inline-block;
+			white-space: nowrap;
 		}
 
 		td {

@@ -269,10 +269,10 @@ class VerificationTableBase extends React.Component<Props, State> {
 								<th className='ver-table-flexible' ref={this.columnsRefs[0]}>
 									Name
 								</th>
-								<th className='ver-table-flexible' ref={this.columnsRefs[1]}>
+								<th className='ver-table-expected' ref={this.columnsRefs[1]}>
 									Expected
 								</th>
-								<th className='ver-table-flexible' ref={this.columnsRefs[2]}>
+								<th className='ver-table-actual' ref={this.columnsRefs[2]}>
 									Actual
 								</th>
 								<th className='ver-table-status' ref={this.columnsRefs[3]}>

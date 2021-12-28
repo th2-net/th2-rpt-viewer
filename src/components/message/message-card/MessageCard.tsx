@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
 	useMessagesWorkspaceStore,
@@ -63,7 +64,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		) !== -1;
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
-	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
@@ -98,23 +98,20 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	}, [viewType]);
 
 	React.useEffect(() => {
-		if (!isHighlighted) {
-			if (messagesStore.highlightedMessageId === messageId) {
-				setHighlighted(true);
+		if (!isHighlighted && messagesStore.highlightedMessageId === messageId) {
+			setHighlighted(true);
 
-				highlightTimer.current = setTimeout(() => {
-					setHighlighted(false);
-					messagesStore.highlightedMessageId = null;
-				}, 3000);
-			} else if (messagesStore.highlightedMessageId !== null) {
+			highlightTimer.current = setTimeout(() => {
 				setHighlighted(false);
-			}
+				messagesStore.highlightedMessageId = null;
+			}, 3000);
 		}
 
 		return () => {
 			if (highlightTimer.current) {
 				window.clearTimeout(highlightTimer.current);
 			}
+			setHighlighted(false);
 		};
 	}, [messagesStore.highlightedMessageId]);
 
@@ -129,9 +126,9 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		messagesStore.setHoveredMessage(null);
 	}, [messagesStore.setHoveredMessage]);
 
-	const isAttached = !!messagesStore.attachedMessages.find(
-		attMsg => attMsg.messageId === message.messageId,
-	);
+	const isAttached = computed(
+		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.messageId === message.messageId),
+	).get();
 
 	const toogleMessagePin = React.useCallback(() => {
 		selectedStore.toggleMessagePin(message, booksStore.selectedBook.name);
@@ -157,7 +154,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			isContentBeautified={isContentBeautified}
 			isSoftFiltered={isSoftFiltered}
 			toogleMessagePin={toogleMessagePin}
-			isDetailed={isDetailed}
 			isExported={isExported}
 			isExport={messagesStore.exportStore.isExport}
 			sortOrderItems={sortOrderItems}

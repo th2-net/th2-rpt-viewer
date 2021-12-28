@@ -281,24 +281,19 @@ export default class MessagesStore {
 			attachedMessages,
 		);
 
-		if (
-			this.dataStore.isLoadingNextMessages ||
-			this.dataStore.isLoadingPreviousMessages ||
-			shouldShowFilterHintBeforeRefetchingMessages
-		) {
-			return;
-		}
-
-		const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
-
-		if (mostRecentMessage) {
-			const streams = this.filterStore.filter.streams;
-			this.filterStore.filter = {
-				...this.filterStore.filter,
-				streams: [...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)])],
-				timestampTo: timestampToNumber(mostRecentMessage.timestamp),
-			};
-			this.selectedMessageId = new String(mostRecentMessage.messageId);
+		if (!shouldShowFilterHintBeforeRefetchingMessages) {
+			const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
+			if (mostRecentMessage) {
+				const streams = this.filterStore.filter.streams;
+				this.selectedMessageId = new String(mostRecentMessage.messageId);
+				this.filterStore.filter = {
+					...this.filterStore.filter,
+					streams: [
+						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
+					],
+					timestampTo: timestampToNumber(mostRecentMessage.timestamp),
+				};
+			}
 		}
 	};
 
