@@ -293,22 +293,22 @@ export default class EventsStore {
 	};
 
 	@action
-	public goToEvent = async (savedEventNode: EventTreeNode | EventAction, scope = this.scope) => {
-		if (!scope || !this.booksStore.scopeList.includes(scope)) return;
+	public goToEvent = async (event: EventTreeNode | EventAction, scope = this.scope) => {
+		if (!scope) return;
 		this.scope = scope;
 
 		this.selectedNode = null;
 		this.selectedEvent = null;
-		this.graphStore.setTimestamp(timestampToNumber(savedEventNode.startTimestamp));
+		this.graphStore.setTimestamp(timestampToNumber(event.startTimestamp));
 		this.workspaceStore.viewStore.activePanel = this;
 
 		this.eventDataStore.fetchEventTree({
 			timeRange: calculateTimeRange(
-				timestampToNumber(savedEventNode.startTimestamp),
+				timestampToNumber(event.startTimestamp),
 				this.graphStore.interval,
 			),
 			filter: this.filterStore.filter,
-			targetEventId: savedEventNode.eventId,
+			targetEventId: event.eventId,
 			scope,
 		});
 	};

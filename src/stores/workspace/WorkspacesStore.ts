@@ -24,11 +24,15 @@ import { isWorkspaceStore } from '../../helpers/workspace';
 import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { getRangeFromTimestamp } from '../../helpers/date';
+import { getRangeFromTimestamp, getTimestampAsNumber, timestampToNumber } from '../../helpers/date';
 import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import BooksStore from '../BooksStore';
+import { GraphItem } from '../../models/Graph';
+import { getGraphItemId } from '../../helpers/graph';
+import { isEvent } from '../../helpers/event';
+import { isMessage } from '../../helpers/message';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -164,6 +168,46 @@ export default class WorkspacesStore {
 			interval: SEARCH_STORE_INTERVAL,
 			timeRange: [timestampFrom, timestampTo],
 		};
+	};
+
+	public onGraphSearchResultSelect = (item: GraphItem) => {
+		// s is scope for event and session for message
+		const [bookId, s] = getGraphItemId(item).split(':');
+		const book = this.booksStore.books.find(b => b.name === bookId);
+
+		if (!book) return;
+		this.booksStore.selectBook(book);
+
+		if (isEvent(item)) {
+			if (!isWorkspaceStore(this.activeWorkspace)) {
+				const timeRange = getRangeFromTimestamp(getTimestampAsNumber(item), SEARCH_STORE_INTERVAL);
+				const workspace = this.createWorkspace({
+					events: {
+						targetEvent: item,
+						scope: s,
+						range: timeRange,
+					},
+					timeRange,
+				});
+				this.addWorkspace(workspace);
+			} else {
+				this.activeWorkspace.eventsStore.goToEvent(item, s);
+			}
+		}
+
+		if (isMessage(item)) {
+			if (!isWorkspaceStore(this.activeWorkspace)) {
+				const workspace = this.createWorkspace({
+					messages: {
+						timestampTo: timestampToNumber(item.timestamp),
+						targetMessage: item,
+					},
+				});
+				this.addWorkspace(workspace);
+			} else {
+				this.activeWorkspace.messagesStore.onMessageSelect(item);
+			}
+		}
 	};
 
 	public syncData = async (unsavedData?: DbData) => {
