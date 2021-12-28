@@ -19,10 +19,12 @@ import { observer } from 'mobx-react-lite';
 import { computed } from 'mobx';
 import { useBooksStore } from '../../hooks/useBooksStore';
 import Select from '../util/Select';
+import { useWorkspaces } from '../../hooks';
 import '../../styles/books.scss';
 
 const BookSelect = () => {
 	const booksStore = useBooksStore();
+	const workspacesStore = useWorkspaces();
 
 	const booksIds = computed(() => booksStore.books.map(b => b.name)).get();
 
@@ -34,6 +36,7 @@ const BookSelect = () => {
 				const selectedBook = booksStore.books.find(b => b.name === bookName);
 				if (selectedBook) {
 					booksStore.selectBook(selectedBook);
+					workspacesStore.onSelectedBookChange(selectedBook);
 				}
 			}}
 			className='books-input'

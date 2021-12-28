@@ -261,6 +261,9 @@ export default class MessagesStore {
 			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 			this.hintMessages = [];
 			this.workspaceStore.viewStore.activePanel = this;
+			if (this.workspaceStore.viewStore.panelsLayout[1] < 20) {
+				this.workspaceStore.viewStore.setPanelsLayout([50, 50]);
+			}
 		}
 	};
 
@@ -390,5 +393,10 @@ export default class MessagesStore {
 		if (hoveredMessage !== null) {
 			this.graphStore.setTimestamp(timestampToNumber(hoveredMessage.timestamp));
 		}
+	};
+
+	public onSelectedBookChange = () => {
+		this.selectedMessageId = null;
+		this.dataStore.loadMessages();
 	};
 }

@@ -41,6 +41,7 @@ export default class BooksStore {
 
 	@action
 	selectBook = (book: Book) => {
+		if (book === this.selectedBook) return;
 		this.selectedBook = book;
 		this.scopeList = [];
 		if (book) {

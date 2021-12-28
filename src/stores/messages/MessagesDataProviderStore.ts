@@ -45,8 +45,6 @@ export default class MessagesDataProviderStore {
 		);
 
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
-
-		reaction(() => this.booksStore.selectedBook, this.loadMessages);
 	}
 
 	public updateStore: MessagesUpdateStore;
@@ -74,6 +72,9 @@ export default class MessagesDataProviderStore {
 
 	@observable
 	public anchorChannel: MessagesSSEChannel | null = null;
+
+	@observable
+	public isLoadingAnchorMessage = false;
 
 	@observable
 	public startIndex = 10000;
@@ -112,7 +113,8 @@ export default class MessagesDataProviderStore {
 		return (
 			this.isLoadingNextMessages ||
 			this.isLoadingPreviousMessages ||
-			Boolean(this.anchorChannel?.isLoading)
+			Boolean(this.anchorChannel?.isLoading) ||
+			this.isLoadingAnchorMessage
 		);
 	}
 
@@ -152,6 +154,7 @@ export default class MessagesDataProviderStore {
 
 		if (this.searchChannelPrev && this.searchChannelNext) {
 			if (this.messagesStore.selectedMessageId) {
+				this.isLoadingAnchorMessage = true;
 				this.messageAC = new AbortController();
 				try {
 					message = await this.api.messages.getMessage(
@@ -163,6 +166,8 @@ export default class MessagesDataProviderStore {
 						this.isError = true;
 						return;
 					}
+				} finally {
+					this.isLoadingAnchorMessage = false;
 				}
 			} else {
 				this.anchorChannel = new MessagesSSEChannel(
@@ -413,6 +418,7 @@ export default class MessagesDataProviderStore {
 		this.nextLoadHeartbeat = null;
 		this.lastPreviousChannelResponseTimestamp = null;
 		this.lastNextChannelResponseTimestamp = null;
+		this.isLoadingAnchorMessage = false;
 	};
 
 	@observable

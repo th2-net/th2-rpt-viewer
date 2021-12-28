@@ -33,6 +33,7 @@ import { GraphItem } from '../../models/Graph';
 import { getGraphItemId } from '../../helpers/graph';
 import { isEvent } from '../../helpers/event';
 import { isMessage } from '../../helpers/message';
+import { Book } from '../../models/Books';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -201,6 +202,7 @@ export default class WorkspacesStore {
 					messages: {
 						timestampTo: timestampToNumber(item.timestamp),
 						targetMessage: item,
+						streams: [item.sessionId],
 					},
 				});
 				this.addWorkspace(workspace);
@@ -208,6 +210,13 @@ export default class WorkspacesStore {
 				this.activeWorkspace.messagesStore.onMessageSelect(item);
 			}
 		}
+	};
+
+	public onSelectedBookChange = (book: Book) => {
+		this.workspaces.forEach(workspace => {
+			workspace.eventsStore.onSelectedBookChange(book);
+			workspace.messagesStore.onSelectedBookChange();
+		});
 	};
 
 	public syncData = async (unsavedData?: DbData) => {

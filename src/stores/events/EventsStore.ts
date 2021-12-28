@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, runInAction } from 'mobx';
+import { action, computed, observable, reaction, runInAction, when } from 'mobx';
 import moment from 'moment';
 import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
@@ -92,8 +92,6 @@ export default class EventsStore {
 		reaction(() => this.viewStore.flattenedListView, this.onViewChange);
 
 		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
-
-		reaction(() => this.booksStore.selectedBook, this.onSelectedBookChange);
 	}
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
@@ -295,22 +293,30 @@ export default class EventsStore {
 	@action
 	public goToEvent = async (event: EventTreeNode | EventAction, scope = this.scope) => {
 		if (!scope) return;
-		this.scope = scope;
 
-		this.selectedNode = null;
-		this.selectedEvent = null;
-		this.graphStore.setTimestamp(timestampToNumber(event.startTimestamp));
-		this.workspaceStore.viewStore.activePanel = this;
+		await when(() => !this.booksStore.isLoadingScope);
+		if (this.booksStore.scopeList.includes(scope)) {
+			this.scope = scope;
 
-		this.eventDataStore.fetchEventTree({
-			timeRange: calculateTimeRange(
-				timestampToNumber(event.startTimestamp),
-				this.graphStore.interval,
-			),
-			filter: this.filterStore.filter,
-			targetEventId: event.eventId,
-			scope,
-		});
+			this.selectedNode = null;
+			this.selectedEvent = null;
+			this.graphStore.setTimestamp(timestampToNumber(event.startTimestamp));
+			this.workspaceStore.viewStore.activePanel = this;
+
+			this.eventDataStore.fetchEventTree({
+				timeRange: calculateTimeRange(
+					timestampToNumber(event.startTimestamp),
+					this.graphStore.interval,
+				),
+				filter: this.filterStore.filter,
+				targetEventId: event.eventId,
+				scope,
+			});
+
+			if (this.workspaceStore.viewStore.panelsLayout[0] < 20) {
+				this.workspaceStore.viewStore.setPanelsLayout([50, 50]);
+			}
+		}
 	};
 
 	@action
@@ -536,7 +542,7 @@ export default class EventsStore {
 
 	private scopeAC: AbortController | null = null;
 
-	private onSelectedBookChange = async (selectedBook: Book) => {
+	public onSelectedBookChange = async (selectedBook: Book) => {
 		this.eventDataStore.resetEventsTreeState();
 		runInAction(() => {
 			this.selectedNode = null;
