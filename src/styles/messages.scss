@@ -98,6 +98,7 @@
 }
 
 .message-card-tools {
+	position: relative;
 	margin: 1px 4px 0 4px;
 	align-self: stretch;
 	display: flex;
@@ -126,35 +127,34 @@
 
 	&__controls {
 		position: absolute;
-		right: 11px;
+		right: -7px;
 		background-color: white;
 		box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
 		display: flex;
-		padding: 4px 0;
-		gap: 4px;
-		flex-direction: column;
+		padding: 4px 8px;
+		border-radius: 2px;
 		z-index: 2;
 
 		&-group {
 			display: flex;
-			flex-direction: column;
+			&:nth-child(2) {
+				margin: 0 24px;
+			}
 		}
 	}
 
 	&__item {
-		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-		gap: 4px;
-		padding: 2px 4px 2px 10px;
 		cursor: pointer;
-		font-size: 11px;
 		color: $primaryTextColor;
+		&:not(:last-child) {
+			margin-right: 12px;
+		}
 
 		&-title {
 			text-transform: capitalize;
 		}
 
+		&.active,
 		&:hover {
 			background-color: rgba(0, 0, 0, 0.07);
 		}
