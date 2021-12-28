@@ -18,14 +18,11 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import {
 	useMessagesWorkspaceStore,
-	useMessageDisplayRulesStore,
 	useSelectedStore,
 	useMessagesDataStore,
+	useMessagesViewTypesStore,
 } from '../../../hooks';
-import { keyForMessage } from '../../../helpers/keys';
-import StateSaver from '../../util/StateSaver';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
-import { matchWildcardRule } from '../../../helpers/regexp';
 import { MessageCardBase } from './MessageCardBase';
 import '../../../styles/messages.scss';
 
@@ -76,23 +73,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			abortController.abort();
 		};
 	}, []);
-
-	React.useEffect(() => {
-		switch (viewType) {
-			case MessageViewType.FORMATTED:
-				messagesStore.beautify(messageId);
-				break;
-			case MessageViewType.ASCII:
-				messagesStore.hideDetailedRawMessage(messageId);
-				break;
-			case MessageViewType.BINARY:
-				messagesStore.showDetailedRawMessage(messageId);
-				break;
-			default:
-				messagesStore.debeautify(messageId);
-				break;
-		}
-	}, [viewType]);
 
 	React.useEffect(() => {
 		if (!isHighlighted) {
@@ -158,53 +138,13 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	);
 });
 
-const RecoverableMessageCard = React.memo((props: OwnProps) => {
-	const rulesStore = useMessageDisplayRulesStore();
+const RecoverableMessageCard = (props: OwnProps) => {
+	const viewTypesStore = useMessagesViewTypesStore();
+	const { viewType, setViewType } = viewTypesStore.getSavedViewType(props.message);
 
-	return (
-		<StateSaver
-			stateKey={keyForMessage(props.message.messageId)}
-			getDefaultState={() => {
-				const rootRule = rulesStore.rootDisplayRule;
-				const declaredRule = rulesStore.messageDisplayRules.find(rule => {
-					if (rule.session.length > 1 && rule.session.includes('*')) {
-						return matchWildcardRule(props.message.sessionId, rule.session);
-					}
-					return props.message.sessionId.includes(rule.session);
-				});
-				if (!props.message.body) {
-					return declaredRule
-						? getRawViewType(declaredRule.viewType)
-						: rootRule
-						? getRawViewType(rootRule.viewType)
-						: MessageViewType.ASCII;
-				}
-				return declaredRule
-					? declaredRule.viewType
-					: rootRule
-					? rootRule.viewType
-					: MessageViewType.JSON;
-			}}>
-			{(state, saveState) => (
-				<MessageCard
-					{...props}
-					// we should always show raw content if something found in it
-					viewType={state}
-					setViewType={saveState}
-				/>
-			)}
-		</StateSaver>
-	);
-});
+	return <MessageCard {...props} viewType={viewType} setViewType={setViewType} />;
+};
 
 RecoverableMessageCard.displayName = 'RecoverableMessageCard';
 
-export default RecoverableMessageCard;
-
-function isRawViewType(viewType: MessageViewType) {
-	return viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
-}
-
-function getRawViewType(viewType: MessageViewType) {
-	return isRawViewType(viewType) ? viewType : MessageViewType.ASCII;
-}
+export default observer(RecoverableMessageCard);

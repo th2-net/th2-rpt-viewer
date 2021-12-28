@@ -35,6 +35,8 @@ import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplit
 import { SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
 import { isAbortError } from '../../helpers/fetch';
+import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
+import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -57,6 +59,8 @@ export default class WorkspaceStore {
 
 	public messagesStore: MessagesStore;
 
+	public messageViewTypesStore: MessagesViewTypesStore;
+
 	public viewStore: WorkspaceViewStore;
 
 	public graphStore: GraphStore;
@@ -68,6 +72,7 @@ export default class WorkspaceStore {
 		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
 		private sessionsStore: SessionsStore,
+		private messageDisplayRulesStore: MessageDisplayRulesStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
@@ -93,6 +98,7 @@ export default class WorkspaceStore {
 			this.sessionsStore,
 			initialState.messages,
 		);
+		this.messageViewTypesStore = new MessagesViewTypesStore(this.messageDisplayRulesStore);
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 
