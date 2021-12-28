@@ -61,6 +61,9 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	public searchChannelNext: MessagesSSEChannel | null = null;
 
 	@observable
+	public anchorChannel: MessagesSSEChannel | null = null;
+
+	@observable
 	public startIndex = 10000;
 
 	@observable
@@ -89,7 +92,11 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 	@computed
 	public get isLoading(): boolean {
-		return this.isLoadingNextMessages || this.isLoadingPreviousMessages;
+		return (
+			this.isLoadingNextMessages ||
+			this.isLoadingPreviousMessages ||
+			Boolean(this.anchorChannel?.isLoading)
+		);
 	}
 
 	private messageAC: AbortController | null = null;
@@ -146,11 +153,30 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 						return;
 					}
 				}
+			} else {
+				this.anchorChannel = new MessagesSSEChannel(
+					{
+						...queryParams,
+						searchDirection: 'previous',
+					},
+					{
+						onResponse: () => null,
+						onError: this.onLoadingError,
+					},
+					{
+						chunkSize: 1,
+					},
+				);
+				[message] = await this.anchorChannel.loadAndSubscribe({
+					initialResponseTimeoutMs: null,
+				});
+				if (!message) this.anchorChannel.stop();
+				this.anchorChannel = null;
 			}
 
 			const [nextMessages, prevMessages] = await Promise.all([
-				this.searchChannelNext.loadAndSubscribe(message?.messageId),
-				this.searchChannelPrev.loadAndSubscribe(message?.messageId),
+				this.searchChannelNext.loadAndSubscribe({ resumeFromId: message?.messageId }),
+				this.searchChannelPrev.loadAndSubscribe({ resumeFromId: message?.messageId }),
 			]);
 
 			const firstNextMessage = nextMessages[nextMessages.length - 1];
@@ -181,6 +207,8 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.messageAC?.abort();
 		this.searchChannelPrev?.stop();
 		this.searchChannelNext?.stop();
+		this.anchorChannel?.stop();
+		this.anchorChannel = null;
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
 		this.updateStore.stopSubscription();
@@ -340,7 +368,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			return [];
 		}
 
-		return this.searchChannelPrev.loadAndSubscribe(resumeFromId);
+		return this.searchChannelPrev.loadAndSubscribe({ resumeFromId });
 	};
 
 	@action
@@ -349,7 +377,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			return [];
 		}
 
-		return this.searchChannelNext.loadAndSubscribe(resumeFromId);
+		return this.searchChannelNext.loadAndSubscribe({ resumeFromId });
 	};
 
 	@action

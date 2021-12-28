@@ -80,6 +80,9 @@ export default class MessagesStore {
 	@observable
 	public showFilterChangeHint = false;
 
+	@observable
+	public filteringAttachedMessages = false;
+
 	/*
 		This is used for filter change hint. Represents either last clicked message
 		or attached messages
@@ -123,6 +126,11 @@ export default class MessagesStore {
 	}
 
 	@computed
+	public get isLoadingAttachedMessages() {
+		return this.workspaceStore.isLoadingAttachedMessages;
+	}
+
+	@computed
 	public get panelRange(): TimeRange {
 		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
 
@@ -135,6 +143,11 @@ export default class MessagesStore {
 		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
 		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];
 	}
+
+	@action
+	private setFilteringAttachedMessages = (isFiltering: boolean) => {
+		this.filteringAttachedMessages = isFiltering;
+	};
 
 	@action
 	public setHoveredMessage(message: EventMessage | null) {
@@ -232,7 +245,7 @@ export default class MessagesStore {
 
 	@action
 	public onMessageSelect = async (message: EventMessage) => {
-		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(message);
+		const shouldShowFilterHintBeforeRefetchingMessages = await this.handleFilterHint(message);
 
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
 			const streams = this.filterStore.filter.streams;
@@ -261,27 +274,24 @@ export default class MessagesStore {
 	};
 
 	@action
-	public onAttachedMessagesChange = (attachedMessages: EventMessage[]) => {
-		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(attachedMessages);
+	public onAttachedMessagesChange = async (attachedMessages: EventMessage[]) => {
+		const shouldShowFilterHintBeforeRefetchingMessages = await this.handleFilterHint(
+			attachedMessages,
+		);
 
-		if (
-			this.dataStore.isLoadingNextMessages ||
-			this.dataStore.isLoadingPreviousMessages ||
-			shouldShowFilterHintBeforeRefetchingMessages
-		) {
-			return;
-		}
-
-		const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
-
-		if (mostRecentMessage) {
-			const streams = this.filterStore.filter.streams;
-			this.filterStore.filter = {
-				...this.filterStore.filter,
-				streams: [...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)])],
-				timestampTo: timestampToNumber(mostRecentMessage.timestamp),
-			};
-			this.selectedMessageId = new String(mostRecentMessage.messageId);
+		if (!shouldShowFilterHintBeforeRefetchingMessages) {
+			const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
+			if (mostRecentMessage) {
+				const streams = this.filterStore.filter.streams;
+				this.selectedMessageId = new String(mostRecentMessage.messageId);
+				this.filterStore.filter = {
+					...this.filterStore.filter,
+					streams: [
+						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
+					],
+					timestampTo: timestampToNumber(mostRecentMessage.timestamp),
+				};
+			}
 		}
 	};
 
@@ -317,7 +327,7 @@ export default class MessagesStore {
 		filter change hint window is shown to a user. And it is up to him to decide
 		if he wants to reset streams to message(s) streams and update filters
 	*/
-	private handleFilterHint = (message: EventMessage | EventMessage[]): boolean => {
+	private handleFilterHint = async (message: EventMessage | EventMessage[]): Promise<boolean> => {
 		this.hintMessages = Array.isArray(message) ? message : [message];
 
 		if (this.hintMessages.length === 0) {
@@ -325,14 +335,17 @@ export default class MessagesStore {
 			return this.showFilterChangeHint;
 		}
 
-		const sseFilter = this.filterStore.sseMessagesFilter;
-		const areFiltersApplied = [
-			sseFilter
-				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
-				: [],
-		].some(filterValues => filterValues.length > 0);
+		this.setFilteringAttachedMessages(true);
 
-		this.showFilterChangeHint = areFiltersApplied;
+		const matchMessageParams = this.filterStore.filterParams;
+
+		const hintMessagesMatch = await Promise.all(
+			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.messageId, matchMessageParams)),
+		).finally(() => {
+			this.setFilteringAttachedMessages(false);
+		});
+
+		this.showFilterChangeHint = hintMessagesMatch.some(isMatched => !isMatched);
 
 		return this.showFilterChangeHint;
 	};

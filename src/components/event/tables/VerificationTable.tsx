@@ -269,10 +269,10 @@ class VerificationTableBase extends React.Component<Props, State> {
 								<th className='ver-table-flexible' ref={this.columnsRefs[0]}>
 									Name
 								</th>
-								<th className='ver-table-flexible' ref={this.columnsRefs[1]}>
+								<th className='ver-table-expected' ref={this.columnsRefs[1]}>
 									Expected
 								</th>
-								<th className='ver-table-flexible' ref={this.columnsRefs[2]}>
+								<th className='ver-table-actual' ref={this.columnsRefs[2]}>
 									Actual
 								</th>
 								<th className='ver-table-status' ref={this.columnsRefs[3]}>
@@ -352,7 +352,6 @@ class VerificationTableBase extends React.Component<Props, State> {
 		const rootClassName = createStyleSelector(
 			'ver-table-row',
 			statusAlias.className,
-			name === 'NULL_VALUE' ? 'null' : null,
 			isTransparent ? 'transparent' : null,
 			isToggler ? 'subheader' : null,
 		);
@@ -384,7 +383,6 @@ class VerificationTableBase extends React.Component<Props, State> {
 		const expectedValueClassName = createStyleSelector(
 			'ver-table-row-value',
 			isToggler ? 'notype' : null,
-			expected === 'null' ? 'novalue' : null,
 		);
 
 		const operationClassName = createStyleSelector('ver-table-row-operation', operation);
@@ -500,8 +498,16 @@ class VerificationTableBase extends React.Component<Props, State> {
 		wrapperClassName: string | null = null,
 		fakeContent: string = content || '',
 	): React.ReactNode {
-		if (content == null) {
-			return wrap(wrapperClassName, null);
+		if (content === null) {
+			return wrap(createStyleSelector(wrapperClassName || '', 'novalue'), 'null');
+		}
+
+		if (content === '') {
+			return content;
+		}
+
+		if (content === undefined) {
+			return wrap(createStyleSelector(wrapperClassName || '', 'novalue'), 'missing value');
 		}
 
 		return wrap(wrapperClassName, fakeContent);

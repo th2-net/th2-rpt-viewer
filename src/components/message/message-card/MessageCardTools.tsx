@@ -31,8 +31,6 @@ const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 export type MessageCardToolsConfig = {
 	message: EventMessage;
-	messageId: string;
-	messageType: string;
 	messageViewType: MessageViewType;
 	toggleViewType: (viewType: MessageViewType) => void;
 	isBookmarked: boolean;
@@ -43,8 +41,6 @@ export type MessageCardToolsConfig = {
 
 const MessageCardTools = ({
 	message,
-	messageId,
-	messageType,
 	messageViewType,
 	toggleViewType,
 	isBookmarked,
@@ -52,6 +48,8 @@ const MessageCardTools = ({
 	isScreenshotMsg,
 	isEmbedded,
 }: MessageCardToolsConfig) => {
+	const { messageId, messageType } = message;
+
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const appViewMode = useViewMode();

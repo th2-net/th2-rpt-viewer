@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import moment from 'moment';
 import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import EventsFilter from '../models/filter/EventsFilter';
@@ -146,7 +145,7 @@ export function getMessagesSSEParamsFromFilter(
 	filter: MessageFilterState | null,
 	streams: string[],
 	startTimestamp: number | null,
-	endTimestamp: number | null = null,
+	endTimestamp: number | null,
 	searchDirection = 'previous',
 	resultCountLimit?: number,
 ): URLSearchParams {
@@ -172,11 +171,8 @@ export function getMessagesSSEParamsFromFilter(
 			: [],
 	);
 
-	const timestampTo = moment().utc().subtract(30, 'minutes').valueOf();
-	const defaultStartTimestamp = moment(timestampTo).add(5, 'minutes').valueOf();
-
 	const queryParams: MessagesSSEParams = {
-		startTimestamp: startTimestamp || defaultStartTimestamp,
+		startTimestamp,
 		endTimestamp: endTimestamp || undefined,
 		stream: streams,
 		searchDirection,
