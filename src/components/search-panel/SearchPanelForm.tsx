@@ -64,6 +64,7 @@ const SearchPanelForm = () => {
 
 	const [currentStream, setCurrentStream] = useState('');
 	const sessionsStore = useSessionsStore();
+	const searchStore = useSearchStore();
 	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
@@ -116,6 +117,7 @@ const SearchPanelForm = () => {
 		placeholder: 'matches events by the specified parent event id or event name',
 		autocompleteList: eventAutocompleteList.map(event => event.eventId),
 		onAutocompleteSelect: resetEventAutocompleteList,
+		isLoading: searchStore.isLoadingEventAutocompleteList,
 	};
 
 	const messagesFormTypeConfig: FitlerRowItem = {

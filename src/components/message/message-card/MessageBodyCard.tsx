@@ -34,7 +34,6 @@ interface Props {
 	isBeautified: boolean;
 	body: MessageBody | null;
 	isSelected: boolean;
-	renderInfo: () => React.ReactNode;
 	sortOrderItems: string[];
 }
 
@@ -64,7 +63,7 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 	return [...primarySortedFields, ...secondarySortedFields, ...tertiarySortedFields];
 };
 
-function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrderItems }: Props) {
+function MessageBodyCard({ isBeautified, body, isSelected, sortOrderItems }: Props) {
 	const [areSameContext, highlightSameContext] = React.useState(false);
 
 	const fields = React.useMemo(
@@ -77,8 +76,7 @@ function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, sortOrder
 	}
 
 	return (
-		<pre className='mc-body__human'>
-			{renderInfo && renderInfo()}
+		<pre className='mc-body__human' style={{ display: isBeautified ? 'block' : 'inline' }}>
 			{!isBeautified && (
 				<span
 					className={createBemElement('mc-body', 'field-border', areSameContext ? 'active' : null)}>
