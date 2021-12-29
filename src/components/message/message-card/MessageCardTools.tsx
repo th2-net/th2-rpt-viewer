@@ -69,15 +69,10 @@ const MessageCardTools = ({
 		  ]
 		: [MessageViewType.BINARY, MessageViewType.ASCII];
 
-	function onCopy(jsonObjectToCopy: 'body' | 'fields' = 'body') {
+	function onCopy() {
 		let content: string;
 
-		const jsonToCopy =
-			jsonObjectToCopy === 'fields'
-				? message.body?.fields
-					? normalizeFields(message.body.fields)
-					: null
-				: message.body;
+		const jsonToCopy = message.body;
 
 		switch (messageViewType) {
 			case MessageViewType.ASCII:
@@ -154,33 +149,25 @@ const MessageCardTools = ({
 						})}
 					</div>
 				)}
-				{!isScreenshotMsg &&
-					(messageViewType === MessageViewType.JSON ||
-						messageViewType === MessageViewType.FORMATTED) && (
-						<div className='message-card-tools__controls-group'>
-							{['body', 'fields'].map(copyOption => (
-								<div
-									key={copyOption}
-									title={copyOption === 'body' ? 'Copy full' : 'Copy simplified'}
-									className='message-card-tools__item'
-									onClick={() => {
-										onCopy(copyOption as 'body' | 'fields');
-										setIsViewMenuOpen(false);
-									}}>
-									<div className='message-card-tools__copy-icon' />
-								</div>
-							))}
-						</div>
-					)}
-				{isScreenshotMsg && (
-					<>
-						<a
+				{!isScreenshotMsg ? (
+					<div className='message-card-tools__controls-group'>
+						<div
+							title='Copy	to clipboard'
 							className='message-card-tools__item'
-							download={`${messageId}.${messageType.replace('image/', '')}`}
-							href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}>
-							<div className='message-card-tools__icon download' />
-						</a>
-					</>
+							onClick={() => {
+								onCopy();
+								setIsViewMenuOpen(false);
+							}}>
+							<div className='message-card-tools__copy-icon' />
+						</div>
+					</div>
+				) : (
+					<a
+						className='message-card-tools__item'
+						download={`${messageId}.${messageType.replace('image/', '')}`}
+						href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}>
+						<div className='message-card-tools__icon download' />
+					</a>
 				)}
 				{appViewMode === ViewMode.EmbeddedMessages && (
 					<div className='message-card-tools__controls-group'>
