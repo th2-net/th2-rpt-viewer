@@ -22,7 +22,6 @@
 	overflow: auto;
 	display: flex;
 	align-items: flex-start;
-	border-radius: 5px;
 	padding: 1px 3px;
 	display: flex;
 	justify-content: space-between;
@@ -105,7 +104,6 @@
 	justify-content: space-between;
 	align-items: center;
 	min-width: 17px;
-	
 
 	&__button {
 		display: flex;
@@ -785,7 +783,7 @@
 			}
 		}
 
-		&-tool{
+		&-tool {
 			display: flex;
 			justify-content: center;
 			background-color: transparent;
@@ -794,7 +792,7 @@
 			cursor: pointer;
 			font-size: 13px;
 			color: $primaryTextColor;
-	
+
 			&:hover {
 				background-color: #00000012;
 			}
@@ -991,7 +989,7 @@
 		width: 100%;
 	}
 
-	.dragable-area:hover{
+	.dragable-area:hover {
 		cursor: move;
 	}
 }

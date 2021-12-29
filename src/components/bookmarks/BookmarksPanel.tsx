@@ -22,10 +22,9 @@ import Empty from '../util/Empty';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { getItemId, getItemName, isEvent, isEventMessage } from '../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useActivePanel, useSelectedStore } from '../../hooks';
+import { useActivePanel, useSelectedStore, useWorkspaceStore } from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import BookmarkTextSearch from './BookmarkTextSearch';
 import BookmarkTypeSwitcher from './BookmarkTypeSwitcher';
 import Checkbox from '../util/Checkbox';
@@ -63,7 +62,7 @@ export function isMessageBookmark(bookmark: unknown): bookmark is MessageBookmar
 
 function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
-	const searchWorkspace = useSearchWorkspace();
+	const searchWorkspace = useWorkspaceStore();
 
 	const [bookmarkType, setBookmarkType] = React.useState<BookmarkType | null>(null);
 	const [textSearch, setTextSearch] = React.useState('');
@@ -200,6 +199,9 @@ export default observer(BookmarksPanel);
 
 interface BookmarkItemProps {
 	bookmark: BookmarkedItem;
+	messages?: EventMessage[];
+	currentStartIndex?: number;
+	currentEndIndex?: number;
 	onRemove?: (item: BookmarkedItem) => void;
 	onClick?: (item: BookmarkedItem) => void;
 	toggleBookmark?: () => void;
@@ -209,13 +211,22 @@ interface BookmarkItemProps {
 
 const BookmarkItemBase = (props: BookmarkItemProps) => {
 	const {
+		messages,
 		bookmark,
+		currentEndIndex,
+		currentStartIndex,
 		onRemove,
 		onClick,
 		toggleBookmark,
 		isBookmarked = true,
 		isBookmarkButtonDisabled,
 	} = props;
+
+	const [isHighlighted, setIsHighlighted] = React.useState<boolean>(false);
+
+	React.useEffect(() => {
+		changeHighlighting();
+	}, [currentStartIndex, currentEndIndex]);
 
 	const item: EventMessage | EventTreeNode | EventAction = isBookmark(bookmark)
 		? bookmark.item
@@ -229,6 +240,20 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		type: item.type,
 	};
 
+	function changeHighlighting() {
+		if (isEventMessage(item) && currentStartIndex && currentEndIndex && messages) {
+			if (
+				messages
+					.slice(currentStartIndex, currentEndIndex + 1)
+					.filter(elem => elem.messageId === item.messageId).length > 0
+			) {
+				setIsHighlighted(true);
+			} else {
+				setIsHighlighted(false);
+			}
+		}
+	}
+
 	function onBookmarkRemove(event: React.MouseEvent<HTMLButtonElement>) {
 		if (onRemove) {
 			event.stopPropagation();
@@ -236,7 +261,12 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		}
 	}
 
-	const rootClassName = createStyleSelector('bookmark-item', itemInfo.type, itemInfo.status);
+	const rootClassName = createStyleSelector(
+		'bookmark-item',
+		itemInfo.type,
+		itemInfo.status,
+		isHighlighted ? 'highlighted' : null,
+	);
 
 	const iconClassName = createStyleSelector(
 		'bookmark-item__icon',
@@ -249,7 +279,6 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		'toggle-btn',
 		isBookmarkButtonDisabled ? 'disabled' : null,
 	);
-
 	return (
 		<div className={rootClassName}>
 			<i className={iconClassName} />

@@ -21,11 +21,11 @@
 	background-color: #fff;
 	display: grid;
 	grid-template-rows: auto 1fr;
-	
+
 	&__container {
 		padding: 8px 2px 0 8px;
 	}
-	
+
 	&__list {
 		@include scrollbar;
 		& > div {
@@ -39,13 +39,9 @@
 	display: grid;
 	grid-template-columns: 1fr 30px;
 	background-color: #fff;
-	border-radius: 6px;
 	padding: 5px 7px 5px 30px;
-	border-width: 1px;
-	border-style: solid;
 	position: relative;
 	overflow: hidden;
-	margin-bottom: 6px;
 
 	&__info {
 		overflow: hidden;
@@ -157,23 +153,17 @@
 		}
 	}
 
-	&:not(:last-child) {
+	&:last-child {
 		margin-bottom: 6px;
 	}
 
-	&.message {
-		border-color: $graphOverlayPinnedMessagesColor;
+	&.message.highlighted {
+		border-left: solid 2px #61c2f2;
 	}
 
 	&.event,
 	&.eventtreenode {
-		&.passed {
-			border-color: $graphOverlayPassedEventsColor;
-		}
-
-		&.failed {
-			border-color: $graphOverlayFailedEventsColor;
-		}
+		border-left: solid 2px #ffb266;
 	}
 }
 

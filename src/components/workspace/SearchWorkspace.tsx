@@ -40,7 +40,8 @@ function SearchWorkspace() {
 	const {
 		panelsLayout,
 		setPanelsLayout,
-		resetToDefaulLayout,
+		collapsedPanels,
+		setCollapsedPanels,
 		collapsePanel,
 	} = searchWorkspaceStore.viewStore;
 
@@ -66,16 +67,17 @@ function SearchWorkspace() {
 	}, [bookmarksCounter]);
 
 	const searchWorkspacePanels = React.useMemo(() => {
-		return [searchPanel, bookmarksPanel];
+		return [];
 	}, [searchPanel, bookmarksPanel]);
 
 	return (
 		<div className='workspace'>
 			<WorkspaceSplitter
+				collapsedPanels={collapsedPanels}
+				setCollapsedPanels={setCollapsedPanels}
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
 				panels={searchWorkspacePanels}
-				resetToDefaulLayout={resetToDefaulLayout}
 				collapsePanel={collapsePanel}
 			/>
 		</div>
