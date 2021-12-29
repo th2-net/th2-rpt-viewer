@@ -173,7 +173,8 @@ const MessageCardBase = React.memo(
 							<Checkbox
 								id={messageId}
 								checked={!!isExported}
-								onChange={() => {
+								onChange={e => {
+									e.stopPropagation();
 									addMessageToExport?.();
 								}}
 							/>
