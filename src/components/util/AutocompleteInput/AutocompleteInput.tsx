@@ -75,6 +75,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 				e.target instanceof HTMLElement &&
 				autocompleteListRef.current.contains(e.target)
 			) {
+				e.target.click();
 				e.stopImmediatePropagation();
 				return;
 			}
