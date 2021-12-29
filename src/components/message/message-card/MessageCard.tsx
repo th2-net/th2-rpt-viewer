@@ -49,14 +49,15 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
-	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
+	const isContentBeautified = viewType === MessageViewType.FORMATTED;
+	const isDetailed = viewType === MessageViewType.BINARY;
+
 	const isBookmarked =
 		selectedStore.bookmarkedMessages.findIndex(
 			bookmarkedMessage => bookmarkedMessage.id === messageId,
 		) !== -1;
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
-	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
 	const applyFilterToBody = messagesStore.selectedMessageId?.valueOf() === message.messageId;
 
 	React.useEffect(() => {

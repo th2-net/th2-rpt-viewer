@@ -14,17 +14,27 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable } from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import { keyForMessage } from '../../helpers/keys';
 import { EventMessage } from '../../models/EventMessage';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
+import MessagesStore from './MessagesStore';
 import { SavedMessageViewType } from './SavedMessageViewType';
 
 class MessagesViewTypesStore {
 	messageDisplayRulesStore: MessageDisplayRulesStore;
 
-	constructor(messageDispalyRulesStore: MessageDisplayRulesStore) {
+	messagesStore: MessagesStore;
+
+	constructor(messageDispalyRulesStore: MessageDisplayRulesStore, messagesStore: MessagesStore) {
 		this.messageDisplayRulesStore = messageDispalyRulesStore;
+		this.messagesStore = messagesStore;
+		reaction(() => this.filter, this.resetSavedViewTypes);
+	}
+
+	@computed
+	private get filter() {
+		return this.messagesStore.filterStore.filter;
 	}
 
 	@observable
@@ -42,7 +52,7 @@ class MessagesViewTypesStore {
 	};
 
 	@action
-	public resetSavedViewTypes = () => {
+	private resetSavedViewTypes = () => {
 		this.savedViewTypes.clear();
 	};
 }

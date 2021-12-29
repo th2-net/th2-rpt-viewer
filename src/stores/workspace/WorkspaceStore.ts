@@ -98,7 +98,10 @@ export default class WorkspaceStore {
 			this.sessionsStore,
 			initialState.messages,
 		);
-		this.messageViewTypesStore = new MessagesViewTypesStore(this.messageDisplayRulesStore);
+		this.messageViewTypesStore = new MessagesViewTypesStore(
+			this.messageDisplayRulesStore,
+			this.messagesStore,
+		);
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 
