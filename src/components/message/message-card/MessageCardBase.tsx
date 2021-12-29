@@ -154,8 +154,6 @@ const MessageCardBase = React.memo(
 
 		const messageCardToolsConfig: MessageCardToolsConfig = {
 			message,
-			messageId,
-			messageType,
 			messageViewType: viewType,
 			toggleViewType,
 			isBookmarked: isBookmarked || false,
