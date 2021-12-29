@@ -66,12 +66,6 @@ export default class MessagesStore {
 	public highlightedMessageId: String | null = null;
 
 	@observable
-	public detailedRawMessagesIds: Array<string> = [];
-
-	@observable
-	public beautifiedMessages: Array<string> = [];
-
-	@observable
 	public currentMessagesIndexesRange: ListRange = {
 		startIndex: 0,
 		endIndex: 0,
@@ -154,30 +148,6 @@ export default class MessagesStore {
 		this.hoveredMessage = message;
 		this.graphStore.setHoveredTimestamp(message);
 	}
-
-	@action
-	public showDetailedRawMessage = (messageId: string) => {
-		if (!this.detailedRawMessagesIds.includes(messageId)) {
-			this.detailedRawMessagesIds = [...this.detailedRawMessagesIds, messageId];
-		}
-	};
-
-	@action
-	public hideDetailedRawMessage = (messageId: string) => {
-		this.detailedRawMessagesIds = this.detailedRawMessagesIds.filter(id => id !== messageId);
-	};
-
-	@action
-	public beautify = (messageId: string) => {
-		if (!this.beautifiedMessages.includes(messageId)) {
-			this.beautifiedMessages = [...this.beautifiedMessages, messageId];
-		}
-	};
-
-	@action
-	public debeautify = (messageId: string) => {
-		this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
-	};
 
 	@action
 	public scrollToMessage = (messageId: string) => {
