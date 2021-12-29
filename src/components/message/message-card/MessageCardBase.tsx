@@ -141,8 +141,6 @@ export function MessageCardBase({
 
 	const messageCardToolsConfig: MessageCardToolsConfig = {
 		message,
-		messageId,
-		messageType,
 		messageViewType: viewType,
 		toggleViewType,
 		isBookmarked: isBookmarked || false,
