@@ -171,8 +171,7 @@ const MessageCardBase = React.memo(
 							<Checkbox
 								id={messageId}
 								checked={!!isExported}
-								onChange={e => {
-									e.stopPropagation();
+								onChange={() => {
 									addMessageToExport?.();
 								}}
 							/>
@@ -234,15 +233,17 @@ function calculateHueValue(session: string): number {
 }
 
 function getMessageIdWithHighlightedSession(part: string, i: number, arr: string[]) {
+	const defaultPart = <span key={part}>{`:${part}`}</span>;
+
 	if (arr.length === 3) {
-		return i === 0 ? <b>{part}</b> : `:${part}`;
+		return i === 0 ? <b key={part}>{part}</b> : defaultPart;
 	}
 
 	if (i === 0) {
-		return <b>{part}</b>;
+		return <b key={part}>{part}</b>;
 	}
 	if (i === 1) {
-		return <b>{`:${part}`}</b>;
+		return <b key={part}>{`:${part}`}</b>;
 	}
-	return `:${part}`;
+	return defaultPart;
 }

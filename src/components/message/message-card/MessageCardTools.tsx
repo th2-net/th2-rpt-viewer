@@ -107,7 +107,10 @@ const MessageCardTools = ({
 					'button',
 					isViewMenuOpen ? 'active' : null,
 				)}
-				onClick={() => setIsViewMenuOpen(isOpen => !isOpen)}>
+				onClick={e => {
+					e.stopPropagation();
+					setIsViewMenuOpen(isOpen => !isOpen);
+				}}>
 				<div className='message-card-tools__ellipsis' />
 			</div>
 			<MessagePopup isOpen={isViewMenuOpen}>
@@ -223,6 +226,7 @@ function MessagePopup({ isOpen, children }: MessagePopupProps) {
 			{isOpen && (
 				<motion.div
 					className='message-card-tools__controls'
+					onClick={e => e.stopPropagation()}
 					style={{ transformOrigin: 'top' }}
 					initial={{ opacity: 0, scale: 0.5 }}
 					animate={{ opacity: 1, scale: 1 }}
