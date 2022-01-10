@@ -398,3 +398,21 @@
 		}
 	}
 }
+
+@mixin  graph-button {
+	cursor: pointer;
+    padding: 3px 6px;
+    outline: none;
+    border: 1px solid $workspaceLinkGetterColor;
+    border-radius: 4px;
+    background: transparent;
+    color: $workspaceLinkGetterColor;
+    font: 11px 'Open sans', sans-serif;
+	text-transform: capitalize;
+    
+    &:disabled {
+        color: grey;
+        border-color: grey;
+        opacity: .5;
+    }
+}

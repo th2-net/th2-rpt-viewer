@@ -37,7 +37,7 @@ const GraphLastEventsButton = ({
 	};
 
 	return (
-		<button onClick={showLastEvents} className='graph-last-events-button graph-button'>
+		<button onClick={showLastEvents} className='graph-last-events-button'>
 			Show last events
 		</button>
 	);

@@ -497,7 +497,7 @@
 	position: absolute;
 	z-index: 16;
 	left: 50%;
-	top: 10px;
+	top: 12px;
 	transform: translateX(-50%);
 	height: 24px;
 	overflow: hidden;
@@ -740,25 +740,8 @@
 .graph-last-events-button {
 	position: absolute;
 	left: 50%;
-	top: 10px;
+	top: 12px;
 	transform: translateX(130%);
 	z-index: 15;
-}
-
-.graph-button {
-	cursor: pointer;
-    padding: 3px 6px;
-    outline: none;
-    border: 1px solid $workspaceLinkGetterColor;
-    border-radius: 4px;
-    background: transparent;
-    color: $workspaceLinkGetterColor;
-    font: 11px 'Open sans', sans-serif;
-	text-transform: capitalize;
-    
-    &:disabled {
-        color: grey;
-        border-color: grey;
-        opacity: .5;
-    }
+	@include graph-button();
 }
