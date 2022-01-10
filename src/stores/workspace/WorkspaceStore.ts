@@ -34,6 +34,9 @@ import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
+import { isAbortError } from '../../helpers/fetch';
+import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
+import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -56,6 +59,8 @@ export default class WorkspaceStore {
 
 	public messagesStore: MessagesStore;
 
+	public messageViewTypesStore: MessagesViewTypesStore;
+
 	public viewStore: WorkspaceViewStore;
 
 	public graphStore: GraphStore;
@@ -67,6 +72,7 @@ export default class WorkspaceStore {
 		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
 		private sessionsStore: SessionsStore,
+		private messageDisplayRulesStore: MessageDisplayRulesStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
@@ -91,6 +97,11 @@ export default class WorkspaceStore {
 			this.workspacesStore.filtersHistoryStore,
 			this.sessionsStore,
 			initialState.messages,
+		);
+
+		this.messageViewTypesStore = new MessagesViewTypesStore(
+			this.messageDisplayRulesStore,
+			this.messagesStore,
 		);
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
@@ -145,7 +156,7 @@ export default class WorkspaceStore {
 				[...cachedMessages, ...messages].filter(Boolean),
 			);
 		} catch (error) {
-			if (error.name !== 'AbortError') {
+			if (!isAbortError(error)) {
 				console.error('Error while loading attached messages', error);
 			}
 			this.attachedMessages = [];

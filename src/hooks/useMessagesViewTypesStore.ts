@@ -11,30 +11,14 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import { observer } from 'mobx-react-lite';
-import DetailedMessageRaw from './DetailedMessageRaw';
-import SimpleMessageRaw from './SimpleMessageRaw';
+import { useWorkspaceStore } from '.';
+import MessagesViewTypesStore from '../stores/messages/MessagesViewTypesStore';
 
-interface Props {
-	rawContent: string;
-	renderInfo: () => React.ReactNode;
-	isDetailed: boolean;
-}
+export const useMessagesViewTypesStore = (): MessagesViewTypesStore => {
+	const workspaceStore = useWorkspaceStore();
 
-function MessageRaw({ rawContent, renderInfo, isDetailed }: Props) {
-	return (
-		<div className='mc-raw'>
-			{isDetailed ? (
-				<DetailedMessageRaw rawContent={rawContent} />
-			) : (
-				<SimpleMessageRaw rawContent={rawContent} renderInfo={renderInfo} />
-			)}
-		</div>
-	);
-}
-
-export default observer(MessageRaw);
+	return workspaceStore.messageViewTypesStore;
+};

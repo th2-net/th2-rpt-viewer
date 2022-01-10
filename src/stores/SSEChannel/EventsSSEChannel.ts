@@ -78,6 +78,5 @@ export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 		this.closeChannel();
 		this.isLoading = false;
 		this.clearSchedulersAndTimeouts();
-		this.onStop?.();
 	};
 }

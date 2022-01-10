@@ -19,7 +19,8 @@ import { MessageViewType } from '../../../models/EventMessage';
 import MessageBody from '../../../models/MessageBody';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
-import MessageRaw from './raw/MessageRaw';
+import SimpleMessageRaw from './raw/SimpleMessageRaw';
+import DetailedMessageRaw from './raw/DetailedMessageRaw';
 
 export type MessageCardViewTypeRendererProps = {
 	viewType: MessageViewType;
@@ -28,20 +29,17 @@ export type MessageCardViewTypeRendererProps = {
 	isBeautified: boolean;
 	isSelected: boolean;
 	messageBody: MessageBody | null;
-	renderInfo: () => React.ReactNode;
 	isEmbedded?: boolean;
 	isDetailed?: boolean;
 	sortOrderItems: string[];
 };
 
 const MessageCardViewTypeRenderer = ({
-	renderInfo,
 	viewType,
 	rawContent,
 	isBeautified,
 	isSelected,
 	messageBody,
-	isDetailed,
 	sortOrderItems,
 }: MessageCardViewTypeRendererProps) => {
 	switch (viewType) {
@@ -51,7 +49,6 @@ const MessageCardViewTypeRenderer = ({
 				<ErrorBoundary
 					fallback={
 						<MessageBodyCardFallback
-							renderInfo={renderInfo}
 							isBeautified={isBeautified}
 							isSelected={isSelected}
 							body={messageBody}
@@ -62,20 +59,14 @@ const MessageCardViewTypeRenderer = ({
 						isBeautified={isBeautified}
 						body={messageBody}
 						isSelected={isSelected}
-						renderInfo={renderInfo}
 						sortOrderItems={sortOrderItems}
 					/>
 				</ErrorBoundary>
 			);
 		case MessageViewType.ASCII:
+			return rawContent ? <SimpleMessageRaw rawContent={rawContent} /> : null;
 		case MessageViewType.BINARY:
-			return rawContent ? (
-				<MessageRaw
-					rawContent={rawContent}
-					renderInfo={renderInfo}
-					isDetailed={isDetailed || viewType === MessageViewType.BINARY}
-				/>
-			) : null;
+			return rawContent ? <DetailedMessageRaw rawContent={rawContent} /> : null;
 		default:
 			return null;
 	}

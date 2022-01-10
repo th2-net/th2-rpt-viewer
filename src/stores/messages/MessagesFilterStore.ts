@@ -91,7 +91,11 @@ export default class MessagesFilterStore {
 			searchDirection: 'previous',
 			resultCountLimit: 15,
 			filters: filtersToAdd,
-			...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
+			...Object.fromEntries(
+				[...filterValues, ...filterInclusion, ...filterConjunct].filter(
+					filtersArr => filtersArr.length,
+				),
+			),
 		};
 
 		return queryParams;
@@ -137,8 +141,8 @@ export default class MessagesFilterStore {
 	public resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
 		const filter = getDefaultMessagesFiltersState(this.searchStore.messagesFilterInfo);
 		const defaultMessagesFilter = getDefaultMessagesFilter();
-		this.isSoftFilter = false;
 		this.sseMessagesFilter = filter;
+		this.isSoftFilter = false;
 		this.filter = {
 			...defaultMessagesFilter,
 			timestampFrom: this.filter.timestampFrom,

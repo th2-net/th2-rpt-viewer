@@ -61,6 +61,9 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	public searchChannelNext: MessagesSSEChannel | null = null;
 
 	@observable
+	public anchorChannel: MessagesSSEChannel | null = null;
+
+	@observable
 	public startIndex = 10000;
 
 	@observable
@@ -89,7 +92,11 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 	@computed
 	public get isLoading(): boolean {
-		return this.isLoadingNextMessages || this.isLoadingPreviousMessages;
+		return (
+			this.isLoadingNextMessages ||
+			this.isLoadingPreviousMessages ||
+			Boolean(this.anchorChannel?.isLoading)
+		);
 	}
 
 	private messageAC: AbortController | null = null;
@@ -109,14 +116,26 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				...queryParams,
 				searchDirection: 'previous',
 			},
-			SEARCH_TIME_FRAME,
+			{
+				interval: SEARCH_TIME_FRAME,
+				onClose: () =>
+					!this.searchChannelNext?.isLoading &&
+					!this.updateStore.isLoading &&
+					this.updateStore.subscribeOnChanges(),
+			},
 		);
 		this.createNextMessageChannelEventSource(
 			{
 				...queryParams,
 				searchDirection: 'next',
 			},
-			SEARCH_TIME_FRAME,
+			{
+				interval: SEARCH_TIME_FRAME,
+				onClose: () =>
+					!this.searchChannelPrev?.isLoading &&
+					!this.updateStore.isLoading &&
+					this.updateStore.subscribeOnChanges(),
+			},
 		);
 
 		let message: EventMessage | undefined;
@@ -134,21 +153,30 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 						return;
 					}
 				}
+			} else {
+				this.anchorChannel = new MessagesSSEChannel(
+					{
+						...queryParams,
+						searchDirection: 'previous',
+					},
+					{
+						onResponse: () => null,
+						onError: this.onLoadingError,
+					},
+					{
+						chunkSize: 1,
+					},
+				);
+				[message] = await this.anchorChannel.loadAndSubscribe({
+					initialResponseTimeoutMs: null,
+				});
+				if (!message) this.anchorChannel.stop();
+				this.anchorChannel = null;
 			}
 
-			this.searchChannelNext.onStop = () =>
-				!this.searchChannelPrev?.isLoading &&
-				!this.updateStore.isLoading &&
-				this.updateStore.subscribeOnChanges();
-
-			this.searchChannelPrev.onStop = () =>
-				!this.searchChannelNext?.isLoading &&
-				!this.updateStore.isLoading &&
-				this.updateStore.subscribeOnChanges();
-
 			const [nextMessages, prevMessages] = await Promise.all([
-				this.searchChannelNext.loadAndSubscribe(message?.messageId),
-				this.searchChannelPrev.loadAndSubscribe(message?.messageId),
+				this.searchChannelNext.loadAndSubscribe({ resumeFromId: message?.messageId }),
+				this.searchChannelPrev.loadAndSubscribe({ resumeFromId: message?.messageId }),
 			]);
 
 			const firstNextMessage = nextMessages[nextMessages.length - 1];
@@ -179,6 +207,8 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.messageAC?.abort();
 		this.searchChannelPrev?.stop();
 		this.searchChannelNext?.stop();
+		this.anchorChannel?.stop();
+		this.anchorChannel = null;
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
 		this.updateStore.stopSubscription();
@@ -194,7 +224,10 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
-		interval?: number,
+		options?: {
+			onClose?: () => void;
+			interval?: number;
+		},
 	) => {
 		this.prevLoadEndTimestamp = null;
 
@@ -202,7 +235,15 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
 			onKeepAliveResponse:
-				typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+				typeof options?.interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+			...(options?.onClose
+				? {
+						onClose: messages => {
+							this.onPrevChannelResponse(messages);
+							options.onClose?.();
+						},
+				  }
+				: {}),
 		});
 	};
 
@@ -251,7 +292,13 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	};
 
 	@action
-	public createNextMessageChannelEventSource = (query: MessagesSSEParams, interval?: number) => {
+	public createNextMessageChannelEventSource = (
+		query: MessagesSSEParams,
+		options?: {
+			onClose?: () => void;
+			interval?: number;
+		},
+	) => {
 		this.nextLoadEndTimestamp = null;
 
 		this.searchChannelNext = new MessagesSSEChannel(query, {
@@ -260,7 +307,16 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				if (query.keepOpen) this.messagesStore.scrollToMessage(messages[0].messageId);
 			},
 			onError: this.onLoadingError,
-			onKeepAliveResponse: typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+			onKeepAliveResponse:
+				typeof options?.interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+			...(options?.onClose
+				? {
+						onClose: messages => {
+							this.onNextChannelResponse(messages);
+							options.onClose?.();
+						},
+				  }
+				: {}),
 		});
 	};
 
@@ -312,7 +368,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			return [];
 		}
 
-		return this.searchChannelPrev.loadAndSubscribe(resumeFromId);
+		return this.searchChannelPrev.loadAndSubscribe({ resumeFromId });
 	};
 
 	@action
@@ -321,7 +377,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			return [];
 		}
 
-		return this.searchChannelNext.loadAndSubscribe(resumeFromId);
+		return this.searchChannelNext.loadAndSubscribe({ resumeFromId });
 	};
 
 	@action

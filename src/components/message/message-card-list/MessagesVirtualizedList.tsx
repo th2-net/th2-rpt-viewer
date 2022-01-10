@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
-import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { Virtuoso, VirtuosoHandle, ListItem } from 'react-virtuoso';
 import moment from 'moment';
 import {
 	useDebouncedCallback,
@@ -25,6 +25,8 @@ import {
 } from '../../../hooks';
 import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
+import { SSEHeartbeat } from '../../../api/sse';
+import { formatTime } from '../../../helpers/date';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
@@ -59,26 +61,39 @@ const MessagesVirtualizedList = (props: Props) => {
 		isLoadingPreviousMessages,
 		onNextChannelResponse,
 		onPrevChannelResponse,
+		prevLoadHeartbeat,
+		nextLoadHeartbeat,
 	} = useMessagesDataStore();
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
-	const {
-		className,
-		overscan = 3,
-		itemRenderer,
-		loadPrevMessages,
-		loadNextMessages,
-		scrolledIndex,
-	} = props;
+	const { className, overscan = 3, itemRenderer, loadPrevMessages, loadNextMessages } = props;
+
+	const [[firstPrevChunkIsLoaded, firstNextChunkIsLoaded], setLoadedChunks] = React.useState<
+		[boolean, boolean]
+	>([false, false]);
 
 	React.useEffect(() => {
-		if (scrolledIndex !== null) {
+		if (!searchChannelNext?.isLoading) setLoadedChunks(loadedChunks => [true, loadedChunks[1]]);
+		if (!searchChannelPrev?.isLoading) setLoadedChunks(loadedChunks => [loadedChunks[0], true]);
+	}, [searchChannelNext?.isLoading, searchChannelPrev?.isLoading]);
+
+	React.useEffect(() => {
+		const selectedMessageId = messageStore.selectedMessageId?.valueOf();
+		if (selectedMessageId) {
 			raf(() => {
-				virtuoso.current?.scrollToIndex({ index: scrolledIndex.valueOf(), align: 'center' });
+				const index = messageStore.dataStore.messages.findIndex(
+					m => m.messageId === selectedMessageId,
+				);
+				if (index !== -1) virtuoso.current?.scrollToIndex({ index, align: 'center' });
 			}, 3);
 		}
-	}, [scrolledIndex]);
+	}, [
+		messageStore.selectedMessageId,
+		messageStore,
+		firstPrevChunkIsLoaded,
+		firstNextChunkIsLoaded,
+	]);
 
 	const debouncedScrollHandler = useDebouncedCallback(
 		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
@@ -124,22 +139,25 @@ const MessagesVirtualizedList = (props: Props) => {
 		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
+	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
+		messageStore.currentMessagesIndexesRange = {
+			startIndex: (renderedMessages && renderedMessages[0]?.originalIndex) ?? 0,
+			endIndex:
+				(renderedMessages && renderedMessages[renderedMessages.length - 1]?.originalIndex) ?? 0,
+		};
+	}, 100);
+
 	return (
 		<Virtuoso
 			data={messageList}
 			firstItemIndex={startIndex}
-			initialTopMostItemIndex={initialItemCount}
+			initialTopMostItemIndex={initialItemCount - 1}
 			ref={virtuoso}
 			overscan={overscan}
 			itemContent={itemRenderer}
 			style={{ height: '100%', width: '100%' }}
 			className={className}
-			itemsRendered={messages => {
-				messageStore.currentMessagesIndexesRange = {
-					startIndex: (messages && messages[0]?.originalIndex) ?? 0,
-					endIndex: (messages && messages[messages.length - 1]?.originalIndex) ?? 0,
-				};
-			}}
+			itemsRendered={onMessagesRendered}
 			onScroll={onScroll}
 			onWheel={onWheel}
 			components={{
@@ -158,7 +176,10 @@ const MessagesVirtualizedList = (props: Props) => {
 										</button>
 									</div>
 								) : (
-									<MessagesListSpinner isLoading={isLoadingNextMessages} />
+									<MessagesListSpinner
+										isLoading={isLoadingNextMessages}
+										searchInfo={nextLoadHeartbeat}
+									/>
 								)
 							}
 						</Observer>
@@ -181,7 +202,10 @@ const MessagesVirtualizedList = (props: Props) => {
 										</button>
 									</div>
 								) : (
-									<MessagesListSpinner isLoading={isLoadingPreviousMessages} />
+									<MessagesListSpinner
+										isLoading={isLoadingPreviousMessages}
+										searchInfo={prevLoadHeartbeat}
+									/>
 								)
 							}
 						</Observer>
@@ -196,8 +220,19 @@ export default observer(MessagesVirtualizedList);
 
 interface SpinnerProps {
 	isLoading: boolean;
+	searchInfo: SSEHeartbeat | null;
 }
-const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
+const MessagesListSpinner = ({ isLoading, searchInfo }: SpinnerProps) => {
 	if (!isLoading) return null;
-	return <div className='messages-list__spinner' />;
+	return (
+		<div className='messages-list__spinner-wrapper'>
+			<div className='messages-list__spinner' />
+			{searchInfo && (
+				<div className='messages-list__search-info'>
+					<span>Processed items: {searchInfo.scanCounter}</span>
+					<span>Current search position: {formatTime(searchInfo.timestamp)}</span>
+				</div>
+			)}
+		</div>
+	);
 };

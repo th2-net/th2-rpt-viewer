@@ -61,6 +61,9 @@ export default class MessagesDataProviderStore {
 	public searchChannelNext: MessagesSSEChannel | null = null;
 
 	@observable
+	public anchorChannel: MessagesSSEChannel | null = null;
+
+	@observable
 	public startIndex = 10000;
 
 	@observable
@@ -72,9 +75,11 @@ export default class MessagesDataProviderStore {
 	@observable
 	public isMatchingMessages: Map<string, boolean> = new Map();
 
-	prevLoadEndTimestamp: number | null = null;
+	@observable
+	public prevLoadHeartbeat: SSEHeartbeat | null = null;
 
-	nextLoadEndTimestamp: number | null = null;
+	@observable
+	public nextLoadHeartbeat: SSEHeartbeat | null = null;
 
 	private lastPreviousChannelResponseTimestamp: number | null = null;
 
@@ -92,7 +97,11 @@ export default class MessagesDataProviderStore {
 
 	@computed
 	public get isLoading(): boolean {
-		return this.isLoadingNextMessages || this.isLoadingPreviousMessages;
+		return (
+			this.isLoadingNextMessages ||
+			this.isLoadingPreviousMessages ||
+			Boolean(this.anchorChannel?.isLoading)
+		);
 	}
 
 	private messageAC: AbortController | null = null;
@@ -110,17 +119,22 @@ export default class MessagesDataProviderStore {
 				...queryParams,
 				searchDirection: 'previous',
 			},
-			SEARCH_TIME_FRAME,
+			{
+				interval: SEARCH_TIME_FRAME,
+			},
 		);
 		this.createNextMessageChannelEventSource(
 			{
 				...queryParams,
 				searchDirection: 'next',
 			},
-			SEARCH_TIME_FRAME,
+			{
+				interval: SEARCH_TIME_FRAME,
+			},
 		);
 
 		let message: EventMessage | undefined;
+
 		if (this.searchChannelPrev && this.searchChannelNext) {
 			if (this.messagesStore.selectedMessageId) {
 				this.messageAC = new AbortController();
@@ -135,17 +149,28 @@ export default class MessagesDataProviderStore {
 						return;
 					}
 				}
+			} else {
+				this.anchorChannel = new MessagesSSEChannel(
+					{
+						...queryParams,
+						searchDirection: 'previous',
+					},
+					{
+						onResponse: () => null,
+						onError: this.onLoadingError,
+					},
+					{
+						chunkSize: 1,
+					},
+				);
+				[message] = await this.anchorChannel.loadAndSubscribe({ initialResponseTimeoutMs: null });
+				if (!message) this.anchorChannel.stop();
+				this.anchorChannel = null;
 			}
 
-			const { selectedMessageId, scrollToMessage } = this.messagesStore;
-			this.searchChannelNext.onStop = () =>
-				selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
-			this.searchChannelPrev.onStop = () =>
-				selectedMessageId && scrollToMessage(selectedMessageId.valueOf());
-
 			const [nextMessages, prevMessages] = await Promise.all([
-				this.searchChannelNext.loadAndSubscribe(message?.messageId),
-				this.searchChannelPrev.loadAndSubscribe(message?.messageId),
+				this.searchChannelNext.loadAndSubscribe({ resumeFromId: message?.messageId }),
+				this.searchChannelPrev.loadAndSubscribe({ resumeFromId: message?.messageId }),
 			]);
 
 			const firstNextMessage = nextMessages[nextMessages.length - 1];
@@ -160,13 +185,10 @@ export default class MessagesDataProviderStore {
 				this.initialItemCount = messages.length;
 			});
 
-			if (this.messagesStore.selectedMessageId) {
-				this.messagesStore.scrollToMessage(this.messagesStore.selectedMessageId?.valueOf());
-			} else {
-				const firstPrevMessage = prevMessages[0];
-				if (firstPrevMessage) {
-					this.messagesStore.scrollToMessage(firstPrevMessage.messageId);
-				}
+			if (!this.messagesStore.selectedMessageId) {
+				const selectedMessage = prevMessages[0] || nextMessages[nextMessages.length - 1];
+				if (selectedMessage)
+					this.messagesStore.selectedMessageId = new String(selectedMessage.messageId);
 			}
 		}
 
@@ -180,8 +202,10 @@ export default class MessagesDataProviderStore {
 		this.messageAC?.abort();
 		this.searchChannelPrev?.stop();
 		this.searchChannelNext?.stop();
+		this.anchorChannel?.stop();
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
+		this.anchorChannel = null;
 		this.resetMessagesDataState(isError);
 	};
 
@@ -194,31 +218,46 @@ export default class MessagesDataProviderStore {
 	@action
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
-		interval?: number,
+		options?: {
+			onClose?: () => void;
+			interval?: number;
+		},
 	) => {
-		this.prevLoadEndTimestamp = null;
-
 		this.searchChannelPrev = new MessagesSSEChannel(query, {
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
 			onKeepAliveResponse:
-				typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+				typeof options?.interval === 'number'
+					? this.onKeepAliveMessagePrevious
+					: e =>
+							runInAction(() => {
+								this.prevLoadHeartbeat = e;
+							}),
+			...(options?.onClose
+				? {
+						onClose: messages => {
+							this.onPrevChannelResponse(messages);
+							options.onClose?.();
+						},
+				  }
+				: {}),
 		});
 	};
 
+	@action
 	private onKeepAliveMessagePrevious = (e: SSEHeartbeat) => {
+		this.prevLoadHeartbeat = e;
+
 		if (this.lastPreviousChannelResponseTimestamp === null) {
 			this.lastPreviousChannelResponseTimestamp = Date.now();
 		}
+
 		if (
 			this.lastPreviousChannelResponseTimestamp !== null &&
 			Date.now() - this.lastPreviousChannelResponseTimestamp >= FIFTEEN_SECONDS
 		) {
-			runInAction(() => {
-				this.noMatchingMessagesPrev = true;
-				this.prevLoadEndTimestamp = e.timestamp;
-				this.searchChannelPrev?.stop();
-			});
+			this.noMatchingMessagesPrev = true;
+			this.searchChannelPrev?.stop();
 		}
 	};
 
@@ -242,29 +281,42 @@ export default class MessagesDataProviderStore {
 			}
 
 			this.messages = newMessagesList;
-
-			const selectedMessageId = this.messagesStore.selectedMessageId?.valueOf();
-			if (selectedMessageId && messages.find(m => m.messageId === selectedMessageId)) {
-				this.messagesStore.scrollToMessage(selectedMessageId);
-			}
 		}
 	};
 
 	@action
-	public createNextMessageChannelEventSource = (query: MessagesSSEParams, interval?: number) => {
-		this.nextLoadEndTimestamp = null;
-
+	public createNextMessageChannelEventSource = (
+		query: MessagesSSEParams,
+		options?: {
+			onClose?: () => void;
+			interval?: number;
+		},
+	) => {
 		this.searchChannelNext = new MessagesSSEChannel(query, {
 			onResponse: this.onNextChannelResponse,
 			onError: this.onLoadingError,
-			onKeepAliveResponse: typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+			onKeepAliveResponse:
+				typeof options?.interval === 'number'
+					? this.onKeepAliveMessageNext
+					: e =>
+							runInAction(() => {
+								this.nextLoadHeartbeat = e;
+							}),
+			...(options?.onClose
+				? {
+						onClose: messages => {
+							this.onNextChannelResponse(messages);
+							options.onClose?.();
+						},
+				  }
+				: {}),
 		});
 	};
 
 	@action
 	public onNextChannelResponse = (messages: EventMessage[]) => {
 		this.lastNextChannelResponseTimestamp = null;
-		const firstNextMessage = messages[this.messages.length - 1];
+		const firstNextMessage = messages[messages.length - 1];
 
 		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
 			messages.pop();
@@ -279,15 +331,13 @@ export default class MessagesDataProviderStore {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
 			}
 			this.messages = newMessagesList;
-
-			const selectedMessageId = this.messagesStore.selectedMessageId?.valueOf();
-			if (selectedMessageId && messages.find(m => m.messageId === selectedMessageId)) {
-				this.messagesStore.scrollToMessage(selectedMessageId);
-			}
 		}
 	};
 
+	@action
 	private onKeepAliveMessageNext = (e: SSEHeartbeat) => {
+		this.nextLoadHeartbeat = e;
+
 		if (this.lastNextChannelResponseTimestamp === null) {
 			this.lastNextChannelResponseTimestamp = Date.now();
 		}
@@ -295,33 +345,37 @@ export default class MessagesDataProviderStore {
 			this.lastNextChannelResponseTimestamp !== null &&
 			Date.now() - this.lastNextChannelResponseTimestamp >= FIFTEEN_SECONDS
 		) {
-			runInAction(() => {
-				this.noMatchingMessagesNext = true;
-				this.nextLoadEndTimestamp = e.timestamp;
-				this.searchChannelNext?.stop();
-			});
+			this.noMatchingMessagesNext = true;
+			this.searchChannelNext?.stop();
 		}
 	};
 
 	@action
 	public getPreviousMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
-		if (!this.searchChannelPrev || this.searchChannelPrev.isLoading) {
+		if (
+			!this.searchChannelPrev ||
+			this.searchChannelPrev.isLoading ||
+			this.noMatchingMessagesPrev
+		) {
 			return [];
 		}
 
-		return this.searchChannelPrev.loadAndSubscribe(resumeFromId);
+		return this.searchChannelPrev.loadAndSubscribe({ resumeFromId });
 	};
 
 	@action
 	public getNextMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
-		if (!this.searchChannelNext || this.searchChannelNext.isLoading) {
+		if (
+			!this.searchChannelNext ||
+			this.searchChannelNext.isLoading ||
+			this.noMatchingMessagesNext
+		) {
 			return [];
 		}
 
-		return this.searchChannelNext.loadAndSubscribe(resumeFromId);
+		return this.searchChannelNext.loadAndSubscribe({ resumeFromId });
 	};
 
-	@action
 	private onFilterChange = async () => {
 		this.stopMessagesLoading();
 		this.updateStore.stopSubscription();
@@ -339,8 +393,8 @@ export default class MessagesDataProviderStore {
 		this.isMatchingMessages.clear();
 		this.noMatchingMessagesNext = false;
 		this.noMatchingMessagesPrev = false;
-		this.prevLoadEndTimestamp = null;
-		this.nextLoadEndTimestamp = null;
+		this.prevLoadHeartbeat = null;
+		this.nextLoadHeartbeat = null;
 		this.lastPreviousChannelResponseTimestamp = null;
 		this.lastNextChannelResponseTimestamp = null;
 	};
@@ -372,47 +426,57 @@ export default class MessagesDataProviderStore {
 		if (
 			this.messagesStore.filterStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||
-			!this.searchChannelPrev ||
-			(!this.prevLoadEndTimestamp && !this.nextLoadEndTimestamp)
+			!this.searchChannelPrev
 		)
 			return;
 
+		if (!this.prevLoadHeartbeat && !this.nextLoadHeartbeat)
+			throw new Error('Load could not continue because loadHeathbeat is missing');
+
 		const queryParams = this.messagesStore.filterStore.filterParams;
 
-		const { stream, endTimestamp, resultCountLimit, resumeFromId } = queryParams;
+		const { stream, endTimestamp, resultCountLimit } = queryParams;
+
+		const keepLoadingStartTimestamp =
+			direction === 'previous'
+				? this.prevLoadHeartbeat!.timestamp
+				: this.nextLoadHeartbeat!.timestamp;
 
 		const query: MessagesSSEParams = this.messagesStore.filterStore.isSoftFilter
 			? {
-					startTimestamp:
-						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-						direction === 'previous' ? this.prevLoadEndTimestamp! : this.nextLoadEndTimestamp!,
+					startTimestamp: keepLoadingStartTimestamp,
 					stream,
 					searchDirection: direction,
 					endTimestamp,
 					resultCountLimit,
-					resumeFromId,
 			  }
 			: {
 					...queryParams,
-					startTimestamp:
-						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-						direction === 'previous' ? this.prevLoadEndTimestamp! : this.nextLoadEndTimestamp!,
+					startTimestamp: keepLoadingStartTimestamp,
 					searchDirection: direction,
 			  };
 
 		if (direction === 'previous') {
+			this.prevLoadHeartbeat = {
+				timestamp: keepLoadingStartTimestamp,
+				scanCounter: 0,
+				id: '',
+			};
+		} else {
+			this.nextLoadHeartbeat = {
+				timestamp: keepLoadingStartTimestamp,
+				scanCounter: 0,
+				id: '',
+			};
+		}
+
+		if (direction === 'previous') {
 			this.noMatchingMessagesPrev = false;
-			this.createPreviousMessageChannelEventSource({
-				...query,
-				resumeFromId: this.messages[this.messages.length - 1]?.messageId,
-			});
+			this.createPreviousMessageChannelEventSource(query);
 			this.searchChannelPrev.subscribe();
 		} else {
 			this.noMatchingMessagesNext = false;
-			this.createNextMessageChannelEventSource({
-				...query,
-				resumeFromId: this.messages[0]?.messageId,
-			});
+			this.createNextMessageChannelEventSource(query);
 			this.searchChannelNext.subscribe();
 		}
 	};
