@@ -117,11 +117,19 @@ export default function DetailedMessageRaw({ rawContent, applyFilterToBody }: Pr
 		);
 
 		return (
-			<React.Fragment>
-				{content.slice(0, startOffset)}
-				<mark className='mc-raw__highlighted-content'>{content.slice(startOffset, endOffset)}</mark>
-				{content.slice(endOffset)}
-			</React.Fragment>
+			<span ref={humanReadableRef}>
+				{endOffset < startOffset ? (
+					content
+				) : (
+					<>
+						{content.slice(0, startOffset)}
+						<mark className='mc-raw__highlighted-content'>
+							{content.slice(startOffset, endOffset)}
+						</mark>
+						{content.slice(endOffset)}
+					</>
+				)}
+			</span>
 		);
 	};
 
@@ -162,9 +170,17 @@ export default function DetailedMessageRaw({ rawContent, applyFilterToBody }: Pr
 
 		return (
 			<span ref={hexadecimalRef}>
-				{content.slice(0, startOffset)}
-				<mark className='mc-raw__highlighted-content'>{content.slice(startOffset, endOffset)}</mark>
-				{content.slice(endOffset)}
+				{endOffset < startOffset ? (
+					content
+				) : (
+					<>
+						{content.slice(0, startOffset)}
+						<mark className='mc-raw__highlighted-content'>
+							{content.slice(startOffset, endOffset)}
+						</mark>
+						{content.slice(endOffset)}
+					</>
+				)}
 			</span>
 		);
 	};
