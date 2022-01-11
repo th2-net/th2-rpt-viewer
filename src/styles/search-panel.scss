@@ -22,6 +22,7 @@
 	display: flex;
 	flex-direction: column;
 	height: 100%;
+	background-color: #fff;
 }
 
 .search-panel {
@@ -30,7 +31,7 @@
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
-	color: #fff;
+	color: #666666;
 	border-radius: 0 0 5px 5px;
 	flex-shrink: 0;
 
@@ -176,6 +177,7 @@
 .search-form {
 	&__progress-bar {
 		margin: 0 10px 10px;
+		border: 1px solid #5C85D6;
 	}
 
 	&__submit {
@@ -191,7 +193,6 @@
 	grid-template-columns: 1fr 2fr 1fr;
 	align-items: center;
 	padding: 10px 10px 7px;
-
 	&__previous {
 		justify-self: start;
 	}
@@ -223,6 +224,7 @@
 	border-radius: 5px;
 	position: relative;
 	transition: background-color 0.3s;
+	border: 1px solid #5C85D6;
 
 	&.active {
 		background: white;
@@ -242,7 +244,6 @@
 	}
 
 	&__icon {
-		filter: brightness(1000%);
 		transition: filter 0.3s;
 
 		&.prev {
@@ -288,6 +289,8 @@
 		background-color: inherit;
 		color: $searchTextColor;
 		border-bottom: 1px solid white;
+		border-radius: 4px;
+		border: 1px solid #5C85D6;
 
 		&:focus {
 			background-color: white;
@@ -306,7 +309,7 @@
 	cursor: pointer;
 	display: flex;
 	align-items: center;
-	color: white;
+	color: #B2B2B2;
 	background: none;
 	padding: 3px 8px 3px 5px;
 	border-radius: 5px;
@@ -315,7 +318,7 @@
 	transition: color 0.3s, background-color 0.3s, opacity 0.3s;
 
 	&.active {
-		color: $primaryTextColor;
+		color: $textSelectedSwitcher;
 		background-color: white;
 		opacity: 1;
 	}
@@ -327,31 +330,38 @@
 
 	&__icon {
 		&.event {
-			@include icon(url(../../resources/icons/workspace-events-white.svg), 15px, 15px);
+			@include icon(url(../../resources/icons/workspace-events.svg), 15px, 15px);
 
 			&.active {
-				@include icon(url(../../resources/icons/workspace-events.svg), 15px, 15px);
+				@include icon(url(../../resources/icons/workspace-events-white.svg), 15px, 15px);
 			}
 		}
 		&.message {
-			@include icon(url(../../resources/icons/workspace-messages-white.svg), 15px, 15px);
+			@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
 
 			&.active {
-				@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
+				@include icon(url(../../resources/icons/workspace-messages-white.svg), 15px, 15px);
 			}
 		}
 		&.passed {
-			@include icon(url(../../resources/icons/workspace-passed-white.svg), 15px, 15px);
+			@include icon(url(../../resources/icons/radio-switcher-unselected.svg), 15px, 15px);
 
 			&.active {
-				@include icon(url(../../resources/icons/workspace-passed.svg), 15px, 15px);
+				@include icon(url(../../resources/icons/radio-switcher-selected.svg), 15px, 15px);
 			}
 		}
 		&.failed {
-			@include icon(url(../../resources/icons/workspace-failed-white.svg), 15px, 15px);
+			@include icon(url(../../resources/icons/radio-switcher-unselected.svg), 15px, 15px);
 
 			&.active {
-				@include icon(url(../../resources/icons/workspace-failed.svg), 15px, 15px);
+				@include icon(url(../../resources/icons/radio-switcher-selected.svg), 15px, 15px);
+			}
+		}
+		&.any {
+			@include icon(url(../../resources/icons/radio-switcher-unselected.svg), 15px, 15px);
+
+			&.active {
+				@include icon(url(../../resources/icons/radio-switcher-selected.svg), 15px, 15px);
 			}
 		}
 	}
@@ -359,6 +369,20 @@
 	&__label {
 		margin-left: 3px;
 		font-size: 14px;
+	}
+
+	&.event {
+		&.active {
+			color: #fff;
+			background-color: #FFA64C;
+		}
+	}
+
+	&.message {
+		&.active {
+		background-color: #1AC4E5;
+		color: #fff;
+		}
 	}
 }
 
@@ -409,7 +433,7 @@
 
 	&__infinite {
 		@include icon(url(../../resources/icons/infinite.svg), 25px, 25px);
-		filter: brightness(300%);
+		filter: brightness(150%);
 		transition: filter 0.3s;
 		margin: 0 3px;
 	}
@@ -634,8 +658,8 @@
 	align-items: center;
 	font-size: 14px;
 	font-weight: bold;
-	color: $alternativeTextColor;
-	background: $searchButtonColor;
+	color: #fff;
+	background: #ADC2EB;
 	font-family: 'Open Sans', sans-serif;
 	cursor: pointer;
 	outline: none;
@@ -646,6 +670,7 @@
 		margin-right: 1px;
 		flex-shrink: 0;
 		opacity: 0.85;
+		filter: brightness(1000%);
 
 		&.pending {
 			@include icon(url(../../resources/icons/workspace-search.svg), 20px, 20px);

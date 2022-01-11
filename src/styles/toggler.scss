@@ -33,31 +33,40 @@
 		cursor: pointer;
 		position: relative;
 		box-sizing: border-box;
-		width: 40px;
-		height: 20px;
+		width: 32px;
+		height: 11px;
 		margin: 0 4px;
 		border: solid white 1px;
 		border-radius: 12px;
+		background-color: #ADC2EB;
 		&:before {
 			position: absolute;
 			content: '';
 			width: 16px;
 			height: 16px;
 			border-radius: 50%;
-			background-color: white;
+			background-color: #5C85D6;
 			top: 50%;
 			transform: translateY(-50%);
 			transition: left ease-in-out 240ms;
 		}
 	}
+
+	&__label {
+		color: #ADC2EB;
+		&.selected{
+			color: #5C85D6;
+			font-weight: 600;
+		}
+	}
 	.off {
 		&:before {
-			left: calc(100% - 18px);
+			left: calc(100% - 16px);
 		}
 	}
 	.on {
 		&:before {
-			left: 2px;
+			left: 0px;
 		}
 	}
 }

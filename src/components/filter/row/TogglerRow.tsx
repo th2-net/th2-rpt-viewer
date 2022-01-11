@@ -37,9 +37,9 @@ const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
 						toggleValue();
 					}
 				}}>
-				<p className='toggler__label'>{firstLabel}</p>
+				<p className={`toggler__label ${value ? 'selected' : ''}`}>{firstLabel}</p>
 				<div className={togglerBarClassName}></div>
-				<p className='toggler__label'>{secondLabel}</p>
+				<p className={`toggler__label ${!value ? 'selected' : ''}`}>{secondLabel}</p>
 			</div>
 		</div>
 	);

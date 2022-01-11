@@ -48,6 +48,7 @@ $passedIconColorActive: #00802a;
 $naTextColor: $reportTitleTextColor;
 
 $primaryTextColor: #4d4d4d;
+$buttonFilterColor: #fff;
 $primaryTextColorLight: #5e5e5e;
 $secondaryTextColor: #808080;
 $secondaryLightTextColor: #999999;
@@ -55,6 +56,7 @@ $alternativeTextColor: #666666;
 $activeTextColor: #333333;
 $filteredTextColor: #ffe6cc;
 $highlightedTextColor: #99c7ff;
+$textSelectedSwitcher: #5C85D6;
 
 $defaultCardBorderColor: #666666;
 $defaultCardBackground: #e0e0e0;
@@ -86,9 +88,9 @@ $messageCardRawHoverBackground: rgba(102, 102, 102, 0.15);
 $rejectedMessageLabelBackground: #ffe699;
 $adminMessageLabelBackground: #7acccc;
 
-$filterPrimaryColor: #00bbcc;
-$filterSecondaryColor: #ffdd99;
-$filterTextColor: #ffffff;
+$filterPrimaryColor: #fff;
+$filterSecondaryColor: #5C85D6;
+$filterTextColor: #666666;
 $filterPathColor: #000000;
 
 $bubbleDefaultBackground: #ffffff;
@@ -132,7 +134,7 @@ $windowsLayoutBackgroundColor: #bdccdb;
 $windowsSplitterColor: #7db3e8;
 
 $filterPickerControlColor: #e6e6e6;
-$filterPickerControlFontColor: #4d4d4d;
+$filterPickerControlFontColor: #ADC2EB;
 $filterPickerScrollItemColor: #666666;
 $filterPickerScrollItemActiveColor: #3fc7fa;
 $filterPickerScrollItemBlockedColor: #f3f3f3;
@@ -188,10 +190,11 @@ $messageListLoadButtonColor: #e5eaf0;
 $messageListLoadButtonTextColor: #3d668f;
 
 $searchTextColor: white;
-$searchPanelColor: #adc2eb;
+$searchPanelColor: #fff;
 $searchProgressBarColor: #9163db;
 $searchButtonColor: white;
 $searchNotFoundEventsColor: #fbd010;
+$searchInputBorderColor: #5C85D6;
 
 $bookmarkIconColor: #a65cd6;
 $bookmarkPanelHeaderColor: #cca3f5;
