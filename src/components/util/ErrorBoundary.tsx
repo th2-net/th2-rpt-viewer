@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import ErrorScreen from '../ErrorScreen';
 
 interface Props {
 	errorMessage?: string;
@@ -23,36 +24,38 @@ interface Props {
 
 interface State {
 	hasError: boolean;
-	message: string;
+	error: Error;
+	errorInfo?: React.ErrorInfo;
 }
 
 export default class ErrorBoundary extends React.Component<Props, State> {
 	state = {
 		hasError: false,
-		message: '',
+		error: new Error(),
+		errorInfo: undefined,
 	};
 
-	static getDerivedStateFromError(error: Error): State {
+	static getDerivedStateFromError(error: Error, errorInfo: React.ErrorInfo): State {
 		return {
 			hasError: true,
-			message: error.message,
+			error,
+			errorInfo,
 		};
 	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 		console.error(`${error.stack}, component stack: ${errorInfo.componentStack}`);
-		this.setState({ message: error.message });
+		this.setState({ error, errorInfo });
 	}
 
 	render() {
-		const errorMessage = this.state.message || 'Something went wrong...';
 		const { hasError } = this.state;
 		const { fallback } = this.props;
 		if (hasError) {
 			if (React.isValidElement(fallback)) {
 				return fallback;
 			}
-			return errorMessage;
+			return <ErrorScreen error={this.state.error} errorInfo={this.state.errorInfo} />;
 		}
 
 		return this.props.children;
