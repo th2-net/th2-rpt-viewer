@@ -18,7 +18,7 @@
 import React from 'react';
 import { formatTime, getTimestampAsNumber } from '../../helpers/date';
 import { getItemName, isEventAction, isEventMessage } from '../../helpers/event';
-import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
+import { createBemBlock, createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { useMessageBodySortStore } from '../../hooks';
 import { ActionType, EventAction } from '../../models/EventAction';
 import {
@@ -71,6 +71,7 @@ const getSortedEntries = (
 
 type SearchResultItemProps = {
 	result: SearchResult;
+	highlighted?: boolean;
 	filters: EventFilterState | MessageFilterState;
 	onResultClick: (
 		item: SearchResult,
@@ -85,7 +86,12 @@ type ItemByActionType<T extends ResultActionType> = {
 	message: EventMessage;
 }[T];
 
-const SearchResultItem = ({ result, filters, onResultClick }: SearchResultItemProps) => {
+const SearchResultItem = ({
+	result,
+	highlighted,
+	filters,
+	onResultClick,
+}: SearchResultItemProps) => {
 	const { getSortedFields } = useMessageBodySortStore();
 
 	const keysToDisplay: {
@@ -372,6 +378,12 @@ const SearchResultItem = ({ result, filters, onResultClick }: SearchResultItemPr
 		},
 	};
 
+	const rootClassName = createBemBlock(
+		'search-result',
+		result.type,
+		highlighted ? 'highlight' : null,
+	);
+
 	const nameClassName = createBemElement(
 		'search-result',
 		'name',
@@ -386,7 +398,7 @@ const SearchResultItem = ({ result, filters, onResultClick }: SearchResultItemPr
 	);
 
 	return (
-		<div className='search-result'>
+		<div className={rootClassName}>
 			<i className={iconClassName} />
 			<div className={nameClassName} onClick={() => onResultClick(result)}>
 				{getItemName(result)}

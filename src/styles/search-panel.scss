@@ -821,6 +821,7 @@
 }
 
 .search-result {
+	background-color: $searchResultBackgroundColor;
 	display: grid;
 	grid-template-areas:
 		'icon name timestamp'
@@ -828,8 +829,18 @@
 	grid-template-columns: 15px 1fr auto;
 	grid-template-rows: 15px auto;
 	gap: 5px 7px;
-	padding: 5px 5px 5px 0;
+	padding: 5px;
 	margin-bottom: 5px;
+
+	&.highlight {
+		&.event {
+			border-left: solid 2px $searchResultEventHighlightColor;
+		}
+
+		&.message {
+			border-left: solid 2px $searchResultMessageHighlightColor;
+		}
+	}
 
 	&__icon {
 		grid-area: icon;

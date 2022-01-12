@@ -156,15 +156,6 @@
 	&:last-child {
 		margin-bottom: 6px;
 	}
-
-	&.message.highlighted {
-		border-left: solid 2px #61c2f2;
-	}
-
-	&.event,
-	&.eventtreenode {
-		border-left: solid 2px #ffb266;
-	}
 }
 
 .bookmarks-panel-item {
