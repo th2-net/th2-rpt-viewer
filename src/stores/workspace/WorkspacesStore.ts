@@ -69,7 +69,7 @@ export default class WorkspacesStore {
 		} else {
 			this.addWorkspace(
 				this.createWorkspace({
-					layout: [100, 0, 0, 0],
+					layout: [0, 100, 0, 0],
 				}),
 			);
 		}
@@ -101,54 +101,10 @@ export default class WorkspacesStore {
 		);
 	};
 
-	public getInitialWorkspaceByMessage = (
-		timestamp: number,
-		targetMessage?: EventMessage,
-		targetMessageBodyRange?: FilterEntry,
-		targetMessageBodyBinaryRange?: FilterEntry,
-	): WorkspaceInitialState => {
-		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
-		const filters: MessageFilterState | null = (requestInfo?.filters as MessageFilterState) || null;
-
-		return {
-			messages: {
-				sse: filters,
-				streams: requestInfo?.state.stream || [],
-				timestampFrom: null,
-				timestampTo: timestamp,
-				targetMessage,
-				targetMessageBodyRange,
-				targetMessageBodyBinaryRange,
-			},
-			interval: SEARCH_STORE_INTERVAL,
-			layout: [0, 0, 100, 0],
-			timeRange: getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL),
-		};
-	};
-
 	public closeWorkspace = (tab: number | WorkspaceStore) => {
 		const closedWorkspace = this.tabsStore.closeWorkspace(tab);
 
 		closedWorkspace.dispose();
-	};
-
-	public getInitialWorkspaceByEvent = (
-		timestamp: number,
-		targetEvent?: EventTreeNode | EventAction,
-		targetEventBodyRange?: FilterEntry | undefined,
-	): WorkspaceInitialState => {
-		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
-
-		return {
-			events: {
-				range: [timestampFrom, timestampTo],
-				targetEvent,
-				targetEventBodyRange,
-			},
-			layout: [0, 100, 0, 0],
-			interval: SEARCH_STORE_INTERVAL,
-			timeRange: [timestampFrom, timestampTo],
-		};
 	};
 
 	public syncData = async (unsavedData?: DbData) => {
