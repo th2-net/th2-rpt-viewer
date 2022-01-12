@@ -14,15 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, toJS } from 'mobx';
+import { action, computed, observable } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
-import EventsStore, { EventStoreURLState } from './events/EventsStore';
-import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
-import { getObjectKeys } from '../helpers/object';
-import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import MessageBodySortOrderStore from './MessageBodySortStore';
 import { DbData } from '../api/indexedDb';
@@ -65,58 +61,6 @@ export default class RootStore {
 	public get isBookmarksFull(): boolean {
 		return this.workspacesStore.selectedStore.isBookmarksFull;
 	}
-
-	public getAppState = (): WorkspacesUrlState | null => {
-		const activeWorkspace = this.workspacesStore.activeWorkspace;
-
-		let eventStoreState: EventStoreURLState = {};
-		let messagesStoreState: MessagesStoreURLState = {};
-
-		if (activeWorkspace && isWorkspaceStore(activeWorkspace)) {
-			const eventsStore: EventsStore = activeWorkspace.eventsStore;
-			eventStoreState = {
-				filter: eventsStore.filterStore.filter || undefined,
-				range: eventsStore.filterStore.range,
-				panelArea: eventsStore.viewStore.eventsPanelArea,
-				search:
-					eventsStore.searchStore.tokens.length > 0
-						? eventsStore.searchStore.tokens.map(t => t.pattern)
-						: undefined,
-				selectedEventId: eventsStore.selectedNode?.eventId,
-				flattenedListView: eventsStore.viewStore.flattenedListView,
-			};
-			const messagesStore: MessagesStore = activeWorkspace.messagesStore;
-			messagesStoreState = {
-				timestampFrom: messagesStore.filterStore.filter.timestampFrom,
-				timestampTo: messagesStore.filterStore.filter.timestampTo,
-				streams: messagesStore.filterStore.filter.streams,
-				isSoftFilter: messagesStore.filterStore.isSoftFilter,
-				sse: messagesStore.filterStore.sseMessagesFilter,
-			};
-
-			getObjectKeys(eventStoreState).forEach(key => {
-				if (eventStoreState[key] === undefined) {
-					delete eventStoreState[key];
-				}
-			});
-
-			getObjectKeys(messagesStoreState).forEach(key => {
-				if (messagesStoreState[key] === undefined) {
-					delete messagesStoreState[key];
-				}
-			});
-			return [
-				toJS({
-					events: eventStoreState,
-					messages: messagesStoreState,
-					timeRange: activeWorkspace.graphStore.range,
-					interval: activeWorkspace.graphStore.interval,
-					layout: activeWorkspace.viewStore.panelsLayout,
-				}),
-			];
-		}
-		return null;
-	};
 
 	private parseUrlState = (): WorkspacesUrlState | null => {
 		try {

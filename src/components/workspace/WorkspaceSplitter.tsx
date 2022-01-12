@@ -273,15 +273,15 @@ function WorkspaceSplitter(props: Props) {
 					activeSplitterLeft,
 				);
 
-				if (leftSpace / rootWidth < 0.3 && index === 1) {
+				if (leftSpace / rootWidth < 0.1 && index === 1) {
 					return activeSplitterLeft - leftSpace;
 				}
 
-				if (leftSpace / rootWidth < 0.2 && index !== 1) {
+				if (leftSpace / rootWidth < 0.1 && index !== 1) {
 					return activeSplitterLeft - leftSpace;
 				}
 
-				if (rightSpace / rootWidth < 0.2) {
+				if (rightSpace / rootWidth < 0.1) {
 					return activeSplitterLeft + rightSpace;
 				}
 
@@ -326,59 +326,60 @@ function WorkspaceSplitter(props: Props) {
 
 	return (
 		<div ref={rootRef} className='workspace-split-view'>
-			{panels.map((panel, index) => (
-				<React.Fragment key={panel.color.default}>
-					<Splitter
-						isResizing={isResizing}
-						color={panel.isActive ? panel.color.active : panel.color.default}
-						icon={<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />}
-						onMouseDown={onMouseDown}
-						disabled={index === 0}
-						ref={splittersRefs.current[index]}
-						isPanelActive={panel.isActive}
-						setActivePanel={panel.setActivePanel}
-					/>
-					<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
-						<div className='pane__sidebar' onClick={() => collapsePanel(index)}>
-							<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />
-							<div className='pane__title'>{panel.title}</div>
-							<div
-								className='pane__line'
-								style={{
-									backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
-								}}
-							/>
-						</div>
-						<div className='pane__wrapper'>
-							<div
-								className='pane__header'
-								style={{
-									backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
-									borderRadius:
-										panel.title === 'Search' || panel.title.includes('Bookmarks')
-											? '5px 5px 0 0'
-											: '5px',
-									cursor: 'pointer',
-								}}
-								onClick={() => collapsePanel(index)}>
-								<i
-									className={
-										'pane__header-icon ' +
-										`workspace-split-view__${panel.title.toLowerCase()}-icon-white`
-									}
+			{panels.map((panel, index) => {
+				const iconClassName = `workspace-split-view__${panel.title
+					.toLowerCase()
+					.replace(/\s/g, '-')}-icon`;
+
+				return (
+					<React.Fragment key={panel.color.default}>
+						<Splitter
+							isResizing={isResizing}
+							color={panel.isActive ? panel.color.active : panel.color.default}
+							icon={<i className={iconClassName} />}
+							onMouseDown={onMouseDown}
+							disabled={index === 0}
+							ref={splittersRefs.current[index]}
+							isPanelActive={panel.isActive}
+							setActivePanel={panel.setActivePanel}
+						/>
+						<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
+							<div className='pane__sidebar' onClick={() => collapsePanel(index)}>
+								<i className={iconClassName} />
+								<div className='pane__title'>{panel.title}</div>
+								<div
+									className='pane__line'
+									style={{
+										backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
+									}}
 								/>
-								<div className='pane__header-title'>{panel.title}</div>
 							</div>
-							<div className='pane__main'>{panel.component}</div>
+							<div className='pane__wrapper'>
+								<div
+									className='pane__header'
+									style={{
+										backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
+										borderRadius:
+											panel.title === 'Search' || panel.title.includes('Bookmarks')
+												? '5px 5px 0 0'
+												: '5px',
+										cursor: 'pointer',
+									}}
+									onClick={() => collapsePanel(index)}>
+									<i className={`pane__header-icon ${iconClassName}-white`} />
+									<div className='pane__header-title'>{panel.title}</div>
+								</div>
+								<div className='pane__main'>{panel.component}</div>
+							</div>
 						</div>
-					</div>
-					<Overlay
-						color={panel.color.default}
-						isResizing={isResizing}
-						ref={overlaysRefs.current[index]}
-					/>
-				</React.Fragment>
-			))}
+						<Overlay
+							color={panel.color.default}
+							isResizing={isResizing}
+							ref={overlaysRefs.current[index]}
+						/>
+					</React.Fragment>
+				);
+			})}
 		</div>
 	);
 }
