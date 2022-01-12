@@ -18,7 +18,6 @@ import { hot } from 'react-hot-loader/root';
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import { ToastProvider } from 'react-toast-notifications';
-import { useMemo } from 'react';
 import StoresProvider from './StoresProvider';
 import Toast from './notifications/Toast';
 import ToastContainer from './notifications/ToastContainer';
@@ -30,11 +29,7 @@ import { useSessionsStore } from '../hooks';
 import '../styles/root.scss';
 
 const AppRootBase = () => {
-	const sessionsStore = useSessionsStore();
-
-	const sessionNames = useMemo(() => sessionsStore.sessions.map(({ session }) => session), [
-		sessionsStore.sessions,
-	]);
+	const { sessionNames } = useSessionsStore();
 
 	return (
 		<div className='app'>
