@@ -101,7 +101,8 @@ export default class WorkspaceViewStore {
 	};
 
 	private expandPanel = (targetIndex: number) => {
-		const expandedPanelCount = this.panelsLayout.filter(isPanelCollapsed).length;
+		const expandedPanelCount =
+			this.panelsLayout.length - this.panelsLayout.filter(isPanelCollapsed).length;
 
 		this.panelsLayout = this.panelsLayout.map((panelArea, panelIndex) =>
 			panelIndex === targetIndex
