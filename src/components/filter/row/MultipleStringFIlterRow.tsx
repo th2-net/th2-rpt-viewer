@@ -128,7 +128,7 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 							autocompleteVariants={config.autocompleteList}
 							isValid={
 								config.validateBubbles
-									? config.autocompleteList
+									? config.autocompleteList && config.autocompleteList.length > 0
 										? config.autocompleteList.includes(value.trim())
 										: undefined
 									: undefined
