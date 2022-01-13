@@ -18,6 +18,7 @@ import { observable, action } from 'mobx';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import EventsStore from '../events/EventsStore';
 import MessagesStore from '../messages/MessagesStore';
+import { isPanelCollapsed } from '../../helpers/workspaceView';
 
 type InitialState = Partial<{
 	panelArea: number;
@@ -67,10 +68,6 @@ export default class WorkspaceViewStore {
 	};
 
 	private collapsePanel = (targetIndex: number) => {
-		const isPanelCollapsed = (width: number) => {
-			return width < 5;
-		};
-
 		const newLayout = [...this.panelsLayout] as WorkspacePanelsLayout;
 
 		for (let i = targetIndex + 1; i < newLayout.length; i++) {
@@ -104,10 +101,14 @@ export default class WorkspaceViewStore {
 	};
 
 	private expandPanel = (targetIndex: number) => {
-		this.panelsLayout = this.panelsLayout.map((width, panelIndex) =>
+		const expandedPanelCount = this.panelsLayout.reduce(
+			(count, panelArea) => count + +!isPanelCollapsed(panelArea),
+		);
+
+		this.panelsLayout = this.panelsLayout.map((panelArea, panelIndex) =>
 			panelIndex === targetIndex
-				? 100 / this.panelsLayout.length
-				: (width * (this.panelsLayout.length - 1)) / this.panelsLayout.length,
+				? 100 / (expandedPanelCount + 1)
+				: (panelArea * expandedPanelCount) / (expandedPanelCount + 1),
 		) as WorkspacePanelsLayout;
 	};
 
