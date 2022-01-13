@@ -395,6 +395,17 @@
 	height: 100%;
 	width: 100%;
 
+	.unknowns {
+		&__title {
+			margin: 10px 0 0;
+			font: bold 12px 'Open Sans', sans-serif;
+			color: $alternativeTextColor
+		}
+		&__list {
+			@include scrollbar;
+		}
+	}
+
 	&__nav {
 		display: flex;
 		cursor: pointer;
@@ -403,18 +414,22 @@
 		opacity: 0.8;
 		background-color: transparent;
 		padding: 0;
+
 		&:hover {
 			opacity: 1;
 			.label {
 				display: block;
 			}
 		}
+
 		.label {
 			display: none;
 		}
+
 		.up {
 			@include icon(url(../../resources/icons/arr4-up.svg), 16px, 24px);
 		}
+
 		.down {
 			@include icon(url(../../resources/icons/arr4-down.svg), 16px, 24px);
 		}

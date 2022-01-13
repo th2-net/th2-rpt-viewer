@@ -24,6 +24,7 @@ import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks'
 import DetailedFlatEventCard from './DetailedFlatEventCard';
 import EventWindowHeader from '../EventWindowHeader';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
+import { isEventNode } from '../../../helpers/event';
 
 function EventTreeView() {
 	const eventsStore = useWorkspaceEventStore();
@@ -50,10 +51,10 @@ function EventTreeView() {
 						parentNodes={
 							eventsStore.selectedNode.parentId === null
 								? []
-								: eventsStore.getParentNodes(
-										eventsStore.selectedNode.eventId,
-										eventDataStore.eventsCache,
-								  )
+								: eventsStore
+										.getParentNodes(eventsStore.selectedNode.eventId, eventDataStore.eventsCache)
+										.map(parentId => eventDataStore.eventsCache.get(parentId))
+										.filter(isEventNode)
 						}
 					/>
 				)}

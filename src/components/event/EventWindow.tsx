@@ -33,7 +33,9 @@ function EventWindow() {
 		if (node) {
 			eventsStore.scrollToEvent(node.eventId);
 		}
-		eventsStore.selectNode(node);
+		if (!node?.isUnknown) {
+			eventsStore.selectNode(node);
+		}
 	}, []);
 
 	return (

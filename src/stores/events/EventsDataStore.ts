@@ -17,11 +17,7 @@
 import { action, computed, IReactionDisposer, observable, reaction, runInAction, when } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../../api/ApiSchema';
-import {
-	convertEventActionToEventTreeNode,
-	getErrorEventTreeNode,
-	isRootEvent,
-} from '../../helpers/event';
+import { convertEventActionToEventTreeNode, isRootEvent, unknownRoot } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import notificationsStore from '../NotificationsStore';
 import EventsFilterStore from './EventsFilterStore';
@@ -92,9 +88,8 @@ export default class EventsDataStore {
 	@computed
 	public get targetNodePath() {
 		if (!this.targetNode) return null;
-		const parentIds = this.eventStore
-			.getParentNodes(this.targetNode.eventId, this.eventsCache)
-			.map(parentEventNode => parentEventNode.eventId);
+
+		const parentIds = this.eventStore.getParentNodes(this.targetNode.eventId, this.eventsCache);
 		return [...parentIds, this.targetNode.eventId];
 	}
 
@@ -165,7 +160,10 @@ export default class EventsDataStore {
 			if (event.parentId === null) {
 				rootEvents.push(event);
 			} else {
-				eventsByParentId[event.parentId] = (eventsByParentId[event.parentId] || []).concat(event);
+				const cachedParent = this.eventsCache.get(event.parentId);
+				// We need this to change the parent to an unknown root if needed
+				const parentId = cachedParent?.eventId ?? event.parentId;
+				eventsByParentId[parentId] = (eventsByParentId[parentId] || []).concat(event);
 			}
 		}
 
@@ -190,7 +188,6 @@ export default class EventsDataStore {
 			}
 			if (!this.eventsCache.get(parentId) && !this.loadingParentEvents.has(parentId)) {
 				this.loadParentNodes(parentId);
-				this.loadingParentEvents.set(parentId, true);
 			}
 		});
 
@@ -254,6 +251,7 @@ export default class EventsDataStore {
 					this.parentNodesLoaderAC.signal,
 					{ probe: true },
 				);
+				this.loadingParentEvents.set(currentParentId, false);
 
 				if (!currentParentEvent) break;
 
@@ -284,14 +282,27 @@ export default class EventsDataStore {
 					if (cachedRootNode) {
 						rootNode = cachedRootNode;
 					} else {
-						rootNode = getErrorEventTreeNode(rootNode?.parentId || parentId);
+						rootNode = unknownRoot;
+						if (currentParentId) {
+							this.parentChildrensMap.set(
+								unknownRoot.eventId,
+								this.parentChildrensMap.get(currentParentId) || [],
+							);
+							this.parentChildrensMap.delete(currentParentId);
+							this.rootEventIds = [...this.rootEventIds, currentParentId];
+						}
 					}
 					parentNodes.unshift(rootNode);
 				}
 
 				parentNodes.forEach(eventNode => {
 					if (!this.eventsCache.has(eventNode.eventId)) {
-						this.eventsCache.set(eventNode.eventId, eventNode);
+						if (eventNode.eventId !== unknownRoot.eventId) {
+							this.eventsCache.set(eventNode.eventId, eventNode);
+						} else {
+							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+							this.eventsCache.set(currentParentId!, unknownRoot);
+						}
 					}
 				});
 				if (isTargetNodes) {
@@ -317,21 +328,24 @@ export default class EventsDataStore {
 		}
 	};
 
+	@action
 	private parentNodesUpdater = () => {
 		const parentNodes = this.loadedParentNodes;
 		if (!parentNodes.length) return;
 
 		const parentChildrenMapUpdate: Map<string, string[]> = new Map();
-		const parentLoadingStatusUpdate: Map<string, boolean> = new Map();
 		const rootNodes: string[] = [];
 
 		parentNodes.forEach(parentNodePath => {
 			for (let i = 0; i < parentNodePath.length; i++) {
 				const event = parentNodePath[i];
 
-				const { isUnknown, parentId, eventId } = event;
+				const { parentId: realParentId, eventId } = event;
+				const cachedParent = realParentId ? this.eventsCache.get(realParentId) : null;
+				// We need this to change the parent to an unknown root if needed
+				const parentId = cachedParent?.eventId ?? event.parentId;
 
-				if ((isRootEvent(event) || isUnknown) && !rootNodes.includes(eventId)) {
+				if (isRootEvent(event) && !event.isUnknown && !rootNodes.includes(eventId)) {
 					rootNodes.push(eventId);
 				}
 
@@ -343,28 +357,21 @@ export default class EventsDataStore {
 						parentChildrenMapUpdate.set(parentId, [...new Set(siblings)]);
 					}
 				}
-
-				parentLoadingStatusUpdate.set(event.eventId, false);
 			}
 		});
 
-		runInAction(() => {
-			if (rootNodes.length !== 0) {
-				this.rootEventIds = [
-					...this.rootEventIds,
-					...rootNodes.filter(eventId => !this.rootEventIds.includes(eventId)),
-				];
-			}
-		});
+		if (rootNodes.length !== 0) {
+			this.rootEventIds = [
+				...this.rootEventIds,
+				...rootNodes.filter(eventId => !this.rootEventIds.includes(eventId)),
+			];
+		}
 
 		this.parentChildrensMap = observable.map(
 			new Map([...this.parentChildrensMap, ...parentChildrenMapUpdate]),
 			{
 				deep: false,
 			},
-		);
-		this.loadingParentEvents = observable.map(
-			new Map([...this.loadingParentEvents, ...parentLoadingStatusUpdate]),
 		);
 		this.loadedParentNodes = [];
 	};

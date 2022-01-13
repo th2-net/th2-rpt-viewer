@@ -169,7 +169,11 @@ export default class EventsStore {
 		}
 
 		const rootNodes = sortEventsByTimestamp(
-			rootIds.map(eventId => this.eventDataStore.eventsCache.get(eventId)).filter(isEventNode),
+			[
+				...new Set(
+					rootIds.map(eventId => this.eventDataStore.eventsCache.get(eventId)).filter(isEventNode),
+				),
+			],
 			'desc',
 		);
 
@@ -191,7 +195,9 @@ export default class EventsStore {
 		}
 
 		return [
-			...this.getParentNodes(this.selectedNode.eventId, this.eventDataStore.eventsCache),
+			...this.getParentNodes(this.selectedNode.eventId, this.eventDataStore.eventsCache)
+				.map(parentId => this.eventDataStore.eventsCache.get(parentId))
+				.filter(isEventNode),
 			this.selectedNode,
 		];
 	}
@@ -267,7 +273,7 @@ export default class EventsStore {
 		let index = -1;
 		if (!this.viewStore.flattenedListView) {
 			const parents = this.getParentNodes(eventId, this.eventDataStore.eventsCache);
-			[...parents.map(parentNode => parentNode.eventId), eventId].forEach(id => {
+			[...parents, eventId].forEach(id => {
 				const eventIndex = this.nodesList.findIndex(ev => ev.eventId === id);
 				if (eventIndex !== -1 && id !== eventId) this.isExpandedMap.set(id, true);
 				if (id === eventId) this.scrolledIndex = new Number(eventIndex);
@@ -467,16 +473,19 @@ export default class EventsStore {
 		}
 	};
 
-	public getParentNodes(eventId: string, cache: Map<string, EventTreeNode>): EventTreeNode[] {
+	public getParentNodes(eventId: string, cache: Map<string, EventTreeNode>): string[] {
 		let event = cache.get(eventId);
 		const path = [];
 
 		while (event && event?.parentId !== null) {
-			event = cache.get(event.parentId);
-			path.unshift(event);
+			const parentId = event.parentId;
+			event = cache.get(parentId);
+			if (event) {
+				path.unshift(parentId);
+			}
 		}
 
-		return path.filter(isEventNode);
+		return path;
 	}
 
 	public getChildrenNodes(parentId: string) {
