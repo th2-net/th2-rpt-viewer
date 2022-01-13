@@ -44,20 +44,11 @@ export interface Props {
 	panels: Array<Panel>;
 	panelsLayout: WorkspacePanelsLayout;
 	setPanelsLayout: (panelsLayout: WorkspacePanelsLayout) => void;
-	collapsePanel: (index: number) => void;
-	collapsedPanels: number[];
-	setCollapsedPanels: (collapsedPanels: number[]) => void;
+	togglePanel: (index: number) => void;
 }
 
 function WorkspaceSplitter(props: Props) {
-	const {
-		panels,
-		panelsLayout,
-		setPanelsLayout,
-		setCollapsedPanels,
-		collapsedPanels,
-		collapsePanel,
-	} = props;
+	const { panels, panelsLayout, setPanelsLayout, togglePanel } = props;
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const clickOffsetX = React.useRef(0);
 	const activeSplitter = React.useRef<HTMLDivElement | null>(null);
@@ -87,7 +78,6 @@ function WorkspaceSplitter(props: Props) {
 	React.useLayoutEffect(() => {
 		const rootEl = rootRef.current;
 		if (!rootEl) return;
-		let newCollapsedPanels = [...collapsedPanels];
 
 		panelsRefs.current.forEach((ref, index) => {
 			const panelRef = ref.current;
@@ -97,18 +87,13 @@ function WorkspaceSplitter(props: Props) {
 				if (Math.floor(widthInPx) <= MIN_PANEL_WIDTH * 2) {
 					if (!panelRef.classList.contains('minified')) {
 						panelRef.classList.add('minified');
-						newCollapsedPanels.push(index);
-						newCollapsedPanels = Array.from(new Set(newCollapsedPanels));
-						setCollapsedPanels(newCollapsedPanels);
 					}
 				} else if (panelRef.classList.contains('minified')) {
 					panelRef.classList.remove('minified');
-					newCollapsedPanels = newCollapsedPanels.filter(idx => idx !== index);
-					setCollapsedPanels(newCollapsedPanels);
 				}
 			}
 		});
-	}, [panelsLayout, collapsedPanels]);
+	}, [panelsLayout]);
 
 	function onMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
 		setIsResizing(true);
@@ -326,60 +311,59 @@ function WorkspaceSplitter(props: Props) {
 
 	return (
 		<div ref={rootRef} className='workspace-split-view'>
-			{panels.map((panel, index) => {
-				const iconClassName = `workspace-split-view__${panel.title
-					.toLowerCase()
-					.replace(/\s/g, '-')}-icon`;
-
-				return (
-					<React.Fragment key={panel.color.default}>
-						<Splitter
-							isResizing={isResizing}
-							color={panel.isActive ? panel.color.active : panel.color.default}
-							icon={<i className={iconClassName} />}
-							onMouseDown={onMouseDown}
-							disabled={index === 0}
-							ref={splittersRefs.current[index]}
-							isPanelActive={panel.isActive}
-							setActivePanel={panel.setActivePanel}
-						/>
-						<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
-							<div className='pane__sidebar' onClick={() => collapsePanel(index)}>
-								<i className={iconClassName} />
-								<div className='pane__title'>{panel.title}</div>
-								<div
-									className='pane__line'
-									style={{
-										backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
-									}}
-								/>
-							</div>
-							<div className='pane__wrapper'>
-								<div
-									className='pane__header'
-									style={{
-										backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
-										borderRadius:
-											panel.title === 'Search' || panel.title.includes('Bookmarks')
-												? '5px 5px 0 0'
-												: '5px',
-										cursor: 'pointer',
-									}}
-									onClick={() => collapsePanel(index)}>
-									<i className={`pane__header-icon ${iconClassName}-white`} />
-									<div className='pane__header-title'>{panel.title}</div>
-								</div>
-								<div className='pane__main'>{panel.component}</div>
-							</div>
+			{panels.map((panel, index) => (
+				<React.Fragment key={panel.color.default}>
+					<Splitter
+						isResizing={isResizing}
+						color={panel.isActive ? panel.color.active : panel.color.default}
+						icon={<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />}
+						onMouseDown={onMouseDown}
+						disabled={index === 0}
+						ref={splittersRefs.current[index]}
+						isPanelActive={panel.isActive}
+						setActivePanel={panel.setActivePanel}
+					/>
+					<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
+						<div className='pane__sidebar' onClick={() => togglePanel(index)}>
+							<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />
+							<div className='pane__title'>{panel.title}</div>
+							<div
+								className='pane__line'
+								style={{
+									backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
+								}}
+							/>
 						</div>
-						<Overlay
-							color={panel.color.default}
-							isResizing={isResizing}
-							ref={overlaysRefs.current[index]}
-						/>
-					</React.Fragment>
-				);
-			})}
+						<div className='pane__wrapper'>
+							<div
+								className='pane__header'
+								style={{
+									backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
+									borderRadius:
+										panel.title === 'Search' || panel.title.includes('Bookmarks')
+											? '5px 5px 0 0'
+											: '5px',
+									cursor: 'pointer',
+								}}
+								onClick={() => togglePanel(index)}>
+								<i
+									className={
+										'pane__header-icon ' +
+										`workspace-split-view__${panel.title.toLowerCase()}-icon-white`
+									}
+								/>
+								<div className='pane__header-title'>{panel.title}</div>
+							</div>
+							<div className='pane__main'>{panel.component}</div>
+						</div>
+					</div>
+					<Overlay
+						color={panel.color.default}
+						isResizing={isResizing}
+						ref={overlaysRefs.current[index]}
+					/>
+				</React.Fragment>
+			))}
 		</div>
 	);
 }

@@ -52,23 +52,15 @@ const panelColors = {
 
 function Workspace() {
 	const { activePanel } = useActivePanel(null);
-	const {
-		panelsLayout,
-		setPanelsLayout,
-		setCollapsedPanels,
-		collapsedPanels,
-		collapsePanel,
-	} = useWorkspaceViewStore();
+	const { panelsLayout, setPanelsLayout, togglePanel } = useWorkspaceViewStore();
 	const workspaceStore = useWorkspaceStore();
 
 	return (
 		<div className='workspace'>
 			<WorkspaceSplitter
-				collapsedPanels={collapsedPanels}
-				setCollapsedPanels={setCollapsedPanels}
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
-				collapsePanel={collapsePanel}
+				togglePanel={togglePanel}
 				panels={[
 					{
 						title: 'Smart Search',

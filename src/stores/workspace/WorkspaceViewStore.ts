@@ -48,9 +48,6 @@ export default class WorkspaceViewStore {
 	@observable
 	public activePanel: EventsStore | MessagesStore | null = null;
 
-	@observable
-	public collapsedPanels: number[] = [];
-
 	@action
 	public setPanelArea = (panelArea: number) => {
 		this.eventsPanelArea = panelArea;
@@ -61,166 +58,57 @@ export default class WorkspaceViewStore {
 		this.panelsLayout = panelsLayout;
 	};
 
-	@action
-	public setCollapsedPanels = (collapsedPanels: number[]) => {
-		this.collapsedPanels = collapsedPanels;
+	@action togglePanel = (targetIndex: number) => {
+		if (this.panelsLayout[targetIndex] < 5) {
+			this.expandPanel(targetIndex);
+		} else {
+			this.collapsePanel(targetIndex);
+		}
 	};
 
-	@action
-	public collapsePanel = (index: number) => {
-		if (this.collapsedPanels.length === 0) {
-			this.panelsLayout =
-				index === 0
-					? [0, 35, 35, 30]
-					: index === 1
-					? [35, 0, 35, 30]
-					: index === 2
-					? [35, 35, 0, 30]
-					: [35, 35, 30, 0];
-		}
-		if (this.collapsedPanels.length === 1 && this.collapsedPanels.includes(index)) {
-			this.panelsLayout = [35, 25, 20, 20];
-		}
-		if (this.collapsedPanels.length === 1 && !this.collapsedPanels.includes(index)) {
-			if (index === 0) {
-				this.panelsLayout = this.collapsedPanels.includes(1)
-					? [0, 0, 50, 50]
-					: this.collapsedPanels.includes(2)
-					? [0, 50, 0, 50]
-					: [0, 50, 50, 0];
-			}
+	private collapsePanel = (targetIndex: number) => {
+		const isPanelCollapsed = (width: number) => {
+			return width < 5;
+		};
 
-			if (index === 1) {
-				this.panelsLayout = this.collapsedPanels.includes(0)
-					? [0, 0, 50, 50]
-					: this.collapsedPanels.includes(2)
-					? [50, 0, 0, 50]
-					: [50, 0, 50, 0];
-			}
+		const newLayout = [...this.panelsLayout] as WorkspacePanelsLayout;
 
-			if (index === 2) {
-				this.panelsLayout = this.collapsedPanels.includes(0)
-					? [0, 50, 0, 50]
-					: this.collapsedPanels.includes(1)
-					? [50, 0, 0, 50]
-					: [50, 50, 0, 0];
-			}
-
-			if (index === 3) {
-				this.panelsLayout = this.collapsedPanels.includes(0)
-					? [0, 50, 50, 0]
-					: this.collapsedPanels.includes(1)
-					? [50, 0, 50, 0]
-					: [50, 50, 0, 0];
+		for (let i = targetIndex + 1; i < newLayout.length; i++) {
+			if (!isPanelCollapsed(newLayout[i])) {
+				newLayout[i] += newLayout[targetIndex];
+				newLayout[targetIndex] = 0;
+				break;
 			}
 		}
-		if (this.collapsedPanels.length === 2 && this.collapsedPanels.includes(index)) {
-			if (index === 0) {
-				this.panelsLayout = this.collapsedPanels.includes(1)
-					? [45, 0, 30, 25]
-					: this.collapsedPanels.includes(2)
-					? [45, 30, 0, 25]
-					: [45, 30, 25, 0];
-			}
 
-			if (index === 1) {
-				this.panelsLayout = this.collapsedPanels.includes(0)
-					? [0, 35, 35, 30]
-					: this.collapsedPanels.includes(2)
-					? [35, 35, 0, 30]
-					: [35, 35, 30, 0];
-			}
-
-			if (index === 2) {
-				this.panelsLayout = this.collapsedPanels.includes(0)
-					? [0, 35, 35, 30]
-					: this.collapsedPanels.includes(1)
-					? [35, 0, 35, 30]
-					: [35, 35, 30, 0];
-			}
-
-			if (index === 3) {
-				this.panelsLayout = this.collapsedPanels.includes(0)
-					? [0, 35, 35, 30]
-					: this.collapsedPanels.includes(1)
-					? [35, 0, 35, 30]
-					: [35, 35, 0, 30];
+		if (!isPanelCollapsed(newLayout[targetIndex])) {
+			for (let i = targetIndex - 1; i >= 0; i--) {
+				if (!isPanelCollapsed(newLayout[i])) {
+					newLayout[i] += newLayout[targetIndex];
+					newLayout[targetIndex] = 0;
+					break;
+				}
 			}
 		}
-		if (this.collapsedPanels.length === 2 && !this.collapsedPanels.includes(index)) {
-			if (index === 0) {
-				this.panelsLayout =
-					this.collapsedPanels.includes(1) && this.collapsedPanels.includes(2)
-						? [0, 0, 0, 100]
-						: this.collapsedPanels.includes(1) && this.collapsedPanels.includes(3)
-						? [0, 0, 100, 0]
-						: [0, 100, 0, 0];
-			}
 
-			if (index === 1) {
-				this.panelsLayout =
-					this.collapsedPanels.includes(0) && this.collapsedPanels.includes(2)
-						? [0, 0, 0, 100]
-						: this.collapsedPanels.includes(0) && this.collapsedPanels.includes(3)
-						? [0, 0, 100, 0]
-						: [100, 0, 0, 0];
-			}
+		if (!isPanelCollapsed(newLayout[targetIndex])) {
+			const panelIndexToSwap = targetIndex === 0 ? 1 : targetIndex - 1;
 
-			if (index === 2) {
-				this.panelsLayout =
-					this.collapsedPanels.includes(0) && this.collapsedPanels.includes(1)
-						? [0, 0, 0, 100]
-						: this.collapsedPanels.includes(0) && this.collapsedPanels.includes(3)
-						? [0, 100, 0, 0]
-						: [100, 0, 0, 0];
-			}
-
-			if (index === 3) {
-				this.panelsLayout =
-					this.collapsedPanels.includes(0) && this.collapsedPanels.includes(1)
-						? [0, 0, 100, 0]
-						: this.collapsedPanels.includes(0) && this.collapsedPanels.includes(2)
-						? [0, 100, 0, 0]
-						: [100, 0, 0, 0];
-			}
+			[newLayout[targetIndex], newLayout[panelIndexToSwap]] = [
+				newLayout[panelIndexToSwap],
+				newLayout[targetIndex],
+			];
 		}
-		if (this.collapsedPanels.length === 3 && this.collapsedPanels.includes(index)) {
-			if (index === 0) {
-				this.panelsLayout =
-					this.collapsedPanels.includes(1) && this.collapsedPanels.includes(2)
-						? [50, 0, 0, 50]
-						: this.collapsedPanels.includes(1) && this.collapsedPanels.includes(3)
-						? [50, 0, 50, 0]
-						: [50, 50, 0, 0];
-			}
 
-			if (index === 1) {
-				this.panelsLayout =
-					this.collapsedPanels.includes(0) && this.collapsedPanels.includes(2)
-						? [0, 50, 0, 50]
-						: this.collapsedPanels.includes(0) && this.collapsedPanels.includes(3)
-						? [0, 50, 50, 0]
-						: [50, 50, 0, 0];
-			}
+		this.panelsLayout = newLayout;
+	};
 
-			if (index === 2) {
-				this.panelsLayout =
-					this.collapsedPanels.includes(0) && this.collapsedPanels.includes(1)
-						? [0, 0, 50, 50]
-						: this.collapsedPanels.includes(0) && this.collapsedPanels.includes(3)
-						? [0, 50, 50, 0]
-						: [50, 0, 50, 0];
-			}
-
-			if (index === 3) {
-				this.panelsLayout =
-					this.collapsedPanels.includes(0) && this.collapsedPanels.includes(1)
-						? [0, 0, 50, 50]
-						: this.collapsedPanels.includes(0) && this.collapsedPanels.includes(2)
-						? [0, 50, 0, 50]
-						: [50, 0, 0, 50];
-			}
-		}
+	private expandPanel = (targetIndex: number) => {
+		this.panelsLayout = this.panelsLayout.map((width, panelIndex) =>
+			panelIndex === targetIndex
+				? 100 / this.panelsLayout.length
+				: (width * (this.panelsLayout.length - 1)) / this.panelsLayout.length,
+		) as WorkspacePanelsLayout;
 	};
 
 	@action
