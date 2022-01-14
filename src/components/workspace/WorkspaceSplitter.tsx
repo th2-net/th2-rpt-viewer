@@ -134,9 +134,9 @@ function WorkspaceSplitter(props: Props) {
 
 		const { left: rootLeft, width: rootWidth } = rootEl.getBoundingClientRect();
 
-		const activeSplitterLeftPostion = e.pageX - clickOffsetX.current - rootLeft;
+		const activeSplitterLeftPosition = e.pageX - clickOffsetX.current - rootLeft;
 
-		const splittersLeftPositions = getUpdatedSplittersPositions(activeSplitterLeftPostion);
+		const splittersLeftPositions = getUpdatedSplittersPositions(activeSplitterLeftPosition);
 
 		splittersRefs.current.forEach((splitter, index) => {
 			if (splitter.current) {
@@ -179,7 +179,7 @@ function WorkspaceSplitter(props: Props) {
 				nextSplitter && nextSplitter.current
 					? nextSplitter.current.getBoundingClientRect().left
 					: rootWidth + rootOffsetLeft;
-			return right - (left + width);
+			return Math.max(right - (left + width), 0);
 		});
 
 		const splitterWidth = splittersRefs.current[0].current!.clientWidth;
@@ -215,10 +215,7 @@ function WorkspaceSplitter(props: Props) {
 		});
 	}
 
-	const getFreeSpaceAroundSplitter = (
-		splitterIndex: number,
-		activeSplitterLeftPosition: number,
-	) => {
+	const getFreeSpaceAroundSplitter = (splitterIndex: number, splitterLeftPosition: number) => {
 		const splitter = splittersRefs.current[splitterIndex].current!;
 		const leftSplitter =
 			splitterIndex === 1 ? null : splittersRefs.current[splitterIndex - 1]?.current;
@@ -226,20 +223,14 @@ function WorkspaceSplitter(props: Props) {
 
 		return {
 			left: leftSplitter
-				? activeSplitterLeftPosition -
-				  leftSplitter.offsetLeft -
-				  MIN_PANEL_WIDTH -
-				  splitter.clientWidth
-				: activeSplitterLeftPosition - MIN_PANEL_WIDTH - splitter.clientWidth,
+				? splitterLeftPosition - leftSplitter.offsetLeft - MIN_PANEL_WIDTH - splitter.clientWidth
+				: splitterLeftPosition - MIN_PANEL_WIDTH - splitter.clientWidth,
 			right: rightSplitter
-				? rightSplitter.offsetLeft -
-				  activeSplitterLeftPosition -
-				  MIN_PANEL_WIDTH -
-				  splitter.clientWidth
+				? rightSplitter.offsetLeft - splitterLeftPosition - MIN_PANEL_WIDTH - splitter.clientWidth
 				: rootRef.current!.clientWidth -
 				  MIN_PANEL_WIDTH -
 				  splitter.clientWidth -
-				  activeSplitterLeftPosition,
+				  splitterLeftPosition,
 		};
 	};
 
@@ -247,66 +238,61 @@ function WorkspaceSplitter(props: Props) {
 		const activeSplitterIndex = splittersRefs.current.findIndex(
 			splitter => splitter.current === activeSplitter.current,
 		);
-		const rootWidth = rootRef.current!.clientWidth;
 
-		const { left: rootOffsetLeft } = rootRef.current!.getBoundingClientRect();
+		const rootWidth = rootRef.current?.clientWidth as number;
 
-		return splittersRefs.current.map((resizerRef, index) => {
-			if (resizerRef.current === activeSplitter.current) {
-				const { left: leftSpace, right: rightSpace } = getFreeSpaceAroundSplitter(
-					index,
-					activeSplitterLeft,
-				);
+		return splittersRefs.current
+			.map((resizerRef, index) => {
+				const resizer = resizerRef.current as HTMLDivElement;
 
-				if (leftSpace / rootWidth < 0.1 && index === 1) {
-					return activeSplitterLeft - leftSpace;
+				if (resizer === activeSplitter.current) {
+					const { left, right } = getFreeSpaceAroundSplitter(index, activeSplitterLeft);
+					let offsetLeft = activeSplitterLeft;
+
+					if (left / rootWidth < 0.1) {
+						offsetLeft = activeSplitterLeft - left;
+					}
+
+					if (right / rootWidth < 0.1) {
+						offsetLeft = activeSplitterLeft + right;
+					}
+
+					return {
+						resizer,
+						offsetLeft,
+					};
 				}
 
-				if (leftSpace / rootWidth < 0.1 && index !== 1) {
-					return activeSplitterLeft - leftSpace;
+				return {
+					resizer,
+					offsetLeft: resizer.offsetLeft,
+				};
+			})
+			.map(({ offsetLeft, resizer }, index) => {
+				if (resizer === activeSplitter.current) {
+					return minmax(offsetLeft, ...splittersMinxMaxPositions.current[index]);
 				}
 
-				if (rightSpace / rootWidth < 0.1) {
-					return activeSplitterLeft + rightSpace;
+				if (index < activeSplitterIndex) {
+					const adjacentPosition =
+						activeSplitterLeft -
+						(MIN_PANEL_WIDTH + resizer.clientWidth) * (activeSplitterIndex - index);
+
+					if (offsetLeft > adjacentPosition) {
+						return minmax(adjacentPosition, ...splittersMinxMaxPositions.current[index]);
+					}
+					return minmax(offsetLeft, ...splittersMinxMaxPositions.current[index]);
 				}
 
-				return minmax(activeSplitterLeft, ...splittersMinxMaxPositions.current[index]);
-			}
+				const adjacentPosition =
+					activeSplitterLeft +
+					(MIN_PANEL_WIDTH + resizer.clientWidth) * (index - activeSplitterIndex);
 
-			const { left, width } = resizerRef.current!.getBoundingClientRect();
-			const fullWidth = width + MIN_PANEL_WIDTH;
-
-			if (
-				index < activeSplitterIndex &&
-				index !== 0 &&
-				left - rootOffsetLeft + fullWidth * (activeSplitterIndex - index) > activeSplitterLeft
-			) {
-				if (left / rootWidth < 0.2) {
-					if (index === 2) return rootOffsetLeft + width * 2 - 2;
-					return rootOffsetLeft - width + 3;
+				if (offsetLeft < adjacentPosition) {
+					return minmax(adjacentPosition, ...splittersMinxMaxPositions.current[index]);
 				}
-
-				return minmax(
-					activeSplitterLeft - (activeSplitterIndex - index) * fullWidth,
-					...splittersMinxMaxPositions.current[index],
-				);
-			}
-			if (
-				index > activeSplitterIndex &&
-				activeSplitterLeft + (index - activeSplitterIndex) * fullWidth > left - rootOffsetLeft
-			) {
-				if (left / rootWidth > 0.8) {
-					if (index === 2) return rootWidth - fullWidth * 2;
-					return rootWidth - fullWidth;
-				}
-
-				return minmax(
-					activeSplitterLeft + (index - activeSplitterIndex) * fullWidth,
-					...splittersMinxMaxPositions.current[index],
-				);
-			}
-			return left - rootRef.current!.getBoundingClientRect().left;
-		});
+				return minmax(offsetLeft, ...splittersMinxMaxPositions.current[index]);
+			});
 	};
 
 	return (
