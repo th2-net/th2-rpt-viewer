@@ -16,7 +16,9 @@
 
 const webpackMerge = require('webpack-merge');
 const commonConfig = require('./webpack.common');
+const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const path = require('path');
+const packageJSON = require('../package.json');
 
 const { appBuild, appPath, appSrc } = require('./paths');
 
@@ -53,4 +55,13 @@ module.exports = webpackMerge(commonConfig, {
 	optimization: {
 		usedExports: true,
 	},
+	plugins: [
+		new WebpackManifestPlugin({
+			generate: (seed, files, entries) => {
+				return {
+					version: packageJSON.version,
+				};
+			}
+		})
+	]
 });
