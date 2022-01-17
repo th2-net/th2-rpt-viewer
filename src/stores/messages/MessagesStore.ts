@@ -60,9 +60,6 @@ export default class MessagesStore {
 	public selectedMessageId: String | null = null;
 
 	@observable
-	public scrolledIndex: Number | null = null;
-
-	@observable
 	public highlightedMessageId: String | null = null;
 
 	@observable
@@ -78,9 +75,9 @@ export default class MessagesStore {
 	public filteringAttachedMessages = false;
 
 	/*
-		This is used for filter change hint. Represents either last clicked message
-		or attached messages
-	*/
+		 This is used for filter change hint. Represents either last clicked message
+		 or attached messages
+	 */
 	public hintMessages: EventMessage[] = [];
 
 	constructor(
@@ -101,8 +98,6 @@ export default class MessagesStore {
 			() => this.workspaceStore.attachedMessages,
 			this.onAttachedMessagesChange,
 		);
-
-		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
 
 		reaction(() => this.hoveredMessage, this.onMessageHover);
 
@@ -150,16 +145,6 @@ export default class MessagesStore {
 	}
 
 	@action
-	public scrollToMessage = (messageId: string) => {
-		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === messageId);
-
-		if (messageIndex === -1 && this.dataStore.messages.length > 1)
-			throw new Error(`Message with ${messageId} id doesn't exists`);
-
-		this.scrolledIndex = new Number(messageIndex);
-	};
-
-	@action
 	public applyFilter = (
 		filter: MessagesFilter,
 		sseFilters: MessageFilterState | null,
@@ -205,13 +190,6 @@ export default class MessagesStore {
 			}
 		}
 		this.dataStore.loadMessages();
-	};
-
-	@action
-	private onSelectedMessageIdChange = (selectedMessageId: String | null) => {
-		if (selectedMessageId !== null) {
-			this.scrollToMessage(selectedMessageId.valueOf());
-		}
 	};
 
 	@action
@@ -292,12 +270,12 @@ export default class MessagesStore {
 
 	@action
 	/*
-		This method handles message select or attached messages change events.
-		When those events occur we want to check if selected message or
-		attached messages match current filter and streams. If it doesn't match
-		filter change hint window is shown to a user. And it is up to him to decide
-		if he wants to reset streams to message(s) streams and update filters
-	*/
+		 This method handles message select or attached messages change events.
+		 When those events occur we want to check if selected message or
+		 attached messages match current filter and streams. If it doesn't match
+		 filter change hint window is shown to a user. And it is up to him to decide
+		 if he wants to reset streams to message(s) streams and update filters
+	 */
 	private handleFilterHint = async (message: EventMessage | EventMessage[]): Promise<boolean> => {
 		this.hintMessages = Array.isArray(message) ? message : [message];
 

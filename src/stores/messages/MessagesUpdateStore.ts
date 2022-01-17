@@ -22,7 +22,7 @@ import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 export default class MessagesUpdateStore {
 	constructor(
 		private messagesDataStore: MessagesDataStore,
-		private scrollToMessage: (messageId: string) => void,
+		private selectedMessageId: String | null,
 	) {}
 
 	@observable
@@ -50,10 +50,10 @@ export default class MessagesUpdateStore {
 				resultCountLimit: undefined,
 			},
 			{
-				onResponse: incommingMessages => {
-					if (incommingMessages.length) {
-						onNextChannelResponse(incommingMessages);
-						this.scrollToMessage(incommingMessages[0].messageId);
+				onResponse: incomingMessages => {
+					if (incomingMessages.length) {
+						onNextChannelResponse(incomingMessages);
+						this.selectedMessageId = incomingMessages[0].messageId;
 					}
 				},
 				onError: this.onLoadingError,
