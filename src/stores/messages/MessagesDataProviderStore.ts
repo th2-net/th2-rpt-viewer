@@ -32,7 +32,7 @@ export default class MessagesDataProviderStore {
 	private readonly messagesLimit = 250;
 
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
-		this.updateStore = new MessagesUpdateStore(this, this.messagesStore.selectedMessageId);
+		this.updateStore = new MessagesUpdateStore(this, this.messagesStore);
 
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
 	}

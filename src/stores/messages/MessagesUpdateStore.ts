@@ -18,11 +18,13 @@ import { action, computed, observable } from 'mobx';
 import notificationsStore from '../NotificationsStore';
 import { MessagesDataStore } from '../../models/Stores';
 import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
+import MessagesStore from './MessagesStore';
+import EmbeddedMessagesStore from '../../components/embedded/embedded-stores/EmbeddedMessagesStore';
 
 export default class MessagesUpdateStore {
 	constructor(
 		private messagesDataStore: MessagesDataStore,
-		private selectedMessageId: String | null,
+		private messagesStore: MessagesStore | EmbeddedMessagesStore,
 	) {}
 
 	@observable
@@ -53,7 +55,7 @@ export default class MessagesUpdateStore {
 				onResponse: incomingMessages => {
 					if (incomingMessages.length) {
 						onNextChannelResponse(incomingMessages);
-						this.selectedMessageId = incomingMessages[0].messageId;
+						this.messagesStore.selectedMessageId = incomingMessages[0].messageId;
 					}
 				},
 				onError: this.onLoadingError,
