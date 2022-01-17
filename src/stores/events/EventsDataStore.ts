@@ -89,8 +89,18 @@ export default class EventsDataStore {
 	public get targetNodePath() {
 		if (!this.targetNode) return null;
 
-		const parentIds = this.eventStore.getParentNodes(this.targetNode.eventId, this.eventsCache);
-		return [...parentIds, this.targetNode.eventId];
+		let event = this.eventsCache.get(this.targetNode.eventId);
+		const path = [];
+
+		while (event && event?.parentId !== null) {
+			const parentId = event.parentId;
+			event = this.eventsCache.get(parentId);
+			if (event) {
+				path.unshift(parentId);
+			}
+		}
+
+		return path;
 	}
 
 	@computed
@@ -284,10 +294,10 @@ export default class EventsDataStore {
 					} else {
 						rootNode = unknownRoot;
 						if (currentParentId) {
-							this.parentChildrensMap.set(
-								unknownRoot.eventId,
-								this.parentChildrensMap.get(currentParentId) || [],
-							);
+							this.parentChildrensMap.set(unknownRoot.eventId, [
+								...(this.parentChildrensMap.get(unknownRoot.eventId) || []),
+								...(this.parentChildrensMap.get(currentParentId) || []),
+							]);
 							this.parentChildrensMap.delete(currentParentId);
 							this.rootEventIds = [...this.rootEventIds, currentParentId];
 						}
