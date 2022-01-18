@@ -22,10 +22,9 @@ import Empty from '../util/Empty';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { getItemId, getItemName, isEvent, isEventMessage } from '../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useActivePanel, useSelectedStore } from '../../hooks';
+import { useActivePanel, useSelectedStore, useWorkspaceStore } from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import BookmarkTextSearch from './BookmarkTextSearch';
 import BookmarkTypeSwitcher from './BookmarkTypeSwitcher';
 import Checkbox from '../util/Checkbox';
@@ -63,7 +62,7 @@ export function isMessageBookmark(bookmark: unknown): bookmark is MessageBookmar
 
 function BookmarksPanel() {
 	const selectedStore = useSelectedStore();
-	const searchWorkspace = useSearchWorkspace();
+	const searchWorkspace = useWorkspaceStore();
 
 	const [bookmarkType, setBookmarkType] = React.useState<BookmarkType | null>(null);
 	const [textSearch, setTextSearch] = React.useState('');
@@ -249,7 +248,6 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		'toggle-btn',
 		isBookmarkButtonDisabled ? 'disabled' : null,
 	);
-
 	return (
 		<div className={rootClassName}>
 			<i className={iconClassName} />

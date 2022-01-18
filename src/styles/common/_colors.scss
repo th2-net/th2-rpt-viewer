@@ -175,9 +175,9 @@ $eventTextColorLight: #ffb266;
 
 $workspaceBackground: #eef2f6;
 $workspaceLinkGetterColor: #3d668f;
-$workspaceTabTextColor: $workspaceLinkGetterColor;
-$workspaceTabBackground: #cce6ff;
-$workspaceTabActiveBackground: #4d80b2;
+$workspaceTabTextColor: #4080bf;
+$workspaceTabBackground: #d6e6f5;
+$workspaceTabActiveBackground: $workspaceTabTextColor;
 
 $expandIconBackgroundColor: rgba(0, 0, 0, 0.1);
 
@@ -192,6 +192,9 @@ $searchPanelColor: #adc2eb;
 $searchProgressBarColor: #9163db;
 $searchButtonColor: white;
 $searchNotFoundEventsColor: #fbd010;
+$searchResultBackgroundColor: #fff;
+$searchResultMessageHighlightColor: #61c2f2;
+$searchResultEventHighlightColor: $eventTextColorLight;
 
 $bookmarkIconColor: #a65cd6;
 $bookmarkPanelHeaderColor: #cca3f5;

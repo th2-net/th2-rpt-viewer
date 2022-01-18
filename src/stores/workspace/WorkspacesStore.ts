@@ -19,16 +19,9 @@ import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
-import SearchWorkspaceStore, { SEARCH_STORE_INTERVAL } from './SearchWorkspaceStore';
-import { isWorkspaceStore } from '../../helpers/workspace';
-import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
-import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import { getRangeFromTimestamp } from '../../helpers/date';
 import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
-import { FilterEntry } from '../SearchStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -39,22 +32,17 @@ export default class WorkspacesStore {
 
 	public tabsStore = new TabsStore(this);
 
-	public searchWorkspace: SearchWorkspaceStore;
-
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
 		public filtersHistoryStore: FiltersHistoryStore,
 		initialState: WorkspacesUrlState | null,
 	) {
-		this.searchWorkspace = new SearchWorkspaceStore(this.rootStore, this, this.api);
-
 		this.init(initialState || null);
 
 		reaction(
 			() => this.activeWorkspace,
-			activeWorkspace =>
-				isWorkspaceStore(activeWorkspace) && this.onActiveWorkspaceChange(activeWorkspace),
+			activeWorkspace => this.onActiveWorkspaceChange(activeWorkspace),
 		);
 	}
 
@@ -69,7 +57,7 @@ export default class WorkspacesStore {
 	}
 
 	@computed get activeWorkspace() {
-		return [this.searchWorkspace, ...this.workspaces][this.tabsStore.activeTabIndex];
+		return this.workspaces[this.tabsStore.activeTabIndex];
 	}
 
 	@action
@@ -81,7 +69,7 @@ export default class WorkspacesStore {
 		} else {
 			this.addWorkspace(
 				this.createWorkspace({
-					layout: [100, 0],
+					layout: [0, 100, 0, 0],
 				}),
 			);
 		}
@@ -95,7 +83,7 @@ export default class WorkspacesStore {
 	@action
 	public addWorkspace = (workspace: WorkspaceStore) => {
 		this.workspaces.push(workspace);
-		this.tabsStore.setActiveWorkspace(this.workspaces.length);
+		this.tabsStore.setActiveWorkspace(this.workspaces.length - 1);
 	};
 
 	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
@@ -104,38 +92,13 @@ export default class WorkspacesStore {
 
 	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {
 		return new WorkspaceStore(
+			this.rootStore,
 			this,
 			this.selectedStore,
-			this.searchWorkspace.searchStore,
 			this.rootStore.sessionsStore,
 			this.api,
 			workspaceInitialState,
 		);
-	};
-
-	public getInitialWorkspaceByMessage = (
-		timestamp: number,
-		targetMessage?: EventMessage,
-		targetMessageBodyRange?: FilterEntry,
-		targetMessageBodyBinaryRange?: FilterEntry,
-	): WorkspaceInitialState => {
-		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
-		const filters: MessageFilterState | null = (requestInfo?.filters as MessageFilterState) || null;
-
-		return {
-			messages: {
-				sse: filters,
-				streams: requestInfo?.state.stream || [],
-				timestampFrom: null,
-				timestampTo: timestamp,
-				targetMessage,
-				targetMessageBodyRange,
-				targetMessageBodyBinaryRange,
-			},
-			interval: SEARCH_STORE_INTERVAL,
-			layout: [0, 100],
-			timeRange: getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL),
-		};
 	};
 
 	public closeWorkspace = (tab: number | WorkspaceStore) => {
@@ -144,33 +107,10 @@ export default class WorkspacesStore {
 		closedWorkspace.dispose();
 	};
 
-	public getInitialWorkspaceByEvent = (
-		timestamp: number,
-		targetEvent?: EventTreeNode | EventAction,
-		targetEventBodyRange?: FilterEntry | undefined,
-	): WorkspaceInitialState => {
-		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
-
-		return {
-			events: {
-				range: [timestampFrom, timestampTo],
-				targetEvent,
-				targetEventBodyRange,
-			},
-			layout: [100, 0],
-			interval: SEARCH_STORE_INTERVAL,
-			timeRange: [timestampFrom, timestampTo],
-		};
-	};
-
 	public syncData = async (unsavedData?: DbData) => {
 		try {
-			await Promise.all([
-				this.searchWorkspace.searchStore.syncData(unsavedData),
-				this.selectedStore.syncData(unsavedData),
-			]);
+			await this.selectedStore.syncData(unsavedData);
 		} catch (error) {
-			this.searchWorkspace.searchStore.syncData();
 			this.selectedStore.syncData();
 		}
 	};

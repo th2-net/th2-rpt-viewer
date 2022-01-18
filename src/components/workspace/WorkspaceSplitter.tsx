@@ -21,7 +21,7 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 
 const MIN_PANEL_WIDTH = 15;
 
-export type WorkspacePanelsLayout = [number, number];
+export type WorkspacePanelsLayout = [number, number, number, number];
 
 function minmax(num: number, min: number, max: number) {
 	return Math.min(Math.max(num, min), max);
@@ -35,7 +35,6 @@ interface Panel {
 		default: string;
 		active: string;
 	};
-	minWidth?: number;
 	setActivePanel?: () => void;
 }
 
@@ -45,12 +44,11 @@ export interface Props {
 	panels: Array<Panel>;
 	panelsLayout: WorkspacePanelsLayout;
 	setPanelsLayout: (panelsLayout: WorkspacePanelsLayout) => void;
-	resetToDefaulLayout: () => void;
-	collapsePanel: (index: number) => void;
+	togglePanel: (index: number) => void;
 }
 
 function WorkspaceSplitter(props: Props) {
-	const { panels, panelsLayout, setPanelsLayout, resetToDefaulLayout, collapsePanel } = props;
+	const { panels, panelsLayout, setPanelsLayout, togglePanel } = props;
 	const rootRef = React.useRef<HTMLDivElement>(null);
 	const clickOffsetX = React.useRef(0);
 	const activeSplitter = React.useRef<HTMLDivElement | null>(null);
@@ -86,7 +84,7 @@ function WorkspaceSplitter(props: Props) {
 			if (panelRef) {
 				panelRef.style.width = `${panelsLayout[index]}%`;
 				const widthInPx = (rootEl.getBoundingClientRect().width * panelsLayout[index]) / 100;
-				if (Math.floor(widthInPx) <= MIN_PANEL_WIDTH) {
+				if (Math.floor(widthInPx) <= MIN_PANEL_WIDTH * 2) {
 					if (!panelRef.classList.contains('minified')) {
 						panelRef.classList.add('minified');
 					}
@@ -136,9 +134,9 @@ function WorkspaceSplitter(props: Props) {
 
 		const { left: rootLeft, width: rootWidth } = rootEl.getBoundingClientRect();
 
-		const activeSplitterLeftPostion = e.pageX - clickOffsetX.current - rootLeft;
+		const activeSplitterLeftPosition = e.pageX - clickOffsetX.current - rootLeft;
 
-		const splittersLeftPositions = getUpdatedSplittersPositions(activeSplitterLeftPostion);
+		const splittersLeftPositions = getUpdatedSplittersPositions(activeSplitterLeftPosition);
 
 		splittersRefs.current.forEach((splitter, index) => {
 			if (splitter.current) {
@@ -146,18 +144,18 @@ function WorkspaceSplitter(props: Props) {
 			}
 		});
 
-		const spliiterWidth = splittersRefs.current[0].current!.clientWidth;
+		const splitterWidth = splittersRefs.current[0].current!.clientWidth;
 
 		overlaysRefs.current.forEach((overlayRef, index) => {
 			if (overlayRef.current) {
-				overlayRef.current.style.left = `${splittersLeftPositions[index] + spliiterWidth}px`;
+				overlayRef.current.style.left = `${splittersLeftPositions[index] + splitterWidth}px`;
 				const overlayWidth =
 					index === overlaysRefs.current.length - 1
 						? rootRef.current!.offsetLeft +
 						  rootWidth -
 						  splittersLeftPositions[index] -
-						  spliiterWidth
-						: splittersLeftPositions[index + 1] - splittersLeftPositions[index] - spliiterWidth;
+						  splitterWidth
+						: splittersLeftPositions[index + 1] - splittersLeftPositions[index] - splitterWidth;
 				overlayRef.current.style.width = `${overlayWidth}px`;
 			}
 		});
@@ -181,7 +179,7 @@ function WorkspaceSplitter(props: Props) {
 				nextSplitter && nextSplitter.current
 					? nextSplitter.current.getBoundingClientRect().left
 					: rootWidth + rootOffsetLeft;
-			return right - (left + width);
+			return Math.max(right - (left + width), 0);
 		});
 
 		const splitterWidth = splittersRefs.current[0].current!.clientWidth;
@@ -191,20 +189,6 @@ function WorkspaceSplitter(props: Props) {
 				parseFloat(((w / (rootWidth - splitterWidth * panels.length)) * 100).toFixed(2)),
 			) as WorkspacePanelsLayout,
 		);
-
-		panelsRefs.current.forEach((panelRef, index) => {
-			if (panelRef.current) {
-				panelRef.current.style.width = `${widths[index]}px`;
-
-				if (Math.round(widths[index]) === MIN_PANEL_WIDTH) {
-					if (!panelRef.current.classList.contains('minified')) {
-						panelRef.current.classList.add('minified');
-					}
-				} else if (panelRef.current.classList.contains('minified')) {
-					panelRef.current.classList.remove('minified');
-				}
-			}
-		});
 
 		splittersRefs.current.forEach(resizerRef => {
 			if (resizerRef.current) {
@@ -231,24 +215,22 @@ function WorkspaceSplitter(props: Props) {
 		});
 	}
 
-	const getFreeSpaceAroundSplitter = (splitterIndex: number, activeSplitterLeftPostion: number) => {
+	const getFreeSpaceAroundSplitter = (splitterIndex: number, splitterLeftPosition: number) => {
 		const splitter = splittersRefs.current[splitterIndex].current!;
-		const leftSplitter = splittersRefs.current[splitterIndex - 1]?.current;
+		const leftSplitter =
+			splitterIndex === 1 ? null : splittersRefs.current[splitterIndex - 1]?.current;
 		const rightSplitter = splittersRefs.current[splitterIndex + 1]?.current;
 
 		return {
 			left: leftSplitter
-				? activeSplitterLeftPostion -
-				  leftSplitter.clientLeft -
-				  MIN_PANEL_WIDTH -
-				  splitter.clientWidth
-				: activeSplitterLeftPostion,
+				? splitterLeftPosition - leftSplitter.offsetLeft - MIN_PANEL_WIDTH - splitter.clientWidth
+				: splitterLeftPosition - MIN_PANEL_WIDTH - splitter.clientWidth,
 			right: rightSplitter
-				? rightSplitter.clientLeft - activeSplitterLeftPostion
+				? rightSplitter.offsetLeft - splitterLeftPosition - MIN_PANEL_WIDTH - splitter.clientWidth
 				: rootRef.current!.clientWidth -
 				  MIN_PANEL_WIDTH -
 				  splitter.clientWidth -
-				  activeSplitterLeftPostion,
+				  splitterLeftPosition,
 		};
 	};
 
@@ -257,51 +239,60 @@ function WorkspaceSplitter(props: Props) {
 			splitter => splitter.current === activeSplitter.current,
 		);
 
-		const { left: rootOffsetLeft } = rootRef.current!.getBoundingClientRect();
+		const rootWidth = rootRef.current?.clientWidth as number;
 
-		return splittersRefs.current.map((resizerRef, index) => {
-			if (resizerRef.current === activeSplitter.current) {
-				const { left: leftSpace, right: rightSpace } = getFreeSpaceAroundSplitter(
-					index,
-					activeSplitterLeft,
-				);
+		return splittersRefs.current
+			.map((resizerRef, index) => {
+				const resizer = resizerRef.current as HTMLDivElement;
 
-				const rootWidth = rootRef.current!.clientWidth;
+				if (resizer === activeSplitter.current) {
+					const { left, right } = getFreeSpaceAroundSplitter(index, activeSplitterLeft);
+					let offsetLeft = activeSplitterLeft;
 
-				if (leftSpace / rootWidth < 0.2) {
-					return activeSplitterLeft - leftSpace;
+					if (left / rootWidth < 0.1) {
+						offsetLeft = activeSplitterLeft - left;
+					}
+
+					if (right / rootWidth < 0.1) {
+						offsetLeft = activeSplitterLeft + right;
+					}
+
+					return {
+						resizer,
+						offsetLeft,
+					};
 				}
 
-				if (rightSpace / rootWidth < 0.2) {
-					return activeSplitterLeft + rightSpace;
+				return {
+					resizer,
+					offsetLeft: resizer.offsetLeft,
+				};
+			})
+			.map(({ offsetLeft, resizer }, index) => {
+				if (resizer === activeSplitter.current) {
+					return minmax(offsetLeft, ...splittersMinxMaxPositions.current[index]);
 				}
 
-				return minmax(activeSplitterLeft, ...splittersMinxMaxPositions.current[index]);
-			}
+				if (index < activeSplitterIndex) {
+					const adjacentPosition =
+						activeSplitterLeft -
+						(MIN_PANEL_WIDTH + resizer.clientWidth) * (activeSplitterIndex - index);
 
-			const { left, width } = resizerRef.current!.getBoundingClientRect();
-			const fullWidth = width + MIN_PANEL_WIDTH;
+					if (offsetLeft > adjacentPosition) {
+						return minmax(adjacentPosition, ...splittersMinxMaxPositions.current[index]);
+					}
+					return minmax(offsetLeft, ...splittersMinxMaxPositions.current[index]);
+				}
 
-			if (
-				index < activeSplitterIndex &&
-				left - rootOffsetLeft + fullWidth * (activeSplitterIndex - index) > activeSplitterLeft
-			) {
-				return minmax(
-					activeSplitterLeft - (activeSplitterIndex - index) * fullWidth,
-					...splittersMinxMaxPositions.current[index],
-				);
-			}
-			if (
-				index > activeSplitterIndex &&
-				activeSplitterLeft + (index - activeSplitterIndex) * fullWidth > left - rootOffsetLeft
-			) {
-				return minmax(
-					activeSplitterLeft + (index - activeSplitterIndex) * fullWidth,
-					...splittersMinxMaxPositions.current[index],
-				);
-			}
-			return left - rootRef.current!.getBoundingClientRect().left;
-		});
+				const adjacentPosition =
+					activeSplitterLeft +
+					(MIN_PANEL_WIDTH + resizer.clientWidth) * (index - activeSplitterIndex);
+
+				if (offsetLeft < adjacentPosition) {
+					return minmax(adjacentPosition, ...splittersMinxMaxPositions.current[index]);
+				}
+				return minmax(offsetLeft, ...splittersMinxMaxPositions.current[index]);
+			});
 	};
 
 	return (
@@ -319,7 +310,7 @@ function WorkspaceSplitter(props: Props) {
 						setActivePanel={panel.setActivePanel}
 					/>
 					<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
-						<div className='pane__sidebar' onClick={resetToDefaulLayout}>
+						<div className='pane__sidebar' onClick={() => togglePanel(index)}>
 							<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />
 							<div className='pane__title'>{panel.title}</div>
 							<div
@@ -340,7 +331,7 @@ function WorkspaceSplitter(props: Props) {
 											: '5px',
 									cursor: 'pointer',
 								}}
-								onClick={() => collapsePanel(index)}>
+								onClick={() => togglePanel(index)}>
 								<i
 									className={
 										'pane__header-icon ' +
@@ -390,7 +381,7 @@ type SplitterProps = {
 };
 
 const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(
-	({ onMouseDown, disabled = false, isPanelActive = false, setActivePanel }, ref) => {
+	({ onMouseDown, disabled, isPanelActive, setActivePanel }, ref) => {
 		const splitterClassName = createStyleSelector(
 			'workspace-splitter',
 			isPanelActive ? null : 'inactive',
