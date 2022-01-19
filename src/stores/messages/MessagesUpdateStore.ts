@@ -55,7 +55,8 @@ export default class MessagesUpdateStore {
 				onResponse: incomingMessages => {
 					if (incomingMessages.length) {
 						onNextChannelResponse(incomingMessages);
-						this.messagesStore.selectedMessageId = incomingMessages[0].messageId;
+						const id = incomingMessages[0].messageId;
+						if (id) this.messagesStore.selectedMessageId = new String(id);
 					}
 				},
 				onError: this.onLoadingError,
