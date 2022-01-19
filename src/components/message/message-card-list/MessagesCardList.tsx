@@ -71,7 +71,6 @@ function MessageCardList() {
 				<MessagesVirtualizedList
 					className='messages-list__items'
 					rowCount={messagesDataStore.messages.length}
-					scrolledIndex={messagesStore.scrolledIndex}
 					itemRenderer={renderMsg}
 					overscan={0}
 					loadNextMessages={messagesDataStore.getNextMessages}
