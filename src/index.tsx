@@ -46,8 +46,8 @@ ReactDOM.render(
 	<ErrorBoundary>
 		<React.Suspense
 			fallback={
-				<div className='loading'>
-					<i className='loading__icon' />
+				<div className='app-loader'>
+					<i />
 				</div>
 			}>
 			<ViewModeProvider value={viewMode}>
