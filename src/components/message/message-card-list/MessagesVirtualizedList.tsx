@@ -166,10 +166,12 @@ const MessagesVirtualizedList = (props: Props) => {
 							{() =>
 								noMatchingMessagesNext ? (
 									<div className='messages-list__loading-message'>
-										<span className='messages-list__loading-message-text'>
-											No more matching messages since&nbsp;
-											{moment.utc(messageStore.filterStore.filterParams.startTimestamp).format()}
-										</span>
+										{nextLoadHeartbeat && (
+											<span className='messages-list__loading-message-text'>
+												No more matching messages up to&nbsp;
+												{moment.utc(nextLoadHeartbeat.timestamp).format()}
+											</span>
+										)}
 										<button className='messages-list__load-btn' onClick={() => keepLoading('next')}>
 											Keep loading
 										</button>
@@ -190,10 +192,12 @@ const MessagesVirtualizedList = (props: Props) => {
 							{() =>
 								noMatchingMessagesPrev ? (
 									<div className='messages-list__loading-message'>
-										<span className='messages-list__loading-message-text'>
-											No more matching messages since&nbsp;
-											{moment(messageStore.filterStore.filterParams.startTimestamp).utc().format()}
-										</span>
+										{prevLoadHeartbeat && (
+											<span className='messages-list__loading-message-text'>
+												No more matching messages from&nbsp;
+												{moment.utc(prevLoadHeartbeat.timestamp).format()}
+											</span>
+										)}
 										<button
 											className='messages-list__load-btn'
 											onClick={() => keepLoading('previous')}>
