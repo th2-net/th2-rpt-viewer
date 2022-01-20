@@ -25,7 +25,6 @@ import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
 import MessagesUpdateStore from './MessagesUpdateStore';
 
-const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class MessagesDataProviderStore {
@@ -119,18 +118,14 @@ export default class MessagesDataProviderStore {
 				...queryParams,
 				searchDirection: 'previous',
 			},
-			{
-				interval: SEARCH_TIME_FRAME,
-			},
+			FIFTEEN_SECONDS,
 		);
 		this.createNextMessageChannelEventSource(
 			{
 				...queryParams,
 				searchDirection: 'next',
 			},
-			{
-				interval: SEARCH_TIME_FRAME,
-			},
+			FIFTEEN_SECONDS,
 		);
 
 		let message: EventMessage | undefined;
@@ -218,46 +213,45 @@ export default class MessagesDataProviderStore {
 	@action
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
-		options?: {
-			onClose?: () => void;
-			interval?: number;
-		},
+		requestTimeoutMs?: number,
+		onCloseHandler?: () => void,
 	) => {
+		const onClose =
+			onCloseHandler &&
+			((messages: EventMessage[]) => {
+				this.onPrevChannelResponse(messages);
+				onCloseHandler();
+			});
+
 		this.searchChannelPrev = new MessagesSSEChannel(query, {
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
-			onKeepAliveResponse:
-				typeof options?.interval === 'number'
-					? this.onKeepAliveMessagePrevious
-					: e =>
-							runInAction(() => {
-								this.prevLoadHeartbeat = e;
-							}),
-			...(options?.onClose
-				? {
-						onClose: messages => {
-							this.onPrevChannelResponse(messages);
-							options.onClose?.();
-						},
-				  }
-				: {}),
+			onKeepAliveResponse: heartbeat =>
+				this.onKeepAliveMessagePrevious(heartbeat, requestTimeoutMs),
+			onClose,
 		});
 	};
 
 	@action
-	private onKeepAliveMessagePrevious = (e: SSEHeartbeat) => {
-		this.prevLoadHeartbeat = e;
+	private onKeepAliveMessagePrevious = (
+		heartbeat: SSEHeartbeat,
+		// Stops messages loading when requestTimeoutMs has passed since first heartbeat
+		requestTimeoutMs?: number,
+	) => {
+		this.prevLoadHeartbeat = heartbeat;
 
-		if (this.lastPreviousChannelResponseTimestamp === null) {
-			this.lastPreviousChannelResponseTimestamp = Date.now();
-		}
+		if (requestTimeoutMs) {
+			if (this.lastPreviousChannelResponseTimestamp === null) {
+				this.lastPreviousChannelResponseTimestamp = Date.now();
+			}
 
-		if (
-			this.lastPreviousChannelResponseTimestamp !== null &&
-			Date.now() - this.lastPreviousChannelResponseTimestamp >= FIFTEEN_SECONDS
-		) {
-			this.noMatchingMessagesPrev = true;
-			this.searchChannelPrev?.stop();
+			if (
+				this.lastPreviousChannelResponseTimestamp !== null &&
+				Date.now() - this.lastPreviousChannelResponseTimestamp >= FIFTEEN_SECONDS
+			) {
+				this.noMatchingMessagesPrev = true;
+				this.searchChannelPrev?.stop();
+			}
 		}
 	};
 
@@ -287,29 +281,20 @@ export default class MessagesDataProviderStore {
 	@action
 	public createNextMessageChannelEventSource = (
 		query: MessagesSSEParams,
-		options?: {
-			onClose?: () => void;
-			interval?: number;
-		},
+		requestTimeoutMs?: number,
+		onCloseHandler?: () => void,
 	) => {
+		const onClose =
+			onCloseHandler &&
+			((messages: EventMessage[]) => {
+				this.onNextChannelResponse(messages);
+				onCloseHandler();
+			});
 		this.searchChannelNext = new MessagesSSEChannel(query, {
 			onResponse: this.onNextChannelResponse,
 			onError: this.onLoadingError,
-			onKeepAliveResponse:
-				typeof options?.interval === 'number'
-					? this.onKeepAliveMessageNext
-					: e =>
-							runInAction(() => {
-								this.nextLoadHeartbeat = e;
-							}),
-			...(options?.onClose
-				? {
-						onClose: messages => {
-							this.onNextChannelResponse(messages);
-							options.onClose?.();
-						},
-				  }
-				: {}),
+			onKeepAliveResponse: hearbeat => this.onKeepAliveMessageNext(hearbeat, requestTimeoutMs),
+			onClose,
 		});
 	};
 
@@ -335,18 +320,24 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	private onKeepAliveMessageNext = (e: SSEHeartbeat) => {
-		this.nextLoadHeartbeat = e;
+	private onKeepAliveMessageNext = (
+		heartbeat: SSEHeartbeat,
+		// Stops messages loading when requestTimeoutMs has passed since first heartbeat
+		requestTimeoutMs?: number,
+	) => {
+		this.nextLoadHeartbeat = heartbeat;
 
-		if (this.lastNextChannelResponseTimestamp === null) {
-			this.lastNextChannelResponseTimestamp = Date.now();
-		}
-		if (
-			this.lastNextChannelResponseTimestamp !== null &&
-			Date.now() - this.lastNextChannelResponseTimestamp >= FIFTEEN_SECONDS
-		) {
-			this.noMatchingMessagesNext = true;
-			this.searchChannelNext?.stop();
+		if (requestTimeoutMs) {
+			if (this.lastNextChannelResponseTimestamp === null) {
+				this.lastNextChannelResponseTimestamp = Date.now();
+			}
+			if (
+				this.lastNextChannelResponseTimestamp !== null &&
+				Date.now() - this.lastNextChannelResponseTimestamp >= requestTimeoutMs
+			) {
+				this.noMatchingMessagesNext = true;
+				this.searchChannelNext?.stop();
+			}
 		}
 	};
 
