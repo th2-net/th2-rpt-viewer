@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
 import { useWorkspaceEventStore, useEventsFilterStore, useFiltersHistoryStore } from '../../hooks';
-import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
 import { Filter, EventFilterState } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
@@ -47,7 +46,6 @@ function getDefaultCurrentFilterValues(filter: EventsFilter | null) {
 
 function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
-	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
 	const { eventsHistory } = useFiltersHistoryStore();
 
@@ -204,7 +202,6 @@ function EventsFilterPanel() {
 
 	return (
 		<FilterPanel
-			isLoading={eventDataStore.isLoading}
 			isFilterApplied={filterStore.isEventsFilterApplied}
 			renderFooter={() =>
 				filter && (

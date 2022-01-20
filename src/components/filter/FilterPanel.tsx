@@ -27,7 +27,6 @@ const PANEL_WIDTH = 840;
 
 interface Props {
 	isFilterApplied: boolean;
-	isLoading?: boolean;
 	isDisabled?: boolean;
 	showFilter: boolean;
 	config: FilterRowConfig[];
@@ -47,7 +46,6 @@ const FilterPanel = (props: Props) => {
 		onSubmit,
 		onClearAll,
 		renderFooter,
-		isLoading,
 	} = props;
 
 	const filterBaseRef = React.useRef<HTMLDivElement>(null);
@@ -124,9 +122,6 @@ const FilterPanel = (props: Props) => {
 			<div className={filterButtonClass} ref={filterButtonRef} onClick={onClick}>
 				<div className={filterIconClass} />
 				<div className={filterTitleClass}>{showFilter ? 'Hide Filter' : 'Show Filter'}</div>
-				{typeof isLoading === 'boolean'
-					? isLoading && <div style={{ marginLeft: 5 }} className='filter__loading' />
-					: null}
 			</div>
 			<ModalPortal isOpen={showFilter}>
 				<div ref={filterBaseRef} className='filter'>

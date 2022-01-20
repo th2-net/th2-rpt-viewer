@@ -108,6 +108,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
+		this.resetMessagesDataState();
 
 		const queryParams = this.messagesStore.filterStore.filterParams;
 
@@ -203,7 +204,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	};
 
 	@action
-	public stopMessagesLoading = (isError = false) => {
+	public stopMessagesLoading = () => {
 		this.messageAC?.abort();
 		this.searchChannelPrev?.stop();
 		this.searchChannelNext?.stop();
@@ -212,13 +213,13 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
 		this.updateStore.stopSubscription();
-		this.resetMessagesDataState(isError);
 	};
 
 	@action
 	private onLoadingError = (event: Event) => {
 		notificationsStore.handleSSEError(event);
-		this.stopMessagesLoading(true);
+		this.stopMessagesLoading();
+		this.resetMessagesDataState(true);
 	};
 
 	@action
@@ -388,7 +389,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	};
 
 	@action
-	private resetMessagesDataState = (isError = false) => {
+	public resetMessagesDataState = (isError = false) => {
 		this.initialItemCount = 0;
 		this.startIndex = 10000;
 		this.messages = [];

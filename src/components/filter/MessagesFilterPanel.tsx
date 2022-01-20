@@ -106,7 +106,7 @@ const MessagesFilterPanel = () => {
 
 	const isLoading = computed(
 		() =>
-			(messagesDataStore.messages.length === 0 && messagesDataStore.isLoading) ||
+			messagesDataStore.isLoading ||
 			(filterStore.isSoftFilter &&
 				[...messagesDataStore.isMatchingMessages.values()].some(Boolean)) ||
 			messagesStore.isLoadingAttachedMessages ||
@@ -284,7 +284,6 @@ const MessagesFilterPanel = () => {
 	return (
 		<>
 			<FilterPanel
-				isLoading={isLoading}
 				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
@@ -295,7 +294,12 @@ const MessagesFilterPanel = () => {
 			/>
 			<MessageReplayModal />
 			<MessageFilterWarning />
-			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />
+			<MessagesFilterSessionFilter
+				config={sessionFilterConfig}
+				submitChanges={submitChanges}
+				stopLoading={messagesDataStore.stopMessagesLoading}
+				isLoading={isLoading}
+			/>
 			<MessageExport
 				isExport={messagesStore.exportStore.isExport}
 				enableExport={messagesStore.exportStore.enableExport}

@@ -99,7 +99,8 @@ export default class MessagesDataProviderStore {
 		return (
 			this.isLoadingNextMessages ||
 			this.isLoadingPreviousMessages ||
-			Boolean(this.anchorChannel?.isLoading)
+			Boolean(this.anchorChannel?.isLoading) ||
+			Boolean(this.messageAC)
 		);
 	}
 
@@ -108,6 +109,7 @@ export default class MessagesDataProviderStore {
 	@action
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
+		this.resetMessagesDataState();
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
@@ -143,6 +145,8 @@ export default class MessagesDataProviderStore {
 						this.isError = true;
 						return;
 					}
+				} finally {
+					this.messageAC = null;
 				}
 			} else {
 				this.anchorChannel = new MessagesSSEChannel(
@@ -193,7 +197,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public stopMessagesLoading = (isError = false) => {
+	public stopMessagesLoading = () => {
 		this.messageAC?.abort();
 		this.searchChannelPrev?.stop();
 		this.searchChannelNext?.stop();
@@ -201,13 +205,14 @@ export default class MessagesDataProviderStore {
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
 		this.anchorChannel = null;
-		this.resetMessagesDataState(isError);
+		this.messageAC = null;
 	};
 
 	@action
 	private onLoadingError = (event: Event) => {
 		notificationsStore.handleSSEError(event);
-		this.stopMessagesLoading(true);
+		this.stopMessagesLoading();
+		this.resetMessagesDataState(true);
 	};
 
 	@action
@@ -375,7 +380,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	private resetMessagesDataState = (isError = false) => {
+	public resetMessagesDataState = (isError = false) => {
 		this.initialItemCount = 0;
 		this.startIndex = 10000;
 		this.messages = [];
