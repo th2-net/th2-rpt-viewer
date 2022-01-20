@@ -393,6 +393,10 @@
 	align-items: center;
 	margin-bottom: 5px;
 
+	&.align-start {
+		align-items: start;
+	}
+
 	&:hover &__divider-text {
 		display: none;
 	}
@@ -429,7 +433,8 @@
 		align-items: center;
 	}
 
-	&__input {
+	&__input,
+	&__textarea {
 		width: 100%;
 		flex-grow: 1;
 		padding: 3px 5px;
@@ -462,6 +467,10 @@
 			text-align: center;
 			margin-left: 0;
 		}
+	}
+	&__textarea {
+		@include scrollbar();
+		min-height: 60px;
 	}
 
 	&__toggler {

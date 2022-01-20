@@ -1,0 +1,45 @@
+@import './common/vars';
+
+.collect-feedback-button {
+	position: absolute;
+	top: 12px;
+	left: 90px;
+	z-index: 15;
+	@include graph-button();
+}
+
+.collect-feedback-modal {
+	@include rpt-viewer-modal();
+	overflow-y: auto;
+	width: 715px;
+	padding: 8px 16px;
+	color: $primaryTextColor;
+    .filter-row {
+        &__input,
+        &__textarea {
+            margin: 0;
+        }
+        &__input {
+            border: 1px solid rgb(118, 118, 118);
+        }
+    }
+	&__header {
+		text-align: center;
+        margin: 0 0 8px;
+	}
+    &__screenshot {
+        width: 400px;
+        img { max-width: 100%; max-height: 100%; }
+    }
+    &__buttons {
+        display: flex;
+        justify-content: space-between;
+    }
+    &__button {
+        @include rpt-viewer-modal-button();
+        cursor: pointer;
+        padding: 4px;
+        color: #fff;
+        background-color: $filterPickerScrollItemActiveColor;
+    }
+}

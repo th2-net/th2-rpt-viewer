@@ -29,12 +29,13 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 
 	const inputClassName = createBemElement(
 		config.className || 'filter-row',
-		'input',
+		config.textarea ? 'textarea' : 'input',
 		config.value.length ? 'non-empty' : '',
 	);
 	const wrapperClassName = createBemBlock(
 		config.className || 'filter-row',
 		config.wrapperClassName || null,
+		config.textarea ? 'align-start' : null,
 	);
 	const labelClassName = createStyleSelector(
 		`${config.className || 'filter-row'}__label`,
@@ -52,7 +53,17 @@ export default function StringFilterRow({ config }: { config: FilterRowStringCon
 					{config.label}
 				</label>
 			)}
-			{config.autocompleteList ? (
+			{config.textarea ? (
+				<textarea
+					placeholder={config.hint}
+					className={inputClassName}
+					id={config.id}
+					autoComplete='off'
+					disabled={config.disabled}
+					value={config.value}
+					onChange={e => config.setValue(e.target.value)}
+				/>
+			) : config.autocompleteList ? (
 				<AutocompleteInput
 					placeholder={config.hint}
 					anchor={autocompleteAnchor}
