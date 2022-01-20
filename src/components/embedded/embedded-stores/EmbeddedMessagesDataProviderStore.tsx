@@ -32,7 +32,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	private readonly messagesLimit = 250;
 
 	constructor(private messagesStore: EmbeddedMessagesStore, private api: ApiSchema) {
-		this.updateStore = new MessagesUpdateStore(this, this.messagesStore.scrollToMessage);
+		this.updateStore = new MessagesUpdateStore(this, this.messagesStore);
 
 		autorun(() => this.messagesStore.filterStore.filter && this.onFilterChange());
 	}

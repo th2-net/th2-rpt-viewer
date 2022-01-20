@@ -18,11 +18,13 @@ import { action, computed, observable } from 'mobx';
 import notificationsStore from '../NotificationsStore';
 import { MessagesDataStore } from '../../models/Stores';
 import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
+import MessagesStore from './MessagesStore';
+import EmbeddedMessagesStore from '../../components/embedded/embedded-stores/EmbeddedMessagesStore';
 
 export default class MessagesUpdateStore {
 	constructor(
 		private messagesDataStore: MessagesDataStore,
-		private scrollToMessage: (messageId: string) => void,
+		private messagesStore: MessagesStore | EmbeddedMessagesStore,
 	) {}
 
 	@observable
@@ -50,10 +52,11 @@ export default class MessagesUpdateStore {
 				resultCountLimit: undefined,
 			},
 			{
-				onResponse: incommingMessages => {
-					if (incommingMessages.length) {
-						onNextChannelResponse(incommingMessages);
-						this.scrollToMessage(incommingMessages[0].messageId);
+				onResponse: incomingMessages => {
+					if (incomingMessages.length) {
+						onNextChannelResponse(incomingMessages);
+						const id = incomingMessages[0].messageId;
+						if (id) this.messagesStore.selectedMessageId = new String(id);
 					}
 				},
 				onError: this.onLoadingError,
