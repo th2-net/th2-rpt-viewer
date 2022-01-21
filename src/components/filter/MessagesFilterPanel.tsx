@@ -30,6 +30,7 @@ import {
 	useMessagesWorkspaceStore,
 	useFiltersHistoryStore,
 	useSessionsStore,
+	useWorkspaceStore,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -50,6 +51,7 @@ type CurrentSSEValues = {
 };
 
 const MessagesFilterPanel = () => {
+	const workspaceStore = useWorkspaceStore();
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
@@ -104,7 +106,14 @@ const MessagesFilterPanel = () => {
 		);
 	}, [filter, filterStore.filter, streams, isSoftFilterApplied]);
 
-	const isLoading = computed(
+	const stopLoading = React.useCallback(() => {
+		messagesDataStore.stopMessagesLoading();
+		workspaceStore.stopAttachedMessagesLoading();
+	}, []);
+
+	const isAnchorLoading = computed(() => workspaceStore.isLoadingAttachedMessages).get();
+
+	const isMessageListLoading = computed(
 		() =>
 			messagesDataStore.isLoading ||
 			(filterStore.isSoftFilter &&
@@ -291,14 +300,15 @@ const MessagesFilterPanel = () => {
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
 				renderFooter={renderFooter}
+				isLoading={isAnchorLoading}
 			/>
 			<MessageReplayModal />
 			<MessageFilterWarning />
 			<MessagesFilterSessionFilter
 				config={sessionFilterConfig}
 				submitChanges={submitChanges}
-				stopLoading={messagesDataStore.stopMessagesLoading}
-				isLoading={isLoading}
+				stopLoading={stopLoading}
+				isLoading={isMessageListLoading}
 			/>
 			<MessageExport
 				isExport={messagesStore.exportStore.isExport}

@@ -27,6 +27,7 @@ import FiltersHistory from '../filters-history/FiltersHistory';
 import { getArrayOfUniques } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
+import useEventsDataStore from '../../hooks/useEventsDataStore';
 
 type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;
@@ -46,6 +47,7 @@ function getDefaultCurrentFilterValues(filter: EventsFilter | null) {
 
 function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
+	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
 	const { eventsHistory } = useFiltersHistoryStore();
 
@@ -202,6 +204,7 @@ function EventsFilterPanel() {
 
 	return (
 		<FilterPanel
+			isLoading={eventDataStore.isLoading}
 			isFilterApplied={filterStore.isEventsFilterApplied}
 			renderFooter={() =>
 				filter && (

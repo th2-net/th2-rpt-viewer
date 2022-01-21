@@ -60,9 +60,6 @@ export default class MessagesDataProviderStore {
 	public searchChannelNext: MessagesSSEChannel | null = null;
 
 	@observable
-	public anchorChannel: MessagesSSEChannel | null = null;
-
-	@observable
 	public startIndex = 10000;
 
 	@observable
@@ -79,6 +76,11 @@ export default class MessagesDataProviderStore {
 
 	@observable
 	public nextLoadHeartbeat: SSEHeartbeat | null = null;
+
+	@observable
+	private isLoadingAnchorMessage = false;
+
+	public anchorChannel: MessagesSSEChannel | null = null;
 
 	private lastPreviousChannelResponseTimestamp: number | null = null;
 
@@ -97,10 +99,7 @@ export default class MessagesDataProviderStore {
 	@computed
 	public get isLoading(): boolean {
 		return (
-			this.isLoadingNextMessages ||
-			this.isLoadingPreviousMessages ||
-			Boolean(this.anchorChannel?.isLoading) ||
-			Boolean(this.messageAC)
+			this.isLoadingNextMessages || this.isLoadingPreviousMessages || this.isLoadingAnchorMessage
 		);
 	}
 
@@ -133,6 +132,7 @@ export default class MessagesDataProviderStore {
 		let message: EventMessage | undefined;
 
 		if (this.searchChannelPrev && this.searchChannelNext) {
+			this.isLoadingAnchorMessage = true;
 			if (this.messagesStore.selectedMessageId) {
 				this.messageAC = new AbortController();
 				try {
@@ -146,7 +146,7 @@ export default class MessagesDataProviderStore {
 						return;
 					}
 				} finally {
-					this.messageAC = null;
+					this.isLoadingAnchorMessage = false;
 				}
 			} else {
 				this.anchorChannel = new MessagesSSEChannel(
@@ -165,6 +165,7 @@ export default class MessagesDataProviderStore {
 				[message] = await this.anchorChannel.loadAndSubscribe({ initialResponseTimeoutMs: null });
 				if (!message) this.anchorChannel.stop();
 				this.anchorChannel = null;
+				this.isLoadingAnchorMessage = false;
 			}
 
 			const [nextMessages, prevMessages] = await Promise.all([
@@ -205,7 +206,6 @@ export default class MessagesDataProviderStore {
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
 		this.anchorChannel = null;
-		this.messageAC = null;
 	};
 
 	@action
@@ -375,7 +375,6 @@ export default class MessagesDataProviderStore {
 	private onFilterChange = async () => {
 		this.stopMessagesLoading();
 		this.updateStore.stopSubscription();
-		this.resetMessagesDataState();
 		this.loadMessages();
 	};
 

@@ -205,6 +205,7 @@ const EmbeddedMessagesFilterPanel = ({
 				config={filterConfig}
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
+				isLoading={false}
 			/>
 			<MessagesFilterSessionFilter
 				config={sessionFilterConfig}
