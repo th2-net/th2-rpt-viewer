@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
 	CompoundFilterRow,
@@ -84,10 +83,6 @@ const EmbeddedMessagesFilterPanel = ({
 			filter,
 		);
 	}, [filter, filterStore.filter, streams]);
-
-	const isLoading = computed(
-		() => messagesDataStore.messages.length === 0 && messagesDataStore.isLoading,
-	).get();
 
 	const compoundFilterRow: Array<CompoundFilterRow> = React.useMemo(() => {
 		if (!filter || Object.keys(filter).length === 0) return [];
@@ -204,15 +199,20 @@ const EmbeddedMessagesFilterPanel = ({
 	return (
 		<>
 			<FilterPanel
-				isLoading={isLoading}
 				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
 				config={filterConfig}
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
+				isLoading={false}
 			/>
-			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />
+			<MessagesFilterSessionFilter
+				config={sessionFilterConfig}
+				submitChanges={submitChanges}
+				stopLoading={messagesDataStore.stopMessagesLoading}
+				isLoading={messagesDataStore.isLoading}
+			/>
 		</>
 	);
 };

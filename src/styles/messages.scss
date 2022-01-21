@@ -819,8 +819,14 @@
 			outline: none;
 		}
 
-		&-icon {
+		&-start-icon {
 			@include icon(url('../../resources/icons/search.svg'), 16px, 16px);
+
+			display: inline-block;
+		}
+
+		&-stop-icon {
+			@include icon(url('../../resources/icons/cross-icon-big.svg'), 16px, 16px);
 
 			display: inline-block;
 		}
