@@ -21,6 +21,7 @@ import {
 	convertEventActionToEventTreeNode,
 	getErrorEventTreeNode,
 	isRootEvent,
+	unknownRoot,
 } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import notificationsStore from '../NotificationsStore';
@@ -284,7 +285,8 @@ export default class EventsDataStore {
 					if (cachedRootNode) {
 						rootNode = cachedRootNode;
 					} else {
-						rootNode = getErrorEventTreeNode(rootNode?.parentId || parentId);
+						rootNode = unknownRoot;
+						parentNodes.unshift(getErrorEventTreeNode(rootNode?.parentId || parentId));
 					}
 					parentNodes.unshift(rootNode);
 				}
@@ -317,6 +319,7 @@ export default class EventsDataStore {
 		}
 	};
 
+	@action
 	private parentNodesUpdater = () => {
 		const parentNodes = this.loadedParentNodes;
 		if (!parentNodes.length) return;
@@ -329,9 +332,9 @@ export default class EventsDataStore {
 			for (let i = 0; i < parentNodePath.length; i++) {
 				const event = parentNodePath[i];
 
-				const { isUnknown, parentId, eventId } = event;
+				const { parentId, eventId } = event;
 
-				if ((isRootEvent(event) || isUnknown) && !rootNodes.includes(eventId)) {
+				if (isRootEvent(event) && !rootNodes.includes(eventId)) {
 					rootNodes.push(eventId);
 				}
 
@@ -348,14 +351,12 @@ export default class EventsDataStore {
 			}
 		});
 
-		runInAction(() => {
-			if (rootNodes.length !== 0) {
-				this.rootEventIds = [
-					...this.rootEventIds,
-					...rootNodes.filter(eventId => !this.rootEventIds.includes(eventId)),
-				];
-			}
-		});
+		if (rootNodes.length !== 0) {
+			this.rootEventIds = [
+				...this.rootEventIds,
+				...rootNodes.filter(eventId => !this.rootEventIds.includes(eventId)),
+			];
+		}
 
 		this.parentChildrensMap = observable.map(
 			new Map([...this.parentChildrensMap, ...parentChildrenMapUpdate]),
