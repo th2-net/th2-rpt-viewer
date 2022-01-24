@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
-import { useErrorsStore, useResponsesStore, useScreenshot } from '../../hooks';
+import { useErrorsStore, useScreenshot } from '../../hooks';
 import StringFilterRow from '../filter/row/StringRow';
 
 interface CollectFeedbackModalProps {
