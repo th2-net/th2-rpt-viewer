@@ -50,6 +50,8 @@ type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
 };
 
+const priority = ['attachedEventIds', 'type', 'body', 'bodyBinary', 'text'];
+
 const MessagesFilterPanel = () => {
 	const workspaceStore = useWorkspaceStore();
 	const messagesStore = useMessagesWorkspaceStore();
@@ -161,8 +163,11 @@ const MessagesFilterPanel = () => {
 			setCurrentValues((prevState: CurrentSSEValues) => ({ ...prevState, [name]: value }));
 		};
 
-		return searchStore.messagesFilterInfo.map<CompoundFilterRow>(
-			(filterInfo: MessagesFilterInfo) => {
+		return searchStore.messagesFilterInfo
+			.sort((a, b) => {
+				return priority.indexOf(a.name) - priority.indexOf(b.name);
+			})
+			.map<CompoundFilterRow>((filterInfo: MessagesFilterInfo) => {
 				const state = getState(filterInfo.name);
 				const label = prettifyCamelcase(filterInfo.name);
 				const autocompleteList = getArrayOfUniques<string>(
@@ -206,8 +211,7 @@ const MessagesFilterPanel = () => {
 							},
 					  )
 					: [];
-			},
-		);
+			});
 	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
