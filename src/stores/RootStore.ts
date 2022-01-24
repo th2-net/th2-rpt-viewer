@@ -74,14 +74,11 @@ export default class RootStore {
 		let messagesStoreState: MessagesStoreURLState = {};
 
 		if (activeWorkspace && isWorkspaceStore(activeWorkspace)) {
-			const clearEmpty = (filter: Partial<MessageFilterState> | Partial<EventsFilter>) => {
+			const clearEventFilter = (filter: Partial<EventsFilter>) => {
 				const tempFilter = toJS(filter);
 				Object.assign(tempFilter, filter);
 				getObjectKeys(tempFilter).forEach(filterKey => {
-					if (
-						tempFilter[filterKey] !== undefined &&
-						(tempFilter[filterKey]?.values.length === 0 ||
-							(filterKey === 'status' && tempFilter[filterKey].values === 'any')))
+					if (tempFilter[filterKey]?.values.length === 0 || tempFilter[filterKey]?.values === 'any')
 						delete tempFilter[filterKey];
 				});
 				return getObjectKeys(tempFilter).length === 0 ? undefined : tempFilter;
@@ -89,7 +86,7 @@ export default class RootStore {
 			const eventsStore: EventsStore = activeWorkspace.eventsStore;
 			eventStoreState = {
 				filter:
-					(eventsStore.filterStore.filter && clearEmpty(eventsStore.filterStore.filter)) ||
+					(eventsStore.filterStore.filter && clearEventFilter(eventsStore.filterStore.filter)) ||
 					undefined,
 				range: eventsStore.filterStore.range,
 				panelArea: eventsStore.viewStore.eventsPanelArea,
@@ -103,6 +100,14 @@ export default class RootStore {
 						? undefined
 						: eventsStore.viewStore.flattenedListView,
 			};
+			const clearMessageFilter = (filter: Partial<MessageFilterState> | Partial<EventsFilter>) => {
+				const tempFilter = toJS(filter);
+				Object.assign(tempFilter, filter);
+				getObjectKeys(tempFilter).forEach(filterKey => {
+					if (tempFilter[filterKey]?.values.length === 0) delete tempFilter[filterKey];
+				});
+				return getObjectKeys(tempFilter).length === 0 ? undefined : tempFilter;
+			};
 			const messagesStore: MessagesStore = activeWorkspace.messagesStore;
 			messagesStoreState = {
 				timestampFrom: messagesStore.filterStore.filter.timestampFrom,
@@ -112,12 +117,12 @@ export default class RootStore {
 						? messagesStore.filterStore.filter.streams
 						: undefined,
 				isSoftFilter:
-					messagesStore.filterStore.isSoftFilter !== false
+					messagesStore.filterStore.isSoftFilter === false
 						? undefined
 						: messagesStore.filterStore.isSoftFilter,
 				sse:
 					messagesStore.filterStore.sseMessagesFilter &&
-					clearEmpty(messagesStore.filterStore.sseMessagesFilter),
+					clearMessageFilter(messagesStore.filterStore.sseMessagesFilter),
 			};
 
 			getObjectKeys(eventStoreState).forEach(key => {
