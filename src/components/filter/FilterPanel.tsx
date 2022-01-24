@@ -136,13 +136,13 @@ const FilterPanel = (props: Props) => {
 								if (Array.isArray(b)) {
 									return a[0].id.localeCompare(b[0].id);
 								}
-								return 1;
+								return -1;
 							}
 							if (Array.isArray(b)) {
 								if (Array.isArray(a)) {
 									return a[0].id.localeCompare(b[0].id);
 								}
-								return -1;
+								return 1;
 							}
 							return a.id.localeCompare(b.id);
 						})
