@@ -57,6 +57,13 @@ const MessagesFilterPanel = () => {
 	const sessionsStore = useSessionsStore();
 	const { filterStore } = messagesStore;
 
+	const priority = [
+		'attachedMessageId-include',
+		'type-negative',
+		'body-negative',
+		'bodyBinary-negative',
+	];
+
 	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
 	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentStream, setCurrentStream] = React.useState('');
@@ -288,7 +295,21 @@ const MessagesFilterPanel = () => {
 				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
-				config={filterConfig}
+				config={filterConfig.sort((a, b) => {
+					if (Array.isArray(a)) {
+						if (Array.isArray(b)) {
+							return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
+						}
+						return priority.indexOf(a[0].id) - priority.indexOf(b.id);
+					}
+					if (Array.isArray(b)) {
+						if (Array.isArray(a)) {
+							return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
+						}
+						return priority.indexOf(a.id) - priority.indexOf(b[0].id);
+					}
+					return priority.indexOf(a.id) - priority.indexOf(b.id);
+				})}
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
 				renderFooter={renderFooter}

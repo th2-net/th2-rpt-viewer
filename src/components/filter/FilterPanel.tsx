@@ -130,44 +130,17 @@ const FilterPanel = (props: Props) => {
 			</div>
 			<ModalPortal isOpen={showFilter}>
 				<div ref={filterBaseRef} className='filter'>
-					{config
-						.sort((a, b) => {
-							const priority = [
-								'attachedMessageId-include',
-								'attachedEventIds-negative',
-								'type-include',
-								'type-negative',
-								'name-include',
-								'body-include',
-								'body-negative',
-								'bodyBinary-negative',
-								'status',
-							];
-							if (Array.isArray(a)) {
-								if (Array.isArray(b)) {
-									return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
-								}
-								return priority.indexOf(a[0].id) - priority.indexOf(b.id);
-							}
-							if (Array.isArray(b)) {
-								if (Array.isArray(a)) {
-									return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
-								}
-								return priority.indexOf(a.id) - priority.indexOf(b[0].id);
-							}
-							return priority.indexOf(a.id) - priority.indexOf(b.id);
-						})
-						.map(rowConfig =>
-							Array.isArray(rowConfig) ? (
-								<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
-									{rowConfig.map(_rowConfig => (
-										<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
-									))}
-								</div>
-							) : (
-								<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
-							),
-						)}
+					{config.map(rowConfig =>
+						Array.isArray(rowConfig) ? (
+							<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
+								{rowConfig.map(_rowConfig => (
+									<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
+								))}
+							</div>
+						) : (
+							<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
+						),
+					)}
 					<div className='filter__controls filter-controls'>
 						{renderFooter && renderFooter()}
 						<div className='filter-controls__clear-btn' onClick={onClearAllClick}>

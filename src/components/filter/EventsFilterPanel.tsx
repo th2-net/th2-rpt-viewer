@@ -57,6 +57,14 @@ function EventsFilterPanel() {
 		getDefaultCurrentFilterValues(filterStore.filter),
 	);
 
+	const priority = [
+		'attachedEventIds-negative',
+		'type-include',
+		'name-include',
+		'body-include',
+		'status',
+	];
+
 	React.useEffect(() => {
 		setFilter(filterStore.filter);
 		setCurrentFilterValues(getDefaultCurrentFilterValues(filterStore.filter));
@@ -221,7 +229,21 @@ function EventsFilterPanel() {
 			showFilter={filterStore.isOpen}
 			onSubmit={onSubmit}
 			onClearAll={eventsStore.clearFilter}
-			config={filterConfig}
+			config={filterConfig.sort((a, b) => {
+				if (Array.isArray(a)) {
+					if (Array.isArray(b)) {
+						return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
+					}
+					return priority.indexOf(a[0].id) - priority.indexOf(b.id);
+				}
+				if (Array.isArray(b)) {
+					if (Array.isArray(a)) {
+						return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
+					}
+					return priority.indexOf(a.id) - priority.indexOf(b[0].id);
+				}
+				return priority.indexOf(a.id) - priority.indexOf(b.id);
+			})}
 		/>
 	);
 }
