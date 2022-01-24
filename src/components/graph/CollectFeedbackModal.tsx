@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
-import { useScreenshot } from '../../hooks';
+import { useErrorsStore, useResponsesStore, useScreenshot } from '../../hooks';
 import StringFilterRow from '../filter/row/StringRow';
 
 interface CollectFeedbackModalProps {
@@ -25,6 +25,8 @@ interface CollectFeedbackModalProps {
 
 const CollectFeedbackModal = ({ toggleModal, isOpen }: CollectFeedbackModalProps) => {
 	const { image, takeScreenshot, clear } = useScreenshot();
+	const { responses } = useResponsesStore();
+	const { errors } = useErrorsStore();
 	const [title, setTitle] = useState('');
 	const [descr, setDescr] = useState('');
 
@@ -48,13 +50,41 @@ const CollectFeedbackModal = ({ toggleModal, isOpen }: CollectFeedbackModalProps
 					label: 'Description:',
 				}}
 			/>
+			<div className='collect-feedback-modal__info'>
+				{errors.length > 0 && (
+					<div className='collect-feedback-modal__errors'>
+						<h4>Last errors:</h4>
+						{errors.map((error, i) => (
+							<p key={`${error.message}_${i}`} className='collect-feedback-modal__error'>
+								{error.message}
+							</p>
+						))}
+					</div>
+				)}
+				{responses.length > 0 && (
+					<div
+						className='collect-feedback-modal__responses'
+						style={errors.length > 0 ? {} : { flexGrow: 1 }}>
+						<h4>Last requests:</h4>
+						{responses.map((res, i) => (
+							<div className='collect-feedback-modal__response' key={`${res.url}_${i}`}>
+								<p className='response-url' title={res.url}>
+									{res.url}
+								</p>
+								<p className='response-status'>{res.ok ? 'ok' : res.status}</p>
+							</div>
+						))}
+					</div>
+				)}
+			</div>
 			{image && (
 				<div className='collect-feedback-modal__screenshot'>
+					Screenshot:
 					<img src={image} alt='screenshot' />
 				</div>
 			)}
 			<div className='collect-feedback-modal__buttons'>
-				{!image && (
+				{!image ? (
 					<button
 						className='collect-feedback-modal__button'
 						onClick={() => {
@@ -62,6 +92,10 @@ const CollectFeedbackModal = ({ toggleModal, isOpen }: CollectFeedbackModalProps
 							takeScreenshot().finally(toggleModal);
 						}}>
 						Include Screenshot
+					</button>
+				) : (
+					<button className='collect-feedback-modal__button' onClick={clear}>
+						Clear Screenshot
 					</button>
 				)}
 				<button className='collect-feedback-modal__button'>Ok</button>
