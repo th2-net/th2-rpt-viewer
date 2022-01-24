@@ -113,7 +113,7 @@ const MessagesFilterPanel = () => {
 		workspaceStore.stopAttachedMessagesLoading();
 	}, []);
 
-	const isAnchorLoading = computed(() => workspaceStore.isLoadingAttachedMessages).get();
+	const isAttachedMessagesLoading = computed(() => workspaceStore.isLoadingAttachedMessages).get();
 
 	const isMessageListLoading = computed(
 		() =>
@@ -304,7 +304,7 @@ const MessagesFilterPanel = () => {
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
 				renderFooter={renderFooter}
-				isLoading={isAnchorLoading}
+				isLoading={isAttachedMessagesLoading}
 			/>
 			<MessageReplayModal />
 			<MessageFilterWarning />
