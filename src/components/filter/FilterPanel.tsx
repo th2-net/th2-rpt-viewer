@@ -132,19 +132,50 @@ const FilterPanel = (props: Props) => {
 				<div ref={filterBaseRef} className='filter'>
 					{config
 						.sort((a, b) => {
+							const priority = [
+								'attachedMessageId-include',
+								'attachedEventIds-negative',
+								'type-include',
+								'name-include',
+								'body-include',
+								'body-negative',
+								'bodyBinary-negative',
+								'status',
+								'type-negative',
+							];
 							if (Array.isArray(a)) {
 								if (Array.isArray(b)) {
-									return a[0].id.localeCompare(b[0].id);
+									console.log(
+										priority.indexOf(a[0].id) > -1 ? priority.indexOf(a[0].id) : a[0].id,
+										priority.indexOf(b[0].id) > -1 ? priority.indexOf(b[0].id) : b[0].id,
+									);
+									return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
 								}
-								return -1;
+								console.log(
+									priority.indexOf(a[0].id) > -1 ? priority.indexOf(a[0].id) : a[0].id,
+									priority.indexOf(b.id) > -1 ? priority.indexOf(b.id) : b.id,
+								);
+								return priority.indexOf(a[0].id) - priority.indexOf(b.id);
 							}
 							if (Array.isArray(b)) {
 								if (Array.isArray(a)) {
-									return a[0].id.localeCompare(b[0].id);
+									console.log(
+										priority.indexOf(a[0].id) > -1 ? priority.indexOf(a[0].id) : a[0].id,
+										priority.indexOf(b[0].id) > -1 ? priority.indexOf(b[0].id) : b[0].id,
+									);
+									return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
 								}
-								return 1;
+								console.log(
+									priority.indexOf(a.id) > -1 ? priority.indexOf(a.id) : a.id,
+									priority.indexOf(b[0].id) > -1 ? priority.indexOf(b[0].id) : b[0].id,
+								);
+								return priority.indexOf(a.id) - priority.indexOf(b[0].id);
 							}
-							return a.id.localeCompare(b.id);
+							console.log(
+								priority.indexOf(a.id) > -1 ? priority.indexOf(a.id) : a.id,
+								priority.indexOf(b.id) > -1 ? priority.indexOf(b.id) : b.id,
+							);
+							return priority.indexOf(a.id) - priority.indexOf(b.id);
 						})
 						.map(rowConfig =>
 							Array.isArray(rowConfig) ? (
