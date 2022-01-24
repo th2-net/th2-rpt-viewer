@@ -75,10 +75,13 @@ export default class RootStore {
 
 		if (activeWorkspace && isWorkspaceStore(activeWorkspace)) {
 			const clearEmpty = (filter: Partial<MessageFilterState> | Partial<EventsFilter>) => {
-				const tempFilter: Partial<MessageFilterState> | Partial<EventsFilter> = {};
+				const tempFilter = toJS(filter);
 				Object.assign(tempFilter, filter);
 				getObjectKeys(tempFilter).forEach(filterKey => {
-					if (tempFilter[filterKey]?.values.length === 0 && tempFilter[filterKey] !== undefined)
+					if (
+						tempFilter[filterKey] !== undefined &&
+						(tempFilter[filterKey]?.values.length === 0 ||
+							(filterKey === 'status' && tempFilter[filterKey].values === 'any')))
 						delete tempFilter[filterKey];
 				});
 				return getObjectKeys(tempFilter).length === 0 ? undefined : tempFilter;
@@ -95,7 +98,10 @@ export default class RootStore {
 						? eventsStore.searchStore.tokens.map(t => t.pattern)
 						: undefined,
 				selectedEventId: eventsStore.selectedNode?.eventId,
-				flattenedListView: eventsStore.viewStore.flattenedListView,
+				flattenedListView:
+					eventsStore.viewStore.flattenedListView === false
+						? undefined
+						: eventsStore.viewStore.flattenedListView,
 			};
 			const messagesStore: MessagesStore = activeWorkspace.messagesStore;
 			messagesStoreState = {
@@ -105,7 +111,10 @@ export default class RootStore {
 					messagesStore.filterStore.filter.streams.length > 0
 						? messagesStore.filterStore.filter.streams
 						: undefined,
-				isSoftFilter: messagesStore.filterStore.isSoftFilter,
+				isSoftFilter:
+					messagesStore.filterStore.isSoftFilter !== false
+						? undefined
+						: messagesStore.filterStore.isSoftFilter,
 				sse:
 					messagesStore.filterStore.sseMessagesFilter &&
 					clearEmpty(messagesStore.filterStore.sseMessagesFilter),
