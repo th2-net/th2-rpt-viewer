@@ -130,17 +130,33 @@ const FilterPanel = (props: Props) => {
 			</div>
 			<ModalPortal isOpen={showFilter}>
 				<div ref={filterBaseRef} className='filter'>
-					{config.map(rowConfig =>
-						Array.isArray(rowConfig) ? (
-							<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
-								{rowConfig.map(_rowConfig => (
-									<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
-								))}
-							</div>
-						) : (
-							<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
-						),
-					)}
+					{config
+						.sort((a, b) => {
+							if (Array.isArray(a)) {
+								if (Array.isArray(b)) {
+									return a[0].id.localeCompare(b[0].id);
+								}
+								return 1;
+							}
+							if (Array.isArray(b)) {
+								if (Array.isArray(a)) {
+									return a[0].id.localeCompare(b[0].id);
+								}
+								return -1;
+							}
+							return a.id.localeCompare(b.id);
+						})
+						.map(rowConfig =>
+							Array.isArray(rowConfig) ? (
+								<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
+									{rowConfig.map(_rowConfig => (
+										<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
+									))}
+								</div>
+							) : (
+								<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
+							),
+						)}
 					<div className='filter__controls filter-controls'>
 						{renderFooter && renderFooter()}
 						<div className='filter-controls__clear-btn' onClick={onClearAllClick}>
