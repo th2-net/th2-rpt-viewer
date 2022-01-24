@@ -49,12 +49,7 @@ type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
 };
 
-const priority = [
-	'attachedMessageId-include',
-	'type-negative',
-	'body-negative',
-	'bodyBinary-negative',
-];
+const priority = ['attachedEventIds', 'type', 'body', 'bodyBinary', 'text'];
 
 const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
@@ -159,8 +154,11 @@ const MessagesFilterPanel = () => {
 			setCurrentValues((prevState: CurrentSSEValues) => ({ ...prevState, [name]: value }));
 		};
 
-		return searchStore.messagesFilterInfo.map<CompoundFilterRow>(
-			(filterInfo: MessagesFilterInfo) => {
+		return searchStore.messagesFilterInfo
+			.sort((a, b) => {
+				return priority.indexOf(a.name) - priority.indexOf(b.name);
+			})
+			.map<CompoundFilterRow>((filterInfo: MessagesFilterInfo) => {
 				const state = getState(filterInfo.name);
 				const label = prettifyCamelcase(filterInfo.name);
 				const autocompleteList = getArrayOfUniques<string>(
@@ -204,8 +202,7 @@ const MessagesFilterPanel = () => {
 							},
 					  )
 					: [];
-			},
-		);
+			});
 	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
@@ -253,14 +250,7 @@ const MessagesFilterPanel = () => {
 	}, [searchStore.getMessagesFilters, searchStore.isMessageFiltersLoading]);
 
 	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
-		return compoundFilterRow.length
-			? compoundFilterRow.sort((a, b) => {
-					if (Array.isArray(b)) {
-						return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
-					}
-					return priority.indexOf(a[0].id) - priority.indexOf(b);
-			  })
-			: [sseFiltersErrorConfig];
+		return compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig];
 	}, [compoundFilterRow, sseFiltersErrorConfig]);
 
 	const renderFooter = React.useCallback(() => {
