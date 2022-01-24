@@ -49,6 +49,13 @@ type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
 };
 
+const priority = [
+	'attachedMessageId-include',
+	'type-negative',
+	'body-negative',
+	'bodyBinary-negative',
+];
+
 const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
@@ -56,13 +63,6 @@ const MessagesFilterPanel = () => {
 	const { messagesHistory } = useFiltersHistoryStore();
 	const sessionsStore = useSessionsStore();
 	const { filterStore } = messagesStore;
-
-	const priority = [
-		'attachedMessageId-include',
-		'type-negative',
-		'body-negative',
-		'bodyBinary-negative',
-	];
 
 	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
 	const [showFilter, setShowFilter] = React.useState(false);
@@ -253,7 +253,14 @@ const MessagesFilterPanel = () => {
 	}, [searchStore.getMessagesFilters, searchStore.isMessageFiltersLoading]);
 
 	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
-		return compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig];
+		return compoundFilterRow.length
+			? compoundFilterRow.sort((a, b) => {
+					if (Array.isArray(b)) {
+						return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
+					}
+					return priority.indexOf(a[0].id) - priority.indexOf(b);
+			  })
+			: [sseFiltersErrorConfig];
 	}, [compoundFilterRow, sseFiltersErrorConfig]);
 
 	const renderFooter = React.useCallback(() => {
@@ -295,21 +302,7 @@ const MessagesFilterPanel = () => {
 				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
-				config={filterConfig.sort((a, b) => {
-					if (Array.isArray(a)) {
-						if (Array.isArray(b)) {
-							return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
-						}
-						return priority.indexOf(a[0].id) - priority.indexOf(b.id);
-					}
-					if (Array.isArray(b)) {
-						if (Array.isArray(a)) {
-							return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
-						}
-						return priority.indexOf(a.id) - priority.indexOf(b[0].id);
-					}
-					return priority.indexOf(a.id) - priority.indexOf(b.id);
-				})}
+				config={filterConfig}
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
 				renderFooter={renderFooter}

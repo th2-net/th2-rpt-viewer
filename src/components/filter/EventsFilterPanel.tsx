@@ -45,6 +45,14 @@ function getDefaultCurrentFilterValues(filter: EventsFilter | null) {
 		: null;
 }
 
+const priority = [
+	'attachedEventIds-negative',
+	'type-include',
+	'name-include',
+	'body-include',
+	'status',
+];
+
 function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
@@ -56,14 +64,6 @@ function EventsFilterPanel() {
 	const [currentFilterValues, setCurrentFilterValues] = React.useState<CurrentFilterValues | null>(
 		getDefaultCurrentFilterValues(filterStore.filter),
 	);
-
-	const priority = [
-		'attachedEventIds-negative',
-		'type-include',
-		'name-include',
-		'body-include',
-		'status',
-	];
 
 	React.useEffect(() => {
 		setFilter(filterStore.filter);
@@ -124,90 +124,106 @@ function EventsFilterPanel() {
 
 		const filterNames = getObjectKeys(filter);
 
-		return filterNames.map(filterName => {
-			const filterValues: Filter = filter[filterName];
-			const label = prettifyCamelcase(filterName);
+		return filterNames
+			.map(filterName => {
+				const filterValues: Filter = filter[filterName];
+				const label = prettifyCamelcase(filterName);
 
-			let togglerNegative: FilterRowTogglerConfig | null = null;
-			let togglerConjunct: FilterRowTogglerConfig | null = null;
+				let togglerNegative: FilterRowTogglerConfig | null = null;
+				let togglerConjunct: FilterRowTogglerConfig | null = null;
 
-			const autocompleteList = getArrayOfUniques(
-				eventsHistory
-					.map(item => item.filters[filterName]?.values)
-					.filter(notEmpty)
-					.flat(),
-			);
+				const autocompleteList = getArrayOfUniques(
+					eventsHistory
+						.map(item => item.filters[filterName]?.values)
+						.filter(notEmpty)
+						.flat(),
+				);
 
-			if ('negative' in filterValues) {
-				togglerNegative = {
-					id: `${filterName}-include`,
-					label,
-					type: 'toggler',
-					value: filterValues.negative,
-					toggleValue: getToggler(filterName, 'negative' as keyof Filter),
-					possibleValues: ['excl', 'incl'],
-					className: 'filter-row__toggler',
-					labelClassName: 'event-filters-panel-label',
-				};
-			}
-
-			if ('conjunct' in filterValues) {
-				togglerConjunct = {
-					id: `${filterName}-conjunct`,
-					label: '',
-					type: 'toggler',
-					value: filterValues.conjunct,
-					toggleValue: getToggler(filterName, 'conjunct' as keyof Filter),
-					possibleValues: ['and', 'or'],
-					className: 'filter-row__toggler',
-					labelClassName: 'event-filters-panel-label',
-				};
-			}
-
-			let filterInput: FilterRowConfig | null = null;
-			switch (filterValues.type) {
-				case 'string':
-					filterInput = {
-						id: filterName,
-						type: 'string',
-						value: filterValues.values,
-						setValue: getValuesUpdater(filterName),
-						autocompleteList,
-						hint: filterValues.hint,
-					};
-					break;
-				case 'string[]':
-					filterInput = {
-						id: filterName,
-						type: 'multiple-strings',
-						values: filterValues.values,
-						setValues: getValuesUpdater(filterName),
-						currentValue: currentFilterValues[filterName] || '',
-						setCurrentValue: setCurrentValue(filterName),
-						autocompleteList,
-						hint: filterValues.hint,
-					};
-					break;
-				case 'switcher':
-					filterInput = {
-						id: filterName,
-						disabled: false,
+				if ('negative' in filterValues) {
+					togglerNegative = {
+						id: `${filterName}-include`,
 						label,
-						type: 'switcher',
-						value: filterValues.values,
-						setValue: getValuesUpdater(filterName),
-						possibleValues: ['passed', 'failed', 'any'],
-						defaultValue: 'any',
+						type: 'toggler',
+						value: filterValues.negative,
+						toggleValue: getToggler(filterName, 'negative' as keyof Filter),
+						possibleValues: ['excl', 'incl'],
+						className: 'filter-row__toggler',
 						labelClassName: 'event-filters-panel-label',
 					};
-					break;
-				default:
-					break;
-			}
+				}
 
-			const filterRow = [togglerNegative, togglerConjunct, filterInput].filter(notEmpty);
-			return filterRow.length === 1 ? filterRow[0] : filterRow;
-		});
+				if ('conjunct' in filterValues) {
+					togglerConjunct = {
+						id: `${filterName}-conjunct`,
+						label: '',
+						type: 'toggler',
+						value: filterValues.conjunct,
+						toggleValue: getToggler(filterName, 'conjunct' as keyof Filter),
+						possibleValues: ['and', 'or'],
+						className: 'filter-row__toggler',
+						labelClassName: 'event-filters-panel-label',
+					};
+				}
+
+				let filterInput: FilterRowConfig | null = null;
+				switch (filterValues.type) {
+					case 'string':
+						filterInput = {
+							id: filterName,
+							type: 'string',
+							value: filterValues.values,
+							setValue: getValuesUpdater(filterName),
+							autocompleteList,
+							hint: filterValues.hint,
+						};
+						break;
+					case 'string[]':
+						filterInput = {
+							id: filterName,
+							type: 'multiple-strings',
+							values: filterValues.values,
+							setValues: getValuesUpdater(filterName),
+							currentValue: currentFilterValues[filterName] || '',
+							setCurrentValue: setCurrentValue(filterName),
+							autocompleteList,
+							hint: filterValues.hint,
+						};
+						break;
+					case 'switcher':
+						filterInput = {
+							id: filterName,
+							disabled: false,
+							label,
+							type: 'switcher',
+							value: filterValues.values,
+							setValue: getValuesUpdater(filterName),
+							possibleValues: ['passed', 'failed', 'any'],
+							defaultValue: 'any',
+							labelClassName: 'event-filters-panel-label',
+						};
+						break;
+					default:
+						break;
+				}
+
+				const filterRow = [togglerNegative, togglerConjunct, filterInput].filter(notEmpty);
+				return filterRow.length === 1 ? filterRow[0] : filterRow;
+			})
+			.sort((a, b) => {
+				if (Array.isArray(a)) {
+					if (Array.isArray(b)) {
+						return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
+					}
+					return priority.indexOf(a[0].id) - priority.indexOf(b.id);
+				}
+				if (Array.isArray(b)) {
+					if (Array.isArray(a)) {
+						return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
+					}
+					return priority.indexOf(a.id) - priority.indexOf(b[0].id);
+				}
+				return priority.indexOf(a.id) - priority.indexOf(b.id);
+			});
 	}, [filter, eventsHistory, currentFilterValues, setCurrentValue, getValuesUpdater, getToggler]);
 
 	return (
@@ -229,21 +245,7 @@ function EventsFilterPanel() {
 			showFilter={filterStore.isOpen}
 			onSubmit={onSubmit}
 			onClearAll={eventsStore.clearFilter}
-			config={filterConfig.sort((a, b) => {
-				if (Array.isArray(a)) {
-					if (Array.isArray(b)) {
-						return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
-					}
-					return priority.indexOf(a[0].id) - priority.indexOf(b.id);
-				}
-				if (Array.isArray(b)) {
-					if (Array.isArray(a)) {
-						return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
-					}
-					return priority.indexOf(a.id) - priority.indexOf(b[0].id);
-				}
-				return priority.indexOf(a.id) - priority.indexOf(b.id);
-			})}
+			config={filterConfig}
 		/>
 	);
 }
