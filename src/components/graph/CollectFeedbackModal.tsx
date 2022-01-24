@@ -25,7 +25,6 @@ interface CollectFeedbackModalProps {
 
 const CollectFeedbackModal = ({ toggleModal, isOpen }: CollectFeedbackModalProps) => {
 	const { image, takeScreenshot, clear } = useScreenshot();
-	const { responses } = useResponsesStore();
 	const { errors } = useErrorsStore();
 	const [title, setTitle] = useState('');
 	const [descr, setDescr] = useState('');
@@ -58,21 +57,6 @@ const CollectFeedbackModal = ({ toggleModal, isOpen }: CollectFeedbackModalProps
 							<p key={`${error.message}_${i}`} className='collect-feedback-modal__error'>
 								{error.message}
 							</p>
-						))}
-					</div>
-				)}
-				{responses.length > 0 && (
-					<div
-						className='collect-feedback-modal__responses'
-						style={errors.length > 0 ? {} : { flexGrow: 1 }}>
-						<h4>Last requests:</h4>
-						{responses.map((res, i) => (
-							<div className='collect-feedback-modal__response' key={`${res.url}_${i}`}>
-								<p className='response-url' title={res.url}>
-									{res.url}
-								</p>
-								<p className='response-status'>{res.ok ? 'ok' : res.status}</p>
-							</div>
 						))}
 					</div>
 				)}
