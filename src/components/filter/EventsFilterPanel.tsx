@@ -45,6 +45,8 @@ function getDefaultCurrentFilterValues(filter: EventsFilter | null) {
 		: null;
 }
 
+const priority = ['attachedMessageId', 'type', 'body', 'name', 'status', 'text'];
+
 function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
@@ -114,7 +116,9 @@ function EventsFilterPanel() {
 	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
 		if (!filter || !currentFilterValues) return [];
 
-		const filterNames = getObjectKeys(filter);
+		const filterNames = getObjectKeys(filter).sort((a, b) => {
+			return priority.indexOf(a) - priority.indexOf(b);
+		});
 
 		return filterNames.map(filterName => {
 			const filterValues: Filter = filter[filterName];
