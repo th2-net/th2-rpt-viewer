@@ -188,6 +188,13 @@ export default class WorkspaceStore {
 		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
 	};
 
+	stopAttachedMessagesLoading = () => {
+		if (this.attachedMessagesAC) {
+			this.attachedMessagesAC.abort();
+			this.attachedMessagesAC = null;
+		}
+	};
+
 	dispose = () => {
 		// Delete all subscriptions and cancel pending requests
 		this.messagesStore.dispose();

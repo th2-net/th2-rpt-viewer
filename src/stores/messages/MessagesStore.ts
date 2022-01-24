@@ -266,6 +266,7 @@ export default class MessagesStore {
 		this.hintMessages = [];
 		this.filterStore.resetMessagesFilter({ streams: this.filterStore.filter.streams });
 		this.dataStore.stopMessagesLoading();
+		this.dataStore.resetMessagesDataState();
 	};
 
 	@action
@@ -326,6 +327,7 @@ export default class MessagesStore {
 		this.attachedMessagesSubscription();
 		this.filterStore.dispose();
 		this.dataStore.stopMessagesLoading();
+		this.dataStore.resetMessagesDataState();
 	};
 
 	private onMessageHover = (hoveredMessage: EventMessage | null) => {
