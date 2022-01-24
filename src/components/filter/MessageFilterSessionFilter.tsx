@@ -21,17 +21,27 @@ import FilterRow from './row';
 type MessagesFilterSessionFilterProps = {
 	config: FilterRowMultipleStringsConfig;
 	submitChanges: () => void;
+	stopLoading: () => void;
+	isLoading: boolean;
 };
 
 const MessagesFilterSessionFilter = ({
 	config,
 	submitChanges,
+	stopLoading,
+	isLoading,
 }: MessagesFilterSessionFilterProps) => {
 	return (
 		<>
 			<FilterRow rowConfig={config} />
-			<button onClick={submitChanges} className='messages-window-header__filter-submit-btn'>
-				<i className='messages-window-header__filter-submit-icon' />
+			<button
+				onClick={isLoading ? stopLoading : submitChanges}
+				className='messages-window-header__filter-submit-btn'>
+				{isLoading ? (
+					<i className='messages-window-header__filter-submit-stop-icon' />
+				) : (
+					<i className='messages-window-header__filter-submit-start-icon' />
+				)}
 			</button>
 		</>
 	);

@@ -202,16 +202,16 @@ export default class EventsStore {
 
 		const selectedPath = this.selectedPath;
 
-		const rootEvent = selectedPath[0];
+		const firstKnownEvent = selectedPath.filter(node => !node.isUnknown)[0];
 
 		const timestamps = {
-			startEventId: rootEvent.eventId,
-			startTimestamp: timestampToNumber(rootEvent.startTimestamp),
-			endEventId: rootEvent.eventId,
-			endTimestamp: timestampToNumber(rootEvent.startTimestamp),
+			startEventId: firstKnownEvent.eventId,
+			startTimestamp: timestampToNumber(firstKnownEvent.startTimestamp),
+			endEventId: firstKnownEvent.eventId,
+			endTimestamp: timestampToNumber(firstKnownEvent.startTimestamp),
 		};
 
-		const eventNodes = this.getNodesList(rootEvent, []);
+		const eventNodes = this.getNodesList(firstKnownEvent, []);
 
 		if (eventNodes.length > 1 && eventNodes[1]) {
 			timestamps.startTimestamp = timestampToNumber(eventNodes[1].startTimestamp);
@@ -253,6 +253,8 @@ export default class EventsStore {
 
 	@action
 	public selectNode = (eventTreeNode: EventTreeNode | null) => {
+		if (eventTreeNode?.isUnknown) return;
+
 		if (eventTreeNode === null || eventTreeNode.eventId !== this.selectedNode?.eventId) {
 			this.selectedNode = eventTreeNode;
 		}
