@@ -36,6 +36,7 @@ import {
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { SessionsStore } from './messages/SessionsStore';
+import EventsFilter from '../models/filter/EventsFilter';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -73,9 +74,20 @@ export default class RootStore {
 		let messagesStoreState: MessagesStoreURLState = {};
 
 		if (activeWorkspace && isWorkspaceStore(activeWorkspace)) {
+			const clearEmpty = (filter: Partial<MessageFilterState> | Partial<EventsFilter>) => {
+				const tempFilter: Partial<MessageFilterState> | Partial<EventsFilter> = {};
+				Object.assign(tempFilter, filter);
+				getObjectKeys(tempFilter).forEach(filterKey => {
+					if (tempFilter[filterKey]?.values.length === 0 && tempFilter[filterKey] !== undefined)
+						delete tempFilter[filterKey];
+				});
+				return getObjectKeys(tempFilter).length === 0 ? undefined : tempFilter;
+			};
 			const eventsStore: EventsStore = activeWorkspace.eventsStore;
 			eventStoreState = {
-				filter: eventsStore.filterStore.filter || undefined,
+				filter:
+					(eventsStore.filterStore.filter && clearEmpty(eventsStore.filterStore.filter)) ||
+					undefined,
 				range: eventsStore.filterStore.range,
 				panelArea: eventsStore.viewStore.eventsPanelArea,
 				search:
@@ -89,19 +101,24 @@ export default class RootStore {
 			messagesStoreState = {
 				timestampFrom: messagesStore.filterStore.filter.timestampFrom,
 				timestampTo: messagesStore.filterStore.filter.timestampTo,
-				streams: messagesStore.filterStore.filter.streams,
+				streams:
+					messagesStore.filterStore.filter.streams.length > 0
+						? messagesStore.filterStore.filter.streams
+						: undefined,
 				isSoftFilter: messagesStore.filterStore.isSoftFilter,
-				sse: messagesStore.filterStore.sseMessagesFilter,
+				sse:
+					messagesStore.filterStore.sseMessagesFilter &&
+					clearEmpty(messagesStore.filterStore.sseMessagesFilter),
 			};
 
 			getObjectKeys(eventStoreState).forEach(key => {
-				if (eventStoreState[key] === undefined) {
+				if (eventStoreState[key] === undefined || eventStoreState[key] === null) {
 					delete eventStoreState[key];
 				}
 			});
 
 			getObjectKeys(messagesStoreState).forEach(key => {
-				if (messagesStoreState[key] === undefined) {
+				if (messagesStoreState[key] === undefined || messagesStoreState[key] === null) {
 					delete messagesStoreState[key];
 				}
 			});
