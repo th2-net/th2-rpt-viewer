@@ -145,36 +145,16 @@ const FilterPanel = (props: Props) => {
 							];
 							if (Array.isArray(a)) {
 								if (Array.isArray(b)) {
-									console.log(
-										priority.indexOf(a[0].id) > -1 ? priority.indexOf(a[0].id) : a[0].id,
-										priority.indexOf(b[0].id) > -1 ? priority.indexOf(b[0].id) : b[0].id,
-									);
 									return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
 								}
-								console.log(
-									priority.indexOf(a[0].id) > -1 ? priority.indexOf(a[0].id) : a[0].id,
-									priority.indexOf(b.id) > -1 ? priority.indexOf(b.id) : b.id,
-								);
 								return priority.indexOf(a[0].id) - priority.indexOf(b.id);
 							}
 							if (Array.isArray(b)) {
 								if (Array.isArray(a)) {
-									console.log(
-										priority.indexOf(a[0].id) > -1 ? priority.indexOf(a[0].id) : a[0].id,
-										priority.indexOf(b[0].id) > -1 ? priority.indexOf(b[0].id) : b[0].id,
-									);
 									return priority.indexOf(a[0].id) - priority.indexOf(b[0].id);
 								}
-								console.log(
-									priority.indexOf(a.id) > -1 ? priority.indexOf(a.id) : a.id,
-									priority.indexOf(b[0].id) > -1 ? priority.indexOf(b[0].id) : b[0].id,
-								);
 								return priority.indexOf(a.id) - priority.indexOf(b[0].id);
 							}
-							console.log(
-								priority.indexOf(a.id) > -1 ? priority.indexOf(a.id) : a.id,
-								priority.indexOf(b.id) > -1 ? priority.indexOf(b.id) : b.id,
-							);
 							return priority.indexOf(a.id) - priority.indexOf(b.id);
 						})
 						.map(rowConfig =>
