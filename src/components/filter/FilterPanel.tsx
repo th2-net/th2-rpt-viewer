@@ -136,12 +136,12 @@ const FilterPanel = (props: Props) => {
 								'attachedMessageId-include',
 								'attachedEventIds-negative',
 								'type-include',
+								'type-negative',
 								'name-include',
 								'body-include',
 								'body-negative',
 								'bodyBinary-negative',
 								'status',
-								'type-negative',
 							];
 							if (Array.isArray(a)) {
 								if (Array.isArray(b)) {
