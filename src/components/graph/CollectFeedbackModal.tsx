@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
-import { useErrorsStore, useScreenshot } from '../../hooks';
+import { useErrorsStore, useResponsesStore, useScreenshot } from '../../hooks';
 import StringFilterRow from '../filter/row/StringRow';
 
 interface CollectFeedbackModalProps {
@@ -26,12 +26,34 @@ interface CollectFeedbackModalProps {
 const CollectFeedbackModal = ({ toggleModal, isOpen }: CollectFeedbackModalProps) => {
 	const { image, takeScreenshot, clear } = useScreenshot();
 	const { errors } = useErrorsStore();
+	const { responses } = useResponsesStore();
 	const [title, setTitle] = useState('');
 	const [descr, setDescr] = useState('');
+	const [isLoading, setIsLoading] = useState(false);
 
 	useEffect(() => {
 		if (!isOpen) clear();
 	}, [isOpen]);
+
+	const body = JSON.stringify({
+		// eslint-disable-next-line @typescript-eslint/camelcase
+		rpt_viewer_collected_feedback: {
+			title,
+			descr,
+			image,
+			errors: errors.map(({ message, timeStamp, error }) => ({ error, message, timeStamp })),
+			responses: responses.map(({ url, status, statusText }) => ({ url, status, statusText })),
+		},
+	});
+
+	const send = async () => {
+		setIsLoading(true);
+		const res = await fetch('http://10.44.17.234:8080/errorLogs', { method: 'post', body });
+		setIsLoading(false);
+		if (!res.ok) {
+			console.error(`${res.status}: ${res.statusText}`);
+		}
+	};
 
 	return (
 		<div className='collect-feedback-modal'>
@@ -82,7 +104,9 @@ const CollectFeedbackModal = ({ toggleModal, isOpen }: CollectFeedbackModalProps
 						Clear Screenshot
 					</button>
 				)}
-				<button className='collect-feedback-modal__button'>Ok</button>
+				<button className='collect-feedback-modal__button' onClick={send}>
+					{isLoading ? <span className='spinner'></span> : 'Ok'}
+				</button>
 			</div>
 		</div>
 	);

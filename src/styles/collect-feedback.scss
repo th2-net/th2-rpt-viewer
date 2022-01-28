@@ -82,5 +82,9 @@
         padding: 4px;
         color: #fff;
         background-color: $filterPickerScrollItemActiveColor;
+        .spinner {
+            display: block;
+            @include spinner(2px, 10px, 1s, #fff, rgba(255,255,255,0.5));
+        }
     }
 }
