@@ -151,10 +151,14 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 
 	private getFetchedChunk = async (): Promise<EventMessage[]> => {
 		this.fetchedChunkSubscription = when(() => !this.isLoading);
-		await this.fetchedChunkSubscription;
-		const nextChunk = this.getNextChunk();
-		this.resetSSEState({ isEndReached: this.isEndReached });
-		return nextChunk;
+		try {
+			await this.fetchedChunkSubscription;
+			const nextChunk = this.getNextChunk();
+			this.resetSSEState({ isEndReached: this.isEndReached });
+			return nextChunk;
+		} catch (err) {
+			return [];
+		}
 	};
 
 	private onMessageIdsEvent = (e: Event) => {

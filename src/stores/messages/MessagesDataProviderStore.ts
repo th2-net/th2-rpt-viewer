@@ -164,17 +164,23 @@ export default class MessagesDataProviderStore {
 				);
 				try {
 					[message] = await this.anchorChannel.loadAndSubscribe({ initialResponseTimeoutMs: null });
-					if (!message) this.anchorChannel.stop();
+					if (!message) this.anchorChannel?.stop();
 					this.anchorChannel = null;
 				} finally {
 					this.isLoadingAnchorMessage = false;
 				}
 			}
 
-			const [nextMessages, prevMessages] = await Promise.all([
-				this.searchChannelNext.loadAndSubscribe({ resumeFromId: message?.messageId }),
-				this.searchChannelPrev.loadAndSubscribe({ resumeFromId: message?.messageId }),
+			const loadedMessages: [EventMessage[], EventMessage[]] = await Promise.all([
+				this.searchChannelNext
+					? this.searchChannelNext.loadAndSubscribe({ resumeFromId: message?.messageId })
+					: [],
+				this.searchChannelPrev
+					? this.searchChannelPrev.loadAndSubscribe({ resumeFromId: message?.messageId })
+					: [],
 			]);
+
+			const [nextMessages, prevMessages] = loadedMessages;
 
 			const firstNextMessage = nextMessages[nextMessages.length - 1];
 
