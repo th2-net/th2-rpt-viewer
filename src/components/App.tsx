@@ -34,19 +34,6 @@ const AppRootBase = () => {
 	const searchStore = useSearchStore();
 	const tabsStore = useTabsStore();
 
-	const promiseRejectionHandler = (e: PromiseRejectionEvent) => {
-		if (e.reason === 'WHEN_CANCELLED') {
-			e.preventDefault();
-		}
-	};
-
-	React.useEffect(() => {
-		window.addEventListener('unhandledrejection', promiseRejectionHandler);
-		return () => {
-			window.removeEventListener('unhandledrejection', promiseRejectionHandler);
-		};
-	});
-
 	return (
 		<div className='app'>
 			<ToastProvider
