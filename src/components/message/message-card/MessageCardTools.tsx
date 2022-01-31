@@ -166,30 +166,26 @@ const MessageCardTools = ({
 						})}
 					</div>
 				)}
-				{!isScreenshotMsg &&
-					(messageViewType === MessageViewType.JSON ||
-						messageViewType === MessageViewType.FORMATTED) && (
-						<div className='message-card-tools__controls-group'>
-							{['body', 'fields'].map(copyOption => (
-								<div
-									key={copyOption}
-									title='Copy content to clipboard'
-									className='message-card-tools__item'
-									onClick={() => {
-										onCopy(copyOption as 'body' | 'fields');
-										setIsViewMenuOpen(false);
-									}}>
-									<span className='message-card-tools__item-title'>
-										{copyOption === 'body' ? 'Copy full' : 'Copy simplified'}
-									</span>
-									<div className='message-card-tools__copy-icon' />
-									<div
-										className={createBemElement('message-card-tools', 'indicator', 'bookmark')}
-									/>
-								</div>
-							))}
-						</div>
-					)}
+				{!isScreenshotMsg && (
+					<div className='message-card-tools__controls-group'>
+						{['body', 'fields'].map(copyOption => (
+							<div
+								key={copyOption}
+								title='Copy content to clipboard'
+								className='message-card-tools__item'
+								onClick={() => {
+									onCopy(copyOption as 'body' | 'fields');
+									setIsViewMenuOpen(false);
+								}}>
+								<span className='message-card-tools__item-title'>
+									{copyOption === 'body' ? 'Copy full' : 'Copy simplified'}
+								</span>
+								<div className='message-card-tools__copy-icon' />
+								<div className={createBemElement('message-card-tools', 'indicator', 'bookmark')} />
+							</div>
+						))}
+					</div>
+				)}
 				{isScreenshotMsg && (
 					<>
 						<a

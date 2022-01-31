@@ -395,6 +395,17 @@
 	height: 100%;
 	width: 100%;
 
+	.unknowns {
+		&__title {
+			margin: 10px 0 0;
+			font: bold 12px 'Open Sans', sans-serif;
+			color: $alternativeTextColor
+		}
+		&__list {
+			@include scrollbar;
+		}
+	}
+
 	&__nav {
 		display: flex;
 		cursor: pointer;

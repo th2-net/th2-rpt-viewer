@@ -125,7 +125,6 @@ export const convertEventActionToEventTreeNode = (event: EventAction): EventTree
 		startTimestamp: event.startTimestamp,
 		endTimestamp: event.endTimestamp,
 		successful: event.successful,
-		filtered: true,
 		parentId: event.parentEventId,
 		type: ActionType.EVENT_TREE_NODE,
 	};
@@ -137,9 +136,8 @@ export const getErrorEventTreeNode = (eventId: string): EventTreeNode => {
 		isUnknown: true,
 		eventId,
 		eventName: eventId,
-		eventType: '',
-		filtered: true,
-		parentId: null,
+		eventType: 'eventTreeNode',
+		parentId: 'unknown-root',
 		startTimestamp: {
 			nano: 0,
 			epochSecond: 0,
@@ -150,6 +148,20 @@ export const getErrorEventTreeNode = (eventId: string): EventTreeNode => {
 		},
 		successful: false,
 	};
+};
+
+export const unknownRoot: EventTreeNode = {
+	type: ActionType.EVENT_TREE_NODE,
+	isUnknown: true,
+	eventId: 'unknown-root',
+	eventName: 'Unknown Events',
+	eventType: 'eventTreeNode',
+	parentId: null,
+	startTimestamp: {
+		nano: 0,
+		epochSecond: 0,
+	},
+	successful: false,
 };
 
 export function getEventParentId(e: EventTreeNode | EventAction) {

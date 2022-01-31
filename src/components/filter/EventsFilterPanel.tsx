@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
 import { useWorkspaceEventStore, useEventsFilterStore, useFiltersHistoryStore } from '../../hooks';
-import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
 import { Filter, EventFilterState } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
@@ -28,6 +27,7 @@ import FiltersHistory from '../filters-history/FiltersHistory';
 import { getArrayOfUniques } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
+import useEventsDataStore from '../../hooks/useEventsDataStore';
 
 type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;
@@ -44,6 +44,8 @@ function getDefaultCurrentFilterValues(filter: EventsFilter | null) {
 		  )
 		: null;
 }
+
+const priority = ['attachedMessageId', 'type', 'body', 'name', 'status', 'text'];
 
 function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
@@ -114,7 +116,9 @@ function EventsFilterPanel() {
 	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
 		if (!filter || !currentFilterValues) return [];
 
-		const filterNames = getObjectKeys(filter);
+		const filterNames = getObjectKeys(filter).sort((a, b) => {
+			return priority.indexOf(a) - priority.indexOf(b);
+		});
 
 		return filterNames.map(filterName => {
 			const filterValues: Filter = filter[filterName];

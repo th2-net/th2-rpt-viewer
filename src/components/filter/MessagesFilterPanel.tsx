@@ -30,6 +30,7 @@ import {
 	useMessagesWorkspaceStore,
 	useFiltersHistoryStore,
 	useSessionsStore,
+	useWorkspaceStore,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -49,7 +50,10 @@ type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
 };
 
+const priority = ['attachedEventIds', 'type', 'body', 'bodyBinary', 'text'];
+
 const MessagesFilterPanel = () => {
+	const workspaceStore = useWorkspaceStore();
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
@@ -104,9 +108,16 @@ const MessagesFilterPanel = () => {
 		);
 	}, [filter, filterStore.filter, streams, isSoftFilterApplied]);
 
-	const isLoading = computed(
+	const stopLoading = React.useCallback(() => {
+		messagesDataStore.stopMessagesLoading();
+		workspaceStore.stopAttachedMessagesLoading();
+	}, []);
+
+	const isAttachedMessagesLoading = computed(() => workspaceStore.isLoadingAttachedMessages).get();
+
+	const isMessageListLoading = computed(
 		() =>
-			(messagesDataStore.messages.length === 0 && messagesDataStore.isLoading) ||
+			messagesDataStore.isLoading ||
 			(filterStore.isSoftFilter &&
 				[...messagesDataStore.isMatchingMessages.values()].some(Boolean)) ||
 			messagesStore.isLoadingAttachedMessages ||
@@ -152,8 +163,11 @@ const MessagesFilterPanel = () => {
 			setCurrentValues((prevState: CurrentSSEValues) => ({ ...prevState, [name]: value }));
 		};
 
-		return searchStore.messagesFilterInfo.map<CompoundFilterRow>(
-			(filterInfo: MessagesFilterInfo) => {
+		return searchStore.messagesFilterInfo
+			.sort((a, b) => {
+				return priority.indexOf(a.name) - priority.indexOf(b.name);
+			})
+			.map<CompoundFilterRow>((filterInfo: MessagesFilterInfo) => {
 				const state = getState(filterInfo.name);
 				const label = prettifyCamelcase(filterInfo.name);
 				const autocompleteList = getArrayOfUniques<string>(
@@ -197,8 +211,7 @@ const MessagesFilterPanel = () => {
 							},
 					  )
 					: [];
-			},
-		);
+			});
 	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
@@ -284,7 +297,6 @@ const MessagesFilterPanel = () => {
 	return (
 		<>
 			<FilterPanel
-				isLoading={isLoading}
 				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
@@ -292,10 +304,16 @@ const MessagesFilterPanel = () => {
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
 				renderFooter={renderFooter}
+				isLoading={isAttachedMessagesLoading}
 			/>
 			<MessageReplayModal />
 			<MessageFilterWarning />
-			<MessagesFilterSessionFilter config={sessionFilterConfig} submitChanges={submitChanges} />
+			<MessagesFilterSessionFilter
+				config={sessionFilterConfig}
+				submitChanges={submitChanges}
+				stopLoading={stopLoading}
+				isLoading={isMessageListLoading}
+			/>
 			<MessageExport
 				isExport={messagesStore.exportStore.isExport}
 				enableExport={messagesStore.exportStore.enableExport}

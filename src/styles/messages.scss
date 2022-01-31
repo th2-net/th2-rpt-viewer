@@ -559,7 +559,7 @@
 		border-radius: 5px;
 		background-color: $messageListSearchInfoColor;
 		color: $messageListSearchInfoTextColor;
-		font-size: 8px;
+		font-size: 9px;
 		position: absolute;
 		left: 50%;
 		top: 50%;
@@ -819,8 +819,14 @@
 			outline: none;
 		}
 
-		&-icon {
+		&-start-icon {
 			@include icon(url('../../resources/icons/search.svg'), 16px, 16px);
+
+			display: inline-block;
+		}
+
+		&-stop-icon {
+			@include icon(url('../../resources/icons/cross-icon-big.svg'), 16px, 16px);
 
 			display: inline-block;
 		}
