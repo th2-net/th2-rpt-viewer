@@ -162,10 +162,13 @@ export default class MessagesDataProviderStore {
 						chunkSize: 1,
 					},
 				);
-				[message] = await this.anchorChannel.loadAndSubscribe({ initialResponseTimeoutMs: null });
-				if (!message) this.anchorChannel.stop();
-				this.anchorChannel = null;
-				this.isLoadingAnchorMessage = false;
+				try {
+					[message] = await this.anchorChannel.loadAndSubscribe({ initialResponseTimeoutMs: null });
+					if (!message) this.anchorChannel.stop();
+					this.anchorChannel = null;
+				} finally {
+					this.isLoadingAnchorMessage = false;
+				}
 			}
 
 			const [nextMessages, prevMessages] = await Promise.all([

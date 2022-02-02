@@ -195,17 +195,20 @@ function MessageBodyCardField(props: FieldProps) {
 							display: isBeautified ? 'block' : undefined,
 							paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
 						}}>
-						{field.listValue.values?.map((value, idx) => (
-							<MessageBodyCardField
-								primarySort={primarySort}
-								key={idx}
-								field={value}
-								label={''}
-								isBeautified={isBeautified}
-								isRoot={true}
-								setIsHighlighted={highlightSameContext}
-								highlightColor={highlightColor}
-							/>
+						{field.listValue.values?.map((value, idx, arr) => (
+							<React.Fragment key={idx}>
+								<MessageBodyCardField
+									primarySort={primarySort}
+									key={idx}
+									field={value}
+									label={''}
+									isBeautified={isBeautified}
+									isRoot={true}
+									setIsHighlighted={highlightSameContext}
+									highlightColor={highlightColor}
+								/>
+								{isBeautified || idx === arr.length - 1 ? null : ', '}
+							</React.Fragment>
 						))}
 					</span>
 					<span
