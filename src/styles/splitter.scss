@@ -71,16 +71,19 @@
 			z-index: 2;
 		}
 
-		&:hover:after,
-		&.dragging:after {
-			content: '';
-			height: 100%;
-			width: 0;
-			border: 1.5px solid $splitterColor;
+		&:hover &-line, &.dragging &-line {
+			opacity: 1;
+		}
+
+		&-line {
 			position: absolute;
+			height: 100%;
+			width: 3px;
+			top: 0;
 			left: 14px;
 			border-radius: 5px;
 			background-color: $splitterColor;
+			opacity: 0;
 		}
 	}
 

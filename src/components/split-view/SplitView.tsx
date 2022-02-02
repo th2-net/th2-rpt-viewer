@@ -251,6 +251,7 @@ export default class SplitView extends React.Component<Props, State> {
 					style={splitterStyle}
 					onMouseDown={this.splitterMouseDown}
 					ref={this.splitter}>
+					<div className='splitter-bar-line'></div>
 					<div className='splitter-bar-button'>
 						<div className='splitter-bar-icon' />
 					</div>
