@@ -14,17 +14,69 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable } from 'mobx';
+import { action, observable, runInAction, toJS } from 'mobx';
+import moment from 'moment';
+import { nanoid } from 'nanoid';
 import api from '../api';
 import { UserApiSchema } from '../api/ApiSchema';
+import { IndexedDB, IndexedDbStores } from '../api/indexedDb';
+import notificationsStore from './NotificationsStore';
 
-export class UserDataStore {
-	constructor(private userApi: UserApiSchema) {}
-
-	@observable
-	public userId = 'defaultUser';
+export interface User {
+	id: string;
+	name: string;
+	timestamp: number;
 }
 
-const userDataStore = new UserDataStore(api.userApi);
+export class UserDataStore {
+	constructor(private userApi: UserApiSchema, private indexedDb: IndexedDB) {
+		this.init();
+	}
+
+	@observable
+	public user: User | null = null;
+
+	@action
+	public setUser = (name: string) => {
+		if (this.user) {
+			this.user = {
+				...this.user,
+				name,
+			};
+		}
+	};
+
+	@action
+	public updateUser = async () => {
+		if (this.user) {
+			try {
+				await this.indexedDb.updateDbStoreItem(IndexedDbStores.USER, toJS(this.user));
+			} catch (error) {
+				notificationsStore.addMessage({
+					notificationType: 'genericError',
+					type: 'error',
+					header: 'Failed to update user data',
+					description: '',
+					id: nanoid(),
+				});
+			}
+		}
+	};
+
+	private init = async () => {
+		let user: User;
+		const savedUser = await this.indexedDb.getStoreValues<User>(IndexedDbStores.USER);
+		user = savedUser[0];
+		if (!user) {
+			user = { id: 'defaultUser', name: 'defaultUser', timestamp: moment.utc().valueOf() };
+			this.indexedDb.addDbStoreItem(IndexedDbStores.USER, user);
+		}
+		runInAction(() => {
+			this.user = user;
+		});
+	};
+}
+
+const userDataStore = new UserDataStore(api.userApi, api.indexedDb);
 
 export default userDataStore;

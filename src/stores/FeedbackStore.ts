@@ -55,7 +55,7 @@ export class FeedbackStore {
 	private responses: Response[] = [];
 
 	@computed private get user(): string {
-		return this.userDataStore.userId;
+		return this.userDataStore.user?.name || 'defaultUser';
 	}
 
 	@computed private get feedback(): UserFeedback {
