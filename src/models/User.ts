@@ -1,3 +1,5 @@
+import { MessageDisplayRule } from './EventMessage';
+
 /** *****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -13,25 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+export interface UserPrefs {
+	messageDisplayRules: UserPrefsRules<MessageDisplayRule> & {
+		rootRule: MessageDisplayRule;
+	};
+	messageBodySort: UserPrefsRules<string>;
+}
 
-import ApiSchema from './ApiSchema';
-import { IndexedDB } from './indexedDb';
-import eventHttpApi from './event';
-import messageHttpApi from './message';
-import sseApi from './sse';
-import userApi from './user';
+export interface UserFeedback {
+	user: string;
+	title: string;
+	descr: string;
+	image?: string;
+	errors: Partial<ErrorEvent>[];
+	responses: Partial<Response>[];
+}
 
-const envName =
-	process.env.NODE_ENV === 'development'
-		? 'development'
-		: `${window.location.host}${window.location.pathname}`;
-
-const api: ApiSchema = {
-	events: eventHttpApi,
-	messages: messageHttpApi,
-	sse: sseApi,
-	userApi,
-	indexedDb: new IndexedDB(envName),
-};
-
-export default api;
+interface UserPrefsRules<T> {
+	rules: T[];
+	order: string[];
+}

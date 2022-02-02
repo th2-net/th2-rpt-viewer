@@ -29,11 +29,13 @@ import {
 } from './sse';
 import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
+import { UserFeedback, UserPrefs } from '../models/User';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
 	messages: MessageApiSchema;
 	sse: SSESchema;
+	userApi: UserApiSchema;
 	indexedDb: IndexedDB;
 }
 
@@ -101,4 +103,10 @@ export interface SSESchema {
 	getMessagesFilters: () => Promise<MessagesSSEFilters[]>;
 	getEventsFiltersInfo: (filters: EventSSEFilters[]) => Promise<EventsFiltersInfo[]>;
 	getMessagesFiltersInfo: (filters: MessagesSSEFilters[]) => Promise<MessagesFilterInfo[]>;
+}
+
+export interface UserApiSchema {
+	getUserPrefs: (id: string) => Promise<UserPrefs>;
+	setUserPrefs: (userId: string, prefs: UserPrefs) => Promise<string>;
+	sendUserFeedback: (feedback: UserFeedback) => void;
 }
