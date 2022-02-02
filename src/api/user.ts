@@ -20,13 +20,13 @@ import { UserApiSchema } from './ApiSchema';
 
 const userApi: UserApiSchema = {
 	sendUserFeedback: async (feeback: UserFeedback) => {
-		const res = await fetch('10.44.132.165:8080/store', {
+		const res = await fetch('http://10.44.17.234:8080/store', {
 			method: 'post',
 			body: JSON.stringify({ rptViewerCollectedFeedback: feeback }),
 		});
 
 		if (res.ok) {
-			return res.json();
+			return res.text();
 		}
 
 		console.error(res.statusText);
@@ -37,7 +37,7 @@ const userApi: UserApiSchema = {
 			collection: 'userPreferences',
 			id,
 		});
-		const res = await fetch(`10.44.132.165:8080/getById?${params}`);
+		const res = await fetch(`http://10.44.17.234:8080/getById?${params}`);
 		if (res.ok) {
 			return res.json();
 		}
@@ -46,7 +46,7 @@ const userApi: UserApiSchema = {
 		return null;
 	},
 	setUserPrefs: async (userId: string, prefs: UserPrefs) => {
-		const res = await fetch('10.44.132.165:8080/store', {
+		const res = await fetch('http://10.44.17.234:8080/store', {
 			method: 'post',
 			body: JSON.stringify({
 				userPreferences: {
@@ -56,7 +56,7 @@ const userApi: UserApiSchema = {
 		});
 
 		if (res.ok) {
-			return res.json();
+			return res.text();
 		}
 
 		console.error(res.statusText);

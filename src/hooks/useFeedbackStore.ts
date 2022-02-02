@@ -16,7 +16,7 @@
 
 import { useRootStore } from './useRootStore';
 
-export const useErrorsStore = () => {
+export const useFeedbackStore = () => {
 	const rootStore = useRootStore();
-	return rootStore.errorsStore;
+	return rootStore.feedbackStore;
 };

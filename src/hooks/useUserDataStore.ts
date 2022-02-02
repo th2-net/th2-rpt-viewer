@@ -16,7 +16,7 @@
 
 import { useRootStore } from './useRootStore';
 
-export const useResponsesStore = () => {
+export const useUserDataStore = () => {
 	const rootStore = useRootStore();
-	return rootStore.responsesStore;
+	return rootStore.userDataStore;
 };

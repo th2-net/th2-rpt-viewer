@@ -107,6 +107,6 @@ export interface SSESchema {
 
 export interface UserApiSchema {
 	getUserPrefs: (id: string) => Promise<UserPrefs>;
-	setUserPrefs: (userId: string, prefs: UserPrefs) => Promise<string>;
-	sendUserFeedback: (feedback: UserFeedback) => void;
+	setUserPrefs: (userId: string, prefs: UserPrefs) => Promise<string | null>;
+	sendUserFeedback: (feedback: UserFeedback) => Promise<string | null>;
 }

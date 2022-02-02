@@ -14,30 +14,17 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable } from 'mobx';
+import { action, computed, observable } from 'mobx';
+import api from '../api';
+import { UserApiSchema } from '../api/ApiSchema';
 
-export class ErrorsStore {
-	constructor() {
-		window.addEventListener('error', e => {
-			this.addError(e);
-		});
-	}
+export class UserDataStore {
+	constructor(private userApi: UserApiSchema) {}
 
 	@observable
-	public errors: ErrorEvent[] = [];
-
-	@action
-	public addError = (error: ErrorEvent) => {
-		if (error.message === 'ResizeObserver loop limit exceeded') {
-			return;
-		}
-		if (this.errors.length === 10) {
-			this.errors.shift();
-		}
-		this.errors.push(error);
-	};
+	public userId = 'defaultUser';
 }
 
-const errorsStore = new ErrorsStore();
+const userDataStore = new UserDataStore(api.userApi);
 
-export default errorsStore;
+export default userDataStore;
