@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, IReactionDisposer } from 'mobx';
+import { action, computed, observable, reaction, IReactionDisposer, runInAction } from 'mobx';
 import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
@@ -72,7 +72,7 @@ export default class MessagesStore {
 	public showFilterChangeHint = false;
 
 	@observable
-	public filteringAttachedMessages = false;
+	public isFilteringTargetMessages = false;
 
 	/*
 		 This is used for filter change hint. Represents either last clicked message
@@ -134,11 +134,6 @@ export default class MessagesStore {
 	}
 
 	@action
-	private setFilteringAttachedMessages = (isFiltering: boolean) => {
-		this.filteringAttachedMessages = isFiltering;
-	};
-
-	@action
 	public setHoveredMessage(message: EventMessage | null) {
 		this.hoveredMessage = message;
 		this.graphStore.setHoveredTimestamp(message);
@@ -198,16 +193,18 @@ export default class MessagesStore {
 
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
 			const streams = this.filterStore.filter.streams;
-			this.filterStore.resetMessagesFilter({
-				timestampFrom: null,
-				timestampTo: timestampToNumber(message.timestamp),
-				streams: [...new Set([...streams, message.sessionId])],
-			});
+
 			this.selectedMessageId = new String(message.messageId);
 			this.highlightedMessageId = message.messageId;
 			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 			this.hintMessages = [];
 			this.workspaceStore.viewStore.activePanel = this;
+
+			this.filterStore.resetMessagesFilter({
+				timestampFrom: null,
+				timestampTo: timestampToNumber(message.timestamp),
+				streams: [...new Set([...streams, message.sessionId])],
+			});
 		}
 	};
 
@@ -216,7 +213,7 @@ export default class MessagesStore {
 		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === message.messageId);
 		if (messageIndex !== -1) {
 			this.selectedMessageId = new String(message.messageId);
-			this.highlightedMessageId = message.messageId;
+			this.highlightedMessageId = new String(message.messageId);
 		} else {
 			this.onMessageSelect(message);
 		}
@@ -271,28 +268,30 @@ export default class MessagesStore {
 
 	@action
 	/*
-		 This method handles message select or attached messages change events.
-		 When those events occur we want to check if selected message or
-		 attached messages match current filter and streams. If it doesn't match
-		 filter change hint window is shown to a user. And it is up to him to decide
-		 if he wants to reset streams to message(s) streams and update filters
+		This method handles message select or attached messages change events.
+		When those events occur we want to check if selected message or
+		attached messages match current filter and streams. If it doesn't match
+		filter change hint window is shown to a user. And it is up to user to decide
+		if he wants to reset streams to message(s) streams and update filters
 	 */
 	private handleFilterHint = async (message: EventMessage | EventMessage[]): Promise<boolean> => {
 		this.hintMessages = Array.isArray(message) ? message : [message];
+		const matchMessageParams = this.filterStore.filterParams;
 
-		if (this.hintMessages.length === 0) {
+		if (
+			this.hintMessages.length === 0 ||
+			(!matchMessageParams.filters?.length && !matchMessageParams.stream.length)
+		) {
 			this.showFilterChangeHint = false;
 			return this.showFilterChangeHint;
 		}
 
-		this.setFilteringAttachedMessages(true);
-
-		const matchMessageParams = this.filterStore.filterParams;
+		runInAction(() => (this.isFilteringTargetMessages = true));
 
 		const hintMessagesMatch = await Promise.all(
 			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.messageId, matchMessageParams)),
 		).finally(() => {
-			this.setFilteringAttachedMessages(false);
+			runInAction(() => (this.isFilteringTargetMessages = false));
 		});
 
 		this.showFilterChangeHint = hintMessagesMatch.some(isMatched => !isMatched);
@@ -309,17 +308,17 @@ export default class MessagesStore {
 
 		const targetMessage: EventMessage = sortMessagesByTimestamp(this.hintMessages)[0];
 
+		this.hintMessages = [];
+		this.selectedMessageId = new String(targetMessage.messageId);
+		this.highlightedMessageId = targetMessage.messageId;
+		this.showFilterChangeHint = false;
+		this.graphStore.setTimestamp(timestampToNumber(targetMessage.timestamp));
+
 		this.filterStore.resetMessagesFilter({
 			streams: [...new Set(this.hintMessages.map(({ sessionId }) => sessionId))],
 			timestampTo: timestampToNumber(targetMessage.timestamp),
 			timestampFrom: null,
 		});
-		this.graphStore.setTimestamp(timestampToNumber(targetMessage.timestamp));
-
-		this.hintMessages = [];
-		this.selectedMessageId = new String(targetMessage.messageId);
-		this.highlightedMessageId = targetMessage.messageId;
-		this.showFilterChangeHint = false;
 	};
 
 	// Unsubcribe from reactions

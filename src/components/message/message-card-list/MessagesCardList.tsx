@@ -31,16 +31,9 @@ function MessageCardList() {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 
-	const renderMsg = (index: number, message: EventMessage) => {
+	const renderMsg = React.useCallback((index: number, message: EventMessage) => {
 		return <MessageCard message={message} />;
-	};
-
-	if (
-		messagesDataStore.messages.length === 0 &&
-		(messagesDataStore.isLoading || messagesStore.isLoadingAttachedMessages)
-	) {
-		return <SplashScreen />;
-	}
+	}, []);
 
 	if (messagesDataStore.isError) {
 		return (
@@ -49,6 +42,15 @@ function MessageCardList() {
 				descriptionStyles={{ position: 'relative', bottom: '6px' }}
 			/>
 		);
+	}
+
+	if (
+		messagesDataStore.messages.length === 0 &&
+		(messagesDataStore.isLoading ||
+			messagesStore.isLoadingAttachedMessages ||
+			messagesStore.isFilteringTargetMessages)
+	) {
+		return <SplashScreen />;
 	}
 
 	if (
