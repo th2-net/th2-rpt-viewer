@@ -21,31 +21,30 @@ import { useMessagesWorkspaceStore } from '../../hooks';
 const AttachedMessagesSelection = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 
-	const { attachedMessages } = messagesStore;
-
 	const [messageIndex, setMessageIndex] = React.useState<number>(0);
 
 	React.useEffect(() => {
 		setMessageIndex(0);
-	}, [attachedMessages]);
+	}, [messagesStore.attachedMessages]);
 
 	const onPrevious = () => {
-		if (messageIndex !== 0) {
+		if (messageIndex > 0) {
 			const nextIndex = messageIndex - 1;
-			messagesStore.selectAttachedMessage(attachedMessages[nextIndex]);
+			messagesStore.selectAttachedMessage(messagesStore.attachedMessages[nextIndex]);
 			setMessageIndex(nextIndex);
 		}
 	};
 
 	const onNext = () => {
-		if (messageIndex !== attachedMessages.length - 1) {
+		if (messageIndex !== messagesStore.attachedMessages.length - 1) {
 			const nextIndex = messageIndex + 1;
-			messagesStore.selectAttachedMessage(attachedMessages[nextIndex]);
+			messagesStore.selectAttachedMessage(messagesStore.attachedMessages[nextIndex]);
 			setMessageIndex(nextIndex);
 		}
 	};
 
-	if (attachedMessages.length === 0) return null;
+	if (messagesStore.attachedMessages.length === 0 || !messagesStore.dataStore.messages.length)
+		return null;
 
 	return (
 		<div className='messages-list__attached-messages'>
@@ -53,12 +52,11 @@ const AttachedMessagesSelection = () => {
 				<div className='messages-list__attached-messages-btn-previous' />
 				<span className='messages-list__attached-messages-text'>Show previous</span>
 			</button>
-
 			<span className='messages-list__attached-messages-text-counter'>
 				<span className='messages-list__attached-messages-text-counter-current'>
 					{messageIndex + 1}{' '}
 				</span>
-				| {attachedMessages.length}
+				| {messagesStore.attachedMessages.length}
 			</span>
 			<button className='messages-list__attached-messages-btn' onClick={onNext}>
 				<span className='messages-list__attached-messages-text'>Show next</span>
