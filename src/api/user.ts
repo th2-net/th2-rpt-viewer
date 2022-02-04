@@ -37,7 +37,7 @@ const userApi: UserApiSchema = {
 			collection: 'userPreferences',
 			id,
 		});
-		const res = await fetch(`http://10.44.17.234:8080/getById?${params}`);
+		const res = await fetch(`http://10.44.17.234:8080/getById/?${params}`);
 		if (res.ok) {
 			return res.json();
 		}
@@ -45,7 +45,22 @@ const userApi: UserApiSchema = {
 		console.error(res.statusText);
 		return null;
 	},
-	setUserPrefs: async (userId: string, prefs: UserPrefs) => {
+	addNewUserPrefs: async (prefs: UserPrefs) => {
+		const res = await fetch('http://10.44.17.234:8080/store', {
+			method: 'post',
+			body: JSON.stringify({
+				userPreferences: prefs,
+			}),
+		});
+
+		if (res.ok) {
+			return res.text();
+		}
+
+		console.error(res.statusText);
+		return 'null';
+	},
+	editUserPrefs: async (userId: string, prefs: UserPrefs) => {
 		const res = await fetch('http://10.44.17.234:8080/store', {
 			method: 'post',
 			body: JSON.stringify({

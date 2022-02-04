@@ -14,20 +14,25 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { observer } from 'mobx-react-lite';
 import React, { useRef, useState } from 'react';
-import { useOutsideClickListener } from '../../hooks';
+import { useOutsideClickListener, useUserDataStore } from '../../hooks';
 import { ModalPortal } from '../util/Portal';
 import '../../styles/messages-view-configurator.scss';
 import RulesList from './RulesList';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import BodySortConfig from './BodySortConfig';
+import StringFilterRow from '../filter/row/StringRow';
 
 type Props = {
 	sessions: string[];
 };
 
 const MessageViewConfigurator = ({ sessions }: Props) => {
+	const { user, setUserName, saveNewUser, isDefaultUser } = useUserDataStore();
+
 	const [isOpen, setIsOpen] = useState(false);
+	const [isEditingUserName, setIsEditingUserName] = useState(false);
 	const [mode, setMode] = useState<'display-rules' | 'body-sort'>('display-rules');
 
 	const modalRef = useRef<HTMLDivElement>(null);
@@ -69,6 +74,41 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 					zIndex: 500,
 				}}>
 				<div className='messages-view-configurator'>
+					<div className='messages-view-configurator__user'>
+						User name:
+						{isEditingUserName ? (
+							<>
+								<StringFilterRow
+									config={{
+										type: 'string',
+										id: 'user-name',
+										value: user?.name || '',
+										setValue: setUserName,
+									}}
+								/>
+								<button
+									className='edit-user-name'
+									onClick={() => {
+										saveNewUser();
+										setIsEditingUserName(false);
+									}}>
+									ok
+								</button>
+							</>
+						) : (
+							<p onClick={() => setIsEditingUserName(true)} className='user-name'>
+								{user?.name}
+							</p>
+						)}
+					</div>
+					{isDefaultUser && (
+						<p className='hint'>
+							<i>
+								{`Feel free to play with preferences but you'll 
+								have to change user name to make app save them`}
+							</i>
+						</p>
+					)}
 					<div className='messages-view-configurator-header'>
 						<p>{mode === 'display-rules' ? 'Message Display Rules' : 'Message Body Sort'}</p>
 					</div>
@@ -94,4 +134,4 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 	);
 };
 
-export default MessageViewConfigurator;
+export default observer(MessageViewConfigurator);

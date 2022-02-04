@@ -31,6 +31,10 @@ import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
 import { UserFeedback, UserPrefs } from '../models/User';
 
+export enum CollectionsNames {
+	USER_PREFERENCES = 'userPreferences',
+}
+
 export default interface ApiSchema {
 	events: EventApiSchema;
 	messages: MessageApiSchema;
@@ -103,10 +107,12 @@ export interface SSESchema {
 	getMessagesFilters: () => Promise<MessagesSSEFilters[]>;
 	getEventsFiltersInfo: (filters: EventSSEFilters[]) => Promise<EventsFiltersInfo[]>;
 	getMessagesFiltersInfo: (filters: MessagesSSEFilters[]) => Promise<MessagesFilterInfo[]>;
+	getCollectionIds: (collection: CollectionsNames) => EventSource;
 }
 
 export interface UserApiSchema {
 	getUserPrefs: (id: string) => Promise<UserPrefs>;
-	setUserPrefs: (userId: string, prefs: UserPrefs) => Promise<string | null>;
+	addNewUserPrefs: (prefs: UserPrefs) => Promise<string>;
+	editUserPrefs: (userId: string, prefs: UserPrefs) => Promise<string | null>;
 	sendUserFeedback: (feedback: UserFeedback) => Promise<string | null>;
 }

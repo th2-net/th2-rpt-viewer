@@ -17,7 +17,7 @@
 import { nanoid } from 'nanoid';
 import moment from 'moment';
 import React, { useState } from 'react';
-import { useMessageDisplayRulesStore } from '../../hooks';
+import { useMessageDisplayRulesStore, useUserDataStore } from '../../hooks';
 import { MessageViewType } from '../../models/EventMessage';
 import SessionEditor from './SessionEditor';
 import RuleEditor from './RuleEditor';
@@ -27,14 +27,14 @@ type NewRuleProps = {
 };
 
 const NewRule = ({ sessions }: NewRuleProps) => {
-	const rulesStore = useMessageDisplayRulesStore();
+	const userDataStore = useUserDataStore();
 
 	const [session, setSession] = useState('');
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
 	const submitHandler = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		rulesStore.setNewMessagesDisplayRule({
+		userDataStore.setNewMessagesDisplayRule({
 			id: nanoid(),
 			session,
 			viewType,

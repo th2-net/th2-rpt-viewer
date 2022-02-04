@@ -432,3 +432,16 @@
 	background-color: $filterPickerScrollItemBlockedColor;
 	color: $filterPickerScrollItemBlockedFontColor;
 }
+
+@mixin rpt-viewer-submit-button {
+	cursor: pointer;
+	border-radius: 4px;
+	border: none;
+	padding: 1px 2px;
+	color: #fff;
+	background-color: $filterPickerScrollItemActiveColor;
+	&:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+}
