@@ -21,8 +21,8 @@ import {
 	useMessagesWorkspaceStore,
 	useSelectedStore,
 	useMessagesDataStore,
-	useMessageBodySortStore,
 	useMessagesViewTypesStore,
+	useUserDataStore,
 } from '../../../hooks';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import MessageCardBase from './MessageCardBase';
@@ -45,7 +45,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const selectedStore = useSelectedStore();
-	const { sortOrderItems } = useMessageBodySortStore();
+	const { sortOrderItems } = useUserDataStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 

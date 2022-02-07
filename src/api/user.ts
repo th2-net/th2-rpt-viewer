@@ -16,13 +16,16 @@
 
 import { createURLSearchParams } from '../helpers/url';
 import { UserFeedback, UserPrefs } from '../models/User';
-import { UserApiSchema } from './ApiSchema';
+import { CollectionsNames, UserApiSchema } from './ApiSchema';
 
 const userApi: UserApiSchema = {
 	sendUserFeedback: async (feeback: UserFeedback) => {
 		const res = await fetch('http://10.44.17.234:8080/store', {
 			method: 'post',
-			body: JSON.stringify({ rptViewerCollectedFeedback: feeback }),
+			body: JSON.stringify({
+				collection: CollectionsNames.RPT_VIEWER_COLLECTED_FEEDBACK,
+				payload: feeback,
+			}),
 		});
 
 		if (res.ok) {
@@ -32,9 +35,21 @@ const userApi: UserApiSchema = {
 		console.error(res.statusText);
 		return null;
 	},
+	getUsersIds: async () => {
+		const params = createURLSearchParams({
+			collection: CollectionsNames.USER_PREFERENCES,
+		});
+		const res = await fetch(`http://10.44.17.234:8080/getById/?${params}`);
+		if (res.ok) {
+			return res.json();
+		}
+
+		console.error(res.statusText);
+		return null;
+	},
 	getUserPrefs: async (id: string) => {
 		const params = createURLSearchParams({
-			collection: 'userPreferences',
+			collection: CollectionsNames.USER_PREFERENCES,
 			id,
 		});
 		const res = await fetch(`http://10.44.17.234:8080/getById/?${params}`);
@@ -49,7 +64,8 @@ const userApi: UserApiSchema = {
 		const res = await fetch('http://10.44.17.234:8080/store', {
 			method: 'post',
 			body: JSON.stringify({
-				userPreferences: prefs,
+				collection: CollectionsNames.USER_PREFERENCES,
+				payload: prefs,
 			}),
 		});
 
@@ -61,12 +77,12 @@ const userApi: UserApiSchema = {
 		return 'null';
 	},
 	editUserPrefs: async (userId: string, prefs: UserPrefs) => {
-		const res = await fetch('http://10.44.17.234:8080/store', {
+		const res = await fetch('http://10.44.17.234:8080/update', {
 			method: 'post',
 			body: JSON.stringify({
-				userPreferences: {
-					[userId]: prefs,
-				},
+				collection: CollectionsNames.USER_PREFERENCES,
+				id: userId,
+				payload: prefs,
 			}),
 		});
 

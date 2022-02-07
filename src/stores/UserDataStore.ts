@@ -14,11 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, runInAction, toJS } from 'mobx';
+import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import api from '../api';
-import { CollectionsNames, SSESchema, UserApiSchema } from '../api/ApiSchema';
+import { UserApiSchema } from '../api/ApiSchema';
 import { IndexedDB, IndexedDbStores } from '../api/indexedDb';
 import { move } from '../helpers/array';
 import { MessageDisplayRule } from '../models/EventMessage';
@@ -36,13 +36,11 @@ export interface User {
 export class UserDataStore {
 	constructor(
 		// eslint-disable-next-line no-shadow
-		private api: { user: UserApiSchema; sse: SSESchema; indexedDb: IndexedDB },
+		private api: { user: UserApiSchema; indexedDb: IndexedDB },
 	) {
 		this.init();
+		reaction(() => this.userPrefs, this.saveUserPrefs);
 	}
-
-	@observable
-	private usersIds: string[] = [];
 
 	@observable
 	public user: User | null = null;
@@ -53,6 +51,11 @@ export class UserDataStore {
 	@computed
 	public get isDefaultUser() {
 		return this.user && this.user.name === DEFAULT_USER_NAME;
+	}
+
+	@computed
+	public get sortOrderItems() {
+		return this.userPrefs?.messageBodySort || [];
 	}
 
 	@action
@@ -67,12 +70,23 @@ export class UserDataStore {
 
 	@action
 	public saveNewUser = async () => {
-		await this.saveUser();
+		if (this.user && this.isDefaultUser) {
+			const defaultUserPrefs = await this.api.user.getUserPrefs(DEFAULT_USER_NAME);
+			this.userPrefs = defaultUserPrefs;
+			this.user = {
+				...this.user,
+				name: DEFAULT_USER_NAME,
+				id: DEFAULT_USER_NAME,
+			};
+			await this.saveUser();
+			return;
+		}
 
 		if (this.userPrefs) {
 			const newUserId = await this.api.user.addNewUserPrefs(this.userPrefs);
 			this.setUserId(newUserId);
 		}
+		await this.saveUser();
 	};
 
 	public setRootDisplayRule = (rule: MessageDisplayRule) => {
@@ -86,7 +100,6 @@ export class UserDataStore {
 				},
 			};
 		}
-		this.api.user.editUserPrefs(this.user.id, this.userPrefs);
 	};
 
 	@action
@@ -105,7 +118,6 @@ export class UserDataStore {
 				},
 			};
 		}
-		this.api.user.editUserPrefs(this.user.id, this.userPrefs);
 	};
 
 	@action
@@ -121,7 +133,6 @@ export class UserDataStore {
 				),
 			},
 		};
-		this.api.user.editUserPrefs(this.user.id, this.userPrefs);
 	};
 
 	@action
@@ -137,7 +148,6 @@ export class UserDataStore {
 				),
 			},
 		};
-		this.api.user.editUserPrefs(this.user.id, this.userPrefs);
 	};
 
 	@action
@@ -151,7 +161,58 @@ export class UserDataStore {
 				rules: move(this.userPrefs.messageDisplayRules.rules, from, to),
 			},
 		};
-		this.api.user.editUserPrefs(this.user.id, this.userPrefs);
+	};
+
+	@action
+	public setNewBodySortOrderItem = (orderItem: string) => {
+		if (!this.userPrefs) return;
+
+		const hasSame = this.userPrefs.messageBodySort.find(item => item === orderItem);
+		if (!hasSame) {
+			this.userPrefs = {
+				...this.userPrefs,
+				messageBodySort: [...this.userPrefs.messageBodySort, orderItem],
+			};
+		}
+	};
+
+	@action
+	public editBodySortOrderItem = (orderItem: string, newOrderItem: string) => {
+		if (!this.userPrefs) return;
+
+		this.userPrefs = {
+			...this.userPrefs,
+			messageBodySort: this.userPrefs.messageBodySort.map(existedOrderItem =>
+				existedOrderItem === orderItem ? newOrderItem : existedOrderItem,
+			),
+		};
+	};
+
+	@action
+	public deleteBodySortOrderItem = (orderItem: string) => {
+		if (!this.userPrefs) return;
+
+		this.userPrefs = {
+			...this.userPrefs,
+			messageBodySort: this.userPrefs.messageBodySort.filter(
+				existedItem => existedItem !== orderItem,
+			),
+		};
+	};
+
+	@action
+	public reorderBodySort = (from: number, to: number) => {
+		if (!this.userPrefs) return;
+		this.userPrefs = {
+			...this.userPrefs,
+			messageBodySort: move(this.userPrefs.messageBodySort, from, to),
+		};
+	};
+
+	private saveUserPrefs = (userPrefs: UserPrefs | null) => {
+		if (userPrefs && this.user && !this.isDefaultUser) {
+			this.api.user.editUserPrefs(this.user.id, userPrefs);
+		}
 	};
 
 	private saveUser = async () => {
@@ -181,19 +242,7 @@ export class UserDataStore {
 		this.saveUser();
 	};
 
-	@action
-	private onIdsChannelResponse = (e: MessageEvent) => {
-		this.usersIds = [...new Set([...this.usersIds, e.data])];
-	};
-
 	private init = async () => {
-		// const idsChannel = this.api.sse.getCollectionIds(CollectionsNames.USER_PREFERENCES);
-		// idsChannel.addEventListener('message', this.onIdsChannelResponse);
-		// idsChannel.addEventListener('close', (e: Event) => {
-		// 	console.log(e);
-		// 	idsChannel.close();
-		// });
-
 		let user: User;
 		const savedUser = await this.api.indexedDb.getStoreValues<User>(IndexedDbStores.USER);
 		user = savedUser[0];
@@ -211,7 +260,6 @@ export class UserDataStore {
 
 const userDataStore = new UserDataStore({
 	user: api.userApi,
-	sse: api.sse,
 	indexedDb: api.indexedDb,
 });
 

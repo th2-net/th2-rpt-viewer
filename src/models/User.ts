@@ -16,10 +16,11 @@ import { MessageDisplayRule } from './EventMessage';
  * limitations under the License.
  ***************************************************************************** */
 export interface UserPrefs {
-	messageDisplayRules: UserPrefsRules<MessageDisplayRule> & {
+	messageDisplayRules: {
+		rules: MessageDisplayRule[];
 		rootRule: MessageDisplayRule;
 	};
-	messageBodySort: UserPrefsRules<string>;
+	messageBodySort: string[];
 }
 
 export interface UserFeedback {
@@ -29,9 +30,4 @@ export interface UserFeedback {
 	image?: string;
 	errors: Partial<ErrorEvent>[];
 	responses: Partial<Response>[];
-}
-
-interface UserPrefsRules<T> {
-	rules: T[];
-	order: string[];
 }

@@ -17,23 +17,23 @@
 import { action, computed, observable, reaction } from 'mobx';
 import { matchWildcardRule } from '../../helpers/regexp';
 import { EventMessage, MessageViewType } from '../../models/EventMessage';
-import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
+import { UserDataStore } from '../UserDataStore';
 
 export class SavedMessageViewType {
 	message: EventMessage;
 
-	messageDisplayRulesStore: MessageDisplayRulesStore;
+	userDataStore: UserDataStore;
 
-	constructor(message: EventMessage, messageDisplayRulesStore: MessageDisplayRulesStore) {
+	constructor(message: EventMessage, userDataStore: UserDataStore) {
 		this.message = message;
-		this.messageDisplayRulesStore = messageDisplayRulesStore;
+		this.userDataStore = userDataStore;
 		reaction(() => this.displayRule, this.setViewType);
 	}
 
 	@computed
 	private get displayRule() {
-		const rootRule = this.messageDisplayRulesStore.rootDisplayRule;
-		const declaredRule = this.messageDisplayRulesStore.messageDisplayRules.find(rule => {
+		const rootRule = this.userDataStore.userPrefs?.messageDisplayRules.rootRule;
+		const declaredRule = this.userDataStore.userPrefs?.messageDisplayRules.rules.find(rule => {
 			if (rule.session.length > 1 && rule.session.includes('*')) {
 				return matchWildcardRule(this.message.sessionId, rule.session);
 			}

@@ -36,7 +36,7 @@ import { SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
 import { isAbortError } from '../../helpers/fetch';
 import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
-import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
+import userDataStore from '../UserDataStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -72,7 +72,6 @@ export default class WorkspaceStore {
 		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
 		private sessionsStore: SessionsStore,
-		private messageDisplayRulesStore: MessageDisplayRulesStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
@@ -99,10 +98,7 @@ export default class WorkspaceStore {
 			initialState.messages,
 		);
 
-		this.messageViewTypesStore = new MessagesViewTypesStore(
-			this.messageDisplayRulesStore,
-			this.messagesStore,
-		);
+		this.messageViewTypesStore = new MessagesViewTypesStore(userDataStore, this.messagesStore);
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
 

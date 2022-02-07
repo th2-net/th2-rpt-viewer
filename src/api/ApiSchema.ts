@@ -33,6 +33,7 @@ import { UserFeedback, UserPrefs } from '../models/User';
 
 export enum CollectionsNames {
 	USER_PREFERENCES = 'userPreferences',
+	RPT_VIEWER_COLLECTED_FEEDBACK = 'rptViewrCollectedFeedback',
 }
 
 export default interface ApiSchema {
@@ -107,10 +108,10 @@ export interface SSESchema {
 	getMessagesFilters: () => Promise<MessagesSSEFilters[]>;
 	getEventsFiltersInfo: (filters: EventSSEFilters[]) => Promise<EventsFiltersInfo[]>;
 	getMessagesFiltersInfo: (filters: MessagesSSEFilters[]) => Promise<MessagesFilterInfo[]>;
-	getCollectionIds: (collection: CollectionsNames) => EventSource;
 }
 
 export interface UserApiSchema {
+	getUsersIds: () => Promise<string[]>;
 	getUserPrefs: (id: string) => Promise<UserPrefs>;
 	addNewUserPrefs: (prefs: UserPrefs) => Promise<string>;
 	editUserPrefs: (userId: string, prefs: UserPrefs) => Promise<string | null>;

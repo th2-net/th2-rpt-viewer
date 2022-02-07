@@ -17,17 +17,17 @@
 import { action, computed, observable, reaction } from 'mobx';
 import { keyForMessage } from '../../helpers/keys';
 import { EventMessage } from '../../models/EventMessage';
-import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
+import { UserDataStore } from '../UserDataStore';
 import MessagesStore from './MessagesStore';
 import { SavedMessageViewType } from './SavedMessageViewType';
 
 class MessagesViewTypesStore {
-	messageDisplayRulesStore: MessageDisplayRulesStore;
+	userDataStore: UserDataStore;
 
 	messagesStore: MessagesStore;
 
-	constructor(messageDispalyRulesStore: MessageDisplayRulesStore, messagesStore: MessagesStore) {
-		this.messageDisplayRulesStore = messageDispalyRulesStore;
+	constructor(userDataStore: UserDataStore, messagesStore: MessagesStore) {
+		this.userDataStore = userDataStore;
 		this.messagesStore = messagesStore;
 		reaction(() => this.filter, this.resetSavedViewTypes);
 	}
@@ -47,7 +47,7 @@ class MessagesViewTypesStore {
 		if (this.savedViewTypes.has(key)) {
 			return this.savedViewTypes.get(key) as SavedMessageViewType;
 		}
-		this.savedViewTypes.set(key, new SavedMessageViewType(message, this.messageDisplayRulesStore));
+		this.savedViewTypes.set(key, new SavedMessageViewType(message, this.userDataStore));
 		return this.savedViewTypes.get(key) as SavedMessageViewType;
 	};
 

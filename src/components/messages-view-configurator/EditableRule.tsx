@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React, { useState, useCallback } from 'react';
-import { useMessageDisplayRulesStore, usePrevious, useUserDataStore } from '../../hooks';
+import { usePrevious, useUserDataStore } from '../../hooks';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
 import SessionEditor from './SessionEditor';
 import RuleEditor from './RuleEditor';

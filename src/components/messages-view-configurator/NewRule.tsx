@@ -17,7 +17,7 @@
 import { nanoid } from 'nanoid';
 import moment from 'moment';
 import React, { useState } from 'react';
-import { useMessageDisplayRulesStore, useUserDataStore } from '../../hooks';
+import { useUserDataStore } from '../../hooks';
 import { MessageViewType } from '../../models/EventMessage';
 import SessionEditor from './SessionEditor';
 import RuleEditor from './RuleEditor';

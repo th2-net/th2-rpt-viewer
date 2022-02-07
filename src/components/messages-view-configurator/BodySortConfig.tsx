@@ -17,25 +17,25 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { Virtuoso } from 'react-virtuoso';
-import { useMessageBodySortStore } from '../../hooks';
+import { useUserDataStore } from '../../hooks';
 import NewSortOrderItem from './NewSortOrderItem';
 import EditableSortOrderItem from './EditableSortOrderItem';
 
 const BodySortConfig = () => {
-	const { sortOrder } = useMessageBodySortStore();
+	const { sortOrderItems } = useUserDataStore();
 
 	const computeKey = (index: number) => {
-		return sortOrder[index].id;
+		return sortOrderItems[index];
 	};
 
 	const renderSortRule = (index: number) => {
-		const item = sortOrder[index];
+		const item = sortOrderItems[index];
 		return (
 			<div className='order-item editable'>
 				<EditableSortOrderItem
 					item={item}
 					index={index}
-					isLast={index === sortOrder.length - 1}
+					isLast={index === sortOrderItems.length - 1}
 					isFirst={index === 0}
 				/>
 			</div>
@@ -46,7 +46,7 @@ const BodySortConfig = () => {
 		<Virtuoso
 			itemContent={renderSortRule}
 			computeItemKey={computeKey}
-			totalCount={sortOrder.length}
+			totalCount={sortOrderItems.length}
 			style={{ height: '120px' }}
 			components={{
 				Header: function Header() {
