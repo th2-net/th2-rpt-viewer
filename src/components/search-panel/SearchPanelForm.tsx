@@ -253,12 +253,14 @@ const SearchPanelForm = () => {
 					<SearchPanelFilters {...(filters as any)} type={formType} autocompletes={autocompletes} />
 				)}
 			</div>
-			<div className='search-panel__footer'>
-				<button className='search-panel__clear-btn' onClick={clearFilters}>
-					<i className='search-panel__clear-icon' />
-					Clear All
-				</button>
-			</div>
+			{!disabled && (
+				<div className='search-panel__footer'>
+					<button className='search-panel__clear-btn' onClick={clearFilters}>
+						<i className='search-panel__clear-icon' />
+						Clear All
+					</button>
+				</div>
+			)}
 		</div>
 	);
 };
