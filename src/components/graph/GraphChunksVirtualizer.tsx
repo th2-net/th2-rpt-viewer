@@ -149,14 +149,14 @@ const GraphChunksVirtualizer = (props: Props) => {
 		} else {
 			setPanels([]);
 		}
-	}, [panelsRange, chunks, timestamp]);
+	}, [panelsRange, chunks, timestamp, interval]);
 
 	React.useEffect(() => {
 		center.current = timestamp.valueOf();
 		const anchor = new Number(getChunkTimestampFrom(timestamp.valueOf(), interval));
 		setAnchorTimestamp(anchor);
 		getCurrentChunks(state.initialPosition, anchor.valueOf());
-	}, [timestamp]);
+	}, [timestamp, interval]);
 
 	React.useLayoutEffect(() => {
 		getTimeRange();
@@ -170,7 +170,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 			}
 			center.current = null;
 		}
-	}, [chunks, anchorTimestamp]);
+	}, [chunks, anchorTimestamp, interval]);
 
 	React.useEffect(() => {
 		document.addEventListener('mousedown', handleMouseDown);
@@ -237,6 +237,7 @@ const GraphChunksVirtualizer = (props: Props) => {
 		}
 
 		const updatedChunks: [Chunk, number][] = chunksIndexes.map(i => [getChunk(anchorTs, i), i]);
+
 		const isUpdated =
 			chunks.length === 0 ||
 			chunks.length !== updatedChunks.length ||

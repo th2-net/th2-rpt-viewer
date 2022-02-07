@@ -79,7 +79,11 @@ export default class WorkspaceStore {
 		this.viewStore = new WorkspaceViewStore({
 			panelsLayout: initialState.layout,
 		});
-		this.graphStore = new GraphStore(this.selectedStore, initialState.timeRange);
+		this.graphStore = new GraphStore(
+			this.selectedStore,
+			initialState.timeRange,
+			initialState.interval,
+		);
 		this.eventsStore = new EventsStore(
 			this,
 			this.graphStore,

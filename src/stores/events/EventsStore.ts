@@ -87,6 +87,8 @@ export default class EventsStore {
 		reaction(() => this.viewStore.flattenedListView, this.onViewChange);
 
 		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
+
+		reaction(() => this.graphStore.interval, this.onIntervalChange);
 	}
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
@@ -411,6 +413,23 @@ export default class EventsStore {
 				targetEventId: initialState.selectedEventId,
 			});
 		}
+	};
+
+	private onIntervalChange = (interval: number) => {
+		const intervalMs = interval * 60 * 1000;
+		let timestampFrom = this.filterStore.timestampFrom;
+		let timestampTo = this.filterStore.timestampFrom + intervalMs;
+		const now = moment.utc().valueOf();
+		if (timestampTo > now) {
+			timestampTo = now;
+			timestampFrom = timestampTo - intervalMs;
+		}
+		const timeRange: TimeRange = [timestampFrom, timestampTo];
+		this.eventDataStore.fetchEventTree({
+			filter: this.filterStore.filter,
+			timeRange,
+			targetEventId: this.selectedNode?.eventId,
+		});
 	};
 
 	private getNodesList = (
