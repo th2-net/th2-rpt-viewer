@@ -104,6 +104,20 @@ type SearchProgressState = {
 const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
 const SEARCH_CHUNK_SIZE = 500;
 
+function getDefaultFormState(): SearchPanelFormState {
+	return {
+		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
+		searchDirection: SearchDirection.Next,
+		resultCountLimit: 50,
+		timeLimits: {
+			previous: null,
+			next: null,
+		},
+		parentEvent: '',
+		stream: [],
+	};
+}
+
 export class SearchStore {
 	constructor(
 		private workspacesStore: WorkspacesStore,
@@ -159,17 +173,7 @@ export class SearchStore {
 
 	@observable messagesFilter: MessageFilterState | null = null;
 
-	@observable searchForm: SearchPanelFormState = {
-		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
-		searchDirection: SearchDirection.Next,
-		resultCountLimit: 50,
-		timeLimits: {
-			previous: null,
-			next: null,
-		},
-		parentEvent: '',
-		stream: [],
-	};
+	@observable searchForm: SearchPanelFormState = getDefaultFormState();
 
 	@observable formType: SearchPanelType = 'event';
 
@@ -404,6 +408,13 @@ export class SearchStore {
 		}
 
 		this.resetSearchProgressState();
+	};
+
+	@action clearFilters = () => {
+		this.messagesFilter = getDefaultMessagesFiltersState(this.messagesFilterInfo);
+		this.eventsFilter = getDefaultEventsFiltersState(this.eventFilterInfo);
+
+		this.searchForm = getDefaultFormState();
 	};
 
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
