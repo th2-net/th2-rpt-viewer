@@ -239,13 +239,6 @@
 		background-size: 80%;
 		filter: opacity(0.6);
 	}
-
-	&__copy-all {
-		flex-direction: row-reverse;
-		cursor: pointer;
-		flex-shrink: 0;
-		display: none;
-	}
 }
 
 .mc-label {
