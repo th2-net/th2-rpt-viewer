@@ -38,6 +38,8 @@ export function EventsIntervalInput() {
 
 		if (parsedInterval) {
 			submitIntervalDebounced.current(parsedInterval);
+		} else {
+			submitIntervalDebounced.current.cancel();
 		}
 	};
 
@@ -54,7 +56,7 @@ export function EventsIntervalInput() {
 
 	return (
 		<div className='interval-input'>
-			<label htmlFor='events-interval'>Interval</label>
+			<label htmlFor='events-interval'>Interval (mins)</label>
 			<input
 				id='events-interval'
 				type='text'
