@@ -157,10 +157,10 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 		}, [handleKeyDown]);
 
 		React.useEffect(() => {
-			const showAutocomplete = Boolean(alwaysShow || (anchor && value));
+			const showAutocomplete = Boolean(anchor && (alwaysShow || list.length));
 
 			toggleAutocompleteList(showAutocomplete);
-		}, [value, list, focusedOption, anchor]);
+		}, [list, focusedOption, anchor]);
 
 		function toggleAutocompleteList(showAutocomplete: boolean) {
 			if (showAutocomplete) {
@@ -205,6 +205,7 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 				const option = list[index];
 				return (
 					<div
+						title={option}
 						className={createBemElement(
 							'autocomplete-list',
 							'option',

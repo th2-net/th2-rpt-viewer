@@ -18,29 +18,45 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { computed } from 'mobx';
 import { useBooksStore } from '../../hooks/useBooksStore';
-import Select from '../util/Select';
 import { useWorkspaces } from '../../hooks';
+import AutocompleteInput from '../util/AutocompleteInput';
 import '../../styles/books.scss';
 
 const BookSelect = () => {
 	const booksStore = useBooksStore();
 	const workspacesStore = useWorkspaces();
 
+	const inputRef = React.useRef<HTMLInputElement>(null);
+
+	const [currentValue, setCurrentValue] = React.useState(booksStore.selectedBook.name);
+
 	const booksIds = computed(() => booksStore.books.map(b => b.name)).get();
 
+	const onSubmit = (bookName: string) => {
+		const book = booksStore.books.find(b => b.name === bookName);
+		if (book) {
+			booksStore.selectBook(book);
+			workspacesStore.onSelectedBookChange(book);
+			setCurrentValue(book.name);
+		} else {
+			setCurrentValue(booksStore.selectedBook.name);
+		}
+	};
+
 	return (
-		<Select
-			options={booksIds}
-			selected={booksStore.selectedBook.name}
-			onChange={bookName => {
-				const selectedBook = booksStore.books.find(b => b.name === bookName);
-				if (selectedBook) {
-					booksStore.selectBook(selectedBook);
-					workspacesStore.onSelectedBookChange(selectedBook);
-				}
-			}}
-			className='books-input'
-		/>
+		<div className='books-input'>
+			<AutocompleteInput
+				onSubmit={onSubmit}
+				value={currentValue}
+				setValue={setCurrentValue}
+				autoCompleteList={booksIds}
+				ref={inputRef}
+				anchor={inputRef.current || undefined}
+				autoresize={false}
+				submitKeyCodes={[]}
+				autocompleteListMinWidth={320}
+			/>
+		</div>
 	);
 };
 

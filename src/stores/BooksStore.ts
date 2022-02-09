@@ -21,7 +21,18 @@ import { Book } from '../models/Books';
 
 export default class BooksStore {
 	constructor(private api: ApiSchema, books: Book[], initialBook: Book) {
-		this.books = books;
+		this.books = books.sort((bookA, bookB) => {
+			const nameA = bookA.name.toLowerCase();
+			const nameB = bookB.name.toLowerCase();
+			if (nameA < nameB) {
+				return -1;
+			}
+			if (nameB < nameA) {
+				return 1;
+			}
+			return 0;
+		});
+
 		this.selectedBook = initialBook;
 
 		reaction(() => this.selectedBook, this.getScopeList, { fireImmediately: true });

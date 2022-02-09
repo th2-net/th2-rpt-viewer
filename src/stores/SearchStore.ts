@@ -154,6 +154,7 @@ export class SearchStore {
 			() => {
 				this.stopSearch();
 				this.getSearchHistory();
+				this.resetSearchProgressState();
 			},
 		);
 	}
@@ -443,7 +444,7 @@ export class SearchStore {
 
 	@action prevSearch = () => {
 		if (this.currentIndex !== 0) {
-			this.currentIndex -= 1;
+			this.currentIndex = Math.max(this.currentIndex - 1, 0);
 			this.resetSearchProgressState();
 			this.setCompleted(true);
 		}
@@ -451,7 +452,7 @@ export class SearchStore {
 
 	@action newSearch = (searchHistoryItem: SearchHistory) => {
 		this.searchHistory = [...this.searchHistory, searchHistoryItem];
-		this.currentIndex = this.searchHistory.length - 1;
+		this.currentIndex = Math.max(this.searchHistory.length - 1, 0);
 		this.resetSearchProgressState();
 	};
 
@@ -780,7 +781,7 @@ export class SearchStore {
 				const index = historyTimestamp
 					? this.searchHistory.findIndex(search => search.timestamp === historyTimestamp)
 					: -1;
-				this.currentIndex = index === -1 ? this.searchHistory.length - 1 : index;
+				this.currentIndex = index === -1 ? Math.max(this.searchHistory.length - 1, 0) : index;
 			});
 		} catch (error) {
 			console.error('Failed to load search history', error);
