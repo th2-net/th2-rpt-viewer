@@ -31,23 +31,20 @@ type EditableRuleProps = {
 };
 
 const EditableRule = ({ sessions, rule, isFirst, isLast, index, autofocus }: EditableRuleProps) => {
-	const userDataStore = useUserDataStore();
+	const {
+		messageDisplayRules: { reorderMessagesDisplayRule, deleteMessagesDisplayRule },
+	} = useUserDataStore();
 
 	return (
 		<div className='rule editable'>
-			<Reorder
-				isFirst={isFirst}
-				isLast={isLast}
-				index={index}
-				move={userDataStore.reorderMessagesDisplayRule}
-			/>
+			<Reorder isFirst={isFirst} isLast={isLast} index={index} move={reorderMessagesDisplayRule} />
 			<Session rule={rule} sessions={sessions} autofocus={autofocus} />
 			<ViewType rule={rule} />
 			{rule.removable && (
 				<button
 					className='rule-delete'
 					onClick={() => {
-						userDataStore.deleteMessagesDisplayRule(rule);
+						deleteMessagesDisplayRule(rule);
 					}}
 					title='delete'
 				/>
@@ -65,7 +62,9 @@ interface SessionProps {
 }
 
 const Session = ({ rule, sessions, autofocus }: SessionProps) => {
-	const userDataStore = useUserDataStore();
+	const {
+		messageDisplayRules: { editMessageDisplayRule },
+	} = useUserDataStore();
 
 	const [value, setValue] = useState(rule.session);
 	const [isEditing, setIsEditing] = useState(false);
@@ -74,7 +73,7 @@ const Session = ({ rule, sessions, autofocus }: SessionProps) => {
 
 	React.useEffect(() => {
 		if (!isEditing && isEditingPrev && value !== rule.session) {
-			userDataStore.editMessageDisplayRule(rule, { ...rule, session: value });
+			editMessageDisplayRule(rule, { ...rule, session: value });
 		}
 	}, [isEditing, isEditingPrev, value]);
 
@@ -108,7 +107,9 @@ const Session = ({ rule, sessions, autofocus }: SessionProps) => {
 };
 
 const ViewType = ({ rule }: { rule: MessageDisplayRule }) => {
-	const userDataStore = useUserDataStore();
+	const {
+		messageDisplayRules: { setRootDisplayRule, editMessageDisplayRule },
+	} = useUserDataStore();
 
 	const [viewType, setViewType] = useState<MessageViewType>(rule.viewType);
 	const [ruleIsEditing, setRuleIsEditing] = useState(false);
@@ -116,11 +117,11 @@ const ViewType = ({ rule }: { rule: MessageDisplayRule }) => {
 	const editViewType = (vType: MessageViewType) => {
 		const newRule = { ...rule, viewType: vType };
 		if (rule.session === '*') {
-			userDataStore.setRootDisplayRule(newRule);
+			setRootDisplayRule(newRule);
 			setRuleIsEditing(false);
 			return;
 		}
-		userDataStore.editMessageDisplayRule(rule, newRule);
+		editMessageDisplayRule(rule, newRule);
 		setRuleIsEditing(false);
 	};
 

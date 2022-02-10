@@ -22,20 +22,22 @@ import NewSortOrderItem from './NewSortOrderItem';
 import EditableSortOrderItem from './EditableSortOrderItem';
 
 const BodySortConfig = () => {
-	const { sortOrderItems } = useUserDataStore();
+	const {
+		messageBodySort: { sortOrder },
+	} = useUserDataStore();
 
 	const computeKey = (index: number) => {
-		return sortOrderItems[index];
+		return sortOrder[index];
 	};
 
 	const renderSortRule = (index: number) => {
-		const item = sortOrderItems[index];
+		const item = sortOrder[index];
 		return (
 			<div className='order-item editable'>
 				<EditableSortOrderItem
 					item={item}
 					index={index}
-					isLast={index === sortOrderItems.length - 1}
+					isLast={index === sortOrder.length - 1}
 					isFirst={index === 0}
 				/>
 			</div>
@@ -46,7 +48,7 @@ const BodySortConfig = () => {
 		<Virtuoso
 			itemContent={renderSortRule}
 			computeItemKey={computeKey}
-			totalCount={sortOrderItems.length}
+			totalCount={sortOrder.length}
 			style={{ height: '120px' }}
 			components={{
 				Header: function Header() {

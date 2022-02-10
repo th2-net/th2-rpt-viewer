@@ -19,7 +19,7 @@ import api from '../api';
 import { UserApiSchema } from '../api/ApiSchema';
 import { until } from '../helpers/timeout';
 import { UserFeedback } from '../models/User';
-import userDataStoreInstance, { UserDataStore } from './UserDataStore';
+import userDataStoreInstance, { UserDataStore } from './user/UserDataStore';
 
 export enum FeedbackFields {
 	TITLE = 'title',

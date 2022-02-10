@@ -19,7 +19,9 @@ import { useUserDataStore } from '../../hooks';
 import StringFilterRow from '../filter/row/StringRow';
 
 const NewSortOrderItem = () => {
-	const { setNewBodySortOrderItem } = useUserDataStore();
+	const {
+		messageBodySort: { setNewBodySortOrderItem },
+	} = useUserDataStore();
 	const [newItem, setNewItem] = useState('');
 
 	const submitHandler = (e: React.MouseEvent) => {

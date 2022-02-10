@@ -24,7 +24,7 @@ import { SearchHistory } from '../stores/SearchStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { Session } from '../stores/messages/SessionsStore';
-import { User } from '../stores/UserDataStore';
+import { User } from '../models/User';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',

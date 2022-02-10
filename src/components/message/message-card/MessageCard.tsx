@@ -45,7 +45,9 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const selectedStore = useSelectedStore();
-	const { sortOrderItems } = useUserDataStore();
+	const {
+		messageBodySort: { sortOrder },
+	} = useUserDataStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
@@ -134,7 +136,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			toogleMessagePin={toogleMessagePin}
 			isExported={isExported}
 			isExport={messagesStore.exportStore.isExport}
-			sortOrderItems={sortOrderItems}
+			sortOrderItems={sortOrder}
 			addMessageToExport={addMessagesToExport}
 		/>
 	);

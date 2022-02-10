@@ -28,20 +28,17 @@ type EditableSortOrderItemProps = {
 };
 
 const EditableSortOrderItem = ({ item, isFirst, isLast, index }: EditableSortOrderItemProps) => {
-	const userDataStore = useUserDataStore();
+	const {
+		messageBodySort: { reorderBodySort, deleteBodySortOrderItem },
+	} = useUserDataStore();
 
 	return (
 		<>
-			<Reorder
-				isFirst={isFirst}
-				isLast={isLast}
-				index={index}
-				move={userDataStore.reorderBodySort}
-			/>
+			<Reorder isFirst={isFirst} isLast={isLast} index={index} move={reorderBodySort} />
 			<Editor item={item} />
 			<button
 				className='rule-delete'
-				onClick={() => userDataStore.deleteBodySortOrderItem(item)}
+				onClick={() => deleteBodySortOrderItem(item)}
 				title='delete'
 			/>
 		</>
@@ -51,7 +48,9 @@ const EditableSortOrderItem = ({ item, isFirst, isLast, index }: EditableSortOrd
 export default EditableSortOrderItem;
 
 const Editor = ({ item }: { item: string }) => {
-	const userDataStore = useUserDataStore();
+	const {
+		messageBodySort: { editBodySortOrderItem },
+	} = useUserDataStore();
 
 	const [value, setValue] = useState(item);
 	const [isEditing, setIsEditing] = useState(false);
@@ -60,7 +59,7 @@ const Editor = ({ item }: { item: string }) => {
 
 	React.useEffect(() => {
 		if (!isEditing && isEditingPrev && value !== item) {
-			userDataStore.editBodySortOrderItem(item, value);
+			editBodySortOrderItem(item, value);
 		}
 	}, [isEditing, isEditingPrev, value]);
 

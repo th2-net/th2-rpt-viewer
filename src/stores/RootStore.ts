@@ -19,7 +19,7 @@ import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
-import userDataStoreInstance from './UserDataStore';
+import userDataStoreInstance from './user/UserDataStore';
 import feedbackStoreInstance from './FeedbackStore';
 import EventsStore, { EventStoreURLState } from './events/EventsStore';
 import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';

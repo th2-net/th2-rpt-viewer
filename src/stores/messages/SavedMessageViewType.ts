@@ -17,7 +17,7 @@
 import { action, computed, observable, reaction } from 'mobx';
 import { matchWildcardRule } from '../../helpers/regexp';
 import { EventMessage, MessageViewType } from '../../models/EventMessage';
-import { UserDataStore } from '../UserDataStore';
+import { UserDataStore } from '../user/UserDataStore';
 
 export class SavedMessageViewType {
 	message: EventMessage;

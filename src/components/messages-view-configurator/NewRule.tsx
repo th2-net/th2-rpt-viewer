@@ -34,7 +34,7 @@ const NewRule = ({ sessions }: NewRuleProps) => {
 
 	const submitHandler = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		userDataStore.setNewMessagesDisplayRule({
+		userDataStore.messageDisplayRules.setNewMessagesDisplayRule({
 			id: nanoid(),
 			session,
 			viewType,

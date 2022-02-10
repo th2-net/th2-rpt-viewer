@@ -36,7 +36,7 @@ import { SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
 import { isAbortError } from '../../helpers/fetch';
 import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
-import userDataStore from '../UserDataStore';
+import userDataStore from '../user/UserDataStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;

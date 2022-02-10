@@ -15,12 +15,19 @@ import { MessageDisplayRule } from './EventMessage';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+
+export interface User {
+	id: string;
+	name: string;
+	timestamp: number;
+}
+
 export interface UserPrefs {
 	messageDisplayRules: {
 		rules: MessageDisplayRule[];
 		rootRule: MessageDisplayRule;
 	};
-	messageBodySort: string[];
+	messageBodySortOrder: string[];
 }
 
 export interface UserFeedback {
