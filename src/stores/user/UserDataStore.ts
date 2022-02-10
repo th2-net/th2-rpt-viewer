@@ -20,11 +20,22 @@ import { nanoid } from 'nanoid';
 import { UserApiSchema } from '../../api/ApiSchema';
 import { IndexedDB, IndexedDbStores } from '../../api/indexedDb';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
+import { EventBookmark, MessageBookmark } from '../../components/bookmarks/BookmarksPanel';
 import { User, UserPrefs } from '../../models/User';
 import api from '../../api';
 import notificationsStore from '../NotificationsStore';
 import MessageBodySortStore from './MessageBodySortStore';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
+import PinnedItemsStore from './PinnedItemsStore';
+
+export const DEFAULT_ROOT_DISPLAY_RULE = {
+	editableSession: false,
+	editableType: true,
+	id: 'root',
+	removable: false,
+	session: '*',
+	viewType: MessageViewType.JSON,
+};
 
 const DEFAULT_USER_NAME = 'defaultUser';
 
@@ -36,17 +47,14 @@ const DEFAULT_USER: User = {
 
 const DEFAULT_USER_PREFS: UserPrefs = {
 	messageDisplayRules: {
-		rootRule: {
-			editableSession: false,
-			editableType: true,
-			id: 'root',
-			removable: false,
-			session: '*',
-			viewType: MessageViewType.JSON,
-		},
+		rootRule: DEFAULT_ROOT_DISPLAY_RULE,
 		rules: [],
 	},
 	messageBodySortOrder: [],
+	pinned: {
+		events: [],
+		messages: [],
+	},
 };
 
 export class UserDataStore {
@@ -54,36 +62,43 @@ export class UserDataStore {
 
 	public messageBodySort!: MessageBodySortStore;
 
+	public pinnedItemsStore!: PinnedItemsStore;
+
 	constructor(
 		// eslint-disable-next-line no-shadow
 		private api: { user: UserApiSchema; indexedDb: IndexedDB },
 	) {
 		this.init();
+
 		reaction(() => this.userPrefs, this.saveUserPrefs);
 	}
 
 	@observable
-	public user: User = DEFAULT_USER;
+	public isInitializing = true;
 
 	@observable
-	public userPrefs: UserPrefs = DEFAULT_USER_PREFS;
+	public user: User | null = null;
+
+	@observable
+	public userPrefs: UserPrefs | null = null;
 
 	@computed
 	public get isDefaultUser() {
-		return this.user.name === DEFAULT_USER_NAME;
+		return this.user && this.user.name === DEFAULT_USER_NAME;
 	}
 
 	@action
 	public setUserName = async (name: string) => {
-		this.user = {
-			...this.user,
-			name,
-		};
+		if (this.user)
+			this.user = {
+				...this.user,
+				name,
+			};
 	};
 
 	@action
 	public saveNewUser = async () => {
-		if (this.isDefaultUser) {
+		if (this.user && this.isDefaultUser) {
 			const defaultUserPrefs = await this.api.user.getUserPrefs(DEFAULT_USER_NAME);
 			this.userPrefs = defaultUserPrefs;
 			this.user = {
@@ -104,68 +119,63 @@ export class UserDataStore {
 
 	@action
 	public syncMessageDisplayRootRule = (rootRule: MessageDisplayRule) => {
-		this.userPrefs = {
-			...this.userPrefs,
-			messageDisplayRules: {
-				...this.userPrefs.messageDisplayRules,
-				rootRule,
-			},
-		};
+		if (this.userPrefs)
+			this.userPrefs = {
+				...this.userPrefs,
+				messageDisplayRules: {
+					...this.userPrefs.messageDisplayRules,
+					rootRule,
+				},
+			};
 	};
 
 	@action
 	public syncMessageDisplayRules = (rules: MessageDisplayRule[]) => {
-		this.userPrefs = {
-			...this.userPrefs,
-			messageDisplayRules: {
-				...this.userPrefs.messageDisplayRules,
-				rules,
-			},
-		};
+		if (this.userPrefs)
+			this.userPrefs = {
+				...this.userPrefs,
+				messageDisplayRules: {
+					...this.userPrefs.messageDisplayRules,
+					rules,
+				},
+			};
 	};
 
 	@action
 	public syncMessageBodySortOrder = (messageBodySortOrder: string[]) => {
-		this.userPrefs = {
-			...this.userPrefs,
-			messageBodySortOrder,
-		};
+		if (this.userPrefs)
+			this.userPrefs = {
+				...this.userPrefs,
+				messageBodySortOrder,
+			};
+	};
+
+	@action
+	public syncPinned = (pinned: { events: EventBookmark[]; messages: MessageBookmark[] }) => {
+		if (this.userPrefs)
+			this.userPrefs = {
+				...this.userPrefs,
+				pinned,
+			};
 	};
 
 	@action
 	private setUserId = (id: string) => {
-		this.user = {
-			...this.user,
-			id,
-		};
+		if (this.user)
+			this.user = {
+				...this.user,
+				id,
+			};
 		this.saveUser();
 	};
 
-	private saveUserPrefs = (userPrefs: UserPrefs) => {
-		if (!this.isDefaultUser) {
-			this.api.user.editUserPrefs(this.user.id, userPrefs);
-		}
-	};
-
-	private saveUser = async () => {
-		try {
-			await this.api.indexedDb.updateDbStoreItem(IndexedDbStores.USER, toJS(this.user));
-		} catch (error) {
-			notificationsStore.addMessage({
-				notificationType: 'genericError',
-				type: 'error',
-				header: 'Failed to update user data',
-				description: '',
-				id: nanoid(),
-			});
-		}
-	};
-
+	@action
 	private init = async () => {
-		const user =
-			(await this.api.indexedDb.getStoreValues<User>(IndexedDbStores.USER))[0] || DEFAULT_USER;
-
-		await this.api.indexedDb.addDbStoreItem(IndexedDbStores.USER, user);
+		let user = (await this.api.indexedDb.getStoreValues<User>(IndexedDbStores.USER))[0];
+		if (!user) {
+			user = DEFAULT_USER;
+			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.USER, user);
+		}
 
 		const userPrefs = (await this.api.user.getUserPrefs(user.id)) || DEFAULT_USER_PREFS;
 
@@ -177,6 +187,31 @@ export class UserDataStore {
 		this.messageDisplayRules = new MessageDisplayRulesStore(this);
 
 		this.messageBodySort = new MessageBodySortStore(this);
+
+		this.pinnedItemsStore = new PinnedItemsStore(this);
+
+		this.isInitializing = false;
+	};
+
+	private saveUserPrefs = (userPrefs: UserPrefs | null) => {
+		if (userPrefs && this.user && !this.isDefaultUser) {
+			this.api.user.editUserPrefs(this.user.id, userPrefs);
+		}
+	};
+
+	private saveUser = async () => {
+		if (this.user)
+			try {
+				await this.api.indexedDb.updateDbStoreItem(IndexedDbStores.USER, toJS(this.user));
+			} catch (error) {
+				notificationsStore.addMessage({
+					notificationType: 'genericError',
+					type: 'error',
+					header: 'Failed to update user data',
+					description: '',
+					id: nanoid(),
+				});
+			}
 	};
 }
 

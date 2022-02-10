@@ -1,3 +1,4 @@
+import { EventBookmark, MessageBookmark } from '../components/bookmarks/BookmarksPanel';
 import { MessageDisplayRule } from './EventMessage';
 
 /** *****************************************************************************
@@ -28,6 +29,10 @@ export interface UserPrefs {
 		rootRule: MessageDisplayRule;
 	};
 	messageBodySortOrder: string[];
+	pinned: {
+		events: EventBookmark[];
+		messages: MessageBookmark[];
+	};
 }
 
 export interface UserFeedback {

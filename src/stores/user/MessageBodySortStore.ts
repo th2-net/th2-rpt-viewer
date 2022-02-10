@@ -19,15 +19,12 @@ import { move } from '../../helpers/array';
 import { UserDataStore } from './UserDataStore';
 
 export default class MessageBodySortOrderStore {
-	constructor(
-		// eslint-disable-next-line no-shadow
-		private userStore: UserDataStore,
-	) {
+	constructor(private userStore: UserDataStore) {
 		reaction(() => this.sortOrder, this.userStore.syncMessageBodySortOrder);
 	}
 
 	@observable
-	public sortOrder: string[] = this.userStore.userPrefs.messageBodySortOrder;
+	public sortOrder: string[] = this.userStore.userPrefs?.messageBodySortOrder || [];
 
 	@action
 	public setNewBodySortOrderItem = (orderItem: string) => {

@@ -34,7 +34,7 @@ export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
 
-	public selectedStore = new SelectedStore(this, this.api.indexedDb);
+	public selectedStore = new SelectedStore(this);
 
 	public tabsStore = new TabsStore(this);
 
@@ -158,13 +158,9 @@ export default class WorkspacesStore {
 
 	public syncData = async (unsavedData?: DbData) => {
 		try {
-			await Promise.all([
-				this.searchWorkspace.searchStore.syncData(unsavedData),
-				this.selectedStore.syncData(unsavedData),
-			]);
+			this.searchWorkspace.searchStore.syncData(unsavedData);
 		} catch (error) {
 			this.searchWorkspace.searchStore.syncData();
-			this.selectedStore.syncData();
 		}
 	};
 

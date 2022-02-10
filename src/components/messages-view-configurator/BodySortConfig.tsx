@@ -22,9 +22,15 @@ import NewSortOrderItem from './NewSortOrderItem';
 import EditableSortOrderItem from './EditableSortOrderItem';
 
 const BodySortConfig = () => {
+	const userDataStore = useUserDataStore();
+
+	if (userDataStore.isInitializing) {
+		return null;
+	}
+
 	const {
 		messageBodySort: { sortOrder },
-	} = useUserDataStore();
+	} = userDataStore;
 
 	const computeKey = (index: number) => {
 		return sortOrder[index];

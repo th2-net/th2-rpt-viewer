@@ -339,7 +339,6 @@ const GraphSearchDialog = (props: Props) => {
 							bookmark={searchResult.item}
 							onClick={() => onSearchResultSelect(searchResult)}
 							onRemove={() => onHistoryItemDelete(searchResult)}
-							isBookmarkButtonDisabled={rootStore.isBookmarksFull}
 						/>
 					))}
 				</div>

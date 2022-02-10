@@ -19,7 +19,7 @@ import moment from 'moment';
 import { observer } from 'mobx-react-lite';
 import { isEventMessage, isEventNode, getItemId } from '../../helpers/event';
 import { createBemElement } from '../../helpers/styleCreators';
-import { useSelectedStore } from '../../hooks';
+import { useUserDataStore } from '../../hooks';
 import { SearchResult } from '../../stores/SearchStore';
 import { BookmarkedItem, BookmarkItem } from '../bookmarks/BookmarksPanel';
 import { getTimestampAsNumber } from '../../helpers/date';
@@ -32,8 +32,16 @@ interface SearchResultGroup {
 }
 
 const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResultGroup) => {
-	const selectedStore = useSelectedStore();
+	const userDataStore = useUserDataStore();
 	const [isExpanded, setIsExpanded] = React.useState(false);
+
+	if (userDataStore.isInitializing) {
+		return null;
+	}
+
+	const {
+		pinnedItemsStore: { toggleEventPin, toggleMessagePin, itemsToShow },
+	} = userDataStore;
 
 	const expandButtonClass = createBemElement(
 		'search-result-group',
@@ -65,16 +73,14 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 
 	const getBookmarkToggler = (searchResult: SearchResult) => () => {
 		if (isEventMessage(searchResult)) {
-			selectedStore.toggleMessagePin(searchResult);
+			toggleMessagePin(searchResult);
 		} else {
-			selectedStore.toggleEventPin(searchResult);
+			toggleEventPin(searchResult);
 		}
 	};
 
 	const getIsToggled = (searchResult: SearchResult): boolean => {
-		return Boolean(
-			selectedStore.savedItems.find(savedItem => getItemId(savedItem) === getItemId(searchResult)),
-		);
+		return Boolean(itemsToShow.find(savedItem => getItemId(savedItem) === getItemId(searchResult)));
 	};
 
 	const averageTimestamp = (() => {
@@ -111,7 +117,6 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 					onClick={onResultClick}
 					toggleBookmark={getBookmarkToggler(results[0])}
 					isBookmarked={getIsToggled(results[0])}
-					isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
 				/>
 			</div>
 		);
@@ -142,7 +147,6 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 							onClick={onResultClick}
 							toggleBookmark={getBookmarkToggler(result)}
 							isBookmarked={getIsToggled(result)}
-							isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
 						/>
 					))}
 			</div>

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, toJS } from 'mobx';
+import { action, observable, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
@@ -60,11 +60,6 @@ export default class RootStore {
 		);
 
 		window.history.replaceState({}, '', window.location.pathname);
-	}
-
-	@computed
-	public get isBookmarksFull(): boolean {
-		return this.workspacesStore.selectedStore.isBookmarksFull;
 	}
 
 	public getAppState = (): WorkspacesUrlState | null => {

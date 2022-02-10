@@ -17,22 +17,20 @@
 import { action, observable, reaction } from 'mobx';
 import { move } from '../../helpers/array';
 import { MessageDisplayRule } from '../../models/EventMessage';
-import { UserDataStore } from './UserDataStore';
+import { DEFAULT_ROOT_DISPLAY_RULE, UserDataStore } from './UserDataStore';
 
 export default class MessageDisplayRulesStore {
-	constructor(
-		// eslint-disable-next-line no-shadow
-		private userStore: UserDataStore,
-	) {
+	constructor(private userStore: UserDataStore) {
 		reaction(() => this.rootRule, this.userStore.syncMessageDisplayRootRule);
 		reaction(() => this.rules, this.userStore.syncMessageDisplayRules);
 	}
 
 	@observable
-	public rootRule: MessageDisplayRule = this.userStore.userPrefs.messageDisplayRules.rootRule;
+	public rootRule: MessageDisplayRule =
+		this.userStore.userPrefs?.messageDisplayRules.rootRule || DEFAULT_ROOT_DISPLAY_RULE;
 
 	@observable
-	public rules: MessageDisplayRule[] = this.userStore.userPrefs.messageDisplayRules.rules;
+	public rules: MessageDisplayRule[] = this.userStore.userPrefs?.messageDisplayRules.rules || [];
 
 	public setRootDisplayRule = (rule: MessageDisplayRule) => {
 		if (this.rootRule.viewType !== rule.viewType) {

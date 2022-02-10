@@ -22,7 +22,7 @@ import Empty from '../util/Empty';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { getItemId, getItemName, isEvent, isEventMessage } from '../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useActivePanel, useSelectedStore } from '../../hooks';
+import { useActivePanel, useUserDataStore } from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
@@ -62,7 +62,7 @@ export function isMessageBookmark(bookmark: unknown): bookmark is MessageBookmar
 }
 
 function BookmarksPanel() {
-	const selectedStore = useSelectedStore();
+	const { isInitializing, pinnedItemsStore } = useUserDataStore();
 	const searchWorkspace = useSearchWorkspace();
 
 	const [bookmarkType, setBookmarkType] = React.useState<BookmarkType | null>(null);
@@ -70,18 +70,17 @@ function BookmarksPanel() {
 	const [selectedBookmarks, setSelectedBookmarks] = React.useState<string[]>([]);
 
 	const bookmarks = React.useMemo(() => {
-		const sortedBookmarks: Bookmark[] = [
-			...selectedStore.bookmarkedMessages,
-			...selectedStore.bookmarkedEvents,
-		];
-
+		if (isInitializing) {
+			return [];
+		}
+		const sortedBookmarks: Bookmark[] = [...pinnedItemsStore.messages, ...pinnedItemsStore.events];
 		sortedBookmarks.sort((bookmarkA, bookmarkB) => {
 			if (bookmarkA.timestamp > bookmarkB.timestamp) return -1;
 			if (bookmarkA.timestamp < bookmarkB.timestamp) return 1;
 			return 0;
 		});
 		return sortedBookmarks;
-	}, [selectedStore.bookmarkedMessages, selectedStore.bookmarkedEvents]);
+	}, [isInitializing, pinnedItemsStore?.events, pinnedItemsStore?.messages]);
 
 	const filteredBookmarks = React.useMemo(() => {
 		return bookmarks
@@ -131,7 +130,7 @@ function BookmarksPanel() {
 	function removeSelected() {
 		filteredBookmarks
 			.filter(bookmark => selectedBookmarks.includes(bookmark.id))
-			.forEach(bookmark => selectedStore.removeBookmark(bookmark));
+			.forEach(bookmark => pinnedItemsStore.removeBookmark(bookmark));
 		setSelectedBookmarks([]);
 	}
 
@@ -139,11 +138,7 @@ function BookmarksPanel() {
 		return (
 			<div className='bookmarks-panel-item'>
 				<div className='bookmarks-panel-item__content'>
-					<BookmarkItem
-						bookmark={filteredBookmarks[index]}
-						onClick={onBookmarkClick}
-						isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
-					/>
+					<BookmarkItem bookmark={filteredBookmarks[index]} onClick={onBookmarkClick} />
 				</div>
 				<Checkbox
 					className='bookmarks-panel-checkbox'
@@ -204,7 +199,7 @@ interface BookmarkItemProps {
 	onClick?: (item: BookmarkedItem) => void;
 	toggleBookmark?: () => void;
 	isBookmarked?: boolean;
-	isBookmarkButtonDisabled: boolean;
+	isBookmarkButtonDisabled?: boolean;
 }
 
 const BookmarkItemBase = (props: BookmarkItemProps) => {

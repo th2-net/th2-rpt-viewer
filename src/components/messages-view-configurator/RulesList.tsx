@@ -25,19 +25,23 @@ interface Props {
 }
 
 const RulesList = ({ sessions }: Props) => {
-	const { userPrefs } = useUserDataStore();
+	const userDataStore = useUserDataStore();
 
-	if (!userPrefs) {
+	if (userDataStore.isInitializing) {
 		return null;
 	}
 
+	const {
+		messageDisplayRules: { rules, rootRule },
+	} = userDataStore;
+
 	const computeKey = (index: number) => {
-		const rule = userPrefs.messageDisplayRules.rules[index];
+		const rule = rules[index];
 		return rule.id;
 	};
 
 	const renderRule = (index: number) => {
-		const rule = userPrefs.messageDisplayRules.rules[index];
+		const rule = rules[index];
 		return (
 			<RuleRow
 				sessions={sessions}
@@ -45,7 +49,7 @@ const RulesList = ({ sessions }: Props) => {
 				key={rule.id}
 				index={index}
 				isFirst={index === 0}
-				isLast={index === userPrefs.messageDisplayRules.rules.length - 1}
+				isLast={index === rules.length - 1}
 				autofocus={true}
 			/>
 		);
@@ -61,20 +65,14 @@ const RulesList = ({ sessions }: Props) => {
 				className='rules'
 				itemContent={renderRule}
 				computeItemKey={computeKey}
-				totalCount={userPrefs.messageDisplayRules.rules.length}
+				totalCount={rules.length}
 				style={{ height: '120px' }}
 				components={{
 					Header: function Header() {
 						return <RuleRow rule={null} sessions={sessions} index={0} />;
 					},
 					Footer: function Footer() {
-						return (
-							<RuleRow
-								sessions={sessions}
-								rule={userPrefs.messageDisplayRules.rootRule}
-								index={0}
-							/>
-						);
+						return <RuleRow sessions={sessions} rule={rootRule} index={0} />;
 					},
 				}}
 			/>

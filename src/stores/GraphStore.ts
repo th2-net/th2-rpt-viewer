@@ -22,8 +22,11 @@ import { calculateTimeRange } from '../helpers/graph';
 import { Chunk, GraphItem, GraphItemType, IntervalOption } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { SelectedStore } from './SelectedStore';
+import userDataStore from './user/UserDataStore';
 
 export class GraphStore {
+	private readonly userDataStore = userDataStore;
+
 	public readonly steps = {
 		15: 1,
 		30: 3,
@@ -165,7 +168,7 @@ export class GraphStore {
 				? item.successful
 					? GraphItemType.HOVERED_EVENT_PASSED
 					: GraphItemType.HOVERED_EVENT_FAILED
-				: this.selectedStore.savedItems.includes(item)
+				: this.userDataStore.pinnedItemsStore.itemsToShow.includes(item)
 				? item.successful
 					? GraphItemType.BOOKMARKED_PASSED
 					: GraphItemType.BOOKMARKED_FAILED

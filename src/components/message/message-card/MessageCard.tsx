@@ -19,7 +19,6 @@ import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
 	useMessagesWorkspaceStore,
-	useSelectedStore,
 	useMessagesDataStore,
 	useMessagesViewTypesStore,
 	useUserDataStore,
@@ -44,9 +43,10 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
-	const selectedStore = useSelectedStore();
 	const {
 		messageBodySort: { sortOrder },
+		isInitializing,
+		pinnedItemsStore,
 	} = useUserDataStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
@@ -55,10 +55,11 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const isContentBeautified = viewType === MessageViewType.FORMATTED;
-	const isBookmarked =
-		selectedStore.bookmarkedMessages.findIndex(
-			bookmarkedMessage => bookmarkedMessage.id === messageId,
-		) !== -1;
+	const isBookmarked = isInitializing
+		? false
+		: pinnedItemsStore.messages.findIndex(
+				bookmarkedMessage => bookmarkedMessage.id === messageId,
+		  ) !== -1;
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
 
@@ -111,8 +112,8 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	).get();
 
 	const toogleMessagePin = React.useCallback(() => {
-		selectedStore.toggleMessagePin(message);
-	}, [selectedStore.toggleMessagePin]);
+		pinnedItemsStore.toggleMessagePin(message);
+	}, [pinnedItemsStore]);
 
 	const addMessagesToExport = React.useCallback(
 		() => messagesStore.exportStore.addMessageToExport(message),
