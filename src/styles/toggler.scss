@@ -21,11 +21,26 @@
 	display: flex;
 	align-items: center;
 	margin: 0 10px;
+	width: 100px;
 
 	&.disabled {
 		opacity: 0.5;
 		& > div {
 			cursor: default;
+		}
+	}
+
+	&.on {
+		p:first-child {
+			color: #5C85D6;
+			font-weight: 600;
+		}
+	}
+
+	&.off {
+		p:last-child {
+			color: #5C85D6;
+			font-weight: 600;
 		}
 	}
 
@@ -54,10 +69,6 @@
 
 	&__label {
 		color: #ADC2EB;
-		&.selected{
-			color: #5C85D6;
-			font-weight: 600;
-		}
 	}
 	.off {
 		&:before {

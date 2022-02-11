@@ -22,7 +22,11 @@ const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
 	const { value, toggleValue, possibleValues, label, disabled, className = '' } = config;
 	const [firstLabel, secondLabel] = possibleValues;
 
-	const togglerClassName = createStyleSelector('toggler', disabled ? 'disabled' : '');
+	const togglerClassName = createStyleSelector(
+		'toggler',
+		disabled ? 'disabled' : '',
+		value ? 'on' : 'off',
+	);
 	const togglerBarClassName = createStyleSelector('toggler__bar', className, value ? 'on' : 'off');
 
 	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
@@ -37,9 +41,9 @@ const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
 						toggleValue();
 					}
 				}}>
-				<p className={`toggler__label ${value ? 'selected' : ''}`}>{firstLabel}</p>
+				<p className={'toggler__label'}>{firstLabel}</p>
 				<div className={togglerBarClassName}></div>
-				<p className={`toggler__label ${!value ? 'selected' : ''}`}>{secondLabel}</p>
+				<p className={'toggler__label'}>{secondLabel}</p>
 			</div>
 		</div>
 	);
