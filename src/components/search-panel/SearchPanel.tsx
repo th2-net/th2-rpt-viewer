@@ -16,19 +16,17 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useActivePanel } from '../../hooks';
+import { useActivePanel, useWorkspaceStore } from '../../hooks';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
-import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import '../../styles/search-panel.scss';
 
 export type SearchPanelType = 'event' | 'message';
 
 const SearchPanel = () => {
-	const searchWorkspace = useSearchWorkspace();
+	const workspaceStore = useWorkspaceStore();
 	const searchStore = useSearchStore();
-
 	const { ref: searchPanelRef } = useActivePanel(null);
 
 	return (
@@ -41,8 +39,8 @@ const SearchPanel = () => {
 					flattenedResult={searchStore.flattenedResult}
 					filters={searchStore.currentSearch.request.filters}
 					timestamp={searchStore.currentSearch.timestamp}
-					onResultItemClick={searchWorkspace.onSearchResultItemSelect}
-					onResultGroupClick={searchWorkspace.followByTimestamp}
+					onResultItemClick={workspaceStore.onSearchResultItemSelect}
+					onResultGroupClick={workspaceStore.onSearchResultGroupSelect}
 					onResultDelete={() => {
 						if (searchStore.currentSearch) {
 							searchStore.deleteHistoryItem(searchStore.currentSearch);

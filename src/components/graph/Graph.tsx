@@ -25,7 +25,6 @@ import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
 import { useActiveWorkspace, useSelectedStore } from '../../hooks';
 import { Chunk, PanelRange } from '../../models/Graph';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
-import { isWorkspaceStore } from '../../helpers/workspace';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
 import '../../styles/graph.scss';
 import GraphLastEventsButton from './GraphLastEventsButton';
@@ -154,21 +153,17 @@ const GraphRoot = () => {
 			<div className='graph-root'>
 				<i className='th2-logo' />
 				<GraphSearch
-					hoveredTimestamp={
-						isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.hoveredTimestamp : null
-					}
+					hoveredTimestamp={activeWorkspace.graphStore.hoveredTimestamp}
 					onTimestampSubmit={activeWorkspace.onTimestampSelect}
 					onFoundItemClick={activeWorkspace.onSavedItemSelect}
-					windowRange={isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.range : null}
+					windowRange={activeWorkspace.graphStore.range}
 				/>
-				{isWorkspaceStore(activeWorkspace) && (
-					<GraphLastEventsButton
-						onTimestampSubmit={activeWorkspace.onTimestampSelect}
-						setRange={activeWorkspace.eventsStore.onRangeChange}
-						interval={activeWorkspace.graphStore.interval}
-					/>
-				)}
-				{isWorkspaceStore(activeWorkspace) && <ObservedGraph activeWorkspace={activeWorkspace} />}
+				<GraphLastEventsButton
+					onTimestampSubmit={activeWorkspace.onTimestampSelect}
+					setRange={activeWorkspace.eventsStore.onRangeChange}
+					interval={activeWorkspace.graphStore.interval}
+				/>
+				<ObservedGraph activeWorkspace={activeWorkspace} />
 			</div>
 		</PointerTimestampProvider>
 	);

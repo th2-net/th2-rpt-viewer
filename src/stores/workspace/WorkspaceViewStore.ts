@@ -18,6 +18,7 @@ import { observable, action } from 'mobx';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import EventsStore from '../events/EventsStore';
 import MessagesStore from '../messages/MessagesStore';
+import { isPanelCollapsed } from '../../helpers/workspaceView';
 
 type InitialState = Partial<{
 	panelArea: number;
@@ -27,7 +28,7 @@ type InitialState = Partial<{
 }>;
 
 export const defaultPanelsLayout: WorkspacePanelsLayout =
-	process.env.NODE_ENV === 'development' ? [50, 50] : [100, 0];
+	process.env.NODE_ENV === 'development' ? [45, 30, 25, 0] : [0, 100, 0, 0];
 
 export default class WorkspaceViewStore {
 	constructor(initalState?: InitialState) {
@@ -58,14 +59,56 @@ export default class WorkspaceViewStore {
 		this.panelsLayout = panelsLayout;
 	};
 
-	@action
-	public resetToDefaulLayout = () => {
-		this.panelsLayout = [50, 50];
+	@action togglePanel = (targetIndex: number) => {
+		if (isPanelCollapsed(this.panelsLayout[targetIndex])) {
+			this.expandPanel(targetIndex);
+		} else {
+			this.collapsePanel(targetIndex);
+		}
 	};
 
-	@action
-	public collapsePanel = (index: number) => {
-		this.panelsLayout = index === 0 ? [0, 100] : [100, 0];
+	private collapsePanel = (targetIndex: number) => {
+		const newLayout = [...this.panelsLayout] as WorkspacePanelsLayout;
+
+		for (let i = targetIndex + 1; i < newLayout.length; i++) {
+			if (!isPanelCollapsed(newLayout[i])) {
+				newLayout[i] += newLayout[targetIndex];
+				newLayout[targetIndex] = 0;
+				break;
+			}
+		}
+
+		if (!isPanelCollapsed(newLayout[targetIndex])) {
+			for (let i = targetIndex - 1; i >= 0; i--) {
+				if (!isPanelCollapsed(newLayout[i])) {
+					newLayout[i] += newLayout[targetIndex];
+					newLayout[targetIndex] = 0;
+					break;
+				}
+			}
+		}
+
+		if (!isPanelCollapsed(newLayout[targetIndex])) {
+			const panelIndexToSwap = targetIndex === 0 ? 1 : targetIndex - 1;
+
+			[newLayout[targetIndex], newLayout[panelIndexToSwap]] = [
+				newLayout[panelIndexToSwap],
+				newLayout[targetIndex],
+			];
+		}
+
+		this.panelsLayout = newLayout;
+	};
+
+	private expandPanel = (targetIndex: number) => {
+		const expandedPanelCount =
+			this.panelsLayout.length - this.panelsLayout.filter(isPanelCollapsed).length;
+
+		this.panelsLayout = this.panelsLayout.map((panelArea, panelIndex) =>
+			panelIndex === targetIndex
+				? 100 / (expandedPanelCount + 1)
+				: (panelArea * expandedPanelCount) / (expandedPanelCount + 1),
+		) as WorkspacePanelsLayout;
 	};
 
 	@action

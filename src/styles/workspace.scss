@@ -31,16 +31,13 @@
 
 .workspace-tab {
 	display: flex;
-	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	height: fit-content;
-	width: 100%;
-	border-radius: 6px 0 0 6px;
-	padding: 10px 0;
+	border-radius: 6px 6px 0 0;
+	padding: 6px 7px;
 	background-color: $workspaceTabBackground;
 	color: $workspaceTabTextColor;
-	box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.25);
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
 	cursor: pointer;
 	transition: background-color 0.2s;
 
@@ -53,29 +50,36 @@
 		transition: color 0.2s;
 		color: inherit;
 		font-size: 12px;
-		writing-mode: vertical-rl;
-		text-orientation: mixed;
-		transform: rotate(180deg);
-		line-height: 22px;
+		line-height: 15px;
 	}
 
 	&__add {
 		background-color: #dee5ed;
 		text-align: center;
-		height: 25px;
-		padding: 0;
+		padding: 7px;
 		color: $workspaceTabActiveBackground;
 		font-size: 20px;
-		line-height: 25px;
+		line-height: 15px;
 	}
 
-	&__close {
-		@include icon(url(../../resources/icons/cross-icon-white.svg));
-		display: block;
-		border-radius: 50%;
-		margin: auto;
-		margin-bottom: 5px;
+	&__controls {
+		display: flex;
+		align-items: center;
 		transition: all 0.2s;
+		max-width: 0;
+		overflow: hidden;
+	}
+
+	&:hover &__controls {
+		transform: scale(1);
+		max-width: 60px;
+	}
+
+	&__control-button {
+		margin-left: 5px;
+		border-radius: 5px;
+		padding: 3px;
+		transition: background-color 0.2s;
 
 		&:hover {
 			background-color: rgba(102, 102, 102, 0.15);
@@ -86,6 +90,18 @@
 				background-color: rgba(181, 181, 181, 0.34);
 			}
 		}
+	}
+
+	&__copy {
+		@include icon(url(../../resources/icons/workspace-link.svg));
+
+		&.selected {
+			@include icon(url(../../resources/icons/workspace-link-white.svg));
+		}
+	}
+
+	&__close {
+		@include icon(url(../../resources/icons/cross-icon-white.svg));
 	}
 }
 
@@ -106,12 +122,12 @@
 		@include scrollbar;
 	}
 
-	&__search-icon {
+	&__smart-search-icon {
 		@include icon(url(../../resources/icons/workspace-search.svg), 15px, 15px);
 		margin-bottom: 3px;
 	}
 
-	&__search-icon-white {
+	&__smart-search-icon-white {
 		@include icon(url(../../resources/icons/workspace-search-white.svg), 15px, 15px);
 	}
 
@@ -281,6 +297,10 @@
 		flex-shrink: 1;
 		height: 100%;
 		overflow: hidden;
+	}
+
+	&.minified &__wrapper {
+		display: none;
 	}
 
 	&.minified &__sidebar {

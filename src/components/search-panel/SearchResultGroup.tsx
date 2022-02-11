@@ -17,13 +17,15 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { getItemId, isEventMessage } from '../../helpers/event';
+import { getItemId, isEvent, isEventMessage } from '../../helpers/event';
 import { createBemElement } from '../../helpers/styleCreators';
 import { FilterEntry, SearchResult } from '../../stores/SearchStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { ActionType } from '../../models/EventAction';
 import SearchResultItem from './SearchResultItem';
 import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
+import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
+import { EventMessage } from '../../models/EventMessage';
 
 interface SearchResultGroup {
 	results: SearchResult[];
@@ -42,6 +44,8 @@ const SearchResultGroup = ({
 	onGroupClick,
 }: SearchResultGroup) => {
 	const [isExpanded, setIsExpanded] = React.useState(false);
+	const messagesWorkspaceStore = useMessagesWorkspaceStore();
+	const messagesDataStore = useMessagesDataStore();
 
 	const expandButtonClass = createBemElement(
 		'search-result-group',
@@ -111,10 +115,32 @@ const SearchResultGroup = ({
 			.utc()
 			.format('HH:mm:ss.SSS')}`;
 
+	const isMessageVisibleInMessagePanel = (message: EventMessage) => {
+		const visibleMessages = messagesDataStore.messages.slice(
+			messagesWorkspaceStore.currentMessagesIndexesRange.startIndex,
+			messagesWorkspaceStore.currentMessagesIndexesRange.endIndex + 1,
+		);
+
+		return visibleMessages.some(({ messageId }) => messageId === message.messageId);
+	};
+
+	const isResultItemHighlighted = (result: SearchResult) => {
+		if (isEvent(result)) {
+			return true; // TODO: implement events highlighting
+		}
+
+		return isMessageVisibleInMessagePanel(result);
+	};
+
 	if (results.length === 1) {
 		return (
 			<div className='search-result-single-item'>
-				<SearchResultItem result={results[0]} filters={filters} onResultClick={onResultClick} />
+				<SearchResultItem
+					result={results[0]}
+					filters={filters}
+					onResultClick={onResultClick}
+					highlighted={isResultItemHighlighted(results[0])}
+				/>
 			</div>
 		);
 	}
@@ -143,6 +169,7 @@ const SearchResultGroup = ({
 							result={result}
 							filters={filters}
 							onResultClick={onResultClick}
+							highlighted={isResultItemHighlighted(result)}
 						/>
 					))}
 			</div>
