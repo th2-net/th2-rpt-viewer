@@ -14,9 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, reaction } from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import { move } from '../../helpers/array';
-import { UserDataStore } from './UserDataStore';
+import { UserDataStore, userDataStoreLimits } from './UserDataStore';
 
 export default class MessageBodySortOrderStore {
 	constructor(private userStore: UserDataStore) {
@@ -26,12 +26,21 @@ export default class MessageBodySortOrderStore {
 	@observable
 	public sortOrder: string[] = this.userStore.userPrefs?.messageBodySortOrder || [];
 
+	@computed
+	private get isLimitReached() {
+		return this.sortOrder.length === userDataStoreLimits.messageBodySort;
+	}
+
 	@action
 	public setNewBodySortOrderItem = (orderItem: string) => {
 		const hasSame = this.sortOrder.find((item: string) => item === orderItem);
-		if (!hasSame) {
-			this.sortOrder = [...this.sortOrder, orderItem];
+		if (hasSame) return;
+		if (this.isLimitReached) {
+			const newSortOrder = this.sortOrder.slice(0, -1);
+			this.sortOrder = [orderItem, ...newSortOrder];
+			return;
 		}
+		this.sortOrder = [...this.sortOrder, orderItem];
 	};
 
 	@action

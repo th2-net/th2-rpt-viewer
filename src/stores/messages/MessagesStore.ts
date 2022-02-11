@@ -35,6 +35,7 @@ import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
 import { getItemAt } from '../../helpers/array';
+import userDataStore from '../user/UserDataStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -45,6 +46,8 @@ type MessagesStoreDefaultState = MessagesStoreURLState & {
 export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string | null | undefined;
 
 export default class MessagesStore {
+	private readonly userDataStore = userDataStore;
+
 	private attachedMessagesSubscription: IReactionDisposer;
 
 	public filterStore: MessagesFilterStore;
@@ -156,7 +159,7 @@ export default class MessagesStore {
 		}
 
 		this.exportStore.disableExport();
-		this.sessionsStore.saveSessions(filter.streams);
+		this.userDataStore.lastSearchedSessionsStore.addSessions(filter.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.highlightedMessageId = null;

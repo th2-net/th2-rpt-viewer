@@ -38,7 +38,7 @@ import SearchResultCountLimit, {
 } from './search-form/SearchResultCountLimit';
 import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
-import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
+import { useFiltersHistoryStore, useUserDataStore } from '../../hooks';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -64,18 +64,21 @@ const SearchPanelForm = () => {
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
-	const sessionsStore = useSessionsStore();
+	const { isInitializing, lastSearchedSessionsStore } = useUserDataStore();
 	const searchStore = useSearchStore();
 	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
+		if (isInitializing) {
+			return messageSessions;
+		}
 		return [
-			...sessionsStore.sessions.map(s => s.session),
+			...lastSearchedSessionsStore.sessions.map(s => s.session),
 			...messageSessions.filter(
-				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
+				session => lastSearchedSessionsStore.sessions.findIndex(s => s.session === session) === -1,
 			),
 		];
-	}, [messageSessions, sessionsStore.sessions]);
+	}, [messageSessions, lastSearchedSessionsStore?.sessions]);
 
 	const areSessionInvalid: boolean = React.useMemo(() => {
 		return (

@@ -26,7 +26,7 @@ import {
 import { sortByTimestamp } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { UserDataStore } from './UserDataStore';
+import { UserDataStore, userDataStoreLimits } from './UserDataStore';
 
 export default class PinnedItemsStore {
 	constructor(private userStore: UserDataStore) {
@@ -54,6 +54,11 @@ export default class PinnedItemsStore {
 			...this.events.map(pinnedEvent => pinnedEvent.item),
 			...this.messages.map(pinnedMessage => pinnedMessage.item),
 		]);
+	}
+
+	@computed
+	private get isLimitReached() {
+		return this.itemsToShow.length === userDataStoreLimits.bookmarks;
 	}
 
 	@action
@@ -92,9 +97,16 @@ export default class PinnedItemsStore {
 		const readyToPinEvent = this.createReadyToPinEvent(event);
 		const hasSame =
 			this.events.findIndex(pinnedEvent => pinnedEvent.id === readyToPinEvent.id) !== -1;
-		if (!hasSame) {
-			this.events = [...this.events, readyToPinEvent];
+
+		if (hasSame) return;
+
+		if (this.isLimitReached) {
+			const newPinnedEvents = this.events.slice(0, -1);
+			this.events = [...newPinnedEvents, readyToPinEvent];
+			return;
 		}
+
+		this.events = [...this.events, readyToPinEvent];
 	};
 
 	@action
@@ -102,9 +114,16 @@ export default class PinnedItemsStore {
 		const readyToPinMessage = this.createReadyToPinMessage(message);
 		const hasSame =
 			this.messages.findIndex(pinnedEvent => pinnedEvent.id === readyToPinMessage.id) !== -1;
-		if (!hasSame) {
-			this.messages = [...this.messages, readyToPinMessage];
+
+		if (hasSame) return;
+
+		if (this.isLimitReached) {
+			const newPinnedMessages = this.messages.slice(0, -1);
+			this.messages = [...newPinnedMessages, readyToPinMessage];
+			return;
 		}
+
+		this.messages = [...this.messages, readyToPinMessage];
 	};
 
 	@action

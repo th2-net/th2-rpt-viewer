@@ -27,6 +27,7 @@ import notificationsStore from '../NotificationsStore';
 import MessageBodySortStore from './MessageBodySortStore';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import PinnedItemsStore from './PinnedItemsStore';
+import LastSearchedSessionsStore, { Session } from './LastSearchedSessionsStore';
 
 export const DEFAULT_ROOT_DISPLAY_RULE = {
 	editableSession: false,
@@ -55,7 +56,18 @@ const DEFAULT_USER_PREFS: UserPrefs = {
 		events: [],
 		messages: [],
 	},
+	lastSearchedSessions: [],
 };
+
+export const userDataStoreLimits = {
+	bookmarks: 1000,
+	filtersHistory: 40,
+	messageDisplayRules: 100,
+	messageBodySort: 100,
+	searchHistory: 5,
+	graphSearchHistory: 1000,
+	lastSearchedSessions: 20,
+} as const;
 
 export class UserDataStore {
 	public messageDisplayRules!: MessageDisplayRulesStore;
@@ -63,6 +75,8 @@ export class UserDataStore {
 	public messageBodySort!: MessageBodySortStore;
 
 	public pinnedItemsStore!: PinnedItemsStore;
+
+	public lastSearchedSessionsStore!: LastSearchedSessionsStore;
 
 	constructor(
 		// eslint-disable-next-line no-shadow
@@ -160,6 +174,15 @@ export class UserDataStore {
 	};
 
 	@action
+	public syncLastSessions = (sessions: Session[]) => {
+		if (this.userPrefs)
+			this.userPrefs = {
+				...this.userPrefs,
+				lastSearchedSessions: sessions,
+			};
+	};
+
+	@action
 	private setUserId = (id: string) => {
 		if (this.user)
 			this.user = {
@@ -189,6 +212,8 @@ export class UserDataStore {
 		this.messageBodySort = new MessageBodySortStore(this);
 
 		this.pinnedItemsStore = new PinnedItemsStore(this);
+
+		this.lastSearchedSessionsStore = new LastSearchedSessionsStore(this);
 
 		this.isInitializing = false;
 	};

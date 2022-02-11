@@ -14,10 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, reaction } from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import { move } from '../../helpers/array';
 import { MessageDisplayRule } from '../../models/EventMessage';
-import { DEFAULT_ROOT_DISPLAY_RULE, UserDataStore } from './UserDataStore';
+import { DEFAULT_ROOT_DISPLAY_RULE, UserDataStore, userDataStoreLimits } from './UserDataStore';
 
 export default class MessageDisplayRulesStore {
 	constructor(private userStore: UserDataStore) {
@@ -32,6 +32,12 @@ export default class MessageDisplayRulesStore {
 	@observable
 	public rules: MessageDisplayRule[] = this.userStore.userPrefs?.messageDisplayRules.rules || [];
 
+	@computed
+	private get isLimitReached() {
+		return this.rules.length === userDataStoreLimits.messageDisplayRules;
+	}
+
+	@action
 	public setRootDisplayRule = (rule: MessageDisplayRule) => {
 		if (this.rootRule.viewType !== rule.viewType) {
 			this.rootRule = rule;
@@ -40,9 +46,16 @@ export default class MessageDisplayRulesStore {
 
 	@action
 	public setNewMessagesDisplayRule = (rule: MessageDisplayRule) => {
-		if (!this.rules.find((existed: MessageDisplayRule) => existed.session === rule.session)) {
-			this.rules = [rule, ...this.rules];
+		const hasSame = this.rules.find(
+			(existed: MessageDisplayRule) => existed.session === rule.session,
+		);
+		if (hasSame) return;
+		if (this.isLimitReached) {
+			const newRules = this.rules.slice(0, -1);
+			this.rules = [rule, ...newRules];
+			return;
 		}
+		this.rules = [rule, ...this.rules];
 	};
 
 	@action
