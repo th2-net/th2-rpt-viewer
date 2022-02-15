@@ -46,7 +46,6 @@ import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
-import { SessionsStore } from './messages/SessionsStore';
 import { getItemAt } from '../helpers/array';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
@@ -123,7 +122,6 @@ export class SearchStore {
 		private workspacesStore: WorkspacesStore,
 		private api: ApiSchema,
 		private filtersHistory: FiltersHistoryStore,
-		private sessionsStore: SessionsStore,
 	) {
 		this.init();
 
