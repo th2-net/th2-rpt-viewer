@@ -38,7 +38,6 @@ export interface UserPrefs {
 }
 
 export interface UserFeedback {
-	user: string;
 	title: string;
 	descr: string;
 	image?: string;

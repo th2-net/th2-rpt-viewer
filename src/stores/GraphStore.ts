@@ -22,11 +22,9 @@ import { calculateTimeRange } from '../helpers/graph';
 import { Chunk, GraphItem, GraphItemType } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { SelectedStore } from './SelectedStore';
-import userDataStore from './user/UserDataStore';
+import UserDataStore from './user/UserDataStore';
 
 export class GraphStore {
-	private readonly userDataStore = userDataStore;
-
 	public readonly steps = {
 		15: 1,
 		30: 3,
@@ -35,6 +33,7 @@ export class GraphStore {
 
 	constructor(
 		private selectedStore: SelectedStore,
+		private userDataStore: UserDataStore,
 		timeRange: TimeRange | null = null,
 		defaultInterval: number | null | undefined,
 	) {

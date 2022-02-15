@@ -19,8 +19,8 @@ import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
-import userDataStoreInstance from './user/UserDataStore';
-import feedbackStoreInstance from './FeedbackStore';
+import UserDataStore from './user/UserDataStore';
+import feedbackStore from './FeedbackStore';
 import EventsStore, { EventStoreURLState } from './events/EventsStore';
 import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
 import { getObjectKeys } from '../helpers/object';
@@ -39,11 +39,11 @@ import { SessionsStore } from './messages/SessionsStore';
 import EventsFilter from '../models/filter/EventsFilter';
 
 export default class RootStore {
+	userDataStore: UserDataStore;
+
+	feedbackStore = feedbackStore;
+
 	notificationsStore = notificationStoreInstance;
-
-	userDataStore = userDataStoreInstance;
-
-	feedbackStore = feedbackStoreInstance;
 
 	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb, this.notificationsStore);
 
@@ -52,6 +52,8 @@ export default class RootStore {
 	sessionsStore = new SessionsStore(this.api.indexedDb);
 
 	constructor(private api: ApiSchema) {
+		this.userDataStore = new UserDataStore({ user: api.userApi, indexedDb: api.indexedDb }, this);
+
 		this.workspacesStore = new WorkspacesStore(
 			this,
 			this.api,

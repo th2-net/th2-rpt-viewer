@@ -19,7 +19,6 @@ import api from '../api';
 import { UserApiSchema } from '../api/ApiSchema';
 import { until } from '../helpers/timeout';
 import { UserFeedback } from '../models/User';
-import userDataStoreInstance, { UserDataStore } from './user/UserDataStore';
 
 export enum FeedbackFields {
 	TITLE = 'title',
@@ -27,8 +26,8 @@ export enum FeedbackFields {
 	IMAGE = 'image',
 }
 
-export class FeedbackStore {
-	constructor(private userApi: UserApiSchema, private userDataStore: UserDataStore) {
+class FeedbackStore {
+	constructor(private userApi: UserApiSchema) {
 		window.addEventListener('error', e => {
 			this.addError(e);
 		});
@@ -54,13 +53,8 @@ export class FeedbackStore {
 	@observable
 	private responses: Response[] = [];
 
-	@computed private get user(): string {
-		return this.userDataStore.user?.name || 'defaultUser';
-	}
-
 	@computed private get feedback(): UserFeedback {
 		return {
-			user: this.user,
 			...this.inputs,
 			errors: this.errors,
 			responses: this.responses,
@@ -149,6 +143,6 @@ export class FeedbackStore {
 	};
 }
 
-const feedbackStore = new FeedbackStore(api.userApi, userDataStoreInstance);
+const feedbackStore = new FeedbackStore(api.userApi);
 
 export default feedbackStore;

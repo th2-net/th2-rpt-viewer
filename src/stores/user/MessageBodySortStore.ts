@@ -16,7 +16,7 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import { move } from '../../helpers/array';
-import { UserDataStore, userDataStoreLimits } from './UserDataStore';
+import UserDataStore, { userDataStoreLimits } from './UserDataStore';
 
 export default class MessageBodySortOrderStore {
 	constructor(private userStore: UserDataStore) {

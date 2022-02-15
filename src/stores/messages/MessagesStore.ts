@@ -21,7 +21,6 @@ import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
 import { timestampToNumber } from '../../helpers/date';
 import MessagesFilter from '../../models/filter/MessagesFilter';
-import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { TimeRange } from '../../models/Timestamp';
 import { SearchStore } from '../SearchStore';
@@ -32,10 +31,9 @@ import { MessageFilterState } from '../../components/search-panel/SearchPanelFil
 import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
-import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
 import { getItemAt } from '../../helpers/array';
-import userDataStore from '../user/UserDataStore';
+import UserDataStore from '../user/UserDataStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -46,8 +44,6 @@ type MessagesStoreDefaultState = MessagesStoreURLState & {
 export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string | null | undefined;
 
 export default class MessagesStore {
-	private readonly userDataStore = userDataStore;
-
 	private attachedMessagesSubscription: IReactionDisposer;
 
 	public filterStore: MessagesFilterStore;
@@ -86,11 +82,10 @@ export default class MessagesStore {
 	constructor(
 		private workspaceStore: WorkspaceStore,
 		private graphStore: GraphStore,
-		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
+		private userDataStore: UserDataStore,
 		private api: ApiSchema,
 		private filterHistoryStore: FiltersHistoryStore,
-		private sessionsStore: SessionsStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
 		this.filterStore = new MessagesFilterStore(this.searchStore);
@@ -105,6 +100,10 @@ export default class MessagesStore {
 		reaction(() => this.hoveredMessage, this.onMessageHover);
 
 		reaction(() => this.filterStore.filter, this.exportStore.disableExport);
+	}
+
+	private get lastSearchedSessionsStore() {
+		return this.userDataStore.lastSearchedSessionsStore;
 	}
 
 	@computed
@@ -159,7 +158,7 @@ export default class MessagesStore {
 		}
 
 		this.exportStore.disableExport();
-		this.userDataStore.lastSearchedSessionsStore.addSessions(filter.streams);
+		this.lastSearchedSessionsStore.addSessions(filter.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.highlightedMessageId = null;

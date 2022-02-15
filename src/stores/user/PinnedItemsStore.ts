@@ -26,7 +26,7 @@ import {
 import { sortByTimestamp } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
-import { UserDataStore, userDataStoreLimits } from './UserDataStore';
+import UserDataStore, { userDataStoreLimits } from './UserDataStore';
 
 export default class PinnedItemsStore {
 	constructor(private userStore: UserDataStore) {

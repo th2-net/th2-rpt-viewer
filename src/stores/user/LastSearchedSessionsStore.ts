@@ -16,7 +16,7 @@
 
 import { action, observable, reaction } from 'mobx';
 import { sortByTimestamp } from '../../helpers/date';
-import { UserDataStore, userDataStoreLimits } from './UserDataStore';
+import UserDataStore, { userDataStoreLimits } from './UserDataStore';
 
 export interface Session {
 	session: string;

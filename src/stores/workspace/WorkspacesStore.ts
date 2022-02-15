@@ -34,6 +34,8 @@ export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
 
+	public userDataStore = this.rootStore.userDataStore;
+
 	public selectedStore = new SelectedStore(this);
 
 	public tabsStore = new TabsStore(this);
@@ -106,7 +108,7 @@ export default class WorkspacesStore {
 			this,
 			this.selectedStore,
 			this.searchWorkspace.searchStore,
-			this.rootStore.sessionsStore,
+			this.userDataStore,
 			this.api,
 			workspaceInitialState,
 		);

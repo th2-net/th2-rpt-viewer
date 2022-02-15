@@ -48,7 +48,6 @@ import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { SessionsStore } from './messages/SessionsStore';
 import { getItemAt } from '../helpers/array';
-import userDataStore from './user/UserDataStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -120,8 +119,6 @@ function getDefaultFormState(): SearchPanelFormState {
 }
 
 export class SearchStore {
-	private readonly userDataStore = userDataStore;
-
 	constructor(
 		private workspacesStore: WorkspacesStore,
 		private api: ApiSchema,
@@ -571,7 +568,9 @@ export class SearchStore {
 			if (this.formType === 'event') {
 				this.filtersHistory.onEventFilterSubmit(filterParams as EventFilterState);
 			} else {
-				this.userDataStore.lastSearchedSessionsStore.addSessions(stream);
+				if (!this.workspacesStore.userDataStore.isInitializing) {
+					this.workspacesStore.userDataStore.lastSearchedSessionsStore.addSessions(stream);
+				}
 				this.filtersHistory.onMessageFilterSubmit(filterParams as MessageFilterState);
 			}
 

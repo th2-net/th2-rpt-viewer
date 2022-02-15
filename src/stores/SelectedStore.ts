@@ -24,11 +24,8 @@ import { GraphItem } from '../models/Graph';
 import { filterUniqueGraphItems } from '../helpers/graph';
 import { isWorkspaceStore } from '../helpers/workspace';
 import { EventBookmark, MessageBookmark } from '../components/bookmarks/BookmarksPanel';
-import userDataStoreInstance from './user/UserDataStore';
 
 export class SelectedStore {
-	private readonly userDataStore = userDataStoreInstance;
-
 	@observable.shallow
 	public bookmarkedMessages: MessageBookmark[] = [];
 
@@ -55,12 +52,12 @@ export class SelectedStore {
 	public get graphItems(): Array<GraphItem> {
 		if (
 			!isWorkspaceStore(this.workspacesStore.activeWorkspace) ||
-			this.userDataStore.isInitializing
+			this.workspacesStore.userDataStore.isInitializing
 		)
 			return [];
 
 		const items = [
-			...this.userDataStore.pinnedItemsStore.itemsToShow,
+			...this.workspacesStore.userDataStore.pinnedItemsStore.itemsToShow,
 			...this.workspacesStore.activeWorkspace.attachedMessages,
 		];
 

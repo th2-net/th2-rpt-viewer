@@ -17,7 +17,7 @@
 import { action, computed, observable, reaction } from 'mobx';
 import { keyForMessage } from '../../helpers/keys';
 import { EventMessage } from '../../models/EventMessage';
-import { UserDataStore } from '../user/UserDataStore';
+import UserDataStore from '../user/UserDataStore';
 import MessagesStore from './MessagesStore';
 import { SavedMessageViewType } from './SavedMessageViewType';
 

@@ -33,10 +33,9 @@ import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
-import { SessionsStore } from '../messages/SessionsStore';
 import { isAbortError } from '../../helpers/fetch';
 import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
-import userDataStore from '../user/UserDataStore';
+import UserDataStore from '../user/UserDataStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -71,7 +70,7 @@ export default class WorkspaceStore {
 		private workspacesStore: WorkspacesStore,
 		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
-		private sessionsStore: SessionsStore,
+		private userDataStore: UserDataStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
@@ -80,6 +79,7 @@ export default class WorkspaceStore {
 		});
 		this.graphStore = new GraphStore(
 			this.selectedStore,
+			this.userDataStore,
 			initialState.timeRange,
 			initialState.interval,
 		);
@@ -94,11 +94,10 @@ export default class WorkspaceStore {
 		this.messagesStore = new MessagesStore(
 			this,
 			this.graphStore,
-			this.selectedStore,
 			this.searchStore,
+			this.userDataStore,
 			this.api,
 			this.workspacesStore.filtersHistoryStore,
-			this.sessionsStore,
 			initialState.messages,
 		);
 

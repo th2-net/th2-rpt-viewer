@@ -17,7 +17,7 @@
 import { action, computed, observable, reaction } from 'mobx';
 import { move } from '../../helpers/array';
 import { MessageDisplayRule } from '../../models/EventMessage';
-import { DEFAULT_ROOT_DISPLAY_RULE, UserDataStore, userDataStoreLimits } from './UserDataStore';
+import UserDataStore, { DEFAULT_ROOT_DISPLAY_RULE, userDataStoreLimits } from './UserDataStore';
 
 export default class MessageDisplayRulesStore {
 	constructor(private userStore: UserDataStore) {

@@ -22,12 +22,12 @@ import { IndexedDB, IndexedDbStores } from '../../api/indexedDb';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
 import { EventBookmark, MessageBookmark } from '../../components/bookmarks/BookmarksPanel';
 import { User, UserPrefs } from '../../models/User';
-import api from '../../api';
 import notificationsStore from '../NotificationsStore';
 import MessageBodySortStore from './MessageBodySortStore';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import PinnedItemsStore from './PinnedItemsStore';
 import LastSearchedSessionsStore, { Session } from './LastSearchedSessionsStore';
+import RootStore from '../RootStore';
 
 export const DEFAULT_ROOT_DISPLAY_RULE = {
 	editableSession: false,
@@ -38,7 +38,7 @@ export const DEFAULT_ROOT_DISPLAY_RULE = {
 	viewType: MessageViewType.JSON,
 };
 
-const DEFAULT_USER_NAME = 'defaultUser';
+export const DEFAULT_USER_NAME = 'defaultUser';
 
 const DEFAULT_USER: User = {
 	name: DEFAULT_USER_NAME,
@@ -48,7 +48,14 @@ const DEFAULT_USER: User = {
 
 const DEFAULT_USER_PREFS: UserPrefs = {
 	messageDisplayRules: {
-		rootRule: DEFAULT_ROOT_DISPLAY_RULE,
+		rootRule: {
+			editableSession: false,
+			editableType: true,
+			id: 'root',
+			removable: false,
+			session: '*',
+			viewType: MessageViewType.JSON,
+		},
 		rules: [],
 	},
 	messageBodySortOrder: [],
@@ -69,7 +76,7 @@ export const userDataStoreLimits = {
 	lastSearchedSessions: 20,
 } as const;
 
-export class UserDataStore {
+export default class {
 	public messageDisplayRules!: MessageDisplayRulesStore;
 
 	public messageBodySort!: MessageBodySortStore;
@@ -78,13 +85,14 @@ export class UserDataStore {
 
 	public lastSearchedSessionsStore!: LastSearchedSessionsStore;
 
-	constructor(
-		// eslint-disable-next-line no-shadow
-		private api: { user: UserApiSchema; indexedDb: IndexedDB },
-	) {
+	constructor(private api: { user: UserApiSchema; indexedDb: IndexedDB }, private root: RootStore) {
 		this.init();
 
 		reaction(() => this.userPrefs, this.saveUserPrefs);
+	}
+
+	public get searchStore() {
+		return this.root.workspacesStore.searchWorkspace.searchStore;
 	}
 
 	@observable
@@ -239,10 +247,3 @@ export class UserDataStore {
 			}
 	};
 }
-
-const userDataStore = new UserDataStore({
-	user: api.userApi,
-	indexedDb: api.indexedDb,
-});
-
-export default userDataStore;
