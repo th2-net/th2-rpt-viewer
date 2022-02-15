@@ -25,7 +25,6 @@ import { MessageFilterState } from '../../components/search-panel/SearchPanelFil
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import { getRangeFromTimestamp } from '../../helpers/date';
-import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 
@@ -158,15 +157,7 @@ export default class WorkspacesStore {
 		};
 	};
 
-	public syncData = async (unsavedData?: DbData) => {
-		try {
-			this.searchWorkspace.searchStore.syncData(unsavedData);
-		} catch (error) {
-			this.searchWorkspace.searchStore.syncData();
-		}
-	};
-
-	public onQuotaExceededError = (unsavedData?: DbData) => {
-		this.rootStore.handleQuotaExceededError(unsavedData);
+	public onQuotaExceededError = () => {
+		this.rootStore.handleQuotaExceededError();
 	};
 }

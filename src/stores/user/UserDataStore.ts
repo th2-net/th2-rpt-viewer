@@ -28,6 +28,7 @@ import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import PinnedItemsStore from './PinnedItemsStore';
 import LastSearchedSessionsStore, { Session } from './LastSearchedSessionsStore';
 import RootStore from '../RootStore';
+import SearchHistoryStore, { SearchHistory } from './SearchHistoryStore';
 
 export const DEFAULT_ROOT_DISPLAY_RULE = {
 	editableSession: false,
@@ -48,14 +49,7 @@ const DEFAULT_USER: User = {
 
 const DEFAULT_USER_PREFS: UserPrefs = {
 	messageDisplayRules: {
-		rootRule: {
-			editableSession: false,
-			editableType: true,
-			id: 'root',
-			removable: false,
-			session: '*',
-			viewType: MessageViewType.JSON,
-		},
+		rootRule: DEFAULT_ROOT_DISPLAY_RULE,
 		rules: [],
 	},
 	messageBodySortOrder: [],
@@ -64,6 +58,7 @@ const DEFAULT_USER_PREFS: UserPrefs = {
 		messages: [],
 	},
 	lastSearchedSessions: [],
+	searchHistory: [],
 };
 
 export const userDataStoreLimits = {
@@ -84,6 +79,8 @@ export default class {
 	public pinnedItemsStore!: PinnedItemsStore;
 
 	public lastSearchedSessionsStore!: LastSearchedSessionsStore;
+
+	public searchHistoryStore!: SearchHistoryStore;
 
 	constructor(private api: { user: UserApiSchema; indexedDb: IndexedDB }, private root: RootStore) {
 		this.init();
@@ -191,6 +188,16 @@ export default class {
 	};
 
 	@action
+	public syncSearchHistory = (searchHistory: SearchHistory[]) => {
+		if (this.userPrefs) {
+			this.userPrefs = {
+				...this.userPrefs,
+				searchHistory,
+			};
+		}
+	};
+
+	@action
 	private setUserId = (id: string) => {
 		if (this.user)
 			this.user = {
@@ -222,6 +229,8 @@ export default class {
 		this.pinnedItemsStore = new PinnedItemsStore(this);
 
 		this.lastSearchedSessionsStore = new LastSearchedSessionsStore(this);
+
+		this.searchHistoryStore = new SearchHistoryStore(this);
 
 		this.isInitializing = false;
 	};

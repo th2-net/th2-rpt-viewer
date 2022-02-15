@@ -205,7 +205,7 @@ export default class RootStore {
 	@observable resetGraphSearchData = false;
 
 	@action
-	public handleQuotaExceededError = async (unsavedData?: DbData) => {
+	public handleQuotaExceededError = async () => {
 		const errorId = nanoid();
 		this.notificationsStore.addMessage({
 			notificationType: 'genericError',
@@ -214,18 +214,16 @@ export default class RootStore {
 			description: 'Not enough storage space to save data. Clear all data?',
 			action: {
 				label: 'OK',
-				callback: () => this.clearAppData(errorId, unsavedData),
+				callback: () => this.clearAppData(errorId),
 			},
 			id: errorId,
 		});
 	};
 
-	public clearAppData = async (errorId: string, unsavedData?: DbData) => {
+	public clearAppData = async (errorId: string) => {
 		this.notificationsStore.deleteMessage(errorId);
 		try {
 			await this.api.indexedDb.clearAllData();
-
-			await this.workspacesStore.syncData(unsavedData);
 
 			this.notificationsStore.addMessage({
 				notificationType: 'genericError',
@@ -235,7 +233,7 @@ export default class RootStore {
 				id: nanoid(),
 			});
 		} catch (error) {
-			this.workspacesStore.syncData(unsavedData);
+			console.error(error);
 		}
 	};
 }

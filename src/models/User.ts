@@ -1,5 +1,6 @@
 import { EventBookmark, MessageBookmark } from '../components/bookmarks/BookmarksPanel';
 import { Session } from '../stores/user/LastSearchedSessionsStore';
+import { SearchHistory } from '../stores/user/SearchHistoryStore';
 import { MessageDisplayRule } from './EventMessage';
 
 /** *****************************************************************************
@@ -35,6 +36,7 @@ export interface UserPrefs {
 		messages: MessageBookmark[];
 	};
 	lastSearchedSessions: Session[];
+	searchHistory: SearchHistory[];
 }
 
 export interface UserFeedback {

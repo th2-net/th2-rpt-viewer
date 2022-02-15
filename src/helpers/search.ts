@@ -19,7 +19,7 @@ import {
 	EventFilterState,
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
-import { SearchHistory } from '../stores/SearchStore';
+import { SearchHistory } from '../stores/user/SearchHistoryStore';
 
 export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
 	if (param.defaultValue === null) {
