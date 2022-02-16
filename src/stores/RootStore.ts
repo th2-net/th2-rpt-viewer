@@ -25,7 +25,6 @@ import EventsStore, { EventStoreURLState } from './events/EventsStore';
 import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
 import { getObjectKeys } from '../helpers/object';
 import { isWorkspaceStore } from '../helpers/workspace';
-import { DbData } from '../api/indexedDb';
 import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
 import { intervalOptions } from '../models/Graph';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
@@ -35,7 +34,6 @@ import {
 	FilterState,
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
-import { SessionsStore } from './messages/SessionsStore';
 import EventsFilter from '../models/filter/EventsFilter';
 
 export default class RootStore {
@@ -48,8 +46,6 @@ export default class RootStore {
 	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb, this.notificationsStore);
 
 	workspacesStore: WorkspacesStore;
-
-	sessionsStore = new SessionsStore(this.api.indexedDb);
 
 	constructor(private api: ApiSchema) {
 		this.userDataStore = new UserDataStore({ user: api.userApi, indexedDb: api.indexedDb }, this);

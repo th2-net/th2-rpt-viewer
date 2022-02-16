@@ -18,7 +18,6 @@ import { Timestamp } from './Timestamp';
 import MessageBody from './MessageBody';
 import { ActionType } from './EventAction';
 import { notEmpty } from '../helpers/object';
-import { OrderRule } from '../stores/MessageDisplayRulesStore';
 
 export enum MessageViewType {
 	JSON = 'json',
@@ -64,8 +63,4 @@ export function isMessageDisplayRule(obj: unknown): obj is MessageDisplayRule {
 
 export function isMessageBodySortOrderItem(obj: unknown): obj is MessageSortOrderItem {
 	return notEmpty(obj) && (obj as MessageSortOrderItem).item !== undefined;
-}
-
-export function isOrderRule(obj: unknown): obj is OrderRule {
-	return notEmpty(obj) && (obj as OrderRule).order !== undefined;
 }

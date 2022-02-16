@@ -16,25 +16,14 @@
 
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
-import { EventBookmark, MessageBookmark } from '../components/bookmarks/BookmarksPanel';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
-import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
-import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';
-import { Session } from '../stores/messages/SessionsStore';
 import { User } from '../models/User';
-import { SearchHistory } from '../stores/user/SearchHistoryStore';
 
 export enum IndexedDbStores {
-	EVENTS = 'events',
-	MESSAGES = 'messages',
-	SEARCH_HISTORY = 'search-history',
 	GRAPH_SEARCH_HISTORY = 'graph-search-history',
-	DISPLAY_RULES = 'display-rules',
-	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 	FILTERS_HISTORY = 'filters-history',
-	SESSIONS_HISTORY = 'sessions-history',
 	USER = 'user',
 }
 
@@ -42,40 +31,9 @@ type indexedDbStoresKeyPaths = {
 	[k in IndexedDbStores]: string;
 };
 
-export type DbData =
-	| EventBookmark
-	| MessageBookmark
-	| SearchHistory
-	| GraphSearchResult
-	| MessageDisplayRule
-	| OrderRule
-	| MessageSortOrderItem
-	| FiltersHistoryType<FilterState>
-	| Session
-	| User;
+export type DbData = GraphSearchResult | FiltersHistoryType<FilterState> | User;
 
 interface TH2DB extends DBSchema {
-	[IndexedDbStores.EVENTS]: {
-		key: string;
-		value: EventBookmark;
-		indexes: {
-			timestamp: number;
-		};
-	};
-	[IndexedDbStores.MESSAGES]: {
-		key: string;
-		value: MessageBookmark;
-		indexes: {
-			timestamp: number;
-		};
-	};
-	[IndexedDbStores.SEARCH_HISTORY]: {
-		key: number;
-		value: SearchHistory;
-		indexes: {
-			timestamp: number;
-		};
-	};
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: {
 		key: string;
 		value: GraphSearchResult;
@@ -83,30 +41,9 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
-	[IndexedDbStores.DISPLAY_RULES]: {
-		key: string;
-		value: MessageDisplayRule | OrderRule;
-		indexes: {
-			timestamp: number;
-		};
-	};
-	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: {
-		key: string;
-		value: MessageSortOrderItem;
-		indexes: {
-			timestamp: number;
-		};
-	};
 	[IndexedDbStores.FILTERS_HISTORY]: {
 		key: string;
 		value: FiltersHistoryType<FilterState>;
-		indexes: {
-			timestamp: number;
-		};
-	};
-	[IndexedDbStores.SESSIONS_HISTORY]: {
-		key: string;
-		value: Session;
 		indexes: {
 			timestamp: number;
 		};
@@ -123,26 +60,16 @@ interface TH2DB extends DBSchema {
 export const indexedDbLimits = {
 	bookmarks: 1000,
 	[IndexedDbStores.FILTERS_HISTORY]: 40,
-	[IndexedDbStores.DISPLAY_RULES]: 100,
-	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 100,
-	[IndexedDbStores.SEARCH_HISTORY]: 5,
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
-	[IndexedDbStores.SESSIONS_HISTORY]: 20,
 } as const;
 
 const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
-	[IndexedDbStores.EVENTS]: 'id',
-	[IndexedDbStores.MESSAGES]: 'id',
-	[IndexedDbStores.SEARCH_HISTORY]: 'timestamp',
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 'id',
-	[IndexedDbStores.DISPLAY_RULES]: 'id',
-	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 'id',
 	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
-	[IndexedDbStores.SESSIONS_HISTORY]: 'session',
 	[IndexedDbStores.USER]: 'timestamp',
 };
 
-const dbVersion = 4;
+const dbVersion = 5;
 
 export class IndexedDB {
 	@observable
@@ -179,7 +106,7 @@ export class IndexedDB {
 		const tx = await db.transaction(storeName, 'readwrite');
 		const store = await tx.objectStore(storeName);
 
-		await store.delete(key);
+		await store.delete(key as string);
 		await tx.done;
 	};
 
