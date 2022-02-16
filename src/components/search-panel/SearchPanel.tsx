@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useActivePanel } from '../../hooks';
+import { useActivePanel, useUserDataStore } from '../../hooks';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
@@ -29,6 +29,7 @@ export type SearchPanelType = 'event' | 'message';
 const SearchPanel = () => {
 	const searchWorkspace = useSearchWorkspace();
 	const searchStore = useSearchStore();
+	const { searchHistoryStore } = useUserDataStore();
 
 	const { ref: searchPanelRef } = useActivePanel(null);
 
@@ -56,12 +57,12 @@ const SearchPanel = () => {
 					onResultGroupClick={searchWorkspace.followByTimestamp}
 					onResultDelete={() => {
 						if (searchStore.currentSearch) {
-							searchStore.deleteHistoryItem(searchStore.currentSearch);
+							searchHistoryStore.deleteHistoryItem(searchStore.currentSearch);
 						}
 					}}
 					showToggler={searchStore.searchHistory.length > 1}
-					next={searchStore.nextSearch}
-					prev={searchStore.prevSearch}
+					next={searchHistoryStore.nextSearch}
+					prev={searchHistoryStore.prevSearch}
 					disableNext={
 						searchStore.isSearching ||
 						searchStore.currentIndex === searchStore.searchHistory.length - 1

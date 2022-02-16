@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
+import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
 import debounce from 'lodash.debounce';
 import ApiSchema from '../api/ApiSchema';
@@ -41,6 +41,7 @@ import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { SearchHistory } from './user/SearchHistoryStore';
+import { getItemAt } from '../helpers/array';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -105,6 +106,10 @@ export class SearchStore {
 	) {
 		this.init();
 
+		autorun(() => {
+			this.currentSearch = getItemAt(this.searchHistory, this.currentIndex);
+		});
+
 		reaction(
 			() => this.currentSearch?.timestamp,
 			currentSearchTimestamp => {
@@ -139,17 +144,9 @@ export class SearchStore {
 	}
 
 	@computed
-	public get currentSearch() {
-		if (!this.isInitializing) {
-			return this.workspacesStore.userDataStore.searchHistoryStore?.currentSearch;
-		}
-		return null;
-	}
-
-	@computed
 	public get searchHistory() {
 		if (!this.isInitializing) {
-			return this.workspacesStore.userDataStore.searchHistoryStore?.history;
+			return this.workspacesStore.userDataStore.searchHistoryStore.history;
 		}
 		return [];
 	}
@@ -157,14 +154,17 @@ export class SearchStore {
 	@computed
 	public get currentIndex() {
 		if (!this.isInitializing) {
-			return this.workspacesStore.userDataStore.searchHistoryStore?.currentIndex;
+			return this.workspacesStore.userDataStore.searchHistoryStore.currentIndex;
 		}
 		return 0;
 	}
 
-	@computed
 	private get saveSearchResults() {
-		return this.workspacesStore.userDataStore.searchHistoryStore?.saveSearchResults;
+		return this.workspacesStore.userDataStore.searchHistoryStore.saveSearchResults;
+	}
+
+	private get newSearch() {
+		return this.workspacesStore.userDataStore.searchHistoryStore.newSearch;
 	}
 
 	@observable messageSessions: Array<string> = [];
@@ -176,6 +176,8 @@ export class SearchStore {
 		previous: null,
 		next: null,
 	};
+
+	@observable currentSearch: SearchHistory | null = null;
 
 	@observable eventsFilter: EventFilterState | null = null;
 
@@ -417,33 +419,6 @@ export class SearchStore {
 		this.eventsFilter = getDefaultEventsFiltersState(this.eventFilterInfo);
 
 		this.searchForm = getDefaultFormState();
-	};
-
-	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
-		this.workspacesStore.userDataStore.searchHistoryStore.deleteHistoryItem(searchHistoryItem);
-
-		this.resetSearchProgressState();
-
-		if (this.searchHistory.length !== 0) {
-			this.setCompleted(true);
-		}
-	};
-
-	@action nextSearch = () => {
-		this.workspacesStore.userDataStore.searchHistoryStore.nextSearch();
-		this.resetSearchProgressState();
-		this.setCompleted(true);
-	};
-
-	@action prevSearch = () => {
-		this.workspacesStore.userDataStore.searchHistoryStore.prevSearch();
-		this.resetSearchProgressState();
-		this.setCompleted(true);
-	};
-
-	@action newSearch = (searchHistoryItem: SearchHistory) => {
-		this.workspacesStore.userDataStore.searchHistoryStore.newSearch(searchHistoryItem);
-		this.resetSearchProgressState();
 	};
 
 	@action startSearch = (loadMore = false) => {

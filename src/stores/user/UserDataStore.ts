@@ -230,7 +230,10 @@ export default class {
 
 		this.lastSearchedSessionsStore = new LastSearchedSessionsStore(this);
 
-		this.searchHistoryStore = new SearchHistoryStore(this);
+		this.searchHistoryStore = new SearchHistoryStore(
+			this,
+			this.root.workspacesStore.searchWorkspace.searchStore,
+		);
 
 		this.isInitializing = false;
 	};

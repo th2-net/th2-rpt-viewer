@@ -14,9 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, observable, reaction } from 'mobx';
-import { getItemAt } from '../../helpers/array';
-import { SearchResult, StateHistory } from '../SearchStore';
+import { action, observable, reaction } from 'mobx';
+import { SearchResult, SearchStore, StateHistory } from '../SearchStore';
 import UserDataStore, { userDataStoreLimits } from './UserDataStore';
 
 export type SearchHistory = {
@@ -34,15 +33,9 @@ export type SearchHistory = {
 };
 
 export default class SearchHistoryStore {
-	constructor(private userStore: UserDataStore) {
-		autorun(() => {
-			this.currentSearch = getItemAt(this.history, this.currentIndex);
-		});
+	constructor(private userStore: UserDataStore, private searchStore: SearchStore) {
 		reaction(() => this.history, this.userStore.syncSearchHistory);
 	}
-
-	@observable
-	public currentSearch: SearchHistory | null = null;
 
 	@observable
 	public history: SearchHistory[] = this.userStore.userPrefs?.searchHistory || [];
@@ -54,6 +47,12 @@ export default class SearchHistoryStore {
 	public deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
 		this.history = this.history.filter(item => item !== searchHistoryItem);
 		this.currentIndex = Math.max(this.currentIndex - 1, 0);
+
+		this.searchStore.resetSearchProgressState();
+
+		if (this.history.length !== 0) {
+			this.searchStore.setCompleted(true);
+		}
 	};
 
 	@action
@@ -61,6 +60,8 @@ export default class SearchHistoryStore {
 		if (this.currentIndex < this.history.length - 1) {
 			this.currentIndex += 1;
 		}
+		this.searchStore.resetSearchProgressState();
+		this.searchStore.setCompleted(true);
 	};
 
 	@action
@@ -68,6 +69,8 @@ export default class SearchHistoryStore {
 		if (this.currentIndex !== 0) {
 			this.currentIndex -= 1;
 		}
+		this.searchStore.resetSearchProgressState();
+		this.searchStore.setCompleted(true);
 	};
 
 	@action
@@ -79,6 +82,7 @@ export default class SearchHistoryStore {
 			this.history = newHistory;
 		}
 		this.currentIndex = this.history.length - 1;
+		this.searchStore.resetSearchProgressState();
 	};
 
 	@action
