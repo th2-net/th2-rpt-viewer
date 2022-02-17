@@ -14,24 +14,36 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from './ApiSchema';
-import { IndexedDB } from './indexedDb';
-import eventHttpApi from './event';
-import messageHttpApi from './message';
-import sseApi from './sse';
-import feedbackApi from './feedback';
+import { CollectionsApiPostBody, CollectionsNames, FeedbackSchema } from './ApiSchema';
 
-const envName =
-	process.env.NODE_ENV === 'development'
-		? 'development'
-		: `${window.location.host}${window.location.pathname}`;
+export interface Feedback {
+	title: string;
+	descr: string;
+	image?: string;
+	errors: Partial<ErrorEvent>[];
+	responses: Partial<Response>[];
+}
 
-const api: ApiSchema = {
-	events: eventHttpApi,
-	messages: messageHttpApi,
-	sse: sseApi,
-	feedbackApi,
-	indexedDb: new IndexedDB(envName),
+const feedbackApi: FeedbackSchema = {
+	sendFeedback: async (feedback: Feedback) => {
+		const preparedBody: CollectionsApiPostBody<Feedback> = {
+			collection: CollectionsNames.FEEDBACK,
+			payload: feedback,
+		};
+		const body = JSON.stringify(preparedBody);
+
+		const res = await fetch('http://10.44.17.234:8080/store', {
+			method: 'post',
+			body,
+		});
+
+		if (res.ok) {
+			return res.json();
+		}
+
+		console.error(res.statusText);
+		return null;
+	},
 };
 
-export default api;
+export default feedbackApi;

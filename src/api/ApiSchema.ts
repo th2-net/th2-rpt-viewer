@@ -29,12 +29,29 @@ import {
 } from './sse';
 import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
+import { Feedback } from './feedback';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
 	messages: MessageApiSchema;
 	sse: SSESchema;
+	feedbackApi: FeedbackSchema;
 	indexedDb: IndexedDB;
+}
+
+export enum CollectionsNames {
+	FEEDBACK = 'rptViewerCollectedFeedback',
+}
+
+export interface CollectionsApiPostBody<T> {
+	collection: CollectionsNames;
+	payload: T;
+	id?: string;
+}
+
+export interface CollectionsApiGetBody {
+	collection: CollectionsNames;
+	id: string;
 }
 
 export type SSEChannelType = 'event' | 'message';
@@ -101,4 +118,8 @@ export interface SSESchema {
 	getMessagesFilters: () => Promise<MessagesSSEFilters[]>;
 	getEventsFiltersInfo: (filters: EventSSEFilters[]) => Promise<EventsFiltersInfo[]>;
 	getMessagesFiltersInfo: (filters: MessagesSSEFilters[]) => Promise<MessagesFilterInfo[]>;
+}
+
+export interface FeedbackSchema {
+	sendFeedback: (feedback: Feedback) => Promise<void>;
 }

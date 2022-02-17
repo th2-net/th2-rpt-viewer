@@ -97,6 +97,7 @@ export type FilterRowStringConfig = FilterRowBaseConfig & {
 	labelClassName?: string;
 	autocompleteList?: string[];
 	hint?: string;
+	textarea?: boolean;
 };
 
 export type FilterRowMultipleStringsConfig = FilterRowBaseConfig & {

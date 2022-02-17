@@ -32,9 +32,12 @@ import {
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { SessionsStore } from './messages/SessionsStore';
+import feedbackStoreInstance from './FeedbackStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
+
+	feedbackStore = feedbackStoreInstance;
 
 	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb, this.notificationsStore);
 

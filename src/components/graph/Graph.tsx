@@ -28,6 +28,7 @@ import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
 import '../../styles/graph.scss';
 import GraphLastEventsButton from './GraphLastEventsButton';
+import CollectFeedback from '../CollectFeedback';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -152,6 +153,7 @@ const GraphRoot = () => {
 		<PointerTimestampProvider>
 			<div className='graph-root'>
 				<i className='th2-logo' />
+				<CollectFeedback />
 				<GraphSearch
 					hoveredTimestamp={activeWorkspace.graphStore.hoveredTimestamp}
 					onTimestampSubmit={activeWorkspace.onTimestampSelect}
