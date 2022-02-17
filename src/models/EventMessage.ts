@@ -41,7 +41,6 @@ export interface MessageDisplayRule {
 	removable: boolean;
 	editableSession: boolean;
 	editableType: boolean;
-	timestamp: number;
 }
 
 export interface EventMessage {

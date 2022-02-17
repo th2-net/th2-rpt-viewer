@@ -14,7 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { CollectionsApiPostBody, CollectionsNames, FeedbackSchema } from './ApiSchema';
+import { CollectionsApiPostBody } from '../models/CollectionsApi';
+import { FeedbackSchema } from './ApiSchema';
 
 export interface Feedback {
 	title: string;
@@ -24,10 +25,14 @@ export interface Feedback {
 	responses: Partial<Response>[];
 }
 
+export enum FeedbackCollectionsNames {
+	FEEDBACK = 'rptViewerCollectedFeedback',
+}
+
 const feedbackApi: FeedbackSchema = {
 	sendFeedback: async (feedback: Feedback) => {
 		const preparedBody: CollectionsApiPostBody<Feedback> = {
-			collection: CollectionsNames.FEEDBACK,
+			collection: FeedbackCollectionsNames.FEEDBACK,
 			payload: feedback,
 		};
 		const body = JSON.stringify(preparedBody);

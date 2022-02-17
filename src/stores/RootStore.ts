@@ -33,11 +33,17 @@ import {
 } from '../components/search-panel/SearchPanelFilters';
 import { SessionsStore } from './messages/SessionsStore';
 import feedbackStoreInstance from './FeedbackStore';
+import PersistedDataRootStore from './persisted/PersistedDataRootStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
 	feedbackStore = feedbackStoreInstance;
+
+	persistedDataRootStore = new PersistedDataRootStore(
+		this.api.indexedDb,
+		this.api.persistedDataApi,
+	);
 
 	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb, this.notificationsStore);
 

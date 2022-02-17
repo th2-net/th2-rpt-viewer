@@ -30,28 +30,15 @@ import {
 import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
 import { Feedback } from './feedback';
+import { PersistedDataCollectionsNames } from '../models/PersistedData';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
 	messages: MessageApiSchema;
 	sse: SSESchema;
 	feedbackApi: FeedbackSchema;
+	persistedDataApi: PersistedDataApiSchema;
 	indexedDb: IndexedDB;
-}
-
-export enum CollectionsNames {
-	FEEDBACK = 'rptViewerCollectedFeedback',
-}
-
-export interface CollectionsApiPostBody<T> {
-	collection: CollectionsNames;
-	payload: T;
-	id?: string;
-}
-
-export interface CollectionsApiGetBody {
-	collection: CollectionsNames;
-	id: string;
 }
 
 export type SSEChannelType = 'event' | 'message';
@@ -122,4 +109,16 @@ export interface SSESchema {
 
 export interface FeedbackSchema {
 	sendFeedback: (feedback: Feedback) => Promise<void>;
+}
+
+export interface PersistedDataApiSchema {
+	getPersistedData: <T>(
+		collection: PersistedDataCollectionsNames,
+		dataId: string,
+	) => Promise<T | null>;
+	setPersistedData: <T>(
+		collection: PersistedDataCollectionsNames,
+		payload: T,
+		dataId?: string,
+	) => Promise<[PersistedDataCollectionsNames, string]>;
 }

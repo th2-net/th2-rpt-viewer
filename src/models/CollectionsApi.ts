@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,26 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from './ApiSchema';
-import { IndexedDB } from './indexedDb';
-import eventHttpApi from './event';
-import messageHttpApi from './message';
-import sseApi from './sse';
-import feedbackApi from './feedback';
-import persistedDataApi from './persistedData';
+import { FeedbackCollectionsNames } from '../api/feedback';
+import { PersistedDataCollectionsNames } from './PersistedData';
 
-const envName =
-	process.env.NODE_ENV === 'development'
-		? 'development'
-		: `${window.location.host}${window.location.pathname}`;
+export type CollectionsNames = FeedbackCollectionsNames | PersistedDataCollectionsNames;
 
-const api: ApiSchema = {
-	events: eventHttpApi,
-	messages: messageHttpApi,
-	sse: sseApi,
-	feedbackApi,
-	persistedDataApi,
-	indexedDb: new IndexedDB(envName),
-};
-
-export default api;
+export interface CollectionsApiPostBody<T> {
+	collection: CollectionsNames;
+	payload: T;
+	id?: string;
+}
