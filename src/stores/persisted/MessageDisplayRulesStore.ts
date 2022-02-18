@@ -14,7 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { action } from 'mobx';
 import { PersistedDataApiSchema } from '../../api/ApiSchema';
+import { move } from '../../helpers/array';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
 import { PersistedDataCollectionsNames, PersistedDataTypes } from '../../models/PersistedData';
 import PersistedStore from './PerstistedStore';
@@ -34,4 +36,64 @@ export default class extends PersistedStore<
 	constructor(id: string, api: PersistedDataApiSchema) {
 		super(id, PersistedDataCollectionsNames.MESSAGE_DISPLAY_RULES, api);
 	}
+
+	public setRootDisplayRule = (rootRule: MessageDisplayRule) => {
+		if (!this.data) {
+			return;
+		}
+		if (this.data.rootRule.viewType !== rootRule.viewType) {
+			this.data = {
+				...this.data,
+				rootRule,
+			};
+		}
+	};
+
+	@action
+	public setNewMessagesDisplayRule = (rule: MessageDisplayRule) => {
+		if (!this.data) {
+			return;
+		}
+		if (!this.data.rules.find((existed: MessageDisplayRule) => existed.session === rule.session)) {
+			this.data = {
+				...this.data,
+				rules: [rule, ...this.data.rules],
+			};
+		}
+	};
+
+	@action
+	public editMessageDisplayRule = (rule: MessageDisplayRule, newRule: MessageDisplayRule) => {
+		if (!this.data) {
+			return;
+		}
+		this.data = {
+			...this.data,
+			rules: this.data.rules.map(existedRule =>
+				existedRule.id === rule.id ? newRule : existedRule,
+			),
+		};
+	};
+
+	@action
+	public deleteMessagesDisplayRule = (rule: MessageDisplayRule) => {
+		if (!this.data) {
+			return;
+		}
+		this.data = {
+			...this.data,
+			rules: this.data.rules.filter(existedRule => existedRule.id !== rule.id),
+		};
+	};
+
+	@action
+	public reorderMessagesDisplayRule = (from: number, to: number) => {
+		if (!this.data) {
+			return;
+		}
+		this.data = {
+			...this.data,
+			rules: move(this.data.rules, from, to),
+		};
+	};
 }

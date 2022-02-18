@@ -43,7 +43,7 @@ export default class PersistedStore<T> {
 	};
 
 	private syncData = (payload: T | null) => {
-		if (payload && Array.isArray(payload) && payload.length > 0) {
+		if (payload) {
 			this.api.setPersistedData(this.collection, payload, this.id);
 		}
 	};

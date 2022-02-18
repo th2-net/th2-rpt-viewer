@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { Virtuoso } from 'react-virtuoso';
-import { useMessageDisplayRulesStore } from '../../hooks';
+import { usePersistedDataStore } from '../../hooks';
 import RuleRow from './RuleRow';
 
 interface Props {
@@ -25,15 +25,21 @@ interface Props {
 }
 
 const RulesList = ({ sessions }: Props) => {
-	const rulesStore = useMessageDisplayRulesStore();
+	const { messageDisplayRules } = usePersistedDataStore();
+
+	if (!messageDisplayRules || !messageDisplayRules?.data) {
+		return null;
+	}
+
+	const { data } = messageDisplayRules;
 
 	const computeKey = (index: number) => {
-		const rule = rulesStore.messageDisplayRules[index];
+		const rule = data.rules[index];
 		return rule.id;
 	};
 
 	const renderRule = (index: number) => {
-		const rule = rulesStore.messageDisplayRules[index];
+		const rule = data.rules[index];
 		return (
 			<RuleRow
 				sessions={sessions}
@@ -41,7 +47,7 @@ const RulesList = ({ sessions }: Props) => {
 				key={rule.id}
 				index={index}
 				isFirst={index === 0}
-				isLast={index === rulesStore.messageDisplayRules.length - 1}
+				isLast={index === data.rules.length - 1}
 				autofocus={true}
 			/>
 		);
@@ -57,14 +63,14 @@ const RulesList = ({ sessions }: Props) => {
 				className='rules'
 				itemContent={renderRule}
 				computeItemKey={computeKey}
-				totalCount={rulesStore.messageDisplayRules.length}
+				totalCount={data.rules.length}
 				style={{ height: '120px' }}
 				components={{
 					Header: function Header() {
 						return <RuleRow rule={null} sessions={sessions} index={0} />;
 					},
 					Footer: function Footer() {
-						return <RuleRow sessions={sessions} rule={rulesStore.rootDisplayRule} index={0} />;
+						return <RuleRow sessions={sessions} rule={data.rootRule} index={0} />;
 					},
 				}}
 			/>
