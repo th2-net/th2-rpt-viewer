@@ -17,7 +17,6 @@
 import { Timestamp } from './Timestamp';
 import MessageBody from './MessageBody';
 import { ActionType } from './EventAction';
-import { notEmpty } from '../helpers/object';
 
 export enum MessageViewType {
 	JSON = 'json',
