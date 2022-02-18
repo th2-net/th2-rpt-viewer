@@ -69,7 +69,7 @@ export default class PersistedDataRootStore {
 					this.api.setPersistedData<PersistedDataTypes[PersistedDataCollectionsNames]>(
 						collection,
 						collection === PersistedDataCollectionsNames.MESSAGE_DISPLAY_RULES
-							? [DEFAULT_ROOT_RULE]
+							? { rootRule: DEFAULT_ROOT_RULE, rules: [] }
 							: [],
 					),
 				);

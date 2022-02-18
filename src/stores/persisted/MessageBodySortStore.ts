@@ -14,7 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { action } from 'mobx';
 import { PersistedDataApiSchema } from '../../api/ApiSchema';
+import { move } from '../../helpers/array';
 import { PersistedDataCollectionsNames, PersistedDataTypes } from '../../models/PersistedData';
 import PersistedStore from './PerstistedStore';
 
@@ -24,4 +26,41 @@ export default class extends PersistedStore<
 	constructor(id: string, api: PersistedDataApiSchema) {
 		super(id, PersistedDataCollectionsNames.MESSAGE_BODY_SORT_ORDER, api);
 	}
+
+	@action
+	public setNewBodySortOrderItem = (orderItem: string) => {
+		if (!this.data) {
+			return;
+		}
+		const hasSame = this.data.find((item: string) => item === orderItem);
+		if (!hasSame) {
+			this.data = [...this.data, orderItem];
+		}
+	};
+
+	@action
+	public editBodySortOrderItem = (orderItem: string, newOrderItem: string) => {
+		if (!this.data) {
+			return;
+		}
+		this.data = this.data.map(existedOrderItem =>
+			existedOrderItem === orderItem ? newOrderItem : existedOrderItem,
+		);
+	};
+
+	@action
+	public deleteBodySortOrderItem = (orderItem: string) => {
+		if (!this.data) {
+			return;
+		}
+		this.data = this.data.filter(existedItem => existedItem !== orderItem);
+	};
+
+	@action
+	public reorderBodySort = (from: number, to: number) => {
+		if (!this.data) {
+			return;
+		}
+		this.data = move(this.data, from, to);
+	};
 }

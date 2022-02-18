@@ -49,7 +49,10 @@ export const persistedDataLimits = {
 export interface PersistedDataTypes {
 	[PersistedDataCollectionsNames.MESSAGE_BODY_SORT_ORDER]: string[];
 	[PersistedDataCollectionsNames.LAST_SEARCHED_SESSIONS]: Session[];
-	[PersistedDataCollectionsNames.MESSAGE_DISPLAY_RULES]: MessageDisplayRule[];
+	[PersistedDataCollectionsNames.MESSAGE_DISPLAY_RULES]: {
+		rootRule: MessageDisplayRule;
+		rules: MessageDisplayRule[];
+	};
 	[PersistedDataCollectionsNames.GRAPH_SEARCH_HISTORY]: GraphSearchResult[];
 	[PersistedDataCollectionsNames.FILTERS_HISTORY]: FiltersHistoryType<FilterState>[];
 	[PersistedDataCollectionsNames.SEARCH_HISTORY]: SearchHistory[];
