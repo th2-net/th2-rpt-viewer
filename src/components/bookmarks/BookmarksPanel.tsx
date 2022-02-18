@@ -31,7 +31,7 @@ import Checkbox from '../util/Checkbox';
 import '../../styles/bookmarks.scss';
 import { Bookmark, isBookmark } from '../../stores/persisted/PinnedItemsStore';
 
-export type BookmarkedItem = Bookmark | EventMessage | EventTreeNode | EventAction;
+type BookmarkedItem = Bookmark | EventMessage | EventTreeNode | EventAction;
 
 function BookmarksPanel() {
 	const { initialized, pinnedItems } = usePersistedDataStore();
