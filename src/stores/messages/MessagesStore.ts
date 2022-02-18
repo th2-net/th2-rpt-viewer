@@ -32,8 +32,8 @@ import { MessageFilterState } from '../../components/search-panel/SearchPanelFil
 import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
-import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
+import PersistedDataRootStore from '../persisted/PersistedDataRootStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -98,7 +98,7 @@ export default class MessagesStore {
 		private searchStore: SearchStore,
 		private api: ApiSchema,
 		private filterHistoryStore: FiltersHistoryStore,
-		private sessionsStore: SessionsStore,
+		private persistedDataStore: PersistedDataRootStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
 		this.filterStore = new MessagesFilterStore(this.searchStore);
@@ -191,7 +191,7 @@ export default class MessagesStore {
 		}
 
 		this.exportStore.disableExport();
-		this.sessionsStore.saveSessions(filter.streams);
+		this.persistedDataStore.lastSearchedSessions?.addSessions(filter.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.selectedMessageId = null;

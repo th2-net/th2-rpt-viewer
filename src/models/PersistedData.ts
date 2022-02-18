@@ -18,6 +18,7 @@ import { EventBookmark, MessageBookmark } from '../components/bookmarks/Bookmark
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
+import { Session } from '../stores/persisted/LastSearchedSessionsStore';
 import { SearchHistory } from '../stores/SearchStore';
 import { MessageDisplayRule } from './EventMessage';
 
@@ -47,7 +48,7 @@ export const persistedDataLimits = {
 
 export interface PersistedDataTypes {
 	[PersistedDataCollectionsNames.MESSAGE_BODY_SORT_ORDER]: string[];
-	[PersistedDataCollectionsNames.LAST_SEARCHED_SESSIONS]: string[];
+	[PersistedDataCollectionsNames.LAST_SEARCHED_SESSIONS]: Session[];
 	[PersistedDataCollectionsNames.MESSAGE_DISPLAY_RULES]: MessageDisplayRule[];
 	[PersistedDataCollectionsNames.GRAPH_SEARCH_HISTORY]: GraphSearchResult[];
 	[PersistedDataCollectionsNames.FILTERS_HISTORY]: FiltersHistoryType<FilterState>[];

@@ -46,8 +46,8 @@ import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
-import { SessionsStore } from './messages/SessionsStore';
 import { EventBodyPayload } from '../models/EventActionPayload';
+import PersistedDataRootStore from './persisted/PersistedDataRootStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -114,7 +114,7 @@ export class SearchStore {
 		private workspacesStore: WorkspacesStore,
 		private api: ApiSchema,
 		private filtersHistory: FiltersHistoryStore,
-		private sessionsStore: SessionsStore,
+		private persistedDataStore: PersistedDataRootStore,
 	) {
 		this.init();
 
@@ -575,7 +575,7 @@ export class SearchStore {
 			if (this.formType === 'event') {
 				this.filtersHistory.onEventFilterSubmit(filterParams as EventFilterState);
 			} else {
-				this.sessionsStore.saveSessions(stream);
+				this.persistedDataStore.lastSearchedSessions?.addSessions(stream);
 				this.filtersHistory.onMessageFilterSubmit(filterParams as MessageFilterState);
 			}
 

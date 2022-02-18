@@ -29,7 +29,7 @@ import {
 	useMessagesDataStore,
 	useMessagesWorkspaceStore,
 	useFiltersHistoryStore,
-	useSessionsStore,
+	usePersistedDataStore,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -54,7 +54,7 @@ const MessagesFilterPanel = () => {
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
 	const { messagesHistory } = useFiltersHistoryStore();
-	const sessionsStore = useSessionsStore();
+	const { lastSearchedSessions } = usePersistedDataStore();
 	const { filterStore } = messagesStore;
 
 	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
@@ -198,13 +198,16 @@ const MessagesFilterPanel = () => {
 	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
-		return [
-			...sessionsStore.sessions.map(s => s.session),
-			...messagesStore.messageSessions.filter(
-				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
-			),
-		];
-	}, [messagesStore.messageSessions, sessionsStore.sessions]);
+		if (lastSearchedSessions?.data) {
+			return [
+				...lastSearchedSessions.data.map(s => s.session),
+				...messagesStore.messageSessions.filter(
+					session => lastSearchedSessions.data?.findIndex(s => s.session === session) === -1,
+				),
+			];
+		}
+		return messagesStore.messageSessions;
+	}, [messagesStore.messageSessions, lastSearchedSessions?.data]);
 
 	const areSessionInvalid: boolean = React.useMemo(() => {
 		return (

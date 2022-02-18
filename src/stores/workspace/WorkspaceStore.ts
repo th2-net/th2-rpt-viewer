@@ -33,7 +33,6 @@ import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
-import { SessionsStore } from '../messages/SessionsStore';
 import RootStore from '../RootStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import { isAbortError } from '../../helpers/fetch';
@@ -72,7 +71,6 @@ export default class WorkspaceStore {
 		private rootStore: RootStore,
 		private workspacesStore: WorkspacesStore,
 		private selectedStore: SelectedStore,
-		private sessionsStore: SessionsStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
@@ -80,7 +78,7 @@ export default class WorkspaceStore {
 			this.workspacesStore,
 			api,
 			this.workspacesStore.filtersHistoryStore,
-			this.rootStore.sessionsStore,
+			this.rootStore.persistedDataRootStore,
 		);
 		this.viewStore = new WorkspaceViewStore({
 			panelsLayout: initialState.layout,
@@ -101,7 +99,7 @@ export default class WorkspaceStore {
 			this.searchStore,
 			this.api,
 			this.workspacesStore.filtersHistoryStore,
-			this.sessionsStore,
+			this.rootStore.persistedDataRootStore,
 			initialState.messages,
 		);
 

@@ -95,7 +95,6 @@ export default class WorkspacesStore {
 			this.rootStore,
 			this,
 			this.selectedStore,
-			this.rootStore.sessionsStore,
 			this.api,
 			workspaceInitialState,
 		);

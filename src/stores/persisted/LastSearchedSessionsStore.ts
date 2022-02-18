@@ -14,9 +14,20 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { action } from 'mobx';
 import { PersistedDataApiSchema } from '../../api/ApiSchema';
-import { PersistedDataCollectionsNames, PersistedDataTypes } from '../../models/PersistedData';
+import { sortByTimestamp } from '../../helpers/date';
+import {
+	PersistedDataCollectionsNames,
+	persistedDataLimits,
+	PersistedDataTypes,
+} from '../../models/PersistedData';
 import PersistedStore from './PerstistedStore';
+
+export interface Session {
+	session: string;
+	timestamp: number;
+}
 
 export default class extends PersistedStore<
 	PersistedDataTypes[PersistedDataCollectionsNames.LAST_SEARCHED_SESSIONS]
@@ -24,4 +35,25 @@ export default class extends PersistedStore<
 	constructor(id: string, api: PersistedDataApiSchema) {
 		super(id, PersistedDataCollectionsNames.LAST_SEARCHED_SESSIONS, api);
 	}
+
+	@action
+	public addSessions = (sessions: string[]) => {
+		if (!this.data) {
+			return;
+		}
+		const currentSessionNames = this.data.map(({ session }) => session);
+
+		const sessionsToAdd: Session[] = sessions
+			.map(session => ({ session, timestamp: Date.now() }))
+			.filter(({ session }) => !currentSessionNames.includes(session));
+
+		const newSessions = [...sessionsToAdd, ...this.data];
+
+		const sortedNewSessions = sortByTimestamp(newSessions);
+
+		this.data = sortedNewSessions.slice(
+			0,
+			persistedDataLimits[PersistedDataCollectionsNames.LAST_SEARCHED_SESSIONS],
+		);
+	};
 }
