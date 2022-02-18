@@ -22,7 +22,7 @@ import { formatTime, timestampToNumber } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import EventBodyCard from './EventBodyCard';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { useSelectedStore, useWorkspaceEventStore } from '../../hooks';
+import { usePersistedDataStore, useWorkspaceEventStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 
 interface Props {
@@ -34,7 +34,7 @@ interface Props {
 }
 
 function EventDetailInfoCard(props: Props) {
-	const selectedStore = useSelectedStore();
+	const { pinnedItems } = usePersistedDataStore();
 	const eventStore = useWorkspaceEventStore();
 	const { currentSearch } = useSearchStore();
 	const bodyFilters = currentSearch?.request.filters.body.values ?? [];
@@ -54,14 +54,12 @@ function EventDetailInfoCard(props: Props) {
 	const endTimestampValue = endTimestamp && timestampToNumber(endTimestamp);
 
 	const isBookmarked =
-		selectedStore.bookmarkedEvents.findIndex(
-			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
-		) !== -1;
+		pinnedItems.data?.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !== -1;
 
 	function onEventPin() {
 		if (event === null) return;
 
-		selectedStore.toggleEventPin(node);
+		pinnedItems.toggleEventPin(node);
 	}
 
 	function onMouseEnter() {

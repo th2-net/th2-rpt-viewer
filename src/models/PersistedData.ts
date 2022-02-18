@@ -14,11 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventBookmark, MessageBookmark } from '../components/bookmarks/BookmarksPanel';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { Session } from '../stores/persisted/LastSearchedSessionsStore';
+import { EventBookmark, MessageBookmark } from '../stores/persisted/PinnedItemsStore';
 import { SearchHistory } from '../stores/SearchStore';
 import { MessageDisplayRule } from './EventMessage';
 

@@ -19,7 +19,6 @@ import ApiSchema from '../../api/ApiSchema';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
-import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 
@@ -28,9 +27,11 @@ export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 12;
 
-	public selectedStore = new SelectedStore(this, this.api.indexedDb);
+	public selectedStore = new SelectedStore(this);
 
 	public tabsStore = new TabsStore(this);
+
+	public persistedDataStore = this.rootStore.persistedDataRootStore;
 
 	constructor(
 		private rootStore: RootStore,
@@ -104,17 +105,5 @@ export default class WorkspacesStore {
 		const closedWorkspace = this.tabsStore.closeWorkspace(tab);
 
 		closedWorkspace.dispose();
-	};
-
-	public syncData = async (unsavedData?: DbData) => {
-		try {
-			await this.selectedStore.syncData(unsavedData);
-		} catch (error) {
-			this.selectedStore.syncData();
-		}
-	};
-
-	public onQuotaExceededError = (unsavedData?: DbData) => {
-		this.rootStore.handleQuotaExceededError(unsavedData);
 	};
 }

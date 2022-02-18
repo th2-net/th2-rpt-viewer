@@ -14,11 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action } from 'mobx';
+import { action, computed } from 'mobx';
 import { PersistedDataApiSchema } from '../../api/ApiSchema';
 import { move } from '../../helpers/array';
 import { MessageDisplayRule, MessageViewType } from '../../models/EventMessage';
-import { PersistedDataCollectionsNames, PersistedDataTypes } from '../../models/PersistedData';
+import {
+	PersistedDataCollectionsNames,
+	persistedDataLimits,
+	PersistedDataTypes,
+} from '../../models/PersistedData';
 import PersistedStore from './PerstistedStore';
 
 export const DEFAULT_ROOT_RULE: MessageDisplayRule = {
@@ -37,6 +41,15 @@ export default class extends PersistedStore<
 		super(id, PersistedDataCollectionsNames.MESSAGE_DISPLAY_RULES, api);
 	}
 
+	@computed
+	private get isLimitReached() {
+		return (
+			this.data?.rules.length ===
+			persistedDataLimits[PersistedDataCollectionsNames.MESSAGE_DISPLAY_RULES]
+		);
+	}
+
+	@action
 	public setRootDisplayRule = (rootRule: MessageDisplayRule) => {
 		if (!this.data) {
 			return;
@@ -54,12 +67,17 @@ export default class extends PersistedStore<
 		if (!this.data) {
 			return;
 		}
-		if (!this.data.rules.find((existed: MessageDisplayRule) => existed.session === rule.session)) {
-			this.data = {
-				...this.data,
-				rules: [rule, ...this.data.rules],
-			};
-		}
+		const hasSame = this.data.rules.find(
+			(existed: MessageDisplayRule) => existed.session === rule.session,
+		);
+		if (hasSame) return;
+
+		this.data = {
+			...this.data,
+			rules: this.isLimitReached
+				? [rule, ...this.data.rules.slice(0, -1)]
+				: [rule, ...this.data.rules],
+		};
 	};
 
 	@action

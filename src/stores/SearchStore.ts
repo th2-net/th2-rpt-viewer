@@ -16,7 +16,6 @@
 
 import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import moment from 'moment';
-import { nanoid } from 'nanoid';
 import debounce from 'lodash.debounce';
 import ApiSchema from '../api/ApiSchema';
 import {
@@ -820,17 +819,7 @@ export class SearchStore {
 			}
 			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
 		} catch (error) {
-			if (error instanceof DOMException && error.code === error.QUOTA_EXCEEDED_ERR) {
-				this.workspacesStore.onQuotaExceededError(search);
-			} else {
-				notificationsStore.addMessage({
-					notificationType: 'genericError',
-					type: 'error',
-					header: `Failed to save current search result`,
-					description: '',
-					id: nanoid(),
-				});
-			}
+			console.error(error);
 		}
 	};
 

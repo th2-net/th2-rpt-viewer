@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action } from 'mobx';
+import { action, computed } from 'mobx';
 import { PersistedDataApiSchema } from '../../api/ApiSchema';
 import { sortByTimestamp } from '../../helpers/date';
 import {
@@ -34,6 +34,11 @@ export default class extends PersistedStore<
 > {
 	constructor(id: string, api: PersistedDataApiSchema) {
 		super(id, PersistedDataCollectionsNames.LAST_SEARCHED_SESSIONS, api);
+	}
+
+	@computed
+	public get sessionNames() {
+		return this.data?.map(({ session }) => session) || [];
 	}
 
 	@action

@@ -56,6 +56,9 @@ export default class PersistedDataRootStore {
 	}
 
 	@observable
+	public initialized = false;
+
+	@observable
 	public rootDataIDs: RootDataIDs | null = null;
 
 	private init = async () => {
@@ -134,5 +137,7 @@ export default class PersistedDataRootStore {
 			ids[PersistedDataCollectionsNames.PINNED_ITEMS],
 			this.api,
 		);
+
+		this.initialized = true;
 	};
 }

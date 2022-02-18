@@ -18,9 +18,8 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import {
 	useMessagesWorkspaceStore,
-	useMessageDisplayRulesStore,
-	useSelectedStore,
 	useMessagesDataStore,
+	usePersistedDataStore,
 } from '../../../hooks';
 import { keyForMessage } from '../../../helpers/keys';
 import StateSaver from '../../util/StateSaver';
@@ -45,7 +44,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
-	const selectedStore = useSelectedStore();
+	const { pinnedItems } = usePersistedDataStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
@@ -54,9 +53,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const isContentBeautified = messagesStore.beautifiedMessages.includes(messageId);
 	const isBookmarked =
-		selectedStore.bookmarkedMessages.findIndex(
-			bookmarkedMessage => bookmarkedMessage.id === messageId,
-		) !== -1;
+		pinnedItems.data?.findIndex(bookmarkedMessage => bookmarkedMessage.id === messageId) !== -1;
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
 	const isDetailed = messagesStore.detailedRawMessagesIds.includes(messageId);
@@ -131,7 +128,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	);
 
 	function toogleMessagePin() {
-		selectedStore.toggleMessagePin(message);
+		pinnedItems.toggleMessagePin(message);
 	}
 
 	const isExported = messagesStore.exportStore.isExported(message);
@@ -159,14 +156,14 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 });
 
 const RecoverableMessageCard = React.memo((props: OwnProps) => {
-	const rulesStore = useMessageDisplayRulesStore();
+	const { messageDisplayRules } = usePersistedDataStore();
 
 	return (
 		<StateSaver
 			stateKey={keyForMessage(props.message.messageId)}
 			getDefaultState={() => {
-				const rootRule = rulesStore.rootDisplayRule;
-				const declaredRule = rulesStore.messageDisplayRules.find(rule => {
+				const rootRule = messageDisplayRules.data?.rootRule;
+				const declaredRule = messageDisplayRules.data?.rules.find(rule => {
 					if (rule.session.length > 1 && rule.session.includes('*')) {
 						return matchWildcardRule(props.message.sessionId, rule.session);
 					}

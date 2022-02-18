@@ -14,14 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable } from 'mobx';
+import { observable } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
-import MessageDisplayRulesStore from './MessageDisplayRulesStore';
-import MessageBodySortOrderStore from './MessageBodySortStore';
-import { DbData } from '../api/indexedDb';
 import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
 import { intervalOptions } from '../models/Graph';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
@@ -31,7 +28,6 @@ import {
 	FilterState,
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
-import { SessionsStore } from './messages/SessionsStore';
 import feedbackStoreInstance from './FeedbackStore';
 import PersistedDataRootStore from './persisted/PersistedDataRootStore';
 
@@ -47,13 +43,7 @@ export default class RootStore {
 
 	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb, this.notificationsStore);
 
-	messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
-
-	messageBodySortStore = new MessageBodySortOrderStore(this, this.api.indexedDb);
-
 	workspacesStore: WorkspacesStore;
-
-	sessionsStore = new SessionsStore(this.api.indexedDb);
 
 	constructor(private api: ApiSchema) {
 		this.workspacesStore = new WorkspacesStore(
@@ -64,11 +54,6 @@ export default class RootStore {
 		);
 
 		window.history.replaceState({}, '', window.location.pathname);
-	}
-
-	@computed
-	public get isBookmarksFull(): boolean {
-		return this.workspacesStore.selectedStore.isBookmarksFull;
 	}
 
 	private parseUrlState = (): WorkspacesUrlState | null => {
@@ -135,45 +120,4 @@ export default class RootStore {
 
 	// workaround to reset graph search state as it uses internal state
 	@observable resetGraphSearchData = false;
-
-	@action
-	public handleQuotaExceededError = async (unsavedData?: DbData) => {
-		const errorId = nanoid();
-		this.notificationsStore.addMessage({
-			notificationType: 'genericError',
-			type: 'error',
-			header: 'QuotaExceededError',
-			description: 'Not enough storage space to save data. Clear all data?',
-			action: {
-				label: 'OK',
-				callback: () => this.clearAppData(errorId, unsavedData),
-			},
-			id: errorId,
-		});
-	};
-
-	public clearAppData = async (errorId: string, unsavedData?: DbData) => {
-		this.notificationsStore.deleteMessage(errorId);
-		try {
-			await this.api.indexedDb.clearAllData();
-
-			await Promise.all([
-				this.workspacesStore.syncData(unsavedData),
-				this.messageDisplayRulesStore.syncData(unsavedData),
-				this.messageBodySortStore.syncData(unsavedData),
-			]);
-
-			this.notificationsStore.addMessage({
-				notificationType: 'genericError',
-				type: 'success',
-				header: 'Data has been removed',
-				description: '',
-				id: nanoid(),
-			});
-		} catch (error) {
-			this.workspacesStore.syncData(unsavedData);
-			this.messageDisplayRulesStore.syncData(unsavedData);
-			this.messageBodySortStore.syncData(unsavedData);
-		}
-	};
 }

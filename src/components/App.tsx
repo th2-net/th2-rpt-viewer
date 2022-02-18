@@ -25,11 +25,11 @@ import Notifier from './notifications/Notifier';
 import WorkspacesLayout from './workspace/WorkspacesLayout';
 import Graph from './graph/Graph';
 import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
-import { useSessionsStore } from '../hooks';
+import { usePersistedDataStore } from '../hooks';
 import '../styles/root.scss';
 
 const AppRootBase = () => {
-	const { sessionNames } = useSessionsStore();
+	const { lastSearchedSessions } = usePersistedDataStore();
 
 	return (
 		<div className='app'>
@@ -38,7 +38,7 @@ const AppRootBase = () => {
 				components={{ Toast, ToastContainer }}
 				transitionDuration={400}>
 				<Graph />
-				<MessagesViewConfigurator sessions={sessionNames} />
+				<MessagesViewConfigurator sessions={lastSearchedSessions?.sessionNames} />
 				<div className='app__workspaces'>
 					<WorkspacesLayout />
 				</div>

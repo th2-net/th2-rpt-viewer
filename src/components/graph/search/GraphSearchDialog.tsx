@@ -24,7 +24,7 @@ import { EventAction } from '../../../models/EventAction';
 import { EventMessage } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../bookmarks/BookmarksPanel';
 import Empty from '../../util/Empty';
-import { useDebouncedCallback, useRootStore } from '../../../hooks';
+import { useDebouncedCallback, usePersistedDataStore, useRootStore } from '../../../hooks';
 import KeyCodes from '../../../util/KeyCodes';
 import { indexedDbLimits, IndexedDbStores } from '../../../api/indexedDb';
 import { GraphSearchResult } from './GraphSearch';
@@ -55,17 +55,16 @@ const GraphSearchDialog = (props: Props) => {
 	} = props;
 
 	const rootStore = useRootStore();
+	const { pinnedItems } = usePersistedDataStore();
 
 	const [isLoading, setIsLoading] = React.useState(false);
+	const [foundId, setFoundId] = React.useState<string | null>(null);
+	const [searchHistory, setSearchHistory] = React.useState<GraphSearchResult[]>([]);
 	const [currentSearchResult, setCurrentSearchResult] = React.useState<GraphSearchResult | null>(
 		null,
 	);
 
 	const ac = React.useRef<AbortController | null>(null);
-
-	const [foundId, setFoundId] = React.useState<string | null>(null);
-
-	const [searchHistory, setSearchHistory] = React.useState<GraphSearchResult[]>([]);
 
 	const sortedSearchHistory: GraphSearchResult[] = React.useMemo(() => {
 		const sortedHistory = searchHistory.slice();
@@ -339,7 +338,7 @@ const GraphSearchDialog = (props: Props) => {
 							bookmark={searchResult.item}
 							onClick={() => onSearchResultSelect(searchResult)}
 							onRemove={() => onHistoryItemDelete(searchResult)}
-							isBookmarkButtonDisabled={rootStore.isBookmarksFull}
+							isBookmarkButtonDisabled={pinnedItems?.isLimitReached}
 						/>
 					))}
 				</div>
