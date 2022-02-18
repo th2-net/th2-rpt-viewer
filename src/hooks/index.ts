@@ -40,3 +40,4 @@ export * from './useMessageDisplayRulesStore';
 export * from './useMessageBodySortStore';
 export * from './useFiltersHistoryStore';
 export * from './useFeedbackStore';
+export * from './usePersistedDataStore';
