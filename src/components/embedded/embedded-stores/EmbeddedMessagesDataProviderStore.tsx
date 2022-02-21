@@ -345,7 +345,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		}
 
 		if (messages.length !== 0) {
-			this.resumeMessageIdsNext.updateMessageIdsByMessageList(messages);
+			this.resumeMessageIdsNext.updateMessageIdsByMessageList([...messages].reverse());
 			this.startIndex -= messages.length;
 
 			let newMessagesList = [...messages, ...this.messages];
