@@ -48,6 +48,7 @@ import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { SessionsStore } from './messages/SessionsStore';
 import { EventBodyPayload } from '../models/EventActionPayload';
+import ResumeMessageIdsStore from './messages/ResumeMessageIdsStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -216,6 +217,11 @@ export class SearchStore {
 	@observable selectedEventBodyFilter: [EventBodyPayload, FilterEntry] | null = null;
 
 	eventAutocompleteSseChannel: EventSource | null = null;
+
+	private resumeFromMessageIds = {
+		previous: new ResumeMessageIdsStore(),
+		next: new ResumeMessageIdsStore(),
+	};
 
 	@computed get searchProgress() {
 		const startTimestamp = Number(this.searchForm.startTimestamp);
@@ -553,7 +559,11 @@ export class SearchStore {
 			};
 
 			if (isPaused || loadMore) {
-				params.resumeFromId = this.searchProgressState[direction].lastEventId;
+				if (this.formType === 'message') {
+					params.messageId = this.resumeFromMessageIds[direction].idList;
+				} else {
+					params.resumeFromId = this.searchProgressState[direction].lastEventId;
+				}
 			}
 
 			if (isPaused) {
@@ -683,6 +693,12 @@ export class SearchStore {
 				this.currentSearch.progress[searchDirection] = eventTimestamp;
 				this.searchProgressState[searchDirection].lastEventId = getItemId(parsedEvent);
 				this.searchProgressState[searchDirection].resultCount += 1;
+
+				if (isEventMessage(parsedEvent)) {
+					this.resumeFromMessageIds[searchDirection].updateMessageIdsByMessageId(
+						parsedEvent.messageId,
+					);
+				}
 			} else {
 				if (eventTimestamp) {
 					this.currentSearch.progress[searchDirection] = eventTimestamp;
@@ -726,6 +742,9 @@ export class SearchStore {
 				resultCount: 0,
 			},
 		};
+
+		this.resumeFromMessageIds.previous.reset();
+		this.resumeFromMessageIds.next.reset();
 	}
 
 	@action resetEventAutocompleteList = () => {

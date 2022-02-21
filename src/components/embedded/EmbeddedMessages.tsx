@@ -144,8 +144,8 @@ interface Props {
 	scrolledIndex: Number | null;
 	className?: string;
 	overscan?: number;
-	loadNextMessages: (resumeFromId?: string) => Promise<EventMessage[]>;
-	loadPrevMessages: (resumeFromId?: string) => Promise<EventMessage[]>;
+	loadNextMessages: () => Promise<EventMessage[]>;
+	loadPrevMessages: () => Promise<EventMessage[]>;
 }
 
 const MessagesVirtualizedList = observer((props: Props) => {
@@ -182,7 +182,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 					!messagesStore.dataStore.updateStore.isLoading &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
-					loadNextMessages(messagesStore.dataStore.messages[0]?.messageId).then(messages =>
+					loadNextMessages().then(messages =>
 						messagesStore.dataStore.onNextChannelResponse(messages),
 					);
 				}
@@ -194,10 +194,9 @@ const MessagesVirtualizedList = observer((props: Props) => {
 					!messagesStore.dataStore.searchChannelPrev.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
 				) {
-					loadPrevMessages(
-						messagesStore.dataStore.messages[messagesStore.dataStore.messages.length - 1]
-							?.messageId,
-					).then(messages => messagesStore.dataStore.onPrevChannelResponse(messages));
+					loadPrevMessages().then(messages =>
+						messagesStore.dataStore.onPrevChannelResponse(messages),
+					);
 				}
 			}
 		},

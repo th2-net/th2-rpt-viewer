@@ -40,8 +40,8 @@ interface Props {
 	scrolledIndex: Number | null;
 	className?: string;
 	overscan?: number;
-	loadNextMessages: (resumeFromId?: string) => Promise<EventMessage[]>;
-	loadPrevMessages: (resumeFromId?: string) => Promise<EventMessage[]>;
+	loadNextMessages: () => Promise<EventMessage[]>;
+	loadPrevMessages: () => Promise<EventMessage[]>;
 }
 
 const MessagesVirtualizedList = (props: Props) => {
@@ -93,9 +93,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					!searchChannelNext.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
-					loadNextMessages(messageList[0]?.messageId).then(messages =>
-						onNextChannelResponse(messages),
-					);
+					loadNextMessages().then(messages => onNextChannelResponse(messages));
 				}
 
 				if (
@@ -105,9 +103,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					!searchChannelPrev.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
 				) {
-					loadPrevMessages(messageList[messageList.length - 1]?.messageId).then(messages =>
-						onPrevChannelResponse(messages),
-					);
+					loadPrevMessages().then(messages => onPrevChannelResponse(messages));
 				}
 			}
 		},
