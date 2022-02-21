@@ -24,16 +24,22 @@ import notificationsStore from '../NotificationsStore';
 import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
 import MessagesUpdateStore from './MessagesUpdateStore';
+import ResumeMessageIdsStore from './ResumeMessageIdsStore';
+import { MessagesDataStore } from '../../models/Stores';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
-export default class MessagesDataProviderStore {
+export default class MessagesDataProviderStore implements MessagesDataStore {
 	private readonly messagesLimit = 250;
 
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
 		this.updateStore = new MessagesUpdateStore(this, this.messagesStore);
 
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
+
+		reaction(() => this.searchChannelPrev, this.resumeMessageIdsPrev.reset);
+
+		reaction(() => this.searchChannelNext, this.resumeMessageIdsNext.reset);
 	}
 
 	public updateStore: MessagesUpdateStore;
@@ -85,6 +91,10 @@ export default class MessagesDataProviderStore {
 	private lastPreviousChannelResponseTimestamp: number | null = null;
 
 	private lastNextChannelResponseTimestamp: number | null = null;
+
+	public resumeMessageIdsPrev = new ResumeMessageIdsStore();
+
+	public resumeMessageIdsNext = new ResumeMessageIdsStore();
 
 	@computed
 	public get isLoadingNextMessages(): boolean {
@@ -172,8 +182,12 @@ export default class MessagesDataProviderStore {
 			}
 
 			const [nextMessages, prevMessages] = await Promise.all([
-				this.searchChannelNext.loadAndSubscribe({ resumeFromId: message?.messageId }),
-				this.searchChannelPrev.loadAndSubscribe({ resumeFromId: message?.messageId }),
+				this.searchChannelNext.loadAndSubscribe({
+					resumeMessageIds: message && [message.messageId],
+				}),
+				this.searchChannelPrev.loadAndSubscribe({
+					resumeMessageIds: message && [message.messageId],
+				}),
 			]);
 
 			const firstNextMessage = nextMessages[nextMessages.length - 1];
@@ -276,6 +290,7 @@ export default class MessagesDataProviderStore {
 		}
 
 		if (messages.length) {
+			this.resumeMessageIdsPrev.updateMessageIdsByMessageList(messages);
 			let newMessagesList = [...this.messages, ...messages];
 
 			if (newMessagesList.length > this.messagesLimit) {
@@ -316,6 +331,7 @@ export default class MessagesDataProviderStore {
 		}
 
 		if (messages.length !== 0) {
+			this.resumeMessageIdsNext.updateMessageIdsByMessageList(messages);
 			this.startIndex -= messages.length;
 
 			let newMessagesList = [...messages, ...this.messages];
@@ -350,7 +366,7 @@ export default class MessagesDataProviderStore {
 	};
 
 	@action
-	public getPreviousMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
+	public getPreviousMessages = async (): Promise<EventMessage[]> => {
 		if (
 			!this.searchChannelPrev ||
 			this.searchChannelPrev.isLoading ||
@@ -359,11 +375,13 @@ export default class MessagesDataProviderStore {
 			return [];
 		}
 
-		return this.searchChannelPrev.loadAndSubscribe({ resumeFromId });
+		return this.searchChannelPrev.loadAndSubscribe({
+			resumeMessageIds: this.resumeMessageIdsPrev.idList,
+		});
 	};
 
 	@action
-	public getNextMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
+	public getNextMessages = async (): Promise<EventMessage[]> => {
 		if (
 			!this.searchChannelNext ||
 			this.searchChannelNext.isLoading ||
@@ -372,7 +390,9 @@ export default class MessagesDataProviderStore {
 			return [];
 		}
 
-		return this.searchChannelNext.loadAndSubscribe({ resumeFromId });
+		return this.searchChannelNext.loadAndSubscribe({
+			resumeMessageIds: this.resumeMessageIdsNext.idList,
+		});
 	};
 
 	private onFilterChange = async () => {
@@ -487,7 +507,6 @@ export default class MessagesDataProviderStore {
 		try {
 			const {
 				resultCountLimit,
-				resumeFromId,
 				searchDirection,
 				...filterParams
 			} = this.messagesStore.filterStore.filterParams;

@@ -16,10 +16,10 @@
 
 import { action, computed, observable } from 'mobx';
 import notificationsStore from '../NotificationsStore';
-import { MessagesDataStore } from '../../models/Stores';
 import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
 import EmbeddedMessagesStore from '../../components/embedded/embedded-stores/EmbeddedMessagesStore';
+import { MessagesDataStore } from '../../models/Stores';
 
 export default class MessagesUpdateStore {
 	constructor(
@@ -36,19 +36,14 @@ export default class MessagesUpdateStore {
 		// filter changes in MessagesFilterStore
 		const queryParams = this.messagesDataStore.getFilterParams();
 
-		const { onNextChannelResponse, messages } = this.messagesDataStore;
+		const { onNextChannelResponse, resumeMessageIdsNext } = this.messagesDataStore;
 
 		this.channel = new MessagesSSEChannel(
 			{
 				...queryParams,
 				searchDirection: 'next',
 				keepOpen: true,
-				...(messages[0]?.messageId
-					? {
-							resumeFromId: messages[0].messageId,
-							startTimestamp: undefined,
-					  }
-					: {}),
+				messageId: resumeMessageIdsNext.idList,
 				resultCountLimit: undefined,
 			},
 			{
@@ -63,7 +58,7 @@ export default class MessagesUpdateStore {
 			},
 		);
 
-		this.channel.subscribe(messages[0]?.messageId);
+		this.channel.subscribe(resumeMessageIdsNext.idList);
 	};
 
 	private onLoadingError = (event: Event) => {

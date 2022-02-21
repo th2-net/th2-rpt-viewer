@@ -77,7 +77,7 @@ export interface EventSSEParams extends BaseSSEParams {
 	'name-conjunct'?: boolean;
 }
 
-export interface MessagesSSEParams extends BaseSSEParams {
+export interface MessagesSSEParams extends Omit<BaseSSEParams, 'resumeFromId'> {
 	stream: string[];
 	filters?: Array<MessagesSSEFilters>;
 	'attachedEventIds-values'?: string[];

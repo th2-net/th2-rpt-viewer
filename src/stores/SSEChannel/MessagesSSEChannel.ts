@@ -40,8 +40,8 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		super(isEventMessage, eventListeners, options);
 	}
 
-	public subscribe = (resumeFromId?: string): void => {
-		this.initConnection(resumeFromId);
+	public subscribe = (resumeMessageIds?: string[]): void => {
+		this.initConnection(resumeMessageIds);
 		this.initUpdateScheduler();
 	};
 
@@ -89,11 +89,11 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		and subscribes on changes 
 	*/
 	public loadAndSubscribe = async (options?: {
-		resumeFromId?: string;
+		resumeMessageIds?: string[];
 		initialResponseTimeoutMs?: number | null;
 	}): Promise<EventMessage[]> => {
-		const { resumeFromId, initialResponseTimeoutMs = 2000 } = options || {};
-		this.initConnection(resumeFromId);
+		const { resumeMessageIds, initialResponseTimeoutMs = 2000 } = options || {};
+		this.initConnection(resumeMessageIds);
 
 		const messagesChunk = await (initialResponseTimeoutMs
 			? Promise.race([
@@ -105,21 +105,21 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		return messagesChunk;
 	};
 
-	private initConnection = (resumeFromId?: string): void => {
+	private initConnection = (resumeMessageIds?: string[]): void => {
 		this.closeChannel();
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
 
-		const messageId: string[] = this.messagesIdsEvent
-			? (Object.values(this.messagesIdsEvent.messageIds).filter(Boolean) as string[])
-			: [];
+		const messageId: string[] =
+			resumeMessageIds ??
+			(this.messagesIdsEvent
+				? (Object.values(this.messagesIdsEvent.messageIds).filter(Boolean) as string[])
+				: []);
 
 		this.messagesIdsEvent = null;
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
-				resumeFromId:
-					(messageId.length ? undefined : resumeFromId) ?? this.queryParams.resumeFromId,
 				...(this.queryParams.keepOpen
 					? {
 							resultCountLimit: undefined,

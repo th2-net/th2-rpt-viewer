@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import { runInAction, action, observable, computed, autorun } from 'mobx';
+import { runInAction, action, observable, computed, autorun, reaction } from 'mobx';
 import { MessagesSSEParams, SSEHeartbeat } from '../../../api/sse';
 import { EventMessage } from '../../../models/EventMessage';
 import EmbeddedMessagesStore from './EmbeddedMessagesStore';
@@ -24,6 +24,7 @@ import { isAbortError } from '../../../helpers/fetch';
 import { MessagesDataStore } from '../../../models/Stores';
 import MessagesUpdateStore from '../../../stores/messages/MessagesUpdateStore';
 import { MessagesSSEChannel } from '../../../stores/SSEChannel/MessagesSSEChannel';
+import ResumeMessageIdsStore from '../../../stores/messages/ResumeMessageIdsStore';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
@@ -35,6 +36,10 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.updateStore = new MessagesUpdateStore(this, this.messagesStore);
 
 		autorun(() => this.messagesStore.filterStore.filter && this.onFilterChange());
+
+		reaction(() => this.searchChannelPrev, this.resumeMessageIdsPrev.reset);
+
+		reaction(() => this.searchChannelNext, this.resumeMessageIdsNext.reset);
 	}
 
 	public updateStore: MessagesUpdateStore;
@@ -79,6 +84,10 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	private lastPreviousChannelResponseTimestamp: number | null = null;
 
 	private lastNextChannelResponseTimestamp: number | null = null;
+
+	public resumeMessageIdsPrev = new ResumeMessageIdsStore();
+
+	public resumeMessageIdsNext = new ResumeMessageIdsStore();
 
 	@computed
 	public get isLoadingNextMessages(): boolean {
@@ -176,8 +185,12 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			}
 
 			const [nextMessages, prevMessages] = await Promise.all([
-				this.searchChannelNext.loadAndSubscribe({ resumeFromId: message?.messageId }),
-				this.searchChannelPrev.loadAndSubscribe({ resumeFromId: message?.messageId }),
+				this.searchChannelNext.loadAndSubscribe({
+					resumeMessageIds: message && [message.messageId],
+				}),
+				this.searchChannelPrev.loadAndSubscribe({
+					resumeMessageIds: message && [message.messageId],
+				}),
 			]);
 
 			const firstNextMessage = nextMessages[nextMessages.length - 1];
@@ -277,6 +290,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		}
 
 		if (messages.length) {
+			this.resumeMessageIdsPrev.updateMessageIdsByMessageList(messages);
 			let newMessagesList = [...this.messages, ...messages];
 
 			if (newMessagesList.length > this.messagesLimit) {
@@ -331,6 +345,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		}
 
 		if (messages.length !== 0) {
+			this.resumeMessageIdsNext.updateMessageIdsByMessageList(messages);
 			this.startIndex -= messages.length;
 
 			let newMessagesList = [...messages, ...this.messages];
@@ -364,21 +379,25 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	};
 
 	@action
-	public getPreviousMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
+	public getPreviousMessages = async (): Promise<EventMessage[]> => {
 		if (!this.searchChannelPrev || this.searchChannelPrev.isLoading) {
 			return [];
 		}
 
-		return this.searchChannelPrev.loadAndSubscribe({ resumeFromId });
+		return this.searchChannelPrev.loadAndSubscribe({
+			resumeMessageIds: this.resumeMessageIdsPrev.idList,
+		});
 	};
 
 	@action
-	public getNextMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
+	public getNextMessages = async (): Promise<EventMessage[]> => {
 		if (!this.searchChannelNext || this.searchChannelNext.isLoading) {
 			return [];
 		}
 
-		return this.searchChannelNext.loadAndSubscribe({ resumeFromId });
+		return this.searchChannelNext.loadAndSubscribe({
+			resumeMessageIds: this.resumeMessageIdsPrev.idList,
+		});
 	};
 
 	@action
@@ -426,14 +445,14 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			this.noMatchingMessagesPrev = false;
 			this.createPreviousMessageChannelEventSource({
 				...query,
-				resumeFromId: this.messages[this.messages.length - 1]?.messageId,
+				messageId: this.resumeMessageIdsPrev.idList,
 			});
 			this.searchChannelPrev.subscribe();
 		} else {
 			this.noMatchingMessagesNext = false;
 			this.createNextMessageChannelEventSource({
 				...query,
-				resumeFromId: this.messages[0]?.messageId,
+				messageId: this.resumeMessageIdsNext.idList,
 			});
 			this.searchChannelNext.subscribe();
 		}
