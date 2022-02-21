@@ -30,7 +30,6 @@ import {
 	useMessagesWorkspaceStore,
 	useFiltersHistoryStore,
 	useSessionsStore,
-	useWorkspaceStore,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -53,7 +52,6 @@ type CurrentSSEValues = {
 const priority = ['attachedEventIds', 'type', 'body', 'bodyBinary', 'text'];
 
 const MessagesFilterPanel = () => {
-	const workspaceStore = useWorkspaceStore();
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
@@ -110,18 +108,19 @@ const MessagesFilterPanel = () => {
 
 	const stopLoading = React.useCallback(() => {
 		messagesDataStore.stopMessagesLoading();
-		workspaceStore.stopAttachedMessagesLoading();
 	}, []);
-
-	const isAttachedMessagesLoading = computed(() => workspaceStore.isLoadingAttachedMessages).get();
 
 	const isMessageListLoading = computed(
 		() =>
 			messagesDataStore.isLoading ||
 			(filterStore.isSoftFilter &&
-				[...messagesDataStore.isMatchingMessages.values()].some(Boolean)) ||
-			messagesStore.isLoadingAttachedMessages ||
-			messagesStore.filteringAttachedMessages,
+				[...messagesDataStore.isMatchingMessages.values()].some(Boolean)),
+	).get();
+
+	const secondaryLoadingStatus = computed(
+		() =>
+			messagesDataStore.messages.length !== 0 &&
+			(messagesStore.isFilteringTargetMessages || messagesStore.isLoadingAttachedMessages),
 	).get();
 
 	const compoundFilterRow: Array<CompoundFilterRow> = React.useMemo(() => {
@@ -304,7 +303,7 @@ const MessagesFilterPanel = () => {
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
 				renderFooter={renderFooter}
-				isLoading={isAttachedMessagesLoading}
+				isLoading={secondaryLoadingStatus}
 			/>
 			<MessageReplayModal />
 			<MessageFilterWarning />
