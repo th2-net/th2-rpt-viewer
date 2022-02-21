@@ -31,7 +31,6 @@ import { isEventMessage } from '../../helpers/event';
 import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
-import FiltersHistoryStore from '../FiltersHistoryStore';
 import MessagesExportStore from './MessagesExportStore';
 import PersistedDataRootStore from '../persisted/PersistedDataRootStore';
 
@@ -97,7 +96,6 @@ export default class MessagesStore {
 		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
 		private api: ApiSchema,
-		private filterHistoryStore: FiltersHistoryStore,
 		private persistedDataStore: PersistedDataRootStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
@@ -187,7 +185,7 @@ export default class MessagesStore {
 		isSoftFilterApplied: boolean,
 	) => {
 		if (sseFilters) {
-			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
+			this.persistedDataStore.filtersHistory.onMessageFilterSubmit(sseFilters);
 		}
 
 		this.exportStore.disableExport();

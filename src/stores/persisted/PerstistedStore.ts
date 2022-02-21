@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, reaction, runInAction } from 'mobx';
+import { action, observable, reaction, runInAction } from 'mobx';
 import { PersistedDataApiSchema } from '../../api/ApiSchema';
 import { PersistedDataCollectionsNames } from '../../models/PersistedData';
 
@@ -29,8 +29,12 @@ export default class PersistedStore<T> {
 	}
 
 	@observable
+	public initialized = false;
+
+	@observable
 	public data: T | null = null;
 
+	@action
 	private init = async () => {
 		try {
 			const data = await this.api.getPersistedData<T>(this.collection, this.id);
@@ -40,6 +44,7 @@ export default class PersistedStore<T> {
 		} catch (error) {
 			console.error(`Unable to load ${this.collection}`);
 		}
+		this.initialized = true;
 	};
 
 	private syncData = (payload: T | null) => {

@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-
-import { observable } from 'mobx';
+import { observable, when } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
-import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
 import { intervalOptions } from '../models/Graph';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
 import { getRangeFromTimestamp } from '../helpers/date';
@@ -30,6 +28,7 @@ import {
 } from '../components/search-panel/SearchPanelFilters';
 import feedbackStoreInstance from './FeedbackStore';
 import PersistedDataRootStore from './persisted/PersistedDataRootStore';
+import { FiltersHistoryType } from './persisted/FiltersHistoryStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -41,19 +40,11 @@ export default class RootStore {
 		this.api.persistedDataApi,
 	);
 
-	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb, this.notificationsStore);
-
-	workspacesStore: WorkspacesStore;
+	@observable
+	workspacesStore!: WorkspacesStore;
 
 	constructor(private api: ApiSchema) {
-		this.workspacesStore = new WorkspacesStore(
-			this,
-			this.api,
-			this.filtersHistoryStore,
-			this.parseUrlState(),
-		);
-
-		window.history.replaceState({}, '', window.location.pathname);
+		this.init();
 	}
 
 	private parseUrlState = (): WorkspacesUrlState | null => {
@@ -75,16 +66,16 @@ export default class RootStore {
 				const { type, filters } = filtersHistoryItem;
 
 				if (type === 'event') {
-					this.filtersHistoryStore
+					this.persistedDataRootStore.filtersHistory
 						.onEventFilterSubmit(filters as EventFilterState, true)
 						.then(() => {
-							this.filtersHistoryStore.showSuccessNotification(type);
+							this.persistedDataRootStore.filtersHistory.showSuccessNotification(type);
 						});
 				} else {
-					this.filtersHistoryStore
+					this.persistedDataRootStore.filtersHistory
 						.onMessageFilterSubmit(filters as MessageFilterState, true)
 						.then(() => {
-							this.filtersHistoryStore.showSuccessNotification(type);
+							this.persistedDataRootStore.filtersHistory.showSuccessNotification(type);
 						});
 				}
 				return null;
@@ -116,6 +107,14 @@ export default class RootStore {
 			});
 			return null;
 		}
+	};
+
+	private init = async () => {
+		await when(() => this.persistedDataRootStore.initialized);
+
+		this.workspacesStore = new WorkspacesStore(this, this.api, this.parseUrlState());
+
+		window.history.replaceState({}, '', window.location.pathname);
 	};
 
 	// workaround to reset graph search state as it uses internal state

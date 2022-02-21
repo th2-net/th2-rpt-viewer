@@ -26,9 +26,9 @@ import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
 import FilterRow from '../filter/row';
 import { SearchPanelType } from './SearchPanel';
 import { getArrayOfUniques } from '../../helpers/array';
-import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 import { notEmpty } from '../../helpers/object';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
+import { FiltersHistoryType } from '../../stores/persisted/FiltersHistoryStore';
 
 export type StringFilter = {
 	type: 'string';

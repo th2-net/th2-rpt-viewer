@@ -24,9 +24,14 @@ import { createBemElement, createStyleSelector } from '../../helpers/styleCreato
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import '../../styles/root.scss';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
+import SplashScreen from '../SplashScreen';
 
 const WorkspacesLayout = () => {
 	const workspacesStore = useWorkspaces();
+
+	if (!workspacesStore) {
+		return <SplashScreen />;
+	}
 
 	const renderTabs: TabListRenderProps = ({ activeTabIndex, setActiveTab }) => {
 		const getTabLayout = (workspace: WorkspaceStore, index: number) => {

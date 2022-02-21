@@ -19,5 +19,5 @@ import { useWorkspaces } from './useWorkspacesStore';
 export const useActiveWorkspace = () => {
 	const workspacesStore = useWorkspaces();
 
-	return workspacesStore.activeWorkspace;
+	return workspacesStore?.activeWorkspace;
 };

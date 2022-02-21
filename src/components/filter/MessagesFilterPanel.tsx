@@ -28,7 +28,6 @@ import {
 import {
 	useMessagesDataStore,
 	useMessagesWorkspaceStore,
-	useFiltersHistoryStore,
 	usePersistedDataStore,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
@@ -53,7 +52,7 @@ const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
-	const { messagesHistory } = useFiltersHistoryStore();
+	const { filtersHistory } = usePersistedDataStore();
 	const { lastSearchedSessions } = usePersistedDataStore();
 	const { filterStore } = messagesStore;
 
@@ -153,7 +152,7 @@ const MessagesFilterPanel = () => {
 				const state = getState(filterInfo.name);
 				const label = prettifyCamelcase(filterInfo.name);
 				const autocompleteList = getArrayOfUniques<string>(
-					messagesHistory
+					filtersHistory?.messages
 						.map(item => item.filters[filterInfo.name]?.values)
 						.filter(notEmpty)
 						.flat(),
@@ -195,7 +194,7 @@ const MessagesFilterPanel = () => {
 					: [];
 			},
 		);
-	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
+	}, [searchStore.messagesFilterInfo, filtersHistory?.messages, filter, currentValues]);
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
 		if (lastSearchedSessions?.data) {

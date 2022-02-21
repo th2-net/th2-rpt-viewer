@@ -16,7 +16,7 @@
 
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';
-import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
+import { FiltersHistoryType } from '../stores/persisted/FiltersHistoryStore';
 import { Session } from '../stores/persisted/LastSearchedSessionsStore';
 import { EventBookmark, MessageBookmark } from '../stores/persisted/PinnedItemsStore';
 import { SearchHistory } from '../stores/persisted/SearchHistoryStore';

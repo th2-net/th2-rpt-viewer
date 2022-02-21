@@ -186,9 +186,10 @@ export default class extends PersistedStore<
 			return;
 		}
 
-		const readyToPinEvent = this.createReadyToPinEvent(event);
 		const hasSame = this.data.some(pinnedEvent => pinnedEvent.id === event.eventId);
 		if (hasSame) return;
+
+		const readyToPinEvent = this.createReadyToPinEvent(event);
 
 		if (this.isLimitReached) {
 			const newPinnedEvents = this.data.slice(0, -1);
@@ -205,9 +206,10 @@ export default class extends PersistedStore<
 			return;
 		}
 
-		const readyToPinMessage = this.createReadyToPinMessage(message);
 		const hasSame = this.data.some(pinnedMessage => pinnedMessage.id === message.messageId);
 		if (hasSame) return;
+
+		const readyToPinMessage = this.createReadyToPinMessage(message);
 
 		if (this.isLimitReached) {
 			const newPinnedMessages = this.data.slice(0, -1);

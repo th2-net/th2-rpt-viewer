@@ -38,8 +38,6 @@ import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
-import WorkspacesStore from './workspace/WorkspacesStore';
-import FiltersHistoryStore from './FiltersHistoryStore';
 import { EventBodyPayload } from '../models/EventActionPayload';
 import PersistedDataRootStore from './persisted/PersistedDataRootStore';
 import { SearchHistory } from './persisted/SearchHistoryStore';
@@ -91,12 +89,7 @@ const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
 const SEARCH_CHUNK_SIZE = 500;
 
 export class SearchStore {
-	constructor(
-		private workspacesStore: WorkspacesStore,
-		private api: ApiSchema,
-		private filtersHistory: FiltersHistoryStore,
-		private persistedDataStore: PersistedDataRootStore,
-	) {
+	constructor(private api: ApiSchema, private persistedDataStore: PersistedDataRootStore) {
 		this.init();
 
 		reaction(
@@ -541,10 +534,14 @@ export class SearchStore {
 			this.searchChannel[direction] = searchChannel;
 
 			if (this.formType === 'event') {
-				this.filtersHistory.onEventFilterSubmit(filterParams as EventFilterState);
+				this.persistedDataStore.filtersHistory.onEventFilterSubmit(
+					filterParams as EventFilterState,
+				);
 			} else {
 				this.persistedDataStore.lastSearchedSessions?.addSessions(stream);
-				this.filtersHistory.onMessageFilterSubmit(filterParams as MessageFilterState);
+				this.persistedDataStore.filtersHistory.onMessageFilterSubmit(
+					filterParams as MessageFilterState,
+				);
 			}
 
 			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));

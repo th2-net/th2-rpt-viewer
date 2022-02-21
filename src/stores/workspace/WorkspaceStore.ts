@@ -74,12 +74,7 @@ export default class WorkspaceStore {
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
-		this.searchStore = new SearchStore(
-			this.workspacesStore,
-			api,
-			this.workspacesStore.filtersHistoryStore,
-			this.rootStore.persistedDataRootStore,
-		);
+		this.searchStore = new SearchStore(api, this.rootStore.persistedDataRootStore);
 		this.viewStore = new WorkspaceViewStore({
 			panelsLayout: initialState.layout,
 		});
@@ -89,7 +84,7 @@ export default class WorkspaceStore {
 			this.graphStore,
 			this.searchStore,
 			this.api,
-			this.workspacesStore.filtersHistoryStore,
+			this.rootStore.persistedDataRootStore,
 			initialState.events,
 		);
 		this.messagesStore = new MessagesStore(
@@ -98,7 +93,6 @@ export default class WorkspaceStore {
 			this.selectedStore,
 			this.searchStore,
 			this.api,
-			this.workspacesStore.filtersHistoryStore,
 			this.rootStore.persistedDataRootStore,
 			initialState.messages,
 		);

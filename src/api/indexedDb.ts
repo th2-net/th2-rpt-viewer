@@ -17,13 +17,10 @@
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
-import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
-import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { RootDataIDs } from '../stores/persisted/PersistedDataRootStore';
 
 export enum IndexedDbStores {
 	GRAPH_SEARCH_HISTORY = 'graph-search-history',
-	FILTERS_HISTORY = 'filters-history',
 	ROOT_DATA_IDS = 'root-data-ids',
 }
 
@@ -31,19 +28,12 @@ type indexedDbStoresKeyPaths = {
 	[k in IndexedDbStores]: string;
 };
 
-export type DbData = GraphSearchResult | FiltersHistoryType<FilterState> | RootDataIDs;
+export type DbData = GraphSearchResult | RootDataIDs;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: {
 		key: string;
 		value: GraphSearchResult;
-		indexes: {
-			timestamp: number;
-		};
-	};
-	[IndexedDbStores.FILTERS_HISTORY]: {
-		key: string;
-		value: FiltersHistoryType<FilterState>;
 		indexes: {
 			timestamp: number;
 		};
@@ -59,17 +49,15 @@ interface TH2DB extends DBSchema {
 
 export const indexedDbLimits = {
 	bookmarks: 1000,
-	[IndexedDbStores.FILTERS_HISTORY]: 40,
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
 } as const;
 
 const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 'id',
-	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
 	[IndexedDbStores.ROOT_DATA_IDS]: 'timestamp',
 };
 
-const dbVersion = 6;
+const dbVersion = 7;
 
 export class IndexedDB {
 	@observable

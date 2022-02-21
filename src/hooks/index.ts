@@ -35,6 +35,5 @@ export * from './useSelectedStore';
 export * from './useWorkspacesStore';
 export * from './useTabsStore';
 export * from './useWorkspaceStore';
-export * from './useFiltersHistoryStore';
 export * from './useFeedbackStore';
 export * from './usePersistedDataStore';

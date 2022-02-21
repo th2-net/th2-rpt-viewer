@@ -20,7 +20,6 @@ import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
 import RootStore from '../RootStore';
-import FiltersHistoryStore from '../FiltersHistoryStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -36,7 +35,6 @@ export default class WorkspacesStore {
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
-		public filtersHistoryStore: FiltersHistoryStore,
 		initialState: WorkspacesUrlState | null,
 	) {
 		this.init(initialState || null);

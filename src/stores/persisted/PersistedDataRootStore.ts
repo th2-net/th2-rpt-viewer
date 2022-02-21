@@ -36,18 +36,25 @@ export interface RootDataIDs {
 }
 
 export default class PersistedDataRootStore {
+	@observable
 	public lastSearchedSessions!: LastSearchedSessionsStore;
 
+	@observable
 	public messageDisplayRules!: MessageDisplayRulesStore;
 
+	@observable
 	public graphSearchHistory!: GraphSearchHistoryStore;
 
+	@observable
 	public messageBodySort!: MessageBodySortStore;
 
+	@observable
 	public filtersHistory!: FiltersHistoryStore;
 
+	@observable
 	public searchHistory!: SearchHistoryStore;
 
+	@observable
 	public pinnedItems!: PinnedItemsStore;
 
 	constructor(private indexedDB: IndexedDB, private api: PersistedDataApiSchema) {
@@ -102,12 +109,12 @@ export default class PersistedDataRootStore {
 			console.error('Unable to load persisted data!');
 			return;
 		}
-
+		// done
 		this.lastSearchedSessions = new LastSearchedSessionsStore(
 			ids[PersistedDataCollectionsNames.LAST_SEARCHED_SESSIONS],
 			this.api,
 		);
-
+		// done
 		this.messageDisplayRules = new MessageDisplayRulesStore(
 			ids[PersistedDataCollectionsNames.MESSAGE_DISPLAY_RULES],
 			this.api,
@@ -117,22 +124,23 @@ export default class PersistedDataRootStore {
 			ids[PersistedDataCollectionsNames.GRAPH_SEARCH_HISTORY],
 			this.api,
 		);
-
+		// done
 		this.messageBodySort = new MessageBodySortStore(
 			ids[PersistedDataCollectionsNames.MESSAGE_BODY_SORT_ORDER],
 			this.api,
 		);
 
+		// done
 		this.filtersHistory = new FiltersHistoryStore(
 			ids[PersistedDataCollectionsNames.FILTERS_HISTORY],
 			this.api,
 		);
-
+		// done
 		this.searchHistory = new SearchHistoryStore(
 			ids[PersistedDataCollectionsNames.SEARCH_HISTORY],
 			this.api,
 		);
-
+		// done
 		this.pinnedItems = new PinnedItemsStore(
 			ids[PersistedDataCollectionsNames.PINNED_ITEMS],
 			this.api,

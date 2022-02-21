@@ -38,7 +38,7 @@ import SearchResultCountLimit, {
 } from './search-form/SearchResultCountLimit';
 import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
-import { useFiltersHistoryStore, usePersistedDataStore } from '../../hooks';
+import { usePersistedDataStore } from '../../hooks';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -64,7 +64,7 @@ const SearchPanelForm = () => {
 
 	const [currentStream, setCurrentStream] = useState('');
 	const { lastSearchedSessions } = usePersistedDataStore();
-	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
+	const { initialized, filtersHistory } = usePersistedDataStore();
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
 		if (lastSearchedSessions?.data) {
@@ -85,11 +85,12 @@ const SearchPanelForm = () => {
 		);
 	}, [form.stream, messageSessions]);
 
-	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
-		formType,
-		eventsHistory,
-		messagesHistory,
-	]);
+	const autocompletes = useMemo(() => {
+		if (!initialized) {
+			return [];
+		}
+		return formType === 'event' ? filtersHistory.events : filtersHistory.messages;
+	}, [formType, filtersHistory?.events, filtersHistory?.messages]);
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
