@@ -25,7 +25,6 @@ interface BaseSSEParams {
 	startTimestamp?: number;
 	endTimestamp?: number | null;
 	resultCountLimit?: number;
-	resumeFromId?: string;
 	searchDirection?: 'next' | 'previous'; // defaults to next
 	keepOpen?: boolean;
 }
@@ -76,9 +75,10 @@ export interface EventSSEParams extends BaseSSEParams {
 	'name-values'?: string[];
 	'name-negative'?: boolean;
 	'name-conjunct'?: boolean;
+	resumeFromId?: string;
 }
 
-export interface MessagesSSEParams extends Omit<BaseSSEParams, 'resumeFromId'> {
+export interface MessagesSSEParams extends BaseSSEParams {
 	stream: string[];
 	filters?: Array<MessagesSSEFilters>;
 	'attachedEventIds-values'?: string[];
