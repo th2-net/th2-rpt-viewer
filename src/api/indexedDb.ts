@@ -17,13 +17,11 @@
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
-import { SearchHistory } from '../stores/SearchStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { RootDataIDs } from '../stores/persisted/PersistedDataRootStore';
 
 export enum IndexedDbStores {
-	SEARCH_HISTORY = 'search-history',
 	GRAPH_SEARCH_HISTORY = 'graph-search-history',
 	FILTERS_HISTORY = 'filters-history',
 	ROOT_DATA_IDS = 'root-data-ids',
@@ -33,20 +31,9 @@ type indexedDbStoresKeyPaths = {
 	[k in IndexedDbStores]: string;
 };
 
-export type DbData =
-	| GraphSearchResult
-	| SearchHistory
-	| FiltersHistoryType<FilterState>
-	| RootDataIDs;
+export type DbData = GraphSearchResult | FiltersHistoryType<FilterState> | RootDataIDs;
 
 interface TH2DB extends DBSchema {
-	[IndexedDbStores.SEARCH_HISTORY]: {
-		key: number;
-		value: SearchHistory;
-		indexes: {
-			timestamp: number;
-		};
-	};
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: {
 		key: string;
 		value: GraphSearchResult;
@@ -73,18 +60,16 @@ interface TH2DB extends DBSchema {
 export const indexedDbLimits = {
 	bookmarks: 1000,
 	[IndexedDbStores.FILTERS_HISTORY]: 40,
-	[IndexedDbStores.SEARCH_HISTORY]: 5,
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
 } as const;
 
 const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
-	[IndexedDbStores.SEARCH_HISTORY]: 'timestamp',
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 'id',
 	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
 	[IndexedDbStores.ROOT_DATA_IDS]: 'timestamp',
 };
 
-const dbVersion = 5;
+const dbVersion = 6;
 
 export class IndexedDB {
 	@observable
@@ -121,7 +106,7 @@ export class IndexedDB {
 		const tx = await db.transaction(storeName, 'readwrite');
 		const store = await tx.objectStore(storeName);
 
-		await store.delete(key);
+		await store.delete(key as string);
 		await tx.done;
 	};
 

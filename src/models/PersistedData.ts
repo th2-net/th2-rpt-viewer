@@ -19,7 +19,7 @@ import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { Session } from '../stores/persisted/LastSearchedSessionsStore';
 import { EventBookmark, MessageBookmark } from '../stores/persisted/PinnedItemsStore';
-import { SearchHistory } from '../stores/SearchStore';
+import { SearchHistory } from '../stores/persisted/SearchHistoryStore';
 import { MessageDisplayRule } from './EventMessage';
 
 export enum PersistedDataCollectionsNames {

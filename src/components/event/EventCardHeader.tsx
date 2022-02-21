@@ -56,7 +56,7 @@ function EventCardHeader(props: Props) {
 	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp, isUnknown } = event;
 
-	const { pinnedItems } = usePersistedDataStore();
+	const { initialized, pinnedItems } = usePersistedDataStore();
 	const eventStore = useWorkspaceEventStore();
 	const { setActiveWorkspace } = useTabsStore();
 	const { stopSearch, setFormType, updateForm } = useSearchStore();
@@ -68,8 +68,9 @@ function EventCardHeader(props: Props) {
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
 
-	const isBookmarked =
-		pinnedItems.data?.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !== -1;
+	const isBookmarked = initialized
+		? pinnedItems.data?.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !== -1
+		: false;
 
 	const rootClassName = createBemBlock(
 		'event-header-card',

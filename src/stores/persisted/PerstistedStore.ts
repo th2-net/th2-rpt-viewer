@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { comparer, observable, reaction, runInAction } from 'mobx';
+import { observable, reaction, runInAction } from 'mobx';
 import { PersistedDataApiSchema } from '../../api/ApiSchema';
 import { PersistedDataCollectionsNames } from '../../models/PersistedData';
 
@@ -25,7 +25,7 @@ export default class PersistedStore<T> {
 		private api: PersistedDataApiSchema,
 	) {
 		this.init();
-		reaction(() => this.data, this.syncData, { equals: comparer.structural });
+		reaction(() => this.data, this.syncData);
 	}
 
 	@observable

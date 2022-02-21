@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
+import { action, computed, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
 import debounce from 'lodash.debounce';
 import ApiSchema from '../api/ApiSchema';
@@ -25,7 +25,6 @@ import {
 	SSEHeartbeat,
 	SSEParams,
 } from '../api/sse';
-import { DbData, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
 	EventFilterState,
@@ -34,11 +33,7 @@ import {
 } from '../components/search-panel/SearchPanelFilters';
 import { getTimestampAsNumber } from '../helpers/date';
 import { getItemId, isEventAction, isEventId, isEventMessage } from '../helpers/event';
-import {
-	getDefaultEventsFiltersState,
-	getDefaultMessagesFiltersState,
-	isSearchHistoryEntity,
-} from '../helpers/search';
+import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../helpers/search';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
@@ -47,6 +42,7 @@ import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { EventBodyPayload } from '../models/EventActionPayload';
 import PersistedDataRootStore from './persisted/PersistedDataRootStore';
+import { SearchHistory } from './persisted/SearchHistoryStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -63,20 +59,6 @@ export type SearchPanelFormState = {
 };
 
 export type SearchResult = EventAction | EventMessage;
-
-export type SearchHistory = {
-	timestamp: number;
-	results: Record<string, Array<SearchResult>>;
-	request: StateHistory;
-	progress: {
-		previous: number;
-		next: number;
-	};
-	processedObjectCount: {
-		previous: number;
-		next: number;
-	};
-};
 
 export type StateHistory = {
 	type: SearchPanelType;
@@ -117,10 +99,6 @@ export class SearchStore {
 	) {
 		this.init();
 
-		autorun(() => {
-			this.currentSearch = this.searchHistory[this.currentIndex] || null;
-		});
-
 		reaction(
 			() => this.currentSearch?.timestamp,
 			currentSearchTimestamp => {
@@ -148,6 +126,26 @@ export class SearchStore {
 				}
 			},
 		);
+	}
+
+	@computed
+	private get initialized() {
+		return this.persistedDataStore.initialized;
+	}
+
+	@computed
+	public get currentSearch() {
+		return this.initialized ? this.persistedDataStore.searchHistory.currentSearch : null;
+	}
+
+	@computed
+	public get searchHistory() {
+		return this.initialized ? this.persistedDataStore.searchHistory.data || [] : [];
+	}
+
+	@computed
+	public get currentIndex() {
+		return this.initialized ? this.persistedDataStore.searchHistory.currentIndex : 0;
 	}
 
 	@observable messageSessions: Array<string> = [];
@@ -178,17 +176,11 @@ export class SearchStore {
 
 	@observable formType: SearchPanelType = 'event';
 
-	@observable searchHistory: SearchHistory[] = [];
-
-	@observable currentIndex = this.searchHistory.length > 0 ? this.searchHistory.length - 1 : 0;
-
 	@observable eventFilterInfo: EventsFiltersInfo[] = [];
 
 	@observable messagesFilterInfo: MessagesFilterInfo[] = [];
 
 	@observable isMessageFiltersLoading = false;
-
-	@observable currentSearch: SearchHistory | null = null;
 
 	@observable searchProgressState: {
 		previous: SearchProgressState;
@@ -423,53 +415,30 @@ export class SearchStore {
 	};
 
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
-		this.searchHistory = this.searchHistory.filter(item => item !== searchHistoryItem);
-		this.currentIndex = Math.max(this.currentIndex - 1, 0);
+		this.persistedDataStore.searchHistory.deleteSearchHistoryItem(searchHistoryItem);
 
 		this.resetSearchProgressState();
 
 		if (this.searchHistory.length !== 0) {
 			this.setCompleted(true);
 		}
-		this.api.indexedDb.deleteDbStoreItem(
-			IndexedDbStores.SEARCH_HISTORY,
-			searchHistoryItem.timestamp,
-		);
 	};
 
 	@action nextSearch = () => {
-		if (this.currentIndex < this.searchHistory.length - 1) {
-			this.currentIndex += 1;
-			this.resetSearchProgressState();
-			this.setCompleted(true);
-		}
+		this.persistedDataStore.searchHistory.nextSearchHistoryIndex();
+		this.resetSearchProgressState();
+		this.setCompleted(true);
 	};
 
 	@action prevSearch = () => {
-		if (this.currentIndex !== 0) {
-			this.currentIndex -= 1;
-			this.resetSearchProgressState();
-			this.setCompleted(true);
-		}
+		this.persistedDataStore.searchHistory.prevSearchHistoryIndex();
+		this.resetSearchProgressState();
+		this.setCompleted(true);
 	};
 
 	@action newSearch = (searchHistoryItem: SearchHistory) => {
-		this.searchHistory = [...this.searchHistory, searchHistoryItem];
-		this.currentIndex = this.searchHistory.length - 1;
+		this.persistedDataStore.searchHistory.setNewSearchHistoryItem(searchHistoryItem);
 		this.resetSearchProgressState();
-	};
-
-	@action updateSearchItem = (searchHistoryItem: Partial<SearchHistory>) => {
-		this.searchHistory = this.searchHistory.map(item => {
-			if (item === searchHistoryItem) {
-				return {
-					...item,
-					...searchHistoryItem,
-				};
-			}
-
-			return item;
-		});
 	};
 
 	@action startSearch = (loadMore = false) => {
@@ -628,7 +597,7 @@ export class SearchStore {
 			this.currentSearch &&
 			Object.values(this.currentSearch.results).some(results => results.length > 0)
 		) {
-			this.saveSearchResults(toJS(this.currentSearch));
+			this.persistedDataStore.searchHistory.saveSearchResultsToHistory(this.currentSearch);
 		}
 	};
 
@@ -770,68 +739,9 @@ export class SearchStore {
 		}
 	}
 
-	private getSearchHistory = async (historyTimestamp?: number) => {
-		try {
-			const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
-				IndexedDbStores.SEARCH_HISTORY,
-			);
-			runInAction(() => {
-				this.searchHistory = searchHistory;
-				const defaultIndex = searchHistory.length - 1;
-				const index = historyTimestamp
-					? searchHistory.findIndex(search => search.timestamp === historyTimestamp)
-					: -1;
-				this.currentIndex = index === -1 ? defaultIndex : index;
-			});
-		} catch (error) {
-			console.error('Failed to load search history', error);
-		}
-	};
-
 	private init = () => {
 		this.getEventFilters();
 		this.getMessagesFilters();
 		this.loadMessageSessions();
-		this.getSearchHistory();
-	};
-
-	private saveSearchResults = async (search: SearchHistory) => {
-		try {
-			const savedSearchResultKeys = await this.api.indexedDb.getStoreKeys<number>(
-				IndexedDbStores.SEARCH_HISTORY,
-			);
-
-			if (savedSearchResultKeys.includes(search.timestamp)) {
-				await this.api.indexedDb.updateDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
-				return;
-			}
-
-			if (savedSearchResultKeys.length >= indexedDbLimits['search-history']) {
-				const keysToDelete = savedSearchResultKeys.slice(
-					0,
-					savedSearchResultKeys.length - indexedDbLimits['search-history'] + 1,
-				);
-				await Promise.all(
-					keysToDelete.map(searchHistoryKey =>
-						this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SEARCH_HISTORY, searchHistoryKey),
-					),
-				);
-			}
-			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	@action
-	public syncData = async (unsavedData?: DbData) => {
-		if (this.isSearching) {
-			this.stopSearch();
-		}
-
-		await this.getSearchHistory();
-		if (unsavedData && isSearchHistoryEntity(unsavedData)) {
-			await this.saveSearchResults(unsavedData);
-		}
 	};
 }
