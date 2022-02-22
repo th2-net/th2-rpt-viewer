@@ -109,38 +109,30 @@ export default class PersistedDataRootStore {
 			console.error('Unable to load persisted data!');
 			return;
 		}
-		// done
 		this.lastSearchedSessions = new LastSearchedSessionsStore(
 			ids[PersistedDataCollectionsNames.LAST_SEARCHED_SESSIONS],
 			this.api,
 		);
-		// done
 		this.messageDisplayRules = new MessageDisplayRulesStore(
 			ids[PersistedDataCollectionsNames.MESSAGE_DISPLAY_RULES],
 			this.api,
 		);
-
 		this.graphSearchHistory = new GraphSearchHistoryStore(
 			ids[PersistedDataCollectionsNames.GRAPH_SEARCH_HISTORY],
 			this.api,
 		);
-		// done
 		this.messageBodySort = new MessageBodySortStore(
 			ids[PersistedDataCollectionsNames.MESSAGE_BODY_SORT_ORDER],
 			this.api,
 		);
-
-		// done
 		this.filtersHistory = new FiltersHistoryStore(
 			ids[PersistedDataCollectionsNames.FILTERS_HISTORY],
 			this.api,
 		);
-		// done
 		this.searchHistory = new SearchHistoryStore(
 			ids[PersistedDataCollectionsNames.SEARCH_HISTORY],
 			this.api,
 		);
-		// done
 		this.pinnedItems = new PinnedItemsStore(
 			ids[PersistedDataCollectionsNames.PINNED_ITEMS],
 			this.api,

@@ -14,8 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { action, computed } from 'mobx';
 import { PersistedDataApiSchema } from '../../api/ApiSchema';
-import { PersistedDataCollectionsNames, PersistedDataTypes } from '../../models/PersistedData';
+import { GraphSearchResult } from '../../components/graph/search/GraphSearch';
+import {
+	PersistedDataCollectionsNames,
+	persistedDataLimits,
+	PersistedDataTypes,
+} from '../../models/PersistedData';
 import PersistedStore from './PerstistedStore';
 
 export default class extends PersistedStore<
@@ -24,4 +30,41 @@ export default class extends PersistedStore<
 	constructor(id: string, api: PersistedDataApiSchema) {
 		super(id, PersistedDataCollectionsNames.GRAPH_SEARCH_HISTORY, api);
 	}
+
+	@computed
+	public get sortedHistory() {
+		if (!this.data) {
+			return [];
+		}
+		const sortedHistory = this.data.slice();
+		sortedHistory.sort((itemA, itemB) => {
+			if (itemA.timestamp > itemB.timestamp) return -1;
+			if (itemA.timestamp < itemB.timestamp) return 1;
+			return 0;
+		});
+
+		return sortedHistory;
+	}
+
+	@action
+	public addHistoryItem = (item: GraphSearchResult) => {
+		if (!this.data || !item) {
+			return;
+		}
+		if (
+			this.data.length === persistedDataLimits[PersistedDataCollectionsNames.GRAPH_SEARCH_HISTORY]
+		) {
+			this.data = [...this.data.slice(1), item];
+		} else {
+			this.data = [...this.data, item];
+		}
+	};
+
+	@action
+	public deleteHistoryItem = (item: GraphSearchResult) => {
+		if (!this.data) {
+			return;
+		}
+		this.data = this.data.filter(existedItem => existedItem.id !== item.id);
+	};
 }

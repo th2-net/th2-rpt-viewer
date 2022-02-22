@@ -116,7 +116,4 @@ export default class RootStore {
 
 		window.history.replaceState({}, '', window.location.pathname);
 	};
-
-	// workaround to reset graph search state as it uses internal state
-	@observable resetGraphSearchData = false;
 }

@@ -16,11 +16,9 @@
 
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
-import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { RootDataIDs } from '../stores/persisted/PersistedDataRootStore';
 
 export enum IndexedDbStores {
-	GRAPH_SEARCH_HISTORY = 'graph-search-history',
 	ROOT_DATA_IDS = 'root-data-ids',
 }
 
@@ -28,16 +26,9 @@ type indexedDbStoresKeyPaths = {
 	[k in IndexedDbStores]: string;
 };
 
-export type DbData = GraphSearchResult | RootDataIDs;
+export type DbData = RootDataIDs;
 
 interface TH2DB extends DBSchema {
-	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: {
-		key: string;
-		value: GraphSearchResult;
-		indexes: {
-			timestamp: number;
-		};
-	};
 	[IndexedDbStores.ROOT_DATA_IDS]: {
 		key: string;
 		value: RootDataIDs;
@@ -49,11 +40,9 @@ interface TH2DB extends DBSchema {
 
 export const indexedDbLimits = {
 	bookmarks: 1000,
-	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
 } as const;
 
 const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
-	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 'id',
 	[IndexedDbStores.ROOT_DATA_IDS]: 'timestamp',
 };
 
