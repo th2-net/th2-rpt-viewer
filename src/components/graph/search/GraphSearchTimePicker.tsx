@@ -24,7 +24,7 @@ interface Props {
 }
 
 export function GraphSearchTimePicker(props: Props) {
-	const { timestamp, setTimestamp } = props;
+	const { timestamp } = props;
 
 	return (
 		<div className='graph-search-picker'>

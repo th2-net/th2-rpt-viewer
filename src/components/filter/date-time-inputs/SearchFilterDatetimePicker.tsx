@@ -103,9 +103,10 @@ const SearchFilterDatetimePicker = ({
 		formatTimestampValue(previousTimeLimit.value, timeMask),
 	);
 	const [inputTimeLimitsValue, setInputTimeLimitsValue] = React.useState(
-		formatTimestampValue(previousTimeLimit.value, dateTimeMask) +
-			' \u2013 ' +
-			formatTimestampValue(nextTimeLimit.value, dateTimeMask),
+		`${formatTimestampValue(previousTimeLimit.value, dateTimeMask)} \u2013 ${formatTimestampValue(
+			nextTimeLimit.value,
+			dateTimeMask,
+		)}`,
 	);
 
 	const [focusedInput, setFocusedInput] = React.useState('startTimestamp');
@@ -114,9 +115,10 @@ const SearchFilterDatetimePicker = ({
 		setInputPreviousValue(formatTimestampValue(previousTimeLimit.value, timeMask));
 		setInputNextValue(formatTimestampValue(nextTimeLimit.value, timeMask));
 		setInputTimeLimitsValue(
-			formatTimestampValue(previousTimeLimit.value, dateTimeMask) +
-				' \u2013 ' +
-				formatTimestampValue(nextTimeLimit.value, dateTimeMask),
+			`${formatTimestampValue(previousTimeLimit.value, dateTimeMask)} \u2013 ${formatTimestampValue(
+				nextTimeLimit.value,
+				dateTimeMask,
+			)}`,
 		);
 	}, [previousTimeLimit.value, nextTimeLimit.value]);
 
@@ -132,41 +134,43 @@ const SearchFilterDatetimePicker = ({
 
 		if (updatedValue) {
 			if (!updatedValue.includes('_')) {
-				previousTimeLimit.value === null
-					? (previousTimeLimit.setValue(
+				if (previousTimeLimit.value === null) {
+					previousTimeLimit.setValue(
+						moment
+							.utc(
+								`${formatTimestampValue(moment().utc().valueOf(), dateMask)} ${updatedValue}`,
+								dateTimeMask,
+							)
+							.valueOf(),
+					);
+					setValue(
+						moment
+							.utc(
+								`${formatTimestampValue(moment().utc().valueOf(), dateMask)} ${updatedValue}`,
+								dateTimeMask,
+							)
+							.valueOf(),
+					);
+					updateForm({ searchDirection: SearchDirection.Next });
+				} else {
+					previousTimeLimit.setValue(
+						moment
+							.utc(
+								`${formatTimestampValue(previousTimeLimit.value, dateMask)} ${updatedValue}`,
+								dateTimeMask,
+							)
+							.valueOf(),
+					),
+						setValue(
 							moment
 								.utc(
-									formatTimestampValue(moment().utc().valueOf(), dateMask) + ' ' + updatedValue,
+									`${formatTimestampValue(previousTimeLimit.value, dateMask)} ${updatedValue}`,
 									dateTimeMask,
 								)
 								.valueOf(),
-					  ),
-					  setValue(
-							moment
-								.utc(
-									formatTimestampValue(moment().utc().valueOf(), dateMask) + ' ' + updatedValue,
-									dateTimeMask,
-								)
-								.valueOf(),
-					  ),
-					  updateForm({ searchDirection: SearchDirection.Next }))
-					: (previousTimeLimit.setValue(
-							moment
-								.utc(
-									formatTimestampValue(previousTimeLimit.value, dateMask) + ' ' + updatedValue,
-									dateTimeMask,
-								)
-								.valueOf(),
-					  ),
-					  setValue(
-							moment
-								.utc(
-									formatTimestampValue(previousTimeLimit.value, dateMask) + ' ' + updatedValue,
-									dateTimeMask,
-								)
-								.valueOf(),
-					  ),
-					  updateForm({ searchDirection: SearchDirection.Next }));
+						),
+						updateForm({ searchDirection: SearchDirection.Next });
+				}
 			}
 
 			return;
@@ -181,23 +185,25 @@ const SearchFilterDatetimePicker = ({
 
 		if (updatedValue) {
 			if (!updatedValue.includes('_')) {
-				nextTimeLimit.value === null
-					? nextTimeLimit.setValue(
-							moment
-								.utc(
-									formatTimestampValue(moment().utc().valueOf(), dateMask) + ' ' + updatedValue,
-									dateTimeMask,
-								)
-								.valueOf(),
-					  )
-					: nextTimeLimit.setValue(
-							moment
-								.utc(
-									formatTimestampValue(nextTimeLimit.value, dateMask) + ' ' + updatedValue,
-									dateTimeMask,
-								)
-								.valueOf(),
-					  );
+				if (nextTimeLimit.value === null) {
+					nextTimeLimit.setValue(
+						moment
+							.utc(
+								`${formatTimestampValue(moment().utc().valueOf(), dateMask)} ${updatedValue}`,
+								dateTimeMask,
+							)
+							.valueOf(),
+					);
+				} else {
+					nextTimeLimit.setValue(
+						moment
+							.utc(
+								`${formatTimestampValue(nextTimeLimit.value, dateMask)} ${updatedValue}`,
+								dateTimeMask,
+							)
+							.valueOf(),
+					);
+				}
 			}
 			return;
 		}
@@ -219,7 +225,7 @@ const SearchFilterDatetimePicker = ({
 	};
 
 	const change = (dateValue: Moment | null) => {
-		const inputValue =
+		const input =
 			focusedInput === 'previousTimeLimit'
 				? previousTimeLimit.value
 				: focusedInput === 'nextTimeLimit'
@@ -228,8 +234,8 @@ const SearchFilterDatetimePicker = ({
 		if (!dateValue) return;
 		if (dateValue.utc().startOf('day').isSameOrBefore(moment().startOf('day'))) {
 			let appliedDate;
-			if (inputValue) {
-				appliedDate = moment(inputValue)
+			if (input) {
+				appliedDate = moment(input)
 					.utc()
 					.set('year', dateValue.year())
 					.set('month', dateValue.month())
@@ -237,19 +243,18 @@ const SearchFilterDatetimePicker = ({
 			} else {
 				appliedDate = dateValue.utc().startOf('day');
 			}
-			focusedInput === 'previousTimeLimit'
-				? (previousTimeLimit.setValue(appliedDate.valueOf()), setValue(appliedDate.valueOf()))
-				: focusedInput === 'nextTimeLimit'
-				? nextTimeLimit.setValue(appliedDate.valueOf())
-				: setValue(appliedDate.valueOf());
+			if (focusedInput === 'previousTimeLimit')
+				previousTimeLimit.setValue(appliedDate.valueOf()), setValue(appliedDate.valueOf());
+			else if (focusedInput === 'nextTimeLimit') nextTimeLimit.setValue(appliedDate.valueOf());
+			else setValue(appliedDate.valueOf());
 			return;
 		}
 
-		focusedInput === 'previousTimeLimit'
-			? previousTimeLimit.setValue(moment().utc().startOf('day').valueOf())
-			: focusedInput === 'nextTimeLimit'
-			? nextTimeLimit.setValue(moment().utc().startOf('day').valueOf())
-			: setValue(moment().utc().startOf('day').valueOf());
+		if (focusedInput === 'previousTimeLimit')
+			previousTimeLimit.setValue(moment().utc().startOf('day').valueOf());
+		else if (focusedInput === 'nextTimeLimit')
+			nextTimeLimit.setValue(moment().utc().startOf('day').valueOf());
+		else setValue(moment().utc().startOf('day').valueOf());
 	};
 
 	const setTimeOffset = (minutes: number) => {
@@ -291,7 +296,8 @@ const SearchFilterDatetimePicker = ({
 	};
 
 	const handleSearchButton = () => {
-		isSearching ? pauseSearch() : startSearch();
+		if (isSearching) pauseSearch();
+		else startSearch();
 		if (onClose) onClose();
 	};
 
