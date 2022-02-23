@@ -160,16 +160,16 @@ const SearchFilterDatetimePicker = ({
 								dateTimeMask,
 							)
 							.valueOf(),
-					),
-						setValue(
-							moment
-								.utc(
-									`${formatTimestampValue(previousTimeLimit.value, dateMask)} ${updatedValue}`,
-									dateTimeMask,
-								)
-								.valueOf(),
-						),
-						updateForm({ searchDirection: SearchDirection.Next });
+					);
+					setValue(
+						moment
+							.utc(
+								`${formatTimestampValue(previousTimeLimit.value, dateMask)} ${updatedValue}`,
+								dateTimeMask,
+							)
+							.valueOf(),
+					);
+					updateForm({ searchDirection: SearchDirection.Next });
 				}
 			}
 
@@ -243,10 +243,12 @@ const SearchFilterDatetimePicker = ({
 			} else {
 				appliedDate = dateValue.utc().startOf('day');
 			}
-			if (focusedInput === 'previousTimeLimit')
-				previousTimeLimit.setValue(appliedDate.valueOf()), setValue(appliedDate.valueOf());
-			else if (focusedInput === 'nextTimeLimit') nextTimeLimit.setValue(appliedDate.valueOf());
-			else setValue(appliedDate.valueOf());
+			if (focusedInput === 'previousTimeLimit') {
+				previousTimeLimit.setValue(appliedDate.valueOf());
+				setValue(appliedDate.valueOf());
+			} else if (focusedInput === 'nextTimeLimit') {
+				nextTimeLimit.setValue(appliedDate.valueOf());
+			} else setValue(appliedDate.valueOf());
 			return;
 		}
 
