@@ -31,7 +31,7 @@ import { getMessagesSSEParamsFromFilter, MessagesFilterInfo } from '../../api/ss
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { useMessagesWorkspaceStore, useOutsideClickListener } from '../../hooks';
 import FilterRow from '../filter/row';
-import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
+import { DATE_TIME_INPUT_MASK, TIME_INPUT_MASK } from '../../util/filterInputs';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { ModalPortal } from '../util/Portal';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
@@ -198,18 +198,24 @@ function MessageReplayModal() {
 				id: 'replay-timerange',
 				inputs: [
 					{
-						dateMask: DateTimeMask.DATE_TIME_MASK,
+						dateTimeMask: DateTimeMask.DATE_TIME_MASK,
+						dateMask: DateTimeMask.DATE_MASK,
+						timeMask: DateTimeMask.TIME_MASK,
 						id: 'replay-startTimestamp',
-						inputMask: DATE_TIME_INPUT_MASK,
+						dateTimeInputMask: DATE_TIME_INPUT_MASK,
+						timeInputMask: TIME_INPUT_MASK,
 						placeholder: '',
 						setValue: setStartTimestamp,
 						value: startTimestamp,
 						type: TimeInputType.DATE_TIME,
 					},
 					{
-						dateMask: DateTimeMask.DATE_TIME_MASK,
+						dateTimeMask: DateTimeMask.DATE_TIME_MASK,
+						dateMask: DateTimeMask.DATE_MASK,
+						timeMask: DateTimeMask.TIME_MASK,
 						id: 'replay-endTimestamp',
-						inputMask: DATE_TIME_INPUT_MASK,
+						dateTimeInputMask: DATE_TIME_INPUT_MASK,
+						timeInputMask: TIME_INPUT_MASK,
 						placeholder: '',
 						setValue: setEndTimestamp,
 						value: endTimestamp,

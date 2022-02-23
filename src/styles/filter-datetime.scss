@@ -1,0 +1,137 @@
+/******************************************************************************
+ * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+.search-filter-datetime-picker {
+	&__row {
+		flex-direction: column;
+	}
+	&__action-buttons {
+		padding-right: 10px;
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+		&__button {
+			width: 78px;
+			cursor: pointer;
+			font-size: 12px;
+			font-weight: 16px;
+			border: none;
+			color: #fff;
+			border-radius: 23px;
+			padding: 6px 12px;
+			outline: none;
+			&.cancel {
+				background-color: #bdccdb;
+			}
+			&.start {
+				background-color: #5c85d6;
+			}
+		}
+	}
+	&__header {
+		margin-bottom: 12px;
+		width: fit-content;
+	}
+	&__content {
+		display: flex;
+		margin-bottom: 12px;
+		&-left {
+			&-inputs-wrapper {
+				gap: 8px;
+				display: flex;
+				flex-direction: row;
+			}
+		}
+	}
+	&__input-header {
+		font-size: 10px;
+		color: #666;
+		min-height: 14px;
+	}
+	&__datepicker {
+		border: none;
+		box-shadow: none;
+	}
+
+	&__controls {
+		display: flex;
+		flex-direction: column;
+		margin-top: 16px;
+		gap: 10px;
+		padding: 0 !important;
+
+		&-item {
+			background-color: #fff;
+			width: fit-content;
+			border: none;
+			font-size: 11px;
+			color: #3d668f;
+			cursor: pointer;
+			&-now {
+				font-weight: 700;
+				margin-bottom: 2px;
+				background-color: #fff;
+				width: fit-content;
+				border: none;
+				font-size: 11px;
+				color: #3d668f;
+				cursor: pointer;
+			}
+		}
+	}
+}
+
+.rc-calendar {
+	border: none;
+	box-shadow: none;
+
+	&-header {
+		display: flex;
+		border: none !important;
+	}
+
+	&-body {
+		padding-top: 0 !important;
+		height: auto !important;
+		font-size: 11px;
+	}
+
+	&-date {
+		width: 16px !important;
+		height: 16px !important;
+		line-height: 16px !important;
+	}
+
+	&-disabled-cell > .rc-calendar-date {
+		width: auto !important;
+	}
+
+	&-column-header {
+		color: #999;
+	}
+
+	&-month-select,
+	&-year-select {
+		font-weight: 400 !important;
+		color: #000 !important;
+	}
+
+	&-prev-month-btn,
+	&-next-month-btn,
+	&-prev-year-btn,
+	&-next-year-btn {
+		display: none !important;
+	}
+}

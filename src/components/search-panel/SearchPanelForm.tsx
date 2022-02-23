@@ -23,7 +23,11 @@ import {
 	TimeInputType,
 } from '../../models/filter/FilterInputs';
 import FilterRow from '../filter/row';
-import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
+import {
+	TIME_INPUT_MASK,
+	DATE_TIME_INPUT_MASK,
+	TIMESTAMPS_INPUT_MASK,
+} from '../../util/filterInputs';
 import { SearchPanelFormState } from '../../stores/SearchStore';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelFilters from './SearchPanelFilters';
@@ -143,9 +147,13 @@ const SearchPanelForm = () => {
 			disabled,
 			setValue: getFormStateUpdater('startTimestamp'),
 			type: TimeInputType.DATE_TIME,
-			dateMask: DateTimeMask.DATE_TIME_MASK,
+			dateTimeMask: DateTimeMask.DATE_TIME_MASK,
+			dateMask: DateTimeMask.DATE_SECONDARY_MASK,
+			timeMask: DateTimeMask.TIME_MASK,
 			placeholder: '',
-			inputMask: DATE_TIME_INPUT_MASK,
+			timestampsInputMask: TIMESTAMPS_INPUT_MASK,
+			dateTimeInputMask: DATE_TIME_INPUT_MASK,
+			timeInputMask: TIME_INPUT_MASK,
 		},
 	};
 
