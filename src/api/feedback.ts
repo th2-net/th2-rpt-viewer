@@ -21,7 +21,7 @@ export interface Feedback {
 	title: string;
 	descr: string;
 	image?: string;
-	errors: Partial<ErrorEvent>[];
+	errors: ErrorEvent[];
 	responses: Partial<Response>[];
 	link: string;
 }
@@ -44,7 +44,7 @@ const feedbackApi: FeedbackSchema = {
 		});
 
 		if (res.ok) {
-			return res.json();
+			return res.text();
 		}
 
 		console.error(res.statusText);

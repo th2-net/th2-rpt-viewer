@@ -74,7 +74,11 @@ export default class FeedbackStore {
 
 	@computed
 	private get responses() {
-		return this.responsesStore.responses;
+		return this.responsesStore.responses.map(res => ({
+			url: res.url,
+			status: res.status,
+			statusText: res.statusText,
+		}));
 	}
 
 	@computed private get feedback(): Feedback {

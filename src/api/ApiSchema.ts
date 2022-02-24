@@ -108,7 +108,7 @@ export interface SSESchema {
 }
 
 export interface FeedbackSchema {
-	sendFeedback: (feedback: Feedback) => Promise<void>;
+	sendFeedback: (feedback: Feedback) => Promise<string | null>;
 }
 
 export interface PersistedDataApiSchema {
