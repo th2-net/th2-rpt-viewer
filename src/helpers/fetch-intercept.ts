@@ -16,8 +16,8 @@
 
 import fetchIntercept from 'fetch-intercept';
 import { nanoid } from 'nanoid';
-import feedbackStore from '../stores/FeedbackStore';
 import notificationsStore from '../stores/NotificationsStore';
+import responsesStoreInstance from '../stores/ResponsesStore';
 
 export const registerFetchInterceptor = () =>
 	fetchIntercept.register({
@@ -28,7 +28,7 @@ export const registerFetchInterceptor = () =>
 			return Promise.reject(error);
 		},
 		response(response) {
-			feedbackStore.addResponse(response);
+			responsesStoreInstance.addResponse(response);
 			if (!response.ok) {
 				const { url, status, statusText } = response;
 				let header: string;

@@ -23,6 +23,7 @@ export interface Feedback {
 	image?: string;
 	errors: Partial<ErrorEvent>[];
 	responses: Partial<Response>[];
+	link: string;
 }
 
 export enum FeedbackCollectionsNames {

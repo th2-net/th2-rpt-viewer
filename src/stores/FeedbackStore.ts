@@ -15,10 +15,12 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction } from 'mobx';
-import api from '../api';
 import { FeedbackSchema } from '../api/ApiSchema';
 import { Feedback } from '../api/feedback';
 import { until } from '../helpers/timeout';
+import { ResponsesStore } from './ResponsesStore';
+import WorkspacesStore from './workspace/WorkspacesStore';
+import WorkspaceStore from './workspace/WorkspaceStore';
 
 export enum FeedbackFields {
 	TITLE = 'title',
@@ -26,8 +28,12 @@ export enum FeedbackFields {
 	IMAGE = 'image',
 }
 
-export class FeedbackStore {
-	constructor(private feedbackApi: FeedbackSchema) {
+export default class FeedbackStore {
+	constructor(
+		private feedbackApi: FeedbackSchema,
+		private workspacesStore: WorkspacesStore,
+		private responsesStore: ResponsesStore,
+	) {
 		window.addEventListener('error', e => {
 			this.addError(e);
 		});
@@ -50,14 +56,33 @@ export class FeedbackStore {
 	@observable
 	public errors: ErrorEvent[] = [];
 
-	@observable
-	private responses: Response[] = [];
+	@computed
+	private get activeWorkspace(): WorkspaceStore {
+		return this.workspacesStore.activeWorkspace;
+	}
+
+	@computed
+	private get link() {
+		return [
+			window.location.origin,
+			window.location.pathname,
+			`?${new URLSearchParams({
+				workspaces: window.btoa(JSON.stringify(this.activeWorkspace.getWorkspaceState())),
+			})}`,
+		].join('');
+	}
+
+	@computed
+	private get responses() {
+		return this.responsesStore.responses;
+	}
 
 	@computed private get feedback(): Feedback {
 		return {
 			...this.inputs,
 			errors: this.errors,
 			responses: this.responses,
+			link: this.link,
 		};
 	}
 
@@ -69,14 +94,6 @@ export class FeedbackStore {
 	@action
 	public setInputValues = (key: FeedbackFields, value: string) => {
 		this.inputs = { ...this.inputs, [key]: value };
-	};
-
-	@action
-	public addResponse = (res: Response) => {
-		if (this.responses.length === 10) {
-			this.responses.shift();
-		}
-		this.responses.push(res);
 	};
 
 	@action
@@ -142,7 +159,3 @@ export class FeedbackStore {
 		this.errors.push(error);
 	};
 }
-
-const feedbackStore = new FeedbackStore(api.feedbackApi);
-
-export default feedbackStore;

@@ -26,19 +26,23 @@ import {
 	FilterState,
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
-import feedbackStoreInstance from './FeedbackStore';
+import FeedbackStore from './FeedbackStore';
 import PersistedDataRootStore from './persisted/PersistedDataRootStore';
 import { FiltersHistoryType } from './persisted/FiltersHistoryStore';
+import responsesStoreInstance from './ResponsesStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
-	feedbackStore = feedbackStoreInstance;
+	responsesStore = responsesStoreInstance;
 
 	persistedDataRootStore = new PersistedDataRootStore(
 		this.api.indexedDb,
 		this.api.persistedDataApi,
 	);
+
+	@observable
+	feedbackStore!: FeedbackStore;
 
 	@observable
 	workspacesStore!: WorkspacesStore;
@@ -113,6 +117,12 @@ export default class RootStore {
 		await when(() => this.persistedDataRootStore.initialized);
 
 		this.workspacesStore = new WorkspacesStore(this, this.api, this.parseUrlState());
+
+		this.feedbackStore = new FeedbackStore(
+			this.api.feedbackApi,
+			this.workspacesStore,
+			this.responsesStore,
+		);
 
 		window.history.replaceState({}, '', window.location.pathname);
 	};

@@ -23,6 +23,20 @@ import StringFilterRow from './filter/row/StringRow';
 import '../styles/collect-feedback.scss';
 
 const CollectFeedback = () => {
+	const feedbackStore = useFeedbackStore();
+	const modalRef = useRef<HTMLDivElement>(null);
+	const buttonRef = useRef<HTMLButtonElement>(null);
+
+	useOutsideClickListener(modalRef, (e: MouseEvent) => {
+		if (e.target !== buttonRef.current) {
+			feedbackStore?.toggleOpen(false);
+		}
+	});
+
+	if (!feedbackStore) {
+		return null;
+	}
+
 	const {
 		isLoading,
 		errors,
@@ -33,15 +47,7 @@ const CollectFeedback = () => {
 		clearScreenshot,
 		setInputValues,
 		sendFeedback,
-	} = useFeedbackStore();
-	const modalRef = useRef<HTMLDivElement>(null);
-	const buttonRef = useRef<HTMLButtonElement>(null);
-
-	useOutsideClickListener(modalRef, (e: MouseEvent) => {
-		if (e.target !== buttonRef.current) {
-			toggleOpen(false);
-		}
-	});
+	} = feedbackStore;
 
 	return (
 		<>
