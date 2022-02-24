@@ -429,8 +429,7 @@ const SearchFilterDatetimePicker = ({
 					</button>
 					<button
 						className='search-filter-datetime-picker__action-buttons__button start'
-						onClick={handleSearchButton}
-						disabled={previousTimeLimit.value === nextTimeLimit.value}>
+						onClick={handleSearchButton}>
 						<span>Start</span>
 					</button>
 				</div>
