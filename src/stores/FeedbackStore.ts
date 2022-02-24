@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction } from 'mobx';
+import UAParser, { IBrowser } from 'ua-parser-js';
 import { FeedbackSchema } from '../api/ApiSchema';
 import { Feedback } from '../api/feedback';
 import { until } from '../helpers/timeout';
@@ -29,6 +30,8 @@ export enum FeedbackFields {
 }
 
 export default class FeedbackStore {
+	private browser: IBrowser;
+
 	constructor(
 		private feedbackApi: FeedbackSchema,
 		private workspacesStore: WorkspacesStore,
@@ -38,6 +41,9 @@ export default class FeedbackStore {
 			this.addError(e);
 		});
 		reaction(() => this.isOpen, this.clearScreenshot);
+
+		const userAgent = new UAParser();
+		this.browser = userAgent.getBrowser();
 	}
 
 	@observable
@@ -87,6 +93,7 @@ export default class FeedbackStore {
 			errors: this.errors,
 			responses: this.responses,
 			link: this.link,
+			browser: this.browser,
 		};
 	}
 

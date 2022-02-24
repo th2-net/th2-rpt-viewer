@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { IBrowser } from 'ua-parser-js';
 import { CollectionsApiPostBody } from '../models/CollectionsApi';
 import { FeedbackSchema } from './ApiSchema';
 
@@ -24,6 +25,7 @@ export interface Feedback {
 	errors: ErrorEvent[];
 	responses: Partial<Response>[];
 	link: string;
+	browser: IBrowser;
 }
 
 export enum FeedbackCollectionsNames {
