@@ -26,7 +26,7 @@ const persistedDataApi: PersistedDataApiSchema = {
 			id,
 		});
 
-		const res = await fetch(`http://10.44.17.234:8080/getById?${params}`);
+		const res = await fetch(`http://th2-qa:30000/th2-commonv3/key-value-storage/getById?${params}`);
 		if (res.ok) {
 			return (res.json() as unknown) as T;
 		}
@@ -49,10 +49,13 @@ const persistedDataApi: PersistedDataApiSchema = {
 
 		const body = JSON.stringify(preparedBody);
 
-		const res = await fetch(`http://10.44.17.234:8080/${id ? 'update' : 'store'}`, {
-			method: 'post',
-			body,
-		});
+		const res = await fetch(
+			`http://th2-qa:30000/th2-commonv3/key-value-storage/${id ? 'update' : 'store'}`,
+			{
+				method: 'post',
+				body,
+			},
+		);
 
 		if (res.ok) {
 			return [collection, await res.text()];

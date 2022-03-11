@@ -40,7 +40,7 @@ const feedbackApi: FeedbackSchema = {
 		};
 		const body = JSON.stringify(preparedBody);
 
-		const res = await fetch('http://10.44.17.234:8080/store', {
+		const res = await fetch('http://th2-qa:30000/th2-commonv3/key-value-storage/store', {
 			method: 'post',
 			body,
 		});
