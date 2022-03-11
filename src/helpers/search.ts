@@ -19,7 +19,6 @@ import {
 	EventFilterState,
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
-import { SearchHistory } from '../stores/SearchStore';
 
 export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
 	if (param.defaultValue === null) {
@@ -76,13 +75,4 @@ export function getDefaultMessagesFiltersState(
 	}, {} as MessageFilterState);
 
 	return state;
-}
-
-export function isSearchHistoryEntity(obj: unknown): obj is SearchHistory {
-	return (
-		typeof obj === 'object' &&
-		obj !== null &&
-		(obj as SearchHistory).request !== undefined &&
-		(obj as SearchHistory).results !== undefined
-	);
 }

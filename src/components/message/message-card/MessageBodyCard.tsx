@@ -20,7 +20,7 @@ import { createBemElement } from '../../../helpers/styleCreators';
 import MessageBody, { isListValue, isMessageValue } from '../../../models/MessageBody';
 import { useSearchStore } from '../../../hooks/useSearchStore';
 import { isRangesIntersect, trimRange } from '../../../helpers/range';
-import { useMessageBodySortStore, useMessagesWorkspaceStore } from '../../../hooks';
+import { useMessagesWorkspaceStore, usePersistedDataStore } from '../../../hooks';
 import { BodyFilter, getFiltersEntries, wrapString } from '../../../helpers/filters';
 
 const BEAUTIFIED_PAD_VALUE = 15;
@@ -38,11 +38,11 @@ interface Props {
 function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, applyFilterToBody }: Props) {
 	const { currentSearch } = useSearchStore();
 	const { selectedBodyFilter } = useMessagesWorkspaceStore();
-	const { getSortedFields, sortOrderItems } = useMessageBodySortStore();
+	const { messageBodySort } = usePersistedDataStore();
 
 	const sortedObject = React.useMemo(
-		() => Object.fromEntries(getSortedFields(body?.fields ? body.fields : {})),
-		[body, [sortOrderItems]],
+		() => Object.fromEntries(messageBodySort.getSortedFields(body?.fields ? body.fields : {})),
+		[body],
 	);
 
 	const bodyAsString = JSON.stringify(sortedObject).replace(
@@ -70,7 +70,7 @@ function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, applyFilt
 			<MessageBodyCardField
 				field={sortedObject}
 				range={[0, bodyAsString.length - 1]}
-				primarySort={sortOrderItems}
+				primarySort={messageBodySort.data || []}
 				highlightColor={isSelected ? SELECTED_HIGHLIGHT_COLOR : DEFAULT_HIGHLIGHT_COLOR}
 				isBeautified={isBeautified}
 				applyFilterToBody={applyFilterToBody}

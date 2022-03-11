@@ -21,11 +21,11 @@ import {
 	FilterState,
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
-import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { areArraysEqual } from './array';
 import { notEmpty } from './object';
 import { getRangesIntersection, isInsideRange, isRangesIntersect, isValidRange } from './range';
 import { FilterEntry } from '../stores/SearchStore';
+import { FiltersHistoryType } from '../stores/persisted/FiltersHistoryStore';
 
 export function getNonEmptyFilters(filter: Partial<FilterState>) {
 	return Object.fromEntries(

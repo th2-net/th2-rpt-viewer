@@ -19,6 +19,8 @@ import { IndexedDB } from './indexedDb';
 import eventHttpApi from './event';
 import messageHttpApi from './message';
 import sseApi from './sse';
+import feedbackApi from './feedback';
+import persistedDataApi from './persistedData';
 
 const envName =
 	process.env.NODE_ENV === 'development'
@@ -29,6 +31,8 @@ const api: ApiSchema = {
 	events: eventHttpApi,
 	messages: messageHttpApi,
 	sse: sseApi,
+	feedbackApi,
+	persistedDataApi,
 	indexedDb: new IndexedDB(envName),
 };
 

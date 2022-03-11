@@ -19,7 +19,7 @@ import React from 'react';
 import { formatTime, getTimestampAsNumber } from '../../helpers/date';
 import { getItemName, isEventAction, isEventMessage } from '../../helpers/event';
 import { createBemBlock, createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useMessageBodySortStore } from '../../hooks';
+import { usePersistedDataStore } from '../../hooks';
 import { ActionType, EventAction } from '../../models/EventAction';
 import {
 	EventBodyPayloadType,
@@ -92,7 +92,7 @@ const SearchResultItem = ({
 	filters,
 	onResultClick,
 }: SearchResultItemProps) => {
-	const { getSortedFields } = useMessageBodySortStore();
+	const { messageBodySort } = usePersistedDataStore();
 
 	const keysToDisplay: {
 		[key in ResultActionType]: {
@@ -300,7 +300,7 @@ const SearchResultItem = ({
 
 				const sortedObject = {
 					...body,
-					fields: Object.fromEntries(getSortedFields(body.fields)),
+					fields: Object.fromEntries(messageBodySort.getSortedFields(body.fields)),
 				};
 
 				const bodyAsString = JSON.stringify(sortedObject).replace(

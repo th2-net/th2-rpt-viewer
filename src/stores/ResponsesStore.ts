@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,12 +11,22 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
 
-import { useRootStore } from './useRootStore';
+import { action, observable } from 'mobx';
 
-export const useFiltersHistoryStore = () => {
-	const rootStore = useRootStore();
-	return rootStore.filtersHistoryStore;
-};
+export class ResponsesStore {
+	@observable
+	public responses: Response[] = [];
+
+	@action
+	public addResponse = (res: Response) => {
+		this.responses =
+			this.responses.length === 10 ? [...this.responses.slice(1), res] : [...this.responses, res];
+	};
+}
+
+const responsesStoreInstance = new ResponsesStore();
+
+export default responsesStoreInstance;

@@ -18,13 +18,13 @@ import React, { useState, useRef, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ModalPortal } from '../util/Portal';
 import '../../styles/filters-history.scss';
-import { useOutsideClickListener, useFiltersHistoryStore } from '../../hooks';
+import { useOutsideClickListener, usePersistedDataStore } from '../../hooks';
 import { raf } from '../../helpers/raf';
 import { SearchPanelType } from '../search-panel/SearchPanel';
 import FiltersHistoryItem from './FiltersHistoryItem';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { EventFilterState, MessageFilterState } from '../search-panel/SearchPanelFilters';
-import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
+import { FiltersHistoryType } from '../../stores/persisted/FiltersHistoryStore';
 
 interface Props {
 	type?: SearchPanelType;
@@ -42,16 +42,19 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const historyRef = useRef<HTMLDivElement>(null);
-	const { eventsHistory, messagesHistory, toggleFilterPin } = useFiltersHistoryStore();
+	const { filtersHistory } = usePersistedDataStore();
 	const { filters, formType, eventFilterInfo, messagesFilterInfo } = useSearchStore();
 
 	const toShow: (
 		| FiltersHistoryType<EventFilterState>
 		| FiltersHistoryType<MessageFilterState>
 	)[] = useMemo(() => {
+		if (!filtersHistory) {
+			return [];
+		}
 		const fType = type || formType;
-		return fType === 'event' ? eventsHistory : messagesHistory;
-	}, [eventsHistory, messagesHistory, type, formType]);
+		return fType === 'event' ? filtersHistory?.events : filtersHistory?.messages;
+	}, [filtersHistory?.events, filtersHistory?.messages, type, formType]);
 
 	const filtersState: FiltersState = useMemo(() => {
 		if (sseFilter) {
@@ -91,14 +94,14 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 	const onFilterPin = React.useCallback(
 		(filter: FiltersHistoryType<EventFilterState | MessageFilterState>) => {
 			const isPinnedUpdated = !filter.isPinned;
-			toggleFilterPin(filter);
+			filtersHistory?.toggleFilterPin(filter);
 			if (isPinnedUpdated) {
 				raf(() => {
 					historyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
 				}, 2);
 			}
 		},
-		[toggleFilterPin],
+		[filtersHistory?.toggleFilterPin],
 	);
 
 	const closeHistory = React.useCallback(() => setIsOpen(false), [setIsOpen]);

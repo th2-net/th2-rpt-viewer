@@ -28,6 +28,8 @@ import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
 import '../../styles/graph.scss';
 import GraphLastEventsButton from './GraphLastEventsButton';
+import CollectFeedback from '../CollectFeedback';
+import SplashScreen from '../SplashScreen';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -148,10 +150,15 @@ const ObservedGraph = observer(Graph);
 const GraphRoot = () => {
 	const activeWorkspace = useActiveWorkspace();
 
+	if (!activeWorkspace) {
+		return <SplashScreen />;
+	}
+
 	return (
 		<PointerTimestampProvider>
 			<div className='graph-root'>
 				<i className='th2-logo' />
+				<CollectFeedback />
 				<GraphSearch
 					hoveredTimestamp={activeWorkspace.graphStore.hoveredTimestamp}
 					onTimestampSubmit={activeWorkspace.onTimestampSelect}

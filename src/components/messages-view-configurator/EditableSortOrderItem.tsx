@@ -15,29 +15,33 @@
  ***************************************************************************** */
 
 import React, { useState, useCallback } from 'react';
-import { useMessageBodySortStore, usePrevious } from '../../hooks';
+import { usePersistedDataStore, usePrevious } from '../../hooks';
 import Reorder from './Reorder';
 import AutocompleteInput from '../util/AutocompleteInput';
-import { MessageSortOrderItem } from '../../models/EventMessage';
 import KeyCodes from '../../util/KeyCodes';
 
 type EditableSortOrderItemProps = {
-	item: MessageSortOrderItem;
+	item: string;
 	index: number;
 	isFirst?: boolean;
 	isLast?: boolean;
 };
 
 const EditableSortOrderItem = ({ item, isFirst, isLast, index }: EditableSortOrderItemProps) => {
-	const sortOrderStore = useMessageBodySortStore();
+	const { messageBodySort } = usePersistedDataStore();
 
 	return (
 		<>
-			<Reorder isFirst={isFirst} isLast={isLast} index={index} move={sortOrderStore.reorder} />
+			<Reorder
+				isFirst={isFirst}
+				isLast={isLast}
+				index={index}
+				move={messageBodySort.reorderBodySort}
+			/>
 			<Editor item={item} />
 			<button
 				className='rule-delete'
-				onClick={() => sortOrderStore.deleteItem(item)}
+				onClick={() => messageBodySort.deleteBodySortOrderItem(item)}
 				title='delete'
 			/>
 		</>
@@ -46,17 +50,17 @@ const EditableSortOrderItem = ({ item, isFirst, isLast, index }: EditableSortOrd
 
 export default EditableSortOrderItem;
 
-const Editor = ({ item }: { item: MessageSortOrderItem }) => {
-	const sortOrderStore = useMessageBodySortStore();
+const Editor = ({ item }: { item: string }) => {
+	const { messageBodySort } = usePersistedDataStore();
 
-	const [value, setValue] = useState(item.item);
+	const [value, setValue] = useState(item);
 	const [isEditing, setIsEditing] = useState(false);
 
 	const isEditingPrev = usePrevious(isEditing);
 
 	React.useEffect(() => {
-		if (!isEditing && isEditingPrev && value !== item.item) {
-			sortOrderStore.editItem(item, { ...item, item: value });
+		if (!isEditing && isEditingPrev && value !== item) {
+			messageBodySort.editBodySortOrderItem(item, value);
 		}
 	}, [isEditing, isEditingPrev, value]);
 

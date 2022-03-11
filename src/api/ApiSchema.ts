@@ -29,11 +29,15 @@ import {
 } from './sse';
 import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
+import { Feedback } from './feedback';
+import { PersistedDataCollectionsNames } from '../models/PersistedData';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
 	messages: MessageApiSchema;
 	sse: SSESchema;
+	feedbackApi: FeedbackSchema;
+	persistedDataApi: PersistedDataApiSchema;
 	indexedDb: IndexedDB;
 }
 
@@ -101,4 +105,20 @@ export interface SSESchema {
 	getMessagesFilters: () => Promise<MessagesSSEFilters[]>;
 	getEventsFiltersInfo: (filters: EventSSEFilters[]) => Promise<EventsFiltersInfo[]>;
 	getMessagesFiltersInfo: (filters: MessagesSSEFilters[]) => Promise<MessagesFilterInfo[]>;
+}
+
+export interface FeedbackSchema {
+	sendFeedback: (feedback: Feedback) => Promise<string | null>;
+}
+
+export interface PersistedDataApiSchema {
+	getPersistedData: <T>(
+		collection: PersistedDataCollectionsNames,
+		dataId: string,
+	) => Promise<T | null>;
+	setPersistedData: <T>(
+		collection: PersistedDataCollectionsNames,
+		payload: T,
+		dataId?: string,
+	) => Promise<[PersistedDataCollectionsNames, string]>;
 }

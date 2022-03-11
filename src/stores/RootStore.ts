@@ -13,16 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-
-import { action, computed, observable } from 'mobx';
+import { observable, when } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
-import MessageDisplayRulesStore from './MessageDisplayRulesStore';
-import MessageBodySortOrderStore from './MessageBodySortStore';
-import { DbData } from '../api/indexedDb';
-import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
 import { intervalOptions } from '../models/Graph';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
 import { getRangeFromTimestamp } from '../helpers/date';
@@ -31,35 +26,29 @@ import {
 	FilterState,
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
-import { SessionsStore } from './messages/SessionsStore';
+import FeedbackStore from './FeedbackStore';
+import PersistedDataRootStore from './persisted/PersistedDataRootStore';
+import { FiltersHistoryType } from './persisted/FiltersHistoryStore';
+import responsesStoreInstance from './ResponsesStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
-	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb, this.notificationsStore);
+	responsesStore = responsesStoreInstance;
 
-	messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
+	persistedDataRootStore = new PersistedDataRootStore(
+		this.api.indexedDb,
+		this.api.persistedDataApi,
+	);
 
-	messageBodySortStore = new MessageBodySortOrderStore(this, this.api.indexedDb);
+	@observable
+	feedbackStore!: FeedbackStore;
 
-	workspacesStore: WorkspacesStore;
-
-	sessionsStore = new SessionsStore(this.api.indexedDb);
+	@observable
+	workspacesStore!: WorkspacesStore;
 
 	constructor(private api: ApiSchema) {
-		this.workspacesStore = new WorkspacesStore(
-			this,
-			this.api,
-			this.filtersHistoryStore,
-			this.parseUrlState(),
-		);
-
-		window.history.replaceState({}, '', window.location.pathname);
-	}
-
-	@computed
-	public get isBookmarksFull(): boolean {
-		return this.workspacesStore.selectedStore.isBookmarksFull;
+		this.init();
 	}
 
 	private parseUrlState = (): WorkspacesUrlState | null => {
@@ -81,16 +70,16 @@ export default class RootStore {
 				const { type, filters } = filtersHistoryItem;
 
 				if (type === 'event') {
-					this.filtersHistoryStore
+					this.persistedDataRootStore.filtersHistory
 						.onEventFilterSubmit(filters as EventFilterState, true)
 						.then(() => {
-							this.filtersHistoryStore.showSuccessNotification(type);
+							this.persistedDataRootStore.filtersHistory.showSuccessNotification(type);
 						});
 				} else {
-					this.filtersHistoryStore
+					this.persistedDataRootStore.filtersHistory
 						.onMessageFilterSubmit(filters as MessageFilterState, true)
 						.then(() => {
-							this.filtersHistoryStore.showSuccessNotification(type);
+							this.persistedDataRootStore.filtersHistory.showSuccessNotification(type);
 						});
 				}
 				return null;
@@ -124,47 +113,17 @@ export default class RootStore {
 		}
 	};
 
-	// workaround to reset graph search state as it uses internal state
-	@observable resetGraphSearchData = false;
+	private init = async () => {
+		await when(() => this.persistedDataRootStore.initialized);
 
-	@action
-	public handleQuotaExceededError = async (unsavedData?: DbData) => {
-		const errorId = nanoid();
-		this.notificationsStore.addMessage({
-			notificationType: 'genericError',
-			type: 'error',
-			header: 'QuotaExceededError',
-			description: 'Not enough storage space to save data. Clear all data?',
-			action: {
-				label: 'OK',
-				callback: () => this.clearAppData(errorId, unsavedData),
-			},
-			id: errorId,
-		});
-	};
+		this.workspacesStore = new WorkspacesStore(this, this.api, this.parseUrlState());
 
-	public clearAppData = async (errorId: string, unsavedData?: DbData) => {
-		this.notificationsStore.deleteMessage(errorId);
-		try {
-			await this.api.indexedDb.clearAllData();
+		this.feedbackStore = new FeedbackStore(
+			this.api.feedbackApi,
+			this.workspacesStore,
+			this.responsesStore,
+		);
 
-			await Promise.all([
-				this.workspacesStore.syncData(unsavedData),
-				this.messageDisplayRulesStore.syncData(unsavedData),
-				this.messageBodySortStore.syncData(unsavedData),
-			]);
-
-			this.notificationsStore.addMessage({
-				notificationType: 'genericError',
-				type: 'success',
-				header: 'Data has been removed',
-				description: '',
-				id: nanoid(),
-			});
-		} catch (error) {
-			this.workspacesStore.syncData(unsavedData);
-			this.messageDisplayRulesStore.syncData(unsavedData);
-			this.messageBodySortStore.syncData(unsavedData);
-		}
+		window.history.replaceState({}, '', window.location.pathname);
 	};
 }

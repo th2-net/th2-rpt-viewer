@@ -31,9 +31,8 @@ import { isEventMessage } from '../../helpers/event';
 import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
-import FiltersHistoryStore from '../FiltersHistoryStore';
-import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
+import PersistedDataRootStore from '../persisted/PersistedDataRootStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -97,8 +96,7 @@ export default class MessagesStore {
 		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
 		private api: ApiSchema,
-		private filterHistoryStore: FiltersHistoryStore,
-		private sessionsStore: SessionsStore,
+		private persistedDataStore: PersistedDataRootStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
 		this.filterStore = new MessagesFilterStore(this.searchStore);
@@ -187,11 +185,11 @@ export default class MessagesStore {
 		isSoftFilterApplied: boolean,
 	) => {
 		if (sseFilters) {
-			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
+			this.persistedDataStore.filtersHistory.onMessageFilterSubmit(sseFilters);
 		}
 
 		this.exportStore.disableExport();
-		this.sessionsStore.saveSessions(filter.streams);
+		this.persistedDataStore.lastSearchedSessions?.addSessions(filter.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.selectedMessageId = null;

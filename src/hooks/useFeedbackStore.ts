@@ -16,7 +16,7 @@
 
 import { useRootStore } from './useRootStore';
 
-export const useMessageBodySortStore = () => {
+export const useFeedbackStore = () => {
 	const rootStore = useRootStore();
-	return rootStore.messageBodySortStore;
+	return rootStore.feedbackStore;
 };

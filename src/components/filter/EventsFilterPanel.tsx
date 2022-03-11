@@ -18,7 +18,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
-import { useWorkspaceEventStore, useEventsFilterStore, useFiltersHistoryStore } from '../../hooks';
+import { useWorkspaceEventStore, useEventsFilterStore, usePersistedDataStore } from '../../hooks';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { EventSSEFilters } from '../../api/sse';
 import { Filter, EventFilterState } from '../search-panel/SearchPanelFilters';
@@ -49,7 +49,7 @@ function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
-	const { eventsHistory } = useFiltersHistoryStore();
+	const { filtersHistory } = usePersistedDataStore();
 
 	const [filter, setFilter] = useSetState<EventFilterState | null>(filterStore.filter);
 
@@ -124,7 +124,7 @@ function EventsFilterPanel() {
 			let togglerConjunct: FilterRowTogglerConfig | null = null;
 
 			const autocompleteList = getArrayOfUniques(
-				eventsHistory
+				filtersHistory?.events
 					.map(item => item.filters[filterName]?.values)
 					.filter(notEmpty)
 					.flat(),
@@ -190,7 +190,14 @@ function EventsFilterPanel() {
 			const filterRow = [togglerNegative, togglerConjunct, filterInput].filter(notEmpty);
 			return filterRow.length === 1 ? filterRow[0] : filterRow;
 		});
-	}, [filter, eventsHistory, currentFilterValues, setCurrentValue, getValuesUpdater, getToggler]);
+	}, [
+		filter,
+		filtersHistory?.events,
+		currentFilterValues,
+		setCurrentValue,
+		getValuesUpdater,
+		getToggler,
+	]);
 
 	return (
 		<FilterPanel

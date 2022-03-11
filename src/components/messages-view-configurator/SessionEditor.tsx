@@ -26,13 +26,7 @@ interface SessionEditorProps {
 	autofocus?: boolean;
 }
 
-const SessionEditor: React.FC<SessionEditorProps> = ({
-	value,
-	setValue,
-	sessions,
-	onSubmit,
-	autofocus,
-}) => {
+const SessionEditor = ({ value, setValue, sessions, onSubmit, autofocus }: SessionEditorProps) => {
 	const ref = React.useRef<HTMLInputElement>(null);
 
 	const [anchor, setAnchor] = React.useState<HTMLInputElement>();

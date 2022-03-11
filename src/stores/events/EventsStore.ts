@@ -31,7 +31,7 @@ import { FilterEntry, SearchStore } from '../SearchStore';
 import EventsDataStore from './EventsDataStore';
 import { EventFilterState } from '../../components/search-panel/SearchPanelFilters';
 import EventsFilter from '../../models/filter/EventsFilter';
-import FiltersHistoryStore from '../FiltersHistoryStore';
+import PersistedDataRootStore from '../persisted/PersistedDataRootStore';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
@@ -63,7 +63,7 @@ export default class EventsStore {
 		private graphStore: GraphStore,
 		private searchPanelStore: SearchStore,
 		private api: ApiSchema,
-		private filterHistoryStore: FiltersHistoryStore,
+		private persistedDataStore: PersistedDataRootStore,
 		defaultState: EventStoreDefaultStateType,
 	) {
 		const initialState = !defaultState || typeof defaultState === 'string' ? {} : defaultState;
@@ -513,7 +513,7 @@ export default class EventsStore {
 	};
 
 	public applyFilter = (filter: EventFilterState) => {
-		this.filterHistoryStore.onEventFilterSubmit(filter);
+		this.persistedDataStore.filtersHistory.onEventFilterSubmit(filter);
 
 		this.eventDataStore.fetchEventTree({ filter, timeRange: this.filterStore.range });
 	};

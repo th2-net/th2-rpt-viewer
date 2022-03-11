@@ -16,7 +16,8 @@
 
 import { useRootStore } from './useRootStore';
 
-export const useMessageDisplayRulesStore = () => {
+export const usePersistedDataStore = () => {
 	const rootStore = useRootStore();
-	return rootStore.messageDisplayRulesStore;
+
+	return rootStore.persistedDataRootStore;
 };

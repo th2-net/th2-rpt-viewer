@@ -16,7 +16,6 @@
 
 import React from 'react';
 import moment from 'moment';
-import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 import { FilterState } from '../search-panel/SearchPanelFilters';
 import { FiltersState } from './FiltersHistory';
 import { EventsFiltersInfo, MessagesFilterInfo } from '../../api/sse';
@@ -26,6 +25,7 @@ import { createBemElement } from '../../helpers/styleCreators';
 import { useDebouncedCallback } from '../../hooks';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { showNotification } from '../../helpers/showNotification';
+import { FiltersHistoryType } from '../../stores/persisted/FiltersHistoryStore';
 
 const FILTER_HISTORY_DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss.SSS' as const;
 

@@ -28,8 +28,7 @@ import {
 import {
 	useMessagesDataStore,
 	useMessagesWorkspaceStore,
-	useFiltersHistoryStore,
-	useSessionsStore,
+	usePersistedDataStore,
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -53,8 +52,8 @@ const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
-	const { messagesHistory } = useFiltersHistoryStore();
-	const sessionsStore = useSessionsStore();
+	const { filtersHistory } = usePersistedDataStore();
+	const { lastSearchedSessions } = usePersistedDataStore();
 	const { filterStore } = messagesStore;
 
 	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
@@ -153,7 +152,7 @@ const MessagesFilterPanel = () => {
 				const state = getState(filterInfo.name);
 				const label = prettifyCamelcase(filterInfo.name);
 				const autocompleteList = getArrayOfUniques<string>(
-					messagesHistory
+					filtersHistory?.messages
 						.map(item => item.filters[filterInfo.name]?.values)
 						.filter(notEmpty)
 						.flat(),
@@ -195,16 +194,19 @@ const MessagesFilterPanel = () => {
 					: [];
 			},
 		);
-	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
+	}, [searchStore.messagesFilterInfo, filtersHistory?.messages, filter, currentValues]);
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
-		return [
-			...sessionsStore.sessions.map(s => s.session),
-			...messagesStore.messageSessions.filter(
-				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
-			),
-		];
-	}, [messagesStore.messageSessions, sessionsStore.sessions]);
+		if (lastSearchedSessions?.data) {
+			return [
+				...lastSearchedSessions.data.map(s => s.session),
+				...messagesStore.messageSessions.filter(
+					session => lastSearchedSessions.data?.findIndex(s => s.session === session) === -1,
+				),
+			];
+		}
+		return messagesStore.messageSessions;
+	}, [messagesStore.messageSessions, lastSearchedSessions?.data]);
 
 	const areSessionInvalid: boolean = React.useMemo(() => {
 		return (

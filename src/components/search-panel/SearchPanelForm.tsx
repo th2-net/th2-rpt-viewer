@@ -42,7 +42,7 @@ import SearchResultCountLimit, {
 } from './search-form/SearchResultCountLimit';
 import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
-import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
+import { usePersistedDataStore } from '../../hooks';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -67,17 +67,20 @@ const SearchPanelForm = () => {
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
-	const sessionsStore = useSessionsStore();
-	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
+	const { lastSearchedSessions } = usePersistedDataStore();
+	const { initialized, filtersHistory } = usePersistedDataStore();
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
-		return [
-			...sessionsStore.sessions.map(s => s.session),
-			...messageSessions.filter(
-				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
-			),
-		];
-	}, [messageSessions, sessionsStore.sessions]);
+		if (lastSearchedSessions?.data) {
+			return [
+				...lastSearchedSessions.data.map(s => s.session),
+				...messageSessions.filter(
+					session => lastSearchedSessions.data?.findIndex(s => s.session === session) === -1,
+				),
+			];
+		}
+		return messageSessions;
+	}, [messageSessions, lastSearchedSessions?.data]);
 
 	const areSessionInvalid: boolean = React.useMemo(() => {
 		return (
@@ -86,11 +89,12 @@ const SearchPanelForm = () => {
 		);
 	}, [form.stream, messageSessions]);
 
-	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
-		formType,
-		eventsHistory,
-		messagesHistory,
-	]);
+	const autocompletes = useMemo(() => {
+		if (!initialized) {
+			return [];
+		}
+		return formType === 'event' ? filtersHistory.events : filtersHistory.messages;
+	}, [formType, filtersHistory?.events, filtersHistory?.messages]);
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
