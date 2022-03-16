@@ -483,8 +483,6 @@ export class SearchStore {
 			this.searchProgressState[SearchDirection.Next].resultCount = 1;
 		}
 
-
-
 		if ((!isPaused && !loadMore) || this.currentSearch?.request.type !== this.formType) {
 			this.newSearch({
 				timestamp: moment().utc().valueOf(),
