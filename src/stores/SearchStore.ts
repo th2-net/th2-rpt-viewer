@@ -157,6 +157,34 @@ export class SearchStore {
 				}
 			},
 		);
+
+		reaction(
+			() => this.formType,
+			type => {
+				const filterParams = type === 'event' ? this.eventsFilter : this.messagesFilter;
+
+				if (!this.isPaused ||
+					!filterParams ||
+					!Object.values(this.currentSearch?.results || []).some(results => results.length > 0)
+				) {
+					return;
+				}
+
+				this.newSearch({
+					timestamp: moment().utc().valueOf(),
+					request: { type: this.formType, state: this.searchForm, filters: filterParams },
+					results: {},
+					progress: {
+						previous: 0,
+						next: 0,
+					},
+					processedObjectCount: {
+						previous: 0,
+						next: 0,
+					},
+				});
+			},
+		);
 	}
 
 	@observable messageSessions: Array<string> = [];
