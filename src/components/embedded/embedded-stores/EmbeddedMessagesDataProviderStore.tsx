@@ -182,6 +182,8 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				this.isError = true;
 				return;
 			}
+		} finally {
+			this.isLoadingMessageIds = false;
 		}
 
 		if (!messageIds) return;

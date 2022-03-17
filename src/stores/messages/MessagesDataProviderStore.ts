@@ -167,6 +167,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				this.isError = true;
 				return;
 			}
+		} finally {
+			this.isLoadingMessageIds = false;
 		}
 
 		if (!messageIds) return;
