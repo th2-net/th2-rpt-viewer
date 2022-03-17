@@ -440,7 +440,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 						</td>
 						<td className={actualClassName} onCopy={this.onCopyFor(operation)}>
 							<div className='ver-table-row-wrapper'>
-								{this.renderContent(`${key}-operation`, '', operationClassName)}
+								{this.renderContent(`${key}-operation`, '', operationClassName, '', true)}
 							</div>
 						</td>
 						<td className={statusClassName}>{keyField && <div className='ver-table__check' />}</td>
@@ -491,18 +491,20 @@ class VerificationTableBase extends React.Component<Props, State> {
 	 * rendered if class name is null)
 	 * @param fakeContent - this text will be rendered when there is no search results found -
 	 *     it's needed to render fake dots and squares instead of real non-printable characters
+	 * @param isEmpty - confirms the absence of content in the cells
 	 */
 	private renderContent(
 		contentKey: string,
 		content: string | null,
 		wrapperClassName: string | null = null,
 		fakeContent: string = content || '',
+		isEmpty: Boolean = false,
 	): React.ReactNode {
 		if (content === null) {
 			return wrap(createStyleSelector(wrapperClassName || '', 'novalue'), 'null');
 		}
 
-		if (content === '') {
+		if (content === '' && !isEmpty) {
 			return content;
 		}
 
