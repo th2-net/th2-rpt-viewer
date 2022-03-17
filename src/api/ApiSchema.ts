@@ -29,6 +29,7 @@ import {
 } from './sse';
 import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
+import { DirectionalStreamInfo } from '../models/StreamInfo';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
@@ -87,6 +88,12 @@ export interface MessageApiSchema {
 		filter: MatchMessageParams,
 		abortSignal?: AbortSignal,
 	) => Promise<boolean>;
+	getResumptionMessageIds: (params: {
+		streams: string[];
+		startTimestamp?: number;
+		messageId?: string;
+		abortSignal?: AbortSignal;
+	}) => Promise<DirectionalStreamInfo>;
 }
 
 export interface SSESchema {

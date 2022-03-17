@@ -19,12 +19,11 @@ import { EventMessage } from './EventMessage';
 
 export interface MessagesDataStore {
 	messages: EventMessage[];
-	resumeMessageIdsPrev: MessageIdsStore;
-	resumeMessageIdsNext: MessageIdsStore;
 	loadMessages: () => Promise<void>;
 	onNextChannelResponse: (messages: EventMessage[]) => void;
 	onPrevChannelResponse: (messages: EventMessage[]) => void;
 	getFilterParams: () => MessagesSSEParams;
+	getNextMessages: () => Promise<EventMessage[]>;
 }
 
 export interface MessageIdsStore {
