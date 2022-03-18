@@ -663,16 +663,12 @@ export class SearchStore {
 			) {
 				this.exportChunkToSearchHistory();
 			}
-
-			if (this.resultCount >= this.currentSearch.request.state.resultCountLimit) {
-				this.stopSearch();
-			}
 		}
 	};
 
 	private onMessageIdsEvent = (searchDirection: SSESearchDirection, ev: Event) => {
 		this.resumeFromMessageIds[searchDirection] =
-			ev instanceof MessageEvent && ev.data ? JSON.parse(ev.data) : null;
+			ev instanceof MessageEvent && ev.data ? JSON.parse(ev.data).messageIds : null;
 	};
 
 	@action
