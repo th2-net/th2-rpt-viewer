@@ -24,9 +24,7 @@ interface BaseSSEParams {
 	startTimestamp?: number;
 	endTimestamp?: number | null;
 	resultCountLimit?: number;
-	resumeFromId?: string;
 	searchDirection?: 'next' | 'previous'; // defaults to next
-	keepOpen?: boolean;
 }
 
 export interface SSEHeartbeat {
@@ -75,6 +73,7 @@ export interface EventSSEParams extends BaseSSEParams {
 	'name-values'?: string[];
 	'name-negative'?: boolean;
 	'name-conjunct'?: boolean;
+	resumeFromId?: string;
 }
 
 export interface MessagesSSEParams extends BaseSSEParams {
@@ -100,7 +99,7 @@ export interface SSEParamsEvents {
 	limitForParent?: number;
 }
 
-export interface MessagesIdsEvent {
+export interface MessageIdsEvent {
 	reason: string;
 	// session: messageId
 	messageIds: {

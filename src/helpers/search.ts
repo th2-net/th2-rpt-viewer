@@ -86,3 +86,7 @@ export function isSearchHistoryEntity(obj: unknown): obj is SearchHistory {
 		(obj as SearchHistory).results !== undefined
 	);
 }
+
+export function getResultGroupKey(timestamp: number, interval: number) {
+	return Math.floor(timestamp / 1000 / (interval * 60)).toString();
+}

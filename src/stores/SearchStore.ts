@@ -21,6 +21,7 @@ import debounce from 'lodash.debounce';
 import ApiSchema from '../api/ApiSchema';
 import {
 	EventsFiltersInfo,
+	MessageIdsEvent,
 	MessagesFilterInfo,
 	SSEFilterInfo,
 	SSEHeartbeat,
@@ -38,6 +39,7 @@ import { getItemId, isEventId, isEventMessage, isEventNode } from '../helpers/ev
 import {
 	getDefaultEventsFiltersState,
 	getDefaultMessagesFiltersState,
+	getResultGroupKey,
 	isSearchHistoryEntity,
 } from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
@@ -212,6 +214,14 @@ export class SearchStore {
 	@observable eventAutocompleteList: EventTreeNode[] = [];
 
 	@observable.ref eventAutocompleteSseChannel: EventSource | null = null;
+
+	private resumeFromMessageIds: {
+		previous: MessageIdsEvent | null;
+		next: MessageIdsEvent | null;
+	} = {
+		previous: null,
+		next: null,
+	};
 
 	@computed get isLoadingEventAutocompleteList() {
 		return Boolean(this.eventAutocompleteSseChannel);
@@ -546,7 +556,15 @@ export class SearchStore {
 			};
 
 			if (isPaused || loadMore) {
-				params.resumeFromId = this.searchProgressState[direction].lastEventId;
+				if (this.formType === 'message') {
+					const messageIdEvent = this.resumeFromMessageIds[direction];
+
+					if (messageIdEvent) {
+						params.messageId = Object.values(messageIdEvent).filter(Boolean);
+					}
+				} else {
+					params.resumeFromId = this.searchProgressState[direction].lastEventId;
+				}
 			}
 
 			if (isPaused) {
@@ -574,6 +592,7 @@ export class SearchStore {
 
 			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));
 			searchChannel.addEventListener('keep_alive', this.onChannelResponse.bind(this, direction));
+			searchChannel.addEventListener('message_ids', this.onMessageIdsEvent.bind(this, direction));
 			searchChannel.addEventListener('close', this.stopSearch.bind(this, direction, undefined));
 			searchChannel.addEventListener('error', this.onError.bind(this, direction));
 		};
@@ -651,6 +670,11 @@ export class SearchStore {
 		}
 	};
 
+	private onMessageIdsEvent = (searchDirection: SSESearchDirection, ev: Event) => {
+		this.resumeFromMessageIds[searchDirection] =
+			ev instanceof MessageEvent && ev.data ? JSON.parse(ev.data) : null;
+	};
+
 	@action
 	exportChunkToSearchHistory() {
 		this.searchChunk.forEach(eventWithSearchDirection => {
@@ -664,18 +688,25 @@ export class SearchStore {
 					: parsedEvent.timestamp;
 
 			if (isEventNode(parsedEvent) || isEventMessage(parsedEvent)) {
-				const resultGroupKey = Math.floor(
-					eventTimestamp / 1000 / (SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60),
-				).toString();
+				const resultGroupKey = getResultGroupKey(
+					eventTimestamp,
+					SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES,
+				);
 
 				if (!this.currentSearch.results[resultGroupKey]) {
 					this.currentSearch.results[resultGroupKey] = [];
 				}
 
-				this.currentSearch.results[resultGroupKey].push(parsedEvent);
+				if (
+					!this.currentSearch.results[resultGroupKey].find(
+						entity => getItemId(entity) === getItemId(parsedEvent),
+					)
+				) {
+					this.currentSearch.results[resultGroupKey].push(parsedEvent);
+					this.searchProgressState[searchDirection].lastEventId = getItemId(parsedEvent);
+					this.searchProgressState[searchDirection].resultCount += 1;
+				}
 				this.currentSearch.progress[searchDirection] = eventTimestamp;
-				this.searchProgressState[searchDirection].lastEventId = getItemId(parsedEvent);
-				this.searchProgressState[searchDirection].resultCount += 1;
 			} else {
 				if (eventTimestamp) {
 					this.currentSearch.progress[searchDirection] = eventTimestamp;
@@ -718,6 +749,11 @@ export class SearchStore {
 				lastProcessedObjectCount: 0,
 				resultCount: 0,
 			},
+		};
+
+		this.resumeFromMessageIds = {
+			previous: null,
+			next: null,
 		};
 	}
 

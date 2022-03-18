@@ -109,7 +109,6 @@ export default class MessagesFilterStore {
 			searchDirection: this.filterParams.searchDirection,
 			endTimestamp: this.filterParams.endTimestamp,
 			resultCountLimit: this.filterParams.resultCountLimit,
-			resumeFromId: this.filterParams.resumeFromId,
 		};
 	}
 

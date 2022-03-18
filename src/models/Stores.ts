@@ -23,4 +23,9 @@ export interface MessagesDataStore {
 	onNextChannelResponse: (messages: EventMessage[]) => void;
 	onPrevChannelResponse: (messages: EventMessage[]) => void;
 	getFilterParams: () => MessagesSSEParams;
+	getNextMessages: () => Promise<EventMessage[]>;
+}
+
+export interface MessageIdsStore {
+	readonly idList: string[];
 }
