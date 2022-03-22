@@ -308,7 +308,6 @@ export default class MessagesStore {
 
 		const targetMessage: EventMessage = sortMessagesByTimestamp(this.hintMessages)[0];
 
-		this.hintMessages = [];
 		this.selectedMessageId = new String(targetMessage.messageId);
 		this.highlightedMessageId = targetMessage.messageId;
 		this.showFilterChangeHint = false;
@@ -319,6 +318,8 @@ export default class MessagesStore {
 			timestampTo: timestampToNumber(targetMessage.timestamp),
 			timestampFrom: null,
 		});
+
+		this.hintMessages = [];
 	};
 
 	// Unsubcribe from reactions
