@@ -130,8 +130,7 @@ const messageHttpApi: MessageApiSchema = {
 		}
 
 		const params = createURLSearchParams({ stream: streams, startTimestamp, messageId });
-		const res = await fetch(`backend/messageIds?${params}`, { signal });
-
+		const res = await fetch(`backend/messageIds/?${params}`, { signal });
 		if (res.ok) return res.json();
 
 		console.error(res.statusText);
