@@ -182,8 +182,12 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			}),
 		]);
 
-		runInAction(() => {
-			const messages = [...nextMessages, ...[message].filter(isEventMessage), ...prevMessages];
+		runInAction(() => {{
+			const messages = [
+				...nextMessages.filter(val => val.messageId !== message?.messageId),
+				...[message].filter(isEventMessage),
+				...prevMessages.filter(val => val.messageId !== message?.messageId),
+			];
 			this.messages = messages;
 			this.initialItemCount = messages.length;
 		});
