@@ -182,7 +182,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			}),
 		]);
 
-		runInAction(() => {{
+		runInAction(() => {
 			const messages = [
 				...nextMessages.filter(val => val.messageId !== message?.messageId),
 				...[message].filter(isEventMessage),
