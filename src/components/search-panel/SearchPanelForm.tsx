@@ -170,7 +170,7 @@ const SearchPanelForm = () => {
 		previousTimeLimit: {
 			value:
 				isSearching && !timeLimits.previous && startTimestamp
-					? startTimestamp - progress.previous
+					? startTimestamp - Math.abs(progress.previous)
 					: timeLimits.previous,
 			setValue: nextValue =>
 				updateForm({ timeLimits: { ...form.timeLimits, previous: nextValue } }),
