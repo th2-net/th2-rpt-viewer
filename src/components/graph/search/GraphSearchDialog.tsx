@@ -140,17 +140,15 @@ const GraphSearchDialog = (props: Props) => {
 		if (submittedId !== null) {
 			const id = submittedId.valueOf();
 
-			if (currentSearchResult && id === currentSearchResult.id) {
-				onSearchResultSelect(currentSearchResult);
-				setTimestamp(getTimestampAsNumber(currentSearchResult.item));
-				closeModal();
-			}
 			if (filteredSearchHistory.length === 1) {
 				onSearchResultSelect(filteredSearchHistory[0]);
 				setTimestamp(getTimestampAsNumber(filteredSearchHistory[0].item));
 				closeModal();
-			}
-			if (filteredSearchHistory.length !== 1 && !currentSearchResult) {
+			} else if (currentSearchResult && id === currentSearchResult.id) {
+				onSearchResultSelect(currentSearchResult);
+				setTimestamp(getTimestampAsNumber(currentSearchResult.item));
+				closeModal();
+			} else if (!currentSearchResult) {
 				ac.current = new AbortController();
 				onValueChange(id, ac.current);
 			}
@@ -319,7 +317,7 @@ const GraphSearchDialog = (props: Props) => {
 					),
 				);
 			}
-			await api.indexedDb.addDbStoreItem(IndexedDbStores.GRAPH_SEARCH_HISTORY, searchResult);
+			await api.indexedDb.updateDbStoreItem(IndexedDbStores.GRAPH_SEARCH_HISTORY, searchResult);
 		} finally {
 			setSearchHistory(history => [...history, searchResult]);
 			setIsLoading(false);
@@ -333,15 +331,17 @@ const GraphSearchDialog = (props: Props) => {
 			{isLoading && <div className='graph-search-dialog__loader' />}
 			{filteredSearchHistory.length > 0 && (
 				<div className='graph-search-dialog__history-list'>
-					{filteredSearchHistory.map(searchResult => (
-						<BookmarkItem
-							key={searchResult.id}
-							bookmark={searchResult.item}
-							onClick={() => onSearchResultSelect(searchResult)}
-							onRemove={() => onHistoryItemDelete(searchResult)}
-							isBookmarkButtonDisabled={rootStore.isBookmarksFull}
-						/>
-					))}
+					{filteredSearchHistory
+						.sort((a, b) => b.timestamp - a.timestamp)
+						.map(searchResult => (
+							<BookmarkItem
+								key={searchResult.id}
+								bookmark={searchResult.item}
+								onClick={() => onSearchResultSelect(searchResult)}
+								onRemove={() => onHistoryItemDelete(searchResult)}
+								isBookmarkButtonDisabled={rootStore.isBookmarksFull}
+							/>
+						))}
 				</div>
 			)}
 			{filteredSearchHistory.length === 0 && !isLoading && (
