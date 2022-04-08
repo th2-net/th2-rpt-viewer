@@ -104,7 +104,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					isStartReached &&
 					searchChannelNext &&
 					!searchChannelNext.isLoading &&
-					!searchChannelNext.isEndReached &&
+					searchChannelNext.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
 					loadNextMessages().then(messages => onNextChannelResponse(messages));
@@ -114,7 +114,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					isEndReached &&
 					searchChannelPrev &&
 					!searchChannelPrev.isLoading &&
-					!searchChannelPrev.isEndReached &&
+					searchChannelPrev.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
 				) {
 					loadPrevMessages().then(messages => onPrevChannelResponse(messages));
