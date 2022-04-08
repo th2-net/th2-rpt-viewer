@@ -57,7 +57,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 
 	@action
 	protected onClose = () => {
-		const isEndReached = this.fetchedEventsCount !== this.chunkSize;
+		const isEndReached = !(this.fetchedEventsCount > 0);
 
 		if (this.fetchedChunkSubscription == null) {
 			const chunk = this.getNextChunk();
@@ -85,7 +85,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 
 	/*
 		Returns a promise within initialResponseTimeoutMs or successful fetch
-		and subscribes on changes 
+		and subscribes on changes
 	*/
 	public loadAndSubscribe = async (options?: {
 		resumeMessageIds?: string[];
