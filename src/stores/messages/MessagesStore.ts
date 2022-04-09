@@ -179,7 +179,7 @@ export default class MessagesStore {
 			const message = defaultState.targetMessage;
 			if (isEventMessage(message)) {
 				this.selectedMessageId = new String(message.messageId);
-				this.highlightedMessageId = message.messageId;
+				this.highlightedMessageId = new String(message.messageId);
 				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 				this.workspaceStore.viewStore.activePanel = this;
 			}
@@ -195,7 +195,7 @@ export default class MessagesStore {
 			const streams = this.filterStore.filter.streams;
 
 			this.selectedMessageId = new String(message.messageId);
-			this.highlightedMessageId = message.messageId;
+			this.highlightedMessageId = new String(message.messageId);
 			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 			this.hintMessages = [];
 			this.workspaceStore.viewStore.activePanel = this;
@@ -309,7 +309,7 @@ export default class MessagesStore {
 		const targetMessage: EventMessage = sortMessagesByTimestamp(this.hintMessages)[0];
 
 		this.selectedMessageId = new String(targetMessage.messageId);
-		this.highlightedMessageId = targetMessage.messageId;
+		this.highlightedMessageId = new String(targetMessage.messageId);
 		this.showFilterChangeHint = false;
 		this.graphStore.setTimestamp(timestampToNumber(targetMessage.timestamp));
 
