@@ -175,10 +175,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		const [nextMessages, prevMessages] = await Promise.all([
 			this.searchChannelNext.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(messageIds.previous),
+				resumeMessageIds: extractMessageIds(messageIds.next),
 			}),
 			this.searchChannelPrev.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(messageIds.next),
+				resumeMessageIds: extractMessageIds(messageIds.previous),
 			}),
 		]);
 
@@ -186,7 +186,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			const messages = [
 				...nextMessages.filter(val => val.messageId !== message?.messageId),
 				...[message].filter(isEventMessage),
-				...prevMessages.filter(val => val.messageId !== message?.messageId),
+				...prevMessages,
 			];
 			this.messages = messages;
 			this.initialItemCount = messages.length;
