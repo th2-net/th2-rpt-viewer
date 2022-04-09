@@ -76,7 +76,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	}, []);
 
 	React.useEffect(() => {
-		if (!isHighlighted && messagesStore.highlightedMessageId === messageId) {
+		if (!isHighlighted && messagesStore.highlightedMessageId?.valueOf() === messageId) {
 			setHighlighted(true);
 
 			highlightTimer.current = setTimeout(() => {
