@@ -27,7 +27,7 @@ function MessagesWindowHeader() {
 		<div className='messages-window-header'>
 			<div className='messages-window-header__group'>
 				<MessagesUpdateButton
-					isShow={searchChannelNext?.isEndReached ?? false}
+					isShow={!searchChannelNext?.isEndReached ?? false}
 					isLoading={updateStore.isLoading}
 					subscribeOnChanges={updateStore.subscribeOnChanges}
 					stopSubscription={updateStore.stopSubscription}
