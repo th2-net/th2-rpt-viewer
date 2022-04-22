@@ -90,6 +90,8 @@ export default class EventsStore {
 		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
 
 		reaction(() => this.selectedEvent, this.onSelectedEventChange);
+
+		reaction(() => this.graphStore.interval, this.onIntervalChange);
 	}
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
@@ -207,16 +209,16 @@ export default class EventsStore {
 
 		const selectedPath = this.selectedPath;
 
-		const rootEvent = selectedPath[0];
+		const firstKnownEvent = selectedPath.filter(node => !node.isUnknown)[0];
 
 		const timestamps = {
-			startEventId: rootEvent.eventId,
-			startTimestamp: timestampToNumber(rootEvent.startTimestamp),
-			endEventId: rootEvent.eventId,
-			endTimestamp: timestampToNumber(rootEvent.startTimestamp),
+			startEventId: firstKnownEvent.eventId,
+			startTimestamp: timestampToNumber(firstKnownEvent.startTimestamp),
+			endEventId: firstKnownEvent.eventId,
+			endTimestamp: timestampToNumber(firstKnownEvent.startTimestamp),
 		};
 
-		const eventNodes = this.getNodesList(rootEvent, []);
+		const eventNodes = this.getNodesList(firstKnownEvent, []);
 
 		if (eventNodes.length > 1 && eventNodes[1]) {
 			timestamps.startTimestamp = timestampToNumber(eventNodes[1].startTimestamp);
@@ -258,14 +260,15 @@ export default class EventsStore {
 
 	@action
 	public selectNode = (eventTreeNode: EventTreeNode | null) => {
+		if (eventTreeNode?.isUnknown) return;
+
 		if (eventTreeNode === null || eventTreeNode.eventId !== this.selectedNode?.eventId) {
 			this.selectedNode = eventTreeNode;
 		}
 	};
 
 	@action
-	public scrollToEvent = (eventId: string | null) => {
-		if (!eventId) return;
+	public scrollToEvent = (eventId: string) => {
 		let index = -1;
 		if (!this.viewStore.flattenedListView) {
 			const parents = this.getParentNodes(eventId, this.eventDataStore.eventsCache);
@@ -364,11 +367,6 @@ export default class EventsStore {
 	};
 
 	@action
-	private onScrolledItemChange = (scrolledItemId: string | null) => {
-		this.scrollToEvent(scrolledItemId);
-	};
-
-	@action
 	public onTargetEventLoad = (event: EventAction, node: EventTreeNode) => {
 		this.selectedEvent = event;
 		if (node.eventId !== this.selectedNode?.eventId) {
@@ -427,6 +425,23 @@ export default class EventsStore {
 				targetEventId: initialState.selectedEventId,
 			});
 		}
+	};
+
+	private onIntervalChange = (interval: number) => {
+		const intervalMs = interval * 60 * 1000;
+		let timestampFrom = this.filterStore.timestampFrom;
+		let timestampTo = this.filterStore.timestampFrom + intervalMs;
+		const now = moment.utc().valueOf();
+		if (timestampTo > now) {
+			timestampTo = now;
+			timestampFrom = timestampTo - intervalMs;
+		}
+		const timeRange: TimeRange = [timestampFrom, timestampTo];
+		this.eventDataStore.fetchEventTree({
+			filter: this.filterStore.filter,
+			timeRange,
+			targetEventId: this.selectedNode?.eventId,
+		});
 	};
 
 	private getNodesList = (

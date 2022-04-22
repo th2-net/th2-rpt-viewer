@@ -29,6 +29,8 @@ import { Apps, CrossOriginMessage } from '../../../models/PostMessage';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
+const JSON_COPY_OPTIONS = ['body', 'fields'] as const;
+
 export type MessageCardToolsConfig = {
 	message: EventMessage;
 	messageViewType: MessageViewType;
@@ -99,6 +101,9 @@ const MessageCardTools = ({
 		}
 	}
 
+	const isRawViewType =
+		messageViewType === MessageViewType.ASCII || messageViewType === MessageViewType.BINARY;
+
 	return (
 		<div className='message-card-tools' ref={rootRef}>
 			<div
@@ -152,19 +157,40 @@ const MessageCardTools = ({
 						})}
 					</div>
 				)}
-				{!isScreenshotMsg ? (
+				{!isScreenshotMsg && (
 					<div className='message-card-tools__controls-group'>
-						<div
-							title='Copy	to clipboard'
-							className='message-card-tools__item'
-							onClick={() => {
-								onCopy();
-								setIsViewMenuOpen(false);
-							}}>
-							<div className='message-card-tools__copy-icon' />
-						</div>
+						{isRawViewType ? (
+							<div
+								title='Copy content to clipboard'
+								className='message-card-tools__item'
+								onClick={() => onCopy()}>
+								<span className='message-card-tools__item-title'>Copy</span>
+								<div className='message-card-tools__copy-icon' />
+								<div className={createBemElement('message-card-tools', 'indicator', 'bookmark')} />
+							</div>
+						) : (
+							JSON_COPY_OPTIONS.map(copyOption => (
+								<div
+									key={copyOption}
+									title='Copy content to clipboard'
+									className='message-card-tools__item'
+									onClick={() => {
+										onCopy();
+										setIsViewMenuOpen(false);
+									}}>
+									<span className='message-card-tools__item-title'>
+										{copyOption === 'body' ? 'Copy full' : 'Copy simplified'}
+									</span>
+									<div className='message-card-tools__copy-icon' />
+									<div
+										className={createBemElement('message-card-tools', 'indicator', 'bookmark')}
+									/>
+								</div>
+							))
+						)}
 					</div>
-				) : (
+				)}
+				{isScreenshotMsg && (
 					<a
 						className='message-card-tools__item'
 						download={`${messageId}.${messageType.replace('image/', '')}`}
@@ -202,13 +228,6 @@ const MessageCardTools = ({
 					</div>
 				)}
 			</MessagePopup>
-			{!isScreenshotMsg &&
-				(messageViewType === MessageViewType.ASCII ||
-					messageViewType === MessageViewType.BINARY) && (
-					<div className='message-card-tools__copy-all' title='Copy content to clipboard'>
-						<div className='message-card-tools__copy-icon' onClick={() => onCopy()} />
-					</div>
-				)}
 		</div>
 	);
 };

@@ -14,66 +14,49 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable } from 'mobx';
-import notificationsStore from '../NotificationsStore';
+import { action, computed, observable, runInAction } from 'mobx';
+import MessagesStore from './MessagesStore';
+import EmbeddedMessagesStore from '../../components/embedded/embedded-stores/EmbeddedMessagesStore';
 import { MessagesDataStore } from '../../models/Stores';
-import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 
 export default class MessagesUpdateStore {
 	constructor(
 		private messagesDataStore: MessagesDataStore,
-		private scrollToMessage: (messageId: string) => void,
+		private messagesStore: MessagesStore | EmbeddedMessagesStore,
 	) {}
 
 	@observable
-	private channel: MessagesSSEChannel | null = null;
+	private timer: ReturnType<typeof setTimeout> | null = null;
 
 	@action
-	public subscribeOnChanges = async () => {
-		// For some reason MessagesUpdateStore doesn't react on
-		// filter changes in MessagesFilterStore
-		const queryParams = this.messagesDataStore.getFilterParams();
-
-		const { onNextChannelResponse, messages } = this.messagesDataStore;
-
-		this.channel = new MessagesSSEChannel(
-			{
-				...queryParams,
-				searchDirection: 'next',
-				keepOpen: true,
-				...(messages[0]?.messageId
-					? {
-							resumeFromId: messages[0].messageId,
-							startTimestamp: undefined,
-					  }
-					: {}),
-				resultCountLimit: undefined,
-			},
-			{
-				onResponse: incommingMessages => {
-					if (messages.length) {
-						onNextChannelResponse(incommingMessages);
-						this.scrollToMessage(incommingMessages[0].messageId);
-					}
-				},
-				onError: this.onLoadingError,
-			},
-		);
-
-		this.channel.subscribe(messages[0]?.messageId);
+	public subscribeOnChanges = () => {
+		this.startLoop();
 	};
 
-	private onLoadingError = (event: Event) => {
-		notificationsStore.handleSSEError(event);
-		this.stopSubscription();
+	@action
+	startLoop = async () => {
+		const { getNextMessages, onNextChannelResponse } = this.messagesDataStore;
+
+		const messages = await getNextMessages();
+
+		if (messages.length) {
+			onNextChannelResponse(messages);
+			this.messagesStore.selectedMessageId = messages[0].messageId;
+		}
+
+		runInAction(() => (this.timer = setTimeout(this.startLoop, 5000)));
 	};
 
+	@action
 	public stopSubscription = () => {
-		this.channel?.stop();
+		if (this.timer) {
+			clearTimeout(this.timer);
+			this.timer = null;
+		}
 	};
 
 	@computed
 	public get isLoading() {
-		return this.channel?.isLoading ?? false;
+		return !!this.timer;
 	}
 }

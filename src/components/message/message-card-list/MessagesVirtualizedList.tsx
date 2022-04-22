@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
-import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { Virtuoso, VirtuosoHandle, ListItem } from 'react-virtuoso';
 import moment from 'moment';
 import {
 	useDebouncedCallback,
@@ -25,23 +25,24 @@ import {
 } from '../../../hooks';
 import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
+import { SSEHeartbeat } from '../../../api/sse';
+import { formatTime } from '../../../helpers/date';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
 	rowCount: number;
 	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
 	/*
-		Number objects is used here because in some cases (eg one message / action was 
-		selected several times by different entities)
-		We can't understand that we need to scroll to the selected entity again when
-		we are comparing primitive numbers.
-		Objects and reference comparison is the only way to handle numbers changing in this case.
-	*/
-	scrolledIndex: Number | null;
+		 Number objects is used here because in some cases (eg one message / action was
+		 selected several times by different entities)
+		 We can't understand that we need to scroll to the selected entity again when
+		 we are comparing primitive numbers.
+		 Objects and reference comparison is the only way to handle numbers changing in this case.
+	 */
 	className?: string;
 	overscan?: number;
-	loadNextMessages: (resumeFromId?: string) => Promise<EventMessage[]>;
-	loadPrevMessages: (resumeFromId?: string) => Promise<EventMessage[]>;
+	loadNextMessages: () => Promise<EventMessage[]>;
+	loadPrevMessages: () => Promise<EventMessage[]>;
 }
 
 const MessagesVirtualizedList = (props: Props) => {
@@ -59,26 +60,39 @@ const MessagesVirtualizedList = (props: Props) => {
 		isLoadingPreviousMessages,
 		onNextChannelResponse,
 		onPrevChannelResponse,
+		prevLoadHeartbeat,
+		nextLoadHeartbeat,
 	} = useMessagesDataStore();
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
-	const {
-		className,
-		overscan = 3,
-		itemRenderer,
-		loadPrevMessages,
-		loadNextMessages,
-		scrolledIndex,
-	} = props;
+	const { className, overscan = 3, itemRenderer, loadPrevMessages, loadNextMessages } = props;
+
+	const [[firstPrevChunkIsLoaded, firstNextChunkIsLoaded], setLoadedChunks] = React.useState<
+		[boolean, boolean]
+	>([false, false]);
 
 	React.useEffect(() => {
-		if (scrolledIndex !== null) {
+		if (!searchChannelNext?.isLoading) setLoadedChunks(loadedChunks => [true, loadedChunks[1]]);
+		if (!searchChannelPrev?.isLoading) setLoadedChunks(loadedChunks => [loadedChunks[0], true]);
+	}, [searchChannelNext?.isLoading, searchChannelPrev?.isLoading]);
+
+	React.useEffect(() => {
+		const selectedMessageId = messageStore.selectedMessageId?.valueOf();
+		if (selectedMessageId) {
 			raf(() => {
-				virtuoso.current?.scrollToIndex({ index: scrolledIndex.valueOf(), align: 'center' });
+				const index = messageStore.dataStore.messages.findIndex(
+					m => m.messageId === selectedMessageId,
+				);
+				if (index !== -1) virtuoso.current?.scrollToIndex({ index, align: 'center' });
 			}, 3);
 		}
-	}, [scrolledIndex]);
+	}, [
+		messageStore.selectedMessageId,
+		messageStore,
+		firstPrevChunkIsLoaded,
+		firstNextChunkIsLoaded,
+	]);
 
 	const debouncedScrollHandler = useDebouncedCallback(
 		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
@@ -93,9 +107,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					!searchChannelNext.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
-					loadNextMessages(messageList[0]?.messageId).then(messages =>
-						onNextChannelResponse(messages),
-					);
+					loadNextMessages().then(messages => onNextChannelResponse(messages));
 				}
 
 				if (
@@ -105,9 +117,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					!searchChannelPrev.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
 				) {
-					loadPrevMessages(messageList[messageList.length - 1]?.messageId).then(messages =>
-						onPrevChannelResponse(messages),
-					);
+					loadPrevMessages().then(messages => onPrevChannelResponse(messages));
 				}
 			}
 		},
@@ -124,22 +134,25 @@ const MessagesVirtualizedList = (props: Props) => {
 		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
+	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
+		messageStore.currentMessagesIndexesRange = {
+			startIndex: (renderedMessages && renderedMessages[0]?.originalIndex) ?? 0,
+			endIndex:
+				(renderedMessages && renderedMessages[renderedMessages.length - 1]?.originalIndex) ?? 0,
+		};
+	}, 100);
+
 	return (
 		<Virtuoso
 			data={messageList}
 			firstItemIndex={startIndex}
-			initialTopMostItemIndex={initialItemCount}
+			initialTopMostItemIndex={initialItemCount - 1}
 			ref={virtuoso}
 			overscan={overscan}
 			itemContent={itemRenderer}
 			style={{ height: '100%', width: '100%' }}
 			className={className}
-			itemsRendered={messages => {
-				messageStore.currentMessagesIndexesRange = {
-					startIndex: (messages && messages[0]?.originalIndex) ?? 0,
-					endIndex: (messages && messages[messages.length - 1]?.originalIndex) ?? 0,
-				};
-			}}
+			itemsRendered={onMessagesRendered}
 			onScroll={onScroll}
 			onWheel={onWheel}
 			components={{
@@ -149,16 +162,21 @@ const MessagesVirtualizedList = (props: Props) => {
 							{() =>
 								noMatchingMessagesNext ? (
 									<div className='messages-list__loading-message'>
-										<span className='messages-list__loading-message-text'>
-											No more matching messages since&nbsp;
-											{moment.utc(messageStore.filterStore.filterParams.startTimestamp).format()}
-										</span>
+										{nextLoadHeartbeat && (
+											<span className='messages-list__loading-message-text'>
+												No more matching messages up to&nbsp;
+												{moment.utc(nextLoadHeartbeat.timestamp).format()}
+											</span>
+										)}
 										<button className='messages-list__load-btn' onClick={() => keepLoading('next')}>
 											Keep loading
 										</button>
 									</div>
 								) : (
-									<MessagesListSpinner isLoading={isLoadingNextMessages} />
+									<MessagesListSpinner
+										isLoading={isLoadingNextMessages}
+										searchInfo={nextLoadHeartbeat}
+									/>
 								)
 							}
 						</Observer>
@@ -170,10 +188,12 @@ const MessagesVirtualizedList = (props: Props) => {
 							{() =>
 								noMatchingMessagesPrev ? (
 									<div className='messages-list__loading-message'>
-										<span className='messages-list__loading-message-text'>
-											No more matching messages since&nbsp;
-											{moment(messageStore.filterStore.filterParams.startTimestamp).utc().format()}
-										</span>
+										{prevLoadHeartbeat && (
+											<span className='messages-list__loading-message-text'>
+												No more matching messages from&nbsp;
+												{moment.utc(prevLoadHeartbeat.timestamp).format()}
+											</span>
+										)}
 										<button
 											className='messages-list__load-btn'
 											onClick={() => keepLoading('previous')}>
@@ -181,7 +201,10 @@ const MessagesVirtualizedList = (props: Props) => {
 										</button>
 									</div>
 								) : (
-									<MessagesListSpinner isLoading={isLoadingPreviousMessages} />
+									<MessagesListSpinner
+										isLoading={isLoadingPreviousMessages}
+										searchInfo={prevLoadHeartbeat}
+									/>
 								)
 							}
 						</Observer>
@@ -196,8 +219,19 @@ export default observer(MessagesVirtualizedList);
 
 interface SpinnerProps {
 	isLoading: boolean;
+	searchInfo: SSEHeartbeat | null;
 }
-const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
+const MessagesListSpinner = ({ isLoading, searchInfo }: SpinnerProps) => {
 	if (!isLoading) return null;
-	return <div className='messages-list__spinner' />;
+	return (
+		<div className='messages-list__spinner-wrapper'>
+			<div className='messages-list__spinner' />
+			{searchInfo && (
+				<div className='messages-list__search-info'>
+					<span>Processed items: {searchInfo.scanCounter}</span>
+					<span>Current search position: {formatTime(searchInfo.timestamp)}</span>
+				</div>
+			)}
+		</div>
+	);
 };

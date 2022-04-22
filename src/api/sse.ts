@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import moment from 'moment';
 import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import EventsFilter from '../models/filter/EventsFilter';
@@ -25,9 +24,7 @@ interface BaseSSEParams {
 	startTimestamp?: number;
 	endTimestamp?: number | null;
 	resultCountLimit?: number;
-	resumeFromId?: string;
 	searchDirection?: 'next' | 'previous'; // defaults to next
-	keepOpen?: boolean;
 }
 
 export interface SSEHeartbeat {
@@ -49,8 +46,8 @@ export interface SSEFilterParameter {
 	type: { value: 'string' | 'boolean' | 'string[]' | 'switcher' };
 }
 
-export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status';
-export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body';
+export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status' | 'text';
+export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body' | 'text';
 
 export interface EventsFiltersInfo {
 	name: EventSSEFilters;
@@ -76,6 +73,7 @@ export interface EventSSEParams extends BaseSSEParams {
 	'name-values'?: string[];
 	'name-negative'?: boolean;
 	'name-conjunct'?: boolean;
+	resumeFromId?: string;
 }
 
 export interface MessagesSSEParams extends BaseSSEParams {
@@ -101,7 +99,7 @@ export interface SSEParamsEvents {
 	limitForParent?: number;
 }
 
-export interface MessagesIdsEvent {
+export interface MessageIdsEvent {
 	reason: string;
 	// session: messageId
 	messageIds: {
@@ -146,7 +144,7 @@ export function getMessagesSSEParamsFromFilter(
 	filter: MessageFilterState | null,
 	streams: string[],
 	startTimestamp: number | null,
-	endTimestamp: number | null = null,
+	endTimestamp: number | null,
 	searchDirection = 'previous',
 	resultCountLimit?: number,
 ): URLSearchParams {
@@ -172,11 +170,8 @@ export function getMessagesSSEParamsFromFilter(
 			: [],
 	);
 
-	const timestampTo = moment().utc().subtract(30, 'minutes').valueOf();
-	const defaultStartTimestamp = moment(timestampTo).add(5, 'minutes').valueOf();
-
 	const queryParams: MessagesSSEParams = {
-		startTimestamp: startTimestamp || defaultStartTimestamp,
+		startTimestamp,
 		endTimestamp: endTimestamp || undefined,
 		stream: streams,
 		searchDirection,

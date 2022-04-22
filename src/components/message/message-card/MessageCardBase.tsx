@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { getHashCode } from '../../../helpers/stringHash';
-import { createBemBlock, createStyleSelector } from '../../../helpers/styleCreators';
+import { createStyleSelector, createBemBlock } from '../../../helpers/styleCreators';
 import { formatTime, timestampToNumber } from '../../../helpers/date';
 import { MessageScreenshotZoom } from './MessageScreenshot';
 import { EventMessage, isScreenshotMessage, MessageViewType } from '../../../models/EventMessage';
@@ -26,8 +26,7 @@ import MessageCardViewTypeRenderer, {
 import Checkbox from '../../util/Checkbox';
 import MessageCardTools, { MessageCardToolsConfig } from './MessageCardTools';
 import '../../../styles/messages.scss';
-
-const HUE_SEGMENTS_COUNT = 36;
+import { MessageHeader } from './MessageHeader';
 
 export interface MessageCardBaseProps {
 	message: EventMessage;
@@ -39,10 +38,10 @@ export interface MessageCardBaseProps {
 	isSoftFiltered?: boolean;
 	isContentBeautified?: boolean;
 	toogleMessagePin?: () => void;
-	isDetailed?: boolean;
 	isEmbedded?: boolean;
 	isExported?: boolean;
 	isExport?: boolean;
+	sortOrderItems?: string[];
 	viewType: MessageViewType;
 	setViewType: (viewType: MessageViewType) => void;
 	addMessageToExport?: () => void;
@@ -62,9 +61,9 @@ const MessageCardBase = React.memo(
 		isSoftFiltered,
 		toogleMessagePin,
 		isEmbedded,
-		isDetailed,
 		isExported,
 		isExport,
+		sortOrderItems,
 		addMessageToExport,
 		applyFilterToBody,
 	}: MessageCardBaseProps) => {
@@ -73,14 +72,6 @@ const MessageCardBase = React.memo(
 		const splittedMessageId = messageId.split(':');
 		const messageIdWithHighlightedSession = splittedMessageId.map(
 			getMessageIdWithHighlightedSession,
-		);
-
-		const rootClass = createBemBlock(
-			'message-card-wrapper',
-			isAttached ? 'attached' : null,
-			isBookmarked ? 'pinned' : null,
-			isHighlighted ? 'highlighted' : null,
-			isSoftFiltered ? 'soft-filtered' : null,
 		);
 
 		// session arrow color, we calculating it for each session from-to pair, based on hash
@@ -92,6 +83,16 @@ const MessageCardBase = React.memo(
 		const sessionClass = createStyleSelector(
 			'mc-header__icon mc-header__direction-icon',
 			direction?.toLowerCase(),
+		);
+
+		const rootClass = createBemBlock(
+			'message-card-wrapper',
+			isAttached ? 'attached' : null,
+			isBookmarked ? 'pinned' : null,
+			isHighlighted ? 'highlighted' : null,
+			isSoftFiltered ? 'soft-filtered' : null,
+			isExport ? 'export-mode' : null,
+			isExported ? 'exported' : null,
 		);
 
 		const iconsClassName = createBemBlock(
@@ -148,8 +149,8 @@ const MessageCardBase = React.memo(
 			isBeautified: viewType === MessageViewType.FORMATTED,
 			rawContent: bodyBase64,
 			isSelected: isAttached || false,
-			isDetailed,
 			applyFilterToBody,
+			sortOrderItems: sortOrderItems || [],
 		};
 
 		const messageCardToolsConfig: MessageCardToolsConfig = {
@@ -199,6 +200,11 @@ const MessageCardBase = React.memo(
 				<div className='message-card'>
 					<div className='mc__mc-header mc-header'>{renderMessageInfo()}</div>
 					<div className='mc__mc-body mc-body'>
+						<MessageHeader
+							message={message}
+							onTimestampMouseEnter={hoverMessage}
+							onTimestampMouseLeave={unhoverMessage}
+						/>
 						{isScreenshotMsg ? (
 							<div className='mc-body__screenshot'>
 								<MessageScreenshotZoom
@@ -225,6 +231,8 @@ const MessageCardBase = React.memo(
 
 MessageCardBase.displayName = 'MessageCardBase';
 export default MessageCardBase;
+
+const HUE_SEGMENTS_COUNT = 36;
 
 function calculateHueValue(session: string): number {
 	const hashCode = getHashCode(session);

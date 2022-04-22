@@ -19,26 +19,20 @@ import moment from 'moment';
 import { getTimestampAsNumber } from '../helpers/date';
 import { isEventNode } from '../helpers/event';
 import { calculateTimeRange } from '../helpers/graph';
-import { Chunk, GraphItem, GraphItemType, IntervalOption } from '../models/Graph';
+import { Chunk, GraphItem, GraphItemType } from '../models/Graph';
 import { TimeRange } from '../models/Timestamp';
 import { SelectedStore } from './SelectedStore';
 
 export class GraphStore {
-	public readonly steps = {
-		15: 1,
-		30: 3,
-		60: 5,
-	};
-
 	constructor(
 		private selectedStore: SelectedStore,
 		timeRange: TimeRange | null = null,
-		defaultInterval: IntervalOption = 15,
+		defaultInterval: number | null | undefined,
 	) {
 		this.range = timeRange || this.range;
 		this.setTimestampFromRange(this.range);
 
-		this.interval = defaultInterval;
+		this.interval = defaultInterval || 15;
 
 		reaction(
 			() => this.interval,
@@ -54,7 +48,7 @@ export class GraphStore {
 	}
 
 	@observable
-	public interval: IntervalOption = 15;
+	public interval = 15;
 
 	@observable
 	public chunks: Chunk[] = [];
@@ -78,7 +72,8 @@ export class GraphStore {
 
 	@computed
 	public get tickSize() {
-		return this.steps[this.interval];
+		if (this.interval <= 15) return 1;
+		return Math.floor(this.interval / 10);
 	}
 
 	@action
@@ -87,7 +82,7 @@ export class GraphStore {
 	};
 
 	@action
-	public setInterval = (interval: IntervalOption) => {
+	public setInterval = (interval: number) => {
 		this.interval = interval;
 	};
 
@@ -115,7 +110,7 @@ export class GraphStore {
 	};
 
 	@action
-	public createChunks(interval: IntervalOption, timestamp: number) {
+	public createChunks(interval: number, timestamp: number) {
 		this.chunks = [];
 
 		const centralChunkStart = this.getChunkTimestampFrom(timestamp, interval);
@@ -147,7 +142,7 @@ export class GraphStore {
 		this.chunks = chunks;
 	}
 
-	private createChunk = (timestamp: number, interval: IntervalOption) => {
+	private createChunk = (timestamp: number, interval: number) => {
 		return {
 			from: moment.utc(timestamp).valueOf(),
 			to: moment

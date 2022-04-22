@@ -33,6 +33,7 @@ interface Props {
 	isSelected: boolean;
 	renderInfo: () => React.ReactNode;
 	applyFilterToBody?: boolean;
+	sortOrderItems: string[];
 }
 
 function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, applyFilterToBody }: Props) {

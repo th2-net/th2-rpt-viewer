@@ -19,7 +19,8 @@ import { MessageViewType } from '../../../models/EventMessage';
 import MessageBody from '../../../models/MessageBody';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
-import MessageRaw from './raw/MessageRaw';
+import SimpleMessageRaw from './raw/SimpleMessageRaw';
+import DetailedMessageRaw from './raw/DetailedMessageRaw';
 
 export type MessageCardViewTypeRendererProps = {
 	viewType: MessageViewType;
@@ -28,21 +29,22 @@ export type MessageCardViewTypeRendererProps = {
 	isBeautified: boolean;
 	isSelected: boolean;
 	messageBody: MessageBody | null;
-	renderInfo: () => React.ReactNode;
 	isEmbedded?: boolean;
 	isDetailed?: boolean;
 	applyFilterToBody?: boolean;
+	renderInfo: () => React.ReactNode;
+	sortOrderItems: string[];
 };
 
 const MessageCardViewTypeRenderer = ({
-	renderInfo,
 	viewType,
 	rawContent,
 	isBeautified,
 	isSelected,
 	messageBody,
-	isDetailed,
+	renderInfo,
 	applyFilterToBody,
+	sortOrderItems,
 }: MessageCardViewTypeRendererProps) => {
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
@@ -51,11 +53,12 @@ const MessageCardViewTypeRenderer = ({
 				<ErrorBoundary
 					fallback={
 						<MessageBodyCardFallback
-							renderInfo={renderInfo}
 							isBeautified={isBeautified}
 							isSelected={isSelected}
 							body={messageBody}
 							applyFilterToBody={applyFilterToBody}
+							sortOrderItems={sortOrderItems}
+							renderInfo={renderInfo}
 						/>
 					}>
 					<MessageBodyCard
@@ -64,19 +67,16 @@ const MessageCardViewTypeRenderer = ({
 						isSelected={isSelected}
 						renderInfo={renderInfo}
 						applyFilterToBody={applyFilterToBody}
+						sortOrderItems={sortOrderItems}
 					/>
 				</ErrorBoundary>
 			);
 		case MessageViewType.ASCII:
-		case MessageViewType.BINARY:
 			return rawContent ? (
-				<MessageRaw
-					rawContent={rawContent}
-					renderInfo={renderInfo}
-					isDetailed={isDetailed || viewType === MessageViewType.BINARY}
-					applyFilterToBody={applyFilterToBody}
-				/>
+				<SimpleMessageRaw rawContent={rawContent} renderInfo={renderInfo} />
 			) : null;
+		case MessageViewType.BINARY:
+			return rawContent ? <DetailedMessageRaw rawContent={rawContent} /> : null;
 		default:
 			return null;
 	}

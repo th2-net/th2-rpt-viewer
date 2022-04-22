@@ -21,6 +21,7 @@ import {
 	convertEventActionToEventTreeNode,
 	getErrorEventTreeNode,
 	isRootEvent,
+	unknownRoot,
 } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
 import notificationsStore from '../NotificationsStore';
@@ -30,6 +31,8 @@ import EventsFilter from '../../models/filter/EventsFilter';
 import { TimeRange } from '../../models/Timestamp';
 import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import { isAbortError } from '../../helpers/fetch';
+import { getItemAt } from '../../helpers/array';
+import { timestampToNumber } from '../../helpers/date';
 
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
@@ -275,7 +278,7 @@ export default class EventsDataStore {
 			}
 		} finally {
 			if (!isAborted) {
-				let rootNode = parentNodes[0];
+				let rootNode = getItemAt(parentNodes, 0);
 
 				if (!rootNode || !isRootEvent(rootNode)) {
 					const cachedRootNode =
@@ -283,7 +286,8 @@ export default class EventsDataStore {
 					if (cachedRootNode) {
 						rootNode = cachedRootNode;
 					} else {
-						rootNode = getErrorEventTreeNode(rootNode?.parentId || parentId);
+						rootNode = unknownRoot;
+						parentNodes.unshift(getErrorEventTreeNode(rootNode?.parentId || parentId));
 					}
 					parentNodes.unshift(rootNode);
 				}
@@ -304,6 +308,9 @@ export default class EventsDataStore {
 						(isRootEvent(rootNode) || rootNode.isUnknown) &&
 						!this.rootEventIds.includes(rootNode.eventId)
 					) {
+						if (this.eventStore.targetNodeId) {
+							this.eventStore.scrollToEvent(this.eventStore.targetNodeId);
+						}
 						this.rootEventIds.push(rootNode.eventId);
 					}
 				} else {
@@ -313,6 +320,7 @@ export default class EventsDataStore {
 		}
 	};
 
+	@action
 	private parentNodesUpdater = () => {
 		const parentNodes = this.loadedParentNodes;
 		if (!parentNodes.length) return;
@@ -325,9 +333,9 @@ export default class EventsDataStore {
 			for (let i = 0; i < parentNodePath.length; i++) {
 				const event = parentNodePath[i];
 
-				const { isUnknown, parentId, eventId } = event;
+				const { parentId, eventId } = event;
 
-				if ((isRootEvent(event) || isUnknown) && !rootNodes.includes(eventId)) {
+				if (isRootEvent(event) && !rootNodes.includes(eventId)) {
 					rootNodes.push(eventId);
 				}
 
@@ -344,14 +352,12 @@ export default class EventsDataStore {
 			}
 		});
 
-		runInAction(() => {
-			if (rootNodes.length !== 0) {
-				this.rootEventIds = [
-					...this.rootEventIds,
-					...rootNodes.filter(eventId => !this.rootEventIds.includes(eventId)),
-				];
-			}
-		});
+		if (rootNodes.length !== 0) {
+			this.rootEventIds = [
+				...this.rootEventIds,
+				...rootNodes.filter(eventId => !this.rootEventIds.includes(eventId)),
+			];
+		}
 
 		this.parentChildrensMap = observable.map(
 			new Map([...this.parentChildrensMap, ...parentChildrenMapUpdate]),
@@ -387,7 +393,7 @@ export default class EventsDataStore {
 		if (parentNode) {
 			const eventsChildren = this.eventStore.getChildrenNodes(parentId);
 
-			const lastChild = eventsChildren[eventsChildren.length - 1];
+			const lastChild = getItemAt(eventsChildren, eventsChildren.length - 1);
 
 			const loader = new EventsSSEChannel(
 				{
@@ -500,6 +506,18 @@ export default class EventsDataStore {
 			try {
 				this.targetEventAC = new AbortController();
 				const event = await this.api.events.getEvent(targetEventId, this.targetEventAC.signal);
+				const targetEventTimestamp = timestampToNumber(event.startTimestamp);
+				// TODO: add filtering too see if target event matches current filter
+				if (
+					targetEventTimestamp < this.filterStore.timestampFrom ||
+					targetEventTimestamp > this.filterStore.timestampTo
+				) {
+					this.targetEventLoadSubscription();
+					this.targetEventAC = null;
+					this.targetNode = null;
+					this.eventStore.targetNodeId = null;
+					return;
+				}
 				const targetNode = convertEventActionToEventTreeNode(event);
 				if (targetNode.parentId !== null) {
 					this.loadParentNodes(targetNode.parentId, true);

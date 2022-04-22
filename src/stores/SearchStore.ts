@@ -21,6 +21,7 @@ import debounce from 'lodash.debounce';
 import ApiSchema from '../api/ApiSchema';
 import {
 	EventsFiltersInfo,
+	MessageIdsEvent,
 	MessagesFilterInfo,
 	SSEFilterInfo,
 	SSEHeartbeat,
@@ -48,6 +49,7 @@ import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { SessionsStore } from './messages/SessionsStore';
 import { EventBodyPayload } from '../models/EventActionPayload';
+import { getItemAt } from '../helpers/array';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -109,6 +111,20 @@ export type FilterEntry = {
 const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
 const SEARCH_CHUNK_SIZE = 500;
 
+function getDefaultFormState(): SearchPanelFormState {
+	return {
+		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
+		searchDirection: SearchDirection.Next,
+		resultCountLimit: 50,
+		timeLimits: {
+			previous: null,
+			next: null,
+		},
+		parentEvent: '',
+		stream: [],
+	};
+}
+
 export class SearchStore {
 	constructor(
 		private workspacesStore: WorkspacesStore,
@@ -119,7 +135,7 @@ export class SearchStore {
 		this.init();
 
 		autorun(() => {
-			this.currentSearch = this.searchHistory[this.currentIndex] || null;
+			this.currentSearch = getItemAt(this.searchHistory, this.currentIndex);
 		});
 
 		reaction(
@@ -140,12 +156,11 @@ export class SearchStore {
 		reaction(
 			() => this.searchForm.parentEvent,
 			parentEvent => {
-				if (parentEvent) {
-					if (!isEventId(parentEvent)) {
-						this.loadEventAutocompleteList(parentEvent);
-					}
+				if (parentEvent && !isEventId(parentEvent)) {
+					this.loadEventAutocompleteList(parentEvent);
 				} else {
 					this.resetEventAutocompleteList();
+					this.loadEventAutocompleteList.cancel();
 				}
 			},
 		);
@@ -165,17 +180,7 @@ export class SearchStore {
 
 	@observable messagesFilter: MessageFilterState | null = null;
 
-	@observable searchForm: SearchPanelFormState = {
-		startTimestamp: moment().utc().subtract(30, 'minutes').valueOf(),
-		searchDirection: SearchDirection.Next,
-		resultCountLimit: 50,
-		timeLimits: {
-			previous: null,
-			next: null,
-		},
-		parentEvent: '',
-		stream: [],
-	};
+	@observable searchForm: SearchPanelFormState = getDefaultFormState();
 
 	@observable formType: SearchPanelType = 'event';
 
@@ -215,7 +220,19 @@ export class SearchStore {
 
 	@observable selectedEventBodyFilter: [EventBodyPayload, FilterEntry] | null = null;
 
-	eventAutocompleteSseChannel: EventSource | null = null;
+	@observable.ref eventAutocompleteSseChannel: EventSource | null = null;
+
+	private resumeFromMessageIds: {
+		previous: MessageIdsEvent | null;
+		next: MessageIdsEvent | null;
+	} = {
+		previous: null,
+		next: null,
+	};
+
+	@computed get isLoadingEventAutocompleteList() {
+		return Boolean(this.eventAutocompleteSseChannel);
+	}
 
 	@computed get searchProgress() {
 		const startTimestamp = Number(this.searchForm.startTimestamp);
@@ -423,6 +440,13 @@ export class SearchStore {
 		this.resetSearchProgressState();
 	};
 
+	@action clearFilters = () => {
+		this.messagesFilter = getDefaultMessagesFiltersState(this.messagesFilterInfo);
+		this.eventsFilter = getDefaultEventsFiltersState(this.eventFilterInfo);
+
+		this.searchForm = getDefaultFormState();
+	};
+
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
 		this.searchHistory = this.searchHistory.filter(item => item !== searchHistoryItem);
 		this.currentIndex = Math.max(this.currentIndex - 1, 0);
@@ -489,7 +513,7 @@ export class SearchStore {
 			this.searchProgressState[SearchDirection.Next].resultCount = 1;
 		}
 
-		if (!isPaused && !loadMore) {
+		if ((!isPaused && !loadMore) || this.currentSearch?.request.type !== this.formType) {
 			this.newSearch({
 				timestamp: moment().utc().valueOf(),
 				request: { type: this.formType, state: this.searchForm, filters: filterParams },
@@ -553,7 +577,15 @@ export class SearchStore {
 			};
 
 			if (isPaused || loadMore) {
-				params.resumeFromId = this.searchProgressState[direction].lastEventId;
+				if (this.formType === 'message') {
+					const messageIdEvent = this.resumeFromMessageIds[direction];
+
+					if (messageIdEvent) {
+						params.messageId = Object.values(messageIdEvent).filter(Boolean);
+					}
+				} else {
+					params.resumeFromId = this.searchProgressState[direction].lastEventId;
+				}
 			}
 
 			if (isPaused) {
@@ -581,6 +613,7 @@ export class SearchStore {
 
 			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));
 			searchChannel.addEventListener('keep_alive', this.onChannelResponse.bind(this, direction));
+			searchChannel.addEventListener('message_ids', this.onMessageIdsEvent.bind(this, direction));
 			searchChannel.addEventListener('close', this.stopSearch.bind(this, direction, undefined));
 			searchChannel.addEventListener('error', this.onError.bind(this, direction));
 		};
@@ -651,11 +684,12 @@ export class SearchStore {
 			) {
 				this.exportChunkToSearchHistory();
 			}
-
-			if (this.resultCount >= this.currentSearch.request.state.resultCountLimit) {
-				this.stopSearch();
-			}
 		}
+	};
+
+	private onMessageIdsEvent = (searchDirection: SSESearchDirection, ev: Event) => {
+		this.resumeFromMessageIds[searchDirection] =
+			ev instanceof MessageEvent && ev.data ? JSON.parse(ev.data).messageIds : null;
 	};
 
 	@action
@@ -679,10 +713,16 @@ export class SearchStore {
 					this.currentSearch.results[resultGroupKey] = [];
 				}
 
-				this.currentSearch.results[resultGroupKey].push(parsedEvent);
+				if (
+					!this.currentSearch.results[resultGroupKey].find(
+						entity => getItemId(entity) === getItemId(parsedEvent),
+					)
+				) {
+					this.currentSearch.results[resultGroupKey].push(parsedEvent);
+					this.searchProgressState[searchDirection].lastEventId = getItemId(parsedEvent);
+					this.searchProgressState[searchDirection].resultCount += 1;
+				}
 				this.currentSearch.progress[searchDirection] = eventTimestamp;
-				this.searchProgressState[searchDirection].lastEventId = getItemId(parsedEvent);
-				this.searchProgressState[searchDirection].resultCount += 1;
 			} else {
 				if (eventTimestamp) {
 					this.currentSearch.progress[searchDirection] = eventTimestamp;
@@ -726,9 +766,16 @@ export class SearchStore {
 				resultCount: 0,
 			},
 		};
+
+		this.resumeFromMessageIds = {
+			previous: null,
+			next: null,
+		};
 	}
 
 	@action resetEventAutocompleteList = () => {
+		this.eventAutocompleteSseChannel?.close();
+		this.eventAutocompleteSseChannel = null;
 		this.eventAutocompleteList = [];
 	};
 

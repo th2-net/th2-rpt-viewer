@@ -27,7 +27,7 @@ const PANEL_WIDTH = 840;
 
 interface Props {
 	isFilterApplied: boolean;
-	isLoading?: boolean;
+	isLoading: boolean;
 	isDisabled?: boolean;
 	showFilter: boolean;
 	config: FilterRowConfig[];

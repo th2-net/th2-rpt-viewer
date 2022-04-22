@@ -18,21 +18,20 @@
 import { action, when } from 'mobx';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
-import { MessagesSSEParams, SSEHeartbeat, MessagesIdsEvent } from '../../api/sse';
+import { MessagesSSEParams, SSEHeartbeat, MessageIdsEvent } from '../../api/sse';
 import { isEventMessage } from '../../helpers/event';
 import { EventMessage } from '../../models/EventMessage';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
 
 export type MessageSSEEventListeners = SSEEventListeners<EventMessage> & {
 	onKeepAliveResponse?: (event: SSEHeartbeat) => void;
+	onMessageIdsEvent?: (event: MessageIdsEvent) => void;
 };
 
 export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	private readonly type: SSEChannelType = 'message';
 
-	private readonly initialResponseTimeoutMs = 2000;
-
-	private messagesIdsEvent: MessagesIdsEvent | null = null;
+	private messageIdsEvent: MessageIdsEvent | null = null;
 
 	constructor(
 		private queryParams: MessagesSSEParams,
@@ -42,8 +41,8 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		super(isEventMessage, eventListeners, options);
 	}
 
-	public subscribe = (resumeFromId?: string): void => {
-		this.initConnection(resumeFromId);
+	public subscribe = (resumeMessageIds?: string[]): void => {
+		this.initConnection(resumeMessageIds);
 		this.initUpdateScheduler();
 	};
 
@@ -58,13 +57,11 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 
 	@action
 	protected onClose = () => {
-		const isEndReached = !this.queryParams.keepOpen
-			? this.fetchedEventsCount !== this.chunkSize
-			: false;
+		const isEndReached = !(this.fetchedEventsCount > 0);
 
 		if (this.fetchedChunkSubscription == null) {
 			const chunk = this.getNextChunk();
-			this.eventListeners.onResponse(chunk);
+			(this.eventListeners.onClose || this.eventListeners.onResponse)(chunk);
 			this.resetSSEState({ isEndReached });
 		} else {
 			this.isEndReached = isEndReached;
@@ -73,7 +70,6 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.closeChannel();
 		this.isLoading = false;
 		this.clearSchedulersAndTimeouts();
-		this.onStop?.();
 	};
 
 	@action
@@ -89,41 +85,40 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 
 	/*
 		Returns a promise within initialResponseTimeoutMs or successful fetch
-		and subscribes on changes 
+		and subscribes on changes
 	*/
-	public loadAndSubscribe = async (resumeFromId?: string): Promise<EventMessage[]> => {
-		this.initConnection(resumeFromId);
+	public loadAndSubscribe = async (options?: {
+		resumeMessageIds?: string[];
+		initialResponseTimeoutMs?: number | null;
+	}): Promise<EventMessage[]> => {
+		const { resumeMessageIds, initialResponseTimeoutMs = 2000 } = options || {};
+		this.initConnection(resumeMessageIds);
 
-		const messagesChunk = await Promise.race([
-			this.getInitialResponseWithinTimeout(this.initialResponseTimeoutMs),
-			this.getFetchedChunk(),
-		]);
+		const messagesChunk = await (initialResponseTimeoutMs
+			? Promise.race([
+					this.getInitialResponseWithinTimeout(initialResponseTimeoutMs),
+					this.getFetchedChunk(),
+			  ])
+			: this.getFetchedChunk());
 
 		return messagesChunk;
 	};
 
-	private initConnection = (resumeFromId?: string): void => {
+	private initConnection = (resumeMessageIds?: string[]): void => {
 		this.closeChannel();
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
 
-		const messageId: string[] = this.messagesIdsEvent
-			? (Object.values(this.messagesIdsEvent.messageIds).filter(Boolean) as string[])
-			: [];
+		const messageId: string[] =
+			resumeMessageIds ??
+			(this.messageIdsEvent
+				? (Object.values(this.messageIdsEvent.messageIds).filter(Boolean) as string[])
+				: []);
 
-		this.messagesIdsEvent = null;
+		this.messageIdsEvent = null;
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
-				resumeFromId:
-					(messageId.length ? undefined : resumeFromId) ?? this.queryParams.resumeFromId,
-				...(this.queryParams.keepOpen
-					? {
-							resultCountLimit: undefined,
-					  }
-					: {
-							resultCountLimit: this.chunkSize,
-					  }),
 				messageId,
 			},
 			type: this.type,
@@ -133,7 +128,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.channel.addEventListener('close', this.onClose);
 		this.channel.addEventListener('error', this._onError);
 		this.channel.addEventListener('keep_alive', this._onKeepAliveResponse);
-		this.channel.addEventListener('message_ids', this.onMessageIdsEvent);
+		this.channel.addEventListener('message_ids', this._onMessageIdsEvent);
 	};
 
 	private getInitialResponseWithinTimeout = (timeout: number): Promise<EventMessage[]> => {
@@ -154,7 +149,11 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		return nextChunk;
 	};
 
-	private onMessageIdsEvent = (e: Event) => {
-		this.messagesIdsEvent = e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
+	private _onMessageIdsEvent = (e: Event) => {
+		this.messageIdsEvent = e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
+
+		if (this.messageIdsEvent && this.eventListeners.onMessageIdsEvent) {
+			this.eventListeners.onMessageIdsEvent(this.messageIdsEvent);
+		}
 	};
 }

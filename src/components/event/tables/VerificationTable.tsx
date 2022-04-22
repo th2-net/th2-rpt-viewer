@@ -29,6 +29,7 @@ import '../../../styles/tables.scss';
 import { wrapString } from '../../../helpers/filters';
 import { FilterEntry } from '../../../stores/SearchStore';
 import { areArraysEqual } from '../../../helpers/array';
+import Popover from '../../util/Popover';
 
 const PADDING_LEVEL_VALUE = 10;
 
@@ -65,6 +66,13 @@ interface State {
 	nodes: TableNode[];
 	prevColumns: Array<React.RefObject<HTMLTableHeaderCellElement>>;
 	nextColumns: Array<React.RefObject<HTMLTableHeaderCellElement>>;
+	tooltip: Tooltip;
+}
+
+interface Tooltip {
+	target: HTMLElement | null;
+	message: string;
+	isOpen: boolean;
 }
 
 export interface TableNode extends VerificationPayloadField {
@@ -78,23 +86,14 @@ class VerificationTableBase extends React.Component<Props, State> {
 		nodes: this.props.nodes,
 		prevColumns: [],
 		nextColumns: [],
+		tooltip: {
+			target: null,
+			message: '',
+			isOpen: false,
+		},
 	};
 
-	constructor(props: Props) {
-		super(props);
-		this.state = {
-			nodes: props.target
-				? this.updateExpandPath(
-						props.target.path.slice(1).map(p => parseInt(p)),
-						props.nodes,
-				  )
-				: props.nodes,
-			prevColumns: [],
-			nextColumns: [],
-		};
-	}
-
-	columnsRefs: Array<React.RefObject<HTMLTableHeaderCellElement>> = Array(6)
+	columnsRefs: Array<React.RefObject<HTMLTableHeaderCellElement>> = Array(7)
 		.fill(null)
 		.map(() => React.createRef());
 
@@ -207,7 +206,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 
 	render() {
 		const { status, keyPrefix, precision } = this.props;
-		const { nodes } = this.state;
+		const { nodes, tooltip } = this.state;
 
 		const rootClass = createStyleSelector('ver-table', status);
 
@@ -266,10 +265,10 @@ class VerificationTableBase extends React.Component<Props, State> {
 								<th className='ver-table-flexible' ref={this.columnsRefs[0]}>
 									Name
 								</th>
-								<th className='ver-table-flexible' ref={this.columnsRefs[1]}>
+								<th className='ver-table-expected' ref={this.columnsRefs[1]}>
 									Expected
 								</th>
-								<th className='ver-table-flexible' ref={this.columnsRefs[2]}>
+								<th className='ver-table-actual' ref={this.columnsRefs[2]}>
 									Actual
 								</th>
 								<th className='ver-table-status' ref={this.columnsRefs[3]}>
@@ -281,6 +280,9 @@ class VerificationTableBase extends React.Component<Props, State> {
 								<th className='ver-table-key' ref={this.columnsRefs[5]}>
 									Key
 								</th>
+								<th className='ver-table-hint' ref={this.columnsRefs[6]}>
+									Hint
+								</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -290,6 +292,14 @@ class VerificationTableBase extends React.Component<Props, State> {
 						</tbody>
 					</table>
 				</div>
+				{tooltip && (
+					<Popover
+						isOpen={tooltip.isOpen}
+						anchorEl={tooltip.target}
+						onClickOutside={() => this.hideTooltip()}>
+						<div className='ver-table__tooltip'>{tooltip.message}</div>
+					</Popover>
+				)}
 			</div>
 		);
 	}
@@ -341,6 +351,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 			subEntries,
 			key: keyField,
 			operation,
+			hint,
 		} = node;
 
 		const isToggler = subEntries != null && subEntries.length > 0;
@@ -387,10 +398,11 @@ class VerificationTableBase extends React.Component<Props, State> {
 		const expectedValueClassName = createStyleSelector(
 			'ver-table-row-value',
 			isToggler ? 'notype' : null,
-			expected === 'null' ? 'novalue' : null,
 		);
 
 		const operationClassName = createStyleSelector('ver-table-row-operation', operation);
+
+		const hintClassName = createStyleSelector('ver-table-row-hint', hint ? 'visible' : null);
 
 		return (
 			<tr className={rootClassName} key={key}>
@@ -400,6 +412,13 @@ class VerificationTableBase extends React.Component<Props, State> {
 							{this.renderContent(`${key}-name`, name, path)}
 						</p>
 						<span className='ver-table-row-count'>{subEntries.length}</span>
+						<div className='ver-table-row-spacer' />
+						<div
+							onClick={e => hint && this.showTooltip(e, hint)}
+							title={hint}
+							className='ver-table-row-wrapper inner'>
+							{this.renderContent(`${key}-hint`, '', path, hintClassName)}
+						</div>
 					</td>
 				) : (
 					<td
@@ -465,10 +484,42 @@ class VerificationTableBase extends React.Component<Props, State> {
 							</div>
 						</td>
 						<td className={statusClassName}>{keyField && <div className='ver-table__check' />}</td>
+						<td className={actualClassName}>
+							<div
+								onClick={e => hint && this.showTooltip(e, hint)}
+								title={hint}
+								className='ver-table-row-wrapper'>
+								{this.renderContent(`${key}-hint`, '', path, hintClassName)}
+							</div>
+						</td>
 					</>
 				)}
 			</tr>
 		);
+	}
+
+	private hideTooltip(): void {
+		this.setState({
+			...this.state,
+			tooltip: {
+				target: null,
+				message: '',
+				isOpen: false,
+			},
+		});
+	}
+
+	private showTooltip(e: React.MouseEvent<HTMLDivElement>, message: string): void {
+		this.setState({
+			...this.state,
+			tooltip: {
+				target: e.currentTarget,
+				message,
+				isOpen: true,
+			},
+		});
+
+		e.stopPropagation();
 	}
 
 	/**
@@ -480,6 +531,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 	 * rendered if class name is null)
 	 * @param fakeContent - this text will be rendered when there is no search results found -
 	 *     it's needed to render fake dots and squares instead of real non-printable characters
+	 * @param isEmpty - confirms the absence of content in the cells
 	 */
 	private renderContent(
 		contentKey: string,
@@ -489,7 +541,8 @@ class VerificationTableBase extends React.Component<Props, State> {
 		fakeContent: string = content || '',
 	): React.ReactNode {
 		const { filters, target } = this.props;
-		const cellValue = content == null ? 'null' : fakeContent;
+		const cellValue =
+			content == null ? 'null' : content === undefined ? 'missing value' : fakeContent;
 
 		const inludingFilters = filters.filter(f => cellValue.includes(f));
 

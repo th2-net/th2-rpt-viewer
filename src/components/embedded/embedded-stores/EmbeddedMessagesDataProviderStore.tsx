@@ -24,6 +24,8 @@ import { isAbortError } from '../../../helpers/fetch';
 import { MessagesDataStore } from '../../../models/Stores';
 import MessagesUpdateStore from '../../../stores/messages/MessagesUpdateStore';
 import { MessagesSSEChannel } from '../../../stores/SSEChannel/MessagesSSEChannel';
+import { DirectionalStreamInfo } from '../../../models/StreamInfo';
+import { extractMessageIds } from '../../../helpers/streamInfo';
 
 const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
@@ -32,7 +34,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	private readonly messagesLimit = 250;
 
 	constructor(private messagesStore: EmbeddedMessagesStore, private api: ApiSchema) {
-		this.updateStore = new MessagesUpdateStore(this, this.messagesStore.scrollToMessage);
+		this.updateStore = new MessagesUpdateStore(this, this.messagesStore);
 
 		autorun(() => this.messagesStore.filterStore.filter && this.onFilterChange());
 	}
@@ -77,6 +79,9 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 	private lastNextChannelResponseTimestamp: number | null = null;
 
+	@observable
+	private isLoadingMessageIds = false;
+
 	@computed
 	public get isLoadingNextMessages(): boolean {
 		return Boolean(this.searchChannelNext?.isLoading);
@@ -89,7 +94,11 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 	@computed
 	public get isLoading(): boolean {
-		return this.isLoadingNextMessages || this.isLoadingPreviousMessages;
+		return (
+			this.isLoadingNextMessages ||
+			this.isLoadingPreviousMessages ||
+			Boolean(this.isLoadingMessageIds)
+		);
 	}
 
 	private messageAC: AbortController | null = null;
@@ -101,100 +110,134 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
+		this.resetMessagesDataState();
 
-		const queryParams = this.messagesStore.filterStore.filterParams;
+		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
+
+		const queryParams = this.getFilterParams();
 
 		this.createPreviousMessageChannelEventSource(
 			{
 				...queryParams,
 				searchDirection: 'previous',
 			},
-			SEARCH_TIME_FRAME,
+			{
+				interval: SEARCH_TIME_FRAME,
+				onClose: () =>
+					!this.searchChannelNext?.isLoading &&
+					!this.updateStore.isLoading &&
+					this.updateStore.subscribeOnChanges(),
+			},
 		);
 		this.createNextMessageChannelEventSource(
 			{
 				...queryParams,
 				searchDirection: 'next',
 			},
-			SEARCH_TIME_FRAME,
+			{
+				interval: SEARCH_TIME_FRAME,
+				onClose: () =>
+					!this.searchChannelPrev?.isLoading &&
+					!this.updateStore.isLoading &&
+					this.updateStore.subscribeOnChanges(),
+			},
 		);
 
-		let message: EventMessage | undefined;
-		if (this.searchChannelPrev && this.searchChannelNext) {
-			if (this.messagesStore.selectedMessageId) {
+		if (!this.searchChannelPrev || !this.searchChannelNext) return;
+
+		const startTimestamp = queryParams.startTimestamp;
+
+		let message: EventMessage | null = null;
+
+		this.isLoadingMessageIds = true;
+
+		let messageIds: DirectionalStreamInfo | undefined;
+
+		if (this.messagesStore.selectedMessageId) {
+			try {
 				this.messageAC = new AbortController();
-				try {
-					message = await this.api.messages.getMessage(
-						this.messagesStore.selectedMessageId.valueOf(),
-						this.messageAC.signal,
-					);
-				} catch (error) {
-					if (!isAbortError(error)) {
-						this.isError = true;
-						return;
-					}
+				message = await this.api.messages.getMessage(
+					this.messagesStore.selectedMessageId.valueOf(),
+					this.messageAC.signal,
+				);
+			} catch (error) {
+				if (!isAbortError(error)) {
+					this.isError = true;
+					return;
 				}
 			}
+		}
 
-			this.searchChannelNext.onStop = () =>
-				!this.searchChannelPrev?.isLoading &&
-				!this.updateStore.isLoading &&
-				this.updateStore.subscribeOnChanges();
-
-			this.searchChannelPrev.onStop = () =>
-				!this.searchChannelNext?.isLoading &&
-				!this.updateStore.isLoading &&
-				this.updateStore.subscribeOnChanges();
-
-			const [nextMessages, prevMessages] = await Promise.all([
-				this.searchChannelNext.loadAndSubscribe(message?.messageId),
-				this.searchChannelPrev.loadAndSubscribe(message?.messageId),
-			]);
-
-			const firstNextMessage = nextMessages[nextMessages.length - 1];
-
-			if (firstNextMessage && firstNextMessage.messageId === prevMessages[0]?.messageId) {
-				nextMessages.pop();
-			}
-
-			runInAction(() => {
-				const messages = [...nextMessages, ...[message].filter(isEventMessage), ...prevMessages];
-				this.messages = messages;
-				this.initialItemCount = messages.length;
+		try {
+			this.messageAC = new AbortController();
+			messageIds = await this.api.messages.getResumptionMessageIds({
+				streams: queryParams.stream,
+				abortSignal: this.messageAC.signal,
+				...(this.messagesStore.selectedMessageId
+					? { messageId: this.messagesStore.selectedMessageId.valueOf() }
+					: { startTimestamp }),
 			});
+		} catch (error) {
+			if (!isAbortError(error)) {
+				this.isError = true;
+				return;
+			}
+		} finally {
+			this.isLoadingMessageIds = false;
+		}
 
-			if (this.messagesStore.selectedMessageId) {
-				this.messagesStore.scrollToMessage(this.messagesStore.selectedMessageId?.valueOf());
-			} else {
-				const firstPrevMessage = prevMessages[0];
-				if (firstPrevMessage) {
-					this.messagesStore.scrollToMessage(firstPrevMessage.messageId);
-				}
+		if (!messageIds) return;
+
+		const [nextMessages, prevMessages] = await Promise.all([
+			this.searchChannelNext.loadAndSubscribe({
+				resumeMessageIds: extractMessageIds(messageIds.previous),
+			}),
+			this.searchChannelPrev.loadAndSubscribe({
+				resumeMessageIds: extractMessageIds(messageIds.next),
+			}),
+		]);
+
+		runInAction(() => {
+			const messages = [...nextMessages, ...[message].filter(isEventMessage), ...prevMessages];
+			this.messages = messages;
+			this.initialItemCount = messages.length;
+		});
+
+		if (this.messagesStore.selectedMessageId) {
+			this.messagesStore.scrollToMessage(this.messagesStore.selectedMessageId?.valueOf());
+		} else {
+			const firstPrevMessage = prevMessages[0];
+			if (firstPrevMessage) {
+				this.messagesStore.scrollToMessage(firstPrevMessage.messageId);
 			}
 		}
 	};
 
 	@action
-	public stopMessagesLoading = (isError = false) => {
+	public stopMessagesLoading = () => {
 		this.messageAC?.abort();
 		this.searchChannelPrev?.stop();
 		this.searchChannelNext?.stop();
+		this.isLoadingMessageIds = false;
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
 		this.updateStore.stopSubscription();
-		this.resetMessagesDataState(isError);
 	};
 
 	@action
 	private onLoadingError = (event: Event) => {
 		notificationsStore.handleSSEError(event);
-		this.stopMessagesLoading(true);
+		this.stopMessagesLoading();
+		this.resetMessagesDataState(true);
 	};
 
 	@action
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
-		interval?: number,
+		options?: {
+			onClose?: () => void;
+			interval?: number;
+		},
 	) => {
 		this.prevLoadEndTimestamp = null;
 
@@ -202,7 +245,15 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
 			onKeepAliveResponse:
-				typeof interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+				typeof options?.interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
+			...(options?.onClose
+				? {
+						onClose: messages => {
+							this.onPrevChannelResponse(messages);
+							options.onClose?.();
+						},
+				  }
+				: {}),
 		});
 	};
 
@@ -251,16 +302,30 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	};
 
 	@action
-	public createNextMessageChannelEventSource = (query: MessagesSSEParams, interval?: number) => {
+	public createNextMessageChannelEventSource = (
+		query: MessagesSSEParams,
+		options?: {
+			onClose?: () => void;
+			interval?: number;
+		},
+	) => {
 		this.nextLoadEndTimestamp = null;
 
 		this.searchChannelNext = new MessagesSSEChannel(query, {
 			onResponse: messages => {
 				this.onNextChannelResponse(messages);
-				if (query.keepOpen) this.messagesStore.scrollToMessage(messages[0].messageId);
 			},
 			onError: this.onLoadingError,
-			onKeepAliveResponse: typeof interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+			onKeepAliveResponse:
+				typeof options?.interval === 'number' ? this.onKeepAliveMessageNext : undefined,
+			...(options?.onClose
+				? {
+						onClose: messages => {
+							this.onNextChannelResponse(messages);
+							options.onClose?.();
+						},
+				  }
+				: {}),
 		});
 	};
 
@@ -307,21 +372,21 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	};
 
 	@action
-	public getPreviousMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
+	public getPreviousMessages = async (): Promise<EventMessage[]> => {
 		if (!this.searchChannelPrev || this.searchChannelPrev.isLoading) {
 			return [];
 		}
 
-		return this.searchChannelPrev.loadAndSubscribe(resumeFromId);
+		return this.searchChannelPrev.loadAndSubscribe();
 	};
 
 	@action
-	public getNextMessages = async (resumeFromId?: string): Promise<EventMessage[]> => {
+	public getNextMessages = async (): Promise<EventMessage[]> => {
 		if (!this.searchChannelNext || this.searchChannelNext.isLoading) {
 			return [];
 		}
 
-		return this.searchChannelNext.loadAndSubscribe(resumeFromId);
+		return this.searchChannelNext.loadAndSubscribe();
 	};
 
 	@action
@@ -332,7 +397,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	};
 
 	@action
-	private resetMessagesDataState = (isError = false) => {
+	public resetMessagesDataState = (isError = false) => {
 		this.initialItemCount = 0;
 		this.startIndex = 10000;
 		this.messages = [];
@@ -367,17 +432,11 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 		if (direction === 'previous') {
 			this.noMatchingMessagesPrev = false;
-			this.createPreviousMessageChannelEventSource({
-				...query,
-				resumeFromId: this.messages[this.messages.length - 1]?.messageId,
-			});
+			this.createPreviousMessageChannelEventSource(query);
 			this.searchChannelPrev.subscribe();
 		} else {
 			this.noMatchingMessagesNext = false;
-			this.createNextMessageChannelEventSource({
-				...query,
-				resumeFromId: this.messages[0]?.messageId,
-			});
+			this.createNextMessageChannelEventSource(query);
 			this.searchChannelNext.subscribe();
 		}
 	};

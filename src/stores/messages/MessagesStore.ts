@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, IReactionDisposer } from 'mobx';
+import { action, computed, observable, reaction, IReactionDisposer, runInAction } from 'mobx';
 import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
@@ -34,6 +34,7 @@ import MessagesFilterStore, { MessagesFilterStoreInitialState } from './Messages
 import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
+import { getItemAt } from '../../helpers/array';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -61,16 +62,7 @@ export default class MessagesStore {
 	public selectedMessageId: String | null = null;
 
 	@observable
-	public scrolledIndex: Number | null = null;
-
-	@observable
 	public highlightedMessageId: String | null = null;
-
-	@observable
-	public detailedRawMessagesIds: Array<string> = [];
-
-	@observable
-	public beautifiedMessages: Array<string> = [];
 
 	@observable
 	public currentMessagesIndexesRange: ListRange = {
@@ -85,10 +77,13 @@ export default class MessagesStore {
 
 	@observable selectedBodyBinaryFilter: FilterEntry | null = null;
 
+	@observable
+	public isFilteringTargetMessages = false;
+
 	/*
-		This is used for filter change hint. Represents either last clicked message
-		or attached messages
-	*/
+		 This is used for filter change hint. Represents either last clicked message
+		 or attached messages
+	 */
 	public hintMessages: EventMessage[] = [];
 
 	constructor(
@@ -110,8 +105,6 @@ export default class MessagesStore {
 			this.onAttachedMessagesChange,
 		);
 
-		reaction(() => this.selectedMessageId, this.onSelectedMessageIdChange);
-
 		reaction(() => this.hoveredMessage, this.onMessageHover);
 
 		reaction(() => this.filterStore.filter, this.exportStore.disableExport);
@@ -128,11 +121,16 @@ export default class MessagesStore {
 	}
 
 	@computed
+	public get isLoadingAttachedMessages() {
+		return this.workspaceStore.isLoadingAttachedMessages;
+	}
+
+	@computed
 	public get panelRange(): TimeRange {
 		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
 
-		const messageTo = this.dataStore.messages[startIndex];
-		const messageFrom = this.dataStore.messages[endIndex];
+		const messageTo = getItemAt(this.dataStore.messages, startIndex);
+		const messageFrom = getItemAt(this.dataStore.messages, endIndex);
 
 		if (messageFrom && messageTo) {
 			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
@@ -148,39 +146,6 @@ export default class MessagesStore {
 	}
 
 	@action
-	public showDetailedRawMessage = (messageId: string) => {
-		if (!this.detailedRawMessagesIds.includes(messageId)) {
-			this.detailedRawMessagesIds = [...this.detailedRawMessagesIds, messageId];
-		}
-	};
-
-	@action
-	public hideDetailedRawMessage = (messageId: string) => {
-		this.detailedRawMessagesIds = this.detailedRawMessagesIds.filter(id => id !== messageId);
-	};
-
-	@action
-	public beautify = (messageId: string) => {
-		if (!this.beautifiedMessages.includes(messageId)) {
-			this.beautifiedMessages = [...this.beautifiedMessages, messageId];
-		}
-	};
-
-	@action
-	public debeautify = (messageId: string) => {
-		this.beautifiedMessages = this.beautifiedMessages.filter(msgId => msgId !== messageId);
-	};
-
-	@action
-	public scrollToMessage = (messageId: string) => {
-		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === messageId);
-
-		if (messageIndex === -1) throw new Error(`Message with ${messageId} id doesn't exists`);
-
-		this.scrolledIndex = new Number(messageIndex);
-	};
-
-	@action
 	public applyFilter = (
 		filter: MessagesFilter,
 		sseFilters: MessageFilterState | null,
@@ -189,12 +154,17 @@ export default class MessagesStore {
 		if (sseFilters) {
 			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
 		}
+		if (
+			this.selectedMessageId &&
+			!this.workspaceStore.attachedMessagesIds.includes(this.selectedMessageId.valueOf())
+		) {
+			this.selectedMessageId = null;
+		}
 
 		this.exportStore.disableExport();
 		this.sessionsStore.saveSessions(filter.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
-		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
 		this.filterStore.setMessagesFilter(filter, sseFilters, isSoftFilterApplied);
 	};
@@ -215,7 +185,7 @@ export default class MessagesStore {
 			const message = defaultState.targetMessage;
 			if (isEventMessage(message)) {
 				this.selectedMessageId = new String(message.messageId);
-				this.highlightedMessageId = message.messageId;
+				this.highlightedMessageId = new String(message.messageId);
 				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 				this.workspaceStore.viewStore.activePanel = this;
 				if (defaultState.targetMessageBodyRange) {
@@ -230,53 +200,56 @@ export default class MessagesStore {
 	};
 
 	@action
-	private onSelectedMessageIdChange = (selectedMessageId: String | null) => {
-		if (selectedMessageId !== null) {
-			this.scrollToMessage(selectedMessageId.valueOf());
-		}
-	};
-
-	@action
 	public onMessageSelect = async (message: EventMessage) => {
-		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(message);
+		const shouldShowFilterHintBeforeRefetchingMessages = await this.handleFilterHint(message);
 
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
 			const streams = this.filterStore.filter.streams;
+
+			this.selectedMessageId = new String(message.messageId);
+			this.highlightedMessageId = new String(message.messageId);
+			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
+			this.hintMessages = [];
+			this.workspaceStore.viewStore.activePanel = this;
+
 			this.filterStore.resetMessagesFilter({
 				timestampFrom: null,
 				timestampTo: timestampToNumber(message.timestamp),
 				streams: [...new Set([...streams, message.sessionId])],
 			});
-			this.selectedMessageId = new String(message.messageId);
-			this.highlightedMessageId = message.messageId;
-			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
-			this.hintMessages = [];
-			this.workspaceStore.viewStore.activePanel = this;
 		}
 	};
 
 	@action
-	public onAttachedMessagesChange = (attachedMessages: EventMessage[]) => {
-		const shouldShowFilterHintBeforeRefetchingMessages = this.handleFilterHint(attachedMessages);
-
-		if (
-			this.dataStore.isLoadingNextMessages ||
-			this.dataStore.isLoadingPreviousMessages ||
-			shouldShowFilterHintBeforeRefetchingMessages
-		) {
-			return;
+	public selectAttachedMessage = (message: EventMessage) => {
+		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === message.messageId);
+		if (messageIndex !== -1) {
+			this.selectedMessageId = new String(message.messageId);
+			this.highlightedMessageId = new String(message.messageId);
+		} else {
+			this.onMessageSelect(message);
 		}
+	};
 
-		const mostRecentMessage = sortMessagesByTimestamp(attachedMessages)[0];
+	@action
+	public onAttachedMessagesChange = async (attachedMessages: EventMessage[]) => {
+		const shouldShowFilterHintBeforeRefetchingMessages = await this.handleFilterHint(
+			attachedMessages,
+		);
 
-		if (mostRecentMessage) {
-			const streams = this.filterStore.filter.streams;
-			this.filterStore.filter = {
-				...this.filterStore.filter,
-				streams: [...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)])],
-				timestampTo: timestampToNumber(mostRecentMessage.timestamp),
-			};
-			this.selectedMessageId = new String(mostRecentMessage.messageId);
+		if (!shouldShowFilterHintBeforeRefetchingMessages) {
+			const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
+			if (mostRecentMessage) {
+				const streams = this.filterStore.filter.streams;
+				this.selectedMessageId = new String(mostRecentMessage.messageId);
+				this.filterStore.filter = {
+					...this.filterStore.filter,
+					streams: [
+						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
+					],
+					timestampTo: timestampToNumber(mostRecentMessage.timestamp),
+				};
+			}
 		}
 	};
 
@@ -302,6 +275,7 @@ export default class MessagesStore {
 		this.hintMessages = [];
 		this.filterStore.resetMessagesFilter({ streams: this.filterStore.filter.streams });
 		this.dataStore.stopMessagesLoading();
+		this.dataStore.resetMessagesDataState();
 	};
 
 	@action
@@ -309,25 +283,30 @@ export default class MessagesStore {
 		This method handles message select or attached messages change events.
 		When those events occur we want to check if selected message or
 		attached messages match current filter and streams. If it doesn't match
-		filter change hint window is shown to a user. And it is up to him to decide
+		filter change hint window is shown to a user. And it is up to user to decide
 		if he wants to reset streams to message(s) streams and update filters
-	*/
-	private handleFilterHint = (message: EventMessage | EventMessage[]): boolean => {
+	 */
+	private handleFilterHint = async (message: EventMessage | EventMessage[]): Promise<boolean> => {
 		this.hintMessages = Array.isArray(message) ? message : [message];
+		const matchMessageParams = this.filterStore.filterParams;
 
-		if (this.hintMessages.length === 0) {
+		if (
+			this.hintMessages.length === 0 ||
+			(!matchMessageParams.filters?.length && !matchMessageParams.stream.length)
+		) {
 			this.showFilterChangeHint = false;
 			return this.showFilterChangeHint;
 		}
 
-		const sseFilter = this.filterStore.sseMessagesFilter;
-		const areFiltersApplied = [
-			sseFilter
-				? [sseFilter.attachedEventIds.values, sseFilter.body.values, sseFilter.type.values].flat()
-				: [],
-		].some(filterValues => filterValues.length > 0);
+		runInAction(() => (this.isFilteringTargetMessages = true));
 
-		this.showFilterChangeHint = areFiltersApplied;
+		const hintMessagesMatch = await Promise.all(
+			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.messageId, matchMessageParams)),
+		).finally(() => {
+			runInAction(() => (this.isFilteringTargetMessages = false));
+		});
+
+		this.showFilterChangeHint = hintMessagesMatch.some(isMatched => !isMatched);
 
 		return this.showFilterChangeHint;
 	};
@@ -341,17 +320,18 @@ export default class MessagesStore {
 
 		const targetMessage: EventMessage = sortMessagesByTimestamp(this.hintMessages)[0];
 
+		this.selectedMessageId = new String(targetMessage.messageId);
+		this.highlightedMessageId = new String(targetMessage.messageId);
+		this.showFilterChangeHint = false;
+		this.graphStore.setTimestamp(timestampToNumber(targetMessage.timestamp));
+
 		this.filterStore.resetMessagesFilter({
 			streams: [...new Set(this.hintMessages.map(({ sessionId }) => sessionId))],
 			timestampTo: timestampToNumber(targetMessage.timestamp),
 			timestampFrom: null,
 		});
-		this.graphStore.setTimestamp(timestampToNumber(targetMessage.timestamp));
 
 		this.hintMessages = [];
-		this.selectedMessageId = new String(targetMessage.messageId);
-		this.highlightedMessageId = targetMessage.messageId;
-		this.showFilterChangeHint = false;
 	};
 
 	// Unsubcribe from reactions
@@ -359,6 +339,7 @@ export default class MessagesStore {
 		this.attachedMessagesSubscription();
 		this.filterStore.dispose();
 		this.dataStore.stopMessagesLoading();
+		this.dataStore.resetMessagesDataState();
 	};
 
 	private onMessageHover = (hoveredMessage: EventMessage | null) => {

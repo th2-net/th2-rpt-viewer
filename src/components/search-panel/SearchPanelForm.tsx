@@ -64,10 +64,12 @@ const SearchPanelForm = () => {
 		isPaused,
 		eventAutocompleteList,
 		resetEventAutocompleteList,
+		clearFilters,
 	} = useSearchStore();
 
 	const [currentStream, setCurrentStream] = useState('');
 	const sessionsStore = useSessionsStore();
+	const searchStore = useSearchStore();
 	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
@@ -120,6 +122,7 @@ const SearchPanelForm = () => {
 		placeholder: 'matches events by the specified parent event id or event name',
 		autocompleteList: eventAutocompleteList.map(event => event.eventId),
 		onAutocompleteSelect: resetEventAutocompleteList,
+		isLoading: searchStore.isLoadingEventAutocompleteList,
 	};
 
 	const messagesFormTypeConfig: FitlerRowItem = {
@@ -175,7 +178,7 @@ const SearchPanelForm = () => {
 		previousTimeLimit: {
 			value:
 				isSearching && !timeLimits.previous && startTimestamp
-					? startTimestamp - progress.previous
+					? startTimestamp - Math.abs(progress.previous)
 					: timeLimits.previous,
 			setValue: nextValue =>
 				updateForm({ timeLimits: { ...form.timeLimits, previous: nextValue } }),
@@ -258,6 +261,14 @@ const SearchPanelForm = () => {
 					<SearchPanelFilters {...(filters as any)} type={formType} autocompletes={autocompletes} />
 				)}
 			</div>
+			{!disabled && (
+				<div className='search-panel__footer'>
+					<button className='search-panel__clear-btn' onClick={clearFilters}>
+						<i className='search-panel__clear-icon' />
+						Clear All
+					</button>
+				</div>
+			)}
 		</div>
 	);
 };

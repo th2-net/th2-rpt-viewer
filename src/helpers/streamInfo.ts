@@ -1,5 +1,5 @@
-/** *****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+/** ****************************************************************************
+ * Copyright 2021-2021 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	MultipleStringFilter,
-	SwitcherFilter,
-} from '../../components/search-panel/SearchPanelFilters';
+import { StreamInfo } from '../models/StreamInfo';
 
-export default interface EventsFilter {
-	attachedMessageId: MultipleStringFilter;
-	type: MultipleStringFilter;
-	body: MultipleStringFilter;
-	name: MultipleStringFilter;
-	status: SwitcherFilter;
-	text: MultipleStringFilter;
-}
+export const extractMessageId = ({ lastElement }: StreamInfo) => {
+	return lastElement;
+};
+
+export const extractMessageIds = (streamInfoList: StreamInfo[]) =>
+	streamInfoList.map(extractMessageId);

@@ -176,6 +176,7 @@ export class IndexedDB {
 		const db = await this.getDb();
 		const tx = await db.transaction(storeName, 'readwrite');
 		const store = await tx.objectStore(storeName);
+
 		await store.add(data);
 		await tx.done;
 	};

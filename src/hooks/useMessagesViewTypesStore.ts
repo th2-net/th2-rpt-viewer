@@ -11,19 +11,14 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  limitations under the License.
  ***************************************************************************** */
 
-import {
-	MultipleStringFilter,
-	SwitcherFilter,
-} from '../../components/search-panel/SearchPanelFilters';
+import { useWorkspaceStore } from '.';
+import MessagesViewTypesStore from '../stores/messages/MessagesViewTypesStore';
 
-export default interface EventsFilter {
-	attachedMessageId: MultipleStringFilter;
-	type: MultipleStringFilter;
-	body: MultipleStringFilter;
-	name: MultipleStringFilter;
-	status: SwitcherFilter;
-	text: MultipleStringFilter;
-}
+export const useMessagesViewTypesStore = (): MessagesViewTypesStore => {
+	const workspaceStore = useWorkspaceStore();
+
+	return workspaceStore.messageViewTypesStore;
+};

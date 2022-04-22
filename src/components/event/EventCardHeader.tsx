@@ -171,7 +171,13 @@ function EventCardHeader(props: Props) {
 					/>
 				)}
 			{!isUnknown && <div className='search-by-parent' onClick={onSearchClicked} />}
-			{!isUnknown && <div className={bookmarkClassName} onClick={onPinClicked} />}
+			{!isUnknown && (
+				<div
+					className={bookmarkClassName}
+					onClick={onPinClicked}
+					title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
+				/>
+			)}
 		</div>
 	);
 }

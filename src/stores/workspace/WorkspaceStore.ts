@@ -38,6 +38,8 @@ import RootStore from '../RootStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import { isAbortError } from '../../helpers/fetch';
 import { getObjectKeys } from '../../helpers/object';
+import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
+import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -60,6 +62,8 @@ export default class WorkspaceStore {
 
 	public messagesStore: MessagesStore;
 
+	public messageViewTypesStore: MessagesViewTypesStore;
+
 	public viewStore: WorkspaceViewStore;
 
 	public graphStore: GraphStore;
@@ -73,6 +77,7 @@ export default class WorkspaceStore {
 		private workspacesStore: WorkspacesStore,
 		private selectedStore: SelectedStore,
 		private sessionsStore: SessionsStore,
+		private messageDisplayRulesStore: MessageDisplayRulesStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
@@ -85,7 +90,11 @@ export default class WorkspaceStore {
 		this.viewStore = new WorkspaceViewStore({
 			panelsLayout: initialState.layout,
 		});
-		this.graphStore = new GraphStore(this.selectedStore, initialState.timeRange);
+		this.graphStore = new GraphStore(
+			this.selectedStore,
+			initialState.timeRange,
+			initialState.interval,
+		);
 		this.eventsStore = new EventsStore(
 			this,
 			this.graphStore,
@@ -103,6 +112,11 @@ export default class WorkspaceStore {
 			this.workspacesStore.filtersHistoryStore,
 			this.sessionsStore,
 			initialState.messages,
+		);
+
+		this.messageViewTypesStore = new MessagesViewTypesStore(
+			this.messageDisplayRulesStore,
+			this.messagesStore,
 		);
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
