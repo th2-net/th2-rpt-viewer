@@ -172,7 +172,7 @@
 			}
 		}
 
-		&.json {
+		&.json, &.json-metadata {
 			@include icon(url(../../resources/icons/json.svg));
 		}
 

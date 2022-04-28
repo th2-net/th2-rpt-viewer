@@ -50,7 +50,7 @@ export class SavedMessageViewType {
 			? declaredRule.viewType
 			: rootRule
 			? rootRule.viewType
-			: MessageViewType.JSON;
+			: MessageViewType.JSON_METADATA;
 	}
 
 	@observable

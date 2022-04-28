@@ -22,6 +22,7 @@ import { OrderRule } from '../stores/MessageDisplayRulesStore';
 
 export enum MessageViewType {
 	JSON = 'json',
+	JSON_METADATA = 'json-metadata',
 	FORMATTED = 'formatted',
 	ASCII = 'ASCII',
 	BINARY = 'binary',

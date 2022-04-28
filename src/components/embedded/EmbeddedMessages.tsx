@@ -37,7 +37,7 @@ const EmbeddedMessages = () => {
 	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
 
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
+	const [viewType, setViewType] = useState(MessageViewType.JSON_METADATA);
 
 	const renderMsg = (index: number, message: EventMessage) => {
 		return (

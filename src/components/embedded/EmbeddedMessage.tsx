@@ -21,7 +21,7 @@ import SplashScreen from '../SplashScreen';
 
 function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
+	const [viewType, setViewType] = useState(MessageViewType.JSON_METADATA);
 	const [errorStatus, setErrorStatus] = useState<string | null>(null);
 
 	useEffect(() => {

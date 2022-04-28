@@ -65,6 +65,7 @@ const MessageCardTools = ({
 	const viewTypes = message.body
 		? [
 				MessageViewType.JSON,
+				MessageViewType.JSON_METADATA,
 				MessageViewType.FORMATTED,
 				MessageViewType.BINARY,
 				MessageViewType.ASCII,
@@ -94,6 +95,7 @@ const MessageCardTools = ({
 				content = jsonToCopy ? JSON.stringify(jsonToCopy, null, 4) : '';
 				break;
 			case MessageViewType.JSON:
+			case MessageViewType.JSON_METADATA:
 				content = jsonToCopy ? JSON.stringify(jsonToCopy) : '';
 				break;
 			default:

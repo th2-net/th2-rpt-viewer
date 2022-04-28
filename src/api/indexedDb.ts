@@ -15,11 +15,12 @@
  ***************************************************************************** */
 
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
+import moment from 'moment';
 import { observable, when } from 'mobx';
 import { EventBookmark, MessageBookmark } from '../components/bookmarks/BookmarksPanel';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
-import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
-import { OrderRule } from '../stores/MessageDisplayRulesStore';
+import { MessageDisplayRule, MessageSortOrderItem, MessageViewType } from '../models/EventMessage';
+import { OrderRule, ROOT_DISPLAY_NAME_ID } from '../stores/MessageDisplayRulesStore';
 import { SearchHistory } from '../stores/SearchStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';
@@ -131,7 +132,7 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.SESSIONS_HISTORY]: 'session',
 };
 
-const dbVersion = 3;
+const dbVersion = 4;
 
 export class IndexedDB {
 	@observable
@@ -143,7 +144,7 @@ export class IndexedDB {
 
 	private async initDb() {
 		this.db = await openDB<TH2DB>(this.env, dbVersion, {
-			upgrade: async db => {
+			upgrade: async (db, _, newVersion) => {
 				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
 					const name = storeName as IndexedDbStores;
 					if (!db.objectStoreNames.contains(name)) {
@@ -151,6 +152,18 @@ export class IndexedDB {
 						store.createIndex('timestamp', 'timestamp');
 					}
 				});
+
+				if (newVersion === 4) {
+					this.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, {
+						id: ROOT_DISPLAY_NAME_ID,
+						session: '*',
+						viewType: MessageViewType.JSON_METADATA,
+						removable: false,
+						editableSession: false,
+						editableType: true,
+						timestamp: moment.utc().valueOf(),
+					});
+				}
 			},
 		});
 	}

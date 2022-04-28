@@ -30,7 +30,7 @@ const NewRule = ({ sessions }: NewRuleProps) => {
 	const rulesStore = useMessageDisplayRulesStore();
 
 	const [session, setSession] = useState('');
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
+	const [viewType, setViewType] = useState(MessageViewType.JSON_METADATA);
 
 	const submitHandler = (e: React.MouseEvent) => {
 		e.stopPropagation();

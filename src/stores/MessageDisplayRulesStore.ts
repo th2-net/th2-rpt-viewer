@@ -133,7 +133,7 @@ class MessageDisplayRulesStore {
 			rootDisplayRule = {
 				id: ROOT_DISPLAY_NAME_ID,
 				session: '*',
-				viewType: MessageViewType.JSON,
+				viewType: MessageViewType.JSON_METADATA,
 				removable: false,
 				editableSession: false,
 				editableType: true,

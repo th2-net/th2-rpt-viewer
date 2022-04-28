@@ -14,25 +14,82 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export default interface MessageBody {
-	metadata: {
-		id: {
-			connectionId: {
-				sessionAlias: string;
-			};
-			sequence: string;
+interface MessageMetadata {
+	id: {
+		connectionId: {
+			sessionAlias: string;
 		};
-		timestamp: string;
-		messageType: string;
+		sequence: string;
 	};
+	timestamp: string;
+	messageType: string;
+}
+
+export default interface MessageBody {
+	metadata: MessageMetadata;
 	fields: MessageBodyFields;
 }
 
 export type MessageBodyFields = { [key: string]: MessageBodyField };
 
+export function getMessageBodyFields(body: MessageBody | null): MessageBodyFields {
+	return {
+		fields: {
+			messageValue: {
+				fields: body?.fields || {},
+			},
+		},
+		metadata: {
+			...(body?.metadata
+				? {
+						messageValue: {
+							fields: toBodyFields(body.metadata),
+						},
+				  }
+				: { simpleValue: 'null' }),
+		},
+	};
+}
+
+const isPrimitive = (val: unknown): val is string | number | boolean => {
+	return !(typeof val === 'object' || typeof val === 'function');
+};
+
+function getField(value: unknown): MessageBodyField {
+	if (isPrimitive(value)) {
+		return {
+			simpleValue: value.toString(),
+		};
+	}
+
+	if (Array.isArray(value)) {
+		return {
+			listValue: {
+				values: value.map(getField),
+			},
+		};
+	}
+
+	return {
+		messageValue: {
+			fields: toBodyFields(value),
+		},
+	};
+}
+
+export function toBodyFields(obj: unknown): MessageBodyFields | undefined {
+	if (!obj) return undefined;
+	return Object.entries(obj as {}).reduce((acc, [key, value]) => {
+		return {
+			...acc,
+			[key]: getField(value),
+		};
+	}, {} as MessageBodyFields);
+}
+
 export type ListValueField = {
 	listValue: {
-		values?: Array<MessageValueField>;
+		values?: Array<MessageBodyField>;
 	};
 };
 

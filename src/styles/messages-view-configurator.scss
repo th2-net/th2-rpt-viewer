@@ -230,7 +230,7 @@
 	outline: none;
 	width: 16px;
 	height: 16px;
-	&.json {
+	&.json, &.json-metadata {
 		@include icon(url(../../resources/icons/json.svg));
 		background-position: 1.5px 3px;
 	}

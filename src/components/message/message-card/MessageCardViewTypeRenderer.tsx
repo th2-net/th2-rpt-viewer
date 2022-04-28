@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { MessageViewType } from '../../../models/EventMessage';
-import MessageBody from '../../../models/MessageBody';
+import MessageBody, { getMessageBodyFields } from '../../../models/MessageBody';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import SimpleMessageRaw from './raw/SimpleMessageRaw';
@@ -42,7 +42,14 @@ const MessageCardViewTypeRenderer = ({
 	messageBody,
 	sortOrderItems,
 }: MessageCardViewTypeRendererProps) => {
+	const jsonBody = React.useMemo(() => {
+		return viewType === MessageViewType.JSON_METADATA
+			? getMessageBodyFields(messageBody)
+			: messageBody?.fields || null;
+	}, [messageBody, viewType]);
+
 	switch (viewType) {
+		case MessageViewType.JSON_METADATA:
 		case MessageViewType.FORMATTED:
 		case MessageViewType.JSON:
 			return (
@@ -51,13 +58,13 @@ const MessageCardViewTypeRenderer = ({
 						<MessageBodyCardFallback
 							isBeautified={isBeautified}
 							isSelected={isSelected}
-							body={messageBody}
+							body={jsonBody}
 							sortOrderItems={sortOrderItems}
 						/>
 					}>
 					<MessageBodyCard
 						isBeautified={isBeautified}
-						body={messageBody}
+						body={jsonBody}
 						isSelected={isSelected}
 						sortOrderItems={sortOrderItems}
 					/>

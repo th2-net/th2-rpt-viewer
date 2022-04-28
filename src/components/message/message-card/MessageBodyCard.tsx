@@ -18,7 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import debounce from 'lodash.debounce';
 import { createBemElement } from '../../../helpers/styleCreators';
-import MessageBody, {
+import {
 	isSimpleValue,
 	MessageBodyField,
 	isListValue,
@@ -32,7 +32,7 @@ const SELECTED_HIGHLIGHT_COLOR = '#fff';
 
 interface Props {
 	isBeautified: boolean;
-	body: MessageBody | null;
+	body: MessageBodyFields | null;
 	isSelected: boolean;
 	sortOrderItems: string[];
 }
@@ -44,7 +44,7 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 
 	const secondarySortedFields: [string, MessageBodyField][] = Object.entries(fields)
 		.filter(([key]) => key.includes('-') && !sortOrder.includes(key))
-		.sort((a: [string, MessageBodyField], b: [string, MessageBodyField]) => {
+		.sort((a, b) => {
 			const [keyA] = a;
 			const [keyB] = b;
 			return +keyA.charAt(keyA.length - 1) > +keyB.charAt(keyB.length - 1) ? 1 : -1;
@@ -54,7 +54,7 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 
 	const tertiarySortedFields: [string, MessageBodyField][] = Object.entries(fields)
 		.filter(([key]) => !sortOrder.includes(key) && !secondarySortedKeys.includes(key))
-		.sort((a: [string, MessageBodyField], b: [string, MessageBodyField]) => {
+		.sort((a, b) => {
 			const [keyA] = a;
 			const [keyB] = b;
 			return keyA.toLowerCase() > keyB.toLowerCase() ? 1 : -1;
@@ -66,10 +66,10 @@ const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
 function MessageBodyCard({ isBeautified, body, isSelected, sortOrderItems }: Props) {
 	const [areSameContext, highlightSameContext] = React.useState(false);
 
-	const fields = React.useMemo(
-		() => getSortedFields(body?.fields ? body.fields : {}, sortOrderItems),
-		[body, sortOrderItems],
-	);
+	const fields = React.useMemo(() => getSortedFields(body || {}, sortOrderItems), [
+		body,
+		sortOrderItems,
+	]);
 
 	if (body == null) {
 		return <pre className='mc-body__human'>null</pre>;
