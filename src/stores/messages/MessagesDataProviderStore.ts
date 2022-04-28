@@ -66,9 +66,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public startIndex = 10000;
 
 	@observable
-	public initialItemCount = 0;
-
-	@observable
 	public isSoftFiltered: Map<string, boolean> = new Map();
 
 	@observable
@@ -189,7 +186,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				...prevMessages,
 			];
 			this.messages = messages;
-			this.initialItemCount = messages.length;
 		});
 
 		if (!this.messagesStore.selectedMessageId) {
@@ -383,7 +379,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 	@action
 	public resetMessagesDataState = (isError = false) => {
-		this.initialItemCount = 0;
 		this.startIndex = 10000;
 		this.messages = [];
 		this.isError = isError;
