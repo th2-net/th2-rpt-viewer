@@ -218,21 +218,12 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
 		requestTimeoutMs?: number,
-		onCloseHandler?: () => void,
 	) => {
-		const onClose =
-			onCloseHandler &&
-			((messages: EventMessage[]) => {
-				this.onPrevChannelResponse(messages);
-				onCloseHandler();
-			});
-
 		this.searchChannelPrev = new MessagesSSEChannel(query, {
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
 			onKeepAliveResponse: heartbeat =>
 				this.onKeepAliveMessagePrevious(heartbeat, requestTimeoutMs),
-			onClose,
 		});
 	};
 
@@ -286,19 +277,11 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public createNextMessageChannelEventSource = (
 		query: MessagesSSEParams,
 		requestTimeoutMs?: number,
-		onCloseHandler?: () => void,
 	) => {
-		const onClose =
-			onCloseHandler &&
-			((messages: EventMessage[]) => {
-				this.onNextChannelResponse(messages);
-				onCloseHandler();
-			});
 		this.searchChannelNext = new MessagesSSEChannel(query, {
 			onResponse: this.onNextChannelResponse,
 			onError: this.onLoadingError,
 			onKeepAliveResponse: hearbeat => this.onKeepAliveMessageNext(hearbeat, requestTimeoutMs),
-			onClose,
 		});
 	};
 
@@ -424,53 +407,47 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			return;
 
 		if (!this.prevLoadHeartbeat && !this.nextLoadHeartbeat)
-			throw new Error('Load could not continue because loadHeathbeat is missing');
-
-		const queryParams = this.messagesStore.filterStore.filterParams;
-
-		const { stream, endTimestamp, resultCountLimit } = queryParams;
+			throw new Error('Load could not continue because loadHeartbeat is missing');
 
 		const keepLoadingStartTimestamp =
 			direction === 'previous'
 				? this.prevLoadHeartbeat!.timestamp
 				: this.nextLoadHeartbeat!.timestamp;
 
-		const query: MessagesSSEParams = this.messagesStore.filterStore.isSoftFilter
-			? {
-					startTimestamp: keepLoadingStartTimestamp,
-					stream,
-					searchDirection: direction,
-					endTimestamp,
-					resultCountLimit,
-			  }
-			: {
-					...queryParams,
-					startTimestamp: keepLoadingStartTimestamp,
-					searchDirection: direction,
-			  };
+		const defaultHearbeat = {
+			timestamp: keepLoadingStartTimestamp,
+			scanCounter: 0,
+			id: '',
+		};
 
 		if (direction === 'previous') {
-			this.prevLoadHeartbeat = {
-				timestamp: keepLoadingStartTimestamp,
-				scanCounter: 0,
-				id: '',
-			};
+			this.prevLoadHeartbeat = defaultHearbeat;
 		} else {
-			this.nextLoadHeartbeat = {
-				timestamp: keepLoadingStartTimestamp,
-				scanCounter: 0,
-				id: '',
-			};
+			this.nextLoadHeartbeat = defaultHearbeat;
 		}
 
 		if (direction === 'previous') {
 			this.noMatchingMessagesPrev = false;
-			this.createPreviousMessageChannelEventSource(query);
-			this.searchChannelPrev.subscribe();
+			const idsMap = this.messages
+				.slice(Math.max(0, this.messages.length - 20))
+				.reduce((map, m) => ({ ...map, [m.messageId]: true }), {} as Record<string, boolean>);
+			this.searchChannelPrev.refetch({
+				onResponse: messages =>
+					this.onPrevChannelResponse(messages.filter(m => !idsMap[m.messageId])),
+				onError: this.onLoadingError,
+				onKeepAliveResponse: heartbeat => this.onKeepAliveMessagePrevious(heartbeat),
+			});
 		} else {
 			this.noMatchingMessagesNext = false;
-			this.createNextMessageChannelEventSource(query);
-			this.searchChannelNext.subscribe();
+			const idsMap = this.messages
+				.slice(0, 20)
+				.reduce((map, m) => ({ ...map, [m.messageId]: true }), {} as Record<string, boolean>);
+			this.searchChannelNext.refetch({
+				onResponse: messages =>
+					this.onNextChannelResponse(messages.filter(m => !idsMap[m.messageId])),
+				onError: this.onLoadingError,
+				onKeepAliveResponse: heartbeat => this.onKeepAliveMessageNext(heartbeat),
+			});
 		}
 	};
 

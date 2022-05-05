@@ -31,7 +31,7 @@ export type MessageSSEEventListeners = SSEEventListeners<EventMessage> & {
 export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	private readonly type: SSEChannelType = 'message';
 
-	private messageIdsEvent: MessageIdsEvent | null = null;
+	private messageIds: string[] = [];
 
 	constructor(
 		private queryParams: MessagesSSEParams,
@@ -42,6 +42,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	}
 
 	public subscribe = (resumeMessageIds?: string[]): void => {
+		this.messageIds = resumeMessageIds || this.messageIds;
 		this.initConnection(resumeMessageIds);
 		this.initUpdateScheduler();
 	};
@@ -57,7 +58,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 
 	@action
 	protected onClose = () => {
-		const isEndReached = !(this.fetchedEventsCount > 0);
+		const isEndReached = this.fetchedEventsCount === 0;
 
 		if (this.fetchedChunkSubscription == null) {
 			const chunk = this.getNextChunk();
@@ -108,18 +109,12 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.closeChannel();
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
+		this.messageIds = resumeMessageIds || this.messageIds;
 
-		const messageId: string[] =
-			resumeMessageIds ??
-			(this.messageIdsEvent
-				? (Object.values(this.messageIdsEvent.messageIds).filter(Boolean) as string[])
-				: []);
-
-		this.messageIdsEvent = null;
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
-				messageId,
+				messageId: this.messageIds,
 			},
 			type: this.type,
 		});
@@ -150,10 +145,16 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	};
 
 	private _onMessageIdsEvent = (e: Event) => {
-		this.messageIdsEvent = e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
-
-		if (this.messageIdsEvent && this.eventListeners.onMessageIdsEvent) {
-			this.eventListeners.onMessageIdsEvent(this.messageIdsEvent);
+		const messagesIdsEvent: MessageIdsEvent =
+			e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
+		this.messageIds = Object.values(messagesIdsEvent.messageIds).filter(Boolean) as string[];
+		if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
+			this.eventListeners.onMessageIdsEvent(messagesIdsEvent);
 		}
 	};
+
+	public refetch(eventListeners?: MessageSSEEventListeners) {
+		this.eventListeners = eventListeners || this.eventListeners;
+		this.subscribe();
+	}
 }
