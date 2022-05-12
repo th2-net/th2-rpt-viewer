@@ -41,7 +41,7 @@ export const MessageHeader = React.memo((props: MessageInfoProps) => {
 		direction?.toLowerCase(),
 	);
 
-	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
+	const formattedTimestamp = formatTime(timestamp);
 	return (
 		<div className='mc-header__info'>
 			<span

@@ -26,6 +26,7 @@ import {
 	SSEFilterInfo,
 	SSEHeartbeat,
 	SSEParams,
+	toStream,
 } from '../api/sse';
 import { DbData, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
@@ -35,7 +36,7 @@ import {
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { getTimestampAsNumber } from '../helpers/date';
-import { getItemId, isEventId, isEventMessage, isEventNode } from '../helpers/event';
+import { getItemId, isEventId, isEventMessage, isEventNode, isEventAction } from '../helpers/event';
 import {
 	getDefaultEventsFiltersState,
 	getDefaultMessagesFiltersState,
@@ -546,11 +547,12 @@ export class SearchStore {
 		);
 
 		const startDirectionalSearch = (direction: SSESearchDirection) => {
+			const endTimestamp = timeLimits[direction];
 			const params = {
-				startTimestamp: _startTimestamp,
+				startTimestamp: _startTimestamp ? new Date(_startTimestamp).toISOString() : _startTimestamp,
 				searchDirection: direction,
 				resultCountLimit,
-				endTimestamp: timeLimits[direction],
+				endTimestamp: endTimestamp ? new Date(endTimestamp).toISOString() : endTimestamp,
 				filters: filtersToAdd,
 				...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
 			};
@@ -655,7 +657,22 @@ export class SearchStore {
 		if (this.currentSearch) {
 			const data = (ev as MessageEvent).data;
 			const parsedEvent: SearchResult | SSEHeartbeat = JSON.parse(data);
-			this.searchChunk.push({ ...parsedEvent, searchDirection });
+			if (isEventAction(parsedEvent)) {
+				this.searchChunk.push({
+					...parsedEvent,
+					startTimestamp: moment(parsedEvent.startTimestamp).valueOf(),
+					endTimestamp: moment(parsedEvent.endTimestamp).valueOf(),
+					searchDirection,
+				});
+			} else if (isEventMessage(parsedEvent)) {
+				this.searchChunk.push({
+					...parsedEvent,
+					timestamp: moment(parsedEvent.timestamp).valueOf(),
+					searchDirection,
+				});
+			} else {
+				this.searchChunk.push({ ...parsedEvent, searchDirection });
+			}
 
 			if (
 				this.searchChunk.length >= SEARCH_CHUNK_SIZE ||

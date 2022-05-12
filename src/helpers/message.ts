@@ -31,9 +31,9 @@ export const sortMessagesByTimestamp = (
 	const copiedMessages = messages.slice();
 	copiedMessages.sort((mesA, mesB) => {
 		if (order === 'desc') {
-			return timestampToNumber(mesB.timestamp) - timestampToNumber(mesA.timestamp);
+			return mesB.timestamp - mesA.timestamp;
 		}
-		return timestampToNumber(mesA.timestamp) - timestampToNumber(mesB.timestamp);
+		return mesA.timestamp - mesB.timestamp;
 	});
 	return copiedMessages;
 };

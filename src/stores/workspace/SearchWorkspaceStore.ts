@@ -82,7 +82,7 @@ export default class SearchWorkspaceStore {
 			initialWorkspaceState.layout = [100, 0];
 		} else {
 			initialWorkspaceState.messages = {
-				timestampTo: timestampToNumber(savedItem.timestamp),
+				timestampTo: savedItem.timestamp,
 				timestampFrom: null,
 				streams: [savedItem.sessionId],
 				targetMessage: savedItem,
@@ -100,12 +100,12 @@ export default class SearchWorkspaceStore {
 
 		if (isEventMessage(resultItem)) {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(
-				timestampToNumber(resultItem.timestamp),
+				resultItem.timestamp,
 				resultItem,
 			);
 		} else {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(
-				timestampToNumber(resultItem.startTimestamp),
+				resultItem.startTimestamp,
 				resultItem,
 			);
 		}

@@ -54,8 +54,8 @@ const messageHttpApi: MessageApiSchema = {
 			timelineDirection,
 			messageId: messageId.length > 0 ? messageId : null,
 			limit,
-			timestampFrom,
-			timestampTo,
+			timestampFrom: timestampFrom ? new Date(timestampFrom).toISOString() : null,
+			timestampTo: timestampTo ? new Date(timestampTo).toISOString() : null,
 			stream: streams,
 		});
 
@@ -74,8 +74,8 @@ const messageHttpApi: MessageApiSchema = {
 	getMessagesIds: async (timestampFrom, timestampTo) => {
 		const params = createURLSearchParams({
 			idsOnly: true,
-			timestampFrom,
-			timestampTo,
+			timestampFrom: timestampFrom ? new Date(timestampFrom).toISOString() : null,
+			timestampTo: timestampTo ? new Date(timestampTo).toISOString() : null,
 		});
 		const res = await fetch(`backend/search/messages?${params}`);
 

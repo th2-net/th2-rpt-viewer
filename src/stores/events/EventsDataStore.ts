@@ -506,7 +506,7 @@ export default class EventsDataStore {
 			try {
 				this.targetEventAC = new AbortController();
 				const event = await this.api.events.getEvent(targetEventId, this.targetEventAC.signal);
-				const targetEventTimestamp = timestampToNumber(event.startTimestamp);
+				const targetEventTimestamp = event.startTimestamp;
 				// TODO: add filtering too see if target event matches current filter
 				if (
 					targetEventTimestamp < this.filterStore.timestampFrom ||

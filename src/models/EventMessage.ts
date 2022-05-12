@@ -14,8 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { Timestamp } from './Timestamp';
-import MessageBody from './MessageBody';
+import { MessageBody } from './MessageBody';
 import { ActionType } from './EventAction';
 import { notEmpty } from '../helpers/object';
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
@@ -47,8 +46,8 @@ export interface MessageDisplayRule {
 export interface EventMessage {
 	type: ActionType.MESSAGE;
 	messageType: string;
-	messageId: string;
-	timestamp: Timestamp;
+	id: string;
+	timestamp: number;
 	direction: string;
 	sessionId: string;
 	body: MessageBody | null;

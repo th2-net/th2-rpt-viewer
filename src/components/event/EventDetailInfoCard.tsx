@@ -47,8 +47,6 @@ function EventDetailInfoCard(props: Props) {
 	const { isUnknown } = node;
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
-	const startTimestampValue = startTimestamp && timestampToNumber(startTimestamp);
-	const endTimestampValue = endTimestamp && timestampToNumber(endTimestamp);
 
 	const isBookmarked =
 		selectedStore.bookmarkedEvents.findIndex(
@@ -101,9 +99,9 @@ function EventDetailInfoCard(props: Props) {
 							className='event-card__timestamp'
 							onMouseEnter={onMouseEnter}
 							onMouseLeave={onMouseLeave}>
-							{formatTime(startTimestampValue)}
-							{endTimestampValue && endTimestampValue !== startTimestampValue ? (
-								<> &ndash; {formatTime(endTimestampValue)}</>
+							{formatTime(startTimestamp)}
+							{endTimestamp && endTimestamp !== startTimestamp ? (
+								<> &ndash; {formatTime(endTimestamp)}</>
 							) : null}
 						</div>
 					</div>
