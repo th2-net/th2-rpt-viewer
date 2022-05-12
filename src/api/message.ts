@@ -56,7 +56,7 @@ const messageHttpApi: MessageApiSchema = {
 			limit,
 			timestampFrom: timestampFrom ? new Date(timestampFrom).toISOString() : null,
 			timestampTo: timestampTo ? new Date(timestampTo).toISOString() : null,
-			stream: streams,
+			stream: streams.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
 		});
 
 		const res = await fetch(`backend/search/messages?${params}`, {

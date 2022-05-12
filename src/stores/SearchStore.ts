@@ -596,7 +596,12 @@ export class SearchStore {
 			}
 
 			const queryParams: SSEParams =
-				this.formType === 'event' ? { ...params, parentEvent } : { ...params, stream };
+				this.formType === 'event'
+					? { ...params, parentEvent }
+					: {
+							...params,
+							stream: stream.flatMap(s => [`${s}:first`, `${s}:second`]),
+					};
 
 			const searchChannel = this.api.sse.getEventSource({
 				type: this.formType,

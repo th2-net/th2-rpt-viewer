@@ -173,7 +173,7 @@ export function getMessagesSSEParamsFromFilter(
 	const queryParams: MessagesSSEParams = {
 		startTimestamp: startTimestamp ? new Date(startTimestamp).toISOString() : startTimestamp,
 		endTimestamp: endTimestamp ? new Date(endTimestamp).toISOString() : endTimestamp,
-		stream: streams,
+		stream: streams.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
 		searchDirection,
 		resultCountLimit,
 		filters: filtersToAdd,
