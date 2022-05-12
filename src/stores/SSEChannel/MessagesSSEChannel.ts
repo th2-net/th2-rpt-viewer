@@ -120,6 +120,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
+				stream: this.queryParams.stream.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
 				messageId: this.messageIds,
 			},
 			type: this.type,
