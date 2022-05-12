@@ -129,7 +129,11 @@ const messageHttpApi: MessageApiSchema = {
 			throw new Error('One of startTimestamp or messageId must be specified');
 		}
 
-		const params = createURLSearchParams({ stream: streams, startTimestamp, messageId });
+		const params = createURLSearchParams({
+			stream: streams.flatMap(stream => [`${stream}:first`, `${stream}:second`]),
+			startTimestamp: startTimestamp ? new Date(startTimestamp).toISOString() : startTimestamp,
+			messageId,
+		});
 		const res = await fetch(`backend/messageIds/?${params}`, { signal });
 		if (res.ok) return res.json();
 
