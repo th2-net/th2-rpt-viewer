@@ -14,10 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import moment from 'moment';
 import { ActionType, EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { EventStatus } from '../models/Status';
-import { getTimestampAsNumber, timestampToNumber } from './date';
+import { getTimestampAsNumber } from './date';
 
 export function getMinifiedStatus(status: string): string {
 	return status
@@ -51,9 +52,9 @@ export function sortEventsByTimestamp(
 	const copiedEvents = eventNodes.slice();
 	copiedEvents.sort((eventA, eventB) => {
 		if (order === 'desc') {
-			return timestampToNumber(eventB.startTimestamp) - timestampToNumber(eventA.startTimestamp);
+			return eventB.startTimestamp - eventA.startTimestamp;
 		}
-		return timestampToNumber(eventA.startTimestamp) - timestampToNumber(eventB.startTimestamp);
+		return eventA.startTimestamp - eventB.startTimestamp;
 	});
 	return copiedEvents;
 }
@@ -122,8 +123,8 @@ export const convertEventActionToEventTreeNode = (event: EventAction): EventTree
 		eventId: event.eventId,
 		eventName: event.eventName,
 		eventType: event.eventType,
-		startTimestamp: event.startTimestamp,
-		endTimestamp: event.endTimestamp,
+		startTimestamp: moment(event.startTimestamp).valueOf(),
+		endTimestamp: event.endTimestamp ? moment(event.endTimestamp).valueOf() : event.endTimestamp,
 		successful: event.successful,
 		parentId: event.parentEventId,
 		type: ActionType.EVENT_TREE_NODE,
@@ -138,14 +139,8 @@ export const getErrorEventTreeNode = (eventId: string): EventTreeNode => {
 		eventName: eventId,
 		eventType: 'eventTreeNode',
 		parentId: 'unknown-root',
-		startTimestamp: {
-			nano: 0,
-			epochSecond: 0,
-		},
-		endTimestamp: {
-			nano: 0,
-			epochSecond: 0,
-		},
+		startTimestamp: 0,
+		endTimestamp: 0,
 		successful: false,
 	};
 };
@@ -157,10 +152,7 @@ export const unknownRoot: EventTreeNode = {
 	eventName: 'Unknown Events',
 	eventType: 'eventTreeNode',
 	parentId: null,
-	startTimestamp: {
-		nano: 0,
-		epochSecond: 0,
-	},
+	startTimestamp: 0,
 	successful: false,
 };
 

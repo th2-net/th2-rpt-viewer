@@ -19,7 +19,6 @@ import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
-import { timestampToNumber } from '../../helpers/date';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';
@@ -133,7 +132,7 @@ export default class MessagesStore {
 		const messageFrom = getItemAt(this.dataStore.messages, endIndex);
 
 		if (messageFrom && messageTo) {
-			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
+			return [messageFrom.timestamp, messageTo.timestamp];
 		}
 		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
 		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];
@@ -186,7 +185,7 @@ export default class MessagesStore {
 			if (isEventMessage(message)) {
 				this.selectedMessageId = new String(message.messageId);
 				this.highlightedMessageId = new String(message.messageId);
-				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
+				this.graphStore.setTimestamp(message.timestamp);
 				this.workspaceStore.viewStore.activePanel = this;
 				if (defaultState.targetMessageBodyRange) {
 					this.selectedBodyFilter = defaultState.targetMessageBodyRange;
@@ -208,13 +207,13 @@ export default class MessagesStore {
 
 			this.selectedMessageId = new String(message.messageId);
 			this.highlightedMessageId = new String(message.messageId);
-			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
+			this.graphStore.setTimestamp(message.timestamp);
 			this.hintMessages = [];
 			this.workspaceStore.viewStore.activePanel = this;
 
 			this.filterStore.resetMessagesFilter({
 				timestampFrom: null,
-				timestampTo: timestampToNumber(message.timestamp),
+				timestampTo: message.timestamp,
 				streams: [...new Set([...streams, message.sessionId])],
 			});
 		}
@@ -247,7 +246,7 @@ export default class MessagesStore {
 					streams: [
 						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
 					],
-					timestampTo: timestampToNumber(mostRecentMessage.timestamp),
+					timestampTo: mostRecentMessage.timestamp,
 				};
 			}
 		}
@@ -323,11 +322,11 @@ export default class MessagesStore {
 		this.selectedMessageId = new String(targetMessage.messageId);
 		this.highlightedMessageId = new String(targetMessage.messageId);
 		this.showFilterChangeHint = false;
-		this.graphStore.setTimestamp(timestampToNumber(targetMessage.timestamp));
+		this.graphStore.setTimestamp(targetMessage.timestamp);
 
 		this.filterStore.resetMessagesFilter({
 			streams: [...new Set(this.hintMessages.map(({ sessionId }) => sessionId))],
-			timestampTo: timestampToNumber(targetMessage.timestamp),
+			timestampTo: targetMessage.timestamp,
 			timestampFrom: null,
 		});
 
@@ -344,7 +343,7 @@ export default class MessagesStore {
 
 	private onMessageHover = (hoveredMessage: EventMessage | null) => {
 		if (hoveredMessage !== null) {
-			this.graphStore.setTimestamp(timestampToNumber(hoveredMessage.timestamp));
+			this.graphStore.setTimestamp(hoveredMessage.timestamp);
 		}
 	};
 }

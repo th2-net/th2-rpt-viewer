@@ -171,8 +171,8 @@ export function getMessagesSSEParamsFromFilter(
 	);
 
 	const queryParams: MessagesSSEParams = {
-		startTimestamp,
-		endTimestamp: endTimestamp || undefined,
+		startTimestamp: startTimestamp ? new Date(startTimestamp).toISOString() : startTimestamp,
+		endTimestamp: endTimestamp ? new Date(endTimestamp).toISOString() : endTimestamp,
 		stream: streams,
 		searchDirection,
 		resultCountLimit,
@@ -186,14 +186,22 @@ export function getMessagesSSEParamsFromFilter(
 const sseApi: SSESchema = {
 	getEventSource: config => {
 		const { type, queryParams } = config;
-		const params = createURLSearchParams({ ...queryParams });
+		const params = createURLSearchParams({
+			...queryParams,
+			startTimestamp: queryParams.startTimestamp
+				? new Date(queryParams.startTimestamp).toISOString()
+				: null,
+			endTimestamp: queryParams.endTimestamp
+				? new Date(queryParams.endTimestamp).toISOString()
+				: null,
+		});
 		return new EventSource(`backend/search/sse/${type}s/?${params}`);
 	},
 	getEventsTreeSource: (timeRange, filter, sseParams) => {
 		const paramFromFilter = filter ? getEventsSSEParamsFromFilter(filter) : {};
 		const params = createURLSearchParams({
-			startTimestamp: timeRange[0],
-			endTimestamp: timeRange[1],
+			startTimestamp: new Date(timeRange[0]).toISOString(),
+			endTimestamp: new Date(timeRange[1]).toISOString(),
 			...paramFromFilter,
 			...sseParams,
 		});

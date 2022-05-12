@@ -23,7 +23,7 @@ import { EventAction, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
 import { isEvent, isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
-import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
+import { getRangeFromTimestamp } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
 import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';
@@ -213,22 +213,22 @@ export default class EventsStore {
 
 		const timestamps = {
 			startEventId: firstKnownEvent.eventId,
-			startTimestamp: timestampToNumber(firstKnownEvent.startTimestamp),
+			startTimestamp: firstKnownEvent.startTimestamp,
 			endEventId: firstKnownEvent.eventId,
-			endTimestamp: timestampToNumber(firstKnownEvent.startTimestamp),
+			endTimestamp: firstKnownEvent.startTimestamp,
 		};
 
 		const eventNodes = this.getNodesList(firstKnownEvent, []);
 
 		if (eventNodes.length > 1 && eventNodes[1]) {
-			timestamps.startTimestamp = timestampToNumber(eventNodes[1].startTimestamp);
+			timestamps.startTimestamp = eventNodes[1].startTimestamp;
 			timestamps.endTimestamp = timestamps.startTimestamp;
 
 			for (let i = 1; eventNodes[i]; i++) {
 				timestamps.endEventId = eventNodes[i].eventId;
 				const parents = this.getParentNodes(eventNodes[i].eventId, this.eventDataStore.eventsCache);
 				if (parents?.length === 1) {
-					const eventTimestamp = timestampToNumber(eventNodes[i].startTimestamp);
+					const eventTimestamp = eventNodes[i].startTimestamp;
 
 					if (eventTimestamp < timestamps.startTimestamp) {
 						timestamps.startTimestamp = eventTimestamp;
@@ -287,13 +287,10 @@ export default class EventsStore {
 	public goToEvent = async (savedEventNode: EventTreeNode | EventAction) => {
 		this.selectedNode = null;
 		this.selectedEvent = null;
-		this.graphStore.setTimestamp(timestampToNumber(savedEventNode.startTimestamp));
+		this.graphStore.setTimestamp(savedEventNode.startTimestamp);
 		this.workspaceStore.viewStore.activePanel = this;
 
-		const timeRange = calculateTimeRange(
-			timestampToNumber(savedEventNode.startTimestamp),
-			this.graphStore.interval,
-		);
+		const timeRange = calculateTimeRange(savedEventNode.startTimestamp, this.graphStore.interval);
 
 		this.eventDataStore.fetchEventTree({
 			timeRange,
@@ -401,7 +398,7 @@ export default class EventsStore {
 			try {
 				const event = await this.api.events.getEvent(defaultState);
 				this.filterStore.setRange(
-					getRangeFromTimestamp(timestampToNumber(event.startTimestamp), this.graphStore.interval),
+					getRangeFromTimestamp(event.startTimestamp, this.graphStore.interval),
 				);
 				initialState = { ...initialState, selectedEventId: event.eventId, targetEvent: event };
 				this.goToEvent(event);
@@ -496,7 +493,7 @@ export default class EventsStore {
 
 	private onHoveredEventChange = (hoveredEvent: EventTreeNode | null) => {
 		if (hoveredEvent !== null) {
-			this.graphStore.setTimestamp(timestampToNumber(hoveredEvent.startTimestamp));
+			this.graphStore.setTimestamp(hoveredEvent.startTimestamp);
 		}
 	};
 

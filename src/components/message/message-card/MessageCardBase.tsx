@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { getHashCode } from '../../../helpers/stringHash';
 import { createStyleSelector, createBemBlock } from '../../../helpers/styleCreators';
-import { formatTime, timestampToNumber } from '../../../helpers/date';
+import { formatTime } from '../../../helpers/date';
 import { MessageScreenshotZoom } from './MessageScreenshot';
 import { EventMessage, isScreenshotMessage, MessageViewType } from '../../../models/EventMessage';
 import MessageCardViewTypeRenderer, {
@@ -103,7 +103,7 @@ const MessageCardBase = React.memo(
 
 		const renderInlineMessageInfo = () => {
 			if (viewType === MessageViewType.ASCII || viewType === MessageViewType.JSON) {
-				const formattedTimestamp = formatTime(timestampToNumber(timestamp));
+				const formattedTimestamp = formatTime(timestamp);
 				return (
 					<>
 						{isExport ? (
@@ -165,7 +165,7 @@ const MessageCardBase = React.memo(
 
 		const renderMessageInfo = () => {
 			if (viewType === MessageViewType.FORMATTED || viewType === MessageViewType.BINARY) {
-				const formattedTimestamp = formatTime(timestampToNumber(timestamp));
+				const formattedTimestamp = formatTime(timestamp);
 				return (
 					<div className='mc-header__info'>
 						{isExport ? (

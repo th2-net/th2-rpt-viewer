@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { Timestamp } from './Timestamp';
 import MessageBody from './MessageBody';
 import { ActionType } from './EventAction';
 import { notEmpty } from '../helpers/object';
@@ -48,7 +47,7 @@ export interface EventMessage {
 	type: ActionType.MESSAGE;
 	messageType: string;
 	messageId: string;
-	timestamp: Timestamp;
+	timestamp: number;
 	direction: string;
 	sessionId: string;
 	body: MessageBody | null;

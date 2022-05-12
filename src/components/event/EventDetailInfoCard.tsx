@@ -18,7 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SplashScreen from '../SplashScreen';
 import { createBemBlock, createStyleSelector } from '../../helpers/styleCreators';
-import { formatTime, timestampToNumber } from '../../helpers/date';
+import { formatTime } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import EventBodyCard from './EventBodyCard';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
@@ -50,8 +50,6 @@ function EventDetailInfoCard(props: Props) {
 	const { isUnknown } = node;
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
-	const startTimestampValue = startTimestamp && timestampToNumber(startTimestamp);
-	const endTimestampValue = endTimestamp && timestampToNumber(endTimestamp);
 
 	const isBookmarked =
 		selectedStore.bookmarkedEvents.findIndex(
@@ -104,9 +102,9 @@ function EventDetailInfoCard(props: Props) {
 							className='event-card__timestamp'
 							onMouseEnter={onMouseEnter}
 							onMouseLeave={onMouseLeave}>
-							{formatTime(startTimestampValue)}
-							{endTimestampValue && endTimestampValue !== startTimestampValue ? (
-								<> &ndash; {formatTime(endTimestampValue)}</>
+							{formatTime(startTimestamp)}
+							{endTimestamp && endTimestamp !== startTimestamp ? (
+								<> &ndash; {formatTime(endTimestamp)}</>
 							) : null}
 						</div>
 					</div>
