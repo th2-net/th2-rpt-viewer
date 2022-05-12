@@ -106,6 +106,6 @@ export function filterUniqueGraphItems(items: GraphItem[]) {
 }
 
 function getGraphItemId(item: GraphItem) {
-	if (isEventMessage(item)) return item.messageId;
+	if (isEventMessage(item)) return item.id;
 	return item.eventId;
 }

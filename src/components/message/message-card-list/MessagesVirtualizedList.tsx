@@ -81,9 +81,7 @@ const MessagesVirtualizedList = (props: Props) => {
 		const selectedMessageId = messageStore.selectedMessageId?.valueOf();
 		if (selectedMessageId) {
 			raf(() => {
-				const index = messageStore.dataStore.messages.findIndex(
-					m => m.messageId === selectedMessageId,
-				);
+				const index = messageStore.dataStore.messages.findIndex(m => m.id === selectedMessageId);
 				if (index !== -1) virtuoso.current?.scrollToIndex({ index, align: 'center' });
 			}, 3);
 		}

@@ -41,7 +41,7 @@ export default class MessagesUpdateStore {
 
 		if (messages.length) {
 			onNextChannelResponse(messages);
-			this.messagesStore.selectedMessageId = messages[0].messageId;
+			this.messagesStore.selectedMessageId = messages[0].id;
 		}
 
 		runInAction(() => (this.timer = setTimeout(this.startLoop, 5000)));

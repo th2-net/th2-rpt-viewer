@@ -40,7 +40,7 @@ export interface RecoveredProps {
 interface Props extends OwnProps, RecoveredProps {}
 
 const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
-	const { messageId } = message;
+	const messageId = message.id;
 
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
@@ -60,7 +60,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
 
-	const applyFilterToBody = messagesStore.selectedMessageId?.valueOf() === message.messageId;
+	const applyFilterToBody = messagesStore.selectedMessageId?.valueOf() === message.id;
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
@@ -107,7 +107,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	}, [messagesStore.setHoveredMessage]);
 
 	const isAttached = computed(
-		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.messageId === message.messageId),
+		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.id === message.id),
 	).get();
 
 	const toogleMessagePin = React.useCallback(() => {

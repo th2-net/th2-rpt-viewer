@@ -184,7 +184,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		runInAction(() => {
 			const messages = [
-				...nextMessages.filter(val => val.messageId !== message?.messageId),
+				...nextMessages.filter(val => val.id !== message?.id),
 				...[message].filter(isEventMessage),
 				...prevMessages,
 			];
@@ -194,11 +194,11 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		if (!this.messagesStore.selectedMessageId) {
 			message = prevMessages[0] || nextMessages[nextMessages.length - 1];
-			if (message) this.messagesStore.selectedMessageId = new String(message.messageId);
+			if (message) this.messagesStore.selectedMessageId = new String(message.id);
 		}
 
 		if (this.messagesStore.filterStore.isSoftFilter && message) {
-			this.isSoftFiltered.set(message.messageId, true);
+			this.isSoftFiltered.set(message.id, true);
 		}
 	};
 
@@ -268,10 +268,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.lastPreviousChannelResponseTimestamp = null;
 		const firstPrevMessage = messages[0];
 
-		if (
-			firstPrevMessage &&
-			firstPrevMessage.messageId === this.messages[this.messages.length - 1]?.messageId
-		) {
+		if (firstPrevMessage && firstPrevMessage.id === this.messages[this.messages.length - 1]?.id) {
 			messages.shift();
 		}
 
@@ -311,7 +308,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.lastNextChannelResponseTimestamp = null;
 		const firstNextMessage = messages[messages.length - 1];
 
-		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
+		if (firstNextMessage && firstNextMessage.id === this.messages[0]?.id) {
 			messages.pop();
 		}
 

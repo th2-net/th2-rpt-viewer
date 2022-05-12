@@ -47,7 +47,7 @@ const EmbeddedMessages = () => {
 				message={message}
 				setViewType={setViewType}
 				viewType={viewType}
-				applyFilterToBody={message.messageId === selectedMessageId}
+				applyFilterToBody={message.id === selectedMessageId}
 			/>
 		);
 	};

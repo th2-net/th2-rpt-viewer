@@ -67,9 +67,9 @@ const MessageCardBase = React.memo(
 		addMessageToExport,
 		applyFilterToBody,
 	}: MessageCardBaseProps) => {
-		const { messageId, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
+		const { id, timestamp, messageType, sessionId, direction, bodyBase64, body } = message;
 
-		const splittedMessageId = messageId.split(':');
+		const splittedMessageId = id.split(':');
 		const messageIdWithHighlightedSession = splittedMessageId.map(
 			getMessageIdWithHighlightedSession,
 		);
@@ -107,11 +107,7 @@ const MessageCardBase = React.memo(
 				return (
 					<>
 						{isExport ? (
-							<Checkbox
-								id={messageId}
-								checked={!!isExported}
-								onChange={() => addMessageToExport?.()}
-							/>
+							<Checkbox id={id} checked={!!isExported} onChange={() => addMessageToExport?.()} />
 						) : (
 							<span className={iconsClassName} />
 						)}
@@ -144,7 +140,7 @@ const MessageCardBase = React.memo(
 		const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
 			renderInfo: renderInlineMessageInfo,
 			viewType,
-			messageId,
+			messageId: id,
 			messageBody: body,
 			isBeautified: viewType === MessageViewType.FORMATTED,
 			rawContent: bodyBase64,
@@ -170,7 +166,7 @@ const MessageCardBase = React.memo(
 					<div className='mc-header__info'>
 						{isExport ? (
 							<Checkbox
-								id={messageId}
+								id={id}
 								checked={!!isExported}
 								onChange={() => {
 									addMessageToExport?.();
@@ -213,7 +209,7 @@ const MessageCardBase = React.memo(
 											? `data:${message.messageType};base64,${message.bodyBase64}`
 											: ''
 									}
-									alt={message.messageId}
+									alt={message.id}
 								/>
 							</div>
 						) : (

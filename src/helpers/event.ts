@@ -109,7 +109,7 @@ export const sortByTimestamp = (
 };
 
 export function getItemId(item: EventAction | EventTreeNode | EventMessage) {
-	if (isEventMessage(item)) return item.messageId;
+	if (isEventMessage(item)) return item.id;
 	return item.eventId;
 }
 

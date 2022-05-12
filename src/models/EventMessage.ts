@@ -46,7 +46,7 @@ export interface MessageDisplayRule {
 export interface EventMessage {
 	type: ActionType.MESSAGE;
 	messageType: string;
-	messageId: string;
+	id: string;
 	timestamp: number;
 	direction: string;
 	sessionId: string;

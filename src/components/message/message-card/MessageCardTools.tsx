@@ -50,7 +50,7 @@ const MessageCardTools = ({
 	isScreenshotMsg,
 	isEmbedded,
 }: MessageCardToolsConfig) => {
-	const { messageId, messageType } = message;
+	const { id, messageType } = message;
 
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
@@ -193,7 +193,7 @@ const MessageCardTools = ({
 				{isScreenshotMsg && (
 					<a
 						className='message-card-tools__item'
-						download={`${messageId}.${messageType.replace('image/', '')}`}
+						download={`${id}.${messageType.replace('image/', '')}`}
 						href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}>
 						<div className='message-card-tools__icon download' />
 					</a>

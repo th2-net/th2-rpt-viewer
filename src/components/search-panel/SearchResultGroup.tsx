@@ -121,7 +121,7 @@ const SearchResultGroup = ({
 			messagesWorkspaceStore.currentMessagesIndexesRange.endIndex + 1,
 		);
 
-		return visibleMessages.some(({ messageId }) => messageId === message.messageId);
+		return visibleMessages.some(({ id }) => id === message.id);
 	};
 
 	const isResultItemHighlighted = (result: SearchResult) => {

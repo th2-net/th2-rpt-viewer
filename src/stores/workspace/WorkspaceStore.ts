@@ -203,10 +203,10 @@ export default class WorkspaceStore {
 		this.attachedMessagesAC = new AbortController();
 		try {
 			const cachedMessages = this.attachedMessages.filter(message =>
-				attachedMessagesIds.includes(message.messageId),
+				attachedMessagesIds.includes(message.id),
 			);
 			const messagesToLoad = attachedMessagesIds.filter(
-				messageId => cachedMessages.findIndex(message => message.messageId === messageId) === -1,
+				messageId => cachedMessages.findIndex(message => message.id === messageId) === -1,
 			);
 			const messages = await Promise.all(
 				messagesToLoad.map(id => this.api.messages.getMessage(id, this.attachedMessagesAC?.signal)),
