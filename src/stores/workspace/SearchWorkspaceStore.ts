@@ -24,7 +24,7 @@ import { SearchStore } from '../SearchStore';
 import ApiSchema from '../../api/ApiSchema';
 import { WorkspaceInitialState } from './WorkspaceStore';
 import { isEvent, isEventMessage } from '../../helpers/event';
-import { getTimestampAsNumber, timestampToNumber, getRangeFromTimestamp } from '../../helpers/date';
+import { getTimestampAsNumber, getRangeFromTimestamp } from '../../helpers/date';
 import RootStore from '../RootStore';
 
 export const SEARCH_STORE_INTERVAL = 15;

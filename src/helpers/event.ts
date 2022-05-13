@@ -17,7 +17,7 @@ import moment from 'moment';
 import { ActionType, EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { EventStatus } from '../models/Status';
-import { getTimestampAsNumber, timestampToNumber } from './date';
+import { getTimestampAsNumber } from './date';
 
 export function getMinifiedStatus(status: string): string {
 	return status

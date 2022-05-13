@@ -18,7 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SplashScreen from '../SplashScreen';
 import { createBemBlock, createStyleSelector } from '../../helpers/styleCreators';
-import { formatTime, timestampToNumber } from '../../helpers/date';
+import { formatTime } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import EventBodyCard from './EventBodyCard';
 import { EventAction, EventTreeNode } from '../../models/EventAction';

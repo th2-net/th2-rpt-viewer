@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { formatTime, getElapsedTime, timestampToNumber } from '../../helpers/date';
+import { formatTime, getElapsedTime } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';

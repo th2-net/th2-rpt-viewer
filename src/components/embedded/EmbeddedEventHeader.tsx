@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { formatTime, getElapsedTime, timestampToNumber } from '../../helpers/date';
+import { formatTime, getElapsedTime } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { EventAction } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';

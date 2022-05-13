@@ -22,7 +22,6 @@ import {
 	MessageBodyField,
 	MessageBodyFields,
 } from '../models/MessageBody';
-import { timestampToNumber } from './date';
 
 export const sortMessagesByTimestamp = (
 	messages: Array<EventMessage>,

@@ -19,7 +19,6 @@ import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
-import { timestampToNumber } from '../../helpers/date';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';

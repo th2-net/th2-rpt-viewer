@@ -23,7 +23,7 @@ import { EventAction, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
 import { isEvent, isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
-import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
+import { getRangeFromTimestamp } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/graph';
 import { GraphStore } from '../GraphStore';
 import { TimeRange } from '../../models/Timestamp';

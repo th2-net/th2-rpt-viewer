@@ -32,7 +32,6 @@ import { TimeRange } from '../../models/Timestamp';
 import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import { isAbortError } from '../../helpers/fetch';
 import { getItemAt } from '../../helpers/array';
-import { timestampToNumber } from '../../helpers/date';
 
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;

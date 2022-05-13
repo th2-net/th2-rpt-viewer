@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { EventMessage } from '../../../models/EventMessage';
 import { createStyleSelector } from '../../../helpers/styleCreators';
-import { timestampToNumber, formatTime } from '../../../helpers/date';
+import { formatTime } from '../../../helpers/date';
 import { getHashCode } from '../../../helpers/stringHash';
 
 interface MessageInfoProps {
