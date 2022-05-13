@@ -110,7 +110,7 @@ export class SelectedStore {
 	@action
 	public toggleMessagePin = (message: EventMessage) => {
 		const bookmark = this.bookmarkedMessages.find(
-			messageBookmark => messageBookmark.id === message.messageId,
+			messageBookmark => messageBookmark.id === message.id,
 		);
 		if (bookmark) {
 			this.removeBookmark(bookmark);
@@ -208,7 +208,7 @@ export class SelectedStore {
 
 	private createMessageBookmark = (message: EventMessage): MessageBookmark => {
 		return {
-			id: message.messageId,
+			id: message.id,
 			timestamp: moment.utc().valueOf(),
 			item: toJS(message),
 		};

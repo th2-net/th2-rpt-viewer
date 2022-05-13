@@ -40,7 +40,7 @@ export interface RecoveredProps {
 interface Props extends OwnProps, RecoveredProps {}
 
 const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
-	const { messageId } = message;
+	const { id } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
@@ -54,20 +54,19 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const isContentBeautified = viewType === MessageViewType.FORMATTED;
 	const isBookmarked =
-		selectedStore.bookmarkedMessages.findIndex(
-			bookmarkedMessage => bookmarkedMessage.id === messageId,
-		) !== -1;
+		selectedStore.bookmarkedMessages.findIndex(bookmarkedMessage => bookmarkedMessage.id === id) !==
+		-1;
 
-	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
+	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(id);
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
 
 		if (
 			messagesStore.filterStore.isSoftFilter &&
-			messagesDataStore.isSoftFiltered.get(messageId) === undefined
+			messagesDataStore.isSoftFiltered.get(id) === undefined
 		) {
-			messagesDataStore.matchMessage(messageId, abortController.signal);
+			messagesDataStore.matchMessage(id, abortController.signal);
 		}
 
 		return () => {
@@ -76,7 +75,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	}, []);
 
 	React.useEffect(() => {
-		if (!isHighlighted && messagesStore.highlightedMessageId?.valueOf() === messageId) {
+		if (!isHighlighted && messagesStore.highlightedMessageId?.valueOf() === id) {
 			setHighlighted(true);
 
 			highlightTimer.current = setTimeout(() => {
@@ -105,7 +104,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	}, [messagesStore.setHoveredMessage]);
 
 	const isAttached = computed(
-		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.messageId === message.messageId),
+		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.id === message.id),
 	).get();
 
 	const toogleMessagePin = React.useCallback(() => {

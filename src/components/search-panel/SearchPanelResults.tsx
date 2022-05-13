@@ -58,7 +58,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	function computeKey(index: number) {
 		const [, results] = resultGroups[index];
 		const item = results[0];
-		return isEventNode(item) ? item.eventId : item.messageId;
+		return isEventNode(item) ? item.eventId : item.id;
 	}
 
 	return (

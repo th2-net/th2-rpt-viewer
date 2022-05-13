@@ -204,7 +204,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		} else {
 			const firstPrevMessage = prevMessages[0];
 			if (firstPrevMessage) {
-				this.messagesStore.scrollToMessage(firstPrevMessage.messageId);
+				this.messagesStore.scrollToMessage(firstPrevMessage.id);
 			}
 		}
 	};
@@ -274,10 +274,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.lastPreviousChannelResponseTimestamp = null;
 		const firstPrevMessage = messages[0];
 
-		if (
-			firstPrevMessage &&
-			firstPrevMessage.messageId === this.messages[this.messages.length - 1]?.messageId
-		) {
+		if (firstPrevMessage && firstPrevMessage.id === this.messages[this.messages.length - 1]?.id) {
 			messages.shift();
 		}
 
@@ -291,7 +288,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			this.messages = newMessagesList;
 
 			const selectedMessageId = this.messagesStore.selectedMessageId?.valueOf();
-			if (selectedMessageId && messages.find(m => m.messageId === selectedMessageId)) {
+			if (selectedMessageId && messages.find(m => m.id === selectedMessageId)) {
 				this.messagesStore.scrollToMessage(selectedMessageId);
 			}
 		}
@@ -330,7 +327,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.lastNextChannelResponseTimestamp = null;
 		const firstNextMessage = messages[this.messages.length - 1];
 
-		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
+		if (firstNextMessage && firstNextMessage.id === this.messages[0]?.id) {
 			messages.pop();
 		}
 
@@ -345,7 +342,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 			this.messages = newMessagesList;
 
 			const selectedMessageId = this.messagesStore.selectedMessageId?.valueOf();
-			if (selectedMessageId && messages.find(m => m.messageId === selectedMessageId)) {
+			if (selectedMessageId && messages.find(m => m.id === selectedMessageId)) {
 				this.messagesStore.scrollToMessage(selectedMessageId);
 			}
 		}

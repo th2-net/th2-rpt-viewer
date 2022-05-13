@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { MessageBody } from './MessageBody';
+import MessageBody from './MessageBody';
 import { ActionType } from './EventAction';
 import { notEmpty } from '../helpers/object';
 import { OrderRule } from '../stores/MessageDisplayRulesStore';

@@ -210,10 +210,10 @@ export default class MessagesStore {
 
 	@action
 	public selectAttachedMessage = (message: EventMessage) => {
-		const messageIndex = this.dataStore.messages.findIndex(m => m.messageId === message.messageId);
+		const messageIndex = this.dataStore.messages.findIndex(m => m.id === message.id);
 		if (messageIndex !== -1) {
-			this.selectedMessageId = new String(message.messageId);
-			this.highlightedMessageId = new String(message.messageId);
+			this.selectedMessageId = new String(message.id);
+			this.highlightedMessageId = new String(message.id);
 		} else {
 			this.onMessageSelect(message);
 		}
@@ -229,7 +229,7 @@ export default class MessagesStore {
 			const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
 			if (mostRecentMessage) {
 				const streams = this.filterStore.filter.streams;
-				this.selectedMessageId = new String(mostRecentMessage.messageId);
+				this.selectedMessageId = new String(mostRecentMessage.id);
 				this.filterStore.filter = {
 					...this.filterStore.filter,
 					streams: [
@@ -289,7 +289,7 @@ export default class MessagesStore {
 		runInAction(() => (this.isFilteringTargetMessages = true));
 
 		const hintMessagesMatch = await Promise.all(
-			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.messageId, matchMessageParams)),
+			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.id, matchMessageParams)),
 		).finally(() => {
 			runInAction(() => (this.isFilteringTargetMessages = false));
 		});
@@ -308,8 +308,8 @@ export default class MessagesStore {
 
 		const targetMessage: EventMessage = sortMessagesByTimestamp(this.hintMessages)[0];
 
-		this.selectedMessageId = new String(targetMessage.messageId);
-		this.highlightedMessageId = new String(targetMessage.messageId);
+		this.selectedMessageId = new String(targetMessage.id);
+		this.highlightedMessageId = new String(targetMessage.id);
 		this.showFilterChangeHint = false;
 		this.graphStore.setTimestamp(targetMessage.timestamp);
 

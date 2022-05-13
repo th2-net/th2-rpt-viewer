@@ -44,7 +44,7 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 	function computeKey(index: number) {
 		const item = results[index];
 
-		return isEventNode(item) ? item.eventId : item.messageId;
+		return isEventNode(item) ? item.eventId : item.id;
 	}
 
 	const namesEncountersMap = new Map<string, number>();

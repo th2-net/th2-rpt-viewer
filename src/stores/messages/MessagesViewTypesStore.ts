@@ -42,8 +42,8 @@ class MessagesViewTypesStore {
 
 	@action
 	public getSavedViewType = (message: EventMessage): SavedMessageViewType => {
-		const { messageId } = message;
-		const key = keyForMessage(messageId);
+		const { id } = message;
+		const key = keyForMessage(id);
 		if (this.savedViewTypes.has(key)) {
 			return this.savedViewTypes.get(key) as SavedMessageViewType;
 		}

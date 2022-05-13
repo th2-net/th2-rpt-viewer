@@ -62,7 +62,7 @@ const MessageCardBase = React.memo(
 		sortOrderItems,
 		addMessageToExport,
 	}: MessageCardBaseProps) => {
-		const { messageId, bodyBase64, body } = message;
+		const { id, bodyBase64, body } = message;
 
 		const rootClass = createBemBlock(
 			'message-card-wrapper',
@@ -84,7 +84,7 @@ const MessageCardBase = React.memo(
 
 		const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
 			viewType,
-			messageId,
+			messageId: id,
 			messageBody: body,
 			isBeautified: viewType === MessageViewType.FORMATTED,
 			rawContent: bodyBase64,
@@ -120,7 +120,7 @@ const MessageCardBase = React.memo(
 											? `data:${message.messageType};base64,${message.bodyBase64}`
 											: ''
 									}
-									alt={message.messageId}
+									alt={message.id}
 								/>
 							</div>
 						) : (

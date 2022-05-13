@@ -28,7 +28,7 @@ interface MessageInfoProps {
 
 export const MessageHeader = React.memo((props: MessageInfoProps) => {
 	const { message, onTimestampMouseEnter, onTimestampMouseLeave } = props;
-	const { timestamp, sessionId, messageType, messageId, direction } = message;
+	const { timestamp, sessionId, messageType, id, direction } = message;
 
 	// session arrow color, we calculating it for each session from-to pair, based on hash
 	const sessionArrowStyle: React.CSSProperties = {
@@ -54,7 +54,7 @@ export const MessageHeader = React.memo((props: MessageInfoProps) => {
 			<span className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
 				{sessionId}
 			</span>
-			<span className='mc-header__value'>{messageId}</span>
+			<span className='mc-header__value'>{id}</span>
 			<span className={sessionClass} style={sessionArrowStyle}></span>
 			<span className='mc-header__value messageType' title={messageType && `Name: ${messageType}`}>
 				{messageType}

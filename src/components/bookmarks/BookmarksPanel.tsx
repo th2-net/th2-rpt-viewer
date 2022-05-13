@@ -222,7 +222,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		: bookmark;
 
 	const itemInfo = {
-		id: isEventMessage(item) ? item.messageId : item.eventId,
+		id: isEventMessage(item) ? item.id : item.eventId,
 		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
 		title: isEventMessage(item) ? item.messageType || 'unknown type' : item.eventName,
 		timestamp: getTimestampAsNumber(item),
