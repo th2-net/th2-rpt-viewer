@@ -50,7 +50,6 @@ export type DateInputProps = {
 
 const SearchPanelForm = () => {
 	const {
-		isFormDisabled: disabled,
 		updateForm,
 		searchForm: form,
 		formType,
@@ -109,13 +108,12 @@ const SearchPanelForm = () => {
 	const resultCountLimitConfig: ResultCountLimitConfig = {
 		value: !form.resultCountLimit ? '' : form.resultCountLimit.toString(),
 		setValue: updateCountLimit,
-		disabled,
+		disabled: false,
 	};
 
 	const eventsFormTypeConfig: FitlerRowItem = {
 		label: 'Parent Event',
 		value: form.parentEvent,
-		disabled,
 		setValue: getFormStateUpdater('parentEvent'),
 		type: 'event-resolver',
 		id: 'parent-event',
@@ -130,7 +128,6 @@ const SearchPanelForm = () => {
 		id: 'stream',
 		label: 'Session',
 		values: form.stream,
-		disabled,
 		setValues: getFormStateUpdater('stream'),
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
@@ -147,7 +144,6 @@ const SearchPanelForm = () => {
 		inputConfig: {
 			id: 'startTimestamp',
 			value: form.startTimestamp,
-			disabled,
 			setValue: getFormStateUpdater('startTimestamp'),
 			type: TimeInputType.DATE_TIME,
 			dateTimeMask: DateTimeMask.DATE_TIME_MASK,
@@ -173,7 +169,7 @@ const SearchPanelForm = () => {
 		isSearching,
 		updateForm,
 		startTimestampInput,
-		disabled: disabled || isSearching,
+		disabled: isSearching,
 		searchDirection: form.searchDirection,
 		previousTimeLimit: {
 			value:
@@ -231,8 +227,7 @@ const SearchPanelForm = () => {
 
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
-		disabled:
-			disabled || !form.searchDirection || (formType === 'message' && form.stream.length === 0),
+		disabled: !form.searchDirection || (formType === 'message' && form.stream.length === 0),
 		progress: commonProgress,
 		processedObjectCount,
 		isPaused,
@@ -250,7 +245,7 @@ const SearchPanelForm = () => {
 				<div className='filter-row'>
 					<div className='filter-row__label'>Search for</div>
 					<div className='search-type-config'>
-						<SearchTypeSwitcher formType={formType} setFormType={setFormType} disabled={disabled} />
+						<SearchTypeSwitcher formType={formType} setFormType={setFormType} />
 						<SearchResultCountLimit {...resultCountLimitConfig} />
 					</div>
 				</div>
@@ -261,14 +256,12 @@ const SearchPanelForm = () => {
 					<SearchPanelFilters {...(filters as any)} type={formType} autocompletes={autocompletes} />
 				)}
 			</div>
-			{!disabled && (
-				<div className='search-panel__footer'>
-					<button className='search-panel__clear-btn' onClick={clearFilters}>
-						<i className='search-panel__clear-icon' />
-						Clear All
-					</button>
-				</div>
-			)}
+			<div className='search-panel__footer'>
+				<button className='search-panel__clear-btn' onClick={clearFilters}>
+					<i className='search-panel__clear-icon' />
+					Clear All
+				</button>
+			</div>
 		</div>
 	);
 };
