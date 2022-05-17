@@ -93,8 +93,8 @@ function BookmarksPanel() {
 			)
 			.filter(
 				bookmark =>
-					getItemId(bookmark.item).includes(textSearch) ||
-					getItemName(bookmark.item).includes(textSearch),
+					getItemId(bookmark.item).toLowerCase().includes(textSearch) ||
+					getItemName(bookmark.item).toLowerCase().includes(textSearch),
 			);
 	}, [bookmarks, bookmarkType, textSearch]);
 
