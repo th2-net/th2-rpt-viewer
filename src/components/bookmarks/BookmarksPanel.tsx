@@ -84,6 +84,7 @@ function BookmarksPanel() {
 	}, [selectedStore.bookmarkedMessages, selectedStore.bookmarkedEvents]);
 
 	const filteredBookmarks = React.useMemo(() => {
+		const search = textSearch.toLowerCase();
 		return bookmarks
 			.filter(
 				bookmark =>
@@ -93,8 +94,8 @@ function BookmarksPanel() {
 			)
 			.filter(
 				bookmark =>
-					getItemId(bookmark.item).toLowerCase().includes(textSearch) ||
-					getItemName(bookmark.item).toLowerCase().includes(textSearch),
+					getItemId(bookmark.item).toLowerCase().includes(search) ||
+					getItemName(bookmark.item).toLowerCase().includes(search),
 			);
 	}, [bookmarks, bookmarkType, textSearch]);
 
