@@ -42,8 +42,10 @@ export function formatTime(time: string | number) {
 	return moment.utc(time).format(DateTimeMask.DATE_TIME_MASK);
 }
 
-export function timestampToNumber(timestamp: Timestamp): number {
-	return Math.floor(timestamp.epochSecond * 1000 + timestamp.nano / 1_000_000);
+export function timestampToNumber(timestamp: Timestamp | string): number {
+	return typeof timestamp === 'string'
+		? moment.utc(timestamp).valueOf()
+		: Math.floor(timestamp.epochSecond * 1000 + timestamp.nano / 1_000_000);
 }
 
 export function getTimestampAsNumber(entity: EventAction | EventTreeNode | EventMessage): number {
