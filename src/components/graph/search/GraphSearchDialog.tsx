@@ -21,7 +21,7 @@ import api from '../../../api';
 import { getTimestampAsNumber } from '../../../helpers/date';
 import { getItemId, getItemName } from '../../../helpers/event';
 import { EventAction } from '../../../models/EventAction';
-import { EventMessage, EventMessageItem } from '../../../models/EventMessage';
+import { EventMessageItem } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../bookmarks/BookmarksPanel';
 import Empty from '../../util/Empty';
 import { useDebouncedCallback, useRootStore } from '../../../hooks';

@@ -24,7 +24,7 @@ import {
 	useMessageBodySortStore,
 	useMessagesViewTypesStore,
 } from '../../../hooks';
-import { MessageViewType, EventMessageItem, EventMessage } from '../../../models/EventMessage';
+import { MessageViewType, EventMessageItem } from '../../../models/EventMessage';
 import MessageCardBase from './MessageCardBase';
 import '../../../styles/messages.scss';
 import { createBemBlock } from '../../../helpers/styleCreators';

@@ -14,13 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
-import { EventMessage, MessageViewType, EventMessageItem } from '../../models/EventMessage';
+import { EventMessage, EventMessageItem } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
-import MessageCardBase from '../message/message-card/MessageCardBase';
 import '../../styles/embedded.scss';
 import api from '../../api';
 import StateSaverProvider from '../util/StateSaverProvider';
@@ -37,8 +36,6 @@ const messagesStore = new EmbeddedMessagesStore(api);
 const EmbeddedMessages = () => {
 	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
-
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
 	const renderMsg = React.useCallback((index: number, message: EventMessageItem) => {
 		return <MessageCard message={message} />;
@@ -168,9 +165,10 @@ const MessagesVirtualizedList = observer((props: Props) => {
 				tempMessageItem.parsedMessage = tempMessage.parsedMessages
 					? tempMessage.parsedMessages[index]
 					: null;
+
 				if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
 					tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
-				console.log(tempMessageItem);
+
 				setMessageList([...messageList, tempMessageItem]);
 			}),
 		);

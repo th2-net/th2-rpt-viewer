@@ -43,7 +43,7 @@ import {
 	isSearchHistoryEntity,
 } from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
-import { EventMessage, EventMessageItem } from '../models/EventMessage';
+import { EventMessageItem } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';

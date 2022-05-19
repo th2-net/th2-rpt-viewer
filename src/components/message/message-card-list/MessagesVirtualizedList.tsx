@@ -110,7 +110,7 @@ const MessagesVirtualizedList = (props: Props) => {
 				if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
 					tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
 
-				setMessageList(messageList => [...messageList, tempMessageItem]);
+				setMessageList(messageListCopy => [...messageListCopy, tempMessageItem]);
 			}),
 		);
 	}, [messages]);
@@ -128,7 +128,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					!searchChannelNext.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
-					loadNextMessages().then(messages => onNextChannelResponse(messages));
+					loadNextMessages().then(nextMessages => onNextChannelResponse(nextMessages));
 				}
 
 				if (

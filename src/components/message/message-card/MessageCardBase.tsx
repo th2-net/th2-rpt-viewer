@@ -18,10 +18,8 @@ import * as React from 'react';
 import { createBemBlock } from '../../../helpers/styleCreators';
 import { MessageScreenshotZoom } from './MessageScreenshot';
 import {
-	EventMessage,
 	isScreenshotMessage,
 	MessageViewType,
-	ParsedMessage,
 	EventMessageItem,
 } from '../../../models/EventMessage';
 import MessageCardViewTypeRenderer, {
@@ -105,7 +103,8 @@ const MessageCardBase = React.memo(
 								<MessageScreenshotZoom
 									src={
 										typeof rawMessageBase64 === 'string'
-											? `data:${parsedMessage?.message.metadata.messageType};base64,${message.rawMessageBase64}`
+											? `data:${parsedMessage?.message.metadata.messageType};base64,` +
+											  `${message.rawMessageBase64}`
 											: ''
 									}
 									alt={message.id}
