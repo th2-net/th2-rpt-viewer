@@ -18,7 +18,7 @@ import { action, computed, observable, runInAction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import moment from 'moment';
 import { EventTreeNode } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
+import { EventMessage, EventMessageItem } from '../models/EventMessage';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import { sortMessagesByTimestamp } from '../helpers/message';
 import { getItemName, sortByTimestamp } from '../helpers/event';
@@ -108,7 +108,7 @@ export class SelectedStore {
 	}
 
 	@action
-	public toggleMessagePin = (message: EventMessage) => {
+	public toggleMessagePin = (message: EventMessageItem) => {
 		const bookmark = this.bookmarkedMessages.find(
 			messageBookmark => messageBookmark.id === message.id,
 		);
@@ -206,7 +206,7 @@ export class SelectedStore {
 		}
 	};
 
-	private createMessageBookmark = (message: EventMessage): MessageBookmark => {
+	private createMessageBookmark = (message: EventMessageItem): MessageBookmark => {
 		return {
 			id: message.id,
 			timestamp: moment.utc().valueOf(),

@@ -55,7 +55,8 @@ function SkeletonedMessageCardListItem({ id }: Props) {
 		return <MessageCardSkeleton />;
 	}
 
-	return <MessageCard key={message.id} message={message} />;
+	// return <MessageCard key={message.id} message={message} />;
+	return null;
 }
 
 export default observer(SkeletonedMessageCardListItem);

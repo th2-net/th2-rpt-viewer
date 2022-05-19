@@ -15,7 +15,7 @@
  ***************************************************************************** */
 import moment from 'moment';
 import { ActionType, EventAction, EventTreeNode } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
+import { EventMessage, EventMessageItem } from '../models/EventMessage';
 import { EventStatus } from '../models/Status';
 import { getTimestampAsNumber } from './date';
 
@@ -112,8 +112,9 @@ export function getItemId(item: EventAction | EventTreeNode | EventMessage) {
 	return item.eventId;
 }
 
-export function getItemName(item: EventAction | EventTreeNode | EventMessage) {
-	if (isEventMessage(item)) return item.messageType;
+export function getItemName(item: EventAction | EventTreeNode | EventMessageItem) {
+	if (isEventMessage(item))
+		return item.parsedMessage ? item.parsedMessage.message.metadata.messageType : '';
 	return item.eventName;
 }
 

@@ -18,7 +18,7 @@ import React, { useState } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
-import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import { EventMessage, MessageViewType, EventMessageItem } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import '../../styles/embedded.scss';
@@ -30,6 +30,7 @@ import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import MessagesUpdateButton from '../message/MessagesUpdateButton';
 import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
+import MessageCard from '../message/message-card/MessageCard';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
@@ -39,17 +40,9 @@ const EmbeddedMessages = () => {
 
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
-	const renderMsg = (index: number, message: EventMessage) => {
-		return (
-			<MessageCardBase
-				isEmbedded
-				key={index}
-				message={message}
-				setViewType={setViewType}
-				viewType={viewType}
-			/>
-		);
-	};
+	const renderMsg = React.useCallback((index: number, message: EventMessageItem) => {
+		return <MessageCard message={message} />;
+	}, []);
 
 	const reportURL = React.useMemo(() => {
 		const messagesStoreState = {
@@ -132,7 +125,7 @@ export default function MessagesApp() {
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
 	rowCount: number;
-	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
+	itemRenderer: (index: number, message: EventMessageItem) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -158,6 +151,30 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		loadNextMessages,
 		scrolledIndex,
 	} = props;
+
+	const [messageList, setMessageList] = React.useState<EventMessageItem[]>([]);
+
+	React.useEffect(() => {
+		messagesStore.dataStore.messages.forEach(message =>
+			message.parsedMessages?.forEach((parsedMessage, index) => {
+				const tempMessage = message;
+				const { parsedMessages, ...rest } = tempMessage;
+				const tempMessageItem: EventMessageItem = {
+					...rest,
+					parsedMessage: null,
+					parsedMessages: [],
+				};
+
+				tempMessageItem.parsedMessage = tempMessage.parsedMessages
+					? tempMessage.parsedMessages[index]
+					: null;
+				if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
+					tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
+				console.log(tempMessageItem);
+				setMessageList([...messageList, tempMessageItem]);
+			}),
+		);
+	}, [messagesStore.dataStore.messages]);
 
 	React.useEffect(() => {
 		if (scrolledIndex !== null) {
@@ -214,7 +231,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 
 	return (
 		<Virtuoso
-			data={messagesStore.dataStore.messages}
+			data={messageList}
 			firstItemIndex={messagesStore.dataStore.startIndex}
 			ref={virtuoso}
 			overscan={overscan}

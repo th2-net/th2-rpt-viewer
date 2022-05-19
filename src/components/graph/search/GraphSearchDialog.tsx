@@ -21,7 +21,7 @@ import api from '../../../api';
 import { getTimestampAsNumber } from '../../../helpers/date';
 import { getItemId, getItemName } from '../../../helpers/event';
 import { EventAction } from '../../../models/EventAction';
-import { EventMessage } from '../../../models/EventMessage';
+import { EventMessage, EventMessageItem } from '../../../models/EventMessage';
 import { BookmarkItem } from '../../bookmarks/BookmarksPanel';
 import Empty from '../../util/Empty';
 import { useDebouncedCallback, useRootStore } from '../../../hooks';
@@ -281,7 +281,23 @@ const GraphSearchDialog = (props: Props) => {
 				.getMessage(id, abortController.signal, { probe: true })
 				.then(foundMessage => {
 					if (foundMessage !== null) {
-						onSearchSuccess(foundMessage, searchTimestamp);
+						foundMessage.parsedMessages?.forEach((parsedMessage, index) => {
+							const tempMessage = foundMessage;
+							const { parsedMessages, ...rest } = tempMessage;
+							const foundMessageItem: EventMessageItem = {
+								...rest,
+								parsedMessage: null,
+								parsedMessages: [],
+							};
+
+							foundMessageItem.parsedMessage = tempMessage.parsedMessages
+								? tempMessage.parsedMessages[index]
+								: null;
+							if (foundMessageItem.parsedMessages && foundMessageItem.parsedMessage)
+								foundMessageItem.parsedMessages[0] = foundMessageItem.parsedMessage;
+							onSearchSuccess(foundMessageItem, searchTimestamp);
+						});
+
 						abortController.abort();
 					}
 				})
@@ -289,7 +305,10 @@ const GraphSearchDialog = (props: Props) => {
 		]).then(() => setIsLoading(false));
 	};
 
-	async function onSearchSuccess(responseObject: EventAction | EventMessage, timestamp: number) {
+	async function onSearchSuccess(
+		responseObject: EventAction | EventMessageItem,
+		timestamp: number,
+	) {
 		const searchResult: GraphSearchResult = {
 			timestamp,
 			id: getItemId(responseObject),

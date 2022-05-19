@@ -17,7 +17,7 @@
 import React, { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createBemElement } from '../../../helpers/styleCreators';
-import { EventMessage, MessageViewType } from '../../../models/EventMessage';
+import { EventMessage, MessageViewType, ParsedMessage } from '../../../models/EventMessage';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { decodeBase64RawContent, getAllRawContent } from '../../../helpers/rawFormatter';
 import { copyTextToClipboard } from '../../../helpers/copyHandler';
@@ -33,6 +33,7 @@ const JSON_COPY_OPTIONS = ['body', 'fields'] as const;
 
 export type MessageCardToolsConfig = {
 	message: EventMessage;
+	parsedMessage: ParsedMessage | null;
 	messageViewType: MessageViewType;
 	toggleViewType: (viewType: MessageViewType) => void;
 	isBookmarked: boolean;
@@ -43,6 +44,7 @@ export type MessageCardToolsConfig = {
 
 const MessageCardTools = ({
 	message,
+	parsedMessage,
 	messageViewType,
 	toggleViewType,
 	isBookmarked,
@@ -50,7 +52,7 @@ const MessageCardTools = ({
 	isScreenshotMsg,
 	isEmbedded,
 }: MessageCardToolsConfig) => {
-	const { id, messageType } = message;
+	const { id } = message;
 
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
@@ -62,7 +64,7 @@ const MessageCardTools = ({
 		}
 	});
 
-	const viewTypes = message.body
+	const viewTypes = parsedMessage
 		? [
 				MessageViewType.JSON,
 				MessageViewType.FORMATTED,
@@ -76,18 +78,18 @@ const MessageCardTools = ({
 
 		const jsonToCopy =
 			jsonObjectToCopy === 'fields'
-				? message.body?.fields
-					? normalizeFields(message.body.fields)
+				? parsedMessage?.message.fields
+					? normalizeFields(parsedMessage.message.fields)
 					: null
-				: message.body;
+				: parsedMessage;
 
 		switch (messageViewType) {
 			case MessageViewType.ASCII:
-				content = message.bodyBase64 ? atob(message.bodyBase64) : '';
+				content = message.rawMessageBase64 ? atob(message.rawMessageBase64) : '';
 				break;
 			case MessageViewType.BINARY:
-				content = message.bodyBase64
-					? getAllRawContent(decodeBase64RawContent(message.bodyBase64))
+				content = message.rawMessageBase64
+					? getAllRawContent(decodeBase64RawContent(message.rawMessageBase64))
 					: '';
 				break;
 			case MessageViewType.FORMATTED:
@@ -207,38 +209,44 @@ const MessageCardTools = ({
 				{isScreenshotMsg && (
 					<a
 						className='message-card-tools__item'
-						download={`${id}.${messageType.replace('image/', '')}`}
-						href={`data:${message.messageType};base64,${message.bodyBase64 || ''}`}>
+						download={`${id}.${parsedMessage?.message.metadata.messageType.replace('image/', '')}`}
+						href={`data:${parsedMessage?.message.metadata.messageType};base64,${
+							message.rawMessageBase64 || ''
+						}`}>
 						<div className='message-card-tools__icon download' />
 					</a>
 				)}
 				{appViewMode === ViewMode.EmbeddedMessages && (
 					<div className='message-card-tools__controls-group'>
-						<div
-							title='Send to history'
-							className='message-card-tools__item'
-							onClick={() => {
-								const isDev = process.env.NODE_ENV === 'development';
+						{parsedMessage && (
+							<div
+								title='Send to history'
+								className='message-card-tools__item'
+								onClick={() => {
+									const isDev = process.env.NODE_ENV === 'development';
 
-								window.parent.postMessage(
-									{
-										payload: {
-											...message,
-											jsonBody:
-												message.body &&
-												JSON.stringify(normalizeFields(message.body?.fields), null, '    '),
-										} as unknown,
-										action: 'replayMessage',
-										publisher: Apps.ReportViewer,
-									} as CrossOriginMessage,
-									isDev ? 'http://localhost:9002' : window.location.origin,
-								);
-								setIsViewMenuOpen(false);
-							}}>
-							<span className='message-card-tools__item-title'>Send to replay</span>
-							<div className='message-card-tools__copy-icon' />
-							<div className={createBemElement('message-card-tools', 'indicator', 'bookmark')} />
-						</div>
+									window.parent.postMessage(
+										{
+											payload: {
+												...message,
+												jsonBody: JSON.stringify(
+													normalizeFields(parsedMessage.message.fields),
+													null,
+													'    ',
+												),
+											} as unknown,
+											action: 'replayMessage',
+											publisher: Apps.ReportViewer,
+										} as CrossOriginMessage,
+										isDev ? 'http://localhost:9002' : window.location.origin,
+									);
+									setIsViewMenuOpen(false);
+								}}>
+								<span className='message-card-tools__item-title'>Send to replay</span>
+								<div className='message-card-tools__copy-icon' />
+								<div className={createBemElement('message-card-tools', 'indicator', 'bookmark')} />
+							</div>
+						)}
 					</div>
 				)}
 			</MessagePopup>

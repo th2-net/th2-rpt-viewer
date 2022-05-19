@@ -17,7 +17,13 @@
 import * as React from 'react';
 import { createBemBlock } from '../../../helpers/styleCreators';
 import { MessageScreenshotZoom } from './MessageScreenshot';
-import { EventMessage, isScreenshotMessage, MessageViewType } from '../../../models/EventMessage';
+import {
+	EventMessage,
+	isScreenshotMessage,
+	MessageViewType,
+	ParsedMessage,
+	EventMessageItem,
+} from '../../../models/EventMessage';
 import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
@@ -26,22 +32,17 @@ import '../../../styles/messages.scss';
 import { MessageHeader } from './MessageHeader';
 
 export interface MessageCardBaseProps {
-	message: EventMessage;
+	message: EventMessageItem;
 	hoverMessage?: () => void;
 	unhoverMessage?: () => void;
 	isAttached?: boolean;
 	isBookmarked?: boolean;
-	isHighlighted?: boolean;
-	isSoftFiltered?: boolean;
 	isContentBeautified?: boolean;
 	toogleMessagePin?: () => void;
 	isEmbedded?: boolean;
-	isExported?: boolean;
-	isExport?: boolean;
 	sortOrderItems?: string[];
 	viewType: MessageViewType;
 	setViewType: (viewType: MessageViewType) => void;
-	addMessageToExport?: () => void;
 }
 
 const MessageCardBase = React.memo(
@@ -53,26 +54,11 @@ const MessageCardBase = React.memo(
 		unhoverMessage,
 		isAttached,
 		isBookmarked,
-		isHighlighted,
-		isSoftFiltered,
 		toogleMessagePin,
 		isEmbedded,
-		isExported,
-		isExport,
 		sortOrderItems,
-		addMessageToExport,
 	}: MessageCardBaseProps) => {
-		const { id, bodyBase64, body } = message;
-
-		const rootClass = createBemBlock(
-			'message-card-wrapper',
-			isAttached ? 'attached' : null,
-			isBookmarked ? 'pinned' : null,
-			isHighlighted ? 'highlighted' : null,
-			isSoftFiltered ? 'soft-filtered' : null,
-			isExport ? 'export-mode' : null,
-			isExported ? 'exported' : null,
-		);
+		const { id, rawMessageBase64, parsedMessage } = message;
 
 		const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : 'hidden');
 
@@ -85,15 +71,16 @@ const MessageCardBase = React.memo(
 		const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
 			viewType,
 			messageId: id,
-			messageBody: body,
+			messageBody: parsedMessage ? parsedMessage.message : null,
 			isBeautified: viewType === MessageViewType.FORMATTED,
-			rawContent: bodyBase64,
+			rawContent: rawMessageBase64,
 			isSelected: isAttached || false,
 			sortOrderItems: sortOrderItems || [],
 		};
 
 		const messageCardToolsConfig: MessageCardToolsConfig = {
 			message,
+			parsedMessage,
 			messageViewType: viewType,
 			toggleViewType,
 			isBookmarked: isBookmarked || false,
@@ -103,12 +90,13 @@ const MessageCardBase = React.memo(
 		};
 
 		return (
-			<div className={rootClass} onClick={addMessageToExport}>
+			<div>
 				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
 				<div className='message-card'>
 					<div className='mc__mc-body mc-body'>
 						<MessageHeader
 							message={message}
+							parsedMessage={parsedMessage}
 							onTimestampMouseEnter={hoverMessage}
 							onTimestampMouseLeave={unhoverMessage}
 						/>
@@ -116,8 +104,8 @@ const MessageCardBase = React.memo(
 							<div className='mc-body__screenshot'>
 								<MessageScreenshotZoom
 									src={
-										typeof bodyBase64 === 'string'
-											? `data:${message.messageType};base64,${message.bodyBase64}`
+										typeof rawMessageBase64 === 'string'
+											? `data:${parsedMessage?.message.metadata.messageType};base64,${message.rawMessageBase64}`
 											: ''
 									}
 									alt={message.id}

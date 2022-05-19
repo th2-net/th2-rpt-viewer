@@ -24,7 +24,7 @@ import { getItemId, getItemName, isEvent, isEventMessage } from '../../helpers/e
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { useActivePanel, useSelectedStore } from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
+import { EventMessage, EventMessageItem } from '../../models/EventMessage';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import BookmarkTextSearch from './BookmarkTextSearch';
 import BookmarkTypeSwitcher from './BookmarkTypeSwitcher';
@@ -44,13 +44,13 @@ export function isBookmark(item: unknown): item is Bookmark {
 export interface MessageBookmark {
 	timestamp: number;
 	id: string;
-	item: EventMessage;
+	item: EventMessageItem;
 }
 
 export interface EventBookmark {
 	timestamp: number;
 	id: string;
-	item: EventMessage | EventTreeNode;
+	item: EventMessageItem | EventTreeNode;
 }
 
 export function isEventBookmark(bookmark: unknown): bookmark is EventBookmark {
@@ -224,7 +224,11 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 	const itemInfo = {
 		id: isEventMessage(item) ? item.id : item.eventId,
 		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
-		title: isEventMessage(item) ? item.messageType || 'unknown type' : item.eventName,
+		title: isEventMessage(item)
+			? item.parsedMessages
+					?.map(parsedMessage => parsedMessage.message.metadata.messageType)
+					.toString() || 'unknown type'
+			: item.eventName,
 		timestamp: getTimestampAsNumber(item),
 		type: item.type,
 	};
