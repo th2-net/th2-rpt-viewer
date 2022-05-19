@@ -81,10 +81,9 @@ export default class MessagesExportStore {
 			[
 				this.exportMessages
 					.map(exportMessage => {
-						if (exportMessage.parsedMessage)
-							return exportMessage.parsedMessages?.map(parsedMessage =>
-								this.convertMessage(exportMessage, parsedMessage, messageViewType),
-							);
+						return exportMessage.parsedMessages?.map(parsedMessage =>
+							this.convertMessage(exportMessage, parsedMessage, messageViewType),
+						);
 					})
 					.join('\n'),
 			],

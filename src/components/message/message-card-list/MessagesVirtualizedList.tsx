@@ -138,7 +138,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					!searchChannelPrev.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
 				) {
-					loadPrevMessages().then(messages => onPrevChannelResponse(messages));
+					loadPrevMessages().then(prevMessages => onPrevChannelResponse(prevMessages));
 				}
 			}
 		},
