@@ -130,7 +130,7 @@ function BookmarksPanel() {
 	}
 
 	function removeSelected() {
-		filteredBookmarks
+		bookmarks
 			.filter(bookmark => selectedBookmarks.includes(bookmark.id))
 			.forEach(bookmark => selectedStore.removeBookmark(bookmark));
 		setSelectedBookmarks([]);
@@ -177,7 +177,7 @@ function BookmarksPanel() {
 					<div className='bookmark-panel-header-actions_right-side'>
 						<Checkbox
 							className='bookmarks-panel-checkbox'
-							checked={selectedBookmarks.length === filteredBookmarks.length}
+							checked={selectedBookmarks.length === bookmarks.length && bookmarks.length !== 0}
 							onChange={selectAll}
 						/>
 					</div>
