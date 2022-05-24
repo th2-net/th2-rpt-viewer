@@ -84,6 +84,7 @@ function BookmarksPanel() {
 	}, [selectedStore.bookmarkedMessages, selectedStore.bookmarkedEvents]);
 
 	const filteredBookmarks = React.useMemo(() => {
+		const search = textSearch.toLowerCase();
 		return bookmarks
 			.filter(
 				bookmark =>
@@ -93,8 +94,8 @@ function BookmarksPanel() {
 			)
 			.filter(
 				bookmark =>
-					getItemId(bookmark.item).includes(textSearch) ||
-					getItemName(bookmark.item).includes(textSearch),
+					getItemId(bookmark.item).toLowerCase().includes(search) ||
+					getItemName(bookmark.item).toLowerCase().includes(search),
 			);
 	}, [bookmarks, bookmarkType, textSearch]);
 
@@ -129,7 +130,7 @@ function BookmarksPanel() {
 	}
 
 	function removeSelected() {
-		filteredBookmarks
+		bookmarks
 			.filter(bookmark => selectedBookmarks.includes(bookmark.id))
 			.forEach(bookmark => selectedStore.removeBookmark(bookmark));
 		setSelectedBookmarks([]);
@@ -176,7 +177,7 @@ function BookmarksPanel() {
 					<div className='bookmark-panel-header-actions_right-side'>
 						<Checkbox
 							className='bookmarks-panel-checkbox'
-							checked={selectedBookmarks.length === filteredBookmarks.length}
+							checked={selectedBookmarks.length === bookmarks.length && bookmarks.length !== 0}
 							onChange={selectAll}
 						/>
 					</div>
