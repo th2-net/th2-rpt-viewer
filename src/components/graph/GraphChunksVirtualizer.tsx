@@ -486,9 +486,9 @@ function TimeSelector(props: TimeSelectorProps) {
 		const offset = e.clientX - startOffset.current;
 		const x0 = (panelRange[0] + panelRange[1]) / 2;
 		if (Math.abs(offset) > 10) {
-			onClick(x0 + getTimeOffset(offset) - windowTimeRange[0]);
+			onClick(Math.floor(x0 + getTimeOffset(offset) - windowTimeRange[0]));
 		} else {
-			onClick(getTimeOffset(withoutOff));
+			onClick(Math.floor(getTimeOffset(withoutOff)));
 		}
 		startOffset.current = 0;
 		setX(0);
