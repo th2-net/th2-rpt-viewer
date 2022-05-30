@@ -161,11 +161,11 @@ export default class WorkspacesStore {
 		try {
 			await Promise.all([
 				this.searchWorkspace.searchStore.syncData(unsavedData),
-				this.selectedStore.syncData(unsavedData),
+				this.selectedStore.bookmarksStore.syncData(unsavedData),
 			]);
 		} catch (error) {
 			this.searchWorkspace.searchStore.syncData();
-			this.selectedStore.syncData();
+			this.selectedStore.bookmarksStore.syncData();
 		}
 	};
 

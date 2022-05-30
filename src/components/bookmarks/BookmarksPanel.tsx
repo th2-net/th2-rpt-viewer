@@ -20,9 +20,9 @@ import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
 import Empty from '../util/Empty';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { getItemId, getItemName, isEvent, isEventMessage } from '../../helpers/event';
+import { getItemId, getItemName, isEventMessage } from '../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useActivePanel, useSelectedStore } from '../../hooks';
+import { useActivePanel, useBookmarksStore } from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { EventMessage } from '../../models/EventMessage';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
@@ -30,39 +30,11 @@ import BookmarkTextSearch from './BookmarkTextSearch';
 import BookmarkTypeSwitcher from './BookmarkTypeSwitcher';
 import Checkbox from '../util/Checkbox';
 import '../../styles/bookmarks.scss';
-
-export type Bookmark = EventBookmark | MessageBookmark;
-
-export type BookmarkedItem = Bookmark | EventMessage | EventTreeNode | EventAction;
-
-export type BookmarkType = 'event' | 'message';
-
-export function isBookmark(item: unknown): item is Bookmark {
-	return (item as Bookmark).id !== undefined && (item as Bookmark).item !== undefined;
-}
-
-export interface MessageBookmark {
-	timestamp: number;
-	id: string;
-	item: EventMessage;
-}
-
-export interface EventBookmark {
-	timestamp: number;
-	id: string;
-	item: EventMessage | EventTreeNode;
-}
-
-export function isEventBookmark(bookmark: unknown): bookmark is EventBookmark {
-	return isBookmark(bookmark) && isEvent(bookmark.item);
-}
-
-export function isMessageBookmark(bookmark: unknown): bookmark is MessageBookmark {
-	return isBookmark(bookmark) && isEventMessage(bookmark.item);
-}
+import { Bookmark, BookmarkedItem, BookmarkType } from '../../models/Bookmarks';
+import { isBookmark, isEventBookmark, isMessageBookmark } from '../../helpers/bookmarks';
 
 function BookmarksPanel() {
-	const selectedStore = useSelectedStore();
+	const bookmarksStore = useBookmarksStore();
 	const searchWorkspace = useSearchWorkspace();
 
 	const [bookmarkType, setBookmarkType] = React.useState<BookmarkType | null>(null);
@@ -71,8 +43,8 @@ function BookmarksPanel() {
 
 	const bookmarks = React.useMemo(() => {
 		const sortedBookmarks: Bookmark[] = [
-			...selectedStore.bookmarkedMessages,
-			...selectedStore.bookmarkedEvents,
+			...bookmarksStore.bookmarkedMessages,
+			...bookmarksStore.bookmarkedEvents,
 		];
 
 		sortedBookmarks.sort((bookmarkA, bookmarkB) => {
@@ -81,7 +53,7 @@ function BookmarksPanel() {
 			return 0;
 		});
 		return sortedBookmarks;
-	}, [selectedStore.bookmarkedMessages, selectedStore.bookmarkedEvents]);
+	}, [bookmarksStore.bookmarkedMessages, bookmarksStore.bookmarkedEvents]);
 
 	const filteredBookmarks = React.useMemo(() => {
 		const search = textSearch.toLowerCase();
@@ -132,7 +104,7 @@ function BookmarksPanel() {
 	function removeSelected() {
 		bookmarks
 			.filter(bookmark => selectedBookmarks.includes(bookmark.id))
-			.forEach(bookmark => selectedStore.removeBookmark(bookmark));
+			.forEach(bookmark => bookmarksStore.removeBookmark(bookmark));
 		setSelectedBookmarks([]);
 	}
 
@@ -143,7 +115,7 @@ function BookmarksPanel() {
 					<BookmarkItem
 						bookmark={filteredBookmarks[index]}
 						onClick={onBookmarkClick}
-						isBookmarkButtonDisabled={selectedStore.isBookmarksFull}
+						isBookmarkButtonDisabled={bookmarksStore.isBookmarksFull}
 					/>
 				</div>
 				<Checkbox

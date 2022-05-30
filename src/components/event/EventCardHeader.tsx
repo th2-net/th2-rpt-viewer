@@ -23,7 +23,7 @@ import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
 import SearchableContent from '../search/SearchableContent';
-import { useSelectedStore, useWorkspaceEventStore, useTabsStore } from '../../hooks';
+import { useWorkspaceEventStore, useTabsStore, useBookmarksStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 
 interface Props {
@@ -56,7 +56,7 @@ function EventCardHeader(props: Props) {
 	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp, isUnknown } = event;
 
-	const selectedStore = useSelectedStore();
+	const bookmarksStore = useBookmarksStore();
 	const eventStore = useWorkspaceEventStore();
 	const { setActiveWorkspace } = useTabsStore();
 	const { stopSearch, setFormType, updateForm } = useSearchStore();
@@ -70,7 +70,7 @@ function EventCardHeader(props: Props) {
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
 
 	const isBookmarked =
-		selectedStore.bookmarkedEvents.findIndex(
+		bookmarksStore.bookmarkedEvents.findIndex(
 			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
 		) !== -1;
 
@@ -94,7 +94,7 @@ function EventCardHeader(props: Props) {
 	const bookmarkClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	function onPinClicked(e: React.MouseEvent) {
-		selectedStore.toggleEventPin(event);
+		bookmarksStore.toggleEventPin(event);
 		e.stopPropagation();
 	}
 
