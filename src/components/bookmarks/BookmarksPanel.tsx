@@ -20,7 +20,7 @@ import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
 import Empty from '../util/Empty';
 import { getTimestampAsNumber } from '../../helpers/date';
-import { getItemId, getItemName, isEventMessage } from '../../helpers/event';
+import { isEventMessage } from '../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { useActivePanel, useBookmarksStore } from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
@@ -30,46 +30,24 @@ import BookmarkTextSearch from './BookmarkTextSearch';
 import BookmarkTypeSwitcher from './BookmarkTypeSwitcher';
 import Checkbox from '../util/Checkbox';
 import '../../styles/bookmarks.scss';
-import { Bookmark, BookmarkedItem, BookmarkType } from '../../models/Bookmarks';
-import { isBookmark, isEventBookmark, isMessageBookmark } from '../../helpers/bookmarks';
+import { BookmarkedItem } from '../../models/Bookmarks';
+import { isBookmark } from '../../helpers/bookmarks';
 
 function BookmarksPanel() {
-	const bookmarksStore = useBookmarksStore();
 	const searchWorkspace = useSearchWorkspace();
-
-	const [bookmarkType, setBookmarkType] = React.useState<BookmarkType | null>(null);
-	const [textSearch, setTextSearch] = React.useState('');
-	const [selectedBookmarks, setSelectedBookmarks] = React.useState<string[]>([]);
-
-	const bookmarks = React.useMemo(() => {
-		const sortedBookmarks: Bookmark[] = [
-			...bookmarksStore.bookmarkedMessages,
-			...bookmarksStore.bookmarkedEvents,
-		];
-
-		sortedBookmarks.sort((bookmarkA, bookmarkB) => {
-			if (bookmarkA.timestamp > bookmarkB.timestamp) return -1;
-			if (bookmarkA.timestamp < bookmarkB.timestamp) return 1;
-			return 0;
-		});
-		return sortedBookmarks;
-	}, [bookmarksStore.bookmarkedMessages, bookmarksStore.bookmarkedEvents]);
-
-	const filteredBookmarks = React.useMemo(() => {
-		const search = textSearch.toLowerCase();
-		return bookmarks
-			.filter(
-				bookmark =>
-					bookmarkType === null ||
-					(bookmarkType === 'event' && isEventBookmark(bookmark)) ||
-					(bookmarkType === 'message' && isMessageBookmark(bookmark)),
-			)
-			.filter(
-				bookmark =>
-					getItemId(bookmark.item).toLowerCase().includes(search) ||
-					getItemName(bookmark.item).toLowerCase().includes(search),
-			);
-	}, [bookmarks, bookmarkType, textSearch]);
+	const {
+		filteredBookmarks,
+		selectedBookmarks,
+		selectItem,
+		bookmarkType,
+		setBookmarkType,
+		textSearch,
+		setTextSearch,
+		removeSelected,
+		sortedBookmarks,
+		isBookmarksFull,
+		selectAll,
+	} = useBookmarksStore();
 
 	const { ref: panelRef } = useActivePanel(null);
 
@@ -85,29 +63,6 @@ function BookmarksPanel() {
 		return filteredBookmarks[index].id;
 	}
 
-	function selectItem(index: number) {
-		if (!selectedBookmarks.includes(filteredBookmarks[index].id)) {
-			setSelectedBookmarks([...selectedBookmarks, filteredBookmarks[index].id]);
-		} else {
-			setSelectedBookmarks(selectedBookmarks.filter(item => filteredBookmarks[index].id !== item));
-		}
-	}
-
-	function selectAll() {
-		if (selectedBookmarks.length !== filteredBookmarks.length) {
-			setSelectedBookmarks(filteredBookmarks.map(bookmark => bookmark.id));
-		} else {
-			setSelectedBookmarks([]);
-		}
-	}
-
-	function removeSelected() {
-		bookmarks
-			.filter(bookmark => selectedBookmarks.includes(bookmark.id))
-			.forEach(bookmark => bookmarksStore.removeBookmark(bookmark));
-		setSelectedBookmarks([]);
-	}
-
 	function renderBookmarkItem(index: number) {
 		return (
 			<div className='bookmarks-panel-item'>
@@ -115,12 +70,12 @@ function BookmarksPanel() {
 					<BookmarkItem
 						bookmark={filteredBookmarks[index]}
 						onClick={onBookmarkClick}
-						isBookmarkButtonDisabled={bookmarksStore.isBookmarksFull}
+						isBookmarkButtonDisabled={isBookmarksFull}
 					/>
 				</div>
 				<Checkbox
 					className='bookmarks-panel-checkbox'
-					checked={selectedBookmarks.includes(filteredBookmarks[index].id)}
+					checked={selectedBookmarks.has(filteredBookmarks[index].id)}
 					onChange={() => selectItem(index)}
 				/>
 			</div>
@@ -138,25 +93,27 @@ function BookmarksPanel() {
 					<div className='bookmark-panel-header-actions_left-side'>
 						<button
 							className='button'
-							disabled={selectedBookmarks.length === 0}
+							disabled={selectedBookmarks.size === 0}
 							onClick={removeSelected}>
 							<i className={iconButtonClassName} />
 							<span className='button__label'>
-								Delete {selectedBookmarks.length > 0 && `(${selectedBookmarks.length})`}
+								Delete {selectedBookmarks.size > 0 && `(${selectedBookmarks.size})`}
 							</span>
 						</button>
 					</div>
 					<div className='bookmark-panel-header-actions_right-side'>
 						<Checkbox
 							className='bookmarks-panel-checkbox'
-							checked={selectedBookmarks.length === bookmarks.length && bookmarks.length !== 0}
+							checked={
+								selectedBookmarks.size === sortedBookmarks.length && sortedBookmarks.length !== 0
+							}
 							onChange={selectAll}
 						/>
 					</div>
 				</div>
 			</div>
 			<div className='bookmarks-panel__container'>
-				{bookmarks.length === 0 && <Empty description='No bookmarks added' />}
+				{sortedBookmarks.length === 0 && <Empty description='No bookmarks added' />}
 				<Virtuoso
 					className='bookmarks-panel__list'
 					totalCount={filteredBookmarks.length}

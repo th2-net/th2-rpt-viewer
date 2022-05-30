@@ -70,9 +70,7 @@ function EventCardHeader(props: Props) {
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
 
 	const isBookmarked =
-		bookmarksStore.bookmarkedEvents.findIndex(
-			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
-		) !== -1;
+		bookmarksStore.events.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !== -1;
 
 	const rootClassName = createBemBlock(
 		'event-header-card',

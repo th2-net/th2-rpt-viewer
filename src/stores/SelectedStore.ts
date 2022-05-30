@@ -36,8 +36,8 @@ export class SelectedStore {
 	@computed
 	public get savedItems(): Array<EventTreeNode | EventMessage> {
 		return sortByTimestamp([
-			...this.bookmarksStore.bookmarkedEvents.map(bookmark => bookmark.item),
-			...this.bookmarksStore.bookmarkedMessages.map(bookmark => bookmark.item),
+			...this.bookmarksStore.events.map(bookmark => bookmark.item),
+			...this.bookmarksStore.messages.map(bookmark => bookmark.item),
 		]);
 	}
 

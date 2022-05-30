@@ -20,7 +20,7 @@ import moment from 'moment';
 import { EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './workspace/WorkspacesStore';
-import { getItemName } from '../helpers/event';
+import { getItemId, getItemName } from '../helpers/event';
 import { DbData, IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import notificationsStore from './NotificationsStore';
 import { Bookmark, BookmarkType, EventBookmark, MessageBookmark } from '../models/Bookmarks';
@@ -28,10 +28,10 @@ import { isEventBookmark, isMessageBookmark } from '../helpers/bookmarks';
 
 export class BookmarksStore {
 	@observable.shallow
-	public bookmarkedMessages: MessageBookmark[] = [];
+	public messages: MessageBookmark[] = [];
 
 	@observable.shallow
-	public bookmarkedEvents: EventBookmark[] = [];
+	public events: EventBookmark[] = [];
 
 	@observable
 	public bookmarkType: BookmarkType | null = null;
@@ -40,22 +40,90 @@ export class BookmarksStore {
 	public textSearch = '';
 
 	@observable
-	public selectedPinnedItems: Set<string> = new Set();
+	public selectedBookmarks: Set<string> = new Set();
+
+	@observable
+	public addedBookmarks: Set<string> = new Set();
 
 	constructor(private workspacesStore: WorkspacesStore, private db: IndexedDB) {
 		this.init();
 	}
 
 	@computed
+	public get sortedBookmarks() {
+		const sortedBookmarks: Bookmark[] = [...this.messages, ...this.events];
+
+		sortedBookmarks.sort((bookmarkA, bookmarkB) => {
+			if (bookmarkA.timestamp > bookmarkB.timestamp) return -1;
+			if (bookmarkA.timestamp < bookmarkB.timestamp) return 1;
+			return 0;
+		});
+		return sortedBookmarks;
+	}
+
+	@computed
+	public get filteredBookmarks() {
+		const search = this.textSearch.toLowerCase();
+		return this.sortedBookmarks
+			.filter(
+				bookmark =>
+					this.bookmarkType === null ||
+					(this.bookmarkType === 'event' && isEventBookmark(bookmark)) ||
+					(this.bookmarkType === 'message' && isMessageBookmark(bookmark)),
+			)
+			.filter(
+				bookmark =>
+					getItemId(bookmark.item).toLowerCase().includes(search) ||
+					getItemName(bookmark.item).toLowerCase().includes(search),
+			);
+	}
+
+	@computed
 	public get isBookmarksFull(): boolean {
-		return (
-			this.bookmarkedMessages.length + this.bookmarkedEvents.length >= indexedDbLimits.bookmarks
-		);
+		return this.messages.length + this.events.length >= indexedDbLimits.bookmarks;
 	}
 
 	@action
+	public setBookmarkType = (type: BookmarkType | null) => {
+		this.bookmarkType = type;
+	};
+
+	@action
+	public setTextSearch = (v: string) => {
+		this.textSearch = v;
+	};
+
+	@action
+	public selectItem = (index: number) => {
+		const id = this.filteredBookmarks[index].id;
+		if (this.selectedBookmarks.has(id)) {
+			this.selectedBookmarks.delete(id);
+		} else {
+			this.selectedBookmarks.add(id);
+		}
+	};
+
+	@action
+	public selectAll = () => {
+		if (this.selectedBookmarks.size !== this.filteredBookmarks.length) {
+			this.selectedBookmarks = new Set(this.filteredBookmarks.map(({ id }) => id));
+		} else {
+			this.selectedBookmarks.clear();
+		}
+	};
+
+	@action
+	public removeSelected = async () => {
+		this.events.filter(({ id }) => this.selectedBookmarks.has(id)).forEach(this.removeBookmark);
+		this.messages.filter(({ id }) => this.selectedBookmarks.has(id)).forEach(this.removeBookmark);
+		this.events = this.events.filter(({ id }) => !this.selectedBookmarks.has(id));
+		this.messages = this.messages.filter(({ id }) => !this.selectedBookmarks.has(id));
+		this.selectedBookmarks.clear();
+	};
+
+	@action
 	public toggleMessagePin = (message: EventMessage) => {
-		const bookmark = this.bookmarkedMessages.find(
+		const bookmark = this.messages.find(
 			messageBookmark => messageBookmark.id === message.messageId,
 		);
 		if (bookmark) {
@@ -63,7 +131,7 @@ export class BookmarksStore {
 			this.db.deleteDbStoreItem(IndexedDbStores.MESSAGES, bookmark.id);
 		} else if (!this.isBookmarksFull) {
 			const messageBookmark = this.createMessageBookmark(message);
-			this.bookmarkedMessages = this.bookmarkedMessages.concat(messageBookmark);
+			this.messages = this.messages.concat(messageBookmark);
 			this.saveBookmark(toJS(messageBookmark));
 		} else {
 			this.onLimitReached();
@@ -72,17 +140,13 @@ export class BookmarksStore {
 
 	@action
 	public toggleEventPin = async (event: EventTreeNode) => {
-		const bookmark = this.bookmarkedEvents.find(
-			eventBookmark => eventBookmark.id === event.eventId,
-		);
+		const bookmark = this.events.find(eventBookmark => eventBookmark.id === event.eventId);
 		if (bookmark) {
-			this.bookmarkedEvents = this.bookmarkedEvents.filter(
-				eventBookmark => eventBookmark !== bookmark,
-			);
+			this.events = this.events.filter(eventBookmark => eventBookmark !== bookmark);
 			this.db.deleteDbStoreItem(IndexedDbStores.EVENTS, bookmark.id);
 		} else if (!this.isBookmarksFull) {
 			const eventBookmark = this.createEventBookmark(event);
-			this.bookmarkedEvents = this.bookmarkedEvents.concat(eventBookmark);
+			this.events = this.events.concat(eventBookmark);
 			this.saveBookmark(toJS(eventBookmark));
 		} else {
 			this.onLimitReached();
@@ -92,16 +156,12 @@ export class BookmarksStore {
 	@action
 	public removeBookmark = async (bookmark: Bookmark) => {
 		if (isEventBookmark(bookmark)) {
-			this.bookmarkedEvents = this.bookmarkedEvents.filter(
-				eventBookmark => eventBookmark !== bookmark,
-			);
+			this.events = this.events.filter(eventBookmark => eventBookmark !== bookmark);
 			this.db.deleteDbStoreItem(IndexedDbStores.EVENTS, bookmark.id);
 		}
 
 		if (isMessageBookmark(bookmark)) {
-			this.bookmarkedMessages = this.bookmarkedMessages.filter(
-				messageBookmark => messageBookmark !== bookmark,
-			);
+			this.messages = this.messages.filter(messageBookmark => messageBookmark !== bookmark);
 			this.db.deleteDbStoreItem(IndexedDbStores.MESSAGES, bookmark.id);
 		}
 	};
@@ -134,7 +194,7 @@ export class BookmarksStore {
 		try {
 			const savedEvents = await this.db.getStoreValues<EventBookmark>(IndexedDbStores.EVENTS);
 			runInAction(() => {
-				this.bookmarkedEvents = savedEvents;
+				this.events = savedEvents;
 			});
 		} catch (error) {
 			console.error('Failed to fetch saved events');
@@ -145,7 +205,7 @@ export class BookmarksStore {
 		try {
 			const savedMessages = await this.db.getStoreValues<MessageBookmark>(IndexedDbStores.MESSAGES);
 			runInAction(() => {
-				this.bookmarkedMessages = savedMessages;
+				this.messages = savedMessages;
 			});
 		} catch (error) {
 			console.error('Failed to fetch saved messages');
@@ -173,12 +233,12 @@ export class BookmarksStore {
 
 		if (isEventBookmark(unsavedData)) {
 			await this.saveBookmark(unsavedData);
-			this.bookmarkedEvents.push(unsavedData);
+			this.events.push(unsavedData);
 		}
 
 		if (isMessageBookmark(unsavedData)) {
 			await this.saveBookmark(unsavedData);
-			this.bookmarkedMessages.push(unsavedData);
+			this.messages.push(unsavedData);
 		}
 	};
 

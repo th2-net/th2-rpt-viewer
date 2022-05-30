@@ -54,9 +54,8 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const isContentBeautified = viewType === MessageViewType.FORMATTED;
 	const isBookmarked =
-		bookmarksStore.bookmarkedMessages.findIndex(
-			bookmarkedMessage => bookmarkedMessage.id === messageId,
-		) !== -1;
+		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === messageId) !==
+		-1;
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
 

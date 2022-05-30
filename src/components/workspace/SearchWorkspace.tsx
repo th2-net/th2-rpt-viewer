@@ -45,8 +45,7 @@ function SearchWorkspace() {
 	} = searchWorkspaceStore.viewStore;
 
 	const bookmarksCounter =
-		selectedStore.bookmarksStore.bookmarkedMessages.length +
-		selectedStore.bookmarksStore.bookmarkedEvents.length;
+		selectedStore.bookmarksStore.messages.length + selectedStore.bookmarksStore.events.length;
 
 	const searchPanel = React.useMemo(() => {
 		return {

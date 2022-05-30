@@ -51,9 +51,7 @@ function EventDetailInfoCard(props: Props) {
 	const endTimestampValue = endTimestamp && timestampToNumber(endTimestamp);
 
 	const isBookmarked =
-		bookmarksStore.bookmarkedEvents.findIndex(
-			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
-		) !== -1;
+		bookmarksStore.events.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !== -1;
 
 	function onEventPin() {
 		if (event === null) return;
