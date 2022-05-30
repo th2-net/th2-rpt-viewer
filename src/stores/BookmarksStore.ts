@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, runInAction, toJS } from 'mobx';
+import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import moment from 'moment';
 import { EventTreeNode } from '../models/EventAction';
@@ -42,11 +42,20 @@ export class BookmarksStore {
 	@observable
 	public selectedBookmarks: Set<string> = new Set();
 
-	@observable
-	public addedBookmarks: Set<string> = new Set();
-
 	constructor(private workspacesStore: WorkspacesStore, private db: IndexedDB) {
 		this.init();
+		reaction(
+			() => this.bookmarkType,
+			() => {
+				this.selectedBookmarks.clear();
+			},
+		);
+		reaction(
+			() => this.textSearch,
+			() => {
+				this.selectedBookmarks.clear();
+			},
+		);
 	}
 
 	@computed
@@ -154,7 +163,7 @@ export class BookmarksStore {
 	};
 
 	@action
-	public removeBookmark = async (bookmark: Bookmark) => {
+	public removeBookmark = (bookmark: Bookmark) => {
 		if (isEventBookmark(bookmark)) {
 			this.events = this.events.filter(eventBookmark => eventBookmark !== bookmark);
 			this.db.deleteDbStoreItem(IndexedDbStores.EVENTS, bookmark.id);
