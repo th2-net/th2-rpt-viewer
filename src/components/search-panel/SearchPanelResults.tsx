@@ -17,10 +17,10 @@
 import React from 'react';
 import moment from 'moment';
 import { isEventNode } from '../../helpers/event';
-import { BookmarkedItem } from '../bookmarks/BookmarksPanel';
 import { SearchResult } from '../../stores/SearchStore';
 import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
+import { BookmarkedItem } from '../../models/Bookmarks';
 
 interface SearchPanelResultsProps {
 	onResultItemClick: (searchResult: BookmarkedItem) => void;
