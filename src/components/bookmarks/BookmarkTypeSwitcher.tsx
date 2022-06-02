@@ -15,7 +15,7 @@
  ***************************************************************************** */
 import React from 'react';
 import { createBemElement } from '../../helpers/styleCreators';
-import { BookmarkType } from './BookmarksPanel';
+import { BookmarkType } from '../../models/Bookmarks';
 
 type Props = {
 	value: BookmarkType | null;
