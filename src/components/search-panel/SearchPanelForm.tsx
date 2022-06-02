@@ -111,7 +111,7 @@ const SearchPanelForm = () => {
 	const eventsFormTypeConfig: FitlerRowItem = {
 		label: 'Parent Event',
 		value: form.parentEvent,
-		disabled,
+		disabled: disabled || isSearching,
 		setValue: getFormStateUpdater('parentEvent'),
 		type: 'event-resolver',
 		id: 'parent-event',

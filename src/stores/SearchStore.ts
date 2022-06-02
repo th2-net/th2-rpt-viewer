@@ -316,7 +316,7 @@ export class SearchStore {
 						info: this.eventFilterInfo,
 						state: this.eventsFilter,
 						setState: this.setEventsFilter,
-						disableAll: this.isFormDisabled,
+						disableAll: this.isFormDisabled || this.isSearching,
 				  }
 				: null;
 		}
@@ -325,7 +325,7 @@ export class SearchStore {
 					info: this.messagesFilterInfo,
 					state: this.messagesFilter,
 					setState: this.setMessagesFilter,
-					disableAll: this.isFormDisabled,
+					disableAll: this.isFormDisabled || this.isSearching,
 			  }
 			: null;
 	}
