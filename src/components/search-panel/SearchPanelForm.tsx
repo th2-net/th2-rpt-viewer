@@ -39,6 +39,7 @@ import SearchResultCountLimit, {
 import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
+import { createBemElement } from '../../helpers/styleCreators';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -255,7 +256,14 @@ const SearchPanelForm = () => {
 			</div>
 			{!disabled && (
 				<div className='search-panel__footer'>
-					<button className='search-panel__clear-btn' onClick={clearFilters}>
+					<button
+						className={createBemElement(
+							'search-panel',
+							'clear-btn',
+							isSearching ? 'disabled' : null,
+						)}
+						onClick={clearFilters}
+						disabled={isSearching}>
 						<i className='search-panel__clear-icon' />
 						Clear All
 					</button>
