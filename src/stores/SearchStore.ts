@@ -421,10 +421,12 @@ export class SearchStore {
 	};
 
 	@action clearFilters = () => {
-		this.messagesFilter = getDefaultMessagesFiltersState(this.messagesFilterInfo);
-		this.eventsFilter = getDefaultEventsFiltersState(this.eventFilterInfo);
+		if (!this.isSearching) {
+			this.messagesFilter = getDefaultMessagesFiltersState(this.messagesFilterInfo);
+			this.eventsFilter = getDefaultEventsFiltersState(this.eventFilterInfo);
 
-		this.searchForm = getDefaultFormState();
+			this.searchForm = getDefaultFormState();
+		}
 	};
 
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
