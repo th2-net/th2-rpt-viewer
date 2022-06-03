@@ -305,7 +305,7 @@ export class SearchStore {
 		| (SSEHeartbeat & { searchDirection: SSESearchDirection })
 	> = [];
 
-	@computed get isFormDisabled() {
+	@computed get isHistorySearch() {
 		return this.searchHistory.length > 1 && this.currentIndex !== this.searchHistory.length - 1;
 	}
 
@@ -316,7 +316,7 @@ export class SearchStore {
 						info: this.eventFilterInfo,
 						state: this.eventsFilter,
 						setState: this.setEventsFilter,
-						disableAll: this.isFormDisabled || this.isSearching,
+						disableAll: this.isHistorySearch || this.isSearching,
 				  }
 				: null;
 		}
@@ -325,7 +325,7 @@ export class SearchStore {
 					info: this.messagesFilterInfo,
 					state: this.messagesFilter,
 					setState: this.setMessagesFilter,
-					disableAll: this.isFormDisabled || this.isSearching,
+					disableAll: this.isHistorySearch || this.isSearching,
 			  }
 			: null;
 	}

@@ -276,7 +276,10 @@
 }
 
 @mixin clickable {
-	cursor: pointer;
+	&:not([disabled]) {
+		cursor: pointer;
+	}
+
 	border-radius: 2px;
 
 	&:hover {
@@ -285,7 +288,9 @@
 }
 
 @mixin improved-clickable($bgc, $rad: 2px, $amount: 2) {
-	cursor: pointer;
+	&:not([disabled]) {
+		cursor: pointer;
+	}
 	border-radius: $rad;
 	background-color: $bgc;
 

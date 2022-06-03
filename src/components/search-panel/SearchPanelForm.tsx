@@ -47,7 +47,7 @@ export type DateInputProps = {
 
 const SearchPanelForm = () => {
 	const {
-		isFormDisabled: disabled,
+		isHistorySearch,
 		updateForm,
 		searchForm: form,
 		formType,
@@ -63,6 +63,8 @@ const SearchPanelForm = () => {
 		resetEventAutocompleteList,
 		clearFilters,
 	} = useSearchStore();
+
+	const disabled = isHistorySearch || isSearching;
 
 	const [currentStream, setCurrentStream] = useState('');
 	const sessionsStore = useSessionsStore();
@@ -112,7 +114,7 @@ const SearchPanelForm = () => {
 	const eventsFormTypeConfig: FitlerRowItem = {
 		label: 'Parent Event',
 		value: form.parentEvent,
-		disabled: disabled || isSearching,
+		disabled,
 		setValue: getFormStateUpdater('parentEvent'),
 		type: 'event-resolver',
 		id: 'parent-event',
@@ -225,7 +227,9 @@ const SearchPanelForm = () => {
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
 		disabled:
-			disabled || !form.searchDirection || (formType === 'message' && form.stream.length === 0),
+			isHistorySearch ||
+			!form.searchDirection ||
+			(formType === 'message' && form.stream.length === 0),
 		progress: commonProgress,
 		processedObjectCount,
 		isPaused,
@@ -239,7 +243,7 @@ const SearchPanelForm = () => {
 			<SearchProgressBar {...progressBarConfig} />
 			<SearchSubmit {...searchSubmitConfig} />
 			<div className='search-panel__fields'>
-				<FiltersHistory />
+				<FiltersHistory disabled={disabled} />
 				<div className='filter-row'>
 					<div className='filter-row__label'>Search for</div>
 					<div className='search-type-config'>
