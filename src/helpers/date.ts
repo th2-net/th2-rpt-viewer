@@ -18,7 +18,7 @@ import moment, { Moment } from 'moment';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { DateTimeMask } from '../models/filter/FilterInputs';
-import { TimeRange, Timestamp } from '../models/Timestamp';
+import { TimeRange } from '../models/Timestamp';
 import { isEventMessage } from './event';
 
 export function getElapsedTime(

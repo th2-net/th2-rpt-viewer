@@ -35,7 +35,7 @@ import {
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { getTimestampAsNumber } from '../helpers/date';
-import { getItemId, isEventId, isEventMessage, isEventNode, isEventAction } from '../helpers/event';
+import { getItemId, isEventId, isEventMessage, isEventNode } from '../helpers/event';
 import {
 	getDefaultEventsFiltersState,
 	getDefaultMessagesFiltersState,
