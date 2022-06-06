@@ -21,11 +21,7 @@ export type StreamInfo = {
 		name: string;
 		direction: StreamDirection;
 	};
-	lastId: {
-		streamName: string;
-		direction: string;
-		index: number;
-	};
+	lastId: string;
 };
 
 export type DirectionalStreamInfo = {
