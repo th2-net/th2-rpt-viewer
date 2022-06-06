@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { formatTime, getElapsedTime } from '../../helpers/date';
+import { formatTime, getElapsedTime, timestampToNumber } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';
@@ -64,6 +64,7 @@ function EventCardHeader(props: Props) {
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
+	const startTimestampValue = timestampToNumber(startTimestamp);
 
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
@@ -103,7 +104,7 @@ function EventCardHeader(props: Props) {
 		setFormType('event');
 		updateForm({
 			parentEvent: eventId,
-			startTimestamp,
+			startTimestamp: startTimestampValue,
 		});
 		setActiveWorkspace(0);
 	}
@@ -148,7 +149,9 @@ function EventCardHeader(props: Props) {
 						className='event-header-card__time-label'
 						onMouseEnter={onMouseEnter}
 						onMouseLeave={onMouseLeave}>
-						<span className='event-header-card__time-label-full'>{formatTime(startTimestamp)}</span>
+						<span className='event-header-card__time-label-full'>
+							{formatTime(startTimestampValue)}
+						</span>{' '}
 					</div>
 					{eventType && (
 						<span className='event-header-card__event-type' onClick={handleTypeClick}>

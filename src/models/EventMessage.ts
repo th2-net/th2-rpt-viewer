@@ -47,7 +47,7 @@ export interface EventMessage {
 	type: ActionType.MESSAGE;
 	sequence: string;
 	id: string;
-	timestamp: number;
+	timestamp: string;
 	direction: string;
 	sessionId: string;
 	rawMessageBase64: string | null;

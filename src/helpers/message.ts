@@ -22,6 +22,7 @@ import {
 	MessageBodyField,
 	MessageBodyFields,
 } from '../models/MessageBody';
+import { timestampToNumber } from './date';
 
 export const sortMessagesByTimestamp = (
 	messages: Array<EventMessage>,
@@ -30,9 +31,9 @@ export const sortMessagesByTimestamp = (
 	const copiedMessages = messages.slice();
 	copiedMessages.sort((mesA, mesB) => {
 		if (order === 'desc') {
-			return mesB.timestamp - mesA.timestamp;
+			return timestampToNumber(mesB.timestamp) - timestampToNumber(mesA.timestamp);
 		}
-		return mesA.timestamp - mesB.timestamp;
+		return timestampToNumber(mesA.timestamp) - timestampToNumber(mesB.timestamp);
 	});
 	return copiedMessages;
 };

@@ -17,7 +17,7 @@
 import * as React from 'react';
 import { EventMessage, ParsedMessage } from '../../../models/EventMessage';
 import { createStyleSelector } from '../../../helpers/styleCreators';
-import { formatTime } from '../../../helpers/date';
+import { formatTime, timestampToNumber } from '../../../helpers/date';
 import { getHashCode } from '../../../helpers/stringHash';
 
 interface MessageInfoProps {
@@ -42,7 +42,7 @@ export const MessageHeader = React.memo((props: MessageInfoProps) => {
 		direction?.toLowerCase(),
 	);
 
-	const formattedTimestamp = formatTime(timestamp);
+	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 	return (
 		<div className='mc-header__info'>
 			<span

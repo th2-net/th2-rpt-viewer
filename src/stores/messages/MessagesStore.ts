@@ -34,6 +34,7 @@ import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
 import { getItemAt } from '../../helpers/array';
+import { timestampToNumber } from '../../helpers/date';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -126,7 +127,7 @@ export default class MessagesStore {
 		const messageFrom = getItemAt(this.dataStore.messages, endIndex);
 
 		if (messageFrom && messageTo) {
-			return [messageFrom.timestamp, messageTo.timestamp];
+			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
 		}
 		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
 		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];
@@ -178,8 +179,8 @@ export default class MessagesStore {
 			const message = defaultState.targetMessage;
 			if (isEventMessage(message)) {
 				this.selectedMessageId = new String(message.id);
-				this.highlightedMessageId = message.id;
-				this.graphStore.setTimestamp(message.timestamp);
+				this.highlightedMessageId = new String(message.id);
+				this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 				this.workspaceStore.viewStore.activePanel = this;
 			}
 		}
@@ -195,13 +196,13 @@ export default class MessagesStore {
 
 			this.selectedMessageId = new String(message.id);
 			this.highlightedMessageId = new String(message.id);
-			this.graphStore.setTimestamp(message.timestamp);
+			this.graphStore.setTimestamp(timestampToNumber(message.timestamp));
 			this.hintMessages = [];
 			this.workspaceStore.viewStore.activePanel = this;
 
 			this.filterStore.resetMessagesFilter({
 				timestampFrom: null,
-				timestampTo: message.timestamp,
+				timestampTo: timestampToNumber(message.timestamp),
 				streams: [...new Set([...streams, message.sessionId])],
 			});
 		}
@@ -234,7 +235,7 @@ export default class MessagesStore {
 					streams: [
 						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
 					],
-					timestampTo: mostRecentMessage.timestamp,
+					timestampTo: timestampToNumber(mostRecentMessage.timestamp),
 				};
 			}
 		}
@@ -310,11 +311,11 @@ export default class MessagesStore {
 		this.selectedMessageId = new String(targetMessage.id);
 		this.highlightedMessageId = new String(targetMessage.id);
 		this.showFilterChangeHint = false;
-		this.graphStore.setTimestamp(targetMessage.timestamp);
+		this.graphStore.setTimestamp(timestampToNumber(targetMessage.timestamp));
 
 		this.filterStore.resetMessagesFilter({
 			streams: [...new Set(this.hintMessages.map(({ sessionId }) => sessionId))],
-			timestampTo: targetMessage.timestamp,
+			timestampTo: timestampToNumber(targetMessage.timestamp),
 			timestampFrom: null,
 		});
 
@@ -331,7 +332,7 @@ export default class MessagesStore {
 
 	private onMessageHover = (hoveredMessage: EventMessage | null) => {
 		if (hoveredMessage !== null) {
-			this.graphStore.setTimestamp(hoveredMessage.timestamp);
+			this.graphStore.setTimestamp(timestampToNumber(hoveredMessage.timestamp));
 		}
 	};
 }

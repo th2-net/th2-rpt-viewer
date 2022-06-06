@@ -24,7 +24,7 @@ import { SearchStore } from '../SearchStore';
 import ApiSchema from '../../api/ApiSchema';
 import { WorkspaceInitialState } from './WorkspaceStore';
 import { isEvent, isEventMessage } from '../../helpers/event';
-import { getTimestampAsNumber, getRangeFromTimestamp } from '../../helpers/date';
+import { getTimestampAsNumber, getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
 import RootStore from '../RootStore';
 
 export const SEARCH_STORE_INTERVAL = 15;
@@ -82,7 +82,7 @@ export default class SearchWorkspaceStore {
 			initialWorkspaceState.layout = [100, 0];
 		} else {
 			initialWorkspaceState.messages = {
-				timestampTo: savedItem.timestamp,
+				timestampTo: timestampToNumber(savedItem.timestamp),
 				timestampFrom: null,
 				streams: [savedItem.sessionId],
 				targetMessage: savedItem,
@@ -100,12 +100,12 @@ export default class SearchWorkspaceStore {
 
 		if (isEventMessage(resultItem)) {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(
-				resultItem.timestamp,
+				timestampToNumber(resultItem.timestamp),
 				resultItem,
 			);
 		} else {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(
-				resultItem.startTimestamp,
+				timestampToNumber(resultItem.startTimestamp),
 				resultItem,
 			);
 		}
