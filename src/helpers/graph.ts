@@ -81,10 +81,12 @@ export function groupGraphItems(
 			currItem = sortedItems[++i];
 		}
 		groups.push(group);
+
+		i++;
 		headItem = sortedItems[i];
 	}
 
-	return groups;
+	return groups.filter(group => group.items.length !== 0);
 }
 
 export function getGraphTimeTicks(timeRange: TimeRange, interval: number, tickSize: number) {
