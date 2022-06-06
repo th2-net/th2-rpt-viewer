@@ -109,7 +109,6 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		this.closeChannel();
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
-		console.log(this.messageIds);
 		this.messageIds = resumeMessageIds || this.messageIds;
 
 		this.channel = api.sse.getEventSource({
@@ -149,9 +148,6 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	private _onMessageIdsEvent = (e: Event) => {
 		const messagesIdsEvent: MessageIdsEvent =
 			e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
-		console.log(
-			Object.values(messagesIdsEvent.messageIds).map(messageId => messageId.lastId) as string[],
-		);
 		this.messageIds = Object.values(messagesIdsEvent.messageIds).map(
 			messageId => messageId.lastId,
 		) as string[];
