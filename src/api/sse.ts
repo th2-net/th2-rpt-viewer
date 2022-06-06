@@ -114,7 +114,11 @@ export interface MessageIdsEvent {
 	reason: string;
 	// session: messageId
 	messageIds: {
-		[session: string]: string | null;
+		[session: string]: {
+			hasStarted: boolean;
+			hasFinished: boolean;
+			lastId: string | null;
+		};
 	};
 }
 
