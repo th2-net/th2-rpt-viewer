@@ -24,7 +24,7 @@ import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
 import MessagesUpdateStore from './MessagesUpdateStore';
 import { MessagesDataStore } from '../../models/Stores';
-import { DirectionalStreamInfo } from '../../models/StreamInfo';
+import { DirectionalStreamInfo, StreamDirection } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
 import { isEventMessage } from '../../helpers/event';
 
@@ -172,10 +172,14 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		const [nextMessages, prevMessages] = await Promise.all([
 			this.searchChannelNext.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(messageIds.next),
+				resumeMessageIds: extractMessageIds(
+					messageIds.next.filter((messageId, index) => index < 2),
+				),
 			}),
 			this.searchChannelPrev.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(messageIds.previous),
+				resumeMessageIds: extractMessageIds(
+					messageIds.previous.filter((messageId, index) => index < 2),
+				),
 			}),
 		]);
 
