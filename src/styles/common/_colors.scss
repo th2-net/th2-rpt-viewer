@@ -56,13 +56,15 @@ $alternativeTextColor: #666666;
 $activeTextColor: #333333;
 $filteredTextColor: #ffe6cc;
 $highlightedTextColor: #99c7ff;
-$textSelectedSwitcher: #5C85D6;
+$textSelectedSwitcher: #5c85d6;
 
 $defaultCardBorderColor: #666666;
 $defaultCardBackground: #e0e0e0;
 $defaultSelectedCardBackground: #e0e0e033;
 
 $buttonDisabledBackground: $defaultCardBackground;
+
+$headerBackground: #3d668f;
 
 $tableHeaderBackground: #148fcc;
 $tableHeaderBackgroundSecondary: #73b6e6;
@@ -89,7 +91,7 @@ $rejectedMessageLabelBackground: #ffe699;
 $adminMessageLabelBackground: #7acccc;
 
 $filterPrimaryColor: #fff;
-$filterSecondaryColor: #5C85D6;
+$filterSecondaryColor: #5c85d6;
 $filterTextColor: #666666;
 $filterPathColor: #000000;
 
@@ -134,7 +136,7 @@ $windowsLayoutBackgroundColor: #bdccdb;
 $windowsSplitterColor: #7db3e8;
 
 $filterPickerControlColor: #e6e6e6;
-$filterPickerControlFontColor: #ADC2EB;
+$filterPickerControlFontColor: #adc2eb;
 $filterPickerScrollItemColor: #666666;
 $filterPickerScrollItemActiveColor: #3fc7fa;
 $filterPickerScrollItemBlockedColor: #f3f3f3;
@@ -188,7 +190,7 @@ $controlButtonTextColorHover: #595959;
 
 $messageListLoadButtonColor: #e5eaf0;
 $messageListLoadButtonTextColor: #3d668f;
-$messageListSearchInfoColor: #d8d8d8;;
+$messageListSearchInfoColor: #d8d8d8;
 $messageListSearchInfoTextColor: #333333;
 
 $searchTextColor: white;
@@ -196,7 +198,7 @@ $searchPanelColor: #fff;
 $searchProgressBarColor: #9163db;
 $searchButtonColor: white;
 $searchNotFoundEventsColor: #fbd010;
-$searchInputBorderColor: #5C85D6;
+$searchInputBorderColor: #5c85d6;
 $searchResultBackgroundColor: #fff;
 $searchResultMessageHighlightColor: #61c2f2;
 $searchResultEventHighlightColor: $eventTextColorLight;
@@ -210,7 +212,7 @@ $bookmarkLinkHoverColor: #040505;
 $eventsListLoadButtonColor: #e5eaf0;
 $eventsListLoadButtonTextColor: #bc271a;
 
-$attachedMessageCardColor: #FFA64C;
-$hoveredAttachedMessageCardColor: #FFEEE5;
+$attachedMessageCardColor: #ffa64c;
+$hoveredAttachedMessageCardColor: #ffeee5;
 $pinnedMessageCardColor: $bookmarkIconColor;
-$hoveredPinnedMessageCardColor: #FAF4FF 
+$hoveredPinnedMessageCardColor: #faf4ff;

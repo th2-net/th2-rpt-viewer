@@ -17,7 +17,6 @@
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
 import { EventBookmark, MessageBookmark } from '../components/bookmarks/BookmarksPanel';
-import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { SearchHistory } from '../stores/SearchStore';
@@ -44,7 +43,6 @@ export type DbData =
 	| EventBookmark
 	| MessageBookmark
 	| SearchHistory
-	| GraphSearchResult
 	| MessageDisplayRule
 	| OrderRule
 	| MessageSortOrderItem
@@ -75,7 +73,7 @@ interface TH2DB extends DBSchema {
 	};
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: {
 		key: string;
-		value: GraphSearchResult;
+		value: null;
 		indexes: {
 			timestamp: number;
 		};

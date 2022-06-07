@@ -209,3 +209,19 @@
 		}
 	}
 }
+
+.header {
+	position: relative;
+	height: 100%;
+	width: 100%;
+	background-color: $headerBackground;
+}
+
+.th2-logo {
+	@include icon(url(../../resources/icons/th2-icon.svg), 22px, 60px);
+	display: inline-block;
+	position: absolute;
+	left: 14px;
+	top: 4px;
+	z-index: 5;
+}
