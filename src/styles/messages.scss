@@ -136,7 +136,6 @@
 				filter: none;
 			}
 		}
-
 	}
 }
 
@@ -450,7 +449,7 @@
 
 	&__field-border {
 		padding: 1px 2px;
-		&.active{
+		&.active {
 			border: 1px solid $graphTickColor;
 			padding: 0 1px;
 			border-radius: '4px';
@@ -964,6 +963,26 @@
 
 		&-ascii {
 			@include icon(url(../../resources/icons/ascii.svg), 20px, 20px);
+		}
+	}
+
+	&__configurator-button {
+		@include clickable;
+		border: none;
+		border-radius: 6px;
+		background-color: transparent;
+		width: 28px;
+		height: 28px;
+		display: flex;
+		justify-content: center;
+		padding: 0;
+		align-items: center;
+		cursor: pointer;
+		outline: none;
+
+		&-icon {
+			@include icon(url(../../resources/icons/settings.svg), 15px, 15px);
+			display: inline-block;
 		}
 	}
 }

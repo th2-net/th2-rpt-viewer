@@ -18,6 +18,7 @@ import React, { useRef, useState } from 'react';
 import { useOutsideClickListener } from '../../hooks';
 import { ModalPortal } from '../util/Portal';
 import '../../styles/messages-view-configurator.scss';
+import '../../styles/messages.scss';
 import RulesList from './RulesList';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import BodySortConfig from './BodySortConfig';
@@ -32,11 +33,17 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 
 	const modalRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
+	const imageRef = useRef<HTMLImageElement>(null);
 
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		const isFromAutocomplete = Boolean((e.target as HTMLElement).closest('.rules-autocomplete'));
 		const isFromSelect = Boolean((e.target as HTMLElement).closest('.rules-select-options-list'));
-		if (e.target !== buttonRef.current && !isFromAutocomplete && !isFromSelect) {
+		if (
+			e.target !== buttonRef.current &&
+			e.target !== imageRef.current &&
+			!isFromAutocomplete &&
+			!isFromSelect
+		) {
 			setIsOpen(false);
 		}
 	});
@@ -50,22 +57,30 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 		mode === 'body-sort' ? 'active' : null,
 	);
 
+	const offsetTop = document
+		.querySelector('.messages-window-header__configurator-button')
+		?.getBoundingClientRect().top;
+
+	const offsetRight = document
+		.querySelector('.messages-window-header__configurator-button')
+		?.getBoundingClientRect().left;
+
 	return (
 		<>
 			<button
 				ref={buttonRef}
-				className='messages-view-configurator-open'
-				onClick={() => setIsOpen(open => !open)}
-				title='Message display rules'
-			/>
+				className='messages-window-header__configurator-button'
+				onClick={() => setIsOpen(open => !open)}>
+				<i className='messages-window-header__configurator-button-icon' ref={imageRef} />
+			</button>
 			<ModalPortal
 				isOpen={isOpen}
 				ref={modalRef}
 				style={{
 					position: 'absolute',
 					width: '320px',
-					top: '35px',
-					right: '14px',
+					top: `calc(35px + ${offsetTop}px)`,
+					right: `calc(100% - ${offsetRight}px - 14px)`,
 					zIndex: 500,
 				}}>
 				<div className='messages-view-configurator'>
