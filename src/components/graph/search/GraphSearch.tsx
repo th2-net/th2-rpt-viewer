@@ -33,6 +33,7 @@ interface Props {
 	onFoundItemClick: InstanceType<typeof WorkspaceStore>['onSavedItemSelect'];
 	windowRange: TimeRange | null;
 	hoveredTimestamp: number | null;
+	activeTabIndex: number;
 }
 
 export type GraphSearchMode = 'timestamp' | 'history';
@@ -43,7 +44,13 @@ export interface GraphSearchResult {
 }
 
 function GraphSearch(props: Props) {
-	const { onTimestampSubmit, onFoundItemClick, windowRange, hoveredTimestamp } = props;
+	const {
+		onTimestampSubmit,
+		onFoundItemClick,
+		windowRange,
+		hoveredTimestamp,
+		activeTabIndex,
+	} = props;
 
 	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
 		isValidDate: false,
@@ -81,7 +88,8 @@ function GraphSearch(props: Props) {
 				if (
 					typeof inputConfig.timestamp === 'number' &&
 					inputConfig.isValidDate &&
-					inputConfig.timestamp <= moment.utc().valueOf()
+					inputConfig.timestamp <= moment.utc().valueOf() &&
+					activeTabIndex > 0
 				) {
 					onTimestampSubmit(inputConfig.timestamp);
 				}
