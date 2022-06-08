@@ -828,7 +828,7 @@
 		font-size: 12px;
 		line-height: 14px;
 		font-weight: 600;
-		color: $graphAttachedItemNameColor;
+		color: $attachedItemNameColor;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		overflow: hidden;
@@ -905,11 +905,11 @@
 			border-radius: 50%;
 
 			&.passed {
-				background-color: $graphOverlayPassedEventsColor;
+				background-color: $passedEventsColor;
 			}
 
 			&.failed {
-				background-color: $graphOverlayFailedEventsColor;
+				background-color: $failedEventsColor;
 			}
 		}
 	}

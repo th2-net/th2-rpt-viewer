@@ -403,8 +403,8 @@
 		text-align: center;
 
 		&:hover {
-			color: $graphTextColor;
-			border: 1px solid $graphTextColor;
+			color: $timestampTextColor;
+			border: 1px solid $timestampTextColor;
 		}
 	}
 }

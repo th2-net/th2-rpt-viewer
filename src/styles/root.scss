@@ -126,11 +126,11 @@ input {
 	border-radius: 50%;
 
 	&.passed {
-		background-color: $graphOverlayPassedEventsColor;
+		background-color: $passedEventsColor;
 	}
 
 	&.failed {
-		background-color: $graphOverlayFailedEventsColor;
+		background-color: $failedEventsColor;
 	}
 }
 
