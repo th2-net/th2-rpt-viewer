@@ -136,7 +136,6 @@ export default class EventsFilterStore {
 	@action
 	public setInterval = (interval: number) => {
 		this.interval = interval;
-		console.log(this.interval);
 	};
 
 	@action
