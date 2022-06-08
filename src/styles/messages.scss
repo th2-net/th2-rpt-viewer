@@ -450,7 +450,7 @@
 	&__field-border {
 		padding: 1px 2px;
 		&.active {
-			border: 1px solid $graphTickColor;
+			border: 1px solid $messageTickColor;
 			padding: 0 1px;
 			border-radius: '4px';
 		}

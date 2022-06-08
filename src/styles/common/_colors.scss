@@ -153,24 +153,10 @@ $realtimeButtonColor: #e6e6e6;
 $realtimeButtonActiveColor: #a9e9b5;
 $realtimeButtonBorderColor: #999999;
 
-$graphBackgroundColor: #dee5ed;
-$graphButtonBackgroundColor: #d7e0ea;
-$graphTickColor: #3d668f;
-$graphTextColor: $graphTickColor;
-$graphAttachedEventPassedColor: #00802a;
-$graphAttachedEventFailedColor: #bc271a;
-$graphRangeSelectorBorder: #ff7733;
-$graphOverlayEventsColor: #3d668f;
-$graphOverlayPassedEventsColor: #00802a;
-$graphOverlayFailedEventsColor: #e60000;
-$graphOverlayMessagesColor: #1481b8;
-$graphOverlayConnectedMessagesColor: #ff6b00;
-$graphAttachedEventPassedColor: #00802a;
-$graphAttachedEventFailedColor: #bc271a;
-$graphOverlayPinnedMessagesColor: #a21ae5;
-$graphAttachedItemNameColor: #bc271a;
-$graphAttachedItemTimestampColor: #666666;
+$passedEventsColor: #00802a;
+$failedEventsColor: #e60000;
 
+$timestampTextColor: $messageTickColor;
 $timestampInputBorderColor: #7a99b8;
 
 $eventCardIdColor: #595959;
@@ -209,10 +195,13 @@ $bookmarkPanelCheckboxColor: #e8daf8;
 $bookmarkPanelButtonTextColor: white;
 $bookmarkPanelButtonBackgroundColor: #cca3f5;
 $bookmarkLinkHoverColor: #040505;
+$bookmarkAttachedItemTimestampColor: #666666;
 $eventsListLoadButtonColor: #e5eaf0;
 $eventsListLoadButtonTextColor: #bc271a;
 
+$messageTickColor: #3d668f;
 $attachedMessageCardColor: #ffa64c;
+$attachedItemNameColor: #bc271a;
 $hoveredAttachedMessageCardColor: #ffeee5;
 $pinnedMessageCardColor: $bookmarkIconColor;
 $hoveredPinnedMessageCardColor: #faf4ff;

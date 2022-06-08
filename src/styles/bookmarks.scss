@@ -120,7 +120,7 @@
 	&__id {
 		grid-area: timestamp;
 		font-size: 9px;
-		color: $graphAttachedItemTimestampColor;
+		color: $bookmarkAttachedItemTimestampColor;
 	}
 
 	&__id {
@@ -144,11 +144,11 @@
 			border-radius: 50%;
 
 			&.passed {
-				background-color: $graphOverlayPassedEventsColor;
+				background-color: $passedEventsColor;
 			}
 
 			&.failed {
-				background-color: $graphOverlayFailedEventsColor;
+				background-color: $failedEventsColor;
 			}
 		}
 	}

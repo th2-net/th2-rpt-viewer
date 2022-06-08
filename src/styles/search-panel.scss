@@ -140,11 +140,11 @@
 				border-radius: 50%;
 
 				&.passed {
-					background-color: $graphOverlayPassedEventsColor;
+					background-color: $passedEventsColor;
 				}
 
 				&.failed {
-					background-color: $graphOverlayFailedEventsColor;
+					background-color: $failedEventsColor;
 				}
 
 				&.hide {
@@ -202,7 +202,7 @@
 .search-form {
 	&__progress-bar {
 		margin: 0 10px 10px;
-		border: 1px solid #5C85D6;
+		border: 1px solid #5c85d6;
 	}
 
 	&__submit {
@@ -249,7 +249,7 @@
 	border-radius: 5px;
 	position: relative;
 	transition: background-color 0.3s;
-	border: 1px solid #5C85D6;
+	border: 1px solid #5c85d6;
 
 	&.active {
 		background: white;
@@ -315,7 +315,7 @@
 		color: $searchTextColor;
 		border-bottom: 1px solid white;
 		border-radius: 4px;
-		border: 1px solid #5C85D6;
+		border: 1px solid #5c85d6;
 
 		&:focus {
 			background-color: white;
@@ -334,7 +334,7 @@
 	cursor: pointer;
 	display: flex;
 	align-items: center;
-	color: #B2B2B2;
+	color: #b2b2b2;
 	background: none;
 	padding: 3px 8px 3px 5px;
 	border-radius: 5px;
@@ -399,14 +399,14 @@
 	&.event {
 		&.active {
 			color: #fff;
-			background-color: #FFA64C;
+			background-color: #ffa64c;
 		}
 	}
 
 	&.message {
 		&.active {
-		background-color: #1AC4E5;
-		color: #fff;
+			background-color: #1ac4e5;
+			color: #fff;
 		}
 	}
 }
@@ -684,7 +684,7 @@
 	font-size: 14px;
 	font-weight: bold;
 	color: #fff;
-	background: #ADC2EB;
+	background: #adc2eb;
 	font-family: 'Open Sans', sans-serif;
 	cursor: pointer;
 	outline: none;
@@ -913,7 +913,7 @@
 			}
 		}
 	}
-	
+
 	&__name {
 		@include ellipsis();
 
@@ -924,7 +924,7 @@
 		cursor: pointer;
 
 		&.message {
-			color: #087A91;
+			color: #087a91;
 		}
 
 		&.eventtreenode {
