@@ -108,19 +108,6 @@ function EventCardHeader(props: Props) {
 		setActiveWorkspace(0);
 	}
 
-	function onMouseEnter() {
-		if (!isUnknown) {
-			hoverTimeout.current = setTimeout(() => {
-				eventStore.setHoveredEvent(event);
-			}, 600);
-		}
-	}
-
-	function onMouseLeave() {
-		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
-		eventStore.setHoveredEvent(null);
-	}
-
 	function onRootClick() {
 		if (!disabled && onSelect) {
 			onSelect();
@@ -144,10 +131,7 @@ function EventCardHeader(props: Props) {
 			{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown ? (
 				<>
 					{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
-					<div
-						className='event-header-card__time-label'
-						onMouseEnter={onMouseEnter}
-						onMouseLeave={onMouseLeave}>
+					<div className='event-header-card__time-label'>
 						<span className='event-header-card__time-label-full'>{formatTime(startTimestamp)}</span>
 					</div>
 					{eventType && (
