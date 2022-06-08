@@ -23,7 +23,6 @@ import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import MessageBodySortOrderStore from './MessageBodySortStore';
 import { DbData } from '../api/indexedDb';
 import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
-import { intervalOptions } from '../models/Graph';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
 import { getRangeFromTimestamp } from '../helpers/date';
 import {
@@ -98,8 +97,7 @@ export default class RootStore {
 			if (workspacesUrlState) {
 				return JSON.parse(window.atob(workspacesUrlState));
 			}
-			const interval = intervalOptions[0];
-			const timeRange = timestamp ? getRangeFromTimestamp(+timestamp, interval) : undefined;
+			const timeRange = timestamp ? getRangeFromTimestamp(+timestamp, 15) : undefined;
 
 			return [
 				{
@@ -108,7 +106,7 @@ export default class RootStore {
 						timestampTo: timestamp ? parseInt(timestamp) : null,
 					},
 					timeRange,
-					interval,
+					interval: 15,
 					layout: messageId ? [0, 0, 100, 0] : defaultPanelsLayout,
 				},
 			];
@@ -123,9 +121,6 @@ export default class RootStore {
 			return null;
 		}
 	};
-
-	// workaround to reset graph search state as it uses internal state
-	@observable resetGraphSearchData = false;
 
 	@action
 	public handleQuotaExceededError = async (unsavedData?: DbData) => {

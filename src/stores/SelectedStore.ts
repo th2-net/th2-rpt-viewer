@@ -22,8 +22,6 @@ import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import { sortMessagesByTimestamp } from '../helpers/message';
 import { getItemName, sortByTimestamp } from '../helpers/event';
-import { GraphItem } from '../models/Graph';
-import { filterUniqueGraphItems } from '../helpers/graph';
 import { DbData, IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import {
 	EventBookmark,
@@ -68,27 +66,6 @@ export class SelectedStore {
 	@computed
 	public get hoveredMessage(): EventMessage | null {
 		return this.workspacesStore.activeWorkspace.messagesStore.hoveredMessage;
-	}
-
-	@computed
-	public get graphItems(): Array<GraphItem> {
-		const items = [...this.savedItems, ...this.workspacesStore.activeWorkspace.attachedMessages];
-
-		const selectedEvent = this.workspacesStore.activeWorkspace.eventsStore.selectedNode;
-
-		if (selectedEvent) {
-			items.push(selectedEvent);
-		}
-
-		if (this.hoveredEvent) {
-			items.push(this.hoveredEvent);
-		}
-
-		if (this.hoveredMessage) {
-			items.push(this.hoveredMessage);
-		}
-
-		return sortByTimestamp(filterUniqueGraphItems(items));
 	}
 
 	@computed

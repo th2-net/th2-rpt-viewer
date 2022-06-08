@@ -24,7 +24,7 @@ import EventsSearchStore from './EventsSearchStore';
 import { isEvent, isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
-import { calculateTimeRange } from '../../helpers/graph';
+import { calculateTimeRange } from '../../helpers/calculateTimeRange';
 import { TimeRange } from '../../models/Timestamp';
 import { FilterEntry, SearchStore } from '../SearchStore';
 import EventsDataStore from './EventsDataStore';

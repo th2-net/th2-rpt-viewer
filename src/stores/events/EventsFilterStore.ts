@@ -22,7 +22,7 @@ import { EventsFiltersInfo, EventSSEFilters } from '../../api/sse';
 import { getDefaultEventsFiltersState } from '../../helpers/search';
 import { TimeRange } from '../../models/Timestamp';
 import { getObjectKeys } from '../../helpers/object';
-import { calculateTimeRange } from '../../helpers/graph';
+import { calculateTimeRange } from '../../helpers/calculateTimeRange';
 
 function getDefaultTimeRange(interval = 15): TimeRange {
 	const timestampTo = moment.utc().valueOf();
