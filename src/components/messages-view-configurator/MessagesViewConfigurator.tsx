@@ -18,7 +18,6 @@ import React, { useRef, useState } from 'react';
 import { useOutsideClickListener } from '../../hooks';
 import { ModalPortal } from '../util/Portal';
 import '../../styles/messages-view-configurator.scss';
-import '../../styles/messages.scss';
 import RulesList from './RulesList';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import BodySortConfig from './BodySortConfig';

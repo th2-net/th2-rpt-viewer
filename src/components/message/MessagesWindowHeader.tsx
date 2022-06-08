@@ -20,6 +20,7 @@ import { useMessagesDataStore, useSessionsStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
 import MessagesUpdateButton from './MessagesUpdateButton';
 import MessagesViewConfigurator from '../messages-view-configurator/MessagesViewConfigurator';
+import '../../styles/messages.scss';
 
 function MessagesWindowHeader() {
 	const { searchChannelNext, updateStore } = useMessagesDataStore();
