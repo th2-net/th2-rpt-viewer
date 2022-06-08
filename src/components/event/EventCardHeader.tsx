@@ -61,8 +61,6 @@ function EventCardHeader(props: Props) {
 	const { setActiveWorkspace } = useTabsStore();
 	const { stopSearch, setFormType, updateForm } = useSearchStore();
 
-	const hoverTimeout = React.useRef<NodeJS.Timeout>();
-
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
 
 	const elapsedTime =
