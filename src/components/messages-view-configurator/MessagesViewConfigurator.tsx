@@ -32,14 +32,12 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 
 	const modalRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
-	const imageRef = useRef<HTMLImageElement>(null);
 
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		const isFromAutocomplete = Boolean((e.target as HTMLElement).closest('.rules-autocomplete'));
 		const isFromSelect = Boolean((e.target as HTMLElement).closest('.rules-select-options-list'));
 		if (
-			e.target !== buttonRef.current &&
-			e.target !== imageRef.current &&
+			!buttonRef.current?.contains(e.target as HTMLElement) &&
 			!isFromAutocomplete &&
 			!isFromSelect
 		) {
@@ -56,13 +54,9 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 		mode === 'body-sort' ? 'active' : null,
 	);
 
-	const offsetTop = document
-		.querySelector('.messages-window-header__configurator-button')
-		?.getBoundingClientRect().top;
+	const offsetTop = buttonRef.current?.getBoundingClientRect().top;
 
-	const offsetRight = document
-		.querySelector('.messages-window-header__configurator-button')
-		?.getBoundingClientRect().left;
+	const offsetRight = buttonRef.current?.getBoundingClientRect().left;
 
 	return (
 		<>
@@ -70,7 +64,7 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 				ref={buttonRef}
 				className='messages-window-header__configurator-button'
 				onClick={() => setIsOpen(open => !open)}>
-				<i className='messages-window-header__configurator-button-icon' ref={imageRef} />
+				<i className='messages-window-header__configurator-button-icon' />
 			</button>
 			<ModalPortal
 				isOpen={isOpen}

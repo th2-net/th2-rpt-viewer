@@ -44,7 +44,6 @@ export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
 	messages: Partial<MessagesStoreURLState> | string;
 	timeRange?: TimeRange;
-	interval: number | null;
 	layout: WorkspacePanelsLayout;
 }
 
