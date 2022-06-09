@@ -59,16 +59,6 @@ export class SelectedStore {
 	}
 
 	@computed
-	public get hoveredEvent(): EventTreeNode | null {
-		return this.workspacesStore.activeWorkspace.eventsStore.hoveredEvent;
-	}
-
-	@computed
-	public get hoveredMessage(): EventMessage | null {
-		return this.workspacesStore.activeWorkspace.messagesStore.hoveredMessage;
-	}
-
-	@computed
 	public get attachedMessages() {
 		return sortMessagesByTimestamp(this.workspacesStore.activeWorkspace.attachedMessages);
 	}

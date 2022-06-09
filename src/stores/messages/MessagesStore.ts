@@ -54,9 +54,6 @@ export default class MessagesStore {
 	public exportStore = new MessagesExportStore();
 
 	@observable
-	public hoveredMessage: EventMessage | null = null;
-
-	@observable
 	public selectedMessageId: String | null = null;
 
 	@observable
@@ -132,11 +129,6 @@ export default class MessagesStore {
 		}
 		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
 		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];
-	}
-
-	@action
-	public setHoveredMessage(message: EventMessage | null) {
-		this.hoveredMessage = message;
 	}
 
 	@action

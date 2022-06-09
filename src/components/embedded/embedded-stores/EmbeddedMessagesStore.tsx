@@ -38,9 +38,6 @@ export default class EmbeddedMessagesStore {
 	public filterStore: EmbeddedMessagesFilterStore;
 
 	@observable
-	public hoveredMessage: EventMessage | null = null;
-
-	@observable
 	public selectedMessageId: String | null = null;
 
 	@observable

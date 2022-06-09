@@ -92,8 +92,6 @@ export default class EventsStore {
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
 
-	@observable.ref hoveredEvent: EventTreeNode | null = null;
-
 	@observable.ref selectedParentNode: EventTreeNode | null = null;
 
 	@observable.ref selectedEvent: EventAction | null = null;

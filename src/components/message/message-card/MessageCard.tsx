@@ -50,7 +50,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
-	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const isContentBeautified = viewType === MessageViewType.FORMATTED;
 	const isBookmarked =
@@ -95,17 +94,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		};
 	}, [messagesStore.highlightedMessageId]);
 
-	const hoverMessage = React.useCallback(() => {
-		hoverTimeout.current = setTimeout(() => {
-			messagesStore.setHoveredMessage(message);
-		}, 600);
-	}, [messagesStore.setHoveredMessage]);
-
-	const unhoverMessage = React.useCallback(() => {
-		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
-		messagesStore.setHoveredMessage(null);
-	}, [messagesStore.setHoveredMessage]);
-
 	const isAttached = computed(
 		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.id === message.id),
 	).get();
@@ -127,8 +115,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			viewType={viewType}
 			setViewType={setViewType}
 			isHighlighted={isHighlighted}
-			hoverMessage={hoverMessage}
-			unhoverMessage={unhoverMessage}
 			isBookmarked={isBookmarked}
 			isAttached={isAttached}
 			isContentBeautified={isContentBeautified}
