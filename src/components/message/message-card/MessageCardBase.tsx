@@ -30,8 +30,6 @@ import { MessageHeader } from './MessageHeader';
 
 export interface MessageCardBaseProps {
 	message: EventMessage;
-	hoverMessage?: () => void;
-	unhoverMessage?: () => void;
 	isAttached?: boolean;
 	isBookmarked?: boolean;
 	isHighlighted?: boolean;
@@ -53,8 +51,6 @@ const MessageCardBase = React.memo(
 		message,
 		viewType,
 		setViewType,
-		hoverMessage,
-		unhoverMessage,
 		isAttached,
 		isBookmarked,
 		isHighlighted,
@@ -114,9 +110,7 @@ const MessageCardBase = React.memo(
 						<span className={sessionClass} style={sessionArrowStyle}></span>
 						<span
 							className='mc-header__value mc-header__timestamp'
-							title={`Timestamp: ${formattedTimestamp}`}
-							onMouseEnter={hoverMessage}
-							onMouseLeave={unhoverMessage}>
+							title={`Timestamp: ${formattedTimestamp}`}>
 							{timestamp && formattedTimestamp}
 						</span>
 						<span className='mc-header__value'>{messageIdWithHighlightedSession} </span>
@@ -178,9 +172,7 @@ const MessageCardBase = React.memo(
 						<div className={sessionClass} style={sessionArrowStyle} />
 						<p
 							className='mc-header__value mc-header__timestamp'
-							title={`Timestamp: ${formattedTimestamp}`}
-							onMouseEnter={hoverMessage}
-							onMouseLeave={unhoverMessage}>
+							title={`Timestamp: ${formattedTimestamp}`}>
 							{timestamp && formattedTimestamp}
 						</p>
 						<p className='mc-header__value'>{messageIdWithHighlightedSession}</p>
@@ -196,11 +188,7 @@ const MessageCardBase = React.memo(
 				<div className='message-card'>
 					<div className='mc__mc-header mc-header'>{renderMessageInfo()}</div>
 					<div className='mc__mc-body mc-body'>
-						<MessageHeader
-							message={message}
-							onTimestampMouseEnter={hoverMessage}
-							onTimestampMouseLeave={unhoverMessage}
-						/>
+						<MessageHeader message={message} />
 						{isScreenshotMsg ? (
 							<div className='mc-body__screenshot'>
 								<MessageScreenshotZoom

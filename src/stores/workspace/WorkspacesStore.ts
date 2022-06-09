@@ -87,7 +87,9 @@ export default class WorkspacesStore {
 	};
 
 	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
-		activeWorkspace.graphStore.setTimestampFromRange(activeWorkspace.graphStore.range);
+		activeWorkspace.eventsStore.filterStore.setTimestampFromRange(
+			activeWorkspace.eventsStore.filterStore.range,
+		);
 	};
 
 	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {

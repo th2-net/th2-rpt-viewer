@@ -27,7 +27,6 @@ import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
 import { ActionType, EventAction, EventTreeNode } from '../../models/EventAction';
 import { sortMessagesByTimestamp } from '../../helpers/message';
-import { GraphStore } from '../GraphStore';
 import { isEventMessage } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
@@ -45,7 +44,6 @@ export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
 	messages: Partial<MessagesStoreURLState> | string;
 	timeRange?: TimeRange;
-	interval: number | null;
 	layout: WorkspacePanelsLayout;
 }
 
@@ -65,8 +63,6 @@ export default class WorkspaceStore {
 	public messageViewTypesStore: MessagesViewTypesStore;
 
 	public viewStore: WorkspaceViewStore;
-
-	public graphStore: GraphStore;
 
 	public searchStore: SearchStore;
 
@@ -90,14 +86,8 @@ export default class WorkspaceStore {
 		this.viewStore = new WorkspaceViewStore({
 			panelsLayout: initialState.layout,
 		});
-		this.graphStore = new GraphStore(
-			this.selectedStore,
-			initialState.timeRange,
-			initialState.interval,
-		);
 		this.eventsStore = new EventsStore(
 			this,
-			this.graphStore,
 			this.searchStore,
 			this.api,
 			this.workspacesStore.filtersHistoryStore,
@@ -105,7 +95,6 @@ export default class WorkspaceStore {
 		);
 		this.messagesStore = new MessagesStore(
 			this,
-			this.graphStore,
 			this.selectedStore,
 			this.searchStore,
 			this.api,
@@ -180,8 +169,8 @@ export default class WorkspaceStore {
 			toJS({
 				events: eventStoreState,
 				messages: messagesStoreState,
-				timeRange: this.graphStore.range,
-				interval: this.graphStore.interval,
+				timeRange: this.eventsStore.filterStore.range,
+				interval: this.eventsStore.filterStore.interval,
 				layout: this.viewStore.panelsLayout,
 			}),
 		];
@@ -239,7 +228,7 @@ export default class WorkspaceStore {
 
 	@action
 	public onTimestampSelect = (timestamp: number) => {
-		this.graphStore.setTimestamp(timestamp);
+		this.eventsStore.filterStore.setTimestamp(timestamp);
 	};
 
 	@action
@@ -249,10 +238,10 @@ export default class WorkspaceStore {
 
 	@action
 	public onTimestampSelectSearch = (timestamp: number) => {
-		const range = getRangeFromTimestamp(timestamp, this.graphStore.interval);
+		const range = getRangeFromTimestamp(timestamp, this.eventsStore.filterStore.interval);
 		const newWorkspace = this.workspacesStore.createWorkspace({
 			timeRange: range,
-			interval: this.graphStore.interval,
+			interval: this.eventsStore.filterStore.interval,
 			events: {
 				range,
 			},
@@ -276,7 +265,7 @@ export default class WorkspaceStore {
 			case ActionType.EVENT_ACTION:
 				this.eventsStore.clearFilter();
 				this.eventsStore.filterStore.setEventsRange(
-					getRangeFromTimestamp(timestamp, this.graphStore.interval),
+					getRangeFromTimestamp(timestamp, this.eventsStore.filterStore.interval),
 				);
 				if (this.eventsStore.filterStore.filter) {
 					this.eventsStore.applyFilter(this.eventsStore.filterStore.filter);

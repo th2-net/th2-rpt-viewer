@@ -24,8 +24,7 @@ import EventsSearchStore from './EventsSearchStore';
 import { isEvent, isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
-import { calculateTimeRange } from '../../helpers/graph';
-import { GraphStore } from '../GraphStore';
+import { calculateTimeRange } from '../../helpers/calculateTimeRange';
 import { TimeRange } from '../../models/Timestamp';
 import { FilterEntry, SearchStore } from '../SearchStore';
 import EventsDataStore from './EventsDataStore';
@@ -60,7 +59,6 @@ export default class EventsStore {
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
-		private graphStore: GraphStore,
 		private searchPanelStore: SearchStore,
 		private api: ApiSchema,
 		private filterHistoryStore: FiltersHistoryStore,
@@ -68,7 +66,7 @@ export default class EventsStore {
 	) {
 		const initialState = !defaultState || typeof defaultState === 'string' ? {} : defaultState;
 
-		this.filterStore = new EventsFilterStore(this.graphStore, this.searchPanelStore, {
+		this.filterStore = new EventsFilterStore(this.searchPanelStore, {
 			filter: initialState.filter,
 			range: initialState.range,
 		});
@@ -87,16 +85,12 @@ export default class EventsStore {
 
 		reaction(() => this.viewStore.flattenedListView, this.onViewChange);
 
-		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
-
 		reaction(() => this.selectedEvent, this.onSelectedEventChange);
 
-		reaction(() => this.graphStore.interval, this.onIntervalChange);
+		reaction(() => this.filterStore.interval, this.onIntervalChange);
 	}
 
 	@observable.ref selectedNode: EventTreeNode | null = null;
-
-	@observable.ref hoveredEvent: EventTreeNode | null = null;
 
 	@observable.ref selectedParentNode: EventTreeNode | null = null;
 
@@ -245,14 +239,6 @@ export default class EventsStore {
 	}
 
 	@action
-	public setHoveredEvent(event: EventTreeNode | null) {
-		if (event !== this.hoveredEvent) {
-			this.hoveredEvent = event;
-			this.graphStore.setHoveredTimestamp(event);
-		}
-	}
-
-	@action
 	public toggleNode = (eventTreeNode: EventTreeNode) => {
 		const isExpanded = !this.isExpandedMap.get(eventTreeNode.eventId);
 		this.isExpandedMap.set(eventTreeNode.eventId, isExpanded);
@@ -287,10 +273,9 @@ export default class EventsStore {
 	public goToEvent = async (savedEventNode: EventTreeNode | EventAction) => {
 		this.selectedNode = null;
 		this.selectedEvent = null;
-		this.graphStore.setTimestamp(savedEventNode.startTimestamp);
 		this.workspaceStore.viewStore.activePanel = this;
 
-		const timeRange = calculateTimeRange(savedEventNode.startTimestamp, this.graphStore.interval);
+		const timeRange = calculateTimeRange(savedEventNode.startTimestamp, this.filterStore.interval);
 
 		this.eventDataStore.fetchEventTree({
 			timeRange,
@@ -301,7 +286,7 @@ export default class EventsStore {
 
 	@action
 	public onRangeChange = (timestampFrom: number) => {
-		const timeRange = calculateTimeRange(timestampFrom, this.graphStore.interval);
+		const timeRange = calculateTimeRange(timestampFrom, this.filterStore.interval);
 
 		this.eventDataStore.fetchEventTree({
 			timeRange,
@@ -398,7 +383,7 @@ export default class EventsStore {
 			try {
 				const event = await this.api.events.getEvent(defaultState);
 				this.filterStore.setRange(
-					getRangeFromTimestamp(event.startTimestamp, this.graphStore.interval),
+					getRangeFromTimestamp(event.startTimestamp, this.filterStore.interval),
 				);
 				initialState = { ...initialState, selectedEventId: event.eventId, targetEvent: event };
 				this.goToEvent(event);
@@ -491,12 +476,6 @@ export default class EventsStore {
 		return targetNode ? [targetNode, ...this.getNodesPath(rest, childList)] : [];
 	}
 
-	private onHoveredEventChange = (hoveredEvent: EventTreeNode | null) => {
-		if (hoveredEvent !== null) {
-			this.graphStore.setTimestamp(hoveredEvent.startTimestamp);
-		}
-	};
-
 	public getParentNodes(eventId: string, cache: Map<string, EventTreeNode>): EventTreeNode[] {
 		let event = cache.get(eventId);
 		const path = [];
@@ -545,7 +524,7 @@ export default class EventsStore {
 			.valueOf();
 		const timestampTo = moment
 			.utc(timestampFrom)
-			.add(this.graphStore.interval, 'minutes')
+			.add(this.filterStore.interval, 'minutes')
 			.valueOf();
 
 		this.eventDataStore.fetchEventTree({

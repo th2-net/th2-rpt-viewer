@@ -23,22 +23,17 @@ import Toast from './notifications/Toast';
 import ToastContainer from './notifications/ToastContainer';
 import Notifier from './notifications/Notifier';
 import WorkspacesLayout from './workspace/WorkspacesLayout';
-import Graph from './graph/Graph';
-import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
-import { useSessionsStore } from '../hooks';
 import '../styles/root.scss';
+import Header from './util/Header';
 
 const AppRootBase = () => {
-	const { sessionNames } = useSessionsStore();
-
 	return (
 		<div className='app'>
 			<ToastProvider
 				placement='top-right'
 				components={{ Toast, ToastContainer }}
 				transitionDuration={400}>
-				<Graph />
-				<MessagesViewConfigurator sessions={sessionNames} />
+				<Header />
 				<div className='app__workspaces'>
 					<WorkspacesLayout />
 				</div>
