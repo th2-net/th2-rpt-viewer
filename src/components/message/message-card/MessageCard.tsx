@@ -19,10 +19,10 @@ import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
 	useMessagesWorkspaceStore,
-	useSelectedStore,
 	useMessagesDataStore,
 	useMessageBodySortStore,
 	useMessagesViewTypesStore,
+	useBookmarksStore,
 } from '../../../hooks';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import MessageCardBase from './MessageCardBase';
@@ -44,7 +44,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
-	const selectedStore = useSelectedStore();
+	const bookmarksStore = useBookmarksStore();
 	const { sortOrderItems } = useMessageBodySortStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
@@ -53,9 +53,8 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const isContentBeautified = viewType === MessageViewType.FORMATTED;
 	const isBookmarked =
-		selectedStore.bookmarkedMessages.findIndex(
-			bookmarkedMessage => bookmarkedMessage.id === messageId,
-		) !== -1;
+		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === messageId) !==
+		-1;
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
 
@@ -99,8 +98,8 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	).get();
 
 	const toogleMessagePin = React.useCallback(() => {
-		selectedStore.toggleMessagePin(message);
-	}, [selectedStore.toggleMessagePin]);
+		bookmarksStore.toggleMessagePin(message);
+	}, [bookmarksStore.toggleMessagePin]);
 
 	const addMessagesToExport = React.useCallback(
 		() => messagesStore.exportStore.addMessageToExport(message),

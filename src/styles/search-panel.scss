@@ -181,7 +181,9 @@
 	}
 
 	&__clear-btn {
-		@include clickable;
+		&:not([disabled]) {
+			@include clickable;
+		}
 		flex: initial;
 		display: flex;
 		flex-direction: row;
@@ -192,6 +194,11 @@
 		border: none;
 		background-color: unset;
 		color: #fff;
+
+		&.disabled {
+			opacity: 0.5;
+			cursor: inherit;
+		}
 	}
 
 	&__clear-icon {

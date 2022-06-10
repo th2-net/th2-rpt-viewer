@@ -111,11 +111,17 @@ export default class WorkspacesStore {
 	};
 
 	public syncData = async (unsavedData?: DbData) => {
-		try {
-			await this.selectedStore.syncData(unsavedData);
-		} catch (error) {
-			this.selectedStore.syncData();
-		}
+		console.log({ unsavedData });
+		// TODO: Fix sync data
+		// try {
+		// 	await Promise.all([
+		// 		this.searchWorkspace.searchStore.syncData(unsavedData),
+		// 		this.selectedStore.bookmarksStore.syncData(unsavedData),
+		// 	]);
+		// } catch (error) {
+		// 	this.searchWorkspace.searchStore.syncData();
+		// 	this.selectedStore.bookmarksStore.syncData();
+		// }
 	};
 
 	public onQuotaExceededError = (unsavedData?: DbData) => {

@@ -52,7 +52,6 @@ const MessagesVirtualizedList = (props: Props) => {
 		searchChannelNext,
 		searchChannelPrev,
 		startIndex,
-		initialItemCount,
 		noMatchingMessagesNext,
 		noMatchingMessagesPrev,
 		keepLoading,
@@ -144,7 +143,6 @@ const MessagesVirtualizedList = (props: Props) => {
 		<Virtuoso
 			data={messageList}
 			firstItemIndex={startIndex}
-			initialTopMostItemIndex={initialItemCount - 1}
 			ref={virtuoso}
 			overscan={overscan}
 			itemContent={itemRenderer}

@@ -217,7 +217,6 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		<Virtuoso
 			data={messagesStore.dataStore.messages}
 			firstItemIndex={messagesStore.dataStore.startIndex}
-			initialTopMostItemIndex={messagesStore.dataStore.initialItemCount}
 			ref={virtuoso}
 			overscan={overscan}
 			itemContent={itemRenderer}
