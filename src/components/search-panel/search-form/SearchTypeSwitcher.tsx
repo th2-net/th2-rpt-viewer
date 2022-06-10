@@ -21,14 +21,11 @@ import { SearchPanelType } from '../SearchPanel';
 type Props = {
 	formType: SearchPanelType;
 	setFormType: (formType: SearchPanelType) => void;
-	disabled: boolean;
 };
 
-const SearchTypeSwitcher = ({ formType, setFormType, disabled }: Props) => {
+const SearchTypeSwitcher = ({ formType, setFormType }: Props) => {
 	const setType = (type: typeof formType) => {
-		if (!disabled) {
-			setFormType(type);
-		}
+		setFormType(type);
 	};
 
 	return (
@@ -40,7 +37,6 @@ const SearchTypeSwitcher = ({ formType, setFormType, disabled }: Props) => {
 					'switch-search-type-button',
 					type,
 					formType === type ? 'active' : null,
-					disabled ? 'disabled' : null,
 				);
 
 				const iconClassName = createBemElement(

@@ -46,16 +46,8 @@ const SearchPanel = () => {
 							searchStore.deleteHistoryItem(searchStore.currentSearch);
 						}
 					}}
-					showToggler={searchStore.searchHistory.length > 1}
-					next={searchStore.nextSearch}
-					prev={searchStore.prevSearch}
-					disableNext={
-						searchStore.isSearching ||
-						searchStore.currentIndex === searchStore.searchHistory.length - 1
-					}
-					disablePrev={searchStore.isSearching || searchStore.currentIndex === 0}
 					disabledRemove={searchStore.isSearching}
-					showLoadMoreButton={searchStore.isCompleted && !searchStore.isFormDisabled}
+					showLoadMoreButton={searchStore.isCompleted}
 					loadMore={() => searchStore.startSearch(true)}
 				/>
 			)}

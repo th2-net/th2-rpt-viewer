@@ -17,15 +17,14 @@
 import React from 'react';
 import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
-import { getItemId } from '../../helpers/event';
+import { getItemId, isEvent } from '../../helpers/event';
 import { FilterEntry, SearchResult } from '../../stores/SearchStore';
-import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
 import SearchPanelSeparator from './SearchPanelSeparator';
 import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
-
-type Separator = [number, number];
-type FlattenedResult = SearchResult[] | Separator;
+import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
+import { EventMessage } from '../../models/EventMessage';
+import SearchResultItem from './SearchResultItem';
 
 interface SearchPanelResultsProps {
 	onResultItemClick: (
@@ -34,12 +33,7 @@ interface SearchPanelResultsProps {
 	) => void;
 	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
 	onResultDelete: () => void;
-	disableNext: boolean;
-	disablePrev: boolean;
-	showToggler: boolean;
-	next: () => void;
-	prev: () => void;
-	flattenedResult: FlattenedResult[];
+	flattenedResult: (SearchResult | [number, number])[];
 	filters: EventFilterState | MessageFilterState;
 	timestamp: number;
 	disabledRemove: boolean;
@@ -53,44 +47,49 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		filters,
 		timestamp,
 		onResultItemClick,
-		onResultGroupClick,
 		onResultDelete,
-		disablePrev,
-		disableNext,
 		disabledRemove,
-		showToggler,
-		next,
-		prev,
 		loadMore,
 	} = props;
 
+	const messagesWorkspaceStore = useMessagesWorkspaceStore();
+	const messagesDataStore = useMessagesDataStore();
+
 	function computeKey(index: number) {
 		const results = flattenedResult[index];
-		if (isSeparator(results)) return results[0];
-		return getItemId(results[0]);
+		if ('length' in results) return results[0];
+		return getItemId(results);
 	}
 
-	const isSeparator = (object: FlattenedResult): object is Separator => {
-		return !Number.isNaN(+object[0]);
+	const isMessageVisibleInMessagePanel = (message: EventMessage) => {
+		const visibleMessages = messagesDataStore.messages.slice(
+			messagesWorkspaceStore.currentMessagesIndexesRange.startIndex,
+			messagesWorkspaceStore.currentMessagesIndexesRange.endIndex + 1,
+		);
+
+		return visibleMessages.some(({ id }) => id === message.id);
 	};
 
-	const renderResult = (index: number, results: FlattenedResult) => {
-		if (isSeparator(results)) {
-			return (
-				<React.Fragment>
-					<SearchPanelSeparator prevElement={results[0]} nextElement={results[1]} />
-				</React.Fragment>
-			);
+	const isResultItemHighlighted = (result: SearchResult) => {
+		if (isEvent(result)) {
+			return true; // TODO: implement events highlighting
+		}
+
+		return isMessageVisibleInMessagePanel(result);
+	};
+
+	const renderResult = (index: number, result: SearchResult | [number, number]) => {
+		if ('length' in result) {
+			return <SearchPanelSeparator prevElement={result[0]} nextElement={result[1]} />;
 		}
 		return (
-			<React.Fragment>
-				<SearchResultGroup
-					results={results}
-					filters={filters}
-					onResultClick={onResultItemClick}
-					onGroupClick={onResultGroupClick}
-				/>
-			</React.Fragment>
+			<SearchResultItem
+				key={computeKey(index)}
+				result={result}
+				filters={filters}
+				onResultClick={onResultItemClick}
+				highlighted={isResultItemHighlighted(result)}
+			/>
 		);
 	};
 
@@ -104,12 +103,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 
 	return (
 		<div className='search-results'>
-			{showToggler && (
-				<div className='search-results__controls'>
-					<button className='search-results__arrow' disabled={disablePrev} onClick={prev} />
-					<button className='search-results__arrow next' disabled={disableNext} onClick={next} />
-				</div>
-			)}
 			<div className='history-point'>
 				<p className='history-point__timestamp'>
 					{moment(+timestamp)
