@@ -181,8 +181,13 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		runInAction(() => {
 			const messages = [
-				...nextMessages.filter(val => val.messageId !== message?.messageId),
+				...nextMessages.filter(
+					(val, idx) => val.messageId !== message?.messageId && idx < nextMessages.length - 2,
+				),
 				...[message].filter(isEventMessage),
+				...nextMessages.filter(
+					(val, idx) => val.messageId !== message?.messageId && idx >= nextMessages.length - 2,
+				),
 				...prevMessages,
 			];
 			this.messages = messages;
