@@ -270,7 +270,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				newMessagesList = newMessagesList.slice(-this.messagesLimit);
 			}
 
-			this.messages = newMessagesList;
+			this.messages = newMessagesList.sort(
+				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
+			);
 		}
 	};
 
@@ -303,7 +305,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
 			}
-			this.messages = newMessagesList;
+			this.messages = newMessagesList.sort(
+				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
+			);
 		}
 	};
 
