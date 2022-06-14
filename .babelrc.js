@@ -18,7 +18,12 @@ module.exports = {
 	presets: [
 		['@babel/env', { targets: '> 0.25%', modules: false }],
 		'@babel/preset-typescript',
-		'@babel/preset-react',
+		[
+			'@babel/preset-react',
+			{
+				runtime: 'automatic',
+			},
+		],
 	],
 	plugins: [
 		['@babel/plugin-proposal-decorators', { legacy: true }],
