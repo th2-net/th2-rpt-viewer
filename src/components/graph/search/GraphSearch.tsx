@@ -67,6 +67,8 @@ function GraphSearch(props: Props) {
 	// If user selects mode input will no longer switch automatically based on input value
 	const [isModeLocked, setIsModeLocked] = React.useState(false);
 
+	const [isLoading, setIsLoading] = React.useState(false);
+
 	const [isIdSearchDisabled, setIsIdSearchDisabled] = React.useState(false);
 
 	const [showModal, setShowModal] = React.useState(false);
@@ -160,6 +162,7 @@ function GraphSearch(props: Props) {
 	const timestampSearch = (startTimestamp: number) => {
 		setTimestamp(startTimestamp);
 		setMode('history');
+		setIsLoading(true);
 	};
 
 	const handleModalSubmit = () => {
@@ -239,10 +242,12 @@ function GraphSearch(props: Props) {
 							onSearchResultSelect={onGraphSearchResultSelect}
 							setTimestamp={handleTimepickerValueChange}
 							setIsIdSearchDisabled={setIsIdSearchDisabled}
+							setIsLoading={setIsLoading}
 							closeModal={closeModal}
 							submittedId={submittedId}
 							submittedTimestamp={timestamp}
 							isIdMode={showModal && mode === 'history'}
+							isLoading={isLoading}
 						/>
 					)}
 					<div className='graph-search__switchers'>
