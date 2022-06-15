@@ -210,12 +210,8 @@ const SearchFilterDatetimePicker = ({
 		nextTimeLimit.setValue(null);
 	};
 
-	const isValidTime = (maskedValue: string): boolean => {
-		return moment(
-			replaceUnfilledDateStringWithMinValues(maskedValue, timeMask),
-			timeMask,
-		).isValid();
-	};
+	const isValidTime = (maskedValue: string): boolean =>
+		moment(replaceUnfilledDateStringWithMinValues(maskedValue, timeMask), timeMask).isValid();
 
 	const timePipe = (maskedValue: string): string | false => {
 		if (isValidTime(maskedValue)) {

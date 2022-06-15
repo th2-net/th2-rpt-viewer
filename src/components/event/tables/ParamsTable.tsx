@@ -160,7 +160,7 @@ class ParamsTableBase extends React.Component<Props, State> {
 						</tr>
 					</thead>
 					<tbody>
-						{this.state.nodes.map((nodes, index) => this.renderNodes(nodes, 1, [index.toString()]))}
+						{this.state.nodes.map((nodes, index) => this.renderNodes(nodes, [index.toString()], 1))}
 					</tbody>
 				</table>
 			</div>
@@ -169,8 +169,8 @@ class ParamsTableBase extends React.Component<Props, State> {
 
 	private renderNodes(
 		node: ParamsTableRow,
-		paddingLevel = 1,
 		path: string[],
+		paddingLevel = 1,
 		key = '',
 	): React.ReactNodeArray {
 		if (node.subRows.length !== 0) {
@@ -180,8 +180,8 @@ class ParamsTableBase extends React.Component<Props, State> {
 							list.concat(
 								this.renderNodes(
 									n,
-									paddingLevel + 1,
 									[...path, index.toString()],
+									paddingLevel + 1,
 									`${key}-${index}`,
 								),
 							),
@@ -191,12 +191,12 @@ class ParamsTableBase extends React.Component<Props, State> {
 
 			return [this.renderTooglerNode(node, paddingLevel, path, key), ...subNodes];
 		}
-		return [this.renderValueNode(node.title, node.columns, paddingLevel, path, key)];
+		return [this.renderValueNode(node.title, node.columns || {}, paddingLevel, path, key)];
 	}
 
 	private renderValueNode(
 		rowTitle: string,
-		columns: { [columnTitle: string]: string } = {},
+		columns: { [columnTitle: string]: string },
 		paddingLevel: number,
 		path: string[],
 		key: string,

@@ -123,14 +123,13 @@ const SearchResultItem = ({
 				): {
 					path: string[];
 					value: string;
-				}[] => {
-					return bodyPayload.rows.flatMap((row, idx) => {
-						return Object.entries(row).map(([key, value]) => ({
+				}[] =>
+					bodyPayload.rows.flatMap((row, idx) =>
+						Object.entries(row).map(([key, value]) => ({
 							path: [...path, idx.toString(), key],
 							value,
-						}));
-					});
-				};
+						})),
+					);
 
 				const treeTableEntries = (
 					bodyPayload: TreeTablePayload,

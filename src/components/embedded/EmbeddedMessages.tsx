@@ -39,18 +39,16 @@ const EmbeddedMessages = () => {
 
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
-	const renderMsg = (index: number, message: EventMessage) => {
-		return (
-			<MessageCardBase
-				isEmbedded
-				key={index}
-				message={message}
-				setViewType={setViewType}
-				viewType={viewType}
-				applyFilterToBody={message.id === selectedMessageId}
-			/>
-		);
-	};
+	const renderMsg = (index: number, message: EventMessage) => (
+		<MessageCardBase
+			isEmbedded
+			key={index}
+			message={message}
+			setViewType={setViewType}
+			viewType={viewType}
+			applyFilterToBody={message.id === selectedMessageId}
+		/>
+	);
 
 	const reportURL = React.useMemo(() => {
 		const messagesStoreState = {

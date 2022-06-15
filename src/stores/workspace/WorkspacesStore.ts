@@ -92,8 +92,8 @@ export default class WorkspacesStore {
 		);
 	};
 
-	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {
-		return new WorkspaceStore(
+	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) =>
+		new WorkspaceStore(
 			this.rootStore,
 			this,
 			this.selectedStore,
@@ -102,7 +102,6 @@ export default class WorkspacesStore {
 			this.api,
 			workspaceInitialState,
 		);
-	};
 
 	public closeWorkspace = (tab: number | WorkspaceStore) => {
 		const closedWorkspace = this.tabsStore.closeWorkspace(tab);

@@ -163,9 +163,7 @@ const MessagesFilterPanel = () => {
 		};
 
 		return searchStore.messagesFilterInfo
-			.sort((a, b) => {
-				return priority.indexOf(a.name) - priority.indexOf(b.name);
-			})
+			.sort((a, b) => priority.indexOf(a.name) - priority.indexOf(b.name))
 			.map<CompoundFilterRow>((filterInfo: MessagesFilterInfo) => {
 				const state = getState(filterInfo.name);
 				const label = prettifyCamelcase(filterInfo.name);
@@ -213,24 +211,25 @@ const MessagesFilterPanel = () => {
 			});
 	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
 
-	const sessionsAutocomplete: string[] = React.useMemo(() => {
-		return [
+	const sessionsAutocomplete: string[] = React.useMemo(
+		() => [
 			...sessionsStore.sessions.map(s => s.session),
 			...messagesStore.messageSessions.filter(
 				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
 			),
-		];
-	}, [messagesStore.messageSessions, sessionsStore.sessions]);
+		],
+		[messagesStore.messageSessions, sessionsStore.sessions],
+	);
 
-	const areSessionInvalid: boolean = React.useMemo(() => {
-		return (
+	const areSessionInvalid: boolean = React.useMemo(
+		() =>
 			streams.length === 0 ||
-			streams.some(stream => !messagesStore.messageSessions.includes(stream.trim()))
-		);
-	}, [streams, messagesStore.messageSessions]);
+			streams.some(stream => !messagesStore.messageSessions.includes(stream.trim())),
+		[streams, messagesStore.messageSessions],
+	);
 
-	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
-		return {
+	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(
+		() => ({
 			type: 'multiple-strings',
 			id: 'messages-stream',
 			values: streams,
@@ -243,23 +242,26 @@ const MessagesFilterPanel = () => {
 			required: true,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
-		};
-	}, [streams, setStreams, currentStream, setCurrentStream, sessionsAutocomplete]);
+		}),
+		[streams, setStreams, currentStream, setCurrentStream, sessionsAutocomplete],
+	);
 
-	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
-		return {
+	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(
+		() => ({
 			type: 'action',
 			id: 'sse-filtler-error',
 			message: 'Failed to load sse filters',
 			actionButtonText: 'Try again',
 			action: searchStore.getMessagesFilters,
 			isLoading: searchStore.isMessageFiltersLoading,
-		};
-	}, [searchStore.getMessagesFilters, searchStore.isMessageFiltersLoading]);
+		}),
+		[searchStore.getMessagesFilters, searchStore.isMessageFiltersLoading],
+	);
 
-	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
-		return compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig];
-	}, [compoundFilterRow, sseFiltersErrorConfig]);
+	const filterConfig: Array<FilterRowConfig> = React.useMemo(
+		() => (compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig]),
+		[compoundFilterRow, sseFiltersErrorConfig],
+	);
 
 	const renderFooter = React.useCallback(() => {
 		if (!filter) return null;

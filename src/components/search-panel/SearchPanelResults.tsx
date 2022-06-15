@@ -93,13 +93,12 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		);
 	};
 
-	const loadMoreButton = () => {
-		return !loadMoreButton ? null : (
+	const loadMoreButton = () =>
+		!loadMoreButton ? null : (
 			<button onClick={loadMore} className='actions-list__load-button'>
 				Load more
 			</button>
 		);
-	};
 
 	return (
 		<div className='search-results'>
