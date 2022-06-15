@@ -21,7 +21,6 @@ export * from './useAsyncEffect';
 export * from './useDebouncedCallback';
 export * from './useEventWindowStore';
 export * from './useEventWindowViewStore';
-export * from './useHeatmap';
 export * from './useMessagesDataStore';
 export * from './useMessagesStore';
 export * from './useNotificationsStore';
