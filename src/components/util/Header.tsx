@@ -16,12 +16,10 @@
 
 import React from 'react';
 
-const Header = () => {
-	return (
-		<div className='header'>
-			<i className='th2-logo' />
-		</div>
-	);
-};
+const Header = () => (
+	<div className='header'>
+		<i className='th2-logo' />
+	</div>
+);
 
 export default Header;

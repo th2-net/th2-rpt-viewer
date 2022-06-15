@@ -349,9 +349,8 @@ export class SearchStore {
 		});
 	}
 
-	public isSeparator = (object: SearchResult[] | [number, number]): object is [number, number] => {
-		return !Number.isNaN(+object[0]);
-	};
+	public isSeparator = (object: SearchResult[] | [number, number]): object is [number, number] =>
+		!Number.isNaN(+object[0]);
 
 	@computed get flattenedResult(): (SearchResult | [number, number])[] {
 		if (!this.currentSearch) return [];

@@ -14,9 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export const isValidRange = (range: [number, number]): boolean => {
-	return range[0] >= 0 && range[1] >= 0 && range[1] >= range[0];
-};
+export const isValidRange = (range: [number, number]): boolean =>
+	range[0] >= 0 && range[1] >= 0 && range[1] >= range[0];
 
 export const isRangesIntersect = (first: [number, number], second: [number, number]): boolean => {
 	if (!first || !second) throw new Error('One of ranges is undefined');
@@ -41,10 +40,10 @@ export const getRangesIntersection = (
 	return [max[0], min[1] < max[1] ? min[1] : max[1]];
 };
 
-export const trimRange = (range: [number, number], limits: [number, number]): [number, number] => {
-	return [Math.max(range[0], limits[0]), Math.min(range[1], limits[1])];
-};
+export const trimRange = (range: [number, number], limits: [number, number]): [number, number] => [
+	Math.max(range[0], limits[0]),
+	Math.min(range[1], limits[1]),
+];
 
-export const isInsideRange = (point: number, range: [number, number]) => {
-	return range[0] <= point && range[1] >= point;
-};
+export const isInsideRange = (point: number, range: [number, number]) =>
+	range[0] <= point && range[1] >= point;

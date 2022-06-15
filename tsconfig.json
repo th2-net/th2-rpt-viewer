@@ -15,7 +15,8 @@
 		"strict": true,
 		"resolveJsonModule": true,
 		"noEmit": true,
-		"allowJs": true
+		"allowJs": true,
+		"useUnknownInCatchVariables": false
 	},
 	"exclude": ["node_modules"],
 	"include": ["./src/**/*"]

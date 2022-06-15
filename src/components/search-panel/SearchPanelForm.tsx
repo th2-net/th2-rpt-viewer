@@ -75,27 +75,27 @@ const SearchPanelForm = () => {
 	const searchStore = useSearchStore();
 	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
 
-	const sessionsAutocomplete: string[] = React.useMemo(() => {
-		return [
+	const sessionsAutocomplete: string[] = React.useMemo(
+		() => [
 			...sessionsStore.sessions.map(s => s.session),
 			...messageSessions.filter(
 				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
 			),
-		];
-	}, [messageSessions, sessionsStore.sessions]);
+		],
+		[messageSessions, sessionsStore.sessions],
+	);
 
-	const areSessionInvalid: boolean = React.useMemo(() => {
-		return (
+	const areSessionInvalid: boolean = React.useMemo(
+		() =>
 			form.stream.length === 0 ||
-			form.stream.some(stream => !messageSessions.includes(stream.trim()))
-		);
-	}, [form.stream, messageSessions]);
+			form.stream.some(stream => !messageSessions.includes(stream.trim())),
+		[form.stream, messageSessions],
+	);
 
-	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
-		formType,
-		eventsHistory,
-		messagesHistory,
-	]);
+	const autocompletes = useMemo(
+		() => (formType === 'event' ? eventsHistory : messagesHistory),
+		[formType, eventsHistory, messagesHistory],
+	);
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
@@ -160,14 +160,8 @@ const SearchPanelForm = () => {
 		},
 	};
 
-	const {
-		startTimestamp,
-		completed,
-		progress,
-		timeLimits,
-		timeIntervals,
-		processedObjectCount,
-	} = searchProgress;
+	const { startTimestamp, completed, progress, timeLimits, timeIntervals, processedObjectCount } =
+		searchProgress;
 
 	const searchDatetimeControlsConfig: SearchDatetimeControlsConfig = {
 		isSearching,

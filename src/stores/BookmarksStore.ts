@@ -219,21 +219,17 @@ export class BookmarksStore {
 		}
 	};
 
-	private createMessageBookmark = (message: EventMessage): MessageBookmark => {
-		return {
-			id: message.id,
-			timestamp: moment.utc().valueOf(),
-			item: toJS(message),
-		};
-	};
+	private createMessageBookmark = (message: EventMessage): MessageBookmark => ({
+		id: message.id,
+		timestamp: moment.utc().valueOf(),
+		item: toJS(message),
+	});
 
-	private createEventBookmark = (event: EventTreeNode): EventBookmark => {
-		return {
-			id: event.eventId,
-			timestamp: moment.utc().valueOf(),
-			item: toJS(event),
-		};
-	};
+	private createEventBookmark = (event: EventTreeNode): EventBookmark => ({
+		id: event.eventId,
+		timestamp: moment.utc().valueOf(),
+		item: toJS(event),
+	});
 
 	public syncData = async (unsavedData?: DbData) => {
 		await Promise.all([this.getSavedEvents(), this.getSavedMessages()]);

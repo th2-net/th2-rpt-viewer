@@ -26,22 +26,20 @@ import WorkspacesLayout from './workspace/WorkspacesLayout';
 import '../styles/root.scss';
 import Header from './util/Header';
 
-const AppRootBase = () => {
-	return (
-		<div className='app'>
-			<ToastProvider
-				placement='top-right'
-				components={{ Toast, ToastContainer }}
-				transitionDuration={400}>
-				<Header />
-				<div className='app__workspaces'>
-					<WorkspacesLayout />
-				</div>
-				<Notifier />
-			</ToastProvider>
-		</div>
-	);
-};
+const AppRootBase = () => (
+	<div className='app'>
+		<ToastProvider
+			placement='top-right'
+			components={{ Toast, ToastContainer }}
+			transitionDuration={400}>
+			<Header />
+			<div className='app__workspaces'>
+				<WorkspacesLayout />
+			</div>
+			<Notifier />
+		</ToastProvider>
+	</div>
+);
 
 AppRootBase.displayName = 'AppRootBase';
 

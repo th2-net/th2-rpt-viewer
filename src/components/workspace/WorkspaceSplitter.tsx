@@ -170,7 +170,7 @@ function WorkspaceSplitter(props: Props) {
 		document.removeEventListener('mousemove', onMouseMove);
 		document.removeEventListener('mouseup', onMouseUp);
 
-		const { width: rootWidth, left: rootOffsetLeft } = rootEl?.getBoundingClientRect();
+		const { width: rootWidth, left: rootOffsetLeft } = rootEl.getBoundingClientRect();
 
 		const widths = splittersRefs.current.map((splitterRef, index) => {
 			const { left, width } = splitterRef.current!.getBoundingClientRect();

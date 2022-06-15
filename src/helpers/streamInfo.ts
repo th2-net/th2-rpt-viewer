@@ -16,9 +16,7 @@
 
 import { StreamInfo } from '../models/StreamInfo';
 
-export const extractMessageId = ({ lastId }: StreamInfo) => {
-	return lastId;
-};
+export const extractMessageId = ({ lastId }: StreamInfo) => lastId;
 
 export const extractMessageIds = (streamInfoList: StreamInfo[]) =>
 	streamInfoList.map(extractMessageId);

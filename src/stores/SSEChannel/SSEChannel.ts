@@ -18,7 +18,6 @@
 import { action, observable } from 'mobx';
 import { getObjectKeys } from '../../helpers/object';
 
-// eslint-disable-next-line @typescript-eslint/interface-name-prefix
 export interface ISSEChannel {
 	subscribe: () => void;
 	stop: () => void;

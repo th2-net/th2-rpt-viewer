@@ -71,6 +71,7 @@ module.exports = {
 				},
 			},
 		],
+		'no-use-before-define': 'off',
 		'@typescript-eslint/no-use-before-define': 'off',
 		'@typescript-eslint/explicit-function-return-type': 'off',
 		'@typescript-eslint/ban-types': 'off',
@@ -108,6 +109,9 @@ module.exports = {
 		'prefer-destructuring': 'off',
 		'no-useless-constructor': 'off',
 		'prettier/prettier': ['error'],
+		'no-shadow': 'off',
+		'@typescript-eslint/no-shadow': ['error'],
+		'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
 	},
 	settings: {
 		react: {
