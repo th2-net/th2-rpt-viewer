@@ -40,10 +40,7 @@ export default class WorkspacesStore {
 	) {
 		this.init(initialState || null);
 
-		reaction(
-			() => this.activeWorkspace,
-			activeWorkspace => this.onActiveWorkspaceChange(activeWorkspace),
-		);
+		reaction(() => this.activeWorkspace, this.onActiveWorkspaceChange);
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];

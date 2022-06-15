@@ -14,12 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { computed } from 'mobx';
-import { EventTreeNode } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './workspace/WorkspacesStore';
-import { sortMessagesByTimestamp } from '../helpers/message';
-import { sortByTimestamp } from '../helpers/event';
 import { IndexedDB } from '../api/indexedDb';
 import { BookmarksStore } from './BookmarksStore';
 
@@ -28,18 +23,5 @@ export class SelectedStore {
 
 	constructor(private workspacesStore: WorkspacesStore, private db: IndexedDB) {
 		this.bookmarksStore = new BookmarksStore(workspacesStore, db);
-	}
-
-	@computed
-	public get savedItems(): Array<EventTreeNode | EventMessage> {
-		return sortByTimestamp([
-			...this.bookmarksStore.events.map(bookmark => bookmark.item),
-			...this.bookmarksStore.messages.map(bookmark => bookmark.item),
-		]);
-	}
-
-	@computed
-	public get attachedMessages() {
-		return sortMessagesByTimestamp(this.workspacesStore.activeWorkspace.attachedMessages);
 	}
 }
