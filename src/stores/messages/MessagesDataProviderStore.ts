@@ -28,6 +28,7 @@ import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
 import { isEventMessage } from '../../helpers/event';
 import { timestampToNumber } from '../../helpers/date';
+import { Timestamp } from '../../models/Timestamp';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
@@ -84,6 +85,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	private lastPreviousChannelResponseTimestamp: number | null = null;
 
 	private lastNextChannelResponseTimestamp: number | null = null;
+
+	private initialMessage: EventMessage | null = null;
 
 	@computed
 	public get isLoadingNextMessages(): boolean {
@@ -170,6 +173,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (!messageIds) return;
+
+		if (message) this.initialMessage = message;
 
 		const [nextMessages, prevMessages] = await Promise.all([
 			this.searchChannelNext.loadAndSubscribe({
@@ -270,9 +275,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				newMessagesList = newMessagesList.slice(-this.messagesLimit);
 			}
 
-			this.messages = newMessagesList.sort(
-				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
-			);
+			this.messages = newMessagesList;
 		}
 	};
 
@@ -298,16 +301,27 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (messages.length !== 0) {
+			const previousMessages = messages.filter(message => {
+				if (this.initialMessage)
+					return (
+						timestampToNumber(message.timestamp) < timestampToNumber(this.initialMessage.timestamp)
+					);
+			});
+			if (previousMessages.length !== 0) this.messages = [...this.messages, ...previousMessages];
 			this.startIndex -= messages.length;
 
-			let newMessagesList = [...messages, ...this.messages];
-
+			let newMessagesList = [
+				...messages.filter(
+					message =>
+						!this.messages.includes(message) &&
+						message.messageId !== this.initialMessage?.messageId,
+				),
+				...this.messages,
+			];
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
 			}
-			this.messages = newMessagesList.sort(
-				(a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp),
-			);
+			this.messages = newMessagesList;
 		}
 	};
 
