@@ -106,9 +106,11 @@ const WorkspacesLayout = () => {
 			tabList={tabListInjectedProps => (
 				<>
 					{renderTabs(tabListInjectedProps)}
-					<div className='workspace-tab workspace-tab__add' onClick={addWorkspace}>
-						+
-					</div>
+					{!workspacesStore.isFull && (
+						<button className='workspace-tab workspace-tab__add' onClick={addWorkspace}>
+							+
+						</button>
+					)}
 				</>
 			)}
 			tabPanels={workspacesStore.workspaces.map(workspace => (

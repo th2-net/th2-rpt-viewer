@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
@@ -54,11 +53,6 @@ export default class RootStore {
 		);
 
 		window.history.replaceState({}, '', window.location.pathname);
-	}
-
-	@computed
-	public get isBookmarksFull(): boolean {
-		return this.workspacesStore.selectedStore.bookmarksStore.isBookmarksFull;
 	}
 
 	private parseUrlState = (): WorkspacesUrlState | null => {
@@ -121,7 +115,6 @@ export default class RootStore {
 		}
 	};
 
-	@action
 	public handleQuotaExceededError = async (unsavedData?: DbData) => {
 		const errorId = nanoid();
 		this.notificationsStore.addMessage({
@@ -137,7 +130,7 @@ export default class RootStore {
 		});
 	};
 
-	public clearAppData = async (errorId: string, unsavedData?: DbData) => {
+	private clearAppData = async (errorId: string, unsavedData?: DbData) => {
 		this.notificationsStore.deleteMessage(errorId);
 		try {
 			await this.api.indexedDb.clearAllData();

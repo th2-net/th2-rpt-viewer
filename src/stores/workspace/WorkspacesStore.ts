@@ -26,7 +26,7 @@ import FiltersHistoryStore from '../FiltersHistoryStore';
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
 export default class WorkspacesStore {
-	public readonly MAX_WORKSPACES_COUNT = 12;
+	public readonly MAX_WORKSPACES_COUNT = 10;
 
 	public selectedStore = new SelectedStore(this, this.api.indexedDb);
 
@@ -47,10 +47,6 @@ export default class WorkspacesStore {
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
-
-	@computed get eventStores() {
-		return this.workspaces.map(workspace => workspace.eventsStore);
-	}
 
 	@computed get isFull() {
 		return this.workspaces.length === this.MAX_WORKSPACES_COUNT;
@@ -82,6 +78,7 @@ export default class WorkspacesStore {
 
 	@action
 	public addWorkspace = (workspace: WorkspaceStore) => {
+		if (this.isFull) return;
 		this.workspaces.push(workspace);
 		this.tabsStore.setActiveWorkspace(this.workspaces.length - 1);
 	};
