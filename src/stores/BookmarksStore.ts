@@ -25,6 +25,7 @@ import { DbData, IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/inde
 import notificationsStore from './NotificationsStore';
 import { Bookmark, BookmarkType, EventBookmark, MessageBookmark } from '../models/Bookmarks';
 import { isEventBookmark, isMessageBookmark } from '../helpers/bookmarks';
+import { isQuotaExceededError } from '../helpers/fetch';
 
 export class BookmarksStore {
 	@observable.shallow
@@ -183,7 +184,7 @@ export class BookmarksStore {
 		try {
 			await this.db.addDbStoreItem(store, toJS(bookmark));
 		} catch (error) {
-			if (error.name === 'QuotaExceededError') {
+			if (isQuotaExceededError(error)) {
 				this.workspacesStore.onQuotaExceededError(bookmark);
 			} else {
 				notificationsStore.addMessage({
