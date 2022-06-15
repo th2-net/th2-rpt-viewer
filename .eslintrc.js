@@ -112,6 +112,8 @@ module.exports = {
 		'no-shadow': 'off',
 		'@typescript-eslint/no-shadow': ['error'],
 		'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
+		'react/react-in-jsx-scope': 'off',
+		'react/jsx-filename-extension': [1, { extensions: ['tsx'] }],
 	},
 	settings: {
 		react: {
