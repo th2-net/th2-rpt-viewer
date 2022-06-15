@@ -290,16 +290,18 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public onNextChannelResponse = (messages: EventMessage[]) => {
 		this.lastNextChannelResponseTimestamp = null;
 
-		const prevMessages = messages.filter(
-			message =>
-				timestampToNumber(message.timestamp) < timestampToNumber(this.messages[0].timestamp) ||
-				message.messageId === this.messages[0].messageId,
-		);
+		const prevMessages =
+			this.messages.length > 0
+				? messages.filter(
+						message =>
+							timestampToNumber(message.timestamp) <
+								timestampToNumber(this.messages[0].timestamp) ||
+							message.messageId === this.messages[0].messageId,
+				  )
+				: [];
 		const firstNextMessage = prevMessages[0];
 
-		const nextMessages = prevMessages.length
-			? messages.slice(0, messages.length - prevMessages.length)
-			: messages;
+		const nextMessages = messages.slice(0, messages.length - prevMessages.length);
 
 		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
 			prevMessages.shift();
@@ -309,12 +311,9 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			this.startIndex -= messages.length;
 
 			let newMessagesList = prevMessages.length
-				? [
-						...nextMessages,
-						...[this.messages[0], ...prevMessages].filter(isEventMessage),
-						...this.messages.slice(1),
-				  ]
+				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
 				: [...nextMessages, ...this.messages];
+
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
 			}
