@@ -292,23 +292,28 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		const prevMessages = messages.filter(
 			message =>
-				timestampToNumber(message.timestamp) <= timestampToNumber(this.messages[0].timestamp),
+				timestampToNumber(message.timestamp) < timestampToNumber(this.messages[0].timestamp) ||
+				message.messageId === this.messages[0].messageId,
 		);
-		const firstNextMessage = messages[messages.length - 1];
+		const firstNextMessage = prevMessages[0];
 
 		const nextMessages = prevMessages.length
 			? messages.slice(0, messages.length - prevMessages.length)
 			: messages;
 
 		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
-			prevMessages.pop();
+			prevMessages.shift();
 		}
 
 		if (messages.length !== 0) {
 			this.startIndex -= messages.length;
 
 			let newMessagesList = prevMessages.length
-				? [...nextMessages, ...prevMessages.filter(isEventMessage), ...this.messages.slice(1)]
+				? [
+						...nextMessages,
+						...[this.messages[0], ...prevMessages].filter(isEventMessage),
+						...this.messages.slice(1),
+				  ]
 				: [...nextMessages, ...this.messages];
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
