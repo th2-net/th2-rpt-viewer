@@ -85,8 +85,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 	private lastNextChannelResponseTimestamp: number | null = null;
 
-	private initialMessage: EventMessage | null = null;
-
 	@computed
 	public get isLoadingNextMessages(): boolean {
 		return Boolean(this.searchChannelNext?.isLoading);
@@ -172,8 +170,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (!messageIds) return;
-
-		if (message) this.initialMessage = message;
 
 		const [nextMessages, prevMessages] = await Promise.all([
 			this.searchChannelNext.loadAndSubscribe({
@@ -300,19 +296,17 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		}
 
 		if (messages.length !== 0) {
-			const previousMessages = messages.filter(message => {
-				return this.initialMessage
-					? timestampToNumber(message.timestamp) < timestampToNumber(this.initialMessage.timestamp)
-					: false;
-			});
+			const previousMessages = messages.filter(
+				message =>
+					timestampToNumber(message.timestamp) < timestampToNumber(this.messages[0].timestamp),
+			);
 			if (previousMessages.length !== 0) this.messages = [...this.messages, ...previousMessages];
 			this.startIndex -= messages.length;
 
 			let newMessagesList = [
 				...messages.filter(
 					message =>
-						!this.messages.includes(message) &&
-						message.messageId !== this.initialMessage?.messageId,
+						!this.messages.includes(message) && message.messageId !== this.messages[0].messageId,
 				),
 				...this.messages,
 			];
