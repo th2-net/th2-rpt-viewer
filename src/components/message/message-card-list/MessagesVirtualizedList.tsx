@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { toJS } from 'mobx';
 import { Observer, observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle, ListItem } from 'react-virtuoso';
 import moment from 'moment';
@@ -94,24 +95,25 @@ const MessagesVirtualizedList = (props: Props) => {
 	]);
 
 	React.useEffect(() => {
-		messages.forEach(message =>
-			message.parsedMessages?.forEach((parsedMessage, index) => {
-				const tempMessage = message;
-				const { parsedMessages, ...rest } = tempMessage;
-				const tempMessageItem: EventMessageItem = {
-					...rest,
-					parsedMessage: null,
-					parsedMessages: [],
-				};
+		toJS(messages).forEach(message =>
+			message.parsedMessages
+				? message.parsedMessages.forEach((parsedMessage, index) => {
+						const tempMessage = message;
+						const { parsedMessages, ...rest } = tempMessage;
+						const tempMessageItem: EventMessageItem = {
+							...rest,
+							parsedMessage: null,
+							parsedMessages: [],
+						};
 
-				tempMessageItem.parsedMessage = tempMessage.parsedMessages
-					? tempMessage.parsedMessages[index]
-					: null;
-				if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
-					tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
-
-				setMessageList(messageListCopy => [...messageListCopy, tempMessageItem]);
-			}),
+						tempMessageItem.parsedMessage = tempMessage.parsedMessages
+							? tempMessage.parsedMessages[index]
+							: null;
+						if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
+							tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
+						setMessageList(messageListCopy => [...messageListCopy, tempMessageItem]);
+				  })
+				: setMessageList(messageListCopy => [...messageListCopy, message as EventMessageItem]),
 		);
 	}, [messages]);
 
