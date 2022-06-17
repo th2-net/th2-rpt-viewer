@@ -18,7 +18,7 @@ import moment, { Moment } from 'moment';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { DateTimeMask } from '../models/filter/FilterInputs';
-import { TimeRange, Timestamp } from '../models/Timestamp';
+import { TimeRange } from '../models/Timestamp';
 import { isEventMessage } from './event';
 
 export function getElapsedTime(
@@ -40,10 +40,6 @@ export function formatTime(time: string | number) {
 		return '';
 	}
 	return moment.utc(time).format(DateTimeMask.DATE_TIME_MASK);
-}
-
-export function timestampToNumber(timestamp: Timestamp): number {
-	return Math.floor(timestamp.epochSecond * 1000 + timestamp.nano / 1_000_000);
 }
 
 export function getTimestampAsNumber(entity: EventAction | EventTreeNode | EventMessage): number {
@@ -106,21 +102,16 @@ export function getRangeFromTimestamp(timestamp: number, interval: number): Time
 	];
 }
 
-export function sortByTimestamp<T extends { timestamp: number | Timestamp }>(
+export function sortByTimestamp<T extends { timestamp: number }>(
 	array: T[],
 	order: 'desc' | 'asc' = 'desc',
 ) {
 	const copiedArray = array.slice();
 	copiedArray.sort((itemA, itemB) => {
-		const timestampA =
-			typeof itemA.timestamp === 'number' ? itemA.timestamp : timestampToNumber(itemA.timestamp);
-		const timestampB =
-			typeof itemB.timestamp === 'number' ? itemB.timestamp : timestampToNumber(itemB.timestamp);
-
 		if (order === 'desc') {
-			return timestampB - timestampA;
+			return itemB.timestamp - itemA.timestamp;
 		}
-		return timestampA - timestampB;
+		return itemA.timestamp - itemB.timestamp;
 	});
 	return copiedArray;
 }
