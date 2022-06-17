@@ -15,8 +15,9 @@
  ******************************************************************************/
 
 const { merge } = require('webpack-merge');
-const commonConfig = require('./webpack.common');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const commonConfig = require('./webpack.common');
 const { appSrc } = require('./paths');
 
 module.exports = merge(commonConfig, {
@@ -24,7 +25,7 @@ module.exports = merge(commonConfig, {
 		publicPath: '/',
 	},
 	mode: 'development',
-	entry: ['react-hot-loader/patch', appSrc],
+	entry: [appSrc],
 	devtool: 'inline-source-map',
 	devServer: {
 		watchFiles: {
@@ -64,5 +65,6 @@ module.exports = merge(commonConfig, {
 				files: './src/**/*',
 			},
 		}),
+		new ReactRefreshWebpackPlugin(),
 	],
 });
