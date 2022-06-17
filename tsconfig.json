@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"baseUrl": "src",
 		"outDir": "./build/",
 		"target": "es6",
 		"keyofStringsOnly": true,
@@ -16,7 +17,16 @@
 		"resolveJsonModule": true,
 		"noEmit": true,
 		"allowJs": true,
-		"useUnknownInCatchVariables": false
+		"useUnknownInCatchVariables": false,
+		"paths": {
+			"helpers": ["helpers/*"],
+			"models": ["models/*"],
+			"styles": ["styles/*"],
+			"stores": ["helpers/*"],
+			"api": ["api/*"],
+			"components": ["components/*"],
+			"hooks": ["hooks/*"]
+		}
 	},
 	"exclude": ["node_modules"],
 	"include": ["./src/**/*"]

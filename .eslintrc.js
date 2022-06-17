@@ -24,6 +24,7 @@ module.exports = {
 		'plugin:@typescript-eslint/recommended',
 		'plugin:import/errors',
 		'plugin:import/warnings',
+		'plugin:import/recommended',
 		'plugin:import/typescript',
 	],
 	plugins: ['react-hooks', 'prettier'],
@@ -118,6 +119,11 @@ module.exports = {
 	settings: {
 		react: {
 			version: 'detect',
+		},
+		'import/resolver': {
+			webpack: {
+				config: './webpack/webpack.common.js',
+			},
 		},
 	},
 	overrides: [

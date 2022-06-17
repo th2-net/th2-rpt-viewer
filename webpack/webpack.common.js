@@ -24,6 +24,15 @@ const { appSrc, appPath } = require('./paths');
 module.exports = {
 	resolve: {
 		extensions: ['.ts', '.tsx', '.scss', '.js'],
+		alias: {
+			helpers: path.resolve(appSrc, 'helpers'),
+			models: path.resolve(appSrc, 'models'),
+			api: path.resolve(appSrc, 'api'),
+			stores: path.resolve(appSrc, 'stores'),
+			styles: path.resolve(appSrc, 'styles'),
+			components: path.resolve(appSrc, 'components'),
+			hooks: path.resolve(appSrc, 'hooks'),
+		},
 	},
 	module: {
 		rules: [
@@ -41,9 +50,9 @@ module.exports = {
 				exclude: /node_modules/,
 			},
 			{
-        test: /\.(woff|woff2|eot|ttf|otf)$/i,
-        type: 'asset/resource',
-      },
+				test: /\.(woff|woff2|eot|ttf|otf)$/i,
+				type: 'asset/resource',
+			},
 			{
 				test: /\.(png|svg|jpg|jpeg|gif)$/i,
 				type: 'asset/resource',
