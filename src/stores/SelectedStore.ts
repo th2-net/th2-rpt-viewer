@@ -16,7 +16,7 @@
 
 import { computed } from 'mobx';
 import { EventTreeNode } from '../models/EventAction';
-import { EventMessage, EventMessageItem } from '../models/EventMessage';
+import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import { sortMessagesByTimestamp } from '../helpers/message';
 import { sortByTimestamp } from '../helpers/event';

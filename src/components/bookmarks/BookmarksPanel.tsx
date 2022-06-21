@@ -24,7 +24,7 @@ import { isEventMessage } from '../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { useActivePanel, useBookmarksStore } from '../../hooks';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { EventMessage, EventMessageItem } from '../../models/EventMessage';
+import { EventMessage } from '../../models/EventMessage';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
 import BookmarkTextSearch from './BookmarkTextSearch';
 import BookmarkTypeSwitcher from './BookmarkTypeSwitcher';
