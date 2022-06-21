@@ -35,7 +35,6 @@ export interface MessageCardBaseProps {
 	unhoverMessage?: () => void;
 	isAttached?: boolean;
 	isBookmarked?: boolean;
-	isContentBeautified?: boolean;
 	toogleMessagePin?: () => void;
 	isEmbedded?: boolean;
 	sortOrderItems?: string[];

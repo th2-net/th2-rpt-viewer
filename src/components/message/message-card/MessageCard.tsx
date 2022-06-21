@@ -19,10 +19,10 @@ import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
 	useMessagesWorkspaceStore,
-	useSelectedStore,
 	useMessagesDataStore,
 	useMessageBodySortStore,
 	useMessagesViewTypesStore,
+	useBookmarksStore,
 } from '../../../hooks';
 import { MessageViewType, EventMessageItem } from '../../../models/EventMessage';
 import MessageCardBase from './MessageCardBase';
@@ -45,7 +45,7 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
-	const selectedStore = useSelectedStore();
+	const bookmarksStore = useBookmarksStore();
 	const { sortOrderItems } = useMessageBodySortStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
@@ -54,10 +54,7 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const isBookmarked =
-		selectedStore.bookmarkedMessages.findIndex(bookmarkedMessage => bookmarkedMessage.id === id) !==
-		-1;
-
-	const isContentBeautified = viewType === MessageViewType.FORMATTED;
+		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === id) !== -1;
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(id);
 
@@ -110,8 +107,8 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 	).get();
 
 	const toogleMessagePin = React.useCallback(() => {
-		selectedStore.toggleMessagePin(message);
-	}, [selectedStore.toggleMessagePin]);
+		bookmarksStore.toggleMessagePin(message);
+	}, [bookmarksStore.toggleMessagePin]);
 
 	const addMessagesToExport = React.useCallback(
 		() => messagesStore.exportStore.addMessageToExport(message),
@@ -138,7 +135,6 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 				setViewType={setViewType}
 				hoverMessage={hoverMessage}
 				unhoverMessage={unhoverMessage}
-				isContentBeautified={isContentBeautified}
 				isBookmarked={isBookmarked}
 				isAttached={isAttached}
 				toogleMessagePin={toogleMessagePin}

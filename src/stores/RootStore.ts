@@ -64,7 +64,7 @@ export default class RootStore {
 
 	@computed
 	public get isBookmarksFull(): boolean {
-		return this.workspacesStore.selectedStore.isBookmarksFull;
+		return this.workspacesStore.selectedStore.bookmarksStore.isBookmarksFull;
 	}
 
 	public getAppState = (): WorkspacesUrlState | null => {
