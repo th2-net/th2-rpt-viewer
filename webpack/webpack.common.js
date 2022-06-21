@@ -32,6 +32,7 @@ module.exports = {
 			styles: path.resolve(appSrc, 'styles'),
 			components: path.resolve(appSrc, 'components'),
 			hooks: path.resolve(appSrc, 'hooks'),
+			modules: path.resolve(appSrc, 'modules'),
 		},
 	},
 	module: {

@@ -14,12 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventAction, EventTreeNode } from './EventAction';
-import { EventMessage } from './EventMessage';
+import { EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
 
 export type Bookmark = EventBookmark | MessageBookmark;
-
-export type BookmarkedItem = Bookmark | EventMessage | EventTreeNode | EventAction;
 
 export type BookmarkType = 'event' | 'message';
 

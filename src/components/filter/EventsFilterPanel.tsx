@@ -51,7 +51,7 @@ function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
-	const { eventsHistory } = useFiltersHistoryStore();
+	const { eventsHistory, onEventFilterSubmit } = useFiltersHistoryStore();
 
 	const [filter, setFilter] = useSetState<EventFilterState | null>(filterStore.filter);
 
@@ -67,6 +67,7 @@ function EventsFilterPanel() {
 	const onSubmit = React.useCallback(() => {
 		if (filter) {
 			eventsStore.applyFilter(filter);
+			onEventFilterSubmit(filter);
 		}
 	}, [filter]);
 

@@ -53,7 +53,7 @@ class MessageBodySortOrderStore {
 	}
 
 	@computed
-	public get rulesOrder(): OrderRule {
+	private get rulesOrder(): OrderRule {
 		return {
 			id: RULES_ORDER_ID,
 			order: this.sortOrder.map(({ item }) => item),

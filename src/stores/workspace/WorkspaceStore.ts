@@ -22,7 +22,6 @@ import MessagesStore, {
 } from '../messages/MessagesStore';
 import EventsStore, { EventStoreDefaultStateType, EventStoreURLState } from '../events/EventsStore';
 import ApiSchema from '../../api/ApiSchema';
-import { SelectedStore } from '../SelectedStore';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
 import { ActionType, EventAction, EventTreeNode } from '../../models/EventAction';
@@ -33,7 +32,6 @@ import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
-import RootStore from '../RootStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import { isAbortError } from '../../helpers/fetch';
 import { getObjectKeys } from '../../helpers/object';
@@ -69,9 +67,7 @@ export default class WorkspaceStore {
 	public id = nanoid();
 
 	constructor(
-		private rootStore: RootStore,
 		private workspacesStore: WorkspacesStore,
-		private selectedStore: SelectedStore,
 		private sessionsStore: SessionsStore,
 		private messageDisplayRulesStore: MessageDisplayRulesStore,
 		private api: ApiSchema,
@@ -81,24 +77,16 @@ export default class WorkspaceStore {
 			this.workspacesStore,
 			api,
 			this.workspacesStore.filtersHistoryStore,
-			this.rootStore.sessionsStore,
+			this.sessionsStore,
 		);
 		this.viewStore = new WorkspaceViewStore({
 			panelsLayout: initialState.layout,
 		});
-		this.eventsStore = new EventsStore(
-			this,
-			this.searchStore,
-			this.api,
-			this.workspacesStore.filtersHistoryStore,
-			initialState.events,
-		);
+		this.eventsStore = new EventsStore(this, this.searchStore, this.api, initialState.events);
 		this.messagesStore = new MessagesStore(
 			this,
-			this.selectedStore,
 			this.searchStore,
 			this.api,
-			this.workspacesStore.filtersHistoryStore,
 			this.sessionsStore,
 			initialState.messages,
 		);
@@ -121,11 +109,6 @@ export default class WorkspaceStore {
 
 	@observable
 	public isLoadingAttachedMessages = false;
-
-	@computed
-	public get attachedMessagesStreams() {
-		return [...new Set(this.attachedMessages.map(msg => msg.sessionId))];
-	}
 
 	@computed
 	public get isActive(): boolean {
@@ -177,7 +160,7 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	public setAttachedMessagesIds = (attachedMessageIds: string[]) => {
+	private setAttachedMessagesIds = (attachedMessageIds: string[]) => {
 		this.attachedMessagesIds = [...new Set(attachedMessageIds)];
 	};
 
@@ -227,30 +210,8 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	public onTimestampSelect = (timestamp: number) => {
-		this.eventsStore.filterStore.setTimestamp(timestamp);
-	};
-
-	@action
 	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
 		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
-	};
-
-	@action
-	public onTimestampSelectSearch = (timestamp: number) => {
-		const range = getRangeFromTimestamp(timestamp, this.eventsStore.filterStore.interval);
-		const newWorkspace = this.workspacesStore.createWorkspace({
-			timeRange: range,
-			interval: this.eventsStore.filterStore.interval,
-			events: {
-				range,
-			},
-			messages: {
-				timestampTo: timestamp,
-			},
-		});
-
-		this.workspacesStore.addWorkspace(newWorkspace);
 	};
 
 	@action
@@ -287,7 +248,7 @@ export default class WorkspaceStore {
 		}
 	};
 
-	dispose = () => {
+	public dispose = () => {
 		// Delete all subscriptions and cancel pending requests
 		this.messagesStore.dispose();
 		this.eventsStore.dispose();

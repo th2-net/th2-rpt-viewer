@@ -55,7 +55,7 @@ const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
-	const { messagesHistory } = useFiltersHistoryStore();
+	const { messagesHistory, onMessageFilterSubmit } = useFiltersHistoryStore();
 	const sessionsStore = useSessionsStore();
 	const { filterStore } = messagesStore;
 
@@ -104,6 +104,10 @@ const MessagesFilterPanel = () => {
 			filter,
 			isSoftFilterApplied,
 		);
+
+		if (filter) {
+			onMessageFilterSubmit(filter);
+		}
 	}, [filter, filterStore.filter, streams, isSoftFilterApplied]);
 
 	const stopLoading = React.useCallback(() => {

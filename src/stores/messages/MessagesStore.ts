@@ -20,7 +20,6 @@ import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
 import MessagesFilter from '../../models/filter/MessagesFilter';
-import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { TimeRange } from '../../models/Timestamp';
 import { FilterEntry, SearchStore } from '../SearchStore';
@@ -29,7 +28,6 @@ import { sortMessagesByTimestamp } from '../../helpers/message';
 import { isEventMessage } from '../../helpers/event';
 import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
-import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
 import { getItemAt } from '../../helpers/array';
@@ -83,10 +81,8 @@ export default class MessagesStore {
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
-		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
 		private api: ApiSchema,
-		private filterHistoryStore: FiltersHistoryStore,
 		private sessionsStore: SessionsStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
@@ -137,9 +133,6 @@ export default class MessagesStore {
 		sseFilters: MessageFilterState | null,
 		isSoftFilterApplied: boolean,
 	) => {
-		if (sseFilters) {
-			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
-		}
 		if (
 			this.selectedMessageId &&
 			!this.workspaceStore.attachedMessagesIds.includes(this.selectedMessageId.valueOf())
@@ -234,23 +227,6 @@ export default class MessagesStore {
 					timestampTo: mostRecentMessage.timestamp,
 				};
 			}
-		}
-	};
-
-	@action
-	public onRangeChange = (timestamp: number) => {
-		this.selectedMessageId = null;
-		this.highlightedMessageId = null;
-		this.hintMessages = [];
-
-		this.filterStore.filter = {
-			...this.filterStore.filter,
-			timestampFrom: null,
-			timestampTo: timestamp,
-		};
-
-		if (this.workspaceStore.viewStore.panelsLayout[1] < 20) {
-			this.workspaceStore.viewStore.setPanelsLayout([45, 30, 25, 0]);
 		}
 	};
 

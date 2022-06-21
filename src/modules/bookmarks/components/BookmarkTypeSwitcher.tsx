@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import React from 'react';
-import { createBemElement } from '../../helpers/styleCreators';
-import { BookmarkType } from '../../models/Bookmarks';
 
-type Props = {
+import { createBemElement } from 'helpers/styleCreators';
+import { BookmarkType } from '../models/Bookmarks';
+
+interface Props {
 	value: BookmarkType | null;
 	setValue: (value: BookmarkType | null) => void;
 	label: string;
-};
+}
 
 const BookmarkTypeSwitcher = ({ value, setValue, label }: Props) => {
 	const setType = (type: string) => {

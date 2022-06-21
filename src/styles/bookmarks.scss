@@ -37,6 +37,7 @@
 .bookmark-item {
 	@include bookmark-button($showOnHoverOverParent: false);
 	display: grid;
+	width: 100%;
 	grid-template-columns: 1fr 30px;
 	background-color: #fff;
 	padding: 5px 7px 5px 30px;
@@ -160,14 +161,7 @@
 
 .bookmarks-panel-item {
 	display: flex;
-	justify-content: space-around;
-	align-items: center;
-	width: 100%;
-	height: auto;
-
-	&__content {
-		width: calc(100% - 30px);
-	}
+	padding: 5px 0;
 }
 
 .bookmarks-panel-checkbox {
@@ -207,7 +201,6 @@
 			font-size: 13px;
 			color: $primaryTextColor;
 			box-sizing: border-box;
-			// workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
 			min-width: 0;
 			&:disabled {
 				opacity: 0.5;

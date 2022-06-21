@@ -14,20 +14,23 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, runInAction, toJS } from 'mobx';
+import { action, computed, observable, runInAction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import moment from 'moment';
-import { EventTreeNode } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
-import WorkspacesStore from './workspace/WorkspacesStore';
-import { getItemId, getItemName } from '../helpers/event';
-import { DbData, IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
-import notificationsStore from './NotificationsStore';
-import { Bookmark, BookmarkType, EventBookmark, MessageBookmark } from '../models/Bookmarks';
+import WorkspacesStore from 'stores/workspace/WorkspacesStore';
+import notificationsStore from 'stores/NotificationsStore';
+import { EventTreeNode } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import { IBookmarksStore } from 'models/Stores';
+import { getItemName } from 'helpers/event';
+import { sortByTimestamp } from 'helpers/date';
+import { isQuotaExceededError } from 'helpers/fetch';
+import { DbData, IndexedDB, indexedDbLimits, IndexedDbStores } from 'api/indexedDb';
+import { Bookmark, EventBookmark, MessageBookmark } from '../models/Bookmarks';
 import { isEventBookmark, isMessageBookmark } from '../helpers/bookmarks';
-import { isQuotaExceededError } from '../helpers/fetch';
+import { BookmarksFilterStore } from './BookmarkFilterStore';
 
-export class BookmarksStore {
+export class BookmarksStore implements IBookmarksStore {
 	@observable.shallow
 	public messages: MessageBookmark[] = [];
 
@@ -35,57 +38,19 @@ export class BookmarksStore {
 	public events: EventBookmark[] = [];
 
 	@observable
-	public bookmarkType: BookmarkType | null = null;
+	public isLoadingBookmarks = false;
 
-	@observable
-	public textSearch = '';
-
-	@observable
-	public selectedBookmarks: Set<string> = new Set();
+	filterStore: BookmarksFilterStore;
 
 	constructor(private workspacesStore: WorkspacesStore, private db: IndexedDB) {
-		this.init();
-		reaction(
-			() => this.bookmarkType,
-			() => {
-				this.selectedBookmarks.clear();
-			},
-		);
-		reaction(
-			() => this.textSearch,
-			() => {
-				this.selectedBookmarks.clear();
-			},
-		);
+		this.filterStore = new BookmarksFilterStore(this);
+
+		this.getBookmarks();
 	}
 
 	@computed
-	public get sortedBookmarks() {
-		const sortedBookmarks: Bookmark[] = [...this.messages, ...this.events];
-
-		sortedBookmarks.sort((bookmarkA, bookmarkB) => {
-			if (bookmarkA.timestamp > bookmarkB.timestamp) return -1;
-			if (bookmarkA.timestamp < bookmarkB.timestamp) return 1;
-			return 0;
-		});
-		return sortedBookmarks;
-	}
-
-	@computed
-	public get filteredBookmarks() {
-		const search = this.textSearch.toLowerCase();
-		return this.sortedBookmarks
-			.filter(
-				bookmark =>
-					this.bookmarkType === null ||
-					(this.bookmarkType === 'event' && isEventBookmark(bookmark)) ||
-					(this.bookmarkType === 'message' && isMessageBookmark(bookmark)),
-			)
-			.filter(
-				bookmark =>
-					getItemId(bookmark.item).toLowerCase().includes(search) ||
-					getItemName(bookmark.item).toLowerCase().includes(search),
-			);
+	public get bookmarks() {
+		return sortByTimestamp<Bookmark>([...this.messages, ...this.events]);
 	}
 
 	@computed
@@ -93,42 +58,17 @@ export class BookmarksStore {
 		return this.messages.length + this.events.length >= indexedDbLimits.bookmarks;
 	}
 
-	@action
-	public setBookmarkType = (type: BookmarkType | null) => {
-		this.bookmarkType = type;
-	};
-
-	@action
-	public setTextSearch = (v: string) => {
-		this.textSearch = v;
-	};
-
-	@action
-	public selectItem = (index: number) => {
-		const id = this.filteredBookmarks[index].id;
-		if (this.selectedBookmarks.has(id)) {
-			this.selectedBookmarks.delete(id);
-		} else {
-			this.selectedBookmarks.add(id);
-		}
-	};
-
-	@action
-	public selectAll = () => {
-		if (this.selectedBookmarks.size !== this.filteredBookmarks.length) {
-			this.selectedBookmarks = new Set(this.filteredBookmarks.map(({ id }) => id));
-		} else {
-			this.selectedBookmarks.clear();
-		}
-	};
+	@computed get isEmpty(): boolean {
+		return !this.isLoadingBookmarks && this.events.length === 0 && this.messages.length === 0;
+	}
 
 	@action
 	public removeSelected = async () => {
-		this.events.filter(({ id }) => this.selectedBookmarks.has(id)).forEach(this.removeBookmark);
-		this.messages.filter(({ id }) => this.selectedBookmarks.has(id)).forEach(this.removeBookmark);
-		this.events = this.events.filter(({ id }) => !this.selectedBookmarks.has(id));
-		this.messages = this.messages.filter(({ id }) => !this.selectedBookmarks.has(id));
-		this.selectedBookmarks.clear();
+		const selectedBookmarks = this.filterStore.selectedBookmarks;
+		this.bookmarks.filter(({ id }) => selectedBookmarks.has(id)).forEach(this.removeBookmark);
+		this.events = this.events.filter(({ id }) => !selectedBookmarks.has(id));
+		this.messages = this.messages.filter(({ id }) => !selectedBookmarks.has(id));
+		this.filterStore.resetSelection();
 	};
 
 	@action
@@ -162,7 +102,7 @@ export class BookmarksStore {
 	};
 
 	@action
-	public removeBookmark = (bookmark: Bookmark) => {
+	private removeBookmark = (bookmark: Bookmark) => {
 		if (isEventBookmark(bookmark)) {
 			this.events = this.events.filter(eventBookmark => eventBookmark !== bookmark);
 			this.db.deleteDbStoreItem(IndexedDbStores.EVENTS, bookmark.id);
@@ -174,9 +114,24 @@ export class BookmarksStore {
 		}
 	};
 
-	private init = () => {
-		this.getSavedEvents();
-		this.getSavedMessages();
+	private getBookmarks = async () => {
+		try {
+			runInAction(() => (this.isLoadingBookmarks = true));
+
+			const [savedEvents, savedMessages] = await Promise.all([
+				this.db.getStoreValues<EventBookmark>(IndexedDbStores.EVENTS),
+				this.db.getStoreValues<MessageBookmark>(IndexedDbStores.MESSAGES),
+			]);
+
+			runInAction(() => {
+				this.messages = savedMessages;
+				this.events = savedEvents;
+				this.isLoadingBookmarks = false;
+			});
+		} catch (error) {
+			console.error('Failed to fetch saved events');
+			runInAction(() => (this.isLoadingBookmarks = false));
+		}
 	};
 
 	private saveBookmark = async (bookmark: EventBookmark | MessageBookmark) => {
@@ -198,28 +153,6 @@ export class BookmarksStore {
 		}
 	};
 
-	private getSavedEvents = async () => {
-		try {
-			const savedEvents = await this.db.getStoreValues<EventBookmark>(IndexedDbStores.EVENTS);
-			runInAction(() => {
-				this.events = savedEvents;
-			});
-		} catch (error) {
-			console.error('Failed to fetch saved events');
-		}
-	};
-
-	private getSavedMessages = async () => {
-		try {
-			const savedMessages = await this.db.getStoreValues<MessageBookmark>(IndexedDbStores.MESSAGES);
-			runInAction(() => {
-				this.messages = savedMessages;
-			});
-		} catch (error) {
-			console.error('Failed to fetch saved messages');
-		}
-	};
-
 	private createMessageBookmark = (message: EventMessage): MessageBookmark => ({
 		id: message.id,
 		timestamp: moment.utc().valueOf(),
@@ -233,7 +166,7 @@ export class BookmarksStore {
 	});
 
 	public syncData = async (unsavedData?: DbData) => {
-		await Promise.all([this.getSavedEvents(), this.getSavedMessages()]);
+		await this.getBookmarks();
 
 		if (isEventBookmark(unsavedData)) {
 			await this.saveBookmark(unsavedData);

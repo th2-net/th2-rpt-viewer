@@ -15,11 +15,12 @@
  ***************************************************************************** */
 
 import { observable, action, computed, reaction } from 'mobx';
-import ApiSchema from '../../api/ApiSchema';
-import { SelectedStore } from '../SelectedStore';
+import { BookmarksStore } from 'modules/bookmarks/stores/BookmarksStore';
+import { IBookmarksStore } from 'models/Stores';
+import ApiSchema from 'api/ApiSchema';
+import { DbData } from 'api/indexedDb';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
-import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 
@@ -28,7 +29,7 @@ export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 export default class WorkspacesStore {
 	public readonly MAX_WORKSPACES_COUNT = 10;
 
-	public selectedStore = new SelectedStore(this, this.api.indexedDb);
+	public bookmarksStore: IBookmarksStore;
 
 	public tabsStore = new TabsStore(this);
 
@@ -39,6 +40,8 @@ export default class WorkspacesStore {
 		initialState: WorkspacesUrlState | null,
 	) {
 		this.init(initialState || null);
+
+		this.bookmarksStore = new BookmarksStore(this, this.api.indexedDb);
 
 		reaction(() => this.activeWorkspace, this.onActiveWorkspaceChange);
 	}
@@ -54,43 +57,20 @@ export default class WorkspacesStore {
 	}
 
 	@action
-	private init(initialState: WorkspacesUrlState | null) {
-		if (initialState !== null) {
-			initialState.forEach(workspaceState =>
-				this.addWorkspace(this.createWorkspace(workspaceState)),
-			);
-		} else {
-			this.addWorkspace(
-				this.createWorkspace({
-					layout: [0, 100, 0, 0],
-				}),
-			);
-		}
-	}
-
-	@action
 	public deleteWorkspace = (workspace: WorkspaceStore) => {
 		this.workspaces.splice(this.workspaces.indexOf(workspace), 1);
 	};
 
 	@action
-	public addWorkspace = (workspace: WorkspaceStore) => {
+	public addWorkspace = (workspace = this.createWorkspace()) => {
 		if (this.isFull) return;
 		this.workspaces.push(workspace);
 		this.tabsStore.setActiveWorkspace(this.workspaces.length - 1);
 	};
 
-	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
-		activeWorkspace.eventsStore.filterStore.setTimestampFromRange(
-			activeWorkspace.eventsStore.filterStore.range,
-		);
-	};
-
 	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) =>
 		new WorkspaceStore(
-			this.rootStore,
 			this,
-			this.selectedStore,
 			this.rootStore.sessionsStore,
 			this.rootStore.messageDisplayRulesStore,
 			this.api,
@@ -119,5 +99,25 @@ export default class WorkspacesStore {
 
 	public onQuotaExceededError = (unsavedData?: DbData) => {
 		this.rootStore.handleQuotaExceededError(unsavedData);
+	};
+
+	private init(initialState: WorkspacesUrlState | null) {
+		if (initialState !== null) {
+			initialState.forEach(workspaceState =>
+				this.addWorkspace(this.createWorkspace(workspaceState)),
+			);
+		} else {
+			this.addWorkspace(
+				this.createWorkspace({
+					layout: [0, 100, 0, 0],
+				}),
+			);
+		}
+	}
+
+	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
+		activeWorkspace.eventsStore.filterStore.setTimestampFromRange(
+			activeWorkspace.eventsStore.filterStore.range,
+		);
 	};
 }

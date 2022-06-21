@@ -30,7 +30,6 @@ import { FilterEntry, SearchStore } from '../SearchStore';
 import EventsDataStore from './EventsDataStore';
 import { EventFilterState } from '../../components/search-panel/SearchPanelFilters';
 import EventsFilter from '../../models/filter/EventsFilter';
-import FiltersHistoryStore from '../FiltersHistoryStore';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
@@ -49,19 +48,18 @@ type EventStoreDefaultState = EventStoreURLState & {
 export type EventStoreDefaultStateType = EventStoreDefaultState | string | null | undefined;
 
 export default class EventsStore {
-	public filterStore!: EventsFilterStore;
+	public filterStore: EventsFilterStore;
 
-	public viewStore!: ViewStore;
+	public viewStore: ViewStore;
 
-	public searchStore!: EventsSearchStore;
+	public searchStore: EventsSearchStore;
 
-	public eventDataStore!: EventsDataStore;
+	public eventDataStore: EventsDataStore;
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
 		private searchPanelStore: SearchStore,
 		private api: ApiSchema,
-		private filterHistoryStore: FiltersHistoryStore,
 		defaultState: EventStoreDefaultStateType,
 	) {
 		const initialState = !defaultState || typeof defaultState === 'string' ? {} : defaultState;
@@ -90,21 +88,29 @@ export default class EventsStore {
 		reaction(() => this.filterStore.interval, this.onIntervalChange);
 	}
 
-	@observable.ref selectedNode: EventTreeNode | null = null;
+	@observable.ref
+	public selectedNode: EventTreeNode | null = null;
 
-	@observable.ref selectedParentNode: EventTreeNode | null = null;
+	@observable.ref
+	public selectedParentNode: EventTreeNode | null = null;
 
-	@observable.ref selectedEvent: EventAction | null = null;
+	@observable.ref
+	public selectedEvent: EventAction | null = null;
 
-	@observable scrolledIndex: Number | null = null;
+	@observable
+	public scrolledIndex: Number | null = null;
 
-	@observable isExpandedMap: Map<string, boolean> = new Map();
+	@observable
+	public isExpandedMap: Map<string, boolean> = new Map();
 
-	@observable eventTreeStatusCode: number | null = null;
+	@observable
+	public eventTreeStatusCode: number | null = null;
 
-	@observable targetNodeId: string | null = null;
+	@observable
+	public targetNodeId: string | null = null;
 
-	@observable selectedBodyFilter: FilterEntry | null = null;
+	@observable
+	public selectedBodyFilter: FilterEntry | null = null;
 
 	@computed
 	public get isLoadingTargetNode(): boolean {
@@ -119,11 +125,6 @@ export default class EventsStore {
 				return !children || children.length === 0;
 			}),
 		);
-	}
-
-	@computed
-	public get panelRange(): TimeRange {
-		return this.filterStore.range;
 	}
 
 	@computed
@@ -145,11 +146,6 @@ export default class EventsStore {
 			'desc',
 		);
 		return rootNodes.flatMap(eventNode => this.getFlatExpandedList(eventNode));
-	}
-
-	@computed
-	public get isSelectedEventLoading() {
-		return this.selectedNode !== null && this.selectedEvent === null;
 	}
 
 	// we need this property for correct virtualized tree render -
@@ -282,20 +278,6 @@ export default class EventsStore {
 			filter: this.filterStore.filter,
 			targetEventId: savedEventNode.eventId,
 		});
-	};
-
-	@action
-	public onRangeChange = (timestampFrom: number) => {
-		const timeRange = calculateTimeRange(timestampFrom, this.filterStore.interval);
-
-		this.eventDataStore.fetchEventTree({
-			timeRange,
-			filter: this.filterStore.filter,
-		});
-
-		if (this.workspaceStore.viewStore.panelsLayout[0] < 20) {
-			this.workspaceStore.viewStore.setPanelsLayout([45, 30, 25, 0]);
-		}
 	};
 
 	@action
@@ -466,16 +448,6 @@ export default class EventsStore {
 		];
 	};
 
-	private getNodesPath(path: string[], nodes: EventTreeNode[]): EventTreeNode[] {
-		if (path.length === 0 || nodes.length === 0) {
-			return [];
-		}
-		const [currentId, ...rest] = path;
-		const targetNode = nodes.find(n => n.eventId === currentId);
-		const childList = targetNode ? this.getChildrenNodes(targetNode.eventId) : [];
-		return targetNode ? [targetNode, ...this.getNodesPath(rest, childList)] : [];
-	}
-
 	public getParentNodes(eventId: string, cache: Map<string, EventTreeNode>): EventTreeNode[] {
 		let event = cache.get(eventId);
 		const path = [];
@@ -504,8 +476,6 @@ export default class EventsStore {
 	};
 
 	public applyFilter = (filter: EventFilterState) => {
-		this.filterHistoryStore.onEventFilterSubmit(filter);
-
 		this.eventDataStore.fetchEventTree({ filter, timeRange: this.filterStore.range });
 	};
 

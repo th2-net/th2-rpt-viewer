@@ -29,7 +29,6 @@ export * from './useParentEvents';
 export * from './usePrevious';
 export * from './useRootStore';
 export * from './useSelectListener';
-export * from './useSelectedStore';
 export * from './useSessionsStore';
 export * from './useWorkspacesStore';
 export * from './useTabsStore';

@@ -14,9 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import moment from 'moment';
 import { Virtuoso } from 'react-virtuoso';
+import { formatTimestamp } from 'helpers/date';
 import { getItemId, isEvent } from '../../helpers/event';
 import { FilterEntry, SearchResult } from '../../stores/SearchStore';
 import { ActionType } from '../../models/EventAction';
@@ -103,11 +102,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	return (
 		<div className='search-results'>
 			<div className='history-point'>
-				<p className='history-point__timestamp'>
-					{moment(+timestamp)
-						.utc()
-						.format('DD.MM.YYYY HH:mm:ss.SSS')}
-				</p>
+				<p className='history-point__timestamp'>{formatTimestamp(timestamp)}</p>
 				<button
 					className='bookmark-item__remove-btn'
 					disabled={disabledRemove}

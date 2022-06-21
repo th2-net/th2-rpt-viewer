@@ -25,7 +25,8 @@
 			"stores": ["helpers/*"],
 			"api": ["api/*"],
 			"components": ["components/*"],
-			"hooks": ["hooks/*"]
+			"hooks": ["hooks/*"],
+			"modules": ["modules/*"]
 		}
 	},
 	"exclude": ["node_modules"],

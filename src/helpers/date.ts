@@ -105,7 +105,7 @@ export function getRangeFromTimestamp(timestamp: number, interval: number): Time
 export function sortByTimestamp<T extends { timestamp: number }>(
 	array: T[],
 	order: 'desc' | 'asc' = 'desc',
-) {
+): T[] {
 	const copiedArray = array.slice();
 	copiedArray.sort((itemA, itemB) => {
 		if (order === 'desc') {
@@ -114,4 +114,8 @@ export function sortByTimestamp<T extends { timestamp: number }>(
 		return itemA.timestamp - itemB.timestamp;
 	});
 	return copiedArray;
+}
+
+export function formatTimestamp(timestamp: number, format = 'DD.MM.YYYY HH:mm:ss.SSS'): string {
+	return moment.utc(timestamp).format(format);
 }
