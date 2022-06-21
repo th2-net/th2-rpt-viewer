@@ -28,8 +28,8 @@ import { usePrevious } from '../../../hooks';
 const TIME_MASK = DateTimeMask.TIME_MASK;
 export const DATE_TIME_MASK = DateTimeMask.DATE_TIME_MASK;
 
-const TIME_PLACEHOLDER = '00:00:00.000' as const;
-const DATE_TIME_PLACEHOLDER = '01.01.2021 00:00:00.000' as const;
+const TIME_PLACEHOLDER = '00:00:00.000';
+const DATE_TIME_PLACEHOLDER = `01.01.${moment().year().toString()} 00:00:00.000`;
 
 type KeyboardHandler = {
 	[key: string]: (keyEvent?: KeyboardEvent | undefined) => void;

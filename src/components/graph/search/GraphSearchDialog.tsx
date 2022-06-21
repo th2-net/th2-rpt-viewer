@@ -39,6 +39,8 @@ interface Props {
 	closeModal: () => void;
 	submittedId: String | null;
 	isIdMode: boolean;
+	isLoading: boolean;
+	setIsLoading: (value: React.SetStateAction<boolean>) => void;
 	submittedTimestamp: number | null;
 }
 
@@ -48,15 +50,16 @@ const GraphSearchDialog = (props: Props) => {
 		value,
 		setTimestamp,
 		setIsIdSearchDisabled,
+		setIsLoading,
 		closeModal,
 		submittedId,
 		isIdMode,
+		isLoading,
 		submittedTimestamp,
 	} = props;
 
 	const rootStore = useRootStore();
 
-	const [isLoading, setIsLoading] = React.useState(false);
 	const [currentSearchResult, setCurrentSearchResult] = React.useState<GraphSearchResult | null>(
 		null,
 	);
@@ -261,7 +264,6 @@ const GraphSearchDialog = (props: Props) => {
 
 	const fetchObjectById = (id: string, abortController: AbortController) => {
 		const searchTimestamp = moment.utc().valueOf();
-		setIsLoading(true);
 		function handleError(err: any) {
 			if (err.name !== 'AbortError') {
 				setIsLoading(false);
