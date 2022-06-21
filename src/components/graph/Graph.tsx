@@ -22,7 +22,7 @@ import GraphChunk from './GraphChunk';
 import GraphSearch from './search/GraphSearch';
 import OutsideItems from './OutsideItems';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
-import { useActiveWorkspace, useSelectedStore } from '../../hooks';
+import { useActiveWorkspace, useSelectedStore, useTabsStore } from '../../hooks';
 import { Chunk, PanelRange } from '../../models/Graph';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
@@ -148,6 +148,7 @@ const ObservedGraph = observer(Graph);
 
 const GraphRoot = () => {
 	const activeWorkspace = useActiveWorkspace();
+	const tabsStore = useTabsStore();
 
 	return (
 		<PointerTimestampProvider>
@@ -160,6 +161,7 @@ const GraphRoot = () => {
 					onTimestampSubmit={activeWorkspace.onTimestampSelect}
 					onFoundItemClick={activeWorkspace.onSavedItemSelect}
 					windowRange={isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.range : null}
+					activeTabIndex={tabsStore.activeTabIndex}
 				/>
 				{isWorkspaceStore(activeWorkspace) && (
 					<GraphLastEventsButton

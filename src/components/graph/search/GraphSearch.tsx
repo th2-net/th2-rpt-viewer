@@ -33,6 +33,7 @@ interface Props {
 	onFoundItemClick: InstanceType<typeof WorkspaceStore>['onSavedItemSelect'];
 	windowRange: TimeRange | null;
 	hoveredTimestamp: number | null;
+	activeTabIndex: number;
 }
 
 export type GraphSearchMode = 'timestamp' | 'history';
@@ -43,7 +44,13 @@ export interface GraphSearchResult {
 }
 
 function GraphSearch(props: Props) {
-	const { onTimestampSubmit, onFoundItemClick, windowRange, hoveredTimestamp } = props;
+	const {
+		onTimestampSubmit,
+		onFoundItemClick,
+		windowRange,
+		hoveredTimestamp,
+		activeTabIndex,
+	} = props;
 
 	const [inputConfig, setInputConfig] = React.useState<GraphSearchInputConfig>({
 		isValidDate: false,
@@ -59,6 +66,8 @@ function GraphSearch(props: Props) {
 	const [mode, setMode] = React.useState<GraphSearchMode>('timestamp');
 	// If user selects mode input will no longer switch automatically based on input value
 	const [isModeLocked, setIsModeLocked] = React.useState(false);
+
+	const [isLoading, setIsLoading] = React.useState(false);
 
 	const [isIdSearchDisabled, setIsIdSearchDisabled] = React.useState(false);
 
@@ -81,7 +90,8 @@ function GraphSearch(props: Props) {
 				if (
 					typeof inputConfig.timestamp === 'number' &&
 					inputConfig.isValidDate &&
-					inputConfig.timestamp <= moment.utc().valueOf()
+					inputConfig.timestamp <= moment.utc().valueOf() &&
+					activeTabIndex > 0
 				) {
 					onTimestampSubmit(inputConfig.timestamp);
 				}
@@ -152,6 +162,7 @@ function GraphSearch(props: Props) {
 	const timestampSearch = (startTimestamp: number) => {
 		setTimestamp(startTimestamp);
 		setMode('history');
+		setIsLoading(true);
 	};
 
 	const handleModalSubmit = () => {
@@ -231,10 +242,12 @@ function GraphSearch(props: Props) {
 							onSearchResultSelect={onGraphSearchResultSelect}
 							setTimestamp={handleTimepickerValueChange}
 							setIsIdSearchDisabled={setIsIdSearchDisabled}
+							setIsLoading={setIsLoading}
 							closeModal={closeModal}
 							submittedId={submittedId}
 							submittedTimestamp={timestamp}
 							isIdMode={showModal && mode === 'history'}
+							isLoading={isLoading}
 						/>
 					)}
 					<div className='graph-search__switchers'>

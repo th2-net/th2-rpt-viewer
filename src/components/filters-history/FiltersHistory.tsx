@@ -29,6 +29,7 @@ import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 interface Props {
 	type?: SearchPanelType;
 	sseFilter?: FiltersState;
+	disabled?: boolean;
 }
 
 export type FiltersState = {
@@ -38,10 +39,11 @@ export type FiltersState = {
 		| ((patch: Partial<MessageFilterState>) => void);
 } | null;
 
-const FiltersHistory = ({ type, sseFilter }: Props) => {
+const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const historyRef = useRef<HTMLDivElement>(null);
+
 	const { eventsHistory, messagesHistory, toggleFilterPin } = useFiltersHistoryStore();
 	const { filters, formType, eventFilterInfo, messagesFilterInfo } = useSearchStore();
 
@@ -111,7 +113,8 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 				onClick={() => {
 					setIsOpen(o => !o);
 				}}
-				title={'Filters history'}></button>
+				title={'Filters history'}
+				disabled={disabled}></button>
 			<ModalPortal isOpen={isOpen}>
 				<div ref={historyRef} className='filters-history'>
 					{toShow.map((item, index) => (
