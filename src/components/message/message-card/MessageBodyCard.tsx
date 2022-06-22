@@ -31,12 +31,11 @@ interface Props {
 	isBeautified: boolean;
 	body: MessageBody | null;
 	isSelected: boolean;
-	renderInfo: () => React.ReactNode;
 	applyFilterToBody?: boolean;
 	sortOrderItems: string[];
 }
 
-function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, applyFilterToBody }: Props) {
+function MessageBodyCard({ isBeautified, body, isSelected, applyFilterToBody }: Props) {
 	const { currentSearch } = useSearchStore();
 	const { selectedBodyFilter } = useMessagesWorkspaceStore();
 	const { getSortedFields, sortOrderItems } = useMessageBodySortStore();
@@ -67,7 +66,6 @@ function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, applyFilt
 
 	return (
 		<pre className='mc-body__human'>
-			{renderInfo && renderInfo()}
 			<MessageBodyCardField
 				field={sortedObject}
 				range={[0, bodyAsString.length - 1]}

@@ -17,7 +17,7 @@
 
 import React from 'react';
 import { formatTime, getTimestampAsNumber } from '../../helpers/date';
-import { getItemName, isEventAction, isEventMessage } from '../../helpers/event';
+import { getItemName, isEventAction, isEventMessage, isEventNode } from '../../helpers/event';
 import { createBemBlock, createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { useMessageBodySortStore } from '../../hooks';
 import { ActionType, EventAction } from '../../models/EventAction';
@@ -281,25 +281,21 @@ const SearchResultItem = ({
 			},
 		},
 		message: {
-			messageType: messageType => {
-				if (!filters.type.values.length || filters.type.negative) return <>{messageType}</>;
+			type: type => {
+				if (!filters.type.values.length || filters.type.negative) return <>{type}</>;
 
 				return (
-					<>
-						{filters.type.values
-							.filter(filterValue => messageType.includes(filterValue))
-							.join(', ')}
-					</>
+					<>{filters.type.values.filter(filterValue => type.includes(filterValue)).join(', ')}</>
 				);
 			},
-			body: body => {
-				if (!body) return <>{null}</>;
+			parsedMessages: parsedMessages => {
+				if (!parsedMessages) return <>{null}</>;
 
-				const { fields, ...bodyWithoutFields } = body;
+				const { fields, ...bodyWithoutFields } = parsedMessages[0].message;
 
 				const sortedObject = {
-					...body,
-					fields: Object.fromEntries(getSortedFields(body.fields)),
+					...parsedMessages[0],
+					fields: Object.fromEntries(getSortedFields(parsedMessages[0].message.fields)),
 				};
 
 				const bodyAsString = JSON.stringify(sortedObject).replace(
@@ -343,7 +339,7 @@ const SearchResultItem = ({
 					</>
 				);
 			},
-			bodyBase64: binary => {
+			rawMessageBase64: binary => {
 				if (!binary) return <>null</>;
 
 				const bodyBinary = (filters as MessageFilterState).bodyBinary;

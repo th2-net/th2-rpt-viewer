@@ -15,20 +15,21 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { EventMessage } from '../../../models/EventMessage';
+import { EventMessage, ParsedMessage } from '../../../models/EventMessage';
 import { createStyleSelector } from '../../../helpers/styleCreators';
 import { formatTime } from '../../../helpers/date';
 import { getHashCode } from '../../../helpers/stringHash';
 
 interface MessageInfoProps {
 	message: EventMessage;
+	parsedMessage: ParsedMessage | null;
 	onTimestampMouseEnter?: () => void;
 	onTimestampMouseLeave?: () => void;
 }
 
 export const MessageHeader = React.memo((props: MessageInfoProps) => {
-	const { message, onTimestampMouseEnter, onTimestampMouseLeave } = props;
-	const { timestamp, sessionId, messageType, id, direction } = message;
+	const { message, parsedMessage, onTimestampMouseEnter, onTimestampMouseLeave } = props;
+	const { timestamp, sessionId, direction } = message;
 
 	// session arrow color, we calculating it for each session from-to pair, based on hash
 	const sessionArrowStyle: React.CSSProperties = {
@@ -54,10 +55,15 @@ export const MessageHeader = React.memo((props: MessageInfoProps) => {
 			<span className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
 				{sessionId}
 			</span>
-			<span className='mc-header__value'>{id}</span>
+			<span className='mc-header__value'>{parsedMessage?.id}</span>
 			<span className={sessionClass} style={sessionArrowStyle}></span>
-			<span className='mc-header__value messageType' title={messageType && `Name: ${messageType}`}>
-				{messageType}
+			<span
+				className='mc-header__value messageType'
+				title={
+					parsedMessage?.message.metadata.messageType &&
+					`Name: ${parsedMessage?.message.metadata.messageType}`
+				}>
+				{parsedMessage?.message.metadata.messageType}
 			</span>
 		</div>
 	);

@@ -45,17 +45,29 @@ export interface MessageDisplayRule {
 
 export interface EventMessage {
 	type: ActionType.MESSAGE;
-	messageType: string;
+	sequence: string;
 	id: string;
-	timestamp: number;
+	timestamp: string;
 	direction: string;
 	sessionId: string;
-	body: MessageBody | null;
-	bodyBase64: string | null;
+	rawMessageBase64: string | null;
+	parsedMessages: ParsedMessage[] | null;
 }
 
-export function isScreenshotMessage(message: EventMessage): boolean {
-	return /image\/\w+/gi.test(message.messageType);
+export interface EventMessageItem extends EventMessage {
+	parsedMessage: ParsedMessage | null;
+}
+
+export interface ParsedMessage {
+	match: boolean;
+	id: string;
+	message: MessageBody;
+}
+
+export function isScreenshotMessage(message: EventMessageItem): boolean {
+	return message.parsedMessage
+		? /image\/\w+/gi.test(message.parsedMessage?.message.metadata.messageType)
+		: false;
 }
 
 export function isMessageDisplayRule(obj: unknown): obj is MessageDisplayRule {

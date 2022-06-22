@@ -32,6 +32,7 @@ import { TimeRange } from '../../models/Timestamp';
 import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import { isAbortError } from '../../helpers/fetch';
 import { getItemAt } from '../../helpers/array';
+import { timestampToNumber } from '../../helpers/date';
 
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
@@ -505,8 +506,8 @@ export default class EventsDataStore {
 				const targetEventTimestamp = event.startTimestamp;
 				// TODO: add filtering too see if target event matches current filter
 				if (
-					targetEventTimestamp < this.filterStore.timestampFrom ||
-					targetEventTimestamp > this.filterStore.timestampTo
+					timestampToNumber(targetEventTimestamp) < this.filterStore.timestampFrom ||
+					timestampToNumber(targetEventTimestamp) > this.filterStore.timestampTo
 				) {
 					this.targetEventLoadSubscription();
 					this.targetEventAC = null;

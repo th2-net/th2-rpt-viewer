@@ -18,14 +18,14 @@ import { Bookmark, EventBookmark, MessageBookmark } from 'modules/bookmarks/mode
 import { DbData } from '../api/indexedDb';
 import { MessagesSSEParams } from '../api/sse';
 import { EventTreeNode } from './EventAction';
-import { EventMessage } from './EventMessage';
+import { EventMessage, EventMessageItem } from './EventMessage';
 
 export interface IBookmarksStore {
 	messages: MessageBookmark[];
 	events: EventBookmark[];
 	bookmarks: Bookmark[];
 	isLoadingBookmarks: boolean;
-	toggleMessagePin: (message: EventMessage) => void;
+	toggleMessagePin: (message: EventMessageItem) => void;
 	toggleEventPin: (message: EventTreeNode) => void;
 	syncData: (unsavedData?: DbData) => void;
 }

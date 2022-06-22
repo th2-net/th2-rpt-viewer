@@ -14,21 +14,23 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventTreeNode } from 'models/EventAction';
-import { EventMessage } from 'models/EventMessage';
+import { EventTreeNode } from '../../../models/EventAction';
+import { EventMessageItem } from '../../../models/EventMessage';
 
 export type Bookmark = EventBookmark | MessageBookmark;
 
 export type BookmarkType = 'event' | 'message';
 
+export type BookmarkedItem = Bookmark | EventMessageItem | EventTreeNode;
+
 export interface MessageBookmark {
 	timestamp: number;
 	id: string;
-	item: EventMessage;
+	item: EventMessageItem;
 }
 
 export interface EventBookmark {
 	timestamp: number;
 	id: string;
-	item: EventMessage | EventTreeNode;
+	item: EventMessageItem | EventTreeNode;
 }

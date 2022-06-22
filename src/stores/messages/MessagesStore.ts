@@ -31,6 +31,7 @@ import MessagesFilterStore, { MessagesFilterStoreInitialState } from './Messages
 import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
 import { getItemAt } from '../../helpers/array';
+import { timestampToNumber } from '../../helpers/date';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -121,7 +122,7 @@ export default class MessagesStore {
 		const messageFrom = getItemAt(this.dataStore.messages, endIndex);
 
 		if (messageFrom && messageTo) {
-			return [messageFrom.timestamp, messageTo.timestamp];
+			return [timestampToNumber(messageFrom.timestamp), timestampToNumber(messageTo.timestamp)];
 		}
 		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
 		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];
@@ -191,7 +192,7 @@ export default class MessagesStore {
 
 			this.filterStore.resetMessagesFilter({
 				timestampFrom: null,
-				timestampTo: message.timestamp,
+				timestampTo: timestampToNumber(message.timestamp),
 				streams: [...new Set([...streams, message.sessionId])],
 			});
 		}
@@ -224,7 +225,7 @@ export default class MessagesStore {
 					streams: [
 						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
 					],
-					timestampTo: mostRecentMessage.timestamp,
+					timestampTo: timestampToNumber(mostRecentMessage.timestamp),
 				};
 			}
 		}
@@ -286,7 +287,7 @@ export default class MessagesStore {
 
 		this.filterStore.resetMessagesFilter({
 			streams: [...new Set(this.hintMessages.map(({ sessionId }) => sessionId))],
-			timestampTo: targetMessage.timestamp,
+			timestampTo: timestampToNumber(targetMessage.timestamp),
 			timestampFrom: null,
 		});
 

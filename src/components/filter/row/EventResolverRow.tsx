@@ -16,7 +16,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import api from '../../../api';
-import { formatTimestamp } from '../../../helpers/date';
+import { formatTimestamp, timestampToNumber } from '../../../helpers/date';
 import { getEventStatus, isEventId } from '../../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
 import { useDebouncedCallback } from '../../../hooks';
@@ -127,7 +127,7 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 					</div>
 					{event && (
 						<div className='filter-row__event-card-timestamp'>
-							{formatTimestamp(event.startTimestamp)}
+							{formatTimestamp(timestampToNumber(event.startTimestamp))}
 						</div>
 					)}
 				</div>

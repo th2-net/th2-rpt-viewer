@@ -28,8 +28,8 @@ interface EventBase {
 	eventId: string;
 	eventName: string;
 	eventType: string;
-	startTimestamp: number;
-	endTimestamp?: number | null;
+	startTimestamp: string;
+	endTimestamp?: string | null;
 	successful: boolean;
 }
 

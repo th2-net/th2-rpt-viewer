@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { formatTime, getElapsedTime } from '../../helpers/date';
+import { formatTime, getElapsedTime, timestampToNumber } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { EventAction } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';
@@ -31,6 +31,7 @@ export default function EmbeddedEventHeader(props: Props) {
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp } = event;
 
 	const status = getEventStatus(event);
+	const startTimestampValue = timestampToNumber(startTimestamp);
 
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
@@ -51,7 +52,9 @@ export default function EmbeddedEventHeader(props: Props) {
 				<>
 					{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
 					<div className='event-header-card__time-label'>
-						<span className='event-header-card__time-label-full'>{formatTime(startTimestamp)}</span>
+						<span className='event-header-card__time-label-full'>
+							{formatTime(startTimestampValue)}
+						</span>
 					</div>
 					{eventType && <span className='event-header-card__event-type'>{eventType}</span>}
 				</>

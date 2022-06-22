@@ -16,7 +16,12 @@
 
 import { action, observable } from 'mobx';
 import moment from 'moment';
-import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import {
+	EventMessage,
+	MessageViewType,
+	ParsedMessage,
+	EventMessageItem,
+} from '../../models/EventMessage';
 import { decodeBase64RawContent, getAllRawContent } from '../../helpers/rawFormatter';
 import { downloadTxtFile } from '../../helpers/files/downloadTxt';
 
@@ -25,14 +30,14 @@ export default class MessagesExportStore {
 	public isExport = false;
 
 	@observable.shallow
-	public exportMessages: Array<EventMessage> = [];
+	public exportMessages: Array<EventMessageItem> = [];
 
-	public isExported(message: EventMessage) {
+	public isExported(message: EventMessageItem) {
 		return this.exportMessages.includes(message);
 	}
 
 	@action
-	public addMessageToExport(message: EventMessage) {
+	public addMessageToExport(message: EventMessageItem) {
 		if (!this.isExport) return;
 		if (this.isExported(message)) {
 			this.exportMessages = this.exportMessages.filter(exportMessage => exportMessage !== message);
@@ -53,18 +58,22 @@ export default class MessagesExportStore {
 		this.exportMessages = [];
 	};
 
-	private convertMessage(messageToConvert: EventMessage, messageViewType: MessageViewType) {
+	private convertMessage(
+		messageToConvert: EventMessage,
+		parsedMessage: ParsedMessage,
+		messageViewType: MessageViewType,
+	) {
 		let content: string;
 
-		const jsonToCopy = messageToConvert.body;
+		const jsonToCopy = parsedMessage;
 
 		switch (messageViewType) {
 			case MessageViewType.ASCII:
-				content = messageToConvert.bodyBase64 ? atob(messageToConvert.bodyBase64) : '';
+				content = messageToConvert.rawMessageBase64 ? atob(messageToConvert.rawMessageBase64) : '';
 				break;
 			case MessageViewType.BINARY:
-				content = messageToConvert.bodyBase64
-					? getAllRawContent(decodeBase64RawContent(messageToConvert.bodyBase64))
+				content = messageToConvert.rawMessageBase64
+					? getAllRawContent(decodeBase64RawContent(messageToConvert.rawMessageBase64))
 					: '';
 				break;
 			case MessageViewType.FORMATTED:
@@ -87,7 +96,11 @@ export default class MessagesExportStore {
 		downloadTxtFile(
 			[
 				this.exportMessages
-					.map(exportMessage => this.convertMessage(exportMessage, messageViewType))
+					.map(exportMessage => {
+						return exportMessage.parsedMessages?.map(parsedMessage =>
+							this.convertMessage(exportMessage, parsedMessage, messageViewType),
+						);
+					})
 					.join('\n'),
 			],
 			`exported_messages_${moment.utc().toISOString()}.txt`,

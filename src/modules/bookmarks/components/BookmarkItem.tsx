@@ -49,7 +49,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 	const itemInfo = {
 		id: isEventMessage(item) ? item.id : item.eventId,
 		status: isEventMessage(item) ? null : item.successful ? 'passed' : 'failed',
-		title: isEventMessage(item) ? item.messageType || 'unknown type' : item.eventName,
+		title: isEventMessage(item) ? item.type || 'unknown type' : item.eventName,
 		timestamp: getTimestampAsNumber(item),
 		type: item.type,
 	};

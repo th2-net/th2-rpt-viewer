@@ -22,11 +22,11 @@ import { TimeRange } from '../models/Timestamp';
 import { isEventMessage } from './event';
 
 export function getElapsedTime(
-	startTimestamp: number,
-	endTimestamp: number,
+	startTimestamp: string,
+	endTimestamp: string,
 	withMiliseconds = true,
 ) {
-	const diff = endTimestamp - startTimestamp;
+	const diff = timestampToNumber(endTimestamp) - timestampToNumber(startTimestamp);
 	const seconds = Math.floor(diff / 1000);
 	const milliseconds = Math.floor(diff - seconds * 1000);
 
@@ -42,9 +42,13 @@ export function formatTime(time: string | number) {
 	return moment.utc(time).format(DateTimeMask.DATE_TIME_MASK);
 }
 
+export function timestampToNumber(timestamp: string): number {
+	return new Date(timestamp).getTime();
+}
+
 export function getTimestampAsNumber(entity: EventAction | EventTreeNode | EventMessage): number {
-	if (isEventMessage(entity)) return entity.timestamp;
-	return entity.startTimestamp;
+	if (isEventMessage(entity)) return timestampToNumber(entity.timestamp);
+	return timestampToNumber(entity.startTimestamp);
 }
 
 export function formatTimestampValue(timestamp: number | null, timeMask: string) {
