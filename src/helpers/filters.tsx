@@ -31,8 +31,8 @@ export function getNonEmptyFilters(filter: Partial<FilterState>) {
 	return Object.fromEntries(
 		Object.entries(toJS(observable(filter)))
 			.filter(([_, value]) => value && value.values && value.values.length > 0)
-			.map(([k, v]) => {
-				return typeof v.values === 'string'
+			.map(([k, v]) =>
+				typeof v.values === 'string'
 					? [k, v]
 					: [
 							k,
@@ -40,8 +40,8 @@ export function getNonEmptyFilters(filter: Partial<FilterState>) {
 								...v,
 								values: [...new Set(v.values.sort())],
 							},
-					  ];
-			}),
+					  ],
+			),
 	);
 }
 
@@ -68,13 +68,10 @@ export type BodyFilter = {
 	range: [number, number];
 };
 
-export const isFiltersEqual = (first: BodyFilter, second: BodyFilter): boolean => {
-	return (
-		first?.range[0] === second.range[0] &&
-		first?.range[1] === second.range[1] &&
-		areArraysEqual([...(second?.type || [])], [...second.type])
-	);
-};
+export const isFiltersEqual = (first: BodyFilter, second: BodyFilter): boolean =>
+	first?.range[0] === second.range[0] &&
+	first?.range[1] === second.range[1] &&
+	areArraysEqual([...(second?.type || [])], [...second.type]);
 
 export const getFiltersIntersect = (first?: BodyFilter, second?: BodyFilter): BodyFilter[] => {
 	if (!first || !second) throw new Error('One of ranges is undefined');
@@ -152,12 +149,9 @@ export const uniteFilters = (_filters: BodyFilter[]): BodyFilter[] => {
 			if (firstFilter && secondFilter && isRangesIntersect(firstFilter.range, secondFilter.range)) {
 				const filtersIntersects = getFiltersIntersect(firstFilter, secondFilter).filter(
 					// eslint-disable-next-line no-loop-func
-					filter => {
-						return (
-							isFiltersEqual(filter, secondFilter) ||
-							![...processedFilters].some(f => isFiltersEqual(f, filter))
-						);
-					},
+					filter =>
+						isFiltersEqual(filter, secondFilter) ||
+						![...processedFilters].some(f => isFiltersEqual(f, filter)),
 				);
 
 				processedFilters.add(secondFilter);

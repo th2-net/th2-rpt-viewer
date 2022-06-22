@@ -14,13 +14,11 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import { HeatmapContext } from '../contexts/heatmapContext';
+import { useWorkspaces } from 'hooks/useWorkspacesStore';
+import { BookmarksStore } from '../stores/BookmarksStore';
 
-export const useHeatmap = () => {
-	const heatmapContext = React.useContext(HeatmapContext);
-	if (!heatmapContext) {
-		throw new Error('Heatmap context should be used inside of HeatmapContextProvider');
-	}
-	return heatmapContext;
+export const useBookmarksStore = () => {
+	const workspacesStore = useWorkspaces();
+
+	return workspacesStore.bookmarksStore as BookmarksStore;
 };

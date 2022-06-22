@@ -19,10 +19,10 @@ import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
 	useMessagesWorkspaceStore,
-	useSelectedStore,
 	useMessagesDataStore,
 	useMessageBodySortStore,
 	useMessagesViewTypesStore,
+	useBookmarksStore,
 } from '../../../hooks';
 import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import MessageCardBase from './MessageCardBase';
@@ -44,19 +44,17 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
-	const selectedStore = useSelectedStore();
+	const bookmarksStore = useBookmarksStore();
 	const { sortOrderItems } = useMessageBodySortStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
-	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const isContentBeautified = viewType === MessageViewType.FORMATTED;
 	const isBookmarked =
-		selectedStore.bookmarkedMessages.findIndex(
-			bookmarkedMessage => bookmarkedMessage.id === messageId,
-		) !== -1;
+		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === messageId) !==
+		-1;
 
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
 
@@ -95,24 +93,13 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		};
 	}, [messagesStore.highlightedMessageId]);
 
-	const hoverMessage = React.useCallback(() => {
-		hoverTimeout.current = setTimeout(() => {
-			messagesStore.setHoveredMessage(message);
-		}, 600);
-	}, [messagesStore.setHoveredMessage]);
-
-	const unhoverMessage = React.useCallback(() => {
-		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
-		messagesStore.setHoveredMessage(null);
-	}, [messagesStore.setHoveredMessage]);
-
 	const isAttached = computed(
 		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.id === message.id),
 	).get();
 
 	const toogleMessagePin = React.useCallback(() => {
-		selectedStore.toggleMessagePin(message);
-	}, [selectedStore.toggleMessagePin]);
+		bookmarksStore.toggleMessagePin(message);
+	}, [bookmarksStore.toggleMessagePin]);
 
 	const addMessagesToExport = React.useCallback(
 		() => messagesStore.exportStore.addMessageToExport(message),
@@ -127,8 +114,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 			viewType={viewType}
 			setViewType={setViewType}
 			isHighlighted={isHighlighted}
-			hoverMessage={hoverMessage}
-			unhoverMessage={unhoverMessage}
 			isBookmarked={isBookmarked}
 			isAttached={isAttached}
 			isContentBeautified={isContentBeautified}

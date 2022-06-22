@@ -14,21 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { createContext } from 'react';
+import { TimeRange } from '../models/Timestamp';
 
-import { HeatmapElement, ListRange } from '../models/Heatmap';
-
-interface HeatmapContextState {
-	heatmapElements: HeatmapElement[];
-	setHeatmapElements: (heatmapElements: HeatmapElement[]) => void;
-	visibleRange: ListRange | null;
-	setVisibleRange: (range: ListRange) => void;
-	fullRange: ListRange | null;
-	setFullRange: (range: ListRange) => void;
-	unknownAreas: {
-		before: HeatmapElement[];
-		after: HeatmapElement[];
-	};
+export function calculateTimeRange(timestamp: number, interval: number): TimeRange {
+	return [timestamp - (interval / 2) * 60 * 1000, timestamp + (interval / 2) * 60 * 1000];
 }
-
-export const HeatmapContext = createContext({} as HeatmapContextState);

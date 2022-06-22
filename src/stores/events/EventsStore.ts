@@ -24,14 +24,12 @@ import EventsSearchStore from './EventsSearchStore';
 import { isEvent, isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
-import { calculateTimeRange } from '../../helpers/graph';
-import { GraphStore } from '../GraphStore';
+import { calculateTimeRange } from '../../helpers/calculateTimeRange';
 import { TimeRange } from '../../models/Timestamp';
 import { FilterEntry, SearchStore } from '../SearchStore';
 import EventsDataStore from './EventsDataStore';
 import { EventFilterState } from '../../components/search-panel/SearchPanelFilters';
 import EventsFilter from '../../models/filter/EventsFilter';
-import FiltersHistoryStore from '../FiltersHistoryStore';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;
@@ -50,25 +48,23 @@ type EventStoreDefaultState = EventStoreURLState & {
 export type EventStoreDefaultStateType = EventStoreDefaultState | string | null | undefined;
 
 export default class EventsStore {
-	public filterStore!: EventsFilterStore;
+	public filterStore: EventsFilterStore;
 
-	public viewStore!: ViewStore;
+	public viewStore: ViewStore;
 
-	public searchStore!: EventsSearchStore;
+	public searchStore: EventsSearchStore;
 
-	public eventDataStore!: EventsDataStore;
+	public eventDataStore: EventsDataStore;
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
-		private graphStore: GraphStore,
 		private searchPanelStore: SearchStore,
 		private api: ApiSchema,
-		private filterHistoryStore: FiltersHistoryStore,
 		defaultState: EventStoreDefaultStateType,
 	) {
 		const initialState = !defaultState || typeof defaultState === 'string' ? {} : defaultState;
 
-		this.filterStore = new EventsFilterStore(this.graphStore, this.searchPanelStore, {
+		this.filterStore = new EventsFilterStore(this.searchPanelStore, {
 			filter: initialState.filter,
 			range: initialState.range,
 		});
@@ -87,30 +83,34 @@ export default class EventsStore {
 
 		reaction(() => this.viewStore.flattenedListView, this.onViewChange);
 
-		reaction(() => this.hoveredEvent, this.onHoveredEventChange);
-
 		reaction(() => this.selectedEvent, this.onSelectedEventChange);
 
-		reaction(() => this.graphStore.interval, this.onIntervalChange);
+		reaction(() => this.filterStore.interval, this.onIntervalChange);
 	}
 
-	@observable.ref selectedNode: EventTreeNode | null = null;
+	@observable.ref
+	public selectedNode: EventTreeNode | null = null;
 
-	@observable.ref hoveredEvent: EventTreeNode | null = null;
+	@observable.ref
+	public selectedParentNode: EventTreeNode | null = null;
 
-	@observable.ref selectedParentNode: EventTreeNode | null = null;
+	@observable.ref
+	public selectedEvent: EventAction | null = null;
 
-	@observable.ref selectedEvent: EventAction | null = null;
+	@observable
+	public scrolledIndex: Number | null = null;
 
-	@observable scrolledIndex: Number | null = null;
+	@observable
+	public isExpandedMap: Map<string, boolean> = new Map();
 
-	@observable isExpandedMap: Map<string, boolean> = new Map();
+	@observable
+	public eventTreeStatusCode: number | null = null;
 
-	@observable eventTreeStatusCode: number | null = null;
+	@observable
+	public targetNodeId: string | null = null;
 
-	@observable targetNodeId: string | null = null;
-
-	@observable selectedBodyFilter: FilterEntry | null = null;
+	@observable
+	public selectedBodyFilter: FilterEntry | null = null;
 
 	@computed
 	public get isLoadingTargetNode(): boolean {
@@ -125,11 +125,6 @@ export default class EventsStore {
 				return !children || children.length === 0;
 			}),
 		);
-	}
-
-	@computed
-	public get panelRange(): TimeRange {
-		return this.filterStore.range;
 	}
 
 	@computed
@@ -151,11 +146,6 @@ export default class EventsStore {
 			'desc',
 		);
 		return rootNodes.flatMap(eventNode => this.getFlatExpandedList(eventNode));
-	}
-
-	@computed
-	public get isSelectedEventLoading() {
-		return this.selectedNode !== null && this.selectedEvent === null;
 	}
 
 	// we need this property for correct virtualized tree render -
@@ -245,14 +235,6 @@ export default class EventsStore {
 	}
 
 	@action
-	public setHoveredEvent(event: EventTreeNode | null) {
-		if (event !== this.hoveredEvent) {
-			this.hoveredEvent = event;
-			this.graphStore.setHoveredTimestamp(event);
-		}
-	}
-
-	@action
 	public toggleNode = (eventTreeNode: EventTreeNode) => {
 		const isExpanded = !this.isExpandedMap.get(eventTreeNode.eventId);
 		this.isExpandedMap.set(eventTreeNode.eventId, isExpanded);
@@ -287,30 +269,15 @@ export default class EventsStore {
 	public goToEvent = async (savedEventNode: EventTreeNode | EventAction) => {
 		this.selectedNode = null;
 		this.selectedEvent = null;
-		this.graphStore.setTimestamp(savedEventNode.startTimestamp);
 		this.workspaceStore.viewStore.activePanel = this;
 
-		const timeRange = calculateTimeRange(savedEventNode.startTimestamp, this.graphStore.interval);
+		const timeRange = calculateTimeRange(savedEventNode.startTimestamp, this.filterStore.interval);
 
 		this.eventDataStore.fetchEventTree({
 			timeRange,
 			filter: this.filterStore.filter,
 			targetEventId: savedEventNode.eventId,
 		});
-	};
-
-	@action
-	public onRangeChange = (timestampFrom: number) => {
-		const timeRange = calculateTimeRange(timestampFrom, this.graphStore.interval);
-
-		this.eventDataStore.fetchEventTree({
-			timeRange,
-			filter: this.filterStore.filter,
-		});
-
-		if (this.workspaceStore.viewStore.panelsLayout[0] < 20) {
-			this.workspaceStore.viewStore.setPanelsLayout([45, 30, 25, 0]);
-		}
 	};
 
 	@action
@@ -398,7 +365,7 @@ export default class EventsStore {
 			try {
 				const event = await this.api.events.getEvent(defaultState);
 				this.filterStore.setRange(
-					getRangeFromTimestamp(event.startTimestamp, this.graphStore.interval),
+					getRangeFromTimestamp(event.startTimestamp, this.filterStore.interval),
 				);
 				initialState = { ...initialState, selectedEventId: event.eventId, targetEvent: event };
 				this.goToEvent(event);
@@ -481,22 +448,6 @@ export default class EventsStore {
 		];
 	};
 
-	private getNodesPath(path: string[], nodes: EventTreeNode[]): EventTreeNode[] {
-		if (path.length === 0 || nodes.length === 0) {
-			return [];
-		}
-		const [currentId, ...rest] = path;
-		const targetNode = nodes.find(n => n.eventId === currentId);
-		const childList = targetNode ? this.getChildrenNodes(targetNode.eventId) : [];
-		return targetNode ? [targetNode, ...this.getNodesPath(rest, childList)] : [];
-	}
-
-	private onHoveredEventChange = (hoveredEvent: EventTreeNode | null) => {
-		if (hoveredEvent !== null) {
-			this.graphStore.setTimestamp(hoveredEvent.startTimestamp);
-		}
-	};
-
 	public getParentNodes(eventId: string, cache: Map<string, EventTreeNode>): EventTreeNode[] {
 		let event = cache.get(eventId);
 		const path = [];
@@ -525,8 +476,6 @@ export default class EventsStore {
 	};
 
 	public applyFilter = (filter: EventFilterState) => {
-		this.filterHistoryStore.onEventFilterSubmit(filter);
-
 		this.eventDataStore.fetchEventTree({ filter, timeRange: this.filterStore.range });
 	};
 
@@ -545,7 +494,7 @@ export default class EventsStore {
 			.valueOf();
 		const timestampTo = moment
 			.utc(timestampFrom)
-			.add(this.graphStore.interval, 'minutes')
+			.add(this.filterStore.interval, 'minutes')
 			.valueOf();
 
 		this.eventDataStore.fetchEventTree({

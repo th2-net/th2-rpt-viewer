@@ -22,7 +22,7 @@ import { formatTime } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import EventBodyCard from './EventBodyCard';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { useSelectedStore, useWorkspaceEventStore } from '../../hooks';
+import { useBookmarksStore, useWorkspaceEventStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 
 interface Props {
@@ -34,13 +34,12 @@ interface Props {
 }
 
 function EventDetailInfoCard(props: Props) {
-	const selectedStore = useSelectedStore();
+	const bookmarksStore = useBookmarksStore();
 	const eventStore = useWorkspaceEventStore();
 	const { currentSearch } = useSearchStore();
 	const bodyFilters = currentSearch?.request.filters.body.values ?? [];
 
-	const { event, eventTreeNode, node, children } = props;
-	const hoverTimeout = React.useRef<NodeJS.Timeout>();
+	const { event, node, children } = props;
 
 	if (!event) {
 		return <SplashScreen />;
@@ -52,27 +51,12 @@ function EventDetailInfoCard(props: Props) {
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
 
 	const isBookmarked =
-		selectedStore.bookmarkedEvents.findIndex(
-			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
-		) !== -1;
+		bookmarksStore.events.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !== -1;
 
 	function onEventPin() {
 		if (event === null) return;
 
-		selectedStore.toggleEventPin(node);
-	}
-
-	function onMouseEnter() {
-		if (!isUnknown) {
-			hoverTimeout.current = setTimeout(() => {
-				eventStore.setHoveredEvent(eventTreeNode);
-			}, 600);
-		}
-	}
-
-	function onMouseLeave() {
-		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
-		eventStore.setHoveredEvent(null);
+		bookmarksStore.toggleEventPin(node);
 	}
 
 	const cardClassName = createStyleSelector('event-detail-info__event-card', 'event-card', status);
@@ -98,10 +82,7 @@ function EventDetailInfoCard(props: Props) {
 					</div>
 					<div className='event-card__body'>
 						<div className='event-card__id'>{eventId}</div>
-						<div
-							className='event-card__timestamp'
-							onMouseEnter={onMouseEnter}
-							onMouseLeave={onMouseLeave}>
+						<div className='event-card__timestamp'>
 							{formatTime(startTimestamp)}
 							{endTimestamp && endTimestamp !== startTimestamp ? (
 								<> &ndash; {formatTime(endTimestamp)}</>

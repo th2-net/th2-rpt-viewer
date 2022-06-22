@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { ActionFilterRow, FitlerRowItem } from '../../../models/filter/FilterInputs';
 import StringFilterRow from './StringRow';
 import MultipleStringFilterRow from './MultipleStringFIlterRow';

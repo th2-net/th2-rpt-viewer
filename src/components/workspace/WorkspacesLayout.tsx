@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import Workspace from './Workspace';
 import { WorkspaceContextProvider } from '../../contexts/workspaceContext';
@@ -95,7 +94,7 @@ const WorkspacesLayout = () => {
 	};
 
 	function addWorkspace() {
-		workspacesStore.addWorkspace(workspacesStore.createWorkspace());
+		workspacesStore.addWorkspace();
 	}
 
 	return (
@@ -106,9 +105,11 @@ const WorkspacesLayout = () => {
 			tabList={tabListInjectedProps => (
 				<>
 					{renderTabs(tabListInjectedProps)}
-					<div className='workspace-tab workspace-tab__add' onClick={addWorkspace}>
-						+
-					</div>
+					{!workspacesStore.isFull && (
+						<button className='workspace-tab workspace-tab__add' onClick={addWorkspace}>
+							+
+						</button>
+					)}
 				</>
 			)}
 			tabPanels={workspacesStore.workspaces.map(workspace => (

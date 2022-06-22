@@ -20,7 +20,6 @@ import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
 import MessagesFilter from '../../models/filter/MessagesFilter';
-import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { TimeRange } from '../../models/Timestamp';
 import { FilterEntry, SearchStore } from '../SearchStore';
@@ -28,9 +27,7 @@ import MessagesDataProviderStore from './MessagesDataProviderStore';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { isEventMessage } from '../../helpers/event';
 import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
-import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
-import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
 import { getItemAt } from '../../helpers/array';
@@ -53,9 +50,6 @@ export default class MessagesStore {
 	public dataStore: MessagesDataProviderStore;
 
 	public exportStore = new MessagesExportStore();
-
-	@observable
-	public hoveredMessage: EventMessage | null = null;
 
 	@observable
 	public selectedMessageId: String | null = null;
@@ -87,11 +81,8 @@ export default class MessagesStore {
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
-		private graphStore: GraphStore,
-		private selectedStore: SelectedStore,
 		private searchStore: SearchStore,
 		private api: ApiSchema,
-		private filterHistoryStore: FiltersHistoryStore,
 		private sessionsStore: SessionsStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
@@ -103,8 +94,6 @@ export default class MessagesStore {
 			() => this.workspaceStore.attachedMessages,
 			this.onAttachedMessagesChange,
 		);
-
-		reaction(() => this.hoveredMessage, this.onMessageHover);
 
 		reaction(() => this.filterStore.filter, this.exportStore.disableExport);
 	}
@@ -139,20 +128,11 @@ export default class MessagesStore {
 	}
 
 	@action
-	public setHoveredMessage(message: EventMessage | null) {
-		this.hoveredMessage = message;
-		this.graphStore.setHoveredTimestamp(message);
-	}
-
-	@action
 	public applyFilter = (
 		filter: MessagesFilter,
 		sseFilters: MessageFilterState | null,
 		isSoftFilterApplied: boolean,
 	) => {
-		if (sseFilters) {
-			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
-		}
 		if (
 			this.selectedMessageId &&
 			!this.workspaceStore.attachedMessagesIds.includes(this.selectedMessageId.valueOf())
@@ -185,7 +165,6 @@ export default class MessagesStore {
 			if (isEventMessage(message)) {
 				this.selectedMessageId = new String(message.id);
 				this.highlightedMessageId = new String(message.id);
-				this.graphStore.setTimestamp(message.timestamp);
 				this.workspaceStore.viewStore.activePanel = this;
 				if (defaultState.targetMessageBodyRange) {
 					this.selectedBodyFilter = defaultState.targetMessageBodyRange;
@@ -207,7 +186,6 @@ export default class MessagesStore {
 
 			this.selectedMessageId = new String(message.id);
 			this.highlightedMessageId = new String(message.id);
-			this.graphStore.setTimestamp(message.timestamp);
 			this.hintMessages = [];
 			this.workspaceStore.viewStore.activePanel = this;
 
@@ -249,23 +227,6 @@ export default class MessagesStore {
 					timestampTo: mostRecentMessage.timestamp,
 				};
 			}
-		}
-	};
-
-	@action
-	public onRangeChange = (timestamp: number) => {
-		this.selectedMessageId = null;
-		this.highlightedMessageId = null;
-		this.hintMessages = [];
-
-		this.filterStore.filter = {
-			...this.filterStore.filter,
-			timestampFrom: null,
-			timestampTo: timestamp,
-		};
-
-		if (this.workspaceStore.viewStore.panelsLayout[1] < 20) {
-			this.workspaceStore.viewStore.setPanelsLayout([45, 30, 25, 0]);
 		}
 	};
 
@@ -322,7 +283,6 @@ export default class MessagesStore {
 		this.selectedMessageId = new String(targetMessage.id);
 		this.highlightedMessageId = new String(targetMessage.id);
 		this.showFilterChangeHint = false;
-		this.graphStore.setTimestamp(targetMessage.timestamp);
 
 		this.filterStore.resetMessagesFilter({
 			streams: [...new Set(this.hintMessages.map(({ sessionId }) => sessionId))],
@@ -339,11 +299,5 @@ export default class MessagesStore {
 		this.filterStore.dispose();
 		this.dataStore.stopMessagesLoading();
 		this.dataStore.resetMessagesDataState();
-	};
-
-	private onMessageHover = (hoveredMessage: EventMessage | null) => {
-		if (hoveredMessage !== null) {
-			this.graphStore.setTimestamp(hoveredMessage.timestamp);
-		}
 	};
 }

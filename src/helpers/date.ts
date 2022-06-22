@@ -18,7 +18,7 @@ import moment, { Moment } from 'moment';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { DateTimeMask } from '../models/filter/FilterInputs';
-import { TimeRange, Timestamp } from '../models/Timestamp';
+import { TimeRange } from '../models/Timestamp';
 import { isEventMessage } from './event';
 
 export function getElapsedTime(
@@ -40,10 +40,6 @@ export function formatTime(time: string | number) {
 		return '';
 	}
 	return moment.utc(time).format(DateTimeMask.DATE_TIME_MASK);
-}
-
-export function timestampToNumber(timestamp: Timestamp): number {
-	return Math.floor(timestamp.epochSecond * 1000 + timestamp.nano / 1_000_000);
 }
 
 export function getTimestampAsNumber(entity: EventAction | EventTreeNode | EventMessage): number {
@@ -86,20 +82,14 @@ export const getTimeWindow = (
 	};
 };
 
-export const isTimeIntersected = (firstRange: TimeRange, secondRange: TimeRange) => {
-	return (
-		(firstRange[0] >= secondRange[0] && firstRange[0] <= secondRange[1]) ||
-		(secondRange[0] >= firstRange[0] && secondRange[0] <= secondRange[1])
-	);
-};
+export const isTimeIntersected = (firstRange: TimeRange, secondRange: TimeRange) =>
+	(firstRange[0] >= secondRange[0] && firstRange[0] <= secondRange[1]) ||
+	(secondRange[0] >= firstRange[0] && secondRange[0] <= secondRange[1]);
 
-export const isTimeInsideInterval = (timestamp: number, interval: [number, number]) => {
-	return timestamp >= interval[0] && timestamp <= interval[1];
-};
+export const isTimeInsideInterval = (timestamp: number, interval: [number, number]) =>
+	timestamp >= interval[0] && timestamp <= interval[1];
 
-export const toUTC = (date: Moment) => {
-	return date.subtract(moment().utcOffset(), 'minutes');
-};
+export const toUTC = (date: Moment) => date.subtract(moment().utcOffset(), 'minutes');
 
 export function getRangeFromTimestamp(timestamp: number, interval: number): TimeRange {
 	return [
@@ -112,21 +102,20 @@ export function getRangeFromTimestamp(timestamp: number, interval: number): Time
 	];
 }
 
-export function sortByTimestamp<T extends { timestamp: number | Timestamp }>(
+export function sortByTimestamp<T extends { timestamp: number }>(
 	array: T[],
 	order: 'desc' | 'asc' = 'desc',
-) {
+): T[] {
 	const copiedArray = array.slice();
 	copiedArray.sort((itemA, itemB) => {
-		const timestampA =
-			typeof itemA.timestamp === 'number' ? itemA.timestamp : timestampToNumber(itemA.timestamp);
-		const timestampB =
-			typeof itemB.timestamp === 'number' ? itemB.timestamp : timestampToNumber(itemB.timestamp);
-
 		if (order === 'desc') {
-			return timestampB - timestampA;
+			return itemB.timestamp - itemA.timestamp;
 		}
-		return timestampA - timestampB;
+		return itemA.timestamp - itemB.timestamp;
 	});
 	return copiedArray;
+}
+
+export function formatTimestamp(timestamp: number, format = 'DD.MM.YYYY HH:mm:ss.SSS'): string {
+	return moment.utc(timestamp).format(format);
 }

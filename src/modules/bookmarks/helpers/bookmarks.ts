@@ -14,14 +14,17 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export const hexToRGBA = (hex: string, opacity: number) => {
-	// eslint-disable-next-line no-param-reassign
-	hex = hex.replace('#', '');
-	const r = parseInt(hex.substring(0, 2), 16);
-	const g = parseInt(hex.substring(2, 4), 16);
-	const b = parseInt(hex.substring(4, 6), 16);
+import { isEvent, isEventMessage } from 'helpers/event';
+import { Bookmark, EventBookmark, MessageBookmark } from '../models/Bookmarks';
 
-	return `rgba(${r}, ${g}, ${b}, ${opacity / 100})`;
-};
+export function isBookmark(item: unknown): item is Bookmark {
+	return (item as Bookmark).id !== undefined && (item as Bookmark).item !== undefined;
+}
 
-export const randomHexColor = () => `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+export function isEventBookmark(bookmark: unknown): bookmark is EventBookmark {
+	return isBookmark(bookmark) && isEvent(bookmark.item);
+}
+
+export function isMessageBookmark(bookmark: unknown): bookmark is MessageBookmark {
+	return isBookmark(bookmark) && isEventMessage(bookmark.item);
+}

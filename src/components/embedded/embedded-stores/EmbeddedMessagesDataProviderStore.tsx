@@ -66,9 +66,6 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	public startIndex = 10000;
 
 	@observable
-	public initialItemCount = 0;
-
-	@observable
 	public isMatchingMessages: Map<string, boolean> = new Map();
 
 	prevLoadEndTimestamp: number | null = null;
@@ -103,9 +100,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 	private messageAC: AbortController | null = null;
 
-	public getFilterParams = () => {
-		return this.messagesStore.filterStore.filterParams;
-	};
+	public getFilterParams = () => this.messagesStore.filterStore.filterParams;
 
 	@action
 	public loadMessages = async () => {
@@ -200,7 +195,6 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		runInAction(() => {
 			const messages = [...nextMessages, ...[message].filter(isEventMessage), ...prevMessages];
 			this.messages = messages;
-			this.initialItemCount = messages.length;
 		});
 
 		if (this.messagesStore.selectedMessageId) {
@@ -395,7 +389,6 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 	@action
 	public resetMessagesDataState = (isError = false) => {
-		this.initialItemCount = 0;
 		this.startIndex = 10000;
 		this.messages = [];
 		this.isError = isError;

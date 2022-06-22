@@ -15,20 +15,21 @@
  ***************************************************************************** */
 
 import { observable, action, computed, reaction } from 'mobx';
-import ApiSchema from '../../api/ApiSchema';
-import { SelectedStore } from '../SelectedStore';
+import { BookmarksStore } from 'modules/bookmarks/stores/BookmarksStore';
+import { IBookmarksStore } from 'models/Stores';
+import ApiSchema from 'api/ApiSchema';
+import { DbData } from 'api/indexedDb';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
-import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
 export default class WorkspacesStore {
-	public readonly MAX_WORKSPACES_COUNT = 12;
+	public readonly MAX_WORKSPACES_COUNT = 10;
 
-	public selectedStore = new SelectedStore(this, this.api.indexedDb);
+	public bookmarksStore: IBookmarksStore;
 
 	public tabsStore = new TabsStore(this);
 
@@ -40,17 +41,12 @@ export default class WorkspacesStore {
 	) {
 		this.init(initialState || null);
 
-		reaction(
-			() => this.activeWorkspace,
-			activeWorkspace => this.onActiveWorkspaceChange(activeWorkspace),
-		);
+		this.bookmarksStore = new BookmarksStore(this, this.api.indexedDb);
+
+		reaction(() => this.activeWorkspace, this.onActiveWorkspaceChange);
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
-
-	@computed get eventStores() {
-		return this.workspaces.map(workspace => workspace.eventsStore);
-	}
 
 	@computed get isFull() {
 		return this.workspaces.length === this.MAX_WORKSPACES_COUNT;
@@ -61,6 +57,50 @@ export default class WorkspacesStore {
 	}
 
 	@action
+	public deleteWorkspace = (workspace: WorkspaceStore) => {
+		this.workspaces.splice(this.workspaces.indexOf(workspace), 1);
+	};
+
+	@action
+	public addWorkspace = (workspace = this.createWorkspace()) => {
+		if (this.isFull) return;
+		this.workspaces.push(workspace);
+		this.tabsStore.setActiveWorkspace(this.workspaces.length - 1);
+	};
+
+	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) =>
+		new WorkspaceStore(
+			this,
+			this.rootStore.sessionsStore,
+			this.rootStore.messageDisplayRulesStore,
+			this.api,
+			workspaceInitialState,
+		);
+
+	public closeWorkspace = (tab: number | WorkspaceStore) => {
+		const closedWorkspace = this.tabsStore.closeWorkspace(tab);
+
+		closedWorkspace.dispose();
+	};
+
+	public syncData = async (unsavedData?: DbData) => {
+		console.log({ unsavedData });
+		// TODO: Fix sync data
+		// try {
+		// 	await Promise.all([
+		// 		this.searchWorkspace.searchStore.syncData(unsavedData),
+		// 		this.selectedStore.bookmarksStore.syncData(unsavedData),
+		// 	]);
+		// } catch (error) {
+		// 	this.searchWorkspace.searchStore.syncData();
+		// 	this.selectedStore.bookmarksStore.syncData();
+		// }
+	};
+
+	public onQuotaExceededError = (unsavedData?: DbData) => {
+		this.rootStore.handleQuotaExceededError(unsavedData);
+	};
+
 	private init(initialState: WorkspacesUrlState | null) {
 		if (initialState !== null) {
 			initialState.forEach(workspaceState =>
@@ -75,48 +115,9 @@ export default class WorkspacesStore {
 		}
 	}
 
-	@action
-	public deleteWorkspace = (workspace: WorkspaceStore) => {
-		this.workspaces.splice(this.workspaces.indexOf(workspace), 1);
-	};
-
-	@action
-	public addWorkspace = (workspace: WorkspaceStore) => {
-		this.workspaces.push(workspace);
-		this.tabsStore.setActiveWorkspace(this.workspaces.length - 1);
-	};
-
 	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
-		activeWorkspace.graphStore.setTimestampFromRange(activeWorkspace.graphStore.range);
-	};
-
-	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {
-		return new WorkspaceStore(
-			this.rootStore,
-			this,
-			this.selectedStore,
-			this.rootStore.sessionsStore,
-			this.rootStore.messageDisplayRulesStore,
-			this.api,
-			workspaceInitialState,
+		activeWorkspace.eventsStore.filterStore.setTimestampFromRange(
+			activeWorkspace.eventsStore.filterStore.range,
 		);
-	};
-
-	public closeWorkspace = (tab: number | WorkspaceStore) => {
-		const closedWorkspace = this.tabsStore.closeWorkspace(tab);
-
-		closedWorkspace.dispose();
-	};
-
-	public syncData = async (unsavedData?: DbData) => {
-		try {
-			await this.selectedStore.syncData(unsavedData);
-		} catch (error) {
-			this.selectedStore.syncData();
-		}
-	};
-
-	public onQuotaExceededError = (unsavedData?: DbData) => {
-		this.rootStore.handleQuotaExceededError(unsavedData);
 	};
 }

@@ -23,7 +23,7 @@ import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
 import SearchableContent from '../search/SearchableContent';
-import { useSelectedStore, useWorkspaceEventStore, useTabsStore } from '../../hooks';
+import { useWorkspaceEventStore, useTabsStore, useBookmarksStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 
 interface Props {
@@ -56,12 +56,10 @@ function EventCardHeader(props: Props) {
 	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp, isUnknown } = event;
 
-	const selectedStore = useSelectedStore();
+	const bookmarksStore = useBookmarksStore();
 	const eventStore = useWorkspaceEventStore();
 	const { setActiveWorkspace } = useTabsStore();
 	const { stopSearch, setFormType, updateForm } = useSearchStore();
-
-	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
 
@@ -69,9 +67,7 @@ function EventCardHeader(props: Props) {
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
 
 	const isBookmarked =
-		selectedStore.bookmarkedEvents.findIndex(
-			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
-		) !== -1;
+		bookmarksStore.events.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !== -1;
 
 	const rootClassName = createBemBlock(
 		'event-header-card',
@@ -93,7 +89,7 @@ function EventCardHeader(props: Props) {
 	const bookmarkClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	function onPinClicked(e: React.MouseEvent) {
-		selectedStore.toggleEventPin(event);
+		bookmarksStore.toggleEventPin(event);
 		e.stopPropagation();
 	}
 
@@ -106,19 +102,6 @@ function EventCardHeader(props: Props) {
 			startTimestamp,
 		});
 		setActiveWorkspace(0);
-	}
-
-	function onMouseEnter() {
-		if (!isUnknown) {
-			hoverTimeout.current = setTimeout(() => {
-				eventStore.setHoveredEvent(event);
-			}, 600);
-		}
-	}
-
-	function onMouseLeave() {
-		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
-		eventStore.setHoveredEvent(null);
 	}
 
 	function onRootClick() {
@@ -144,10 +127,7 @@ function EventCardHeader(props: Props) {
 			{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown ? (
 				<>
 					{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
-					<div
-						className='event-header-card__time-label'
-						onMouseEnter={onMouseEnter}
-						onMouseLeave={onMouseLeave}>
+					<div className='event-header-card__time-label'>
 						<span className='event-header-card__time-label-full'>{formatTime(startTimestamp)}</span>
 					</div>
 					{eventType && (

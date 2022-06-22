@@ -114,21 +114,14 @@ export default class MessagesFilterStore {
 
 	@computed
 	public get isMessagesFilterApplied() {
-		return [
-			this.sseMessagesFilter
-				? [
-						this.sseMessagesFilter.attachedEventIds.values,
-						this.sseMessagesFilter.body.values,
-						this.sseMessagesFilter.type.values,
-				  ].flat()
-				: [],
-		].some(filter => filter.length > 0);
+		if (!this.sseMessagesFilter) return false;
+		return Object.values(this.sseMessagesFilter).some(filter => filter.values.length > 0);
 	}
 
 	@action
 	public setMessagesFilter(
 		filter: MessagesFilter,
-		sseFilters: MessageFilterState | null = null,
+		sseFilters: MessageFilterState | null,
 		isSoftFilterApplied: boolean,
 	) {
 		this.isSoftFilter = isSoftFilterApplied;

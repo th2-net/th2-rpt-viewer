@@ -85,12 +85,11 @@ const FilterDatetimeInput = (props: DateTimeInputProps) => {
 		}
 		setValue(null);
 	};
-	const isValidDateTime = (maskedValue: string): boolean => {
-		return moment(
+	const isValidDateTime = (maskedValue: string): boolean =>
+		moment(
 			replaceUnfilledDateStringWithMinValues(maskedValue, dateTimeMask),
 			dateTimeMask,
 		).isValid();
-	};
 
 	const dateTimePipe = (maskedValue: string): string | false => {
 		if (isValidDateTime(maskedValue)) {

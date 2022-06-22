@@ -42,9 +42,9 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		}
 	}, []);
 
-	const parents = computed(() => {
-		return eventsStore.getParentNodes(eventTreeNode.eventId, eventsDataStore.eventsCache);
-	}).get();
+	const parents = computed(() =>
+		eventsStore.getParentNodes(eventTreeNode.eventId, eventsDataStore.eventsCache),
+	).get();
 
 	const childrenCount = computed(() => {
 		const children = eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId);

@@ -27,7 +27,7 @@ import {
 	SSEHeartbeat,
 	SSEParams,
 } from '../api/sse';
-import { DbData, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
+import { DbData, IndexedDbStores } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
 	EventFilterState,
@@ -186,7 +186,7 @@ export class SearchStore {
 
 	@observable searchHistory: SearchHistory[] = [];
 
-	@observable currentIndex = this.searchHistory.length > 0 ? this.searchHistory.length - 1 : 0;
+	@observable currentIndex = 0;
 
 	@observable eventFilterInfo: EventsFiltersInfo[] = [];
 
@@ -312,7 +312,7 @@ export class SearchStore {
 		| (SSEHeartbeat & { searchDirection: SSESearchDirection })
 	> = [];
 
-	@computed get isFormDisabled() {
+	@computed get isHistorySearch() {
 		return this.searchHistory.length > 1 && this.currentIndex !== this.searchHistory.length - 1;
 	}
 
@@ -323,7 +323,7 @@ export class SearchStore {
 						info: this.eventFilterInfo,
 						state: this.eventsFilter,
 						setState: this.setEventsFilter,
-						disableAll: this.isFormDisabled,
+						disableAll: this.isHistorySearch || this.isSearching,
 				  }
 				: null;
 		}
@@ -332,7 +332,7 @@ export class SearchStore {
 					info: this.messagesFilterInfo,
 					state: this.messagesFilter,
 					setState: this.setMessagesFilter,
-					disableAll: this.isFormDisabled,
+					disableAll: this.isHistorySearch || this.isSearching,
 			  }
 			: null;
 	}
@@ -349,16 +349,19 @@ export class SearchStore {
 		});
 	}
 
-	@computed get flattenedResult() {
+	public isSeparator = (object: SearchResult[] | [number, number]): object is [number, number] =>
+		!Number.isNaN(+object[0]);
+
+	@computed get flattenedResult(): (SearchResult | [number, number])[] {
 		if (!this.currentSearch) return [];
-		const result: (SearchResult[] | [number, number])[] = [];
+		const result: (SearchResult | [number, number])[] = [];
 		this.sortedResultGroups.forEach(([, value], index) => {
 			if (index > 0)
 				result.push([
 					getTimestampAsNumber(this.sortedResultGroups[index - 1][1].slice(-1)[0]),
 					getTimestampAsNumber(value[0]),
 				]);
-			result.push(value);
+			result.push(...value);
 		});
 		return result;
 	}
@@ -441,10 +444,12 @@ export class SearchStore {
 	};
 
 	@action clearFilters = () => {
-		this.messagesFilter = getDefaultMessagesFiltersState(this.messagesFilterInfo);
-		this.eventsFilter = getDefaultEventsFiltersState(this.eventFilterInfo);
+		if (!this.isSearching) {
+			this.messagesFilter = getDefaultMessagesFiltersState(this.messagesFilterInfo);
+			this.eventsFilter = getDefaultEventsFiltersState(this.eventFilterInfo);
 
-		this.searchForm = getDefaultFormState();
+			this.searchForm = getDefaultFormState();
+		}
 	};
 
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
@@ -462,25 +467,8 @@ export class SearchStore {
 		);
 	};
 
-	@action nextSearch = () => {
-		if (this.currentIndex < this.searchHistory.length - 1) {
-			this.currentIndex += 1;
-			this.resetSearchProgressState();
-			this.setCompleted(true);
-		}
-	};
-
-	@action prevSearch = () => {
-		if (this.currentIndex !== 0) {
-			this.currentIndex -= 1;
-			this.resetSearchProgressState();
-			this.setCompleted(true);
-		}
-	};
-
 	@action newSearch = (searchHistoryItem: SearchHistory) => {
-		this.searchHistory = [...this.searchHistory, searchHistoryItem];
-		this.currentIndex = this.searchHistory.length - 1;
+		this.searchHistory = [searchHistoryItem];
 		this.resetSearchProgressState();
 	};
 
@@ -840,18 +828,13 @@ export class SearchStore {
 		}
 	}
 
-	private getSearchHistory = async (historyTimestamp?: number) => {
+	private getSearchHistory = async () => {
 		try {
 			const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
 				IndexedDbStores.SEARCH_HISTORY,
 			);
 			runInAction(() => {
 				this.searchHistory = searchHistory;
-				const defaultIndex = searchHistory.length - 1;
-				const index = historyTimestamp
-					? searchHistory.findIndex(search => search.timestamp === historyTimestamp)
-					: -1;
-				this.currentIndex = index === -1 ? defaultIndex : index;
 			});
 		} catch (error) {
 			console.error('Failed to load search history', error);
@@ -876,17 +859,10 @@ export class SearchStore {
 				return;
 			}
 
-			if (savedSearchResultKeys.length >= indexedDbLimits['search-history']) {
-				const keysToDelete = savedSearchResultKeys.slice(
-					0,
-					savedSearchResultKeys.length - indexedDbLimits['search-history'] + 1,
-				);
-				await Promise.all(
-					keysToDelete.map(searchHistoryKey =>
-						this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SEARCH_HISTORY, searchHistoryKey),
-					),
-				);
-			}
+			savedSearchResultKeys.forEach(key =>
+				this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SEARCH_HISTORY, key),
+			);
+
 			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
 		} catch (error) {
 			if (error instanceof DOMException && error.code === error.QUOTA_EXCEEDED_ERR) {

@@ -43,6 +43,7 @@ import SearchResultCountLimit, {
 import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
+import { createBemElement } from '../../helpers/styleCreators';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -50,7 +51,7 @@ export type DateInputProps = {
 
 const SearchPanelForm = () => {
 	const {
-		isFormDisabled: disabled,
+		isHistorySearch,
 		updateForm,
 		searchForm: form,
 		formType,
@@ -67,32 +68,34 @@ const SearchPanelForm = () => {
 		clearFilters,
 	} = useSearchStore();
 
+	const disabled = isHistorySearch || isSearching;
+
 	const [currentStream, setCurrentStream] = useState('');
 	const sessionsStore = useSessionsStore();
 	const searchStore = useSearchStore();
 	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
 
-	const sessionsAutocomplete: string[] = React.useMemo(() => {
-		return [
+	const sessionsAutocomplete: string[] = React.useMemo(
+		() => [
 			...sessionsStore.sessions.map(s => s.session),
 			...messageSessions.filter(
 				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
 			),
-		];
-	}, [messageSessions, sessionsStore.sessions]);
+		],
+		[messageSessions, sessionsStore.sessions],
+	);
 
-	const areSessionInvalid: boolean = React.useMemo(() => {
-		return (
+	const areSessionInvalid: boolean = React.useMemo(
+		() =>
 			form.stream.length === 0 ||
-			form.stream.some(stream => !messageSessions.includes(stream.trim()))
-		);
-	}, [form.stream, messageSessions]);
+			form.stream.some(stream => !messageSessions.includes(stream.trim())),
+		[form.stream, messageSessions],
+	);
 
-	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
-		formType,
-		eventsHistory,
-		messagesHistory,
-	]);
+	const autocompletes = useMemo(
+		() => (formType === 'event' ? eventsHistory : messagesHistory),
+		[formType, eventsHistory, messagesHistory],
+	);
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
@@ -109,13 +112,12 @@ const SearchPanelForm = () => {
 	const resultCountLimitConfig: ResultCountLimitConfig = {
 		value: !form.resultCountLimit ? '' : form.resultCountLimit.toString(),
 		setValue: updateCountLimit,
-		disabled,
+		disabled: false,
 	};
 
 	const eventsFormTypeConfig: FitlerRowItem = {
 		label: 'Parent Event',
 		value: form.parentEvent,
-		disabled,
 		setValue: getFormStateUpdater('parentEvent'),
 		type: 'event-resolver',
 		id: 'parent-event',
@@ -130,7 +132,6 @@ const SearchPanelForm = () => {
 		id: 'stream',
 		label: 'Session',
 		values: form.stream,
-		disabled,
 		setValues: getFormStateUpdater('stream'),
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
@@ -147,7 +148,6 @@ const SearchPanelForm = () => {
 		inputConfig: {
 			id: 'startTimestamp',
 			value: form.startTimestamp,
-			disabled,
 			setValue: getFormStateUpdater('startTimestamp'),
 			type: TimeInputType.DATE_TIME,
 			dateTimeMask: DateTimeMask.DATE_TIME_MASK,
@@ -160,20 +160,14 @@ const SearchPanelForm = () => {
 		},
 	};
 
-	const {
-		startTimestamp,
-		completed,
-		progress,
-		timeLimits,
-		timeIntervals,
-		processedObjectCount,
-	} = searchProgress;
+	const { startTimestamp, completed, progress, timeLimits, timeIntervals, processedObjectCount } =
+		searchProgress;
 
 	const searchDatetimeControlsConfig: SearchDatetimeControlsConfig = {
 		isSearching,
 		updateForm,
 		startTimestampInput,
-		disabled: disabled || isSearching,
+		disabled: isSearching,
 		searchDirection: form.searchDirection,
 		previousTimeLimit: {
 			value:
@@ -232,7 +226,9 @@ const SearchPanelForm = () => {
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
 		disabled:
-			disabled || !form.searchDirection || (formType === 'message' && form.stream.length === 0),
+			isHistorySearch ||
+			!form.searchDirection ||
+			(formType === 'message' && form.stream.length === 0),
 		progress: commonProgress,
 		processedObjectCount,
 		isPaused,
@@ -246,11 +242,11 @@ const SearchPanelForm = () => {
 			<SearchProgressBar {...progressBarConfig} />
 			<SearchSubmit {...searchSubmitConfig} />
 			<div className='search-panel__fields'>
-				<FiltersHistory />
+				<FiltersHistory disabled={disabled} />
 				<div className='filter-row'>
 					<div className='filter-row__label'>Search for</div>
 					<div className='search-type-config'>
-						<SearchTypeSwitcher formType={formType} setFormType={setFormType} disabled={disabled} />
+						<SearchTypeSwitcher formType={formType} setFormType={setFormType} />
 						<SearchResultCountLimit {...resultCountLimitConfig} />
 					</div>
 				</div>
@@ -263,7 +259,14 @@ const SearchPanelForm = () => {
 			</div>
 			{!disabled && (
 				<div className='search-panel__footer'>
-					<button className='search-panel__clear-btn' onClick={clearFilters}>
+					<button
+						className={createBemElement(
+							'search-panel',
+							'clear-btn',
+							isSearching ? 'disabled' : null,
+						)}
+						onClick={clearFilters}
+						disabled={isSearching}>
 						<i className='search-panel__clear-icon' />
 						Clear All
 					</button>

@@ -14,14 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import { createStyleSelector } from '../../helpers/styleCreators';
+import { createStyleSelector } from 'helpers/styleCreators';
 
-type Props = {
+interface Props {
 	value: string;
 	setValue: (value: string) => void;
 	label: string;
-};
+}
 
 export default function BookmarkTextSearch({ value, setValue, label }: Props) {
 	const inputClassName = createStyleSelector(

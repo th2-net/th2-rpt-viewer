@@ -29,6 +29,7 @@ import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 interface Props {
 	type?: SearchPanelType;
 	sseFilter?: FiltersState;
+	disabled?: boolean;
 }
 
 export type FiltersState = {
@@ -38,20 +39,19 @@ export type FiltersState = {
 		| ((patch: Partial<MessageFilterState>) => void);
 } | null;
 
-const FiltersHistory = ({ type, sseFilter }: Props) => {
+const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const historyRef = useRef<HTMLDivElement>(null);
+
 	const { eventsHistory, messagesHistory, toggleFilterPin } = useFiltersHistoryStore();
 	const { filters, formType, eventFilterInfo, messagesFilterInfo } = useSearchStore();
 
-	const toShow: (
-		| FiltersHistoryType<EventFilterState>
-		| FiltersHistoryType<MessageFilterState>
-	)[] = useMemo(() => {
-		const fType = type || formType;
-		return fType === 'event' ? eventsHistory : messagesHistory;
-	}, [eventsHistory, messagesHistory, type, formType]);
+	const toShow: (FiltersHistoryType<EventFilterState> | FiltersHistoryType<MessageFilterState>)[] =
+		useMemo(() => {
+			const fType = type || formType;
+			return fType === 'event' ? eventsHistory : messagesHistory;
+		}, [eventsHistory, messagesHistory, type, formType]);
 
 	const filtersState: FiltersState = useMemo(() => {
 		if (sseFilter) {
@@ -69,7 +69,7 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 		if (isOpen) {
 			raf(() => {
 				if (historyRef.current && buttonRef.current) {
-					const { left, bottom } = buttonRef.current?.getBoundingClientRect();
+					const { left, bottom } = buttonRef.current.getBoundingClientRect();
 					historyRef.current.style.left = `${left}px`;
 					historyRef.current.style.top = `${bottom}px`;
 				}
@@ -111,7 +111,8 @@ const FiltersHistory = ({ type, sseFilter }: Props) => {
 				onClick={() => {
 					setIsOpen(o => !o);
 				}}
-				title={'Filters history'}></button>
+				title={'Filters history'}
+				disabled={disabled}></button>
 			<ModalPortal isOpen={isOpen}>
 				<div ref={historyRef} className='filters-history'>
 					{toShow.map((item, index) => (
