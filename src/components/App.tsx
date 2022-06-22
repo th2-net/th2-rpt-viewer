@@ -26,10 +26,15 @@ import WorkspacesLayout from './workspace/WorkspacesLayout';
 import Graph from './graph/Graph';
 import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
 import { useSessionsStore } from '../hooks';
+import api from '../api';
 import '../styles/root.scss';
 
 const AppRootBase = () => {
 	const { sessionNames } = useSessionsStore();
+
+	React.useEffect(() => {
+		if (api.indexedDb.getError()) throw api.indexedDb.getError();
+	}, [api.indexedDb.getError()]);
 
 	return (
 		<div className='app'>

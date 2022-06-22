@@ -131,18 +131,21 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.SESSIONS_HISTORY]: 'session',
 };
 
-const dbVersion = 3;
+const dbVersion = 4;
 
 export class IndexedDB {
 	@observable
 	private db: IDBPDatabase<TH2DB> | null = null;
+
+	@observable
+	private error: Error | null = null;
 
 	constructor(private env: string) {
 		this.initDb();
 	}
 
 	private async initDb() {
-		this.db = await openDB<TH2DB>(this.env, dbVersion, {
+		await openDB<TH2DB>(this.env, dbVersion, {
 			upgrade: async db => {
 				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
 					const name = storeName as IndexedDbStores;
@@ -151,9 +154,22 @@ export class IndexedDB {
 						store.createIndex('timestamp', 'timestamp');
 					}
 				});
+				this.error = new Error(
+					// eslint-disable-next-line max-len
+					'Current version is newer than previously used. Please, clear cache.',
+				);
 			},
-		});
+		})
+			.then(val => (this.db = val))
+			.catch(() => {
+				this.error = new Error(
+					// eslint-disable-next-line max-len
+					'Current version is older than previously used. Please, use latest version of Report Viewer or clear cache.',
+				);
+			});
 	}
+
+	public getError = () => this.error;
 
 	private getDb = async (): Promise<IDBPDatabase<TH2DB>> => {
 		if (this.db) return this.db;
