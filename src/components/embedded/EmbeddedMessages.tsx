@@ -86,8 +86,8 @@ const EmbeddedMessages = () => {
 		<div className='messages-list'>
 			<div className='messages-list__header'>
 				<MessagesUpdateButton
-					isShow={dataStore.searchChannelNext?.isEndReached || dataStore.updateStore.isLoading}
-					isLoading={updateStore.isLoading}
+					isShow={updateStore.canActivate}
+					isLoading={updateStore.isActive}
 					subscribeOnChanges={updateStore.subscribeOnChanges}
 					stopSubscription={updateStore.stopSubscription}
 				/>
@@ -178,7 +178,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 					messagesStore.dataStore.searchChannelNext &&
 					!messagesStore.dataStore.searchChannelNext.isLoading &&
 					!messagesStore.dataStore.searchChannelNext.isEndReached &&
-					!messagesStore.dataStore.updateStore.isLoading &&
+					!messagesStore.dataStore.updateStore.isActive &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
 					loadNextMessages().then(messages =>
