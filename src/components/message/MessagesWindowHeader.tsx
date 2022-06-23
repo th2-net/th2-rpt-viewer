@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import React from 'react';
 import { useMessagesDataStore, useSessionsStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
 import MessagesUpdateButton from './MessagesUpdateButton';

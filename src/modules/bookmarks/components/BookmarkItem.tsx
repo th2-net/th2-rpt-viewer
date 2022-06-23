@@ -18,9 +18,6 @@ import React, { memo } from 'react';
 import { formatTimestamp, getTimestampAsNumber } from 'helpers/date';
 import { isEventMessage } from 'helpers/event';
 import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
-import { EventAction, EventTreeNode } from 'models/EventAction';
-import { EventMessage } from 'models/EventMessage';
-import { isBookmark } from '../helpers/bookmarks';
 import { Bookmark } from '../models/Bookmarks';
 
 interface BookmarkItemProps {
@@ -42,9 +39,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		isBookmarkButtonDisabled,
 	} = props;
 
-	const item: EventMessage | EventTreeNode | EventAction = isBookmark(bookmark)
-		? bookmark.item
-		: bookmark;
+	const item = bookmark.item;
 
 	const itemInfo = {
 		id: isEventMessage(item) ? item.id : item.eventId,

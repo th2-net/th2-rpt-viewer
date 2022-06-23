@@ -26,7 +26,7 @@ export interface IBookmarksStore {
 	bookmarks: Bookmark[];
 	isLoadingBookmarks: boolean;
 	toggleMessagePin: (message: EventMessage) => void;
-	toggleEventPin: (message: EventTreeNode) => void;
+	toggleEventPin: (event: EventTreeNode) => void;
 	syncData: (unsavedData?: DbData) => void;
 }
 

@@ -22,7 +22,7 @@ import notificationsStore from 'stores/NotificationsStore';
 import { EventTreeNode } from 'models/EventAction';
 import { EventMessage } from 'models/EventMessage';
 import { IBookmarksStore } from 'models/Stores';
-import { getItemName } from 'helpers/event';
+import { getItemId, getItemName } from 'helpers/event';
 import { sortByTimestamp } from 'helpers/date';
 import { isQuotaExceededError } from 'helpers/fetch';
 import { DbData, IndexedDB, indexedDbLimits, IndexedDbStores } from 'api/indexedDb';
@@ -55,11 +55,11 @@ export class BookmarksStore implements IBookmarksStore {
 
 	@computed
 	public get isBookmarksFull(): boolean {
-		return this.messages.length + this.events.length >= indexedDbLimits.bookmarks;
+		return this.bookmarks.length >= indexedDbLimits.bookmarks;
 	}
 
 	@computed get isEmpty(): boolean {
-		return !this.isLoadingBookmarks && this.events.length === 0 && this.messages.length === 0;
+		return this.bookmarks.length === 0 && !this.isLoadingBookmarks;
 	}
 
 	@action
@@ -76,11 +76,10 @@ export class BookmarksStore implements IBookmarksStore {
 		const bookmark = this.messages.find(messageBookmark => messageBookmark.id === message.id);
 		if (bookmark) {
 			this.removeBookmark(bookmark);
-			this.db.deleteDbStoreItem(IndexedDbStores.MESSAGES, bookmark.id);
 		} else if (!this.isBookmarksFull) {
-			const messageBookmark = this.createMessageBookmark(message);
+			const messageBookmark = this.createBookmark(message);
 			this.messages = this.messages.concat(messageBookmark);
-			this.saveBookmark(toJS(messageBookmark));
+			this.saveBookmark(messageBookmark);
 		} else {
 			this.onLimitReached();
 		}
@@ -90,12 +89,11 @@ export class BookmarksStore implements IBookmarksStore {
 	public toggleEventPin = async (event: EventTreeNode) => {
 		const bookmark = this.events.find(eventBookmark => eventBookmark.id === event.eventId);
 		if (bookmark) {
-			this.events = this.events.filter(eventBookmark => eventBookmark !== bookmark);
-			this.db.deleteDbStoreItem(IndexedDbStores.EVENTS, bookmark.id);
+			this.removeBookmark(bookmark);
 		} else if (!this.isBookmarksFull) {
-			const eventBookmark = this.createEventBookmark(event);
+			const eventBookmark = this.createBookmark(event);
 			this.events = this.events.concat(eventBookmark);
-			this.saveBookmark(toJS(eventBookmark));
+			this.saveBookmark(eventBookmark);
 		} else {
 			this.onLimitReached();
 		}
@@ -106,9 +104,7 @@ export class BookmarksStore implements IBookmarksStore {
 		if (isEventBookmark(bookmark)) {
 			this.events = this.events.filter(eventBookmark => eventBookmark !== bookmark);
 			this.db.deleteDbStoreItem(IndexedDbStores.EVENTS, bookmark.id);
-		}
-
-		if (isMessageBookmark(bookmark)) {
+		} else {
 			this.messages = this.messages.filter(messageBookmark => messageBookmark !== bookmark);
 			this.db.deleteDbStoreItem(IndexedDbStores.MESSAGES, bookmark.id);
 		}
@@ -153,16 +149,10 @@ export class BookmarksStore implements IBookmarksStore {
 		}
 	};
 
-	private createMessageBookmark = (message: EventMessage): MessageBookmark => ({
-		id: message.id,
+	private createBookmark = <T extends EventMessage | EventTreeNode>(item: T): Bookmark<T> => ({
+		id: getItemId(item),
 		timestamp: moment.utc().valueOf(),
-		item: toJS(message),
-	});
-
-	private createEventBookmark = (event: EventTreeNode): EventBookmark => ({
-		id: event.eventId,
-		timestamp: moment.utc().valueOf(),
-		item: toJS(event),
+		item: toJS(item),
 	});
 
 	public syncData = async (unsavedData?: DbData) => {
