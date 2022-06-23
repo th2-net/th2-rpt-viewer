@@ -22,15 +22,15 @@ import MessagesViewConfigurator from '../messages-view-configurator/MessagesView
 import '../../styles/messages.scss';
 
 function MessagesWindowHeader() {
-	const { searchChannelNext, updateStore } = useMessagesDataStore();
+	const { updateStore } = useMessagesDataStore();
 	const { sessionNames } = useSessionsStore();
 
 	return (
 		<div className='messages-window-header'>
 			<div className='messages-window-header__group'>
 				<MessagesUpdateButton
-					isShow={!searchChannelNext?.isEndReached ?? false}
-					isLoading={updateStore.isLoading}
+					isShow={updateStore.canActivate}
+					isLoading={updateStore.isActive}
 					subscribeOnChanges={updateStore.subscribeOnChanges}
 					stopSubscription={updateStore.stopSubscription}
 				/>

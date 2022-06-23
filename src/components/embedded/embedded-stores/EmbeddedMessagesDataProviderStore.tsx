@@ -105,7 +105,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	public loadMessages = async () => {
 		this.stopMessagesLoading();
-		this.resetMessagesDataState();
+		this.resetState();
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
@@ -120,7 +120,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				interval: SEARCH_TIME_FRAME,
 				onClose: () =>
 					!this.searchChannelNext?.isLoading &&
-					!this.updateStore.isLoading &&
+					!this.updateStore.isActive &&
 					this.updateStore.subscribeOnChanges(),
 			},
 		);
@@ -133,7 +133,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				interval: SEARCH_TIME_FRAME,
 				onClose: () =>
 					!this.searchChannelPrev?.isLoading &&
-					!this.updateStore.isLoading &&
+					!this.updateStore.isActive &&
 					this.updateStore.subscribeOnChanges(),
 			},
 		);
@@ -222,7 +222,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	private onLoadingError = (event: Event) => {
 		notificationsStore.handleSSEError(event);
 		this.stopMessagesLoading();
-		this.resetMessagesDataState(true);
+		this.resetState(true);
 	};
 
 	@action
@@ -383,12 +383,12 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	private onFilterChange = async () => {
 		this.stopMessagesLoading();
-		this.resetMessagesDataState();
+		this.resetState();
 		this.loadMessages();
 	};
 
 	@action
-	public resetMessagesDataState = (isError = false) => {
+	public resetState = (isError = false) => {
 		this.startIndex = 10000;
 		this.messages = [];
 		this.isError = isError;
