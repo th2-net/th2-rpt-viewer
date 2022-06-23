@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, runInAction } from 'mobx';
+import { action, computed, observable } from 'mobx';
 import MessagesStore from './MessagesStore';
 import EmbeddedMessagesStore from '../../components/embedded/embedded-stores/EmbeddedMessagesStore';
 import { MessagesDataStore } from '../../models/Stores';
@@ -25,38 +25,45 @@ export default class MessagesUpdateStore {
 		private messagesStore: MessagesStore | EmbeddedMessagesStore,
 	) {}
 
-	@observable
 	private timer: ReturnType<typeof setTimeout> | null = null;
+
+	@observable
+	public isActive = false;
+
+	@computed
+	public get canActivate() {
+		return this.messagesStore.filterStore.filter.streams.length > 0;
+	}
 
 	@action
 	public subscribeOnChanges = () => {
-		this.startLoop();
-	};
+		if (!this.canActivate) return;
+		this.isActive = true;
+		this.messagesDataStore.resetState();
+		this.messagesStore.selectedMessageId = null;
+		this.messagesStore.filterStore.filter.timestampTo = Date.now();
 
-	@action
-	startLoop = async () => {
-		const { getNextMessages, onNextChannelResponse } = this.messagesDataStore;
+		this.messagesDataStore.loadMessages({
+			onClose: async messages => {
+				this.messagesDataStore.onNextChannelResponse(messages);
 
-		const messages = await getNextMessages();
-
-		if (messages.length) {
-			onNextChannelResponse(messages);
-			this.messagesStore.selectedMessageId = messages[0].messageId;
-		}
-
-		runInAction(() => (this.timer = setTimeout(this.startLoop, 5000)));
+				if (this.isActive) {
+					this.timer = setTimeout(this.loadNextMessages, 5000);
+				}
+			},
+		});
 	};
 
 	@action
 	public stopSubscription = () => {
 		if (this.timer) {
 			clearTimeout(this.timer);
-			this.timer = null;
 		}
+		this.isActive = false;
 	};
 
-	@computed
-	public get isLoading() {
-		return !!this.timer;
-	}
+	private loadNextMessages = async () => {
+		const nextMessages = await this.messagesDataStore.getNextMessages();
+		this.messagesDataStore.onNextChannelResponse(nextMessages);
+	};
 }
