@@ -17,20 +17,15 @@
 import { EventTreeNode } from '../../../models/EventAction';
 import { EventMessageItem } from '../../../models/EventMessage';
 
-export type Bookmark = EventBookmark | MessageBookmark;
+export interface Bookmark<
+	T extends EventTreeNode | EventMessageItem = EventTreeNode | EventMessageItem,
+> {
+	timestamp: number;
+	id: string;
+	item: T;
+}
 
 export type BookmarkType = 'event' | 'message';
 
-export type BookmarkedItem = Bookmark | EventMessageItem | EventTreeNode;
-
-export interface MessageBookmark {
-	timestamp: number;
-	id: string;
-	item: EventMessageItem;
-}
-
-export interface EventBookmark {
-	timestamp: number;
-	id: string;
-	item: EventMessageItem | EventTreeNode;
-}
+export type EventBookmark = Bookmark<EventTreeNode>;
+export type MessageBookmark = Bookmark<EventMessageItem>;
