@@ -127,19 +127,17 @@ export const convertEventActionToEventTreeNode = (event: EventAction): EventTree
 	type: ActionType.EVENT_TREE_NODE,
 });
 
-export const getErrorEventTreeNode = (eventId: string): EventTreeNode => {
-	return {
-		type: ActionType.EVENT_TREE_NODE,
-		isUnknown: true,
-		eventId,
-		eventName: eventId,
-		eventType: 'eventTreeNode',
-		parentId: 'unknown-root',
-		startTimestamp: '',
-		endTimestamp: '',
-		successful: false,
-	};
-};
+export const getErrorEventTreeNode = (eventId: string): EventTreeNode => ({
+	type: ActionType.EVENT_TREE_NODE,
+	isUnknown: true,
+	eventId,
+	eventName: eventId,
+	eventType: 'eventTreeNode',
+	parentId: 'unknown-root',
+	startTimestamp: '',
+	endTimestamp: '',
+	successful: false,
+});
 
 export const unknownRoot: EventTreeNode = {
 	type: ActionType.EVENT_TREE_NODE,

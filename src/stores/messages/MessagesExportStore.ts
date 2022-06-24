@@ -96,11 +96,11 @@ export default class MessagesExportStore {
 		downloadTxtFile(
 			[
 				this.exportMessages
-					.map(exportMessage => {
-						return exportMessage.parsedMessages?.map(parsedMessage =>
+					.map(exportMessage =>
+						exportMessage.parsedMessages?.map(parsedMessage =>
 							this.convertMessage(exportMessage, parsedMessage, messageViewType),
-						);
-					})
+						),
+					)
 					.join('\n'),
 			],
 			`exported_messages_${moment.utc().toISOString()}.txt`,

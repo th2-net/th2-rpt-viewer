@@ -16,7 +16,6 @@
  ***************************************************************************** */
 
 import { action, when } from 'mobx';
-import moment from 'moment';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat, MessageIdsEvent } from '../../api/sse';

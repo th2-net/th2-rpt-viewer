@@ -16,7 +16,6 @@
  ***************************************************************************** */
 
 import { action } from 'mobx';
-import moment from 'moment';
 import api from '../../api';
 import { SSEParamsEvents } from '../../api/sse';
 import { isEventNode } from '../../helpers/event';

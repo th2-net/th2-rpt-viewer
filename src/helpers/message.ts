@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { timestampToNumber } from '../helpers/date';
+import { timestampToNumber } from './date';
 import { ActionType } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import {

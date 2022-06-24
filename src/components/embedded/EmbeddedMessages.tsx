@@ -34,12 +34,13 @@ import MessageCard from '../message/message-card/MessageCard';
 const messagesStore = new EmbeddedMessagesStore(api);
 
 const EmbeddedMessages = () => {
-	const { dataStore, scrolledIndex, selectedMessageId } = messagesStore;
+	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
 
-	const renderMsg = React.useCallback((index: number, message: EventMessageItem) => {
-		return <MessageCard message={message} />;
-	}, []);
+	const renderMsg = React.useCallback(
+		(index: number, message: EventMessageItem) => <MessageCard message={message} />,
+		[],
+	);
 
 	const reportURL = React.useMemo(() => {
 		const messagesStoreState = {

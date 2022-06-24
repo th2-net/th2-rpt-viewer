@@ -65,17 +65,15 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	if (messageList) {
 		return (
 			<div className='embedded-wrapper'>
-				{messageList.map((parsedMessage, index: number) => {
-					return (
-						<MessageCardBase
-							isEmbedded
-							key={`${parsedMessage.id}-${index}`}
-							message={parsedMessage}
-							setViewType={setViewType}
-							viewType={viewType}
-						/>
-					);
-				})}
+				{messageList.map((parsedMessage, index: number) => (
+					<MessageCardBase
+						isEmbedded
+						key={`${parsedMessage.id}-${index}`}
+						message={parsedMessage}
+						setViewType={setViewType}
+						viewType={viewType}
+					/>
+				))}
 			</div>
 		);
 	}
