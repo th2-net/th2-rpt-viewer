@@ -23,6 +23,14 @@ import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './Work
 import TabsStore from './TabsStore';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
+import { SearchStore } from 'stores/SearchStore';
+import { SessionsStore } from 'stores/messages/SessionsStore';
+import { getRangeFromTimestamp } from '../../helpers/date';
+import { EventMessage } from '../../models/EventMessage';
+import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
+import { EventTreeNode, EventAction } from '../../models/EventAction';
+
+const SEARCH_INTERVAL = 15;
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
@@ -31,15 +39,20 @@ export default class WorkspacesStore {
 
 	public bookmarksStore: IBookmarksStore;
 
+	public searchStore: SearchStore;
+
 	public tabsStore = new TabsStore(this);
 
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
 		public filtersHistoryStore: FiltersHistoryStore,
+		private sessionsStore: SessionsStore,
 		initialState: WorkspacesUrlState | null,
 	) {
 		this.init(initialState || null);
+
+		this.searchStore = new SearchStore(this, api, filtersHistoryStore, sessionsStore);
 
 		this.bookmarksStore = new BookmarksStore(this, this.api.indexedDb);
 
@@ -66,6 +79,44 @@ export default class WorkspacesStore {
 		if (this.isFull) return;
 		this.workspaces.push(workspace);
 		this.tabsStore.setActiveWorkspace(this.workspaces.length - 1);
+	};
+
+	public getInitialWorkspaceByMessage = (
+		timestamp: number,
+		targetMessage?: EventMessage,
+	): WorkspaceInitialState => {
+		const requestInfo = this.searchStore.currentSearch?.request;
+		const filters: MessageFilterState | null = (requestInfo?.filters as MessageFilterState) || null;
+
+		return {
+			messages: {
+				sse: filters,
+				streams: requestInfo?.state.stream || [],
+				timestampFrom: null,
+				timestampTo: timestamp,
+				targetMessage,
+			},
+			interval: SEARCH_INTERVAL,
+			layout: [0, 0, 100, 0],
+			timeRange: getRangeFromTimestamp(timestamp, SEARCH_INTERVAL),
+		};
+	};
+
+	public getInitialWorkspaceByEvent = (
+		timestamp: number,
+		targetEvent?: EventTreeNode | EventAction,
+	): WorkspaceInitialState => {
+		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_INTERVAL);
+
+		return {
+			events: {
+				range: [timestampFrom, timestampTo],
+				targetEvent,
+			},
+			layout: [0, 100, 0, 0],
+			interval: SEARCH_INTERVAL,
+			timeRange: [timestampFrom, timestampTo],
+		};
 	};
 
 	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) =>

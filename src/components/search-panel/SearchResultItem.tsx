@@ -76,6 +76,7 @@ type SearchResultItemProps = {
 	onResultClick: (
 		item: SearchResult,
 		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
+		isNewWorkspace?: boolean,
 	) => void;
 };
 
@@ -397,6 +398,11 @@ const SearchResultItem = ({
 			<i className={iconClassName} />
 			<div className={nameClassName} onClick={() => onResultClick(result)}>
 				{getItemName(result)}
+			</div>
+			<div
+				className='search-result__new-workspace'
+				onClick={() => onResultClick(result, undefined, true)}>
+				Open in a new workspace
 			</div>
 			<div className='search-result__timestamp'>{formatTime(getTimestampAsNumber(result))}</div>
 			<div className='search-result__body'>
