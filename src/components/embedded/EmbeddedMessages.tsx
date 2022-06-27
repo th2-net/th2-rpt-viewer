@@ -153,26 +153,27 @@ const MessagesVirtualizedList = observer((props: Props) => {
 	const [messageList, setMessageList] = React.useState<EventMessageItem[]>([]);
 
 	React.useEffect(() => {
-		messagesStore.dataStore.messages.forEach(message =>
-			message.parsedMessages?.forEach((parsedMessage, index) => {
-				const tempMessage = message;
-				const { parsedMessages, ...rest } = tempMessage;
-				const tempMessageItem: EventMessageItem = {
-					...rest,
-					parsedMessage: null,
-					parsedMessages: [],
-				};
+		messagesStore.dataStore.messages.forEach(message => {
+			if (message.parsedMessages) {
+				const tempMessageList: EventMessageItem[] = [];
+				message.parsedMessages.forEach(parsedMessage => {
+					const { parsedMessages, ...rest } = message;
+					const tempMessageItem: EventMessageItem = {
+						...rest,
+						parsedMessage: null,
+						parsedMessages: [],
+					};
 
-				tempMessageItem.parsedMessage = tempMessage.parsedMessages
-					? tempMessage.parsedMessages[index]
-					: null;
-
-				if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
-					tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
-
-				setMessageList([...messageList, tempMessageItem]);
-			}),
-		);
+					tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
+					if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
+						tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
+					tempMessageList.push(tempMessageItem);
+				});
+				setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
+			} else {
+				setMessageList(messageListCopy => [...messageListCopy, message as EventMessageItem]);
+			}
+		});
 	}, [messagesStore.dataStore.messages]);
 
 	React.useEffect(() => {

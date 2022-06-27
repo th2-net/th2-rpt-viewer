@@ -45,9 +45,9 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 					tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
 				tempMessageList.push(tempMessageItem);
 			});
-			setMessageList(messageList => [...messageList, ...tempMessageList]);
+			setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
 		} else {
-			setMessageList(messageList => [...messageList, message as EventMessageItem]);
+			setMessageList(messageListCopy => [...messageListCopy, message as EventMessageItem]);
 		}
 	});
 
