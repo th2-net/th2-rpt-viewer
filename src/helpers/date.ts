@@ -39,7 +39,7 @@ export function formatTime(time: string | number) {
 	if (time == null) {
 		return '';
 	}
-	return moment.utc(time).format(DateTimeMask.DATE_TIME_MASK);
+	return moment.utc(new Date(time).getTime()).format(DateTimeMask.DATE_TIME_MASK);
 }
 
 export function timestampToNumber(timestamp: string): number {

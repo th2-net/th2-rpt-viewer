@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { toJS } from 'mobx';
 import { Observer, observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle, ListItem } from 'react-virtuoso';
 import moment from 'moment';
@@ -102,26 +101,27 @@ const MessagesVirtualizedList = (props: Props) => {
 	]);
 
 	React.useEffect(() => {
-		toJS(messages).forEach(message =>
-			message.parsedMessages
-				? message.parsedMessages.forEach((parsedMessage, index) => {
-						const tempMessage = message;
-						const { parsedMessages, ...rest } = tempMessage;
-						const tempMessageItem: EventMessageItem = {
-							...rest,
-							parsedMessage: null,
-							parsedMessages: [],
-						};
+		messages.forEach(message => {
+			if (message.parsedMessages) {
+				const tempMessageList: EventMessageItem[] = [];
+				message.parsedMessages.forEach(parsedMessage => {
+					const { parsedMessages, ...rest } = message;
+					const tempMessageItem: EventMessageItem = {
+						...rest,
+						parsedMessage: null,
+						parsedMessages: [],
+					};
 
-						tempMessageItem.parsedMessage = tempMessage.parsedMessages
-							? tempMessage.parsedMessages[index]
-							: null;
-						if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
-							tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
-						setMessageList(messageListCopy => [...messageListCopy, tempMessageItem]);
-				  })
-				: setMessageList(messageListCopy => [...messageListCopy, message as EventMessageItem]),
-		);
+					tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
+					if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
+						tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
+					tempMessageList.push(tempMessageItem);
+				});
+				setMessageList(messageList => [...messageList, ...tempMessageList]);
+			} else {
+				setMessageList(messageList => [...messageList, message as EventMessageItem]);
+			}
+		});
 	}, [messages]);
 
 	const debouncedScrollHandler = useDebouncedCallback(

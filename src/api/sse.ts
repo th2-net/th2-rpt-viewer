@@ -83,9 +83,7 @@ export const toStream = (
 	name: string,
 	direction: MessageDirection[] = ['first', 'second'],
 ): string[] => {
-	const res = direction.map(dir => `${name}:${dir}`);
-
-	return res;
+	return direction.map(dir => `${name}:${dir}`);
 };
 
 export interface MessagesSSEParams extends BaseSSEParams {
@@ -201,7 +199,6 @@ export function getMessagesSSEParamsFromFilter(
 
 const sseApi: SSESchema = {
 	getEventSource: config => {
-		// console.error(new Error());
 		const { type, queryParams } = config;
 		const params = createURLSearchParams({
 			...queryParams,
