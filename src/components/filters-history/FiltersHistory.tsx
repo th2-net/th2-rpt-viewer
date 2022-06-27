@@ -17,18 +17,17 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { EventFilterState, MessageFilterState } from 'modules/search/models/Search';
-import { SearchPanelType } from 'modules/search/components/SearchPanel';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener, useFiltersHistoryStore } from '../../hooks';
 import { useFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import { raf } from '../../helpers/raf';
 import FiltersHistoryItem from './FiltersHistoryItem';
 import { useSearchStore } from '../../hooks/useSearchStore';
-import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
+import { FiltersHistoryType, FilterType } from '../../stores/FiltersHistoryStore';
 import '../../styles/filters-history.scss';
 
 interface Props {
-	type?: SearchPanelType;
+	type?: FilterType;
 	sseFilter?: FiltersState;
 	disabled?: boolean;
 }

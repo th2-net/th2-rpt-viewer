@@ -20,8 +20,8 @@ import moment from 'moment';
 import { nanoid } from 'nanoid';
 import { EventFilterState, MessageFilterState, FilterState } from 'modules/search/models/Search';
 import { capitalize } from 'helpers/stringUtils';
+import { ActionType } from 'models/EventAction';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
-import { SearchPanelType } from '../modules/search/components/SearchPanel';
 import {
 	getNonEmptyFilters,
 	isEmptyFilter,
@@ -31,9 +31,11 @@ import {
 import { NotificationsStore } from './NotificationsStore';
 import { sortByTimestamp } from '../helpers/date';
 
+export type FilterType = ActionType.EVENT_ACTION | ActionType.MESSAGE;
+
 export interface FiltersHistoryType<T extends FilterState> {
 	timestamp: number;
-	type: SearchPanelType;
+	type: FilterType;
 	filters: Partial<T>;
 	isPinned?: boolean;
 }
@@ -123,7 +125,7 @@ class FiltersHistoryStore {
 			getEquilizedItem({
 				filters,
 				timestamp: Date.now(),
-				type: 'event',
+				type: ActionType.EVENT_ACTION,
 				isPinned,
 			}),
 		);
@@ -138,7 +140,7 @@ class FiltersHistoryStore {
 			getEquilizedItem({
 				filters,
 				timestamp: Date.now(),
-				type: 'message',
+				type: ActionType.MESSAGE,
 				isPinned,
 			}),
 		);
@@ -163,7 +165,7 @@ class FiltersHistoryStore {
 	};
 
 	@action
-	public showSuccessNotification = (type: SearchPanelType) => {
+	public showSuccessNotification = (type: FilterType) => {
 		this.notificationsStore.addMessage({
 			type: 'success',
 			notificationType: 'success',

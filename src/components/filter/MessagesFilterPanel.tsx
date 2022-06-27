@@ -18,6 +18,7 @@ import React from 'react';
 import { computed } from 'mobx';
 import { Observer, observer } from 'mobx-react-lite';
 import { MessageFilterState, MultipleStringFilter } from 'modules/search/models/Search';
+import { ActionType } from 'models/EventAction';
 import FilterPanel from './FilterPanel';
 import {
 	CompoundFilterRow,
@@ -275,7 +276,7 @@ const MessagesFilterPanel = () => {
 					<div className='filter-footer'>
 						{filter && (
 							<FiltersHistory
-								type='message'
+								type={ActionType.MESSAGE}
 								sseFilter={{
 									state: filter,
 									setState: setFilter,

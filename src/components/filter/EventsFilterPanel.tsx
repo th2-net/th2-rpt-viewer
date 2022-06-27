@@ -17,6 +17,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Filter, EventFilterState } from 'modules/search/models/Search';
+import { ActionType } from 'models/EventAction';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
 import { useWorkspaceEventStore, useEventsFilterStore, useFiltersHistoryStore } from '../../hooks';
@@ -201,7 +202,7 @@ function EventsFilterPanel() {
 			renderFooter={() =>
 				filter && (
 					<FiltersHistory
-						type='event'
+						type={ActionType.EVENT_ACTION}
 						sseFilter={{
 							state: filter,
 							setState: setFilter,
