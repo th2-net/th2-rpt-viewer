@@ -19,6 +19,7 @@ import isEqual from 'lodash.isequal';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import { EventFilterState, MessageFilterState, FilterState } from 'modules/search/models/Search';
+import { capitalize } from 'helpers/stringUtils';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
 import { SearchPanelType } from '../modules/search/components/SearchPanel';
 import {
@@ -166,7 +167,7 @@ class FiltersHistoryStore {
 		this.notificationsStore.addMessage({
 			type: 'success',
 			notificationType: 'success',
-			description: `${type.charAt(0).toUpperCase()}${type.slice(1)} filter successfully saved!`,
+			description: `${capitalize(type)} filter successfully saved!`,
 			id: nanoid(),
 		});
 	};
