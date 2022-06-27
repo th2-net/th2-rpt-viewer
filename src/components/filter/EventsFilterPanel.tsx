@@ -16,11 +16,11 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import { Filter, EventFilterState } from 'modules/search/models/Search';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
 import { useWorkspaceEventStore, useEventsFilterStore, useFiltersHistoryStore } from '../../hooks';
 import { EventSSEFilters } from '../../api/sse';
-import { Filter, EventFilterState } from '../search-panel/SearchPanelFilters';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
 import FiltersHistory from '../filters-history/FiltersHistory';

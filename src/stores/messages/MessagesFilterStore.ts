@@ -16,9 +16,9 @@
 
 import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import moment from 'moment';
+import { SearchStore } from 'modules/search/stores/SearchStore';
+import { MessageFilterState } from 'modules/search/models/Search';
 import MessagesFilter from '../../models/filter/MessagesFilter';
-import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
-import { SearchStore } from '../SearchStore';
 import { getDefaultMessagesFiltersState } from '../../helpers/search';
 import { MessagesFilterInfo, MessagesSSEParams } from '../../api/sse';
 

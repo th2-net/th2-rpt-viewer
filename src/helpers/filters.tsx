@@ -14,18 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
 import { observable, toJS } from 'mobx';
-import {
-	EventFilterState,
-	FilterState,
-	MessageFilterState,
-} from '../components/search-panel/SearchPanelFilters';
+import { EventFilterState, FilterState, MessageFilterState } from 'modules/search/models/Search';
+import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { areArraysEqual } from './array';
 import { notEmpty } from './object';
 import { getRangesIntersection, isInsideRange, isRangesIntersect, isValidRange } from './range';
-import { FilterEntry } from '../stores/SearchStore';
 
 export function getNonEmptyFilters(filter: Partial<FilterState>) {
 	return Object.fromEntries(

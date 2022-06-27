@@ -16,15 +16,15 @@
 
 import React, { useState, useRef, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
+import { EventFilterState, MessageFilterState } from 'modules/search/models/Search';
+import { SearchPanelType } from 'modules/search/components/SearchPanel';
 import { ModalPortal } from '../util/Portal';
-import '../../styles/filters-history.scss';
 import { useOutsideClickListener, useFiltersHistoryStore } from '../../hooks';
 import { raf } from '../../helpers/raf';
-import { SearchPanelType } from '../search-panel/SearchPanel';
 import FiltersHistoryItem from './FiltersHistoryItem';
 import { useSearchStore } from '../../hooks/useSearchStore';
-import { EventFilterState, MessageFilterState } from '../search-panel/SearchPanelFilters';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
+import '../../styles/filters-history.scss';
 
 interface Props {
 	type?: SearchPanelType;

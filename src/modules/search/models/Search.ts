@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +14,43 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { MultipleStringFilter, SwitcherFilter } from 'modules/search/models/Search';
+export type StringFilter = {
+	type: 'string';
+	values: string;
+	negative: boolean;
+	hint: string;
+};
 
-export default interface EventsFilter {
+export type MultipleStringFilter = {
+	type: 'string[]';
+	values: string[];
+	negative: boolean;
+	conjunct: boolean;
+	hint: string;
+};
+
+export type SwitcherFilter = {
+	type: 'switcher';
+	values: string;
+};
+
+export type Filter = StringFilter | MultipleStringFilter | SwitcherFilter;
+
+export type FilterState = EventFilterState | MessageFilterState;
+
+export type EventFilterState = {
 	attachedMessageId: MultipleStringFilter;
 	type: MultipleStringFilter;
 	body: MultipleStringFilter;
 	name: MultipleStringFilter;
 	status: SwitcherFilter;
 	text: MultipleStringFilter;
-}
+};
+
+export type MessageFilterState = {
+	attachedEventIds: MultipleStringFilter;
+	type: MultipleStringFilter;
+	body: MultipleStringFilter;
+	bodyBinary: MultipleStringFilter;
+	text: MultipleStringFilter;
+};

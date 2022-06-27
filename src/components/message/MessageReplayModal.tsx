@@ -18,7 +18,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'framer-motion';
 import moment from 'moment';
-import { MessageFilterState, MultipleStringFilter } from '../search-panel/SearchPanelFilters';
+import { MessageFilterState, MultipleStringFilter } from 'modules/search/models/Search';
 import {
 	CompoundFilterRow,
 	FilterRowConfig,

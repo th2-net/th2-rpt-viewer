@@ -17,16 +17,16 @@
 import { action, computed, observable, reaction, IReactionDisposer, runInAction } from 'mobx';
 import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
+import { MessageFilterState } from 'modules/search/models/Search';
+import { FilterEntry, SearchStore } from 'modules/search/stores/SearchStore';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { TimeRange } from '../../models/Timestamp';
-import { FilterEntry, SearchStore } from '../SearchStore';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { isEventMessage } from '../../helpers/event';
-import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';

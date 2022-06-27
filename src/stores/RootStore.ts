@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { nanoid } from 'nanoid';
+import { EventFilterState, FilterState, MessageFilterState } from 'modules/search/models/Search';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
@@ -24,11 +25,6 @@ import { DbData } from '../api/indexedDb';
 import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
 import { getRangeFromTimestamp } from '../helpers/date';
-import {
-	EventFilterState,
-	FilterState,
-	MessageFilterState,
-} from '../components/search-panel/SearchPanelFilters';
 import { SessionsStore } from './messages/SessionsStore';
 
 export default class RootStore {

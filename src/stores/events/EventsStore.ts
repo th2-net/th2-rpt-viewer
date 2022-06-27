@@ -16,6 +16,8 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
+import { EventFilterState } from 'modules/search/models/Search';
+import { FilterEntry, SearchStore } from 'modules/search/stores/SearchStore';
 import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
@@ -26,9 +28,7 @@ import WorkspaceStore from '../workspace/WorkspaceStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/calculateTimeRange';
 import { TimeRange } from '../../models/Timestamp';
-import { FilterEntry, SearchStore } from '../SearchStore';
 import EventsDataStore from './EventsDataStore';
-import { EventFilterState } from '../../components/search-panel/SearchPanelFilters';
 import EventsFilter from '../../models/filter/EventsFilter';
 
 export type EventStoreURLState = Partial<{

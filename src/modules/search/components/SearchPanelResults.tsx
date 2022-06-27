@@ -16,13 +16,13 @@
 
 import { Virtuoso } from 'react-virtuoso';
 import { formatTimestamp } from 'helpers/date';
-import { getItemId, isEvent } from '../../helpers/event';
-import { FilterEntry, SearchResult } from '../../stores/SearchStore';
-import { ActionType } from '../../models/EventAction';
+import { getItemId, isEvent } from 'helpers/event';
+import { ActionType } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import { useMessagesDataStore, useMessagesWorkspaceStore } from 'hooks/index';
+import { FilterEntry, SearchResult } from '../stores/SearchStore';
 import SearchPanelSeparator from './SearchPanelSeparator';
-import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
-import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
-import { EventMessage } from '../../models/EventMessage';
+import { EventFilterState, MessageFilterState } from '../models/Search';
 import SearchResultItem from './SearchResultItem';
 
 interface SearchPanelResultsProps {

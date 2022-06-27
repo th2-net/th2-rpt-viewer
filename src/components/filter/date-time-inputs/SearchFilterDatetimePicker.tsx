@@ -18,15 +18,15 @@ import React from 'react';
 import Calendar from 'rc-calendar';
 import moment, { Moment } from 'moment';
 import MaskedInput from 'react-text-mask';
-import '../../../styles/filter-datetime.scss';
+import { SearchPanelFormState } from 'modules/search/stores/SearchStore';
 import 'rc-calendar/assets/index.css';
 import { TimeInputType, DateTimeMask } from '../../../models/filter/FilterInputs';
 import { useOutsideClickListener } from '../../../hooks';
 import { createStyleSelector } from '../../../helpers/styleCreators';
 import { formatTimestampValue } from '../../../helpers/date';
 import { replaceUnfilledDateStringWithMinValues } from '../../../helpers/stringUtils';
-import { SearchPanelFormState } from '../../../stores/SearchStore';
 import { SearchDirection } from '../../../models/search/SearchDirection';
+import 'styles/filter-datetime.scss';
 
 interface SearchFilterDatetimePickerProps {
 	value: number | null;

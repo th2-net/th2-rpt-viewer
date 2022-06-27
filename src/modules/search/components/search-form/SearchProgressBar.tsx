@@ -14,9 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import { createBemElement } from '../../../helpers/styleCreators';
-import { SearchDirection } from '../../../models/search/SearchDirection';
+import { createBemElement } from 'helpers/styleCreators';
+import { SearchDirection } from 'models/search/SearchDirection';
 
 type Progress = {
 	completed: boolean;

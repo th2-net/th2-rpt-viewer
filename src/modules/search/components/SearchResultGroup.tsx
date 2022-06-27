@@ -17,15 +17,15 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { getItemId, isEvent, isEventMessage } from '../../helpers/event';
-import { createBemElement } from '../../helpers/styleCreators';
-import { FilterEntry, SearchResult } from '../../stores/SearchStore';
-import { getTimestampAsNumber } from '../../helpers/date';
-import { ActionType } from '../../models/EventAction';
+import { getItemId, isEvent, isEventMessage } from 'helpers/event';
+import { createBemElement } from 'helpers/styleCreators';
+import { getTimestampAsNumber } from 'helpers/date';
+import { ActionType } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
+import { useMessagesDataStore, useMessagesWorkspaceStore } from 'hooks/index';
+import { FilterEntry, SearchResult } from '../stores/SearchStore';
 import SearchResultItem from './SearchResultItem';
-import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
-import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
-import { EventMessage } from '../../models/EventMessage';
+import { EventFilterState, MessageFilterState } from '../models/Search';
 
 interface SearchResultGroup {
 	results: SearchResult[];

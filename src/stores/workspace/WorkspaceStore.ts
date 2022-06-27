@@ -16,6 +16,7 @@
 
 import { action, computed, observable, reaction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
+import { SearchStore } from 'modules/search/stores/SearchStore';
 import MessagesStore, {
 	MessagesStoreDefaultStateType,
 	MessagesStoreURLState,
@@ -30,7 +31,6 @@ import { isEventMessage } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
-import { SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import { isAbortError } from '../../helpers/fetch';

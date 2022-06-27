@@ -16,6 +16,7 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import { MessageFilterState, MultipleStringFilter } from 'modules/search/models/Search';
 import {
 	CompoundFilterRow,
 	FilterRowTogglerConfig,
@@ -24,7 +25,6 @@ import {
 	FilterRowConfig,
 } from '../../models/filter/FilterInputs';
 import { MessagesFilterInfo } from '../../api/sse';
-import { MessageFilterState, MultipleStringFilter } from '../search-panel/SearchPanelFilters';
 import useSetState from '../../hooks/useSetState';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
 import FilterPanel from '../filter/FilterPanel';

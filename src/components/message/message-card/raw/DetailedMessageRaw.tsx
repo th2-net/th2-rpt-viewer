@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { MessageFilterState } from 'modules/search/models/Search';
 import { copyTextToClipboard } from '../../../../helpers/copyHandler';
 import { showNotification } from '../../../../helpers/showNotification';
 import { useSelectListener } from '../../../../hooks/useSelectListener';
@@ -26,7 +27,6 @@ import {
 } from '../../../../helpers/rawFormatter';
 import '../../../../styles/messages.scss';
 import { BodyFilter, getFiltersEntries, wrapString } from '../../../../helpers/filters';
-import { MessageFilterState } from '../../../search-panel/SearchPanelFilters';
 import { useSearchStore } from '../../../../hooks/useSearchStore';
 import { useMessagesWorkspaceStore } from '../../../../hooks';
 import { isRangesIntersect } from '../../../../helpers/range';

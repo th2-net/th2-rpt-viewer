@@ -17,11 +17,11 @@
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
 import { EventBookmark, MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
+import { FilterState } from 'modules/search/models/Search';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
-import { SearchHistory } from '../stores/SearchStore';
+import { SearchHistory } from '../modules/search/stores/SearchStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
-import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { Session } from '../stores/messages/SessionsStore';
 
 export enum IndexedDbStores {

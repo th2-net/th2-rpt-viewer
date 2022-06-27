@@ -14,10 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import { wrapString } from '../../../helpers/filters';
-import { FilterEntry } from '../../../stores/SearchStore';
-import '../../../styles/tables.scss';
+import { FilterEntry } from 'modules/search/stores/SearchStore';
+import { wrapString } from 'helpers/filters';
+import 'styles/tables.scss';
 
 interface CustomTableProps {
 	content: { [key: string]: string | number | null | undefined }[];

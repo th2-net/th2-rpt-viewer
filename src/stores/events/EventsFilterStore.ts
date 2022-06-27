@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
+import { SearchStore } from 'modules/search/stores/SearchStore';
 import moment from 'moment';
 import EventsFilter from '../../models/filter/EventsFilter';
-import { SearchStore } from '../SearchStore';
 import { EventsFiltersInfo, EventSSEFilters } from '../../api/sse';
 import { getDefaultEventsFiltersState } from '../../helpers/search';
 import { TimeRange } from '../../models/Timestamp';

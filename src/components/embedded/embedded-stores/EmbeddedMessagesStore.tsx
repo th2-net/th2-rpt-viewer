@@ -15,7 +15,7 @@
  ***************************************************************************** */
 import moment from 'moment';
 import { action, reaction, observable } from 'mobx';
-import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
+import { MessageFilterState } from 'modules/search/models/Search';
 import MessagesFilter from '../../../models/filter/MessagesFilter';
 import ApiSchema from '../../../api/ApiSchema';
 import EmbeddedMessagesDataProviderStore from './EmbeddedMessagesDataProviderStore';

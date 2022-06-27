@@ -15,12 +15,11 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import React from 'react';
-import { useActivePanel, useWorkspaceStore } from '../../hooks';
+import { useActivePanel, useWorkspaceStore } from 'hooks/index';
 import SearchPanelForm from './SearchPanelForm';
-import { useSearchStore } from '../../hooks/useSearchStore';
+import { useSearchStore } from '../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
-import '../../styles/search-panel.scss';
+import 'styles/search-panel.scss';
 
 export type SearchPanelType = 'event' | 'message';
 

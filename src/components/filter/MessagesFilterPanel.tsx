@@ -17,6 +17,7 @@
 import React from 'react';
 import { computed } from 'mobx';
 import { Observer, observer } from 'mobx-react-lite';
+import { MessageFilterState, MultipleStringFilter } from 'modules/search/models/Search';
 import FilterPanel from './FilterPanel';
 import {
 	CompoundFilterRow,
@@ -33,7 +34,6 @@ import {
 } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessagesFilterInfo } from '../../api/sse';
-import { MessageFilterState, MultipleStringFilter } from '../search-panel/SearchPanelFilters';
 import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';

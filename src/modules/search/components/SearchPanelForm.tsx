@@ -21,15 +21,19 @@ import {
 	DateTimeMask,
 	FitlerRowItem,
 	TimeInputType,
-} from '../../models/filter/FilterInputs';
-import FilterRow from '../filter/row';
+} from 'models/filter/FilterInputs';
+import FilterRow from 'components/filter/row';
+import { SearchDirection } from 'models/search/SearchDirection';
+import FiltersHistory from 'components/filters-history/FiltersHistory';
+import { useFiltersHistoryStore, useSessionsStore } from 'hooks/index';
+import { createBemElement } from 'helpers/styleCreators';
 import {
 	TIME_INPUT_MASK,
 	DATE_TIME_INPUT_MASK,
 	TIMESTAMPS_INPUT_MASK,
-} from '../../util/filterInputs';
-import { SearchPanelFormState } from '../../stores/SearchStore';
-import { useSearchStore } from '../../hooks/useSearchStore';
+} from '../../../util/filterInputs';
+import { SearchPanelFormState } from '../stores/SearchStore';
+import { useSearchStore } from '../hooks/useSearchStore';
 import SearchPanelFilters from './SearchPanelFilters';
 import SearchTypeSwitcher from './search-form/SearchTypeSwitcher';
 import SearchDatetimeControls, {
@@ -40,10 +44,6 @@ import SearchSubmit, { SearchSubmitConfig } from './search-form/SearchSubmit';
 import SearchResultCountLimit, {
 	ResultCountLimitConfig,
 } from './search-form/SearchResultCountLimit';
-import { SearchDirection } from '../../models/search/SearchDirection';
-import FiltersHistory from '../filters-history/FiltersHistory';
-import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
-import { createBemElement } from '../../helpers/styleCreators';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;

@@ -15,61 +15,27 @@
  ***************************************************************************** */
 
 import React from 'react';
-import useSetState from '../../hooks/useSetState';
+import useSetState from 'hooks/useSetState';
 import {
 	FilterRowMultipleStringsConfig,
 	FilterRowStringConfig,
 	FilterRowTogglerConfig,
 	FilterRowSwitcherConfig,
-} from '../../models/filter/FilterInputs';
-import { SSEFilterInfo, SSEFilterParameter } from '../../api/sse';
-import FilterRow from '../filter/row';
+} from 'models/filter/FilterInputs';
+import { SSEFilterInfo, SSEFilterParameter } from 'api/sse';
+import { getArrayOfUniques } from 'helpers/array';
+import { FiltersHistoryType } from 'stores/FiltersHistoryStore';
+import { notEmpty } from 'helpers/object';
+import { prettifyCamelcase } from 'helpers/stringUtils';
+import FilterRow from 'components/filter/row';
+import {
+	FilterState,
+	Filter,
+	EventFilterState,
+	MessageFilterState,
+	MultipleStringFilter,
+} from '../models/Search';
 import { SearchPanelType } from './SearchPanel';
-import { getArrayOfUniques } from '../../helpers/array';
-import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
-import { notEmpty } from '../../helpers/object';
-import { prettifyCamelcase } from '../../helpers/stringUtils';
-
-export type StringFilter = {
-	type: 'string';
-	values: string;
-	negative: boolean;
-	hint: string;
-};
-
-export type MultipleStringFilter = {
-	type: 'string[]';
-	values: string[];
-	negative: boolean;
-	conjunct: boolean;
-	hint: string;
-};
-
-export type SwitcherFilter = {
-	type: 'switcher';
-	values: string;
-};
-
-export type Filter = StringFilter | MultipleStringFilter | SwitcherFilter;
-
-export type EventFilterState = {
-	attachedMessageId: MultipleStringFilter;
-	type: MultipleStringFilter;
-	body: MultipleStringFilter;
-	name: MultipleStringFilter;
-	status: SwitcherFilter;
-	text: MultipleStringFilter;
-};
-
-export type MessageFilterState = {
-	attachedEventIds: MultipleStringFilter;
-	type: MultipleStringFilter;
-	body: MultipleStringFilter;
-	bodyBinary: MultipleStringFilter;
-	text: MultipleStringFilter;
-};
-
-export type FilterState = EventFilterState | MessageFilterState;
 
 type FilterRowConfig =
 	| FilterRowSwitcherConfig

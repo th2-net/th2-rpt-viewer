@@ -15,12 +15,12 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { createStyleSelector } from '../../../helpers/styleCreators';
+import { FilterEntry } from 'modules/search/stores/SearchStore';
+import { createStyleSelector } from 'helpers/styleCreators';
+import { areArraysEqual } from 'helpers/array';
+import { wrapString } from 'helpers/filters';
 import StateSaver from '../../util/StateSaver';
-import '../../../styles/tables.scss';
-import { wrapString } from '../../../helpers/filters';
-import { FilterEntry } from '../../../stores/SearchStore';
-import { areArraysEqual } from '../../../helpers/array';
+import 'styles/tables.scss';
 
 export interface ParamsTableRow {
 	subRows: ParamsTableRow[];

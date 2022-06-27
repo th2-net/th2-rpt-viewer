@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { createBemElement } from '../../../helpers/styleCreators';
+import { createBemElement } from 'helpers/styleCreators';
 import { SearchPanelType } from '../SearchPanel';
 
 type Props = {

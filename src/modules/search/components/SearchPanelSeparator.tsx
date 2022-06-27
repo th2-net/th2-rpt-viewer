@@ -14,19 +14,29 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { BookmarksStore } from 'modules/bookmarks/stores/BookmarksStore';
-import { SearchStore } from 'modules/search/stores/SearchStore';
-import EventsStore from '../stores/events/EventsStore';
-import MessagesStore from '../stores/messages/MessagesStore';
+import moment from 'moment';
 
-export const isEventsStore = (object: unknown): object is EventsStore =>
-	object instanceof EventsStore;
+interface Props {
+	prevElement: number;
+	nextElement: number;
+}
 
-export const isMessagesStore = (object: unknown): object is MessagesStore =>
-	object instanceof MessagesStore;
+const SearchPanelSeparator = (props: Props) => {
+	const { prevElement, nextElement } = props;
+	const time = moment(Math.abs(nextElement - prevElement)).utc();
+	return (
+		<div className={'search-result-separator'}>
+			<span className={'search-result-separator__text'}>
+				No Data for
+				<b>
+					{time.hour() > 0 && ` ${time.hour()}h`}
+					{time.minute() > 0 && ` ${time.minute()}min`}
+					{time.second() > 0 && ` ${time.second()}sec`}
+					{time.millisecond() > 0 && ` ${time.millisecond()}ms`}
+				</b>
+			</span>
+		</div>
+	);
+};
 
-export const isSearchStore = (object: unknown): object is SearchStore =>
-	object instanceof SearchStore;
-
-export const isBookmarksStore = (object: unknown): object is BookmarksStore =>
-	object instanceof isBookmarksStore;
+export default SearchPanelSeparator;

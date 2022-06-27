@@ -16,13 +16,13 @@
 
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
+import { MessageFilterState } from 'modules/search/models/Search';
 import { BodyFilter, getFiltersEntries, wrapString } from '../../../../helpers/filters';
 import { isRangesIntersect, trimRange } from '../../../../helpers/range';
 import { splitOnReadableParts } from '../../../../helpers/stringUtils';
 import { createBemElement } from '../../../../helpers/styleCreators';
 import { useMessagesWorkspaceStore } from '../../../../hooks';
 import { useSearchStore } from '../../../../hooks/useSearchStore';
-import { MessageFilterState } from '../../../search-panel/SearchPanelFilters';
 
 interface Props {
 	rawContent: string;

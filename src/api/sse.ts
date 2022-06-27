@@ -14,11 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { MessageFilterState } from 'modules/search/models/Search';
 import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import EventsFilter from '../models/filter/EventsFilter';
 import { getObjectKeys } from '../helpers/object';
-import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
 import { SearchDirection } from '../models/search/SearchDirection';
 
 interface BaseSSEParams {

@@ -16,11 +16,11 @@
 /* eslint-disable react/display-name */
 
 import React from 'react';
-import { formatTime, getTimestampAsNumber } from '../../helpers/date';
-import { getItemName, isEventAction, isEventMessage } from '../../helpers/event';
-import { createBemBlock, createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { useMessageBodySortStore } from '../../hooks';
-import { ActionType, EventAction } from '../../models/EventAction';
+import { formatTime, getTimestampAsNumber } from 'helpers/date';
+import { getItemName, isEventAction, isEventMessage } from 'helpers/event';
+import { createBemBlock, createBemElement, createStyleSelector } from 'helpers/styleCreators';
+import { useMessageBodySortStore } from 'hooks/index';
+import { ActionType, EventAction } from 'models/EventAction';
 import {
 	EventBodyPayloadType,
 	TablePayload,
@@ -29,10 +29,10 @@ import {
 	TreeTableRow,
 	VerificationPayload,
 	VerificationPayloadField,
-} from '../../models/EventActionPayload';
-import { EventMessage } from '../../models/EventMessage';
-import { FilterEntry, SearchResult } from '../../stores/SearchStore';
-import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
+} from 'models/EventActionPayload';
+import { EventMessage } from 'models/EventMessage';
+import { EventFilterState, MessageFilterState } from '../models/Search';
+import { FilterEntry, SearchResult } from '../stores/SearchStore';
 
 const DETAIL_VALUE_LENGTH_LIMIT = 40;
 

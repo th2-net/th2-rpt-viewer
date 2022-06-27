@@ -16,10 +16,10 @@
 
 import { action, computed, IReactionDisposer, observable, reaction, runInAction } from 'mobx';
 import moment from 'moment';
+import { MessageFilterState } from 'modules/search/models/Search';
 import MessagesFilter from '../../../models/filter/MessagesFilter';
 import { getDefaultMessagesFiltersState } from '../../../helpers/search';
 import { MessagesFilterInfo, MessagesSSEParams } from '../../../api/sse';
-import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
 import ApiSchema from '../../../api/ApiSchema';
 
 function getDefaultMessagesFilter(): MessagesFilter {

@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { EventAction } from '../../models/EventAction';
 import { CustomTable } from './tables/CustomTable';
 import { VerificationTable } from './tables/VerificationTable';
@@ -27,7 +28,6 @@ import { getEventStatus } from '../../helpers/event';
 import api from '../../api';
 import { ReferenceCard } from './ReferenceCard';
 import { wrapString } from '../../helpers/filters';
-import { FilterEntry } from '../../stores/SearchStore';
 
 interface Props {
 	body: EventBodyPayload;

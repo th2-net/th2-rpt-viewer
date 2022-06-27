@@ -14,8 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import { createBemElement } from '../../../helpers/styleCreators';
+import { createBemElement } from 'helpers/styleCreators';
 
 export type SearchSubmitConfig = {
 	isSearching: boolean;

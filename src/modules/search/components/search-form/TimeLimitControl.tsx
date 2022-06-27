@@ -16,7 +16,7 @@
 
 import moment from 'moment';
 import React, { useRef, useState, Fragment } from 'react';
-import { createBemBlock, createBemElement } from '../../../helpers/styleCreators';
+import { createBemBlock, createBemElement } from 'helpers/styleCreators';
 
 type Props = {
 	value: number | null;

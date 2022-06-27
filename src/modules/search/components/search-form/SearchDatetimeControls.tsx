@@ -14,11 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import { createBemElement } from '../../../helpers/styleCreators';
-import { SearchDirection } from '../../../models/search/SearchDirection';
-import { SearchPanelFormState } from '../../../stores/SearchStore';
-import FilterDatetimeInput from '../../filter/date-time-inputs/DateTimeInput';
+import { createBemElement } from 'helpers/styleCreators';
+import { SearchDirection } from 'models/search/SearchDirection';
+import FilterDatetimeInput from 'components/filter/date-time-inputs/DateTimeInput';
+import { SearchPanelFormState } from '../../stores/SearchStore';
 import { DateInputProps } from '../SearchPanelForm';
 import TimeLimitControl from './TimeLimitControl';
 

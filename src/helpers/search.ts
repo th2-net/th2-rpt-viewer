@@ -14,12 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { EventFilterState, MessageFilterState } from 'modules/search/models/Search';
+import { SearchHistory } from 'modules/search/stores/SearchStore';
 import { EventsFiltersInfo, MessagesFilterInfo, SSEFilterParameter } from '../api/sse';
-import {
-	EventFilterState,
-	MessageFilterState,
-} from '../components/search-panel/SearchPanelFilters';
-import { SearchHistory } from '../stores/SearchStore';
 
 export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
 	if (param.defaultValue === null) {

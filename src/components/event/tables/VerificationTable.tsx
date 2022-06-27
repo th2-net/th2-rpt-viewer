@@ -18,6 +18,7 @@ import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import throttle from 'lodash.throttle';
 import { observer } from 'mobx-react-lite';
+import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { EventStatus, eventStatusValues, StatusType } from '../../../models/Status';
 import { createStyleSelector } from '../../../helpers/styleCreators';
 import { getVerificationTablesNodes } from '../../../helpers/tables';
@@ -25,11 +26,10 @@ import StateSaver, { RecoverableElementProps } from '../../util/StateSaver';
 import { replaceNonPrintableChars } from '../../../helpers/stringUtils';
 import { copyTextToClipboard } from '../../../helpers/copyHandler';
 import { VerificationPayload, VerificationPayloadField } from '../../../models/EventActionPayload';
-import '../../../styles/tables.scss';
 import { wrapString } from '../../../helpers/filters';
-import { FilterEntry } from '../../../stores/SearchStore';
 import { areArraysEqual } from '../../../helpers/array';
 import Popover from '../../util/Popover';
+import 'styles/tables.scss';
 
 const PADDING_LEVEL_VALUE = 10;
 

@@ -18,13 +18,9 @@ import { observable, action, toJS, computed, reaction, when } from 'mobx';
 import isEqual from 'lodash.isequal';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
+import { EventFilterState, MessageFilterState, FilterState } from 'modules/search/models/Search';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
-import { SearchPanelType } from '../components/search-panel/SearchPanel';
-import {
-	EventFilterState,
-	MessageFilterState,
-	FilterState,
-} from '../components/search-panel/SearchPanelFilters';
+import { SearchPanelType } from '../modules/search/components/SearchPanel';
 import {
 	getNonEmptyFilters,
 	isEmptyFilter,

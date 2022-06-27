@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
 import { createBemElement } from '../../helpers/styleCreators';
 
 type MessagesUpdateButtonProps = {

@@ -18,7 +18,15 @@ import { action, autorun, computed, observable, reaction, runInAction, toJS } fr
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import debounce from 'lodash.debounce';
-import ApiSchema from '../api/ApiSchema';
+import { EventMessage } from 'models/EventMessage';
+import { SearchDirection } from 'models/search/SearchDirection';
+import notificationsStore from 'stores/NotificationsStore';
+import WorkspacesStore from 'stores/workspace/WorkspacesStore';
+import FiltersHistoryStore from 'stores/FiltersHistoryStore';
+import { SessionsStore } from 'stores/messages/SessionsStore';
+import { EventBodyPayload } from 'models/EventActionPayload';
+import { getItemAt } from 'helpers/array';
+import ApiSchema from 'api/ApiSchema';
 import {
 	EventsFiltersInfo,
 	MessageIdsEvent,
@@ -26,30 +34,18 @@ import {
 	SSEFilterInfo,
 	SSEHeartbeat,
 	SSEParams,
-} from '../api/sse';
-import { DbData, IndexedDbStores } from '../api/indexedDb';
-import { SearchPanelType } from '../components/search-panel/SearchPanel';
-import {
-	EventFilterState,
-	FilterState,
-	MessageFilterState,
-} from '../components/search-panel/SearchPanelFilters';
-import { getTimestampAsNumber } from '../helpers/date';
-import { getItemId, isEventAction, isEventId, isEventMessage } from '../helpers/event';
+} from 'api/sse';
+import { DbData, IndexedDbStores } from 'api/indexedDb';
+import { getItemId, isEventAction, isEventId, isEventMessage } from 'helpers/event';
+import { getTimestampAsNumber } from 'helpers/date';
 import {
 	getDefaultEventsFiltersState,
 	getDefaultMessagesFiltersState,
 	isSearchHistoryEntity,
-} from '../helpers/search';
-import { EventAction, EventTreeNode } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
-import { SearchDirection } from '../models/search/SearchDirection';
-import notificationsStore from './NotificationsStore';
-import WorkspacesStore from './workspace/WorkspacesStore';
-import FiltersHistoryStore from './FiltersHistoryStore';
-import { SessionsStore } from './messages/SessionsStore';
-import { EventBodyPayload } from '../models/EventActionPayload';
-import { getItemAt } from '../helpers/array';
+} from 'helpers/search';
+import { EventAction, EventTreeNode } from 'models/EventAction';
+import { SearchPanelType } from '../components/SearchPanel';
+import { EventFilterState, FilterState, MessageFilterState } from '../models/Search';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
