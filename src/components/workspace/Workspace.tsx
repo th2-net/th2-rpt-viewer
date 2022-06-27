@@ -64,7 +64,12 @@ function Workspace() {
 					{
 						title: 'Smart Search',
 						color: panelColors.search,
-						component: <SearchPanel />,
+						component: (
+							<SearchPanel
+								onResultClick={workspaceStore.onSearchResultItemSelect}
+								onResultGroupClick={workspaceStore.onSearchResultGroupSelect}
+							/>
+						),
 						isActive: isSearchStore(activePanel),
 					},
 					{

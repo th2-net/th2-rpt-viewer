@@ -16,14 +16,23 @@
 
 import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useActivePanel, useWorkspaceStore } from 'hooks/index';
+import { useActivePanel } from 'hooks/index';
+import { ActionType } from 'models/EventAction';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
+import { SearchResult, FilterEntry } from '../stores/SearchStore';
 import 'styles/search-panel.scss';
 
-const SearchPanel = () => {
-	const workspaceStore = useWorkspaceStore();
+interface SearchPanelProps {
+	onResultClick: (
+		searchResult: SearchResult,
+		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
+	) => void;
+	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
+}
+
+const SearchPanel = (props: SearchPanelProps) => {
 	const searchStore = useSearchStore();
 	const { ref: searchPanelRef } = useActivePanel(null);
 
@@ -41,12 +50,12 @@ const SearchPanel = () => {
 					flattenedResult={searchStore.flattenedResult}
 					filters={searchStore.currentSearch.request.filters}
 					timestamp={searchStore.currentSearch.timestamp}
-					onResultClick={workspaceStore.onSearchResultItemSelect}
-					onResultGroupClick={workspaceStore.onSearchResultGroupSelect}
-					onResultDelete={removeCurrentSearch}
 					disabledRemove={searchStore.isSearching}
 					showLoadMoreButton={searchStore.isCompleted && !searchStore.isHistorySearch}
 					loadMore={searchStore.loadMore}
+					onResultDelete={removeCurrentSearch}
+					onResultClick={props.onResultClick}
+					onResultGroupClick={props.onResultGroupClick}
 				/>
 			)}
 		</div>
