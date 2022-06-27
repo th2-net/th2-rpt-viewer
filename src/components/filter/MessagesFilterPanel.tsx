@@ -29,7 +29,7 @@ import {
 } from '../../models/filter/FilterInputs';
 import {
 	useMessagesDataStore,
-	useMessagesWorkspaceStore,
+	useMessagesStore,
 	useFiltersHistoryStore,
 	useSessionsStore,
 } from '../../hooks';
@@ -53,7 +53,7 @@ type CurrentSSEValues = {
 const priority = ['attachedEventIds', 'type', 'body', 'bodyBinary', 'text'];
 
 const MessagesFilterPanel = () => {
-	const messagesStore = useMessagesWorkspaceStore();
+	const messagesStore = useMessagesStore();
 	const messagesDataStore = useMessagesDataStore();
 	const { messagesHistory, onMessageFilterSubmit } = useFiltersHistoryStore();
 	const sessionsStore = useSessionsStore();

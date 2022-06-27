@@ -22,7 +22,7 @@ import { createBemElement } from 'helpers/styleCreators';
 import { getTimestampAsNumber } from 'helpers/date';
 import { ActionType } from 'models/EventAction';
 import { EventMessage } from 'models/EventMessage';
-import { useMessagesDataStore, useMessagesWorkspaceStore } from 'hooks/index';
+import { useMessagesDataStore, useMessagesStore } from 'hooks/index';
 import { FilterEntry, SearchResult } from '../stores/SearchStore';
 import SearchResultItem from './SearchResultItem';
 import { EventFilterState, MessageFilterState } from '../models/Search';
@@ -44,7 +44,7 @@ const SearchResultGroup = ({
 	onGroupClick,
 }: SearchResultGroup) => {
 	const [isExpanded, setIsExpanded] = React.useState(false);
-	const messagesWorkspaceStore = useMessagesWorkspaceStore();
+	const messagesWorkspaceStore = useMessagesStore();
 	const messagesDataStore = useMessagesDataStore();
 
 	const expandButtonClass = createBemElement(

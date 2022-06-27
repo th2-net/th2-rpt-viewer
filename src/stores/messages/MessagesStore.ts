@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction, IReactionDisposer, runInAction } from 'mobx';
-import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
 import { MessageFilterState } from 'modules/search/models/Search';
 import { IFilterConfigStore } from 'models/Stores';
@@ -24,7 +23,6 @@ import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import WorkspaceStore from '../workspace/WorkspaceStore';
-import { TimeRange } from '../../models/Timestamp';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { isEventMessage } from '../../helpers/event';
@@ -115,20 +113,6 @@ export default class MessagesStore {
 	@computed
 	public get isLoadingAttachedMessages() {
 		return this.workspaceStore.isLoadingAttachedMessages;
-	}
-
-	@computed
-	public get panelRange(): TimeRange {
-		const { startIndex, endIndex } = this.currentMessagesIndexesRange;
-
-		const messageTo = getItemAt(this.dataStore.messages, startIndex);
-		const messageFrom = getItemAt(this.dataStore.messages, endIndex);
-
-		if (messageFrom && messageTo) {
-			return [messageFrom.timestamp, messageTo.timestamp];
-		}
-		const timestampTo = this.filterStore.filter.timestampTo || moment().utc().valueOf();
-		return [timestampTo - 15 * 1000, timestampTo + 15 * 1000];
 	}
 
 	@action

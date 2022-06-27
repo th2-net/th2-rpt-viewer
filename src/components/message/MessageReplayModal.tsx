@@ -29,7 +29,7 @@ import {
 	TimeInputType,
 } from '../../models/filter/FilterInputs';
 import { getMessagesSSEParamsFromFilter, MessagesFilterInfo } from '../../api/sse';
-import { useMessagesWorkspaceStore, useOutsideClickListener } from '../../hooks';
+import { useMessagesStore, useOutsideClickListener } from '../../hooks';
 import { useFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import FilterRow from '../filter/row';
 import { DATE_TIME_INPUT_MASK, TIME_INPUT_MASK } from '../../util/filterInputs';
@@ -44,7 +44,7 @@ type CurrentSSEValues = {
 
 function MessageReplayModal() {
 	const filterConfigStore = useFilterConfigStore();
-	const messagesStore = useMessagesWorkspaceStore();
+	const messagesStore = useMessagesStore();
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 

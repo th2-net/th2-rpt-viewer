@@ -27,7 +27,7 @@ import {
 } from 'helpers/rawFormatter';
 import { BodyFilter, getFiltersEntries, wrapString } from 'helpers/filters';
 import { useSearchStore } from 'hooks/useSearchStore';
-import { useMessagesWorkspaceStore } from 'hooks/index';
+import { useMessagesStore } from 'hooks/index';
 import { isRangesIntersect } from 'helpers/range';
 import 'styles/messages.scss';
 
@@ -40,7 +40,7 @@ interface Props {
 
 export default function DetailedMessageRaw({ rawContent, applyFilterToBody }: Props) {
 	const { currentSearch } = useSearchStore();
-	const { selectedBodyBinaryFilter } = useMessagesWorkspaceStore();
+	const { selectedBodyBinaryFilter } = useMessagesStore();
 
 	const hexadecimalRef = React.useRef<HTMLPreElement>(null);
 	const humanReadableRef = React.useRef<HTMLPreElement>(null);

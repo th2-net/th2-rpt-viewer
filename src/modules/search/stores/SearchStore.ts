@@ -54,8 +54,12 @@ import {
 	isSearchHistoryEntity,
 } from 'helpers/search';
 import { EventAction, EventTreeNode } from 'models/EventAction';
-import { SearchPanelType } from '../components/SearchPanel';
-import { EventFilterState, FilterState, MessageFilterState } from '../models/Search';
+import {
+	EventFilterState,
+	FilterState,
+	MessageFilterState,
+	SearchPanelType,
+} from '../models/Search';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -610,6 +614,8 @@ export class SearchStore {
 			startDirectionalSearch(searchDirection);
 		}
 	};
+
+	loadMore = this.startSearch.bind(this, true);
 
 	@action pauseSearch = () => {
 		if (this.currentSearch) {

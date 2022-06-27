@@ -16,10 +16,10 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useMessagesWorkspaceStore } from '../../hooks';
+import { useMessagesStore } from '../../hooks';
 
 const AttachedMessagesSelection = () => {
-	const messagesStore = useMessagesWorkspaceStore();
+	const messagesStore = useMessagesStore();
 
 	const [messageIndex, setMessageIndex] = React.useState<number>(0);
 

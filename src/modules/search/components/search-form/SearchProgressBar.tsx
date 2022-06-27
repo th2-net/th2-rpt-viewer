@@ -56,14 +56,14 @@ const SearchProgressBar = (props: SearchProgressBarConfig) => {
 	const rightLineWidth = getLineWidth({ isSearching, ...rightProgress });
 
 	const leftWrapperClassName = createBemElement(
-		'progress-bar',
+		'search-progress-bar',
 		'line-wrapper',
 		'left',
 		searchDirection === SearchDirection.Next ? 'hidden' : null,
 	);
 
 	const leftLineClassName = createBemElement(
-		'progress-bar',
+		'search-progress-bar',
 		'line',
 		'left',
 		isSearching ? 'searching' : null,
@@ -75,20 +75,20 @@ const SearchProgressBar = (props: SearchProgressBarConfig) => {
 	);
 
 	const rightWrapperClassName = createBemElement(
-		'progress-bar',
+		'search-progress-bar',
 		'line-wrapper',
 		'right',
 		searchDirection === SearchDirection.Previous ? 'hidden' : null,
 	);
 
 	const startPointClassName = createBemElement(
-		'progress-bar',
+		'search-progress-bar',
 		'start-point',
 		isSearching || !searchDirection ? 'hidden' : null,
 	);
 
 	const rightLineClassName = createBemElement(
-		'progress-bar',
+		'search-progress-bar',
 		'line',
 		'right',
 		isSearching ? 'searching' : null,
@@ -100,7 +100,7 @@ const SearchProgressBar = (props: SearchProgressBarConfig) => {
 	);
 
 	return (
-		<div className='search-form__progress-bar progress-bar'>
+		<div className='search-progress-bar'>
 			<div className={leftWrapperClassName}>
 				<div
 					className={leftLineClassName}

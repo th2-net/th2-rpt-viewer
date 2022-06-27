@@ -34,8 +34,8 @@ import {
 	EventFilterState,
 	MessageFilterState,
 	MultipleStringFilter,
+	SearchPanelType,
 } from '../models/Search';
-import { SearchPanelType } from './SearchPanel';
 
 type FilterRowConfig =
 	| FilterRowSwitcherConfig

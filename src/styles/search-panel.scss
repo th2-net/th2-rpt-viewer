@@ -16,7 +16,7 @@
 
 @import './common/vars';
 
-.search-panel-wrapper {
+.search-panel {
 	@include scrollbar();
 	overflow-y: auto;
 	display: flex;
@@ -25,7 +25,7 @@
 	background-color: #fff;
 }
 
-.search-panel {
+.search-panel-form {
 	padding: 0 8px 8px;
 	background-color: $searchPanelColor;
 	overflow: hidden;
@@ -203,13 +203,6 @@
 
 	&__clear-icon {
 		@include icon(url(../../resources/icons/cross-icon-white.svg), 25px, 25px);
-	}
-}
-
-.search-form {
-	&__progress-bar {
-		margin: 0 10px 10px;
-		border: 1px solid #5c85d6;
 	}
 
 	&__submit {
@@ -572,7 +565,9 @@
 	}
 }
 
-.progress-bar {
+.search-progress-bar {
+	margin: 0 10px 10px;
+	border: 1px solid #5c85d6;
 	display: flex;
 	align-items: stretch;
 	background: white;

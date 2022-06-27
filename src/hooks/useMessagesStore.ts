@@ -17,7 +17,7 @@
 import MessagesStore from '../stores/messages/MessagesStore';
 import { useWorkspaceStore } from './useWorkspaceStore';
 
-export const useMessagesWorkspaceStore = (): MessagesStore => {
+export const useMessagesStore = (): MessagesStore => {
 	const workspaceStore = useWorkspaceStore();
 
 	return workspaceStore.messagesStore;

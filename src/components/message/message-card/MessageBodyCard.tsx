@@ -20,7 +20,7 @@ import { createBemElement } from '../../../helpers/styleCreators';
 import MessageBody, { isListValue, isMessageValue } from '../../../models/MessageBody';
 import { useSearchStore } from '../../../hooks/useSearchStore';
 import { isRangesIntersect, trimRange } from '../../../helpers/range';
-import { useMessageBodySortStore, useMessagesWorkspaceStore } from '../../../hooks';
+import { useMessageBodySortStore, useMessagesStore } from '../../../hooks';
 import { BodyFilter, getFiltersEntries, wrapString } from '../../../helpers/filters';
 
 const BEAUTIFIED_PAD_VALUE = 15;
@@ -38,7 +38,7 @@ interface Props {
 
 function MessageBodyCard({ isBeautified, body, isSelected, renderInfo, applyFilterToBody }: Props) {
 	const { currentSearch } = useSearchStore();
-	const { selectedBodyFilter } = useMessagesWorkspaceStore();
+	const { selectedBodyFilter } = useMessagesStore();
 	const { getSortedFields, sortOrderItems } = useMessageBodySortStore();
 
 	const sortedObject = React.useMemo(

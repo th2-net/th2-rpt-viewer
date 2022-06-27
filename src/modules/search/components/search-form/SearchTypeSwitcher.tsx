@@ -15,12 +15,14 @@
  ***************************************************************************** */
 
 import { createBemElement } from 'helpers/styleCreators';
-import { SearchPanelType } from '../SearchPanel';
+import { SearchPanelType } from '../../models/Search';
 
 type Props = {
 	formType: SearchPanelType;
 	setFormType: (formType: SearchPanelType) => void;
 };
+
+const types = ['event', 'message'] as const;
 
 const SearchTypeSwitcher = ({ formType, setFormType }: Props) => {
 	const setType = (type: typeof formType) => {
@@ -29,7 +31,7 @@ const SearchTypeSwitcher = ({ formType, setFormType }: Props) => {
 
 	return (
 		<div className='search-type-switcher'>
-			{['event' as typeof formType, 'message' as typeof formType].map(type => {
+			{types.map(type => {
 				const buttonClassName = createBemElement(
 					'search-type-switcher',
 					'switch-search-type-button',

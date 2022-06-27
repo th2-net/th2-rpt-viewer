@@ -16,17 +16,17 @@
 
 import { Virtuoso } from 'react-virtuoso';
 import { formatTimestamp } from 'helpers/date';
-import { getItemId, isEvent } from 'helpers/event';
+import { isEvent } from 'helpers/event';
 import { ActionType } from 'models/EventAction';
 import { EventMessage } from 'models/EventMessage';
-import { useMessagesDataStore, useMessagesWorkspaceStore } from 'hooks/index';
+import { useMessagesDataStore, useMessagesStore } from 'hooks/index';
 import { FilterEntry, SearchResult } from '../stores/SearchStore';
 import SearchPanelSeparator from './SearchPanelSeparator';
 import { EventFilterState, MessageFilterState } from '../models/Search';
 import SearchResultItem from './SearchResultItem';
 
 interface SearchPanelResultsProps {
-	onResultItemClick: (
+	onResultClick: (
 		searchResult: SearchResult,
 		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
 	) => void;
@@ -45,25 +45,20 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		flattenedResult,
 		filters,
 		timestamp,
-		onResultItemClick,
+		onResultClick: onResultItemClick,
 		onResultDelete,
 		disabledRemove,
 		loadMore,
+		showLoadMoreButton,
 	} = props;
 
-	const messagesWorkspaceStore = useMessagesWorkspaceStore();
+	const messagesStore = useMessagesStore();
 	const messagesDataStore = useMessagesDataStore();
-
-	function computeKey(index: number) {
-		const results = flattenedResult[index];
-		if ('length' in results) return results[0];
-		return getItemId(results);
-	}
 
 	const isMessageVisibleInMessagePanel = (message: EventMessage) => {
 		const visibleMessages = messagesDataStore.messages.slice(
-			messagesWorkspaceStore.currentMessagesIndexesRange.startIndex,
-			messagesWorkspaceStore.currentMessagesIndexesRange.endIndex + 1,
+			messagesStore.currentMessagesIndexesRange.startIndex,
+			messagesStore.currentMessagesIndexesRange.endIndex + 1,
 		);
 
 		return visibleMessages.some(({ id }) => id === message.id);
@@ -78,12 +73,11 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	};
 
 	const renderResult = (index: number, result: SearchResult | [number, number]) => {
-		if ('length' in result) {
+		if (Array.isArray(result)) {
 			return <SearchPanelSeparator prevElement={result[0]} nextElement={result[1]} />;
 		}
 		return (
 			<SearchResultItem
-				key={computeKey(index)}
 				result={result}
 				filters={filters}
 				onResultClick={onResultItemClick}
@@ -91,13 +85,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 			/>
 		);
 	};
-
-	const loadMoreButton = () =>
-		!loadMoreButton ? null : (
-			<button onClick={loadMore} className='actions-list__load-button'>
-				Load more
-			</button>
-		);
 
 	return (
 		<div className='search-results'>
@@ -115,9 +102,15 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 					data={flattenedResult}
 					className={'search-results__list-virtual'}
 					style={{ height: '100%' }}
-					computeItemKey={computeKey}
 					components={{
-						Footer: loadMoreButton,
+						Footer: function SearchResultsFooter() {
+							if (!showLoadMoreButton) return null;
+							return (
+								<button onClick={loadMore} className='actions-list__load-button'>
+									Load more
+								</button>
+							);
+						},
 					}}
 					itemContent={renderResult}
 				/>

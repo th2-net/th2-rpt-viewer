@@ -237,11 +237,11 @@ const SearchPanelForm = () => {
 	};
 
 	return (
-		<div className='search-panel__search-form search-form'>
+		<div className='search-panel-form'>
 			<SearchDatetimeControls {...searchDatetimeControlsConfig} />
 			<SearchProgressBar {...progressBarConfig} />
 			<SearchSubmit {...searchSubmitConfig} />
-			<div className='search-panel__fields'>
+			<div className='search-panel-form__fields'>
 				<FiltersHistory disabled={disabled} />
 				<div className='filter-row'>
 					<div className='filter-row__label'>Search for</div>
@@ -258,16 +258,16 @@ const SearchPanelForm = () => {
 				)}
 			</div>
 			{!disabled && (
-				<div className='search-panel__footer'>
+				<div className='search-panel-form__footer'>
 					<button
 						className={createBemElement(
-							'search-panel',
+							'search-panel-form',
 							'clear-btn',
 							isSearching ? 'disabled' : null,
 						)}
 						onClick={clearFilters}
 						disabled={isSearching}>
-						<i className='search-panel__clear-icon' />
+						<i className='search-panel-form__clear-icon' />
 						Clear All
 					</button>
 				</div>

@@ -21,7 +21,7 @@ import moment from 'moment';
 import {
 	useDebouncedCallback,
 	useMessagesDataStore,
-	useMessagesWorkspaceStore,
+	useMessagesStore,
 } from '../../../hooks';
 import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
@@ -46,7 +46,7 @@ interface Props {
 }
 
 const MessagesVirtualizedList = (props: Props) => {
-	const messageStore = useMessagesWorkspaceStore();
+	const messageStore = useMessagesStore();
 	const {
 		messages: messageList,
 		searchChannelNext,

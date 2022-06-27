@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useActivePanel, useWorkspaceStore } from 'hooks/index';
 import SearchPanelForm from './SearchPanelForm';
@@ -21,33 +22,31 @@ import { useSearchStore } from '../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
 import 'styles/search-panel.scss';
 
-export type SearchPanelType = 'event' | 'message';
-
 const SearchPanel = () => {
 	const workspaceStore = useWorkspaceStore();
 	const searchStore = useSearchStore();
 	const { ref: searchPanelRef } = useActivePanel(null);
 
+	const removeCurrentSearch = useCallback(() => {
+		if (searchStore.currentSearch) {
+			searchStore.deleteHistoryItem(searchStore.currentSearch);
+		}
+	}, [searchStore.currentSearch]);
+
 	return (
-		<div className='search-panel-wrapper'>
-			<div className='search-panel' ref={searchPanelRef}>
-				<SearchPanelForm />
-			</div>
+		<div className='search-panel' ref={searchPanelRef}>
+			<SearchPanelForm />
 			{searchStore.currentSearch && (
 				<SearchPanelResults
 					flattenedResult={searchStore.flattenedResult}
 					filters={searchStore.currentSearch.request.filters}
 					timestamp={searchStore.currentSearch.timestamp}
-					onResultItemClick={workspaceStore.onSearchResultItemSelect}
+					onResultClick={workspaceStore.onSearchResultItemSelect}
 					onResultGroupClick={workspaceStore.onSearchResultGroupSelect}
-					onResultDelete={() => {
-						if (searchStore.currentSearch) {
-							searchStore.deleteHistoryItem(searchStore.currentSearch);
-						}
-					}}
+					onResultDelete={removeCurrentSearch}
 					disabledRemove={searchStore.isSearching}
 					showLoadMoreButton={searchStore.isCompleted && !searchStore.isHistorySearch}
-					loadMore={() => searchStore.startSearch(true)}
+					loadMore={searchStore.loadMore}
 				/>
 			)}
 		</div>

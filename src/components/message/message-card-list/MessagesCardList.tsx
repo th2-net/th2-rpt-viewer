@@ -20,7 +20,7 @@ import MessageCard from '../message-card/MessageCard';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
 import SplashScreen from '../../SplashScreen';
 import Empty from '../../util/Empty';
-import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../../hooks';
+import { useMessagesDataStore, useMessagesStore } from '../../../hooks';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import { EventMessage } from '../../../models/EventMessage';
 import '../../../styles/messages.scss';
@@ -28,7 +28,7 @@ import '../../../styles/messages.scss';
 export type MessagesHeights = { [index: number]: number };
 
 function MessageCardList() {
-	const messagesStore = useMessagesWorkspaceStore();
+	const messagesStore = useMessagesStore();
 	const messagesDataStore = useMessagesDataStore();
 
 	const renderMsg = React.useCallback(

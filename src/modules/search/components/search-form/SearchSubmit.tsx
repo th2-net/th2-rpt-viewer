@@ -53,7 +53,7 @@ const SearchSubmit = ({
 	const handleClick = isSearching ? () => pauseSearch() : () => startSearch();
 
 	return (
-		<div className='search-form__submit'>
+		<div className='search-panel-form__submit'>
 			{Boolean(processedObjectCount) && (
 				<div className='search-processed-objects'> {processedObjectCount} processed objects </div>
 			)}

@@ -14,6 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
+export type SearchPanelType = 'event' | 'message';
+
 export type StringFilter = {
 	type: 'string';
 	values: string;

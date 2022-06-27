@@ -16,13 +16,13 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useMessagesWorkspaceStore, useOutsideClickListener } from '../../hooks';
+import { useMessagesStore, useOutsideClickListener } from '../../hooks';
 import { ActionFilterConfig } from '../../models/filter/FilterInputs';
 import { ModalPortal } from '../util/Portal';
 import ActionRow from './row/ActionRow';
 
 const MessageFilterWarning = () => {
-	const messagesStore = useMessagesWorkspaceStore();
+	const messagesStore = useMessagesStore();
 
 	const [showHintModal, setShowHintModal] = React.useState(false);
 

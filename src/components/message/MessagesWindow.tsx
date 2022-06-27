@@ -17,12 +17,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import MessagesWindowHeader from './MessagesWindowHeader';
-import { useMessagesWorkspaceStore, useActivePanel } from '../../hooks';
+import { useMessagesStore, useActivePanel } from '../../hooks';
 import MessagesCardList from './message-card-list/MessagesCardList';
 import AttachedMessagesSelection from './AttachedMessagesSelection';
 
 const MessagesWindow = () => {
-	const messagesStore = useMessagesWorkspaceStore();
+	const messagesStore = useMessagesStore();
 
 	const { ref: panelRef } = useActivePanel(messagesStore);
 

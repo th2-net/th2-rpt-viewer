@@ -18,7 +18,7 @@ import * as React from 'react';
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
-	useMessagesWorkspaceStore,
+	useMessagesStore,
 	useMessagesDataStore,
 	useMessageBodySortStore,
 	useMessagesViewTypesStore,
@@ -42,7 +42,7 @@ interface Props extends OwnProps, RecoveredProps {}
 const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const messageId = message.id;
 
-	const messagesStore = useMessagesWorkspaceStore();
+	const messagesStore = useMessagesStore();
 	const messagesDataStore = useMessagesDataStore();
 	const bookmarksStore = useBookmarksStore();
 	const { sortOrderItems } = useMessageBodySortStore();
