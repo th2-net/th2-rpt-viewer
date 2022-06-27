@@ -14,7 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, autorun, computed, observable, reaction, runInAction, toJS } from 'mobx';
+import {
+	action,
+	autorun,
+	computed,
+	IReactionDisposer,
+	observable,
+	reaction,
+	runInAction,
+	toJS,
+} from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import debounce from 'lodash.debounce';
@@ -123,6 +132,8 @@ function getDefaultFormState(): SearchPanelFormState {
 }
 
 export class SearchStore {
+	private subscriptions: IReactionDisposer[] = [];
+
 	constructor(
 		private workspacesStore: WorkspacesStore,
 		private api: ApiSchema,
@@ -132,13 +143,22 @@ export class SearchStore {
 	) {
 		this.getSearchHistory();
 
-		reaction(() => this.filterConfigStore.messageSessions, this.setMessagesSessions);
+		const sessionsSub = reaction(
+			() => this.filterConfigStore.messageSessions,
+			this.setMessagesSessions,
+		);
 
-		reaction(() => this.filterConfigStore.messagesFilterInfo, this.initMessagesFilter);
+		const messageFilterSub = reaction(
+			() => this.filterConfigStore.messagesFilterInfo,
+			this.initMessagesFilter,
+		);
 
-		reaction(() => this.filterConfigStore.eventFilterInfo, this.initEventsFilter);
+		const eventsFilterFilterSub = reaction(
+			() => this.filterConfigStore.eventFilterInfo,
+			this.initEventsFilter,
+		);
 
-		autorun(() => {
+		const currentSearchSub = autorun(() => {
 			this.currentSearch = getItemAt(this.searchHistory, this.currentIndex);
 		});
 
@@ -168,6 +188,7 @@ export class SearchStore {
 				}
 			},
 		);
+		this.subscriptions = [sessionsSub, messageFilterSub, eventsFilterFilterSub, currentSearchSub];
 	}
 
 	@observable searchChannel: {
@@ -846,5 +867,9 @@ export class SearchStore {
 		if (unsavedData && isSearchHistoryEntity(unsavedData)) {
 			await this.saveSearchResults(unsavedData);
 		}
+	};
+
+	public dispose = () => {
+		this.subscriptions.forEach(unsubscribe => unsubscribe());
 	};
 }

@@ -255,5 +255,6 @@ export default class WorkspaceStore {
 		// Delete all subscriptions and cancel pending requests
 		this.messagesStore.dispose();
 		this.eventsStore.dispose();
+		this.searchStore.dispose();
 	};
 }
