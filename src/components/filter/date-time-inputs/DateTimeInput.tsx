@@ -17,14 +17,14 @@
 import React from 'react';
 import MaskedInput from 'react-text-mask';
 import moment from 'moment';
-import SearchFilterDatetimePicker from './SearchFilterDatetimePicker';
+import { DateTimeInputType } from 'models/filter/FilterInputs';
+import { formatTimestampValue } from 'helpers/date';
+import { createStyleSelector } from 'helpers/styleCreators';
+import { replaceUnfilledDateStringWithMinValues } from 'helpers/stringUtils';
+import { useSearchStore } from 'hooks/useSearchStore';
+import { SearchDirection } from 'models/search/SearchDirection';
 import FilterDatetimePicker from './FilterDatetimePicker';
-import { DateTimeInputType } from '../../../models/filter/FilterInputs';
-import { formatTimestampValue } from '../../../helpers/date';
-import { createStyleSelector } from '../../../helpers/styleCreators';
-import { replaceUnfilledDateStringWithMinValues } from '../../../helpers/stringUtils';
-import { useSearchStore } from '../../../hooks/useSearchStore';
-import { SearchDirection } from '../../../models/search/SearchDirection';
+import SearchFilterDatetimePicker from './SearchFilterDatetimePicker';
 
 interface DateTimeInputProps {
 	inputConfig: DateTimeInputType;

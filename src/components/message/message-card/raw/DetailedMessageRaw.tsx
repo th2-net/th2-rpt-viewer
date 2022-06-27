@@ -16,20 +16,20 @@
 
 import * as React from 'react';
 import { MessageFilterState } from 'modules/search/models/Search';
-import { copyTextToClipboard } from '../../../../helpers/copyHandler';
-import { showNotification } from '../../../../helpers/showNotification';
-import { useSelectListener } from '../../../../hooks/useSelectListener';
+import { copyTextToClipboard } from 'helpers/copyHandler';
+import { showNotification } from 'helpers/showNotification';
+import { useSelectListener } from 'hooks/useSelectListener';
 import {
 	decodeBase64RawContent,
 	getRawContent,
 	mapHumanReadableOffsetsToOctetOffsets,
 	mapOctetOffsetsToHumanReadableOffsets,
-} from '../../../../helpers/rawFormatter';
-import '../../../../styles/messages.scss';
-import { BodyFilter, getFiltersEntries, wrapString } from '../../../../helpers/filters';
-import { useSearchStore } from '../../../../hooks/useSearchStore';
-import { useMessagesWorkspaceStore } from '../../../../hooks';
-import { isRangesIntersect } from '../../../../helpers/range';
+} from 'helpers/rawFormatter';
+import { BodyFilter, getFiltersEntries, wrapString } from 'helpers/filters';
+import { useSearchStore } from 'hooks/useSearchStore';
+import { useMessagesWorkspaceStore } from 'hooks/index';
+import { isRangesIntersect } from 'helpers/range';
+import 'styles/messages.scss';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
