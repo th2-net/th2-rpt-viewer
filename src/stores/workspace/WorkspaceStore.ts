@@ -17,6 +17,7 @@
 import { action, computed, observable, reaction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import { SearchStore } from 'modules/search/stores/SearchStore';
+import { IFilterConfigStore } from 'models/Stores';
 import MessagesStore, {
 	MessagesStoreDefaultStateType,
 	MessagesStoreURLState,
@@ -31,7 +32,7 @@ import { isEventMessage } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
-import { SessionsStore } from '../messages/SessionsStore';
+import { SessionHistoryStore } from '../messages/SessionHistoryStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import { isAbortError } from '../../helpers/fetch';
 import { getObjectKeys } from '../../helpers/object';
@@ -68,8 +69,9 @@ export default class WorkspaceStore {
 
 	constructor(
 		private workspacesStore: WorkspacesStore,
-		private sessionsStore: SessionsStore,
+		private sessionsStore: SessionHistoryStore,
 		private messageDisplayRulesStore: MessageDisplayRulesStore,
+		private filterConfigStore: IFilterConfigStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
 	) {
@@ -78,14 +80,15 @@ export default class WorkspaceStore {
 			api,
 			this.workspacesStore.filtersHistoryStore,
 			this.sessionsStore,
+			this.filterConfigStore,
 		);
 		this.viewStore = new WorkspaceViewStore({
 			panelsLayout: initialState.layout,
 		});
-		this.eventsStore = new EventsStore(this, this.searchStore, this.api, initialState.events);
+		this.eventsStore = new EventsStore(this, this.filterConfigStore, this.api, initialState.events);
 		this.messagesStore = new MessagesStore(
 			this,
-			this.searchStore,
+			this.filterConfigStore,
 			this.api,
 			this.sessionsStore,
 			initialState.messages,

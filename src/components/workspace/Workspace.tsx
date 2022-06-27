@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import BookmarksPanel from 'modules/bookmarks';
-import SearchPanel from 'modules/search/components/SearchPanel';
+import SearchPanel from 'modules/search';
 import EventWindow from '../event/EventWindow';
 import MessagesWindow from '../message/MessagesWindow';
 import WorkspaceSplitter from './WorkspaceSplitter';

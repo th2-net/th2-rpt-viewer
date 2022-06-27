@@ -17,7 +17,8 @@
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { EventFilterState } from 'modules/search/models/Search';
-import { FilterEntry, SearchStore } from 'modules/search/stores/SearchStore';
+import { FilterEntry } from 'modules/search/stores/SearchStore';
+import { IFilterConfigStore } from 'models/Stores';
 import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../workspace/WorkspaceViewStore';
 import ApiSchema from '../../api/ApiSchema';
@@ -58,13 +59,13 @@ export default class EventsStore {
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
-		private searchPanelStore: SearchStore,
+		private filterConfigStore: IFilterConfigStore,
 		private api: ApiSchema,
 		defaultState: EventStoreDefaultStateType,
 	) {
 		const initialState = !defaultState || typeof defaultState === 'string' ? {} : defaultState;
 
-		this.filterStore = new EventsFilterStore(this.searchPanelStore, {
+		this.filterStore = new EventsFilterStore(this.filterConfigStore, {
 			filter: initialState.filter,
 			range: initialState.range,
 		});
@@ -480,7 +481,7 @@ export default class EventsStore {
 	};
 
 	public clearFilter = () => {
-		const defaultFilter = this.filterStore.resetEventsFilter();
+		const defaultFilter = this.filterStore.getDefaultEventFilter();
 		this.eventDataStore.fetchEventTree({
 			filter: defaultFilter,
 			timeRange: this.filterStore.range,

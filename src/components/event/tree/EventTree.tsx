@@ -105,7 +105,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 	}, [eventTreeNode]);
 
 	const onEventTypeSelect = (eventType: string) => {
-		const defaultFilter = eventsStore.filterStore.resetEventsFilter();
+		const defaultFilter = eventsStore.filterStore.getDefaultEventFilter();
 		if (!defaultFilter) return;
 		defaultFilter.type.values.push(eventType);
 		eventsStore.filterStore.setEventsFilter(defaultFilter);

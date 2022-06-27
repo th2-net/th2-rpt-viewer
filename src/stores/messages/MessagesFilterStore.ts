@@ -14,13 +14,12 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
+import { action, computed, IReactionDisposer, observable, reaction, toJS } from 'mobx';
 import moment from 'moment';
-import { SearchStore } from 'modules/search/stores/SearchStore';
+import { IFilterConfigStore } from 'models/Stores';
 import { MessageFilterState } from 'modules/search/models/Search';
 import MessagesFilter from '../../models/filter/MessagesFilter';
-import { getDefaultMessagesFiltersState } from '../../helpers/search';
-import { MessagesFilterInfo, MessagesSSEParams } from '../../api/sse';
+import { MessagesSSEParams } from '../../api/sse';
 
 function getDefaultMessagesFilter(): MessagesFilter {
 	return {
@@ -38,10 +37,10 @@ export type MessagesFilterStoreInitialState = {
 export default class MessagesFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
 
-	constructor(private searchStore: SearchStore, initialState?: MessagesFilterStoreInitialState) {
+	constructor(private filtersStore: IFilterConfigStore, initialState?: MessagesFilterStoreInitialState) {
 		this.init(initialState);
 
-		this.sseFilterSubscription = reaction(() => searchStore.messagesFilterInfo, this.initSSEFilter);
+		this.sseFilterSubscription = reaction(() => filtersStore.messageFilters, this.initSSEFilter);
 	}
 
 	@observable filter: MessagesFilter = getDefaultMessagesFilter();
@@ -131,7 +130,7 @@ export default class MessagesFilterStore {
 
 	@action
 	public resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
-		const filter = getDefaultMessagesFiltersState(this.searchStore.messagesFilterInfo);
+		const filter = toJS(this.filtersStore.messageFilters);
 		const defaultMessagesFilter = getDefaultMessagesFilter();
 		this.sseMessagesFilter = filter;
 		this.isSoftFilter = false;
@@ -155,7 +154,7 @@ export default class MessagesFilterStore {
 			} = initialState;
 
 			const appliedSSEFilter = {
-				...(getDefaultMessagesFiltersState(this.searchStore.messagesFilterInfo) || {}),
+				...toJS(this.filtersStore.messageFilters || {}),
 				...sse,
 			} as MessageFilterState;
 			this.setMessagesFilter(
@@ -168,25 +167,24 @@ export default class MessagesFilterStore {
 				isSoftFilter,
 			);
 		} else {
-			this.setSSEMessagesFilter(this.searchStore.messagesFilterInfo);
+			this.setDefaultSSEFilter();
 		}
 	};
 
 	@action
-	private setSSEMessagesFilter = (messagesFilterInfo: MessagesFilterInfo[]) => {
-		this.sseMessagesFilter = getDefaultMessagesFiltersState(messagesFilterInfo);
+	private setDefaultSSEFilter = () => {
+		this.sseMessagesFilter = toJS(this.filtersStore.messageFilters);
 	};
 
 	@action
-	private initSSEFilter = (filterInfo: MessagesFilterInfo[]) => {
-		if (this.sseMessagesFilter) {
-			const defaultState = getDefaultMessagesFiltersState(filterInfo) || {};
+	private initSSEFilter = (filters: MessageFilterState | null) => {
+		const filtersCopy = toJS(filters);
+
+		if (filtersCopy) {
 			this.sseMessagesFilter = {
-				...defaultState,
-				...this.sseMessagesFilter,
+				...filtersCopy,
+				...(this.sseMessagesFilter || {}),
 			};
-		} else {
-			this.setSSEMessagesFilter(filterInfo);
 		}
 	};
 

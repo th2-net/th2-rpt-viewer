@@ -22,7 +22,7 @@ import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { SearchHistory } from '../modules/search/stores/SearchStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
-import { Session } from '../stores/messages/SessionsStore';
+import { Session } from '../stores/messages/SessionHistoryStore';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',

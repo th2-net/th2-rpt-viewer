@@ -14,12 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
-import { SearchStore } from 'modules/search/stores/SearchStore';
+import { action, computed, IReactionDisposer, observable, reaction, toJS } from 'mobx';
+import { IFilterConfigStore } from 'models/Stores';
 import moment from 'moment';
 import EventsFilter from '../../models/filter/EventsFilter';
-import { EventsFiltersInfo, EventSSEFilters } from '../../api/sse';
-import { getDefaultEventsFiltersState } from '../../helpers/search';
+import { EventSSEFilters } from '../../api/sse';
 import { TimeRange } from '../../models/Timestamp';
 import { getObjectKeys } from '../../helpers/object';
 import { calculateTimeRange } from '../../helpers/calculateTimeRange';
@@ -61,13 +60,16 @@ export type EventsFilterStoreInitialState = Partial<{
 export default class EventsFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
 
-	constructor(private searchStore: SearchStore, initialState?: EventsFilterStoreInitialState) {
+	constructor(
+		private filterConfigStore: IFilterConfigStore,
+		initialState?: EventsFilterStoreInitialState,
+	) {
 		if (initialState) {
 			const defaultRange = getDefaultTimeRange();
 
 			const { range = defaultRange, filter } = initialState;
 
-			const defaultEventFilter = getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
+			const defaultEventFilter = toJS(this.filterConfigStore.eventFilters);
 			this.setEventsFilter(
 				filter
 					? {
@@ -82,7 +84,7 @@ export default class EventsFilterStore {
 		this.setTimestampFromRange(this.range);
 
 		this.sseFilterSubscription = reaction(
-			() => this.searchStore.eventFilterInfo,
+			() => this.filterConfigStore.eventFilters,
 			this.initSSEFilter,
 		);
 	}
@@ -118,9 +120,7 @@ export default class EventsFilterStore {
 	}
 
 	@observable
-	public filter: null | EventsFilter = getDefaultEventsFiltersState(
-		this.searchStore.eventFilterInfo,
-	);
+	public filter: null | EventsFilter = toJS(this.filterConfigStore.eventFilters);
 
 	@computed
 	public get isEventsFilterApplied(): boolean {
@@ -159,8 +159,8 @@ export default class EventsFilterStore {
 	};
 
 	@action
-	public resetEventsFilter = (): EventsFilter | null =>
-		getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
+	public getDefaultEventFilter = (): EventsFilter | null =>
+		toJS(this.filterConfigStore.eventFilters);
 
 	@action
 	public setIsOpen = (state: boolean) => {
@@ -168,14 +168,14 @@ export default class EventsFilterStore {
 	};
 
 	@action
-	private initSSEFilter = (filterInfo: EventsFiltersInfo[]) => {
+	private initSSEFilter = (filterConfig: EventsFilter | null) => {
 		if (this.filter) {
 			this.filter = {
-				...(getDefaultEventsFiltersState(filterInfo) || {}),
+				...(toJS(filterConfig) || {}),
 				...this.filter,
 			};
 		} else {
-			this.filter = getDefaultEventsFiltersState(filterInfo);
+			this.filter = toJS(filterConfig);
 		}
 	};
 

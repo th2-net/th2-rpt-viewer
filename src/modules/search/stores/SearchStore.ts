@@ -23,7 +23,7 @@ import { SearchDirection } from 'models/search/SearchDirection';
 import notificationsStore from 'stores/NotificationsStore';
 import WorkspacesStore from 'stores/workspace/WorkspacesStore';
 import FiltersHistoryStore from 'stores/FiltersHistoryStore';
-import { SessionsStore } from 'stores/messages/SessionsStore';
+import { SessionHistoryStore } from 'stores/messages/SessionHistoryStore';
 import { EventBodyPayload } from 'models/EventActionPayload';
 import { getItemAt } from 'helpers/array';
 import ApiSchema from 'api/ApiSchema';
@@ -37,6 +37,7 @@ import {
 } from 'api/sse';
 import { DbData, IndexedDbStores } from 'api/indexedDb';
 import { getItemId, isEventAction, isEventId, isEventMessage } from 'helpers/event';
+import { IFilterConfigStore } from 'models/Stores';
 import { getTimestampAsNumber } from 'helpers/date';
 import {
 	getDefaultEventsFiltersState,
@@ -126,9 +127,16 @@ export class SearchStore {
 		private workspacesStore: WorkspacesStore,
 		private api: ApiSchema,
 		private filtersHistory: FiltersHistoryStore,
-		private sessionsStore: SessionsStore,
+		private sessionsStore: SessionHistoryStore,
+		private filterConfigStore: IFilterConfigStore,
 	) {
-		this.init();
+		this.getSearchHistory();
+
+		reaction(() => this.filterConfigStore.messageSessions, this.setMessagesSessions);
+
+		reaction(() => this.filterConfigStore.messagesFilterInfo, this.initMessagesFilter);
+
+		reaction(() => this.filterConfigStore.eventFilterInfo, this.initEventsFilter);
 
 		autorun(() => {
 			this.currentSearch = getItemAt(this.searchHistory, this.currentIndex);
@@ -162,8 +170,6 @@ export class SearchStore {
 		);
 	}
 
-	@observable messageSessions: Array<string> = [];
-
 	@observable searchChannel: {
 		previous: EventSource | null;
 		next: EventSource | null;
@@ -176,6 +182,8 @@ export class SearchStore {
 
 	@observable messagesFilter: MessageFilterState | null = null;
 
+	@observable messageSessions: string[] = this.filterConfigStore.messageSessions.slice();
+
 	@observable searchForm: SearchPanelFormState = getDefaultFormState();
 
 	@observable formType: SearchPanelType = 'event';
@@ -187,8 +195,6 @@ export class SearchStore {
 	@observable eventFilterInfo: EventsFiltersInfo[] = [];
 
 	@observable messagesFilterInfo: MessagesFilterInfo[] = [];
-
-	@observable isMessageFiltersLoading = false;
 
 	@observable currentSearch: SearchHistory | null = null;
 
@@ -209,8 +215,6 @@ export class SearchStore {
 			resultCount: 0,
 		},
 	};
-
-	@observable isEventsFilterLoading = false;
 
 	@observable eventAutocompleteList: EventTreeNode[] = [];
 
@@ -316,7 +320,7 @@ export class SearchStore {
 		if (this.formType === 'event') {
 			return this.eventsFilter
 				? {
-						info: this.eventFilterInfo,
+						info: this.filterConfigStore.eventFilterInfo,
 						state: this.eventsFilter,
 						setState: this.setEventsFilter,
 						disableAll: this.isHistorySearch || this.isSearching,
@@ -325,7 +329,7 @@ export class SearchStore {
 		}
 		return this.messagesFilter
 			? {
-					info: this.messagesFilterInfo,
+					info: this.filterConfigStore.messagesFilterInfo,
 					state: this.messagesFilter,
 					setState: this.setMessagesFilter,
 					disableAll: this.isHistorySearch || this.isSearching,
@@ -361,48 +365,6 @@ export class SearchStore {
 		});
 		return result;
 	}
-
-	@action
-	getEventFilters = async () => {
-		this.isEventsFilterLoading = true;
-		try {
-			const filters = await this.api.sse.getEventFilters();
-			const filtersInfo = await this.api.sse.getEventsFiltersInfo(filters);
-			runInAction(() => {
-				this.eventFilterInfo = filtersInfo;
-				if (!this.eventsFilter) {
-					this.eventsFilter = getDefaultEventsFiltersState(filtersInfo);
-				}
-			});
-		} catch (error) {
-			console.error('Error occured while loading event filters', error);
-		} finally {
-			runInAction(() => {
-				this.isEventsFilterLoading = false;
-			});
-		}
-	};
-
-	@action
-	getMessagesFilters = async () => {
-		this.isMessageFiltersLoading = true;
-		try {
-			const filters = await this.api.sse.getMessagesFilters();
-			const filtersInfo = await this.api.sse.getMessagesFiltersInfo(filters);
-			runInAction(() => {
-				this.messagesFilterInfo = filtersInfo;
-				if (!this.messagesFilter) {
-					this.messagesFilter = getDefaultMessagesFiltersState(filtersInfo);
-				}
-			});
-		} catch (error) {
-			console.error('Error occured while loading messages filters', error);
-		} finally {
-			runInAction(() => {
-				this.isMessageFiltersLoading = false;
-			});
-		}
-	};
 
 	@action setFormType = (formType: SearchPanelType) => {
 		this.formType = formType;
@@ -441,11 +403,23 @@ export class SearchStore {
 
 	@action clearFilters = () => {
 		if (!this.isSearching) {
-			this.messagesFilter = getDefaultMessagesFiltersState(this.messagesFilterInfo);
-			this.eventsFilter = getDefaultEventsFiltersState(this.eventFilterInfo);
+			this.messagesFilter = getDefaultMessagesFiltersState(
+				this.filterConfigStore.messagesFilterInfo,
+			);
+			this.eventsFilter = getDefaultEventsFiltersState(this.filterConfigStore.eventFilterInfo);
 
 			this.searchForm = getDefaultFormState();
 		}
+	};
+
+	@action
+	private initEventsFilter = (eventsFilterInfo: EventsFiltersInfo[]) => {
+		this.eventsFilter = getDefaultEventsFiltersState(eventsFilterInfo);
+	};
+
+	@action
+	private initMessagesFilter = (messagesFilterInfo: MessagesFilterInfo[]) => {
+		this.messagesFilter = getDefaultMessagesFiltersState(messagesFilterInfo);
 	};
 
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {
@@ -785,6 +759,11 @@ export class SearchStore {
 		this.eventAutocompleteList = [];
 	};
 
+	@action
+	private setMessagesSessions = (sessions: string[]) => {
+		this.messageSessions = sessions.slice();
+	};
+
 	private loadEventAutocompleteList = debounce((parentEventName: string) => {
 		if (this.eventAutocompleteSseChannel) {
 			this.eventAutocompleteSseChannel.close();
@@ -813,17 +792,6 @@ export class SearchStore {
 		});
 	}, 400);
 
-	private async loadMessageSessions() {
-		try {
-			const messageSessions = await this.api.messages.getMessageSessions();
-			runInAction(() => {
-				this.messageSessions = messageSessions;
-			});
-		} catch (error) {
-			console.error("Couldn't fetch sessions");
-		}
-	}
-
 	private getSearchHistory = async () => {
 		try {
 			const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
@@ -835,13 +803,6 @@ export class SearchStore {
 		} catch (error) {
 			console.error('Failed to load search history', error);
 		}
-	};
-
-	private init = () => {
-		this.getEventFilters();
-		this.getMessagesFilters();
-		this.loadMessageSessions();
-		this.getSearchHistory();
 	};
 
 	private saveSearchResults = async (search: SearchHistory) => {

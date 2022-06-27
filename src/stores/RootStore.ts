@@ -16,6 +16,7 @@
 
 import { nanoid } from 'nanoid';
 import { EventFilterState, FilterState, MessageFilterState } from 'modules/search/models/Search';
+import { IFilterConfigStore } from 'models/Stores';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
@@ -25,7 +26,8 @@ import { DbData } from '../api/indexedDb';
 import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
 import { getRangeFromTimestamp } from '../helpers/date';
-import { SessionsStore } from './messages/SessionsStore';
+import { SessionHistoryStore } from './messages/SessionHistoryStore';
+import { FilterConfigStore } from './FilterConfigStore';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -38,12 +40,16 @@ export default class RootStore {
 
 	workspacesStore: WorkspacesStore;
 
-	sessionsStore = new SessionsStore(this.api.indexedDb);
+	sessionsStore = new SessionHistoryStore(this.api.indexedDb);
+
+	filtersConfigStore: IFilterConfigStore;
 
 	constructor(private api: ApiSchema) {
+		this.filtersConfigStore = new FilterConfigStore(api);
 		this.workspacesStore = new WorkspacesStore(
 			this,
 			this.api,
+			this.filtersConfigStore,
 			this.filtersHistoryStore,
 			this.parseUrlState(),
 		);

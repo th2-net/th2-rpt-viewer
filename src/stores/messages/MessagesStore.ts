@@ -18,7 +18,8 @@ import { action, computed, observable, reaction, IReactionDisposer, runInAction 
 import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
 import { MessageFilterState } from 'modules/search/models/Search';
-import { FilterEntry, SearchStore } from 'modules/search/stores/SearchStore';
+import { IFilterConfigStore } from 'models/Stores';
+import { FilterEntry } from 'modules/search/stores/SearchStore';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
 import MessagesFilter from '../../models/filter/MessagesFilter';
@@ -28,7 +29,7 @@ import MessagesDataProviderStore from './MessagesDataProviderStore';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { isEventMessage } from '../../helpers/event';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
-import { SessionsStore } from './SessionsStore';
+import { SessionHistoryStore } from './SessionHistoryStore';
 import MessagesExportStore from './MessagesExportStore';
 import { getItemAt } from '../../helpers/array';
 
@@ -81,13 +82,13 @@ export default class MessagesStore {
 
 	constructor(
 		private workspaceStore: WorkspaceStore,
-		private searchStore: SearchStore,
+		private filterConfigStore: IFilterConfigStore,
 		private api: ApiSchema,
-		private sessionsStore: SessionsStore,
+		private sessionsStore: SessionHistoryStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
 		this.filterStore = new MessagesFilterStore(
-			this.searchStore,
+			this.filterConfigStore,
 			defaultState && typeof defaultState === 'object' ? defaultState : undefined,
 		);
 		this.dataStore = new MessagesDataProviderStore(this, this.api);
@@ -103,7 +104,7 @@ export default class MessagesStore {
 
 	@computed
 	public get messageSessions(): string[] {
-		return this.searchStore.messageSessions;
+		return this.filterConfigStore.messageSessions;
 	}
 
 	@computed

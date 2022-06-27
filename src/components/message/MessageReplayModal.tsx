@@ -29,8 +29,8 @@ import {
 	TimeInputType,
 } from '../../models/filter/FilterInputs';
 import { getMessagesSSEParamsFromFilter, MessagesFilterInfo } from '../../api/sse';
-import { useSearchStore } from '../../hooks/useSearchStore';
 import { useMessagesWorkspaceStore, useOutsideClickListener } from '../../hooks';
+import { useFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import FilterRow from '../filter/row';
 import { DATE_TIME_INPUT_MASK, TIME_INPUT_MASK } from '../../util/filterInputs';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
@@ -43,7 +43,7 @@ type CurrentSSEValues = {
 };
 
 function MessageReplayModal() {
-	const searchStore = useSearchStore();
+	const filterConfigStore = useFilterConfigStore();
 	const messagesStore = useMessagesWorkspaceStore();
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
@@ -149,38 +149,45 @@ function MessageReplayModal() {
 			setCurrentValues(prevState => ({ ...prevState, [name]: value }));
 		};
 
-		return searchStore.messagesFilterInfo.map<CompoundFilterRow>((filter: MessagesFilterInfo) => {
-			const state = getState(filter.name);
-			const label = prettifyCamelcase(filter.name);
-			return state
-				? filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(param => {
-						switch (param.type.value) {
-							case 'boolean':
-								return {
-									id: `${filter.name}-${param.name}`,
-									label: param.name === 'negative' ? label : '',
-									disabled: false,
-									type: 'toggler',
-									value: state[param.name as keyof MultipleStringFilter],
-									toggleValue: getToggler(filter.name, param.name as keyof MultipleStringFilter),
-									possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
-									className: 'filter-row__toggler',
-								} as any;
-							default:
-								return {
-									id: filter.name,
-									label: '',
-									type: 'multiple-strings',
-									values: state.values,
-									setValues: getValuesUpdater(filter.name),
-									currentValue: currentValues[filter.name as keyof MessageFilterState],
-									setCurrentValue: setCurrentValue(filter.name),
-								};
-						}
-				  })
-				: [];
-		});
-	}, [searchStore.messagesFilterInfo, sseFilter, setSSEFilter, currentValues]);
+		return filterConfigStore.messagesFilterInfo.map<CompoundFilterRow>(
+			(filter: MessagesFilterInfo) => {
+				const state = getState(filter.name);
+				const label = prettifyCamelcase(filter.name);
+				return state
+					? filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
+							param => {
+								switch (param.type.value) {
+									case 'boolean':
+										return {
+											id: `${filter.name}-${param.name}`,
+											label: param.name === 'negative' ? label : '',
+											disabled: false,
+											type: 'toggler',
+											value: state[param.name as keyof MultipleStringFilter],
+											toggleValue: getToggler(
+												filter.name,
+												param.name as keyof MultipleStringFilter,
+											),
+											possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+											className: 'filter-row__toggler',
+										} as any;
+									default:
+										return {
+											id: filter.name,
+											label: '',
+											type: 'multiple-strings',
+											values: state.values,
+											setValues: getValuesUpdater(filter.name),
+											currentValue: currentValues[filter.name as keyof MessageFilterState],
+											setCurrentValue: setCurrentValue(filter.name),
+										};
+								}
+							},
+					  )
+					: [];
+			},
+		);
+	}, [filterConfigStore.messagesFilterInfo, sseFilter, setSSEFilter, currentValues]);
 
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(
 		() => ({

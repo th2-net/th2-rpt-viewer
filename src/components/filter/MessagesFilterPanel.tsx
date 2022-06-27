@@ -32,7 +32,7 @@ import {
 	useFiltersHistoryStore,
 	useSessionsStore,
 } from '../../hooks';
-import { useSearchStore } from '../../hooks/useSearchStore';
+import { useFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import { MessagesFilterInfo } from '../../api/sse';
 import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
@@ -54,10 +54,10 @@ const priority = ['attachedEventIds', 'type', 'body', 'bodyBinary', 'text'];
 const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
-	const searchStore = useSearchStore();
 	const { messagesHistory, onMessageFilterSubmit } = useFiltersHistoryStore();
 	const sessionsStore = useSessionsStore();
 	const { filterStore } = messagesStore;
+	const filterConfigStore = useFilterConfigStore();
 
 	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
 	const [showFilter, setShowFilter] = React.useState(false);
@@ -95,7 +95,6 @@ const MessagesFilterPanel = () => {
 	}, []);
 
 	const submitChanges = React.useCallback(() => {
-		searchStore.stopSearch();
 		messagesStore.applyFilter(
 			{
 				...filterStore.filter,
@@ -166,7 +165,7 @@ const MessagesFilterPanel = () => {
 			setCurrentValues((prevState: CurrentSSEValues) => ({ ...prevState, [name]: value }));
 		};
 
-		return searchStore.messagesFilterInfo
+		return filterConfigStore.messagesFilterInfo
 			.sort((a, b) => priority.indexOf(a.name) - priority.indexOf(b.name))
 			.map<CompoundFilterRow>((filterInfo: MessagesFilterInfo) => {
 				const state = getState(filterInfo.name);
@@ -213,7 +212,7 @@ const MessagesFilterPanel = () => {
 					  )
 					: [];
 			});
-	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
+	}, [filterConfigStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
 
 	const sessionsAutocomplete: string[] = React.useMemo(
 		() => [
@@ -256,10 +255,10 @@ const MessagesFilterPanel = () => {
 			id: 'sse-filtler-error',
 			message: 'Failed to load sse filters',
 			actionButtonText: 'Try again',
-			action: searchStore.getMessagesFilters,
-			isLoading: searchStore.isMessageFiltersLoading,
+			action: filterConfigStore.getMessageFilters,
+			isLoading: filterConfigStore.isMessageFiltersLoading,
 		}),
-		[searchStore.getMessagesFilters, searchStore.isMessageFiltersLoading],
+		[filterConfigStore.getMessageFilters, filterConfigStore.isMessageFiltersLoading],
 	);
 
 	const filterConfig: Array<FilterRowConfig> = React.useMemo(

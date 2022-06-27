@@ -16,7 +16,7 @@
 
 import { observable, action, computed, reaction } from 'mobx';
 import { BookmarksStore } from 'modules/bookmarks/stores/BookmarksStore';
-import { IBookmarksStore } from 'models/Stores';
+import { IBookmarksStore, IFilterConfigStore } from 'models/Stores';
 import ApiSchema from 'api/ApiSchema';
 import { DbData } from 'api/indexedDb';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
@@ -36,6 +36,7 @@ export default class WorkspacesStore {
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
+		private filterConfigStore: IFilterConfigStore,
 		public filtersHistoryStore: FiltersHistoryStore,
 		initialState: WorkspacesUrlState | null,
 	) {
@@ -73,6 +74,7 @@ export default class WorkspacesStore {
 			this,
 			this.rootStore.sessionsStore,
 			this.rootStore.messageDisplayRulesStore,
+			this.filterConfigStore,
 			this.api,
 			workspaceInitialState,
 		);

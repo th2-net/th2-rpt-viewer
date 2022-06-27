@@ -20,6 +20,7 @@ import { EventFilterState, MessageFilterState } from 'modules/search/models/Sear
 import { SearchPanelType } from 'modules/search/components/SearchPanel';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener, useFiltersHistoryStore } from '../../hooks';
+import { useFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import { raf } from '../../helpers/raf';
 import FiltersHistoryItem from './FiltersHistoryItem';
 import { useSearchStore } from '../../hooks/useSearchStore';
@@ -45,7 +46,8 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 	const historyRef = useRef<HTMLDivElement>(null);
 
 	const { eventsHistory, messagesHistory, toggleFilterPin } = useFiltersHistoryStore();
-	const { filters, formType, eventFilterInfo, messagesFilterInfo } = useSearchStore();
+	const { filters, formType } = useSearchStore();
+	const { eventFilterInfo, messagesFilterInfo } = useFilterConfigStore();
 
 	const toShow: (FiltersHistoryType<EventFilterState> | FiltersHistoryType<MessageFilterState>)[] =
 		useMemo(() => {

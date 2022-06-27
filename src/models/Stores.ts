@@ -15,8 +15,9 @@
  ***************************************************************************** */
 
 import { Bookmark, EventBookmark, MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
+import { EventFilterState, MessageFilterState } from 'modules/search/models/Search';
 import { DbData } from '../api/indexedDb';
-import { MessagesSSEParams } from '../api/sse';
+import { EventsFiltersInfo, MessagesFilterInfo, MessagesSSEParams } from '../api/sse';
 import { EventTreeNode } from './EventAction';
 import { MessageSSEEventListeners } from '../stores/SSEChannel/MessagesSSEChannel';
 import { EventMessage } from './EventMessage';
@@ -29,6 +30,19 @@ export interface IBookmarksStore {
 	toggleMessagePin: (message: EventMessage) => void;
 	toggleEventPin: (event: EventTreeNode) => void;
 	syncData: (unsavedData?: DbData) => void;
+}
+
+export interface IFilterConfigStore {
+	isMessageFiltersLoading: boolean;
+	isEventFiltersLoading: boolean;
+	eventFilterInfo: EventsFiltersInfo[];
+	messagesFilterInfo: MessagesFilterInfo[];
+	messageSessions: string[];
+	eventFilters: EventFilterState | null;
+	messageFilters: MessageFilterState | null;
+	getMessageFilters: () => Promise<MessageFilterState | null>;
+	getEventFilters: () => Promise<EventFilterState | null>;
+	getMessageSessions: () => Promise<string[]>;
 }
 
 export interface MessagesDataStore {

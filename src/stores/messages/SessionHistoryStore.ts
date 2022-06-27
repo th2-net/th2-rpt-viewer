@@ -23,7 +23,7 @@ export interface Session {
 	timestamp: number;
 }
 
-export class SessionsStore {
+export class SessionHistoryStore {
 	@observable.ref
 	public sessions: Session[] = [];
 
