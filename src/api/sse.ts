@@ -81,9 +81,7 @@ export type MessageDirection = 'first' | 'second';
 export const toStream = (
 	name: string,
 	direction: MessageDirection[] = ['first', 'second'],
-): string[] => {
-	return direction.map(dir => `${name}:${dir}`);
-};
+): string[] => direction.map(dir => `${name}:${dir}`);
 
 export interface MessagesSSEParams extends BaseSSEParams {
 	stream: string[];
