@@ -14,24 +14,51 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import api from '../../../api';
-import { formatTimestamp } from '../../../helpers/date';
-import { getEventStatus, isEventId } from '../../../helpers/event';
-import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
-import { useDebouncedCallback } from '../../../hooks';
-import { EventAction } from '../../../models/EventAction';
-import { FilterRowEventResolverConfig } from '../../../models/filter/FilterInputs';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { formatTimestamp } from 'helpers/date';
+import { useEvent } from 'hooks/useEvent';
+import { getEventStatus, isEventId } from 'helpers/event';
+import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
+import { useEventsSearch } from 'hooks/useEventSearch';
+import { FilterRowEventResolverConfig } from 'models/filter/FilterInputs';
 import AutocompleteInput from '../../util/AutocompleteInput';
 
 export default function EventResolverRow({ config }: { config: FilterRowEventResolverConfig }) {
-	const [isInput, setIsInput] = useState(true);
-	const [isLoadingEvent, setIsLoading] = useState(false);
-	const [isError, setIsError] = useState(false);
-	const [event, setEvent] = useState<EventAction | null>(null);
+	const [isEventPlaceholder, showEventPlaceholder] = useState(true);
+
 	const input = useRef<HTMLInputElement>(null);
 
-	const isLoadingAutocompleteList = Boolean(config.isLoading);
+	const isId = isEventId(config.value);
+
+	const { data: events, isLoading: isLoadingAutocompleteList } = useEventsSearch(
+		!isId ? config.value.trim() : '',
+	);
+
+	const autocomplete = useMemo(() => events.map(e => e.eventId), [events]);
+
+	const { event, isError, isLoading: isLoadingEvent } = useEvent(isId ? config.value.trim() : '');
+
+	useEffect(() => {
+		showEventPlaceholder(Boolean(event));
+	}, [event]);
+
+	const showInput = () => showEventPlaceholder(false);
+
+	const showEventCard = () => {
+		if (event) {
+			showEventPlaceholder(true);
+		}
+	};
+
+	const onAutocompleteValueSelect = useCallback((nextValue: string) => {
+		config.setValue(nextValue);
+	}, []);
+
+	const onClearParentEvent = () => {
+		config.setValue('');
+		input.current?.focus();
+	};
+
 	const isLoading = isLoadingAutocompleteList || isLoadingEvent;
 
 	const inputWrapperClassName = createBemElement('filter-row', 'wrapper');
@@ -40,7 +67,7 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 		'filter-row',
 		'input',
 		config.value.length ? 'non-empty' : '',
-		isInput ? '' : 'hide',
+		isEventPlaceholder ? 'hide' : '',
 	);
 
 	const searchStatusIconClassname = createStyleSelector(
@@ -63,63 +90,10 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 		event?.eventName || config.value ? 'non-empty' : null,
 	);
 
-	useEffect(() => {
-		const ac = new AbortController();
-		setEvent(null);
-		setIsError(false);
-
-		if (config.value) {
-			fetchObjectById(config.value, ac);
-		}
-		return () => {
-			ac.abort();
-		};
-	}, [config.value]);
-
-	const showInput = useCallback(() => {
-		setIsInput(true);
-	}, [setIsInput]);
-
-	const showEventCard = useCallback(() => {
-		if (event) {
-			setIsInput(false);
-		}
-	}, [event, setIsInput]);
-
-	const fetchObjectById = useDebouncedCallback(
-		async (id: string, abortController: AbortController) => {
-			if (isEventId(id)) {
-				try {
-					setIsLoading(true);
-					const foundEvent = await api.events.getEvent(id, abortController.signal, { probe: true });
-					setEvent(foundEvent);
-					setIsInput(!foundEvent);
-					setIsError(!foundEvent);
-					setIsLoading(false);
-				} catch (error) {
-					setIsLoading(false);
-					setEvent(null);
-					setIsInput(true);
-					setIsError(true);
-				}
-			}
-		},
-		400,
-	);
-
-	const onAutocompleteValueSelect = useCallback((nextValue: string) => {
-		config.setValue(nextValue);
-		config.onAutocompleteSelect?.();
-	}, []);
-
 	return (
 		<div className={wrapperClassName}>
-			{config.label && (
-				<label className={labelClassName} htmlFor={config.id}>
-					{config.label}
-				</label>
-			)}
-			{!isInput && (
+			{config.label && <label className={labelClassName}>{config.label}</label>}
+			{isEventPlaceholder && (
 				<div className='filter-row__event-card' onClick={showInput}>
 					<i className={iconClassName} />
 					<div className={eventCardTitleClassName}>
@@ -132,8 +106,8 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 					)}
 				</div>
 			)}
-			{(isLoading || isError) && <div className={searchStatusIconClassname} />}
-			{isInput && (
+			<div className={searchStatusIconClassname} />
+			{!isEventPlaceholder && (
 				<AutocompleteInput
 					value={config.value}
 					setValue={config.setValue}
@@ -141,12 +115,11 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 					ref={input}
 					wrapperClassName={inputWrapperClassName}
 					className={inputClassName}
-					id={config.id}
 					placeholder={config.placeholder}
 					disabled={config.disabled}
 					autoComplete='off'
 					autoFocus
-					autoCompleteList={config.autocompleteList}
+					autoCompleteList={autocomplete}
 					onBlur={showEventCard}
 					anchor={input.current || undefined}
 					inputStyle={{
@@ -157,13 +130,7 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 					alwaysShowAutocomplete
 				/>
 			)}
-			<button
-				className={clearClassName}
-				onClick={() => {
-					config.setValue('');
-					input.current?.focus();
-				}}
-			/>
+			<button className={clearClassName} onClick={onClearParentEvent} />
 		</div>
 	);
 }

@@ -26,7 +26,6 @@ import {
 } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
-import debounce from 'lodash.debounce';
 import { EventMessage } from 'models/EventMessage';
 import { SearchDirection } from 'models/search/SearchDirection';
 import notificationsStore from 'stores/NotificationsStore';
@@ -45,7 +44,7 @@ import {
 	SSEParams,
 } from 'api/sse';
 import { DbData, IndexedDbStores } from 'api/indexedDb';
-import { getItemId, isEventAction, isEventId, isEventMessage } from 'helpers/event';
+import { getItemId, isEventAction, isEventMessage } from 'helpers/event';
 import { IFilterConfigStore, ISearchStore } from 'models/Stores';
 import { getTimestampAsNumber } from 'helpers/date';
 import {
@@ -53,7 +52,7 @@ import {
 	getDefaultMessagesFiltersState,
 	isSearchHistoryEntity,
 } from 'helpers/search';
-import { EventAction, EventTreeNode } from 'models/EventAction';
+import { EventAction } from 'models/EventAction';
 import {
 	EventFilterState,
 	FilterState,
@@ -181,17 +180,6 @@ export class SearchStore implements ISearchStore {
 			},
 		);
 
-		reaction(
-			() => this.searchForm.parentEvent,
-			parentEvent => {
-				if (parentEvent && !isEventId(parentEvent)) {
-					this.loadEventAutocompleteList(parentEvent);
-				} else {
-					this.resetEventAutocompleteList();
-					this.loadEventAutocompleteList.cancel();
-				}
-			},
-		);
 		this.subscriptions = [sessionsSub, messageFilterSub, eventsFilterFilterSub, currentSearchSub];
 	}
 
@@ -241,11 +229,7 @@ export class SearchStore implements ISearchStore {
 		},
 	};
 
-	@observable eventAutocompleteList: EventTreeNode[] = [];
-
 	@observable selectedEventBodyFilter: [EventBodyPayload, FilterEntry] | null = null;
-
-	@observable.ref eventAutocompleteSseChannel: EventSource | null = null;
 
 	private resumeFromMessageIds: {
 		previous: MessageIdsEvent | null;
@@ -254,10 +238,6 @@ export class SearchStore implements ISearchStore {
 		previous: null,
 		next: null,
 	};
-
-	@computed get isLoadingEventAutocompleteList() {
-		return Boolean(this.eventAutocompleteSseChannel);
-	}
 
 	@computed get searchProgress() {
 		const startTimestamp = Number(this.searchForm.startTimestamp);
@@ -780,44 +760,10 @@ export class SearchStore implements ISearchStore {
 		};
 	}
 
-	@action resetEventAutocompleteList = () => {
-		this.eventAutocompleteSseChannel?.close();
-		this.eventAutocompleteSseChannel = null;
-		this.eventAutocompleteList = [];
-	};
-
 	@action
 	private setMessagesSessions = (sessions: string[]) => {
 		this.messageSessions = sessions.slice();
 	};
-
-	private loadEventAutocompleteList = debounce((parentEventName: string) => {
-		if (this.eventAutocompleteSseChannel) {
-			this.eventAutocompleteSseChannel.close();
-		}
-		this.resetEventAutocompleteList();
-
-		this.eventAutocompleteSseChannel = this.api.sse.getEventSource({
-			type: 'event',
-			queryParams: {
-				filters: ['name'],
-				'name-values': [parentEventName],
-				startTimestamp: moment().utc().valueOf(),
-				searchDirection: 'previous',
-				resultCountLimit: 10,
-			},
-		});
-		this.eventAutocompleteSseChannel.addEventListener('event', (ev: Event) =>
-			runInAction(() => {
-				const event: EventTreeNode = JSON.parse((ev as MessageEvent).data);
-				this.eventAutocompleteList.push(event);
-			}),
-		);
-		this.eventAutocompleteSseChannel.addEventListener('close', () => {
-			this.eventAutocompleteSseChannel?.close();
-			this.eventAutocompleteSseChannel = null;
-		});
-	}, 400);
 
 	private getSearchHistory = async () => {
 		try {

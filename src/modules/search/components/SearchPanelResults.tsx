@@ -54,7 +54,7 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 
 	const isResultItemHighlighted = (result: SearchResult) => itemsInView[getItemId(result)];
 
-	const renderResult = (index: number, result: SearchResult | [number, number]) => {
+	const renderResult = (i: number, result: SearchResult | [number, number]) => {
 		if (Array.isArray(result)) {
 			return <SearchPanelSeparator prevElement={result[0]} nextElement={result[1]} />;
 		}
@@ -70,25 +70,25 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 
 	return (
 		<div className='search-results'>
-			<div className='history-point'>
-				<p className='history-point__timestamp'>{formatTimestamp(timestamp)}</p>
+			<div className='search-results__header'>
+				<p className='search-results__timestamp'>{formatTimestamp(timestamp)}</p>
 				<button
-					className='bookmark-item__remove-btn'
+					className='search-results__remove-btn'
 					disabled={disabledRemove}
 					onClick={onResultDelete}>
-					<i className='bookmark-item__remove-btn-icon' />
+					<i />
 				</button>
 			</div>
 			<div className='search-results__list'>
 				<Virtuoso
 					data={flattenedResult}
-					className={'search-results__list-virtual'}
+					className='search-results__virtuoso'
 					style={{ height: '100%' }}
 					components={{
 						Footer: function SearchResultsFooter() {
 							if (!showLoadMoreButton) return null;
 							return (
-								<button onClick={loadMore} className='actions-list__load-button'>
+								<button onClick={loadMore} className='search-results__load-more-button'>
 									Load more
 								</button>
 							);

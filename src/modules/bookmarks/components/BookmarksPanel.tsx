@@ -16,7 +16,9 @@
 
 import { Observer, observer } from 'mobx-react-lite';
 import Checkbox from 'components/util/Checkbox';
-import { useActivePanel, useWorkspaceStore } from 'hooks/index';
+import { useActivePanel } from 'hooks/index';
+import { EventTreeNode, EventAction } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
 import { useBookmarksFilterStore } from '../hooks/useBookmarkFilterStore';
 import { useBookmarksStore } from '../hooks/useBookmarksStore';
 import { BookmarkItem } from './BookmarkItem';
@@ -25,17 +27,19 @@ import { BookmarkList } from './BookmarkList';
 import { Bookmark } from '../models/Bookmarks';
 import 'styles/bookmarks.scss';
 
-function BookmarksPanel() {
+interface BookmarkPanelProps {
+	onBookmarkClick: (savedItem: EventAction | EventMessage | EventTreeNode) => void;
+}
+
+function BookmarksPanel(props: BookmarkPanelProps) {
 	const { isBookmarksFull, isEmpty } = useBookmarksStore();
 
 	const filterStore = useBookmarksFilterStore();
 
-	const workspaceStore = useWorkspaceStore();
-
 	const { ref: panelRef } = useActivePanel(null);
 
 	function onBookmarkClick(bookmark: Bookmark) {
-		workspaceStore.onSavedItemSelect(bookmark.item);
+		props.onBookmarkClick(bookmark.item);
 	}
 
 	function renderBookmarkItem(index: number, bookmark: Bookmark) {

@@ -25,7 +25,7 @@ import { EventSSEFilters } from '../../api/sse';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
 import FiltersHistory from '../filters-history/FiltersHistory';
-import { getArrayOfUniques } from '../../helpers/array';
+import { uniq } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
@@ -126,7 +126,7 @@ function EventsFilterPanel() {
 			let togglerNegative: FilterRowTogglerConfig | null = null;
 			let togglerConjunct: FilterRowTogglerConfig | null = null;
 
-			const autocompleteList = getArrayOfUniques(
+			const autocompleteList = uniq(
 				eventsHistory
 					.map(item => item.filters[filterName]?.values)
 					.filter(notEmpty)

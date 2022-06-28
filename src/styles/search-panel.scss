@@ -56,7 +56,6 @@
 
 		&__search-status {
 			flex-shrink: 0;
-			margin-left: 10px;
 
 			&.loading {
 				@include spinner(3px, 15px);
@@ -723,44 +722,55 @@
 	padding-right: 5px;
 	flex-grow: 1;
 
-	&__controls {
-		padding: 2px 0;
-		display: flex;
-		justify-content: space-between;
-	}
-	&__arrow {
-		height: 24px;
-		width: 24px;
-		border: none;
-		outline: none;
-		cursor: pointer;
-		background-image: url(../../resources/icons/graph-arrow-left.svg);
-		background-repeat: no-repeat;
-		background-size: 100%;
-		background-position: center;
-		&.next {
-			transform: rotate(180deg);
-		}
-	}
-	.history-point {
+	&__header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		border-bottom: 1px solid;
 		margin-bottom: 5px;
+	}
 
-		&__timestamp {
-			margin: 0;
-			font-size: 12px;
-		}
+	&__timestamp {
+		margin: 0;
+		font-size: 12px;
 	}
 
 	&__list {
 		width: 100%;
 		flex-grow: 1;
+	}
 
-		&-virtual {
-			@include scrollbar();
+	&__virtuoso {
+		@include scrollbar();
+	}
+
+	&__load-more-button {
+		@include clickable;
+
+		display: block;
+		border-radius: 4px;
+		border-width: 1px;
+		border-color: $eventsListLoadButtonTextColor;
+		background-color: white;
+		font-weight: 600;
+		font-size: 12px;
+		padding: 2px 7px;
+		color: $eventsListLoadButtonTextColor;
+		margin: 0 auto 7px auto;
+		outline: none;
+	}
+
+	&__remove-btn {
+		background-color: transparent;
+		border: none;
+		outline: none;
+
+		& i {
+			@include clickable;
+			@include icon(url(../../resources/icons/cross-icon.svg), 20px, 20px);
+
+			border-radius: 50%;
+			display: inline-block;
 		}
 	}
 }

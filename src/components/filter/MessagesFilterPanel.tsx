@@ -31,7 +31,7 @@ import {
 	useMessagesDataStore,
 	useMessagesStore,
 	useFiltersHistoryStore,
-	useSessionsStore,
+	useSessionsHistoryStore,
 } from '../../hooks';
 import { useFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import { MessagesFilterInfo } from '../../api/sse';
@@ -40,7 +40,7 @@ import MessageFilterWarning from './MessageFilterWarning';
 import Checkbox from '../util/Checkbox';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import MessageReplayModal from '../message/MessageReplayModal';
-import { getArrayOfUniques } from '../../helpers/array';
+import { uniq } from '../../helpers/array';
 import useSetState from '../../hooks/useSetState';
 import { notEmpty } from '../../helpers/object';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
@@ -56,7 +56,7 @@ const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesStore();
 	const messagesDataStore = useMessagesDataStore();
 	const { messagesHistory, onMessageFilterSubmit } = useFiltersHistoryStore();
-	const sessionsStore = useSessionsStore();
+	const sessionsStore = useSessionsHistoryStore();
 	const { filterStore } = messagesStore;
 	const filterConfigStore = useFilterConfigStore();
 
@@ -171,7 +171,7 @@ const MessagesFilterPanel = () => {
 			.map<CompoundFilterRow>((filterInfo: MessagesFilterInfo) => {
 				const state = getState(filterInfo.name);
 				const label = prettifyCamelcase(filterInfo.name);
-				const autocompleteList = getArrayOfUniques<string>(
+				const autocompleteList = uniq<string>(
 					messagesHistory
 						.map(item => item.filters[filterInfo.name]?.values)
 						.filter(notEmpty)

@@ -111,7 +111,7 @@ function Workspace() {
 					{
 						title: 'Bookmarks',
 						color: panelColors.bookmarks,
-						component: <BookmarksPanel />,
+						component: <BookmarksPanel onBookmarkClick={workspaceStore.onSavedItemSelect} />,
 						isActive: isBookmarksStore(activePanel),
 					},
 				]}

@@ -16,7 +16,7 @@
 
 import { useRootStore } from './useRootStore';
 
-export const useSessionsStore = () => {
+export const useSessionsHistoryStore = () => {
 	const rootStore = useRootStore();
 
 	return rootStore.sessionsStore;

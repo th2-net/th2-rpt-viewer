@@ -25,7 +25,7 @@ import {
 import FilterRow from 'components/filter/row';
 import { SearchDirection } from 'models/search/SearchDirection';
 import FiltersHistory from 'components/filters-history/FiltersHistory';
-import { useFiltersHistoryStore, useSessionsStore } from 'hooks/index';
+import { useFiltersHistoryStore, useSessionsHistoryStore } from 'hooks/index';
 import { createBemElement } from 'helpers/styleCreators';
 import {
 	TIME_INPUT_MASK,
@@ -63,16 +63,14 @@ const SearchPanelForm = () => {
 		isSearching,
 		searchProgress,
 		isPaused,
-		eventAutocompleteList,
-		resetEventAutocompleteList,
 		clearFilters,
 	} = useSearchStore();
 
 	const disabled = isHistorySearch || isSearching;
 
 	const [currentStream, setCurrentStream] = useState('');
-	const sessionsStore = useSessionsStore();
-	const searchStore = useSearchStore();
+	const sessionsStore = useSessionsHistoryStore();
+
 	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
 
 	const sessionsAutocomplete: string[] = React.useMemo(
@@ -122,9 +120,6 @@ const SearchPanelForm = () => {
 		type: 'event-resolver',
 		id: 'parent-event',
 		placeholder: 'matches events by the specified parent event id or event name',
-		autocompleteList: eventAutocompleteList.map(event => event.eventId),
-		onAutocompleteSelect: resetEventAutocompleteList,
-		isLoading: searchStore.isLoadingEventAutocompleteList,
 	};
 
 	const messagesFormTypeConfig: FitlerRowItem = {

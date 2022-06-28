@@ -23,7 +23,7 @@ import {
 	FilterRowSwitcherConfig,
 } from 'models/filter/FilterInputs';
 import { SSEFilterInfo, SSEFilterParameter } from 'api/sse';
-import { getArrayOfUniques } from 'helpers/array';
+import { uniq } from 'helpers/array';
 import { FiltersHistoryType } from 'stores/FiltersHistoryStore';
 import { notEmpty } from 'helpers/object';
 import { prettifyCamelcase } from 'helpers/stringUtils';
@@ -109,7 +109,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 			{info.map((filter: SSEFilterInfo) => {
 				const filterState = getState(filter.name);
 				const label = prettifyCamelcase(filter.name);
-				const autocompleteList = getArrayOfUniques(
+				const autocompleteList = uniq(
 					autocompletes
 						.map(item => item.filters[filter.name as keyof FilterState]?.values)
 						.filter(notEmpty)
