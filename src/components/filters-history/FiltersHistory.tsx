@@ -17,18 +17,18 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { EventFilterState, MessageFilterState } from 'modules/search/models/Search';
+import { EntityType } from 'models/EventAction';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener, useFiltersHistoryStore } from '../../hooks';
 import { useFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import { raf } from '../../helpers/raf';
 import FiltersHistoryItem from './FiltersHistoryItem';
-import { useSearchStore } from '../../hooks/useSearchStore';
-import { FiltersHistoryType, FilterType } from '../../stores/FiltersHistoryStore';
+import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 import '../../styles/filters-history.scss';
 
 interface Props {
-	type?: FilterType;
-	sseFilter?: FiltersState;
+	type: EntityType;
+	filter: FiltersState;
 	disabled?: boolean;
 }
 
@@ -39,32 +39,19 @@ export type FiltersState = {
 		| ((patch: Partial<MessageFilterState>) => void);
 } | null;
 
-const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
+const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const historyRef = useRef<HTMLDivElement>(null);
 
 	const { eventsHistory, messagesHistory, toggleFilterPin } = useFiltersHistoryStore();
-	const { filters, formType } = useSearchStore();
 	const { eventFilterInfo, messagesFilterInfo } = useFilterConfigStore();
 
 	const toShow: (FiltersHistoryType<EventFilterState> | FiltersHistoryType<MessageFilterState>)[] =
-		useMemo(() => {
-			const fType = type || formType;
-			return fType === 'event' ? eventsHistory : messagesHistory;
-		}, [eventsHistory, messagesHistory, type, formType]);
-
-	const filtersState: FiltersState = useMemo(() => {
-		if (sseFilter) {
-			return sseFilter;
-		}
-		return filters
-			? {
-					state: filters.state,
-					setState: filters.setState,
-			  }
-			: null;
-	}, [filters, sseFilter]);
+		useMemo(
+			() => (type === 'event' ? eventsHistory : messagesHistory),
+			[eventsHistory, messagesHistory, type],
+		);
 
 	React.useLayoutEffect(() => {
 		if (isOpen) {
@@ -90,10 +77,9 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 	});
 
 	const onFilterPin = React.useCallback(
-		(filter: FiltersHistoryType<EventFilterState | MessageFilterState>) => {
-			const isPinnedUpdated = !filter.isPinned;
-			toggleFilterPin(filter);
-			if (isPinnedUpdated) {
+		(pinnedFilter: FiltersHistoryType<EventFilterState | MessageFilterState>) => {
+			toggleFilterPin(pinnedFilter);
+			if (!pinnedFilter.isPinned) {
 				raf(() => {
 					historyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
 				}, 2);
@@ -120,7 +106,7 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 						<React.Fragment key={item.timestamp}>
 							<FiltersHistoryItem
 								item={item}
-								filter={filtersState}
+								filter={filter}
 								eventsFilterInfo={eventFilterInfo}
 								messagesFilterInfo={messagesFilterInfo}
 								closeHistory={closeHistory}

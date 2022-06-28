@@ -14,7 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export type SearchPanelType = 'event' | 'message';
+import { EntityType } from 'models/EventAction';
+
+export type SearchPanelType = EntityType;
 
 export type StringFilter = {
 	type: 'string';

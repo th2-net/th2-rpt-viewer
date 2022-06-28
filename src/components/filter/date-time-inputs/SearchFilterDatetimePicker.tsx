@@ -421,12 +421,12 @@ const SearchFilterDatetimePicker = ({
 					<button
 						className='search-filter-datetime-picker__action-buttons__button cancel'
 						onClick={handleCancelButton}>
-						<span>Cancel</span>
+						Cancel
 					</button>
 					<button
 						className='search-filter-datetime-picker__action-buttons__button start'
 						onClick={handleSearchButton}>
-						<span>Start</span>
+						Start
 					</button>
 				</div>
 			</div>

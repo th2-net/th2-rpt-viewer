@@ -242,7 +242,7 @@ const SearchPanelForm = () => {
 			<SearchProgressBar {...progressBarConfig} />
 			<SearchSubmit {...searchSubmitConfig} />
 			<div className='search-panel-form__fields'>
-				<FiltersHistory disabled={disabled} />
+				<FiltersHistory disabled={disabled} type={formType} filter={filters} />
 				<div className='filter-row'>
 					<div className='filter-row__label'>Search for</div>
 					<div className='search-type-config'>
@@ -254,7 +254,7 @@ const SearchPanelForm = () => {
 			</div>
 			<div className='filters'>
 				{filters && filters.info.length > 0 && (
-					<SearchPanelFilters {...(filters as any)} type={formType} autocompletes={autocompletes} />
+					<SearchPanelFilters {...filters} type={formType} autocompletes={autocompletes} />
 				)}
 			</div>
 			{!disabled && (

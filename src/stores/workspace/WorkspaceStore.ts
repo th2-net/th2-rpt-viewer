@@ -17,7 +17,7 @@
 import { action, computed, observable, reaction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import { SearchStore } from 'modules/search/stores/SearchStore';
-import { IFilterConfigStore } from 'models/Stores';
+import { IFilterConfigStore, ISearchStore } from 'models/Stores';
 import MessagesStore, {
 	MessagesStoreDefaultStateType,
 	MessagesStoreURLState,
@@ -63,7 +63,7 @@ export default class WorkspaceStore {
 
 	public viewStore: WorkspaceViewStore;
 
-	public searchStore: SearchStore;
+	public searchStore: ISearchStore;
 
 	public id = nanoid();
 
@@ -249,6 +249,17 @@ export default class WorkspaceStore {
 			default:
 				break;
 		}
+	};
+
+	public onFilterByParentEvent = (parentEvent: EventTreeNode) => {
+		this.searchStore.stopSearch();
+		this.searchStore.setFormType('event');
+		this.searchStore.updateForm({
+			parentEvent: parentEvent.eventId,
+			startTimestamp: parentEvent.startTimestamp,
+		});
+
+		// TODO: expand search panel if it's collapsed & set active panel
 	};
 
 	public dispose = () => {

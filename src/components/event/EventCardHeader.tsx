@@ -23,8 +23,7 @@ import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
 import SearchableContent from '../search/SearchableContent';
-import { useWorkspaceEventStore, useTabsStore, useBookmarksStore } from '../../hooks';
-import { useSearchStore } from '../../hooks/useSearchStore';
+import { useWorkspaceEventStore, useBookmarksStore, useWorkspaceStore } from '../../hooks';
 
 interface Props {
 	displayType?: CardDisplayType;
@@ -58,8 +57,7 @@ function EventCardHeader(props: Props) {
 
 	const bookmarksStore = useBookmarksStore();
 	const eventStore = useWorkspaceEventStore();
-	const { setActiveWorkspace } = useTabsStore();
-	const { stopSearch, setFormType, updateForm } = useSearchStore();
+	const workspaceStore = useWorkspaceStore();
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
 
@@ -89,19 +87,13 @@ function EventCardHeader(props: Props) {
 	const bookmarkClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	function onPinClicked(e: React.MouseEvent) {
-		bookmarksStore.toggleEventPin(event);
 		e.stopPropagation();
+		bookmarksStore.toggleEventPin(event);
 	}
 
-	function onSearchClicked(e: React.MouseEvent) {
+	function onFilterClick(e: React.MouseEvent) {
 		e.stopPropagation();
-		stopSearch();
-		setFormType('event');
-		updateForm({
-			parentEvent: eventId,
-			startTimestamp,
-		});
-		setActiveWorkspace(0);
+		workspaceStore.onFilterByParentEvent(event);
 	}
 
 	function onRootClick() {
@@ -147,7 +139,7 @@ function EventCardHeader(props: Props) {
 							.concat(eventStore.eventDataStore.hasUnloadedChildren.get(event.eventId) ? '+' : '')}
 					/>
 				)}
-			{!isUnknown && <div className='search-by-parent' onClick={onSearchClicked} />}
+			{!isUnknown && <div className='search-by-parent' onClick={onFilterClick} />}
 			{!isUnknown && (
 				<div
 					className={bookmarkClassName}

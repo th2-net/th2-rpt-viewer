@@ -46,7 +46,7 @@ import {
 } from 'api/sse';
 import { DbData, IndexedDbStores } from 'api/indexedDb';
 import { getItemId, isEventAction, isEventId, isEventMessage } from 'helpers/event';
-import { IFilterConfigStore } from 'models/Stores';
+import { IFilterConfigStore, ISearchStore } from 'models/Stores';
 import { getTimestampAsNumber } from 'helpers/date';
 import {
 	getDefaultEventsFiltersState,
@@ -135,7 +135,7 @@ function getDefaultFormState(): SearchPanelFormState {
 	};
 }
 
-export class SearchStore {
+export class SearchStore implements ISearchStore {
 	private subscriptions: IReactionDisposer[] = [];
 
 	constructor(

@@ -24,6 +24,8 @@ export enum ActionType {
 	MESSAGE = 'message',
 }
 
+export type EntityType = 'event' | 'message';
+
 interface EventBase {
 	eventId: string;
 	eventName: string;

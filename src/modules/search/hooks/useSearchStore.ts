@@ -15,9 +15,10 @@
  ***************************************************************************** */
 
 import { useWorkspaceStore } from 'hooks/useWorkspaceStore';
+import { SearchStore } from '../stores/SearchStore';
 
 export const useSearchStore = () => {
 	const workspacesStore = useWorkspaceStore();
 
-	return workspacesStore.searchStore;
+	return workspacesStore.searchStore as SearchStore;
 };

@@ -15,7 +15,12 @@
  ***************************************************************************** */
 
 import { Bookmark, EventBookmark, MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
-import { EventFilterState, MessageFilterState } from 'modules/search/models/Search';
+import {
+	EventFilterState,
+	MessageFilterState,
+	SearchPanelType,
+} from 'modules/search/models/Search';
+import { SearchHistory, SearchPanelFormState } from 'modules/search/stores/SearchStore';
 import { DbData } from '../api/indexedDb';
 import { EventsFiltersInfo, MessagesFilterInfo, MessagesSSEParams } from '../api/sse';
 import { EventTreeNode } from './EventAction';
@@ -45,6 +50,18 @@ export interface IFilterConfigStore {
 	getMessageSessions: () => Promise<string[]>;
 }
 
+export interface ISearchStore {
+	currentSearch: SearchHistory | null;
+	updateForm: (stateUpdate: Partial<SearchPanelFormState>) => void;
+	dispose: () => void;
+	stopSearch: () => void;
+	setFormType: (type: SearchPanelType) => void;
+
+	pauseSearch: () => void;
+	isSearching: boolean;
+	startSearch: (loadMore?: boolean) => void;
+}
+
 export interface MessagesDataStore {
 	messages: EventMessage[];
 	loadMessages: (
@@ -56,8 +73,4 @@ export interface MessagesDataStore {
 	resetState: () => void;
 	getFilterParams: () => MessagesSSEParams;
 	getNextMessages: () => Promise<EventMessage[]>;
-}
-
-export interface MessageIdsStore {
-	readonly idList: string[];
 }

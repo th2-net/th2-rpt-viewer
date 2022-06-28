@@ -277,7 +277,7 @@ const MessagesFilterPanel = () => {
 						{filter && (
 							<FiltersHistory
 								type={ActionType.MESSAGE}
-								sseFilter={{
+								filter={{
 									state: filter,
 									setState: setFilter,
 								}}

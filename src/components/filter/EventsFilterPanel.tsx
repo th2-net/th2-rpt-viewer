@@ -203,7 +203,7 @@ function EventsFilterPanel() {
 				filter && (
 					<FiltersHistory
 						type={ActionType.EVENT_ACTION}
-						sseFilter={{
+						filter={{
 							state: filter,
 							setState: setFilter,
 						}}
