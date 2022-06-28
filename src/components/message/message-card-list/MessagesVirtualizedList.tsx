@@ -101,9 +101,9 @@ const MessagesVirtualizedList = (props: Props) => {
 	]);
 
 	React.useEffect(() => {
+		const tempMessageList: EventMessageItem[] = [];
 		messages.forEach(message => {
 			if (message.parsedMessages) {
-				const tempMessageList: EventMessageItem[] = [];
 				message.parsedMessages.forEach(parsedMessage => {
 					const { parsedMessages, ...rest } = message;
 					const tempMessageItem: EventMessageItem = {
@@ -117,11 +117,11 @@ const MessagesVirtualizedList = (props: Props) => {
 						tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
 					tempMessageList.push(tempMessageItem);
 				});
-				setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
 			} else {
-				setMessageList(messageListCopy => [...messageListCopy, message as EventMessageItem]);
+				tempMessageList.push(message as EventMessageItem);
 			}
 		});
+		setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
 	}, [messages]);
 
 	const debouncedScrollHandler = useDebouncedCallback(
