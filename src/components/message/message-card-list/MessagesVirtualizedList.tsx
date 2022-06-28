@@ -27,6 +27,7 @@ import { EventMessage, EventMessageItem } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
 import { SSEHeartbeat } from '../../../api/sse';
 import { formatTime } from '../../../helpers/date';
+import getMessageList from '../../../helpers/messageList';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
@@ -94,27 +95,7 @@ const MessagesVirtualizedList = (props: Props) => {
 	]);
 
 	React.useEffect(() => {
-		const tempMessageList: EventMessageItem[] = [];
-		messages.forEach(message => {
-			if (message.parsedMessages) {
-				message.parsedMessages.forEach(parsedMessage => {
-					const { parsedMessages, ...rest } = message;
-					const tempMessageItem: EventMessageItem = {
-						...rest,
-						parsedMessage: null,
-						parsedMessages: [],
-					};
-
-					tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
-					if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
-						tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
-					tempMessageList.push(tempMessageItem);
-				});
-			} else {
-				tempMessageList.push(message as EventMessageItem);
-			}
-		});
-		setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
+		setMessageList(messageListCopy => [...messageListCopy, ...getMessageList(messages)]);
 	}, [messages]);
 
 	const debouncedScrollHandler = useDebouncedCallback(

@@ -19,6 +19,7 @@ import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
 import { EventMessage, EventMessageItem } from '../../models/EventMessage';
+import getMessageList from '../../helpers/messageList';
 import SplashScreen from '../SplashScreen';
 import '../../styles/embedded.scss';
 import api from '../../api';
@@ -152,27 +153,10 @@ const MessagesVirtualizedList = observer((props: Props) => {
 	const [messageList, setMessageList] = React.useState<EventMessageItem[]>([]);
 
 	React.useEffect(() => {
-		messagesStore.dataStore.messages.forEach(message => {
-			if (message.parsedMessages) {
-				const tempMessageList: EventMessageItem[] = [];
-				message.parsedMessages.forEach(parsedMessage => {
-					const { parsedMessages, ...rest } = message;
-					const tempMessageItem: EventMessageItem = {
-						...rest,
-						parsedMessage: null,
-						parsedMessages: [],
-					};
-
-					tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
-					if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
-						tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
-					tempMessageList.push(tempMessageItem);
-				});
-				setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
-			} else {
-				setMessageList(messageListCopy => [...messageListCopy, message as EventMessageItem]);
-			}
-		});
+		setMessageList(messageListCopy => [
+			...messageListCopy,
+			...getMessageList(messagesStore.dataStore.messages),
+		]);
 	}, [messagesStore.dataStore.messages]);
 
 	React.useEffect(() => {

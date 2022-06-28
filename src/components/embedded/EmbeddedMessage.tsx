@@ -16,6 +16,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { EventMessage, MessageViewType, EventMessageItem } from '../../models/EventMessage';
+import getMessageList from '../../helpers/messageList';
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
 
@@ -30,25 +31,10 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	}, []);
 
 	useEffect(() => {
-		if (message?.parsedMessages) {
-			const tempMessageList: EventMessageItem[] = [];
-			message.parsedMessages.forEach(parsedMessage => {
-				const { parsedMessages, ...rest } = message;
-				const tempMessageItem: EventMessageItem = {
-					...rest,
-					parsedMessage: null,
-					parsedMessages: [],
-				};
-
-				tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
-				if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
-					tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
-				tempMessageList.push(tempMessageItem);
-			});
-			setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
-		} else {
-			setMessageList(messageListCopy => [...messageListCopy, message as EventMessageItem]);
-		}
+		setMessageList(messageListCopy => [
+			...messageListCopy,
+			...getMessageList(Array.of(message) as EventMessage[]),
+		]);
 	});
 
 	async function getMessage() {
@@ -64,7 +50,7 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 		throw new Error(errorStatus);
 	}
 
-	if (messageList) {
+	if (messageList.length) {
 		return (
 			<div className='embedded-wrapper'>
 				{messageList.map((parsedMessage, index: number) => {
