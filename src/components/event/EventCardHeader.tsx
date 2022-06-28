@@ -143,7 +143,12 @@ function EventCardHeader(props: Props) {
 				<>
 					{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
 					<div className='event-header-card__time-label'>
-						<span className='event-header-card__time-label-full'>{formatTime(startTimestamp)}</span>
+						<span
+							className='event-header-card__time-label-full'
+							onMouseEnter={onMouseEnter}
+							onMouseLeave={onMouseLeave}>
+							{formatTime(startTimestamp)}
+						</span>
 					</div>
 					{eventType && (
 						<span className='event-header-card__event-type' onClick={handleTypeClick}>
