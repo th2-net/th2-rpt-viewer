@@ -16,10 +16,8 @@
 
 import { Virtuoso } from 'react-virtuoso';
 import { formatTimestamp } from 'helpers/date';
-import { isEvent } from 'helpers/event';
+import { getItemId } from 'helpers/event';
 import { ActionType } from 'models/EventAction';
-import { EventMessage } from 'models/EventMessage';
-import { useMessagesDataStore, useMessagesStore } from 'hooks/index';
 import { FilterEntry, SearchResult } from '../stores/SearchStore';
 import SearchPanelSeparator from './SearchPanelSeparator';
 import { EventFilterState, MessageFilterState } from '../models/Search';
@@ -38,6 +36,7 @@ interface SearchPanelResultsProps {
 	disabledRemove: boolean;
 	showLoadMoreButton: boolean;
 	loadMore: () => void;
+	itemsInView?: Record<string, boolean>;
 }
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
@@ -50,27 +49,10 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		disabledRemove,
 		loadMore,
 		showLoadMoreButton,
+		itemsInView = {},
 	} = props;
 
-	const messagesStore = useMessagesStore();
-	const messagesDataStore = useMessagesDataStore();
-
-	const isMessageVisibleInMessagePanel = (message: EventMessage) => {
-		const visibleMessages = messagesDataStore.messages.slice(
-			messagesStore.currentMessagesIndexesRange.startIndex,
-			messagesStore.currentMessagesIndexesRange.endIndex + 1,
-		);
-
-		return visibleMessages.some(({ id }) => id === message.id);
-	};
-
-	const isResultItemHighlighted = (result: SearchResult) => {
-		if (isEvent(result)) {
-			return true; // TODO: implement events highlighting
-		}
-
-		return isMessageVisibleInMessagePanel(result);
-	};
+	const isResultItemHighlighted = (result: SearchResult) => itemsInView[getItemId(result)];
 
 	const renderResult = (index: number, result: SearchResult | [number, number]) => {
 		if (Array.isArray(result)) {

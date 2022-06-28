@@ -37,7 +37,10 @@ export type MessagesFilterStoreInitialState = {
 export default class MessagesFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
 
-	constructor(private filtersStore: IFilterConfigStore, initialState?: MessagesFilterStoreInitialState) {
+	constructor(
+		private filtersStore: IFilterConfigStore,
+		initialState?: MessagesFilterStoreInitialState,
+	) {
 		this.init(initialState);
 
 		this.sseFilterSubscription = reaction(() => filtersStore.messageFilters, this.initSSEFilter);

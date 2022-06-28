@@ -30,6 +30,7 @@ interface SearchPanelProps {
 		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
 	) => void;
 	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
+	itemsInView: Record<string, boolean>;
 }
 
 const SearchPanel = (props: SearchPanelProps) => {
@@ -54,6 +55,7 @@ const SearchPanel = (props: SearchPanelProps) => {
 					showLoadMoreButton={searchStore.isCompleted && !searchStore.isHistorySearch}
 					loadMore={searchStore.loadMore}
 					onResultDelete={removeCurrentSearch}
+					itemsInView={props.itemsInView}
 					onResultClick={props.onResultClick}
 					onResultGroupClick={props.onResultGroupClick}
 				/>

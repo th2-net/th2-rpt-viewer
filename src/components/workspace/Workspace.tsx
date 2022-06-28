@@ -14,13 +14,20 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import BookmarksPanel from 'modules/bookmarks';
 import SearchPanel from 'modules/search';
+import { getItemId } from 'helpers/event';
 import EventWindow from '../event/EventWindow';
 import MessagesWindow from '../message/MessagesWindow';
 import WorkspaceSplitter from './WorkspaceSplitter';
-import { useActivePanel, useWorkspaceStore } from '../../hooks';
+import {
+	useActivePanel,
+	useMessagesStore,
+	useWorkspaceEventStore,
+	useWorkspaceStore,
+} from '../../hooks';
 import {
 	isEventsStore,
 	isMessagesStore,
@@ -53,6 +60,18 @@ function Workspace() {
 	const { activePanel } = useActivePanel(null);
 	const { panelsLayout, setPanelsLayout, togglePanel } = useWorkspaceViewStore();
 	const workspaceStore = useWorkspaceStore();
+	const messagesStore = useMessagesStore();
+	const eventsStore = useWorkspaceEventStore();
+
+	const itemsInView = computed(() =>
+		[...messagesStore.messagesInView, ...eventsStore.eventsInView].reduce(
+			(map, item) => ({
+				...map,
+				[getItemId(item)]: true,
+			}),
+			{} as Record<string, boolean>,
+		),
+	).get();
 
 	return (
 		<div className='workspace'>
@@ -68,6 +87,7 @@ function Workspace() {
 							<SearchPanel
 								onResultClick={workspaceStore.onSearchResultItemSelect}
 								onResultGroupClick={workspaceStore.onSearchResultGroupSelect}
+								itemsInView={itemsInView}
 							/>
 						),
 						isActive: isSearchStore(activePanel),

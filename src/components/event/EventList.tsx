@@ -17,16 +17,17 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { isEventNode } from 'helpers/event';
 import Empty from '../util/Empty';
 import SplashScreen from '../SplashScreen';
 import StateSaverProvider from '../util/StateSaverProvider';
-import { useWorkspaceEventStore } from '../../hooks';
+import { useDebouncedCallback, useWorkspaceEventStore } from '../../hooks';
 import { raf } from '../../helpers/raf';
 import { EventTreeNode } from '../../models/EventAction';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
-import '../../styles/action.scss';
 import EventTree from './tree/EventTree';
 import FlatEventListItem from './flat-event-list/FlatEventListItem';
+import '../../styles/action.scss';
 
 interface Props {
 	scrolledIndex: Number | null;
@@ -128,6 +129,12 @@ function EventTreeListBase(props: Props) {
 
 	const computeKey = (index: number) => currentNodes[index]?.eventId || index;
 
+	const onEventsRendered = useDebouncedCallback((renderedMessages: ListItem<EventTreeNode>[]) => {
+		eventStore.setRenderedItems(
+			renderedMessages.map(listItem => listItem.data).filter(isEventNode),
+		);
+	}, 800);
+
 	return (
 		<div className='actions-list' ref={listRef}>
 			<StateSaverProvider>
@@ -143,6 +150,7 @@ function EventTreeListBase(props: Props) {
 					style={{ height: '100%' }}
 					itemsRendered={events => {
 						eventsInViewport.current = events;
+						onEventsRendered(events);
 					}}
 				/>
 			</StateSaverProvider>

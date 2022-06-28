@@ -113,6 +113,14 @@ export default class EventsStore {
 	@observable
 	public selectedBodyFilter: FilterEntry | null = null;
 
+	@observable
+	public eventsInView: EventTreeNode[] = [];
+
+	@action
+	public setRenderedItems = (renderedEvents: EventTreeNode[]) => {
+		this.eventsInView = renderedEvents;
+	};
+
 	@computed
 	public get isLoadingTargetNode(): boolean {
 		return this.targetNodeId !== null;

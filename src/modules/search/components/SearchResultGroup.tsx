@@ -21,8 +21,6 @@ import { getItemId, isEvent, isEventMessage } from 'helpers/event';
 import { createBemElement } from 'helpers/styleCreators';
 import { getTimestampAsNumber } from 'helpers/date';
 import { ActionType } from 'models/EventAction';
-import { EventMessage } from 'models/EventMessage';
-import { useMessagesDataStore, useMessagesStore } from 'hooks/index';
 import { FilterEntry, SearchResult } from '../stores/SearchStore';
 import SearchResultItem from './SearchResultItem';
 import { EventFilterState, MessageFilterState } from '../models/Search';
@@ -35,6 +33,7 @@ interface SearchResultGroup {
 		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
 	) => void;
 	onGroupClick: (timestamp: number, resultType: ActionType) => void;
+	itemsInView: Record<string, boolean>;
 }
 
 const SearchResultGroup = ({
@@ -42,10 +41,9 @@ const SearchResultGroup = ({
 	filters,
 	onResultClick,
 	onGroupClick,
+	itemsInView,
 }: SearchResultGroup) => {
 	const [isExpanded, setIsExpanded] = React.useState(false);
-	const messagesWorkspaceStore = useMessagesStore();
-	const messagesDataStore = useMessagesDataStore();
 
 	const expandButtonClass = createBemElement(
 		'search-result-group',
@@ -115,21 +113,12 @@ const SearchResultGroup = ({
 			.utc()
 			.format('HH:mm:ss.SSS')}`;
 
-	const isMessageVisibleInMessagePanel = (message: EventMessage) => {
-		const visibleMessages = messagesDataStore.messages.slice(
-			messagesWorkspaceStore.currentMessagesIndexesRange.startIndex,
-			messagesWorkspaceStore.currentMessagesIndexesRange.endIndex + 1,
-		);
-
-		return visibleMessages.some(({ id }) => id === message.id);
-	};
-
 	const isResultItemHighlighted = (result: SearchResult) => {
 		if (isEvent(result)) {
 			return true; // TODO: implement events highlighting
 		}
 
-		return isMessageVisibleInMessagePanel(result);
+		return itemsInView[result.id];
 	};
 
 	if (results.length === 1) {

@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction, IReactionDisposer, runInAction } from 'mobx';
-import { ListRange } from 'react-virtuoso';
 import { MessageFilterState } from 'modules/search/models/Search';
 import { IFilterConfigStore } from 'models/Stores';
 import { FilterEntry } from 'modules/search/stores/SearchStore';
@@ -57,12 +56,6 @@ export default class MessagesStore {
 	public highlightedMessageId: String | null = null;
 
 	@observable
-	public currentMessagesIndexesRange: ListRange = {
-		startIndex: 0,
-		endIndex: 0,
-	};
-
-	@observable
 	public showFilterChangeHint = false;
 
 	@observable selectedBodyFilter: FilterEntry | null = null;
@@ -99,6 +92,14 @@ export default class MessagesStore {
 
 		reaction(() => this.filterStore.filter, this.exportStore.disableExport);
 	}
+
+	@observable
+	public messagesInView: EventMessage[] = [];
+
+	@action
+	public setRenderedItems = (renderedMessages: EventMessage[]) => {
+		this.messagesInView = renderedMessages;
+	};
 
 	@computed
 	public get messageSessions(): string[] {

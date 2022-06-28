@@ -18,11 +18,8 @@ import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle, ListItem } from 'react-virtuoso';
 import moment from 'moment';
-import {
-	useDebouncedCallback,
-	useMessagesDataStore,
-	useMessagesStore,
-} from '../../../hooks';
+import { isEventMessage } from 'helpers/event';
+import { useDebouncedCallback, useMessagesDataStore, useMessagesStore } from '../../../hooks';
 import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
 import { SSEHeartbeat } from '../../../api/sse';
@@ -139,12 +136,10 @@ const MessagesVirtualizedList = (props: Props) => {
 	};
 
 	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
-		messageStore.currentMessagesIndexesRange = {
-			startIndex: (renderedMessages && renderedMessages[0]?.originalIndex) ?? 0,
-			endIndex:
-				(renderedMessages && renderedMessages[renderedMessages.length - 1]?.originalIndex) ?? 0,
-		};
-	}, 100);
+		messageStore.setRenderedItems(
+			renderedMessages.map(listItem => listItem.data).filter(isEventMessage),
+		);
+	}, 800);
 
 	return (
 		<Virtuoso
