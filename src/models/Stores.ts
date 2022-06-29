@@ -18,6 +18,7 @@ import { Bookmark, EventBookmark, MessageBookmark } from 'modules/bookmarks/mode
 import { DbData } from '../api/indexedDb';
 import { MessagesSSEParams } from '../api/sse';
 import { EventTreeNode } from './EventAction';
+import { MessageSSEEventListeners } from '../stores/SSEChannel/MessagesSSEChannel';
 import { EventMessage } from './EventMessage';
 
 export interface IBookmarksStore {
@@ -26,15 +27,19 @@ export interface IBookmarksStore {
 	bookmarks: Bookmark[];
 	isLoadingBookmarks: boolean;
 	toggleMessagePin: (message: EventMessage) => void;
-	toggleEventPin: (message: EventTreeNode) => void;
+	toggleEventPin: (event: EventTreeNode) => void;
 	syncData: (unsavedData?: DbData) => void;
 }
 
 export interface MessagesDataStore {
 	messages: EventMessage[];
-	loadMessages: () => Promise<void>;
+	loadMessages: (
+		nextChannelListeners?: Partial<MessageSSEEventListeners>,
+		prevChannelListeners?: Partial<MessageSSEEventListeners>,
+	) => Promise<void>;
 	onNextChannelResponse: (messages: EventMessage[]) => void;
 	onPrevChannelResponse: (messages: EventMessage[]) => void;
+	resetState: () => void;
 	getFilterParams: () => MessagesSSEParams;
 	getNextMessages: () => Promise<EventMessage[]>;
 }

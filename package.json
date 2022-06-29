@@ -1,6 +1,6 @@
 {
 	"name": "th2-rpt-viewer",
-	"version": "5.0.14",
+	"version": "5.0.15",
 	"description": "",
 	"main": "index.tsx",
 	"private": true,
@@ -89,7 +89,7 @@
 		"eslint-plugin-react": "^7.30.0",
 		"eslint-plugin-react-hooks": "^4.5.0",
 		"file-loader": "^6.2.0",
-		"fork-ts-checker-webpack-plugin": "^5.0.1",
+		"fork-ts-checker-webpack-plugin": "^7.2.11",
 		"html-webpack-plugin": "^5.5.0",
 		"identity-obj-proxy": "^3.0.0",
 		"jest": "^24.9.0",

@@ -110,6 +110,6 @@ export default class EmbeddedMessagesStore {
 	public clearFilters = () => {
 		this.filterStore.resetMessagesFilter({ streams: this.filterStore.filter.streams });
 		this.dataStore.stopMessagesLoading();
-		this.dataStore.resetMessagesDataState();
+		this.dataStore.resetState();
 	};
 }

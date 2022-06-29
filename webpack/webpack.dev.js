@@ -60,11 +60,7 @@ module.exports = merge(commonConfig, {
 		],
 	},
 	plugins: [
-		new ForkTsCheckerWebpackPlugin({
-			eslint: {
-				files: './src/**/*',
-			},
-		}),
-		new ReactRefreshWebpackPlugin(),
+		new ForkTsCheckerWebpackPlugin({ devServer: false }),
+		new ReactRefreshWebpackPlugin({ overlay: false }),
 	],
 });

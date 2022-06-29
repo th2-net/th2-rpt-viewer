@@ -17,7 +17,6 @@
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import EventsFilter from '../models/filter/EventsFilter';
-import MessagesFilter from '../models/filter/MessagesFilter';
 import { TimeRange } from '../models/Timestamp';
 import {
 	SSEParamsEvents,
@@ -48,28 +47,6 @@ export interface EventApiSchema {
 }
 
 export interface MessageApiSchema {
-	getAll: () => Promise<number[]>;
-	getMessagesIds: (timestampFrom: number, timestampTo: number) => Promise<string[]>;
-	getMessages(
-		search: {
-			limit: number;
-			timelineDirection: 'previous' | 'next';
-			messageId: string;
-			idsOnly: true;
-		},
-		filter: MessagesFilter,
-		abortSignal?: AbortSignal,
-	): Promise<string[]>;
-	getMessages(
-		search: {
-			limit: number;
-			timelineDirection: 'previous' | 'next';
-			messageId: string;
-			idsOnly: false;
-		},
-		filter: MessagesFilter,
-		abortSignal?: AbortSignal,
-	): Promise<EventMessage[]>;
 	getMessage: (
 		id: string,
 		signal?: AbortSignal,
@@ -81,12 +58,14 @@ export interface MessageApiSchema {
 		filter: MatchMessageParams,
 		abortSignal?: AbortSignal,
 	) => Promise<boolean>;
-	getResumptionMessageIds: (params: {
-		streams: string[];
-		startTimestamp?: number;
-		messageId?: string;
-		abortSignal?: AbortSignal;
-	}) => Promise<DirectionalStreamInfo>;
+	getResumptionMessageIds: (
+		params: {
+			streams: string[];
+			startTimestamp?: number;
+			messageId?: string;
+		},
+		abortSignal?: AbortSignal,
+	) => Promise<DirectionalStreamInfo>;
 }
 
 export interface SSESchema {

@@ -86,7 +86,10 @@ export default class MessagesStore {
 		private sessionsStore: SessionsStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
-		this.filterStore = new MessagesFilterStore(this.searchStore);
+		this.filterStore = new MessagesFilterStore(
+			this.searchStore,
+			defaultState && typeof defaultState === 'object' ? defaultState : undefined,
+		);
 		this.dataStore = new MessagesDataProviderStore(this, this.api);
 		this.init(defaultState);
 
@@ -160,7 +163,6 @@ export default class MessagesStore {
 				console.error(`Couldnt fetch target message ${defaultState}`);
 			}
 		} else {
-			this.filterStore = new MessagesFilterStore(this.searchStore, defaultState);
 			const message = defaultState.targetMessage;
 			if (isEventMessage(message)) {
 				this.selectedMessageId = new String(message.id);
@@ -235,7 +237,7 @@ export default class MessagesStore {
 		this.hintMessages = [];
 		this.filterStore.resetMessagesFilter({ streams: this.filterStore.filter.streams });
 		this.dataStore.stopMessagesLoading();
-		this.dataStore.resetMessagesDataState();
+		this.dataStore.resetState();
 	};
 
 	@action
@@ -298,6 +300,6 @@ export default class MessagesStore {
 		this.attachedMessagesSubscription();
 		this.filterStore.dispose();
 		this.dataStore.stopMessagesLoading();
-		this.dataStore.resetMessagesDataState();
+		this.dataStore.resetState();
 	};
 }
