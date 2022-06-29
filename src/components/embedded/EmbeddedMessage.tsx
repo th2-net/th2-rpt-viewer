@@ -33,9 +33,9 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	useEffect(() => {
 		setMessageList(messageListCopy => [
 			...messageListCopy,
-			...getMessageList(Array.of(message) as EventMessage[]),
+			...getMessageList(Array.of(message) as EventMessage[], messageListCopy),
 		]);
-	});
+	}, [message]);
 
 	async function getMessage() {
 		const res = await fetch(`backend/message/${messageId}`);

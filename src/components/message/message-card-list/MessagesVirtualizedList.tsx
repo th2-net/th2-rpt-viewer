@@ -95,7 +95,10 @@ const MessagesVirtualizedList = (props: Props) => {
 	]);
 
 	React.useEffect(() => {
-		setMessageList(messageListCopy => [...messageListCopy, ...getMessageList(messages)]);
+		setMessageList(messageListCopy => [
+			...messageListCopy,
+			...getMessageList(messages, messageListCopy),
+		]);
 	}, [messages]);
 
 	const debouncedScrollHandler = useDebouncedCallback(

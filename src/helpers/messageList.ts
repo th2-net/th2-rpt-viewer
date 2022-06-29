@@ -16,26 +16,31 @@
 
 import { EventMessage, EventMessageItem } from '../models/EventMessage';
 
-export default function getMessageList(messages: EventMessage[]) {
+export default function getMessageList(
+	messages: EventMessage[],
+	previousMessageList: EventMessage[],
+) {
 	const tempMessageList: EventMessageItem[] = [];
-	messages.forEach(message => {
-		if (message.parsedMessages) {
-			message.parsedMessages.forEach(parsedMessage => {
-				const { parsedMessages, ...rest } = message;
-				const tempMessageItem: EventMessageItem = {
-					...rest,
-					parsedMessage: null,
-					parsedMessages: [],
-				};
+	messages
+		.filter(message => !previousMessageList.includes(message))
+		.forEach(message => {
+			if (message.parsedMessages) {
+				message.parsedMessages.forEach(parsedMessage => {
+					const { parsedMessages, ...rest } = message;
+					const tempMessageItem: EventMessageItem = {
+						...rest,
+						parsedMessage: null,
+						parsedMessages: [],
+					};
 
-				tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
-				if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
-					tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
-				tempMessageList.push(tempMessageItem);
-			});
-		} else {
-			tempMessageList.push(message as EventMessageItem);
-		}
-	});
+					tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
+					if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
+						tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
+					tempMessageList.push(tempMessageItem);
+				});
+			} else {
+				tempMessageList.push(message as EventMessageItem);
+			}
+		});
 	return tempMessageList;
 }

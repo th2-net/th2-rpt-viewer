@@ -155,7 +155,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 	React.useEffect(() => {
 		setMessageList(messageListCopy => [
 			...messageListCopy,
-			...getMessageList(messagesStore.dataStore.messages),
+			...getMessageList(messagesStore.dataStore.messages, messageListCopy),
 		]);
 	}, [messagesStore.dataStore.messages]);
 
