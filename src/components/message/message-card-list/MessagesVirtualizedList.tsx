@@ -62,6 +62,7 @@ const MessagesVirtualizedList = (props: Props) => {
 		onPrevChannelResponse,
 		prevLoadHeartbeat,
 		nextLoadHeartbeat,
+		updateStore,
 	} = useMessagesDataStore();
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
@@ -73,6 +74,12 @@ const MessagesVirtualizedList = (props: Props) => {
 	const [[firstPrevChunkIsLoaded, firstNextChunkIsLoaded], setLoadedChunks] = React.useState<
 		[boolean, boolean]
 	>([false, false]);
+
+	React.useEffect(() => {
+		if (updateStore.isActive && virtuoso.current) {
+			virtuoso.current.scrollToIndex(0);
+		}
+	}, [updateStore.isActive]);
 
 	React.useEffect(() => {
 		if (!searchChannelNext?.isLoading) setLoadedChunks(loadedChunks => [true, loadedChunks[1]]);
@@ -199,7 +206,7 @@ const MessagesVirtualizedList = (props: Props) => {
 									</div>
 								) : (
 									<MessagesListSpinner
-										isLoading={isLoadingNextMessages}
+										isLoading={isLoadingNextMessages || updateStore.isActive}
 										searchInfo={nextLoadHeartbeat}
 									/>
 								)
