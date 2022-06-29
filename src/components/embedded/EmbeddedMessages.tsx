@@ -14,11 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
-import { EventMessage, EventMessageItem } from '../../models/EventMessage';
+import { EventMessage, EventMessageItem, MessageViewType } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
 import '../../styles/embedded.scss';
 import api from '../../api';
@@ -29,17 +29,27 @@ import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import MessagesUpdateButton from '../message/MessagesUpdateButton';
 import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
-import MessageCard from '../message/message-card/MessageCard';
+import MessageCardBase from '../message/message-card/MessageCardBase';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
 const EmbeddedMessages = () => {
-	const { dataStore, scrolledIndex } = messagesStore;
+	const { dataStore, scrolledIndex, selectedMessageId } = messagesStore;
 	const { updateStore } = dataStore;
 
+	const [viewType, setViewType] = useState(MessageViewType.JSON);
+
 	const renderMsg = React.useCallback(
-		(index: number, message: EventMessageItem) => <MessageCard message={message} />,
-		[],
+		(index: number, message: EventMessageItem) => (
+			<MessageCardBase
+				message={message}
+				isEmbedded
+				setViewType={setViewType}
+				viewType={viewType}
+				applyFilterToBody={message.id === selectedMessageId?.valueOf()}
+			/>
+		),
+		[viewType, setViewType],
 	);
 
 	const reportURL = React.useMemo(() => {
