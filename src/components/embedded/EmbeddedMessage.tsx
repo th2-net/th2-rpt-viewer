@@ -15,18 +15,41 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
-import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import { EventMessage, MessageViewType, EventMessageItem } from '../../models/EventMessage';
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
 
 function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
+	const [messageList, setMessageList] = React.useState<EventMessageItem[]>([]);
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 	const [errorStatus, setErrorStatus] = useState<string | null>(null);
 
 	useEffect(() => {
 		getMessage();
 	}, []);
+
+	useEffect(() => {
+		if (message?.parsedMessages) {
+			const tempMessageList: EventMessageItem[] = [];
+			message.parsedMessages.forEach(parsedMessage => {
+				const { parsedMessages, ...rest } = message;
+				const tempMessageItem: EventMessageItem = {
+					...rest,
+					parsedMessage: null,
+					parsedMessages: [],
+				};
+
+				tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
+				if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
+					tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
+				tempMessageList.push(tempMessageItem);
+			});
+			setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
+		} else {
+			setMessageList(messageListCopy => [...messageListCopy, message as EventMessageItem]);
+		}
+	});
 
 	async function getMessage() {
 		const res = await fetch(`backend/message/${messageId}`);
@@ -41,15 +64,18 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 		throw new Error(errorStatus);
 	}
 
-	if (message) {
+	if (messageList.length) {
 		return (
 			<div className='embedded-wrapper'>
-				<MessageCardBase
-					isEmbedded
-					message={message}
-					setViewType={setViewType}
-					viewType={viewType}
-				/>
+				{messageList.map((parsedMessage, index: number) => (
+					<MessageCardBase
+						isEmbedded
+						key={`${parsedMessage.id}-${index}`}
+						message={parsedMessage}
+						setViewType={setViewType}
+						viewType={viewType}
+					/>
+				))}
 			</div>
 		);
 	}

@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { timestampToNumber } from './date';
 import { ActionType } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import {
@@ -30,9 +31,9 @@ export const sortMessagesByTimestamp = (
 	const copiedMessages = messages.slice();
 	copiedMessages.sort((mesA, mesB) => {
 		if (order === 'desc') {
-			return mesB.timestamp - mesA.timestamp;
+			return timestampToNumber(mesB.timestamp) - timestampToNumber(mesA.timestamp);
 		}
-		return mesA.timestamp - mesB.timestamp;
+		return timestampToNumber(mesA.timestamp) - timestampToNumber(mesB.timestamp);
 	});
 	return copiedMessages;
 };

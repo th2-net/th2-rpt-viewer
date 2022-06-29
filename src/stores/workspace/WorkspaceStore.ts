@@ -30,9 +30,9 @@ import { isEventMessage } from '../../helpers/event';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
-import { SearchStore } from '../SearchStore';
+import { FilterEntry, SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
-import { getRangeFromTimestamp } from '../../helpers/date';
+import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
 import { isAbortError } from '../../helpers/fetch';
 import { getObjectKeys } from '../../helpers/object';
 import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
@@ -215,14 +215,36 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	public onSearchResultItemSelect = (resultItem: EventTreeNode | EventAction | EventMessage) => {
-		this.onSavedItemSelect(resultItem);
+	public onSearchResultItemSelect = (
+		resultItem: EventTreeNode | EventAction | EventMessage,
+		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
+		isNewWorkspace?: boolean,
+	) => {
+		if (isNewWorkspace) {
+			let initialWorkspaceState: WorkspaceInitialState = {};
+
+			if (isEventMessage(resultItem)) {
+				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(
+					timestampToNumber(resultItem.timestamp),
+					resultItem,
+				);
+			} else {
+				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(
+					timestampToNumber(resultItem.startTimestamp),
+					resultItem,
+				);
+			}
+
+			const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
+			this.workspacesStore.addWorkspace(newWorkspace);
+		} else {
+			this.onSavedItemSelect(resultItem);
+		}
 	};
 
 	@action
 	public onSearchResultGroupSelect = (timestamp: number, resultType: ActionType) => {
 		switch (resultType) {
-			case ActionType.EVENT_TREE_NODE:
 			case ActionType.EVENT_ACTION:
 				this.eventsStore.clearFilter();
 				this.eventsStore.filterStore.setEventsRange(

@@ -22,11 +22,11 @@ import { TimeRange } from '../models/Timestamp';
 import { isEventMessage } from './event';
 
 export function getElapsedTime(
-	startTimestamp: number,
-	endTimestamp: number,
+	startTimestamp: string,
+	endTimestamp: string,
 	withMiliseconds = true,
 ) {
-	const diff = endTimestamp - startTimestamp;
+	const diff = timestampToNumber(endTimestamp) - timestampToNumber(startTimestamp);
 	const seconds = Math.floor(diff / 1000);
 	const milliseconds = Math.floor(diff - seconds * 1000);
 
@@ -39,12 +39,16 @@ export function formatTime(time: string | number) {
 	if (time == null) {
 		return '';
 	}
-	return moment.utc(time).format(DateTimeMask.DATE_TIME_MASK);
+	return moment.utc(new Date(time).getTime()).format(DateTimeMask.DATE_TIME_MASK);
+}
+
+export function timestampToNumber(timestamp: string): number {
+	return new Date(timestamp).getTime();
 }
 
 export function getTimestampAsNumber(entity: EventAction | EventTreeNode | EventMessage): number {
-	if (isEventMessage(entity)) return entity.timestamp;
-	return entity.startTimestamp;
+	if (isEventMessage(entity)) return timestampToNumber(entity.timestamp);
+	return timestampToNumber(entity.startTimestamp);
 }
 
 export function formatTimestampValue(timestamp: number | null, timeMask: string) {
@@ -102,16 +106,21 @@ export function getRangeFromTimestamp(timestamp: number, interval: number): Time
 	];
 }
 
-export function sortByTimestamp<T extends { timestamp: number }>(
+export function sortByTimestamp<T extends { timestamp: number | string }>(
 	array: T[],
 	order: 'desc' | 'asc' = 'desc',
-): T[] {
+) {
 	const copiedArray = array.slice();
 	copiedArray.sort((itemA, itemB) => {
+		const timestampA =
+			typeof itemA.timestamp === 'number' ? itemA.timestamp : timestampToNumber(itemA.timestamp);
+		const timestampB =
+			typeof itemB.timestamp === 'number' ? itemB.timestamp : timestampToNumber(itemB.timestamp);
+
 		if (order === 'desc') {
-			return itemB.timestamp - itemA.timestamp;
+			return timestampB - timestampA;
 		}
-		return itemA.timestamp - itemB.timestamp;
+		return timestampA - timestampB;
 	});
 	return copiedArray;
 }

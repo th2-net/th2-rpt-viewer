@@ -49,6 +49,7 @@ export default class RootStore {
 			this,
 			this.api,
 			this.filtersHistoryStore,
+			this.sessionsStore,
 			this.parseUrlState(),
 		);
 

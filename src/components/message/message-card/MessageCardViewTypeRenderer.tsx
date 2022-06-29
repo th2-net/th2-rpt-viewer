@@ -31,9 +31,8 @@ export type MessageCardViewTypeRendererProps = {
 	messageBody: MessageBody | null;
 	isEmbedded?: boolean;
 	isDetailed?: boolean;
-	applyFilterToBody?: boolean;
-	renderInfo: () => React.ReactNode;
 	sortOrderItems: string[];
+	applyFilterToBody?: boolean;
 };
 
 const MessageCardViewTypeRenderer = ({
@@ -42,9 +41,8 @@ const MessageCardViewTypeRenderer = ({
 	isBeautified,
 	isSelected,
 	messageBody,
-	renderInfo,
-	applyFilterToBody,
 	sortOrderItems,
+	applyFilterToBody,
 }: MessageCardViewTypeRendererProps) => {
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
@@ -56,27 +54,25 @@ const MessageCardViewTypeRenderer = ({
 							isBeautified={isBeautified}
 							isSelected={isSelected}
 							body={messageBody}
-							applyFilterToBody={applyFilterToBody}
 							sortOrderItems={sortOrderItems}
-							renderInfo={renderInfo}
 						/>
 					}>
 					<MessageBodyCard
 						isBeautified={isBeautified}
 						body={messageBody}
 						isSelected={isSelected}
-						renderInfo={renderInfo}
-						applyFilterToBody={applyFilterToBody}
 						sortOrderItems={sortOrderItems}
 					/>
 				</ErrorBoundary>
 			);
 		case MessageViewType.ASCII:
 			return rawContent ? (
-				<SimpleMessageRaw rawContent={rawContent} renderInfo={renderInfo} />
+				<SimpleMessageRaw rawContent={rawContent} applyFilterToBody={applyFilterToBody} />
 			) : null;
 		case MessageViewType.BINARY:
-			return rawContent ? <DetailedMessageRaw rawContent={rawContent} /> : null;
+			return rawContent ? (
+				<DetailedMessageRaw rawContent={rawContent} applyFilterToBody={applyFilterToBody} />
+			) : null;
 		default:
 			return null;
 	}

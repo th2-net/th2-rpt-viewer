@@ -23,7 +23,7 @@ import { EventAction, EventTreeNode } from '../../models/EventAction';
 import EventsSearchStore from './EventsSearchStore';
 import { isEvent, isEventNode, isRootEvent, sortEventsByTimestamp } from '../../helpers/event';
 import WorkspaceStore from '../workspace/WorkspaceStore';
-import { getRangeFromTimestamp } from '../../helpers/date';
+import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
 import { calculateTimeRange } from '../../helpers/calculateTimeRange';
 import { TimeRange } from '../../models/Timestamp';
 import { FilterEntry, SearchStore } from '../SearchStore';
@@ -271,8 +271,10 @@ export default class EventsStore {
 		this.selectedEvent = null;
 		this.workspaceStore.viewStore.activePanel = this;
 
-		const timeRange = calculateTimeRange(savedEventNode.startTimestamp, this.filterStore.interval);
-
+		const timeRange = calculateTimeRange(
+			timestampToNumber(savedEventNode.startTimestamp),
+			this.filterStore.interval,
+		);
 		this.eventDataStore.fetchEventTree({
 			timeRange,
 			filter: this.filterStore.filter,
@@ -365,7 +367,7 @@ export default class EventsStore {
 			try {
 				const event = await this.api.events.getEvent(defaultState);
 				this.filterStore.setRange(
-					getRangeFromTimestamp(event.startTimestamp, this.filterStore.interval),
+					getRangeFromTimestamp(timestampToNumber(event.startTimestamp), this.filterStore.interval),
 				);
 				initialState = { ...initialState, selectedEventId: event.eventId, targetEvent: event };
 				this.goToEvent(event);

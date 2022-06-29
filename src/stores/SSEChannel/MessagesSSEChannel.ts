@@ -16,7 +16,6 @@
  ***************************************************************************** */
 
 import { action, when } from 'mobx';
-import moment from 'moment';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat, MessageIdsEvent } from '../../api/sse';
@@ -54,10 +53,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		if (this.queryParams.searchDirection === 'next') {
 			chunk = chunk.reverse();
 		}
-		return chunk.map(event => ({
-			...event,
-			timestamp: moment(event.timestamp).valueOf(),
-		}));
+		return chunk;
 	};
 
 	@action
@@ -151,7 +147,9 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	private _onMessageIdsEvent = (e: Event) => {
 		const messagesIdsEvent: MessageIdsEvent =
 			e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
-		this.messageIds = Object.values(messagesIdsEvent.messageIds).filter(Boolean) as string[];
+		this.messageIds = Object.values(messagesIdsEvent.messageIds).map(
+			messageId => messageId.lastId,
+		) as string[];
 		if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
 			this.eventListeners.onMessageIdsEvent(messagesIdsEvent);
 		}

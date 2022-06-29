@@ -76,6 +76,7 @@ type SearchResultItemProps = {
 	onResultClick: (
 		item: SearchResult,
 		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
+		isNewWorkspace?: boolean,
 	) => void;
 };
 
@@ -281,25 +282,21 @@ const SearchResultItem = ({
 			},
 		},
 		message: {
-			messageType: messageType => {
-				if (!filters.type.values.length || filters.type.negative) return <>{messageType}</>;
+			type: type => {
+				if (!filters.type.values.length || filters.type.negative) return <>{type}</>;
 
 				return (
-					<>
-						{filters.type.values
-							.filter(filterValue => messageType.includes(filterValue))
-							.join(', ')}
-					</>
+					<>{filters.type.values.filter(filterValue => type.includes(filterValue)).join(', ')}</>
 				);
 			},
-			body: body => {
-				if (!body) return <>{null}</>;
+			parsedMessages: parsedMessages => {
+				if (!parsedMessages) return <>{null}</>;
 
-				const { fields, ...bodyWithoutFields } = body;
+				const { fields, ...bodyWithoutFields } = parsedMessages[0].message;
 
 				const sortedObject = {
-					...body,
-					fields: Object.fromEntries(getSortedFields(body.fields)),
+					...parsedMessages[0],
+					fields: Object.fromEntries(getSortedFields(parsedMessages[0].message.fields)),
 				};
 
 				const bodyAsString = JSON.stringify(sortedObject).replace(
@@ -343,7 +340,7 @@ const SearchResultItem = ({
 					</>
 				);
 			},
-			bodyBase64: binary => {
+			rawMessageBase64: binary => {
 				if (!binary) return <>null</>;
 
 				const bodyBinary = (filters as MessageFilterState).bodyBinary;
@@ -401,6 +398,11 @@ const SearchResultItem = ({
 			<i className={iconClassName} />
 			<div className={nameClassName} onClick={() => onResultClick(result)}>
 				{getItemName(result)}
+			</div>
+			<div
+				className='search-result__new-workspace'
+				onClick={() => onResultClick(result, undefined, true)}>
+				Open in a new workspace
 			</div>
 			<div className='search-result__timestamp'>{formatTime(getTimestampAsNumber(result))}</div>
 			<div className='search-result__body'>
