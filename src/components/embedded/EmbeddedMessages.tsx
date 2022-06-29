@@ -37,10 +37,9 @@ const EmbeddedMessages = () => {
 	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
 
-	const renderMsg = React.useCallback(
-		(index: number, message: EventMessageItem) => <MessageCard message={message} />,
-		[],
-	);
+	const renderMsg = React.useCallback((index: number, message: EventMessageItem) => {
+		return <MessageCard message={message} />;
+	}, []);
 
 	const reportURL = React.useMemo(() => {
 		const messagesStoreState = {
@@ -153,27 +152,26 @@ const MessagesVirtualizedList = observer((props: Props) => {
 	const [messageList, setMessageList] = React.useState<EventMessageItem[]>([]);
 
 	React.useEffect(() => {
-		messagesStore.dataStore.messages.forEach(message => {
-			if (message.parsedMessages) {
-				const tempMessageList: EventMessageItem[] = [];
-				message.parsedMessages.forEach(parsedMessage => {
-					const { parsedMessages, ...rest } = message;
-					const tempMessageItem: EventMessageItem = {
-						...rest,
-						parsedMessage: null,
-						parsedMessages: [],
-					};
+		messagesStore.dataStore.messages.forEach(message =>
+			message.parsedMessages?.forEach((parsedMessage, index) => {
+				const tempMessage = message;
+				const { parsedMessages, ...rest } = tempMessage;
+				const tempMessageItem: EventMessageItem = {
+					...rest,
+					parsedMessage: null,
+					parsedMessages: [],
+				};
 
-					tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
-					if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
-						tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
-					tempMessageList.push(tempMessageItem);
-				});
-				setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
-			} else {
-				setMessageList(messageListCopy => [...messageListCopy, message as EventMessageItem]);
-			}
-		});
+				tempMessageItem.parsedMessage = tempMessage.parsedMessages
+					? tempMessage.parsedMessages[index]
+					: null;
+
+				if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
+					tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
+
+				setMessageList([...messageList, tempMessageItem]);
+			}),
+		);
 	}, [messagesStore.dataStore.messages]);
 
 	React.useEffect(() => {

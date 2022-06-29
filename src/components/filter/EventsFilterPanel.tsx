@@ -51,7 +51,7 @@ function EventsFilterPanel() {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
-	const { eventsHistory, onEventFilterSubmit } = useFiltersHistoryStore();
+	const { eventsHistory } = useFiltersHistoryStore();
 
 	const [filter, setFilter] = useSetState<EventFilterState | null>(filterStore.filter);
 
@@ -67,13 +67,12 @@ function EventsFilterPanel() {
 	const onSubmit = React.useCallback(() => {
 		if (filter) {
 			eventsStore.applyFilter(filter);
-			onEventFilterSubmit(filter);
 		}
 	}, [filter]);
 
 	const getToggler = React.useCallback(
-		(filterName: EventSSEFilters, paramName: keyof Filter) =>
-			function toggler() {
+		(filterName: EventSSEFilters, paramName: keyof Filter) => {
+			return function toggler() {
 				if (filter) {
 					const filterValue = filter[filterName];
 					if (filterValue && paramName in filterValue) {
@@ -84,39 +83,42 @@ function EventsFilterPanel() {
 						setFilter({ [filterName]: updatedFilterValue });
 					}
 				}
-			},
+			};
+		},
 		[filter],
 	);
 
 	const getValuesUpdater = React.useCallback(
-		<T extends 'string' | 'string[]' | 'switcher'>(name: EventSSEFilters) =>
-			function valuesUpdater(values: T extends 'string[]' ? string[] : string) {
+		<T extends 'string' | 'string[]' | 'switcher'>(name: EventSSEFilters) => {
+			return function valuesUpdater(values: T extends 'string[]' ? string[] : string) {
 				if (filter) {
 					setFilter({ [name]: { ...filter[name], values } });
 				}
-			},
+			};
+		},
 		[filter],
 	);
 
 	const setCurrentValue = React.useCallback(
-		(filterName: EventSSEFilters) =>
-			function setValue(value: string) {
+		(filterName: EventSSEFilters) => {
+			return function setValue(value: string) {
 				if (currentFilterValues) {
 					setCurrentFilterValues({
 						...currentFilterValues,
 						[filterName]: value,
 					});
 				}
-			},
+			};
+		},
 		[currentFilterValues],
 	);
 
 	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
 		if (!filter || !currentFilterValues) return [];
 
-		const filterNames = getObjectKeys(filter).sort(
-			(a, b) => priority.indexOf(a) - priority.indexOf(b),
-		);
+		const filterNames = getObjectKeys(filter).sort((a, b) => {
+			return priority.indexOf(a) - priority.indexOf(b);
+		});
 
 		return filterNames.map(filterName => {
 			const filterValues: Filter = filter[filterName];
@@ -160,6 +162,16 @@ function EventsFilterPanel() {
 
 			let filterInput: FilterRowConfig | null = null;
 			switch (filterValues.type) {
+				case 'string':
+					filterInput = {
+						id: filterName,
+						type: 'string',
+						value: filterValues.values,
+						setValue: getValuesUpdater(filterName),
+						autocompleteList,
+						hint: filterValues.hint,
+					};
+					break;
 				case 'string[]':
 					filterInput = {
 						id: filterName,

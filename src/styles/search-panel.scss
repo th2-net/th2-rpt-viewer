@@ -22,7 +22,6 @@
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	background-color: #fff;
 }
 
 .search-panel {
@@ -30,10 +29,8 @@
 	background-color: $searchPanelColor;
 	overflow: hidden;
 	display: flex;
-	width: 100%;
-	min-width: 350px;
 	flex-direction: column;
-	color: #666666;
+	color: #fff;
 	border-radius: 0 0 5px 5px;
 	flex-shrink: 0;
 
@@ -140,11 +137,11 @@
 				border-radius: 50%;
 
 				&.passed {
-					background-color: $passedEventsColor;
+					background-color: $graphOverlayPassedEventsColor;
 				}
 
 				&.failed {
-					background-color: $failedEventsColor;
+					background-color: $graphOverlayFailedEventsColor;
 				}
 
 				&.hide {
@@ -209,7 +206,6 @@
 .search-form {
 	&__progress-bar {
 		margin: 0 10px 10px;
-		border: 1px solid #5c85d6;
 	}
 
 	&__submit {
@@ -225,6 +221,7 @@
 	grid-template-columns: 1fr 2fr 1fr;
 	align-items: center;
 	padding: 10px 10px 7px;
+
 	&__previous {
 		justify-self: start;
 	}
@@ -256,7 +253,6 @@
 	border-radius: 5px;
 	position: relative;
 	transition: background-color 0.3s;
-	border: 1px solid #5c85d6;
 
 	&.active {
 		background: white;
@@ -276,6 +272,7 @@
 	}
 
 	&__icon {
+		filter: brightness(1000%);
 		transition: filter 0.3s;
 
 		&.prev {
@@ -319,10 +316,13 @@
 		width: 50px;
 		font-size: 13px;
 		background-color: inherit;
+		color: $searchTextColor;
 		border-bottom: 1px solid white;
-		border-radius: 4px;
-		border: 1px solid #5c85d6;
-		color: $alternativeTextColor;
+
+		&:focus {
+			background-color: white;
+			color: $alternativeTextColor;
+		}
 
 		&:disabled {
 			opacity: 0.5;
@@ -336,7 +336,7 @@
 	cursor: pointer;
 	display: flex;
 	align-items: center;
-	color: #b2b2b2;
+	color: white;
 	background: none;
 	padding: 3px 8px 3px 5px;
 	border-radius: 5px;
@@ -345,7 +345,7 @@
 	transition: color 0.3s, background-color 0.3s, opacity 0.3s;
 
 	&.active {
-		color: $textSelectedSwitcher;
+		color: $primaryTextColor;
 		background-color: white;
 		opacity: 1;
 	}
@@ -357,38 +357,31 @@
 
 	&__icon {
 		&.event {
-			@include icon(url(../../resources/icons/workspace-events.svg), 15px, 15px);
+			@include icon(url(../../resources/icons/workspace-events-white.svg), 15px, 15px);
 
 			&.active {
-				@include icon(url(../../resources/icons/workspace-events-white.svg), 15px, 15px);
+				@include icon(url(../../resources/icons/workspace-events.svg), 15px, 15px);
 			}
 		}
 		&.message {
-			@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
+			@include icon(url(../../resources/icons/workspace-messages-white.svg), 15px, 15px);
 
 			&.active {
-				@include icon(url(../../resources/icons/workspace-messages-white.svg), 15px, 15px);
+				@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
 			}
 		}
 		&.passed {
-			@include icon(url(../../resources/icons/radio-switcher-unselected.svg), 15px, 15px);
+			@include icon(url(../../resources/icons/workspace-passed-white.svg), 15px, 15px);
 
 			&.active {
-				@include icon(url(../../resources/icons/radio-switcher-selected.svg), 15px, 15px);
+				@include icon(url(../../resources/icons/workspace-passed.svg), 15px, 15px);
 			}
 		}
 		&.failed {
-			@include icon(url(../../resources/icons/radio-switcher-unselected.svg), 15px, 15px);
+			@include icon(url(../../resources/icons/workspace-failed-white.svg), 15px, 15px);
 
 			&.active {
-				@include icon(url(../../resources/icons/radio-switcher-selected.svg), 15px, 15px);
-			}
-		}
-		&.any {
-			@include icon(url(../../resources/icons/radio-switcher-unselected.svg), 15px, 15px);
-
-			&.active {
-				@include icon(url(../../resources/icons/radio-switcher-selected.svg), 15px, 15px);
+				@include icon(url(../../resources/icons/workspace-failed.svg), 15px, 15px);
 			}
 		}
 	}
@@ -396,20 +389,6 @@
 	&__label {
 		margin-left: 3px;
 		font-size: 14px;
-	}
-
-	&.event {
-		&.active {
-			color: #fff;
-			background-color: #ffa64c;
-		}
-	}
-
-	&.message {
-		&.active {
-			background-color: #1ac4e5;
-			color: #fff;
-		}
 	}
 }
 
@@ -460,7 +439,7 @@
 
 	&__infinite {
 		@include icon(url(../../resources/icons/infinite.svg), 25px, 25px);
-		filter: brightness(150%);
+		filter: brightness(300%);
 		transition: filter 0.3s;
 		margin: 0 3px;
 	}
@@ -685,8 +664,8 @@
 	align-items: center;
 	font-size: 14px;
 	font-weight: bold;
-	color: #fff;
-	background: #adc2eb;
+	color: $alternativeTextColor;
+	background: $searchButtonColor;
 	font-family: 'Open Sans', sans-serif;
 	cursor: pointer;
 	outline: none;
@@ -697,7 +676,6 @@
 		margin-right: 1px;
 		flex-shrink: 0;
 		opacity: 0.85;
-		filter: brightness(1000%);
 
 		&.pending {
 			@include icon(url(../../resources/icons/workspace-search.svg), 20px, 20px);
@@ -726,7 +704,6 @@
 	display: flex;
 	flex-direction: column;
 	padding-right: 5px;
-	flex-grow: 1;
 
 	&__controls {
 		padding: 2px 0;
@@ -762,11 +739,6 @@
 
 	&__list {
 		width: 100%;
-		flex-grow: 1;
-
-		&-virtual {
-			@include scrollbar();
-		}
 	}
 }
 
@@ -830,7 +802,7 @@
 		font-size: 12px;
 		line-height: 14px;
 		font-weight: 600;
-		color: $attachedItemNameColor;
+		color: $graphAttachedItemNameColor;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		overflow: hidden;
@@ -850,139 +822,6 @@
 		text-overflow: ellipsis;
 		overflow: hidden;
 		white-space: nowrap;
-	}
-}
-
-.search-result-separator {
-	font-size: 11px;
-	display: block;
-	text-align: center;
-	margin: 12px 0px;
-	margin-left: 24px;
-	border-bottom: 1px solid $secondaryTextColor;
-	color: $eventCardIdColor;
-	line-height: 0.1em;
-
-	&__text {
-		background-color: #fff;
-		padding: 0 45px;
-		width: 10px;
-	}
-}
-
-.search-result {
-	background-color: $searchResultBackgroundColor;
-	display: grid;
-	grid-template-areas:
-		'icon name new-workspace timestamp'
-		'body body body body';
-	grid-template-columns: 15px auto 1fr auto;
-	grid-template-rows: 15px auto;
-	gap: 5px 7px;
-	padding: 5px;
-	margin-bottom: 5px;
-
-	&.highlight {
-		&.event {
-			border-left: solid 2px $searchResultEventHighlightColor;
-		}
-
-		&.message {
-			border-left: solid 2px $searchResultMessageHighlightColor;
-		}
-	}
-
-	&__icon {
-		grid-area: icon;
-
-		&.message-icon {
-			@include icon(url(../../resources/icons/bookmark-added-hover.svg), 15px, 15px);
-		}
-
-		&.event-icon,
-		&.eventtreenode-icon {
-			width: 11px;
-			height: 11px;
-			margin: 2px;
-			border-radius: 50%;
-
-			&.passed {
-				background-color: $passedEventsColor;
-			}
-
-			&.failed {
-				background-color: $failedEventsColor;
-			}
-		}
-	}
-
-	&__name {
-		@include ellipsis();
-
-		grid-area: name;
-		font-weight: 700;
-		font-size: 10px;
-		line-height: 15px;
-		cursor: pointer;
-
-		&.message {
-			color: #087a91;
-		}
-
-		&.eventtreenode {
-			&.success {
-				color: $passedTextColor;
-			}
-
-			&.fail {
-				color: $failedTextColor;
-			}
-		}
-
-		&:hover {
-			color: $bookmarkLinkHoverColor;
-			text-decoration: underline;
-		}
-	}
-
-	&__new-workspace {
-		grid-area: new-workspace;
-		font-size: 10px;
-		color: #808080;
-		line-height: 15px;
-		cursor: pointer;
-
-		&:hover {
-			color: #595959;
-		}
-	}
-
-	&__timestamp {
-		grid-area: timestamp;
-		color: #808080;
-		font-size: 9px;
-		line-height: 15px;
-	}
-
-	&__body {
-		grid-area: body;
-		font-size: 10px;
-		line-height: 15px;
-		color: $alternativeTextColor;
-		word-wrap: break-word;
-
-		&-key {
-			font-weight: 600;
-		}
-
-		&-value {
-			font-weight: 400;
-		}
-
-		.filtered {
-			background-color: $filteredTextColor;
-			cursor: pointer;
-		}
 	}
 }
 

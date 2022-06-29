@@ -30,19 +30,21 @@ const MessagesFilterSessionFilter = ({
 	submitChanges,
 	stopLoading,
 	isLoading,
-}: MessagesFilterSessionFilterProps) => (
-	<>
-		<FilterRow rowConfig={config} />
-		<button
-			onClick={isLoading ? stopLoading : submitChanges}
-			className='messages-window-header__filter-submit-btn'>
-			{isLoading ? (
-				<i className='messages-window-header__filter-submit-stop-icon' />
-			) : (
-				<i className='messages-window-header__filter-submit-start-icon' />
-			)}
-		</button>
-	</>
-);
+}: MessagesFilterSessionFilterProps) => {
+	return (
+		<>
+			<FilterRow rowConfig={config} />
+			<button
+				onClick={isLoading ? stopLoading : submitChanges}
+				className='messages-window-header__filter-submit-btn'>
+				{isLoading ? (
+					<i className='messages-window-header__filter-submit-stop-icon' />
+				) : (
+					<i className='messages-window-header__filter-submit-start-icon' />
+				)}
+			</button>
+		</>
+	);
+};
 
 export default MessagesFilterSessionFilter;

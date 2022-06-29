@@ -14,9 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import moment from 'moment';
+import * as React from 'react';
+import { useState, useRef, useEffect } from 'react';
 import api from '../../../api';
-import { formatTimestamp, timestampToNumber } from '../../../helpers/date';
+import { getTimestampAsNumber } from '../../../helpers/date';
 import { getEventStatus, isEventId } from '../../../helpers/event';
 import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';
 import { useDebouncedCallback } from '../../../hooks';
@@ -76,11 +78,11 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 		};
 	}, [config.value]);
 
-	const showInput = useCallback(() => {
+	const showInput = React.useCallback(() => {
 		setIsInput(true);
 	}, [setIsInput]);
 
-	const showEventCard = useCallback(() => {
+	const showEventCard = React.useCallback(() => {
 		if (event) {
 			setIsInput(false);
 		}
@@ -107,7 +109,7 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 		400,
 	);
 
-	const onAutocompleteValueSelect = useCallback((nextValue: string) => {
+	const onAutocompleteValueSelect = React.useCallback((nextValue: string) => {
 		config.setValue(nextValue);
 		config.onAutocompleteSelect?.();
 	}, []);
@@ -127,7 +129,7 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 					</div>
 					{event && (
 						<div className='filter-row__event-card-timestamp'>
-							{formatTimestamp(timestampToNumber(event.startTimestamp))}
+							{moment.utc(getTimestampAsNumber(event)).format('DD.MM.YYYY HH:mm:ss.SSS')}
 						</div>
 					)}
 				</div>

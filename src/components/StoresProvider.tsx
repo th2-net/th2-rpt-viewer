@@ -18,10 +18,10 @@ import React from 'react';
 import RootStoreContext, { createRootStore } from '../contexts/rootStoreContext';
 import api from '../api';
 
-const rootStore = createRootStore(api);
-
 function RootStoreProvider({ children }: React.PropsWithChildren<{}>) {
-	return <RootStoreContext.Provider value={rootStore}>{children}</RootStoreContext.Provider>;
+	return (
+		<RootStoreContext.Provider value={createRootStore(api)}>{children}</RootStoreContext.Provider>
+	);
 }
 
 export default RootStoreProvider;

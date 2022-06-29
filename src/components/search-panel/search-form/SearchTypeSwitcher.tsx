@@ -14,17 +14,21 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import React from 'react';
 import { createBemElement } from '../../../helpers/styleCreators';
 import { SearchPanelType } from '../SearchPanel';
 
 type Props = {
 	formType: SearchPanelType;
 	setFormType: (formType: SearchPanelType) => void;
+	disabled: boolean;
 };
 
-const SearchTypeSwitcher = ({ formType, setFormType }: Props) => {
+const SearchTypeSwitcher = ({ formType, setFormType, disabled }: Props) => {
 	const setType = (type: typeof formType) => {
-		setFormType(type);
+		if (!disabled) {
+			setFormType(type);
+		}
 	};
 
 	return (
@@ -36,6 +40,7 @@ const SearchTypeSwitcher = ({ formType, setFormType }: Props) => {
 					'switch-search-type-button',
 					type,
 					formType === type ? 'active' : null,
+					disabled ? 'disabled' : null,
 				);
 
 				const iconClassName = createBemElement(

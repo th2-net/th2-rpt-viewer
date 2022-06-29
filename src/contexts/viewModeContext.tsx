@@ -28,6 +28,6 @@ interface ViewModeProviderProps {
 	children: React.ReactNode;
 	value: ViewMode;
 }
-export const ViewModeProvider = ({ children, value }: ViewModeProviderProps) => (
-	<ViewModeContext.Provider value={value}>{children}</ViewModeContext.Provider>
-);
+export const ViewModeProvider = ({ children, value }: ViewModeProviderProps) => {
+	return <ViewModeContext.Provider value={value}>{children}</ViewModeContext.Provider>;
+};

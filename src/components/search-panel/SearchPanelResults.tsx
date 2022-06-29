@@ -14,27 +14,24 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { Virtuoso } from 'react-virtuoso';
-import { formatTimestamp } from 'helpers/date';
-import { getItemId, isEvent } from '../../helpers/event';
-import { FilterEntry, SearchResult } from '../../stores/SearchStore';
+import React from 'react';
+import moment from 'moment';
+import { isEventNode } from '../../helpers/event';
+import { SearchResult } from '../../stores/SearchStore';
+import SearchResultGroup from './SearchResultGroup';
 import { ActionType } from '../../models/EventAction';
-import SearchPanelSeparator from './SearchPanelSeparator';
-import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
-import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
-import { EventMessage } from '../../models/EventMessage';
-import SearchResultItem from './SearchResultItem';
+import { BookmarkedItem } from '../../models/Bookmarks';
 
 interface SearchPanelResultsProps {
-	onResultItemClick: (
-		searchResult: SearchResult,
-		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
-		isNewWorkspace?: boolean,
-	) => void;
+	onResultItemClick: (searchResult: BookmarkedItem) => void;
 	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
 	onResultDelete: () => void;
-	flattenedResult: (SearchResult | [number, number])[];
-	filters: EventFilterState | MessageFilterState;
+	disableNext: boolean;
+	disablePrev: boolean;
+	showToggler: boolean;
+	next: () => void;
+	prev: () => void;
+	resultGroups: [string, SearchResult[]][];
 	timestamp: number;
 	disabledRemove: boolean;
 	showLoadMoreButton: boolean;
@@ -43,67 +40,41 @@ interface SearchPanelResultsProps {
 
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const {
-		flattenedResult,
-		filters,
+		resultGroups,
 		timestamp,
 		onResultItemClick,
+		onResultGroupClick,
 		onResultDelete,
+		disablePrev,
+		disableNext,
 		disabledRemove,
+		showToggler,
+		next,
+		prev,
+		showLoadMoreButton,
 		loadMore,
 	} = props;
 
-	const messagesWorkspaceStore = useMessagesWorkspaceStore();
-	const messagesDataStore = useMessagesDataStore();
-
 	function computeKey(index: number) {
-		const results = flattenedResult[index];
-		if ('length' in results) return results[0];
-		return getItemId(results);
+		const [, results] = resultGroups[index];
+		const item = results[0];
+		return isEventNode(item) ? item.eventId : item.id;
 	}
-
-	const isMessageVisibleInMessagePanel = (message: EventMessage) => {
-		const visibleMessages = messagesDataStore.messages.slice(
-			messagesWorkspaceStore.currentMessagesIndexesRange.startIndex,
-			messagesWorkspaceStore.currentMessagesIndexesRange.endIndex + 1,
-		);
-
-		return visibleMessages.some(({ id }) => id === message.id);
-	};
-
-	const isResultItemHighlighted = (result: SearchResult) => {
-		if (isEvent(result)) {
-			return true; // TODO: implement events highlighting
-		}
-
-		return isMessageVisibleInMessagePanel(result);
-	};
-
-	const renderResult = (index: number, result: SearchResult | [number, number]) => {
-		if ('length' in result) {
-			return <SearchPanelSeparator prevElement={result[0]} nextElement={result[1]} />;
-		}
-		return (
-			<SearchResultItem
-				key={computeKey(index)}
-				result={result}
-				filters={filters}
-				onResultClick={onResultItemClick}
-				highlighted={isResultItemHighlighted(result)}
-			/>
-		);
-	};
-
-	const loadMoreButton = () =>
-		!loadMoreButton ? null : (
-			<button onClick={loadMore} className='actions-list__load-button'>
-				Load more
-			</button>
-		);
 
 	return (
 		<div className='search-results'>
+			{showToggler && (
+				<div className='search-results__controls'>
+					<button className='search-results__arrow' disabled={disablePrev} onClick={prev} />
+					<button className='search-results__arrow next' disabled={disableNext} onClick={next} />
+				</div>
+			)}
 			<div className='history-point'>
-				<p className='history-point__timestamp'>{formatTimestamp(timestamp)}</p>
+				<p className='history-point__timestamp'>
+					{moment(+timestamp)
+						.utc()
+						.format('DD.MM.YYYY HH:mm:ss.SSS')}
+				</p>
 				<button
 					className='bookmark-item__remove-btn'
 					disabled={disabledRemove}
@@ -112,16 +83,19 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 				</button>
 			</div>
 			<div className='search-results__list'>
-				<Virtuoso
-					data={flattenedResult}
-					className={'search-results__list-virtual'}
-					style={{ height: '100%' }}
-					computeItemKey={computeKey}
-					components={{
-						Footer: loadMoreButton,
-					}}
-					itemContent={renderResult}
-				/>
+				{resultGroups.map(([_, results], index) => (
+					<SearchResultGroup
+						key={computeKey(index)}
+						results={results}
+						onResultClick={onResultItemClick}
+						onGroupClick={onResultGroupClick}
+					/>
+				))}
+				{showLoadMoreButton && (
+					<button onClick={loadMore} className='actions-list__load-button'>
+						Load more
+					</button>
+				)}
 			</div>
 		</div>
 	);

@@ -100,7 +100,9 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 	private messageAC: AbortController | null = null;
 
-	public getFilterParams = () => this.messagesStore.filterStore.filterParams;
+	public getFilterParams = () => {
+		return this.messagesStore.filterStore.filterParams;
+	};
 
 	@action
 	public loadMessages = async () => {

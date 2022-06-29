@@ -68,8 +68,8 @@ const MessageCardTools = ({
 		? [
 				MessageViewType.JSON,
 				MessageViewType.FORMATTED,
-				MessageViewType.ASCII,
 				MessageViewType.BINARY,
+				MessageViewType.ASCII,
 		  ]
 		: [MessageViewType.BINARY, MessageViewType.ASCII];
 
@@ -119,18 +119,16 @@ const MessageCardTools = ({
 					'button',
 					isViewMenuOpen ? 'active' : null,
 				)}
-				onClick={e => {
-					e.stopPropagation();
-					setIsViewMenuOpen(isOpen => !isOpen);
-				}}>
+				onClick={() => setIsViewMenuOpen(isOpen => !isOpen)}>
 				<div className='message-card-tools__ellipsis' />
 			</div>
 			<MessagePopup isOpen={isViewMenuOpen}>
 				{!isEmbedded && (
-					<div
-						className='message-card-tools__controls-group'
-						title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}>
+					<div className='message-card-tools__controls-group'>
 						<div className='message-card-tools__item' onClick={() => toggleMessagePin()}>
+							<span className='message-card-tools__item-title'>
+								{isBookmarked ? 'Remove bookmark' : 'Bookmark'}
+							</span>
 							<div
 								className={createBemElement(
 									'message-card-tools',
@@ -139,26 +137,37 @@ const MessageCardTools = ({
 									isBookmarked ? 'pinned' : null,
 								)}
 							/>
+
+							<div
+								className={createBemElement(
+									'message-card-tools',
+									'indicator',
+									'bookmark',
+									isBookmarked ? 'active' : null,
+								)}
+							/>
 						</div>
 					</div>
 				)}
 				{!isScreenshotMsg && (
 					<div className='message-card-tools__controls-group'>
 						{viewTypes.map(viewType => {
-							const itemClassName = createBemElement(
+							const iconClassName = createBemElement('message-card-tools', 'icon', viewType);
+							const indicatorClassName = createBemElement(
 								'message-card-tools',
-								'item',
+								'indicator',
 								viewType === messageViewType ? 'active' : null,
 							);
-							const iconClassName = createBemElement('message-card-tools', 'icon', viewType);
 
 							return (
 								<div
 									title={viewType}
-									className={itemClassName}
+									className='message-card-tools__item'
 									key={viewType}
 									onClick={() => toggleViewType(viewType)}>
+									<span className='message-card-tools__item-title'>{viewType}</span>
 									<div className={iconClassName} />
+									<div className={indicatorClassName} />
 								</div>
 							);
 						})}
@@ -182,7 +191,7 @@ const MessageCardTools = ({
 									title='Copy content to clipboard'
 									className='message-card-tools__item'
 									onClick={() => {
-										onCopy();
+										onCopy(copyOption);
 										setIsViewMenuOpen(false);
 									}}>
 									<span className='message-card-tools__item-title'>
@@ -258,7 +267,6 @@ function MessagePopup({ isOpen, children }: MessagePopupProps) {
 			{isOpen && (
 				<motion.div
 					className='message-card-tools__controls'
-					onClick={e => e.stopPropagation()}
 					style={{ transformOrigin: 'top' }}
 					initial={{ opacity: 0, scale: 0.5 }}
 					animate={{ opacity: 1, scale: 1 }}

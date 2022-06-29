@@ -15,15 +15,13 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import { useMessagesDataStore, useSessionsStore } from '../../hooks';
+import React from 'react';
+import { useMessagesDataStore } from '../../hooks';
 import MessagesFilter from '../filter/MessagesFilterPanel';
 import MessagesUpdateButton from './MessagesUpdateButton';
-import MessagesViewConfigurator from '../messages-view-configurator/MessagesViewConfigurator';
-import '../../styles/messages.scss';
 
 function MessagesWindowHeader() {
 	const { updateStore } = useMessagesDataStore();
-	const { sessionNames } = useSessionsStore();
 
 	return (
 		<div className='messages-window-header'>
@@ -35,7 +33,6 @@ function MessagesWindowHeader() {
 					stopSubscription={updateStore.stopSubscription}
 				/>
 				<MessagesFilter />
-				<MessagesViewConfigurator sessions={sessionNames} />
 			</div>
 		</div>
 	);

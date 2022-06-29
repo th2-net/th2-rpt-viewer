@@ -23,11 +23,7 @@ import {
 	TimeInputType,
 } from '../../models/filter/FilterInputs';
 import FilterRow from '../filter/row';
-import {
-	TIME_INPUT_MASK,
-	DATE_TIME_INPUT_MASK,
-	TIMESTAMPS_INPUT_MASK,
-} from '../../util/filterInputs';
+import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
 import { SearchPanelFormState } from '../../stores/SearchStore';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelFilters from './SearchPanelFilters';
@@ -75,27 +71,27 @@ const SearchPanelForm = () => {
 	const searchStore = useSearchStore();
 	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
 
-	const sessionsAutocomplete: string[] = React.useMemo(
-		() => [
+	const sessionsAutocomplete: string[] = React.useMemo(() => {
+		return [
 			...sessionsStore.sessions.map(s => s.session),
 			...messageSessions.filter(
 				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
 			),
-		],
-		[messageSessions, sessionsStore.sessions],
-	);
+		];
+	}, [messageSessions, sessionsStore.sessions]);
 
-	const areSessionInvalid: boolean = React.useMemo(
-		() =>
+	const areSessionInvalid: boolean = React.useMemo(() => {
+		return (
 			form.stream.length === 0 ||
-			form.stream.some(stream => !messageSessions.includes(stream.trim())),
-		[form.stream, messageSessions],
-	);
+			form.stream.some(stream => !messageSessions.includes(stream.trim()))
+		);
+	}, [form.stream, messageSessions]);
 
-	const autocompletes = useMemo(
-		() => (formType === 'event' ? eventsHistory : messagesHistory),
-		[formType, eventsHistory, messagesHistory],
-	);
+	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
+		formType,
+		eventsHistory,
+		messagesHistory,
+	]);
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
@@ -112,12 +108,13 @@ const SearchPanelForm = () => {
 	const resultCountLimitConfig: ResultCountLimitConfig = {
 		value: !form.resultCountLimit ? '' : form.resultCountLimit.toString(),
 		setValue: updateCountLimit,
-		disabled: false,
+		disabled,
 	};
 
 	const eventsFormTypeConfig: FitlerRowItem = {
 		label: 'Parent Event',
 		value: form.parentEvent,
+		disabled,
 		setValue: getFormStateUpdater('parentEvent'),
 		type: 'event-resolver',
 		id: 'parent-event',
@@ -132,6 +129,7 @@ const SearchPanelForm = () => {
 		id: 'stream',
 		label: 'Session',
 		values: form.stream,
+		disabled,
 		setValues: getFormStateUpdater('stream'),
 		currentValue: currentStream,
 		setCurrentValue: setCurrentStream,
@@ -148,26 +146,29 @@ const SearchPanelForm = () => {
 		inputConfig: {
 			id: 'startTimestamp',
 			value: form.startTimestamp,
+			disabled,
 			setValue: getFormStateUpdater('startTimestamp'),
 			type: TimeInputType.DATE_TIME,
-			dateTimeMask: DateTimeMask.DATE_TIME_MASK,
-			dateMask: DateTimeMask.DATE_SECONDARY_MASK,
-			timeMask: DateTimeMask.TIME_MASK,
+			dateMask: DateTimeMask.DATE_TIME_MASK,
 			placeholder: '',
-			timestampsInputMask: TIMESTAMPS_INPUT_MASK,
-			dateTimeInputMask: DATE_TIME_INPUT_MASK,
-			timeInputMask: TIME_INPUT_MASK,
+			inputMask: DATE_TIME_INPUT_MASK,
 		},
 	};
 
-	const { startTimestamp, completed, progress, timeLimits, timeIntervals, processedObjectCount } =
-		searchProgress;
+	const {
+		startTimestamp,
+		completed,
+		progress,
+		timeLimits,
+		timeIntervals,
+		processedObjectCount,
+	} = searchProgress;
 
 	const searchDatetimeControlsConfig: SearchDatetimeControlsConfig = {
 		isSearching,
 		updateForm,
 		startTimestampInput,
-		disabled: isSearching,
+		disabled: disabled || isSearching,
 		searchDirection: form.searchDirection,
 		previousTimeLimit: {
 			value:
@@ -246,7 +247,7 @@ const SearchPanelForm = () => {
 				<div className='filter-row'>
 					<div className='filter-row__label'>Search for</div>
 					<div className='search-type-config'>
-						<SearchTypeSwitcher formType={formType} setFormType={setFormType} />
+						<SearchTypeSwitcher formType={formType} setFormType={setFormType} disabled={disabled} />
 						<SearchResultCountLimit {...resultCountLimitConfig} />
 					</div>
 				</div>

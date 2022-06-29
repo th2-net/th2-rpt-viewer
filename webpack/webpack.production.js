@@ -14,7 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 
-const { merge } = require('webpack-merge');
+const webpackMerge = require('webpack-merge');
 const commonConfig = require('./webpack.common');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const path = require('path');
@@ -22,7 +22,7 @@ const packageJSON = require('../package.json');
 
 const { appBuild, appPath, appSrc } = require('./paths');
 
-module.exports = merge(commonConfig, {
+module.exports = webpackMerge(commonConfig, {
 	output: {
 		path: path.resolve(appBuild, 'out'),
 		publicPath: '',
@@ -61,7 +61,7 @@ module.exports = merge(commonConfig, {
 				return {
 					version: packageJSON.version,
 				};
-			},
-		}),
-	],
+			}
+		})
+	]
 });

@@ -18,16 +18,12 @@ module.exports = {
 	presets: [
 		['@babel/env', { targets: '> 0.25%', modules: false }],
 		'@babel/preset-typescript',
-		[
-			'@babel/preset-react',
-			{
-				runtime: 'automatic',
-			},
-		],
+		'@babel/preset-react',
 	],
 	plugins: [
 		['@babel/plugin-proposal-decorators', { legacy: true }],
 		['@babel/proposal-class-properties', { legacy: true }],
+		'react-hot-loader/babel',
 		[
 			'const-enum',
 			{
@@ -38,8 +34,7 @@ module.exports = {
 		'@babel/plugin-proposal-nullish-coalescing-operator',
 		'@babel/plugin-proposal-optional-chaining',
 		'@babel/plugin-proposal-optional-catch-binding',
-		process.env.NODE_ENV === 'development' && 'react-refresh/babel',
-	].filter(Boolean),
+	],
 	env: {
 		production: {
 			presets: ['minify'],

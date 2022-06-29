@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, observable, reaction } from 'mobx';
 import { IndexedDB, indexedDbLimits, IndexedDbStores } from '../../api/indexedDb';
 import { sortByTimestamp } from '../../helpers/date';
 
@@ -43,11 +43,6 @@ export class SessionsStore {
 				}
 			},
 		);
-	}
-
-	@computed
-	get sessionNames() {
-		return this.sessions.map(({ session }) => session);
 	}
 
 	@action

@@ -14,4 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
+export interface Timestamp {
+	nano: number;
+	epochSecond: number;
+}
+
 export type TimeRange = [number, number];

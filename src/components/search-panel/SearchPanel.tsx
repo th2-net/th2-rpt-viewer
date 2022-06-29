@@ -16,18 +16,33 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useActivePanel, useWorkspaceStore } from '../../hooks';
+import { useActivePanel } from '../../hooks';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
+import useSearchWorkspace from '../../hooks/useSearchWorkspace';
+import { BookmarkedItem } from '../../models/Bookmarks';
+import { isBookmark } from '../../helpers/bookmarks';
 import '../../styles/search-panel.scss';
 
 export type SearchPanelType = 'event' | 'message';
 
 const SearchPanel = () => {
-	const workspaceStore = useWorkspaceStore();
+	const searchWorkspace = useSearchWorkspace();
 	const searchStore = useSearchStore();
+
 	const { ref: searchPanelRef } = useActivePanel(null);
+
+	const onResultItemClick = React.useCallback(
+		(bookmark: BookmarkedItem) => {
+			if (isBookmark(bookmark)) {
+				searchWorkspace.onSearchResultItemSelect(bookmark.item);
+			} else {
+				searchWorkspace.onSearchResultItemSelect(bookmark);
+			}
+		},
+		[searchWorkspace.onSearchResultItemSelect],
+	);
 
 	return (
 		<div className='search-panel-wrapper'>
@@ -36,16 +51,23 @@ const SearchPanel = () => {
 			</div>
 			{searchStore.currentSearch && (
 				<SearchPanelResults
-					flattenedResult={searchStore.flattenedResult}
-					filters={searchStore.currentSearch.request.filters}
+					resultGroups={searchStore.sortedResultGroups}
 					timestamp={searchStore.currentSearch.timestamp}
-					onResultItemClick={workspaceStore.onSearchResultItemSelect}
-					onResultGroupClick={workspaceStore.onSearchResultGroupSelect}
+					onResultItemClick={onResultItemClick}
+					onResultGroupClick={searchWorkspace.followByTimestamp}
 					onResultDelete={() => {
 						if (searchStore.currentSearch) {
 							searchStore.deleteHistoryItem(searchStore.currentSearch);
 						}
 					}}
+					showToggler={searchStore.searchHistory.length > 1}
+					next={searchStore.nextSearch}
+					prev={searchStore.prevSearch}
+					disableNext={
+						searchStore.isSearching ||
+						searchStore.currentIndex === searchStore.searchHistory.length - 1
+					}
+					disablePrev={searchStore.isSearching || searchStore.currentIndex === 0}
 					disabledRemove={searchStore.isSearching}
 					showLoadMoreButton={searchStore.isCompleted && !searchStore.isHistorySearch}
 					loadMore={() => searchStore.startSearch(true)}

@@ -47,11 +47,13 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 	const { eventsHistory, messagesHistory, toggleFilterPin } = useFiltersHistoryStore();
 	const { filters, formType, eventFilterInfo, messagesFilterInfo } = useSearchStore();
 
-	const toShow: (FiltersHistoryType<EventFilterState> | FiltersHistoryType<MessageFilterState>)[] =
-		useMemo(() => {
-			const fType = type || formType;
-			return fType === 'event' ? eventsHistory : messagesHistory;
-		}, [eventsHistory, messagesHistory, type, formType]);
+	const toShow: (
+		| FiltersHistoryType<EventFilterState>
+		| FiltersHistoryType<MessageFilterState>
+	)[] = useMemo(() => {
+		const fType = type || formType;
+		return fType === 'event' ? eventsHistory : messagesHistory;
+	}, [eventsHistory, messagesHistory, type, formType]);
 
 	const filtersState: FiltersState = useMemo(() => {
 		if (sseFilter) {
@@ -69,7 +71,7 @@ const FiltersHistory = ({ type, sseFilter, disabled = false }: Props) => {
 		if (isOpen) {
 			raf(() => {
 				if (historyRef.current && buttonRef.current) {
-					const { left, bottom } = buttonRef.current.getBoundingClientRect();
+					const { left, bottom } = buttonRef.current?.getBoundingClientRect();
 					historyRef.current.style.left = `${left}px`;
 					historyRef.current.style.top = `${bottom}px`;
 				}

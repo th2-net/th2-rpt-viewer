@@ -14,8 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export const isAbortError = (error: unknown): boolean =>
-	error instanceof DOMException && error.code === error.ABORT_ERR;
-
-export const isQuotaExceededError = (error: unknown): boolean =>
-	error instanceof DOMException && error.code === error.QUOTA_EXCEEDED_ERR;
+export const isAbortError = (error: unknown): boolean => {
+	return error instanceof DOMException && error.code === error.ABORT_ERR;
+};

@@ -19,7 +19,6 @@ import { createURLSearchParams } from '../helpers/url';
 import EventsFilter from '../models/filter/EventsFilter';
 import { getObjectKeys } from '../helpers/object';
 import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
-import { SearchDirection } from '../models/search/SearchDirection';
 
 interface BaseSSEParams {
 	startTimestamp?: number;
@@ -82,7 +81,11 @@ export type MessageDirection = 'first' | 'second';
 export const toStream = (
 	name: string,
 	direction: MessageDirection[] = ['first', 'second'],
-): string[] => direction.map(dir => `${name}:${dir}`);
+): string[] => {
+	const res = direction.map(dir => `${name}:${dir}`);
+
+	return res;
+};
 
 export interface MessagesSSEParams extends BaseSSEParams {
 	stream: string[];
@@ -157,7 +160,7 @@ export function getMessagesSSEParamsFromFilter(
 	streams: string[],
 	startTimestamp: number | null,
 	endTimestamp: number | null,
-	searchDirection: SearchDirection,
+	searchDirection = 'previous',
 	resultCountLimit?: number,
 ): URLSearchParams {
 	const filtersToAdd: Array<keyof MessageFilterState> = !filter
@@ -228,8 +231,12 @@ const sseApi: SSESchema = {
 
 		throw res;
 	},
-	getEventFilters: () => sseApi.getFilters<EventSSEFilters>('events'),
-	getMessagesFilters: () => sseApi.getFilters<MessagesSSEFilters>('messages'),
+	getEventFilters: () => {
+		return sseApi.getFilters<EventSSEFilters>('events');
+	},
+	getMessagesFilters: () => {
+		return sseApi.getFilters<MessagesSSEFilters>('messages');
+	},
 	getEventsFiltersInfo: async filters => {
 		const eventFilterInfo = await Promise.all<EventsFiltersInfo>(
 			filters.map(filterName =>
@@ -253,12 +260,13 @@ const sseApi: SSESchema = {
 			return filterInfo;
 		});
 	},
-	getMessagesFiltersInfo: filters =>
-		Promise.all(
+	getMessagesFiltersInfo: filters => {
+		return Promise.all(
 			filters.map(filterName =>
 				fetch(`backend/filters/sse-messages/${filterName}`).then(res => res.json()),
 			),
-		),
+		);
+	},
 };
 
 export default sseApi;

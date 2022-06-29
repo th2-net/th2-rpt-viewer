@@ -137,11 +137,7 @@ const SearchDatetimeControls = ({
 					<i className={prevIconClassName} />
 				</button>
 				<div className='search-datetime-controls__start-input'>
-					<FilterDatetimeInput
-						{...startTimestampInput}
-						previousTimeLimit={previousTimeLimit}
-						nextTimeLimit={nextTimeLimit}
-					/>
+					<FilterDatetimeInput {...startTimestampInput} />
 				</div>
 				<button
 					className={nextButtonClassName}

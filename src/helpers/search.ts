@@ -39,22 +39,21 @@ export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
 
 export function getDefaultEventsFiltersState(info: EventsFiltersInfo[]): EventFilterState | null {
 	if (!info.length) return null;
-	const state = info.reduce(
-		(prev, curr) => ({
+	const state = info.reduce((prev, curr) => {
+		return {
 			...prev,
-			[curr.name]: curr.parameters.reduce(
-				(prevParams, currParam) => ({
+			[curr.name]: curr.parameters.reduce((prevParams, currParam) => {
+				return {
 					hint: curr.hint,
 					...prevParams,
 					type: currParam.type.value,
-					[currParam.name.includes('value') ? 'values' : currParam.name]:
-						getFilterParameterDefaultValue(currParam),
-				}),
-				{},
-			),
-		}),
-		{} as EventFilterState,
-	);
+					[currParam.name.includes('value')
+						? 'values'
+						: currParam.name]: getFilterParameterDefaultValue(currParam),
+				};
+			}, {}),
+		};
+	}, {} as EventFilterState);
 	return state;
 }
 
@@ -62,21 +61,19 @@ export function getDefaultMessagesFiltersState(
 	info: MessagesFilterInfo[],
 ): MessageFilterState | null {
 	if (!info.length) return null;
-	const state = info.reduce(
-		(prev, curr) => ({
+	const state = info.reduce((prev, curr) => {
+		return {
 			...prev,
-			[curr.name]: curr.parameters.reduce(
-				(prevParams, currParam) => ({
+			[curr.name]: curr.parameters.reduce((prevParams, currParam) => {
+				return {
 					hint: curr.hint,
 					...prevParams,
 					type: currParam.type.value,
 					values: getFilterParameterDefaultValue(currParam),
-				}),
-				{},
-			),
-		}),
-		{} as MessageFilterState,
-	);
+				};
+			}, {}),
+		};
+	}, {} as MessageFilterState);
 
 	return state;
 }

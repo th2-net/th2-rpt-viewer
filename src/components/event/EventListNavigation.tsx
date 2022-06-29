@@ -16,15 +16,16 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useWorkspaceEventStore } from '../../hooks';
+import { useGraphDataStore, useWorkspaceEventStore } from '../../hooks';
 
 export const EventListNavDown = observer(() => {
+	const graphStore = useGraphDataStore();
 	const eventsStore = useWorkspaceEventStore();
 
 	return (
 		<button
 			className='actions-list__nav'
-			onClick={() => eventsStore.changeEventsRange(-eventsStore.filterStore.interval)}>
+			onClick={() => eventsStore.changeEventsRange(-graphStore.interval)}>
 			<span className='down'></span>
 			<span className='label'>Older</span>
 		</button>
@@ -32,12 +33,13 @@ export const EventListNavDown = observer(() => {
 });
 
 export const EventListNavUp = observer(() => {
+	const graphStore = useGraphDataStore();
 	const eventsStore = useWorkspaceEventStore();
 
 	return (
 		<button
 			className='actions-list__nav'
-			onClick={() => eventsStore.changeEventsRange(eventsStore.filterStore.interval)}>
+			onClick={() => eventsStore.changeEventsRange(graphStore.interval)}>
 			<span className='up'></span>
 			<span className='label'>Newer</span>
 		</button>

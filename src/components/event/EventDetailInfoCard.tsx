@@ -18,12 +18,11 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SplashScreen from '../SplashScreen';
 import { createBemBlock, createStyleSelector } from '../../helpers/styleCreators';
-import { formatTime } from '../../helpers/date';
+import { formatTime, timestampToNumber } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import EventBodyCard from './EventBodyCard';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { useBookmarksStore, useWorkspaceEventStore } from '../../hooks';
-import { useSearchStore } from '../../hooks/useSearchStore';
 
 interface Props {
 	node: EventTreeNode;
@@ -36,10 +35,9 @@ interface Props {
 function EventDetailInfoCard(props: Props) {
 	const bookmarksStore = useBookmarksStore();
 	const eventStore = useWorkspaceEventStore();
-	const { currentSearch } = useSearchStore();
-	const bodyFilters = currentSearch?.request.filters.body.values ?? [];
 
-	const { event, node, children } = props;
+	const { event, eventTreeNode, node, children } = props;
+	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	if (!event) {
 		return <SplashScreen />;
@@ -49,6 +47,8 @@ function EventDetailInfoCard(props: Props) {
 	const { isUnknown } = node;
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
+	const startTimestampValue = startTimestamp && timestampToNumber(startTimestamp);
+	const endTimestampValue = endTimestamp && timestampToNumber(endTimestamp);
 
 	const isBookmarked =
 		bookmarksStore.events.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !== -1;
@@ -57,6 +57,19 @@ function EventDetailInfoCard(props: Props) {
 		if (event === null) return;
 
 		bookmarksStore.toggleEventPin(node);
+	}
+
+	function onMouseEnter() {
+		if (!isUnknown) {
+			hoverTimeout.current = setTimeout(() => {
+				eventStore.setHoveredEvent(eventTreeNode);
+			}, 600);
+		}
+	}
+
+	function onMouseLeave() {
+		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+		eventStore.setHoveredEvent(null);
 	}
 
 	const cardClassName = createStyleSelector('event-detail-info__event-card', 'event-card', status);
@@ -82,10 +95,13 @@ function EventDetailInfoCard(props: Props) {
 					</div>
 					<div className='event-card__body'>
 						<div className='event-card__id'>{eventId}</div>
-						<div className='event-card__timestamp'>
-							{formatTime(startTimestamp)}
-							{endTimestamp && endTimestamp !== startTimestamp ? (
-								<> &ndash; {formatTime(endTimestamp)}</>
+						<div
+							className='event-card__timestamp'
+							onMouseEnter={onMouseEnter}
+							onMouseLeave={onMouseLeave}>
+							{formatTime(startTimestampValue)}
+							{endTimestampValue && endTimestampValue !== startTimestampValue ? (
+								<> &ndash; {formatTime(endTimestampValue)}</>
 							) : null}
 						</div>
 					</div>
@@ -101,25 +117,10 @@ function EventDetailInfoCard(props: Props) {
 							key={`body-${eventId}-${index}`}
 							body={bodyPayloadItem}
 							parentEvent={event}
-							filters={bodyFilters}
-							// eslint-disable-next-line eqeqeq
-							target={
-								eventStore.selectedBodyFilter
-									? parseInt(eventStore.selectedBodyFilter.path[0]) === index
-										? eventStore.selectedBodyFilter
-										: undefined
-									: undefined
-							}
 						/>
 					))
 				) : (
-					<EventBodyCard
-						key={eventId}
-						body={body}
-						parentEvent={event}
-						filters={bodyFilters}
-						target={eventStore.selectedBodyFilter || undefined}
-					/>
+					<EventBodyCard key={eventId} body={body} parentEvent={event} />
 				)}
 			</div>
 		</div>

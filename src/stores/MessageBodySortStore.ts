@@ -27,8 +27,6 @@ import RootStore from './RootStore';
 import { IndexedDB, IndexedDbStores, indexedDbLimits, DbData } from '../api/indexedDb';
 import { OrderRule, RULES_ORDER_ID } from './MessageDisplayRulesStore';
 import notificationsStore from './NotificationsStore';
-import { MessageBodyField, MessageBodyFields } from '../models/MessageBody';
-import { isQuotaExceededError } from '../helpers/fetch';
 
 class MessageBodySortOrderStore {
 	constructor(private rootStore: RootStore, private indexedDb: IndexedDB) {
@@ -53,7 +51,7 @@ class MessageBodySortOrderStore {
 	}
 
 	@computed
-	private get rulesOrder(): OrderRule {
+	public get rulesOrder(): OrderRule {
 		return {
 			id: RULES_ORDER_ID,
 			order: this.sortOrder.map(({ item }) => item),
@@ -128,7 +126,7 @@ class MessageBodySortOrderStore {
 		try {
 			await this.indexedDb.addDbStoreItem(IndexedDbStores.MESSAGE_BODY_SORT_ORDER, toJS(rule));
 		} catch (error) {
-			if (isQuotaExceededError(error)) {
+			if (error.name === 'QuotaExceededError') {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {
 				notificationsStore.addMessage({
@@ -146,7 +144,7 @@ class MessageBodySortOrderStore {
 		try {
 			await this.indexedDb.updateDbStoreItem(IndexedDbStores.MESSAGE_BODY_SORT_ORDER, toJS(rule));
 		} catch (error) {
-			if (isQuotaExceededError(error)) {
+			if (error.name === 'QuotaExceededError') {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {
 				notificationsStore.addMessage({
@@ -167,25 +165,6 @@ class MessageBodySortOrderStore {
 		if (isMessageBodySortOrderItem(unsavedData)) {
 			await this.saveRule(unsavedData);
 		}
-	};
-
-	getSortedFields = (fields: MessageBodyFields) => {
-		const primarySortedFields: [string, MessageBodyField][] = Object.entries(
-			this.sortOrderItems.reduce(
-				(prev, curr) => (fields[curr] ? { ...prev, [curr]: fields[curr] } : prev),
-				{},
-			),
-		);
-
-		const secondarySortedFields: [string, MessageBodyField][] = Object.entries(fields)
-			.filter(([key]) => !this.sortOrderItems.includes(key))
-			.sort((a: [string, MessageBodyField], b: [string, MessageBodyField]) => {
-				const [keyA] = a;
-				const [keyB] = b;
-				return keyA.toLowerCase() > keyB.toLowerCase() ? 1 : -1;
-			});
-
-		return [...primarySortedFields, ...secondarySortedFields];
 	};
 }
 

@@ -16,4 +16,6 @@
 
 import { useWorkspaces } from './useWorkspacesStore';
 
-export const useWorkspaceViewStore = () => useWorkspaces().activeWorkspace.viewStore;
+export const useWorkspaceViewStore = () => {
+	return useWorkspaces().activeWorkspace.viewStore;
+};

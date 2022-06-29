@@ -19,31 +19,21 @@ import { EventAction } from '../../models/EventAction';
 import { CustomTable } from './tables/CustomTable';
 import { VerificationTable } from './tables/VerificationTable';
 import { keyForVerification } from '../../helpers/keys';
-import { RecoverableParamsTable as ParamsTable } from './tables/ParamsTable';
+import ParamsTable from './tables/ParamsTable';
 import { extractParams } from '../../helpers/tables';
 import { EventBodyPayload, EventBodyPayloadType } from '../../models/EventActionPayload';
 import ErrorBoundary from '../util/ErrorBoundary';
 import { getEventStatus } from '../../helpers/event';
 import api from '../../api';
 import { ReferenceCard } from './ReferenceCard';
-import { wrapString } from '../../helpers/filters';
-import { FilterEntry } from '../../stores/SearchStore';
 
 interface Props {
 	body: EventBodyPayload;
 	parentEvent: EventAction;
 	referenceHistory?: Array<string>;
-	filters?: string[];
-	target?: FilterEntry;
 }
 
-export function EventBodyPayloadRenderer({
-	body,
-	parentEvent,
-	filters,
-	referenceHistory = [],
-	target,
-}: Props) {
+export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory = [] }: Props) {
 	const [referencedEvent, setReferencedEvent] = React.useState<EventAction | null>(null);
 	const [referencedBody, setReferencedBody] = React.useState<EventBodyPayload[]>([]);
 
@@ -62,45 +52,24 @@ export function EventBodyPayloadRenderer({
 	}, [body]);
 
 	switch (body.type) {
-		case EventBodyPayloadType.MESSAGE: {
-			const inludingFilters = (filters ?? []).filter(f => body.data.includes(f));
-
-			const wrappedContent = inludingFilters.length
-				? wrapString(
-						body.data,
-						inludingFilters.map(filter => {
-							const valueIndex = body.data.indexOf(filter);
-							const valueRange: [number, number] = [valueIndex, valueIndex + filter.length - 1];
-							return {
-								type: new Set([
-									valueRange[0] === target?.range[0] && valueRange[1] === target.range[1]
-										? 'highlighted'
-										: 'filtered',
-								]),
-								range: valueRange,
-							};
-						}),
-				  )
-				: body.data;
-
+		case EventBodyPayloadType.MESSAGE:
 			return (
 				<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
 					<div className='event-detail-info__message-wrapper'>
 						<div key='message' className='event-detail-info__message'>
-							{wrappedContent}
+							{body.data}
 						</div>
 					</div>
 				</ErrorBoundary>
 			);
-		}
-		case EventBodyPayloadType.TABLE: {
+		case EventBodyPayloadType.TABLE:
 			return (
 				<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
-					<CustomTable content={body.rows} key='table' filters={filters ?? []} target={target} />
+					<CustomTable content={body.rows} key='table' />
 				</ErrorBoundary>
 			);
-		}
-		case EventBodyPayloadType.VERIFICATION: {
+		case EventBodyPayloadType.VERIFICATION:
+			// eslint-disable-next-line no-case-declarations
 			const key = keyForVerification(parentEvent.parentEventId, parentEvent.eventId);
 
 			return (
@@ -111,32 +80,27 @@ export function EventBodyPayloadRenderer({
 							status={getEventStatus(parentEvent)}
 							keyPrefix={key}
 							stateKey={`${key}-nodes`}
-							filters={filters ?? []}
-							target={target}
 						/>
 					</div>
 				</ErrorBoundary>
 			);
-		}
-		case EventBodyPayloadType.TREE_TABLE: {
+		case EventBodyPayloadType.TREE_TABLE:
+			// eslint-disable-next-line no-case-declarations
 			const { columns, rows } = extractParams(body);
-
 			return (
 				<ErrorBoundary>
 					<div>
 						{body.name && <div className='ac-body__item-title'>{body.name}</div>}
 						<ParamsTable
+							expandPath={[]}
 							columns={columns}
 							rows={rows}
 							stateKey={`${parentEvent.eventId}-input-params-nodes`}
 							name={parentEvent.eventName}
-							filters={filters ?? []}
-							target={target}
 						/>
 					</div>
 				</ErrorBoundary>
 			);
-		}
 		case EventBodyPayloadType.REFERENCE:
 			return (
 				<ErrorBoundary>
@@ -153,21 +117,13 @@ export function EventBodyPayloadRenderer({
 	}
 }
 
-export default function EventBodyCard({
-	parentEvent,
-	body,
-	referenceHistory,
-	filters,
-	target,
-}: Props) {
+export default function EventBodyCard({ parentEvent, body, referenceHistory }: Props) {
 	return (
 		<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
 			<EventBodyPayloadRenderer
 				body={body}
 				parentEvent={parentEvent}
 				referenceHistory={referenceHistory}
-				filters={filters}
-				target={target}
 			/>
 		</ErrorBoundary>
 	);

@@ -36,11 +36,7 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		const isFromAutocomplete = Boolean((e.target as HTMLElement).closest('.rules-autocomplete'));
 		const isFromSelect = Boolean((e.target as HTMLElement).closest('.rules-select-options-list'));
-		if (
-			!buttonRef.current?.contains(e.target as HTMLElement) &&
-			!isFromAutocomplete &&
-			!isFromSelect
-		) {
+		if (e.target !== buttonRef.current && !isFromAutocomplete && !isFromSelect) {
 			setIsOpen(false);
 		}
 	});
@@ -54,26 +50,22 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 		mode === 'body-sort' ? 'active' : null,
 	);
 
-	const offsetTop = buttonRef.current?.getBoundingClientRect().top;
-
-	const offsetRight = buttonRef.current?.getBoundingClientRect().left;
-
 	return (
 		<>
 			<button
 				ref={buttonRef}
-				className='messages-window-header__configurator-button'
-				onClick={() => setIsOpen(open => !open)}>
-				<i className='messages-window-header__configurator-button-icon' />
-			</button>
+				className='messages-view-configurator-open'
+				onClick={() => setIsOpen(open => !open)}
+				title='Message display rules'
+			/>
 			<ModalPortal
 				isOpen={isOpen}
 				ref={modalRef}
 				style={{
 					position: 'absolute',
 					width: '320px',
-					top: `calc(35px + ${offsetTop}px)`,
-					right: `calc(100% - ${offsetRight}px - 14px)`,
+					top: '35px',
+					right: '14px',
 					zIndex: 500,
 				}}>
 				<div className='messages-view-configurator'>

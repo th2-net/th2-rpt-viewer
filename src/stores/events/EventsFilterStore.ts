@@ -17,12 +17,12 @@
 import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import moment from 'moment';
 import EventsFilter from '../../models/filter/EventsFilter';
+import { GraphStore } from '../GraphStore';
 import { SearchStore } from '../SearchStore';
 import { EventsFiltersInfo, EventSSEFilters } from '../../api/sse';
 import { getDefaultEventsFiltersState } from '../../helpers/search';
 import { TimeRange } from '../../models/Timestamp';
 import { getObjectKeys } from '../../helpers/object';
-import { calculateTimeRange } from '../../helpers/calculateTimeRange';
 
 function getDefaultTimeRange(interval = 15): TimeRange {
 	const timestampTo = moment.utc().valueOf();
@@ -61,9 +61,13 @@ export type EventsFilterStoreInitialState = Partial<{
 export default class EventsFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
 
-	constructor(private searchStore: SearchStore, initialState?: EventsFilterStoreInitialState) {
+	constructor(
+		private graphStore: GraphStore,
+		private searchStore: SearchStore,
+		initialState?: EventsFilterStoreInitialState,
+	) {
 		if (initialState) {
-			const defaultRange = getDefaultTimeRange();
+			const defaultRange = getDefaultTimeRange(this.graphStore.interval);
 
 			const { range = defaultRange, filter } = initialState;
 
@@ -79,8 +83,6 @@ export default class EventsFilterStore {
 			this.setEventsRange(range);
 		}
 
-		this.setTimestampFromRange(this.range);
-
 		this.sseFilterSubscription = reaction(
 			() => this.searchStore.eventFilterInfo,
 			this.initSSEFilter,
@@ -88,21 +90,7 @@ export default class EventsFilterStore {
 	}
 
 	@observable
-	public interval = 15;
-
-	@observable
-	public timestamp: Number = new Number(
-		moment
-			.utc()
-			.subtract(this.interval / 2, 'minutes')
-			.valueOf(),
-	);
-
-	@observable
-	public range: TimeRange = calculateTimeRange(
-		moment.utc(this.timestamp.valueOf()).valueOf(),
-		this.interval,
-	);
+	public range: TimeRange = getDefaultTimeRange(this.graphStore.interval);
 
 	@observable
 	public isOpen = false;
@@ -134,23 +122,8 @@ export default class EventsFilterStore {
 	}
 
 	@action
-	public setInterval = (interval: number) => {
-		this.interval = interval;
-	};
-
-	@action
-	public setTimestamp = (timestamp: number) => {
-		this.timestamp = new Number(timestamp);
-	};
-
-	@action
 	public setRange = (range: TimeRange) => {
 		this.range = range;
-	};
-
-	@action
-	public setTimestampFromRange = (range: TimeRange) => {
-		this.timestamp = new Number(range[0] + (range[1] - range[0]) / 2);
 	};
 
 	@action
@@ -159,8 +132,9 @@ export default class EventsFilterStore {
 	};
 
 	@action
-	public resetEventsFilter = (): EventsFilter | null =>
-		getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
+	public resetEventsFilter = (): EventsFilter | null => {
+		return getDefaultEventsFiltersState(this.searchStore.eventFilterInfo);
+	};
 
 	@action
 	public setIsOpen = (state: boolean) => {

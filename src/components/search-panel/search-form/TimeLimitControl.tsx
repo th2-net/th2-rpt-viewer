@@ -17,6 +17,8 @@
 import moment from 'moment';
 import React, { useRef, useState, Fragment } from 'react';
 import { createBemBlock, createBemElement } from '../../../helpers/styleCreators';
+import { TimeInputType } from '../../../models/filter/FilterInputs';
+import FilterDatetimePicker from '../../filter/date-time-inputs/FilterDatetimePicker';
 
 type Props = {
 	value: number | null;
@@ -93,6 +95,20 @@ const TimeLimitControl = ({
 					))}
 				</div>
 			</div>
+			{showPicker && (
+				<FilterDatetimePicker
+					setValue={setValue}
+					value={value}
+					type={TimeInputType.DATE_TIME}
+					left={Math.min(rootRef.current?.offsetLeft || 0, window.innerWidth - 600)}
+					top={
+						rootRef.current
+							? rootRef.current.offsetTop + rootRef.current.clientHeight + 10
+							: undefined
+					}
+					onClose={() => togglePicker(false)}
+				/>
+			)}
 		</>
 	);
 };

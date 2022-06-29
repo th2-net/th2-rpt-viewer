@@ -14,7 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-const SplitViewPane = ({ children }: React.PropsWithChildren<{}>) => (
+import * as React from 'react';
+
+interface Props {
+	children: React.ReactNode;
+}
+
+const SplitViewPane = ({ children }: Props) => (
 	<div className='splitter-pane'>
 		<div className='splitter-pane__content'>{children}</div>
 	</div>

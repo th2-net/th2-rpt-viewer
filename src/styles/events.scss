@@ -98,8 +98,8 @@
 		color: $secondaryLightTextColor;
 		white-space: nowrap;
 		&:hover {
-			color: $timestampTextColor;
-			border: 1px solid $timestampTextColor;
+			color: $graphTextColor;
+			border: 1px solid $graphTextColor;
 			padding: 0 2px;
 			border-radius: 4px;
 		}
@@ -111,8 +111,8 @@
 		border-radius: 4px;
 
 		&:hover {
-			color: $timestampTextColor;
-			border: 1px solid $timestampTextColor;
+			color: $graphTextColor;
+			border: 1px solid $graphTextColor;
 		}
 
 		&-short {
@@ -320,8 +320,8 @@
 		text-align: right;
 
 		&:hover {
-			color: $timestampTextColor;
-			border: 1px solid $timestampTextColor;
+			color: $graphTextColor;
+			border: 1px solid $graphTextColor;
 		}
 	}
 

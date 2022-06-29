@@ -23,7 +23,7 @@ import * as React from 'react';
  * @param args callback arguments
  */
 export function stopPropagationHandler<T extends unknown[], R>(
-	callbackfn: (...fnArgs: T) => R,
+	callbackfn: (...args: T) => R,
 	...args: T
 ) {
 	return (e: React.MouseEvent) => {

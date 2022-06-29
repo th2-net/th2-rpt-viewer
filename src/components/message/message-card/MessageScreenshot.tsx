@@ -26,7 +26,9 @@ interface Props {
 export function MessageScreenshotZoom(props: Props) {
 	const [isOpen, setOpen] = useState(false);
 
-	const hideImage = React.useCallback(() => isOpen && setOpen(false), [isOpen]);
+	const hideImage = React.useCallback(() => {
+		return isOpen && setOpen(false);
+	}, [isOpen]);
 
 	const onKeyDown = React.useCallback(
 		(e: Event) => {

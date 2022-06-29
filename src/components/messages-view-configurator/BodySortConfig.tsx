@@ -24,7 +24,9 @@ import EditableSortOrderItem from './EditableSortOrderItem';
 const BodySortConfig = () => {
 	const { sortOrder } = useMessageBodySortStore();
 
-	const computeKey = (index: number) => sortOrder[index].id;
+	const computeKey = (index: number) => {
+		return sortOrder[index].id;
+	};
 
 	const renderSortRule = (index: number) => {
 		const item = sortOrder[index];

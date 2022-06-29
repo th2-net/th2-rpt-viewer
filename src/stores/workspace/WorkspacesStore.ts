@@ -15,58 +15,75 @@
  ***************************************************************************** */
 
 import { observable, action, computed, reaction } from 'mobx';
-import { BookmarksStore } from 'modules/bookmarks/stores/BookmarksStore';
-import { IBookmarksStore } from 'models/Stores';
-import ApiSchema from 'api/ApiSchema';
-import { DbData } from 'api/indexedDb';
-import { SearchStore } from 'stores/SearchStore';
-import { SessionsStore } from 'stores/messages/SessionsStore';
-import { getRangeFromTimestamp } from '../../helpers/date';
+import ApiSchema from '../../api/ApiSchema';
+import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
+import SearchWorkspaceStore, { SEARCH_STORE_INTERVAL } from './SearchWorkspaceStore';
+import { isWorkspaceStore } from '../../helpers/workspace';
+import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
+import { EventMessage } from '../../models/EventMessage';
+import { getRangeFromTimestamp } from '../../helpers/date';
+import { DbData } from '../../api/indexedDb';
 import RootStore from '../RootStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
-import { EventMessage } from '../../models/EventMessage';
-import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
-import { EventTreeNode, EventAction } from '../../models/EventAction';
-
-const SEARCH_INTERVAL = 15;
 
 export type WorkspacesUrlState = Array<WorkspaceUrlState>;
 
 export default class WorkspacesStore {
-	public readonly MAX_WORKSPACES_COUNT = 10;
+	public readonly MAX_WORKSPACES_COUNT = 12;
 
-	public bookmarksStore: IBookmarksStore;
-
-	public searchStore: SearchStore;
+	public selectedStore = new SelectedStore(this, this.api.indexedDb);
 
 	public tabsStore = new TabsStore(this);
+
+	public searchWorkspace: SearchWorkspaceStore;
 
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
 		public filtersHistoryStore: FiltersHistoryStore,
-		private sessionsStore: SessionsStore,
 		initialState: WorkspacesUrlState | null,
 	) {
+		this.searchWorkspace = new SearchWorkspaceStore(this.rootStore, this, this.api);
+
 		this.init(initialState || null);
 
-		this.searchStore = new SearchStore(this, api, filtersHistoryStore, sessionsStore);
-
-		this.bookmarksStore = new BookmarksStore(this, this.api.indexedDb);
-
-		reaction(() => this.activeWorkspace, this.onActiveWorkspaceChange);
+		reaction(
+			() => this.activeWorkspace,
+			activeWorkspace =>
+				isWorkspaceStore(activeWorkspace) && this.onActiveWorkspaceChange(activeWorkspace),
+		);
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
+
+	@computed get eventStores() {
+		return this.workspaces.map(workspace => workspace.eventsStore);
+	}
 
 	@computed get isFull() {
 		return this.workspaces.length === this.MAX_WORKSPACES_COUNT;
 	}
 
 	@computed get activeWorkspace() {
-		return this.workspaces[this.tabsStore.activeTabIndex];
+		return [this.searchWorkspace, ...this.workspaces][this.tabsStore.activeTabIndex];
+	}
+
+	@action
+	private init(initialState: WorkspacesUrlState | null) {
+		if (initialState !== null) {
+			initialState.forEach(workspaceState =>
+				this.addWorkspace(this.createWorkspace(workspaceState)),
+			);
+		} else {
+			this.addWorkspace(
+				this.createWorkspace({
+					layout: [100, 0],
+				}),
+			);
+		}
 	}
 
 	@action
@@ -75,17 +92,32 @@ export default class WorkspacesStore {
 	};
 
 	@action
-	public addWorkspace = (workspace = this.createWorkspace()) => {
-		if (this.isFull) return;
+	public addWorkspace = (workspace: WorkspaceStore) => {
 		this.workspaces.push(workspace);
-		this.tabsStore.setActiveWorkspace(this.workspaces.length - 1);
+		this.tabsStore.setActiveWorkspace(this.workspaces.length);
+	};
+
+	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
+		activeWorkspace.graphStore.setTimestampFromRange(activeWorkspace.graphStore.range);
+	};
+
+	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) => {
+		return new WorkspaceStore(
+			this,
+			this.selectedStore,
+			this.searchWorkspace.searchStore,
+			this.rootStore.sessionsStore,
+			this.rootStore.messageDisplayRulesStore,
+			this.api,
+			workspaceInitialState,
+		);
 	};
 
 	public getInitialWorkspaceByMessage = (
 		timestamp: number,
 		targetMessage?: EventMessage,
 	): WorkspaceInitialState => {
-		const requestInfo = this.searchStore.currentSearch?.request;
+		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
 		const filters: MessageFilterState | null = (requestInfo?.filters as MessageFilterState) || null;
 
 		return {
@@ -96,37 +128,11 @@ export default class WorkspacesStore {
 				timestampTo: timestamp,
 				targetMessage,
 			},
-			interval: SEARCH_INTERVAL,
-			layout: [0, 0, 100, 0],
-			timeRange: getRangeFromTimestamp(timestamp, SEARCH_INTERVAL),
+			interval: SEARCH_STORE_INTERVAL,
+			layout: [0, 100],
+			timeRange: getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL),
 		};
 	};
-
-	public getInitialWorkspaceByEvent = (
-		timestamp: number,
-		targetEvent?: EventTreeNode | EventAction,
-	): WorkspaceInitialState => {
-		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_INTERVAL);
-
-		return {
-			events: {
-				range: [timestampFrom, timestampTo],
-				targetEvent,
-			},
-			layout: [0, 100, 0, 0],
-			interval: SEARCH_INTERVAL,
-			timeRange: [timestampFrom, timestampTo],
-		};
-	};
-
-	public createWorkspace = (workspaceInitialState: WorkspaceInitialState = {}) =>
-		new WorkspaceStore(
-			this,
-			this.rootStore.sessionsStore,
-			this.rootStore.messageDisplayRulesStore,
-			this.api,
-			workspaceInitialState,
-		);
 
 	public closeWorkspace = (tab: number | WorkspaceStore) => {
 		const closedWorkspace = this.tabsStore.closeWorkspace(tab);
@@ -134,41 +140,36 @@ export default class WorkspacesStore {
 		closedWorkspace.dispose();
 	};
 
+	public getInitialWorkspaceByEvent = (
+		timestamp: number,
+		targetEvent?: EventTreeNode | EventAction,
+	): WorkspaceInitialState => {
+		const [timestampFrom, timestampTo] = getRangeFromTimestamp(timestamp, SEARCH_STORE_INTERVAL);
+
+		return {
+			events: {
+				range: [timestampFrom, timestampTo],
+				targetEvent,
+			},
+			layout: [100, 0],
+			interval: SEARCH_STORE_INTERVAL,
+			timeRange: [timestampFrom, timestampTo],
+		};
+	};
+
 	public syncData = async (unsavedData?: DbData) => {
-		console.log({ unsavedData });
-		// TODO: Fix sync data
-		// try {
-		// 	await Promise.all([
-		// 		this.searchWorkspace.searchStore.syncData(unsavedData),
-		// 		this.selectedStore.bookmarksStore.syncData(unsavedData),
-		// 	]);
-		// } catch (error) {
-		// 	this.searchWorkspace.searchStore.syncData();
-		// 	this.selectedStore.bookmarksStore.syncData();
-		// }
+		try {
+			await Promise.all([
+				this.searchWorkspace.searchStore.syncData(unsavedData),
+				this.selectedStore.bookmarksStore.syncData(unsavedData),
+			]);
+		} catch (error) {
+			this.searchWorkspace.searchStore.syncData();
+			this.selectedStore.bookmarksStore.syncData();
+		}
 	};
 
 	public onQuotaExceededError = (unsavedData?: DbData) => {
 		this.rootStore.handleQuotaExceededError(unsavedData);
-	};
-
-	private init(initialState: WorkspacesUrlState | null) {
-		if (initialState !== null) {
-			initialState.forEach(workspaceState =>
-				this.addWorkspace(this.createWorkspace(workspaceState)),
-			);
-		} else {
-			this.addWorkspace(
-				this.createWorkspace({
-					layout: [0, 100, 0, 0],
-				}),
-			);
-		}
-	}
-
-	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
-		activeWorkspace.eventsStore.filterStore.setTimestampFromRange(
-			activeWorkspace.eventsStore.filterStore.range,
-		);
 	};
 }

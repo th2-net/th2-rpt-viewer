@@ -32,7 +32,6 @@ export type FilterRowConfig = FitlerRowItem | CompoundFilterRow | ActionFilterRo
 export enum DateTimeMask {
 	TIME_MASK = 'HH:mm:ss.SSS',
 	DATE_MASK = 'YYYY-MM-DD',
-	DATE_SECONDARY_MASK = 'DD.MM.YYYY',
 	DATE_TIME_MASK = 'DD.MM.YYYY HH:mm:ss.SSS',
 	INTERVAL_MASK = 'mm',
 }
@@ -48,12 +47,8 @@ export type DateTimeInputType = {
 	setValue: (nextValue: number | null) => void;
 	type: TimeInputType;
 	id: string;
-	dateTimeInputMask: (string | RegExp)[];
-	timeInputMask?: (string | RegExp)[];
-	timestampsInputMask?: (string | RegExp)[];
-	dateTimeMask: DateTimeMask;
+	inputMask: (string | RegExp)[];
 	dateMask: DateTimeMask;
-	timeMask: DateTimeMask;
 	placeholder: string;
 	inputClassName?: string;
 	labelClassName?: string;

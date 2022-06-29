@@ -14,10 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useWorkspaces } from 'hooks/useWorkspacesStore';
+import { useSelectedStore } from './useSelectedStore';
 
 export const useBookmarksStore = () => {
-	const workspacesStore = useWorkspaces();
+	const selectedStore = useSelectedStore();
 
-	return workspacesStore.bookmarksStore;
+	return selectedStore.bookmarksStore;
 };

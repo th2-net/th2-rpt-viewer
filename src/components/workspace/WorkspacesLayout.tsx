@@ -14,87 +14,58 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import Workspace from './Workspace';
+import SearchWorkspace from './SearchWorkspace';
 import { WorkspaceContextProvider } from '../../contexts/workspaceContext';
 import { useWorkspaces } from '../../hooks';
 import Tabs, { TabListRenderProps } from '../tabs/Tabs';
-import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
+import { createStyleSelector } from '../../helpers/styleCreators';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
+import SearchWorkspaceStore from '../../stores/workspace/SearchWorkspaceStore';
+import { isWorkspaceStore } from '../../helpers/workspace';
+import { SearchWorkspaceContextProvider } from '../../contexts/searchWorkspaceContext';
 import '../../styles/root.scss';
-import { copyTextToClipboard } from '../../helpers/copyHandler';
 
 const WorkspacesLayout = () => {
 	const workspacesStore = useWorkspaces();
 
 	const renderTabs: TabListRenderProps = ({ activeTabIndex, setActiveTab }) => {
-		const getTabLayout = (workspace: WorkspaceStore, index: number) => {
-			const isTabSelected = activeTabIndex === index;
-			const controlButtonClassName = createBemElement(
-				'workspace-tab',
-				'control-button',
-				isTabSelected ? 'selected' : null,
-			);
-			const copyButtonClassName = createBemElement(
-				'workspace-tab',
-				'copy',
-				isTabSelected ? 'selected' : null,
-			);
-
-			return (
-				<Observer key={workspace.id}>
-					{() => (
-						<div
-							className={`workspace-tab ${activeTabIndex === index ? 'active' : ''}`}
-							onClick={() => setActiveTab(index)}>
-							<h3 className='workspace-tab__title'>Workspace {index + 1}</h3>
-							<div className='workspace-tab__controls'>
-								<div
-									className={controlButtonClassName}
-									title='Copy workspace link'
-									onClick={e => {
-										e.stopPropagation();
-										const appState = workspace.getWorkspaceState();
-										const searchString = appState
-											? new URLSearchParams({ workspaces: window.btoa(JSON.stringify(appState)) })
-											: null;
-										copyTextToClipboard(
-											[window.location.origin, window.location.pathname, `?${searchString}`].join(
-												'',
-											),
-										);
-									}}>
-									<div className={copyButtonClassName} />
-								</div>
-								{workspacesStore.workspaces.length > 1 && (
-									<div
-										className={controlButtonClassName}
-										onClick={e => {
-											e.stopPropagation();
-											workspacesStore.closeWorkspace(workspace);
-										}}>
-										<div
-											className={createStyleSelector(
-												'workspace-tab__close',
-												activeTabIndex === index ? 'selected' : null,
-											)}
-										/>
-									</div>
+		const getTabLayout = (workspace: WorkspaceStore | SearchWorkspaceStore, index: number) => (
+			<Observer key={workspace.id}>
+				{() => (
+					<div
+						className={`workspace-tab ${activeTabIndex === index ? 'active' : ''}`}
+						onClick={() => setActiveTab(index)}>
+						{workspacesStore.workspaces.length > 0 && isWorkspaceStore(workspace) && (
+							<span
+								className={createStyleSelector(
+									'workspace-tab__close',
+									activeTabIndex === index ? 'selected' : null,
 								)}
-							</div>
-						</div>
-					)}
-				</Observer>
-			);
-		};
+								onClick={e => {
+									e.stopPropagation();
+									workspacesStore.closeWorkspace(workspace);
+								}}
+							/>
+						)}
+						<h3 className='workspace-tab__title'>
+							{isWorkspaceStore(workspace) ? `Workspace ${index}` : 'Search'}
+						</h3>
+					</div>
+				)}
+			</Observer>
+		);
 
 		return [
-			...workspacesStore.workspaces.map((workspace, index) => getTabLayout(workspace, index)),
+			getTabLayout(workspacesStore.searchWorkspace, 0),
+			...workspacesStore.workspaces.map((workspace, index) => getTabLayout(workspace, index + 1)),
 		];
 	};
 
 	function addWorkspace() {
-		workspacesStore.addWorkspace();
+		workspacesStore.addWorkspace(workspacesStore.createWorkspace());
 	}
 
 	return (
@@ -105,18 +76,23 @@ const WorkspacesLayout = () => {
 			tabList={tabListInjectedProps => (
 				<>
 					{renderTabs(tabListInjectedProps)}
-					{!workspacesStore.isFull && (
-						<button className='workspace-tab workspace-tab__add' onClick={addWorkspace}>
-							+
-						</button>
-					)}
+					<div className='workspace-tab workspace-tab__add' onClick={addWorkspace}>
+						+
+					</div>
 				</>
 			)}
-			tabPanels={workspacesStore.workspaces.map(workspace => (
-				<WorkspaceContextProvider value={workspace} key={workspace.id}>
-					<Workspace />
-				</WorkspaceContextProvider>
-			))}
+			tabPanels={[
+				<SearchWorkspaceContextProvider
+					value={workspacesStore.searchWorkspace}
+					key='search-workspace'>
+					<SearchWorkspace />
+				</SearchWorkspaceContextProvider>,
+				...workspacesStore.workspaces.map(workspace => (
+					<WorkspaceContextProvider value={workspace} key={workspace.id}>
+						<Workspace />
+					</WorkspaceContextProvider>
+				)),
+			]}
 		/>
 	);
 };

@@ -43,7 +43,7 @@ describe('[Helpers] Search - multiTokenSearch', () => {
 
 		const result = multiTokenSplit(content, tokens);
 
-		const [start, end] = content.split(/sit/g);
+		const [start, end] = content.split(new RegExp('sit', 'g'));
 
 		const expectedResult: SearchSplitResult[] = [
 			{
@@ -118,7 +118,7 @@ describe('[Helpers] Search - multiTokenSearch', () => {
 				token: tokens[1],
 			},
 			{
-				content: content.split(/dolor/g)[1],
+				content: content.split(new RegExp('dolor', 'g'))[1],
 				token: null,
 			},
 		];
