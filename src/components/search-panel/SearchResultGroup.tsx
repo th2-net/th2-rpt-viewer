@@ -17,25 +17,35 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { isEventMessage, isEventNode, getItemId } from '../../helpers/event';
+import { isEvent, isEventMessage } from '../../helpers/event';
 import { createBemElement } from '../../helpers/styleCreators';
-import { useBookmarksStore, useSelectedStore } from '../../hooks';
-import { SearchResult } from '../../stores/SearchStore';
+import { FilterEntry, SearchResult } from '../../stores/SearchStore';
 import { getTimestampAsNumber } from '../../helpers/date';
 import { ActionType } from '../../models/EventAction';
-import { BookmarkedItem } from '../../models/Bookmarks';
-import { BookmarkItem } from '../bookmarks/BookmarksPanel';
+import SearchResultItem from './SearchResultItem';
+import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
+import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
+import { EventMessage } from '../../models/EventMessage';
 
 interface SearchResultGroup {
 	results: SearchResult[];
-	onResultClick: (searchResult: BookmarkedItem) => void;
+	filters: EventFilterState | MessageFilterState;
+	onResultClick: (
+		searchResult: SearchResult,
+		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
+	) => void;
 	onGroupClick: (timestamp: number, resultType: ActionType) => void;
 }
 
-const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResultGroup) => {
-	const { savedItems } = useSelectedStore();
-	const bookmarksStore = useBookmarksStore();
+const SearchResultGroup = ({
+	results,
+	filters,
+	onResultClick,
+	onGroupClick,
+}: SearchResultGroup) => {
 	const [isExpanded, setIsExpanded] = React.useState(false);
+	const messagesWorkspaceStore = useMessagesWorkspaceStore();
+	const messagesDataStore = useMessagesDataStore();
 
 	const expandButtonClass = createBemElement(
 		'search-result-group',
@@ -43,11 +53,7 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 		isExpanded ? 'expanded' : null,
 	);
 
-	function computeKey(index: number) {
-		const item = results[index];
-
-		return isEventNode(item) ? item.eventId : item.id;
-	}
+	const computeKey = (result: SearchResult) => (isEvent(result) ? result.eventId : result.id);
 
 	const namesEncountersMap = new Map<string, number>();
 	results
@@ -70,17 +76,20 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 		.map(entry => entry[0])
 		.splice(0, 3);
 
-	const getBookmarkToggler = (searchResult: SearchResult) => () => {
-		if (isEventMessage(searchResult)) {
-			bookmarksStore.toggleMessagePin(searchResult);
-		} else {
-			bookmarksStore.toggleEventPin(searchResult);
-		}
-	};
+	// const getBookmarkToggler = (searchResult: SearchResult) => () => {
+	// 	if (isEventMessage(searchResult)) {
+	// 		selectedStore.toggleMessagePin(searchResult);
+	// 	} else {
+	// 		selectedStore.toggleEventPin(searchResult);
+	// 	}
+	// };
 
-	const getIsToggled = (searchResult: SearchResult): boolean => {
-		return Boolean(savedItems.find(savedItem => getItemId(savedItem) === getItemId(searchResult)));
-	};
+	// const getIsToggled = (searchResult: SearchResult): boolean => {
+	// 	return Boolean(
+	// 		selectedStore.savedItems.find(savedItem =>
+	// getItemId(savedItem) === getItemId(searchResult)),
+	// 	);
+	// };
 
 	const averageTimestamp = (() => {
 		const groupTimestamps = results.map(getTimestampAsNumber);
@@ -107,16 +116,31 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 			.utc()
 			.format('HH:mm:ss.SSS')}`;
 
+	const isMessageVisibleInMessagePanel = (message: EventMessage) => {
+		const visibleMessages = messagesDataStore.messages.slice(
+			messagesWorkspaceStore.currentMessagesIndexesRange.startIndex,
+			messagesWorkspaceStore.currentMessagesIndexesRange.endIndex + 1,
+		);
+
+		return visibleMessages.some(({ id }) => id === message.id);
+	};
+
+	const isResultItemHighlighted = (result: SearchResult) => {
+		if (isEvent(result)) {
+			return true; // TODO: implement events highlighting
+		}
+
+		return isMessageVisibleInMessagePanel(result);
+	};
+
 	if (results.length === 1) {
 		return (
 			<div className='search-result-single-item'>
-				<BookmarkItem
-					key={computeKey(0)}
-					bookmark={results[0]}
-					onClick={onResultClick}
-					toggleBookmark={getBookmarkToggler(results[0])}
-					isBookmarked={getIsToggled(results[0])}
-					isBookmarkButtonDisabled={bookmarksStore.isBookmarksFull}
+				<SearchResultItem
+					result={results[0]}
+					filters={filters}
+					onResultClick={onResultClick}
+					highlighted={isResultItemHighlighted(results[0])}
 				/>
 			</div>
 		);
@@ -140,14 +164,13 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 			</div>
 			<div className='search-result-group-items'>
 				{isExpanded &&
-					results.map((result, index) => (
-						<BookmarkItem
-							key={computeKey(index)}
-							bookmark={result}
-							onClick={onResultClick}
-							toggleBookmark={getBookmarkToggler(result)}
-							isBookmarked={getIsToggled(result)}
-							isBookmarkButtonDisabled={bookmarksStore.isBookmarksFull}
+					results.map(result => (
+						<SearchResultItem
+							key={computeKey(result)}
+							result={result}
+							filters={filters}
+							onResultClick={onResultClick}
+							highlighted={isResultItemHighlighted(result)}
 						/>
 					))}
 			</div>

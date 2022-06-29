@@ -16,21 +16,21 @@
 
 import React, { useRef } from 'react';
 import debounce from 'lodash.debounce';
-import { useGraphDataStore } from '../../hooks';
 import KeyCodes from '../../util/KeyCodes';
+import { useEventsFilterStore } from '../../hooks/useEventsFilterStore';
 
 export function EventsIntervalInput() {
-	const graphStore = useGraphDataStore();
+	const eventsFilterStore = useEventsFilterStore();
 
 	const inputRef = useRef<HTMLInputElement>();
 
 	const submitIntervalDebounced = useRef(
 		debounce((i: number) => {
-			graphStore.setInterval(i);
+			eventsFilterStore.setInterval(i);
 		}, 500),
 	);
 
-	const [interval, setEventsInterval] = React.useState(() => graphStore.interval.toString());
+	const [interval, setEventsInterval] = React.useState(() => eventsFilterStore.interval.toString());
 
 	const onIntervalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const parsedInterval = parseInt(event.target.value) || '';
@@ -48,7 +48,7 @@ export function EventsIntervalInput() {
 			submitIntervalDebounced.current.cancel();
 			const parsedInterval = parseInt(interval);
 			if (parsedInterval) {
-				graphStore.setInterval(parsedInterval);
+				eventsFilterStore.setInterval(parsedInterval);
 				inputRef.current?.blur();
 			}
 		}

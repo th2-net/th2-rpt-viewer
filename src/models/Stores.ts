@@ -14,9 +14,22 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { Bookmark, EventBookmark, MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
+import { DbData } from '../api/indexedDb';
 import { MessagesSSEParams } from '../api/sse';
+import { EventTreeNode } from './EventAction';
 import { MessageSSEEventListeners } from '../stores/SSEChannel/MessagesSSEChannel';
-import { EventMessage } from './EventMessage';
+import { EventMessage, EventMessageItem } from './EventMessage';
+
+export interface IBookmarksStore {
+	messages: MessageBookmark[];
+	events: EventBookmark[];
+	bookmarks: Bookmark[];
+	isLoadingBookmarks: boolean;
+	toggleMessagePin: (message: EventMessageItem) => void;
+	toggleEventPin: (message: EventTreeNode) => void;
+	syncData: (unsavedData?: DbData) => void;
+}
 
 export interface MessagesDataStore {
 	messages: EventMessage[];

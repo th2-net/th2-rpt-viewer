@@ -45,6 +45,7 @@ export default function Checkbox({
 				id={id}
 				checked={checked}
 				onChange={onChange}
+				onClick={e => e.stopPropagation()}
 			/>
 			{label && (
 				<label className='checkbox__label' htmlFor={id}>

@@ -27,7 +27,7 @@ import {
 	SSEHeartbeat,
 	SSEParams,
 } from '../api/sse';
-import { DbData, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
+import { DbData, IndexedDbStores } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
 import {
 	EventFilterState,
@@ -35,20 +35,20 @@ import {
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { getTimestampAsNumber } from '../helpers/date';
-import { getItemId, isEventId, isEventMessage, isEventNode } from '../helpers/event';
+import { getItemId, isEventAction, isEventId, isEventMessage } from '../helpers/event';
 import {
 	getDefaultEventsFiltersState,
 	getDefaultMessagesFiltersState,
-	getResultGroupKey,
 	isSearchHistoryEntity,
 } from '../helpers/search';
-import { EventTreeNode } from '../models/EventAction';
+import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessageItem } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { SessionsStore } from './messages/SessionsStore';
+import { EventBodyPayload } from '../models/EventActionPayload';
 import { getItemAt } from '../helpers/array';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
@@ -65,7 +65,7 @@ export type SearchPanelFormState = {
 	stream: string[];
 };
 
-export type SearchResult = EventTreeNode | EventMessageItem;
+export type SearchResult = EventAction | EventMessageItem;
 
 export type SearchHistory = {
 	timestamp: number;
@@ -101,6 +101,11 @@ type SearchProgressState = {
 	lastEventId: string | null;
 	lastProcessedObjectCount: number;
 	resultCount: number;
+};
+
+export type FilterEntry = {
+	path: string[];
+	range: [number, number];
 };
 
 const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
@@ -181,7 +186,7 @@ export class SearchStore {
 
 	@observable searchHistory: SearchHistory[] = [];
 
-	@observable currentIndex = this.searchHistory.length > 0 ? this.searchHistory.length - 1 : 0;
+	@observable currentIndex = 0;
 
 	@observable eventFilterInfo: EventsFiltersInfo[] = [];
 
@@ -212,6 +217,8 @@ export class SearchStore {
 	@observable isEventsFilterLoading = false;
 
 	@observable eventAutocompleteList: EventTreeNode[] = [];
+
+	@observable selectedEventBodyFilter: [EventBodyPayload, FilterEntry] | null = null;
 
 	@observable.ref eventAutocompleteSseChannel: EventSource | null = null;
 
@@ -333,18 +340,30 @@ export class SearchStore {
 	@computed get sortedResultGroups() {
 		if (!this.currentSearch) return [];
 
-		const startTimestamp = this.currentSearch.request.state.startTimestamp || 0;
-
 		return Object.entries(this.currentSearch.results).sort((a, b) => {
 			const [firstResultGroupTimestamp, secondResultGroupTimestamp] = [a, b].map(
 				resultGroup => +resultGroup[0] * 1000 * SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60,
 			);
 
-			return (
-				Math.abs(firstResultGroupTimestamp - startTimestamp) -
-				Math.abs(secondResultGroupTimestamp - startTimestamp)
-			);
+			return firstResultGroupTimestamp - secondResultGroupTimestamp;
 		});
+	}
+
+	public isSeparator = (object: SearchResult[] | [number, number]): object is [number, number] =>
+		!Number.isNaN(+object[0]);
+
+	@computed get flattenedResult(): (SearchResult | [number, number])[] {
+		if (!this.currentSearch) return [];
+		const result: (SearchResult | [number, number])[] = [];
+		this.sortedResultGroups.forEach(([, value], index) => {
+			if (index > 0)
+				result.push([
+					getTimestampAsNumber(this.sortedResultGroups[index - 1][1].slice(-1)[0]),
+					getTimestampAsNumber(value[0]),
+				]);
+			result.push(...value);
+		});
+		return result;
 	}
 
 	@action
@@ -355,7 +374,9 @@ export class SearchStore {
 			const filtersInfo = await this.api.sse.getEventsFiltersInfo(filters);
 			runInAction(() => {
 				this.eventFilterInfo = filtersInfo;
-				this.eventsFilter = getDefaultEventsFiltersState(filtersInfo);
+				if (!this.eventsFilter) {
+					this.eventsFilter = getDefaultEventsFiltersState(filtersInfo);
+				}
 			});
 		} catch (error) {
 			console.error('Error occured while loading event filters', error);
@@ -374,7 +395,9 @@ export class SearchStore {
 			const filtersInfo = await this.api.sse.getMessagesFiltersInfo(filters);
 			runInAction(() => {
 				this.messagesFilterInfo = filtersInfo;
-				this.messagesFilter = getDefaultMessagesFiltersState(filtersInfo);
+				if (!this.messagesFilter) {
+					this.messagesFilter = getDefaultMessagesFiltersState(filtersInfo);
+				}
 			});
 		} catch (error) {
 			console.error('Error occured while loading messages filters', error);
@@ -444,25 +467,8 @@ export class SearchStore {
 		);
 	};
 
-	@action nextSearch = () => {
-		if (this.currentIndex < this.searchHistory.length - 1) {
-			this.currentIndex += 1;
-			this.resetSearchProgressState();
-			this.setCompleted(true);
-		}
-	};
-
-	@action prevSearch = () => {
-		if (this.currentIndex !== 0) {
-			this.currentIndex -= 1;
-			this.resetSearchProgressState();
-			this.setCompleted(true);
-		}
-	};
-
 	@action newSearch = (searchHistoryItem: SearchHistory) => {
-		this.searchHistory = [...this.searchHistory, searchHistoryItem];
-		this.currentIndex = this.searchHistory.length - 1;
+		this.searchHistory = [searchHistoryItem];
 		this.resetSearchProgressState();
 	};
 
@@ -548,13 +554,15 @@ export class SearchStore {
 		);
 
 		const startDirectionalSearch = (direction: SSESearchDirection) => {
+			const endTimestamp = timeLimits[direction];
 			const params = {
-				startTimestamp: _startTimestamp,
+				startTimestamp: _startTimestamp ? new Date(_startTimestamp).toISOString() : _startTimestamp,
 				searchDirection: direction,
 				resultCountLimit,
-				endTimestamp: timeLimits[direction],
+				endTimestamp: endTimestamp ? new Date(endTimestamp).toISOString() : endTimestamp,
 				filters: filtersToAdd,
 				...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
+				metadataOnly: false,
 			};
 
 			if (isPaused || loadMore) {
@@ -662,11 +670,27 @@ export class SearchStore {
 		if (this.currentSearch) {
 			const data = (ev as MessageEvent).data;
 			const parsedEvent: SearchResult | SSEHeartbeat = JSON.parse(data);
-			this.searchChunk.push({ ...parsedEvent, searchDirection });
+
+			if (isEventAction(parsedEvent)) {
+				this.searchChunk.push({
+					...parsedEvent,
+					startTimestamp: parsedEvent.startTimestamp,
+					endTimestamp: parsedEvent.endTimestamp,
+					searchDirection,
+				});
+			} else if (isEventMessage(parsedEvent)) {
+				this.searchChunk.push({
+					...parsedEvent,
+					timestamp: parsedEvent.timestamp,
+					searchDirection,
+				});
+			} else {
+				this.searchChunk.push({ ...parsedEvent, searchDirection });
+			}
 
 			if (
 				this.searchChunk.length >= SEARCH_CHUNK_SIZE ||
-				(!isEventNode(parsedEvent) && !isEventMessage(parsedEvent))
+				(!isEventAction(parsedEvent) && !isEventMessage(parsedEvent))
 			) {
 				this.exportChunkToSearchHistory();
 			}
@@ -685,16 +709,14 @@ export class SearchStore {
 
 			const { searchDirection, ...parsedEvent } = eventWithSearchDirection;
 
-			const eventTimestamp =
-				isEventNode(parsedEvent) || isEventMessage(parsedEvent)
-					? getTimestampAsNumber(parsedEvent)
-					: parsedEvent.timestamp;
+			const eventTimestamp = !isHeartbeat(parsedEvent)
+				? getTimestampAsNumber(parsedEvent)
+				: parsedEvent.timestamp;
 
-			if (isEventNode(parsedEvent) || isEventMessage(parsedEvent)) {
-				const resultGroupKey = getResultGroupKey(
-					eventTimestamp,
-					SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES,
-				);
+			if (!isHeartbeat(parsedEvent)) {
+				const resultGroupKey = Math.floor(
+					eventTimestamp / 1000 / (SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES * 60),
+				).toString();
 
 				if (!this.currentSearch.results[resultGroupKey]) {
 					this.currentSearch.results[resultGroupKey] = [];
@@ -805,18 +827,13 @@ export class SearchStore {
 		}
 	}
 
-	private getSearchHistory = async (historyTimestamp?: number) => {
+	private getSearchHistory = async () => {
 		try {
 			const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
 				IndexedDbStores.SEARCH_HISTORY,
 			);
 			runInAction(() => {
 				this.searchHistory = searchHistory;
-				const defaultIndex = searchHistory.length - 1;
-				const index = historyTimestamp
-					? searchHistory.findIndex(search => search.timestamp === historyTimestamp)
-					: -1;
-				this.currentIndex = index === -1 ? defaultIndex : index;
 			});
 		} catch (error) {
 			console.error('Failed to load search history', error);
@@ -841,17 +858,10 @@ export class SearchStore {
 				return;
 			}
 
-			if (savedSearchResultKeys.length >= indexedDbLimits['search-history']) {
-				const keysToDelete = savedSearchResultKeys.slice(
-					0,
-					savedSearchResultKeys.length - indexedDbLimits['search-history'] + 1,
-				);
-				await Promise.all(
-					keysToDelete.map(searchHistoryKey =>
-						this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SEARCH_HISTORY, searchHistoryKey),
-					),
-				);
-			}
+			savedSearchResultKeys.forEach(key =>
+				this.api.indexedDb.deleteDbStoreItem(IndexedDbStores.SEARCH_HISTORY, key),
+			);
+
 			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
 		} catch (error) {
 			if (error instanceof DOMException && error.code === error.QUOTA_EXCEEDED_ERR) {
@@ -880,3 +890,8 @@ export class SearchStore {
 		}
 	};
 }
+
+const isHeartbeat = (object: unknown): object is SSEHeartbeat =>
+	typeof object === 'object' &&
+	object !== null &&
+	(object as SSEHeartbeat).scanCounter !== undefined;

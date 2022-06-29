@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { timestampToNumber } from './date';
 import { ActionType } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import {
@@ -22,7 +23,6 @@ import {
 	MessageBodyField,
 	MessageBodyFields,
 } from '../models/MessageBody';
-import { timestampToNumber } from './date';
 
 export const sortMessagesByTimestamp = (
 	messages: Array<EventMessage>,
@@ -38,33 +38,29 @@ export const sortMessagesByTimestamp = (
 	return copiedMessages;
 };
 
-export const isMessage = (object: unknown): object is EventMessage => {
-	return (
-		typeof object === 'object' &&
-		object !== null &&
-		(object as EventMessage).type === ActionType.MESSAGE
-	);
-};
+export const isMessage = (object: unknown): object is EventMessage =>
+	typeof object === 'object' &&
+	object !== null &&
+	(object as EventMessage).type === ActionType.MESSAGE;
 
 export function normalizeFields(fields: MessageBodyFields) {
-	return Object.entries(fields).reduce((acc, [name, field]) => {
-		return {
+	return Object.entries(fields).reduce(
+		(acc, [name, field]) => ({
 			...acc,
 			[name]: normalizeField(field),
-		};
-	}, {});
+		}),
+		{},
+	);
 }
 
 export function normalizeField(field: MessageBodyField): string | object {
 	if (isSimpleValue(field)) return field.simpleValue;
 	if (isMessageValue(field)) {
 		return Object.entries(field.messageValue.fields || {}).reduce(
-			(acc, [fieldName, fieldValue]) => {
-				return {
-					...acc,
-					[fieldName]: normalizeField(fieldValue),
-				};
-			},
+			(acc, [fieldName, fieldValue]) => ({
+				...acc,
+				[fieldName]: normalizeField(fieldValue),
+			}),
 			{},
 		);
 	}

@@ -46,9 +46,9 @@ export function useSelectListener(
 			return;
 		}
 
-		if (refIsAnchorNode || refIsFocusNode) {
+		if (range.commonAncestorContainer === ref.current) {
 			setStartOffset(range.startOffset);
-			setEndOffset(ref.current.textContent!.length);
+			setEndOffset(range.startOffset + range.toString().length);
 			return;
 		}
 

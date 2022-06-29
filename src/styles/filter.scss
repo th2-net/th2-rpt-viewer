@@ -24,7 +24,7 @@
 	background-color: $filterPrimaryColor;
 	color: $filterTextColor;
 	font-size: 15px;
-	font-weight: bold;
+	font-weight: normal;
 	white-space: nowrap;
 	position: fixed;
 	z-index: 120;
@@ -102,7 +102,7 @@
 		}
 
 		&__icon {
-			background-image: url(../../resources/icons/filter-hover.svg);
+			@include icon(url(../../resources/icons/filter.svg), 15px, 15px);
 		}
 	}
 
@@ -112,7 +112,7 @@
 		}
 
 		&__icon {
-			background-image: url(../../resources/icons/filter-white.svg);
+			background-image: url(../../resources/icons/filter.svg);
 		}
 	}
 
@@ -188,13 +188,12 @@
 		left: 0;
 		top: 40px;
 		z-index: 2;
-		padding: 20px 30px;
+		padding: 8px;
 		background-color: white;
 		display: flex;
 		flex-direction: column;
 		border-radius: 6px;
-		box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14),
-			0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+		box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.25);
 
 		&__row {
 			height: 300px;
@@ -339,7 +338,7 @@
 	font-size: 14px;
 
 	.filters-history-open {
-		@include improved-clickable($filterPrimaryColor, 10px)
+		@include improved-clickable($filterPrimaryColor, 10px);
 	}
 
 	&__counts {
@@ -387,7 +386,7 @@
 .filter-row {
 	min-height: 32px;
 	font-size: 14px;
-	font-weight: bold;
+	font-weight: normal;
 	box-sizing: border-box;
 	display: flex;
 	align-items: center;
@@ -442,6 +441,8 @@
 		box-sizing: border-box;
 		// workaround for ff to use input as flex item https://bugzilla.mozilla.org/show_bug.cgi?id=1242914
 		min-width: 0;
+		border-radius: 4px;
+		border:1px solid $searchInputBorderColor;
 		&:disabled {
 			opacity: 0.5;
 		}
@@ -457,6 +458,22 @@
 			background-color: #fff;
 		}
 
+		&.datetime-picker {
+			margin: 0;
+			outline: none;
+			border: 1px solid #4080bf;
+			border-radius: 4px;
+			&.time {
+				width: 95px;
+			}
+			&.datetime {
+				width: 170px;
+			}
+			&.timestamps {
+				width: 340px;
+			}
+		}
+
 		&.time-interval {
 			width: 50px;
 			text-align: center;
@@ -468,6 +485,8 @@
 		cursor: pointer;
 		border: none;
 		background-color: $filterPickerControlFontColor;
+		height: 10px;
+		width: 30px;
 
 		&::before {
 			background-color: $filterSecondaryColor;
@@ -485,7 +504,7 @@
 		padding: 3px 15px;
 		border-radius: 5px;
 		background-color: rgba($filterSecondaryColor, 0.9);
-		color: $primaryTextColor;
+		color: $buttonFilterColor;
 		cursor: pointer;
 		font-size: 14px;
 		font-weight: bold;
@@ -506,7 +525,7 @@
 
 	&__label {
 		width: 120px;
-		font-weight: bold;
+		font-weight: 600;
 		font-size: 14px;
 		flex-shrink: 0;
 	}
@@ -515,7 +534,6 @@
 		@include scrollbar();
 		width: 100%;
 		margin: 0 10px;
-		border-radius: 3px;
 		&.active {
 			background: #ffffff;
 		}

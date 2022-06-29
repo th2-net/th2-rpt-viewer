@@ -26,8 +26,8 @@ import {
 } from '../../../hooks';
 import { MessageViewType, EventMessageItem } from '../../../models/EventMessage';
 import MessageCardBase from './MessageCardBase';
-import '../../../styles/messages.scss';
 import { createBemBlock } from '../../../helpers/styleCreators';
+import '../../../styles/messages.scss';
 
 export interface OwnProps {
 	message: EventMessageItem;
@@ -51,7 +51,6 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
-	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const isBookmarked =
 		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === id) !== -1;
@@ -91,17 +90,6 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 		};
 	}, [messagesStore.highlightedMessageId]);
 
-	const hoverMessage = React.useCallback(() => {
-		hoverTimeout.current = setTimeout(() => {
-			messagesStore.setHoveredMessage(message);
-		}, 600);
-	}, [messagesStore.setHoveredMessage]);
-
-	const unhoverMessage = React.useCallback(() => {
-		if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
-		messagesStore.setHoveredMessage(null);
-	}, [messagesStore.setHoveredMessage]);
-
 	const isAttached = computed(
 		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.id === message.id),
 	).get();
@@ -133,8 +121,6 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 				message={message}
 				viewType={viewType}
 				setViewType={setViewType}
-				hoverMessage={hoverMessage}
-				unhoverMessage={unhoverMessage}
 				isBookmarked={isBookmarked}
 				isAttached={isAttached}
 				toogleMessagePin={toogleMessagePin}

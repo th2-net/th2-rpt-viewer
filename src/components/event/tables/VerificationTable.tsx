@@ -26,6 +26,9 @@ import { replaceNonPrintableChars } from '../../../helpers/stringUtils';
 import { copyTextToClipboard } from '../../../helpers/copyHandler';
 import { VerificationPayload, VerificationPayloadField } from '../../../models/EventActionPayload';
 import '../../../styles/tables.scss';
+import { wrapString } from '../../../helpers/filters';
+import { FilterEntry } from '../../../stores/SearchStore';
+import { areArraysEqual } from '../../../helpers/array';
 import Popover from '../../util/Popover';
 
 const PADDING_LEVEL_VALUE = 10;
@@ -42,13 +45,14 @@ interface OwnProps {
 	status: EventStatus;
 	keyPrefix: string;
 	stateKey: string;
+	filters: string[];
+	target?: FilterEntry;
 }
 
 interface StateProps {
 	precision: string;
 	transparencyFilter: Set<StatusType>;
 	visibilityFilter: Set<StatusType>;
-	expandPath: number[];
 }
 
 interface Props extends Omit<OwnProps, 'params'>, StateProps {
@@ -139,14 +143,6 @@ class VerificationTableBase extends React.Component<Props, State> {
 		this.resizeObserver.observe(this.rootRef.current as HTMLDivElement);
 	}
 
-	componentDidUpdate(prevProps: Props) {
-		if (this.props.expandPath !== prevProps.expandPath && this.props.expandPath.length > 0) {
-			this.setState({
-				nodes: this.updateExpandPath(this.props.expandPath, this.state.nodes),
-			});
-		}
-	}
-
 	componentWillUnmount() {
 		this.props.stateSaver(this.state.nodes);
 		this.resizeObserver?.unobserve(this.rootRef.current as HTMLDivElement);
@@ -204,7 +200,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 		if (!prevColumn || !rootRef) return;
 		const { left } = rootRef.getBoundingClientRect();
 		const columnRect = prevColumn.getBoundingClientRect();
-		rootRef.scrollLeft = rootRef?.scrollLeft - (left - columnRect.left);
+		rootRef.scrollLeft -= left - columnRect.left;
 		this.getHiddenColumns();
 	};
 
@@ -290,7 +286,9 @@ class VerificationTableBase extends React.Component<Props, State> {
 							</tr>
 						</thead>
 						<tbody>
-							{nodes.map((param, index) => this.renderTableNodes(param, `${keyPrefix}-${index}`))}
+							{nodes.map((param, index) =>
+								this.renderTableNodes(param, `${keyPrefix}-${index}`, [index.toString()]),
+							)}
 						</tbody>
 					</table>
 				</div>
@@ -306,7 +304,12 @@ class VerificationTableBase extends React.Component<Props, State> {
 		);
 	}
 
-	private renderTableNodes(node: TableNode, key: string, paddingLevel = 1): React.ReactNodeArray {
+	private renderTableNodes(
+		node: TableNode,
+		key: string,
+		path: string[],
+		paddingLevel = 1,
+	): React.ReactNodeArray {
 		if (node.status != null && !this.props.visibilityFilter.has(node.status as any)) {
 			return [];
 		}
@@ -315,17 +318,29 @@ class VerificationTableBase extends React.Component<Props, State> {
 			const subNodes = node.isExpanded
 				? node.subEntries.reduce(
 						(list, n, index) =>
-							list.concat(this.renderTableNodes(n, `${key}-${index}`, paddingLevel + 1)),
+							list.concat(
+								this.renderTableNodes(
+									n,
+									`${key}-${index}`,
+									[...path, index.toString()],
+									paddingLevel + 1,
+								),
+							),
 						[] as React.ReactNodeArray,
 				  )
 				: [];
 
-			return [this.renderNode(node, paddingLevel, key), ...subNodes];
+			return [this.renderNode(node, paddingLevel, path, key), ...subNodes];
 		}
-		return [this.renderNode(node, paddingLevel, key)];
+		return [this.renderNode(node, paddingLevel, path, key)];
 	}
 
-	private renderNode(node: TableNode, paddingLevel: number, key: string): React.ReactNode {
+	private renderNode(
+		node: TableNode,
+		paddingLevel: number,
+		path: string[],
+		key: string,
+	): React.ReactNode {
 		const { transparencyFilter } = this.props;
 		const {
 			name,
@@ -394,7 +409,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 				{isToggler ? (
 					<td className={togglerClassName} onClick={this.onTogglerClick(node)}>
 						<p style={{ marginLeft: PADDING_LEVEL_VALUE * (paddingLevel - 1) }}>
-							{this.renderContent(`${key}-name`, name)}
+							{this.renderContent(`${key}-name`, name, path)}
 						</p>
 						<span className='ver-table-row-count'>{subEntries.length}</span>
 						<div className='ver-table-row-spacer' />
@@ -402,14 +417,14 @@ class VerificationTableBase extends React.Component<Props, State> {
 							onClick={e => hint && this.showTooltip(e, hint)}
 							title={hint}
 							className='ver-table-row-wrapper inner'>
-							{this.renderContent(`${key}-hint`, '', hintClassName)}
+							{this.renderContent(`${key}-hint`, '', path, hintClassName)}
 						</div>
 					</td>
 				) : (
 					<td
 						className={statusAlias.className}
 						style={{ paddingLeft: PADDING_LEVEL_VALUE * paddingLevel }}>
-						{this.renderContent(`${key}-name`, name)}
+						{this.renderContent(`${key}-name`, name, path)}
 					</td>
 				)}
 				{!isToggler && (
@@ -419,28 +434,53 @@ class VerificationTableBase extends React.Component<Props, State> {
 								{this.renderContent(
 									`${key}-expected`,
 									expected,
+									[...path, 'expected'],
 									expectedValueClassName,
 									expectedReplaced,
 								)}
-								{isToggler ? null : this.renderContent(`${key}-expectedType`, '', typeClassName)}
+								{isToggler
+									? null
+									: this.renderContent(
+											`${key}-expectedType`,
+											'',
+											[...path, 'expected'],
+											typeClassName,
+									  )}
 							</div>
 						</td>
 						<td className={actualClassName} onCopy={this.onCopyFor(actual)}>
 							<div className='ver-table-row-wrapper'>
-								{this.renderContent(`${key}-actual`, actual, actualValueClassName, actualReplaced)}
-								{this.renderContent(`${key}-actualType`, '', typeClassName)}
+								{this.renderContent(
+									`${key}-actual`,
+									actual,
+									[...path, 'actual'],
+									actualValueClassName,
+									actualReplaced,
+								)}
+								{this.renderContent(
+									`${key}-actualType`,
+									'',
+									[...path, 'actualType'],
+									typeClassName,
+								)}
 							</div>
 						</td>
 						<td className={statusClassName}>
 							{this.renderContent(
 								`${key}-status`,
 								statusAlias.alias as string,
+								[...path, 'status'],
 								statusWrapperClassName,
 							)}
 						</td>
 						<td className={actualClassName} onCopy={this.onCopyFor(operation)}>
 							<div className='ver-table-row-wrapper'>
-								{this.renderContent(`${key}-operation`, '', operationClassName, '', true)}
+								{this.renderContent(
+									`${key}-operation`,
+									'',
+									[...path, 'operation'],
+									operationClassName,
+								)}
 							</div>
 						</td>
 						<td className={statusClassName}>{keyField && <div className='ver-table__check' />}</td>
@@ -449,7 +489,7 @@ class VerificationTableBase extends React.Component<Props, State> {
 								onClick={e => hint && this.showTooltip(e, hint)}
 								title={hint}
 								className='ver-table-row-wrapper'>
-								{this.renderContent(`${key}-hint`, '', hintClassName)}
+								{this.renderContent(`${key}-hint`, '', path, hintClassName)}
 							</div>
 						</td>
 					</>
@@ -496,23 +536,34 @@ class VerificationTableBase extends React.Component<Props, State> {
 	private renderContent(
 		contentKey: string,
 		content: string | null,
+		path: string[],
 		wrapperClassName: string | null = null,
 		fakeContent: string = content || '',
-		isEmpty: Boolean = false,
 	): React.ReactNode {
-		if (content === null) {
-			return wrap(createStyleSelector(wrapperClassName || '', 'novalue'), 'null');
-		}
+		const { filters, target } = this.props;
+		const cellValue =
+			content == null ? 'null' : content === undefined ? 'missing value' : fakeContent;
 
-		if (content === '' && !isEmpty) {
-			return content;
-		}
+		const inludingFilters = filters.filter(f => cellValue.includes(f));
 
-		if (content === undefined) {
-			return wrap(createStyleSelector(wrapperClassName || '', 'novalue'), 'missing value');
-		}
+		const wrappedContent = inludingFilters.length
+			? wrapString(
+					cellValue,
+					inludingFilters.map(filter => {
+						const entryIndex = cellValue.indexOf(filter);
+						const entryRange: [number, number] = [entryIndex, entryIndex + filter.length - 1];
 
-		return wrap(wrapperClassName, fakeContent);
+						return {
+							type: new Set([
+								target && areArraysEqual(path, target.path.slice(1)) ? 'highlighted' : 'filtered',
+							]),
+							range: entryRange,
+						};
+					}),
+			  )
+			: content;
+
+		return wrap(wrapperClassName, wrappedContent);
 
 		function wrap(className: string | null, data: React.ReactNode): React.ReactNode {
 			return className == null ? data : <div className={className}>{data}</div>;
@@ -561,7 +612,6 @@ export const VerificationTable = observer(({ ...restProps }: OwnProps) => (
 		precision=''
 		transparencyFilter={new Set<StatusType>(eventStatusValues)}
 		visibilityFilter={new Set(eventStatusValues)}
-		expandPath={[] /** TODO: remove legacy search logic */}
 		{...restProps}
 	/>
 ));

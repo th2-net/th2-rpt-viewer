@@ -178,14 +178,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		const [nextMessages, prevMessages] = await Promise.all([
 			this.searchChannelNext.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(
-					messageIds.next.filter((messageId, index) => index < 2),
-				),
+				resumeMessageIds: extractMessageIds(messageIds.next),
 			}),
 			this.searchChannelPrev.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(
-					messageIds.previous.filter((messageId, index) => index < 2),
-				),
+				resumeMessageIds: extractMessageIds(messageIds.previous),
 			}),
 		]);
 
@@ -416,11 +412,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	};
 
 	@action
-	public getFilterParams = () => {
-		return this.messagesStore.filterStore.isSoftFilter
+	public getFilterParams = () =>
+		this.messagesStore.filterStore.isSoftFilter
 			? this.messagesStore.filterStore.softFilterParams
 			: this.messagesStore.filterStore.filterParams;
-	};
 
 	@action
 	public keepLoading = (direction: 'next' | 'previous') => {
@@ -480,11 +475,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.isMatchingMessages.set(messageId, true);
 
 		try {
-			const {
-				resultCountLimit,
-				searchDirection,
-				...filterParams
-			} = this.messagesStore.filterStore.filterParams;
+			const { resultCountLimit, searchDirection, ...filterParams } =
+				this.messagesStore.filterStore.filterParams;
 			const isMatch = await this.api.messages.matchMessage(messageId, filterParams, abortSignal);
 
 			runInAction(() => {

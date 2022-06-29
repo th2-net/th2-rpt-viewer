@@ -19,6 +19,7 @@ import moment from 'moment';
 import { nanoid } from 'nanoid';
 import { DbData, IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import { move } from '../helpers/array';
+import { isQuotaExceededError } from '../helpers/fetch';
 import {
 	isMessageDisplayRule,
 	isOrderRule,
@@ -179,7 +180,7 @@ class MessageDisplayRulesStore {
 		try {
 			await this.indexedDb.addDbStoreItem(IndexedDbStores.DISPLAY_RULES, toJS(rule));
 		} catch (error) {
-			if (error.name === 'QuotaExceededError') {
+			if (isQuotaExceededError(error)) {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {
 				notificationsStore.addMessage({
@@ -197,7 +198,7 @@ class MessageDisplayRulesStore {
 		try {
 			await this.indexedDb.updateDbStoreItem(IndexedDbStores.DISPLAY_RULES, toJS(rule));
 		} catch (error) {
-			if (error.name === 'QuotaExceededError') {
+			if (isQuotaExceededError(error)) {
 				this.rootStore.handleQuotaExceededError(rule);
 			} else {
 				notificationsStore.addMessage({

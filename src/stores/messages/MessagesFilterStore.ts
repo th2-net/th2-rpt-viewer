@@ -121,7 +121,7 @@ export default class MessagesFilterStore {
 	@action
 	public setMessagesFilter(
 		filter: MessagesFilter,
-		sseFilters: MessageFilterState | null = null,
+		sseFilters: MessageFilterState | null,
 		isSoftFilterApplied: boolean,
 	) {
 		this.isSoftFilter = isSoftFilterApplied;

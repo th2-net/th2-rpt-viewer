@@ -31,13 +31,6 @@ import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
 import { DirectionalStreamInfo } from '../models/StreamInfo';
 
-export default interface ApiSchema {
-	events: EventApiSchema;
-	messages: MessageApiSchema;
-	sse: SSESchema;
-	indexedDb: IndexedDB;
-}
-
 export type SSEChannelType = 'event' | 'message';
 
 export interface EventSourceConfig {
@@ -108,4 +101,11 @@ export interface SSESchema {
 	getMessagesFilters: () => Promise<MessagesSSEFilters[]>;
 	getEventsFiltersInfo: (filters: EventSSEFilters[]) => Promise<EventsFiltersInfo[]>;
 	getMessagesFiltersInfo: (filters: MessagesSSEFilters[]) => Promise<MessagesFilterInfo[]>;
+}
+
+export default interface ApiSchema {
+	events: EventApiSchema;
+	messages: MessageApiSchema;
+	sse: SSESchema;
+	indexedDb: IndexedDB;
 }

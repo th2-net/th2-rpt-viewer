@@ -32,10 +32,11 @@ import { getMessagesSSEParamsFromFilter, MessagesFilterInfo } from '../../api/ss
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { useMessagesWorkspaceStore, useOutsideClickListener } from '../../hooks';
 import FilterRow from '../filter/row';
-import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
+import { DATE_TIME_INPUT_MASK, TIME_INPUT_MASK } from '../../util/filterInputs';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { ModalPortal } from '../util/Portal';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -181,8 +182,8 @@ function MessageReplayModal() {
 		});
 	}, [searchStore.messagesFilterInfo, sseFilter, setSSEFilter, currentValues]);
 
-	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(() => {
-		return {
+	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(
+		() => ({
 			type: 'multiple-strings',
 			id: 'messages-stream',
 			values: streams,
@@ -192,27 +193,34 @@ function MessageReplayModal() {
 			autocompleteList: messagesStore.messageSessions,
 			wrapperClassName: 'messages-window-header__session-filter',
 			label: 'Session names',
-		};
-	}, [streams, setStreams, currentStream, setCurrentStream, messagesStore.messageSessions]);
+		}),
+		[streams, setStreams, currentStream, setCurrentStream, messagesStore.messageSessions],
+	);
 
-	const timestampFromConfig: FilterRowTimeWindowConfig[] = React.useMemo(() => {
-		return [
+	const timestampFromConfig: FilterRowTimeWindowConfig[] = React.useMemo(
+		() => [
 			{
 				id: 'replay-timerange',
 				inputs: [
 					{
-						dateMask: DateTimeMask.DATE_TIME_MASK,
+						dateTimeMask: DateTimeMask.DATE_TIME_MASK,
+						dateMask: DateTimeMask.DATE_MASK,
+						timeMask: DateTimeMask.TIME_MASK,
 						id: 'replay-startTimestamp',
-						inputMask: DATE_TIME_INPUT_MASK,
+						dateTimeInputMask: DATE_TIME_INPUT_MASK,
+						timeInputMask: TIME_INPUT_MASK,
 						placeholder: '',
 						setValue: setStartTimestamp,
 						value: startTimestamp,
 						type: TimeInputType.DATE_TIME,
 					},
 					{
-						dateMask: DateTimeMask.DATE_TIME_MASK,
+						dateTimeMask: DateTimeMask.DATE_TIME_MASK,
+						dateMask: DateTimeMask.DATE_MASK,
+						timeMask: DateTimeMask.TIME_MASK,
 						id: 'replay-endTimestamp',
-						inputMask: DATE_TIME_INPUT_MASK,
+						dateTimeInputMask: DATE_TIME_INPUT_MASK,
+						timeInputMask: TIME_INPUT_MASK,
 						placeholder: '',
 						setValue: setEndTimestamp,
 						value: endTimestamp,
@@ -221,12 +229,14 @@ function MessageReplayModal() {
 				],
 				type: 'time-window',
 			},
-		];
-	}, [startTimestamp, endTimestamp]);
+		],
+		[startTimestamp, endTimestamp],
+	);
 
-	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
-		return [timestampFromConfig, sessionFilterConfig, ...compoundFilterRow];
-	}, [compoundFilterRow, timestampFromConfig, sessionFilterConfig]);
+	const filterConfig: Array<FilterRowConfig> = React.useMemo(
+		() => [timestampFromConfig, sessionFilterConfig, ...compoundFilterRow],
+		[compoundFilterRow, timestampFromConfig, sessionFilterConfig],
+	);
 
 	const textToCopy = React.useMemo(() => {
 		const link = [
@@ -257,7 +267,7 @@ function MessageReplayModal() {
 			[...streams, currentStream].filter(Boolean),
 			startTimestamp,
 			endTimestamp,
-			'next',
+			SearchDirection.Next,
 		).toString();
 		return `${link}?${params}`;
 	}, [streams, startTimestamp, endTimestamp, sseFilter, currentStream, currentValues]);

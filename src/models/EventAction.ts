@@ -45,7 +45,7 @@ export interface EventAction extends EventBase {
 	batchId: null | string;
 	batched: boolean;
 	body: EventActionBody;
-	parentEventId: string;
+	parentEventId: string | null;
 	type: ActionType.EVENT_ACTION;
 }
 

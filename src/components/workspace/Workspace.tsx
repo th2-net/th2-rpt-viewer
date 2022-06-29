@@ -14,13 +14,19 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import BookmarksPanel from 'modules/bookmarks';
+import SearchPanel from '../search-panel/SearchPanel';
 import EventWindow from '../event/EventWindow';
-import WorkspaceSplitter from './WorkspaceSplitter';
 import MessagesWindow from '../message/MessagesWindow';
+import WorkspaceSplitter from './WorkspaceSplitter';
 import { useActivePanel, useWorkspaceStore } from '../../hooks';
-import { isEventsStore, isMessagesStore } from '../../helpers/stores';
+import {
+	isEventsStore,
+	isMessagesStore,
+	isSearchStore,
+	isBookmarksStore,
+} from '../../helpers/stores';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 import '../../styles/workspace.scss';
 
@@ -29,20 +35,23 @@ const panelColors = {
 		default: '#F5C5A3',
 		active: '#F7A76E',
 	},
+	search: {
+		default: '#5C85D6',
+		active: '#5C85D6',
+	},
 	messages: {
 		default: '#ADE0EB',
 		active: '#1AC4E5',
+	},
+	bookmarks: {
+		default: '#CCA3F5',
+		active: '#CCA3F5',
 	},
 } as const;
 
 function Workspace() {
 	const { activePanel } = useActivePanel(null);
-	const {
-		panelsLayout,
-		setPanelsLayout,
-		resetToDefaulLayout,
-		collapsePanel,
-	} = useWorkspaceViewStore();
+	const { panelsLayout, setPanelsLayout, togglePanel } = useWorkspaceViewStore();
 	const workspaceStore = useWorkspaceStore();
 
 	return (
@@ -50,14 +59,18 @@ function Workspace() {
 			<WorkspaceSplitter
 				panelsLayout={panelsLayout}
 				setPanelsLayout={setPanelsLayout}
-				resetToDefaulLayout={resetToDefaulLayout}
-				collapsePanel={collapsePanel}
+				togglePanel={togglePanel}
 				panels={[
+					{
+						title: 'Smart Search',
+						color: panelColors.search,
+						component: <SearchPanel />,
+						isActive: isSearchStore(activePanel),
+					},
 					{
 						title: 'Events',
 						color: panelColors.events,
 						component: <EventWindow />,
-						minWidth: 500,
 						isActive: isEventsStore(activePanel),
 						setActivePanel: () =>
 							workspaceStore.viewStore.setActivePanel(workspaceStore.eventsStore),
@@ -66,10 +79,15 @@ function Workspace() {
 						title: 'Messages',
 						color: panelColors.messages,
 						component: <MessagesWindow />,
-						minWidth: 400,
 						isActive: isMessagesStore(activePanel),
 						setActivePanel: () =>
 							workspaceStore.viewStore.setActivePanel(workspaceStore.messagesStore),
+					},
+					{
+						title: 'Bookmarks',
+						color: panelColors.bookmarks,
+						component: <BookmarksPanel />,
+						isActive: isBookmarksStore(activePanel),
 					},
 				]}
 			/>

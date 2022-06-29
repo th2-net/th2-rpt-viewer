@@ -48,17 +48,23 @@ $passedIconColorActive: #00802a;
 $naTextColor: $reportTitleTextColor;
 
 $primaryTextColor: #4d4d4d;
+$buttonFilterColor: #fff;
 $primaryTextColorLight: #5e5e5e;
 $secondaryTextColor: #808080;
 $secondaryLightTextColor: #999999;
 $alternativeTextColor: #666666;
 $activeTextColor: #333333;
+$filteredTextColor: #ffe6cc;
+$highlightedTextColor: #99c7ff;
+$textSelectedSwitcher: #5c85d6;
 
 $defaultCardBorderColor: #666666;
 $defaultCardBackground: #e0e0e0;
 $defaultSelectedCardBackground: #e0e0e033;
 
 $buttonDisabledBackground: $defaultCardBackground;
+
+$headerBackground: #3d668f;
 
 $tableHeaderBackground: #148fcc;
 $tableHeaderBackgroundSecondary: #73b6e6;
@@ -76,15 +82,7 @@ $tableBodyBackground: #fff;
 $tableBodyBackgroundHighlighted: $tableHeaderBackground;
 
 $messageCardHoverBackground: #f3fafc;
-$attachedMessageColor: #1919e6;
-$highlightedMessageCardBackground: rgba($attachedMessageColor, 0.1);
-$attachedMessageCardHoverBackground: rgba($attachedMessageColor, 0.1);
-$exportedMessageCardBorderColor: rgba($attachedMessageColor, 0.3);
-$exportedMessageCardBackground: rgba($attachedMessageColor, 0.2);
-$exportedMessageCardHoverBackground: rgba($attachedMessageColor, 0.1);
-$attachedMessageCardBorderColor: rgba($attachedMessageColor, 0.5);
-$attachedMessageCardHoverBorderColor: $attachedMessageColor;
-$attachedMessageCardIconColor: $attachedMessageColor;
+$highlightedMessageCardBackground: rgba(#1919e6, 0.1);
 $messageCardKeyColor: #5cc2d6;
 $messageCardValueColor: #087a91;
 $messageCardRawHoverBackground: rgba(102, 102, 102, 0.15);
@@ -92,9 +90,9 @@ $messageCardRawHoverBackground: rgba(102, 102, 102, 0.15);
 $rejectedMessageLabelBackground: #ffe699;
 $adminMessageLabelBackground: #7acccc;
 
-$filterPrimaryColor: #00bbcc;
-$filterSecondaryColor: #ffdd99;
-$filterTextColor: #ffffff;
+$filterPrimaryColor: #fff;
+$filterSecondaryColor: #5c85d6;
+$filterTextColor: #666666;
 $filterPathColor: #000000;
 
 $bubbleDefaultBackground: #ffffff;
@@ -138,7 +136,7 @@ $windowsLayoutBackgroundColor: #bdccdb;
 $windowsSplitterColor: #7db3e8;
 
 $filterPickerControlColor: #e6e6e6;
-$filterPickerControlFontColor: #4d4d4d;
+$filterPickerControlFontColor: #adc2eb;
 $filterPickerScrollItemColor: #666666;
 $filterPickerScrollItemActiveColor: #3fc7fa;
 $filterPickerScrollItemBlockedColor: #f3f3f3;
@@ -155,24 +153,11 @@ $realtimeButtonColor: #e6e6e6;
 $realtimeButtonActiveColor: #a9e9b5;
 $realtimeButtonBorderColor: #999999;
 
-$graphBackgroundColor: #dee5ed;
-$graphButtonBackgroundColor: #d7e0ea;
-$graphTickColor: #3d668f;
-$graphTextColor: $graphTickColor;
-$graphAttachedEventPassedColor: #00802a;
-$graphAttachedEventFailedColor: #bc271a;
-$graphRangeSelectorBorder: #ff7733;
-$graphOverlayEventsColor: #3d668f;
-$graphOverlayPassedEventsColor: #00802a;
-$graphOverlayFailedEventsColor: #e60000;
-$graphOverlayMessagesColor: #1481b8;
-$graphOverlayConnectedMessagesColor: #ff6b00;
-$graphAttachedEventPassedColor: #00802a;
-$graphAttachedEventFailedColor: #bc271a;
-$graphOverlayPinnedMessagesColor: #a21ae5;
-$graphAttachedItemNameColor: #bc271a;
-$graphAttachedItemTimestampColor: #666666;
+$passedEventsColor: #00802a;
+$failedEventsColor: #e60000;
 
+$messageTickColor: #3d668f;
+$timestampTextColor: $messageTickColor;
 $timestampInputBorderColor: #7a99b8;
 
 $eventCardIdColor: #595959;
@@ -181,9 +166,9 @@ $eventTextColorLight: #ffb266;
 
 $workspaceBackground: #eef2f6;
 $workspaceLinkGetterColor: #3d668f;
-$workspaceTabTextColor: $workspaceLinkGetterColor;
-$workspaceTabBackground: #cce6ff;
-$workspaceTabActiveBackground: #4d80b2;
+$workspaceTabTextColor: #4080bf;
+$workspaceTabBackground: #d6e6f5;
+$workspaceTabActiveBackground: $workspaceTabTextColor;
 
 $expandIconBackgroundColor: rgba(0, 0, 0, 0.1);
 
@@ -192,14 +177,17 @@ $controlButtonTextColorHover: #595959;
 
 $messageListLoadButtonColor: #e5eaf0;
 $messageListLoadButtonTextColor: #3d668f;
-$messageListSearchInfoColor: #d8d8d8;;
+$messageListSearchInfoColor: #d8d8d8;
 $messageListSearchInfoTextColor: #333333;
 
-$searchTextColor: white;
-$searchPanelColor: #adc2eb;
+$searchPanelColor: #fff;
 $searchProgressBarColor: #9163db;
 $searchButtonColor: white;
 $searchNotFoundEventsColor: #fbd010;
+$searchInputBorderColor: #5c85d6;
+$searchResultBackgroundColor: #fff;
+$searchResultMessageHighlightColor: #61c2f2;
+$searchResultEventHighlightColor: $eventTextColorLight;
 
 $bookmarkIconColor: #a65cd6;
 $bookmarkPanelHeaderColor: #cca3f5;
@@ -207,5 +195,12 @@ $bookmarkPanelCheckboxColor: #e8daf8;
 $bookmarkPanelButtonTextColor: white;
 $bookmarkPanelButtonBackgroundColor: #cca3f5;
 $bookmarkLinkHoverColor: #040505;
+$bookmarkAttachedItemTimestampColor: #666666;
 $eventsListLoadButtonColor: #e5eaf0;
 $eventsListLoadButtonTextColor: #bc271a;
+
+$attachedMessageCardColor: #ffa64c;
+$attachedItemNameColor: #bc271a;
+$hoveredAttachedMessageCardColor: #ffeee5;
+$pinnedMessageCardColor: $bookmarkIconColor;
+$hoveredPinnedMessageCardColor: #faf4ff;

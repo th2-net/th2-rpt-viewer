@@ -30,23 +30,25 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	}, []);
 
 	useEffect(() => {
-		if (message)
-			message.parsedMessages?.forEach((parsedMessage, index) => {
-				const tempMessage = message;
-				const { parsedMessages, ...rest } = tempMessage;
+		if (message?.parsedMessages) {
+			const tempMessageList: EventMessageItem[] = [];
+			message.parsedMessages.forEach(parsedMessage => {
+				const { parsedMessages, ...rest } = message;
 				const tempMessageItem: EventMessageItem = {
 					...rest,
 					parsedMessage: null,
 					parsedMessages: [],
 				};
 
-				tempMessageItem.parsedMessage = tempMessage.parsedMessages
-					? tempMessage.parsedMessages[index]
-					: null;
+				tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
 				if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
 					tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
-				setMessageList([...messageList, tempMessageItem]);
+				tempMessageList.push(tempMessageItem);
 			});
+			setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
+		} else {
+			setMessageList(messageListCopy => [...messageListCopy, message as EventMessageItem]);
+		}
 	});
 
 	async function getMessage() {
@@ -65,17 +67,15 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	if (messageList) {
 		return (
 			<div className='embedded-wrapper'>
-				{messageList.map((parsedMessage, index: number) => {
-					return (
-						<MessageCardBase
-							isEmbedded
-							key={`${parsedMessage.id}-${index}`}
-							message={parsedMessage}
-							setViewType={setViewType}
-							viewType={viewType}
-						/>
-					);
-				})}
+				{messageList.map((parsedMessage, index: number) => (
+					<MessageCardBase
+						isEmbedded
+						key={`${parsedMessage.id}-${index}`}
+						message={parsedMessage}
+						setViewType={setViewType}
+						viewType={viewType}
+					/>
+				))}
 			</div>
 		);
 	}

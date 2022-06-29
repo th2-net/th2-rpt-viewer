@@ -24,6 +24,7 @@ module.exports = {
 		'plugin:@typescript-eslint/recommended',
 		'plugin:import/errors',
 		'plugin:import/warnings',
+		'plugin:import/recommended',
 		'plugin:import/typescript',
 	],
 	plugins: ['react-hooks', 'prettier'],
@@ -71,6 +72,7 @@ module.exports = {
 				},
 			},
 		],
+		'no-use-before-define': 'off',
 		'@typescript-eslint/no-use-before-define': 'off',
 		'@typescript-eslint/explicit-function-return-type': 'off',
 		'@typescript-eslint/ban-types': 'off',
@@ -108,10 +110,20 @@ module.exports = {
 		'prefer-destructuring': 'off',
 		'no-useless-constructor': 'off',
 		'prettier/prettier': ['error'],
+		'no-shadow': 'off',
+		'@typescript-eslint/no-shadow': ['error'],
+		'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
+		'react/react-in-jsx-scope': 'off',
+		'react/jsx-filename-extension': [1, { extensions: ['tsx'] }],
 	},
 	settings: {
 		react: {
 			version: 'detect',
+		},
+		'import/resolver': {
+			webpack: {
+				config: './webpack/webpack.common.js',
+			},
 		},
 	},
 	overrides: [

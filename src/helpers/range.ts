@@ -14,12 +14,36 @@
  * limitations under the License.
  ***************************************************************************** */
 
-const range = (start: number, end: number): Array<number> =>
-	new Array(end - start + 1).fill(undefined).map((_, i) => start + i);
+export const isValidRange = (range: [number, number]): boolean =>
+	range[0] >= 0 && range[1] >= 0 && range[1] >= range[0];
 
-export const rangeSum = (start: number, end: number, mapper: (idx: number) => number) =>
-	range(start, end)
-		.map(mapper)
-		.reduce((sum, current) => sum + current, 0);
+export const isRangesIntersect = (first: [number, number], second: [number, number]): boolean => {
+	if (!first || !second) throw new Error('One of ranges is undefined');
 
-export default range;
+	const min = first[0] < second[0] ? first : second;
+	const max = min[0] === first[0] && min[1] === first[1] ? second : first;
+
+	return min[1] >= max[0];
+};
+
+export const getRangesIntersection = (
+	first?: [number, number],
+	second?: [number, number],
+): [number, number] => {
+	if (!first || !second) throw new Error('One of ranges is undefined');
+
+	const min = first[0] < second[0] ? first : second;
+	const max = min[0] === first[0] && min[1] === first[1] ? second : first;
+
+	if (min[1] < max[0]) throw new Error("Ranges haven't an intersection");
+
+	return [max[0], min[1] < max[1] ? min[1] : max[1]];
+};
+
+export const trimRange = (range: [number, number], limits: [number, number]): [number, number] => [
+	Math.max(range[0], limits[0]),
+	Math.min(range[1], limits[1]),
+];
+
+export const isInsideRange = (point: number, range: [number, number]) =>
+	range[0] <= point && range[1] >= point;

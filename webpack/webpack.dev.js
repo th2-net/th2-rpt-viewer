@@ -14,17 +14,18 @@
  * limitations under the License.
  ******************************************************************************/
 
-const webpackMerge = require('webpack-merge');
-const commonConfig = require('./webpack.common');
+const { merge } = require('webpack-merge');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const commonConfig = require('./webpack.common');
 const { appSrc } = require('./paths');
 
-module.exports = webpackMerge(commonConfig, {
+module.exports = merge(commonConfig, {
 	output: {
 		publicPath: '/',
 	},
 	mode: 'development',
-	entry: ['react-hot-loader/patch', appSrc],
+	entry: [appSrc],
 	devtool: 'inline-source-map',
 	devServer: {
 		watchFiles: {
@@ -51,21 +52,6 @@ module.exports = webpackMerge(commonConfig, {
 	},
 	module: {
 		rules: [
-			// {
-			//     test: /\.(ts|tsx)$/,
-			//     enforce: 'pre',
-			//     use: [{
-			//         options: {
-			//             eslintPath: require.resolve('eslint'),
-			//             failOnError: false,
-			//             cache: false,
-			//             quite: true,
-			//             formatter: require('eslint-formatter-pretty'),
-			//         },
-			//         loader: require.resolve('eslint-loader'),
-			//     }],
-			//     exclude: /node_modules/,
-			// },
 			{
 				test: /\.scss$/,
 				exclude: /node_modules/,
@@ -79,5 +65,6 @@ module.exports = webpackMerge(commonConfig, {
 				files: './src/**/*',
 			},
 		}),
+		new ReactRefreshWebpackPlugin(),
 	],
 });

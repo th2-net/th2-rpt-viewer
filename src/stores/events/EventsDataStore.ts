@@ -48,13 +48,10 @@ export default class EventsDataStore {
 		private api: ApiSchema,
 	) {
 		reaction(() => this.targetNodePath, this.preloadSelectedPathChildren, {
-			equals: (pathA: string[], pathB: string[]) => {
-				return (
-					Boolean(pathA && pathB) &&
-					pathA.length === pathB.length &&
-					pathA.every((id, index) => id === pathB[index])
-				);
-			},
+			equals: (pathA: string[], pathB: string[]) =>
+				Boolean(pathA && pathB) &&
+				pathA.length === pathB.length &&
+				pathA.every((id, index) => id === pathB[index]),
 		});
 	}
 
@@ -506,11 +503,11 @@ export default class EventsDataStore {
 			try {
 				this.targetEventAC = new AbortController();
 				const event = await this.api.events.getEvent(targetEventId, this.targetEventAC.signal);
-				const targetEventTimestamp = timestampToNumber(event.startTimestamp);
+				const targetEventTimestamp = event.startTimestamp;
 				// TODO: add filtering too see if target event matches current filter
 				if (
-					targetEventTimestamp < this.filterStore.timestampFrom ||
-					targetEventTimestamp > this.filterStore.timestampTo
+					timestampToNumber(targetEventTimestamp) < this.filterStore.timestampFrom ||
+					timestampToNumber(targetEventTimestamp) > this.filterStore.timestampTo
 				) {
 					this.targetEventLoadSubscription();
 					this.targetEventAC = null;
@@ -596,7 +593,7 @@ export default class EventsDataStore {
 		initialState: Partial<{ isError: boolean; isLoading: boolean }> = {},
 	) => {
 		this.stopCurrentRequests();
-		const { isError = false, isLoading = false } = initialState;
+		const { isError = false } = initialState;
 
 		this.isError = isError;
 

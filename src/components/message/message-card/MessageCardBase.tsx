@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { createBemBlock } from '../../../helpers/styleCreators';
 import { MessageScreenshotZoom } from './MessageScreenshot';
+import { createBemBlock } from '../../../helpers/styleCreators';
 import {
 	isScreenshotMessage,
 	MessageViewType,
@@ -31,8 +31,6 @@ import { MessageHeader } from './MessageHeader';
 
 export interface MessageCardBaseProps {
 	message: EventMessageItem;
-	hoverMessage?: () => void;
-	unhoverMessage?: () => void;
 	isAttached?: boolean;
 	isBookmarked?: boolean;
 	toogleMessagePin?: () => void;
@@ -47,8 +45,6 @@ const MessageCardBase = React.memo(
 		message,
 		viewType,
 		setViewType,
-		hoverMessage,
-		unhoverMessage,
 		isAttached,
 		isBookmarked,
 		toogleMessagePin,
@@ -91,12 +87,7 @@ const MessageCardBase = React.memo(
 				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
 				<div className='message-card'>
 					<div className='mc__mc-body mc-body'>
-						<MessageHeader
-							message={message}
-							parsedMessage={parsedMessage}
-							onTimestampMouseEnter={hoverMessage}
-							onTimestampMouseLeave={unhoverMessage}
-						/>
+						<MessageHeader message={message} parsedMessage={parsedMessage} />
 						{isScreenshotMsg ? (
 							<div className='mc-body__screenshot'>
 								<MessageScreenshotZoom
@@ -123,5 +114,4 @@ const MessageCardBase = React.memo(
 );
 
 MessageCardBase.displayName = 'MessageCardBase';
-
 export default MessageCardBase;

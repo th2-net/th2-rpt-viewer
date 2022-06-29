@@ -14,20 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
-import EventsStore, { EventStoreURLState } from './events/EventsStore';
-import MessagesStore, { MessagesStoreURLState } from './messages/MessagesStore';
-import { getObjectKeys } from '../helpers/object';
-import { isWorkspaceStore } from '../helpers/workspace';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import MessageBodySortOrderStore from './MessageBodySortStore';
 import { DbData } from '../api/indexedDb';
 import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
-import { intervalOptions } from '../models/Graph';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
 import { getRangeFromTimestamp } from '../helpers/date';
 import {
@@ -36,7 +30,6 @@ import {
 	MessageFilterState,
 } from '../components/search-panel/SearchPanelFilters';
 import { SessionsStore } from './messages/SessionsStore';
-import EventsFilter from '../models/filter/EventsFilter';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -56,91 +49,12 @@ export default class RootStore {
 			this,
 			this.api,
 			this.filtersHistoryStore,
+			this.sessionsStore,
 			this.parseUrlState(),
 		);
 
 		window.history.replaceState({}, '', window.location.pathname);
 	}
-
-	@computed
-	public get isBookmarksFull(): boolean {
-		return this.workspacesStore.selectedStore.bookmarksStore.isBookmarksFull;
-	}
-
-	public getAppState = (): WorkspacesUrlState | null => {
-		const activeWorkspace = this.workspacesStore.activeWorkspace;
-
-		let eventStoreState: EventStoreURLState = {};
-		let messagesStoreState: MessagesStoreURLState = {};
-
-		if (activeWorkspace && isWorkspaceStore(activeWorkspace)) {
-			const clearFilter = (filter: Partial<MessageFilterState> | Partial<EventsFilter>) => {
-				const tempFilter = toJS(filter);
-				if ('status' in tempFilter && tempFilter?.status?.values === 'any') {
-					delete tempFilter.status;
-				}
-				getObjectKeys(tempFilter).forEach(filterKey => {
-					if (tempFilter[filterKey]?.values.length === 0) delete tempFilter[filterKey];
-				});
-				return getObjectKeys(tempFilter).length === 0 ? undefined : tempFilter;
-			};
-			const eventsStore: EventsStore = activeWorkspace.eventsStore;
-			eventStoreState = {
-				filter:
-					(eventsStore.filterStore.filter && clearFilter(eventsStore.filterStore.filter)) ||
-					undefined,
-				range: eventsStore.filterStore.range,
-				panelArea: eventsStore.viewStore.eventsPanelArea,
-				search:
-					eventsStore.searchStore.tokens.length > 0
-						? eventsStore.searchStore.tokens.map(t => t.pattern)
-						: undefined,
-				selectedEventId: eventsStore.selectedNode?.eventId,
-				flattenedListView:
-					eventsStore.viewStore.flattenedListView === false
-						? undefined
-						: eventsStore.viewStore.flattenedListView,
-			};
-			const messagesStore: MessagesStore = activeWorkspace.messagesStore;
-			messagesStoreState = {
-				timestampFrom: messagesStore.filterStore.filter.timestampFrom,
-				timestampTo: messagesStore.filterStore.filter.timestampTo,
-				streams:
-					messagesStore.filterStore.filter.streams.length > 0
-						? messagesStore.filterStore.filter.streams
-						: undefined,
-				isSoftFilter:
-					messagesStore.filterStore.isSoftFilter === false
-						? undefined
-						: messagesStore.filterStore.isSoftFilter,
-				sse:
-					messagesStore.filterStore.sseMessagesFilter &&
-					clearFilter(messagesStore.filterStore.sseMessagesFilter),
-			};
-
-			getObjectKeys(eventStoreState).forEach(key => {
-				if (eventStoreState[key] === undefined || eventStoreState[key] === null) {
-					delete eventStoreState[key];
-				}
-			});
-
-			getObjectKeys(messagesStoreState).forEach(key => {
-				if (messagesStoreState[key] === undefined || messagesStoreState[key] === null) {
-					delete messagesStoreState[key];
-				}
-			});
-			return [
-				toJS({
-					events: eventStoreState,
-					messages: messagesStoreState,
-					timeRange: activeWorkspace.graphStore.range,
-					interval: activeWorkspace.graphStore.interval,
-					layout: activeWorkspace.viewStore.panelsLayout,
-				}),
-			];
-		}
-		return null;
-	};
 
 	private parseUrlState = (): WorkspacesUrlState | null => {
 		try {
@@ -178,8 +92,7 @@ export default class RootStore {
 			if (workspacesUrlState) {
 				return JSON.parse(window.atob(workspacesUrlState));
 			}
-			const interval = intervalOptions[0];
-			const timeRange = timestamp ? getRangeFromTimestamp(+timestamp, interval) : undefined;
+			const timeRange = timestamp ? getRangeFromTimestamp(+timestamp, 15) : undefined;
 
 			return [
 				{
@@ -188,8 +101,7 @@ export default class RootStore {
 						timestampTo: timestamp ? parseInt(timestamp) : null,
 					},
 					timeRange,
-					interval,
-					layout: messageId ? [0, 100] : defaultPanelsLayout,
+					layout: messageId ? [0, 0, 100, 0] : defaultPanelsLayout,
 				},
 			];
 		} catch (error) {
@@ -204,10 +116,6 @@ export default class RootStore {
 		}
 	};
 
-	// workaround to reset graph search state as it uses internal state
-	@observable resetGraphSearchData = false;
-
-	@action
 	public handleQuotaExceededError = async (unsavedData?: DbData) => {
 		const errorId = nanoid();
 		this.notificationsStore.addMessage({
@@ -223,7 +131,7 @@ export default class RootStore {
 		});
 	};
 
-	public clearAppData = async (errorId: string, unsavedData?: DbData) => {
+	private clearAppData = async (errorId: string, unsavedData?: DbData) => {
 		this.notificationsStore.deleteMessage(errorId);
 		try {
 			await this.api.indexedDb.clearAllData();

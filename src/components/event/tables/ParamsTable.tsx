@@ -18,6 +18,9 @@ import * as React from 'react';
 import { createStyleSelector } from '../../../helpers/styleCreators';
 import StateSaver from '../../util/StateSaver';
 import '../../../styles/tables.scss';
+import { wrapString } from '../../../helpers/filters';
+import { FilterEntry } from '../../../stores/SearchStore';
+import { areArraysEqual } from '../../../helpers/array';
 
 export interface ParamsTableRow {
 	subRows: ParamsTableRow[];
@@ -39,11 +42,9 @@ interface OwnProps {
 	columns: Array<string>;
 	rows: ParamsTableRow[];
 	name: string;
+	filters: string[];
+	target?: FilterEntry;
 	stateKey: string;
-}
-
-interface StateProps {
-	expandPath: number[];
 }
 
 interface RecoveredProps {
@@ -51,7 +52,7 @@ interface RecoveredProps {
 	saveState: (state: ParamsTableRow[]) => void;
 }
 
-interface Props extends Omit<OwnProps, 'params'>, StateProps, RecoveredProps {}
+interface Props extends Omit<OwnProps, 'params' | 'rows'>, RecoveredProps {}
 
 interface State {
 	nodes: ParamsTableRow[];
@@ -61,7 +62,12 @@ class ParamsTableBase extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		this.state = {
-			nodes: props.nodes,
+			nodes: props.target
+				? this.updateExpandPath(
+						props.target.path.slice(1).map(p => parseInt(p)),
+						props.nodes,
+				  )
+				: props.nodes,
 		};
 	}
 
@@ -98,7 +104,7 @@ class ParamsTableBase extends React.Component<Props, State> {
 		prevState: ParamsTableRow[],
 	): ParamsTableRow[] {
 		return prevState.map((node, index) =>
-			index === currentIndex
+			index === currentIndex && node.subRows.length
 				? {
 						...node,
 						isExpanded: true,
@@ -108,14 +114,13 @@ class ParamsTableBase extends React.Component<Props, State> {
 		);
 	}
 
-	componentDidUpdate(prevProps: Props) {
-		if (
-			prevProps.expandPath !== this.props.expandPath &&
-			this.props.expandPath &&
-			this.props.expandPath.length > 0
-		) {
+	componentDidUpdate() {
+		if (this.props.target?.path.length) {
 			this.setState({
-				nodes: this.updateExpandPath(this.props.expandPath, this.state.nodes),
+				nodes: this.updateExpandPath(
+					this.props.target.path.slice(1).map(p => parseInt(p)),
+					this.state.nodes,
+				),
 			});
 		}
 	}
@@ -142,47 +147,58 @@ class ParamsTableBase extends React.Component<Props, State> {
 						</span>
 					</div>
 				</div>
-				<div className='params-table-wrapper'>
-					<table
-						style={{
-							gridTemplateColumns: `1fr repeat(${this.props.columns.length}, minmax(150px, 250px))`,
-						}}>
-						<thead>
-							<tr>
-								<th style={{ gridColumn: '1 / 2' }}></th>
-								{this.props.columns.map((columnTitle, idx) => (
-									<th style={{ gridColumn: `${idx + 2}/${idx + 3}` }} key={columnTitle}>
-										{columnTitle}
-									</th>
-								))}
-							</tr>
-						</thead>
-						<tbody>{this.state.nodes.map(nodes => this.renderNodes(nodes, 1))}</tbody>
-					</table>
-				</div>
+				<table
+					style={{
+						gridTemplateColumns: `repeat(${this.props.columns.length + 1}, minmax(150px, 250px))`,
+					}}>
+					<thead>
+						<tr>
+							<th></th>
+							{this.props.columns.map(columnTitle => (
+								<th key={columnTitle}>{columnTitle}</th>
+							))}
+						</tr>
+					</thead>
+					<tbody>
+						{this.state.nodes.map((nodes, index) => this.renderNodes(nodes, [index.toString()], 1))}
+					</tbody>
+				</table>
 			</div>
 		);
 	}
 
-	private renderNodes(node: ParamsTableRow, paddingLevel = 1, key = ''): React.ReactNodeArray {
-		if (node.subRows && node.subRows.length !== 0) {
+	private renderNodes(
+		node: ParamsTableRow,
+		path: string[],
+		paddingLevel = 1,
+		key = '',
+	): React.ReactNodeArray {
+		if (node.subRows.length !== 0) {
 			const subNodes = node.isExpanded
 				? node.subRows.reduce(
 						(list, n, index) =>
-							list.concat(this.renderNodes(n, paddingLevel + 1, `${key}-${index}`)),
+							list.concat(
+								this.renderNodes(
+									n,
+									[...path, index.toString()],
+									paddingLevel + 1,
+									`${key}-${index}`,
+								),
+							),
 						[] as React.ReactNodeArray,
 				  )
 				: [];
 
-			return [this.renderTooglerNode(node, paddingLevel, key), ...subNodes];
+			return [this.renderTooglerNode(node, paddingLevel, path, key), ...subNodes];
 		}
-		return [this.renderValueNode(node.title, node.columns, paddingLevel, key)];
+		return [this.renderValueNode(node.title, node.columns || {}, paddingLevel, path, key)];
 	}
 
 	private renderValueNode(
 		rowTitle: string,
-		columns: { [columnTitle: string]: string } = {},
+		columns: { [columnTitle: string]: string },
 		paddingLevel: number,
+		path: string[],
 		key: string,
 	): React.ReactNode {
 		const cellStyle = {
@@ -191,10 +207,10 @@ class ParamsTableBase extends React.Component<Props, State> {
 
 		return (
 			<tr className='params-table-row-value' key={key}>
-				<td style={cellStyle}>{this.renderContent(`${key}-name`, rowTitle)}</td>
-				{this.props.columns.map(columnTitle => (
+				<td style={cellStyle}>{this.renderContent(`${key}-name`, rowTitle, path)}</td>
+				{this.props.columns.map((columnTitle, index) => (
 					<td key={`${rowTitle} - ${columnTitle}`}>
-						{this.renderContent(`${key}-value`, columns[columnTitle])}
+						{this.renderContent(`${key}-value`, columns[columnTitle], [...path, index.toString()])}
 					</td>
 				))}
 			</tr>
@@ -204,6 +220,7 @@ class ParamsTableBase extends React.Component<Props, State> {
 	private renderTooglerNode(
 		node: ParamsTableRow,
 		paddingLevel: number,
+		path: string[],
 		key: string,
 	): React.ReactNode {
 		const rootClass = createStyleSelector(
@@ -215,8 +232,11 @@ class ParamsTableBase extends React.Component<Props, State> {
 		};
 		return (
 			<tr className={rootClass} key={key} onClick={this.togglerClickHandler(node)}>
-				<td style={{ gridColumn: `1 / ${this.props.columns.length + 2}` }}>
-					<p style={nameStyle}>{this.renderContent(`${key}-name`, node.title)}</p>
+				<td
+					style={{
+						gridColumn: `1 / ${this.props.columns.length + 2}`,
+					}}>
+					<p style={nameStyle}>{this.renderContent(`${key}-name`, node.title, path)}</p>
 				</td>
 			</tr>
 		);
@@ -226,10 +246,33 @@ class ParamsTableBase extends React.Component<Props, State> {
 		we need this for optimization - render SearchableContent component
 		only if it contains some search results
 	*/
-	private renderContent(contentKey: string, content: string): React.ReactNode {
+	private renderContent(contentKey: string, content: string, path: string[]): React.ReactNode {
+		if (!content) return content;
 		if (typeof content === 'boolean' && (content as boolean))
 			return <div className='boolean-value-cell' />;
-		return content;
+
+		const { filters, target } = this.props;
+
+		const inludingFilters = filters.filter(f => content.includes(f));
+
+		const wrappedContent = inludingFilters.length
+			? wrapString(
+					content,
+					inludingFilters.map(filter => {
+						const entryIndex = content.indexOf(filter);
+						const entryRange: [number, number] = [entryIndex, entryIndex + filter.length - 1];
+
+						return {
+							type: new Set([
+								target && areArraysEqual(path, target.path.slice(1)) ? 'highlighted' : 'filtered',
+							]),
+							range: entryRange,
+						};
+					}),
+			  )
+			: content;
+
+		return wrappedContent;
 	}
 
 	private togglerClickHandler = (targetNode: ParamsTableRow) => (e: React.MouseEvent) => {
@@ -247,20 +290,11 @@ class ParamsTableBase extends React.Component<Props, State> {
 	};
 }
 
-export const RecoverableParamsTable = ({
-	stateKey,
-	...props
-}: OwnProps & StateProps & { stateKey: string }) => (
+export const RecoverableParamsTable = ({ stateKey, ...props }: OwnProps & { stateKey: string }) => (
 	// at first table render, we need to generate table nodes if we don't find previous table's state
 	<StateSaver stateKey={stateKey} getDefaultState={() => props.rows}>
 		{(state: ParamsTableRow[], stateSaver) => (
-			<ParamsTableBase
-				{...props}
-				saveState={stateSaver}
-				rows={state}
-				nodes={state}
-				stateKey={stateKey}
-			/>
+			<ParamsTableBase {...props} saveState={stateSaver} nodes={state} stateKey={stateKey} />
 		)}
 	</StateSaver>
 );

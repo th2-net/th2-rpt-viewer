@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"baseUrl": "src",
 		"outDir": "./build/",
 		"target": "es6",
 		"keyofStringsOnly": true,
@@ -8,14 +9,25 @@
 		"moduleResolution": "node",
 		"removeComments": false,
 		"sourceMap": true,
-		"jsx": "react",
+		"jsx": "react-jsx",
 		"skipLibCheck": true,
 		"esModuleInterop": true,
 		"experimentalDecorators": true,
 		"strict": true,
 		"resolveJsonModule": true,
 		"noEmit": true,
-		"allowJs": true
+		"allowJs": true,
+		"useUnknownInCatchVariables": false,
+		"paths": {
+			"helpers": ["helpers/*"],
+			"models": ["models/*"],
+			"styles": ["styles/*"],
+			"stores": ["helpers/*"],
+			"api": ["api/*"],
+			"components": ["components/*"],
+			"hooks": ["hooks/*"],
+			"modules": ["modules/*"]
+		}
 	},
 	"exclude": ["node_modules"],
 	"include": ["./src/**/*"]

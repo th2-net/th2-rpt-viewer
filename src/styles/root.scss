@@ -52,7 +52,6 @@ ul {
 	margin: 0;
 }
 
-
 #index {
 	width: 100vw;
 	height: 100vh;
@@ -67,9 +66,9 @@ input {
 
 .app {
 	display: grid;
-	grid-template-rows: 100px 1fr;
+	grid-template-rows: 31px 1fr;
 	grid-template-columns: 100%;
-	row-gap: 20px;
+	row-gap: 9px;
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
@@ -80,8 +79,6 @@ input {
 		z-index: 100;
 		height: 100%;
 		width: 100%;
-		display: flex;
-		flex-direction: column;
 		padding: 0 10px;
 		overflow: hidden;
 	}
@@ -129,12 +126,28 @@ input {
 	border-radius: 50%;
 
 	&.passed {
-		background-color: $graphOverlayPassedEventsColor;
+		background-color: $passedEventsColor;
 	}
 
 	&.failed {
-		background-color: $graphOverlayFailedEventsColor;
+		background-color: $failedEventsColor;
 	}
+}
+
+.filtered {
+	background-color: $filteredTextColor;
+
+	&.highlighted {
+		display: inline-block;
+		line-height: 11px;
+		height: 11px;
+		border-top: 2px solid $filteredTextColor;
+		border-bottom: 2px solid $filteredTextColor;
+	}
+}
+
+.highlighted {
+	background-color: $highlightedTextColor !important;
 }
 
 .app-loader {
@@ -142,7 +155,7 @@ input {
 	width: 100%;
 	height: 100%;
 	justify-content: center;
-	align-items:center;
+	align-items: center;
 	background-color: $windowsLayoutBackgroundColor;
 	& i {
 		@include spinner(5px, 40px, 2s);

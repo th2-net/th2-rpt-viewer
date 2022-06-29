@@ -42,7 +42,6 @@ interface Props {
 const Tabs = (props: Props) => {
 	const { tabList, tabPanels, activeIndex, onChange, closeTab, classNames = {} } = props;
 	const [activeTabIndex, setActiveTabIndex] = React.useState(0);
-	const ref = React.useRef<HTMLDivElement | null>(null);
 
 	React.useEffect(() => {
 		if (activeIndex !== activeTabIndex) {
@@ -65,7 +64,7 @@ const Tabs = (props: Props) => {
 
 	return (
 		<div className='tabs__wrapper'>
-			<div className='tabs' ref={ref}>
+			<div className='tabs'>
 				<div className={tabsListClassName}>{tabs}</div>
 				<div className='tabs__content'>
 					{tabPanels.map((content, index) => (
