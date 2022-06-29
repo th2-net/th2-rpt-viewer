@@ -32,7 +32,6 @@ export type MessageCardViewTypeRendererProps = {
 	isEmbedded?: boolean;
 	isDetailed?: boolean;
 	sortOrderItems: string[];
-	applyFilterToBody?: boolean;
 };
 
 const MessageCardViewTypeRenderer = ({
@@ -42,7 +41,6 @@ const MessageCardViewTypeRenderer = ({
 	isSelected,
 	messageBody,
 	sortOrderItems,
-	applyFilterToBody,
 }: MessageCardViewTypeRendererProps) => {
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
@@ -66,13 +64,9 @@ const MessageCardViewTypeRenderer = ({
 				</ErrorBoundary>
 			);
 		case MessageViewType.ASCII:
-			return rawContent ? (
-				<SimpleMessageRaw rawContent={rawContent} applyFilterToBody={applyFilterToBody} />
-			) : null;
+			return rawContent ? <SimpleMessageRaw rawContent={rawContent} /> : null;
 		case MessageViewType.BINARY:
-			return rawContent ? (
-				<DetailedMessageRaw rawContent={rawContent} applyFilterToBody={applyFilterToBody} />
-			) : null;
+			return rawContent ? <DetailedMessageRaw rawContent={rawContent} /> : null;
 		default:
 			return null;
 	}

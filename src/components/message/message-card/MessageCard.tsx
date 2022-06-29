@@ -55,8 +55,6 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 	const isBookmarked =
 		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === id) !== -1;
 
-	const applyFilterToBody = messagesStore.selectedMessageId?.valueOf() === message.id;
-
 	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(id);
 
 	React.useEffect(() => {
@@ -127,7 +125,6 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 				isAttached={isAttached}
 				toogleMessagePin={toogleMessagePin}
 				sortOrderItems={sortOrderItems}
-				applyFilterToBody={applyFilterToBody}
 			/>
 		</div>
 	);

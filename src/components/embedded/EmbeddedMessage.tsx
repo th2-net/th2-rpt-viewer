@@ -64,7 +64,7 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 		throw new Error(errorStatus);
 	}
 
-	if (messageList.length) {
+	if (messageList) {
 		return (
 			<div className='embedded-wrapper'>
 				{messageList.map((parsedMessage, index: number) => (

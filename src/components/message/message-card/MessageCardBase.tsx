@@ -26,8 +26,8 @@ import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
 import MessageCardTools, { MessageCardToolsConfig } from './MessageCardTools';
-import { MessageHeader } from './MessageHeader';
 import '../../../styles/messages.scss';
+import { MessageHeader } from './MessageHeader';
 
 export interface MessageCardBaseProps {
 	message: EventMessageItem;
@@ -38,7 +38,6 @@ export interface MessageCardBaseProps {
 	sortOrderItems?: string[];
 	viewType: MessageViewType;
 	setViewType: (viewType: MessageViewType) => void;
-	applyFilterToBody?: boolean;
 }
 
 const MessageCardBase = React.memo(
@@ -51,7 +50,6 @@ const MessageCardBase = React.memo(
 		toogleMessagePin,
 		isEmbedded,
 		sortOrderItems,
-		applyFilterToBody = false,
 	}: MessageCardBaseProps) => {
 		const { id, rawMessageBase64, parsedMessage } = message;
 
@@ -71,7 +69,6 @@ const MessageCardBase = React.memo(
 			rawContent: rawMessageBase64,
 			isSelected: isAttached || false,
 			sortOrderItems: sortOrderItems || [],
-			applyFilterToBody,
 		};
 
 		const messageCardToolsConfig: MessageCardToolsConfig = {
