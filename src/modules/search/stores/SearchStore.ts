@@ -205,10 +205,6 @@ export class SearchStore implements ISearchStore {
 
 	@observable currentIndex = 0;
 
-	@observable eventFilterInfo: EventsFiltersInfo[] = [];
-
-	@observable messagesFilterInfo: MessagesFilterInfo[] = [];
-
 	@observable currentSearch: SearchHistory | null = null;
 
 	@observable searchProgressState: {
@@ -354,9 +350,6 @@ export class SearchStore implements ISearchStore {
 		});
 	}
 
-	public isSeparator = (object: SearchResult[] | [number, number]): object is [number, number] =>
-		!Number.isNaN(+object[0]);
-
 	@computed get flattenedResult(): (SearchResult | [number, number])[] {
 		if (!this.currentSearch) return [];
 		const result: (SearchResult | [number, number])[] = [];
@@ -445,19 +438,6 @@ export class SearchStore implements ISearchStore {
 	@action newSearch = (searchHistoryItem: SearchHistory) => {
 		this.searchHistory = [searchHistoryItem];
 		this.resetSearchProgressState();
-	};
-
-	@action updateSearchItem = (searchHistoryItem: Partial<SearchHistory>) => {
-		this.searchHistory = this.searchHistory.map(item => {
-			if (item === searchHistoryItem) {
-				return {
-					...item,
-					...searchHistoryItem,
-				};
-			}
-
-			return item;
-		});
 	};
 
 	@action startSearch = (loadMore = false) => {

@@ -30,7 +30,7 @@ interface SearchPanelProps {
 		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
 	) => void;
 	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
-	itemsInView: Record<string, boolean>;
+	itemsInView?: Record<string, boolean>;
 }
 
 const SearchPanel = (props: SearchPanelProps) => {

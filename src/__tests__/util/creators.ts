@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { nanoid } from 'nanoid';
 import SearchToken, { PanelSearchToken } from '../../models/search/SearchToken';
 import SearchSplitResult from '../../models/search/SearchSplitResult';
 import Panel from '../../util/Panel';
@@ -44,26 +43,3 @@ export function createSearchSplitResult(
 		token,
 	};
 }
-
-export const createHeatmapInputData = (
-	itemsLength: number,
-	selectedItemsIndexes: Map<string, number[]>,
-	pinnedItemsIndexes: number[],
-) => {
-	const items = Array(itemsLength)
-		.fill(null)
-		.map(() => nanoid());
-	const pinnedItems = pinnedItemsIndexes.map(i => items[i]);
-	const selectedItems: Map<string, string[]> = new Map();
-	selectedItemsIndexes.forEach((indexes, color) =>
-		selectedItems.set(
-			color,
-			indexes.map(i => items[i]),
-		),
-	);
-	return {
-		items,
-		selectedItems,
-		pinnedItems,
-	};
-};
