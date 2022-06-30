@@ -27,6 +27,7 @@ interface SearchPanelResultsProps {
 	onResultClick: (
 		searchResult: SearchResult,
 		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
+		isNewWorkspace?: boolean,
 	) => void;
 	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
 	onResultDelete: () => void;

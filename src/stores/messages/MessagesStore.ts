@@ -19,7 +19,7 @@ import { MessageFilterState } from 'modules/search/models/Search';
 import { IFilterConfigStore } from 'models/Stores';
 import { FilterEntry } from 'modules/search/stores/SearchStore';
 import ApiSchema from '../../api/ApiSchema';
-import { EventMessage } from '../../models/EventMessage';
+import { EventMessage, EventMessageItem } from '../../models/EventMessage';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
@@ -29,6 +29,7 @@ import MessagesFilterStore, { MessagesFilterStoreInitialState } from './Messages
 import { SessionHistoryStore } from './SessionHistoryStore';
 import MessagesExportStore from './MessagesExportStore';
 import { getItemAt } from '../../helpers/array';
+import { timestampToNumber } from '../../helpers/date';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -97,7 +98,7 @@ export default class MessagesStore {
 	public messagesInView: EventMessage[] = [];
 
 	@action
-	public setRenderedItems = (renderedMessages: EventMessage[]) => {
+	public setRenderedItems = (renderedMessages: EventMessageItem[]) => {
 		this.messagesInView = renderedMessages;
 	};
 
@@ -179,7 +180,7 @@ export default class MessagesStore {
 
 			this.filterStore.resetMessagesFilter({
 				timestampFrom: null,
-				timestampTo: message.timestamp,
+				timestampTo: timestampToNumber(message.timestamp),
 				streams: [...new Set([...streams, message.sessionId])],
 			});
 		}
@@ -212,7 +213,7 @@ export default class MessagesStore {
 					streams: [
 						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
 					],
-					timestampTo: mostRecentMessage.timestamp,
+					timestampTo: timestampToNumber(mostRecentMessage.timestamp),
 				};
 			}
 		}
@@ -274,7 +275,7 @@ export default class MessagesStore {
 
 		this.filterStore.resetMessagesFilter({
 			streams: [...new Set(this.hintMessages.map(({ sessionId }) => sessionId))],
-			timestampTo: targetMessage.timestamp,
+			timestampTo: timestampToNumber(targetMessage.timestamp),
 			timestampFrom: null,
 		});
 

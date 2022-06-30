@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { formatTimestamp } from 'helpers/date';
+import { formatTime } from 'helpers/date';
 import { useEvent } from 'hooks/useEvent';
 import { getEventStatus, isEventId } from 'helpers/event';
 import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
@@ -101,7 +101,7 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 					</div>
 					{event && (
 						<div className='filter-row__event-card-timestamp'>
-							{formatTimestamp(event.startTimestamp)}
+							{formatTime(event.startTimestamp)}
 						</div>
 					)}
 				</div>

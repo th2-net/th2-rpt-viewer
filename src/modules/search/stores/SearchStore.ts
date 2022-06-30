@@ -26,7 +26,7 @@ import {
 } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
-import { EventMessage } from 'models/EventMessage';
+import { EventMessageItem } from 'models/EventMessage';
 import { SearchDirection } from 'models/search/SearchDirection';
 import notificationsStore from 'stores/NotificationsStore';
 import WorkspacesStore from 'stores/workspace/WorkspacesStore';
@@ -74,7 +74,7 @@ export type SearchPanelFormState = {
 	stream: string[];
 };
 
-export type SearchResult = EventAction | EventMessage;
+export type SearchResult = EventAction | EventMessageItem;
 
 export type SearchHistory = {
 	timestamp: number;
@@ -631,14 +631,14 @@ export class SearchStore implements ISearchStore {
 			if (isEventAction(parsedEvent)) {
 				this.searchChunk.push({
 					...parsedEvent,
-					startTimestamp: moment(parsedEvent.startTimestamp).valueOf(),
-					endTimestamp: moment(parsedEvent.endTimestamp).valueOf(),
+					startTimestamp: parsedEvent.startTimestamp,
+					endTimestamp: parsedEvent.endTimestamp,
 					searchDirection,
 				});
 			} else if (isEventMessage(parsedEvent)) {
 				this.searchChunk.push({
 					...parsedEvent,
-					timestamp: moment(parsedEvent.timestamp).valueOf(),
+					timestamp: parsedEvent.timestamp,
 					searchDirection,
 				});
 			} else {

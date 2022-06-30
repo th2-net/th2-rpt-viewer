@@ -16,7 +16,6 @@
  ***************************************************************************** */
 
 import { action } from 'mobx';
-import moment from 'moment';
 import api from '../../api';
 import { SSEParamsEvents } from '../../api/sse';
 import { isEventNode } from '../../helpers/event';
@@ -59,13 +58,7 @@ export default class EventSSEChannel extends SSEChannel<EventTreeNode> {
 	}
 
 	protected getNextChunk(chunkSize = this.accumulatedData.length): EventTreeNode[] {
-		return this.accumulatedData.splice(0, chunkSize).map(eventData => ({
-			...eventData,
-			startTimestamp: moment(eventData.startTimestamp).valueOf(),
-			endTimestamp: eventData.endTimestamp
-				? moment(eventData.endTimestamp).valueOf()
-				: eventData.endTimestamp,
-		}));
+		return this.accumulatedData.splice(0, chunkSize);
 	}
 
 	@action

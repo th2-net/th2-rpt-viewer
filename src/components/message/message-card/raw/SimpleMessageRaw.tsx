@@ -26,11 +26,10 @@ import { useSearchStore } from 'hooks/useSearchStore';
 
 interface Props {
 	rawContent: string;
-	renderInfo: () => React.ReactNode;
 	applyFilterToBody?: boolean;
 }
 
-function SimpleMessageRaw({ rawContent, renderInfo, applyFilterToBody }: Props) {
+function SimpleMessageRaw({ rawContent, applyFilterToBody }: Props) {
 	const { currentSearch } = useSearchStore();
 	const { selectedBodyBinaryFilter } = useMessagesStore();
 	const contentRef = React.useRef<HTMLDivElement>(null);
@@ -53,7 +52,6 @@ function SimpleMessageRaw({ rawContent, renderInfo, applyFilterToBody }: Props) 
 
 	return (
 		<div className='mc-raw__human' ref={contentRef}>
-			{renderInfo()}
 			{convertedArr.map((part, index) => {
 				if (part.isPrintable) {
 					const valueRange: [number, number] = [

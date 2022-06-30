@@ -51,6 +51,7 @@ export default class RootStore {
 			this.api,
 			this.filtersConfigStore,
 			this.filtersHistoryStore,
+			this.sessionsStore,
 			this.parseUrlState(),
 		);
 

@@ -18,9 +18,9 @@ import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle, ListItem } from 'react-virtuoso';
 import moment from 'moment';
-import { isEventMessage } from 'helpers/event';
+import { notEmpty } from 'helpers/object';
 import { useDebouncedCallback, useMessagesDataStore, useMessagesStore } from '../../../hooks';
-import { EventMessage } from '../../../models/EventMessage';
+import { EventMessage, EventMessageItem } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
 import { SSEHeartbeat } from '../../../api/sse';
 import { formatTime } from '../../../helpers/date';
@@ -28,7 +28,7 @@ import { formatTime } from '../../../helpers/date';
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
 	rowCount: number;
-	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
+	itemRenderer: (index: number, message: EventMessageItem) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -45,7 +45,7 @@ interface Props {
 const MessagesVirtualizedList = (props: Props) => {
 	const messageStore = useMessagesStore();
 	const {
-		messages: messageList,
+		messages,
 		searchChannelNext,
 		searchChannelPrev,
 		startIndex,
@@ -64,6 +64,8 @@ const MessagesVirtualizedList = (props: Props) => {
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
 	const { className, overscan = 3, itemRenderer, loadPrevMessages, loadNextMessages } = props;
+
+	const [messageList, setMessageList] = React.useState<EventMessageItem[]>([]);
 
 	const [[firstPrevChunkIsLoaded, firstNextChunkIsLoaded], setLoadedChunks] = React.useState<
 		[boolean, boolean]
@@ -95,6 +97,30 @@ const MessagesVirtualizedList = (props: Props) => {
 		firstNextChunkIsLoaded,
 	]);
 
+	React.useEffect(() => {
+		const tempMessageList: EventMessageItem[] = [];
+		messages.forEach(message => {
+			if (message.parsedMessages) {
+				message.parsedMessages.forEach(parsedMessage => {
+					const { parsedMessages, ...rest } = message;
+					const tempMessageItem: EventMessageItem = {
+						...rest,
+						parsedMessage: null,
+						parsedMessages: [],
+					};
+
+					tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
+					if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
+						tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
+					tempMessageList.push(tempMessageItem);
+				});
+			} else {
+				tempMessageList.push(message as EventMessageItem);
+			}
+		});
+		setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
+	}, [messages]);
+
 	const debouncedScrollHandler = useDebouncedCallback(
 		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
 			const scroller = event.target;
@@ -108,7 +134,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					!searchChannelNext.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
-					loadNextMessages().then(messages => onNextChannelResponse(messages));
+					loadNextMessages().then(nextMessages => onNextChannelResponse(nextMessages));
 				}
 
 				if (
@@ -118,7 +144,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					!searchChannelPrev.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
 				) {
-					loadPrevMessages().then(messages => onPrevChannelResponse(messages));
+					loadPrevMessages().then(prevMessages => onPrevChannelResponse(prevMessages));
 				}
 			}
 		},
@@ -135,11 +161,14 @@ const MessagesVirtualizedList = (props: Props) => {
 		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
-	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
-		messageStore.setRenderedItems(
-			renderedMessages.map(listItem => listItem.data).filter(isEventMessage),
-		);
-	}, 800);
+	const onMessagesRendered = useDebouncedCallback(
+		(renderedMessages: ListItem<EventMessageItem>[]) => {
+			messageStore.setRenderedItems(
+				renderedMessages.map(listItem => listItem.data).filter(notEmpty),
+			);
+		},
+		800,
+	);
 
 	return (
 		<Virtuoso

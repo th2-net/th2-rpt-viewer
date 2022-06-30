@@ -24,12 +24,13 @@ import {
 	useMessagesViewTypesStore,
 	useBookmarksStore,
 } from '../../../hooks';
-import { EventMessage, MessageViewType } from '../../../models/EventMessage';
+import { MessageViewType, EventMessageItem } from '../../../models/EventMessage';
 import MessageCardBase from './MessageCardBase';
 import '../../../styles/messages.scss';
+import { createBemBlock } from '../../../helpers/styleCreators';
 
 export interface OwnProps {
-	message: EventMessage;
+	message: EventMessageItem;
 }
 
 export interface RecoveredProps {
@@ -39,8 +40,8 @@ export interface RecoveredProps {
 
 interface Props extends OwnProps, RecoveredProps {}
 
-const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
-	const messageId = message.id;
+const MessageCard = ({ message, viewType, setViewType }: Props) => {
+	const { id } = message;
 
 	const messagesStore = useMessagesStore();
 	const messagesDataStore = useMessagesDataStore();
@@ -51,23 +52,19 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 
-	const isContentBeautified = viewType === MessageViewType.FORMATTED;
 	const isBookmarked =
-		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === messageId) !==
-		-1;
+		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === id) !== -1;
 
-	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(messageId);
-
-	const applyFilterToBody = messagesStore.selectedMessageId?.valueOf() === message.id;
+	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(id);
 
 	React.useEffect(() => {
 		const abortController = new AbortController();
 
 		if (
 			messagesStore.filterStore.isSoftFilter &&
-			messagesDataStore.isSoftFiltered.get(messageId) === undefined
+			messagesDataStore.isSoftFiltered.get(id) === undefined
 		) {
-			messagesDataStore.matchMessage(messageId, abortController.signal);
+			messagesDataStore.matchMessage(id, abortController.signal);
 		}
 
 		return () => {
@@ -76,7 +73,7 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	}, []);
 
 	React.useEffect(() => {
-		if (!isHighlighted && messagesStore.highlightedMessageId?.valueOf() === messageId) {
+		if (!isHighlighted && messagesStore.highlightedMessageId?.valueOf() === id) {
 			setHighlighted(true);
 
 			highlightTimer.current = setTimeout(() => {
@@ -108,30 +105,34 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 
 	const isExported = messagesStore.exportStore.isExported(message);
 
-	return (
-		<MessageCardBase
-			message={message}
-			viewType={viewType}
-			setViewType={setViewType}
-			isHighlighted={isHighlighted}
-			isBookmarked={isBookmarked}
-			isAttached={isAttached}
-			isContentBeautified={isContentBeautified}
-			isSoftFiltered={isSoftFiltered}
-			toogleMessagePin={toogleMessagePin}
-			isExported={isExported}
-			isExport={messagesStore.exportStore.isExport}
-			applyFilterToBody={applyFilterToBody}
-			sortOrderItems={sortOrderItems}
-			addMessageToExport={addMessagesToExport}
-		/>
+	const rootClass = createBemBlock(
+		'message-card-wrapper',
+		isAttached ? 'attached' : null,
+		isBookmarked ? 'pinned' : null,
+		isHighlighted ? 'highlighted' : null,
+		isSoftFiltered ? 'soft-filtered' : null,
+		messagesStore.exportStore.isExport ? 'export-mode' : null,
+		isExported ? 'exported' : null,
 	);
-});
+
+	return (
+		<div className={rootClass} onClick={addMessagesToExport}>
+			<MessageCardBase
+				message={message}
+				viewType={viewType}
+				setViewType={setViewType}
+				isBookmarked={isBookmarked}
+				isAttached={isAttached}
+				toogleMessagePin={toogleMessagePin}
+				sortOrderItems={sortOrderItems}
+			/>
+		</div>
+	);
+};
 
 const RecoverableMessageCard = (props: OwnProps) => {
 	const viewTypesStore = useMessagesViewTypesStore();
 	const { viewType, setViewType } = viewTypesStore.getSavedViewType(props.message);
-
 	return <MessageCard {...props} viewType={viewType} setViewType={setViewType} />;
 };
 

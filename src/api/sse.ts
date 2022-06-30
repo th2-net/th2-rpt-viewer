@@ -77,6 +77,13 @@ export interface EventSSEParams extends BaseSSEParams {
 	resumeFromId?: string;
 }
 
+export type MessageDirection = 'first' | 'second';
+
+export const toStream = (
+	name: string,
+	direction: MessageDirection[] = ['first', 'second'],
+): string[] => direction.map(dir => `${name}:${dir}`);
+
 export interface MessagesSSEParams extends BaseSSEParams {
 	stream: string[];
 	filters?: Array<MessagesSSEFilters>;
@@ -104,7 +111,11 @@ export interface MessageIdsEvent {
 	reason: string;
 	// session: messageId
 	messageIds: {
-		[session: string]: string | null;
+		[session: string]: {
+			hasStarted: boolean;
+			hasFinished: boolean;
+			lastId: string | null;
+		};
 	};
 }
 
@@ -186,6 +197,7 @@ export function getMessagesSSEParamsFromFilter(
 
 const sseApi: SSESchema = {
 	getEventSource: config => {
+		// console.error(new Error());
 		const { type, queryParams } = config;
 		const params = createURLSearchParams({
 			...queryParams,

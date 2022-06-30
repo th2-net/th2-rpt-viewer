@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { action, reaction, observable, computed, runInAction } from 'mobx';
-import { sortByTimestamp } from 'helpers/date';
+import { sortByTimestamp, timestampToNumber } from 'helpers/date';
 import { SearchDirection } from 'models/search/SearchDirection';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
@@ -145,10 +145,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 			const [nextMessages, prevMessages] = await Promise.all([
 				this.searchChannelNext.loadAndSubscribe({
-					resumeMessageIds: extractMessageIds(messageIds.next.filter((_, index) => index < 2)),
+					resumeMessageIds: extractMessageIds(messageIds.next),
 				}),
 				this.searchChannelPrev.loadAndSubscribe({
-					resumeMessageIds: extractMessageIds(messageIds.previous.filter((_, index) => index < 2)),
+					resumeMessageIds: extractMessageIds(messageIds.previous),
 				}),
 			]);
 
@@ -280,7 +280,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			this.messages.length > 0
 				? messages.filter(
 						message =>
-							message.timestamp < this.messages[0].timestamp || message.id === this.messages[0].id,
+							timestampToNumber(message.timestamp) <
+								timestampToNumber(this.messages[0].timestamp) || message.id === this.messages[0].id,
 				  )
 				: [];
 		const firstNextMessage = prevMessages[0];

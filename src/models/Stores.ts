@@ -25,15 +25,15 @@ import { DbData } from '../api/indexedDb';
 import { EventsFiltersInfo, MessagesFilterInfo, MessagesSSEParams } from '../api/sse';
 import { EventTreeNode } from './EventAction';
 import { MessageSSEEventListeners } from '../stores/SSEChannel/MessagesSSEChannel';
-import { EventMessage } from './EventMessage';
+import { EventMessage, EventMessageItem } from './EventMessage';
 
 export interface IBookmarksStore {
 	messages: MessageBookmark[];
 	events: EventBookmark[];
 	bookmarks: Bookmark[];
 	isLoadingBookmarks: boolean;
-	toggleMessagePin: (message: EventMessage) => void;
-	toggleEventPin: (event: EventTreeNode) => void;
+	toggleMessagePin: (message: EventMessageItem) => void;
+	toggleEventPin: (message: EventTreeNode) => void;
 	syncData: (unsavedData?: DbData) => void;
 }
 
