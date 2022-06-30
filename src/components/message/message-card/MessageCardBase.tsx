@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { createBemBlock } from 'helpers/styleCreators';
 import { MessageScreenshotZoom } from './MessageScreenshot';
-import { createBemBlock } from '../../../helpers/styleCreators';
 import {
 	isScreenshotMessage,
 	MessageViewType,

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
@@ -39,7 +39,7 @@ const EmbeddedMessages = () => {
 
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 
-	const renderMsg = React.useCallback(
+	const renderMsg = useCallback(
 		(index: number, message: EventMessageItem) => (
 			<MessageCardBase
 				message={message}
@@ -52,7 +52,7 @@ const EmbeddedMessages = () => {
 		[viewType, setViewType],
 	);
 
-	const reportURL = React.useMemo(() => {
+	const reportURL = useMemo(() => {
 		const messagesStoreState = {
 			timestampFrom: messagesStore.filterStore.filter.timestampFrom,
 			timestampTo: messagesStore.filterStore.filter.timestampTo,

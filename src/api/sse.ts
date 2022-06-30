@@ -197,6 +197,7 @@ export function getMessagesSSEParamsFromFilter(
 
 const sseApi: SSESchema = {
 	getEventSource: config => {
+		// console.error(new Error());
 		const { type, queryParams } = config;
 		const params = createURLSearchParams({
 			...queryParams,
