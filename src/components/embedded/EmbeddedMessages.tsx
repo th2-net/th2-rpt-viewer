@@ -18,8 +18,7 @@ import React from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
-import { EventMessage, EventMessageItem } from '../../models/EventMessage';
-import getMessageList from '../../helpers/messageList';
+import { EventMessage } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
 import '../../styles/embedded.scss';
 import api from '../../api';
@@ -38,7 +37,7 @@ const EmbeddedMessages = () => {
 	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
 
-	const renderMsg = React.useCallback((index: number, message: EventMessageItem) => {
+	const renderMsg = React.useCallback((index: number, message: EventMessage) => {
 		return <MessageCard message={message} />;
 	}, []);
 
@@ -123,7 +122,7 @@ export default function MessagesApp() {
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
 	rowCount: number;
-	itemRenderer: (index: number, message: EventMessageItem) => React.ReactElement;
+	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -149,15 +148,6 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		loadNextMessages,
 		scrolledIndex,
 	} = props;
-
-	const [messageList, setMessageList] = React.useState<EventMessageItem[]>([]);
-
-	React.useEffect(() => {
-		setMessageList(messageListCopy => [
-			...messageListCopy,
-			...getMessageList(messagesStore.dataStore.messages, messageListCopy),
-		]);
-	}, [messagesStore.dataStore.messages]);
 
 	React.useEffect(() => {
 		if (scrolledIndex !== null) {
@@ -214,7 +204,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 
 	return (
 		<Virtuoso
-			data={messageList}
+			data={messagesStore.dataStore.messages}
 			firstItemIndex={messagesStore.dataStore.startIndex}
 			ref={virtuoso}
 			overscan={overscan}

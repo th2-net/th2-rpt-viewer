@@ -54,19 +54,17 @@ export interface EventMessage {
 	parsedMessages: ParsedMessage[] | null;
 }
 
-export interface EventMessageItem extends EventMessage {
-	parsedMessage: ParsedMessage | null;
-}
-
 export interface ParsedMessage {
 	match: boolean;
 	id: string;
 	message: MessageBody;
 }
 
-export function isScreenshotMessage(message: EventMessageItem): boolean {
-	return message.parsedMessage
-		? /image\/\w+/gi.test(message.parsedMessage?.message.metadata.messageType)
+export function isScreenshotMessage(message: EventMessage): boolean {
+	return message.parsedMessages?.filter(parsedMessage =>
+		/image\/\w+/gi.test(parsedMessage.message.metadata.messageType),
+	).length
+		? true
 		: false;
 }
 

@@ -15,27 +15,18 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
-import { EventMessage, MessageViewType, EventMessageItem } from '../../models/EventMessage';
-import getMessageList from '../../helpers/messageList';
+import { EventMessage, MessageViewType } from '../../models/EventMessage';
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
 
 function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
-	const [messageList, setMessageList] = React.useState<EventMessageItem[]>([]);
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 	const [errorStatus, setErrorStatus] = useState<string | null>(null);
 
 	useEffect(() => {
 		getMessage();
 	}, []);
-
-	useEffect(() => {
-		setMessageList(messageListCopy => [
-			...messageListCopy,
-			...getMessageList(Array.of(message) as EventMessage[], messageListCopy),
-		]);
-	}, [message]);
 
 	async function getMessage() {
 		const res = await fetch(`backend/message/${messageId}`);
@@ -50,20 +41,18 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 		throw new Error(errorStatus);
 	}
 
-	if (messageList.length) {
+	if (message) {
 		return (
 			<div className='embedded-wrapper'>
-				{messageList.map((parsedMessage, index: number) => {
-					return (
-						<MessageCardBase
-							isEmbedded
-							key={`${parsedMessage.id}-${index}`}
-							message={parsedMessage}
-							setViewType={setViewType}
-							viewType={viewType}
-						/>
-					);
-				})}
+				return (
+				<MessageCardBase
+					isEmbedded
+					key={`${message.id}`}
+					message={message}
+					setViewType={setViewType}
+					viewType={viewType}
+				/>
+				);
 			</div>
 		);
 	}

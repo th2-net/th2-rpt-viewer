@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { EventAction, EventTreeNode } from './EventAction';
-import { EventMessage, EventMessageItem } from './EventMessage';
+import { EventMessage } from './EventMessage';
 
 export type Bookmark = EventBookmark | MessageBookmark;
 
@@ -26,11 +26,11 @@ export type BookmarkType = 'event' | 'message';
 export interface MessageBookmark {
 	timestamp: number;
 	id: string;
-	item: EventMessageItem;
+	item: EventMessage;
 }
 
 export interface EventBookmark {
 	timestamp: number;
 	id: string;
-	item: EventMessageItem | EventTreeNode;
+	item: EventMessage | EventTreeNode;
 }

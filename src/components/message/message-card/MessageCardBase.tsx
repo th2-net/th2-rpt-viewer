@@ -20,19 +20,25 @@ import { MessageScreenshotZoom } from './MessageScreenshot';
 import {
 	isScreenshotMessage,
 	MessageViewType,
-	EventMessageItem,
+	EventMessage,
+	ParsedMessage,
 } from '../../../models/EventMessage';
 import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
-import MessageCardTools, { MessageCardToolsConfig } from './MessageCardTools';
+import { MessageCardToolsProps } from './MessageCardTools';
 import '../../../styles/messages.scss';
 import { MessageHeader } from './MessageHeader';
+import { useMessagesWorkspaceStore } from '../../../hooks';
 
 export interface MessageCardBaseProps {
-	message: EventMessageItem;
+	message: EventMessage;
 	hoverMessage?: () => void;
 	unhoverMessage?: () => void;
+	isHighlighted?: boolean;
+	isSoftFiltered?: boolean;
+	isExported?: boolean;
+	isExpanded?: boolean;
 	isAttached?: boolean;
 	isBookmarked?: boolean;
 	toogleMessagePin?: () => void;
@@ -49,35 +55,63 @@ const MessageCardBase = React.memo(
 		setViewType,
 		hoverMessage,
 		unhoverMessage,
+		isHighlighted,
+		isSoftFiltered,
+		isExported,
+		isExpanded,
 		isAttached,
 		isBookmarked,
 		toogleMessagePin,
 		isEmbedded,
 		sortOrderItems,
 	}: MessageCardBaseProps) => {
-		const { id, rawMessageBase64, parsedMessage } = message;
+		const { id, rawMessageBase64 } = message;
+
+		const messagesStore = useMessagesWorkspaceStore();
+
+		const [renderingMessages, setRenderingMessages] = React.useState<ParsedMessage[]>([]);
 
 		const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : 'hidden');
+
+		const rootClass = createBemBlock(
+			'message-card-wrapper',
+			isAttached ? 'attached' : null,
+			isBookmarked ? 'pinned' : null,
+			isHighlighted ? 'highlighted' : null,
+			isSoftFiltered ? 'soft-filtered' : null,
+			messagesStore.exportStore.isExport ? 'export-mode' : null,
+			isExported ? 'exported' : null,
+		);
 
 		const toggleViewType = (v: MessageViewType) => {
 			setViewType(v);
 		};
 
+		const addMessagesToExport = React.useCallback(
+			() => messagesStore.exportStore.addMessageToExport(message),
+			[messagesStore.exportStore.addMessageToExport],
+		);
+
 		const isScreenshotMsg = isScreenshotMessage(message);
+
+		React.useEffect(() => {
+			if (message.parsedMessages)
+				isExpanded
+					? setRenderingMessages(message.parsedMessages)
+					: setRenderingMessages(Array.of(message.parsedMessages[0]));
+		}, [isExpanded]);
 
 		const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
 			viewType,
 			messageId: id,
-			messageBody: parsedMessage ? parsedMessage.message : null,
 			isBeautified: viewType === MessageViewType.FORMATTED,
 			rawContent: rawMessageBase64,
 			isSelected: isAttached || false,
 			sortOrderItems: sortOrderItems || [],
 		};
 
-		const messageCardToolsConfig: MessageCardToolsConfig = {
+		const messageCardToolsConfig: MessageCardToolsProps = {
 			message,
-			parsedMessage,
 			messageViewType: viewType,
 			toggleViewType,
 			isBookmarked: isBookmarked || false,
@@ -87,36 +121,49 @@ const MessageCardBase = React.memo(
 		};
 
 		return (
-			<div>
+			<div className={rootClass} onClick={addMessagesToExport}>
 				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
 				<div className='message-card'>
-					<div className='mc__mc-body mc-body'>
-						<MessageHeader
-							message={message}
-							parsedMessage={parsedMessage}
-							onTimestampMouseEnter={hoverMessage}
-							onTimestampMouseLeave={unhoverMessage}
-						/>
-						{isScreenshotMsg ? (
-							<div className='mc-body__screenshot'>
-								<MessageScreenshotZoom
-									src={
-										typeof rawMessageBase64 === 'string'
-											? `data:${parsedMessage?.message.metadata.messageType};base64,` +
-											  `${message.rawMessageBase64}`
-											: ''
-									}
-									alt={message.id}
-								/>
+					<MessageHeader
+						{...messageCardToolsConfig}
+						message={message}
+						onTimestampMouseEnter={hoverMessage}
+						onTimestampMouseLeave={unhoverMessage}
+					/>
+					{renderingMessages.map((parsedMessage, index) => (
+						<div className='mc__body parsed-message' key={parsedMessage.id}>
+							<div className='mc-body'>
+								{index > 0 && (
+									<MessageHeader
+										{...messageCardToolsConfig}
+										message={message}
+										parsedMessage={parsedMessage}
+									/>
+								)}
+								{isScreenshotMsg ? (
+									<div className='mc-body__screenshot'>
+										<MessageScreenshotZoom
+											src={
+												typeof rawMessageBase64 === 'string'
+													? `data:${parsedMessage.message.metadata.messageType};base64,` +
+													  `${message.rawMessageBase64}`
+													: ''
+											}
+											alt={message.id}
+										/>
+									</div>
+								) : (
+									<div className='mc-body__human'>
+										<MessageCardViewTypeRenderer
+											{...messageViewTypeRendererProps}
+											messageBody={parsedMessage.message}
+										/>
+									</div>
+								)}
 							</div>
-						) : (
-							<div className='mc-body__human'>
-								<MessageCardViewTypeRenderer {...messageViewTypeRendererProps} />
-							</div>
-						)}
-					</div>
+						</div>
+					))}
 				</div>
-				<MessageCardTools {...messageCardToolsConfig} />
 			</div>
 		);
 	},

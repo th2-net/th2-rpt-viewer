@@ -19,15 +19,16 @@ import { EventMessage, ParsedMessage } from '../../../models/EventMessage';
 import { createStyleSelector } from '../../../helpers/styleCreators';
 import { formatTime, timestampToNumber } from '../../../helpers/date';
 import { getHashCode } from '../../../helpers/stringHash';
+import MessageCardTools, { MessageCardToolsProps } from './MessageCardTools';
 
 interface MessageInfoProps {
 	message: EventMessage;
-	parsedMessage: ParsedMessage | null;
+	parsedMessage?: ParsedMessage;
 	onTimestampMouseEnter?: () => void;
 	onTimestampMouseLeave?: () => void;
 }
 
-export const MessageHeader = React.memo((props: MessageInfoProps) => {
+export const MessageHeader = React.memo((props: MessageInfoProps & MessageCardToolsProps) => {
 	const { message, parsedMessage, onTimestampMouseEnter, onTimestampMouseLeave } = props;
 	const { timestamp, sessionId, direction } = message;
 
@@ -43,28 +44,72 @@ export const MessageHeader = React.memo((props: MessageInfoProps) => {
 	);
 
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
+
+	const messageCardToolsConfig: MessageCardToolsProps = {
+		message,
+		messageViewType: props.messageViewType,
+		toggleViewType: props.toggleViewType,
+		isBookmarked: props.isBookmarked || false,
+		toggleMessagePin: props.toggleMessagePin || (() => null),
+		isScreenshotMsg: props.isScreenshotMsg,
+		isEmbedded: props.isEmbedded,
+	};
 	return (
 		<div className='mc-header__info'>
-			<span
-				className='mc-header__value mc-header__timestamp'
-				title={`Timestamp: ${formattedTimestamp}`}
-				onMouseEnter={onTimestampMouseEnter}
-				onMouseLeave={onTimestampMouseLeave}>
-				{timestamp && formattedTimestamp}
-			</span>
-			<span className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
-				{sessionId}
-			</span>
-			<span className='mc-header__value'>{parsedMessage?.id}</span>
-			<span className={sessionClass} style={sessionArrowStyle}></span>
-			<span
-				className='mc-header__value messageType'
-				title={
-					parsedMessage?.message.metadata.messageType &&
-					`Name: ${parsedMessage?.message.metadata.messageType}`
-				}>
-				{parsedMessage?.message.metadata.messageType}
-			</span>
+			{parsedMessage ? (
+				<>
+					<span
+						className='mc-header__value sessionId-inline'
+						title={`Session: ${parsedMessage.message.metadata.id.sequence}`}>
+						{parsedMessage.message.metadata.id.subsequence[0]}
+					</span>
+					<span
+						className='mc-header__value messageType'
+						title={
+							parsedMessage.message.metadata.messageType &&
+							`Name: ${parsedMessage.message.metadata.messageType}`
+						}>
+						{parsedMessage.message.metadata.messageType}
+					</span>
+					<div className='message-card-tools__wrapper'>
+						<MessageCardTools {...messageCardToolsConfig} parsedMessage={parsedMessage} />
+					</div>
+				</>
+			) : (
+				<>
+					<span
+						className='mc-header__value mc-header__timestamp'
+						title={`Timestamp: ${formattedTimestamp}`}
+						onMouseEnter={onTimestampMouseEnter}
+						onMouseLeave={onTimestampMouseLeave}>
+						{timestamp && formattedTimestamp}
+					</span>
+					<span className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
+						{sessionId}
+					</span>
+					<span className='mc-header__value'>{message.id}</span>
+					<span className='mc-header__value'>
+						{message.parsedMessages?.[0].message.metadata.id.subsequence[0]}
+					</span>
+					<span className={sessionClass} style={sessionArrowStyle}></span>
+					<span
+						className='mc-header__value messageType'
+						title={
+							message.parsedMessages?.[0].message.metadata.messageType &&
+							`Name: ${message.parsedMessages?.[0].message.metadata.messageType}`
+						}>
+						{message.parsedMessages?.[0].message.metadata.messageType}
+					</span>
+					{message.parsedMessages && (
+						<div className='message-card-tools__wrapper'>
+							<MessageCardTools
+								{...messageCardToolsConfig}
+								parsedMessage={message.parsedMessages[0]}
+							/>
+						</div>
+					)}
+				</>
+			)}
 		</div>
 	);
 });

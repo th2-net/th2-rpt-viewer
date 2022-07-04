@@ -24,13 +24,13 @@ import {
 	useMessagesViewTypesStore,
 	useBookmarksStore,
 } from '../../../hooks';
-import { MessageViewType, EventMessageItem } from '../../../models/EventMessage';
+import { MessageViewType, EventMessage } from '../../../models/EventMessage';
 import MessageCardBase from './MessageCardBase';
 import '../../../styles/messages.scss';
-import { createBemBlock } from '../../../helpers/styleCreators';
+import MessageExpandButton from '../MessageExpandButton';
 
 export interface OwnProps {
-	message: EventMessageItem;
+	message: EventMessage;
 }
 
 export interface RecoveredProps {
@@ -40,7 +40,7 @@ export interface RecoveredProps {
 
 interface Props extends OwnProps, RecoveredProps {}
 
-const MessageCard = ({ message, viewType, setViewType }: Props) => {
+const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const { id } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
@@ -49,6 +49,7 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 	const { sortOrderItems } = useMessageBodySortStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
+	const [isExpandedMessages, setIsExpandedMessages] = React.useState(false);
 
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
@@ -110,39 +111,32 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 		bookmarksStore.toggleMessagePin(message);
 	}, [bookmarksStore.toggleMessagePin]);
 
-	const addMessagesToExport = React.useCallback(
-		() => messagesStore.exportStore.addMessageToExport(message),
-		[messagesStore.exportStore.addMessageToExport],
-	);
-
 	const isExported = messagesStore.exportStore.isExported(message);
 
-	const rootClass = createBemBlock(
-		'message-card-wrapper',
-		isAttached ? 'attached' : null,
-		isBookmarked ? 'pinned' : null,
-		isHighlighted ? 'highlighted' : null,
-		isSoftFiltered ? 'soft-filtered' : null,
-		messagesStore.exportStore.isExport ? 'export-mode' : null,
-		isExported ? 'exported' : null,
-	);
-
 	return (
-		<div className={rootClass} onClick={addMessagesToExport}>
+		<div>
 			<MessageCardBase
 				message={message}
 				viewType={viewType}
 				setViewType={setViewType}
 				hoverMessage={hoverMessage}
 				unhoverMessage={unhoverMessage}
+				isHighlighted={isHighlighted}
+				isSoftFiltered={isSoftFiltered}
+				isExported={isExported}
+				isExpanded={isExpandedMessages}
 				isBookmarked={isBookmarked}
 				isAttached={isAttached}
 				toogleMessagePin={toogleMessagePin}
 				sortOrderItems={sortOrderItems}
 			/>
+			<MessageExpandButton
+				isExpandedMessages={isExpandedMessages}
+				setIsExpandedMessages={setIsExpandedMessages}
+			/>
 		</div>
 	);
-};
+});
 
 const RecoverableMessageCard = (props: OwnProps) => {
 	const viewTypesStore = useMessagesViewTypesStore();

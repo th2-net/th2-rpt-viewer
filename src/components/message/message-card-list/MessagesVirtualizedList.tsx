@@ -23,16 +23,15 @@ import {
 	useMessagesDataStore,
 	useMessagesWorkspaceStore,
 } from '../../../hooks';
-import { EventMessage, EventMessageItem } from '../../../models/EventMessage';
+import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
 import { SSEHeartbeat } from '../../../api/sse';
 import { formatTime } from '../../../helpers/date';
-import getMessageList from '../../../helpers/messageList';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
 	rowCount: number;
-	itemRenderer: (index: number, message: EventMessageItem) => React.ReactElement;
+	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -68,8 +67,6 @@ const MessagesVirtualizedList = (props: Props) => {
 
 	const { className, overscan = 3, itemRenderer, loadPrevMessages, loadNextMessages } = props;
 
-	const [messageList, setMessageList] = React.useState<EventMessageItem[]>([]);
-
 	const [[firstPrevChunkIsLoaded, firstNextChunkIsLoaded], setLoadedChunks] = React.useState<
 		[boolean, boolean]
 	>([false, false]);
@@ -93,13 +90,6 @@ const MessagesVirtualizedList = (props: Props) => {
 		firstPrevChunkIsLoaded,
 		firstNextChunkIsLoaded,
 	]);
-
-	React.useEffect(() => {
-		setMessageList(messageListCopy => [
-			...messageListCopy,
-			...getMessageList(messages, messageListCopy),
-		]);
-	}, [messages]);
 
 	const debouncedScrollHandler = useDebouncedCallback(
 		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
@@ -141,20 +131,17 @@ const MessagesVirtualizedList = (props: Props) => {
 		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
-	const onMessagesRendered = useDebouncedCallback(
-		(renderedMessages: ListItem<EventMessageItem>[]) => {
-			messageStore.currentMessagesIndexesRange = {
-				startIndex: (renderedMessages && renderedMessages[0]?.originalIndex) ?? 0,
-				endIndex:
-					(renderedMessages && renderedMessages[renderedMessages.length - 1]?.originalIndex) ?? 0,
-			};
-		},
-		100,
-	);
+	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
+		messageStore.currentMessagesIndexesRange = {
+			startIndex: (renderedMessages && renderedMessages[0]?.originalIndex) ?? 0,
+			endIndex:
+				(renderedMessages && renderedMessages[renderedMessages.length - 1]?.originalIndex) ?? 0,
+		};
+	}, 100);
 
 	return (
 		<Virtuoso
-			data={messageList}
+			data={messages}
 			firstItemIndex={startIndex}
 			ref={virtuoso}
 			overscan={overscan}

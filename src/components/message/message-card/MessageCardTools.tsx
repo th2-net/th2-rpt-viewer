@@ -31,15 +31,18 @@ const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 const JSON_COPY_OPTIONS = ['body', 'fields'] as const;
 
-export type MessageCardToolsConfig = {
+export type MessageCardToolsProps = {
 	message: EventMessage;
-	parsedMessage: ParsedMessage | null;
 	messageViewType: MessageViewType;
 	toggleViewType: (viewType: MessageViewType) => void;
 	isBookmarked: boolean;
 	toggleMessagePin: () => void;
 	isScreenshotMsg: boolean;
 	isEmbedded?: boolean;
+};
+
+type OwnProps = {
+	parsedMessage: ParsedMessage | null;
 };
 
 const MessageCardTools = ({
@@ -51,7 +54,7 @@ const MessageCardTools = ({
 	toggleMessagePin,
 	isScreenshotMsg,
 	isEmbedded,
-}: MessageCardToolsConfig) => {
+}: MessageCardToolsProps & OwnProps) => {
 	const { id } = message;
 
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);

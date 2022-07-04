@@ -28,10 +28,13 @@ export type MessageCardViewTypeRendererProps = {
 	rawContent: string | null;
 	isBeautified: boolean;
 	isSelected: boolean;
-	messageBody: MessageBody | null;
 	isEmbedded?: boolean;
 	isDetailed?: boolean;
 	sortOrderItems: string[];
+};
+
+type OwnProps = {
+	messageBody: MessageBody | null;
 };
 
 const MessageCardViewTypeRenderer = ({
@@ -41,7 +44,7 @@ const MessageCardViewTypeRenderer = ({
 	isSelected,
 	messageBody,
 	sortOrderItems,
-}: MessageCardViewTypeRendererProps) => {
+}: MessageCardViewTypeRendererProps & OwnProps) => {
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
 		case MessageViewType.JSON:
