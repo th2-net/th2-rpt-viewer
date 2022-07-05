@@ -47,6 +47,7 @@ import { DbData, IndexedDbStores } from 'api/indexedDb';
 import { getItemId, isEventAction, isEventMessage } from 'helpers/event';
 import { IFilterConfigStore, ISearchStore } from 'models/Stores';
 import { getTimestampAsNumber } from 'helpers/date';
+import { isQuotaExceededError } from 'helpers/fetch';
 import {
 	getDefaultEventsFiltersState,
 	getDefaultMessagesFiltersState,
@@ -458,7 +459,7 @@ export class SearchStore implements ISearchStore {
 
 		if ((!isPaused && !loadMore) || this.currentSearch?.request.type !== this.formType) {
 			this.newSearch({
-				timestamp: moment().utc().valueOf(),
+				timestamp: moment.utc().valueOf(),
 				request: { type: this.formType, state: this.searchForm, filters: filterParams },
 				results: {},
 				progress: {
@@ -775,7 +776,7 @@ export class SearchStore implements ISearchStore {
 
 			await this.api.indexedDb.addDbStoreItem(IndexedDbStores.SEARCH_HISTORY, search);
 		} catch (error) {
-			if (error instanceof DOMException && error.code === error.QUOTA_EXCEEDED_ERR) {
+			if (isQuotaExceededError(error)) {
 				this.workspacesStore.onQuotaExceededError(search);
 			} else {
 				notificationsStore.addMessage({

@@ -140,7 +140,7 @@ function EventsFilterPanel() {
 					type: 'toggler',
 					value: filterValues.negative,
 					toggleValue: getToggler(filterName, 'negative' as keyof Filter),
-					possibleValues: ['excl', 'incl'],
+					options: ['excl', 'incl'],
 					className: 'filter-row__toggler',
 					labelClassName: 'event-filters-panel-label',
 				};
@@ -153,7 +153,7 @@ function EventsFilterPanel() {
 					type: 'toggler',
 					value: filterValues.conjunct,
 					toggleValue: getToggler(filterName, 'conjunct' as keyof Filter),
-					possibleValues: ['and', 'or'],
+					options: ['and', 'or'],
 					className: 'filter-row__toggler',
 					labelClassName: 'event-filters-panel-label',
 				};
@@ -181,7 +181,7 @@ function EventsFilterPanel() {
 						type: 'switcher',
 						value: filterValues.values,
 						setValue: getValuesUpdater(filterName),
-						possibleValues: ['passed', 'failed', 'any'],
+						options: ['passed', 'failed', 'any'],
 						defaultValue: 'any',
 						labelClassName: 'event-filters-panel-label',
 					};

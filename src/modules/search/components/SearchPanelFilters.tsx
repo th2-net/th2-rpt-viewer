@@ -57,7 +57,7 @@ type Values = {
 };
 
 const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
-	const { info, state, setState, disableAll, autocompletes } = props;
+	const { info, state, setState, disableAll: disabled, autocompletes } = props;
 
 	function getValuesUpdater<T extends keyof FilterState>(name: T) {
 		return function valuesUpdater<K extends FilterState[T]>(values: K) {
@@ -117,23 +117,21 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 				);
 
 				const config = filterState
-					? filter.parameters.map((param: SSEFilterParameter): FilterRowConfig => {
+					? filter.parameters.map((param: SSEFilterParameter): FilterRowConfig | null => {
 							switch (param.type.value) {
 								case 'boolean':
 									return {
 										id: `${filter.name}-${param.name}`,
-										label: '',
-										disabled: disableAll,
+										disabled,
 										type: 'toggler',
 										value: filterState[param.name],
 										toggleValue: getToggler(filter.name, param.name as keyof Filter),
-										possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+										options: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
 									};
 								case 'string':
 									return {
 										id: filter.name,
-										disabled: disableAll,
-										label: '',
+										disabled,
 										type: 'string',
 										value: filterState.values || '',
 										setValue: getValuesUpdater(filter.name),
@@ -143,19 +141,17 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 								case 'switcher':
 									return {
 										id: filter.name,
-										disabled: disableAll,
-										label: '',
+										disabled,
 										type: 'switcher',
 										value: filterState.values,
 										setValue: getValuesUpdater(filter.name),
-										possibleValues: ['passed', 'failed', 'any'],
+										options: ['passed', 'failed', 'any'],
 										defaultValue: 'any',
 									};
-								default:
+								case 'string[]':
 									return {
 										id: filter.name,
-										disabled: disableAll,
-										label: '',
+										disabled,
 										type: 'multiple-strings',
 										values: filterState.values,
 										setValues: getValuesUpdater(filter.name),
@@ -164,6 +160,9 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 										autocompleteList,
 										hint: filter.hint,
 									};
+								default:
+									console.error(`unhandled filter type ${filter.name}`);
+									return null;
 							}
 					  })
 					: [];
@@ -171,9 +170,9 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 				return (
 					<div className='filter-row' key={filter.name}>
 						<p className='filter-row__label'>{label}</p>
-						{config.map(rowConfig => (
-							<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
-						))}
+						{config.map(rowConfig =>
+							rowConfig ? <FilterRow rowConfig={rowConfig} key={rowConfig.id} /> : null,
+						)}
 					</div>
 				);
 			})}

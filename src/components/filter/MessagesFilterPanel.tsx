@@ -193,7 +193,7 @@ const MessagesFilterPanel = () => {
 												filterInfo.name,
 												param.name as keyof MultipleStringFilter,
 											),
-											possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+											options: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
 											className: 'filter-row__toggler',
 										} as any;
 									default:

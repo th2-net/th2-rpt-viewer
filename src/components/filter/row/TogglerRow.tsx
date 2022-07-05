@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import React from 'react';
+
 import { createStyleSelector } from '../../../helpers/styleCreators';
 import { FilterRowTogglerConfig } from '../../../models/filter/FilterInputs';
 import '../../../styles/toggler.scss';
 
 const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
-	const { value, toggleValue, possibleValues, label, disabled, className = '' } = config;
-	const [firstLabel, secondLabel] = possibleValues;
+	const { value, toggleValue, options, label, disabled, className = '' } = config;
+	const [firstLabel, secondLabel] = options;
 
 	const togglerClassName = createStyleSelector(
 		'toggler',
