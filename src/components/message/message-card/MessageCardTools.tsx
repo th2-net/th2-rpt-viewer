@@ -16,6 +16,7 @@
 
 import React, { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { observer } from 'mobx-react-lite';
 import { createBemElement } from '../../../helpers/styleCreators';
 import { EventMessage, MessageViewType, ParsedMessage } from '../../../models/EventMessage';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
@@ -27,7 +28,6 @@ import useViewMode from '../../../hooks/useViewMode';
 import { ViewMode } from '../../../contexts/viewModeContext';
 import { Apps, CrossOriginMessage } from '../../../models/PostMessage';
 import { useMessagesViewTypesStore } from '../../../hooks';
-import { observer } from 'mobx-react-lite';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 

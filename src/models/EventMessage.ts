@@ -61,11 +61,11 @@ export interface ParsedMessage {
 }
 
 export function isScreenshotMessage(message: EventMessage): boolean {
-	return message.parsedMessages?.filter(parsedMessage =>
-		/image\/\w+/gi.test(parsedMessage.message.metadata.messageType),
-	).length
-		? true
-		: false;
+	return Boolean(
+		message.parsedMessages?.filter(parsedMessage =>
+			/image\/\w+/gi.test(parsedMessage.message.metadata.messageType),
+		).length,
+	);
 }
 
 export function isMessageDisplayRule(obj: unknown): obj is MessageDisplayRule {

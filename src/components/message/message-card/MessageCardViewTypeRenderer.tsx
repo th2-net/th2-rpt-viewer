@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 import { MessageViewType, ParsedMessage } from '../../../models/EventMessage';
 import MessageBody from '../../../models/MessageBody';
 import ErrorBoundary from '../../util/ErrorBoundary';
@@ -22,7 +23,6 @@ import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import SimpleMessageRaw from './raw/SimpleMessageRaw';
 import DetailedMessageRaw from './raw/DetailedMessageRaw';
 import { useMessagesViewTypesStore } from '../../../hooks';
-import { observer } from 'mobx-react-lite';
 
 export type MessageCardViewTypeRendererProps = {
 	messageId: string;

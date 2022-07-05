@@ -82,10 +82,10 @@ const MessageCardBase = React.memo(
 		const isScreenshotMsg = isScreenshotMessage(message);
 
 		React.useEffect(() => {
-			if (message.parsedMessages)
-				isExpanded
-					? setRenderingMessages(message.parsedMessages)
-					: setRenderingMessages(Array.of(message.parsedMessages[0]));
+			if (message.parsedMessages) {
+				if (isExpanded) setRenderingMessages(message.parsedMessages);
+				else setRenderingMessages(Array.of(message.parsedMessages[0]));
+			}
 		}, [isExpanded]);
 
 		const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
