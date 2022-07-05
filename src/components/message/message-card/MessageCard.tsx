@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { computed, observe } from 'mobx';
+import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
 	useMessagesStore,
@@ -26,8 +26,8 @@ import {
 } from '../../../hooks';
 import { MessageViewType, EventMessageItem } from '../../../models/EventMessage';
 import MessageCardBase from './MessageCardBase';
-import '../../../styles/messages.scss';
 import { createBemBlock } from '../../../helpers/styleCreators';
+import 'styles/messages.scss';
 
 export interface OwnProps {
 	message: EventMessageItem;
