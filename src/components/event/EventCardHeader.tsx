@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { formatTime, getElapsedTime } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
@@ -25,7 +25,7 @@ import { Chip } from '../Chip';
 import SearchableContent from '../search/SearchableContent';
 import { useWorkspaceEventStore, useBookmarksStore, useWorkspaceStore } from '../../hooks';
 
-interface Props {
+interface EventCardHeaderBaseProps {
 	displayType?: CardDisplayType;
 	event: EventTreeNode;
 	onSelect?: () => void;
@@ -37,9 +37,13 @@ interface Props {
 	parentsCount?: number;
 	rootStyle?: React.CSSProperties;
 	disabled?: boolean;
+	isBookmarked?: boolean;
+	toggleEventPin?: (event: EventTreeNode) => void;
+	onFilterByParentEvent?: (event: EventTreeNode) => void;
+	hasChildrenToLoad?: boolean;
 }
 
-function EventCardHeader(props: Props) {
+function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 	const {
 		displayType = CardDisplayType.MINIMAL,
 		event,
@@ -52,20 +56,17 @@ function EventCardHeader(props: Props) {
 		parentsCount = 0,
 		rootStyle = {},
 		disabled = false,
+		isBookmarked = false,
+		toggleEventPin,
+		onFilterByParentEvent,
+		hasChildrenToLoad = false,
 	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp, isUnknown } = event;
-
-	const bookmarksStore = useBookmarksStore();
-	const eventStore = useWorkspaceEventStore();
-	const workspaceStore = useWorkspaceStore();
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
 
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
-
-	const isBookmarked =
-		bookmarksStore.events.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !== -1;
 
 	const rootClassName = createBemBlock(
 		'event-header-card',
@@ -88,12 +89,12 @@ function EventCardHeader(props: Props) {
 
 	function onPinClicked(e: React.MouseEvent) {
 		e.stopPropagation();
-		bookmarksStore.toggleEventPin(event);
+		if (toggleEventPin) toggleEventPin(event);
 	}
 
 	function onFilterClick(e: React.MouseEvent) {
 		e.stopPropagation();
-		workspaceStore.onFilterByParentEvent(event);
+		if (onFilterByParentEvent) onFilterByParentEvent(event);
 	}
 
 	function onRootClick() {
@@ -133,11 +134,7 @@ function EventCardHeader(props: Props) {
 			{displayType !== CardDisplayType.STATUS_ONLY &&
 				childrenCount !== undefined &&
 				childrenCount > 0 && (
-					<Chip
-						text={childrenCount
-							.toString()
-							.concat(eventStore.eventDataStore.hasUnloadedChildren.get(event.eventId) ? '+' : '')}
-					/>
+					<Chip text={childrenCount.toString().concat(hasChildrenToLoad ? '+' : '')} />
 				)}
 			{!isUnknown && <div className='search-by-parent' onClick={onFilterClick} />}
 			{!isUnknown && (
@@ -150,5 +147,32 @@ function EventCardHeader(props: Props) {
 		</div>
 	);
 }
+
+const EventCardHeader = (props: EventCardHeaderBaseProps) => {
+	const { event } = props;
+	const bookmarksStore = useBookmarksStore();
+	const workspaceStore = useWorkspaceStore();
+	const eventStore = useWorkspaceEventStore();
+
+	const hasChildrenToLoad = computed(() =>
+		eventStore.eventDataStore.hasUnloadedChildren.get(event.eventId),
+	).get();
+
+	const isBookmarked = computed(
+		() =>
+			bookmarksStore.events.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !==
+			-1,
+	).get();
+
+	return (
+		<EventCardHeaderBase
+			onFilterByParentEvent={workspaceStore.onFilterByParentEvent}
+			isBookmarked={isBookmarked}
+			hasChildrenToLoad={hasChildrenToLoad}
+			toggleEventPin={bookmarksStore.toggleEventPin}
+			{...props}
+		/>
+	);
+};
 
 export default observer(EventCardHeader);

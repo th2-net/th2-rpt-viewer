@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
 import { observer } from 'mobx-react-lite';
 import EventCardHeader from '../EventCardHeader';
 import { useWorkspaceEventStore } from '../../../hooks';
