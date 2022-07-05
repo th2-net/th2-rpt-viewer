@@ -17,12 +17,7 @@
 import * as React from 'react';
 import { createBemBlock } from '../../../helpers/styleCreators';
 import { MessageScreenshotZoom } from './MessageScreenshot';
-import {
-	isScreenshotMessage,
-	MessageViewType,
-	EventMessage,
-	ParsedMessage,
-} from '../../../models/EventMessage';
+import { isScreenshotMessage, EventMessage, ParsedMessage } from '../../../models/EventMessage';
 import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
@@ -44,15 +39,11 @@ export interface MessageCardBaseProps {
 	toogleMessagePin?: () => void;
 	isEmbedded?: boolean;
 	sortOrderItems?: string[];
-	viewType: MessageViewType;
-	setViewType: (viewType: MessageViewType) => void;
 }
 
 const MessageCardBase = React.memo(
 	({
 		message,
-		viewType,
-		setViewType,
 		hoverMessage,
 		unhoverMessage,
 		isHighlighted,
@@ -83,10 +74,6 @@ const MessageCardBase = React.memo(
 			isExported ? 'exported' : null,
 		);
 
-		const toggleViewType = (v: MessageViewType) => {
-			setViewType(v);
-		};
-
 		const addMessagesToExport = React.useCallback(
 			() => messagesStore.exportStore.addMessageToExport(message),
 			[messagesStore.exportStore.addMessageToExport],
@@ -102,9 +89,7 @@ const MessageCardBase = React.memo(
 		}, [isExpanded]);
 
 		const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
-			viewType,
 			messageId: id,
-			isBeautified: viewType === MessageViewType.FORMATTED,
 			rawContent: rawMessageBase64,
 			isSelected: isAttached || false,
 			sortOrderItems: sortOrderItems || [],
@@ -112,8 +97,6 @@ const MessageCardBase = React.memo(
 
 		const messageCardToolsConfig: MessageCardToolsProps = {
 			message,
-			messageViewType: viewType,
-			toggleViewType,
 			isBookmarked: isBookmarked || false,
 			toggleMessagePin: toogleMessagePin || (() => null),
 			isScreenshotMsg,
@@ -157,6 +140,7 @@ const MessageCardBase = React.memo(
 										<MessageCardViewTypeRenderer
 											{...messageViewTypeRendererProps}
 											messageBody={parsedMessage.message}
+											message={parsedMessage}
 										/>
 									</div>
 								)}

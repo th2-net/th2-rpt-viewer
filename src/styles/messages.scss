@@ -74,10 +74,6 @@
 		background-color: $messageCardHoverBackground;
 	}
 
-	&:hover .message-card-tools__ellipsis {
-		display: block;
-	}
-
 	&:hover .mc-header {
 		&__value {
 			font-weight: bold;
@@ -311,6 +307,10 @@
 		align-items: center;
 		flex-grow: 1;
 		overflow: hidden;
+
+		&:hover .message-card-tools__ellipsis {
+			display: block;
+		}
 	}
 
 	&__item {
@@ -395,6 +395,7 @@
 }
 
 .mc-body {
+	width: 100%;
 	font-size: 11px;
 	border-radius: 5px;
 	display: flex;
@@ -449,6 +450,10 @@
 		width: auto;
 		height: 100px;
 		padding: 5px 0;
+	}
+
+	&:hover .message-card-tools__ellipsis {
+		display: block;
 	}
 }
 

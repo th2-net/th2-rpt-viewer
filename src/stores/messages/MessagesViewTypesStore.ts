@@ -16,7 +16,7 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import { keyForMessage } from '../../helpers/keys';
-import { EventMessage } from '../../models/EventMessage';
+import { ParsedMessage } from '../../models/EventMessage';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 import MessagesStore from './MessagesStore';
 import { SavedMessageViewType } from './SavedMessageViewType';
@@ -41,7 +41,7 @@ class MessagesViewTypesStore {
 	public savedViewTypes = new Map<string, SavedMessageViewType>();
 
 	@action
-	public getSavedViewType = (message: EventMessage): SavedMessageViewType => {
+	public getSavedViewType = (message: ParsedMessage): SavedMessageViewType => {
 		const { id } = message;
 		const key = keyForMessage(id);
 		if (this.savedViewTypes.has(key)) {

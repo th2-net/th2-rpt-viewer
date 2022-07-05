@@ -15,13 +15,12 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
-import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import { EventMessage } from '../../models/EventMessage';
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
 
 function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
 	const [errorStatus, setErrorStatus] = useState<string | null>(null);
 
 	useEffect(() => {
@@ -45,13 +44,7 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 		return (
 			<div className='embedded-wrapper'>
 				return (
-				<MessageCardBase
-					isEmbedded
-					key={`${message.id}`}
-					message={message}
-					setViewType={setViewType}
-					viewType={viewType}
-				/>
+				<MessageCardBase isEmbedded key={`${message.id}`} message={message} />
 				);
 			</div>
 		);

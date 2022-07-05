@@ -26,6 +26,8 @@ import { normalizeFields } from '../../../helpers/message';
 import useViewMode from '../../../hooks/useViewMode';
 import { ViewMode } from '../../../contexts/viewModeContext';
 import { Apps, CrossOriginMessage } from '../../../models/PostMessage';
+import { useMessagesViewTypesStore } from '../../../hooks';
+import { observer } from 'mobx-react-lite';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
@@ -33,8 +35,6 @@ const JSON_COPY_OPTIONS = ['body', 'fields'] as const;
 
 export type MessageCardToolsProps = {
 	message: EventMessage;
-	messageViewType: MessageViewType;
-	toggleViewType: (viewType: MessageViewType) => void;
 	isBookmarked: boolean;
 	toggleMessagePin: () => void;
 	isScreenshotMsg: boolean;
@@ -42,20 +42,22 @@ export type MessageCardToolsProps = {
 };
 
 type OwnProps = {
-	parsedMessage: ParsedMessage | null;
+	parsedMessage: ParsedMessage;
 };
 
 const MessageCardTools = ({
 	message,
 	parsedMessage,
-	messageViewType,
-	toggleViewType,
 	isBookmarked,
 	toggleMessagePin,
 	isScreenshotMsg,
 	isEmbedded,
 }: MessageCardToolsProps & OwnProps) => {
+	const viewTypesStore = useMessagesViewTypesStore();
+
 	const { id } = message;
+
+	const { viewType, setViewType } = viewTypesStore.getSavedViewType(parsedMessage);
 
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
@@ -86,7 +88,7 @@ const MessageCardTools = ({
 					: null
 				: parsedMessage;
 
-		switch (messageViewType) {
+		switch (viewType) {
 			case MessageViewType.ASCII:
 				content = message.rawMessageBase64 ? atob(message.rawMessageBase64) : '';
 				break;
@@ -111,8 +113,11 @@ const MessageCardTools = ({
 		}
 	}
 
-	const isRawViewType =
-		messageViewType === MessageViewType.ASCII || messageViewType === MessageViewType.BINARY;
+	const isRawViewType = viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
+
+	const toggleViewType = (v: MessageViewType) => {
+		setViewType(v);
+	};
 
 	return (
 		<div className='message-card-tools' ref={rootRef}>
@@ -154,21 +159,21 @@ const MessageCardTools = ({
 				)}
 				{!isScreenshotMsg && (
 					<div className='message-card-tools__controls-group'>
-						{viewTypes.map(viewType => {
-							const iconClassName = createBemElement('message-card-tools', 'icon', viewType);
+						{viewTypes.map(currentViewType => {
+							const iconClassName = createBemElement('message-card-tools', 'icon', currentViewType);
 							const indicatorClassName = createBemElement(
 								'message-card-tools',
 								'indicator',
-								viewType === messageViewType ? 'active' : null,
+								currentViewType === viewType ? 'active' : null,
 							);
 
 							return (
 								<div
-									title={viewType}
+									title={currentViewType}
 									className='message-card-tools__item'
-									key={viewType}
-									onClick={() => toggleViewType(viewType)}>
-									<span className='message-card-tools__item-title'>{viewType}</span>
+									key={currentViewType}
+									onClick={() => toggleViewType(currentViewType)}>
+									<span className='message-card-tools__item-title'>{currentViewType}</span>
 									<div className={iconClassName} />
 									<div className={indicatorClassName} />
 								</div>
@@ -257,7 +262,7 @@ const MessageCardTools = ({
 	);
 };
 
-export default MessageCardTools;
+export default observer(MessageCardTools);
 
 interface MessagePopupProps {
 	isOpen: boolean;

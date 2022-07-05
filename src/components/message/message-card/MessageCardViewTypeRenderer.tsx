@@ -15,18 +15,18 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { MessageViewType } from '../../../models/EventMessage';
+import { MessageViewType, ParsedMessage } from '../../../models/EventMessage';
 import MessageBody from '../../../models/MessageBody';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import SimpleMessageRaw from './raw/SimpleMessageRaw';
 import DetailedMessageRaw from './raw/DetailedMessageRaw';
+import { useMessagesViewTypesStore } from '../../../hooks';
+import { observer } from 'mobx-react-lite';
 
 export type MessageCardViewTypeRendererProps = {
-	viewType: MessageViewType;
 	messageId: string;
 	rawContent: string | null;
-	isBeautified: boolean;
 	isSelected: boolean;
 	isEmbedded?: boolean;
 	isDetailed?: boolean;
@@ -35,16 +35,19 @@ export type MessageCardViewTypeRendererProps = {
 
 type OwnProps = {
 	messageBody: MessageBody | null;
+	message: ParsedMessage;
 };
 
 const MessageCardViewTypeRenderer = ({
-	viewType,
 	rawContent,
-	isBeautified,
 	isSelected,
 	messageBody,
+	message,
 	sortOrderItems,
 }: MessageCardViewTypeRendererProps & OwnProps) => {
+	const viewTypesStore = useMessagesViewTypesStore();
+	const { viewType } = viewTypesStore.getSavedViewType(message);
+
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
 		case MessageViewType.JSON:
@@ -52,14 +55,14 @@ const MessageCardViewTypeRenderer = ({
 				<ErrorBoundary
 					fallback={
 						<MessageBodyCardFallback
-							isBeautified={isBeautified}
+							isBeautified={viewType === MessageViewType.FORMATTED}
 							isSelected={isSelected}
 							body={messageBody}
 							sortOrderItems={sortOrderItems}
 						/>
 					}>
 					<MessageBodyCard
-						isBeautified={isBeautified}
+						isBeautified={viewType === MessageViewType.FORMATTED}
 						body={messageBody}
 						isSelected={isSelected}
 						sortOrderItems={sortOrderItems}
@@ -75,4 +78,4 @@ const MessageCardViewTypeRenderer = ({
 	}
 };
 
-export default MessageCardViewTypeRenderer;
+export default observer(MessageCardViewTypeRenderer);

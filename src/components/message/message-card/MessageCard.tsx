@@ -21,26 +21,18 @@ import {
 	useMessagesWorkspaceStore,
 	useMessagesDataStore,
 	useMessageBodySortStore,
-	useMessagesViewTypesStore,
 	useBookmarksStore,
 } from '../../../hooks';
-import { MessageViewType, EventMessage } from '../../../models/EventMessage';
+import { EventMessage } from '../../../models/EventMessage';
 import MessageCardBase from './MessageCardBase';
 import '../../../styles/messages.scss';
 import MessageExpandButton from '../MessageExpandButton';
 
-export interface OwnProps {
+export interface Props {
 	message: EventMessage;
 }
 
-export interface RecoveredProps {
-	viewType: MessageViewType;
-	setViewType: (viewType: MessageViewType) => void;
-}
-
-interface Props extends OwnProps, RecoveredProps {}
-
-const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
+const MessageCard = observer(({ message }: Props) => {
 	const { id } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
@@ -117,8 +109,6 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		<div>
 			<MessageCardBase
 				message={message}
-				viewType={viewType}
-				setViewType={setViewType}
 				hoverMessage={hoverMessage}
 				unhoverMessage={unhoverMessage}
 				isHighlighted={isHighlighted}
@@ -138,10 +128,8 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	);
 });
 
-const RecoverableMessageCard = (props: OwnProps) => {
-	const viewTypesStore = useMessagesViewTypesStore();
-	const { viewType, setViewType } = viewTypesStore.getSavedViewType(props.message);
-	return <MessageCard {...props} viewType={viewType} setViewType={setViewType} />;
+const RecoverableMessageCard = (props: Props) => {
+	return <MessageCard {...props} />;
 };
 
-export default observer(RecoverableMessageCard);
+export default RecoverableMessageCard;

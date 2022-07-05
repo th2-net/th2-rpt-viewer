@@ -16,15 +16,15 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import { matchWildcardRule } from '../../helpers/regexp';
-import { MessageViewType, EventMessage } from '../../models/EventMessage';
+import { MessageViewType, ParsedMessage } from '../../models/EventMessage';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 
 export class SavedMessageViewType {
-	message: EventMessage;
+	message: ParsedMessage;
 
 	messageDisplayRulesStore: MessageDisplayRulesStore;
 
-	constructor(message: EventMessage, messageDisplayRulesStore: MessageDisplayRulesStore) {
+	constructor(message: ParsedMessage, messageDisplayRulesStore: MessageDisplayRulesStore) {
 		this.message = message;
 
 		this.messageDisplayRulesStore = messageDisplayRulesStore;
@@ -36,11 +36,11 @@ export class SavedMessageViewType {
 		const rootRule = this.messageDisplayRulesStore.rootDisplayRule;
 		const declaredRule = this.messageDisplayRulesStore.messageDisplayRules.find(rule => {
 			if (rule.session.length > 1 && rule.session.includes('*')) {
-				return matchWildcardRule(this.message.sessionId, rule.session);
+				return matchWildcardRule(this.message.id, rule.session);
 			}
-			return this.message.sessionId.includes(rule.session);
+			return this.message.id.includes(rule.session);
 		});
-		if (!this.message || !this.message.parsedMessages) {
+		if (!this.message) {
 			return declaredRule
 				? getRawViewType(declaredRule.viewType)
 				: rootRule

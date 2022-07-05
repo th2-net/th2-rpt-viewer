@@ -47,8 +47,6 @@ export const MessageHeader = React.memo((props: MessageInfoProps & MessageCardTo
 
 	const messageCardToolsConfig: MessageCardToolsProps = {
 		message,
-		messageViewType: props.messageViewType,
-		toggleViewType: props.toggleViewType,
 		isBookmarked: props.isBookmarked || false,
 		toggleMessagePin: props.toggleMessagePin || (() => null),
 		isScreenshotMsg: props.isScreenshotMsg,
