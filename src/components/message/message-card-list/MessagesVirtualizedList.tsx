@@ -134,7 +134,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					!searchChannelNext.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
-					loadNextMessages().then(nextMessages => onNextChannelResponse(nextMessages));
+					loadNextMessages().then(onNextChannelResponse);
 				}
 
 				if (
@@ -144,7 +144,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					!searchChannelPrev.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
 				) {
-					loadPrevMessages().then(prevMessages => onPrevChannelResponse(prevMessages));
+					loadPrevMessages().then(onPrevChannelResponse);
 				}
 			}
 		},

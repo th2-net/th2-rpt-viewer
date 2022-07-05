@@ -47,9 +47,11 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 			});
 			setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
 		} else {
-			setMessageList(messageListCopy => [...messageListCopy, message as EventMessageItem]);
+			setMessageList(messageListCopy =>
+				[...messageListCopy, message as EventMessageItem].filter(Boolean),
+			);
 		}
-	});
+	}, [message]);
 
 	async function getMessage() {
 		const res = await fetch(`backend/message/${messageId}`);
