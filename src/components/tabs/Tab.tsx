@@ -31,7 +31,7 @@ export type TabProps = Partial<TabsInjectedProps> & {
 	};
 };
 
-const Tab: React.RefForwardingComponent<HTMLDivElement, TabProps> = (props, ref) => {
+const Tab: React.ForwardRefRenderFunction<HTMLDivElement, TabProps> = (props, ref) => {
 	const { isSelected = false, tabIndex = 0, setActiveTab, children, classNames } = props;
 
 	const tabClassName = createStyleSelector(
