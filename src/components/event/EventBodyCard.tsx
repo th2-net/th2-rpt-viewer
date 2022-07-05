@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { FilterEntry } from 'modules/search/stores/SearchStore';
+import { useEvent } from 'hooks/useEvent';
 import { EventAction } from '../../models/EventAction';
 import { CustomTable } from './tables/CustomTable';
 import { VerificationTable } from './tables/VerificationTable';
@@ -25,7 +25,6 @@ import { extractParams } from '../../helpers/tables';
 import { EventBodyPayload, EventBodyPayloadType } from '../../models/EventActionPayload';
 import ErrorBoundary from '../util/ErrorBoundary';
 import { getEventStatus } from '../../helpers/event';
-import api from '../../api';
 import { ReferenceCard } from './ReferenceCard';
 import { wrapString } from '../../helpers/filters';
 
@@ -44,22 +43,10 @@ export function EventBodyPayloadRenderer({
 	referenceHistory = [],
 	target,
 }: Props) {
-	const [referencedEvent, setReferencedEvent] = React.useState<EventAction | null>(null);
-	const [referencedBody, setReferencedBody] = React.useState<EventBodyPayload[]>([]);
-
-	React.useEffect(() => {
-		const ac = new AbortController();
-		if (body.type === EventBodyPayloadType.REFERENCE) {
-			api.events
-				.getEvent(body.eventId, ac.signal, { probe: true })
-				.then(ev => {
-					setReferencedEvent(ev);
-					setReferencedBody(ev.body);
-				})
-				.catch(() => setReferencedEvent(null));
-		}
-		return ac.abort;
-	}, [body]);
+	const { event: referencedEvent } = useEvent(
+		body.type === EventBodyPayloadType.REFERENCE ? body.eventId : '',
+	);
+	const referencedBody = referencedEvent?.body || [];
 
 	switch (body.type) {
 		case EventBodyPayloadType.MESSAGE: {

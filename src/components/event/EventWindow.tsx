@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import EventTreeView from './tree/EventTreeView';
 import FlatEventView from './flat-event-list/FlatEventView';
@@ -29,7 +29,7 @@ function EventWindow() {
 
 	const { ref: panelRef } = useActivePanel(eventsStore);
 
-	const onBreadcrumbItemClick = React.useCallback((node: EventTreeNode | null) => {
+	const onBreadcrumbItemClick = useCallback((node: EventTreeNode | null) => {
 		if (node) {
 			eventsStore.scrollToEvent(node.eventId);
 		}

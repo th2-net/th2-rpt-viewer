@@ -20,7 +20,7 @@ import { isAbortError } from 'helpers/fetch';
 import { useDebouncedCallback } from 'hooks/useDebouncedCallback';
 import { EventAction } from 'models/EventAction';
 
-export const useEvent = (eventId: string, debounceMs = 400) => {
+export const useEvent = (eventId: string, { debounceMs = 400, probe = true } = {}) => {
 	const [event, setEvent] = useState<EventAction | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isError, setIsError] = useState(false);
@@ -34,7 +34,7 @@ export const useEvent = (eventId: string, debounceMs = 400) => {
 
 		setIsLoading(true);
 		try {
-			const foundEvent = await api.getEvent(id, signal, { probe: true });
+			const foundEvent = await api.getEvent(id, signal, { probe });
 			setEvent(foundEvent);
 		} catch (error) {
 			if (!isAbortError(error)) {

@@ -102,7 +102,6 @@ function EventDetailInfoCard(props: Props) {
 							body={bodyPayloadItem}
 							parentEvent={event}
 							filters={bodyFilters}
-							// eslint-disable-next-line eqeqeq
 							target={
 								eventStore.selectedBodyFilter
 									? parseInt(eventStore.selectedBodyFilter.path[0]) === index

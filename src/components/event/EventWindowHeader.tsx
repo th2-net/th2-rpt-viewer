@@ -14,13 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import EventsFilterPanel from '../filter/EventsFilterPanel';
 import { useActivePanel, useWorkspaceEventStore, useWorkspaceStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
 import EventsSearchPanel from './search/EventsSearchPanel';
-import { EventListNavUp, EventListNavDown } from './EventListNavigation';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { isEventsStore } from '../../helpers/stores';
 import { EventsIntervalInput } from './EventsIntervalInput';
@@ -63,8 +61,18 @@ function EventWindowHeader() {
 				)}
 				{!eventDataStore.isLoading && (
 					<div className='event-window-header__nav'>
-						<EventListNavUp />
-						<EventListNavDown />
+						<button
+							className='actions-list__nav'
+							onClick={() => eventStore.changeEventsRange(-eventStore.filterStore.interval)}>
+							<span className='down' />
+							<span className='label'>Older</span>
+						</button>
+						<button
+							className='actions-list__nav'
+							onClick={() => eventStore.changeEventsRange(eventStore.filterStore.interval)}>
+							<span className='up' />
+							<span className='label'>Newer</span>
+						</button>
 					</div>
 				)}
 			</div>
