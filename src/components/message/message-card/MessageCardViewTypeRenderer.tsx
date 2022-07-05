@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { MessageViewType, ParsedMessage } from '../../../models/EventMessage';
+import { MessageViewType, ParsedMessage, EventMessage } from '../../../models/EventMessage';
 import MessageBody from '../../../models/MessageBody';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
@@ -34,19 +34,19 @@ export type MessageCardViewTypeRendererProps = {
 };
 
 type OwnProps = {
-	messageBody: MessageBody | null;
-	message: ParsedMessage;
+	message: EventMessage;
+	parsedMessage: ParsedMessage;
 };
 
 const MessageCardViewTypeRenderer = ({
 	rawContent,
 	isSelected,
-	messageBody,
 	message,
+	parsedMessage,
 	sortOrderItems,
 }: MessageCardViewTypeRendererProps & OwnProps) => {
 	const viewTypesStore = useMessagesViewTypesStore();
-	const { viewType } = viewTypesStore.getSavedViewType(message);
+	const { viewType } = viewTypesStore.getSavedViewType(message, parsedMessage);
 
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
@@ -57,13 +57,13 @@ const MessageCardViewTypeRenderer = ({
 						<MessageBodyCardFallback
 							isBeautified={viewType === MessageViewType.FORMATTED}
 							isSelected={isSelected}
-							body={messageBody}
+							body={parsedMessage.message}
 							sortOrderItems={sortOrderItems}
 						/>
 					}>
 					<MessageBodyCard
 						isBeautified={viewType === MessageViewType.FORMATTED}
-						body={messageBody}
+						body={parsedMessage.message}
 						isSelected={isSelected}
 						sortOrderItems={sortOrderItems}
 					/>

@@ -57,7 +57,7 @@ const MessageCardTools = ({
 
 	const { id } = message;
 
-	const { viewType, setViewType } = viewTypesStore.getSavedViewType(parsedMessage);
+	const { viewType, setViewType } = viewTypesStore.getSavedViewType(message, parsedMessage);
 
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);

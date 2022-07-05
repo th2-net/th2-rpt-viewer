@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { EventMessage, ParsedMessage } from '../../../models/EventMessage';
-import { createStyleSelector } from '../../../helpers/styleCreators';
+import { createStyleSelector, createBemBlock } from '../../../helpers/styleCreators';
 import { formatTime, timestampToNumber } from '../../../helpers/date';
 import { getHashCode } from '../../../helpers/stringHash';
 import MessageCardTools, { MessageCardToolsProps } from './MessageCardTools';
@@ -26,10 +26,19 @@ interface MessageInfoProps {
 	parsedMessage?: ParsedMessage;
 	onTimestampMouseEnter?: () => void;
 	onTimestampMouseLeave?: () => void;
+	isBookmarked?: boolean;
+	isEmbedded?: boolean;
 }
 
 export const MessageHeader = React.memo((props: MessageInfoProps & MessageCardToolsProps) => {
-	const { message, parsedMessage, onTimestampMouseEnter, onTimestampMouseLeave } = props;
+	const {
+		message,
+		parsedMessage,
+		onTimestampMouseEnter,
+		onTimestampMouseLeave,
+		isBookmarked,
+		isEmbedded,
+	} = props;
 	const { timestamp, sessionId, direction } = message;
 
 	// session arrow color, we calculating it for each session from-to pair, based on hash
@@ -42,6 +51,8 @@ export const MessageHeader = React.memo((props: MessageInfoProps & MessageCardTo
 		'mc-header__icon mc-header__direction-icon',
 		direction?.toLowerCase(),
 	);
+
+	const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : 'hidden');
 
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
@@ -75,6 +86,8 @@ export const MessageHeader = React.memo((props: MessageInfoProps & MessageCardTo
 				</>
 			) : (
 				<>
+					{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
+
 					<span
 						className='mc-header__value mc-header__timestamp'
 						title={`Timestamp: ${formattedTimestamp}`}
@@ -82,14 +95,14 @@ export const MessageHeader = React.memo((props: MessageInfoProps & MessageCardTo
 						onMouseLeave={onTimestampMouseLeave}>
 						{timestamp && formattedTimestamp}
 					</span>
-					<span className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
-						{sessionId}
-					</span>
+					<div className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
+						<span className={sessionClass} style={sessionArrowStyle}></span>
+						<span>{sessionId}</span>
+					</div>
 					<span className='mc-header__value'>{message.id}</span>
 					<span className='mc-header__value'>
 						{message.parsedMessages?.[0].message.metadata.id.subsequence[0]}
 					</span>
-					<span className={sessionClass} style={sessionArrowStyle}></span>
 					<span
 						className='mc-header__value messageType'
 						title={

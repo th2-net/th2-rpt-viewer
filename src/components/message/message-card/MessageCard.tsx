@@ -106,7 +106,7 @@ const MessageCard = observer(({ message }: Props) => {
 	const isExported = messagesStore.exportStore.isExported(message);
 
 	return (
-		<div>
+		<div className='messages-list__item'>
 			<MessageCardBase
 				message={message}
 				hoverMessage={hoverMessage}

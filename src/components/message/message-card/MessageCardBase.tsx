@@ -62,8 +62,6 @@ const MessageCardBase = React.memo(
 
 		const [renderingMessages, setRenderingMessages] = React.useState<ParsedMessage[]>([]);
 
-		const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : 'hidden');
-
 		const rootClass = createBemBlock(
 			'message-card-wrapper',
 			isAttached ? 'attached' : null,
@@ -105,45 +103,48 @@ const MessageCardBase = React.memo(
 
 		return (
 			<div className={rootClass} onClick={addMessagesToExport}>
-				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
 				<div className='message-card'>
 					<MessageHeader
 						{...messageCardToolsConfig}
 						message={message}
 						onTimestampMouseEnter={hoverMessage}
 						onTimestampMouseLeave={unhoverMessage}
+						isBookmarked={isBookmarked || false}
+						isEmbedded={isEmbedded}
 					/>
 					{renderingMessages.map((parsedMessage, index) => (
-						<div className='mc__body parsed-message' key={parsedMessage.id}>
-							<div className='mc-body'>
-								{index > 0 && (
-									<MessageHeader
-										{...messageCardToolsConfig}
-										message={message}
-										parsedMessage={parsedMessage}
-									/>
-								)}
-								{isScreenshotMsg ? (
-									<div className='mc-body__screenshot'>
-										<MessageScreenshotZoom
-											src={
-												typeof rawMessageBase64 === 'string'
-													? `data:${parsedMessage.message.metadata.messageType};base64,` +
-													  `${message.rawMessageBase64}`
-													: ''
-											}
-											alt={message.id}
-										/>
-									</div>
-								) : (
-									<div className='mc-body__human'>
-										<MessageCardViewTypeRenderer
-											{...messageViewTypeRendererProps}
-											messageBody={parsedMessage.message}
-											message={parsedMessage}
-										/>
-									</div>
-								)}
+						<div key={parsedMessage.id} className='parsed-message-wrapper'>
+							{index > 0 && (
+								<MessageHeader
+									{...messageCardToolsConfig}
+									message={message}
+									parsedMessage={parsedMessage}
+								/>
+							)}
+							<div className='parsed-message' key={parsedMessage.id}>
+								<div className='mc-body'>
+									{isScreenshotMsg ? (
+										<div className='mc-body__screenshot'>
+											<MessageScreenshotZoom
+												src={
+													typeof rawMessageBase64 === 'string'
+														? `data:${parsedMessage.message.metadata.messageType};base64,` +
+														  `${message.rawMessageBase64}`
+														: ''
+												}
+												alt={message.id}
+											/>
+										</div>
+									) : (
+										<div className='mc-body__human'>
+											<MessageCardViewTypeRenderer
+												{...messageViewTypeRendererProps}
+												message={message}
+												parsedMessage={parsedMessage}
+											/>
+										</div>
+									)}
+								</div>
 							</div>
 						</div>
 					))}
