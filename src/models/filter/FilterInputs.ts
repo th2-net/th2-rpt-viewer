@@ -129,7 +129,7 @@ export type FilterRowTogglerConfig = FilterRowBaseConfig & {
 	type: 'toggler';
 	disabled?: boolean;
 	value: boolean;
-	options: [string, string];
+	options: string[];
 	toggleValue: () => void;
 	labelClassName?: string;
 	className?: string;
@@ -140,7 +140,7 @@ export type FilterRowSwitcherConfig = FilterRowBaseConfig & {
 	disabled?: boolean;
 	value: string;
 	setValue: (nextValue: string) => void;
-	options: [string, string, string];
+	options: string[];
 	className?: string;
 	labelClassName?: string;
 	defaultValue: string;

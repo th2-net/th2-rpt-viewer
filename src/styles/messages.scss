@@ -86,6 +86,10 @@
 		}
 	}
 
+	&.exported {
+		background-color: $exportedMessageCardBackground;
+	}
+
 	&.export-mode {
 		cursor: pointer;
 	}

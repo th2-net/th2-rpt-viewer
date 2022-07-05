@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import { useMessageBodySortStore } from '../../hooks';

@@ -14,8 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-
 interface ReorderProps {
 	isFirst?: boolean;
 	isLast?: boolean;

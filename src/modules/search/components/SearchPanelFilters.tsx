@@ -59,6 +59,8 @@ type Values = {
 const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 	const { info, state, setState, disableAll: disabled, autocompletes } = props;
 
+	const [currentValues, setCurrentValues] = useSetState<Values>({});
+
 	function getValuesUpdater<T extends keyof FilterState>(name: T) {
 		return function valuesUpdater<K extends FilterState[T]>(values: K) {
 			setState({ [name]: { ...state[name], values } });
@@ -79,8 +81,6 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 	function getState<T extends keyof FilterState>(name: T) {
 		return state[name];
 	}
-
-	const [currentValues, setCurrentValues] = useSetState<Values>({});
 
 	React.useEffect(() => {
 		const newStateKeys: Values = {};
@@ -109,6 +109,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 			{info.map((filter: SSEFilterInfo) => {
 				const filterState = getState(filter.name);
 				const label = prettifyCamelcase(filter.name);
+
 				const autocompleteList = uniq(
 					autocompletes
 						.map(item => item.filters[filter.name as keyof FilterState]?.values)

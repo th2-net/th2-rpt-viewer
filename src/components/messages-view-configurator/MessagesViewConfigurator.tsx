@@ -14,13 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useOutsideClickListener } from '../../hooks';
 import { ModalPortal } from '../util/Portal';
-import '../../styles/messages-view-configurator.scss';
 import RulesList from './RulesList';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import BodySortConfig from './BodySortConfig';
+import '../../styles/messages-view-configurator.scss';
 
 type Props = {
 	sessions: string[];

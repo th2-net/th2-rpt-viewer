@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import KeyCodes from '../../util/KeyCodes';
 import AutocompleteInput from '../util/AutocompleteInput';
 
@@ -33,11 +33,11 @@ const SessionEditor: React.FC<SessionEditorProps> = ({
 	onSubmit,
 	autofocus,
 }) => {
-	const ref = React.useRef<HTMLInputElement>(null);
+	const ref = useRef<HTMLInputElement>(null);
 
-	const [anchor, setAnchor] = React.useState<HTMLInputElement>();
+	const [anchor, setAnchor] = useState<HTMLInputElement>();
 
-	React.useLayoutEffect(() => {
+	useLayoutEffect(() => {
 		setAnchor(ref.current || undefined);
 	}, [setAnchor]);
 

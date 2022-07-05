@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import { useState, useRef } from 'react';
 import { MessageViewType } from '../../models/EventMessage';
 import useDimensions from '../../hooks/useDimensions';
 import { createStyleSelector } from '../../helpers/styleCreators';
@@ -31,10 +31,10 @@ interface RuleEditorProps {
 const viewTypes = Object.values(MessageViewType);
 
 const RuleEditor = ({ selected, setSelected, onSelect, defaultOpen }: RuleEditorProps) => {
-	const [showOptions, setShowOptions] = React.useState(Boolean(defaultOpen));
+	const [showOptions, setShowOptions] = useState(Boolean(defaultOpen));
 
 	const [btnRef, btnDimensions] = useDimensions<HTMLButtonElement>();
-	const listRef = React.useRef(null);
+	const listRef = useRef(null);
 
 	useOutsideClickListener(listRef, (e: MouseEvent) => {
 		if (e.target !== btnRef.current) {

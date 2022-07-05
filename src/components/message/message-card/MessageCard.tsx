@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { computed } from 'mobx';
+import { computed, observe } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
 	useMessagesStore,
@@ -40,7 +40,7 @@ export interface RecoveredProps {
 
 interface Props extends OwnProps, RecoveredProps {}
 
-const MessageCard = ({ message, viewType, setViewType }: Props) => {
+const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 	const { id } = message;
 
 	const messagesStore = useMessagesStore();
@@ -103,7 +103,9 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 		[messagesStore.exportStore.addMessageToExport],
 	);
 
-	const isExported = messagesStore.exportStore.isExported(message);
+	const isExported = computed(() =>
+		messagesStore.exportStore.exportMessages.includes(message),
+	).get();
 
 	const rootClass = createBemBlock(
 		'message-card-wrapper',
@@ -128,7 +130,7 @@ const MessageCard = ({ message, viewType, setViewType }: Props) => {
 			/>
 		</div>
 	);
-};
+});
 
 const RecoverableMessageCard = (props: OwnProps) => {
 	const viewTypesStore = useMessagesViewTypesStore();

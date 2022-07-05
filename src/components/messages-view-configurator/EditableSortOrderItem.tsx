@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useMessageBodySortStore, usePrevious } from '../../hooks';
 import Reorder from './Reorder';
 import AutocompleteInput from '../util/AutocompleteInput';
@@ -54,7 +54,7 @@ const Editor = ({ item }: { item: MessageSortOrderItem }) => {
 
 	const isEditingPrev = usePrevious(isEditing);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		if (!isEditing && isEditingPrev && value !== item.item) {
 			sortOrderStore.editItem(item, { ...item, item: value });
 		}
