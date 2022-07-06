@@ -16,29 +16,31 @@
 import React from 'react';
 import { createBemElement } from '../../helpers/styleCreators';
 import '../../styles/messages.scss';
+import { EventMessage } from '../../models/EventMessage';
 
 interface Props {
-	isExpandedMessages: boolean;
-	setIsExpandedMessages: React.Dispatch<React.SetStateAction<boolean>>;
+	message: EventMessage;
+	isExpanded: boolean;
+	setExpanded: (message: EventMessage) => void;
 }
 
 const MessageExpandButton = (props: Props) => {
-	const { isExpandedMessages, setIsExpandedMessages } = props;
+	const { isExpanded, setExpanded, message } = props;
 
 	const buttonClass = createBemElement(
 		'message-card-expand-wrapper',
 		'expand-button',
-		isExpandedMessages ? 'expanded' : null,
+		isExpanded ? 'expanded' : null,
 	);
 
 	const changeExpandState = () => {
-		setIsExpandedMessages(!isExpandedMessages);
+		setExpanded(message);
 	};
 
 	return (
 		<div className='message-card-expand-wrapper'>
 			<div className={buttonClass} onClick={changeExpandState}>
-				{isExpandedMessages ? 'Show Less' : 'Show More'}
+				{isExpanded ? 'Show Less' : 'Show More'}
 			</div>
 		</div>
 	);

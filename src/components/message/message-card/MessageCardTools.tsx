@@ -16,7 +16,6 @@
 
 import React, { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { observer } from 'mobx-react-lite';
 import { createBemElement } from '../../../helpers/styleCreators';
 import { EventMessage, MessageViewType, ParsedMessage } from '../../../models/EventMessage';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
@@ -27,7 +26,6 @@ import { normalizeFields } from '../../../helpers/message';
 import useViewMode from '../../../hooks/useViewMode';
 import { ViewMode } from '../../../contexts/viewModeContext';
 import { Apps, CrossOriginMessage } from '../../../models/PostMessage';
-import { useMessagesViewTypesStore } from '../../../hooks';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
@@ -37,12 +35,14 @@ export type MessageCardToolsProps = {
 	message: EventMessage;
 	isBookmarked: boolean;
 	toggleMessagePin: () => void;
-	isScreenshotMsg: boolean;
 	isEmbedded?: boolean;
 };
 
 type OwnProps = {
+	viewType?: MessageViewType;
+	setViewType?: (vt: MessageViewType) => void;
 	parsedMessage: ParsedMessage;
+	isScreenshotMsg: boolean;
 };
 
 const MessageCardTools = ({
@@ -50,14 +50,12 @@ const MessageCardTools = ({
 	parsedMessage,
 	isBookmarked,
 	toggleMessagePin,
+	viewType,
+	setViewType,
 	isScreenshotMsg,
 	isEmbedded,
 }: MessageCardToolsProps & OwnProps) => {
-	const viewTypesStore = useMessagesViewTypesStore();
-
 	const { id } = message;
-
-	const { viewType, setViewType } = viewTypesStore.getSavedViewType(message, parsedMessage);
 
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
@@ -116,7 +114,9 @@ const MessageCardTools = ({
 	const isRawViewType = viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
 
 	const toggleViewType = (v: MessageViewType) => {
-		setViewType(v);
+		if (setViewType) {
+			setViewType(v);
+		}
 	};
 
 	return (
@@ -262,7 +262,7 @@ const MessageCardTools = ({
 	);
 };
 
-export default observer(MessageCardTools);
+export default MessageCardTools;
 
 interface MessagePopupProps {
 	isOpen: boolean;

@@ -15,25 +15,33 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { EventMessage, ParsedMessage } from '../../../models/EventMessage';
+import { EventMessage, ParsedMessage, MessageViewType } from '../../../models/EventMessage';
 import { createStyleSelector, createBemBlock } from '../../../helpers/styleCreators';
 import { formatTime, timestampToNumber } from '../../../helpers/date';
 import { getHashCode } from '../../../helpers/stringHash';
 import MessageCardTools, { MessageCardToolsProps } from './MessageCardTools';
+import { SavedMessageViewType } from '../../../stores/messages/SavedMessageViewType';
 
-interface MessageInfoProps {
+export interface MessageInfoProps {
 	message: EventMessage;
 	parsedMessage?: ParsedMessage;
 	onTimestampMouseEnter?: () => void;
 	onTimestampMouseLeave?: () => void;
+	getSavedViewType?: (message: EventMessage, parsedMessageId: string) => SavedMessageViewType;
+	viewType?: MessageViewType;
+	setViewType?: (vt: MessageViewType) => void;
 	isBookmarked?: boolean;
 	isEmbedded?: boolean;
+	isScreenshotMsg: boolean;
 }
 
 export const MessageHeader = React.memo((props: MessageInfoProps & MessageCardToolsProps) => {
 	const {
 		message,
 		parsedMessage,
+		getSavedViewType,
+		viewType,
+		setViewType,
 		onTimestampMouseEnter,
 		onTimestampMouseLeave,
 		isBookmarked,
@@ -60,9 +68,9 @@ export const MessageHeader = React.memo((props: MessageInfoProps & MessageCardTo
 		message,
 		isBookmarked: props.isBookmarked || false,
 		toggleMessagePin: props.toggleMessagePin || (() => null),
-		isScreenshotMsg: props.isScreenshotMsg,
 		isEmbedded: props.isEmbedded,
 	};
+
 	return (
 		<div className='mc-header__info'>
 			{parsedMessage ? (
@@ -81,7 +89,17 @@ export const MessageHeader = React.memo((props: MessageInfoProps & MessageCardTo
 						{parsedMessage.message.metadata.messageType}
 					</span>
 					<div className='message-card-tools__wrapper'>
-						<MessageCardTools {...messageCardToolsConfig} parsedMessage={parsedMessage} />
+						<MessageCardTools
+							{...messageCardToolsConfig}
+							parsedMessage={parsedMessage}
+							isScreenshotMsg={props.isScreenshotMsg}
+							viewType={viewType}
+							setViewType={
+								getSavedViewType
+									? getSavedViewType(message, parsedMessage.id).setViewType
+									: setViewType
+							}
+						/>
 					</div>
 				</>
 			) : (
@@ -116,6 +134,13 @@ export const MessageHeader = React.memo((props: MessageInfoProps & MessageCardTo
 							<MessageCardTools
 								{...messageCardToolsConfig}
 								parsedMessage={message.parsedMessages[0]}
+								isScreenshotMsg={props.isScreenshotMsg}
+								viewType={viewType}
+								setViewType={
+									getSavedViewType
+										? getSavedViewType(message, message.parsedMessages[0].id).setViewType
+										: setViewType
+								}
 							/>
 						</div>
 					)}

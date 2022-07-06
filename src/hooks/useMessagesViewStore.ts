@@ -15,10 +15,10 @@
  ***************************************************************************** */
 
 import { useWorkspaceStore } from '.';
-import MessagesViewTypesStore from '../stores/messages/MessagesViewTypesStore';
+import MessagesViewStore from '../stores/messages/MessagesViewStore';
 
-export const useMessagesViewTypesStore = (): MessagesViewTypesStore => {
+export const useMessagesViewStore = (): MessagesViewStore => {
 	const workspaceStore = useWorkspaceStore();
 
-	return workspaceStore.messageViewTypesStore;
+	return workspaceStore.messageViewStore;
 };

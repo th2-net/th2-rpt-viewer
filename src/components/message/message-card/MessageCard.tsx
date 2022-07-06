@@ -22,17 +22,29 @@ import {
 	useMessagesDataStore,
 	useMessageBodySortStore,
 	useBookmarksStore,
+	useMessagesViewStore,
 } from '../../../hooks';
-import { EventMessage } from '../../../models/EventMessage';
+import { EventMessage, MessageViewType } from '../../../models/EventMessage';
 import MessageCardBase from './MessageCardBase';
 import '../../../styles/messages.scss';
 import MessageExpandButton from '../MessageExpandButton';
+import { SavedMessageViewType } from '../../../stores/messages/SavedMessageViewType';
 
-export interface Props {
+export interface OwnProps {
 	message: EventMessage;
 }
 
-const MessageCard = observer(({ message }: Props) => {
+export interface RecoveredProps {
+	viewTypes?: MessageViewType[];
+	getSavedViewType: (message: EventMessage, parsedMessageId: string) => SavedMessageViewType;
+	setExpandedMessage: (message: EventMessage) => void;
+	isExpanded: boolean;
+}
+
+interface Props extends OwnProps, RecoveredProps {}
+
+const MessageCard = observer((props: Props) => {
+	const { message, viewTypes, getSavedViewType, setExpandedMessage, isExpanded } = props;
 	const { id } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
@@ -41,7 +53,6 @@ const MessageCard = observer(({ message }: Props) => {
 	const { sortOrderItems } = useMessageBodySortStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
-	const [isExpandedMessages, setIsExpandedMessages] = React.useState(false);
 
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
@@ -95,6 +106,11 @@ const MessageCard = observer(({ message }: Props) => {
 		messagesStore.setHoveredMessage(null);
 	}, [messagesStore.setHoveredMessage]);
 
+	const addMessagesToExport = React.useCallback(
+		() => messagesStore.exportStore.addMessageToExport(message),
+		[messagesStore.exportStore.addMessageToExport],
+	);
+
 	const isAttached = computed(
 		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.id === message.id),
 	).get();
@@ -109,27 +125,49 @@ const MessageCard = observer(({ message }: Props) => {
 		<div className='messages-list__item'>
 			<MessageCardBase
 				message={message}
+				viewTypes={viewTypes}
+				getSavedViewType={getSavedViewType}
 				hoverMessage={hoverMessage}
 				unhoverMessage={unhoverMessage}
+				addMessagesToExport={addMessagesToExport}
 				isHighlighted={isHighlighted}
 				isSoftFiltered={isSoftFiltered}
 				isExported={isExported}
-				isExpanded={isExpandedMessages}
+				isExport={messagesStore.exportStore.isExport}
+				isExpanded={isExpanded}
 				isBookmarked={isBookmarked}
 				isAttached={isAttached}
 				toogleMessagePin={toogleMessagePin}
 				sortOrderItems={sortOrderItems}
 			/>
 			<MessageExpandButton
-				isExpandedMessages={isExpandedMessages}
-				setIsExpandedMessages={setIsExpandedMessages}
+				message={message}
+				isExpanded={isExpanded}
+				setExpanded={setExpandedMessage}
 			/>
 		</div>
 	);
 });
 
-const RecoverableMessageCard = (props: Props) => {
-	return <MessageCard {...props} />;
+const RecoverableMessageCard = (props: OwnProps) => {
+	const viewStore = useMessagesViewStore();
+	const { getSavedViewType, expandedMessages, setExpandedMessage } = viewStore;
+
+	const viewTypes = props.message.parsedMessages?.map(
+		parsedMessage => getSavedViewType(props.message, parsedMessage.id).viewType,
+	);
+
+	const isExpanded = expandedMessages.includes(props.message.id);
+
+	return (
+		<MessageCard
+			{...props}
+			viewTypes={viewTypes}
+			getSavedViewType={getSavedViewType}
+			setExpandedMessage={setExpandedMessage}
+			isExpanded={isExpanded}
+		/>
+	);
 };
 
-export default RecoverableMessageCard;
+export default observer(RecoverableMessageCard);

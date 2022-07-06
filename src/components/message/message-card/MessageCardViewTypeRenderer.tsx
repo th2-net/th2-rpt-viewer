@@ -15,14 +15,12 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
-import { MessageViewType, ParsedMessage, EventMessage } from '../../../models/EventMessage';
-import MessageBody from '../../../models/MessageBody';
+import { MessageViewType } from '../../../models/EventMessage';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import SimpleMessageRaw from './raw/SimpleMessageRaw';
 import DetailedMessageRaw from './raw/DetailedMessageRaw';
-import { useMessagesViewTypesStore } from '../../../hooks';
+import MessageBody from '../../../models/MessageBody';
 
 export type MessageCardViewTypeRendererProps = {
 	messageId: string;
@@ -34,20 +32,17 @@ export type MessageCardViewTypeRendererProps = {
 };
 
 type OwnProps = {
-	message: EventMessage;
-	parsedMessage: ParsedMessage;
+	messageBody: MessageBody;
+	viewType?: MessageViewType;
 };
 
 const MessageCardViewTypeRenderer = ({
 	rawContent,
 	isSelected,
-	message,
-	parsedMessage,
+	viewType,
+	messageBody,
 	sortOrderItems,
 }: MessageCardViewTypeRendererProps & OwnProps) => {
-	const viewTypesStore = useMessagesViewTypesStore();
-	const { viewType } = viewTypesStore.getSavedViewType(message, parsedMessage);
-
 	switch (viewType) {
 		case MessageViewType.FORMATTED:
 		case MessageViewType.JSON:
@@ -57,13 +52,13 @@ const MessageCardViewTypeRenderer = ({
 						<MessageBodyCardFallback
 							isBeautified={viewType === MessageViewType.FORMATTED}
 							isSelected={isSelected}
-							body={parsedMessage.message}
+							body={messageBody}
 							sortOrderItems={sortOrderItems}
 						/>
 					}>
 					<MessageBodyCard
 						isBeautified={viewType === MessageViewType.FORMATTED}
-						body={parsedMessage.message}
+						body={messageBody}
 						isSelected={isSelected}
 						sortOrderItems={sortOrderItems}
 					/>
@@ -78,4 +73,4 @@ const MessageCardViewTypeRenderer = ({
 	}
 };
 
-export default observer(MessageCardViewTypeRenderer);
+export default MessageCardViewTypeRenderer;

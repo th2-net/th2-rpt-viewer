@@ -16,23 +16,23 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import { matchWildcardRule } from '../../helpers/regexp';
-import { MessageViewType, ParsedMessage, EventMessage } from '../../models/EventMessage';
+import { MessageViewType, EventMessage } from '../../models/EventMessage';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 
 export class SavedMessageViewType {
 	message: EventMessage;
 
-	parsedMessage: ParsedMessage;
+	parsedMessageId: string;
 
 	messageDisplayRulesStore: MessageDisplayRulesStore;
 
 	constructor(
 		message: EventMessage,
-		parsedMessage: ParsedMessage,
+		parsedMessageId: string,
 		messageDisplayRulesStore: MessageDisplayRulesStore,
 	) {
 		this.message = message;
-		this.parsedMessage = parsedMessage;
+		this.parsedMessageId = parsedMessageId;
 
 		this.messageDisplayRulesStore = messageDisplayRulesStore;
 		reaction(() => this.displayRule, this.setViewType);
@@ -43,9 +43,9 @@ export class SavedMessageViewType {
 		const rootRule = this.messageDisplayRulesStore.rootDisplayRule;
 		const declaredRule = this.messageDisplayRulesStore.messageDisplayRules.find(rule => {
 			if (rule.session.length > 1 && rule.session.includes('*')) {
-				return matchWildcardRule(this.parsedMessage.id, rule.session);
+				return matchWildcardRule(this.parsedMessageId, rule.session);
 			}
-			return this.parsedMessage.id.includes(rule.session);
+			return this.parsedMessageId.includes(rule.session);
 		});
 		if (!this.message || !this.message.parsedMessages) {
 			return declaredRule

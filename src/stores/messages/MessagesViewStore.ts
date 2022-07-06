@@ -16,12 +16,12 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import { keyForMessage } from '../../helpers/keys';
-import { ParsedMessage, EventMessage } from '../../models/EventMessage';
+import { EventMessage } from '../../models/EventMessage';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 import MessagesStore from './MessagesStore';
 import { SavedMessageViewType } from './SavedMessageViewType';
 
-class MessagesViewTypesStore {
+class MessagesViewStore {
 	messageDisplayRulesStore: MessageDisplayRulesStore;
 
 	messagesStore: MessagesStore;
@@ -40,19 +40,21 @@ class MessagesViewTypesStore {
 	@observable
 	public savedViewTypes = new Map<string, SavedMessageViewType>();
 
+	@observable
+	public expandedMessages: String[] = [];
+
 	@action
 	public getSavedViewType = (
 		message: EventMessage,
-		parsedMessage: ParsedMessage,
+		parsedMessageId: string,
 	): SavedMessageViewType => {
-		const { id } = parsedMessage;
-		const key = keyForMessage(id);
+		const key = keyForMessage(parsedMessageId);
 		if (this.savedViewTypes.has(key)) {
 			return this.savedViewTypes.get(key) as SavedMessageViewType;
 		}
 		this.savedViewTypes.set(
 			key,
-			new SavedMessageViewType(message, parsedMessage, this.messageDisplayRulesStore),
+			new SavedMessageViewType(message, parsedMessageId, this.messageDisplayRulesStore),
 		);
 		return this.savedViewTypes.get(key) as SavedMessageViewType;
 	};
@@ -61,6 +63,15 @@ class MessagesViewTypesStore {
 	private resetSavedViewTypes = () => {
 		this.savedViewTypes.clear();
 	};
+
+	@action
+	public setExpandedMessage = (message: EventMessage) => {
+		if (this.expandedMessages.includes(message.id)) {
+			this.expandedMessages.splice(this.expandedMessages.indexOf(message.id));
+		} else {
+			this.expandedMessages.push(message.id);
+		}
+	};
 }
 
-export default MessagesViewTypesStore;
+export default MessagesViewStore;
