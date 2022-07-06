@@ -25,7 +25,6 @@ export * from './useMessagesDataStore';
 export * from './useMessagesStore';
 export * from './useNotificationsStore';
 export * from './useOutsideClickListener';
-export * from './useParentEvents';
 export * from './usePrevious';
 export * from './useRootStore';
 export * from './useSelectListener';

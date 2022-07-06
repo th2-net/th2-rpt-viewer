@@ -93,9 +93,6 @@ export default class EventsStore {
 	public selectedNode: EventTreeNode | null = null;
 
 	@observable.ref
-	public selectedParentNode: EventTreeNode | null = null;
-
-	@observable.ref
 	public selectedEvent: EventAction | null = null;
 
 	@observable
@@ -316,13 +313,11 @@ export default class EventsStore {
 	private onSelectedNodeChange = (selectedNode: EventTreeNode | null) => {
 		if (selectedNode && selectedNode.eventId !== this.selectedEvent?.eventId) {
 			this.selectedEvent = null;
-			this.selectedParentNode = null;
 			this.selectedNode = selectedNode;
 			this.eventDataStore.fetchDetailedEventInfo(selectedNode);
 		} else if (selectedNode === null) {
 			this.selectedNode = null;
 			this.selectedEvent = null;
-			this.selectedParentNode = null;
 		}
 	};
 

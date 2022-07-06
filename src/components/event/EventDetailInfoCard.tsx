@@ -42,7 +42,12 @@ function EventDetailInfoCard(props: Props) {
 	const { event, node, children } = props;
 
 	if (!event) {
-		return <SplashScreen />;
+		return (
+			<div className='event-detail-info'>
+				{children}
+				<SplashScreen />
+			</div>
+		);
 	}
 
 	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId } = event;

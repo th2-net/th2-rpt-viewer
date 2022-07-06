@@ -199,6 +199,13 @@
 	&__message {
 		font-size: 11px;
 	}
+
+	.splash-screen {
+		height: auto;
+		position: absolute;
+		top: 50%;
+    transform: translate(0px, -100%);
+	}
 }
 
 .event-card {

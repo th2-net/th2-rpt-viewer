@@ -36,7 +36,11 @@ export default function EventResolverRow({ config }: { config: FilterRowEventRes
 
 	const autocomplete = useMemo(() => events.map(e => e.eventId), [events]);
 
-	const { event, isError, isLoading: isLoadingEvent } = useEvent(isId ? config.value.trim() : '');
+	const {
+		event,
+		isError,
+		isLoading: isLoadingEvent,
+	} = useEvent(isId ? config.value.trim() : '', { debounceMs: 400 });
 
 	useEffect(() => {
 		showEventPlaceholder(Boolean(event));

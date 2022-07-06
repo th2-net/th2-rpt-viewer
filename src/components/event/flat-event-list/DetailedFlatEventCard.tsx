@@ -14,9 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { useState } from 'react';
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useEventsStore, useParentEvents } from '../../../hooks';
+import { useEvent } from 'hooks/useEvent';
 import EventCardHeader from '../EventCardHeader';
 import EventDetailInfoCard from '../EventDetailInfoCard';
 import { EventTreeNode } from '../../../models/EventAction';
@@ -29,23 +30,19 @@ interface Props {
 
 function DetailedFlatEventCard(props: Props) {
 	const { eventTreeNode, parentNodes } = props;
-	const eventWindowStore = useEventsStore();
 	const eventsDataStore = useEventsDataStore();
 
-	const { selectedParentEvent, setSelectedNode, selectedNode } = useParentEvents(
-		eventWindowStore.selectedParentNode,
-	);
+	const [selectedNode, setSelectedNode] = useState<EventTreeNode>(eventTreeNode);
 
-	const event = selectedNode === null ? eventWindowStore.selectedEvent : selectedParentEvent;
-	const node = selectedNode === null ? eventWindowStore.selectedNode : selectedNode;
+	const { event } = useEvent(selectedNode.eventId);
 
 	const childrenCount = computed(
-		() => (node ? eventsDataStore.parentChildrensMap.get(node.eventId) || [] : []).length,
+		() => (eventsDataStore.parentChildrensMap.get(selectedNode.eventId) || []).length,
 	).get();
 
 	return (
 		<EventDetailInfoCard
-			node={node!}
+			node={selectedNode}
 			event={event}
 			eventTreeNode={eventTreeNode}
 			childrenCount={childrenCount}>
@@ -59,11 +56,11 @@ function DetailedFlatEventCard(props: Props) {
 							isActive={selectedNode === eventNode}
 						/>
 					))}
-					{selectedNode !== null && (
+					{selectedNode && (
 						<EventCardHeader
 							key={eventTreeNode.eventId}
 							event={eventTreeNode}
-							onSelect={() => setSelectedNode(null)}
+							onSelect={() => setSelectedNode(eventTreeNode)}
 						/>
 					)}
 				</div>
