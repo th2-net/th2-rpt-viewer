@@ -22,12 +22,7 @@ import { getItemId } from 'helpers/event';
 import EventWindow from '../event/EventWindow';
 import MessagesWindow from '../message/MessagesWindow';
 import WorkspaceSplitter from './WorkspaceSplitter';
-import {
-	useActivePanel,
-	useMessagesStore,
-	useEventsStore,
-	useWorkspaceStore,
-} from '../../hooks';
+import { useActivePanel, useMessagesStore, useEventsStore, useWorkspaceStore } from '../../hooks';
 import {
 	isEventsStore,
 	isMessagesStore,

@@ -62,10 +62,6 @@ export interface ISearchStore {
 	startSearch: (loadMore?: boolean) => void;
 }
 
-export interface IEventsStore {
-	
-}
-
 export interface MessagesDataStore {
 	messages: EventMessage[];
 	loadMessages: (
