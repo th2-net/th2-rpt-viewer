@@ -18,7 +18,7 @@ import React from 'react';
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import EventCardHeader from '../EventCardHeader';
-import { useWorkspaceEventStore } from '../../../hooks';
+import { useEventsStore } from '../../../hooks';
 import { EventTreeNode } from '../../../models/EventAction';
 import CardDisplayType from '../../../util/CardDisplayType';
 import { createBemBlock } from '../../../helpers/styleCreators';
@@ -30,7 +30,7 @@ interface EventTreeProps {
 }
 
 function EventTree({ eventTreeNode }: EventTreeProps) {
-	const eventsStore = useWorkspaceEventStore();
+	const eventsStore = useEventsStore();
 	const eventsDataStore = useEventsDataStore();
 
 	React.useEffect(() => {

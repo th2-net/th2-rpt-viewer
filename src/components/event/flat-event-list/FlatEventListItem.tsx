@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import EventCardHeader from '../EventCardHeader';
-import { useWorkspaceEventStore } from '../../../hooks';
+import { useEventsStore } from '../../../hooks';
 import { EventTreeNode } from '../../../models/EventAction';
 import CardDisplayType from '../../../util/CardDisplayType';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
@@ -26,7 +26,7 @@ interface FlatEventListItemProps {
 }
 
 function FlatEventListItem(props: FlatEventListItemProps) {
-	const eventsStore = useWorkspaceEventStore();
+	const eventsStore = useEventsStore();
 	const eventsDataStore = useEventsDataStore();
 
 	const { node } = props;

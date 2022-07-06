@@ -19,7 +19,7 @@ export * from './useActivePanel';
 export * from './useActiveWorkspace';
 export * from './useAsyncEffect';
 export * from './useDebouncedCallback';
-export * from './useEventWindowStore';
+export * from './useEventsStore';
 export * from './useEventWindowViewStore';
 export * from './useMessagesDataStore';
 export * from './useMessagesStore';

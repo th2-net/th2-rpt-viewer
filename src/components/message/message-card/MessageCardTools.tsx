@@ -65,12 +65,7 @@ const MessageCardTools = ({
 	});
 
 	const viewTypes = parsedMessage
-		? [
-				MessageViewType.JSON,
-				MessageViewType.FORMATTED,
-				MessageViewType.ASCII,
-				MessageViewType.BINARY,
-		  ]
+		? Object.values(MessageViewType)
 		: [MessageViewType.BINARY, MessageViewType.ASCII];
 
 	function onCopy(jsonObjectToCopy: 'body' | 'fields' = 'body') {

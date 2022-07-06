@@ -22,7 +22,7 @@ import { formatTime } from '../../helpers/date';
 import { getEventStatus } from '../../helpers/event';
 import EventBodyCard from './EventBodyCard';
 import { EventAction, EventTreeNode } from '../../models/EventAction';
-import { useBookmarksStore, useWorkspaceEventStore } from '../../hooks';
+import { useBookmarksStore, useEventsStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 
 interface Props {
@@ -35,7 +35,7 @@ interface Props {
 
 function EventDetailInfoCard(props: Props) {
 	const bookmarksStore = useBookmarksStore();
-	const eventStore = useWorkspaceEventStore();
+	const eventStore = useEventsStore();
 	const { currentSearch } = useSearchStore();
 	const bodyFilters = currentSearch?.request.filters.body.values ?? [];
 

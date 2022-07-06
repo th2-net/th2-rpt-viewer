@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import EventsFilterPanel from '../filter/EventsFilterPanel';
-import { useActivePanel, useWorkspaceEventStore, useWorkspaceStore } from '../../hooks';
+import { useActivePanel, useEventsStore, useWorkspaceStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
 import EventsSearchPanel from './search/EventsSearchPanel';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
@@ -24,7 +24,7 @@ import { isEventsStore } from '../../helpers/stores';
 import { EventsIntervalInput } from './EventsIntervalInput';
 
 function EventWindowHeader() {
-	const eventStore = useWorkspaceEventStore();
+	const eventStore = useEventsStore();
 	const eventDataStore = useEventsDataStore();
 	const workspaceStore = useWorkspaceStore();
 

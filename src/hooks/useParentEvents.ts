@@ -16,12 +16,12 @@
 
 import React from 'react';
 import { useAsyncEffect } from './useAsyncEffect';
-import { useWorkspaceEventStore } from './useEventWindowStore';
+import { useEventsStore } from './useEventsStore';
 import api from '../api/event';
 import { EventAction, EventTreeNode } from '../models/EventAction';
 
 export const useParentEvents = (initialSelectedNode: EventTreeNode | null) => {
-	const eventWindowStore = useWorkspaceEventStore();
+	const eventWindowStore = useEventsStore();
 
 	const [parentEvents, setParentEvents] = React.useState<Map<string, EventAction>>(new Map());
 	const [selectedNode, setSelectedNode] = React.useState<null | EventTreeNode>(initialSelectedNode);

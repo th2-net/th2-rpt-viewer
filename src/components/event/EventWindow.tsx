@@ -19,13 +19,13 @@ import { observer } from 'mobx-react-lite';
 import EventTreeView from './tree/EventTreeView';
 import FlatEventView from './flat-event-list/FlatEventView';
 import EventBreadcrumbs from './breadcrumbs/EventBreadcrumbs';
-import { useEventWindowViewStore, useWorkspaceEventStore, useActivePanel } from '../../hooks';
+import { useEventWindowViewStore, useEventsStore, useActivePanel } from '../../hooks';
 import { EventTreeNode } from '../../models/EventAction';
 import '../../styles/events.scss';
 
 function EventWindow() {
 	const eventWindowViewStore = useEventWindowViewStore();
-	const eventsStore = useWorkspaceEventStore();
+	const eventsStore = useEventsStore();
 
 	const { ref: panelRef } = useActivePanel(eventsStore);
 

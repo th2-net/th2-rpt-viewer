@@ -15,10 +15,10 @@
  ***************************************************************************** */
 
 import EventsFilterStore from '../stores/events/EventsFilterStore';
-import { useWorkspaceEventStore } from './useEventWindowStore';
+import { useEventsStore } from './useEventsStore';
 
 export const useEventsFilterStore = (): EventsFilterStore => {
-	const workspaceEventStore = useWorkspaceEventStore();
+	const workspaceEventStore = useEventsStore();
 
 	return workspaceEventStore.filterStore;
 };

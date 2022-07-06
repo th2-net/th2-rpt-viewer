@@ -19,13 +19,13 @@ import SplitViewPane from '../../split-view/SplitViewPane';
 import EventList from '../EventList';
 import Empty from '../../util/Empty';
 import SplitView from '../../split-view/SplitView';
-import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks';
+import { useEventsStore, useEventWindowViewStore } from '../../../hooks';
 import DetailedFlatEventCard from './DetailedFlatEventCard';
 import EventWindowHeader from '../EventWindowHeader';
 import useEventsDataStore from '../../../hooks/useEventsDataStore';
 
 function EventTreeView() {
-	const eventsStore = useWorkspaceEventStore();
+	const eventsStore = useEventsStore();
 	const viewStore = useEventWindowViewStore();
 	const eventDataStore = useEventsDataStore();
 

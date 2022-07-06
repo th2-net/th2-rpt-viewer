@@ -20,7 +20,7 @@ import { Filter, EventFilterState } from 'modules/search/models/Search';
 import { ActionType } from 'models/EventAction';
 import FilterPanel from './FilterPanel';
 import { FilterRowConfig, FilterRowTogglerConfig } from '../../models/filter/FilterInputs';
-import { useWorkspaceEventStore, useEventsFilterStore, useFiltersHistoryStore } from '../../hooks';
+import { useEventsStore, useEventsFilterStore, useFiltersHistoryStore } from '../../hooks';
 import { EventSSEFilters } from '../../api/sse';
 import { getObjectKeys, notEmpty } from '../../helpers/object';
 import EventsFilter from '../../models/filter/EventsFilter';
@@ -49,7 +49,7 @@ function getDefaultCurrentFilterValues(filter: EventsFilter | null) {
 const priority = ['attachedMessageId', 'type', 'body', 'name', 'status', 'text'];
 
 function EventsFilterPanel() {
-	const eventsStore = useWorkspaceEventStore();
+	const eventsStore = useEventsStore();
 	const eventDataStore = useEventsDataStore();
 	const filterStore = useEventsFilterStore();
 	const { eventsHistory, onEventFilterSubmit } = useFiltersHistoryStore();

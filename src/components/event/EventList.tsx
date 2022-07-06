@@ -21,7 +21,7 @@ import { isEventNode } from 'helpers/event';
 import Empty from '../util/Empty';
 import SplashScreen from '../SplashScreen';
 import StateSaverProvider from '../util/StateSaverProvider';
-import { useDebouncedCallback, useWorkspaceEventStore } from '../../hooks';
+import { useDebouncedCallback, useEventsStore } from '../../hooks';
 import { raf } from '../../helpers/raf';
 import { EventTreeNode } from '../../models/EventAction';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
@@ -38,7 +38,7 @@ interface Props {
 const START_INDEX = 100_000;
 
 function EventTreeListBase(props: Props) {
-	const eventStore = useWorkspaceEventStore();
+	const eventStore = useEventsStore();
 	const { scrolledIndex, selectedNode, isFlat = false } = props;
 
 	const nodes = !isFlat ? eventStore.nodesList : eventStore.flattenedEventList;
@@ -165,7 +165,7 @@ interface EventTreeListWrapperProps {
 }
 
 function EventTreeListWrapper(props: EventTreeListWrapperProps) {
-	const eventsStore = useWorkspaceEventStore();
+	const eventsStore = useEventsStore();
 	const eventDataStore = useEventsDataStore();
 
 	if (eventDataStore.rootEventIds.length === 0) {

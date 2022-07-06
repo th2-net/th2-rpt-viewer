@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useWorkspaceEventStore } from '../../hooks';
+import { useEventsStore } from '../../hooks';
 import multiTokenSplit from '../../helpers/search/multiTokenSplit';
 import { createBemBlock } from '../../helpers/styleCreators';
 import '../../styles/search.scss';
@@ -27,7 +27,7 @@ type Props = {
 };
 
 function SearchableContent({ content, eventId }: Props) {
-	const { searchStore } = useWorkspaceEventStore();
+	const { searchStore } = useEventsStore();
 
 	if (!searchStore.results.includes(eventId)) {
 		return <>{content}</>;

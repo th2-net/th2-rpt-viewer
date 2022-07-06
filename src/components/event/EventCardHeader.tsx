@@ -16,6 +16,7 @@
 
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import useEventsDataStore from 'hooks/useEventsDataStore';
 import { formatTime, getElapsedTime } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
@@ -23,7 +24,7 @@ import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
 import SearchableContent from '../search/SearchableContent';
-import { useWorkspaceEventStore, useBookmarksStore, useWorkspaceStore } from '../../hooks';
+import { useBookmarksStore, useWorkspaceStore } from '../../hooks';
 
 interface EventCardHeaderBaseProps {
 	displayType?: CardDisplayType;
@@ -152,10 +153,10 @@ const EventCardHeader = (props: EventCardHeaderBaseProps) => {
 	const { event } = props;
 	const bookmarksStore = useBookmarksStore();
 	const workspaceStore = useWorkspaceStore();
-	const eventStore = useWorkspaceEventStore();
+	const eventsDataStore = useEventsDataStore();
 
 	const hasChildrenToLoad = computed(() =>
-		eventStore.eventDataStore.hasUnloadedChildren.get(event.eventId),
+		eventsDataStore.hasUnloadedChildren.get(event.eventId),
 	).get();
 
 	const isBookmarked = computed(

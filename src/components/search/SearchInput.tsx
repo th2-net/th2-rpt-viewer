@@ -22,7 +22,7 @@ import SearchToken from '../../models/search/SearchToken';
 import Bubble from '../util/Bubble';
 import { nextCyclicItem, removeByIndex, replaceByIndex } from '../../helpers/array';
 import { raf } from '../../helpers/raf';
-import { useWorkspaceEventStore } from '../../hooks/useEventWindowStore';
+import { useEventsStore } from '../../hooks/useEventsStore';
 import { createSearchToken } from '../../helpers/search/createSearchToken';
 import '../../styles/search.scss';
 
@@ -310,7 +310,7 @@ interface SearchInputProps {
 }
 
 const SearchInput = (props: SearchInputProps) => {
-	const { searchStore } = useWorkspaceEventStore();
+	const { searchStore } = useEventsStore();
 
 	return (
 		<SearchInputBase

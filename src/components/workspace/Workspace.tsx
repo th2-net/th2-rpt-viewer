@@ -25,7 +25,7 @@ import WorkspaceSplitter from './WorkspaceSplitter';
 import {
 	useActivePanel,
 	useMessagesStore,
-	useWorkspaceEventStore,
+	useEventsStore,
 	useWorkspaceStore,
 } from '../../hooks';
 import {
@@ -61,7 +61,7 @@ function Workspace() {
 	const { panelsLayout, setPanelsLayout, togglePanel } = useWorkspaceViewStore();
 	const workspaceStore = useWorkspaceStore();
 	const messagesStore = useMessagesStore();
-	const eventsStore = useWorkspaceEventStore();
+	const eventsStore = useEventsStore();
 
 	const itemsInView = computed(() =>
 		[...messagesStore.messagesInView, ...eventsStore.eventsInView].reduce(
