@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import { useWorkspaceStore } from '.';
-import MessagesViewStore from '../stores/messages/MessagesViewStore';
+import MessagesViewTypeStore from '../stores/messages/MessagesViewTypeStore';
 
-export const useMessagesViewStore = (): MessagesViewStore => {
+export const useMessagesViewTypeStore = (): MessagesViewTypeStore => {
 	const workspaceStore = useWorkspaceStore();
 
 	return workspaceStore.messageViewStore;

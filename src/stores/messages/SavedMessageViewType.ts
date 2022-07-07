@@ -22,14 +22,14 @@ import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 export class SavedMessageViewType {
 	message: EventMessage;
 
-	parsedMessageId: string;
+	parsedMessageId?: string;
 
 	messageDisplayRulesStore: MessageDisplayRulesStore;
 
 	constructor(
 		message: EventMessage,
-		parsedMessageId: string,
 		messageDisplayRulesStore: MessageDisplayRulesStore,
+		parsedMessageId?: string,
 	) {
 		this.message = message;
 		this.parsedMessageId = parsedMessageId;
@@ -43,9 +43,14 @@ export class SavedMessageViewType {
 		const rootRule = this.messageDisplayRulesStore.rootDisplayRule;
 		const declaredRule = this.messageDisplayRulesStore.messageDisplayRules.find(rule => {
 			if (rule.session.length > 1 && rule.session.includes('*')) {
-				return matchWildcardRule(this.parsedMessageId, rule.session);
+				return matchWildcardRule(
+					this.parsedMessageId ? this.parsedMessageId : this.message.id,
+					rule.session,
+				);
 			}
-			return this.parsedMessageId.includes(rule.session);
+			return this.parsedMessageId
+				? this.parsedMessageId.includes(rule.session)
+				: this.message.id.includes(rule.session);
 		});
 		if (!this.message || !this.message.parsedMessages) {
 			return declaredRule

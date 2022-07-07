@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { ActionType } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
+import { EventMessage, MessageViewTypeConfig } from '../models/EventMessage';
 import {
 	isMessageValue,
 	isSimpleValue,
@@ -69,4 +69,14 @@ export function normalizeField(field: MessageBodyField): string | object {
 		);
 	}
 	return field.listValue.values?.map(listValueField => normalizeField(listValueField)) || [];
+}
+
+export function defineViewTypeConfig(
+	viewTypeConfig: MessageViewTypeConfig | MessageViewTypeConfig[],
+	index: number,
+) {
+	if (Array.isArray(viewTypeConfig)) {
+		return viewTypeConfig[index];
+	}
+	return viewTypeConfig;
 }

@@ -36,7 +36,7 @@ import { SearchStore } from '../SearchStore';
 import { SessionsStore } from '../messages/SessionsStore';
 import { isAbortError } from '../../helpers/fetch';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
-import MessagesViewStore from '../messages/MessagesViewStore';
+import MessagesViewTypeStore from '../messages/MessagesViewTypeStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -59,7 +59,7 @@ export default class WorkspaceStore {
 
 	public messagesStore: MessagesStore;
 
-	public messageViewStore: MessagesViewStore;
+	public messageViewStore: MessagesViewTypeStore;
 
 	public viewStore: WorkspaceViewStore;
 
@@ -103,7 +103,7 @@ export default class WorkspaceStore {
 			initialState.messages,
 		);
 
-		this.messageViewStore = new MessagesViewStore(
+		this.messageViewStore = new MessagesViewTypeStore(
 			this.messageDisplayRulesStore,
 			this.messagesStore,
 		);

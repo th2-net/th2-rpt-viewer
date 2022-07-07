@@ -22,29 +22,29 @@ import {
 	useMessagesDataStore,
 	useMessageBodySortStore,
 	useBookmarksStore,
-	useMessagesViewStore,
+	useMessagesViewTypeStore,
 } from '../../../hooks';
-import { EventMessage, MessageViewType } from '../../../models/EventMessage';
-import MessageCardBase from './MessageCardBase';
+import { EventMessage, MessageViewTypeConfig } from '../../../models/EventMessage';
+import MessageCardBase, { MessageCardBaseProps } from './MessageCardBase';
 import '../../../styles/messages.scss';
 import MessageExpandButton from '../MessageExpandButton';
-import { SavedMessageViewType } from '../../../stores/messages/SavedMessageViewType';
+import StateSaver from '../../util/StateSaver';
 
 export interface OwnProps {
 	message: EventMessage;
 }
 
 export interface RecoveredProps {
-	viewTypes?: MessageViewType[];
-	getSavedViewType: (message: EventMessage, parsedMessageId: string) => SavedMessageViewType;
-	setExpandedMessage: (message: EventMessage) => void;
+	viewTypesConfig: MessageViewTypeConfig | MessageViewTypeConfig[];
 	isExpanded: boolean;
+	saveState: (state: boolean) => void;
+	stateKey: string;
 }
 
 interface Props extends OwnProps, RecoveredProps {}
 
 const MessageCard = observer((props: Props) => {
-	const { message, viewTypes, getSavedViewType, setExpandedMessage, isExpanded } = props;
+	const { message, viewTypesConfig, saveState } = props;
 	const { id } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
@@ -53,6 +53,7 @@ const MessageCard = observer((props: Props) => {
 	const { sortOrderItems } = useMessageBodySortStore();
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
+	const [isExpanded, setIsExpanded] = React.useState(props.isExpanded);
 
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
@@ -95,6 +96,12 @@ const MessageCard = observer((props: Props) => {
 		};
 	}, [messagesStore.highlightedMessageId]);
 
+	React.useEffect(() => {
+		return () => {
+			saveState(isExpanded);
+		};
+	}, [isExpanded]);
+
 	const hoverMessage = React.useCallback(() => {
 		hoverTimeout.current = setTimeout(() => {
 			messagesStore.setHoveredMessage(message);
@@ -121,52 +128,59 @@ const MessageCard = observer((props: Props) => {
 
 	const isExported = messagesStore.exportStore.isExported(message);
 
+	const messageCardBaseProps: MessageCardBaseProps = {
+		message,
+		viewTypeConfig: viewTypesConfig,
+		hoverMessage,
+		unhoverMessage,
+		addMessagesToExport,
+		isHighlighted,
+		isSoftFiltered,
+		isExported,
+		isExpanded,
+		isExport: messagesStore.exportStore.isExport,
+		isBookmarked,
+		isAttached,
+		toogleMessagePin,
+		sortOrderItems,
+	};
+
 	return (
 		<div className='messages-list__item'>
-			<MessageCardBase
-				message={message}
-				viewTypes={viewTypes}
-				getSavedViewType={getSavedViewType}
-				hoverMessage={hoverMessage}
-				unhoverMessage={unhoverMessage}
-				addMessagesToExport={addMessagesToExport}
-				isHighlighted={isHighlighted}
-				isSoftFiltered={isSoftFiltered}
-				isExported={isExported}
-				isExport={messagesStore.exportStore.isExport}
-				isExpanded={isExpanded}
-				isBookmarked={isBookmarked}
-				isAttached={isAttached}
-				toogleMessagePin={toogleMessagePin}
-				sortOrderItems={sortOrderItems}
-			/>
-			<MessageExpandButton
-				message={message}
-				isExpanded={isExpanded}
-				setExpanded={setExpandedMessage}
-			/>
+			<MessageCardBase {...messageCardBaseProps} />
+			<MessageExpandButton isExpanded={isExpanded} setExpanded={setIsExpanded} />
 		</div>
 	);
 });
 
 const RecoverableMessageCard = (props: OwnProps) => {
-	const viewStore = useMessagesViewStore();
-	const { getSavedViewType, expandedMessages, setExpandedMessage } = viewStore;
+	const viewTypesStore = useMessagesViewTypeStore();
+	const { getSavedViewType } = viewTypesStore;
 
-	const viewTypes = props.message.parsedMessages?.map(
-		parsedMessage => getSavedViewType(props.message, parsedMessage.id).viewType,
-	);
-
-	const isExpanded = expandedMessages.includes(props.message.id);
+	const viewTypesConfig = props.message.parsedMessages
+		? props.message.parsedMessages.map(parsedMessage => {
+				return {
+					viewType: getSavedViewType(props.message, parsedMessage.id).viewType,
+					setViewType: getSavedViewType(props.message, parsedMessage.id).setViewType,
+				};
+		  })
+		: {
+				viewType: getSavedViewType(props.message).viewType,
+				setViewType: getSavedViewType(props.message).setViewType,
+		  };
 
 	return (
-		<MessageCard
-			{...props}
-			viewTypes={viewTypes}
-			getSavedViewType={getSavedViewType}
-			setExpandedMessage={setExpandedMessage}
-			isExpanded={isExpanded}
-		/>
+		<StateSaver stateKey={props.message.id}>
+			{(state: boolean, stateSaver) => (
+				<MessageCard
+					{...props}
+					viewTypesConfig={viewTypesConfig}
+					stateKey={props.message.id}
+					saveState={stateSaver}
+					isExpanded={state}
+				/>
+			)}
+		</StateSaver>
 	);
 };
 

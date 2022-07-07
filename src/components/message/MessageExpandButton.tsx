@@ -16,16 +16,14 @@
 import React from 'react';
 import { createBemElement } from '../../helpers/styleCreators';
 import '../../styles/messages.scss';
-import { EventMessage } from '../../models/EventMessage';
 
 interface Props {
-	message: EventMessage;
 	isExpanded: boolean;
-	setExpanded: (message: EventMessage) => void;
+	setExpanded: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const MessageExpandButton = (props: Props) => {
-	const { isExpanded, setExpanded, message } = props;
+	const { isExpanded, setExpanded } = props;
 
 	const buttonClass = createBemElement(
 		'message-card-expand-wrapper',
@@ -34,7 +32,7 @@ const MessageExpandButton = (props: Props) => {
 	);
 
 	const changeExpandState = () => {
-		setExpanded(message);
+		setExpanded(!isExpanded);
 	};
 
 	return (

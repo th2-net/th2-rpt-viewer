@@ -16,35 +16,35 @@
 
 import * as React from 'react';
 import { createBemBlock } from '../../../helpers/styleCreators';
-import { MessageScreenshotZoom } from './MessageScreenshot';
-import { isScreenshotMessage, EventMessage, MessageViewType } from '../../../models/EventMessage';
-import MessageCardViewTypeRenderer, {
-	MessageCardViewTypeRendererProps,
-} from './MessageCardViewTypeRenderer';
+import {
+	isScreenshotMessage,
+	EventMessage,
+	MessageViewTypeConfig,
+} from '../../../models/EventMessage';
+import { MessageCardViewTypeRendererProps } from './MessageCardViewTypeRenderer';
 import { MessageCardToolsProps } from './MessageCardTools';
 import '../../../styles/messages.scss';
-import { MessageHeader, MessageInfoProps } from './MessageHeader';
-import { SavedMessageViewType } from '../../../stores/messages/SavedMessageViewType';
+import { MessageInfoProps } from './header/MessageCardHeader';
+import { MessageCardHeader } from './header/MessageCardHeader';
+import { MessageCardParsedMessage } from './MessageCardParsedMessage';
+import { defineViewTypeConfig } from '../../../helpers/message';
 
 export interface MessageCardBaseProps {
 	message: EventMessage;
 	hoverMessage?: () => void;
 	unhoverMessage?: () => void;
 	addMessagesToExport?: () => void;
-	getSavedViewType?: (message: EventMessage, parsedMessageId: string) => SavedMessageViewType;
-	viewType?: MessageViewType;
-	viewTypes?: MessageViewType[];
-	setViewType?: React.Dispatch<React.SetStateAction<MessageViewType>>;
+	viewTypeConfig: MessageViewTypeConfig | MessageViewTypeConfig[];
 	isHighlighted?: boolean;
 	isSoftFiltered?: boolean;
 	isExported?: boolean;
 	isExport?: boolean;
-	isExpanded?: boolean;
 	isAttached?: boolean;
 	isBookmarked?: boolean;
 	toogleMessagePin?: () => void;
 	isEmbedded?: boolean;
 	sortOrderItems?: string[];
+	isExpanded: boolean;
 }
 
 const MessageCardBase = React.memo(
@@ -53,10 +53,7 @@ const MessageCardBase = React.memo(
 		hoverMessage,
 		unhoverMessage,
 		addMessagesToExport,
-		getSavedViewType,
-		viewType,
-		viewTypes,
-		setViewType,
+		viewTypeConfig,
 		isHighlighted,
 		isSoftFiltered,
 		isExported,
@@ -69,6 +66,11 @@ const MessageCardBase = React.memo(
 		sortOrderItems,
 	}: MessageCardBaseProps) => {
 		const { id, rawMessageBase64 } = message;
+
+		const [currentViewType, currentSetViewType] = [
+			defineViewTypeConfig(viewTypeConfig, 0).viewType,
+			defineViewTypeConfig(viewTypeConfig, 0).setViewType,
+		];
 
 		const rootClass = createBemBlock(
 			'message-card-wrapper',
@@ -96,9 +98,8 @@ const MessageCardBase = React.memo(
 
 		const messageInfoProps: MessageInfoProps = {
 			message,
-			viewType: viewTypes ? viewTypes[0] : viewType,
-			setViewType,
-			getSavedViewType,
+			viewType: currentViewType,
+			setViewType: currentSetViewType,
 			onTimestampMouseEnter: hoverMessage,
 			onTimestampMouseLeave: unhoverMessage,
 			isBookmarked: isBookmarked || false,
@@ -109,48 +110,21 @@ const MessageCardBase = React.memo(
 		return (
 			<div className={rootClass} onClick={addMessagesToExport}>
 				<div className='message-card'>
-					<MessageHeader {...messageCardToolsConfig} {...messageInfoProps} />
+					<MessageCardHeader {...messageCardToolsConfig} {...messageInfoProps} />
 					{message.parsedMessages
-						?.filter((parsedMessage, index) => (isExpanded ? parsedMessage : index < 1))
+						?.filter((parsedMessage, index) => (isExpanded ? parsedMessage : index === 0))
 						.map((parsedMessage, index) => (
-							<div key={parsedMessage.id} className='parsed-message-wrapper'>
-								{index > 0 && (
-									<MessageHeader
-										{...messageCardToolsConfig}
-										message={message}
-										parsedMessage={parsedMessage}
-										isScreenshotMsg={isScreenshotMessage(parsedMessage)}
-										viewType={viewTypes ? viewTypes[index] : viewType}
-										setViewType={setViewType}
-										getSavedViewType={getSavedViewType}
-									/>
-								)}
-								<div className='parsed-message' key={parsedMessage.id}>
-									<div className='mc-body'>
-										{isScreenshotMessage(parsedMessage) ? (
-											<div className='mc-body__screenshot'>
-												<MessageScreenshotZoom
-													src={
-														typeof rawMessageBase64 === 'string'
-															? `data:${parsedMessage.message.metadata.messageType};base64,` +
-															  `${message.rawMessageBase64}`
-															: ''
-													}
-													alt={message.id}
-												/>
-											</div>
-										) : (
-											<div className='mc-body__human'>
-												<MessageCardViewTypeRenderer
-													{...messageViewTypeRendererProps}
-													viewType={viewTypes ? viewTypes[index] : viewType}
-													messageBody={parsedMessage.message}
-												/>
-											</div>
-										)}
-									</div>
-								</div>
-							</div>
+							<MessageCardParsedMessage
+								key={index}
+								message={message}
+								parsedMessage={parsedMessage}
+								parsedMessageIndex={index}
+								viewType={currentViewType}
+								setViewType={currentSetViewType}
+								messageCardToolsConfig={messageCardToolsConfig}
+								messageViewTypeRendererProps={messageViewTypeRendererProps}
+								rawMessageBase64={rawMessageBase64}
+							/>
 						))}
 				</div>
 			</div>

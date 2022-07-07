@@ -15,14 +15,21 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
-import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import { EventMessage, MessageViewType, MessageViewTypeConfig } from '../../models/EventMessage';
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
+import MessageExpandButton from '../message/MessageExpandButton';
 
 function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
 	const [errorStatus, setErrorStatus] = useState<string | null>(null);
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
+	const [isExpanded, setIsExpanded] = React.useState(false);
+
+	const viewTypeConfig: MessageViewTypeConfig = {
+		viewType,
+		setViewType,
+	};
 
 	useEffect(() => {
 		getMessage();
@@ -44,14 +51,14 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	if (message) {
 		return (
 			<div className='embedded-wrapper'>
-				return (
-				<MessageCardBase
-					isEmbedded
-					message={message}
-					viewType={viewType}
-					setViewType={setViewType}
-				/>
-				);
+				<div className='messages-list__item'>
+					<MessageCardBase
+						message={message}
+						viewTypeConfig={viewTypeConfig}
+						isExpanded={isExpanded}
+					/>
+					<MessageExpandButton isExpanded={isExpanded} setExpanded={setIsExpanded} />
+				</div>
 			</div>
 		);
 	}
