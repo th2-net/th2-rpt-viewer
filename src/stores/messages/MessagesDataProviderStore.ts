@@ -178,14 +178,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		const [nextMessages, prevMessages] = await Promise.all([
 			this.searchChannelNext.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(
-					messageIds.next,
-				),
+				resumeMessageIds: extractMessageIds(messageIds.next),
 			}),
 			this.searchChannelPrev.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(
-					messageIds.previous,
-				),
+				resumeMessageIds: extractMessageIds(messageIds.previous),
 			}),
 		]);
 
@@ -480,11 +476,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.isMatchingMessages.set(messageId, true);
 
 		try {
-			const {
-				resultCountLimit,
-				searchDirection,
-				...filterParams
-			} = this.messagesStore.filterStore.filterParams;
+			const { resultCountLimit, searchDirection, ...filterParams } =
+				this.messagesStore.filterStore.filterParams;
 			const isMatch = await this.api.messages.matchMessage(messageId, filterParams, abortSignal);
 
 			runInAction(() => {
