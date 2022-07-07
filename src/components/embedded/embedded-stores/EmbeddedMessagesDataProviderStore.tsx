@@ -187,14 +187,10 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 		const [nextMessages, prevMessages] = await Promise.all([
 			this.searchChannelNext.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(
-					messageIds.next.filter((messageId, index) => index < 2),
-				),
+				resumeMessageIds: extractMessageIds(messageIds.next),
 			}),
 			this.searchChannelPrev.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(
-					messageIds.previous.filter((messageId, index) => index < 2),
-				),
+				resumeMessageIds: extractMessageIds(messageIds.previous),
 			}),
 		]);
 
