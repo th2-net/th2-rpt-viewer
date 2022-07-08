@@ -24,8 +24,7 @@ import {
 import { MessageCardViewTypeRendererProps } from './MessageCardViewTypeRenderer';
 import { MessageCardToolsProps } from './MessageCardTools';
 import '../../../styles/messages.scss';
-import { MessageInfoProps } from './header/MessageCardHeader';
-import { MessageCardHeader } from './header/MessageCardHeader';
+import { MessageCardHeader, MessageInfoProps } from './header/MessageCardHeader';
 import { MessageCardParsedMessage } from './MessageCardParsedMessage';
 import { defineViewTypeConfig } from '../../../helpers/message';
 
@@ -67,11 +66,6 @@ const MessageCardBase = React.memo(
 	}: MessageCardBaseProps) => {
 		const { id, rawMessageBase64 } = message;
 
-		const [currentViewType, currentSetViewType] = [
-			defineViewTypeConfig(viewTypeConfig, 0).viewType,
-			defineViewTypeConfig(viewTypeConfig, 0).setViewType,
-		];
-
 		const rootClass = createBemBlock(
 			'message-card-wrapper',
 			isAttached ? 'attached' : null,
@@ -98,8 +92,8 @@ const MessageCardBase = React.memo(
 
 		const messageInfoProps: MessageInfoProps = {
 			message,
-			viewType: currentViewType,
-			setViewType: currentSetViewType,
+			viewType: defineViewTypeConfig(viewTypeConfig, 0).viewType,
+			setViewType: defineViewTypeConfig(viewTypeConfig, 0).setViewType,
 			onTimestampMouseEnter: hoverMessage,
 			onTimestampMouseLeave: unhoverMessage,
 			isBookmarked: isBookmarked || false,
@@ -119,8 +113,8 @@ const MessageCardBase = React.memo(
 								message={message}
 								parsedMessage={parsedMessage}
 								parsedMessageIndex={index}
-								viewType={currentViewType}
-								setViewType={currentSetViewType}
+								viewType={defineViewTypeConfig(viewTypeConfig, index).viewType}
+								setViewType={defineViewTypeConfig(viewTypeConfig, index).setViewType}
 								messageCardToolsConfig={messageCardToolsConfig}
 								messageViewTypeRendererProps={messageViewTypeRendererProps}
 								rawMessageBase64={rawMessageBase64}

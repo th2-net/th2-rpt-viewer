@@ -156,7 +156,6 @@ const MessageCard = observer((props: Props) => {
 const RecoverableMessageCard = (props: OwnProps) => {
 	const viewTypesStore = useMessagesViewTypeStore();
 	const { getSavedViewType } = viewTypesStore;
-
 	const viewTypesConfig = props.message.parsedMessages
 		? props.message.parsedMessages.map(parsedMessage => {
 				return {
@@ -165,8 +164,8 @@ const RecoverableMessageCard = (props: OwnProps) => {
 				};
 		  })
 		: {
-				viewType: getSavedViewType(props.message).viewType,
-				setViewType: getSavedViewType(props.message).setViewType,
+				viewType: getSavedViewType(props.message, props.message.id).viewType,
+				setViewType: getSavedViewType(props.message, props.message.id).setViewType,
 		  };
 
 	return (

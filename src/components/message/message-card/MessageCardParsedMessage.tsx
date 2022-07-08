@@ -15,13 +15,17 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { MessageViewType, EventMessage } from '../../../models/EventMessage';
 import { MessageCardToolsProps } from './MessageCardTools';
 import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
 import { MessageScreenshotZoom } from './MessageScreenshot';
-import { isScreenshotMessage, ParsedMessage } from '../../../models/EventMessage';
+import {
+	isScreenshotMessage,
+	ParsedMessage,
+	MessageViewType,
+	EventMessage,
+} from '../../../models/EventMessage';
 import { ParsedMessageHeader } from './header/ParsedMessageHeader';
 
 export interface ParsedMessageProps {
