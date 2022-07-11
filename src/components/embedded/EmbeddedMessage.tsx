@@ -24,11 +24,17 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
 	const [errorStatus, setErrorStatus] = useState<string | null>(null);
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
-	const [isExpanded, setIsExpanded] = React.useState(false);
+	const [rawViewType, setRawViewType] = useState(MessageViewType.ASCII);
+	const [isExpanded, setIsExpanded] = React.useState(true);
 
 	const viewTypeConfig: MessageViewTypeConfig = {
 		viewType,
 		setViewType,
+	};
+
+	const rawViewTypeConfig: MessageViewTypeConfig = {
+		viewType: rawViewType,
+		setViewType: setRawViewType,
 	};
 
 	useEffect(() => {
@@ -55,9 +61,14 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 					<MessageCardBase
 						message={message}
 						viewTypeConfig={viewTypeConfig}
+						rawViewTypeConfig={rawViewTypeConfig}
 						isExpanded={isExpanded}
 					/>
-					<MessageExpandButton isExpanded={isExpanded} setExpanded={setIsExpanded} />
+					<MessageExpandButton
+						isExpanded={isExpanded}
+						setExpanded={setIsExpanded}
+						parsedMessages={message.parsedMessages}
+					/>
 				</div>
 			</div>
 		);

@@ -16,14 +16,16 @@
 import React from 'react';
 import { createBemElement } from '../../helpers/styleCreators';
 import '../../styles/messages.scss';
+import { ParsedMessage } from '../../models/EventMessage';
 
 interface Props {
 	isExpanded: boolean;
-	setExpanded: React.Dispatch<React.SetStateAction<boolean>>;
+	setExpanded: (state: boolean) => void;
+	parsedMessages: ParsedMessage[] | null;
 }
 
 const MessageExpandButton = (props: Props) => {
-	const { isExpanded, setExpanded } = props;
+	const { isExpanded, setExpanded, parsedMessages } = props;
 
 	const buttonClass = createBemElement(
 		'message-card-expand-wrapper',
@@ -31,15 +33,24 @@ const MessageExpandButton = (props: Props) => {
 		isExpanded ? 'expanded' : null,
 	);
 
+	const warningClass = createBemElement('message-card-expand-wrapper', 'warning');
+
 	const changeExpandState = () => {
 		setExpanded(!isExpanded);
 	};
 
 	return (
 		<div className='message-card-expand-wrapper'>
-			<div className={buttonClass} onClick={changeExpandState}>
-				{isExpanded ? 'Show Less' : 'Show More'}
-			</div>
+			{parsedMessages ? (
+				<div className={buttonClass} onClick={changeExpandState}>
+					{isExpanded ? 'Show Less' : 'Show More'}
+				</div>
+			) : (
+				<div className={warningClass}>
+					<span className={'message-card-expand-wrapper__warning-icon'} />
+					<p>Only Raw Data Available</p>
+				</div>
+			)}
 		</div>
 	);
 };

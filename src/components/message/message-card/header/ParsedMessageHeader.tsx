@@ -15,56 +15,52 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { EventMessage, ParsedMessage, MessageViewType } from '../../../../models/EventMessage';
+import { ParsedMessage, MessageViewType } from '../../../../models/EventMessage';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
+import { Chip } from '../../../Chip';
 
 export interface ParsedMessageHeaderProps {
-	message: EventMessage;
-	parsedMessage: ParsedMessage;
+	parsedMessage?: ParsedMessage;
+	rawMessageIndex?: number;
 	viewType: MessageViewType;
 	setViewType: (vt: MessageViewType) => void;
 	isScreenshotMsg: boolean;
+	messageCardToolsConfig: MessageCardToolsProps;
 }
 
-export const ParsedMessageHeader = React.memo(
-	(props: ParsedMessageHeaderProps & MessageCardToolsProps) => {
-		const { message, parsedMessage, viewType, setViewType } = props;
-		const messageCardToolsConfig: MessageCardToolsProps = {
-			message,
-			isBookmarked: props.isBookmarked || false,
-			toggleMessagePin: props.toggleMessagePin || (() => null),
-			isEmbedded: props.isEmbedded,
-		};
+export const ParsedMessageHeader = React.memo((props: ParsedMessageHeaderProps) => {
+	const { parsedMessage, viewType, setViewType, rawMessageIndex } = props;
 
-		return (
-			<div className='mc-header__info'>
-				<span
-					className='mc-header__value sessionId-inline'
-					title={`Session: ${parsedMessage.message.metadata.id.sequence}`}>
-					{parsedMessage.message.metadata.id.subsequence[0]}
-				</span>
-				<span
-					className='mc-header__value messageType'
+	return (
+		<div className='mc-header__info'>
+			<Chip
+				title={`Session: ${parsedMessage?.message.metadata.id.sequence}`}
+				text={parsedMessage ? parsedMessage.message.metadata.id.subsequence[0] : rawMessageIndex}
+			/>
+			{!rawMessageIndex && (
+				<Chip
+					className='mc-header__value'
 					title={
-						parsedMessage.message.metadata.messageType &&
-						`Name: ${parsedMessage.message.metadata.messageType}`
-					}>
-					{parsedMessage.message.metadata.messageType}
-				</span>
-				{viewType && setViewType && (
-					<div className='message-card-tools__wrapper'>
-						<MessageCardTools
-							{...messageCardToolsConfig}
-							parsedMessage={parsedMessage}
-							isScreenshotMsg={props.isScreenshotMsg}
-							viewType={viewType}
-							setViewType={setViewType}
-						/>
-					</div>
-				)}
+						parsedMessage
+							? parsedMessage.message.metadata.messageType &&
+							  `Name: ${parsedMessage.message.metadata.messageType}`
+							: 'Name: RawMessage'
+					}
+					text={parsedMessage?.message.metadata.messageType}
+				/>
+			)}
+
+			<div className='message-card-tools__wrapper'>
+				<MessageCardTools
+					{...props.messageCardToolsConfig}
+					parsedMessage={parsedMessage}
+					isScreenshotMsg={props.isScreenshotMsg}
+					viewType={viewType}
+					setViewType={setViewType}
+				/>
 			</div>
-		);
-	},
-);
+		</div>
+	);
+});
 
 ParsedMessageHeader.displayName = 'ParsedMessageHeader';

@@ -36,10 +36,9 @@ export interface ParsedMessageProps {
 	setViewType: (vt: MessageViewType) => void;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
-	rawMessageBase64: string | null;
 }
 
-export const MessageCardParsedMessage = React.memo((props: ParsedMessageProps) => {
+export const ParsedMessageComponent = React.memo((props: ParsedMessageProps) => {
 	const {
 		message,
 		parsedMessage,
@@ -48,15 +47,13 @@ export const MessageCardParsedMessage = React.memo((props: ParsedMessageProps) =
 		setViewType,
 		messageCardToolsConfig,
 		messageViewTypeRendererProps,
-		rawMessageBase64,
 	} = props;
 
 	return (
 		<div key={parsedMessage.id} className='parsed-message-wrapper'>
 			{parsedMessageIndex > 0 && (
 				<ParsedMessageHeader
-					{...messageCardToolsConfig}
-					message={message}
+					messageCardToolsConfig={messageCardToolsConfig}
 					parsedMessage={parsedMessage}
 					isScreenshotMsg={isScreenshotMessage(parsedMessage)}
 					viewType={viewType}
@@ -69,7 +66,7 @@ export const MessageCardParsedMessage = React.memo((props: ParsedMessageProps) =
 						<div className='mc-body__screenshot'>
 							<MessageScreenshotZoom
 								src={
-									typeof rawMessageBase64 === 'string'
+									typeof messageViewTypeRendererProps.rawContent === 'string'
 										? `data:${parsedMessage.message.metadata.messageType};base64,` +
 										  `${message.rawMessageBase64}`
 										: ''
@@ -92,4 +89,4 @@ export const MessageCardParsedMessage = React.memo((props: ParsedMessageProps) =
 	);
 });
 
-MessageCardParsedMessage.displayName = 'MessageCardParsedMessage';
+ParsedMessageComponent.displayName = 'ParsedMessageComponent';

@@ -73,10 +73,10 @@ export function normalizeField(field: MessageBodyField): string | object {
 
 export function defineViewTypeConfig(
 	viewTypeConfig: MessageViewTypeConfig | MessageViewTypeConfig[],
-	index: number,
+	index?: number,
 ) {
 	if (Array.isArray(viewTypeConfig)) {
-		return viewTypeConfig[index];
+		return index !== undefined ? viewTypeConfig[index] : viewTypeConfig[viewTypeConfig.length - 1];
 	}
 	return viewTypeConfig;
 }

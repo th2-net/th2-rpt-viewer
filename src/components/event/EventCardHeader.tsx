@@ -21,7 +21,7 @@ import { createBemBlock } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
-import { Chip } from '../Chip';
+import { Counter } from '../util/Counter';
 import SearchableContent from '../search/SearchableContent';
 import { useWorkspaceEventStore, useTabsStore, useBookmarksStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
@@ -157,11 +157,11 @@ function EventCardHeader(props: Props) {
 					)}
 				</>
 			) : null}
-			{isFlatView && parentsCount > 0 ? <Chip text={parentsCount.toString()} /> : null}
+			{isFlatView && parentsCount > 0 ? <Counter text={parentsCount.toString()} /> : null}
 			{displayType !== CardDisplayType.STATUS_ONLY &&
 				childrenCount !== undefined &&
 				childrenCount > 0 && (
-					<Chip
+					<Counter
 						text={childrenCount
 							.toString()
 							.concat(eventStore.eventDataStore.hasUnloadedChildren.get(event.eventId) ? '+' : '')}

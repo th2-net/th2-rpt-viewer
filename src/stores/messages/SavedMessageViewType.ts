@@ -52,7 +52,7 @@ export class SavedMessageViewType {
 				? this.parsedMessageId.includes(rule.session)
 				: this.message.id.includes(rule.session);
 		});
-		if (!this.message || !this.message.parsedMessages) {
+		if (!this.parsedMessageId) {
 			return declaredRule
 				? getRawViewType(declaredRule.viewType)
 				: rootRule

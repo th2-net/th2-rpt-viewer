@@ -57,7 +57,7 @@ class MessagesViewTypeStore {
 		} else {
 			this.savedViewTypes.set(
 				key,
-				new SavedMessageViewType(message, this.messageDisplayRulesStore, message.id),
+				new SavedMessageViewType(message, this.messageDisplayRulesStore),
 			);
 		}
 		return this.savedViewTypes.get(key) as SavedMessageViewType;

@@ -33,9 +33,8 @@ const JSON_COPY_OPTIONS = ['body', 'fields'] as const;
 
 export type MessageCardToolsProps = {
 	message: EventMessage;
-	isBookmarked: boolean;
-	toggleMessagePin: () => void;
-	isEmbedded?: boolean;
+	isBookmarked?: boolean;
+	toggleMessagePin?: () => void;
 };
 
 type OwnProps = {
@@ -53,7 +52,6 @@ const MessageCardTools = ({
 	viewType,
 	setViewType,
 	isScreenshotMsg,
-	isEmbedded,
 }: MessageCardToolsProps & OwnProps) => {
 	const { id } = message;
 
@@ -68,12 +66,7 @@ const MessageCardTools = ({
 	});
 
 	const viewTypes = parsedMessage
-		? [
-				MessageViewType.JSON,
-				MessageViewType.FORMATTED,
-				MessageViewType.BINARY,
-				MessageViewType.ASCII,
-		  ]
+		? [MessageViewType.JSON, MessageViewType.FORMATTED]
 		: [MessageViewType.BINARY, MessageViewType.ASCII];
 
 	function onCopy(jsonObjectToCopy: 'body' | 'fields' = 'body') {
@@ -114,9 +107,7 @@ const MessageCardTools = ({
 	const isRawViewType = viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
 
 	const toggleViewType = (v: MessageViewType) => {
-		if (setViewType) {
-			setViewType(v);
-		}
+		setViewType(v);
 	};
 
 	return (
@@ -131,7 +122,7 @@ const MessageCardTools = ({
 				<div className='message-card-tools__ellipsis' />
 			</div>
 			<MessagePopup isOpen={isViewMenuOpen}>
-				{!isEmbedded && (
+				{toggleMessagePin && (
 					<div className='message-card-tools__controls-group'>
 						<div className='message-card-tools__item' onClick={() => toggleMessagePin()}>
 							<span className='message-card-tools__item-title'>

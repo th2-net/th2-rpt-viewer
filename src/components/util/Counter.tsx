@@ -15,50 +15,30 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { createStyleSelector } from '../helpers/styleCreators';
+import { createStyleSelector } from '../../helpers/styleCreators';
 
 interface Props {
-	text?: string | number;
-	className?: string;
-	additionalClassName?: string;
+	text: string | number;
 	title?: string;
 	isSelected?: boolean;
 	isLoading?: boolean;
 	onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-	onMouseEnter?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-	onMouseLeave?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-	children?: React.ReactNode;
 }
 
-export function Chip(props: Props) {
-	const {
-		text,
-		className,
-		additionalClassName,
-		isSelected,
-		onClick,
-		title,
-		isLoading,
-		onMouseEnter,
-		onMouseLeave,
-		children,
-	} = props;
+export function Counter(props: Props) {
+	const { text, isSelected, onClick, title, isLoading } = props;
 	const rootClass = createStyleSelector(
-		'chip',
+		'counter',
 		isSelected ? 'selected' : null,
 		onClick ? 'clickable' : null,
 		isLoading ? 'loading' : null,
-		additionalClassName ? additionalClassName : null,
 	);
 
 	return (
-		<div
-			className={className ? className : rootClass}
-			title={title}
-			onClick={e => onClick && onClick(e)}
-			onMouseEnter={e => onMouseEnter && onMouseEnter(e)}
-			onMouseLeave={e => onMouseLeave && onMouseLeave(e)}>
-			{children ? children : <p>{text}</p>}
+		<div className={rootClass} title={title} onClick={e => onClick && onClick(e)}>
+			<div className='counter__title'>
+				<p>{text}</p>
+			</div>
 		</div>
 	);
 }

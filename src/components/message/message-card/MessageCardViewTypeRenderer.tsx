@@ -32,7 +32,7 @@ export type MessageCardViewTypeRendererProps = {
 };
 
 type OwnProps = {
-	messageBody: MessageBody;
+	messageBody?: MessageBody;
 	viewType: MessageViewType;
 };
 
@@ -43,33 +43,40 @@ const MessageCardViewTypeRenderer = ({
 	messageBody,
 	sortOrderItems,
 }: MessageCardViewTypeRendererProps & OwnProps) => {
-	switch (viewType) {
-		case MessageViewType.FORMATTED:
-		case MessageViewType.JSON:
-			return (
-				<ErrorBoundary
-					fallback={
-						<MessageBodyCardFallback
+	if (messageBody) {
+		switch (viewType) {
+			case MessageViewType.FORMATTED:
+			case MessageViewType.JSON:
+				return (
+					<ErrorBoundary
+						fallback={
+							<MessageBodyCardFallback
+								isBeautified={viewType === MessageViewType.FORMATTED}
+								isSelected={isSelected}
+								body={messageBody}
+								sortOrderItems={sortOrderItems}
+							/>
+						}>
+						<MessageBodyCard
 							isBeautified={viewType === MessageViewType.FORMATTED}
-							isSelected={isSelected}
 							body={messageBody}
+							isSelected={isSelected}
 							sortOrderItems={sortOrderItems}
 						/>
-					}>
-					<MessageBodyCard
-						isBeautified={viewType === MessageViewType.FORMATTED}
-						body={messageBody}
-						isSelected={isSelected}
-						sortOrderItems={sortOrderItems}
-					/>
-				</ErrorBoundary>
-			);
-		case MessageViewType.ASCII:
-			return rawContent ? <SimpleMessageRaw rawContent={rawContent} /> : null;
-		case MessageViewType.BINARY:
-			return rawContent ? <DetailedMessageRaw rawContent={rawContent} /> : null;
-		default:
-			return null;
+					</ErrorBoundary>
+				);
+			default:
+				return null;
+		}
+	} else {
+		switch (viewType) {
+			case MessageViewType.ASCII:
+				return rawContent ? <SimpleMessageRaw rawContent={rawContent} /> : null;
+			case MessageViewType.BINARY:
+				return rawContent ? <DetailedMessageRaw rawContent={rawContent} /> : null;
+			default:
+				return null;
+		}
 	}
 };
 

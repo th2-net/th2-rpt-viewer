@@ -20,6 +20,7 @@ import { createStyleSelector, createBemBlock } from '../../../../helpers/styleCr
 import { formatTime, timestampToNumber } from '../../../../helpers/date';
 import { getHashCode } from '../../../../helpers/stringHash';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
+import { Chip } from '../../../Chip';
 
 export interface MessageInfoProps {
 	message: EventMessage;
@@ -30,6 +31,7 @@ export interface MessageInfoProps {
 	isBookmarked?: boolean;
 	isEmbedded?: boolean;
 	isScreenshotMsg: boolean;
+	messageCardToolsConfig: MessageCardToolsProps;
 }
 
 export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCardToolsProps) => {
@@ -41,6 +43,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		onTimestampMouseLeave,
 		isBookmarked,
 		isEmbedded,
+		messageCardToolsConfig,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
 
@@ -59,51 +62,38 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
-	const messageCardToolsConfig: MessageCardToolsProps = {
-		message,
-		isBookmarked: props.isBookmarked || false,
-		toggleMessagePin: props.toggleMessagePin || (() => null),
-		isEmbedded: props.isEmbedded,
-	};
-
 	return (
 		<div className='mc-header__info'>
 			{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
-
-			<span
-				className='mc-header__value mc-header__timestamp'
+			<Chip
+				text={timestamp && formattedTimestamp}
+				additionalClassName={'mc-header__timestamp'}
 				title={`Timestamp: ${formattedTimestamp}`}
 				onMouseEnter={onTimestampMouseEnter}
-				onMouseLeave={onTimestampMouseLeave}>
-				{timestamp && formattedTimestamp}
-			</span>
-			<div className='mc-header__value sessionId-inline' title={`Session: ${sessionId}`}>
+				onMouseLeave={onTimestampMouseLeave}
+			/>
+			<Chip title={`Session: ${sessionId}`}>
 				<span className={sessionClass} style={sessionArrowStyle}></span>
 				<span>{sessionId}</span>
-			</div>
-			<span className='mc-header__value'>{message.id}</span>
-			<span className='mc-header__value'>
-				{message.parsedMessages?.[0].message.metadata.id.subsequence[0]}
-			</span>
-			<span
-				className='mc-header__value messageType'
+			</Chip>
+			<Chip text={message.id} />
+			<Chip text={message.parsedMessages?.[0].message.metadata.id.subsequence[0]} />
+			<Chip
+				text={message.parsedMessages?.[0].message.metadata.messageType}
 				title={
 					message.parsedMessages?.[0].message.metadata.messageType &&
 					`Name: ${message.parsedMessages?.[0].message.metadata.messageType}`
-				}>
-				{message.parsedMessages?.[0].message.metadata.messageType}
-			</span>
-			{viewType && setViewType && (
-				<div className='message-card-tools__wrapper'>
-					<MessageCardTools
-						{...messageCardToolsConfig}
-						parsedMessage={message.parsedMessages?.[0]}
-						isScreenshotMsg={props.isScreenshotMsg}
-						viewType={viewType}
-						setViewType={setViewType}
-					/>
-				</div>
-			)}
+				}
+			/>
+			<div className='message-card-tools__wrapper'>
+				<MessageCardTools
+					{...messageCardToolsConfig}
+					parsedMessage={message.parsedMessages?.[0]}
+					isScreenshotMsg={props.isScreenshotMsg}
+					viewType={viewType}
+					setViewType={setViewType}
+				/>
+			</div>
 		</div>
 	);
 });
