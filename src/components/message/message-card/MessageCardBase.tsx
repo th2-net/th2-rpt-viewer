@@ -88,7 +88,7 @@ const MessageCardBase = React.memo(
 
 		const messageCardToolsConfig: MessageCardToolsProps = {
 			message,
-			isBookmarked: isBookmarked,
+			isBookmarked,
 			toggleMessagePin: toogleMessagePin,
 		};
 

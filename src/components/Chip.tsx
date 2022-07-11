@@ -48,17 +48,17 @@ export function Chip(props: Props) {
 		isSelected ? 'selected' : null,
 		onClick ? 'clickable' : null,
 		isLoading ? 'loading' : null,
-		additionalClassName ? additionalClassName : null,
+		additionalClassName || null,
 	);
 
 	return (
 		<div
-			className={className ? className : rootClass}
+			className={className || rootClass}
 			title={title}
 			onClick={e => onClick && onClick(e)}
 			onMouseEnter={e => onMouseEnter && onMouseEnter(e)}
 			onMouseLeave={e => onMouseLeave && onMouseLeave(e)}>
-			{children ? children : <p>{text}</p>}
+			{children || <p>{text}</p>}
 		</div>
 	);
 }
