@@ -40,13 +40,15 @@ export const MessageCardRaw = React.memo((props: MessageCardRawProps) => {
 	} = props;
 	return (
 		<div className='parsed-message-wrapper'>
-			<ParsedMessageHeader
-				messageCardToolsConfig={messageCardToolsConfig}
-				isScreenshotMsg={false}
-				rawMessageIndex={message.parsedMessages ? message.parsedMessages.length + 1 : undefined}
-				viewType={viewType}
-				setViewType={setViewType}
-			/>
+			{message.parsedMessages && (
+				<ParsedMessageHeader
+					messageCardToolsConfig={messageCardToolsConfig}
+					isScreenshotMsg={false}
+					rawMessageIndex={message.parsedMessages ? message.parsedMessages.length + 1 : undefined}
+					viewType={viewType}
+					setViewType={setViewType}
+				/>
+			)}
 
 			<div className='parsed-message'>
 				<div className='mc-body'>

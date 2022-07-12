@@ -126,14 +126,10 @@ const MessageCardBase = React.memo(
 						<MessageCardRaw
 							message={message}
 							viewType={
-								rawViewTypeConfig
-									? rawViewTypeConfig.viewType
-									: defineViewTypeConfig(viewTypeConfig).viewType
+								rawViewTypeConfig?.viewType || defineViewTypeConfig(viewTypeConfig).viewType
 							}
 							setViewType={
-								rawViewTypeConfig
-									? rawViewTypeConfig.setViewType
-									: defineViewTypeConfig(viewTypeConfig).setViewType
+								rawViewTypeConfig?.setViewType || defineViewTypeConfig(viewTypeConfig).setViewType
 							}
 							messageCardToolsConfig={messageCardToolsConfig}
 							messageViewTypeRendererProps={messageViewTypeRendererProps}

@@ -45,21 +45,15 @@ class MessagesViewTypeStore {
 		message: EventMessage,
 		parsedMessageId?: string,
 	): SavedMessageViewType => {
-		const key = parsedMessageId ? keyForMessage(parsedMessageId) : keyForMessage(message.id);
+		const key = keyForMessage(parsedMessageId || message.id);
 		if (this.savedViewTypes.has(key)) {
 			return this.savedViewTypes.get(key) as SavedMessageViewType;
 		}
-		if (parsedMessageId) {
-			this.savedViewTypes.set(
-				key,
-				new SavedMessageViewType(message, this.messageDisplayRulesStore, parsedMessageId),
-			);
-		} else {
-			this.savedViewTypes.set(
-				key,
-				new SavedMessageViewType(message, this.messageDisplayRulesStore),
-			);
-		}
+		this.savedViewTypes.set(
+			key,
+			new SavedMessageViewType(message, this.messageDisplayRulesStore, parsedMessageId),
+		);
+
 		return this.savedViewTypes.get(key) as SavedMessageViewType;
 	};
 

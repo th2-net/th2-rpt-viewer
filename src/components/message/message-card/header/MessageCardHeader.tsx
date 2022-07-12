@@ -64,7 +64,10 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 
 	return (
 		<div className='mc-header__info'>
-			{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
+			<Chip>
+				<div className='mc-header__message-icon'></div>
+				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
+			</Chip>
 			<Chip
 				text={timestamp && formattedTimestamp}
 				additionalClassName={'mc-header__timestamp'}
@@ -77,14 +80,16 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				<span>{sessionId}</span>
 			</Chip>
 			<Chip text={message.id} />
-			<Chip text={message.parsedMessages?.[0].message.metadata.id.subsequence[0]} />
-			<Chip
-				text={message.parsedMessages?.[0].message.metadata.messageType}
-				title={
-					message.parsedMessages?.[0].message.metadata.messageType &&
-					`Name: ${message.parsedMessages?.[0].message.metadata.messageType}`
-				}
-			/>
+			{message.parsedMessages && (
+				<Chip text={message.parsedMessages[0].message.metadata.id.subsequence[0]} />
+			)}
+			{message.parsedMessages && (
+				<Chip
+					text={message.parsedMessages[0].message.metadata.messageType}
+					title={`Name: ${message.parsedMessages[0].message.metadata.messageType}`}
+				/>
+			)}
+
 			<div className='message-card-tools__wrapper'>
 				<MessageCardTools
 					{...messageCardToolsConfig}

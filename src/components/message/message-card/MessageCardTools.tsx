@@ -122,32 +122,13 @@ const MessageCardTools = ({
 				<div className='message-card-tools__ellipsis' />
 			</div>
 			<MessagePopup isOpen={isViewMenuOpen}>
-				{toggleMessagePin && (
-					<div className='message-card-tools__controls-group'>
-						<div className='message-card-tools__item' onClick={() => toggleMessagePin()}>
-							<span className='message-card-tools__item-title'>
-								{isBookmarked ? 'Remove bookmark' : 'Bookmark'}
-							</span>
-							<div
-								className={createBemElement(
-									'message-card-tools',
-									'icon',
-									'bookmark',
-									isBookmarked ? 'pinned' : null,
-								)}
-							/>
-
-							<div
-								className={createBemElement(
-									'message-card-tools',
-									'indicator',
-									'bookmark',
-									isBookmarked ? 'active' : null,
-								)}
-							/>
-						</div>
-					</div>
-				)}
+				<div className='message-card-tools__header'>
+					<span>View</span>
+					<div
+						className='message-card-tools__header-close'
+						onClick={() => setIsViewMenuOpen(false)}
+					/>
+				</div>
 				{!isScreenshotMsg && (
 					<div className='message-card-tools__controls-group'>
 						{viewTypes.map(currentViewType => {
@@ -164,12 +145,32 @@ const MessageCardTools = ({
 									className='message-card-tools__item'
 									key={currentViewType}
 									onClick={() => toggleViewType(currentViewType)}>
-									<span className='message-card-tools__item-title'>{currentViewType}</span>
 									<div className={iconClassName} />
+									<span className='message-card-tools__item-title'>{currentViewType}</span>
 									<div className={indicatorClassName} />
 								</div>
 							);
 						})}
+					</div>
+				)}
+				<div className='message-card-tools__line' />
+				<div className='message-card-tools__header'>
+					<span>Action</span>
+				</div>
+				{toggleMessagePin && (
+					<div className='message-card-tools__controls-group'>
+						<div className='message-card-tools__item' onClick={() => toggleMessagePin()}>
+							<div
+								className={createBemElement(
+									'message-card-tools',
+									'icon',
+									'bookmark',
+									'action',
+									isBookmarked ? 'pinned' : null,
+								)}
+							/>
+							<span className='message-card-tools__item-title'>Bookmark</span>
+						</div>
 					</div>
 				)}
 				{!isScreenshotMsg && (
@@ -179,8 +180,8 @@ const MessageCardTools = ({
 								title='Copy content to clipboard'
 								className='message-card-tools__item'
 								onClick={() => onCopy()}>
-								<span className='message-card-tools__item-title'>Copy</span>
 								<div className='message-card-tools__copy-icon' />
+								<span className='message-card-tools__item-title'>Copy</span>
 								<div className={createBemElement('message-card-tools', 'indicator', 'bookmark')} />
 							</div>
 						) : (
@@ -193,10 +194,10 @@ const MessageCardTools = ({
 										onCopy(copyOption);
 										setIsViewMenuOpen(false);
 									}}>
+									<div className='message-card-tools__copy-icon' />
 									<span className='message-card-tools__item-title'>
 										{copyOption === 'body' ? 'Copy full' : 'Copy simplified'}
 									</span>
-									<div className='message-card-tools__copy-icon' />
 									<div
 										className={createBemElement('message-card-tools', 'indicator', 'bookmark')}
 									/>
@@ -241,8 +242,8 @@ const MessageCardTools = ({
 									);
 									setIsViewMenuOpen(false);
 								}}>
-								<span className='message-card-tools__item-title'>Send to replay</span>
 								<div className='message-card-tools__copy-icon' />
+								<span className='message-card-tools__item-title'>Send to replay</span>
 								<div className={createBemElement('message-card-tools', 'indicator', 'bookmark')} />
 							</div>
 						)}

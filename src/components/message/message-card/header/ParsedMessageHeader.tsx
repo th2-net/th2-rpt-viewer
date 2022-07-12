@@ -33,17 +33,19 @@ export const ParsedMessageHeader = React.memo((props: ParsedMessageHeaderProps) 
 
 	return (
 		<div className='mc-header__info'>
+			<Chip>
+				<div className='mc-header__message-icon'></div>
+			</Chip>
 			<Chip
 				title={`Session: ${parsedMessage?.message.metadata.id.sequence}`}
-				text={parsedMessage ? parsedMessage.message.metadata.id.subsequence[0] : rawMessageIndex}
+				text={parsedMessage?.message.metadata.id.subsequence[0] || rawMessageIndex}
 			/>
 			{!rawMessageIndex && (
 				<Chip
 					className='mc-header__value'
 					title={
 						parsedMessage
-							? parsedMessage.message.metadata.messageType &&
-							  `Name: ${parsedMessage.message.metadata.messageType}`
+							? `Name: ${parsedMessage.message.metadata.messageType}`
 							: 'Name: RawMessage'
 					}
 					text={parsedMessage?.message.metadata.messageType}

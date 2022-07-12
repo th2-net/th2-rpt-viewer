@@ -43,14 +43,9 @@ export class SavedMessageViewType {
 		const rootRule = this.messageDisplayRulesStore.rootDisplayRule;
 		const declaredRule = this.messageDisplayRulesStore.messageDisplayRules.find(rule => {
 			if (rule.session.length > 1 && rule.session.includes('*')) {
-				return matchWildcardRule(
-					this.parsedMessageId ? this.parsedMessageId : this.message.id,
-					rule.session,
-				);
+				return matchWildcardRule(this.parsedMessageId || this.message.id, rule.session);
 			}
-			return this.parsedMessageId
-				? this.parsedMessageId.includes(rule.session)
-				: this.message.id.includes(rule.session);
+			return this.parsedMessageId?.includes(rule.session) || this.message.id.includes(rule.session);
 		});
 		if (!this.parsedMessageId) {
 			return declaredRule

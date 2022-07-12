@@ -47,7 +47,7 @@ const MessageExpandButton = (props: Props) => {
 				</div>
 			) : (
 				<div className={warningClass}>
-					<span className={'message-card-expand-wrapper__warning-icon'} />
+					<div className={'message-card-expand-wrapper__warning-icon'} />
 					<p>Only Raw Data Available</p>
 				</div>
 			)}
