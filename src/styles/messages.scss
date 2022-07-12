@@ -379,14 +379,17 @@
 	&__direction-icon {
 		background-image: url('../../resources/icons/session-icon.svg');
 		background-size: 100%;
-
-		&.in {
+		z-index: 1;
+		&.first {
 			transform: scale(-1);
 		}
 	}
 
 	&__message-icon {
 		@include icon(url(../../resources/icons/message-icon.svg), 12px, 12px);
+	}
+	&__session-id {
+		z-index: 1;
 	}
 
 	&__key,

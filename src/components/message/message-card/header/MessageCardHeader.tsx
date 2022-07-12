@@ -48,8 +48,15 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 	const { timestamp, sessionId, direction } = message;
 
 	// session arrow color, we calculating it for each session from-to pair, based on hash
-	const sessionArrowStyle: React.CSSProperties = {
-		display: 'inline-flex',
+	const sessionBackgroundStyle: React.CSSProperties = {
+		position: 'absolute',
+		top: 0,
+		left: 0,
+		width: '100%',
+		height: '100%',
+		zIndex: 0,
+		borderRadius: 20,
+		backgroundColor: '#666',
 		filter: `invert(1) sepia(1) saturate(5) hue-rotate(${calculateHueValue(sessionId)}deg)`,
 	};
 
@@ -75,9 +82,10 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				onMouseEnter={onTimestampMouseEnter}
 				onMouseLeave={onTimestampMouseLeave}
 			/>
-			<Chip title={`Session: ${sessionId}`}>
-				<span className={sessionClass} style={sessionArrowStyle}></span>
-				<span>{sessionId}</span>
+			<Chip title={`Session: ${sessionId}`} className='chip sessionId-inline'>
+				<div style={sessionBackgroundStyle} />
+				<span className={sessionClass}></span>
+				<span className='mc-header__session-id'>{sessionId}</span>
 			</Chip>
 			<Chip text={message.id} />
 			{message.parsedMessages && (
