@@ -17,7 +17,8 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import SplitViewPane from '../../split-view/SplitViewPane';
-import EventList from '../EventList';
+// import EventList from '../EventList';
+import EventList from '../experimental-api/EventList';
 import Empty from '../../util/Empty';
 import SplitView from '../../split-view/SplitView';
 import { useWorkspaceEventStore, useEventWindowViewStore } from '../../../hooks';

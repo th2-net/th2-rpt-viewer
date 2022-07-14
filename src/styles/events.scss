@@ -495,11 +495,10 @@
 	flex-direction: row;
 	justify-content: space-between;
 	align-items: center;
-	padding: 0 10px;
+	padding: 0 5px;
 	border: 2px solid $skeletonBackgroundColor;
 	border-radius: 5px;
-	min-height: 38px;
-	margin: 2px 0;
+	min-height: 23px;
 
 	&.status-only {
 		width: 38px;
@@ -518,7 +517,7 @@
 	&__name,
 	&__status {
 		background-color: $skeletonBackgroundColor;
-		height: 18px;
+		height: 12px;
 		border-radius: 3px;
 	}
 }

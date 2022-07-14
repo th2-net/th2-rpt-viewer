@@ -37,6 +37,8 @@ import { SessionsStore } from '../messages/SessionsStore';
 import { isAbortError } from '../../helpers/fetch';
 import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
+// eslint-disable-next-line max-len
+import { ExperimentalAPIEventStore } from '../../components/event/experimental-api/ExperimentalAPIEventStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -55,6 +57,8 @@ export type WorkspaceInitialState = Partial<{
 }>;
 
 export default class WorkspaceStore {
+	public experimentalAPIEventsStore = new ExperimentalAPIEventStore();
+
 	public eventsStore: EventsStore;
 
 	public messagesStore: MessagesStore;

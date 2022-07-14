@@ -17,10 +17,10 @@
 import * as React from 'react';
 import { getEventStatus } from '../../../helpers/event';
 import { createBemElement } from '../../../helpers/styleCreators';
-import { EventTreeNode } from '../../../models/EventAction';
+import { EventTreeNode, EventAction } from '../../../models/EventAction';
 
 interface Props {
-	eventNode: EventTreeNode | 'root';
+	eventNode: (EventTreeNode | EventAction) | 'root';
 	isLast?: boolean;
 	onSelect: () => void;
 }

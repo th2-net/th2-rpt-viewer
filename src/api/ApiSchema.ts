@@ -46,6 +46,14 @@ export interface EventSourceConfig {
 }
 
 export interface EventApiSchema {
+	getChildrenIds: (
+		params: {
+			limit?: number;
+			parentId?: string;
+			probe?: boolean;
+		},
+		signal?: AbortSignal,
+	) => Promise<string[]>;
 	getEvent: (
 		id: string,
 		abortSignal?: AbortSignal,

@@ -19,28 +19,28 @@ import { observer } from 'mobx-react-lite';
 import EventTreeView from './tree/EventTreeView';
 import FlatEventView from './flat-event-list/FlatEventView';
 import EventBreadcrumbs from './breadcrumbs/EventBreadcrumbs';
-import { useEventWindowViewStore, useWorkspaceEventStore, useActivePanel } from '../../hooks';
-import { EventTreeNode } from '../../models/EventAction';
+import { useEventWindowViewStore } from '../../hooks';
+import { EventTreeNode, EventAction } from '../../models/EventAction';
 import '../../styles/events.scss';
+import { useExperimentalApiEventStore } from './experimental-api/ExperimentalAPIEventStore';
 
 function EventWindow() {
 	const eventWindowViewStore = useEventWindowViewStore();
-	const eventsStore = useWorkspaceEventStore();
+	const eventsStore = useExperimentalApiEventStore();
 
-	const { ref: panelRef } = useActivePanel(eventsStore);
-
-	const onBreadcrumbItemClick = React.useCallback((node: EventTreeNode | null) => {
-		if (node) {
-			eventsStore.scrollToEvent(node.eventId);
+	const onBreadcrumbItemClick = React.useCallback((node: EventAction | EventTreeNode | null) => {
+		const event = node as EventAction;
+		if (event) {
+			eventsStore.scrollToEvent(event.eventId);
 		}
-		eventsStore.selectNode(node);
+		eventsStore.selectEvent(event);
 	}, []);
 
 	return (
-		<div className='window' ref={panelRef}>
+		<div className='window'>
 			<div className='window__breadcrumbs'>
 				<EventBreadcrumbs
-					isLoadingSelectedPath={eventsStore.isLoadingTargetNode}
+					isLoadingSelectedPath={false}
 					path={eventsStore.selectedPath}
 					onSelect={onBreadcrumbItemClick}
 				/>

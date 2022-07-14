@@ -22,11 +22,19 @@ import { TimeRange, Timestamp } from '../models/Timestamp';
 import { isEventMessage } from './event';
 
 export function getElapsedTime(
-	startTimestamp: Timestamp,
-	endTimestamp: Timestamp,
+	startTimestamp: Timestamp | string,
+	endTimestamp: Timestamp | string,
 	withMiliseconds = true,
 ) {
-	const diff = timestampToNumber(endTimestamp) - timestampToNumber(startTimestamp);
+	let diff = 0;
+
+	if (typeof startTimestamp === 'string' && typeof endTimestamp === 'string') {
+		diff = new Date(endTimestamp).valueOf() - new Date(startTimestamp).valueOf();
+	} else {
+		diff =
+			timestampToNumber(endTimestamp as Timestamp) - timestampToNumber(startTimestamp as Timestamp);
+	}
+
 	const seconds = Math.floor(diff / 1000);
 	const milliseconds = Math.floor(diff - seconds * 1000);
 

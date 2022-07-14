@@ -18,7 +18,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { formatTime, getElapsedTime, timestampToNumber } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
-import { EventTreeNode } from '../../models/EventAction';
+import { EventTreeNode, EventAction } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
@@ -28,7 +28,7 @@ import { useSearchStore } from '../../hooks/useSearchStore';
 
 interface Props {
 	displayType?: CardDisplayType;
-	event: EventTreeNode;
+	event: EventTreeNode | EventAction;
 	onSelect?: () => void;
 	onEventTypeSelect?: (eventType: string) => void;
 	isSelected?: boolean;
@@ -56,6 +56,9 @@ function EventCardHeader(props: Props) {
 	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp, isUnknown } = event;
 
+	const timestampStart = (startTimestamp as unknown) as string;
+	const timestampEnd = (endTimestamp as unknown) as string;
+
 	const bookmarksStore = useBookmarksStore();
 	const eventStore = useWorkspaceEventStore();
 	const { setActiveWorkspace } = useTabsStore();
@@ -67,7 +70,7 @@ function EventCardHeader(props: Props) {
 	const startTimestampValue = timestampToNumber(startTimestamp);
 
 	const elapsedTime =
-		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
+		timestampStart && timestampEnd ? getElapsedTime(timestampStart, timestampEnd) : null;
 
 	const isBookmarked =
 		bookmarksStore.events.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !== -1;
@@ -92,7 +95,7 @@ function EventCardHeader(props: Props) {
 	const bookmarkClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	function onPinClicked(e: React.MouseEvent) {
-		bookmarksStore.toggleEventPin(event);
+		bookmarksStore.toggleEventPin(event as EventTreeNode);
 		e.stopPropagation();
 	}
 
@@ -110,7 +113,7 @@ function EventCardHeader(props: Props) {
 	function onMouseEnter() {
 		if (!isUnknown) {
 			hoverTimeout.current = setTimeout(() => {
-				eventStore.setHoveredEvent(event);
+				eventStore.setHoveredEvent(event as EventTreeNode);
 			}, 600);
 		}
 	}
@@ -147,9 +150,7 @@ function EventCardHeader(props: Props) {
 						className='event-header-card__time-label'
 						onMouseEnter={onMouseEnter}
 						onMouseLeave={onMouseLeave}>
-						<span className='event-header-card__time-label-full'>
-							{formatTime(startTimestampValue)}
-						</span>
+						<span className='event-header-card__time-label-full'>{formatTime(timestampStart)}</span>
 					</div>
 					{eventType && (
 						<span className='event-header-card__event-type' onClick={handleTypeClick}>

@@ -15,12 +15,12 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { EventTreeNode } from '../../../models/EventAction';
+import { EventTreeNode, EventAction } from '../../../models/EventAction';
 import EventBreadcrumbsItem from './EventBreadcrumbsItem';
 
 interface Props {
-	path: EventTreeNode[];
-	onSelect: (eventTreeNode: EventTreeNode | null) => void;
+	path: (EventTreeNode | EventAction)[];
+	onSelect: (eventTreeNode: (EventTreeNode | EventAction) | null) => void;
 	isLoadingSelectedPath: boolean;
 }
 

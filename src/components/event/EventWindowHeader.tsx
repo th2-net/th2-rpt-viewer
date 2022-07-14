@@ -38,6 +38,8 @@ function EventWindowHeader() {
 		eventStore.viewStore.flattenedListView ? 'active' : null,
 	);
 
+	return <div className='window__controls' />;
+
 	return (
 		<div className='window__controls'>
 			<div className='event-window-header'>

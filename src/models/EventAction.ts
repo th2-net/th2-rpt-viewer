@@ -48,6 +48,7 @@ export interface EventAction extends EventBase {
 	body: EventActionBody;
 	parentEventId: string;
 	type: ActionType.EVENT_ACTION;
+	isUnknown?: boolean;
 }
 
 export type EventActionBody = EventBodyPayload[];
