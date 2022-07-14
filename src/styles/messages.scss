@@ -385,6 +385,10 @@
 	&__message-icon {
 		@include icon(url(../../resources/icons/message-icon.svg), 12px, 12px);
 	}
+	&__attached-icon {
+		flex-shrink: 0;
+		@include icon(url(../../resources/icons/attached-icon.svg), 12px, 12px);
+	}
 	&__session-id {
 		z-index: 1;
 	}

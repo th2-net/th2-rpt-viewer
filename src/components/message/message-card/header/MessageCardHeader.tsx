@@ -29,6 +29,7 @@ export interface MessageInfoProps {
 	viewType?: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
 	isBookmarked?: boolean;
+	isAttached?: boolean;
 	isEmbedded?: boolean;
 	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
@@ -42,6 +43,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		onTimestampMouseEnter,
 		onTimestampMouseLeave,
 		isBookmarked,
+		isAttached,
 		isEmbedded,
 		messageCardToolsConfig,
 	} = props;
@@ -77,6 +79,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 			<Chip>
 				<div className='mc-header__message-icon' />
 				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
+				{!isEmbedded && isAttached && <div className='mc-header__attached-icon' />}
 			</Chip>
 			<Chip
 				additionalClassName={'mc-header__timestamp'}
