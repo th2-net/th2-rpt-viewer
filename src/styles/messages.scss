@@ -174,7 +174,6 @@
 		border-radius: 8px;
 		display: flex;
 		padding: 12px;
-		gap: 4px;
 		flex-direction: column;
 		z-index: 2;
 
@@ -187,12 +186,11 @@
 	&__item {
 		display: grid;
 		grid-template-columns: 29px 1fr auto;
-		grid-template-rows: auto;
+		height: 36px;
 		align-items: center;
 		gap: 8px;
 		padding: 4px 8px;
 		cursor: pointer;
-		font-size: 11px;
 		color: $primaryTextColor;
 
 		&-title {
@@ -223,7 +221,7 @@
 				background-size: 60%;
 				margin: 2px;
 				border-radius: 20px;
-				box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+				box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.3);
 			}
 		}
 
@@ -291,8 +289,7 @@
 		background-color: #fcfcfc;
 		@include icon(url(../../resources/icons/clipboard.svg), 24px, 24px);
 		background-size: 60%;
-		filter: opacity(0.6);
-		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.3);
 		margin: 2px;
 		border-radius: 20px;
 	}

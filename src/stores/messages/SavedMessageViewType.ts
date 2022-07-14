@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, computed, observable } from 'mobx';
 import { matchWildcardRule } from '../../helpers/regexp';
 import { MessageViewType, EventMessage } from '../../models/EventMessage';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
@@ -22,20 +22,14 @@ import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 export class SavedMessageViewType {
 	message: EventMessage;
 
-	parsedMessageId?: string;
-
 	messageDisplayRulesStore: MessageDisplayRulesStore;
 
-	constructor(
-		message: EventMessage,
-		messageDisplayRulesStore: MessageDisplayRulesStore,
-		parsedMessageId?: string,
-	) {
+	constructor(message: EventMessage, messageDisplayRulesStore: MessageDisplayRulesStore) {
 		this.message = message;
-		this.parsedMessageId = parsedMessageId;
 
 		this.messageDisplayRulesStore = messageDisplayRulesStore;
-		reaction(() => this.displayRule, this.setViewType);
+
+		this.getViewTypes();
 	}
 
 	@computed
@@ -43,17 +37,18 @@ export class SavedMessageViewType {
 		const rootRule = this.messageDisplayRulesStore.rootDisplayRule;
 		const declaredRule = this.messageDisplayRulesStore.messageDisplayRules.find(rule => {
 			if (rule.session.length > 1 && rule.session.includes('*')) {
-				return matchWildcardRule(this.parsedMessageId || this.message.id, rule.session);
+				return matchWildcardRule(this.message.id, rule.session);
 			}
-			return this.parsedMessageId?.includes(rule.session) || this.message.id.includes(rule.session);
+			return this.message.id.includes(rule.session);
 		});
-		if (!this.parsedMessageId) {
+		if (!this.message.parsedMessages) {
 			return declaredRule
 				? getRawViewType(declaredRule.viewType)
 				: rootRule
 				? getRawViewType(rootRule.viewType)
 				: MessageViewType.ASCII;
 		}
+
 		return declaredRule
 			? declaredRule.viewType
 			: rootRule
@@ -62,11 +57,20 @@ export class SavedMessageViewType {
 	}
 
 	@observable
-	public viewType: MessageViewType = this.displayRule;
+	public viewTypes: Map<string, MessageViewType> = new Map();
 
 	@action
-	public setViewType = (vt: MessageViewType) => {
-		this.viewType = vt;
+	private getViewTypes = () => {
+		this.viewTypes.set(this.message.id, MessageViewType.ASCII);
+		if (this.message.parsedMessages)
+			this.message.parsedMessages.forEach(parsedMessage =>
+				this.viewTypes.set(parsedMessage.id, this.displayRule),
+			);
+	};
+
+	@action
+	public setViewType = (vt: string, id: string) => {
+		this.viewTypes.set(id, vt as MessageViewType);
 	};
 }
 

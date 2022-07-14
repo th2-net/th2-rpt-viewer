@@ -33,7 +33,7 @@ export type MessageCardViewTypeRendererProps = {
 
 type OwnProps = {
 	messageBody?: MessageBody;
-	viewType: MessageViewType;
+	viewType?: MessageViewType;
 };
 
 const MessageCardViewTypeRenderer = ({

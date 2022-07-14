@@ -23,6 +23,7 @@ import {
 	MessageBodyFields,
 } from '../models/MessageBody';
 import { timestampToNumber } from './date';
+import { SavedMessageViewType } from '../stores/messages/SavedMessageViewType';
 
 export const sortMessagesByTimestamp = (
 	messages: Array<EventMessage>,
@@ -69,6 +70,32 @@ export function normalizeField(field: MessageBodyField): string | object {
 		);
 	}
 	return field.listValue.values?.map(listValueField => normalizeField(listValueField)) || [];
+}
+
+export function getViewTypesConfig(
+	message: EventMessage,
+	getSavedViewType: (message: EventMessage) => SavedMessageViewType,
+) {
+	const viewTypes = getSavedViewType(message).viewTypes;
+	return message.parsedMessages
+		? [
+				...message.parsedMessages.map(parsedMessage => {
+					return {
+						viewType: viewTypes.get(parsedMessage.id),
+						setViewType: getSavedViewType(message).setViewType,
+					};
+				}),
+				{
+					viewType: viewTypes.get(message.id),
+					setViewType: getSavedViewType(message).setViewType,
+				},
+		  ]
+		: [
+				{
+					viewType: viewTypes.get(message.id),
+					setViewType: getSavedViewType(message).setViewType,
+				},
+		  ];
 }
 
 export function defineViewTypeConfig(

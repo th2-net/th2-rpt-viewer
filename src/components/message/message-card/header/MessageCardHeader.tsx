@@ -26,8 +26,8 @@ export interface MessageInfoProps {
 	message: EventMessage;
 	onTimestampMouseEnter?: () => void;
 	onTimestampMouseLeave?: () => void;
-	viewType: MessageViewType;
-	setViewType: (vt: MessageViewType) => void;
+	viewType?: MessageViewType;
+	setViewType: (vt: MessageViewType, id: string) => void;
 	isBookmarked?: boolean;
 	isEmbedded?: boolean;
 	isScreenshotMsg: boolean;
@@ -57,7 +57,10 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		zIndex: 0,
 		borderRadius: 20,
 		backgroundColor: '#666',
-		filter: `invert(1) sepia(1) saturate(5) hue-rotate(${calculateHueValue(sessionId)}deg)`,
+		filter: `invert(1) sepia(1) saturate(5) hue-rotate(${React.useMemo(
+			() => calculateHueValue(sessionId),
+			[sessionId],
+		)}deg)`,
 	};
 
 	const sessionClass = createStyleSelector(
@@ -76,26 +79,25 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
 			</Chip>
 			<Chip
-				text={timestamp && formattedTimestamp}
 				additionalClassName={'mc-header__timestamp'}
 				title={`Timestamp: ${formattedTimestamp}`}
 				onMouseEnter={onTimestampMouseEnter}
-				onMouseLeave={onTimestampMouseLeave}
-			/>
+				onMouseLeave={onTimestampMouseLeave}>
+				{timestamp && formattedTimestamp}
+			</Chip>
 			<Chip title={`Session: ${sessionId}`} className='chip sessionId-inline'>
 				<div style={sessionBackgroundStyle} />
 				<span className={sessionClass}></span>
 				<span className='mc-header__session-id'>{sessionId}</span>
 			</Chip>
-			<Chip text={message.id} />
+			<Chip>{message.id}</Chip>
 			{message.parsedMessages && (
-				<Chip text={message.parsedMessages[0].message.metadata.id.subsequence[0]} />
+				<Chip>{message.parsedMessages[0].message.metadata.id.subsequence[0]}</Chip>
 			)}
 			{message.parsedMessages && (
-				<Chip
-					text={message.parsedMessages[0].message.metadata.messageType}
-					title={`Name: ${message.parsedMessages[0].message.metadata.messageType}`}
-				/>
+				<Chip title={`Name: ${message.parsedMessages[0].message.metadata.messageType}`}>
+					{message.parsedMessages[0].message.metadata.messageType}
+				</Chip>
 			)}
 
 			<div className='message-card-tools__wrapper'>

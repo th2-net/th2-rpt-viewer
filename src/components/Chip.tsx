@@ -17,22 +17,17 @@
 import * as React from 'react';
 import { createStyleSelector } from '../helpers/styleCreators';
 
-interface Props {
-	text?: string | number;
+interface Props
+	extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
 	className?: string;
 	additionalClassName?: string;
-	title?: string;
 	isSelected?: boolean;
 	isLoading?: boolean;
-	onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-	onMouseEnter?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-	onMouseLeave?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 	children?: React.ReactNode;
 }
 
 export function Chip(props: Props) {
 	const {
-		text,
 		className,
 		additionalClassName,
 		isSelected,
@@ -55,10 +50,10 @@ export function Chip(props: Props) {
 		<div
 			className={className || rootClass}
 			title={title}
-			onClick={e => onClick && onClick(e)}
-			onMouseEnter={e => onMouseEnter && onMouseEnter(e)}
-			onMouseLeave={e => onMouseLeave && onMouseLeave(e)}>
-			{children || <p>{text}</p>}
+			onClick={onClick}
+			onMouseEnter={onMouseEnter}
+			onMouseLeave={onMouseLeave}>
+			{children}
 		</div>
 	);
 }

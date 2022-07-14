@@ -22,8 +22,8 @@ import { Chip } from '../../../Chip';
 export interface ParsedMessageHeaderProps {
 	parsedMessage?: ParsedMessage;
 	rawMessageIndex?: number;
-	viewType: MessageViewType;
-	setViewType: (vt: MessageViewType) => void;
+	viewType?: MessageViewType;
+	setViewType: (vt: MessageViewType, id: string) => void;
 	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 }
@@ -36,10 +36,9 @@ export const ParsedMessageHeader = React.memo((props: ParsedMessageHeaderProps) 
 			<Chip>
 				<div className='mc-header__message-icon'></div>
 			</Chip>
-			<Chip
-				title={`Session: ${parsedMessage?.message.metadata.id.sequence}`}
-				text={parsedMessage?.message.metadata.id.subsequence[0] || rawMessageIndex}
-			/>
+			<Chip title={`Session: ${parsedMessage?.message.metadata.id.sequence}`}>
+				{parsedMessage?.message.metadata.id.subsequence[0] || rawMessageIndex}
+			</Chip>
 			{!rawMessageIndex && (
 				<Chip
 					className='mc-header__value'
@@ -47,9 +46,9 @@ export const ParsedMessageHeader = React.memo((props: ParsedMessageHeaderProps) 
 						parsedMessage
 							? `Name: ${parsedMessage.message.metadata.messageType}`
 							: 'Name: RawMessage'
-					}
-					text={parsedMessage?.message.metadata.messageType}
-				/>
+					}>
+					{parsedMessage?.message.metadata.messageType}
+				</Chip>
 			)}
 
 			<div className='message-card-tools__wrapper'>

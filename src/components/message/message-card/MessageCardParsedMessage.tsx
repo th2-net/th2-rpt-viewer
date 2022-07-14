@@ -32,8 +32,8 @@ export interface ParsedMessageProps {
 	message: EventMessage;
 	parsedMessage: ParsedMessage;
 	parsedMessageIndex: number;
-	viewType: MessageViewType;
-	setViewType: (vt: MessageViewType) => void;
+	viewType?: MessageViewType;
+	setViewType: (vt: MessageViewType, id: string) => void;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
 }

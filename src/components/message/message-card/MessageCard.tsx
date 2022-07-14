@@ -29,13 +29,14 @@ import MessageCardBase, { MessageCardBaseProps } from './MessageCardBase';
 import '../../../styles/messages.scss';
 import MessageExpandButton from '../MessageExpandButton';
 import StateSaver from '../../util/StateSaver';
+import { getViewTypesConfig } from '../../../helpers/message';
 
 export interface OwnProps {
 	message: EventMessage;
 }
 
 export interface RecoveredProps {
-	viewTypesConfig: MessageViewTypeConfig | MessageViewTypeConfig[];
+	viewTypesConfig: MessageViewTypeConfig[];
 	isExpanded: boolean;
 	setIsExpanded: (state: boolean) => void;
 	stateKey: string;
@@ -153,23 +154,7 @@ const MessageCard = observer((props: Props) => {
 const RecoverableMessageCard = (props: OwnProps) => {
 	const viewTypesStore = useMessagesViewTypeStore();
 	const { getSavedViewType } = viewTypesStore;
-	const viewTypesConfig = props.message.parsedMessages
-		? ([
-				...props.message.parsedMessages.map(parsedMessage => {
-					return {
-						viewType: getSavedViewType(props.message, parsedMessage.id).viewType,
-						setViewType: getSavedViewType(props.message, parsedMessage.id).setViewType,
-					};
-				}),
-				{
-					viewType: getSavedViewType(props.message).viewType,
-					setViewType: getSavedViewType(props.message).setViewType,
-				},
-		  ] as MessageViewTypeConfig[])
-		: {
-				viewType: getSavedViewType(props.message).viewType,
-				setViewType: getSavedViewType(props.message).setViewType,
-		  };
+	const viewTypesConfig = getViewTypesConfig(props.message, getSavedViewType);
 
 	return (
 		<StateSaver stateKey={props.message.id}>
