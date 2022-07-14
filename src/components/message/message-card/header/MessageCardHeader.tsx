@@ -75,7 +75,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 	return (
 		<div className='mc-header__info'>
 			<Chip>
-				<div className='mc-header__message-icon'></div>
+				<div className='mc-header__message-icon' />
 				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
 			</Chip>
 			<Chip
@@ -85,9 +85,9 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				onMouseLeave={onTimestampMouseLeave}>
 				{timestamp && formattedTimestamp}
 			</Chip>
-			<Chip title={`Session: ${sessionId}`} className='chip sessionId-inline'>
+			<Chip title={`Session: ${sessionId}`} className='sessionId-inline'>
 				<div style={sessionBackgroundStyle} />
-				<span className={sessionClass}></span>
+				<span className={sessionClass} />
 				<span className='mc-header__session-id'>{sessionId}</span>
 			</Chip>
 			<Chip>{message.id}</Chip>

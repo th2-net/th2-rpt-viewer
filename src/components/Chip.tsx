@@ -19,7 +19,6 @@ import { createStyleSelector } from '../helpers/styleCreators';
 
 interface Props
 	extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
-	className?: string;
 	additionalClassName?: string;
 	isSelected?: boolean;
 	isLoading?: boolean;
@@ -48,7 +47,7 @@ export function Chip(props: Props) {
 
 	return (
 		<div
-			className={className || rootClass}
+			className={className ? rootClass.concat(' ', className) : rootClass}
 			title={title}
 			onClick={onClick}
 			onMouseEnter={onMouseEnter}
