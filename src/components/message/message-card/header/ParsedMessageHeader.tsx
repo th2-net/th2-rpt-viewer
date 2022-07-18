@@ -23,7 +23,7 @@ export interface ParsedMessageHeaderProps {
 	parsedMessage?: ParsedMessage;
 	rawMessageIndex?: number;
 	viewType?: MessageViewType;
-	setViewType: (vt: MessageViewType, id: string) => void;
+	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void;
 	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 }

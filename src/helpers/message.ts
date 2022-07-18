@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { ActionType } from '../models/EventAction';
-import { EventMessage, MessageViewTypeConfig } from '../models/EventMessage';
+import { EventMessage, MessageViewTypeConfig, MessageViewType } from '../models/EventMessage';
 import {
 	isMessageValue,
 	isSimpleValue,
@@ -23,7 +23,6 @@ import {
 	MessageBodyFields,
 } from '../models/MessageBody';
 import { timestampToNumber } from './date';
-import { SavedMessageViewType } from '../stores/messages/SavedMessageViewType';
 
 export const sortMessagesByTimestamp = (
 	messages: Array<EventMessage>,
@@ -74,26 +73,27 @@ export function normalizeField(field: MessageBodyField): string | object {
 
 export function getViewTypesConfig(
 	message: EventMessage,
-	getSavedViewType: (message: EventMessage) => SavedMessageViewType,
+	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void,
+	getSavedViewType: (message: EventMessage) => Map<string, MessageViewType>,
 ) {
-	const viewTypes = getSavedViewType(message).viewTypes;
+	const viewTypes = getSavedViewType(message);
 	return message.parsedMessages
 		? [
 				...message.parsedMessages.map(parsedMessage => {
 					return {
 						viewType: viewTypes.get(parsedMessage.id),
-						setViewType: getSavedViewType(message).setViewType,
+						setViewType,
 					};
 				}),
 				{
 					viewType: viewTypes.get(message.id),
-					setViewType: getSavedViewType(message).setViewType,
+					setViewType,
 				},
 		  ]
 		: [
 				{
 					viewType: viewTypes.get(message.id),
-					setViewType: getSavedViewType(message).setViewType,
+					setViewType,
 				},
 		  ];
 }

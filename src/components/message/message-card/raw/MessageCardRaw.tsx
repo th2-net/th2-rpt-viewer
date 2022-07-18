@@ -25,7 +25,7 @@ import { ParsedMessageHeader } from '../header/ParsedMessageHeader';
 export interface MessageCardRawProps {
 	message: EventMessage;
 	viewType?: MessageViewType;
-	setViewType: (vt: MessageViewType, id: string) => void;
+	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
 }

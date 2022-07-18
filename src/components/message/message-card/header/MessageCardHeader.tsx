@@ -27,7 +27,7 @@ export interface MessageInfoProps {
 	onTimestampMouseEnter?: () => void;
 	onTimestampMouseLeave?: () => void;
 	viewType?: MessageViewType;
-	setViewType: (vt: MessageViewType, id: string) => void;
+	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void;
 	isBookmarked?: boolean;
 	isAttached?: boolean;
 	isEmbedded?: boolean;
