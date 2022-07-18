@@ -37,17 +37,6 @@ export interface MessageSortOrderItem {
 	timestamp: number;
 }
 
-export interface MessageDisplayRule {
-	[x: string]: any;
-	id: string;
-	session: string;
-	viewType: MessageViewType;
-	removable: boolean;
-	editableSession: boolean;
-	editableType: boolean;
-	timestamp: number;
-}
-
 export interface EventMessage {
 	type: ActionType.MESSAGE;
 	sequence: string;
