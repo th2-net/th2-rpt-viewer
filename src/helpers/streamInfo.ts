@@ -20,5 +20,7 @@ export const extractMessageId = ({ lastId }: StreamInfo) => {
 	return lastId;
 };
 
-export const extractMessageIds = (streamInfoList: StreamInfo[]) =>
-	streamInfoList.map(extractMessageId);
+// TODO temporary workaround, undo once rpt-data-provider bug is resolved
+export const extractMessageIds = (streamInfoList: StreamInfo[]) => [
+	...new Set([...streamInfoList.map(extractMessageId)]),
+];
