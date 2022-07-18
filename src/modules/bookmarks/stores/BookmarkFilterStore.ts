@@ -51,7 +51,8 @@ export class BookmarksFilterStore {
 					(this.bookmarkType === 'message' && isMessageBookmark(bookmark)),
 			)
 			.filter(
-				bookmark => regex.test(getItemId(bookmark.item)) || regex.test(getItemName(bookmark.item)),
+				bookmark =>
+					regex.test(getItemId(bookmark.item)) || regex.test(getItemName(bookmark.item) || ''),
 			);
 	}
 

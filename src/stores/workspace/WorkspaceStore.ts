@@ -36,8 +36,6 @@ import { SessionHistoryStore } from '../messages/SessionHistoryStore';
 import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
 import { isAbortError } from '../../helpers/fetch';
 import { getObjectKeys } from '../../helpers/object';
-import MessagesViewTypesStore from '../messages/MessagesViewTypesStore';
-import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState> | string;
@@ -59,8 +57,6 @@ export default class WorkspaceStore {
 
 	public messagesStore: MessagesStore;
 
-	public messageViewTypesStore: MessagesViewTypesStore;
-
 	public viewStore: WorkspaceViewStore;
 
 	public searchStore: ISearchStore;
@@ -70,7 +66,6 @@ export default class WorkspaceStore {
 	constructor(
 		private workspacesStore: WorkspacesStore,
 		private sessionsStore: SessionHistoryStore,
-		private messageDisplayRulesStore: MessageDisplayRulesStore,
 		private filterConfigStore: IFilterConfigStore,
 		private api: ApiSchema,
 		initialState: WorkspaceInitialState,
@@ -92,11 +87,6 @@ export default class WorkspaceStore {
 			this.api,
 			this.sessionsStore,
 			initialState.messages,
-		);
-
-		this.messageViewTypesStore = new MessagesViewTypesStore(
-			this.messageDisplayRulesStore,
-			this.messagesStore,
 		);
 
 		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);

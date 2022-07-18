@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 import { ActionType, EventAction, EventTreeNode } from '../models/EventAction';
-import { EventMessage, EventMessageItem } from '../models/EventMessage';
+import { EventMessage } from '../models/EventMessage';
 import { EventStatus } from '../models/Status';
 import { getTimestampAsNumber, timestampToNumber } from './date';
 
@@ -110,9 +110,8 @@ export function getItemId(item: EventAction | EventTreeNode | EventMessage) {
 	return item.eventId;
 }
 
-export function getItemName(item: EventAction | EventTreeNode | EventMessageItem) {
-	if (isEventMessage(item))
-		return item.parsedMessage ? item.parsedMessage.message.metadata.messageType : '';
+export function getItemName(item: EventAction | EventTreeNode | EventMessage) {
+	if (isEventMessage(item)) return item.parsedMessages?.[0].message.metadata.messageType;
 	return item.eventName;
 }
 

@@ -26,7 +26,6 @@ import {
 } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
-import { EventMessageItem } from 'models/EventMessage';
 import { SearchDirection } from 'models/search/SearchDirection';
 import notificationsStore from 'stores/NotificationsStore';
 import WorkspacesStore from 'stores/workspace/WorkspacesStore';
@@ -44,7 +43,7 @@ import {
 	SSEParams,
 } from 'api/sse';
 import { DbData, IndexedDbStores } from 'api/indexedDb';
-import { getItemId, isEventAction, isEventMessage } from 'helpers/event';
+import { getItemId, isEventAction, isEventMessage, isEventNode } from 'helpers/event';
 import { IFilterConfigStore, ISearchStore } from 'models/Stores';
 import { getTimestampAsNumber } from 'helpers/date';
 import { isQuotaExceededError } from 'helpers/fetch';
@@ -54,6 +53,7 @@ import {
 	isSearchHistoryEntity,
 } from 'helpers/search';
 import { EventAction } from 'models/EventAction';
+import { EventMessage } from 'models/EventMessage';
 import {
 	EventFilterState,
 	FilterState,
@@ -75,7 +75,7 @@ export type SearchPanelFormState = {
 	stream: string[];
 };
 
-export type SearchResult = EventAction | EventMessageItem;
+export type SearchResult = EventAction | EventMessage;
 
 export type SearchHistory = {
 	timestamp: number;
@@ -629,7 +629,7 @@ export class SearchStore implements ISearchStore {
 			const data = (ev as MessageEvent).data;
 			const parsedEvent: SearchResult | SSEHeartbeat = JSON.parse(data);
 
-			if (isEventAction(parsedEvent)) {
+			if (isEventNode(parsedEvent)) {
 				this.searchChunk.push({
 					...parsedEvent,
 					startTimestamp: parsedEvent.startTimestamp,

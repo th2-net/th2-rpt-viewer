@@ -15,102 +15,129 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { createBemBlock } from 'helpers/styleCreators';
-import { MessageScreenshotZoom } from './MessageScreenshot';
+import { createBemBlock } from '../../../helpers/styleCreators';
 import {
 	isScreenshotMessage,
-	MessageViewType,
-	EventMessageItem,
+	EventMessage,
+	MessageViewTypeConfig,
 } from '../../../models/EventMessage';
-import MessageCardViewTypeRenderer, {
-	MessageCardViewTypeRendererProps,
-} from './MessageCardViewTypeRenderer';
-import MessageCardTools, { MessageCardToolsConfig } from './MessageCardTools';
+import { MessageCardViewTypeRendererProps } from './MessageCardViewTypeRenderer';
+import { MessageCardToolsProps } from './MessageCardTools';
 import '../../../styles/messages.scss';
-import { MessageHeader } from './MessageHeader';
+import { MessageCardHeader, MessageInfoProps } from './header/MessageCardHeader';
+import { ParsedMessageComponent } from './MessageCardParsedMessage';
+import { defineViewTypeConfig } from '../../../helpers/message';
+import { MessageCardRaw } from './raw/MessageCardRaw';
 
 export interface MessageCardBaseProps {
-	message: EventMessageItem;
+	message: EventMessage;
+	hoverMessage?: () => void;
+	unhoverMessage?: () => void;
+	addMessagesToExport?: () => void;
+	viewTypeConfig: MessageViewTypeConfig | MessageViewTypeConfig[];
+	rawViewTypeConfig?: MessageViewTypeConfig;
+	isHighlighted?: boolean;
+	isSoftFiltered?: boolean;
+	isExported?: boolean;
+	isExport?: boolean;
 	isAttached?: boolean;
 	isBookmarked?: boolean;
 	toogleMessagePin?: () => void;
 	isEmbedded?: boolean;
 	sortOrderItems?: string[];
-	viewType: MessageViewType;
-	setViewType: (viewType: MessageViewType) => void;
 	applyFilterToBody?: boolean;
+	isExpanded: boolean;
 }
 
 const MessageCardBase = React.memo(
 	({
 		message,
-		viewType,
-		setViewType,
+		hoverMessage,
+		unhoverMessage,
+		addMessagesToExport,
+		viewTypeConfig,
+		rawViewTypeConfig,
+		isHighlighted,
+		isSoftFiltered,
+		isExported,
+		isExport,
+		isExpanded,
 		isAttached,
 		isBookmarked,
 		toogleMessagePin,
-		isEmbedded,
 		sortOrderItems,
 		applyFilterToBody = false,
 	}: MessageCardBaseProps) => {
-		const { id, rawMessageBase64, parsedMessage } = message;
+		const { id, rawMessageBase64 } = message;
 
-		const bookmarkIconClass = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : 'hidden');
-
-		const toggleViewType = (v: MessageViewType) => {
-			setViewType(v);
-		};
-
-		const isScreenshotMsg = isScreenshotMessage(message);
+		const rootClass = createBemBlock(
+			'message-card-wrapper',
+			isAttached ? 'attached' : null,
+			isBookmarked ? 'pinned' : null,
+			isHighlighted ? 'highlighted' : null,
+			isSoftFiltered ? 'soft-filtered' : null,
+			isExport ? 'export-mode' : null,
+			isExported ? 'exported' : null,
+		);
 
 		const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
-			viewType,
 			messageId: id,
-			messageBody: parsedMessage ? parsedMessage.message : null,
-			isBeautified: viewType === MessageViewType.FORMATTED,
 			rawContent: rawMessageBase64,
 			isSelected: isAttached || false,
 			sortOrderItems: sortOrderItems || [],
 			applyFilterToBody,
 		};
 
-		const messageCardToolsConfig: MessageCardToolsConfig = {
+		const messageCardToolsConfig: MessageCardToolsProps = {
 			message,
-			parsedMessage,
-			messageViewType: viewType,
-			toggleViewType,
-			isBookmarked: isBookmarked || false,
-			toggleMessagePin: toogleMessagePin || (() => null),
-			isScreenshotMsg,
-			isEmbedded,
+			isBookmarked,
+			toggleMessagePin: toogleMessagePin,
+		};
+
+		const messageInfoProps: MessageInfoProps = {
+			message,
+			viewType: defineViewTypeConfig(viewTypeConfig, 0).viewType,
+			setViewType: defineViewTypeConfig(viewTypeConfig, 0).setViewType,
+			onTimestampMouseEnter: hoverMessage,
+			onTimestampMouseLeave: unhoverMessage,
+			isBookmarked,
+			isAttached,
+			isScreenshotMsg: isScreenshotMessage(message.parsedMessages?.[0]),
+			messageCardToolsConfig,
 		};
 
 		return (
-			<div>
-				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
+			<div className={rootClass} onClick={addMessagesToExport}>
 				<div className='message-card'>
-					<div className='mc__mc-body mc-body'>
-						<MessageHeader message={message} parsedMessage={parsedMessage} />
-						{isScreenshotMsg ? (
-							<div className='mc-body__screenshot'>
-								<MessageScreenshotZoom
-									src={
-										typeof rawMessageBase64 === 'string'
-											? `data:${parsedMessage?.message.metadata.messageType};base64,` +
-											  `${message.rawMessageBase64}`
-											: ''
-									}
-									alt={message.id}
-								/>
-							</div>
-						) : (
-							<div className='mc-body__human'>
-								<MessageCardViewTypeRenderer {...messageViewTypeRendererProps} />
-							</div>
-						)}
-					</div>
+					<MessageCardHeader {...messageInfoProps} />
+					{message.parsedMessages
+						?.filter((parsedMessage, index) => (isExpanded ? parsedMessage : index === 0))
+						.map((parsedMessage, index) => (
+							<ParsedMessageComponent
+								key={index}
+								message={message}
+								parsedMessage={parsedMessage}
+								parsedMessageIndex={index}
+								viewType={defineViewTypeConfig(viewTypeConfig, index).viewType}
+								setViewType={defineViewTypeConfig(viewTypeConfig, index).setViewType}
+								messageCardToolsConfig={messageCardToolsConfig}
+								messageViewTypeRendererProps={messageViewTypeRendererProps}
+							/>
+						))}
+					{(!message.parsedMessages || isExpanded) && (
+						<MessageCardRaw
+							message={message}
+							viewType={
+								rawViewTypeConfig?.viewType || defineViewTypeConfig(viewTypeConfig).viewType
+							}
+							setViewType={
+								rawViewTypeConfig?.setViewType || defineViewTypeConfig(viewTypeConfig).setViewType
+							}
+							messageCardToolsConfig={messageCardToolsConfig}
+							messageViewTypeRendererProps={messageViewTypeRendererProps}
+						/>
+					)}
 				</div>
-				<MessageCardTools {...messageCardToolsConfig} />
 			</div>
 		);
 	},

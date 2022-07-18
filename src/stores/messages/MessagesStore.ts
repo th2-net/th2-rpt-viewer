@@ -19,7 +19,7 @@ import { MessageFilterState } from 'modules/search/models/Search';
 import { IFilterConfigStore } from 'models/Stores';
 import { FilterEntry } from 'modules/search/stores/SearchStore';
 import ApiSchema from '../../api/ApiSchema';
-import { EventMessage, EventMessageItem } from '../../models/EventMessage';
+import { EventMessage } from '../../models/EventMessage';
 import MessagesFilter from '../../models/filter/MessagesFilter';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
@@ -30,6 +30,7 @@ import { SessionHistoryStore } from './SessionHistoryStore';
 import MessagesExportStore from './MessagesExportStore';
 import { getItemAt } from '../../helpers/array';
 import { timestampToNumber } from '../../helpers/date';
+import MessagesViewTypeStore from './MessagesViewTypeStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -49,6 +50,8 @@ export default class MessagesStore {
 	public dataStore: MessagesDataProviderStore;
 
 	public exportStore = new MessagesExportStore();
+
+	public messageViewStore = new MessagesViewTypeStore();
 
 	@observable
 	public selectedMessageId: String | null = null;
@@ -91,14 +94,20 @@ export default class MessagesStore {
 			this.onAttachedMessagesChange,
 		);
 
-		reaction(() => this.filterStore.filter, this.exportStore.disableExport);
+		reaction(
+			() => this.filterStore.filter,
+			() => {
+				this.exportStore.disableExport();
+				this.messageViewStore.resetSavedViewTypes();
+			},
+		);
 	}
 
 	@observable
 	public messagesInView: EventMessage[] = [];
 
 	@action
-	public setRenderedItems = (renderedMessages: EventMessageItem[]) => {
+	public setRenderedItems = (renderedMessages: EventMessage[]) => {
 		this.messagesInView = renderedMessages;
 	};
 

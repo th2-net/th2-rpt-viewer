@@ -81,8 +81,16 @@ $tableCounterBackgroundColor: #e6e6e6;
 $tableBodyBackground: #fff;
 $tableBodyBackgroundHighlighted: $tableHeaderBackground;
 
-$messageCardHoverBackground: #f3fafc;
-$highlightedMessageCardBackground: rgba(#1919e6, 0.1);
+$messageCardHoverBackground: #edf3ff;
+$attachedMessageColor: #1919e6;
+$highlightedMessageCardBackground: rgba($attachedMessageColor, 0.1);
+$attachedMessageCardHoverBackground: rgba($attachedMessageColor, 0.1);
+$exportedMessageCardBorderColor: rgba($attachedMessageColor, 0.3);
+$exportedMessageCardBackground: rgba($attachedMessageColor, 0.2);
+$exportedMessageCardHoverBackground: rgba($attachedMessageColor, 0.1);
+$attachedMessageCardBorderColor: rgba($attachedMessageColor, 0.5);
+$attachedMessageCardHoverBorderColor: $attachedMessageColor;
+$attachedMessageCardIconColor: $attachedMessageColor;
 $messageCardKeyColor: #5cc2d6;
 $messageCardValueColor: #087a91;
 $messageCardRawHoverBackground: rgba(102, 102, 102, 0.15);
@@ -111,7 +119,7 @@ $splitterColor: #cccccc;
 $spinnerOuterColor: $defaultCardBorderColor;
 $spinnerInnerColor: rgba(0, 0, 0, 0.2);
 
-$chipTextColor: #333333;
+$counterTextColor: #333333;
 
 $linkTextColor: #1763cf;
 $linkUnderlineColor: #a8c6f0;

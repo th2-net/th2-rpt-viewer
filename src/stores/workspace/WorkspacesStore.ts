@@ -130,7 +130,6 @@ export default class WorkspacesStore {
 		new WorkspaceStore(
 			this,
 			this.rootStore.sessionsStore,
-			this.rootStore.messageDisplayRulesStore,
 			this.filterConfigStore,
 			this.api,
 			workspaceInitialState,

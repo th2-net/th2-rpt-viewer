@@ -21,26 +21,31 @@ import {
 	useMessagesStore,
 	useMessagesDataStore,
 	useMessageBodySortStore,
-	useMessagesViewTypesStore,
 	useBookmarksStore,
+	useMessagesViewTypeStore,
 } from '../../../hooks';
-import { MessageViewType, EventMessageItem } from '../../../models/EventMessage';
-import MessageCardBase from './MessageCardBase';
-import { createBemBlock } from '../../../helpers/styleCreators';
-import 'styles/messages.scss';
+import { EventMessage, MessageViewTypeConfig } from '../../../models/EventMessage';
+import MessageCardBase, { MessageCardBaseProps } from './MessageCardBase';
+import '../../../styles/messages.scss';
+import MessageExpandButton from '../MessageExpandButton';
+import StateSaver from '../../util/StateSaver';
+import { getViewTypesConfig } from '../../../helpers/message';
 
 export interface OwnProps {
-	message: EventMessageItem;
+	message: EventMessage;
 }
 
 export interface RecoveredProps {
-	viewType: MessageViewType;
-	setViewType: (viewType: MessageViewType) => void;
+	viewTypesConfig: MessageViewTypeConfig[];
+	isExpanded: boolean;
+	setIsExpanded: (state: boolean) => void;
+	stateKey: string;
 }
 
 interface Props extends OwnProps, RecoveredProps {}
 
-const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
+const MessageCard = observer((props: Props) => {
+	const { message, viewTypesConfig } = props;
 	const { id } = message;
 
 	const messagesStore = useMessagesStore();
@@ -107,35 +112,51 @@ const MessageCard = observer(({ message, viewType, setViewType }: Props) => {
 		messagesStore.exportStore.exportMessages.includes(message),
 	).get();
 
-	const rootClass = createBemBlock(
-		'message-card-wrapper',
-		isAttached ? 'attached' : null,
-		isBookmarked ? 'pinned' : null,
-		isHighlighted ? 'highlighted' : null,
-		isSoftFiltered ? 'soft-filtered' : null,
-		messagesStore.exportStore.isExport ? 'export-mode' : null,
-		isExported ? 'exported' : null,
-	);
+	const messageCardBaseProps: MessageCardBaseProps = {
+		message,
+		viewTypeConfig: viewTypesConfig,
+		addMessagesToExport,
+		isHighlighted,
+		isSoftFiltered,
+		isExported,
+		isExpanded: props.isExpanded,
+		isExport: messagesStore.exportStore.isExport,
+		isBookmarked,
+		isAttached,
+		toogleMessagePin,
+		sortOrderItems,
+	};
 
 	return (
-		<div className={rootClass} onClick={addMessagesToExport}>
-			<MessageCardBase
-				message={message}
-				viewType={viewType}
-				setViewType={setViewType}
-				isBookmarked={isBookmarked}
-				isAttached={isAttached}
-				toogleMessagePin={toogleMessagePin}
-				sortOrderItems={sortOrderItems}
+		<div className='messages-list__item'>
+			<MessageCardBase {...messageCardBaseProps} />
+			<MessageExpandButton
+				isExpanded={props.isExpanded}
+				setExpanded={props.setIsExpanded}
+				parsedMessages={message.parsedMessages}
 			/>
 		</div>
 	);
 });
 
 const RecoverableMessageCard = (props: OwnProps) => {
-	const viewTypesStore = useMessagesViewTypesStore();
-	const { viewType, setViewType } = viewTypesStore.getSavedViewType(props.message);
-	return <MessageCard {...props} viewType={viewType} setViewType={setViewType} />;
+	const viewTypesStore = useMessagesViewTypeStore();
+	const { getSavedViewType, setViewType } = viewTypesStore;
+	const viewTypesConfig = getViewTypesConfig(props.message, setViewType, getSavedViewType);
+
+	return (
+		<StateSaver stateKey={props.message.id}>
+			{(state: boolean, stateSaver) => (
+				<MessageCard
+					message={props.message}
+					viewTypesConfig={viewTypesConfig}
+					stateKey={props.message.id}
+					setIsExpanded={stateSaver}
+					isExpanded={state}
+				/>
+			)}
+		</StateSaver>
+	);
 };
 
 export default observer(RecoverableMessageCard);

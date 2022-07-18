@@ -22,7 +22,7 @@ import { createBemBlock } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
-import { Chip } from '../Chip';
+import { Counter } from '../util/Counter';
 import SearchableContent from '../search/SearchableContent';
 import { useBookmarksStore, useWorkspaceStore } from '../../hooks';
 
@@ -104,11 +104,12 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		}
 	}
 
-	const handleTypeClick = (ev: React.MouseEvent) => {
-		if (!onEventTypeSelect) return;
-		ev.stopPropagation();
-		onEventTypeSelect(eventType);
-	};
+	function handleTypeClick(e: React.MouseEvent) {
+		if (onEventTypeSelect) {
+			e.stopPropagation();
+			onEventTypeSelect(eventType);
+		}
+	}
 
 	return (
 		<div className={rootClassName} onClick={onRootClick} style={rootStyle}>
@@ -131,11 +132,11 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 					)}
 				</>
 			) : null}
-			{isFlatView && parentsCount > 0 ? <Chip text={parentsCount.toString()} /> : null}
+			{isFlatView && parentsCount > 0 ? <Counter text={parentsCount.toString()} /> : null}
 			{displayType !== CardDisplayType.STATUS_ONLY &&
 				childrenCount !== undefined &&
 				childrenCount > 0 && (
-					<Chip text={childrenCount.toString().concat(hasChildrenToLoad ? '+' : '')} />
+					<Counter text={childrenCount.toString().concat(hasChildrenToLoad ? '+' : '')} />
 				)}
 			{!isUnknown && <div className='search-by-parent' onClick={onFilterClick} />}
 			{!isUnknown && (

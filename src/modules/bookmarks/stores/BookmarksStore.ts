@@ -20,7 +20,7 @@ import moment from 'moment';
 import WorkspacesStore from 'stores/workspace/WorkspacesStore';
 import notificationsStore from 'stores/NotificationsStore';
 import { EventTreeNode } from 'models/EventAction';
-import { EventMessageItem } from 'models/EventMessage';
+import { EventMessage } from 'models/EventMessage';
 import { IBookmarksStore } from 'models/Stores';
 import { getItemId, getItemName } from 'helpers/event';
 import { sortByTimestamp } from 'helpers/date';
@@ -72,7 +72,7 @@ export class BookmarksStore implements IBookmarksStore {
 	};
 
 	@action
-	public toggleMessagePin = (message: EventMessageItem) => {
+	public toggleMessagePin = (message: EventMessage) => {
 		const bookmark = this.messages.find(messageBookmark => messageBookmark.id === message.id);
 		if (bookmark) {
 			this.removeBookmark(bookmark);
@@ -149,7 +149,7 @@ export class BookmarksStore implements IBookmarksStore {
 		}
 	};
 
-	private createBookmark = <T extends EventMessageItem | EventTreeNode>(item: T): Bookmark<T> => ({
+	private createBookmark = <T extends EventMessage | EventTreeNode>(item: T): Bookmark<T> => ({
 		id: getItemId(item),
 		timestamp: moment.utc().valueOf(),
 		item: toJS(item),

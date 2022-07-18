@@ -14,44 +14,30 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { createStyleSelector } from '../helpers/styleCreators';
+import { createStyleSelector } from '../../helpers/styleCreators';
 
-interface Props
-	extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
-	additionalClassName?: string;
+interface Props {
+	text: string | number;
+	title?: string;
 	isSelected?: boolean;
 	isLoading?: boolean;
-	children?: React.ReactNode;
+	onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
-export function Chip(props: Props) {
-	const {
-		className = '',
-		isSelected,
-		onClick,
-		title,
-		isLoading,
-		onMouseEnter,
-		onMouseLeave,
-		children,
-	} = props;
-
+export function Counter(props: Props) {
+	const { text, isSelected, onClick, title, isLoading } = props;
 	const rootClass = createStyleSelector(
-		'chip',
+		'counter',
 		isSelected ? 'selected' : null,
 		onClick ? 'clickable' : null,
 		isLoading ? 'loading' : null,
-		className,
 	);
 
 	return (
-		<div
-			className={rootClass}
-			title={title}
-			onClick={onClick}
-			onMouseEnter={onMouseEnter}
-			onMouseLeave={onMouseLeave}>
-			{children}
+		<div className={rootClass} title={title} onClick={onClick}>
+			<div className='counter__title'>
+				<p>{text}</p>
+			</div>
 		</div>
 	);
 }

@@ -14,11 +14,11 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useWorkspaceStore } from '.';
-import MessagesViewTypesStore from '../stores/messages/MessagesViewTypesStore';
+import MessagesViewTypeStore from '../stores/messages/MessagesViewTypeStore';
+import { useMessagesStore } from './useMessagesStore';
 
-export const useMessagesViewTypesStore = (): MessagesViewTypesStore => {
-	const workspaceStore = useWorkspaceStore();
+export const useMessagesViewTypeStore = (): MessagesViewTypeStore => {
+	const messagesStore = useMessagesStore();
 
-	return workspaceStore.messageViewTypesStore;
+	return messagesStore.messageViewStore;
 };

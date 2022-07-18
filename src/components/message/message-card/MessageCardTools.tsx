@@ -31,27 +31,28 @@ const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 const JSON_COPY_OPTIONS = ['body', 'fields'] as const;
 
-export type MessageCardToolsConfig = {
+export type MessageCardToolsProps = {
 	message: EventMessage;
-	parsedMessage: ParsedMessage | null;
-	messageViewType: MessageViewType;
-	toggleViewType: (viewType: MessageViewType) => void;
-	isBookmarked: boolean;
-	toggleMessagePin: () => void;
+	isBookmarked?: boolean;
+	toggleMessagePin?: () => void;
+};
+
+type OwnProps = {
+	viewType?: MessageViewType;
+	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void;
+	parsedMessage?: ParsedMessage;
 	isScreenshotMsg: boolean;
-	isEmbedded?: boolean;
 };
 
 const MessageCardTools = ({
 	message,
 	parsedMessage,
-	messageViewType,
-	toggleViewType,
 	isBookmarked,
 	toggleMessagePin,
+	viewType,
+	setViewType,
 	isScreenshotMsg,
-	isEmbedded,
-}: MessageCardToolsConfig) => {
+}: MessageCardToolsProps & OwnProps) => {
 	const { id } = message;
 
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
@@ -65,7 +66,7 @@ const MessageCardTools = ({
 	});
 
 	const viewTypes = parsedMessage
-		? Object.values(MessageViewType)
+		? [MessageViewType.JSON, MessageViewType.FORMATTED]
 		: [MessageViewType.BINARY, MessageViewType.ASCII];
 
 	function onCopy(jsonObjectToCopy: 'body' | 'fields' = 'body') {
@@ -78,7 +79,7 @@ const MessageCardTools = ({
 					: null
 				: parsedMessage;
 
-		switch (messageViewType) {
+		switch (viewType) {
 			case MessageViewType.ASCII:
 				content = message.rawMessageBase64 ? atob(message.rawMessageBase64) : '';
 				break;
@@ -103,8 +104,11 @@ const MessageCardTools = ({
 		}
 	}
 
-	const isRawViewType =
-		messageViewType === MessageViewType.ASCII || messageViewType === MessageViewType.BINARY;
+	const isRawViewType = viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
+
+	const toggleViewType = (v: MessageViewType) => {
+		setViewType(v, message.id, parsedMessage ? parsedMessage.id : message.id);
+	};
 
 	return (
 		<div className='message-card-tools' ref={rootRef}>
@@ -121,42 +125,55 @@ const MessageCardTools = ({
 				<div className='message-card-tools__ellipsis' />
 			</div>
 			<MessagePopup isOpen={isViewMenuOpen}>
-				{!isEmbedded && (
+				<div className='message-card-tools__header'>
+					<span>View</span>
 					<div
-						className='message-card-tools__controls-group'
-						title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}>
+						className='message-card-tools__header-close'
+						onClick={() => setIsViewMenuOpen(false)}
+					/>
+				</div>
+				{!isScreenshotMsg && (
+					<div className='message-card-tools__controls-group'>
+						{viewTypes.map(currentViewType => {
+							const iconClassName = createBemElement('message-card-tools', 'icon', currentViewType);
+							const indicatorClassName = createBemElement(
+								'message-card-tools',
+								'indicator',
+								currentViewType === viewType ? 'active' : null,
+							);
+
+							return (
+								<div
+									title={currentViewType}
+									className='message-card-tools__item'
+									key={currentViewType}
+									onClick={() => toggleViewType(currentViewType)}>
+									<div className={iconClassName} />
+									<span className='message-card-tools__item-title'>{currentViewType}</span>
+									<div className={indicatorClassName} />
+								</div>
+							);
+						})}
+					</div>
+				)}
+				<div className='message-card-tools__line' />
+				<div className='message-card-tools__header'>
+					<span>Action</span>
+				</div>
+				{toggleMessagePin && (
+					<div className='message-card-tools__controls-group'>
 						<div className='message-card-tools__item' onClick={() => toggleMessagePin()}>
 							<div
 								className={createBemElement(
 									'message-card-tools',
 									'icon',
 									'bookmark',
+									'action',
 									isBookmarked ? 'pinned' : null,
 								)}
 							/>
+							<span className='message-card-tools__item-title'>Bookmark</span>
 						</div>
-					</div>
-				)}
-				{!isScreenshotMsg && (
-					<div className='message-card-tools__controls-group'>
-						{viewTypes.map(viewType => {
-							const itemClassName = createBemElement(
-								'message-card-tools',
-								'item',
-								viewType === messageViewType ? 'active' : null,
-							);
-							const iconClassName = createBemElement('message-card-tools', 'icon', viewType);
-
-							return (
-								<div
-									title={viewType}
-									className={itemClassName}
-									key={viewType}
-									onClick={() => toggleViewType(viewType)}>
-									<div className={iconClassName} />
-								</div>
-							);
-						})}
 					</div>
 				)}
 				{!isScreenshotMsg && (
@@ -166,8 +183,8 @@ const MessageCardTools = ({
 								title='Copy content to clipboard'
 								className='message-card-tools__item'
 								onClick={() => onCopy()}>
-								<span className='message-card-tools__item-title'>Copy</span>
 								<div className='message-card-tools__copy-icon' />
+								<span className='message-card-tools__item-title'>Copy</span>
 								<div className={createBemElement('message-card-tools', 'indicator', 'bookmark')} />
 							</div>
 						) : (
@@ -180,10 +197,10 @@ const MessageCardTools = ({
 										onCopy();
 										setIsViewMenuOpen(false);
 									}}>
+									<div className='message-card-tools__copy-icon' />
 									<span className='message-card-tools__item-title'>
 										{copyOption === 'body' ? 'Copy full' : 'Copy simplified'}
 									</span>
-									<div className='message-card-tools__copy-icon' />
 									<div
 										className={createBemElement('message-card-tools', 'indicator', 'bookmark')}
 									/>
@@ -228,8 +245,8 @@ const MessageCardTools = ({
 									);
 									setIsViewMenuOpen(false);
 								}}>
-								<span className='message-card-tools__item-title'>Send to replay</span>
 								<div className='message-card-tools__copy-icon' />
+								<span className='message-card-tools__item-title'>Send to replay</span>
 								<div className={createBemElement('message-card-tools', 'indicator', 'bookmark')} />
 							</div>
 						)}

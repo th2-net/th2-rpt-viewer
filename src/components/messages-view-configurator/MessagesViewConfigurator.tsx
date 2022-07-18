@@ -17,18 +17,11 @@
 import { useRef, useState } from 'react';
 import { useOutsideClickListener } from '../../hooks';
 import { ModalPortal } from '../util/Portal';
-import RulesList from './RulesList';
-import { createStyleSelector } from '../../helpers/styleCreators';
 import BodySortConfig from './BodySortConfig';
 import '../../styles/messages-view-configurator.scss';
 
-type Props = {
-	sessions: string[];
-};
-
-const MessageViewConfigurator = ({ sessions }: Props) => {
+const MessageViewConfigurator = () => {
 	const [isOpen, setIsOpen] = useState(false);
-	const [mode, setMode] = useState<'display-rules' | 'body-sort'>('display-rules');
 
 	const modalRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
@@ -44,15 +37,6 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 			setIsOpen(false);
 		}
 	});
-
-	const rulesButtonClassName = createStyleSelector(
-		'switcher',
-		mode === 'display-rules' ? 'active' : null,
-	);
-	const sortButtonClassName = createStyleSelector(
-		'switcher',
-		mode === 'body-sort' ? 'active' : null,
-	);
 
 	const offsetTop = buttonRef.current?.getBoundingClientRect().top;
 
@@ -78,23 +62,10 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 				}}>
 				<div className='messages-view-configurator'>
 					<div className='messages-view-configurator-header'>
-						<p>{mode === 'display-rules' ? 'Message Display Rules' : 'Message Body Sort'}</p>
+						<p>Message Body Sort</p>
 					</div>
 					<div className='messages-view-configurator-body'>
-						{mode === 'display-rules' ? <RulesList sessions={sessions} /> : <BodySortConfig />}
-					</div>
-					{mode === 'display-rules' ? (
-						<p className='hint'>
-							<i>Use * character to match an unknown substring as part of session name</i>
-						</p>
-					) : null}
-					<div className='switchers'>
-						<button className={rulesButtonClassName} onClick={() => setMode('display-rules')}>
-							Display rules
-						</button>
-						<button className={sortButtonClassName} onClick={() => setMode('body-sort')}>
-							Body sort
-						</button>
+						<BodySortConfig />
 					</div>
 				</div>
 			</ModalPortal>

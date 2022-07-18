@@ -15,43 +15,31 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
-import { EventMessage, MessageViewType, EventMessageItem } from '../../models/EventMessage';
+import { EventMessage, MessageViewType, MessageViewTypeConfig } from '../../models/EventMessage';
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
+import MessageExpandButton from '../message/MessageExpandButton';
 
 function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
-	const [messageList, setMessageList] = React.useState<EventMessageItem[]>([]);
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
 	const [errorStatus, setErrorStatus] = useState<string | null>(null);
+	const [viewType, setViewType] = useState(MessageViewType.JSON);
+	const [rawViewType, setRawViewType] = useState(MessageViewType.ASCII);
+	const [isExpanded, setIsExpanded] = React.useState(true);
+
+	const viewTypeConfig: MessageViewTypeConfig = {
+		viewType,
+		setViewType,
+	};
+
+	const rawViewTypeConfig: MessageViewTypeConfig = {
+		viewType: rawViewType,
+		setViewType: setRawViewType,
+	};
 
 	useEffect(() => {
 		getMessage();
 	}, []);
-
-	useEffect(() => {
-		if (message?.parsedMessages) {
-			const tempMessageList: EventMessageItem[] = [];
-			message.parsedMessages.forEach(parsedMessage => {
-				const { parsedMessages, ...rest } = message;
-				const tempMessageItem: EventMessageItem = {
-					...rest,
-					parsedMessage: null,
-					parsedMessages: [],
-				};
-
-				tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
-				if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
-					tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
-				tempMessageList.push(tempMessageItem);
-			});
-			setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
-		} else {
-			setMessageList(messageListCopy =>
-				[...messageListCopy, message as EventMessageItem].filter(Boolean),
-			);
-		}
-	}, [message]);
 
 	async function getMessage() {
 		const res = await fetch(`backend/message/${messageId}`);
@@ -66,18 +54,22 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 		throw new Error(errorStatus);
 	}
 
-	if (messageList.length) {
+	if (message) {
 		return (
 			<div className='embedded-wrapper'>
-				{messageList.map(parsedMessage => (
+				<div className='messages-list__item'>
 					<MessageCardBase
-						isEmbedded
-						key={parsedMessage.id}
-						message={parsedMessage}
-						setViewType={setViewType}
-						viewType={viewType}
+						message={message}
+						viewTypeConfig={viewTypeConfig}
+						rawViewTypeConfig={rawViewTypeConfig}
+						isExpanded={isExpanded}
 					/>
-				))}
+					<MessageExpandButton
+						isExpanded={isExpanded}
+						setExpanded={setIsExpanded}
+						parsedMessages={message.parsedMessages}
+					/>
+				</div>
 			</div>
 		);
 	}

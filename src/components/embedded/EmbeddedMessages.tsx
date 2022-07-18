@@ -14,11 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
-import { EventMessage, EventMessageItem, MessageViewType } from '../../models/EventMessage';
+import { EventMessage } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
 import '../../styles/embedded.scss';
 import api from '../../api';
@@ -29,27 +29,47 @@ import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import MessagesUpdateButton from '../message/MessagesUpdateButton';
 import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
+import MessagesViewTypeStore from '../../stores/messages/MessagesViewTypeStore';
+import { getViewTypesConfig } from '../../helpers/message';
+import StateSaver from '../util/StateSaver';
 import MessageCardBase from '../message/message-card/MessageCardBase';
+import MessageExpandButton from '../message/MessageExpandButton';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
+const viewStore = new MessagesViewTypeStore();
+
+const EmbeddedMessageCard = observer((props: { message: EventMessage }) => {
+	const { getSavedViewType, setViewType } = viewStore;
+	const viewTypesConfig = getViewTypesConfig(props.message, setViewType, getSavedViewType);
+
+	return (
+		<StateSaver stateKey={props.message.id}>
+			{(isExpanded: boolean, setIsExpanded) => (
+				<div className='messages-list__item'>
+					<MessageCardBase
+						viewTypeConfig={viewTypesConfig}
+						message={props.message}
+						isExpanded={isExpanded}
+					/>
+					<MessageExpandButton
+						isExpanded={isExpanded}
+						setExpanded={setIsExpanded}
+						parsedMessages={props.message.parsedMessages}
+					/>
+				</div>
+			)}
+		</StateSaver>
+	);
+});
+
 const EmbeddedMessages = () => {
-	const { dataStore, scrolledIndex, selectedMessageId } = messagesStore;
+	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
 
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
-
-	const renderMsg = useCallback(
-		(index: number, message: EventMessageItem) => (
-			<MessageCardBase
-				message={message}
-				isEmbedded
-				setViewType={setViewType}
-				viewType={viewType}
-				applyFilterToBody={message.id === selectedMessageId?.valueOf()}
-			/>
-		),
-		[viewType, setViewType],
+	const renderMsg = React.useCallback(
+		(index: number, message: EventMessage) => <EmbeddedMessageCard message={message} />,
+		[],
 	);
 
 	const reportURL = useMemo(() => {
@@ -133,7 +153,7 @@ export default function MessagesApp() {
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
 	rowCount: number;
-	itemRenderer: (index: number, message: EventMessageItem) => React.ReactElement;
+	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -159,32 +179,6 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		loadNextMessages,
 		scrolledIndex,
 	} = props;
-
-	const [messageList, setMessageList] = React.useState<EventMessageItem[]>([]);
-
-	React.useEffect(() => {
-		messagesStore.dataStore.messages.forEach(message => {
-			if (message.parsedMessages) {
-				const tempMessageList: EventMessageItem[] = [];
-				message.parsedMessages.forEach(parsedMessage => {
-					const { parsedMessages, ...rest } = message;
-					const tempMessageItem: EventMessageItem = {
-						...rest,
-						parsedMessage: null,
-						parsedMessages: [],
-					};
-
-					tempMessageItem.parsedMessage = message.parsedMessages ? parsedMessage : null;
-					if (tempMessageItem.parsedMessages && tempMessageItem.parsedMessage)
-						tempMessageItem.parsedMessages[0] = tempMessageItem.parsedMessage;
-					tempMessageList.push(tempMessageItem);
-				});
-				setMessageList(messageListCopy => [...messageListCopy, ...tempMessageList]);
-			} else {
-				setMessageList(messageListCopy => [...messageListCopy, message as EventMessageItem]);
-			}
-		});
-	}, [messagesStore.dataStore.messages]);
 
 	React.useEffect(() => {
 		if (scrolledIndex !== null) {
@@ -241,7 +235,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 
 	return (
 		<Virtuoso
-			data={messageList}
+			data={messagesStore.dataStore.messages}
 			firstItemIndex={messagesStore.dataStore.startIndex}
 			ref={virtuoso}
 			overscan={overscan}
@@ -303,8 +297,6 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		/>
 	);
 });
-
-export { MessagesVirtualizedList };
 
 interface SpinnerProps {
 	isLoading: boolean;
