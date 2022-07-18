@@ -34,7 +34,7 @@ export interface MessageCardBaseProps {
 	hoverMessage?: () => void;
 	unhoverMessage?: () => void;
 	addMessagesToExport?: () => void;
-	viewTypeConfig: MessageViewTypeConfig | MessageViewTypeConfig[];
+	viewTypeConfig: MessageViewTypeConfig | Map<string, MessageViewTypeConfig>;
 	rawViewTypeConfig?: MessageViewTypeConfig;
 	isHighlighted?: boolean;
 	isSoftFiltered?: boolean;
@@ -94,8 +94,8 @@ const MessageCardBase = React.memo(
 
 		const messageInfoProps: MessageInfoProps = {
 			message,
-			viewType: defineViewTypeConfig(viewTypeConfig, 0).viewType,
-			setViewType: defineViewTypeConfig(viewTypeConfig, 0).setViewType,
+			viewType: defineViewTypeConfig(viewTypeConfig, message.parsedMessages?.[0].id).viewType,
+			setViewType: defineViewTypeConfig(viewTypeConfig, message.parsedMessages?.[0].id).setViewType,
 			onTimestampMouseEnter: hoverMessage,
 			onTimestampMouseLeave: unhoverMessage,
 			isBookmarked,
@@ -117,8 +117,8 @@ const MessageCardBase = React.memo(
 								message={message}
 								parsedMessage={parsedMessage}
 								parsedMessageIndex={index}
-								viewType={defineViewTypeConfig(viewTypeConfig, index).viewType}
-								setViewType={defineViewTypeConfig(viewTypeConfig, index).setViewType}
+								viewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).viewType}
+								setViewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType}
 								messageCardToolsConfig={messageCardToolsConfig}
 								messageViewTypeRendererProps={messageViewTypeRendererProps}
 							/>
@@ -127,10 +127,12 @@ const MessageCardBase = React.memo(
 						<MessageCardRaw
 							message={message}
 							viewType={
-								rawViewTypeConfig?.viewType || defineViewTypeConfig(viewTypeConfig).viewType
+								rawViewTypeConfig?.viewType ||
+								defineViewTypeConfig(viewTypeConfig, message.id).viewType
 							}
 							setViewType={
-								rawViewTypeConfig?.setViewType || defineViewTypeConfig(viewTypeConfig).setViewType
+								rawViewTypeConfig?.setViewType ||
+								defineViewTypeConfig(viewTypeConfig, message.id).setViewType
 							}
 							messageCardToolsConfig={messageCardToolsConfig}
 							messageViewTypeRendererProps={messageViewTypeRendererProps}

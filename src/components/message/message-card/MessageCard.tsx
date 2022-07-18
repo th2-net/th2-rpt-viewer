@@ -36,7 +36,7 @@ export interface OwnProps {
 }
 
 export interface RecoveredProps {
-	viewTypesConfig: MessageViewTypeConfig[];
+	viewTypesConfig: Map<string, MessageViewTypeConfig>;
 	isExpanded: boolean;
 	setIsExpanded: (state: boolean) => void;
 	stateKey: string;

@@ -77,33 +77,27 @@ export function getViewTypesConfig(
 	getSavedViewType: (message: EventMessage) => Map<string, MessageViewType>,
 ) {
 	const viewTypes = getSavedViewType(message);
-	return message.parsedMessages
-		? [
-				...message.parsedMessages.map(parsedMessage => {
-					return {
-						viewType: viewTypes.get(parsedMessage.id),
-						setViewType,
-					};
-				}),
-				{
-					viewType: viewTypes.get(message.id),
-					setViewType,
-				},
-		  ]
-		: [
-				{
-					viewType: viewTypes.get(message.id),
-					setViewType,
-				},
-		  ];
+	const config = new Map<string, MessageViewTypeConfig>();
+	config.set(message.id, { viewType: viewTypes.get(message.id) as MessageViewType, setViewType });
+
+	if (message.parsedMessages) {
+		message.parsedMessages.forEach(parsedMessage => {
+			config.set(parsedMessage.id, {
+				viewType: viewTypes.get(parsedMessage.id),
+				setViewType,
+			});
+		});
+	}
+
+	return config;
 }
 
 export function defineViewTypeConfig(
-	viewTypeConfig: MessageViewTypeConfig | MessageViewTypeConfig[],
-	index?: number,
+	viewTypeConfig: MessageViewTypeConfig | Map<string, MessageViewTypeConfig>,
+	id?: string,
 ) {
-	if (Array.isArray(viewTypeConfig)) {
-		return index !== undefined ? viewTypeConfig[index] : viewTypeConfig[viewTypeConfig.length - 1];
+	if (id && viewTypeConfig instanceof Map) {
+		return viewTypeConfig.get(id) as MessageViewTypeConfig;
 	}
-	return viewTypeConfig;
+	return viewTypeConfig as MessageViewTypeConfig;
 }
