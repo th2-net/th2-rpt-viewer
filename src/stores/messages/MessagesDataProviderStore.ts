@@ -20,7 +20,7 @@ import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isAbortError } from '../../helpers/fetch';
 import { EventMessage } from '../../models/EventMessage';
 import notificationsStore from '../NotificationsStore';
-import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
+import { MessageSSEEventListeners, MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
 import MessagesUpdateStore from './MessagesUpdateStore';
 import { MessagesDataStore } from '../../models/Stores';
@@ -103,9 +103,12 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	private messageAC: AbortController | null = null;
 
 	@action
-	public loadMessages = async () => {
+	public loadMessages = async (
+		nextListeners?: Partial<MessageSSEEventListeners>,
+		prevListeners?: Partial<MessageSSEEventListeners>,
+	) => {
 		this.stopMessagesLoading();
-		this.resetMessagesDataState();
+		this.resetState();
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
@@ -117,6 +120,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				searchDirection: 'previous',
 			},
 			FIFTEEN_SECONDS,
+			prevListeners,
 		);
 		this.createNextMessageChannelEventSource(
 			{
@@ -124,6 +128,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				searchDirection: 'next',
 			},
 			FIFTEEN_SECONDS,
+			nextListeners,
 		);
 
 		if (!this.searchChannelPrev || !this.searchChannelNext) return;
@@ -173,14 +178,10 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 		const [nextMessages, prevMessages] = await Promise.all([
 			this.searchChannelNext.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(
-					messageIds.next.filter((messageId, index) => index < 2),
-				),
+				resumeMessageIds: extractMessageIds(messageIds.next),
 			}),
 			this.searchChannelPrev.loadAndSubscribe({
-				resumeMessageIds: extractMessageIds(
-					messageIds.previous.filter((messageId, index) => index < 2),
-				),
+				resumeMessageIds: extractMessageIds(messageIds.previous),
 			}),
 		]);
 
@@ -216,19 +217,22 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	private onLoadingError = (event: Event) => {
 		notificationsStore.handleSSEError(event);
 		this.stopMessagesLoading();
-		this.resetMessagesDataState(true);
+		this.resetState(true);
+		this.updateStore.stopSubscription();
 	};
 
 	@action
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
 		requestTimeoutMs?: number,
+		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
 		this.searchChannelPrev = new MessagesSSEChannel(query, {
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
 			onKeepAliveResponse: heartbeat =>
 				this.onKeepAliveMessagePrevious(heartbeat, requestTimeoutMs),
+			...listeners,
 		});
 	};
 
@@ -279,11 +283,13 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public createNextMessageChannelEventSource = (
 		query: MessagesSSEParams,
 		requestTimeoutMs?: number,
+		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
 		this.searchChannelNext = new MessagesSSEChannel(query, {
 			onResponse: this.onNextChannelResponse,
 			onError: this.onLoadingError,
 			onKeepAliveResponse: hearbeat => this.onKeepAliveMessageNext(hearbeat, requestTimeoutMs),
+			...listeners,
 		});
 	};
 
@@ -376,7 +382,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	};
 
 	@action
-	public resetMessagesDataState = (isError = false) => {
+	public resetState = (isError = false) => {
 		this.startIndex = 10000;
 		this.messages = [];
 		this.isError = isError;
