@@ -1,11 +1,6 @@
 import { action, observable } from 'mobx';
 import moment from 'moment';
-import {
-	EventMessage,
-	MessageViewType,
-	ParsedMessage,
-	EventMessageItem,
-} from '../../models/EventMessage';
+import { EventMessage, MessageViewType, ParsedMessage } from '../../models/EventMessage';
 import { decodeBase64RawContent, getAllRawContent } from '../../helpers/rawFormatter';
 import { downloadTxtFile } from '../../helpers/files/downloadTxt';
 
@@ -14,14 +9,14 @@ export default class MessagesExportStore {
 	public isExport = false;
 
 	@observable.shallow
-	public exportMessages: Array<EventMessageItem> = [];
+	public exportMessages: Array<EventMessage> = [];
 
-	public isExported(message: EventMessageItem) {
+	public isExported(message: EventMessage) {
 		return this.exportMessages.includes(message);
 	}
 
 	@action
-	public addMessageToExport(message: EventMessageItem) {
+	public addMessageToExport(message: EventMessage) {
 		if (!this.isExport) return;
 		if (this.isExported(message)) {
 			this.exportMessages = this.exportMessages.filter(exportMessage => exportMessage !== message);

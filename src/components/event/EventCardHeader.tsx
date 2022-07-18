@@ -21,7 +21,7 @@ import { createBemBlock } from '../../helpers/styleCreators';
 import { EventTreeNode } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
-import { Chip } from '../Chip';
+import { Counter } from '../util/Counter';
 import SearchableContent from '../search/SearchableContent';
 import { useWorkspaceEventStore, useTabsStore, useBookmarksStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
@@ -64,7 +64,6 @@ function EventCardHeader(props: Props) {
 	const hoverTimeout = React.useRef<NodeJS.Timeout>();
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
-	const startTimestampValue = timestampToNumber(startTimestamp);
 
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
@@ -102,7 +101,7 @@ function EventCardHeader(props: Props) {
 		setFormType('event');
 		updateForm({
 			parentEvent: eventId,
-			startTimestamp: startTimestampValue,
+			startTimestamp: timestampToNumber(startTimestamp),
 		});
 		setActiveWorkspace(0);
 	}
@@ -143,13 +142,13 @@ function EventCardHeader(props: Props) {
 			{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown ? (
 				<>
 					{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
-					<div
-						className='event-header-card__time-label'
-						onMouseEnter={onMouseEnter}
-						onMouseLeave={onMouseLeave}>
-						<span className='event-header-card__time-label-full'>
-							{formatTime(startTimestampValue)}
-						</span>{' '}
+					<div className='event-header-card__time-label'>
+						<span
+							className='event-header-card__time-label-full'
+							onMouseEnter={onMouseEnter}
+							onMouseLeave={onMouseLeave}>
+							{formatTime(startTimestamp)}
+						</span>
 					</div>
 					{eventType && (
 						<span className='event-header-card__event-type' onClick={handleTypeClick}>
@@ -158,11 +157,11 @@ function EventCardHeader(props: Props) {
 					)}
 				</>
 			) : null}
-			{isFlatView && parentsCount > 0 ? <Chip text={parentsCount.toString()} /> : null}
+			{isFlatView && parentsCount > 0 ? <Counter text={parentsCount.toString()} /> : null}
 			{displayType !== CardDisplayType.STATUS_ONLY &&
 				childrenCount !== undefined &&
 				childrenCount > 0 && (
-					<Chip
+					<Counter
 						text={childrenCount
 							.toString()
 							.concat(eventStore.eventDataStore.hasUnloadedChildren.get(event.eventId) ? '+' : '')}

@@ -15,44 +15,30 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { createStyleSelector } from '../helpers/styleCreators';
+import { createStyleSelector } from '../../helpers/styleCreators';
 
-interface Props
-	extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
-	additionalClassName?: string;
+interface Props {
+	text: string | number;
+	title?: string;
 	isSelected?: boolean;
 	isLoading?: boolean;
-	children?: React.ReactNode;
+	onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
-export function Chip(props: Props) {
-	const {
-		className,
-		additionalClassName,
-		isSelected,
-		onClick,
-		title,
-		isLoading,
-		onMouseEnter,
-		onMouseLeave,
-		children,
-	} = props;
+export function Counter(props: Props) {
+	const { text, isSelected, onClick, title, isLoading } = props;
 	const rootClass = createStyleSelector(
-		'chip',
+		'counter',
 		isSelected ? 'selected' : null,
 		onClick ? 'clickable' : null,
 		isLoading ? 'loading' : null,
-		additionalClassName || null,
 	);
 
 	return (
-		<div
-			className={className ? rootClass.concat(' ', className) : rootClass}
-			title={title}
-			onClick={onClick}
-			onMouseEnter={onMouseEnter}
-			onMouseLeave={onMouseLeave}>
-			{children}
+		<div className={rootClass} title={title} onClick={e => onClick && onClick(e)}>
+			<div className='counter__title'>
+				<p>{text}</p>
+			</div>
 		</div>
 	);
 }

@@ -43,7 +43,7 @@ import {
 	isSearchHistoryEntity,
 } from '../helpers/search';
 import { EventTreeNode } from '../models/EventAction';
-import { EventMessageItem } from '../models/EventMessage';
+import { EventMessage } from '../models/EventMessage';
 import { SearchDirection } from '../models/search/SearchDirection';
 import notificationsStore from './NotificationsStore';
 import WorkspacesStore from './workspace/WorkspacesStore';
@@ -65,7 +65,7 @@ export type SearchPanelFormState = {
 	stream: string[];
 };
 
-export type SearchResult = EventTreeNode | EventMessageItem;
+export type SearchResult = EventTreeNode | EventMessage;
 
 export type SearchHistory = {
 	timestamp: number;

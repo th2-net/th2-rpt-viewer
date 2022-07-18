@@ -18,7 +18,7 @@ import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
 import { GraphSearchResult } from '../components/graph/search/GraphSearch';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
-import { OrderRule } from '../stores/MessageDisplayRulesStore';
+import { OrderRule } from '../stores/MessageBodySortStore';
 import { SearchHistory } from '../stores/SearchStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';

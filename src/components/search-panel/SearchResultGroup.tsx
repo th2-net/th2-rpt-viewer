@@ -53,7 +53,7 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 	results
 		.map(result =>
 			isEventMessage(result)
-				? result.parsedMessage?.message.metadata.messageType
+				? result.parsedMessages?.[0].message.metadata.messageType
 				: result.eventName,
 		)
 		.forEach(name => {

@@ -356,14 +356,14 @@
 		}
 
 		cursor: pointer;
-		width: 15px;
-		height: 15px;
+		width: 12px;
+		height: 12px;
 		flex-shrink: 0;
-		background: url(../../resources/icons/bookmark-add.svg);
+		@include icon(url(../../resources/icons/bookmark-icon.svg), 12px, 12px);
 
 		&.pinned {
 			display: inline-block;
-			background: url(../../resources/icons/bookmark-added.svg);
+			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 11px);
 		}
 	}
 
@@ -372,7 +372,7 @@
 		background: url(../../resources/icons/bookmark-add-hover.svg);
 
 		&.pinned {
-			background: url(../../resources/icons/bookmark-added-hover.svg);
+			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 11px);
 		}
 	}
 }

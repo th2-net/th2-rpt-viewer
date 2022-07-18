@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { ActionType } from '../models/EventAction';
-import { EventMessage } from '../models/EventMessage';
+import { EventMessage, MessageViewTypeConfig, MessageViewType } from '../models/EventMessage';
 import {
 	isMessageValue,
 	isSimpleValue,
@@ -69,4 +69,41 @@ export function normalizeField(field: MessageBodyField): string | object {
 		);
 	}
 	return field.listValue.values?.map(listValueField => normalizeField(listValueField)) || [];
+}
+
+export function getViewTypesConfig(
+	message: EventMessage,
+	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void,
+	getSavedViewType: (message: EventMessage) => Map<string, MessageViewType>,
+) {
+	const viewTypes = getSavedViewType(message);
+	return message.parsedMessages
+		? [
+				...message.parsedMessages.map(parsedMessage => {
+					return {
+						viewType: viewTypes.get(parsedMessage.id),
+						setViewType,
+					};
+				}),
+				{
+					viewType: viewTypes.get(message.id),
+					setViewType,
+				},
+		  ]
+		: [
+				{
+					viewType: viewTypes.get(message.id),
+					setViewType,
+				},
+		  ];
+}
+
+export function defineViewTypeConfig(
+	viewTypeConfig: MessageViewTypeConfig | MessageViewTypeConfig[],
+	index?: number,
+) {
+	if (Array.isArray(viewTypeConfig)) {
+		return index !== undefined ? viewTypeConfig[index] : viewTypeConfig[viewTypeConfig.length - 1];
+	}
+	return viewTypeConfig;
 }

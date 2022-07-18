@@ -26,7 +26,7 @@ import GraphSearchInput, { GraphSearchInputConfig } from './GraphSearchInput';
 import { GraphSearchTimePicker } from './GraphSearchTimePicker';
 import KeyCodes from '../../../util/KeyCodes';
 import { EventAction } from '../../../models/EventAction';
-import { EventMessageItem } from '../../../models/EventMessage';
+import { EventMessage } from '../../../models/EventMessage';
 
 interface Props {
 	onTimestampSubmit: (timestamp: number) => void;
@@ -40,7 +40,7 @@ export type GraphSearchMode = 'timestamp' | 'history';
 export interface GraphSearchResult {
 	timestamp: number;
 	id: string;
-	item: EventAction | EventMessageItem;
+	item: EventAction | EventMessage;
 }
 
 function GraphSearch(props: Props) {

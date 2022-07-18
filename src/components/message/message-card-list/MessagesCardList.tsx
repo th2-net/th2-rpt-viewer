@@ -23,7 +23,7 @@ import Empty from '../../util/Empty';
 import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../../hooks';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import '../../../styles/messages.scss';
-import { EventMessageItem } from '../../../models/EventMessage';
+import { EventMessage } from '../../../models/EventMessage';
 
 export type MessagesHeights = { [index: number]: number };
 
@@ -31,8 +31,8 @@ function MessageCardList() {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 
-	const renderMsg = React.useCallback((index: number, message: EventMessageItem) => {
-		return <MessageCard message={message} />;
+	const renderMsg = React.useCallback((index: number, message: EventMessage) => {
+		return <MessageCard message={message} key={index} />;
 	}, []);
 
 	if (messagesDataStore.isError) {

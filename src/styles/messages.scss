@@ -21,9 +21,8 @@
 	@include bookmark-button($showOnHoverOverParent: true);
 	overflow: auto;
 	align-items: flex-start;
-	border-radius: 5px;
-	padding: 1px 3px;
 	display: flex;
+	border-radius: 16px 16px 0 0;
 	justify-content: space-between;
 
 	&.highlighted {
@@ -70,19 +69,12 @@
 		cursor: pointer;
 	}
 
-	&:hover {
+	&:hover .parsed-message,
+	&:hover .mc-header__info {
 		background-color: $messageCardHoverBackground;
 	}
 
-	&:hover .message-card-tools__ellipsis {
-		display: block;
-	}
-
 	&:hover .mc-header {
-		&__value {
-			font-weight: bold;
-		}
-
 		&__is-attached-icon {
 			opacity: 1;
 		}
@@ -93,7 +85,41 @@
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
-	padding: 0 2px;
+}
+
+.message-card-expand-wrapper {
+	display: flex;
+	background-color: #fbfbfb;
+	border-radius: 0 0 16px 16px;
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 16px;
+	padding: 12px 8px;
+
+	&__expand-button {
+		margin-left: auto;
+		cursor: pointer;
+		background: #fcfcfc;
+		color: #4e8aff;
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+		border-radius: 20px;
+		padding: 6px 16px;
+		&.expanded {
+			background-color: #4e8aff;
+			color: #fff;
+		}
+	}
+	&__warning {
+		display: flex;
+		flex-direction: row;
+		color: #ffb84e;
+		gap: 10px;
+		padding: 6px 16px;
+
+		&-icon {
+			@include icon(url(../../resources/icons/raw-data-warning.svg), 13px, 13px);
+		}
+	}
 }
 
 .message-card-tools {
@@ -105,10 +131,33 @@
 	align-items: center;
 	min-width: 17px;
 
+	&__wrapper {
+		display: flex;
+		flex-grow: 1;
+		flex-direction: row-reverse;
+	}
+
+	&__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		color: #acacac;
+
+		&-close {
+			cursor: pointer;
+			@include icon(url(../../resources/icons/message-tools-close.svg), 9px, 9px);
+		}
+	}
+
 	&__button {
 		display: flex;
 		align-items: center;
 		cursor: pointer;
+		padding: 4px;
+		&.active {
+			background-color: #fcfcfc;
+			border-radius: 20px;
+		}
 	}
 
 	&__button.active &__ellipsis {
@@ -117,19 +166,19 @@
 
 	&__ellipsis {
 		display: none;
-		margin-left: 2px;
+		border: none;
 		flex-shrink: 0;
 		@include icon(url(../../resources/icons/ellipsis.svg), 15px, 15px);
 	}
 
 	&__controls {
 		position: absolute;
-		right: 11px;
+		right: 50px;
 		background-color: white;
-		box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+		border-radius: 8px;
 		display: flex;
-		padding: 4px 0;
-		gap: 4px;
+		padding: 12px;
 		flex-direction: column;
 		z-index: 2;
 
@@ -140,13 +189,13 @@
 	}
 
 	&__item {
-		display: flex;
-		justify-content: flex-end;
+		display: grid;
+		grid-template-columns: 29px 1fr auto;
+		height: 36px;
 		align-items: center;
-		gap: 4px;
-		padding: 2px 4px 2px 10px;
+		gap: 8px;
+		padding: 4px 8px;
 		cursor: pointer;
-		font-size: 11px;
 		color: $primaryTextColor;
 
 		&-title {
@@ -162,13 +211,22 @@
 		width: 15px;
 		height: 15px;
 		flex-shrink: 0;
+		margin-left: 6px;
 
 		&.bookmark {
-			@include icon(url(../../resources/icons/bookmark-add-hover.svg));
+			@include icon(url(../../resources/icons/bookmark-add-icon.svg), 24px, 24px);
 			background-size: auto;
 
 			&.pinned {
-				background-image: url(../../resources/icons/bookmark-added-hover.svg);
+				@include icon(url(../../resources/icons/bookmark-icon.svg), 24px, 24px);
+				background-size: auto;
+			}
+			&.action {
+				background-color: #fcfcfc;
+				background-size: 60%;
+				margin: 2px;
+				border-radius: 20px;
+				box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.3);
 			}
 		}
 
@@ -181,11 +239,11 @@
 		}
 
 		&.binary {
-			@include icon(url(../../resources/icons/binar.svg));
-			opacity: 0.7;
+			@include icon(url(../../resources/icons/binar.svg), 10px, 7px);
 		}
 
 		&.ascii {
+			padding-right: 2px;
 			@include icon(url(../../resources/icons/ascii.svg));
 		}
 
@@ -233,11 +291,16 @@
 	}
 
 	&__copy-icon {
-		height: 16px;
-		width: 16px;
-		@include icon(url(../../resources/icons/clipboard.svg), 16px, 16px);
-		background-size: 80%;
-		filter: opacity(0.6);
+		background-color: #fcfcfc;
+		@include icon(url(../../resources/icons/clipboard.svg), 24px, 24px);
+		background-size: 60%;
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.3);
+		margin: 2px;
+		border-radius: 20px;
+	}
+	&__line {
+		border: 1px solid #dedede;
+		margin: 4px 0;
 	}
 }
 
@@ -281,9 +344,24 @@
 
 	&__info {
 		display: inline-flex;
+		background-color: #fbfbfb;
+		font-weight: 400;
+		font-size: 12px;
+		color: #5c5757;
+		width: 100%;
 		align-items: center;
+		padding: 12px 16px 16px 16px;
 		flex-grow: 1;
 		overflow: hidden;
+
+		&:hover .message-card-tools__ellipsis {
+			display: block;
+		}
+		&:hover .message-card-tools {
+			background-color: #fcfcfc;
+			border-radius: 20px;
+			box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+		}
 	}
 
 	&__item {
@@ -302,10 +380,21 @@
 	&__direction-icon {
 		background-image: url('../../resources/icons/session-icon.svg');
 		background-size: 100%;
-
-		&.in {
+		z-index: 1;
+		&.first {
 			transform: scale(-1);
 		}
+	}
+
+	&__message-icon {
+		@include icon(url(../../resources/icons/message-icon.svg), 12px, 12px);
+	}
+	&__attached-icon {
+		flex-shrink: 0;
+		@include icon(url(../../resources/icons/attached-icon.svg), 12px, 12px);
+	}
+	&__session-id {
+		z-index: 1;
 	}
 
 	&__key,
@@ -320,8 +409,6 @@
 	&__key,
 	&__key-minified,
 	&__value {
-		font-size: 9px;
-		line-height: 15px;
 		margin: 0 5px;
 	}
 
@@ -331,14 +418,13 @@
 	}
 
 	&__value {
+		@include ellipsis();
+		background-color: #fcfcfc;
 		display: inline-block;
-		color: $messageCardValueColor;
 		vertical-align: middle;
-		font-weight: bold;
-
-		&.messageType {
-			@include ellipsis();
-		}
+		padding: 4px 8px;
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+		border-radius: 20px;
 	}
 
 	&__icon {
@@ -350,9 +436,9 @@
 	&__timestamp {
 		transition: all 0.15s;
 		border: 1px solid transparent;
-		border-radius: 4px;
 		margin-left: 0;
 		text-align: center;
+		white-space: nowrap;
 
 		&:hover {
 			color: $graphTextColor;
@@ -361,9 +447,33 @@
 	}
 }
 
+.parsed-message-wrapper {
+	&:hover .message-card-tools__ellipsis {
+		display: block;
+	}
+	&:hover .message-card-tools {
+		background-color: #fcfcfc;
+		border-radius: 20px;
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+	}
+}
+
+.parsed-message {
+	background-color: #fbfbfb;
+	margin-bottom: 1px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
 .mc-body {
-	font-size: 11px;
+	width: 100%;
+	font-size: 12px;
+	font-weight: 400;
 	border-radius: 5px;
+	padding: 0 16px 12px 16px;
+	display: flex;
+	flex-direction: column;
 
 	&__human {
 		display: inline;
@@ -385,7 +495,6 @@
 
 	&__field-label {
 		display: inline-block;
-		height: 100%;
 	}
 
 	&__field-border {
@@ -415,6 +524,14 @@
 		width: auto;
 		height: 100px;
 		padding: 5px 0;
+	}
+
+	&:hover .message-card-tools__ellipsis {
+		display: block;
+	}
+	&:hover .message-card-tools {
+		border-radius: 20px;
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
 	}
 }
 
@@ -523,6 +640,7 @@
 }
 
 .messages-list {
+	background-color: #f1f1f1;
 	display: inline-block;
 	height: 100%;
 	width: 100%;
@@ -531,6 +649,11 @@
 	&__items {
 		height: 100%;
 		@include scrollbar;
+	}
+
+	&__item {
+		margin: 0 5px;
+		padding: 4px;
 	}
 
 	&__spinner {
