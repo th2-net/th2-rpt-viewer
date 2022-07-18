@@ -64,7 +64,6 @@ const MessageCardBase = React.memo(
 		isAttached,
 		isBookmarked,
 		toogleMessagePin,
-		isEmbedded,
 		sortOrderItems,
 	}: MessageCardBaseProps) => {
 		const { id, rawMessageBase64 } = message;
@@ -100,7 +99,6 @@ const MessageCardBase = React.memo(
 			onTimestampMouseLeave: unhoverMessage,
 			isBookmarked,
 			isAttached,
-			isEmbedded,
 			isScreenshotMsg: isScreenshotMessage(message.parsedMessages?.[0]),
 			messageCardToolsConfig,
 		};

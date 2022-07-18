@@ -445,6 +445,14 @@
 			border: 1px solid $graphTextColor;
 		}
 	}
+
+	&__sessionid {
+		position: relative;
+		color: #fff;
+		display: flex;
+		flex-direction: row;
+		gap: 5px;
+	}
 }
 
 .parsed-message-wrapper {

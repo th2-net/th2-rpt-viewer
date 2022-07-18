@@ -44,7 +44,7 @@ export interface RecoveredProps {
 
 interface Props extends OwnProps, RecoveredProps {}
 
-const MessageCard = observer((props: Props) => {
+export const MessageCard = observer((props: Props) => {
 	const { message, viewTypesConfig } = props;
 	const { id } = message;
 

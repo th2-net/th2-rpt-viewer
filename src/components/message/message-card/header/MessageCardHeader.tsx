@@ -30,7 +30,6 @@ export interface MessageInfoProps {
 	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void;
 	isBookmarked?: boolean;
 	isAttached?: boolean;
-	isEmbedded?: boolean;
 	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 }
@@ -44,7 +43,6 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		onTimestampMouseLeave,
 		isBookmarked,
 		isAttached,
-		isEmbedded,
 		messageCardToolsConfig,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
@@ -74,21 +72,24 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
+	const timestampClassname =
+		onTimestampMouseEnter || onTimestampMouseLeave ? 'mc-header__timestamp' : '';
+
 	return (
 		<div className='mc-header__info'>
 			<Chip>
 				<div className='mc-header__message-icon' />
-				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
-				{!isEmbedded && isAttached && <div className='mc-header__attached-icon' />}
+				{isBookmarked && <div className={bookmarkIconClass} />}
+				{isAttached && <div className='mc-header__attached-icon' />}
 			</Chip>
 			<Chip
-				additionalClassName={'mc-header__timestamp'}
+				className={timestampClassname}
 				title={`Timestamp: ${formattedTimestamp}`}
 				onMouseEnter={onTimestampMouseEnter}
 				onMouseLeave={onTimestampMouseLeave}>
 				{timestamp && formattedTimestamp}
 			</Chip>
-			<Chip title={`Session: ${sessionId}`} className='sessionId-inline'>
+			<Chip title={`Session: ${sessionId}`} className='mc-header__sessionId'>
 				<div style={sessionBackgroundStyle} />
 				<span className={sessionClass} />
 				<span className='mc-header__session-id'>{sessionId}</span>

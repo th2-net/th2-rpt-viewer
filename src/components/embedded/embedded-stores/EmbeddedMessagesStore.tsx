@@ -82,9 +82,7 @@ export default class EmbeddedMessagesStore {
 
 	@action
 	public scrollToMessage = async (messageId: string) => {
-		const messageIndex = this.dataStore.messages.findIndex(
-			(m: { id: string }) => m.id === messageId,
-		);
+		const messageIndex = this.dataStore.messages.findIndex(m => m.id === messageId);
 		if (messageIndex !== -1) {
 			this.scrolledIndex = new Number(messageIndex);
 		}
