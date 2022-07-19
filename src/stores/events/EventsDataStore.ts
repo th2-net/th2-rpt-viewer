@@ -432,8 +432,6 @@ export default class EventsDataStore {
 		// eslint-disable-next-line no-param-reassign
 		events = events.filter(event => !childList.includes(event.eventId));
 
-		events.forEach(event => this.childrenAreUnknown.set(event.eventId, true));
-
 		const initialCount = this.childrenLoaders[parentId].initialCount;
 		const expectedChildrenCountLoaded =
 			(Math.floor(initialCount / this.CHILDREN_COUNT_LIMIT) + 1) * this.CHILDREN_COUNT_LIMIT;
@@ -442,6 +440,8 @@ export default class EventsDataStore {
 			// eslint-disable-next-line no-param-reassign
 			events = events.slice(0, expectedChildrenCountLoaded - childList.length);
 		}
+
+		events.forEach(event => this.childrenAreUnknown.set(event.eventId, true));
 
 		const newEntries: [string, EventTreeNode][] = events.map(event => [event.eventId, event]);
 		const eventsMap: Map<string, EventTreeNode> = observable.map(
