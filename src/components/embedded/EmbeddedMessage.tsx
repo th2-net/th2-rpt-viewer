@@ -66,6 +66,7 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 					/>
 					<MessageExpandButton
 						isExpanded={isExpanded}
+						isScreenshotMsg={false}
 						setExpanded={setIsExpanded}
 						parsedMessages={message.parsedMessages}
 					/>

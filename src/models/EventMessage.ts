@@ -54,10 +54,6 @@ export interface ParsedMessage {
 	message: MessageBody;
 }
 
-export function isScreenshotMessage(message?: ParsedMessage): boolean {
-	return message ? /image\/\w+/gi.test(message.message.metadata.messageType) : false;
-}
-
 export function isMessageBodySortOrderItem(obj: unknown): obj is MessageSortOrderItem {
 	return notEmpty(obj) && (obj as MessageSortOrderItem).item !== undefined;
 }

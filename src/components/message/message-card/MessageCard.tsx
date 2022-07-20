@@ -144,6 +144,7 @@ const MessageCard = observer((props: Props) => {
 			<MessageCardBase {...messageCardBaseProps} />
 			<MessageExpandButton
 				isExpanded={props.isExpanded}
+				isScreenshotMsg={false}
 				setExpanded={props.setIsExpanded}
 				parsedMessages={message.parsedMessages}
 			/>

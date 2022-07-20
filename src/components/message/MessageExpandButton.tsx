@@ -20,12 +20,13 @@ import { ParsedMessage } from '../../models/EventMessage';
 
 interface Props {
 	isExpanded: boolean;
+	isScreenshotMsg: boolean;
 	setExpanded: (state: boolean) => void;
 	parsedMessages: ParsedMessage[] | null;
 }
 
 const MessageExpandButton = (props: Props) => {
-	const { isExpanded, setExpanded, parsedMessages } = props;
+	const { isExpanded, isScreenshotMsg, setExpanded, parsedMessages } = props;
 
 	const buttonClass = createBemElement(
 		'message-card-expand-wrapper',
@@ -41,16 +42,20 @@ const MessageExpandButton = (props: Props) => {
 
 	return (
 		<div className='message-card-expand-wrapper'>
-			{parsedMessages ? (
-				<div className={buttonClass} onClick={changeExpandState}>
-					{isExpanded ? 'Show Less' : 'Show More'}
-				</div>
-			) : (
-				<div className={warningClass}>
-					<div className={'message-card-expand-wrapper__warning-icon'} />
-					<p>Only Raw Data Available</p>
-				</div>
-			)}
+			{!isScreenshotMsg ? (
+				<>
+					{parsedMessages ? (
+						<div className={buttonClass} onClick={changeExpandState}>
+							{isExpanded ? 'Show Less' : 'Show More'}
+						</div>
+					) : (
+						<div className={warningClass}>
+							<div className={'message-card-expand-wrapper__warning-icon'} />
+							<p>Only Raw Data Available</p>
+						</div>
+					)}
+				</>
+			) : null}
 		</div>
 	);
 };

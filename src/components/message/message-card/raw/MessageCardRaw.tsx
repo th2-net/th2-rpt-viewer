@@ -21,11 +21,13 @@ import MessageCardViewTypeRenderer, {
 } from '../MessageCardViewTypeRenderer';
 import { MessageViewType, EventMessage } from '../../../../models/EventMessage';
 import { ParsedMessageHeader } from '../header/ParsedMessageHeader';
+import { MessageScreenshotZoom } from '../MessageScreenshot';
 
 export interface MessageCardRawProps {
 	message: EventMessage;
 	viewType?: MessageViewType;
 	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void;
+	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
 }
@@ -35,6 +37,7 @@ export const MessageCardRaw = React.memo((props: MessageCardRawProps) => {
 		message,
 		viewType,
 		setViewType,
+		isScreenshotMsg,
 		messageCardToolsConfig,
 		messageViewTypeRendererProps,
 	} = props;
@@ -52,9 +55,22 @@ export const MessageCardRaw = React.memo((props: MessageCardRawProps) => {
 
 			<div className='parsed-message'>
 				<div className='mc-body'>
-					<div className='mc-body__human'>
-						<MessageCardViewTypeRenderer {...messageViewTypeRendererProps} viewType={viewType} />
-					</div>
+					{isScreenshotMsg ? (
+						<div className='mc-body__screenshot'>
+							<MessageScreenshotZoom
+								src={
+									typeof message.rawMessageBase64 === 'string'
+										? `data:screenshot;base64,${message.rawMessageBase64}`
+										: ''
+								}
+								alt={message.id}
+							/>
+						</div>
+					) : (
+						<div className='mc-body__human'>
+							<MessageCardViewTypeRenderer {...messageViewTypeRendererProps} viewType={viewType} />
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

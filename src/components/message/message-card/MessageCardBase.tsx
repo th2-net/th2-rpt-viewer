@@ -16,11 +16,7 @@
 
 import * as React from 'react';
 import { createBemBlock } from '../../../helpers/styleCreators';
-import {
-	isScreenshotMessage,
-	EventMessage,
-	MessageViewTypeConfig,
-} from '../../../models/EventMessage';
+import { EventMessage, MessageViewTypeConfig } from '../../../models/EventMessage';
 import { MessageCardViewTypeRendererProps } from './MessageCardViewTypeRenderer';
 import { MessageCardToolsProps } from './MessageCardTools';
 import '../../../styles/messages.scss';
@@ -94,14 +90,20 @@ const MessageCardBase = React.memo(
 
 		const messageInfoProps: MessageInfoProps = {
 			message,
-			viewType: defineViewTypeConfig(viewTypeConfig, message.parsedMessages?.[0].id).viewType,
-			setViewType: defineViewTypeConfig(viewTypeConfig, message.parsedMessages?.[0].id).setViewType,
+			viewType: defineViewTypeConfig(
+				viewTypeConfig,
+				message.parsedMessages ? message.parsedMessages[0].id : message.id,
+			).viewType,
+			setViewType: defineViewTypeConfig(
+				viewTypeConfig,
+				message.parsedMessages ? message.parsedMessages[0].id : message.id,
+			).setViewType,
 			onTimestampMouseEnter: hoverMessage,
 			onTimestampMouseLeave: unhoverMessage,
 			isBookmarked,
 			isAttached,
 			isEmbedded,
-			isScreenshotMsg: isScreenshotMessage(message.parsedMessages?.[0]),
+			isScreenshotMsg: false,
 			messageCardToolsConfig,
 		};
 
@@ -134,6 +136,7 @@ const MessageCardBase = React.memo(
 								rawViewTypeConfig?.setViewType ||
 								defineViewTypeConfig(viewTypeConfig, message.id).setViewType
 							}
+							isScreenshotMsg={false}
 							messageCardToolsConfig={messageCardToolsConfig}
 							messageViewTypeRendererProps={messageViewTypeRendererProps}
 						/>

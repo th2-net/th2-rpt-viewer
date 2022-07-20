@@ -19,13 +19,7 @@ import { MessageCardToolsProps } from './MessageCardTools';
 import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
-import { MessageScreenshotZoom } from './MessageScreenshot';
-import {
-	isScreenshotMessage,
-	ParsedMessage,
-	MessageViewType,
-	EventMessage,
-} from '../../../models/EventMessage';
+import { ParsedMessage, MessageViewType, EventMessage } from '../../../models/EventMessage';
 import { ParsedMessageHeader } from './header/ParsedMessageHeader';
 
 export interface ParsedMessageProps {
@@ -40,7 +34,6 @@ export interface ParsedMessageProps {
 
 export const ParsedMessageComponent = React.memo((props: ParsedMessageProps) => {
 	const {
-		message,
 		parsedMessage,
 		parsedMessageIndex,
 		viewType,
@@ -55,34 +48,20 @@ export const ParsedMessageComponent = React.memo((props: ParsedMessageProps) => 
 				<ParsedMessageHeader
 					messageCardToolsConfig={messageCardToolsConfig}
 					parsedMessage={parsedMessage}
-					isScreenshotMsg={isScreenshotMessage(parsedMessage)}
+					isScreenshotMsg={false}
 					viewType={viewType}
 					setViewType={setViewType}
 				/>
 			)}
 			<div className='parsed-message' key={parsedMessage.id}>
 				<div className='mc-body'>
-					{isScreenshotMessage(parsedMessage) ? (
-						<div className='mc-body__screenshot'>
-							<MessageScreenshotZoom
-								src={
-									typeof messageViewTypeRendererProps.rawContent === 'string'
-										? `data:${parsedMessage.message.metadata.messageType};base64,` +
-										  `${message.rawMessageBase64}`
-										: ''
-								}
-								alt={message.id}
-							/>
-						</div>
-					) : (
-						<div className='mc-body__human'>
-							<MessageCardViewTypeRenderer
-								{...messageViewTypeRendererProps}
-								viewType={viewType}
-								messageBody={parsedMessage.message}
-							/>
-						</div>
-					)}
+					<div className='mc-body__human'>
+						<MessageCardViewTypeRenderer
+							{...messageViewTypeRendererProps}
+							viewType={viewType}
+							messageBody={parsedMessage.message}
+						/>
+					</div>
 				</div>
 			</div>
 		</div>

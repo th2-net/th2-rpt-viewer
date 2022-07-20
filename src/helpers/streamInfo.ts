@@ -20,5 +20,6 @@ export const extractMessageId = ({ lastId }: StreamInfo) => {
 	return lastId;
 };
 
-export const extractMessageIds = (streamInfoList: StreamInfo[]) =>
-	streamInfoList.map(extractMessageId);
+export const extractMessageIds = (streamInfoList: StreamInfo[]) => [
+	...new Set([...streamInfoList.map(extractMessageId)]),
+];

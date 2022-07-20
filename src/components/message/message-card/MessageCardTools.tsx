@@ -123,7 +123,7 @@ const MessageCardTools = ({
 			</div>
 			<MessagePopup isOpen={isViewMenuOpen}>
 				<div className='message-card-tools__header'>
-					<span>View</span>
+					{!isScreenshotMsg ? <span>View</span> : <span>Action</span>}
 					<div
 						className='message-card-tools__header-close'
 						onClick={() => setIsViewMenuOpen(false)}
@@ -153,9 +153,9 @@ const MessageCardTools = ({
 						})}
 					</div>
 				)}
-				<div className='message-card-tools__line' />
+				{!isScreenshotMsg ? <div className='message-card-tools__line' /> : null}
 				<div className='message-card-tools__header'>
-					<span>Action</span>
+					{!isScreenshotMsg ? <span>Action</span> : null}
 				</div>
 				{toggleMessagePin && (
 					<div className='message-card-tools__controls-group'>
@@ -207,14 +207,19 @@ const MessageCardTools = ({
 					</div>
 				)}
 				{isScreenshotMsg && (
-					<a
-						className='message-card-tools__item'
-						download={`${id}.${parsedMessage?.message.metadata.messageType.replace('image/', '')}`}
-						href={`data:${parsedMessage?.message.metadata.messageType};base64,${
-							message.rawMessageBase64 || ''
-						}`}>
-						<div className='message-card-tools__icon download' />
-					</a>
+					<div className='message-card-tools__item'>
+						<a
+							download={`${id}.${parsedMessage?.message.metadata.messageType.replace(
+								'image/',
+								'',
+							)}`}
+							href={`data:${parsedMessage?.message.metadata.messageType};base64,${
+								message.rawMessageBase64 || ''
+							}`}>
+							<div className='message-card-tools__icon download' />
+						</a>
+						<span className='message-card-tools__item-title'>Download</span>
+					</div>
 				)}
 				{appViewMode === ViewMode.EmbeddedMessages && (
 					<div className='message-card-tools__controls-group'>
