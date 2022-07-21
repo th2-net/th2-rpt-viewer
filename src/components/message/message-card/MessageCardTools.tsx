@@ -65,9 +65,12 @@ const MessageCardTools = ({
 		}
 	});
 
-	const viewTypes = parsedMessage
-		? [MessageViewType.JSON, MessageViewType.FORMATTED]
-		: [MessageViewType.BINARY, MessageViewType.ASCII];
+	const isRawViewType = viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
+
+	const viewTypes =
+		parsedMessage && !isRawViewType
+			? [MessageViewType.JSON, MessageViewType.FORMATTED]
+			: [MessageViewType.BINARY, MessageViewType.ASCII];
 
 	function onCopy(jsonObjectToCopy: 'body' | 'fields' = 'body') {
 		let content: string;
@@ -104,10 +107,8 @@ const MessageCardTools = ({
 		}
 	}
 
-	const isRawViewType = viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
-
 	const toggleViewType = (v: MessageViewType) => {
-		setViewType(v, parsedMessage ? parsedMessage.id : message.id);
+		setViewType(v, parsedMessage && !isRawViewType ? parsedMessage.id : message.id);
 	};
 
 	return (

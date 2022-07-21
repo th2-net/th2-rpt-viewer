@@ -63,10 +63,12 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 						viewTypeConfig={viewTypeConfig}
 						rawViewTypeConfig={rawViewTypeConfig}
 						isExpanded={isExpanded}
+						isDisplayRuleRaw={false}
 					/>
 					<MessageExpandButton
 						isExpanded={isExpanded}
 						isScreenshotMsg={false}
+						isDisplayRuleRaw={false}
 						setExpanded={setIsExpanded}
 						parsedMessages={message.parsedMessages}
 					/>

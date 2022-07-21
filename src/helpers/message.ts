@@ -78,6 +78,7 @@ export function getViewTypesConfig(
 ) {
 	const viewTypes = getSavedViewType(message).viewTypes;
 	const config = new Map<string, MessageViewTypeConfig>();
+
 	config.set(message.id, {
 		viewType: viewTypes.get(message.id) as MessageViewType,
 		setViewType: getSavedViewType(message).setViewType,

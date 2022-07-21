@@ -28,6 +28,7 @@ export interface MessageCardRawProps {
 	viewType?: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
 	isScreenshotMsg: boolean;
+	isDisplayRuleRaw: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
 }
@@ -38,12 +39,13 @@ export const MessageCardRaw = React.memo((props: MessageCardRawProps) => {
 		viewType,
 		setViewType,
 		isScreenshotMsg,
+		isDisplayRuleRaw,
 		messageCardToolsConfig,
 		messageViewTypeRendererProps,
 	} = props;
 	return (
 		<div className='parsed-message-wrapper'>
-			{message.parsedMessages && (
+			{message.parsedMessages && !isDisplayRuleRaw && (
 				<ParsedMessageHeader
 					messageCardToolsConfig={messageCardToolsConfig}
 					isScreenshotMsg={false}

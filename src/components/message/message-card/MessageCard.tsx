@@ -38,13 +38,14 @@ export interface OwnProps {
 export interface RecoveredProps {
 	viewTypesConfig: Map<string, MessageViewTypeConfig>;
 	isExpanded: boolean;
+	isDisplayRuleRaw: boolean;
 	setIsExpanded: (state: boolean) => void;
 	stateKey: string;
 }
 
 interface Props extends OwnProps, RecoveredProps {}
 
-const MessageCard = observer((props: Props) => {
+const MessageCard = (props: Props) => {
 	const { message, viewTypesConfig } = props;
 	const { id } = message;
 
@@ -131,6 +132,7 @@ const MessageCard = observer((props: Props) => {
 		isHighlighted,
 		isSoftFiltered,
 		isExported,
+		isDisplayRuleRaw: props.isDisplayRuleRaw,
 		isExpanded: props.isExpanded,
 		isExport: messagesStore.exportStore.isExport,
 		isBookmarked,
@@ -145,17 +147,21 @@ const MessageCard = observer((props: Props) => {
 			<MessageExpandButton
 				isExpanded={props.isExpanded}
 				isScreenshotMsg={false}
+				isDisplayRuleRaw={props.isDisplayRuleRaw}
 				setExpanded={props.setIsExpanded}
 				parsedMessages={message.parsedMessages}
 			/>
 		</div>
 	);
-});
+};
 
 const RecoverableMessageCard = (props: OwnProps) => {
 	const viewTypesStore = useMessagesViewTypeStore();
 	const { getSavedViewType } = viewTypesStore;
+
 	const viewTypesConfig = getViewTypesConfig(props.message, getSavedViewType);
+
+	const isDisplayRuleRaw = getSavedViewType(props.message).isDisplayRuleRaw;
 
 	return (
 		<StateSaver stateKey={props.message.id}>
@@ -166,6 +172,7 @@ const RecoverableMessageCard = (props: OwnProps) => {
 					stateKey={props.message.id}
 					setIsExpanded={stateSaver}
 					isExpanded={state}
+					isDisplayRuleRaw={isDisplayRuleRaw}
 				/>
 			)}
 		</StateSaver>

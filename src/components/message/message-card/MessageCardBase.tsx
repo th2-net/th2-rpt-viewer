@@ -42,6 +42,7 @@ export interface MessageCardBaseProps {
 	isEmbedded?: boolean;
 	sortOrderItems?: string[];
 	isExpanded: boolean;
+	isDisplayRuleRaw: boolean;
 }
 
 const MessageCardBase = React.memo(
@@ -55,6 +56,7 @@ const MessageCardBase = React.memo(
 		isHighlighted,
 		isSoftFiltered,
 		isExported,
+		isDisplayRuleRaw,
 		isExport,
 		isExpanded,
 		isAttached,
@@ -92,11 +94,11 @@ const MessageCardBase = React.memo(
 			message,
 			viewType: defineViewTypeConfig(
 				viewTypeConfig,
-				message.parsedMessages ? message.parsedMessages[0].id : message.id,
+				message.parsedMessages && !isDisplayRuleRaw ? message.parsedMessages[0].id : message.id,
 			).viewType,
 			setViewType: defineViewTypeConfig(
 				viewTypeConfig,
-				message.parsedMessages ? message.parsedMessages[0].id : message.id,
+				message.parsedMessages && !isDisplayRuleRaw ? message.parsedMessages[0].id : message.id,
 			).setViewType,
 			onTimestampMouseEnter: hoverMessage,
 			onTimestampMouseLeave: unhoverMessage,
@@ -111,21 +113,22 @@ const MessageCardBase = React.memo(
 			<div className={rootClass} onClick={addMessagesToExport}>
 				<div className='message-card'>
 					<MessageCardHeader {...messageInfoProps} />
-					{message.parsedMessages
-						?.filter((parsedMessage, index) => (isExpanded ? parsedMessage : index === 0))
-						.map((parsedMessage, index) => (
-							<ParsedMessageComponent
-								key={index}
-								message={message}
-								parsedMessage={parsedMessage}
-								parsedMessageIndex={index}
-								viewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).viewType}
-								setViewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType}
-								messageCardToolsConfig={messageCardToolsConfig}
-								messageViewTypeRendererProps={messageViewTypeRendererProps}
-							/>
-						))}
-					{(!message.parsedMessages || isExpanded) && (
+					{!isDisplayRuleRaw &&
+						message.parsedMessages
+							?.filter((parsedMessage, index) => (isExpanded ? parsedMessage : index === 0))
+							.map((parsedMessage, index) => (
+								<ParsedMessageComponent
+									key={parsedMessage.id}
+									message={message}
+									parsedMessage={parsedMessage}
+									parsedMessageIndex={index}
+									viewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).viewType}
+									setViewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType}
+									messageCardToolsConfig={messageCardToolsConfig}
+									messageViewTypeRendererProps={messageViewTypeRendererProps}
+								/>
+							))}
+					{(!message.parsedMessages || isExpanded || isDisplayRuleRaw) && (
 						<MessageCardRaw
 							message={message}
 							viewType={
@@ -137,6 +140,7 @@ const MessageCardBase = React.memo(
 								defineViewTypeConfig(viewTypeConfig, message.id).setViewType
 							}
 							isScreenshotMsg={false}
+							isDisplayRuleRaw={isDisplayRuleRaw}
 							messageCardToolsConfig={messageCardToolsConfig}
 							messageViewTypeRendererProps={messageViewTypeRendererProps}
 						/>

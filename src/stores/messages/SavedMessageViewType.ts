@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable } from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import { matchWildcardRule } from '../../helpers/regexp';
 import { MessageViewType, EventMessage } from '../../models/EventMessage';
 import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
@@ -30,10 +30,12 @@ export class SavedMessageViewType {
 		this.messageDisplayRulesStore = messageDisplayRulesStore;
 
 		this.getViewTypes();
+
+		reaction(() => this.displayRule, this.onDisplayRuleChange);
 	}
 
 	@computed
-	private get displayRule() {
+	public get displayRule() {
 		const rootRule = this.messageDisplayRulesStore.rootDisplayRule;
 		const declaredRule = this.messageDisplayRulesStore.messageDisplayRules.find(rule => {
 			if (rule.session.length > 1 && rule.session.includes('*')) {
@@ -59,6 +61,9 @@ export class SavedMessageViewType {
 	@observable
 	public viewTypes: Map<string, MessageViewType> = new Map();
 
+	@observable
+	public isDisplayRuleRaw: boolean = isRawViewType(this.displayRule);
+
 	@action
 	private getViewTypes = () => {
 		this.viewTypes.set(this.message.id, MessageViewType.ASCII);
@@ -66,6 +71,23 @@ export class SavedMessageViewType {
 			this.message.parsedMessages.forEach(parsedMessage =>
 				this.viewTypes.set(parsedMessage.id, this.displayRule),
 			);
+	};
+
+	@action
+	private onDisplayRuleChange = (vt: MessageViewType) => {
+		if (!isRawViewType(vt)) {
+			this.viewTypes.forEach((viewType, key) => {
+				if (key !== this.message.id) {
+					this.viewTypes.set(key, vt);
+				} else {
+					this.viewTypes.set(key, MessageViewType.ASCII);
+				}
+			});
+			this.isDisplayRuleRaw = false;
+		} else {
+			this.viewTypes.set(this.message.id, vt);
+			this.isDisplayRuleRaw = true;
+		}
 	};
 
 	@action
