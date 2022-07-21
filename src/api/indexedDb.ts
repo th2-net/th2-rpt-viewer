@@ -45,6 +45,7 @@ export type DbData =
 	| MessageBookmark
 	| SearchHistory
 	| GraphSearchResult
+	| MessageDisplayRule
 	| OrderRule
 	| MessageSortOrderItem
 	| FiltersHistoryType<FilterState>
@@ -81,7 +82,7 @@ interface TH2DB extends DBSchema {
 	};
 	[IndexedDbStores.DISPLAY_RULES]: {
 		key: string;
-		value: OrderRule;
+		value: MessageDisplayRule | OrderRule;
 		indexes: {
 			timestamp: number;
 		};
