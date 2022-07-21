@@ -39,7 +39,7 @@ export type MessageCardToolsProps = {
 
 type OwnProps = {
 	viewType?: MessageViewType;
-	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void;
+	setViewType: (vt: MessageViewType, id: string) => void;
 	parsedMessage?: ParsedMessage;
 	isScreenshotMsg: boolean;
 };
@@ -107,7 +107,7 @@ const MessageCardTools = ({
 	const isRawViewType = viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
 
 	const toggleViewType = (v: MessageViewType) => {
-		setViewType(v, message.id, parsedMessage ? parsedMessage.id : message.id);
+		setViewType(v, parsedMessage ? parsedMessage.id : message.id);
 	};
 
 	return (

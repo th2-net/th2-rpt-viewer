@@ -23,6 +23,7 @@ import {
 	MessageBodyFields,
 } from '../models/MessageBody';
 import { timestampToNumber } from './date';
+import { SavedMessageViewType } from '../stores/messages/SavedMessageViewType';
 
 export const sortMessagesByTimestamp = (
 	messages: Array<EventMessage>,
@@ -73,18 +74,20 @@ export function normalizeField(field: MessageBodyField): string | object {
 
 export function getViewTypesConfig(
 	message: EventMessage,
-	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void,
-	getSavedViewType: (message: EventMessage) => Map<string, MessageViewType>,
+	getSavedViewType: (message: EventMessage) => SavedMessageViewType,
 ) {
-	const viewTypes = getSavedViewType(message);
+	const viewTypes = getSavedViewType(message).viewTypes;
 	const config = new Map<string, MessageViewTypeConfig>();
-	config.set(message.id, { viewType: viewTypes.get(message.id) as MessageViewType, setViewType });
+	config.set(message.id, {
+		viewType: viewTypes.get(message.id) as MessageViewType,
+		setViewType: getSavedViewType(message).setViewType,
+	});
 
 	if (message.parsedMessages) {
 		message.parsedMessages.forEach(parsedMessage => {
 			config.set(parsedMessage.id, {
 				viewType: viewTypes.get(parsedMessage.id),
-				setViewType,
+				setViewType: getSavedViewType(message).setViewType,
 			});
 		});
 	}

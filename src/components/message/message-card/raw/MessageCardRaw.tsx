@@ -26,7 +26,7 @@ import { MessageScreenshotZoom } from '../MessageScreenshot';
 export interface MessageCardRawProps {
 	message: EventMessage;
 	viewType?: MessageViewType;
-	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void;
+	setViewType: (vt: MessageViewType, id: string) => void;
 	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;

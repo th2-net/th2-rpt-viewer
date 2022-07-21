@@ -32,7 +32,7 @@ function MessageCardList() {
 	const messagesDataStore = useMessagesDataStore();
 
 	const renderMsg = React.useCallback((index: number, message: EventMessage) => {
-		return <MessageCard message={message} key={index} />;
+		return <MessageCard message={message} />;
 	}, []);
 
 	if (messagesDataStore.isError) {

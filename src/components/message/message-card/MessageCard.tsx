@@ -154,8 +154,8 @@ const MessageCard = observer((props: Props) => {
 
 const RecoverableMessageCard = (props: OwnProps) => {
 	const viewTypesStore = useMessagesViewTypeStore();
-	const { getSavedViewType, setViewType } = viewTypesStore;
-	const viewTypesConfig = getViewTypesConfig(props.message, setViewType, getSavedViewType);
+	const { getSavedViewType } = viewTypesStore;
+	const viewTypesConfig = getViewTypesConfig(props.message, getSavedViewType);
 
 	return (
 		<StateSaver stateKey={props.message.id}>

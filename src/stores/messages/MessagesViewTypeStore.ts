@@ -16,13 +16,18 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import { keyForMessage } from '../../helpers/keys';
-import { EventMessage, MessageViewType } from '../../models/EventMessage';
+import { EventMessage } from '../../models/EventMessage';
+import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 import MessagesStore from './MessagesStore';
+import { SavedMessageViewType } from './SavedMessageViewType';
 
 class MessagesViewTypeStore {
+	messageDisplayRulesStore: MessageDisplayRulesStore;
+
 	messagesStore: MessagesStore;
 
-	constructor(messagesStore: MessagesStore) {
+	constructor(messageDispalyRulesStore: MessageDisplayRulesStore, messagesStore: MessagesStore) {
+		this.messageDisplayRulesStore = messageDispalyRulesStore;
 		this.messagesStore = messagesStore;
 		reaction(() => this.filter, this.resetSavedViewTypes);
 	}
@@ -33,32 +38,17 @@ class MessagesViewTypeStore {
 	}
 
 	@observable
-	public savedViewTypes = new Map<string, Map<string, MessageViewType>>();
+	public savedViewTypes = new Map<string, SavedMessageViewType>();
 
 	@action
-	public getSavedViewType = (message: EventMessage) => {
+	public getSavedViewType = (message: EventMessage): SavedMessageViewType => {
 		const key = keyForMessage(message.id);
 		if (this.savedViewTypes.has(key)) {
-			return this.savedViewTypes.get(key) as Map<string, MessageViewType>;
+			return this.savedViewTypes.get(key) as SavedMessageViewType;
 		}
-		this.savedViewTypes.set(key, this.getViewTypes(message));
-		return this.savedViewTypes.get(key) as Map<string, MessageViewType>;
-	};
+		this.savedViewTypes.set(key, new SavedMessageViewType(message, this.messageDisplayRulesStore));
 
-	@action
-	public setViewType = (vt: MessageViewType, messageId: string, parsedMessageId: string) => {
-		this.savedViewTypes.get(keyForMessage(messageId))?.set(parsedMessageId, vt);
-	};
-
-	@action
-	private getViewTypes = (message: EventMessage) => {
-		const viewTypes: Map<string, MessageViewType> = new Map();
-		viewTypes.set(message.id, MessageViewType.ASCII);
-		if (message.parsedMessages)
-			message.parsedMessages.forEach(parsedMessage =>
-				viewTypes.set(parsedMessage.id, MessageViewType.JSON),
-			);
-		return viewTypes;
+		return this.savedViewTypes.get(key) as SavedMessageViewType;
 	};
 
 	@action
