@@ -129,8 +129,6 @@ const EmbeddedMessages = () => {
 			) : (
 				<StateSaverProvider>
 					<MessagesVirtualizedList
-						className='messages-list__items'
-						rowCount={dataStore.messages.length}
 						scrolledIndex={scrolledIndex}
 						itemRenderer={renderMsg}
 						overscan={0}
@@ -152,7 +150,6 @@ export default function MessagesApp() {
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
-	rowCount: number;
 	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
@@ -162,7 +159,6 @@ interface Props {
 		 Objects and reference comparison is the only way to handle numbers changing in this case.
 	 */
 	scrolledIndex: Number | null;
-	className?: string;
 	overscan?: number;
 	loadNextMessages: () => Promise<EventMessage[]>;
 	loadPrevMessages: () => Promise<EventMessage[]>;
@@ -171,14 +167,7 @@ interface Props {
 const MessagesVirtualizedList = observer((props: Props) => {
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
-	const {
-		className,
-		overscan = 3,
-		itemRenderer,
-		loadPrevMessages,
-		loadNextMessages,
-		scrolledIndex,
-	} = props;
+	const { overscan = 3, itemRenderer, loadPrevMessages, loadNextMessages, scrolledIndex } = props;
 
 	React.useEffect(() => {
 		if (scrolledIndex !== null) {
@@ -241,7 +230,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 			overscan={overscan}
 			itemContent={itemRenderer}
 			style={{ height: '100%', width: '100%' }}
-			className={className}
+			className='messages-list__items'
 			onScroll={onScroll}
 			onWheel={onWheel}
 			components={{

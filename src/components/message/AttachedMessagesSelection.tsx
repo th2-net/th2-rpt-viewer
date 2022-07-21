@@ -14,16 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useMessagesStore } from '../../hooks';
 
 const AttachedMessagesSelection = () => {
 	const messagesStore = useMessagesStore();
 
-	const [messageIndex, setMessageIndex] = React.useState<number>(0);
+	const [messageIndex, setMessageIndex] = useState(0);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		setMessageIndex(0);
 	}, [messagesStore.attachedMessages]);
 
@@ -43,8 +43,9 @@ const AttachedMessagesSelection = () => {
 		}
 	};
 
-	if (messagesStore.attachedMessages.length === 0 || !messagesStore.dataStore.messages.length)
+	if (messagesStore.attachedMessages.length === 0 || !messagesStore.dataStore.messages.length) {
 		return null;
+	}
 
 	return (
 		<div className='messages-list__attached-messages'>

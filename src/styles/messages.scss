@@ -143,13 +143,12 @@
 }
 
 .message-card-tools {
-	margin: 1px 4px 0 4px;
 	align-self: stretch;
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
 	align-items: center;
-	min-width: 17px;
+	min-width: 25px;
 
 	&__wrapper {
 		display: flex;
@@ -691,6 +690,7 @@
 
 	&__items {
 		height: 100%;
+		width: 100%;
 		@include scrollbar;
 	}
 

@@ -18,7 +18,8 @@ import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle, ListItem } from 'react-virtuoso';
 import moment from 'moment';
-import { notEmpty } from 'helpers/object';
+import { isEventMessage } from 'helpers/event';
+import { SearchDirection } from 'models/search/SearchDirection';
 import { EventMessage } from '../../../models/EventMessage';
 import { useMessagesStore, useDebouncedCallback, useMessagesDataStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';
@@ -26,9 +27,7 @@ import { SSEHeartbeat } from '../../../api/sse';
 import { formatTime } from '../../../helpers/date';
 
 interface Props {
-	computeItemKey?: (idx: number) => React.Key;
-	rowCount: number;
-	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
+	renderMessage: (message: EventMessage) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -36,7 +35,6 @@ interface Props {
 		 we are comparing primitive numbers.
 		 Objects and reference comparison is the only way to handle numbers changing in this case.
 	 */
-	className?: string;
 	overscan?: number;
 	loadNextMessages: () => Promise<EventMessage[]>;
 	loadPrevMessages: () => Promise<EventMessage[]>;
@@ -63,7 +61,7 @@ const MessagesVirtualizedList = (props: Props) => {
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
-	const { className, overscan = 3, itemRenderer, loadPrevMessages, loadNextMessages } = props;
+	const { overscan = 3, renderMessage, loadPrevMessages, loadNextMessages } = props;
 
 	const [[firstPrevChunkIsLoaded, firstNextChunkIsLoaded], setLoadedChunks] = React.useState<
 		[boolean, boolean]
@@ -136,18 +134,27 @@ const MessagesVirtualizedList = (props: Props) => {
 	};
 
 	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
-		messageStore.setRenderedItems(renderedMessages.map(listItem => listItem.data).filter(notEmpty));
+		messageStore.setRenderedItems(
+			renderedMessages.map(listItem => listItem.data).filter(isEventMessage),
+		);
 	}, 800);
+
+	const computeItemKey = (index: number, message: EventMessage) => message.id;
+
+	const itemContent = React.useCallback(
+		(index: number, message: EventMessage) => renderMessage(message),
+		[renderMessage],
+	);
 
 	return (
 		<Virtuoso
+			computeItemKey={computeItemKey}
 			data={messages}
 			firstItemIndex={startIndex}
 			ref={virtuoso}
 			overscan={overscan}
-			itemContent={itemRenderer}
-			style={{ height: '100%', width: '100%' }}
-			className={className}
+			itemContent={itemContent}
+			className='messages-list__items'
 			itemsRendered={onMessagesRendered}
 			onScroll={onScroll}
 			onWheel={onWheel}
@@ -155,54 +162,30 @@ const MessagesVirtualizedList = (props: Props) => {
 				Header: function MessagesListSpinnerNext() {
 					return (
 						<Observer>
-							{() =>
-								noMatchingMessagesNext ? (
-									<div className='messages-list__loading-message'>
-										{nextLoadHeartbeat && (
-											<span className='messages-list__loading-message-text'>
-												No more matching messages up to&nbsp;
-												{moment.utc(nextLoadHeartbeat.timestamp).format()}
-											</span>
-										)}
-										<button className='messages-list__load-btn' onClick={() => keepLoading('next')}>
-											Keep loading
-										</button>
-									</div>
-								) : (
-									<MessagesListSpinner
-										isLoading={isLoadingNextMessages || updateStore.isActive}
-										searchInfo={nextLoadHeartbeat}
-									/>
-								)
-							}
+							{() => (
+								<DirectionLoadingStatus
+									direction={SearchDirection.Next}
+									onKeepLoading={keepLoading}
+									hearbeat={nextLoadHeartbeat}
+									isLoading={isLoadingNextMessages || updateStore.isActive}
+									noMatchingMesssages={noMatchingMessagesNext}
+								/>
+							)}
 						</Observer>
 					);
 				},
 				Footer: function MessagesListSpinnerPrevious() {
 					return (
 						<Observer>
-							{() =>
-								noMatchingMessagesPrev ? (
-									<div className='messages-list__loading-message'>
-										{prevLoadHeartbeat && (
-											<span className='messages-list__loading-message-text'>
-												No more matching messages from&nbsp;
-												{moment.utc(prevLoadHeartbeat.timestamp).format()}
-											</span>
-										)}
-										<button
-											className='messages-list__load-btn'
-											onClick={() => keepLoading('previous')}>
-											Keep loading
-										</button>
-									</div>
-								) : (
-									<MessagesListSpinner
-										isLoading={isLoadingPreviousMessages}
-										searchInfo={prevLoadHeartbeat}
-									/>
-								)
-							}
+							{() => (
+								<DirectionLoadingStatus
+									direction={SearchDirection.Previous}
+									onKeepLoading={keepLoading}
+									hearbeat={prevLoadHeartbeat}
+									isLoading={isLoadingPreviousMessages}
+									noMatchingMesssages={noMatchingMessagesPrev}
+								/>
+							)}
 						</Observer>
 					);
 				},
@@ -213,21 +196,46 @@ const MessagesVirtualizedList = (props: Props) => {
 
 export default observer(MessagesVirtualizedList);
 
-interface SpinnerProps {
+interface DirectionLoadingStatusProps {
+	hearbeat: SSEHeartbeat | null;
+	onKeepLoading: (searchDirection: SearchDirection.Next | SearchDirection.Previous) => void;
+	noMatchingMesssages: boolean;
 	isLoading: boolean;
-	searchInfo: SSEHeartbeat | null;
+	direction: SearchDirection.Next | SearchDirection.Previous;
 }
-const MessagesListSpinner = ({ isLoading, searchInfo }: SpinnerProps) => {
-	if (!isLoading) return null;
-	return (
-		<div className='messages-list__spinner-wrapper'>
-			<div className='messages-list__spinner' />
-			{searchInfo && (
-				<div className='messages-list__search-info'>
-					<span>Processed items: {searchInfo.scanCounter}</span>
-					<span>Current search position: {formatTime(searchInfo.timestamp)}</span>
-				</div>
-			)}
-		</div>
-	);
-};
+
+function DirectionLoadingStatus(props: DirectionLoadingStatusProps) {
+	const { noMatchingMesssages, onKeepLoading, hearbeat, isLoading, direction } = props;
+
+	if (noMatchingMesssages) {
+		return (
+			<div className='messages-list__loading-message'>
+				{hearbeat && (
+					<span className='messages-list__loading-message-text'>
+						No more matching messages {direction === SearchDirection.Next ? 'up to' : 'from'}&nbsp;
+						{moment.utc(hearbeat.timestamp).format()}
+					</span>
+				)}
+				<button className='messages-list__load-btn' onClick={() => onKeepLoading(direction)}>
+					Keep loading
+				</button>
+			</div>
+		);
+	}
+
+	if (isLoading) {
+		return (
+			<div className='messages-list__spinner-wrapper'>
+				<div className='messages-list__spinner' />
+				{hearbeat && (
+					<div className='messages-list__search-info'>
+						<span>Processed items: {hearbeat.scanCounter}</span>
+						<span>Current search position: {formatTime(hearbeat.timestamp)}</span>
+					</div>
+				)}
+			</div>
+		);
+	}
+
+	return null;
+}

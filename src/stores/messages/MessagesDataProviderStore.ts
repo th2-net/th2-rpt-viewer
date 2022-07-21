@@ -382,7 +382,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			: this.messagesStore.filterStore.filterParams;
 
 	@action
-	public keepLoading = (direction: 'next' | 'previous') => {
+	public keepLoading = (direction: SearchDirection.Next | SearchDirection.Previous) => {
 		if (
 			this.messagesStore.filterStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||
@@ -394,7 +394,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			throw new Error('Load could not continue because loadHeartbeat is missing');
 
 		const keepLoadingStartTimestamp =
-			direction === 'previous'
+			direction === SearchDirection.Previous
 				? this.prevLoadHeartbeat!.timestamp
 				: this.nextLoadHeartbeat!.timestamp;
 
@@ -404,13 +404,13 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			id: '',
 		};
 
-		if (direction === 'previous') {
+		if (direction === SearchDirection.Previous) {
 			this.prevLoadHeartbeat = defaultHearbeat;
 		} else {
 			this.nextLoadHeartbeat = defaultHearbeat;
 		}
 
-		if (direction === 'previous') {
+		if (direction === SearchDirection.Previous) {
 			this.noMatchingMessagesPrev = false;
 			const idsMap = this.messages
 				.slice(Math.max(0, this.messages.length - 20))

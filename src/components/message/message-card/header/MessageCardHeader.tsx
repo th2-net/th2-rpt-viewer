@@ -103,7 +103,6 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 					{message.parsedMessages[0].message.metadata.messageType}
 				</Chip>
 			)}
-
 			<div className='message-card-tools__wrapper'>
 				<MessageCardTools
 					{...messageCardToolsConfig}

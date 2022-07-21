@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import MessageCard from '../message-card/MessageCard';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
@@ -25,54 +25,43 @@ import StateSaverProvider from '../../util/StateSaverProvider';
 import { EventMessage } from '../../../models/EventMessage';
 import '../../../styles/messages.scss';
 
+const ERROR_MESSAGE = 'Error occured while loading messages';
+const EMPTY_MESSAGE = 'No messages';
+
 function MessageCardList() {
 	const messagesStore = useMessagesStore();
 	const messagesDataStore = useMessagesDataStore();
 
-	const renderMsg = React.useCallback(
-		(index: number, message: EventMessage) => <MessageCard message={message} key={index} />,
+	const renderMessage = useCallback(
+		(message: EventMessage) => <MessageCard message={message} />,
 		[],
 	);
 
 	if (messagesDataStore.isError) {
-		return (
-			<Empty
-				description='Error occured while loading messages'
-				descriptionStyles={{ position: 'relative', bottom: '6px' }}
-			/>
-		);
+		return <Empty description={ERROR_MESSAGE} />;
 	}
 
-	if (
-		messagesDataStore.messages.length === 0 &&
-		(messagesDataStore.isLoading ||
-			messagesStore.isLoadingAttachedMessages ||
-			messagesStore.isFilteringTargetMessages)
-	) {
+	const isEmpty = messagesDataStore.messages.length === 0;
+
+	const isLoading =
+		messagesDataStore.isLoading ||
+		messagesStore.isLoadingAttachedMessages ||
+		messagesStore.isFilteringTargetMessages ||
+		messagesDataStore.updateStore.isActive;
+
+	if (isEmpty && isLoading) {
 		return <SplashScreen />;
 	}
 
-	if (
-		!(messagesDataStore.isLoadingNextMessages || messagesDataStore.isLoadingPreviousMessages) &&
-		messagesDataStore.messages.length === 0
-	) {
-		if (messagesDataStore.isError === false) {
-			return (
-				<Empty
-					description='No messages'
-					descriptionStyles={{ position: 'relative', bottom: '6px' }}
-				/>
-			);
-		}
+	if (isEmpty && !isLoading) {
+		return <Empty description={EMPTY_MESSAGE} />;
 	}
 
 	return (
 		<div className='messages-list'>
 			<StateSaverProvider>
 				<MessagesVirtualizedList
-					className='messages-list__items'
-					rowCount={messagesDataStore.messages.length}
-					itemRenderer={renderMsg}
+					renderMessage={renderMessage}
 					overscan={0}
 					loadNextMessages={messagesDataStore.getNextMessages}
 					loadPrevMessages={messagesDataStore.getPreviousMessages}
