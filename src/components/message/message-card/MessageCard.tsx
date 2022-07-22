@@ -30,6 +30,7 @@ import '../../../styles/messages.scss';
 import MessageExpandButton from '../MessageExpandButton';
 import StateSaver from '../../util/StateSaver';
 import { getViewTypesConfig } from '../../../helpers/message';
+import { createBemBlock } from '../../../helpers/styleCreators';
 
 export interface OwnProps {
 	message: EventMessage;
@@ -45,7 +46,7 @@ export interface RecoveredProps {
 
 interface Props extends OwnProps, RecoveredProps {}
 
-const MessageCard = (props: Props) => {
+const MessageCard = observer((props: Props) => {
 	const { message, viewTypesConfig } = props;
 	const { id } = message;
 
@@ -108,7 +109,7 @@ const MessageCard = (props: Props) => {
 		messagesStore.setHoveredMessage(null);
 	}, [messagesStore.setHoveredMessage]);
 
-	const addMessagesToExport = React.useCallback(
+	const addMessageToExport = React.useCallback(
 		() => messagesStore.exportStore.addMessageToExport(message),
 		[messagesStore.exportStore.addMessageToExport],
 	);
@@ -128,21 +129,28 @@ const MessageCard = (props: Props) => {
 		viewTypeConfig: viewTypesConfig,
 		hoverMessage,
 		unhoverMessage,
-		addMessagesToExport,
-		isHighlighted,
-		isSoftFiltered,
-		isExported,
 		isDisplayRuleRaw: props.isDisplayRuleRaw,
 		isExpanded: props.isExpanded,
-		isExport: messagesStore.exportStore.isExport,
 		isBookmarked,
 		isAttached,
 		toogleMessagePin,
 		sortOrderItems,
+		isExport: messagesStore.exportStore.isExport,
+		isExported,
+		addMessageToExport,
 	};
 
+	const rootClass = createBemBlock(
+		'messages-list__item',
+		isAttached ? 'attached' : null,
+		isBookmarked ? 'pinned' : null,
+		isHighlighted ? 'highlighted' : null,
+		isSoftFiltered ? 'soft-filtered' : null,
+		isExported ? 'exported' : null,
+	);
+
 	return (
-		<div className='messages-list__item'>
+		<div className={rootClass}>
 			<MessageCardBase {...messageCardBaseProps} />
 			<MessageExpandButton
 				isExpanded={props.isExpanded}
@@ -153,7 +161,7 @@ const MessageCard = (props: Props) => {
 			/>
 		</div>
 	);
-};
+});
 
 const RecoverableMessageCard = (props: OwnProps) => {
 	const viewTypesStore = useMessagesViewTypeStore();

@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { createBemBlock } from '../../../helpers/styleCreators';
 import { EventMessage, MessageViewTypeConfig } from '../../../models/EventMessage';
 import { MessageCardViewTypeRendererProps } from './MessageCardViewTypeRenderer';
 import { MessageCardToolsProps } from './MessageCardTools';
@@ -29,13 +28,11 @@ export interface MessageCardBaseProps {
 	message: EventMessage;
 	hoverMessage?: () => void;
 	unhoverMessage?: () => void;
-	addMessagesToExport?: () => void;
+	addMessageToExport?: () => void;
+	isExport?: boolean;
+	isExported?: boolean;
 	viewTypeConfig: MessageViewTypeConfig | Map<string, MessageViewTypeConfig>;
 	rawViewTypeConfig?: MessageViewTypeConfig;
-	isHighlighted?: boolean;
-	isSoftFiltered?: boolean;
-	isExported?: boolean;
-	isExport?: boolean;
 	isAttached?: boolean;
 	isBookmarked?: boolean;
 	toogleMessagePin?: () => void;
@@ -50,32 +47,20 @@ const MessageCardBase = React.memo(
 		message,
 		hoverMessage,
 		unhoverMessage,
-		addMessagesToExport,
 		viewTypeConfig,
 		rawViewTypeConfig,
-		isHighlighted,
-		isSoftFiltered,
-		isExported,
 		isDisplayRuleRaw,
-		isExport,
 		isExpanded,
 		isAttached,
 		isBookmarked,
 		toogleMessagePin,
 		isEmbedded,
 		sortOrderItems,
+		addMessageToExport,
+		isExport,
+		isExported,
 	}: MessageCardBaseProps) => {
 		const { id, rawMessageBase64 } = message;
-
-		const rootClass = createBemBlock(
-			'message-card-wrapper',
-			isAttached ? 'attached' : null,
-			isBookmarked ? 'pinned' : null,
-			isHighlighted ? 'highlighted' : null,
-			isSoftFiltered ? 'soft-filtered' : null,
-			isExport ? 'export-mode' : null,
-			isExported ? 'exported' : null,
-		);
 
 		const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
 			messageId: id,
@@ -102,15 +87,18 @@ const MessageCardBase = React.memo(
 			).setViewType,
 			onTimestampMouseEnter: hoverMessage,
 			onTimestampMouseLeave: unhoverMessage,
+			addMessageToExport,
 			isBookmarked,
 			isAttached,
 			isEmbedded,
+			isExport,
+			isExported,
 			isScreenshotMsg: false,
 			messageCardToolsConfig,
 		};
 
 		return (
-			<div className={rootClass} onClick={addMessagesToExport}>
+			<div className='message-card-wrapper'>
 				<div className='message-card'>
 					<MessageCardHeader {...messageInfoProps} />
 					{!isDisplayRuleRaw &&

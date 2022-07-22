@@ -25,50 +25,6 @@
 	border-radius: 16px 16px 0 0;
 	justify-content: space-between;
 
-	&.highlighted {
-		@keyframes highlight {
-			from {
-				background: $highlightedMessageCardBackground;
-			}
-
-			50% {
-				background: rgba($highlightedMessageCardBackground, 0);
-			}
-			to {
-				background: $highlightedMessageCardBackground;
-			}
-		}
-		animation: highlight 1s infinite ease-in-out;
-	}
-
-	&.soft-filtered {
-		border: 1px solid $filterPrimaryColor;
-
-		&:hover {
-			background-color: rgba($color: $filterPrimaryColor, $alpha: 0.1);
-		}
-	}
-
-	&.attached {
-		border: 2px solid $attachedMessageCardBorderColor;
-
-		&:hover {
-			border-color: $attachedMessageCardHoverBorderColor;
-			background-color: $attachedMessageCardHoverBackground;
-		}
-	}
-
-	&.exported {
-		background-color: $exportedMessageCardBackground;
-		&:hover {
-			background-color: $exportedMessageCardHoverBackground;
-		}
-	}
-
-	&.export-mode {
-		cursor: pointer;
-	}
-
 	&:hover .parsed-message,
 	&:hover .mc-header__info {
 		background-color: $messageCardHoverBackground;
@@ -652,8 +608,47 @@
 	}
 
 	&__item {
-		margin: 0 5px;
-		padding: 4px;
+		margin: 2px 5px;
+		border-radius: 16px;
+		padding: 2px;
+
+		&.highlighted {
+			@keyframes highlight {
+				from {
+					background: $highlightedMessageCardBackground;
+				}
+
+				50% {
+					background: rgba($highlightedMessageCardBackground, 0);
+				}
+				to {
+					background: $highlightedMessageCardBackground;
+				}
+			}
+			animation: highlight 1s infinite ease-in-out;
+		}
+
+		&.soft-filtered {
+			border: 1px solid $filterPrimaryColor;
+
+			&:hover {
+				background-color: rgba($color: $filterPrimaryColor, $alpha: 0.1);
+			}
+		}
+
+		&.attached {
+			border: 2px solid $attachedMessageCardBorderColor;
+
+			&:hover {
+				border-color: $attachedMessageCardHoverBorderColor;
+				background-color: $attachedMessageCardHoverBackground;
+			}
+		}
+
+		&.exported {
+			border: 2px solid $exportedMessageCardBackground;
+			padding: 0;
+		}
 	}
 
 	&__spinner {

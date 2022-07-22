@@ -21,16 +21,20 @@ import { formatTime, timestampToNumber } from '../../../../helpers/date';
 import { getHashCode } from '../../../../helpers/stringHash';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
 import { Chip } from '../../../Chip';
+import Checkbox from '../../../util/Checkbox';
 
 export interface MessageInfoProps {
 	message: EventMessage;
 	onTimestampMouseEnter?: () => void;
 	onTimestampMouseLeave?: () => void;
+	addMessageToExport?: () => void;
 	viewType?: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
 	isBookmarked?: boolean;
 	isAttached?: boolean;
 	isEmbedded?: boolean;
+	isExport?: boolean;
+	isExported?: boolean;
 	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 }
@@ -42,9 +46,12 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		setViewType,
 		onTimestampMouseEnter,
 		onTimestampMouseLeave,
+		addMessageToExport,
 		isBookmarked,
 		isAttached,
 		isEmbedded,
+		isExport,
+		isExported,
 		messageCardToolsConfig,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
@@ -76,6 +83,9 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 
 	return (
 		<div className='mc-header__info'>
+			{isExport && isExported !== undefined && addMessageToExport && (
+				<Checkbox checked={isExported} onChange={addMessageToExport} />
+			)}
 			<Chip>
 				<div className='mc-header__message-icon' />
 				{!isEmbedded && isBookmarked && <div className={bookmarkIconClass} />}
