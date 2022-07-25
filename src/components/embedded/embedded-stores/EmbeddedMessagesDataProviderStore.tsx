@@ -23,11 +23,14 @@ import { isEventMessage } from '../../../helpers/event';
 import { isAbortError } from '../../../helpers/fetch';
 import { MessagesDataStore } from '../../../models/Stores';
 import MessagesUpdateStore from '../../../stores/messages/MessagesUpdateStore';
-import { MessagesSSEChannel } from '../../../stores/SSEChannel/MessagesSSEChannel';
+import {
+	MessagesSSEChannel,
+	MessageSSEEventListeners,
+} from '../../../stores/SSEChannel/MessagesSSEChannel';
 import { DirectionalStreamInfo } from '../../../models/StreamInfo';
 import { extractMessageIds } from '../../../helpers/streamInfo';
 
-const SEARCH_TIME_FRAME = 15;
+// const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class EmbeddedMessagesDataProviderStore implements MessagesDataStore {
@@ -105,7 +108,10 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	};
 
 	@action
-	public loadMessages = async () => {
+	public loadMessages = async (
+		nextListeners?: Partial<MessageSSEEventListeners>,
+		prevListeners?: Partial<MessageSSEEventListeners>,
+	) => {
 		this.stopMessagesLoading();
 		this.resetState();
 
@@ -118,26 +124,16 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				...queryParams,
 				searchDirection: 'previous',
 			},
-			{
-				interval: SEARCH_TIME_FRAME,
-				onClose: () =>
-					!this.searchChannelNext?.isLoading &&
-					!this.updateStore.isActive &&
-					this.updateStore.subscribeOnChanges(),
-			},
+			FIFTEEN_SECONDS,
+			prevListeners,
 		);
 		this.createNextMessageChannelEventSource(
 			{
 				...queryParams,
 				searchDirection: 'next',
 			},
-			{
-				interval: SEARCH_TIME_FRAME,
-				onClose: () =>
-					!this.searchChannelPrev?.isLoading &&
-					!this.updateStore.isActive &&
-					this.updateStore.subscribeOnChanges(),
-			},
+			FIFTEEN_SECONDS,
+			nextListeners,
 		);
 
 		if (!this.searchChannelPrev || !this.searchChannelNext) return;
@@ -217,7 +213,6 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.isLoadingMessageIds = false;
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
-		this.updateStore.stopSubscription();
 	};
 
 	@action
@@ -230,26 +225,14 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
-		options?: {
-			onClose?: () => void;
-			interval?: number;
-		},
+		requestTimeoutMs?: number,
+		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
-		this.prevLoadEndTimestamp = null;
-
 		this.searchChannelPrev = new MessagesSSEChannel(query, {
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
-			onKeepAliveResponse:
-				typeof options?.interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
-			...(options?.onClose
-				? {
-						onClose: messages => {
-							this.onPrevChannelResponse(messages);
-							options.onClose?.();
-						},
-				  }
-				: {}),
+			onKeepAliveResponse: heartbeat => this.onKeepAliveMessagePrevious(heartbeat),
+			...listeners,
 		});
 	};
 
@@ -297,28 +280,14 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	public createNextMessageChannelEventSource = (
 		query: MessagesSSEParams,
-		options?: {
-			onClose?: () => void;
-			interval?: number;
-		},
+		requestTimeoutMs?: number,
+		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
-		this.nextLoadEndTimestamp = null;
-
 		this.searchChannelNext = new MessagesSSEChannel(query, {
-			onResponse: messages => {
-				this.onNextChannelResponse(messages);
-			},
+			onResponse: this.onNextChannelResponse,
 			onError: this.onLoadingError,
-			onKeepAliveResponse:
-				typeof options?.interval === 'number' ? this.onKeepAliveMessageNext : undefined,
-			...(options?.onClose
-				? {
-						onClose: messages => {
-							this.onNextChannelResponse(messages);
-							options.onClose?.();
-						},
-				  }
-				: {}),
+			onKeepAliveResponse: hearbeat => this.onKeepAliveMessageNext(hearbeat),
+			...listeners,
 		});
 	};
 

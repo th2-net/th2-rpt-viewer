@@ -22,9 +22,9 @@ import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 export class SavedMessageViewType {
 	message: EventMessage;
 
-	messageDisplayRulesStore: MessageDisplayRulesStore;
+	messageDisplayRulesStore?: MessageDisplayRulesStore;
 
-	constructor(message: EventMessage, messageDisplayRulesStore: MessageDisplayRulesStore) {
+	constructor(message: EventMessage, messageDisplayRulesStore?: MessageDisplayRulesStore) {
 		this.message = message;
 
 		this.messageDisplayRulesStore = messageDisplayRulesStore;
@@ -36,8 +36,8 @@ export class SavedMessageViewType {
 
 	@computed
 	public get displayRule() {
-		const rootRule = this.messageDisplayRulesStore.rootDisplayRule;
-		const declaredRule = this.messageDisplayRulesStore.messageDisplayRules.find(rule => {
+		const rootRule = this.messageDisplayRulesStore?.rootDisplayRule;
+		const declaredRule = this.messageDisplayRulesStore?.messageDisplayRules.find(rule => {
 			if (rule.session.length > 1 && rule.session.includes('*')) {
 				return matchWildcardRule(this.message.id, rule.session);
 			}

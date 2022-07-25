@@ -27,8 +27,7 @@ interface Props
 
 export function Chip(props: Props) {
 	const {
-		className,
-		additionalClassName,
+		className = '',
 		isSelected,
 		onClick,
 		title,
@@ -42,12 +41,12 @@ export function Chip(props: Props) {
 		isSelected ? 'selected' : null,
 		onClick ? 'clickable' : null,
 		isLoading ? 'loading' : null,
-		additionalClassName || null,
+		className,
 	);
 
 	return (
 		<div
-			className={className ? rootClass.concat(' ', className) : rootClass}
+			className={rootClass}
 			title={title}
 			onClick={onClick}
 			onMouseEnter={onMouseEnter}

@@ -29,16 +29,49 @@ import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import MessagesUpdateButton from '../message/MessagesUpdateButton';
 import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
-import MessageCard from '../message/message-card/MessageCard';
+import { getViewTypesConfig } from '../../helpers/message';
+import StateSaver from '../util/StateSaver';
+import MessageCardBase from '../message/message-card/MessageCardBase';
+import MessageExpandButton from '../message/MessageExpandButton';
+import EmbeddedMessagesViewTypeStore from './embedded-stores/EmbeddedMessagesViewTypeStore';
 
 const messagesStore = new EmbeddedMessagesStore(api);
+
+const viewStore = new EmbeddedMessagesViewTypeStore();
+
+const EmbeddedMessageCard = observer((props: { message: EventMessage }) => {
+	const { getSavedViewType } = viewStore;
+	const viewTypesConfig = getViewTypesConfig(props.message, getSavedViewType);
+
+	return (
+		<StateSaver stateKey={props.message.id}>
+			{(isExpanded: boolean, setIsExpanded) => (
+				<div className='messages-list__item'>
+					<MessageCardBase
+						viewTypeConfig={viewTypesConfig}
+						message={props.message}
+						isExpanded={isExpanded}
+						isDisplayRuleRaw={false}
+					/>
+					<MessageExpandButton
+						isExpanded={isExpanded}
+						setExpanded={setIsExpanded}
+						parsedMessages={props.message.parsedMessages}
+						isScreenshotMsg={false}
+						isDisplayRuleRaw={false}
+					/>
+				</div>
+			)}
+		</StateSaver>
+	);
+});
 
 const EmbeddedMessages = () => {
 	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
 
 	const renderMsg = React.useCallback((index: number, message: EventMessage) => {
-		return <MessageCard message={message} />;
+		return <EmbeddedMessageCard message={message} />;
 	}, []);
 
 	const reportURL = React.useMemo(() => {
@@ -266,8 +299,6 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		/>
 	);
 });
-
-export { MessagesVirtualizedList };
 
 interface SpinnerProps {
 	isLoading: boolean;

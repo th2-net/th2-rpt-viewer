@@ -101,7 +101,12 @@ export default class MessagesStore {
 
 		reaction(() => this.hoveredMessage, this.onMessageHover);
 
-		reaction(() => this.filterStore.filter, this.exportStore.disableExport);
+		reaction(
+			() => this.filterStore.filter,
+			() => {
+				this.exportStore.disableExport();
+			},
+		);
 	}
 
 	@computed

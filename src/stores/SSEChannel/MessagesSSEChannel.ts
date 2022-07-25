@@ -95,14 +95,20 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		const { resumeMessageIds, initialResponseTimeoutMs = 2000 } = options || {};
 		this.initConnection(resumeMessageIds);
 
-		const messagesChunk = await (initialResponseTimeoutMs
-			? Promise.race([
-					this.getInitialResponseWithinTimeout(initialResponseTimeoutMs),
-					this.getFetchedChunk(),
-			  ])
-			: this.getFetchedChunk());
-
-		return messagesChunk;
+		try {
+			const messagesChunk = await (initialResponseTimeoutMs
+				? Promise.race([
+						this.getInitialResponseWithinTimeout(initialResponseTimeoutMs),
+						this.getFetchedChunk(),
+				  ])
+				: this.getFetchedChunk());
+			return messagesChunk;
+		} catch (error) {
+			if (error !== 'WHEN_CANCELLED') {
+				console.log(error);
+			}
+			return [];
+		}
 	};
 
 	private initConnection = (resumeMessageIds?: string[]): void => {

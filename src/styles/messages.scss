@@ -401,6 +401,33 @@
 			border: 1px solid $graphTextColor;
 		}
 	}
+
+	&__sessionid {
+		position: relative;
+		color: #fff;
+		display: flex;
+		flex-direction: row;
+		gap: 5px;
+	}
+}
+
+.parsed-message-wrapper {
+	&:hover .message-card-tools__ellipsis {
+		display: block;
+	}
+	&:hover .message-card-tools {
+		background-color: #fcfcfc;
+		border-radius: 20px;
+		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+	}
+}
+
+.parsed-message {
+	background-color: #fbfbfb;
+	margin-bottom: 1px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
 }
 
 .parsed-message-wrapper {
