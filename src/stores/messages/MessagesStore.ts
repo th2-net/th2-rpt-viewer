@@ -18,6 +18,7 @@ import { action, computed, observable, reaction, IReactionDisposer, runInAction 
 import { MessageFilterState } from 'modules/search/models/Search';
 import { IFilterConfigStore } from 'models/Stores';
 import { FilterEntry } from 'modules/search/stores/SearchStore';
+import { Panel } from 'models/Panel';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
 import MessagesFilter from '../../models/filter/MessagesFilter';
@@ -159,7 +160,7 @@ export default class MessagesStore {
 			if (isEventMessage(message)) {
 				this.selectedMessageId = new String(message.id);
 				this.highlightedMessageId = new String(message.id);
-				this.workspaceStore.viewStore.activePanel = this;
+				this.workspaceStore.viewStore.activePanel = Panel.Messages;
 				if (defaultState.targetMessageBodyRange) {
 					this.selectedBodyFilter = defaultState.targetMessageBodyRange;
 				}
@@ -181,7 +182,7 @@ export default class MessagesStore {
 			this.selectedMessageId = new String(message.id);
 			this.highlightedMessageId = new String(message.id);
 			this.hintMessages = [];
-			this.workspaceStore.viewStore.activePanel = this;
+			this.workspaceStore.viewStore.activePanel = Panel.Messages;
 
 			this.filterStore.resetMessagesFilter({
 				timestampFrom: null,

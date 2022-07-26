@@ -15,9 +15,8 @@
  ***************************************************************************** */
 
 import { observable, action } from 'mobx';
+import { Panel } from 'models/Panel';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
-import EventsStore from '../events/EventsStore';
-import MessagesStore from '../messages/MessagesStore';
 import { isPanelCollapsed } from '../../helpers/workspaceView';
 
 type InitialState = Partial<{
@@ -47,7 +46,7 @@ export default class WorkspaceViewStore {
 	public flattenedListView = false;
 
 	@observable
-	public activePanel: EventsStore | MessagesStore | null = null;
+	public activePanel: Panel = Panel.Search;
 
 	@action
 	public setPanelArea = (panelArea: number) => {
@@ -112,7 +111,7 @@ export default class WorkspaceViewStore {
 	};
 
 	@action
-	public setActivePanel = (panel: EventsStore | MessagesStore | null) => {
+	public setActivePanel = (panel: Panel) => {
 		this.activePanel = panel;
 	};
 

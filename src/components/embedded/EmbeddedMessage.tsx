@@ -42,7 +42,7 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	}, []);
 
 	async function getMessage() {
-		const res = await fetch(`backend/message/${messageId}`);
+		const res = await fetch(`http://de-th2-qa:30000/th2-groups/backend/message/${messageId}`);
 		if (res.ok) {
 			setMessage(await res.json());
 		} else {

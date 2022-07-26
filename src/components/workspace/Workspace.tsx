@@ -17,18 +17,13 @@
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import BookmarksPanel from 'modules/bookmarks';
+import EventsPanel from 'modules/events';
 import SearchPanel from 'modules/search';
 import { getItemId } from 'helpers/event';
-import EventWindow from '../event/EventWindow';
+import { Panel } from 'models/Panel';
 import MessagesWindow from '../message/MessagesWindow';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import { useActivePanel, useMessagesStore, useEventsStore, useWorkspaceStore } from '../../hooks';
-import {
-	isEventsStore,
-	isMessagesStore,
-	isSearchStore,
-	isBookmarksStore,
-} from '../../helpers/stores';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 import '../../styles/workspace.scss';
 
@@ -52,14 +47,14 @@ const panelColors = {
 } as const;
 
 function Workspace() {
-	const { activePanel } = useActivePanel(null);
+	const { activePanel } = useActivePanel();
 	const { panelsLayout, setPanelsLayout, togglePanel } = useWorkspaceViewStore();
 	const workspaceStore = useWorkspaceStore();
 	const messagesStore = useMessagesStore();
 	const eventsStore = useEventsStore();
 
 	const itemsInView = computed(() =>
-		[...messagesStore.messagesInView, ...eventsStore.eventsInView].reduce(
+		[...messagesStore.messagesInView, ...eventsStore.renderedEvents].reduce(
 			(map, item) => ({
 				...map,
 				[getItemId(item)]: true,
@@ -85,29 +80,29 @@ function Workspace() {
 								itemsInView={itemsInView}
 							/>
 						),
-						isActive: isSearchStore(activePanel),
+						isActive: activePanel === Panel.Search,
+						setActivePanel: () => workspaceStore.viewStore.setActivePanel(Panel.Search),
 					},
 					{
 						title: 'Events',
 						color: panelColors.events,
-						component: <EventWindow />,
-						isActive: isEventsStore(activePanel),
-						setActivePanel: () =>
-							workspaceStore.viewStore.setActivePanel(workspaceStore.eventsStore),
+						component: <EventsPanel />,
+						isActive: activePanel === Panel.Events,
+						setActivePanel: () => workspaceStore.viewStore.setActivePanel(Panel.Events),
 					},
 					{
 						title: 'Messages',
 						color: panelColors.messages,
 						component: <MessagesWindow />,
-						isActive: isMessagesStore(activePanel),
-						setActivePanel: () =>
-							workspaceStore.viewStore.setActivePanel(workspaceStore.messagesStore),
+						isActive: activePanel === Panel.Messages,
+						setActivePanel: () => workspaceStore.viewStore.setActivePanel(Panel.Messages),
 					},
 					{
 						title: 'Bookmarks',
 						color: panelColors.bookmarks,
 						component: <BookmarksPanel onBookmarkClick={workspaceStore.onSavedItemSelect} />,
-						isActive: isBookmarksStore(activePanel),
+						isActive: activePanel === Panel.Bookmarks,
+						setActivePanel: () => workspaceStore.viewStore.setActivePanel(Panel.Bookmarks),
 					},
 				]}
 			/>

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observable, action, computed, reaction } from 'mobx';
+import { observable, action, computed } from 'mobx';
 import { BookmarksStore } from 'modules/bookmarks/stores/BookmarksStore';
 import { IBookmarksStore, IFilterConfigStore } from 'models/Stores';
 import ApiSchema from 'api/ApiSchema';
@@ -64,8 +64,6 @@ export default class WorkspacesStore {
 		);
 
 		this.bookmarksStore = new BookmarksStore(this, this.api.indexedDb);
-
-		reaction(() => this.activeWorkspace, this.onActiveWorkspaceChange);
 	}
 
 	@observable workspaces: Array<WorkspaceStore> = [];
@@ -175,10 +173,4 @@ export default class WorkspacesStore {
 			);
 		}
 	}
-
-	private onActiveWorkspaceChange = (activeWorkspace: WorkspaceStore) => {
-		activeWorkspace.eventsStore.filterStore.setTimestampFromRange(
-			activeWorkspace.eventsStore.filterStore.range,
-		);
-	};
 }

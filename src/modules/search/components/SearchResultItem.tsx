@@ -29,7 +29,7 @@ import {
 	TreeTableRow,
 	VerificationPayload,
 	VerificationPayloadField,
-} from 'models/EventActionPayload';
+} from 'modules/events/models/EventBodyPayload';
 import { EventMessage } from 'models/EventMessage';
 import { EventFilterState, MessageFilterState } from '../models/Search';
 import { FilterEntry, SearchResult } from '../stores/SearchStore';

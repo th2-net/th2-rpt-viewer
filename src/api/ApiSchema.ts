@@ -16,7 +16,7 @@
 
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import EventsFilter from '../models/filter/EventsFilter';
+import EventsFilter from '../modules/events/models/EventsFilter';
 import { TimeRange } from '../models/Timestamp';
 import {
 	SSEParamsEvents,

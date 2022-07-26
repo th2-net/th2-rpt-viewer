@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventBodyPayload } from './EventActionPayload';
+import { EventBodyPayload } from 'modules/events/models/EventBodyPayload';
 
 export type EventTree = Array<EventTreeNode>;
 

@@ -17,7 +17,7 @@
 import { MessageFilterState } from 'modules/search/models/Search';
 import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
-import EventsFilter from '../models/filter/EventsFilter';
+import EventsFilter from '../modules/events/models/EventsFilter';
 import { getObjectKeys } from '../helpers/object';
 import { SearchDirection } from '../models/search/SearchDirection';
 

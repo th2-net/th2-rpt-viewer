@@ -16,17 +16,21 @@
  ***************************************************************************** */
 
 import { useEffect, useRef } from 'react';
-import EventsStore from '../stores/events/EventsStore';
-import MessagesStore from '../stores/messages/MessagesStore';
+import { Panel } from 'models/Panel';
 import { useWorkspaceViewStore } from './useWorkspaceViewStore';
 
-export function useActivePanel(panel: EventsStore | MessagesStore | null = null) {
+export function useActivePanel(panel?: Panel) {
 	const panelRef = useRef<HTMLDivElement>(null);
 
 	const workspaceViewStore = useWorkspaceViewStore();
 
 	function handlePanelClick(e: MouseEvent) {
-		if (panelRef.current && e.target instanceof Node && panelRef.current.contains(e.target)) {
+		if (
+			panel !== undefined &&
+			panelRef.current &&
+			e.target instanceof Node &&
+			panelRef.current.contains(e.target)
+		) {
 			workspaceViewStore.setActivePanel(panel);
 		}
 	}

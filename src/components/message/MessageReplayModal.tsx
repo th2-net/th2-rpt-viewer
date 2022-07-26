@@ -249,7 +249,7 @@ function MessageReplayModal() {
 		const link = [
 			window.location.origin,
 			window.location.pathname,
-			'backend/search/sse/messages/',
+			'http://de-th2-qa:30000/th2-groups/backend/search/sse/messages/',
 		].join('');
 
 		let filter = sseFilter;

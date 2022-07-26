@@ -18,6 +18,7 @@ import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useActivePanel } from 'hooks/index';
 import { ActionType } from 'models/EventAction';
+import { Panel } from 'models/Panel';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
@@ -35,7 +36,7 @@ interface SearchPanelProps {
 
 const SearchPanel = (props: SearchPanelProps) => {
 	const searchStore = useSearchStore();
-	const { ref: searchPanelRef } = useActivePanel(null);
+	const { ref: searchPanelRef } = useActivePanel(Panel.Search);
 
 	const removeCurrentSearch = useCallback(() => {
 		if (searchStore.currentSearch) {

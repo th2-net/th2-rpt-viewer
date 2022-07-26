@@ -14,13 +14,11 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-export * from './useEventsFilterStore';
+export * from '../modules/events/hooks/useEventsFilterStore';
 export * from './useActivePanel';
 export * from './useActiveWorkspace';
 export * from './useAsyncEffect';
 export * from './useDebouncedCallback';
-export * from './useEventsStore';
-export * from './useEventWindowViewStore';
 export * from './useMessagesDataStore';
 export * from './useMessagesStore';
 export * from './useNotificationsStore';
@@ -37,3 +35,4 @@ export * from './useMessageBodySortStore';
 export * from './useFiltersHistoryStore';
 export * from './useMessagesViewTypeStore';
 export * from './useBookmarksStore';
+export * from './useEventsStore';

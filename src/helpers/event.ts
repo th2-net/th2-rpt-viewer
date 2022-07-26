@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+
 import { ActionType, EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
-import { EventStatus } from '../models/Status';
+import { EventStatus } from '../modules/events/models/Status';
 import { getTimestampAsNumber, timestampToNumber } from './date';
 
 export function getMinifiedStatus(status: string): string {

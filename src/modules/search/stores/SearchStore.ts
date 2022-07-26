@@ -31,7 +31,7 @@ import notificationsStore from 'stores/NotificationsStore';
 import WorkspacesStore from 'stores/workspace/WorkspacesStore';
 import FiltersHistoryStore from 'stores/FiltersHistoryStore';
 import { SessionHistoryStore } from 'stores/messages/SessionHistoryStore';
-import { EventBodyPayload } from 'models/EventActionPayload';
+import { EventBodyPayload } from 'modules/events/models/EventBodyPayload';
 import { getItemAt } from 'helpers/array';
 import ApiSchema from 'api/ApiSchema';
 import {

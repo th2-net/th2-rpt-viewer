@@ -17,12 +17,16 @@
 import { action, computed, observable, reaction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import { SearchStore, FilterEntry } from 'modules/search/stores/SearchStore';
-import { IFilterConfigStore, ISearchStore } from 'models/Stores';
+import { IEventsStore, IFilterConfigStore, ISearchStore } from 'models/Stores';
+import { Panel } from 'models/Panel';
 import MessagesStore, {
 	MessagesStoreDefaultStateType,
 	MessagesStoreURLState,
 } from '../messages/MessagesStore';
-import EventsStore, { EventStoreDefaultStateType, EventStoreURLState } from '../events/EventsStore';
+import EventsStore, {
+	EventStoreDefaultStateType,
+	EventStoreURLState,
+} from '../../modules/events/stores/EventsStore';
 import ApiSchema from '../../api/ApiSchema';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
@@ -40,8 +44,8 @@ import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
 import MessagesViewTypeStore from '../messages/MessagesViewTypeStore';
 
 export interface WorkspaceUrlState {
-	events: Partial<EventStoreURLState> | string;
-	messages: Partial<MessagesStoreURLState> | string;
+	events: Partial<EventStoreURLState>;
+	messages: Partial<MessagesStoreURLState>;
 	timeRange?: TimeRange;
 	layout: WorkspacePanelsLayout;
 }
@@ -55,7 +59,7 @@ export type WorkspaceInitialState = Partial<{
 }>;
 
 export default class WorkspaceStore {
-	public eventsStore: EventsStore;
+	public eventsStore: IEventsStore;
 
 	public messagesStore: MessagesStore;
 
@@ -119,17 +123,7 @@ export default class WorkspaceStore {
 	}
 
 	public getWorkspaceState = (): WorkspacesUrlState => {
-		const eventStoreState = {
-			filter: this.eventsStore.filterStore.filter || undefined,
-			range: this.eventsStore.filterStore.range,
-			panelArea: this.eventsStore.viewStore.eventsPanelArea,
-			search:
-				this.eventsStore.searchStore.tokens.length > 0
-					? this.eventsStore.searchStore.tokens.map(t => t.pattern)
-					: undefined,
-			selectedEventId: this.eventsStore.selectedNode?.eventId,
-			flattenedListView: this.eventsStore.viewStore.flattenedListView,
-		};
+		const eventStoreState = toJS(this.eventsStore.urlState);
 
 		const messagesStoreState = {
 			timestampFrom: this.messagesStore.filterStore.filter.timestampFrom,
@@ -155,8 +149,8 @@ export default class WorkspaceStore {
 			toJS({
 				events: eventStoreState,
 				messages: messagesStoreState,
-				timeRange: this.eventsStore.filterStore.range,
-				interval: this.eventsStore.filterStore.interval,
+				timeRange: eventStoreState.range,
+				interval: eventStoreState.interval,
 				layout: this.viewStore.panelsLayout,
 			}),
 		];
@@ -204,10 +198,10 @@ export default class WorkspaceStore {
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
 		if (isEventMessage(savedItem)) {
 			this.messagesStore.exportStore.disableExport();
-			this.viewStore.activePanel = this.messagesStore;
+			this.viewStore.activePanel = Panel.Messages;
 			this.messagesStore.onMessageSelect(savedItem);
 		} else {
-			this.viewStore.activePanel = this.eventsStore;
+			this.viewStore.activePanel = Panel.Events;
 			this.eventsStore.goToEvent(savedItem);
 		}
 	};
@@ -249,13 +243,10 @@ export default class WorkspaceStore {
 	public onSearchResultGroupSelect = (timestamp: number, resultType: ActionType) => {
 		switch (resultType) {
 			case ActionType.EVENT_ACTION:
-				this.eventsStore.clearFilter();
-				this.eventsStore.filterStore.setEventsRange(
-					getRangeFromTimestamp(timestamp, this.eventsStore.filterStore.interval),
+				this.eventsStore.applyFilter(
+					undefined,
+					getRangeFromTimestamp(timestamp, this.eventsStore.urlState.interval!),
 				);
-				if (this.eventsStore.filterStore.filter) {
-					this.eventsStore.applyFilter(this.eventsStore.filterStore.filter);
-				}
 				break;
 			case ActionType.MESSAGE:
 				this.messagesStore.filterStore.setMessagesFilter(
@@ -269,7 +260,7 @@ export default class WorkspaceStore {
 				);
 				break;
 			default:
-				break;
+				throw new Error(`Unhandled result type ${resultType}`);
 		}
 	};
 
@@ -285,7 +276,6 @@ export default class WorkspaceStore {
 	};
 
 	public dispose = () => {
-		// Delete all subscriptions and cancel pending requests
 		this.messagesStore.dispose();
 		this.eventsStore.dispose();
 		this.searchStore.dispose();

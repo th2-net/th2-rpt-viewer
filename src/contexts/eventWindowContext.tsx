@@ -14,10 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import EventsStore from '../stores/events/EventsStore';
+import { createContext } from 'react';
+import EventsStore from '../modules/events/stores/EventsStore';
 
-const EventWindowContext = React.createContext<EventsStore | null>(null);
+const EventWindowContext = createContext<EventsStore | null>(null);
 
 interface EventWindowProviderProps {
 	children: React.ReactNode;

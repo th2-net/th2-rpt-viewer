@@ -21,9 +21,12 @@ import {
 	SearchPanelType,
 } from 'modules/search/models/Search';
 import { SearchHistory, SearchPanelFormState } from 'modules/search/stores/SearchStore';
+import { EventStoreURLState } from 'modules/events/stores/EventsStore';
+import { TimeRange } from 'models/Timestamp';
+import EventsFilter from 'modules/events/models/EventsFilter';
 import { DbData } from '../api/indexedDb';
 import { EventsFiltersInfo, MessagesFilterInfo, MessagesSSEParams } from '../api/sse';
-import { EventTreeNode } from './EventAction';
+import { EventTreeNode, EventAction } from './EventAction';
 import { MessageSSEEventListeners } from '../stores/SSEChannel/MessagesSSEChannel';
 import { EventMessage } from './EventMessage';
 
@@ -73,4 +76,13 @@ export interface MessagesDataStore {
 	resetState: () => void;
 	getFilterParams: () => MessagesSSEParams;
 	getNextMessages: () => Promise<EventMessage[]>;
+}
+
+export interface IEventsStore {
+	renderedEvents: EventTreeNode[];
+	selectedEvent: EventAction | null;
+	goToEvent: (event: EventAction | EventTreeNode) => void;
+	dispose: () => void;
+	urlState: EventStoreURLState;
+	applyFilter: (filter?: EventsFilter, timeRange?: TimeRange) => void;
 }

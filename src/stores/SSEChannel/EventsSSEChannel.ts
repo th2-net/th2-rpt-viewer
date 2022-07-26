@@ -20,7 +20,7 @@ import api from '../../api';
 import { SSEParamsEvents } from '../../api/sse';
 import { isEventNode } from '../../helpers/event';
 import { EventTreeNode } from '../../models/EventAction';
-import EventsFilter from '../../models/filter/EventsFilter';
+import EventsFilter from '../../modules/events/models/EventsFilter';
 import { TimeRange } from '../../models/Timestamp';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
 

@@ -99,8 +99,8 @@ export default class RootStore {
 
 			return [
 				{
-					events: eventId || { range: timeRange },
-					messages: messageId || {
+					events: { range: timeRange, selectedEventId: eventId || undefined },
+					messages: {
 						timestampTo: timestamp ? parseInt(timestamp) : null,
 					},
 					timeRange,

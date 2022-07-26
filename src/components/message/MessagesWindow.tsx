@@ -14,17 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import { observer } from 'mobx-react-lite';
+import { Panel } from 'models/Panel';
 import MessagesWindowHeader from './MessagesWindowHeader';
-import { useMessagesStore, useActivePanel } from '../../hooks';
+import { useActivePanel } from '../../hooks';
 import MessagesCardList from './message-card-list/MessagesCardList';
 import AttachedMessagesSelection from './AttachedMessagesSelection';
 
 const MessagesWindow = () => {
-	const messagesStore = useMessagesStore();
-
-	const { ref: panelRef } = useActivePanel(messagesStore);
+	const { ref: panelRef } = useActivePanel(Panel.Messages);
 
 	return (
 		<div className='window' ref={panelRef}>
@@ -39,4 +36,4 @@ const MessagesWindow = () => {
 	);
 };
 
-export default observer(MessagesWindow);
+export default MessagesWindow;

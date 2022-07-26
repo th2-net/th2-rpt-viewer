@@ -19,6 +19,7 @@ import Checkbox from 'components/util/Checkbox';
 import { useActivePanel } from 'hooks/index';
 import { EventTreeNode, EventAction } from 'models/EventAction';
 import { EventMessage } from 'models/EventMessage';
+import { Panel } from 'models/Panel';
 import { useBookmarksFilterStore } from '../hooks/useBookmarkFilterStore';
 import { useBookmarksStore } from '../hooks/useBookmarksStore';
 import { BookmarkItem } from './BookmarkItem';
@@ -36,7 +37,7 @@ function BookmarksPanel(props: BookmarkPanelProps) {
 
 	const filterStore = useBookmarksFilterStore();
 
-	const { ref: panelRef } = useActivePanel(null);
+	const { ref: panelRef } = useActivePanel(Panel.Bookmarks);
 
 	function onBookmarkClick(bookmark: Bookmark) {
 		props.onBookmarkClick(bookmark.item);
