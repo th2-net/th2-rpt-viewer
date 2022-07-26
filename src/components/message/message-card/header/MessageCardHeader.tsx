@@ -32,6 +32,7 @@ export interface MessageInfoProps {
 	setViewType: (vt: MessageViewType, id: string) => void;
 	isBookmarked?: boolean;
 	isAttached?: boolean;
+	isHighlighted?: boolean;
 	isExport?: boolean;
 	isExported?: boolean;
 	isScreenshotMsg: boolean;
@@ -48,6 +49,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		addMessageToExport,
 		isBookmarked,
 		isAttached,
+		isHighlighted,
 		isExport,
 		isExported,
 		messageCardToolsConfig,
@@ -70,6 +72,8 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		)}deg)`,
 	};
 
+	const headerClass = createBemBlock('mc-header__info', isHighlighted ? 'highlighted' : null);
+
 	const sessionClass = createStyleSelector(
 		'mc-header__icon mc-header__direction-icon',
 		direction?.toLowerCase(),
@@ -83,7 +87,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		onTimestampMouseEnter || onTimestampMouseLeave ? 'mc-header__timestamp' : '';
 
 	return (
-		<div className='mc-header__info'>
+		<div className={headerClass}>
 			{isExport && isExported !== undefined && addMessageToExport && (
 				<Checkbox checked={isExported} onChange={addMessageToExport} />
 			)}

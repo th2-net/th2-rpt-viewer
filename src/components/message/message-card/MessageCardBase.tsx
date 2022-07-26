@@ -20,7 +20,7 @@ import { MessageCardViewTypeRendererProps } from './MessageCardViewTypeRenderer'
 import { MessageCardToolsProps } from './MessageCardTools';
 import '../../../styles/messages.scss';
 import { MessageCardHeader, MessageInfoProps } from './header/MessageCardHeader';
-import { ParsedMessageComponent } from './MessageCardParsedMessage';
+import { ParsedMessageComponent, ParsedMessageProps } from './MessageCardParsedMessage';
 import { defineViewTypeConfig } from '../../../helpers/message';
 import { MessageCardRaw } from './raw/MessageCardRaw';
 
@@ -34,6 +34,7 @@ export interface MessageCardBaseProps {
 	viewTypeConfig: MessageViewTypeConfig | Map<string, MessageViewTypeConfig>;
 	rawViewTypeConfig?: MessageViewTypeConfig;
 	isAttached?: boolean;
+	isHighlighted?: boolean;
 	isBookmarked?: boolean;
 	toogleMessagePin?: () => void;
 	isEmbedded?: boolean;
@@ -52,6 +53,7 @@ const MessageCardBase = React.memo(
 		isDisplayRuleRaw,
 		isExpanded,
 		isAttached,
+		isHighlighted,
 		isBookmarked,
 		toogleMessagePin,
 		sortOrderItems,
@@ -95,6 +97,12 @@ const MessageCardBase = React.memo(
 			messageCardToolsConfig,
 		};
 
+		const parsedMessageProps: ParsedMessageProps = {
+			isHighlighted,
+			messageCardToolsConfig,
+			messageViewTypeRendererProps,
+		};
+
 		return (
 			<div className='message-card-wrapper'>
 				<div className='message-card'>
@@ -104,14 +112,12 @@ const MessageCardBase = React.memo(
 							?.filter((parsedMessage, index) => (isExpanded ? parsedMessage : index === 0))
 							.map((parsedMessage, index) => (
 								<ParsedMessageComponent
+									{...parsedMessageProps}
 									key={parsedMessage.id}
-									message={message}
 									parsedMessage={parsedMessage}
 									parsedMessageIndex={index}
 									viewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).viewType}
 									setViewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType}
-									messageCardToolsConfig={messageCardToolsConfig}
-									messageViewTypeRendererProps={messageViewTypeRendererProps}
 								/>
 							))}
 					{(!message.parsedMessages || isExpanded || isDisplayRuleRaw) && (
@@ -126,6 +132,7 @@ const MessageCardBase = React.memo(
 								defineViewTypeConfig(viewTypeConfig, message.id).setViewType
 							}
 							isScreenshotMsg={false}
+							isHighlighted={isHighlighted}
 							isDisplayRuleRaw={isDisplayRuleRaw}
 							messageCardToolsConfig={messageCardToolsConfig}
 							messageViewTypeRendererProps={messageViewTypeRendererProps}
