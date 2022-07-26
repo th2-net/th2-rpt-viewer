@@ -24,16 +24,9 @@ import {
 	isOrderRule,
 } from '../models/EventMessage';
 import RootStore from './RootStore';
-import { IndexedDB, IndexedDbStores, DbData } from '../api/indexedDb';
+import { IndexedDB, IndexedDbStores, indexedDbLimits, DbData } from '../api/indexedDb';
+import { OrderRule, RULES_ORDER_ID } from './MessageDisplayRulesStore';
 import notificationsStore from './NotificationsStore';
-
-export const RULES_ORDER_ID = 'order';
-
-export interface OrderRule {
-	id: typeof RULES_ORDER_ID;
-	order: string[];
-	timestamp: number;
-}
 
 class MessageBodySortOrderStore {
 	constructor(private rootStore: RootStore, private indexedDb: IndexedDB) {
@@ -46,6 +39,11 @@ class MessageBodySortOrderStore {
 
 	@observable
 	public sortOrder: MessageSortOrderItem[] = [];
+
+	@computed
+	public get isDisplayRulesFull(): boolean {
+		return this.sortOrder.length >= indexedDbLimits[IndexedDbStores.MESSAGE_BODY_SORT_ORDER];
+	}
 
 	@computed
 	public get sortOrderItems(): string[] {

@@ -26,10 +26,12 @@ import WorkspacesLayout from './workspace/WorkspacesLayout';
 import Graph from './graph/Graph';
 import WorkspaceLinkGetter from './WorkspaceLinkGetter';
 import MessagesViewConfigurator from './messages-view-configurator/MessagesViewConfigurator';
+import { useSearchStore } from '../hooks/useSearchStore';
 import { useTabsStore } from '../hooks';
 import '../styles/root.scss';
 
 const AppRootBase = () => {
+	const searchStore = useSearchStore();
 	const tabsStore = useTabsStore();
 
 	return (
@@ -40,7 +42,7 @@ const AppRootBase = () => {
 				transitionDuration={400}>
 				<Graph />
 				{tabsStore.activeTabIndex !== 0 && <WorkspaceLinkGetter />}
-				<MessagesViewConfigurator />
+				<MessagesViewConfigurator sessions={searchStore.messageSessions} />
 				<div className='app__workspaces'>
 					<WorkspacesLayout />
 				</div>

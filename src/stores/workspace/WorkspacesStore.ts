@@ -107,6 +107,7 @@ export default class WorkspacesStore {
 			this.selectedStore,
 			this.searchWorkspace.searchStore,
 			this.rootStore.sessionsStore,
+			this.rootStore.messageDisplayRulesStore,
 			this.api,
 			workspaceInitialState,
 		);

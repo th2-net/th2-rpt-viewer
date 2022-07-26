@@ -17,7 +17,7 @@
 import MessageBody from './MessageBody';
 import { ActionType } from './EventAction';
 import { notEmpty } from '../helpers/object';
-import { OrderRule } from '../stores/MessageBodySortStore';
+import { OrderRule } from '../stores/MessageDisplayRulesStore';
 
 export enum MessageViewType {
 	JSON = 'json',
@@ -27,7 +27,7 @@ export enum MessageViewType {
 }
 
 export type MessageViewTypeConfig = {
-	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void;
+	setViewType: (vt: MessageViewType, id: string) => void;
 	viewType?: MessageViewType;
 };
 
@@ -65,8 +65,8 @@ export interface ParsedMessage {
 	message: MessageBody;
 }
 
-export function isScreenshotMessage(message?: ParsedMessage): boolean {
-	return message ? /image\/\w+/gi.test(message.message.metadata.messageType) : false;
+export function isMessageDisplayRule(obj: unknown): obj is MessageDisplayRule {
+	return notEmpty(obj) && (obj as MessageDisplayRule).viewType !== undefined;
 }
 
 export function isMessageBodySortOrderItem(obj: unknown): obj is MessageSortOrderItem {

@@ -21,15 +21,19 @@ import { formatTime, timestampToNumber } from '../../../../helpers/date';
 import { getHashCode } from '../../../../helpers/stringHash';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
 import { Chip } from '../../../Chip';
+import Checkbox from '../../../util/Checkbox';
 
 export interface MessageInfoProps {
 	message: EventMessage;
 	onTimestampMouseEnter?: () => void;
 	onTimestampMouseLeave?: () => void;
+	addMessageToExport?: () => void;
 	viewType?: MessageViewType;
-	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void;
+	setViewType: (vt: MessageViewType, id: string) => void;
 	isBookmarked?: boolean;
 	isAttached?: boolean;
+	isExport?: boolean;
+	isExported?: boolean;
 	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 }
@@ -41,8 +45,11 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		setViewType,
 		onTimestampMouseEnter,
 		onTimestampMouseLeave,
+		addMessageToExport,
 		isBookmarked,
 		isAttached,
+		isExport,
+		isExported,
 		messageCardToolsConfig,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
@@ -72,18 +79,21 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
-	const timestampClassname =
+	const timestampClassName =
 		onTimestampMouseEnter || onTimestampMouseLeave ? 'mc-header__timestamp' : '';
 
 	return (
 		<div className='mc-header__info'>
+			{isExport && isExported !== undefined && addMessageToExport && (
+				<Checkbox checked={isExported} onChange={addMessageToExport} />
+			)}
 			<Chip>
 				<div className='mc-header__message-icon' />
 				{isBookmarked && <div className={bookmarkIconClass} />}
 				{isAttached && <div className='mc-header__attached-icon' />}
 			</Chip>
 			<Chip
-				className={timestampClassname}
+				className={timestampClassName}
 				title={`Timestamp: ${formattedTimestamp}`}
 				onMouseEnter={onTimestampMouseEnter}
 				onMouseLeave={onTimestampMouseLeave}>

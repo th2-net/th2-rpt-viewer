@@ -30,14 +30,16 @@ import '../../../styles/messages.scss';
 import MessageExpandButton from '../MessageExpandButton';
 import StateSaver from '../../util/StateSaver';
 import { getViewTypesConfig } from '../../../helpers/message';
+import { createBemBlock } from '../../../helpers/styleCreators';
 
 export interface OwnProps {
 	message: EventMessage;
 }
 
 export interface RecoveredProps {
-	viewTypesConfig: MessageViewTypeConfig[];
+	viewTypesConfig: Map<string, MessageViewTypeConfig>;
 	isExpanded: boolean;
+	isDisplayRuleRaw: boolean;
 	setIsExpanded: (state: boolean) => void;
 	stateKey: string;
 }
@@ -107,7 +109,7 @@ export const MessageCard = observer((props: Props) => {
 		messagesStore.setHoveredMessage(null);
 	}, [messagesStore.setHoveredMessage]);
 
-	const addMessagesToExport = React.useCallback(
+	const addMessageToExport = React.useCallback(
 		() => messagesStore.exportStore.addMessageToExport(message),
 		[messagesStore.exportStore.addMessageToExport],
 	);
@@ -127,23 +129,33 @@ export const MessageCard = observer((props: Props) => {
 		viewTypeConfig: viewTypesConfig,
 		hoverMessage,
 		unhoverMessage,
-		addMessagesToExport,
-		isHighlighted,
-		isSoftFiltered,
-		isExported,
+		isDisplayRuleRaw: props.isDisplayRuleRaw,
 		isExpanded: props.isExpanded,
-		isExport: messagesStore.exportStore.isExport,
 		isBookmarked,
 		isAttached,
 		toogleMessagePin,
 		sortOrderItems,
+		isExport: messagesStore.exportStore.isExport,
+		isExported,
+		addMessageToExport,
 	};
 
+	const rootClass = createBemBlock(
+		'messages-list__item',
+		isAttached ? 'attached' : null,
+		isBookmarked ? 'pinned' : null,
+		isHighlighted ? 'highlighted' : null,
+		isSoftFiltered ? 'soft-filtered' : null,
+		isExported ? 'exported' : null,
+	);
+
 	return (
-		<div className='messages-list__item'>
+		<div className={rootClass}>
 			<MessageCardBase {...messageCardBaseProps} />
 			<MessageExpandButton
 				isExpanded={props.isExpanded}
+				isScreenshotMsg={false}
+				isDisplayRuleRaw={props.isDisplayRuleRaw}
 				setExpanded={props.setIsExpanded}
 				parsedMessages={message.parsedMessages}
 			/>
@@ -153,8 +165,11 @@ export const MessageCard = observer((props: Props) => {
 
 const RecoverableMessageCard = (props: OwnProps) => {
 	const viewTypesStore = useMessagesViewTypeStore();
-	const { getSavedViewType, setViewType } = viewTypesStore;
-	const viewTypesConfig = getViewTypesConfig(props.message, setViewType, getSavedViewType);
+	const { getSavedViewType } = viewTypesStore;
+
+	const viewTypesConfig = getViewTypesConfig(props.message, getSavedViewType);
+
+	const isDisplayRuleRaw = getSavedViewType(props.message).isDisplayRuleRaw;
 
 	return (
 		<StateSaver stateKey={props.message.id}>
@@ -165,6 +180,7 @@ const RecoverableMessageCard = (props: OwnProps) => {
 					stateKey={props.message.id}
 					setIsExpanded={stateSaver}
 					isExpanded={state}
+					isDisplayRuleRaw={isDisplayRuleRaw}
 				/>
 			)}
 		</StateSaver>

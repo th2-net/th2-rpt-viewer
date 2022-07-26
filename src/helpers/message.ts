@@ -23,6 +23,7 @@ import {
 	MessageBodyFields,
 } from '../models/MessageBody';
 import { timestampToNumber } from './date';
+import { SavedMessageViewType } from '../stores/messages/SavedMessageViewType';
 
 export const sortMessagesByTimestamp = (
 	messages: Array<EventMessage>,
@@ -73,37 +74,34 @@ export function normalizeField(field: MessageBodyField): string | object {
 
 export function getViewTypesConfig(
 	message: EventMessage,
-	setViewType: (vt: MessageViewType, messageId: string, parsedMessageId: string) => void,
-	getSavedViewType: (message: EventMessage) => Map<string, MessageViewType>,
+	getSavedViewType: (message: EventMessage) => SavedMessageViewType,
 ) {
-	const viewTypes = getSavedViewType(message);
-	return message.parsedMessages
-		? [
-				...message.parsedMessages.map(parsedMessage => {
-					return {
-						viewType: viewTypes.get(parsedMessage.id),
-						setViewType,
-					};
-				}),
-				{
-					viewType: viewTypes.get(message.id),
-					setViewType,
-				},
-		  ]
-		: [
-				{
-					viewType: viewTypes.get(message.id),
-					setViewType,
-				},
-		  ];
+	const viewTypes = getSavedViewType(message).viewTypes;
+	const config = new Map<string, MessageViewTypeConfig>();
+
+	config.set(message.id, {
+		viewType: viewTypes.get(message.id) as MessageViewType,
+		setViewType: getSavedViewType(message).setViewType,
+	});
+
+	if (message.parsedMessages) {
+		message.parsedMessages.forEach(parsedMessage => {
+			config.set(parsedMessage.id, {
+				viewType: viewTypes.get(parsedMessage.id),
+				setViewType: getSavedViewType(message).setViewType,
+			});
+		});
+	}
+
+	return config;
 }
 
 export function defineViewTypeConfig(
-	viewTypeConfig: MessageViewTypeConfig | MessageViewTypeConfig[],
-	index?: number,
+	viewTypeConfig: MessageViewTypeConfig | Map<string, MessageViewTypeConfig>,
+	id?: string,
 ) {
-	if (Array.isArray(viewTypeConfig)) {
-		return index !== undefined ? viewTypeConfig[index] : viewTypeConfig[viewTypeConfig.length - 1];
+	if (id && viewTypeConfig instanceof Map) {
+		return viewTypeConfig.get(id) as MessageViewTypeConfig;
 	}
-	return viewTypeConfig;
+	return viewTypeConfig as MessageViewTypeConfig;
 }
