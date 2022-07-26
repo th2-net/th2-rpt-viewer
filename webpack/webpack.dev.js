@@ -43,7 +43,7 @@ module.exports = merge(commonConfig, {
 		historyApiFallback: true,
 		proxy: {
 			'/': {
-				target: 'http://th2-qa:30000/th2-groups/',
+				target: 'http://de-th2-qa:30000/th2-groups/',
 				changeOrigin: true,
 				secure: false,
 			},

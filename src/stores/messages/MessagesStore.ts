@@ -30,7 +30,6 @@ import { SessionHistoryStore } from './SessionHistoryStore';
 import MessagesExportStore from './MessagesExportStore';
 import { getItemAt } from '../../helpers/array';
 import { timestampToNumber } from '../../helpers/date';
-import MessagesViewTypeStore from './MessagesViewTypeStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -50,8 +49,6 @@ export default class MessagesStore {
 	public dataStore: MessagesDataProviderStore;
 
 	public exportStore = new MessagesExportStore();
-
-	public messageViewStore = new MessagesViewTypeStore();
 
 	@observable
 	public selectedMessageId: String | null = null;
@@ -98,7 +95,6 @@ export default class MessagesStore {
 			() => this.filterStore.filter,
 			() => {
 				this.exportStore.disableExport();
-				this.messageViewStore.resetSavedViewTypes();
 			},
 		);
 	}

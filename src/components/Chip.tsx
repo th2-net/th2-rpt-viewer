@@ -35,7 +35,6 @@ export function Chip(props: Props) {
 		onMouseLeave,
 		children,
 	} = props;
-
 	const rootClass = createStyleSelector(
 		'chip',
 		isSelected ? 'selected' : null,

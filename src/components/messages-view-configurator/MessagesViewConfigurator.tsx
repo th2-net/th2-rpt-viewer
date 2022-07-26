@@ -15,13 +15,18 @@
  ***************************************************************************** */
 
 import { useRef, useState } from 'react';
+import { useFilterConfigStore } from 'hooks/useFilterConfigStore';
 import { useOutsideClickListener } from '../../hooks';
 import { ModalPortal } from '../util/Portal';
+import RulesList from './RulesList';
+import { createStyleSelector } from '../../helpers/styleCreators';
 import BodySortConfig from './BodySortConfig';
 import '../../styles/messages-view-configurator.scss';
 
 const MessageViewConfigurator = () => {
+	const { messageSessions } = useFilterConfigStore();
 	const [isOpen, setIsOpen] = useState(false);
+	const [mode, setMode] = useState<'display-rules' | 'body-sort'>('display-rules');
 
 	const modalRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
@@ -39,8 +44,16 @@ const MessageViewConfigurator = () => {
 	});
 
 	const offsetTop = buttonRef.current?.getBoundingClientRect().top;
-
 	const offsetRight = buttonRef.current?.getBoundingClientRect().left;
+
+	const rulesButtonClassName = createStyleSelector(
+		'switcher',
+		mode === 'display-rules' ? 'active' : null,
+	);
+	const sortButtonClassName = createStyleSelector(
+		'switcher',
+		mode === 'body-sort' ? 'active' : null,
+	);
 
 	return (
 		<>
@@ -62,10 +75,27 @@ const MessageViewConfigurator = () => {
 				}}>
 				<div className='messages-view-configurator'>
 					<div className='messages-view-configurator-header'>
-						<p>Message Body Sort</p>
+						<p>{mode === 'display-rules' ? 'Message Display Rules' : 'Message Body Sort'}</p>
 					</div>
 					<div className='messages-view-configurator-body'>
-						<BodySortConfig />
+						{mode === 'display-rules' ? (
+							<RulesList sessions={messageSessions} />
+						) : (
+							<BodySortConfig />
+						)}
+					</div>
+					{mode === 'display-rules' ? (
+						<p className='hint'>
+							<i>Use * character to match an unknown substring as part of session name</i>
+						</p>
+					) : null}
+					<div className='switchers'>
+						<button className={rulesButtonClassName} onClick={() => setMode('display-rules')}>
+							Display rules
+						</button>
+						<button className={sortButtonClassName} onClick={() => setMode('body-sort')}>
+							Body sort
+						</button>
 					</div>
 				</div>
 			</ModalPortal>

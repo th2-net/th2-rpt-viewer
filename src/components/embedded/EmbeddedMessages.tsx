@@ -29,19 +29,19 @@ import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import MessagesUpdateButton from '../message/MessagesUpdateButton';
 import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
-import MessagesViewTypeStore from '../../stores/messages/MessagesViewTypeStore';
 import { getViewTypesConfig } from '../../helpers/message';
 import StateSaver from '../util/StateSaver';
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import MessageExpandButton from '../message/MessageExpandButton';
+import EmbeddedMessagesViewTypeStore from './embedded-stores/EmbeddedMessagesViewTypeStore';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
-const viewStore = new MessagesViewTypeStore();
+const viewStore = new EmbeddedMessagesViewTypeStore();
 
 const EmbeddedMessageCard = observer((props: { message: EventMessage }) => {
-	const { getSavedViewType, setViewType } = viewStore;
-	const viewTypesConfig = getViewTypesConfig(props.message, setViewType, getSavedViewType);
+	const { getSavedViewType } = viewStore;
+	const viewTypesConfig = getViewTypesConfig(props.message, getSavedViewType);
 
 	return (
 		<StateSaver stateKey={props.message.id}>
@@ -51,11 +51,14 @@ const EmbeddedMessageCard = observer((props: { message: EventMessage }) => {
 						viewTypeConfig={viewTypesConfig}
 						message={props.message}
 						isExpanded={isExpanded}
+						isDisplayRuleRaw={false}
 					/>
 					<MessageExpandButton
 						isExpanded={isExpanded}
 						setExpanded={setIsExpanded}
 						parsedMessages={props.message.parsedMessages}
+						isScreenshotMsg={false}
+						isDisplayRuleRaw={false}
 					/>
 				</div>
 			)}

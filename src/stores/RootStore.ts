@@ -20,6 +20,7 @@ import { IFilterConfigStore } from 'models/Stores';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
+import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 import MessageBodySortOrderStore from './MessageBodySortStore';
 import { DbData } from '../api/indexedDb';
 import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
@@ -32,6 +33,8 @@ export default class RootStore {
 	notificationsStore = notificationStoreInstance;
 
 	filtersHistoryStore = new FiltersHistoryStore(this.api.indexedDb, this.notificationsStore);
+
+	messageDisplayRulesStore = new MessageDisplayRulesStore(this, this.api.indexedDb);
 
 	messageBodySortStore = new MessageBodySortOrderStore(this, this.api.indexedDb);
 
@@ -47,6 +50,7 @@ export default class RootStore {
 			this,
 			this.api,
 			this.filtersConfigStore,
+			this.messageDisplayRulesStore,
 			this.filtersHistoryStore,
 			this.sessionsStore,
 			this.parseUrlState(),
@@ -137,6 +141,7 @@ export default class RootStore {
 
 			await Promise.all([
 				this.workspacesStore.syncData(unsavedData),
+				this.messageDisplayRulesStore.syncData(unsavedData),
 				this.messageBodySortStore.syncData(unsavedData),
 			]);
 
@@ -149,6 +154,7 @@ export default class RootStore {
 			});
 		} catch (error) {
 			this.workspacesStore.syncData(unsavedData);
+			this.messageDisplayRulesStore.syncData(unsavedData);
 			this.messageBodySortStore.syncData(unsavedData);
 		}
 	};

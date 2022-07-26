@@ -22,6 +22,7 @@ import { DbData } from 'api/indexedDb';
 import { SearchStore } from 'modules/search/stores/SearchStore';
 import { MessageFilterState } from 'modules/search/models/Search';
 import { SessionHistoryStore } from 'stores/messages/SessionHistoryStore';
+import MessageDisplayRulesStore from 'stores/MessageDisplayRulesStore';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
@@ -47,6 +48,7 @@ export default class WorkspacesStore {
 		private rootStore: RootStore,
 		private api: ApiSchema,
 		private filterConfigStore: IFilterConfigStore,
+		private messageDisplayRulesStore: MessageDisplayRulesStore,
 		public filtersHistoryStore: FiltersHistoryStore,
 		private sessionsStore: SessionHistoryStore,
 		initialState: WorkspacesUrlState | null,
@@ -131,6 +133,7 @@ export default class WorkspacesStore {
 			this,
 			this.rootStore.sessionsStore,
 			this.filterConfigStore,
+			this.messageDisplayRulesStore,
 			this.api,
 			workspaceInitialState,
 		);

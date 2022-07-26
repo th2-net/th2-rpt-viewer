@@ -32,6 +32,7 @@ export * from './useSessionsStore';
 export * from './useWorkspacesStore';
 export * from './useTabsStore';
 export * from './useWorkspaceStore';
+export * from './useMessageDisplayRulesStore';
 export * from './useMessageBodySortStore';
 export * from './useFiltersHistoryStore';
 export * from './useMessagesViewTypeStore';

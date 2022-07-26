@@ -20,7 +20,7 @@ import { EventBookmark, MessageBookmark } from 'modules/bookmarks/models/Bookmar
 import { FilterState } from 'modules/search/models/Search';
 import { SearchHistory } from 'modules/search/stores/SearchStore';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
-import { OrderRule } from '../stores/MessageBodySortStore';
+import { OrderRule } from '../stores/MessageDisplayRulesStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { Session } from '../stores/messages/SessionHistoryStore';
 

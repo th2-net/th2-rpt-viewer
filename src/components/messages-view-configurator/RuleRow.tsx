@@ -11,14 +11,30 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
 
-import { useWorkspaceStore } from '.';
-import MessagesViewTypeStore from '../stores/messages/MessagesViewTypeStore';
+import * as React from 'react';
+import { MessageDisplayRule } from '../../models/EventMessage';
+import NewRule from './NewRule';
+import EditableRule from './EditableRule';
 
-export const useMessagesViewTypeStore = (): MessagesViewTypeStore => {
-	const workspaceStore = useWorkspaceStore();
+interface RuleRowProps {
+	rule: MessageDisplayRule | null;
+	sessions: string[];
+	index: number;
+	isFirst?: boolean;
+	isLast?: boolean;
+	autofocus?: boolean;
+}
 
-	return workspaceStore.messageViewStore;
+const RuleRow = (props: RuleRowProps) => {
+	const { rule, sessions, ...restProps } = props;
+	return rule ? (
+		<EditableRule rule={rule} sessions={sessions} {...restProps} />
+	) : (
+		<NewRule sessions={sessions} />
+	);
 };
+
+export default RuleRow;

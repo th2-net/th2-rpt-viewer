@@ -127,7 +127,7 @@ function EventTreeListBase(props: Props) {
 		}
 	}, [scrolledIndex]);
 
-	const computeKey = (index: number) => currentNodes[index]?.eventId || index;
+	const computeKey = (index: number, event: EventTreeNode) => event.eventId;
 
 	const onEventsRendered = useDebouncedCallback((renderedMessages: ListItem<EventTreeNode>[]) => {
 		eventStore.setRenderedItems(
