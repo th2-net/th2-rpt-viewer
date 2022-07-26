@@ -153,7 +153,6 @@ export const MessageCard = observer((props: Props) => {
 			<MessageCardBase {...messageCardBaseProps} />
 			<MessageExpandButton
 				isExpanded={props.isExpanded}
-				isAttached={isAttached}
 				isHighlighted={isHighlighted}
 				isScreenshotMsg={false}
 				isDisplayRuleRaw={Boolean(props.isDisplayRuleRaw && message.parsedMessages)}

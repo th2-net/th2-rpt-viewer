@@ -22,7 +22,6 @@ interface Props {
 	isExpanded: boolean;
 	isScreenshotMsg: boolean;
 	isDisplayRuleRaw: boolean;
-	isAttached?: boolean;
 	isHighlighted?: boolean;
 	setExpanded: (state: boolean) => void;
 	parsedMessages: ParsedMessage[] | null;
@@ -31,7 +30,6 @@ interface Props {
 const MessageExpandButton = (props: Props) => {
 	const {
 		isExpanded,
-		isAttached,
 		isHighlighted,
 		isScreenshotMsg,
 		isDisplayRuleRaw,
@@ -41,7 +39,6 @@ const MessageExpandButton = (props: Props) => {
 
 	const rootClass = createBemBlock(
 		'message-card-expand-wrapper',
-		isAttached ? 'attached' : null,
 		isHighlighted ? 'highlighted' : null,
 	);
 
