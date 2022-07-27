@@ -133,6 +133,7 @@ export const MessageCard = observer((props: Props) => {
 		isExpanded: props.isExpanded,
 		isBookmarked,
 		isAttached,
+		isHighlighted,
 		toogleMessagePin,
 		sortOrderItems,
 		isExport: messagesStore.exportStore.isExport,
@@ -142,11 +143,9 @@ export const MessageCard = observer((props: Props) => {
 
 	const rootClass = createBemBlock(
 		'messages-list__item',
-		isAttached ? 'attached' : null,
-		isBookmarked ? 'pinned' : null,
-		isHighlighted ? 'highlighted' : null,
 		isSoftFiltered ? 'soft-filtered' : null,
 		isExported ? 'exported' : null,
+		isAttached ? 'attached' : null,
 	);
 
 	return (
@@ -154,8 +153,9 @@ export const MessageCard = observer((props: Props) => {
 			<MessageCardBase {...messageCardBaseProps} />
 			<MessageExpandButton
 				isExpanded={props.isExpanded}
+				isHighlighted={isHighlighted}
 				isScreenshotMsg={false}
-				isDisplayRuleRaw={props.isDisplayRuleRaw}
+				isDisplayRuleRaw={Boolean(props.isDisplayRuleRaw && message.parsedMessages)}
 				setExpanded={props.setIsExpanded}
 				parsedMessages={message.parsedMessages}
 			/>

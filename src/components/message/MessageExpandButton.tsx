@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 import React from 'react';
-import { createBemElement } from '../../helpers/styleCreators';
+import { createBemElement, createBemBlock } from '../../helpers/styleCreators';
 import '../../styles/messages.scss';
 import { ParsedMessage } from '../../models/EventMessage';
 
@@ -22,12 +22,25 @@ interface Props {
 	isExpanded: boolean;
 	isScreenshotMsg: boolean;
 	isDisplayRuleRaw: boolean;
+	isHighlighted?: boolean;
 	setExpanded: (state: boolean) => void;
 	parsedMessages: ParsedMessage[] | null;
 }
 
 const MessageExpandButton = (props: Props) => {
-	const { isExpanded, isScreenshotMsg, isDisplayRuleRaw, setExpanded, parsedMessages } = props;
+	const {
+		isExpanded,
+		isHighlighted,
+		isScreenshotMsg,
+		isDisplayRuleRaw,
+		setExpanded,
+		parsedMessages,
+	} = props;
+
+	const rootClass = createBemBlock(
+		'message-card-expand-wrapper',
+		isHighlighted ? 'highlighted' : null,
+	);
 
 	const buttonClass = createBemElement(
 		'message-card-expand-wrapper',
@@ -42,7 +55,7 @@ const MessageExpandButton = (props: Props) => {
 	};
 
 	return (
-		<div className='message-card-expand-wrapper'>
+		<div className={rootClass}>
 			{!isScreenshotMsg && !isDisplayRuleRaw ? (
 				<>
 					{parsedMessages ? (

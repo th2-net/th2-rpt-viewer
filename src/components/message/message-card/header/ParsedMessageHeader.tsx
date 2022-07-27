@@ -18,21 +18,32 @@ import * as React from 'react';
 import { ParsedMessage, MessageViewType } from '../../../../models/EventMessage';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
 import { Chip } from '../../../Chip';
+import { createBemBlock } from '../../../../helpers/styleCreators';
 
 export interface ParsedMessageHeaderProps {
 	parsedMessage?: ParsedMessage;
 	rawMessageIndex?: number;
 	viewType?: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
+	isHighlighted?: boolean;
 	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 }
 
 export const ParsedMessageHeader = React.memo((props: ParsedMessageHeaderProps) => {
-	const { parsedMessage, viewType, setViewType, rawMessageIndex } = props;
+	const {
+		parsedMessage,
+		viewType,
+		setViewType,
+		rawMessageIndex,
+		isScreenshotMsg,
+		isHighlighted,
+	} = props;
+
+	const headerClass = createBemBlock('mc-header__info', isHighlighted ? 'highlighted' : null);
 
 	return (
-		<div className='mc-header__info'>
+		<div className={headerClass}>
 			<Chip>
 				<div className='mc-header__message-icon'></div>
 			</Chip>
@@ -55,7 +66,7 @@ export const ParsedMessageHeader = React.memo((props: ParsedMessageHeaderProps) 
 				<MessageCardTools
 					{...props.messageCardToolsConfig}
 					parsedMessage={parsedMessage}
-					isScreenshotMsg={props.isScreenshotMsg}
+					isScreenshotMsg={isScreenshotMsg}
 					viewType={viewType}
 					setViewType={setViewType}
 				/>
