@@ -92,6 +92,7 @@ const MessageCardBase = React.memo(
 			addMessageToExport,
 			isBookmarked,
 			isAttached,
+			isHighlighted,
 			isExport,
 			isExported,
 			isScreenshotMsg: false,
