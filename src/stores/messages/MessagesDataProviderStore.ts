@@ -313,8 +313,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			prevMessages.shift();
 		}
 
-		if (messages.length !== 0) {
-			this.startIndex -= messages.length;
+		if (prevMessages.length > 0 || nextMessages.length > 0) {
+			this.startIndex -= nextMessages.length;
 
 			let newMessagesList = prevMessages.length
 				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
