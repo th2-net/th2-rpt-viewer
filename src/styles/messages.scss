@@ -619,6 +619,7 @@
 		border-radius: 16px;
 
 		&-info {
+			position: relative;
 			display: flex;
 		}
 
@@ -626,7 +627,7 @@
 			position: absolute;
 			margin: 12px 8px;
 			width: 4px;
-			height: 80px;
+			height: calc(100% - 24px);
 			border-radius: 2px;
 
 			&.bookmarked {
