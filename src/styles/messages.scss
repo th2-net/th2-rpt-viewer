@@ -448,25 +448,6 @@
 	justify-content: space-between;
 }
 
-.parsed-message-wrapper {
-	&:hover .message-card-tools__ellipsis {
-		display: block;
-	}
-	&:hover .message-card-tools {
-		background-color: #fcfcfc;
-		border-radius: 20px;
-		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
-	}
-}
-
-.parsed-message {
-	background-color: #fbfbfb;
-	margin-bottom: 1px;
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-}
-
 .mc-body {
 	width: 100%;
 	font-size: 12px;
@@ -652,23 +633,6 @@
 	&__item {
 		margin: 2px 5px;
 		border-radius: 16px;
-		padding: 2px;
-
-		&.highlighted {
-			@keyframes highlight {
-				from {
-					background: $highlightedMessageCardBackground;
-				}
-
-				50% {
-					background: rgba($highlightedMessageCardBackground, 0);
-				}
-				to {
-					background: $highlightedMessageCardBackground;
-				}
-			}
-			animation: highlight 1s infinite ease-in-out;
-		}
 
 		&.soft-filtered {
 			border: 1px solid $filterPrimaryColor;
@@ -681,9 +645,9 @@
 		&.attached {
 			border: 2px solid $attachedMessageCardBorderColor;
 
-			&:hover {
-				border-color: $attachedMessageCardHoverBorderColor;
-				background-color: $attachedMessageCardHoverBackground;
+			& .parsed-message,
+			& .mc-header__info {
+				background-color: $messageCardHoverBackground;
 			}
 		}
 
@@ -814,6 +778,22 @@
 			}
 		}
 	}
+}
+
+.highlighted {
+	@keyframes highlight {
+		from {
+			background: $highlightedMessageCardBackground;
+		}
+
+		50% {
+			background: rgba($highlightedMessageCardBackground, 0);
+		}
+		to {
+			background: $highlightedMessageCardBackground;
+		}
+	}
+	animation: highlight 1s infinite ease-in-out;
 }
 
 .messages-window-header {

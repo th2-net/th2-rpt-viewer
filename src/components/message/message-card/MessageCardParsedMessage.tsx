@@ -19,21 +19,26 @@ import { MessageCardToolsProps } from './MessageCardTools';
 import MessageCardViewTypeRenderer, {
 	MessageCardViewTypeRendererProps,
 } from './MessageCardViewTypeRenderer';
-import { ParsedMessage, MessageViewType, EventMessage } from '../../../models/EventMessage';
+import { ParsedMessage, MessageViewType } from '../../../models/EventMessage';
 import { ParsedMessageHeader } from './header/ParsedMessageHeader';
+import { createBemBlock } from '../../../helpers/styleCreators';
 
 export interface ParsedMessageProps {
-	message: EventMessage;
-	parsedMessage: ParsedMessage;
-	parsedMessageIndex: number;
-	viewType?: MessageViewType;
-	setViewType: (vt: MessageViewType, id: string) => void;
+	isHighlighted?: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
 }
 
-export const ParsedMessageComponent = React.memo((props: ParsedMessageProps) => {
+interface OwnProps {
+	parsedMessage: ParsedMessage;
+	parsedMessageIndex: number;
+	viewType?: MessageViewType;
+	setViewType: (vt: MessageViewType, id: string) => void;
+}
+
+export const ParsedMessageComponent = React.memo((props: ParsedMessageProps & OwnProps) => {
 	const {
+		isHighlighted,
 		parsedMessage,
 		parsedMessageIndex,
 		viewType,
@@ -42,18 +47,21 @@ export const ParsedMessageComponent = React.memo((props: ParsedMessageProps) => 
 		messageViewTypeRendererProps,
 	} = props;
 
+	const parsedMessageClass = createBemBlock('parsed-message', isHighlighted ? 'highlighted' : null);
+
 	return (
-		<div key={parsedMessage.id} className='parsed-message-wrapper'>
+		<div className='parsed-message-wrapper'>
 			{parsedMessageIndex > 0 && (
 				<ParsedMessageHeader
 					messageCardToolsConfig={messageCardToolsConfig}
 					parsedMessage={parsedMessage}
 					isScreenshotMsg={false}
+					isHighlighted={isHighlighted}
 					viewType={viewType}
 					setViewType={setViewType}
 				/>
 			)}
-			<div className='parsed-message' key={parsedMessage.id}>
+			<div className={parsedMessageClass}>
 				<div className='mc-body'>
 					<div className='mc-body__human'>
 						<MessageCardViewTypeRenderer

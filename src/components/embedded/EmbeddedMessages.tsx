@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
@@ -70,7 +70,7 @@ const EmbeddedMessages = () => {
 	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
 
-	const renderMsg = React.useCallback(
+	const renderMsg = useCallback(
 		(index: number, message: EventMessage) => <EmbeddedMessageCard message={message} />,
 		[],
 	);
@@ -106,6 +106,14 @@ const EmbeddedMessages = () => {
 		);
 	}
 
+	const isLoading =
+		dataStore.messages.length === 0 &&
+		(dataStore.isLoadingNextMessages ||
+			dataStore.isLoadingPreviousMessages ||
+			updateStore.isActive);
+
+	const isEmpty = !isLoading && dataStore.messages.length === 0;
+
 	return (
 		<div className='messages-list'>
 			<div className='messages-list__header'>
@@ -120,23 +128,21 @@ const EmbeddedMessages = () => {
 					Report viewer
 				</a>
 			</div>
-			{dataStore.messages.length === 0 &&
-			(dataStore.isLoadingNextMessages || dataStore.isLoadingPreviousMessages) ? (
-				<SplashScreen />
-			) : dataStore.messages.length === 0 &&
-			  !(dataStore.isLoadingNextMessages || dataStore.isLoadingPreviousMessages) ? (
+			{isLoading && <SplashScreen />}
+			{isEmpty && (
 				<Empty
 					description='No messages'
 					descriptionStyles={{ position: 'relative', bottom: '6px' }}
 				/>
-			) : (
+			)}
+			{!isEmpty && !isLoading && (
 				<StateSaverProvider>
 					<MessagesVirtualizedList
 						scrolledIndex={scrolledIndex}
 						itemRenderer={renderMsg}
-						overscan={0}
 						loadNextMessages={dataStore.getNextMessages}
 						loadPrevMessages={dataStore.getPreviousMessages}
+						isLive={dataStore.updateStore.isActive}
 					/>
 				</StateSaverProvider>
 			)}
@@ -147,9 +153,19 @@ const EmbeddedMessages = () => {
 EmbeddedMessages.displayName = 'EmbeddedMessages';
 
 const EmbeddedMessagesApp = observer(EmbeddedMessages);
+
 export default function MessagesApp() {
 	return <EmbeddedMessagesApp />;
 }
+
+interface SpinnerProps {
+	isLoading: boolean;
+}
+const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
+	if (!isLoading) return null;
+
+	return <div className='messages-list__spinner' />;
+};
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
@@ -165,12 +181,20 @@ interface Props {
 	overscan?: number;
 	loadNextMessages: () => Promise<EventMessage[]>;
 	loadPrevMessages: () => Promise<EventMessage[]>;
+	isLive: boolean;
 }
 
 const MessagesVirtualizedList = observer((props: Props) => {
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 
-	const { overscan = 3, itemRenderer, loadPrevMessages, loadNextMessages, scrolledIndex } = props;
+	const {
+		overscan = 3,
+		itemRenderer,
+		loadPrevMessages,
+		loadNextMessages,
+		scrolledIndex,
+		isLive,
+	} = props;
 
 	React.useEffect(() => {
 		if (scrolledIndex !== null) {
@@ -194,9 +218,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 					!messagesStore.dataStore.updateStore.isActive &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
-					loadNextMessages().then(messages =>
-						messagesStore.dataStore.onNextChannelResponse(messages),
-					);
+					loadNextMessages().then(messagesStore.dataStore.onNextChannelResponse);
 				}
 
 				if (
@@ -206,9 +228,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 					!messagesStore.dataStore.searchChannelPrev.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
 				) {
-					loadPrevMessages().then(messages =>
-						messagesStore.dataStore.onPrevChannelResponse(messages),
-					);
+					loadPrevMessages().then(messagesStore.dataStore.onPrevChannelResponse);
 				}
 			}
 		},
@@ -254,7 +274,9 @@ const MessagesVirtualizedList = observer((props: Props) => {
 										</button>
 									</div>
 								) : (
-									<MessagesListSpinner isLoading={messagesStore.dataStore.isLoadingNextMessages} />
+									<MessagesListSpinner
+										isLoading={messagesStore.dataStore.isLoadingNextMessages || isLive}
+									/>
 								)
 							}
 						</Observer>
@@ -289,12 +311,3 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		/>
 	);
 });
-
-interface SpinnerProps {
-	isLoading: boolean;
-}
-const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
-	if (!isLoading) return null;
-
-	return <div className='messages-list__spinner' />;
-};

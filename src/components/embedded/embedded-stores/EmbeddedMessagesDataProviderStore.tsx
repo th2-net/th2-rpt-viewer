@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 import { runInAction, action, observable, computed, autorun } from 'mobx';
-import { sortByTimestamp } from 'helpers/date';
+import { sortByTimestamp, timestampToNumber } from 'helpers/date';
 import { MessagesSSEParams, SSEHeartbeat } from '../../../api/sse';
 import { EventMessage } from '../../../models/EventMessage';
 import EmbeddedMessagesStore from './EmbeddedMessagesStore';
@@ -31,7 +31,6 @@ import {
 import { DirectionalStreamInfo } from '../../../models/StreamInfo';
 import { extractMessageIds } from '../../../helpers/streamInfo';
 
-// const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class EmbeddedMessagesDataProviderStore implements MessagesDataStore {
@@ -283,16 +282,28 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	public onNextChannelResponse = (messages: EventMessage[]) => {
 		this.lastNextChannelResponseTimestamp = null;
+		const prevMessages =
+			this.messages.length > 0
+				? messages.filter(
+						message =>
+							timestampToNumber(message.timestamp) <
+								timestampToNumber(this.messages[0].timestamp) || message.id === this.messages[0].id,
+				  )
+				: [];
 		const firstNextMessage = messages[this.messages.length - 1];
 
+		const nextMessages = messages.slice(0, messages.length - prevMessages.length);
+
 		if (firstNextMessage && firstNextMessage.id === this.messages[0]?.id) {
-			messages.pop();
+			prevMessages.shift();
 		}
 
-		if (messages.length !== 0) {
-			this.startIndex -= messages.length;
+		if (prevMessages.length > 0 || nextMessages.length > 0) {
+			this.startIndex -= nextMessages.length;
 
-			let newMessagesList = [...messages, ...this.messages];
+			let newMessagesList = prevMessages.length
+				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
+				: [...nextMessages, ...this.messages];
 
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
@@ -344,7 +355,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	private onFilterChange = async () => {
 		this.stopMessagesLoading();
 		this.resetState();
-		this.loadMessages();
+		this.updateStore.subscribeOnChanges();
 	};
 
 	@action

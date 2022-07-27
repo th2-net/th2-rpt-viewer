@@ -22,12 +22,14 @@ import MessageCardViewTypeRenderer, {
 import { MessageViewType, EventMessage } from '../../../../models/EventMessage';
 import { ParsedMessageHeader } from '../header/ParsedMessageHeader';
 import { MessageScreenshotZoom } from '../MessageScreenshot';
+import { createBemBlock } from '../../../../helpers/styleCreators';
 
 export interface MessageCardRawProps {
 	message: EventMessage;
 	viewType?: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
 	isScreenshotMsg: boolean;
+	isHighlighted?: boolean;
 	isDisplayRuleRaw: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
@@ -39,10 +41,14 @@ export const MessageCardRaw = memo((props: MessageCardRawProps) => {
 		viewType,
 		setViewType,
 		isScreenshotMsg,
+		isHighlighted,
 		isDisplayRuleRaw,
 		messageCardToolsConfig,
 		messageViewTypeRendererProps,
 	} = props;
+
+	const parsedMessageClass = createBemBlock('parsed-message', isHighlighted ? 'highlighted' : null);
+
 	return (
 		<div className='parsed-message-wrapper'>
 			{message.parsedMessages && !isDisplayRuleRaw && (
@@ -55,7 +61,7 @@ export const MessageCardRaw = memo((props: MessageCardRawProps) => {
 				/>
 			)}
 
-			<div className='parsed-message'>
+			<div className={parsedMessageClass}>
 				<div className='mc-body'>
 					{isScreenshotMsg ? (
 						<div className='mc-body__screenshot'>

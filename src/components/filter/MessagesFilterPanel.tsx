@@ -37,7 +37,6 @@ import { useFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import { MessagesFilterInfo } from '../../api/sse';
 import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
 import MessageFilterWarning from './MessageFilterWarning';
-import Checkbox from '../util/Checkbox';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import MessageReplayModal from '../message/MessageReplayModal';
 import { uniq } from '../../helpers/array';
@@ -281,16 +280,6 @@ const MessagesFilterPanel = () => {
 									state: filter,
 									setState: setFilter,
 								}}
-							/>
-						)}
-						{filter && (
-							<Checkbox
-								checked={isSoftFilterApplied}
-								onChange={e => {
-									setIsSoftFilterApplied(e.target.checked);
-								}}
-								label='Soft filter'
-								id='soft-filter'
 							/>
 						)}
 					</div>
