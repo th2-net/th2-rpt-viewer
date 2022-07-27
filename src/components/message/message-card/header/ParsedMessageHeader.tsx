@@ -31,14 +31,8 @@ export interface ParsedMessageHeaderProps {
 }
 
 export const ParsedMessageHeader = React.memo((props: ParsedMessageHeaderProps) => {
-	const {
-		parsedMessage,
-		viewType,
-		setViewType,
-		rawMessageIndex,
-		isScreenshotMsg,
-		isHighlighted,
-	} = props;
+	const { parsedMessage, viewType, setViewType, rawMessageIndex, isScreenshotMsg, isHighlighted } =
+		props;
 
 	const headerClass = createBemBlock('mc-header__info', isHighlighted ? 'highlighted' : null);
 
