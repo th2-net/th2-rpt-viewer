@@ -14,9 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import EventBodyCard from 'modules/events/components/EventBodyCard';
 import { EventAction } from '../../models/EventAction';
-import EventBodyCard from '../event/EventBodyCard';
 import SplashScreen from '../SplashScreen';
 import EmbeddedEventHeader from './EmbeddedEventHeader';
 

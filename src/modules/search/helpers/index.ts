@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,13 +11,16 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
 
-import { useWorkspaces } from './useWorkspacesStore';
+import { SearchHistory } from '../stores/SearchStore';
 
-export const useActiveWorkspace = () => {
-	const workspacesStore = useWorkspaces();
-
-	return workspacesStore.activeWorkspace;
-};
+export function isSearchHistoryEntity(obj: unknown): obj is SearchHistory {
+	return (
+		typeof obj === 'object' &&
+		obj !== null &&
+		(obj as SearchHistory).request !== undefined &&
+		(obj as SearchHistory).results !== undefined
+	);
+}

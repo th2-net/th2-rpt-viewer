@@ -47,13 +47,10 @@ import { getItemId, isEventAction, isEventMessage, isEventNode } from 'helpers/e
 import { IFilterConfigStore, ISearchStore } from 'models/Stores';
 import { getTimestampAsNumber } from 'helpers/date';
 import { isQuotaExceededError } from 'helpers/fetch';
-import {
-	getDefaultEventsFiltersState,
-	getDefaultMessagesFiltersState,
-	isSearchHistoryEntity,
-} from 'helpers/search';
+import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from 'helpers/search';
 import { EventAction } from 'models/EventAction';
 import { EventMessage } from 'models/EventMessage';
+import { isSearchHistoryEntity } from '../helpers';
 import {
 	EventFilterState,
 	FilterState,

@@ -14,7 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { ActionFilterRow, FitlerRowItem } from '../../../models/filter/FilterInputs';
+import EventResolverRow from 'modules/events/components/filter/EventResolverRow';
+import { ActionFilterRow, FitlerRowItem } from 'models/filter/FilterInputs';
 import StringFilterRow from './StringRow';
 import MultipleStringFilterRow from './MultipleStringFIlterRow';
 import TimeWindow from './TimeWindow';
@@ -22,7 +23,6 @@ import DatetimeFilterRow from './DateTimeFilterRow';
 import TogglerRow from './TogglerRow';
 import ActionRow from './ActionRow';
 import SwitcherRow from './SwitcherRow';
-import EventResolverRow from './EventResolverRow';
 
 interface Props {
 	rowConfig: FitlerRowItem | ActionFilterRow;

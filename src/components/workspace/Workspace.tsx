@@ -23,7 +23,7 @@ import { getItemId } from 'helpers/event';
 import { Panel } from 'models/Panel';
 import MessagesWindow from '../message/MessagesWindow';
 import WorkspaceSplitter from './WorkspaceSplitter';
-import { useActivePanel, useMessagesStore, useEventsStore, useWorkspaceStore } from '../../hooks';
+import { useActivePanel, useWorkspaceStore } from '../../hooks';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
 import '../../styles/workspace.scss';
 
@@ -50,11 +50,12 @@ function Workspace() {
 	const { activePanel } = useActivePanel();
 	const { panelsLayout, setPanelsLayout, togglePanel } = useWorkspaceViewStore();
 	const workspaceStore = useWorkspaceStore();
-	const messagesStore = useMessagesStore();
-	const eventsStore = useEventsStore();
 
 	const itemsInView = computed(() =>
-		[...messagesStore.messagesInView, ...eventsStore.renderedEvents].reduce(
+		[
+			...workspaceStore.messagesStore.messagesInView,
+			...workspaceStore.eventsStore.renderedEvents,
+		].reduce(
 			(map, item) => ({
 				...map,
 				[getItemId(item)]: true,

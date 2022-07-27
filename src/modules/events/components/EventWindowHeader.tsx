@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { useActivePanel, useWorkspaceStore } from 'hooks/index';
 import { createBemElement } from 'helpers/styleCreators';
 import { isEventsStore } from 'helpers/stores';
-import EventsFilterPanel from './EventsFilterPanel';
+import EventsFilterPanel from './filter/EventsFilterPanel';
 import { useEventsStore } from '../hooks/useEventsStore';
 import useEventsDataStore from '../hooks/useEventsDataStore';
 import EventsSearchPanel from './search/EventsSearchPanel';

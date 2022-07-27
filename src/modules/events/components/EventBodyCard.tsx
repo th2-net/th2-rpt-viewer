@@ -16,10 +16,10 @@
 
 import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { EventBodyPayload, EventBodyPayloadType } from 'modules/events/models/EventBodyPayload';
-import { useEvent } from 'hooks/useEvent';
 import { EventAction } from 'models/EventAction';
 import ErrorBoundary from 'components/util/ErrorBoundary';
 import { wrapString } from 'helpers/filters';
+import { useEvent } from '../hooks/useEvent';
 import { getEventStatus } from '../helpers/event';
 import { keyForVerification } from '../helpers/keys';
 import { CustomTable } from './tables/CustomTable';

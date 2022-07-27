@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import { EventFilterState, MessageFilterState } from 'modules/search/models/Search';
-import { SearchHistory } from 'modules/search/stores/SearchStore';
 import { EventsFiltersInfo, MessagesFilterInfo, SSEFilterParameter } from '../api/sse';
 
 export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
@@ -78,15 +77,3 @@ export function getDefaultMessagesFiltersState(
 	return state;
 }
 
-export function isSearchHistoryEntity(obj: unknown): obj is SearchHistory {
-	return (
-		typeof obj === 'object' &&
-		obj !== null &&
-		(obj as SearchHistory).request !== undefined &&
-		(obj as SearchHistory).results !== undefined
-	);
-}
-
-export function getResultGroupKey(timestamp: number, interval: number) {
-	return Math.floor(timestamp / 1000 / (interval * 60)).toString();
-}

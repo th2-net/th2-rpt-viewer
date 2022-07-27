@@ -17,7 +17,6 @@
 import { observable, action } from 'mobx';
 import { Panel } from 'models/Panel';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
-import { isPanelCollapsed } from '../../helpers/workspaceView';
 
 type InitialState = Partial<{
 	panelArea: number;
@@ -59,7 +58,7 @@ export default class WorkspaceViewStore {
 	};
 
 	@action togglePanel = (targetIndex: number) => {
-		if (isPanelCollapsed(this.panelsLayout[targetIndex])) {
+		if (this.isPanelCollapsed(this.panelsLayout[targetIndex])) {
 			this.expandPanel(targetIndex);
 		} else {
 			this.collapsePanel(targetIndex);
@@ -70,16 +69,16 @@ export default class WorkspaceViewStore {
 		const newLayout = [...this.panelsLayout] as WorkspacePanelsLayout;
 
 		for (let i = targetIndex + 1; i < newLayout.length; i++) {
-			if (!isPanelCollapsed(newLayout[i])) {
+			if (!this.isPanelCollapsed(newLayout[i])) {
 				newLayout[i] += newLayout[targetIndex];
 				newLayout[targetIndex] = 0;
 				break;
 			}
 		}
 
-		if (!isPanelCollapsed(newLayout[targetIndex])) {
+		if (!this.isPanelCollapsed(newLayout[targetIndex])) {
 			for (let i = targetIndex - 1; i >= 0; i--) {
-				if (!isPanelCollapsed(newLayout[i])) {
+				if (!this.isPanelCollapsed(newLayout[i])) {
 					newLayout[i] += newLayout[targetIndex];
 					newLayout[targetIndex] = 0;
 					break;
@@ -87,7 +86,7 @@ export default class WorkspaceViewStore {
 			}
 		}
 
-		if (!isPanelCollapsed(newLayout[targetIndex])) {
+		if (!this.isPanelCollapsed(newLayout[targetIndex])) {
 			const panelIndexToSwap = targetIndex === 0 ? 1 : targetIndex - 1;
 
 			[newLayout[targetIndex], newLayout[panelIndexToSwap]] = [
@@ -101,7 +100,7 @@ export default class WorkspaceViewStore {
 
 	private expandPanel = (targetIndex: number) => {
 		const expandedPanelCount =
-			this.panelsLayout.length - this.panelsLayout.filter(isPanelCollapsed).length;
+			this.panelsLayout.length - this.panelsLayout.filter(this.isPanelCollapsed).length;
 
 		this.panelsLayout = this.panelsLayout.map((panelArea, panelIndex) =>
 			panelIndex === targetIndex
@@ -126,4 +125,6 @@ export default class WorkspaceViewStore {
 		this.flattenedListView = Boolean(initalState.flattenedListView);
 		this.panelsLayout = initalState.panelsLayout ?? defaultPanelsLayout;
 	};
+
+	private isPanelCollapsed = (panelArea: number) => panelArea < 10;
 }

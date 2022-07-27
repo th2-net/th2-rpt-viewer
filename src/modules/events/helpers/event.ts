@@ -18,14 +18,6 @@ import { EventMessage } from 'models/EventMessage';
 import { getTimestampAsNumber, timestampToNumber } from 'helpers/date';
 import { EventStatus } from '../models/Status';
 
-export function getMinifiedStatus(status: string): string {
-	return status
-		.split('_')
-		.map(str => str[0])
-		.join('')
-		.toUpperCase();
-}
-
 export function getEventStatus(event: EventAction | EventTreeNode): EventStatus {
 	return event.successful ? EventStatus.PASSED : EventStatus.FAILED;
 }
@@ -148,7 +140,3 @@ export const unknownRoot: EventTreeNode = {
 	startTimestamp: '',
 	successful: false,
 };
-
-export function getEventParentId(e: EventTreeNode | EventAction) {
-	return isEventNode(e) ? e.parentId : e.parentEventId;
-}

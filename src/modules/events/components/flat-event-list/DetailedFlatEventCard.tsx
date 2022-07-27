@@ -17,8 +17,8 @@
 import { useState } from 'react';
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useEvent } from 'hooks/useEvent';
 import { EventTreeNode } from 'models/EventAction';
+import { useEvent } from '../../hooks/useEvent';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import EventCardHeader from '../EventCardHeader';
 import EventDetailInfoCard from '../EventDetailInfoCard';

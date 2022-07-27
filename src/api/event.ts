@@ -17,7 +17,6 @@
 import { EventApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import { EventAction } from '../models/EventAction';
-import { getEventParentId } from '../helpers/event';
 
 const eventHttpApi: EventApiSchema = {
 	getEvent: async (id, signal?, queryParams = {}) => {
@@ -53,7 +52,7 @@ const eventHttpApi: EventApiSchema = {
 				if (currentParentEvent) {
 					path.unshift(currentParentEvent);
 				}
-				currentParentId = getEventParentId(currentParentEvent);
+				currentParentId = currentParentEvent.parentEventId;
 			}
 
 			return path;

@@ -20,17 +20,17 @@ import { Filter, EventFilterState } from 'modules/search/models/Search';
 import { ActionType } from 'models/EventAction';
 import { useFiltersHistoryStore } from 'hooks/useFiltersHistoryStore';
 import FilterPanel from 'components/filter/FilterPanel';
-import { FilterRowConfig, FilterRowTogglerConfig } from '../../../models/filter/FilterInputs';
-import { useEventsFilterStore } from '../hooks/useEventsFilterStore';
-import { useEventsStore } from '../hooks/useEventsStore';
-import { EventSSEFilters } from '../../../api/sse';
-import { getObjectKeys, notEmpty } from '../../../helpers/object';
-import EventsFilter from '../models/EventsFilter';
-import FiltersHistory from '../../../components/filters-history/FiltersHistory';
-import { uniq } from '../../../helpers/array';
-import useSetState from '../../../hooks/useSetState';
-import { prettifyCamelcase } from '../../../helpers/stringUtils';
-import useEventsDataStore from '../hooks/useEventsDataStore';
+import { FilterRowConfig, FilterRowTogglerConfig } from '../../../../models/filter/FilterInputs';
+import { useEventsFilterStore } from '../../hooks/useEventsFilterStore';
+import { useEventsStore } from '../../hooks/useEventsStore';
+import { EventSSEFilters } from '../../../../api/sse';
+import { getObjectKeys, notEmpty } from '../../../../helpers/object';
+import EventsFilter from '../../models/EventsFilter';
+import FiltersHistory from '../../../../components/filters-history/FiltersHistory';
+import { uniq } from '../../../../helpers/array';
+import useSetState from '../../../../hooks/useSetState';
+import { prettifyCamelcase } from '../../../../helpers/stringUtils';
+import useEventsDataStore from '../../hooks/useEventsDataStore';
 
 type CurrentFilterValues = {
 	[key in EventSSEFilters]: string;

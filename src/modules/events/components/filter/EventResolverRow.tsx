@@ -16,12 +16,12 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { formatTime } from 'helpers/date';
-import { useEvent } from 'hooks/useEvent';
+import AutocompleteInput from 'components/util/AutocompleteInput';
 import { getEventStatus, isEventId } from 'helpers/event';
 import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
-import { useEventsSearch } from 'hooks/useEventSearch';
 import { FilterRowEventResolverConfig } from 'models/filter/FilterInputs';
-import AutocompleteInput from '../../util/AutocompleteInput';
+import { useEvent } from '../../hooks/useEvent';
+import { useEventsSearch } from '../../hooks/useEventSearch';
 
 export default function EventResolverRow({ config }: { config: FilterRowEventResolverConfig }) {
 	const [isEventPlaceholder, showEventPlaceholder] = useState(true);

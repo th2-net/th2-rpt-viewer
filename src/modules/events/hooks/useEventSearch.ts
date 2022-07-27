@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import moment from 'moment';
 import { useDebouncedCallback } from 'hooks/useDebouncedCallback';
 import { EventTreeNode } from 'models/EventAction';
-import moment from 'moment';
 import api from 'api/index';
 
 // TODO: it should accept queryParams instead of hardcoded name filter
