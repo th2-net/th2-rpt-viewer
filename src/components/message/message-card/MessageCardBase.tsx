@@ -23,6 +23,7 @@ import { MessageCardHeader, MessageInfoProps } from './header/MessageCardHeader'
 import { ParsedMessageComponent, ParsedMessageProps } from './MessageCardParsedMessage';
 import { defineViewTypeConfig } from '../../../helpers/message';
 import { MessageCardRaw } from './raw/MessageCardRaw';
+import { createBemBlock } from '../../../helpers/styleCreators';
 
 export interface MessageCardBaseProps {
 	message: EventMessage;
@@ -103,41 +104,51 @@ const MessageCardBase = React.memo(
 			messageViewTypeRendererProps,
 		};
 
+		const indicatorClass = createBemBlock(
+			'messages-list__item-indicator',
+			isBookmarked && !isAttached ? 'bookmarked' : null,
+			isAttached && !isBookmarked ? 'attached' : null,
+			isBookmarked && isAttached ? 'bookmarked-attached' : null,
+		);
+
 		return (
-			<div className='message-card-wrapper'>
-				<div className='message-card'>
-					<MessageCardHeader {...messageInfoProps} />
-					{!isDisplayRuleRaw &&
-						message.parsedMessages
-							?.filter((parsedMessage, index) => (isExpanded ? parsedMessage : index === 0))
-							.map((parsedMessage, index) => (
-								<ParsedMessageComponent
-									{...parsedMessageProps}
-									key={parsedMessage.id}
-									parsedMessage={parsedMessage}
-									parsedMessageIndex={index}
-									viewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).viewType}
-									setViewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType}
-								/>
-							))}
-					{(!message.parsedMessages || isExpanded || isDisplayRuleRaw) && (
-						<MessageCardRaw
-							message={message}
-							viewType={
-								rawViewTypeConfig?.viewType ||
-								defineViewTypeConfig(viewTypeConfig, message.id).viewType
-							}
-							setViewType={
-								rawViewTypeConfig?.setViewType ||
-								defineViewTypeConfig(viewTypeConfig, message.id).setViewType
-							}
-							isScreenshotMsg={false}
-							isHighlighted={isHighlighted}
-							isDisplayRuleRaw={isDisplayRuleRaw}
-							messageCardToolsConfig={messageCardToolsConfig}
-							messageViewTypeRendererProps={messageViewTypeRendererProps}
-						/>
-					)}
+			<div className='messages-list__item-info'>
+				{(isBookmarked || isAttached) && <div className={indicatorClass} />}
+				<div className='message-card-wrapper'>
+					<div className='message-card'>
+						<MessageCardHeader {...messageInfoProps} />
+						{!isDisplayRuleRaw &&
+							message.parsedMessages
+								?.filter((parsedMessage, index) => (isExpanded ? parsedMessage : index === 0))
+								.map((parsedMessage, index) => (
+									<ParsedMessageComponent
+										{...parsedMessageProps}
+										key={parsedMessage.id}
+										parsedMessage={parsedMessage}
+										parsedMessageIndex={index}
+										viewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).viewType}
+										setViewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType}
+									/>
+								))}
+						{(!message.parsedMessages || isExpanded || isDisplayRuleRaw) && (
+							<MessageCardRaw
+								message={message}
+								viewType={
+									rawViewTypeConfig?.viewType ||
+									defineViewTypeConfig(viewTypeConfig, message.id).viewType
+								}
+								setViewType={
+									rawViewTypeConfig?.setViewType ||
+									defineViewTypeConfig(viewTypeConfig, message.id).setViewType
+								}
+								isScreenshotMsg={false}
+								isHighlighted={isHighlighted}
+								isDisplayRuleRaw={isDisplayRuleRaw}
+								messageCardToolsConfig={messageCardToolsConfig}
+								messageViewTypeRendererProps={messageViewTypeRendererProps}
+							/>
+						)}
+					</div>
 				</div>
 			</div>
 		);
