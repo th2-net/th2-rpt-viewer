@@ -15,14 +15,15 @@
  ***************************************************************************** */
 
 import { Observer, observer } from 'mobx-react-lite';
+import { showNotification } from 'helpers/showNotification';
 import Workspace from './Workspace';
 import { WorkspaceContextProvider } from '../../contexts/workspaceContext';
 import { useWorkspaces } from '../../hooks';
-import Tabs, { TabListRenderProps } from '../tabs/Tabs';
+import Tabs, { Tab, TabListRenderProps } from '../Tabs';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
-import '../../styles/root.scss';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
+import '../../styles/root.scss';
 
 const WorkspacesLayout = () => {
 	const workspacesStore = useWorkspaces();
@@ -44,9 +45,12 @@ const WorkspacesLayout = () => {
 			return (
 				<Observer key={workspace.id}>
 					{() => (
-						<div
-							className={`workspace-tab ${activeTabIndex === index ? 'active' : ''}`}
-							onClick={() => setActiveTab(index)}>
+						<Tab
+							isSelected={activeTabIndex === index}
+							tabIndex={index}
+							activeClassName='active'
+							className='workspace-tab'
+							setActiveTab={setActiveTab}>
 							<h3 className='workspace-tab__title'>Workspace {index + 1}</h3>
 							<div className='workspace-tab__controls'>
 								<div
@@ -63,6 +67,7 @@ const WorkspacesLayout = () => {
 												'',
 											),
 										);
+										showNotification('Workspace link copied to clipboard');
 									}}>
 									<div className={copyButtonClassName} />
 								</div>
@@ -82,7 +87,7 @@ const WorkspacesLayout = () => {
 									</div>
 								)}
 							</div>
-						</div>
+						</Tab>
 					)}
 				</Observer>
 			);

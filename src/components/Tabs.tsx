@@ -14,9 +14,44 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import { createStyleSelector } from '../../helpers/styleCreators';
-import '../../styles/tabs.scss';
+import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { createStyleSelector } from '../helpers/styleCreators';
+import 'styles/tabs.scss';
+
+export type TabProps = Partial<TabsInjectedProps> & {
+	children: React.ReactNode;
+	tabIndex?: number;
+	isSelected?: boolean;
+	isClosable?: boolean;
+	className: string;
+	activeClassName: string;
+};
+
+export const Tab = observer<TabProps, HTMLDivElement>(
+	(props, ref) => {
+		const {
+			isSelected = false,
+			tabIndex = 0,
+			setActiveTab,
+			children,
+			className,
+			activeClassName,
+		} = props;
+
+		const tabClassName = createStyleSelector('tab', isSelected ? activeClassName : null, className);
+
+		return (
+			<div
+				className={tabClassName}
+				onClick={setActiveTab && (() => setActiveTab(tabIndex))}
+				ref={ref}>
+				{children}
+			</div>
+		);
+	},
+	{ forwardRef: true },
+);
 
 export interface TabsInjectedProps {
 	activeTabIndex: number;
@@ -41,9 +76,9 @@ interface Props {
 
 const Tabs = (props: Props) => {
 	const { tabList, tabPanels, activeIndex, onChange, closeTab, classNames = {} } = props;
-	const [activeTabIndex, setActiveTabIndex] = React.useState(0);
+	const [activeTabIndex, setActiveTabIndex] = useState(0);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		if (activeIndex !== activeTabIndex) {
 			setActiveTabIndex(activeIndex);
 		}
