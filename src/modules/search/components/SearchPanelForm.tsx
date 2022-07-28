@@ -23,7 +23,7 @@ import {
 	TimeInputType,
 } from 'models/filter/FilterInputs';
 import FilterRow from 'components/filter/row';
-import { SearchDirection } from 'models/search/SearchDirection';
+import { SearchDirection } from 'models/SearchDirection';
 import FiltersHistory from 'components/filters-history/FiltersHistory';
 import { useFiltersHistoryStore, useSessionsHistoryStore } from 'hooks/index';
 import { createBemElement } from 'helpers/styleCreators';

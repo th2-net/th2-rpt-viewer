@@ -18,7 +18,7 @@ import { useReducer } from 'react';
 import { EventAction } from 'models/EventAction';
 import { createBemBlock } from 'helpers/styleCreators';
 import { EventBodyPayload } from '../models/EventBodyPayload';
-import EventBodyCard from './EventBodyCard';
+import EventBodyCard from './event-card/EventBodyCard';
 
 interface Props {
 	eventId: string;

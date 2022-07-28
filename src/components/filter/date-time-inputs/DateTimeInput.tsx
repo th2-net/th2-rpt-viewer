@@ -22,7 +22,7 @@ import { formatTimestampValue } from 'helpers/date';
 import { createStyleSelector } from 'helpers/styleCreators';
 import { replaceUnfilledDateStringWithMinValues } from 'helpers/stringUtils';
 import { useSearchStore } from 'hooks/useSearchStore';
-import { SearchDirection } from 'models/search/SearchDirection';
+import { SearchDirection } from 'models/SearchDirection';
 import FilterDatetimePicker from './FilterDatetimePicker';
 import SearchFilterDatetimePicker from './SearchFilterDatetimePicker';
 

@@ -26,7 +26,7 @@ import FlatEventView from './flat-event-list/FlatEventView';
 import EventBreadcrumbs from './breadcrumbs/EventBreadcrumbs';
 import 'styles/events.scss';
 
-function EventWindow() {
+function EventsPanel() {
 	const eventWindowViewStore = useEventWindowViewStore();
 	const eventsStore = useEventsStore();
 
@@ -58,4 +58,4 @@ function EventWindow() {
 	);
 }
 
-export default observer(EventWindow);
+export default observer(EventsPanel);

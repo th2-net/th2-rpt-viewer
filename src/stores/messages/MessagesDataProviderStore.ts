@@ -16,7 +16,7 @@
 
 import { action, reaction, observable, computed, runInAction } from 'mobx';
 import { sortByTimestamp, timestampToNumber } from 'helpers/date';
-import { SearchDirection } from 'models/search/SearchDirection';
+import { SearchDirection } from 'models/SearchDirection';
 import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isAbortError } from '../../helpers/fetch';

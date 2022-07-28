@@ -21,10 +21,10 @@ import { createBemBlock } from 'helpers/styleCreators';
 import { EventTreeNode } from 'models/EventAction';
 import { useBookmarksStore, useWorkspaceStore } from 'hooks/index';
 import { getEventStatus } from 'helpers/event';
-import SearchableContent from './search/SearchableContent';
-import useEventsDataStore from '../hooks/useEventsDataStore';
+import SearchableContent from '../search/SearchableContent';
+import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { ChildrenCount } from './ChildrenCount';
-import CardDisplayType from '../../../models/util/CardDisplayType';
+import CardDisplayType from '../../../../models/util/CardDisplayType';
 
 interface EventCardHeaderBaseProps {
 	displayType?: CardDisplayType;

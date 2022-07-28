@@ -24,7 +24,7 @@ import useEventsDataStore from '../hooks/useEventsDataStore';
 import EventsSearchPanel from './search/EventsSearchPanel';
 import { EventsIntervalInput } from './EventsIntervalInput';
 
-function EventWindowHeader() {
+function EventsPanelHeader() {
 	const eventStore = useEventsStore();
 	const eventDataStore = useEventsDataStore();
 	const workspaceStore = useWorkspaceStore();
@@ -81,4 +81,4 @@ function EventWindowHeader() {
 	);
 }
 
-export default observer(EventWindowHeader);
+export default observer(EventsPanelHeader);

@@ -26,7 +26,7 @@ import {
 } from 'mobx';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
-import { SearchDirection } from 'models/search/SearchDirection';
+import { SearchDirection } from 'models/SearchDirection';
 import notificationsStore from 'stores/NotificationsStore';
 import WorkspacesStore from 'stores/workspace/WorkspacesStore';
 import FiltersHistoryStore from 'stores/FiltersHistoryStore';

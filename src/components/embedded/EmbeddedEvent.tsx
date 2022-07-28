@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { useEffect, useState } from 'react';
-import EventBodyCard from 'modules/events/components/EventBodyCard';
+import EventBodyCard from 'modules/events/components/event-card/EventBodyCard';
 import { EventAction } from '../../models/EventAction';
 import SplashScreen from '../SplashScreen';
 import EmbeddedEventHeader from './EmbeddedEventHeader';

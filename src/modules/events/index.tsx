@@ -1,3 +1,3 @@
-import EventsPanel from './components/EventWindow';
+import EventsPanel from './components/EventsPanel';
 
 export default EventsPanel;

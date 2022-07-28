@@ -25,7 +25,7 @@ import { useOutsideClickListener } from '../../../hooks';
 import { createStyleSelector } from '../../../helpers/styleCreators';
 import { formatTimestampValue } from '../../../helpers/date';
 import { replaceUnfilledDateStringWithMinValues } from '../../../helpers/stringUtils';
-import { SearchDirection } from '../../../models/search/SearchDirection';
+import { SearchDirection } from '../../../models/SearchDirection';
 import 'styles/filter-datetime.scss';
 
 interface SearchFilterDatetimePickerProps {

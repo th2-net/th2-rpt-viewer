@@ -14,8 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-// TODO: fix component once search is migrated to sse
-
 import * as React from 'react';
 import { raf } from 'helpers/raf';
 import { createBemElement, createStyleSelector } from 'helpers/styleCreators';

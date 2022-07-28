@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { createBemElement } from 'helpers/styleCreators';
-import { SearchDirection } from 'models/search/SearchDirection';
+import { SearchDirection } from 'models/SearchDirection';
 
 type Progress = {
 	completed: boolean;

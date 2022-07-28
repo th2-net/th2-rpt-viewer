@@ -22,7 +22,7 @@ import { createBemBlock } from 'helpers/styleCreators';
 import { formatTime } from 'helpers/date';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { useEventsStore } from '../../hooks/useEventsStore';
-import EventCardHeader from '../EventCardHeader';
+import EventCardHeader from '../event-card/EventCardHeader';
 import CardDisplayType from '../../../../models/util/CardDisplayType';
 
 interface EventTreeProps {
@@ -139,7 +139,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 					childrenCount={childrenCount}
 					event={eventTreeNode}
 					displayType={CardDisplayType.MINIMAL}
-					onSelect={eventTreeNode.isUnknown ? undefined : eventsStore.selectNode}
+					onSelect={eventsStore.selectNode}
 					onEventTypeSelect={onEventTypeSelect}
 					isSelected={isSelected}
 					isActive={

@@ -18,25 +18,39 @@ import { observer } from 'mobx-react-lite';
 import SplitViewPane from 'components/split-view/SplitViewPane';
 import Empty from 'components/util/Empty';
 import SplitView from 'components/split-view/SplitView';
+import { useBookmarksStore } from 'hooks/useBookmarksStore';
 import { useEventsStore } from '../../hooks/useEventsStore';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
-import EventDetailInfoCard from '../EventDetailInfoCard';
-import EventWindowHeader from '../EventWindowHeader';
+import EventDetailInfoCard from '../event-card/EventDetailInfoCard';
+import EventsPanelHeader from '../EventsPanelHeader';
 import EventList from '../EventList';
 
 function EventTreeView() {
 	const eventsStore = useEventsStore();
 	const viewStore = useEventWindowViewStore();
+	const bookmarksStore = useBookmarksStore();
+
+	const event = eventsStore.selectedNode;
+
+	const isBookmarked = event
+		? bookmarksStore.events.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !==
+		  -1
+		: false;
 
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
-				<EventWindowHeader />
+				<EventsPanelHeader />
 				<EventList />
 			</SplitViewPane>
 			<SplitViewPane>
-				{eventsStore.selectedNode ? (
-					<EventDetailInfoCard node={eventsStore.selectedNode} />
+				{event ? (
+					<EventDetailInfoCard
+						isBookmarked={isBookmarked}
+						onBookmarkClick={bookmarksStore.toggleEventPin}
+						node={event}
+						filter={eventsStore.selectedBodyFilter}
+					/>
 				) : (
 					<Empty description='Select event' />
 				)}

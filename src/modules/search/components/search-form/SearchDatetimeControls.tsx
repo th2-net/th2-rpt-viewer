@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { createBemElement } from 'helpers/styleCreators';
-import { SearchDirection } from 'models/search/SearchDirection';
+import { SearchDirection } from 'models/SearchDirection';
 import FilterDatetimeInput from 'components/filter/date-time-inputs/DateTimeInput';
 import { SearchPanelFormState } from '../../stores/SearchStore';
 import { DateInputProps } from '../SearchPanelForm';

@@ -519,7 +519,7 @@ export default class EventsDataStore {
 					this.loadParentNodes(targetNode.parentId, true);
 				}
 				this.eventsCache.set(targetNode.eventId, targetNode);
-				this.eventStore.onTargetEventLoad(targetNode);
+				this.eventStore.selectNode(targetNode);
 				this.targetNode = targetNode;
 			} catch (error) {
 				console.error(`Couldnt fetch target event node ${targetEventId}`);

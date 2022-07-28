@@ -19,17 +19,19 @@ import { observer } from 'mobx-react-lite';
 import SplitViewPane from 'components/split-view/SplitViewPane';
 import Empty from 'components/util/Empty';
 import SplitView from 'components/split-view/SplitView';
+import { useBookmarksStore } from 'hooks/useBookmarksStore';
 import { useEventsStore } from '../../hooks/useEventsStore';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import EventList from '../EventList';
-import EventWindowHeader from '../EventWindowHeader';
-import EventDetailInfoCard from '../EventDetailInfoCard';
+import EventWindowHeader from '../EventsPanelHeader';
+import EventDetailInfoCard from '../event-card/EventDetailInfoCard';
 
 function EventTreeView() {
 	const eventsStore = useEventsStore();
 	const viewStore = useEventWindowViewStore();
 	const eventDataStore = useEventsDataStore();
+	const bookmarksStore = useBookmarksStore();
 
 	const node = eventsStore.selectedNode;
 
@@ -39,6 +41,10 @@ function EventTreeView() {
 			: eventsStore.getParentNodes(node.eventId, eventDataStore.eventsCache),
 	).get();
 
+	const isBookmarked = node
+		? bookmarksStore.events.findIndex(bookmarkedEvent => bookmarkedEvent.id === node.eventId) !== -1
+		: false;
+
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
@@ -47,7 +53,13 @@ function EventTreeView() {
 			</SplitViewPane>
 			<SplitViewPane>
 				{node ? (
-					<EventDetailInfoCard node={node} parentNodes={parentNodes} />
+					<EventDetailInfoCard
+						node={node}
+						parentNodes={parentNodes}
+						isBookmarked={isBookmarked}
+						onBookmarkClick={bookmarksStore.toggleEventPin}
+						filter={eventsStore.selectedBodyFilter}
+					/>
 				) : (
 					<Empty description='Select event' />
 				)}

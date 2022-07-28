@@ -14,18 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { useState } from 'react';
-import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
+import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { createBemBlock, createStyleSelector } from 'helpers/styleCreators';
-import { useBookmarksStore } from 'hooks/index';
 import { formatTime } from 'helpers/date';
 import { getEventStatus } from 'helpers/event';
 import { EventTreeNode } from 'models/EventAction';
 import { useSearchStore } from 'hooks/useSearchStore';
 import SplashScreen from 'components/SplashScreen';
 import Empty from 'components/util/Empty';
-import { useEvent } from '../hooks/useEvent';
-import { useEventsStore } from '../hooks/useEventsStore';
+import { useEvent } from '../../hooks/useEvent';
 import EventBodyCard from './EventBodyCard';
 import EventCardHeader from './EventCardHeader';
 
@@ -33,15 +31,27 @@ interface Props {
 	node: EventTreeNode;
 	parentNodes?: EventTreeNode[];
 	children?: React.ReactNode;
+	isBookmarked?: boolean;
+	onBookmarkClick?: (node: EventTreeNode) => void;
+	filter?: FilterEntry | null;
 }
 
 function EventDetailInfoCard(props: Props) {
-	const { node, children, parentNodes = [] } = props;
+	const {
+		node,
+		children,
+		parentNodes = [],
+		isBookmarked = false,
+		onBookmarkClick,
+		filter = null,
+	} = props;
 
 	const [selectedNode, setSelectedNode] = useState<EventTreeNode>(node);
 
-	const bookmarksStore = useBookmarksStore();
-	const eventStore = useEventsStore();
+	useEffect(() => {
+		setSelectedNode(node);
+	}, [node]);
+
 	const { currentSearch } = useSearchStore();
 	const bodyFilters = currentSearch?.request.filters.body.values ?? [];
 
@@ -60,19 +70,16 @@ function EventDetailInfoCard(props: Props) {
 		);
 	}
 
+	const onToggleBookmark = () => {
+		if (onBookmarkClick) {
+			onBookmarkClick(node);
+		}
+	};
+
 	const { startTimestamp, endTimestamp, eventType, eventName, body, eventId } = event;
 	const { isUnknown } = node;
 
 	const status = isUnknown ? 'unknown' : getEventStatus(event);
-
-	const isBookmarked =
-		bookmarksStore.events.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !== -1;
-
-	function onEventPin() {
-		if (event === null) return;
-
-		bookmarksStore.toggleEventPin(node);
-	}
 
 	const cardClassName = createStyleSelector('event-detail-info__event-card', 'event-card', status);
 	const bookmarkButtonClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
@@ -118,7 +125,7 @@ function EventDetailInfoCard(props: Props) {
 					</div>
 				</div>
 				<div className='event-card__bookmark'>
-					<div className={bookmarkButtonClassName} onClick={onEventPin}></div>
+					<div className={bookmarkButtonClassName} onClick={onToggleBookmark}></div>
 				</div>
 			</div>
 			<div className='event-detail-info__list'>
@@ -130,11 +137,7 @@ function EventDetailInfoCard(props: Props) {
 							parentEvent={event}
 							filters={bodyFilters}
 							target={
-								eventStore.selectedBodyFilter
-									? parseInt(eventStore.selectedBodyFilter.path[0]) === index
-										? eventStore.selectedBodyFilter
-										: undefined
-									: undefined
+								filter ? (parseInt(filter.path[0]) === index ? filter : undefined) : undefined
 							}
 						/>
 					))
@@ -144,7 +147,7 @@ function EventDetailInfoCard(props: Props) {
 						body={body}
 						parentEvent={event}
 						filters={bodyFilters}
-						target={eventStore.selectedBodyFilter || undefined}
+						target={filter || undefined}
 					/>
 				)}
 			</div>
@@ -152,4 +155,4 @@ function EventDetailInfoCard(props: Props) {
 	);
 }
 
-export default observer(EventDetailInfoCard);
+export default EventDetailInfoCard;

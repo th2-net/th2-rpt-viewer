@@ -258,10 +258,12 @@ export default class EventsStore implements IEventsStore {
 
 	@action
 	public selectNode = (eventTreeNode: EventTreeNode | null) => {
-		if (eventTreeNode?.isUnknown) return;
-
-		if (eventTreeNode === null || eventTreeNode.eventId !== this.selectedNode?.eventId) {
-			this.selectedNode = eventTreeNode;
+		if (eventTreeNode?.isUnknown || eventTreeNode?.eventId === this.selectedNode?.eventId) {
+			return;
+		}
+		this.selectedNode = eventTreeNode;
+		if (eventTreeNode && this.viewStore.eventsPanelArea > 80) {
+			this.viewStore.setPanelArea(50);
 		}
 	};
 
@@ -323,11 +325,6 @@ export default class EventsStore implements IEventsStore {
 		if (this.selectedNode) {
 			this.scrollToEvent(this.selectedNode.eventId);
 		}
-	};
-
-	@action
-	public onTargetEventLoad = (node: EventTreeNode) => {
-		this.selectedNode = node;
 	};
 
 	@action

@@ -16,7 +16,7 @@
 
 import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import debounce from 'lodash.debounce';
-import SearchWorker from '../../../search.worker';
+import SearchWorker from '../search.worker';
 import SearchToken from '../../../models/search/SearchToken';
 import ApiSchema from '../../../api/ApiSchema';
 import EventsStore from './EventsStore';

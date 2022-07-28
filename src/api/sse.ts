@@ -19,7 +19,7 @@ import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import EventsFilter from '../modules/events/models/EventsFilter';
 import { getObjectKeys } from '../helpers/object';
-import { SearchDirection } from '../models/search/SearchDirection';
+import { SearchDirection } from '../models/SearchDirection';
 
 interface BaseSSEParams {
 	startTimestamp?: number;

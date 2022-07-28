@@ -19,7 +19,7 @@ import { Observer, observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle, ListItem } from 'react-virtuoso';
 import moment from 'moment';
 import { isEventMessage } from 'helpers/message';
-import { SearchDirection } from 'models/search/SearchDirection';
+import { SearchDirection } from 'models/SearchDirection';
 import { EventMessage } from '../../../models/EventMessage';
 import { useMessagesStore, useDebouncedCallback, useMessagesDataStore } from '../../../hooks';
 import { raf } from '../../../helpers/raf';

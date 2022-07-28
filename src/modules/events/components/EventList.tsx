@@ -21,7 +21,6 @@ import { isEventNode } from 'helpers/event';
 import Empty from 'components/util/Empty';
 import SplashScreen from 'components/SplashScreen';
 import { useDebouncedCallback } from 'hooks/useDebouncedCallback';
-import StateSaverProvider from 'components/util/StateSaverProvider';
 import { raf } from 'helpers/raf';
 import { EventTreeNode } from 'models/EventAction';
 import { useEventsStore } from '../hooks/useEventsStore';
@@ -138,23 +137,21 @@ function EventTreeListBase(props: Props) {
 
 	return (
 		<div className='actions-list' ref={listRef}>
-			<StateSaverProvider>
-				<Virtuoso
-					firstItemIndex={firstItemIndex}
-					initialTopMostItemIndex={initialItemCount.current - 1}
-					data={currentNodes}
-					ref={virtuosoRef}
-					totalCount={currentNodes.length}
-					computeItemKey={computeKey}
-					overscan={3}
-					itemContent={renderEvent}
-					style={{ height: '100%' }}
-					itemsRendered={events => {
-						eventsInViewport.current = events;
-						onEventsRendered(events);
-					}}
-				/>
-			</StateSaverProvider>
+			<Virtuoso
+				firstItemIndex={firstItemIndex}
+				initialTopMostItemIndex={initialItemCount.current - 1}
+				data={currentNodes}
+				ref={virtuosoRef}
+				totalCount={currentNodes.length}
+				computeItemKey={computeKey}
+				overscan={3}
+				itemContent={renderEvent}
+				style={{ height: '100%' }}
+				itemsRendered={events => {
+					eventsInViewport.current = events;
+					onEventsRendered(events);
+				}}
+			/>
 		</div>
 	);
 }

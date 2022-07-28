@@ -19,14 +19,14 @@ import { EventBodyPayload, EventBodyPayloadType } from 'modules/events/models/Ev
 import { EventAction } from 'models/EventAction';
 import ErrorBoundary from 'components/util/ErrorBoundary';
 import { wrapString } from 'helpers/filters';
-import { useEvent } from '../hooks/useEvent';
-import { getEventStatus } from '../helpers/event';
-import { keyForVerification } from '../helpers/keys';
-import { CustomTable } from './tables/CustomTable';
-import { extractParams } from '../helpers/tables';
-import { VerificationTable } from './tables/VerificationTable';
-import { RecoverableParamsTable as ParamsTable } from './tables/ParamsTable';
-import { ReferenceCard } from './ReferenceCard';
+import { useEvent } from '../../hooks/useEvent';
+import { getEventStatus } from '../../helpers/event';
+import { keyForVerification } from '../../helpers/keys';
+import { CustomTable } from '../tables/CustomTable';
+import { extractParams } from '../../helpers/tables';
+import { VerificationTable } from '../tables/VerificationTable';
+import { RecoverableParamsTable as ParamsTable } from '../tables/ParamsTable';
+import { ReferenceCard } from '../ReferenceCard';
 
 interface Props {
 	body: EventBodyPayload;

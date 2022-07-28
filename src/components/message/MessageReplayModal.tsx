@@ -36,7 +36,7 @@ import FilterRow from '../filter/row';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { ModalPortal } from '../util/Portal';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
-import { SearchDirection } from '../../models/search/SearchDirection';
+import { SearchDirection } from '../../models/SearchDirection';
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
