@@ -19,7 +19,7 @@ import { useMessageBodySortStore, usePrevious } from '../../hooks';
 import Reorder from './Reorder';
 import AutocompleteInput from '../util/AutocompleteInput';
 import { MessageSortOrderItem } from '../../models/EventMessage';
-import KeyCodes from '../../util/KeyCodes';
+import KeyCodes from '../../models/util/KeyCodes';
 
 type EditableSortOrderItemProps = {
 	item: MessageSortOrderItem;

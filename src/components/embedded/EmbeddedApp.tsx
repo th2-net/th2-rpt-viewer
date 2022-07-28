@@ -14,15 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
 import EmbeddedEvent from './EmbeddedEvent';
 import EmbeddedMessage from './EmbeddedMessage';
 import '../../styles/embedded.scss';
 
 function EmbeddedApp() {
-	if (window.location.search.split('&').length > 2) {
-		throw new Error('Only one query parameter expected.');
-	}
 	const searchParams = new URLSearchParams(window.location.search);
 	const eventId = searchParams.get('eventId');
 	const messageId = searchParams.get('messageId');
@@ -33,7 +29,7 @@ function EmbeddedApp() {
 	if (messageId) {
 		return <EmbeddedMessage messageId={messageId} />;
 	}
-	throw new Error('Provide messageId or eventId');
+	throw new Error("'messageId' or 'eventId' query parameter expected");
 }
 
 export default EmbeddedApp;

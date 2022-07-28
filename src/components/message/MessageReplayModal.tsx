@@ -32,7 +32,7 @@ import { getMessagesSSEParamsFromFilter, MessagesFilterInfo } from '../../api/ss
 import { useMessagesStore, useOutsideClickListener } from '../../hooks';
 import { useFilterConfigStore } from '../../hooks/useFilterConfigStore';
 import FilterRow from '../filter/row';
-import { DATE_TIME_INPUT_MASK, TIME_INPUT_MASK } from '../../util/filterInputs';
+import { DATE_TIME_INPUT_MASK, TIME_INPUT_MASK } from '../../models/util/filterInputs';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { ModalPortal } from '../util/Portal';
 import { prettifyCamelcase } from '../../helpers/stringUtils';

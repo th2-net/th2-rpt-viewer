@@ -16,7 +16,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import KeyCodes from '../../../util/KeyCodes';
+import KeyCodes from '../../../models/util/KeyCodes';
 
 interface Props {
 	src: string;

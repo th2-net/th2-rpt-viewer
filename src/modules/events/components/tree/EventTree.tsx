@@ -23,7 +23,7 @@ import { formatTime } from 'helpers/date';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { useEventsStore } from '../../hooks/useEventsStore';
 import EventCardHeader from '../EventCardHeader';
-import CardDisplayType from '../../../../util/CardDisplayType';
+import CardDisplayType from '../../../../models/util/CardDisplayType';
 
 interface EventTreeProps {
 	eventTreeNode: EventTreeNode;

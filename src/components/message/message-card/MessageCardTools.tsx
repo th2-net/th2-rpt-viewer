@@ -24,7 +24,7 @@ import { copyTextToClipboard } from '../../../helpers/copyHandler';
 import { showNotification } from '../../../helpers/showNotification';
 import { normalizeFields } from '../../../helpers/message';
 import useViewMode from '../../../hooks/useViewMode';
-import { ViewMode } from '../../../contexts/viewModeContext';
+import { ViewMode } from '../../ViewModeProvider';
 import { Apps, CrossOriginMessage } from '../../../models/PostMessage';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';

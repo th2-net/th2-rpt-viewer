@@ -17,7 +17,7 @@
 import React, { useRef } from 'react';
 import debounce from 'lodash.debounce';
 import { useEventsFilterStore } from '../hooks/useEventsFilterStore';
-import KeyCodes from '../../../util/KeyCodes';
+import KeyCodes from '../../../models/util/KeyCodes';
 
 export function EventsIntervalInput() {
 	const eventsFilterStore = useEventsFilterStore();

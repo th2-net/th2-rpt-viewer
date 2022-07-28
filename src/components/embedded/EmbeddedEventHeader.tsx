@@ -18,7 +18,7 @@ import { formatTime, getElapsedTime } from '../../helpers/date';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { EventAction } from '../../models/EventAction';
 import { getEventStatus } from '../../helpers/event';
-import CardDisplayType from '../../util/CardDisplayType';
+import CardDisplayType from '../../models/util/CardDisplayType';
 
 interface Props {
 	displayType?: CardDisplayType;

@@ -17,7 +17,7 @@
 import { Observer, observer } from 'mobx-react-lite';
 import { showNotification } from 'helpers/showNotification';
 import Workspace from './Workspace';
-import { WorkspaceContextProvider } from '../../contexts/workspaceContext';
+import { WorkspaceContextProvider } from '../WorkspaceStoreProvider';
 import { useWorkspaces } from '../../hooks';
 import Tabs, { Tab, TabListRenderProps } from '../Tabs';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';

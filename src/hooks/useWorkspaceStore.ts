@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { WorkspaceContext } from '../contexts/workspaceContext';
+import { WorkspaceContext } from '../components/WorkspaceStoreProvider';
 import WorkspaceStore from '../stores/workspace/WorkspaceStore';
 
 export const useWorkspaceStore = (): WorkspaceStore => {

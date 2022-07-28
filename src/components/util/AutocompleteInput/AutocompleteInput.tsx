@@ -16,10 +16,10 @@
 
 import * as React from 'react';
 import AutosizeInput from 'react-input-autosize';
-import KeyCodes from '../../../util/KeyCodes';
+import KeyCodes from '../../../models/util/KeyCodes';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { AutocompleteList } from './AutocompleteList';
-import { Override } from '../../../util/types';
+import { Override } from '../../../models/util/Types';
 
 type Props = Override<
 	React.InputHTMLAttributes<HTMLInputElement>,

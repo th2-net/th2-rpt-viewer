@@ -22,7 +22,7 @@ import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
 import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
 import { ModalPortal } from 'components/util/Portal';
 import SearchInput from './SearchInput';
-import KeyCodes from '../../../../util/KeyCodes';
+import KeyCodes from '../../../../models/util/KeyCodes';
 
 const PANEL_WIDTH = 540;
 

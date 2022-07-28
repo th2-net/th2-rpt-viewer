@@ -17,7 +17,7 @@
 import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import { IndexLocationWithAlign, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
-import KeyCodes from '../../../util/KeyCodes';
+import KeyCodes from '../../../models/util/KeyCodes';
 import { ModalPortal } from '../Portal';
 import { useOutsideClickListener } from '../../../hooks/useOutsideClickListener';
 import { createBemElement, createStyleSelector } from '../../../helpers/styleCreators';

@@ -14,16 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { Panel } from 'models/Panel';
 import SearchToken, { PanelSearchToken } from '../../models/search/SearchToken';
 import SearchSplitResult from '../../models/search/SearchSplitResult';
-import Panel from '../../util/Panel';
 
 export function createSearchToken(
 	pattern = 'test',
 	color = 'default',
 	isActive = false,
 	isScrollable = true,
-	panels: Panel[] = [Panel.ACTIONS, Panel.MESSAGES, Panel.KNOWN_BUGS, Panel.LOGS],
+	panels: Panel[] = [Panel.Events, Panel.Messages],
 ): PanelSearchToken {
 	return {
 		pattern,

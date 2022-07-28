@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import RootStoreContext from '../contexts/rootStoreContext';
+import { RootStoreContext } from '../components/StoresProvider';
 
 export const useRootStore = () => {
 	const rootStore = React.useContext(RootStoreContext);

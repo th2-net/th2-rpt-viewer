@@ -31,7 +31,7 @@ import {
 	TIME_INPUT_MASK,
 	DATE_TIME_INPUT_MASK,
 	TIMESTAMPS_INPUT_MASK,
-} from '../../../util/filterInputs';
+} from '../../../models/util/filterInputs';
 import { SearchPanelFormState } from '../stores/SearchStore';
 import { useSearchStore } from '../hooks/useSearchStore';
 import SearchPanelFilters from './SearchPanelFilters';

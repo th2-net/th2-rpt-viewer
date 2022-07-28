@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { ViewModeContext } from '../contexts/viewModeContext';
+import { ViewModeContext } from '../components/ViewModeProvider';
 
 const useViewMode = () => React.useContext(ViewModeContext);
 

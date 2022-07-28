@@ -19,7 +19,7 @@ import { FilterRowMultipleStringsConfig } from '../../../models/filter/FilterInp
 import { removeByIndex, replaceByIndex } from '../../../helpers/array';
 import Bubble, { BubbleRef } from '../../util/Bubble';
 import AutocompleteInput from '../../util/AutocompleteInput/AutocompleteInput';
-import KeyCodes from '../../../util/KeyCodes';
+import KeyCodes from '../../../models/util/KeyCodes';
 import {
 	createBemBlock,
 	createBemElement,

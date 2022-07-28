@@ -22,7 +22,7 @@ import { nextCyclicItem, removeByIndex, replaceByIndex } from 'helpers/array';
 import { createSearchToken } from 'helpers/search/createSearchToken';
 import Bubble from 'components/util/Bubble';
 import { raf } from 'helpers/raf';
-import KeyCodes from '../../../../util/KeyCodes';
+import KeyCodes from '../../../../models/util/KeyCodes';
 import { useEventsStore } from '../../hooks/useEventsStore';
 import 'styles/search.scss';
 
