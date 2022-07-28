@@ -18,7 +18,6 @@ import { observer } from 'mobx-react-lite';
 import SplitViewPane from 'components/split-view/SplitViewPane';
 import Empty from 'components/util/Empty';
 import SplitView from 'components/split-view/SplitView';
-import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { useEventsStore } from '../../hooks/useEventsStore';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import EventDetailInfoCard from '../EventDetailInfoCard';
@@ -28,7 +27,6 @@ import EventList from '../EventList';
 function EventTreeView() {
 	const eventsStore = useEventsStore();
 	const viewStore = useEventWindowViewStore();
-	const eventsDataStore = useEventsDataStore();
 
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
@@ -37,23 +35,10 @@ function EventTreeView() {
 				<EventList />
 			</SplitViewPane>
 			<SplitViewPane>
-				{eventsStore.selectedNode === null &&
-					!eventsDataStore.isLoadingSelectedEvent &&
-					(!eventsDataStore.isError ? (
-						<Empty description='Select event' />
-					) : (
-						<Empty description='Error occured while loading event' />
-					))}
-				{eventsStore.selectedNode && (
-					<EventDetailInfoCard
-						node={eventsStore.selectedNode}
-						event={eventsStore.selectedEvent}
-						eventTreeNode={eventsStore.selectedNode}
-						childrenCount={
-							(eventsDataStore.parentChildrensMap.get(eventsStore.selectedNode.eventId) || [])
-								.length
-						}
-					/>
+				{eventsStore.selectedNode ? (
+					<EventDetailInfoCard node={eventsStore.selectedNode} />
+				) : (
+					<Empty description='Select event' />
 				)}
 			</SplitViewPane>
 		</SplitView>

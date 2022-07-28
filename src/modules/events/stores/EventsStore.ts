@@ -81,20 +81,13 @@ export default class EventsStore {
 
 		this.init(defaultState);
 
-		reaction(() => this.selectedNode, this.onSelectedNodeChange);
-
 		reaction(() => this.viewStore.flattenedListView, this.onViewChange);
-
-		reaction(() => this.selectedEvent, this.onSelectedEventChange);
 
 		reaction(() => this.filterStore.interval, this.onIntervalChange);
 	}
 
 	@observable.ref
 	public selectedNode: EventTreeNode | null = null;
-
-	@observable.ref
-	public selectedEvent: EventAction | null = null;
 
 	@observable
 	public scrolledIndex: Number | null = null;
@@ -134,7 +127,7 @@ export default class EventsStore {
 				this.searchStore.tokens.length > 0
 					? this.searchStore.tokens.map(t => t.pattern)
 					: undefined,
-			selectedEventId: this.selectedEvent?.eventId,
+			selectedEventId: this.selectedNode?.eventId,
 			flattenedListView: this.viewStore.flattenedListView,
 			interval: this.filterStore.interval,
 		};
@@ -291,7 +284,6 @@ export default class EventsStore {
 	@action
 	public goToEvent = async (savedEventNode: EventTreeNode | EventAction) => {
 		this.selectedNode = null;
-		this.selectedEvent = null;
 		this.workspaceStore.viewStore.activePanel = Panel.Events;
 
 		const timeRange = calculateTimeRange(
@@ -327,26 +319,6 @@ export default class EventsStore {
 	};
 
 	@action
-	private onSelectedNodeChange = (selectedNode: EventTreeNode | null) => {
-		if (selectedNode && selectedNode.eventId !== this.selectedEvent?.eventId) {
-			this.selectedEvent = null;
-			this.selectedNode = selectedNode;
-			this.eventDataStore.fetchDetailedEventInfo(selectedNode);
-		} else if (selectedNode === null) {
-			this.selectedNode = null;
-			this.selectedEvent = null;
-		}
-	};
-
-	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
-		if (!selectedEvent) return;
-
-		if (this.viewStore.eventsPanelArea === 100) {
-			this.viewStore.eventsPanelArea = 50;
-		}
-	};
-
-	@action
 	private onViewChange = () => {
 		if (this.selectedNode) {
 			this.scrollToEvent(this.selectedNode.eventId);
@@ -354,11 +326,8 @@ export default class EventsStore {
 	};
 
 	@action
-	public onTargetEventLoad = (event: EventAction, node: EventTreeNode) => {
-		this.selectedEvent = event;
-		if (node.eventId !== this.selectedNode?.eventId) {
-			this.selectedNode = node;
-		}
+	public onTargetEventLoad = (node: EventTreeNode) => {
+		this.selectedNode = node;
 	};
 
 	@action

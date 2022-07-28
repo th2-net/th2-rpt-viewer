@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import SplitViewPane from 'components/split-view/SplitViewPane';
 import Empty from 'components/util/Empty';
@@ -22,13 +23,21 @@ import { useEventsStore } from '../../hooks/useEventsStore';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import EventList from '../EventList';
-import DetailedFlatEventCard from './DetailedFlatEventCard';
 import EventWindowHeader from '../EventWindowHeader';
+import EventDetailInfoCard from '../EventDetailInfoCard';
 
 function EventTreeView() {
 	const eventsStore = useEventsStore();
 	const viewStore = useEventWindowViewStore();
 	const eventDataStore = useEventsDataStore();
+
+	const node = eventsStore.selectedNode;
+
+	const parentNodes = computed(() =>
+		!node || node.parentId === null
+			? []
+			: eventsStore.getParentNodes(node.eventId, eventDataStore.eventsCache),
+	).get();
 
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
@@ -37,25 +46,10 @@ function EventTreeView() {
 				<EventList isFlat={true} />
 			</SplitViewPane>
 			<SplitViewPane>
-				{eventsStore.selectedNode === null &&
-					!eventDataStore.isLoadingSelectedEvent &&
-					(!eventDataStore.isError ? (
-						<Empty description='Select event' />
-					) : (
-						<Empty description='Error occured while loading event' />
-					))}
-				{eventsStore.selectedNode && (
-					<DetailedFlatEventCard
-						eventTreeNode={eventsStore.selectedNode}
-						parentNodes={
-							eventsStore.selectedNode.parentId === null
-								? []
-								: eventsStore.getParentNodes(
-										eventsStore.selectedNode.eventId,
-										eventDataStore.eventsCache,
-								  )
-						}
-					/>
+				{node ? (
+					<EventDetailInfoCard node={node} parentNodes={parentNodes} />
+				) : (
+					<Empty description='Select event' />
 				)}
 			</SplitViewPane>
 		</SplitView>

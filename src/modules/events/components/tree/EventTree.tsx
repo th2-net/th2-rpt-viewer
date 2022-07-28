@@ -99,10 +99,6 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		}
 	}
 
-	const onNodeSelect = React.useCallback(() => {
-		eventsStore.selectNode(eventTreeNode);
-	}, [eventTreeNode]);
-
 	const onEventTypeSelect = (eventType: string) => {
 		const defaultFilter = eventsStore.filterStore.getDefaultEventFilter();
 		if (!defaultFilter) return;
@@ -143,7 +139,7 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 					childrenCount={childrenCount}
 					event={eventTreeNode}
 					displayType={CardDisplayType.MINIMAL}
-					onSelect={eventTreeNode.isUnknown ? undefined : onNodeSelect}
+					onSelect={eventTreeNode.isUnknown ? undefined : eventsStore.selectNode}
 					onEventTypeSelect={onEventTypeSelect}
 					isSelected={isSelected}
 					isActive={

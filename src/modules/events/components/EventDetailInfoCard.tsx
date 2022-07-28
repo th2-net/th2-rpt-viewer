@@ -14,33 +14,42 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { createBemBlock, createStyleSelector } from 'helpers/styleCreators';
 import { useBookmarksStore } from 'hooks/index';
 import { formatTime } from 'helpers/date';
 import { getEventStatus } from 'helpers/event';
-import { EventAction, EventTreeNode } from 'models/EventAction';
+import { EventTreeNode } from 'models/EventAction';
 import { useSearchStore } from 'hooks/useSearchStore';
 import SplashScreen from 'components/SplashScreen';
+import Empty from 'components/util/Empty';
+import { useEvent } from '../hooks/useEvent';
 import { useEventsStore } from '../hooks/useEventsStore';
 import EventBodyCard from './EventBodyCard';
+import EventCardHeader from './EventCardHeader';
 
 interface Props {
 	node: EventTreeNode;
-	event: EventAction | null;
-	eventTreeNode: EventTreeNode;
-	childrenCount?: number;
+	parentNodes?: EventTreeNode[];
 	children?: React.ReactNode;
 }
 
 function EventDetailInfoCard(props: Props) {
+	const { node, children, parentNodes = [] } = props;
+
+	const [selectedNode, setSelectedNode] = useState<EventTreeNode>(node);
+
 	const bookmarksStore = useBookmarksStore();
 	const eventStore = useEventsStore();
 	const { currentSearch } = useSearchStore();
 	const bodyFilters = currentSearch?.request.filters.body.values ?? [];
 
-	const { event, node, children } = props;
+	const { event, isError } = useEvent(selectedNode.eventId);
+
+	if (isError) {
+		return <Empty description='Error occured while loading event' />;
+	}
 
 	if (!event) {
 		return (
@@ -70,7 +79,19 @@ function EventDetailInfoCard(props: Props) {
 
 	return (
 		<div className='event-detail-info'>
-			{children}
+			{parentNodes.length > 0 && (
+				<div className='event-detail-info__parents'>
+					{parentNodes.map(eventNode => (
+						<EventCardHeader
+							key={eventNode.eventId}
+							event={eventNode}
+							onSelect={!eventNode.isUnknown ? e => setSelectedNode(e) : undefined}
+							isActive={selectedNode === eventNode}
+						/>
+					))}
+					<EventCardHeader key={node.eventId} event={node} onSelect={setSelectedNode} />
+				</div>
+			)}
 			<div className={cardClassName}>
 				<div className='event-card__status'>
 					<div className='event-status-icon active'>

@@ -29,7 +29,7 @@ import CardDisplayType from '../../../models/util/CardDisplayType';
 interface EventCardHeaderBaseProps {
 	displayType?: CardDisplayType;
 	event: EventTreeNode;
-	onSelect?: () => void;
+	onSelect?: (eventNode: EventTreeNode) => void;
 	onEventTypeSelect?: (eventType: string) => void;
 	isSelected?: boolean;
 	isActive?: boolean;
@@ -100,7 +100,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 
 	function onRootClick() {
 		if (!disabled && onSelect) {
-			onSelect();
+			onSelect(event);
 		}
 	}
 

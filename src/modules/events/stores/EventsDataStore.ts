@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, IReactionDisposer, observable, reaction, runInAction, when } from 'mobx';
+import { action, computed, IReactionDisposer, observable, reaction, when } from 'mobx';
 import { nanoid } from 'nanoid';
 import ApiSchema from '../../../api/ApiSchema';
 import {
@@ -112,7 +112,6 @@ export default class EventsDataStore {
 		this.resetEventsTreeState({ isLoading: true });
 
 		this.eventStore.selectedNode = null;
-		this.eventStore.selectedEvent = null;
 
 		this.filterStore.setRange(timeRange);
 		this.filterStore.setEventsFilter(filter);
@@ -520,7 +519,7 @@ export default class EventsDataStore {
 					this.loadParentNodes(targetNode.parentId, true);
 				}
 				this.eventsCache.set(targetNode.eventId, targetNode);
-				this.eventStore.onTargetEventLoad(event, targetNode);
+				this.eventStore.onTargetEventLoad(targetNode);
 				this.targetNode = targetNode;
 			} catch (error) {
 				console.error(`Couldnt fetch target event node ${targetEventId}`);
@@ -529,31 +528,6 @@ export default class EventsDataStore {
 			}
 		} else {
 			this.targetEventAC?.abort();
-		}
-	};
-
-	private detailedEventAC: AbortController | null = null;
-
-	@action
-	public fetchDetailedEventInfo = async (selectedNode: EventTreeNode | null) => {
-		if (!selectedNode) return;
-
-		this.detailedEventAC?.abort();
-		this.detailedEventAC = new AbortController();
-
-		this.isLoadingSelectedEvent = true;
-		try {
-			const event = await this.api.events.getEvent(
-				selectedNode.eventId,
-				this.detailedEventAC.signal,
-			);
-			runInAction(() => {
-				this.eventStore.selectedEvent = event;
-			});
-		} catch (error) {
-			console.error(`Error occurred while loading event ${selectedNode.eventId}`);
-		} finally {
-			this.isLoadingSelectedEvent = false;
 		}
 	};
 

@@ -21,7 +21,6 @@ import Toast from './notifications/Toast';
 import ToastContainer from './notifications/ToastContainer';
 import Notifier from './notifications/Notifier';
 import WorkspacesLayout from './workspace/WorkspacesLayout';
-import Header from './util/Header';
 import '../styles/root.scss';
 
 const AppRootBase = () => (
@@ -30,7 +29,9 @@ const AppRootBase = () => (
 			placement='top-right'
 			components={{ Toast, ToastContainer }}
 			transitionDuration={400}>
-			<Header />
+			<div className='header'>
+				<i className='th2-logo' />
+			</div>
 			<div className='app__workspaces'>
 				<WorkspacesLayout />
 			</div>
