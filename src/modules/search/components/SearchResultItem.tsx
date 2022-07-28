@@ -17,7 +17,8 @@
 
 import React from 'react';
 import { formatTime, getTimestampAsNumber } from 'helpers/date';
-import { getItemName, isEventAction, isEventMessage } from 'helpers/event';
+import { getItemName, isEventAction } from 'helpers/event';
+import { isEventMessage } from 'helpers/message';
 import { createBemBlock, createBemElement, createStyleSelector } from 'helpers/styleCreators';
 import { useMessageBodySortStore } from 'hooks/index';
 import { ActionType, EventAction } from 'models/EventAction';

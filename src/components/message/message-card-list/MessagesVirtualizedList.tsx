@@ -18,7 +18,7 @@ import * as React from 'react';
 import { Observer, observer } from 'mobx-react-lite';
 import { Virtuoso, VirtuosoHandle, ListItem } from 'react-virtuoso';
 import moment from 'moment';
-import { isEventMessage } from 'helpers/event';
+import { isEventMessage } from 'helpers/message';
 import { SearchDirection } from 'models/search/SearchDirection';
 import { EventMessage } from '../../../models/EventMessage';
 import { useMessagesStore, useDebouncedCallback, useMessagesDataStore } from '../../../hooks';

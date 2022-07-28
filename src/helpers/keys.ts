@@ -16,8 +16,6 @@
 
 import { EventMessage } from '../models/EventMessage';
 
-/* eslint-disable no-restricted-globals */
-
 const MESSAGE_KEY_PREFIX = 'msg';
 
 export function keyForMessage(id: string, fieldName: keyof EventMessage | null = null): string {

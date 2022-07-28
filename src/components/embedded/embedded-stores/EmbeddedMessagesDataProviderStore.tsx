@@ -20,7 +20,7 @@ import { EventMessage } from '../../../models/EventMessage';
 import EmbeddedMessagesStore from './EmbeddedMessagesStore';
 import ApiSchema from '../../../api/ApiSchema';
 import notificationsStore from '../../../stores/NotificationsStore';
-import { isEventMessage } from '../../../helpers/event';
+import { isEventMessage } from '../../../helpers/message';
 import { isAbortError } from '../../../helpers/fetch';
 import { MessagesDataStore } from '../../../models/Stores';
 import MessagesUpdateStore from '../../../stores/messages/MessagesUpdateStore';

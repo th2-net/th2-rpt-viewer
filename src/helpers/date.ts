@@ -19,7 +19,7 @@ import { EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { DateTimeMask } from '../models/filter/FilterInputs';
 import { TimeRange } from '../models/Timestamp';
-import { isEventMessage } from './event';
+import { isEventMessage } from './message';
 
 export function getElapsedTime(
 	startTimestamp: string,

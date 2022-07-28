@@ -16,7 +16,7 @@
 
 import React, { memo } from 'react';
 import { formatTimestamp, getTimestampAsNumber } from 'helpers/date';
-import { isEventMessage } from 'helpers/event';
+import { isEventMessage } from 'helpers/message';
 import { createBemElement, createStyleSelector } from 'helpers/styleCreators';
 import { Bookmark } from '../models/Bookmarks';
 

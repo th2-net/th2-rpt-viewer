@@ -19,7 +19,7 @@ import {
 	SearchInputBase,
 	Props as SearchInputProps,
 	REACTIVE_SEARCH_DELAY,
-} from 'modules/events/components/search/SearchInput';
+} from '../../../modules/events/components/search/SearchInput';
 import SearchToken from '../../../models/search/SearchToken';
 import KeyCodes from '../../../models/util/KeyCodes';
 import { timer } from '../../util/timer';

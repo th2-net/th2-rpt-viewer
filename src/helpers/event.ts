@@ -14,6 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { isEventMessage } from './message';
 import { ActionType, EventAction, EventTreeNode } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import { EventStatus } from '../modules/events/models/Status';
@@ -48,14 +49,6 @@ export function sortEventsByTimestamp(
 		return timestampToNumber(eventA.startTimestamp) - timestampToNumber(eventB.startTimestamp);
 	});
 	return copiedEvents;
-}
-
-export function isEventMessage(object: unknown): object is EventMessage {
-	return (
-		typeof object === 'object' &&
-		object !== null &&
-		(object as EventMessage).type === ActionType.MESSAGE
-	);
 }
 
 export function isEventAction(object: unknown): object is EventAction {

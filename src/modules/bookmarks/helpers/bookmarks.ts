@@ -14,7 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { isEvent, isEventMessage } from 'helpers/event';
+import { isEvent } from 'helpers/event';
+import { isEventMessage } from 'helpers/message';
 import { Bookmark, EventBookmark, MessageBookmark } from '../models/Bookmarks';
 
 export function isBookmark(item: unknown): item is Bookmark {

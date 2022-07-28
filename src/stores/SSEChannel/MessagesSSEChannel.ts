@@ -19,7 +19,7 @@ import { action, when } from 'mobx';
 import api from '../../api';
 import { SSEChannelType } from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat, MessageIdsEvent } from '../../api/sse';
-import { isEventMessage } from '../../helpers/event';
+import { isEventMessage } from '../../helpers/message';
 import { EventMessage } from '../../models/EventMessage';
 import SSEChannel, { SSEChannelOptions, SSEEventListeners } from './SSEChannel';
 

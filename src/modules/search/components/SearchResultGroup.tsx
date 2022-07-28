@@ -17,7 +17,8 @@
 import React from 'react';
 import moment from 'moment';
 import { observer } from 'mobx-react-lite';
-import { getItemId, isEvent, isEventMessage } from 'helpers/event';
+import { getItemId, isEvent } from 'helpers/event';
+import { isEventMessage } from 'helpers/message';
 import { createBemElement } from 'helpers/styleCreators';
 import { getTimestampAsNumber } from 'helpers/date';
 import { ActionType } from 'models/EventAction';

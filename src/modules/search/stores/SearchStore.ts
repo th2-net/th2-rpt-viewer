@@ -43,7 +43,8 @@ import {
 	SSEParams,
 } from 'api/sse';
 import { DbData, IndexedDbStores } from 'api/indexedDb';
-import { getItemId, isEventAction, isEventMessage, isEventNode } from 'helpers/event';
+import { getItemId, isEventAction, isEventNode } from 'helpers/event';
+import { isEventMessage } from 'helpers/message';
 import { IFilterConfigStore, ISearchStore } from 'models/Stores';
 import { getTimestampAsNumber } from 'helpers/date';
 import { isQuotaExceededError } from 'helpers/fetch';

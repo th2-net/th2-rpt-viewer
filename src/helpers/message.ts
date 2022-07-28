@@ -39,7 +39,7 @@ export const sortMessagesByTimestamp = (
 	return copiedMessages;
 };
 
-export const isMessage = (object: unknown): object is EventMessage =>
+export const isEventMessage = (object: unknown): object is EventMessage =>
 	typeof object === 'object' &&
 	object !== null &&
 	(object as EventMessage).type === ActionType.MESSAGE;
