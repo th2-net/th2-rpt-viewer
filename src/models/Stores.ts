@@ -80,7 +80,7 @@ export interface MessagesDataStore {
 
 export interface IEventsStore {
 	renderedEvents: EventTreeNode[];
-	selectedEvent: EventAction | null;
+	selectedNode: EventTreeNode | null;
 	goToEvent: (event: EventAction | EventTreeNode) => void;
 	dispose: () => void;
 	urlState: EventStoreURLState;

@@ -102,9 +102,7 @@ export default class WorkspaceStore {
 			this.messagesStore,
 		);
 
-		reaction(() => this.attachedMessagesIds, this.getAttachedMessages);
-
-		reaction(() => this.eventsStore.selectedEvent, this.onSelectedEventChange);
+		reaction(() => this.eventsStore.selectedNode, this.getAttachedMessages);
 	}
 
 	@observable
@@ -163,25 +161,28 @@ export default class WorkspaceStore {
 	private attachedMessagesAC: AbortController | null = null;
 
 	@action
-	private getAttachedMessages = async (attachedMessagesIds: string[]) => {
+	private getAttachedMessages = async (eventTreeNode: EventTreeNode | null) => {
+		if (!eventTreeNode) {
+			this.isLoadingAttachedMessages = false;
+			this.attachedMessages = [];
+			return;
+		}
 		this.isLoadingAttachedMessages = true;
 		if (this.attachedMessagesAC) {
 			this.attachedMessagesAC.abort();
 		}
 		this.attachedMessagesAC = new AbortController();
 		try {
-			const cachedMessages = this.attachedMessages.filter(message =>
-				attachedMessagesIds.includes(message.id),
+			const event = await this.api.events.getEvent(
+				eventTreeNode.eventId,
+				this.attachedMessagesAC.signal,
 			);
-			const messagesToLoad = attachedMessagesIds.filter(
-				messageId => cachedMessages.findIndex(message => message.id === messageId) === -1,
+			const attachedMessages = await Promise.all(
+				event.attachedMessageIds.map(id =>
+					this.api.messages.getMessage(id, this.attachedMessagesAC?.signal),
+				),
 			);
-			const messages = await Promise.all(
-				messagesToLoad.map(id => this.api.messages.getMessage(id, this.attachedMessagesAC?.signal)),
-			);
-			this.attachedMessages = sortMessagesByTimestamp(
-				[...cachedMessages, ...messages].filter(Boolean),
-			);
+			this.attachedMessages = sortMessagesByTimestamp(attachedMessages);
 		} catch (error) {
 			if (!isAbortError(error)) {
 				console.error('Error while loading attached messages', error);
@@ -203,11 +204,6 @@ export default class WorkspaceStore {
 			this.viewStore.activePanel = Panel.Events;
 			this.eventsStore.goToEvent(savedItem);
 		}
-	};
-
-	@action
-	private onSelectedEventChange = (selectedEvent: EventAction | null) => {
-		this.setAttachedMessagesIds(selectedEvent ? selectedEvent.attachedMessageIds : []);
 	};
 
 	@action

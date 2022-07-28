@@ -17,7 +17,7 @@
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
 import { FilterEntry } from 'modules/search/stores/SearchStore';
-import { IFilterConfigStore } from 'models/Stores';
+import { IEventsStore, IFilterConfigStore } from 'models/Stores';
 import { Panel } from 'models/Panel';
 import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../../../stores/workspace/WorkspaceViewStore';
@@ -49,7 +49,7 @@ type EventStoreDefaultState = EventStoreURLState & {
 
 export type EventStoreDefaultStateType = EventStoreDefaultState | string | null | undefined;
 
-export default class EventsStore {
+export default class EventsStore implements IEventsStore {
 	public filterStore: EventsFilterStore;
 
 	public viewStore: ViewStore;
