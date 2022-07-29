@@ -99,11 +99,7 @@ const MessagesVirtualizedList = (props: Props) => {
 	]);
 
 	const debouncedScrollHandler = useDebouncedCallback(
-		(
-			event: React.UIEvent<'div'>,
-			isHorizontal?: boolean,
-			wheelScrollDirection?: 'next' | 'previous',
-		) => {
+		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
 			const scroller = event.target;
 			if (scroller instanceof Element) {
 				const isStartReached = scroller.scrollTop === 0;
@@ -113,10 +109,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					searchChannelNext &&
 					!searchChannelNext.isLoading &&
 					!searchChannelNext.isEndReached &&
-					!isHorizontal &&
-					((wheelScrollDirection === undefined &&
-						scroller.parentElement?.className === 'messages-list') ||
-						wheelScrollDirection === 'next')
+					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
 					loadNextMessages().then(nextMessages => onNextChannelResponse(nextMessages));
 				}
@@ -126,10 +119,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					searchChannelPrev &&
 					!searchChannelPrev.isLoading &&
 					!searchChannelPrev.isEndReached &&
-					!isHorizontal &&
-					((wheelScrollDirection === undefined &&
-						scroller.parentElement?.className === 'messages-list') ||
-						wheelScrollDirection === 'previous')
+					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
 				) {
 					loadPrevMessages().then(prevMessages => onPrevChannelResponse(prevMessages));
 				}
@@ -145,7 +135,7 @@ const MessagesVirtualizedList = (props: Props) => {
 
 	const onWheel: React.WheelEventHandler<'div'> = event => {
 		event.persist();
-		debouncedScrollHandler(event, Boolean(event.deltaX), event.deltaY < 0 ? 'next' : 'previous');
+		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
 	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
