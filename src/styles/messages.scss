@@ -19,6 +19,7 @@
 .message-card-wrapper {
 	@include scrollbar();
 	@include bookmark-button($showOnHoverOverParent: true);
+	overflow: hidden;
 	width: 100%;
 	align-items: flex-start;
 	display: flex;
