@@ -24,6 +24,7 @@ import { ParsedMessageHeader } from './header/ParsedMessageHeader';
 import { createBemBlock } from '../../../helpers/styleCreators';
 
 export interface ParsedMessageProps {
+	isCollapsed: boolean;
 	isHighlighted?: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
@@ -38,6 +39,7 @@ interface OwnProps {
 
 export const ParsedMessageComponent = React.memo((props: ParsedMessageProps & OwnProps) => {
 	const {
+		isCollapsed,
 		isHighlighted,
 		parsedMessage,
 		parsedMessageIndex,
@@ -68,6 +70,7 @@ export const ParsedMessageComponent = React.memo((props: ParsedMessageProps & Ow
 							{...messageViewTypeRendererProps}
 							viewType={viewType}
 							messageBody={parsedMessage.message}
+							isCollapsed={isCollapsed}
 						/>
 					</div>
 				</div>

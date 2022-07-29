@@ -28,6 +28,7 @@ export interface MessageCardRawProps {
 	message: EventMessage;
 	viewType?: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
+	isCollapsed: boolean;
 	isScreenshotMsg: boolean;
 	isHighlighted?: boolean;
 	isDisplayRuleRaw: boolean;
@@ -40,6 +41,7 @@ export const MessageCardRaw = React.memo((props: MessageCardRawProps) => {
 		message,
 		viewType,
 		setViewType,
+		isCollapsed,
 		isScreenshotMsg,
 		isHighlighted,
 		isDisplayRuleRaw,
@@ -76,7 +78,11 @@ export const MessageCardRaw = React.memo((props: MessageCardRawProps) => {
 						</div>
 					) : (
 						<div className='mc-body__human'>
-							<MessageCardViewTypeRenderer {...messageViewTypeRendererProps} viewType={viewType} />
+							<MessageCardViewTypeRenderer
+								{...messageViewTypeRendererProps}
+								viewType={viewType}
+								isCollapsed={isCollapsed}
+							/>
 						</div>
 					)}
 				</div>

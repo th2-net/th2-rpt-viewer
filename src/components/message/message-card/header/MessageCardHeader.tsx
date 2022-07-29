@@ -35,6 +35,7 @@ export interface MessageInfoProps {
 	isHighlighted?: boolean;
 	isExport?: boolean;
 	isExported?: boolean;
+	isCollapsed: boolean;
 	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 }
@@ -52,6 +53,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		isHighlighted,
 		isExport,
 		isExported,
+		isCollapsed,
 		messageCardToolsConfig,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
@@ -96,23 +98,27 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				{isBookmarked && <div className={bookmarkIconClass} />}
 				{isAttached && <div className='mc-header__attached-icon' />}
 			</Chip>
-			<Chip
-				className={timestampClassName}
-				title={`Timestamp: ${formattedTimestamp}`}
-				onMouseEnter={onTimestampMouseEnter}
-				onMouseLeave={onTimestampMouseLeave}>
-				{timestamp && formattedTimestamp}
-			</Chip>
+			{!isCollapsed && (
+				<Chip
+					className={timestampClassName}
+					title={`Timestamp: ${formattedTimestamp}`}
+					onMouseEnter={onTimestampMouseEnter}
+					onMouseLeave={onTimestampMouseLeave}>
+					{timestamp && formattedTimestamp}
+				</Chip>
+			)}
+
 			<Chip title={`Session: ${sessionId}`} className='mc-header__sessionId'>
 				<div style={sessionBackgroundStyle} />
 				<span className={sessionClass} />
 				<span className='mc-header__session-id'>{sessionId}</span>
 			</Chip>
-			<Chip>{message.id}</Chip>
-			{message.parsedMessages && (
+			{!isCollapsed && <Chip>{message.id}</Chip>}
+
+			{!isCollapsed && message.parsedMessages && (
 				<Chip>{message.parsedMessages[0].message.metadata.id.subsequence[0]}</Chip>
 			)}
-			{message.parsedMessages && (
+			{!isCollapsed && message.parsedMessages && (
 				<Chip title={`Name: ${message.parsedMessages[0].message.metadata.messageType}`}>
 					{message.parsedMessages[0].message.metadata.messageType}
 				</Chip>

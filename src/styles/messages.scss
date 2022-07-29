@@ -19,7 +19,7 @@
 .message-card-wrapper {
 	@include scrollbar();
 	@include bookmark-button($showOnHoverOverParent: true);
-	overflow: auto;
+	width: 100%;
 	align-items: flex-start;
 	display: flex;
 	border-radius: 16px 16px 0 0;
@@ -443,6 +443,7 @@
 		font-family: inherit;
 		line-height: 16px;
 		margin: 0;
+		padding: 2px 0 2px 0;
 		white-space: pre-wrap;
 		word-break: break-all;
 		color: $alternativeTextColor;
@@ -532,7 +533,6 @@
 		font-family: monospace;
 		line-height: 15px;
 		letter-spacing: 0.5px;
-		overflow-x: auto;
 	}
 
 	&__column {

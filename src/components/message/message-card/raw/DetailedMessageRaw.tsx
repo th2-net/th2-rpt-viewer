@@ -30,9 +30,10 @@ const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 interface Props {
 	rawContent: string;
+	isCollapsed: boolean;
 }
 
-export default function DetailedMessageRaw({ rawContent }: Props) {
+export default function DetailedMessageRaw({ rawContent, isCollapsed }: Props) {
 	const hexadecimalRef = React.useRef<HTMLPreElement>(null);
 	const humanReadableRef = React.useRef<HTMLPreElement>(null);
 	const [hexSelectionStart, hexSelectionEnd] = useSelectListener(hexadecimalRef);
@@ -97,9 +98,11 @@ export default function DetailedMessageRaw({ rawContent }: Props) {
 
 	return (
 		<div className='mc-raw__content'>
-			<div className='mc-raw__column secondary'>
-				<pre>{offset}</pre>
-			</div>
+			{!isCollapsed && (
+				<div className='mc-raw__column secondary'>
+					<pre>{offset}</pre>
+				</div>
+			)}
 			<div className='mc-raw__column primary'>
 				<pre className='mc-raw__content-part' ref={hexadecimalRef}>
 					{renderOctet(hexadecimal)}

@@ -24,6 +24,7 @@ import { ParsedMessageComponent, ParsedMessageProps } from './MessageCardParsedM
 import { defineViewTypeConfig } from '../../../helpers/message';
 import { MessageCardRaw } from './raw/MessageCardRaw';
 import { createBemBlock } from '../../../helpers/styleCreators';
+import useElementSize from '../../../hooks/useElementSize';
 
 export interface MessageCardBaseProps {
 	message: EventMessage;
@@ -64,6 +65,14 @@ const MessageCardBase = React.memo(
 	}: MessageCardBaseProps) => {
 		const { id, rawMessageBase64 } = message;
 
+		const wrapperRef = React.useRef(null);
+
+		const wrapperWidth = useElementSize(wrapperRef)?.width;
+
+		const isCollapsed = React.useMemo(() => Boolean(wrapperWidth && wrapperWidth < 750), [
+			wrapperWidth,
+		]);
+
 		const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
 			messageId: id,
 			rawContent: rawMessageBase64,
@@ -95,11 +104,13 @@ const MessageCardBase = React.memo(
 			isHighlighted,
 			isExport,
 			isExported,
+			isCollapsed,
 			isScreenshotMsg: false,
 			messageCardToolsConfig,
 		};
 
 		const parsedMessageProps: ParsedMessageProps = {
+			isCollapsed,
 			isHighlighted,
 			messageCardToolsConfig,
 			messageViewTypeRendererProps,
@@ -115,7 +126,7 @@ const MessageCardBase = React.memo(
 		return (
 			<div className='messages-list__item-info'>
 				{(isBookmarked || isAttached) && <div className={indicatorClass} />}
-				<div className='message-card-wrapper'>
+				<div className='message-card-wrapper' ref={wrapperRef}>
 					<div className='message-card'>
 						<MessageCardHeader {...messageInfoProps} />
 						{!isDisplayRuleRaw &&
@@ -142,6 +153,7 @@ const MessageCardBase = React.memo(
 									rawViewTypeConfig?.setViewType ||
 									defineViewTypeConfig(viewTypeConfig, message.id).setViewType
 								}
+								isCollapsed={isCollapsed}
 								isScreenshotMsg={false}
 								isHighlighted={isHighlighted}
 								isDisplayRuleRaw={isDisplayRuleRaw}

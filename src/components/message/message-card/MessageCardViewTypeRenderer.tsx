@@ -34,11 +34,13 @@ export type MessageCardViewTypeRendererProps = {
 type OwnProps = {
 	messageBody?: MessageBody;
 	viewType?: MessageViewType;
+	isCollapsed: boolean;
 };
 
 const MessageCardViewTypeRenderer = ({
 	rawContent,
 	isSelected,
+	isCollapsed,
 	viewType,
 	messageBody,
 	sortOrderItems,
@@ -73,7 +75,9 @@ const MessageCardViewTypeRenderer = ({
 			case MessageViewType.ASCII:
 				return rawContent ? <SimpleMessageRaw rawContent={rawContent} /> : null;
 			case MessageViewType.BINARY:
-				return rawContent ? <DetailedMessageRaw rawContent={rawContent} /> : null;
+				return rawContent ? (
+					<DetailedMessageRaw rawContent={rawContent} isCollapsed={isCollapsed} />
+				) : null;
 			default:
 				return null;
 		}
