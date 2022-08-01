@@ -64,6 +64,7 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 						rawViewTypeConfig={rawViewTypeConfig}
 						isExpanded={isExpanded}
 						isDisplayRuleRaw={false}
+						isEmbedded={true}
 					/>
 					<MessageExpandButton
 						isExpanded={isExpanded}

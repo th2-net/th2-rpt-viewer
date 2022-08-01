@@ -25,15 +25,16 @@ import {
 	mapOctetOffsetsToHumanReadableOffsets,
 } from '../../../../helpers/rawFormatter';
 import '../../../../styles/messages.scss';
+import CardDisplayType from '../../../../util/CardDisplayType';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 interface Props {
 	rawContent: string;
-	isCollapsed: boolean;
+	displayType: CardDisplayType;
 }
 
-export default function DetailedMessageRaw({ rawContent, isCollapsed }: Props) {
+export default function DetailedMessageRaw({ rawContent, displayType }: Props) {
 	const hexadecimalRef = React.useRef<HTMLPreElement>(null);
 	const humanReadableRef = React.useRef<HTMLPreElement>(null);
 	const [hexSelectionStart, hexSelectionEnd] = useSelectListener(hexadecimalRef);
@@ -98,7 +99,7 @@ export default function DetailedMessageRaw({ rawContent, isCollapsed }: Props) {
 
 	return (
 		<div className='mc-raw__content'>
-			{!isCollapsed && (
+			{displayType === CardDisplayType.FULL && (
 				<div className='mc-raw__column secondary'>
 					<pre>{offset}</pre>
 				</div>

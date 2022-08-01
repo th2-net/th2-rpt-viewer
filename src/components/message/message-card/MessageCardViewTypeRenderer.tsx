@@ -21,6 +21,7 @@ import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import SimpleMessageRaw from './raw/SimpleMessageRaw';
 import DetailedMessageRaw from './raw/DetailedMessageRaw';
 import MessageBody from '../../../models/MessageBody';
+import CardDisplayType from '../../../util/CardDisplayType';
 
 export type MessageCardViewTypeRendererProps = {
 	messageId: string;
@@ -34,13 +35,13 @@ export type MessageCardViewTypeRendererProps = {
 type OwnProps = {
 	messageBody?: MessageBody;
 	viewType?: MessageViewType;
-	isCollapsed: boolean;
+	displayType: CardDisplayType;
 };
 
 const MessageCardViewTypeRenderer = ({
 	rawContent,
 	isSelected,
-	isCollapsed,
+	displayType,
 	viewType,
 	messageBody,
 	sortOrderItems,
@@ -76,7 +77,7 @@ const MessageCardViewTypeRenderer = ({
 				return rawContent ? <SimpleMessageRaw rawContent={rawContent} /> : null;
 			case MessageViewType.BINARY:
 				return rawContent ? (
-					<DetailedMessageRaw rawContent={rawContent} isCollapsed={isCollapsed} />
+					<DetailedMessageRaw rawContent={rawContent} displayType={displayType} />
 				) : null;
 			default:
 				return null;

@@ -14,16 +14,25 @@
  * limitations under the License.
  ***************************************************************************** */
 import * as React from 'react';
-import useResizeObserver from '@react-hook/resize-observer';
+import ResizeObserver from 'resize-observer-polyfill';
 
-const useElementSize = (target: React.MutableRefObject<HTMLDivElement | null>) => {
+const useElementSize = (target: HTMLDivElement | null) => {
 	const [size, setSize] = React.useState<DOMRectReadOnly>();
 
+	const resizeObserver = new ResizeObserver(entries =>
+		setSize(entries[0]?.contentRect as DOMRectReadOnly),
+	);
+
 	React.useLayoutEffect(() => {
-		if (target.current) setSize(target.current?.getBoundingClientRect());
+		if (target) {
+			setSize(target?.getBoundingClientRect());
+			resizeObserver.observe(target);
+		}
+		return () => {
+			resizeObserver.disconnect();
+		};
 	}, [target]);
 
-	useResizeObserver(target, entry => setSize(entry.contentRect));
 	return size;
 };
 

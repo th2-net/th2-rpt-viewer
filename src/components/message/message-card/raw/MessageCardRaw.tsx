@@ -23,12 +23,13 @@ import { MessageViewType, EventMessage } from '../../../../models/EventMessage';
 import { ParsedMessageHeader } from '../header/ParsedMessageHeader';
 import { MessageScreenshotZoom } from '../MessageScreenshot';
 import { createBemBlock } from '../../../../helpers/styleCreators';
+import CardDisplayType from '../../../../util/CardDisplayType';
 
 export interface MessageCardRawProps {
 	message: EventMessage;
 	viewType?: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
-	isCollapsed: boolean;
+	displayType: CardDisplayType;
 	isScreenshotMsg: boolean;
 	isHighlighted?: boolean;
 	isDisplayRuleRaw: boolean;
@@ -41,7 +42,7 @@ export const MessageCardRaw = React.memo((props: MessageCardRawProps) => {
 		message,
 		viewType,
 		setViewType,
-		isCollapsed,
+		displayType,
 		isScreenshotMsg,
 		isHighlighted,
 		isDisplayRuleRaw,
@@ -81,7 +82,7 @@ export const MessageCardRaw = React.memo((props: MessageCardRawProps) => {
 							<MessageCardViewTypeRenderer
 								{...messageViewTypeRendererProps}
 								viewType={viewType}
-								isCollapsed={isCollapsed}
+								displayType={displayType}
 							/>
 						</div>
 					)}

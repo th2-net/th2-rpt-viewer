@@ -24,6 +24,7 @@ import { ParsedMessageComponent, ParsedMessageProps } from './MessageCardParsedM
 import { defineViewTypeConfig } from '../../../helpers/message';
 import { MessageCardRaw } from './raw/MessageCardRaw';
 import { createBemBlock } from '../../../helpers/styleCreators';
+import CardDisplayType from '../../../util/CardDisplayType';
 import useElementSize from '../../../hooks/useElementSize';
 
 export interface MessageCardBaseProps {
@@ -58,6 +59,7 @@ const MessageCardBase = React.memo(
 		isHighlighted,
 		isBookmarked,
 		toogleMessagePin,
+		isEmbedded,
 		sortOrderItems,
 		addMessageToExport,
 		isExport,
@@ -65,13 +67,19 @@ const MessageCardBase = React.memo(
 	}: MessageCardBaseProps) => {
 		const { id, rawMessageBase64 } = message;
 
-		const wrapperRef = React.useRef(null);
+		const messagesListRef = isEmbedded
+			? document.body
+			: document.getElementsByClassName('messages-list')[0];
 
-		const wrapperWidth = useElementSize(wrapperRef)?.width;
+		const messagesListWidth = useElementSize(messagesListRef as HTMLDivElement)?.width;
 
-		const isCollapsed = React.useMemo(() => Boolean(wrapperWidth && wrapperWidth < 750), [
-			wrapperWidth,
-		]);
+		const displayType = React.useMemo(
+			() =>
+				messagesListWidth && messagesListWidth < 750
+					? CardDisplayType.MINIMAL
+					: CardDisplayType.FULL,
+			[messagesListWidth],
+		);
 
 		const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
 			messageId: id,
@@ -104,13 +112,13 @@ const MessageCardBase = React.memo(
 			isHighlighted,
 			isExport,
 			isExported,
-			isCollapsed,
+			displayType,
 			isScreenshotMsg: false,
 			messageCardToolsConfig,
 		};
 
 		const parsedMessageProps: ParsedMessageProps = {
-			isCollapsed,
+			displayType,
 			isHighlighted,
 			messageCardToolsConfig,
 			messageViewTypeRendererProps,
@@ -126,7 +134,7 @@ const MessageCardBase = React.memo(
 		return (
 			<div className='messages-list__item-info'>
 				{(isBookmarked || isAttached) && <div className={indicatorClass} />}
-				<div className='message-card-wrapper' ref={wrapperRef}>
+				<div className='message-card-wrapper'>
 					<div className='message-card'>
 						<MessageCardHeader {...messageInfoProps} />
 						{!isDisplayRuleRaw &&
@@ -153,7 +161,7 @@ const MessageCardBase = React.memo(
 									rawViewTypeConfig?.setViewType ||
 									defineViewTypeConfig(viewTypeConfig, message.id).setViewType
 								}
-								isCollapsed={isCollapsed}
+								displayType={displayType}
 								isScreenshotMsg={false}
 								isHighlighted={isHighlighted}
 								isDisplayRuleRaw={isDisplayRuleRaw}
