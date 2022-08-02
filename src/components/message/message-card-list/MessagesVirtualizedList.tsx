@@ -27,11 +27,15 @@ import { EventMessage } from '../../../models/EventMessage';
 import { raf } from '../../../helpers/raf';
 import { SSEHeartbeat } from '../../../api/sse';
 import { formatTime } from '../../../helpers/date';
+import useElementSize from '../../../hooks/useElementSize';
+import CardDisplayType from '../../../util/CardDisplayType';
+import MessageCard from '../message-card/MessageCard';
+
+const COLLAPSED_MESSAGES_WIDTH = 750;
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
 	rowCount: number;
-	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -65,12 +69,23 @@ const MessagesVirtualizedList = (props: Props) => {
 	} = useMessagesDataStore();
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
+	const scrollerRef = React.useRef<HTMLDivElement | null>(null);
 
-	const { className, overscan = 3, itemRenderer, loadPrevMessages, loadNextMessages } = props;
+	const { className, overscan = 3, loadPrevMessages, loadNextMessages } = props;
 
 	const [[firstPrevChunkIsLoaded, firstNextChunkIsLoaded], setLoadedChunks] = React.useState<
 		[boolean, boolean]
 	>([false, false]);
+
+	const messagesListWidth = useElementSize(scrollerRef.current)?.width;
+
+	const displayType = React.useMemo(
+		() =>
+			messagesListWidth && messagesListWidth < COLLAPSED_MESSAGES_WIDTH
+				? CardDisplayType.MINIMAL
+				: CardDisplayType.FULL,
+		[messagesListWidth],
+	);
 
 	React.useEffect(() => {
 		if (updateStore.isActive && virtuoso.current) {
@@ -138,6 +153,13 @@ const MessagesVirtualizedList = (props: Props) => {
 		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
+	const itemRenderer = React.useCallback(
+		(index: number, message: EventMessage) => {
+			return <MessageCard message={message} displayType={displayType} key={message.id} />;
+		},
+		[displayType],
+	);
+
 	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
 		messageStore.currentMessagesIndexesRange = {
 			startIndex: (renderedMessages && renderedMessages[0]?.originalIndex) ?? 0,
@@ -146,11 +168,16 @@ const MessagesVirtualizedList = (props: Props) => {
 		};
 	}, 100);
 
+	const handleScrollerRef = React.useCallback(ref => {
+		scrollerRef.current = ref;
+	}, []);
+
 	return (
 		<Virtuoso
 			data={messages}
 			firstItemIndex={startIndex}
 			ref={virtuoso}
+			scrollerRef={handleScrollerRef}
 			overscan={overscan}
 			itemContent={itemRenderer}
 			style={{ height: '100%', width: '100%' }}

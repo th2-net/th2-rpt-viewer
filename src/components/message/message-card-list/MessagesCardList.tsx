@@ -16,24 +16,18 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import MessageCard from '../message-card/MessageCard';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
 import SplashScreen from '../../SplashScreen';
 import Empty from '../../util/Empty';
 import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../../hooks';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import '../../../styles/messages.scss';
-import { EventMessage } from '../../../models/EventMessage';
 
 export type MessagesHeights = { [index: number]: number };
 
 function MessageCardList() {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
-
-	const renderMsg = React.useCallback((index: number, message: EventMessage) => {
-		return <MessageCard message={message} key={message.id} />;
-	}, []);
 
 	if (messagesDataStore.isError) {
 		return (
@@ -73,7 +67,6 @@ function MessageCardList() {
 				<MessagesVirtualizedList
 					className='messages-list__items'
 					rowCount={messagesDataStore.messages.length}
-					itemRenderer={renderMsg}
 					overscan={0}
 					loadNextMessages={messagesDataStore.getNextMessages}
 					loadPrevMessages={messagesDataStore.getPreviousMessages}

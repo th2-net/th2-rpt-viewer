@@ -25,7 +25,7 @@ const useElementSize = (target: HTMLDivElement | null) => {
 
 	React.useLayoutEffect(() => {
 		if (target) {
-			setSize(target?.getBoundingClientRect());
+			setSize(target.getBoundingClientRect());
 			resizeObserver.observe(target);
 		}
 		return () => {

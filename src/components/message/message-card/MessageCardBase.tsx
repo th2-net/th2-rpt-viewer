@@ -25,10 +25,10 @@ import { defineViewTypeConfig } from '../../../helpers/message';
 import { MessageCardRaw } from './raw/MessageCardRaw';
 import { createBemBlock } from '../../../helpers/styleCreators';
 import CardDisplayType from '../../../util/CardDisplayType';
-import useElementSize from '../../../hooks/useElementSize';
 
 export interface MessageCardBaseProps {
 	message: EventMessage;
+	displayType: CardDisplayType;
 	hoverMessage?: () => void;
 	unhoverMessage?: () => void;
 	addMessageToExport?: () => void;
@@ -59,27 +59,13 @@ const MessageCardBase = React.memo(
 		isHighlighted,
 		isBookmarked,
 		toogleMessagePin,
-		isEmbedded,
+		displayType,
 		sortOrderItems,
 		addMessageToExport,
 		isExport,
 		isExported,
 	}: MessageCardBaseProps) => {
 		const { id, rawMessageBase64 } = message;
-
-		const messagesListRef = isEmbedded
-			? document.body
-			: document.getElementsByClassName('messages-list')[0];
-
-		const messagesListWidth = useElementSize(messagesListRef as HTMLDivElement)?.width;
-
-		const displayType = React.useMemo(
-			() =>
-				messagesListWidth && messagesListWidth < 750
-					? CardDisplayType.MINIMAL
-					: CardDisplayType.FULL,
-			[messagesListWidth],
-		);
 
 		const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
 			messageId: id,

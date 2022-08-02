@@ -19,6 +19,8 @@ import { EventMessage, MessageViewType, MessageViewTypeConfig } from '../../mode
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
 import MessageExpandButton from '../message/MessageExpandButton';
+import useElementSize from '../../hooks/useElementSize';
+import CardDisplayType from '../../util/CardDisplayType';
 
 function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
@@ -26,6 +28,13 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [viewType, setViewType] = useState(MessageViewType.JSON);
 	const [rawViewType, setRawViewType] = useState(MessageViewType.ASCII);
 	const [isExpanded, setIsExpanded] = React.useState(true);
+
+	const wrapperWidth = useElementSize(document.body as HTMLDivElement)?.width;
+
+	const displayType = React.useMemo(
+		() => (wrapperWidth && wrapperWidth < 750 ? CardDisplayType.MINIMAL : CardDisplayType.FULL),
+		[wrapperWidth],
+	);
 
 	const viewTypeConfig: MessageViewTypeConfig = {
 		viewType,
@@ -60,6 +69,7 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 				<div className='messages-list__item'>
 					<MessageCardBase
 						message={message}
+						displayType={displayType}
 						viewTypeConfig={viewTypeConfig}
 						rawViewTypeConfig={rawViewTypeConfig}
 						isExpanded={isExpanded}
