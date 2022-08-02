@@ -31,7 +31,17 @@ export async function createRootStore(api: ApiSchema): Promise<RootStore> {
 	try {
 		books = await api.books.getBooksList();
 		const bookId = new URLSearchParams(window.location.search).get('bookId');
-		initialBook = (bookId && books.find(b => b.name === bookId)) || null;
+		initialBook = (bookId && books.length > 0 && books.find(b => b.name === bookId)) || null;
+
+		if (books.length === 0) {
+			notificationsStore.addMessage({
+				header: `Failed to load books`,
+				description: '',
+				notificationType: 'genericError',
+				id: nanoid(),
+				type: 'error',
+			});
+		}
 
 		if (bookId && !initialBook) {
 			notificationsStore.addMessage({

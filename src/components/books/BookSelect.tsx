@@ -28,7 +28,9 @@ const BookSelect = () => {
 
 	const inputRef = React.useRef<HTMLInputElement>(null);
 
-	const [currentValue, setCurrentValue] = React.useState(booksStore.selectedBook.name);
+	const [currentValue, setCurrentValue] = React.useState(
+		booksStore.selectedBook ? booksStore.selectedBook.name : '',
+	);
 
 	const booksIds = computed(() => booksStore.books.map(b => b.name)).get();
 
