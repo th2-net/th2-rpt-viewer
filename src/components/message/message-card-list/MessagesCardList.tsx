@@ -22,12 +22,19 @@ import Empty from '../../util/Empty';
 import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../../hooks';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import '../../../styles/messages.scss';
+import { EventMessage } from '../../../models/EventMessage';
+import CardDisplayType from '../../../util/CardDisplayType';
+import MessageCard from '../message-card/MessageCard';
 
 export type MessagesHeights = { [index: number]: number };
 
 function MessageCardList() {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
+
+	const renderMsg = React.useCallback((message: EventMessage, displayType: CardDisplayType) => {
+		return <MessageCard message={message} displayType={displayType} key={message.id} />;
+	}, []);
 
 	if (messagesDataStore.isError) {
 		return (
@@ -67,6 +74,7 @@ function MessageCardList() {
 				<MessagesVirtualizedList
 					className='messages-list__items'
 					rowCount={messagesDataStore.messages.length}
+					itemRenderer={renderMsg}
 					overscan={0}
 					loadNextMessages={messagesDataStore.getNextMessages}
 					loadPrevMessages={messagesDataStore.getPreviousMessages}

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
@@ -35,7 +35,7 @@ import MessageCardBase from '../message/message-card/MessageCardBase';
 import MessageExpandButton from '../message/MessageExpandButton';
 import EmbeddedMessagesViewTypeStore from './embedded-stores/EmbeddedMessagesViewTypeStore';
 import useElementSize from '../../hooks/useElementSize';
-import CardDisplayType from '../../util/CardDisplayType';
+import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../util/CardDisplayType';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
@@ -75,6 +75,13 @@ const EmbeddedMessageCard = observer(
 const EmbeddedMessages = () => {
 	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
+
+	const renderMsg = useCallback(
+		(message: EventMessage, displayType: CardDisplayType) => (
+			<EmbeddedMessageCard message={message} displayType={displayType} key={message.id} />
+		),
+		[],
+	);
 
 	const reportURL = React.useMemo(() => {
 		const messagesStoreState = {
@@ -140,6 +147,7 @@ const EmbeddedMessages = () => {
 				<StateSaverProvider>
 					<MessagesVirtualizedList
 						className='messages-list__items'
+						itemRenderer={renderMsg}
 						scrolledIndex={scrolledIndex}
 						loadNextMessages={dataStore.getNextMessages}
 						loadPrevMessages={dataStore.getPreviousMessages}
@@ -170,6 +178,7 @@ const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
+	itemRenderer: (message: EventMessage, displayType: CardDisplayType) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -195,6 +204,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		loadNextMessages,
 		scrolledIndex,
 		isLive,
+		itemRenderer,
 	} = props;
 
 	const scrollerRef = React.useRef<HTMLDivElement | null>(null);
@@ -203,7 +213,9 @@ const MessagesVirtualizedList = observer((props: Props) => {
 
 	const displayType = React.useMemo(
 		() =>
-			messagesListWidth && messagesListWidth < 750 ? CardDisplayType.MINIMAL : CardDisplayType.FULL,
+			messagesListWidth && messagesListWidth < COLLAPSED_MESSAGES_WIDTH
+				? CardDisplayType.MINIMAL
+				: CardDisplayType.FULL,
 		[messagesListWidth],
 	);
 
@@ -256,13 +268,6 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
-	const itemRenderer = React.useCallback(
-		(index: number, message: EventMessage) => {
-			return <EmbeddedMessageCard message={message} displayType={displayType} />;
-		},
-		[displayType],
-	);
-
 	const handleScrollerRef = React.useCallback(ref => {
 		scrollerRef.current = ref;
 	}, []);
@@ -274,7 +279,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 			ref={virtuoso}
 			scrollerRef={handleScrollerRef}
 			overscan={overscan}
-			itemContent={itemRenderer}
+			itemContent={(index, message) => itemRenderer(message, displayType)}
 			style={{ height: '100%', width: '100%' }}
 			className={className}
 			onScroll={onScroll}

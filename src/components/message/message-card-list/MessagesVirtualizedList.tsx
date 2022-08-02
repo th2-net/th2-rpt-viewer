@@ -28,14 +28,12 @@ import { raf } from '../../../helpers/raf';
 import { SSEHeartbeat } from '../../../api/sse';
 import { formatTime } from '../../../helpers/date';
 import useElementSize from '../../../hooks/useElementSize';
-import CardDisplayType from '../../../util/CardDisplayType';
-import MessageCard from '../message-card/MessageCard';
-
-const COLLAPSED_MESSAGES_WIDTH = 750;
+import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../../util/CardDisplayType';
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
 	rowCount: number;
+	itemRenderer: (message: EventMessage, displayType: CardDisplayType) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -71,7 +69,7 @@ const MessagesVirtualizedList = (props: Props) => {
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
 	const scrollerRef = React.useRef<HTMLDivElement | null>(null);
 
-	const { className, overscan = 3, loadPrevMessages, loadNextMessages } = props;
+	const { className, overscan = 3, itemRenderer, loadPrevMessages, loadNextMessages } = props;
 
 	const [[firstPrevChunkIsLoaded, firstNextChunkIsLoaded], setLoadedChunks] = React.useState<
 		[boolean, boolean]
@@ -153,13 +151,6 @@ const MessagesVirtualizedList = (props: Props) => {
 		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
-	const itemRenderer = React.useCallback(
-		(index: number, message: EventMessage) => {
-			return <MessageCard message={message} displayType={displayType} key={message.id} />;
-		},
-		[displayType],
-	);
-
 	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
 		messageStore.currentMessagesIndexesRange = {
 			startIndex: (renderedMessages && renderedMessages[0]?.originalIndex) ?? 0,
@@ -179,7 +170,7 @@ const MessagesVirtualizedList = (props: Props) => {
 			ref={virtuoso}
 			scrollerRef={handleScrollerRef}
 			overscan={overscan}
-			itemContent={itemRenderer}
+			itemContent={(index, message) => itemRenderer(message, displayType)}
 			style={{ height: '100%', width: '100%' }}
 			className={className}
 			itemsRendered={onMessagesRendered}

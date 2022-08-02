@@ -16,7 +16,8 @@
 import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 
-const useElementSize = (target: HTMLDivElement | null) => {
+const useElementSize = (target: HTMLElement | null) => {
+	console.log(target);
 	const [size, setSize] = React.useState<DOMRectReadOnly>();
 
 	const resizeObserver = new ResizeObserver(entries =>
