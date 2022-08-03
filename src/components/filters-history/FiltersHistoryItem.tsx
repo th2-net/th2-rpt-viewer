@@ -39,8 +39,14 @@ interface Props {
 }
 
 const FiltersHistoryItem = (props: Props) => {
-	const { item, filter, eventsFilterInfo, messagesFilterInfo, closeHistory, toggleFilterPin } =
-		props;
+	const {
+		item,
+		filter,
+		eventsFilterInfo,
+		messagesFilterInfo,
+		closeHistory,
+		toggleFilterPin,
+	} = props;
 
 	const bubblesContainerRef = React.useRef<{ [key: string]: HTMLDivElement | null }>({});
 

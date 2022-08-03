@@ -85,8 +85,16 @@ interface State {
 }
 
 const GraphChunksVirtualizer = (props: Props) => {
-	const { settings, chunkWidth, timestamp, interval, setRange, getChunk, panelsRange, range } =
-		props;
+	const {
+		settings,
+		chunkWidth,
+		timestamp,
+		interval,
+		setRange,
+		getChunk,
+		panelsRange,
+		range,
+	} = props;
 
 	const viewportElementRef = React.useRef<HTMLDivElement>(null);
 	const rangeElementRef = React.useRef<HTMLDivElement>(null);
