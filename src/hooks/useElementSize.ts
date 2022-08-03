@@ -17,20 +17,20 @@ import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 
 const useElementSize = (target: HTMLElement | null) => {
-	console.log(target);
 	const [size, setSize] = React.useState<DOMRectReadOnly>();
 
-	const resizeObserver = new ResizeObserver(entries =>
-		setSize(entries[0]?.contentRect as DOMRectReadOnly),
+	const resizeObserver = React.useRef(
+		new ResizeObserver(entries => {
+			setSize(entries[0]?.contentRect as DOMRectReadOnly);
+		}),
 	);
 
 	React.useLayoutEffect(() => {
 		if (target) {
-			setSize(target.getBoundingClientRect());
-			resizeObserver.observe(target);
+			resizeObserver.current.observe(target);
 		}
 		return () => {
-			resizeObserver.disconnect();
+			resizeObserver.current.disconnect();
 		};
 	}, [target]);
 
