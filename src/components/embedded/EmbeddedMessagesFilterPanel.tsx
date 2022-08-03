@@ -16,152 +16,26 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-	CompoundFilterRow,
-	FilterRowTogglerConfig,
-	FilterRowMultipleStringsConfig,
-	ActionFilterConfig,
-	FilterRowConfig,
-} from '../../models/filter/FilterInputs';
-import { MessagesFilterInfo } from '../../api/sse';
-import { MessageFilterState, MultipleStringFilter } from '../search-panel/SearchPanelFilters';
-import useSetState from '../../hooks/useSetState';
-import { prettifyCamelcase } from '../../helpers/stringUtils';
-import FilterPanel from '../filter/FilterPanel';
+import { FilterRowMultipleStringsConfig } from '../../models/filter/FilterInputs';
 import MessagesFilterSessionFilter from '../filter/MessageFilterSessionFilter';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
+import FilterButton from '../filter/FilterButton';
 
-type CurrentSSEValues = {
-	[key in keyof MessageFilterState]: string;
-};
-
-const EmbeddedMessagesFilterPanel = ({
-	messagesStore,
-}: {
+interface Props {
+	submitChanges: () => void;
+	showFilter: boolean;
+	setShowFilter: (isShown: boolean) => void;
 	messagesStore: EmbeddedMessagesStore;
-}) => {
+	streams: string[];
+	setStreams: (nextValues: string[]) => void;
+}
+
+const EmbeddedMessagesFilterPanel = (props: Props) => {
+	const { submitChanges, showFilter, setShowFilter, messagesStore, streams, setStreams } = props;
+
 	const messagesDataStore = messagesStore.dataStore;
-	const { filterStore } = messagesStore;
-	const { messagesFilterInfo } = filterStore;
 
-	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
-	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentStream, setCurrentStream] = React.useState('');
-	const [streams, setStreams] = React.useState<Array<string>>([]);
-	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
-		type: '',
-		body: '',
-		attachedEventIds: '',
-		bodyBinary: '',
-		text: '',
-	});
-
-	React.useEffect(() => {
-		setFilter(filterStore.sseMessagesFilter);
-	}, [filterStore.sseMessagesFilter]);
-
-	React.useEffect(() => {
-		setStreams(filterStore.filter.streams);
-	}, [filterStore.filter.streams]);
-
-	React.useEffect(() => {
-		setCurrentValues({
-			type: '',
-			body: '',
-			attachedEventIds: '',
-			bodyBinary: '',
-			text: '',
-		});
-	}, []);
-
-	const submitChanges = React.useCallback(() => {
-		messagesStore.applyFilter(
-			{
-				...filterStore.filter,
-				streams,
-			},
-			filter,
-		);
-	}, [filter, filterStore.filter, streams]);
-
-	const compoundFilterRow: Array<CompoundFilterRow> = React.useMemo(() => {
-		if (!filter || Object.keys(filter).length === 0) return [];
-		// eslint-disable-next-line no-underscore-dangle
-		const _sseFilter = filter;
-
-		function getState(
-			name: keyof MessageFilterState,
-		): MessageFilterState[keyof MessageFilterState] {
-			return _sseFilter[name];
-		}
-
-		function getValuesUpdater<T extends keyof MessageFilterState>(name: T) {
-			return function valuesUpdater<K extends MessageFilterState[T]>(values: K) {
-				if (_sseFilter) {
-					setFilter({ [name]: { ..._sseFilter[name], values } });
-				}
-			};
-		}
-
-		function getToggler<T extends keyof MessageFilterState>(
-			filterName: T,
-			paramName: keyof MultipleStringFilter,
-		) {
-			return function toggler() {
-				if (filter) {
-					setFilter({
-						[filterName]: {
-							..._sseFilter[filterName],
-							[paramName]: !_sseFilter[filterName][paramName],
-						},
-					});
-				}
-			};
-		}
-
-		const setCurrentValue = (name: keyof MessageFilterState) => (value: string) => {
-			setCurrentValues((prevState: CurrentSSEValues) => ({ ...prevState, [name]: value }));
-		};
-
-		return messagesFilterInfo.map<CompoundFilterRow>((filterInfo: MessagesFilterInfo) => {
-			const state = getState(filterInfo.name);
-			const label = prettifyCamelcase(filterInfo.name);
-
-			return state
-				? filterInfo.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
-						param => {
-							switch (param.type.value) {
-								case 'boolean':
-									return {
-										id: `${filterInfo.name}-${param.name}`,
-										label: param.name === 'negative' ? label : '',
-										disabled: false,
-										type: 'toggler',
-										value: state[param.name as keyof MultipleStringFilter],
-										toggleValue: getToggler(
-											filterInfo.name,
-											param.name as keyof MultipleStringFilter,
-										),
-										possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
-										className: 'filter-row__toggler',
-									} as any;
-								default:
-									return {
-										id: filterInfo.name,
-										label: '',
-										type: 'multiple-strings',
-										values: state.values,
-										setValues: getValuesUpdater(filterInfo.name),
-										currentValue: currentValues[filterInfo.name as keyof MessageFilterState],
-										setCurrentValue: setCurrentValue(filterInfo.name),
-										hint: filterInfo.hint,
-									};
-							}
-						},
-				  )
-				: [];
-		});
-	}, [messagesFilterInfo, filter, currentValues]);
 
 	const areSessionInvalid: boolean = streams.length === 0;
 
@@ -181,30 +55,12 @@ const EmbeddedMessagesFilterPanel = ({
 		};
 	}, [streams, setStreams, currentStream, setCurrentStream]);
 
-	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
-		return {
-			type: 'action',
-			id: 'sse-filtler-error',
-			message: 'Failed to load sse filters',
-			actionButtonText: 'Try again',
-			action: () => null,
-			isLoading: false,
-		};
-	}, []);
-
-	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
-		return compoundFilterRow.length ? compoundFilterRow : [sseFiltersErrorConfig];
-	}, [compoundFilterRow, sseFiltersErrorConfig]);
-
 	return (
 		<>
-			<FilterPanel
+			<FilterButton
 				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
-				config={filterConfig}
-				onSubmit={submitChanges}
-				onClearAll={messagesStore.clearFilters}
 				isLoading={false}
 			/>
 			<MessagesFilterSessionFilter

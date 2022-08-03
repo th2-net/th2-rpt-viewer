@@ -18,30 +18,27 @@
 
 .filter {
 	@include scrollbar;
-	@include card-shadow;
 	padding: 12px 15px;
+	width: 100%;
 	border-radius: 0 5px 5px 5px;
 	background-color: $filterPrimaryColor;
 	color: $filterTextColor;
 	font-size: 15px;
 	font-weight: bold;
 	white-space: nowrap;
-	position: fixed;
-	z-index: 120;
 
 	&-footer {
 		display: flex;
 	}
 
 	&-wrapper {
-		position: relative;
-		height: 100%;
-		border-radius: 5px 5px 0 0;
-		display: flex;
+		display: none;
 		align-items: center;
+		border-radius: 5px 5px 0 0;
+		width: 100%;
 
 		&.active {
-			@include card-shadow;
+			display: flex;
 			background-color: $filterPrimaryColor;
 		}
 
@@ -66,20 +63,12 @@
 			opacity: 0.6;
 			cursor: default;
 		}
-
-		&.active {
-			padding: 4px 10px;
-		}
 	}
 
 	&__icon {
 		@include icon(url(../../resources/icons/filter.svg), 15px, 15px);
 
 		&.applied {
-			background-image: url(../../resources/icons/filter-white.svg);
-		}
-
-		&.active {
 			background-image: url(../../resources/icons/filter-white.svg);
 		}
 	}
@@ -339,7 +328,7 @@
 	font-size: 14px;
 
 	.filters-history-open {
-		@include improved-clickable($filterPrimaryColor, 10px)
+		@include improved-clickable($filterPrimaryColor, 10px);
 	}
 
 	&__counts {
