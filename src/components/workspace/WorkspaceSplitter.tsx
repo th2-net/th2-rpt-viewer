@@ -17,6 +17,7 @@
 /* eslint-disable no-param-reassign */
 
 import * as React from 'react';
+import { Panel } from 'models/Panel';
 import { createStyleSelector } from '../../helpers/styleCreators';
 
 const MIN_PANEL_WIDTH = 15;
@@ -27,7 +28,7 @@ function minmax(num: number, min: number, max: number) {
 	return Math.min(Math.max(num, min), max);
 }
 
-interface Panel {
+interface PanelProps {
 	title: string;
 	component: React.ReactNode;
 	isActive: boolean;
@@ -35,16 +36,17 @@ interface Panel {
 		default: string;
 		active: string;
 	};
-	setActivePanel?: () => void;
+	setActivePanel: (panel: Panel) => void;
+	panel: Panel;
 }
 
 export interface Props {
 	className?: string;
 	splitterClassName?: string;
-	panels: Array<Panel>;
+	panels: Array<PanelProps>;
 	panelsLayout: WorkspacePanelsLayout;
 	setPanelsLayout: (panelsLayout: WorkspacePanelsLayout) => void;
-	togglePanel: (index: number) => void;
+	togglePanel: (panel: Panel) => void;
 }
 
 function WorkspaceSplitter(props: Props) {
@@ -307,10 +309,10 @@ function WorkspaceSplitter(props: Props) {
 						disabled={index === 0}
 						ref={splittersRefs.current[index]}
 						isPanelActive={panel.isActive}
-						setActivePanel={panel.setActivePanel}
+						setActivePanel={() => panel.setActivePanel(panel.panel)}
 					/>
 					<div className='workspace-split-view__pane pane' ref={panelsRefs.current[index]}>
-						<div className='pane__sidebar' onClick={() => togglePanel(index)}>
+						<div className='pane__sidebar' onClick={() => togglePanel(panel.panel)}>
 							<i className={`workspace-split-view__${panel.title.toLowerCase()}-icon`} />
 							<div className='pane__title'>{panel.title}</div>
 							<div
@@ -325,13 +327,8 @@ function WorkspaceSplitter(props: Props) {
 								className='pane__header'
 								style={{
 									backgroundColor: panel.isActive ? panel.color.active : panel.color.default,
-									borderRadius:
-										panel.title === 'Search' || panel.title.includes('Bookmarks')
-											? '5px 5px 0 0'
-											: '5px',
-									cursor: 'pointer',
 								}}
-								onClick={() => togglePanel(index)}>
+								onClick={() => togglePanel(panel.panel)}>
 								<i
 									className={
 										'pane__header-icon ' +

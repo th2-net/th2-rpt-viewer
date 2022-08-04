@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 export enum Panel {
-	Events,
-	Messages,
 	Search,
 	Bookmarks,
+	Events,
+	Messages,
 }

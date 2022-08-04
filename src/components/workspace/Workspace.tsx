@@ -81,29 +81,33 @@ function Workspace() {
 								itemsInView={itemsInView}
 							/>
 						),
+						panel: Panel.Search,
 						isActive: activePanel === Panel.Search,
-						setActivePanel: () => workspaceStore.viewStore.setActivePanel(Panel.Search),
+						setActivePanel: workspaceStore.viewStore.setActivePanel,
 					},
 					{
 						title: 'Events',
 						color: panelColors.events,
 						component: <EventsPanel />,
 						isActive: activePanel === Panel.Events,
-						setActivePanel: () => workspaceStore.viewStore.setActivePanel(Panel.Events),
+						panel: Panel.Events,
+						setActivePanel: workspaceStore.viewStore.setActivePanel,
 					},
 					{
 						title: 'Messages',
 						color: panelColors.messages,
 						component: <MessagesWindow />,
 						isActive: activePanel === Panel.Messages,
-						setActivePanel: () => workspaceStore.viewStore.setActivePanel(Panel.Messages),
+						panel: Panel.Messages,
+						setActivePanel: workspaceStore.viewStore.setActivePanel,
 					},
 					{
 						title: 'Bookmarks',
 						color: panelColors.bookmarks,
 						component: <BookmarksPanel onBookmarkClick={workspaceStore.onSavedItemSelect} />,
 						isActive: activePanel === Panel.Bookmarks,
-						setActivePanel: () => workspaceStore.viewStore.setActivePanel(Panel.Bookmarks),
+						panel: Panel.Bookmarks,
+						setActivePanel: workspaceStore.viewStore.setActivePanel,
 					},
 				]}
 			/>

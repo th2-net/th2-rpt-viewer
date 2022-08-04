@@ -57,11 +57,11 @@ export default class WorkspaceViewStore {
 		this.panelsLayout = panelsLayout;
 	};
 
-	@action togglePanel = (targetIndex: number) => {
-		if (this.isPanelCollapsed(this.panelsLayout[targetIndex])) {
-			this.expandPanel(targetIndex);
+	@action togglePanel = (panel: Panel) => {
+		if (this.isPanelCollapsed(this.panelsLayout[panel])) {
+			this.expandPanel(panel);
 		} else {
-			this.collapsePanel(targetIndex);
+			this.collapsePanel(panel);
 		}
 	};
 
