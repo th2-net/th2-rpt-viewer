@@ -44,7 +44,6 @@
 
 		&.event-resolver {
 			position: relative;
-			margin-bottom: 10px;
 
 			.filter-row__wrapper {
 				display: flex !important;
@@ -306,6 +305,7 @@
 .search-result-count-limit {
 	display: flex;
 	white-space: nowrap;
+	color: #3a3a3a;
 
 	& > * {
 		margin-right: 10px;
@@ -316,8 +316,7 @@
 		width: 50px;
 		font-size: 13px;
 		background-color: inherit;
-		color: $searchTextColor;
-		border-bottom: 1px solid white;
+		border-bottom: 1px solid black;
 
 		&:focus {
 			background-color: white;
@@ -336,7 +335,6 @@
 	cursor: pointer;
 	display: flex;
 	align-items: center;
-	color: white;
 	background: none;
 	padding: 3px 8px 3px 5px;
 	border-radius: 5px;
@@ -345,8 +343,8 @@
 	transition: color 0.3s, background-color 0.3s, opacity 0.3s;
 
 	&.active {
-		color: $primaryTextColor;
-		background-color: white;
+		color: white;
+		background-color: #4e8aff;
 		opacity: 1;
 	}
 
@@ -357,32 +355,16 @@
 
 	&__icon {
 		&.event {
-			@include icon(url(../../resources/icons/workspace-events-white.svg), 15px, 15px);
-
-			&.active {
-				@include icon(url(../../resources/icons/workspace-events.svg), 15px, 15px);
-			}
+			@include icon(url(../../resources/icons/workspace-events.svg), 15px, 15px);
 		}
 		&.message {
-			@include icon(url(../../resources/icons/workspace-messages-white.svg), 15px, 15px);
-
-			&.active {
-				@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
-			}
+			@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
 		}
 		&.passed {
-			@include icon(url(../../resources/icons/workspace-passed-white.svg), 15px, 15px);
-
-			&.active {
-				@include icon(url(../../resources/icons/workspace-passed.svg), 15px, 15px);
-			}
+			@include icon(url(../../resources/icons/workspace-passed.svg), 15px, 15px);
 		}
 		&.failed {
-			@include icon(url(../../resources/icons/workspace-failed-white.svg), 15px, 15px);
-
-			&.active {
-				@include icon(url(../../resources/icons/workspace-failed.svg), 15px, 15px);
-			}
+			@include icon(url(../../resources/icons/workspace-failed.svg), 15px, 15px);
 		}
 	}
 

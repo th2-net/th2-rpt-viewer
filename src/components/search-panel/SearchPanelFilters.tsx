@@ -29,6 +29,7 @@ import { getArrayOfUniques } from '../../helpers/array';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
 import { notEmpty } from '../../helpers/object';
 import { prettifyCamelcase } from '../../helpers/stringUtils';
+import '../../styles/filter.scss';
 
 export type StringFilter = {
 	type: 'string';
@@ -114,6 +115,78 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 		return state[name];
 	}
 
+	function getConfig(): [FilterRowConfig[][], string[]] {
+		const configs: FilterRowConfig[][] = [];
+		const labels: string[] = [];
+
+		info.map((filter: SSEFilterInfo) => {
+			const filterState = getState(filter.name);
+			labels.push(prettifyCamelcase(filter.name));
+			const autocompleteList = getArrayOfUniques(
+				autocompletes
+					.map(item => item.filters[filter.name as keyof FilterState]?.values)
+					.filter(notEmpty)
+					.flat(),
+			);
+
+			const config = filterState
+				? filter.parameters.map(
+						(param: SSEFilterParameter): FilterRowConfig => {
+							switch (param.type.value) {
+								case 'boolean':
+									return {
+										id: `${filter.name}-${param.name}`,
+										label: '',
+										disabled: disableAll,
+										type: 'toggler',
+										value: filterState[param.name],
+										toggleValue: getToggler(filter.name, param.name as keyof Filter),
+										possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+									};
+								case 'string':
+									return {
+										id: filter.name,
+										disabled: disableAll,
+										label: '',
+										type: 'string',
+										value: filterState.values || '',
+										setValue: getValuesUpdater(filter.name),
+										autocompleteList,
+										hint: filter.hint,
+									};
+								case 'switcher':
+									return {
+										id: filter.name,
+										disabled: disableAll,
+										label: '',
+										type: 'switcher',
+										value: filterState.values,
+										setValue: getValuesUpdater(filter.name),
+										possibleValues: ['passed', 'failed', 'any'],
+										defaultValue: 'any',
+									};
+								default:
+									return {
+										id: filter.name,
+										disabled: disableAll,
+										label: '',
+										type: 'multiple-strings',
+										values: filterState.values,
+										setValues: getValuesUpdater(filter.name),
+										currentValue: currentValues[filter.name] || '',
+										setCurrentValue: setCurrentValue(filter.name),
+										autocompleteList,
+										hint: filter.hint,
+									};
+							}
+						},
+				  )
+				: [];
+			configs.push(config);
+		});
+		return [configs, labels];
+	}
+
 	const [currentValues, setCurrentValues] = useSetState<Values>({});
 
 	React.useEffect(() => {
@@ -138,81 +211,29 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 		setCurrentValues({ [name]: value });
 	};
 
+	const [configs, labels] = getConfig();
+
 	return (
 		<>
-			{info.map((filter: SSEFilterInfo) => {
-				const filterState = getState(filter.name);
-				const label = prettifyCamelcase(filter.name);
-				const autocompleteList = getArrayOfUniques(
-					autocompletes
-						.map(item => item.filters[filter.name as keyof FilterState]?.values)
-						.filter(notEmpty)
-						.flat(),
-				);
-
-				const config = filterState
-					? filter.parameters.map(
-							(param: SSEFilterParameter): FilterRowConfig => {
-								switch (param.type.value) {
-									case 'boolean':
-										return {
-											id: `${filter.name}-${param.name}`,
-											label: '',
-											disabled: disableAll,
-											type: 'toggler',
-											value: filterState[param.name],
-											toggleValue: getToggler(filter.name, param.name as keyof Filter),
-											possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
-										};
-									case 'string':
-										return {
-											id: filter.name,
-											disabled: disableAll,
-											label: '',
-											type: 'string',
-											value: filterState.values || '',
-											setValue: getValuesUpdater(filter.name),
-											autocompleteList,
-											hint: filter.hint,
-										};
-									case 'switcher':
-										return {
-											id: filter.name,
-											disabled: disableAll,
-											label: '',
-											type: 'switcher',
-											value: filterState.values,
-											setValue: getValuesUpdater(filter.name),
-											possibleValues: ['passed', 'failed', 'any'],
-											defaultValue: 'any',
-										};
-									default:
-										return {
-											id: filter.name,
-											disabled: disableAll,
-											label: '',
-											type: 'multiple-strings',
-											values: filterState.values,
-											setValues: getValuesUpdater(filter.name),
-											currentValue: currentValues[filter.name] || '',
-											setCurrentValue: setCurrentValue(filter.name),
-											autocompleteList,
-											hint: filter.hint,
-										};
-								}
-							},
-					  )
-					: [];
-
-				return (
-					<div className='filter-row' key={filter.name}>
-						<p className='filter-row__label'>{label}</p>
-						{config.map(rowConfig => (
-							<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
-						))}
+			{configs.map((rowConfig, key) => (
+				<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
+					<div className='filter__compound-header'>
+						<p className={'filter-row__label'}>{labels[key]}</p>
+						<div className='filter__togglers'>
+							{rowConfig.map(_rowConfig => (
+								<React.Fragment key={_rowConfig.id}>
+									{_rowConfig.type !== 'multiple-strings' && <FilterRow rowConfig={_rowConfig} />}
+								</React.Fragment>
+							))}
+						</div>
 					</div>
-				);
-			})}
+					{rowConfig
+						.filter(_rowConfig => _rowConfig.type === 'multiple-strings')
+						.map(_rowConfig => (
+							<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
+						))}
+				</div>
+			))}
 		</>
 	);
 };

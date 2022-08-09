@@ -21,7 +21,6 @@ import { FilterRowConfig } from '../../models/filter/FilterInputs';
 import '../../styles/filter.scss';
 
 interface Props {
-	isFilterApplied: boolean;
 	config: FilterRowConfig[];
 	showFilter: boolean;
 	setShowFilter: (isShown: boolean) => void;
@@ -31,18 +30,14 @@ interface Props {
 }
 
 const FilterConfig = (props: Props) => {
-	const {
-		isFilterApplied,
-		showFilter,
-		setShowFilter,
-		config,
-		onSubmit,
-		onClearAll,
-		renderFooter,
-	} = props;
+	const { showFilter, setShowFilter, config, onSubmit, onClearAll, renderFooter } = props;
 
 	function onSubmitClick() {
 		onSubmit();
+		setShowFilter(false);
+	}
+
+	function onClose() {
 		setShowFilter(false);
 	}
 
@@ -50,11 +45,7 @@ const FilterConfig = (props: Props) => {
 		onClearAll();
 	}
 
-	const filterWrapperClass = createStyleSelector(
-		'filter-wrapper',
-		showFilter ? 'active' : null,
-		isFilterApplied ? 'applied' : null,
-	);
+	const filterWrapperClass = createStyleSelector('filter-wrapper', showFilter ? 'active' : null);
 
 	return (
 		<div className={filterWrapperClass}>
@@ -62,22 +53,47 @@ const FilterConfig = (props: Props) => {
 				{config.map(rowConfig =>
 					Array.isArray(rowConfig) ? (
 						<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
-							{rowConfig.map(_rowConfig => (
-								<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
-							))}
+							<div className='filter__compound-header'>
+								{rowConfig
+									.filter(_rowConfig => {
+										return _rowConfig.label;
+									})
+									.map(_rowConfig => (
+										<p className={'filter-row__label'} key={_rowConfig.label}>
+											{_rowConfig.label}
+										</p>
+									))}
+								<div className='filter__togglers'>
+									{rowConfig.map(_rowConfig => (
+										<React.Fragment key={_rowConfig.id}>
+											{_rowConfig.type !== 'multiple-strings' && (
+												<FilterRow rowConfig={_rowConfig} />
+											)}
+										</React.Fragment>
+									))}
+								</div>
+							</div>
+							{rowConfig
+								.filter(_rowConfig => _rowConfig.type === 'multiple-strings')
+								.map(_rowConfig => (
+									<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
+								))}
 						</div>
 					) : (
 						<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
 					),
 				)}
-				<div className='filter__controls filter-controls'>
+				<div className='filter-controls'>
 					{renderFooter && renderFooter()}
 					<div className='filter-controls__clear-btn' onClick={onClearAllClick}>
 						<div className='filter-controls__clear-icon' />
 						Clear All
 					</div>
-					<div className='filter-row__button' onClick={onSubmitClick}>
-						Submit filter
+					<div className='filter-row__button close' onClick={onClose}>
+						Close
+					</div>
+					<div className='filter-row__button submit' onClick={onSubmitClick}>
+						Filter
 					</div>
 				</div>
 			</div>

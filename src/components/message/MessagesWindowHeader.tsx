@@ -192,7 +192,7 @@ function MessagesWindowHeader() {
 	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
 		return {
 			type: 'action',
-			id: 'sse-filtler-error',
+			id: 'sse-filter-error',
 			message: 'Failed to load sse filters',
 			actionButtonText: 'Try again',
 			action: searchStore.getMessagesFilters,
@@ -240,7 +240,6 @@ function MessagesWindowHeader() {
 				</div>
 			</div>
 			<FilterConfig
-				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
 				showFilter={showFilter}
 				config={filterConfig}
 				setShowFilter={setShowFilter}

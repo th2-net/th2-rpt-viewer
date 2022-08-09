@@ -26,39 +26,43 @@ const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
 		}
 	};
 
+	const rootClassName = config.labelClassName ? 'filter__compound-header' : 'search-type-switcher';
+
 	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
 
 	return (
-		<div className='search-type-switcher'>
+		<div className={rootClassName}>
 			{config.label && (
 				<label className={labelClassName} htmlFor={config.id}>
 					{config.label}
 				</label>
 			)}
-			{possibleValues.map(val => {
-				const buttonClassName = createBemElement(
-					'search-type-switcher',
-					'switch-search-type-button',
-					'switch-search-type-button',
-					val,
-					value === val || (value === '' && defaultValue === val) ? 'active' : null,
-					disabled ? 'disabled' : null,
-				);
+			<div className='search-type-switcher'>
+				{possibleValues.map(val => {
+					const buttonClassName = createBemElement(
+						'search-type-switcher',
+						'switch-search-type-button',
+						'switch-search-type-button',
+						val,
+						value === val || (value === '' && defaultValue === val) ? 'active' : null,
+						disabled ? 'disabled' : null,
+					);
 
-				const iconClassName = createBemElement(
-					'switch-search-type-button',
-					'icon',
-					val,
-					value === val || (value === '' && defaultValue === val) ? 'active' : null,
-				);
+					const iconClassName = createBemElement(
+						'switch-search-type-button',
+						'icon',
+						val,
+						value === val || (value === '' && defaultValue === val) ? 'active' : null,
+					);
 
-				return (
-					<button key={val} className={buttonClassName} onClick={() => setType(val)}>
-						<i className={iconClassName} />
-						<div className='switch-search-type-button__label'>{val}</div>
-					</button>
-				);
-			})}
+					return (
+						<button key={val} className={buttonClassName} onClick={() => setType(val)}>
+							<i className={iconClassName} />
+							<div className='switch-search-type-button__label'>{val}</div>
+						</button>
+					);
+				})}
+			</div>
 		</div>
 	);
 };

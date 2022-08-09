@@ -46,8 +46,10 @@ function EventWindow() {
 					onSelect={onBreadcrumbItemClick}
 				/>
 			</div>
-			<div className='window__body'>
+			<div className='window__controls'>
 				<EventWindowHeader />
+			</div>
+			<div className='window__body'>
 				{eventWindowViewStore.flattenedListView ? <FlatEventView /> : <EventTreeView />}
 			</div>
 		</div>

@@ -253,7 +253,7 @@ const SearchPanelForm = () => {
 				</div>
 				<FilterRow rowConfig={config} />
 			</div>
-			<div className='filters'>
+			<div className='filter'>
 				{filters && filters.info.length > 0 && (
 					<SearchPanelFilters {...(filters as any)} type={formType} autocompletes={autocompletes} />
 				)}

@@ -263,7 +263,6 @@ function EventWindowHeader() {
 				)}
 			</div>
 			<FilterConfig
-				isFilterApplied={filterStore.isEventsFilterApplied}
 				config={filterConfig}
 				showFilter={filterStore.isOpen}
 				setShowFilter={filterStore.setIsOpen}

@@ -289,7 +289,6 @@ const EmbeddedMessages = () => {
 			<div className='messages-list__filter'>
 				<FilterConfig
 					config={filterConfig}
-					isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
 					setShowFilter={setShowFilter}
 					showFilter={showFilter}
 					onSubmit={submitChanges}
