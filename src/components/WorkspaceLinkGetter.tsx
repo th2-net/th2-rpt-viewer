@@ -14,11 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 import React, { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { copyTextToClipboard } from '../helpers/copyHandler';
+import { useRootStore, useWorkspaces } from '../hooks';
+import { isWorkspaceStore } from '../helpers/workspace';
 import '../styles/workspace-link-getter.scss';
-import { useRootStore } from '../hooks';
 
-const WorkspaceLinkGetter = () => {
+const WorkspaceLinkGetter = observer(() => {
+	const workspacesStore = useWorkspaces();
+
 	const [disabled, setDisabled] = useState(false);
 	const rootStore = useRootStore();
 
@@ -34,23 +38,34 @@ const WorkspaceLinkGetter = () => {
 		};
 	}, [disabled]);
 
+	function copyWorkspaceLink() {
+		const appState = rootStore.getAppState();
+		const params = appState
+			? new URLSearchParams({ workspaces: window.btoa(JSON.stringify(appState)) })
+			: null;
+
+		if (params) {
+			copyTextToClipboard(
+				[window.location.origin, window.location.pathname, `?${params}`].join(''),
+			);
+			setDisabled(true);
+		}
+	}
+
+	if (!isWorkspaceStore(workspacesStore.activeWorkspace)) {
+		return null;
+	}
+
 	return (
 		<button
 			className='graph-button workspace-link-getter'
 			disabled={disabled}
-			onClick={() => {
-				const appState = rootStore.getAppState();
-				const searchString = appState
-					? new URLSearchParams({ workspaces: window.btoa(JSON.stringify(appState)) })
-					: null;
-				copyTextToClipboard(
-					[window.location.origin, window.location.pathname, `?${searchString}`].join(''),
-				);
-				setDisabled(true);
-			}}>
+			onClick={copyWorkspaceLink}>
 			{disabled ? 'Copied to clipboard' : 'Get Workspace Link'}
 		</button>
 	);
-};
+});
+
+WorkspaceLinkGetter.displayName = 'WorkspaceLinkGetter';
 
 export default WorkspaceLinkGetter;

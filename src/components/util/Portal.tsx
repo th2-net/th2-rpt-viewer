@@ -65,7 +65,7 @@ export const ModalPortal = React.forwardRef<HTMLDivElement, ModalPortalProps>(
 		return (
 			<Portal>
 				<div ref={ref} style={{ ...style, visibility: isShown ? 'visible' : 'hidden' }}>
-					{children}
+					{isOpen ? children : null}
 				</div>
 			</Portal>
 		);

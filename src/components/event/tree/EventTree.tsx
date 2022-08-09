@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import EventCardHeader from '../EventCardHeader';
@@ -28,6 +28,7 @@ import useEventsDataStore from '../../../hooks/useEventsDataStore';
 
 interface EventTreeProps {
 	eventTreeNode: EventTreeNode;
+	parentNodes?: EventTreeNode[];
 }
 
 function EventTree({ eventTreeNode }: EventTreeProps) {
@@ -42,9 +43,9 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		}
 	}, []);
 
-	const parents = computed(() => {
+	const parents = useMemo(() => {
 		return eventsStore.getParentNodes(eventTreeNode.eventId, eventsDataStore.eventsCache);
-	}).get();
+	}, [eventTreeNode]);
 
 	const childrenCount = computed(() => {
 		const children = eventsDataStore.parentChildrensMap.get(eventTreeNode.eventId);
@@ -57,11 +58,15 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 			: 0;
 	}).get();
 
-	const isLoadingSiblings = computed(
-		() => eventTreeNode.parentId && eventsDataStore.isLoadingChildren.get(eventTreeNode.parentId),
+	const isLoadingSiblings = computed(() =>
+		Boolean(
+			eventTreeNode.parentId && eventsDataStore.isLoadingChildren.get(eventTreeNode.parentId),
+		),
 	).get();
 
-	const onExpandClick = () => eventsStore.toggleNode(eventTreeNode);
+	const onExpandClick = React.useCallback(() => eventsStore.toggleNode(eventTreeNode), [
+		eventTreeNode,
+	]);
 
 	const showLoadButton = computed(() => {
 		let isLastChild = false;
@@ -104,13 +109,13 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 		eventsStore.selectNode(eventTreeNode);
 	}, [eventTreeNode]);
 
-	const onEventTypeSelect = (eventType: string) => {
+	const onEventTypeSelect = React.useCallback((eventType: string) => {
 		const defaultFilter = eventsStore.filterStore.resetEventsFilter();
 		if (!defaultFilter) return;
 		defaultFilter.type.values.push(eventType);
 		eventsStore.filterStore.setEventsFilter(defaultFilter);
 		eventsStore.filterStore.setIsOpen(true);
-	};
+	}, []);
 
 	const nestingLevel = 20 * parents.length;
 
