@@ -14,13 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
 import { MessageViewType } from '../../../models/EventMessage';
 import ErrorBoundary from '../../util/ErrorBoundary';
 import MessageBodyCard, { MessageBodyCardFallback } from './MessageBodyCard';
 import SimpleMessageRaw from './raw/SimpleMessageRaw';
 import DetailedMessageRaw from './raw/DetailedMessageRaw';
 import MessageBody from '../../../models/MessageBody';
+import CardDisplayType from '../../../models/util/CardDisplayType';
 
 export type MessageCardViewTypeRendererProps = {
 	messageId: string;
@@ -35,11 +35,13 @@ export type MessageCardViewTypeRendererProps = {
 type OwnProps = {
 	messageBody?: MessageBody;
 	viewType?: MessageViewType;
+	displayType: CardDisplayType;
 };
 
 const MessageCardViewTypeRenderer = ({
 	rawContent,
 	isSelected,
+	displayType,
 	viewType,
 	messageBody,
 	sortOrderItems,
@@ -74,7 +76,9 @@ const MessageCardViewTypeRenderer = ({
 			case MessageViewType.ASCII:
 				return rawContent ? <SimpleMessageRaw rawContent={rawContent} /> : null;
 			case MessageViewType.BINARY:
-				return rawContent ? <DetailedMessageRaw rawContent={rawContent} /> : null;
+				return rawContent ? (
+					<DetailedMessageRaw rawContent={rawContent} displayType={displayType} />
+				) : null;
 			default:
 				return null;
 		}

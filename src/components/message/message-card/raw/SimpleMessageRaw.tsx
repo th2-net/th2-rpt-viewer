@@ -21,17 +21,21 @@ import { BodyFilter, getFiltersEntries, wrapString } from 'helpers/filters';
 import { isRangesIntersect, trimRange } from 'helpers/range';
 import { splitOnReadableParts } from 'helpers/stringUtils';
 import { createBemElement } from 'helpers/styleCreators';
-import { useMessagesStore } from 'hooks/index';
-import { useSearchStore } from 'hooks/useSearchStore';
+import { FilterEntry, SearchHistory } from 'modules/search/stores/SearchStore';
 
 interface Props {
 	rawContent: string;
 	applyFilterToBody?: boolean;
+	selectedBodyBinaryFilter?: FilterEntry;
+	currentSearch?: SearchHistory | null;
 }
 
-function SimpleMessageRaw({ rawContent, applyFilterToBody }: Props) {
-	const { currentSearch } = useSearchStore();
-	const { selectedBodyBinaryFilter } = useMessagesStore();
+function SimpleMessageRaw({
+	rawContent,
+	applyFilterToBody,
+	currentSearch,
+	selectedBodyBinaryFilter,
+}: Props) {
 	const contentRef = React.useRef<HTMLDivElement>(null);
 
 	const humanReadableContent = atob(rawContent);

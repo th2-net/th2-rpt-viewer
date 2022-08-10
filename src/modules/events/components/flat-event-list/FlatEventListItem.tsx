@@ -19,7 +19,7 @@ import { EventTreeNode } from 'models/EventAction';
 import { useEventsStore } from '../../hooks/useEventsStore';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import EventCardHeader from '../event-card/EventCardHeader';
-import CardDisplayType from '../../../../models/util/CardDisplayType';
+import CardDisplayType from '../../models/CardDisplayType';
 
 interface FlatEventListItemProps {
 	node: EventTreeNode;

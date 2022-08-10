@@ -25,9 +25,11 @@ import { useMessagesStore, useDebouncedCallback, useMessagesDataStore } from '..
 import { raf } from '../../../helpers/raf';
 import { SSEHeartbeat } from '../../../api/sse';
 import { formatTime } from '../../../helpers/date';
+import useElementSize from '../../../hooks/useElementSize';
+import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../../models/util/CardDisplayType';
 
 interface Props {
-	renderMessage: (message: EventMessage) => React.ReactElement;
+	renderMessage: (message: EventMessage, displayType: CardDisplayType) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -60,12 +62,23 @@ const MessagesVirtualizedList = (props: Props) => {
 	} = useMessagesDataStore();
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
+	const scrollerRef = React.useRef<HTMLDivElement | null>(null);
 
 	const { overscan = 3, renderMessage, loadPrevMessages, loadNextMessages } = props;
 
 	const [[firstPrevChunkIsLoaded, firstNextChunkIsLoaded], setLoadedChunks] = React.useState<
 		[boolean, boolean]
 	>([false, false]);
+
+	const messagesListWidth = useElementSize(scrollerRef.current)?.width;
+
+	const displayType = React.useMemo(
+		() =>
+			messagesListWidth && messagesListWidth < COLLAPSED_MESSAGES_WIDTH
+				? CardDisplayType.MINIMAL
+				: CardDisplayType.FULL,
+		[messagesListWidth],
+	);
 
 	React.useEffect(() => {
 		if (updateStore.isActive && virtuoso.current) {
@@ -94,11 +107,7 @@ const MessagesVirtualizedList = (props: Props) => {
 	]);
 
 	const debouncedScrollHandler = useDebouncedCallback(
-		(
-			event: React.UIEvent<'div'>,
-			isHorizontal?: boolean,
-			wheelScrollDirection?: 'next' | 'previous',
-		) => {
+		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
 			const scroller = event.target;
 			if (scroller instanceof Element) {
 				const isStartReached = scroller.scrollTop === 0;
@@ -108,10 +117,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					searchChannelNext &&
 					!searchChannelNext.isLoading &&
 					!searchChannelNext.isEndReached &&
-					!isHorizontal &&
-					((wheelScrollDirection === undefined &&
-						scroller.parentElement?.className === 'messages-list') ||
-						wheelScrollDirection === 'next')
+					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
 					loadNextMessages().then(onNextChannelResponse);
 				}
@@ -121,10 +127,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					searchChannelPrev &&
 					!searchChannelPrev.isLoading &&
 					!searchChannelPrev.isEndReached &&
-					!isHorizontal &&
-					((wheelScrollDirection === undefined &&
-						scroller.parentElement?.className === 'messages-list') ||
-						wheelScrollDirection === 'previous')
+					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
 				) {
 					loadPrevMessages().then(onPrevChannelResponse);
 				}
@@ -140,7 +143,7 @@ const MessagesVirtualizedList = (props: Props) => {
 
 	const onWheel: React.WheelEventHandler<'div'> = event => {
 		event.persist();
-		debouncedScrollHandler(event, Boolean(event.deltaX), event.deltaY < 0 ? 'next' : 'previous');
+		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
 	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
@@ -150,9 +153,13 @@ const MessagesVirtualizedList = (props: Props) => {
 	}, 800);
 
 	const itemContent = React.useCallback(
-		(index: number, message: EventMessage) => renderMessage(message),
-		[renderMessage],
+		(index: number, message: EventMessage) => renderMessage(message, displayType),
+		[renderMessage, displayType],
 	);
+
+	const handleScrollerRef = React.useCallback(ref => {
+		scrollerRef.current = ref;
+	}, []);
 
 	const computeItemKey = React.useCallback((index: number, msg: EventMessage) => msg.id, []);
 
@@ -162,6 +169,7 @@ const MessagesVirtualizedList = (props: Props) => {
 			data={messages}
 			firstItemIndex={startIndex}
 			ref={virtuoso}
+			scrollerRef={handleScrollerRef}
 			overscan={overscan}
 			itemContent={itemContent}
 			className='messages-list__items'

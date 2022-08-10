@@ -26,22 +26,27 @@ import {
 	mapOctetOffsetsToHumanReadableOffsets,
 } from 'helpers/rawFormatter';
 import { BodyFilter, getFiltersEntries, wrapString } from 'helpers/filters';
-import { useSearchStore } from 'hooks/useSearchStore';
-import { useMessagesStore } from 'hooks/index';
 import { isRangesIntersect } from 'helpers/range';
-import 'styles/messages.scss';
+import CardDisplayType from 'models/util/CardDisplayType';
+import { FilterEntry, SearchHistory } from 'modules/search/stores/SearchStore';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 interface Props {
 	rawContent: string;
+	displayType: CardDisplayType;
 	applyFilterToBody?: boolean;
+	selectedBodyBinaryFilter?: FilterEntry;
+	currentSearch?: SearchHistory | null;
 }
 
-export default function DetailedMessageRaw({ rawContent, applyFilterToBody }: Props) {
-	const { currentSearch } = useSearchStore();
-	const { selectedBodyBinaryFilter } = useMessagesStore();
-
+export default function DetailedMessageRaw({
+	rawContent,
+	displayType,
+	applyFilterToBody,
+	selectedBodyBinaryFilter,
+	currentSearch,
+}: Props) {
 	const hexadecimalRef = React.useRef<HTMLPreElement>(null);
 	const humanReadableRef = React.useRef<HTMLPreElement>(null);
 	const [hexSelectionStart, hexSelectionEnd] = useSelectListener(hexadecimalRef);
@@ -177,9 +182,11 @@ export default function DetailedMessageRaw({ rawContent, applyFilterToBody }: Pr
 
 	return (
 		<div className='mc-raw__content'>
-			<div className='mc-raw__column secondary'>
-				<pre>{offset}</pre>
-			</div>
+			{displayType === CardDisplayType.FULL && (
+				<div className='mc-raw__column secondary'>
+					<pre>{offset}</pre>
+				</div>
+			)}
 			<div className='mc-raw__column primary'>
 				<pre className='mc-raw__content-part'>{renderOctet(hexadecimal)}</pre>
 				<div

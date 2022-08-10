@@ -24,7 +24,7 @@ import { getEventStatus } from 'helpers/event';
 import SearchableContent from '../search/SearchableContent';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { Counter } from './Counter';
-import CardDisplayType from '../../../../models/util/CardDisplayType';
+import CardDisplayType from '../../models/CardDisplayType';
 
 interface EventCardHeaderBaseProps {
 	displayType?: CardDisplayType;

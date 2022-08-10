@@ -16,13 +16,14 @@
 
 import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import MessageCard from '../message-card/MessageCard';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
 import SplashScreen from '../../SplashScreen';
 import Empty from '../../util/Empty';
 import { useMessagesDataStore, useMessagesStore } from '../../../hooks';
 import StateSaverProvider from '../../util/StateSaverProvider';
 import { EventMessage } from '../../../models/EventMessage';
+import CardDisplayType from '../../../models/util/CardDisplayType';
+import MessageCard from '../message-card/MessageCard';
 import '../../../styles/messages.scss';
 
 const ERROR_MESSAGE = 'Error occured while loading messages';
@@ -33,7 +34,9 @@ function MessageCardList() {
 	const messagesDataStore = useMessagesDataStore();
 
 	const renderMessage = useCallback(
-		(message: EventMessage) => <MessageCard message={message} />,
+		(message: EventMessage, displayType: CardDisplayType) => (
+			<MessageCard message={message} displayType={displayType} key={message.id} />
+		),
 		[],
 	);
 

@@ -1,5 +1,5 @@
 /** *****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2022 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+import * as React from 'react';
+import ResizeObserver from 'resize-observer-polyfill';
 
-export const COLLAPSED_MESSAGES_WIDTH = 750;
+const useElementSize = (target: HTMLElement | null) => {
+	const [size, setSize] = React.useState<DOMRectReadOnly>();
 
-const enum CardDisplayType {
-	STATUS_ONLY = 'status-only',
-	MINIMAL = 'minimal',
-	FULL = 'full',
-}
+	const resizeObserver = React.useRef(
+		new ResizeObserver(entries => {
+			setSize(entries[0]?.contentRect as DOMRectReadOnly);
+		}),
+	);
 
-export default CardDisplayType;
+	React.useLayoutEffect(() => {
+		if (target) {
+			resizeObserver.current.observe(target);
+		}
+		return () => {
+			resizeObserver.current.disconnect();
+		};
+	}, [target]);
+
+	return size;
+};
+
+export default useElementSize;

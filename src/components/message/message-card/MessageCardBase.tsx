@@ -24,9 +24,11 @@ import { ParsedMessageComponent, ParsedMessageProps } from './MessageCardParsedM
 import { defineViewTypeConfig } from '../../../helpers/message';
 import { MessageCardRaw } from './raw/MessageCardRaw';
 import { createBemBlock } from '../../../helpers/styleCreators';
+import CardDisplayType from '../../../models/util/CardDisplayType';
 
 export interface MessageCardBaseProps {
 	message: EventMessage;
+	displayType: CardDisplayType;
 	addMessageToExport?: () => void;
 	isExport?: boolean;
 	isExported?: boolean;
@@ -54,6 +56,7 @@ const MessageCardBase = React.memo(
 		isHighlighted,
 		isBookmarked,
 		toogleMessagePin,
+		displayType,
 		sortOrderItems,
 		applyFilterToBody = false,
 		addMessageToExport,
@@ -92,11 +95,13 @@ const MessageCardBase = React.memo(
 			isHighlighted,
 			isExport,
 			isExported,
+			displayType,
 			isScreenshotMsg: false,
 			messageCardToolsConfig,
 		};
 
 		const parsedMessageProps: ParsedMessageProps = {
+			displayType,
 			isHighlighted,
 			messageCardToolsConfig,
 			messageViewTypeRendererProps,
@@ -139,6 +144,7 @@ const MessageCardBase = React.memo(
 									rawViewTypeConfig?.setViewType ||
 									defineViewTypeConfig(viewTypeConfig, message.id).setViewType
 								}
+								displayType={displayType}
 								isScreenshotMsg={false}
 								isHighlighted={isHighlighted}
 								isDisplayRuleRaw={isDisplayRuleRaw}

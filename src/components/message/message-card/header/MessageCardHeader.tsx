@@ -22,11 +22,10 @@ import { getHashCode } from '../../../../helpers/stringHash';
 import MessageCardTools, { MessageCardToolsProps } from '../MessageCardTools';
 import { Chip } from '../../../Chip';
 import Checkbox from '../../../util/Checkbox';
+import CardDisplayType from '../../../../models/util/CardDisplayType';
 
 export interface MessageInfoProps {
 	message: EventMessage;
-	onTimestampMouseEnter?: () => void;
-	onTimestampMouseLeave?: () => void;
 	addMessageToExport?: () => void;
 	viewType?: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
@@ -35,6 +34,7 @@ export interface MessageInfoProps {
 	isHighlighted?: boolean;
 	isExport?: boolean;
 	isExported?: boolean;
+	displayType: CardDisplayType;
 	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 }
@@ -44,14 +44,13 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		message,
 		viewType,
 		setViewType,
-		onTimestampMouseEnter,
-		onTimestampMouseLeave,
 		addMessageToExport,
 		isBookmarked,
 		isAttached,
 		isHighlighted,
 		isExport,
 		isExported,
+		displayType,
 		messageCardToolsConfig,
 	} = props;
 	const { timestamp, sessionId, direction } = message;
@@ -83,9 +82,6 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
-	const timestampClassName =
-		onTimestampMouseEnter || onTimestampMouseLeave ? 'mc-header__timestamp' : '';
-
 	return (
 		<div className={headerClass}>
 			{isExport && isExported !== undefined && addMessageToExport && (
@@ -96,23 +92,20 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				{isBookmarked && <div className={bookmarkIconClass} />}
 				{isAttached && <div className='mc-header__attached-icon' />}
 			</Chip>
-			<Chip
-				className={timestampClassName}
-				title={`Timestamp: ${formattedTimestamp}`}
-				onMouseEnter={onTimestampMouseEnter}
-				onMouseLeave={onTimestampMouseLeave}>
-				{timestamp && formattedTimestamp}
-			</Chip>
-			<Chip title={`Session: ${sessionId}`} className='mc-header__sessionid'>
+			{displayType === CardDisplayType.FULL && (
+				<Chip title={`Timestamp: ${formattedTimestamp}`}>{timestamp && formattedTimestamp}</Chip>
+			)}
+			<Chip title={`Session: ${sessionId}`} className='mc-header__sessionId'>
 				<div style={sessionBackgroundStyle} />
 				<span className={sessionClass} />
 				<span className='mc-header__session-id'>{sessionId}</span>
 			</Chip>
-			<Chip>{message.id}</Chip>
-			{message.parsedMessages && (
+			{displayType === CardDisplayType.FULL && <Chip>{message.id}</Chip>}
+
+			{displayType === CardDisplayType.FULL && message.parsedMessages && (
 				<Chip>{message.parsedMessages[0].message.metadata.id.subsequence[0]}</Chip>
 			)}
-			{message.parsedMessages && (
+			{displayType === CardDisplayType.FULL && message.parsedMessages && (
 				<Chip title={`Name: ${message.parsedMessages[0].message.metadata.messageType}`}>
 					{message.parsedMessages[0].message.metadata.messageType}
 				</Chip>

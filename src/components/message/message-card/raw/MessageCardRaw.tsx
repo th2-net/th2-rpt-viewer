@@ -23,11 +23,13 @@ import { MessageViewType, EventMessage } from '../../../../models/EventMessage';
 import { ParsedMessageHeader } from '../header/ParsedMessageHeader';
 import { MessageScreenshotZoom } from '../MessageScreenshot';
 import { createBemBlock } from '../../../../helpers/styleCreators';
+import CardDisplayType from '../../../../models/util/CardDisplayType';
 
 export interface MessageCardRawProps {
 	message: EventMessage;
 	viewType?: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
+	displayType: CardDisplayType;
 	isScreenshotMsg: boolean;
 	isHighlighted?: boolean;
 	isDisplayRuleRaw: boolean;
@@ -40,6 +42,7 @@ export const MessageCardRaw = memo((props: MessageCardRawProps) => {
 		message,
 		viewType,
 		setViewType,
+		displayType,
 		isScreenshotMsg,
 		isHighlighted,
 		isDisplayRuleRaw,
@@ -76,7 +79,11 @@ export const MessageCardRaw = memo((props: MessageCardRawProps) => {
 						</div>
 					) : (
 						<div className='mc-body__human'>
-							<MessageCardViewTypeRenderer {...messageViewTypeRendererProps} viewType={viewType} />
+							<MessageCardViewTypeRenderer
+								{...messageViewTypeRendererProps}
+								viewType={viewType}
+								displayType={displayType}
+							/>
 						</div>
 					)}
 				</div>
