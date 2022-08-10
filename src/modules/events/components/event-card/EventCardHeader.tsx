@@ -159,11 +159,27 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 
 type UnknownEventCardHeaderProps = Pick<
 	EventCardHeaderBaseProps,
-	'childrenCount' | 'event' | 'isActive' | 'isSelected' | 'disabled'
+	| 'childrenCount'
+	| 'event'
+	| 'isActive'
+	| 'isSelected'
+	| 'disabled'
+	| 'hasChildrenToLoad'
+	| 'parentsCount'
+	| 'isFlatView'
 >;
 
 const UnknownEventCardHeader = (props: UnknownEventCardHeaderProps) => {
-	const { childrenCount, event, isActive, isSelected, disabled } = props;
+	const {
+		parentsCount = 0,
+		childrenCount = 0,
+		hasChildrenToLoad,
+		event,
+		isActive,
+		isSelected,
+		disabled,
+		isFlatView,
+	} = props;
 	const rootClassName = createBemBlock(
 		'event-header-card',
 		'unknown',
@@ -180,13 +196,19 @@ const UnknownEventCardHeader = (props: UnknownEventCardHeaderProps) => {
 		isActive ? 'active' : null,
 	);
 
+	const counter = isFlatView
+		? parentsCount
+		: childrenCount > 0
+		? `${childrenCount}${hasChildrenToLoad ? '+' : ''}`
+		: '';
+
 	return (
 		<div className={rootClassName}>
 			<div className={iconClassName} />
 			<div className='event-header-card__title' title={event.eventName}>
 				<SearchableContent content={event.eventName} eventId={event.eventId} />
 			</div>
-			<Counter>{childrenCount}</Counter>
+			<Counter>{counter}</Counter>
 		</div>
 	);
 };
