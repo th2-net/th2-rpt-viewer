@@ -163,6 +163,8 @@ const MessagesVirtualizedList = (props: Props) => {
 		scrollerRef.current = ref;
 	}, []);
 
+	const computeItemKey = React.useCallback((index: number, msg: EventMessage) => msg.id, []);
+
 	return (
 		<Virtuoso
 			data={messages}
@@ -232,6 +234,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					);
 				},
 			}}
+			computeItemKey={computeItemKey}
 		/>
 	);
 };

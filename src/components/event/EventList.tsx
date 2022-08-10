@@ -36,6 +36,8 @@ interface Props {
 
 const START_INDEX = 100_000;
 
+const virtuosoStyles: React.CSSProperties = { height: '100%' };
+
 function EventTreeListBase(props: Props) {
 	const eventStore = useWorkspaceEventStore();
 	const { scrolledIndex, selectedNode, isFlat = false } = props;
@@ -126,7 +128,11 @@ function EventTreeListBase(props: Props) {
 		}
 	}, [scrolledIndex]);
 
-	const computeKey = (index: number, event: EventTreeNode) => event.eventId;
+	const computeKey = React.useCallback((index: number, event: EventTreeNode) => event.eventId, []);
+
+	const onItemsRendered = React.useCallback((listItems: ListItem<EventTreeNode>[]) => {
+		eventsInViewport.current = listItems;
+	}, []);
 
 	return (
 		<div className='actions-list' ref={listRef}>
@@ -140,10 +146,8 @@ function EventTreeListBase(props: Props) {
 					computeItemKey={computeKey}
 					overscan={3}
 					itemContent={renderEvent}
-					style={{ height: '100%' }}
-					itemsRendered={events => {
-						eventsInViewport.current = events;
-					}}
+					style={virtuosoStyles}
+					itemsRendered={onItemsRendered}
 				/>
 			</StateSaverProvider>
 		</div>
@@ -151,6 +155,8 @@ function EventTreeListBase(props: Props) {
 }
 
 const EventTreeList = observer(EventTreeListBase);
+
+EventTreeList.displayName = 'EventTreeList';
 
 interface EventTreeListWrapperProps {
 	isFlat?: boolean;
