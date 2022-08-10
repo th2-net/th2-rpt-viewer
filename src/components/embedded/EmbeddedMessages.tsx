@@ -30,6 +30,9 @@ import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import MessagesUpdateButton from '../message/MessagesUpdateButton';
 import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
+import { timestampToNumber } from '../../helpers/date';
+import { SearchDirection } from '../../models/search/SearchDirection';
+import { WorkspaceUrlState } from '../../stores/workspace/WorkspaceStore';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
@@ -65,7 +68,7 @@ const EmbeddedMessages = () => {
 	);
 
 	const reportURL = React.useMemo(() => {
-		const messagesStoreState = {
+		const messagesStoreState: WorkspaceUrlState['messages'] = {
 			timestampFrom: messagesStore.filterStore.filter.timestampFrom,
 			timestampTo: messagesStore.filterStore.filter.timestampTo,
 			streams: messagesStore.filterStore.filter.streams,
@@ -143,6 +146,7 @@ const EmbeddedMessages = () => {
 EmbeddedMessages.displayName = 'EmbeddedMessages';
 
 const EmbeddedMessagesApp = observer(EmbeddedMessages);
+
 export default function MessagesApp() {
 	return <EmbeddedMessagesApp />;
 }
@@ -177,6 +181,8 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		scrolledIndex,
 		isLive,
 	} = props;
+
+	const messageList = messagesStore.dataStore.messages;
 
 	React.useEffect(() => {
 		if (scrolledIndex !== null) {
@@ -247,11 +253,11 @@ const MessagesVirtualizedList = observer((props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment.utc(messagesStore.filterStore.filterParams.startTimestamp).format()}
+											{moment.utc(timestampToNumber(messageList[0].timestamp)).format()}
 										</span>
 										<button
 											className='messages-list__load-btn'
-											onClick={() => messagesStore.dataStore.keepLoading('next')}>
+											onClick={() => messagesStore.dataStore.keepLoading(SearchDirection.Next)}>
 											Keep loading
 										</button>
 									</div>
@@ -272,11 +278,13 @@ const MessagesVirtualizedList = observer((props: Props) => {
 									<div className='messages-list__loading-message'>
 										<span className='messages-list__loading-message-text'>
 											No more matching messages since&nbsp;
-											{moment(messagesStore.filterStore.filterParams.startTimestamp).utc().format()}
+											{moment
+												.utc(timestampToNumber(messageList[messageList.length - 1].timestamp))
+												.format()}
 										</span>
 										<button
 											className='messages-list__load-btn'
-											onClick={() => messagesStore.dataStore.keepLoading('previous')}>
+											onClick={() => messagesStore.dataStore.keepLoading(SearchDirection.Previous)}>
 											Keep loading
 										</button>
 									</div>

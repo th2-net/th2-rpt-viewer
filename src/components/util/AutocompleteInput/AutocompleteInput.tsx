@@ -37,6 +37,7 @@ type Props = Override<
 	onRemove?: () => void;
 	onEmptyBlur?: () => void;
 	anchor?: HTMLElement;
+	autocompleteListMinWidth?: number;
 };
 
 const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
@@ -59,6 +60,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		submitKeyCodes = [KeyCodes.ENTER],
 		anchor,
 		alwaysShowAutocomplete,
+		autocompleteListMinWidth,
 		...lastInputProps
 	} = props;
 
@@ -68,8 +70,11 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 
 	const [autocompleteAnchor, setAutocompleteAnchor] = React.useState<HTMLElement | null>(null);
 
+	const isFocused = Boolean(autocompleteAnchor);
+
 	const onClickOutside = React.useCallback(
 		(e: MouseEvent) => {
+			if (!isFocused) return;
 			if (
 				autocompleteListRef.current &&
 				e.target instanceof HTMLElement &&
@@ -87,7 +92,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			}
 			setAutocompleteAnchor(null);
 		},
-		[value],
+		[value, isFocused],
 	);
 
 	useOutsideClickListener(ref, onClickOutside);
@@ -167,6 +172,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 					anchor={autocompleteAnchor}
 					onSelect={onAutocompleteSelect}
 					alwaysShow={alwaysShowAutocomplete}
+					minWidth={autocompleteListMinWidth}
 				/>
 			)}
 		</React.Fragment>

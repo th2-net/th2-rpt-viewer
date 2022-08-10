@@ -35,6 +35,7 @@ import FiltersHistoryStore from '../FiltersHistoryStore';
 import { SessionsStore } from './SessionsStore';
 import MessagesExportStore from './MessagesExportStore';
 import { getItemAt } from '../../helpers/array';
+import BooksStore from '../BooksStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -88,10 +89,11 @@ export default class MessagesStore {
 		private api: ApiSchema,
 		private filterHistoryStore: FiltersHistoryStore,
 		private sessionsStore: SessionsStore,
+		private booksStore: BooksStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
-		this.filterStore = new MessagesFilterStore(this.searchStore);
-		this.dataStore = new MessagesDataProviderStore(this, this.api);
+		this.filterStore = new MessagesFilterStore(this.searchStore, this.booksStore);
+		this.dataStore = new MessagesDataProviderStore(this, this.api, this.booksStore);
 		this.init(defaultState);
 
 		this.attachedMessagesSubscription = reaction(
@@ -106,7 +108,7 @@ export default class MessagesStore {
 
 	@computed
 	public get messageSessions(): string[] {
-		return this.searchStore.messageSessions;
+		return this.sessionsStore.messageSessions;
 	}
 
 	@computed
@@ -175,7 +177,7 @@ export default class MessagesStore {
 				console.error(`Couldnt fetch target message ${defaultState}`);
 			}
 		} else {
-			this.filterStore = new MessagesFilterStore(this.searchStore, defaultState);
+			this.filterStore = new MessagesFilterStore(this.searchStore, this.booksStore, defaultState);
 			const message = defaultState.targetMessage;
 			if (isEventMessage(message)) {
 				this.selectedMessageId = new String(message.messageId);
@@ -289,7 +291,12 @@ export default class MessagesStore {
 		runInAction(() => (this.isFilteringTargetMessages = true));
 
 		const hintMessagesMatch = await Promise.all(
-			this.hintMessages.map(hm => this.api.messages.matchMessage(hm.messageId, matchMessageParams)),
+			this.hintMessages.map(hm =>
+				this.api.messages.matchMessage(hm.messageId, {
+					...matchMessageParams,
+					bookId: this.booksStore.selectedBook.name,
+				}),
+			),
 		).finally(() => {
 			runInAction(() => (this.isFilteringTargetMessages = false));
 		});
@@ -334,5 +341,10 @@ export default class MessagesStore {
 		if (hoveredMessage !== null) {
 			this.graphStore.setTimestamp(timestampToNumber(hoveredMessage.timestamp));
 		}
+	};
+
+	public onSelectedBookChange = () => {
+		this.selectedMessageId = null;
+		this.dataStore.loadMessages();
 	};
 }

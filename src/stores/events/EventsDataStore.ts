@@ -33,18 +33,23 @@ import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
 import { isAbortError } from '../../helpers/fetch';
 import { getItemAt } from '../../helpers/array';
 import { timestampToNumber } from '../../helpers/date';
+import BooksStore from '../BooksStore';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
 interface FetchEventTreeOptions {
 	timeRange: TimeRange;
 	filter: EventsFilter | null;
 	targetEventId?: string;
+	scope: string;
 }
+
 export default class EventsDataStore {
 	private CHILDREN_COUNT_LIMIT = 50;
 
 	constructor(
 		private eventStore: EventsStore,
 		private filterStore: EventsFilterStore,
+		private booksStore: BooksStore,
 		private api: ApiSchema,
 	) {
 		reaction(() => this.targetNodePath, this.preloadSelectedPathChildren, {
@@ -109,10 +114,12 @@ export default class EventsDataStore {
 	}
 
 	@action
-	public fetchEventTree = (options: FetchEventTreeOptions) => {
-		const { timeRange, filter, targetEventId } = options;
+	public fetchEventTree = async (options: FetchEventTreeOptions) => {
+		const { timeRange, filter, targetEventId, scope } = options;
 
-		this.resetEventsTreeState({ isLoading: true });
+		const bookId = this.booksStore.selectedBook.name;
+
+		this.resetEventsTreeState();
 
 		this.eventStore.selectedNode = null;
 		this.eventStore.selectedEvent = null;
@@ -136,6 +143,8 @@ export default class EventsDataStore {
 						searchDirection: 'next',
 						// load 1 more to see if there are more children
 						limitForParent: this.CHILDREN_COUNT_LIMIT + 1,
+						bookId,
+						scope,
 					},
 				},
 				{
@@ -382,7 +391,8 @@ export default class EventsDataStore {
 	public childrenAreUnknown: Map<string, boolean> = new Map();
 
 	@action
-	public loadChildren = (parentId: string) => {
+	public loadChildren = async (parentId: string) => {
+		if (!this.booksStore.selectedBook) return;
 		if (this.childrenLoaders[parentId]) {
 			this.childrenLoaders[parentId].loader.stop();
 			delete this.childrenLoaders[parentId];
@@ -404,7 +414,9 @@ export default class EventsDataStore {
 						resumeFromId: lastChild?.eventId,
 						// load 1 more to see if there are more children
 						resultCountLimit: this.CHILDREN_COUNT_LIMIT + 1,
-						searchDirection: 'next',
+						searchDirection: SearchDirection.Next,
+						bookId: this.booksStore.selectedBook.name,
+						scope: this.eventStore.scope!,
 					},
 				},
 				{
@@ -592,11 +604,9 @@ export default class EventsDataStore {
 	};
 
 	@action
-	public resetEventsTreeState = (
-		initialState: Partial<{ isError: boolean; isLoading: boolean }> = {},
-	) => {
+	public resetEventsTreeState = (initialState: Partial<{ isError: boolean }> = {}) => {
 		this.stopCurrentRequests();
-		const { isError = false, isLoading = false } = initialState;
+		const { isError = false } = initialState;
 
 		this.isError = isError;
 
@@ -627,6 +637,16 @@ export default class EventsDataStore {
 						this.isPreloadingTargetEventsChildren.set(eventId, true);
 					}
 				});
+		}
+	};
+
+	public onScopeChange = (scope: string | null) => {
+		if (scope) {
+			this.fetchEventTree({
+				filter: this.filterStore.filter,
+				timeRange: this.filterStore.range,
+				scope,
+			});
 		}
 	};
 }

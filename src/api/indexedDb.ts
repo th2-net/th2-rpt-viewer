@@ -24,6 +24,7 @@ import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { FilterState } from '../components/search-panel/SearchPanelFilters';
 import { Session } from '../stores/messages/SessionsStore';
 import { EventBookmark, MessageBookmark } from '../models/Bookmarks';
+import { Book } from '../models/Books';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',
@@ -34,6 +35,7 @@ export enum IndexedDbStores {
 	MESSAGE_BODY_SORT_ORDER = 'message-body-sort-order',
 	FILTERS_HISTORY = 'filters-history',
 	SESSIONS_HISTORY = 'sessions-history',
+	SELECTED_BOOK = 'selected-book',
 }
 
 type indexedDbStoresKeyPaths = {
@@ -49,7 +51,8 @@ export type DbData =
 	| OrderRule
 	| MessageSortOrderItem
 	| FiltersHistoryType<FilterState>
-	| Session;
+	| Session
+	| Book;
 
 interface TH2DB extends DBSchema {
 	[IndexedDbStores.EVENTS]: {
@@ -108,6 +111,13 @@ interface TH2DB extends DBSchema {
 			timestamp: number;
 		};
 	};
+	[IndexedDbStores.SELECTED_BOOK]: {
+		key: string;
+		value: Book;
+		indexes: {
+			timestamp: number;
+		};
+	};
 }
 
 export const indexedDbLimits = {
@@ -115,7 +125,7 @@ export const indexedDbLimits = {
 	[IndexedDbStores.FILTERS_HISTORY]: 40,
 	[IndexedDbStores.DISPLAY_RULES]: 100,
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 100,
-	[IndexedDbStores.SEARCH_HISTORY]: 5,
+	[IndexedDbStores.SEARCH_HISTORY]: 15,
 	[IndexedDbStores.GRAPH_SEARCH_HISTORY]: 1000,
 	[IndexedDbStores.SESSIONS_HISTORY]: 20,
 } as const;
@@ -129,9 +139,10 @@ const indexedDBkeyPaths: indexedDbStoresKeyPaths = {
 	[IndexedDbStores.MESSAGE_BODY_SORT_ORDER]: 'id',
 	[IndexedDbStores.FILTERS_HISTORY]: 'timestamp',
 	[IndexedDbStores.SESSIONS_HISTORY]: 'session',
+	[IndexedDbStores.SELECTED_BOOK]: 'id',
 };
 
-const dbVersion = 3;
+const dbVersion = 5;
 
 export class IndexedDB {
 	@observable
@@ -143,7 +154,14 @@ export class IndexedDB {
 
 	private async initDb() {
 		this.db = await openDB<TH2DB>(this.env, dbVersion, {
-			upgrade: async db => {
+			upgrade: async (db, _oldVersion, newVersion) => {
+				if (newVersion === 4) {
+					await [
+						IndexedDbStores.SEARCH_HISTORY,
+						IndexedDbStores.EVENTS,
+						IndexedDbStores.MESSAGES,
+					].map(store => this.clearStore(store));
+				}
 				Object.entries(indexedDBkeyPaths).forEach(([storeName, keyPath]) => {
 					const name = storeName as IndexedDbStores;
 					if (!db.objectStoreNames.contains(name)) {
@@ -259,5 +277,6 @@ export class IndexedDB {
 		if (store.clear) {
 			store.clear();
 		}
+		await tx.done;
 	};
 }

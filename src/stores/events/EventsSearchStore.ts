@@ -26,6 +26,8 @@ import { nextCyclicItemByIndex } from '../../helpers/array';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { EventTreeNode } from '../../models/EventAction';
 import EventsSSEChannel from '../SSEChannel/EventsSSEChannel';
+import BooksStore from '../BooksStore';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
 const defaultState = {
 	tokens: [],
@@ -44,6 +46,7 @@ export default class EventsSearchStore {
 	constructor(
 		private api: ApiSchema,
 		private eventsStore: EventsStore,
+		private booksStore: BooksStore,
 		initialState?: initialState,
 	) {
 		this.init(initialState);
@@ -170,7 +173,7 @@ export default class EventsSearchStore {
 	private worker: typeof SearchWorker | null = null;
 
 	@action
-	public fetchSearchResults = (searchTokens: SearchToken[]) => {
+	public fetchSearchResults = async (searchTokens: SearchToken[], bookId: string) => {
 		this.channel?.stop();
 		this.worker?.terminate();
 		this.rawResults = [];
@@ -180,7 +183,9 @@ export default class EventsSearchStore {
 			this.searchResultsUpdateReaction();
 		}
 
-		if (searchTokens.length === 0) return;
+		const scope = this.eventsStore.scope;
+
+		if (searchTokens.length === 0 || !scope) return;
 
 		this.isLoadingSearchResults = true;
 
@@ -188,7 +193,9 @@ export default class EventsSearchStore {
 			{
 				filter: this.getSearchFilter(searchTokens),
 				sseParams: {
-					searchDirection: 'next',
+					searchDirection: SearchDirection.Next,
+					bookId,
+					scope,
 				},
 				timeRange: this.eventsStore.filterStore.range,
 			},
@@ -273,7 +280,7 @@ export default class EventsSearchStore {
 		this.isProccessingSearchResults = Boolean(searchTokens.length);
 
 		if (searchTokens.length !== 0) {
-			this.debouncedFetchSearchResults(searchTokens);
+			this.debouncedFetchSearchResults(searchTokens, this.booksStore.selectedBook.name);
 		} else {
 			this.resetState();
 		}
@@ -283,7 +290,9 @@ export default class EventsSearchStore {
 
 	public onFilterChange = () => {
 		this.resetState();
-		this.fetchSearchResults(this.tokens);
+		if (this.booksStore.selectedBook) {
+			this.fetchSearchResults(this.tokens, this.booksStore.selectedBook.name);
+		}
 	};
 
 	private onSearchDataUpdate = debounce((rawResults: string[], nodes: EventTreeNode[]) => {

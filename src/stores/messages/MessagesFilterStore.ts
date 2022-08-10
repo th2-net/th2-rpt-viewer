@@ -21,6 +21,7 @@ import { MessageFilterState } from '../../components/search-panel/SearchPanelFil
 import { SearchStore } from '../SearchStore';
 import { getDefaultMessagesFiltersState } from '../../helpers/search';
 import { MessagesFilterInfo, MessagesSSEParams } from '../../api/sse';
+import BooksStore from '../BooksStore';
 
 function getDefaultMessagesFilter(): MessagesFilter {
 	return {
@@ -38,7 +39,11 @@ export type MessagesFilterStoreInitialState = {
 export default class MessagesFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
 
-	constructor(private searchStore: SearchStore, initialState?: MessagesFilterStoreInitialState) {
+	constructor(
+		private searchStore: SearchStore,
+		private booksStore: BooksStore,
+		initialState?: MessagesFilterStoreInitialState,
+	) {
 		this.init(initialState);
 
 		this.sseFilterSubscription = reaction(() => searchStore.messagesFilterInfo, this.initSSEFilter);
@@ -55,7 +60,7 @@ export default class MessagesFilterStore {
 	@observable isSoftFilter = false;
 
 	@computed
-	public get filterParams(): MessagesSSEParams {
+	public get filterParams(): Omit<MessagesSSEParams, 'bookId'> {
 		const sseFilters = this.sseMessagesFilter;
 
 		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
@@ -85,7 +90,7 @@ export default class MessagesFilterStore {
 		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
 		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
 
-		const queryParams: MessagesSSEParams = {
+		const queryParams = {
 			startTimestamp: this.filter.timestampTo || startTimestamp,
 			stream: this.filter.streams,
 			searchDirection: 'previous',
@@ -102,7 +107,7 @@ export default class MessagesFilterStore {
 	}
 
 	@computed
-	public get softFilterParams(): MessagesSSEParams {
+	public get softFilterParams(): Omit<MessagesSSEParams, 'bookId'> {
 		return {
 			startTimestamp: this.filterParams.startTimestamp,
 			stream: this.filterParams.stream,

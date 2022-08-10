@@ -24,11 +24,14 @@ import { EventListNavUp, EventListNavDown } from './EventListNavigation';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { isEventsStore } from '../../helpers/stores';
 import { EventsIntervalInput } from './EventsIntervalInput';
+import Select from '../util/Select';
+import { useBooksStore } from '../../hooks/useBooksStore';
 
 function EventWindowHeader() {
 	const eventStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 	const workspaceStore = useWorkspaceStore();
+	const booksStore = useBooksStore();
 
 	const { activePanel } = useActivePanel();
 
@@ -54,6 +57,16 @@ function EventWindowHeader() {
 					</div>
 					<EventsIntervalInput />
 				</div>
+				<Select
+					className='event-window-header__scope'
+					options={booksStore.scopeList}
+					onChange={scope => {
+						if (scope) {
+							eventStore.applyScope(scope);
+						}
+					}}
+					selected={eventStore.scope || ''}
+				/>
 				{eventDataStore.isLoading && (
 					<div className='event-window-header__loader'>
 						Resolving events<span>.</span>

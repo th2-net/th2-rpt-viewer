@@ -19,7 +19,6 @@ import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import EventCardHeader from '../EventCardHeader';
 import { useWorkspaceEventStore } from '../../../hooks';
-import EventCardSkeleton from '../EventCardSkeleton';
 import { EventTreeNode } from '../../../models/EventAction';
 import CardDisplayType from '../../../util/CardDisplayType';
 import { createBemBlock } from '../../../helpers/styleCreators';
@@ -145,24 +144,20 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 					onClick={onExpandClick}
 					disabled={eventsStore.isLoadingTargetNode}
 				/>
-				{eventTreeNode ? (
-					<EventCardHeader
-						childrenCount={childrenCount}
-						event={eventTreeNode}
-						displayType={CardDisplayType.MINIMAL}
-						onSelect={eventTreeNode.isUnknown ? undefined : onNodeSelect}
-						onEventTypeSelect={onEventTypeSelect}
-						isSelected={isSelected}
-						isActive={
-							eventsStore.selectedPath.length > 0 &&
-							eventsStore.selectedPath[eventsStore.selectedPath.length - 1].eventId ===
-								eventTreeNode.eventId
-						}
-						disabled={eventsStore.isLoadingTargetNode}
-					/>
-				) : (
-					<EventCardSkeleton />
-				)}
+				<EventCardHeader
+					childrenCount={childrenCount}
+					event={eventTreeNode}
+					displayType={CardDisplayType.MINIMAL}
+					onSelect={eventTreeNode.isUnknown ? undefined : onNodeSelect}
+					onEventTypeSelect={onEventTypeSelect}
+					isSelected={isSelected}
+					isActive={
+						eventsStore.selectedPath.length > 0 &&
+						eventsStore.selectedPath[eventsStore.selectedPath.length - 1].eventId ===
+							eventTreeNode.eventId
+					}
+					disabled={eventsStore.isLoadingTargetNode}
+				/>
 			</div>
 			{!hideTimestampsForUknownEvent &&
 				eventsStore.selectedPathTimestamps?.endEventId === eventTreeNode.eventId &&

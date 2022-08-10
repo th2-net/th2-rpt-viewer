@@ -18,11 +18,13 @@ import { action, computed, observable } from 'mobx';
 import MessagesStore from './MessagesStore';
 import EmbeddedMessagesStore from '../../components/embedded/embedded-stores/EmbeddedMessagesStore';
 import { MessagesDataStore } from '../../models/Stores';
+import BooksStore from '../BooksStore';
 
 export default class MessagesUpdateStore {
 	constructor(
 		private messagesDataStore: MessagesDataStore,
 		private messagesStore: MessagesStore | EmbeddedMessagesStore,
+		private booksStore: BooksStore | string,
 	) {}
 
 	private timer: ReturnType<typeof setTimeout> | null = null;
@@ -37,7 +39,9 @@ export default class MessagesUpdateStore {
 
 	@action
 	public subscribeOnChanges = () => {
-		if (!this.canActivate) return;
+		const bookId =
+			typeof this.booksStore === 'string' ? this.booksStore : this.booksStore.selectedBook?.name;
+		if (!this.canActivate || !bookId) return;
 		this.isActive = true;
 		this.messagesDataStore.resetState();
 		this.messagesStore.selectedMessageId = null;

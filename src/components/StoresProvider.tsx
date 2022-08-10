@@ -14,14 +14,27 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import RootStoreContext, { createRootStore } from '../contexts/rootStoreContext';
 import api from '../api';
+import RootStore from '../stores/RootStore';
+import SplashScreen from './SplashScreen';
 
 function RootStoreProvider({ children }: React.PropsWithChildren<{}>) {
-	return (
-		<RootStoreContext.Provider value={createRootStore(api)}>{children}</RootStoreContext.Provider>
-	);
+	const [rootStore, setRootStore] = React.useState<null | RootStore>(null);
+
+	useEffect(() => {
+		async function initRootStore() {
+			const store = await createRootStore(api);
+			setRootStore(store);
+		}
+
+		initRootStore();
+	}, []);
+
+	if (!rootStore) return <SplashScreen />;
+
+	return <RootStoreContext.Provider value={rootStore}>{children}</RootStoreContext.Provider>;
 }
 
 export default RootStoreProvider;

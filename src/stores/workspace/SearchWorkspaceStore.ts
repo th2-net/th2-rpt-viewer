@@ -23,9 +23,10 @@ import WorkspacesStore from './WorkspacesStore';
 import { SearchStore } from '../SearchStore';
 import ApiSchema from '../../api/ApiSchema';
 import { WorkspaceInitialState } from './WorkspaceStore';
-import { isEvent, isEventMessage } from '../../helpers/event';
-import { getTimestampAsNumber, timestampToNumber, getRangeFromTimestamp } from '../../helpers/date';
+import { isEventMessage } from '../../helpers/event';
+import { timestampToNumber, getRangeFromTimestamp } from '../../helpers/date';
 import RootStore from '../RootStore';
+import BooksStore from '../BooksStore';
 
 export const SEARCH_STORE_INTERVAL = 15;
 
@@ -39,6 +40,7 @@ export default class SearchWorkspaceStore {
 	constructor(
 		private rootStore: RootStore,
 		private workspacesStore: WorkspacesStore,
+		private booksStore: BooksStore,
 		api: ApiSchema,
 	) {
 		this.searchStore = new SearchStore(
@@ -46,6 +48,7 @@ export default class SearchWorkspaceStore {
 			api,
 			this.workspacesStore.filtersHistoryStore,
 			this.rootStore.sessionsStore,
+			this.booksStore,
 		);
 
 		this.viewStore = new WorkspaceViewStore(undefined);
@@ -69,33 +72,11 @@ export default class SearchWorkspaceStore {
 	};
 
 	@action
-	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
-		const timeRange = getRangeFromTimestamp(getTimestampAsNumber(savedItem), SEARCH_STORE_INTERVAL);
-		const initialWorkspaceState: WorkspaceInitialState = {
-			timeRange,
-			interval: SEARCH_STORE_INTERVAL,
-		};
-		if (isEvent(savedItem)) {
-			initialWorkspaceState.events = {
-				targetEvent: savedItem,
-			};
-			initialWorkspaceState.layout = [100, 0];
-		} else {
-			initialWorkspaceState.messages = {
-				timestampTo: timestampToNumber(savedItem.timestamp),
-				timestampFrom: null,
-				streams: [savedItem.sessionId],
-				targetMessage: savedItem,
-			};
-			initialWorkspaceState.layout = [0, 100];
-		}
-
-		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
-		this.workspacesStore.addWorkspace(newWorkspace);
-	};
-
-	@action
-	public onSearchResultItemSelect = (resultItem: EventTreeNode | EventAction | EventMessage) => {
+	public onSearchResultItemSelect = (
+		resultItem: EventTreeNode | EventAction | EventMessage,
+		bookId: string,
+		scope: string,
+	) => {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 
 		if (isEventMessage(resultItem)) {
@@ -106,22 +87,24 @@ export default class SearchWorkspaceStore {
 		} else {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(
 				timestampToNumber(resultItem.startTimestamp),
+				scope,
 				resultItem,
 			);
 		}
-
 		const newWorkspace = this.workspacesStore.createWorkspace(initialWorkspaceState);
 		this.workspacesStore.addWorkspace(newWorkspace);
 	};
 
 	@action
-	public followByTimestamp = (timestamp: number, resultType: ActionType) => {
+	public followByTimestamp = (timestamp: number, resultType: ActionType, scope: string) => {
 		let initialWorkspaceState: WorkspaceInitialState = {};
 
 		switch (resultType) {
 			case ActionType.EVENT_ACTION:
 			case ActionType.EVENT_TREE_NODE:
-				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(timestamp);
+				if (scope) {
+					initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByEvent(timestamp, scope);
+				}
 				break;
 			case ActionType.MESSAGE:
 				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(timestamp);

@@ -30,10 +30,12 @@ import {
 import { IndexedDB } from './indexedDb';
 import { MatchMessageParams } from './message';
 import { DirectionalStreamInfo } from '../models/StreamInfo';
+import { Book } from '../models/Books';
 
 export default interface ApiSchema {
 	events: EventApiSchema;
 	messages: MessageApiSchema;
+	books: BooksApiSchema;
 	sse: SSESchema;
 	indexedDb: IndexedDB;
 }
@@ -82,7 +84,7 @@ export interface MessageApiSchema {
 		signal?: AbortSignal,
 		queryParams?: Record<string, string | number | boolean | null | string[]>,
 	) => Promise<EventMessage>;
-	getMessageSessions: () => Promise<string[]>;
+	getMessageSessions: (bookId: string) => Promise<string[]>;
 	matchMessage: (
 		messageId: string,
 		filter: MatchMessageParams,
@@ -94,6 +96,11 @@ export interface MessageApiSchema {
 		messageId?: string;
 		abortSignal?: AbortSignal;
 	}) => Promise<DirectionalStreamInfo>;
+}
+
+export interface BooksApiSchema {
+	getBooksList: () => Promise<Book[]>;
+	getBookScope: (bookId: string, abortSignal?: AbortSignal) => Promise<string[]>;
 }
 
 export interface SSESchema {

@@ -50,6 +50,7 @@ import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { SessionsStore } from './messages/SessionsStore';
 import { getItemAt } from '../helpers/array';
+import BooksStore from './BooksStore';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -63,12 +64,14 @@ export type SearchPanelFormState = {
 	searchDirection: SearchDirection | null;
 	parentEvent: string;
 	stream: string[];
+	scope: string;
 };
 
 export type SearchResult = EventTreeNode | EventMessage;
 
 export type SearchHistory = {
 	timestamp: number;
+	bookId: string;
 	results: Record<string, Array<SearchResult>>;
 	request: StateHistory;
 	progress: {
@@ -85,6 +88,7 @@ export type StateHistory = {
 	type: SearchPanelType;
 	state: SearchPanelFormState;
 	filters: EventFilterState | MessageFilterState;
+	scope: string;
 };
 
 export type SearchHistoryState<T> = {
@@ -117,6 +121,7 @@ function getDefaultFormState(): SearchPanelFormState {
 		},
 		parentEvent: '',
 		stream: [],
+		scope: '',
 	};
 }
 
@@ -126,6 +131,7 @@ export class SearchStore {
 		private api: ApiSchema,
 		private filtersHistory: FiltersHistoryStore,
 		private sessionsStore: SessionsStore,
+		private booksStore: BooksStore,
 	) {
 		this.init();
 
@@ -159,9 +165,16 @@ export class SearchStore {
 				}
 			},
 		);
-	}
 
-	@observable messageSessions: Array<string> = [];
+		reaction(
+			() => this.booksStore.selectedBook,
+			() => {
+				this.stopSearch();
+				this.getSearchHistory();
+				this.resetSearchProgressState();
+			},
+		);
+	}
 
 	@observable searchChannel: {
 		previous: EventSource | null;
@@ -454,7 +467,7 @@ export class SearchStore {
 
 	@action prevSearch = () => {
 		if (this.currentIndex !== 0) {
-			this.currentIndex -= 1;
+			this.currentIndex = Math.max(this.currentIndex - 1, 0);
 			this.resetSearchProgressState();
 			this.setCompleted(true);
 		}
@@ -462,7 +475,7 @@ export class SearchStore {
 
 	@action newSearch = (searchHistoryItem: SearchHistory) => {
 		this.searchHistory = [...this.searchHistory, searchHistoryItem];
-		this.currentIndex = this.searchHistory.length - 1;
+		this.currentIndex = Math.max(this.searchHistory.length - 1, 0);
 		this.resetSearchProgressState();
 	};
 
@@ -481,12 +494,14 @@ export class SearchStore {
 
 	@action startSearch = (loadMore = false) => {
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
-		if (this.isSearching || !filterParams) return;
-		const isPaused = this.isPaused;
+		const bookId = this.booksStore.selectedBook.name;
+		const scope = this.searchForm.scope;
+
+		if (this.isSearching || !filterParams || (this.formType === 'event' && !scope.trim())) return;
 		this.setCompleted(false);
 
 		if (loadMore) {
-			if (isPaused) {
+			if (this.isPaused) {
 				this.startSearch();
 				return;
 			}
@@ -495,10 +510,16 @@ export class SearchStore {
 			this.searchProgressState[SearchDirection.Next].resultCount = 1;
 		}
 
-		if ((!isPaused && !loadMore) || this.currentSearch?.request.type !== this.formType) {
+		if ((!this.isPaused && !loadMore) || this.currentSearch?.request.type !== this.formType) {
 			this.newSearch({
 				timestamp: moment().utc().valueOf(),
-				request: { type: this.formType, state: this.searchForm, filters: filterParams },
+				request: {
+					type: this.formType,
+					state: this.searchForm,
+					filters: filterParams,
+					scope,
+				} as any,
+				bookId,
 				results: {},
 				progress: {
 					previous: 0,
@@ -554,10 +575,12 @@ export class SearchStore {
 				resultCountLimit,
 				endTimestamp: timeLimits[direction],
 				filters: filtersToAdd,
+				bookId: this.booksStore.selectedBook.name,
+				scope,
 				...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
 			};
 
-			if (isPaused || loadMore) {
+			if (this.isPaused || loadMore) {
 				if (this.formType === 'message') {
 					const messageIdEvent = this.resumeFromMessageIds[direction];
 
@@ -569,7 +592,7 @@ export class SearchStore {
 				}
 			}
 
-			if (isPaused) {
+			if (this.isPaused) {
 				params.resultCountLimit =
 					this.currentSearch!.request.state.resultCountLimit -
 					this.searchProgressState[direction].resultCount;
@@ -582,7 +605,6 @@ export class SearchStore {
 				type: this.formType,
 				queryParams,
 			});
-
 			this.searchChannel[direction] = searchChannel;
 
 			if (this.formType === 'event') {
@@ -761,10 +783,11 @@ export class SearchStore {
 		this.eventAutocompleteList = [];
 	};
 
-	private loadEventAutocompleteList = debounce((parentEventName: string) => {
+	private loadEventAutocompleteList = debounce(async (parentEventName: string) => {
 		if (this.eventAutocompleteSseChannel) {
 			this.eventAutocompleteSseChannel.close();
 		}
+
 		this.resetEventAutocompleteList();
 
 		this.eventAutocompleteSseChannel = this.api.sse.getEventSource({
@@ -773,8 +796,10 @@ export class SearchStore {
 				filters: ['name'],
 				'name-values': [parentEventName],
 				startTimestamp: moment().utc().valueOf(),
-				searchDirection: 'previous',
+				searchDirection: SearchDirection.Previous,
 				resultCountLimit: 10,
+				bookId: this.booksStore.selectedBook.name,
+				scope: this.searchForm.scope,
 			},
 		});
 		this.eventAutocompleteSseChannel.addEventListener('event', (ev: Event) =>
@@ -789,29 +814,19 @@ export class SearchStore {
 		});
 	}, 400);
 
-	private async loadMessageSessions() {
-		try {
-			const messageSessions = await this.api.messages.getMessageSessions();
-			runInAction(() => {
-				this.messageSessions = messageSessions;
-			});
-		} catch (error) {
-			console.error("Couldn't fetch sessions");
-		}
-	}
-
 	private getSearchHistory = async (historyTimestamp?: number) => {
 		try {
 			const searchHistory = await this.api.indexedDb.getStoreValues<SearchHistory>(
 				IndexedDbStores.SEARCH_HISTORY,
 			);
 			runInAction(() => {
-				this.searchHistory = searchHistory;
-				const defaultIndex = searchHistory.length - 1;
+				this.searchHistory = searchHistory.filter(
+					search => search.bookId === this.booksStore.selectedBook.name,
+				);
 				const index = historyTimestamp
-					? searchHistory.findIndex(search => search.timestamp === historyTimestamp)
+					? this.searchHistory.findIndex(search => search.timestamp === historyTimestamp)
 					: -1;
-				this.currentIndex = index === -1 ? defaultIndex : index;
+				this.currentIndex = index === -1 ? Math.max(this.searchHistory.length - 1, 0) : index;
 			});
 		} catch (error) {
 			console.error('Failed to load search history', error);
@@ -821,7 +836,6 @@ export class SearchStore {
 	private init = () => {
 		this.getEventFilters();
 		this.getMessagesFilters();
-		this.loadMessageSessions();
 		this.getSearchHistory();
 	};
 

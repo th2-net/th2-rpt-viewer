@@ -11,43 +11,28 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import '../../styles/select.scss';
+import { BooksApiSchema } from './ApiSchema';
 
-interface Props<T> {
-	className?: string;
-	options: Array<T>;
-	selected: string;
-	prefix?: string;
-	onChange: (option: T) => void;
-	onSelect?: () => void;
-}
+const booksHttpApi: BooksApiSchema = {
+	getBooksList: async () => {
+		const res = await fetch('backend/bookIds');
 
-export default function Select<T extends string>({
-	options,
-	selected,
-	onChange,
-	onSelect,
-	className = '',
-	prefix = '',
-}: Props<T>) {
-	return (
-		<select
-			className={`options-select ${className}`}
-			value={prefix + selected}
-			onChange={e => {
-				onChange(e.target.value as T);
-				if (onSelect) {
-					onSelect();
-				}
-			}}>
-			<option></option>
-			{options.map((opt, index) => (
-				<option key={index}>{prefix + opt}</option>
-			))}
-		</select>
-	);
-}
+		if (res.ok) return res.json();
+
+		console.error(res.statusText);
+		return [];
+	},
+	getBookScope: async (bookId, signal) => {
+		const res = await fetch(`backend/scopeIds?bookId=${bookId}`, { signal });
+
+		if (res.ok) return res.json();
+
+		console.error(res.statusText);
+		return [];
+	},
+};
+
+export default booksHttpApi;

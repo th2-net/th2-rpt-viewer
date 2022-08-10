@@ -22,13 +22,14 @@ import GraphChunk from './GraphChunk';
 import GraphSearch from './search/GraphSearch';
 import OutsideItems from './OutsideItems';
 import GraphChunksVirtualizer, { Settings } from './GraphChunksVirtualizer';
-import { useActiveWorkspace, useSelectedStore, useTabsStore } from '../../hooks';
+import { useActiveWorkspace, useSelectedStore, useTabsStore, useWorkspaces } from '../../hooks';
 import { Chunk, PanelRange } from '../../models/Graph';
 import WorkspaceStore from '../../stores/workspace/WorkspaceStore';
 import { isWorkspaceStore } from '../../helpers/workspace';
 import PointerTimestampProvider from '../../contexts/pointerTimestampContext';
-import '../../styles/graph.scss';
 import GraphLastEventsButton from './GraphLastEventsButton';
+import BookSelect from '../books/BookSelect';
+import '../../styles/graph.scss';
 
 const getChunkWidth = () => window.innerWidth / 2;
 
@@ -149,17 +150,19 @@ const ObservedGraph = observer(Graph);
 const GraphRoot = () => {
 	const activeWorkspace = useActiveWorkspace();
 	const tabsStore = useTabsStore();
+	const workspacesStore = useWorkspaces();
 
 	return (
 		<PointerTimestampProvider>
 			<div className='graph-root'>
 				<i className='th2-logo' />
+				<BookSelect />
 				<GraphSearch
 					hoveredTimestamp={
 						isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.hoveredTimestamp : null
 					}
 					onTimestampSubmit={activeWorkspace.onTimestampSelect}
-					onFoundItemClick={activeWorkspace.onSavedItemSelect}
+					onFoundItemClick={workspacesStore.onGraphSearchResultSelect}
 					windowRange={isWorkspaceStore(activeWorkspace) ? activeWorkspace.graphStore.range : null}
 					activeTabIndex={tabsStore.activeTabIndex}
 				/>

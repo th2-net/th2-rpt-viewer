@@ -17,9 +17,7 @@
 import React from 'react';
 import GraphItemsMenu from './GraphItemsMenu';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { EventTreeNode } from '../../models/EventAction';
-import { EventMessage } from '../../models/EventMessage';
-import { GraphGroup, GraphItemType } from '../../models/Graph';
+import { GraphGroup, GraphItemType, GraphItem } from '../../models/Graph';
 import { GraphStore } from '../../stores/GraphStore';
 
 type GroupItemType =
@@ -51,7 +49,7 @@ const GROUP_MAX_ITEMS = 3;
 
 interface GraphItemsGroupProps {
 	group: GraphGroup;
-	onGraphItemClick: (item: EventTreeNode | EventMessage) => void;
+	onGraphItemClick: (item: GraphItem) => void;
 	getGraphItemType: InstanceType<typeof GraphStore>['getGraphItemType'];
 }
 

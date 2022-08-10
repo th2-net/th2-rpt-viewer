@@ -40,6 +40,8 @@ import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
+import SelectFilterRow from '../filter/row/SelectFilterRow';
+import { useBooksStore } from '../../hooks/useBooksStore';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -51,7 +53,6 @@ const SearchPanelForm = () => {
 		updateForm,
 		searchForm: form,
 		formType,
-		messageSessions,
 		filters,
 		startSearch,
 		pauseSearch,
@@ -65,6 +66,9 @@ const SearchPanelForm = () => {
 	} = useSearchStore();
 
 	const disabled = isHistorySearch || isSearching;
+	const booksStore = useBooksStore();
+
+	const { messageSessions } = useSessionsStore();
 
 	const [currentStream, setCurrentStream] = useState('');
 	const sessionsStore = useSessionsStore();
@@ -229,7 +233,7 @@ const SearchPanelForm = () => {
 		disabled:
 			isHistorySearch ||
 			!form.searchDirection ||
-			(formType === 'message' && form.stream.length === 0),
+			(formType === 'message' && form.stream.length === 0) || (formType === 'event' && !form.scope),
 		progress: commonProgress,
 		processedObjectCount,
 		isPaused,
@@ -256,6 +260,19 @@ const SearchPanelForm = () => {
 			<div className='filters'>
 				{filters && filters.info.length > 0 && (
 					<SearchPanelFilters {...(filters as any)} type={formType} autocompletes={autocompletes} />
+				)}
+				{/* TODO: fix scope select */}
+				{formType === 'event' && (
+					<SelectFilterRow
+						config={{
+							options: booksStore.scopeList,
+							setValue: v => updateForm({ scope: v }),
+							id: 'scope',
+							type: 'select',
+							value: form.scope,
+							label: 'Scope',
+						}}
+					/>
 				)}
 			</div>
 			{!disabled && (

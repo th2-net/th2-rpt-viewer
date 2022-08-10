@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2021 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import EmbeddedEvent from './EmbeddedEvent';
-import EmbeddedMessage from './EmbeddedMessage';
-import '../../styles/embedded.scss';
-
-function EmbeddedApp() {
-	const searchParams = new URLSearchParams(window.location.search);
-	const eventId = searchParams.get('eventId');
-	const messageId = searchParams.get('messageId');
-
-	if (eventId) {
-		return <EmbeddedEvent eventId={eventId} />;
-	}
-	if (messageId) {
-		return <EmbeddedMessage messageId={messageId} />;
-	}
-	throw new Error('Provide messageId or eventId');
-}
-
-export default EmbeddedApp;
+export type Book = {
+	name: string;
+};

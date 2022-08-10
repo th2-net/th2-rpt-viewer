@@ -15,13 +15,66 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { nanoid } from 'nanoid';
 import RootStore from '../stores/RootStore';
 import ApiSchema from '../api/ApiSchema';
+import { Book } from '../models/Books';
+import { IndexedDbStores } from '../api/indexedDb';
+import BooksStore from '../stores/BooksStore';
+import notificationsStore from '../stores/NotificationsStore';
 
 const RootStoreContext = React.createContext<RootStore | null>(null);
 
-export function createRootStore(api: ApiSchema): RootStore {
-	const rootStore = new RootStore(api);
+export async function createRootStore(api: ApiSchema): Promise<RootStore> {
+	let initialBook: Book | null | undefined;
+	let books: Book[] = [];
+	try {
+		books = await api.books.getBooksList();
+		const bookId = new URLSearchParams(window.location.search).get('bookId');
+		initialBook = (bookId && books.length > 0 && books.find(b => b.name === bookId)) || null;
+
+		if (books.length === 0) {
+			notificationsStore.addMessage({
+				header: `Failed to load books`,
+				description: '',
+				notificationType: 'genericError',
+				id: nanoid(),
+				type: 'error',
+			});
+		}
+
+		if (bookId && !initialBook) {
+			notificationsStore.addMessage({
+				header: `Failed to load book ${bookId}`,
+				description: '',
+				notificationType: 'genericError',
+				id: nanoid(),
+				type: 'error',
+			});
+		}
+
+		if (!initialBook) {
+			const [lastSelectedBook] = await api.indexedDb.getStoreValues<Book>(
+				IndexedDbStores.SELECTED_BOOK,
+			);
+			initialBook = lastSelectedBook && books.find(book => book.name === lastSelectedBook.name);
+		}
+		initialBook = initialBook || books[0];
+	} catch (e) {
+		if (!books.length) {
+			notificationsStore.addMessage({
+				header: 'Failed to load books',
+				description: '',
+				notificationType: 'genericError',
+				id: nanoid(),
+				type: 'error',
+			});
+		}
+	}
+
+	const booksStore = new BooksStore(api, books, initialBook || books[0]);
+
+	const rootStore = new RootStore(api, booksStore);
 
 	return rootStore;
 }

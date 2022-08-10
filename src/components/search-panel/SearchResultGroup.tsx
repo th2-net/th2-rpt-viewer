@@ -25,6 +25,7 @@ import { getTimestampAsNumber } from '../../helpers/date';
 import { ActionType } from '../../models/EventAction';
 import { BookmarkedItem } from '../../models/Bookmarks';
 import { BookmarkItem } from '../bookmarks/BookmarksPanel';
+import { useScope } from '../../hooks/useScope';
 
 interface SearchResultGroup {
 	results: SearchResult[];
@@ -36,6 +37,8 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 	const { savedItems } = useSelectedStore();
 	const bookmarksStore = useBookmarksStore();
 	const [isExpanded, setIsExpanded] = React.useState(false);
+
+	const { bookId, scope } = useScope();
 
 	const expandButtonClass = createBemElement(
 		'search-result-group',
@@ -67,9 +70,9 @@ const SearchResultGroup = ({ results, onResultClick, onGroupClick }: SearchResul
 
 	const getBookmarkToggler = (searchResult: SearchResult) => () => {
 		if (isEventMessage(searchResult)) {
-			bookmarksStore.toggleMessagePin(searchResult);
+			bookmarksStore.toggleMessagePin(searchResult, bookId);
 		} else {
-			bookmarksStore.toggleEventPin(searchResult);
+			bookmarksStore.toggleEventPin(searchResult, bookId, scope);
 		}
 	};
 

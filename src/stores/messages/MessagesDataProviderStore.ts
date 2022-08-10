@@ -19,6 +19,7 @@ import ApiSchema from '../../api/ApiSchema';
 import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isAbortError } from '../../helpers/fetch';
 import { EventMessage } from '../../models/EventMessage';
+import BooksStore from '../BooksStore';
 import notificationsStore from '../NotificationsStore';
 import { MessageSSEEventListeners, MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
@@ -28,14 +29,19 @@ import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
 import { isEventMessage } from '../../helpers/event';
 import { timestampToNumber } from '../../helpers/date';
+import { SearchDirection } from '../../models/search/SearchDirection';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class MessagesDataProviderStore implements MessagesDataStore {
 	private readonly messagesLimit = 250;
 
-	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
-		this.updateStore = new MessagesUpdateStore(this, this.messagesStore);
+	constructor(
+		private messagesStore: MessagesStore,
+		private api: ApiSchema,
+		private booksStore: BooksStore,
+	) {
+		this.updateStore = new MessagesUpdateStore(this, this.messagesStore, booksStore);
 
 		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
 	}
@@ -109,6 +115,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	) => {
 		this.stopMessagesLoading();
 		this.resetState();
+		const bookId = this.booksStore.selectedBook.name;
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
@@ -117,7 +124,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.createPreviousMessageChannelEventSource(
 			{
 				...queryParams,
-				searchDirection: 'previous',
+				searchDirection: SearchDirection.Previous,
+				bookId,
 			},
 			FIFTEEN_SECONDS,
 			prevListeners,
@@ -125,7 +133,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.createNextMessageChannelEventSource(
 			{
 				...queryParams,
-				searchDirection: 'next',
+				searchDirection: SearchDirection.Next,
+				bookId,
 			},
 			FIFTEEN_SECONDS,
 			nextListeners,
@@ -423,7 +432,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	};
 
 	@action
-	public keepLoading = (direction: 'next' | 'previous') => {
+	public keepLoading = async (direction: SearchDirection) => {
 		if (
 			this.messagesStore.filterStore.filter.streams.length === 0 ||
 			!this.searchChannelNext ||
@@ -435,7 +444,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			throw new Error('Load could not continue because loadHeartbeat is missing');
 
 		const keepLoadingStartTimestamp =
-			direction === 'previous'
+			direction === SearchDirection.Previous
 				? this.prevLoadHeartbeat!.timestamp
 				: this.nextLoadHeartbeat!.timestamp;
 
@@ -451,7 +460,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			this.nextLoadHeartbeat = defaultHearbeat;
 		}
 
-		if (direction === 'previous') {
+		if (direction === SearchDirection.Previous) {
 			this.noMatchingMessagesPrev = false;
 			const idsMap = this.messages
 				.slice(Math.max(0, this.messages.length - 20))
@@ -478,6 +487,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 
 	@action
 	public matchMessage = async (messageId: string, abortSignal: AbortSignal) => {
+		const bookId = this.booksStore.selectedBook.name;
 		if (this.isSoftFiltered.get(messageId) !== undefined) return;
 		this.isMatchingMessages.set(messageId, true);
 
@@ -487,7 +497,11 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				searchDirection,
 				...filterParams
 			} = this.messagesStore.filterStore.filterParams;
-			const isMatch = await this.api.messages.matchMessage(messageId, filterParams, abortSignal);
+			const isMatch = await this.api.messages.matchMessage(
+				messageId,
+				{ ...filterParams, bookId },
+				abortSignal,
+			);
 
 			runInAction(() => {
 				this.isSoftFiltered.set(messageId, isMatch);
