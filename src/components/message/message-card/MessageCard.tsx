@@ -31,9 +31,11 @@ import MessageExpandButton from '../MessageExpandButton';
 import StateSaver from '../../util/StateSaver';
 import { getViewTypesConfig } from '../../../helpers/message';
 import { createBemBlock } from '../../../helpers/styleCreators';
+import CardDisplayType from '../../../util/CardDisplayType';
 
 export interface OwnProps {
 	message: EventMessage;
+	displayType: CardDisplayType;
 }
 
 export interface RecoveredProps {
@@ -47,7 +49,7 @@ export interface RecoveredProps {
 interface Props extends OwnProps, RecoveredProps {}
 
 export const MessageCard = observer((props: Props) => {
-	const { message, viewTypesConfig } = props;
+	const { message, displayType, viewTypesConfig } = props;
 	const { id } = message;
 
 	const messagesStore = useMessagesWorkspaceStore();
@@ -126,6 +128,7 @@ export const MessageCard = observer((props: Props) => {
 
 	const messageCardBaseProps: MessageCardBaseProps = {
 		message,
+		displayType,
 		viewTypeConfig: viewTypesConfig,
 		hoverMessage,
 		unhoverMessage,
@@ -176,6 +179,7 @@ const RecoverableMessageCard = (props: OwnProps) => {
 			{(state: boolean, stateSaver) => (
 				<MessageCard
 					message={props.message}
+					displayType={props.displayType}
 					viewTypesConfig={viewTypesConfig}
 					stateKey={props.message.id}
 					setIsExpanded={stateSaver}

@@ -22,8 +22,10 @@ import MessageCardViewTypeRenderer, {
 import { ParsedMessage, MessageViewType } from '../../../models/EventMessage';
 import { ParsedMessageHeader } from './header/ParsedMessageHeader';
 import { createBemBlock } from '../../../helpers/styleCreators';
+import CardDisplayType from '../../../util/CardDisplayType';
 
 export interface ParsedMessageProps {
+	displayType: CardDisplayType;
 	isHighlighted?: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
@@ -38,6 +40,7 @@ interface OwnProps {
 
 export const ParsedMessageComponent = React.memo((props: ParsedMessageProps & OwnProps) => {
 	const {
+		displayType,
 		isHighlighted,
 		parsedMessage,
 		parsedMessageIndex,
@@ -68,6 +71,7 @@ export const ParsedMessageComponent = React.memo((props: ParsedMessageProps & Ow
 							{...messageViewTypeRendererProps}
 							viewType={viewType}
 							messageBody={parsedMessage.message}
+							displayType={displayType}
 						/>
 					</div>
 				</div>
