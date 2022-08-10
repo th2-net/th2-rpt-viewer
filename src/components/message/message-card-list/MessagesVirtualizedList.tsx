@@ -156,7 +156,7 @@ const MessagesVirtualizedList = (props: Props) => {
 		};
 	}, 100);
 
-	const computeItemKey = React.useCallback((index: number, msg: EventMessage) => msg.messageId, []);
+	const computeItemKey = React.useCallback((index: number, msg: EventMessage) => msg.id, []);
 
 	return (
 		<Virtuoso
