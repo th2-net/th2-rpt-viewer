@@ -138,7 +138,6 @@ function EventTree({ eventTreeNode }: EventTreeProps) {
 			<div className='event-tree-card' style={{ paddingLeft: nestingLevel }}>
 				<ExpandIcon
 					status={expandIconStatus}
-					className='event-card__children-icon'
 					onClick={onExpandClick}
 					disabled={eventsStore.isLoadingTargetNode}
 				/>
@@ -206,13 +205,13 @@ function ExpandIcon(props: Props) {
 					onClick();
 				}
 			}}>
-			{props.status === 'loading' ? (
+			{props.status === 'loading' && (
 				<>
 					<div className='expand-icon__dot' />
 					<div className='expand-icon__dot' />
 					<div className='expand-icon__dot' />
 				</>
-			) : null}
+			)}
 		</div>
 	);
 }

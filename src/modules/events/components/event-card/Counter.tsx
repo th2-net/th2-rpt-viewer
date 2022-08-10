@@ -23,7 +23,7 @@ type Props = React.PropsWithChildren<{
 	onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }>;
 
-export function ChildrenCount(props: Props) {
+export function Counter(props: Props) {
 	const { children, isSelected, onClick, title, isLoading } = props;
 	const rootClass = createStyleSelector(
 		'counter',

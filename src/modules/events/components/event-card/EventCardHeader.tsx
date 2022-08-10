@@ -23,7 +23,7 @@ import { useBookmarksStore, useWorkspaceStore } from 'hooks/index';
 import { getEventStatus } from 'helpers/event';
 import SearchableContent from '../search/SearchableContent';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
-import { ChildrenCount } from './ChildrenCount';
+import { Counter } from './Counter';
 import CardDisplayType from '../../../../models/util/CardDisplayType';
 
 interface EventCardHeaderBaseProps {
@@ -52,19 +52,18 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		onEventTypeSelect,
 		isSelected = false,
 		isActive = false,
-		childrenCount,
 		isFlatView = false,
+		childrenCount = 0,
 		parentsCount = 0,
-		rootStyle = {},
 		disabled = false,
 		isBookmarked = false,
 		toggleEventPin,
 		onFilterByParentEvent,
 		hasChildrenToLoad = false,
 	} = props;
-	const { eventId, eventName, eventType, startTimestamp, endTimestamp, isUnknown } = event;
+	const { eventId, eventName, eventType, startTimestamp, endTimestamp } = event;
 
-	const status = isUnknown ? 'unknown' : getEventStatus(event);
+	const status = getEventStatus(event);
 
 	const elapsedTime =
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
@@ -111,29 +110,28 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		}
 	}
 
+	const counter = isFlatView
+		? parentsCount
+		: childrenCount > 0
+		? `${childrenCount}${hasChildrenToLoad ? '+' : ''}`
+		: '';
+
 	return (
-		<div className={rootClassName} onClick={onRootClick} style={rootStyle}>
+		<div className={rootClassName} onClick={onRootClick}>
 			<div className={iconClassName} />
-			{displayType !== CardDisplayType.STATUS_ONLY ? (
-				<div className='event-header-card__title' title={eventName}>
-					<SearchableContent content={eventName} eventId={eventId} />
-				</div>
-			) : null}
-			{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown && (
-				<span className='event-header-card__event-type' onClick={handleTypeClick}>
-					{eventType}
-				</span>
+			{displayType !== CardDisplayType.STATUS_ONLY && (
+				<>
+					<div className='event-header-card__title' title={eventName}>
+						<SearchableContent content={eventName} eventId={eventId} />
+					</div>
+					<span className='event-header-card__event-type' onClick={handleTypeClick}>
+						{eventType}
+					</span>
+				</>
 			)}
-			{isFlatView && parentsCount > 0 && <ChildrenCount>{parentsCount}</ChildrenCount>}
-			{displayType !== CardDisplayType.STATUS_ONLY &&
-				childrenCount !== undefined &&
-				childrenCount > 0 && (
-					<ChildrenCount>
-						{childrenCount.toString().concat(hasChildrenToLoad ? '+' : '')}
-					</ChildrenCount>
-				)}
+			{counter && <Counter>{counter}</Counter>}
 			<div className='event-header-card__details'>
-				{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown ? (
+				{displayType !== CardDisplayType.STATUS_ONLY && (
 					<>
 						{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
 						<div className='event-header-card__time-label'>
@@ -147,25 +145,61 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 							</span>
 						)}
 					</>
-				) : null}
-				{!isUnknown && <div className='search-by-parent' onClick={onFilterClick} />}
-				{!isUnknown && (
-					<div
-						className={bookmarkClassName}
-						onClick={onPinClicked}
-						title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
-					/>
 				)}
+				<div className='search-by-parent' onClick={onFilterClick} />
+				<div
+					className={bookmarkClassName}
+					onClick={onPinClicked}
+					title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
+				/>
 			</div>
 		</div>
 	);
 }
+
+type UnknownEventCardHeaderProps = Pick<
+	EventCardHeaderBaseProps,
+	'childrenCount' | 'event' | 'isActive' | 'isSelected' | 'disabled'
+>;
+
+const UnknownEventCardHeader = (props: UnknownEventCardHeaderProps) => {
+	const { childrenCount, event, isActive, isSelected, disabled } = props;
+	const rootClassName = createBemBlock(
+		'event-header-card',
+		'unknown',
+		isSelected ? 'selected' : null,
+		isActive ? 'active' : null,
+		'not-selectable',
+		disabled ? 'disabled' : null,
+	);
+
+	const iconClassName = createBemBlock(
+		'event-status-icon',
+		'unknown',
+		isSelected ? 'selected' : null,
+		isActive ? 'active' : null,
+	);
+
+	return (
+		<div className={rootClassName}>
+			<div className={iconClassName} />
+			<div className='event-header-card__title' title={event.eventName}>
+				<SearchableContent content={event.eventName} eventId={event.eventId} />
+			</div>
+			<Counter>{childrenCount}</Counter>
+		</div>
+	);
+};
 
 const EventCardHeader = (props: EventCardHeaderBaseProps) => {
 	const { event } = props;
 	const bookmarksStore = useBookmarksStore();
 	const workspaceStore = useWorkspaceStore();
 	const eventsDataStore = useEventsDataStore();
+
+	if (event.isUnknown) {
+		return <UnknownEventCardHeader {...props} />;
+	}
 
 	const hasChildrenToLoad = computed(() =>
 		eventsDataStore.hasUnloadedChildren.get(event.eventId),
