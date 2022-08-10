@@ -154,6 +154,7 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 					anchor={anchor}
 					ref={inputRef}
 					className='bubble__input'
+					inputStyle={{ maxWidth: '100%' }}
 					value={currentValue}
 					setValue={setCurrentValue}
 					onKeyDown={bubbleSwitch}
@@ -167,7 +168,9 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 			) : (
 				<React.Fragment>
 					{!isValid && <i className='bubble__attention-sign' />}
-					<span className='bubble__value'>{value}</span>
+					<span className='bubble__value' title={value}>
+						{value}
+					</span>
 					<div className='bubble__remove'>
 						<div className={iconClass} onClick={stopPropagationHandler(onRemove)} />
 					</div>

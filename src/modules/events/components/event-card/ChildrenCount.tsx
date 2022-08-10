@@ -16,16 +16,15 @@
 
 import { createStyleSelector } from 'helpers/styleCreators';
 
-interface Props {
-	text: string | number;
+type Props = React.PropsWithChildren<{
 	title?: string;
 	isSelected?: boolean;
 	isLoading?: boolean;
 	onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-}
+}>;
 
 export function ChildrenCount(props: Props) {
-	const { text, isSelected, onClick, title, isLoading } = props;
+	const { children, isSelected, onClick, title, isLoading } = props;
 	const rootClass = createStyleSelector(
 		'counter',
 		isSelected ? 'selected' : null,
@@ -36,7 +35,7 @@ export function ChildrenCount(props: Props) {
 	return (
 		<div className={rootClass} title={title} onClick={onClick}>
 			<div className='counter__title'>
-				<p>{text}</p>
+				<p>{children}</p>
 			</div>
 		</div>
 	);

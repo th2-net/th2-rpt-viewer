@@ -15,8 +15,9 @@
  ***************************************************************************** */
 
 import { useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useFilterConfigStore } from 'hooks/useFilterConfigStore';
-import { useOutsideClickListener } from '../../hooks';
+import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
 import { ModalPortal } from '../util/Portal';
 import RulesList from './RulesList';
 import { createStyleSelector } from '../../helpers/styleCreators';
@@ -25,6 +26,7 @@ import '../../styles/messages-view-configurator.scss';
 
 const MessageViewConfigurator = () => {
 	const { messageSessions } = useFilterConfigStore();
+
 	const [isOpen, setIsOpen] = useState(false);
 	const [mode, setMode] = useState<'display-rules' | 'body-sort'>('display-rules');
 
@@ -103,4 +105,4 @@ const MessageViewConfigurator = () => {
 	);
 };
 
-export default MessageViewConfigurator;
+export default observer(MessageViewConfigurator);

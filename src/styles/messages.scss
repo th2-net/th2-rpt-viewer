@@ -304,7 +304,6 @@
 	&__info {
 		display: inline-flex;
 		background-color: #fbfbfb;
-		font-weight: 400;
 		font-size: 12px;
 		color: #5c5757;
 		width: 100%;
@@ -633,6 +632,31 @@
 	&__item {
 		margin: 2px 5px;
 		border-radius: 16px;
+
+		&-info {
+			position: relative;
+			display: flex;
+		}
+
+		&-indicator {
+			position: absolute;
+			margin: 12px 8px;
+			width: 4px;
+			height: calc(100% - 24px);
+			border-radius: 2px;
+
+			&.bookmarked {
+				background: #a65cd6;
+			}
+
+			&.attached {
+				background: #f26c0d;
+			}
+
+			&.bookmarked-attached {
+				background: linear-gradient(to bottom, #a65cd6 50%, #f26c0d 50%);
+			}
+		}
 
 		&.soft-filtered {
 			border: 1px solid $filterPrimaryColor;

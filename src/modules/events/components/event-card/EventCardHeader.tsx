@@ -75,7 +75,7 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 		displayType,
 		isSelected ? 'selected' : null,
 		isActive ? 'active' : null,
-		onSelect ? 'clickable' : null,
+		onSelect ? null : 'not-selectable',
 		disabled ? 'disabled' : null,
 	);
 
@@ -119,33 +119,44 @@ function EventCardHeaderBase(props: EventCardHeaderBaseProps) {
 					<SearchableContent content={eventName} eventId={eventId} />
 				</div>
 			) : null}
-			{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown ? (
-				<>
-					{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
-					<div className='event-header-card__time-label'>
-						<span className='event-header-card__time-label-full'>{formatTime(startTimestamp)}</span>
-					</div>
-					{eventType && (
-						<span className='event-header-card__event-type' onClick={handleTypeClick}>
-							{eventType}
-						</span>
-					)}
-				</>
-			) : null}
-			{isFlatView && parentsCount > 0 ? <ChildrenCount text={parentsCount.toString()} /> : null}
+			{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown && (
+				<span className='event-header-card__event-type' onClick={handleTypeClick}>
+					{eventType}
+				</span>
+			)}
+			{isFlatView && parentsCount > 0 && <ChildrenCount>{parentsCount}</ChildrenCount>}
 			{displayType !== CardDisplayType.STATUS_ONLY &&
 				childrenCount !== undefined &&
 				childrenCount > 0 && (
-					<ChildrenCount text={childrenCount.toString().concat(hasChildrenToLoad ? '+' : '')} />
+					<ChildrenCount>
+						{childrenCount.toString().concat(hasChildrenToLoad ? '+' : '')}
+					</ChildrenCount>
 				)}
-			{!isUnknown && <div className='search-by-parent' onClick={onFilterClick} />}
-			{!isUnknown && (
-				<div
-					className={bookmarkClassName}
-					onClick={onPinClicked}
-					title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
-				/>
-			)}
+			<div className='event-header-card__details'>
+				{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown ? (
+					<>
+						{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
+						<div className='event-header-card__time-label'>
+							<span className='event-header-card__time-label-full'>
+								{formatTime(startTimestamp)}
+							</span>
+						</div>
+						{eventType && (
+							<span className='event-header-card__event-type' onClick={handleTypeClick}>
+								{eventType}
+							</span>
+						)}
+					</>
+				) : null}
+				{!isUnknown && <div className='search-by-parent' onClick={onFilterClick} />}
+				{!isUnknown && (
+					<div
+						className={bookmarkClassName}
+						onClick={onPinClicked}
+						title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
+					/>
+				)}
+			</div>
 		</div>
 	);
 }
