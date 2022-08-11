@@ -233,7 +233,8 @@ const SearchPanelForm = () => {
 		disabled:
 			isHistorySearch ||
 			!form.searchDirection ||
-			(formType === 'message' && form.stream.length === 0) || (formType === 'event' && !form.scope),
+			(formType === 'message' && form.stream.length === 0) ||
+			(formType === 'event' && !form.scope),
 		progress: commonProgress,
 		processedObjectCount,
 		isPaused,
