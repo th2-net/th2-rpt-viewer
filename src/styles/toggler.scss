@@ -41,10 +41,10 @@
 		width: 24px;
 		height: 24px;
 	}
-	.incl {
+	.include {
 		@include icon(url(../../resources/icons/include.svg), 24px, 24px);
 	}
-	.excl {
+	.exclude {
 		@include icon(url(../../resources/icons/exclude.svg), 24px, 24px);
 	}
 	.and {

@@ -119,9 +119,10 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 		const configs: FilterRowConfig[][] = [];
 		const labels: string[] = [];
 
-		info.map((filter: SSEFilterInfo) => {
+		info.forEach((filter: SSEFilterInfo) => {
 			const filterState = getState(filter.name);
 			labels.push(prettifyCamelcase(filter.name));
+
 			const autocompleteList = getArrayOfUniques(
 				autocompletes
 					.map(item => item.filters[filter.name as keyof FilterState]?.values)
@@ -141,7 +142,8 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 										type: 'toggler',
 										value: filterState[param.name],
 										toggleValue: getToggler(filter.name, param.name as keyof Filter),
-										possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+										possibleValues:
+											param.name === 'negative' ? ['Exclude', 'Include'] : ['And', 'Or'],
 									};
 								case 'string':
 									return {
@@ -184,6 +186,7 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 				: [];
 			configs.push(config);
 		});
+
 		return [configs, labels];
 	}
 
@@ -220,11 +223,11 @@ const SearchPanelFilters = (props: SearchPanelFiltersProps) => {
 					<div className='filter__compound-header'>
 						<p className={'filter-row__label'}>{labels[key]}</p>
 						<div className='filter__togglers'>
-							{rowConfig.map(_rowConfig => (
-								<React.Fragment key={_rowConfig.id}>
-									{_rowConfig.type !== 'multiple-strings' && <FilterRow rowConfig={_rowConfig} />}
-								</React.Fragment>
-							))}
+							{rowConfig
+								.filter(_rowConfig => _rowConfig.type !== 'multiple-strings')
+								.map(_rowConfig => (
+									<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
+								))}
 						</div>
 					</div>
 					{rowConfig

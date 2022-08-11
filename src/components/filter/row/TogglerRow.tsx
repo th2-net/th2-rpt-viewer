@@ -19,13 +19,13 @@ import { FilterRowTogglerConfig } from '../../../models/filter/FilterInputs';
 import '../../../styles/toggler.scss';
 
 const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
-	const { value, toggleValue, possibleValues, disabled, className = '' } = config;
+	const { value, toggleValue, possibleValues, disabled } = config;
 	const [firstLabel, secondLabel] = possibleValues;
 
 	const togglerClassName = createStyleSelector('toggler', disabled ? 'disabled' : '');
 	const togglerIconClassName = createStyleSelector(
 		'toggler__icon',
-		value ? firstLabel : secondLabel,
+		value ? firstLabel.toLowerCase() : secondLabel.toLowerCase(),
 	);
 
 	return (

@@ -162,7 +162,7 @@ function EventWindowHeader() {
 					type: 'toggler',
 					value: filterValues.negative,
 					toggleValue: getToggler(filterName, 'negative' as keyof Filter),
-					possibleValues: ['excl', 'incl'],
+					possibleValues: ['Exclude', 'Include'],
 					className: 'filter-row__toggler',
 					labelClassName: 'event-filters-panel-label',
 				};
@@ -175,7 +175,7 @@ function EventWindowHeader() {
 					type: 'toggler',
 					value: filterValues.conjunct,
 					toggleValue: getToggler(filterName, 'conjunct' as keyof Filter),
-					possibleValues: ['and', 'or'],
+					possibleValues: ['And', 'Or'],
 					className: 'filter-row__toggler',
 					labelClassName: 'event-filters-panel-label',
 				};

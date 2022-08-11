@@ -167,7 +167,8 @@ function MessagesWindowHeader() {
 												filterInfo.name,
 												param.name as keyof MultipleStringFilter,
 											),
-											possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+											possibleValues:
+												param.name === 'negative' ? ['Exclude', 'Include'] : ['And', 'Or'],
 											className: 'filter-row__toggler',
 										} as any;
 									default:

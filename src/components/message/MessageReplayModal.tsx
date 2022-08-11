@@ -162,7 +162,8 @@ function MessageReplayModal() {
 									type: 'toggler',
 									value: state[param.name as keyof MultipleStringFilter],
 									toggleValue: getToggler(filter.name, param.name as keyof MultipleStringFilter),
-									possibleValues: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
+									possibleValues:
+										param.name === 'negative' ? ['Exclude', 'Include'] : ['And', 'Or'],
 									className: 'filter-row__toggler',
 								} as any;
 							default:
@@ -323,22 +324,18 @@ function MessageReplayModal() {
 								key={rowConfig.map(c => c.id).join('-')}>
 								<div className='filter__compound-header replay__compound-header'>
 									{rowConfig
-										.filter(_rowConfig => {
-											return _rowConfig.label;
-										})
+										.filter(_rowConfig => _rowConfig.label)
 										.map(_rowConfig => (
 											<p className={'filter-row__label'} key={_rowConfig.label}>
 												{_rowConfig.label}
 											</p>
 										))}
 									<div className='filter__togglers'>
-										{rowConfig.map(_rowConfig => (
-											<React.Fragment key={_rowConfig.id}>
-												{_rowConfig.type !== 'multiple-strings' && (
-													<FilterRow rowConfig={_rowConfig} />
-												)}
-											</React.Fragment>
-										))}
+										{rowConfig
+											.filter(_rowConfig => _rowConfig.type !== 'multiple-strings')
+											.map(_rowConfig => (
+												<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
+											))}
 									</div>
 								</div>
 								{rowConfig
