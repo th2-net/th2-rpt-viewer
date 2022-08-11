@@ -178,7 +178,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 		itemInfo.status,
 	);
 
-	const bookmarkButtonClassname = createBemElement(
+	const bookmarkButtonClassName = createBemElement(
 		'bookmark-item',
 		'toggle-btn',
 		isBookmarkButtonDisabled ? 'disabled' : null,
@@ -208,7 +208,7 @@ const BookmarkItemBase = (props: BookmarkItemProps) => {
 					</button>
 				)}
 				{!onRemove && toggleBookmark && (
-					<div className={bookmarkButtonClassname}>
+					<div className={bookmarkButtonClassName}>
 						<div
 							title={
 								isBookmarkButtonDisabled
