@@ -46,37 +46,43 @@ import { MessageFilterState, MultipleStringFilter } from '../search-panel/Search
 import { prettifyCamelcase } from '../../helpers/stringUtils';
 import { MessagesFilterInfo } from '../../api/sse';
 import useSetState from '../../hooks/useSetState';
+import useElementSize from '../../hooks/useElementSize';
+import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../util/CardDisplayType';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
 const viewStore = new EmbeddedMessagesViewTypeStore();
 
-const EmbeddedMessageCard = observer((props: { message: EventMessage }) => {
-	const { getSavedViewType } = viewStore;
-	const viewTypesConfig = getViewTypesConfig(props.message, getSavedViewType);
+const EmbeddedMessageCard = observer(
+	(props: { message: EventMessage; displayType: CardDisplayType }) => {
+		const { getSavedViewType } = viewStore;
+		const viewTypesConfig = getViewTypesConfig(props.message, getSavedViewType);
 
-	return (
-		<StateSaver stateKey={props.message.id}>
-			{(isExpanded: boolean, setIsExpanded) => (
-				<div className='messages-list__item'>
-					<MessageCardBase
-						viewTypeConfig={viewTypesConfig}
-						message={props.message}
-						isExpanded={isExpanded}
-						isDisplayRuleRaw={false}
-					/>
-					<MessageExpandButton
-						isExpanded={isExpanded}
-						setExpanded={setIsExpanded}
-						parsedMessages={props.message.parsedMessages}
-						isScreenshotMsg={false}
-						isDisplayRuleRaw={false}
-					/>
-				</div>
-			)}
-		</StateSaver>
-	);
-});
+		return (
+			<StateSaver stateKey={props.message.id}>
+				{(isExpanded: boolean, setIsExpanded) => (
+					<div className='messages-list__item'>
+						<MessageCardBase
+							viewTypeConfig={viewTypesConfig}
+							message={props.message}
+							displayType={props.displayType}
+							isExpanded={isExpanded}
+							isDisplayRuleRaw={false}
+							isEmbedded={true}
+						/>
+						<MessageExpandButton
+							isExpanded={isExpanded}
+							setExpanded={setIsExpanded}
+							parsedMessages={props.message.parsedMessages}
+							isScreenshotMsg={false}
+							isDisplayRuleRaw={false}
+						/>
+					</div>
+				)}
+			</StateSaver>
+		);
+	},
+);
 
 type CurrentSSEValues = {
 	[key in keyof MessageFilterState]: string;
@@ -223,7 +229,9 @@ const EmbeddedMessages = () => {
 	}, [compoundFilterRow, sseFiltersErrorConfig]);
 
 	const renderMsg = useCallback(
-		(index: number, message: EventMessage) => <EmbeddedMessageCard message={message} />,
+		(message: EventMessage, displayType: CardDisplayType) => (
+			<EmbeddedMessageCard message={message} displayType={displayType} key={message.id} />
+		),
 		[],
 	);
 
@@ -307,8 +315,8 @@ const EmbeddedMessages = () => {
 				<StateSaverProvider>
 					<MessagesVirtualizedList
 						className='messages-list__items'
-						scrolledIndex={scrolledIndex}
 						itemRenderer={renderMsg}
+						scrolledIndex={scrolledIndex}
 						loadNextMessages={dataStore.getNextMessages}
 						loadPrevMessages={dataStore.getPreviousMessages}
 						isLive={dataStore.updateStore.isActive}
@@ -338,7 +346,7 @@ const MessagesListSpinner = ({ isLoading }: SpinnerProps) => {
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
-	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
+	itemRenderer: (message: EventMessage, displayType: CardDisplayType) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
 		 selected several times by different entities)
@@ -360,12 +368,24 @@ const MessagesVirtualizedList = observer((props: Props) => {
 	const {
 		className,
 		overscan = 3,
-		itemRenderer,
 		loadPrevMessages,
 		loadNextMessages,
 		scrolledIndex,
 		isLive,
+		itemRenderer,
 	} = props;
+
+	const scrollerRef = React.useRef<HTMLDivElement | null>(null);
+
+	const messagesListWidth = useElementSize(scrollerRef.current)?.width;
+
+	const displayType = React.useMemo(
+		() =>
+			messagesListWidth && messagesListWidth < COLLAPSED_MESSAGES_WIDTH
+				? CardDisplayType.MINIMAL
+				: CardDisplayType.FULL,
+		[messagesListWidth],
+	);
 
 	React.useEffect(() => {
 		if (scrolledIndex !== null) {
@@ -416,13 +436,18 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
 	};
 
+	const handleScrollerRef = React.useCallback(ref => {
+		scrollerRef.current = ref;
+	}, []);
+
 	return (
 		<Virtuoso
 			data={messagesStore.dataStore.messages}
 			firstItemIndex={messagesStore.dataStore.startIndex}
 			ref={virtuoso}
+			scrollerRef={handleScrollerRef}
 			overscan={overscan}
-			itemContent={itemRenderer}
+			itemContent={(index, message) => itemRenderer(message, displayType)}
 			style={{ height: '100%', width: '100%' }}
 			className={className}
 			onScroll={onScroll}

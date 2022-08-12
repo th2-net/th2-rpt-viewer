@@ -16,7 +16,6 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import MessageCard from '../message-card/MessageCard';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
 import SplashScreen from '../../SplashScreen';
 import Empty from '../../util/Empty';
@@ -24,6 +23,8 @@ import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../../hooks'
 import StateSaverProvider from '../../util/StateSaverProvider';
 import '../../../styles/messages.scss';
 import { EventMessage } from '../../../models/EventMessage';
+import CardDisplayType from '../../../util/CardDisplayType';
+import MessageCard from '../message-card/MessageCard';
 
 export type MessagesHeights = { [index: number]: number };
 
@@ -31,8 +32,8 @@ function MessageCardList() {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 
-	const renderMsg = React.useCallback((index: number, message: EventMessage) => {
-		return <MessageCard message={message} key={index} />;
+	const renderMsg = React.useCallback((message: EventMessage, displayType: CardDisplayType) => {
+		return <MessageCard message={message} displayType={displayType} key={message.id} />;
 	}, []);
 
 	if (messagesDataStore.isError) {
