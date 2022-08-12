@@ -64,10 +64,6 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 		nextValue = nextValue.trim();
 		const { values, setValues, setCurrentValue } = config;
 		setCurrentValue('');
-		if (values.length > 0) {
-			setValues([...values, nextValue]);
-			return;
-		}
 		setValues([...values, nextValue]);
 	};
 

@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
 import { createBemBlock } from '../../../helpers/styleCreators';
 import {
 	DateTimeInputType,

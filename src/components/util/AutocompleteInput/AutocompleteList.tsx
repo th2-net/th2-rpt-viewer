@@ -219,7 +219,7 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 					</div>
 				);
 			},
-			[list, focusedOption],
+			[list, focusedOption, handleSelect],
 		);
 
 		const listHeight = Math.min(
