@@ -82,6 +82,7 @@ export default class SearchWorkspaceStore {
 		if (isEventMessage(resultItem)) {
 			initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(
 				timestampToNumber(resultItem.timestamp),
+				bookId,
 				resultItem,
 			);
 		} else {
@@ -107,7 +108,7 @@ export default class SearchWorkspaceStore {
 				}
 				break;
 			case ActionType.MESSAGE:
-				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(timestamp);
+				initialWorkspaceState = this.workspacesStore.getInitialWorkspaceByMessage(timestamp, '');
 				break;
 			default:
 				break;

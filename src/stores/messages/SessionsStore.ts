@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, reaction, runInAction } from 'mobx';
+import { action, observable, reaction, runInAction, computed } from 'mobx';
 import { indexedDbLimits, IndexedDbStores } from '../../api/indexedDb';
 import { sortByTimestamp } from '../../helpers/date';
 import { Book } from '../../models/Books';
@@ -55,6 +55,14 @@ export class SessionsStore {
 		reaction(() => this.booksStore.selectedBook, this.loadMessageSessions, {
 			fireImmediately: true,
 		});
+	}
+
+	@computed
+	public get bookStreams() {
+		const userSubmittedSessions = this.sessions
+			.filter(session => this.messageSessions.includes(session.session))
+			.map(s => s.session);
+		return [...new Set([...userSubmittedSessions, ...this.messageSessions])];
 	}
 
 	private loadMessageSessions = async (book: Book) => {

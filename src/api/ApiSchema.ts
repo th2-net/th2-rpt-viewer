@@ -90,12 +90,15 @@ export interface MessageApiSchema {
 		filter: MatchMessageParams,
 		abortSignal?: AbortSignal,
 	) => Promise<boolean>;
-	getResumptionMessageIds: (params: {
-		streams: string[];
-		startTimestamp?: number;
-		messageId?: string;
-		abortSignal?: AbortSignal;
-	}) => Promise<DirectionalStreamInfo>;
+	getResumptionMessageIds: (
+		params: {
+			streams: string[];
+			bookId: string;
+			startTimestamp?: number;
+			messageId?: string;
+		},
+		abortSignal?: AbortSignal,
+	) => Promise<DirectionalStreamInfo>;
 }
 
 export interface BooksApiSchema {

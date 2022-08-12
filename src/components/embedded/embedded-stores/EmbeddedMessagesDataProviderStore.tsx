@@ -162,13 +162,16 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 		try {
 			this.messageAC = new AbortController();
-			messageIds = await this.api.messages.getResumptionMessageIds({
-				streams: queryParams.stream,
-				abortSignal: this.messageAC.signal,
-				...(this.messagesStore.selectedMessageId
-					? { messageId: this.messagesStore.selectedMessageId.valueOf() }
-					: { startTimestamp }),
-			});
+			messageIds = await this.api.messages.getResumptionMessageIds(
+				{
+					streams: queryParams.stream,
+					bookId: queryParams.bookId,
+					...(this.messagesStore.selectedMessageId
+						? { messageId: this.messagesStore.selectedMessageId.valueOf() }
+						: { startTimestamp }),
+				},
+				this.messageAC.signal,
+			);
 		} catch (error) {
 			if (!isAbortError(error)) {
 				this.isError = true;

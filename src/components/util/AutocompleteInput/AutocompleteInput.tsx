@@ -92,7 +92,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 			}
 			setAutocompleteAnchor(null);
 		},
-		[value, isFocused],
+		[value, isFocused, onSubmit],
 	);
 
 	useOutsideClickListener(ref, onClickOutside);
@@ -171,7 +171,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 					value={value.trim()}
 					anchor={autocompleteAnchor}
 					onSelect={onAutocompleteSelect}
-					alwaysShow={alwaysShowAutocomplete}
+					alwaysShow={isFocused && alwaysShowAutocomplete}
 					minWidth={autocompleteListMinWidth}
 				/>
 			)}

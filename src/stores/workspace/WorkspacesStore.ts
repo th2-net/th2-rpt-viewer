@@ -130,6 +130,7 @@ export default class WorkspacesStore {
 
 	public getInitialWorkspaceByMessage = (
 		timestamp: number,
+		bookId: string,
 		targetMessage?: EventMessage,
 	): WorkspaceInitialState => {
 		const requestInfo = this.searchWorkspace.searchStore.currentSearch?.request;
@@ -176,7 +177,7 @@ export default class WorkspacesStore {
 
 	public onGraphSearchResultSelect = (item: GraphItem) => {
 		// s is scope for event and session for message
-		const [bookId, s] = getGraphItemId(item).split(':');
+		const [bookId, scope] = getGraphItemId(item).split(':');
 		const book = this.booksStore.books.find(b => b.name === bookId);
 
 		if (!book) return;
@@ -188,14 +189,14 @@ export default class WorkspacesStore {
 				const workspace = this.createWorkspace({
 					events: {
 						targetEvent: item,
-						scope: s,
+						scope,
 						range: timeRange,
 					},
 					timeRange,
 				});
 				this.addWorkspace(workspace);
 			} else {
-				this.activeWorkspace.eventsStore.goToEvent(item, s);
+				this.activeWorkspace.eventsStore.goToEvent(item, scope);
 			}
 		}
 

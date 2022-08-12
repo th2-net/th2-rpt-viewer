@@ -544,7 +544,7 @@ export default class EventsStore {
 	};
 
 	@action
-	public applyScope = (scope: string) => {
+	public applyScope = (scope: string | null) => {
 		this.scope = scope;
 		this.eventDataStore.onScopeChange(scope);
 	};
@@ -579,7 +579,8 @@ export default class EventsStore {
 				this.scopeAC.abort();
 			}
 			const scopeList = await this.api.books.getBookScope(selectedBook.name, this.scopeAC.signal);
-			this.applyScope(scopeList[0]);
+			const scope = scopeList.find(Boolean);
+			this.applyScope(scope || null);
 		} catch (error) {
 			if (!isAbortError(error)) {
 				console.error('Failed to load scope list');

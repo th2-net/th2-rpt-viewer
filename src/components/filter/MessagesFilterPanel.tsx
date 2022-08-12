@@ -213,15 +213,6 @@ const MessagesFilterPanel = () => {
 			});
 	}, [searchStore.messagesFilterInfo, messagesHistory, filter, currentValues]);
 
-	const sessionsAutocomplete: string[] = React.useMemo(() => {
-		return [
-			...sessionsStore.sessions.map(s => s.session),
-			...messagesStore.messageSessions.filter(
-				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
-			),
-		];
-	}, [messagesStore.messageSessions, sessionsStore.sessions]);
-
 	const areSessionInvalid: boolean = React.useMemo(() => {
 		return (
 			streams.length === 0 ||
@@ -237,14 +228,14 @@ const MessagesFilterPanel = () => {
 			setValues: setStreams,
 			currentValue: currentStream,
 			setCurrentValue: setCurrentStream,
-			autocompleteList: sessionsAutocomplete,
+			autocompleteList: sessionsStore.bookStreams,
 			validateBubbles: true,
 			isInvalid: areSessionInvalid,
 			required: true,
 			wrapperClassName: 'messages-window-header__session-filter scrollable',
 			hint: 'Session name',
 		};
-	}, [streams, setStreams, currentStream, setCurrentStream, sessionsAutocomplete]);
+	}, [streams, setStreams, currentStream, setCurrentStream, sessionsStore.bookStreams]);
 
 	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
 		return {

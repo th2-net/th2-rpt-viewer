@@ -345,6 +345,7 @@ export default class MessagesStore {
 
 	public onSelectedBookChange = () => {
 		this.selectedMessageId = null;
-		this.dataStore.loadMessages();
+		this.dataStore.stopMessagesLoading();
+		this.dataStore.resetState();
 	};
 }

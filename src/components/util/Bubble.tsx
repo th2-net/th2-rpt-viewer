@@ -102,17 +102,20 @@ const Bubble = React.forwardRef<BubbleRef, Props>((props, ref) => {
 		}
 	};
 
-	const inputOnSubmit = (nextValue: string) => {
-		// eslint-disable-next-line no-param-reassign
-		nextValue = nextValue.trim();
-		setCurrentValue(nextValue);
-		if (nextValue.length === 0) {
-			onRemove();
-			return;
-		}
-		onSubmit(nextValue);
-		setIsEditing(false);
-	};
+	const inputOnSubmit = React.useCallback(
+		(nextValue: string) => {
+			// eslint-disable-next-line no-param-reassign
+			nextValue = nextValue.trim();
+			setCurrentValue(nextValue);
+			if (nextValue.length === 0) {
+				onRemove();
+				return;
+			}
+			onSubmit(nextValue);
+			setIsEditing(false);
+		},
+		[onSubmit],
+	);
 
 	const bubbleSwitch: React.KeyboardEventHandler<HTMLInputElement> = e => {
 		if (e.target instanceof HTMLInputElement) {
