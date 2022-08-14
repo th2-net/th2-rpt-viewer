@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
-import { MessageFilterState } from 'modules/search/models/Search';
+import MessagesFilter from 'models/filter/MessagesFilter';
 import { BodyFilter, getFiltersEntries, wrapString } from 'helpers/filters';
 import { isRangesIntersect, trimRange } from 'helpers/range';
 import { splitOnReadableParts } from 'helpers/stringUtils';
@@ -42,12 +42,12 @@ function SimpleMessageRaw({
 	const convertedArr = splitOnReadableParts(humanReadableContent);
 
 	const filterEntries: Array<BodyFilter> = React.useMemo(() => {
-		if (!applyFilterToBody || !(currentSearch?.request.filters as MessageFilterState).bodyBinary)
+		if (!applyFilterToBody || !(currentSearch?.request.filters as MessagesFilter).bodyBinary)
 			return [];
 
 		return getFiltersEntries(
 			humanReadableContent,
-			(currentSearch?.request.filters as MessageFilterState).bodyBinary.values,
+			(currentSearch?.request.filters as MessagesFilter).bodyBinary.values,
 			selectedBodyBinaryFilter || undefined,
 		);
 	}, [currentSearch?.request.filters]);

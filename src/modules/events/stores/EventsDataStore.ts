@@ -16,6 +16,7 @@
 
 import { action, computed, IReactionDisposer, observable, reaction, when } from 'mobx';
 import { nanoid } from 'nanoid';
+import EventsFilter from 'models/filter/EventsFilter';
 import ApiSchema from '../../../api/ApiSchema';
 import {
 	convertEventActionToEventTreeNode,
@@ -27,7 +28,6 @@ import { EventTreeNode } from '../../../models/EventAction';
 import notificationsStore from '../../../stores/NotificationsStore';
 import EventsFilterStore from './EventsFilterStore';
 import EventsStore from './EventsStore';
-import EventsFilter from '../models/EventsFilter';
 import { TimeRange } from '../../../models/Timestamp';
 import EventsSSEChannel from '../../../stores/SSEChannel/EventsSSEChannel';
 import { isAbortError } from '../../../helpers/fetch';

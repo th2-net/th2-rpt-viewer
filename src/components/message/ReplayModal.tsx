@@ -18,33 +18,33 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'framer-motion';
 import moment from 'moment';
-import { MessageFilterState, MultipleStringFilter } from 'modules/search/models/Search';
-import { DATE_TIME_INPUT_MASK, TIME_INPUT_MASK } from 'models/util/filterInputs';
+import { TIME_INPUT_MASK, DATE_TIME_INPUT_MASK } from 'models/util/filterInputs';
+import { SearchDirection } from 'models/SearchDirection';
 import {
-	CompoundFilterRow,
 	FilterRowConfig,
 	FilterRowMultipleStringsConfig,
-	FilterRowTogglerConfig,
 	FilterRowTimeWindowConfig,
 	DateTimeMask,
 	TimeInputType,
 } from '../../models/filter/FilterInputs';
-import { getMessagesSSEParamsFromFilter, MessagesFilterInfo } from '../../api/sse';
+import { getMessagesSSEParamsFromFilter, MessageFilterKeys } from '../../api/sse';
 import { useMessagesStore, useOutsideClickListener } from '../../hooks';
-import { useFilterConfigStore } from '../../hooks/useFilterConfigStore';
-import FilterRow from '../filter/row';
 import { copyTextToClipboard } from '../../helpers/copyHandler';
 import { ModalPortal } from '../util/Portal';
-import { prettifyCamelcase } from '../../helpers/stringUtils';
-import { SearchDirection } from '../../models/SearchDirection';
+import { useFilterConfig } from '../../hooks/useFilterConfig';
+import { FilterRows } from '../filter/FilerRows';
 
-type CurrentSSEValues = {
-	[key in keyof MessageFilterState]: string;
-};
+const filterOrder: MessageFilterKeys[] = [
+	'attachedEventIds',
+	'type',
+	'body',
+	'bodyBinary',
+	'message_generic',
+];
 
-function MessageReplayModal() {
-	const filterConfigStore = useFilterConfigStore();
+function ReplayModal() {
 	const messagesStore = useMessagesStore();
+	const filterStore = messagesStore.filterStore;
 
 	const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -54,15 +54,6 @@ function MessageReplayModal() {
 
 	const [drag, setDrag] = React.useState(false);
 	const [mouseDown, setMouseDown] = React.useState(false);
-
-	const [sseFilter, setSSEFilter] = React.useState<MessageFilterState | null>(null);
-	const [currentValues, setCurrentValues] = React.useState<CurrentSSEValues>({
-		type: '',
-		body: '',
-		attachedEventIds: '',
-		bodyBinary: '',
-		text: '',
-	});
 
 	const [startTimestamp, setStartTimestamp] = React.useState<null | number>(null);
 	const [endTimestamp, setEndTimestamp] = React.useState<null | number>(null);
@@ -88,106 +79,11 @@ function MessageReplayModal() {
 		};
 	}, [isCopied]);
 
-	React.useEffect(() => {
-		setSSEFilter(messagesStore.filterStore.sseMessagesFilter);
-		setCurrentValues({
-			type: '',
-			body: '',
-			attachedEventIds: '',
-			bodyBinary: '',
-			text: '',
-		});
-	}, [messagesStore.filterStore.sseMessagesFilter]);
-
-	const compoundFilterRow: Array<CompoundFilterRow> = React.useMemo(() => {
-		if (!sseFilter) return [];
-		// eslint-disable-next-line no-underscore-dangle
-		const _sseFilter = sseFilter;
-		function getState(
-			name: keyof MessageFilterState,
-		): MessageFilterState[keyof MessageFilterState] {
-			return _sseFilter[name];
-		}
-
-		function getValuesUpdater<T extends keyof MessageFilterState>(name: T) {
-			return function valuesUpdater<K extends MessageFilterState[T]>(values: K) {
-				setSSEFilter(prevState => {
-					if (prevState !== null) {
-						return {
-							...prevState,
-							[name]: { ...prevState[name], values },
-						};
-					}
-
-					return prevState;
-				});
-			};
-		}
-
-		function getToggler<T extends keyof MessageFilterState>(
-			filterName: T,
-			paramName: keyof MultipleStringFilter,
-		) {
-			return function toggler() {
-				setSSEFilter(prevState => {
-					if (prevState !== null) {
-						return {
-							...prevState,
-							[filterName]: {
-								...prevState[filterName],
-								[paramName]: !prevState[filterName][paramName],
-							},
-						};
-					}
-
-					return prevState;
-				});
-			};
-		}
-
-		const setCurrentValue = (name: keyof MessageFilterState) => (value: string) => {
-			setCurrentValues(prevState => ({ ...prevState, [name]: value }));
-		};
-
-		return filterConfigStore.messagesFilterInfo.map<CompoundFilterRow>(
-			(filter: MessagesFilterInfo) => {
-				const state = getState(filter.name);
-				const label = prettifyCamelcase(filter.name);
-				return state
-					? filter.parameters.map<FilterRowTogglerConfig | FilterRowMultipleStringsConfig>(
-							param => {
-								switch (param.type.value) {
-									case 'boolean':
-										return {
-											id: `${filter.name}-${param.name}`,
-											label: param.name === 'negative' ? label : '',
-											disabled: false,
-											type: 'toggler',
-											value: state[param.name as keyof MultipleStringFilter],
-											toggleValue: getToggler(
-												filter.name,
-												param.name as keyof MultipleStringFilter,
-											),
-											options: param.name === 'negative' ? ['excl', 'incl'] : ['and', 'or'],
-											className: 'filter-row__toggler',
-										} as any;
-									default:
-										return {
-											id: filter.name,
-											label: '',
-											type: 'multiple-strings',
-											values: state.values,
-											setValues: getValuesUpdater(filter.name),
-											currentValue: currentValues[filter.name as keyof MessageFilterState],
-											setCurrentValue: setCurrentValue(filter.name),
-										};
-								}
-							},
-					  )
-					: [];
-			},
-		);
-	}, [filterConfigStore.messagesFilterInfo, sseFilter, setSSEFilter, currentValues]);
+	const { config, setFilter } = useFilterConfig({
+		filterInfo: filterStore.filterInfo,
+		filter: filterStore.sseMessagesFilter,
+		order: filterOrder,
+	});
 
 	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(
 		() => ({
@@ -241,8 +137,8 @@ function MessageReplayModal() {
 	);
 
 	const filterConfig: Array<FilterRowConfig> = React.useMemo(
-		() => [timestampFromConfig, sessionFilterConfig, ...compoundFilterRow],
-		[compoundFilterRow, timestampFromConfig, sessionFilterConfig],
+		() => [timestampFromConfig, sessionFilterConfig, ...config],
+		[config, timestampFromConfig, sessionFilterConfig],
 	);
 
 	const textToCopy = React.useMemo(() => {
@@ -252,49 +148,25 @@ function MessageReplayModal() {
 			'backend/search/sse/messages/',
 		].join('');
 
-		let filter = sseFilter;
-
-		if (filter) {
-			filter = Object.entries(filter).reduce((acc, currentFilter) => {
-				const [filterString, filterValue] = currentFilter;
-				const currentValue = currentValues[filterString as keyof MessageFilterState];
-
-				return {
-					...acc,
-					[filterString]: {
-						...filterValue,
-						values: [...filterValue.values, currentValue].filter(Boolean),
-					},
-				};
-			}, {} as MessageFilterState);
-		}
-
 		const params = getMessagesSSEParamsFromFilter(
-			filter,
-			[...streams, currentStream].filter(Boolean),
+			filterStore.sseMessagesFilter,
+			streams,
 			startTimestamp,
 			endTimestamp,
 			SearchDirection.Next,
 		).toString();
 		return `${link}?${params}`;
-	}, [streams, startTimestamp, endTimestamp, sseFilter, currentStream, currentValues]);
+	}, [streams, startTimestamp, endTimestamp, currentStream]);
 
 	function toggleReplayModal() {
 		if (!isOpen) {
-			const { timestampTo, timestampFrom } = messagesStore.filterStore.filter;
+			const { timestampTo, timestampFrom } = messagesStore.filterStore.params;
 
-			setStreams(messagesStore.filterStore.filter.streams.slice());
+			setStreams(messagesStore.filterStore.params.streams.slice());
 			setCurrentStream('');
 			setStartTimestamp(timestampFrom || moment().subtract(30, 'minutes').valueOf());
 			setEndTimestamp(timestampTo);
-			setCurrentValues({
-				type: '',
-				body: '',
-				attachedEventIds: '',
-				bodyBinary: '',
-				text: '',
-			});
-			setSSEFilter(messagesStore.filterStore.sseMessagesFilter);
+			setFilter(messagesStore.filterStore.sseMessagesFilter);
 			setIsOpen(true);
 		} else {
 			setIsOpen(false);
@@ -332,20 +204,7 @@ function MessageReplayModal() {
 					<button className='replay__close-button' onClick={() => setIsOpen(false)}>
 						<i></i>
 					</button>
-					{filterConfig.map(rowConfig =>
-						Array.isArray(rowConfig) ? (
-							<div
-								onMouseOver={() => setDrag(false)}
-								className='filter__compound'
-								key={rowConfig.map(c => c.id).join('-')}>
-								{rowConfig.map(_rowConfig => (
-									<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
-								))}
-							</div>
-						) : (
-							<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
-						),
-					)}
+					<FilterRows config={filterConfig} />
 					<p className='replay__generated-text'>
 						<a href={textToCopy} rel='noopener noreferrer' target='_blank'>
 							{textToCopy}
@@ -366,4 +225,4 @@ function MessageReplayModal() {
 	);
 }
 
-export default observer(MessageReplayModal);
+export default observer(ReplayModal);

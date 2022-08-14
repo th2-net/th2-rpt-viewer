@@ -32,7 +32,7 @@ export default class MessagesUpdateStore {
 
 	@computed
 	public get canActivate() {
-		return this.messagesStore.filterStore.filter.streams.length > 0;
+		return this.messagesStore.filterStore.params.streams.length > 0;
 	}
 
 	@action
@@ -41,7 +41,7 @@ export default class MessagesUpdateStore {
 		this.isActive = true;
 		this.messagesDataStore.resetState();
 		this.messagesStore.selectedMessageId = null;
-		this.messagesStore.filterStore.filter.timestampTo = Date.now();
+		this.messagesStore.filterStore.params.timestampTo = Date.now();
 
 		this.messagesDataStore.loadMessages({
 			onClose: async messages => {

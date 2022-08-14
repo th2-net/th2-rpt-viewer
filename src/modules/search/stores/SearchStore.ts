@@ -32,6 +32,8 @@ import WorkspacesStore from 'stores/workspace/WorkspacesStore';
 import FiltersHistoryStore from 'stores/FiltersHistoryStore';
 import { SessionHistoryStore } from 'stores/messages/SessionHistoryStore';
 import { EventBodyPayload } from 'modules/events/models/EventBodyPayload';
+import EventsFilter from 'models/filter/EventsFilter';
+import MessagesFilter from 'models/filter/MessagesFilter';
 import { getItemAt } from 'helpers/array';
 import ApiSchema from 'api/ApiSchema';
 import {
@@ -52,12 +54,7 @@ import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from 'he
 import { EventAction } from 'models/EventAction';
 import { EventMessage } from 'models/EventMessage';
 import { isSearchHistoryEntity } from '../helpers';
-import {
-	EventFilterState,
-	FilterState,
-	MessageFilterState,
-	SearchPanelType,
-} from '../models/Search';
+import { FilterState, SearchPanelType } from '../models/Search';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -92,7 +89,7 @@ export type SearchHistory = {
 export type StateHistory = {
 	type: SearchPanelType;
 	state: SearchPanelFormState;
-	filters: EventFilterState | MessageFilterState;
+	filters: EventsFilter | MessagesFilter;
 };
 
 export type SearchHistoryState<T> = {
@@ -171,9 +168,9 @@ export class SearchStore implements ISearchStore {
 					this.formType = this.currentSearch.request.type;
 					this.searchForm = this.currentSearch.request.state;
 					if (this.currentSearch.request.type === 'event') {
-						this.eventsFilter = this.currentSearch.request.filters as EventFilterState;
+						this.eventsFilter = this.currentSearch.request.filters as EventsFilter;
 					} else {
-						this.messagesFilter = this.currentSearch.request.filters as MessageFilterState;
+						this.messagesFilter = this.currentSearch.request.filters as MessagesFilter;
 					}
 				}
 			},
@@ -190,9 +187,9 @@ export class SearchStore implements ISearchStore {
 		next: null,
 	};
 
-	@observable eventsFilter: EventFilterState | null = null;
+	@observable eventsFilter: EventsFilter | null = null;
 
-	@observable messagesFilter: MessageFilterState | null = null;
+	@observable messagesFilter: MessagesFilter | null = null;
 
 	@observable messageSessions: string[] = this.filterConfigStore.messageSessions.slice();
 
@@ -376,7 +373,7 @@ export class SearchStore implements ISearchStore {
 		this.resetSearchProgressState();
 	};
 
-	@action setEventsFilter = (patch: Partial<EventFilterState>) => {
+	@action setEventsFilter = (patch: Partial<EventsFilter>) => {
 		if (this.eventsFilter) {
 			this.eventsFilter = {
 				...this.eventsFilter,
@@ -387,7 +384,7 @@ export class SearchStore implements ISearchStore {
 		this.resetSearchProgressState();
 	};
 
-	@action setMessagesFilter = (patch: Partial<MessageFilterState>) => {
+	@action setMessagesFilter = (patch: Partial<MessagesFilter>) => {
 		if (this.messagesFilter) {
 			this.messagesFilter = {
 				...this.messagesFilter,
@@ -439,7 +436,17 @@ export class SearchStore implements ISearchStore {
 		this.resetSearchProgressState();
 	};
 
-	@action startSearch = (loadMore = false) => {
+	@action startSearch = (
+		loadMore = false,
+		filters: Partial<{
+			eventsFilter: EventsFilter | null;
+			messagesFilter: MessagesFilter | null;
+		}> = {},
+	) => {
+		const { eventsFilter = this.eventsFilter, messagesFilter = this.messagesFilter } = filters;
+		this.eventsFilter = eventsFilter;
+		this.messagesFilter = messagesFilter;
+
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
 		if (this.isSearching || !filterParams) return;
 		const isPaused = this.isPaused;
@@ -487,23 +494,23 @@ export class SearchStore implements ISearchStore {
 		const filtersToAdd = !this.filters
 			? []
 			: (this.filters.info as EventsFiltersInfo[])
-					.filter((info: SSEFilterInfo) => getFilter(info.name).values.length !== 0)
+					.filter((info: SSEFilterInfo) => getFilter(info.name as any).values.length !== 0)
 					.filter(
 						(info: SSEFilterInfo) =>
-							info.name !== 'status' || getFilter(info.name).values !== 'any',
+							info.name !== 'status' || getFilter(info.name as any).values !== 'any',
 					)
 					.map((info: SSEFilterInfo) => info.name);
 
-		const filterValues: [string, string | string[]][] = filtersToAdd.map(filter => [
+		const filterValues: [string, string | string[]][] = filtersToAdd.map((filter: any) => [
 			`${filter}-${filter === 'status' ? 'value' : 'values'}`,
 			getFilter(filter).values,
 		]);
 
-		const filterInclusion = filtersToAdd.map(filter =>
+		const filterInclusion = filtersToAdd.map((filter: any) =>
 			getFilter(filter).negative ? [`${filter}-negative`, getFilter(filter).negative] : [],
 		);
 
-		const filterConjunct = filtersToAdd.map(filter =>
+		const filterConjunct = filtersToAdd.map((filter: any) =>
 			getFilter(filter).conjunct ? [`${filter}-conjunct`, getFilter(filter).conjunct] : [],
 		);
 
@@ -553,10 +560,10 @@ export class SearchStore implements ISearchStore {
 			this.searchChannel[direction] = searchChannel;
 
 			if (this.formType === 'event') {
-				this.filtersHistory.onEventFilterSubmit(filterParams as EventFilterState);
+				this.filtersHistory.onEventFilterSubmit(filterParams as EventsFilter);
 			} else {
 				this.sessionsStore.saveSessions(stream);
-				this.filtersHistory.onMessageFilterSubmit(filterParams as MessageFilterState);
+				this.filtersHistory.onMessageFilterSubmit(filterParams as MessagesFilter);
 			}
 
 			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));
@@ -717,7 +724,7 @@ export class SearchStore implements ISearchStore {
 		this.searchProgressState[searchDirection].completed = completed;
 	}
 
-	@action resetSearchProgressState() {
+	@action resetSearchProgressState = () => {
 		this.searchProgressState = {
 			previous: {
 				completed: false,
@@ -737,7 +744,7 @@ export class SearchStore implements ISearchStore {
 			previous: null,
 			next: null,
 		};
-	}
+	};
 
 	@action
 	private setMessagesSessions = (sessions: string[]) => {

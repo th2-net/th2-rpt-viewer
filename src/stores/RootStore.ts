@@ -15,7 +15,8 @@
  ***************************************************************************** */
 
 import { nanoid } from 'nanoid';
-import { EventFilterState, FilterState, MessageFilterState } from 'modules/search/models/Search';
+import EventsFilter from 'models/filter/EventsFilter';
+import MessagesFilter from 'models/filter/MessagesFilter';
 import { IFilterConfigStore } from 'models/Stores';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
@@ -72,20 +73,18 @@ export default class RootStore {
 			const messageId = searchParams.get('messageId');
 
 			if (filtersToPin) {
-				const filtersHistoryItem: FiltersHistoryType<FilterState> = JSON.parse(
+				const filtersHistoryItem: FiltersHistoryType<EventsFilter | MessagesFilter> = JSON.parse(
 					window.atob(filtersToPin),
 				);
 				const { type, filters } = filtersHistoryItem;
 
 				if (type === 'event') {
-					this.filtersHistoryStore
-						.onEventFilterSubmit(filters as EventFilterState, true)
-						.then(() => {
-							this.filtersHistoryStore.showSuccessNotification(type);
-						});
+					this.filtersHistoryStore.onEventFilterSubmit(filters as EventsFilter, true).then(() => {
+						this.filtersHistoryStore.showSuccessNotification(type);
+					});
 				} else {
 					this.filtersHistoryStore
-						.onMessageFilterSubmit(filters as MessageFilterState, true)
+						.onMessageFilterSubmit(filters as MessagesFilter, true)
 						.then(() => {
 							this.filtersHistoryStore.showSuccessNotification(type);
 						});

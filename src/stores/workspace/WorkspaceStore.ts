@@ -123,9 +123,9 @@ export default class WorkspaceStore {
 		const eventStoreState = toJS(this.eventsStore.urlState);
 
 		const messagesStoreState = {
-			timestampFrom: this.messagesStore.filterStore.filter.timestampFrom,
-			timestampTo: this.messagesStore.filterStore.filter.timestampTo,
-			streams: this.messagesStore.filterStore.filter.streams,
+			timestampFrom: this.messagesStore.filterStore.params.timestampFrom,
+			timestampTo: this.messagesStore.filterStore.params.timestampTo,
+			streams: this.messagesStore.filterStore.params.streams,
 			isSoftFilter: this.messagesStore.filterStore.isSoftFilter,
 			sse: this.messagesStore.filterStore.sseMessagesFilter,
 		};
@@ -251,7 +251,6 @@ export default class WorkspaceStore {
 						timestampTo: timestamp,
 					},
 					null,
-					false,
 				);
 				break;
 			default:

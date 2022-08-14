@@ -15,14 +15,15 @@
  ***************************************************************************** */
 
 import { observable, toJS } from 'mobx';
-import { EventFilterState, FilterState, MessageFilterState } from 'modules/search/models/Search';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
 import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
 import { areArraysEqual } from './array';
 import { notEmpty } from './object';
 import { getRangesIntersection, isInsideRange, isRangesIntersect, isValidRange } from './range';
 
-export function getNonEmptyFilters(filter: Partial<FilterState>) {
+export function getNonEmptyFilters(filter: Partial<MessagesFilter | EventsFilter>) {
 	return Object.fromEntries(
 		Object.entries(toJS(observable(filter)))
 			.filter(([_, value]) => value && value.values && value.values.length > 0)
@@ -40,19 +41,17 @@ export function getNonEmptyFilters(filter: Partial<FilterState>) {
 	);
 }
 
-export function isEventsFilterHistory(
-	filter: unknown,
-): filter is FiltersHistoryType<EventFilterState> {
-	return notEmpty(filter) && (filter as FiltersHistoryType<EventFilterState>).type === 'event';
+export function isEventsFilterHistory(filter: unknown): filter is FiltersHistoryType<EventsFilter> {
+	return notEmpty(filter) && (filter as FiltersHistoryType<EventsFilter>).type === 'event';
 }
 
 export function isMessagesFilterHistory(
 	filter: unknown,
-): filter is FiltersHistoryType<MessageFilterState> {
-	return notEmpty(filter) && (filter as FiltersHistoryType<MessageFilterState>).type === 'message';
+): filter is FiltersHistoryType<MessagesFilter> {
+	return notEmpty(filter) && (filter as FiltersHistoryType<MessagesFilter>).type === 'message';
 }
 
-export function isEmptyFilter(filter: Partial<EventFilterState>) {
+export function isEmptyFilter(filter: Partial<EventsFilter>) {
 	return !Object.values(filter)
 		.filter(notEmpty)
 		.some(filterValues => filterValues.values.length > 0);

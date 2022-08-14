@@ -1,5 +1,5 @@
 /** ****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+ * Copyright 2022-2022 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,24 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import MessagesFilter from 'models/filter/MessagesFilter';
-import EventsFilter from 'models/filter/EventsFilter';
-import { EntityType } from 'models/EventAction';
+import React from 'react';
+import { FilterRowConfig } from '../../models/filter/FilterInputs';
+import FilterRow from './row';
 
-export type SearchPanelType = EntityType;
-
-export type FilterState = EventsFilter | MessagesFilter;
+export function FilterRows({ config }: { config: FilterRowConfig[] }) {
+	return (
+		<>
+			{config.map(rowConfig =>
+				Array.isArray(rowConfig) ? (
+					<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
+						{rowConfig.map(_rowConfig => (
+							<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
+						))}
+					</div>
+				) : (
+					<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
+				),
+			)}
+		</>
+	);
+}

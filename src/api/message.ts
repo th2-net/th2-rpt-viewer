@@ -72,7 +72,9 @@ const messageHttpApi: MessageApiSchema = {
 			startTimestamp: startTimestamp ? new Date(startTimestamp).toISOString() : startTimestamp,
 			messageId,
 		});
-		const res = await fetch(`backend/messageIds/?${params}`, { signal });
+		const res = await fetch(`backend/messageIds/?${params}`, {
+			signal,
+		});
 		if (res.ok) return res.json();
 
 		console.error(res.statusText);

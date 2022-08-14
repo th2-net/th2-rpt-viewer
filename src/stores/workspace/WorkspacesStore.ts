@@ -20,9 +20,9 @@ import { IBookmarksStore, IFilterConfigStore } from 'models/Stores';
 import ApiSchema from 'api/ApiSchema';
 import { DbData } from 'api/indexedDb';
 import { SearchStore } from 'modules/search/stores/SearchStore';
-import { MessageFilterState } from 'modules/search/models/Search';
 import { SessionHistoryStore } from 'stores/messages/SessionHistoryStore';
 import MessageDisplayRulesStore from 'stores/MessageDisplayRulesStore';
+import MessagesFilter from 'models/filter/MessagesFilter';
 import { getRangeFromTimestamp } from '../../helpers/date';
 import WorkspaceStore, { WorkspaceUrlState, WorkspaceInitialState } from './WorkspaceStore';
 import TabsStore from './TabsStore';
@@ -93,7 +93,7 @@ export default class WorkspacesStore {
 		targetMessage?: EventMessage,
 	): WorkspaceInitialState => {
 		const requestInfo = this.searchStore.currentSearch?.request;
-		const filters: MessageFilterState | null = (requestInfo?.filters as MessageFilterState) || null;
+		const filters: MessagesFilter | null = (requestInfo?.filters as MessagesFilter) || null;
 
 		return {
 			messages: {

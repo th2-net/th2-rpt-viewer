@@ -32,7 +32,8 @@ import {
 	VerificationPayloadField,
 } from 'modules/events/models/EventBodyPayload';
 import { EventMessage } from 'models/EventMessage';
-import { EventFilterState, MessageFilterState } from '../models/Search';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
 import { FilterEntry, SearchResult } from '../stores/SearchStore';
 
 const DETAIL_VALUE_LENGTH_LIMIT = 40;
@@ -73,7 +74,7 @@ const getSortedEntries = (
 type SearchResultItemProps = {
 	result: SearchResult;
 	highlighted?: boolean;
-	filters: EventFilterState | MessageFilterState;
+	filters: EventsFilter | MessagesFilter;
 	onResultClick: (
 		item: SearchResult,
 		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
@@ -108,7 +109,7 @@ const SearchResultItem = ({
 					[
 					{ids
 						.filter(id =>
-							(filters as EventFilterState).attachedMessageId.values.some(filterId =>
+							(filters as EventsFilter).attachedMessageId.values.some(filterId =>
 								id.includes(filterId),
 							),
 						)
@@ -344,7 +345,7 @@ const SearchResultItem = ({
 			rawMessageBase64: binary => {
 				if (!binary) return <>null</>;
 
-				const bodyBinary = (filters as MessageFilterState).bodyBinary;
+				const bodyBinary = (filters as MessagesFilter).bodyBinary;
 				if (!bodyBinary.values.length || bodyBinary.negative) return <>{trimValue(binary)}</>;
 
 				const sortedEntries = getSortedEntries(window.atob(binary), bodyBinary.values);

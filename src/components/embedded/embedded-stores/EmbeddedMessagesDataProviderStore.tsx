@@ -39,7 +39,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	constructor(private messagesStore: EmbeddedMessagesStore, private api: ApiSchema) {
 		this.updateStore = new MessagesUpdateStore(this, this.messagesStore);
 
-		autorun(() => this.messagesStore.filterStore.filter && this.onFilterChange());
+		autorun(() => this.messagesStore.filterStore.params && this.onFilterChange());
 	}
 
 	public updateStore: MessagesUpdateStore;
@@ -113,7 +113,7 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.stopMessagesLoading();
 		this.resetState();
 
-		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
+		if (this.messagesStore.filterStore.params.streams.length === 0) return;
 
 		const queryParams = this.getFilterParams();
 

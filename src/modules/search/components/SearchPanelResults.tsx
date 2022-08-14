@@ -18,9 +18,10 @@ import { Virtuoso } from 'react-virtuoso';
 import { formatTimestamp } from 'helpers/date';
 import { getItemId } from 'helpers/event';
 import { ActionType } from 'models/EventAction';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
 import { FilterEntry, SearchResult } from '../stores/SearchStore';
 import SearchPanelSeparator from './SearchPanelSeparator';
-import { EventFilterState, MessageFilterState } from '../models/Search';
 import SearchResultItem from './SearchResultItem';
 
 interface SearchPanelResultsProps {
@@ -32,7 +33,7 @@ interface SearchPanelResultsProps {
 	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
 	onResultDelete: () => void;
 	flattenedResult: (SearchResult | [number, number])[];
-	filters: EventFilterState | MessageFilterState;
+	filters: EventsFilter | MessagesFilter;
 	timestamp: number;
 	disabledRemove: boolean;
 	showLoadMoreButton: boolean;

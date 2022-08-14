@@ -17,11 +17,10 @@
 import { action, computed, IReactionDisposer, observable, reaction, toJS } from 'mobx';
 import moment from 'moment';
 import { IFilterConfigStore } from 'models/Stores';
-import { MessageFilterState } from 'modules/search/models/Search';
-import MessagesFilter from '../../models/filter/MessagesFilter';
-import { MessagesSSEParams } from '../../api/sse';
+import MessagesFilter, { MessagesParams } from '../../models/filter/MessagesFilter';
+import { MessagesFilterInfo, MessagesSSEParams } from '../../api/sse';
 
-function getDefaultMessagesFilter(): MessagesFilter {
+function getDefaultMessagesParams(): MessagesParams {
 	return {
 		timestampFrom: null,
 		timestampTo: moment.utc().valueOf(),
@@ -30,12 +29,14 @@ function getDefaultMessagesFilter(): MessagesFilter {
 }
 
 export type MessagesFilterStoreInitialState = {
-	sse?: Partial<MessageFilterState> | null;
+	sse?: Partial<MessagesFilter> | null;
 	isSoftFilter?: boolean;
-} & Partial<MessagesFilter>;
+} & Partial<MessagesParams>;
 
 export default class MessagesFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
+
+	private sseFilterInfoSubscription: IReactionDisposer;
 
 	constructor(
 		private filtersStore: IFilterConfigStore,
@@ -44,11 +45,19 @@ export default class MessagesFilterStore {
 		this.init(initialState);
 
 		this.sseFilterSubscription = reaction(() => filtersStore.messageFilters, this.initSSEFilter);
+		this.sseFilterInfoSubscription = reaction(
+			() => filtersStore.messagesFilterInfo,
+			filterInfo => (this.filterInfo = filterInfo),
+			{ fireImmediately: true },
+		);
 	}
 
-	@observable filter: MessagesFilter = getDefaultMessagesFilter();
+	@observable.ref
+	public filterInfo: MessagesFilterInfo[] = [];
 
-	@observable sseMessagesFilter: MessageFilterState | null = null;
+	@observable params: MessagesParams = getDefaultMessagesParams();
+
+	@observable sseMessagesFilter: MessagesFilter | null = null;
 
 	/*
 		When isSoftFilter is applied messages that don't match filter are not excluded,
@@ -60,11 +69,11 @@ export default class MessagesFilterStore {
 	public get filterParams(): MessagesSSEParams {
 		const sseFilters = this.sseMessagesFilter;
 
-		const filtersToAdd: Array<keyof MessageFilterState> = !sseFilters
+		const filtersToAdd: Array<keyof MessagesFilter> = !sseFilters
 			? []
 			: Object.entries(sseFilters)
 					.filter(([_, filter]) => filter.values.length > 0)
-					.map(([filterName]) => filterName as keyof MessageFilterState);
+					.map(([filterName]) => filterName as keyof MessagesFilter);
 
 		const filterValues = filtersToAdd
 			.map(filterName =>
@@ -88,8 +97,8 @@ export default class MessagesFilterStore {
 		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
 
 		const queryParams: MessagesSSEParams = {
-			startTimestamp: this.filter.timestampTo || startTimestamp,
-			stream: this.filter.streams,
+			startTimestamp: this.params.timestampTo || startTimestamp,
+			stream: this.params.streams,
 			searchDirection: 'previous',
 			resultCountLimit: 15,
 			filters: filtersToAdd,
@@ -121,45 +130,39 @@ export default class MessagesFilterStore {
 	}
 
 	@action
-	public setMessagesFilter(
-		filter: MessagesFilter,
-		sseFilters: MessageFilterState | null,
-		isSoftFilterApplied: boolean,
-	) {
-		this.isSoftFilter = isSoftFilterApplied;
-		this.sseMessagesFilter = sseFilters;
-		this.filter = filter;
+	public setMessagesFilter(params: MessagesParams, filter: MessagesFilter | null = null) {
+		this.params = params;
+		this.sseMessagesFilter = filter;
 	}
 
 	@action
-	public resetMessagesFilter = (initFilter: Partial<MessagesFilter> = {}) => {
+	public resetMessagesFilter = (initFilter: Partial<MessagesParams> = {}) => {
 		const filter = toJS(this.filtersStore.messageFilters);
-		const defaultMessagesFilter = getDefaultMessagesFilter();
+		const defaultMessagesFilter = getDefaultMessagesParams();
 		this.sseMessagesFilter = filter;
 		this.isSoftFilter = false;
-		this.filter = {
+		this.params = {
 			...defaultMessagesFilter,
-			timestampFrom: this.filter.timestampFrom,
-			timestampTo: this.filter.timestampTo,
+			timestampFrom: this.params.timestampFrom,
+			timestampTo: this.params.timestampTo,
 			...initFilter,
 		};
 	};
 
 	private init = (initialState?: MessagesFilterStoreInitialState) => {
 		if (initialState) {
-			const defaultMessagesFilter = getDefaultMessagesFilter();
+			const defaultMessagesFilter = getDefaultMessagesParams();
 			const {
 				streams = defaultMessagesFilter.streams,
 				timestampFrom = defaultMessagesFilter.timestampFrom,
 				timestampTo = defaultMessagesFilter.timestampTo,
 				sse = {},
-				isSoftFilter = false,
 			} = initialState;
 
 			const appliedSSEFilter = {
 				...toJS(this.filtersStore.messageFilters || {}),
 				...sse,
-			} as MessageFilterState;
+			} as MessagesFilter;
 			this.setMessagesFilter(
 				{
 					streams,
@@ -167,7 +170,6 @@ export default class MessagesFilterStore {
 					timestampTo,
 				},
 				Object.keys(appliedSSEFilter).length > 0 ? appliedSSEFilter : null,
-				isSoftFilter,
 			);
 		} else {
 			this.setDefaultSSEFilter();
@@ -180,7 +182,7 @@ export default class MessagesFilterStore {
 	};
 
 	@action
-	private initSSEFilter = (filters: MessageFilterState | null) => {
+	private initSSEFilter = (filters: MessagesFilter | null) => {
 		const filtersCopy = toJS(filters);
 
 		if (filtersCopy) {
@@ -198,5 +200,6 @@ export default class MessagesFilterStore {
 
 	public dispose = () => {
 		this.sseFilterSubscription();
+		this.sseFilterInfoSubscription();
 	};
 }

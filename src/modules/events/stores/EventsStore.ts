@@ -19,6 +19,7 @@ import moment from 'moment';
 import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { IEventsStore, IFilterConfigStore } from 'models/Stores';
 import { Panel } from 'models/Panel';
+import EventsFilter from 'models/filter/EventsFilter';
 import EventsFilterStore from './EventsFilterStore';
 import ViewStore from '../../../stores/workspace/WorkspaceViewStore';
 import ApiSchema from '../../../api/ApiSchema';
@@ -30,7 +31,6 @@ import { getRangeFromTimestamp, timestampToNumber } from '../../../helpers/date'
 import { calculateTimeRange } from '../helpers/calculateTimeRange';
 import { TimeRange } from '../../../models/Timestamp';
 import EventsDataStore from './EventsDataStore';
-import EventsFilter from '../models/EventsFilter';
 
 export type EventStoreURLState = Partial<{
 	panelArea: number;

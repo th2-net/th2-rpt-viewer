@@ -16,6 +16,7 @@
 
 import { action, computed, IReactionDisposer, observable, reaction } from 'mobx';
 import debounce from 'lodash.debounce';
+import EventsFilter from 'models/filter/EventsFilter';
 import SearchWorker from '../search.worker';
 import SearchToken from '../../../models/search/SearchToken';
 import ApiSchema from '../../../api/ApiSchema';
@@ -23,8 +24,7 @@ import EventsStore from './EventsStore';
 import { createSearchToken } from '../../../helpers/search/createSearchToken';
 import { COLORS as SearchTokenColors } from '../components/search/SearchInput';
 import { nextCyclicItemByIndex } from '../../../helpers/array';
-import EventsFilter from '../models/EventsFilter';
-import { EventTreeNode } from '../../../models/EventAction';
+import { EventTreeNode } from '../models/Event';
 import EventsSSEChannel from '../../../stores/SSEChannel/EventsSSEChannel';
 
 const defaultState = {

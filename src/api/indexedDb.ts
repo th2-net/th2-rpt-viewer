@@ -17,7 +17,8 @@
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
 import { observable, when } from 'mobx';
 import { EventBookmark, MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
-import { FilterState } from 'modules/search/models/Search';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
 import { SearchHistory } from 'modules/search/stores/SearchStore';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
 import { OrderRule } from '../stores/MessageDisplayRulesStore';
@@ -45,7 +46,7 @@ export type DbData =
 	| MessageDisplayRule
 	| OrderRule
 	| MessageSortOrderItem
-	| FiltersHistoryType<FilterState>
+	| FiltersHistoryType<MessagesFilter | EventsFilter>
 	| Session;
 
 interface TH2DB extends DBSchema {
@@ -86,7 +87,7 @@ interface TH2DB extends DBSchema {
 	};
 	[IndexedDbStores.FILTERS_HISTORY]: {
 		key: string;
-		value: FiltersHistoryType<FilterState>;
+		value: FiltersHistoryType<MessagesFilter | EventsFilter>;
 		indexes: {
 			timestamp: number;
 		};

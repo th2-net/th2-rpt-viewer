@@ -34,7 +34,7 @@ class MessagesViewTypeStore {
 
 	@computed
 	private get filter() {
-		return this.messagesStore.filterStore.filter;
+		return this.messagesStore.filterStore.params;
 	}
 
 	@observable

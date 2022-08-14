@@ -38,7 +38,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	constructor(private messagesStore: MessagesStore, private api: ApiSchema) {
 		this.updateStore = new MessagesUpdateStore(this, this.messagesStore);
 
-		reaction(() => this.messagesStore.filterStore.filter, this.onFilterChange);
+		reaction(() => this.messagesStore.filterStore.params, this.onFilterChange);
 	}
 
 	public updateStore: MessagesUpdateStore;
@@ -108,7 +108,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 		this.stopMessagesLoading();
 		this.resetState();
 
-		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
+		if (this.messagesStore.filterStore.params.streams.length === 0) return;
 
 		this.isLoadingMessageIds = true;
 
@@ -384,7 +384,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	@action
 	public keepLoading = (direction: SearchDirection.Next | SearchDirection.Previous) => {
 		if (
-			this.messagesStore.filterStore.filter.streams.length === 0 ||
+			this.messagesStore.filterStore.params.streams.length === 0 ||
 			!this.searchChannelNext ||
 			!this.searchChannelPrev
 		)

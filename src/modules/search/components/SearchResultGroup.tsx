@@ -21,14 +21,15 @@ import { getItemId, isEvent } from 'helpers/event';
 import { isEventMessage } from 'helpers/message';
 import { createBemElement } from 'helpers/styleCreators';
 import { getTimestampAsNumber } from 'helpers/date';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
 import { ActionType } from 'models/EventAction';
 import { FilterEntry, SearchResult } from '../stores/SearchStore';
 import SearchResultItem from './SearchResultItem';
-import { EventFilterState, MessageFilterState } from '../models/Search';
 
 interface SearchResultGroup {
 	results: SearchResult[];
-	filters: EventFilterState | MessageFilterState;
+	filters: EventsFilter | MessagesFilter;
 	onResultClick: (
 		searchResult: SearchResult,
 		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },

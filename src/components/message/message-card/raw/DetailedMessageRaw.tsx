@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { MessageFilterState } from 'modules/search/models/Search';
+import MessagesFilter from 'models/filter/MessagesFilter';
 import { copyTextToClipboard } from 'helpers/copyHandler';
 import { showNotification } from 'helpers/showNotification';
 import { useSelectListener } from 'hooks/useSelectListener';
@@ -70,7 +70,7 @@ export default function DetailedMessageRaw({
 
 		return getFiltersEntries(
 			humanReadable,
-			(currentSearch?.request.filters as MessageFilterState).bodyBinary.values,
+			(currentSearch?.request.filters as MessagesFilter).bodyBinary.values,
 			selectedBodyBinaryFilter || undefined,
 		);
 	}, [currentSearch?.request.filters]);

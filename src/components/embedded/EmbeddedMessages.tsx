@@ -85,9 +85,9 @@ const EmbeddedMessages = () => {
 
 	const reportURL = useMemo(() => {
 		const messagesStoreState = {
-			timestampFrom: messagesStore.filterStore.filter.timestampFrom,
-			timestampTo: messagesStore.filterStore.filter.timestampTo,
-			streams: messagesStore.filterStore.filter.streams,
+			timestampFrom: messagesStore.filterStore.params.timestampFrom,
+			timestampTo: messagesStore.filterStore.params.timestampTo,
+			streams: messagesStore.filterStore.params.streams,
 			sse: messagesStore.filterStore.sseMessagesFilter,
 			isSoftFilter: false,
 		};
@@ -103,7 +103,7 @@ const EmbeddedMessages = () => {
 		});
 
 		return [window.location.origin, window.location.pathname, `?${searchString}`].join('');
-	}, [messagesStore.filterStore.filter, messagesStore.filterStore.sseMessagesFilter]);
+	}, [messagesStore.filterStore.params, messagesStore.filterStore.sseMessagesFilter]);
 
 	if (dataStore.isError) {
 		return (

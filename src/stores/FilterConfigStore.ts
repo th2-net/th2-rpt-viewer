@@ -19,7 +19,8 @@ import ApiSchema from 'api/ApiSchema';
 import { getDefaultMessagesFiltersState, getDefaultEventsFiltersState } from 'helpers/search';
 import { computed, observable, runInAction } from 'mobx';
 import { IFilterConfigStore } from 'models/Stores';
-import { MessageFilterState, EventFilterState } from 'modules/search/models/Search';
+import EventsFilter from 'models/filter/EventsFilter';
+import MessagesFilter from 'models/filter/MessagesFilter';
 
 /* eslint-disable no-underscore-dangle */
 // TODO: This store probably shouldnt expose both filterInfo and
@@ -49,12 +50,12 @@ export class FilterConfigStore implements IFilterConfigStore {
 	}
 
 	@computed
-	public get eventFilters(): EventFilterState | null {
+	public get eventFilters(): EventsFilter | null {
 		return this.eventFilterInfo ? getDefaultEventsFiltersState(this.eventFilterInfo) : null;
 	}
 
 	@computed
-	public get messageFilters(): MessageFilterState | null {
+	public get messageFilters(): MessagesFilter | null {
 		return this.messagesFilterInfo ? getDefaultMessagesFiltersState(this.messagesFilterInfo) : null;
 	}
 

@@ -22,14 +22,13 @@
 	white-space: nowrap;
 	position: relative;
 	right: 0;
-
 	border-radius: $bubbleBorderRadius;
-	color: $primaryTextColor;
 	font-weight: bold;
-
 	padding: 3px 5px;
 	height: $filterBubbleHeight;
 	max-width: calc(100% - 10px);
+	color: #ffffff;
+	background-color: #5eba6e;
 
 	transition: right 0.15s ease-in-out;
 

@@ -16,7 +16,8 @@
 
 import React, { useState, useRef, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { EventFilterState, MessageFilterState } from 'modules/search/models/Search';
+import EventsFilter from 'models/filter/EventsFilter';
+import MessagesFilter from 'models/filter/MessagesFilter';
 import { EntityType } from 'models/EventAction';
 import { ModalPortal } from '../util/Portal';
 import { useOutsideClickListener, useFiltersHistoryStore } from '../../hooks';
@@ -28,15 +29,13 @@ import '../../styles/filters-history.scss';
 
 interface Props {
 	type: EntityType;
-	filter: FiltersState;
+	filter?: FiltersState;
 	disabled?: boolean;
 }
 
 export type FiltersState = {
-	state: EventFilterState | MessageFilterState;
-	setState:
-		| ((patch: Partial<EventFilterState>) => void)
-		| ((patch: Partial<MessageFilterState>) => void);
+	state: EventsFilter | MessagesFilter;
+	setState: ((patch: Partial<EventsFilter>) => void) | ((patch: Partial<MessagesFilter>) => void);
 } | null;
 
 const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
@@ -47,11 +46,10 @@ const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 	const { eventsHistory, messagesHistory, toggleFilterPin } = useFiltersHistoryStore();
 	const { eventFilterInfo, messagesFilterInfo } = useFilterConfigStore();
 
-	const toShow: (FiltersHistoryType<EventFilterState> | FiltersHistoryType<MessageFilterState>)[] =
-		useMemo(
-			() => (type === 'event' ? eventsHistory : messagesHistory),
-			[eventsHistory, messagesHistory, type],
-		);
+	const toShow: (FiltersHistoryType<EventsFilter> | FiltersHistoryType<MessagesFilter>)[] = useMemo(
+		() => (type === 'event' ? eventsHistory : messagesHistory),
+		[eventsHistory, messagesHistory, type],
+	);
 
 	React.useLayoutEffect(() => {
 		if (isOpen) {
@@ -77,7 +75,7 @@ const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 	});
 
 	const onFilterPin = React.useCallback(
-		(pinnedFilter: FiltersHistoryType<EventFilterState | MessageFilterState>) => {
+		(pinnedFilter: FiltersHistoryType<EventsFilter | MessagesFilter>) => {
 			toggleFilterPin(pinnedFilter);
 			if (!pinnedFilter.isPinned) {
 				raf(() => {
@@ -102,19 +100,20 @@ const FiltersHistory = ({ type, filter, disabled = false }: Props) => {
 				disabled={disabled}></button>
 			<ModalPortal isOpen={isOpen}>
 				<div ref={historyRef} className='filters-history'>
-					{toShow.map((item, index) => (
-						<React.Fragment key={item.timestamp}>
-							<FiltersHistoryItem
-								item={item}
-								filter={filter}
-								eventsFilterInfo={eventFilterInfo}
-								messagesFilterInfo={messagesFilterInfo}
-								closeHistory={closeHistory}
-								toggleFilterPin={onFilterPin}
-							/>
-							{toShow.length - 1 > index && <hr />}
-						</React.Fragment>
-					))}
+					{filter &&
+						toShow.map((item, index) => (
+							<React.Fragment key={item.timestamp}>
+								<FiltersHistoryItem
+									item={item}
+									filter={filter}
+									eventsFilterInfo={eventFilterInfo}
+									messagesFilterInfo={messagesFilterInfo}
+									closeHistory={closeHistory}
+									toggleFilterPin={onFilterPin}
+								/>
+								{toShow.length - 1 > index && <hr />}
+							</React.Fragment>
+						))}
 				</div>
 			</ModalPortal>
 		</>

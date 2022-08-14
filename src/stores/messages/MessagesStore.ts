@@ -15,13 +15,12 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction, IReactionDisposer, runInAction } from 'mobx';
-import { MessageFilterState } from 'modules/search/models/Search';
 import { IFilterConfigStore } from 'models/Stores';
 import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { Panel } from 'models/Panel';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
-import MessagesFilter from '../../models/filter/MessagesFilter';
+import MessagesFilter, { MessagesParams } from '../../models/filter/MessagesFilter';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
 import { sortMessagesByTimestamp, isEventMessage } from '../../helpers/message';
@@ -92,7 +91,7 @@ export default class MessagesStore {
 		);
 
 		reaction(
-			() => this.filterStore.filter,
+			() => this.filterStore.params,
 			() => {
 				this.exportStore.disableExport();
 			},
@@ -123,11 +122,7 @@ export default class MessagesStore {
 	}
 
 	@action
-	public applyFilter = (
-		filter: MessagesFilter,
-		sseFilters: MessageFilterState | null,
-		isSoftFilterApplied: boolean,
-	) => {
+	public applyFilter = (params: MessagesParams, filter: MessagesFilter | null) => {
 		if (
 			this.selectedMessageId &&
 			!this.workspaceStore.attachedMessagesIds.includes(this.selectedMessageId.valueOf())
@@ -136,11 +131,11 @@ export default class MessagesStore {
 		}
 
 		this.exportStore.disableExport();
-		this.sessionsStore.saveSessions(filter.streams);
+		this.sessionsStore.saveSessions(params.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.highlightedMessageId = null;
-		this.filterStore.setMessagesFilter(filter, sseFilters, isSoftFilterApplied);
+		this.filterStore.setMessagesFilter(params, filter);
 	};
 
 	private init = async (defaultState: MessagesStoreDefaultStateType) => {
@@ -176,7 +171,7 @@ export default class MessagesStore {
 		const shouldShowFilterHintBeforeRefetchingMessages = await this.handleFilterHint(message);
 
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
-			const streams = this.filterStore.filter.streams;
+			const streams = this.filterStore.params.streams;
 
 			this.selectedMessageId = new String(message.id);
 			this.highlightedMessageId = new String(message.id);
@@ -211,10 +206,10 @@ export default class MessagesStore {
 		if (!shouldShowFilterHintBeforeRefetchingMessages) {
 			const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
 			if (mostRecentMessage) {
-				const streams = this.filterStore.filter.streams;
+				const streams = this.filterStore.params.streams;
 				this.selectedMessageId = new String(mostRecentMessage.id);
-				this.filterStore.filter = {
-					...this.filterStore.filter,
+				this.filterStore.params = {
+					...this.filterStore.params,
 					streams: [
 						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
 					],
@@ -227,7 +222,7 @@ export default class MessagesStore {
 	@action
 	public clearFilters = () => {
 		this.hintMessages = [];
-		this.filterStore.resetMessagesFilter({ streams: this.filterStore.filter.streams });
+		this.filterStore.resetMessagesFilter({ streams: this.filterStore.params.streams });
 		this.dataStore.stopMessagesLoading();
 		this.dataStore.resetState();
 	};

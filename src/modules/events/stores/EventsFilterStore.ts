@@ -17,11 +17,11 @@
 import { action, computed, IReactionDisposer, observable, reaction, toJS } from 'mobx';
 import { IFilterConfigStore } from 'models/Stores';
 import moment from 'moment';
-import { EventSSEFilters } from 'api/sse';
+import { EventsFiltersInfo, EventFilterKeys } from 'api/sse';
 import { getObjectKeys } from 'helpers/object';
 import { TimeRange } from 'models/Timestamp';
+import EventsFilter from 'models/filter/EventsFilter';
 import { calculateTimeRange } from '../helpers/calculateTimeRange';
-import EventsFilter from '../models/EventsFilter';
 
 function getDefaultTimeRange(interval = 15): TimeRange {
 	const timestampTo = moment.utc().valueOf();
@@ -60,6 +60,8 @@ export type EventsFilterStoreInitialState = Partial<{
 export default class EventsFilterStore {
 	private sseFilterSubscription: IReactionDisposer;
 
+	private sseFilterInfoSubscription: IReactionDisposer;
+
 	constructor(
 		private filterConfigStore: IFilterConfigStore,
 		initialState?: EventsFilterStoreInitialState,
@@ -69,7 +71,9 @@ export default class EventsFilterStore {
 
 			const { range = defaultRange, filter } = initialState;
 
-			const defaultEventFilter = toJS(this.filterConfigStore.eventFilters);
+			const defaultEventFilter = toJS(
+				this.filterConfigStore.eventFilters,
+			) as unknown as EventsFilter;
 			this.setEventsFilter(
 				filter
 					? {
@@ -84,8 +88,15 @@ export default class EventsFilterStore {
 		this.setTimestampFromRange(this.range);
 
 		this.sseFilterSubscription = reaction(
-			() => this.filterConfigStore.eventFilters,
+			() => this.filterConfigStore.eventFilters as unknown as EventsFilter,
 			this.initSSEFilter,
+			{ fireImmediately: true },
+		);
+
+		this.sseFilterInfoSubscription = reaction(
+			() => this.filterConfigStore.eventFilterInfo,
+			filterInfo => (this.filterInfo = filterInfo),
+			{ fireImmediately: true },
 		);
 	}
 
@@ -120,12 +131,12 @@ export default class EventsFilterStore {
 	}
 
 	@observable
-	public filter: null | EventsFilter = toJS(this.filterConfigStore.eventFilters);
+	public filter: null | EventsFilter = toJS(this.filterConfigStore.eventFilters as EventsFilter);
 
 	@computed
-	public get isEventsFilterApplied(): boolean {
+	public get isFilterApplied(): boolean {
 		if (!this.filter) return false;
-		return getObjectKeys(this.filter).some((filterName: EventSSEFilters) => {
+		return getObjectKeys(this.filter).some((filterName: EventFilterKeys) => {
 			if (filterName === 'status') {
 				return this.filter && this.filter[filterName].values !== 'any';
 			}
@@ -167,6 +178,9 @@ export default class EventsFilterStore {
 		this.isOpen = state;
 	};
 
+	@observable.ref
+	public filterInfo: EventsFiltersInfo[] = [];
+
 	@action
 	private initSSEFilter = (filterConfig: EventsFilter | null) => {
 		if (this.filter) {
@@ -186,5 +200,6 @@ export default class EventsFilterStore {
 
 	public dispose = () => {
 		this.sseFilterSubscription();
+		this.sseFilterInfoSubscription();
 	};
 }

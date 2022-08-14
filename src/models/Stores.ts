@@ -15,15 +15,12 @@
  ***************************************************************************** */
 
 import { Bookmark, EventBookmark, MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
-import {
-	EventFilterState,
-	MessageFilterState,
-	SearchPanelType,
-} from 'modules/search/models/Search';
+import { SearchPanelType } from 'modules/search/models/Search';
 import { SearchHistory, SearchPanelFormState } from 'modules/search/stores/SearchStore';
 import { EventStoreURLState } from 'modules/events/stores/EventsStore';
 import { TimeRange } from 'models/Timestamp';
-import EventsFilter from 'modules/events/models/EventsFilter';
+import EventsFilter from 'models/filter/EventsFilter';
+import MessagesFilter from 'models/filter/MessagesFilter';
 import { DbData } from '../api/indexedDb';
 import { EventsFiltersInfo, MessagesFilterInfo, MessagesSSEParams } from '../api/sse';
 import { EventTreeNode, EventAction } from './EventAction';
@@ -46,10 +43,10 @@ export interface IFilterConfigStore {
 	eventFilterInfo: EventsFiltersInfo[];
 	messagesFilterInfo: MessagesFilterInfo[];
 	messageSessions: string[];
-	eventFilters: EventFilterState | null;
-	messageFilters: MessageFilterState | null;
-	getMessageFilters: () => Promise<MessageFilterState | null>;
-	getEventFilters: () => Promise<EventFilterState | null>;
+	eventFilters: EventsFilter | null;
+	getEventFilters: () => Promise<EventsFilter | null>;
+	messageFilters: MessagesFilter | null;
+	getMessageFilters: () => Promise<MessagesFilter | null>;
 	getMessageSessions: () => Promise<string[]>;
 }
 

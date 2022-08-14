@@ -14,7 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventFilterState, MessageFilterState } from 'modules/search/models/Search';
+import MessagesFilter from 'models/filter/MessagesFilter';
+import EventsFilter from 'models/filter/EventsFilter';
 import { EventsFiltersInfo, MessagesFilterInfo, SSEFilterParameter } from '../api/sse';
 
 export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
@@ -33,7 +34,7 @@ export function getFilterParameterDefaultValue(param: SSEFilterParameter) {
 	return param.defaultValue;
 }
 
-export function getDefaultEventsFiltersState(info: EventsFiltersInfo[]): EventFilterState | null {
+export function getDefaultEventsFiltersState(info: EventsFiltersInfo[]): EventsFilter | null {
 	if (!info.length) return null;
 	const state = info.reduce(
 		(prev, curr) => ({
@@ -49,14 +50,12 @@ export function getDefaultEventsFiltersState(info: EventsFiltersInfo[]): EventFi
 				{},
 			),
 		}),
-		{} as EventFilterState,
+		{} as EventsFilter,
 	);
 	return state;
 }
 
-export function getDefaultMessagesFiltersState(
-	info: MessagesFilterInfo[],
-): MessageFilterState | null {
+export function getDefaultMessagesFiltersState(info: MessagesFilterInfo[]): MessagesFilter | null {
 	if (!info.length) return null;
 	const state = info.reduce(
 		(prev, curr) => ({
@@ -71,7 +70,7 @@ export function getDefaultMessagesFiltersState(
 				{},
 			),
 		}),
-		{} as MessageFilterState,
+		{} as MessagesFilter,
 	);
 
 	return state;

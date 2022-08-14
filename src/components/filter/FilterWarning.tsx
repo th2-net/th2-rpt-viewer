@@ -21,7 +21,7 @@ import { ActionFilterConfig } from '../../models/filter/FilterInputs';
 import { ModalPortal } from '../util/Portal';
 import ActionRow from './row/ActionRow';
 
-const MessageFilterWarning = () => {
+const FilterWarning = () => {
 	const messagesStore = useMessagesStore();
 
 	const [showHintModal, setShowHintModal] = React.useState(false);
@@ -85,4 +85,4 @@ const MessageFilterWarning = () => {
 	);
 };
 
-export default observer(MessageFilterWarning);
+export default observer(FilterWarning);

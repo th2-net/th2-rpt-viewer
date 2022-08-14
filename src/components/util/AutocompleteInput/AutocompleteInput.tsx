@@ -146,6 +146,7 @@ const AutocompleteInput = React.forwardRef((props: Props, ref: any) => {
 		<React.Fragment>
 			{autoresize ? (
 				<AutosizeInput
+					style={{ display: 'inline-flex' }}
 					className={wrapperClassName}
 					{...inputProps}
 					inputRef={input => {
