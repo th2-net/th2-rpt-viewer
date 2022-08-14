@@ -30,7 +30,7 @@ import { SearchDirection } from 'models/SearchDirection';
 import notificationsStore from 'stores/NotificationsStore';
 import WorkspacesStore from 'stores/workspace/WorkspacesStore';
 import FiltersHistoryStore from 'stores/FiltersHistoryStore';
-import { SessionHistoryStore } from 'stores/messages/SessionHistoryStore';
+import { SessionHistoryStore } from 'modules/messages/stores/SessionHistoryStore';
 import { EventBodyPayload } from 'modules/events/models/EventBodyPayload';
 import EventsFilter from 'models/filter/EventsFilter';
 import MessagesFilter from 'models/filter/MessagesFilter';

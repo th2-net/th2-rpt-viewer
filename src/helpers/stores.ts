@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import { BookmarksStore } from 'modules/bookmarks/stores/BookmarksStore';
+import MessagesStore from 'modules/messages/stores/MessagesStore';
 import { SearchStore } from 'modules/search/stores/SearchStore';
 import EventsStore from '../modules/events/stores/EventsStore';
-import MessagesStore from '../stores/messages/MessagesStore';
 
 export const isEventsStore = (object: unknown): object is EventsStore =>
 	object instanceof EventsStore;

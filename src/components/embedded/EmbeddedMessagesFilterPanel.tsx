@@ -17,6 +17,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import MessagesFilter from 'models/filter/MessagesFilter';
+import MessagesFilterSessionFilter from 'modules/messages/components/filter/SessionFilterRow';
 import {
 	FilterRowMultipleStringsConfig,
 	ActionFilterConfig,
@@ -24,7 +25,6 @@ import {
 } from '../../models/filter/FilterInputs';
 import { MessageFilterKeys } from '../../api/sse';
 import FilterPanel from '../filter/FilterPanel';
-import MessagesFilterSessionFilter from '../filter/SessionFilterRow';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import { useFilterConfig } from '../../hooks/useFilterConfig';
 

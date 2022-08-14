@@ -25,9 +25,9 @@ import {
 } from '../models/EventMessage';
 import RootStore from './RootStore';
 import { IndexedDB, IndexedDbStores, indexedDbLimits, DbData } from '../api/indexedDb';
-import { OrderRule, RULES_ORDER_ID } from './MessageDisplayRulesStore';
+import { OrderRule, RULES_ORDER_ID } from '../modules/messages/stores/MessageDisplayRulesStore';
 import notificationsStore from './NotificationsStore';
-import { MessageBodyField, MessageBodyFields } from '../models/MessageBody';
+import { MessageBodyField, MessageBodyFields } from '../modules/messages/models/MessageBody';
 import { isQuotaExceededError } from '../helpers/fetch';
 
 class MessageBodySortOrderStore {

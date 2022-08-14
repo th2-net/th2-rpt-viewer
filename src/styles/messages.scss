@@ -648,16 +648,19 @@
 			width: 4px;
 			height: calc(100% - 24px);
 			border-radius: 2px;
+			visibility: hidden;
 
 			&.bookmarked {
 				background: #a65cd6;
+				visibility: visible;
 			}
 
 			&.attached {
 				background: #f26c0d;
+				visibility: visible;
 			}
 
-			&.bookmarked-attached {
+			&.bookmarked.attached {
 				background: linear-gradient(to bottom, #a65cd6 50%, #f26c0d 50%);
 			}
 		}

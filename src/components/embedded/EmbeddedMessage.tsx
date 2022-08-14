@@ -15,10 +15,10 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
+import MessageCardBase from 'modules/messages/components/message-card/MessageCardBase';
+import MessageExpandButton from 'modules/messages/components/MessageExpandButton';
 import { EventMessage, MessageViewType, MessageViewTypeConfig } from '../../models/EventMessage';
-import MessageCardBase from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
-import MessageExpandButton from '../message/MessageExpandButton';
 import useElementSize from '../../hooks/useElementSize';
 import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../models/util/CardDisplayType';
 
@@ -86,7 +86,6 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 					/>
 					<MessageExpandButton
 						isExpanded={isExpanded}
-						isScreenshotMsg={false}
 						isDisplayRuleRaw={false}
 						setExpanded={setIsExpanded}
 						parsedMessages={message.parsedMessages}

@@ -19,10 +19,13 @@ import { nanoid } from 'nanoid';
 import { SearchStore, FilterEntry } from 'modules/search/stores/SearchStore';
 import { IEventsStore, IFilterConfigStore, ISearchStore } from 'models/Stores';
 import { Panel } from 'models/Panel';
+import { SessionHistoryStore } from 'modules/messages/stores//SessionHistoryStore';
+import MessageDisplayRulesStore from 'modules/messages/stores/MessageDisplayRulesStore';
+import MessagesViewTypeStore from 'modules/messages/stores/MessagesViewTypeStore';
 import MessagesStore, {
 	MessagesStoreDefaultStateType,
 	MessagesStoreURLState,
-} from '../messages/MessagesStore';
+} from 'modules/messages/stores/MessagesStore';
 import EventsStore, {
 	EventStoreDefaultStateType,
 	EventStoreURLState,
@@ -35,12 +38,9 @@ import { sortMessagesByTimestamp, isEventMessage } from '../../helpers/message';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
-import { SessionHistoryStore } from '../messages/SessionHistoryStore';
 import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
 import { isAbortError } from '../../helpers/fetch';
 import { getObjectKeys } from '../../helpers/object';
-import MessageDisplayRulesStore from '../MessageDisplayRulesStore';
-import MessagesViewTypeStore from '../messages/MessagesViewTypeStore';
 
 export interface WorkspaceUrlState {
 	events: Partial<EventStoreURLState>;

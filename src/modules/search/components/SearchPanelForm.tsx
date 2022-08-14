@@ -30,7 +30,7 @@ import { useFilterConfig } from 'hooks/useFilterConfig';
 import { FilterRows } from 'components/filter/FilerRows';
 import { SearchDirection } from 'models/SearchDirection';
 import FiltersHistory from 'components/filters-history/FiltersHistory';
-import { useSessionsHistoryStore } from 'hooks/index';
+import { useSessionsHistoryStore } from 'modules/messages/hooks/useSessionsStore';
 import { createBemElement } from 'helpers/styleCreators';
 import {
 	TIME_INPUT_MASK,

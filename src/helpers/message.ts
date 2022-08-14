@@ -16,14 +16,7 @@
 
 import { timestampToNumber } from './date';
 import { ActionType } from '../models/EventAction';
-import { EventMessage, MessageViewTypeConfig, MessageViewType } from '../models/EventMessage';
-import {
-	isMessageValue,
-	isSimpleValue,
-	MessageBodyField,
-	MessageBodyFields,
-} from '../models/MessageBody';
-import { SavedMessageViewType } from '../stores/messages/SavedMessageViewType';
+import { EventMessage } from '../models/EventMessage';
 
 export const sortMessagesByTimestamp = (
 	messages: Array<EventMessage>,
@@ -43,61 +36,3 @@ export const isEventMessage = (object: unknown): object is EventMessage =>
 	typeof object === 'object' &&
 	object !== null &&
 	(object as EventMessage).type === ActionType.MESSAGE;
-
-export function normalizeFields(fields: MessageBodyFields) {
-	return Object.entries(fields).reduce(
-		(acc, [name, field]) => ({
-			...acc,
-			[name]: normalizeField(field),
-		}),
-		{},
-	);
-}
-
-export function normalizeField(field: MessageBodyField): string | object {
-	if (isSimpleValue(field)) return field.simpleValue;
-	if (isMessageValue(field)) {
-		return Object.entries(field.messageValue.fields || {}).reduce(
-			(acc, [fieldName, fieldValue]) => ({
-				...acc,
-				[fieldName]: normalizeField(fieldValue),
-			}),
-			{},
-		);
-	}
-	return field.listValue.values?.map(listValueField => normalizeField(listValueField)) || [];
-}
-
-export function getViewTypesConfig(
-	message: EventMessage,
-	getSavedViewType: (message: EventMessage) => SavedMessageViewType,
-) {
-	const viewTypes = getSavedViewType(message).viewTypes;
-	const config = new Map<string, MessageViewTypeConfig>();
-
-	config.set(message.id, {
-		viewType: viewTypes.get(message.id) as MessageViewType,
-		setViewType: getSavedViewType(message).setViewType,
-	});
-
-	if (message.parsedMessages) {
-		message.parsedMessages.forEach(parsedMessage => {
-			config.set(parsedMessage.id, {
-				viewType: viewTypes.get(parsedMessage.id),
-				setViewType: getSavedViewType(message).setViewType,
-			});
-		});
-	}
-
-	return config;
-}
-
-export function defineViewTypeConfig(
-	viewTypeConfig: MessageViewTypeConfig | Map<string, MessageViewTypeConfig>,
-	id?: string,
-) {
-	if (id && viewTypeConfig instanceof Map) {
-		return viewTypeConfig.get(id) as MessageViewTypeConfig;
-	}
-	return viewTypeConfig as MessageViewTypeConfig;
-}

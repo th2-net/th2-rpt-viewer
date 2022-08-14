@@ -16,11 +16,12 @@
 
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { formatTime, getElapsedTime } from 'helpers/date';
+import { formatTime } from 'helpers/date';
 import { createBemBlock } from 'helpers/styleCreators';
 import { EventTreeNode } from 'models/EventAction';
 import { useBookmarksStore, useWorkspaceStore } from 'hooks/index';
 import { getEventStatus } from 'helpers/event';
+import { getElapsedTime } from '../../helpers/date';
 import SearchableContent from '../search/SearchableContent';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { Counter } from './Counter';

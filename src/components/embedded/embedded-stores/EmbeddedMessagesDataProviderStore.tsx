@@ -15,6 +15,7 @@
  ***************************************************************************** */
 import { runInAction, action, observable, computed, autorun } from 'mobx';
 import { sortByTimestamp, timestampToNumber } from 'helpers/date';
+import MessagesUpdateStore from 'modules/messages/stores/MessagesUpdateStore';
 import { MessagesSSEParams, SSEHeartbeat } from '../../../api/sse';
 import { EventMessage } from '../../../models/EventMessage';
 import EmbeddedMessagesStore from './EmbeddedMessagesStore';
@@ -23,7 +24,6 @@ import notificationsStore from '../../../stores/NotificationsStore';
 import { isEventMessage } from '../../../helpers/message';
 import { isAbortError } from '../../../helpers/fetch';
 import { MessagesDataStore } from '../../../models/Stores';
-import MessagesUpdateStore from '../../../stores/messages/MessagesUpdateStore';
 import {
 	MessagesSSEChannel,
 	MessageSSEEventListeners,

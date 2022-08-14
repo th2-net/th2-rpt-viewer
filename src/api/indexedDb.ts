@@ -19,11 +19,11 @@ import { observable, when } from 'mobx';
 import { EventBookmark, MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import EventsFilter from 'models/filter/EventsFilter';
+import { Session } from 'modules/messages/stores/SessionHistoryStore';
 import { SearchHistory } from 'modules/search/stores/SearchStore';
 import { MessageDisplayRule, MessageSortOrderItem } from '../models/EventMessage';
-import { OrderRule } from '../stores/MessageDisplayRulesStore';
+import { OrderRule } from '../modules/messages/stores/MessageDisplayRulesStore';
 import { FiltersHistoryType } from '../stores/FiltersHistoryStore';
-import { Session } from '../stores/messages/SessionHistoryStore';
 
 export enum IndexedDbStores {
 	EVENTS = 'events',

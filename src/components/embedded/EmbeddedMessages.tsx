@@ -18,6 +18,10 @@ import React, { useCallback, useMemo } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
+import MessagesUpdateButton from 'modules/messages/components/MessagesUpdateButton';
+import MessageCardBase from 'modules/messages/components/message-card/MessageCardBase';
+import MessageExpandButton from 'modules/messages/components/MessageExpandButton';
+import { getViewTypesConfig } from 'modules/messages/helpers/message';
 import { EventMessage } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
 import '../../styles/embedded.scss';
@@ -27,12 +31,8 @@ import Empty from '../util/Empty';
 import { useDebouncedCallback } from '../../hooks';
 import { raf } from '../../helpers/raf';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
-import MessagesUpdateButton from '../message/MessagesUpdateButton';
 import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
-import { getViewTypesConfig } from '../../helpers/message';
 import StateSaver from '../util/StateSaver';
-import MessageCardBase from '../message/message-card/MessageCardBase';
-import MessageExpandButton from '../message/MessageExpandButton';
 import EmbeddedMessagesViewTypeStore from './embedded-stores/EmbeddedMessagesViewTypeStore';
 import useElementSize from '../../hooks/useElementSize';
 import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../models/util/CardDisplayType';
@@ -62,7 +62,6 @@ const EmbeddedMessageCard = observer(
 							isExpanded={isExpanded}
 							setExpanded={setIsExpanded}
 							parsedMessages={props.message.parsedMessages}
-							isScreenshotMsg={false}
 							isDisplayRuleRaw={false}
 						/>
 					</div>

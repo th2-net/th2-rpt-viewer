@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import { action, observable } from 'mobx';
-import { keyForMessage } from '../../../helpers/keys';
-import { EventMessage } from '../../../models/EventMessage';
-import { SavedMessageViewType } from '../../../stores/messages/SavedMessageViewType';
+import { SavedMessageViewType } from 'modules/messages/stores/SavedMessageViewType';
+import { keyForMessage } from 'modules/messages/helpers/keys';
+import { EventMessage } from 'models/EventMessage';
 
 class EmbeddedMessagesViewTypeStore {
 	@observable

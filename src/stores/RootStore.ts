@@ -18,16 +18,16 @@ import { nanoid } from 'nanoid';
 import EventsFilter from 'models/filter/EventsFilter';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import { IFilterConfigStore } from 'models/Stores';
+import { SessionHistoryStore } from 'modules/messages/stores/SessionHistoryStore';
 import ApiSchema from '../api/ApiSchema';
 import WorkspacesStore, { WorkspacesUrlState } from './workspace/WorkspacesStore';
 import notificationStoreInstance from './NotificationsStore';
-import MessageDisplayRulesStore from './MessageDisplayRulesStore';
+import MessageDisplayRulesStore from '../modules/messages/stores/MessageDisplayRulesStore';
 import MessageBodySortOrderStore from './MessageBodySortStore';
 import { DbData } from '../api/indexedDb';
 import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
 import { getRangeFromTimestamp } from '../helpers/date';
-import { SessionHistoryStore } from './messages/SessionHistoryStore';
 import { FilterConfigStore } from './FilterConfigStore';
 
 export default class RootStore {

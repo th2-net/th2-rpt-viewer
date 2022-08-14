@@ -21,7 +21,7 @@ import EventsPanel from 'modules/events';
 import SearchPanel from 'modules/search';
 import { getItemId } from 'helpers/event';
 import { Panel } from 'models/Panel';
-import MessagesWindow from '../message/MessagesWindow';
+import MessagesWindow from 'modules/messages';
 import WorkspaceSplitter from './WorkspaceSplitter';
 import { useActivePanel, useWorkspaceStore } from '../../hooks';
 import { useWorkspaceViewStore } from '../../hooks/useWorkspaceViewStore';
