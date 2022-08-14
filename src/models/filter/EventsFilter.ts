@@ -26,5 +26,5 @@ export default interface EventsFilter {
 	body: MultipleStringFilter;
 	name: MultipleStringFilter;
 	status: SwitcherFilter;
-	text: MultipleStringFilter;
+	event_generic: MultipleStringFilter;
 }

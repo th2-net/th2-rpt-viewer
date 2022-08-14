@@ -479,7 +479,17 @@ export class SearchStore {
 		});
 	};
 
-	@action startSearch = (loadMore = false) => {
+	@action startSearch = (
+		loadMore = false,
+		filters: Partial<{
+			eventsFilter: EventFilterState | null;
+			messagesFilter: MessageFilterState | null;
+		}> = {},
+	) => {
+		const { eventsFilter = this.eventsFilter, messagesFilter = this.messagesFilter } = filters;
+		this.eventsFilter = eventsFilter;
+		this.messagesFilter = messagesFilter;
+
 		const filterParams = this.formType === 'event' ? this.eventsFilter : this.messagesFilter;
 		if (this.isSearching || !filterParams) return;
 		const isPaused = this.isPaused;
@@ -527,23 +537,23 @@ export class SearchStore {
 		const filtersToAdd = !this.filters
 			? []
 			: (this.filters.info as EventsFiltersInfo[])
-					.filter((info: SSEFilterInfo) => getFilter(info.name).values.length !== 0)
+					.filter((info: SSEFilterInfo) => getFilter(info.name as any).values.length !== 0)
 					.filter(
 						(info: SSEFilterInfo) =>
-							info.name !== 'status' || getFilter(info.name).values !== 'any',
+							info.name !== 'status' || getFilter(info.name as any).values !== 'any',
 					)
 					.map((info: SSEFilterInfo) => info.name);
 
-		const filterValues: [string, string | string[]][] = filtersToAdd.map(filter => [
+		const filterValues: [string, string | string[]][] = filtersToAdd.map((filter: any) => [
 			`${filter}-${filter === 'status' ? 'value' : 'values'}`,
 			getFilter(filter).values,
 		]);
 
-		const filterInclusion = filtersToAdd.map(filter =>
+		const filterInclusion = filtersToAdd.map((filter: any) =>
 			getFilter(filter).negative ? [`${filter}-negative`, getFilter(filter).negative] : [],
 		);
 
-		const filterConjunct = filtersToAdd.map(filter =>
+		const filterConjunct = filtersToAdd.map((filter: any) =>
 			getFilter(filter).conjunct ? [`${filter}-conjunct`, getFilter(filter).conjunct] : [],
 		);
 
@@ -738,7 +748,7 @@ export class SearchStore {
 		this.searchProgressState[searchDirection].completed = completed;
 	}
 
-	@action resetSearchProgressState() {
+	@action resetSearchProgressState = () => {
 		this.searchProgressState = {
 			previous: {
 				completed: false,
@@ -758,7 +768,7 @@ export class SearchStore {
 			previous: null,
 			next: null,
 		};
-	}
+	};
 
 	@action resetEventAutocompleteList = () => {
 		this.eventAutocompleteSseChannel?.close();

@@ -29,28 +29,6 @@
 	position: fixed;
 	z-index: 120;
 
-	&-footer {
-		display: flex;
-	}
-
-	&-wrapper {
-		position: relative;
-		height: 100%;
-		border-radius: 5px 5px 0 0;
-		display: flex;
-		align-items: center;
-
-		&.active {
-			@include card-shadow;
-			background-color: $filterPrimaryColor;
-		}
-
-		&.applied {
-			background-color: $filterPrimaryColor;
-			border-radius: 5px;
-		}
-	}
-
 	&__button {
 		@include unselectable;
 		display: flex;
@@ -61,14 +39,11 @@
 		background-color: transparent;
 		border: none;
 		outline: none;
+		min-width: 95px;
 
 		&.disabled {
 			opacity: 0.6;
 			cursor: default;
-		}
-
-		&.active {
-			padding: 4px 10px;
 		}
 	}
 
@@ -137,12 +112,6 @@
 		margin-left: 65px;
 		height: 40px;
 		padding: 5px 10px 0 0;
-	}
-
-	&__bubble {
-		color: #ffffff;
-		background-color: #5eba6e;
-		margin: 2px 5px;
 	}
 
 	&__counter {
@@ -331,6 +300,43 @@
 	}
 }
 
+.filter-panel {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+
+	&__button {
+		position: relative;
+		height: 100%;
+		border-radius: 5px 5px 0 0;
+		display: flex;
+		align-items: center;
+
+		&.active {
+			@include card-shadow;
+			background-color: $filterPrimaryColor;
+		}
+
+		&.applied {
+			background-color: $filterPrimaryColor;
+			border-radius: 5px;
+		}
+	}
+}
+
+.filter-panel,
+.replay {
+	.toggler__bar {
+		cursor: pointer;
+		border: none;
+		background-color: $filterPickerControlFontColor;
+
+		&::before {
+			background-color: $filterSecondaryColor;
+		}
+	}
+}
+
 .filter-controls {
 	display: flex;
 	flex-direction: row;
@@ -339,7 +345,7 @@
 	font-size: 14px;
 
 	.filters-history-open {
-		@include improved-clickable($filterPrimaryColor, 10px)
+		@include improved-clickable($filterPrimaryColor, 10px);
 	}
 
 	&__counts {
@@ -391,7 +397,6 @@
 	box-sizing: border-box;
 	display: flex;
 	align-items: center;
-	margin-bottom: 5px;
 
 	&:hover &__divider-text {
 		display: none;
@@ -464,16 +469,6 @@
 		}
 	}
 
-	&__toggler {
-		cursor: pointer;
-		border: none;
-		background-color: $filterPickerControlFontColor;
-
-		&::before {
-			background-color: $filterSecondaryColor;
-		}
-	}
-
 	&__datetime-input {
 		margin: 0 10px;
 	}
@@ -505,7 +500,7 @@
 	}
 
 	&__label {
-		width: 120px;
+		width: 140px;
 		font-weight: bold;
 		font-size: 14px;
 		flex-shrink: 0;
@@ -536,6 +531,9 @@
 		position: relative;
 		flex-wrap: wrap;
 		flex-grow: 1;
+		gap: 5px;
+		padding: 5px 8px;
+
 		&.filter-row__input {
 			margin: 0;
 			width: 100%;
