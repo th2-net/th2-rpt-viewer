@@ -661,7 +661,7 @@ export class SearchStore implements ISearchStore {
 
 	private onMessageIdsEvent = (searchDirection: SSESearchDirection, ev: Event) => {
 		this.resumeFromMessageIds[searchDirection] =
-			ev instanceof MessageEvent && ev.data ? JSON.parse(ev.data).messageIds : null;
+			ev instanceof MessageEvent && ev.data ? JSON.parse(ev.data) : null;
 	};
 
 	@action
