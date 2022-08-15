@@ -528,10 +528,9 @@ export class SearchStore implements ISearchStore {
 
 			if (isPaused || loadMore) {
 				if (this.formType === 'message') {
-					const messageIdEvent = this.resumeFromMessageIds[direction];
-
+					const messageIdEvent = this.resumeFromMessageIds[direction]?.messageIds;
 					if (messageIdEvent) {
-						params.messageId = Object.values(messageIdEvent).filter(Boolean);
+						params.messageId = Object.values(messageIdEvent).map(messageId => messageId.lastId);
 					}
 				} else {
 					params.resumeFromId = this.searchProgressState[direction].lastEventId;
