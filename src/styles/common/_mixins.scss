@@ -354,24 +354,24 @@
 		@if $showOnHoverOverParent {
 			display: none;
 		}
-
+		cursor: pointer;
 		width: 12px;
 		height: 12px;
 		flex-shrink: 0;
-		@include icon(url(../../resources/icons/bookmark-icon.svg), 12px, 12px);
+		@include icon(url(../../resources/icons/bookmark-add-icon.svg), 14px, 12px);
 
 		&.pinned {
 			display: inline-block;
-			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 11px);
+			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 12px);
 		}
 	}
 
 	&:hover .bookmark-button {
 		display: inline-block;
-		background: url(../../resources/icons/bookmark-add-hover.svg);
+		@include icon(url(../../resources/icons/bookmark-add-icon.svg), 14px, 12px);
 
 		&.pinned {
-			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 11px);
+			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 12px);
 		}
 	}
 }
