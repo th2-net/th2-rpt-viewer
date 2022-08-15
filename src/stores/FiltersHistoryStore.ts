@@ -74,7 +74,7 @@ class FiltersHistoryStore {
 	@observable
 	private initialized = false;
 
-	@observable
+	@observable.ref
 	public filterHistory: FiltersHistoryType<EventFilterState | MessageFilterState>[] = [];
 
 	@computed

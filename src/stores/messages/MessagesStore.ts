@@ -145,11 +145,7 @@ export default class MessagesStore {
 	}
 
 	@action
-	public applyFilter = (
-		filter: MessagesFilter,
-		sseFilters: MessageFilterState | null,
-		isSoftFilterApplied: boolean,
-	) => {
+	public applyFilter = (filter: MessagesFilter, sseFilters: MessageFilterState | null) => {
 		if (sseFilters) {
 			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
 		}
@@ -165,7 +161,7 @@ export default class MessagesStore {
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.highlightedMessageId = null;
-		this.filterStore.setMessagesFilter(filter, sseFilters, isSoftFilterApplied);
+		this.filterStore.setMessagesFilter(filter, sseFilters);
 	};
 
 	private init = async (defaultState: MessagesStoreDefaultStateType) => {

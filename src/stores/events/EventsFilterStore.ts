@@ -19,7 +19,7 @@ import moment from 'moment';
 import EventsFilter from '../../models/filter/EventsFilter';
 import { GraphStore } from '../GraphStore';
 import { SearchStore } from '../SearchStore';
-import { EventsFiltersInfo, EventSSEFilters } from '../../api/sse';
+import { EventsFiltersInfo, EventFilterKeys } from '../../api/sse';
 import { getDefaultEventsFiltersState } from '../../helpers/search';
 import { TimeRange } from '../../models/Timestamp';
 import { getObjectKeys } from '../../helpers/object';
@@ -86,6 +86,7 @@ export default class EventsFilterStore {
 		this.sseFilterSubscription = reaction(
 			() => this.searchStore.eventFilterInfo,
 			this.initSSEFilter,
+			{ fireImmediately: true },
 		);
 	}
 
@@ -111,9 +112,9 @@ export default class EventsFilterStore {
 	);
 
 	@computed
-	public get isEventsFilterApplied(): boolean {
+	public get isFilterApplied(): boolean {
 		if (!this.filter) return false;
-		return getObjectKeys(this.filter).some((filterName: EventSSEFilters) => {
+		return getObjectKeys(this.filter).some((filterName: EventFilterKeys) => {
 			if (filterName === 'status') {
 				return this.filter && this.filter[filterName].values !== 'any';
 			}
@@ -141,8 +142,12 @@ export default class EventsFilterStore {
 		this.isOpen = state;
 	};
 
+	@observable.ref
+	public filterInfo: EventsFiltersInfo[] = [];
+
 	@action
 	private initSSEFilter = (filterInfo: EventsFiltersInfo[]) => {
+		this.filterInfo = filterInfo;
 		if (this.filter) {
 			this.filter = {
 				...(getDefaultEventsFiltersState(filterInfo) || {}),

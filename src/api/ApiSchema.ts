@@ -22,9 +22,9 @@ import { TimeRange } from '../models/Timestamp';
 import {
 	SSEParamsEvents,
 	EventsFiltersInfo,
-	EventSSEFilters,
+	EventFilterKeys,
 	MessagesFilterInfo,
-	MessagesSSEFilters,
+	MessageFilterKeys,
 	SSEParams,
 } from './sse';
 import { IndexedDB } from './indexedDb';
@@ -104,8 +104,8 @@ export interface SSESchema {
 		sseParams: SSEParamsEvents,
 	) => EventSource;
 	getFilters: <T>(filterType: 'events' | 'messages') => Promise<T[]>;
-	getEventFilters: () => Promise<EventSSEFilters[]>;
-	getMessagesFilters: () => Promise<MessagesSSEFilters[]>;
-	getEventsFiltersInfo: (filters: EventSSEFilters[]) => Promise<EventsFiltersInfo[]>;
-	getMessagesFiltersInfo: (filters: MessagesSSEFilters[]) => Promise<MessagesFilterInfo[]>;
+	getEventFilters: () => Promise<EventFilterKeys[]>;
+	getMessagesFilters: () => Promise<MessageFilterKeys[]>;
+	getEventsFiltersInfo: (filters: EventFilterKeys[]) => Promise<EventsFiltersInfo[]>;
+	getMessagesFiltersInfo: (filters: MessageFilterKeys[]) => Promise<MessagesFilterInfo[]>;
 }
