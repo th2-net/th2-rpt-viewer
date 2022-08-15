@@ -29,6 +29,8 @@ import MessagesDataProviderStore from './MessagesDataProviderStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 import { SessionHistoryStore } from './SessionHistoryStore';
 import MessagesExportStore from './MessagesExportStore';
+import MessagesViewTypeStore from './MessagesViewTypeStore';
+import MessageDisplayRulesStore from './MessageDisplayRulesStore';
 
 export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
@@ -48,6 +50,8 @@ export default class MessagesStore {
 	public dataStore: MessagesDataProviderStore;
 
 	public exportStore = new MessagesExportStore();
+
+	public messageViewStore: MessagesViewTypeStore;
 
 	@observable
 	public selectedMessageId: String | null = null;
@@ -76,6 +80,7 @@ export default class MessagesStore {
 		private filterConfigStore: IFilterConfigStore,
 		private api: ApiSchema,
 		private sessionsStore: SessionHistoryStore,
+		private messageDisplayRulesStore: MessageDisplayRulesStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
 		this.filterStore = new MessagesFilterStore(
@@ -83,6 +88,8 @@ export default class MessagesStore {
 			defaultState && typeof defaultState === 'object' ? defaultState : undefined,
 		);
 		this.dataStore = new MessagesDataProviderStore(this, this.api);
+		this.messageViewStore = new MessagesViewTypeStore(this.messageDisplayRulesStore);
+
 		this.init(defaultState);
 
 		this.attachedMessagesSubscription = reaction(
@@ -94,6 +101,7 @@ export default class MessagesStore {
 			() => this.filterStore.params,
 			() => {
 				this.exportStore.disableExport();
+				this.messageViewStore.resetSavedViewTypes();
 			},
 		);
 	}

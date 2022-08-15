@@ -21,7 +21,6 @@ import { IEventsStore, IFilterConfigStore, ISearchStore } from 'models/Stores';
 import { Panel } from 'models/Panel';
 import { SessionHistoryStore } from 'modules/messages/stores//SessionHistoryStore';
 import MessageDisplayRulesStore from 'modules/messages/stores/MessageDisplayRulesStore';
-import MessagesViewTypeStore from 'modules/messages/stores/MessagesViewTypeStore';
 import MessagesStore, {
 	MessagesStoreDefaultStateType,
 	MessagesStoreURLState,
@@ -62,8 +61,6 @@ export default class WorkspaceStore {
 
 	public messagesStore: MessagesStore;
 
-	public messageViewStore: MessagesViewTypeStore;
-
 	public viewStore: WorkspaceViewStore;
 
 	public searchStore: ISearchStore;
@@ -94,12 +91,8 @@ export default class WorkspaceStore {
 			this.filterConfigStore,
 			this.api,
 			this.sessionsStore,
+			messageDisplayRulesStore,
 			initialState.messages,
-		);
-
-		this.messageViewStore = new MessagesViewTypeStore(
-			this.messageDisplayRulesStore,
-			this.messagesStore,
 		);
 
 		reaction(() => this.eventsStore.selectedNode, this.getAttachedMessages);

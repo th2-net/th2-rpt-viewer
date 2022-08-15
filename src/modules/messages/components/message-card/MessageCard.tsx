@@ -58,11 +58,6 @@ const MessageCard = observer((props: Props) => {
 
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
 
-	const isBookmarked =
-		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === id) !== -1;
-
-	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(id);
-
 	React.useEffect(() => {
 		const abortController = new AbortController();
 
@@ -96,17 +91,22 @@ const MessageCard = observer((props: Props) => {
 		};
 	}, [messagesStore.highlightedMessageId]);
 
-	const isAttached = computed(
-		() => !!messagesStore.attachedMessages.find(attMsg => attMsg.id === message.id),
+	const isBookmarked =
+		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === id) !== -1;
+
+	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(id);
+
+	const isAttached = computed(() =>
+		messagesStore.attachedMessages.some(attMsg => attMsg.id === message.id),
+	).get();
+
+	const isExported = computed(() =>
+		messagesStore.exportStore.exportMessages.includes(message),
 	).get();
 
 	const toogleMessagePin = React.useCallback(() => {
 		bookmarksStore.toggleMessagePin(message);
 	}, [bookmarksStore.toggleMessagePin]);
-
-	const isExported = computed(() =>
-		messagesStore.exportStore.exportMessages.includes(message),
-	).get();
 
 	const rootClass = createBemBlock(
 		'messages-list__item',
@@ -153,14 +153,14 @@ const RecoverableMessageCard = (props: OwnProps) => {
 
 	return (
 		<StateSaver stateKey={props.message.id}>
-			{(state: boolean, stateSaver) => (
+			{(isExpanded: boolean, setIsExpanded) => (
 				<MessageCard
 					message={props.message}
 					displayType={props.displayType}
 					viewTypeConfig={viewTypesConfig}
 					stateKey={props.message.id}
-					setIsExpanded={stateSaver}
-					isExpanded={state}
+					isExpanded={isExpanded}
+					setIsExpanded={setIsExpanded}
 					isDisplayRuleRaw={isDisplayRuleRaw}
 				/>
 			)}

@@ -14,45 +14,31 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, observable } from 'mobx';
 import { EventMessage } from 'models/EventMessage';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
-import { keyForMessage } from '../helpers/keys';
-import MessagesStore from './MessagesStore';
 import { SavedMessageViewType } from './SavedMessageViewType';
 
 class MessagesViewTypeStore {
-	messageDisplayRulesStore: MessageDisplayRulesStore;
-
-	messagesStore: MessagesStore;
-
-	constructor(messageDispalyRulesStore: MessageDisplayRulesStore, messagesStore: MessagesStore) {
-		this.messageDisplayRulesStore = messageDispalyRulesStore;
-		this.messagesStore = messagesStore;
-		reaction(() => this.filter, this.resetSavedViewTypes);
-	}
-
-	@computed
-	private get filter() {
-		return this.messagesStore.filterStore.params;
-	}
+	constructor(private messageDisplayRulesStore: MessageDisplayRulesStore) {}
 
 	@observable
 	public savedViewTypes = new Map<string, SavedMessageViewType>();
 
 	@action
 	public getSavedViewType = (message: EventMessage): SavedMessageViewType => {
-		const key = keyForMessage(message.id);
-		if (this.savedViewTypes.has(key)) {
-			return this.savedViewTypes.get(key) as SavedMessageViewType;
-		}
-		this.savedViewTypes.set(key, new SavedMessageViewType(message, this.messageDisplayRulesStore));
+		let savedViewType = this.savedViewTypes.get(message.id);
 
-		return this.savedViewTypes.get(key) as SavedMessageViewType;
+		if (!savedViewType) {
+			savedViewType = new SavedMessageViewType(message, this.messageDisplayRulesStore);
+			this.savedViewTypes.set(message.id, savedViewType);
+		}
+
+		return savedViewType;
 	};
 
 	@action
-	private resetSavedViewTypes = () => {
+	public resetSavedViewTypes = () => {
 		this.savedViewTypes.clear();
 	};
 }
