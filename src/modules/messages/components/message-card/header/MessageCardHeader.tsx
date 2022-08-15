@@ -28,7 +28,7 @@ export interface MessageInfoProps {
 	message: EventMessage;
 	addMessageToExport?: (message: EventMessage) => void;
 	viewType?: MessageViewType;
-	setViewType: (vt: MessageViewType, id: string) => void;
+	setViewType: (id: string, vt: MessageViewType) => void;
 	isBookmarked?: boolean;
 	isAttached?: boolean;
 	isHighlighted?: boolean;
@@ -55,7 +55,6 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 	} = props;
 	const { timestamp, sessionId, direction } = message;
 
-	// session arrow color, we calculating it for each session from-to pair, based on hash
 	const sessionBackgroundStyle: React.CSSProperties = {
 		position: 'absolute',
 		top: 0,
@@ -82,6 +81,8 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 
 	const formattedTimestamp = formatTime(timestampToNumber(timestamp));
 
+	const parsedMessage = message.parsedMessages ? message.parsedMessages[0] : undefined;
+
 	return (
 		<div className={headerClass}>
 			{isExport && isExported !== undefined && addMessageToExport && (
@@ -101,18 +102,18 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 				<span className='mc-header__session-id'>{sessionId}</span>
 			</Chip>
 			{displayType === CardDisplayType.FULL && <Chip>{message.id}</Chip>}
-			{displayType === CardDisplayType.FULL && message.parsedMessages && (
-				<Chip>{message.parsedMessages[0].message.metadata.id.subsequence[0]}</Chip>
+			{displayType === CardDisplayType.FULL && parsedMessage && (
+				<Chip>{parsedMessage.message.metadata.id.subsequence[0]}</Chip>
 			)}
-			{displayType === CardDisplayType.FULL && message.parsedMessages && (
-				<Chip title={`Name: ${message.parsedMessages[0].message.metadata.messageType}`}>
-					{message.parsedMessages[0].message.metadata.messageType}
+			{displayType === CardDisplayType.FULL && parsedMessage && (
+				<Chip title={`Name: ${parsedMessage.message.metadata.messageType}`}>
+					{parsedMessage.message.metadata.messageType}
 				</Chip>
 			)}
 			<div className='message-card-tools__wrapper'>
 				<MessageCardTools
 					{...messageCardToolsConfig}
-					parsedMessage={message.parsedMessages?.[0]}
+					parsedMessage={parsedMessage}
 					isScreenshotMsg={props.isScreenshotMsg}
 					viewType={viewType}
 					setViewType={setViewType}

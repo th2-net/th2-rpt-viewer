@@ -15,157 +15,118 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { createBemBlock } from 'helpers/styleCreators';
+import { EventMessage, MessageViewType } from 'models/EventMessage';
+import { createBemElement } from 'helpers/styleCreators';
+import { isEventMessage } from 'helpers/message';
 import CardDisplayType from 'models/util/CardDisplayType';
-import { useMessageBodySortStore, useBookmarksStore } from 'hooks/index';
-import StateSaver from 'components/util/StateSaver';
-import { EventMessage, MessageViewTypeConfig } from 'models/EventMessage';
-import { useMessagesStore } from '../../hooks/useMessagesStore';
-import { useMessagesDataStore } from '../../hooks/useMessagesDataStore';
-import { getViewTypesConfig } from '../../helpers/message';
-import { useMessagesViewTypeStore } from '../../hooks/useMessagesViewTypeStore';
-import MessageCardBase from './MessageCardBase';
+import { MessageCardViewTypeRendererProps } from './MessageBody';
+import { MessageCardToolsProps } from './MessageCardTools';
+import { MessageCardHeader } from './header/MessageCardHeader';
+import { ParsedMessageComponent } from './ParsedMessage';
 import MessageExpandButton from '../MessageExpandButton';
 import 'styles/messages.scss';
 
-export interface OwnProps {
+interface MessageCardProps {
 	message: EventMessage;
 	displayType: CardDisplayType;
+	addMessageToExport?: (msg: EventMessage) => void;
+	isExport?: boolean;
+	isExported?: boolean;
+	isAttached?: boolean;
+	isHighlighted?: boolean;
+	isBookmarked?: boolean;
+	toggleMessagePin?: () => void;
+	isEmbedded?: boolean;
+	sortOrderItems?: string[];
+	applyFilterToBody?: boolean;
+	isExpanded?: boolean;
+	setIsExpanded?: (isExpanded: boolean) => void;
+	viewTypesMap: Map<string, MessageViewType>;
+	setViewType: (id: string, vt: MessageViewType) => void;
 }
 
-export interface RecoveredProps {
-	viewTypeConfig: Map<string, MessageViewTypeConfig>;
-	isExpanded: boolean;
-	isDisplayRuleRaw: boolean;
-	setIsExpanded: (state: boolean) => void;
-	stateKey: string;
-}
+const MessageCard = (props: MessageCardProps) => {
+	const {
+		message,
+		isExpanded: isExpandedProp,
+		setIsExpanded: setIsExpandedProp,
+		isAttached,
+		isBookmarked,
+		toggleMessagePin,
+		displayType,
+		sortOrderItems = [],
+		applyFilterToBody = false,
+		viewTypesMap,
+		setViewType,
+	} = props;
 
-interface Props extends OwnProps, RecoveredProps {}
+	const [expanded, setIsExpanded] = React.useState(isExpandedProp || false);
 
-const MessageCard = observer((props: Props) => {
-	const { message } = props;
-	const { id } = message;
+	const isExpanded = isExpandedProp === undefined ? expanded : isExpandedProp;
+	const updateIsExpanded = setIsExpandedProp || setIsExpanded;
 
-	const messagesStore = useMessagesStore();
-	const messagesDataStore = useMessagesDataStore();
-	const bookmarksStore = useBookmarksStore();
-	const { sortOrderItems } = useMessageBodySortStore();
+	const { id, rawMessageBase64 } = message;
 
-	const [isHighlighted, setHighlighted] = React.useState(false);
+	const messageViewTypeRendererProps: MessageCardViewTypeRendererProps = {
+		messageId: id,
+		rawMessageBase64,
+		isSelected: isAttached || false,
+		sortOrderItems,
+		applyFilterToBody,
+	};
 
-	const highlightTimer = React.useRef<NodeJS.Timeout>();
+	const messageCardToolsConfig: MessageCardToolsProps = {
+		message,
+		isBookmarked,
+		toggleMessagePin,
+	};
 
-	React.useEffect(() => {
-		const abortController = new AbortController();
-
-		if (
-			messagesStore.filterStore.isSoftFilter &&
-			messagesDataStore.isSoftFiltered.get(id) === undefined
-		) {
-			messagesDataStore.matchMessage(id, abortController.signal);
-		}
-
-		return () => {
-			abortController.abort();
-		};
-	}, []);
-
-	React.useEffect(() => {
-		if (!isHighlighted && messagesStore.highlightedMessageId?.valueOf() === id) {
-			setHighlighted(true);
-
-			highlightTimer.current = setTimeout(() => {
-				setHighlighted(false);
-				messagesStore.highlightedMessageId = null;
-			}, 3000);
-		}
-
-		return () => {
-			if (highlightTimer.current) {
-				window.clearTimeout(highlightTimer.current);
-			}
-			setHighlighted(false);
-		};
-	}, [messagesStore.highlightedMessageId]);
-
-	const isBookmarked =
-		bookmarksStore.messages.findIndex(bookmarkedMessage => bookmarkedMessage.id === id) !== -1;
-
-	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(id);
-
-	const isAttached = computed(() =>
-		messagesStore.attachedMessages.some(attMsg => attMsg.id === message.id),
-	).get();
-
-	const isExported = computed(() =>
-		messagesStore.exportStore.exportMessages.includes(message),
-	).get();
-
-	const toogleMessagePin = React.useCallback(() => {
-		bookmarksStore.toggleMessagePin(message);
-	}, [bookmarksStore.toggleMessagePin]);
-
-	const rootClass = createBemBlock(
-		'messages-list__item',
-		isSoftFiltered ? 'soft-filtered' : null,
-		isExported ? 'exported' : null,
+	const indicatorClass = createBemElement(
+		'message-card',
+		'status',
+		isBookmarked ? 'bookmarked' : null,
 		isAttached ? 'attached' : null,
 	);
 
-	const isScreenshotMsg = false;
+	const messages = React.useMemo(() => {
+		const parsedMessages = message.parsedMessages || [];
+
+		return [...parsedMessages, message];
+	}, [message]);
 
 	return (
-		<div className={rootClass}>
-			<MessageCardBase
-				{...props}
-				addMessageToExport={messagesStore.exportStore.addMessageToExport}
-				isExport={messagesStore.exportStore.isExport}
-				toogleMessagePin={toogleMessagePin}
-				isBookmarked={isBookmarked}
-				isHighlighted={isHighlighted}
-				sortOrderItems={sortOrderItems}
-				isAttached={isAttached}
-				isExported={isExported}
+		<div className='message-card'>
+			<div className='message-card__messages'>
+				<div className={indicatorClass} />
+				<MessageCardHeader
+					{...props}
+					viewType={viewTypesMap.get(messages[0].id)}
+					setViewType={setViewType}
+					messageCardToolsConfig={messageCardToolsConfig}
+				/>
+				{messages.slice(0, isExpanded ? undefined : 1).map((msg, index) => (
+					<ParsedMessageComponent
+						key={msg.id}
+						parsedMessage={isEventMessage(msg) ? undefined : msg}
+						displayType={displayType}
+						viewType={viewTypesMap.get(msg.id)}
+						setViewType={setViewType}
+						messageCardToolsConfig={messageCardToolsConfig}
+						messageViewTypeRendererProps={messageViewTypeRendererProps}
+						displayHeader={index > 0}
+						rawMessageIndex={isEventMessage(msg) ? index + 1 : undefined}
+					/>
+				))}
+			</div>
+			<MessageExpandButton
+				isExpanded={isExpanded}
+				setExpanded={message.parsedMessages ? updateIsExpanded : undefined}
 			/>
-			{!isScreenshotMsg && (
-				<MessageExpandButton
-					isExpanded={props.isExpanded}
-					setExpanded={props.setIsExpanded}
-					isHighlighted={isHighlighted}
-					isDisplayRuleRaw={Boolean(props.isDisplayRuleRaw && message.parsedMessages)}
-					parsedMessages={message.parsedMessages}
-				/>
-			)}
 		</div>
-	);
-});
-
-const RecoverableMessageCard = (props: OwnProps) => {
-	const viewTypesStore = useMessagesViewTypeStore();
-	const { getSavedViewType } = viewTypesStore;
-
-	const viewTypesConfig = getViewTypesConfig(props.message, getSavedViewType);
-
-	const isDisplayRuleRaw = getSavedViewType(props.message).isDisplayRuleRaw;
-
-	return (
-		<StateSaver stateKey={props.message.id}>
-			{(isExpanded: boolean, setIsExpanded) => (
-				<MessageCard
-					message={props.message}
-					displayType={props.displayType}
-					viewTypeConfig={viewTypesConfig}
-					stateKey={props.message.id}
-					isExpanded={isExpanded}
-					setIsExpanded={setIsExpanded}
-					isDisplayRuleRaw={isDisplayRuleRaw}
-				/>
-			)}
-		</StateSaver>
 	);
 };
 
-export default observer(RecoverableMessageCard);
+MessageCard.displayName = 'MessageCard';
+
+export default observer(MessageCard);

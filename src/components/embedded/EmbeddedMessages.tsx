@@ -18,10 +18,8 @@ import React, { useCallback, useMemo } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
+import MessageCard from 'modules/messages/components/message-card/MessageCard';
 import MessagesUpdateButton from 'modules/messages/components/MessagesUpdateButton';
-import MessageCardBase from 'modules/messages/components/message-card/MessageCardBase';
-import MessageExpandButton from 'modules/messages/components/MessageExpandButton';
-import { getViewTypesConfig } from 'modules/messages/helpers/message';
 import { EventMessage } from '../../models/EventMessage';
 import SplashScreen from '../SplashScreen';
 import '../../styles/embedded.scss';
@@ -44,25 +42,22 @@ const viewStore = new EmbeddedMessagesViewTypeStore();
 const EmbeddedMessageCard = observer(
 	(props: { message: EventMessage; displayType: CardDisplayType }) => {
 		const { getSavedViewType } = viewStore;
-		const viewTypesConfig = getViewTypesConfig(props.message, getSavedViewType);
+		const viewTypeStore = getSavedViewType(props.message);
+		const viewTypesMap = viewTypeStore.viewTypes;
+		const setViewType = viewTypeStore.setViewType;
 
 		return (
 			<StateSaver stateKey={props.message.id}>
 				{(isExpanded: boolean, setIsExpanded) => (
 					<div className='messages-list__item'>
-						<MessageCardBase
-							viewTypeConfig={viewTypesConfig}
+						<MessageCard
+							viewTypesMap={viewTypesMap}
+							setViewType={setViewType}
 							message={props.message}
 							displayType={props.displayType}
 							isExpanded={isExpanded}
-							isDisplayRuleRaw={false}
 							isEmbedded={true}
-						/>
-						<MessageExpandButton
-							isExpanded={isExpanded}
-							setExpanded={setIsExpanded}
-							parsedMessages={props.message.parsedMessages}
-							isDisplayRuleRaw={false}
+							setIsExpanded={setIsExpanded}
 						/>
 					</div>
 				)}

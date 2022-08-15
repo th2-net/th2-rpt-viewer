@@ -14,14 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { EventMessage, MessageViewTypeConfig, MessageViewType } from 'models/EventMessage';
+import { EventMessage, MessageViewType } from 'models/EventMessage';
 import {
 	isMessageValue,
 	isSimpleValue,
 	MessageBodyField,
 	MessageBodyFields,
 } from '../models/MessageBody';
-import { SavedMessageViewType } from '../stores/SavedMessageViewType';
 
 export function normalizeFields(fields: MessageBodyFields) {
 	return Object.entries(fields).reduce(
@@ -32,6 +31,7 @@ export function normalizeFields(fields: MessageBodyFields) {
 		{},
 	);
 }
+
 export function normalizeField(field: MessageBodyField): string | object {
 	if (isSimpleValue(field)) return field.simpleValue;
 	if (isMessageValue(field)) {
@@ -46,36 +46,27 @@ export function normalizeField(field: MessageBodyField): string | object {
 	return field.listValue.values?.map(listValueField => normalizeField(listValueField)) || [];
 }
 
-export function getViewTypesConfig(
-	message: EventMessage,
-	getSavedViewType: (message: EventMessage) => SavedMessageViewType,
-) {
-	const viewTypes = getSavedViewType(message).viewTypes;
-	const config = new Map<string, MessageViewTypeConfig>();
-
-	config.set(message.id, {
-		viewType: viewTypes.get(message.id) as MessageViewType,
-		setViewType: getSavedViewType(message).setViewType,
-	});
-
-	if (message.parsedMessages) {
-		message.parsedMessages.forEach(parsedMessage => {
-			config.set(parsedMessage.id, {
-				viewType: viewTypes.get(parsedMessage.id),
-				setViewType: getSavedViewType(message).setViewType,
-			});
-		});
-	}
-
-	return config;
+export function isRawViewType(viewType: MessageViewType) {
+	return viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
 }
 
-export function defineViewTypeConfig(
-	viewTypeConfig: MessageViewTypeConfig | Map<string, MessageViewTypeConfig>,
-	id?: string,
-) {
-	if (id && viewTypeConfig instanceof Map) {
-		return viewTypeConfig.get(id) as MessageViewTypeConfig;
-	}
-	return viewTypeConfig as MessageViewTypeConfig;
+export function getDefaultViewTypesMap(message: EventMessage, defaultRule = MessageViewType.JSON) {
+	const parsedMessages = (message.parsedMessages || []).map(pm => pm.id);
+	return [message.id, ...parsedMessages].reduce((map, id) => {
+		if (id === message.id) {
+			map.set(id, getDefaultRawViewType(defaultRule));
+		} else {
+			map.set(id, getDefaultJSONViewType(defaultRule));
+		}
+
+		return map;
+	}, new Map() as Map<string, MessageViewType>);
+}
+
+export function getDefaultRawViewType(viewType: MessageViewType) {
+	return isRawViewType(viewType) ? viewType : MessageViewType.ASCII;
+}
+
+export function getDefaultJSONViewType(viewType: MessageViewType) {
+	return !isRawViewType(viewType) ? viewType : MessageViewType.JSON;
 }

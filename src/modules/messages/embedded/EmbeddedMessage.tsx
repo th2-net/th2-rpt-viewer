@@ -14,20 +14,23 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useEffect, useState } from 'react';
-import MessageCardBase from 'modules/messages/components/message-card/MessageCardBase';
-import MessageExpandButton from 'modules/messages/components/MessageExpandButton';
-import { EventMessage, MessageViewType, MessageViewTypeConfig } from '../../models/EventMessage';
-import SplashScreen from '../SplashScreen';
-import useElementSize from '../../hooks/useElementSize';
-import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../models/util/CardDisplayType';
+import React, { useCallback, useEffect, useState } from 'react';
+import { EventMessage, MessageViewType } from 'models/EventMessage';
+import SplashScreen from 'components/SplashScreen';
+import useElementSize from 'hooks/useElementSize';
+import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from 'models/util/CardDisplayType';
+import { getDefaultViewTypesMap } from '../helpers/message';
+import MessageCard from '../components/message-card/MessageCard';
 
 function EmbeddedMessage({ messageId }: { messageId: string }) {
 	const [message, setMessage] = useState<EventMessage | null>();
 	const [errorStatus, setErrorStatus] = useState<string | null>(null);
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
-	const [rawViewType, setRawViewType] = useState(MessageViewType.ASCII);
-	const [isExpanded, setIsExpanded] = React.useState(true);
+	const [viewType, setViewType] = useState<Map<string, MessageViewType>>(new Map());
+
+	const updateViewType = useCallback((id: string, newViewType: MessageViewType) => {
+		setViewType(vt => new Map(vt.set(id, newViewType)));
+	}, []);
+
 	const [wrapperContent, setWrapperContent] = React.useState<HTMLDivElement | null>(null);
 
 	const wrapperWidth = useElementSize(wrapperContent)?.width;
@@ -40,28 +43,20 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 		[wrapperWidth],
 	);
 
-	const viewTypeConfig: MessageViewTypeConfig = {
-		viewType,
-		setViewType,
-	};
-
-	const rawViewTypeConfig: MessageViewTypeConfig = {
-		viewType: rawViewType,
-		setViewType: setRawViewType,
-	};
-
 	useEffect(() => {
+		async function getMessage() {
+			const res = await fetch(`backend/message/${messageId}`);
+			if (res.ok) {
+				const msg = await res.json();
+				setViewType(getDefaultViewTypesMap(msg));
+				setMessage(msg);
+			} else {
+				setErrorStatus(`${res.status} ${res.statusText}`);
+			}
+		}
+
 		getMessage();
 	}, []);
-
-	async function getMessage() {
-		const res = await fetch(`backend/message/${messageId}`);
-		if (res.ok) {
-			setMessage(await res.json());
-		} else {
-			setErrorStatus(`${res.status} ${res.statusText}`);
-		}
-	}
 
 	const handleWrapperRef = React.useCallback(ref => {
 		setWrapperContent(ref);
@@ -74,23 +69,13 @@ function EmbeddedMessage({ messageId }: { messageId: string }) {
 	if (message) {
 		return (
 			<div className='embedded-wrapper' ref={handleWrapperRef}>
-				<div className='messages-list__item'>
-					<MessageCardBase
-						message={message}
-						displayType={displayType}
-						viewTypeConfig={viewTypeConfig}
-						rawViewTypeConfig={rawViewTypeConfig}
-						isExpanded={isExpanded}
-						isDisplayRuleRaw={false}
-						isEmbedded={true}
-					/>
-					<MessageExpandButton
-						isExpanded={isExpanded}
-						isDisplayRuleRaw={false}
-						setExpanded={setIsExpanded}
-						parsedMessages={message.parsedMessages}
-					/>
-				</div>
+				<MessageCard
+					message={message}
+					displayType={displayType}
+					setViewType={updateViewType}
+					viewTypesMap={viewType}
+					isEmbedded={true}
+				/>
 			</div>
 		);
 	}

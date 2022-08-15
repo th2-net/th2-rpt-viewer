@@ -43,7 +43,7 @@ function EmbeddedEvent({ eventId }: { eventId: string }) {
 
 	if (event) {
 		return (
-			<div className='embedded-wrapper'>
+			<>
 				<EmbeddedEventHeader event={event} />
 				{Array.isArray(event.body) ? (
 					event.body.map((bodyPayloadItem, index) => (
@@ -56,7 +56,7 @@ function EmbeddedEvent({ eventId }: { eventId: string }) {
 				) : (
 					<EventBodyCard key={eventId} body={event.body} parentEvent={event} />
 				)}
-			</div>
+			</>
 		);
 	}
 	return <SplashScreen />;

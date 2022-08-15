@@ -16,18 +16,90 @@
 
 @import './common/vars';
 
-.message-card-wrapper {
+.message-card {
 	@include scrollbar();
 	@include bookmark-button($showOnHoverOverParent: true);
-	overflow: hidden;
-	width: 100%;
-	align-items: flex-start;
+	position: relative;
 	display: flex;
-	align-items: flex-start;
-	border-radius: 16px 16px 0 0;
-	justify-content: space-between;
+	flex-direction: column;
+	flex-grow: 1;
+	width: 100%;
 
-	&:hover .parsed-message,
+	&__status {
+		position: absolute;
+		width: 4px;
+		height: calc(100% - 75px);
+    border-radius: 2px;
+    visibility: hidden;
+    left: 8px;
+    top: 12px;
+
+		&.bookmarked {
+			background: #a65cd6;
+			visibility: visible;
+		}
+
+		&.attached {
+			background: #f26c0d;
+			visibility: visible;
+		}
+
+		&.bookmarked.attached {
+			background: linear-gradient(to bottom, #a65cd6 50%, #f26c0d 50%);
+		}
+	}
+
+	& > div:first-child {
+		border-radius: 16px 16px 0 0;
+	}
+
+	& > div:last-child {
+		border-radius:  0 0 16px 16px;
+	}
+
+	&__messages {
+		overflow: hidden;
+		width: 100%;
+	}
+
+	& .expand {
+		width: 100%;
+		display: flex;
+		background-color: #fbfbfb;
+		font-weight: 400;
+		font-size: 14px;
+		line-height: 16px;
+		padding: 12px 8px;
+
+		&__raw-data-only {
+			display: flex;
+			flex-direction: row;
+			color: #ffb84e;
+			gap: 10px;
+			padding: 6px 16px;
+
+			&-icon {
+				@include icon(url(../../resources/icons/raw-data-warning.svg), 13px, 13px);
+			}
+		}
+
+		&__button {
+			margin-left: auto;
+			cursor: pointer;
+			background: #fcfcfc;
+			color: #4e8aff;
+			box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
+			border-radius: 20px;
+			padding: 6px 16px;
+
+			&.expanded {
+				background-color: #4e8aff;
+				color: #fff;
+			}
+		}
+	}
+
+	&:hover .parsed-message__body,
 	&:hover .mc-header__info {
 		background-color: $messageCardHoverBackground;
 	}
@@ -35,47 +107,6 @@
 	&:hover .mc-header {
 		&__is-attached-icon {
 			opacity: 1;
-		}
-	}
-}
-
-.message-card {
-	display: flex;
-	flex-direction: column;
-	flex-grow: 1;
-}
-
-.message-card-expand-wrapper {
-	display: flex;
-	background-color: #fbfbfb;
-	border-radius: 0 0 16px 16px;
-	font-weight: 400;
-	font-size: 14px;
-	line-height: 16px;
-	padding: 12px 8px;
-
-	&__expand-button {
-		margin-left: auto;
-		cursor: pointer;
-		background: #fcfcfc;
-		color: #4e8aff;
-		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
-		border-radius: 20px;
-		padding: 6px 16px;
-		&.expanded {
-			background-color: #4e8aff;
-			color: #fff;
-		}
-	}
-	&__warning {
-		display: flex;
-		flex-direction: row;
-		color: #ffb84e;
-		gap: 10px;
-		padding: 6px 16px;
-
-		&-icon {
-			@include icon(url(../../resources/icons/raw-data-warning.svg), 13px, 13px);
 		}
 	}
 }
@@ -430,7 +461,7 @@
 	}
 }
 
-.parsed-message-wrapper {
+.parsed-message {
 	&:hover .message-card-tools__ellipsis {
 		display: block;
 	}
@@ -439,14 +470,14 @@
 		border-radius: 20px;
 		box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.1);
 	}
-}
 
-.parsed-message {
-	background-color: #fbfbfb;
-	margin-bottom: 1px;
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
+	&__body {
+		background-color: #fbfbfb;
+		margin-bottom: 1px;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+	}
 }
 
 .mc-body {
@@ -601,25 +632,6 @@
 	}
 }
 
-.mc-expand-btn {
-	position: absolute;
-	top: 67px;
-	right: 12px;
-	padding-right: 5px;
-
-	&.rejected {
-		top: 80px;
-	}
-
-	&__icon {
-		height: 19px;
-		width: 19px;
-		background-image: url(../../resources/icons/arr4-up.svg);
-		background-size: 100%;
-		cursor: pointer;
-	}
-}
-
 .messages-list {
 	background-color: #f1f1f1;
 	display: inline-block;
@@ -634,36 +646,8 @@
 	}
 
 	&__item {
-		margin: 2px 5px;
+		padding: 2px 5px;
 		border-radius: 16px;
-
-		&-info {
-			position: relative;
-			display: flex;
-		}
-
-		&-indicator {
-			position: absolute;
-			margin: 12px 8px;
-			width: 4px;
-			height: calc(100% - 24px);
-			border-radius: 2px;
-			visibility: hidden;
-
-			&.bookmarked {
-				background: #a65cd6;
-				visibility: visible;
-			}
-
-			&.attached {
-				background: #f26c0d;
-				visibility: visible;
-			}
-
-			&.bookmarked.attached {
-				background: linear-gradient(to bottom, #a65cd6 50%, #f26c0d 50%);
-			}
-		}
 
 		&.soft-filtered {
 			border: 1px solid $filterPrimaryColor;

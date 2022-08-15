@@ -26,11 +26,6 @@ export enum MessageViewType {
 	BINARY = 'binary',
 }
 
-export type MessageViewTypeConfig = {
-	setViewType: (vt: MessageViewType, id: string) => void;
-	viewType?: MessageViewType;
-};
-
 export interface MessageSortOrderItem {
 	id: string;
 	item: string;

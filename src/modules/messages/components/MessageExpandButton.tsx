@@ -14,54 +14,33 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { createBemElement, createBemBlock } from 'helpers/styleCreators';
-import { ParsedMessage } from 'models/EventMessage';
+import { createBemElement } from 'helpers/styleCreators';
 import 'styles/messages.scss';
 
 interface Props {
 	isExpanded: boolean;
-	isDisplayRuleRaw: boolean;
-	isHighlighted?: boolean;
-	setExpanded: (state: boolean) => void;
-	parsedMessages: ParsedMessage[] | null;
+	setExpanded?: (state: boolean) => void;
 }
 
 const MessageExpandButton = (props: Props) => {
-	const { isExpanded, isHighlighted, isDisplayRuleRaw, setExpanded, parsedMessages } = props;
+	const { isExpanded, setExpanded } = props;
 
-	const rootClass = createBemBlock(
-		'message-card-expand-wrapper',
-		isHighlighted ? 'highlighted' : null,
-	);
+	const buttonClass = createBemElement('expand', 'button', isExpanded ? 'expanded' : null);
 
-	const buttonClass = createBemElement(
-		'message-card-expand-wrapper',
-		'expand-button',
-		isExpanded ? 'expanded' : null,
-	);
-
-	const warningClass = createBemElement('message-card-expand-wrapper', 'warning');
-
-	const changeExpandState = () => {
-		setExpanded(!isExpanded);
-	};
+	const warningClass = createBemElement('expand', 'raw-data-only');
 
 	return (
-		<div className={rootClass}>
-			{!isDisplayRuleRaw ? (
-				<>
-					{parsedMessages ? (
-						<div className={buttonClass} onClick={changeExpandState}>
-							{isExpanded ? 'Show Less' : 'Show More'}
-						</div>
-					) : (
-						<div className={warningClass}>
-							<div className={'message-card-expand-wrapper__warning-icon'} />
-							<p>Only Raw Data Available</p>
-						</div>
-					)}
-				</>
-			) : null}
+		<div className='expand'>
+			{setExpanded ? (
+				<div className={buttonClass} onClick={() => setExpanded(!isExpanded)}>
+					{isExpanded ? 'Show Less' : 'Show More'}
+				</div>
+			) : (
+				<div className={warningClass}>
+					<div className='expand__raw-data-only-icon' />
+					<p>Only Raw Data Available</p>
+				</div>
+			)}
 		</div>
 	);
 };

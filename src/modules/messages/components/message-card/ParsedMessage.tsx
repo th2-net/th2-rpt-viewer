@@ -15,67 +15,38 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { ParsedMessage, MessageViewType } from 'models/EventMessage';
-import { createBemBlock } from 'helpers/styleCreators';
+import { ParsedMessage, MessageViewType, EventMessage } from 'models/EventMessage';
 import CardDisplayType from 'models/util/CardDisplayType';
 import { MessageCardToolsProps } from './MessageCardTools';
-import MessageCardViewTypeRenderer, {
-	MessageCardViewTypeRendererProps,
-} from './MessageCardViewTypeRenderer';
+import MessageBodyComponent, { MessageCardViewTypeRendererProps } from './MessageBody';
 import { ParsedMessageHeader } from './header/ParsedMessageHeader';
 
 export interface ParsedMessageProps {
 	displayType: CardDisplayType;
-	isHighlighted?: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
+	rawMessageIndex?: number;
 }
 
 interface OwnProps {
-	parsedMessage: ParsedMessage;
-	displayHeader: boolean;
+	parsedMessage?: ParsedMessage;
+	message?: EventMessage;
+	displayHeader?: boolean;
 	viewType?: MessageViewType;
-	setViewType: (vt: MessageViewType, id: string) => void;
+	setViewType: (id: string, vt: MessageViewType) => void;
 }
 
 export const ParsedMessageComponent = React.memo((props: ParsedMessageProps & OwnProps) => {
-	const {
-		displayType,
-		isHighlighted,
-		parsedMessage,
-		displayHeader,
-		viewType,
-		setViewType,
-		messageCardToolsConfig,
-		messageViewTypeRendererProps,
-	} = props;
-
-	const parsedMessageClass = createBemBlock('parsed-message', isHighlighted ? 'highlighted' : null);
+	const { parsedMessage, displayHeader = true, messageViewTypeRendererProps } = props;
 
 	return (
-		<div className='parsed-message-wrapper'>
-			{displayHeader && (
-				<ParsedMessageHeader
-					messageCardToolsConfig={messageCardToolsConfig}
-					parsedMessage={parsedMessage}
-					isScreenshotMsg={false}
-					isHighlighted={isHighlighted}
-					viewType={viewType}
-					setViewType={setViewType}
-				/>
-			)}
-			<div className={parsedMessageClass}>
-				<div className='mc-body'>
-					<div className='mc-body__human'>
-						<MessageCardViewTypeRenderer
-							{...messageViewTypeRendererProps}
-							viewType={viewType}
-							messageBody={parsedMessage.message}
-							displayType={displayType}
-						/>
-					</div>
-				</div>
-			</div>
+		<div className='parsed-message'>
+			{displayHeader && <ParsedMessageHeader {...props} isScreenshotMsg={false} />}
+			<MessageBodyComponent
+				messageBody={parsedMessage?.message}
+				{...messageViewTypeRendererProps}
+				{...props}
+			/>
 		</div>
 	);
 });

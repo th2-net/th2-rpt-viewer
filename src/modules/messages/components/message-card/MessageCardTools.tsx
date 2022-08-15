@@ -25,7 +25,7 @@ import { showNotification } from 'helpers/showNotification';
 import { Apps, CrossOriginMessage } from 'models/PostMessage';
 import useViewMode from 'hooks/useViewMode';
 import { ViewMode } from 'components/ViewModeProvider';
-import { normalizeFields } from '../../helpers/message';
+import { isRawViewType, normalizeFields } from '../../helpers/message';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
@@ -39,7 +39,7 @@ export type MessageCardToolsProps = {
 
 type OwnProps = {
 	viewType?: MessageViewType;
-	setViewType: (vt: MessageViewType, id: string) => void;
+	setViewType: (id: string, vt: MessageViewType) => void;
 	parsedMessage?: ParsedMessage;
 	isScreenshotMsg?: boolean;
 };
@@ -53,8 +53,6 @@ const MessageCardTools = ({
 	setViewType,
 	isScreenshotMsg,
 }: MessageCardToolsProps & OwnProps) => {
-	const { id } = message;
-
 	const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const appViewMode = useViewMode();
@@ -65,10 +63,10 @@ const MessageCardTools = ({
 		}
 	});
 
-	const isRawViewType = viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
+	const isRaw = viewType !== undefined && isRawViewType(viewType);
 
 	const viewTypes =
-		parsedMessage && !isRawViewType
+		parsedMessage && !isRaw
 			? [MessageViewType.JSON, MessageViewType.FORMATTED]
 			: [MessageViewType.BINARY, MessageViewType.ASCII];
 
@@ -108,7 +106,7 @@ const MessageCardTools = ({
 	}
 
 	const toggleViewType = (v: MessageViewType) => {
-		setViewType(v, parsedMessage && !isRawViewType ? parsedMessage.id : message.id);
+		setViewType(parsedMessage && !isRaw ? parsedMessage.id : message.id, v);
 	};
 
 	return (
@@ -179,7 +177,7 @@ const MessageCardTools = ({
 				)}
 				{!isScreenshotMsg && (
 					<div className='message-card-tools__controls-group'>
-						{isRawViewType ? (
+						{isRaw ? (
 							<div
 								title='Copy content to clipboard'
 								className='message-card-tools__item'
@@ -213,7 +211,7 @@ const MessageCardTools = ({
 				{isScreenshotMsg && (
 					<div className='message-card-tools__item'>
 						<a
-							download={`${id}.${parsedMessage?.message.metadata.messageType.replace(
+							download={`${message.id}.${parsedMessage?.message.metadata.messageType.replace(
 								'image/',
 								'',
 							)}`}

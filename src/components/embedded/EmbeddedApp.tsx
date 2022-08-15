@@ -14,8 +14,8 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import EmbeddedMessage from 'modules/messages/embedded/EmbeddedMessage';
 import EmbeddedEvent from './EmbeddedEvent';
-import EmbeddedMessage from './EmbeddedMessage';
 import '../../styles/embedded.scss';
 
 function EmbeddedApp() {
@@ -23,13 +23,19 @@ function EmbeddedApp() {
 	const eventId = searchParams.get('eventId');
 	const messageId = searchParams.get('messageId');
 
-	if (eventId) {
-		return <EmbeddedEvent eventId={eventId} />;
+	if (!eventId && !messageId) {
+		throw new Error("'messageId' or 'eventId' query parameter expected");
 	}
-	if (messageId) {
-		return <EmbeddedMessage messageId={messageId} />;
-	}
-	throw new Error("'messageId' or 'eventId' query parameter expected");
+
+	return (
+		<div className='embedded-wrapper'>
+			{eventId ? (
+				<EmbeddedEvent eventId={eventId} />
+			) : messageId ? (
+				<EmbeddedMessage messageId={messageId} />
+			) : null}
+		</div>
+	);
 }
 
 export default EmbeddedApp;

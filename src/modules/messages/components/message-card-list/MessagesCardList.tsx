@@ -24,7 +24,7 @@ import CardDisplayType from 'models/util/CardDisplayType';
 import { useMessagesDataStore } from '../../hooks/useMessagesDataStore';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 import MessagesVirtualizedList from './MessagesVirtualizedList';
-import MessageCard from '../message-card/MessageCard';
+import MessageCardListItem from '../message-card/MessageCardListItem';
 import 'styles/messages.scss';
 
 const ERROR_MESSAGE = 'Error occured while loading messages';
@@ -36,7 +36,7 @@ function MessageCardList() {
 
 	const renderMessage = useCallback(
 		(message: EventMessage, displayType: CardDisplayType) => (
-			<MessageCard message={message} displayType={displayType} key={message.id} />
+			<MessageCardListItem message={message} displayType={displayType} />
 		),
 		[],
 	);

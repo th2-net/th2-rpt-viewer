@@ -18,20 +18,18 @@ import { action, computed, observable, reaction } from 'mobx';
 import { matchWildcardRule } from 'helpers/regexp';
 import { MessageViewType, EventMessage } from 'models/EventMessage';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
+import { getDefaultRawViewType, getDefaultViewTypesMap, isRawViewType } from '../helpers/message';
 
 export class SavedMessageViewType {
-	message: EventMessage;
-
-	messageDisplayRulesStore?: MessageDisplayRulesStore;
-
-	constructor(message: EventMessage, messageDisplayRulesStore?: MessageDisplayRulesStore) {
+	constructor(
+		private message: EventMessage,
+		private messageDisplayRulesStore?: MessageDisplayRulesStore,
+	) {
 		this.message = message;
 
 		this.messageDisplayRulesStore = messageDisplayRulesStore;
 
-		this.getViewTypes();
-
-		reaction(() => this.displayRule, this.onDisplayRuleChange);
+		reaction(() => this.displayRule, this.onDisplayRuleChange, { fireImmediately: true });
 	}
 
 	@computed
@@ -45,9 +43,9 @@ export class SavedMessageViewType {
 		});
 		if (!this.message.parsedMessages) {
 			return declaredRule
-				? getRawViewType(declaredRule.viewType)
+				? getDefaultRawViewType(declaredRule.viewType)
 				: rootRule
-				? getRawViewType(rootRule.viewType)
+				? getDefaultRawViewType(rootRule.viewType)
 				: MessageViewType.ASCII;
 		}
 
@@ -59,47 +57,24 @@ export class SavedMessageViewType {
 	}
 
 	@observable
-	public viewTypes: Map<string, MessageViewType> = new Map();
-
-	@observable
-	public isDisplayRuleRaw: boolean = isRawViewType(this.displayRule);
-
-	@action
-	private getViewTypes = () => {
-		this.viewTypes.set(this.message.id, MessageViewType.ASCII);
-		if (this.message.parsedMessages)
-			this.message.parsedMessages.forEach(parsedMessage =>
-				this.viewTypes.set(parsedMessage.id, this.displayRule),
-			);
-	};
+	public viewTypes: Map<string, MessageViewType> = getDefaultViewTypesMap(
+		this.message,
+		this.displayRule,
+	);
 
 	@action
 	private onDisplayRuleChange = (vt: MessageViewType) => {
 		if (!isRawViewType(vt)) {
-			this.viewTypes.forEach((viewType, key) => {
-				if (key !== this.message.id) {
-					this.viewTypes.set(key, vt);
-				} else {
-					this.viewTypes.set(key, MessageViewType.ASCII);
-				}
+			this.message.parsedMessages?.forEach(parsedMessage => {
+				this.viewTypes.set(parsedMessage.id, vt);
 			});
-			this.isDisplayRuleRaw = false;
 		} else {
 			this.viewTypes.set(this.message.id, vt);
-			this.isDisplayRuleRaw = true;
 		}
 	};
 
 	@action
-	public setViewType = (vt: string, id: string) => {
-		this.viewTypes.set(id, vt as MessageViewType);
+	public setViewType = (id: string, vt: MessageViewType) => {
+		this.viewTypes = this.viewTypes.set(id, vt);
 	};
-}
-
-function isRawViewType(viewType: MessageViewType) {
-	return viewType === MessageViewType.ASCII || viewType === MessageViewType.BINARY;
-}
-
-function getRawViewType(viewType: MessageViewType) {
-	return isRawViewType(viewType) ? viewType : MessageViewType.ASCII;
 }
