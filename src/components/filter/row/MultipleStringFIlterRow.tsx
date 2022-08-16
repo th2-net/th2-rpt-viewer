@@ -30,7 +30,7 @@ interface MultipleStringFilterRowProps {
 	config: FilterRowMultipleStringsConfig;
 }
 
-export default function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
+function MultipleStringFilterRow({ config }: MultipleStringFilterRowProps) {
 	const input = React.useRef<HTMLInputElement>();
 	const bubbleRefs = React.useRef<{ [index: number]: BubbleRef | null }>({});
 	const rootRef = React.useRef<HTMLDivElement>(null);
@@ -166,3 +166,14 @@ export default function MultipleStringFilterRow({ config }: MultipleStringFilter
 		</div>
 	);
 }
+
+export default React.memo(MultipleStringFilterRow, (prevProps, nextProps) => {
+	const props: (keyof FilterRowMultipleStringsConfig)[] = [
+		'values',
+		'currentValue',
+		'disabled',
+		'autocompleteList',
+		'isInvalid',
+	];
+	return props.every(prop => prevProps.config[prop] === nextProps.config[prop]);
+});

@@ -18,14 +18,16 @@ import React from 'react';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { useOutsideClickListener } from '../../hooks';
 import { ModalPortal } from '../util/Portal';
-import FilterRow from './row';
 import { raf } from '../../helpers/raf';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
+import { EventFilterState, MessageFilterState } from '../search-panel/SearchPanelFilters';
+import FiltersHistory from '../filters-history/FiltersHistory';
+import { FilterRows } from './FilerRows';
 import '../../styles/filter.scss';
 
 const PANEL_WIDTH = 840;
 
-interface Props {
+interface Props<T extends MessageFilterState | EventFilterState> {
 	isFilterApplied: boolean;
 	isLoading: boolean;
 	isDisabled?: boolean;
@@ -34,10 +36,12 @@ interface Props {
 	setShowFilter: (isShown: boolean) => void;
 	onSubmit: () => void;
 	onClearAll: () => void;
-	renderFooter?: () => React.ReactNode;
+	filter?: T | null;
+	setFilter?: (filter: T | null) => void;
+	type?: 'event' | 'message';
 }
 
-const FilterPanel = (props: Props) => {
+const FilterPanel = <T extends MessageFilterState | EventFilterState>(props: Props<T>) => {
 	const {
 		isFilterApplied,
 		showFilter,
@@ -46,8 +50,10 @@ const FilterPanel = (props: Props) => {
 		isDisabled = false,
 		onSubmit,
 		onClearAll,
-		renderFooter,
 		isLoading,
+		filter,
+		type,
+		setFilter,
 	} = props;
 
 	const filterBaseRef = React.useRef<HTMLDivElement>(null);
@@ -92,7 +98,7 @@ const FilterPanel = (props: Props) => {
 	}
 
 	const filterWrapperClass = createStyleSelector(
-		'filter-wrapper',
+		'filter-panel__button',
 		showFilter ? 'active' : null,
 		isFilterApplied ? 'applied' : null,
 	);
@@ -129,20 +135,18 @@ const FilterPanel = (props: Props) => {
 					: null}
 			</div>
 			<ModalPortal isOpen={showFilter}>
-				<div ref={filterBaseRef} className='filter'>
-					{config.map(rowConfig =>
-						Array.isArray(rowConfig) ? (
-							<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
-								{rowConfig.map(_rowConfig => (
-									<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
-								))}
-							</div>
-						) : (
-							<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
-						),
-					)}
+				<div ref={filterBaseRef} className='filter filter-panel'>
+					<FilterRows config={config} />
 					<div className='filter__controls filter-controls'>
-						{renderFooter && renderFooter()}
+						{filter && setFilter && (
+							<FiltersHistory
+								type={type}
+								sseFilter={{
+									state: filter as MessageFilterState,
+									setState: setFilter as any,
+								}}
+							/>
+						)}
 						<div className='filter-controls__clear-btn' onClick={onClearAllClick}>
 							<div className='filter-controls__clear-icon' />
 							Clear All

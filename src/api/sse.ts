@@ -33,37 +33,47 @@ export interface SSEHeartbeat {
 	scanCounter: number;
 }
 
-export interface SSEFilterInfo {
-	name: any;
-	hint: string;
-	parameters: SSEFilterParameter[];
-}
+export type SSEFilterInfo = EventsFiltersInfo | MessagesFilterInfo;
 
 export interface SSEFilterParameter {
 	defaultValue: boolean | string | string[] | null;
 	hint: string;
-	name: string;
+	name: 'conjunct' | 'negative' | 'values';
 	type: { value: 'string' | 'boolean' | 'string[]' | 'switcher' };
 }
 
-export type EventSSEFilters = 'attachedMessageId' | 'type' | 'name' | 'body' | 'status' | 'text';
-export type MessagesSSEFilters = 'attachedEventIds' | 'type' | 'body' | 'text';
+export type EventFilterKeys =
+	| 'attachedMessageId'
+	| 'type'
+	| 'name'
+	| 'body'
+	| 'status'
+	| 'event_generic';
+
+export type MessageFilterKeys =
+	| 'attachedEventIds'
+	| 'type'
+	| 'body'
+	| 'bodyBinary'
+	| 'message_generic';
+
+export type FilterKeys = EventFilterKeys | MessageFilterKeys;
 
 export interface EventsFiltersInfo {
-	name: EventSSEFilters;
+	name: EventFilterKeys;
 	hint: string;
 	parameters: SSEFilterParameter[];
 }
 
 export interface MessagesFilterInfo {
-	name: MessagesSSEFilters;
+	name: MessageFilterKeys;
 	hint: string;
 	parameters: SSEFilterParameter[];
 }
 
 export interface EventSSEParams extends BaseSSEParams {
 	parentEvent?: string;
-	filters?: Array<EventSSEFilters>;
+	filters?: Array<EventFilterKeys>;
 	'attachedMessageId-values'?: string;
 	'attachedMessageId-negative'?: boolean;
 	'attachedMessageId-conjunct'?: boolean;
@@ -85,7 +95,7 @@ export const toStream = (
 
 export interface MessagesSSEParams extends BaseSSEParams {
 	stream: string[];
-	filters?: Array<MessagesSSEFilters>;
+	filters?: Array<MessageFilterKeys>;
 	'attachedEventIds-values'?: string[];
 	'attachedEventIds-negative'?: boolean;
 	'attachedEventIds-conjunct'?: boolean;
@@ -227,10 +237,10 @@ const sseApi: SSESchema = {
 		throw res;
 	},
 	getEventFilters: () => {
-		return sseApi.getFilters<EventSSEFilters>('events');
+		return sseApi.getFilters<EventFilterKeys>('events');
 	},
 	getMessagesFilters: () => {
-		return sseApi.getFilters<MessagesSSEFilters>('messages');
+		return sseApi.getFilters<MessageFilterKeys>('messages');
 	},
 	getEventsFiltersInfo: async filters => {
 		const eventFilterInfo = await Promise.all<EventsFiltersInfo>(
@@ -245,7 +255,7 @@ const sseApi: SSESchema = {
 				filterInfo.parameters = [
 					{
 						type: { value: 'switcher' },
-						name: 'value',
+						name: 'values',
 						defaultValue: 'any',
 						hint: 'passed, failed, any',
 					},

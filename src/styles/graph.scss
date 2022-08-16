@@ -82,7 +82,8 @@
 			flex-shrink: 0;
 
 			&.pinned-message {
-				@include icon(url(../../resources/icons/bookmark-added-hover.svg), 14px, 14px);
+				margin: 0 6px;
+				@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 12px);
 			}
 
 			&.attached-message {
@@ -354,7 +355,8 @@
 		}
 
 		&.pinned-message-icon {
-			@include icon(url(../../resources/icons/bookmark-added-hover.svg), 16px, 16px);
+			margin-left: 2px;
+			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 11px);
 		}
 
 		&.bookmarked-failed-icon,
@@ -588,11 +590,11 @@
 		background: transparent;
 		color: $workspaceLinkGetterColor;
 		font: 11px 'Open sans', sans-serif;
-		
+
 		&:disabled {
 			color: grey;
 			border-color: grey;
-			opacity: .5;
+			opacity: 0.5;
 		}
 	}
 }
@@ -752,18 +754,18 @@
 
 .graph-button {
 	cursor: pointer;
-    padding: 3px 6px;
-    outline: none;
-    border: 1px solid $workspaceLinkGetterColor;
-    border-radius: 4px;
-    background: transparent;
-    color: $workspaceLinkGetterColor;
-    font: 11px 'Open sans', sans-serif;
+	padding: 3px 6px;
+	outline: none;
+	border: 1px solid $workspaceLinkGetterColor;
+	border-radius: 4px;
+	background: transparent;
+	color: $workspaceLinkGetterColor;
+	font: 11px 'Open sans', sans-serif;
 	text-transform: capitalize;
-    
-    &:disabled {
-        color: grey;
-        border-color: grey;
-        opacity: .5;
-    }
+
+	&:disabled {
+		color: grey;
+		border-color: grey;
+		opacity: 0.5;
+	}
 }
