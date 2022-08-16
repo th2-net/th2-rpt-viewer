@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React, { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { EventMessage } from '../../models/EventMessage';
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import SplashScreen from '../SplashScreen';
@@ -23,7 +24,6 @@ import useElementSize from '../../hooks/useElementSize';
 import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../util/CardDisplayType';
 import EmbeddedMessagesViewTypeStore from './embedded-stores/EmbeddedMessagesViewTypeStore';
 import { getViewTypesConfig } from '../../helpers/message';
-import { observer } from 'mobx-react-lite';
 
 const viewStore = new EmbeddedMessagesViewTypeStore();
 
