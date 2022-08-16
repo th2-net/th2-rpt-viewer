@@ -27,7 +27,7 @@ import CardDisplayType from '../../../../util/CardDisplayType';
 
 export interface MessageCardRawProps {
 	message: EventMessage;
-	viewType?: MessageViewType;
+	viewType: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
 	displayType: CardDisplayType;
 	isScreenshotMsg: boolean;
