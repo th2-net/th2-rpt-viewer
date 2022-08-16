@@ -56,7 +56,6 @@ const EmbeddedMessageCard = observer(
 							displayType={props.displayType}
 							isExpanded={isExpanded}
 							isDisplayRuleRaw={false}
-							isEmbedded={true}
 						/>
 						<MessageExpandButton
 							isExpanded={isExpanded}

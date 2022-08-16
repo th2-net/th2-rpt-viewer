@@ -28,7 +28,7 @@ export enum MessageViewType {
 
 export type MessageViewTypeConfig = {
 	setViewType: (vt: MessageViewType, id: string) => void;
-	viewType?: MessageViewType;
+	viewType: MessageViewType;
 };
 
 export interface MessageSortOrderItem {

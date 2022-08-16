@@ -23,7 +23,7 @@ import { createBemBlock } from '../../../../helpers/styleCreators';
 export interface ParsedMessageHeaderProps {
 	parsedMessage?: ParsedMessage;
 	rawMessageIndex?: number;
-	viewType?: MessageViewType;
+	viewType: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
 	isHighlighted?: boolean;
 	isScreenshotMsg: boolean;

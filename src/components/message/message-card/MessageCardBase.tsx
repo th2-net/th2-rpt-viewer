@@ -34,13 +34,11 @@ export interface MessageCardBaseProps {
 	addMessageToExport?: () => void;
 	isExport?: boolean;
 	isExported?: boolean;
-	viewTypeConfig: MessageViewTypeConfig | Map<string, MessageViewTypeConfig>;
-	rawViewTypeConfig?: MessageViewTypeConfig;
+	viewTypeConfig: Map<string, MessageViewTypeConfig>;
 	isAttached?: boolean;
 	isHighlighted?: boolean;
 	isBookmarked?: boolean;
 	toogleMessagePin?: () => void;
-	isEmbedded?: boolean;
 	sortOrderItems?: string[];
 	isExpanded: boolean;
 	isDisplayRuleRaw: boolean;
@@ -52,7 +50,6 @@ const MessageCardBase = React.memo(
 		hoverMessage,
 		unhoverMessage,
 		viewTypeConfig,
-		rawViewTypeConfig,
 		isDisplayRuleRaw,
 		isExpanded,
 		isAttached,
@@ -139,14 +136,8 @@ const MessageCardBase = React.memo(
 						{(!message.parsedMessages || isExpanded || isDisplayRuleRaw) && (
 							<MessageCardRaw
 								message={message}
-								viewType={
-									rawViewTypeConfig?.viewType ||
-									defineViewTypeConfig(viewTypeConfig, message.id).viewType
-								}
-								setViewType={
-									rawViewTypeConfig?.setViewType ||
-									defineViewTypeConfig(viewTypeConfig, message.id).setViewType
-								}
+								viewType={defineViewTypeConfig(viewTypeConfig, message.id).viewType}
+								setViewType={defineViewTypeConfig(viewTypeConfig, message.id).setViewType}
 								displayType={displayType}
 								isScreenshotMsg={false}
 								isHighlighted={isHighlighted}

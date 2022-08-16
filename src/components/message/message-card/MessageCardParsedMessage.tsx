@@ -34,7 +34,7 @@ export interface ParsedMessageProps {
 interface OwnProps {
 	parsedMessage: ParsedMessage;
 	parsedMessageIndex: number;
-	viewType?: MessageViewType;
+	viewType: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
 }
 
