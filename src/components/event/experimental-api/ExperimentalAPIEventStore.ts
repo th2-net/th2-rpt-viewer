@@ -2,9 +2,11 @@ import { useMemo, useEffect, useState } from 'react';
 import { observable, runInAction, computed, action } from 'mobx';
 import { EventAction } from '../../../models/EventAction';
 import api from '../../../api';
+import eventHttpApi from '../../../api/event';
 import { isAbortError } from '../../../helpers/fetch';
 import { useWorkspaceStore } from '../../../hooks';
 import { isEventAction } from '../../../helpers/event';
+import { EventStoreDefaultStateType } from '../../../stores/events/EventsStore';
 
 export class ExperimentalAPIEventStore {
 	@observable rootIds: string[] = [];
@@ -25,13 +27,39 @@ export class ExperimentalAPIEventStore {
 
 	@observable scrolledIndex: null | Number = null;
 
-	constructor() {
+	events: EventStoreDefaultStateType;
+
+	constructor(events: EventStoreDefaultStateType) {
+		this.events = events;
+		console.log('events', events);
 		this.getRootIds();
+		this.loadEvent((events as any)?.selectedEventId);
 	}
+
+	@action
+	loadEvent = async (eventId: string) => {
+		if (eventId) {
+			console.log('evnetID', eventId);
+			const data = await this.fetchEvent(eventId);
+			const firstChild = JSON.parse(JSON.stringify(data));
+			const parents = await eventHttpApi.getEventParents(firstChild.eventId);
+			for (let i = 0; i < parents.length; i++) {
+				this.cache.set(parents[i].eventId, parents[i]);
+				if (parents[i].parentEventId) {
+					this.fetchChildren(parents[i].eventId);
+					// this.parentsChildrenMapMap.set(parents[i].parentEventId, [parents[i].eventId]);
+				}
+				this.isExpanded.set(parents[i].parentEventId, true);
+			}
+			this.scrollToEvent(eventId);
+			console.log('parents', parents);
+		}
+	};
 
 	@action
 	selectEvent = (event: EventAction | null) => {
 		this.selectedEvent = event;
+		console.log(event);
 	};
 
 	@action
@@ -110,7 +138,7 @@ export class ExperimentalAPIEventStore {
 	};
 
 	fetchEvent = async (eventId: string, signal?: AbortSignal): Promise<EventAction> => {
-		const cached = this.cache.get(eventId);
+		const cached = await this.cache.get(eventId);
 		if (cached) return cached;
 
 		const data = await api.events.getEvent(eventId, signal);
@@ -119,11 +147,14 @@ export class ExperimentalAPIEventStore {
 	};
 
 	getParentNodes(eventId: string, cache: Map<string, EventAction>): EventAction[] {
-		let event = cache.get(eventId);
+		const event = cache.get(eventId);
 		const path = [];
-
-		while (event && event?.parentEventId !== null) {
-			event = cache.get(event.parentEventId);
+		let firstChild;
+		if (event) {
+			firstChild = JSON.parse(JSON.stringify(event));
+		}
+		while (firstChild && firstChild?.parentEventId !== null) {
+			firstChild = cache.get(firstChild.parentEventId);
 			path.unshift(event);
 		}
 

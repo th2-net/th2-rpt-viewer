@@ -95,7 +95,7 @@ export default class RootStore {
 					eventsStore.searchStore.tokens.length > 0
 						? eventsStore.searchStore.tokens.map(t => t.pattern)
 						: undefined,
-				selectedEventId: eventsStore.selectedNode?.eventId,
+				selectedEventId: activeWorkspace.experimentalAPIEventsStore.selectedEvent?.eventId,
 				flattenedListView:
 					eventsStore.viewStore.flattenedListView === false
 						? undefined
