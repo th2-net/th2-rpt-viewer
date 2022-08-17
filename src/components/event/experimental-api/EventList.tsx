@@ -117,10 +117,13 @@ function EventTreeListBase(props: Props) {
 		}
 	}, [eventStore.scrolledIndex]);
 
+	const computeItemKey = React.useCallback((index: number, eventId: string) => eventId, []);
+
 	return (
 		<div className='actions-list' ref={listRef}>
 			<StateSaverProvider>
 				<Virtuoso
+					computeItemKey={computeItemKey}
 					firstItemIndex={firstItemIndex}
 					initialTopMostItemIndex={initialItemCount.current - 1}
 					data={currentNodes}

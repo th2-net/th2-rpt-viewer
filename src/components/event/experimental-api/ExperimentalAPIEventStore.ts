@@ -31,14 +31,19 @@ export class ExperimentalAPIEventStore {
 
 	constructor(initialState: EventStoreDefaultStateType) {
 		this.getRootIds();
-		if (typeof initialState !== 'string') {
-			if (typeof initialState?.selectedEventId === 'string')
-				this.loadEvent(initialState.selectedEventId);
+
+		if (initialState) {
+			const targetEventId =
+				typeof initialState === 'string' ? initialState : initialState.selectedEventId;
+
+			if (targetEventId) {
+				this.loadTargetEvent(targetEventId);
+			}
 		}
 	}
 
 	@action
-	loadEvent = async (eventId: string) => {
+	loadTargetEvent = async (eventId: string) => {
 		const parents = await eventHttpApi.getEventParents(eventId);
 		for (let i = 0; i < parents.length; i++) {
 			this.cache.set(parents[i].eventId, parents[i]);
@@ -54,7 +59,6 @@ export class ExperimentalAPIEventStore {
 	@action
 	selectEvent = (event: EventAction | null) => {
 		this.selectedEvent = event;
-		console.log(event);
 	};
 
 	@action
