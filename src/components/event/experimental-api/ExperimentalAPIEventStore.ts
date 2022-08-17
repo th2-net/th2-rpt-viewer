@@ -31,7 +31,6 @@ export class ExperimentalAPIEventStore {
 
 	constructor(events: EventStoreDefaultStateType) {
 		this.events = events;
-		console.log('events', events);
 		this.getRootIds();
 		this.loadEvent((events as any)?.selectedEventId);
 	}
@@ -39,20 +38,17 @@ export class ExperimentalAPIEventStore {
 	@action
 	loadEvent = async (eventId: string) => {
 		if (eventId) {
-			console.log('evnetID', eventId);
 			const data = await this.fetchEvent(eventId);
 			const firstChild = JSON.parse(JSON.stringify(data));
 			const parents = await eventHttpApi.getEventParents(firstChild.eventId);
 			for (let i = 0; i < parents.length; i++) {
 				this.cache.set(parents[i].eventId, parents[i]);
 				if (parents[i].parentEventId) {
-					this.fetchChildren(parents[i].eventId);
-					// this.parentsChildrenMapMap.set(parents[i].parentEventId, [parents[i].eventId]);
+					this.parentsChildrenMapMap.set(parents[i].parentEventId, [parents[i].eventId]);
 				}
 				this.isExpanded.set(parents[i].parentEventId, true);
 			}
 			this.scrollToEvent(eventId);
-			console.log('parents', parents);
 		}
 	};
 
