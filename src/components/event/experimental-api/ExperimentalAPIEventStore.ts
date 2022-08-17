@@ -27,29 +27,26 @@ export class ExperimentalAPIEventStore {
 
 	@observable scrolledIndex: null | Number = null;
 
-	events: EventStoreDefaultStateType;
-
-	constructor(events: EventStoreDefaultStateType) {
-		this.events = events;
+	constructor(initialState: EventStoreDefaultStateType) {
 		this.getRootIds();
-		this.loadEvent((events as any)?.selectedEventId);
+		if (typeof initialState !== 'string') {
+			if (typeof initialState?.selectedEventId === 'string')
+				this.loadEvent(initialState.selectedEventId);
+		}
 	}
 
 	@action
 	loadEvent = async (eventId: string) => {
-		if (eventId) {
-			const data = await this.fetchEvent(eventId);
-			const firstChild = JSON.parse(JSON.stringify(data));
-			const parents = await eventHttpApi.getEventParents(firstChild.eventId);
-			for (let i = 0; i < parents.length; i++) {
-				this.cache.set(parents[i].eventId, parents[i]);
-				if (parents[i].parentEventId) {
-					this.parentsChildrenMapMap.set(parents[i].parentEventId, [parents[i].eventId]);
-				}
-				this.isExpanded.set(parents[i].parentEventId, true);
+		const parents = await eventHttpApi.getEventParents(eventId);
+		for (let i = 0; i < parents.length; i++) {
+			this.cache.set(parents[i].eventId, parents[i]);
+			if (parents[i].parentEventId) {
+				this.parentsChildrenMapMap.set(parents[i].parentEventId, [parents[i].eventId]);
 			}
-			this.scrollToEvent(eventId);
+			this.isExpanded.set(parents[i].parentEventId, true);
 		}
+		this.selectEvent(parents[parents.length - 1]);
+		this.scrollToEvent(eventId);
 	};
 
 	@action
@@ -143,14 +140,11 @@ export class ExperimentalAPIEventStore {
 	};
 
 	getParentNodes(eventId: string, cache: Map<string, EventAction>): EventAction[] {
-		const event = cache.get(eventId);
+		let event = cache.get(eventId);
 		const path = [];
-		let firstChild;
-		if (event) {
-			firstChild = JSON.parse(JSON.stringify(event));
-		}
-		while (firstChild && firstChild?.parentEventId !== null) {
-			firstChild = cache.get(firstChild.parentEventId);
+
+		while (event && event?.parentEventId !== null) {
+			event = cache.get(event.parentEventId);
 			path.unshift(event);
 		}
 
