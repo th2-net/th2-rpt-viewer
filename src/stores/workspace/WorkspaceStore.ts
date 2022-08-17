@@ -57,8 +57,6 @@ export type WorkspaceInitialState = Partial<{
 }>;
 
 export default class WorkspaceStore {
-	public experimentalAPIEventsStore = new ExperimentalAPIEventStore();
-
 	public eventsStore: EventsStore;
 
 	public messagesStore: MessagesStore;
@@ -68,6 +66,8 @@ export default class WorkspaceStore {
 	public viewStore: WorkspaceViewStore;
 
 	public graphStore: GraphStore;
+
+	public experimentalAPIEventsStore: ExperimentalAPIEventStore;
 
 	public id = nanoid();
 
@@ -96,6 +96,7 @@ export default class WorkspaceStore {
 			this.workspacesStore.filtersHistoryStore,
 			initialState.events,
 		);
+		this.experimentalAPIEventsStore = new ExperimentalAPIEventStore(initialState.events);
 		this.messagesStore = new MessagesStore(
 			this,
 			this.graphStore,

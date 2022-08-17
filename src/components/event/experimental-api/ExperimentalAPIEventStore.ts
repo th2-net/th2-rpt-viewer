@@ -2,9 +2,11 @@ import { useMemo, useEffect, useState } from 'react';
 import { observable, runInAction, computed, action } from 'mobx';
 import { EventAction } from '../../../models/EventAction';
 import api from '../../../api';
+import eventHttpApi from '../../../api/event';
 import { isAbortError } from '../../../helpers/fetch';
 import { useWorkspaceStore } from '../../../hooks';
 import { isEventAction } from '../../../helpers/event';
+import { EventStoreDefaultStateType } from '../../../stores/events/EventsStore';
 
 export class ExperimentalAPIEventStore {
 	@observable rootIds: string[] = [];
@@ -25,13 +27,32 @@ export class ExperimentalAPIEventStore {
 
 	@observable scrolledIndex: null | Number = null;
 
-	constructor() {
+	constructor(initialState: EventStoreDefaultStateType) {
 		this.getRootIds();
+		if (typeof initialState !== 'string') {
+			if (typeof initialState?.selectedEventId === 'string')
+				this.loadEvent(initialState.selectedEventId);
+		}
 	}
+
+	@action
+	loadEvent = async (eventId: string) => {
+		const parents = await eventHttpApi.getEventParents(eventId);
+		for (let i = 0; i < parents.length; i++) {
+			this.cache.set(parents[i].eventId, parents[i]);
+			if (parents[i].parentEventId) {
+				this.parentsChildrenMapMap.set(parents[i].parentEventId, [parents[i].eventId]);
+			}
+			this.isExpanded.set(parents[i].parentEventId, true);
+		}
+		this.selectEvent(parents[parents.length - 1]);
+		this.scrollToEvent(eventId);
+	};
 
 	@action
 	selectEvent = (event: EventAction | null) => {
 		this.selectedEvent = event;
+		console.log(event);
 	};
 
 	@action
@@ -110,7 +131,7 @@ export class ExperimentalAPIEventStore {
 	};
 
 	fetchEvent = async (eventId: string, signal?: AbortSignal): Promise<EventAction> => {
-		const cached = this.cache.get(eventId);
+		const cached = await this.cache.get(eventId);
 		if (cached) return cached;
 
 		const data = await api.events.getEvent(eventId, signal);
