@@ -9,6 +9,8 @@ import { isEventAction } from '../../../helpers/event';
 import { EventStoreDefaultStateType } from '../../../stores/events/EventsStore';
 
 export class ExperimentalAPIEventStore {
+	private CHILDREN_COUNT_LIMIT = 20;
+
 	@observable rootIds: string[] = [];
 
 	@observable isExpanded: Map<string, boolean> = new Map();
@@ -17,7 +19,7 @@ export class ExperimentalAPIEventStore {
 
 	@observable isLoadingRootIds = false;
 
-	@observable parentsChildrenMapMap: Map<string, string[]> = new Map();
+	@observable parentsChildrenMap: Map<string, string[]> = new Map();
 
 	@observable isLoadingChildren: Map<string, boolean> = new Map();
 
@@ -41,7 +43,7 @@ export class ExperimentalAPIEventStore {
 		for (let i = 0; i < parents.length; i++) {
 			this.cache.set(parents[i].eventId, parents[i]);
 			if (parents[i].parentEventId) {
-				this.parentsChildrenMapMap.set(parents[i].parentEventId, [parents[i].eventId]);
+				this.parentsChildrenMap.set(parents[i].parentEventId, [parents[i].eventId]);
 			}
 			this.isExpanded.set(parents[i].parentEventId, true);
 		}
@@ -83,7 +85,7 @@ export class ExperimentalAPIEventStore {
 	@computed get tree() {
 		const getNodesList = (eventId: string): string[] => {
 			if (this.isExpanded.get(eventId)) {
-				const children = this.parentsChildrenMapMap.get(eventId) || [];
+				const children = this.parentsChildrenMap.get(eventId) || [];
 				return [eventId, ...children.flatMap(getNodesList)];
 			}
 			return [eventId];
@@ -107,14 +109,21 @@ export class ExperimentalAPIEventStore {
 
 	fetchChildren = async (eventId: string) => {
 		if (this.isLoadingChildren.get(eventId) || this.hasMoreChildren.get(eventId) === false) return;
-		const currentChildren = this.parentsChildrenMapMap.get(eventId) || [];
+		this.isLoadingChildren.set(eventId, true);
+		const currentChildren = this.parentsChildrenMap.get(eventId) || [];
+
 		try {
-			const ids = await api.events.getChildrenIds({ parentId: eventId });
+			const ids = await api.events.getChildrenIds({
+				parentId: eventId,
+				limit: this.CHILDREN_COUNT_LIMIT + 1,
+				offset: this.parentsChildrenMap.get(eventId)?.length || 0,
+			});
 
 			runInAction(() => {
-				this.hasMoreChildren.set(eventId, false);
+				this.hasMoreChildren.set(eventId, ids.length > this.CHILDREN_COUNT_LIMIT);
 				this.isLoadingChildren.set(eventId, false);
-				this.parentsChildrenMapMap.set(eventId, [...currentChildren, ...ids]);
+				ids.splice(this.CHILDREN_COUNT_LIMIT, 1);
+				this.parentsChildrenMap.set(eventId, [...currentChildren, ...ids]);
 			});
 		} catch (error) {
 			runInAction(() => {
@@ -152,7 +161,7 @@ export class ExperimentalAPIEventStore {
 	}
 
 	getChildrenNodes(parentId: string): string[] {
-		return this.parentsChildrenMapMap.get(parentId) || [];
+		return this.parentsChildrenMap.get(parentId) || [];
 	}
 }
 

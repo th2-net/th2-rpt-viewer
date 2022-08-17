@@ -49,6 +49,7 @@ export interface EventApiSchema {
 	getChildrenIds: (
 		params: {
 			limit?: number;
+			offset?: number;
 			parentId?: string;
 			probe?: boolean;
 		},
