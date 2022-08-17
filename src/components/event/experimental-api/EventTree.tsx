@@ -39,7 +39,7 @@ function EventTree({ eventId }: EventTreeProps) {
 	}).get();
 
 	const childrenCount = computed(
-		() => eventsStore.parentsChildrenMapMap.get(eventId)?.length || 0,
+		() => eventsStore.parentsChildrenMap.get(eventId)?.length || 0,
 	).get();
 
 	const hasChildren = computed(
@@ -53,7 +53,10 @@ function EventTree({ eventId }: EventTreeProps) {
 
 	const onExpandClick = () => {
 		eventsStore.toggleExpand(eventId);
-		eventsStore.fetchChildren(eventId);
+
+		if (!eventsStore.parentsChildrenMap.get(eventId)?.length) {
+			eventsStore.fetchChildren(eventId);
+		}
 	};
 
 	const showLoadButton = computed(() => {
@@ -65,7 +68,7 @@ function EventTree({ eventId }: EventTreeProps) {
 			const siblings = eventsStore.getChildrenNodes(parentId);
 
 			isLastChild = siblings.length > 0 && siblings[siblings.length - 1] === eventId;
-			parentHasMoreChilds = eventsDataStore.hasUnloadedChildren.get(parentId) === true;
+			parentHasMoreChilds = eventsStore.hasMoreChildren.get(parentId) === true;
 		}
 
 		return isLastChild && parentHasMoreChilds;

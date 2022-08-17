@@ -20,8 +20,8 @@ import { EventAction } from '../models/EventAction';
 import { getEventParentId } from '../helpers/event';
 
 const eventHttpApi: EventApiSchema = {
-	getChildrenIds: async ({ limit, parentId, probe = false }, signal) => {
-		const params = createURLSearchParams({ id: parentId, limit, probe });
+	getChildrenIds: async ({ limit, offset, parentId, probe = false }, signal) => {
+		const params = createURLSearchParams({ id: parentId, limit, offset, probe });
 		const res = await fetch(`backend/eventChildren?${params}`, {
 			signal,
 		});
