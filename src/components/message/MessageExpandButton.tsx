@@ -21,21 +21,13 @@ import { ParsedMessage } from '../../models/EventMessage';
 interface Props {
 	isExpanded: boolean;
 	isScreenshotMsg: boolean;
-	isDisplayRuleRaw: boolean;
 	isHighlighted?: boolean;
 	setExpanded: (state: boolean) => void;
 	parsedMessages: ParsedMessage[] | null;
 }
 
 const MessageExpandButton = (props: Props) => {
-	const {
-		isExpanded,
-		isHighlighted,
-		isScreenshotMsg,
-		isDisplayRuleRaw,
-		setExpanded,
-		parsedMessages,
-	} = props;
+	const { isExpanded, isHighlighted, isScreenshotMsg, setExpanded, parsedMessages } = props;
 
 	const rootClass = createBemBlock(
 		'message-card-expand-wrapper',
@@ -56,7 +48,7 @@ const MessageExpandButton = (props: Props) => {
 
 	return (
 		<div className={rootClass}>
-			{!isScreenshotMsg && !isDisplayRuleRaw ? (
+			{!isScreenshotMsg ? (
 				<>
 					{parsedMessages ? (
 						<div className={buttonClass} onClick={changeExpandState}>

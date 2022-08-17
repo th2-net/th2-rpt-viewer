@@ -97,11 +97,13 @@ const MessageCardBase = React.memo(
 			isExported,
 			displayType,
 			isScreenshotMsg: false,
+			isDisplayRuleRaw,
 			messageCardToolsConfig,
 		};
 
 		const parsedMessageProps: ParsedMessageProps = {
 			displayType,
+			isDisplayRuleRaw,
 			isHighlighted,
 			messageCardToolsConfig,
 			messageViewTypeRendererProps,
@@ -120,31 +122,65 @@ const MessageCardBase = React.memo(
 				<div className='message-card-wrapper'>
 					<div className='message-card'>
 						<MessageCardHeader {...messageInfoProps} />
-						{!isDisplayRuleRaw &&
-							message.parsedMessages
-								?.filter((parsedMessage, index) => (isExpanded ? parsedMessage : index === 0))
-								.map((parsedMessage, index) => (
-									<ParsedMessageComponent
-										{...parsedMessageProps}
-										key={parsedMessage.id}
-										parsedMessage={parsedMessage}
-										parsedMessageIndex={index}
-										viewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).viewType}
-										setViewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType}
+						{!isDisplayRuleRaw ? (
+							<>
+								{message.parsedMessages
+									?.filter(parsedMessage =>
+										isExpanded
+											? parsedMessage
+											: parsedMessage.message.metadata.id.subsequence[0] === 1,
+									)
+									.map(parsedMessage => (
+										<ParsedMessageComponent
+											{...parsedMessageProps}
+											key={parsedMessage.id}
+											parsedMessage={parsedMessage}
+											viewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).viewType}
+											setViewType={
+												defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType
+											}
+										/>
+									))}
+								{(!message.parsedMessages || isExpanded) && (
+									<MessageCardRaw
+										message={message}
+										viewType={defineViewTypeConfig(viewTypeConfig, message.id).viewType}
+										setViewType={defineViewTypeConfig(viewTypeConfig, message.id).setViewType}
+										displayType={displayType}
+										isScreenshotMsg={false}
+										isHighlighted={isHighlighted}
+										isDisplayRuleRaw={isDisplayRuleRaw}
+										messageCardToolsConfig={messageCardToolsConfig}
+										messageViewTypeRendererProps={messageViewTypeRendererProps}
 									/>
-								))}
-						{(!message.parsedMessages || isExpanded || isDisplayRuleRaw) && (
-							<MessageCardRaw
-								message={message}
-								viewType={defineViewTypeConfig(viewTypeConfig, message.id).viewType}
-								setViewType={defineViewTypeConfig(viewTypeConfig, message.id).setViewType}
-								displayType={displayType}
-								isScreenshotMsg={false}
-								isHighlighted={isHighlighted}
-								isDisplayRuleRaw={isDisplayRuleRaw}
-								messageCardToolsConfig={messageCardToolsConfig}
-								messageViewTypeRendererProps={messageViewTypeRendererProps}
-							/>
+								)}
+							</>
+						) : (
+							<>
+								<MessageCardRaw
+									message={message}
+									viewType={defineViewTypeConfig(viewTypeConfig, message.id).viewType}
+									setViewType={defineViewTypeConfig(viewTypeConfig, message.id).setViewType}
+									displayType={displayType}
+									isScreenshotMsg={false}
+									isHighlighted={isHighlighted}
+									isDisplayRuleRaw={isDisplayRuleRaw}
+									messageCardToolsConfig={messageCardToolsConfig}
+									messageViewTypeRendererProps={messageViewTypeRendererProps}
+								/>
+								{isExpanded &&
+									message.parsedMessages?.map(parsedMessage => (
+										<ParsedMessageComponent
+											{...parsedMessageProps}
+											key={parsedMessage.id}
+											parsedMessage={parsedMessage}
+											viewType={defineViewTypeConfig(viewTypeConfig, parsedMessage.id).viewType}
+											setViewType={
+												defineViewTypeConfig(viewTypeConfig, parsedMessage.id).setViewType
+											}
+										/>
+									))}
+							</>
 						)}
 					</div>
 				</div>

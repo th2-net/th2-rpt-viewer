@@ -22,10 +22,10 @@ import { createBemBlock } from '../../../../helpers/styleCreators';
 
 export interface ParsedMessageHeaderProps {
 	parsedMessage?: ParsedMessage;
-	rawMessageIndex?: number;
 	viewType: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
 	isHighlighted?: boolean;
+	isRawMessage: boolean;
 	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 }
@@ -35,7 +35,7 @@ export const ParsedMessageHeader = React.memo((props: ParsedMessageHeaderProps) 
 		parsedMessage,
 		viewType,
 		setViewType,
-		rawMessageIndex,
+		isRawMessage,
 		isScreenshotMsg,
 		isHighlighted,
 	} = props;
@@ -47,19 +47,21 @@ export const ParsedMessageHeader = React.memo((props: ParsedMessageHeaderProps) 
 			<Chip>
 				<div className='mc-header__message-icon'></div>
 			</Chip>
-			<Chip title={`Session: ${parsedMessage?.message.metadata.id.sequence}`}>
-				{parsedMessage?.message.metadata.id.subsequence[0] || rawMessageIndex}
-			</Chip>
-			{!rawMessageIndex && (
-				<Chip
-					className='mc-header__value'
-					title={
-						parsedMessage
-							? `Name: ${parsedMessage.message.metadata.messageType}`
-							: 'Name: RawMessage'
-					}>
-					{parsedMessage?.message.metadata.messageType}
-				</Chip>
+			{!isRawMessage && (
+				<>
+					<Chip title={`Session: ${parsedMessage?.message.metadata.id.sequence}`}>
+						{parsedMessage?.message.metadata.id.subsequence[0]}
+					</Chip>
+					<Chip
+						className='mc-header__value'
+						title={
+							parsedMessage
+								? `Name: ${parsedMessage.message.metadata.messageType}`
+								: 'Name: RawMessage'
+						}>
+						{parsedMessage?.message.metadata.messageType}
+					</Chip>
+				</>
 			)}
 
 			<div className='message-card-tools__wrapper'>

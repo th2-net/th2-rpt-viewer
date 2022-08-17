@@ -62,7 +62,6 @@ const EmbeddedMessageCard = observer(
 							setExpanded={setIsExpanded}
 							parsedMessages={props.message.parsedMessages}
 							isScreenshotMsg={false}
-							isDisplayRuleRaw={false}
 						/>
 					</div>
 				)}
