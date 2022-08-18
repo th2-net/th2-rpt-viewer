@@ -18,15 +18,28 @@ import React from 'react';
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { FilterRowMultipleStringsConfig } from '../../models/filter/FilterInputs';
-import { useMessagesDataStore, useMessagesWorkspaceStore, useSessionsStore } from '../../hooks';
+import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessageFilterState } from '../search-panel/SearchPanelFilters';
-import MessagesFilterSessionFilter from './MessageFilterSessionFilter';
-import MessageFilterWarning from './MessageFilterWarning';
-import MessageReplayModal from '../message/MessageReplayModal';
-import useSetState from '../../hooks/useSetState';
+import SessionFilter from './SessionFilterRow';
 import MessageExport from '../message/MessageExport';
 import FilterButton from './FilterButton';
+import ReplayModal from '../message/ReplayModal';
+import FilterWarning from './FilterWarning';
+import {
+	useMessageFiltersAutocomplete,
+	useSessionAutocomplete,
+} from '../../hooks/useMessagesAutocomplete';
+import { useFilterConfig } from '../../hooks/useFilterConfig';
+import { MessageFilterKeys } from '../../api/sse';
+
+const filterOrder: MessageFilterKeys[] = [
+	'attachedEventIds',
+	'type',
+	'body',
+	'bodyBinary',
+	'message_generic',
+];
 
 interface Props {
 	showFilter: boolean;
@@ -39,25 +52,23 @@ const MessagesFilterPanel = (props: Props) => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
-	const sessionsStore = useSessionsStore();
 	const { filterStore } = messagesStore;
 
-	const [filter, setFilter] = useSetState<MessageFilterState | null>(filterStore.sseMessagesFilter);
-	const [currentStream, setCurrentStream] = React.useState('');
-	const [streams, setStreams] = React.useState<Array<string>>([]);
-	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
+	const autocompleteLists = useMessageFiltersAutocomplete(filterStore.filterInfo);
 
-	React.useEffect(() => {
-		setFilter(filterStore.sseMessagesFilter);
-	}, [filterStore.sseMessagesFilter]);
+	const { filter } = useFilterConfig({
+		filterInfo: filterStore.filterInfo,
+		filter: filterStore.sseMessagesFilter,
+		order: filterOrder,
+		autocompleteLists,
+	});
+
+	const [streams, setStreams] = React.useState<Array<string>>([]);
+	const [currentStream, setCurrentStream] = React.useState('');
 
 	React.useEffect(() => {
 		setStreams(filterStore.filter.streams);
 	}, [filterStore.filter.streams]);
-
-	React.useEffect(() => {
-		setIsSoftFilterApplied(filterStore.isSoftFilter);
-	}, [filterStore.isSoftFilter]);
 
 	const submitChanges = React.useCallback(() => {
 		searchStore.stopSearch();
@@ -66,14 +77,9 @@ const MessagesFilterPanel = (props: Props) => {
 				...filterStore.filter,
 				streams,
 			},
-			filter,
-			isSoftFilterApplied,
+			filter as MessageFilterState,
 		);
-	}, [filter, filterStore.filter, streams, isSoftFilterApplied]);
-
-	const stopLoading = React.useCallback(() => {
-		messagesDataStore.stopMessagesLoading();
-	}, []);
+	}, [filter, filterStore.filter, streams, filterStore.isSoftFilter]);
 
 	const isMessageListLoading = computed(
 		() =>
@@ -88,14 +94,7 @@ const MessagesFilterPanel = (props: Props) => {
 			(messagesStore.isFilteringTargetMessages || messagesStore.isLoadingAttachedMessages),
 	).get();
 
-	const sessionsAutocomplete: string[] = React.useMemo(() => {
-		return [
-			...sessionsStore.sessions.map(s => s.session),
-			...messagesStore.messageSessions.filter(
-				session => sessionsStore.sessions.findIndex(s => s.session === session) === -1,
-			),
-		];
-	}, [messagesStore.messageSessions, sessionsStore.sessions]);
+	const sessionsAutocomplete = useSessionAutocomplete();
 
 	const areSessionInvalid: boolean = React.useMemo(() => {
 		return (
@@ -129,12 +128,12 @@ const MessagesFilterPanel = (props: Props) => {
 				showFilter={showFilter}
 				isLoading={secondaryLoadingStatus}
 			/>
-			<MessageReplayModal />
-			<MessageFilterWarning />
-			<MessagesFilterSessionFilter
+			<ReplayModal />
+			<FilterWarning />
+			<SessionFilter
 				config={sessionFilterConfig}
 				submitChanges={submitChanges}
-				stopLoading={stopLoading}
+				stopLoading={messagesDataStore.stopMessagesLoading}
 				isLoading={isMessageListLoading}
 			/>
 			<MessageExport

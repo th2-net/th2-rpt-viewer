@@ -53,6 +53,7 @@
 		background-color: transparent;
 		border: none;
 		outline: none;
+		min-width: 95px;
 
 		&.disabled {
 			opacity: 0.6;
@@ -107,6 +108,12 @@
 		color: #ffffff;
 		background-color: #5eba6e;
 		margin: 2px 5px;
+	}
+
+	&__controls {
+		margin-left: 65px;
+		height: 40px;
+		padding: 5px 10px 0 0;
 	}
 
 	&__counter {
@@ -308,6 +315,43 @@
 	}
 }
 
+.filter-panel {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+
+	&__button {
+		position: relative;
+		height: 100%;
+		border-radius: 5px 5px 0 0;
+		display: flex;
+		align-items: center;
+
+		&.active {
+			@include card-shadow;
+			background-color: $filterPrimaryColor;
+		}
+
+		&.applied {
+			background-color: $filterPrimaryColor;
+			border-radius: 5px;
+		}
+	}
+}
+
+.filter-panel,
+.replay {
+	.toggler__bar {
+		cursor: pointer;
+		border: none;
+		background-color: $filterPickerControlFontColor;
+
+		&::before {
+			background-color: $filterSecondaryColor;
+		}
+	}
+}
+
 .filter-controls {
 	display: flex;
 	justify-content: flex-end;
@@ -449,16 +493,6 @@
 		}
 	}
 
-	&__toggler {
-		cursor: pointer;
-		border: none;
-		background-color: $filterPickerControlFontColor;
-
-		&::before {
-			background-color: $filterSecondaryColor;
-		}
-	}
-
 	&__datetime-input {
 		margin: 0 10px;
 	}
@@ -527,6 +561,9 @@
 		position: relative;
 		flex-wrap: wrap;
 		flex-grow: 1;
+		gap: 5px;
+		padding: 5px 8px;
+
 		&.filter-row__input {
 			margin: 0;
 			width: 100%;

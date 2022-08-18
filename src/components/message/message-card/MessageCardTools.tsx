@@ -38,7 +38,7 @@ export type MessageCardToolsProps = {
 };
 
 type OwnProps = {
-	viewType?: MessageViewType;
+	viewType: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
 	parsedMessage?: ParsedMessage;
 	isScreenshotMsg: boolean;

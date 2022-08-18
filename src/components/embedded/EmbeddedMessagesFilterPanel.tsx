@@ -17,9 +17,9 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { FilterRowMultipleStringsConfig } from '../../models/filter/FilterInputs';
-import MessagesFilterSessionFilter from '../filter/MessageFilterSessionFilter';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
 import FilterButton from '../filter/FilterButton';
+import MessagesFilterSessionFilter from '../filter/SessionFilterRow';
 
 interface Props {
 	submitChanges: () => void;

@@ -40,7 +40,6 @@
 
 	.filter-row {
 		flex-grow: 1;
-		margin-bottom: 4px;
 
 		&.event-resolver {
 			position: relative;
@@ -200,6 +199,12 @@
 	&__clear-icon {
 		@include icon(url(../../resources/icons/cross-icon-white.svg), 25px, 25px);
 	}
+
+	&__form {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+	}
 }
 
 .search-form {
@@ -211,7 +216,6 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		padding-bottom: 3px;
 	}
 }
 

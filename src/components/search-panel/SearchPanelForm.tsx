@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
 	DateTimeInputType,
@@ -26,7 +26,6 @@ import FilterRow from '../filter/row';
 import { DATE_TIME_INPUT_MASK } from '../../util/filterInputs';
 import { SearchPanelFormState } from '../../stores/SearchStore';
 import { useSearchStore } from '../../hooks/useSearchStore';
-import SearchPanelFilters from './SearchPanelFilters';
 import SearchTypeSwitcher from './search-form/SearchTypeSwitcher';
 import SearchDatetimeControls, {
 	SearchDatetimeControlsConfig,
@@ -38,12 +37,33 @@ import SearchResultCountLimit, {
 } from './search-form/SearchResultCountLimit';
 import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
-import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
+import { useSessionsStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
+import { useFilterConfig } from '../../hooks/useFilterConfig';
+import { FilterRows } from '../filter/FilerRows';
+import { EventFilterKeys, MessageFilterKeys } from '../../api/sse';
+import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
 };
+
+const eventFilterOrder: EventFilterKeys[] = [
+	'attachedMessageId',
+	'type',
+	'body',
+	'name',
+	'event_generic',
+	'status',
+];
+
+const messagesFilterOrder: MessageFilterKeys[] = [
+	'attachedEventIds',
+	'type',
+	'body',
+	'bodyBinary',
+	'message_generic',
+];
 
 const SearchPanelForm = () => {
 	const {
@@ -61,15 +81,36 @@ const SearchPanelForm = () => {
 		isPaused,
 		eventAutocompleteList,
 		resetEventAutocompleteList,
+		resetSearchProgressState,
 		clearFilters,
 	} = useSearchStore();
 
 	const disabled = isHistorySearch || isSearching;
 
+	const { config, filter } = useFilterConfig({
+		filterInfo: filters?.info || [],
+		filter: filters?.state || null,
+		disabled,
+		order: formType === 'event' ? eventFilterOrder : messagesFilterOrder,
+	});
+
+	useEffect(() => {
+		resetSearchProgressState();
+	}, [filter]);
+
+	const onStartSearch = useCallback(
+		(loadMore = false) => {
+			startSearch(loadMore, {
+				eventsFilter: formType === 'event' ? (filter as EventFilterState) : undefined,
+				messagesFilter: formType !== 'event' ? (filter as MessageFilterState) : undefined,
+			});
+		},
+		[filter, startSearch, filters],
+	);
+
 	const [currentStream, setCurrentStream] = useState('');
 	const sessionsStore = useSessionsStore();
 	const searchStore = useSearchStore();
-	const { eventsHistory, messagesHistory } = useFiltersHistoryStore();
 
 	const sessionsAutocomplete: string[] = React.useMemo(() => {
 		return [
@@ -86,12 +127,6 @@ const SearchPanelForm = () => {
 			form.stream.some(stream => !messageSessions.includes(stream.trim()))
 		);
 	}, [form.stream, messageSessions]);
-
-	const autocompletes = useMemo(() => (formType === 'event' ? eventsHistory : messagesHistory), [
-		formType,
-		eventsHistory,
-		messagesHistory,
-	]);
 
 	function getFormStateUpdater<T extends keyof SearchPanelFormState>(name: T) {
 		return function formStateUpdater<K extends SearchPanelFormState[T]>(value: K) {
@@ -139,7 +174,7 @@ const SearchPanelForm = () => {
 		validateBubbles: true,
 	};
 
-	const config: FitlerRowItem =
+	const currentConfig: FitlerRowItem =
 		formType === 'event' ? eventsFormTypeConfig : messagesFormTypeConfig;
 
 	const startTimestampInput: DateInputProps = {
@@ -233,46 +268,48 @@ const SearchPanelForm = () => {
 		progress: commonProgress,
 		processedObjectCount,
 		isPaused,
-		startSearch,
+		startSearch: onStartSearch,
 		pauseSearch,
 	};
 
 	return (
-		<div className='search-panel__search-form search-form'>
+		<div>
 			<SearchDatetimeControls {...searchDatetimeControlsConfig} />
 			<SearchProgressBar {...progressBarConfig} />
-			<SearchSubmit {...searchSubmitConfig} />
-			<div className='search-panel__fields'>
-				<FiltersHistory disabled={disabled} />
-				<div className='filter-row'>
-					<div className='filter-row__label'>Search for</div>
-					<div className='search-type-config'>
-						<SearchTypeSwitcher formType={formType} setFormType={setFormType} disabled={disabled} />
-						<SearchResultCountLimit {...resultCountLimitConfig} />
+			<div className='search-panel__form'>
+				<SearchSubmit {...searchSubmitConfig} />
+				<div className='search-panel__fields'>
+					<FiltersHistory disabled={disabled} />
+					<div className='filter-row'>
+						<div className='filter-row__label'>Search for</div>
+						<div className='search-type-config'>
+							<SearchTypeSwitcher
+								formType={formType}
+								setFormType={setFormType}
+								disabled={disabled}
+							/>
+							<SearchResultCountLimit {...resultCountLimitConfig} />
+						</div>
 					</div>
+					<FilterRow rowConfig={currentConfig} />
 				</div>
-				<FilterRow rowConfig={config} />
-			</div>
-			<div className='filter'>
-				{filters && filters.info.length > 0 && (
-					<SearchPanelFilters {...(filters as any)} type={formType} autocompletes={autocompletes} />
+				<FilterRows config={config} />
+				{!disabled && (
+					<div className='search-panel__footer'>
+						<button
+							className={createBemElement(
+								'search-panel',
+								'clear-btn',
+								isSearching ? 'disabled' : null,
+							)}
+							onClick={clearFilters}
+							disabled={isSearching}>
+							<i className='search-panel__clear-icon' />
+							Clear All
+						</button>
+					</div>
 				)}
 			</div>
-			{!disabled && (
-				<div className='search-panel__footer'>
-					<button
-						className={createBemElement(
-							'search-panel',
-							'clear-btn',
-							isSearching ? 'disabled' : null,
-						)}
-						onClick={clearFilters}
-						disabled={isSearching}>
-						<i className='search-panel__clear-icon' />
-						Clear All
-					</button>
-				</div>
-			)}
 		</div>
 	);
 };

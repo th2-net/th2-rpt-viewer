@@ -41,7 +41,11 @@ export default class MessagesFilterStore {
 	constructor(private searchStore: SearchStore, initialState?: MessagesFilterStoreInitialState) {
 		this.init(initialState);
 
-		this.sseFilterSubscription = reaction(() => searchStore.messagesFilterInfo, this.initSSEFilter);
+		this.sseFilterSubscription = reaction(
+			() => searchStore.messagesFilterInfo,
+			this.initSSEFilter,
+			{ fireImmediately: true },
+		);
 	}
 
 	@observable filter: MessagesFilter = getDefaultMessagesFilter();
@@ -119,12 +123,7 @@ export default class MessagesFilterStore {
 	}
 
 	@action
-	public setMessagesFilter(
-		filter: MessagesFilter,
-		sseFilters: MessageFilterState | null = null,
-		isSoftFilterApplied: boolean,
-	) {
-		this.isSoftFilter = isSoftFilterApplied;
+	public setMessagesFilter(filter: MessagesFilter, sseFilters: MessageFilterState | null = null) {
 		this.sseMessagesFilter = sseFilters;
 		this.filter = filter;
 	}
@@ -151,7 +150,6 @@ export default class MessagesFilterStore {
 				timestampFrom = defaultMessagesFilter.timestampFrom,
 				timestampTo = defaultMessagesFilter.timestampTo,
 				sse = {},
-				isSoftFilter = false,
 			} = initialState;
 
 			const appliedSSEFilter = {
@@ -165,7 +163,6 @@ export default class MessagesFilterStore {
 					timestampTo,
 				},
 				Object.keys(appliedSSEFilter).length > 0 ? appliedSSEFilter : null,
-				isSoftFilter,
 			);
 		} else {
 			this.setSSEMessagesFilter(this.searchStore.messagesFilterInfo);
@@ -177,8 +174,12 @@ export default class MessagesFilterStore {
 		this.sseMessagesFilter = getDefaultMessagesFiltersState(messagesFilterInfo);
 	};
 
+	@observable.ref
+	public filterInfo: MessagesFilterInfo[] = [];
+
 	@action
 	private initSSEFilter = (filterInfo: MessagesFilterInfo[]) => {
+		this.filterInfo = filterInfo;
 		if (this.sseMessagesFilter) {
 			const defaultState = getDefaultMessagesFiltersState(filterInfo) || {};
 			this.sseMessagesFilter = {

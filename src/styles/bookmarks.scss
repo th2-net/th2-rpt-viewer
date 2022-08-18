@@ -21,11 +21,11 @@
 	background-color: #fff;
 	display: grid;
 	grid-template-rows: auto 1fr;
-	
+
 	&__container {
 		padding: 8px 2px 0 8px;
 	}
-	
+
 	&__list {
 		@include scrollbar;
 		& > div {
@@ -137,7 +137,8 @@
 		top: 7px;
 
 		&.message-icon {
-			@include icon(url(../../resources/icons/bookmark-added-hover.svg), 17px, 17px);
+			margin: 1px;
+			@include icon(url(../../resources/icons/bookmark-icon.svg), 14px, 12px);
 		}
 
 		&.event-icon,

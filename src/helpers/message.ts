@@ -87,7 +87,7 @@ export function getViewTypesConfig(
 	if (message.parsedMessages) {
 		message.parsedMessages.forEach(parsedMessage => {
 			config.set(parsedMessage.id, {
-				viewType: viewTypes.get(parsedMessage.id),
+				viewType: viewTypes.get(parsedMessage.id) as MessageViewType,
 				setViewType: getSavedViewType(message).setViewType,
 			});
 		});
@@ -97,11 +97,8 @@ export function getViewTypesConfig(
 }
 
 export function defineViewTypeConfig(
-	viewTypeConfig: MessageViewTypeConfig | Map<string, MessageViewTypeConfig>,
-	id?: string,
+	viewTypeConfig: Map<string, MessageViewTypeConfig>,
+	id: string,
 ) {
-	if (id && viewTypeConfig instanceof Map) {
-		return viewTypeConfig.get(id) as MessageViewTypeConfig;
-	}
-	return viewTypeConfig as MessageViewTypeConfig;
+	return viewTypeConfig.get(id) as MessageViewTypeConfig;
 }
