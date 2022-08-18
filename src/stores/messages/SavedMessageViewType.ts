@@ -67,10 +67,15 @@ export class SavedMessageViewType {
 	@action
 	private getViewTypes = () => {
 		this.viewTypes.set(this.message.id, MessageViewType.ASCII);
-		if (this.message.parsedMessages)
-			this.message.parsedMessages.forEach(parsedMessage =>
-				this.viewTypes.set(parsedMessage.id, this.displayRule),
-			);
+		if (this.message.parsedMessages) {
+			this.message.parsedMessages.forEach(parsedMessage => {
+				if (this.isDisplayRuleRaw) {
+					this.viewTypes.set(parsedMessage.id, MessageViewType.JSON);
+				} else {
+					this.viewTypes.set(parsedMessage.id, this.displayRule);
+				}
+			});
+		}
 	};
 
 	@action

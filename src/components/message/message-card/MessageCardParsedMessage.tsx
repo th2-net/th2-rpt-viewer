@@ -26,6 +26,7 @@ import CardDisplayType from '../../../util/CardDisplayType';
 
 export interface ParsedMessageProps {
 	displayType: CardDisplayType;
+	isDisplayRuleRaw: boolean;
 	isHighlighted?: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
@@ -33,7 +34,6 @@ export interface ParsedMessageProps {
 
 interface OwnProps {
 	parsedMessage: ParsedMessage;
-	parsedMessageIndex: number;
 	viewType: MessageViewType;
 	setViewType: (vt: MessageViewType, id: string) => void;
 }
@@ -41,9 +41,9 @@ interface OwnProps {
 export const ParsedMessageComponent = React.memo((props: ParsedMessageProps & OwnProps) => {
 	const {
 		displayType,
+		isDisplayRuleRaw,
 		isHighlighted,
 		parsedMessage,
-		parsedMessageIndex,
 		viewType,
 		setViewType,
 		messageCardToolsConfig,
@@ -54,11 +54,13 @@ export const ParsedMessageComponent = React.memo((props: ParsedMessageProps & Ow
 
 	return (
 		<div className='parsed-message-wrapper'>
-			{parsedMessageIndex > 0 && (
+			{((!isDisplayRuleRaw && parsedMessage.message.metadata.id.subsequence[0] > 1) ||
+				isDisplayRuleRaw) && (
 				<ParsedMessageHeader
 					messageCardToolsConfig={messageCardToolsConfig}
 					parsedMessage={parsedMessage}
 					isScreenshotMsg={false}
+					isRawMessage={false}
 					isHighlighted={isHighlighted}
 					viewType={viewType}
 					setViewType={setViewType}
