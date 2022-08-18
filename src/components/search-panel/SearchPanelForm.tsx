@@ -293,7 +293,9 @@ const SearchPanelForm = () => {
 					</div>
 					<FilterRow rowConfig={currentConfig} />
 				</div>
-				<FilterRows config={config} />
+				<div className='filter'>
+					<FilterRows config={config} />
+				</div>
 				{!disabled && (
 					<div className='search-panel__footer'>
 						<button

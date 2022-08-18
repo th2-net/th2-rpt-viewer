@@ -32,7 +32,7 @@ export function FilterRows({ config, headerClassName, onMouseOver }: Props) {
 	);
 
 	return (
-		<div className='filter'>
+		<>
 			{config.map(rowConfig =>
 				Array.isArray(rowConfig) ? (
 					<div
@@ -65,6 +65,6 @@ export function FilterRows({ config, headerClassName, onMouseOver }: Props) {
 					<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
 				),
 			)}
-		</div>
+		</>
 	);
 }

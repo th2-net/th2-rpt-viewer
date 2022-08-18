@@ -16,9 +16,9 @@
 
 import React from 'react';
 import { createStyleSelector } from '../../helpers/styleCreators';
-import FilterRow from './row';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
 import '../../styles/filter.scss';
+import { FilterRows } from './FilerRows';
 
 interface Props {
 	config: FilterRowConfig[];
@@ -50,35 +50,7 @@ const FilterConfig = (props: Props) => {
 	return (
 		<div className={filterWrapperClass}>
 			<div className='filter'>
-				{config.map(rowConfig =>
-					Array.isArray(rowConfig) ? (
-						<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
-							<div className='filter__compound-header'>
-								{rowConfig
-									.filter(_rowConfig => _rowConfig.label)
-									.map(_rowConfig => (
-										<p className={'filter-row__label'} key={_rowConfig.label}>
-											{_rowConfig.label}
-										</p>
-									))}
-								<div className='filter__togglers'>
-									{rowConfig
-										.filter(_rowConfig => _rowConfig.type !== 'multiple-strings')
-										.map(_rowConfig => (
-											<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
-										))}
-								</div>
-							</div>
-							{rowConfig
-								.filter(_rowConfig => _rowConfig.type === 'multiple-strings')
-								.map(_rowConfig => (
-									<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
-								))}
-						</div>
-					) : (
-						<FilterRow rowConfig={rowConfig} key={rowConfig.id} />
-					),
-				)}
+				<FilterRows config={config} />
 				<div className='filter-controls'>
 					{renderFooter && renderFooter()}
 					<div className='filter-controls__clear-btn' onClick={onClearAllClick}>
