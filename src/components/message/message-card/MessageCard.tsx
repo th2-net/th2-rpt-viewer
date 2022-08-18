@@ -158,7 +158,6 @@ export const MessageCard = observer((props: Props) => {
 				isExpanded={props.isExpanded}
 				isHighlighted={isHighlighted}
 				isScreenshotMsg={false}
-				isDisplayRuleRaw={Boolean(props.isDisplayRuleRaw && message.parsedMessages)}
 				setExpanded={props.setIsExpanded}
 				parsedMessages={message.parsedMessages}
 			/>

@@ -28,7 +28,7 @@ interface Props {
 export function FilterRows({ config, headerClassName, onMouseOver }: Props) {
 	const compoundHeaderClassName = createStyleSelector(
 		'filter__compound-header',
-		headerClassName ? headerClassName : null,
+		headerClassName || null,
 	);
 
 	return (

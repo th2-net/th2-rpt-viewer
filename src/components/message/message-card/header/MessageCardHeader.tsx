@@ -37,6 +37,7 @@ export interface MessageInfoProps {
 	isExport?: boolean;
 	isExported?: boolean;
 	displayType: CardDisplayType;
+	isDisplayRuleRaw: boolean;
 	isScreenshotMsg: boolean;
 	messageCardToolsConfig: MessageCardToolsProps;
 }
@@ -54,6 +55,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 		isHighlighted,
 		isExport,
 		isExported,
+		isDisplayRuleRaw,
 		displayType,
 		messageCardToolsConfig,
 	} = props;
@@ -116,7 +118,7 @@ export const MessageCardHeader = React.memo((props: MessageInfoProps & MessageCa
 			</Chip>
 			{displayType === CardDisplayType.FULL && <Chip>{message.id}</Chip>}
 
-			{displayType === CardDisplayType.FULL && message.parsedMessages && (
+			{displayType === CardDisplayType.FULL && message.parsedMessages && !isDisplayRuleRaw && (
 				<Chip>{message.parsedMessages[0].message.metadata.id.subsequence[0]}</Chip>
 			)}
 			{displayType === CardDisplayType.FULL && message.parsedMessages && (
