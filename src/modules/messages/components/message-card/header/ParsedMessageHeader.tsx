@@ -22,7 +22,6 @@ import { Chip } from '../../Chip';
 
 export interface ParsedMessageHeaderProps {
 	parsedMessage?: ParsedMessage;
-	rawMessageIndex?: number;
 	viewType?: MessageViewType;
 	setViewType: (id: string, vt: MessageViewType) => void;
 	isHighlighted?: boolean;
@@ -31,8 +30,7 @@ export interface ParsedMessageHeaderProps {
 }
 
 export const ParsedMessageHeader = memo((props: ParsedMessageHeaderProps) => {
-	const { parsedMessage, viewType, setViewType, rawMessageIndex, isScreenshotMsg, isHighlighted } =
-		props;
+	const { parsedMessage, viewType, setViewType, isScreenshotMsg, isHighlighted } = props;
 
 	const headerClass = createBemElement('mc-header', 'info', isHighlighted ? 'highlighted' : null);
 
@@ -41,19 +39,16 @@ export const ParsedMessageHeader = memo((props: ParsedMessageHeaderProps) => {
 			<Chip>
 				<div className='mc-header__message-icon'></div>
 			</Chip>
-			<Chip>{parsedMessage?.message.metadata.id.subsequence[0] || rawMessageIndex}</Chip>
-			{!rawMessageIndex && (
-				<Chip
-					className='mc-header__value'
-					title={
-						parsedMessage
-							? `Name: ${parsedMessage.message.metadata.messageType}`
-							: 'Name: RawMessage'
-					}>
-					{parsedMessage?.message.metadata.messageType}
-				</Chip>
+			{parsedMessage && (
+				<>
+					<Chip>{parsedMessage.message.metadata.id.subsequence[0]}</Chip>
+					<Chip
+						className='mc-header__value'
+						title={`Name: ${parsedMessage.message.metadata.messageType}`}>
+						{parsedMessage.message.metadata.messageType}
+					</Chip>
+				</>
 			)}
-
 			<div className='message-card-tools__wrapper'>
 				<MessageCardTools
 					{...props.messageCardToolsConfig}

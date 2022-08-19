@@ -39,7 +39,7 @@ export class SavedMessageViewType {
 			if (rule.session.length > 1 && rule.session.includes('*')) {
 				return matchWildcardRule(this.message.id, rule.session);
 			}
-			return this.message.id.includes(rule.session);
+			return this.message.sessionId === rule.session;
 		});
 		if (!this.message.parsedMessages) {
 			return declaredRule
