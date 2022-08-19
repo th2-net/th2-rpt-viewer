@@ -52,7 +52,6 @@ const MessagesVirtualizedList = (props: Props) => {
 		searchChannelNext,
 		searchChannelPrev,
 		startIndex,
-		initialItemCount,
 		noMatchingMessagesNext,
 		noMatchingMessagesPrev,
 		keepLoading,
@@ -62,6 +61,7 @@ const MessagesVirtualizedList = (props: Props) => {
 		onPrevChannelResponse,
 		prevLoadHeartbeat,
 		nextLoadHeartbeat,
+		updateStore,
 	} = useMessagesDataStore();
 
 	const virtuoso = React.useRef<VirtuosoHandle>(null);
@@ -71,6 +71,12 @@ const MessagesVirtualizedList = (props: Props) => {
 	const [[firstPrevChunkIsLoaded, firstNextChunkIsLoaded], setLoadedChunks] = React.useState<
 		[boolean, boolean]
 	>([false, false]);
+
+	React.useEffect(() => {
+		if (updateStore.isActive && virtuoso.current) {
+			virtuoso.current.scrollToIndex(0);
+		}
+	}, [updateStore.isActive]);
 
 	React.useEffect(() => {
 		if (!searchChannelNext?.isLoading) setLoadedChunks(loadedChunks => [true, loadedChunks[1]]);
@@ -95,7 +101,11 @@ const MessagesVirtualizedList = (props: Props) => {
 	]);
 
 	const debouncedScrollHandler = useDebouncedCallback(
-		(event: React.UIEvent<'div'>, wheelScrollDirection?: 'next' | 'previous') => {
+		(
+			event: React.UIEvent<'div'>,
+			isHorizontal?: boolean,
+			wheelScrollDirection?: 'next' | 'previous',
+		) => {
 			const scroller = event.target;
 			if (scroller instanceof Element) {
 				const isStartReached = scroller.scrollTop === 0;
@@ -105,7 +115,10 @@ const MessagesVirtualizedList = (props: Props) => {
 					searchChannelNext &&
 					!searchChannelNext.isLoading &&
 					!searchChannelNext.isEndReached &&
-					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
+					!isHorizontal &&
+					((wheelScrollDirection === undefined &&
+						scroller.parentElement?.className === 'messages-list') ||
+						wheelScrollDirection === 'next')
 				) {
 					loadNextMessages().then(messages => onNextChannelResponse(messages));
 				}
@@ -115,7 +128,10 @@ const MessagesVirtualizedList = (props: Props) => {
 					searchChannelPrev &&
 					!searchChannelPrev.isLoading &&
 					!searchChannelPrev.isEndReached &&
-					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
+					!isHorizontal &&
+					((wheelScrollDirection === undefined &&
+						scroller.parentElement?.className === 'messages-list') ||
+						wheelScrollDirection === 'previous')
 				) {
 					loadPrevMessages().then(messages => onPrevChannelResponse(messages));
 				}
@@ -131,7 +147,7 @@ const MessagesVirtualizedList = (props: Props) => {
 
 	const onWheel: React.WheelEventHandler<'div'> = event => {
 		event.persist();
-		debouncedScrollHandler(event, event.deltaY < 0 ? 'next' : 'previous');
+		debouncedScrollHandler(event, Boolean(event.deltaX), event.deltaY < 0 ? 'next' : 'previous');
 	};
 
 	const onMessagesRendered = useDebouncedCallback((renderedMessages: ListItem<EventMessage>[]) => {
@@ -142,11 +158,12 @@ const MessagesVirtualizedList = (props: Props) => {
 		};
 	}, 100);
 
+	const computeItemKey = React.useCallback((index: number, msg: EventMessage) => msg.messageId, []);
+
 	return (
 		<Virtuoso
 			data={messageList}
 			firstItemIndex={startIndex}
-			initialTopMostItemIndex={initialItemCount - 1}
 			ref={virtuoso}
 			overscan={overscan}
 			itemContent={itemRenderer}
@@ -174,7 +191,7 @@ const MessagesVirtualizedList = (props: Props) => {
 									</div>
 								) : (
 									<MessagesListSpinner
-										isLoading={isLoadingNextMessages}
+										isLoading={isLoadingNextMessages || updateStore.isActive}
 										searchInfo={nextLoadHeartbeat}
 									/>
 								)
@@ -211,6 +228,7 @@ const MessagesVirtualizedList = (props: Props) => {
 					);
 				},
 			}}
+			computeItemKey={computeItemKey}
 		/>
 	);
 };

@@ -39,6 +39,8 @@ interface Props {
 	closeModal: () => void;
 	submittedId: String | null;
 	isIdMode: boolean;
+	isLoading: boolean;
+	setIsLoading: (value: React.SetStateAction<boolean>) => void;
 	submittedTimestamp: number | null;
 }
 
@@ -48,15 +50,16 @@ const GraphSearchDialog = (props: Props) => {
 		value,
 		setTimestamp,
 		setIsIdSearchDisabled,
+		setIsLoading,
 		closeModal,
 		submittedId,
 		isIdMode,
+		isLoading,
 		submittedTimestamp,
 	} = props;
 
 	const rootStore = useRootStore();
 
-	const [isLoading, setIsLoading] = React.useState(false);
 	const [currentSearchResult, setCurrentSearchResult] = React.useState<GraphSearchResult | null>(
 		null,
 	);
@@ -156,52 +159,79 @@ const GraphSearchDialog = (props: Props) => {
 	}, [submittedId]);
 
 	React.useEffect(() => {
-		const searchChannels = {
-			previous: submittedTimestamp
-				? api.sse.getEventSource({
-						type: 'event',
-						queryParams: {
-							startTimestamp: submittedTimestamp,
-							resultCountLimit: 1,
-							searchDirection: SearchDirection.Previous,
-						},
-				  })
-				: null,
-			next: submittedTimestamp
-				? api.sse.getEventSource({
-						type: 'event',
-						queryParams: {
-							startTimestamp: submittedTimestamp,
-							resultCountLimit: 1,
-							searchDirection: SearchDirection.Next,
-						},
-				  })
-				: null,
+		// eslint-disable-next-line @typescript-eslint/no-empty-function
+		if (!submittedTimestamp) return () => {};
+		let isCancelled = false;
+
+		const queryParams = {
+			startTimestamp: submittedTimestamp,
+			resultCountLimit: 1,
+			searchDirection: SearchDirection.Previous,
+		} as const;
+
+		const channels = [
+			api.sse.getEventSource({
+				type: 'event',
+				queryParams,
+			}),
+			api.sse.getEventSource({
+				type: 'event',
+				queryParams: {
+					...queryParams,
+					endTimestamp: Date.now(),
+					searchDirection: SearchDirection.Next,
+				},
+			}),
+		];
+
+		const results: EventAction[] = [];
+
+		const getClosestResult = (events: EventAction[]): EventAction => {
+			events.sort((eventA, eventB) => {
+				const diffA = Math.abs(getTimestampAsNumber(eventA) - submittedTimestamp);
+				const diffB = Math.abs(getTimestampAsNumber(eventB) - submittedTimestamp);
+				if (diffA < diffB) {
+					return -1;
+				}
+				if (diffA > diffB) {
+					return 1;
+				}
+				return 0;
+			});
+			return events[0];
 		};
 
-		const stopSearch = () => {
-			searchChannels.next?.close();
-			searchChannels.previous?.close();
+		const stopSearch = (eventSource: EventSource) => () => {
+			eventSource.close();
+
+			if (channels.every(ch => ch.readyState === 2) && !isCancelled) {
+				const event = getClosestResult(results);
+				if (event) {
+					ac.current = new AbortController();
+					onSearchSuccess(event, submittedTimestamp);
+					setFoundId(event.eventId);
+				} else {
+					setIsLoading(false);
+				}
+			}
 		};
 
-		const onChannelResponse = (ev: any) => {
-			if (!submittedTimestamp) return;
-			stopSearch();
-			const data = (ev as MessageEvent).data;
-			const parsedEvent = JSON.parse(data);
-			const id = getItemId(parsedEvent);
-			ac.current = new AbortController();
-			onSearchSuccess(parsedEvent, submittedTimestamp);
-			setFoundId(id);
+		const onResponse = (ev: Event) => {
+			if (ev instanceof MessageEvent) {
+				const parsedEvent = JSON.parse(ev.data) as EventAction;
+				results.push(parsedEvent);
+			}
 		};
 
-		searchChannels.previous?.addEventListener('event', onChannelResponse);
-		searchChannels.next?.addEventListener('event', onChannelResponse);
-		searchChannels.previous?.addEventListener('close', () => stopSearch);
-		searchChannels.next?.addEventListener('close', () => stopSearch);
+		channels.forEach(c => {
+			c.addEventListener('event', onResponse);
+			c.addEventListener('close', stopSearch(c));
+			c.addEventListener('error', stopSearch(c));
+		});
 
 		return () => {
-			stopSearch();
+			isCancelled = true;
+			channels.forEach(c => c.close());
 		};
 	}, [submittedTimestamp]);
 
@@ -261,7 +291,6 @@ const GraphSearchDialog = (props: Props) => {
 
 	const fetchObjectById = (id: string, abortController: AbortController) => {
 		const searchTimestamp = moment.utc().valueOf();
-		setIsLoading(true);
 		function handleError(err: any) {
 			if (err.name !== 'AbortError') {
 				setIsLoading(false);

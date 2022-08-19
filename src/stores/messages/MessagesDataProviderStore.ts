@@ -20,13 +20,14 @@ import { MessagesSSEParams, SSEHeartbeat } from '../../api/sse';
 import { isAbortError } from '../../helpers/fetch';
 import { EventMessage } from '../../models/EventMessage';
 import notificationsStore from '../NotificationsStore';
-import { MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
+import { MessageSSEEventListeners, MessagesSSEChannel } from '../SSEChannel/MessagesSSEChannel';
 import MessagesStore from './MessagesStore';
 import MessagesUpdateStore from './MessagesUpdateStore';
 import { MessagesDataStore } from '../../models/Stores';
 import { DirectionalStreamInfo } from '../../models/StreamInfo';
 import { extractMessageIds } from '../../helpers/streamInfo';
 import { isEventMessage } from '../../helpers/event';
+import { timestampToNumber } from '../../helpers/date';
 
 const FIFTEEN_SECONDS = 15 * 1000;
 
@@ -66,9 +67,6 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public startIndex = 10000;
 
 	@observable
-	public initialItemCount = 0;
-
-	@observable
 	public isSoftFiltered: Map<string, boolean> = new Map();
 
 	@observable
@@ -105,9 +103,12 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	private messageAC: AbortController | null = null;
 
 	@action
-	public loadMessages = async () => {
+	public loadMessages = async (
+		nextListeners?: Partial<MessageSSEEventListeners>,
+		prevListeners?: Partial<MessageSSEEventListeners>,
+	) => {
 		this.stopMessagesLoading();
-		this.resetMessagesDataState();
+		this.resetState();
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
@@ -119,6 +120,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				searchDirection: 'previous',
 			},
 			FIFTEEN_SECONDS,
+			prevListeners,
 		);
 		this.createNextMessageChannelEventSource(
 			{
@@ -126,6 +128,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				searchDirection: 'next',
 			},
 			FIFTEEN_SECONDS,
+			nextListeners,
 		);
 
 		if (!this.searchChannelPrev || !this.searchChannelNext) return;
@@ -187,9 +190,8 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 				...nextMessages.filter(val => val.messageId !== message?.messageId),
 				...[message].filter(isEventMessage),
 				...prevMessages,
-			];
+			].sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
 			this.messages = messages;
-			this.initialItemCount = messages.length;
 		});
 
 		if (!this.messagesStore.selectedMessageId) {
@@ -215,28 +217,22 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	private onLoadingError = (event: Event) => {
 		notificationsStore.handleSSEError(event);
 		this.stopMessagesLoading();
-		this.resetMessagesDataState(true);
+		this.resetState(true);
+		this.updateStore.stopSubscription();
 	};
 
 	@action
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
 		requestTimeoutMs?: number,
-		onCloseHandler?: () => void,
+		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
-		const onClose =
-			onCloseHandler &&
-			((messages: EventMessage[]) => {
-				this.onPrevChannelResponse(messages);
-				onCloseHandler();
-			});
-
 		this.searchChannelPrev = new MessagesSSEChannel(query, {
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
 			onKeepAliveResponse: heartbeat =>
 				this.onKeepAliveMessagePrevious(heartbeat, requestTimeoutMs),
-			onClose,
+			...listeners,
 		});
 	};
 
@@ -290,35 +286,43 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	public createNextMessageChannelEventSource = (
 		query: MessagesSSEParams,
 		requestTimeoutMs?: number,
-		onCloseHandler?: () => void,
+		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
-		const onClose =
-			onCloseHandler &&
-			((messages: EventMessage[]) => {
-				this.onNextChannelResponse(messages);
-				onCloseHandler();
-			});
 		this.searchChannelNext = new MessagesSSEChannel(query, {
 			onResponse: this.onNextChannelResponse,
 			onError: this.onLoadingError,
 			onKeepAliveResponse: hearbeat => this.onKeepAliveMessageNext(hearbeat, requestTimeoutMs),
-			onClose,
+			...listeners,
 		});
 	};
 
 	@action
 	public onNextChannelResponse = (messages: EventMessage[]) => {
 		this.lastNextChannelResponseTimestamp = null;
-		const firstNextMessage = messages[messages.length - 1];
+
+		const prevMessages =
+			this.messages.length > 0
+				? messages.filter(
+						message =>
+							timestampToNumber(message.timestamp) <
+								timestampToNumber(this.messages[0].timestamp) ||
+							message.messageId === this.messages[0].messageId,
+				  )
+				: [];
+		const firstNextMessage = prevMessages[0];
+
+		const nextMessages = messages.slice(0, messages.length - prevMessages.length);
 
 		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
-			messages.pop();
+			prevMessages.shift();
 		}
 
-		if (messages.length !== 0) {
-			this.startIndex -= messages.length;
+		if (prevMessages.length > 0 || nextMessages.length > 0) {
+			this.startIndex -= nextMessages.length;
 
-			let newMessagesList = [...messages, ...this.messages];
+			let newMessagesList = prevMessages.length
+				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
+				: [...nextMessages, ...this.messages];
 
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
@@ -382,8 +386,7 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 	};
 
 	@action
-	public resetMessagesDataState = (isError = false) => {
-		this.initialItemCount = 0;
+	public resetState = (isError = false) => {
 		this.startIndex = 10000;
 		this.messages = [];
 		this.isError = isError;
@@ -429,53 +432,47 @@ export default class MessagesDataProviderStore implements MessagesDataStore {
 			return;
 
 		if (!this.prevLoadHeartbeat && !this.nextLoadHeartbeat)
-			throw new Error('Load could not continue because loadHeathbeat is missing');
-
-		const queryParams = this.messagesStore.filterStore.filterParams;
-
-		const { stream, endTimestamp, resultCountLimit } = queryParams;
+			throw new Error('Load could not continue because loadHeartbeat is missing');
 
 		const keepLoadingStartTimestamp =
 			direction === 'previous'
 				? this.prevLoadHeartbeat!.timestamp
 				: this.nextLoadHeartbeat!.timestamp;
 
-		const query: MessagesSSEParams = this.messagesStore.filterStore.isSoftFilter
-			? {
-					startTimestamp: keepLoadingStartTimestamp,
-					stream,
-					searchDirection: direction,
-					endTimestamp,
-					resultCountLimit,
-			  }
-			: {
-					...queryParams,
-					startTimestamp: keepLoadingStartTimestamp,
-					searchDirection: direction,
-			  };
+		const defaultHearbeat = {
+			timestamp: keepLoadingStartTimestamp,
+			scanCounter: 0,
+			id: '',
+		};
 
 		if (direction === 'previous') {
-			this.prevLoadHeartbeat = {
-				timestamp: keepLoadingStartTimestamp,
-				scanCounter: 0,
-				id: '',
-			};
+			this.prevLoadHeartbeat = defaultHearbeat;
 		} else {
-			this.nextLoadHeartbeat = {
-				timestamp: keepLoadingStartTimestamp,
-				scanCounter: 0,
-				id: '',
-			};
+			this.nextLoadHeartbeat = defaultHearbeat;
 		}
 
 		if (direction === 'previous') {
 			this.noMatchingMessagesPrev = false;
-			this.createPreviousMessageChannelEventSource(query);
-			this.searchChannelPrev.subscribe();
+			const idsMap = this.messages
+				.slice(Math.max(0, this.messages.length - 20))
+				.reduce((map, m) => ({ ...map, [m.messageId]: true }), {} as Record<string, boolean>);
+			this.searchChannelPrev.refetch({
+				onResponse: messages =>
+					this.onPrevChannelResponse(messages.filter(m => !idsMap[m.messageId])),
+				onError: this.onLoadingError,
+				onKeepAliveResponse: heartbeat => this.onKeepAliveMessagePrevious(heartbeat),
+			});
 		} else {
 			this.noMatchingMessagesNext = false;
-			this.createNextMessageChannelEventSource(query);
-			this.searchChannelNext.subscribe();
+			const idsMap = this.messages
+				.slice(0, 20)
+				.reduce((map, m) => ({ ...map, [m.messageId]: true }), {} as Record<string, boolean>);
+			this.searchChannelNext.refetch({
+				onResponse: messages =>
+					this.onNextChannelResponse(messages.filter(m => !idsMap[m.messageId])),
+				onError: this.onLoadingError,
+				onKeepAliveResponse: heartbeat => this.onKeepAliveMessageNext(heartbeat),
+			});
 		}
 	};
 

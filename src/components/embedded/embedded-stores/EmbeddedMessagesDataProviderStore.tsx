@@ -23,11 +23,14 @@ import { isEventMessage } from '../../../helpers/event';
 import { isAbortError } from '../../../helpers/fetch';
 import { MessagesDataStore } from '../../../models/Stores';
 import MessagesUpdateStore from '../../../stores/messages/MessagesUpdateStore';
-import { MessagesSSEChannel } from '../../../stores/SSEChannel/MessagesSSEChannel';
+import {
+	MessagesSSEChannel,
+	MessageSSEEventListeners,
+} from '../../../stores/SSEChannel/MessagesSSEChannel';
 import { DirectionalStreamInfo } from '../../../models/StreamInfo';
 import { extractMessageIds } from '../../../helpers/streamInfo';
+import { timestampToNumber } from '../../../helpers/date';
 
-const SEARCH_TIME_FRAME = 15;
 const FIFTEEN_SECONDS = 15 * 1000;
 
 export default class EmbeddedMessagesDataProviderStore implements MessagesDataStore {
@@ -64,9 +67,6 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 
 	@observable
 	public startIndex = 10000;
-
-	@observable
-	public initialItemCount = 0;
 
 	@observable
 	public isMatchingMessages: Map<string, boolean> = new Map();
@@ -108,9 +108,12 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	};
 
 	@action
-	public loadMessages = async () => {
+	public loadMessages = async (
+		nextListeners?: Partial<MessageSSEEventListeners>,
+		prevListeners?: Partial<MessageSSEEventListeners>,
+	) => {
 		this.stopMessagesLoading();
-		this.resetMessagesDataState();
+		this.resetState();
 
 		if (this.messagesStore.filterStore.filter.streams.length === 0) return;
 
@@ -121,26 +124,14 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 				...queryParams,
 				searchDirection: 'previous',
 			},
-			{
-				interval: SEARCH_TIME_FRAME,
-				onClose: () =>
-					!this.searchChannelNext?.isLoading &&
-					!this.updateStore.isLoading &&
-					this.updateStore.subscribeOnChanges(),
-			},
+			prevListeners,
 		);
 		this.createNextMessageChannelEventSource(
 			{
 				...queryParams,
 				searchDirection: 'next',
 			},
-			{
-				interval: SEARCH_TIME_FRAME,
-				onClose: () =>
-					!this.searchChannelPrev?.isLoading &&
-					!this.updateStore.isLoading &&
-					this.updateStore.subscribeOnChanges(),
-			},
+			nextListeners,
 		);
 
 		if (!this.searchChannelPrev || !this.searchChannelNext) return;
@@ -198,9 +189,12 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		]);
 
 		runInAction(() => {
-			const messages = [...nextMessages, ...[message].filter(isEventMessage), ...prevMessages];
+			const messages = [
+				...nextMessages.filter(val => val.messageId !== message?.messageId),
+				...[message].filter(isEventMessage),
+				...prevMessages,
+			].sort((a, b) => timestampToNumber(b.timestamp) - timestampToNumber(a.timestamp));
 			this.messages = messages;
-			this.initialItemCount = messages.length;
 		});
 
 		if (this.messagesStore.selectedMessageId) {
@@ -221,39 +215,27 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 		this.isLoadingMessageIds = false;
 		this.searchChannelPrev = null;
 		this.searchChannelNext = null;
-		this.updateStore.stopSubscription();
 	};
 
 	@action
 	private onLoadingError = (event: Event) => {
 		notificationsStore.handleSSEError(event);
 		this.stopMessagesLoading();
-		this.resetMessagesDataState(true);
+		this.resetState(true);
 	};
 
 	@action
 	public createPreviousMessageChannelEventSource = (
 		query: MessagesSSEParams,
-		options?: {
-			onClose?: () => void;
-			interval?: number;
-		},
+		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
 		this.prevLoadEndTimestamp = null;
 
 		this.searchChannelPrev = new MessagesSSEChannel(query, {
 			onResponse: this.onPrevChannelResponse,
 			onError: this.onLoadingError,
-			onKeepAliveResponse:
-				typeof options?.interval === 'number' ? this.onKeepAliveMessagePrevious : undefined,
-			...(options?.onClose
-				? {
-						onClose: messages => {
-							this.onPrevChannelResponse(messages);
-							options.onClose?.();
-						},
-				  }
-				: {}),
+			onKeepAliveResponse: heartbeat => this.onKeepAliveMessagePrevious(heartbeat),
+			...listeners,
 		});
 	};
 
@@ -304,44 +286,42 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	public createNextMessageChannelEventSource = (
 		query: MessagesSSEParams,
-		options?: {
-			onClose?: () => void;
-			interval?: number;
-		},
+		listeners: Partial<MessageSSEEventListeners> = {},
 	) => {
-		this.nextLoadEndTimestamp = null;
-
 		this.searchChannelNext = new MessagesSSEChannel(query, {
-			onResponse: messages => {
-				this.onNextChannelResponse(messages);
-			},
+			onResponse: this.onNextChannelResponse,
 			onError: this.onLoadingError,
-			onKeepAliveResponse:
-				typeof options?.interval === 'number' ? this.onKeepAliveMessageNext : undefined,
-			...(options?.onClose
-				? {
-						onClose: messages => {
-							this.onNextChannelResponse(messages);
-							options.onClose?.();
-						},
-				  }
-				: {}),
+			onKeepAliveResponse: hearbeat => this.onKeepAliveMessageNext(hearbeat),
+			...listeners,
 		});
 	};
 
 	@action
 	public onNextChannelResponse = (messages: EventMessage[]) => {
 		this.lastNextChannelResponseTimestamp = null;
+		const prevMessages =
+			this.messages.length > 0
+				? messages.filter(
+						message =>
+							timestampToNumber(message.timestamp) <
+								timestampToNumber(this.messages[0].timestamp) ||
+							message.messageId === this.messages[0].messageId,
+				  )
+				: [];
 		const firstNextMessage = messages[this.messages.length - 1];
 
+		const nextMessages = messages.slice(0, messages.length - prevMessages.length);
+
 		if (firstNextMessage && firstNextMessage.messageId === this.messages[0]?.messageId) {
-			messages.pop();
+			prevMessages.shift();
 		}
 
-		if (messages.length !== 0) {
-			this.startIndex -= messages.length;
+		if (prevMessages.length > 0 || nextMessages.length > 0) {
+			this.startIndex -= nextMessages.length;
 
-			let newMessagesList = [...messages, ...this.messages];
+			let newMessagesList = prevMessages.length
+				? [...nextMessages, this.messages[0], ...prevMessages, ...this.messages.slice(1)]
+				: [...nextMessages, ...this.messages];
 
 			if (newMessagesList.length > this.messagesLimit) {
 				newMessagesList = newMessagesList.slice(0, this.messagesLimit);
@@ -392,13 +372,12 @@ export default class EmbeddedMessagesDataProviderStore implements MessagesDataSt
 	@action
 	private onFilterChange = async () => {
 		this.stopMessagesLoading();
-		this.resetMessagesDataState();
-		this.loadMessages();
+		this.resetState();
+		this.updateStore.subscribeOnChanges();
 	};
 
 	@action
-	public resetMessagesDataState = (isError = false) => {
-		this.initialItemCount = 0;
+	public resetState = (isError = false) => {
 		this.startIndex = 10000;
 		this.messages = [];
 		this.isError = isError;

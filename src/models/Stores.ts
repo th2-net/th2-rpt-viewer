@@ -15,13 +15,18 @@
  ***************************************************************************** */
 
 import { MessagesSSEParams } from '../api/sse';
+import { MessageSSEEventListeners } from '../stores/SSEChannel/MessagesSSEChannel';
 import { EventMessage } from './EventMessage';
 
 export interface MessagesDataStore {
 	messages: EventMessage[];
-	loadMessages: () => Promise<void>;
+	loadMessages: (
+		nextChannelListeners?: Partial<MessageSSEEventListeners>,
+		prevChannelListeners?: Partial<MessageSSEEventListeners>,
+	) => Promise<void>;
 	onNextChannelResponse: (messages: EventMessage[]) => void;
 	onPrevChannelResponse: (messages: EventMessage[]) => void;
+	resetState: () => void;
 	getFilterParams: () => MessagesSSEParams;
 	getNextMessages: () => Promise<EventMessage[]>;
 }

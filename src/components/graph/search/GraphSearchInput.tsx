@@ -16,7 +16,6 @@
 
 import * as React from 'react';
 import moment from 'moment';
-import { GlobalHotKeys } from 'react-hotkeys';
 import { useRef } from 'react';
 import KeyCodes from '../../../util/KeyCodes';
 import { usePointerTimestamp } from '../../../contexts/pointerTimestampContext';
@@ -28,8 +27,8 @@ import { usePrevious } from '../../../hooks';
 const TIME_MASK = DateTimeMask.TIME_MASK;
 export const DATE_TIME_MASK = DateTimeMask.DATE_TIME_MASK;
 
-const TIME_PLACEHOLDER = '00:00:00.000' as const;
-const DATE_TIME_PLACEHOLDER = '01.01.2021 00:00:00.000' as const;
+const TIME_PLACEHOLDER = '00:00:00.000';
+const DATE_TIME_PLACEHOLDER = `01.01.${moment().year().toString()} 00:00:00.000`;
 
 type KeyboardHandler = {
 	[key: string]: (keyEvent?: KeyboardEvent | undefined) => void;
@@ -97,6 +96,23 @@ function GraphSearchInput(props: Props) {
 
 	const previousPointerTimestamp = React.useRef<number | null>(pointerTimestamp);
 	const savedInputConfig = React.useRef<GraphSearchInputConfig | null>(null);
+
+	const refInput = useRef<HTMLInputElement | null>(null);
+
+	React.useEffect(() => {
+		function onKeyDown(e: KeyboardEvent) {
+			if (e.shiftKey && e.code === 'KeyT') {
+				e.preventDefault();
+				refInput.current?.focus();
+			}
+		}
+
+		document.documentElement.addEventListener('keydown', onKeyDown);
+
+		return () => {
+			document.documentElement.removeEventListener('keydown', onKeyDown);
+		};
+	}, []);
 
 	React.useEffect(() => {
 		if (timestamp !== null && timestamp !== inputConfig.timestamp) {
@@ -288,36 +304,8 @@ function GraphSearchInput(props: Props) {
 		}
 	}
 
-	function preventDefaultHandlers(handlers: KeyboardHandler) {
-		const newHandlers: KeyboardHandler = {};
-		for (const [action, handler] of Object.entries(handlers)) {
-			newHandlers[action] = (event: KeyboardEvent | undefined) => {
-				if (event) {
-					event.preventDefault();
-				}
-				handler();
-			};
-		}
-		return newHandlers;
-	}
-
-	const refInput = useRef<HTMLInputElement | null>(null);
-
-	function hotkeyFocusHandler() {
-		refInput.current?.focus();
-	}
-
-	const keyMap = {
-		INPUT_FOCUS: 'Shift+T',
-	};
-
-	const handlers = preventDefaultHandlers({
-		INPUT_FOCUS: hotkeyFocusHandler,
-	});
-
 	return (
 		<div className='graph-search-input'>
-			<GlobalHotKeys keyMap={keyMap} handlers={handlers} />
 			<input
 				value={inputConfig.value}
 				onChange={handleInputValueChange}

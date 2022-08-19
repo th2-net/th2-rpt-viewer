@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { observer, Observer } from 'mobx-react-lite';
 import moment from 'moment';
@@ -33,23 +33,36 @@ import EmbeddedMessagesFilterPanel from './EmbeddedMessagesFilterPanel';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
+const getViewType = (viewTypes: Map<string, MessageViewType>, message: EventMessage) => {
+	const vt = viewTypes.get(message.messageId);
+	if (vt) return vt;
+
+	return message.body ? MessageViewType.JSON : MessageViewType.ASCII;
+};
+
 const EmbeddedMessages = () => {
 	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
 
-	const [viewType, setViewType] = useState(MessageViewType.JSON);
+	const [viewTypes, setViewTypes] = useState<Map<string, MessageViewType>>(new Map());
 
-	const renderMsg = (index: number, message: EventMessage) => {
-		return (
-			<MessageCardBase
-				isEmbedded
-				key={index}
-				message={message}
-				setViewType={setViewType}
-				viewType={viewType}
-			/>
-		);
-	};
+	const renderMsg = useCallback(
+		(index: number, message: EventMessage) => {
+			const setViewType = (viewType: MessageViewType) => {
+				setViewTypes(vt => new Map(vt.set(message.messageId, viewType)));
+			};
+
+			return (
+				<MessageCardBase
+					isEmbedded
+					message={message}
+					setViewType={setViewType}
+					viewType={getViewType(viewTypes, message)}
+				/>
+			);
+		},
+		[viewTypes, setViewTypes],
+	);
 
 	const reportURL = React.useMemo(() => {
 		const messagesStoreState = {
@@ -82,12 +95,20 @@ const EmbeddedMessages = () => {
 		);
 	}
 
+	const isLoading =
+		dataStore.messages.length === 0 &&
+		(dataStore.isLoadingNextMessages ||
+			dataStore.isLoadingPreviousMessages ||
+			updateStore.isActive);
+
+	const isEmpty = !isLoading && dataStore.messages.length === 0;
+
 	return (
 		<div className='messages-list'>
 			<div className='messages-list__header'>
 				<MessagesUpdateButton
-					isShow={dataStore.searchChannelNext?.isEndReached || dataStore.updateStore.isLoading}
-					isLoading={updateStore.isLoading}
+					isShow={updateStore.canActivate}
+					isLoading={updateStore.isActive}
 					subscribeOnChanges={updateStore.subscribeOnChanges}
 					stopSubscription={updateStore.stopSubscription}
 				/>
@@ -96,25 +117,22 @@ const EmbeddedMessages = () => {
 					Report viewer
 				</a>
 			</div>
-			{dataStore.messages.length === 0 &&
-			(dataStore.isLoadingNextMessages || dataStore.isLoadingPreviousMessages) ? (
-				<SplashScreen />
-			) : dataStore.messages.length === 0 &&
-			  !(dataStore.isLoadingNextMessages || dataStore.isLoadingPreviousMessages) ? (
+			{isLoading && <SplashScreen />}
+			{isEmpty && (
 				<Empty
 					description='No messages'
 					descriptionStyles={{ position: 'relative', bottom: '6px' }}
 				/>
-			) : (
+			)}
+			{!isEmpty && !isLoading && (
 				<StateSaverProvider>
 					<MessagesVirtualizedList
 						className='messages-list__items'
-						rowCount={dataStore.messages.length}
 						scrolledIndex={scrolledIndex}
 						itemRenderer={renderMsg}
-						overscan={0}
 						loadNextMessages={dataStore.getNextMessages}
 						loadPrevMessages={dataStore.getPreviousMessages}
+						isLive={dataStore.updateStore.isActive}
 					/>
 				</StateSaverProvider>
 			)}
@@ -131,7 +149,6 @@ export default function MessagesApp() {
 
 interface Props {
 	computeItemKey?: (idx: number) => React.Key;
-	rowCount: number;
 	itemRenderer: (index: number, message: EventMessage) => React.ReactElement;
 	/*
 		 Number objects is used here because in some cases (eg one message / action was
@@ -145,6 +162,7 @@ interface Props {
 	overscan?: number;
 	loadNextMessages: () => Promise<EventMessage[]>;
 	loadPrevMessages: () => Promise<EventMessage[]>;
+	isLive: boolean;
 }
 
 const MessagesVirtualizedList = observer((props: Props) => {
@@ -157,6 +175,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		loadPrevMessages,
 		loadNextMessages,
 		scrolledIndex,
+		isLive,
 	} = props;
 
 	React.useEffect(() => {
@@ -178,12 +197,10 @@ const MessagesVirtualizedList = observer((props: Props) => {
 					messagesStore.dataStore.searchChannelNext &&
 					!messagesStore.dataStore.searchChannelNext.isLoading &&
 					!messagesStore.dataStore.searchChannelNext.isEndReached &&
-					!messagesStore.dataStore.updateStore.isLoading &&
+					!messagesStore.dataStore.updateStore.isActive &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'next')
 				) {
-					loadNextMessages().then(messages =>
-						messagesStore.dataStore.onNextChannelResponse(messages),
-					);
+					loadNextMessages().then(messagesStore.dataStore.onNextChannelResponse);
 				}
 
 				if (
@@ -193,9 +210,7 @@ const MessagesVirtualizedList = observer((props: Props) => {
 					!messagesStore.dataStore.searchChannelPrev.isEndReached &&
 					(wheelScrollDirection === undefined || wheelScrollDirection === 'previous')
 				) {
-					loadPrevMessages().then(messages =>
-						messagesStore.dataStore.onPrevChannelResponse(messages),
-					);
+					loadPrevMessages().then(messagesStore.dataStore.onPrevChannelResponse);
 				}
 			}
 		},
@@ -216,7 +231,6 @@ const MessagesVirtualizedList = observer((props: Props) => {
 		<Virtuoso
 			data={messagesStore.dataStore.messages}
 			firstItemIndex={messagesStore.dataStore.startIndex}
-			initialTopMostItemIndex={messagesStore.dataStore.initialItemCount}
 			ref={virtuoso}
 			overscan={overscan}
 			itemContent={itemRenderer}
@@ -242,7 +256,9 @@ const MessagesVirtualizedList = observer((props: Props) => {
 										</button>
 									</div>
 								) : (
-									<MessagesListSpinner isLoading={messagesStore.dataStore.isLoadingNextMessages} />
+									<MessagesListSpinner
+										isLoading={messagesStore.dataStore.isLoadingNextMessages || isLive}
+									/>
 								)
 							}
 						</Observer>

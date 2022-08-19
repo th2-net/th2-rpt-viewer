@@ -18,7 +18,7 @@
 
 .event-header-card {
 	@include status-card;
-	@include bookmark-button($showOnHoverOverParent: true);
+	@include bookmark-button();
 	@include event-status-icon($isParentHoverable: true);
 	line-height: 15px;
 	width: 100%;
@@ -28,18 +28,32 @@
 	align-items: center;
 	border: 2px solid transparent;
 	overflow: hidden;
-	cursor: default;
+	cursor: pointer;
+	gap: 5px;
+	height: 23px;
+	position: relative;
 
-	& > *:not(:first-child) {
-		margin-left: 5px;
-	}
-
-	& .event-status-icon {
-		margin: 5px 1px 5px 0;
+	&__details {
+		visibility: hidden;
+		position: absolute;
+		top: 0;
+		right: 0;
+		height: 100%;
+		padding-left: 15px;
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		max-width: 90%;
+		transition: none;
+		background-color: inherit;
 	}
 
 	&:hover {
 		background-color: var(--status-secondary-background-color);
+	}
+
+	&:hover &__details {
+		visibility: visible;
 	}
 
 	&.full {
@@ -65,8 +79,8 @@
 		border-color: var(--status-hover-border-color);
 	}
 
-	&.clickable {
-		cursor: pointer;
+	&.not-selectable {
+		cursor: default;
 	}
 
 	&.disabled {
@@ -81,15 +95,10 @@
 	}
 
 	&__elapsed-time {
-		display: none;
 		color: $activeTextColor;
 		font-weight: 600;
 		font-size: 10px;
 		line-height: 15px;
-	}
-
-	&:hover &__elapsed-time {
-		display: block;
 	}
 
 	&__time-label,
@@ -97,16 +106,8 @@
 		font-size: 9px;
 		color: $secondaryLightTextColor;
 		white-space: nowrap;
-		&:hover {
-			color: $graphTextColor;
-			border: 1px solid $graphTextColor;
-			padding: 0 2px;
-			border-radius: 4px;
-		}
-	}
-	&__time-label {
 		padding: 0 2px;
-		transition: all 0.15s;
+		transition: color 0.15s, border 0.15s;
 		border: 1px solid transparent;
 		border-radius: 4px;
 
@@ -114,28 +115,6 @@
 			color: $graphTextColor;
 			border: 1px solid $graphTextColor;
 		}
-
-		&-short {
-			display: inline;
-		}
-
-		&-full {
-			display: none;
-		}
-	}
-
-	&:hover &__time-label {
-		&-short {
-			display: none;
-		}
-
-		&-full {
-			display: inline;
-		}
-	}
-
-	&__event-type {
-		margin-left: 3px;
 	}
 
 	&__status,
@@ -147,16 +126,10 @@
 	}
 
 	& .search-by-parent {
-		display: none;
 		cursor: pointer;
 		width: 15px;
 		height: 15px;
 		flex-shrink: 0;
-		background: url(../../resources/icons/filter.svg);
-	}
-
-	&:hover .search-by-parent {
-		display: block;
 		background: url(../../resources/icons/filter-hover.svg);
 	}
 }
@@ -523,19 +496,12 @@
 	}
 }
 
-.event-card {
-	&__children-icon {
-		margin-right: 5px;
-	}
-}
-
 .event-tree-card {
 	display: flex;
+	gap: 5px;
 	flex-direction: row;
 	align-items: center;
-	padding-top: 1px;
-	padding-bottom: 1px;
-	margin-right: 5px;
+	padding: 1px 5px 1px 0;
 }
 
 .event-tree-timestamp {

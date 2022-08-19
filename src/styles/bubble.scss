@@ -29,8 +29,14 @@
 
 	padding: 3px 5px;
 	height: $filterBubbleHeight;
+	max-width: calc(100% - 10px);
 
 	transition: right 0.15s ease-in-out;
+
+	&__value {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 
 	&__remove {
 		position: absolute;
@@ -85,6 +91,10 @@
 		&:focus {
 			outline: 0;
 		}
+	}
+
+	& > div { 
+		max-width: 100%;
 	}
 
 	&.small {

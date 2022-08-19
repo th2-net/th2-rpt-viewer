@@ -50,6 +50,10 @@ export const AutocompleteList = React.forwardRef<HTMLDivElement, AutocompleteLis
 			}),
 		);
 
+		React.useLayoutEffect(() => {
+			adjustAutocompleteListPosition(anchor);
+		}, [anchor, isOpen]);
+
 		React.useEffect(() => {
 			if (anchor) {
 				anchorResizerObserver.current.observe(anchor);

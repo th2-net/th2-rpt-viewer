@@ -44,8 +44,7 @@ function SearchWorkspace() {
 		collapsePanel,
 	} = searchWorkspaceStore.viewStore;
 
-	const bookmarksCounter =
-		selectedStore.bookmarkedMessages.length + selectedStore.bookmarkedEvents.length;
+	const bookmarksCounter = selectedStore.bookmarksStore.filteredBookmarks.length;
 
 	const searchPanel = React.useMemo(() => {
 		return {

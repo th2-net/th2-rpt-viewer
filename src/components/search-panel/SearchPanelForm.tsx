@@ -39,6 +39,7 @@ import SearchResultCountLimit, {
 import { SearchDirection } from '../../models/search/SearchDirection';
 import FiltersHistory from '../filters-history/FiltersHistory';
 import { useFiltersHistoryStore, useSessionsStore } from '../../hooks';
+import { createBemElement } from '../../helpers/styleCreators';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -46,7 +47,7 @@ export type DateInputProps = {
 
 const SearchPanelForm = () => {
 	const {
-		isFormDisabled: disabled,
+		isHistorySearch,
 		updateForm,
 		searchForm: form,
 		formType,
@@ -62,6 +63,8 @@ const SearchPanelForm = () => {
 		resetEventAutocompleteList,
 		clearFilters,
 	} = useSearchStore();
+
+	const disabled = isHistorySearch || isSearching;
 
 	const [currentStream, setCurrentStream] = useState('');
 	const sessionsStore = useSessionsStore();
@@ -224,7 +227,9 @@ const SearchPanelForm = () => {
 	const searchSubmitConfig: SearchSubmitConfig = {
 		isSearching,
 		disabled:
-			disabled || !form.searchDirection || (formType === 'message' && form.stream.length === 0),
+			isHistorySearch ||
+			!form.searchDirection ||
+			(formType === 'message' && form.stream.length === 0),
 		progress: commonProgress,
 		processedObjectCount,
 		isPaused,
@@ -238,7 +243,7 @@ const SearchPanelForm = () => {
 			<SearchProgressBar {...progressBarConfig} />
 			<SearchSubmit {...searchSubmitConfig} />
 			<div className='search-panel__fields'>
-				<FiltersHistory />
+				<FiltersHistory disabled={disabled} />
 				<div className='filter-row'>
 					<div className='filter-row__label'>Search for</div>
 					<div className='search-type-config'>
@@ -255,7 +260,14 @@ const SearchPanelForm = () => {
 			</div>
 			{!disabled && (
 				<div className='search-panel__footer'>
-					<button className='search-panel__clear-btn' onClick={clearFilters}>
+					<button
+						className={createBemElement(
+							'search-panel',
+							'clear-btn',
+							isSearching ? 'disabled' : null,
+						)}
+						onClick={clearFilters}
+						disabled={isSearching}>
 						<i className='search-panel__clear-icon' />
 						Clear All
 					</button>

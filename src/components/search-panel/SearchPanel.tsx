@@ -21,7 +21,8 @@ import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
 import useSearchWorkspace from '../../hooks/useSearchWorkspace';
-import { BookmarkedItem, isBookmark } from '../bookmarks/BookmarksPanel';
+import { BookmarkedItem } from '../../models/Bookmarks';
+import { isBookmark } from '../../helpers/bookmarks';
 import '../../styles/search-panel.scss';
 
 export type SearchPanelType = 'event' | 'message';
@@ -68,7 +69,7 @@ const SearchPanel = () => {
 					}
 					disablePrev={searchStore.isSearching || searchStore.currentIndex === 0}
 					disabledRemove={searchStore.isSearching}
-					showLoadMoreButton={searchStore.isCompleted && !searchStore.isFormDisabled}
+					showLoadMoreButton={searchStore.isCompleted && !searchStore.isHistorySearch}
 					loadMore={() => searchStore.startSearch(true)}
 				/>
 			)}

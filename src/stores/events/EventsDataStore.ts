@@ -428,11 +428,11 @@ export default class EventsDataStore {
 
 	@action
 	private onEventChildrenChunkLoaded = (events: EventTreeNode[], parentId: string) => {
+		if (events.length === 0) return;
+
 		const childList = this.parentChildrensMap.get(parentId) || [];
 		// eslint-disable-next-line no-param-reassign
 		events = events.filter(event => !childList.includes(event.eventId));
-
-		events.forEach(event => this.childrenAreUnknown.set(event.eventId, true));
 
 		const initialCount = this.childrenLoaders[parentId].initialCount;
 		const expectedChildrenCountLoaded =
@@ -442,41 +442,41 @@ export default class EventsDataStore {
 			// eslint-disable-next-line no-param-reassign
 			events = events.slice(0, expectedChildrenCountLoaded - childList.length);
 		}
+
+		events.forEach(event => this.childrenAreUnknown.set(event.eventId, true));
 
 		const newEntries: [string, EventTreeNode][] = events.map(event => [event.eventId, event]);
 		const eventsMap: Map<string, EventTreeNode> = observable.map(
 			new Map([...this.eventsCache, ...newEntries]),
 			{ deep: false },
 		);
-
 		this.eventsCache = eventsMap;
-		const parentNode = this.eventsCache.get(parentId);
-		if (!parentNode) return;
-
 		this.parentChildrensMap.set(parentId, [...childList, ...events.map(event => event.eventId)]);
 	};
 
 	@action
 	private onEventChildrenLoadEnd = (events: EventTreeNode[], parentId: string) => {
-		const childList = this.parentChildrensMap.get(parentId) || [];
-
-		// eslint-disable-next-line no-param-reassign
-		events = events.filter(event => !childList.includes(event.eventId));
-		const initialCount = this.childrenLoaders[parentId].initialCount;
-		const expectedChildrenCountLoaded =
-			(Math.floor(initialCount / this.CHILDREN_COUNT_LIMIT) + 1) * this.CHILDREN_COUNT_LIMIT;
-
-		if (childList.length + events.length > expectedChildrenCountLoaded) {
-			this.hasUnloadedChildren.set(parentId, true);
-			// eslint-disable-next-line no-param-reassign
-			events = events.slice(0, expectedChildrenCountLoaded - childList.length);
-		} else {
+		if (events.length === 0) {
 			this.hasUnloadedChildren.set(parentId, false);
+		} else {
+			const childList = this.parentChildrensMap.get(parentId) || [];
+			// eslint-disable-next-line no-param-reassign
+			events = events.filter(event => !childList.includes(event.eventId));
+			const initialCount = this.childrenLoaders[parentId].initialCount;
+			const expectedChildrenCountLoaded =
+				(Math.floor(initialCount / this.CHILDREN_COUNT_LIMIT) + 1) * this.CHILDREN_COUNT_LIMIT;
+
+			if (childList.length + events.length > expectedChildrenCountLoaded) {
+				this.hasUnloadedChildren.set(parentId, true);
+				// eslint-disable-next-line no-param-reassign
+				events = events.slice(0, expectedChildrenCountLoaded - childList.length);
+			} else {
+				this.hasUnloadedChildren.set(parentId, false);
+			}
+
+			this.onEventChildrenChunkLoaded(events, parentId);
 		}
-
-		this.onEventChildrenChunkLoaded(events, parentId);
 		this.isLoadingChildren.set(parentId, false);
-
 		delete this.childrenLoaders[parentId];
 	};
 

@@ -305,7 +305,7 @@ export class SearchStore {
 		| (SSEHeartbeat & { searchDirection: SSESearchDirection })
 	> = [];
 
-	@computed get isFormDisabled() {
+	@computed get isHistorySearch() {
 		return this.searchHistory.length > 1 && this.currentIndex !== this.searchHistory.length - 1;
 	}
 
@@ -316,7 +316,7 @@ export class SearchStore {
 						info: this.eventFilterInfo,
 						state: this.eventsFilter,
 						setState: this.setEventsFilter,
-						disableAll: this.isFormDisabled,
+						disableAll: this.isHistorySearch || this.isSearching,
 				  }
 				: null;
 		}
@@ -325,7 +325,7 @@ export class SearchStore {
 					info: this.messagesFilterInfo,
 					state: this.messagesFilter,
 					setState: this.setMessagesFilter,
-					disableAll: this.isFormDisabled,
+					disableAll: this.isHistorySearch || this.isSearching,
 			  }
 			: null;
 	}
@@ -421,10 +421,12 @@ export class SearchStore {
 	};
 
 	@action clearFilters = () => {
-		this.messagesFilter = getDefaultMessagesFiltersState(this.messagesFilterInfo);
-		this.eventsFilter = getDefaultEventsFiltersState(this.eventFilterInfo);
+		if (!this.isSearching) {
+			this.messagesFilter = getDefaultMessagesFiltersState(this.messagesFilterInfo);
+			this.eventsFilter = getDefaultEventsFiltersState(this.eventFilterInfo);
 
-		this.searchForm = getDefaultFormState();
+			this.searchForm = getDefaultFormState();
+		}
 	};
 
 	@action deleteHistoryItem = (searchHistoryItem: SearchHistory) => {

@@ -14,28 +14,17 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { observer } from 'mobx-react-lite';
-import React from 'react';
-import { useMessagesDataStore } from '../../hooks';
-import MessagesFilter from '../filter/MessagesFilterPanel';
-import MessagesUpdateButton from './MessagesUpdateButton';
+import { Bookmark, EventBookmark, MessageBookmark } from '../models/Bookmarks';
+import { isEvent, isEventMessage } from './event';
 
-function MessagesWindowHeader() {
-	const { updateStore } = useMessagesDataStore();
-
-	return (
-		<div className='messages-window-header'>
-			<div className='messages-window-header__group'>
-				<MessagesUpdateButton
-					isShow={updateStore.canActivate}
-					isLoading={updateStore.isActive}
-					subscribeOnChanges={updateStore.subscribeOnChanges}
-					stopSubscription={updateStore.stopSubscription}
-				/>
-				<MessagesFilter />
-			</div>
-		</div>
-	);
+export function isBookmark(item: unknown): item is Bookmark {
+	return (item as Bookmark).id !== undefined && (item as Bookmark).item !== undefined;
 }
 
-export default observer(MessagesWindowHeader);
+export function isEventBookmark(bookmark: unknown): bookmark is EventBookmark {
+	return isBookmark(bookmark) && isEvent(bookmark.item);
+}
+
+export function isMessageBookmark(bookmark: unknown): bookmark is MessageBookmark {
+	return isBookmark(bookmark) && isEventMessage(bookmark.item);
+}

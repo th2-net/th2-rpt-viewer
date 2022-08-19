@@ -143,6 +143,10 @@
 
 .graph-chunk {
 	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: end;
+	height: 100%;
 
 	&__item {
 		position: absolute;
@@ -154,6 +158,7 @@
 		display: flex;
 		justify-content: space-between;
 		@include unselectable;
+		width: 100%;
 	}
 
 	&__tick {

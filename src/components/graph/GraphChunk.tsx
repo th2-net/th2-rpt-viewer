@@ -16,7 +16,6 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { LineChart, Line, LineProps } from 'recharts';
 import GraphItemsGroup from './GraphItemsGroup';
 import { GraphStore } from '../../stores/GraphStore';
 import { EventMessage } from '../../models/EventMessage';
@@ -26,30 +25,6 @@ import { getGraphTimeTicks, groupGraphItems, filterListByChunkRange } from '../.
 import { useSelectedStore } from '../../hooks';
 
 const ATTACHED_ITEM_SIZE = 14;
-
-const lineProps: LineProps = {
-	dataKey: '',
-	type: 'linear',
-	yAxisId: 0,
-	animationDuration: 0,
-	activeDot: false,
-	dot: false,
-} as const;
-
-const graphLines = [
-	{
-		dataKey: 'passed',
-		stroke: '#00802A',
-	},
-	{
-		dataKey: 'failed',
-		stroke: '#C20A0A',
-	},
-	{
-		dataKey: 'messages',
-		stroke: '#2689BD',
-	},
-] as const;
 
 interface Props {
 	chunk: Chunk;
@@ -97,7 +72,11 @@ function GraphChunk(props: Props) {
 	}, [chunk.from, chunk.to, chunkWidth, graphItems]);
 
 	return (
-		<div className='graph-chunk' data-from={chunk.from} data-to={chunk.to}>
+		<div
+			className='graph-chunk'
+			data-from={chunk.from}
+			data-to={chunk.to}
+			style={{ width: chunkWidth }}>
 			{graphItemsGroups.map(group => (
 				<GraphItemsGroup
 					key={group.left}
@@ -106,19 +85,6 @@ function GraphChunk(props: Props) {
 					getGraphItemType={getGraphItemType}
 				/>
 			))}
-			<LineChart
-				width={chunkWidth}
-				height={50}
-				data={chunk.data}
-				margin={{ top: 0, right: 0, left: 0, bottom: 5 }}
-				style={{
-					zIndex: 5,
-					cursor: 'inherit',
-				}}>
-				{graphLines.map(line => (
-					<Line key={line.dataKey} {...lineProps} {...line} />
-				))}
-			</LineChart>
 			<div className='graph-chunk__ticks'>
 				{ticks.map(tick => (
 					<span className='graph-chunk__tick' key={tick}>

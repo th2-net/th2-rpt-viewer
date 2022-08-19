@@ -31,7 +31,7 @@ export type MessageSSEEventListeners = SSEEventListeners<EventMessage> & {
 export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	private readonly type: SSEChannelType = 'message';
 
-	private messageIdsEvent: MessageIdsEvent | null = null;
+	private messageIds: string[] = [];
 
 	constructor(
 		private queryParams: MessagesSSEParams,
@@ -42,6 +42,7 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	}
 
 	public subscribe = (resumeMessageIds?: string[]): void => {
+		this.messageIds = resumeMessageIds || this.messageIds;
 		this.initConnection(resumeMessageIds);
 		this.initUpdateScheduler();
 	};
@@ -57,9 +58,9 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 
 	@action
 	protected onClose = () => {
-		const isEndReached = !(this.fetchedEventsCount > 0);
+		const isEndReached = this.fetchedEventsCount === 0;
 
-		if (this.fetchedChunkSubscription == null) {
+		if (this.fetchedChunkSubscription == null || this.eventListeners.onClose) {
 			const chunk = this.getNextChunk();
 			(this.eventListeners.onClose || this.eventListeners.onResponse)(chunk);
 			this.resetSSEState({ isEndReached });
@@ -94,32 +95,32 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 		const { resumeMessageIds, initialResponseTimeoutMs = 2000 } = options || {};
 		this.initConnection(resumeMessageIds);
 
-		const messagesChunk = await (initialResponseTimeoutMs
-			? Promise.race([
-					this.getInitialResponseWithinTimeout(initialResponseTimeoutMs),
-					this.getFetchedChunk(),
-			  ])
-			: this.getFetchedChunk());
-
-		return messagesChunk;
+		try {
+			const messagesChunk = await (initialResponseTimeoutMs
+				? Promise.race([
+						this.getInitialResponseWithinTimeout(initialResponseTimeoutMs),
+						this.getFetchedChunk(),
+				  ])
+				: this.getFetchedChunk());
+			return messagesChunk;
+		} catch (error) {
+			if (error !== 'WHEN_CANCELLED') {
+				console.log(error);
+			}
+			return [];
+		}
 	};
 
 	private initConnection = (resumeMessageIds?: string[]): void => {
 		this.closeChannel();
 		this.resetSSEState({ isLoading: true });
 		this.clearFetchedChunkSubscription();
+		this.messageIds = resumeMessageIds || this.messageIds;
 
-		const messageId: string[] =
-			resumeMessageIds ??
-			(this.messageIdsEvent
-				? (Object.values(this.messageIdsEvent.messageIds).filter(Boolean) as string[])
-				: []);
-
-		this.messageIdsEvent = null;
 		this.channel = api.sse.getEventSource({
 			queryParams: {
 				...this.queryParams,
-				messageId,
+				messageId: this.messageIds,
 			},
 			type: this.type,
 		});
@@ -150,10 +151,16 @@ export class MessagesSSEChannel extends SSEChannel<EventMessage> {
 	};
 
 	private _onMessageIdsEvent = (e: Event) => {
-		this.messageIdsEvent = e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
-
-		if (this.messageIdsEvent && this.eventListeners.onMessageIdsEvent) {
-			this.eventListeners.onMessageIdsEvent(this.messageIdsEvent);
+		const messagesIdsEvent: MessageIdsEvent =
+			e instanceof MessageEvent && e.data ? JSON.parse(e.data) : null;
+		this.messageIds = Object.values(messagesIdsEvent.messageIds).filter(Boolean) as string[];
+		if (messagesIdsEvent && this.eventListeners.onMessageIdsEvent) {
+			this.eventListeners.onMessageIdsEvent(messagesIdsEvent);
 		}
 	};
+
+	public refetch(eventListeners?: MessageSSEEventListeners) {
+		this.eventListeners = eventListeners || this.eventListeners;
+		this.subscribe();
+	}
 }

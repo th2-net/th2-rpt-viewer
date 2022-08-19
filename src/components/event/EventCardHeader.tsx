@@ -23,7 +23,7 @@ import { getEventStatus } from '../../helpers/event';
 import CardDisplayType from '../../util/CardDisplayType';
 import { Chip } from '../Chip';
 import SearchableContent from '../search/SearchableContent';
-import { useSelectedStore, useWorkspaceEventStore, useTabsStore } from '../../hooks';
+import { useWorkspaceEventStore, useTabsStore, useBookmarksStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 
 interface Props {
@@ -56,7 +56,7 @@ function EventCardHeader(props: Props) {
 	} = props;
 	const { eventId, eventName, eventType, startTimestamp, endTimestamp, isUnknown } = event;
 
-	const selectedStore = useSelectedStore();
+	const bookmarksStore = useBookmarksStore();
 	const eventStore = useWorkspaceEventStore();
 	const { setActiveWorkspace } = useTabsStore();
 	const { stopSearch, setFormType, updateForm } = useSearchStore();
@@ -70,9 +70,7 @@ function EventCardHeader(props: Props) {
 		endTimestamp && startTimestamp ? getElapsedTime(startTimestamp, endTimestamp) : null;
 
 	const isBookmarked =
-		selectedStore.bookmarkedEvents.findIndex(
-			bookmarkedEvent => bookmarkedEvent.id === event.eventId,
-		) !== -1;
+		bookmarksStore.events.findIndex(bookmarkedEvent => bookmarkedEvent.id === event.eventId) !== -1;
 
 	const rootClassName = createBemBlock(
 		'event-header-card',
@@ -80,7 +78,7 @@ function EventCardHeader(props: Props) {
 		displayType,
 		isSelected ? 'selected' : null,
 		isActive ? 'active' : null,
-		onSelect ? 'clickable' : null,
+		onSelect ? null : 'not-selectable',
 		disabled ? 'disabled' : null,
 	);
 
@@ -94,7 +92,7 @@ function EventCardHeader(props: Props) {
 	const bookmarkClassName = createBemBlock('bookmark-button', isBookmarked ? 'pinned' : null);
 
 	function onPinClicked(e: React.MouseEvent) {
-		selectedStore.toggleEventPin(event);
+		bookmarksStore.toggleEventPin(event);
 		e.stopPropagation();
 	}
 
@@ -142,24 +140,11 @@ function EventCardHeader(props: Props) {
 					<SearchableContent content={eventName} eventId={eventId} />
 				</div>
 			) : null}
-			{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown ? (
-				<>
-					{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
-					<div
-						className='event-header-card__time-label'
-						onMouseEnter={onMouseEnter}
-						onMouseLeave={onMouseLeave}>
-						<span className='event-header-card__time-label-full'>
-							{formatTime(startTimestampValue)}
-						</span>
-					</div>
-					{eventType && (
-						<span className='event-header-card__event-type' onClick={handleTypeClick}>
-							{eventType}
-						</span>
-					)}
-				</>
-			) : null}
+			{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown && (
+				<span className='event-header-card__event-type' onClick={handleTypeClick}>
+					{eventType}
+				</span>
+			)}
 			{isFlatView && parentsCount > 0 ? <Chip text={parentsCount.toString()} /> : null}
 			{displayType !== CardDisplayType.STATUS_ONLY &&
 				childrenCount !== undefined &&
@@ -170,14 +155,34 @@ function EventCardHeader(props: Props) {
 							.concat(eventStore.eventDataStore.hasUnloadedChildren.get(event.eventId) ? '+' : '')}
 					/>
 				)}
-			{!isUnknown && <div className='search-by-parent' onClick={onSearchClicked} />}
-			{!isUnknown && (
-				<div
-					className={bookmarkClassName}
-					onClick={onPinClicked}
-					title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
-				/>
-			)}
+			<div className='event-header-card__details'>
+				{displayType !== CardDisplayType.STATUS_ONLY && !isUnknown ? (
+					<>
+						{elapsedTime && <span className='event-header-card__elapsed-time'>{elapsedTime}</span>}
+						<div
+							className='event-header-card__time-label'
+							onMouseEnter={onMouseEnter}
+							onMouseLeave={onMouseLeave}>
+							<span className='event-header-card__time-label-full'>
+								{formatTime(startTimestampValue)}
+							</span>
+						</div>
+						{eventType && (
+							<span className='event-header-card__event-type' onClick={handleTypeClick}>
+								{eventType}
+							</span>
+						)}
+					</>
+				) : null}
+				{!isUnknown && <div className='search-by-parent' onClick={onSearchClicked} />}
+				{!isUnknown && (
+					<div
+						className={bookmarkClassName}
+						onClick={onPinClicked}
+						title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
+					/>
+				)}
+			</div>
 		</div>
 	);
 }

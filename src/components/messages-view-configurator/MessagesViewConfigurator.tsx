@@ -15,18 +15,18 @@
  ***************************************************************************** */
 
 import React, { useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useOutsideClickListener } from '../../hooks';
 import { ModalPortal } from '../util/Portal';
-import '../../styles/messages-view-configurator.scss';
 import RulesList from './RulesList';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import BodySortConfig from './BodySortConfig';
+import { useSearchStore } from '../../hooks/useSearchStore';
+import '../../styles/messages-view-configurator.scss';
 
-type Props = {
-	sessions: string[];
-};
+const MessageViewConfigurator = () => {
+	const searchStore = useSearchStore();
 
-const MessageViewConfigurator = ({ sessions }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [mode, setMode] = useState<'display-rules' | 'body-sort'>('display-rules');
 
@@ -73,7 +73,11 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 						<p>{mode === 'display-rules' ? 'Message Display Rules' : 'Message Body Sort'}</p>
 					</div>
 					<div className='messages-view-configurator-body'>
-						{mode === 'display-rules' ? <RulesList sessions={sessions} /> : <BodySortConfig />}
+						{mode === 'display-rules' ? (
+							<RulesList sessions={searchStore.messageSessions} />
+						) : (
+							<BodySortConfig />
+						)}
 					</div>
 					{mode === 'display-rules' ? (
 						<p className='hint'>
@@ -94,4 +98,4 @@ const MessageViewConfigurator = ({ sessions }: Props) => {
 	);
 };
 
-export default MessageViewConfigurator;
+export default observer(MessageViewConfigurator);
