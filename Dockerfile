@@ -8,6 +8,8 @@ RUN npm ci && npm run build
 
 FROM nginx:1.17.10-alpine
 COPY --from=build /home/node/build/out /usr/share/nginx/html
+RUN pwd
+RUN ls ./
 COPY ./metrics/metric /usr/share/nginx/html/metrics
 COPY ./metrics/metric.conf /etc/nginx/conf.d/metrics.conf
 RUN chmod g+rwx /var/cache/nginx /var/run /var/log/nginx
