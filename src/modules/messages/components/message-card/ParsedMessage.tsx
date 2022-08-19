@@ -25,7 +25,6 @@ export interface ParsedMessageProps {
 	displayType: CardDisplayType;
 	messageCardToolsConfig: MessageCardToolsProps;
 	messageViewTypeRendererProps: MessageCardViewTypeRendererProps;
-	rawMessageIndex?: number;
 }
 
 interface OwnProps {

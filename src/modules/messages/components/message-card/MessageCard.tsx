@@ -115,7 +115,6 @@ const MessageCard = (props: MessageCardProps) => {
 						messageCardToolsConfig={messageCardToolsConfig}
 						messageViewTypeRendererProps={messageViewTypeRendererProps}
 						displayHeader={index > 0}
-						rawMessageIndex={isEventMessage(msg) ? index + 1 : undefined}
 					/>
 				))}
 			</div>
