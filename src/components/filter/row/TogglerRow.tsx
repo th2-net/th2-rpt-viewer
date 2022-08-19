@@ -20,12 +20,15 @@ import '../../../styles/toggler.scss';
 
 const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
 	const { value, toggleValue, possibleValues, disabled } = config;
-	const [firstLabel, secondLabel] = possibleValues;
+	const [firstPossibleValue, secondPossibleValue] = possibleValues;
+
+	const firstLabel = firstPossibleValue === 'excl' ? 'Exclude' : 'And';
+	const secondLabel = secondPossibleValue === 'incl' ? 'Include' : 'Or';
 
 	const togglerClassName = createStyleSelector('toggler', disabled ? 'disabled' : '');
 	const togglerIconClassName = createStyleSelector(
 		'toggler__icon',
-		value ? firstLabel.toLowerCase() : secondLabel.toLowerCase(),
+		value ? firstPossibleValue.toLowerCase() : secondPossibleValue.toLowerCase(),
 	);
 
 	return (
