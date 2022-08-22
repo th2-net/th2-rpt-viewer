@@ -44,8 +44,8 @@ type Filter = Partial<Record<FilterKeys, FilterConfig>>;
 type CurrentValues = Partial<Record<FilterKeys, string>>;
 
 const togglerValues: Record<'conjunct' | 'negative', [string, string]> = {
-	conjunct: ['and', 'or'],
-	negative: ['excl', 'incl'],
+	conjunct: ['And', 'Or'],
+	negative: ['Exclude', 'Include'],
 };
 
 const statusValues = ['passed', 'failed', 'any'];

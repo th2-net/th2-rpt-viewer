@@ -194,11 +194,7 @@ function ReplayModal() {
 					<button className='replay__close-button' onClick={() => setIsOpen(false)}>
 						<i></i>
 					</button>
-					<FilterRows
-						config={filterConfig}
-						headerClassName={'replay__compound-header'}
-						onMouseOver={() => setDrag(false)}
-					/>
+					<FilterRows config={filterConfig} headerClassName={'replay__compound-header'} />
 					<p className='replay__generated-text'>
 						<a href={textToCopy} rel='noopener noreferrer' target='_blank'>
 							{textToCopy}

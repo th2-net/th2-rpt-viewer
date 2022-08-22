@@ -22,10 +22,9 @@ import { createStyleSelector } from '../../helpers/styleCreators';
 interface Props {
 	config: FilterRowConfig[];
 	headerClassName?: string;
-	onMouseOver?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
-export function FilterRows({ config, headerClassName, onMouseOver }: Props) {
+export function FilterRows({ config, headerClassName }: Props) {
 	const compoundHeaderClassName = createStyleSelector(
 		'filter__compound-header',
 		headerClassName || null,
@@ -35,10 +34,7 @@ export function FilterRows({ config, headerClassName, onMouseOver }: Props) {
 		<>
 			{config.map(rowConfig =>
 				Array.isArray(rowConfig) ? (
-					<div
-						onMouseOver={onMouseOver}
-						className='filter__compound'
-						key={rowConfig.map(c => c.id).join('-')}>
+					<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
 						<div className={compoundHeaderClassName}>
 							{rowConfig
 								.filter(_rowConfig => _rowConfig.label)

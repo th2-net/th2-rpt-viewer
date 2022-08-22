@@ -20,7 +20,6 @@ import {
 	FilterRowTogglerConfig,
 	FilterRowSwitcherConfig,
 } from '../../models/filter/FilterInputs';
-import '../../styles/filter.scss';
 
 export type StringFilter = {
 	type: 'string';

@@ -19,6 +19,7 @@
 .filter {
 	@include scrollbar;
 	display: flex;
+	position: relative;
 	flex-direction: column;
 	width: 100%;
 	padding: 16px 24px 16px 16px;
@@ -35,6 +36,8 @@
 
 	&-wrapper {
 		display: none;
+		position: absolute;
+		top: 40px;
 		align-items: center;
 		width: 100%;
 

@@ -16,74 +16,27 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-	useActivePanel,
-	useWorkspaceEventStore,
-	useWorkspaceStore,
-	useEventsFilterStore,
-} from '../../hooks';
+import { useActivePanel, useWorkspaceEventStore, useWorkspaceStore } from '../../hooks';
 import { createBemElement } from '../../helpers/styleCreators';
 import EventsSearchPanel from './search/EventsSearchPanel';
 import { EventListNavUp, EventListNavDown } from './EventListNavigation';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { isEventsStore } from '../../helpers/stores';
 import { EventsIntervalInput } from './EventsIntervalInput';
-import FilterConfig from '../filter/FilterConfig';
-import { EventFilterKeys } from '../../api/sse';
-import FiltersHistory from '../filters-history/FiltersHistory';
-import FilterButton from '../filter/FilterButton';
-import { useEventFiltersAutocomplete } from '../../hooks/useEventAutocomplete';
-import { useFilterConfig } from '../../hooks/useFilterConfig';
-
-const filterOrder: EventFilterKeys[] = [
-	'attachedMessageId',
-	'type',
-	'body',
-	'name',
-	'event_generic',
-	'status',
-];
-const classNames = {
-	'string[]': {
-		className: '',
-		labelClassName: '',
-	},
-} as const;
+import EventsFilterPanel from '../filter/EventsFilterPanel';
 
 function EventWindowHeader() {
 	const eventsStore = useWorkspaceEventStore();
 	const eventDataStore = useEventsDataStore();
 	const workspaceStore = useWorkspaceStore();
-	const filterStore = useEventsFilterStore();
 
 	const { activePanel } = useActivePanel();
-
-	const autocompleteLists = useEventFiltersAutocomplete(filterStore.filterInfo);
-
-	const { config, filter, setFilter } = useFilterConfig({
-		filterInfo: filterStore.filterInfo,
-		disabled: false,
-		filter: filterStore.filter,
-		classNames,
-		order: filterOrder,
-		autocompleteLists,
-	});
-
-	React.useEffect(() => {
-		setFilter(filterStore.filter || null);
-	}, [filterStore.filter]);
 
 	const flattenButtonClassName = createBemElement(
 		'event-window-header',
 		'flat-button',
 		eventsStore.viewStore.flattenedListView ? 'active' : null,
 	);
-
-	const onSubmit = React.useCallback(() => {
-		if (filter) {
-			eventsStore.applyFilter(filter);
-		}
-	}, [filter]);
 
 	return (
 		<div className='window__controls'>
@@ -92,12 +45,7 @@ function EventWindowHeader() {
 					<EventsSearchPanel
 						isDisabled={workspaceStore.isActive ? !isEventsStore(activePanel) : true}
 					/>
-					<FilterButton
-						isLoading={eventDataStore.isLoading}
-						isFilterApplied={filterStore.isFilterApplied}
-						showFilter={filterStore.isOpen}
-						setShowFilter={filterStore.setIsOpen}
-					/>
+					<EventsFilterPanel />
 					<div
 						role='button'
 						onClick={eventsStore.viewStore.toggleFlattenEventListView}
@@ -120,24 +68,6 @@ function EventWindowHeader() {
 					</div>
 				)}
 			</div>
-			<FilterConfig
-				config={config}
-				showFilter={filterStore.isOpen}
-				setShowFilter={filterStore.setIsOpen}
-				onSubmit={onSubmit}
-				onClearAll={eventsStore.clearFilter}
-				renderFooter={() =>
-					filter && (
-						<FiltersHistory
-							type='event'
-							sseFilter={{
-								state: filter,
-								setState: setFilter as any,
-							}}
-						/>
-					)
-				}
-			/>
 		</div>
 	);
 }

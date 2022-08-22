@@ -16,8 +16,12 @@
 
 import React from 'react';
 import { computed } from 'mobx';
-import { observer } from 'mobx-react-lite';
-import { FilterRowMultipleStringsConfig } from '../../models/filter/FilterInputs';
+import { observer, Observer } from 'mobx-react-lite';
+import {
+	FilterRowMultipleStringsConfig,
+	ActionFilterConfig,
+	FilterRowConfig,
+} from '../../models/filter/FilterInputs';
 import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
 import { MessageFilterState } from '../search-panel/SearchPanelFilters';
@@ -32,6 +36,8 @@ import {
 } from '../../hooks/useMessagesAutocomplete';
 import { useFilterConfig } from '../../hooks/useFilterConfig';
 import { MessageFilterKeys } from '../../api/sse';
+import FilterConfig from './FilterConfig';
+import FiltersHistory from '../filters-history/FiltersHistory';
 
 const filterOrder: MessageFilterKeys[] = [
 	'attachedEventIds',
@@ -41,14 +47,7 @@ const filterOrder: MessageFilterKeys[] = [
 	'message_generic',
 ];
 
-interface Props {
-	showFilter: boolean;
-	setShowFilter: (isShown: boolean) => void;
-}
-
-const MessagesFilterPanel = (props: Props) => {
-	const { showFilter, setShowFilter } = props;
-
+const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesWorkspaceStore();
 	const messagesDataStore = useMessagesDataStore();
 	const searchStore = useSearchStore();
@@ -56,19 +55,29 @@ const MessagesFilterPanel = (props: Props) => {
 
 	const autocompleteLists = useMessageFiltersAutocomplete(filterStore.filterInfo);
 
-	const { filter } = useFilterConfig({
+	const { config, filter, setFilter } = useFilterConfig({
 		filterInfo: filterStore.filterInfo,
 		filter: filterStore.sseMessagesFilter,
 		order: filterOrder,
 		autocompleteLists,
 	});
 
+	const [showFilter, setShowFilter] = React.useState(false);
 	const [streams, setStreams] = React.useState<Array<string>>([]);
 	const [currentStream, setCurrentStream] = React.useState('');
+	const [isSoftFilterApplied, setIsSoftFilterApplied] = React.useState(filterStore.isSoftFilter);
+
+	React.useEffect(() => {
+		setFilter(filterStore.sseMessagesFilter);
+	}, [filterStore.sseMessagesFilter]);
 
 	React.useEffect(() => {
 		setStreams(filterStore.filter.streams);
 	}, [filterStore.filter.streams]);
+
+	React.useEffect(() => {
+		setIsSoftFilterApplied(filterStore.isSoftFilter);
+	}, [filterStore.isSoftFilter]);
 
 	const submitChanges = React.useCallback(() => {
 		searchStore.stopSearch();
@@ -120,6 +129,43 @@ const MessagesFilterPanel = (props: Props) => {
 		};
 	}, [streams, setStreams, currentStream, setCurrentStream, sessionsAutocomplete]);
 
+	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
+		return {
+			type: 'action',
+			id: 'sse-filtler-error',
+			message: 'Failed to load sse filters',
+			actionButtonText: 'Try again',
+			action: searchStore.getMessagesFilters,
+			isLoading: searchStore.isMessageFiltersLoading,
+		};
+	}, [searchStore.getMessagesFilters, searchStore.isMessageFiltersLoading]);
+
+	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
+		return config.length ? config : [sseFiltersErrorConfig];
+	}, [config, sseFiltersErrorConfig]);
+
+	const renderFooter = React.useCallback(() => {
+		if (!filter) return null;
+
+		return (
+			<Observer>
+				{() => (
+					<div className='filter-footer'>
+						{filter && (
+							<FiltersHistory
+								type='message'
+								sseFilter={{
+									state: filter,
+									setState: setFilter as any,
+								}}
+							/>
+						)}
+					</div>
+				)}
+			</Observer>
+		);
+	}, [filter, isSoftFilterApplied, setIsSoftFilterApplied]);
+
 	return (
 		<>
 			<FilterButton
@@ -127,6 +173,14 @@ const MessagesFilterPanel = (props: Props) => {
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
 				isLoading={secondaryLoadingStatus}
+			/>
+			<FilterConfig
+				setShowFilter={setShowFilter}
+				showFilter={showFilter}
+				config={filterConfig}
+				onSubmit={submitChanges}
+				onClearAll={messagesStore.clearFilters}
+				renderFooter={renderFooter}
 			/>
 			<ReplayModal />
 			<FilterWarning />
