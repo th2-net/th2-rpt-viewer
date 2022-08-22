@@ -24,7 +24,6 @@ import {
 } from '../../models/filter/FilterInputs';
 import { useMessagesDataStore, useMessagesWorkspaceStore } from '../../hooks';
 import { useSearchStore } from '../../hooks/useSearchStore';
-import { MessageFilterState } from '../search-panel/SearchPanelFilters';
 import SessionFilter from './SessionFilterRow';
 import MessageExport from '../message/MessageExport';
 import FilterButton from './FilterButton';
@@ -38,6 +37,7 @@ import { useFilterConfig } from '../../hooks/useFilterConfig';
 import { MessageFilterKeys } from '../../api/sse';
 import FilterConfig from './FilterConfig';
 import FiltersHistory from '../filters-history/FiltersHistory';
+import MessagesFilter from '../../models/filter/MessagesFilter';
 
 const filterOrder: MessageFilterKeys[] = [
 	'attachedEventIds',
@@ -86,7 +86,7 @@ const MessagesFilterPanel = () => {
 				...filterStore.filter,
 				streams,
 			},
-			filter as MessageFilterState,
+			filter as MessagesFilter,
 		);
 	}, [filter, filterStore.filter, streams, filterStore.isSoftFilter]);
 

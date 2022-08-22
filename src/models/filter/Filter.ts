@@ -1,5 +1,5 @@
-/** ****************************************************************************
- * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
+/** *****************************************************************************
+ * Copyright 2022-2022 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-
-import {
-	FilterRowMultipleStringsConfig,
-	FilterRowStringConfig,
-	FilterRowTogglerConfig,
-	FilterRowSwitcherConfig,
-} from '../../models/filter/FilterInputs';
 
 export type StringFilter = {
 	type: 'string';
@@ -42,28 +35,3 @@ export type SwitcherFilter = {
 };
 
 export type Filter = StringFilter | MultipleStringFilter | SwitcherFilter;
-
-export type EventFilterState = {
-	attachedMessageId: StringFilter;
-	type: MultipleStringFilter;
-	body: MultipleStringFilter;
-	name: MultipleStringFilter;
-	status: SwitcherFilter;
-	event_generic: MultipleStringFilter;
-};
-
-export type MessageFilterState = {
-	attachedEventIds: MultipleStringFilter;
-	type: MultipleStringFilter;
-	body: MultipleStringFilter;
-	bodyBinary: MultipleStringFilter;
-	message_generic: MultipleStringFilter;
-};
-
-export type FilterState = EventFilterState | MessageFilterState;
-
-export type FilterRowConfig =
-	| FilterRowSwitcherConfig
-	| FilterRowTogglerConfig
-	| FilterRowStringConfig
-	| FilterRowMultipleStringsConfig;

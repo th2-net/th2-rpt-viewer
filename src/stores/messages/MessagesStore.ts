@@ -19,7 +19,7 @@ import moment from 'moment';
 import { ListRange } from 'react-virtuoso';
 import ApiSchema from '../../api/ApiSchema';
 import { EventMessage } from '../../models/EventMessage';
-import MessagesFilter from '../../models/filter/MessagesFilter';
+import MessagesFilter, { MessagesParams } from '../../models/filter/MessagesFilter';
 import { SelectedStore } from '../SelectedStore';
 import WorkspaceStore from '../workspace/WorkspaceStore';
 import { TimeRange } from '../../models/Timestamp';
@@ -27,7 +27,6 @@ import { SearchStore } from '../SearchStore';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
 import { sortMessagesByTimestamp } from '../../helpers/message';
 import { isEventMessage } from '../../helpers/event';
-import { MessageFilterState } from '../../components/search-panel/SearchPanelFilters';
 import { GraphStore } from '../GraphStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
 import FiltersHistoryStore from '../FiltersHistoryStore';
@@ -145,7 +144,7 @@ export default class MessagesStore {
 	}
 
 	@action
-	public applyFilter = (filter: MessagesFilter, sseFilters: MessageFilterState | null) => {
+	public applyFilter = (filter: MessagesParams, sseFilters: MessagesFilter | null) => {
 		if (sseFilters) {
 			this.filterHistoryStore.onMessageFilterSubmit(sseFilters);
 		}

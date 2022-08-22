@@ -36,11 +36,11 @@ import MessageExpandButton from '../message/MessageExpandButton';
 import EmbeddedMessagesViewTypeStore from './embedded-stores/EmbeddedMessagesViewTypeStore';
 import FilterConfig from '../filter/FilterConfig';
 import { FilterRowConfig, ActionFilterConfig } from '../../models/filter/FilterInputs';
-import { MessageFilterState } from '../search-panel/SearchPanelFilters';
 import { MessageFilterKeys } from '../../api/sse';
 import useElementSize from '../../hooks/useElementSize';
 import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../util/CardDisplayType';
 import { useFilterConfig } from '../../hooks/useFilterConfig';
+import MessagesFilter from '../../models/filter/MessagesFilter';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
@@ -106,7 +106,7 @@ const EmbeddedMessages = () => {
 				...filterStore.filter,
 				streams,
 			},
-			filter as MessageFilterState,
+			filter as MessagesFilter,
 		);
 	}, [filter, filterStore.filter, streams]);
 

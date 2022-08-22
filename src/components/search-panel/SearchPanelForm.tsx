@@ -42,7 +42,8 @@ import { createBemElement } from '../../helpers/styleCreators';
 import { useFilterConfig } from '../../hooks/useFilterConfig';
 import { FilterRows } from '../filter/FilerRows';
 import { EventFilterKeys, MessageFilterKeys } from '../../api/sse';
-import { EventFilterState, MessageFilterState } from './SearchPanelFilters';
+import EventsFilter from '../../models/filter/EventsFilter';
+import MessagesFilter from '../../models/filter/MessagesFilter';
 
 export type DateInputProps = {
 	inputConfig: DateTimeInputType;
@@ -101,8 +102,8 @@ const SearchPanelForm = () => {
 	const onStartSearch = useCallback(
 		(loadMore = false) => {
 			startSearch(loadMore, {
-				eventsFilter: formType === 'event' ? (filter as EventFilterState) : undefined,
-				messagesFilter: formType !== 'event' ? (filter as MessageFilterState) : undefined,
+				eventsFilter: formType === 'event' ? (filter as EventsFilter) : undefined,
+				messagesFilter: formType !== 'event' ? (filter as MessagesFilter) : undefined,
 			});
 		},
 		[filter, startSearch, filters],

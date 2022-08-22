@@ -18,7 +18,7 @@ import { SSESchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
 import EventsFilter from '../models/filter/EventsFilter';
 import { getObjectKeys } from '../helpers/object';
-import { MessageFilterState } from '../components/search-panel/SearchPanelFilters';
+import MessagesFilter from '../models/filter/MessagesFilter';
 
 interface BaseSSEParams {
 	startTimestamp?: number;
@@ -162,18 +162,18 @@ function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
 }
 
 export function getMessagesSSEParamsFromFilter(
-	filter: MessageFilterState | null,
+	filter: MessagesFilter | null,
 	streams: string[],
 	startTimestamp: number | null,
 	endTimestamp: number | null,
 	searchDirection = 'previous',
 	resultCountLimit?: number,
 ): URLSearchParams {
-	const filtersToAdd: Array<keyof MessageFilterState> = !filter
+	const filtersToAdd: Array<keyof MessagesFilter> = !filter
 		? []
 		: Object.entries(filter)
 				.filter(([_, filterValues]) => filterValues.values.length > 0)
-				.map(([filterName]) => filterName as keyof MessageFilterState);
+				.map(([filterName]) => filterName as keyof MessagesFilter);
 
 	const filterValues = filtersToAdd
 		.map(filterName => (filter ? [`${filterName}-values`, filter[filterName].values] : []))
