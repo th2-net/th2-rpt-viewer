@@ -199,6 +199,7 @@ const EmbeddedMessages = () => {
 					showFilter={showFilter}
 					onSubmit={submitChanges}
 					onClearAll={messagesStore.clearFilters}
+					isEmbedded={true}
 				/>
 			</div>
 			{isLoading && <SplashScreen />}
