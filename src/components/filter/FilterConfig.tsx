@@ -27,10 +27,19 @@ interface Props {
 	onSubmit: () => void;
 	onClearAll: () => void;
 	renderFooter?: () => React.ReactNode;
+	isEmbedded?: boolean;
 }
 
 const FilterConfig = (props: Props) => {
-	const { showFilter, setShowFilter, config, onSubmit, onClearAll, renderFooter } = props;
+	const {
+		showFilter,
+		setShowFilter,
+		config,
+		onSubmit,
+		onClearAll,
+		renderFooter,
+		isEmbedded,
+	} = props;
 
 	function onSubmitClick() {
 		onSubmit();
@@ -45,7 +54,11 @@ const FilterConfig = (props: Props) => {
 		onClearAll();
 	}
 
-	const filterWrapperClass = createStyleSelector('filter-wrapper', showFilter ? 'active' : null);
+	const filterWrapperClass = createStyleSelector(
+		'filter-wrapper',
+		isEmbedded ? 'embedded' : null,
+		showFilter ? 'active' : null,
+	);
 
 	return (
 		<div className={filterWrapperClass}>

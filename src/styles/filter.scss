@@ -36,12 +36,17 @@
 	&-wrapper {
 		display: none;
 		position: absolute;
+		z-index: 2;
 		top: 40px;
 		align-items: center;
 		width: 100%;
 
 		&.active {
 			display: flex;
+		}
+
+		&.embedded {
+			top: 50px;
 		}
 	}
 
