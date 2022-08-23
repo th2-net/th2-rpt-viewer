@@ -50,12 +50,12 @@ export type DateInputProps = {
 };
 
 const eventFilterOrder: EventFilterKeys[] = [
+	'status',
 	'attachedMessageId',
 	'type',
 	'body',
 	'name',
 	'event_generic',
-	'status',
 ];
 
 const messagesFilterOrder: MessageFilterKeys[] = [
@@ -282,7 +282,6 @@ const SearchPanelForm = () => {
 				<div className='search-panel__fields'>
 					<FiltersHistory disabled={disabled} />
 					<div className='filter-row'>
-						<div className='filter-row__label'>Search for</div>
 						<div className='search-type-config'>
 							<SearchTypeSwitcher
 								formType={formType}

@@ -44,7 +44,7 @@ const togglerValues: Record<'conjunct' | 'negative', [string, string]> = {
 	negative: ['Exclude', 'Include'],
 };
 
-const statusValues = ['passed', 'failed', 'any'];
+const statusValues = ['All', 'Passed', 'Failed'];
 
 interface UseFilterConfigProps<T extends Filter> {
 	filterInfo: SSEFilterInfo[];

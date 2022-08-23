@@ -281,6 +281,10 @@
 		display: flex;
 		width: 100%;
 		justify-content: flex-end;
+
+		&.status {
+			justify-content: flex-start;
+		}
 	}
 
 	&-warning {
@@ -534,6 +538,11 @@
 		flex-shrink: 0;
 		color: #3a3a3a;
 		font-weight: bold;
+
+		&.status {
+			align-self: flex-start;
+			margin-bottom: 12px;
+		}
 	}
 
 	.filter-content {
