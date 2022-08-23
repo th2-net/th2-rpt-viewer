@@ -880,13 +880,8 @@
 	width: 100%;
 	display: flex;
 	justify-content: space-between;
-
-	&__group {
-		width: 100%;
-		display: flex;
-		align-items: center;
-		gap: 10px;
-	}
+	align-items: center;
+	gap: 10px;
 
 	&__realtime-button {
 		@include clickable;
@@ -1117,15 +1112,15 @@
 
 .replay {
 	display: grid;
-	row-gap: 5px;
+	row-gap: 8px;
 	position: absolute;
-	top: calc(50% - 200px);
+	top: calc(50% - 400px);
 	left: calc(50% - 400px);
 	width: 800px;
-	background-color: #0bc;
+	background-color: white;
+	border: 3px solid #0bc;
 	padding: 0px 20px 20px 20px;
 	border-radius: 6px;
-	color: white;
 	z-index: 300;
 	margin: 10px;
 
@@ -1146,6 +1141,10 @@
 		}
 	}
 
+	&__compound-header {
+		margin-bottom: 12px;
+	}
+
 	.filter-row {
 		margin-bottom: 0;
 		margin-left: 0;
@@ -1156,7 +1155,6 @@
 	}
 
 	.filter-row__label {
-		color: #fff;
 		font-size: 14px;
 	}
 
@@ -1169,7 +1167,7 @@
 	}
 
 	&__generated-text {
-		background-color: rgba(255, 255, 255, 0.8);
+		background-color: #f1f1f1;
 		padding: 3px 15px;
 		position: relative;
 		color: #4d4d4d;
@@ -1207,7 +1205,7 @@
 		border: none;
 		background-color: transparent;
 
-		@include round-button(url(../../resources/icons/cross-icon-white.svg));
+		@include round-button(url(../../resources/icons/cross-icon.svg));
 	}
 
 	.dragable-area {

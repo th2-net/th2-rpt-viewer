@@ -17,7 +17,7 @@
 import { EventAction } from '../models/EventAction';
 import { EventMessage } from '../models/EventMessage';
 import EventsFilter from '../models/filter/EventsFilter';
-import MessagesFilter from '../models/filter/MessagesFilter';
+import { MessagesParams } from '../models/filter/MessagesFilter';
 import { TimeRange } from '../models/Timestamp';
 import {
 	SSEParamsEvents,
@@ -64,7 +64,7 @@ export interface MessageApiSchema {
 			messageId: string;
 			idsOnly: true;
 		},
-		filter: MessagesFilter,
+		filter: MessagesParams,
 		abortSignal?: AbortSignal,
 	): Promise<string[]>;
 	getMessages(
@@ -74,7 +74,7 @@ export interface MessageApiSchema {
 			messageId: string;
 			idsOnly: false;
 		},
-		filter: MessagesFilter,
+		filter: MessagesParams,
 		abortSignal?: AbortSignal,
 	): Promise<EventMessage[]>;
 	getMessage: (

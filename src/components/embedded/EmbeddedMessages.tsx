@@ -34,8 +34,13 @@ import StateSaver from '../util/StateSaver';
 import MessageCardBase from '../message/message-card/MessageCardBase';
 import MessageExpandButton from '../message/MessageExpandButton';
 import EmbeddedMessagesViewTypeStore from './embedded-stores/EmbeddedMessagesViewTypeStore';
+import FilterConfig from '../filter/FilterConfig';
+import { FilterRowConfig, ActionFilterConfig } from '../../models/filter/FilterInputs';
+import { MessageFilterKeys } from '../../api/sse';
 import useElementSize from '../../hooks/useElementSize';
 import CardDisplayType, { COLLAPSED_MESSAGES_WIDTH } from '../../util/CardDisplayType';
+import { useFilterConfig } from '../../hooks/useFilterConfig';
+import MessagesFilter from '../../models/filter/MessagesFilter';
 
 const messagesStore = new EmbeddedMessagesStore(api);
 
@@ -70,9 +75,55 @@ const EmbeddedMessageCard = observer(
 	},
 );
 
+const filterOrder: MessageFilterKeys[] = [
+	'attachedEventIds',
+	'type',
+	'body',
+	'bodyBinary',
+	'message_generic',
+];
+
 const EmbeddedMessages = () => {
 	const { dataStore, scrolledIndex } = messagesStore;
 	const { updateStore } = dataStore;
+	const { filterStore } = messagesStore;
+
+	const { config, filter } = useFilterConfig({
+		filterInfo: filterStore.messagesFilterInfo,
+		filter: filterStore.sseMessagesFilter,
+		order: filterOrder,
+	});
+	const [showFilter, setShowFilter] = React.useState(false);
+	const [streams, setStreams] = React.useState<Array<string>>([]);
+
+	React.useEffect(() => {
+		setStreams(filterStore.filter.streams);
+	}, [filterStore.filter.streams]);
+
+	const submitChanges = React.useCallback(() => {
+		messagesStore.applyFilter(
+			{
+				...filterStore.filter,
+				streams,
+			},
+			filter as MessagesFilter,
+		);
+	}, [filter, filterStore.filter, streams]);
+
+	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(() => {
+		return {
+			type: 'action',
+			id: 'sse-filtler-error',
+			message: 'Failed to load sse filters',
+			actionButtonText: 'Try again',
+			action: () => null,
+			isLoading: false,
+		};
+	}, []);
+
+	const filterConfig: Array<FilterRowConfig> = React.useMemo(() => {
+		return config.length ? config : [sseFiltersErrorConfig];
+	}, [config, sseFiltersErrorConfig]);
 
 	const renderMsg = useCallback(
 		(message: EventMessage, displayType: CardDisplayType) => (
@@ -129,10 +180,26 @@ const EmbeddedMessages = () => {
 					subscribeOnChanges={updateStore.subscribeOnChanges}
 					stopSubscription={updateStore.stopSubscription}
 				/>
-				<EmbeddedMessagesFilterPanel messagesStore={messagesStore} />
+				<EmbeddedMessagesFilterPanel
+					submitChanges={submitChanges}
+					showFilter={showFilter}
+					setShowFilter={setShowFilter}
+					messagesStore={messagesStore}
+					streams={streams}
+					setStreams={setStreams}
+				/>
 				<a href={reportURL} target='_black' className='report-viewer-link'>
 					Report viewer
 				</a>
+			</div>
+			<div className='messages-list__filter'>
+				<FilterConfig
+					config={filterConfig}
+					setShowFilter={setShowFilter}
+					showFilter={showFilter}
+					onSubmit={submitChanges}
+					onClearAll={messagesStore.clearFilters}
+				/>
 			</div>
 			{isLoading && <SplashScreen />}
 			{isEmpty && (

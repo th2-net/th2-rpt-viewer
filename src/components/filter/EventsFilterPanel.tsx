@@ -16,21 +16,22 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import FilterPanel from './FilterPanel';
 import { useWorkspaceEventStore, useEventsFilterStore } from '../../hooks';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { useFilterConfig } from '../../hooks/useFilterConfig';
-import { EventFilterState } from '../search-panel/SearchPanelFilters';
 import { EventFilterKeys } from '../../api/sse';
 import { useEventFiltersAutocomplete } from '../../hooks/useEventAutocomplete';
+import FilterConfig from './FilterConfig';
+import FilterButton from './FilterButton';
+import FiltersHistory from '../filters-history/FiltersHistory';
 
 const filterOrder: EventFilterKeys[] = [
+	'status',
 	'attachedMessageId',
 	'type',
 	'body',
 	'name',
 	'event_generic',
-	'status',
 ];
 const classNames = {
 	'string[]': {
@@ -66,18 +67,32 @@ function EventsFilterPanel() {
 	}, [filter]);
 
 	return (
-		<FilterPanel
-			isLoading={eventDataStore.isLoading}
-			isFilterApplied={filterStore.isFilterApplied}
-			setShowFilter={filterStore.setIsOpen}
-			showFilter={filterStore.isOpen}
-			onSubmit={onSubmit}
-			onClearAll={eventsStore.clearFilter}
-			config={config}
-			type='event'
-			filter={filter as EventFilterState}
-			setFilter={setFilter as any}
-		/>
+		<>
+			<FilterButton
+				isLoading={eventDataStore.isLoading}
+				isFilterApplied={filterStore.isFilterApplied}
+				showFilter={filterStore.isOpen}
+				setShowFilter={filterStore.setIsOpen}
+			/>
+			<FilterConfig
+				setShowFilter={filterStore.setIsOpen}
+				showFilter={filterStore.isOpen}
+				onSubmit={onSubmit}
+				onClearAll={eventsStore.clearFilter}
+				config={config}
+				renderFooter={() =>
+					filter && (
+						<FiltersHistory
+							type='event'
+							sseFilter={{
+								state: filter,
+								setState: setFilter as any,
+							}}
+						/>
+					)
+				}
+			/>
+		</>
 	);
 }
 

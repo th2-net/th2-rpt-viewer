@@ -137,7 +137,6 @@ export type FilterRowSwitcherConfig = FilterRowBaseConfig & {
 	setValue: (nextValue: string) => void;
 	possibleValues: string[];
 	className?: string;
-	labelClassName?: string;
 	defaultValue: string;
 };
 

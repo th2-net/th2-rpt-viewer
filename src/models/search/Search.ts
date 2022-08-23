@@ -1,4 +1,4 @@
-/** *****************************************************************************
+/** ****************************************************************************
  * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { StringFilter, MultipleStringFilter, SwitcherFilter } from './Filter';
+import EventsFilter from '../filter/EventsFilter';
+import MessagesFilter from '../filter/MessagesFilter';
 
-export default interface EventsFilter {
-	attachedMessageId: StringFilter;
-	type: MultipleStringFilter;
-	body: MultipleStringFilter;
-	name: MultipleStringFilter;
-	status: SwitcherFilter;
-	event_generic: MultipleStringFilter;
-}
+export type FilterState = EventsFilter | MessagesFilter;

@@ -296,19 +296,25 @@
 	display: flex;
 	justify-content: space-between;
 	width: 100%;
+	height: 100%;
+	align-items: center;
 }
 
 .search-type-switcher {
 	display: flex;
+	flex-direction: column;
 
-	&__switch-search-type-button {
-		margin-left: 10px;
+	&__togglers {
+		display: flex;
+		padding: 2px;
 	}
 }
 
 .search-result-count-limit {
 	display: flex;
+	align-items: center;
 	white-space: nowrap;
+	color: #3a3a3a;
 
 	& > * {
 		margin-right: 10px;
@@ -319,8 +325,7 @@
 		width: 50px;
 		font-size: 13px;
 		background-color: inherit;
-		color: $searchTextColor;
-		border-bottom: 1px solid white;
+		border-bottom: 1px solid black;
 
 		&:focus {
 			background-color: white;
@@ -339,17 +344,17 @@
 	cursor: pointer;
 	display: flex;
 	align-items: center;
-	color: white;
 	background: none;
-	padding: 3px 8px 3px 5px;
-	border-radius: 5px;
+	padding: 8px 12px;
+	box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.16);
 	opacity: 0.8;
 
 	transition: color 0.3s, background-color 0.3s, opacity 0.3s;
 
 	&.active {
-		color: $primaryTextColor;
-		background-color: white;
+		color: white;
+		background-color: #4e8aff;
+		box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.16);
 		opacity: 1;
 	}
 
@@ -358,34 +363,34 @@
 		cursor: inherit;
 	}
 
+	&.all {
+		border-radius: 8px 0px 0px 8px;
+	}
+
+	&.failed {
+		border-radius: 0px 8px 8px 0px;
+	}
+
+	&.message {
+		border-radius: 0px 8px 8px 0px;
+	}
+
+	&.event {
+		border-radius: 8px 0px 0px 8px;
+	}
+
 	&__icon {
 		&.event {
-			@include icon(url(../../resources/icons/workspace-events-white.svg), 15px, 15px);
-
-			&.active {
-				@include icon(url(../../resources/icons/workspace-events.svg), 15px, 15px);
-			}
+			@include icon(url(../../resources/icons/workspace-events.svg), 15px, 15px);
 		}
 		&.message {
-			@include icon(url(../../resources/icons/workspace-messages-white.svg), 15px, 15px);
-
-			&.active {
-				@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
-			}
+			@include icon(url(../../resources/icons/workspace-messages.svg), 15px, 15px);
 		}
 		&.passed {
-			@include icon(url(../../resources/icons/workspace-passed-white.svg), 15px, 15px);
-
-			&.active {
-				@include icon(url(../../resources/icons/workspace-passed.svg), 15px, 15px);
-			}
+			@include icon(url(../../resources/icons/workspace-passed.svg), 15px, 15px);
 		}
 		&.failed {
-			@include icon(url(../../resources/icons/workspace-failed-white.svg), 15px, 15px);
-
-			&.active {
-				@include icon(url(../../resources/icons/workspace-failed.svg), 15px, 15px);
-			}
+			@include icon(url(../../resources/icons/workspace-failed.svg), 15px, 15px);
 		}
 	}
 
