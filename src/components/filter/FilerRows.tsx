@@ -35,7 +35,11 @@ export function FilterRows({ config, headerClassName }: Props) {
 			{config.map(rowConfig =>
 				Array.isArray(rowConfig) ? (
 					<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
-						<div className={compoundHeaderClassName}>
+						<div
+							className={createStyleSelector(
+								compoundHeaderClassName,
+								rowConfig[0].label === 'Status' ? 'status' : null,
+							)}>
 							{rowConfig
 								.filter(_rowConfig => _rowConfig.label && _rowConfig.label !== 'Status')
 								.map(_rowConfig => (

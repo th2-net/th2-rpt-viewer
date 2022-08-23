@@ -27,21 +27,19 @@ const SwitcherRow = ({ config }: { config: FilterRowSwitcherConfig }) => {
 		}
 	};
 
-	const rootClassName = config.labelClassName ? 'filter__compound-header' : 'search-type-switcher';
-
 	const labelClassName = createStyleSelector(
 		'filter-row__label',
 		config.label === 'Status' ? 'status' : null,
 	);
 
 	return (
-		<div className={rootClassName}>
+		<div className='search-type-switcher'>
 			{config.label && (
 				<label className={labelClassName} htmlFor={config.id}>
 					{config.label}
 				</label>
 			)}
-			<div className={'search-type-switcher__togglers'}>
+			<div className='search-type-switcher__togglers'>
 				{possibleValues.map(val => {
 					const buttonClassName = createBemElement(
 						'search-type-switcher',

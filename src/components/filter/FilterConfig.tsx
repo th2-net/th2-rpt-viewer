@@ -50,7 +50,9 @@ const FilterConfig = (props: Props) => {
 	return (
 		<div className={filterWrapperClass}>
 			<div className='filter'>
-				<FilterRows config={config} />
+				<div className='filter-inputs'>
+					<FilterRows config={config} />
+				</div>
 				<div className='filter-controls'>
 					{renderFooter && renderFooter()}
 					<div className='filter-controls__clear-btn' onClick={onClearAllClick}>
