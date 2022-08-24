@@ -36,7 +36,7 @@ type MessagesStoreDefaultState = MessagesStoreURLState & {
 	targetMessage?: EventMessage;
 };
 
-export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string | null | undefined;
+export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | null | undefined;
 
 export default class MessagesStore {
 	public filterStore: MessagesFilterStore;
@@ -114,24 +114,14 @@ export default class MessagesStore {
 	};
 
 	private init = async (defaultState: MessagesStoreDefaultStateType) => {
-		if (!defaultState) {
-			return;
-		}
-		if (typeof defaultState === 'string') {
-			try {
-				const message = await this.api.messages.getMessage(defaultState);
-				this.onMessageSelect(message);
-			} catch (error) {
-				console.error(`Couldnt fetch target message ${defaultState}`);
-			}
-		} else {
+		if (defaultState) {
 			const message = defaultState.targetMessage;
 			if (isEventMessage(message)) {
-				this.selectedMessageId = new String(message.id);
-				this.highlightedMessageId = new String(message.id);
+				this.onMessageSelect(message);
 			}
+		} else {
+			this.dataStore.loadMessages();
 		}
-		this.dataStore.loadMessages();
 	};
 
 	@action
