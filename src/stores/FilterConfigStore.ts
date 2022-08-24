@@ -23,8 +23,7 @@ import EventsFilter from 'models/filter/EventsFilter';
 import MessagesFilter from 'models/filter/MessagesFilter';
 
 /* eslint-disable no-underscore-dangle */
-// TODO: This store probably shouldnt expose both filterInfo and
-// default filterState(eventFilters, messageFilters)
+
 export class FilterConfigStore implements IFilterConfigStore {
 	@observable
 	private _messageSessions: Array<string> = [];

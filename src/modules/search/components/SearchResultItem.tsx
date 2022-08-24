@@ -18,18 +18,17 @@ import { formatTime, getTimestampAsNumber } from 'helpers/date';
 import { getItemName, isEventAction } from 'helpers/event';
 import { isEventMessage } from 'helpers/message';
 import { createBemBlock, createBemElement, createStyleSelector } from 'helpers/styleCreators';
-import MessagesFilter from 'models/filter/MessagesFilter';
-import EventsFilter from 'models/filter/EventsFilter';
 import { SearchResult } from '../stores/SearchStore';
 
-type SearchResultItemProps = {
+interface SearchResultItemProps {
 	result: SearchResult;
-	highlighted?: boolean;
-	filters: EventsFilter | MessagesFilter;
 	onResultClick: (item: SearchResult, isNewWorkspace?: boolean) => void;
-};
+	highlighted?: boolean;
+}
 
-const SearchResultItem = ({ result, highlighted, onResultClick }: SearchResultItemProps) => {
+const SearchResultItem = (props: SearchResultItemProps) => {
+	const { result, highlighted = false, onResultClick } = props;
+
 	const rootClassName = createBemBlock(
 		'search-result',
 		result.type,

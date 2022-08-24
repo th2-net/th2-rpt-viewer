@@ -16,7 +16,7 @@
 
 export enum Panel {
 	Search,
-	Bookmarks,
 	Events,
 	Messages,
+	Bookmarks,
 }

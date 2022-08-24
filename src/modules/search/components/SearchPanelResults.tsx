@@ -40,7 +40,6 @@ interface SearchPanelResultsProps {
 const SearchPanelResults = (props: SearchPanelResultsProps) => {
 	const {
 		flattenedResult,
-		filters,
 		timestamp,
 		onResultClick: onResultItemClick,
 		onResultDelete,
@@ -59,7 +58,6 @@ const SearchPanelResults = (props: SearchPanelResultsProps) => {
 		return (
 			<SearchResultItem
 				result={result}
-				filters={filters}
 				onResultClick={onResultItemClick}
 				highlighted={isResultItemHighlighted(result)}
 			/>
