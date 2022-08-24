@@ -9,9 +9,11 @@ import { isEventAction } from '../../../helpers/event';
 import { EventStoreDefaultStateType } from '../../../stores/events/EventsStore';
 
 export class ExperimentalAPIEventStore {
-	private CHILDREN_COUNT_LIMIT = 20;
+	private CHILDREN_COUNT_LIMIT = 5;
 
 	@observable rootIds: string[] = [];
+
+	@observable targetEventParents: EventAction[] = [];
 
 	@observable isExpanded: Map<string, boolean> = new Map();
 
@@ -45,10 +47,11 @@ export class ExperimentalAPIEventStore {
 	@action
 	loadTargetEvent = async (eventId: string) => {
 		const parents = await eventHttpApi.getEventParents(eventId);
+		this.targetEventParents = parents.slice();
 		for (let i = 0; i < parents.length; i++) {
 			this.cache.set(parents[i].eventId, parents[i]);
 			if (parents[i].parentEventId) {
-				this.parentsChildrenMap.set(parents[i].parentEventId, [parents[i].eventId]);
+				this.fetchChildren(parents[i].parentEventId);
 			}
 			this.isExpanded.set(parents[i].parentEventId, true);
 		}
@@ -89,7 +92,21 @@ export class ExperimentalAPIEventStore {
 	@computed get tree() {
 		const getNodesList = (eventId: string): string[] => {
 			if (this.isExpanded.get(eventId)) {
-				const children = this.parentsChildrenMap.get(eventId) || [];
+				const children = (this.parentsChildrenMap.get(eventId) || []).slice();
+
+				if (this.targetEventParents.length) {
+					const currentEventInTargetEventParents = this.targetEventParents.find(
+						event => event?.parentEventId === eventId,
+					);
+
+					if (
+						currentEventInTargetEventParents &&
+						!children.includes(currentEventInTargetEventParents?.eventId)
+					) {
+						children.push(currentEventInTargetEventParents.eventId);
+					}
+				}
+
 				return [eventId, ...children.flatMap(getNodesList)];
 			}
 			return [eventId];
