@@ -73,7 +73,6 @@ export class BookmarksStore {
 	@computed
 	public get filteredBookmarks() {
 		const search = this.textSearch.toLowerCase();
-		console.log(this.sortedBookmarks);
 		return this.sortedBookmarks
 			.filter(
 				bookmark =>
