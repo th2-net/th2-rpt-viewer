@@ -170,7 +170,7 @@ const MessagesFilterPanel = () => {
 				onClearAll={messagesStore.clearFilters}
 				filter={filter}
 				setFilter={setFilter as any}
-				type='event'
+				type='message'
 			/>
 			<ReplayModal />
 			<FilterWarning />

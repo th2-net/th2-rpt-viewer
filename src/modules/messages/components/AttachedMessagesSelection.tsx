@@ -18,6 +18,8 @@ import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useMessagesStore } from '../hooks/useMessagesStore';
 
+type Offset = -1 | 1;
+
 const AttachedMessagesSelection = () => {
 	const messagesStore = useMessagesStore();
 
@@ -27,18 +29,12 @@ const AttachedMessagesSelection = () => {
 		setMessageIndex(0);
 	}, [messagesStore.attachedMessages]);
 
-	const onPrevious = () => {
-		if (messageIndex > 0) {
-			const nextIndex = messageIndex - 1;
-			messagesStore.selectAttachedMessage(messagesStore.attachedMessages[nextIndex]);
-			setMessageIndex(nextIndex);
-		}
-	};
+	const selectAttachedMessage = (offset: Offset) => {
+		const nextIndex = messageIndex + offset;
+		const message = messagesStore.attachedMessages[nextIndex];
 
-	const onNext = () => {
-		if (messageIndex !== messagesStore.attachedMessages.length - 1) {
-			const nextIndex = messageIndex + 1;
-			messagesStore.selectAttachedMessage(messagesStore.attachedMessages[nextIndex]);
+		if (message) {
+			messagesStore.selectAttachedMessage(message);
 			setMessageIndex(nextIndex);
 		}
 	};
@@ -49,7 +45,9 @@ const AttachedMessagesSelection = () => {
 
 	return (
 		<div className='messages-list__attached-messages'>
-			<button className='messages-list__attached-messages-btn' onClick={onPrevious}>
+			<button
+				className='messages-list__attached-messages-btn'
+				onClick={() => selectAttachedMessage(-1)}>
 				<div className='messages-list__attached-messages-btn-previous' />
 				<span className='messages-list__attached-messages-text'>Show previous</span>
 			</button>
@@ -59,7 +57,9 @@ const AttachedMessagesSelection = () => {
 				</span>
 				| {messagesStore.attachedMessages.length}
 			</span>
-			<button className='messages-list__attached-messages-btn' onClick={onNext}>
+			<button
+				className='messages-list__attached-messages-btn'
+				onClick={() => selectAttachedMessage(1)}>
 				<span className='messages-list__attached-messages-text'>Show next</span>
 				<div className='messages-list__attached-messages-btn-next' />
 			</button>
