@@ -18,9 +18,9 @@ import { action, computed, observable, reaction, runInAction, toJS } from 'mobx'
 import { nanoid } from 'nanoid';
 import moment from 'moment';
 import { EventTreeNode } from '../models/EventAction';
-import { EventMessage, ParsedMessage } from '../models/EventMessage';
+import { EventMessage } from '../models/EventMessage';
 import WorkspacesStore from './workspace/WorkspacesStore';
-import { getItemName } from '../helpers/event';
+import { getItemId, getItemName } from '../helpers/event';
 import { DbData, IndexedDB, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import notificationsStore from './NotificationsStore';
 import { Bookmark, BookmarkType, EventBookmark, MessageBookmark } from '../models/Bookmarks';
@@ -73,49 +73,19 @@ export class BookmarksStore {
 	@computed
 	public get filteredBookmarks() {
 		const search = this.textSearch.toLowerCase();
-		const unknownType = 'unknown type';
-		if (unknownType.includes(search) && search) {
-			return this.sortedBookmarks.filter(
-				bookmark => (bookmark.item as EventMessage).parsedMessages === null,
+		console.log(this.sortedBookmarks);
+		return this.sortedBookmarks
+			.filter(
+				bookmark =>
+					this.bookmarkType === null ||
+					(this.bookmarkType === 'event' && isEventBookmark(bookmark)) ||
+					(this.bookmarkType === 'message' && isMessageBookmark(bookmark)),
+			)
+			.filter(
+				bookmark =>
+					getItemId(bookmark.item).toLowerCase().includes(search) ||
+					getItemName(bookmark.item)?.toLowerCase().includes(search),
 			);
-		}
-		if (search) {
-			return this.sortedBookmarks.filter(bookmark => {
-				let trueOrFalse = false;
-				if ((bookmark.item as EventMessage).parsedMessages as ParsedMessage[]) {
-					for (
-						let i = 0;
-						i < ((bookmark.item as EventMessage).parsedMessages as ParsedMessage[]).length;
-						i++
-					) {
-						if (
-							((bookmark.item as EventMessage).parsedMessages as ParsedMessage[])[
-								i
-							].message.metadata.messageType
-								.toLowerCase()
-								.includes(search)
-						) {
-							trueOrFalse = true;
-						}
-					}
-				}
-				return trueOrFalse;
-			});
-		}
-		return this.sortedBookmarks;
-
-		// return this.sortedBookmarks
-		// 	.filter(
-		// 		bookmark =>
-		// 			this.bookmarkType === null ||
-		// 			(this.bookmarkType === 'event' && isEventBookmark(bookmark)) ||
-		// 			(this.bookmarkType === 'message' && isMessageBookmark(bookmark)),
-		// 	)
-		// 	.filter(
-		// 		bookmark =>
-		// 			getItemId(bookmark.item).toLowerCase().includes(search) ||
-		// 			getItemName(bookmark.item)?.toLowerCase().includes(search),
-		// 	);
 	}
 
 	@computed
