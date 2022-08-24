@@ -32,7 +32,7 @@ import { useOutsideClickListener } from 'hooks/index';
 import { copyTextToClipboard } from 'helpers/copyHandler';
 import { ModalPortal } from 'components/util/Portal';
 import { useFilterConfig } from 'hooks/useFilterConfig';
-import { FilterRows } from 'components/filter/FilerRows';
+import { FilterRows } from 'components/filter/FilterRows';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 
 const filterOrder: MessageFilterKeys[] = [

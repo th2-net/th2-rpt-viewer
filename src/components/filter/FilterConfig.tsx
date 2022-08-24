@@ -21,7 +21,7 @@ import { EntityType } from 'models/EventAction';
 import FiltersHistory from 'components/filters-history/FiltersHistory';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
-import { FilterRows } from './FilerRows';
+import { FilterRows } from './FilterRows';
 import '../../styles/filter.scss';
 
 interface Props<T extends MessagesFilter | EventsFilter> {

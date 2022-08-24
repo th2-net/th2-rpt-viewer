@@ -14,7 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
 import FilterRow from './row';
 import { createStyleSelector } from '../../helpers/styleCreators';

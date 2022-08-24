@@ -27,7 +27,7 @@ import MessagesFilter from 'models/filter/MessagesFilter';
 import FilterRow from 'components/filter/row';
 import { EventFilterKeys, MessageFilterKeys } from 'api/sse';
 import { useFilterConfig } from 'hooks/useFilterConfig';
-import { FilterRows } from 'components/filter/FilerRows';
+import { FilterRows } from 'components/filter/FilterRows';
 import { SearchDirection } from 'models/SearchDirection';
 import FiltersHistory from 'components/filters-history/FiltersHistory';
 import { useSessionsHistoryStore } from 'modules/messages/hooks/useSessionsStore';
