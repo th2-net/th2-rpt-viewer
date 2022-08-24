@@ -21,7 +21,6 @@
 	position: relative;
 	flex-direction: column;
 	width: 100%;
-	padding: 16px 24px 16px 16px;
 	gap: 12px;
 	font-size: 16px;
 	border-radius: 4px;
@@ -40,6 +39,7 @@
 		top: 40px;
 		align-items: center;
 		width: 100%;
+		padding: 16px 24px 16px 16px;
 
 		&.active {
 			display: flex;
@@ -579,7 +579,6 @@
 	}
 
 	&__label {
-		width: 120px;
 		align-self: center;
 		flex-shrink: 0;
 		color: #3a3a3a;
