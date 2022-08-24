@@ -112,8 +112,14 @@ export function getItemId(item: EventAction | EventTreeNode | EventMessage) {
 }
 
 export function getItemName(item: EventAction | EventTreeNode | EventMessage) {
-	if (isEventMessage(item)) return item.parsedMessages?.[0].message.metadata.messageType;
-	return item.eventName;
+	if (isEventMessage(item) && item.parsedMessages) {
+		return item.parsedMessages.reduce((previous, current) => {
+			return previous + current.message.metadata.messageType.concat(',');
+		}, '');
+	}
+	if (isEventAction(item) || isEventNode(item)) return item.eventName;
+
+	return 'unknown type';
 }
 
 export const convertEventActionToEventTreeNode = (event: EventAction): EventTreeNode => {
