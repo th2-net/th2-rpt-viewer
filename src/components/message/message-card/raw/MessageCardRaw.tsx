@@ -58,7 +58,7 @@ export const MessageCardRaw = React.memo((props: MessageCardRawProps) => {
 				<ParsedMessageHeader
 					messageCardToolsConfig={messageCardToolsConfig}
 					isScreenshotMsg={false}
-					rawMessageIndex={message.parsedMessages ? message.parsedMessages.length + 1 : undefined}
+					isRawMessage={true}
 					viewType={viewType}
 					setViewType={setViewType}
 				/>

@@ -30,13 +30,10 @@ import FiltersHistoryStore, { FiltersHistoryType } from './FiltersHistoryStore';
 import { intervalOptions } from '../models/Graph';
 import { defaultPanelsLayout } from './workspace/WorkspaceViewStore';
 import { getRangeFromTimestamp } from '../helpers/date';
-import {
-	EventFilterState,
-	FilterState,
-	MessageFilterState,
-} from '../components/search-panel/SearchPanelFilters';
+import { FilterState } from '../models/search/Search';
 import { SessionsStore } from './messages/SessionsStore';
 import EventsFilter from '../models/filter/EventsFilter';
+import MessagesFilter from '../models/filter/MessagesFilter';
 
 export default class RootStore {
 	notificationsStore = notificationStoreInstance;
@@ -74,7 +71,7 @@ export default class RootStore {
 		let messagesStoreState: MessagesStoreURLState = {};
 
 		if (activeWorkspace && isWorkspaceStore(activeWorkspace)) {
-			const clearFilter = (filter: Partial<MessageFilterState> | Partial<EventsFilter>) => {
+			const clearFilter = (filter: Partial<MessagesFilter> | Partial<EventsFilter>) => {
 				const tempFilter = toJS(filter);
 				if ('status' in tempFilter && tempFilter?.status?.values === 'any') {
 					delete tempFilter.status;
@@ -161,14 +158,12 @@ export default class RootStore {
 				const { type, filters } = filtersHistoryItem;
 
 				if (type === 'event') {
-					this.filtersHistoryStore
-						.onEventFilterSubmit(filters as EventFilterState, true)
-						.then(() => {
-							this.filtersHistoryStore.showSuccessNotification(type);
-						});
+					this.filtersHistoryStore.onEventFilterSubmit(filters as EventsFilter, true).then(() => {
+						this.filtersHistoryStore.showSuccessNotification(type);
+					});
 				} else {
 					this.filtersHistoryStore
-						.onMessageFilterSubmit(filters as MessageFilterState, true)
+						.onMessageFilterSubmit(filters as MessagesFilter, true)
 						.then(() => {
 							this.filtersHistoryStore.showSuccessNotification(type);
 						});

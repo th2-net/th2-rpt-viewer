@@ -17,18 +17,12 @@
 @import './common/vars';
 
 .filters-history-open {
-	padding: 5px;
-	margin: 0 10px 0 0;
-	border: none;
-	outline: none;
-	color: #fff;
-	font: bold 14px 'Open Sans', sans-serif;
+	@include clickable;
 	background-image: url(../../resources/icons/filters-history-open.svg);
-	background-repeat: no-repeat;
-	background-position: center center;
-	background-size: cover;
-	width: 25px;
+	width: 24px;
 	height: 25px;
+	border: none;
+
 	&:disabled {
 		opacity: 0.5;
 		cursor: default;

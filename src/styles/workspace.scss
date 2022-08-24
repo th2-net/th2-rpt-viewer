@@ -193,13 +193,10 @@
 	&__controls {
 		position: relative;
 		z-index: 100;
-		height: 33px;
 		width: 100%;
 		display: flex;
 		flex-direction: column;
-		justify-content: flex-start;
 		align-items: center;
-		padding: 0 5px;
 		white-space: nowrap;
 	}
 

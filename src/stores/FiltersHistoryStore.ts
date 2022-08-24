@@ -20,11 +20,7 @@ import moment from 'moment';
 import { nanoid } from 'nanoid';
 import { IndexedDB, IndexedDbStores, indexedDbLimits } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
-import {
-	EventFilterState,
-	MessageFilterState,
-	FilterState,
-} from '../components/search-panel/SearchPanelFilters';
+import { FilterState } from '../models/search/Search';
 import {
 	getNonEmptyFilters,
 	isEmptyFilter,
@@ -33,6 +29,8 @@ import {
 } from '../helpers/filters';
 import { NotificationsStore } from './NotificationsStore';
 import { sortByTimestamp } from '../helpers/date';
+import EventsFilter from '../models/filter/EventsFilter';
+import MessagesFilter from '../models/filter/MessagesFilter';
 
 export interface FiltersHistoryType<T extends FilterState> {
 	timestamp: number;
@@ -75,7 +73,7 @@ class FiltersHistoryStore {
 	private initialized = false;
 
 	@observable.ref
-	public filterHistory: FiltersHistoryType<EventFilterState | MessageFilterState>[] = [];
+	public filterHistory: FiltersHistoryType<EventsFilter | MessagesFilter>[] = [];
 
 	@computed
 	private get allEventFilters() {
@@ -108,17 +106,17 @@ class FiltersHistoryStore {
 	}
 
 	@computed
-	public get eventsHistory(): FiltersHistoryType<EventFilterState>[] {
+	public get eventsHistory(): FiltersHistoryType<EventsFilter>[] {
 		return [...this.pinnedEventFilters, ...this.eventFilters];
 	}
 
 	@computed
-	public get messagesHistory(): FiltersHistoryType<MessageFilterState>[] {
+	public get messagesHistory(): FiltersHistoryType<MessagesFilter>[] {
 		return [...this.pinnedMessageFilters, ...this.messageFilters];
 	}
 
 	@action
-	public onEventFilterSubmit = async (filters: EventFilterState, isPinned = false) => {
+	public onEventFilterSubmit = async (filters: EventsFilter, isPinned = false) => {
 		if (isEmptyFilter(filters)) return;
 
 		await when(() => this.initialized);
@@ -133,7 +131,7 @@ class FiltersHistoryStore {
 	};
 
 	@action
-	public onMessageFilterSubmit = async (filters: MessageFilterState, isPinned = false) => {
+	public onMessageFilterSubmit = async (filters: MessagesFilter, isPinned = false) => {
 		if (isEmptyFilter(filters)) return;
 
 		await when(() => this.initialized);
@@ -148,7 +146,7 @@ class FiltersHistoryStore {
 	};
 
 	@action
-	public toggleFilterPin = (filter: FiltersHistoryType<MessageFilterState | EventFilterState>) => {
+	public toggleFilterPin = (filter: FiltersHistoryType<MessagesFilter | EventsFilter>) => {
 		const filterToUpdate = this.filterHistory.find(f => f === filter);
 		if (filterToUpdate) {
 			this.indexedDb.deleteDbStoreItem(IndexedDbStores.FILTERS_HISTORY, filter.timestamp);
@@ -177,14 +175,14 @@ class FiltersHistoryStore {
 
 	private init = async () => {
 		const history = await this.indexedDb.getStoreValues<
-			FiltersHistoryType<EventFilterState | MessageFilterState>
+			FiltersHistoryType<EventsFilter | MessagesFilter>
 		>(IndexedDbStores.FILTERS_HISTORY);
 		this.filterHistory = history;
 		this.initialized = true;
 	};
 
 	@action
-	private addEventHistoryItem = async (newItem: FiltersHistoryType<EventFilterState>) => {
+	private addEventHistoryItem = async (newItem: FiltersHistoryType<EventsFilter>) => {
 		const existedFilter = this.eventsHistory.find(({ filters }) =>
 			isEqual(filters, newItem.filters),
 		);
@@ -196,7 +194,7 @@ class FiltersHistoryStore {
 	};
 
 	@action
-	private addMessageHistoryItem = async (newItem: FiltersHistoryType<MessageFilterState>) => {
+	private addMessageHistoryItem = async (newItem: FiltersHistoryType<MessagesFilter>) => {
 		const existedFilter = this.messagesHistory.find(({ filters }) =>
 			isEqual(filters, newItem.filters),
 		);

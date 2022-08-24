@@ -16,15 +16,14 @@
 import moment from 'moment';
 import { action, reaction, observable } from 'mobx';
 import { EventMessage } from '../../../models/EventMessage';
-import { MessageFilterState } from '../../search-panel/SearchPanelFilters';
-import MessagesFilter from '../../../models/filter/MessagesFilter';
+import MessagesFilter, { MessagesParams } from '../../../models/filter/MessagesFilter';
 import ApiSchema from '../../../api/ApiSchema';
 import EmbeddedMessagesDataProviderStore from './EmbeddedMessagesDataProviderStore';
 import EmbeddedMessagesFilterStore, {
 	EmbeddedMessagesFilterInitialState,
 } from './EmbeddedMessagesFilterStore';
 
-function getDefaultMessagesFilter(): MessagesFilter {
+function getDefaultMessagesParams(): MessagesParams {
 	return {
 		timestampFrom: null,
 		timestampTo: moment.utc().valueOf(),
@@ -57,7 +56,7 @@ export default class EmbeddedMessagesStore {
 
 	constructor(private api: ApiSchema) {
 		const initialState = this.getURLState();
-		const defaultMessagesFilter = getDefaultMessagesFilter();
+		const defaultMessagesFilter = getDefaultMessagesParams();
 		const {
 			timestampFrom = defaultMessagesFilter.timestampFrom,
 			timestampTo = defaultMessagesFilter.timestampTo,
@@ -74,7 +73,7 @@ export default class EmbeddedMessagesStore {
 	}
 
 	@action
-	public applyFilter = (filter: MessagesFilter, sseFilters: MessageFilterState | null) => {
+	public applyFilter = (filter: MessagesParams, sseFilters: MessagesFilter | null) => {
 		this.selectedMessageId = null;
 		this.highlightedMessageId = null;
 		this.filterStore.setMessagesFilter(filter, sseFilters);

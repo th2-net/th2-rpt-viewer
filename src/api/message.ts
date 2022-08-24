@@ -16,7 +16,7 @@
 
 import { MessageApiSchema } from './ApiSchema';
 import { createURLSearchParams } from '../helpers/url';
-import MessagesFilter from '../models/filter/MessagesFilter';
+import { MessagesParams } from '../models/filter/MessagesFilter';
 import { MessagesSSEParams } from './sse';
 
 export type MatchMessageParams = Omit<
@@ -43,7 +43,7 @@ const messageHttpApi: MessageApiSchema = {
 			messageId: string;
 			idsOnly: boolean;
 		},
-		filter: MessagesFilter,
+		filter: MessagesParams,
 		abortSignal?: AbortSignal,
 	) => {
 		const { idsOnly = true, messageId = '', timelineDirection = 'next', limit = 100 } = search;

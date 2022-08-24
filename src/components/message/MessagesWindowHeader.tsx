@@ -17,24 +17,24 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useMessagesDataStore } from '../../hooks';
-import MessagesFilter from '../filter/MessagesFilterPanel';
 import MessagesUpdateButton from './MessagesUpdateButton';
+import MessagesFilterPanel from '../filter/MessagesFilterPanel';
 
 function MessagesWindowHeader() {
 	const { updateStore } = useMessagesDataStore();
 
 	return (
-		<div className='messages-window-header'>
-			<div className='messages-window-header__group'>
+		<>
+			<div className='messages-window-header'>
 				<MessagesUpdateButton
 					isShow={updateStore.canActivate}
 					isLoading={updateStore.isActive}
 					subscribeOnChanges={updateStore.subscribeOnChanges}
 					stopSubscription={updateStore.stopSubscription}
 				/>
-				<MessagesFilter />
+				<MessagesFilterPanel />
 			</div>
-		</div>
+		</>
 	);
 }
 

@@ -29,11 +29,7 @@ import {
 } from '../api/sse';
 import { DbData, indexedDbLimits, IndexedDbStores } from '../api/indexedDb';
 import { SearchPanelType } from '../components/search-panel/SearchPanel';
-import {
-	EventFilterState,
-	FilterState,
-	MessageFilterState,
-} from '../components/search-panel/SearchPanelFilters';
+import { FilterState } from '../models/search/Search';
 import { getTimestampAsNumber } from '../helpers/date';
 import { getItemId, isEventId, isEventMessage, isEventNode } from '../helpers/event';
 import {
@@ -50,6 +46,8 @@ import WorkspacesStore from './workspace/WorkspacesStore';
 import FiltersHistoryStore from './FiltersHistoryStore';
 import { SessionsStore } from './messages/SessionsStore';
 import { getItemAt } from '../helpers/array';
+import EventsFilter from '../models/filter/EventsFilter';
+import MessagesFilter from '../models/filter/MessagesFilter';
 
 type SSESearchDirection = SearchDirection.Next | SearchDirection.Previous;
 
@@ -84,7 +82,7 @@ export type SearchHistory = {
 export type StateHistory = {
 	type: SearchPanelType;
 	state: SearchPanelFormState;
-	filters: EventFilterState | MessageFilterState;
+	filters: EventsFilter | MessagesFilter;
 };
 
 export type SearchHistoryState<T> = {
@@ -140,9 +138,9 @@ export class SearchStore {
 					this.formType = this.currentSearch.request.type;
 					this.searchForm = this.currentSearch.request.state;
 					if (this.currentSearch.request.type === 'event') {
-						this.eventsFilter = this.currentSearch.request.filters as EventFilterState;
+						this.eventsFilter = this.currentSearch.request.filters as EventsFilter;
 					} else {
-						this.messagesFilter = this.currentSearch.request.filters as MessageFilterState;
+						this.messagesFilter = this.currentSearch.request.filters as MessagesFilter;
 					}
 				}
 			},
@@ -171,9 +169,9 @@ export class SearchStore {
 		next: null,
 	};
 
-	@observable eventsFilter: EventFilterState | null = null;
+	@observable eventsFilter: EventsFilter | null = null;
 
-	@observable messagesFilter: MessageFilterState | null = null;
+	@observable messagesFilter: MessagesFilter | null = null;
 
 	@observable searchForm: SearchPanelFormState = getDefaultFormState();
 
@@ -398,7 +396,7 @@ export class SearchStore {
 		this.resetSearchProgressState();
 	};
 
-	@action setEventsFilter = (patch: Partial<EventFilterState>) => {
+	@action setEventsFilter = (patch: Partial<EventsFilter>) => {
 		if (this.eventsFilter) {
 			this.eventsFilter = {
 				...this.eventsFilter,
@@ -409,7 +407,7 @@ export class SearchStore {
 		this.resetSearchProgressState();
 	};
 
-	@action setMessagesFilter = (patch: Partial<MessageFilterState>) => {
+	@action setMessagesFilter = (patch: Partial<MessagesFilter>) => {
 		if (this.messagesFilter) {
 			this.messagesFilter = {
 				...this.messagesFilter,
@@ -482,8 +480,8 @@ export class SearchStore {
 	@action startSearch = (
 		loadMore = false,
 		filters: Partial<{
-			eventsFilter: EventFilterState | null;
-			messagesFilter: MessageFilterState | null;
+			eventsFilter: EventsFilter | null;
+			messagesFilter: MessagesFilter | null;
 		}> = {},
 	) => {
 		const { eventsFilter = this.eventsFilter, messagesFilter = this.messagesFilter } = filters;
@@ -600,10 +598,10 @@ export class SearchStore {
 			this.searchChannel[direction] = searchChannel;
 
 			if (this.formType === 'event') {
-				this.filtersHistory.onEventFilterSubmit(filterParams as EventFilterState);
+				this.filtersHistory.onEventFilterSubmit(filterParams as EventsFilter);
 			} else {
 				this.sessionsStore.saveSessions(stream);
-				this.filtersHistory.onMessageFilterSubmit(filterParams as MessageFilterState);
+				this.filtersHistory.onMessageFilterSubmit(filterParams as MessagesFilter);
 			}
 
 			searchChannel.addEventListener(this.formType, this.onChannelResponse.bind(this, direction));

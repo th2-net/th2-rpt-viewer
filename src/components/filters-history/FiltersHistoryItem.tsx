@@ -17,7 +17,7 @@
 import React from 'react';
 import moment from 'moment';
 import { FiltersHistoryType } from '../../stores/FiltersHistoryStore';
-import { FilterState } from '../search-panel/SearchPanelFilters';
+import { FilterState } from '../../models/search/Search';
 import { FiltersState } from './FiltersHistory';
 import { EventsFiltersInfo, MessagesFilterInfo } from '../../api/sse';
 import { getDefaultEventsFiltersState, getDefaultMessagesFiltersState } from '../../helpers/search';

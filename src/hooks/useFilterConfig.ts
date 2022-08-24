@@ -19,11 +19,7 @@ import { SSEFilterParameter, SSEFilterInfo, FilterKeys } from '../api/sse';
 import { prettifyCamelcase } from '../helpers/stringUtils';
 import { FilterRowConfig, FitlerRowItem } from '../models/filter/FilterInputs';
 import { notEmpty, getObjectKeys } from '../helpers/object';
-import {
-	StringFilter,
-	MultipleStringFilter,
-	SwitcherFilter,
-} from '../components/search-panel/SearchPanelFilters';
+import { StringFilter, MultipleStringFilter, SwitcherFilter } from '../models/filter/Filter';
 
 export type FilterClassnames = Partial<
 	Record<
@@ -44,11 +40,11 @@ type Filter = Partial<Record<FilterKeys, FilterConfig>>;
 type CurrentValues = Partial<Record<FilterKeys, string>>;
 
 const togglerValues: Record<'conjunct' | 'negative', [string, string]> = {
-	conjunct: ['and', 'or'],
-	negative: ['excl', 'incl'],
+	conjunct: ['And', 'Or'],
+	negative: ['Exclude', 'Include'],
 };
 
-const statusValues = ['passed', 'failed', 'any'];
+const statusValues = ['All', 'Passed', 'Failed'];
 
 interface UseFilterConfigProps<T extends Filter> {
 	filterInfo: SSEFilterInfo[];

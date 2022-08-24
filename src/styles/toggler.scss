@@ -16,11 +16,16 @@
 
 @import './common/vars';
 
-
 .toggler {
 	display: flex;
+	flex-direction: column;
 	align-items: center;
 	margin: 0 10px;
+
+	&-wrapper {
+		display: flex;
+		background: #fff;
+	}
 
 	&.disabled {
 		opacity: 0.5;
@@ -29,35 +34,27 @@
 		}
 	}
 
-	&__bar {
+	&__icon {
 		cursor: pointer;
 		position: relative;
 		box-sizing: border-box;
-		width: 40px;
-		height: 20px;
-		margin: 0 4px;
-		border: solid white 1px;
-		border-radius: 12px;
-		&:before {
-			position: absolute;
-			content: '';
-			width: 16px;
-			height: 16px;
-			border-radius: 50%;
-			background-color: white;
-			top: 50%;
-			transform: translateY(-50%);
-			transition: left ease-in-out 240ms;
-		}
+		width: 24px;
+		height: 24px;
 	}
-	.off {
-		&:before {
-			left: calc(100% - 18px);
-		}
+	.include {
+		@include icon(url(../../resources/icons/include.svg), 24px, 24px);
 	}
-	.on {
-		&:before {
-			left: 2px;
-		}
+	.exclude {
+		@include icon(url(../../resources/icons/exclude.svg), 24px, 24px);
+	}
+	.and {
+		@include icon(url(../../resources/icons/and.svg), 24px, 24px);
+	}
+	.or {
+		@include icon(url(../../resources/icons/or.svg), 24px, 24px);
+	}
+	&__label {
+		font-size: 14px;
+		color: #898989;
 	}
 }
