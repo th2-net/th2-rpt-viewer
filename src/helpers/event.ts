@@ -97,14 +97,15 @@ export function getItemId(item: EventAction | EventTreeNode | EventMessage) {
 }
 
 export function getItemName(item: EventAction | EventTreeNode | EventMessage) {
-	if (isEventMessage(item) && item.parsedMessages) {
-		return item.parsedMessages.reduce((previous, current) => {
-			return previous + current.message.metadata.messageType.concat(',');
-		}, '');
-	}
-	if (isEventAction(item) || isEventNode(item)) return item.eventName;
+	if (isEventMessage(item)) {
+		const messageName = item.parsedMessages?.reduce(
+			(previous, current) => previous + current.message.metadata.messageType.concat(','),
+			'',
+		);
 
-	return 'unknown type';
+		return messageName || 'unknown type';
+	}
+	return item.eventName;
 }
 
 export const convertEventActionToEventTreeNode = (event: EventAction): EventTreeNode => ({
