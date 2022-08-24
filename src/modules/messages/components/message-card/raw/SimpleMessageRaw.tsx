@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { splitOnReadableParts } from 'helpers/stringUtils';
+import { splitOnReadableParts } from '../../../helpers/message';
 
 interface Props {
 	rawContent: string;

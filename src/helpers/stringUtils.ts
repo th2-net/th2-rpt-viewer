@@ -82,27 +82,6 @@ const nonPrintableRegExp = createRegExp`
 	${'g'}
 `;
 
-type PartOfString = {
-	text: string;
-	isPrintable: boolean;
-};
-
-export function splitOnReadableParts(targetString: string): PartOfString[] {
-	const stringParts = targetString.split(/\01/g);
-	return stringParts.reduce((arr, curr) => {
-		if (curr === '') return arr;
-		arr.push({
-			text: curr,
-			isPrintable: true,
-		});
-		arr.push({
-			text: '',
-			isPrintable: false,
-		});
-		return arr;
-	}, [] as PartOfString[]);
-}
-
 export function replaceNonPrintableCharsWithDot(targetString: string): string {
 	if (!targetString) {
 		return targetString;

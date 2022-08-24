@@ -17,8 +17,8 @@
 import { action, observable } from 'mobx';
 import moment from 'moment';
 import { EventMessage, MessageViewType, ParsedMessage } from 'models/EventMessage';
-import { decodeBase64RawContent, getAllRawContent } from 'helpers/rawFormatter';
 import { downloadTxtFile } from 'helpers/files/downloadTxt';
+import { decodeBase64RawContent, getAllRawContent } from '../helpers/rawFormatter';
 
 export default class MessagesExportStore {
 	@observable

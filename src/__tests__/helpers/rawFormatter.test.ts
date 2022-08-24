@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as Raw from '../../helpers/rawFormatter';
+import * as Raw from '../../modules/messages/helpers/rawFormatter';
 
 describe('[Helpers] rawFormatter tests', () => {
 	test('mapOctetOffsetsToHumanReadableOffsets() with empty range', () => {

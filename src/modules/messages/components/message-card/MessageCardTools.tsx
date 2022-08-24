@@ -19,12 +19,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { createBemElement } from 'helpers/styleCreators';
 import { EventMessage, MessageViewType, ParsedMessage } from 'models/EventMessage';
 import { useOutsideClickListener } from 'hooks/useOutsideClickListener';
-import { decodeBase64RawContent, getAllRawContent } from 'helpers/rawFormatter';
 import { copyTextToClipboard } from 'helpers/copyHandler';
 import { showNotification } from 'helpers/showNotification';
 import { Apps, CrossOriginMessage } from 'models/PostMessage';
 import useViewMode from 'hooks/useViewMode';
 import { ViewMode } from 'components/ViewModeProvider';
+import { decodeBase64RawContent, getAllRawContent } from '../../helpers/rawFormatter';
 import { isRawViewType, normalizeFields } from '../../helpers/message';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';

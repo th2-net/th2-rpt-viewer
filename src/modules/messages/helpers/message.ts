@@ -70,3 +70,24 @@ export function getDefaultRawViewType(viewType: MessageViewType) {
 export function getDefaultJSONViewType(viewType: MessageViewType) {
 	return !isRawViewType(viewType) ? viewType : MessageViewType.JSON;
 }
+
+type PartOfString = {
+	text: string;
+	isPrintable: boolean;
+};
+
+export function splitOnReadableParts(targetString: string): PartOfString[] {
+	const stringParts = targetString.split(/\01/g);
+	return stringParts.reduce((arr, curr) => {
+		if (curr === '') return arr;
+		arr.push({
+			text: curr,
+			isPrintable: true,
+		});
+		arr.push({
+			text: '',
+			isPrintable: false,
+		});
+		return arr;
+	}, [] as PartOfString[]);
+}

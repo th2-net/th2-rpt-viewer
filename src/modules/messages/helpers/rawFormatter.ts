@@ -16,7 +16,7 @@
 
 /* eslint-disable no-mixed-operators */
 
-import { replaceNonPrintableCharsWithDot } from './stringUtils';
+import { replaceNonPrintableCharsWithDot } from '../../../helpers/stringUtils';
 
 /**
  * Generates columns for rendering and copying.
