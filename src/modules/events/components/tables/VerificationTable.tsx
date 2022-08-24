@@ -18,13 +18,10 @@ import * as React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import throttle from 'lodash.throttle';
 import { observer } from 'mobx-react-lite';
-import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { createStyleSelector } from 'helpers/styleCreators';
 import StateSaver, { RecoverableElementProps } from 'components/util/StateSaver';
 import { replaceNonPrintableChars } from 'helpers/stringUtils';
 import { copyTextToClipboard } from 'helpers/copyHandler';
-import { wrapString } from 'helpers/filters';
-import { areArraysEqual } from 'helpers/array';
 import Popover from 'components/util/Popover';
 import { VerificationPayload, VerificationPayloadField } from '../../models/EventBodyPayload';
 import { EventStatus, eventStatusValues, StatusType } from '../../models/Status';
@@ -45,8 +42,6 @@ interface OwnProps {
 	status: EventStatus;
 	keyPrefix: string;
 	stateKey: string;
-	filters: string[];
-	target?: FilterEntry;
 }
 
 interface StateProps {
@@ -539,31 +534,21 @@ class VerificationTableBase extends React.Component<Props, State> {
 		path: string[],
 		wrapperClassName: string | null = null,
 		fakeContent: string = content || '',
+		isEmpty: Boolean = false,
 	): React.ReactNode {
-		const { filters, target } = this.props;
-		const cellValue =
-			content == null ? 'null' : content === undefined ? 'missing value' : fakeContent;
+		if (content === null) {
+			return wrap(createStyleSelector(wrapperClassName || '', 'novalue'), 'null');
+		}
 
-		const inludingFilters = filters.filter(f => cellValue.includes(f));
+		if (content === '' && !isEmpty) {
+			return content;
+		}
 
-		const wrappedContent = inludingFilters.length
-			? wrapString(
-					cellValue,
-					inludingFilters.map(filter => {
-						const entryIndex = cellValue.indexOf(filter);
-						const entryRange: [number, number] = [entryIndex, entryIndex + filter.length - 1];
+		if (content === undefined) {
+			return wrap(createStyleSelector(wrapperClassName || '', 'novalue'), 'missing value');
+		}
 
-						return {
-							type: new Set([
-								target && areArraysEqual(path, target.path.slice(1)) ? 'highlighted' : 'filtered',
-							]),
-							range: entryRange,
-						};
-					}),
-			  )
-			: content;
-
-		return wrap(wrapperClassName, wrappedContent);
+		return wrap(wrapperClassName, fakeContent);
 
 		function wrap(className: string | null, data: React.ReactNode): React.ReactNode {
 			return className == null ? data : <div className={className}>{data}</div>;

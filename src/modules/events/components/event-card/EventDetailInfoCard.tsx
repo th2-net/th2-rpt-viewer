@@ -15,12 +15,10 @@
  ***************************************************************************** */
 
 import { useEffect, useState } from 'react';
-import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { createBemBlock, createStyleSelector } from 'helpers/styleCreators';
 import { formatTime } from 'helpers/date';
 import { getEventStatus } from 'helpers/event';
 import { EventTreeNode } from 'models/EventAction';
-import { useSearchStore } from 'hooks/useSearchStore';
 import SplashScreen from 'components/SplashScreen';
 import Empty from 'components/util/Empty';
 import { useEvent } from '../../hooks/useEvent';
@@ -33,27 +31,16 @@ interface Props {
 	children?: React.ReactNode;
 	isBookmarked?: boolean;
 	onBookmarkClick?: (node: EventTreeNode) => void;
-	filter?: FilterEntry | null;
 }
 
 function EventDetailInfoCard(props: Props) {
-	const {
-		node,
-		children,
-		parentNodes = [],
-		isBookmarked = false,
-		onBookmarkClick,
-		filter = null,
-	} = props;
+	const { node, children, parentNodes = [], isBookmarked = false, onBookmarkClick } = props;
 
 	const [selectedNode, setSelectedNode] = useState<EventTreeNode>(node);
 
 	useEffect(() => {
 		setSelectedNode(node);
 	}, [node]);
-
-	const { currentSearch } = useSearchStore();
-	const bodyFilters = currentSearch?.request.filters.body.values ?? [];
 
 	const { event, isError } = useEvent(selectedNode.eventId);
 
@@ -135,20 +122,10 @@ function EventDetailInfoCard(props: Props) {
 							key={`body-${eventId}-${index}`}
 							body={bodyPayloadItem}
 							parentEvent={event}
-							filters={bodyFilters}
-							target={
-								filter ? (parseInt(filter.path[0]) === index ? filter : undefined) : undefined
-							}
 						/>
 					))
 				) : (
-					<EventBodyCard
-						key={eventId}
-						body={body}
-						parentEvent={event}
-						filters={bodyFilters}
-						target={filter || undefined}
-					/>
+					<EventBodyCard key={eventId} body={body} parentEvent={event} />
 				)}
 			</div>
 		</div>

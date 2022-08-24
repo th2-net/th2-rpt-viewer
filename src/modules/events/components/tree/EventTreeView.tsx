@@ -49,7 +49,6 @@ function EventTreeView() {
 						isBookmarked={isBookmarked}
 						onBookmarkClick={bookmarksStore.toggleEventPin}
 						node={event}
-						filter={eventsStore.selectedBodyFilter}
 					/>
 				) : (
 					<Empty description='Select event' />

@@ -16,13 +16,15 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import debounce from 'lodash.debounce';
 import { createBemElement } from 'helpers/styleCreators';
-import { useSearchStore } from 'hooks/useSearchStore';
-import { isRangesIntersect, trimRange } from 'helpers/range';
-import { useMessageBodySortStore } from 'hooks/index';
-import { BodyFilter, getFiltersEntries, wrapString } from 'helpers/filters';
-import MessageBody, { isListValue, isMessageValue } from '../../models/MessageBody';
-import { useMessagesStore } from '../../hooks/useMessagesStore';
+import MessageBody, {
+	isSimpleValue,
+	MessageBodyField,
+	isListValue,
+	MessageBodyFields,
+	isMessageValue,
+} from '../../models/MessageBody';
 
 const BEAUTIFIED_PAD_VALUE = 15;
 const DEFAULT_HIGHLIGHT_COLOR = '#e2dfdf';
@@ -32,51 +34,231 @@ interface Props {
 	isBeautified: boolean;
 	body: MessageBody | null;
 	isSelected: boolean;
-	applyFilterToBody?: boolean;
 	sortOrderItems: string[];
 }
 
-function MessageBodyCard({ isBeautified, body, isSelected, applyFilterToBody }: Props) {
-	const { currentSearch } = useSearchStore();
-	const { selectedBodyFilter } = useMessagesStore();
-	const { getSortedFields, sortOrderItems } = useMessageBodySortStore();
-
-	const sortedObject = React.useMemo(
-		() => Object.fromEntries(getSortedFields(body?.fields ? body.fields : {})),
-		[body, [sortOrderItems]],
+const getSortedFields = (fields: MessageBodyFields, sortOrder: string[]) => {
+	const primarySortedFields: [string, MessageBodyField][] = Object.entries(
+		sortOrder.reduce((prev, curr) => (fields[curr] ? { ...prev, [curr]: fields[curr] } : prev), {}),
 	);
 
-	const bodyAsString = JSON.stringify(sortedObject).replace(
-		/:[{|[|"]/gm,
-		(str: string) => `${str[0]} ${str[1]}`,
+	const secondarySortedFields: [string, MessageBodyField][] = Object.entries(fields)
+		.filter(([key]) => key.includes('-') && !sortOrder.includes(key))
+		.sort((a: [string, MessageBodyField], b: [string, MessageBodyField]) => {
+			const [keyA] = a;
+			const [keyB] = b;
+			return +keyA.charAt(keyA.length - 1) > +keyB.charAt(keyB.length - 1) ? 1 : -1;
+		});
+
+	const secondarySortedKeys = secondarySortedFields.map(([key]) => key);
+
+	const tertiarySortedFields: [string, MessageBodyField][] = Object.entries(fields)
+		.filter(([key]) => !sortOrder.includes(key) && !secondarySortedKeys.includes(key))
+		.sort((a: [string, MessageBodyField], b: [string, MessageBodyField]) => {
+			const [keyA] = a;
+			const [keyB] = b;
+			return keyA.toLowerCase() > keyB.toLowerCase() ? 1 : -1;
+		});
+
+	return [...primarySortedFields, ...secondarySortedFields, ...tertiarySortedFields];
+};
+
+function MessageBodyCard({ isBeautified, body, isSelected, sortOrderItems }: Props) {
+	const [areSameContext, highlightSameContext] = React.useState(false);
+
+	const fields = React.useMemo(
+		() => getSortedFields(body?.fields ? body.fields : {}, sortOrderItems),
+		[body, sortOrderItems],
 	);
-
-	const filterEntries: Array<BodyFilter> = React.useMemo(() => {
-		if (!applyFilterToBody) return [];
-
-		return getFiltersEntries(
-			bodyAsString,
-			currentSearch?.request.filters.body.values,
-			selectedBodyFilter || undefined,
-		);
-	}, [currentSearch?.request.filters]);
 
 	if (body == null) {
 		return <pre className='mc-body__human'>null</pre>;
 	}
 
 	return (
-		<pre className='mc-body__human'>
-			<MessageBodyCardField
-				field={sortedObject}
-				range={[0, bodyAsString.length - 1]}
-				primarySort={sortOrderItems}
-				highlightColor={isSelected ? SELECTED_HIGHLIGHT_COLOR : DEFAULT_HIGHLIGHT_COLOR}
-				isBeautified={isBeautified}
-				applyFilterToBody={applyFilterToBody}
-				filters={filterEntries}
-			/>
+		<pre className='mc-body__human' style={{ display: isBeautified ? 'block' : 'inline' }}>
+			{!isBeautified && (
+				<span
+					className={createBemElement('mc-body', 'field-border', areSameContext ? 'active' : null)}>
+					{'{'}
+				</span>
+			)}
+			{fields.map(([key, value], idx, arr) => (
+				<React.Fragment key={key}>
+					<MessageBodyCardField
+						primarySort={sortOrderItems}
+						highlightColor={isSelected ? SELECTED_HIGHLIGHT_COLOR : DEFAULT_HIGHLIGHT_COLOR}
+						label={key}
+						field={value}
+						isBeautified={isBeautified}
+						setIsHighlighted={highlightSameContext}
+					/>
+					{isBeautified || idx === arr.length - 1 ? null : ', '}
+				</React.Fragment>
+			))}
+			{!isBeautified && (
+				<span
+					className={createBemElement('mc-body', 'field-border', areSameContext ? 'active' : null)}>
+					{'}'}
+				</span>
+			)}
 		</pre>
+	);
+}
+
+interface FieldProps {
+	isBeautified: boolean;
+	label: string;
+	field: MessageBodyField;
+	setIsHighlighted: (isHighlighted: boolean) => void;
+	isRoot?: boolean;
+	highlightColor: string;
+	primarySort: string[];
+	renderInfo?: () => React.ReactNode;
+}
+
+function MessageBodyCardField(props: FieldProps) {
+	const {
+		primarySort,
+		field,
+		label,
+		isBeautified,
+		isRoot = true,
+		setIsHighlighted,
+		highlightColor,
+	} = props;
+
+	const [areSameContext, highlightSameContext] = React.useState(false);
+
+	const highlight = React.useMemo(() => debounce(() => setIsHighlighted(true), 60), []);
+
+	const removeHighlight = React.useCallback(() => {
+		highlight.cancel();
+		setIsHighlighted(false);
+	}, [highlight]);
+
+	if (isRoot) {
+		return (
+			<MessageBodyCardField
+				primarySort={primarySort}
+				highlightColor={highlightColor}
+				isBeautified={isBeautified}
+				field={field}
+				label={label}
+				isRoot={false}
+				setIsHighlighted={setIsHighlighted}
+			/>
+		);
+	}
+
+	const subFields = isMessageValue(field)
+		? field.messageValue && field.messageValue.fields
+			? field.messageValue.fields
+			: {}
+		: {};
+
+	const sortedSubFields = getSortedFields(subFields, primarySort);
+
+	return (
+		<span
+			className='mc-body__field'
+			style={{
+				display: isBeautified ? 'block' : undefined,
+			}}>
+			<span
+				onMouseEnter={highlight}
+				onMouseLeave={removeHighlight}
+				className='mc-body__field-label'>
+				{label ? `${label}: ` : ''}
+			</span>
+			{isSimpleValue(field) ? (
+				<span
+					onMouseEnter={highlight}
+					onMouseLeave={removeHighlight}
+					className='mc-body__field-simple-value'>
+					{field.simpleValue}
+				</span>
+			) : isListValue(field) ? (
+				<>
+					<span
+						className={createBemElement(
+							'mc-body',
+							'field-border',
+							areSameContext ? 'active' : null,
+						)}>
+						{'['}
+					</span>
+					<span
+						style={{
+							display: isBeautified ? 'block' : undefined,
+							paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
+						}}>
+						{field.listValue.values?.map((value, idx, arr) => (
+							<React.Fragment key={idx}>
+								<MessageBodyCardField
+									primarySort={primarySort}
+									key={idx}
+									field={value}
+									label={''}
+									isBeautified={isBeautified}
+									isRoot={true}
+									setIsHighlighted={highlightSameContext}
+									highlightColor={highlightColor}
+								/>
+								{isBeautified || idx === arr.length - 1 ? null : ', '}
+							</React.Fragment>
+						))}
+					</span>
+					<span
+						className={createBemElement(
+							'mc-body',
+							'field-border',
+							areSameContext ? 'active' : null,
+						)}>
+						{']'}
+					</span>
+				</>
+			) : (
+				<>
+					<span
+						className={createBemElement(
+							'mc-body',
+							'field-border',
+							areSameContext ? 'active' : null,
+						)}>
+						{'{'}
+					</span>
+					<span
+						style={{
+							display: isBeautified ? 'block' : undefined,
+							paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
+						}}>
+						{sortedSubFields.map(([key, subField], idx, arr) => (
+							<React.Fragment key={key}>
+								<MessageBodyCardField
+									primarySort={primarySort}
+									field={subField}
+									label={key}
+									isBeautified={isBeautified}
+									isRoot={false}
+									setIsHighlighted={highlightSameContext}
+									highlightColor={highlightColor}
+								/>
+								{isBeautified || idx === arr.length - 1 ? null : ', '}
+							</React.Fragment>
+						))}
+					</span>
+					<span
+						className={createBemElement(
+							'mc-body',
+							'field-border',
+							areSameContext ? 'active' : null,
+						)}>
+						{'}'}
+					</span>
+				</>
+			)}
+		</span>
 	);
 }
 
@@ -87,122 +269,5 @@ export function MessageBodyCardFallback({ body, isBeautified }: Props) {
 		<pre className='mc-body__human'>
 			{isBeautified ? JSON.stringify(body, undefined, '  ') : JSON.stringify(body)}
 		</pre>
-	);
-}
-
-type FieldProps = {
-	field: Object | Array<number | string> | number | string | null;
-	range: [number, number];
-	filters: BodyFilter[];
-	isBeautified: boolean;
-	highlightColor: string;
-	primarySort: string[];
-	applyFilterToBody?: boolean;
-};
-
-function MessageBodyCardField(props: FieldProps) {
-	const { field, range, applyFilterToBody, filters, isBeautified } = props;
-
-	const [isSameContext, highlightSameContext] = React.useState(false);
-
-	const trimedFilters = filters.map(filter => ({
-		...filter,
-		range: trimRange(filter.range, range),
-	}));
-
-	if (isMessageValue(field)) {
-		const fieldRanges: [number, number][] = [];
-
-		return (
-			<>
-				<span
-					className={createBemElement(
-						'mc-body',
-						'field-border',
-						isSameContext ? 'active' : null,
-						applyFilterToBody &&
-							trimedFilters.some(part => isRangesIntersect(part.range, [range[0], range[0]]))
-							? 'filtered'
-							: null,
-					)}>
-					{'{'}
-				</span>
-				<span
-					className='mc-body__field'
-					style={{
-						display: isBeautified ? 'block' : undefined,
-						paddingLeft: isBeautified ? BEAUTIFIED_PAD_VALUE : undefined,
-					}}>
-					{Object.entries(field).map(([key, value], idx, arr) => {
-						const [from] = range;
-						const fieldBody = JSON.stringify(value).replace(
-							/:[{|[|"]/gm,
-							(str: string) => `${str[0]} ${str[1]}`,
-						);
-						const fieldLength = fieldBody.length;
-						const newFrom =
-							(!fieldRanges.length
-								? from + '{'.length
-								: fieldRanges[fieldRanges.length - 1][1] + ','.length + 1) + `"${key}": `.length;
-						const fieldRange: [number, number] = [newFrom, newFrom + fieldLength - 1];
-						const fieldFilters = filters.filter(({ range: filterRange }) =>
-							isRangesIntersect(fieldRange, filterRange),
-						);
-						fieldRanges.push(fieldRange);
-						const keyRange: [number, number] = [
-							fieldRange[0] - `"${key}": `.length,
-							fieldRange[0] - 1,
-						];
-
-						return (
-							<React.Fragment key={key}>
-								<span
-									onMouseEnter={() => highlightSameContext(true)}
-									onMouseLeave={() => highlightSameContext(false)}
-									className='mc-body__field-label'>
-									{applyFilterToBody
-										? wrapString(`"${key}": `, trimedFilters, keyRange)
-										: `"${key}": `}
-								</span>
-								<MessageBodyCardField
-									key={key}
-									{...props}
-									field={value}
-									range={fieldRange}
-									filters={fieldFilters}
-								/>
-								{!isBeautified && arr.length !== idx + 1 ? ',' : ''}
-							</React.Fragment>
-						);
-					})}
-				</span>
-				<span
-					className={createBemElement(
-						'mc-body',
-						'field-border',
-						isSameContext ? 'active' : null,
-						applyFilterToBody &&
-							trimedFilters.some(part => isRangesIntersect(part.range, [range[1], range[1]]))
-							? 'filtered'
-							: null,
-					)}
-					style={{ display: isBeautified ? 'block' : undefined }}>
-					{'}'}
-				</span>
-			</>
-		);
-	}
-	if (isListValue(field)) {
-		const fieldValue = `[${field
-			.map((value, idx, arr) => `${value}${arr.length !== idx + 1 ? ',' : ''}`)
-			.join('')}]`;
-
-		return applyFilterToBody ? wrapString(fieldValue, trimedFilters, range) : <>{`"${field}"`}</>;
-	}
-
-	return (
-		<span className='mc-body__field-simple-value'>
-			{applyFilterToBody ? wrapString(`"${field}"`, trimedFilters, range) : `"${field}"`}
-		</span>
 	);
 }

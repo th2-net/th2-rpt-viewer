@@ -31,7 +31,6 @@ import notificationsStore from 'stores/NotificationsStore';
 import WorkspacesStore from 'stores/workspace/WorkspacesStore';
 import FiltersHistoryStore from 'stores/FiltersHistoryStore';
 import { SessionHistoryStore } from 'modules/messages/stores/SessionHistoryStore';
-import { EventBodyPayload } from 'modules/events/models/EventBodyPayload';
 import EventsFilter from 'models/filter/EventsFilter';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import { getItemAt } from 'helpers/array';
@@ -106,11 +105,6 @@ type SearchProgressState = {
 	lastEventId: string | null;
 	lastProcessedObjectCount: number;
 	resultCount: number;
-};
-
-export type FilterEntry = {
-	path: string[];
-	range: [number, number];
 };
 
 const SEARCH_RESULT_GROUP_TIME_INTERVAL_MINUTES = 1;
@@ -220,8 +214,6 @@ export class SearchStore implements ISearchStore {
 			resultCount: 0,
 		},
 	};
-
-	@observable selectedEventBodyFilter: [EventBodyPayload, FilterEntry] | null = null;
 
 	private resumeFromMessageIds: {
 		previous: MessageIdsEvent | null;

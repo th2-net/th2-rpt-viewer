@@ -53,10 +53,10 @@ export function isSimpleValue(field: MessageBodyField): field is SimpleValueFiel
 	return field != null && typeof (field as SimpleValueField).simpleValue === 'string';
 }
 
-export function isListValue(field: unknown): field is Array<number | string> {
-	return field !== null && Array.isArray(field);
+export function isListValue(field: MessageBodyField): field is ListValueField {
+	return field != null && typeof (field as ListValueField).listValue === 'object';
 }
 
-export function isMessageValue(field: unknown): field is MessageValueField {
-	return field !== null && typeof field === 'object';
+export function isMessageValue(field: MessageBodyField): field is MessageValueField {
+	return field != null && typeof (field as MessageValueField).messageValue === 'object';
 }

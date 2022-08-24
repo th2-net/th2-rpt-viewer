@@ -16,7 +16,6 @@
 
 import { action, computed, observable, reaction, IReactionDisposer, runInAction } from 'mobx';
 import { IFilterConfigStore } from 'models/Stores';
-import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { Panel } from 'models/Panel';
 import ApiSchema from 'api/ApiSchema';
 import { EventMessage } from 'models/EventMessage';
@@ -36,8 +35,6 @@ export type MessagesStoreURLState = MessagesFilterStoreInitialState;
 
 type MessagesStoreDefaultState = MessagesStoreURLState & {
 	targetMessage?: EventMessage;
-	targetMessageBodyRange?: FilterEntry;
-	targetMessageBodyBinaryRange?: FilterEntry;
 };
 
 export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string | null | undefined;
@@ -61,10 +58,6 @@ export default class MessagesStore {
 
 	@observable
 	public showFilterChangeHint = false;
-
-	@observable selectedBodyFilter: FilterEntry | null = null;
-
-	@observable selectedBodyBinaryFilter: FilterEntry | null = null;
 
 	@observable
 	public isFilteringTargetMessages = false;
@@ -163,12 +156,6 @@ export default class MessagesStore {
 				this.selectedMessageId = new String(message.id);
 				this.highlightedMessageId = new String(message.id);
 				this.workspaceStore.viewStore.activePanel = Panel.Messages;
-				if (defaultState.targetMessageBodyRange) {
-					this.selectedBodyFilter = defaultState.targetMessageBodyRange;
-				}
-				if (defaultState.targetMessageBodyBinaryRange) {
-					this.selectedBodyBinaryFilter = defaultState.targetMessageBodyBinaryRange;
-				}
 			}
 		}
 		this.dataStore.loadMessages();

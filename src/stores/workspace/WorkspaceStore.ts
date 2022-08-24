@@ -16,7 +16,7 @@
 
 import { action, computed, observable, reaction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
-import { SearchStore, FilterEntry } from 'modules/search/stores/SearchStore';
+import { SearchStore } from 'modules/search/stores/SearchStore';
 import { IEventsStore, IFilterConfigStore, ISearchStore } from 'models/Stores';
 import { Panel } from 'models/Panel';
 import { SessionHistoryStore } from 'modules/messages/stores//SessionHistoryStore';
@@ -202,7 +202,6 @@ export default class WorkspaceStore {
 	@action
 	public onSearchResultItemSelect = (
 		resultItem: EventTreeNode | EventAction | EventMessage,
-		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
 		isNewWorkspace?: boolean,
 	) => {
 		if (isNewWorkspace) {

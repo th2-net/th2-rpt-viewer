@@ -16,7 +16,6 @@
 
 import { action, computed, observable, reaction } from 'mobx';
 import moment from 'moment';
-import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { IEventsStore, IFilterConfigStore } from 'models/Stores';
 import { Panel } from 'models/Panel';
 import EventsFilter from 'models/filter/EventsFilter';
@@ -44,7 +43,6 @@ export type EventStoreURLState = Partial<{
 
 type EventStoreDefaultState = EventStoreURLState & {
 	targetEvent?: EventTreeNode | EventAction;
-	targetEventBodyRange?: FilterEntry | undefined;
 };
 
 export type EventStoreDefaultStateType = EventStoreDefaultState | string | null | undefined;
@@ -100,9 +98,6 @@ export default class EventsStore implements IEventsStore {
 
 	@observable
 	public targetNodeId: string | null = null;
-
-	@observable
-	public selectedBodyFilter: FilterEntry | null = null;
 
 	@observable
 	public renderedEvents: EventTreeNode[] = [];
@@ -367,9 +362,6 @@ export default class EventsStore implements IEventsStore {
 				});
 			}
 		} else if (isEvent(initialState.targetEvent)) {
-			if (defaultState?.targetEventBodyRange) {
-				this.selectedBodyFilter = defaultState.targetEventBodyRange;
-			}
 			this.goToEvent(initialState.targetEvent);
 		} else {
 			this.eventDataStore.fetchEventTree({

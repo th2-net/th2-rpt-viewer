@@ -14,17 +14,13 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { FilterEntry } from 'modules/search/stores/SearchStore';
-import { wrapString } from 'helpers/filters';
 import 'styles/tables.scss';
 
 interface CustomTableProps {
 	content: { [key: string]: string | number | null | undefined }[];
-	filters: string[];
-	target?: FilterEntry;
 }
 
-export function CustomTable({ content, filters, target }: CustomTableProps) {
+export function CustomTable({ content }: CustomTableProps) {
 	if (!content || content.length < 1) {
 		return null;
 	}
@@ -47,27 +43,9 @@ export function CustomTable({ content, filters, target }: CustomTableProps) {
 				<tbody>
 					{content.map((row, index) => (
 						<tr key={index}>
-							{headers.map(cell => {
-								const value = row[cell];
-								const inludingFilters = filters.filter(f => value?.toString().includes(f));
-
-								const wrappedContent =
-									value && inludingFilters.length
-										? wrapString(
-												value.toString(),
-												inludingFilters.map(filter => ({
-													type: new Set([
-														target && index === parseInt(target.path[1]) && cell === target.path[2]
-															? 'highlighted'
-															: 'filtered',
-													]),
-													range: [value.toString().indexOf(filter), filter.length - 1],
-												})),
-										  )
-										: value;
-
-								return <td key={row[cell] ?? index}>{wrappedContent}</td>;
-							})}
+							{headers.map(cell => (
+								<td key={row[cell] ?? index}>{row[cell]}</td>
+							))}
 						</tr>
 					))}
 				</tbody>

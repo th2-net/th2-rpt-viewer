@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import MessagesFilter from 'models/filter/MessagesFilter';
 import { copyTextToClipboard } from 'helpers/copyHandler';
 import { showNotification } from 'helpers/showNotification';
 import { useSelectListener } from 'hooks/useSelectListener';
@@ -25,28 +24,16 @@ import {
 	mapHumanReadableOffsetsToOctetOffsets,
 	mapOctetOffsetsToHumanReadableOffsets,
 } from 'helpers/rawFormatter';
-import { BodyFilter, getFiltersEntries, wrapString } from 'helpers/filters';
-import { isRangesIntersect } from 'helpers/range';
 import CardDisplayType from 'models/util/CardDisplayType';
-import { FilterEntry, SearchHistory } from 'modules/search/stores/SearchStore';
 
 const COPY_NOTIFICATION_TEXT = 'Text copied to the clipboard!';
 
 interface Props {
 	rawContent: string;
 	displayType: CardDisplayType;
-	applyFilterToBody?: boolean;
-	selectedBodyBinaryFilter?: FilterEntry;
-	currentSearch?: SearchHistory | null;
 }
 
-export default function DetailedMessageRaw({
-	rawContent,
-	displayType,
-	applyFilterToBody,
-	selectedBodyBinaryFilter,
-	currentSearch,
-}: Props) {
+export default function DetailedMessageRaw({ rawContent, displayType }: Props) {
 	const hexadecimalRef = React.useRef<HTMLPreElement>(null);
 	const humanReadableRef = React.useRef<HTMLPreElement>(null);
 	const [hexSelectionStart, hexSelectionEnd] = useSelectListener(hexadecimalRef);
@@ -65,56 +52,9 @@ export default function DetailedMessageRaw({
 		}
 	};
 
-	const filterEntriesHuman: Array<BodyFilter> = React.useMemo(() => {
-		if (!applyFilterToBody) return [];
-
-		return getFiltersEntries(
-			humanReadable,
-			(currentSearch?.request.filters as MessagesFilter).bodyBinary.values,
-			selectedBodyBinaryFilter || undefined,
-		);
-	}, [currentSearch?.request.filters]);
-
-	const filterEntriesHex = React.useMemo(
-		() =>
-			filterEntriesHuman.map(entry => ({
-				type: new Set([...entry.type]),
-				range: mapHumanReadableOffsetsToOctetOffsets(entry.range[0], entry.range[1]) as [
-					number,
-					number,
-				],
-			})),
-		[filterEntriesHuman],
-	);
-
 	const renderHumanReadable = (content: string) => {
-		if (humanSelectionStart === humanSelectionEnd && hexSelectionStart === hexSelectionEnd) {
-			if (!applyFilterToBody) return <span ref={humanReadableRef}>{content}</span>;
-
-			const splitedContent = content.split('\n');
-
-			let binaryPartPosition = 0;
-
-			return (
-				<span ref={humanReadableRef}>
-					{splitedContent.flatMap((part, idx) => {
-						const valueRange: [number, number] = [
-							binaryPartPosition,
-							binaryPartPosition + part.length - 1,
-						];
-						const includingFilters = filterEntriesHuman.filter(entry =>
-							isRangesIntersect(entry.range, valueRange),
-						);
-						const value = includingFilters.length
-							? wrapString(part, includingFilters, valueRange)
-							: part;
-
-						binaryPartPosition += part.length;
-
-						return <React.Fragment key={idx}>{[value, '\n']}</React.Fragment>;
-					})}
-				</span>
-			);
+		if (hexSelectionStart === hexSelectionEnd) {
+			return <span>{content}</span>;
 		}
 
 		const [startOffset, endOffset] = mapOctetOffsetsToHumanReadableOffsets(
@@ -132,33 +72,8 @@ export default function DetailedMessageRaw({
 	};
 
 	const renderOctet = (content: string) => {
-		if (humanSelectionStart === humanSelectionEnd && hexSelectionStart === hexSelectionEnd) {
-			if (!applyFilterToBody) return <span ref={hexadecimalRef}>{content}</span>;
-
-			const splitedContent = content.split('\n');
-
-			let binaryPartPosition = 0;
-
-			return (
-				<span ref={hexadecimalRef}>
-					{splitedContent.flatMap((part, idx) => {
-						const valueRange: [number, number] = [
-							binaryPartPosition,
-							binaryPartPosition + part.length - 1,
-						];
-						const includingFilters = filterEntriesHex.filter(entry =>
-							isRangesIntersect(entry.range, valueRange),
-						);
-						const value = includingFilters.length
-							? wrapString(part, includingFilters, valueRange)
-							: part;
-
-						binaryPartPosition += part.length;
-
-						return <React.Fragment key={idx}>{[value, '\n']}</React.Fragment>;
-					})}
-				</span>
-			);
+		if (humanSelectionStart === humanSelectionEnd) {
+			return <span>{content}</span>;
 		}
 
 		const [startOffset, endOffset] = mapHumanReadableOffsetsToOctetOffsets(
@@ -167,11 +82,11 @@ export default function DetailedMessageRaw({
 		);
 
 		return (
-			<span ref={hexadecimalRef}>
+			<React.Fragment>
 				{content.slice(0, startOffset)}
 				<mark className='mc-raw__highlighted-content'>{content.slice(startOffset, endOffset)}</mark>
 				{content.slice(endOffset)}
-			</span>
+			</React.Fragment>
 		);
 	};
 
@@ -188,19 +103,21 @@ export default function DetailedMessageRaw({
 				</div>
 			)}
 			<div className='mc-raw__column primary'>
-				<pre className='mc-raw__content-part'>{renderOctet(hexadecimal)}</pre>
+				<pre className='mc-raw__content-part' ref={hexadecimalRef}>
+					{renderOctet(hexadecimal)}
+				</pre>
 				<div
-					className='mc-raw__copy-btn mc-raw__copy-icon'
+					className='mc-raw__copy-btn   mc-raw__copy-icon'
 					onClick={() => copyHandler(hexadecimal)}
 					title='Copy to clipboard'
 				/>
 			</div>
 			<div className='mc-raw__column primary'>
-				<pre className='mc-raw__content-part' onCopy={humanContentOnCopy}>
+				<pre className='mc-raw__content-part' onCopy={humanContentOnCopy} ref={humanReadableRef}>
 					{renderHumanReadable(beautifiedHumanReadable)}
 				</pre>
 				<div
-					className='mc-raw__copy-btn mc-raw__copy-icon'
+					className='mc-raw__copy-btn   mc-raw__copy-icon'
 					onClick={() => copyHandler(humanReadable)}
 					title='Copy to clipboard'
 				/>

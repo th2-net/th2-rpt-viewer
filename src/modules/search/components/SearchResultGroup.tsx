@@ -24,16 +24,13 @@ import { getTimestampAsNumber } from 'helpers/date';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import EventsFilter from 'models/filter/EventsFilter';
 import { ActionType } from 'models/EventAction';
-import { FilterEntry, SearchResult } from '../stores/SearchStore';
+import { SearchResult } from '../stores/SearchStore';
 import SearchResultItem from './SearchResultItem';
 
 interface SearchResultGroup {
 	results: SearchResult[];
 	filters: EventsFilter | MessagesFilter;
-	onResultClick: (
-		searchResult: SearchResult,
-		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
-	) => void;
+	onResultClick: (searchResult: SearchResult) => void;
 	onGroupClick: (timestamp: number, resultType: ActionType) => void;
 	itemsInView: Record<string, boolean>;
 }

@@ -22,14 +22,11 @@ import { Panel } from 'models/Panel';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../hooks/useSearchStore';
 import SearchPanelResults from './SearchPanelResults';
-import { SearchResult, FilterEntry } from '../stores/SearchStore';
+import { SearchResult } from '../stores/SearchStore';
 import 'styles/search-panel.scss';
 
 interface SearchPanelProps {
-	onResultClick: (
-		searchResult: SearchResult,
-		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
-	) => void;
+	onResultClick: (searchResult: SearchResult) => void;
 	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
 	itemsInView?: Record<string, boolean>;
 }

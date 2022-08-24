@@ -20,16 +20,12 @@ import { getItemId } from 'helpers/event';
 import { ActionType } from 'models/EventAction';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import EventsFilter from 'models/filter/EventsFilter';
-import { FilterEntry, SearchResult } from '../stores/SearchStore';
+import { SearchResult } from '../stores/SearchStore';
 import SearchPanelSeparator from './SearchPanelSeparator';
 import SearchResultItem from './SearchResultItem';
 
 interface SearchPanelResultsProps {
-	onResultClick: (
-		searchResult: SearchResult,
-		filter?: { type: 'body' | 'bodyBinary'; entry: FilterEntry },
-		isNewWorkspace?: boolean,
-	) => void;
+	onResultClick: (searchResult: SearchResult, isNewWorkspace?: boolean) => void;
 	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
 	onResultDelete: () => void;
 	flattenedResult: (SearchResult | [number, number])[];

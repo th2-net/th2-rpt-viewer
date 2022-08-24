@@ -15,10 +15,7 @@
  ***************************************************************************** */
 
 import * as React from 'react';
-import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { createStyleSelector } from 'helpers/styleCreators';
-import { areArraysEqual } from 'helpers/array';
-import { wrapString } from 'helpers/filters';
 import StateSaver from 'components/util/StateSaver';
 import 'styles/tables.scss';
 
@@ -42,8 +39,6 @@ interface OwnProps {
 	columns: Array<string>;
 	rows: ParamsTableRow[];
 	name: string;
-	filters: string[];
-	target?: FilterEntry;
 	stateKey: string;
 }
 
@@ -62,12 +57,7 @@ class ParamsTableBase extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		this.state = {
-			nodes: props.target
-				? this.updateExpandPath(
-						props.target.path.slice(1).map(p => parseInt(p)),
-						props.nodes,
-				  )
-				: props.nodes,
+			nodes: props.nodes,
 		};
 	}
 
@@ -112,17 +102,6 @@ class ParamsTableBase extends React.Component<Props, State> {
 				  }
 				: node,
 		);
-	}
-
-	componentDidUpdate() {
-		if (this.props.target?.path.length) {
-			this.setState({
-				nodes: this.updateExpandPath(
-					this.props.target.path.slice(1).map(p => parseInt(p)),
-					this.state.nodes,
-				),
-			});
-		}
 	}
 
 	componentWillUnmount() {
@@ -189,16 +168,15 @@ class ParamsTableBase extends React.Component<Props, State> {
 				  )
 				: [];
 
-			return [this.renderTooglerNode(node, paddingLevel, path, key), ...subNodes];
+			return [this.renderTooglerNode(node, paddingLevel, key), ...subNodes];
 		}
-		return [this.renderValueNode(node.title, node.columns || {}, paddingLevel, path, key)];
+		return [this.renderValueNode(node.title, node.columns || {}, paddingLevel, key)];
 	}
 
 	private renderValueNode(
 		rowTitle: string,
 		columns: { [columnTitle: string]: string },
 		paddingLevel: number,
-		path: string[],
 		key: string,
 	): React.ReactNode {
 		const cellStyle = {
@@ -207,10 +185,10 @@ class ParamsTableBase extends React.Component<Props, State> {
 
 		return (
 			<tr className='params-table-row-value' key={key}>
-				<td style={cellStyle}>{this.renderContent(`${key}-name`, rowTitle, path)}</td>
-				{this.props.columns.map((columnTitle, index) => (
+				<td style={cellStyle}>{this.renderContent(`${key}-name`, rowTitle)}</td>
+				{this.props.columns.map(columnTitle => (
 					<td key={`${rowTitle} - ${columnTitle}`}>
-						{this.renderContent(`${key}-value`, columns[columnTitle], [...path, index.toString()])}
+						{this.renderContent(`${key}-value`, columns[columnTitle])}
 					</td>
 				))}
 			</tr>
@@ -220,7 +198,6 @@ class ParamsTableBase extends React.Component<Props, State> {
 	private renderTooglerNode(
 		node: ParamsTableRow,
 		paddingLevel: number,
-		path: string[],
 		key: string,
 	): React.ReactNode {
 		const rootClass = createStyleSelector(
@@ -236,7 +213,7 @@ class ParamsTableBase extends React.Component<Props, State> {
 					style={{
 						gridColumn: `1 / ${this.props.columns.length + 2}`,
 					}}>
-					<p style={nameStyle}>{this.renderContent(`${key}-name`, node.title, path)}</p>
+					<p style={nameStyle}>{this.renderContent(`${key}-name`, node.title)}</p>
 				</td>
 			</tr>
 		);
@@ -246,33 +223,12 @@ class ParamsTableBase extends React.Component<Props, State> {
 		we need this for optimization - render SearchableContent component
 		only if it contains some search results
 	*/
-	private renderContent(contentKey: string, content: string, path: string[]): React.ReactNode {
+	private renderContent(contentKey: string, content: string): React.ReactNode {
 		if (!content) return content;
 		if (typeof content === 'boolean' && (content as boolean))
 			return <div className='boolean-value-cell' />;
 
-		const { filters, target } = this.props;
-
-		const inludingFilters = filters.filter(f => content.includes(f));
-
-		const wrappedContent = inludingFilters.length
-			? wrapString(
-					content,
-					inludingFilters.map(filter => {
-						const entryIndex = content.indexOf(filter);
-						const entryRange: [number, number] = [entryIndex, entryIndex + filter.length - 1];
-
-						return {
-							type: new Set([
-								target && areArraysEqual(path, target.path.slice(1)) ? 'highlighted' : 'filtered',
-							]),
-							range: entryRange,
-						};
-					}),
-			  )
-			: content;
-
-		return wrappedContent;
+		return content;
 	}
 
 	private togglerClickHandler = (targetNode: ParamsTableRow) => (e: React.MouseEvent) => {

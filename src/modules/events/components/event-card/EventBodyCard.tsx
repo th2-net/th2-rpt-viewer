@@ -14,11 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { FilterEntry } from 'modules/search/stores/SearchStore';
 import { EventBodyPayload, EventBodyPayloadType } from 'modules/events/models/EventBodyPayload';
 import { EventAction } from 'models/EventAction';
 import ErrorBoundary from 'components/util/ErrorBoundary';
-import { wrapString } from 'helpers/filters';
 import { useEvent } from '../../hooks/useEvent';
 import { getEventStatus } from '../../helpers/event';
 import { keyForVerification } from '../../helpers/keys';
@@ -32,17 +30,9 @@ interface Props {
 	body: EventBodyPayload;
 	parentEvent: EventAction;
 	referenceHistory?: Array<string>;
-	filters?: string[];
-	target?: FilterEntry;
 }
 
-export function EventBodyPayloadRenderer({
-	body,
-	parentEvent,
-	filters,
-	referenceHistory = [],
-	target,
-}: Props) {
+export function EventBodyPayloadRenderer({ body, parentEvent, referenceHistory = [] }: Props) {
 	const { event: referencedEvent } = useEvent(
 		body.type === EventBodyPayloadType.REFERENCE ? body.eventId : '',
 	);
@@ -50,31 +40,11 @@ export function EventBodyPayloadRenderer({
 
 	switch (body.type) {
 		case EventBodyPayloadType.MESSAGE: {
-			const inludingFilters = (filters ?? []).filter(f => body.data.includes(f));
-
-			const wrappedContent = inludingFilters.length
-				? wrapString(
-						body.data,
-						inludingFilters.map(filter => {
-							const valueIndex = body.data.indexOf(filter);
-							const valueRange: [number, number] = [valueIndex, valueIndex + filter.length - 1];
-							return {
-								type: new Set([
-									valueRange[0] === target?.range[0] && valueRange[1] === target.range[1]
-										? 'highlighted'
-										: 'filtered',
-								]),
-								range: valueRange,
-							};
-						}),
-				  )
-				: body.data;
-
 			return (
 				<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
 					<div className='event-detail-info__message-wrapper'>
 						<div key='message' className='event-detail-info__message'>
-							{wrappedContent}
+							{body.data}
 						</div>
 					</div>
 				</ErrorBoundary>
@@ -83,7 +53,7 @@ export function EventBodyPayloadRenderer({
 		case EventBodyPayloadType.TABLE: {
 			return (
 				<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
-					<CustomTable content={body.rows} key='table' filters={filters ?? []} target={target} />
+					<CustomTable content={body.rows} />
 				</ErrorBoundary>
 			);
 		}
@@ -98,8 +68,6 @@ export function EventBodyPayloadRenderer({
 							status={getEventStatus(parentEvent)}
 							keyPrefix={key}
 							stateKey={`${key}-nodes`}
-							filters={filters ?? []}
-							target={target}
 						/>
 					</div>
 				</ErrorBoundary>
@@ -117,8 +85,6 @@ export function EventBodyPayloadRenderer({
 							rows={rows}
 							stateKey={`${parentEvent.eventId}-input-params-nodes`}
 							name={parentEvent.eventName}
-							filters={filters ?? []}
-							target={target}
 						/>
 					</div>
 				</ErrorBoundary>
@@ -140,21 +106,13 @@ export function EventBodyPayloadRenderer({
 	}
 }
 
-export default function EventBodyCard({
-	parentEvent,
-	body,
-	referenceHistory,
-	filters,
-	target,
-}: Props) {
+export default function EventBodyCard({ parentEvent, body, referenceHistory }: Props) {
 	return (
 		<ErrorBoundary fallback={<JSONBodyFallback body={body} />}>
 			<EventBodyPayloadRenderer
 				body={body}
 				parentEvent={parentEvent}
 				referenceHistory={referenceHistory}
-				filters={filters}
-				target={target}
 			/>
 		</ErrorBoundary>
 	);

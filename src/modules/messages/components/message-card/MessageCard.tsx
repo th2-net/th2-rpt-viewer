@@ -39,7 +39,6 @@ interface MessageCardProps {
 	toggleMessagePin?: () => void;
 	isEmbedded?: boolean;
 	sortOrderItems?: string[];
-	applyFilterToBody?: boolean;
 	isExpanded?: boolean;
 	setIsExpanded?: (isExpanded: boolean) => void;
 	viewTypesMap: Map<string, MessageViewType>;
@@ -56,7 +55,6 @@ const MessageCard = (props: MessageCardProps) => {
 		toggleMessagePin,
 		displayType,
 		sortOrderItems = [],
-		applyFilterToBody = false,
 		viewTypesMap,
 		setViewType,
 	} = props;
@@ -73,7 +71,6 @@ const MessageCard = (props: MessageCardProps) => {
 		rawMessageBase64,
 		isSelected: isAttached || false,
 		sortOrderItems,
-		applyFilterToBody,
 	};
 
 	const messageCardToolsConfig: MessageCardToolsProps = {

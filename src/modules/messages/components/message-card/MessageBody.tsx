@@ -31,7 +31,6 @@ export type MessageCardViewTypeRendererProps = {
 	isEmbedded?: boolean;
 	isDetailed?: boolean;
 	sortOrderItems: string[];
-	applyFilterToBody?: boolean;
 	isScreenshotMsg?: boolean;
 };
 
