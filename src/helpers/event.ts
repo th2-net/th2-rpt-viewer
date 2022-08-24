@@ -117,7 +117,7 @@ export function getItemName(item: EventAction | EventTreeNode | EventMessage) {
 			return previous + current.message.metadata.messageType.concat(',');
 		}, '');
 	}
-	if (isEventAction(item)) return item.eventName;
+	if (isEventAction(item) || isEventNode(item)) return item.eventName;
 
 	return 'unknown type';
 }
