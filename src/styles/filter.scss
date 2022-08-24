@@ -17,17 +17,38 @@
 @import './common/vars';
 
 .filter {
-	@include scrollbar;
-	@include card-shadow;
-	padding: 12px 15px;
-	border-radius: 0 5px 5px 5px;
-	background-color: $filterPrimaryColor;
+	display: flex;
+	position: relative;
+	flex-direction: column;
+	width: 100%;
+	padding: 16px 24px 16px 16px;
+	gap: 12px;
+	font-size: 16px;
+	border-radius: 4px;
+	background: #fff;
 	color: $filterTextColor;
-	font-size: 15px;
-	font-weight: normal;
 	white-space: nowrap;
-	position: fixed;
-	z-index: 120;
+
+	&-footer {
+		display: flex;
+	}
+
+	&-wrapper {
+		display: none;
+		position: absolute;
+		z-index: 2;
+		top: 40px;
+		align-items: center;
+		width: 100%;
+
+		&.active {
+			display: flex;
+		}
+
+		&.embedded {
+			top: 50px;
+		}
+	}
 
 	&__button {
 		@include unselectable;
@@ -49,14 +70,6 @@
 
 	&__icon {
 		@include icon(url(../../resources/icons/filter.svg), 15px, 15px);
-
-		&.applied {
-			background-image: url(../../resources/icons/filter-white.svg);
-		}
-
-		&.active {
-			background-image: url(../../resources/icons/filter-white.svg);
-		}
 	}
 
 	&__title {
@@ -91,21 +104,17 @@
 		}
 	}
 
-	&__button.applied & {
-		&__title {
-			color: white;
-		}
-
-		&__icon {
-			background-image: url(../../resources/icons/filter-white.svg);
-		}
-	}
-
 	&__path {
 		color: $filterPathColor;
 		font-weight: bold;
 		margin-right: 20px;
 		background-color: rgba(#fff, 0.75);
+	}
+
+	&__bubble {
+		color: #ffffff;
+		background-color: #5eba6e;
+		margin: 2px 5px;
 	}
 
 	&__controls {
@@ -258,9 +267,30 @@
 
 	&__compound {
 		display: flex;
+		flex-direction: column;
 
 		& > div:last-child {
 			width: 100%;
+		}
+		&-header {
+			display: flex;
+			overflow: hidden;
+			justify-content: space-between;
+			margin-bottom: 20px;
+
+			&.status {
+				margin: 0;
+			}
+		}
+	}
+
+	&__togglers {
+		display: flex;
+		width: 100%;
+		justify-content: flex-end;
+
+		&.status {
+			justify-content: flex-start;
 		}
 	}
 
@@ -336,15 +366,24 @@
 	}
 }
 
+.filter-inputs {
+	@include scrollbar;
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	max-height: 650px;
+	gap: 12px;
+}
+
 .filter-controls {
 	display: flex;
-	flex-direction: row;
 	justify-content: flex-end;
 	align-items: center;
+	gap: 12px;
 	font-size: 14px;
 
 	.filters-history-open {
-		@include improved-clickable($filterPrimaryColor, 10px);
+		@include improved-clickable(#fff, 10px);
 	}
 
 	&__counts {
@@ -385,17 +424,22 @@
 	}
 
 	&__clear-icon {
-		@include icon(url(../../resources/icons/cross-icon-white.svg), 25px, 25px);
+		@include icon(url(../../resources/icons/cross-icon-dark.svg), 23px, 23px);
 	}
 }
 
 .filter-row {
-	min-height: 32px;
+	overflow: hidden;
+	background: #fbfbfb;
+	box-shadow: 0px 0.5px 2px rgba(0, 0, 0, 0.3);
+	border-radius: 4px;
+	min-height: 40px;
 	font-size: 14px;
 	font-weight: normal;
 	box-sizing: border-box;
 	display: flex;
 	align-items: center;
+	width: 100%;
 
 	&:hover &__divider-text {
 		display: none;
@@ -438,9 +482,9 @@
 		flex-grow: 1;
 		padding: 3px 5px;
 		margin: 0 10px;
+		background-color: #f1f1f1;
 		border-radius: $bubbleBorderRadius;
-		min-height: 30px;
-		background-color: rgba(#ffffff, 0.5);
+		min-height: 40px;
 		font-size: 13px;
 		color: $primaryTextColor;
 		box-sizing: border-box;
@@ -457,6 +501,10 @@
 			&::placeholder {
 				color: $secondaryTextColor;
 			}
+		}
+
+		&.active {
+			background-color: #fff;
 		}
 
 		&.non-empty {
@@ -503,21 +551,23 @@
 	}
 
 	&__button {
-		height: 30px;
 		display: flex;
 		align-items: center;
-		padding: 3px 15px;
-		border-radius: 5px;
-		background-color: rgba($filterSecondaryColor, 0.9);
-		color: $buttonFilterColor;
+		padding: 12px 24px;
+		border-radius: 12px;
+		background-color: $filterButtonSubmitColor;
+		color: $filterButtonSubmitTextColor;
 		cursor: pointer;
 		font-size: 14px;
 		font-weight: bold;
 		border: none;
 		outline: none;
 
-		&:hover {
-			background-color: rgba($filterSecondaryColor, 1);
+		&.close {
+			border: 1px solid $filterButtonCloseTextColor;
+			background: $filterButtonCloseColor;
+			border-color: $filterButtonCloseTextColor;
+			color: $filterButtonCloseTextColor;
 		}
 	}
 
@@ -529,19 +579,29 @@
 	}
 
 	&__label {
-		width: 140px;
-		font-weight: bold;
-		font-size: 14px;
+		width: 120px;
+		align-self: center;
 		flex-shrink: 0;
+		color: #3a3a3a;
+		font-weight: bold;
+
+		&.status {
+			align-self: flex-start;
+			margin-bottom: 12px;
+		}
 	}
 
 	.filter-content {
 		@include scrollbar();
 		width: 100%;
-		margin: 0 10px;
+		height: 100%;
+		border-radius: 4px;
+		background: #f1f1f1;
+
 		&.active {
 			background: #ffffff;
 		}
+
 		&.disabled {
 			opacity: 0.5;
 			cursor: default;
@@ -555,6 +615,7 @@
 		align-items: center;
 		justify-content: flex-start;
 		min-width: 100%;
+		height: 100%;
 		width: fit-content;
 		position: relative;
 		flex-wrap: wrap;
@@ -615,7 +676,6 @@
 	}
 
 	&__message {
-		color: white;
 		font-size: 14px;
 		font-weight: bold;
 		margin-right: 15px;

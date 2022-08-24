@@ -154,6 +154,25 @@ export function replaceUnfilledDateStringWithMinValues(
 	}
 }
 
+export function changeStatusName(status: string) {
+	switch (status) {
+		case 'any':
+			return 'All';
+		case 'passed':
+			return 'Passed';
+		case 'failed':
+			return 'Failed';
+		case 'All':
+			return 'any';
+		case 'Passed':
+			return 'passed';
+		case 'Failed':
+			return 'failed';
+		default:
+			return '';
+	}
+}
+
 /**
  * Splits and capitalizes camel cased string
  *  * @example

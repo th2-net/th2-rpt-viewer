@@ -22,7 +22,6 @@ import { useBookmarksStore } from 'hooks/useBookmarksStore';
 import { useEventsStore } from '../../hooks/useEventsStore';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import EventDetailInfoCard from '../event-card/EventDetailInfoCard';
-import EventsPanelHeader from '../EventsPanelHeader';
 import EventList from '../EventList';
 
 function EventTreeView() {
@@ -40,7 +39,6 @@ function EventTreeView() {
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
-				<EventsPanelHeader />
 				<EventList />
 			</SplitViewPane>
 			<SplitViewPane>

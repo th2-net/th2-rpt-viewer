@@ -24,6 +24,7 @@ import { useEventWindowViewStore } from '../hooks/useEventWindowViewStore';
 import EventTreeView from './tree/EventTreeView';
 import FlatEventView from './flat-event-list/FlatEventView';
 import EventBreadcrumbs from './breadcrumbs/EventBreadcrumbs';
+import EventsPanelHeader from './EventsPanelHeader';
 import 'styles/events.scss';
 
 function EventsPanel() {
@@ -51,6 +52,7 @@ function EventsPanel() {
 					onSelect={onBreadcrumbItemClick}
 				/>
 			</div>
+			<EventsPanelHeader />
 			<div className='window__body'>
 				{eventWindowViewStore.flattenedListView ? <FlatEventView /> : <EventTreeView />}
 			</div>

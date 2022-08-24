@@ -17,16 +17,53 @@
 import React from 'react';
 import { FilterRowConfig } from '../../models/filter/FilterInputs';
 import FilterRow from './row';
+import { createStyleSelector } from '../../helpers/styleCreators';
 
-export function FilterRows({ config }: { config: FilterRowConfig[] }) {
+interface Props {
+	config: FilterRowConfig[];
+	headerClassName?: string;
+}
+
+export function FilterRows({ config, headerClassName }: Props) {
+	const compoundHeaderClassName = createStyleSelector(
+		'filter__compound-header',
+		headerClassName || null,
+	);
+
 	return (
 		<>
 			{config.map(rowConfig =>
 				Array.isArray(rowConfig) ? (
 					<div className='filter__compound' key={rowConfig.map(c => c.id).join('-')}>
-						{rowConfig.map(_rowConfig => (
-							<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
-						))}
+						<div
+							className={createStyleSelector(
+								compoundHeaderClassName,
+								rowConfig[0].label === 'Status' ? 'status' : null,
+							)}>
+							{rowConfig
+								.filter(_rowConfig => _rowConfig.label && _rowConfig.label !== 'Status')
+								.map(_rowConfig => (
+									<p className={'filter-row__label'} key={_rowConfig.label}>
+										{_rowConfig.label}
+									</p>
+								))}
+							<div
+								className={createStyleSelector(
+									'filter__togglers',
+									rowConfig[0].label === 'Status' ? 'status' : null,
+								)}>
+								{rowConfig
+									.filter(_rowConfig => _rowConfig.type !== 'multiple-strings')
+									.map(_rowConfig => (
+										<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
+									))}
+							</div>
+						</div>
+						{rowConfig
+							.filter(_rowConfig => _rowConfig.type === 'multiple-strings')
+							.map(_rowConfig => (
+								<FilterRow rowConfig={_rowConfig} key={_rowConfig.id} />
+							))}
 					</div>
 				) : (
 					<FilterRow rowConfig={rowConfig} key={rowConfig.id} />

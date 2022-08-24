@@ -19,7 +19,8 @@ import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useFilterConfigStore } from 'hooks/useFilterConfigStore';
 import MessagesFilter from 'models/filter/MessagesFilter';
-import FilterPanel from 'components/filter/FilterPanel';
+import FilterConfig from 'components/filter/FilterConfig';
+import FilterButton from 'components/filter/FilterButton';
 import { useFilterConfig } from 'hooks/useFilterConfig';
 import {
 	FilterRowMultipleStringsConfig,
@@ -29,8 +30,8 @@ import {
 import { MessageFilterKeys } from 'api/sse';
 import { useFiltersHistoryStore } from 'hooks/index';
 import {
-	useSessionAutocomplete,
 	useMessageFiltersAutocomplete,
+	useSessionAutocomplete,
 } from '../../hooks/useMessagesAutocomplete';
 import { useMessagesDataStore } from '../../hooks/useMessagesDataStore';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
@@ -64,10 +65,13 @@ const MessagesFilterPanel = () => {
 		autocompleteLists,
 	});
 
+	const [showFilter, setShowFilter] = React.useState(false);
 	const [streams, setStreams] = React.useState<Array<string>>([]);
 	const [currentStream, setCurrentStream] = React.useState('');
 
-	const [showFilter, setShowFilter] = React.useState(false);
+	React.useEffect(() => {
+		setFilter(filterStore.sseMessagesFilter);
+	}, [filterStore.sseMessagesFilter]);
 
 	React.useEffect(() => {
 		setStreams(filterStore.params.streams);
@@ -146,17 +150,21 @@ const MessagesFilterPanel = () => {
 
 	return (
 		<>
-			<FilterPanel
+			<FilterButton
 				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
+				setShowFilter={setShowFilter}
+				showFilter={showFilter}
+				isLoading={secondaryLoadingStatus}
+			/>
+			<FilterConfig
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
 				config={filterConfig}
 				onSubmit={submitChanges}
 				onClearAll={messagesStore.clearFilters}
-				isLoading={secondaryLoadingStatus}
-				type='message'
 				filter={filter}
 				setFilter={setFilter as any}
+				type='event'
 			/>
 			<ReplayModal />
 			<FilterWarning />

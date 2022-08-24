@@ -89,6 +89,7 @@ function MultipleStringFilterRowBase({ config }: MultipleStringFilterRowProps) {
 		'multiple-values',
 		'filter-row__input',
 		config.isInvalid ? 'invalid' : null,
+		isFocused ? 'active' : null,
 	);
 
 	const filterContentClassName = createStyleSelector(

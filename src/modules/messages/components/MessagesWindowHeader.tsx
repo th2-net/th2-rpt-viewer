@@ -25,8 +25,8 @@ function MessagesWindowHeader() {
 	const { updateStore } = useMessagesDataStore();
 
 	return (
-		<div className='messages-window-header'>
-			<div className='messages-window-header__group'>
+		<>
+			<div className='messages-window-header'>
 				<MessagesUpdateButton
 					isShow={updateStore.canActivate}
 					isLoading={updateStore.isActive}
@@ -36,7 +36,7 @@ function MessagesWindowHeader() {
 				<MessagesFilterPanel />
 				<MessagesViewConfigurator />
 			</div>
-		</div>
+		</>
 	);
 }
 

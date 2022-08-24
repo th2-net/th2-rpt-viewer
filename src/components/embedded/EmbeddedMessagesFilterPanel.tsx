@@ -16,57 +16,26 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import MessagesFilter from 'models/filter/MessagesFilter';
 import MessagesFilterSessionFilter from 'modules/messages/components/filter/SessionFilterRow';
-import {
-	FilterRowMultipleStringsConfig,
-	ActionFilterConfig,
-	FilterRowConfig,
-} from '../../models/filter/FilterInputs';
-import { MessageFilterKeys } from '../../api/sse';
-import FilterPanel from '../filter/FilterPanel';
+import { FilterRowMultipleStringsConfig } from '../../models/filter/FilterInputs';
 import EmbeddedMessagesStore from './embedded-stores/EmbeddedMessagesStore';
-import { useFilterConfig } from '../../hooks/useFilterConfig';
+import FilterButton from '../filter/FilterButton';
 
-const filterOrder: MessageFilterKeys[] = [
-	'attachedEventIds',
-	'type',
-	'body',
-	'bodyBinary',
-	'message_generic',
-];
-
-const EmbeddedMessagesFilterPanel = ({
-	messagesStore,
-}: {
+interface Props {
+	submitChanges: () => void;
+	showFilter: boolean;
+	setShowFilter: (isShown: boolean) => void;
 	messagesStore: EmbeddedMessagesStore;
-}) => {
+	streams: string[];
+	setStreams: (nextValues: string[]) => void;
+}
+
+const EmbeddedMessagesFilterPanel = (props: Props) => {
+	const { submitChanges, showFilter, setShowFilter, messagesStore, streams, setStreams } = props;
+
 	const messagesDataStore = messagesStore.dataStore;
-	const { filterStore } = messagesStore;
 
-	const { config, filter } = useFilterConfig({
-		filterInfo: filterStore.messagesFilterInfo,
-		filter: filterStore.sseMessagesFilter,
-		order: filterOrder,
-	});
-
-	const [showFilter, setShowFilter] = React.useState(false);
 	const [currentStream, setCurrentStream] = React.useState('');
-	const [streams, setStreams] = React.useState<Array<string>>([]);
-
-	React.useEffect(() => {
-		setStreams(filterStore.params.streams);
-	}, [filterStore.params.streams]);
-
-	const submitChanges = React.useCallback(() => {
-		messagesStore.applyFilter(
-			{
-				...filterStore.params,
-				streams,
-			},
-			filter as MessagesFilter,
-		);
-	}, [filter, filterStore.params, streams]);
 
 	const areSessionInvalid: boolean = streams.length === 0;
 
@@ -87,34 +56,13 @@ const EmbeddedMessagesFilterPanel = ({
 		[streams, setStreams, currentStream, setCurrentStream],
 	);
 
-	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(
-		() => ({
-			type: 'action',
-			id: 'sse-filtler-error',
-			message: 'Failed to load sse filters',
-			actionButtonText: 'Try again',
-			action: () => null,
-			isLoading: false,
-		}),
-		[],
-	);
-
-	const filterConfig: Array<FilterRowConfig> = React.useMemo(
-		() => (config.length ? config : [sseFiltersErrorConfig]),
-		[config, sseFiltersErrorConfig],
-	);
-
 	return (
 		<>
-			<FilterPanel
+			<FilterButton
 				isFilterApplied={messagesStore.filterStore.isMessagesFilterApplied}
 				setShowFilter={setShowFilter}
 				showFilter={showFilter}
-				config={filterConfig}
-				onSubmit={submitChanges}
-				onClearAll={messagesStore.clearFilters}
 				isLoading={false}
-				type='message'
 			/>
 			<MessagesFilterSessionFilter
 				config={sessionFilterConfig}

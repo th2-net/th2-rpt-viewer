@@ -14,26 +14,23 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { createStyleSelector } from '../../../helpers/styleCreators';
-import { FilterRowTogglerConfig } from '../../../models/filter/FilterInputs';
-import '../../../styles/toggler.scss';
+import { createStyleSelector } from 'helpers/styleCreators';
+import { FilterRowTogglerConfig } from 'models/filter/FilterInputs';
+import 'styles/toggler.scss';
 
 const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
-	const { value, toggleValue, options, label, disabled, className = '' } = config;
+	const { value, toggleValue, options, disabled } = config;
+
 	const [firstLabel, secondLabel] = options;
 
-	const togglerClassName = createStyleSelector(
-		'toggler',
-		disabled ? 'disabled' : '',
-		value ? 'on' : 'off',
+	const togglerClassName = createStyleSelector('toggler', disabled ? 'disabled' : '');
+	const togglerIconClassName = createStyleSelector(
+		'toggler__icon',
+		value ? firstLabel.toLowerCase() : secondLabel.toLowerCase(),
 	);
-	const togglerBarClassName = createStyleSelector('toggler__bar', className, value ? 'on' : 'off');
-
-	const labelClassName = createStyleSelector('filter-row__label', config.labelClassName || null);
 
 	return (
-		<div className='filter-row toggler-wrapper'>
-			{label && <p className={labelClassName}>{label}</p>}
+		<div className='toggler-wrapper'>
 			<div
 				className={togglerClassName}
 				onClick={() => {
@@ -41,9 +38,8 @@ const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
 						toggleValue();
 					}
 				}}>
-				<p className={'toggler__label'}>{firstLabel}</p>
-				<div className={togglerBarClassName}></div>
-				<p className={'toggler__label'}>{secondLabel}</p>
+				<div className={togglerIconClassName}></div>
+				<p className='toggler__label'>{value ? firstLabel : secondLabel}</p>
 			</div>
 		</div>
 	);

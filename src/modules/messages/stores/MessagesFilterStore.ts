@@ -136,7 +136,7 @@ export default class MessagesFilterStore {
 	}
 
 	@action
-	public resetMessagesFilter = (initFilter: Partial<MessagesParams> = {}) => {
+	public resetMessagesFilter = (initialParams: Partial<MessagesParams> = {}) => {
 		const filter = toJS(this.filtersStore.messageFilters);
 		const defaultMessagesFilter = getDefaultMessagesParams();
 		this.sseMessagesFilter = filter;
@@ -145,7 +145,7 @@ export default class MessagesFilterStore {
 			...defaultMessagesFilter,
 			timestampFrom: this.params.timestampFrom,
 			timestampTo: this.params.timestampTo,
-			...initFilter,
+			...initialParams,
 		};
 	};
 

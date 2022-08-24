@@ -24,7 +24,6 @@ import { useEventsStore } from '../../hooks/useEventsStore';
 import useEventsDataStore from '../../hooks/useEventsDataStore';
 import { useEventWindowViewStore } from '../../hooks/useEventWindowViewStore';
 import EventList from '../EventList';
-import EventWindowHeader from '../EventsPanelHeader';
 import EventDetailInfoCard from '../event-card/EventDetailInfoCard';
 
 function EventTreeView() {
@@ -48,7 +47,6 @@ function EventTreeView() {
 	return (
 		<SplitView panelArea={viewStore.eventsPanelArea} onPanelAreaChange={viewStore.setPanelArea}>
 			<SplitViewPane>
-				<EventWindowHeader />
 				<EventList isFlat={true} />
 			</SplitViewPane>
 			<SplitViewPane>

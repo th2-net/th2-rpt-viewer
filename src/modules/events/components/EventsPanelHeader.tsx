@@ -25,7 +25,7 @@ import EventsSearchPanel from './search/EventsSearchPanel';
 import { EventsIntervalInput } from './EventsIntervalInput';
 
 function EventsPanelHeader() {
-	const eventStore = useEventsStore();
+	const eventsStore = useEventsStore();
 	const eventDataStore = useEventsDataStore();
 	const workspaceStore = useWorkspaceStore();
 
@@ -34,7 +34,7 @@ function EventsPanelHeader() {
 	const flattenButtonClassName = createBemElement(
 		'event-window-header',
 		'flat-button',
-		eventStore.viewStore.flattenedListView ? 'active' : null,
+		eventsStore.viewStore.flattenedListView ? 'active' : null,
 	);
 
 	return (
@@ -47,7 +47,7 @@ function EventsPanelHeader() {
 					<EventsFilterPanel />
 					<div
 						role='button'
-						onClick={eventStore.viewStore.toggleFlattenEventListView}
+						onClick={eventsStore.viewStore.toggleFlattenEventListView}
 						className={flattenButtonClassName}>
 						Flat view
 					</div>
@@ -64,13 +64,13 @@ function EventsPanelHeader() {
 					<div className='event-window-header__nav'>
 						<button
 							className='actions-list__nav'
-							onClick={() => eventStore.changeEventsRange(-eventStore.filterStore.interval)}>
+							onClick={() => eventsStore.changeEventsRange(-eventsStore.filterStore.interval)}>
 							<span className='down' />
 							<span className='label'>Older</span>
 						</button>
 						<button
 							className='actions-list__nav'
-							onClick={() => eventStore.changeEventsRange(eventStore.filterStore.interval)}>
+							onClick={() => eventsStore.changeEventsRange(eventsStore.filterStore.interval)}>
 							<span className='up' />
 							<span className='label'>Newer</span>
 						</button>
