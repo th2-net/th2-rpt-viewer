@@ -14,19 +14,18 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, IReactionDisposer, runInAction } from 'mobx';
+import { action, computed, observable, reaction, runInAction } from 'mobx';
 import { IFilterConfigStore } from 'models/Stores';
-import { Panel } from 'models/Panel';
 import ApiSchema from 'api/ApiSchema';
 import { EventMessage } from 'models/EventMessage';
+import { EventTreeNode } from 'models/EventAction';
+import { isAbortError } from 'helpers/fetch';
 import MessagesFilter, { MessagesParams } from 'models/filter/MessagesFilter';
 import { sortMessagesByTimestamp, isEventMessage } from 'helpers/message';
-import WorkspaceStore from 'stores/workspace/WorkspaceStore';
 import { getItemAt } from 'helpers/array';
 import { timestampToNumber } from 'helpers/date';
 import MessagesDataProviderStore from './MessagesDataProviderStore';
 import MessagesFilterStore, { MessagesFilterStoreInitialState } from './MessagesFilterStore';
-import { SessionHistoryStore } from './SessionHistoryStore';
 import MessagesExportStore from './MessagesExportStore';
 import MessagesViewTypeStore from './MessagesViewTypeStore';
 import MessageDisplayRulesStore from './MessageDisplayRulesStore';
@@ -40,8 +39,6 @@ type MessagesStoreDefaultState = MessagesStoreURLState & {
 export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | string | null | undefined;
 
 export default class MessagesStore {
-	private attachedMessagesSubscription: IReactionDisposer;
-
 	public filterStore: MessagesFilterStore;
 
 	public dataStore: MessagesDataProviderStore;
@@ -69,10 +66,8 @@ export default class MessagesStore {
 	public hintMessages: EventMessage[] = [];
 
 	constructor(
-		private workspaceStore: WorkspaceStore,
 		private filterConfigStore: IFilterConfigStore,
 		private api: ApiSchema,
-		private sessionsStore: SessionHistoryStore,
 		private messageDisplayRulesStore: MessageDisplayRulesStore,
 		defaultState: MessagesStoreDefaultStateType,
 	) {
@@ -85,10 +80,7 @@ export default class MessagesStore {
 
 		this.init(defaultState);
 
-		this.attachedMessagesSubscription = reaction(
-			() => this.workspaceStore.attachedMessages,
-			this.onAttachedMessagesChange,
-		);
+		reaction(() => this.attachedMessages, this.onAttachedMessagesChange);
 
 		reaction(
 			() => this.filterStore.params,
@@ -112,27 +104,9 @@ export default class MessagesStore {
 		return this.filterConfigStore.messageSessions;
 	}
 
-	@computed
-	public get attachedMessages(): EventMessage[] {
-		return this.workspaceStore.attachedMessages;
-	}
-
-	@computed
-	public get isLoadingAttachedMessages() {
-		return this.workspaceStore.isLoadingAttachedMessages;
-	}
-
 	@action
 	public applyFilter = (params: MessagesParams, filter: MessagesFilter | null) => {
-		if (
-			this.selectedMessageId &&
-			!this.workspaceStore.attachedMessagesIds.includes(this.selectedMessageId.valueOf())
-		) {
-			this.selectedMessageId = null;
-		}
-
 		this.exportStore.disableExport();
-		this.sessionsStore.saveSessions(params.streams);
 		this.hintMessages = [];
 		this.showFilterChangeHint = false;
 		this.highlightedMessageId = null;
@@ -155,7 +129,6 @@ export default class MessagesStore {
 			if (isEventMessage(message)) {
 				this.selectedMessageId = new String(message.id);
 				this.highlightedMessageId = new String(message.id);
-				this.workspaceStore.viewStore.activePanel = Panel.Messages;
 			}
 		}
 		this.dataStore.loadMessages();
@@ -171,7 +144,6 @@ export default class MessagesStore {
 			this.selectedMessageId = new String(message.id);
 			this.highlightedMessageId = new String(message.id);
 			this.hintMessages = [];
-			this.workspaceStore.viewStore.activePanel = Panel.Messages;
 
 			this.filterStore.resetMessagesFilter({
 				timestampFrom: null,
@@ -189,28 +161,6 @@ export default class MessagesStore {
 			this.highlightedMessageId = new String(message.id);
 		} else {
 			this.onMessageSelect(message);
-		}
-	};
-
-	@action
-	public onAttachedMessagesChange = async (attachedMessages: EventMessage[]) => {
-		const shouldShowFilterHintBeforeRefetchingMessages = await this.handleFilterHint(
-			attachedMessages,
-		);
-
-		if (!shouldShowFilterHintBeforeRefetchingMessages) {
-			const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
-			if (mostRecentMessage) {
-				const streams = this.filterStore.params.streams;
-				this.selectedMessageId = new String(mostRecentMessage.id);
-				this.filterStore.params = {
-					...this.filterStore.params,
-					streams: [
-						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
-					],
-					timestampTo: timestampToNumber(mostRecentMessage.timestamp),
-				};
-			}
 		}
 	};
 
@@ -277,9 +227,72 @@ export default class MessagesStore {
 		this.hintMessages = [];
 	};
 
+	@observable
+	public attachedMessages: Array<EventMessage> = [];
+
+	@observable
+	public isLoadingAttachedMessages = false;
+
+	private attachedMessagesAC: AbortController | null = null;
+
+	@action
+	public onSelectedEventChange = async (eventTreeNode: EventTreeNode | null) => {
+		if (!eventTreeNode) {
+			this.isLoadingAttachedMessages = false;
+			this.attachedMessages = [];
+			return;
+		}
+		this.isLoadingAttachedMessages = true;
+		if (this.attachedMessagesAC) {
+			this.attachedMessagesAC.abort();
+		}
+		this.attachedMessagesAC = new AbortController();
+		try {
+			const event = await this.api.events.getEvent(
+				eventTreeNode.eventId,
+				this.attachedMessagesAC.signal,
+			);
+			const attachedMessages = await Promise.all(
+				event.attachedMessageIds.map(id =>
+					this.api.messages.getMessage(id, this.attachedMessagesAC?.signal),
+				),
+			);
+			this.attachedMessages = sortMessagesByTimestamp(attachedMessages);
+		} catch (error) {
+			if (!isAbortError(error)) {
+				console.error('Error while loading attached messages', error);
+			}
+			this.attachedMessages = [];
+		} finally {
+			this.attachedMessagesAC = null;
+			this.isLoadingAttachedMessages = false;
+		}
+	};
+
+	@action
+	public onAttachedMessagesChange = async (attachedMessages: EventMessage[]) => {
+		const shouldShowFilterHintBeforeRefetchingMessages = await this.handleFilterHint(
+			attachedMessages,
+		);
+
+		if (!shouldShowFilterHintBeforeRefetchingMessages) {
+			const mostRecentMessage = getItemAt(sortMessagesByTimestamp(attachedMessages), 0);
+			if (mostRecentMessage) {
+				const streams = this.filterStore.params.streams;
+				this.selectedMessageId = new String(mostRecentMessage.id);
+				this.filterStore.params = {
+					...this.filterStore.params,
+					streams: [
+						...new Set([...streams, ...attachedMessages.map(({ sessionId }) => sessionId)]),
+					],
+					timestampTo: timestampToNumber(mostRecentMessage.timestamp),
+				};
+			}
+		}
+	};
+
 	// Unsubcribe from reactions
 	public dispose = () => {
-		this.attachedMessagesSubscription();
 		this.filterStore.dispose();
 		this.dataStore.stopMessagesLoading();
 		this.dataStore.resetState();

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, toJS } from 'mobx';
+import { action, computed, reaction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import { SearchStore } from 'modules/search/stores/SearchStore';
 import { IEventsStore, IFilterConfigStore, ISearchStore } from 'models/Stores';
@@ -33,12 +33,11 @@ import ApiSchema from '../../api/ApiSchema';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
 import { ActionType, EventAction, EventTreeNode } from '../../models/EventAction';
-import { sortMessagesByTimestamp, isEventMessage } from '../../helpers/message';
+import { isEventMessage } from '../../helpers/message';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
 import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
-import { isAbortError } from '../../helpers/fetch';
 import { getObjectKeys } from '../../helpers/object';
 
 export interface WorkspaceUrlState {
@@ -87,25 +86,14 @@ export default class WorkspaceStore {
 		});
 		this.eventsStore = new EventsStore(this, this.filterConfigStore, this.api, initialState.events);
 		this.messagesStore = new MessagesStore(
-			this,
 			this.filterConfigStore,
 			this.api,
-			this.sessionsStore,
 			messageDisplayRulesStore,
 			initialState.messages,
 		);
 
-		reaction(() => this.eventsStore.selectedNode, this.getAttachedMessages);
+		reaction(() => this.eventsStore.selectedNode, this.messagesStore.onSelectedEventChange);
 	}
-
-	@observable
-	public attachedMessagesIds: Array<string> = [];
-
-	@observable
-	public attachedMessages: Array<EventMessage> = [];
-
-	@observable
-	public isLoadingAttachedMessages = false;
 
 	@computed
 	public get isActive(): boolean {
@@ -147,50 +135,8 @@ export default class WorkspaceStore {
 	};
 
 	@action
-	private setAttachedMessagesIds = (attachedMessageIds: string[]) => {
-		this.attachedMessagesIds = [...new Set(attachedMessageIds)];
-	};
-
-	private attachedMessagesAC: AbortController | null = null;
-
-	@action
-	private getAttachedMessages = async (eventTreeNode: EventTreeNode | null) => {
-		if (!eventTreeNode) {
-			this.isLoadingAttachedMessages = false;
-			this.attachedMessages = [];
-			return;
-		}
-		this.isLoadingAttachedMessages = true;
-		if (this.attachedMessagesAC) {
-			this.attachedMessagesAC.abort();
-		}
-		this.attachedMessagesAC = new AbortController();
-		try {
-			const event = await this.api.events.getEvent(
-				eventTreeNode.eventId,
-				this.attachedMessagesAC.signal,
-			);
-			const attachedMessages = await Promise.all(
-				event.attachedMessageIds.map(id =>
-					this.api.messages.getMessage(id, this.attachedMessagesAC?.signal),
-				),
-			);
-			this.attachedMessages = sortMessagesByTimestamp(attachedMessages);
-		} catch (error) {
-			if (!isAbortError(error)) {
-				console.error('Error while loading attached messages', error);
-			}
-			this.attachedMessages = [];
-		} finally {
-			this.attachedMessagesAC = null;
-			this.isLoadingAttachedMessages = false;
-		}
-	};
-
-	@action
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
 		if (isEventMessage(savedItem)) {
-			this.messagesStore.exportStore.disableExport();
 			this.viewStore.activePanel = Panel.Messages;
 			this.messagesStore.onMessageSelect(savedItem);
 		} else {

@@ -39,6 +39,7 @@ import SessionFilter from './SessionFilterRow';
 import FilterWarning from './FilterWarning';
 import ReplayModal from './ReplayModal';
 import MessageExport from '../MessageExport';
+import { useSessionsHistoryStore } from '../../hooks/useSessionsStore';
 
 const filterOrder: MessageFilterKeys[] = [
 	'attachedEventIds',
@@ -51,6 +52,7 @@ const filterOrder: MessageFilterKeys[] = [
 const MessagesFilterPanel = () => {
 	const messagesStore = useMessagesStore();
 	const messagesDataStore = useMessagesDataStore();
+	const sessionsStore = useSessionsHistoryStore();
 	const { onMessageFilterSubmit } = useFiltersHistoryStore();
 
 	const { filterStore } = messagesStore;
@@ -88,6 +90,10 @@ const MessagesFilterPanel = () => {
 
 		if (filter) {
 			onMessageFilterSubmit(filter);
+		}
+
+		if (streams.length) {
+			sessionsStore.saveSessions(streams);
 		}
 	}, [filter, filterStore.params, streams]);
 
