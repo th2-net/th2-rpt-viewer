@@ -24,6 +24,17 @@
 	gap: 10px;
 	height: 100%;
 	background-color: #fff;
+
+	&__fields {
+		display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+		.filter-row {
+			box-shadow: none;
+			background: none;
+		}
+	}
 }
 
 .search-panel-form {
