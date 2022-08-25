@@ -39,9 +39,10 @@ type Filter = Partial<Record<FilterKeys, FilterConfig>>;
 
 type CurrentValues = Partial<Record<FilterKeys, string>>;
 
-const togglerValues: Record<'conjunct' | 'negative', [string, string]> = {
+const togglerValues: Record<'conjunct' | 'negative' | 'strict', [string, string]> = {
 	conjunct: ['And', 'Or'],
 	negative: ['Exclude', 'Include'],
+	strict: ['Strict-On', 'Strict-Off'],
 };
 
 const statusValues = ['All', 'Passed', 'Failed'];
@@ -190,7 +191,8 @@ export function useFilterConfig<T extends Filter>({
 								type: 'toggler',
 								value: (state as MultipleStringFilter)[filterParam.name] as boolean,
 								toggleValue: getToggler(name, filterParam.name),
-								possibleValues: togglerValues[filterParam.name as 'conjunct' | 'negative'],
+								possibleValues:
+									togglerValues[filterParam.name as 'conjunct' | 'negative' | 'strict'],
 							};
 						case 'switcher':
 							return {

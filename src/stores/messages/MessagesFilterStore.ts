@@ -85,6 +85,12 @@ export default class MessagesFilterStore {
 				: [],
 		);
 
+		const filterStrict = filtersToAdd.map(filterName =>
+			sseFilters && sseFilters[filterName].strict
+				? [`${filterName}-strict`, sseFilters[filterName].strict]
+				: [],
+		);
+
 		const endTimestamp = moment().utc().subtract(30, 'minutes').valueOf();
 		const startTimestamp = moment(endTimestamp).add(5, 'minutes').valueOf();
 
@@ -95,7 +101,7 @@ export default class MessagesFilterStore {
 			resultCountLimit: 15,
 			filters: filtersToAdd,
 			...Object.fromEntries(
-				[...filterValues, ...filterInclusion, ...filterConjunct].filter(
+				[...filterValues, ...filterInclusion, ...filterConjunct, ...filterStrict].filter(
 					filtersArr => filtersArr.length,
 				),
 			),
