@@ -139,16 +139,19 @@ export class SearchStore implements ISearchStore {
 		const sessionsSub = reaction(
 			() => this.filterConfigStore.messageSessions,
 			this.setMessagesSessions,
+			{ fireImmediately: true },
 		);
 
 		const messageFilterSub = reaction(
 			() => this.filterConfigStore.messagesFilterInfo,
 			this.initMessagesFilter,
+			{ fireImmediately: true },
 		);
 
 		const eventsFilterFilterSub = reaction(
 			() => this.filterConfigStore.eventFilterInfo,
 			this.initEventsFilter,
+			{ fireImmediately: true },
 		);
 
 		const currentSearchSub = autorun(() => {

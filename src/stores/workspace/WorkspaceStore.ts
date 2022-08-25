@@ -32,12 +32,12 @@ import EventsStore, {
 import ApiSchema from '../../api/ApiSchema';
 import WorkspaceViewStore from './WorkspaceViewStore';
 import { EventMessage } from '../../models/EventMessage';
-import { ActionType, EventAction, EventTreeNode } from '../../models/EventAction';
+import { EventAction, EventTreeNode } from '../../models/EventAction';
 import { isEventMessage } from '../../helpers/message';
 import { TimeRange } from '../../models/Timestamp';
 import WorkspacesStore, { WorkspacesUrlState } from './WorkspacesStore';
 import { WorkspacePanelsLayout } from '../../components/workspace/WorkspaceSplitter';
-import { getRangeFromTimestamp, timestampToNumber } from '../../helpers/date';
+import { timestampToNumber } from '../../helpers/date';
 import { getObjectKeys } from '../../helpers/object';
 
 export interface WorkspaceUrlState {
@@ -138,9 +138,15 @@ export default class WorkspaceStore {
 	public onSavedItemSelect = (savedItem: EventTreeNode | EventAction | EventMessage) => {
 		if (isEventMessage(savedItem)) {
 			this.viewStore.activePanel = Panel.Messages;
+			if (!this.viewStore.isExpanded(Panel.Messages)) {
+				this.viewStore.expandPanel(Panel.Messages);
+			}
 			this.messagesStore.onMessageSelect(savedItem);
 		} else {
 			this.viewStore.activePanel = Panel.Events;
+			if (!this.viewStore.isExpanded(Panel.Events)) {
+				this.viewStore.expandPanel(Panel.Events);
+			}
 			this.eventsStore.goToEvent(savedItem);
 		}
 	};
@@ -172,30 +178,6 @@ export default class WorkspaceStore {
 		}
 	};
 
-	@action
-	public onSearchResultGroupSelect = (timestamp: number, resultType: ActionType) => {
-		switch (resultType) {
-			case ActionType.EVENT_ACTION:
-				this.eventsStore.applyFilter(
-					undefined,
-					getRangeFromTimestamp(timestamp, this.eventsStore.urlState.interval!),
-				);
-				break;
-			case ActionType.MESSAGE:
-				this.messagesStore.filterStore.setMessagesFilter(
-					{
-						streams: this.searchStore.currentSearch?.request.state.stream ?? [],
-						timestampFrom: null,
-						timestampTo: timestamp,
-					},
-					null,
-				);
-				break;
-			default:
-				throw new Error(`Unhandled result type ${resultType}`);
-		}
-	};
-
 	public onFilterByParentEvent = (parentEvent: EventTreeNode) => {
 		this.searchStore.stopSearch();
 		this.searchStore.setFormType('event');
@@ -204,7 +186,10 @@ export default class WorkspaceStore {
 			startTimestamp: timestampToNumber(parentEvent.startTimestamp),
 		});
 
-		// TODO: expand search panel if it's collapsed & set active panel
+		this.viewStore.setActivePanel(Panel.Search);
+		if (!this.viewStore.isExpanded(Panel.Search)) {
+			this.viewStore.expandPanel(Panel.Search);
+		}
 	};
 
 	public dispose = () => {

@@ -440,6 +440,7 @@
 	box-sizing: border-box;
 	display: flex;
 	align-items: center;
+	gap: 15px;
 	width: 100%;
 
 	&:hover &__divider-text {

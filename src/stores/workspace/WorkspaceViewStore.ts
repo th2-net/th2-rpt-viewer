@@ -98,7 +98,7 @@ export default class WorkspaceViewStore {
 		this.panelsLayout = newLayout;
 	};
 
-	private expandPanel = (targetIndex: number) => {
+	public expandPanel = (targetIndex: number) => {
 		const expandedPanelCount =
 			this.panelsLayout.length - this.panelsLayout.filter(this.isPanelCollapsed).length;
 
@@ -113,6 +113,8 @@ export default class WorkspaceViewStore {
 	public setActivePanel = (panel: Panel) => {
 		this.activePanel = panel;
 	};
+
+	public isExpanded = (panel: Panel) => this.panelsLayout[panel] > 10;
 
 	@action
 	public toggleFlattenEventListView = () => {

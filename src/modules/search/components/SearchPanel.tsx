@@ -17,7 +17,6 @@
 import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useActivePanel } from 'hooks/index';
-import { ActionType } from 'models/EventAction';
 import { Panel } from 'models/Panel';
 import SearchPanelForm from './SearchPanelForm';
 import { useSearchStore } from '../hooks/useSearchStore';
@@ -27,7 +26,6 @@ import 'styles/search-panel.scss';
 
 interface SearchPanelProps {
 	onResultClick: (searchResult: SearchResult) => void;
-	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
 	itemsInView?: Record<string, boolean>;
 }
 
@@ -55,7 +53,6 @@ const SearchPanel = (props: SearchPanelProps) => {
 					onResultDelete={removeCurrentSearch}
 					itemsInView={props.itemsInView}
 					onResultClick={props.onResultClick}
-					onResultGroupClick={props.onResultGroupClick}
 				/>
 			)}
 		</div>

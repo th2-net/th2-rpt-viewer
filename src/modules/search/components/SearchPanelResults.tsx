@@ -17,7 +17,6 @@
 import { Virtuoso } from 'react-virtuoso';
 import { formatTimestamp } from 'helpers/date';
 import { getItemId } from 'helpers/event';
-import { ActionType } from 'models/EventAction';
 import MessagesFilter from 'models/filter/MessagesFilter';
 import EventsFilter from 'models/filter/EventsFilter';
 import { SearchResult } from '../stores/SearchStore';
@@ -26,7 +25,6 @@ import SearchResultItem from './SearchResultItem';
 
 interface SearchPanelResultsProps {
 	onResultClick: (searchResult: SearchResult, isNewWorkspace?: boolean) => void;
-	onResultGroupClick: (timestamp: number, resultType: ActionType) => void;
 	onResultDelete: () => void;
 	flattenedResult: (SearchResult | [number, number])[];
 	filters: EventsFilter | MessagesFilter;

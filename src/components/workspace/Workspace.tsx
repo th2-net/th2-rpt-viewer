@@ -77,7 +77,6 @@ function Workspace() {
 						component: (
 							<SearchPanel
 								onResultClick={workspaceStore.onSearchResultItemSelect}
-								onResultGroupClick={workspaceStore.onSearchResultGroupSelect}
 								itemsInView={itemsInView}
 							/>
 						),
