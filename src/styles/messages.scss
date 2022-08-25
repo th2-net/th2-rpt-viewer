@@ -185,6 +185,7 @@
 		padding: 4px 8px;
 		cursor: pointer;
 		color: $primaryTextColor;
+
 		&:not(:last-child) {
 			margin-right: 12px;
 		}
@@ -669,7 +670,6 @@
 
 		&.exported {
 			border: 2px solid $exportedMessageCardBackground;
-			padding: 0;
 		}
 	}
 

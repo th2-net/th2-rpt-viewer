@@ -32,14 +32,14 @@ export default class MessagesExportStore {
 	}
 
 	@action
-	public addMessageToExport(message: EventMessage) {
+	public addMessageToExport = (message: EventMessage) => {
 		if (!this.isExport) return;
 		if (this.isExported(message)) {
 			this.exportMessages = this.exportMessages.filter(exportMessage => exportMessage !== message);
 		} else {
 			this.exportMessages.push(message);
 		}
-	}
+	};
 
 	@action
 	public enableExport = () => {
