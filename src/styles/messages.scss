@@ -149,11 +149,11 @@
 	}
 
 	&__button.active &__ellipsis {
-		display: block;
+		visibility: visible;
 	}
 
 	&__ellipsis {
-		display: none;
+		visibility: hidden;
 		border: none;
 		flex-shrink: 0;
 		@include icon(url(../../resources/icons/ellipsis.svg), 15px, 15px);
@@ -348,7 +348,7 @@
 		overflow: hidden;
 
 		&:hover .message-card-tools__ellipsis {
-			display: block;
+			visibility: visible;
 		}
 		&:hover .message-card-tools {
 			background-color: #fcfcfc;
@@ -463,7 +463,7 @@
 
 .parsed-message {
 	&:hover .message-card-tools__ellipsis {
-		display: block;
+		visibility: visible;
 	}
 	&:hover .message-card-tools {
 		background-color: #fcfcfc;
