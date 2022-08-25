@@ -269,6 +269,7 @@
 	&__compound {
 		display: flex;
 		flex-direction: column;
+		padding: 2px;
 
 		& > div:last-child {
 			width: 100%;

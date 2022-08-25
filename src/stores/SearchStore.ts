@@ -555,6 +555,10 @@ export class SearchStore {
 			getFilter(filter).conjunct ? [`${filter}-conjunct`, getFilter(filter).conjunct] : [],
 		);
 
+		const filterStrict = filtersToAdd.map((filter: any) =>
+			getFilter(filter).strict ? [`${filter}-strict`, getFilter(filter).strict] : [],
+		);
+
 		const startDirectionalSearch = (direction: SSESearchDirection) => {
 			const params = {
 				startTimestamp: _startTimestamp,
@@ -562,7 +566,12 @@ export class SearchStore {
 				resultCountLimit,
 				endTimestamp: timeLimits[direction],
 				filters: filtersToAdd,
-				...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
+				...Object.fromEntries([
+					...filterValues,
+					...filterInclusion,
+					...filterConjunct,
+					...filterStrict,
+				]),
 			};
 
 			if (isPaused || loadMore) {

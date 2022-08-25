@@ -26,6 +26,7 @@ export type MultipleStringFilter = {
 	values: string[];
 	negative: boolean;
 	conjunct: boolean;
+	strict: boolean;
 	hint: string;
 };
 
