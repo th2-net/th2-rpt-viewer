@@ -509,6 +509,10 @@ export class SearchStore implements ISearchStore {
 			getFilter(filter).conjunct ? [`${filter}-conjunct`, getFilter(filter).conjunct] : [],
 		);
 
+		const filterStrict = filtersToAdd.map((filter: any) =>
+			getFilter(filter).strict ? [`${filter}-strict`, getFilter(filter).strict] : [],
+		);
+
 		const startDirectionalSearch = (direction: SSESearchDirection) => {
 			const endTimestamp = timeLimits[direction];
 			const params = {
@@ -517,8 +521,13 @@ export class SearchStore implements ISearchStore {
 				resultCountLimit,
 				endTimestamp: endTimestamp ? new Date(endTimestamp).toISOString() : endTimestamp,
 				filters: filtersToAdd,
-				...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
 				metadataOnly: false,
+				...Object.fromEntries([
+					...filterValues,
+					...filterInclusion,
+					...filterConjunct,
+					...filterStrict,
+				]),
 			};
 
 			if (isPaused || loadMore) {

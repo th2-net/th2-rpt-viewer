@@ -39,7 +39,9 @@ const TogglerRow = ({ config }: { config: FilterRowTogglerConfig }) => {
 					}
 				}}>
 				<div className={togglerIconClassName}></div>
-				<p className='toggler__label'>{value ? firstLabel : secondLabel}</p>
+				<p className='toggler__label'>
+					{firstLabel.includes('Strict') ? 'Strict' : value ? firstLabel : secondLabel}
+				</p>
 			</div>
 		</div>
 	);

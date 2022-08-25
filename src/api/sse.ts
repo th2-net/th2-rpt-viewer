@@ -39,7 +39,7 @@ export type SSEFilterInfo = EventsFiltersInfo | MessagesFilterInfo;
 export interface SSEFilterParameter {
 	defaultValue: boolean | string | string[] | null;
 	hint: string;
-	name: 'conjunct' | 'negative' | 'values';
+	name: 'conjunct' | 'negative' | 'strict' | 'values';
 	type: { value: 'string' | 'boolean' | 'string[]' | 'switcher' };
 }
 
@@ -78,12 +78,15 @@ export interface EventSSEParams extends BaseSSEParams {
 	'attachedMessageId-values'?: string;
 	'attachedMessageId-negative'?: boolean;
 	'attachedMessageId-conjunct'?: boolean;
+	'attachedMessageId-strict'?: boolean;
 	'type-values'?: string[];
 	'type-negative'?: boolean;
 	'type-conjunct'?: boolean;
+	'type-strict'?: boolean;
 	'name-values'?: string[];
 	'name-negative'?: boolean;
 	'name-conjunct'?: boolean;
+	'name-strict'?: boolean;
 	resumeFromId?: string;
 }
 
@@ -100,12 +103,15 @@ export interface MessagesSSEParams extends BaseSSEParams {
 	'attachedEventIds-values'?: string[];
 	'attachedEventIds-negative'?: boolean;
 	'attachedEventIds-conjunct'?: boolean;
+	'attachedEventIds-strict'?: boolean;
 	'type-values'?: string[];
 	'type-negative'?: boolean;
 	'type-conjunct'?: boolean;
+	'type-strict'?: boolean;
 	'body-values'?: string[];
 	'body-negative'?: boolean;
 	'body-conjunct'?: boolean;
+	'body-strict'?: boolean;
 	messageId?: string[];
 }
 
@@ -152,6 +158,9 @@ function getEventsSSEParamsFromFilter(filter: EventsFilter): ParamsFromFilter {
 			if ('conjunct' in currentFilter) {
 				currentFilterParams[`${filterName}-conjunct`] = currentFilter.conjunct;
 			}
+			if ('strict' in currentFilter) {
+				currentFilterParams[`${filterName}-strict`] = currentFilter.strict;
+			}
 
 			return {
 				...params,
@@ -192,6 +201,10 @@ export function getMessagesSSEParamsFromFilter(
 			: [],
 	);
 
+	const filterStrict = filtersToAdd.map(filterName =>
+		filter && filter[filterName].strict ? [`${filterName}-strict`, filter[filterName].strict] : [],
+	);
+
 	const queryParams: MessagesSSEParams = {
 		startTimestamp: startTimestamp ? new Date(startTimestamp).toISOString() : startTimestamp,
 		endTimestamp: endTimestamp ? new Date(endTimestamp).toISOString() : endTimestamp,
@@ -199,7 +212,12 @@ export function getMessagesSSEParamsFromFilter(
 		searchDirection,
 		resultCountLimit,
 		filters: filtersToAdd,
-		...Object.fromEntries([...filterValues, ...filterInclusion, ...filterConjunct]),
+		...Object.fromEntries([
+			...filterValues,
+			...filterInclusion,
+			...filterConjunct,
+			...filterStrict,
+		]),
 	};
 
 	return createURLSearchParams({ ...queryParams });
