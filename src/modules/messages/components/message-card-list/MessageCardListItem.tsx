@@ -22,7 +22,7 @@ import CardDisplayType from 'models/util/CardDisplayType';
 import StateSaver from 'components/util/StateSaver';
 import { EventMessage, MessageViewType } from 'models/EventMessage';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
-import { useMessagesDataStore } from '../../hooks/useMessagesDataStore';
+import { useIsSoftFiltered } from '../../hooks/useIsSoftFiltered';
 import { useMessagesViewTypeStore } from '../../hooks/useMessagesViewTypeStore';
 import { useMessageBodySortStore } from '../../hooks/useMessageBodySortStore';
 import MessageCard from '../message-card/MessageCard';
@@ -47,27 +47,12 @@ const MessageCardListItem = observer((props: Props) => {
 	const { id } = message;
 
 	const messagesStore = useMessagesStore();
-	const messagesDataStore = useMessagesDataStore();
 	const { sortOrderItems } = useMessageBodySortStore();
+	const isSoftFiltered = useIsSoftFiltered(id);
 
 	const [isHighlighted, setHighlighted] = React.useState(false);
 
 	const highlightTimer = React.useRef<NodeJS.Timeout>();
-
-	React.useEffect(() => {
-		const abortController = new AbortController();
-
-		if (
-			messagesStore.filterStore.isSoftFilter &&
-			messagesDataStore.isSoftFiltered.get(id) === undefined
-		) {
-			messagesDataStore.matchMessage(id, abortController.signal);
-		}
-
-		return () => {
-			abortController.abort();
-		};
-	}, []);
 
 	React.useEffect(() => {
 		if (!isHighlighted && messagesStore.highlightedMessageId?.valueOf() === id) {
@@ -88,8 +73,6 @@ const MessageCardListItem = observer((props: Props) => {
 	}, [messagesStore.highlightedMessageId]);
 
 	const isBookmarked = computed(() => messagesStore.bookmarks.get(id)).get();
-
-	const isSoftFiltered = messagesDataStore.isSoftFiltered.get(id);
 
 	const isAttached = computed(() =>
 		messagesStore.attachedMessages.some(attMsg => attMsg.id === message.id),

@@ -14,7 +14,7 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { useRootStore } from 'hooks/useRootStore';
+import { useRootStore } from './useRootStore';
 
 export const useSessionsHistoryStore = () => {
 	const rootStore = useRootStore();
