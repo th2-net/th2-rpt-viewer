@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { computed } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import MessagesFilter from 'models/filter/MessagesFilter';
@@ -41,6 +41,7 @@ import SessionFilter from './SessionFilterRow';
 import FilterWarning from './FilterWarning';
 import ReplayModal from './ReplayModal';
 import MessageExport from '../MessageExport';
+import ReportViewerLink from './ReportViewerLink';
 
 const filterOrder: MessageFilterKeys[] = [
 	'attachedEventIds',
@@ -154,30 +155,6 @@ const MessagesFilterPanel = () => {
 		[config, sseFiltersErrorConfig],
 	);
 
-	const reportURL = useMemo(() => {
-		if (viewMode !== ViewMode.EmbeddedMessages) return undefined;
-
-		const messagesStoreState = {
-			timestampFrom: messagesStore.filterStore.params.timestampFrom,
-			timestampTo: messagesStore.filterStore.params.timestampTo,
-			streams: messagesStore.filterStore.params.streams,
-			sse: messagesStore.filterStore.sseMessagesFilter,
-			isSoftFilter: false,
-		};
-
-		const searchString = new URLSearchParams({
-			workspaces: window.btoa(
-				JSON.stringify([
-					{
-						messages: messagesStoreState,
-					},
-				]),
-			),
-		});
-
-		return [window.location.origin, window.location.pathname, `?${searchString}`].join('');
-	}, [viewMode, messagesStore.filterStore.params, messagesStore.filterStore.sseMessagesFilter]);
-
 	return (
 		<>
 			<FilterButton
@@ -196,7 +173,7 @@ const MessagesFilterPanel = () => {
 				setFilter={setFilter as any}
 				type='message'
 			/>
-			{viewMode !== ViewMode.EmbeddedMessages && (
+			{viewMode !== ViewMode.Full && (
 				<>
 					<ReplayModal />
 					<FilterWarning />
@@ -215,9 +192,7 @@ const MessagesFilterPanel = () => {
 				endExport={messagesStore.exportStore.endExport}
 				exportAmount={messagesStore.exportStore.exportMessages.length}
 			/>
-			<a href={reportURL} rel='noreferrer' target='_blank' className='report-viewer-link'>
-				Report viewer
-			</a>
+			{viewMode === ViewMode.EmbeddedMessages && <ReportViewerLink />}
 		</>
 	);
 };
