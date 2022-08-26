@@ -82,7 +82,7 @@ function ReplayModal() {
 
 	const { config, setFilter } = useFilterConfig({
 		filterInfo: filterStore.filterInfo,
-		filter: filterStore.sseMessagesFilter,
+		filter: filterStore.filter,
 		order: filterOrder,
 	});
 
@@ -150,7 +150,7 @@ function ReplayModal() {
 		].join('');
 
 		const params = getMessagesSSEParamsFromFilter(
-			filterStore.sseMessagesFilter,
+			filterStore.filter,
 			streams,
 			startTimestamp,
 			endTimestamp,
@@ -167,7 +167,7 @@ function ReplayModal() {
 			setCurrentStream('');
 			setStartTimestamp(timestampFrom || moment().subtract(30, 'minutes').valueOf());
 			setEndTimestamp(timestampTo);
-			setFilter(messagesStore.filterStore.sseMessagesFilter);
+			setFilter(messagesStore.filterStore.filter);
 			setIsOpen(true);
 		} else {
 			setIsOpen(false);

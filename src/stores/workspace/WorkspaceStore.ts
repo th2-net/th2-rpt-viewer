@@ -17,7 +17,13 @@
 import { action, computed, reaction, toJS } from 'mobx';
 import { nanoid } from 'nanoid';
 import { SearchStore } from 'modules/search/stores/SearchStore';
-import { IBookmarksStore, IEventsStore, IFilterConfigStore, ISearchStore } from 'models/Stores';
+import {
+	IBookmarksStore,
+	IEventsStore,
+	IFilterConfigStore,
+	IMessagesStore,
+	ISearchStore,
+} from 'models/Stores';
 import { Panel } from 'models/Panel';
 import { Session, SessionHistoryStore } from 'modules/messages/stores//SessionHistoryStore';
 import { MessageBookmark } from 'modules/bookmarks/models/Bookmarks';
@@ -58,7 +64,7 @@ export type WorkspaceInitialState = Partial<{
 export default class WorkspaceStore {
 	public eventsStore: IEventsStore;
 
-	public messagesStore: MessagesStore;
+	public messagesStore: IMessagesStore;
 
 	public viewStore: WorkspaceViewStore;
 
@@ -119,7 +125,7 @@ export default class WorkspaceStore {
 			timestampTo: this.messagesStore.filterStore.params.timestampTo,
 			streams: this.messagesStore.filterStore.params.streams,
 			isSoftFilter: this.messagesStore.filterStore.isSoftFilter,
-			sse: this.messagesStore.filterStore.sseMessagesFilter,
+			sse: this.messagesStore.filterStore.filter,
 		};
 
 		getObjectKeys(eventStoreState).forEach(key => {

@@ -57,7 +57,7 @@ export default class MessagesFilterStore {
 
 	@observable params: MessagesParams = getDefaultMessagesParams();
 
-	@observable sseMessagesFilter: MessagesFilter | null = null;
+	@observable filter: MessagesFilter | null = null;
 
 	/*
 		When isSoftFilter is applied messages that don't match filter are not excluded,
@@ -67,7 +67,7 @@ export default class MessagesFilterStore {
 
 	@computed
 	public get filterParams(): MessagesSSEParams {
-		const sseFilters = this.sseMessagesFilter;
+		const sseFilters = this.filter;
 
 		const filtersToAdd: Array<keyof MessagesFilter> = !sseFilters
 			? []
@@ -131,21 +131,21 @@ export default class MessagesFilterStore {
 
 	@computed
 	public get isMessagesFilterApplied() {
-		if (!this.sseMessagesFilter) return false;
-		return Object.values(this.sseMessagesFilter).some(filter => filter.values.length > 0);
+		if (!this.filter) return false;
+		return Object.values(this.filter).some(filter => filter.values.length > 0);
 	}
 
 	@action
 	public setMessagesFilter(params: MessagesParams, filter: MessagesFilter | null = null) {
 		this.params = params;
-		this.sseMessagesFilter = filter;
+		this.filter = filter;
 	}
 
 	@action
 	public resetMessagesFilter = (initialParams: Partial<MessagesParams> = {}) => {
 		const filter = toJS(this.filtersStore.messageFilters);
 		const defaultMessagesFilter = getDefaultMessagesParams();
-		this.sseMessagesFilter = filter;
+		this.filter = filter;
 		this.isSoftFilter = false;
 		this.params = {
 			...defaultMessagesFilter,
@@ -184,7 +184,7 @@ export default class MessagesFilterStore {
 
 	@action
 	private setDefaultSSEFilter = () => {
-		this.sseMessagesFilter = toJS(this.filtersStore.messageFilters);
+		this.filter = toJS(this.filtersStore.messageFilters);
 	};
 
 	@action
@@ -192,9 +192,9 @@ export default class MessagesFilterStore {
 		const filtersCopy = toJS(filters);
 
 		if (filtersCopy) {
-			this.sseMessagesFilter = {
+			this.filter = {
 				...filtersCopy,
-				...(this.sseMessagesFilter || {}),
+				...(this.filter || {}),
 			};
 		}
 	};

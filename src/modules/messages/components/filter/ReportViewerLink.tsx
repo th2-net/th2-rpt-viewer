@@ -26,7 +26,7 @@ const ReportViewerLink = observer(() => {
 			timestampFrom: messagesStore.filterStore.params.timestampFrom,
 			timestampTo: messagesStore.filterStore.params.timestampTo,
 			streams: messagesStore.filterStore.params.streams,
-			sse: messagesStore.filterStore.sseMessagesFilter,
+			sse: messagesStore.filterStore.filter,
 			isSoftFilter: false,
 		};
 
@@ -41,7 +41,7 @@ const ReportViewerLink = observer(() => {
 		});
 
 		return [window.location.origin, window.location.pathname, `?${searchString}`].join('');
-	}, [messagesStore.filterStore.params, messagesStore.filterStore.sseMessagesFilter]);
+	}, [messagesStore.filterStore.params, messagesStore.filterStore.filter]);
 
 	return (
 		<a href={reportURL} rel='noreferrer' target='_blank' className='report-viewer-link'>

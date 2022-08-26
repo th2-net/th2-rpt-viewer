@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { action, computed, observable, reaction, runInAction } from 'mobx';
-import { IFilterConfigStore } from 'models/Stores';
+import { IFilterConfigStore, IMessagesStore } from 'models/Stores';
 import ApiSchema from 'api/ApiSchema';
 import { EventMessage } from 'models/EventMessage';
 import { EventTreeNode } from 'models/EventAction';
@@ -47,7 +47,7 @@ type MessageStoreOptions = Partial<{
 
 export type MessagesStoreDefaultStateType = MessagesStoreDefaultState | null | undefined;
 
-export default class MessagesStore {
+export default class MessagesStore implements IMessagesStore {
 	public filterStore: MessagesFilterStore;
 
 	public dataStore: MessagesDataProviderStore;

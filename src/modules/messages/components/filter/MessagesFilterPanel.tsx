@@ -63,7 +63,7 @@ const MessagesFilterPanel = () => {
 
 	const { config, filter, setFilter } = useFilterConfig({
 		filterInfo: filterStore.filterInfo,
-		filter: filterStore.sseMessagesFilter,
+		filter: filterStore.filter,
 		order: filterOrder,
 		autocompleteLists: filtersAutocomplete,
 	});
@@ -73,8 +73,8 @@ const MessagesFilterPanel = () => {
 	const [currentStream, setCurrentStream] = React.useState('');
 
 	React.useEffect(() => {
-		setFilter(filterStore.sseMessagesFilter);
-	}, [filterStore.sseMessagesFilter]);
+		setFilter(filterStore.filter);
+	}, [filterStore.filter]);
 
 	React.useEffect(() => {
 		setStreams(filterStore.params.streams);

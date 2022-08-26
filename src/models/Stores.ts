@@ -20,7 +20,7 @@ import { SearchHistory, SearchPanelFormState } from 'modules/search/stores/Searc
 import { EventStoreURLState } from 'modules/events/stores/EventsStore';
 import { TimeRange } from 'models/Timestamp';
 import EventsFilter from 'models/filter/EventsFilter';
-import MessagesFilter from 'models/filter/MessagesFilter';
+import MessagesFilter, { MessagesParams } from 'models/filter/MessagesFilter';
 import { DbData } from '../api/indexedDb';
 import { EventsFiltersInfo, MessagesFilterInfo, MessagesSSEParams } from '../api/sse';
 import { EventTreeNode, EventAction } from './EventAction';
@@ -60,6 +60,22 @@ export interface ISearchStore {
 	pauseSearch: () => void;
 	isSearching: boolean;
 	startSearch: (loadMore?: boolean) => void;
+}
+
+export interface IMessagesStore {
+	filterStore: IMessageFilterStore;
+	onMessageSelect: (message: EventMessage) => void;
+	onBookmarksChange: (bookmarkedMessages: EventMessage[]) => void;
+	onSessionHistoryChange: (sessions: string[]) => void;
+	dispose: () => void;
+	onSelectedEventChange: (event: EventTreeNode | null) => void;
+	messagesInView: EventMessage[];
+}
+
+interface IMessageFilterStore {
+	params: MessagesParams;
+	filter: MessagesFilter | null;
+	isSoftFilter: boolean;
 }
 
 export interface MessagesDataStore {
