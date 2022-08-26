@@ -33,12 +33,13 @@ function MessagesPanelHeader(props: Props) {
 
 	return (
 		<div className='messages-window-header'>
-			<MessagesUpdateButton
-				isShow={updateStore.canActivate}
-				isLoading={updateStore.isActive}
-				subscribeOnChanges={updateStore.subscribeOnChanges}
-				stopSubscription={updateStore.stopSubscription}
-			/>
+			{updateStore.canActivate && (
+				<MessagesUpdateButton
+					isLoading={updateStore.isActive}
+					subscribeOnChanges={updateStore.subscribeOnChanges}
+					stopSubscription={updateStore.stopSubscription}
+				/>
+			)}
 			<MessagesFilterPanel {...props} />
 			<MessagesViewConfigurator />
 		</div>

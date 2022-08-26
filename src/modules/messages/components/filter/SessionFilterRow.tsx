@@ -14,34 +14,76 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { useMemo, useEffect, useState } from 'react';
 import { FilterRowMultipleStringsConfig } from 'models/filter/FilterInputs';
 import FilterRow from 'components/filter/row/FilterRow';
+import { useSessionAutocomplete } from '../../hooks/useMessagesAutocomplete';
+import { useMessagesStore } from '../../hooks/useMessagesStore';
+import { useFilterStore } from '../../hooks/useFilterStore';
 
 type MessagesFilterSessionFilterProps = {
-	config: FilterRowMultipleStringsConfig;
 	submitChanges: () => void;
 	stopLoading: () => void;
 	isLoading: boolean;
+	sessions: string[];
+	setSessions: (sessions: string[]) => void;
 };
 
 const MessagesFilterSessionFilter = ({
-	config,
 	submitChanges,
 	stopLoading,
 	isLoading,
-}: MessagesFilterSessionFilterProps) => (
-	<>
-		<FilterRow rowConfig={config} />
-		<button
-			onClick={isLoading ? stopLoading : submitChanges}
-			className='messages-window-header__filter-submit-btn'>
-			{isLoading ? (
-				<i className='messages-window-header__filter-submit-stop-icon' />
-			) : (
-				<i className='messages-window-header__filter-submit-start-icon' />
-			)}
-		</button>
-	</>
-);
+	sessions,
+	setSessions,
+}: MessagesFilterSessionFilterProps) => {
+	const messagesStore = useMessagesStore();
+	const filterStore = useFilterStore();
+	const sessionsAutocomplete = useSessionAutocomplete();
+
+	const [currentStream, setCurrentStream] = useState('');
+
+	useEffect(() => {
+		setSessions(filterStore.params.streams);
+	}, [filterStore.params.streams]);
+
+	const areSessionInvalid: boolean = useMemo(
+		() =>
+			sessions.length === 0 ||
+			sessions.some(stream => !messagesStore.messageSessions.includes(stream.trim())),
+		[sessions, messagesStore.messageSessions],
+	);
+
+	const config: FilterRowMultipleStringsConfig = useMemo(
+		() => ({
+			type: 'multiple-strings',
+			id: 'messages-stream',
+			values: sessions,
+			setValues: setSessions,
+			currentValue: currentStream,
+			setCurrentValue: setCurrentStream,
+			autocompleteList: sessionsAutocomplete,
+			validateBubbles: true,
+			isInvalid: areSessionInvalid,
+			required: true,
+			wrapperClassName: 'messages-window-header__session-filter scrollable',
+			hint: 'Session name',
+		}),
+		[sessions, setSessions, currentStream, setCurrentStream, sessionsAutocomplete],
+	);
+	return (
+		<>
+			<FilterRow rowConfig={config} />
+			<button
+				onClick={isLoading ? stopLoading : submitChanges}
+				className='messages-window-header__filter-submit-btn'>
+				{isLoading ? (
+					<i className='messages-window-header__filter-submit-stop-icon' />
+				) : (
+					<i className='messages-window-header__filter-submit-start-icon' />
+				)}
+			</button>
+		</>
+	);
+};
 
 export default MessagesFilterSessionFilter;

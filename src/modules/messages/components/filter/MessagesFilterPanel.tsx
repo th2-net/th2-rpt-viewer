@@ -22,17 +22,10 @@ import FilterConfig from 'components/filter/FilterConfig';
 import FilterButton from 'components/filter/FilterButton';
 import { useFilterConfig } from 'hooks/useFilterConfig';
 import useViewMode from 'hooks/useViewMode';
-import {
-	FilterRowMultipleStringsConfig,
-	ActionFilterConfig,
-	FilterRowConfig,
-} from 'models/filter/FilterInputs';
+import { ActionFilterConfig, FilterRowConfig } from 'models/filter/FilterInputs';
 import { MessageFilterKeys } from 'api/sse';
 import { ViewMode } from 'components/ViewModeProvider';
-import {
-	useMessageFiltersAutocomplete,
-	useSessionAutocomplete,
-} from '../../hooks/useMessagesAutocomplete';
+import { useMessageFiltersAutocomplete } from '../../hooks/useMessagesAutocomplete';
 import { useMessagesDataStore } from '../../hooks/useMessagesDataStore';
 import { useMessagesStore } from '../../hooks/useMessagesStore';
 import { useMessagesFilterConfigStore } from '../../hooks/useFilterConfigStore';
@@ -58,7 +51,7 @@ const MessagesFilterPanel = () => {
 	const messagesDataStore = useMessagesDataStore();
 	const filterStore = useFilterStore();
 	const filterConfigStore = useMessagesFilterConfigStore();
-
+	const [sessions, setSessions] = React.useState<Array<string>>([]);
 	const filtersAutocomplete = useMessageFiltersAutocomplete();
 
 	const { config, filter, setFilter } = useFilterConfig({
@@ -69,22 +62,16 @@ const MessagesFilterPanel = () => {
 	});
 
 	const [showFilter, setShowFilter] = React.useState(false);
-	const [streams, setStreams] = React.useState<Array<string>>([]);
-	const [currentStream, setCurrentStream] = React.useState('');
 
 	React.useEffect(() => {
 		setFilter(filterStore.filter);
 	}, [filterStore.filter]);
 
-	React.useEffect(() => {
-		setStreams(filterStore.params.streams);
-	}, [filterStore.params.streams]);
-
 	const submitChanges = React.useCallback(() => {
 		messagesStore.applyFilter(
 			{
 				...filterStore.params,
-				streams,
+				streams: sessions,
 			},
 			filter as MessagesFilter,
 		);
@@ -93,10 +80,10 @@ const MessagesFilterPanel = () => {
 			messagesStore.saveFilter(filter);
 		}
 
-		if (streams.length) {
-			messagesStore.saveSessions(streams);
+		if (sessions.length) {
+			messagesStore.saveSessions(sessions);
 		}
-	}, [filter, filterStore.params, streams]);
+	}, [filter, filterStore, sessions]);
 
 	const isMessageListLoading = computed(
 		() =>
@@ -110,33 +97,6 @@ const MessagesFilterPanel = () => {
 			messagesDataStore.messages.length !== 0 &&
 			(messagesStore.isFilteringTargetMessages || messagesStore.isLoadingAttachedMessages),
 	).get();
-
-	const sessionsAutocomplete = useSessionAutocomplete();
-
-	const areSessionInvalid: boolean = React.useMemo(
-		() =>
-			streams.length === 0 ||
-			streams.some(stream => !messagesStore.messageSessions.includes(stream.trim())),
-		[streams, messagesStore.messageSessions],
-	);
-
-	const sessionFilterConfig: FilterRowMultipleStringsConfig = React.useMemo(
-		() => ({
-			type: 'multiple-strings',
-			id: 'messages-stream',
-			values: streams,
-			setValues: setStreams,
-			currentValue: currentStream,
-			setCurrentValue: setCurrentStream,
-			autocompleteList: sessionsAutocomplete,
-			validateBubbles: true,
-			isInvalid: areSessionInvalid,
-			required: true,
-			wrapperClassName: 'messages-window-header__session-filter scrollable',
-			hint: 'Session name',
-		}),
-		[streams, setStreams, currentStream, setCurrentStream, sessionsAutocomplete],
-	);
 
 	const sseFiltersErrorConfig: ActionFilterConfig = React.useMemo(
 		() => ({
@@ -180,7 +140,8 @@ const MessagesFilterPanel = () => {
 				</>
 			)}
 			<SessionFilter
-				config={sessionFilterConfig}
+				sessions={sessions}
+				setSessions={setSessions}
 				submitChanges={submitChanges}
 				stopLoading={messagesDataStore.stopMessagesLoading}
 				isLoading={isMessageListLoading}
@@ -190,7 +151,7 @@ const MessagesFilterPanel = () => {
 				enableExport={messagesStore.exportStore.enableExport}
 				disableExport={messagesStore.exportStore.disableExport}
 				endExport={messagesStore.exportStore.endExport}
-				exportAmount={messagesStore.exportStore.exportMessages.length}
+				exportedCount={messagesStore.exportStore.exportMessages.length}
 			/>
 			{viewMode === ViewMode.EmbeddedMessages && <ReportViewerLink />}
 		</>

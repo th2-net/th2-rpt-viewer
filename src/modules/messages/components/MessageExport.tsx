@@ -23,13 +23,19 @@ interface Props {
 	enableExport: () => void;
 	disableExport: () => void;
 	endExport: (messageViewType: MessageViewType) => void;
-	exportAmount: number;
+	exportedCount: number;
 }
 
 const viewTypes = Object.values(MessageViewType);
 
 const MessageExport = (props: Props) => {
-	const { isExporting, enableExport, disableExport, endExport, exportAmount } = props;
+	const {
+		isExporting,
+		enableExport,
+		disableExport,
+		endExport,
+		exportedCount: exportAmount,
+	} = props;
 	const [isOpen, setIsOpen] = React.useState(false);
 
 	const exportMessages = (messageViewType: MessageViewType) => {

@@ -17,7 +17,6 @@
 import { createBemElement } from 'helpers/styleCreators';
 
 type MessagesUpdateButtonProps = {
-	isShow: boolean;
 	isLoading: boolean;
 	subscribeOnChanges: () => void;
 	stopSubscription: () => void;
@@ -25,7 +24,6 @@ type MessagesUpdateButtonProps = {
 
 const MessagesUpdateButton = ({
 	isLoading,
-	isShow,
 	subscribeOnChanges,
 	stopSubscription,
 }: MessagesUpdateButtonProps) => {
@@ -36,8 +34,6 @@ const MessagesUpdateButton = ({
 	);
 
 	const toggleSubscribe = isLoading ? stopSubscription : subscribeOnChanges;
-
-	if (!isShow) return null;
 
 	return (
 		<button onClick={toggleSubscribe} className={updateButtonClass}>
